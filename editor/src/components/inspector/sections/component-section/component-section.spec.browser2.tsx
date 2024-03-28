@@ -1186,7 +1186,7 @@ import {
   Scene,
 } from 'utopia-api'
 
-function Title({ text }) {
+export function Title({ text }) {
   return <h2 data-uid='0cd'>{text}</h2>
 }
 
@@ -1232,9 +1232,12 @@ export var storyboard = (
   </Storyboard>
 )
 `,
-  ['/utopia/components.utopia.js']: `const Components = {
+  ['/utopia/components.utopia.js']: `import { Title } from './storyboard'
+
+  const Components = {
   '/utopia/storyboard': {
     Title: {
+      component: Title,
       supportsChildren: false,
       properties: {
         text: {
@@ -1306,9 +1309,12 @@ export var storyboard = (
   </Storyboard>
 )
 `,
-  ['/utopia/components.utopia.js']: `const Components = {
+  ['/utopia/components.utopia.js']: `import { View } from 'utopia-api'
+  
+  const Components = {
     'utopia-api': {
       View: {
+        component: View,
         supportsChildren: false,
         properties: {
           sampleprop: {
@@ -1446,7 +1452,7 @@ var Playground = () => {
 )
 
 function DataPickerProjectShell(contents: string, componentDescriptor?: string, imports?: string) {
-  return createModifiedProject({
+  const projectContents = {
     [StoryboardFilePath]: `import * as React from 'react'
     import * as Utopia from 'utopia-api'
     import {
@@ -1491,15 +1497,16 @@ function DataPickerProjectShell(contents: string, componentDescriptor?: string, 
       </Storyboard>
     )
     `,
-    ['/utopia/components.utopia.js']:
-      componentDescriptor != null
-        ? `${imports}
-        
-        const Components = ${componentDescriptor}
-        
-        export default Components`
-        : '',
-  })
+  }
+
+  if (componentDescriptor != null) {
+    projectContents['/utopia/components.utopia.js'] = `${imports}
+      
+    const Components = ${componentDescriptor}
+    
+    export default Components`
+  }
+  return createModifiedProject(projectContents)
 }
 
 const registerComponentProjectWithHtmlProp = createModifiedProject({

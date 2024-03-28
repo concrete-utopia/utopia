@@ -1,7 +1,7 @@
 import { Popover, Transition } from '@headlessui/react'
 import React, { Fragment } from 'react'
 import { CookieConsent, getCookieConsentValue } from 'react-cookie-consent'
-import { useAppStore } from '../stores/appStore'
+import { useCDNLink } from '../util/cdnLink'
 
 const mainNavigation = [
   { name: ' ', href: '#' },
@@ -311,11 +311,8 @@ type HostedImageProps = React.DetailedHTMLProps<
 > & { src: string }
 
 export function HostedImage(props: HostedImageProps) {
-  const env = useAppStore((store) => store.env)
-  if (env == null) {
-    return null
-  }
-  return <img {...props} src={`${env.UTOPIA_CDN_URL}${props.src}`} />
+  const cdnLink = useCDNLink()
+  return <img {...props} src={cdnLink(props.src)} />
 }
 
 export const BasicEmailSignup = React.memo(() => {
