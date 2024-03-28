@@ -8,7 +8,6 @@ import { Substores, useEditorState, useRefEditorState } from '../../editor/store
 import { setProp_UNSAFE } from '../../editor/actions/action-creators'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
-import { OnClickOutsideHOC } from '../../../uuiui'
 import { ComponentPicker, type ElementToInsert } from './component-picker'
 import type { PreferredChildComponentDescriptor } from '../../custom-code/internal-property-controls'
 import { generateConsistentUID } from '../../../core/shared/uid-utils'
@@ -140,17 +139,15 @@ export const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, ta
   }
 
   return (
-    <OnClickOutsideHOC onClickOutside={hideRenderPropPicker}>
-      <Menu key={key} id={id} animation={false} style={{ width: 457 }} onClick={squashEvents}>
-        <ComponentPicker
-          insertionTargetName={prop}
-          preferredComponents={preferredChildrenForTargetProp}
-          allComponents={preferredChildrenForTargetProp}
-          onItemClick={onItemClick}
-          onClickCloseButton={hideRenderPropPicker}
-          currentElementName={targetPropCurrentElementName}
-        />
-      </Menu>
-    </OnClickOutsideHOC>
+    <Menu key={key} id={id} animation={false} style={{ width: 457 }} onClick={squashEvents}>
+      <ComponentPicker
+        insertionTargetName={prop}
+        preferredComponents={preferredChildrenForTargetProp}
+        allComponents={preferredChildrenForTargetProp}
+        onItemClick={onItemClick}
+        onClickCloseButton={hideRenderPropPicker}
+        currentElementName={targetPropCurrentElementName}
+      />
+    </Menu>
   )
 })
