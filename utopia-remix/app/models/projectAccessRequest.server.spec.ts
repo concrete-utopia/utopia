@@ -2,15 +2,17 @@ import { prisma } from '../db.server'
 import {
   createTestProject,
   createTestProjectAccessRequest,
+  createTestProjectCollaborator,
   createTestUser,
   truncateTables,
 } from '../test-util'
-import { AccessRequestStatus } from '../types'
+import { AccessRequestStatus, UserProjectRole } from '../types'
 import {
   createAccessRequest,
   listProjectAccessRequests,
   updateAccessRequestStatus,
 } from './projectAccessRequest.server'
+import * as permissionsService from '../services/permissionsService.server'
 
 describe('projectAccessRequest', () => {
   describe('createAccessRequest', () => {
@@ -78,6 +80,9 @@ describe('projectAccessRequest', () => {
   })
 
   describe('updateAccessRequestStatus', () => {
+    let revokeAllRolesFromUserMock: jest.SpyInstance
+    let grantProjectRoleToUserMock: jest.SpyInstance
+
     afterEach(async () => {
       await truncateTables([
         prisma.projectID,
@@ -86,6 +91,9 @@ describe('projectAccessRequest', () => {
         prisma.project,
         prisma.userDetails,
       ])
+
+      revokeAllRolesFromUserMock.mockRestore()
+      grantProjectRoleToUserMock.mockRestore()
     })
     beforeEach(async () => {
       await createTestUser(prisma, { id: 'bob' })
@@ -93,6 +101,9 @@ describe('projectAccessRequest', () => {
       await createTestUser(prisma, { id: 'that-guy' })
       await createTestProject(prisma, { id: 'one', ownerId: 'bob' })
       await createTestProject(prisma, { id: 'two', ownerId: 'alice' })
+
+      revokeAllRolesFromUserMock = jest.spyOn(permissionsService, 'revokeAllRolesFromUser')
+      grantProjectRoleToUserMock = jest.spyOn(permissionsService, 'grantProjectRoleToUser')
     })
     it('requires an existing project', async () => {
       const fn = async () =>
@@ -171,6 +182,39 @@ describe('projectAccessRequest', () => {
       const collabs = await prisma.projectCollaborator.findMany({ where: { project_id: 'one' } })
       expect(collabs.length).toBe(1)
       expect(collabs[0].user_id).toBe('alice')
+
+      expect(grantProjectRoleToUserMock).toHaveBeenCalledWith(
+        'one',
+        'alice',
+        UserProjectRole.VIEWER,
+      )
+      expect(revokeAllRolesFromUserMock).not.toHaveBeenCalled()
+    })
+    it('removes the user from the collaborators if rejected', async () => {
+      await createTestProjectCollaborator(prisma, { projectId: 'one', userId: 'alice' })
+      const existingCollabs = await prisma.projectCollaborator.findMany({
+        where: { project_id: 'one' },
+      })
+      expect(existingCollabs.length).toBe(1)
+
+      await createTestProjectAccessRequest(prisma, {
+        projectId: 'one',
+        userId: 'alice',
+        token: 'something',
+        status: AccessRequestStatus.PENDING,
+      })
+      await updateAccessRequestStatus({
+        projectId: 'one',
+        ownerId: 'bob',
+        token: 'something',
+        status: AccessRequestStatus.REJECTED,
+      })
+
+      const collabs = await prisma.projectCollaborator.findMany({ where: { project_id: 'one' } })
+      expect(collabs.length).toBe(0)
+
+      expect(grantProjectRoleToUserMock).not.toHaveBeenCalled()
+      expect(revokeAllRolesFromUserMock).toHaveBeenCalledWith('one', 'alice')
     })
   })
 
@@ -199,7 +243,7 @@ describe('projectAccessRequest', () => {
       await createTestProjectAccessRequest(prisma, {
         userId: 'p1',
         projectId: 'two',
-        status: AccessRequestStatus.APPROVED,
+        status: AccessRequestStatus.REJECTED,
         token: 'test1',
       })
       await createTestProjectAccessRequest(prisma, {
