@@ -45,6 +45,7 @@ import {
   applicative3Either,
   applicative4Either,
   applicative5Either,
+  defaultEither,
   foldEither,
   forEachRight,
   isLeft,
@@ -196,8 +197,6 @@ export function createModuleEvaluator(editor: EditorState): ModuleEvaluator {
         resolvedParseSuccess,
       )
       const absoluteFilenameOrPackage = defaultEither(toImport, filePathResolveResult)
-        ? filePathResolveResult.value
-        : toImport
       return extendExportsWithInfo(result, absoluteFilenameOrPackage)
     }
     return createExecutionScope(
