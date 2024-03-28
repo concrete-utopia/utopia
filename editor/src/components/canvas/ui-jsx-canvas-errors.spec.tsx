@@ -161,6 +161,43 @@ export var ${BakedInStoryboardVariableName} = (props) => {
                 },
               ],
             },
+            Object {
+              "columnNumber": 61,
+              "fileName": "code.tsx",
+              "lineNumber": 3,
+              "originalCode": Array [
+                ScriptLine {
+                  "content": "import * as React from \\"react\\"",
+                  "highlight": false,
+                  "lineNumber": 1,
+                },
+                ScriptLine {
+                  "content": "import { View, Storyboard, Scene } from 'utopia-api'",
+                  "highlight": false,
+                  "lineNumber": 2,
+                },
+                ScriptLine {
+                  "content": "const MyComp = (props) => <div data-uid={'bbb'}>Utopia</div>",
+                  "highlight": true,
+                  "lineNumber": 3,
+                },
+                ScriptLine {
+                  "content": "a.a // 16,1 this shall throw an error!",
+                  "highlight": false,
+                  "lineNumber": 4,
+                },
+                ScriptLine {
+                  "content": "export var App = (props) => {",
+                  "highlight": false,
+                  "lineNumber": 5,
+                },
+                ScriptLine {
+                  "content": "  return (<MyComp data-uid={'aaa'}/>)",
+                  "highlight": false,
+                  "lineNumber": 6,
+                },
+              ],
+            },
           ],
         },
       ]
@@ -886,6 +923,48 @@ export var ${BakedInStoryboardVariableName} = (props) => {
                 },
               ],
             },
+            Object {
+              "columnNumber": 30,
+              "fileName": "code.tsx",
+              "lineNumber": 6,
+              "originalCode": Array [
+                ScriptLine {
+                  "content": "import { View, Storyboard, Scene } from 'utopia-api'",
+                  "highlight": false,
+                  "lineNumber": 3,
+                },
+                ScriptLine {
+                  "content": "const MyComp = (props) => <div data-uid={'bbb'}>Utopia</div>",
+                  "highlight": false,
+                  "lineNumber": 4,
+                },
+                ScriptLine {
+                  "content": "",
+                  "highlight": false,
+                  "lineNumber": 5,
+                },
+                ScriptLine {
+                  "content": "export var App = (props) => {",
+                  "highlight": true,
+                  "lineNumber": 6,
+                },
+                ScriptLine {
+                  "content": "  '5' + a.a // 18,9",
+                  "highlight": false,
+                  "lineNumber": 7,
+                },
+                ScriptLine {
+                  "content": "  return (",
+                  "highlight": false,
+                  "lineNumber": 8,
+                },
+                ScriptLine {
+                  "content": "    <MyComp data-uid={'aaa'}>",
+                  "highlight": false,
+                  "lineNumber": 9,
+                },
+              ],
+            },
           ],
         },
       ]
@@ -971,6 +1050,48 @@ export var ${BakedInStoryboardVariableName} = (props) => {
                   "content": "      hello!",
                   "highlight": false,
                   "lineNumber": 10,
+                },
+              ],
+            },
+            Object {
+              "columnNumber": 30,
+              "fileName": "code.tsx",
+              "lineNumber": 6,
+              "originalCode": Array [
+                ScriptLine {
+                  "content": "import { View, Storyboard, Scene } from 'utopia-api'",
+                  "highlight": false,
+                  "lineNumber": 3,
+                },
+                ScriptLine {
+                  "content": "const MyComp = (props) => <div data-uid={'bbb'}>Utopia</div>",
+                  "highlight": false,
+                  "lineNumber": 4,
+                },
+                ScriptLine {
+                  "content": "",
+                  "highlight": false,
+                  "lineNumber": 5,
+                },
+                ScriptLine {
+                  "content": "export var App = (props) => {",
+                  "highlight": true,
+                  "lineNumber": 6,
+                },
+                ScriptLine {
+                  "content": "  a.a // 18,3",
+                  "highlight": false,
+                  "lineNumber": 7,
+                },
+                ScriptLine {
+                  "content": "  return (",
+                  "highlight": false,
+                  "lineNumber": 8,
+                },
+                ScriptLine {
+                  "content": "    <MyComp data-uid={'aaa'}>",
+                  "highlight": false,
+                  "lineNumber": 9,
                 },
               ],
             },
@@ -1466,6 +1587,48 @@ export var ${BakedInStoryboardVariableName} = (props) => {
                   "content": "      }",
                   "highlight": false,
                   "lineNumber": 9,
+                },
+              ],
+            },
+            Object {
+              "columnNumber": 36,
+              "fileName": "code.tsx",
+              "lineNumber": 5,
+              "originalCode": Array [
+                ScriptLine {
+                  "content": "      import { Storyboard, Scene } from 'utopia-api'",
+                  "highlight": false,
+                  "lineNumber": 2,
+                },
+                ScriptLine {
+                  "content": "      import { throwErrorFromCard } from './app'",
+                  "highlight": false,
+                  "lineNumber": 3,
+                },
+                ScriptLine {
+                  "content": "",
+                  "highlight": false,
+                  "lineNumber": 4,
+                },
+                ScriptLine {
+                  "content": "      export var App = (props) => {",
+                  "highlight": true,
+                  "lineNumber": 5,
+                },
+                ScriptLine {
+                  "content": "        throwErrorFromCard()",
+                  "highlight": false,
+                  "lineNumber": 6,
+                },
+                ScriptLine {
+                  "content": "",
+                  "highlight": false,
+                  "lineNumber": 7,
+                },
+                ScriptLine {
+                  "content": "        return <div />",
+                  "highlight": false,
+                  "lineNumber": 8,
                 },
               ],
             },
