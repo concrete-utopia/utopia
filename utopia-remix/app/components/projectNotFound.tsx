@@ -86,7 +86,7 @@ function UnauthorizedPage({ projectId, user }: { projectId: string; user: UserDe
           <a
             href='/projects'
             rel='noopener noreferrer'
-            style={{ textDecoration: 'none', color: colors.primary }}
+            style={{ textDecoration: 'none', color: isDarkMode ? '#80CAFF' : '#0075F9' }}
           >
             {user?.email}
           </a>
@@ -144,7 +144,7 @@ function NotFoundPage({ user, projectId }: { user: UserDetails | null; projectId
               <a
                 href='/projects'
                 rel='noopener noreferrer'
-                style={{ textDecoration: 'none', color: colors.primary }}
+                style={{ textDecoration: 'none', color: isDarkMode ? '#80CAFF' : '#0075F9' }}
               >
                 {user?.email}
               </a>
