@@ -44,9 +44,10 @@ async function createProject(req: Request, params: Params<string>) {
   // handle access level setting
   const url = new URL(req.url)
   const accessLevelParam = url.searchParams.get('accessLevel')
-  const accessLevel: AccessLevel =
-    accessLevelParamToAccessLevel(accessLevelParam) ?? AccessLevel.PRIVATE
-  await createProjectAccess({ projectId: id, accessLevel: accessLevel })
+  const accessLevel: AccessLevel | null = accessLevelParamToAccessLevel(accessLevelParam)
+  if (accessLevel != null) {
+    await createProjectAccess({ projectId: id, accessLevel: accessLevel })
+  }
 
   return project
 }
