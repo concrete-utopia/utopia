@@ -30,7 +30,7 @@ export async function createProjectAccess(params: {
   accessLevel: AccessLevel
   creatorId: string | null
 }): Promise<void> {
-  // check if project access already exists
+  // check if access level already exists
   const projectAccess = await prisma.projectAccess.findUnique({
     where: {
       project_id: params.projectId,
@@ -40,7 +40,6 @@ export async function createProjectAccess(params: {
     console.error(`Project access already exists for project ${params.projectId}`)
     return
   }
-
   await prisma.$transaction(async (tx) => {
     await tx.projectAccess.upsert({
       where: {
