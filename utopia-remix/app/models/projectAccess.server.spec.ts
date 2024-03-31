@@ -115,5 +115,7 @@ describe('create project access', () => {
       where: { project_id: 'one' },
     })
     expect(projectAccess?.access_level).toEqual(1)
+    expect(permissionsService.setProjectAccess).not.toHaveBeenCalledWith('one', 0)
+    expect(permissionsService.setProjectAccess).toHaveBeenCalledTimes(1)
   })
 })
