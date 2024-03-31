@@ -39,14 +39,19 @@ async function createProject(req: Request, params: Params<string>) {
   ensure(id != null, 'project id is null', Status.BAD_REQUEST)
 
   // create the project
-  const project = await proxy(req)
+  const project = (await proxy(req)) as { owner_id?: string }
 
   // handle access level setting
   const url = new URL(req.url)
   const accessLevelParam = url.searchParams.get('accessLevel')
   const accessLevel: AccessLevel =
     accessLevelParamToAccessLevel(accessLevelParam) ?? AccessLevel.PRIVATE
-  await createProjectAccess({ projectId: id, accessLevel: accessLevel })
+
+  await createProjectAccess({
+    projectId: id,
+    accessLevel: accessLevel,
+    creatorId: project.owner_id ?? null,
+  })
 
   return project
 }
