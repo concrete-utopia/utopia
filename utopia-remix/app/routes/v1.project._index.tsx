@@ -36,13 +36,12 @@ async function createNewProject(req: Request, params: Params<string>) {
   // prepare data for creating the project
   const requestData = (await req.json()) as { content: object; name: string; accessLevel: string }
   const { content, name, accessLevel: accessLevelParam } = requestData
-  const projectRequestData = { content, name }
   const headers = new Headers(req.headers)
   headers.delete('content-length')
   const createProjectRequest = new Request(withPath(req, `/v1/project/${id}`), {
     method: 'PUT',
     headers: headers,
-    body: JSON.stringify(projectRequestData),
+    body: JSON.stringify({ content: content, name: name }),
   })
 
   // create the project
