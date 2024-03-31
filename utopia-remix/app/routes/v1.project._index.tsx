@@ -31,26 +31,25 @@ export async function action(args: ActionFunctionArgs) {
 }
 
 async function createProject(req: Request, params: Params<string>) {
-  const projectIdRequest = new Request('/v1/projectid', {
-    method: 'GET',
+  // get a new project id
+  const projectIdRequest = new Request(withPath(req, '/v1/projectid'), {
+    method: 'POST',
     headers: req.headers,
   })
-  const projectIdResponse = (await proxy(projectIdRequest)) as { id: string }
-  const { id } = projectIdResponse
+  const projectIdResponse = await fetch(projectIdRequest)
+  const projectIdResponseJson = await projectIdResponse.json()
+  const { id } = projectIdResponseJson
 
-  const requestData = await req.formData()
-  const content = requestData.get('content') as string
-  const name = requestData.get('name') as string
-  const accessLevelParam = requestData.get('accessLevel') as string
-
-  const projectRequestFormData = new FormData()
-  projectRequestFormData.append('content', content)
-  projectRequestFormData.append('name', name)
-
-  const createProjectRequest = new Request(`/v1/project/${id}`, {
+  // prepare data for creating the project
+  const requestData = (await req.json()) as { content: object; name: string; accessLevel: string }
+  const { content, name, accessLevel: accessLevelParam } = requestData
+  const projectRequestData = { content, name }
+  const headers = new Headers(req.headers)
+  headers.delete('content-length')
+  const createProjectRequest = new Request(withPath(req, `/v1/project/${id}`), {
     method: 'PUT',
-    headers: req.headers,
-    body: req.body,
+    headers: headers,
+    body: JSON.stringify(projectRequestData),
   })
 
   // create the project
@@ -82,4 +81,10 @@ function accessLevelParamToAccessLevel(accessLevelParam: string | null): AccessL
     default:
       throw new ApiError('Invalid access level', Status.BAD_REQUEST)
   }
+}
+
+function withPath(req: Request, path: string): URL {
+  const url = new URL(req.url)
+  url.pathname = path
+  return url
 }
