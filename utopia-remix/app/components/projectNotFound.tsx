@@ -1,8 +1,8 @@
 import { Button } from '@radix-ui/themes'
-import { useFetcher } from '@remix-run/react'
+import { useFetcher, useLocation } from '@remix-run/react'
 import cx from 'classnames'
 import type { UserDetails } from 'prisma-client'
-import React from 'react'
+import React, { useMemo } from 'react'
 import { colors } from '../styles/sprinkles.css'
 import { when } from '../util/react-conditionals'
 import { Status } from '../util/statusCodes'
@@ -105,6 +105,12 @@ function NotFoundPage({ user, projectId }: { user: UserDetails | null; projectId
   const PyramidLight404 = React.useMemo(() => {
     return cdnLink('editor/404_pyramid_light.png')
   }, [cdnLink])
+  const location = useLocation()
+  const onLoginRedirect = useMemo(() => {
+    const queryParams = new URLSearchParams(location.search)
+    const searchString = queryParams.toString() === '' ? '' : `?${queryParams.toString()}`
+    return `/p/${projectId}${searchString}`
+  }, [projectId, location.search])
 
   return (
     <>
@@ -139,7 +145,7 @@ function NotFoundPage({ user, projectId }: { user: UserDetails | null; projectId
           ) : (
             <Action
               text='Sign In'
-              href={`/login?redirectTo=${encodeURIComponent(`/p/${projectId}`)}`}
+              href={`/login?redirectTo=${encodeURIComponent(onLoginRedirect)}`}
             />
           )}
         </div>
