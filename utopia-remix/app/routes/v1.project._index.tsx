@@ -7,6 +7,8 @@ import type { Params } from '@remix-run/react'
 import { createProjectAccess } from '../models/projectAccess.server'
 import { Status } from '../util/statusCodes'
 import { ApiError } from '../util/errors'
+import { action as createProjectIdInternal } from './v1.projectid'
+import { action as createProjectInternal } from './v1.project.$id'
 
 export async function loader(args: LoaderFunctionArgs) {
   return handle(args, {
@@ -24,21 +26,20 @@ export async function loader(args: LoaderFunctionArgs) {
 export async function action(args: ActionFunctionArgs) {
   return handle(args, {
     PUT: {
-      handler: createProject,
+      handler: createNewProject,
       validator: ALLOW,
     },
   })
 }
 
-async function createProject(req: Request, params: Params<string>) {
+async function createNewProject(req: Request, params: Params<string>) {
   // get a new project id
   const projectIdRequest = new Request(withPath(req, '/v1/projectid'), {
     method: 'POST',
     headers: req.headers,
   })
-  const projectIdResponse = await fetch(projectIdRequest)
-  const projectIdResponseJson = await projectIdResponse.json()
-  const { id } = projectIdResponseJson
+  const projectIdResponse = (await createProjectId(projectIdRequest)) as { id: string }
+  const { id } = projectIdResponse
 
   // prepare data for creating the project
   const requestData = (await req.json()) as { content: object; name: string; accessLevel: string }
@@ -53,7 +54,9 @@ async function createProject(req: Request, params: Params<string>) {
   })
 
   // create the project
-  const project = (await proxy(createProjectRequest)) as { owner_id?: string }
+  const project = (await createProject(createProjectRequest, { id: id })) as {
+    ownerId: string | null
+  }
 
   // handle access level setting
   const accessLevel: AccessLevel =
@@ -61,7 +64,7 @@ async function createProject(req: Request, params: Params<string>) {
   await createProjectAccess({
     projectId: id,
     accessLevel: accessLevel,
-    creatorId: project.owner_id ?? null,
+    creatorId: project.ownerId ?? null,
   })
 
   return project
@@ -87,4 +90,24 @@ function withPath(req: Request, path: string): URL {
   const url = new URL(req.url)
   url.pathname = path
   return url
+}
+
+async function createProjectId(req: Request) {
+  // const response = await fetch(req)
+  const response = (await createProjectIdInternal({
+    request: req,
+    params: {},
+    context: {},
+  })) as Response
+  return await response.json()
+}
+
+async function createProject(req: Request, params: Params<string>) {
+  // const response = await fetch(req)
+  const response = (await createProjectInternal({
+    request: req,
+    params: params,
+    context: {},
+  })) as Response
+  return await response.json()
 }
