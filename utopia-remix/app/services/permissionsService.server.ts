@@ -79,7 +79,7 @@ export async function revokeAllRolesFromUser(projectId: string, userId: string) 
     'viewer',
     'collaborator',
     'editor',
-    'owner',
+    'admin',
   ])
 }
 

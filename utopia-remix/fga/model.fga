@@ -5,20 +5,20 @@ type user
 
 type project
   relations
-    define can_assign_admin: admin
-    define can_comment: collaborator or editor or admin
-    define can_edit: editor or admin
-    define can_fork: viewer or collaborator or editor or admin
-    define can_manage: admin
-    define can_play: viewer or collaborator or editor or admin
+    define can_change_owner: owner
+    define can_comment: collaborator or editor or owner
+    define can_edit: editor or owner
+    define can_fork: viewer or collaborator or editor or owner
+    define can_manage: owner
+    define can_play: viewer or collaborator or editor or owner
     define can_request_access: [user:*]
-    define can_see_live_changes: collaborator or editor or admin
-    define can_show_presence: collaborator or editor or admin
-    define can_view: viewer or collaborator or editor or admin
+    define can_see_live_changes: collaborator or editor or owner
+    define can_show_presence: collaborator or editor or owner
+    define can_view: viewer or collaborator or editor or owner
     define collaborator: [user, user:*, group#member]
     define creator: [user]
     define editor: [user, group#member]
-    define admin: [user] or creator
+    define owner: [user] or creator
     define viewer: [user, user:*, group#member]
 
 type group
