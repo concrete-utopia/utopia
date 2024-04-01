@@ -911,6 +911,16 @@ const ProjectRow = React.memo(
       }
     }, [openShareDialog, canOpenShareDialog])
 
+    const onMouseDown = React.useCallback(
+      (event: React.MouseEvent) => {
+        // on right click only allow selection (not-deselction)
+        if (event.button !== 2 || !selected) {
+          onSelect()
+        }
+      },
+      [onSelect, selected],
+    )
+
     return (
       <ContextMenu.Root>
         <ContextMenu.Trigger>
@@ -928,7 +938,7 @@ const ProjectRow = React.memo(
                 paddingRight: 10,
                 transition: `.1s background-color ease-in-out`,
               }}
-              onMouseDown={onSelect}
+              onMouseDown={onMouseDown}
               onDoubleClick={openProject}
             >
               <div
