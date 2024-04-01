@@ -52,6 +52,7 @@ import { githubRepositoryPrettyName } from '../util/github'
 import type { OperationWithKey } from '../stores/projectsStore'
 import { createProjectsStore, ProjectsContext, useProjectsStore } from '../stores/projectsStore'
 import { UserAvatar } from '../components/userAvatar'
+import { UserContextMenu } from '../components/userContextMenu'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
@@ -291,22 +292,27 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
           gap: 30,
         }}
       >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            padding: '0 6px',
-          }}
-        >
-          <UserAvatar
-            picture={user.picture}
-            size={32}
-            name={user.name ?? user.email ?? user.user_id}
-            className={sprinkles({ borderRadius: 'medium' })}
-          />
-          <div className={userName({})}>{user.name}</div>
-        </div>
+        <DropdownMenu.Root>
+          <DropdownMenu.Trigger>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                padding: '0 6px',
+              }}
+            >
+              <UserAvatar
+                picture={user.picture}
+                size={32}
+                name={user.name ?? user.email ?? user.user_id}
+                className={sprinkles({ borderRadius: 'medium' })}
+              />
+              <div className={userName({})}>{user.name}</div>
+            </div>
+          </DropdownMenu.Trigger>
+          <UserContextMenu />
+        </DropdownMenu.Root>
         <TextField.Root>
           <TextField.Slot>
             <MagnifyingGlassIcon height='16' width='16' style={{ paddingLeft: 8 }} />
