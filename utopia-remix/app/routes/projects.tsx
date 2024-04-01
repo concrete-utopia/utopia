@@ -694,7 +694,7 @@ const ProjectCard = React.memo(
 
     const onMouseDown = React.useCallback(
       (event: React.MouseEvent) => {
-        // on right click only allow selection (not-deselction)
+        // on right click only allow selection (not de-selction)
         if (event.button !== 2 || !selected) {
           onSelect()
         }
@@ -913,7 +913,7 @@ const ProjectRow = React.memo(
 
     const onMouseDown = React.useCallback(
       (event: React.MouseEvent) => {
-        // on right click only allow selection (not-deselction)
+        // on right click only allow selection (not de-selction)
         if (event.button !== 2 || !selected) {
           onSelect()
         }
