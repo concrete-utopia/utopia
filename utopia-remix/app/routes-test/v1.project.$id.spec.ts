@@ -183,7 +183,7 @@ describe('create new project', () => {
         accessLevel: AccessLevel.PUBLIC,
       })
     })
-    it('should set access level to PRIVATE for a new project if not provided', async () => {
+    it('shouldnt set access level for a new project if not provided', async () => {
       projectProxy.mockResolvedValue({ id: projectId, ownerId: userId })
       createProjectAccessMock.mockResolvedValue(null)
       const req = newTestRequest({
@@ -198,10 +198,7 @@ describe('create new project', () => {
       }) as Promise<ApiResponse<{ id: string; projectId: string }>>)
       const project = await response.json()
       expect(project).toEqual({ id: projectId, ownerId: userId })
-      expect(createProjectAccessMock).toHaveBeenCalledWith({
-        projectId: projectId,
-        accessLevel: AccessLevel.PRIVATE,
-      })
+      expect(createProjectAccessMock).not.toHaveBeenCalled()
     })
     it('should throw an error for a new project if access level is invalid', async () => {
       projectProxy.mockResolvedValue({ id: projectId, ownerId: userId })
