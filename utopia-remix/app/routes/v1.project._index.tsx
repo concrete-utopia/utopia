@@ -6,8 +6,7 @@ import type { Params } from '@remix-run/react'
 import { createProjectAccess } from '../models/projectAccess.server'
 import { Status } from '../util/statusCodes'
 import { ApiError } from '../util/errors'
-import { action as createProjectIdInternal } from './v1.projectid'
-import { action as createProjectInternal } from './v1.project.$id'
+import { proxy } from '../util/proxy.server'
 
 export async function loader(args: LoaderFunctionArgs) {
   return handle(args, {
@@ -30,7 +29,7 @@ async function createNewProject(req: Request, params: Params<string>) {
     method: 'POST',
     headers: req.headers,
   })
-  const projectIdResponse = (await createProjectId(projectIdRequest)) as { id: string }
+  const projectIdResponse = (await proxy(projectIdRequest)) as { id: string }
   const { id } = projectIdResponse
 
   // prepare data for creating the project
@@ -45,7 +44,7 @@ async function createNewProject(req: Request, params: Params<string>) {
   })
 
   // create the project
-  const project = (await createProject(createProjectRequest, { id: id })) as {
+  const project = (await proxy(createProjectRequest)) as {
     ownerId: string | null
   }
 
@@ -81,24 +80,4 @@ function withPath(req: Request, path: string): URL {
   const url = new URL(req.url)
   url.pathname = path
   return url
-}
-
-async function createProjectId(req: Request) {
-  // const response = await fetch(req)
-  const response = (await createProjectIdInternal({
-    request: req,
-    params: {},
-    context: {},
-  })) as Response
-  return await response.json()
-}
-
-async function createProject(req: Request, params: Params<string>) {
-  // const response = await fetch(req)
-  const response = (await createProjectInternal({
-    request: req,
-    params: params,
-    context: {},
-  })) as Response
-  return await response.json()
 }
