@@ -156,7 +156,9 @@ export function traceDataFromProp(
   }
   if (propDeclaration.attribute.type === 'ATTRIBUTE_VALUE') {
     // bingo
-    return dataTracingToLiteralAttribute(startFrom.elementPath, startFrom.propertyPath, [])
+    return dataTracingToLiteralAttribute(startFrom.elementPath, startFrom.propertyPath, [
+      ...pathDrillSoFar,
+    ])
   }
   if (propDeclaration.attribute.type === 'ATTRIBUTE_NESTED_OBJECT') {
     const partOfObject = getJSExpressionAtPathParts(propDeclaration.attribute, pathDrillSoFar, 0)
@@ -198,7 +200,7 @@ export function traceDataFromProp(
         create(parentComponentInstance, PP.create(identifier.name)),
         metadata,
         projectContents,
-        dataPath.value.path,
+        [...dataPath.value.path, ...pathDrillSoFar],
       )
     }
   }

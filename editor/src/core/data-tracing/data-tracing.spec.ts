@@ -95,6 +95,78 @@ describe('Data Tracing', () => {
       ]),
     )
   })
+
+  it('Traces back a prop to an object literal jsx attribute with a deep data path', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithStoryboard(`
+      function MyComponent({doc}) {
+        return <div data-uid='component-root' title={doc.very.deep.title} />
+      }
+
+      function App() {
+        return <MyComponent data-uid='my-component' doc={{very: { deep: { title: 'string literal here' } } }} />
+      }
+      `),
+      'await-first-dom-report',
+    )
+
+    await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component'))
+
+    const traceResult = traceDataFromProp(
+      EPP.create(EP.fromString('sb/app:my-component:component-root'), PP.create('title')),
+      editor.getEditorState().editor.jsxMetadata,
+      editor.getEditorState().editor.projectContents,
+      [],
+    )
+
+    expect(traceResult).toEqual(
+      dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('doc'), [
+        'very',
+        'deep',
+        'title',
+      ]),
+    )
+  })
+
+  it('Traces back a prop to an object literal jsx attribute with a deep data path through multiple components', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithStoryboard(`
+      function MyInnerComponent({title}) {
+        return <div data-uid='inner-component-root' innerTitle={title.value} />
+      }
+      
+      function MyComponent({doc}) {
+        return <MyInnerComponent data-uid='component-root' title={doc.very.deep.title} />
+      }
+
+      function App() {
+        return <MyComponent data-uid='my-component' doc={{very: { deep: { title: {value: 'string literal here'} } } }} />
+      }
+      `),
+      'await-first-dom-report',
+    )
+
+    await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component:component-root'))
+
+    const traceResult = traceDataFromProp(
+      EPP.create(
+        EP.fromString('sb/app:my-component:component-root:inner-component-root'),
+        PP.create('innerTitle'),
+      ),
+      editor.getEditorState().editor.jsxMetadata,
+      editor.getEditorState().editor.projectContents,
+      [],
+    )
+
+    expect(traceResult).toEqual(
+      dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('doc'), [
+        'very',
+        'deep',
+        'title',
+        'value',
+      ]),
+    )
+  })
 })
 
 function makeTestProjectCodeWithStoryboard(codeForComponents: string): string {
