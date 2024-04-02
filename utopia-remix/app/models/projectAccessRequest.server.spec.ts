@@ -9,6 +9,7 @@ import {
 import { AccessRequestStatus, UserProjectRole } from '../types'
 import {
   createAccessRequest,
+  destroyAccessRequest,
   listProjectAccessRequests,
   updateAccessRequestStatus,
 } from './projectAccessRequest.server'
@@ -325,6 +326,101 @@ describe('projectAccessRequest', () => {
       expect(got[3].token).toBe('test4')
       expect(got[3].user_id).toBe('p4')
       expect(got[3].User?.name).toBe('person4')
+    })
+  })
+
+  describe('destroyAccessRequest', () => {
+    let revokeAllRolesFromUserMock: jest.SpyInstance
+
+    afterEach(async () => {
+      await truncateTables([
+        prisma.projectID,
+        prisma.projectAccessRequest,
+        prisma.projectCollaborator,
+        prisma.project,
+        prisma.userDetails,
+      ])
+
+      revokeAllRolesFromUserMock.mockRestore()
+    })
+
+    beforeEach(async () => {
+      await createTestUser(prisma, { id: 'bob' })
+      await createTestUser(prisma, { id: 'alice' })
+      await createTestUser(prisma, { id: 'carol' })
+      await createTestUser(prisma, { id: 'dorothy' })
+      await createTestProject(prisma, { id: 'one', ownerId: 'bob' })
+      await createTestProject(prisma, { id: 'two', ownerId: 'alice' })
+      await createTestProject(prisma, { id: 'three', ownerId: 'alice' })
+      await createTestProjectAccessRequest(prisma, {
+        projectId: 'two',
+        token: 'token1',
+        userId: 'carol',
+        status: AccessRequestStatus.PENDING,
+      })
+      await createTestProjectAccessRequest(prisma, {
+        projectId: 'three',
+        token: 'token2',
+        userId: 'dorothy',
+        status: AccessRequestStatus.PENDING,
+      })
+      await createTestProjectAccessRequest(prisma, {
+        projectId: 'two',
+        token: 'token3',
+        userId: 'bob',
+        status: AccessRequestStatus.PENDING,
+      })
+
+      revokeAllRolesFromUserMock = jest.spyOn(permissionsService, 'revokeAllRolesFromUser')
+    })
+    it('errors if the project is not found', async () => {
+      const fn = async () =>
+        destroyAccessRequest({ projectId: 'UNKNOWN', ownerId: 'bob', token: 'token1' })
+      await expect(fn).rejects.toThrow('Record to delete does not exist')
+    })
+    it('errors if the project is not owned by the user', async () => {
+      const fn = async () =>
+        destroyAccessRequest({ projectId: 'two', ownerId: 'bob', token: 'token1' })
+      await expect(fn).rejects.toThrow('Record to delete does not exist')
+    })
+    it('errors if the token is not found', async () => {
+      const fn = async () =>
+        destroyAccessRequest({ projectId: 'two', ownerId: 'alice', token: 'tokenWRONG' })
+      await expect(fn).rejects.toThrow('Record to delete does not exist')
+    })
+    it('errors if the token exists but not on that project', async () => {
+      const fn = async () =>
+        destroyAccessRequest({ projectId: 'two', ownerId: 'alice', token: 'token2' })
+      await expect(fn).rejects.toThrow('Record to delete does not exist')
+    })
+    it('deletes the request and revokes roles on FGA', async () => {
+      const existing = await prisma.projectAccessRequest.findMany({ where: { project_id: 'two' } })
+      expect(existing.length).toBe(2)
+      await destroyAccessRequest({ projectId: 'two', ownerId: 'alice', token: 'token1' })
+      const current = await prisma.projectAccessRequest.findMany({
+        where: { project_id: 'two' },
+      })
+      expect(current.length).toBe(1)
+      expect(current[0].user_id).toBe('bob')
+
+      expect(revokeAllRolesFromUserMock).toHaveBeenCalledWith('two', 'carol')
+    })
+    it('rolls back if the FGA revoking fails', async () => {
+      revokeAllRolesFromUserMock.mockImplementation(() => {
+        throw new Error('boom')
+      })
+
+      const existing = await prisma.projectAccessRequest.findMany({ where: { project_id: 'two' } })
+      expect(existing.length).toBe(2)
+
+      const fn = async () =>
+        await destroyAccessRequest({ projectId: 'two', ownerId: 'alice', token: 'token1' })
+      await expect(fn).rejects.toThrow('boom')
+
+      const current = await prisma.projectAccessRequest.findMany({
+        where: { project_id: 'two' },
+      })
+      expect(current.length).toBe(2)
     })
   })
 })
