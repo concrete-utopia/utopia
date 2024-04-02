@@ -1128,6 +1128,8 @@ function propertyAccessLookupForPropsProperty(
   toCheck: JSPropertyAccess,
   propName: string,
 ): boolean {
+  // TODO make this not be special cased to the style prop!
+
   // This checks for `something1.something2.something3`:
   if (toCheck.onValue.type === 'JS_IDENTIFIER' && propsParam.boundParam.type === 'REGULAR_PARAM') {
     // Constrain the above check to `<props>.style.<propName>`
@@ -1144,7 +1146,7 @@ function propertyAccessLookupForPropsProperty(
   return false
 }
 
-function identifierUsesProperty(
+export function identifierUsesProperty(
   element: JSIdentifier,
   propsParam: Param,
   property: string,
@@ -1225,7 +1227,7 @@ export function elementUsesProperty(
     case 'JS_ELEMENT_ACCESS':
       return (
         elementUsesProperty(element.onValue, propsParam, property) ||
-        elementUsesProperty(element.element, propsParam, property)
+        elementUsesProperty(element.element, propsParam, property) // TODO I think this is wrong, as it checks if the element part references the prop, but not that the entire expression itself actually points at a prop
       )
     case 'JS_IDENTIFIER':
       return identifierUsesProperty(element, propsParam, property)
