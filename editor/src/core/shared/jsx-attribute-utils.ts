@@ -148,6 +148,7 @@ export function getJSExpressionAtPathParts(
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
     case 'JSX_ELEMENT':
+    case 'JSX_TEXT_BLOCK':
       return getJSXAttributeResult(attribute, PP.createFromArray(path.slice(pathIndex)))
     case 'ATTRIBUTE_VALUE':
       const slicedPath = path.slice(pathIndex)
@@ -223,6 +224,8 @@ export function jsxSimpleAttributeToValue(attribute: ModifiableAttribute): Eithe
     case 'ATTRIBUTE_VALUE':
     case 'PART_OF_ATTRIBUTE_VALUE':
       return right(attribute.value)
+    case 'JSX_TEXT_BLOCK':
+      return right(attribute)
     case 'JS_IDENTIFIER':
       return left('Unable to get value from identifier.')
     case 'JS_PROPERTY_ACCESS': {
@@ -374,6 +377,7 @@ export function setJSXValueInAttributeAtPathParts(
       case 'JS_PROPERTY_ACCESS':
       case 'JS_ELEMENT_ACCESS':
       case 'JSX_ELEMENT':
+      case 'JSX_TEXT_BLOCK':
         return left(
           `Attempted to set a value at ${PP.toString(
             PP.createFromArray(path.slice(pathIndex)),

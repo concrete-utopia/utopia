@@ -485,6 +485,8 @@ export function fixUtopiaElement(
     switch (value.type) {
       case 'ATTRIBUTE_VALUE':
         return fixJSExpressionValue(value)
+      case 'JSX_TEXT_BLOCK':
+        return fixJSXTextBlock(value)
       case 'ATTRIBUTE_NESTED_ARRAY':
         return fixJSNestedArray(value)
       case 'ATTRIBUTE_NESTED_OBJECT':

@@ -708,6 +708,14 @@ export function fixExpressionUIDs(
         newExpression,
       )
     }
+    case 'JSX_TEXT_BLOCK': {
+      return updateUID(
+        jsxTextBlockUIDOptic,
+        oldExpression?.uid ?? newExpression.uid,
+        fixUIDsState,
+        newExpression,
+      )
+    }
     case 'ATTRIBUTE_NESTED_ARRAY': {
       const fixedContents = fixJSXArrayElements(
         oldExpression?.type === newExpression.type ? oldExpression.content : newExpression.content,
