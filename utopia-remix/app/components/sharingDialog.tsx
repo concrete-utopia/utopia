@@ -294,7 +294,7 @@ function AccessRequests(props: {
 
       return (
         <CollaboratorRow
-          key={request.token}
+          key={`collaborator-${request.token}`}
           picture={user.picture}
           name={user.name ?? user.email ?? user.user_id}
           isDisabled={!isCollaborative}
@@ -342,7 +342,23 @@ const AccessRequestDropdown = React.memo(
     return (
       <DropdownMenu.Root>
         <DropdownMenu.Trigger>
-          <AccessRequestDropdownLabel status={status} />
+          {/* this needs to be inlined (and as a ternary) because DropdownMenu.Trigger requires a direct single child */}
+          {status === AccessRequestStatus.PENDING ? (
+            <Button size='1' color='amber' radius='full'>
+              Requests Access
+              <ChevronDownIcon />
+            </Button>
+          ) : status === AccessRequestStatus.APPROVED ? (
+            <Button size='1' radius='medium' variant='ghost' color='gray' highContrast={true}>
+              Collaborator
+              <ChevronDownIcon />
+            </Button>
+          ) : status === AccessRequestStatus.REJECTED ? (
+            <Button size='1' radius='medium' variant='ghost' color='red'>
+              Denied Access
+              <ChevronDownIcon />
+            </Button>
+          ) : null}
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
           {when(
@@ -378,35 +394,6 @@ const AccessRequestDropdown = React.memo(
   },
 )
 AccessRequestDropdown.displayName = 'AccessRequestDropdown'
-
-const AccessRequestDropdownLabel = React.memo(({ status }: { status: AccessRequestStatus }) => {
-  switch (status) {
-    case AccessRequestStatus.PENDING:
-      return (
-        <Button size='1' color='amber' radius='full'>
-          Requests Access
-          <ChevronDownIcon />
-        </Button>
-      )
-    case AccessRequestStatus.APPROVED:
-      return (
-        <Button size='1' radius='medium' variant='ghost' color='gray' highContrast={true}>
-          Collaborator
-          <ChevronDownIcon />
-        </Button>
-      )
-    case AccessRequestStatus.REJECTED:
-      return (
-        <Button size='1' radius='medium' variant='ghost' color='red'>
-          Denied Access
-          <ChevronDownIcon />
-        </Button>
-      )
-    default:
-      assertNever(status)
-  }
-})
-AccessRequestDropdownLabel.displayName = 'AccessRequestDropdownLabel'
 
 const CollaboratorRow = React.memo(
   ({
