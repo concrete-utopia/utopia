@@ -52,7 +52,7 @@ import { githubRepositoryPrettyName } from '../util/github'
 import type { OperationWithKey } from '../stores/projectsStore'
 import { createProjectsStore, ProjectsContext, useProjectsStore } from '../stores/projectsStore'
 import { UserAvatar } from '../components/userAvatar'
-import { UserContextMenu } from '../components/userContextMenu'
+import { UserContextMenu } from '../components/user-context-menu'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
