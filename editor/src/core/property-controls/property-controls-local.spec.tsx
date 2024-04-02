@@ -28,6 +28,12 @@ const project = (componentDescriptorFiles: { [filename: string]: string }) =>
       return <div>{label}</div>
     }
     `,
+    ['/src/new-module.js']: `import React from 'react'
+    
+    export const NewCard = ({ label }) => {
+      return <div>{label}</div>
+    }
+    `,
     [StoryboardFilePath]: `import * as React from 'react'
   import { Scene, Storyboard, View } from 'utopia-api'
 
@@ -270,6 +276,58 @@ describe('registered property controls', () => {
 
     expect(srcCardKey).toBeUndefined()
   })
+  it('control registration fails when the module name of an imported internal component does not match the name of the registration key', async () => {
+    const renderResult = await renderTestEditorWithModel(
+      project({
+        ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
+        
+        const Components = {
+      '/src/cardd': {
+        Card: {
+          component: Card,
+          supportsChildren: false,
+          properties: { },
+          variants: [ ],
+        },
+      },
+    }
+    
+    export default Components
+  `,
+      }),
+      'await-first-dom-report',
+    )
+    const editorState = renderResult.getEditorState().editor
+
+    expect(editorState.codeEditorErrors).toEqual({
+      buildErrors: {},
+      lintErrors: {
+        '/utopia/components.utopia.js': [
+          {
+            codeSnippet: '',
+            endColumn: null,
+            endLine: null,
+            errorCode: '',
+            fileName: '/utopia/components.utopia.js',
+            message:
+              'Validation failed: Module name (/src/card) does not match the module key (/src/cardd)',
+            passTime: null,
+            severity: 'fatal',
+            source: 'eslint',
+            startColumn: null,
+            startLine: null,
+            type: '',
+          },
+        ],
+      },
+    })
+
+    const srcCardKey = Object.keys(renderResult.getEditorState().editor.propertyControlsInfo).find(
+      (key) => key === '/src/card',
+    )
+
+    expect(srcCardKey).toBeUndefined()
+  })
   it('control registration fails when the imported external component does not match the name of registration key', async () => {
     const renderResult = await renderTestEditorWithModel(
       project({
@@ -305,6 +363,58 @@ describe('registered property controls', () => {
             fileName: '/utopia/components.utopia.js',
             message:
               'Validation failed: Component name (View) does not match the registration key (Vieww)',
+            passTime: null,
+            severity: 'fatal',
+            source: 'eslint',
+            startColumn: null,
+            startLine: null,
+            type: '',
+          },
+        ],
+      },
+    })
+
+    const srcCardKey = Object.keys(renderResult.getEditorState().editor.propertyControlsInfo).find(
+      (key) => key === '/src/card',
+    )
+
+    expect(srcCardKey).toBeUndefined()
+  })
+  it('control registration fails when the module name of an imported external component does not match the name of registration key', async () => {
+    const renderResult = await renderTestEditorWithModel(
+      project({
+        ['/utopia/components.utopia.js']: `import { View } from 'utopia-api'
+        
+        const Components = {
+      'utopia-apii': {
+        View: {
+          component: View,
+          supportsChildren: false,
+          properties: { },
+          variants: [ ],
+        },
+      },
+    }
+    
+    export default Components
+  `,
+      }),
+      'await-first-dom-report',
+    )
+    const editorState = renderResult.getEditorState().editor
+
+    expect(editorState.codeEditorErrors).toEqual({
+      buildErrors: {},
+      lintErrors: {
+        '/utopia/components.utopia.js': [
+          {
+            codeSnippet: '',
+            endColumn: null,
+            endLine: null,
+            errorCode: '',
+            fileName: '/utopia/components.utopia.js',
+            message:
+              'Validation failed: Module name (utopia-api) does not match the module key (utopia-apii)',
             passTime: null,
             severity: 'fatal',
             source: 'eslint',
@@ -609,7 +719,6 @@ describe('registered property controls', () => {
     expect(Object.keys(editorState.propertyControlsInfo['/src/card'])).toMatchInlineSnapshot(`
       Array [
         "Card",
-        "Card2",
       ]
     `)
   })
@@ -1224,7 +1333,8 @@ describe('Lifecycle management of registering components', () => {
               ]
           `)
 
-      const updatedDescriptorFileContent = `import { Card, NewCard } from '../src/card'
+      const updatedDescriptorFileContent = `import { Card } from '../src/card'
+      import { NewCard } from '../src/new-module'
       
       const Components = {
       '/src/card': {
