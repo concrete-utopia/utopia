@@ -233,12 +233,12 @@ function AccessRequests(props: {
   // the access requests, including in-flight optimistic statuses
   const [accessRequests, setAccessRequests] = React.useState(props.accessRequests)
   // the last successfully-obtained access requests that can be used to roll-back in case of issues when updating requests
-  const [stableAccessRequests, setStableAccessRequests] = React.useState(props.accessRequests)
+  const [previousAccessRequests, setPreviousAccessRequests] = React.useState(props.accessRequests)
 
   const updateAccessRequestFetcher = useFetcherWithOperation(projectId, 'updateAccessRequest')
   const onUpdateAccessRequest = React.useCallback(
     (token: string, action: UpdateAccessRequestAction) => () => {
-      setStableAccessRequests(accessRequests)
+      setPreviousAccessRequests(accessRequests)
       setAccessRequests((reqs) => {
         switch (action) {
           case 'destroy':
@@ -269,10 +269,10 @@ function AccessRequests(props: {
   const resetAccessRequests = React.useCallback(
     (data: unknown) => {
       if (isLikeApiError(data)) {
-        setAccessRequests(stableAccessRequests)
+        setAccessRequests(previousAccessRequests)
       }
     },
-    [stableAccessRequests],
+    [previousAccessRequests],
   )
   useFetcherDataUnkown(updateAccessRequestFetcher, resetAccessRequests)
 
