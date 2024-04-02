@@ -6,12 +6,12 @@ exports[`UiJsxCanvas #747 - DOM object constructor cannot be called as a functio
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"sb sb/scene sb/scene/app\\"
-    data-utopia-root-element-path=\\"sb\\"
+    data-utopia-valid-paths=\\"418 418/8ef 418/8ef/e26\\"
+    data-utopia-root-element-path=\\"418\\"
   >
     <div
-      data-utopia-scene-id=\\"sb/scene\\"
-      data-path=\\"sb/scene\\"
+      data-utopia-scene-id=\\"418/8ef\\"
+      data-path=\\"418/8ef\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -31,11 +31,9 @@ exports[`UiJsxCanvas #747 - DOM object constructor cannot be called as a functio
         width: 375px;
         height: 812px;
       \\"
-      data-uid=\\"scene\\"
+      data-uid=\\"8ef\\"
     >
-      <div data-uid=\\"comment-root\\" data-path=\\"sb/scene/app:comment-root\\">
-        hat
-      </div>
+      <div data-uid=\\"240\\" data-path=\\"418/8ef/e26:240\\">hat</div>
     </div>
   </div>
 </div>
@@ -44,7 +42,7 @@ exports[`UiJsxCanvas #747 - DOM object constructor cannot be called as a functio
 
 exports[`UiJsxCanvas #747 - DOM object constructor cannot be called as a function 2`] = `
 Object {
-  "sb/scene": Object {
+  "418/8ef": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -76,7 +74,7 @@ Object {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "app",
+                  "value": "e26",
                 },
               },
             ],
@@ -105,7 +103,7 @@ Object {
               },
               "type": "ATTRIBUTE_VALUE",
               "uid": "",
-              "value": "scene",
+              "value": "8ef",
             },
           },
           Object {
@@ -139,8 +137,8 @@ Object {
     "elementPath": Object {
       "parts": Array [
         Array [
-          "sb",
-          "scene",
+          "418",
+          "8ef",
         ],
       ],
       "type": "elementpath",
@@ -215,7 +213,7 @@ Object {
     },
     "textContent": null,
   },
-  "sb/scene/app": Object {
+  "418/8ef/e26": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -245,7 +243,7 @@ Object {
               },
               "type": "ATTRIBUTE_VALUE",
               "uid": "",
-              "value": "app",
+              "value": "e26",
             },
           },
         ],
@@ -256,9 +254,9 @@ Object {
     "elementPath": Object {
       "parts": Array [
         Array [
-          "sb",
-          "scene",
-          "app",
+          "418",
+          "8ef",
+          "e26",
         ],
       ],
       "type": "elementpath",

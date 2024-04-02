@@ -65,7 +65,7 @@ describe('Conditonals JSX parser', () => {
           JSX_ELEMENT - div - div
             JSX_CONDITIONAL_EXPRESSION - conditional1
               JSX_CONDITIONAL_EXPRESSION - conditional2
-                JSX_ELEMENT - div - middle
+                JSX_ELEMENT - div - f57
         UNPARSED_CODE
         UTOPIA_JSX_COMPONENT - storyboard
           JSX_ELEMENT - Storyboard - eee
@@ -102,7 +102,7 @@ describe('Conditonals JSX printer', () => {
           JSX_ELEMENT - div - div
             JSX_CONDITIONAL_EXPRESSION - conditional1
               JSX_CONDITIONAL_EXPRESSION - conditional2
-                JSX_ELEMENT - div - middle
+                JSX_ELEMENT - div - f57
         UNPARSED_CODE
         UTOPIA_JSX_COMPONENT - storyboard
           JSX_ELEMENT - Storyboard - eee
@@ -130,7 +130,7 @@ describe('Conditonals JSX printer', () => {
                 [0, 1].length > 1 ? (
                   // @utopia/uid=conditional2
                   [0, 1].length === 0 ? (
-                    <div data-uid='middle' />
+                    <div data-uid='f57' />
                   ) : null
                 ) : null
               }

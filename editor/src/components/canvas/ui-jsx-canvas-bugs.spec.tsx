@@ -74,12 +74,12 @@ export var storyboard = (
           id=\\"canvas-container\\"
           data-testid=\\"canvas-container\\"
           style=\\"position: absolute\\"
-          data-utopia-valid-paths=\\"sb sb/scene sb/scene/app sb/scene/app:app-root\\"
-          data-utopia-root-element-path=\\"sb\\"
+          data-utopia-valid-paths=\\"418 418/8ef 418/8ef/e26 418/8ef/e26:dd7\\"
+          data-utopia-root-element-path=\\"418\\"
         >
           <div
-            data-utopia-scene-id=\\"sb/scene\\"
-            data-path=\\"sb/scene\\"
+            data-utopia-scene-id=\\"418/8ef\\"
+            data-path=\\"418/8ef\\"
             style=\\"
               overflow: hidden;
               position: absolute;
@@ -99,9 +99,9 @@ export var storyboard = (
               width: 375px;
               height: 812px;
             \\"
-            data-uid=\\"scene\\"
+            data-uid=\\"8ef\\"
           >
-            <div data-uid=\\"app-root\\" data-path=\\"sb/scene/app:app-root\\"></div>
+            <div data-uid=\\"dd7\\" data-path=\\"418/8ef/e26:dd7\\"></div>
           </div>
         </div>
       </div>
@@ -148,12 +148,12 @@ export default function App(props) {
           id=\\"canvas-container\\"
           data-testid=\\"canvas-container\\"
           style=\\"position: absolute\\"
-          data-utopia-valid-paths=\\"sb sb/scene sb/scene/app\\"
-          data-utopia-root-element-path=\\"sb\\"
+          data-utopia-valid-paths=\\"418 418/8ef 418/8ef/647\\"
+          data-utopia-root-element-path=\\"418\\"
         >
           <div
-            data-utopia-scene-id=\\"sb/scene\\"
-            data-path=\\"sb/scene\\"
+            data-utopia-scene-id=\\"418/8ef\\"
+            data-path=\\"418/8ef\\"
             style=\\"
               overflow: hidden;
               position: absolute;
@@ -173,9 +173,9 @@ export default function App(props) {
               width: 375px;
               height: 812px;
             \\"
-            data-uid=\\"scene\\"
+            data-uid=\\"8ef\\"
           >
-            <div data-uid=\\"app-outer-div\\" data-path=\\"sb/scene/app\\">
+            <div data-uid=\\"app-outer-div\\" data-path=\\"418/8ef/647\\">
               <div data-uid=\\"inner-div\\">hello</div>
             </div>
           </div>
@@ -256,12 +256,12 @@ export default function App(props) {
           id=\\"canvas-container\\"
           data-testid=\\"canvas-container\\"
           style=\\"position: absolute\\"
-          data-utopia-valid-paths=\\"storyboard-entity storyboard-entity/scene-1-entity storyboard-entity/scene-1-entity/app-entity storyboard-entity/scene-2-entity storyboard-entity/scene-2-entity/same-file-app-entity storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div\\"
-          data-utopia-root-element-path=\\"storyboard-entity\\"
+          data-utopia-valid-paths=\\"427 427/b68 427/b68/1e2 427/205 427/205/a9c 427/205/a9c:f3e\\"
+          data-utopia-root-element-path=\\"427\\"
         >
           <div
-            data-utopia-scene-id=\\"storyboard-entity/scene-1-entity\\"
-            data-path=\\"storyboard-entity/scene-1-entity\\"
+            data-utopia-scene-id=\\"427/b68\\"
+            data-path=\\"427/b68\\"
             style=\\"
               overflow: hidden;
               position: absolute;
@@ -281,19 +281,16 @@ export default function App(props) {
               width: 375px;
               height: 812px;
             \\"
-            data-uid=\\"scene-1-entity\\"
+            data-uid=\\"b68\\"
             data-label=\\"Imported App\\"
           >
-            <div
-              data-uid=\\"app-outer-div\\"
-              data-path=\\"storyboard-entity/scene-1-entity/app-entity\\"
-            >
+            <div data-uid=\\"app-outer-div\\" data-path=\\"427/b68/1e2\\">
               <div data-uid=\\"inner-div\\">hello</div>
             </div>
           </div>
           <div
-            data-utopia-scene-id=\\"storyboard-entity/scene-2-entity\\"
-            data-path=\\"storyboard-entity/scene-2-entity\\"
+            data-utopia-scene-id=\\"427/205\\"
+            data-path=\\"427/205\\"
             style=\\"
               overflow: hidden;
               position: absolute;
@@ -313,11 +310,11 @@ export default function App(props) {
               width: 375px;
               height: 812px;
             \\"
-            data-uid=\\"scene-2-entity\\"
+            data-uid=\\"205\\"
             data-label=\\"Same File App\\"
           >
             <div
-              data-uid=\\"same-file-app-div\\"
+              data-uid=\\"f3e\\"
               data-label=\\"Scene Thing\\"
               style=\\"
                 position: relative;
@@ -325,7 +322,7 @@ export default function App(props) {
                 height: 100%;
                 background-color: blue;
               \\"
-              data-path=\\"storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div\\"
+              data-path=\\"427/205/a9c:f3e\\"
             ></div>
           </div>
         </div>
@@ -431,12 +428,12 @@ export default function () {
           id=\\"canvas-container\\"
           data-testid=\\"canvas-container\\"
           style=\\"position: absolute\\"
-          data-utopia-valid-paths=\\"storyboard-entity storyboard-entity/scene-1-entity storyboard-entity/scene-1-entity/app-entity storyboard-entity/scene-1-entity/app-entity:app-outer-div storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance storyboard-entity/scene-1-entity/app-entity:app-outer-div/27b storyboard-entity/scene-1-entity/app-entity:app-outer-div/d7f\\"
-          data-utopia-root-element-path=\\"storyboard-entity\\"
+          data-utopia-valid-paths=\\"427 427/aee 427/aee/1e2 427/aee/1e2:2f0 427/aee/1e2:2f0/a19 427/aee/1e2:2f0/27b 427/aee/1e2:2f0/d7f\\"
+          data-utopia-root-element-path=\\"427\\"
         >
           <div
-            data-utopia-scene-id=\\"storyboard-entity/scene-1-entity\\"
-            data-path=\\"storyboard-entity/scene-1-entity\\"
+            data-utopia-scene-id=\\"427/aee\\"
+            data-path=\\"427/aee\\"
             style=\\"
               overflow: hidden;
               position: absolute;
@@ -456,21 +453,21 @@ export default function () {
               width: 375px;
               height: 812px;
             \\"
-            data-uid=\\"scene-1-entity\\"
+            data-uid=\\"aee\\"
             data-label=\\"Imported App\\"
           >
             <div
-              data-uid=\\"app-outer-div\\"
+              data-uid=\\"2f0\\"
               style=\\"
                 position: relative;
                 width: 100%;
                 height: 100%;
                 background-color: #ffffff;
               \\"
-              data-path=\\"storyboard-entity/scene-1-entity/app-entity:app-outer-div\\"
+              data-path=\\"427/aee/1e2:2f0\\"
             >
               <div
-                data-uid=\\"card-outer-div\\"
+                data-uid=\\"23f\\"
                 style=\\"
                   position: absolute;
                   left: 67px;
@@ -478,10 +475,10 @@ export default function () {
                   width: 133px;
                   height: 300px;
                 \\"
-                data-path=\\"storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div\\"
+                data-path=\\"427/aee/1e2:2f0/a19:23f\\"
               >
                 <div
-                  data-uid=\\"card-inner-div\\"
+                  data-uid=\\"f88\\"
                   style=\\"
                     position: absolute;
                     left: 0;
@@ -490,10 +487,10 @@ export default function () {
                     height: 50px;
                     background-color: red;
                   \\"
-                  data-path=\\"storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-div\\"
+                  data-path=\\"427/aee/1e2:2f0/a19:23f/f88\\"
                 ></div>
                 <div
-                  data-uid=\\"card-inner-spring\\"
+                  data-uid=\\"7d3\\"
                   style=\\"
                     position: absolute;
                     left: 100px;
@@ -502,14 +499,11 @@ export default function () {
                     height: 50px;
                     background-color: blue;
                   \\"
-                  data-path=\\"storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-spring\\"
+                  data-path=\\"427/aee/1e2:2f0/a19:23f/7d3\\"
                 ></div>
               </div>
               hello
-              <div
-                data-uid=\\"4cf\\"
-                data-path=\\"storyboard-entity/scene-1-entity/app-entity:app-outer-div/d7f:4cf\\"
-              >
+              <div data-uid=\\"4cf\\" data-path=\\"427/aee/1e2:2f0/d7f:4cf\\">
                 Default Function Time
               </div>
             </div>

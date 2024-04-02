@@ -76,7 +76,7 @@ Array [
             "utopiaCanvasJSXLookup",
           ],
           "elementsWithin": Object {
-            "bbb": Object {
+            "4ee": Object {
               "children": Array [],
               "name": Object {
                 "baseVariable": "div",
@@ -99,7 +99,7 @@ Array [
                     },
                     "type": "ATTRIBUTE_VALUE",
                     "uid": "",
-                    "value": "bbb",
+                    "value": "4ee",
                   },
                 },
               ],
@@ -112,8 +112,10 @@ Array [
           "params": Array [],
           "sourceMap": Object {
             "file": "code.tsx",
-            "mappings": "OAMQA;AAAAA;AAAAA",
+            "mappings": "OAMSA;AAAIC,cAALC;AAACF",
             "names": Array [
+              "div",
+              "data",
               "<",
             ],
             "sources": Array [
@@ -150,8 +152,8 @@ export var storyboard = (props) => {
             ],
             "version": 3,
           },
-          "transpiledJavascript": "return utopiaCanvasJSXLookup(\\"bbb\\", {
-  callerThis: this
+          "transpiledJavascript": "return React.createElement(\\"div\\", {
+  \\"data-uid\\": \\"bbb\\"
 });",
           "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
           "uid": "",
@@ -180,7 +182,7 @@ export var storyboard = (props) => {
             },
             "type": "ATTRIBUTE_VALUE",
             "uid": "",
-            "value": "aaa",
+            "value": "eaa",
           },
         },
       ],

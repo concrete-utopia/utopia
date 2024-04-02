@@ -46,9 +46,9 @@ export var App = props => {
         ARBITRARY_JS_BLOCK
         UNPARSED_CODE
         UTOPIA_JSX_COMPONENT - App
-          JSX_ELEMENT - div - aaa
-            JSX_MAP_EXPRESSION - 330
-              JSX_ELEMENT - div - bbb
+          JSX_ELEMENT - div - 57e
+            JSX_MAP_EXPRESSION - 3af
+              JSX_ELEMENT - div - 4ee
                 JS_IDENTIFIER - 833
                 JSX_TEXT_BLOCK - d01
                 JS_IDENTIFIER - b90"
@@ -179,9 +179,9 @@ export var App = props => {
       IMPORT_STATEMENT
       UNPARSED_CODE
       UTOPIA_JSX_COMPONENT - Test
-        JSX_ELEMENT - div - mapper-parent
-          JSX_MAP_EXPRESSION - f62
-            JSX_ELEMENT - Card - card"
+        JSX_ELEMENT - div - ded
+          JSX_MAP_EXPRESSION - 027
+            JSX_ELEMENT - Card - cfa"
     `)
     expect(elementsStructure((testParseCode(spreadCode) as any).topLevelElements))
       .toMatchInlineSnapshot(`
@@ -191,9 +191,9 @@ export var App = props => {
       IMPORT_STATEMENT
       UNPARSED_CODE
       UTOPIA_JSX_COMPONENT - Test
-        JSX_ELEMENT - div - mapper-parent
-          JSX_MAP_EXPRESSION - 62e
-            JSX_ELEMENT - Card - card"
+        JSX_ELEMENT - div - ded
+          JSX_MAP_EXPRESSION - 7aa
+            JSX_ELEMENT - Card - 7c4"
     `)
   })
 })

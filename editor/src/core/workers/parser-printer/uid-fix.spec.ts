@@ -169,9 +169,9 @@ describe('fixParseSuccessUIDs', () => {
         565
       434suffix
         112
-      storyboardsuffix
-        scene
-          component"
+      5fdsuffix
+        fd3
+          51d"
     `)
   })
   it('handles a newly inserted component at the start of the file', () => {
@@ -184,9 +184,9 @@ describe('fixParseSuccessUIDs', () => {
     )
     expect(getUidTree(initialParse)).toMatchInlineSnapshot(`
       "e81
-        4a3
+        694
           ffb
-        f4f
+        715
           f01"
     `)
     if (isParseSuccess(initialParse)) {
@@ -199,11 +199,11 @@ describe('fixParseSuccessUIDs', () => {
       )
       expect(getUidTree(secondParse)).toMatchInlineSnapshot(`
         "e81
-          4a3
+          694
         aag
           aae
             ffb
-          f4f
+          715
             f01"
       `)
     } else {
@@ -224,9 +224,9 @@ describe('fixParseSuccessUIDs', () => {
         565
       434
         112
-      storyboard
-        scene
-          component"
+      5fd
+        fd3
+          51d"
     `)
   })
 
@@ -253,9 +253,9 @@ describe('fixParseSuccessUIDs', () => {
         c60
       434
         112
-      storyboard
-        scene
-          component"
+      5fd
+        fd3
+          51d"
     `)
   })
 
@@ -281,9 +281,9 @@ describe('fixParseSuccessUIDs', () => {
       292
         434
         112
-      storyboard
-        scene
-          component"
+      5fd
+        fd3
+          51d"
     `)
   })
 
@@ -301,9 +301,9 @@ describe('fixParseSuccessUIDs', () => {
         565
       434
         112
-      storyboard
-        scene
-          component"
+      5fd
+        fd3
+          51d"
     `)
   })
 
@@ -321,9 +321,9 @@ describe('fixParseSuccessUIDs', () => {
       434
         c60
         112
-      storyboard
-        scene
-          component"
+      5fd
+        fd3
+          51d"
     `)
   })
 
@@ -342,9 +342,9 @@ describe('fixParseSuccessUIDs', () => {
         112
         dda
         03b
-      storyboard
-        scene
-          component"
+      5fd
+        fd3
+          51d"
     `)
   })
 
@@ -371,9 +371,9 @@ describe('fixParseSuccessUIDs', () => {
         112
         dda
         03b
-      storyboard
-        scene
-          component"
+      5fd
+        fd3
+          51d"
     `)
   })
 
@@ -452,9 +452,9 @@ describe('fixParseSuccessUIDs', () => {
       434
         c60
         112
-      storyboard
-        scene
-          component"
+      5fd
+        fd3
+          51d"
     `)
     expect(getUidTree(afterReOrder)).toMatchInlineSnapshot(`
       "4ed
@@ -462,9 +462,9 @@ describe('fixParseSuccessUIDs', () => {
       434
         112
         c60
-      storyboard
-        scene
-          component"
+      5fd
+        fd3
+          51d"
     `)
   })
 
@@ -518,9 +518,9 @@ describe('fixParseSuccessUIDs', () => {
       434
         c85
           f9b
-      storyboard
-        scene
-          component"
+      5fd
+        fd3
+          51d"
     `)
     const secondResult = lintAndParseAndValidateResult(
       'test.js',
@@ -536,9 +536,9 @@ describe('fixParseSuccessUIDs', () => {
         c85
           aab
             f9b
-      storyboard
-        scene
-          component"
+      5fd
+        fd3
+          51d"
     `)
   })
   it(`handles an entirely commented out JSX expression which was not previously commented out`, () => {

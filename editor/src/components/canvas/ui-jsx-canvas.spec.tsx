@@ -1269,7 +1269,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           id=\\"canvas-container\\"
           data-testid=\\"canvas-container\\"
           style=\\"position: absolute\\"
-          data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
+          data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/9d8 utopia-storyboard-uid/scene-aaa/9d8:aaa\\"
           data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
         >
           <div
@@ -1298,7 +1298,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           >
             <div
               data-uid=\\"ccc-unparsed-no-template-path\\"
-              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
+              data-path=\\"utopia-storyboard-uid/scene-aaa/9d8:aaa\\"
             >
               hello
             </div>
@@ -1378,7 +1378,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           id=\\"canvas-container\\"
           data-testid=\\"canvas-container\\"
           style=\\"position: absolute\\"
-          data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
+          data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/9d8 utopia-storyboard-uid/scene-aaa/9d8:aaa\\"
           data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
         >
           <div
@@ -1408,7 +1408,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
             <div
               id=\\"nasty-div\\"
               data-uid=\\"aaa\\"
-              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
+              data-path=\\"utopia-storyboard-uid/scene-aaa/9d8:aaa\\"
             >
               huha huha
             </div>
@@ -1880,7 +1880,7 @@ describe('UiJsxCanvas render multifile projects', () => {
           id=\\"canvas-container\\"
           data-testid=\\"canvas-container\\"
           style=\\"position: absolute\\"
-          data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/inner-div\\"
+          data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/1a4 utopia-storyboard-uid/scene-aaa/1a4:95b utopia-storyboard-uid/scene-aaa/1a4:95b/9d1\\"
           data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
         >
           <div
@@ -1907,13 +1907,10 @@ describe('UiJsxCanvas render multifile projects', () => {
             \\"
             data-uid=\\"scene-aaa\\"
           >
-            <div
-              data-uid=\\"app-outer-div\\"
-              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div\\"
-            >
+            <div data-uid=\\"95b\\" data-path=\\"utopia-storyboard-uid/scene-aaa/1a4:95b\\">
               <div
-                data-uid=\\"inner-div\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/inner-div\\"
+                data-uid=\\"9d1\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/1a4:95b/9d1\\"
               >
                 hello
               </div>
@@ -1975,7 +1972,7 @@ describe('UiJsxCanvas render multifile projects', () => {
           id=\\"canvas-container\\"
           data-testid=\\"canvas-container\\"
           style=\\"position: absolute\\"
-          data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/card-instance utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/card-instance/card-content\\"
+          data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/1a4 utopia-storyboard-uid/scene-aaa/1a4:95b utopia-storyboard-uid/scene-aaa/1a4:95b/08c utopia-storyboard-uid/scene-aaa/1a4:95b/08c/f11\\"
           data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
         >
           <div
@@ -2002,23 +1999,20 @@ describe('UiJsxCanvas render multifile projects', () => {
             \\"
             data-uid=\\"scene-aaa\\"
           >
-            <div
-              data-uid=\\"app-outer-div\\"
-              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div\\"
-            >
+            <div data-uid=\\"95b\\" data-path=\\"utopia-storyboard-uid/scene-aaa/1a4:95b\\">
               <div
-                data-uid=\\"card-outer-div\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/card-instance:card-outer-div\\"
+                data-uid=\\"19b\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/1a4:95b/08c:19b\\"
               >
                 <div
-                  data-uid=\\"card-header\\"
-                  data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/card-instance:card-outer-div/card-header\\"
+                  data-uid=\\"ff5\\"
+                  data-path=\\"utopia-storyboard-uid/scene-aaa/1a4:95b/08c:19b/ff5\\"
                 >
                   Card
                 </div>
                 <span
-                  data-uid=\\"card-content\\"
-                  data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/card-instance/card-content\\"
+                  data-uid=\\"f11\\"
+                  data-path=\\"utopia-storyboard-uid/scene-aaa/1a4:95b/08c/f11\\"
                   >hello
                 </span>
               </div>
@@ -2072,7 +2066,7 @@ describe('UiJsxCanvas render multifile projects', () => {
           id=\\"canvas-container\\"
           data-testid=\\"canvas-container\\"
           style=\\"position: absolute\\"
-          data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+          data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/1a4\\"
           data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
         >
           <div
@@ -2101,7 +2095,7 @@ describe('UiJsxCanvas render multifile projects', () => {
           >
             <div
               data-uid=\\"app-outer-div\\"
-              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity\\"
+              data-path=\\"utopia-storyboard-uid/scene-aaa/1a4\\"
             >
               <div data-uid=\\"inner-div\\">Hi there!</div>
             </div>
@@ -2154,7 +2148,7 @@ describe('UiJsxCanvas render multifile projects', () => {
           id=\\"canvas-container\\"
           data-testid=\\"canvas-container\\"
           style=\\"position: absolute\\"
-          data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+          data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/1a4\\"
           data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
         >
           <div
@@ -2183,7 +2177,7 @@ describe('UiJsxCanvas render multifile projects', () => {
           >
             <div
               data-uid=\\"app-outer-div\\"
-              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity\\"
+              data-path=\\"utopia-storyboard-uid/scene-aaa/1a4\\"
             >
               <div data-uid=\\"inner-div\\">Hi there!</div>
             </div>
@@ -2249,7 +2243,7 @@ describe('UiJsxCanvas render multifile projects', () => {
           id=\\"canvas-container\\"
           data-testid=\\"canvas-container\\"
           style=\\"position: absolute\\"
-          data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:outer-div utopia-storyboard-uid/scene-aaa/app-entity:outer-div/aaa utopia-storyboard-uid/scene-aaa/app-entity:outer-div/aaa/bbb utopia-storyboard-uid/scene-aaa/app-entity:outer-div/ccc\\"
+          data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/9d8 utopia-storyboard-uid/scene-aaa/9d8:4d1 utopia-storyboard-uid/scene-aaa/9d8:4d1/536 utopia-storyboard-uid/scene-aaa/9d8:4d1/536/4ee utopia-storyboard-uid/scene-aaa/9d8:4d1/230\\"
           data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
         >
           <div
@@ -2276,31 +2270,22 @@ describe('UiJsxCanvas render multifile projects', () => {
             \\"
             data-uid=\\"scene-aaa\\"
           >
-            <div
-              data-uid=\\"outer-div\\"
-              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:outer-div\\"
-            >
+            <div data-uid=\\"4d1\\" data-path=\\"utopia-storyboard-uid/scene-aaa/9d8:4d1\\">
               <div
-                data-uid=\\"aaa\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:outer-div/aaa\\"
+                data-uid=\\"536\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/9d8:4d1/536\\"
               >
                 <div
-                  data-uid=\\"bbb\\"
-                  data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:outer-div/aaa/bbb\\"
+                  data-uid=\\"4ee\\"
+                  data-path=\\"utopia-storyboard-uid/scene-aaa/9d8:4d1/536/4ee\\"
                 ></div>
               </div>
               <div
-                data-uid=\\"ccc\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:outer-div/ccc\\"
+                data-uid=\\"230\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/9d8:4d1/230\\"
               >
-                <div
-                  data-uid=\\"ddd~~~1\\"
-                  data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:outer-div/ccc/ddd~~~1\\"
-                ></div>
-                <div
-                  data-uid=\\"eee~~~2\\"
-                  data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:outer-div/ccc/eee~~~2\\"
-                ></div>
+                <div data-uid=\\"ddd\\"></div>
+                <div data-uid=\\"eee\\"></div>
               </div>
             </div>
           </div>

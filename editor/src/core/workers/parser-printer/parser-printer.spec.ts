@@ -5403,7 +5403,7 @@ export var App = props => {
           IMPORT_STATEMENT
           UNPARSED_CODE
           UTOPIA_JSX_COMPONENT - MyComp
-            JSX_ELEMENT - View - aaa
+            JSX_ELEMENT - View - 1b3
               JS_PROPERTY_ACCESS - 807
                 JS_IDENTIFIER - 09c
           UNPARSED_CODE
@@ -5464,7 +5464,7 @@ export var App = props => {
           IMPORT_STATEMENT
           UNPARSED_CODE
           UTOPIA_JSX_COMPONENT - MyComp
-            JSX_ELEMENT - View - aaa
+            JSX_ELEMENT - View - 1b3
               JS_PROPERTY_ACCESS - 807
                 JS_IDENTIFIER - 09c
           UNPARSED_CODE
