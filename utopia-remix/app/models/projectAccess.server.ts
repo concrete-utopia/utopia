@@ -31,7 +31,7 @@ export async function createProjectAccess(params: {
 }): Promise<void> {
   await prisma.$transaction(async (tx) => {
     // check if project access already exists
-    const projectAccess = await prisma.projectAccess.findUnique({
+    const projectAccess = await tx.projectAccess.findUnique({
       where: {
         project_id: params.projectId,
       },
