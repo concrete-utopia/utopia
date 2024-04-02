@@ -33,7 +33,7 @@ import { assertNever } from '../util/assertNever'
 import { useCopyProjectLinkToClipboard } from '../util/copyProjectLink'
 import { isLikeApiError } from '../util/errors'
 import { useProjectEditorLink } from '../util/links'
-import { when } from '../util/react-conditionals'
+import { unless, when } from '../util/react-conditionals'
 import { Spinner } from './spinner'
 import { UserAvatar } from './userAvatar'
 
@@ -299,14 +299,17 @@ function AccessRequests(props: {
           name={user.name ?? user.email ?? user.user_id}
           isDisabled={!isCollaborative}
         >
-          {isCollaborative ? (
+          {when(
+            isCollaborative,
             <AccessRequestDropdown
               status={request.status}
               onApprove={onUpdateAccessRequest(request.token, 'approve')}
               onReject={onUpdateAccessRequest(request.token, 'reject')}
               onDestroy={onUpdateAccessRequest(request.token, 'destroy')}
-            />
-          ) : (
+            />,
+          )}
+          {unless(
+            isCollaborative,
             <Text
               size='1'
               style={{
@@ -317,7 +320,7 @@ function AccessRequests(props: {
               {when(status === AccessRequestStatus.PENDING, 'Pending')}
               {when(status === AccessRequestStatus.APPROVED, 'Collaborator')}
               {when(status === AccessRequestStatus.REJECTED, 'Blocked')}
-            </Text>
+            </Text>,
           )}
         </CollaboratorRow>
       )
