@@ -38,7 +38,35 @@ describe('Data Tracing', () => {
     )
   })
 
-  it('Traces back a prop to a string literal jsx attribute', async () => {
+  it('Traces back a regular prop to a string literal jsx attribute', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithStoryboard(`
+      function MyComponent(props) {
+        return <div data-uid='component-root' title={props.title} />
+      }
+
+      function App() {
+        return <MyComponent data-uid='my-component' title='string literal here' />
+      }
+      `),
+      'await-first-dom-report',
+    )
+
+    await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component'))
+
+    const traceResult = traceDataFromProp(
+      EPP.create(EP.fromString('sb/app:my-component:component-root'), PP.create('title')),
+      editor.getEditorState().editor.jsxMetadata,
+      editor.getEditorState().editor.projectContents,
+      [],
+    )
+
+    expect(traceResult).toEqual(
+      dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('title'), []),
+    )
+  })
+
+  it('Traces back a destrucuted prop to a string literal jsx attribute', async () => {
     const editor = await renderTestEditorWithCode(
       makeTestProjectCodeWithStoryboard(`
       function MyComponent({title}) {
