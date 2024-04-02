@@ -24,6 +24,12 @@ function loadProject<ModelType>(projectId: string): Promise<ProjectLoadResult<Mo
   })
 }
 
+function createNewProjectInServer<ModelType, FileType>(
+  projectModel: ProjectModel<ModelType>,
+): Promise<ProjectWithFileChanges<ModelType, FileType>> {
+  return Promise.resolve(projectWithFileChanges([], projectModel))
+}
+
 function saveProjectToServer<ModelType, FileType>(
   _projectId: string,
   projectModel: ProjectModel<ModelType>,
@@ -54,6 +60,7 @@ export function createDummyPersistenceBackend<ModelType, FileType>(): Persistenc
     checkProjectOwned: checkProjectOwned,
     loadProject: loadProject,
     saveProjectToServer: saveProjectToServer,
+    createNewProjectInServer: createNewProjectInServer,
     saveProjectLocally: saveProjectLocally,
     downloadAssets: downloadAssets,
   }

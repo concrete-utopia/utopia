@@ -13,6 +13,7 @@ import { addFileToProjectContents, getAllProjectAssetFiles } from '../../assets'
 import type { AssetToSave } from '../server'
 import {
   assetToSave,
+  createNewProject,
   createNewProjectID,
   downloadAssetsFromProject,
   loadProject as loadServerProject,
@@ -111,6 +112,24 @@ async function loadProject(projectId: string): Promise<ProjectLoadResult<Persist
       },
     }
   }
+}
+
+async function createNewProjectInServer(
+  projectModel: ProjectModel<PersistentModel>,
+): Promise<ProjectWithFileChanges<PersistentModel, ProjectFile>> {
+  const { assetsToUpload, projectWithChanges } = prepareAssetsForUploading(projectModel)
+
+  const { id: projectId } = await createNewProject(
+    projectWithChanges.projectModel.content,
+    projectWithChanges.projectModel.name,
+  )
+  if (assetsToUpload.length > 0) {
+    await saveAssets(projectId, assetsToUpload)
+  }
+
+  void deleteLocalProject(projectId)
+
+  return projectWithChanges
 }
 
 async function saveProjectToServer(
@@ -233,6 +252,7 @@ export const PersistenceBackend: PersistenceBackendAPI<PersistentModel, ProjectF
   checkProjectOwned: checkProjectOwned,
   loadProject: loadProject,
   saveProjectToServer: saveProjectToServer,
+  createNewProjectInServer: createNewProjectInServer,
   saveProjectLocally: saveProjectLocally,
   downloadAssets: downloadAssets,
 }

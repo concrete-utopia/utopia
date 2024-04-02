@@ -89,6 +89,9 @@ export interface PersistenceBackendAPI<ModelType, FileType> {
     projectId: string,
     projectModel: ProjectModel<ModelType>,
   ) => Promise<ProjectWithFileChanges<ModelType, FileType>>
+  createNewProjectInServer: (
+    projectModel: ProjectModel<ModelType>,
+  ) => Promise<ProjectWithFileChanges<ModelType, FileType>>
   saveProjectLocally: (
     projectId: string,
     projectModel: ProjectModel<ModelType>,
