@@ -27,7 +27,6 @@ export type SharingProjectAccessRequests = {
 
 // State portion that will not be persisted
 interface ProjectsStoreStateNonPersisted {
-  selectedProjectId: string | null
   selectedCategory: Category
   searchQuery: string
   operations: OperationWithKey[]
@@ -37,7 +36,6 @@ interface ProjectsStoreStateNonPersisted {
 }
 
 const initialProjectsStoreStateNonPersisted: ProjectsStoreStateNonPersisted = {
-  selectedProjectId: null,
   selectedCategory: 'allProjects',
   searchQuery: '',
   operations: [],
@@ -49,7 +47,6 @@ const initialProjectsStoreStateNonPersisted: ProjectsStoreStateNonPersisted = {
 type ProjectsStoreState = ProjectsStoreStatePersisted & ProjectsStoreStateNonPersisted
 
 interface ProjectsStoreActions {
-  setSelectedProjectId: (projectId: string | null) => void
   setSelectedCategory: (category: Category) => void
   setSearchQuery: (query: string) => void
   setSortCriteria: (sortCriteria: SortCriteria) => void
@@ -78,9 +75,6 @@ export const createProjectsStore = (
 
           setSelectedCategory: (category: Category) => {
             return set(() => ({ selectedCategory: category }))
-          },
-          setSelectedProjectId: (projectId: string | null) => {
-            return set(() => ({ selectedProjectId: projectId }))
           },
           setSearchQuery: (query) => {
             return set(() => ({ searchQuery: query }))

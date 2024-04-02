@@ -246,7 +246,6 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
   const setSearchQuery = useProjectsStore((store) => store.setSearchQuery)
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
   const setSelectedCategory = useProjectsStore((store) => store.setSelectedCategory)
-  const setSelectedProjectId = useProjectsStore((store) => store.setSelectedProjectId)
   const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
 
   const isDarkMode = useIsDarkMode()
@@ -260,11 +259,10 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
       if (isCategory(category)) {
         setSelectedCategory(category)
         setSearchQuery('')
-        setSelectedProjectId(null)
         setSharingProjectId(null)
       }
     },
-    [setSelectedCategory, setSearchQuery, setSelectedProjectId, setSharingProjectId],
+    [setSelectedCategory, setSearchQuery, setSharingProjectId],
   )
 
   const onChangeSearchQuery = React.useCallback(
@@ -589,15 +587,6 @@ const Projects = React.memo(
     const myUser = useProjectsStore((store) => store.myUser)
     const gridView = useProjectsStore((store) => store.gridView)
 
-    const selectedProjectId = useProjectsStore((store) => store.selectedProjectId)
-    const setSelectedProjectId = useProjectsStore((store) => store.setSelectedProjectId)
-
-    const handleProjectSelect = React.useCallback(
-      (project: ProjectListing) =>
-        setSelectedProjectId(project.proj_id === selectedProjectId ? null : project.proj_id),
-      [setSelectedProjectId, selectedProjectId],
-    )
-
     return (
       <>
         {when(
@@ -608,9 +597,6 @@ const Projects = React.memo(
                 key={project.proj_id}
                 project={project}
                 isSharedWithMe={project.owner_id !== myUser?.user_id}
-                selected={project.proj_id === selectedProjectId}
-                /* eslint-disable-next-line react/jsx-no-bind */
-                onSelect={() => handleProjectSelect(project)}
                 collaborators={collaborators[project.proj_id]}
               />
             ))}
@@ -624,9 +610,6 @@ const Projects = React.memo(
                 key={project.proj_id}
                 project={project}
                 isSharedWithMe={project.owner_id !== myUser?.user_id}
-                selected={project.proj_id === selectedProjectId}
-                /* eslint-disable-next-line react/jsx-no-bind */
-                onSelect={() => handleProjectSelect(project)}
                 collaborators={collaborators[project.proj_id]}
               />
             ))}
@@ -656,15 +639,13 @@ const ProjectCard = React.memo(
     project,
     isSharedWithMe,
     collaborators,
-    selected,
-    onSelect,
   }: {
     project: ProjectListing
     isSharedWithMe: boolean
     collaborators: Collaborator[]
-    selected: boolean
-    onSelect: () => void
   }) => {
+    const [contextMenuOpen, setContextMenuOpen] = React.useState(false)
+
     const projectEditorLink = useProjectEditorLink()
 
     const openProject = React.useCallback(() => {
@@ -698,18 +679,12 @@ const ProjectCard = React.memo(
       }
     }, [openShareDialog, canOpenShareDialog])
 
-    const onMouseDown = React.useCallback(
-      (event: React.MouseEvent) => {
-        // on right click only allow selection (not de-selction)
-        if (event.button !== 2 || !selected) {
-          onSelect()
-        }
-      },
-      [onSelect, selected],
-    )
+    const toggleContextMenuOpen = React.useCallback((isOpen: boolean) => {
+      setContextMenuOpen(isOpen)
+    }, [])
 
     return (
-      <ContextMenu.Root>
+      <ContextMenu.Root onOpenChange={toggleContextMenuOpen}>
         <ContextMenu.Trigger>
           <div
             style={{
@@ -725,7 +700,7 @@ const ProjectCard = React.memo(
           >
             <div
               style={{
-                border: selected ? '2px solid #0090FF' : '2px solid transparent',
+                border: contextMenuOpen ? '2px solid #0090FF' : '2px solid transparent',
                 borderRadius: 10,
                 overflow: 'hidden',
                 height: '100%',
@@ -736,7 +711,6 @@ const ProjectCard = React.memo(
                 position: 'relative',
                 filter: project.deleted === true ? 'grayscale(1)' : undefined,
               }}
-              onMouseDown={onMouseDown}
               onDoubleClick={openProject}
             >
               {when(
@@ -874,17 +848,15 @@ const ProjectRow = React.memo(
   ({
     project,
     collaborators,
-    selected,
     isSharedWithMe,
-    onSelect,
   }: {
     project: ProjectListing
     collaborators: Collaborator[]
-    selected: boolean
     isSharedWithMe: boolean
-    onSelect: () => void
   }) => {
     const projectEditorLink = useProjectEditorLink()
+
+    const [contextMenuOpen, setContextMenuOpen] = React.useState(false)
 
     const openProject = React.useCallback(() => {
       window.open(projectEditorLink(project.proj_id), '_blank')
@@ -917,18 +889,12 @@ const ProjectRow = React.memo(
       }
     }, [openShareDialog, canOpenShareDialog])
 
-    const onMouseDown = React.useCallback(
-      (event: React.MouseEvent) => {
-        // on right click only allow selection (not de-selction)
-        if (event.button !== 2 || !selected) {
-          onSelect()
-        }
-      },
-      [onSelect, selected],
-    )
+    const toggleContextMenuOpen = React.useCallback((isOpen: boolean) => {
+      setContextMenuOpen(isOpen)
+    }, [])
 
     return (
-      <ContextMenu.Root>
+      <ContextMenu.Root onOpenChange={toggleContextMenuOpen}>
         <ContextMenu.Trigger>
           <div style={{ padding: '8px 0' }}>
             <div
@@ -938,13 +904,12 @@ const ProjectRow = React.memo(
                 flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                border: selected ? '2px solid #0090FF' : '2px solid transparent',
+                border: contextMenuOpen ? '2px solid #0090FF' : '2px solid transparent',
                 borderRadius: 10,
                 padding: 4,
                 paddingRight: 10,
                 transition: `.1s background-color ease-in-out`,
               }}
-              onMouseDown={onMouseDown}
               onDoubleClick={openProject}
             >
               <div
