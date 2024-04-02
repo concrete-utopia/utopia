@@ -1,10 +1,5 @@
 import type { ImportType, NormalisedFrame } from 'utopia-api/core'
-import type {
-  ArbitraryJSBlock,
-  ImportStatement,
-  TopLevelElement,
-  UtopiaJSXComponent,
-} from './element-template'
+import type { ArbitraryJSBlock, ImportStatement, TopLevelElement } from './element-template'
 import type { ErrorMessage } from './error-messages'
 import { arrayEqualsByValue, objectEquals } from './utils'
 
