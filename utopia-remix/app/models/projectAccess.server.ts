@@ -36,7 +36,7 @@ export async function createProjectAccess(params: {
         project_id: params.projectId,
       },
     })
-    if (projectAccess != null) {
+    if (projectAccess == null) {
       await tx.projectAccess.create({
         data: {
           project_id: params.projectId,
