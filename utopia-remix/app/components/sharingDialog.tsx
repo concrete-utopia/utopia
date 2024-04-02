@@ -23,6 +23,7 @@ import {
   AccessLevel,
   AccessRequestStatus,
   asAccessLevel,
+  mustAccessRequestStatus,
   operationChangeAccess,
   operationUpdateAccessRequest,
   type ProjectAccessRequestWithUserDetails,
@@ -239,21 +240,20 @@ function AccessRequests(props: {
     (token: string, action: UpdateAccessRequestAction) => () => {
       setStableAccessRequests(accessRequests)
       setAccessRequests((reqs) => {
-        return action === 'destroy'
-          ? reqs.filter((r) => r.token !== token)
-          : reqs.map((r) => {
-              if (r.token === token) {
-                switch (action) {
-                  case 'approve':
-                    return { ...r, status: AccessRequestStatus.APPROVED }
-                  case 'reject':
-                    return { ...r, status: AccessRequestStatus.REJECTED }
-                  default:
-                    assertNever(action)
-                }
-              }
-              return r
-            })
+        switch (action) {
+          case 'destroy':
+            return reqs.filter((r) => r.token !== token)
+          case 'approve':
+            return reqs.map((r) =>
+              r.token === token ? { ...r, status: AccessRequestStatus.APPROVED } : r,
+            )
+          case 'reject':
+            return reqs.map((r) =>
+              r.token === token ? { ...r, status: AccessRequestStatus.REJECTED } : r,
+            )
+          default:
+            assertNever(action)
+        }
       })
       updateAccessRequestFetcher.submit(
         operationUpdateAccessRequest(projectId, token, action),
@@ -290,7 +290,8 @@ function AccessRequests(props: {
         return null
       }
 
-      const status = request.status
+      const status = mustAccessRequestStatus(request.status)
+
       return (
         <CollaboratorRow
           key={request.token}
@@ -299,74 +300,18 @@ function AccessRequests(props: {
           isDisabled={!isCollaborative}
         >
           {isCollaborative ? (
-            <DropdownMenu.Root>
-              <DropdownMenu.Trigger>
-                {status === AccessRequestStatus.PENDING ? (
-                  <Button size='1' color='amber' radius='full'>
-                    Requests Access
-                    <ChevronDownIcon />
-                  </Button>
-                ) : status === AccessRequestStatus.APPROVED ? (
-                  <Button size='1' radius='medium' variant='ghost' color='gray' highContrast={true}>
-                    Collaborator
-                    <ChevronDownIcon />
-                  </Button>
-                ) : status === AccessRequestStatus.REJECTED ? (
-                  <Button size='1' radius='medium' variant='ghost' color='red'>
-                    Denied Access
-                    <ChevronDownIcon />
-                  </Button>
-                ) : null}
-              </DropdownMenu.Trigger>
-              <DropdownMenu.Content>
-                {when(
-                  status !== AccessRequestStatus.REJECTED,
-                  <DropdownMenu.Item
-                    style={{ height: 28 }}
-                    color={'red'}
-                    onClick={onUpdateAccessRequest(request.token, 'reject')}
-                  >
-                    <Flex align='center' gap='2'>
-                      <Cross2Icon />
-                      <Text size='1'>Block</Text>
-                    </Flex>
-                  </DropdownMenu.Item>,
-                )}
-                {when(
-                  status !== AccessRequestStatus.APPROVED,
-                  <DropdownMenu.Item
-                    style={{ height: 28 }}
-                    onClick={onUpdateAccessRequest(request.token, 'approve')}
-                  >
-                    <Flex align='center' gap='2'>
-                      <CheckIcon />
-                      <Text size='1'>Allow To Collaborate</Text>
-                    </Flex>
-                  </DropdownMenu.Item>,
-                )}
-                <DropdownMenu.Separator />
-                <DropdownMenu.Item
-                  style={{ height: 28 }}
-                  color='gray'
-                  onClick={onUpdateAccessRequest(request.token, 'destroy')}
-                >
-                  <Flex align='center' gap='2'>
-                    <MinusCircledIcon />
-                    <Text size='1'>
-                      {status === AccessRequestStatus.PENDING
-                        ? 'Delete Request'
-                        : 'Remove From Project'}
-                    </Text>
-                  </Flex>
-                </DropdownMenu.Item>
-              </DropdownMenu.Content>
-            </DropdownMenu.Root>
+            <AccessRequestDropdown
+              status={request.status}
+              onApprove={onUpdateAccessRequest(request.token, 'approve')}
+              onReject={onUpdateAccessRequest(request.token, 'reject')}
+              onDestroy={onUpdateAccessRequest(request.token, 'destroy')}
+            />
           ) : (
             <Text
               size='1'
               style={{
-                fontStyle: !isCollaborative ? 'italic' : 'normal',
                 cursor: 'default',
+                fontStyle: !isCollaborative ? 'italic' : 'normal',
               }}
             >
               {when(status === AccessRequestStatus.PENDING, 'Pending')}
@@ -378,6 +323,87 @@ function AccessRequests(props: {
       )
     })
 }
+
+const AccessRequestDropdown = React.memo(
+  ({
+    status,
+    onApprove,
+    onReject,
+    onDestroy,
+  }: {
+    status: AccessRequestStatus
+    onApprove: () => void
+    onReject: () => void
+    onDestroy: () => void
+  }) => {
+    return (
+      <DropdownMenu.Root>
+        <DropdownMenu.Trigger>
+          <AccessRequestDropdownLabel status={status} />
+        </DropdownMenu.Trigger>
+        <DropdownMenu.Content>
+          {when(
+            status !== AccessRequestStatus.REJECTED,
+            <DropdownMenu.Item style={{ height: 28 }} color={'red'} onClick={onReject}>
+              <Flex align='center' gap='2'>
+                <Cross2Icon />
+                <Text size='1'>Block</Text>
+              </Flex>
+            </DropdownMenu.Item>,
+          )}
+          {when(
+            status !== AccessRequestStatus.APPROVED,
+            <DropdownMenu.Item style={{ height: 28 }} onClick={onApprove}>
+              <Flex align='center' gap='2'>
+                <CheckIcon />
+                <Text size='1'>Allow To Collaborate</Text>
+              </Flex>
+            </DropdownMenu.Item>,
+          )}
+          <DropdownMenu.Separator />
+          <DropdownMenu.Item style={{ height: 28 }} color='gray' onClick={onDestroy}>
+            <Flex align='center' gap='2'>
+              <MinusCircledIcon />
+              <Text size='1'>
+                {status === AccessRequestStatus.PENDING ? 'Delete Request' : 'Remove From Project'}
+              </Text>
+            </Flex>
+          </DropdownMenu.Item>
+        </DropdownMenu.Content>
+      </DropdownMenu.Root>
+    )
+  },
+)
+AccessRequestDropdown.displayName = 'AccessRequestDropdown'
+
+const AccessRequestDropdownLabel = React.memo(({ status }: { status: AccessRequestStatus }) => {
+  switch (status) {
+    case AccessRequestStatus.PENDING:
+      return (
+        <Button size='1' color='amber' radius='full'>
+          Requests Access
+          <ChevronDownIcon />
+        </Button>
+      )
+    case AccessRequestStatus.APPROVED:
+      return (
+        <Button size='1' radius='medium' variant='ghost' color='gray' highContrast={true}>
+          Collaborator
+          <ChevronDownIcon />
+        </Button>
+      )
+    case AccessRequestStatus.REJECTED:
+      return (
+        <Button size='1' radius='medium' variant='ghost' color='red'>
+          Denied Access
+          <ChevronDownIcon />
+        </Button>
+      )
+    default:
+      assertNever(status)
+  }
+})
+AccessRequestDropdownLabel.displayName = 'AccessRequestDropdownLabel'
 
 const CollaboratorRow = React.memo(
   ({

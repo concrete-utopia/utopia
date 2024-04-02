@@ -246,6 +246,20 @@ export enum AccessRequestStatus {
   REJECTED,
 }
 
+export function mustAccessRequestStatus(n: number): AccessRequestStatus {
+  const maybe = n as AccessRequestStatus
+  switch (maybe) {
+    case AccessRequestStatus.PENDING:
+      return AccessRequestStatus.PENDING
+    case AccessRequestStatus.APPROVED:
+      return AccessRequestStatus.APPROVED
+    case AccessRequestStatus.REJECTED:
+      return AccessRequestStatus.REJECTED
+    default:
+      assertNever(maybe)
+  }
+}
+
 export type ProjectAccessRequestWithUserDetails = ProjectAccessRequest & {
   User: UserDetails | null
 }
