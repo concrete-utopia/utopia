@@ -1,6 +1,6 @@
 import React from 'react'
 import { useProjectsStore } from '../stores/projectsStore'
-import type { ProjectListing } from '../types'
+import type { ProjectSharingDetails } from '../types'
 import { AccessLevel } from '../types'
 import { assertNever } from '../util/assertNever'
 
@@ -8,7 +8,9 @@ import { assertNever } from '../util/assertNever'
  * A hook returning whether the given project's access level is compatible with the
  * currently selected category.
  */
-export function useProjectAccessMatchesSelectedCategory(project: ProjectListing | null): boolean {
+export function useProjectAccessMatchesSelectedCategory(
+  project: ProjectSharingDetails | null,
+): boolean {
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
 
   return React.useMemo(() => {

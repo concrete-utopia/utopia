@@ -23,7 +23,7 @@ import {
 } from '../core/shared/multiplayer'
 import { MultiplayerWrapper } from '../utils/multiplayer-wrapper'
 import { unless, when } from '../utils/react-conditionals'
-import { Avatar, FlexRow, Icn, Tooltip, colorTheme } from '../uuiui'
+import { Avatar, FlexRow, Icn, Tooltip, UtopiaStyles, colorTheme } from '../uuiui'
 import { notice } from './common/notice'
 import type { EditorAction } from './editor/action-types'
 import { showToast, switchEditorMode } from './editor/actions/action-creators'
@@ -31,8 +31,9 @@ import { EditorModes, isFollowMode } from './editor/editor-modes'
 import { useDispatch } from './editor/store/dispatch-context'
 import { Substores, useEditorState } from './editor/store/store-hook'
 import { useIsMyProject } from './editor/store/collaborative-editing'
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useIsBeingFollowed, useSortMultiplayerUsers } from '../core/shared/multiplayer-hooks'
+import { getProjectID } from '../common/env-vars'
 
 const MAX_VISIBLE_OTHER_PLAYERS = 4
 
@@ -120,17 +121,10 @@ SinglePlayerUserBar.displayName = 'SinglePlayerUserBar'
 const MultiplayerUserBar = React.memo(() => {
   const dispatch = useDispatch()
 
-  const url = window.location.href
-  const handleCopyToClipboard = React.useCallback(async () => {
-    try {
-      let actions: EditorAction[] = []
-      actions.push(showToast(notice('Project link copied to clipboard!', 'NOTICE', false)))
-      await window.navigator.clipboard.writeText(url)
-      dispatch(actions)
-    } catch (error) {
-      console.error('Error copying to clipboard:', error)
-    }
-  }, [dispatch, url])
+  const [sharingDialog, setSharingDialog] = React.useState(false)
+  const handleClickShare = React.useCallback(() => {
+    setSharingDialog((v) => !v)
+  }, [])
 
   const collabs = useCollaborators()
 
@@ -217,6 +211,11 @@ const MultiplayerUserBar = React.memo(() => {
     [dispatch, mode, sortedOthers, myUser, myPresence],
   )
 
+  const projectId = getProjectID()
+  if (projectId == null) {
+    return null
+  }
+
   if (myUser.name == null) {
     // it may still be loading, so fallback until it sorts itself out
     return <SinglePlayerUserBar />
@@ -295,10 +294,13 @@ const MultiplayerUserBar = React.memo(() => {
         }),
       )}
       <FlexRow
-        onClick={handleCopyToClipboard}
+        onClick={handleClickShare}
         css={{
           background: colorTheme.primary30.value,
-          borderRadius: 24,
+          borderTopLeftRadius: sharingDialog ? 11 : 24,
+          borderTopRightRadius: sharingDialog ? 11 : 24,
+          borderBottomLeftRadius: sharingDialog ? 0 : 24,
+          borderBottomRightRadius: sharingDialog ? 0 : 24,
           height: 24,
           padding: 2,
           border: `1px solid ${colorTheme.transparent.value}`,
@@ -323,6 +325,28 @@ const MultiplayerUserBar = React.memo(() => {
         />
         <div style={{ padding: '0 8px 0 5px', fontWeight: 500 }}>Share</div>
       </FlexRow>
+      <AnimatePresence>
+        {when(
+          sharingDialog,
+          <motion.iframe
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 450 }}
+            exit={{ opacity: 0, height: 0 }}
+            style={{
+              width: 450,
+              border: `1px solid ${colorTheme.primary30.value}`,
+              boxShadow: UtopiaStyles.shadowStyles.highest.boxShadow,
+              borderRadius: 10,
+              borderTopRightRadius: 0,
+              position: 'absolute',
+              top: 38,
+              right: 14,
+              zIndex: 100,
+            }}
+            src={`http://localhost:8000/iframe/project/${projectId}/sharing`}
+          />,
+        )}
+      </AnimatePresence>
     </motion.div>
   )
 })
