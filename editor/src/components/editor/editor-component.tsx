@@ -6,7 +6,7 @@ import { chrome as isChrome } from 'platform-detect'
 import React from 'react'
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
-import { IS_TEST_ENVIRONMENT } from '../../common/env-vars'
+import { IS_BROWSER_TEST_DEBUG } from '../../common/env-vars'
 import { projectURLForProject } from '../../core/shared/utils'
 import Keyboard from '../../utils/keyboard'
 import { Modifier } from '../../utils/modifiers'
@@ -349,7 +349,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
   const forking = useEditorState(Substores.restOfEditor, (store) => store.editor.forking, '')
 
   React.useEffect(() => {
-    if (IS_TEST_ENVIRONMENT) {
+    if (IS_BROWSER_TEST_DEBUG) {
       return
     }
     if (projectId != null) {
