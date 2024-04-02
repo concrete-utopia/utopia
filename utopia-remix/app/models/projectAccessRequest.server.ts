@@ -5,7 +5,11 @@ import { ensure } from '../util/api.server'
 import { Status } from '../util/statusCodes'
 import type { ProjectAccessRequestWithUserDetails } from '../types'
 import { AccessRequestStatus, UserProjectRole } from '../types'
-import { addToProjectCollaboratorsWithRunner } from './projectCollaborators.server'
+import {
+  addToProjectCollaboratorsWithRunner,
+  removeFromProjectCollaboratorsWithRunner,
+} from './projectCollaborators.server'
+import { assertNever } from '../util/assertNever'
 
 function makeRequestToken(): string {
   return uuid.v4()
@@ -84,19 +88,32 @@ export async function updateAccessRequestStatus(params: {
       },
     })
 
-    // …finally, grant the role.
-    if (params.status === AccessRequestStatus.APPROVED) {
-      await addToProjectCollaboratorsWithRunner(tx, {
-        projectId: params.projectId,
-        userId: request.user_id,
-      })
-      await permissionsService.grantProjectRoleToUser(
-        params.projectId,
-        request.user_id,
-        UserProjectRole.VIEWER,
-      )
+    // …finally, update FGA permissions
+    switch (params.status) {
+      case AccessRequestStatus.APPROVED:
+        await addToProjectCollaboratorsWithRunner(tx, {
+          projectId: params.projectId,
+          userId: request.user_id,
+        })
+        await permissionsService.grantProjectRoleToUser(
+          params.projectId,
+          request.user_id,
+          UserProjectRole.VIEWER,
+        )
+        break
+      case AccessRequestStatus.REJECTED:
+        await removeFromProjectCollaboratorsWithRunner(tx, {
+          projectId: params.projectId,
+          userId: request.user_id,
+        })
+        await permissionsService.revokeAllRolesFromUser(params.projectId, request.user_id)
+        break
+      case AccessRequestStatus.PENDING:
+        // do nothing
+        break
+      default:
+        assertNever(params.status)
     }
-    // NOTE (ruggi): there should be a way to revoke the permission if the request is REJECTED (TODO)
   })
 }
 

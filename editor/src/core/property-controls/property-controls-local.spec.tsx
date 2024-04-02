@@ -190,17 +190,35 @@ describe('registered property controls', () => {
     )
     const editorState = renderResult.getEditorState().editor
 
-    // /src/card is not here
-    expect(Object.keys(editorState.propertyControlsInfo)).toMatchInlineSnapshot(`
-      Array [
-        "@react-three/fiber",
-        "antd",
-        "utopia-api",
-        "@remix-run/react",
-      ]
-    `)
+    expect(editorState.codeEditorErrors).toEqual({
+      buildErrors: {},
+      lintErrors: {
+        '/utopia/components.utopia.js': [
+          {
+            codeSnippet: '',
+            endColumn: null,
+            endLine: null,
+            errorCode: '',
+            fileName: '/utopia/components.utopia.js',
+            message: "Validation failed: Component registered for key 'Card' is undefined",
+            passTime: null,
+            severity: 'fatal',
+            source: 'eslint',
+            startColumn: null,
+            startLine: null,
+            type: '',
+          },
+        ],
+      },
+    })
+
+    const srcCardKey = Object.keys(renderResult.getEditorState().editor.propertyControlsInfo).find(
+      (key) => key === '/src/card',
+    )
+
+    expect(srcCardKey).toBeUndefined()
   })
-  it('control registration fails when the imported component does not match the name of registration key', async () => {
+  it('control registration fails when the imported internal component does not match the name of registration key', async () => {
     const renderResult = await renderTestEditorWithModel(
       project({
         ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
@@ -223,15 +241,191 @@ describe('registered property controls', () => {
     )
     const editorState = renderResult.getEditorState().editor
 
-    // /src/card is not here
-    expect(Object.keys(editorState.propertyControlsInfo)).toMatchInlineSnapshot(`
-      Array [
-        "@react-three/fiber",
-        "antd",
-        "utopia-api",
-        "@remix-run/react",
-      ]
-    `)
+    expect(editorState.codeEditorErrors).toEqual({
+      buildErrors: {},
+      lintErrors: {
+        '/utopia/components.utopia.js': [
+          {
+            codeSnippet: '',
+            endColumn: null,
+            endLine: null,
+            errorCode: '',
+            fileName: '/utopia/components.utopia.js',
+            message:
+              'Validation failed: Component name (Card) does not match the registration key (Cart)',
+            passTime: null,
+            severity: 'fatal',
+            source: 'eslint',
+            startColumn: null,
+            startLine: null,
+            type: '',
+          },
+        ],
+      },
+    })
+
+    const srcCardKey = Object.keys(renderResult.getEditorState().editor.propertyControlsInfo).find(
+      (key) => key === '/src/card',
+    )
+
+    expect(srcCardKey).toBeUndefined()
+  })
+  it('control registration fails when the imported external component does not match the name of registration key', async () => {
+    const renderResult = await renderTestEditorWithModel(
+      project({
+        ['/utopia/components.utopia.js']: `import { View } from 'utopia-api'
+        
+        const Components = {
+      'utopia-api': {
+        Vieww: {
+          component: View,
+          supportsChildren: false,
+          properties: { },
+          variants: [ ],
+        },
+      },
+    }
+    
+    export default Components
+  `,
+      }),
+      'await-first-dom-report',
+    )
+    const editorState = renderResult.getEditorState().editor
+
+    expect(editorState.codeEditorErrors).toEqual({
+      buildErrors: {},
+      lintErrors: {
+        '/utopia/components.utopia.js': [
+          {
+            codeSnippet: '',
+            endColumn: null,
+            endLine: null,
+            errorCode: '',
+            fileName: '/utopia/components.utopia.js',
+            message:
+              'Validation failed: Component name (View) does not match the registration key (Vieww)',
+            passTime: null,
+            severity: 'fatal',
+            source: 'eslint',
+            startColumn: null,
+            startLine: null,
+            type: '',
+          },
+        ],
+      },
+    })
+
+    const srcCardKey = Object.keys(renderResult.getEditorState().editor.propertyControlsInfo).find(
+      (key) => key === '/src/card',
+    )
+
+    expect(srcCardKey).toBeUndefined()
+  })
+  it('updating the control registration removes the build errors', async () => {
+    const renderResult = await renderTestEditorWithModel(
+      project({
+        ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
+        
+        const Components = {
+      '/src/card': {
+        Cart: {
+          component: Card,
+          supportsChildren: false,
+          properties: { },
+          variants: [ ],
+        },
+      },
+    }
+    
+    export default Components
+  `,
+      }),
+      'await-first-dom-report',
+    )
+
+    expect(renderResult.getEditorState().editor.codeEditorErrors).toEqual({
+      buildErrors: {},
+      lintErrors: {
+        '/utopia/components.utopia.js': [
+          {
+            codeSnippet: '',
+            endColumn: null,
+            endLine: null,
+            errorCode: '',
+            fileName: '/utopia/components.utopia.js',
+            message:
+              'Validation failed: Component name (Card) does not match the registration key (Cart)',
+            passTime: null,
+            severity: 'fatal',
+            source: 'eslint',
+            startColumn: null,
+            startLine: null,
+            type: '',
+          },
+        ],
+      },
+    })
+
+    const srcCardKey = Object.keys(renderResult.getEditorState().editor.propertyControlsInfo).find(
+      (key) => key === '/src/card',
+    )
+
+    expect(srcCardKey).toBeUndefined()
+
+    await renderResult.dispatch(
+      [
+        updateFromCodeEditor(
+          '/utopia/components.utopia.js',
+          `import { Card } from '../src/card'
+        
+        const Components = {
+      '/src/card': {
+        Cart: {
+          component: Card,
+          supportsChildren: false,
+          properties: { },
+          variants: [ ],
+        },
+      },
+    }
+    
+    export default Components
+  `,
+          `import { Card } from '../src/card'
+              
+        const Components = {
+      '/src/card': {
+        Card: {
+          component: Card,
+          supportsChildren: false,
+          properties: { },
+          variants: [ ],
+        },
+      },
+      }
+
+      export default Components
+      `,
+        ),
+      ],
+      true,
+    )
+
+    expect(renderResult.getEditorState().editor.codeEditorErrors).toEqual({
+      buildErrors: {},
+      lintErrors: {
+        '/utopia/components.utopia.js': [],
+      },
+    })
+
+    expect(Object.keys(renderResult.getEditorState().editor.propertyControlsInfo)).toEqual([
+      '@react-three/fiber',
+      'antd',
+      'utopia-api',
+      '@remix-run/react',
+      '/src/card',
+    ])
   })
   it('can use imports in the sidecar file', async () => {
     const renderResult = await renderTestEditorWithModel(

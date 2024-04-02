@@ -10,8 +10,15 @@ import {
 import { URL_HASH } from '../../common/env-vars'
 import { blockLevelHtmlElements, inlineHtmlElements } from '../../utils/html-elements'
 import { assertNever, identity } from './utils'
-import type { HugProperty, HugPropertyWidthHeight } from './element-template'
+import {
+  arbitraryBlockRanToEnd,
+  earlyReturnResult,
+  earlyReturnVoid,
+  type HugProperty,
+  type HugPropertyWidthHeight,
+} from './element-template'
 import type { AbsolutePin } from '../../components/canvas/canvas-strategies/strategies/resize-helpers'
+import type { MapLike } from 'typescript'
 
 export const intrinsicHTMLElementNames: Array<keyof ReactDOM> = [
   'a',
@@ -354,6 +361,18 @@ export function addScriptToPage(
 }
 
 export const JSX_CANVAS_LOOKUP_FUNCTION_NAME = 'utopiaCanvasJSXLookup'
+
+export const BLOCK_RAN_TO_END_FUNCTION_NAME = 'utopiaCanvasBlockRanToEnd'
+
+export const EARLY_RETURN_RESULT_FUNCTION_NAME = 'utopiaCanvasEarlyReturnResult'
+
+export const EARLY_RETURN_VOID_FUNCTION_NAME = 'utopiaCanvasEarlyReturnVoid'
+
+export function applyBlockReturnFunctions(scope: MapLike<any>): void {
+  scope[BLOCK_RAN_TO_END_FUNCTION_NAME] = arbitraryBlockRanToEnd
+  scope[EARLY_RETURN_RESULT_FUNCTION_NAME] = earlyReturnResult
+  scope[EARLY_RETURN_VOID_FUNCTION_NAME] = earlyReturnVoid
+}
 
 export function getDomRectCenter(rect: DOMRect): { x: number; y: number } {
   return {
