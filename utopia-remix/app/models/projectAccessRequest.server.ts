@@ -144,3 +144,26 @@ export async function listProjectAccessRequests(params: {
     User: users.find((u) => u.user_id === r.user_id) ?? null,
   }))
 }
+
+export async function destroyAccessRequest(params: {
+  projectId: string
+  ownerId: string
+  token: string
+}) {
+  await prisma.$transaction(async (tx) => {
+    // 1. delete the access request from the DB
+    const request = await tx.projectAccessRequest.delete({
+      where: {
+        project_id_token: {
+          project_id: params.projectId,
+          token: params.token,
+        },
+        Project: {
+          owner_id: params.ownerId,
+        },
+      },
+    })
+    // 2. revoke access on FGA
+    await permissionsService.revokeAllRolesFromUser(params.projectId, request.user_id)
+  })
+}

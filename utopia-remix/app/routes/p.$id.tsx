@@ -22,6 +22,7 @@ export async function loader(args: LoaderFunctionArgs) {
       { validator: validator, excludeHeaders: excludeHeaders },
     )
   } catch (e) {
-    throw redirect(`/project/${args.params.id}`)
+    const url = new URL(args.request.url)
+    throw redirect(`/project/${args.params.id}${url.search}`)
   }
 }
