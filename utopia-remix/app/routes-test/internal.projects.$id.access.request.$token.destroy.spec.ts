@@ -1,6 +1,5 @@
-import { prisma } from '../db.server'
-import { handleDestroyAccessRequest } from '../routes/internal.projects.$id.access.request.$token.destroy'
 import type { Params } from '@remix-run/react'
+import { prisma } from '../db.server'
 import { action } from '../routes/internal.projects.$id.access.request.$token.destroy'
 import {
   createTestProject,

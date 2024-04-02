@@ -1,7 +1,7 @@
 import type { ProjectAccessRequest, UserDetails } from 'prisma-client'
 import { Prisma } from 'prisma-client'
-import { assertNever } from './util/assertNever'
 import { ensure } from './util/api.server'
+import { assertNever } from './util/assertNever'
 import { Status } from './util/statusCodes'
 
 const fullProjectFromDB = Prisma.validator<Prisma.ProjectDefaultArgs>()({
