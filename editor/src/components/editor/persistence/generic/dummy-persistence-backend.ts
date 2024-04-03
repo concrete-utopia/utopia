@@ -6,7 +6,7 @@ import type {
   ProjectOwnership,
   ProjectWithFileChanges,
 } from './persistence-types'
-import { projectWithFileChanges } from './persistence-types'
+import { projectCreationResult, projectWithFileChanges } from './persistence-types'
 
 // Keep this file as simple as possible so that it can be used in https://stately.ai/viz
 let projectCounter = 0
@@ -28,10 +28,9 @@ function loadProject<ModelType>(projectId: string): Promise<ProjectLoadResult<Mo
 function createNewProjectInServer<ModelType, FileType>(
   projectModel: ProjectModel<ModelType>,
 ): Promise<ProjectCreationResult<ModelType, FileType>> {
-  return Promise.resolve({
-    projectId: `Project_${projectCounter++}`,
-    projectWithChanges: projectWithFileChanges([], projectModel),
-  })
+  return Promise.resolve(
+    projectCreationResult(`Project_${projectCounter++}`, projectWithFileChanges([], projectModel)),
+  )
 }
 
 function saveProjectToServer<ModelType, FileType>(
