@@ -1,5 +1,5 @@
 import type { LoaderFunctionArgs } from '@remix-run/node'
-import { useLoaderData } from '@remix-run/react'
+import { useFetcher, useLoaderData } from '@remix-run/react'
 import type { UserDetails } from 'prisma-client'
 import React from 'react'
 import { SharingDialogContent } from '../components/sharingDialog'
@@ -9,6 +9,8 @@ import type { ProjectAccessRequestWithUserDetails } from '../types'
 import { AccessLevel, asAccessLevel, type ProjectSharingDetails } from '../types'
 import { ensure, requireUser } from '../util/api.server'
 import { Status } from '../util/statusCodes'
+
+const IframeHeight = 450 // px
 
 export async function loader(args: LoaderFunctionArgs) {
   const projectId = args.params.id
@@ -43,21 +45,36 @@ const SharingIframe = React.memo(() => {
     }),
   ).current
 
-  const changeProjectAccess = React.useCallback(() => {
-    // TODO
-  }, [])
+  const [accessLevel, setAccessLevel] = React.useState(
+    asAccessLevel(data.project.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE,
+  )
+
+  const changeAccessFetcher = useFetcher()
+
+  const changeProjectAccessLevel = React.useCallback(
+    (newAccessLevel: AccessLevel) => {
+      if (data.project == null) {
+        return
+      }
+      setAccessLevel(newAccessLevel)
+      changeAccessFetcher.submit(
+        { accessLevel: newAccessLevel.toString() },
+        { method: 'POST', action: `/internal/projects/${data.project.proj_id}/access` },
+      )
+    },
+    [changeAccessFetcher, data.project],
+  )
 
   return (
     <ProjectsContext.Provider value={store}>
-      <div style={{ height: 450, width: 450, boxSizing: 'border-box' }}>
+      <div style={{ height: IframeHeight, width: IframeHeight, boxSizing: 'border-box' }}>
         <SharingDialogContent
           project={data.project}
-          accessLevel={
-            asAccessLevel(data.project.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
-          }
+          accessLevel={accessLevel}
           accessRequests={{ state: 'ready', requests: data.accessRequests }}
-          changeProjectAccessLevel={changeProjectAccess}
+          changeProjectAccessLevel={changeProjectAccessLevel}
           asDialog={false}
+          fixedHeight={IframeHeight}
         />
       </div>
     </ProjectsContext.Provider>

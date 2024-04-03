@@ -34,6 +34,7 @@ import { useIsMyProject } from './editor/store/collaborative-editing'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useIsBeingFollowed, useSortMultiplayerUsers } from '../core/shared/multiplayer-hooks'
 import { getProjectID } from '../common/env-vars'
+import { GithubSpinner } from './navigator/left-pane/github-pane/github-spinner'
 
 const MAX_VISIBLE_OTHER_PLAYERS = 4
 
@@ -122,7 +123,14 @@ const MultiplayerUserBar = React.memo(() => {
   const dispatch = useDispatch()
 
   const [sharingDialog, setSharingDialog] = React.useState(false)
+  const [sharingIframeLoaded, setSharingIframeLoaded] = React.useState(false)
+
+  const onSharingIframeLoaded = React.useCallback(() => {
+    setSharingIframeLoaded(true)
+  }, [])
+
   const handleClickShare = React.useCallback(() => {
+    setSharingIframeLoaded(false)
     setSharingDialog((v) => !v)
   }, [])
 
@@ -328,11 +336,13 @@ const MultiplayerUserBar = React.memo(() => {
       <AnimatePresence>
         {when(
           sharingDialog,
-          <motion.iframe
+          <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 450 }}
             exit={{ opacity: 0, height: 0 }}
+            onLoad={onSharingIframeLoaded}
             style={{
+              background: colorTheme.bg0.value,
               width: 450,
               border: `1px solid ${colorTheme.primary30.value}`,
               boxShadow: UtopiaStyles.shadowStyles.highest.boxShadow,
@@ -343,8 +353,44 @@ const MultiplayerUserBar = React.memo(() => {
               right: 14,
               zIndex: 100,
             }}
-            src={`http://localhost:8000/iframe/project/${projectId}/sharing`}
-          />,
+          >
+            {when(
+              !sharingIframeLoaded,
+              <div
+                style={{
+                  background: colorTheme.bg0.value,
+                  top: 0,
+                  left: 0,
+                  bottom: 0,
+                  right: 0,
+                  borderRadius: 10,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  position: 'absolute',
+                  color: colorTheme.fg0.value,
+                  fontStyle: 'italic',
+                  flexDirection: 'column',
+                  gap: 10,
+                }}
+              >
+                <GithubSpinner stroke='#000' />
+                Loading share details…
+              </div>,
+            )}
+            <motion.iframe
+              style={{
+                background: colorTheme.bg0.value,
+                width: '100%',
+                height: '100%',
+                borderRadius: 10,
+                border: 'none',
+                opacity: sharingIframeLoaded ? 1 : 0,
+                transition: '0.25s',
+              }}
+              src={`http://localhost:8000/iframe/project/${projectId}/sharing`}
+            />
+          </motion.div>,
         )}
       </AnimatePresence>
     </motion.div>
