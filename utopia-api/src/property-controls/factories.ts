@@ -1,6 +1,7 @@
 import type {
   AllowedEnumType,
   ArrayControlDescription,
+  BaseControlDescription,
   BasicControlOption,
   BasicControlOptions,
   CheckboxControlDescription,
@@ -98,60 +99,127 @@ export function expressionPopupListControl(
   options: ExpressionControlOption<unknown>[],
   baseOptions?: PropertyControlsOptions<unknown>,
 ): ExpressionPopUpListControlDescription {
-  return {
+  let result: ExpressionPopUpListControlDescription = {
     control: 'expression-popuplist',
     options: options,
-    defaultValue: baseOptions?.defaultValue,
-    label: baseOptions?.label,
-    required: baseOptions?.required,
-    visibleByDefault: baseOptions?.visibleByDefault,
   }
+
+  if (baseOptions?.defaultValue !== undefined) {
+    result.defaultValue = baseOptions.defaultValue
+  }
+
+  if (baseOptions?.required !== undefined) {
+    result.required = baseOptions.required
+  }
+
+  if (baseOptions?.visibleByDefault !== undefined) {
+    result.visibleByDefault = baseOptions.visibleByDefault
+  }
+
+  if (baseOptions?.label !== undefined) {
+    result.label = baseOptions.label
+  }
+
+  return result
 }
 
 export function eulerControl(
   options?: PropertyControlsOptions<[number, number, number, string]>,
 ): EulerControlDescription {
-  return {
+  let result: EulerControlDescription = {
     control: 'euler',
-    defaultValue: options?.defaultValue,
-    label: options?.label,
-    required: options?.required,
-    visibleByDefault: options?.visibleByDefault,
   }
+  if (options?.defaultValue !== undefined) {
+    result.defaultValue = options.defaultValue
+  }
+
+  if (options?.required !== undefined) {
+    result.required = options.required
+  }
+
+  if (options?.visibleByDefault !== undefined) {
+    result.visibleByDefault = options.visibleByDefault
+  }
+
+  if (options?.label !== undefined) {
+    result.label = options.label
+  }
+
+  return result
 }
 
 export function matrix3Control(
   options?: PropertyControlsOptions<Matrix3>,
 ): Matrix3ControlDescription {
-  return {
+  let result: Matrix3ControlDescription = {
     control: 'matrix3',
-    defaultValue: options?.defaultValue,
-    label: options?.label,
-    required: options?.required,
-    visibleByDefault: options?.visibleByDefault,
   }
+  if (options?.defaultValue !== undefined) {
+    result.defaultValue = options.defaultValue
+  }
+
+  if (options?.required !== undefined) {
+    result.required = options.required
+  }
+
+  if (options?.visibleByDefault !== undefined) {
+    result.visibleByDefault = options.visibleByDefault
+  }
+
+  if (options?.label !== undefined) {
+    result.label = options.label
+  }
+
+  return result
 }
 
 export function matrix4Control(
   options?: PropertyControlsOptions<Matrix4>,
 ): Matrix4ControlDescription {
-  return {
+  let result: Matrix4ControlDescription = {
     control: 'matrix4',
-    defaultValue: options?.defaultValue,
-    label: options?.label,
-    required: options?.required,
-    visibleByDefault: options?.visibleByDefault,
   }
+
+  if (options?.defaultValue !== undefined) {
+    result.defaultValue = options.defaultValue
+  }
+
+  if (options?.required !== undefined) {
+    result.required = options.required
+  }
+
+  if (options?.visibleByDefault !== undefined) {
+    result.visibleByDefault = options.visibleByDefault
+  }
+
+  if (options?.label !== undefined) {
+    result.label = options.label
+  }
+
+  return result
 }
 
 export function noControl(options?: PropertyControlsOptions<number>): NoneControlDescription {
-  return {
+  let result: NoneControlDescription = {
     control: 'none',
-    defaultValue: options?.defaultValue,
-    label: options?.label,
-    required: options?.required,
-    visibleByDefault: options?.visibleByDefault,
   }
+  if (options?.defaultValue !== undefined) {
+    result.defaultValue = options.defaultValue
+  }
+
+  if (options?.required !== undefined) {
+    result.required = options.required
+  }
+
+  if (options?.visibleByDefault !== undefined) {
+    result.visibleByDefault = options.visibleByDefault
+  }
+
+  if (options?.label !== undefined) {
+    result.label = options.label
+  }
+
+  return result
 }
 
 export function numberControl(
@@ -166,11 +234,20 @@ export function numberControl(
     result.unit = unit
   }
 
-  if (options != null) {
-    result.defaultValue = options?.defaultValue
-    result.label = options?.label
-    result.required = options?.required
-    result.visibleByDefault = options?.visibleByDefault
+  if (options?.defaultValue !== undefined) {
+    result.defaultValue = options.defaultValue
+  }
+
+  if (options?.required !== undefined) {
+    result.required = options.required
+  }
+
+  if (options?.visibleByDefault !== undefined) {
+    result.visibleByDefault = options.visibleByDefault
+  }
+
+  if (options?.label !== undefined) {
+    result.label = options.label
   }
 
   return result
@@ -180,28 +257,56 @@ export function popupListControl(
   options: BasicControlOptions<unknown>,
   baseOptions?: PropertyControlsOptions<AllowedEnumType | BasicControlOption<unknown>>,
 ): PopUpListControlDescription {
-  return {
+  let result: PopUpListControlDescription = {
     control: 'popuplist',
     options: options,
-    defaultValue: baseOptions?.defaultValue,
-    label: baseOptions?.label,
-    required: baseOptions?.required,
-    visibleByDefault: baseOptions?.visibleByDefault,
   }
+
+  if (baseOptions?.defaultValue !== undefined) {
+    result.defaultValue = baseOptions.defaultValue
+  }
+
+  if (baseOptions?.required !== undefined) {
+    result.required = baseOptions.required
+  }
+
+  if (baseOptions?.visibleByDefault !== undefined) {
+    result.visibleByDefault = baseOptions.visibleByDefault
+  }
+
+  if (baseOptions?.label !== undefined) {
+    result.label = baseOptions.label
+  }
+
+  return result
 }
 
 export function radioControl(
   options: BasicControlOptions<unknown>,
   baseOptions?: PropertyControlsOptions<AllowedEnumType | BasicControlOption<unknown>>,
 ): RadioControlDescription {
-  return {
+  let result: RadioControlDescription = {
     control: 'radio',
     options: options,
-    defaultValue: baseOptions?.defaultValue,
-    label: baseOptions?.label,
-    required: baseOptions?.required,
-    visibleByDefault: baseOptions?.visibleByDefault,
   }
+
+  if (baseOptions?.defaultValue !== undefined) {
+    result.defaultValue = baseOptions.defaultValue
+  }
+
+  if (baseOptions?.required !== undefined) {
+    result.required = baseOptions.required
+  }
+
+  if (baseOptions?.visibleByDefault !== undefined) {
+    result.visibleByDefault = baseOptions.visibleByDefault
+  }
+
+  if (baseOptions?.label !== undefined) {
+    result.label = baseOptions.label
+  }
+
+  return result
 }
 
 export function sliderControl(
@@ -222,11 +327,20 @@ export function sliderControl(
     result.unit = unit
   }
 
-  if (options != null) {
-    result.defaultValue = options?.defaultValue
-    result.label = options?.label
-    result.required = options?.required
-    result.visibleByDefault = options?.visibleByDefault
+  if (options?.defaultValue !== undefined) {
+    result.defaultValue = options.defaultValue
+  }
+
+  if (options?.required !== undefined) {
+    result.required = options.required
+  }
+
+  if (options?.visibleByDefault !== undefined) {
+    result.visibleByDefault = options.visibleByDefault
+  }
+
+  if (options?.label !== undefined) {
+    result.label = options.label
   }
 
   return result
@@ -244,11 +358,20 @@ export function stringControl(
     result.placeholder = placeholder
   }
 
-  if (options != null) {
-    result.defaultValue = options?.defaultValue
-    result.label = options?.label
-    result.required = options?.required
-    result.visibleByDefault = options?.visibleByDefault
+  if (options?.defaultValue !== undefined) {
+    result.defaultValue = options.defaultValue
+  }
+
+  if (options?.required !== undefined) {
+    result.required = options.required
+  }
+
+  if (options?.visibleByDefault !== undefined) {
+    result.visibleByDefault = options.visibleByDefault
+  }
+
+  if (options?.label !== undefined) {
+    result.label = options.label
   }
 
   return result
@@ -266,85 +389,177 @@ export function htmlControl(
     result.placeholder = placeholder
   }
 
-  if (options != null) {
-    result.defaultValue = options?.defaultValue
-    result.label = options?.label
-    result.required = options?.required
-    result.visibleByDefault = options?.visibleByDefault
+  if (options?.defaultValue !== undefined) {
+    result.defaultValue = options.defaultValue
   }
+
+  if (options?.required !== undefined) {
+    result.required = options.required
+  }
+
+  if (options?.visibleByDefault !== undefined) {
+    result.visibleByDefault = options.visibleByDefault
+  }
+
+  if (options?.label !== undefined) {
+    result.label = options.label
+  }
+
   return result
 }
 
 export function styleControl(
   options?: PropertyControlsOptions<unknown>,
 ): StyleControlsControlDescription {
-  return {
+  let result: StyleControlsControlDescription = {
     control: 'style-controls',
-    defaultValue: options?.defaultValue,
-    label: options?.label,
-    required: options?.required,
-    visibleByDefault: options?.visibleByDefault,
   }
+  if (options?.defaultValue !== undefined) {
+    result.defaultValue = options.defaultValue
+  }
+
+  if (options?.required !== undefined) {
+    result.required = options.required
+  }
+
+  if (options?.visibleByDefault !== undefined) {
+    result.visibleByDefault = options.visibleByDefault
+  }
+
+  if (options?.label !== undefined) {
+    result.label = options.label
+  }
+
+  return result
 }
 
 export function vector2Control(
   options?: PropertyControlsOptions<Vector2>,
 ): Vector2ControlDescription {
-  return {
+  let result: Vector2ControlDescription = {
     control: 'vector2',
-    defaultValue: options?.defaultValue,
-    label: options?.label,
-    required: options?.required,
-    visibleByDefault: options?.visibleByDefault,
   }
+
+  if (options?.defaultValue !== undefined) {
+    result.defaultValue = options.defaultValue
+  }
+
+  if (options?.required !== undefined) {
+    result.required = options.required
+  }
+
+  if (options?.visibleByDefault !== undefined) {
+    result.visibleByDefault = options.visibleByDefault
+  }
+
+  if (options?.label !== undefined) {
+    result.label = options.label
+  }
+
+  return result
 }
 
 export function vector3Control(
   options?: PropertyControlsOptions<Vector3>,
 ): Vector3ControlDescription {
-  return {
+  let result: Vector3ControlDescription = {
     control: 'vector3',
-    defaultValue: options?.defaultValue,
-    label: options?.label,
-    required: options?.required,
-    visibleByDefault: options?.visibleByDefault,
   }
+
+  if (options?.defaultValue !== undefined) {
+    result.defaultValue = options.defaultValue
+  }
+
+  if (options?.required !== undefined) {
+    result.required = options.required
+  }
+
+  if (options?.visibleByDefault !== undefined) {
+    result.visibleByDefault = options.visibleByDefault
+  }
+
+  if (options?.label !== undefined) {
+    result.label = options.label
+  }
+
+  return result
 }
 
 export function vector4Control(
   options?: PropertyControlsOptions<Vector4>,
 ): Vector4ControlDescription {
-  return {
+  let result: Vector4ControlDescription = {
     control: 'vector4',
-    defaultValue: options?.defaultValue,
-    label: options?.label,
-    required: options?.required,
-    visibleByDefault: options?.visibleByDefault,
   }
+
+  if (options?.defaultValue !== undefined) {
+    result.defaultValue = options.defaultValue
+  }
+
+  if (options?.required !== undefined) {
+    result.required = options.required
+  }
+
+  if (options?.visibleByDefault !== undefined) {
+    result.visibleByDefault = options.visibleByDefault
+  }
+
+  if (options?.label !== undefined) {
+    result.label = options.label
+  }
+
+  return result
 }
 
 export function jsxControl(options?: PropertyControlsOptions<unknown>): JSXControlDescription {
-  return {
+  let result: JSXControlDescription = {
     control: 'jsx',
-    defaultValue: options?.defaultValue,
-    label: options?.label,
-    required: options?.required,
-    visibleByDefault: options?.visibleByDefault,
   }
+  if (options?.defaultValue !== undefined) {
+    result.defaultValue = options.defaultValue
+  }
+
+  if (options?.required !== undefined) {
+    result.required = options.required
+  }
+
+  if (options?.visibleByDefault !== undefined) {
+    result.visibleByDefault = options.visibleByDefault
+  }
+
+  if (options?.label !== undefined) {
+    result.label = options.label
+  }
+
+  return result
 }
 
 export function arrayControl(
   propertyControl: RegularControlDescription,
   options?: PropertyControlsOptions<Vector2>,
 ): ArrayControlDescription {
-  return {
+  let result: ArrayControlDescription = {
     control: 'array',
     propertyControl: propertyControl,
-    defaultValue: options?.defaultValue,
-    label: options?.label,
-    required: options?.required,
-    visibleByDefault: options?.visibleByDefault,
   }
+
+  if (options?.defaultValue !== undefined) {
+    result.defaultValue = options.defaultValue
+  }
+
+  if (options?.required !== undefined) {
+    result.required = options.required
+  }
+
+  if (options?.visibleByDefault !== undefined) {
+    result.visibleByDefault = options.visibleByDefault
+  }
+
+  if (options?.label !== undefined) {
+    result.label = options.label
+  }
+
+  return result
 }
 
 export function fixedSizeArrayControl(
@@ -352,15 +567,28 @@ export function fixedSizeArrayControl(
   maxCount: number,
   options?: PropertyControlsOptions<Vector2>,
 ): ArrayControlDescription {
-  return {
+  let result: ArrayControlDescription = {
     control: 'array',
     propertyControl: propertyControl,
     maxCount: maxCount,
-    defaultValue: options?.defaultValue,
-    label: options?.label,
-    required: options?.required,
-    visibleByDefault: options?.visibleByDefault,
   }
+  if (options?.defaultValue !== undefined) {
+    result.defaultValue = options.defaultValue
+  }
+
+  if (options?.required !== undefined) {
+    result.required = options.required
+  }
+
+  if (options?.visibleByDefault !== undefined) {
+    result.visibleByDefault = options.visibleByDefault
+  }
+
+  if (options?.label !== undefined) {
+    result.label = options.label
+  }
+
+  return result
 }
 
 export function objectControl(
@@ -369,47 +597,110 @@ export function objectControl(
   },
   options?: PropertyControlsOptions<unknown>,
 ): ObjectControlDescription {
-  return {
+  let result: ObjectControlDescription = {
     control: 'object',
     object: object,
-    defaultValue: options?.defaultValue,
-    label: options?.label,
-    required: options?.required,
-    visibleByDefault: options?.visibleByDefault,
   }
+
+  if (options?.defaultValue !== undefined) {
+    result.defaultValue = options.defaultValue
+  }
+
+  if (options?.required !== undefined) {
+    result.required = options.required
+  }
+
+  if (options?.visibleByDefault !== undefined) {
+    result.visibleByDefault = options.visibleByDefault
+  }
+
+  if (options?.label !== undefined) {
+    result.label = options.label
+  }
+
+  return result
 }
 
 export function tupleControl(
   propertyControls: RegularControlDescription[],
   options?: PropertyControlsOptions<unknown>,
 ): TupleControlDescription {
-  return {
+  let result: TupleControlDescription = {
     control: 'tuple',
     propertyControls: propertyControls,
-    defaultValue: options?.defaultValue,
-    label: options?.label,
-    required: options?.required,
-    visibleByDefault: options?.visibleByDefault,
   }
+
+  if (options?.defaultValue !== undefined) {
+    result.defaultValue = options.defaultValue
+  }
+
+  if (options?.required !== undefined) {
+    result.required = options.required
+  }
+
+  if (options?.visibleByDefault !== undefined) {
+    result.visibleByDefault = options.visibleByDefault
+  }
+
+  if (options?.label !== undefined) {
+    result.label = options.label
+  }
+
+  return result
 }
 
 export function unionControl(
   controls: Array<RegularControlDescription>,
   options?: PropertyControlsOptions<unknown>,
 ): UnionControlDescription {
-  return {
+  let result: UnionControlDescription = {
     control: 'union',
     controls: controls,
-    defaultValue: options?.defaultValue,
-    label: options?.label,
-    required: options?.required,
-    visibleByDefault: options?.visibleByDefault,
   }
+
+  if (options?.defaultValue !== undefined) {
+    result.defaultValue = options.defaultValue
+  }
+
+  if (options?.required !== undefined) {
+    result.required = options.required
+  }
+
+  if (options?.visibleByDefault !== undefined) {
+    result.visibleByDefault = options.visibleByDefault
+  }
+
+  if (options?.label !== undefined) {
+    result.label = options.label
+  }
+
+  return result
 }
 
 export function folderControl(controls: PropertyControls): FolderControlDescription {
   return {
     control: 'folder',
     controls: controls,
+  }
+}
+
+function mutateControlWithOptions<T extends BaseControlDescription>(
+  control: T,
+  options: PropertyControlsOptions<T>,
+) {
+  if (options?.defaultValue !== undefined) {
+    control.defaultValue = options.defaultValue
+  }
+
+  if (options?.required !== undefined) {
+    control.required = options.required
+  }
+
+  if (options?.visibleByDefault !== undefined) {
+    control.visibleByDefault = options.visibleByDefault
+  }
+
+  if (options?.label !== undefined) {
+    control.label = options.label
   }
 }
