@@ -104,21 +104,7 @@ export function expressionPopupListControl(
     options: options,
   }
 
-  if (baseOptions?.defaultValue !== undefined) {
-    result.defaultValue = baseOptions.defaultValue
-  }
-
-  if (baseOptions?.required !== undefined) {
-    result.required = baseOptions.required
-  }
-
-  if (baseOptions?.visibleByDefault !== undefined) {
-    result.visibleByDefault = baseOptions.visibleByDefault
-  }
-
-  if (baseOptions?.label !== undefined) {
-    result.label = baseOptions.label
-  }
+  mutateControlWithOptions(result, baseOptions)
 
   return result
 }
@@ -129,21 +115,7 @@ export function eulerControl(
   let result: EulerControlDescription = {
     control: 'euler',
   }
-  if (options?.defaultValue !== undefined) {
-    result.defaultValue = options.defaultValue
-  }
-
-  if (options?.required !== undefined) {
-    result.required = options.required
-  }
-
-  if (options?.visibleByDefault !== undefined) {
-    result.visibleByDefault = options.visibleByDefault
-  }
-
-  if (options?.label !== undefined) {
-    result.label = options.label
-  }
+  mutateControlWithOptions(result, options)
 
   return result
 }
@@ -154,21 +126,7 @@ export function matrix3Control(
   let result: Matrix3ControlDescription = {
     control: 'matrix3',
   }
-  if (options?.defaultValue !== undefined) {
-    result.defaultValue = options.defaultValue
-  }
-
-  if (options?.required !== undefined) {
-    result.required = options.required
-  }
-
-  if (options?.visibleByDefault !== undefined) {
-    result.visibleByDefault = options.visibleByDefault
-  }
-
-  if (options?.label !== undefined) {
-    result.label = options.label
-  }
+  mutateControlWithOptions(result, options)
 
   return result
 }
@@ -180,51 +138,23 @@ export function matrix4Control(
     control: 'matrix4',
   }
 
-  if (options?.defaultValue !== undefined) {
-    result.defaultValue = options.defaultValue
-  }
-
-  if (options?.required !== undefined) {
-    result.required = options.required
-  }
-
-  if (options?.visibleByDefault !== undefined) {
-    result.visibleByDefault = options.visibleByDefault
-  }
-
-  if (options?.label !== undefined) {
-    result.label = options.label
-  }
+  mutateControlWithOptions(result, options)
 
   return result
 }
 
-export function noControl(options?: PropertyControlsOptions<number>): NoneControlDescription {
+export function noControl(options?: PropertyControlsOptions<unknown>): NoneControlDescription {
   let result: NoneControlDescription = {
     control: 'none',
   }
-  if (options?.defaultValue !== undefined) {
-    result.defaultValue = options.defaultValue
-  }
-
-  if (options?.required !== undefined) {
-    result.required = options.required
-  }
-
-  if (options?.visibleByDefault !== undefined) {
-    result.visibleByDefault = options.visibleByDefault
-  }
-
-  if (options?.label !== undefined) {
-    result.label = options.label
-  }
+  mutateControlWithOptions(result, options)
 
   return result
 }
 
 export function numberControl(
   unit?: string,
-  options?: PropertyControlsOptions<number>,
+  options?: PropertyControlsOptions<unknown>,
 ): NumberInputControlDescription {
   let result: NumberInputControlDescription = {
     control: 'number-input',
@@ -234,21 +164,7 @@ export function numberControl(
     result.unit = unit
   }
 
-  if (options?.defaultValue !== undefined) {
-    result.defaultValue = options.defaultValue
-  }
-
-  if (options?.required !== undefined) {
-    result.required = options.required
-  }
-
-  if (options?.visibleByDefault !== undefined) {
-    result.visibleByDefault = options.visibleByDefault
-  }
-
-  if (options?.label !== undefined) {
-    result.label = options.label
-  }
+  mutateControlWithOptions(result, options)
 
   return result
 }
@@ -262,21 +178,7 @@ export function popupListControl(
     options: options,
   }
 
-  if (baseOptions?.defaultValue !== undefined) {
-    result.defaultValue = baseOptions.defaultValue
-  }
-
-  if (baseOptions?.required !== undefined) {
-    result.required = baseOptions.required
-  }
-
-  if (baseOptions?.visibleByDefault !== undefined) {
-    result.visibleByDefault = baseOptions.visibleByDefault
-  }
-
-  if (baseOptions?.label !== undefined) {
-    result.label = baseOptions.label
-  }
+  mutateControlWithOptions(result, baseOptions)
 
   return result
 }
@@ -290,21 +192,7 @@ export function radioControl(
     options: options,
   }
 
-  if (baseOptions?.defaultValue !== undefined) {
-    result.defaultValue = baseOptions.defaultValue
-  }
-
-  if (baseOptions?.required !== undefined) {
-    result.required = baseOptions.required
-  }
-
-  if (baseOptions?.visibleByDefault !== undefined) {
-    result.visibleByDefault = baseOptions.visibleByDefault
-  }
-
-  if (baseOptions?.label !== undefined) {
-    result.label = baseOptions.label
-  }
+  mutateControlWithOptions(result, baseOptions)
 
   return result
 }
@@ -314,7 +202,7 @@ export function sliderControl(
   max: number,
   step: number,
   unit?: string,
-  options?: PropertyControlsOptions<number>,
+  options?: PropertyControlsOptions<unknown>,
 ): NumberInputControlDescription {
   let result: NumberInputControlDescription = {
     control: 'number-input',
@@ -327,28 +215,14 @@ export function sliderControl(
     result.unit = unit
   }
 
-  if (options?.defaultValue !== undefined) {
-    result.defaultValue = options.defaultValue
-  }
-
-  if (options?.required !== undefined) {
-    result.required = options.required
-  }
-
-  if (options?.visibleByDefault !== undefined) {
-    result.visibleByDefault = options.visibleByDefault
-  }
-
-  if (options?.label !== undefined) {
-    result.label = options.label
-  }
+  mutateControlWithOptions(result, options)
 
   return result
 }
 
 export function stringControl(
   placeholder?: string,
-  options?: PropertyControlsOptions<string>,
+  options?: PropertyControlsOptions<unknown>,
 ): StringInputControlDescription {
   let result: StringInputControlDescription = {
     control: 'string-input',
@@ -358,21 +232,7 @@ export function stringControl(
     result.placeholder = placeholder
   }
 
-  if (options?.defaultValue !== undefined) {
-    result.defaultValue = options.defaultValue
-  }
-
-  if (options?.required !== undefined) {
-    result.required = options.required
-  }
-
-  if (options?.visibleByDefault !== undefined) {
-    result.visibleByDefault = options.visibleByDefault
-  }
-
-  if (options?.label !== undefined) {
-    result.label = options.label
-  }
+  mutateControlWithOptions(result, options)
 
   return result
 }
@@ -389,21 +249,7 @@ export function htmlControl(
     result.placeholder = placeholder
   }
 
-  if (options?.defaultValue !== undefined) {
-    result.defaultValue = options.defaultValue
-  }
-
-  if (options?.required !== undefined) {
-    result.required = options.required
-  }
-
-  if (options?.visibleByDefault !== undefined) {
-    result.visibleByDefault = options.visibleByDefault
-  }
-
-  if (options?.label !== undefined) {
-    result.label = options.label
-  }
+  mutateControlWithOptions(result, options)
 
   return result
 }
@@ -414,21 +260,7 @@ export function styleControl(
   let result: StyleControlsControlDescription = {
     control: 'style-controls',
   }
-  if (options?.defaultValue !== undefined) {
-    result.defaultValue = options.defaultValue
-  }
-
-  if (options?.required !== undefined) {
-    result.required = options.required
-  }
-
-  if (options?.visibleByDefault !== undefined) {
-    result.visibleByDefault = options.visibleByDefault
-  }
-
-  if (options?.label !== undefined) {
-    result.label = options.label
-  }
+  mutateControlWithOptions(result, options)
 
   return result
 }
@@ -440,21 +272,7 @@ export function vector2Control(
     control: 'vector2',
   }
 
-  if (options?.defaultValue !== undefined) {
-    result.defaultValue = options.defaultValue
-  }
-
-  if (options?.required !== undefined) {
-    result.required = options.required
-  }
-
-  if (options?.visibleByDefault !== undefined) {
-    result.visibleByDefault = options.visibleByDefault
-  }
-
-  if (options?.label !== undefined) {
-    result.label = options.label
-  }
+  mutateControlWithOptions(result, options)
 
   return result
 }
@@ -466,21 +284,7 @@ export function vector3Control(
     control: 'vector3',
   }
 
-  if (options?.defaultValue !== undefined) {
-    result.defaultValue = options.defaultValue
-  }
-
-  if (options?.required !== undefined) {
-    result.required = options.required
-  }
-
-  if (options?.visibleByDefault !== undefined) {
-    result.visibleByDefault = options.visibleByDefault
-  }
-
-  if (options?.label !== undefined) {
-    result.label = options.label
-  }
+  mutateControlWithOptions(result, options)
 
   return result
 }
@@ -492,21 +296,7 @@ export function vector4Control(
     control: 'vector4',
   }
 
-  if (options?.defaultValue !== undefined) {
-    result.defaultValue = options.defaultValue
-  }
-
-  if (options?.required !== undefined) {
-    result.required = options.required
-  }
-
-  if (options?.visibleByDefault !== undefined) {
-    result.visibleByDefault = options.visibleByDefault
-  }
-
-  if (options?.label !== undefined) {
-    result.label = options.label
-  }
+  mutateControlWithOptions(result, options)
 
   return result
 }
@@ -515,49 +305,21 @@ export function jsxControl(options?: PropertyControlsOptions<unknown>): JSXContr
   let result: JSXControlDescription = {
     control: 'jsx',
   }
-  if (options?.defaultValue !== undefined) {
-    result.defaultValue = options.defaultValue
-  }
-
-  if (options?.required !== undefined) {
-    result.required = options.required
-  }
-
-  if (options?.visibleByDefault !== undefined) {
-    result.visibleByDefault = options.visibleByDefault
-  }
-
-  if (options?.label !== undefined) {
-    result.label = options.label
-  }
+  mutateControlWithOptions(result, options)
 
   return result
 }
 
 export function arrayControl(
   propertyControl: RegularControlDescription,
-  options?: PropertyControlsOptions<Vector2>,
+  options?: PropertyControlsOptions<unknown>,
 ): ArrayControlDescription {
   let result: ArrayControlDescription = {
     control: 'array',
     propertyControl: propertyControl,
   }
 
-  if (options?.defaultValue !== undefined) {
-    result.defaultValue = options.defaultValue
-  }
-
-  if (options?.required !== undefined) {
-    result.required = options.required
-  }
-
-  if (options?.visibleByDefault !== undefined) {
-    result.visibleByDefault = options.visibleByDefault
-  }
-
-  if (options?.label !== undefined) {
-    result.label = options.label
-  }
+  mutateControlWithOptions(result, options)
 
   return result
 }
@@ -565,28 +327,14 @@ export function arrayControl(
 export function fixedSizeArrayControl(
   propertyControl: RegularControlDescription,
   maxCount: number,
-  options?: PropertyControlsOptions<Vector2>,
+  options?: PropertyControlsOptions<unknown>,
 ): ArrayControlDescription {
   let result: ArrayControlDescription = {
     control: 'array',
     propertyControl: propertyControl,
     maxCount: maxCount,
   }
-  if (options?.defaultValue !== undefined) {
-    result.defaultValue = options.defaultValue
-  }
-
-  if (options?.required !== undefined) {
-    result.required = options.required
-  }
-
-  if (options?.visibleByDefault !== undefined) {
-    result.visibleByDefault = options.visibleByDefault
-  }
-
-  if (options?.label !== undefined) {
-    result.label = options.label
-  }
+  mutateControlWithOptions(result, options)
 
   return result
 }
@@ -602,21 +350,7 @@ export function objectControl(
     object: object,
   }
 
-  if (options?.defaultValue !== undefined) {
-    result.defaultValue = options.defaultValue
-  }
-
-  if (options?.required !== undefined) {
-    result.required = options.required
-  }
-
-  if (options?.visibleByDefault !== undefined) {
-    result.visibleByDefault = options.visibleByDefault
-  }
-
-  if (options?.label !== undefined) {
-    result.label = options.label
-  }
+  mutateControlWithOptions(result, options)
 
   return result
 }
@@ -630,21 +364,7 @@ export function tupleControl(
     propertyControls: propertyControls,
   }
 
-  if (options?.defaultValue !== undefined) {
-    result.defaultValue = options.defaultValue
-  }
-
-  if (options?.required !== undefined) {
-    result.required = options.required
-  }
-
-  if (options?.visibleByDefault !== undefined) {
-    result.visibleByDefault = options.visibleByDefault
-  }
-
-  if (options?.label !== undefined) {
-    result.label = options.label
-  }
+  mutateControlWithOptions(result, options)
 
   return result
 }
@@ -658,21 +378,7 @@ export function unionControl(
     controls: controls,
   }
 
-  if (options?.defaultValue !== undefined) {
-    result.defaultValue = options.defaultValue
-  }
-
-  if (options?.required !== undefined) {
-    result.required = options.required
-  }
-
-  if (options?.visibleByDefault !== undefined) {
-    result.visibleByDefault = options.visibleByDefault
-  }
-
-  if (options?.label !== undefined) {
-    result.label = options.label
-  }
+  mutateControlWithOptions(result, options)
 
   return result
 }
@@ -684,9 +390,9 @@ export function folderControl(controls: PropertyControls): FolderControlDescript
   }
 }
 
-function mutateControlWithOptions<T extends BaseControlDescription>(
-  control: T,
-  options: PropertyControlsOptions<T>,
+function mutateControlWithOptions<T, U extends PropertyControlsOptions<T>>(
+  control: U,
+  options?: PropertyControlsOptions<T>,
 ) {
   if (options?.defaultValue !== undefined) {
     control.defaultValue = options.defaultValue
