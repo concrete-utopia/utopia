@@ -206,28 +206,34 @@ export interface StyleControlsControlDescription {
   defaultValue?: unknown
 }
 
+export type Vector2 = [number, number]
+
 export interface Vector2ControlDescription {
   control: 'vector2'
   label?: string
   visibleByDefault?: boolean
   required?: boolean
-  defaultValue?: [number, number]
+  defaultValue?: Vector2
 }
+
+export type Vector3 = [number, number, number]
 
 export interface Vector3ControlDescription {
   control: 'vector3'
   label?: string
   visibleByDefault?: boolean
   required?: boolean
-  defaultValue?: [number, number, number]
+  defaultValue?: Vector3
 }
+
+export type Vector4 = [number, number, number, number]
 
 export interface Vector4ControlDescription {
   control: 'vector4'
   label?: string
   visibleByDefault?: boolean
   required?: boolean
-  defaultValue?: [number, number, number, number]
+  defaultValue?: Vector4
 }
 
 export interface JSXControlDescription {
@@ -258,6 +264,13 @@ export type BaseControlDescription =
   | Vector3ControlDescription
   | Vector4ControlDescription
   | JSXControlDescription
+
+export interface PropertyControlsOptions<T> {
+  label?: string
+  visibleByDefault?: boolean
+  required?: boolean
+  defaultValue?: T
+}
 
 // Higher Level Controls
 
