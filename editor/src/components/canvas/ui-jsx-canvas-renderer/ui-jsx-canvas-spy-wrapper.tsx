@@ -7,6 +7,7 @@ import type {
   JSXElementChild,
   JSXConditionalExpression,
   ConditionValue,
+  EarlyReturn,
 } from '../../../core/shared/element-template'
 import {
   emptyAttributeMetadata,
@@ -61,6 +62,7 @@ export function addFakeSpyEntry(
   filePath: string,
   imports: Imports,
   conditionValue: ConditionValue,
+  earlyReturn: EarlyReturn | null,
 ): void {
   // Ensure that entries are not created which aren't included in `validPaths`,
   // so that ghost like entries are not created.
@@ -93,6 +95,7 @@ export function addFakeSpyEntry(
       ),
       conditionValue: conditionValue,
       textContent: null,
+      earlyReturn: earlyReturn,
     }
     const elementPathString = EP.toComponentId(elementPath)
     metadataContext.current.spyValues.metadata[elementPathString] = instanceMetadata
@@ -148,6 +151,7 @@ export function buildSpyWrappedElement(
         : null,
       conditionValue: 'not-a-conditional',
       textContent: null,
+      earlyReturn: null,
     }
     if (!EP.isStoryboardPath(elementPath) || shouldIncludeCanvasRootInTheSpy) {
       const elementPathString = EP.toComponentId(elementPath)

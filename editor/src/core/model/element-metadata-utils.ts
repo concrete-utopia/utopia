@@ -2809,6 +2809,7 @@ export function createFakeMetadataForElement(
     null,
     'not-a-conditional',
     null,
+    null,
   )
 }
 
