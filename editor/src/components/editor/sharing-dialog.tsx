@@ -36,7 +36,11 @@ export const SharingDialog = React.memo(() => {
       const body = sharingIframeRef.current.contentWindow.document.body
 
       const width = Math.max(body.scrollWidth) + 20 // add horizontal padding which is getting chomped
-      const height = Math.max(body.scrollHeight) + TopBarHeight + 20 // add vertical padding
+
+      // add room for the radix dialog to fully open vertically without overflowing, it's a bit ugly because the dialog is
+      // taller than needed but it's the only workaround as long as we use an iframe
+      const radixDialogSpacing = 135
+      const height = Math.max(body.scrollHeight) + TopBarHeight + radixDialogSpacing
 
       setIframeWidth(width)
       setIframeHeight(height)
