@@ -140,7 +140,7 @@ export const SharingDialogContent = React.memo(
   }) => {
     return (
       <Flex direction='column' style={{ maxHeight: '75vh' }} gap='4'>
-        <Flex direction='column' gap='4' style={{ padding: asDialog ? 0 : '0 14px' }}>
+        <Flex direction='column' gap='4' style={{ padding: asDialog ? 0 : '1px 14px 0 14px' }}>
           {when(
             asDialog,
             <Flex justify='between' align='center' gap='2'>
