@@ -27,6 +27,7 @@ import {
   jsExpressionOtherJavaScript,
   isJSXElement,
   importedOrigin,
+  jsArbitraryStatement,
 } from '../shared/element-template'
 import { sampleImportsForTests } from './test-ui-js-file.test-utils'
 import { BakedInStoryboardUID } from './scene-utils'
@@ -489,6 +490,7 @@ describe('targetElementSupportsChildren', () => {
           null,
           {},
           emptyComments,
+          [jsArbitraryStatement('<div />', [])],
         ),
       ], // Whatever, close enough
     )
@@ -570,6 +572,7 @@ describe('targetElementSupportsChildren', () => {
                 null,
                 {},
                 emptyComments,
+                [jsArbitraryStatement('<div />', [])],
               ), // Whatever, close enough
             ],
           ),

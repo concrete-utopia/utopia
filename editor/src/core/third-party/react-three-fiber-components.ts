@@ -8,6 +8,7 @@ import {
 import type { JSXAttributes, JSXAttributesEntry } from '../shared/element-template'
 import {
   emptyComments,
+  jsArbitraryStatement,
   jsExpressionOtherJavaScript,
   jsxAttributesEntry,
   jsxElementWithoutUID,
@@ -28,6 +29,7 @@ function threeAttribute(key: string, fromThree: string): JSXAttributesEntry {
       null,
       {},
       emptyComments,
+      [jsArbitraryStatement(`THREE.${fromThree}`, [])],
     ),
     emptyComments,
   )

@@ -5,6 +5,7 @@ import { getJSXAttributesAtPath, setJSXValueAtPath } from './jsx-attribute-utils
 import type { JSXAttributes } from './element-template'
 import {
   emptyComments,
+  jsArbitraryStatement,
   jsExpressionNestedObject,
   jsExpressionOtherJavaScript,
   jsExpressionValue,
@@ -14,9 +15,7 @@ import {
   jsxPropertyAssignment,
   jsxSpreadAssignment,
 } from './element-template'
-import { NO_OP } from './utils'
 import { forEachLeft } from './either'
-import { emptyUiJsxCanvasContextData } from '../../components/canvas/ui-jsx-canvas'
 import { testRenderContext } from '../../utils/utils.test-utils'
 
 function sampleJsxAttributes(): JSXAttributes {
@@ -44,6 +43,7 @@ function sampleJsxAttributes(): JSXAttributes {
             null,
             {},
             emptyComments,
+            [jsArbitraryStatement('props.someShadow', [])],
           ),
           emptyComments,
           emptyComments,
@@ -112,6 +112,7 @@ function sampleJsxAttributes(): JSXAttributes {
       null,
       {},
       emptyComments,
+      [jsArbitraryStatement('props.hello', [])],
     ),
     objectValue: jsExpressionValue(
       {
@@ -132,6 +133,7 @@ function sampleJsxAttributes(): JSXAttributes {
       null,
       {},
       emptyComments,
+      [jsArbitraryStatement('true ? 10 : 5', [])],
     ),
     'data-uid': jsExpressionValue('aaa', emptyComments),
   })

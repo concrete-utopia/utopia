@@ -11,6 +11,7 @@ import {
   jsxFragment,
   jsxAttributesFromMap,
   emptyComments,
+  jsArbitraryStatement,
 } from '../shared/element-template'
 import { addImport, emptyImports, mergeImports } from '../workers/common/project-file-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from './scene-utils'
@@ -77,6 +78,7 @@ const mainComponentForTests = utopiaJSXComponent(
             null,
             {},
             emptyComments,
+            [jsArbitraryStatement(`props.style.left`, [])],
           ),
           top: jsExpressionOtherJavaScript(
             [],
@@ -87,6 +89,7 @@ const mainComponentForTests = utopiaJSXComponent(
             null,
             {},
             emptyComments,
+            [jsArbitraryStatement(`props.style.top`, [])],
           ),
           width: jsExpressionOtherJavaScript(
             [],
@@ -97,6 +100,7 @@ const mainComponentForTests = utopiaJSXComponent(
             null,
             {},
             emptyComments,
+            [jsArbitraryStatement(`props.style.width`, [])],
           ),
           height: jsExpressionOtherJavaScript(
             [],
@@ -107,6 +111,7 @@ const mainComponentForTests = utopiaJSXComponent(
             null,
             {},
             emptyComments,
+            [jsArbitraryStatement(`props.style.height`, [])],
           ),
         }),
         emptyComments,

@@ -53,6 +53,7 @@ import type {
   JSElementAccess,
   JSIdentifier,
   OptionallyChained,
+  JSArbitraryStatement,
 } from '../../shared/element-template'
 import {
   arbitraryJSBlock,
@@ -103,6 +104,7 @@ import {
   jsPropertyAccess,
   jsIdentifier,
   clearExpressionUniqueIDsAndSourceMaps,
+  jsArbitraryStatement,
 } from '../../shared/element-template'
 import { maybeToArray, forceNotNull } from '../../shared/optional-utils'
 import type {
@@ -142,6 +144,7 @@ import type { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
 import { emptySet } from '../../../core/shared/set-utils'
 import { getAllUniqueUidsFromAttributes } from '../../../core/model/get-unique-ids'
 import type { SteganographyMode } from './parser-printer'
+import { identifyValuesDefinedInNode } from './parser-printer-expressions'
 
 export function parseParams(
   params: TS.NodeArray<TS.ParameterDeclaration>,
@@ -871,6 +874,7 @@ function parseOtherJavaScript<E extends TS.Node, T extends { uid: string }>(
     parsedElementsWithin: ElementsWithinInPosition,
     otherJavaScriptType: OtherJavaScriptType,
     params: Array<Param>,
+    statements: Array<JSArbitraryStatement>,
   ) => Either<string, T | null>,
 ): Either<string, WithParserMetadata<T> | null> {
   if (expressionsAndTexts.length === 0) {
@@ -1310,6 +1314,15 @@ function parseOtherJavaScript<E extends TS.Node, T extends { uid: string }>(
     }
     expressionsText.push(trailingCode)
 
+    const statements = expressionsAndTexts.map((expressionAndText) => {
+      return jsArbitraryStatement(
+        expressionAndText.text.trim(),
+        expressionAndText.expression == null
+          ? []
+          : identifyValuesDefinedInNode(sourceFile, expressionAndText.expression),
+      )
+    })
+
     // Helpfully it appears that in JSX elements the start and end are
     // offset by 1, meaning that if we use them to get the text
     // the string is total nonsense.
@@ -1353,7 +1366,7 @@ function parseOtherJavaScript<E extends TS.Node, T extends { uid: string }>(
         buildHighlightBoundsForExpressionsAndText(sourceFile, expressionsAndTexts, created.uid),
       )
       return withParserMetadata(created, highlightBounds, propsUsed, definedElsewhere)
-    }, failOnNullResult(create(code, definedWithin, definedElsewhere, fileNode, parsedElementsWithin, otherJavaScriptType, paramsToUse)))
+    }, failOnNullResult(create(code, definedWithin, definedElsewhere, fileNode, parsedElementsWithin, otherJavaScriptType, paramsToUse, statements)))
   }
 }
 
@@ -1420,6 +1433,7 @@ export function parseJSExpressionMapOrOtherJavascript(
         parsedElementsWithin,
         isList,
         params,
+        statements,
       ) => {
         if (code === '') {
           return right(
@@ -1438,6 +1452,7 @@ export function parseJSExpressionMapOrOtherJavascript(
               alreadyExistingUIDs,
               existingHighlightBounds,
               imports,
+              statements,
             ),
           )
         } else {
@@ -1493,6 +1508,7 @@ export function parseJSExpressionMapOrOtherJavascript(
                 alreadyExistingUIDs,
                 existingHighlightBounds,
                 imports,
+                statements,
               )
             }, transpileEither)
           }, dataUIDFixed)
@@ -1557,6 +1573,7 @@ function createExpressionOtherJavaScript(
   alreadyExistingUIDs: Set<string>,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   imports: Imports,
+  statements: Array<JSArbitraryStatement>,
 ): JSExpressionMapOrOtherJavascript {
   // Ideally the value we hash is stable regardless of location, so exclude the SourceMap value from here and provide an empty UID.
   const value =
@@ -1581,6 +1598,7 @@ function createExpressionOtherJavaScript(
           null,
           elementsWithin,
           comments,
+          statements,
           '',
         )
 
@@ -1615,6 +1633,7 @@ function createExpressionOtherJavaScript(
         sourceMap,
         elementsWithin,
         comments,
+        statements,
         uid,
       )
 }
@@ -1836,6 +1855,7 @@ function createArbitraryJSBlock(
   sourceMap: RawSourceMap | null,
   elementsWithin: ElementsWithin,
   alreadyExistingUIDs: Set<string>,
+  statements: Array<JSArbitraryStatement>,
 ): ArbitraryJSBlock {
   const value = arbitraryJSBlock(
     params,
@@ -1845,6 +1865,7 @@ function createArbitraryJSBlock(
     definedElsewhere,
     null,
     elementsWithin,
+    statements,
     '',
   )
   const uid = generateUIDAndAddToExistingUIDs(sourceFile, value, alreadyExistingUIDs)
@@ -1856,6 +1877,7 @@ function createArbitraryJSBlock(
     definedElsewhere,
     sourceMap,
     elementsWithin,
+    statements,
     uid,
   )
 }
@@ -2286,6 +2308,7 @@ function getAttributeExpression(
         alreadyExistingUIDs,
         existingHighlightBounds,
         imports,
+        [],
       )
 
       return right(
@@ -3627,7 +3650,16 @@ export function parseArbitraryNodes(
     alreadyExistingUIDs,
     trailingCode,
     applySteganography,
-    (code, definedWithin, definedElsewhere, fileSourceNode, parsedElementsWithin, _, params) => {
+    (
+      code,
+      definedWithin,
+      definedElsewhere,
+      fileSourceNode,
+      parsedElementsWithin,
+      _,
+      params,
+      statements,
+    ) => {
       // No need to create an arbitrary block that basically contains no code.
       if (code.trim() === '') {
         return right(null)
@@ -3676,6 +3708,7 @@ export function parseArbitraryNodes(
             transpileResult.sourceMap,
             inPositionToElementsWithin(parsedElementsWithin),
             alreadyExistingUIDs,
+            statements,
           )
         },
         transpileEither,
@@ -3879,12 +3912,4 @@ export function extractPrefixedCode(node: TS.Node, sourceFile: TS.SourceFile): s
   const nodeFullText = node.getFullText(sourceFile) ?? ''
   const prefixedText = nodeFullText.slice(0, nodeFullText.lastIndexOf(nodeText))
   return prefixedText
-}
-
-function isNodeAMapExpression(node: TS.Node, sourceFile: TS.SourceFile): boolean {
-  if (!TS.isCallExpression(node) || !TS.isPropertyAccessExpression(node.expression)) {
-    return false
-  }
-  const funcNode = node.expression.getChildAt(2, sourceFile)
-  return funcNode?.getText(sourceFile) === 'map'
 }

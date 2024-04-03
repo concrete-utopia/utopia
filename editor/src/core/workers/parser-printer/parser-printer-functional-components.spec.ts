@@ -20,6 +20,7 @@ import {
   jsxAttributesFromMap,
   emptyComments,
   clearJSXElementChildUniqueIDs,
+  jsArbitraryStatement,
 } from '../../shared/element-template'
 import { printCode, printCodeOptions } from './parser-printer'
 import {
@@ -242,6 +243,7 @@ describe('Parsing a function component with props', () => {
           expect.objectContaining({}),
           {},
           emptyComments,
+          [jsArbitraryStatement('{thing: true}', [])],
         ),
       ),
     )
@@ -375,6 +377,7 @@ describe('Parsing a function component with props', () => {
           expect.objectContaining({}),
           {},
           emptyComments,
+          [jsArbitraryStatement('5', [])],
         ),
       ),
     )
@@ -475,6 +478,7 @@ describe('Parsing a function component with props', () => {
           expect.objectContaining({}),
           {},
           emptyComments,
+          [jsArbitraryStatement('5', [])],
         ),
       ),
     )
@@ -615,6 +619,7 @@ describe('Parsing a function component with props', () => {
           expect.objectContaining({}),
           {},
           emptyComments,
+          [jsArbitraryStatement('5', [])],
         ),
       ),
     )
@@ -771,6 +776,7 @@ describe('Parsing a function component with props', () => {
           expect.objectContaining({}),
           {},
           emptyComments,
+          [jsArbitraryStatement('{thing: true}', [])],
         ),
       ),
     )
@@ -795,6 +801,7 @@ describe('Parsing a function component with props', () => {
           expect.objectContaining({}),
           {},
           emptyComments,
+          [jsArbitraryStatement('5', [])],
         ),
       ),
     )

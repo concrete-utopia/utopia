@@ -19,6 +19,7 @@ import {
   jsxPropertyAssignment,
   jsxSpreadAssignment,
   utopiaJSXComponent,
+  jsArbitraryStatement,
 } from '../../../core/shared/element-template'
 import * as EP from '../../../core/shared/element-path'
 import { emptyImports } from '../../../core/workers/common/project-file-utils'
@@ -484,6 +485,7 @@ describe('JSXAttributeOtherJavaScriptKeepDeepEqualityCall', () => {
     uid: 'old',
     elementsWithin: {},
     comments: emptyComments,
+    statements: [jsArbitraryStatement('old', [])],
   }
   const newSameValue: JSExpressionOtherJavaScript = {
     type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
@@ -496,6 +498,7 @@ describe('JSXAttributeOtherJavaScriptKeepDeepEqualityCall', () => {
     uid: 'old',
     elementsWithin: {},
     comments: emptyComments,
+    statements: [jsArbitraryStatement('old', [])],
   }
   const newDifferentValue: JSExpressionOtherJavaScript = {
     type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
@@ -508,6 +511,7 @@ describe('JSXAttributeOtherJavaScriptKeepDeepEqualityCall', () => {
     uid: 'new',
     elementsWithin: {},
     comments: emptyComments,
+    statements: [jsArbitraryStatement('new', [])],
   }
 
   it('same reference returns the same reference', () => {

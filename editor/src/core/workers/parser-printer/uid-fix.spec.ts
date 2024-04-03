@@ -166,7 +166,7 @@ describe('fixParseSuccessUIDs', () => {
     expect(getUidTree(parsedFile)).toEqual(getUidTree(modifiedBaseFile))
     expect(getUidTree(parsedFile)).toMatchInlineSnapshot(`
       "4edsuffix
-        565
+        fd0
       434suffix
         112
       storyboardsuffix
@@ -221,7 +221,7 @@ describe('fixParseSuccessUIDs', () => {
     expect(getUidTree(newFile)).toEqual(getUidTree(baseFile))
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
       "4ed
-        565
+        fd0
       434
         112
       storyboard
@@ -248,7 +248,7 @@ describe('fixParseSuccessUIDs', () => {
     expect(getUidTree(newFileFixed)).toEqual(getUidTree(newFile))
     expect(getUidTree(newFileFixed)).toMatchInlineSnapshot(`
       "4ed
-        565
+        fd0
       e86
         c60
       434
@@ -277,7 +277,7 @@ describe('fixParseSuccessUIDs', () => {
     expect(getUidTree(fileWithFragmentUpdated)).toEqual(getUidTree(fileWithFragment))
     expect(getUidTree(fileWithFragmentUpdated)).toMatchInlineSnapshot(`
       "4ed
-        565
+        fd0
       292
         434
         112
@@ -298,7 +298,7 @@ describe('fixParseSuccessUIDs', () => {
     expect(getUidTree(newFile)).toEqual(getUidTree(baseFile))
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
       "4ed
-        565
+        fd0
       434
         112
       storyboard
@@ -317,7 +317,7 @@ describe('fixParseSuccessUIDs', () => {
     )
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
       "4ed
-        565
+        fd0
       434
         c60
         112
@@ -337,7 +337,7 @@ describe('fixParseSuccessUIDs', () => {
     )
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
       "4ed
-        565
+        fd0
       434
         112
         dda
@@ -365,7 +365,7 @@ describe('fixParseSuccessUIDs', () => {
     )
     expect(getUidTree(fourViews)).toMatchInlineSnapshot(`
       "4ed
-        565
+        fd0
       434
         a6c
         112
@@ -448,7 +448,7 @@ describe('fixParseSuccessUIDs', () => {
     )
     expect(getUidTree(beforeReOrder)).toMatchInlineSnapshot(`
       "4ed
-        565
+        fd0
       434
         c60
         112
@@ -458,7 +458,7 @@ describe('fixParseSuccessUIDs', () => {
     `)
     expect(getUidTree(afterReOrder)).toMatchInlineSnapshot(`
       "4ed
-        565
+        fd0
       434
         112
         c60
@@ -514,7 +514,7 @@ describe('fixParseSuccessUIDs', () => {
     )
     expect(getUidTree(firstResult)).toMatchInlineSnapshot(`
       "4ed
-        565
+        fd0
       434
         c85
           f9b
@@ -531,7 +531,7 @@ describe('fixParseSuccessUIDs', () => {
     )
     expect(getUidTree(secondResult)).toMatchInlineSnapshot(`
       "4ed
-        565
+        fd0
       434
         c85
           aab
@@ -663,6 +663,7 @@ describe('fixJSXElementChildUIDs', () => {
         'div-uid': before,
       },
       emptyComments,
+      [],
       'expression-uid',
     )
     const fixUIDsState: FixUIDsState = {
