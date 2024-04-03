@@ -10,8 +10,6 @@ import { AccessLevel, asAccessLevel, type ProjectSharingDetails } from '../types
 import { ensure, requireUser } from '../util/api.server'
 import { Status } from '../util/statusCodes'
 
-const IframeHeight = 450 // px
-
 export async function loader(args: LoaderFunctionArgs) {
   const projectId = args.params.id
   ensure(projectId != null, 'invalid project id', Status.BAD_REQUEST)
@@ -67,16 +65,13 @@ const SharingIframe = React.memo(() => {
 
   return (
     <ProjectsContext.Provider value={store}>
-      <div style={{ height: IframeHeight, width: IframeHeight, boxSizing: 'border-box' }}>
-        <SharingDialogContent
-          project={data.project}
-          accessLevel={accessLevel}
-          accessRequests={{ state: 'ready', requests: data.accessRequests }}
-          changeProjectAccessLevel={changeProjectAccessLevel}
-          asDialog={false}
-          fixedHeight={IframeHeight}
-        />
-      </div>
+      <SharingDialogContent
+        project={data.project}
+        accessLevel={accessLevel}
+        accessRequests={{ state: 'ready', requests: data.accessRequests }}
+        changeProjectAccessLevel={changeProjectAccessLevel}
+        asDialog={false}
+      />
     </ProjectsContext.Provider>
   )
 })

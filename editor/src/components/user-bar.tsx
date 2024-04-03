@@ -119,18 +119,37 @@ const SinglePlayerUserBar = React.memo(() => {
 })
 SinglePlayerUserBar.displayName = 'SinglePlayerUserBar'
 
+const BaseIframeWidth = 270
+const BaseIframeHeight = 100
+
 const MultiplayerUserBar = React.memo(() => {
   const dispatch = useDispatch()
 
   const [sharingDialog, setSharingDialog] = React.useState(false)
   const [sharingIframeLoaded, setSharingIframeLoaded] = React.useState(false)
 
+  const [iframeWidth, setIframeWidth] = React.useState(BaseIframeWidth)
+  const [iframeHeight, setIframeHeight] = React.useState(BaseIframeHeight)
+
+  const sharingIframeRef = React.useRef<HTMLIFrameElement | null>(null)
+
   const onSharingIframeLoaded = React.useCallback(() => {
     setSharingIframeLoaded(true)
+    if (sharingIframeRef.current != null && sharingIframeRef.current.contentWindow != null) {
+      const body = sharingIframeRef.current.contentWindow.document.body
+
+      const width = Math.max(body.scrollWidth) + 20
+      const height = Math.max(body.scrollHeight) - 100
+
+      setIframeWidth(width)
+      setIframeHeight(height)
+    }
   }, [])
 
   const handleClickShare = React.useCallback(() => {
     setSharingIframeLoaded(false)
+    setIframeWidth(BaseIframeWidth)
+    setIframeHeight(BaseIframeHeight)
     setSharingDialog((v) => !v)
   }, [])
 
@@ -305,10 +324,7 @@ const MultiplayerUserBar = React.memo(() => {
         onClick={handleClickShare}
         css={{
           background: colorTheme.primary30.value,
-          borderTopLeftRadius: sharingDialog ? 11 : 24,
-          borderTopRightRadius: sharingDialog ? 11 : 24,
-          borderBottomLeftRadius: sharingDialog ? 0 : 24,
-          borderBottomRightRadius: sharingDialog ? 0 : 24,
+          borderRadius: 24,
           height: 24,
           padding: 2,
           border: `1px solid ${colorTheme.transparent.value}`,
@@ -337,17 +353,15 @@ const MultiplayerUserBar = React.memo(() => {
         {when(
           sharingDialog,
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 450 }}
+            initial={{ opacity: 0, height: 0, width: 0 }}
+            animate={{ opacity: 1, height: iframeHeight, width: iframeWidth }}
             exit={{ opacity: 0, height: 0 }}
             onLoad={onSharingIframeLoaded}
             style={{
               background: colorTheme.bg0.value,
-              width: 450,
               border: `1px solid ${colorTheme.primary30.value}`,
               boxShadow: UtopiaStyles.shadowStyles.highest.boxShadow,
               borderRadius: 10,
-              borderTopRightRadius: 0,
               position: 'absolute',
               top: 38,
               right: 14,
@@ -379,14 +393,15 @@ const MultiplayerUserBar = React.memo(() => {
               </div>,
             )}
             <motion.iframe
+              ref={sharingIframeRef}
               style={{
                 background: colorTheme.bg0.value,
-                width: '100%',
-                height: '100%',
                 borderRadius: 10,
                 border: 'none',
                 opacity: sharingIframeLoaded ? 1 : 0,
-                transition: '0.25s',
+                boxSizing: 'border-box',
+                height: '100%',
+                width: '100%',
               }}
               src={`http://localhost:8000/iframe/project/${projectId}/sharing`}
             />

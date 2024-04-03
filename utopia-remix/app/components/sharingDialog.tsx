@@ -131,25 +131,16 @@ export const SharingDialogContent = React.memo(
     accessLevel,
     changeProjectAccessLevel,
     asDialog,
-    fixedHeight,
   }: {
     project: ProjectSharingDetails
     accessLevel: AccessLevel
     accessRequests: SharingProjectAccessRequests
     changeProjectAccessLevel: (newAccessLevel: AccessLevel) => void
     asDialog: boolean
-    fixedHeight?: number
   }) => {
     return (
-      <Flex
-        direction='column'
-        style={{ height: fixedHeight ?? 'auto', maxHeight: fixedHeight ?? '75vh' }}
-      >
-        <Flex
-          direction='column'
-          gap='4'
-          style={{ padding: asDialog ? '0 0 14px 0' : '0 14px 14px 10px' }}
-        >
+      <Flex direction='column' style={{ maxHeight: '75vh' }} gap='4'>
+        <Flex direction='column' gap='4' style={{ padding: asDialog ? 0 : '0 14px' }}>
           <Flex justify='between' align='center' gap='2'>
             <Flex align={'center'} gap='2'>
               {when(asDialog, <Text size='3'>Project Sharing</Text>)}
@@ -218,11 +209,10 @@ const AccessRequestsList = React.memo(
         <motion.div
           style={{
             flex: '1 1',
-            padding: asDialog ? '14px 0' : 14,
-            overflow: 'scroll',
+            padding: asDialog ? 0 : '0 14px',
           }}
         >
-          <Flex direction={'column'} gap='4'>
+          <Flex direction={'column'} gap='4' style={{}}>
             {when(hasGonePrivate, <HasGonePrivate />)}
 
             <OwnerCollaboratorRow />
