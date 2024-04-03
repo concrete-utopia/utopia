@@ -2167,19 +2167,16 @@ export interface RenderPropNavigatorEntry {
   type: 'RENDER_PROP'
   elementPath: ElementPath
   prop: string
-  propHasValue: boolean
 }
 
 export function renderPropNavigatorEntry(
   elementPath: ElementPath,
   prop: string,
-  propHasValue: boolean,
 ): RenderPropNavigatorEntry {
   return {
     type: 'RENDER_PROP',
     elementPath: elementPath,
     prop: prop,
-    propHasValue: propHasValue,
   }
 }
 

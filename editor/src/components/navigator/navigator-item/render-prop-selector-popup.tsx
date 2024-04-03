@@ -107,7 +107,12 @@ export const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, ta
   const projectContentsRef = useRefEditorState((state) => state.editor.projectContents)
 
   const onItemClick = React.useCallback(
-    (preferredChildToInsert: ElementToInsert) => {
+    (preferredChildToInsert: ElementToInsert, isSelectedVariant: boolean) => {
+      if (isSelectedVariant) {
+        hideRenderPropPicker()
+        return
+      }
+
       const uid = generateConsistentUID(
         'prop',
         new Set(getAllUniqueUids(projectContentsRef.current).uniqueIDs),
@@ -127,7 +132,7 @@ export const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, ta
         ),
       ])
     },
-    [dispatch, projectContentsRef, prop, target],
+    [dispatch, projectContentsRef, prop, target, hideRenderPropPicker],
   )
 
   const squashEvents = React.useCallback((e: React.MouseEvent<unknown>) => {

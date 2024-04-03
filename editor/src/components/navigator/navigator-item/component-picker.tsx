@@ -11,15 +11,6 @@ import { elementFromInsertMenuItem } from '../../editor/insert-callbacks'
 import { componentInfo, type ComponentInfo } from '../../custom-code/code-file'
 import { when } from '../../../utils/react-conditionals'
 
-export interface ComponentPickerProps {
-  insertionTargetName: string
-  currentElementName: string | null
-  preferredComponents: PreferredChildComponentDescriptor[]
-  allComponents: PreferredChildComponentDescriptor[]
-  onItemClick: (elementToInsert: ElementToInsert) => void
-  onClickCloseButton?: React.MouseEventHandler
-}
-
 export interface ElementToInsert {
   elementToInsert: (uid: string) => JSXElementChild
   additionalImports: Imports
@@ -35,6 +26,15 @@ export const componentPickerFilterInputTestId = `component-picker-filter-input`
 export function componentPickerOptionTestId(componentName: string, variant?: string): string {
   const variantSuffix = variant == null ? '' : `-${variant}`
   return `component-picker-option-${componentName}${variantSuffix}`
+}
+
+export interface ComponentPickerProps {
+  insertionTargetName: string
+  currentElementName: string | null
+  preferredComponents: PreferredChildComponentDescriptor[]
+  allComponents: PreferredChildComponentDescriptor[]
+  onItemClick: (elementToInsert: ElementToInsert, isSelectedVariant: boolean) => void
+  onClickCloseButton?: React.MouseEventHandler
 }
 
 export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
@@ -59,12 +59,15 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
       e.preventDefault()
 
       setSelectedVariant(variant)
-      onItemClick({
-        elementToInsert: (uid) => elementFromInsertMenuItem(variant.elementToInsert(), uid),
-        additionalImports: variant.importsToAdd,
-      })
+      onItemClick(
+        {
+          elementToInsert: (uid) => elementFromInsertMenuItem(variant.elementToInsert(), uid),
+          additionalImports: variant.importsToAdd,
+        },
+        selectedVariant === variant,
+      )
     },
-    [onItemClick],
+    [onItemClick, selectedVariant],
   )
 
   return (

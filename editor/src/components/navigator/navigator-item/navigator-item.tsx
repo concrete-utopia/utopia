@@ -400,6 +400,16 @@ const elementWarningsSelector = createCachedSelector(
 type CodeItemType = 'conditional' | 'map' | 'code' | 'none' | 'remix'
 export type RemixItemType = 'scene' | 'outlet' | 'link' | 'none'
 
+function renderPropPickerIdForNavigatorEntry(entry: NavigatorEntry): string {
+  switch (entry.type) {
+    case 'RENDER_PROP':
+    case 'SLOT':
+      return EP.toVarSafeComponentId(entry.elementPath)
+    default:
+      return 'NONSENSE'
+  }
+}
+
 export interface NavigatorItemInnerProps {
   navigatorEntry: NavigatorEntry
   index: number
@@ -431,11 +441,6 @@ export const NavigatorItem: React.FunctionComponent<
     getSelectedViewsInRange,
     index,
   } = props
-
-  // TODO Should be we using isHovered rather than isHighlighted for everything here?
-  const [isHovered, setIsHovered] = React.useState(false)
-  const setIsHoveredTrue = React.useCallback(() => setIsHovered(true), [])
-  const setIsHoveredFalse = React.useCallback(() => setIsHovered(false), [])
 
   const colorTheme = useColorTheme()
 
@@ -768,7 +773,7 @@ export const NavigatorItem: React.FunctionComponent<
     )
   }, [childComponentCount, isFocusedComponent, isConditional])
 
-  const renderPropPickerId = varSafeNavigatorEntryToKey(navigatorEntry)
+  const renderPropPickerId = renderPropPickerIdForNavigatorEntry(navigatorEntry)
   const { showRenderPropPicker: showContextMenu, hideRenderPropPicker: hideContextMenu } =
     useShowRenderPropPicker(renderPropPickerId)
 
@@ -795,11 +800,8 @@ export const NavigatorItem: React.FunctionComponent<
         }`,
         outlineOffset: props.parentOutline === 'solid' ? '-1px' : 0,
       }}
-      onMouseEnter={setIsHoveredTrue}
-      onMouseLeave={setIsHoveredFalse}
     >
-      {portalTarget != null &&
-      (navigatorEntry.type === 'SLOT' || navigatorEntry.type === 'RENDER_PROP')
+      {portalTarget != null && navigatorEntry.type === 'RENDER_PROP'
         ? ReactDOM.createPortal(
             <RenderPropPicker
               target={EP.parentPath(props.navigatorEntry.elementPath)}
@@ -847,47 +849,22 @@ export const NavigatorItem: React.FunctionComponent<
             Empty
           </div>
         ) : isRenderProp ? (
-          <FlexRow style={{ justifyContent: 'space-between', ...containerStyle }}>
-            <FlexRow>
-              <div
-                key={`label-${props.label}-slot`}
-                style={{
-                  width: 140,
-                  height: 19,
-                  fontWeight: 600,
-                  textTransform: 'uppercase',
-                  color: colorTheme.fg5.value,
-                  border: colorTheme.navigatorResizeHintBorder.value,
-                  marginLeft: 23,
-                  paddingTop: 6,
-                  overflow: 'hidden',
-                }}
-              >
-                {props.label}
-              </div>
-            </FlexRow>
-            <FlexRow
-              style={{
-                paddingTop: 6,
-                marginRight: 5,
-                position: 'fixed',
-                right: 0,
-                background: 'transparent',
-              }}
-            >
-              <Button
-                onClick={showContextMenu}
-                style={{
-                  height: 18,
-                  width: 18,
-                  display: isHovered ? 'block' : 'none',
-                  paddingRight: 1,
-                }}
-              >
-                <Icn type='picker' tooltipText='Set Prop' style={{ transform: 'scale(.85)' }} />
-              </Button>
-            </FlexRow>
-          </FlexRow>
+          <div
+            key={`label-${props.label}-slot`}
+            style={{
+              width: 140,
+              height: 19,
+              fontWeight: 600,
+              textTransform: 'uppercase',
+              color: colorTheme.fg5.value,
+              border: colorTheme.navigatorResizeHintBorder.value,
+              marginLeft: 23,
+              paddingTop: 6,
+              overflow: 'hidden',
+            }}
+          >
+            {props.label}
+          </div>
         ) : (
           <FlexRow style={{ justifyContent: 'space-between', ...containerStyle }}>
             <FlexRow>
