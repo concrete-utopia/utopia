@@ -2396,7 +2396,9 @@ export function arbitraryBlockRanToEnd(scope: MapLike<unknown>): ArbitraryBlockR
   }
 }
 
-export type ArbitraryBlockResult = EarlyReturnVoid | EarlyReturnResult | ArbitraryBlockRanToEnd
+export type EarlyReturn = EarlyReturnVoid | EarlyReturnResult
+
+export type ArbitraryBlockResult = EarlyReturn | ArbitraryBlockRanToEnd
 
 export interface ElementInstanceMetadata {
   elementPath: ElementPath
@@ -2413,6 +2415,7 @@ export interface ElementInstanceMetadata {
   importInfo: ImportInfo | null
   conditionValue: ConditionValue
   textContent: string | null
+  earlyReturn: EarlyReturn | null
 }
 
 export function elementInstanceMetadata(
@@ -2430,6 +2433,7 @@ export function elementInstanceMetadata(
   importInfo: ImportInfo | null,
   conditionValue: ConditionValue,
   textContent: string | null,
+  earlyReturn: EarlyReturnResult | EarlyReturnVoid | null,
 ): ElementInstanceMetadata {
   return {
     elementPath: elementPath,
@@ -2446,6 +2450,7 @@ export function elementInstanceMetadata(
     importInfo: importInfo,
     conditionValue: conditionValue,
     textContent: textContent,
+    earlyReturn: earlyReturn,
   }
 }
 

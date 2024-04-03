@@ -256,6 +256,7 @@ export function renderCoreElement(
           filePath,
           imports,
           'not-a-conditional',
+          null,
         )
       }
 
@@ -379,10 +380,19 @@ export function renderCoreElement(
           elementPath,
         )
 
-        addFakeSpyEntry(validPaths, metadataContext, elementPath, element, filePath, imports, {
-          active: activeConditionValue,
-          default: defaultConditionValue,
-        })
+        addFakeSpyEntry(
+          validPaths,
+          metadataContext,
+          elementPath,
+          element,
+          filePath,
+          imports,
+          {
+            active: activeConditionValue,
+            default: defaultConditionValue,
+          },
+          null,
+        )
       }
 
       const childPath = optionalMap(
@@ -455,6 +465,7 @@ export function renderCoreElement(
           filePath,
           imports,
           'not-a-conditional',
+          null,
         )
       }
 
