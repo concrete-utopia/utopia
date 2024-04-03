@@ -141,28 +141,28 @@ export const SharingDialogContent = React.memo(
     return (
       <Flex direction='column' style={{ maxHeight: '75vh' }} gap='4'>
         <Flex direction='column' gap='4' style={{ padding: asDialog ? 0 : '0 14px' }}>
-          <Flex justify='between' align='center' gap='2'>
-            <Flex align={'center'} gap='2'>
-              {when(asDialog, <Text size='3'>Project Sharing</Text>)}
-              <AnimatePresence>
-                {when(
-                  accessRequests.state === 'loading',
-                  <motion.div style={{ opacity: 0.1 }} exit={{ opacity: 0 }}>
-                    <Spinner className={sprinkles({ backgroundColor: 'black' })} />
-                  </motion.div>,
-                )}
-              </AnimatePresence>
-            </Flex>
-            {when(
-              asDialog,
+          {when(
+            asDialog,
+            <Flex justify='between' align='center' gap='2'>
+              <Flex align={'center'} gap='2'>
+                <Text size='3'>Project Sharing</Text>
+                <AnimatePresence>
+                  {when(
+                    accessRequests.state === 'loading',
+                    <motion.div style={{ opacity: 0.1 }} exit={{ opacity: 0 }}>
+                      <Spinner className={sprinkles({ backgroundColor: 'black' })} />
+                    </motion.div>,
+                  )}
+                </AnimatePresence>
+              </Flex>
               <Dialog.Close>
                 <IconButton variant='ghost' color='gray'>
                   <Cross2Icon width='18' height='18' />
                 </IconButton>
-              </Dialog.Close>,
-            )}
-          </Flex>
-          <Flex justify='between'>
+              </Dialog.Close>
+            </Flex>,
+          )}
+          <Flex justify='between' align='center' style={{ paddingTop: 4 }}>
             <Text size='1'>Project Visibility</Text>
             <VisibilityDropdown
               accessLevel={accessLevel}
@@ -174,7 +174,7 @@ export const SharingDialogContent = React.memo(
             <ProjectLink projectId={project.proj_id} />,
           )}
         </Flex>
-        <Separator size='4' />
+        {when(asDialog, <Separator size='4' />)}
         <AccessRequestsList
           projectId={project.proj_id}
           accessLevel={accessLevel}
