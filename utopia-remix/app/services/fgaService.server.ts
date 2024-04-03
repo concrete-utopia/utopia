@@ -122,6 +122,12 @@ export async function makeUserAdmin(projectId: string, userId: string) {
   })
 }
 
+export async function makeUserCreator(projectId: string, userId: string) {
+  return fgaClient.write({
+    writes: [{ user: `user:${userId}`, relation: 'creator', object: `project:${projectId}` }],
+  })
+}
+
 function generalRelation(projectId: string, relation: string) {
   return {
     user: 'user:*',
