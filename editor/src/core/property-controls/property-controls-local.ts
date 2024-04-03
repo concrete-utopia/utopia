@@ -45,9 +45,11 @@ import {
   applicative3Either,
   applicative4Either,
   applicative5Either,
+  defaultEither,
   foldEither,
   forEachRight,
   isLeft,
+  isRight,
   left,
   mapEither,
   right,
@@ -77,6 +79,7 @@ import type { ProjectContentTreeRoot } from '../../components/assets'
 import { isIntrinsicHTMLElement } from '../shared/element-template'
 import type { ErrorMessage } from '../shared/error-messages'
 import { errorMessage } from '../shared/error-messages'
+import { dropFileExtension } from '../shared/file-utils'
 
 async function parseInsertOption(
   insertOption: ComponentInsertOption,
@@ -101,6 +104,39 @@ async function parseInsertOption(
       importsToAdd: importsToAdd,
     }
   }, parsedParams)
+}
+
+const exportedNameSymbol = Symbol('__utopia__exportedName')
+const moduleNameSymbol = Symbol('__utopia__moduleName')
+
+export interface RequireInfo {
+  name: string
+  moduleName: string
+}
+
+export function getRequireInfoFromComponent(component: any): RequireInfo {
+  return {
+    name: component[exportedNameSymbol],
+    moduleName: component[moduleNameSymbol],
+  }
+}
+
+export function setRequireInfoOnComponent(exported: any, name: string, moduleName: string): void {
+  exported[exportedNameSymbol] = name
+  exported[moduleNameSymbol] = moduleName
+}
+
+function extendExportsWithInfo(exports: any, toImport: string): any {
+  Object.entries(exports).forEach(([name, exp]) => {
+    if (typeof exp === 'object' || typeof exp === 'function') {
+      try {
+        ;(exp as any)[exportedNameSymbol] = name
+        ;(exp as any)[moduleNameSymbol] = toImport
+        // eslint-disable-next-line no-empty
+      } catch (e) {}
+    }
+  })
+  return exports
 }
 
 export type ModuleEvaluator = (moduleName: string) => any
@@ -150,7 +186,7 @@ export function createModuleEvaluator(editor: EditorState): ModuleEvaluator {
         filePathResolveResult,
         null,
       )
-      return foldEither(
+      const result = foldEither(
         () => {
           // We did not find a ParseSuccess, fallback to standard require Fn
           return requireFn(importOrigin, toImport, false)
@@ -161,6 +197,8 @@ export function createModuleEvaluator(editor: EditorState): ModuleEvaluator {
         },
         resolvedParseSuccess,
       )
+      const absoluteFilenameOrPackage = defaultEither(toImport, filePathResolveResult)
+      return extendExportsWithInfo(result, absoluteFilenameOrPackage)
     }
     return createExecutionScope(
       moduleName,
@@ -187,6 +225,7 @@ export const isComponentDescriptorFile = (filename: string) =>
 type ComponentRegistrationValidationError =
   | { type: 'component-undefined'; registrationKey: string }
   | { type: 'component-name-does-not-match'; componentName: string; registrationKey: string }
+  | { type: 'module-name-does-not-match'; moduleName: string; moduleKey: string }
 
 function messageForComponentRegistrationValidationError(
   error: ComponentRegistrationValidationError,
@@ -194,6 +233,8 @@ function messageForComponentRegistrationValidationError(
   switch (error.type) {
     case 'component-name-does-not-match':
       return `Component name (${error.componentName}) does not match the registration key (${error.registrationKey})`
+    case 'module-name-does-not-match':
+      return `Module name (${error.moduleName}) does not match the module key (${error.moduleKey})`
     case 'component-undefined':
       return `Component registered for key '${error.registrationKey}' is undefined`
     default:
@@ -225,20 +266,49 @@ interface ComponentDescriptorRegistrationResult {
 
 function isComponentRegistrationValid(
   registrationKey: string,
+  moduleKey: string,
   registration: ComponentToRegister,
 ): ComponentRegistrationValidationResult {
-  if (typeof registration.component === 'undefined') {
+  const { component } = registration
+
+  if (typeof component === 'undefined') {
     return { type: 'component-undefined', registrationKey: registrationKey }
   }
 
-  if (
-    isComponentRendererComponent(registration.component) &&
-    registration.component.originalName !== registrationKey
-  ) {
+  // check validity of internal component
+  if (isComponentRendererComponent(component)) {
+    if (component.originalName !== registrationKey) {
+      return {
+        type: 'component-name-does-not-match',
+        registrationKey: registrationKey,
+        componentName: component.originalName ?? 'null',
+      }
+    }
+    const moduleName = dropFileExtension(component.filePath)
+    if (moduleName !== moduleKey) {
+      return {
+        type: 'module-name-does-not-match',
+        moduleKey: moduleKey,
+        moduleName: moduleName,
+      }
+    }
+    return { type: 'valid' }
+  }
+
+  // check validity of external component
+  const { name, moduleName } = getRequireInfoFromComponent(component)
+  if (name != null && name !== registrationKey) {
     return {
       type: 'component-name-does-not-match',
       registrationKey: registrationKey,
-      componentName: registration.component.originalName ?? 'null',
+      componentName: name,
+    }
+  }
+  if (moduleName != null && moduleName !== moduleKey) {
+    return {
+      type: 'module-name-does-not-match',
+      moduleKey: moduleKey,
+      moduleName: moduleName,
     }
   }
 
@@ -291,7 +361,11 @@ async function getComponentDescriptorPromisesFromParseResult(
       for await (const [componentName, componentToRegister] of Object.entries(
         parsedComponents.value,
       )) {
-        const validationResult = isComponentRegistrationValid(componentName, componentToRegister)
+        const validationResult = isComponentRegistrationValid(
+          componentName,
+          moduleName,
+          componentToRegister,
+        )
         if (validationResult.type !== 'valid') {
           errors.push({ type: 'registration-validation-failed', validationError: validationResult })
           continue

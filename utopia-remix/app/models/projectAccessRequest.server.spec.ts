@@ -2,15 +2,18 @@ import { prisma } from '../db.server'
 import {
   createTestProject,
   createTestProjectAccessRequest,
+  createTestProjectCollaborator,
   createTestUser,
   truncateTables,
 } from '../test-util'
-import { AccessRequestStatus } from '../types'
+import { AccessRequestStatus, UserProjectRole } from '../types'
 import {
   createAccessRequest,
+  destroyAccessRequest,
   listProjectAccessRequests,
   updateAccessRequestStatus,
 } from './projectAccessRequest.server'
+import * as permissionsService from '../services/permissionsService.server'
 
 describe('projectAccessRequest', () => {
   describe('createAccessRequest', () => {
@@ -78,6 +81,9 @@ describe('projectAccessRequest', () => {
   })
 
   describe('updateAccessRequestStatus', () => {
+    let revokeAllRolesFromUserMock: jest.SpyInstance
+    let grantProjectRoleToUserMock: jest.SpyInstance
+
     afterEach(async () => {
       await truncateTables([
         prisma.projectID,
@@ -86,6 +92,9 @@ describe('projectAccessRequest', () => {
         prisma.project,
         prisma.userDetails,
       ])
+
+      revokeAllRolesFromUserMock.mockRestore()
+      grantProjectRoleToUserMock.mockRestore()
     })
     beforeEach(async () => {
       await createTestUser(prisma, { id: 'bob' })
@@ -93,6 +102,9 @@ describe('projectAccessRequest', () => {
       await createTestUser(prisma, { id: 'that-guy' })
       await createTestProject(prisma, { id: 'one', ownerId: 'bob' })
       await createTestProject(prisma, { id: 'two', ownerId: 'alice' })
+
+      revokeAllRolesFromUserMock = jest.spyOn(permissionsService, 'revokeAllRolesFromUser')
+      grantProjectRoleToUserMock = jest.spyOn(permissionsService, 'grantProjectRoleToUser')
     })
     it('requires an existing project', async () => {
       const fn = async () =>
@@ -171,6 +183,39 @@ describe('projectAccessRequest', () => {
       const collabs = await prisma.projectCollaborator.findMany({ where: { project_id: 'one' } })
       expect(collabs.length).toBe(1)
       expect(collabs[0].user_id).toBe('alice')
+
+      expect(grantProjectRoleToUserMock).toHaveBeenCalledWith(
+        'one',
+        'alice',
+        UserProjectRole.VIEWER,
+      )
+      expect(revokeAllRolesFromUserMock).not.toHaveBeenCalled()
+    })
+    it('removes the user from the collaborators if rejected', async () => {
+      await createTestProjectCollaborator(prisma, { projectId: 'one', userId: 'alice' })
+      const existingCollabs = await prisma.projectCollaborator.findMany({
+        where: { project_id: 'one' },
+      })
+      expect(existingCollabs.length).toBe(1)
+
+      await createTestProjectAccessRequest(prisma, {
+        projectId: 'one',
+        userId: 'alice',
+        token: 'something',
+        status: AccessRequestStatus.PENDING,
+      })
+      await updateAccessRequestStatus({
+        projectId: 'one',
+        ownerId: 'bob',
+        token: 'something',
+        status: AccessRequestStatus.REJECTED,
+      })
+
+      const collabs = await prisma.projectCollaborator.findMany({ where: { project_id: 'one' } })
+      expect(collabs.length).toBe(0)
+
+      expect(grantProjectRoleToUserMock).not.toHaveBeenCalled()
+      expect(revokeAllRolesFromUserMock).toHaveBeenCalledWith('one', 'alice')
     })
   })
 
@@ -199,7 +244,7 @@ describe('projectAccessRequest', () => {
       await createTestProjectAccessRequest(prisma, {
         userId: 'p1',
         projectId: 'two',
-        status: AccessRequestStatus.APPROVED,
+        status: AccessRequestStatus.REJECTED,
         token: 'test1',
       })
       await createTestProjectAccessRequest(prisma, {
@@ -281,6 +326,101 @@ describe('projectAccessRequest', () => {
       expect(got[3].token).toBe('test4')
       expect(got[3].user_id).toBe('p4')
       expect(got[3].User?.name).toBe('person4')
+    })
+  })
+
+  describe('destroyAccessRequest', () => {
+    let revokeAllRolesFromUserMock: jest.SpyInstance
+
+    afterEach(async () => {
+      await truncateTables([
+        prisma.projectID,
+        prisma.projectAccessRequest,
+        prisma.projectCollaborator,
+        prisma.project,
+        prisma.userDetails,
+      ])
+
+      revokeAllRolesFromUserMock.mockRestore()
+    })
+
+    beforeEach(async () => {
+      await createTestUser(prisma, { id: 'bob' })
+      await createTestUser(prisma, { id: 'alice' })
+      await createTestUser(prisma, { id: 'carol' })
+      await createTestUser(prisma, { id: 'dorothy' })
+      await createTestProject(prisma, { id: 'one', ownerId: 'bob' })
+      await createTestProject(prisma, { id: 'two', ownerId: 'alice' })
+      await createTestProject(prisma, { id: 'three', ownerId: 'alice' })
+      await createTestProjectAccessRequest(prisma, {
+        projectId: 'two',
+        token: 'token1',
+        userId: 'carol',
+        status: AccessRequestStatus.PENDING,
+      })
+      await createTestProjectAccessRequest(prisma, {
+        projectId: 'three',
+        token: 'token2',
+        userId: 'dorothy',
+        status: AccessRequestStatus.PENDING,
+      })
+      await createTestProjectAccessRequest(prisma, {
+        projectId: 'two',
+        token: 'token3',
+        userId: 'bob',
+        status: AccessRequestStatus.PENDING,
+      })
+
+      revokeAllRolesFromUserMock = jest.spyOn(permissionsService, 'revokeAllRolesFromUser')
+    })
+    it('errors if the project is not found', async () => {
+      const fn = async () =>
+        destroyAccessRequest({ projectId: 'UNKNOWN', ownerId: 'bob', token: 'token1' })
+      await expect(fn).rejects.toThrow('Record to delete does not exist')
+    })
+    it('errors if the project is not owned by the user', async () => {
+      const fn = async () =>
+        destroyAccessRequest({ projectId: 'two', ownerId: 'bob', token: 'token1' })
+      await expect(fn).rejects.toThrow('Record to delete does not exist')
+    })
+    it('errors if the token is not found', async () => {
+      const fn = async () =>
+        destroyAccessRequest({ projectId: 'two', ownerId: 'alice', token: 'tokenWRONG' })
+      await expect(fn).rejects.toThrow('Record to delete does not exist')
+    })
+    it('errors if the token exists but not on that project', async () => {
+      const fn = async () =>
+        destroyAccessRequest({ projectId: 'two', ownerId: 'alice', token: 'token2' })
+      await expect(fn).rejects.toThrow('Record to delete does not exist')
+    })
+    it('deletes the request and revokes roles on FGA', async () => {
+      const existing = await prisma.projectAccessRequest.findMany({ where: { project_id: 'two' } })
+      expect(existing.length).toBe(2)
+      await destroyAccessRequest({ projectId: 'two', ownerId: 'alice', token: 'token1' })
+      const current = await prisma.projectAccessRequest.findMany({
+        where: { project_id: 'two' },
+      })
+      expect(current.length).toBe(1)
+      expect(current[0].user_id).toBe('bob')
+
+      expect(revokeAllRolesFromUserMock).toHaveBeenCalledWith('two', 'carol')
+    })
+    it('rolls back if the FGA revoking fails', async () => {
+      revokeAllRolesFromUserMock.mockImplementation(() => {
+        throw new Error('boom')
+      })
+
+      const existing = await prisma.projectAccessRequest.findMany({ where: { project_id: 'two' } })
+      expect(existing.length).toBe(2)
+
+      const fn = async () =>
+        await destroyAccessRequest({ projectId: 'two', ownerId: 'alice', token: 'token1' })
+      await expect(fn).rejects.toThrow('boom')
+
+      const current = await prisma.projectAccessRequest.findMany({
+        where: { project_id: 'two' },
+      })
+      expect(current.length).toBe(2)
     })
   })
 })

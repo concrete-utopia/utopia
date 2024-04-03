@@ -23,9 +23,6 @@ export const IS_TEST_ENVIRONMENT: boolean =
   IS_JEST_ENVIRONMENT ||
   (typeof window != 'undefined' && (window as any)?.KarmaTestEnvironment != null)
 
-export const IS_BROWSER_TEST_DEBUG: boolean =
-  IS_TEST_ENVIRONMENT && process.env.REACT_APP_BROWSER_TEST_DEBUG === 'true'
-
 export const DEVELOPMENT_ENV: boolean =
   !PRODUCTION_OR_STAGING_CONFIG && !IS_TEST_ENVIRONMENT && HOSTNAME === 'localhost'
 

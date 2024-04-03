@@ -450,6 +450,9 @@ describe('Identifiers as return statements', () => {
       Array [
         "hello",
         "utopiaCanvasJSXLookup",
+        "utopiaCanvasBlockRanToEnd",
+        "utopiaCanvasEarlyReturnResult",
+        "utopiaCanvasEarlyReturnVoid",
       ]
     `)
   })

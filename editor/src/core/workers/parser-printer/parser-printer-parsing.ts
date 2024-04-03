@@ -131,7 +131,12 @@ import type { ElementsWithinInPosition } from './parser-printer-utils'
 import { prependToSourceString, getBoundsOfNodes } from './parser-printer-utils'
 import Hash from 'object-hash'
 import { getComments, getLeadingComments, getTrailingComments } from './parser-printer-comments'
-import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../shared/dom-utils'
+import {
+  BLOCK_RAN_TO_END_FUNCTION_NAME,
+  EARLY_RETURN_RESULT_FUNCTION_NAME,
+  EARLY_RETURN_VOID_FUNCTION_NAME,
+  JSX_CANVAS_LOOKUP_FUNCTION_NAME,
+} from '../../shared/dom-utils'
 import { isEmptyString } from '../../shared/string-utils'
 import type { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
 import { emptySet } from '../../../core/shared/set-utils'
@@ -836,6 +841,16 @@ function getOtherJavaScriptType(
   return defaultOtherJavaScript
 }
 
+function failOnNullResult<T>(result: Either<string, T | null>): Either<string, T> {
+  return flatMapEither((r) => {
+    if (r == null) {
+      return left('Unexpected null result.')
+    } else {
+      return right(r)
+    }
+  }, result)
+}
+
 function parseOtherJavaScript<E extends TS.Node, T extends { uid: string }>(
   sourceFile: TS.SourceFile,
   sourceText: string,
@@ -856,8 +871,8 @@ function parseOtherJavaScript<E extends TS.Node, T extends { uid: string }>(
     parsedElementsWithin: ElementsWithinInPosition,
     otherJavaScriptType: OtherJavaScriptType,
     params: Array<Param>,
-  ) => Either<string, T>,
-): Either<string, WithParserMetadata<T>> {
+  ) => Either<string, T | null>,
+): Either<string, WithParserMetadata<T> | null> {
   if (expressionsAndTexts.length === 0) {
     throw new Error('Unable to deal with a collection of zero expressions.')
   } else {
@@ -1338,7 +1353,7 @@ function parseOtherJavaScript<E extends TS.Node, T extends { uid: string }>(
         buildHighlightBoundsForExpressionsAndText(sourceFile, expressionsAndTexts, created.uid),
       )
       return withParserMetadata(created, highlightBounds, propsUsed, definedElsewhere)
-    }, create(code, definedWithin, definedElsewhere, fileNode, parsedElementsWithin, otherJavaScriptType, paramsToUse))
+    }, failOnNullResult(create(code, definedWithin, definedElsewhere, fileNode, parsedElementsWithin, otherJavaScriptType, paramsToUse)))
   }
 }
 
@@ -1384,105 +1399,106 @@ export function parseJSExpressionMapOrOtherJavascript(
     [...commentsOnExpression.trailingComments, ...commentsOnLastToken],
   )
 
-  return parseOtherJavaScript(
-    sourceFile,
-    sourceText,
-    filename,
-    [expressionAndText],
-    imports,
-    topLevelNames,
-    propsObjectName,
-    existingHighlightBounds,
-    alreadyExistingUIDs,
-    '',
-    applySteganography,
-    (
-      code,
-      _definedWithin,
-      definedElsewhere,
-      fileSourceNode,
-      parsedElementsWithin,
-      isList,
-      params,
-    ) => {
-      if (code === '') {
-        return right(
-          createExpressionOtherJavaScript(
-            sourceFile,
-            jsxExpression,
-            params,
-            expressionFullText,
-            expressionFullText,
-            'return undefined',
-            definedElsewhere,
-            null,
-            inPositionToElementsWithin(parsedElementsWithin),
-            isList,
-            comments,
-            alreadyExistingUIDs,
-            existingHighlightBounds,
-            imports,
-          ),
-        )
-      } else {
-        const { map } = fileSourceNode.toStringWithSourceMap({ file: filename })
-        const rawMap = JSON.parse(map.toString())
-
-        const dataUIDFixed = insertDataUIDsIntoCode(
-          filename,
-          sourceText,
-          expressionFullText,
-          rawMap,
-          parsedElementsWithin,
-          true,
-          false,
-          sourceFile.fileName,
-        )
-        return flatMapEither((dataUIDFixResult) => {
-          const transpileEither = wrapAndTranspileJavascript(
-            sourceFile.fileName,
-            sourceFile.text,
-            dataUIDFixResult.code,
-            dataUIDFixResult.sourceMap,
-            parsedElementsWithin,
-            applySteganography,
-          )
-
-          return mapEither((transpileResult) => {
-            const returnPrepended = prependToSourceString(
-              sourceFile.fileName,
-              sourceFile.text,
-              transpileResult.code,
-              transpileResult.sourceMap,
-              RETURN_TO_PREPEND,
-              '',
-            )
-            // Sneak the function in here if something needs to use it to display
-            // the element on the canvas.
-            let innerDefinedElsewhere = definedElsewhere
-            if (Object.keys(parsedElementsWithin).length > 0) {
-              innerDefinedElsewhere = [...innerDefinedElsewhere, JSX_CANVAS_LOOKUP_FUNCTION_NAME]
-            }
-            return createExpressionOtherJavaScript(
+  return failOnNullResult(
+    parseOtherJavaScript(
+      sourceFile,
+      sourceText,
+      filename,
+      [expressionAndText],
+      imports,
+      topLevelNames,
+      propsObjectName,
+      existingHighlightBounds,
+      alreadyExistingUIDs,
+      '',
+      applySteganography,
+      (
+        code,
+        _definedWithin,
+        definedElsewhere,
+        fileSourceNode,
+        parsedElementsWithin,
+        isList,
+        params,
+      ) => {
+        if (code === '') {
+          return right(
+            createExpressionOtherJavaScript(
               sourceFile,
               jsxExpression,
               params,
               expressionFullText,
-              dataUIDFixResult.code,
-              returnPrepended.code,
-              innerDefinedElsewhere,
-              returnPrepended.sourceMap,
+              expressionFullText,
+              'return undefined',
+              definedElsewhere,
+              null,
               inPositionToElementsWithin(parsedElementsWithin),
               isList,
               comments,
               alreadyExistingUIDs,
               existingHighlightBounds,
               imports,
+            ),
+          )
+        } else {
+          const { map } = fileSourceNode.toStringWithSourceMap({ file: filename })
+          const rawMap = map.toJSON()
+
+          const dataUIDFixed = insertDataUIDsIntoCode(
+            filename,
+            sourceText,
+            expressionFullText,
+            rawMap,
+            parsedElementsWithin,
+            false,
+            sourceFile.fileName,
+          )
+          return flatMapEither((dataUIDFixResult) => {
+            const transpileEither = wrapAndTranspileJavascript(
+              sourceFile.fileName,
+              sourceFile.text,
+              dataUIDFixResult.code,
+              dataUIDFixResult.sourceMap,
+              parsedElementsWithin,
+              applySteganography,
             )
-          }, transpileEither)
-        }, dataUIDFixed)
-      }
-    },
+
+            return mapEither((transpileResult) => {
+              const returnPrepended = prependToSourceString(
+                sourceFile.fileName,
+                sourceFile.text,
+                transpileResult.code,
+                transpileResult.sourceMap,
+                RETURN_TO_PREPEND,
+                '',
+              )
+              // Sneak the function in here if something needs to use it to display
+              // the element on the canvas.
+              let innerDefinedElsewhere = definedElsewhere
+              if (Object.keys(parsedElementsWithin).length > 0) {
+                innerDefinedElsewhere = [...innerDefinedElsewhere, JSX_CANVAS_LOOKUP_FUNCTION_NAME]
+              }
+              return createExpressionOtherJavaScript(
+                sourceFile,
+                jsxExpression,
+                params,
+                expressionFullText,
+                dataUIDFixResult.code,
+                returnPrepended.code,
+                innerDefinedElsewhere,
+                returnPrepended.sourceMap,
+                inPositionToElementsWithin(parsedElementsWithin),
+                isList,
+                comments,
+                alreadyExistingUIDs,
+                existingHighlightBounds,
+                imports,
+              )
+            }, transpileEither)
+          }, dataUIDFixed)
+        }
+      },
+    ),
   )
 }
 
@@ -2229,7 +2245,7 @@ function getAttributeExpression(
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
   applySteganography: SteganographyMode,
-): Either<string, WithParserMetadata<JSExpression>> {
+): Either<string, WithParserMetadata<JSExpression> | null> {
   if (TS.isStringLiteral(initializer)) {
     const comments = getComments(sourceText, initializer)
     return right(
@@ -2381,6 +2397,9 @@ function parseElementProps(
       if (isLeft(attributeResult)) {
         return attributeResult
       } else {
+        if (attributeResult.value == null) {
+          return left('Null returned.')
+        }
         result.push(jsxAttributesSpread(attributeResult.value.value, propComments))
         highlightBounds = mergeHighlightBounds(
           highlightBounds,
@@ -2420,19 +2439,21 @@ function parseElementProps(
         if (isLeft(attributeResult)) {
           return attributeResult
         } else {
-          result.push(
-            jsxAttributesEntry(
-              prop.name.getText(sourceFile),
-              attributeResult.value.value,
-              propComments,
-            ),
-          )
-          highlightBounds = mergeHighlightBounds(
-            highlightBounds,
-            attributeResult.value.highlightBounds,
-          )
-          propsUsed.push(...attributeResult.value.propsUsed)
-          definedElsewhere.push(...attributeResult.value.definedElsewhere)
+          if (attributeResult.value != null) {
+            result.push(
+              jsxAttributesEntry(
+                prop.name.getText(sourceFile),
+                attributeResult.value.value,
+                propComments,
+              ),
+            )
+            highlightBounds = mergeHighlightBounds(
+              highlightBounds,
+              attributeResult.value.highlightBounds,
+            )
+            propsUsed.push(...attributeResult.value.propsUsed)
+            definedElsewhere.push(...attributeResult.value.definedElsewhere)
+          }
         }
       }
     } else {
@@ -3585,7 +3606,7 @@ export function parseArbitraryNodes(
   trailingCode: string,
   useFullText: boolean,
   applySteganography: SteganographyMode,
-): Either<string, WithParserMetadata<ArbitraryJSBlock>> {
+): Either<string, WithParserMetadata<ArbitraryJSBlock> | null> {
   const expressionsAndTexts = arbitraryNodes.map((node) => {
     return createExpressionAndText(
       node,
@@ -3607,11 +3628,13 @@ export function parseArbitraryNodes(
     trailingCode,
     applySteganography,
     (code, definedWithin, definedElsewhere, fileSourceNode, parsedElementsWithin, _, params) => {
-      const definedWithinFields = definedWithin.map((within) => `${within}: ${within}`).join(', ')
-      const definedWithCode = `return { ${definedWithinFields} };`
+      // No need to create an arbitrary block that basically contains no code.
+      if (code.trim() === '') {
+        return right(null)
+      }
 
       const { map } = fileSourceNode.toStringWithSourceMap({ file: filename })
-      const rawMap = JSON.parse(map.toString())
+      const rawMap = map.toJSON()
 
       const transpileEither = transpileJavascript(
         sourceFile.fileName,
@@ -3630,13 +3653,12 @@ export function parseArbitraryNodes(
         code,
         rawMap,
         parsedElementsWithin,
-        false,
         rootLevel,
         sourceFile.fileName,
       )
       return applicative2Either(
         (transpileResult, dataUIDFixResult) => {
-          const transpiled = `${transpileResult.code}\n${definedWithCode}`
+          const transpiled = `return ${transpileResult.code}`
           // FIXME Pass in the dataUIDFixResult below
           return createArbitraryJSBlock(
             sourceFile,
@@ -3644,7 +3666,13 @@ export function parseArbitraryNodes(
             code,
             transpiled,
             definedWithin,
-            [...definedElsewhere, JSX_CANVAS_LOOKUP_FUNCTION_NAME],
+            [
+              ...definedElsewhere,
+              JSX_CANVAS_LOOKUP_FUNCTION_NAME,
+              BLOCK_RAN_TO_END_FUNCTION_NAME,
+              EARLY_RETURN_RESULT_FUNCTION_NAME,
+              EARLY_RETURN_VOID_FUNCTION_NAME,
+            ],
             transpileResult.sourceMap,
             inPositionToElementsWithin(parsedElementsWithin),
             alreadyExistingUIDs,
@@ -3718,7 +3746,7 @@ export function parseOutFunctionContents(
         nodeArrayToArray(arrowFunctionBody.statements),
       )
       const possibleElement = arrowFunctionBody.statements[arrowFunctionBody.statements.length - 1]!
-      let jsBlock: ArbitraryJSBlock
+      let jsBlock: ArbitraryJSBlock | null
       let propsUsed: Array<string> = []
       let definedElsewhere: Array<string> = []
 
@@ -3746,27 +3774,20 @@ export function parseOutFunctionContents(
         if (isLeft(parseResult)) {
           return parseResult
         } else {
-          highlightBounds = mergeHighlightBounds(highlightBounds, parseResult.value.highlightBounds)
-          jsBlock = parseResult.value.value
-          propsUsed = parseResult.value.propsUsed
-          definedElsewhere = parseResult.value.definedElsewhere
+          if (parseResult.value == null) {
+            jsBlock = null
+          } else {
+            highlightBounds = mergeHighlightBounds(
+              highlightBounds,
+              parseResult.value.highlightBounds,
+            )
+            jsBlock = parseResult.value.value
+            propsUsed = parseResult.value.propsUsed
+            definedElsewhere = parseResult.value.definedElsewhere
+          }
         }
       } else {
-        jsBlock = createArbitraryJSBlock(
-          sourceFile,
-          [],
-          returnStatementPrefixCode, // FIXME we need to inject data-uids using insertDataUIDsIntoCode
-          returnStatementPrefixCode,
-          [],
-          [],
-          null,
-          {},
-          alreadyExistingUIDs,
-        )
-        highlightBounds = addToHighlightBounds(
-          highlightBounds,
-          buildHighlightBounds(sourceFile, possibleElement, jsBlock.uid),
-        )
+        jsBlock = null
       }
 
       let declared: Array<string> = [...topLevelNames]

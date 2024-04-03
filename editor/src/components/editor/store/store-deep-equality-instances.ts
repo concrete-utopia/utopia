@@ -136,6 +136,8 @@ import type {
   JSPropertyAccess,
   JSElementAccess,
   OptionallyChained,
+  EarlyReturnResult,
+  EarlyReturnVoid,
 } from '../../../core/shared/element-template'
 import {
   elementInstanceMetadata,
@@ -202,6 +204,7 @@ import {
   isJSIdentifier,
   isJSPropertyAccess,
   isJSElementAccess,
+  earlyReturnResult,
 } from '../../../core/shared/element-template'
 import type {
   CanvasRectangle,
@@ -246,6 +249,7 @@ import {
   unionDeepEquality,
   combine14EqualityCalls,
   combine11EqualityCalls,
+  combine15EqualityCalls,
 } from '../../../utils/deep-equality'
 import {
   ElementPathArrayKeepDeepEquality,
@@ -1941,8 +1945,39 @@ const ConditionValueKeepDeepEquality: KeepDeepEqualityCall<ConditionValue> = uni
   (p): p is ActiveAndDefaultConditionValues => p !== 'not-a-conditional',
 )
 
+export const EarlyReturnResultKeepDeepEquality: KeepDeepEqualityCall<EarlyReturnResult> =
+  combine1EqualityCall(
+    (earlyReturn) => earlyReturn.result,
+    createCallWithTripleEquals<unknown>(),
+    earlyReturnResult,
+  )
+
+export const EarlyReturnVoidKeepDeepEquality: KeepDeepEqualityCall<EarlyReturnVoid> =
+  createCallWithShallowEquals()
+
+export const EarlyReturnKeepDeepEquality: KeepDeepEqualityCall<
+  EarlyReturnResult | EarlyReturnVoid
+> = (oldValue, newValue) => {
+  switch (oldValue.type) {
+    case 'EARLY_RETURN_RESULT':
+      if (newValue.type === oldValue.type) {
+        return EarlyReturnResultKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'EARLY_RETURN_VOID':
+      if (newValue.type === oldValue.type) {
+        return EarlyReturnVoidKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    default:
+      const _exhaustiveCheck: never = oldValue
+      throw new Error(`Unhandled type ${JSON.stringify(oldValue)}`)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
 export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<ElementInstanceMetadata> =
-  combine14EqualityCalls(
+  combine15EqualityCalls(
     (metadata) => metadata.elementPath,
     ElementPathKeepDeepEquality,
     (metadata) => metadata.element,
@@ -1971,6 +2006,8 @@ export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<Eleme
     ConditionValueKeepDeepEquality,
     (metadata) => metadata.textContent,
     nullableDeepEquality(StringKeepDeepEquality),
+    (metadata) => metadata.earlyReturn,
+    nullableDeepEquality(EarlyReturnKeepDeepEquality),
     elementInstanceMetadata,
   )
 

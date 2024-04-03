@@ -2362,6 +2362,44 @@ export function createNotImported(path: string, variableName: string): ImportInf
 export type ActiveAndDefaultConditionValues = { active: boolean; default: boolean }
 export type ConditionValue = ActiveAndDefaultConditionValues | 'not-a-conditional'
 
+export interface EarlyReturnVoid {
+  type: 'EARLY_RETURN_VOID'
+}
+
+export function earlyReturnVoid(): EarlyReturnVoid {
+  return {
+    type: 'EARLY_RETURN_VOID',
+  }
+}
+
+export interface EarlyReturnResult {
+  type: 'EARLY_RETURN_RESULT'
+  result: unknown
+}
+
+export function earlyReturnResult(result: unknown): EarlyReturnResult {
+  return {
+    type: 'EARLY_RETURN_RESULT',
+    result: result,
+  }
+}
+
+export interface ArbitraryBlockRanToEnd {
+  type: 'ARBITRARY_BLOCK_RAN_TO_END'
+  scope: MapLike<unknown>
+}
+
+export function arbitraryBlockRanToEnd(scope: MapLike<unknown>): ArbitraryBlockRanToEnd {
+  return {
+    type: 'ARBITRARY_BLOCK_RAN_TO_END',
+    scope: scope,
+  }
+}
+
+export type EarlyReturn = EarlyReturnVoid | EarlyReturnResult
+
+export type ArbitraryBlockResult = EarlyReturn | ArbitraryBlockRanToEnd
+
 export interface ElementInstanceMetadata {
   elementPath: ElementPath
   element: Either<string, JSXElementChild>
@@ -2377,6 +2415,7 @@ export interface ElementInstanceMetadata {
   importInfo: ImportInfo | null
   conditionValue: ConditionValue
   textContent: string | null
+  earlyReturn: EarlyReturn | null
 }
 
 export function elementInstanceMetadata(
@@ -2394,6 +2433,7 @@ export function elementInstanceMetadata(
   importInfo: ImportInfo | null,
   conditionValue: ConditionValue,
   textContent: string | null,
+  earlyReturn: EarlyReturnResult | EarlyReturnVoid | null,
 ): ElementInstanceMetadata {
   return {
     elementPath: elementPath,
@@ -2410,6 +2450,7 @@ export function elementInstanceMetadata(
     importInfo: importInfo,
     conditionValue: conditionValue,
     textContent: textContent,
+    earlyReturn: earlyReturn,
   }
 }
 
