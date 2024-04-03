@@ -4811,6 +4811,11 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.collaborators,
   )
 
+  const sharingDialogOpenResults = BooleanKeepDeepEquality(
+    oldValue.sharingDialogOpen,
+    newValue.sharingDialogOpen,
+  )
+
   const areEqual =
     idResult.areEqual &&
     forkedFromProjectIdResult.areEqual &&
@@ -4891,7 +4896,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     activeFramesResults.areEqual &&
     commentFilterModeResults.areEqual &&
     forkingResults.areEqual &&
-    collaboratorsResults.areEqual
+    collaboratorsResults.areEqual &&
+    sharingDialogOpenResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -4978,6 +4984,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       commentFilterModeResults.value,
       forkingResults.value,
       collaboratorsResults.value,
+      sharingDialogOpenResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

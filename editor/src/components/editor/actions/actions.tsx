@@ -331,6 +331,7 @@ import type {
   InsertAttributeOtherJavascriptIntoElement,
   SetCollaborators,
   ExtractPropertyControlsFromDescriptorFiles,
+  SetSharingDialogOpen,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -943,6 +944,7 @@ export function restoreEditorState(
     commentFilterMode: currentEditor.commentFilterMode,
     forking: currentEditor.forking,
     collaborators: currentEditor.collaborators,
+    sharingDialogOpen: currentEditor.sharingDialogOpen,
   }
 }
 
@@ -5704,6 +5706,12 @@ export const UPDATE_FNS = {
       evaluator,
     )
     return state
+  },
+  SET_SHARING_DIALOG_OPEN: (action: SetSharingDialogOpen, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      sharingDialogOpen: action.open,
+    }
   },
 }
 
