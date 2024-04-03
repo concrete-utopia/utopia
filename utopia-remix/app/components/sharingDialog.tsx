@@ -139,29 +139,29 @@ export const SharingDialogContent = React.memo(
     asDialog: boolean
   }) => {
     return (
-      <Flex direction='column' style={{ maxHeight: '75vh' }} gap='4'>
-        <Flex direction='column' gap='4' style={{ padding: asDialog ? 0 : '1px 14px 0 14px' }}>
-          {when(
-            asDialog,
-            <Flex justify='between' align='center' gap='2'>
-              <Flex align={'center'} gap='2'>
-                <Text size='3'>Project Sharing</Text>
-                <AnimatePresence>
-                  {when(
-                    accessRequests.state === 'loading',
-                    <motion.div style={{ opacity: 0.1 }} exit={{ opacity: 0 }}>
-                      <Spinner className={sprinkles({ backgroundColor: 'black' })} />
-                    </motion.div>,
-                  )}
-                </AnimatePresence>
-              </Flex>
+      <Flex direction='column' style={{ maxHeight: '75vh', padding: asDialog ? 0 : 14 }} gap='4'>
+        <Flex direction='column' gap='4'>
+          <Flex justify='between' align='center' gap='2'>
+            <Flex align={'center'} gap='2'>
+              <Text size='3'>Project Sharing</Text>
+              <AnimatePresence>
+                {when(
+                  accessRequests.state === 'loading',
+                  <motion.div style={{ opacity: 0.1 }} exit={{ opacity: 0 }}>
+                    <Spinner className={sprinkles({ backgroundColor: 'black' })} />
+                  </motion.div>,
+                )}
+              </AnimatePresence>
+            </Flex>
+            {when(
+              asDialog,
               <Dialog.Close>
                 <IconButton variant='ghost' color='gray'>
                   <Cross2Icon width='18' height='18' />
                 </IconButton>
-              </Dialog.Close>
-            </Flex>,
-          )}
+              </Dialog.Close>,
+            )}
+          </Flex>
           <Flex justify='between' align='center' style={{ paddingTop: 4 }}>
             <Text size='1'>Project Visibility</Text>
             <VisibilityDropdown
@@ -174,12 +174,8 @@ export const SharingDialogContent = React.memo(
             <ProjectLink projectId={project.proj_id} />,
           )}
         </Flex>
-        {when(asDialog, <Separator size='4' />)}
-        <AccessRequestsList
-          projectId={project.proj_id}
-          accessLevel={accessLevel}
-          asDialog={asDialog}
-        />
+        <Separator size='4' />
+        <AccessRequestsList projectId={project.proj_id} accessLevel={accessLevel} />
       </Flex>
     )
   },
@@ -189,56 +185,48 @@ SharingDialogContent.displayName = 'SharingDialogContent'
 type AccessRequestListProps = {
   projectId: string
   accessLevel: AccessLevel
-  asDialog: boolean
 }
 
-const AccessRequestsList = React.memo(
-  ({ projectId, accessLevel, asDialog }: AccessRequestListProps) => {
-    const accessRequests = useProjectsStore((store) => store.sharingProjectAccessRequests)
+const AccessRequestsList = React.memo(({ projectId, accessLevel }: AccessRequestListProps) => {
+  const accessRequests = useProjectsStore((store) => store.sharingProjectAccessRequests)
 
-    const hasGonePrivate = React.useMemo(() => {
-      return accessRequests.requests.length > 0 && accessLevel === AccessLevel.PRIVATE
-    }, [accessLevel, accessRequests])
+  const hasGonePrivate = React.useMemo(() => {
+    return accessRequests.requests.length > 0 && accessLevel === AccessLevel.PRIVATE
+  }, [accessLevel, accessRequests])
 
-    const showAccessRequests = React.useMemo(() => {
-      return accessRequests.state === 'ready' && accessRequests.requests.length > 0
-    }, [accessRequests])
+  const showAccessRequests = React.useMemo(() => {
+    return accessRequests.state === 'ready' && accessRequests.requests.length > 0
+  }, [accessRequests])
 
-    return (
-      <AnimatePresence>
-        <motion.div
-          style={{
-            flex: '1 1',
-            padding: asDialog ? 0 : '0 14px',
-          }}
-        >
-          <Flex direction={'column'} gap='4' style={{}}>
-            {when(hasGonePrivate, <HasGonePrivate />)}
+  return (
+    <AnimatePresence>
+      <motion.div style={{ flex: '1 1' }}>
+        <Flex direction={'column'} gap='4' style={{}}>
+          {when(hasGonePrivate, <HasGonePrivate />)}
 
-            <OwnerCollaboratorRow />
+          <OwnerCollaboratorRow />
 
-            {when(
-              showAccessRequests,
-              <motion.div
-                animate={{ height: 'auto', opacity: 1 }}
-                initial={{ height: 0, opacity: 0 }}
-                exit={{ height: 0, opacity: 0 }}
-              >
-                <Flex direction={'column'} gap='4'>
-                  <AccessRequests
-                    projectId={projectId}
-                    projectAccessLevel={accessLevel}
-                    accessRequests={accessRequests.requests}
-                  />
-                </Flex>
-              </motion.div>,
-            )}
-          </Flex>
-        </motion.div>
-      </AnimatePresence>
-    )
-  },
-)
+          {when(
+            showAccessRequests,
+            <motion.div
+              animate={{ height: 'auto', opacity: 1 }}
+              initial={{ height: 0, opacity: 0 }}
+              exit={{ height: 0, opacity: 0 }}
+            >
+              <Flex direction={'column'} gap='4'>
+                <AccessRequests
+                  projectId={projectId}
+                  projectAccessLevel={accessLevel}
+                  accessRequests={accessRequests.requests}
+                />
+              </Flex>
+            </motion.div>,
+          )}
+        </Flex>
+      </motion.div>
+    </AnimatePresence>
+  )
+})
 AccessRequestsList.displayName = 'AccessRequestsList'
 
 const HasGonePrivate = React.memo(() => {
