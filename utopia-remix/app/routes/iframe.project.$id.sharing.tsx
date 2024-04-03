@@ -1,5 +1,5 @@
 import type { LoaderFunctionArgs } from '@remix-run/node'
-import { useFetcher, useLoaderData } from '@remix-run/react'
+import { json, useFetcher, useLoaderData } from '@remix-run/react'
 import type { UserDetails } from 'prisma-client'
 import React from 'react'
 import { SharingDialogContent } from '../components/sharingDialog'
@@ -21,11 +21,14 @@ export async function loader(args: LoaderFunctionArgs) {
   })
   ensure(sharingDetails != null, 'project not found', Status.NOT_FOUND)
 
-  return {
-    user: user,
-    project: sharingDetails.project,
-    accessRequests: sharingDetails.accessRequests,
-  }
+  return json(
+    {
+      user: user,
+      project: sharingDetails.project,
+      accessRequests: sharingDetails.accessRequests,
+    },
+    { headers: { 'cache-control': 'no-cache' } },
+  )
 }
 
 const SharingIframe = React.memo(() => {
