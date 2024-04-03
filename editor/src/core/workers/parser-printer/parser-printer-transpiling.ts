@@ -532,48 +532,46 @@ export function insertDataUIDsIntoCode(
   code: string,
   map: RawSourceMap,
   elementsWithin: ElementsWithinInPosition,
-  wrapInParens: boolean,
   rootLevel: boolean,
   filename: string,
 ): Either<string, CodeWithMap> {
-  if (wrapInParens) {
-    const wrappedInParensResult = insertDataUIDsIntoCodeInner(
-      sourceFileName,
-      sourceFileText,
-      code,
-      map,
-      elementsWithin,
-      'wrap-in-parens',
-      rootLevel,
-      filename,
-    )
-
-    if (isRight(wrappedInParensResult)) {
-      return wrappedInParensResult
-    } else {
-      return insertDataUIDsIntoCodeInner(
-        sourceFileName,
-        sourceFileText,
-        code,
-        map,
-        elementsWithin,
-        'wrap-in-anon-fn',
-        rootLevel,
-        filename,
-      )
-    }
-  } else {
-    return insertDataUIDsIntoCodeInner(
-      sourceFileName,
-      sourceFileText,
-      code,
-      map,
-      elementsWithin,
-      'do-not-wrap',
-      rootLevel,
-      filename,
-    )
+  const wrappedInParensResult = insertDataUIDsIntoCodeInner(
+    sourceFileName,
+    sourceFileText,
+    code,
+    map,
+    elementsWithin,
+    'wrap-in-parens',
+    rootLevel,
+    filename,
+  )
+  if (isRight(wrappedInParensResult)) {
+    return wrappedInParensResult
   }
+  const wrappedInAnonFunctionResult = insertDataUIDsIntoCodeInner(
+    sourceFileName,
+    sourceFileText,
+    code,
+    map,
+    elementsWithin,
+    'wrap-in-anon-fn',
+    rootLevel,
+    filename,
+  )
+  if (isRight(wrappedInAnonFunctionResult)) {
+    return wrappedInAnonFunctionResult
+  }
+  const doNotWrapResult = insertDataUIDsIntoCodeInner(
+    sourceFileName,
+    sourceFileText,
+    code,
+    map,
+    elementsWithin,
+    'do-not-wrap',
+    rootLevel,
+    filename,
+  )
+  return doNotWrapResult
 }
 
 function getAbsoluteOffsetFromFile(

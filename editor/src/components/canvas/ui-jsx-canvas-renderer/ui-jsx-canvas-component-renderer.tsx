@@ -1,6 +1,10 @@
 import React from 'react'
 import type { MapLike } from 'typescript'
-import type { JSXElementChild, UtopiaJSXComponent } from '../../../core/shared/element-template'
+import type {
+  EarlyReturn,
+  JSXElementChild,
+  UtopiaJSXComponent,
+} from '../../../core/shared/element-template'
 import {
   isUtopiaJSXComponent,
   isSVGElement,
@@ -43,6 +47,7 @@ import { objectMap } from '../../../core/shared/object-utils'
 import type { ComponentRendererComponent } from './component-renderer-component'
 import { mapArrayToDictionary } from '../../../core/shared/array-utils'
 import { assertNever } from '../../../core/shared/utils'
+import { addFakeSpyEntry } from './ui-jsx-canvas-spy-wrapper'
 
 function tryToGetInstancePath(
   maybePath: ElementPath | null,
@@ -227,6 +232,7 @@ export function createComponentRendererComponent(params: {
 
     const buildResult = React.useRef<React.ReactElement | null>(null)
 
+    let earlyReturn: EarlyReturn | null = null
     if (utopiaJsxComponent.arbitraryJSBlock != null) {
       const propertiesFromParams = propertiesExposedByParams(
         utopiaJsxComponent.arbitraryJSBlock.params,
@@ -269,11 +275,13 @@ export function createComponentRendererComponent(params: {
           }
           break
         case 'EARLY_RETURN_VOID':
+          earlyReturn = arbitraryBlockResult
           buildResult.current = undefined as any
-          return buildResult.current
+          break
         case 'EARLY_RETURN_RESULT':
+          earlyReturn = arbitraryBlockResult
           buildResult.current = arbitraryBlockResult.result as any
-          return buildResult.current
+          break
         default:
           assertNever(arbitraryBlockResult)
       }
@@ -304,7 +312,20 @@ export function createComponentRendererComponent(params: {
       }
     }
 
-    if (shouldUpdate()) {
+    if (earlyReturn != null) {
+      if (instancePath != null) {
+        addFakeSpyEntry(
+          sceneContext.validPaths,
+          metadataContext,
+          instancePath,
+          utopiaJsxComponent.rootElement,
+          params.filePath,
+          imports,
+          'not-a-conditional',
+          earlyReturn,
+        )
+      }
+    } else if (shouldUpdate()) {
       buildResult.current = buildComponentRenderResult(utopiaJsxComponent.rootElement)
     }
     return buildResult.current

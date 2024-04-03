@@ -49,6 +49,7 @@ Object {
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
+    "earlyReturn": null,
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -220,6 +221,7 @@ Object {
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
+    "earlyReturn": null,
     "element": Object {
       "type": "RIGHT",
       "value": Object {
