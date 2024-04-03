@@ -76,7 +76,7 @@ function findContainingComponentForElementPath(
 
 function processJSPropertyAccessors(
   expression: JSExpression,
-): Either<string, { path: DataPath; originalIdentifier: JSIdentifier | null }> {
+): Either<string, { path: DataPath; originalIdentifier: JSIdentifier }> {
   switch (expression.type) {
     case 'ATTRIBUTE_FUNCTION_CALL':
     case 'ATTRIBUTE_NESTED_ARRAY':
