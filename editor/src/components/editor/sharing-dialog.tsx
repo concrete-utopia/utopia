@@ -75,7 +75,7 @@ export const SharingDialog = React.memo(() => {
           <motion.div
             initial={{ opacity: 0, height: 0, width: 0 }}
             animate={{ opacity: 1, height: iframeHeight, width: iframeWidth }}
-            exit={{ opacity: 0, height: 0 }}
+            exit={{ opacity: 0 }}
             onLoad={onSharingIframeLoaded}
             style={{
               background: colorTheme.bg0.value,
