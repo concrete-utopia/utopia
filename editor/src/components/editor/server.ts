@@ -95,7 +95,7 @@ interface SaveProjectRequest {
 interface CreateProjectRequest {
   name: string | null
   content: PersistentModel | null
-  accessLevel?: string
+  accessLevel: string | null
 }
 
 interface RequestFailure {
@@ -156,14 +156,14 @@ export async function createNewProjectID(): Promise<string> {
 export async function createNewProject(
   persistentModel: PersistentModel | null,
   name: string,
-  accessLevel?: string,
+  accessLevel: string | null,
 ): Promise<SaveProjectResponse> {
   // PUTs the persistent model as JSON body.
   const url = newProjectURL()
   const bodyValue: CreateProjectRequest = {
     name: name,
     content: persistentModel,
-    accessLevel: accessLevel,
+    accessLevel: accessLevel ?? '',
   }
   const postBody = JSON.stringify(bodyValue)
   const response = await fetch(url, {
@@ -186,7 +186,7 @@ export async function updateSavedProject(
   persistentModel: PersistentModel | null,
   name: string,
 ): Promise<SaveProjectResponse> {
-  // POSTs the persistent model as JSON body.
+  // PUTs the persistent model as JSON body.
   const url = projectURL(projectId)
   const bodyValue: SaveProjectRequest = {
     name: name,
@@ -194,7 +194,7 @@ export async function updateSavedProject(
   }
   const postBody = JSON.stringify(bodyValue)
   const response = await fetch(url, {
-    method: 'POST',
+    method: 'PUT',
     credentials: 'include',
     body: postBody,
     headers: HEADERS,

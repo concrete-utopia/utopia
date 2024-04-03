@@ -382,6 +382,12 @@ const TopActionBar = React.memo(() => {
         onClick: () => window.open(projectEditorLink(null), '_blank'),
         color: 'blue',
       },
+      {
+        id: 'createPublicProject',
+        title: '+ New Public Project',
+        onClick: () => window.open(`${projectEditorLink(null)}?accessLevel=public`, '_blank'),
+        color: 'green',
+      },
     ] as const
   }, [projectEditorLink])
 
