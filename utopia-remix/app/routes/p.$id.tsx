@@ -3,7 +3,11 @@ import { validateProjectAccess } from '../handlers/validators'
 import { proxy } from '../util/proxy.server'
 import { UserProjectPermission } from '~/types'
 import { redirect } from '@remix-run/react'
-import { getProjectIdFromParams, getResponseWithValidation } from '../util/api.server'
+import {
+  getProjectIdFromParams,
+  getResponseWithValidation,
+  requireUserOrRedirectToLogin,
+} from '../util/api.server'
 
 const validator = validateProjectAccess(UserProjectPermission.CAN_VIEW_PROJECT, {
   canRequestAccess: true,
@@ -14,6 +18,8 @@ const validator = validateProjectAccess(UserProjectPermission.CAN_VIEW_PROJECT, 
 const excludeHeaders = new Set(['content-encoding'])
 
 export async function loader(args: LoaderFunctionArgs) {
+  await requireUserOrRedirectToLogin(args.request)
+
   try {
     return await getResponseWithValidation(
       args.request,
