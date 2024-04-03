@@ -1,5 +1,6 @@
 import type {
   PersistenceBackendAPI,
+  ProjectCreationResult,
   ProjectLoadResult,
   ProjectModel,
   ProjectOwnership,
@@ -26,8 +27,11 @@ function loadProject<ModelType>(projectId: string): Promise<ProjectLoadResult<Mo
 
 function createNewProjectInServer<ModelType, FileType>(
   projectModel: ProjectModel<ModelType>,
-): Promise<ProjectWithFileChanges<ModelType, FileType>> {
-  return Promise.resolve(projectWithFileChanges([], projectModel))
+): Promise<ProjectCreationResult<ModelType, FileType>> {
+  return Promise.resolve({
+    projectId: `Project_${projectCounter++}`,
+    projectWithChanges: projectWithFileChanges([], projectModel),
+  })
 }
 
 function saveProjectToServer<ModelType, FileType>(
