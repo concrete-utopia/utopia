@@ -138,6 +138,7 @@ export var whatever = (props) => {
     },
     "statements": Array [
       Object {
+        "definedElsewhere": Array [],
         "definedWithin": Array [
           "cakeFn",
         ],
@@ -147,6 +148,7 @@ export var whatever = (props) => {
         "type": "JS_ARBITRARY_STATEMENT",
       },
       Object {
+        "definedElsewhere": Array [],
         "definedWithin": Array [
           "otherFn",
         ],
@@ -180,26 +182,26 @@ export var whatever = (props) => {
     },
   ],
   "fullHighlightBounds": Object {
-    "0d2": Object {
-      "endCol": 38,
-      "endLine": 23,
-      "startCol": 14,
-      "startLine": 23,
-      "uid": "0d2",
-    },
-    "0fa": Object {
-      "endCol": 1,
-      "endLine": 14,
-      "startCol": 0,
-      "startLine": 12,
-      "uid": "0fa",
-    },
     "6e3": Object {
       "endCol": 24,
       "endLine": 20,
       "startCol": 19,
       "startLine": 20,
       "uid": "6e3",
+    },
+    "72a": Object {
+      "endCol": 38,
+      "endLine": 23,
+      "startCol": 14,
+      "startLine": 23,
+      "uid": "72a",
+    },
+    "a90": Object {
+      "endCol": 1,
+      "endLine": 14,
+      "startCol": 0,
+      "startLine": 12,
+      "uid": "a90",
     },
     "aaa": Object {
       "endCol": 11,
@@ -215,12 +217,12 @@ export var whatever = (props) => {
       "startLine": 21,
       "uid": "aab",
     },
-    "f0d": Object {
+    "fa6": Object {
       "endCol": 1,
       "endLine": 17,
       "startCol": 0,
       "startLine": 15,
-      "uid": "f0d",
+      "uid": "fa6",
     },
     "feb": Object {
       "endCol": 22,
@@ -231,12 +233,12 @@ export var whatever = (props) => {
     },
   },
   "highlightBounds": Object {
-    "0d2": Object {
+    "72a": Object {
       "endCol": 38,
       "endLine": 23,
       "startCol": 14,
       "startLine": 23,
-      "uid": "0d2",
+      "uid": "72a",
     },
     "aaa": Object {
       "endCol": 11,
@@ -435,6 +437,7 @@ export var whatever = (props) => {
       },
       "statements": Array [
         Object {
+          "definedElsewhere": Array [],
           "definedWithin": Array [
             "cakeFn",
           ],
@@ -526,6 +529,7 @@ export var whatever = (props) => {
       },
       "statements": Array [
         Object {
+          "definedElsewhere": Array [],
           "definedWithin": Array [
             "otherFn",
           ],
@@ -666,6 +670,10 @@ export var whatever = (props) => {
                   },
                   "statements": Array [
                     Object {
+                      "definedElsewhere": Array [
+                        "cakeFn",
+                        "otherFn",
+                      ],
                       "definedWithin": Array [],
                       "originalJavascript": "cakeFn(otherFn('b') + 2)",
                       "type": "JS_ARBITRARY_STATEMENT",
@@ -746,19 +754,12 @@ Object {
       "startLine": 6,
       "uid": "34a",
     },
-    "3e6": Object {
-      "endCol": 22,
+    "3ef": Object {
+      "endCol": 45,
       "endLine": 4,
-      "startCol": 17,
+      "startCol": 40,
       "startLine": 4,
-      "uid": "3e6",
-    },
-    "4bd": Object {
-      "endCol": 22,
-      "endLine": 6,
-      "startCol": 17,
-      "startLine": 6,
-      "uid": "4bd",
+      "uid": "3ef",
     },
     "4cf": Object {
       "endCol": 37,
@@ -766,6 +767,13 @@ Object {
       "startCol": 25,
       "startLine": 4,
       "uid": "4cf",
+    },
+    "5d5": Object {
+      "endCol": 22,
+      "endLine": 4,
+      "startCol": 17,
+      "startLine": 4,
+      "uid": "5d5",
     },
     "67f": Object {
       "endCol": 45,
@@ -795,12 +803,19 @@ Object {
       "startLine": 5,
       "uid": "aaa",
     },
-    "b5d": Object {
+    "af0": Object {
       "endCol": 45,
-      "endLine": 4,
+      "endLine": 6,
       "startCol": 40,
-      "startLine": 4,
-      "uid": "b5d",
+      "startLine": 6,
+      "uid": "af0",
+    },
+    "b51": Object {
+      "endCol": 22,
+      "endLine": 6,
+      "startCol": 17,
+      "startLine": 6,
+      "uid": "b51",
     },
     "b93": Object {
       "endCol": 37,
@@ -823,28 +838,14 @@ Object {
       "startLine": 4,
       "uid": "fbe",
     },
-    "ff8": Object {
-      "endCol": 45,
-      "endLine": 6,
-      "startCol": 40,
-      "startLine": 6,
-      "uid": "ff8",
-    },
   },
   "highlightBounds": Object {
-    "3e6": Object {
-      "endCol": 22,
+    "3ef": Object {
+      "endCol": 45,
       "endLine": 4,
-      "startCol": 17,
+      "startCol": 40,
       "startLine": 4,
-      "uid": "3e6",
-    },
-    "4bd": Object {
-      "endCol": 22,
-      "endLine": 6,
-      "startCol": 17,
-      "startLine": 6,
-      "uid": "4bd",
+      "uid": "3ef",
     },
     "4cf": Object {
       "endCol": 37,
@@ -852,6 +853,13 @@ Object {
       "startCol": 25,
       "startLine": 4,
       "uid": "4cf",
+    },
+    "5d5": Object {
+      "endCol": 22,
+      "endLine": 4,
+      "startCol": 17,
+      "startLine": 4,
+      "uid": "5d5",
     },
     "67f": Object {
       "endCol": 45,
@@ -874,12 +882,19 @@ Object {
       "startLine": 5,
       "uid": "aaa",
     },
-    "b5d": Object {
+    "af0": Object {
       "endCol": 45,
-      "endLine": 4,
+      "endLine": 6,
       "startCol": 40,
-      "startLine": 4,
-      "uid": "b5d",
+      "startLine": 6,
+      "uid": "af0",
+    },
+    "b51": Object {
+      "endCol": 22,
+      "endLine": 6,
+      "startCol": 17,
+      "startLine": 6,
+      "uid": "b51",
     },
     "b93": Object {
       "endCol": 37,
@@ -887,13 +902,6 @@ Object {
       "startCol": 25,
       "startLine": 6,
       "uid": "b93",
-    },
-    "ff8": Object {
-      "endCol": 45,
-      "endLine": 6,
-      "startCol": 40,
-      "startLine": 6,
-      "uid": "ff8",
     },
   },
   "imports": Object {
@@ -1012,6 +1020,9 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
           },
           "statements": Array [
             Object {
+              "definedElsewhere": Array [
+                "n",
+              ],
               "definedWithin": Array [],
               "originalJavascript": "n > 0",
               "type": "JS_ARBITRARY_STATEMENT",
@@ -1061,6 +1072,9 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
           },
           "statements": Array [
             Object {
+              "definedElsewhere": Array [
+                "b",
+              ],
               "definedWithin": Array [],
               "originalJavascript": "b(10)",
               "type": "JS_ARBITRARY_STATEMENT",
@@ -1240,6 +1254,9 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
           },
           "statements": Array [
             Object {
+              "definedElsewhere": Array [
+                "n",
+              ],
               "definedWithin": Array [],
               "originalJavascript": "n > 0",
               "type": "JS_ARBITRARY_STATEMENT",
@@ -1289,6 +1306,9 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
           },
           "statements": Array [
             Object {
+              "definedElsewhere": Array [
+                "a",
+              ],
               "definedWithin": Array [],
               "originalJavascript": "a(10)",
               "type": "JS_ARBITRARY_STATEMENT",
@@ -1399,6 +1419,7 @@ export var App = (props) => <View data-uid='bbb'>
     },
     "statements": Array [
       Object {
+        "definedElsewhere": Array [],
         "definedWithin": Array [
           "a",
         ],
@@ -1422,12 +1443,19 @@ export var App = (props) => <View data-uid='bbb'>
     },
   ],
   "fullHighlightBounds": Object {
-    "3e2": Object {
+    "6ca": Object {
+      "endCol": 9,
+      "endLine": 13,
+      "startCol": 3,
+      "startLine": 13,
+      "uid": "6ca",
+    },
+    "807": Object {
       "endCol": 16,
       "endLine": 11,
       "startCol": 0,
       "startLine": 11,
-      "uid": "3e2",
+      "uid": "807",
     },
     "854": Object {
       "endCol": 48,
@@ -1443,28 +1471,21 @@ export var App = (props) => <View data-uid='bbb'>
       "startLine": 12,
       "uid": "bbb",
     },
-    "bbe": Object {
+  },
+  "highlightBounds": Object {
+    "6ca": Object {
       "endCol": 9,
       "endLine": 13,
       "startCol": 3,
       "startLine": 13,
-      "uid": "bbe",
+      "uid": "6ca",
     },
-  },
-  "highlightBounds": Object {
     "bbb": Object {
       "endCol": 7,
       "endLine": 14,
       "startCol": 28,
       "startLine": 12,
       "uid": "bbb",
-    },
-    "bbe": Object {
-      "endCol": 9,
-      "endLine": 13,
-      "startCol": 3,
-      "startLine": 13,
-      "uid": "bbe",
     },
   },
   "imports": Object {
@@ -1606,6 +1627,7 @@ export var App = (props) => <View data-uid='bbb'>
       },
       "statements": Array [
         Object {
+          "definedElsewhere": Array [],
           "definedWithin": Array [
             "a",
           ],
@@ -1694,6 +1716,9 @@ export var App = (props) => <View data-uid='bbb'>
             },
             "statements": Array [
               Object {
+                "definedElsewhere": Array [
+                  "a",
+                ],
                 "definedWithin": Array [],
                 "originalJavascript": "{a: a}",
                 "type": "JS_ARBITRARY_STATEMENT",

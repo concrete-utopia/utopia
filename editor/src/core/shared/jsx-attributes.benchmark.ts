@@ -43,7 +43,7 @@ function sampleJsxAttributes(): JSXAttributes {
             null,
             {},
             emptyComments,
-            [jsArbitraryStatement('props.someShadow', [])],
+            [jsArbitraryStatement('props.someShadow', [], [])],
           ),
           emptyComments,
           emptyComments,
@@ -112,7 +112,7 @@ function sampleJsxAttributes(): JSXAttributes {
       null,
       {},
       emptyComments,
-      [jsArbitraryStatement('props.hello', [])],
+      [jsArbitraryStatement('props.hello', [], [])],
     ),
     objectValue: jsExpressionValue(
       {
@@ -133,7 +133,7 @@ function sampleJsxAttributes(): JSXAttributes {
       null,
       {},
       emptyComments,
-      [jsArbitraryStatement('true ? 10 : 5', [])],
+      [jsArbitraryStatement('true ? 10 : 5', [], [])],
     ),
     'data-uid': jsExpressionValue('aaa', emptyComments),
   })

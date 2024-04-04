@@ -152,6 +152,9 @@ export var storyboard = (props) => {
           },
           "statements": Array [
             Object {
+              "definedElsewhere": Array [
+                "React",
+              ],
               "definedWithin": Array [],
               "originalJavascript": "<div data-uid='bbb' />",
               "type": "JS_ARBITRARY_STATEMENT",
@@ -302,6 +305,12 @@ export var storyboard = (props) => {
     },
     "statements": Array [
       Object {
+        "definedElsewhere": Array [
+          "React",
+          "Storyboard",
+          "Scene",
+          "App",
+        ],
         "definedWithin": Array [
           "storyboard",
         ],

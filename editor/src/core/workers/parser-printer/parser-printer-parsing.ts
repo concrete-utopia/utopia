@@ -866,6 +866,7 @@ function parseOtherJavaScript<E extends TS.Node, T extends { uid: string }>(
   alreadyExistingUIDs: Set<string>,
   trailingCode: string,
   applySteganography: SteganographyMode,
+  parseStatements: 'parse-statements' | 'do-not-parse-statements',
   create: (
     code: string,
     definedWithin: Array<string>,
@@ -1314,14 +1315,56 @@ function parseOtherJavaScript<E extends TS.Node, T extends { uid: string }>(
     }
     expressionsText.push(trailingCode)
 
-    const statements = expressionsAndTexts.map((expressionAndText) => {
-      return jsArbitraryStatement(
-        expressionAndText.text.trim(),
-        expressionAndText.expression == null
-          ? []
-          : identifyValuesDefinedInNode(sourceFile, expressionAndText.expression),
-      )
-    })
+    const statements =
+      parseStatements === 'do-not-parse-statements'
+        ? []
+        : expressionsAndTexts.flatMap((expressionAndText) => {
+            if (expressionAndText.expression == null) {
+              return []
+            } else {
+              const parsedExpression = parseOtherJavaScript(
+                sourceFile,
+                sourceText,
+                filename,
+                [expressionAndText],
+                imports,
+                topLevelNames,
+                initialPropsObjectName,
+                existingHighlightBounds,
+                alreadyExistingUIDs,
+                trailingCode,
+                applySteganography,
+                'do-not-parse-statements',
+                (_code, expressionDefinedWithin, expressionDefinedElsewhere) => {
+                  return right({
+                    expressionDefinedWithin: expressionDefinedWithin,
+                    expressionDefinedElsewhere: expressionDefinedElsewhere,
+                    uid: '',
+                  })
+                },
+              )
+
+              return foldEither(
+                () => {
+                  return []
+                },
+                (success) => {
+                  if (success == null) {
+                    return []
+                  } else {
+                    return [
+                      jsArbitraryStatement(
+                        expressionAndText.text.trim(),
+                        success.value.expressionDefinedWithin,
+                        success.value.expressionDefinedElsewhere,
+                      ),
+                    ]
+                  }
+                },
+                parsedExpression,
+              )
+            }
+          })
 
     // Helpfully it appears that in JSX elements the start and end are
     // offset by 1, meaning that if we use them to get the text
@@ -1425,6 +1468,7 @@ export function parseJSExpressionMapOrOtherJavascript(
       alreadyExistingUIDs,
       '',
       applySteganography,
+      'parse-statements',
       (
         code,
         _definedWithin,
@@ -3650,6 +3694,7 @@ export function parseArbitraryNodes(
     alreadyExistingUIDs,
     trailingCode,
     applySteganography,
+    'parse-statements',
     (
       code,
       definedWithin,

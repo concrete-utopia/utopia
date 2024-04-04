@@ -546,7 +546,7 @@ describe('Absolute Reparent To Flex Strategy', () => {
 
     // Ensure that the code element was selected, and not one of the generated children
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([
-      EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent/bab'),
+      EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent/6f1'),
     ])
   })
 })

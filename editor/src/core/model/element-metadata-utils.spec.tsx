@@ -490,7 +490,7 @@ describe('targetElementSupportsChildren', () => {
           null,
           {},
           emptyComments,
-          [jsArbitraryStatement('<div />', [])],
+          [jsArbitraryStatement('<div />', [], [])],
         ),
       ], // Whatever, close enough
     )
@@ -572,7 +572,7 @@ describe('targetElementSupportsChildren', () => {
                 null,
                 {},
                 emptyComments,
-                [jsArbitraryStatement('<div />', [])],
+                [jsArbitraryStatement('<div />', [], [])],
               ), // Whatever, close enough
             ],
           ),

@@ -63,7 +63,7 @@ export function mapScene(scene: SceneMetadata): JSXElement {
       null,
       {},
       emptyComments,
-      [jsArbitraryStatement(scene.component ?? 'null', [])],
+      [jsArbitraryStatement(scene.component ?? 'null', [], [])],
     ),
     props: jsExpressionValue(scene.props, emptyComments),
     style: jsExpressionValue(scene.frame, emptyComments),

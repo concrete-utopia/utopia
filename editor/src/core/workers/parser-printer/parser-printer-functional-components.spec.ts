@@ -243,7 +243,7 @@ describe('Parsing a function component with props', () => {
           expect.objectContaining({}),
           {},
           emptyComments,
-          [jsArbitraryStatement('{thing: true}', [])],
+          [jsArbitraryStatement('{thing: true}', [], [])],
         ),
       ),
     )
@@ -377,7 +377,7 @@ describe('Parsing a function component with props', () => {
           expect.objectContaining({}),
           {},
           emptyComments,
-          [jsArbitraryStatement('5', [])],
+          [jsArbitraryStatement('5', [], [])],
         ),
       ),
     )
@@ -478,7 +478,7 @@ describe('Parsing a function component with props', () => {
           expect.objectContaining({}),
           {},
           emptyComments,
-          [jsArbitraryStatement('5', [])],
+          [jsArbitraryStatement('5', [], [])],
         ),
       ),
     )
@@ -619,7 +619,7 @@ describe('Parsing a function component with props', () => {
           expect.objectContaining({}),
           {},
           emptyComments,
-          [jsArbitraryStatement('5', [])],
+          [jsArbitraryStatement('5', [], [])],
         ),
       ),
     )
@@ -776,7 +776,7 @@ describe('Parsing a function component with props', () => {
           expect.objectContaining({}),
           {},
           emptyComments,
-          [jsArbitraryStatement('{thing: true}', [])],
+          [jsArbitraryStatement('{thing: true}', [], [])],
         ),
       ),
     )
@@ -801,7 +801,7 @@ describe('Parsing a function component with props', () => {
           expect.objectContaining({}),
           {},
           emptyComments,
-          [jsArbitraryStatement('5', [])],
+          [jsArbitraryStatement('5', [], [])],
         ),
       ),
     )

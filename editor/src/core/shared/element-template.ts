@@ -178,16 +178,19 @@ export interface JSArbitraryStatement {
   type: 'JS_ARBITRARY_STATEMENT'
   originalJavascript: string
   definedWithin: Array<string>
+  definedElsewhere: Array<string>
 }
 
 export function jsArbitraryStatement(
   originalJavascript: string,
   definedWithin: Array<string>,
+  definedElsewhere: Array<string>,
 ): JSArbitraryStatement {
   return {
     type: 'JS_ARBITRARY_STATEMENT',
     originalJavascript: originalJavascript,
     definedWithin: definedWithin,
+    definedElsewhere: definedElsewhere,
   }
 }
 

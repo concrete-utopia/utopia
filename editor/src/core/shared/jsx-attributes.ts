@@ -173,7 +173,7 @@ export function jsxAttributeToValue(
         attribute.sourceMap,
         {},
         attribute.comments,
-        [jsArbitraryStatement(originalJavascript, [])],
+        [jsArbitraryStatement(originalJavascript, [], [])],
         attribute.uid,
       )
       return resolveParamsAndRunJsCode(

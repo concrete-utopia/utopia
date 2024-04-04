@@ -96,7 +96,7 @@ describe('attributeReferencesElsewhere', () => {
           null,
           {},
           emptyComments,
-          [jsArbitraryStatement('otherThing', [])],
+          [jsArbitraryStatement('otherThing', [], [])],
         ),
       ),
     ).toEqual(true)
@@ -105,7 +105,7 @@ describe('attributeReferencesElsewhere', () => {
     expect(
       attributeReferencesElsewhere(
         jsExpressionOtherJavaScript([], '5', '5', 'return 5', [], null, {}, emptyComments, [
-          jsArbitraryStatement('5', []),
+          jsArbitraryStatement('5', [], []),
         ]),
       ),
     ).toEqual(false)
@@ -125,7 +125,7 @@ describe('attributeReferencesElsewhere', () => {
                 null,
                 {},
                 emptyComments,
-                [jsArbitraryStatement('otherThing', [])],
+                [jsArbitraryStatement('otherThing', [], [])],
               ),
               emptyComments,
             ),
@@ -142,7 +142,7 @@ describe('attributeReferencesElsewhere', () => {
           [
             jsxArrayValue(
               jsExpressionOtherJavaScript([], '5', '5', 'return 5', [], null, {}, emptyComments, [
-                jsArbitraryStatement('5', []),
+                jsArbitraryStatement('5', [], []),
               ]),
               emptyComments,
             ),
@@ -168,7 +168,7 @@ describe('attributeReferencesElsewhere', () => {
                 null,
                 {},
                 emptyComments,
-                [jsArbitraryStatement('otherThing', [])],
+                [jsArbitraryStatement('otherThing', [], [])],
               ),
               emptyComments,
               emptyComments,
@@ -187,7 +187,7 @@ describe('attributeReferencesElsewhere', () => {
             jsxPropertyAssignment(
               'someKey',
               jsExpressionOtherJavaScript([], '5', '5', 'return 5', [], null, {}, emptyComments, [
-                jsArbitraryStatement('5', []),
+                jsArbitraryStatement('5', [], []),
               ]),
               emptyComments,
               emptyComments,
@@ -212,7 +212,7 @@ describe('attributeReferencesElsewhere', () => {
             null,
             {},
             emptyComments,
-            [jsArbitraryStatement('otherThing', [])],
+            [jsArbitraryStatement('otherThing', [], [])],
           ),
         ]),
       ),
@@ -223,7 +223,7 @@ describe('attributeReferencesElsewhere', () => {
       attributeReferencesElsewhere(
         jsExpressionFunctionCall('someFn', [
           jsExpressionOtherJavaScript([], '5', '5', 'return 5', [], null, {}, emptyComments, [
-            jsArbitraryStatement('5', []),
+            jsArbitraryStatement('5', [], []),
           ]),
         ]),
       ),

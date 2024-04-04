@@ -29,7 +29,7 @@ function threeAttribute(key: string, fromThree: string): JSXAttributesEntry {
       null,
       {},
       emptyComments,
-      [jsArbitraryStatement(`THREE.${fromThree}`, [])],
+      [jsArbitraryStatement(`THREE.${fromThree}`, [], [])],
     ),
     emptyComments,
   )

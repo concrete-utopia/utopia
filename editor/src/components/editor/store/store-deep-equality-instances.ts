@@ -937,10 +937,12 @@ export const RawSourceMapKeepDeepEquality: KeepDeepEqualityCall<RawSourceMap> =
   )
 
 export const JSArbitraryStatementKeepDeepEqualityCall: KeepDeepEqualityCall<JSArbitraryStatement> =
-  combine2EqualityCalls(
+  combine3EqualityCalls(
     (statement) => statement.originalJavascript,
     createCallWithTripleEquals<string>(),
     (statement) => statement.definedWithin,
+    arrayDeepEquality(createCallWithTripleEquals<string>()),
+    (statement) => statement.definedElsewhere,
     arrayDeepEquality(createCallWithTripleEquals<string>()),
     jsArbitraryStatement,
   )

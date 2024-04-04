@@ -23,3 +23,10 @@ export function identifyValuesDefinedInNode(
   }
   return names
 }
+
+export function identifyValuesDefinedElsewhere(
+  sourceFile: TS.SourceFile,
+  node: TS.Node,
+): Array<string> {
+  return []
+}

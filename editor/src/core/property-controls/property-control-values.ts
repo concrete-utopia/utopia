@@ -433,7 +433,7 @@ function printColor(value: unknown): JSExpression {
 
 function printJS<T>(value: T): JSExpression {
   return jsExpressionOtherJavaScript([], `${value}`, `${value}`, ``, [], null, {}, emptyComments, [
-    jsArbitraryStatement(`${value}`, []),
+    jsArbitraryStatement(`${value}`, [], []),
   ])
 }
 

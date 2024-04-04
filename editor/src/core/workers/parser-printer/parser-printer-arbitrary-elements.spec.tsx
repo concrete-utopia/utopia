@@ -341,7 +341,7 @@ export var whatever = props => (
         ),
       },
       emptyComments,
-      [jsArbitraryStatement(`<MyComp data-uid='aab'/>`, [])],
+      [jsArbitraryStatement(`<MyComp data-uid='aab'/>`, [], ['React', 'MyComp'])],
     )
     const view = jsxElement(
       'View',
@@ -451,7 +451,7 @@ export var whatever = (props) => {
         file: 'code.tsx',
       }),
       {},
-      [jsArbitraryStatement(jsCode, ['arr'])],
+      [jsArbitraryStatement(jsCode, ['arr'], [])],
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -559,7 +559,7 @@ export var whatever = (props) => {
         file: 'code.tsx',
       }),
       {},
-      [jsArbitraryStatement(jsCode, ['arr'])],
+      [jsArbitraryStatement(jsCode, ['arr'], [])],
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -662,7 +662,7 @@ export var whatever = (props) => {
         file: 'code.tsx',
       }),
       {},
-      [jsArbitraryStatement(jsCode, ['arr'])],
+      [jsArbitraryStatement(jsCode, ['arr'], [])],
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -830,14 +830,14 @@ export var whatever = (props) => {
                   }),
                   {},
                   emptyComments,
-                  [jsArbitraryStatement(`n`, [])],
+                  [jsArbitraryStatement(`n`, [], [])],
                 ),
               }),
               [],
             ),
           },
           emptyComments,
-          [jsArbitraryStatement(mapJsCode, [])],
+          [jsArbitraryStatement(mapJsCode, [], [])],
         ),
       ],
     )
@@ -856,7 +856,7 @@ return { arr: arr };`
         file: 'code.tsx',
       }),
       {},
-      [jsArbitraryStatement(jsCode, ['arr'])],
+      [jsArbitraryStatement(jsCode, ['arr'], [])],
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -1023,7 +1023,7 @@ export var whatever = (props) => {
                   }),
                   {},
                   emptyComments,
-                  [jsArbitraryStatement(`n`, [])],
+                  [jsArbitraryStatement(`n`, [], [])],
                 ),
               }),
               [],
@@ -1049,7 +1049,7 @@ return { arr: arr };`
         file: 'code.tsx',
       }),
       {},
-      [jsArbitraryStatement(jsCode, ['arr'])],
+      [jsArbitraryStatement(jsCode, ['arr'], [])],
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -1204,8 +1204,8 @@ export var storyboard = (
       expect(results.alone).toMatchInlineSnapshot(`
         Object {
           "elements": Array [
-            "219",
-            "971",
+            "833",
+            "65e",
           ],
           "js": "return (() => {
           function getPicker() {

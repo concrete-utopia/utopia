@@ -485,7 +485,7 @@ describe('JSXAttributeOtherJavaScriptKeepDeepEqualityCall', () => {
     uid: 'old',
     elementsWithin: {},
     comments: emptyComments,
-    statements: [jsArbitraryStatement('old', [])],
+    statements: [jsArbitraryStatement('old', [], [])],
   }
   const newSameValue: JSExpressionOtherJavaScript = {
     type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
@@ -498,7 +498,7 @@ describe('JSXAttributeOtherJavaScriptKeepDeepEqualityCall', () => {
     uid: 'old',
     elementsWithin: {},
     comments: emptyComments,
-    statements: [jsArbitraryStatement('old', [])],
+    statements: [jsArbitraryStatement('old', [], [])],
   }
   const newDifferentValue: JSExpressionOtherJavaScript = {
     type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
@@ -511,7 +511,7 @@ describe('JSXAttributeOtherJavaScriptKeepDeepEqualityCall', () => {
     uid: 'new',
     elementsWithin: {},
     comments: emptyComments,
-    statements: [jsArbitraryStatement('new', [])],
+    statements: [jsArbitraryStatement('new', [], [])],
   }
 
   it('same reference returns the same reference', () => {

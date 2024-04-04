@@ -124,7 +124,7 @@ describe('ExpressionInputControlDescription', () => {
     null,
     {},
     emptyComments,
-    [jsArbitraryStatement(validValue, [])],
+    [jsArbitraryStatement(validValue, [], [])],
   )
 
   runBaseTestSuite(validValue, wrappedValidValue, [], expressionInputControlDescriptionValue)
