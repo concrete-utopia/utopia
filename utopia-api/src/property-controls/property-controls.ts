@@ -43,14 +43,22 @@ export type BaseControlType =
   | 'vector4'
   | 'jsx'
 
-export interface CheckboxControlDescription extends PropertyControlsOptions<unknown> {
+export interface CheckboxControlDescription {
   control: 'checkbox'
+  label?: string
+  visibleByDefault?: boolean
   disabledTitle?: string
   enabledTitle?: string
+  required?: boolean
+  defaultValue?: unknown
 }
 
-export interface ColorControlDescription extends PropertyControlsOptions<unknown> {
+export interface ColorControlDescription {
   control: 'color'
+  label?: string
+  visibleByDefault?: boolean
+  required?: boolean
+  defaultValue?: unknown
 }
 
 export type AllowedEnumType = string | boolean | number | undefined | null
@@ -61,10 +69,13 @@ export interface BasicControlOption<T> {
 
 export type BasicControlOptions<T> = AllowedEnumType[] | BasicControlOption<T>[]
 
-export interface PopUpListControlDescription
-  extends PropertyControlsOptions<AllowedEnumType | BasicControlOption<unknown>> {
+export interface PopUpListControlDescription {
   control: 'popuplist'
+  label?: string
+  visibleByDefault?: boolean
   options: BasicControlOptions<unknown>
+  required?: boolean
+  defaultValue?: AllowedEnumType | BasicControlOption<unknown>
 }
 
 export interface ImportType {
@@ -80,18 +91,29 @@ export interface ExpressionControlOption<T> {
   requiredImport?: ImportType
 }
 
-export interface ExpressionPopUpListControlDescription extends PropertyControlsOptions<unknown> {
+export interface ExpressionPopUpListControlDescription {
   control: 'expression-popuplist'
+  label?: string
+  visibleByDefault?: boolean
   options: ExpressionControlOption<unknown>[]
+  required?: boolean
+  defaultValue?: unknown
 }
 
-export interface EulerControlDescription
-  extends PropertyControlsOptions<[number, number, number, string]> {
+export interface EulerControlDescription {
   control: 'euler'
+  label?: string
+  visibleByDefault?: boolean
+  required?: boolean
+  defaultValue?: [number, number, number, string]
 }
 
-export interface NoneControlDescription extends PropertyControlsOptions<unknown> {
+export interface NoneControlDescription {
   control: 'none'
+  label?: string
+  visibleByDefault?: boolean
+  required?: boolean
+  defaultValue?: unknown
 }
 
 // prettier-ignore
@@ -101,8 +123,12 @@ export type Matrix3 = [
   number, number, number,
 ]
 
-export interface Matrix3ControlDescription extends PropertyControlsOptions<Matrix3> {
+export interface Matrix3ControlDescription {
   control: 'matrix3'
+  label?: string
+  visibleByDefault?: boolean
+  required?: boolean
+  defaultValue?: Matrix3
 }
 
 // prettier-ignore
@@ -113,67 +139,110 @@ export type Matrix4 = [
   number, number, number, number,
 ]
 
-export interface Matrix4ControlDescription extends PropertyControlsOptions<Matrix4> {
+export interface Matrix4ControlDescription {
   control: 'matrix4'
+  label?: string
+  visibleByDefault?: boolean
+  required?: boolean
+  defaultValue?: Matrix4
 }
 
-export interface NumberInputControlDescription extends PropertyControlsOptions<unknown> {
+export interface NumberInputControlDescription {
   control: 'number-input'
+  label?: string
+  visibleByDefault?: boolean
   max?: number
   min?: number
   unit?: string
   step?: number
   displayStepper?: boolean
+  required?: boolean
+  defaultValue?: unknown
 }
 
-export interface RadioControlDescription
-  extends PropertyControlsOptions<AllowedEnumType | BasicControlOption<unknown>> {
+export interface RadioControlDescription {
   control: 'radio'
+  label?: string
+  visibleByDefault?: boolean
   options: BasicControlOptions<unknown>
+  required?: boolean
+  defaultValue?: AllowedEnumType | BasicControlOption<unknown>
 }
 
-export interface ExpressionInputControlDescription extends PropertyControlsOptions<unknown> {
+export interface ExpressionInputControlDescription {
   control: 'expression-input'
+  label?: string
+  visibleByDefault?: boolean
+  required?: boolean
+  defaultValue?: unknown
 }
 
-export interface StringInputControlDescription extends PropertyControlsOptions<unknown> {
+export interface StringInputControlDescription {
   control: 'string-input'
+  label?: string
+  visibleByDefault?: boolean
   placeholder?: string
   obscured?: boolean
+  required?: boolean
+  defaultValue?: unknown
 }
 
-export interface HtmlInputControlDescription extends PropertyControlsOptions<unknown> {
+export interface HtmlInputControlDescription {
   control: 'html-input'
+  label?: string
+  visibleByDefault?: boolean
   placeholder?: string
   obscured?: boolean
+  required?: boolean
+  defaultValue?: unknown
 }
 
-export interface StyleControlsControlDescription extends PropertyControlsOptions<unknown> {
+export interface StyleControlsControlDescription {
   control: 'style-controls'
+  label?: string
+  visibleByDefault?: boolean
   placeholder?: CSSProperties
+  required?: boolean
+  defaultValue?: unknown
 }
 
 export type Vector2 = [number, number]
 
-export interface Vector2ControlDescription extends PropertyControlsOptions<Vector2> {
+export interface Vector2ControlDescription {
   control: 'vector2'
+  label?: string
+  visibleByDefault?: boolean
+  required?: boolean
+  defaultValue?: Vector2
 }
 
 export type Vector3 = [number, number, number]
 
-export interface Vector3ControlDescription extends PropertyControlsOptions<Vector3> {
+export interface Vector3ControlDescription {
   control: 'vector3'
+  label?: string
+  visibleByDefault?: boolean
+  required?: boolean
+  defaultValue?: Vector3
 }
 
 export type Vector4 = [number, number, number, number]
 
-export interface Vector4ControlDescription extends PropertyControlsOptions<Vector4> {
+export interface Vector4ControlDescription {
   control: 'vector4'
+  label?: string
+  visibleByDefault?: boolean
+  required?: boolean
+  defaultValue?: Vector4
 }
 
-export interface JSXControlDescription extends PropertyControlsOptions<unknown> {
+export interface JSXControlDescription {
   control: 'jsx'
+  label?: string
+  visibleByDefault?: boolean
   preferredChildComponents?: Array<PreferredChildComponent>
+  required?: boolean
+  defaultValue?: unknown
 }
 
 export type BaseControlDescription =
@@ -209,24 +278,40 @@ export type HigherLevelControlType = 'array' | 'tuple' | 'object' | 'union'
 export type RegularControlType = BaseControlType | HigherLevelControlType
 export type ControlType = RegularControlType | 'folder'
 
-export interface ArrayControlDescription extends PropertyControlsOptions<unknown> {
+export interface ArrayControlDescription {
   control: 'array'
+  label?: string
+  visibleByDefault?: boolean
   propertyControl: RegularControlDescription
   maxCount?: number
+  required?: boolean
+  defaultValue?: unknown
 }
 
-export interface ObjectControlDescription extends PropertyControlsOptions<unknown> {
+export interface ObjectControlDescription {
   control: 'object'
+  label?: string
+  visibleByDefault?: boolean
   object: { [prop: string]: RegularControlDescription }
+  required?: boolean
+  defaultValue?: unknown
 }
 
-export interface UnionControlDescription extends PropertyControlsOptions<unknown> {
+export interface UnionControlDescription {
   control: 'union'
+  label?: string
+  visibleByDefault?: boolean
   controls: Array<RegularControlDescription>
+  required?: boolean
+  defaultValue?: unknown
 }
-export interface TupleControlDescription extends PropertyControlsOptions<unknown> {
+export interface TupleControlDescription {
   control: 'tuple'
+  label?: string
+  visibleByDefault?: boolean
   propertyControls: RegularControlDescription[]
+  required?: boolean
+  defaultValue?: unknown
 }
 
 export interface FolderControlDescription {
