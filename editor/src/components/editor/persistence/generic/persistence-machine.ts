@@ -4,6 +4,7 @@ import type { Model } from 'xstate/lib/model.types'
 import type {
   PersistenceBackendAPI,
   PersistenceContext,
+  ProjectCreationResult,
   ProjectLoadResult,
   ProjectModel,
   ProjectOwnership,
@@ -22,6 +23,34 @@ interface NewEvent<ModelType> {
 export function newEvent<ModelType>(projectModel: ProjectModel<ModelType>): NewEvent<ModelType> {
   return {
     type: 'NEW',
+    projectModel: projectModel,
+  }
+}
+
+interface CreateProjectIdEvent<ModelType> {
+  type: 'CREATE_PROJECT_ID'
+  projectModel: ProjectModel<ModelType>
+}
+
+function createProjectIdEvent<ModelType>(
+  projectModel: ProjectModel<ModelType>,
+): CreateProjectIdEvent<ModelType> {
+  return {
+    type: 'CREATE_PROJECT_ID',
+    projectModel: projectModel,
+  }
+}
+
+interface CreateProjectEvent<ModelType> {
+  type: 'CREATE_PROJECT'
+  projectModel: ProjectModel<ModelType>
+}
+
+function createProjectEvent<ModelType>(
+  projectModel: ProjectModel<ModelType>,
+): CreateProjectEvent<ModelType> {
+  return {
+    type: 'CREATE_PROJECT',
     projectModel: projectModel,
   }
 }
@@ -199,6 +228,8 @@ type CoreEvent<ModelType, FileType> =
   | ForkEvent<ModelType>
   | DownloadAssetsCompleteEvent<ModelType, FileType>
   | InnerSaveEvent<ModelType>
+  | CreateProjectIdEvent<ModelType>
+  | CreateProjectEvent<ModelType>
 
 interface BackendCreateProjectIdEvent {
   type: 'BACKEND_CREATE_PROJECT_ID'
@@ -207,6 +238,20 @@ interface BackendCreateProjectIdEvent {
 function backendCreateProjectIdEvent(): BackendCreateProjectIdEvent {
   return {
     type: 'BACKEND_CREATE_PROJECT_ID',
+  }
+}
+
+interface BackendCreateProjectEvent<ModelType> {
+  type: 'BACKEND_SERVER_CREATE_PROJECT'
+  projectModel: ProjectModel<ModelType>
+}
+
+function backendCreateProjectEvent<ModelType>(
+  projectModel: ProjectModel<ModelType>,
+): BackendCreateProjectEvent<ModelType> {
+  return {
+    type: 'BACKEND_SERVER_CREATE_PROJECT',
+    projectModel: projectModel,
   }
 }
 
@@ -299,6 +344,7 @@ function backendErrorEvent(error: Error | string): BackendErrorEvent {
 
 type BackendEvent<ModelType> =
   | BackendCreateProjectIdEvent
+  | BackendCreateProjectEvent<ModelType>
   | BackendDownloadAssetsEvent<ModelType>
   | BackendServerSaveEvent<ModelType>
   | BackendLocalSaveEvent<ModelType>
@@ -342,7 +388,9 @@ export const Saving = 'saving'
 export const Forking = 'forking'
 
 // InternalCreatingNewStates
+export const CreatingNewProject = 'creating-new-project'
 export const CreatingProjectId = 'creating-project-id'
+export const CreatingProject = 'creating-project'
 export const ProjectCreated = 'project-created'
 
 // InternalLoadingStates
@@ -357,6 +405,7 @@ export const ProjectForked = 'project-forked'
 // Backend States
 export const BackendIdle = 'idle'
 export const BackendCreatingProjectId = 'creating-project-id'
+export const BackendCreatingProject = 'creating-project'
 export const BackendCheckingOwnership = 'checking-ownership'
 export const BackendDownloadingAssets = 'downloading-assets'
 export const BackendServerSaving = 'server-saving'
@@ -435,6 +484,7 @@ export function createPersistenceMachine<ModelType, FileType>(
             [BackendIdle]: {
               on: {
                 BACKEND_CREATE_PROJECT_ID: BackendCreatingProjectId,
+                BACKEND_SERVER_CREATE_PROJECT: BackendCreatingProject,
                 BACKEND_CHECK_OWNERSHIP: BackendCheckingOwnership,
                 BACKEND_DOWNLOAD_ASSETS: BackendDownloadingAssets,
                 BACKEND_SERVER_SAVE: BackendServerSaving,
@@ -450,6 +500,27 @@ export function createPersistenceMachine<ModelType, FileType>(
                   target: BackendIdle,
                   actions: [
                     send((_, event: DoneInvokeEvent<string>) => projectIdCreatedEvent(event.data)),
+                  ],
+                },
+                onError: {
+                  target: BackendIdle,
+                  actions: send((_, event) => backendErrorEvent(event.data)),
+                },
+              },
+            },
+            [BackendCreatingProject]: {
+              invoke: {
+                id: 'create-project',
+                src: 'createNewProjectInServer',
+                onDone: {
+                  target: BackendIdle,
+                  actions: [
+                    send((_, event: DoneInvokeEvent<ProjectCreationResult<ModelType, FileType>>) =>
+                      newProjectCreatedEvent(
+                        event.data.projectId,
+                        event.data.projectWithChanges.projectModel,
+                      ),
+                    ),
                   ],
                 },
                 onError: {
@@ -617,8 +688,55 @@ export function createPersistenceMachine<ModelType, FileType>(
 
             // Intermediate states
             [CreatingNew]: {
-              initial: CreatingProjectId,
+              initial: CreatingNewProject,
               states: {
+                [CreatingNewProject]: {
+                  entry: choose([
+                    {
+                      cond: (context, _) => context.loggedIn,
+                      actions: send((_, event) =>
+                        createProjectEvent((event as NewEvent<ModelType>).projectModel),
+                      ),
+                    },
+                    {
+                      actions: send((_, event) =>
+                        createProjectIdEvent((event as NewEvent<ModelType>).projectModel),
+                      ),
+                    },
+                  ]),
+                  on: {
+                    CREATE_PROJECT: CreatingProject,
+                    CREATE_PROJECT_ID: CreatingProjectId,
+                  },
+                },
+                [CreatingProject]: {
+                  entry: [
+                    assign((currentContext, event) => {
+                      return {
+                        projectId: undefined,
+                        project: (event as NewEvent<ModelType>).projectModel,
+                        queuedSave: undefined,
+                        projectOwnership: {
+                          isOwner: true,
+                          ownerId: currentContext.projectOwnership.ownerId,
+                        },
+                      }
+                    }),
+                    send((context) => backendCreateProjectEvent(context.project!)),
+                  ],
+                  on: {
+                    NEW_PROJECT_CREATED: {
+                      actions: [
+                        assign({
+                          projectId: (_, event) => {
+                            return event.projectId
+                          },
+                        }),
+                      ],
+                      target: ProjectCreated,
+                    },
+                  },
+                },
                 [CreatingProjectId]: {
                   entry: [
                     assign((currentContext, event) => {
@@ -856,6 +974,13 @@ export function createPersistenceMachine<ModelType, FileType>(
             throw new Error(
               `Incorrect event type triggered asset download, ${JSON.stringify(event)}`,
             )
+          }
+        },
+        createNewProjectInServer: (context, event) => {
+          if (event.type === 'BACKEND_SERVER_CREATE_PROJECT' && event.projectModel != null) {
+            return backendAPI.createNewProjectInServer(event.projectModel)
+          } else {
+            throw new Error(`Unable to create a new project after event ${JSON.stringify(event)}`)
           }
         },
         saveProjectToServer: (context, event) => {

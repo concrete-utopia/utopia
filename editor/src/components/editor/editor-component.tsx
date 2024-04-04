@@ -74,6 +74,7 @@ import { CommentMaintainer } from '../../core/commenting/comment-maintainer'
 import { useIsLoggedIn, useLiveblocksConnectionListener } from '../../core/shared/multiplayer-hooks'
 import { ForkSearchParamKey, ProjectForkFlow } from './project-fork-flow'
 import { isRoomId, projectIdToRoomId } from '../../utils/room-id'
+import { AccessLevelParamKey } from './persistence/persistence-backend'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -88,13 +89,15 @@ function pushProjectURLToBrowserHistory(
     // …but if it's forking, remove the fork param
     queryParams.delete(ForkSearchParamKey)
   }
+  // remove accessLevel param
+  queryParams.delete(AccessLevelParamKey)
 
   const queryParamsStr = queryParams.size > 0 ? `?${queryParams.toString()}` : ''
 
   const projectURL = projectURLForProject(projectId, projectName)
   const title = `Utopia ${projectName}`
 
-  window.top?.history.pushState({}, title, `${projectURL}${queryParamsStr}`)
+  window.top?.history.replaceState({}, title, `${projectURL}${queryParamsStr}`)
 }
 
 export interface EditorProps {}
