@@ -1,5 +1,5 @@
 import React from 'react'
-import { useContextMenu, Menu } from 'react-contexify'
+import { useContextMenu, Menu, type ContextMenuParams } from 'react-contexify'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   getJSXElementNameAsString,
@@ -75,8 +75,11 @@ const usePreferredChildrenForTargetProp = (
 export const useShowRenderPropPicker = (id: string) => {
   const { show, hideAll } = useContextMenu({ id })
   const onClick = React.useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => {
-      show(event)
+    (
+      event: React.MouseEvent<HTMLDivElement>,
+      params?: Pick<ContextMenuParams, 'id' | 'props' | 'position'> | undefined,
+    ) => {
+      show(event, params)
     },
     [show],
   )
@@ -142,6 +145,8 @@ export const RenderPropPicker = React.memo<RenderPropPickerProps>(
     const squashEvents = React.useCallback((e: React.MouseEvent<unknown>) => {
       e.stopPropagation()
     }, [])
+
+    const wrapperRef = React.useRef<HTMLDivElement>(null)
 
     if (preferredChildrenForTargetProp == null) {
       return null
@@ -214,7 +219,18 @@ export const RenderPropPicker = React.memo<RenderPropPickerProps>(
           name: <FlexRow>{noIcon} More...</FlexRow>,
           enabled: true,
           action: (_data, _dispatch, _rightClickCoordinate, e) => {
-            showRenderPropPicker(e as React.MouseEvent<any>)
+            const currentMenu = (wrapperRef.current?.childNodes[0] as HTMLDivElement) ?? null
+            const position =
+              currentMenu == null
+                ? undefined
+                : {
+                    x: currentMenu.offsetLeft,
+                    y: currentMenu.offsetTop,
+                  }
+
+            showRenderPropPicker(e as React.MouseEvent<any>, {
+              position: position,
+            })
           },
           hideOnAction: false,
         },
@@ -237,7 +253,9 @@ export const RenderPropPicker = React.memo<RenderPropPickerProps>(
         />
       </Menu>
     ) : (
-      <MomentumContextMenu id={id} items={simpleContextMenuItems} getData={NO_OP} />
+      <div ref={wrapperRef}>
+        <MomentumContextMenu id={id} items={simpleContextMenuItems} getData={NO_OP} />
+      </div>
     )
   },
 )
