@@ -101,7 +101,7 @@ describe('create project access', () => {
     jest.spyOn(permissionsService, 'setProjectAccess').mockRestore()
   })
   it('creates the access level for a project', async () => {
-    await createProjectAccess({ projectId: 'one', accessLevel: 1 })
+    await createProjectAccess({ projectId: 'one', accessLevel: 1, creatorId: 'alice' })
     const projectAccess = await prisma.projectAccess.findFirst({
       where: { project_id: 'one' },
     })
@@ -109,8 +109,8 @@ describe('create project access', () => {
     expect(permissionsService.setProjectAccess).toHaveBeenCalledWith('one', 1)
   })
   it('doesnt override the access level if it already exists', async () => {
-    await createProjectAccess({ projectId: 'one', accessLevel: 1 })
-    await createProjectAccess({ projectId: 'one', accessLevel: 0 })
+    await createProjectAccess({ projectId: 'one', accessLevel: 1, creatorId: 'alice' })
+    await createProjectAccess({ projectId: 'one', accessLevel: 0, creatorId: 'alice' })
     const projectAccess = await prisma.projectAccess.findFirst({
       where: { project_id: 'one' },
     })
