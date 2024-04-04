@@ -492,57 +492,54 @@ const VisibilityUIComponents = {
   },
 }
 
-const VisibilityDropdown = React.memo(
-  ({
-    accessLevel,
-    changeProjectAccessLevel,
-  }: {
-    accessLevel: AccessLevel
-    changeProjectAccessLevel: (newAccessLevel: AccessLevel) => void
-  }) => {
-    const onCheckedChange = React.useCallback(
-      (newLevel: AccessLevel) => () => {
-        if (accessLevel === newLevel) {
-          return
-        }
-        changeProjectAccessLevel(newLevel)
-      },
-      [changeProjectAccessLevel, accessLevel],
-    )
-    return (
-      <DropdownMenu.Root>
-        <DropdownMenu.Trigger>
-          <Button
-            color='gray'
-            variant='ghost'
-            highContrast
-            style={{ fontSize: 12, display: 'flex', flexDirection: 'row', gap: 10 }}
-          >
-            {VisibilityUIComponents[accessLevel].icon}
-            {VisibilityUIComponents[accessLevel].text}
-            <CaretDownIcon />
-          </Button>
-        </DropdownMenu.Trigger>
-        <DropdownMenu.Content>
-          {[AccessLevel.PUBLIC, AccessLevel.PRIVATE, AccessLevel.COLLABORATIVE].map((level) => {
-            return (
-              <DropdownMenu.CheckboxItem
-                key={level}
-                style={{ height: 28, fontSize: 12, paddingLeft: 30 }}
-                checked={accessLevel === level}
-                disabled={accessLevel === level}
-                onCheckedChange={onCheckedChange(level)}
-              >
-                {VisibilityUIComponents[level].text}
-              </DropdownMenu.CheckboxItem>
-            )
-          })}
-        </DropdownMenu.Content>
-      </DropdownMenu.Root>
-    )
-  },
-)
-VisibilityDropdown.displayName = 'VisibilityDropdown'
+function VisibilityDropdown({
+  accessLevel,
+  changeProjectAccessLevel,
+}: {
+  accessLevel: AccessLevel
+  changeProjectAccessLevel: (newAccessLevel: AccessLevel) => void
+}) {
+  const onCheckedChange = React.useCallback(
+    (newLevel: AccessLevel) => () => {
+      if (accessLevel === newLevel) {
+        return
+      }
+      changeProjectAccessLevel(newLevel)
+    },
+    [changeProjectAccessLevel, accessLevel],
+  )
+  return (
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger>
+        <Button
+          color='gray'
+          variant='ghost'
+          highContrast
+          style={{ fontSize: 12, display: 'flex', flexDirection: 'row', gap: 10 }}
+        >
+          {VisibilityUIComponents[accessLevel].icon}
+          {VisibilityUIComponents[accessLevel].text}
+          <CaretDownIcon />
+        </Button>
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Content>
+        {[AccessLevel.PUBLIC, AccessLevel.PRIVATE, AccessLevel.COLLABORATIVE].map((level) => {
+          return (
+            <DropdownMenu.CheckboxItem
+              key={level}
+              style={{ height: 28, fontSize: 12, paddingLeft: 30 }}
+              checked={accessLevel === level}
+              disabled={accessLevel === level}
+              onCheckedChange={onCheckedChange(level)}
+            >
+              {VisibilityUIComponents[level].text}
+            </DropdownMenu.CheckboxItem>
+          )
+        })}
+      </DropdownMenu.Content>
+    </DropdownMenu.Root>
+  )
+}
 
 const ProjectLink = React.memo(({ projectId }: { projectId: string }) => {
   const projectLinkRef = React.useRef<HTMLInputElement | null>(null)
