@@ -18,7 +18,7 @@ export const SharingDialog = React.memo(() => {
 
   const projectId = getProjectID()
 
-  const sharingDialogOpen = useEditorState(
+  const sharingDialogOpen: boolean = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.sharingDialogOpen,
     'SharingDialog sharingDialogOpen',
@@ -96,7 +96,6 @@ export const SharingDialog = React.memo(() => {
             iframeLoaded,
             <Button
               highlight
-              //   spotlight
               style={{
                 position: 'absolute',
                 top: 14,
