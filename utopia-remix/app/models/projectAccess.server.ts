@@ -30,33 +30,29 @@ export async function createProjectAccess(params: {
   accessLevel: AccessLevel
   creatorId: string | null
 }): Promise<void> {
-  // check if access level already exists
-  const projectAccess = await prisma.projectAccess.findUnique({
-    where: {
-      project_id: params.projectId,
-    },
-  })
-  if (projectAccess != null) {
-    console.error(`Project access already exists for project ${params.projectId}`)
-    return
-  }
   await prisma.$transaction(async (tx) => {
-    await tx.projectAccess.upsert({
+    // check if project access already exists
+    const projectAccess = await tx.projectAccess.findUnique({
       where: {
         project_id: params.projectId,
       },
-      update: {}, // ON CONFLICT DO NOTHING
-      create: {
-        project_id: params.projectId,
-        access_level: params.accessLevel,
-        modified_at: new Date(),
-      },
     })
-    await Promise.all([
-      permissionsService.setProjectAccess(params.projectId, params.accessLevel),
-      params.creatorId != null
-        ? permissionsService.makeUserCreator(params.projectId, params.creatorId)
-        : null,
-    ])
+    if (projectAccess == null) {
+      await tx.projectAccess.create({
+        data: {
+          project_id: params.projectId,
+          access_level: params.accessLevel,
+          modified_at: new Date(),
+        },
+      })
+      await Promise.all([
+        permissionsService.setProjectAccess(params.projectId, params.accessLevel),
+        params.creatorId != null
+          ? permissionsService.makeUserCreator(params.projectId, params.creatorId)
+          : null,
+      ])
+    } else {
+      console.error(`Project access already exists for project ${params.projectId}`)
+    }
   })
 }
