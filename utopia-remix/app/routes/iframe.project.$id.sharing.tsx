@@ -13,8 +13,10 @@ import { Status } from '../util/statusCodes'
 export async function loader(args: LoaderFunctionArgs) {
   const projectId = args.params.id
   ensure(projectId != null, 'invalid project id', Status.BAD_REQUEST)
+
   const user = await requireUser(args.request)
   ensure(user != null, 'unauthorized', Status.UNAUTHORIZED)
+
   const sharingDetails = await getProjectSharingDetails({
     projectId: projectId,
     userId: user.user_id,
