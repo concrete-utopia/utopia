@@ -69,71 +69,69 @@ export const SharingDialogWrapper = React.memo(
 )
 SharingDialogWrapper.displayName = 'SharingDialogWrapper'
 
-export const SharingDialog = React.memo(
-  ({
-    project,
-    accessRequests,
-  }: {
-    project: ProjectListing | null
-    accessRequests: SharingProjectAccessRequests
-  }) => {
-    const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
+type SharingDialogProps = {
+  project: ProjectListing | null
+  accessRequests: SharingProjectAccessRequests
+}
 
-    const projectAccessLevel = React.useMemo(() => {
-      return asAccessLevel(project?.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
-    }, [project])
+export const SharingDialog = React.memo((props: SharingDialogProps) => {
+  const { project, accessRequests } = props
+  const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
 
-    const [accessLevel, setAccessLevel] = React.useState<AccessLevel>(projectAccessLevel)
+  const projectAccessLevel = React.useMemo(() => {
+    return asAccessLevel(project?.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
+  }, [project])
 
-    const projectAccessMatchesSelectedCategory = useProjectAccessMatchesSelectedCategory(
-      asAccessLevel(project?.ProjectAccess?.access_level),
-    )
+  const [accessLevel, setAccessLevel] = React.useState<AccessLevel>(projectAccessLevel)
 
-    const changeAccessFetcherCallback = React.useCallback(
-      (data: unknown) => {
-        if (isLikeApiError(data)) {
-          setAccessLevel(projectAccessLevel)
-        }
-        if (!projectAccessMatchesSelectedCategory) {
-          setSharingProjectId(null)
-        }
-      },
-      [setSharingProjectId, projectAccessMatchesSelectedCategory, projectAccessLevel],
-    )
+  const projectAccessMatchesSelectedCategory = useProjectAccessMatchesSelectedCategory(
+    asAccessLevel(project?.ProjectAccess?.access_level),
+  )
 
-    const changeAccessFetcher = useFetcherWithOperation(project?.proj_id ?? null, 'changeAccess')
-    useFetcherDataUnkown(changeAccessFetcher, changeAccessFetcherCallback)
+  const changeAccessFetcherCallback = React.useCallback(
+    (data: unknown) => {
+      if (isLikeApiError(data)) {
+        setAccessLevel(projectAccessLevel)
+      }
+      if (!projectAccessMatchesSelectedCategory) {
+        setSharingProjectId(null)
+      }
+    },
+    [setSharingProjectId, projectAccessMatchesSelectedCategory, projectAccessLevel],
+  )
 
-    const changeProjectAccessLevel = React.useCallback(
-      (newAccessLevel: AccessLevel) => {
-        if (project == null) {
-          return
-        }
-        setAccessLevel(newAccessLevel)
-        changeAccessFetcher.submit(
-          operationChangeAccess(project.proj_id, newAccessLevel),
-          { accessLevel: newAccessLevel.toString() },
-          { method: 'POST', action: `/internal/projects/${project.proj_id}/access` },
-        )
-      },
-      [changeAccessFetcher, project],
-    )
+  const changeAccessFetcher = useFetcherWithOperation(project?.proj_id ?? null, 'changeAccess')
+  useFetcherDataUnkown(changeAccessFetcher, changeAccessFetcherCallback)
 
-    if (project == null) {
-      return null
-    }
+  const changeProjectAccessLevel = React.useCallback(
+    (newAccessLevel: AccessLevel) => {
+      if (project == null) {
+        return
+      }
+      setAccessLevel(newAccessLevel)
+      changeAccessFetcher.submit(
+        operationChangeAccess(project.proj_id, newAccessLevel),
+        { accessLevel: newAccessLevel.toString() },
+        { method: 'POST', action: `/internal/projects/${project.proj_id}/access` },
+      )
+    },
+    [changeAccessFetcher, project],
+  )
 
-    return (
-      <SharingDialogContent
-        project={{ ...project, ProjectAccessRequest: accessRequests.requests }}
-        accessRequestsState={accessRequests.state}
-        accessLevel={accessLevel}
-        changeProjectAccessLevel={changeProjectAccessLevel}
-        asDialog={true}
-      />
-    )
-  },
-)
+  if (project == null) {
+    return null
+  }
+
+  return (
+    <SharingDialogContent
+      project={{ ...project, ProjectAccessRequest: accessRequests.requests }}
+      accessRequestsState={accessRequests.state}
+      accessLevel={accessLevel}
+      changeProjectAccessLevel={changeProjectAccessLevel}
+      asDialog={true}
+    />
+  )
+})
 SharingDialog.displayName = 'SharingDialog'
 
 export const SharingDialogContent = React.memo(
