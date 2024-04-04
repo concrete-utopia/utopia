@@ -165,5 +165,10 @@ export async function destroyAccessRequest(params: {
     })
     // 2. revoke access on FGA
     await permissionsService.revokeAllRolesFromUser(params.projectId, request.user_id)
+    // 3. delete the collaborator, if any
+    await removeFromProjectCollaboratorsWithRunner(tx, {
+      projectId: params.projectId,
+      userId: request.user_id,
+    })
   })
 }

@@ -422,5 +422,27 @@ describe('projectAccessRequest', () => {
       })
       expect(current.length).toBe(2)
     })
+    it('removes the user from the collaborators, if present', async () => {
+      await createTestProjectCollaborator(prisma, { projectId: 'two', userId: 'carol' })
+      await createTestProjectCollaborator(prisma, { projectId: 'two', userId: 'bob' })
+      await createTestProjectCollaborator(prisma, { projectId: 'two', userId: 'alice' })
+
+      const existingCollaborators = await prisma.projectCollaborator.findMany({
+        where: { project_id: 'two' },
+      })
+      expect(existingCollaborators.length).toBe(3)
+      expect(existingCollaborators[0].user_id).toBe('carol')
+      expect(existingCollaborators[1].user_id).toBe('bob')
+      expect(existingCollaborators[2].user_id).toBe('alice')
+
+      await destroyAccessRequest({ projectId: 'two', ownerId: 'alice', token: 'token1' })
+
+      const currentCollaborators = await prisma.projectCollaborator.findMany({
+        where: { project_id: 'two' },
+      })
+      expect(currentCollaborators.length).toBe(2)
+      expect(currentCollaborators[0].user_id).toBe('bob')
+      expect(currentCollaborators[1].user_id).toBe('alice')
+    })
   })
 })
