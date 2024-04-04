@@ -521,7 +521,9 @@ export function createPersistenceMachine<ModelType, FileType>(
                         event.data.projectWithChanges.projectModel,
                       ),
                     ),
-                    send((_, event: DoneInvokeEvent<ProjectCreationResult<ModelType, FileType>>) => projectIdCreatedEvent(event.data.projectId)),
+                    send((_, event: DoneInvokeEvent<ProjectCreationResult<ModelType, FileType>>) =>
+                      projectIdCreatedEvent(event.data.projectId),
+                    ),
                   ],
                 },
                 onError: {
