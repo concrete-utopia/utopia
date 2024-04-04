@@ -566,7 +566,10 @@ async function makePreferredChildDescriptor(
   moduleName: string,
   workers: UtopiaTsWorkers,
 ): Promise<Either<string, PreferredChildComponentDescriptor>> {
-  const allRequiredImports = `import { ${componentName} } from '${preferredChild.additionalImports}';`
+  const allRequiredImports =
+    preferredChild.additionalImports == null
+      ? ''
+      : `import { ${componentName} } from '${preferredChild.additionalImports}';`
 
   const parsedParams = await getCachedParseResultForUserStrings(
     workers,

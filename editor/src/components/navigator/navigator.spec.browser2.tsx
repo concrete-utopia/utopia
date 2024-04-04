@@ -5025,6 +5025,47 @@ describe('Navigator', () => {
   })
 
   describe('render props', () => {
+    it('can insert an empty intrinsic element into render prop', async () => {
+      const renderResult = await renderTestEditorWithModel(
+        projectWithRenderProp(''), // <- no render prop
+        'await-first-dom-report',
+      )
+
+      const slotElement = renderResult.renderedDOM.getByTestId(
+        'toggle-render-prop-NavigatorItemTestId-slot_sb/scene/pg:dbc/78c/prop_label_header',
+      )
+
+      await mouseClickAtPoint(slotElement, { x: 3, y: 3 })
+      const renderPropOptionElement = await waitFor(() =>
+        renderResult.renderedDOM.getByText('(empty)'),
+      )
+      await mouseClickAtPoint(renderPropOptionElement, { x: 3, y: 3 })
+
+      expect(
+        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-sb/scene',
+        'regular-sb/scene/pg',
+        'regular-sb/scene/pg:dbc',
+        'regular-sb/scene/pg:dbc/78c',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
+        'regular-sb/scene/pg:dbc/78c/pro', // <- the inserted render prop
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
+        'regular-sb/scene/pg:dbc/78c/88b',
+      ])
+      expect(
+        renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-sb/scene',
+        'regular-sb/scene/pg',
+        'regular-sb/scene/pg:dbc',
+        'regular-sb/scene/pg:dbc/78c',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
+        'regular-sb/scene/pg:dbc/78c/pro', // <- the inserted render prop
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
+        'regular-sb/scene/pg:dbc/78c/88b',
+      ])
+    })
     it('can insert an intrinsic element into render prop', async () => {
       const renderResult = await renderTestEditorWithModel(
         projectWithRenderProp(''), // <- no render prop
