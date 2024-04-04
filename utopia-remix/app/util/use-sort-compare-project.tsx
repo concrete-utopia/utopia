@@ -57,7 +57,7 @@ export function useProjectIsOnActiveOperation() {
           case 'private':
           case 'sharing':
             return op.type === 'delete' && op.projectId === project.proj_id
-          case 'archive':
+          case 'trash':
             return (
               (op.type === 'restore' || op.type === 'destroy') && op.projectId === project.proj_id
             )
