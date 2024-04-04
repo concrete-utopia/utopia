@@ -175,4 +175,5 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   commentFilterMode: 'all',
   forking: false,
   collaborators: [],
+  sharingDialogOpen: false,
 }

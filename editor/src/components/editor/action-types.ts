@@ -1100,6 +1100,11 @@ export interface ExtractPropertyControlsFromDescriptorFiles {
   paths: string[]
 }
 
+export interface SetSharingDialogOpen {
+  action: 'SET_SHARING_DIALOG_OPEN'
+  open: boolean
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertJSXElement
@@ -1278,6 +1283,7 @@ export type EditorAction =
   | SetForking
   | SetCollaborators
   | ExtractPropertyControlsFromDescriptorFiles
+  | SetSharingDialogOpen
 
 export type DispatchPriority =
   | 'everyone'

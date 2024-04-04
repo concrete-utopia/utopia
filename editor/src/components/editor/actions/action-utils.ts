@@ -134,6 +134,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_FORKING':
     case 'SET_COLLABORATORS':
     case 'EXTRACT_PROPERTY_CONTROLS_FROM_DESCRIPTOR_FILES':
+    case 'SET_SHARING_DIALOG_OPEN':
       return true
 
     case 'TRUE_UP_ELEMENTS':
