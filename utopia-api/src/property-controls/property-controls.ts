@@ -265,7 +265,7 @@ export type BaseControlDescription =
   | Vector4ControlDescription
   | JSXControlDescription
 
-export type PropertyControlsOptions<T> = Omit<ControlBaseFields, 'control'> & { defaultField: T }
+export type PropertyControlsOptions<T> = Omit<ControlBaseFields, 'control'> & { defaultValue?: T }
 
 // Higher Level Controls
 
