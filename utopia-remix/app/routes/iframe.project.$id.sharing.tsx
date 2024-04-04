@@ -17,6 +17,8 @@ export async function loader(args: LoaderFunctionArgs) {
   const user = await requireUser(args.request)
   ensure(user != null, 'unauthorized', Status.UNAUTHORIZED)
 
+  // Note: at the moment only the owner of the project can open the share dialog, but that's fine until we
+  // introduce full write-enabled, non-owner roles support.
   const sharingDetails = await getProjectSharingDetails({
     projectId: projectId,
     userId: user.user_id,
