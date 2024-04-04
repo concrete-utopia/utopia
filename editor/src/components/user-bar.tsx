@@ -33,7 +33,6 @@ import { Substores, useEditorState } from './editor/store/store-hook'
 import { useIsMyProject } from './editor/store/collaborative-editing'
 import { motion } from 'framer-motion'
 import { useIsBeingFollowed, useSortMultiplayerUsers } from '../core/shared/multiplayer-hooks'
-import { getProjectID } from '../common/env-vars'
 
 const MAX_VISIBLE_OTHER_PLAYERS = 4
 
@@ -209,11 +208,6 @@ const MultiplayerUserBar = React.memo(() => {
     },
     [dispatch, mode, sortedOthers, myUser, myPresence],
   )
-
-  const projectId = getProjectID()
-  if (projectId == null) {
-    return null
-  }
 
   if (myUser.name == null) {
     // it may still be loading, so fallback until it sorts itself out
