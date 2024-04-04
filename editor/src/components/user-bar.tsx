@@ -26,7 +26,7 @@ import { unless, when } from '../utils/react-conditionals'
 import { Avatar, FlexRow, Icn, Tooltip, colorTheme } from '../uuiui'
 import { notice } from './common/notice'
 import type { EditorAction } from './editor/action-types'
-import { showToast, switchEditorMode } from './editor/actions/action-creators'
+import { setSharingDialogOpen, showToast, switchEditorMode } from './editor/actions/action-creators'
 import { EditorModes, isFollowMode } from './editor/editor-modes'
 import { useDispatch } from './editor/store/dispatch-context'
 import { Substores, useEditorState } from './editor/store/store-hook'
@@ -120,17 +120,9 @@ SinglePlayerUserBar.displayName = 'SinglePlayerUserBar'
 const MultiplayerUserBar = React.memo(() => {
   const dispatch = useDispatch()
 
-  const url = window.location.href
-  const handleCopyToClipboard = React.useCallback(async () => {
-    try {
-      let actions: EditorAction[] = []
-      actions.push(showToast(notice('Project link copied to clipboard!', 'NOTICE', false)))
-      await window.navigator.clipboard.writeText(url)
-      dispatch(actions)
-    } catch (error) {
-      console.error('Error copying to clipboard:', error)
-    }
-  }, [dispatch, url])
+  const handleClickShare = React.useCallback(() => {
+    dispatch([setSharingDialogOpen(true)])
+  }, [dispatch])
 
   const collabs = useCollaborators()
 
@@ -295,7 +287,7 @@ const MultiplayerUserBar = React.memo(() => {
         }),
       )}
       <FlexRow
-        onClick={handleCopyToClipboard}
+        onClick={handleClickShare}
         css={{
           background: colorTheme.primary30.value,
           borderRadius: 24,

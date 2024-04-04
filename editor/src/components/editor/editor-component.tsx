@@ -74,6 +74,7 @@ import { CommentMaintainer } from '../../core/commenting/comment-maintainer'
 import { useIsLoggedIn, useLiveblocksConnectionListener } from '../../core/shared/multiplayer-hooks'
 import { ForkSearchParamKey, ProjectForkFlow } from './project-fork-flow'
 import { isRoomId, projectIdToRoomId } from '../../utils/room-id'
+import { SharingDialog } from './sharing-dialog'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -495,6 +496,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
         <GithubRepositoryCloneFlow />
         <ProjectForkFlow />
         <LockedOverlay />
+        <SharingDialog />
       </SimpleFlexRow>
       <EditorCommon
         mouseDown={onWindowMouseDown}
