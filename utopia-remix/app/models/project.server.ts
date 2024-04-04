@@ -2,7 +2,6 @@ import { prisma } from '../db.server'
 import type {
   CollaboratorsByProject,
   GithubRepository,
-  ProjectAccessRequestWithUserDetails,
   ProjectListing,
   ProjectSharingDetails,
 } from '../types'
@@ -92,11 +91,8 @@ export async function getProjectOwnership(
 export async function getProjectSharingDetails(params: {
   projectId: string
   userId: string
-}): Promise<{
-  project: ProjectSharingDetails
-  accessRequests: ProjectAccessRequestWithUserDetails[]
-} | null> {
-  const project = await prisma.project.findUnique({
+}): Promise<ProjectSharingDetails | null> {
+  return prisma.project.findUnique({
     where: {
       proj_id: params.projectId,
       owner_id: params.userId,
@@ -104,26 +100,9 @@ export async function getProjectSharingDetails(params: {
     select: {
       proj_id: true,
       ProjectAccess: true,
-      ProjectAccessRequest: {
-        select: {
-          status: true,
-          created_at: true,
-          User: true,
-        },
-      },
+      ProjectAccessRequest: { include: { User: true } },
     },
   })
-  if (project == null) {
-    return null
-  }
-  const accessRequests = await prisma.projectAccessRequest.findMany({
-    where: { project_id: params.projectId },
-    include: { User: true },
-  })
-  return {
-    project: project,
-    accessRequests: accessRequests,
-  }
 }
 
 export async function renameProject(params: {

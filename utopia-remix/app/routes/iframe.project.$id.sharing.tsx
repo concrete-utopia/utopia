@@ -4,8 +4,8 @@ import type { UserDetails } from 'prisma-client'
 import React from 'react'
 import { SharingDialogContent } from '../components/sharingDialog'
 import { getProjectSharingDetails } from '../models/project.server'
+import type { SharingProjectAccessRequests } from '../stores/projectsStore'
 import { ProjectsContext, createProjectsStore } from '../stores/projectsStore'
-import type { ProjectAccessRequestWithUserDetails } from '../types'
 import { AccessLevel, asAccessLevel, type ProjectSharingDetails } from '../types'
 import { ensure, requireUser } from '../util/api.server'
 import { Status } from '../util/statusCodes'
@@ -24,8 +24,7 @@ export async function loader(args: LoaderFunctionArgs) {
   return json(
     {
       user: user,
-      project: sharingDetails.project,
-      accessRequests: sharingDetails.accessRequests,
+      project: sharingDetails,
     },
     { headers: { 'cache-control': 'no-cache' } },
   )
@@ -35,14 +34,17 @@ const SharingIframe = React.memo(() => {
   const data = useLoaderData<typeof loader>() as unknown as {
     user: UserDetails
     project: ProjectSharingDetails
-    accessRequests: ProjectAccessRequestWithUserDetails[]
   }
+
+  const accessRequests: SharingProjectAccessRequests = React.useMemo(() => {
+    return { state: 'ready', requests: data.project.ProjectAccessRequest }
+  }, [data.project.ProjectAccessRequest])
 
   const store = React.useRef(
     createProjectsStore({
       myUser: data.user,
       sharingProjectId: data.project.proj_id,
-      sharingProjectAccessRequests: { state: 'ready', requests: data.accessRequests },
+      sharingProjectAccessRequests: accessRequests,
     }),
   ).current
 
@@ -71,7 +73,7 @@ const SharingIframe = React.memo(() => {
       <SharingDialogContent
         project={data.project}
         accessLevel={accessLevel}
-        accessRequests={{ state: 'ready', requests: data.accessRequests }}
+        accessRequests={accessRequests}
         changeProjectAccessLevel={changeProjectAccessLevel}
         asDialog={false}
       />

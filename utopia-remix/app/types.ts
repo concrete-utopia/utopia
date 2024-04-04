@@ -14,7 +14,9 @@ type FullProjectFromDB = Prisma.ProjectGetPayload<typeof fullProjectFromDB>
 
 export type ProjectWithoutContentFromDB = Omit<FullProjectFromDB, 'content'>
 
-export type ProjectSharingDetails = Pick<ProjectListing, 'proj_id' | 'ProjectAccess'>
+export type ProjectSharingDetails = Pick<ProjectListing, 'proj_id' | 'ProjectAccess'> & {
+  ProjectAccessRequest: ProjectAccessRequestWithUserDetails[]
+}
 
 export type ProjectListing = ProjectWithoutContentFromDB & {
   hasPendingRequests?: boolean
