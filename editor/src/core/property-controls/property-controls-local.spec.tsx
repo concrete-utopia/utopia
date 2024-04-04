@@ -173,6 +173,75 @@ describe('registered property controls', () => {
       }
     `)
   })
+  it('Can set property control options using the control factory functions', async () => {
+    const renderResult = await renderTestEditorWithModel(
+      project({
+        ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
+        import * as Utopia from 'utopia-api'
+        
+        const Components = {
+          '/src/card': {
+            Card: {
+              component: Card,
+              supportsChildren: false,
+              properties: {
+                label: Utopia.stringControl('type here', {
+                  required: true,
+                  defaultValue: 'hello',
+                }),
+              },
+              variants: [],
+            },
+          },
+        }
+        
+        export default Components
+        
+  `,
+      }),
+      'await-first-dom-report',
+    )
+    const editorState = renderResult.getEditorState().editor
+
+    expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
+      Object {
+        "Card": Object {
+          "preferredChildComponents": Array [],
+          "properties": Object {
+            "label": Object {
+              "control": "string-input",
+              "defaultValue": "hello",
+              "placeholder": "type here",
+              "required": true,
+            },
+          },
+          "source": Object {
+            "sourceDescriptorFile": "/utopia/components.utopia.js",
+            "type": "DESCRIPTOR_FILE",
+          },
+          "supportsChildren": false,
+          "variants": Array [
+            Object {
+              "elementToInsert": [Function],
+              "importsToAdd": Object {
+                "/src/card": Object {
+                  "importedAs": null,
+                  "importedFromWithin": Array [
+                    Object {
+                      "alias": "Card",
+                      "name": "Card",
+                    },
+                  ],
+                  "importedWithName": null,
+                },
+              },
+              "insertMenuLabel": "Card",
+            },
+          ],
+        },
+      }
+    `)
+  })
   it('control registration fails when the imported component is undefined', async () => {
     const renderResult = await renderTestEditorWithModel(
       project({
