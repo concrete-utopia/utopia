@@ -2,6 +2,7 @@ import { prisma } from '../db.server'
 import type {
   CollaboratorsByProject,
   GithubRepository,
+  ProjectAccessRequestWithUserDetails,
   ProjectListing,
   ProjectSharingDetails,
 } from '../types'
