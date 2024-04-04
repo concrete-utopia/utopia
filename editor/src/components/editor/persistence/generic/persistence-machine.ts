@@ -732,7 +732,6 @@ export function createPersistenceMachine<ModelType, FileType>(
                             return event.projectId
                           },
                         }),
-                        send((_, event) => projectIdCreatedEvent(event.projectId)),
                       ],
                       target: ProjectCreated,
                     },
