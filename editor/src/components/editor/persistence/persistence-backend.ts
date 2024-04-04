@@ -116,12 +116,14 @@ async function loadProject(projectId: string): Promise<ProjectLoadResult<Persist
   }
 }
 
+export const AccessLevelParamKey = 'accessLevel'
+
 async function createNewProjectInServer(
   projectModel: ProjectModel<PersistentModel>,
 ): Promise<ProjectCreationResult<PersistentModel, ProjectFile>> {
   const { projectWithChanges } = prepareAssetsForUploading(projectModel)
 
-  const accessLevel = readParamFromUrl('accessLevel', 'remove-from-url')
+  const accessLevel = readParamFromUrl(AccessLevelParamKey)
 
   const { id } = await createNewProject(
     projectWithChanges.projectModel.content,
