@@ -148,12 +148,6 @@ export const SharingDialogContent = React.memo(
     changeProjectAccessLevel: (newAccessLevel: AccessLevel) => void
     asDialog: boolean
   }) => {
-    const myUser = useProjectsStore((store) => store.myUser)
-
-    const isOwner = React.useMemo(() => {
-      return myUser?.user_id === project.owner_id
-    }, [myUser, project.owner_id])
-
     return (
       <Flex direction='column' style={{ maxHeight: '75vh', padding: asDialog ? 0 : 14 }} gap='4'>
         <Flex direction='column' gap='4'>
@@ -178,27 +172,20 @@ export const SharingDialogContent = React.memo(
               </Dialog.Close>,
             )}
           </Flex>
-          {when(
-            isOwner,
-            <Flex justify='between' align='center' style={{ paddingTop: 4 }}>
-              <Text size='1'>Project Visibility</Text>
-              <VisibilityDropdown
-                accessLevel={accessLevel}
-                changeProjectAccessLevel={changeProjectAccessLevel}
-              />
-            </Flex>,
-          )}
+          <Flex justify='between' align='center' style={{ paddingTop: 4 }}>
+            <Text size='1'>Project Visibility</Text>
+            <VisibilityDropdown
+              accessLevel={accessLevel}
+              changeProjectAccessLevel={changeProjectAccessLevel}
+            />
+          </Flex>
           {when(
             accessLevel === AccessLevel.COLLABORATIVE || accessLevel === AccessLevel.PUBLIC,
             <ProjectLink projectId={project.proj_id} />,
           )}
         </Flex>
         <Separator size='4' />
-        <AccessRequestsList
-          projectId={project.proj_id}
-          accessLevel={accessLevel}
-          ownerId={project.owner_id}
-        />
+        <AccessRequestsList projectId={project.proj_id} accessLevel={accessLevel} />
       </Flex>
     )
   },
@@ -207,52 +194,49 @@ SharingDialogContent.displayName = 'SharingDialogContent'
 
 type AccessRequestListProps = {
   projectId: string
-  ownerId: string
   accessLevel: AccessLevel
 }
 
-const AccessRequestsList = React.memo(
-  ({ projectId, ownerId, accessLevel }: AccessRequestListProps) => {
-    const accessRequests = useProjectsStore((store) => store.sharingProjectAccessRequests)
+const AccessRequestsList = React.memo(({ projectId, accessLevel }: AccessRequestListProps) => {
+  const accessRequests = useProjectsStore((store) => store.sharingProjectAccessRequests)
 
-    const hasGonePrivate = React.useMemo(() => {
-      return accessRequests.requests.length > 0 && accessLevel === AccessLevel.PRIVATE
-    }, [accessLevel, accessRequests])
+  const hasGonePrivate = React.useMemo(() => {
+    return accessRequests.requests.length > 0 && accessLevel === AccessLevel.PRIVATE
+  }, [accessLevel, accessRequests])
 
-    const showAccessRequests = React.useMemo(() => {
-      return accessRequests.state === 'ready' && accessRequests.requests.length > 0
-    }, [accessRequests])
+  const showAccessRequests = React.useMemo(() => {
+    return accessRequests.state === 'ready' && accessRequests.requests.length > 0
+  }, [accessRequests])
 
-    return (
-      <AnimatePresence>
-        <motion.div style={{ flex: '1 1' }}>
-          <Flex direction={'column'} gap='4' style={{}}>
-            {when(hasGonePrivate, <HasGonePrivate />)}
+  return (
+    <AnimatePresence>
+      <motion.div style={{ flex: '1 1' }}>
+        <Flex direction={'column'} gap='4' style={{}}>
+          {when(hasGonePrivate, <HasGonePrivate />)}
 
-            <OwnerCollaboratorRow ownerId={ownerId} />
+          <OwnerCollaboratorRow />
 
-            {when(
-              showAccessRequests,
-              <motion.div
-                animate={{ height: 'auto', opacity: 1 }}
-                initial={{ height: 0, opacity: 0 }}
-                exit={{ height: 0, opacity: 0 }}
-              >
-                <Flex direction={'column'} gap='4'>
-                  <AccessRequests
-                    projectId={projectId}
-                    projectAccessLevel={accessLevel}
-                    accessRequests={accessRequests.requests}
-                  />
-                </Flex>
-              </motion.div>,
-            )}
-          </Flex>
-        </motion.div>
-      </AnimatePresence>
-    )
-  },
-)
+          {when(
+            showAccessRequests,
+            <motion.div
+              animate={{ height: 'auto', opacity: 1 }}
+              initial={{ height: 0, opacity: 0 }}
+              exit={{ height: 0, opacity: 0 }}
+            >
+              <Flex direction={'column'} gap='4'>
+                <AccessRequests
+                  projectId={projectId}
+                  projectAccessLevel={accessLevel}
+                  accessRequests={accessRequests.requests}
+                />
+              </Flex>
+            </motion.div>,
+          )}
+        </Flex>
+      </motion.div>
+    </AnimatePresence>
+  )
+})
 AccessRequestsList.displayName = 'AccessRequestsList'
 
 const HasGonePrivate = React.memo(() => {
@@ -264,13 +248,8 @@ const HasGonePrivate = React.memo(() => {
 })
 HasGonePrivate.displayName = 'HasGonePrivate'
 
-const OwnerCollaboratorRow = React.memo(({ ownerId }: { ownerId: string }) => {
+const OwnerCollaboratorRow = React.memo(() => {
   const myUser = useProjectsStore((store) => store.myUser)
-
-  const isOwner = React.useMemo(() => {
-    return ownerId === myUser?.user_id
-  }, [ownerId, myUser])
-
   if (myUser == null) {
     return null
   }
@@ -279,14 +258,11 @@ const OwnerCollaboratorRow = React.memo(({ ownerId }: { ownerId: string }) => {
     <CollaboratorRow
       picture={myUser.picture ?? null}
       name={`${myUser.name ?? myUser.email ?? myUser.id} (you)`}
-      starBadge={isOwner}
+      starBadge={true}
     >
-      {when(
-        isOwner,
-        <Text size='1' style={{ cursor: 'default' }}>
-          Owner
-        </Text>,
-      )}
+      <Text size='1' style={{ cursor: 'default' }}>
+        Owner
+      </Text>
     </CollaboratorRow>
   )
 })

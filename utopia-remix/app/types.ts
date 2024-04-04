@@ -18,10 +18,7 @@ export type ProjectListing = ProjectWithoutContentFromDB & {
   hasPendingRequests?: boolean
 }
 
-export type ProjectSharingDetails = Pick<
-  ProjectListing,
-  'proj_id' | 'ProjectAccess' | 'owner_id'
-> & {
+export type ProjectSharingDetails = Pick<ProjectListing, 'proj_id' | 'ProjectAccess'> & {
   ProjectAccessRequest: ProjectAccessRequestWithUserDetails[]
 }
 

@@ -33,6 +33,7 @@ import { Substores, useEditorState } from './editor/store/store-hook'
 import { useIsMyProject } from './editor/store/collaborative-editing'
 import { motion } from 'framer-motion'
 import { useIsBeingFollowed, useSortMultiplayerUsers } from '../core/shared/multiplayer-hooks'
+import { useTriggerForkProject } from './editor/persistence-hooks'
 
 const MAX_VISIBLE_OTHER_PLAYERS = 4
 
@@ -123,6 +124,8 @@ const MultiplayerUserBar = React.memo(() => {
   const handleClickShare = React.useCallback(() => {
     dispatch([setSharingDialogOpen(true)])
   }, [dispatch])
+
+  const handleClickFork = useTriggerForkProject()
 
   const collabs = useCollaborators()
 
@@ -287,7 +290,7 @@ const MultiplayerUserBar = React.memo(() => {
         }),
       )}
       <FlexRow
-        onClick={handleClickShare}
+        onClick={amIOwner ? handleClickShare : handleClickFork}
         css={{
           background: colorTheme.primary30.value,
           borderRadius: 24,
@@ -313,7 +316,7 @@ const MultiplayerUserBar = React.memo(() => {
           size={AvatarSize}
           style={{ outline: 'undefined' }}
         />
-        <div style={{ padding: '0 8px 0 5px', fontWeight: 500 }}>Share</div>
+        <div style={{ padding: '0 8px 0 5px', fontWeight: 500 }}>{amIOwner ? 'Share' : 'Fork'}</div>
       </FlexRow>
     </motion.div>
   )

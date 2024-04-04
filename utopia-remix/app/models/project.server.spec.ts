@@ -571,19 +571,17 @@ describe('project model', () => {
         userId: 'dorothy',
         token: 't4',
       })
-
-      await createTestProjectCollaborator(prisma, { projectId: 'two', userId: 'dorothy' })
     })
 
     it('returns null if the project does not exist', async () => {
       const got = await getProjectSharingDetails({ projectId: 'WRONG', userId: 'bob' })
       expect(got).toBe(null)
     })
-    it('returns null if the user does not own the project and is not a collaborator', async () => {
+    it('returns null if the user does not own the project', async () => {
       const got = await getProjectSharingDetails({ projectId: 'one', userId: 'alice' })
       expect(got).toBe(null)
     })
-    it('returns the project details with the access requests if the user is an owner', async () => {
+    it('returns the project details with the access requests', async () => {
       let got = await getProjectSharingDetails({ projectId: 'one', userId: 'bob' })
       if (got == null) {
         throw new Error('expected not null project')
@@ -601,15 +599,6 @@ describe('project model', () => {
       expect(got.ProjectAccessRequest.length).toBe(3)
       expect(got.ProjectAccessRequest[0].token).toBe('t1')
       expect(got.ProjectAccessRequest[0].User?.name).toBe('alice')
-    })
-    it('returns just the project details if the user is not an owner but is a collaborator', async () => {
-      const got = await getProjectSharingDetails({ projectId: 'two', userId: 'dorothy' })
-      if (got == null) {
-        throw new Error('expected not null project')
-      }
-      expect(got.proj_id).toBe('two')
-      expect(got.ProjectAccess?.access_level).toBe(AccessLevel.COLLABORATIVE)
-      expect(got.ProjectAccessRequest.length).toBe(0)
     })
   })
 })
