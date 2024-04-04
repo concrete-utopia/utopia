@@ -265,12 +265,7 @@ export type BaseControlDescription =
   | Vector4ControlDescription
   | JSXControlDescription
 
-export interface PropertyControlsOptions<T> {
-  label?: string
-  visibleByDefault?: boolean
-  required?: boolean
-  defaultValue?: T
-}
+export type PropertyControlsOptions<T> = Omit<ControlBaseFields, 'control'> & { defaultField: T }
 
 // Higher Level Controls
 
