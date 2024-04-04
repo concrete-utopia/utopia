@@ -97,7 +97,7 @@ function pushProjectURLToBrowserHistory(
   const projectURL = projectURLForProject(projectId, projectName)
   const title = `Utopia ${projectName}`
 
-  window.top?.history.pushState({}, title, `${projectURL}${queryParamsStr}`)
+  window.top?.history.replaceState({}, title, `${projectURL}${queryParamsStr}`)
 }
 
 export interface EditorProps {}
