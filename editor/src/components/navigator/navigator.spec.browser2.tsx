@@ -5082,8 +5082,6 @@ describe('Navigator', () => {
       )
       await mouseClickAtPoint(renderPropOptionElement, { x: 3, y: 3 })
 
-      await wait(100000)
-
       expect(
         renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
       ).toEqual([
