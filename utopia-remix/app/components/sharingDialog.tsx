@@ -16,7 +16,10 @@ import React from 'react'
 import { useFetcherDataUnkown } from '../hooks/useFetcherData'
 import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
 import { useProjectAccessMatchesSelectedCategory } from '../hooks/useProjectMatchingCategory'
-import type { SharingProjectAccessRequests } from '../stores/projectsStore'
+import type {
+  SharingProjectAccessRequests,
+  SharingProjectAccessRequestsState,
+} from '../stores/projectsStore'
 import { useProjectsStore } from '../stores/projectsStore'
 import { sprinkles } from '../styles/sprinkles.css'
 import type { ProjectSharingDetails, UpdateAccessRequestAction } from '../types'
@@ -53,10 +56,12 @@ export const SharingDialogWrapper = React.memo(
       [setSharingProjectId],
     )
 
+    const accessRequests = useProjectsStore((store) => store.sharingProjectAccessRequests)
+
     return (
       <Dialog.Root open={sharingProjectId === project?.proj_id} onOpenChange={onOpenChange}>
         <Dialog.Content>
-          <SharingDialog project={project} />
+          <SharingDialog project={project} accessRequests={accessRequests} />
         </Dialog.Content>
       </Dialog.Root>
     )
@@ -65,9 +70,14 @@ export const SharingDialogWrapper = React.memo(
 SharingDialogWrapper.displayName = 'SharingDialogWrapper'
 
 export const SharingDialog = React.memo(
-  ({ project }: { project: ProjectSharingDetails | null }) => {
+  ({
+    project,
+    accessRequests,
+  }: {
+    project: ProjectListing | null
+    accessRequests: SharingProjectAccessRequests
+  }) => {
     const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
-    const accessRequests = useProjectsStore((store) => store.sharingProjectAccessRequests)
 
     const projectAccessLevel = React.useMemo(() => {
       return asAccessLevel(project?.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
@@ -75,7 +85,9 @@ export const SharingDialog = React.memo(
 
     const [accessLevel, setAccessLevel] = React.useState<AccessLevel>(projectAccessLevel)
 
-    const projectAccessMatchesSelectedCategory = useProjectAccessMatchesSelectedCategory(project)
+    const projectAccessMatchesSelectedCategory = useProjectAccessMatchesSelectedCategory(
+      asAccessLevel(project?.ProjectAccess?.access_level),
+    )
 
     const changeAccessFetcherCallback = React.useCallback(
       (data: unknown) => {
@@ -113,8 +125,8 @@ export const SharingDialog = React.memo(
 
     return (
       <SharingDialogContent
-        project={project}
-        accessRequests={accessRequests}
+        project={{ ...project, ProjectAccessRequest: accessRequests.requests }}
+        accessRequestsState={accessRequests.state}
         accessLevel={accessLevel}
         changeProjectAccessLevel={changeProjectAccessLevel}
         asDialog={true}
@@ -127,14 +139,14 @@ SharingDialog.displayName = 'SharingDialog'
 export const SharingDialogContent = React.memo(
   ({
     project,
-    accessRequests,
+    accessRequestsState,
     accessLevel,
     changeProjectAccessLevel,
     asDialog,
   }: {
     project: ProjectSharingDetails
+    accessRequestsState: SharingProjectAccessRequestsState
     accessLevel: AccessLevel
-    accessRequests: SharingProjectAccessRequests
     changeProjectAccessLevel: (newAccessLevel: AccessLevel) => void
     asDialog: boolean
   }) => {
@@ -146,7 +158,7 @@ export const SharingDialogContent = React.memo(
               <Text size='3'>Project Sharing</Text>
               <AnimatePresence>
                 {when(
-                  accessRequests.state === 'loading',
+                  accessRequestsState === 'loading',
                   <motion.div style={{ opacity: 0.1 }} exit={{ opacity: 0 }}>
                     <Spinner className={sprinkles({ backgroundColor: 'black' })} />
                   </motion.div>,

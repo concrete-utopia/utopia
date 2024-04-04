@@ -72,8 +72,8 @@ const SharingIframe = React.memo(() => {
     <ProjectsContext.Provider value={store}>
       <SharingDialogContent
         project={data.project}
+        accessRequestsState={accessRequests.state}
         accessLevel={accessLevel}
-        accessRequests={accessRequests}
         changeProjectAccessLevel={changeProjectAccessLevel}
         asDialog={false}
       />
