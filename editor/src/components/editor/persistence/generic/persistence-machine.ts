@@ -521,9 +521,6 @@ export function createPersistenceMachine<ModelType, FileType>(
                         event.data.projectWithChanges.projectModel,
                       ),
                     ),
-                    send((_, event: DoneInvokeEvent<ProjectCreationResult<ModelType, FileType>>) =>
-                      projectIdCreatedEvent(event.data.projectId),
-                    ),
                   ],
                 },
                 onError: {
@@ -735,6 +732,7 @@ export function createPersistenceMachine<ModelType, FileType>(
                             return event.projectId
                           },
                         }),
+                        send((_, event) => projectIdCreatedEvent(event.projectId)),
                       ],
                       target: ProjectCreated,
                     },
