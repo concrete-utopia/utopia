@@ -23,7 +23,6 @@ export async function loader(args: LoaderFunctionArgs) {
     projectId: projectId,
     userId: user.user_id,
   })
-  ensure(sharingDetails != null, 'project not found', Status.NOT_FOUND)
 
   return json(
     {

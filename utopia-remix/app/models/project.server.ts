@@ -2,7 +2,6 @@ import { prisma } from '../db.server'
 import type {
   CollaboratorsByProject,
   GithubRepository,
-  ProjectAccessRequestWithUserDetails,
   ProjectListing,
   ProjectSharingDetails,
 } from '../types'
@@ -93,17 +92,48 @@ export async function getProjectSharingDetails(params: {
   projectId: string
   userId: string
 }): Promise<ProjectSharingDetails | null> {
-  return prisma.project.findUnique({
+  // NOTE: this is a potentially expensive query. Depending on traffic
+  // and metrics we might be better off splitting it into separate calls
+  // depending on whether the project lookup returns a hit for an owned project,
+  // but for now this is simple and concise enough so we can worry about perf later.
+  const project = await prisma.project.findUnique({
     where: {
       proj_id: params.projectId,
-      owner_id: params.userId,
     },
     select: {
+      owner_id: true,
       proj_id: true,
       ProjectAccess: true,
       ProjectAccessRequest: { include: { User: true } },
+      ProjectCollaborator: true,
     },
   })
+
+  if (project == null) {
+    // the project does not exist, return nothing
+    return null
+  }
+
+  if (project.owner_id === params.userId) {
+    // the user is the owner, return the whole data
+    return {
+      proj_id: project.proj_id,
+      owner_id: project.owner_id,
+      ProjectAccess: project.ProjectAccess,
+      ProjectAccessRequest: project.ProjectAccessRequest,
+    }
+  } else if (project.ProjectCollaborator.some((c) => c.user_id === params.userId)) {
+    // the user is a collaborator, return only the project meta
+    return {
+      proj_id: project.proj_id,
+      owner_id: project.owner_id,
+      ProjectAccess: project.ProjectAccess,
+      ProjectAccessRequest: [],
+    }
+  } else {
+    // the user is not a collaborator, return nothing
+    return null
+  }
 }
 
 export async function renameProject(params: {
