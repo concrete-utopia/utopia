@@ -5,9 +5,11 @@ import { simplifiedMetadataMap } from '../../../utils/utils.test-utils'
 import { setFocusedElement } from '../../editor/actions/action-creators'
 import { StoryboardFilePath } from '../../editor/store/editor-state'
 import CanvasActions from '../canvas-actions'
+import type { EditorRenderResult } from '../ui-jsx.test-utils'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import { matchInlineSnapshotBrowser } from '../../../../test/karma-snapshots'
 import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
+import { earlyReturnResult } from '../../../core/shared/element-template'
 
 const exampleProject = `
 import * as React from "react";
@@ -200,7 +202,65 @@ function createComponentWithConditionalProject() {
   })
 }
 
+function createProjectWithEarlyReturn(returnsEarly: boolean): Promise<EditorRenderResult> {
+  return createAndRenderModifiedProject({
+    [StoryboardFilePath]: `import * as React from 'react'
+import Utopia, {
+  Scene,
+  Storyboard,
+} from 'utopia-api'
+import { App } from '/src/app.js'
+
+export var storyboard = (
+  <Storyboard data-uid='storyboard-entity'>
+    <Scene
+      data-label='Imported App'
+      data-uid='scene-1-entity'
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+    >
+      <App data-uid='app-entity' />
+    </Scene>
+  </Storyboard>
+)`,
+    ['/src/app.js']: `import * as React from 'react'
+
+export var App = () => {
+  if (${returnsEarly}) {
+    return 'Early Return Value.'
+  }
+  return (
+    <div
+      data-uid='app-root-div'
+      style={{
+        width: '100%',
+        background: 'var(--orange)',
+        overflowY: 'scroll',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 0,
+      }}
+    >
+      Something
+    </div>
+  )
+}
+`,
+  })
+}
+
 describe('Spy Wrapper Template Path Tests', () => {
+  it('captures an early return value when there is one', async () => {
+    const { getEditorState } = await createProjectWithEarlyReturn(true)
+    const metadata = getEditorState().editor.jsxMetadata
+    expect(metadata['storyboard-entity/scene-1-entity/app-entity'].earlyReturn).toEqual(
+      earlyReturnResult('Early Return Value.'),
+    )
+  })
+  it('does not capture an early return value in the case where there is not one', async () => {
+    const { getEditorState } = await createProjectWithEarlyReturn(false)
+    const metadata = getEditorState().editor.jsxMetadata
+    expect(metadata['storyboard-entity/scene-1-entity/app-entity'].earlyReturn).toBeNull()
+  })
   it('a simple component in a regular scene', async () => {
     const { getEditorState } = await createExampleProject()
 

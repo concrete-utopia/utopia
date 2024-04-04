@@ -1450,7 +1450,6 @@ export function parseJSExpressionMapOrOtherJavascript(
             expressionFullText,
             rawMap,
             parsedElementsWithin,
-            true,
             false,
             sourceFile.fileName,
           )
@@ -3654,7 +3653,6 @@ export function parseArbitraryNodes(
         code,
         rawMap,
         parsedElementsWithin,
-        false,
         rootLevel,
         sourceFile.fileName,
       )

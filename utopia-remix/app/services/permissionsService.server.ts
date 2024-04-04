@@ -82,3 +82,7 @@ export async function revokeAllRolesFromUser(projectId: string, userId: string) 
     'admin',
   ])
 }
+
+export async function makeUserCreator(projectId: string, userId: string) {
+  return fgaService.makeUserCreator(projectId, userId)
+}

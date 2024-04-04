@@ -28,6 +28,7 @@ export async function setProjectAccess(params: {
 export async function createProjectAccess(params: {
   projectId: string
   accessLevel: AccessLevel
+  creatorId: string | null
 }): Promise<void> {
   await prisma.$transaction(async (tx) => {
     // check if project access already exists
@@ -44,7 +45,12 @@ export async function createProjectAccess(params: {
           modified_at: new Date(),
         },
       })
-      await permissionsService.setProjectAccess(params.projectId, params.accessLevel)
+      await Promise.all([
+        permissionsService.setProjectAccess(params.projectId, params.accessLevel),
+        params.creatorId != null
+          ? permissionsService.makeUserCreator(params.projectId, params.creatorId)
+          : null,
+      ])
     } else {
       console.error(`Project access already exists for project ${params.projectId}`)
     }
