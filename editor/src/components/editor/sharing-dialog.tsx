@@ -8,9 +8,9 @@ import { useEditorState, Substores } from './store/store-hook'
 import { unless, when } from '../../utils/react-conditionals'
 import { setSharingDialogOpen } from './actions/action-creators'
 
-const BaseIframeHeight = 80
-const SharingIframeWidth = 580
-const LoadingDialogWidth = 260
+const BaseIframeHeight = 80 // px
+const SharingIframeWidth = 580 // px
+const LoadingDialogWidth = 260 // px
 
 export const SharingDialog = React.memo(() => {
   const dispatch = useDispatch()
