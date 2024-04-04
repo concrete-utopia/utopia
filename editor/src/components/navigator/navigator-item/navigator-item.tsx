@@ -794,12 +794,22 @@ export const NavigatorItem: React.FunctionComponent<
       {portalTarget == null || navigatorEntry.type !== 'SLOT'
         ? null
         : ReactDOM.createPortal(
-            <RenderPropPicker
-              target={props.navigatorEntry.elementPath}
-              key={renderPropPickerId}
-              id={renderPropPickerId}
-              prop={navigatorEntry.prop}
-            />,
+            <React.Fragment>
+              <RenderPropPicker
+                target={props.navigatorEntry.elementPath}
+                key={renderPropPickerId}
+                id={renderPropPickerId}
+                prop={navigatorEntry.prop}
+                showFullPicker={false}
+              />
+              <RenderPropPicker
+                target={props.navigatorEntry.elementPath}
+                key={`${renderPropPickerId}-full`}
+                id={`${renderPropPickerId}-full`}
+                prop={navigatorEntry.prop}
+                showFullPicker={true}
+              />
+            </React.Fragment>,
             portalTarget,
           )}
       <FlexRow
