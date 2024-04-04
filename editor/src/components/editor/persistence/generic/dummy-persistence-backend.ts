@@ -25,12 +25,11 @@ function loadProject<ModelType>(projectId: string): Promise<ProjectLoadResult<Mo
   })
 }
 
-function createNewProjectInServer<ModelType, FileType>(
+async function createNewProjectInServer<ModelType, FileType>(
   projectModel: ProjectModel<ModelType>,
 ): Promise<ProjectCreationResult<ModelType, FileType>> {
-  return Promise.resolve(
-    projectCreationResult(`Project_${projectCounter++}`, projectWithFileChanges([], projectModel)),
-  )
+  const newProjectId = await getNewProjectId()
+  return projectCreationResult(newProjectId, projectWithFileChanges([], projectModel))
 }
 
 function saveProjectToServer<ModelType, FileType>(

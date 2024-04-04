@@ -121,7 +121,7 @@ async function createNewProjectInServer(
 ): Promise<ProjectCreationResult<PersistentModel, ProjectFile>> {
   const { projectWithChanges } = prepareAssetsForUploading(projectModel)
 
-  const accessLevel = readParamFromUrl('accessLevel')
+  const accessLevel = readParamFromUrl('accessLevel', true)
 
   const { id } = await createNewProject(
     projectWithChanges.projectModel.content,
