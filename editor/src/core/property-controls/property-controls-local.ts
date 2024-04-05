@@ -407,7 +407,7 @@ function simpleErrorMessage(fileName: string, error: string): ErrorMessage {
     null,
     null,
     '',
-    'fatal',
+    'warning',
     '',
     error,
     '',
