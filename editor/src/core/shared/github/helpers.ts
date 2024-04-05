@@ -188,13 +188,15 @@ export async function runGithubOperation(
     dispatch([updateGithubOperations(operation, 'add')], 'everyone')
     result = await logic(operation)
   } catch (error: any) {
-    let actions: EditorAction[] = [
-      showToast(notice(`${opName} failed. See the console for more information.`, 'ERROR')),
-    ]
+    let actions: EditorAction[] = []
 
     const userDetails = await getUserDetailsFromServer()
     if (userDetails == null) {
       actions.push(...resetGithubStateAndDataActions())
+    } else {
+      actions.push(
+        showToast(notice(`${opName} failed. See the console for more information.`, 'ERROR')),
+      )
     }
 
     dispatch(actions, 'everyone')
