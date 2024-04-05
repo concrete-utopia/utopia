@@ -308,7 +308,7 @@ const MultiplayerUserBar = React.memo(() => {
       )}
       {amIOwner ? (
         <FlexRow
-          onClick={amIOwner ? handleClickShare : handleClickFork}
+          onClick={handleClickShare}
           css={{
             background: colorTheme.primary30.value,
             borderRadius: 24,
@@ -331,7 +331,7 @@ const MultiplayerUserBar = React.memo(() => {
                 null,
             )}
             picture={myUser.avatar}
-            isOwner={amIOwner}
+            isOwner={true}
             size={AvatarSize}
             style={{ outline: 'undefined' }}
           />
@@ -352,22 +352,30 @@ const MultiplayerUserBar = React.memo(() => {
           />
           <div
             onClick={handleClickFork}
-            style={{ padding: '0 8px 0 5px', fontWeight: 500 }}
             css={{
-              background: colorTheme.primary30.value,
-              borderRadius: 24,
-              height: 24,
-              padding: 2,
-              border: `1px solid ${colorTheme.transparent.value}`,
+              marginLeft: 6,
+              height: 22,
+              borderRadius: 6,
+              padding: '4px 8px 4px 4px',
+              color: 'white',
+              fontWeight: 500,
+              background:
+                'linear-gradient(180deg, rgba(113, 192, 204) 8.38%, rgba(0, 117, 249) 109.97%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 2,
               transition: 'all .1s ease-in-out',
               '&:hover': {
-                background: colorTheme.primary25.value,
+                background:
+                  'linear-gradient(180deg, rgba(113, 192, 204, 0.7) 8.38%, rgba(0, 117, 249, 0.7) 109.97%)',
               },
               '&:active': {
                 border: `1px solid ${colorTheme.primary30.value}`,
               },
             }}
           >
+            <Icn category='semantic' type='fork' width={18} height={18} color='on-highlight-main' />
             Fork
           </div>
         </FlexRow>
