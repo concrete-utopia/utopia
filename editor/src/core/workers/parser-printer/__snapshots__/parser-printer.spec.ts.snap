@@ -136,6 +136,28 @@ export var whatever = (props) => {
       ],
       "version": 3,
     },
+    "statements": Array [
+      Object {
+        "definedElsewhere": Array [],
+        "definedWithin": Array [
+          "cakeFn",
+        ],
+        "originalJavascript": "function cakeFn(n) {
+  return n
+}",
+        "type": "JS_ARBITRARY_STATEMENT",
+      },
+      Object {
+        "definedElsewhere": Array [],
+        "definedWithin": Array [
+          "otherFn",
+        ],
+        "originalJavascript": "function otherFn(n) {
+  return n
+}",
+        "type": "JS_ARBITRARY_STATEMENT",
+      },
+    ],
     "transpiledJavascript": "return (() => {
   function cakeFn(n) {
     return n;
@@ -160,20 +182,6 @@ export var whatever = (props) => {
     },
   ],
   "fullHighlightBounds": Object {
-    "075": Object {
-      "endCol": 1,
-      "endLine": 14,
-      "startCol": 0,
-      "startLine": 12,
-      "uid": "075",
-    },
-    "427": Object {
-      "endCol": 1,
-      "endLine": 17,
-      "startCol": 0,
-      "startLine": 15,
-      "uid": "427",
-    },
     "6e3": Object {
       "endCol": 24,
       "endLine": 20,
@@ -181,12 +189,19 @@ export var whatever = (props) => {
       "startLine": 20,
       "uid": "6e3",
     },
-    "8f7": Object {
+    "72a": Object {
       "endCol": 38,
       "endLine": 23,
       "startCol": 14,
       "startLine": 23,
-      "uid": "8f7",
+      "uid": "72a",
+    },
+    "a90": Object {
+      "endCol": 1,
+      "endLine": 14,
+      "startCol": 0,
+      "startLine": 12,
+      "uid": "a90",
     },
     "aaa": Object {
       "endCol": 11,
@@ -202,6 +217,13 @@ export var whatever = (props) => {
       "startLine": 21,
       "uid": "aab",
     },
+    "fa6": Object {
+      "endCol": 1,
+      "endLine": 17,
+      "startCol": 0,
+      "startLine": 15,
+      "uid": "fa6",
+    },
     "feb": Object {
       "endCol": 22,
       "endLine": 22,
@@ -211,12 +233,12 @@ export var whatever = (props) => {
     },
   },
   "highlightBounds": Object {
-    "8f7": Object {
+    "72a": Object {
       "endCol": 38,
       "endLine": 23,
       "startCol": 14,
       "startLine": 23,
-      "uid": "8f7",
+      "uid": "72a",
     },
     "aaa": Object {
       "endCol": 11,
@@ -413,6 +435,18 @@ export var whatever = (props) => {
         ],
         "version": 3,
       },
+      "statements": Array [
+        Object {
+          "definedElsewhere": Array [],
+          "definedWithin": Array [
+            "cakeFn",
+          ],
+          "originalJavascript": "function cakeFn(n) {
+  return n
+}",
+          "type": "JS_ARBITRARY_STATEMENT",
+        },
+      ],
       "transpiledJavascript": "return (() => {
   function cakeFn(n) {
     return n;
@@ -493,6 +527,18 @@ export var whatever = (props) => {
         ],
         "version": 3,
       },
+      "statements": Array [
+        Object {
+          "definedElsewhere": Array [],
+          "definedWithin": Array [
+            "otherFn",
+          ],
+          "originalJavascript": "function otherFn(n) {
+  return n
+}",
+          "type": "JS_ARBITRARY_STATEMENT",
+        },
+      ],
       "transpiledJavascript": "return (() => {
   function otherFn(n) {
     return n;
@@ -622,6 +668,17 @@ export var whatever = (props) => {
                     ],
                     "version": 3,
                   },
+                  "statements": Array [
+                    Object {
+                      "definedElsewhere": Array [
+                        "cakeFn",
+                        "otherFn",
+                      ],
+                      "definedWithin": Array [],
+                      "originalJavascript": "cakeFn(otherFn('b') + 2)",
+                      "type": "JS_ARBITRARY_STATEMENT",
+                    },
+                  ],
                   "transpiledJavascript": "return cakeFn(otherFn('b') + 2);",
                   "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                   "uid": "",
@@ -683,13 +740,6 @@ Object {
     },
   ],
   "fullHighlightBounds": Object {
-    "13e": Object {
-      "endCol": 22,
-      "endLine": 6,
-      "startCol": 17,
-      "startLine": 6,
-      "uid": "13e",
-    },
     "1e3": Object {
       "endCol": 37,
       "endLine": 6,
@@ -704,6 +754,13 @@ Object {
       "startLine": 6,
       "uid": "34a",
     },
+    "3ef": Object {
+      "endCol": 45,
+      "endLine": 4,
+      "startCol": 40,
+      "startLine": 4,
+      "uid": "3ef",
+    },
     "4cf": Object {
       "endCol": 37,
       "endLine": 4,
@@ -711,12 +768,12 @@ Object {
       "startLine": 4,
       "uid": "4cf",
     },
-    "58b": Object {
-      "endCol": 45,
+    "5d5": Object {
+      "endCol": 22,
       "endLine": 4,
-      "startCol": 40,
+      "startCol": 17,
       "startLine": 4,
-      "uid": "58b",
+      "uid": "5d5",
     },
     "67f": Object {
       "endCol": 45,
@@ -739,26 +796,26 @@ Object {
       "startLine": 5,
       "uid": "6e3",
     },
-    "7cb": Object {
-      "endCol": 22,
-      "endLine": 4,
-      "startCol": 17,
-      "startLine": 4,
-      "uid": "7cb",
-    },
-    "7df": Object {
-      "endCol": 45,
-      "endLine": 6,
-      "startCol": 40,
-      "startLine": 6,
-      "uid": "7df",
-    },
     "aaa": Object {
       "endCol": 56,
       "endLine": 5,
       "startCol": 33,
       "startLine": 5,
       "uid": "aaa",
+    },
+    "af0": Object {
+      "endCol": 45,
+      "endLine": 6,
+      "startCol": 40,
+      "startLine": 6,
+      "uid": "af0",
+    },
+    "b51": Object {
+      "endCol": 22,
+      "endLine": 6,
+      "startCol": 17,
+      "startLine": 6,
+      "uid": "b51",
     },
     "b93": Object {
       "endCol": 37,
@@ -783,12 +840,12 @@ Object {
     },
   },
   "highlightBounds": Object {
-    "13e": Object {
-      "endCol": 22,
-      "endLine": 6,
-      "startCol": 17,
-      "startLine": 6,
-      "uid": "13e",
+    "3ef": Object {
+      "endCol": 45,
+      "endLine": 4,
+      "startCol": 40,
+      "startLine": 4,
+      "uid": "3ef",
     },
     "4cf": Object {
       "endCol": 37,
@@ -797,12 +854,12 @@ Object {
       "startLine": 4,
       "uid": "4cf",
     },
-    "58b": Object {
-      "endCol": 45,
+    "5d5": Object {
+      "endCol": 22,
       "endLine": 4,
-      "startCol": 40,
+      "startCol": 17,
       "startLine": 4,
-      "uid": "58b",
+      "uid": "5d5",
     },
     "67f": Object {
       "endCol": 45,
@@ -818,26 +875,26 @@ Object {
       "startLine": 6,
       "uid": "6c7",
     },
-    "7cb": Object {
-      "endCol": 22,
-      "endLine": 4,
-      "startCol": 17,
-      "startLine": 4,
-      "uid": "7cb",
-    },
-    "7df": Object {
-      "endCol": 45,
-      "endLine": 6,
-      "startCol": 40,
-      "startLine": 6,
-      "uid": "7df",
-    },
     "aaa": Object {
       "endCol": 56,
       "endLine": 5,
       "startCol": 33,
       "startLine": 5,
       "uid": "aaa",
+    },
+    "af0": Object {
+      "endCol": 45,
+      "endLine": 6,
+      "startCol": 40,
+      "startLine": 6,
+      "uid": "af0",
+    },
+    "b51": Object {
+      "endCol": 22,
+      "endLine": 6,
+      "startCol": 17,
+      "startLine": 6,
+      "uid": "b51",
     },
     "b93": Object {
       "endCol": 37,
@@ -961,6 +1018,16 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
             ],
             "version": 3,
           },
+          "statements": Array [
+            Object {
+              "definedElsewhere": Array [
+                "n",
+              ],
+              "definedWithin": Array [],
+              "originalJavascript": "n > 0",
+              "type": "JS_ARBITRARY_STATEMENT",
+            },
+          ],
           "transpiledJavascript": "return n > 0;",
           "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
           "uid": "",
@@ -1003,6 +1070,16 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
             ],
             "version": 3,
           },
+          "statements": Array [
+            Object {
+              "definedElsewhere": Array [
+                "b",
+              ],
+              "definedWithin": Array [],
+              "originalJavascript": "b(10)",
+              "type": "JS_ARBITRARY_STATEMENT",
+            },
+          ],
           "transpiledJavascript": "return b(10);",
           "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
           "uid": "",
@@ -1175,6 +1252,16 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
             ],
             "version": 3,
           },
+          "statements": Array [
+            Object {
+              "definedElsewhere": Array [
+                "n",
+              ],
+              "definedWithin": Array [],
+              "originalJavascript": "n > 0",
+              "type": "JS_ARBITRARY_STATEMENT",
+            },
+          ],
           "transpiledJavascript": "return n > 0;",
           "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
           "uid": "",
@@ -1217,6 +1304,16 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
             ],
             "version": 3,
           },
+          "statements": Array [
+            Object {
+              "definedElsewhere": Array [
+                "a",
+              ],
+              "definedWithin": Array [],
+              "originalJavascript": "a(10)",
+              "type": "JS_ARBITRARY_STATEMENT",
+            },
+          ],
           "transpiledJavascript": "return a(10);",
           "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
           "uid": "",
@@ -1320,6 +1417,16 @@ export var App = (props) => <View data-uid='bbb'>
       ],
       "version": 3,
     },
+    "statements": Array [
+      Object {
+        "definedElsewhere": Array [],
+        "definedWithin": Array [
+          "a",
+        ],
+        "originalJavascript": "const a = \\"cake\\"",
+        "type": "JS_ARBITRARY_STATEMENT",
+      },
+    ],
     "transpiledJavascript": "return (() => {
   const a = \\"cake\\";
   return utopiaCanvasBlockRanToEnd({
@@ -1336,19 +1443,19 @@ export var App = (props) => <View data-uid='bbb'>
     },
   ],
   "fullHighlightBounds": Object {
-    "5b5": Object {
+    "6ca": Object {
       "endCol": 9,
       "endLine": 13,
       "startCol": 3,
       "startLine": 13,
-      "uid": "5b5",
+      "uid": "6ca",
     },
-    "7a3": Object {
+    "807": Object {
       "endCol": 16,
       "endLine": 11,
       "startCol": 0,
       "startLine": 11,
-      "uid": "7a3",
+      "uid": "807",
     },
     "854": Object {
       "endCol": 48,
@@ -1366,12 +1473,12 @@ export var App = (props) => <View data-uid='bbb'>
     },
   },
   "highlightBounds": Object {
-    "5b5": Object {
+    "6ca": Object {
       "endCol": 9,
       "endLine": 13,
       "startCol": 3,
       "startLine": 13,
-      "uid": "5b5",
+      "uid": "6ca",
     },
     "bbb": Object {
       "endCol": 7,
@@ -1518,6 +1625,16 @@ export var App = (props) => <View data-uid='bbb'>
         ],
         "version": 3,
       },
+      "statements": Array [
+        Object {
+          "definedElsewhere": Array [],
+          "definedWithin": Array [
+            "a",
+          ],
+          "originalJavascript": "const a = \\"cake\\"",
+          "type": "JS_ARBITRARY_STATEMENT",
+        },
+      ],
       "transpiledJavascript": "return (() => {
   const a = \\"cake\\";
   return utopiaCanvasBlockRanToEnd({
@@ -1597,6 +1714,16 @@ export var App = (props) => <View data-uid='bbb'>
               ],
               "version": 3,
             },
+            "statements": Array [
+              Object {
+                "definedElsewhere": Array [
+                  "a",
+                ],
+                "definedWithin": Array [],
+                "originalJavascript": "{a: a}",
+                "type": "JS_ARBITRARY_STATEMENT",
+              },
+            ],
             "transpiledJavascript": "return ({
   a: a
 });",

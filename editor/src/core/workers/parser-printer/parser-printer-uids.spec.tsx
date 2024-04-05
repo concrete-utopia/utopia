@@ -398,6 +398,7 @@ export var app = (props) => {
                   firstChild.sourceMap,
                   updatedElementsWithin,
                   firstChild.comments,
+                  isJSExpressionOtherJavaScript(firstChild) ? firstChild.statements : [],
                 )
                 const updatedRootElement = jsxElement(
                   rootElement.name,

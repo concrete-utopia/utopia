@@ -828,6 +828,7 @@ export function setUtopiaID(element: JSXElementChild, uid: string): JSXElementCh
       element.sourceMap,
       element.elementsWithin,
       element.comments,
+      element.statements,
       uid,
     )
   } else if (isUtopiaJSXMapExpression(element)) {
