@@ -174,6 +174,26 @@ export function jsxAttributeNotFound(): JSXAttributeNotFound {
   }
 }
 
+export interface JSArbitraryStatement {
+  type: 'JS_ARBITRARY_STATEMENT'
+  originalJavascript: string
+  definedWithin: Array<string>
+  definedElsewhere: Array<string>
+}
+
+export function jsArbitraryStatement(
+  originalJavascript: string,
+  definedWithin: Array<string>,
+  definedElsewhere: Array<string>,
+): JSArbitraryStatement {
+  return {
+    type: 'JS_ARBITRARY_STATEMENT',
+    originalJavascript: originalJavascript,
+    definedWithin: definedWithin,
+    definedElsewhere: definedElsewhere,
+  }
+}
+
 export interface JSExpressionOtherJavaScript extends WithComments, WithElementsWithin {
   type: 'ATTRIBUTE_OTHER_JAVASCRIPT'
   params: Array<Param>
@@ -182,6 +202,7 @@ export interface JSExpressionOtherJavaScript extends WithComments, WithElementsW
   transpiledJavascript: string
   definedElsewhere: Array<string>
   sourceMap: RawSourceMap | null
+  statements: Array<JSArbitraryStatement>
   uid: string
 }
 
@@ -194,6 +215,7 @@ export function jsExpressionOtherJavaScript(
   sourceMap: RawSourceMap | null,
   elementsWithin: ElementsWithin,
   comments: ParsedComments,
+  statements: Array<JSArbitraryStatement>,
   uid: string = UUID(),
 ): JSExpressionOtherJavaScript {
   return {
@@ -207,6 +229,7 @@ export function jsExpressionOtherJavaScript(
     uid: uid,
     comments: comments,
     elementsWithin: elementsWithin,
+    statements: statements,
   }
 }
 
@@ -223,6 +246,7 @@ export function jsExpressionOtherJavaScriptSimple(
     null,
     {},
     emptyComments,
+    [],
   )
 }
 
@@ -1944,6 +1968,7 @@ export function arbitraryJSBlock(
   definedElsewhere: Array<string>,
   sourceMap: RawSourceMap | null,
   elementsWithin: ElementsWithin,
+  statements: Array<JSArbitraryStatement>,
   uid: string = UUID(),
 ): ArbitraryJSBlock {
   return {
@@ -1956,6 +1981,7 @@ export function arbitraryJSBlock(
     sourceMap: sourceMap,
     uid: uid,
     elementsWithin: elementsWithin,
+    statements: statements,
   }
 }
 
@@ -2178,6 +2204,7 @@ export type ArbitraryJSBlock = {
   definedWithin: Array<string>
   definedElsewhere: Array<string>
   sourceMap: RawSourceMap | null
+  statements: Array<JSArbitraryStatement>
   uid: string
 } & WithElementsWithin
 

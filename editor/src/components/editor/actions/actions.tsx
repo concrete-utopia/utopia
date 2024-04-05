@@ -4217,6 +4217,7 @@ export const UPDATE_FNS = {
             null,
             oldElementsWithin,
             emptyComments,
+            [],
           ),
           originalConditionString: action.expression,
         }
@@ -4503,6 +4504,7 @@ export const UPDATE_FNS = {
                 null,
                 {},
                 comments,
+                [],
                 element.uid,
               )
             }
@@ -4544,6 +4546,7 @@ export const UPDATE_FNS = {
                       null,
                       {},
                       comments,
+                      [],
                       textElement.uid,
                     )
                   } else {

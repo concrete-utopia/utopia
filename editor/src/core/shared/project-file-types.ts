@@ -624,12 +624,13 @@ export function codeFile(
   fileContents: string,
   lastSavedContents: string | null,
   versionNumber: number = 0,
+  revisionsState: RevisionsStateType = RevisionsState.CodeAhead,
 ): TextFile {
   return textFile(
-    textFileContents(fileContents, unparsed, RevisionsState.CodeAhead),
+    textFileContents(fileContents, unparsed, revisionsState),
     lastSavedContents == null
       ? null
-      : textFileContents(lastSavedContents, unparsed, RevisionsState.CodeAhead),
+      : textFileContents(lastSavedContents, unparsed, revisionsState),
     null,
     versionNumber,
   )
