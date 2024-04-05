@@ -62,6 +62,10 @@ export function projectURL(projectId: string): string {
   return urljoin(PROJECT_ENDPOINT, projectId)
 }
 
+export function newProjectURL(): string {
+  return urljoin(PROJECT_ENDPOINT)
+}
+
 export function projectEditorURL(projectId: string): string {
   return urljoin(PROJECT_EDITOR, projectId)
 }
