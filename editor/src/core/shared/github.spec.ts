@@ -111,7 +111,10 @@ describe('mergeProjectContentsTree', () => {
     const originContents = projectContentFile('/myfile.txt', codeFile('origin code', null, 0))
     const currentContents = projectContentFile('/myfile.txt', codeFile('current code', null, 1))
     const branchContents = projectContentFile('/myfile.txt', codeFile('origin code', null, 2))
-    const mergedContents = projectContentFile('/myfile.txt', codeFile('current code', null, 3))
+    const mergedContents = projectContentFile(
+      '/myfile.txt',
+      codeFile('current code', null, 3, RevisionsState.CodeAheadButPleaseTellVSCodeAboutIt),
+    )
     const actualResult = mergeProjectContentsTree(
       '/myfile.txt',
       currentContents,
@@ -172,7 +175,10 @@ origin code
 =======
 branch code
 >>>>>>> Branch Changes`
-    const mergedContents = projectContentFile('/myfile.txt', codeFile(mergedCode, null, 3))
+    const mergedContents = projectContentFile(
+      '/myfile.txt',
+      codeFile(mergedCode, null, 3, RevisionsState.CodeAheadButPleaseTellVSCodeAboutIt),
+    )
     const actualResult = mergeProjectContentsTree(
       '/myfile.txt',
       currentContents,
