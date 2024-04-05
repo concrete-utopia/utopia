@@ -707,6 +707,11 @@ export interface SetCodeEditorLintErrors {
   lintErrors: ErrorMessages
 }
 
+export interface SetCodeEditorComponentDescriptorErrors {
+  action: 'SET_CODE_EDITOR_COMPONENT_DESCRIPTOR_ERRORS'
+  componentDescriptorErrors: ErrorMessages
+}
+
 export interface SaveDOMReport {
   action: 'SAVE_DOM_REPORT'
   elementMetadata: ElementInstanceMetadataMap
@@ -1206,6 +1211,7 @@ export type EditorAction =
   | SetMainUIFile
   | SetCodeEditorBuildErrors
   | SetCodeEditorLintErrors
+  | SetCodeEditorComponentDescriptorErrors
   | SaveDOMReport
   | RunDOMWalker
   | TrueUpElements

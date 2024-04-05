@@ -767,7 +767,11 @@ export function mergeProjectContentsTree(
       const updatedTextFile: TextFile = isBranchCode
         ? set(fromField('versionNumber'), latestVersion + 1, branchContents.content)
         : textFile(
-            textFileContents(mergedResult, unparsed, RevisionsState.CodeAhead),
+            textFileContents(
+              mergedResult,
+              unparsed,
+              RevisionsState.CodeAheadButPleaseTellVSCodeAboutIt,
+            ),
             null,
             null,
             latestVersion + 1,

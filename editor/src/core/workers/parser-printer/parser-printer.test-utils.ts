@@ -567,6 +567,7 @@ export function jsxArbitraryBlockArbitrary(): Arbitrary<JSExpression> {
         null,
         {},
         emptyComments,
+        [],
         uid,
       ),
     ),
@@ -597,7 +598,18 @@ export function jsxAttributeValueArbitrary(): Arbitrary<JSExpressionValue<any>> 
 export function jsxAttributeOtherJavaScriptArbitrary(): Arbitrary<JSExpressionOtherJavaScript> {
   return uidArbitrary().chain((uid) =>
     FastCheck.constant(
-      jsExpressionOtherJavaScript([], '1 + 2', '1 + 2', '1 + 2', [], null, {}, emptyComments, uid),
+      jsExpressionOtherJavaScript(
+        [],
+        '1 + 2',
+        '1 + 2',
+        '1 + 2',
+        [],
+        null,
+        {},
+        emptyComments,
+        [],
+        uid,
+      ),
     ),
   )
 }
@@ -792,8 +804,8 @@ export function jsxElementChildArbitrary(depth: number): Arbitrary<JSXElementChi
 
 export function arbitraryJSBlockArbitrary(): Arbitrary<ArbitraryJSBlock> {
   return FastCheck.oneof(
-    FastCheck.constant(arbitraryJSBlock([], '1 + 2;', '1 + 2', [], [], null, {})),
-    FastCheck.constant(arbitraryJSBlock([], ' \n ', ' \n ', [], [], null, {})),
+    FastCheck.constant(arbitraryJSBlock([], '1 + 2;', '1 + 2', [], [], null, {}, [])),
+    FastCheck.constant(arbitraryJSBlock([], ' \n ', ' \n ', [], [], null, {}, [])),
   )
 }
 

@@ -222,6 +222,7 @@ import type {
   SetCollaborators,
   ExtractPropertyControlsFromDescriptorFiles,
   SetSharingDialogOpen,
+  SetCodeEditorComponentDescriptorErrors,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -1200,6 +1201,15 @@ export function setCodeEditorLintErrors(lintErrors: ErrorMessages): SetCodeEdito
   return {
     action: 'SET_CODE_EDITOR_LINT_ERRORS',
     lintErrors: lintErrors,
+  }
+}
+
+export function setCodeEditorComponentDescriptorErrors(
+  componentDescriptorErrors: ErrorMessages,
+): SetCodeEditorComponentDescriptorErrors {
+  return {
+    action: 'SET_CODE_EDITOR_COMPONENT_DESCRIPTOR_ERRORS',
+    componentDescriptorErrors: componentDescriptorErrors,
   }
 }
 

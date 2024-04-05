@@ -267,7 +267,8 @@ describe('registered property controls', () => {
 
     expect(editorState.codeEditorErrors).toEqual({
       buildErrors: {},
-      lintErrors: {
+      lintErrors: {},
+      componentDescriptorErrors: {
         '/utopia/components.utopia.js': [
           {
             codeSnippet: '',
@@ -277,8 +278,8 @@ describe('registered property controls', () => {
             fileName: '/utopia/components.utopia.js',
             message: "Validation failed: Component registered for key 'Card' is undefined",
             passTime: null,
-            severity: 'fatal',
-            source: 'eslint',
+            severity: 'warning',
+            source: 'component-descriptor',
             startColumn: null,
             startLine: null,
             type: '',
@@ -318,7 +319,8 @@ describe('registered property controls', () => {
 
     expect(editorState.codeEditorErrors).toEqual({
       buildErrors: {},
-      lintErrors: {
+      lintErrors: {},
+      componentDescriptorErrors: {
         '/utopia/components.utopia.js': [
           {
             codeSnippet: '',
@@ -329,8 +331,8 @@ describe('registered property controls', () => {
             message:
               'Validation failed: Component name (Card) does not match the registration key (Cart)',
             passTime: null,
-            severity: 'fatal',
-            source: 'eslint',
+            severity: 'warning',
+            source: 'component-descriptor',
             startColumn: null,
             startLine: null,
             type: '',
@@ -370,7 +372,8 @@ describe('registered property controls', () => {
 
     expect(editorState.codeEditorErrors).toEqual({
       buildErrors: {},
-      lintErrors: {
+      lintErrors: {},
+      componentDescriptorErrors: {
         '/utopia/components.utopia.js': [
           {
             codeSnippet: '',
@@ -381,8 +384,8 @@ describe('registered property controls', () => {
             message:
               'Validation failed: Module name (/src/card) does not match the module key (/src/cardd)',
             passTime: null,
-            severity: 'fatal',
-            source: 'eslint',
+            severity: 'warning',
+            source: 'component-descriptor',
             startColumn: null,
             startLine: null,
             type: '',
@@ -422,7 +425,8 @@ describe('registered property controls', () => {
 
     expect(editorState.codeEditorErrors).toEqual({
       buildErrors: {},
-      lintErrors: {
+      lintErrors: {},
+      componentDescriptorErrors: {
         '/utopia/components.utopia.js': [
           {
             codeSnippet: '',
@@ -433,8 +437,8 @@ describe('registered property controls', () => {
             message:
               'Validation failed: Component name (View) does not match the registration key (Vieww)',
             passTime: null,
-            severity: 'fatal',
-            source: 'eslint',
+            severity: 'warning',
+            source: 'component-descriptor',
             startColumn: null,
             startLine: null,
             type: '',
@@ -474,7 +478,8 @@ describe('registered property controls', () => {
 
     expect(editorState.codeEditorErrors).toEqual({
       buildErrors: {},
-      lintErrors: {
+      lintErrors: {},
+      componentDescriptorErrors: {
         '/utopia/components.utopia.js': [
           {
             codeSnippet: '',
@@ -485,8 +490,8 @@ describe('registered property controls', () => {
             message:
               'Validation failed: Module name (utopia-api) does not match the module key (utopia-apii)',
             passTime: null,
-            severity: 'fatal',
-            source: 'eslint',
+            severity: 'warning',
+            source: 'component-descriptor',
             startColumn: null,
             startLine: null,
             type: '',
@@ -525,7 +530,8 @@ describe('registered property controls', () => {
 
     expect(renderResult.getEditorState().editor.codeEditorErrors).toEqual({
       buildErrors: {},
-      lintErrors: {
+      lintErrors: {},
+      componentDescriptorErrors: {
         '/utopia/components.utopia.js': [
           {
             codeSnippet: '',
@@ -536,8 +542,8 @@ describe('registered property controls', () => {
             message:
               'Validation failed: Component name (Card) does not match the registration key (Cart)',
             passTime: null,
-            severity: 'fatal',
-            source: 'eslint',
+            severity: 'warning',
+            source: 'component-descriptor',
             startColumn: null,
             startLine: null,
             type: '',
@@ -593,7 +599,8 @@ describe('registered property controls', () => {
 
     expect(renderResult.getEditorState().editor.codeEditorErrors).toEqual({
       buildErrors: {},
-      lintErrors: {
+      lintErrors: {},
+      componentDescriptorErrors: {
         '/utopia/components.utopia.js': [],
       },
     })

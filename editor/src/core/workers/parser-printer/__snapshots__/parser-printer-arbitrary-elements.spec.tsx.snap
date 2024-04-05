@@ -99,6 +99,40 @@ export var storyboard = (
       ],
       "version": 3,
     },
+    "statements": Array [
+      Object {
+        "definedElsewhere": Array [
+          "b",
+        ],
+        "definedWithin": Array [
+          "a",
+        ],
+        "originalJavascript": "function a(n) {
+  if (n <= 0) {
+    return 0
+  } else {
+    return b(n - 1)
+  }
+}",
+        "type": "JS_ARBITRARY_STATEMENT",
+      },
+      Object {
+        "definedElsewhere": Array [
+          "a",
+        ],
+        "definedWithin": Array [
+          "b",
+        ],
+        "originalJavascript": "function b(n) {
+  if (n <= 0) {
+    return 0
+  } else {
+    return a(n - 1)
+  }
+}",
+        "type": "JS_ARBITRARY_STATEMENT",
+      },
+    ],
     "transpiledJavascript": "return (() => {
   function a(n) {
     if (n <= 0) {
@@ -177,6 +211,13 @@ export var storyboard = (
       "startLine": 20,
       "uid": "377",
     },
+    "497": Object {
+      "endCol": 10,
+      "endLine": 21,
+      "startCol": 6,
+      "startLine": 21,
+      "uid": "497",
+    },
     "4bd": Object {
       "endCol": 64,
       "endLine": 37,
@@ -184,12 +225,12 @@ export var storyboard = (
       "startLine": 37,
       "uid": "4bd",
     },
-    "53f": Object {
-      "endCol": 10,
+    "5cb": Object {
+      "endCol": 19,
       "endLine": 21,
-      "startCol": 6,
+      "startCol": 15,
       "startLine": 21,
-      "uid": "53f",
+      "uid": "5cb",
     },
     "5e7": Object {
       "endCol": 79,
@@ -198,12 +239,12 @@ export var storyboard = (
       "startLine": 37,
       "uid": "5e7",
     },
-    "611": Object {
+    "683": Object {
       "endCol": 1,
-      "endLine": 31,
+      "endLine": 13,
       "startCol": 0,
-      "startLine": 25,
-      "uid": "611",
+      "startLine": 7,
+      "uid": "683",
     },
     "6e3": Object {
       "endCol": 20,
@@ -232,13 +273,6 @@ export var storyboard = (
       "startCol": 43,
       "startLine": 37,
       "uid": "791",
-    },
-    "7ce": Object {
-      "endCol": 1,
-      "endLine": 13,
-      "startCol": 0,
-      "startLine": 7,
-      "uid": "7ce",
     },
     "854": Object {
       "endCol": 28,
@@ -310,6 +344,13 @@ export var storyboard = (
       "startLine": 21,
       "uid": "d01",
     },
+    "d25": Object {
+      "endCol": 1,
+      "endLine": 31,
+      "startCol": 0,
+      "startLine": 25,
+      "uid": "d25",
+    },
     "d4f": Object {
       "endCol": 41,
       "endLine": 20,
@@ -317,21 +358,21 @@ export var storyboard = (
       "startLine": 20,
       "uid": "d4f",
     },
-    "e36": Object {
-      "endCol": 19,
-      "endLine": 21,
-      "startCol": 15,
-      "startLine": 21,
-      "uid": "e36",
-    },
   },
   "highlightBounds": Object {
-    "53f": Object {
+    "497": Object {
       "endCol": 10,
       "endLine": 21,
       "startCol": 6,
       "startLine": 21,
-      "uid": "53f",
+      "uid": "497",
+    },
+    "5cb": Object {
+      "endCol": 19,
+      "endLine": 21,
+      "startCol": 15,
+      "startLine": 21,
+      "uid": "5cb",
     },
     "aaa": Object {
       "endCol": 26,
@@ -360,13 +401,6 @@ export var storyboard = (
       "startCol": 4,
       "startLine": 35,
       "uid": "ccc",
-    },
-    "e36": Object {
-      "endCol": 19,
-      "endLine": 21,
-      "startCol": 15,
-      "startLine": 21,
-      "uid": "e36",
     },
   },
   "imports": Object {
@@ -518,6 +552,24 @@ export var storyboard = (
         ],
         "version": 3,
       },
+      "statements": Array [
+        Object {
+          "definedElsewhere": Array [
+            "b",
+          ],
+          "definedWithin": Array [
+            "a",
+          ],
+          "originalJavascript": "function a(n) {
+  if (n <= 0) {
+    return 0
+  } else {
+    return b(n - 1)
+  }
+}",
+          "type": "JS_ARBITRARY_STATEMENT",
+        },
+      ],
       "transpiledJavascript": "return (() => {
   function a(n) {
     if (n <= 0) {
@@ -633,6 +685,16 @@ export var storyboard = (
               ],
               "version": 3,
             },
+            "statements": Array [
+              Object {
+                "definedElsewhere": Array [
+                  "b",
+                ],
+                "definedWithin": Array [],
+                "originalJavascript": "b(5)",
+                "type": "JS_ARBITRARY_STATEMENT",
+              },
+            ],
             "transpiledJavascript": "return b(5);",
             "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
             "uid": "",
@@ -713,6 +775,16 @@ export var storyboard = (
               ],
               "version": 3,
             },
+            "statements": Array [
+              Object {
+                "definedElsewhere": Array [
+                  "a",
+                ],
+                "definedWithin": Array [],
+                "originalJavascript": "a(5)",
+                "type": "JS_ARBITRARY_STATEMENT",
+              },
+            ],
             "transpiledJavascript": "return a(5);",
             "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
             "uid": "",
@@ -883,6 +955,24 @@ export var storyboard = (
         ],
         "version": 3,
       },
+      "statements": Array [
+        Object {
+          "definedElsewhere": Array [
+            "a",
+          ],
+          "definedWithin": Array [
+            "b",
+          ],
+          "originalJavascript": "function b(n) {
+  if (n <= 0) {
+    return 0
+  } else {
+    return a(n - 1)
+  }
+}",
+          "type": "JS_ARBITRARY_STATEMENT",
+        },
+      ],
       "transpiledJavascript": "return (() => {
   function b(n) {
     if (n <= 0) {

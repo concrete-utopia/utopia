@@ -150,6 +150,16 @@ export var storyboard = (props) => {
             ],
             "version": 3,
           },
+          "statements": Array [
+            Object {
+              "definedElsewhere": Array [
+                "React",
+              ],
+              "definedWithin": Array [],
+              "originalJavascript": "<div data-uid='bbb' />",
+              "type": "JS_ARBITRARY_STATEMENT",
+            },
+          ],
           "transpiledJavascript": "return utopiaCanvasJSXLookup(\\"bbb\\", {
   callerThis: this
 });",
@@ -293,6 +303,35 @@ export var storyboard = (props) => {
       ],
       "version": 3,
     },
+    "statements": Array [
+      Object {
+        "definedElsewhere": Array [
+          "React",
+          "Storyboard",
+          "Scene",
+          "App",
+        ],
+        "definedWithin": Array [
+          "storyboard",
+        ],
+        "originalJavascript": "export var storyboard = (props) => {
+  return (
+    <Storyboard data-uid='utopia-storyboard-uid'>
+      <Scene
+        style={{ left: 0, top: 0, width: 400, height: 400 }}
+        data-uid='scene-aaa'
+      >
+        <App
+          data-uid='app-entity'
+          style={{ bottom: 0, left: 0, right: 0, top: 0 }}
+        />
+      </Scene>
+    </Storyboard>
+  )
+}",
+        "type": "JS_ARBITRARY_STATEMENT",
+      },
+    ],
     "transpiledJavascript": "return (() => {
   var storyboard = props => {
     return React.createElement(Storyboard, {

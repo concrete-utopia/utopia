@@ -141,6 +141,7 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   codeEditorErrors: {
     buildErrors: {},
     lintErrors: {},
+    componentDescriptorErrors: {},
   },
   thumbnailLastGenerated: 0,
   pasteTargetsToIgnore: [],

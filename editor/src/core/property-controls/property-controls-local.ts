@@ -72,7 +72,7 @@ import { NO_OP } from '../shared/utils'
 import { createExecutionScope } from '../../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import type { EditorDispatch } from '../../components/editor/action-types'
 import {
-  setCodeEditorLintErrors,
+  setCodeEditorComponentDescriptorErrors,
   updatePropertyControlsInfo,
 } from '../../components/editor/actions/action-creators'
 import type { ProjectContentTreeRoot } from '../../components/assets'
@@ -400,7 +400,20 @@ async function getComponentDescriptorPromisesFromParseResult(
 }
 
 function simpleErrorMessage(fileName: string, error: string): ErrorMessage {
-  return errorMessage(fileName, null, null, null, null, '', 'fatal', '', error, '', 'eslint', null)
+  return errorMessage(
+    fileName,
+    null,
+    null,
+    null,
+    null,
+    '',
+    'warning',
+    '',
+    error,
+    '',
+    'component-descriptor',
+    null,
+  )
 }
 
 function errorsFromComponentRegistration(
@@ -486,7 +499,7 @@ export async function maybeUpdatePropertyControls(
   )
   dispatch([
     updatePropertyControlsInfo(updatedPropertyControlsInfo),
-    setCodeEditorLintErrors(errors),
+    setCodeEditorComponentDescriptorErrors(errors),
   ])
 }
 
