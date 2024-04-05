@@ -862,7 +862,7 @@ export const startGithubPolling =
     githubPollingTimeoutId = window.setTimeout(pollGithub, 0)
   }
 
-export async function refreshGithubData(
+export async function getRefreshGithubActions(
   dispatch: EditorDispatch,
   githubAuthenticated: boolean,
   githubRepo: GithubRepo | null,
@@ -872,10 +872,10 @@ export async function refreshGithubData(
   previousCommitSha: string | null,
   originCommitSha: string | null,
   operationContext: GithubOperationContext,
-): Promise<void> {
+): Promise<Array<Promise<Array<EditorAction>>>> {
   // Collect actions which are the results of the various requests,
   // but not those that show which Github operations are running.
-  const promises: Array<Promise<Array<EditorAction>>> = []
+  let promises: Array<Promise<Array<EditorAction>>> = []
   if (!githubAuthenticated) {
     promises.push(Promise.resolve([updateGithubData(emptyGithubData())]))
   } else if (githubUserDetails === null) {
@@ -917,6 +917,31 @@ export async function refreshGithubData(
     }
   }
 
+  return promises
+}
+
+export async function refreshGithubData(
+  dispatch: EditorDispatch,
+  githubAuthenticated: boolean,
+  githubRepo: GithubRepo | null,
+  branchName: string | null,
+  branchOriginChecksums: FileChecksumsWithFile | null,
+  githubUserDetails: GithubUser | null,
+  previousCommitSha: string | null,
+  originCommitSha: string | null,
+  operationContext: GithubOperationContext,
+): Promise<void> {
+  const promises = await getRefreshGithubActions(
+    dispatch,
+    githubAuthenticated,
+    githubRepo,
+    branchName,
+    branchOriginChecksums,
+    githubUserDetails,
+    previousCommitSha,
+    originCommitSha,
+    operationContext,
+  )
   // Resolve all the promises.
   await Promise.allSettled(promises).then((results) => {
     let actions: Array<EditorAction> = []
