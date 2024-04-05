@@ -51,7 +51,7 @@ const contents = {
       'storyboard.js': {
         content: {
           fileContents: {
-            code: "import * as React from 'react'\nimport { Scene, Storyboard } from 'utopia-api'\nimport { App } from '/src/app.js'\nimport { View, Rectangle } from 'utopia-api'\nimport { FlexRow } from 'utopia-api'\n\nexport var storyboard = (\n  <Storyboard data-uid='0cd'>\n    <Scene\n      style={{\n        width: 700,\n        height: 759,\n        position: 'absolute',\n        left: 207,\n        top: 126,\n        }}\n      data-testid='scene'\n      data-label='Playground'\n      data-uid='3fc'\n    >\n      \n    </Scene>\n  </Storyboard>\n)\n",
+            code: "import * as React from 'react'\nimport { Scene, Storyboard } from 'utopia-api'\nimport { App } from '/src/app.js'\nimport { View, Rectangle } from 'utopia-api'\nimport { FlexRow } from 'utopia-api'\n\nexport var storyboard = (\n  <Storyboard data-uid='0cd'>\n    <Scene\n      style={{\n        width: 700,\n        height: 759,\n        position: 'absolute',\n        left: 207,\n        top: 126,\n        }}\n      data-testid='scene'\n      data-label='Playground'\n      data-uid='2b5'\n    >\n      \n    </Scene>\n  </Storyboard>\n)\n",
             revisionsState: 'CODE_AHEAD',
             parsed: {
               type: 'UNPARSED',
@@ -321,7 +321,7 @@ describe('image drag and drop', () => {
             }}
             data-testid='scene'
             data-label='Playground'
-            data-uid='3fc'
+            data-uid='2b5'
           />
           <img
             data-aspect-ratio-locked
@@ -526,7 +526,7 @@ export var storyboard = (
       }}
       data-testid='scene'
       data-label='Playground'
-      data-uid='3fc'
+      data-uid='2b5'
     >
       <img
         data-aspect-ratio-locked
@@ -602,7 +602,7 @@ export var storyboard = (
       }}
       data-testid='scene'
       data-label='Playground'
-      data-uid='3fc'
+      data-uid='2b5'
     >
       <img
         data-aspect-ratio-locked
@@ -674,7 +674,7 @@ export var storyboard = (
       }}
       data-testid='scene'
       data-label='Playground'
-      data-uid='3fc'
+      data-uid='2b5'
     >
       <img
         data-aspect-ratio-locked
@@ -740,7 +740,7 @@ export var storyboard = (
       }}
       data-testid='scene'
       data-label='Playground'
-      data-uid='3fc'
+      data-uid='2b5'
     >
       <img
         data-aspect-ratio-locked
@@ -809,7 +809,7 @@ export var storyboard = (
       }}
       data-testid='scene'
       data-label='Playground'
-      data-uid='3fc'
+      data-uid='2b5'
     >
       <img
         data-aspect-ratio-locked
@@ -908,7 +908,7 @@ export var storyboard = (
       }}
       data-testid='scene'
       data-label='Playground'
-      data-uid='3fc'
+      data-uid='2b5'
     >
       <img
         data-aspect-ratio-locked

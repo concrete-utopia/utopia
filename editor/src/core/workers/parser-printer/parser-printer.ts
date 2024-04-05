@@ -119,6 +119,7 @@ import { absolutePathFromRelativePath } from '../../../utils/path-utils'
 import { fromField } from '../../../core/shared/optics/optic-creators'
 import type { Optic } from '../../../core/shared/optics/optics'
 import { modify } from '../../../core/shared/optics/optic-utilities'
+import { identifyValuesDefinedInNode } from './parser-printer-expressions'
 
 const BakedInStoryboardVariableName = 'storyboard'
 
@@ -1361,7 +1362,7 @@ export function parseCode(
     // Account for exported components.
     let detailOfExports: ExportsDetail = EmptyExportsDetail
 
-    function pushArbitraryNode(node: TS.Node) {
+    function pushArbitraryNode(node: TS.Node): void {
       if (node.kind !== TS.SyntaxKind.EndOfFileToken) {
         const uidsBeforeParse: Set<string> = new Set(alreadyExistingUIDs_MUTABLE)
         const nodeParseResult = parseArbitraryNodes(
@@ -1407,23 +1408,7 @@ export function parseCode(
     }
 
     const topLevelNames = flatMapArray((node) => {
-      let names: Array<string> = []
-      if (TS.isVariableStatement(node)) {
-        for (const variableDeclaration of node.declarationList.declarations) {
-          if (variableDeclaration.initializer != null) {
-            names.push(variableDeclaration.name.getText(sourceFile))
-          }
-        }
-      } else if (TS.isFunctionLike(node)) {
-        if (node.name != null) {
-          names.push(node.name.getText(sourceFile))
-        }
-      } else if (TS.isClassDeclaration(node)) {
-        if (node.name != null) {
-          names.push(node.name.getText(sourceFile))
-        }
-      }
-      return names
+      return identifyValuesDefinedInNode(sourceFile, node)
     }, topLevelNodes)
 
     for (const topLevelElement of topLevelNodes) {

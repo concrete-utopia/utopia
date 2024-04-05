@@ -25,6 +25,7 @@ import { styles } from './styles/styles.css'
 import type { ErrorWithStatus } from './util/errors'
 import { isErrorWithStatus } from './util/errors'
 import { Status, getStatusName } from './util/statusCodes'
+import { useIsClientReady } from './hooks/use-client-ready'
 
 export const links: LinksFunction = () => [
   ...(cssBundleHref ? [{ rel: 'stylesheet', href: cssBundleHref }] : []),
@@ -64,7 +65,7 @@ export default function App() {
       <body className={styles.root}>
         <AppContext.Provider value={store}>
           <Theme appearance={theme} accentColor='blue' panelBackground='solid'>
-            <Outlet />
+            <OutletWrapper />
           </Theme>
         </AppContext.Provider>
         <ScrollRestoration />
@@ -74,6 +75,16 @@ export default function App() {
     </html>
   )
 }
+
+const OutletWrapper = React.memo(() => {
+  // Only render the outlet if the client is ready.
+  const ready = useIsClientReady()
+  if (!ready) {
+    return null
+  }
+
+  return <Outlet />
+})
 
 export function ErrorBoundary() {
   const routeError = useRouteError()
