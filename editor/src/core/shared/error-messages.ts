@@ -1,6 +1,11 @@
 export type ErrorMessageSeverity = 'fatal' | 'error' | 'warning'
 
-export type ErrorMessageSource = 'eslint' | 'build' | 'utopia-parser' | 'runtime'
+export type ErrorMessageSource =
+  | 'eslint'
+  | 'build'
+  | 'utopia-parser'
+  | 'runtime'
+  | 'component-descriptor'
 
 export interface ErrorMessage {
   fileName: string

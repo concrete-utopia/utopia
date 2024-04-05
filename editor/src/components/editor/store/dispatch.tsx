@@ -1041,6 +1041,7 @@ function filterEditorForFiles(editor: EditorState) {
     codeEditorErrors: {
       buildErrors: pick(allFiles, editor.codeEditorErrors.buildErrors),
       lintErrors: pick(allFiles, editor.codeEditorErrors.lintErrors),
+      componentDescriptorErrors: pick(allFiles, editor.codeEditorErrors.componentDescriptorErrors),
     },
   }
 }

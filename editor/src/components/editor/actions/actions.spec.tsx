@@ -341,6 +341,7 @@ describe('LOAD', () => {
       codeEditorErrors: {
         buildErrors: {},
         lintErrors: {},
+        componentDescriptorErrors: {},
       },
       lastUsedFont: null,
       hiddenInstances: [],
