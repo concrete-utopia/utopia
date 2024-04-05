@@ -97,7 +97,6 @@ export const ClosedPanels = React.memo((props: { side: 'left' | 'right' }) => {
   return (
     <FlexColumn
       style={{
-        pointerEvents: 'initial',
         alignItems: props.side === 'left' ? 'flex-start' : 'flex-end',
         justifyContent: 'space-between',
         height: '100%',
@@ -113,7 +112,6 @@ export const ClosedPanels = React.memo((props: { side: 'left' | 'right' }) => {
           gap: 10,
           height: 300,
           width: 32,
-          pointerEvents: 'initial',
         }}
         onMouseEnter={setIsVisibleTrue}
         onMouseLeave={setIsVisibleFalse}
@@ -150,6 +148,7 @@ export const ClosedPanels = React.memo((props: { side: 'left' | 'right' }) => {
     </FlexColumn>
   )
 })
+ClosedPanels.displayName = 'ClosedPanels'
 
 interface ClosedPanelButtonProps {
   iconType: string
