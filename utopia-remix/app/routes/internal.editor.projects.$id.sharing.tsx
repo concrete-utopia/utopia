@@ -34,7 +34,7 @@ export async function loader(args: LoaderFunctionArgs) {
   )
 }
 
-const EditorProjectSharing = React.memo(() => {
+const EditorProjectSharingPage = React.memo(() => {
   const data = useLoaderData<typeof loader>() as unknown as {
     user: UserDetails
     project: ProjectSharingDetails
@@ -84,6 +84,6 @@ const EditorProjectSharing = React.memo(() => {
     </ProjectsContext.Provider>
   )
 })
-EditorProjectSharing.displayName = 'EditorProjectSharing'
+EditorProjectSharingPage.displayName = 'EditorProjectSharingPage'
 
-export default EditorProjectSharing
+export default EditorProjectSharingPage
