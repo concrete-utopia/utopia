@@ -9,7 +9,9 @@ import { unless, when } from '../../utils/react-conditionals'
 import { setSharingDialogOpen } from './actions/action-creators'
 import { editorShareDialogIframeUrl } from '../../common/server'
 
-const BaseIframeHeight = 80 // px
+const BaseIframeHeight = 80
+const LoadedIframeHeight = 300
+const RadixDialogSpacing = 135
 const SharingIframeWidth = 580 // px
 const LoadingDialogWidth = 260 // px
 
@@ -32,16 +34,7 @@ export const SharingDialog = React.memo(() => {
 
   const onSharingIframeLoaded = React.useCallback(() => {
     setIframeLoaded(true)
-    if (sharingIframeRef.current != null && sharingIframeRef.current.contentWindow != null) {
-      const body = sharingIframeRef.current.contentWindow.document.body
-
-      // add room for the radix dialog to fully open vertically without overflowing, it's a bit ugly because the dialog is
-      // taller than needed but it's the only workaround as long as we use an iframe
-      const radixDialogSpacing = 135
-      const height = Math.max(body.scrollHeight) + radixDialogSpacing
-
-      setIframeHeight(height)
-    }
+    setIframeHeight(LoadedIframeHeight + RadixDialogSpacing)
   }, [])
 
   const handleDismiss = React.useCallback(() => {
