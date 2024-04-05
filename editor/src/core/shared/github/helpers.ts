@@ -19,6 +19,7 @@ import type { EditorAction, EditorDispatch } from '../../../components/editor/ac
 import {
   deleteFile,
   removeFileConflict,
+  setGithubState,
   showToast,
   updateBranchContents,
   updateFile,
@@ -38,7 +39,6 @@ import type {
 import {
   emptyGithubData,
   emptyGithubSettings,
-  FileChecksums,
   githubOperationPrettyName,
   projectGithubSettings,
 } from '../../../components/editor/store/editor-state'
@@ -71,6 +71,10 @@ export function dispatchPromiseActions(
   promise: Promise<Array<EditorAction>>,
 ): Promise<void> {
   return promise.then((actions) => dispatch(actions, 'everyone'))
+}
+
+async function promisifyEditorActions(actions: EditorAction[]): Promise<EditorAction[]> {
+  return actions
 }
 
 export function parseGithubProjectString(maybeProject: string): GithubRepo | null {
@@ -184,10 +188,16 @@ export async function runGithubOperation(
     dispatch([updateGithubOperations(operation, 'add')], 'everyone')
     result = await logic(operation)
   } catch (error: any) {
-    dispatch(
-      [showToast(notice(`${opName} failed. See the console for more information.`, 'ERROR'))],
-      'everyone',
-    )
+    let actions: EditorAction[] = [
+      showToast(notice(`${opName} failed. See the console for more information.`, 'ERROR')),
+    ]
+
+    const userDetails = await getUserDetailsFromServer()
+    if (userDetails == null) {
+      actions.push(...resetGithubStateAndDataActions())
+    }
+
+    dispatch(actions, 'everyone')
     console.error(`[GitHub] operation "${opName}" failed:`, error)
     throw error
   } finally {
@@ -287,7 +297,15 @@ export async function getBranchContentFromServer(
   })
 }
 
-export async function getUserDetailsFromServer(): Promise<Array<EditorAction>> {
+function resetGithubStateAndDataActions(): EditorAction[] {
+  return [setGithubState({ authenticated: false }), updateGithubData(emptyGithubData())]
+}
+
+function updateUserDetailsFromServerActions(userDetails: GithubUser): EditorAction[] {
+  return [updateGithubData({ githubUserDetails: userDetails })]
+}
+
+export async function getUserDetailsFromServer(): Promise<GithubUser | null> {
   const url = GithubEndpoints.userDetails()
 
   const response = await fetch(url, {
@@ -301,19 +319,21 @@ export async function getUserDetailsFromServer(): Promise<Array<EditorAction>> {
     const responseBody: GetGithubUserResponse = await response.json()
     switch (responseBody.type) {
       case 'FAILURE':
-        throw new Error(
+        console.error(
           `Error when attempting to retrieve the user details: ${responseBody.failureReason}`,
         )
+        return null
       case 'SUCCESS':
-        return [updateGithubData({ githubUserDetails: responseBody.user })]
+        return responseBody.user
       default:
         const _exhaustiveCheck: never = responseBody
         throw new Error(`Unhandled response body ${JSON.stringify(responseBody)}`)
     }
   } else {
-    throw new Error(
+    console.error(
       `Github: Unexpected status returned from user details endpoint: ${response.status}`,
     )
+    return null
   }
 }
 
@@ -323,12 +343,20 @@ export async function updateUserDetailsWhenAuthenticated(
   authenticationCheck: Promise<boolean>,
 ): Promise<boolean> {
   const authenticationResult = await authenticationCheck
-  if (authenticationResult) {
-    await dispatchPromiseActions(dispatch, getUserDetailsFromServer()).catch((error) => {
-      console.error(`Error while attempting to retrieve Github user details: ${error}`)
-    })
+  if (!authenticationResult) {
+    return false
   }
-  return authenticationResult
+
+  const userDetails = await getUserDetailsFromServer()
+  if (userDetails == null) {
+    // if the user details are not available while the auth is successful, it means that
+    // there a mismatch between the cookies and the actual auth, so return false overall.
+    dispatch(resetGithubStateAndDataActions())
+    return false
+  }
+
+  dispatch(updateUserDetailsFromServerActions(userDetails))
+  return true
 }
 
 const githubFileChangesSelector = createSelector(
@@ -850,10 +878,17 @@ export async function refreshGithubData(
   // Collect actions which are the results of the various requests,
   // but not those that show which Github operations are running.
   const promises: Array<Promise<Array<EditorAction>>> = []
-  if (githubAuthenticated) {
-    if (githubUserDetails === null) {
-      promises.push(getUserDetailsFromServer())
-    }
+  if (!githubAuthenticated) {
+    promises.push(Promise.resolve([updateGithubData(emptyGithubData())]))
+  } else if (githubUserDetails === null) {
+    const userDetails = await getUserDetailsFromServer()
+    const actions: EditorAction[] =
+      userDetails == null
+        ? resetGithubStateAndDataActions()
+        : updateUserDetailsFromServerActions(userDetails)
+
+    promises.push(promisifyEditorActions(actions))
+  } else {
     promises.push(getUsersPublicGithubRepositories(operationContext)(dispatch))
     if (githubRepo != null) {
       promises.push(getBranchesForGithubRepository(operationContext)(dispatch, githubRepo))
@@ -882,8 +917,6 @@ export async function refreshGithubData(
     } else {
       promises.push(Promise.resolve([updateGithubData({ branches: null })]))
     }
-  } else {
-    promises.push(Promise.resolve([updateGithubData(emptyGithubData())]))
   }
 
   // Resolve all the promises.
