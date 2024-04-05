@@ -2,8 +2,8 @@ import { prisma } from '../db.server'
 import type {
   CollaboratorsByProject,
   GithubRepository,
-  ProjectAccessRequestWithUserDetails,
   ProjectListing,
+  ProjectMetadataForEditor,
   ProjectSharingDetails,
 } from '../types'
 import {
@@ -13,6 +13,7 @@ import {
   userToCollaborator,
   githubRepositoryStringOrNull,
   type ProjectWithoutContentFromDB,
+  toAccessLevelString,
 } from '../types'
 import { ensure } from '../util/api.server'
 import { Status } from '../util/statusCodes'
@@ -263,4 +264,35 @@ export async function updateGithubRepository(params: {
       modified_at: new Date(),
     },
   })
+}
+
+export async function getProjectMetadataForEditor(params: {
+  projectId: string
+  userId: string
+}): Promise<ProjectMetadataForEditor | null> {
+  const project = await prisma.project.findUnique({
+    where: {
+      proj_id: params.projectId,
+      owner_id: params.userId,
+    },
+    select: {
+      proj_id: true,
+      owner_id: true,
+      ProjectAccess: true,
+      ProjectAccessRequest: true,
+    },
+  })
+  if (project == null) {
+    return null
+  }
+
+  const accessLevel = asAccessLevel(project.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
+
+  return {
+    projectId: project.proj_id,
+    hasPendingRequests: project.ProjectAccessRequest.some(
+      (r) => r.status === AccessRequestStatus.PENDING,
+    ),
+    access: toAccessLevelString(accessLevel),
+  }
 }

@@ -184,6 +184,12 @@ const MultiplayerUserBar = React.memo(() => {
     return ownerId === myUser.id
   }, [ownerId, myUser])
 
+  const projectMetadata = useEditorState(
+    Substores.projectServerState,
+    (store) => store.projectServerState.projectData,
+    'ForksGiven projectMetadata',
+  )
+
   const toggleFollowing = React.useCallback(
     (target: FollowTarget) => () => {
       let actions: EditorAction[] = []
@@ -303,6 +309,7 @@ const MultiplayerUserBar = React.memo(() => {
           padding: 2,
           border: `1px solid ${colorTheme.transparent.value}`,
           transition: 'all .1s ease-in-out',
+          position: 'relative',
           '&:hover': {
             background: colorTheme.primary25.value,
           },
@@ -322,6 +329,20 @@ const MultiplayerUserBar = React.memo(() => {
           style={{ outline: 'undefined' }}
         />
         <div style={{ padding: '0 8px 0 5px', fontWeight: 500 }}>Share</div>
+        {when(
+          projectMetadata?.hasPendingRequests === true,
+          <div
+            style={{
+              position: 'absolute',
+              top: -2,
+              right: -2,
+              width: 9,
+              height: 9,
+              background: 'red',
+              borderRadius: '100%',
+            }}
+          />,
+        )}
       </FlexRow>
     </motion.div>
   )

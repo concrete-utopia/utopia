@@ -48,6 +48,8 @@ export interface ServerProjectListing {
   description: string | null
   createdAt: string
   modifiedAt: string
+  hasPendingRequests?: boolean
+  access?: 'private' | 'public' | 'with-link' | 'collaborative'
 }
 
 export interface FetchProjectListResponse {

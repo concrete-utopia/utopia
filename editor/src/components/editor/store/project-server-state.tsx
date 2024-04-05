@@ -11,17 +11,23 @@ export interface ProjectMetadataFromServer {
   title: string
   ownerName: string | null
   ownerPicture: string | null
+  hasPendingRequests?: boolean
+  access?: 'private' | 'public' | 'with-link' | 'collaborative'
 }
 
 export function projectMetadataFromServer(
   title: string,
   ownerName: string | null,
   ownerPicture: string | null,
+  hasPendingRequests?: boolean,
+  access?: 'private' | 'public' | 'with-link' | 'collaborative',
 ): ProjectMetadataFromServer {
   return {
     title: title,
     ownerName: ownerName,
     ownerPicture: ownerPicture,
+    hasPendingRequests: hasPendingRequests,
+    access: access,
   }
 }
 
@@ -69,6 +75,8 @@ function projectListingToProjectMetadataFromServer(
       title: projectListing.title,
       ownerName: projectListing.ownerName ?? null,
       ownerPicture: projectListing.ownerPicture ?? null,
+      hasPendingRequests: projectListing.hasPendingRequests,
+      access: projectListing.access,
     }
   }
 }

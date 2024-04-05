@@ -10,6 +10,8 @@ export interface ProjectListing {
   createdAt: string
   modifiedAt: string
   thumbnail: string
+  hasPendingRequests?: boolean
+  access?: 'private' | 'public' | 'with-link' | 'collaborative'
 }
 
 export const LOCAL_PROJECT_PREFIX = 'local-project-'
