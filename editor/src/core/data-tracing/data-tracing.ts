@@ -1,10 +1,12 @@
 import type { ProjectContentTreeRoot } from '../../components/assets'
 import { MetadataUtils } from '../model/element-metadata-utils'
 import type {
+  IdentifierOrAccess,
   JSElementAccess,
   JSExpression,
   JSIdentifier,
   JSPropertyAccess,
+  Param,
   UtopiaJSXComponent,
 } from '../shared/element-template'
 import { isJSXElement, type ElementInstanceMetadataMap } from '../shared/element-template'
@@ -76,7 +78,7 @@ function findContainingComponentForElementPath(
 
 function processJSPropertyAccessors(
   expression: JSExpression,
-): Either<string, { path: DataPath; originalIdentifier: JSIdentifier }> {
+): Either<string, { originalIdentifier: JSIdentifier; path: DataPath }> {
   switch (expression.type) {
     case 'ATTRIBUTE_FUNCTION_CALL':
     case 'ATTRIBUTE_NESTED_ARRAY':
@@ -121,6 +123,33 @@ function processJSPropertyAccessors(
 
     default:
       assertNever(expression)
+  }
+}
+
+function propUsedByIdentifierOrAccess(
+  param: Param,
+  access: { originalIdentifier: JSIdentifier; path: DataPath },
+): Either<string, string | null> {
+  switch (param.boundParam.type) {
+    case 'REGULAR_PARAM': {
+      // in case of a regular prop param, first we want to match the param name to the original identifier
+      if (param.boundParam.paramName !== access.originalIdentifier.name) {
+        return right(null)
+      }
+
+      // the prop name we are looking for is going to be the first element of the path!
+      return right(access.path[0] ?? null)
+    }
+    case 'DESTRUCTURED_OBJECT': {
+      return left('Finish writing this!')
+      // for (const paramPart of param.boundParam.parts) {
+      // }
+    }
+    case 'DESTRUCTURED_ARRAY': {
+      return left('Destructured array properties are not yet supported')
+    }
+    default:
+      assertNever(param.boundParam)
   }
 }
 
@@ -183,12 +212,6 @@ export function traceDataFromProp(
     }
 
     const identifier = dataPath.value.originalIdentifier
-
-    if (identifier == null) {
-      return dataTracingFailed(
-        'could not find identifier at the root of property access expression',
-      )
-    }
 
     // let's try to match the name to the containing component's props!
     const foundPropSameName = componentHoldingElement.propsUsed.includes(identifier.name)
