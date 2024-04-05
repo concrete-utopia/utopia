@@ -31,7 +31,6 @@ interface CompileErrorContainerProps {
 class CompileErrorContainer extends PureComponent<CompileErrorContainerProps, {}> {
   render() {
     const { currentBuildErrorRecords, editorHandler, onOpenFile } = this.props
-    console.log('currentBuildErrorRecords', currentBuildErrorRecords)
 
     return (
       <ErrorOverlay>
