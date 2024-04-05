@@ -73,10 +73,6 @@ export function dispatchPromiseActions(
   return promise.then((actions) => dispatch(actions, 'everyone'))
 }
 
-async function promisifyEditorActions(actions: EditorAction[]): Promise<EditorAction[]> {
-  return actions
-}
-
 export function parseGithubProjectString(maybeProject: string): GithubRepo | null {
   const withoutGithubPrefix = trimUpToAndIncluding('github.com/', maybeProject)
 
@@ -889,7 +885,7 @@ export async function refreshGithubData(
         ? resetGithubStateAndDataActions()
         : updateUserDetailsFromServerActions(userDetails)
 
-    promises.push(promisifyEditorActions(actions))
+    promises.push(Promise.resolve(actions))
   } else {
     promises.push(getUsersPublicGithubRepositories(operationContext)(dispatch))
     if (githubRepo != null) {
