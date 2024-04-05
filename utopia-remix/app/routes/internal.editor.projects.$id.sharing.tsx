@@ -34,7 +34,7 @@ export async function loader(args: LoaderFunctionArgs) {
   )
 }
 
-const SharingIframe = React.memo(() => {
+const EditorProjectSharing = React.memo(() => {
   const data = useLoaderData<typeof loader>() as unknown as {
     user: UserDetails
     project: ProjectSharingDetails
@@ -84,6 +84,6 @@ const SharingIframe = React.memo(() => {
     </ProjectsContext.Provider>
   )
 })
-SharingIframe.displayName = 'SharingIframe'
+EditorProjectSharing.displayName = 'EditorProjectSharing'
 
-export default SharingIframe
+export default EditorProjectSharing
