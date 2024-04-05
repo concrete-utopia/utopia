@@ -110,8 +110,8 @@ export const ClosedPanels = React.memo((props: { side: 'left' | 'right' }) => {
         onMouseUp={stopPropagation}
         style={{
           gap: 10,
-          height: 300,
           width: 32,
+          pointerEvents: 'initial',
         }}
         onMouseEnter={setIsVisibleTrue}
         onMouseLeave={setIsVisibleFalse}
