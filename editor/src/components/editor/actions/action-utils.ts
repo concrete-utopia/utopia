@@ -67,6 +67,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_CODE_RESULT_CACHE':
     case 'SET_CODE_EDITOR_BUILD_ERRORS':
     case 'SET_CODE_EDITOR_LINT_ERRORS':
+    case 'SET_CODE_EDITOR_COMPONENT_DESCRIPTOR_ERRORS':
     case 'SAVE_DOM_REPORT':
     case 'RUN_DOM_WALKER':
     case 'SET_FILEBROWSER_RENAMING_TARGET':

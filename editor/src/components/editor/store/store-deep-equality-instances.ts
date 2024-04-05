@@ -4137,10 +4137,12 @@ export const ErrorMessagesKeepDeepEquality: KeepDeepEqualityCall<ErrorMessages> 
   objectDeepEquality(arrayDeepEquality(ErrorMessageKeepDeepEquality))
 
 export const EditorStateCodeEditorErrorsKeepDeepEquality: KeepDeepEqualityCall<EditorStateCodeEditorErrors> =
-  combine2EqualityCalls(
+  combine3EqualityCalls(
     (errors) => errors.buildErrors,
     ErrorMessagesKeepDeepEquality,
     (errors) => errors.lintErrors,
+    ErrorMessagesKeepDeepEquality,
+    (errors) => errors.componentDescriptorErrors,
     ErrorMessagesKeepDeepEquality,
     editorStateCodeEditorErrors,
   )

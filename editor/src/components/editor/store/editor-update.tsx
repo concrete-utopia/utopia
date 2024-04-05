@@ -301,6 +301,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_CODE_EDITOR_BUILD_ERRORS(action, state)
     case 'SET_CODE_EDITOR_LINT_ERRORS':
       return UPDATE_FNS.SET_CODE_EDITOR_LINT_ERRORS(action, state)
+    case 'SET_CODE_EDITOR_COMPONENT_DESCRIPTOR_ERRORS':
+      return UPDATE_FNS.SET_CODE_EDITOR_COMPONENT_DESCRIPTOR_ERRORS(action, state)
     case 'SAVE_DOM_REPORT':
       return UPDATE_FNS.SAVE_DOM_REPORT(action, state, spyCollector)
     case 'TRUE_UP_ELEMENTS':

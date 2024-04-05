@@ -111,6 +111,7 @@ async function loadProject(
     codeEditorErrors: {
       buildErrors: {},
       lintErrors: {},
+      componentDescriptorErrors: {},
     },
     fileBrowser: {
       minimised: false,
