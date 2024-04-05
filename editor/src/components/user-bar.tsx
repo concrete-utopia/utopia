@@ -34,6 +34,7 @@ import { useIsMyProject } from './editor/store/collaborative-editing'
 import { motion } from 'framer-motion'
 import { useIsBeingFollowed, useSortMultiplayerUsers } from '../core/shared/multiplayer-hooks'
 import { useTriggerForkProject } from './editor/persistence-hooks'
+import { isBackendBFF } from '../common/env-vars'
 
 const MAX_VISIBLE_OTHER_PLAYERS = 4
 
@@ -121,9 +122,25 @@ SinglePlayerUserBar.displayName = 'SinglePlayerUserBar'
 const MultiplayerUserBar = React.memo(() => {
   const dispatch = useDispatch()
 
+  const url = window.location.href
+  const handleCopyToClipboard = React.useCallback(async () => {
+    try {
+      let actions: EditorAction[] = []
+      actions.push(showToast(notice('Project link copied to clipboard!', 'NOTICE', false)))
+      await window.navigator.clipboard.writeText(url)
+      dispatch(actions)
+    } catch (error) {
+      console.error('Error copying to clipboard:', error)
+    }
+  }, [dispatch, url])
+
   const handleClickShare = React.useCallback(() => {
+    if (!isBackendBFF()) {
+      void handleCopyToClipboard()
+      return
+    }
     dispatch([setSharingDialogOpen(true)])
-  }, [dispatch])
+  }, [dispatch, handleCopyToClipboard])
 
   const handleClickFork = useTriggerForkProject()
 

@@ -7,6 +7,7 @@ import { useDispatch } from './store/dispatch-context'
 import { useEditorState, Substores } from './store/store-hook'
 import { unless, when } from '../../utils/react-conditionals'
 import { setSharingDialogOpen } from './actions/action-creators'
+import { editorShareDialogIframeUrl } from '../../common/server'
 
 const BaseIframeHeight = 80 // px
 const SharingIframeWidth = 580 // px
@@ -119,7 +120,7 @@ export const SharingDialog = React.memo(() => {
               height: '100%',
               borderRadius: 10,
             }}
-            src={`http://localhost:8000/iframe/project/${projectId}/sharing`}
+            src={editorShareDialogIframeUrl(projectId)}
           />
           {unless(
             iframeLoaded,
