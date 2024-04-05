@@ -306,35 +306,72 @@ const MultiplayerUserBar = React.memo(() => {
           )
         }),
       )}
-      <FlexRow
-        onClick={amIOwner ? handleClickShare : handleClickFork}
-        css={{
-          background: colorTheme.primary30.value,
-          borderRadius: 24,
-          height: 24,
-          padding: 2,
-          border: `1px solid ${colorTheme.transparent.value}`,
-          transition: 'all .1s ease-in-out',
-          '&:hover': {
-            background: colorTheme.primary25.value,
-          },
-          '&:active': {
-            border: `1px solid ${colorTheme.primary30.value}`,
-          },
-        }}
-      >
-        <MultiplayerAvatar
-          name={multiplayerInitialsFromName(myUser.name)}
-          color={multiplayerColorFromIndex(
-            getConnectionById(connections, myUser.id, myPresence.connectionId)?.colorIndex ?? null,
-          )}
-          picture={myUser.avatar}
-          isOwner={amIOwner}
-          size={AvatarSize}
-          style={{ outline: 'undefined' }}
-        />
-        <div style={{ padding: '0 8px 0 5px', fontWeight: 500 }}>{amIOwner ? 'Share' : 'Fork'}</div>
-      </FlexRow>
+      {amIOwner ? (
+        <FlexRow
+          onClick={amIOwner ? handleClickShare : handleClickFork}
+          css={{
+            background: colorTheme.primary30.value,
+            borderRadius: 24,
+            height: 24,
+            padding: 2,
+            border: `1px solid ${colorTheme.transparent.value}`,
+            transition: 'all .1s ease-in-out',
+            '&:hover': {
+              background: colorTheme.primary25.value,
+            },
+            '&:active': {
+              border: `1px solid ${colorTheme.primary30.value}`,
+            },
+          }}
+        >
+          <MultiplayerAvatar
+            name={multiplayerInitialsFromName(myUser.name)}
+            color={multiplayerColorFromIndex(
+              getConnectionById(connections, myUser.id, myPresence.connectionId)?.colorIndex ??
+                null,
+            )}
+            picture={myUser.avatar}
+            isOwner={amIOwner}
+            size={AvatarSize}
+            style={{ outline: 'undefined' }}
+          />
+          <div style={{ padding: '0 8px 0 5px', fontWeight: 500 }}>Share</div>
+        </FlexRow>
+      ) : (
+        <FlexRow>
+          <MultiplayerAvatar
+            name={multiplayerInitialsFromName(myUser.name)}
+            color={multiplayerColorFromIndex(
+              getConnectionById(connections, myUser.id, myPresence.connectionId)?.colorIndex ??
+                null,
+            )}
+            picture={myUser.avatar}
+            isOwner={false}
+            size={AvatarSize}
+            style={{ outline: 'undefined' }}
+          />
+          <div
+            onClick={handleClickFork}
+            style={{ padding: '0 8px 0 5px', fontWeight: 500 }}
+            css={{
+              background: colorTheme.primary30.value,
+              borderRadius: 24,
+              height: 24,
+              padding: 2,
+              border: `1px solid ${colorTheme.transparent.value}`,
+              transition: 'all .1s ease-in-out',
+              '&:hover': {
+                background: colorTheme.primary25.value,
+              },
+              '&:active': {
+                border: `1px solid ${colorTheme.primary30.value}`,
+              },
+            }}
+          >
+            Fork
+          </div>
+        </FlexRow>
+      )}
     </motion.div>
   )
 })
