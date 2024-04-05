@@ -540,6 +540,16 @@ export function isJSElementAccess(expression: JSXElementChild): expression is JS
   return expression.type === 'JS_ELEMENT_ACCESS'
 }
 
+export type IdentifierOrAccess = JSIdentifier | JSPropertyAccess | JSElementAccess
+
+export function isIdentifierOrAccess(
+  expression: JSXElementChild,
+): expression is IdentifierOrAccess {
+  return (
+    isJSIdentifier(expression) || isJSPropertyAccess(expression) || isJSElementAccess(expression)
+  )
+}
+
 export type JSExpression =
   | JSIdentifier
   | JSPropertyAccess
