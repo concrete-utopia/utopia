@@ -38,7 +38,7 @@ describe('handleLogin', () => {
     const response = await handleLogin(request, {})
     expect(response.status).toBe(302)
     const redirectLocation = response.headers.get('Location')
-    expect(redirectLocation).toContain(authenticateUrl())
+    expect(redirectLocation).toContain(authenticateUrl().toString())
     const redirectToParam = getDecodedParam(redirectLocation, 'redirectTo')
     expect(redirectToParam).toBe('/p/test-project')
     const codeParam = getDecodedParam(redirectLocation, 'code')
