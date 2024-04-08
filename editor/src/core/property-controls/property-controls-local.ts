@@ -920,7 +920,7 @@ function printScriptLines(scriptLines: Array<ScriptLine>, columnNumber: number |
         // so we can highlight the actual column with a ^
         let extraLine = ''
         if (c.highlight && columnNumber != null) {
-          extraLine = `\n${Array(columnNumber + maxLineNumberLength + 5)
+          extraLine = `\n${Array(columnNumber + maxLineNumberLength + 2)
             .fill(' ')
             .join('')}^`
         }

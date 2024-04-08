@@ -325,9 +325,9 @@ describe('registered property controls', () => {
         '/utopia/components.utopia.js': [
           {
             codeSnippet: `  1 | import { Cart } from '../src/card'
-  2 |
+  2 | 
 > 3 | const foo = undefined.foo
-                               ^
+                            ^
   4 | const Components = {
   5 |   '/src/card': {
   6 |     Card: {`,
