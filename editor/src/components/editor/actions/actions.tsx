@@ -75,9 +75,6 @@ import {
   modifiableAttributeIsAttributeValue,
   isJSExpression,
   isJSXMapExpression,
-  isJSExpressionOtherJavaScript,
-  jsExpressionOtherJavaScriptSimple,
-  getDefinedElsewhereFromElement,
   getDefinedElsewhereFromElementChild,
   isJSXFragment,
   jsxConditionalExpressionConditionOptic,
@@ -175,7 +172,7 @@ import {
 } from '../../canvas/canvas-utils'
 import type { SetFocus } from '../../common/actions'
 import { openMenu } from '../../context-menu-side-effect'
-import type { CodeResultCache, PropertyControlsInfo } from '../../custom-code/code-file'
+import type { CodeResultCache } from '../../custom-code/code-file'
 import {
   codeCacheToBuildResult,
   generateCodeResultCache,
@@ -331,6 +328,8 @@ import type {
   InsertAttributeOtherJavascriptIntoElement,
   SetCollaborators,
   ExtractPropertyControlsFromDescriptorFiles,
+  SetCodeEditorComponentDescriptorErrors,
+  SetSharingDialogOpen,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -376,6 +375,7 @@ import {
   trueUpGroupElementChanged,
   getPackageJsonFromProjectContents,
   modifyUnderlyingTargetJSXElement,
+  getAllComponentDescriptorErrors,
 } from '../store/editor-state'
 import {
   areGeneratedElementsTargeted,
@@ -943,6 +943,7 @@ export function restoreEditorState(
     commentFilterMode: currentEditor.commentFilterMode,
     forking: currentEditor.forking,
     collaborators: currentEditor.collaborators,
+    sharingDialogOpen: currentEditor.sharingDialogOpen,
   }
 }
 
@@ -3529,6 +3530,7 @@ export const UPDATE_FNS = {
           codeEditorErrors: {
             buildErrors: {},
             lintErrors: {},
+            componentDescriptorErrors: {},
           },
           canvas: {
             ...editor.canvas,
@@ -3980,6 +3982,41 @@ export const UPDATE_FNS = {
           },
         }
       }, editor.codeEditorErrors)
+      return {
+        ...editor,
+        codeEditorErrors: updatedCodeEditorErrors,
+      }
+    }
+  },
+  SET_CODE_EDITOR_COMPONENT_DESCRIPTOR_ERRORS: (
+    action: SetCodeEditorComponentDescriptorErrors,
+    editor: EditorModel,
+  ): EditorModel => {
+    const allComponentDescriptorErrorsInState = getAllComponentDescriptorErrors(
+      editor.codeEditorErrors,
+    )
+    const allComponentDescriptorErrorsInAction = Utils.flatMapArray(
+      (filename) => action.componentDescriptorErrors[filename],
+      Object.keys(action.componentDescriptorErrors),
+    )
+    if (
+      allComponentDescriptorErrorsInState.length === 0 &&
+      allComponentDescriptorErrorsInAction.length === 0
+    ) {
+      return editor
+    } else {
+      const updatedCodeEditorErrors = Object.keys(action.componentDescriptorErrors).reduce(
+        (acc, filename) => {
+          return {
+            ...acc,
+            componentDescriptorErrors: {
+              ...acc.componentDescriptorErrors,
+              [filename]: action.componentDescriptorErrors[filename],
+            },
+          }
+        },
+        editor.codeEditorErrors,
+      )
       return {
         ...editor,
         codeEditorErrors: updatedCodeEditorErrors,
@@ -5707,6 +5744,12 @@ export const UPDATE_FNS = {
       evaluator,
     )
     return state
+  },
+  SET_SHARING_DIALOG_OPEN: (action: SetSharingDialogOpen, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      sharingDialogOpen: action.open,
+    }
   },
 }
 

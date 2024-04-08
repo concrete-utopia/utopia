@@ -2,7 +2,7 @@ import type { PersistentModel } from '../components/editor/store/editor-state'
 
 export const HydrogenTestProject: PersistentModel = {
   appID: null,
-  codeEditorErrors: { buildErrors: {}, lintErrors: {} },
+  codeEditorErrors: { buildErrors: {}, lintErrors: {}, componentDescriptorErrors: {} },
   colorSwatches: [],
   dependencyList: { minimised: false },
   exportsInfo: [],

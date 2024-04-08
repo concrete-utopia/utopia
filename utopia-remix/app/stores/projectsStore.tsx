@@ -20,8 +20,10 @@ const initialProjectsStoreStatePersisted: ProjectsStoreStatePersisted = {
   gridView: true,
 }
 
+export type SharingProjectAccessRequestsState = 'loading' | 'ready'
+
 export type SharingProjectAccessRequests = {
-  state: 'loading' | 'ready'
+  state: SharingProjectAccessRequestsState
   requests: ProjectAccessRequestWithUserDetails[]
 }
 

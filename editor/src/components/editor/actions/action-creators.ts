@@ -221,6 +221,8 @@ import type {
   SetForking,
   SetCollaborators,
   ExtractPropertyControlsFromDescriptorFiles,
+  SetSharingDialogOpen,
+  SetCodeEditorComponentDescriptorErrors,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -1202,6 +1204,15 @@ export function setCodeEditorLintErrors(lintErrors: ErrorMessages): SetCodeEdito
   }
 }
 
+export function setCodeEditorComponentDescriptorErrors(
+  componentDescriptorErrors: ErrorMessages,
+): SetCodeEditorComponentDescriptorErrors {
+  return {
+    action: 'SET_CODE_EDITOR_COMPONENT_DESCRIPTOR_ERRORS',
+    componentDescriptorErrors: componentDescriptorErrors,
+  }
+}
+
 export function setFilebrowserRenamingTarget(
   filename: string | null,
 ): SetFilebrowserRenamingTarget {
@@ -1744,5 +1755,12 @@ export function extractPropertyControlsFromDescriptorFiles(
   return {
     action: 'EXTRACT_PROPERTY_CONTROLS_FROM_DESCRIPTOR_FILES',
     paths: paths,
+  }
+}
+
+export function setSharingDialogOpen(open: boolean): SetSharingDialogOpen {
+  return {
+    action: 'SET_SHARING_DIALOG_OPEN',
+    open: open,
   }
 }
