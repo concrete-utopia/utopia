@@ -107,7 +107,6 @@ type SceneIdToRouteMapping = LiveObject<{ [sceneId: string]: string }>
 export type Storage = {
   // author: LiveObject<{ firstName: string, lastName: string }>,
   // ...
-  collaborators: LiveObject<{ [userId: string]: User }> // TODO remove collaborators when the BFF is on
   userReadStatusesByThread: LiveObject<{ [threadId: string]: UserReadStatuses }>
   remixSceneRoutes: LiveObject<{ [userId: string]: SceneIdToRouteMapping }>
   connections: LiveObject<{ [userId: string]: ConnectionInfo[] }>
@@ -120,7 +119,6 @@ export type UserReadStatuses = LiveObject<UserReadStatusesMeta>
 
 export function initialStorage(): Storage {
   return {
-    collaborators: new LiveObject(), // TODO remove this when the BFF is on
     userReadStatusesByThread: new LiveObject(),
     remixSceneRoutes: new LiveObject(),
     connections: new LiveObject(),
