@@ -51,6 +51,6 @@ export function auth0LoginURL({
 
 export function authenticateUrl(): URL {
   return new URL(
-    ServerEnvironment.AUTH0_ENDPOINT || urlJoin(ServerEnvironment.CORS_ORIGIN, 'authenticate'),
+    ServerEnvironment.AUTH0_REDIRECT_URI || urlJoin(ServerEnvironment.CORS_ORIGIN, 'authenticate'),
   )
 }
