@@ -409,7 +409,7 @@ function simpleErrorMessage(fileName: string, error: string): ErrorMessage {
     null,
     null,
     '',
-    'warning',
+    'fatal',
     '',
     error,
     '',
@@ -432,9 +432,9 @@ function errorsFromComponentRegistration(
       case 'evaluation-error':
         if ((error.evaluationError as FancyError).hasOwnProperty('stackFrames')) {
           const fancyError = error.evaluationError as FancyError
-          const errorFromFancyError = fancyErrorToErrorMessage(fancyError)
-          if (errorFromFancyError != null) {
-            return errorFromFancyError
+          const errorMsgFromFancyError = fancyErrorToErrorMessage(fancyError)
+          if (errorMsgFromFancyError != null) {
+            return errorMsgFromFancyError
           }
         }
         return [
@@ -892,7 +892,7 @@ function fancyErrorToErrorMessage(error: FancyError): ErrorMessage | null {
       null,
       null,
       code,
-      'warning',
+      'fatal',
       '',
       `Components file evaluation error: ${error}`,
       '',
