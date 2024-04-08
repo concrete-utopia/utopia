@@ -1,5 +1,8 @@
 import type {
+  AllowedEnumType,
   ArrayControlDescription,
+  BaseControlDescription,
+  BasicControlOption,
   BasicControlOptions,
   CheckboxControlDescription,
   ColorControlDescription,
@@ -11,21 +14,27 @@ import type {
   HtmlInputControlDescription,
   ImportType,
   JSXControlDescription,
+  Matrix3,
   Matrix3ControlDescription,
+  Matrix4,
   Matrix4ControlDescription,
   NoneControlDescription,
   NumberInputControlDescription,
   ObjectControlDescription,
   PopUpListControlDescription,
   PropertyControls,
+  PropertyControlsOptions,
   RadioControlDescription,
   RegularControlDescription,
   StringInputControlDescription,
   StyleControlsControlDescription,
   TupleControlDescription,
   UnionControlDescription,
+  Vector2,
   Vector2ControlDescription,
+  Vector3,
   Vector3ControlDescription,
+  Vector4,
   Vector4ControlDescription,
 } from './property-controls'
 
@@ -88,38 +97,65 @@ export function expression<T>(
 
 export function expressionPopupListControl(
   options: ExpressionControlOption<unknown>[],
+  baseOptions?: PropertyControlsOptions<unknown>,
 ): ExpressionPopUpListControlDescription {
-  return {
+  let result: ExpressionPopUpListControlDescription = {
     control: 'expression-popuplist',
     options: options,
   }
+
+  mutateControlWithOptions(result, baseOptions)
+
+  return result
 }
 
-export function eulerControl(): EulerControlDescription {
-  return {
+export function eulerControl(
+  options?: PropertyControlsOptions<[number, number, number, string]>,
+): EulerControlDescription {
+  let result: EulerControlDescription = {
     control: 'euler',
   }
+  mutateControlWithOptions(result, options)
+
+  return result
 }
 
-export function matrix3Control(): Matrix3ControlDescription {
-  return {
+export function matrix3Control(
+  options?: PropertyControlsOptions<Matrix3>,
+): Matrix3ControlDescription {
+  let result: Matrix3ControlDescription = {
     control: 'matrix3',
   }
+  mutateControlWithOptions(result, options)
+
+  return result
 }
 
-export function matrix4Control(): Matrix4ControlDescription {
-  return {
+export function matrix4Control(
+  options?: PropertyControlsOptions<Matrix4>,
+): Matrix4ControlDescription {
+  let result: Matrix4ControlDescription = {
     control: 'matrix4',
   }
+
+  mutateControlWithOptions(result, options)
+
+  return result
 }
 
-export function noControl(): NoneControlDescription {
-  return {
+export function noControl(options?: PropertyControlsOptions<unknown>): NoneControlDescription {
+  let result: NoneControlDescription = {
     control: 'none',
   }
+  mutateControlWithOptions(result, options)
+
+  return result
 }
 
-export function numberControl(unit?: string): NumberInputControlDescription {
+export function numberControl(
+  unit?: string,
+  options?: PropertyControlsOptions<unknown>,
+): NumberInputControlDescription {
   let result: NumberInputControlDescription = {
     control: 'number-input',
   }
@@ -128,23 +164,37 @@ export function numberControl(unit?: string): NumberInputControlDescription {
     result.unit = unit
   }
 
+  mutateControlWithOptions(result, options)
+
   return result
 }
 
 export function popupListControl(
   options: BasicControlOptions<unknown>,
+  baseOptions?: PropertyControlsOptions<AllowedEnumType | BasicControlOption<unknown>>,
 ): PopUpListControlDescription {
-  return {
+  let result: PopUpListControlDescription = {
     control: 'popuplist',
     options: options,
   }
+
+  mutateControlWithOptions(result, baseOptions)
+
+  return result
 }
 
-export function radioControl(options: BasicControlOptions<unknown>): RadioControlDescription {
-  return {
+export function radioControl(
+  options: BasicControlOptions<unknown>,
+  baseOptions?: PropertyControlsOptions<AllowedEnumType | BasicControlOption<unknown>>,
+): RadioControlDescription {
+  let result: RadioControlDescription = {
     control: 'radio',
     options: options,
   }
+
+  mutateControlWithOptions(result, baseOptions)
+
+  return result
 }
 
 export function sliderControl(
@@ -152,6 +202,7 @@ export function sliderControl(
   max: number,
   step: number,
   unit?: string,
+  options?: PropertyControlsOptions<unknown>,
 ): NumberInputControlDescription {
   let result: NumberInputControlDescription = {
     control: 'number-input',
@@ -164,10 +215,15 @@ export function sliderControl(
     result.unit = unit
   }
 
+  mutateControlWithOptions(result, options)
+
   return result
 }
 
-export function stringControl(placeholder?: string): StringInputControlDescription {
+export function stringControl(
+  placeholder?: string,
+  options?: PropertyControlsOptions<unknown>,
+): StringInputControlDescription {
   let result: StringInputControlDescription = {
     control: 'string-input',
   }
@@ -176,10 +232,15 @@ export function stringControl(placeholder?: string): StringInputControlDescripti
     result.placeholder = placeholder
   }
 
+  mutateControlWithOptions(result, options)
+
   return result
 }
 
-export function htmlControl(placeholder?: string): HtmlInputControlDescription {
+export function htmlControl(
+  placeholder?: string,
+  options?: PropertyControlsOptions<unknown>,
+): HtmlInputControlDescription {
   let result: HtmlInputControlDescription = {
     control: 'html-input',
   }
@@ -188,85 +249,164 @@ export function htmlControl(placeholder?: string): HtmlInputControlDescription {
     result.placeholder = placeholder
   }
 
+  mutateControlWithOptions(result, options)
+
   return result
 }
 
-export function styleControl(): StyleControlsControlDescription {
-  return {
+export function styleControl(
+  options?: PropertyControlsOptions<unknown>,
+): StyleControlsControlDescription {
+  let result: StyleControlsControlDescription = {
     control: 'style-controls',
   }
+  mutateControlWithOptions(result, options)
+
+  return result
 }
 
-export function vector2Control(): Vector2ControlDescription {
-  return {
+export function vector2Control(
+  options?: PropertyControlsOptions<Vector2>,
+): Vector2ControlDescription {
+  let result: Vector2ControlDescription = {
     control: 'vector2',
   }
+
+  mutateControlWithOptions(result, options)
+
+  return result
 }
 
-export function vector3Control(): Vector3ControlDescription {
-  return {
+export function vector3Control(
+  options?: PropertyControlsOptions<Vector3>,
+): Vector3ControlDescription {
+  let result: Vector3ControlDescription = {
     control: 'vector3',
   }
+
+  mutateControlWithOptions(result, options)
+
+  return result
 }
 
-export function vector4Control(): Vector4ControlDescription {
-  return {
+export function vector4Control(
+  options?: PropertyControlsOptions<Vector4>,
+): Vector4ControlDescription {
+  let result: Vector4ControlDescription = {
     control: 'vector4',
   }
+
+  mutateControlWithOptions(result, options)
+
+  return result
 }
 
-export function jsxControl(): JSXControlDescription {
-  return {
+export function jsxControl(options?: PropertyControlsOptions<unknown>): JSXControlDescription {
+  let result: JSXControlDescription = {
     control: 'jsx',
   }
+  mutateControlWithOptions(result, options)
+
+  return result
 }
 
-export function arrayControl(propertyControl: RegularControlDescription): ArrayControlDescription {
-  return {
+export function arrayControl(
+  propertyControl: RegularControlDescription,
+  options?: PropertyControlsOptions<unknown>,
+): ArrayControlDescription {
+  let result: ArrayControlDescription = {
     control: 'array',
     propertyControl: propertyControl,
   }
+
+  mutateControlWithOptions(result, options)
+
+  return result
 }
 
 export function fixedSizeArrayControl(
   propertyControl: RegularControlDescription,
   maxCount: number,
+  options?: PropertyControlsOptions<unknown>,
 ): ArrayControlDescription {
-  return {
+  let result: ArrayControlDescription = {
     control: 'array',
     propertyControl: propertyControl,
     maxCount: maxCount,
   }
+  mutateControlWithOptions(result, options)
+
+  return result
 }
 
-export function objectControl(object: {
-  [prop: string]: RegularControlDescription
-}): ObjectControlDescription {
-  return {
+export function objectControl(
+  object: {
+    [prop: string]: RegularControlDescription
+  },
+  options?: PropertyControlsOptions<unknown>,
+): ObjectControlDescription {
+  let result: ObjectControlDescription = {
     control: 'object',
     object: object,
   }
+
+  mutateControlWithOptions(result, options)
+
+  return result
 }
 
 export function tupleControl(
   propertyControls: RegularControlDescription[],
+  options?: PropertyControlsOptions<unknown>,
 ): TupleControlDescription {
-  return {
+  let result: TupleControlDescription = {
     control: 'tuple',
     propertyControls: propertyControls,
   }
+
+  mutateControlWithOptions(result, options)
+
+  return result
 }
 
-export function unionControl(controls: Array<RegularControlDescription>): UnionControlDescription {
-  return {
+export function unionControl(
+  controls: Array<RegularControlDescription>,
+  options?: PropertyControlsOptions<unknown>,
+): UnionControlDescription {
+  let result: UnionControlDescription = {
     control: 'union',
     controls: controls,
   }
+
+  mutateControlWithOptions(result, options)
+
+  return result
 }
 
 export function folderControl(controls: PropertyControls): FolderControlDescription {
   return {
     control: 'folder',
     controls: controls,
+  }
+}
+
+function mutateControlWithOptions<T, U extends PropertyControlsOptions<T>>(
+  control: U,
+  options?: PropertyControlsOptions<T>,
+) {
+  if (options?.defaultValue !== undefined) {
+    control.defaultValue = options.defaultValue
+  }
+
+  if (options?.required !== undefined) {
+    control.required = options.required
+  }
+
+  if (options?.visibleByDefault !== undefined) {
+    control.visibleByDefault = options.visibleByDefault
+  }
+
+  if (options?.label !== undefined) {
+    control.label = options.label
   }
 }

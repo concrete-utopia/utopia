@@ -8,6 +8,32 @@ import { updateFromCodeEditor } from '../../components/editor/actions/actions-fr
 
 const project = (componentDescriptorFiles: { [filename: string]: string }) =>
   createModifiedProject({
+    ['/src/card.js']: `import React from 'react'
+
+    export const Card = ({ label }) => {
+      return <div>{label}</div>
+    }
+
+    export const NewCard = ({ label }) => {
+      return <h1>{label}</h1>
+    }
+
+    export const CardToDelete = ({ label }) => {
+      return <code>{label}</code>
+    }
+    `,
+    ['/src/card2.js']: `import React from 'react'
+    
+    export const Card2 = ({ label }) => {
+      return <div>{label}</div>
+    }
+    `,
+    ['/src/new-module.js']: `import React from 'react'
+    
+    export const NewCard = ({ label }) => {
+      return <div>{label}</div>
+    }
+    `,
     [StoryboardFilePath]: `import * as React from 'react'
   import { Scene, Storyboard, View } from 'utopia-api'
 
@@ -36,9 +62,12 @@ describe('registered property controls', () => {
   it('registered controls from sidecar file are in editor state', async () => {
     const renderResult = await renderTestEditorWithModel(
       project({
-        ['/utopia/components.utopia.js']: `const Components = {
+        ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
+        
+        const Components = {
       '/src/card': {
         Card: {
+          component: Card,
           supportsChildren: false,
           properties: {
             label: {
@@ -144,14 +173,455 @@ describe('registered property controls', () => {
       }
     `)
   })
-  it('can use imports in the sidecar file', async () => {
+  it('Can set property control options using the control factory functions', async () => {
     const renderResult = await renderTestEditorWithModel(
       project({
-        ['/utopia/components.utopia.js']: `import Utopia from 'utopia-api'
+        ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
+        import * as Utopia from 'utopia-api'
+        
+        const Components = {
+          '/src/card': {
+            Card: {
+              component: Card,
+              supportsChildren: false,
+              properties: {
+                label: Utopia.stringControl('type here', {
+                  required: true,
+                  defaultValue: 'hello',
+                }),
+              },
+              variants: [],
+            },
+          },
+        }
+        
+        export default Components
+        
+  `,
+      }),
+      'await-first-dom-report',
+    )
+    const editorState = renderResult.getEditorState().editor
+
+    expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
+      Object {
+        "Card": Object {
+          "preferredChildComponents": Array [],
+          "properties": Object {
+            "label": Object {
+              "control": "string-input",
+              "defaultValue": "hello",
+              "placeholder": "type here",
+              "required": true,
+            },
+          },
+          "source": Object {
+            "sourceDescriptorFile": "/utopia/components.utopia.js",
+            "type": "DESCRIPTOR_FILE",
+          },
+          "supportsChildren": false,
+          "variants": Array [
+            Object {
+              "elementToInsert": [Function],
+              "importsToAdd": Object {
+                "/src/card": Object {
+                  "importedAs": null,
+                  "importedFromWithin": Array [
+                    Object {
+                      "alias": "Card",
+                      "name": "Card",
+                    },
+                  ],
+                  "importedWithName": null,
+                },
+              },
+              "insertMenuLabel": "Card",
+            },
+          ],
+        },
+      }
+    `)
+  })
+  it('control registration fails when the imported component is undefined', async () => {
+    const renderResult = await renderTestEditorWithModel(
+      project({
+        ['/utopia/components.utopia.js']: `import { Cart } from '../src/card'
         
         const Components = {
       '/src/card': {
         Card: {
+          component: Cart,
+          supportsChildren: false,
+          properties: { },
+          variants: [ ],
+        },
+      },
+    }
+    
+    export default Components
+  `,
+      }),
+      'await-first-dom-report',
+    )
+    const editorState = renderResult.getEditorState().editor
+
+    expect(editorState.codeEditorErrors).toEqual({
+      buildErrors: {},
+      lintErrors: {},
+      componentDescriptorErrors: {
+        '/utopia/components.utopia.js': [
+          {
+            codeSnippet: '',
+            endColumn: null,
+            endLine: null,
+            errorCode: '',
+            fileName: '/utopia/components.utopia.js',
+            message: "Validation failed: Component registered for key 'Card' is undefined",
+            passTime: null,
+            severity: 'warning',
+            source: 'component-descriptor',
+            startColumn: null,
+            startLine: null,
+            type: '',
+          },
+        ],
+      },
+    })
+
+    const srcCardKey = Object.keys(renderResult.getEditorState().editor.propertyControlsInfo).find(
+      (key) => key === '/src/card',
+    )
+
+    expect(srcCardKey).toBeUndefined()
+  })
+  it('control registration fails when the imported internal component does not match the name of registration key', async () => {
+    const renderResult = await renderTestEditorWithModel(
+      project({
+        ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
+        
+        const Components = {
+      '/src/card': {
+        Cart: {
+          component: Card,
+          supportsChildren: false,
+          properties: { },
+          variants: [ ],
+        },
+      },
+    }
+    
+    export default Components
+  `,
+      }),
+      'await-first-dom-report',
+    )
+    const editorState = renderResult.getEditorState().editor
+
+    expect(editorState.codeEditorErrors).toEqual({
+      buildErrors: {},
+      lintErrors: {},
+      componentDescriptorErrors: {
+        '/utopia/components.utopia.js': [
+          {
+            codeSnippet: '',
+            endColumn: null,
+            endLine: null,
+            errorCode: '',
+            fileName: '/utopia/components.utopia.js',
+            message:
+              'Validation failed: Component name (Card) does not match the registration key (Cart)',
+            passTime: null,
+            severity: 'warning',
+            source: 'component-descriptor',
+            startColumn: null,
+            startLine: null,
+            type: '',
+          },
+        ],
+      },
+    })
+
+    const srcCardKey = Object.keys(renderResult.getEditorState().editor.propertyControlsInfo).find(
+      (key) => key === '/src/card',
+    )
+
+    expect(srcCardKey).toBeUndefined()
+  })
+  it('control registration fails when the module name of an imported internal component does not match the name of the registration key', async () => {
+    const renderResult = await renderTestEditorWithModel(
+      project({
+        ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
+        
+        const Components = {
+      '/src/cardd': {
+        Card: {
+          component: Card,
+          supportsChildren: false,
+          properties: { },
+          variants: [ ],
+        },
+      },
+    }
+    
+    export default Components
+  `,
+      }),
+      'await-first-dom-report',
+    )
+    const editorState = renderResult.getEditorState().editor
+
+    expect(editorState.codeEditorErrors).toEqual({
+      buildErrors: {},
+      lintErrors: {},
+      componentDescriptorErrors: {
+        '/utopia/components.utopia.js': [
+          {
+            codeSnippet: '',
+            endColumn: null,
+            endLine: null,
+            errorCode: '',
+            fileName: '/utopia/components.utopia.js',
+            message:
+              'Validation failed: Module name (/src/card) does not match the module key (/src/cardd)',
+            passTime: null,
+            severity: 'warning',
+            source: 'component-descriptor',
+            startColumn: null,
+            startLine: null,
+            type: '',
+          },
+        ],
+      },
+    })
+
+    const srcCardKey = Object.keys(renderResult.getEditorState().editor.propertyControlsInfo).find(
+      (key) => key === '/src/card',
+    )
+
+    expect(srcCardKey).toBeUndefined()
+  })
+  it('control registration fails when the imported external component does not match the name of registration key', async () => {
+    const renderResult = await renderTestEditorWithModel(
+      project({
+        ['/utopia/components.utopia.js']: `import { View } from 'utopia-api'
+        
+        const Components = {
+      'utopia-api': {
+        Vieww: {
+          component: View,
+          supportsChildren: false,
+          properties: { },
+          variants: [ ],
+        },
+      },
+    }
+    
+    export default Components
+  `,
+      }),
+      'await-first-dom-report',
+    )
+    const editorState = renderResult.getEditorState().editor
+
+    expect(editorState.codeEditorErrors).toEqual({
+      buildErrors: {},
+      lintErrors: {},
+      componentDescriptorErrors: {
+        '/utopia/components.utopia.js': [
+          {
+            codeSnippet: '',
+            endColumn: null,
+            endLine: null,
+            errorCode: '',
+            fileName: '/utopia/components.utopia.js',
+            message:
+              'Validation failed: Component name (View) does not match the registration key (Vieww)',
+            passTime: null,
+            severity: 'warning',
+            source: 'component-descriptor',
+            startColumn: null,
+            startLine: null,
+            type: '',
+          },
+        ],
+      },
+    })
+
+    const srcCardKey = Object.keys(renderResult.getEditorState().editor.propertyControlsInfo).find(
+      (key) => key === '/src/card',
+    )
+
+    expect(srcCardKey).toBeUndefined()
+  })
+  it('control registration fails when the module name of an imported external component does not match the name of registration key', async () => {
+    const renderResult = await renderTestEditorWithModel(
+      project({
+        ['/utopia/components.utopia.js']: `import { View } from 'utopia-api'
+        
+        const Components = {
+      'utopia-apii': {
+        View: {
+          component: View,
+          supportsChildren: false,
+          properties: { },
+          variants: [ ],
+        },
+      },
+    }
+    
+    export default Components
+  `,
+      }),
+      'await-first-dom-report',
+    )
+    const editorState = renderResult.getEditorState().editor
+
+    expect(editorState.codeEditorErrors).toEqual({
+      buildErrors: {},
+      lintErrors: {},
+      componentDescriptorErrors: {
+        '/utopia/components.utopia.js': [
+          {
+            codeSnippet: '',
+            endColumn: null,
+            endLine: null,
+            errorCode: '',
+            fileName: '/utopia/components.utopia.js',
+            message:
+              'Validation failed: Module name (utopia-api) does not match the module key (utopia-apii)',
+            passTime: null,
+            severity: 'warning',
+            source: 'component-descriptor',
+            startColumn: null,
+            startLine: null,
+            type: '',
+          },
+        ],
+      },
+    })
+
+    const srcCardKey = Object.keys(renderResult.getEditorState().editor.propertyControlsInfo).find(
+      (key) => key === '/src/card',
+    )
+
+    expect(srcCardKey).toBeUndefined()
+  })
+  it('updating the control registration removes the build errors', async () => {
+    const renderResult = await renderTestEditorWithModel(
+      project({
+        ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
+        
+        const Components = {
+      '/src/card': {
+        Cart: {
+          component: Card,
+          supportsChildren: false,
+          properties: { },
+          variants: [ ],
+        },
+      },
+    }
+    
+    export default Components
+  `,
+      }),
+      'await-first-dom-report',
+    )
+
+    expect(renderResult.getEditorState().editor.codeEditorErrors).toEqual({
+      buildErrors: {},
+      lintErrors: {},
+      componentDescriptorErrors: {
+        '/utopia/components.utopia.js': [
+          {
+            codeSnippet: '',
+            endColumn: null,
+            endLine: null,
+            errorCode: '',
+            fileName: '/utopia/components.utopia.js',
+            message:
+              'Validation failed: Component name (Card) does not match the registration key (Cart)',
+            passTime: null,
+            severity: 'warning',
+            source: 'component-descriptor',
+            startColumn: null,
+            startLine: null,
+            type: '',
+          },
+        ],
+      },
+    })
+
+    const srcCardKey = Object.keys(renderResult.getEditorState().editor.propertyControlsInfo).find(
+      (key) => key === '/src/card',
+    )
+
+    expect(srcCardKey).toBeUndefined()
+
+    await renderResult.dispatch(
+      [
+        updateFromCodeEditor(
+          '/utopia/components.utopia.js',
+          `import { Card } from '../src/card'
+        
+        const Components = {
+      '/src/card': {
+        Cart: {
+          component: Card,
+          supportsChildren: false,
+          properties: { },
+          variants: [ ],
+        },
+      },
+    }
+    
+    export default Components
+  `,
+          `import { Card } from '../src/card'
+              
+        const Components = {
+      '/src/card': {
+        Card: {
+          component: Card,
+          supportsChildren: false,
+          properties: { },
+          variants: [ ],
+        },
+      },
+      }
+
+      export default Components
+      `,
+        ),
+      ],
+      true,
+    )
+
+    expect(renderResult.getEditorState().editor.codeEditorErrors).toEqual({
+      buildErrors: {},
+      lintErrors: {},
+      componentDescriptorErrors: {
+        '/utopia/components.utopia.js': [],
+      },
+    })
+
+    expect(Object.keys(renderResult.getEditorState().editor.propertyControlsInfo)).toEqual([
+      '@react-three/fiber',
+      'antd',
+      'utopia-api',
+      '@remix-run/react',
+      '/src/card',
+    ])
+  })
+  it('can use imports in the sidecar file', async () => {
+    const renderResult = await renderTestEditorWithModel(
+      project({
+        ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
+        import * as Utopia from 'utopia-api'
+        const Components = {
+      '/src/card': {
+        Card: {
+          component: Card,
           supportsChildren: false,
           properties: {
             label: Utopia.stringControl(),
@@ -258,9 +728,13 @@ describe('registered property controls', () => {
   it('registered controls for multiple components from sidecar file are in editor state', async () => {
     const renderResult = await renderTestEditorWithModel(
       project({
-        ['/utopia/components.utopia.js']: `const Components = {
+        ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
+        import { Card2 } from '../src/card2'
+        
+        const Components = {
       '/src/card': {
         Card: {
+          component: Card,
           supportsChildren: false,
           properties: {
             label: {
@@ -288,6 +762,7 @@ describe('registered property controls', () => {
           ],
         },
         Card2: {
+          component: Card2,
           supportsChildren: false,
           properties: {
             label: {
@@ -320,16 +795,19 @@ describe('registered property controls', () => {
     expect(Object.keys(editorState.propertyControlsInfo['/src/card'])).toMatchInlineSnapshot(`
       Array [
         "Card",
-        "Card2",
       ]
     `)
   })
   it('registered controls for multiple modules from sidecar file are in editor state', async () => {
     const renderResult = await renderTestEditorWithModel(
       project({
-        ['/utopia/components.utopia.js']: `const Components = {
+        ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
+        import { Card2 } from '../src/card2'
+
+        const Components = {
         '/src/card': {
           Card: {
+            component: Card,
             supportsChildren: false,
             properties: {
               label: {
@@ -359,6 +837,7 @@ describe('registered property controls', () => {
         },
         '/src/card2': {
           Card2: {
+            component: Card2,
             supportsChildren: false,
             properties: {
               label: {
@@ -402,9 +881,12 @@ describe('registered property controls', () => {
   it('registered controls for multiple modules from multiple sidecar files are in editor state', async () => {
     const renderResult = await renderTestEditorWithModel(
       project({
-        ['/utopia/components.utopia.js']: `const Components = {
+        ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
+        
+        const Components = {
           '/src/card': {
             Card: {
+              component: Card,
               supportsChildren: false,
               properties: {
                 label: {
@@ -436,9 +918,11 @@ describe('registered property controls', () => {
         
         export default Components        
   `,
-        ['/utopia/components2.utopia.js']: `const Components = {
+        ['/utopia/components2.utopia.js']: `import { Card2 } from '../src/card2'
+        const Components = {
           '/src/card2': {
             Card2: {
+              component: Card2,
               supportsChildren: false,
               properties: {
                 label: {
@@ -488,9 +972,12 @@ describe('Lifecycle management of registering components', () => {
     it('Deleting a component descriptor file removes the property controls from that file', async () => {
       const renderResult = await renderTestEditorWithModel(
         project({
-          [descriptorFileName1]: `const Components = {
+          [descriptorFileName1]: `import { Card } from '../src/card'
+        
+        const Components = {
       '/src/card': {
         Card: {
+          component: Card,
           supportsChildren: false,
           properties: {
             label: {
@@ -504,9 +991,12 @@ describe('Lifecycle management of registering components', () => {
     
     export default Components
   `,
-          [descriptorFileName2]: `const Components = {
+          [descriptorFileName2]: `import { Card2 } from '../src/card2'
+
+          const Components = {
     '/src/card2': {
       Card2: {
+        component: Card2,
         supportsChildren: false,
         properties: {
           label: {
@@ -553,9 +1043,12 @@ describe('Lifecycle management of registering components', () => {
     })
   })
   describe('Updating a component descriptor file', () => {
-    const descriptorFileContent2 = `const Components = {
+    const descriptorFileContent2 = `import { Card2 } from '../src/card2'
+    
+    const Components = {
       '/src/card2': {
         Card2: {
+          component: Card2,
           supportsChildren: false,
           properties: {
             label: {
@@ -571,9 +1064,12 @@ describe('Lifecycle management of registering components', () => {
   `
 
     it('Updating a component in a component descriptor file updates the property controls of that component', async () => {
-      const descriptorFileContent1 = `const Components = {
+      const descriptorFileContent1 = `import { Card } from '../src/card'
+
+      const Components = {
       '/src/card': {
         Card: {
+          component: Card,
           supportsChildren: false,
           properties: {
             label: {
@@ -618,9 +1114,12 @@ describe('Lifecycle management of registering components', () => {
               ]
           `)
 
-      const updatedDescriptorFileContent = `const Components = {
+      const updatedDescriptorFileContent = `import { Card } from '../src/card'
+
+      const Components = {
       '/src/card': {
         Card: {
+          component: Card,
           supportsChildren: false,
           properties: {
             label2: {
@@ -668,9 +1167,12 @@ describe('Lifecycle management of registering components', () => {
           `)
     })
     it('Adding a new component in a component descriptor file adds its property controls', async () => {
-      const descriptorFileContent1 = `const Components = {
+      const descriptorFileContent1 = `import { Card } from '../src/card'
+      
+      const Components = {
       '/src/card': {
         Card: {
+          component: Card,
           supportsChildren: false,
           properties: {
             label: {
@@ -706,9 +1208,11 @@ describe('Lifecycle management of registering components', () => {
               ]
           `)
 
-      const updatedDescriptorFileContent = `const Components = {
+      const updatedDescriptorFileContent = `import { Card, NewCard } from '../src/card'
+      const Components = {
       '/src/card': {
         Card: {
+          component: Card,
           supportsChildren: false,
           properties: {
             label2: {
@@ -718,6 +1222,7 @@ describe('Lifecycle management of registering components', () => {
           variants: [],
         },
         NewCard: {
+          component: NewCard,
           supportsChildren: false,
           properties: {
             label2: {
@@ -759,9 +1264,12 @@ describe('Lifecycle management of registering components', () => {
           `)
     })
     it('Removing a component from a component descriptor file removes its property controls', async () => {
-      const descriptorFileContent1 = `const Components = {
+      const descriptorFileContent1 = `import { Card, CardToDelete } from '../src/card'
+      
+      const Components = {
       '/src/card': {
         Card: {
+          component: Card,
           supportsChildren: false,
           properties: {
             label: {
@@ -771,6 +1279,7 @@ describe('Lifecycle management of registering components', () => {
           variants: [],
         },
         CardToDelete: {
+          component: CardToDelete,
           supportsChildren: false,
           properties: {
             label2: {
@@ -808,9 +1317,12 @@ describe('Lifecycle management of registering components', () => {
               ]
           `)
 
-      const updatedDescriptorFileContent = `const Components = {
+      const updatedDescriptorFileContent = `import { Card } from '../src/card'
+      
+      const Components = {
       '/src/card': {
         Card: {
+          component: Card,
           supportsChildren: false,
           properties: {
             label2: {
@@ -851,9 +1363,12 @@ describe('Lifecycle management of registering components', () => {
           `)
     })
     it('Adding a new module to a component descriptor file adds its components', async () => {
-      const descriptorFileContent1 = `const Components = {
+      const descriptorFileContent1 = `import { Card } from '../src/card'
+      
+      const Components = {
       '/src/card': {
         Card: {
+          component: Card,
           supportsChildren: false,
           properties: {
             label: {
@@ -894,9 +1409,13 @@ describe('Lifecycle management of registering components', () => {
               ]
           `)
 
-      const updatedDescriptorFileContent = `const Components = {
+      const updatedDescriptorFileContent = `import { Card } from '../src/card'
+      import { NewCard } from '../src/new-module'
+      
+      const Components = {
       '/src/card': {
         Card: {
+          component: Card,
           supportsChildren: false,
           properties: {
             label2: {
@@ -907,7 +1426,8 @@ describe('Lifecycle management of registering components', () => {
         },
       },
       '/src/new-module': {
-        NewComp: {
+        NewCard: {
+          component: NewCard,
           supportsChildren: false,
           properties: {
             label: {
@@ -944,7 +1464,7 @@ describe('Lifecycle management of registering components', () => {
         Object.keys(renderResult.getEditorState().editor.propertyControlsInfo['/src/new-module']),
       ).toMatchInlineSnapshot(`
               Array [
-                "NewComp",
+                "NewCard",
               ]
           `)
       // The second descriptor file has not been changed
@@ -956,9 +1476,12 @@ describe('Lifecycle management of registering components', () => {
           `)
     })
     it('Deleting a module from a component descriptor file removes it from property controls', async () => {
-      const descriptorFileContent1 = `const Components = {
+      const descriptorFileContent1 = `import { Card } from '../src/card'
+      
+      const Components = {
       '/src/card': {
         Card: {
+          component: Card,
           supportsChildren: false,
           properties: {
             label: {
@@ -1000,9 +1523,12 @@ describe('Lifecycle management of registering components', () => {
               ]
           `)
 
-      const updatedDescriptorFileContent = `const Components = {
+      const updatedDescriptorFileContent = `import { Card } from '../src/card'
+      
+      const Components = {
       '/src/card': {
         Card: {
+          component: Card,
           supportsChildren: false,
           properties: {
             label2: {
@@ -1049,9 +1575,12 @@ describe('Lifecycle management of registering components', () => {
   })
   describe('Renaming a component descriptor file', () => {
     it('Renaming a component descriptor file to a different name updates the property controls to the new source file', async () => {
-      const descriptorFileContent1 = `const Components = {
+      const descriptorFileContent1 = `import { Card } from '../src/card'
+      
+      const Components = {
       '/src/card': {
         Card: {
+          component: Card,
           supportsChildren: false,
           properties: {
             label: {
@@ -1094,9 +1623,12 @@ describe('Lifecycle management of registering components', () => {
       `)
     })
     it('Renaming a component descriptor file to a non-component-descriptor name removes the property controls', async () => {
-      const descriptorFileContent1 = `const Components = {
+      const descriptorFileContent1 = `import { Card } from '../src/card'
+      
+      const Components = {
       '/src/card': {
         Card: {
+          component: Card,
           supportsChildren: false,
           properties: {
             label: {
@@ -1133,9 +1665,12 @@ describe('Lifecycle management of registering components', () => {
       expect(renderResult.getEditorState().editor.propertyControlsInfo['/src/card']).toBeUndefined()
     })
     it('Renaming a regular file to a component descriptor name adds the property controls', async () => {
-      const descriptorFileContent1 = `const Components = {
+      const descriptorFileContent1 = `import { Card } from '../src/card'
+      
+      const Components = {
       '/src/card': {
         Card: {
+          component: Card,
           supportsChildren: false,
           properties: {
             label: {

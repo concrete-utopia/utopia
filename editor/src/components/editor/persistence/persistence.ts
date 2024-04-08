@@ -64,6 +64,7 @@ export class PersistenceMachine {
       if (state.changed) {
         switch (event.type) {
           case 'NEW_PROJECT_CREATED':
+            this.queuedActions.push(setProjectID(event.projectId))
             if (state.matches({ user: LoggedIn })) {
               this.projectUploadedToServer = true
               this.queuedActions.push(showToast(notice('Project successfully uploaded!')))

@@ -1,11 +1,11 @@
+import type { UserDetails } from 'prisma-client'
+import React from 'react'
 import type { StoreApi } from 'zustand'
 import { createStore, useStore } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
-import type { Category, SortCriteria } from './routes/projects'
-import type { Operation, ProjectAccessRequestWithUserDetails } from './types'
-import { areBaseOperationsEquivalent } from './types'
-import type { BrowserEnvironmentType } from './env.server'
-import React from 'react'
+import type { Category, SortCriteria } from '../routes/projects'
+import type { Operation, ProjectAccessRequestWithUserDetails } from '../types'
+import { areBaseOperationsEquivalent } from '../types'
 
 // State portion that will be persisted
 interface ProjectsStoreStatePersisted {
@@ -20,8 +20,10 @@ const initialProjectsStoreStatePersisted: ProjectsStoreStatePersisted = {
   gridView: true,
 }
 
+export type SharingProjectAccessRequestsState = 'loading' | 'ready'
+
 export type SharingProjectAccessRequests = {
-  state: 'loading' | 'ready'
+  state: SharingProjectAccessRequestsState
   requests: ProjectAccessRequestWithUserDetails[]
 }
 
@@ -31,9 +33,9 @@ interface ProjectsStoreStateNonPersisted {
   selectedCategory: Category
   searchQuery: string
   operations: OperationWithKey[]
-  env: BrowserEnvironmentType | null
   sharingProjectId: string | null
   sharingProjectAccessRequests: SharingProjectAccessRequests
+  myUser: UserDetails | null
 }
 
 const initialProjectsStoreStateNonPersisted: ProjectsStoreStateNonPersisted = {
@@ -41,9 +43,9 @@ const initialProjectsStoreStateNonPersisted: ProjectsStoreStateNonPersisted = {
   selectedCategory: 'allProjects',
   searchQuery: '',
   operations: [],
-  env: null,
   sharingProjectId: null,
   sharingProjectAccessRequests: { state: 'ready', requests: [] },
+  myUser: null,
 }
 
 type ProjectsStoreState = ProjectsStoreStatePersisted & ProjectsStoreStateNonPersisted
@@ -60,6 +62,7 @@ interface ProjectsStoreActions {
   updateOperation: (key: string, data: { errored: boolean }) => void
   setSharingProjectId: (projectId: string | null) => void
   setSharingProjectAccessRequests: (requests: SharingProjectAccessRequests) => void
+  setMyUser: (user: UserDetails) => void
 }
 
 type ProjectsStore = ProjectsStoreState & ProjectsStoreActions
@@ -124,9 +127,12 @@ export const createProjectsStore = (
           setSharingProjectAccessRequests: (requests) => {
             return set(() => ({ sharingProjectAccessRequests: requests }))
           },
+          setMyUser: (user) => {
+            return set(() => ({ myUser: user }))
+          },
         }),
         {
-          name: 'store',
+          name: 'projects-store',
           partialize: (fullStore) => {
             const nonPersistedKeys = Object.keys(
               initialProjectsStoreStateNonPersisted,
@@ -162,7 +168,7 @@ export const ProjectsContext = React.createContext<StoreApi<ProjectsStore> | nul
 export function useProjectsStore<T>(selector: (store: ProjectsStore) => T): T {
   const store = React.useContext(ProjectsContext)
   if (store == null) {
-    throw new Error('missing store context')
+    throw new Error('missing projects store context')
   }
   return useStore(store, selector)
 }

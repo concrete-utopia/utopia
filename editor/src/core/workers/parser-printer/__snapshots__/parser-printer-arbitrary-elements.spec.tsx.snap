@@ -5,6 +5,9 @@ Object {
   "combinedTopLevelArbitraryBlock": Object {
     "definedElsewhere": Array [
       "utopiaCanvasJSXLookup",
+      "utopiaCanvasBlockRanToEnd",
+      "utopiaCanvasEarlyReturnResult",
+      "utopiaCanvasEarlyReturnVoid",
     ],
     "definedWithin": Array [
       "a",
@@ -29,8 +32,10 @@ function b(n) {
     "params": Array [],
     "sourceMap": Object {
       "file": "code.tsx",
-      "mappings": "AAOCA,SAASC,CAATD,CAAWE,CAAXF,EAAcG;AACZC,MAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,WAAOD,CAAPC;AACDF,GAFDD,MAEOD;AACLI,WAAOC,CAACC,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDI;AAWFA;;AAEDX,SAASQ,CAATR,CAAWE,CAAXF,EAAcG;AACZC,MAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,WAAOD,CAAPC;AACDF,GAFDD,MAEOD;AACLI,WAAON,CAACQ,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDI;AACHC",
+      "mappings": "AAKoBA,CAAAA,MAAAA;AAEnBC,WAASC,CAATD,CAAWE,CAAXF,EAAcG;AACZC,QAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,aAAOD,CAAPC;AACDF,KAFDD,MAEOD;AACLI,aAAOC,CAACC,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDR;AAWFA;;AAEDC,WAASQ,CAATR,CAAWE,CAAXF,EAAcG;AACZC,QAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,aAAOD,CAAPC;AACDF,KAFDD,MAEOD;AACLI,aAAON,CAACQ,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDR;AACHY;;AA1BmBZ;AAAAA;AAAAA;AAAAA;AA0BnBY,CA1BmBZ",
       "names": Array [
+        "
+",
         "function",
         "a",
         "n",
@@ -42,8 +47,6 @@ function b(n) {
         "b",
         "(",
         "1",
-        "
-",
         "}",
       ],
       "sources": Array [
@@ -96,22 +99,62 @@ export var storyboard = (
       ],
       "version": 3,
     },
-    "transpiledJavascript": "function a(n) {
+    "statements": Array [
+      Object {
+        "definedElsewhere": Array [
+          "b",
+        ],
+        "definedWithin": Array [
+          "a",
+        ],
+        "originalJavascript": "function a(n) {
   if (n <= 0) {
-    return 0;
+    return 0
   } else {
-    return b(n - 1);
+    return b(n - 1)
   }
-}
+}",
+        "type": "JS_ARBITRARY_STATEMENT",
+      },
+      Object {
+        "definedElsewhere": Array [
+          "a",
+        ],
+        "definedWithin": Array [
+          "b",
+        ],
+        "originalJavascript": "function b(n) {
+  if (n <= 0) {
+    return 0
+  } else {
+    return a(n - 1)
+  }
+}",
+        "type": "JS_ARBITRARY_STATEMENT",
+      },
+    ],
+    "transpiledJavascript": "return (() => {
+  function a(n) {
+    if (n <= 0) {
+      return 0;
+    } else {
+      return b(n - 1);
+    }
+  }
 
-function b(n) {
-  if (n <= 0) {
-    return 0;
-  } else {
-    return a(n - 1);
+  function b(n) {
+    if (n <= 0) {
+      return 0;
+    } else {
+      return a(n - 1);
+    }
   }
-}
-return { a: a, b: b };",
+
+  return utopiaCanvasBlockRanToEnd({
+    a: a,
+    b: b
+  });
+})();",
     "type": "ARBITRARY_JS_BLOCK",
     "uid": "",
   },
@@ -126,13 +169,6 @@ return { a: a, b: b };",
     },
   ],
   "fullHighlightBounds": Object {
-    "066": Object {
-      "endCol": 1,
-      "endLine": 31,
-      "startCol": 0,
-      "startLine": 25,
-      "uid": "066",
-    },
     "0a3": Object {
       "endCol": 28,
       "endLine": 19,
@@ -175,12 +211,12 @@ return { a: a, b: b };",
       "startLine": 20,
       "uid": "377",
     },
-    "44c": Object {
-      "endCol": 3,
-      "endLine": 22,
-      "startCol": 2,
-      "startLine": 16,
-      "uid": "44c",
+    "497": Object {
+      "endCol": 10,
+      "endLine": 21,
+      "startCol": 6,
+      "startLine": 21,
+      "uid": "497",
     },
     "4bd": Object {
       "endCol": 64,
@@ -189,12 +225,12 @@ return { a: a, b: b };",
       "startLine": 37,
       "uid": "4bd",
     },
-    "53f": Object {
-      "endCol": 10,
+    "5cb": Object {
+      "endCol": 19,
       "endLine": 21,
-      "startCol": 6,
+      "startCol": 15,
       "startLine": 21,
-      "uid": "53f",
+      "uid": "5cb",
     },
     "5e7": Object {
       "endCol": 79,
@@ -202,6 +238,13 @@ return { a: a, b: b };",
       "startCol": 13,
       "startLine": 37,
       "uid": "5e7",
+    },
+    "683": Object {
+      "endCol": 1,
+      "endLine": 13,
+      "startCol": 0,
+      "startLine": 7,
+      "uid": "683",
     },
     "6e3": Object {
       "endCol": 20,
@@ -244,13 +287,6 @@ return { a: a, b: b };",
       "startCol": 20,
       "startLine": 39,
       "uid": "8b3",
-    },
-    "98f": Object {
-      "endCol": 1,
-      "endLine": 13,
-      "startCol": 0,
-      "startLine": 7,
-      "uid": "98f",
     },
     "a42": Object {
       "endCol": 44,
@@ -308,6 +344,13 @@ return { a: a, b: b };",
       "startLine": 21,
       "uid": "d01",
     },
+    "d25": Object {
+      "endCol": 1,
+      "endLine": 31,
+      "startCol": 0,
+      "startLine": 25,
+      "uid": "d25",
+    },
     "d4f": Object {
       "endCol": 41,
       "endLine": 20,
@@ -315,21 +358,21 @@ return { a: a, b: b };",
       "startLine": 20,
       "uid": "d4f",
     },
-    "e36": Object {
-      "endCol": 19,
-      "endLine": 21,
-      "startCol": 15,
-      "startLine": 21,
-      "uid": "e36",
-    },
   },
   "highlightBounds": Object {
-    "53f": Object {
+    "497": Object {
       "endCol": 10,
       "endLine": 21,
       "startCol": 6,
       "startLine": 21,
-      "uid": "53f",
+      "uid": "497",
+    },
+    "5cb": Object {
+      "endCol": 19,
+      "endLine": 21,
+      "startCol": 15,
+      "startLine": 21,
+      "uid": "5cb",
     },
     "aaa": Object {
       "endCol": 26,
@@ -358,13 +401,6 @@ return { a: a, b: b };",
       "startCol": 4,
       "startLine": 35,
       "uid": "ccc",
-    },
-    "e36": Object {
-      "endCol": 19,
-      "endLine": 21,
-      "startCol": 15,
-      "startLine": 21,
-      "uid": "e36",
     },
   },
   "imports": Object {
@@ -432,6 +468,9 @@ return { a: a, b: b };",
       "definedElsewhere": Array [
         "b",
         "utopiaCanvasJSXLookup",
+        "utopiaCanvasBlockRanToEnd",
+        "utopiaCanvasEarlyReturnResult",
+        "utopiaCanvasEarlyReturnVoid",
       ],
       "definedWithin": Array [
         "a",
@@ -447,21 +486,20 @@ return { a: a, b: b };",
       "params": Array [],
       "sourceMap": Object {
         "file": "code.tsx",
-        "mappings": "AAOCA,SAASC,CAATD,CAAWE,CAAXF,EAAcG;AACZC,MAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,WAAOD,CAAPC;AACDF,GAFDD,MAEOD;AACLI,WAAOC,CAACC,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDI;AACHC",
+        "mappings": "AAOCA,CAAAA,MAAAA;AAAQC,WAAOC,CAAPD,CAAOC,CAAPD,EAAOC;AACbC,QAAIC,CAACH,IAAII,CAATF,EAAYG;AACVC,aAAOF,CAAPE;AACDN,KAFDE,MAEOG;AACLC,aAAOC,CAACC,CAACL,CAACH,GAAGS,CAALD,CAARF;AACDL;AACHS;;AANAX;AAAAA;AAAAA;AAMAW,CANAX",
         "names": Array [
           "function",
-          "a",
-          "n",
-          "{",
-          "if",
           " ",
+          "
+",
+          "if",
+          "n",
           "0",
+          "{",
           "return",
           "b",
           "(",
           "1",
-          "
-",
           "}",
         ],
         "sources": Array [
@@ -514,14 +552,37 @@ export var storyboard = (
         ],
         "version": 3,
       },
-      "transpiledJavascript": "function a(n) {
+      "statements": Array [
+        Object {
+          "definedElsewhere": Array [
+            "b",
+          ],
+          "definedWithin": Array [
+            "a",
+          ],
+          "originalJavascript": "function a(n) {
   if (n <= 0) {
-    return 0;
+    return 0
   } else {
-    return b(n - 1);
+    return b(n - 1)
   }
-}
-return { a: a };",
+}",
+          "type": "JS_ARBITRARY_STATEMENT",
+        },
+      ],
+      "transpiledJavascript": "return (() => {
+  function a(n) {
+    if (n <= 0) {
+      return 0;
+    } else {
+      return b(n - 1);
+    }
+  }
+
+  return utopiaCanvasBlockRanToEnd({
+    a: a
+  });
+})();",
       "type": "ARBITRARY_JS_BLOCK",
       "uid": "",
     },
@@ -624,6 +685,16 @@ export var storyboard = (
               ],
               "version": 3,
             },
+            "statements": Array [
+              Object {
+                "definedElsewhere": Array [
+                  "b",
+                ],
+                "definedWithin": Array [],
+                "originalJavascript": "b(5)",
+                "type": "JS_ARBITRARY_STATEMENT",
+              },
+            ],
             "transpiledJavascript": "return b(5);",
             "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
             "uid": "",
@@ -704,6 +775,16 @@ export var storyboard = (
               ],
               "version": 3,
             },
+            "statements": Array [
+              Object {
+                "definedElsewhere": Array [
+                  "a",
+                ],
+                "definedWithin": Array [],
+                "originalJavascript": "a(5)",
+                "type": "JS_ARBITRARY_STATEMENT",
+              },
+            ],
             "transpiledJavascript": "return a(5);",
             "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
             "uid": "",
@@ -790,6 +871,9 @@ export var storyboard = (
       "definedElsewhere": Array [
         "a",
         "utopiaCanvasJSXLookup",
+        "utopiaCanvasBlockRanToEnd",
+        "utopiaCanvasEarlyReturnResult",
+        "utopiaCanvasEarlyReturnVoid",
       ],
       "definedWithin": Array [
         "b",
@@ -805,21 +889,20 @@ export var storyboard = (
       "params": Array [],
       "sourceMap": Object {
         "file": "code.tsx",
-        "mappings": "AAyBCA,SAASC,CAATD,CAAWE,CAAXF,EAAcG;AACZC,MAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,WAAOD,CAAPC;AACDF,GAFDD,MAEOD;AACLI,WAAOC,CAACC,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDI;AACHC",
+        "mappings": "AAyBCA,CAAAA,MAAAA;AAAQC,WAAOC,CAAPD,CAAOC,CAAPD,EAAOC;AACbC,QAAIC,CAACH,IAAII,CAATF,EAAYG;AACVC,aAAOF,CAAPE;AACDN,KAFDE,MAEOG;AACLC,aAAOC,CAACC,CAACL,CAACH,GAAGS,CAALD,CAARF;AACDL;AACHS;;AANAX;AAAAA;AAAAA;AAMAW,CANAX",
         "names": Array [
           "function",
-          "b",
-          "n",
-          "{",
-          "if",
           " ",
+          "
+",
+          "if",
+          "n",
           "0",
+          "{",
           "return",
           "a",
           "(",
           "1",
-          "
-",
           "}",
         ],
         "sources": Array [
@@ -872,14 +955,37 @@ export var storyboard = (
         ],
         "version": 3,
       },
-      "transpiledJavascript": "function b(n) {
+      "statements": Array [
+        Object {
+          "definedElsewhere": Array [
+            "a",
+          ],
+          "definedWithin": Array [
+            "b",
+          ],
+          "originalJavascript": "function b(n) {
   if (n <= 0) {
-    return 0;
+    return 0
   } else {
-    return a(n - 1);
+    return a(n - 1)
   }
-}
-return { b: b };",
+}",
+          "type": "JS_ARBITRARY_STATEMENT",
+        },
+      ],
+      "transpiledJavascript": "return (() => {
+  function b(n) {
+    if (n <= 0) {
+      return 0;
+    } else {
+      return a(n - 1);
+    }
+  }
+
+  return utopiaCanvasBlockRanToEnd({
+    b: b
+  });
+})();",
       "type": "ARBITRARY_JS_BLOCK",
       "uid": "",
     },

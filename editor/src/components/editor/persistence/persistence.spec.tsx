@@ -112,6 +112,20 @@ jest.mock('../server', () => ({
   createNewProjectID: async (): Promise<string> => {
     return mockRandomProjectID()
   },
+  createNewProject: async (
+    persistentModel: PersistentModel,
+    name: string,
+    accessLevel: string | null,
+  ): Promise<SaveProjectResponse> => {
+    const projectId = mockRandomProjectID()
+    if (persistentModel != null) {
+      let currentLog = mockSaveLog[projectId] ?? []
+      currentLog.push(persistentModel)
+      mockSaveLog[projectId] = currentLog
+      serverProjects[projectId] = persistentModel
+    }
+    return { id: mockRandomProjectID(), ownerId: 'Owner' }
+  },
   assetToSave: (fileType: string, base64: string, fileName: string): AssetToSave => {
     return {
       fileType: fileType,

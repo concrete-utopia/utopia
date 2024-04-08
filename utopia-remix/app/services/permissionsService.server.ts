@@ -73,3 +73,16 @@ export async function grantProjectRoleToUser(
       assertNever(role)
   }
 }
+
+export async function revokeAllRolesFromUser(projectId: string, userId: string) {
+  return await fgaService.revokeRelations(projectId, userId, [
+    'viewer',
+    'collaborator',
+    'editor',
+    'admin',
+  ])
+}
+
+export async function makeUserCreator(projectId: string, userId: string) {
+  return fgaService.makeUserCreator(projectId, userId)
+}

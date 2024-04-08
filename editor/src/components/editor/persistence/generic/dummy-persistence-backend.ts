@@ -1,11 +1,12 @@
 import type {
   PersistenceBackendAPI,
+  ProjectCreationResult,
   ProjectLoadResult,
   ProjectModel,
   ProjectOwnership,
   ProjectWithFileChanges,
 } from './persistence-types'
-import { projectWithFileChanges } from './persistence-types'
+import { projectCreationResult, projectWithFileChanges } from './persistence-types'
 
 // Keep this file as simple as possible so that it can be used in https://stately.ai/viz
 let projectCounter = 0
@@ -23,6 +24,13 @@ function loadProject<ModelType>(projectId: string): Promise<ProjectLoadResult<Mo
     type: 'PROJECT_NOT_FOUND',
     projectId: projectId,
   })
+}
+
+async function createNewProjectInServer<ModelType, FileType>(
+  projectModel: ProjectModel<ModelType>,
+): Promise<ProjectCreationResult<ModelType, FileType>> {
+  const newProjectId = await getNewProjectId()
+  return projectCreationResult(newProjectId, projectWithFileChanges([], projectModel))
 }
 
 function saveProjectToServer<ModelType, FileType>(
@@ -55,6 +63,7 @@ export function createDummyPersistenceBackend<ModelType, FileType>(): Persistenc
     checkProjectOwned: checkProjectOwned,
     loadProject: loadProject,
     saveProjectToServer: saveProjectToServer,
+    createNewProjectInServer: createNewProjectInServer,
     saveProjectLocally: saveProjectLocally,
     downloadAssets: downloadAssets,
   }

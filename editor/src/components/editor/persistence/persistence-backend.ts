@@ -13,6 +13,7 @@ import { addFileToProjectContents, getAllProjectAssetFiles } from '../../assets'
 import type { AssetToSave } from '../server'
 import {
   assetToSave,
+  createNewProject,
   createNewProjectID,
   downloadAssetsFromProject,
   loadProject as loadServerProject,
@@ -27,10 +28,12 @@ import type {
   ProjectWithFileChanges,
   LocalProject,
   ProjectOwnership,
+  ProjectCreationResult,
 } from './generic/persistence-types'
 import { fileWithFileName, projectWithFileChanges } from './generic/persistence-types'
 import type { PersistentModel } from '../store/editor-state'
 import { IS_TEST_ENVIRONMENT } from '../../../common/env-vars'
+import { readParamFromUrl } from '../url-utils'
 
 export async function projectIsStoredLocally(projectId: string): Promise<boolean> {
   const keys = await localforage.keys().catch(() => [])
@@ -112,6 +115,24 @@ async function loadProject(projectId: string): Promise<ProjectLoadResult<Persist
       },
     }
   }
+}
+
+export const AccessLevelParamKey = 'accessLevel'
+
+async function createNewProjectInServer(
+  projectModel: ProjectModel<PersistentModel>,
+): Promise<ProjectCreationResult<PersistentModel, ProjectFile>> {
+  const { projectWithChanges } = prepareAssetsForUploading(projectModel)
+
+  const accessLevel = readParamFromUrl(AccessLevelParamKey)
+
+  const { id } = await createNewProject(
+    projectWithChanges.projectModel.content,
+    projectWithChanges.projectModel.name,
+    accessLevel,
+  )
+
+  return { projectId: id, projectWithChanges: projectWithChanges }
 }
 
 async function saveProjectToServer(
@@ -234,6 +255,7 @@ export const PersistenceBackend: PersistenceBackendAPI<PersistentModel, ProjectF
   checkProjectOwned: checkProjectOwned,
   loadProject: loadProject,
   saveProjectToServer: saveProjectToServer,
+  createNewProjectInServer: createNewProjectInServer,
   saveProjectLocally: saveProjectLocally,
   downloadAssets: downloadAssets,
 }

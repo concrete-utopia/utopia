@@ -707,6 +707,11 @@ export interface SetCodeEditorLintErrors {
   lintErrors: ErrorMessages
 }
 
+export interface SetCodeEditorComponentDescriptorErrors {
+  action: 'SET_CODE_EDITOR_COMPONENT_DESCRIPTOR_ERRORS'
+  componentDescriptorErrors: ErrorMessages
+}
+
 export interface SaveDOMReport {
   action: 'SAVE_DOM_REPORT'
   elementMetadata: ElementInstanceMetadataMap
@@ -1100,6 +1105,11 @@ export interface ExtractPropertyControlsFromDescriptorFiles {
   paths: string[]
 }
 
+export interface SetSharingDialogOpen {
+  action: 'SET_SHARING_DIALOG_OPEN'
+  open: boolean
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertJSXElement
@@ -1201,6 +1211,7 @@ export type EditorAction =
   | SetMainUIFile
   | SetCodeEditorBuildErrors
   | SetCodeEditorLintErrors
+  | SetCodeEditorComponentDescriptorErrors
   | SaveDOMReport
   | RunDOMWalker
   | TrueUpElements
@@ -1278,6 +1289,7 @@ export type EditorAction =
   | SetForking
   | SetCollaborators
   | ExtractPropertyControlsFromDescriptorFiles
+  | SetSharingDialogOpen
 
 export type DispatchPriority =
   | 'everyone'

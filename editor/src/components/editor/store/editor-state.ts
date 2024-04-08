@@ -1166,15 +1166,18 @@ export function editorStateHome(visible: boolean): EditorStateHome {
 export interface EditorStateCodeEditorErrors {
   buildErrors: ErrorMessages
   lintErrors: ErrorMessages
+  componentDescriptorErrors: ErrorMessages
 }
 
 export function editorStateCodeEditorErrors(
   buildErrors: ErrorMessages,
   lintErrors: ErrorMessages,
+  componentDescriptorErrors: ErrorMessages,
 ): EditorStateCodeEditorErrors {
   return {
     buildErrors: buildErrors,
     lintErrors: lintErrors,
+    componentDescriptorErrors: componentDescriptorErrors,
   }
 }
 
@@ -1487,6 +1490,7 @@ export interface EditorState {
   commentFilterMode: CommentFilterMode
   forking: boolean
   collaborators: Collaborator[]
+  sharingDialogOpen: boolean
 }
 
 export function editorState(
@@ -1571,6 +1575,7 @@ export function editorState(
   commentFilterMode: CommentFilterMode,
   forking: boolean,
   collaborators: Collaborator[],
+  sharingDialogOpen: boolean,
 ): EditorState {
   return {
     id: id,
@@ -1654,6 +1659,7 @@ export function editorState(
     commentFilterMode: commentFilterMode,
     forking: forking,
     collaborators: collaborators,
+    sharingDialogOpen: sharingDialogOpen,
   }
 }
 
@@ -2323,6 +2329,10 @@ export function isRenderPropNavigatorEntry(
   return entry.type === 'RENDER_PROP'
 }
 
+export function isSlotNavigatorEntry(entry: NavigatorEntry): entry is SlotNavigatorEntry {
+  return entry.type === 'SLOT'
+}
+
 export interface DerivedState {
   navigatorTargets: Array<NavigatorEntry>
   visibleNavigatorTargets: Array<NavigatorEntry>
@@ -2361,6 +2371,7 @@ export interface PersistentModel {
   codeEditorErrors: {
     buildErrors: ErrorMessages
     lintErrors: ErrorMessages
+    componentDescriptorErrors: ErrorMessages
   }
   fileBrowser: {
     minimised: boolean
@@ -2577,6 +2588,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     codeEditorErrors: {
       buildErrors: {},
       lintErrors: {},
+      componentDescriptorErrors: {},
     },
     thumbnailLastGenerated: 0,
     pasteTargetsToIgnore: [],
@@ -2611,6 +2623,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     commentFilterMode: 'all',
     forking: false,
     collaborators: [],
+    sharingDialogOpen: false,
   }
 }
 
@@ -2996,6 +3009,7 @@ export function editorModelFromPersistentModel(
     commentFilterMode: 'all',
     forking: false,
     collaborators: [],
+    sharingDialogOpen: false,
   }
   return editor
 }
@@ -3049,6 +3063,7 @@ export function persistentModelForProjectContents(
     codeEditorErrors: {
       buildErrors: {},
       lintErrors: {},
+      componentDescriptorErrors: {},
     },
     lastUsedFont: null,
     hiddenInstances: [],
@@ -3212,7 +3227,10 @@ export function getAllCodeEditorErrors(
 ): Array<ErrorMessage> {
   const allLintErrors = getAllLintErrors(codeEditorErrors)
   const allBuildErrors = getAllBuildErrors(codeEditorErrors)
-  const errorsAndWarnings = skipTsErrors ? allLintErrors : [...allBuildErrors, ...allLintErrors]
+  const allComponentDescriptorErrors = getAllComponentDescriptorErrors(codeEditorErrors)
+  const errorsAndWarnings = skipTsErrors
+    ? [...allLintErrors, ...allComponentDescriptorErrors]
+    : [...allBuildErrors, ...allLintErrors, ...allComponentDescriptorErrors]
   if (minimumSeverity === 'fatal') {
     return errorsAndWarnings.filter((error) => error.severity === 'fatal')
   } else if (minimumSeverity === 'error') {
@@ -3234,6 +3252,12 @@ export function getAllLintErrors(
   codeEditorErrors: EditorStateCodeEditorErrors,
 ): Array<ErrorMessage> {
   return getAllErrorsFromFiles(codeEditorErrors.lintErrors)
+}
+
+export function getAllComponentDescriptorErrors(
+  codeEditorErrors: EditorStateCodeEditorErrors,
+): Array<ErrorMessage> {
+  return getAllErrorsFromFiles(codeEditorErrors.componentDescriptorErrors)
 }
 
 export function getAllErrorsFromFiles(errorsInFiles: ErrorMessages): Array<ErrorMessage> {

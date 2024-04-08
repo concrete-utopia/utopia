@@ -90,7 +90,7 @@ export function wrapCodeInParensWithMap(
   const node = SourceNode.fromStringWithSourceMap(wrappedCode, consumer)
   node.setSourceContent(sourceFileName, sourceFileText)
   const result = node.toStringWithSourceMap({ file: sourceFileName })
-  return { code: result.code, sourceMap: result.map }
+  return { code: result.code, sourceMap: result.map.toJSON() }
 }
 
 function wrapCodeInAnonFunction(code: string): string {
@@ -111,7 +111,7 @@ export function wrapCodeInAnonFunctionWithMap(
   const node = SourceNode.fromStringWithSourceMap(wrappedCode, consumer)
   node.setSourceContent(sourceFileName, sourceFileText)
   const result = node.toStringWithSourceMap({ file: sourceFileName })
-  return { code: result.code, sourceMap: result.map }
+  return { code: result.code, sourceMap: result.map.toJSON() }
 }
 
 export function prependToSourceString(
@@ -129,7 +129,7 @@ export function prependToSourceString(
   const { code, map } = node.toStringWithSourceMap({ file: sourceFileName })
   return {
     code: code,
-    sourceMap: JSON.parse(map.toString()),
+    sourceMap: map.toJSON(),
   }
 }
 

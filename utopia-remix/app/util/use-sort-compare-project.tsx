@@ -1,6 +1,6 @@
 import moment from 'moment'
 import React from 'react'
-import { useProjectsStore } from '../store'
+import { useProjectsStore } from '../stores/projectsStore'
 import type { ProjectListing } from '../types'
 import { assertNever } from './assertNever'
 
@@ -57,7 +57,7 @@ export function useProjectIsOnActiveOperation() {
           case 'private':
           case 'sharing':
             return op.type === 'delete' && op.projectId === project.proj_id
-          case 'trash':
+          case 'archive':
             return (
               (op.type === 'restore' || op.type === 'destroy') && op.projectId === project.proj_id
             )

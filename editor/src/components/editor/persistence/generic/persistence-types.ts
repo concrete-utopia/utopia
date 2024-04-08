@@ -62,6 +62,21 @@ export function fileWithFileName<FileType>(
   }
 }
 
+export interface ProjectCreationResult<ModelType, FileType> {
+  projectId: string
+  projectWithChanges: ProjectWithFileChanges<ModelType, FileType>
+}
+
+export function projectCreationResult<ModelType, FileType>(
+  projectId: string,
+  project: ProjectWithFileChanges<ModelType, FileType>,
+): ProjectCreationResult<ModelType, FileType> {
+  return {
+    projectId: projectId,
+    projectWithChanges: project,
+  }
+}
+
 export interface ProjectWithFileChanges<ModelType, FileType> {
   filesWithFileNames: Array<FileWithFileName<FileType>>
   projectModel: ProjectModel<ModelType>
@@ -90,6 +105,9 @@ export interface PersistenceBackendAPI<ModelType, FileType> {
     projectId: string,
     projectModel: ProjectModel<ModelType>,
   ) => Promise<ProjectWithFileChanges<ModelType, FileType>>
+  createNewProjectInServer: (
+    projectModel: ProjectModel<ModelType>,
+  ) => Promise<ProjectCreationResult<ModelType, FileType>>
   saveProjectLocally: (
     projectId: string,
     projectModel: ProjectModel<ModelType>,

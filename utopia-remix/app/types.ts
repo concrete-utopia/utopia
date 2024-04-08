@@ -1,7 +1,7 @@
 import type { ProjectAccessRequest, UserDetails } from 'prisma-client'
 import { Prisma } from 'prisma-client'
-import { assertNever } from './util/assertNever'
 import { ensure } from './util/api.server'
+import { assertNever } from './util/assertNever'
 import { Status } from './util/statusCodes'
 
 const fullProjectFromDB = Prisma.validator<Prisma.ProjectDefaultArgs>()({
@@ -16,6 +16,10 @@ export type ProjectWithoutContentFromDB = Omit<FullProjectFromDB, 'content'>
 
 export type ProjectListing = ProjectWithoutContentFromDB & {
   hasPendingRequests?: boolean
+}
+
+export type ProjectSharingDetails = Pick<ProjectListing, 'proj_id' | 'ProjectAccess'> & {
+  ProjectAccessRequest: ProjectAccessRequestWithUserDetails[]
 }
 
 // Legacy response
@@ -115,9 +119,9 @@ interface BaseOperation {
   projectId: string
 }
 
-function baseOperation(project: ProjectListing): BaseOperation {
+function baseOperation(projectId: string): BaseOperation {
   return {
-    projectId: project.proj_id,
+    projectId: projectId,
   }
 }
 
@@ -126,10 +130,10 @@ type OperationRename = BaseOperation & {
   newTitle: string
 }
 
-export function operationRename(project: ProjectListing, newTitle: string): OperationRename {
+export function operationRename(projectId: string, newTitle: string): OperationRename {
   return {
     type: 'rename',
-    ...baseOperation(project),
+    ...baseOperation(projectId),
     newTitle: newTitle,
   }
 }
@@ -138,24 +142,24 @@ type OperationDelete = BaseOperation & {
   type: 'delete'
 }
 
-export function operationDelete(project: ProjectListing): OperationDelete {
-  return { type: 'delete', ...baseOperation(project) }
+export function operationDelete(projectId: string): OperationDelete {
+  return { type: 'delete', ...baseOperation(projectId) }
 }
 
 type OperationDestroy = BaseOperation & {
   type: 'destroy'
 }
 
-export function operationDestroy(project: ProjectListing): OperationDestroy {
-  return { type: 'destroy', ...baseOperation(project) }
+export function operationDestroy(projectId: string): OperationDestroy {
+  return { type: 'destroy', ...baseOperation(projectId) }
 }
 
 type OperationRestore = BaseOperation & {
   type: 'restore'
 }
 
-export function operationRestore(project: ProjectListing): OperationRestore {
-  return { type: 'restore', ...baseOperation(project) }
+export function operationRestore(projectId: string): OperationRestore {
+  return { type: 'restore', ...baseOperation(projectId) }
 }
 
 type OperationChangeAccess = BaseOperation & {
@@ -164,22 +168,31 @@ type OperationChangeAccess = BaseOperation & {
 }
 
 export function operationChangeAccess(
-  project: ProjectListing,
+  projectId: string,
   newAccessLevel: AccessLevel,
 ): OperationChangeAccess {
-  return { type: 'changeAccess', ...baseOperation(project), newAccessLevel: newAccessLevel }
+  return { type: 'changeAccess', ...baseOperation(projectId), newAccessLevel: newAccessLevel }
 }
 
-type OperationApproveAccessRequest = BaseOperation & {
-  type: 'approveAccessRequest'
+export type UpdateAccessRequestAction = 'approve' | 'reject' | 'destroy'
+
+type OperationUpdateAccessRequest = BaseOperation & {
+  type: 'updateAccessRequest'
   tokenId: string
+  action: UpdateAccessRequestAction
 }
 
-export function operationApproveAccessRequest(
-  project: ProjectListing,
+export function operationUpdateAccessRequest(
+  projectId: string,
   tokenId: string,
-): OperationApproveAccessRequest {
-  return { type: 'approveAccessRequest', ...baseOperation(project), tokenId: tokenId }
+  action: UpdateAccessRequestAction,
+): OperationUpdateAccessRequest {
+  return {
+    type: 'updateAccessRequest',
+    ...baseOperation(projectId),
+    tokenId: tokenId,
+    action: action,
+  }
 }
 
 export type Operation =
@@ -188,7 +201,7 @@ export type Operation =
   | OperationDestroy
   | OperationRestore
   | OperationChangeAccess
-  | OperationApproveAccessRequest
+  | OperationUpdateAccessRequest
 
 export type OperationType =
   | 'rename'
@@ -196,13 +209,13 @@ export type OperationType =
   | 'destroy'
   | 'restore'
   | 'changeAccess'
-  | 'approveAccessRequest'
+  | 'updateAccessRequest'
 
 export function areBaseOperationsEquivalent(a: Operation, b: Operation): boolean {
   return a.projectId === b.projectId && a.type === b.type
 }
 
-export function getOperationDescription(op: Operation, project: ProjectListing) {
+export function getOperationDescription(op: Operation, project: ProjectListing): string {
   switch (op.type) {
     case 'delete':
       return `Deleting project ${project.title}`
@@ -214,8 +227,18 @@ export function getOperationDescription(op: Operation, project: ProjectListing) 
       return `Restoring project ${project.title}`
     case 'changeAccess':
       return `Changing access level of project ${project.title}`
-    case 'approveAccessRequest':
-      return `Granting access request to project ${project.title}`
+    case 'updateAccessRequest':
+      switch (op.action) {
+        case 'approve':
+          return `Granting access request to project ${project.title}`
+        case 'reject':
+          return `Rejecting access request to project ${project.title}`
+        case 'destroy':
+          return `Deleting access request to project ${project.title}`
+        default:
+          assertNever(op.action)
+      }
+      break // required for typecheck
     default:
       assertNever(op)
   }
@@ -225,6 +248,20 @@ export enum AccessRequestStatus {
   PENDING,
   APPROVED,
   REJECTED,
+}
+
+export function mustAccessRequestStatus(n: number): AccessRequestStatus {
+  const maybe = n as AccessRequestStatus
+  switch (maybe) {
+    case AccessRequestStatus.PENDING:
+      return AccessRequestStatus.PENDING
+    case AccessRequestStatus.APPROVED:
+      return AccessRequestStatus.APPROVED
+    case AccessRequestStatus.REJECTED:
+      return AccessRequestStatus.REJECTED
+    default:
+      assertNever(maybe)
+  }
 }
 
 export type ProjectAccessRequestWithUserDetails = ProjectAccessRequest & {

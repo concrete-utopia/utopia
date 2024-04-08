@@ -1,8 +1,6 @@
 import { Popover, Transition } from '@headlessui/react'
-import React from 'react'
-import { Fragment } from 'react'
-import { CookieConsent, getCookieConsentValue } from 'react-cookie-consent'
-import { useProjectsStore } from '../store'
+import React, { Fragment } from 'react'
+import { useCDNLink } from '../util/cdnLink'
 
 const mainNavigation = [
   { name: ' ', href: '#' },
@@ -39,9 +37,6 @@ export function Menu() {
                     padding: '6px 20px',
                     borderRadius: 4,
                   }}
-                  onMouseDown={() =>
-                    gtag('event', 'navigate', { category: 'links', label: item.href, value: 1 })
-                  }
                 >
                   {item.name}
                 </a>
@@ -265,9 +260,6 @@ export const ContactUs = () => (
           key={`contact-us-nav-${index}`}
           href={item.href}
           className='block px-6 py-2 rounded-md text-body hover:text-gray-900 hover:bg-gray-50 text-center'
-          onMouseDown={() =>
-            gtag('event', 'navigate', { category: 'links', label: item.href, value: 1 })
-          }
         >
           {item.name}
         </a>
@@ -276,47 +268,14 @@ export const ContactUs = () => (
   </>
 )
 
-declare function gtag(...args: any): void
-
-function enableCookies() {
-  gtag('consent', 'update', {
-    analytics_storage: 'granted',
-  })
-}
-
-export const CookieConsentBar = () => {
-  if (getCookieConsentValue() === 'true') {
-    enableCookies()
-  }
-
-  return (
-    <CookieConsent
-      location='bottom'
-      style={{ background: '#383C4A', fontSize: '13px' }}
-      buttonStyle={{
-        color: '#383C4A',
-        fontSize: '13px',
-        borderRadius: 5,
-        backgroundColor: '#00FC00',
-      }}
-      onAccept={enableCookies}
-    >
-      This website uses cookies to enhance the user experience.
-    </CookieConsent>
-  )
-}
-
 type HostedImageProps = React.DetailedHTMLProps<
   React.ImgHTMLAttributes<HTMLImageElement>,
   HTMLImageElement
 > & { src: string }
 
 export function HostedImage(props: HostedImageProps) {
-  const env = useProjectsStore((store) => store.env)
-  if (env == null) {
-    return null
-  }
-  return <img {...props} src={`${env.UTOPIA_CDN_URL}${props.src}`} />
+  const cdnLink = useCDNLink()
+  return <img {...props} src={cdnLink(props.src)} />
 }
 
 export const BasicEmailSignup = React.memo(() => {
