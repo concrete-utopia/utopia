@@ -354,6 +354,7 @@ const MultiplayerUserBar = React.memo(() => {
                 height: 9,
                 background: 'red',
                 borderRadius: '100%',
+                border: `1px solid ${colorTheme.bg0.value}`,
               }}
             />,
           )}
