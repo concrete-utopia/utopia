@@ -1,14 +1,6 @@
 import type { LoaderFunctionArgs } from '@remix-run/node'
 import { redirect, type LinksFunction, type MetaFunction } from '@remix-run/node'
-import {
-  ContactUs,
-  CookieConsentBar,
-  GhostBrowser,
-  MainTitle,
-  Menu,
-  Paragraph,
-  Video,
-} from '../components/next'
+import { ContactUs, GhostBrowser, MainTitle, Menu, Paragraph, Video } from '../components/next'
 
 import stylesheet from '~/styles/next-tailwind.css'
 import type { rootLoader } from '../root'
@@ -217,7 +209,6 @@ const IndexPage = React.memo(() => {
       <div className='max-w-5xl mx-auto pt-12 pb-28'>
         <ContactUs />
       </div>
-      <CookieConsentBar />
     </div>
   )
 })
