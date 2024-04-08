@@ -78,7 +78,7 @@ import {
   exportType,
   singleFileBuildResult,
 } from '../../../core/workers/common/worker-types'
-import type { Sides } from 'utopia-api/core'
+import type { PreferredChildComponent, Sides } from 'utopia-api/core'
 import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
@@ -130,6 +130,7 @@ import type {
   JSXConditionalExpression,
   ActiveAndDefaultConditionValues,
   JSXMapExpression,
+  JSExpressionMapOrOtherJavascript,
   JSExpressionOtherJavaScript,
   JSIdentifier,
   JSPropertyAccess,
@@ -143,6 +144,11 @@ import {
   elementInstanceMetadata,
   isArraySpread,
   isArrayValue,
+  modifiableAttributeIsAttributeFunctionCall,
+  modifiableAttributeIsAttributeNestedArray,
+  modifiableAttributeIsAttributeNestedObject,
+  modifiableAttributeIsAttributeOtherJavaScript,
+  isJSXAttributeValue,
   isJSXElement,
   isJSXFragment,
   isJSXTextBlock,
@@ -243,6 +249,7 @@ import {
   NullableNumberKeepDeepEquality,
   combine9EqualityCalls,
   unionDeepEquality,
+  combine14EqualityCalls,
   combine11EqualityCalls,
   combine15EqualityCalls,
 } from '../../../utils/deep-equality'
