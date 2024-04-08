@@ -278,10 +278,70 @@ describe('registered property controls', () => {
             fileName: '/utopia/components.utopia.js',
             message: "Validation failed: Component registered for key 'Card' is undefined",
             passTime: null,
-            severity: 'warning',
+            severity: 'fatal',
             source: 'component-descriptor',
             startColumn: null,
             startLine: null,
+            type: '',
+          },
+        ],
+      },
+    })
+
+    const srcCardKey = Object.keys(renderResult.getEditorState().editor.propertyControlsInfo).find(
+      (key) => key === '/src/card',
+    )
+
+    expect(srcCardKey).toBeUndefined()
+  })
+  it('control registration fails when there is an evaluation error', async () => {
+    const renderResult = await renderTestEditorWithModel(
+      project({
+        ['/utopia/components.utopia.js']: `import { Cart } from '../src/card'
+        
+        const foo = undefined.foo
+        const Components = {
+      '/src/card': {
+        Card: {
+          component: Card,
+          supportsChildren: false,
+          properties: { },
+          variants: [ ],
+        },
+      },
+    }
+    
+    export default Components
+  `,
+      }),
+      'await-first-dom-report',
+    )
+    const editorState = renderResult.getEditorState().editor
+
+    expect(editorState.codeEditorErrors).toEqual({
+      buildErrors: {},
+      lintErrors: {},
+      componentDescriptorErrors: {
+        '/utopia/components.utopia.js': [
+          {
+            codeSnippet: `  1 | import { Cart } from '../src/card'
+  2 |
+> 3 | const foo = undefined.foo
+                               ^
+  4 | const Components = {
+  5 |   '/src/card': {
+  6 |     Card: {`,
+            endColumn: null,
+            endLine: null,
+            errorCode: '',
+            fileName: '/utopia/components.utopia.js',
+            message:
+              "Components file evaluation error: TypeError: Cannot read properties of undefined (reading 'foo')",
+            passTime: null,
+            severity: 'fatal',
+            source: 'component-descriptor',
+            startColumn: 25,
+            startLine: 4,
             type: '',
           },
         ],
@@ -331,7 +391,7 @@ describe('registered property controls', () => {
             message:
               'Validation failed: Component name (Card) does not match the registration key (Cart)',
             passTime: null,
-            severity: 'warning',
+            severity: 'fatal',
             source: 'component-descriptor',
             startColumn: null,
             startLine: null,
@@ -384,7 +444,7 @@ describe('registered property controls', () => {
             message:
               'Validation failed: Module name (/src/card) does not match the module key (/src/cardd)',
             passTime: null,
-            severity: 'warning',
+            severity: 'fatal',
             source: 'component-descriptor',
             startColumn: null,
             startLine: null,
@@ -437,7 +497,7 @@ describe('registered property controls', () => {
             message:
               'Validation failed: Component name (View) does not match the registration key (Vieww)',
             passTime: null,
-            severity: 'warning',
+            severity: 'fatal',
             source: 'component-descriptor',
             startColumn: null,
             startLine: null,
@@ -490,7 +550,7 @@ describe('registered property controls', () => {
             message:
               'Validation failed: Module name (utopia-api) does not match the module key (utopia-apii)',
             passTime: null,
-            severity: 'warning',
+            severity: 'fatal',
             source: 'component-descriptor',
             startColumn: null,
             startLine: null,
@@ -542,7 +602,7 @@ describe('registered property controls', () => {
             message:
               'Validation failed: Component name (Card) does not match the registration key (Cart)',
             passTime: null,
-            severity: 'warning',
+            severity: 'fatal',
             source: 'component-descriptor',
             startColumn: null,
             startLine: null,
