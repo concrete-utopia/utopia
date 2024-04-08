@@ -275,8 +275,6 @@ export async function getProjectMetadataForEditor(params: {
       owner_id: params.userId,
     },
     select: {
-      proj_id: true,
-      owner_id: true,
       ProjectAccessRequest: true,
     },
   })
@@ -285,7 +283,6 @@ export async function getProjectMetadataForEditor(params: {
   }
 
   return {
-    projectId: project.proj_id,
     hasPendingRequests: project.ProjectAccessRequest.some(
       (r) => r.status === AccessRequestStatus.PENDING,
     ),
