@@ -9,6 +9,7 @@ export function auth0LoginURL({
 
   if (fakeUser != null) {
     const url = authenticateUrl()
+    console.info('Authenticating with fake user:', fakeUser, url.toString())
     url.searchParams.set('code', fakeUser)
     url.searchParams.set('onto', behaviour)
     if (redirectTo != null) {
