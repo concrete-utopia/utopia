@@ -12,6 +12,7 @@ import { Status } from './statusCodes'
 import { ServerEnvironment } from '../env.server'
 import { maybeGetUserFromSession } from '../models/session.server'
 import { auth0LoginURL } from './auth0.server'
+import { urlToRelative } from './common'
 
 interface ErrorResponse {
   error: string
@@ -213,7 +214,8 @@ export async function requireUserOrRedirectToLogin(request: Request): Promise<Us
 
   return await requireUser(request, {
     redirect: auth0LoginURL({
-      redirectTo: url.toString(),
+      // send relative urls as our servers sometime redirect internally to different domains
+      redirectTo: urlToRelative(url.toString()),
       fakeUser: fakeUser,
     }),
   })
