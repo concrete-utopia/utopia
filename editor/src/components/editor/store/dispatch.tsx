@@ -823,7 +823,8 @@ function applyProjectChangesToEditor(
   }
 }
 
-export const UTOPIA_IRRECOVERABLE_ERROR_MESSAGE = `Utopia has suffered from an irrecoverable error, please reload the editor.`
+export const UTOPIA_DUPLICATE_UID_ERROR_MESSAGE = (dispatchedActions: string) =>
+  `A dispatched action resulted in duplicated UIDs. Suspicious actions: ${dispatchedActions}`
 function editorDispatchInner(
   boundDispatch: EditorDispatch,
   dispatchedActions: EditorAction[],
@@ -942,7 +943,7 @@ function editorDispatchInner(
       // When running in the browser log the error and tell the user to restart the editor.
       console.error(errorMessage)
       const errorToast = EditorActions.addToast(
-        notice(UTOPIA_IRRECOVERABLE_ERROR_MESSAGE, 'ERROR', true, 'reload-editor'),
+        notice(UTOPIA_DUPLICATE_UID_ERROR_MESSAGE(actionNames), 'ERROR', false),
       )
       result = {
         ...result,
