@@ -84,6 +84,7 @@ import {
 } from '../../../core/property-controls/property-controls-local'
 import { setReactRouterErrorHasBeenLogged } from '../../../core/shared/runtime-report-logs'
 import type { PropertyControlsInfo } from '../../custom-code/code-file'
+import { fixProjectContentsUIDs } from '../../../core/workers/parser-printer/uid-fix'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -949,7 +950,20 @@ function editorDispatchInner(
         ...result,
         unpatchedEditor: UPDATE_FNS.ADD_TOAST(errorToast, result.unpatchedEditor),
       }
-      //}
+
+      const fixedProjectContents = fixProjectContentsUIDs(
+        storedState.unpatchedEditor.projectContents,
+        result.unpatchedEditor.projectContents,
+        new Set(uniqueIDsResult.uniqueIDs),
+      )
+
+      result = {
+        ...result,
+        unpatchedEditor: {
+          ...result.unpatchedEditor,
+          projectContents: fixedProjectContents,
+        },
+      }
     }
 
     let frozenEditorState: EditorState = optionalDeepFreeze(result.unpatchedEditor)

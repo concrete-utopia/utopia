@@ -61,6 +61,7 @@ import type {
   PropertyPath,
   HighlightBoundsForUids,
   ExportsDetail,
+  ParseSuccess,
 } from '../../core/shared/project-file-types'
 import { isParseSuccess, isTextFile } from '../../core/shared/project-file-types'
 import {
@@ -1662,14 +1663,7 @@ export function getParseSuccessForFilePath(
     isParseSuccess(projectFile.fileContents.parsed)
   ) {
     const parseSuccess = projectFile.fileContents.parsed
-    return {
-      topLevelElements: parseSuccess.topLevelElements,
-      imports: parseSuccess.imports,
-      jsxFactoryFunction: parseSuccess.jsxFactoryFunction,
-      combinedTopLevelArbitraryBlock: parseSuccess.combinedTopLevelArbitraryBlock,
-      highlightBounds: parseSuccess.highlightBounds,
-      exportsDetail: parseSuccess.exportsDetail,
-    }
+    return parseSuccess
   } else {
     return EmptyResult
   }

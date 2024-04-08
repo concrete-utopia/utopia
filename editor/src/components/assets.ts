@@ -568,6 +568,22 @@ export function getTextFileByPath(projectContents: ProjectContentTreeRoot, path:
   }
 }
 
+export function getParseSuccessByPath(
+  projectContents: ProjectContentTreeRoot,
+  path: string,
+): ParseSuccess | null {
+  const possibleResult = getProjectFileByFilePath(projectContents, path)
+  if (
+    possibleResult != null &&
+    isTextFile(possibleResult) &&
+    isParseSuccess(possibleResult.fileContents.parsed)
+  ) {
+    return possibleResult.fileContents.parsed
+  } else {
+    return null
+  }
+}
+
 export function packageJsonFileFromProjectContents(
   projectContents: ProjectContentTreeRoot,
 ): ProjectFile | null {

@@ -1,3 +1,13 @@
+import type { ProjectContentTreeRoot, ProjectContentsTree } from '../../../components/assets'
+import { getParseSuccessByPath, transformContentsTree } from '../../../components/assets'
+import { fromField, identityOptic } from '../../../core/shared/optics/optic-creators'
+import { set, unsafeGet } from '../../../core/shared/optics/optic-utilities'
+import type { Optic } from '../../../core/shared/optics/optics'
+import { emptySet } from '../../../core/shared/set-utils'
+import type { UIDMappings } from '../../../core/shared/uid-utils'
+import { generateConsistentUID, updateHighlightBounds } from '../../../core/shared/uid-utils'
+import { assertNever } from '../../../core/shared/utils'
+import invariant from '../../../third-party/remix/invariant'
 import type {
   ArbitraryJSBlock,
   ElementsWithin,
@@ -23,32 +33,21 @@ import type {
   TopLevelElement,
   UtopiaJSXComponent,
 } from '../../shared/element-template'
-import { isArbitraryJSBlock, isUtopiaJSXComponent } from '../../shared/element-template'
 import {
   emptyComments,
   getJSXAttribute,
-  isJSExpressionValue,
+  isArbitraryJSBlock,
   isJSXElement,
+  isUtopiaJSXComponent,
   jsExpressionValue,
   setJSXAttributesAttribute,
 } from '../../shared/element-template'
 import type {
-  ParsedTextFile,
-  ParseSuccess,
   HighlightBoundsForUids,
+  ParseSuccess,
+  ParsedTextFile,
 } from '../../shared/project-file-types'
-import { isParseSuccess } from '../../shared/project-file-types'
-import type { Optic } from '../../../core/shared/optics/optics'
-import { set, unsafeGet } from '../../../core/shared/optics/optic-utilities'
-import { fromField, identityOptic } from '../../../core/shared/optics/optic-creators'
-import { assertNever } from '../../../core/shared/utils'
-import { emptySet } from '../../../core/shared/set-utils'
-import type { UIDMappings } from '../../../core/shared/uid-utils'
-import { generateConsistentUID, updateHighlightBounds } from '../../../core/shared/uid-utils'
-import {
-  emptyGetAllUniqueUIDsWorkingResult,
-  extractUIDFromTopLevelElement,
-} from '../../model/get-unique-ids'
+import { isParseSuccess, isTextFile } from '../../shared/project-file-types'
 
 const jsxElementChildUIDOptic: Optic<JSXElementChild, string> = fromField('uid')
 
@@ -88,6 +87,44 @@ export interface FixUIDsState {
   uidsExpectedToBeSeen: Set<string>
   mappings: UIDMappings
   uidUpdateMethod: 'copy-uids-fix-duplicates' | 'use-mappings' | 'forced-update'
+}
+
+export function fixProjectContentsUIDs(
+  oldProjectContents: ProjectContentTreeRoot | null,
+  newProjectContents: ProjectContentTreeRoot,
+  alreadyExistingUIDs: Set<string>,
+): ProjectContentTreeRoot {
+  return transformContentsTree(newProjectContents, (subtree): ProjectContentsTree => {
+    if (subtree.type === 'PROJECT_CONTENT_DIRECTORY') {
+      return subtree
+    }
+    invariant(subtree.type === 'PROJECT_CONTENT_FILE')
+    if (!isTextFile(subtree.content) || !isParseSuccess(subtree.content.fileContents.parsed)) {
+      return subtree
+    }
+    const oldParseSuccess: ParseSuccess | null =
+      oldProjectContents != null
+        ? getParseSuccessByPath(oldProjectContents, subtree.fullPath)
+        : null
+
+    const fixedParseSuccess = fixParseSuccessUIDs(
+      oldParseSuccess,
+      subtree.content.fileContents.parsed,
+      alreadyExistingUIDs,
+      emptySet(),
+    )
+
+    return {
+      ...subtree,
+      content: {
+        ...subtree.content,
+        fileContents: {
+          ...subtree.content.fileContents,
+          parsed: fixedParseSuccess,
+        },
+      },
+    }
+  })
 }
 
 export function fixParseSuccessUIDs(
