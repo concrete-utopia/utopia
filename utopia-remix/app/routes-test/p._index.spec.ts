@@ -4,6 +4,7 @@ import { createTestSession, createTestUser, newTestRequest, truncateTables } fro
 import { loader as p_loader } from '../routes/p._index'
 import { ServerEnvironment } from '../env.server'
 import * as serverProxy from '../util/proxy.server'
+import { urlToRelative } from '../util/common'
 
 describe('handleEditorWithLogin', () => {
   let pageProxy: jest.SpyInstance
@@ -49,7 +50,7 @@ describe('handleEditorWithLogin', () => {
       expect(redirectResponse.status).toBe(302)
       const redirectLocation = redirectResponse.headers.get('Location')
       const redirectToParam = getParamFromLoginURL(redirectLocation ?? '', 'redirectTo')
-      expect(redirectToParam).toBe(toRelative(request.url))
+      expect(redirectToParam).toBe(urlToRelative(request.url))
     }
     expect(response).toBeUndefined()
   })
@@ -82,7 +83,7 @@ describe('handleEditorWithLogin', () => {
       const redirectToParam = getDecodedParam(redirectLocation, 'redirectTo')
       const expectedRedirectUrl = new URL(request.url)
       expectedRedirectUrl.searchParams.delete('fakeUser')
-      expect(redirectToParam).toBe(toRelative(expectedRedirectUrl.toString()))
+      expect(redirectToParam).toBe(urlToRelative(expectedRedirectUrl.toString()))
       const codeParam = getDecodedParam(redirectLocation, 'code')
       expect(codeParam).toBe('alice')
     }
@@ -100,9 +101,4 @@ function getParamFromLoginURL(url: string, param: string): string | null {
 function getDecodedParam(url: string | null, param: string): string | null {
   const value = new URL(url ?? '').searchParams.get(param)
   return value ? decodeURIComponent(value) : null
-}
-
-function toRelative(url: string): string {
-  const urlObj = new URL(url)
-  return urlObj.href.replace(urlObj.origin, '')
 }
