@@ -1,20 +1,12 @@
 import type { LoaderFunctionArgs } from '@remix-run/node'
 import { redirect, type LinksFunction, type MetaFunction } from '@remix-run/node'
-import {
-  ContactUs,
-  CookieConsentBar,
-  GhostBrowser,
-  MainTitle,
-  Menu,
-  Paragraph,
-  Video,
-} from '../components/next'
+import { ContactUs, GhostBrowser, MainTitle, Menu, Paragraph, Video } from '../components/next'
 
 import stylesheet from '~/styles/next-tailwind.css'
-import urlJoin from 'url-join'
 import type { rootLoader } from '../root'
 import React from 'react'
 import { getUser } from '../util/api.server'
+import { cdnLink } from '../util/cdnLink'
 
 export const links: LinksFunction = () => [
   // css
@@ -58,7 +50,7 @@ export const meta: MetaFunction<typeof rootLoader> = ({ data }) => {
     { name: 'msapplication-TileColor', content: '#da532c' },
     { name: 'theme-color', content: '#ffffff' },
     { property: 'og:title', content: 'Utopia: Design and Code on one platform' },
-    { property: 'og:image', content: urlJoin(data?.env?.UTOPIA_CDN_URL ?? '', '/og-card.png') },
+    { property: 'og:image', content: cdnLink(data?.env?.UTOPIA_CDN_URL ?? null, '/og-card.png') },
     { property: 'og:type', content: 'website' },
     {
       property: 'og:description',
@@ -217,24 +209,6 @@ const IndexPage = React.memo(() => {
       <div className='max-w-5xl mx-auto pt-12 pb-28'>
         <ContactUs />
       </div>
-      <CookieConsentBar />
-      <script async src='https://www.googletagmanager.com/gtag/js?id=G-QM0KPN0RNV'></script>
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `
-			window.dataLayer = window.dataLayer || [];
-			function gtag(){dataLayer.push(arguments);}
-			gtag('consent', 'default', {
-			'ad_storage': 'denied',
-			'analytics_storage': 'denied'
-			});
-			gtag('js', new Date());
-			gtag('config', 'G-QM0KPN0RNV', {
-			page_path: window.location.pathname,
-			});
-		`,
-        }}
-      />
     </div>
   )
 })

@@ -27,6 +27,7 @@ import {
   jsExpressionOtherJavaScript,
   isJSXElement,
   importedOrigin,
+  jsArbitraryStatement,
 } from '../shared/element-template'
 import { sampleImportsForTests } from './test-ui-js-file.test-utils'
 import { BakedInStoryboardUID } from './scene-utils'
@@ -72,6 +73,7 @@ const testComponentMetadataChild1: ElementInstanceMetadata = {
   importInfo: null,
   conditionValue: 'not-a-conditional',
   textContent: null,
+  earlyReturn: null,
 }
 const testComponentMetadataChild2: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
@@ -91,6 +93,7 @@ const testComponentMetadataChild2: ElementInstanceMetadata = {
   importInfo: null,
   conditionValue: 'not-a-conditional',
   textContent: null,
+  earlyReturn: null,
 }
 
 const testComponentMetadataGrandchild: ElementInstanceMetadata = {
@@ -111,6 +114,7 @@ const testComponentMetadataGrandchild: ElementInstanceMetadata = {
   importInfo: null,
   conditionValue: 'not-a-conditional',
   textContent: null,
+  earlyReturn: null,
 }
 
 const testComponentPropsGrandchild: ElementProps = {
@@ -135,6 +139,7 @@ const testComponentMetadataChild3: ElementInstanceMetadata = {
   importInfo: null,
   conditionValue: 'not-a-conditional',
   textContent: null,
+  earlyReturn: null,
 }
 
 const testComponentRoot1: ElementInstanceMetadata = {
@@ -152,6 +157,7 @@ const testComponentRoot1: ElementInstanceMetadata = {
   importInfo: null,
   conditionValue: 'not-a-conditional',
   textContent: null,
+  earlyReturn: null,
 }
 
 const testComponentSceneChildElementRootChild: ElementInstanceMetadata = {
@@ -172,6 +178,7 @@ const testComponentSceneChildElementRootChild: ElementInstanceMetadata = {
   importInfo: null,
   conditionValue: 'not-a-conditional',
   textContent: null,
+  earlyReturn: null,
 }
 
 const testComponentSceneChildElementRoot: ElementInstanceMetadata = {
@@ -192,6 +199,7 @@ const testComponentSceneChildElementRoot: ElementInstanceMetadata = {
   importInfo: null,
   conditionValue: 'not-a-conditional',
   textContent: null,
+  earlyReturn: null,
 }
 
 const testComponentSceneChildElement: ElementInstanceMetadata = {
@@ -209,6 +217,7 @@ const testComponentSceneChildElement: ElementInstanceMetadata = {
   importInfo: null,
   conditionValue: 'not-a-conditional',
   textContent: null,
+  earlyReturn: null,
 }
 
 const testComponentSceneElement: ElementInstanceMetadata = {
@@ -226,6 +235,7 @@ const testComponentSceneElement: ElementInstanceMetadata = {
   importInfo: null,
   conditionValue: 'not-a-conditional',
   textContent: null,
+  earlyReturn: null,
 }
 
 const testComponentSceneElementProps: ElementProps = {
@@ -250,6 +260,7 @@ const testStoryboardGrandChildElement: ElementInstanceMetadata = {
   importInfo: null,
   conditionValue: 'not-a-conditional',
   textContent: null,
+  earlyReturn: null,
 }
 
 const testStoryboardChildElement: ElementInstanceMetadata = {
@@ -267,6 +278,7 @@ const testStoryboardChildElement: ElementInstanceMetadata = {
   importInfo: null,
   conditionValue: 'not-a-conditional',
   textContent: null,
+  earlyReturn: null,
 }
 
 const testStoryboardElement: ElementInstanceMetadata = {
@@ -284,6 +296,7 @@ const testStoryboardElement: ElementInstanceMetadata = {
   importInfo: null,
   conditionValue: 'not-a-conditional',
   textContent: null,
+  earlyReturn: null,
 }
 
 const testElementMetadataMap: ElementInstanceMetadataMap = {
@@ -375,6 +388,7 @@ function dummyInstanceDataForElementType(
     importInfo: importInfo,
     conditionValue: 'not-a-conditional',
     textContent: null,
+    earlyReturn: null,
   }
 }
 
@@ -476,6 +490,7 @@ describe('targetElementSupportsChildren', () => {
           null,
           {},
           emptyComments,
+          [jsArbitraryStatement('<div />', [], [])],
         ),
       ], // Whatever, close enough
     )
@@ -557,6 +572,7 @@ describe('targetElementSupportsChildren', () => {
                 null,
                 {},
                 emptyComments,
+                [jsArbitraryStatement('<div />', [], [])],
               ), // Whatever, close enough
             ],
           ),
@@ -903,6 +919,7 @@ describe('getElementLabel', () => {
     null,
     'not-a-conditional',
     null,
+    null,
   )
   const spanElementProps: ElementProps = {
     'data-uid': 'span-1',
@@ -927,6 +944,7 @@ describe('getElementLabel', () => {
     null,
     null,
     'not-a-conditional',
+    null,
     null,
   )
   const divElementProps: ElementProps = {

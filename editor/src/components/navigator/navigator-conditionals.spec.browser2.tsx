@@ -1738,9 +1738,9 @@ describe('conditionals in the navigator', () => {
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional/a25-attribute
     regular-utopia-storyboard-uid/scene-aaa/268
-      regular-utopia-storyboard-uid/scene-aaa/268/46a~~~1
-      regular-utopia-storyboard-uid/scene-aaa/268/46a~~~2
-      regular-utopia-storyboard-uid/scene-aaa/268/46a~~~3
+      regular-utopia-storyboard-uid/scene-aaa/268/a59~~~1
+      regular-utopia-storyboard-uid/scene-aaa/268/a59~~~2
+      regular-utopia-storyboard-uid/scene-aaa/268/a59~~~3
     regular-utopia-storyboard-uid/scene-aaa/hey`)
     })
     it('keeps the right order for inlined map expressions with multiple values (not-null inactive branch)', async () => {
@@ -1765,9 +1765,9 @@ describe('conditionals in the navigator', () => {
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional/false-branch-element-false-branch
     regular-utopia-storyboard-uid/scene-aaa/268
-      regular-utopia-storyboard-uid/scene-aaa/268/46a~~~1
-      regular-utopia-storyboard-uid/scene-aaa/268/46a~~~2
-      regular-utopia-storyboard-uid/scene-aaa/268/46a~~~3
+      regular-utopia-storyboard-uid/scene-aaa/268/a59~~~1
+      regular-utopia-storyboard-uid/scene-aaa/268/a59~~~2
+      regular-utopia-storyboard-uid/scene-aaa/268/a59~~~3
     regular-utopia-storyboard-uid/scene-aaa/hey`)
     })
   })

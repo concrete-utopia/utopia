@@ -122,6 +122,12 @@ export async function makeUserAdmin(projectId: string, userId: string) {
   })
 }
 
+export async function makeUserCreator(projectId: string, userId: string) {
+  return fgaClient.write({
+    writes: [{ user: `user:${userId}`, relation: 'creator', object: `project:${projectId}` }],
+  })
+}
+
 function generalRelation(projectId: string, relation: string) {
   return {
     user: 'user:*',
@@ -161,4 +167,14 @@ function accessLevelToFgaWrites(projectId: string, accessLevel: AccessLevel): Cl
     default:
       assertNever(accessLevel)
   }
+}
+
+export async function revokeRelations(projectId: string, userId: string, relations: string[]) {
+  return await Promise.all(
+    relations.map((relation) =>
+      fgaClient.write({
+        deletes: [{ user: `user:${userId}`, relation: relation, object: `project:${projectId}` }],
+      }),
+    ),
+  )
 }

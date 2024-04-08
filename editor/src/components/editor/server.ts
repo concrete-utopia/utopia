@@ -4,6 +4,7 @@ import {
   getLoginState,
   HEADERS,
   MODE,
+  newProjectURL,
   projectURL,
   thumbnailURL,
   userConfigURL,
@@ -91,6 +92,12 @@ interface SaveProjectRequest {
   content: PersistentModel | null
 }
 
+interface CreateProjectRequest {
+  name: string | null
+  content: PersistentModel | null
+  accessLevel: string | null
+}
+
 interface RequestFailure {
   type: 'FAILURE'
   statusCode: number
@@ -143,6 +150,34 @@ export async function createNewProjectID(): Promise<string> {
     throw new Error(
       `Create new project request failed (${response.status}): ${response.statusText}`,
     )
+  }
+}
+
+export async function createNewProject(
+  persistentModel: PersistentModel | null,
+  name: string,
+  accessLevel: string | null,
+): Promise<SaveProjectResponse> {
+  // PUTs the persistent model as JSON body.
+  const url = newProjectURL()
+  const bodyValue: CreateProjectRequest = {
+    name: name,
+    content: persistentModel,
+    accessLevel: accessLevel ?? '',
+  }
+  const postBody = JSON.stringify(bodyValue)
+  const response = await fetch(url, {
+    method: 'PUT',
+    credentials: 'include',
+    body: postBody,
+    headers: HEADERS,
+    mode: MODE,
+  })
+  if (response.ok) {
+    return response.json()
+  } else {
+    // FIXME Client should show an error if server requests fail
+    throw new Error(`New project creation failed (${response.status}): ${response.statusText}`)
   }
 }
 

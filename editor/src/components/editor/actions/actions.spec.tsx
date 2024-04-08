@@ -341,6 +341,7 @@ describe('LOAD', () => {
       codeEditorErrors: {
         buildErrors: {},
         lintErrors: {},
+        componentDescriptorErrors: {},
       },
       lastUsedFont: null,
       hiddenInstances: [],
@@ -989,6 +990,7 @@ describe('SET_FOCUSED_ELEMENT', () => {
       null,
       'not-a-conditional',
       null,
+      null,
     )
     const fakeMetadata: ElementInstanceMetadataMap = {
       [EP.toString(pathToFocus)]: divElementMetadata,
@@ -1025,6 +1027,7 @@ describe('SET_FOCUSED_ELEMENT', () => {
       null,
       null,
       'not-a-conditional',
+      null,
       null,
     )
     const fakeMetadata: ElementInstanceMetadataMap = {

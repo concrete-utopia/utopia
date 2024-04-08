@@ -213,8 +213,15 @@ export function useErrorOverlayRecords(): ErrorOverlayRecords {
   }, [runtimeErrors])
 
   const lintErrors = fatalCodeEditorErrors.filter((e) => e.source === 'eslint')
+  const componentDescriptorErrors = fatalCodeEditorErrors.filter(
+    (e) => e.source === 'component-descriptor',
+  )
   // we start with the lint errors, since those show up the fastest. any subsequent error will go below in the error screen
-  const errorRecords = filterOldPasses([...lintErrors, ...utopiaParserErrors])
+  const errorRecords = filterOldPasses([
+    ...lintErrors,
+    ...utopiaParserErrors,
+    ...componentDescriptorErrors,
+  ])
 
   return { errorRecords, overlayErrors }
 }

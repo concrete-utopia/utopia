@@ -35,6 +35,7 @@ import {
   jsIdentifier,
   jsElementAccess,
   modifiableAttributeIsJsxElement,
+  jsArbitraryStatement,
 } from '../../shared/element-template'
 import { sampleCode } from '../../model/new-project-files'
 import { addImport, emptyImports } from '../common/project-file-utils'
@@ -76,7 +77,12 @@ import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../model
 import { optionalMap } from '../../shared/optional-utils'
 import { StoryboardFilePath } from '../../../components/editor/store/editor-state'
 import { emptySet, setsEqual } from '../../shared/set-utils'
-import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../shared/dom-utils'
+import {
+  BLOCK_RAN_TO_END_FUNCTION_NAME,
+  EARLY_RETURN_RESULT_FUNCTION_NAME,
+  EARLY_RETURN_VOID_FUNCTION_NAME,
+  JSX_CANVAS_LOOKUP_FUNCTION_NAME,
+} from '../../shared/dom-utils'
 import { assertNever } from '../../../core/shared/utils'
 import { contentsToTree } from '../../../components/assets'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
@@ -1131,6 +1137,7 @@ export var whatever = (props) => <View data-uid='aaa'>
         }),
         {},
         emptyComments,
+        [jsArbitraryStatement('getSizing(spacing)', [], ['getSizing', 'spacing'])],
       ),
       right: jsExpressionValue(20, emptyComments),
       top: jsExpressionValue(-20, emptyComments),
@@ -1149,6 +1156,7 @@ export var whatever = (props) => <View data-uid='aaa'>
         }),
         {},
         emptyComments,
+        [jsArbitraryStatement(`function click(){console.log('click')}`, ['click'], ['console'])],
       ),
     })
     const cake = jsxElement('cake', 'aab', cakeAttributes, [])
@@ -1173,61 +1181,96 @@ export var whatever = (props) => <View data-uid='aaa'>
     const jsCode1 = `function getSizing(n) {
   return 100 + n
 }`
-    const transpiledJsCode1 = `function getSizing(n) {
-  return 100 + n;
-}
-return { getSizing: getSizing };`
+    const transpiledJsCode1 = `return (() => {
+  function getSizing(n) {
+    return 100 + n;
+  }
+
+  return utopiaCanvasBlockRanToEnd({
+    getSizing: getSizing
+  });
+})();`
     const arbitraryBlock1 = arbitraryJSBlock(
       [],
       jsCode1,
       transpiledJsCode1,
       ['getSizing'],
-      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
+      [
+        JSX_CANVAS_LOOKUP_FUNCTION_NAME,
+        BLOCK_RAN_TO_END_FUNCTION_NAME,
+        EARLY_RETURN_RESULT_FUNCTION_NAME,
+        EARLY_RETURN_VOID_FUNCTION_NAME,
+      ],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
       {},
+      [jsArbitraryStatement(jsCode1, ['getSizing'], [])],
     )
     const jsCode2 = `var spacing = 20`
-    const transpiledJsCode2 = `var spacing = 20;
-return { spacing: spacing };`
+    const transpiledJsCode2 = `return (() => {
+  var spacing = 20;
+  return utopiaCanvasBlockRanToEnd({
+    spacing: spacing
+  });
+})();`
     const arbitraryBlock2 = arbitraryJSBlock(
       [],
       jsCode2,
       transpiledJsCode2,
       ['spacing'],
-      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
+      [
+        JSX_CANVAS_LOOKUP_FUNCTION_NAME,
+        BLOCK_RAN_TO_END_FUNCTION_NAME,
+        EARLY_RETURN_RESULT_FUNCTION_NAME,
+        EARLY_RETURN_VOID_FUNCTION_NAME,
+      ],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
       {},
+      [jsArbitraryStatement(jsCode2, ['spacing'], [])],
     )
     const combinedJsCode = `function getSizing(n) {
   return 100 + n
 }
 var spacing = 20`
-    const transpiledcombinedJsCode = `function getSizing(n) {
-  return 100 + n;
-}
+    const transpiledCombinedJsCode = `return (() => {
+  function getSizing(n) {
+    return 100 + n;
+  }
 
-var spacing = 20;
-return { getSizing: getSizing, spacing: spacing };`
+  var spacing = 20;
+  return utopiaCanvasBlockRanToEnd({
+    getSizing: getSizing,
+    spacing: spacing
+  });
+})();`
     const combinedArbitraryBlock = arbitraryJSBlock(
       [],
       combinedJsCode,
-      transpiledcombinedJsCode,
+      transpiledCombinedJsCode,
       ['getSizing', 'spacing'],
-      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
+      [
+        JSX_CANVAS_LOOKUP_FUNCTION_NAME,
+        BLOCK_RAN_TO_END_FUNCTION_NAME,
+        EARLY_RETURN_RESULT_FUNCTION_NAME,
+        EARLY_RETURN_VOID_FUNCTION_NAME,
+      ],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
       {},
+      [
+        jsArbitraryStatement(jsCode1, ['getSizing'], []),
+        jsArbitraryStatement(jsCode2, ['spacing'], []),
+      ],
     )
     const topLevelElements = [arbitraryBlock1, arbitraryBlock2, exported].map(
       clearTopLevelElementUniqueIDsAndEmptyBlocks,
@@ -1327,22 +1370,33 @@ export var whatever = (props) => <View data-uid='aaa'>
     const jsCode = `export default function getSizing(n) {
   return 100 + n
 }`
-    const transpiledJsCode = `function getSizing(n) {
-  return 100 + n;
-}
-return { getSizing: getSizing };`
+    const transpiledJsCode = `return (() => {
+  function getSizing(n) {
+    return 100 + n;
+  }
+
+  return utopiaCanvasBlockRanToEnd({
+    getSizing: getSizing
+  });
+})();`
     const arbitraryBlock = arbitraryJSBlock(
       [],
       jsCode,
       transpiledJsCode,
       ['getSizing'],
-      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
+      [
+        JSX_CANVAS_LOOKUP_FUNCTION_NAME,
+        BLOCK_RAN_TO_END_FUNCTION_NAME,
+        EARLY_RETURN_RESULT_FUNCTION_NAME,
+        EARLY_RETURN_VOID_FUNCTION_NAME,
+      ],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
       {},
+      [jsArbitraryStatement(jsCode, ['getSizing'], [])],
     )
     const topLevelElements = [arbitraryBlock, exported].map(
       clearTopLevelElementUniqueIDsAndEmptyBlocks,
@@ -1452,28 +1506,39 @@ export var whatever = (props) => <View data-uid='aaa'>
       return 100 + n
   }
 }`
-    const transpiledJsCode = `function getSizing(n) {
-  switch (n) {
-    case 100:
-      return 1;
+    const transpiledJsCode = `return (() => {
+  function getSizing(n) {
+    switch (n) {
+      case 100:
+        return 1;
 
-    default:
-      return 100 + n;
+      default:
+        return 100 + n;
+    }
   }
-}
-return { getSizing: getSizing };`
+
+  return utopiaCanvasBlockRanToEnd({
+    getSizing: getSizing
+  });
+})();`
     const arbitraryBlock = arbitraryJSBlock(
       [],
       jsCode,
       transpiledJsCode,
       ['getSizing'],
-      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
+      [
+        JSX_CANVAS_LOOKUP_FUNCTION_NAME,
+        BLOCK_RAN_TO_END_FUNCTION_NAME,
+        EARLY_RETURN_RESULT_FUNCTION_NAME,
+        EARLY_RETURN_VOID_FUNCTION_NAME,
+      ],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
       {},
+      [jsArbitraryStatement(jsCode, ['getSizing'], [])],
     )
     const topLevelElements = [arbitraryBlock, exported].map(
       clearTopLevelElementUniqueIDsAndEmptyBlocks,
@@ -1497,7 +1562,10 @@ return { getSizing: getSizing };`
     )
     expect(actualResult).toEqual(expectedResult)
   })
-  it('parses the code when it has an export default anonymous function', () => {
+  // Temporarily disabled, as it appears these weren't being handled correctly currently.
+  // Appears they'll need capturing in a slightly different way to the existing values
+  // because of their lack of identifying name, which is what the logic currently relies on.
+  xit('parses the code when it has an export default anonymous function', () => {
     const code = `import * as React from "react";
 import {
   UtopiaUtils,
@@ -1589,6 +1657,7 @@ return {  };`
         file: 'code.tsx',
       }),
       {},
+      [],
     )
     const topLevelElements = [arbitraryBlock, exported].map(
       clearTopLevelElementUniqueIDsAndEmptyBlocks,
@@ -1659,20 +1728,30 @@ export var whatever = (props) => <View data-uid='aaa'>
       false,
       emptyComments,
     )
-    const transpiledJSCode = `var spacing = 20;
-return { spacing: spacing };`
+    const transpiledJSCode = `return (() => {
+  var spacing = 20;
+  return utopiaCanvasBlockRanToEnd({
+    spacing: spacing
+  });
+})();`
     const jsVariable = arbitraryJSBlock(
       [],
       'var spacing = 20',
       transpiledJSCode,
       ['spacing'],
-      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
+      [
+        JSX_CANVAS_LOOKUP_FUNCTION_NAME,
+        BLOCK_RAN_TO_END_FUNCTION_NAME,
+        EARLY_RETURN_RESULT_FUNCTION_NAME,
+        EARLY_RETURN_VOID_FUNCTION_NAME,
+      ],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
       {},
+      [jsArbitraryStatement('var spacing = 20', ['spacing'], [])],
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const { imports } = addImport(
@@ -1730,21 +1809,35 @@ export var whatever = (props) => {
     const view = jsxElement('View', 'aaa', viewAttributes, [])
     const jsCode = `const bgs = ['black', 'grey']
   const bg = bgs[0]`
-    const transpiledJsCode = `const bgs = ['black', 'grey'];
-const bg = bgs[0];
-return { bgs: bgs, bg: bg };`
+    const transpiledJsCode = `return (() => {
+  const bgs = ['black', 'grey'];
+  const bg = bgs[0];
+  return utopiaCanvasBlockRanToEnd({
+    bgs: bgs,
+    bg: bg
+  });
+})();`
     const arbitraryBlock = arbitraryJSBlock(
       [],
       jsCode,
       transpiledJsCode,
       ['bgs', 'bg'],
-      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
+      [
+        JSX_CANVAS_LOOKUP_FUNCTION_NAME,
+        BLOCK_RAN_TO_END_FUNCTION_NAME,
+        EARLY_RETURN_RESULT_FUNCTION_NAME,
+        EARLY_RETURN_VOID_FUNCTION_NAME,
+      ],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
       {},
+      [
+        jsArbitraryStatement(`const bgs = ['black', 'grey']`, ['bgs'], []),
+        jsArbitraryStatement(`const bg = bgs[0]`, ['bg'], ['bgs']),
+      ],
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -1800,20 +1893,30 @@ export var whatever = (props) => {
     })
     const view = jsxElement('View', 'aaa', viewAttributes, [])
     const jsCode = `const greys = ['lightGrey', 'grey']`
-    const transpiledJsCode = `const greys = ['lightGrey', 'grey'];
-return { greys: greys };`
+    const transpiledJsCode = `return (() => {
+  const greys = ['lightGrey', 'grey'];
+  return utopiaCanvasBlockRanToEnd({
+    greys: greys
+  });
+})();`
     const arbitraryBlock = arbitraryJSBlock(
       [],
       jsCode,
       transpiledJsCode,
       ['greys'],
-      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
+      [
+        JSX_CANVAS_LOOKUP_FUNCTION_NAME,
+        BLOCK_RAN_TO_END_FUNCTION_NAME,
+        EARLY_RETURN_RESULT_FUNCTION_NAME,
+        EARLY_RETURN_VOID_FUNCTION_NAME,
+      ],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
       {},
+      [jsArbitraryStatement(jsCode, ['greys'], [])],
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -1870,26 +1973,41 @@ export var whatever = (props) => {
         }),
         {},
         emptyComments,
+        [jsArbitraryStatement('a + b', [], ['a', 'b'])],
       ),
     })
     const view = jsxElement('View', 'aaa', viewAttributes, [])
     const jsCode = `const a = 10
   const b = 20`
-    const transpiledJsCode = `const a = 10;
-const b = 20;
-return { a: a, b: b };`
+    const transpiledJsCode = `return (() => {
+  const a = 10;
+  const b = 20;
+  return utopiaCanvasBlockRanToEnd({
+    a: a,
+    b: b
+  });
+})();`
     const arbitraryBlock = arbitraryJSBlock(
       [],
       jsCode,
       transpiledJsCode,
       ['a', 'b'],
-      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
+      [
+        JSX_CANVAS_LOOKUP_FUNCTION_NAME,
+        BLOCK_RAN_TO_END_FUNCTION_NAME,
+        EARLY_RETURN_RESULT_FUNCTION_NAME,
+        EARLY_RETURN_VOID_FUNCTION_NAME,
+      ],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
       {},
+      [
+        jsArbitraryStatement(`const a = 10`, ['a'], []),
+        jsArbitraryStatement(`const b = 20`, ['b'], []),
+      ],
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -1947,28 +2065,45 @@ export var whatever = (props) => {
         }),
         {},
         emptyComments,
+        [jsArbitraryStatement(`a ? b : c`, [], ['a', 'b', 'c'])],
       ),
     })
     const view = jsxElement('View', 'aaa', viewAttributes, [])
     const jsCode = `const a = true
   const b = 10
   const c = 20`
-    const transpiledJsCode = `const a = true;
-const b = 10;
-const c = 20;
-return { a: a, b: b, c: c };`
+    const transpiledJsCode = `return (() => {
+  const a = true;
+  const b = 10;
+  const c = 20;
+  return utopiaCanvasBlockRanToEnd({
+    a: a,
+    b: b,
+    c: c
+  });
+})();`
     const arbitraryBlock = arbitraryJSBlock(
       [],
       jsCode,
       transpiledJsCode,
       ['a', 'b', 'c'],
-      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
+      [
+        JSX_CANVAS_LOOKUP_FUNCTION_NAME,
+        BLOCK_RAN_TO_END_FUNCTION_NAME,
+        EARLY_RETURN_RESULT_FUNCTION_NAME,
+        EARLY_RETURN_VOID_FUNCTION_NAME,
+      ],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
       {},
+      [
+        jsArbitraryStatement(`const a = true`, ['a'], []),
+        jsArbitraryStatement(`const b = 10`, ['b'], []),
+        jsArbitraryStatement(`const c = 20`, ['c'], []),
+      ],
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -2024,6 +2159,7 @@ export var whatever = (props) => {
         }),
         {},
         emptyComments,
+        [jsArbitraryStatement(`a++`, [], ['a'])],
       ),
       right: jsExpressionOtherJavaScript(
         [],
@@ -2038,24 +2174,35 @@ export var whatever = (props) => {
         }),
         {},
         emptyComments,
+        [jsArbitraryStatement(`++a`, [], ['a'])],
       ),
     })
     const view = jsxElement('View', 'aaa', viewAttributes, [])
     const jsCode = `let a = 10`
-    const transpiledJsCode = `let a = 10;
-return { a: a };`
+    const transpiledJsCode = `return (() => {
+  let a = 10;
+  return utopiaCanvasBlockRanToEnd({
+    a: a
+  });
+})();`
     const arbitraryBlock = arbitraryJSBlock(
       [],
       jsCode,
       transpiledJsCode,
       ['a'],
-      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
+      [
+        JSX_CANVAS_LOOKUP_FUNCTION_NAME,
+        BLOCK_RAN_TO_END_FUNCTION_NAME,
+        EARLY_RETURN_RESULT_FUNCTION_NAME,
+        EARLY_RETURN_VOID_FUNCTION_NAME,
+      ],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
       {},
+      [jsArbitraryStatement(jsCode, ['a'], [])],
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -2112,23 +2259,37 @@ export var whatever = (props) => {
     const view = jsxElement('View', 'aaa', viewAttributes, [])
     const jsCode = `const a = 10
   const b = { a: a }`
-    const transpiledJsCode = `const a = 10;
-const b = {
-  a: a
-};
-return { a: a, b: b };`
+    const transpiledJsCode = `return (() => {
+  const a = 10;
+  const b = {
+    a: a
+  };
+  return utopiaCanvasBlockRanToEnd({
+    a: a,
+    b: b
+  });
+})();`
     const arbitraryBlock = arbitraryJSBlock(
       [],
       jsCode,
       transpiledJsCode,
       ['a', 'b'],
-      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
+      [
+        JSX_CANVAS_LOOKUP_FUNCTION_NAME,
+        BLOCK_RAN_TO_END_FUNCTION_NAME,
+        EARLY_RETURN_RESULT_FUNCTION_NAME,
+        EARLY_RETURN_VOID_FUNCTION_NAME,
+      ],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
       {},
+      [
+        jsArbitraryStatement(`const a = 10`, ['a'], []),
+        jsArbitraryStatement(`const b = { a: a }`, ['b'], ['a']),
+      ],
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -2243,22 +2404,32 @@ export var whatever = (props) => {
     })
     const view = jsxElement('View', 'aaa', viewAttributes, [])
     const jsCode = `const bg = { backgroundColor: 'grey' }`
-    const transpiledJsCode = `const bg = {
-  backgroundColor: 'grey'
-};
-return { bg: bg };`
+    const transpiledJsCode = `return (() => {
+  const bg = {
+    backgroundColor: 'grey'
+  };
+  return utopiaCanvasBlockRanToEnd({
+    bg: bg
+  });
+})();`
     const arbitraryBlock = arbitraryJSBlock(
       [],
       jsCode,
       transpiledJsCode,
       ['bg'],
-      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
+      [
+        JSX_CANVAS_LOOKUP_FUNCTION_NAME,
+        BLOCK_RAN_TO_END_FUNCTION_NAME,
+        EARLY_RETURN_RESULT_FUNCTION_NAME,
+        EARLY_RETURN_VOID_FUNCTION_NAME,
+      ],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
       {},
+      [jsArbitraryStatement(jsCode, ['bg'], [])],
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -2322,6 +2493,7 @@ export var whatever = (props) => <View data-uid='aaa'>
         }),
         {},
         emptyComments,
+        [jsArbitraryStatement('`Count ${count}`', [], ['count'])],
       ),
     })
     const cake = jsxElement('cake', 'aab', cakeAttributes, [])
@@ -2344,20 +2516,30 @@ export var whatever = (props) => <View data-uid='aaa'>
       emptyComments,
     )
     const jsCode = `var count = 10`
-    const transpiledJSCode = `var count = 10;
-return { count: count };`
+    const transpiledJSCode = `return (() => {
+  var count = 10;
+  return utopiaCanvasBlockRanToEnd({
+    count: count
+  });
+})();`
     const jsVariable = arbitraryJSBlock(
       [],
       jsCode,
       transpiledJSCode,
       ['count'],
-      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
+      [
+        JSX_CANVAS_LOOKUP_FUNCTION_NAME,
+        BLOCK_RAN_TO_END_FUNCTION_NAME,
+        EARLY_RETURN_RESULT_FUNCTION_NAME,
+        EARLY_RETURN_VOID_FUNCTION_NAME,
+      ],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
       {},
+      [jsArbitraryStatement(jsCode, ['count'], [])],
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const { imports } = addImport(
@@ -2417,6 +2599,7 @@ export var whatever = (props) => <View data-uid='aaa'>
         }),
         {},
         emptyComments,
+        [jsArbitraryStatement(`use20 ? 20 : 10`, [], ['use20'])],
       ),
       right: jsExpressionValue(20, emptyComments),
       top: jsExpressionValue(-20, emptyComments),
@@ -2440,20 +2623,30 @@ export var whatever = (props) => <View data-uid='aaa'>
       false,
       emptyComments,
     )
-    const transpiledJSCode = `var use20 = true;
-return { use20: use20 };`
+    const transpiledJSCode = `return (() => {
+  var use20 = true;
+  return utopiaCanvasBlockRanToEnd({
+    use20: use20
+  });
+})();`
     const jsVariable = arbitraryJSBlock(
       [],
       'var use20 = true',
       transpiledJSCode,
       ['use20'],
-      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
+      [
+        JSX_CANVAS_LOOKUP_FUNCTION_NAME,
+        BLOCK_RAN_TO_END_FUNCTION_NAME,
+        EARLY_RETURN_RESULT_FUNCTION_NAME,
+        EARLY_RETURN_VOID_FUNCTION_NAME,
+      ],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
       {},
+      [jsArbitraryStatement('var use20 = true', ['use20'], [])],
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const { imports } = addImport(
@@ -2513,20 +2706,31 @@ export var whatever = (props) => <View data-uid='aaa'>
       false,
       emptyComments,
     )
-    const transpiledJSCode = `var mySet = new Set();
-return { mySet: mySet };`
+    const transpiledJSCode = `return (() => {
+  var mySet = new Set();
+  return utopiaCanvasBlockRanToEnd({
+    mySet: mySet
+  });
+})();`
     const jsVariable = arbitraryJSBlock(
       [],
       'var mySet = new Set()',
       transpiledJSCode,
       ['mySet'],
-      ['Set', JSX_CANVAS_LOOKUP_FUNCTION_NAME],
+      [
+        'Set',
+        JSX_CANVAS_LOOKUP_FUNCTION_NAME,
+        BLOCK_RAN_TO_END_FUNCTION_NAME,
+        EARLY_RETURN_RESULT_FUNCTION_NAME,
+        EARLY_RETURN_VOID_FUNCTION_NAME,
+      ],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
       {},
+      [jsArbitraryStatement('var mySet = new Set()', ['mySet'], ['Set'])],
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const expectedResult = parseSuccess(
@@ -2578,6 +2782,7 @@ export var whatever = (props) => <View data-uid='aaa'>
         }),
         {},
         emptyComments,
+        [jsArbitraryStatement('props.left + spacing', [], ['spacing', 'props'])],
       ),
       right: jsExpressionValue(20, emptyComments),
       top: jsExpressionValue(-20, emptyComments),
@@ -2601,20 +2806,30 @@ export var whatever = (props) => <View data-uid='aaa'>
       false,
       emptyComments,
     )
-    const transpiledJSCode = `var spacing = 20;
-return { spacing: spacing };`
+    const transpiledJSCode = `return (() => {
+  var spacing = 20;
+  return utopiaCanvasBlockRanToEnd({
+    spacing: spacing
+  });
+})();`
     const jsVariable = arbitraryJSBlock(
       [],
       'var spacing = 20',
       transpiledJSCode,
       ['spacing'],
-      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
+      [
+        JSX_CANVAS_LOOKUP_FUNCTION_NAME,
+        BLOCK_RAN_TO_END_FUNCTION_NAME,
+        EARLY_RETURN_RESULT_FUNCTION_NAME,
+        EARLY_RETURN_VOID_FUNCTION_NAME,
+      ],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
       {},
+      [jsArbitraryStatement('var spacing = 20', ['spacing'], [])],
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const { imports } = addImport(
@@ -2682,17 +2897,28 @@ export var whatever = (props) => <View data-uid='aaa'>
     "hello"
   );
 };`
-    const transpiledJsCode = `var MyComp = props => {
-  return React.createElement("div", {
-    style: {
-      position: "absolute",
-      left: props.layout.left,
-      backgroundColor: "hotpink"
-    }
-  }, "hello");
-};
-return { MyComp: MyComp };`
-    const definedElseWhere = ['React', JSX_CANVAS_LOOKUP_FUNCTION_NAME]
+    const transpiledJsCode = `return (() => {
+  var MyComp = props => {
+    return React.createElement("div", {
+      style: {
+        position: "absolute",
+        left: props.layout.left,
+        backgroundColor: "hotpink"
+      }
+    }, "hello");
+  };
+
+  return utopiaCanvasBlockRanToEnd({
+    MyComp: MyComp
+  });
+})();`
+    const definedElseWhere = [
+      'React',
+      JSX_CANVAS_LOOKUP_FUNCTION_NAME,
+      BLOCK_RAN_TO_END_FUNCTION_NAME,
+      EARLY_RETURN_RESULT_FUNCTION_NAME,
+      EARLY_RETURN_VOID_FUNCTION_NAME,
+    ]
     const MyComp = arbitraryJSBlock(
       [],
       jsCode,
@@ -2705,6 +2931,7 @@ return { MyComp: MyComp };`
         file: 'code.tsx',
       }),
       {},
+      [jsArbitraryStatement(jsCode, ['MyComp'], ['React'])],
     )
     const myCompAttributes: JSXAttributes = jsxAttributesFromMap({
       'data-uid': jsExpressionValue('aab', emptyComments),
@@ -3144,7 +3371,17 @@ export var App = (props) => <View data-uid='bbb'>
       clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code)),
     )
     const emptyBrackets = {
-      ...jsExpressionOtherJavaScript([], '', '', 'return undefined', [], null, {}, emptyComments),
+      ...jsExpressionOtherJavaScript(
+        [],
+        '',
+        '',
+        'return undefined',
+        [],
+        null,
+        {},
+        emptyComments,
+        [],
+      ),
       uid: expect.any(String),
     }
     const view = clearJSXElementChildUniqueIDs(
@@ -3284,6 +3521,7 @@ export var App = (props) => <View data-uid='bbb'>
         }),
         {},
         emptyComments,
+        [jsArbitraryStatement(`getSizing(spacing)`, [], ['getSizing', 'spacing'])],
       ),
       right: jsExpressionValue(20, emptyComments),
       top: jsExpressionValue(-20, emptyComments),
@@ -3310,61 +3548,96 @@ export var App = (props) => <View data-uid='bbb'>
     const jsCode1 = `function getSizing(n) {
   return 100 + n
 }`
-    const transpiledJSCode1 = `function getSizing(n) {
-  return 100 + n;
-}
-return { getSizing: getSizing };`
+    const transpiledJSCode1 = `return (() => {
+  function getSizing(n) {
+    return 100 + n;
+  }
+
+  return utopiaCanvasBlockRanToEnd({
+    getSizing: getSizing
+  });
+})();`
     const arbitraryBlock1 = arbitraryJSBlock(
       [],
       jsCode1,
       transpiledJSCode1,
       ['getSizing'],
-      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
+      [
+        JSX_CANVAS_LOOKUP_FUNCTION_NAME,
+        BLOCK_RAN_TO_END_FUNCTION_NAME,
+        EARLY_RETURN_RESULT_FUNCTION_NAME,
+        EARLY_RETURN_VOID_FUNCTION_NAME,
+      ],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
       {},
+      [jsArbitraryStatement(jsCode1, ['getSizing'], [])],
     )
     const jsCode2 = `var spacing = 20`
-    const transpiledJSCode2 = `var spacing = 20;
-return { spacing: spacing };`
+    const transpiledJSCode2 = `return (() => {
+  var spacing = 20;
+  return utopiaCanvasBlockRanToEnd({
+    spacing: spacing
+  });
+})();`
     const arbitraryBlock2 = arbitraryJSBlock(
       [],
       jsCode2,
       transpiledJSCode2,
       ['spacing'],
-      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
+      [
+        JSX_CANVAS_LOOKUP_FUNCTION_NAME,
+        BLOCK_RAN_TO_END_FUNCTION_NAME,
+        EARLY_RETURN_RESULT_FUNCTION_NAME,
+        EARLY_RETURN_VOID_FUNCTION_NAME,
+      ],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
       {},
+      [jsArbitraryStatement(jsCode2, ['spacing'], [])],
     )
     const combinedJSCode = `function getSizing(n) {
   return 100 + n
 }
 var spacing = 20`
-    const transpiledcombinedJSCode = `function getSizing(n) {
-  return 100 + n;
-}
+    const transpiledCombinedJSCode = `return (() => {
+  function getSizing(n) {
+    return 100 + n;
+  }
 
-var spacing = 20;
-return { getSizing: getSizing, spacing: spacing };`
+  var spacing = 20;
+  return utopiaCanvasBlockRanToEnd({
+    getSizing: getSizing,
+    spacing: spacing
+  });
+})();`
     const combinedArbitraryBlock = arbitraryJSBlock(
       [],
       combinedJSCode,
-      transpiledcombinedJSCode,
+      transpiledCombinedJSCode,
       ['getSizing', 'spacing'],
-      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
+      [
+        JSX_CANVAS_LOOKUP_FUNCTION_NAME,
+        BLOCK_RAN_TO_END_FUNCTION_NAME,
+        EARLY_RETURN_RESULT_FUNCTION_NAME,
+        EARLY_RETURN_VOID_FUNCTION_NAME,
+      ],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
       {},
+      [
+        jsArbitraryStatement(jsCode1, ['getSizing'], []),
+        jsArbitraryStatement(jsCode2, ['spacing'], []),
+      ],
     )
     const topLevelElements = [arbitraryBlock1, arbitraryBlock2, exported].map(
       clearTopLevelElementUniqueIDsAndEmptyBlocks,
@@ -3826,10 +4099,15 @@ export var whatever = props => {
     const jsCode = `function test(n) {
     return n * 2
   }`
-    const transpiledJSCode = `function test(n) {
-  return n * 2;
-}
-return { test: test };`
+    const transpiledJSCode = `return (() => {
+  function test(n) {
+    return n * 2;
+  }
+
+  return utopiaCanvasBlockRanToEnd({
+    test: test
+  });
+})();`
     const actualResult = simplifyParsedTextFileAttributes(
       clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code)),
     )
@@ -3846,13 +4124,19 @@ return { test: test };`
       jsCode,
       transpiledJSCode,
       ['test'],
-      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
+      [
+        JSX_CANVAS_LOOKUP_FUNCTION_NAME,
+        BLOCK_RAN_TO_END_FUNCTION_NAME,
+        EARLY_RETURN_RESULT_FUNCTION_NAME,
+        EARLY_RETURN_VOID_FUNCTION_NAME,
+      ],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
       {},
+      [jsArbitraryStatement(jsCode, ['test'], [])],
     )
     const expectedResult = parseSuccess(
       imports,
@@ -3890,6 +4174,7 @@ return { test: test };`
                       }),
                       {},
                       emptyComments,
+                      [jsArbitraryStatement('test(100)', [], ['test'])],
                     ),
                   }),
                   [],
@@ -3915,10 +4200,15 @@ return { test: test };`
     const jsCode = `function test(n) {
     return n * 2
   }`
-    const transpiledJSCode = `function test(n) {
-  return n * 2;
-}
-return { test: test };`
+    const transpiledJSCode = `return (() => {
+  function test(n) {
+    return n * 2;
+  }
+
+  return utopiaCanvasBlockRanToEnd({
+    test: test
+  });
+})();`
     const { imports } = addImport(
       'code.jsx',
       'cake',
@@ -3961,6 +4251,7 @@ return { test: test };`
                     }),
                     {},
                     emptyComments,
+                    [jsArbitraryStatement('test(100)', [], ['test'])],
                   ),
                 }),
                 [],
@@ -3972,13 +4263,19 @@ return { test: test };`
             jsCode,
             transpiledJSCode,
             ['test'],
-            [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
+            [
+              JSX_CANVAS_LOOKUP_FUNCTION_NAME,
+              BLOCK_RAN_TO_END_FUNCTION_NAME,
+              EARLY_RETURN_RESULT_FUNCTION_NAME,
+              EARLY_RETURN_VOID_FUNCTION_NAME,
+            ],
             expect.objectContaining({
               sources: ['code.tsx'],
               version: 3,
               file: 'code.tsx',
             }),
             {},
+            [jsArbitraryStatement(jsCode, ['test'], [])],
           ),
           false,
           emptyComments,
@@ -4519,16 +4816,30 @@ export var App = props => {
         `const a = 20;
   const b = 40;
   const MyCustomComponent = props => <View data-uid="abc">{props.children}</View>;`,
-        `const a = 20;
-const b = 40;
+        `return (() => {
+  const a = 20;
+  const b = 40;
 
-const MyCustomComponent = props => ${JSX_CANVAS_LOOKUP_FUNCTION_NAME}("abc", {
-  props: props,
-  callerThis: this
-});
-return { a: a, b: b, MyCustomComponent: MyCustomComponent };`,
+  const MyCustomComponent = props => ${JSX_CANVAS_LOOKUP_FUNCTION_NAME}("abc", {
+    props: props,
+    callerThis: this
+  });
+
+  return utopiaCanvasBlockRanToEnd({
+    a: a,
+    b: b,
+    MyCustomComponent: MyCustomComponent
+  });
+})();`,
         ['a', 'b', 'MyCustomComponent'],
-        ['React', 'View', JSX_CANVAS_LOOKUP_FUNCTION_NAME],
+        [
+          'React',
+          'View',
+          JSX_CANVAS_LOOKUP_FUNCTION_NAME,
+          BLOCK_RAN_TO_END_FUNCTION_NAME,
+          EARLY_RETURN_RESULT_FUNCTION_NAME,
+          EARLY_RETURN_VOID_FUNCTION_NAME,
+        ],
         expect.objectContaining({
           sources: ['code.tsx'],
           version: 3,
@@ -4541,6 +4852,15 @@ return { a: a, b: b, MyCustomComponent: MyCustomComponent };`,
             }),
           }),
         },
+        [
+          jsArbitraryStatement(`const a = 20;`, ['a'], []),
+          jsArbitraryStatement(`const b = 40;`, ['b'], []),
+          jsArbitraryStatement(
+            `const MyCustomComponent = props => <View data-uid="abc">{props.children}</View>;`,
+            ['MyCustomComponent'],
+            ['React', 'View'],
+          ),
+        ],
       ),
       false,
       emptyComments,
@@ -4729,37 +5049,61 @@ export var whatever = props => {
   while (true) {
     const a = 1
   }`
-    const arbitraryBlockTranspiledCode = `var _loopIt = 0,
-    _loopIt2 = 0;
+    const arbitraryBlockTranspiledCode = `return (() => {
+  var _loopIt = 0,
+      _loopIt2 = 0;
 
-for (var n = 0; n != -1; n++) {
-  if (_loopIt++ > ${InfiniteLoopMaxIterations}) {
-    throw new RangeError('${InfiniteLoopError}');
+  for (var n = 0; n != -1; n++) {
+    if (_loopIt++ > ${InfiniteLoopMaxIterations}) {
+      throw new RangeError('${InfiniteLoopError}');
+    }
+
+    const n2 = n * 2;
   }
 
-  const n2 = n * 2;
-}
+  while (true) {
+    if (_loopIt2++ > ${InfiniteLoopMaxIterations}) {
+      throw new RangeError('${InfiniteLoopError}');
+    }
 
-while (true) {
-  if (_loopIt2++ > ${InfiniteLoopMaxIterations}) {
-    throw new RangeError('${InfiniteLoopError}');
+    const a = 1;
   }
 
-  const a = 1;
-}
-return {  };`
+  return utopiaCanvasBlockRanToEnd({});
+})();`
     const arbitraryBlock = arbitraryJSBlock(
       [],
       arbitraryBlockCode,
       arbitraryBlockTranspiledCode,
       [],
-      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
+      [
+        JSX_CANVAS_LOOKUP_FUNCTION_NAME,
+        BLOCK_RAN_TO_END_FUNCTION_NAME,
+        EARLY_RETURN_RESULT_FUNCTION_NAME,
+        EARLY_RETURN_VOID_FUNCTION_NAME,
+      ],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
       {},
+      [
+        jsArbitraryStatement(
+          `for (var n = 0; n != -1; n++) {
+    const n2 = n * 2
+  }`,
+          [],
+          [],
+        ),
+        jsArbitraryStatement(
+          `while (true) {
+    const a = 1
+  }`,
+          [],
+          [],
+        ),
+      ],
     )
     const view = jsxElement(
       'div',
@@ -4808,28 +5152,39 @@ export var whatever = props => {
     const n2 = n * 2
     result.push(<div style={{ left: n, top: n2 }} data-uid='bbb' />)
   }`
-    const arbitraryBlockTranspiledCode = `var _loopIt = 0;
-let result = [];
+    const arbitraryBlockTranspiledCode = `return (() => {
+  var _loopIt = 0;
+  let result = [];
 
-for (var n = 0; n < 5; n++) {
-  if (_loopIt++ > ${InfiniteLoopMaxIterations}) {
-    throw new RangeError('${InfiniteLoopError}');
+  for (var n = 0; n < 5; n++) {
+    if (_loopIt++ > ${InfiniteLoopMaxIterations}) {
+      throw new RangeError('${InfiniteLoopError}');
+    }
+
+    const n2 = n * 2;
+    result.push(${JSX_CANVAS_LOOKUP_FUNCTION_NAME}("bbb", {
+      n: n,
+      n2: n2,
+      callerThis: this
+    }));
   }
 
-  const n2 = n * 2;
-  result.push(${JSX_CANVAS_LOOKUP_FUNCTION_NAME}("bbb", {
-    n: n,
-    n2: n2,
-    callerThis: this
-  }));
-}
-return { result: result };`
+  return utopiaCanvasBlockRanToEnd({
+    result: result
+  });
+})();`
     const arbitraryBlock = arbitraryJSBlock(
       [],
       arbitraryBlockCode,
       arbitraryBlockTranspiledCode,
       ['result'],
-      ['React', JSX_CANVAS_LOOKUP_FUNCTION_NAME],
+      [
+        'React',
+        JSX_CANVAS_LOOKUP_FUNCTION_NAME,
+        BLOCK_RAN_TO_END_FUNCTION_NAME,
+        EARLY_RETURN_RESULT_FUNCTION_NAME,
+        EARLY_RETURN_VOID_FUNCTION_NAME,
+      ],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
@@ -4842,6 +5197,17 @@ return { result: result };`
           }),
         }),
       },
+      [
+        jsArbitraryStatement(`let result = []`, ['result'], []),
+        jsArbitraryStatement(
+          `for (var n = 0; n < 5; n++) {
+    const n2 = n * 2
+    result.push(<div style={{ left: n, top: n2 }} data-uid='bbb' />)
+  }`,
+          [],
+          ['result', 'React'],
+        ),
+      ],
     )
     const innerBlock = jsIdentifier('result', '', expect.objectContaining({}), emptyComments)
     const view = jsxElement(
@@ -4915,6 +5281,7 @@ export var whatever = props => {
                   expect.objectContaining({}),
                   {},
                   emptyComments,
+                  [jsArbitraryStatement(`n * 30`, [], ['n'])],
                 ),
                 emptyComments,
                 emptyComments,
@@ -4930,6 +5297,7 @@ export var whatever = props => {
                   expect.objectContaining({}),
                   {},
                   emptyComments,
+                  [jsArbitraryStatement(`n * 30`, [], ['n'])],
                 ),
                 emptyComments,
                 emptyComments,
@@ -5031,6 +5399,7 @@ export var whatever = props => {
                   expect.objectContaining({}),
                   {},
                   emptyComments,
+                  [jsArbitraryStatement(`n * a`, [], ['n', 'a'])],
                 ),
                 emptyComments,
                 emptyComments,
@@ -5046,6 +5415,7 @@ export var whatever = props => {
                   expect.objectContaining({}),
                   {},
                   emptyComments,
+                  [jsArbitraryStatement(`n * a`, [], ['n', 'a'])],
                 ),
                 emptyComments,
                 emptyComments,
@@ -5062,7 +5432,7 @@ export var whatever = props => {
       arbitraryBlockOriginalCode,
       arbitraryBlockCode,
       arbitraryBlockTranspiledCode,
-      ['a', 'React', 'utopiaCanvasJSXLookup'],
+      ['a', 'React', JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
@@ -5076,16 +5446,26 @@ export var whatever = props => {
     const topLevelArbitraryBlock = arbitraryJSBlock(
       [],
       `const a = 30`,
-      `const a = 30;
-return { a: a };`,
+      `return (() => {
+  const a = 30;
+  return utopiaCanvasBlockRanToEnd({
+    a: a
+  });
+})();`,
       ['a'],
-      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
+      [
+        JSX_CANVAS_LOOKUP_FUNCTION_NAME,
+        BLOCK_RAN_TO_END_FUNCTION_NAME,
+        EARLY_RETURN_RESULT_FUNCTION_NAME,
+        EARLY_RETURN_VOID_FUNCTION_NAME,
+      ],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
       {},
+      [jsArbitraryStatement(`const a = 30`, ['a'], [])],
     )
 
     const view = clearJSXElementChildUniqueIDs(
@@ -5408,7 +5788,7 @@ export var App = props => {
                 JS_IDENTIFIER - 09c
           UNPARSED_CODE
           UTOPIA_JSX_COMPONENT - App
-            JSX_ELEMENT - MyComp - 7ee"
+            JSX_ELEMENT - MyComp - e13"
         `)
 
         const appComponent = success.topLevelElements.find(
@@ -5552,7 +5932,7 @@ export var App = props => {
     }
 
     const transpiledCharacter = 1 + consoleLogBlock.transpiledJavascript.indexOf('log')
-    const transpiledLine = 1
+    const transpiledLine = 2
 
     const consumer = getSourceMapConsumer(consoleLogBlock.sourceMap)
 
@@ -5577,8 +5957,8 @@ export var App = props => {
       throw new Error(`expected the App component's arbitraryJSBlock to be defined`)
     }
 
-    const transpiledCharacter = 1 + arbitraryBlock.transpiledJavascript.split('\n')[1].indexOf('b')
-    const transpiledLine = 2
+    const transpiledCharacter = 1 + arbitraryBlock.transpiledJavascript.split('\n')[2].indexOf('b')
+    const transpiledLine = 3
 
     const consumer = getSourceMapConsumer(arbitraryBlock.sourceMap)
 

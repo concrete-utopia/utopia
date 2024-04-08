@@ -1,13 +1,14 @@
 import { Button } from '@radix-ui/themes'
-import { useFetcher } from '@remix-run/react'
+import { useFetcher, useLocation } from '@remix-run/react'
 import cx from 'classnames'
 import type { UserDetails } from 'prisma-client'
-import React from 'react'
-import { useAppStore } from '../stores/appStore'
+import React, { useMemo } from 'react'
 import { colors } from '../styles/sprinkles.css'
 import { when } from '../util/react-conditionals'
 import { Status } from '../util/statusCodes'
 import * as styles from './projectNotFound.css'
+import { useCDNLink } from '../util/cdnLink'
+import { useIsDarkMode } from '../hooks/useIsDarkMode'
 
 export default function ProjectNotFound({
   projectId,
@@ -43,8 +44,20 @@ export default function ProjectNotFound({
 }
 
 function UnauthorizedPage({ projectId, user }: { projectId: string; user: UserDetails }) {
-  const env = useAppStore((store) => store.env)
-  const hmmPyramidLight = `${env?.UTOPIA_CDN_URL}/editor/hmmm_pyramid_light.png`
+  const cdnLink = useCDNLink()
+  const hmmPyramidLight = React.useMemo(() => {
+    return cdnLink('/editor/hmmm_pyramid_light.png')
+  }, [cdnLink])
+  const hmmPyramidDark = React.useMemo(() => {
+    return cdnLink('/editor/hmmm_pyramid_dark.png')
+  }, [cdnLink])
+
+  const isDarkMode = useIsDarkMode()
+
+  const logoPic = React.useMemo(() => {
+    return isDarkMode ? hmmPyramidDark : hmmPyramidLight
+  }, [isDarkMode, hmmPyramidDark, hmmPyramidLight])
+
   const [accessRequested, setAccessRequested] = React.useState(false)
 
   const accessRequestsFetcher = useFetcher()
@@ -62,8 +75,8 @@ function UnauthorizedPage({ projectId, user }: { projectId: string; user: UserDe
 
   return (
     <>
-      <div className={styles.image}>
-        <img src={hmmPyramidLight} height='500px' alt='Utopia 403 Logo' />
+      <div className={styles.image} style={{ marginRight: 70 }}>
+        <img src={logoPic} height='500px' alt='Utopia 403 Logo' />
       </div>
       <div className={styles.container}>
         <div style={{ fontSize: '100px', fontWeight: 600, fontStyle: 'italic' }}>Hmmm…</div>
@@ -73,7 +86,7 @@ function UnauthorizedPage({ projectId, user }: { projectId: string; user: UserDe
           <a
             href='/projects'
             rel='noopener noreferrer'
-            style={{ textDecoration: 'none', color: colors.primary }}
+            style={{ textDecoration: 'none', color: isDarkMode ? '#80CAFF' : '#0075F9' }}
           >
             {user?.email}
           </a>
@@ -98,15 +111,38 @@ function UnauthorizedPage({ projectId, user }: { projectId: string; user: UserDe
 }
 
 function NotFoundPage({ user, projectId }: { user: UserDetails | null; projectId: string | null }) {
-  const env = useAppStore((store) => store.env)
-  const PyramidLight404 = `${env?.UTOPIA_CDN_URL}/editor/404_pyramid_light.png`
+  const cdnLink = useCDNLink()
+
+  const PyramidLight404 = React.useMemo(() => {
+    return cdnLink('editor/404_pyramid_light.png')
+  }, [cdnLink])
+
+  const PyramidDark404 = React.useMemo(() => {
+    return cdnLink('editor/404_pyramid_dark.png')
+  }, [cdnLink])
+
+  const isDarkMode = useIsDarkMode()
+
+  const logoPic = React.useMemo(() => {
+    return isDarkMode ? PyramidDark404 : PyramidLight404
+  }, [isDarkMode, PyramidDark404, PyramidLight404])
+
+  const location = useLocation()
+  const onLoginRedirect = useMemo(() => {
+    const queryParams = new URLSearchParams(location.search)
+    const searchString = queryParams.toString() === '' ? '' : `?${queryParams.toString()}`
+    return `/p/${projectId}${searchString}`
+  }, [projectId, location.search])
+
   return (
     <>
-      <div className={styles.image}>
-        <img src={PyramidLight404} height='500px' alt='Utopia 404 Logo' />
+      <div className={styles.image} style={{ marginRight: 50 }}>
+        <img src={logoPic} height='500px' alt='Utopia 404 Logo' />
       </div>
       <div className={styles.container}>
-        <div style={{ fontSize: '160px', fontWeight: 600, fontStyle: 'italic' }}>404</div>
+        <div style={{ fontSize: '160px', fontWeight: 600, fontStyle: 'italic', height: 170 }}>
+          404
+        </div>
         <div style={{ fontSize: '42px' }}>Project not found.</div>
         <div className={styles.runningText}>
           <span>Either this project does not exist, or you need to be granted access to it. </span>
@@ -116,7 +152,7 @@ function NotFoundPage({ user, projectId }: { user: UserDetails | null; projectId
               <a
                 href='/projects'
                 rel='noopener noreferrer'
-                style={{ textDecoration: 'none', color: colors.primary }}
+                style={{ textDecoration: 'none', color: isDarkMode ? '#80CAFF' : '#0075F9' }}
               >
                 {user?.email}
               </a>
@@ -133,7 +169,7 @@ function NotFoundPage({ user, projectId }: { user: UserDetails | null; projectId
           ) : (
             <Action
               text='Sign In'
-              href={`/login?redirectTo=${encodeURIComponent(`/p/${projectId}`)}`}
+              href={`/login?redirectTo=${encodeURIComponent(onLoginRedirect)}`}
             />
           )}
         </div>

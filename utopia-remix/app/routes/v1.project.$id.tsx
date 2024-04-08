@@ -23,5 +23,9 @@ export async function action(args: ActionFunctionArgs) {
       handler: proxy,
       validator: ALLOW,
     },
+    POST: {
+      handler: proxy,
+      validator: ALLOW,
+    },
   })
 }

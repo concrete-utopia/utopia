@@ -6,7 +6,7 @@ import { chrome as isChrome } from 'platform-detect'
 import React from 'react'
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
-import { IS_BROWSER_TEST_DEBUG } from '../../common/env-vars'
+import { IS_TEST_ENVIRONMENT } from '../../common/env-vars'
 import { projectURLForProject } from '../../core/shared/utils'
 import Keyboard from '../../utils/keyboard'
 import { Modifier } from '../../utils/modifiers'
@@ -74,6 +74,8 @@ import { CommentMaintainer } from '../../core/commenting/comment-maintainer'
 import { useIsLoggedIn, useLiveblocksConnectionListener } from '../../core/shared/multiplayer-hooks'
 import { ForkSearchParamKey, ProjectForkFlow } from './project-fork-flow'
 import { isRoomId, projectIdToRoomId } from '../../utils/room-id'
+import { SharingDialog } from './sharing-dialog'
+import { AccessLevelParamKey } from './persistence/persistence-backend'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -88,13 +90,15 @@ function pushProjectURLToBrowserHistory(
     // …but if it's forking, remove the fork param
     queryParams.delete(ForkSearchParamKey)
   }
+  // remove accessLevel param
+  queryParams.delete(AccessLevelParamKey)
 
   const queryParamsStr = queryParams.size > 0 ? `?${queryParams.toString()}` : ''
 
   const projectURL = projectURLForProject(projectId, projectName)
   const title = `Utopia ${projectName}`
 
-  window.top?.history.pushState({}, title, `${projectURL}${queryParamsStr}`)
+  window.top?.history.replaceState({}, title, `${projectURL}${queryParamsStr}`)
 }
 
 export interface EditorProps {}
@@ -349,7 +353,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
   const forking = useEditorState(Substores.restOfEditor, (store) => store.editor.forking, '')
 
   React.useEffect(() => {
-    if (IS_BROWSER_TEST_DEBUG) {
+    if (IS_TEST_ENVIRONMENT) {
       return
     }
     if (projectId != null) {
@@ -495,6 +499,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
         <GithubRepositoryCloneFlow />
         <ProjectForkFlow />
         <LockedOverlay />
+        <SharingDialog />
       </SimpleFlexRow>
       <EditorCommon
         mouseDown={onWindowMouseDown}

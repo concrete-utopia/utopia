@@ -9,9 +9,10 @@ import {
   newTestRequest,
   truncateTables,
 } from '../test-util'
-import { loader } from '../routes/v1.project.$id'
+import { loader, action } from '../routes/v1.project.$id'
 import * as proxyServer from '../util/proxy.server'
 import * as permissionsService from '../services/permissionsService.server'
+import * as projectAccessModel from '../models/projectAccess.server'
 import { AccessLevel, UserProjectPermission } from '../types'
 import type { ApiResponse } from '../util/api.server'
 import { Status } from '../util/statusCodes'

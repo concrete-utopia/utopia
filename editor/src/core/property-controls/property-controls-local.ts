@@ -27,8 +27,9 @@ import type {
 } from '../../components/custom-code/code-file'
 import { dependenciesFromPackageJson } from '../../components/editor/npm-dependency/npm-dependency'
 import { parseControlDescription } from './property-controls-parser'
-import type { ParseResult } from '../../utils/value-parser-utils'
+import type { ParseError, ParseResult } from '../../utils/value-parser-utils'
 import {
+  getParseErrorDetails,
   objectKeyParser,
   optionalObjectKeyParser,
   parseAny,
@@ -44,9 +45,11 @@ import {
   applicative3Either,
   applicative4Either,
   applicative5Either,
+  defaultEither,
   foldEither,
   forEachRight,
   isLeft,
+  isRight,
   left,
   mapEither,
   right,
@@ -68,9 +71,15 @@ import { attemptToResolveParsedComponents } from '../../components/canvas/ui-jsx
 import { NO_OP } from '../shared/utils'
 import { createExecutionScope } from '../../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import type { EditorDispatch } from '../../components/editor/action-types'
-import { updatePropertyControlsInfo } from '../../components/editor/actions/action-creators'
+import {
+  setCodeEditorComponentDescriptorErrors,
+  updatePropertyControlsInfo,
+} from '../../components/editor/actions/action-creators'
 import type { ProjectContentTreeRoot } from '../../components/assets'
 import { isIntrinsicHTMLElement } from '../shared/element-template'
+import type { ErrorMessage } from '../shared/error-messages'
+import { errorMessage } from '../shared/error-messages'
+import { dropFileExtension } from '../shared/file-utils'
 
 async function parseInsertOption(
   insertOption: ComponentInsertOption,
@@ -95,6 +104,39 @@ async function parseInsertOption(
       importsToAdd: importsToAdd,
     }
   }, parsedParams)
+}
+
+const exportedNameSymbol = Symbol('__utopia__exportedName')
+const moduleNameSymbol = Symbol('__utopia__moduleName')
+
+export interface RequireInfo {
+  name: string
+  moduleName: string
+}
+
+export function getRequireInfoFromComponent(component: any): RequireInfo {
+  return {
+    name: component[exportedNameSymbol],
+    moduleName: component[moduleNameSymbol],
+  }
+}
+
+export function setRequireInfoOnComponent(exported: any, name: string, moduleName: string): void {
+  exported[exportedNameSymbol] = name
+  exported[moduleNameSymbol] = moduleName
+}
+
+function extendExportsWithInfo(exports: any, toImport: string): any {
+  Object.entries(exports).forEach(([name, exp]) => {
+    if (typeof exp === 'object' || typeof exp === 'function') {
+      try {
+        ;(exp as any)[exportedNameSymbol] = name
+        ;(exp as any)[moduleNameSymbol] = toImport
+        // eslint-disable-next-line no-empty
+      } catch (e) {}
+    }
+  })
+  return exports
 }
 
 export type ModuleEvaluator = (moduleName: string) => any
@@ -144,7 +186,7 @@ export function createModuleEvaluator(editor: EditorState): ModuleEvaluator {
         filePathResolveResult,
         null,
       )
-      return foldEither(
+      const result = foldEither(
         () => {
           // We did not find a ParseSuccess, fallback to standard require Fn
           return requireFn(importOrigin, toImport, false)
@@ -155,6 +197,8 @@ export function createModuleEvaluator(editor: EditorState): ModuleEvaluator {
         },
         resolvedParseSuccess,
       )
+      const absoluteFilenameOrPackage = defaultEither(toImport, filePathResolveResult)
+      return extendExportsWithInfo(result, absoluteFilenameOrPackage)
     }
     return createExecutionScope(
       moduleName,
@@ -178,34 +222,120 @@ export function createModuleEvaluator(editor: EditorState): ModuleEvaluator {
 export const isComponentDescriptorFile = (filename: string) =>
   filename.startsWith('/utopia/') && filename.endsWith('.utopia.js')
 
+type ComponentRegistrationValidationError =
+  | { type: 'component-undefined'; registrationKey: string }
+  | { type: 'component-name-does-not-match'; componentName: string; registrationKey: string }
+  | { type: 'module-name-does-not-match'; moduleName: string; moduleKey: string }
+
+function messageForComponentRegistrationValidationError(
+  error: ComponentRegistrationValidationError,
+): string {
+  switch (error.type) {
+    case 'component-name-does-not-match':
+      return `Component name (${error.componentName}) does not match the registration key (${error.registrationKey})`
+    case 'module-name-does-not-match':
+      return `Module name (${error.moduleName}) does not match the module key (${error.moduleKey})`
+    case 'component-undefined':
+      return `Component registered for key '${error.registrationKey}' is undefined`
+    default:
+      assertNever(error)
+  }
+}
+
+type ComponentRegistrationValidationResult =
+  | { type: 'valid' }
+  | ComponentRegistrationValidationError
+
+type ComponentDescriptorRegistrationError =
+  | { type: 'file-unparsed' }
+  | { type: 'file-parse-failure'; parseErrorMessages: ErrorMessage[] }
+  | { type: 'no-export-default' }
+  | { type: 'no-exported-component-descriptors' }
+  | { type: 'evaluation-error'; evaluationError: unknown }
+  | { type: 'invalid-schema'; invalidSchemaError: ParseError }
+  | { type: 'cannot-extract-component'; componentExtractionError: string }
+  | {
+      type: 'registration-validation-failed'
+      validationError: ComponentRegistrationValidationError
+    }
+
+interface ComponentDescriptorRegistrationResult {
+  descriptors: ComponentDescriptorWithName[]
+  errors: ComponentDescriptorRegistrationError[]
+}
+
 function isComponentRegistrationValid(
   registrationKey: string,
+  moduleKey: string,
   registration: ComponentToRegister,
-): boolean {
-  if (typeof registration.component === 'undefined') {
-    return false
+): ComponentRegistrationValidationResult {
+  const { component } = registration
+
+  if (typeof component === 'undefined') {
+    return { type: 'component-undefined', registrationKey: registrationKey }
   }
 
-  if (isComponentRendererComponent(registration.component)) {
-    return registration.component.originalName === registrationKey
+  // check validity of internal component
+  if (isComponentRendererComponent(component)) {
+    if (component.originalName !== registrationKey) {
+      return {
+        type: 'component-name-does-not-match',
+        registrationKey: registrationKey,
+        componentName: component.originalName ?? 'null',
+      }
+    }
+    const moduleName = dropFileExtension(component.filePath)
+    if (moduleName !== moduleKey) {
+      return {
+        type: 'module-name-does-not-match',
+        moduleKey: moduleKey,
+        moduleName: moduleName,
+      }
+    }
+    return { type: 'valid' }
   }
 
-  return true
+  // check validity of external component
+  const { name, moduleName } = getRequireInfoFromComponent(component)
+  if (name != null && name !== registrationKey) {
+    return {
+      type: 'component-name-does-not-match',
+      registrationKey: registrationKey,
+      componentName: name,
+    }
+  }
+  if (moduleName != null && moduleName !== moduleKey) {
+    return {
+      type: 'module-name-does-not-match',
+      moduleKey: moduleKey,
+      moduleName: moduleName,
+    }
+  }
+
+  return { type: 'valid' }
 }
 
 async function getComponentDescriptorPromisesFromParseResult(
   descriptorFile: ParsedTextFileWithPath,
   workers: UtopiaTsWorkers,
   evaluator: ModuleEvaluator,
-): Promise<ComponentDescriptorWithName[]> {
-  if (!isParseSuccess(descriptorFile.file)) {
-    return []
+): Promise<ComponentDescriptorRegistrationResult> {
+  if (descriptorFile.file.type === 'UNPARSED') {
+    return { descriptors: [], errors: [{ type: 'file-unparsed' }] }
   }
+
+  if (descriptorFile.file.type === 'PARSE_FAILURE') {
+    return {
+      descriptors: [],
+      errors: [
+        { type: 'file-parse-failure', parseErrorMessages: descriptorFile.file.errorMessages },
+      ],
+    }
+  }
+
   const exportDefaultIdentifier = descriptorFile.file.exportsDetail.find(isExportDefault)
   if (exportDefaultIdentifier?.name == null) {
-    // TODO: error handling
-    console.warn('No export default in descriptor file')
-    return []
+    return { descriptors: [], errors: [{ type: 'no-export-default' }] }
   }
 
   try {
@@ -214,45 +344,129 @@ async function getComponentDescriptorPromisesFromParseResult(
     const descriptors = evaluatedFile[exportDefaultIdentifier.name]
 
     if (descriptors == null) {
-      // TODO: error handling
-      console.warn('Could not find component descriptors in the descriptor file')
-      return []
+      return { descriptors: [], errors: [{ type: 'no-exported-component-descriptors' }] }
     }
 
     let result: ComponentDescriptorWithName[] = []
+    let errors: ComponentDescriptorRegistrationError[] = []
 
     for await (const [moduleName, descriptor] of Object.entries(descriptors)) {
       const parsedComponents = parseComponents(descriptor)
 
       if (parsedComponents.type === 'LEFT') {
+        errors.push({ type: 'invalid-schema', invalidSchemaError: parsedComponents.value })
         continue
       }
 
       for await (const [componentName, componentToRegister] of Object.entries(
         parsedComponents.value,
       )) {
-        // TODO: error handing
-        if (isComponentRegistrationValid(componentName, componentToRegister)) {
-          const componentDescriptor = await componentDescriptorForComponentToRegister(
-            componentToRegister,
-            componentName,
-            moduleName,
-            workers,
-            componentDescriptorFromDescriptorFile(descriptorFile.path),
-          )
+        const validationResult = isComponentRegistrationValid(
+          componentName,
+          moduleName,
+          componentToRegister,
+        )
+        if (validationResult.type !== 'valid') {
+          errors.push({ type: 'registration-validation-failed', validationError: validationResult })
+          continue
+        }
+        const componentDescriptor = await componentDescriptorForComponentToRegister(
+          componentToRegister,
+          componentName,
+          moduleName,
+          workers,
+          componentDescriptorFromDescriptorFile(descriptorFile.path),
+        )
 
-          if (componentDescriptor.type === 'RIGHT') {
+        switch (componentDescriptor.type) {
+          case 'LEFT':
+            errors.push({
+              type: 'cannot-extract-component',
+              componentExtractionError: componentDescriptor.value,
+            })
+            break
+          case 'RIGHT':
             result = result.concat(componentDescriptor.value)
-          }
+            break
+          default:
+            assertNever(componentDescriptor)
         }
       }
     }
-    return result
+    return { descriptors: result, errors: errors }
   } catch (e) {
-    // TODO: error handling
-    console.warn('Error evaluating component descriptor file', e)
-    return []
+    return { descriptors: [], errors: [{ type: 'evaluation-error', evaluationError: e }] }
   }
+}
+
+function simpleErrorMessage(fileName: string, error: string): ErrorMessage {
+  return errorMessage(
+    fileName,
+    null,
+    null,
+    null,
+    null,
+    '',
+    'warning',
+    '',
+    error,
+    '',
+    'component-descriptor',
+    null,
+  )
+}
+
+function errorsFromComponentRegistration(
+  fileName: string,
+  errors: ComponentDescriptorRegistrationError[],
+): ErrorMessage[] {
+  return errors.flatMap((error) => {
+    switch (error.type) {
+      case 'file-unparsed':
+        // we control whether a file is parsed or not, so this failure mode is not surfaced to users
+        return []
+      case 'file-parse-failure':
+        return error.parseErrorMessages
+      case 'evaluation-error':
+        return [
+          simpleErrorMessage(
+            fileName,
+            `Components file evaluation error: ${JSON.stringify(error.evaluationError)}`,
+          ),
+        ]
+      case 'no-export-default':
+        return [simpleErrorMessage(fileName, `Components file has no default export`)]
+      case 'no-exported-component-descriptors':
+        return [simpleErrorMessage(fileName, `Cannot extract default export from file`)]
+      case 'invalid-schema':
+        return [
+          simpleErrorMessage(
+            fileName,
+            `Malformed component registration: ${
+              getParseErrorDetails(error.invalidSchemaError).description
+            }`,
+          ),
+        ]
+      case 'cannot-extract-component':
+        return [
+          simpleErrorMessage(
+            fileName,
+            `Malformed component registration: ${error.componentExtractionError}`,
+          ),
+        ]
+      case 'registration-validation-failed':
+        return [
+          simpleErrorMessage(
+            fileName,
+            `Validation failed: ${messageForComponentRegistrationValidationError(
+              error.validationError,
+            )}`,
+          ),
+        ]
+      default:
+        assertNever(error)
+    }
+  })
 }
 
 export interface ParsedTextFileWithPath {
@@ -268,15 +482,13 @@ export async function maybeUpdatePropertyControls(
   evaluator: ModuleEvaluator,
 ) {
   let componentDescriptorUpdates: ComponentDescriptorFileLookup = {}
+  let errors: { [filename: string]: ErrorMessage[] } = {}
   await Promise.all(
     filesToUpdate.map(async (file) => {
-      const descriptors = await getComponentDescriptorPromisesFromParseResult(
-        file,
-        workers,
-        evaluator,
-      )
-      if (descriptors.length > 0) {
-        componentDescriptorUpdates[file.path] = descriptors
+      const result = await getComponentDescriptorPromisesFromParseResult(file, workers, evaluator)
+      errors[file.path] = errorsFromComponentRegistration(file.path, result.errors)
+      if (result.descriptors.length > 0) {
+        componentDescriptorUpdates[file.path] = result.descriptors
       }
     }),
   )
@@ -285,7 +497,10 @@ export async function maybeUpdatePropertyControls(
     previousPropertyControlsInfo,
     componentDescriptorUpdates,
   )
-  dispatch([updatePropertyControlsInfo(updatedPropertyControlsInfo)])
+  dispatch([
+    updatePropertyControlsInfo(updatedPropertyControlsInfo),
+    setCodeEditorComponentDescriptorErrors(errors),
+  ])
 }
 
 interface ComponentDescriptorFileLookup {
@@ -364,7 +579,10 @@ async function makePreferredChildDescriptor(
   moduleName: string,
   workers: UtopiaTsWorkers,
 ): Promise<Either<string, PreferredChildComponentDescriptor>> {
-  const allRequiredImports = `import { ${componentName} } from '${preferredChild.additionalImports}';`
+  const allRequiredImports =
+    preferredChild.additionalImports == null
+      ? ''
+      : `import { ${componentName} } from '${preferredChild.additionalImports}';`
 
   const parsedParams = await getCachedParseResultForUserStrings(
     workers,

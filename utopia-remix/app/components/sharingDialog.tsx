@@ -1,34 +1,44 @@
-import { Dialog, Flex, IconButton, Text, Button, DropdownMenu, Separator } from '@radix-ui/themes'
 import {
   CaretDownIcon,
+  CheckIcon,
+  ChevronDownIcon,
   Cross2Icon,
   GlobeIcon,
-  LockClosedIcon,
   Link2Icon,
+  LockClosedIcon,
+  MinusCircledIcon,
   PersonIcon,
 } from '@radix-ui/react-icons'
-import {
-  asAccessLevel,
-  operationApproveAccessRequest,
-  operationChangeAccess,
-  type ProjectListing,
-  AccessRequestStatus,
-  type ProjectAccessRequestWithUserDetails,
-} from '../types'
-import { AccessLevel } from '../types'
-import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
-import React from 'react'
-import { when } from '../util/react-conditionals'
-import moment from 'moment'
-import { useProjectEditorLink } from '../util/links'
-import { useCopyProjectLinkToClipboard } from '../util/copyProjectLink'
-import { useProjectsStore } from '../stores/projectsStore'
+import { Button, Dialog, DropdownMenu, Flex, IconButton, Separator, Text } from '@radix-ui/themes'
 import { AnimatePresence, motion } from 'framer-motion'
+import moment from 'moment'
+import React from 'react'
 import { useFetcherDataUnkown } from '../hooks/useFetcherData'
+import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
 import { useProjectAccessMatchesSelectedCategory } from '../hooks/useProjectMatchingCategory'
+import type {
+  SharingProjectAccessRequests,
+  SharingProjectAccessRequestsState,
+} from '../stores/projectsStore'
+import { useProjectsStore } from '../stores/projectsStore'
 import { sprinkles } from '../styles/sprinkles.css'
-import { Spinner } from './spinner'
+import type { ProjectSharingDetails, UpdateAccessRequestAction } from '../types'
+import {
+  AccessLevel,
+  AccessRequestStatus,
+  asAccessLevel,
+  mustAccessRequestStatus,
+  operationChangeAccess,
+  operationUpdateAccessRequest,
+  type ProjectAccessRequestWithUserDetails,
+  type ProjectListing,
+} from '../types'
+import { assertNever } from '../util/assertNever'
+import { useCopyProjectLinkToClipboard } from '../util/copyProjectLink'
 import { isLikeApiError } from '../util/errors'
+import { useProjectEditorLink } from '../util/links'
+import { unless, when } from '../util/react-conditionals'
+import { Spinner } from './spinner'
 import { UserAvatar } from './userAvatar'
 
 export const SharingDialogWrapper = React.memo(
@@ -46,10 +56,12 @@ export const SharingDialogWrapper = React.memo(
       [setSharingProjectId],
     )
 
+    const accessRequests = useProjectsStore((store) => store.sharingProjectAccessRequests)
+
     return (
       <Dialog.Root open={sharingProjectId === project?.proj_id} onOpenChange={onOpenChange}>
         <Dialog.Content>
-          <SharingDialog project={project} />
+          <SharingDialog project={project} accessRequests={accessRequests} />
         </Dialog.Content>
       </Dialog.Root>
     )
@@ -57,9 +69,14 @@ export const SharingDialogWrapper = React.memo(
 )
 SharingDialogWrapper.displayName = 'SharingDialogWrapper'
 
-function SharingDialog({ project }: { project: ProjectListing | null }) {
+type SharingDialogProps = {
+  project: ProjectListing | null
+  accessRequests: SharingProjectAccessRequests
+}
+
+export const SharingDialog = React.memo((props: SharingDialogProps) => {
+  const { project, accessRequests } = props
   const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
-  const accessRequests = useProjectsStore((store) => store.sharingProjectAccessRequests)
 
   const projectAccessLevel = React.useMemo(() => {
     return asAccessLevel(project?.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
@@ -67,7 +84,9 @@ function SharingDialog({ project }: { project: ProjectListing | null }) {
 
   const [accessLevel, setAccessLevel] = React.useState<AccessLevel>(projectAccessLevel)
 
-  const projectAccessMatchesSelectedCategory = useProjectAccessMatchesSelectedCategory(project)
+  const projectAccessMatchesSelectedCategory = useProjectAccessMatchesSelectedCategory(
+    asAccessLevel(project?.ProjectAccess?.access_level),
+  )
 
   const changeAccessFetcherCallback = React.useCallback(
     (data: unknown) => {
@@ -104,40 +123,74 @@ function SharingDialog({ project }: { project: ProjectListing | null }) {
   }
 
   return (
-    <Flex direction='column' style={{ gap: 20 }}>
-      <Flex justify='between' align='center'>
-        <Flex align={'center'} gap='2'>
-          <Text size='3'>Project Sharing</Text>
-          <AnimatePresence>
-            {when(
-              accessRequests.state === 'loading',
-              <motion.div style={{ opacity: 0.1 }} exit={{ opacity: 0 }}>
-                <Spinner className={sprinkles({ backgroundColor: 'black' })} />
-              </motion.div>,
-            )}
-          </AnimatePresence>
-        </Flex>
-        <Dialog.Close>
-          <IconButton variant='ghost' color='gray'>
-            <Cross2Icon width='18' height='18' />
-          </IconButton>
-        </Dialog.Close>
-      </Flex>
-      <Flex justify='between'>
-        <Text size='1'>Project Visibility</Text>
-        <VisibilityDropdown
-          accessLevel={accessLevel}
-          changeProjectAccessLevel={changeProjectAccessLevel}
-        />
-      </Flex>
-      {when(
-        accessLevel === AccessLevel.COLLABORATIVE || accessLevel === AccessLevel.PUBLIC,
-        <ProjectLink projectId={project.proj_id} />,
-      )}
-      <AccessRequestsList projectId={project.proj_id} accessLevel={accessLevel} />
-    </Flex>
+    <SharingDialogContent
+      project={{ ...project, ProjectAccessRequest: accessRequests.requests }}
+      accessRequestsState={accessRequests.state}
+      accessLevel={accessLevel}
+      changeProjectAccessLevel={changeProjectAccessLevel}
+      asDialog={true}
+    />
   )
-}
+})
+SharingDialog.displayName = 'SharingDialog'
+
+export const SharingDialogContent = React.memo(
+  ({
+    project,
+    accessRequestsState,
+    accessLevel,
+    changeProjectAccessLevel,
+    asDialog,
+  }: {
+    project: ProjectSharingDetails
+    accessRequestsState: SharingProjectAccessRequestsState
+    accessLevel: AccessLevel
+    changeProjectAccessLevel: (newAccessLevel: AccessLevel) => void
+    asDialog: boolean
+  }) => {
+    return (
+      <Flex direction='column' style={{ maxHeight: '75vh', padding: asDialog ? 0 : 14 }} gap='4'>
+        <Flex direction='column' gap='4'>
+          <Flex justify='between' align='center' gap='2'>
+            <Flex align={'center'} gap='2'>
+              <Text size='3'>Project Sharing</Text>
+              <AnimatePresence>
+                {when(
+                  accessRequestsState === 'loading',
+                  <motion.div style={{ opacity: 0.1 }} exit={{ opacity: 0 }}>
+                    <Spinner className={sprinkles({ backgroundColor: 'black' })} />
+                  </motion.div>,
+                )}
+              </AnimatePresence>
+            </Flex>
+            {when(
+              asDialog,
+              <Dialog.Close>
+                <IconButton variant='ghost' color='gray'>
+                  <Cross2Icon width='18' height='18' />
+                </IconButton>
+              </Dialog.Close>,
+            )}
+          </Flex>
+          <Flex justify='between' align='center' style={{ paddingTop: 4 }}>
+            <Text size='1'>Project Visibility</Text>
+            <VisibilityDropdown
+              accessLevel={accessLevel}
+              changeProjectAccessLevel={changeProjectAccessLevel}
+            />
+          </Flex>
+          {when(
+            accessLevel === AccessLevel.COLLABORATIVE || accessLevel === AccessLevel.PUBLIC,
+            <ProjectLink projectId={project.proj_id} />,
+          )}
+        </Flex>
+        <Separator size='4' />
+        <AccessRequestsList projectId={project.proj_id} accessLevel={accessLevel} />
+      </Flex>
+    )
+  },
+)
+SharingDialogContent.displayName = 'SharingDialogContent'
 
 type AccessRequestListProps = {
   projectId: string
@@ -146,22 +199,6 @@ type AccessRequestListProps = {
 
 const AccessRequestsList = React.memo(({ projectId, accessLevel }: AccessRequestListProps) => {
   const accessRequests = useProjectsStore((store) => store.sharingProjectAccessRequests)
-
-  const approveAccessRequestFetcher = useFetcherWithOperation(projectId, 'approveAccessRequest')
-
-  const approveAccessRequest = React.useCallback(
-    (tokenId: string) => {
-      approveAccessRequestFetcher.submit(
-        operationApproveAccessRequest(projectId, tokenId),
-        { tokenId: tokenId },
-        {
-          method: 'POST',
-          action: `/internal/projects/${projectId}/access/request/${tokenId}/approve`,
-        },
-      )
-    },
-    [approveAccessRequestFetcher, projectId],
-  )
 
   const hasGonePrivate = React.useMemo(() => {
     return accessRequests.requests.length > 0 && accessLevel === AccessLevel.PRIVATE
@@ -173,10 +210,8 @@ const AccessRequestsList = React.memo(({ projectId, accessLevel }: AccessRequest
 
   return (
     <AnimatePresence>
-      <motion.div>
-        <Flex direction={'column'} gap='4'>
-          <Separator size='4' />
-
+      <motion.div style={{ flex: '1 1' }}>
+        <Flex direction={'column'} gap='4' style={{}}>
           {when(hasGonePrivate, <HasGonePrivate />)}
 
           <OwnerCollaboratorRow />
@@ -192,7 +227,6 @@ const AccessRequestsList = React.memo(({ projectId, accessLevel }: AccessRequest
                 <AccessRequests
                   projectId={projectId}
                   projectAccessLevel={accessLevel}
-                  approveAccessRequest={approveAccessRequest}
                   accessRequests={accessRequests.requests}
                 />
               </Flex>
@@ -222,8 +256,8 @@ const OwnerCollaboratorRow = React.memo(() => {
 
   return (
     <CollaboratorRow
-      picture={myUser?.picture ?? null}
-      name={`${myUser?.name ?? myUser?.email ?? myUser?.id} (you)`}
+      picture={myUser.picture ?? null}
+      name={`${myUser.name ?? myUser.email ?? myUser.id} (you)`}
       starBadge={true}
     >
       <Text size='1' style={{ cursor: 'default' }}>
@@ -234,23 +268,58 @@ const OwnerCollaboratorRow = React.memo(() => {
 })
 OwnerCollaboratorRow.displayName = 'OwnerCollaboratorRow'
 
-function AccessRequests({
-  projectId,
-  projectAccessLevel,
-  approveAccessRequest,
-  accessRequests,
-}: {
+function AccessRequests(props: {
   projectId: string
   projectAccessLevel: AccessLevel
-  approveAccessRequest: (projectId: string, tokenId: string) => void
   accessRequests: ProjectAccessRequestWithUserDetails[]
 }) {
-  const onApprove = React.useCallback(
-    (token: string) => () => {
-      approveAccessRequest(projectId, token)
+  const { projectId, projectAccessLevel } = props
+
+  // the access requests, including in-flight optimistic statuses
+  const [accessRequests, setAccessRequests] = React.useState(props.accessRequests)
+  // the last successfully-obtained access requests that can be used to roll-back in case of issues when updating requests
+  const [previousAccessRequests, setPreviousAccessRequests] = React.useState(props.accessRequests)
+
+  const updateAccessRequestFetcher = useFetcherWithOperation(projectId, 'updateAccessRequest')
+  const onUpdateAccessRequest = React.useCallback(
+    (token: string, action: UpdateAccessRequestAction) => () => {
+      setPreviousAccessRequests(accessRequests)
+      setAccessRequests((reqs) => {
+        switch (action) {
+          case 'destroy':
+            return reqs.filter((r) => r.token !== token)
+          case 'approve':
+            return reqs.map((r) =>
+              r.token === token ? { ...r, status: AccessRequestStatus.APPROVED } : r,
+            )
+          case 'reject':
+            return reqs.map((r) =>
+              r.token === token ? { ...r, status: AccessRequestStatus.REJECTED } : r,
+            )
+          default:
+            assertNever(action)
+        }
+      })
+      updateAccessRequestFetcher.submit(
+        operationUpdateAccessRequest(projectId, token, action),
+        { tokenId: token },
+        {
+          method: 'POST',
+          action: `/internal/projects/${projectId}/access/request/${token}/${action}`,
+        },
+      )
     },
-    [projectId, approveAccessRequest],
+    [updateAccessRequestFetcher, projectId, accessRequests],
   )
+  const resetAccessRequests = React.useCallback(
+    (data: unknown) => {
+      if (isLikeApiError(data)) {
+        setAccessRequests(previousAccessRequests)
+      }
+    },
+    [previousAccessRequests],
+  )
+  useFetcherDataUnkown(updateAccessRequestFetcher, resetAccessRequests)
 
   const isCollaborative = React.useMemo(() => {
     return projectAccessLevel === AccessLevel.COLLABORATIVE
@@ -258,10 +327,7 @@ function AccessRequests({
 
   return accessRequests
     .sort((a, b) => {
-      if (a.status !== b.status) {
-        return a.status - b.status
-      }
-      return moment(a.updated_at).unix() - moment(b.updated_at).unix()
+      return moment(a.created_at).unix() - moment(b.created_at).unix()
     })
     .map((request) => {
       const user = request.User
@@ -269,43 +335,110 @@ function AccessRequests({
         return null
       }
 
-      const status = request.status
-      const canBeApproved = isCollaborative && status === AccessRequestStatus.PENDING
-      const color =
-        status === AccessRequestStatus.PENDING
-          ? 'gray'
-          : status === AccessRequestStatus.APPROVED
-          ? 'green'
-          : 'red'
+      const status = mustAccessRequestStatus(request.status)
+
       return (
         <CollaboratorRow
-          key={request.token}
+          key={`collaborator-${request.token}`}
           picture={user.picture}
           name={user.name ?? user.email ?? user.user_id}
           isDisabled={!isCollaborative}
         >
-          {canBeApproved ? (
-            <Button size='1' variant='ghost' onClick={onApprove(request.token)}>
-              Approve
-            </Button>
-          ) : (
+          {when(
+            isCollaborative,
+            <AccessRequestDropdown
+              status={request.status}
+              onApprove={onUpdateAccessRequest(request.token, 'approve')}
+              onReject={onUpdateAccessRequest(request.token, 'reject')}
+              onDestroy={onUpdateAccessRequest(request.token, 'destroy')}
+            />,
+          )}
+          {unless(
+            isCollaborative,
             <Text
               size='1'
-              color={color}
               style={{
-                fontStyle: !isCollaborative ? 'italic' : 'normal',
                 cursor: 'default',
+                fontStyle: !isCollaborative ? 'italic' : 'normal',
               }}
             >
               {when(status === AccessRequestStatus.PENDING, 'Pending')}
-              {when(status === AccessRequestStatus.APPROVED, 'Approved')}
-              {when(status === AccessRequestStatus.REJECTED, 'Rejected')}
-            </Text>
+              {when(status === AccessRequestStatus.APPROVED, 'Collaborator')}
+              {when(status === AccessRequestStatus.REJECTED, 'Blocked')}
+            </Text>,
           )}
         </CollaboratorRow>
       )
     })
 }
+
+const AccessRequestDropdown = React.memo(
+  ({
+    status,
+    onApprove,
+    onReject,
+    onDestroy,
+  }: {
+    status: AccessRequestStatus
+    onApprove: () => void
+    onReject: () => void
+    onDestroy: () => void
+  }) => {
+    return (
+      <DropdownMenu.Root>
+        <DropdownMenu.Trigger>
+          {/* this needs to be inlined (and as a ternary) because DropdownMenu.Trigger requires a direct single child */}
+          {status === AccessRequestStatus.PENDING ? (
+            <Button size='1' color='amber' radius='full'>
+              Requests Access
+              <ChevronDownIcon />
+            </Button>
+          ) : status === AccessRequestStatus.APPROVED ? (
+            <Button size='1' radius='medium' variant='ghost' color='gray' highContrast={true}>
+              Collaborator
+              <ChevronDownIcon />
+            </Button>
+          ) : status === AccessRequestStatus.REJECTED ? (
+            <Button size='1' radius='medium' variant='ghost' color='red'>
+              Denied Access
+              <ChevronDownIcon />
+            </Button>
+          ) : null}
+        </DropdownMenu.Trigger>
+        <DropdownMenu.Content>
+          {when(
+            status !== AccessRequestStatus.REJECTED,
+            <DropdownMenu.Item style={{ height: 28 }} color={'red'} onClick={onReject}>
+              <Flex align='center' gap='2'>
+                <Cross2Icon />
+                <Text size='1'>Block</Text>
+              </Flex>
+            </DropdownMenu.Item>,
+          )}
+          {when(
+            status !== AccessRequestStatus.APPROVED,
+            <DropdownMenu.Item style={{ height: 28 }} onClick={onApprove}>
+              <Flex align='center' gap='2'>
+                <CheckIcon />
+                <Text size='1'>Allow To Collaborate</Text>
+              </Flex>
+            </DropdownMenu.Item>,
+          )}
+          <DropdownMenu.Separator />
+          <DropdownMenu.Item style={{ height: 28 }} color='gray' onClick={onDestroy}>
+            <Flex align='center' gap='2'>
+              <MinusCircledIcon />
+              <Text size='1'>
+                {status === AccessRequestStatus.PENDING ? 'Delete Request' : 'Remove From Project'}
+              </Text>
+            </Flex>
+          </DropdownMenu.Item>
+        </DropdownMenu.Content>
+      </DropdownMenu.Root>
+    )
+  },
+)
+AccessRequestDropdown.displayName = 'AccessRequestDropdown'
 
 const CollaboratorRow = React.memo(
   ({
@@ -366,6 +499,15 @@ function VisibilityDropdown({
   accessLevel: AccessLevel
   changeProjectAccessLevel: (newAccessLevel: AccessLevel) => void
 }) {
+  const onCheckedChange = React.useCallback(
+    (newLevel: AccessLevel) => () => {
+      if (accessLevel === newLevel) {
+        return
+      }
+      changeProjectAccessLevel(newLevel)
+    },
+    [changeProjectAccessLevel, accessLevel],
+  )
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger>
@@ -382,20 +524,13 @@ function VisibilityDropdown({
       </DropdownMenu.Trigger>
       <DropdownMenu.Content>
         {[AccessLevel.PUBLIC, AccessLevel.PRIVATE, AccessLevel.COLLABORATIVE].map((level) => {
-          function onCheckedChange() {
-            if (accessLevel === level) {
-              return
-            }
-            changeProjectAccessLevel(level)
-          }
           return (
             <DropdownMenu.CheckboxItem
               key={level}
               style={{ height: 28, fontSize: 12, paddingLeft: 30 }}
               checked={accessLevel === level}
               disabled={accessLevel === level}
-              // eslint-disable-next-line react/jsx-no-bind
-              onCheckedChange={onCheckedChange}
+              onCheckedChange={onCheckedChange(level)}
             >
               {VisibilityUIComponents[level].text}
             </DropdownMenu.CheckboxItem>

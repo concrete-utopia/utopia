@@ -174,6 +174,26 @@ export function jsxAttributeNotFound(): JSXAttributeNotFound {
   }
 }
 
+export interface JSArbitraryStatement {
+  type: 'JS_ARBITRARY_STATEMENT'
+  originalJavascript: string
+  definedWithin: Array<string>
+  definedElsewhere: Array<string>
+}
+
+export function jsArbitraryStatement(
+  originalJavascript: string,
+  definedWithin: Array<string>,
+  definedElsewhere: Array<string>,
+): JSArbitraryStatement {
+  return {
+    type: 'JS_ARBITRARY_STATEMENT',
+    originalJavascript: originalJavascript,
+    definedWithin: definedWithin,
+    definedElsewhere: definedElsewhere,
+  }
+}
+
 export interface JSExpressionOtherJavaScript extends WithComments, WithElementsWithin {
   type: 'ATTRIBUTE_OTHER_JAVASCRIPT'
   params: Array<Param>
@@ -182,6 +202,7 @@ export interface JSExpressionOtherJavaScript extends WithComments, WithElementsW
   transpiledJavascript: string
   definedElsewhere: Array<string>
   sourceMap: RawSourceMap | null
+  statements: Array<JSArbitraryStatement>
   uid: string
 }
 
@@ -194,6 +215,7 @@ export function jsExpressionOtherJavaScript(
   sourceMap: RawSourceMap | null,
   elementsWithin: ElementsWithin,
   comments: ParsedComments,
+  statements: Array<JSArbitraryStatement>,
   uid: string = UUID(),
 ): JSExpressionOtherJavaScript {
   return {
@@ -207,6 +229,7 @@ export function jsExpressionOtherJavaScript(
     uid: uid,
     comments: comments,
     elementsWithin: elementsWithin,
+    statements: statements,
   }
 }
 
@@ -223,6 +246,7 @@ export function jsExpressionOtherJavaScriptSimple(
     null,
     {},
     emptyComments,
+    [],
   )
 }
 
@@ -1934,6 +1958,7 @@ export function arbitraryJSBlock(
   definedElsewhere: Array<string>,
   sourceMap: RawSourceMap | null,
   elementsWithin: ElementsWithin,
+  statements: Array<JSArbitraryStatement>,
   uid: string = UUID(),
 ): ArbitraryJSBlock {
   return {
@@ -1946,6 +1971,7 @@ export function arbitraryJSBlock(
     sourceMap: sourceMap,
     uid: uid,
     elementsWithin: elementsWithin,
+    statements: statements,
   }
 }
 
@@ -2168,6 +2194,7 @@ export type ArbitraryJSBlock = {
   definedWithin: Array<string>
   definedElsewhere: Array<string>
   sourceMap: RawSourceMap | null
+  statements: Array<JSArbitraryStatement>
   uid: string
 } & WithElementsWithin
 
@@ -2362,6 +2389,44 @@ export function createNotImported(path: string, variableName: string): ImportInf
 export type ActiveAndDefaultConditionValues = { active: boolean; default: boolean }
 export type ConditionValue = ActiveAndDefaultConditionValues | 'not-a-conditional'
 
+export interface EarlyReturnVoid {
+  type: 'EARLY_RETURN_VOID'
+}
+
+export function earlyReturnVoid(): EarlyReturnVoid {
+  return {
+    type: 'EARLY_RETURN_VOID',
+  }
+}
+
+export interface EarlyReturnResult {
+  type: 'EARLY_RETURN_RESULT'
+  result: unknown
+}
+
+export function earlyReturnResult(result: unknown): EarlyReturnResult {
+  return {
+    type: 'EARLY_RETURN_RESULT',
+    result: result,
+  }
+}
+
+export interface ArbitraryBlockRanToEnd {
+  type: 'ARBITRARY_BLOCK_RAN_TO_END'
+  scope: MapLike<unknown>
+}
+
+export function arbitraryBlockRanToEnd(scope: MapLike<unknown>): ArbitraryBlockRanToEnd {
+  return {
+    type: 'ARBITRARY_BLOCK_RAN_TO_END',
+    scope: scope,
+  }
+}
+
+export type EarlyReturn = EarlyReturnVoid | EarlyReturnResult
+
+export type ArbitraryBlockResult = EarlyReturn | ArbitraryBlockRanToEnd
+
 export interface ElementInstanceMetadata {
   elementPath: ElementPath
   element: Either<string, JSXElementChild>
@@ -2377,6 +2442,7 @@ export interface ElementInstanceMetadata {
   importInfo: ImportInfo | null
   conditionValue: ConditionValue
   textContent: string | null
+  earlyReturn: EarlyReturn | null
 }
 
 export function elementInstanceMetadata(
@@ -2394,6 +2460,7 @@ export function elementInstanceMetadata(
   importInfo: ImportInfo | null,
   conditionValue: ConditionValue,
   textContent: string | null,
+  earlyReturn: EarlyReturnResult | EarlyReturnVoid | null,
 ): ElementInstanceMetadata {
   return {
     elementPath: elementPath,
@@ -2410,6 +2477,7 @@ export function elementInstanceMetadata(
     importInfo: importInfo,
     conditionValue: conditionValue,
     textContent: textContent,
+    earlyReturn: earlyReturn,
   }
 }
 
