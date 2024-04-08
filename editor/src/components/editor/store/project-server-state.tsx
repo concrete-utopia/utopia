@@ -4,7 +4,7 @@ import { fetchProjectMetadata } from '../../../common/server'
 import type { EditorDispatch } from '../action-types'
 import { updateProjectServerState } from '../actions/action-creators'
 import { checkProjectOwned, projectIsStoredLocally } from '../persistence/persistence-backend'
-import type { ProjectOwnership } from '../persistence/generic/persistence-types'
+import type { ProjectAccess, ProjectOwnership } from '../persistence/generic/persistence-types'
 import { CollaborationEndpoints } from '../collaborative-endpoints'
 
 export interface ProjectMetadataFromServer {
@@ -12,7 +12,7 @@ export interface ProjectMetadataFromServer {
   ownerName: string | null
   ownerPicture: string | null
   hasPendingRequests?: boolean
-  access?: 'private' | 'public' | 'with-link' | 'collaborative'
+  access?: ProjectAccess
 }
 
 export function projectMetadataFromServer(
@@ -20,7 +20,7 @@ export function projectMetadataFromServer(
   ownerName: string | null,
   ownerPicture: string | null,
   hasPendingRequests?: boolean,
-  access?: 'private' | 'public' | 'with-link' | 'collaborative',
+  access?: ProjectAccess,
 ): ProjectMetadataFromServer {
   return {
     title: title,

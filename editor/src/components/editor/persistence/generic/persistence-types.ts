@@ -96,6 +96,8 @@ export type ProjectOwnership = {
   isOwner: boolean
 }
 
+export type ProjectAccess = 'private' | 'public' | 'with-link' | 'collaborative'
+
 export interface PersistenceBackendAPI<ModelType, FileType> {
   getNewProjectId: () => Promise<string>
   checkProjectOwned: (loggedIn: boolean, projectId: string) => Promise<ProjectOwnership>

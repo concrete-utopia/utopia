@@ -1,5 +1,6 @@
 import localforage from 'localforage'
 import { deleteProjectFromServer } from './server'
+import type { ProjectAccess } from '../components/editor/persistence/generic/persistence-types'
 
 export interface ProjectListing {
   id: string
@@ -11,7 +12,7 @@ export interface ProjectListing {
   modifiedAt: string
   thumbnail: string
   hasPendingRequests?: boolean
-  access?: 'private' | 'public' | 'with-link' | 'collaborative'
+  access?: ProjectAccess
 }
 
 export const LOCAL_PROJECT_PREFIX = 'local-project-'
