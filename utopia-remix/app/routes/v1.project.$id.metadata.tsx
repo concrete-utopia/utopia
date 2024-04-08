@@ -25,7 +25,7 @@ export async function handleGetMetadata(req: Request, params: Params<string>) {
 
   const metadataProxyResponse = await proxy(req)
 
-  // if the resopnse is a valid v1 metadata, enrich it with
+  // if the response is a valid v1 metadata, enrich it with
   // the extra data.
   if (isProjectMetadataV1(metadataProxyResponse)) {
     const user = await requireUser(req)
