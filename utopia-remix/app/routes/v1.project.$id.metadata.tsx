@@ -1,10 +1,10 @@
 import type { LoaderFunctionArgs } from '@remix-run/node'
 import { proxy } from '../util/proxy.server'
-import { ensure, getUser, handle, handleOptions } from '../util/api.server'
+import { ensure, handle, handleOptions, requireUser } from '../util/api.server'
 import { validateProjectAccess } from '../handlers/validators'
 import { UserProjectPermission, isProjectMetadataV1 } from '../types'
 import type { Params } from '@remix-run/react'
-import { getProjectMetadataForEditor } from '../models/project.server'
+import { getProjectExtraMetadataForEditor } from '../models/project.server'
 import { Status } from '../util/statusCodes'
 
 export async function loader(args: LoaderFunctionArgs) {
@@ -25,9 +25,9 @@ export async function handleGetMetadata(req: Request, params: Params<string>) {
 
   const metadataProxyResponse = await proxy(req)
 
-  const user = await getUser(req)
-  if (user != null && isProjectMetadataV1(metadataProxyResponse)) {
-    const meta = await getProjectMetadataForEditor({
+  const user = await requireUser(req)
+  if (isProjectMetadataV1(metadataProxyResponse)) {
+    const meta = await getProjectExtraMetadataForEditor({
       projectId: projectdId,
       userId: user.user_id,
     })
@@ -38,5 +38,6 @@ export async function handleGetMetadata(req: Request, params: Params<string>) {
       }
     }
   }
+
   return metadataProxyResponse
 }

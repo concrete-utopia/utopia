@@ -265,7 +265,7 @@ export async function updateGithubRepository(params: {
   })
 }
 
-export async function getProjectMetadataForEditor(params: {
+export async function getProjectExtraMetadataForEditor(params: {
   projectId: string
   userId: string
 }): Promise<ProjectMetadataForEditor | null> {
