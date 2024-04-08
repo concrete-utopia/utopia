@@ -9,13 +9,16 @@ import {
   newTestRequest,
   truncateTables,
 } from '../test-util'
-import type { ApiResponse } from '../util/api.server'
+import { type ApiResponse } from '../util/api.server'
 import { prisma } from '../db.server'
 import { AccessRequestStatus } from '../types'
 import * as proxyUtil from '../util/proxy.server'
+import * as validators from '../handlers/validators'
 
 describe('v1.project.$id.metadata', () => {
   let proxyMock: jest.SpyInstance
+  let validatorMock: jest.SpyInstance
+
   afterEach(async () => {
     await truncateTables([
       prisma.projectID,
@@ -26,6 +29,7 @@ describe('v1.project.$id.metadata', () => {
       prisma.userDetails,
     ])
     proxyMock.mockRestore()
+    validatorMock.mockRestore()
   })
 
   beforeEach(async () => {
@@ -40,8 +44,10 @@ describe('v1.project.$id.metadata', () => {
       token: 't1',
     })
     await createTestSession(prisma, { userId: 'bob', key: 'bob-key' })
+    await createTestSession(prisma, { userId: 'alice', key: 'alice-key' })
 
     proxyMock = jest.spyOn(proxyUtil, 'proxy')
+    validatorMock = jest.spyOn(validators, 'validateProjectAccess')
   })
 
   it('requires a valid project id', async () => {
@@ -83,7 +89,7 @@ describe('v1.project.$id.metadata', () => {
     expect(got).toEqual('hey there')
   })
 
-  it('enriches the metadata with the extras', async () => {
+  it('enriches the metadata with the extras if the user owns the project', async () => {
     proxyMock.mockResolvedValue({ id: 'one', title: 'project one' })
     let got = await getLoaderResult(
       newTestRequest({
@@ -103,6 +109,20 @@ describe('v1.project.$id.metadata', () => {
       { id: 'two' },
     )
     expect(got).toEqual({ id: 'two', title: 'project two', hasPendingRequests: false })
+  })
+
+  it('returns the vanilla metadata if the user does not own the project', async () => {
+    proxyMock.mockResolvedValue({ id: 'one', title: 'project one' })
+    validatorMock.mockImplementation(() => validators.ALLOW)
+
+    let got = await getLoaderResult(
+      newTestRequest({
+        method: 'GET',
+        authCookie: 'alice-key',
+      }),
+      { id: 'one' },
+    )
+    expect(got).toEqual({ id: 'one', title: 'project one' })
   })
 })
 
