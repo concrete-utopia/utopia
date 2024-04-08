@@ -1,6 +1,5 @@
 import { Popover, Transition } from '@headlessui/react'
 import React, { Fragment } from 'react'
-import { CookieConsent, getCookieConsentValue } from 'react-cookie-consent'
 import { useCDNLink } from '../util/cdnLink'
 
 const mainNavigation = [
@@ -38,9 +37,6 @@ export function Menu() {
                     padding: '6px 20px',
                     borderRadius: 4,
                   }}
-                  onMouseDown={() =>
-                    gtag('event', 'navigate', { category: 'links', label: item.href, value: 1 })
-                  }
                 >
                   {item.name}
                 </a>
@@ -264,9 +260,6 @@ export const ContactUs = () => (
           key={`contact-us-nav-${index}`}
           href={item.href}
           className='block px-6 py-2 rounded-md text-body hover:text-gray-900 hover:bg-gray-50 text-center'
-          onMouseDown={() =>
-            gtag('event', 'navigate', { category: 'links', label: item.href, value: 1 })
-          }
         >
           {item.name}
         </a>
@@ -274,36 +267,6 @@ export const ContactUs = () => (
     </div>
   </>
 )
-
-declare function gtag(...args: any): void
-
-function enableCookies() {
-  gtag('consent', 'update', {
-    analytics_storage: 'granted',
-  })
-}
-
-export const CookieConsentBar = () => {
-  if (getCookieConsentValue() === 'true') {
-    enableCookies()
-  }
-
-  return (
-    <CookieConsent
-      location='bottom'
-      style={{ background: '#383C4A', fontSize: '13px' }}
-      buttonStyle={{
-        color: '#383C4A',
-        fontSize: '13px',
-        borderRadius: 5,
-        backgroundColor: '#00FC00',
-      }}
-      onAccept={enableCookies}
-    >
-      This website uses cookies to enhance the user experience.
-    </CookieConsent>
-  )
-}
 
 type HostedImageProps = React.DetailedHTMLProps<
   React.ImgHTMLAttributes<HTMLImageElement>,
