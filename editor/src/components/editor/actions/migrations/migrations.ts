@@ -31,7 +31,7 @@ import {
 } from '../../../assets'
 import { isUtopiaJSXComponent } from '../../../../core/shared/element-template'
 
-export const CURRENT_PROJECT_VERSION = 14
+export const CURRENT_PROJECT_VERSION = 15
 
 export function applyMigrations(
   persistentModel: PersistentModel,
@@ -50,7 +50,8 @@ export function applyMigrations(
   const version12 = migrateFromVersion11(version11)
   const version13 = migrateFromVersion12(version12)
   const version14 = migrateFromVersion13(version13)
-  return version14
+  const version15 = migrateFromVersion14(version14)
+  return version15
 }
 
 function migrateFromVersion0(
@@ -467,6 +468,23 @@ function migrateFromVersion13(
           }
         },
       ),
+    }
+  }
+}
+
+function migrateFromVersion14(
+  persistentModel: PersistentModel,
+): PersistentModel & { projectVersion: 15 } {
+  if (persistentModel.projectVersion != null && persistentModel.projectVersion !== 13) {
+    return persistentModel as any
+  } else {
+    return {
+      ...persistentModel,
+      projectVersion: 15,
+      codeEditorErrors: {
+        ...persistentModel.codeEditorErrors,
+        componentDescriptorErrors: persistentModel.codeEditorErrors.componentDescriptorErrors ?? {},
+      },
     }
   }
 }
