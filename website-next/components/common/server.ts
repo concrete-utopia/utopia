@@ -6,6 +6,7 @@ import {
   BASE_URL,
   IS_TEST_ENVIRONMENT,
   DEVELOPMENT_ENV,
+  UTOPIA_BACKEND_BASE_URL,
 } from './env-vars'
 import type { ProjectListing } from './persistence'
 import type { LoginState } from './user'
@@ -288,4 +289,8 @@ export async function deleteProjectFromServer(projectId: string): Promise<void> 
       `Failed to delete project ${projectId} (${response.status}): ${response.statusText}`,
     )
   }
+}
+
+export function editorShareDialogIframeUrl(projectId: string): string {
+  return urljoin(UTOPIA_BACKEND_BASE_URL, `/internal/editor/projects/${projectId}/sharing`)
 }

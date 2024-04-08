@@ -52,6 +52,7 @@ import {
   getDefinedElsewhereFromAttribute,
   isJSIdentifier,
   jsxFragment,
+  jsArbitraryStatement,
 } from './element-template'
 import { resolveParamsAndRunJsCode } from './javascript-cache'
 import type {
@@ -172,6 +173,7 @@ export function jsxAttributeToValue(
         attribute.sourceMap,
         {},
         attribute.comments,
+        [jsArbitraryStatement(originalJavascript, [], [])],
         attribute.uid,
       )
       return resolveParamsAndRunJsCode(

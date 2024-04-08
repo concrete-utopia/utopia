@@ -24,7 +24,9 @@ export async function getProjectForEditor(req: Request, params: Params<string>) 
   const validatorResult = await validator(req, params)
   if (validatorResult.ok) {
     const url = new URL(req.url)
-    throw redirect(`/p/${params.id}${url.search}`)
+    return redirect(`/p/${params.id}${url.search}`, {
+      headers: { 'cache-control': 'no-cache' },
+    })
   }
   const error = validatorResult.error as ApiError
   if (error.status === Status.NOT_FOUND) {

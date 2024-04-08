@@ -137,6 +137,7 @@ import type {
   OptionallyChained,
   EarlyReturnResult,
   EarlyReturnVoid,
+  JSArbitraryStatement,
 } from '../../../core/shared/element-template'
 import {
   elementInstanceMetadata,
@@ -199,6 +200,7 @@ import {
   isJSPropertyAccess,
   isJSElementAccess,
   earlyReturnResult,
+  jsArbitraryStatement,
 } from '../../../core/shared/element-template'
 import type {
   CanvasRectangle,
@@ -931,8 +933,19 @@ export const RawSourceMapKeepDeepEquality: KeepDeepEqualityCall<RawSourceMap> =
     },
   )
 
+export const JSArbitraryStatementKeepDeepEqualityCall: KeepDeepEqualityCall<JSArbitraryStatement> =
+  combine3EqualityCalls(
+    (statement) => statement.originalJavascript,
+    createCallWithTripleEquals<string>(),
+    (statement) => statement.definedWithin,
+    arrayDeepEquality(createCallWithTripleEquals<string>()),
+    (statement) => statement.definedElsewhere,
+    arrayDeepEquality(createCallWithTripleEquals<string>()),
+    jsArbitraryStatement,
+  )
+
 export function JSExpressionOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqualityCall<JSExpressionOtherJavaScript> {
-  return combine9EqualityCalls(
+  return combine10EqualityCalls(
     (attribute) => attribute.params,
     arrayDeepEquality(ParamKeepDeepEquality()),
     (attribute) => attribute.originalJavascript,
@@ -949,6 +962,8 @@ export function JSExpressionOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqual
     ElementsWithinKeepDeepEqualityCall(),
     (block) => block.comments,
     ParsedCommentsKeepDeepEqualityCall,
+    (attribute) => attribute.statements,
+    arrayDeepEquality(JSArbitraryStatementKeepDeepEqualityCall),
     (attribute) => attribute.uid,
     createCallWithTripleEquals(),
     jsExpressionOtherJavaScript,
@@ -1250,7 +1265,7 @@ export function ElementsWithinKeepDeepEqualityCall(): KeepDeepEqualityCall<Eleme
 }
 
 export function ArbitraryJSBlockKeepDeepEquality(): KeepDeepEqualityCall<ArbitraryJSBlock> {
-  return combine8EqualityCalls(
+  return combine9EqualityCalls(
     (block) => block.params,
     arrayDeepEquality(ParamKeepDeepEquality()),
     (block) => block.javascript,
@@ -1265,6 +1280,8 @@ export function ArbitraryJSBlockKeepDeepEquality(): KeepDeepEqualityCall<Arbitra
     nullableDeepEquality(RawSourceMapKeepDeepEquality),
     (block) => block.elementsWithin,
     ElementsWithinKeepDeepEqualityCall(),
+    (attribute) => attribute.statements,
+    arrayDeepEquality(JSArbitraryStatementKeepDeepEqualityCall),
     (block) => block.uid,
     createCallWithTripleEquals(),
     arbitraryJSBlock,
@@ -4117,10 +4134,12 @@ export const ErrorMessagesKeepDeepEquality: KeepDeepEqualityCall<ErrorMessages> 
   objectDeepEquality(arrayDeepEquality(ErrorMessageKeepDeepEquality))
 
 export const EditorStateCodeEditorErrorsKeepDeepEquality: KeepDeepEqualityCall<EditorStateCodeEditorErrors> =
-  combine2EqualityCalls(
+  combine3EqualityCalls(
     (errors) => errors.buildErrors,
     ErrorMessagesKeepDeepEquality,
     (errors) => errors.lintErrors,
+    ErrorMessagesKeepDeepEquality,
+    (errors) => errors.componentDescriptorErrors,
     ErrorMessagesKeepDeepEquality,
     editorStateCodeEditorErrors,
   )
@@ -4808,6 +4827,11 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.collaborators,
   )
 
+  const sharingDialogOpenResults = BooleanKeepDeepEquality(
+    oldValue.sharingDialogOpen,
+    newValue.sharingDialogOpen,
+  )
+
   const areEqual =
     idResult.areEqual &&
     forkedFromProjectIdResult.areEqual &&
@@ -4888,7 +4912,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     activeFramesResults.areEqual &&
     commentFilterModeResults.areEqual &&
     forkingResults.areEqual &&
-    collaboratorsResults.areEqual
+    collaboratorsResults.areEqual &&
+    sharingDialogOpenResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -4975,6 +5000,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       commentFilterModeResults.value,
       forkingResults.value,
       collaboratorsResults.value,
+      sharingDialogOpenResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

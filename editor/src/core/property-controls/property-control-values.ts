@@ -50,6 +50,7 @@ import {
   jsxPropertyAssignment,
   emptyComments,
   modifiableAttributeIsAttributeNotFound,
+  jsArbitraryStatement,
 } from '../shared/element-template'
 import type { ModifiableAttribute } from '../shared/jsx-attributes'
 import { getModifiableJSXAttributeAtPathFromAttribute } from '../shared/jsx-attributes'
@@ -431,7 +432,9 @@ function printColor(value: unknown): JSExpression {
 }
 
 function printJS<T>(value: T): JSExpression {
-  return jsExpressionOtherJavaScript([], `${value}`, `${value}`, ``, [], null, {}, emptyComments)
+  return jsExpressionOtherJavaScript([], `${value}`, `${value}`, ``, [], null, {}, emptyComments, [
+    jsArbitraryStatement(`${value}`, [], []),
+  ])
 }
 
 export function printerForBasePropertyControl(control: BaseControlDescription): Printer<unknown> {
