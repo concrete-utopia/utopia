@@ -215,6 +215,7 @@ const ProjectsPageInner = React.memo(() => {
     (e: React.MouseEvent) => {
       const target = e.target as HTMLElement
       // check if target is inside the projects' container
+      // since this handler fires also on context menu clicks
       if (
         containerRef.current != null &&
         containerRef.current.contains(target) &&
