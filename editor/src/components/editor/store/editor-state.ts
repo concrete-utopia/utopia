@@ -1490,6 +1490,7 @@ export interface EditorState {
   commentFilterMode: CommentFilterMode
   forking: boolean
   collaborators: Collaborator[]
+  sharingDialogOpen: boolean
 }
 
 export function editorState(
@@ -1574,6 +1575,7 @@ export function editorState(
   commentFilterMode: CommentFilterMode,
   forking: boolean,
   collaborators: Collaborator[],
+  sharingDialogOpen: boolean,
 ): EditorState {
   return {
     id: id,
@@ -1657,6 +1659,7 @@ export function editorState(
     commentFilterMode: commentFilterMode,
     forking: forking,
     collaborators: collaborators,
+    sharingDialogOpen: sharingDialogOpen,
   }
 }
 
@@ -2620,6 +2623,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     commentFilterMode: 'all',
     forking: false,
     collaborators: [],
+    sharingDialogOpen: false,
   }
 }
 
@@ -3005,6 +3009,7 @@ export function editorModelFromPersistentModel(
     commentFilterMode: 'all',
     forking: false,
     collaborators: [],
+    sharingDialogOpen: false,
   }
   return editor
 }

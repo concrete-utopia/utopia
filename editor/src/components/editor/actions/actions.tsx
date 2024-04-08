@@ -75,9 +75,6 @@ import {
   modifiableAttributeIsAttributeValue,
   isJSExpression,
   isJSXMapExpression,
-  isJSExpressionOtherJavaScript,
-  jsExpressionOtherJavaScriptSimple,
-  getDefinedElsewhereFromElement,
   getDefinedElsewhereFromElementChild,
   isJSXFragment,
   jsxConditionalExpressionConditionOptic,
@@ -175,7 +172,7 @@ import {
 } from '../../canvas/canvas-utils'
 import type { SetFocus } from '../../common/actions'
 import { openMenu } from '../../context-menu-side-effect'
-import type { CodeResultCache, PropertyControlsInfo } from '../../custom-code/code-file'
+import type { CodeResultCache } from '../../custom-code/code-file'
 import {
   codeCacheToBuildResult,
   generateCodeResultCache,
@@ -332,6 +329,7 @@ import type {
   SetCollaborators,
   ExtractPropertyControlsFromDescriptorFiles,
   SetCodeEditorComponentDescriptorErrors,
+  SetSharingDialogOpen,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -945,6 +943,7 @@ export function restoreEditorState(
     commentFilterMode: currentEditor.commentFilterMode,
     forking: currentEditor.forking,
     collaborators: currentEditor.collaborators,
+    sharingDialogOpen: currentEditor.sharingDialogOpen,
   }
 }
 
@@ -5745,6 +5744,12 @@ export const UPDATE_FNS = {
       evaluator,
     )
     return state
+  },
+  SET_SHARING_DIALOG_OPEN: (action: SetSharingDialogOpen, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      sharingDialogOpen: action.open,
+    }
   },
 }
 

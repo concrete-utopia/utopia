@@ -221,6 +221,7 @@ import type {
   SetForking,
   SetCollaborators,
   ExtractPropertyControlsFromDescriptorFiles,
+  SetSharingDialogOpen,
   SetCodeEditorComponentDescriptorErrors,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
@@ -1754,5 +1755,12 @@ export function extractPropertyControlsFromDescriptorFiles(
   return {
     action: 'EXTRACT_PROPERTY_CONTROLS_FROM_DESCRIPTOR_FILES',
     paths: paths,
+  }
+}
+
+export function setSharingDialogOpen(open: boolean): SetSharingDialogOpen {
+  return {
+    action: 'SET_SHARING_DIALOG_OPEN',
+    open: open,
   }
 }

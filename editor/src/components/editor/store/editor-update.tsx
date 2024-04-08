@@ -468,6 +468,8 @@ export function runSimpleLocalEditorAction(
         workers,
         dispatch,
       )
+    case 'SET_SHARING_DIALOG_OPEN':
+      return UPDATE_FNS.SET_SHARING_DIALOG_OPEN(action, state)
     default:
       return state
   }
