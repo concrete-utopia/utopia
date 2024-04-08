@@ -11,6 +11,7 @@ import type { Method } from './methods.server'
 import { Status } from './statusCodes'
 import { ServerEnvironment } from '../env.server'
 import { maybeGetUserFromSession } from '../models/session.server'
+import { auth0LoginURL } from './auth0.server'
 
 interface ErrorResponse {
   error: string
@@ -203,6 +204,19 @@ export async function requireUser(
     }
     throw error
   }
+}
+
+export async function requireUserOrRedirectToLogin(request: Request): Promise<UserDetails | null> {
+  const url = new URL(request.url)
+  const fakeUser = url.searchParams.get('fakeUser')
+  url.searchParams.delete('fakeUser')
+
+  return await requireUser(request, {
+    redirect: auth0LoginURL({
+      redirectTo: url.toString(),
+      fakeUser: fakeUser,
+    }),
+  })
 }
 
 export async function getUser(request: Request): Promise<UserDetails | null> {
