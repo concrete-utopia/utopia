@@ -65,7 +65,6 @@ specifiers:
   prisma: 5.9.0
   prisma-client: link:node_modules/@utopia/prisma-client
   react: 18.2.0
-  react-cookie-consent: 9.0.0
   react-dom: 18.2.0
   slugify: 1.6.6
   source-map-support: 0.5.21
@@ -109,7 +108,6 @@ dependencies:
   moment: 2.30.1
   prisma-client: link:node_modules/@utopia/prisma-client
   react: 18.2.0
-  react-cookie-consent: 9.0.0_react@18.2.0
   react-dom: 18.2.0_react@18.2.0
   slugify: 1.6.6
   tiny-invariant: 1.3.1
@@ -7532,10 +7530,6 @@ packages:
     resolution: {integrity: sha512-gFqAIbuKyyso/3G2qhiO2OM6shY6EPP/R0+mkDbyspxKazh8BXDC5FiFsUjlczgdNz/vfra0da2y+aHrusLG/Q==}
     hasBin: true
 
-  /js-cookie/2.2.1:
-    resolution: {integrity: sha512-HvdH2LzI/EAZcUwA8+0nKNtWHqS+ZmijLA30RwZA0bo7ToCckjK5MkGhjED9KoRcXO6BaGI3I9UIzSA1FKFPOQ==}
-    dev: false
-
   /js-sdsl/4.4.2:
     resolution: {integrity: sha512-dwXFwByc/ajSV6m5bcKAPwe4yDDF6D614pxmIi5odytzxRlwqF6nwoiCek80Ixc7Cvma5awClxrzFtxCQvcM8w==}
     dev: true
@@ -9039,16 +9033,6 @@ packages:
       http-errors: 2.0.0
       iconv-lite: 0.4.24
       unpipe: 1.0.0
-
-  /react-cookie-consent/9.0.0_react@18.2.0:
-    resolution: {integrity: sha512-Blyj+m+Zz7SFHYqT18p16EANgnSg2sIyU6Yp3vk83AnOnSW7qnehPkUe4+8+qxztJrNmCH5GP+VHsWzAKVOoZA==}
-    engines: {node: '>=10'}
-    peerDependencies:
-      react: '>=16'
-    dependencies:
-      js-cookie: 2.2.1
-      react: 18.2.0
-    dev: false
 
   /react-dom/18.2.0_react@18.2.0:
     resolution: {integrity: sha512-6IMTriUmvsjHUjNtEDudZfuDQUoWXVxKHhlEGSk81n4YFS+r/Kl99wXiwlVXtPBtJenozv2P+hxDsw9eA7Xo6g==}
