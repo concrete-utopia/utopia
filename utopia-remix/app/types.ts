@@ -77,30 +77,6 @@ export function asAccessLevel(accessLevel: number | undefined | null): AccessLev
   }
 }
 
-const AccessLevelStrings = {
-  [AccessLevel.PRIVATE]: 'private',
-  [AccessLevel.PUBLIC]: 'public',
-  [AccessLevel.WITH_LINK]: 'with-link',
-  [AccessLevel.COLLABORATIVE]: 'collaborative',
-} as const
-
-export type AccessLevelString = (typeof AccessLevelStrings)[keyof typeof AccessLevelStrings]
-
-export function toAccessLevelString(level: AccessLevel): AccessLevelString {
-  switch (level) {
-    case AccessLevel.COLLABORATIVE:
-      return 'collaborative'
-    case AccessLevel.PRIVATE:
-      return 'private'
-    case AccessLevel.PUBLIC:
-      return 'public'
-    case AccessLevel.WITH_LINK:
-      return 'with-link'
-    default:
-      assertNever(level)
-  }
-}
-
 export const UserProjectPermission = {
   CAN_VIEW_PROJECT: 0,
   CAN_FORK_PROJECT: 1,
