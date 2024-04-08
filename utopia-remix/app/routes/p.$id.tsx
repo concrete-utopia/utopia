@@ -23,6 +23,8 @@ export async function loader(args: LoaderFunctionArgs) {
     )
   } catch (e) {
     const url = new URL(args.request.url)
-    throw redirect(`/project/${args.params.id}${url.search}`)
+    return redirect(`/project/${args.params.id}${url.search}`, {
+      headers: { 'cache-control': 'no-cache' },
+    })
   }
 }
