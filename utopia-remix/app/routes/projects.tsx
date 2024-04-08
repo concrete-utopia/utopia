@@ -17,7 +17,7 @@ import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import { useFetcher, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
 import type { UserDetails } from 'prisma-client'
-import React, { useEffect } from 'react'
+import React, { useCallback } from 'react'
 import { ProjectActionsMenu } from '../components/projectActionContextMenu'
 import { SharingDialogWrapper } from '../components/sharingDialog'
 import { SortingContextMenu } from '../components/sortProjectsContextMenu'
@@ -207,28 +207,24 @@ const ProjectsPageInner = React.memo(() => {
     return activeProjects.find((p) => p.proj_id === sharingProjectId) ?? null
   }, [activeProjects, sharingProjectId])
 
-  const containerRef = React.useRef<HTMLDivElement | null>(null)
-
   const setSelectedProjectId = useProjectsStore((store) => store.setSelectedProjectId)
 
-  // deselect all projects when clicking outside of a project
-  useEffect(() => {
-    const containerRefCurrent = containerRef.current
-    if (containerRefCurrent == null) {
-      return
-    }
-    const handleClick = (e: MouseEvent) => {
+  const containerRef = React.useRef<HTMLDivElement | null>(null)
+
+  const onContainerMouseDown = React.useCallback(
+    (e: React.MouseEvent) => {
       const target = e.target as HTMLElement
-      // check if target is inside a [data-role="project"] element
-      if (target.closest('[data-role="project"]') == null) {
+      // check if target is inside the projects' container
+      if (
+        containerRef.current != null &&
+        containerRef.current.contains(target) &&
+        target.closest('[data-role="project"]') == null
+      ) {
         setSelectedProjectId(null)
       }
-    }
-    containerRefCurrent.addEventListener('mousedown', handleClick)
-    return () => {
-      containerRefCurrent.removeEventListener('mousedown', handleClick)
-    }
-  }, [setSelectedProjectId])
+    },
+    [setSelectedProjectId],
+  )
 
   return (
     <div
@@ -243,6 +239,7 @@ const ProjectsPageInner = React.memo(() => {
         userSelect: 'none',
       }}
       ref={containerRef}
+      onMouseDown={onContainerMouseDown}
     >
       <Sidebar user={data.user} />
       <div
@@ -727,6 +724,14 @@ const ProjectCard = React.memo(
       }
     }, [openShareDialog, canOpenShareDialog])
 
+    const onMouseDown = useCallback(
+      (e: React.MouseEvent) => {
+        e.stopPropagation()
+        onSelect()
+      },
+      [onSelect],
+    )
+
     return (
       <ContextMenu.Root>
         <ContextMenu.Trigger>
@@ -742,7 +747,7 @@ const ProjectCard = React.memo(
               gap: 5,
               filter: activeOperations.length > 0 ? 'grayscale(1)' : undefined,
             }}
-            onMouseDown={onSelect}
+            onMouseDown={onMouseDown}
           >
             <div
               style={{
@@ -937,6 +942,14 @@ const ProjectRow = React.memo(
       }
     }, [openShareDialog, canOpenShareDialog])
 
+    const onMouseDown = useCallback(
+      (e: React.MouseEvent) => {
+        e.stopPropagation()
+        onSelect()
+      },
+      [onSelect],
+    )
+
     return (
       <ContextMenu.Root>
         <ContextMenu.Trigger>
@@ -955,7 +968,7 @@ const ProjectRow = React.memo(
                 paddingRight: 10,
                 transition: `.1s background-color ease-in-out`,
               }}
-              onMouseDown={onSelect}
+              onMouseDown={onMouseDown}
               onDoubleClick={openProject}
             >
               <div
