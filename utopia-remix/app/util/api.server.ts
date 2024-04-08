@@ -200,7 +200,9 @@ export async function requireUser(
   } catch (error) {
     if (error instanceof ApiError && error.status === Status.UNAUTHORIZED) {
       if (options?.redirect != null) {
-        throw redirect(options.redirect)
+        throw redirect(options.redirect, {
+          headers: { 'cache-control': 'no-cache' },
+        })
       }
     }
     throw error
