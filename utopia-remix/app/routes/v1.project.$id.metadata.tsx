@@ -25,8 +25,10 @@ export async function handleGetMetadata(req: Request, params: Params<string>) {
 
   const metadataProxyResponse = await proxy(req)
 
-  const user = await requireUser(req)
+  // if the resopnse is a valid v1 metadata, enrich it with
+  // the extra data.
   if (isProjectMetadataV1(metadataProxyResponse)) {
+    const user = await requireUser(req)
     const meta = await getProjectExtraMetadataForEditor({
       projectId: projectdId,
       userId: user.user_id,
