@@ -229,7 +229,8 @@ export interface JSXControlDescription {
   control: 'jsx'
   label?: string
   visibleByDefault?: boolean
-  preferredChildComponents?: Array<PreferredChildComponent>
+  renders?: Array<RendersComponent>
+  placeholder?: PlaceholderSpec
   required?: boolean
   defaultValue?: unknown
 }
@@ -312,7 +313,6 @@ export type HigherLevelControlDescription =
 
 export type RegularControlDescription = BaseControlDescription | HigherLevelControlDescription
 
-// Please ensure that `property-controls-utils.ts` is kept up to date
 // with any changes to this or the component types.
 export type ControlDescription = RegularControlDescription | FolderControlDescription
 
@@ -357,42 +357,106 @@ export function isHigherLevelControlDescription(
   return !isBaseControlDescription(control)
 }
 
-export type PropertyControls = {
-  [key: string]: ControlDescription
-}
+type AdditionalImports = string | string[]
 
-export function addPropertyControls(component: unknown, propertyControls: PropertyControls): void {
-  if (component != null) {
-    ;(component as any)['propertyControls'] = propertyControls
-  }
-}
+export type ComponentVariant =
+  // if only the component name is specified, and the element is not an
+  // intrinsic element, we try to infer the necessary info from the existing
+  // component registration. If we can't, a validation error is shown
+  | { component: string }
 
-interface ControlDescriptionFilter {
+  // detailed description with the path to import the element from and component
+  // variants
+  | {
+      imports?: AdditionalImports
+      label: string
+      code: string
+    }
+
+export type RendersComponent =
+  // if only the component name is specified, and the element is not an
+  // intrinsic element, we try to infer the necessary info from the existing
+  // component registration. If we can't, a validation error is shown
+  | { component: string }
+  // detailed description with the path to import the element from and component
+  // variants
+  | {
+      imports?: AdditionalImports
+      variant: ComponentVariant | ComponentVariant[]
+    }
+
+export interface ControlDescriptionFilter {
   type: 'filter'
   allow: Record<string, ControlDescription>
 }
-interface ControlDescriptionInfer {
+export interface ControlDescriptionInfer {
   type: 'infer'
   properties: Record<string, ControlDescription>
 }
 
-type ControlDescriptionSpec = ControlDescriptionFilter | ControlDescriptionInfer
+export type ControlDescriptionSpec = ControlDescriptionFilter | ControlDescriptionInfer
 
-interface ComponentToRegister {
+export type InspectorSection = 'style' | 'classname' | 'text' | 'layout'
+
+export type InspectorSpec =
+  // inspector sections to show when the component is selected
+  | { allow: InspectorSection[] }
+  // inspector sections to hide when the component is selected
+  | { suppress: InspectorSection[] }
+
+export type AutoFocus = 'always' | 'never'
+
+export type PropertyControls = Record<string, ControlDescription>
+
+export type PlaceholderSpec =
+  // a placeholder that inserts a span with that wraps `contents`. This will be
+  // editable with the text editor
+  | { type: 'text'; contents: string }
+  // inserts a `div` with the specified width and height
+  | { type: 'spacer'; width: number; height: number }
+
+export interface ChildrenSpec {
+  // specifies what component(s) are preferred.
+  // `undefined`: any component can be rendered
+  // `'text'`: means only JSX text is accepted
+  // `RendersComponent`: detailed spec
+  renders?: 'text' | RendersComponent | RendersComponent[]
+
+  // specifies the placeholder to use
+  placeholder?: PlaceholderSpec
+}
+
+export interface ComponentToRegister {
   // The component to register, passed as the component definition
   component: any
+
   // nothing annotated: detect
   // some/all props: do not detect
   // specific flag: do the inference
-  properties: ControlDescriptionSpec
-  // preferred child components for this component
-  // reuses existing component registrations
-  renders: ComponentToRegister[]
+  properties?: ControlDescriptionSpec | PropertyControls
+
+  // inspector-related configuration
+  // by default, nothing is changed in the inspector
+  inspector?: InspectorSpec
+
+  // speciies whether the component should be autofocused in the navigator
+  autofocus?: AutoFocus
+
+  // specifies how the `children` prop should be used
+  // `undefined`: Utopia assumes that the component doesn't support children
+  // `'supported'`: any child element or elements are supported
+  // `ChildrenSpec`: a detailed description of which element(s) can be used as children
+  children?: 'supported' | ChildrenSpec
+
   // lists templates to insert
-  variants: ComponentVariant[]
+  // if left undefined, any empty element will be inserted
+  variants?: ComponentVariant[]
 }
-type ComponentRegistrations = {
+
+export type ComponentRegistrations = {
+  // registrations are grouped by module name...
   [moduleName: string]: {
+    // ...and component name, until we can reliably infer this
     [componentName: string]: ComponentToRegister
   }
 }
