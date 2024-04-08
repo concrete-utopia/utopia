@@ -13,7 +13,6 @@ import {
   userToCollaborator,
   githubRepositoryStringOrNull,
   type ProjectWithoutContentFromDB,
-  toAccessLevelString,
 } from '../types'
 import { ensure } from '../util/api.server'
 import { Status } from '../util/statusCodes'
@@ -278,7 +277,6 @@ export async function getProjectMetadataForEditor(params: {
     select: {
       proj_id: true,
       owner_id: true,
-      ProjectAccess: true,
       ProjectAccessRequest: true,
     },
   })
@@ -286,13 +284,10 @@ export async function getProjectMetadataForEditor(params: {
     return null
   }
 
-  const accessLevel = asAccessLevel(project.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
-
   return {
     projectId: project.proj_id,
     hasPendingRequests: project.ProjectAccessRequest.some(
       (r) => r.status === AccessRequestStatus.PENDING,
     ),
-    access: toAccessLevelString(accessLevel),
   }
 }

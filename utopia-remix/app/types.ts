@@ -358,5 +358,4 @@ export function githubRepositoryStringOrNull(repo: GithubRepository | null): str
 export type ProjectMetadataForEditor = {
   projectId: string
   hasPendingRequests: boolean
-  access: AccessLevelString
 }

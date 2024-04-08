@@ -199,7 +199,7 @@ const MultiplayerUserBar = React.memo(() => {
   const projectMetadata = useEditorState(
     Substores.projectServerState,
     (store) => store.projectServerState.projectData,
-    'ForksGiven projectMetadata',
+    'MultiplayerUserBar projectMetadata',
   )
 
   const toggleFollowing = React.useCallback(
