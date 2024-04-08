@@ -213,7 +213,8 @@ export async function requireUserOrRedirectToLogin(request: Request): Promise<Us
 
   return await requireUser(request, {
     redirect: auth0LoginURL({
-      redirectTo: url.toString(),
+      // send relative urls as our servers sometime redirect internally to different domains
+      redirectTo: url.href.replace(url.origin, ''),
       fakeUser: fakeUser,
     }),
   })
