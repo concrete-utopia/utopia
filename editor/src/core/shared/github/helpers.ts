@@ -862,7 +862,7 @@ export const startGithubPolling =
     githubPollingTimeoutId = window.setTimeout(pollGithub, 0)
   }
 
-export async function getRefreshGithubActions(
+export function getRefreshGithubActions(
   dispatch: EditorDispatch,
   githubAuthenticated: boolean,
   githubRepo: GithubRepo | null,
@@ -872,20 +872,19 @@ export async function getRefreshGithubActions(
   previousCommitSha: string | null,
   originCommitSha: string | null,
   operationContext: GithubOperationContext,
-): Promise<Array<Promise<Array<EditorAction>>>> {
+): Array<Promise<Array<EditorAction>>> {
   // Collect actions which are the results of the various requests,
   // but not those that show which Github operations are running.
   let promises: Array<Promise<Array<EditorAction>>> = []
   if (!githubAuthenticated) {
     promises.push(Promise.resolve([updateGithubData(emptyGithubData())]))
   } else if (githubUserDetails === null) {
-    const userDetails = await getUserDetailsFromServer()
-    const actions: EditorAction[] =
-      userDetails == null
+    const noUserDetailsActions = getUserDetailsFromServer().then((userDetails) => {
+      return userDetails == null
         ? resetGithubStateAndDataActions()
         : updateUserDetailsFromServerActions(userDetails)
-
-    promises.push(Promise.resolve(actions))
+    })
+    promises.push(noUserDetailsActions)
   } else {
     promises.push(getUsersPublicGithubRepositories(operationContext)(dispatch))
     if (githubRepo != null) {
