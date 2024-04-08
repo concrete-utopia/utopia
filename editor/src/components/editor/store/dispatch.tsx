@@ -824,7 +824,7 @@ function applyProjectChangesToEditor(
 }
 
 export const UTOPIA_DUPLICATE_UID_ERROR_MESSAGE = (dispatchedActions: string) =>
-  `Utopia internal error: a dispatched action resulted in dupliacted UIDs. Suspicious actions: ${dispatchedActions}`
+  `A dispatched action resulted in dupliacted UIDs. Suspicious actions: ${dispatchedActions}`
 function editorDispatchInner(
   boundDispatch: EditorDispatch,
   dispatchedActions: EditorAction[],
@@ -943,7 +943,7 @@ function editorDispatchInner(
       // When running in the browser log the error and tell the user to restart the editor.
       console.error(errorMessage)
       const errorToast = EditorActions.addToast(
-        notice(UTOPIA_DUPLICATE_UID_ERROR_MESSAGE(actionNames), 'ERROR', true, 'reload-editor'),
+        notice(UTOPIA_DUPLICATE_UID_ERROR_MESSAGE(actionNames), 'ERROR', false),
       )
       result = {
         ...result,
