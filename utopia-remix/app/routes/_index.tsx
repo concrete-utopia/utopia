@@ -218,23 +218,6 @@ const IndexPage = React.memo(() => {
         <ContactUs />
       </div>
       <CookieConsentBar />
-      <script async src='https://www.googletagmanager.com/gtag/js?id=G-QM0KPN0RNV'></script>
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `
-			window.dataLayer = window.dataLayer || [];
-			function gtag(){dataLayer.push(arguments);}
-			gtag('consent', 'default', {
-			'ad_storage': 'denied',
-			'analytics_storage': 'denied'
-			});
-			gtag('js', new Date());
-			gtag('config', 'G-QM0KPN0RNV', {
-			page_path: window.location.pathname,
-			});
-		`,
-        }}
-      />
     </div>
   )
 })
