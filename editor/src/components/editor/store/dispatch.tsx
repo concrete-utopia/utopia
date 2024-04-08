@@ -1,4 +1,4 @@
-import { PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
+import { IS_TEST_ENVIRONMENT, PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
 import type { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import { getParseResult } from '../../../core/workers/common/worker-types'
 import { runLocalCanvasAction } from '../../../templates/editor-canvas'
@@ -935,10 +935,10 @@ function editorDispatchInner(
       const errorMessage = `Running ${actionNames} resulted in duplicate UIDs ${JSON.stringify(
         uniqueIDsResult.duplicateIDs,
       )}.`
-      //if (IS_TEST_ENVIRONMENT) {
-      // In tests blow out with an exception so that the error is correctly attributed.
-      //  throw new Error(errorMessage)
-      //} else {
+      if (IS_TEST_ENVIRONMENT) {
+        // In tests blow out with an exception so that the error is correctly attributed.
+        throw new Error(errorMessage)
+      }
       // When running in the browser log the error and tell the user to restart the editor.
       console.error(errorMessage)
       const errorToast = EditorActions.addToast(
