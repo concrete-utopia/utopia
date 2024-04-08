@@ -24,15 +24,20 @@ export async function handleGetMetadata(req: Request, params: Params<string>) {
   ensure(projectdId != null, 'invalid project id', Status.BAD_REQUEST)
 
   const proxied = await proxy(req)
-  const body = proxied as object
+
   const user = await getUser(req)
   if (user != null) {
+    const body = proxied as object
+
     const meta = await getProjectMetadataForEditor({
       projectId: projectdId,
       userId: user.user_id,
     })
     if (meta != null) {
-      return { ...body, ...meta }
+      return {
+        ...body,
+        ...meta,
+      }
     }
   }
   return proxied
