@@ -118,9 +118,7 @@ export class MomentumContextMenu<T> extends ReactComponent<ContextMenuProps<T>> 
             return windowPoint({ x: triggerEvent.clientX, y: triggerEvent.clientY })
           })()
           item.action(this.props.getData(), this.props.dispatch, rightClickCoordinate, event)
-          if (item.hideOnAction !== false) {
-            contextMenu.hideAll()
-          }
+          contextMenu.hideAll()
         }}
         hidden={this.isHidden(item)}
         style={{ height: item.isSeparator ? 9 : 24, display: 'flex', alignItems: 'center' }}

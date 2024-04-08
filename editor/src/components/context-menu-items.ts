@@ -58,7 +58,6 @@ export interface ContextMenuItem<T> {
     rightClickCoordinate: WindowPoint | null,
     event: React.MouseEvent | React.TouchEvent | React.KeyboardEvent,
   ) => void
-  hideOnAction?: boolean
 }
 
 export interface CanvasData {
