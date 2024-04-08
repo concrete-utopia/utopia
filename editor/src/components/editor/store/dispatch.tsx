@@ -824,7 +824,7 @@ function applyProjectChangesToEditor(
 }
 
 export const UTOPIA_DUPLICATE_UID_ERROR_MESSAGE = (dispatchedActions: string) =>
-  `A dispatched action resulted in dupliacted UIDs. Suspicious actions: ${dispatchedActions}`
+  `A dispatched action resulted in duplicated UIDs. Suspicious actions: ${dispatchedActions}`
 function editorDispatchInner(
   boundDispatch: EditorDispatch,
   dispatchedActions: EditorAction[],
