@@ -132,21 +132,21 @@ const Components: ComponentRegistrations = {
       properties: {
         level: ButtonLevelControl,
       },
-      children: { renders: 'text', placeholder: { type: 'text', contents: 'Button' } },
+      children: { preferredContent: 'text', placeholder: { type: 'text', contents: 'Button' } },
     },
     Text: {
       component: Text,
       properties: {
         level: TextLevelControl,
       },
-      children: { renders: 'text', placeholder: { type: 'text', contents: 'Button' } },
+      children: { preferredContent: 'text', placeholder: { type: 'text', contents: 'Button' } },
     },
     Heading: {
       component: Heading,
       properties: {
         level: TextLevelControl,
       },
-      children: { renders: 'text', placeholder: { type: 'text', contents: 'Button' } },
+      children: { preferredContent: 'text', placeholder: { type: 'text', contents: 'Button' } },
     },
     Image: {
       component: Image,
@@ -158,16 +158,16 @@ const Components: ComponentRegistrations = {
     },
     Card: {
       component: Card,
-      focus: 'on',
+      focus: 'always',
       properties: {
         title: {
           control: 'jsx',
-          renders: [{ component: 'Heading' }, { component: 'Text' }, { component: 'Button' }],
+          preferredContent: [{ name: 'Heading' }, { name: 'Text' }, { name: 'Button' }],
           placeholder: { type: 'spacer', width: 100, height: 20 },
         },
         footer: {
           control: 'jsx',
-          renders: [{ component: 'Text' }, { component: 'Button' }],
+          preferredContent: [{ component: Text }, { component: Button }],
         },
       },
       children: 'supported',
@@ -180,8 +180,8 @@ const Components: ComponentRegistrations = {
           ],
           code: `
         <Card
-          title={<Heading level='primary'>New Stuff</Title>}
-          footer={<Button level='default'>Buy it ASAP</Button>}
+          title={<Heading level='primary'/>}>New Stuff</Title>}
+          footer={<Button level='default'>}>Buy it ASAP</Button>}
         >
           <Image data={data.product.image} />
         </Card>
@@ -191,7 +191,9 @@ const Components: ComponentRegistrations = {
     },
     Section: {
       component: Section,
-      children: { renders: [{ component: 'Row' }, { component: 'Column' }, { component: 'Grid' }] },
+      children: {
+        preferredContent: [{ name: 'Row' }, { name: 'Column' }, { name: 'Grid' }],
+      },
     },
     Row: {
       component: Row,
@@ -200,7 +202,7 @@ const Components: ComponentRegistrations = {
         padded: { control: 'checkbox' },
       },
       children: {
-        renders: [{ component: 'Column' }, { component: 'Card' }, { component: 'Image' }],
+        preferredContent: [{ name: 'Column' }, { name: 'Card' }, { name: 'Image' }],
       },
     },
     Column: {
@@ -210,7 +212,7 @@ const Components: ComponentRegistrations = {
         alignment: AlignmentControl,
       },
       children: {
-        renders: [{ component: 'Row' }, { component: 'Card' }, { component: 'Image' }],
+        preferredContent: [{ name: 'Row' }, { name: 'Card' }, { name: 'Image' }],
       },
     },
     Grid: {
@@ -218,12 +220,12 @@ const Components: ComponentRegistrations = {
       properties: {
         left: {
           control: 'jsx',
-          renders: [{ component: 'Row' }, { component: 'Column' }, { component: 'Image' }],
+          preferredContent: [{ name: 'Row' }, { name: 'Column' }, { name: 'Image' }],
           placeholder: { type: 'spacer', width: 100, height: 100 },
         },
         right: {
           control: 'jsx',
-          renders: [{ component: 'Row' }, { component: 'Column' }, { component: 'Image' }],
+          preferredContent: [{ name: 'Row' }, { name: 'Column' }, { name: 'Image' }],
           placeholder: { type: 'spacer', width: 100, height: 100 },
         },
       },
@@ -231,7 +233,7 @@ const Components: ComponentRegistrations = {
     Page: {
       component: Page,
       children: {
-        renders: [{ component: 'Section' }, { component: 'Column' }, { component: 'Row' }],
+        preferredContent: [{ name: 'Section' }, { name: 'Column' }, { name: 'Row' }],
       },
     },
   },
@@ -245,18 +247,14 @@ const Components: ComponentRegistrations = {
         measurement: UnitPriceMeasurementControl,
         measurementSeparator: {
           control: 'jsx',
-          renders: [
+          preferredContent: [
             {
-              variant: [
-                {
-                  label: '/',
-                  code: '<span>/</span>',
-                },
-                {
-                  label: ' per ',
-                  code: '<span> per </span>',
-                },
-              ],
+              label: '/',
+              code: '<span>/</span>',
+            },
+            {
+              label: ' per ',
+              code: '<span> per </span>',
             },
           ],
         },
@@ -280,7 +278,7 @@ const Components: ComponentRegistrations = {
   'src/sample-store-components': {
     FeaturedCollection: {
       component: FeaturedCollection,
-      focus: 'on',
+      focus: 'always',
       variants: [
         {
           label: 'Featured collection',

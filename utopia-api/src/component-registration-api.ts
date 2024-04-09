@@ -229,7 +229,7 @@ export interface JSXControlDescription {
   control: 'jsx'
   label?: string
   visibleByDefault?: boolean
-  renders?: Array<RendersComponent>
+  preferredContent?: ComponentExample | Array<ComponentExample>
   placeholder?: PlaceholderSpec
   required?: boolean
   defaultValue?: unknown
@@ -359,11 +359,15 @@ export function isHigherLevelControlDescription(
 
 type AdditionalImports = string | string[]
 
-export type ComponentVariant =
+export type ComponentExample =
   // if only the component name is specified, and the element is not an
   // intrinsic element, we try to infer the necessary info from the existing
   // component registration. If we can't, a validation error is shown
-  | { component: string }
+  | { name: string }
+
+  // if the actual component is passed, we try to infer the component
+  // name/module name from that
+  | { component: any }
 
   // detailed description with the path to import the element from and component
   // variants
@@ -372,29 +376,6 @@ export type ComponentVariant =
       label: string
       code: string
     }
-
-export type RendersComponent =
-  // if only the component name is specified, and the element is not an
-  // intrinsic element, we try to infer the necessary info from the existing
-  // component registration. If we can't, a validation error is shown
-  | { component: string }
-  // detailed description with the path to import the element from and component
-  // variants
-  | {
-      imports?: AdditionalImports
-      variant: ComponentVariant | ComponentVariant[]
-    }
-
-export interface ControlDescriptionFilter {
-  type: 'filter'
-  allow: Record<string, ControlDescription>
-}
-export interface ControlDescriptionInfer {
-  type: 'infer'
-  properties: Record<string, ControlDescription>
-}
-
-export type ControlDescriptionSpec = ControlDescriptionFilter | ControlDescriptionInfer
 
 export type Styling = 'layout' | 'layout-system' | 'visual' | 'typography'
 
@@ -416,7 +397,7 @@ export interface ChildrenSpec {
   // `undefined`: any component can be rendered
   // `'text'`: means only JSX text is accepted
   // `RendersComponent`: detailed spec
-  renders?: 'text' | RendersComponent | RendersComponent[]
+  preferredContent?: 'text' | ComponentExample | ComponentExample[]
 
   // specifies the placeholder to use
   placeholder?: PlaceholderSpec
@@ -429,7 +410,7 @@ export interface ComponentToRegister {
   // nothing annotated: detect
   // some/all props: do not detect
   // specific flag: do the inference
-  properties?: ControlDescriptionSpec | PropertyControls
+  properties?: PropertyControls
 
   // inspector-related configuration
   // by default, everything is hidden but the component section
@@ -446,7 +427,7 @@ export interface ComponentToRegister {
 
   // lists templates to insert
   // if left undefined, any empty element will be inserted
-  variants?: ComponentVariant[]
+  variants?: ComponentExample[]
 
   icon?: never // TODO
 
