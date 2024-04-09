@@ -196,10 +196,10 @@ const MultiplayerUserBar = React.memo(() => {
     return ownerId === myUser.id
   }, [ownerId, myUser])
 
-  const projectMetadata = useEditorState(
+  const hasPendingRequests = useEditorState(
     Substores.projectServerState,
-    (store) => store.projectServerState.projectData,
-    'MultiplayerUserBar projectMetadata',
+    (store) => store.projectServerState.projectData?.hasPendingRequests ?? false,
+    'MultiplayerUserBar hasPendingRequests',
   )
 
   const toggleFollowing = React.useCallback(
@@ -344,7 +344,7 @@ const MultiplayerUserBar = React.memo(() => {
           />
           <div style={{ padding: '0 8px 0 5px', fontWeight: 500 }}>Share</div>
           {when(
-            projectMetadata?.hasPendingRequests === true,
+            hasPendingRequests,
             <div
               style={{
                 position: 'absolute',
