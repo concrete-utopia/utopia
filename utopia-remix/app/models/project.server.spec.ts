@@ -9,6 +9,7 @@ import {
   truncateTables,
 } from '../test-util'
 import {
+  getProjectExtraMetadataForEditor,
   getProjectOwnership,
   getProjectSharingDetails,
   hardDeleteAllProjects,
@@ -599,6 +600,45 @@ describe('project model', () => {
       expect(got.ProjectAccessRequest.length).toBe(3)
       expect(got.ProjectAccessRequest[0].token).toBe('t1')
       expect(got.ProjectAccessRequest[0].User?.name).toBe('alice')
+    })
+  })
+
+  describe('getProjectExtraMetadataForEditor', () => {
+    beforeEach(async () => {
+      await createTestUser(prisma, { id: 'bob' })
+      await createTestUser(prisma, { id: 'alice' })
+      await createTestUser(prisma, { id: 'carol' })
+      await createTestProject(prisma, { id: 'one', ownerId: 'bob' })
+      await createTestProject(prisma, { id: 'two', ownerId: 'bob' })
+      await createTestProject(prisma, { id: 'three', ownerId: 'bob' })
+      await createTestProjectAccessRequest(prisma, {
+        projectId: 'one',
+        userId: 'alice',
+        status: AccessRequestStatus.PENDING,
+        token: 't1',
+      })
+      await createTestProjectAccessRequest(prisma, {
+        projectId: 'two',
+        userId: 'carol',
+        status: AccessRequestStatus.APPROVED,
+        token: 't2',
+      })
+    })
+    it('returns null if the project does not exist', async () => {
+      const got = await getProjectExtraMetadataForEditor({ projectId: 'WRONG', userId: 'bob' })
+      expect(got).toBe(null)
+    })
+    it('returns null if the user does not own the project', async () => {
+      const got = await getProjectExtraMetadataForEditor({ projectId: 'one', userId: 'alice' })
+      expect(got).toBe(null)
+    })
+    it('returns the extra metadata', async () => {
+      let got = await getProjectExtraMetadataForEditor({ projectId: 'one', userId: 'bob' })
+      expect(got?.hasPendingRequests).toBe(true)
+      got = await getProjectExtraMetadataForEditor({ projectId: 'two', userId: 'bob' })
+      expect(got?.hasPendingRequests).toBe(false)
+      got = await getProjectExtraMetadataForEditor({ projectId: 'three', userId: 'bob' })
+      expect(got?.hasPendingRequests).toBe(false)
     })
   })
 })
