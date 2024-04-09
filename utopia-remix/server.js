@@ -184,11 +184,6 @@ app.use('/sockjs-node', proxy)
 app.use('/v1/javascript/packager', proxy)
 app.use('/vscode', proxy)
 
-// this will use the proxy only for `/p` and `/project` paths
-// for `/p/{id} and `/project/{id}` we will use Remix routes
-app.use('/p/?$', proxy)
-app.use('/project/?$', proxy)
-
 // other middlewares
 app.use(corsMiddleware)
 
