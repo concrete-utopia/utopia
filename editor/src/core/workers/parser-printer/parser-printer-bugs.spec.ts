@@ -51,7 +51,7 @@ export var App = props => {
               JSX_ELEMENT - div - bbb
                 JS_IDENTIFIER - 833
                 JSX_TEXT_BLOCK - d01
-                JS_IDENTIFIER - b90"
+                JS_IDENTIFIER - 20b"
       `)
 
       const aaaElement = findJSXElementAtStaticPath(

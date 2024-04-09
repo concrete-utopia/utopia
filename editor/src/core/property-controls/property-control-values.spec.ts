@@ -23,7 +23,7 @@ import {
   jsExpressionNestedObject,
   jsxPropertyAssignment,
   emptyComments,
-  jsArbitraryStatement,
+  jsOpaqueArbitraryStatement,
 } from '../shared/element-template'
 import {
   unwrapperAndParserForPropertyControl,
@@ -124,7 +124,6 @@ describe('ExpressionInputControlDescription', () => {
     null,
     {},
     emptyComments,
-    [jsArbitraryStatement(validValue, [], [])],
   )
 
   runBaseTestSuite(validValue, wrappedValidValue, [], expressionInputControlDescriptionValue)

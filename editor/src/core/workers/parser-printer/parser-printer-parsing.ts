@@ -54,6 +54,9 @@ import type {
   JSIdentifier,
   OptionallyChained,
   JSArbitraryStatement,
+  JSOpaqueArbitraryStatement,
+  JSAssignment,
+  JSAssignmentStatement,
 } from '../../shared/element-template'
 import {
   arbitraryJSBlock,
@@ -104,7 +107,11 @@ import {
   jsPropertyAccess,
   jsIdentifier,
   clearExpressionUniqueIDsAndSourceMaps,
-  jsArbitraryStatement,
+  jsOpaqueArbitraryStatement,
+  jsAssignment,
+  clearIdentifierUniqueIDsAndSourceMaps,
+  jsAssignmentStatement,
+  clearAssignmentUniqueIDsAndSourceMaps,
 } from '../../shared/element-template'
 import { maybeToArray, forceNotNull } from '../../shared/optional-utils'
 import type {
@@ -144,7 +151,6 @@ import type { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
 import { emptySet } from '../../../core/shared/set-utils'
 import { getAllUniqueUidsFromAttributes } from '../../../core/model/get-unique-ids'
 import type { SteganographyMode } from './parser-printer'
-import { identifyValuesDefinedInNode } from './parser-printer-expressions'
 
 export function parseParams(
   params: TS.NodeArray<TS.ParameterDeclaration>,
@@ -854,11 +860,190 @@ function failOnNullResult<T>(result: Either<string, T | null>): Either<string, T
   }, result)
 }
 
-function parseOtherJavaScript<E extends TS.Node, T extends { uid: string }>(
+function createOpaqueArbitraryStatement(
+  sourceFile: TS.SourceFile,
+  alreadyExistingUIDs: Set<string>,
+  expression: TS.Node,
+  originalJavaScript: string,
+  expressionDefinedWithin: Array<string>,
+  expressionDefinedElsewhere: Array<string>,
+): JSOpaqueArbitraryStatement {
+  const withoutUID = jsOpaqueArbitraryStatement(
+    originalJavaScript,
+    expressionDefinedWithin,
+    expressionDefinedElsewhere,
+    '',
+  )
+  const uid = generateUIDAndAddToExistingUIDs(sourceFile, withoutUID, alreadyExistingUIDs)
+  return jsOpaqueArbitraryStatement(
+    originalJavaScript,
+    expressionDefinedWithin,
+    expressionDefinedElsewhere,
+    uid,
+  )
+}
+
+function createAssignmentStatement(
+  sourceFile: TS.SourceFile,
+  alreadyExistingUIDs: Set<string>,
+  declarationKeyword: 'let' | 'const' | 'var',
+  assignments: Array<JSAssignment>,
+): JSAssignmentStatement {
+  const withoutUID = jsAssignmentStatement(
+    declarationKeyword,
+    assignments.map(clearAssignmentUniqueIDsAndSourceMaps),
+    '',
+  )
+  const uid = generateUIDAndAddToExistingUIDs(sourceFile, withoutUID, alreadyExistingUIDs)
+  return jsAssignmentStatement(declarationKeyword, assignments, uid)
+}
+
+function parseDeclaration(
+  sourceFile: TS.SourceFile,
+  sourceText: string,
+  imports: Imports,
+  topLevelNames: Array<string>,
+  initialPropsObjectName: string | null,
+  existingHighlightBounds: Readonly<HighlightBoundsForUids>,
+  alreadyExistingUIDs: Set<string>,
+  applySteganography: SteganographyMode,
+  tsDeclaration: TS.VariableDeclaration,
+): Either<string, WithParserMetadata<JSAssignment>> {
+  const comments = getComments(sourceText, tsDeclaration)
+  if (TS.isIdentifier(tsDeclaration.name)) {
+    const possibleIdentifier = parseIdentifier(
+      sourceFile,
+      tsDeclaration.name,
+      comments,
+      'outermost-expression',
+      alreadyExistingUIDs,
+    )
+    if (tsDeclaration.initializer == null) {
+      return left('Unable to parse variable declaration without initializer.')
+    } else {
+      const possibleExpression = parseAttributeExpression(
+        sourceFile,
+        sourceText,
+        sourceFile.fileName,
+        imports,
+        topLevelNames,
+        initialPropsObjectName,
+        tsDeclaration.initializer,
+        existingHighlightBounds,
+        alreadyExistingUIDs,
+        [],
+        applySteganography,
+        'part-of-expression',
+      )
+      return applicative2Either(
+        (identifierWithMetatadata, expressionWithMetadata) => {
+          return merge2WithParserMetadata(
+            identifierWithMetatadata,
+            expressionWithMetadata,
+            (identifier, expression) => {
+              const assignment = jsAssignment(identifier, expression)
+              return withParserMetadata(assignment, {}, [], [])
+            },
+          )
+        },
+        possibleIdentifier,
+        possibleExpression,
+      )
+    }
+  } else {
+    return left('Unable to parse variable declaration with non-identifier name.')
+  }
+}
+
+function getDeclarationKind(variableStatement: TS.VariableStatement): 'let' | 'const' | 'var' {
+  if ((variableStatement.declarationList.flags & TS.NodeFlags.Const) !== 0) {
+    return 'const'
+  } else if ((variableStatement.declarationList.flags & TS.NodeFlags.Let) !== 0) {
+    return 'let'
+  } else {
+    return 'var'
+  }
+}
+
+function parseJSArbitraryStatement(
   sourceFile: TS.SourceFile,
   sourceText: string,
   filename: string,
-  expressionsAndTexts: Array<ExpressionAndText<E>>,
+  expressionAndText: ExpressionAndText<TS.Node>,
+  imports: Imports,
+  topLevelNames: Array<string>,
+  initialPropsObjectName: string | null,
+  existingHighlightBounds: Readonly<HighlightBoundsForUids>,
+  alreadyExistingUIDs: Set<string>,
+  trailingCode: string,
+  applySteganography: SteganographyMode,
+): Either<string, WithParserMetadata<JSArbitraryStatement> | null> {
+  const parsedExpression = parseOtherJavaScript<JSArbitraryStatement>(
+    sourceFile,
+    sourceText,
+    filename,
+    [expressionAndText],
+    imports,
+    topLevelNames,
+    initialPropsObjectName,
+    existingHighlightBounds,
+    alreadyExistingUIDs,
+    trailingCode,
+    applySteganography,
+    'do-not-parse-statements',
+    (_code, expressionDefinedWithin, expressionDefinedElsewhere) => {
+      if (expressionAndText.expression == null) {
+        return right(null)
+      } else if (expressionAndText.expression != null) {
+        if (TS.isVariableStatement(expressionAndText.expression)) {
+          const variableStatement = expressionAndText.expression
+          const possibleDeclarations = traverseEither((tsDeclaration) => {
+            return parseDeclaration(
+              sourceFile,
+              sourceText,
+              imports,
+              topLevelNames,
+              initialPropsObjectName,
+              existingHighlightBounds,
+              alreadyExistingUIDs,
+              applySteganography,
+              tsDeclaration,
+            )
+          }, nodeArrayToArray(variableStatement.declarationList.declarations))
+          const possibleAssignmentStatement = mapEither((declarationsAndMetadata) => {
+            return createAssignmentStatement(
+              sourceFile,
+              alreadyExistingUIDs,
+              getDeclarationKind(variableStatement),
+              declarationsAndMetadata.map((d) => d.value),
+            )
+          }, possibleDeclarations)
+
+          if (isRight(possibleAssignmentStatement)) {
+            return possibleAssignmentStatement
+          }
+        }
+      }
+      return right(
+        createOpaqueArbitraryStatement(
+          sourceFile,
+          alreadyExistingUIDs,
+          expressionAndText.expression,
+          expressionAndText.text,
+          expressionDefinedWithin,
+          expressionDefinedElsewhere,
+        ),
+      )
+    },
+  )
+  return parsedExpression
+}
+
+function parseOtherJavaScript<T extends { uid: string }>(
+  sourceFile: TS.SourceFile,
+  sourceText: string,
+  filename: string,
+  expressionsAndTexts: Array<ExpressionAndText<TS.Node>>,
   imports: Imports,
   topLevelNames: Array<string>,
   initialPropsObjectName: string | null,
@@ -1315,56 +1500,32 @@ function parseOtherJavaScript<E extends TS.Node, T extends { uid: string }>(
     }
     expressionsText.push(trailingCode)
 
-    const statements =
-      parseStatements === 'do-not-parse-statements'
-        ? []
-        : expressionsAndTexts.flatMap((expressionAndText) => {
-            if (expressionAndText.expression == null) {
-              return []
-            } else {
-              const parsedExpression = parseOtherJavaScript(
-                sourceFile,
-                sourceText,
-                filename,
-                [expressionAndText],
-                imports,
-                topLevelNames,
-                initialPropsObjectName,
-                existingHighlightBounds,
-                alreadyExistingUIDs,
-                trailingCode,
-                applySteganography,
-                'do-not-parse-statements',
-                (_code, expressionDefinedWithin, expressionDefinedElsewhere) => {
-                  return right({
-                    expressionDefinedWithin: expressionDefinedWithin,
-                    expressionDefinedElsewhere: expressionDefinedElsewhere,
-                    uid: '',
-                  })
-                },
-              )
-
-              return foldEither(
-                () => {
-                  return []
-                },
-                (success) => {
-                  if (success == null) {
-                    return []
-                  } else {
-                    return [
-                      jsArbitraryStatement(
-                        expressionAndText.text.trim(),
-                        success.value.expressionDefinedWithin,
-                        success.value.expressionDefinedElsewhere,
-                      ),
-                    ]
-                  }
-                },
-                parsedExpression,
-              )
+    let statements: Array<JSArbitraryStatement> = []
+    if (parseStatements === 'parse-statements') {
+      for (const expressionAndText of expressionsAndTexts) {
+        if (expressionAndText.expression != null) {
+          const parsedStatement = parseJSArbitraryStatement(
+            sourceFile,
+            sourceText,
+            filename,
+            expressionAndText,
+            imports,
+            topLevelNames,
+            initialPropsObjectName,
+            existingHighlightBounds,
+            alreadyExistingUIDs,
+            '',
+            applySteganography,
+          )
+          forEachRight(parsedStatement, (parsedStatementSuccess) => {
+            if (parsedStatementSuccess != null) {
+              statements.push(parsedStatementSuccess.value)
+              // TODO: Handle the additional values?
             }
           })
+        }
+      }
+    }
 
     // Helpfully it appears that in JSX elements the start and end are
     // offset by 1, meaning that if we use them to get the text
@@ -1496,7 +1657,6 @@ export function parseJSExpressionMapOrOtherJavascript(
               alreadyExistingUIDs,
               existingHighlightBounds,
               imports,
-              statements,
             ),
           )
         } else {
@@ -1552,7 +1712,6 @@ export function parseJSExpressionMapOrOtherJavascript(
                 alreadyExistingUIDs,
                 existingHighlightBounds,
                 imports,
-                statements,
               )
             }, transpileEither)
           }, dataUIDFixed)
@@ -1617,7 +1776,6 @@ function createExpressionOtherJavaScript(
   alreadyExistingUIDs: Set<string>,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   imports: Imports,
-  statements: Array<JSArbitraryStatement>,
 ): JSExpressionMapOrOtherJavascript {
   // Ideally the value we hash is stable regardless of location, so exclude the SourceMap value from here and provide an empty UID.
   const value =
@@ -1642,7 +1800,6 @@ function createExpressionOtherJavaScript(
           null,
           elementsWithin,
           comments,
-          statements,
           '',
         )
 
@@ -1677,7 +1834,6 @@ function createExpressionOtherJavaScript(
         sourceMap,
         elementsWithin,
         comments,
-        statements,
         uid,
       )
 }
@@ -2172,7 +2328,7 @@ function parseIdentifier(
   comments: ParsedComments,
   partOfExpression: PartOfExpression,
   alreadyExistingUIDs: Set<string>,
-): Either<string, WithParserMetadata<JSExpression>> {
+): Either<string, WithParserMetadata<JSIdentifier>> {
   return right(
     createJSIdentifier(
       sourceFile,
@@ -2352,7 +2508,6 @@ function getAttributeExpression(
         alreadyExistingUIDs,
         existingHighlightBounds,
         imports,
-        [],
       )
 
       return right(

@@ -174,25 +174,67 @@ export function jsxAttributeNotFound(): JSXAttributeNotFound {
   }
 }
 
-export interface JSArbitraryStatement {
-  type: 'JS_ARBITRARY_STATEMENT'
+export interface JSOpaqueArbitraryStatement {
+  type: 'JS_OPAQUE_ARBITRARY_STATEMENT'
   originalJavascript: string
   definedWithin: Array<string>
   definedElsewhere: Array<string>
+  uid: string
 }
 
-export function jsArbitraryStatement(
+export function jsOpaqueArbitraryStatement(
   originalJavascript: string,
   definedWithin: Array<string>,
   definedElsewhere: Array<string>,
-): JSArbitraryStatement {
+  uid: string,
+): JSOpaqueArbitraryStatement {
   return {
-    type: 'JS_ARBITRARY_STATEMENT',
+    type: 'JS_OPAQUE_ARBITRARY_STATEMENT',
     originalJavascript: originalJavascript,
     definedWithin: definedWithin,
     definedElsewhere: definedElsewhere,
+    uid: uid,
   }
 }
+
+export interface JSAssignment {
+  type: 'JS_ASSIGNMENT'
+  leftHandSide: JSIdentifier
+  rightHandSide: JSExpression
+}
+
+export function jsAssignment(
+  leftHandSide: JSIdentifier,
+  rightHandSide: JSExpression,
+): JSAssignment {
+  return {
+    type: 'JS_ASSIGNMENT',
+    leftHandSide: leftHandSide,
+    rightHandSide: rightHandSide,
+  }
+}
+
+export interface JSAssignmentStatement {
+  type: 'JS_ASSIGNMENT_STATEMENT'
+  declarationKeyword: 'let' | 'const' | 'var'
+  assignments: Array<JSAssignment>
+  uid: string
+}
+
+export function jsAssignmentStatement(
+  declarationKeyword: 'let' | 'const' | 'var',
+  assignments: Array<JSAssignment>,
+  uid: string,
+): JSAssignmentStatement {
+  return {
+    type: 'JS_ASSIGNMENT_STATEMENT',
+    declarationKeyword: declarationKeyword,
+    assignments: assignments,
+    uid: uid,
+  }
+}
+
+export type JSArbitraryStatement = JSOpaqueArbitraryStatement | JSAssignmentStatement
 
 export interface JSExpressionOtherJavaScript extends WithComments, WithElementsWithin {
   type: 'ATTRIBUTE_OTHER_JAVASCRIPT'
@@ -202,7 +244,6 @@ export interface JSExpressionOtherJavaScript extends WithComments, WithElementsW
   transpiledJavascript: string
   definedElsewhere: Array<string>
   sourceMap: RawSourceMap | null
-  statements: Array<JSArbitraryStatement>
   uid: string
 }
 
@@ -215,7 +256,6 @@ export function jsExpressionOtherJavaScript(
   sourceMap: RawSourceMap | null,
   elementsWithin: ElementsWithin,
   comments: ParsedComments,
-  statements: Array<JSArbitraryStatement>,
   uid: string = UUID(),
 ): JSExpressionOtherJavaScript {
   return {
@@ -229,7 +269,6 @@ export function jsExpressionOtherJavaScript(
     uid: uid,
     comments: comments,
     elementsWithin: elementsWithin,
-    statements: statements,
   }
 }
 
@@ -246,7 +285,6 @@ export function jsExpressionOtherJavaScriptSimple(
     null,
     {},
     emptyComments,
-    [],
   )
 }
 
@@ -706,6 +744,10 @@ export function simplifyAttributeIfPossible(attribute: JSExpression): JSExpressi
   }
 }
 
+export function clearIdentifierUniqueIDs(identifier: JSIdentifier): JSIdentifier {
+  return jsIdentifier(identifier.name, '', identifier.sourceMap, identifier.comments)
+}
+
 export function clearExpressionUniqueIDs(attribute: JSExpression): JSExpression {
   switch (attribute.type) {
     case 'JSX_ELEMENT':
@@ -732,7 +774,7 @@ export function clearExpressionUniqueIDs(attribute: JSExpression): JSExpression 
         '',
       )
     case 'JS_IDENTIFIER':
-      return jsIdentifier(attribute.name, '', attribute.sourceMap, attribute.comments)
+      return clearIdentifierUniqueIDs(attribute)
     case 'JS_PROPERTY_ACCESS':
       return jsPropertyAccess(
         clearExpressionUniqueIDs(attribute.onValue),
@@ -827,6 +869,10 @@ function clearJSXElementChildSourceMaps(element: JSXElementChild): JSXElementChi
   }
 }
 
+export function clearIdentifierSourceMaps(identifier: JSIdentifier): JSIdentifier {
+  return jsIdentifier(identifier.name, identifier.uid, null, identifier.comments)
+}
+
 export function clearExpressionSourceMaps(attribute: JSExpression): JSExpression {
   switch (attribute.type) {
     case 'JSX_ELEMENT':
@@ -858,7 +904,7 @@ export function clearExpressionSourceMaps(attribute: JSExpression): JSExpression
         attribute.uid,
       )
     case 'JS_IDENTIFIER':
-      return jsIdentifier(attribute.name, attribute.uid, null, attribute.comments)
+      return clearIdentifierSourceMaps(attribute)
     case 'JS_PROPERTY_ACCESS':
       return jsPropertyAccess(
         clearExpressionSourceMaps(attribute.onValue),
@@ -909,6 +955,18 @@ export function clearExpressionSourceMaps(attribute: JSExpression): JSExpression
     default:
       const _exhaustiveCheck: never = attribute
       throw new Error(`Unhandled attribute ${JSON.stringify(attribute)}`)
+  }
+}
+
+export function clearIdentifierUniqueIDsAndSourceMaps(identifier: JSIdentifier): JSIdentifier {
+  return clearIdentifierUniqueIDs(clearIdentifierSourceMaps(identifier))
+}
+
+export function clearAssignmentUniqueIDsAndSourceMaps(assignment: JSAssignment): JSAssignment {
+  return {
+    type: 'JS_ASSIGNMENT',
+    leftHandSide: clearIdentifierUniqueIDsAndSourceMaps(assignment.leftHandSide),
+    rightHandSide: clearExpressionUniqueIDsAndSourceMaps(assignment.rightHandSide),
   }
 }
 
@@ -2217,6 +2275,7 @@ export type TopLevelElement = UtopiaJSXComponent | ArbitraryJSBlock | ImportStat
 export function clearArbitraryJSBlockUniqueIDs(block: ArbitraryJSBlock): ArbitraryJSBlock {
   return {
     ...block,
+    statements: block.statements.map(clearJSArbitraryStatementUniqueIDs),
     uid: '',
   }
 }
@@ -2773,4 +2832,32 @@ export function getElementsByUIDFromTopLevelElements(
     }
   })
   return result
+}
+
+export function clearJSAssignmentUniqueIDs(assignment: JSAssignment): JSAssignment {
+  return {
+    ...assignment,
+    leftHandSide: clearIdentifierUniqueIDs(assignment.leftHandSide),
+    rightHandSide: clearExpressionUniqueIDs(assignment.rightHandSide),
+  }
+}
+
+export function clearJSArbitraryStatementUniqueIDs(
+  statement: JSArbitraryStatement,
+): JSArbitraryStatement {
+  switch (statement.type) {
+    case 'JS_ASSIGNMENT_STATEMENT':
+      return {
+        ...statement,
+        assignments: statement.assignments.map(clearJSAssignmentUniqueIDs),
+        uid: '',
+      }
+    case 'JS_OPAQUE_ARBITRARY_STATEMENT':
+      return {
+        ...statement,
+        uid: '',
+      }
+    default:
+      assertNever(statement)
+  }
 }
