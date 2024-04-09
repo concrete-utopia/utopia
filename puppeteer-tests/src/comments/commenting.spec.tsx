@@ -214,13 +214,6 @@ describe('Comments test', () => {
     expect(commentTabs).not.toBeNull()
   })
 
-  xit('There is no comment tab when logged out', async () => {
-    const page = await initBrowserTest(utopiaBrowser)
-
-    const commentsTabs = await page.$$('div[data-testid="comments-tab"]')
-    expect(commentsTabs).toHaveLength(0)
-  })
-
   xit('can reparent comment', async () => {
     const page = await initSignedInBrowserTest(utopiaBrowser)
     await enterCommentMode(page)
