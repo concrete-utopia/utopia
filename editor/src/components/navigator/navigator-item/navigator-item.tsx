@@ -866,7 +866,11 @@ export const NavigatorItem: React.FunctionComponent<
                   collapsed={collapsed}
                   selected={selected && !isInsideComponent}
                   onMouseDown={collapse}
-                  style={{ transform: 'scale(0.6)', opacity: 'var(--paneHoverOpacity)' }}
+                  style={{
+                    transform: 'scale(0.6)',
+                    opacity: 'var(--paneHoverOpacity)',
+                    background: 'pink',
+                  }}
                   testId={`navigator-item-collapse-${navigatorEntryToKey(props.navigatorEntry)}`}
                   iconColor={iconColor}
                 />,
@@ -955,7 +959,7 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'flex-start',
-        gap: 10,
+        gap: 5,
         borderRadius: 20,
         height: 22,
         paddingLeft: 10,
