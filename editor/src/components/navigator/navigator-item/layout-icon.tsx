@@ -110,21 +110,25 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
       if (isZeroSized) {
         return (
           <Icn
-            category='element'
+            category='navigator-element'
             type='zerosized-div'
             testId={iconTestId}
             color={'main'}
-            width={18}
-            height={18}
+            width={12}
+            height={12}
           />
         )
       }
       if (isInvalidOverrideNavigatorEntry(navigatorEntry)) {
         return (
-          <Icons.WarningTriangle
-            color={'overridden'}
+          <Icn
+            category='navigator-element'
+            type='warningtriangle'
             tooltipText={navigatorEntry.message}
             testId={iconTestId}
+            color={'main'}
+            width={12}
+            height={12}
           />
         )
       } else if (warningText == null) {
@@ -145,12 +149,39 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
         )
       } else if (isErroredGroup) {
         return (
-          <Icons.GroupProblematic testId={iconTestId} color={color} tooltipText={warningText} />
+          <Icn
+            category='navigator-element'
+            type='group-problematic'
+            tooltipText={warningText}
+            testId={iconTestId}
+            color={color}
+            width={12}
+            height={12}
+          />
         )
       } else if (isErroredGroupChild) {
-        return <Icn {...defaults} testId={iconTestId} tooltipText={warningText} />
+        return (
+          <Icn
+            {...defaults}
+            testId={iconTestId}
+            tooltipText={warningText}
+            category='navigator-element'
+            width={12}
+            height={12}
+          />
+        )
       } else {
-        return <WarningIcon tooltipText={warningText} testId={iconTestId} />
+        return (
+          <Icn
+            category='navigator-element'
+            type='warningtriangle'
+            tooltipText={warningText}
+            testId={iconTestId}
+            color={'main'}
+            width={12}
+            height={12}
+          />
+        )
       }
     }, [
       iconProps,
@@ -183,7 +214,7 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
             width={12}
             height={12}
             testId={iconTestId}
-            style={{ position: 'relative', left: 11 }}
+            style={{ position: 'relative', left: 11, transform: 'scale(1.1)' }}
           />
         )
       } else {
