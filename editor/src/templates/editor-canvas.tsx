@@ -78,6 +78,7 @@ import type {
 } from '../core/shared/math-utils'
 import {
   canvasPoint,
+  canvasVector,
   roundPointToNearestHalf,
   roundPointToNearestWhole,
   windowRectangle,
@@ -365,10 +366,7 @@ export function runLocalCanvasAction(
   // TODO BB horrorshow performance
   switch (action.action) {
     case 'SCROLL_CANVAS': {
-      const newCanvasOffset = Utils.offsetPoint(
-        model.canvas.realCanvasOffset,
-        Utils.negate(action.delta),
-      )
+      const newCanvasOffset = canvasVector({ x: 0, y: 0 })
       return {
         ...model,
         canvas: {
@@ -378,15 +376,17 @@ export function runLocalCanvasAction(
         },
       }
     }
-    case 'POSITION_CANVAS':
+    case 'POSITION_CANVAS': {
+      const newCanvasOffset = canvasVector({ x: 0, y: 0 })
       return {
         ...model,
         canvas: {
           ...model.canvas,
-          realCanvasOffset: action.position,
-          roundedCanvasOffset: roundPointToNearestWhole(action.position),
+          realCanvasOffset: newCanvasOffset,
+          roundedCanvasOffset: roundPointToNearestWhole(newCanvasOffset),
         },
       }
+    }
     case 'SET_SELECTION_CONTROLS_VISIBILITY':
       return update(model, {
         canvas: {
@@ -401,28 +401,7 @@ export function runLocalCanvasAction(
       }
       return model
     case 'ZOOM': {
-      const { focusPoint, scale } = action
-      const previousScale = model.canvas.scale
-      const newCanvasOffset = getCanvasOffset(
-        model.canvas.realCanvasOffset,
-        previousScale,
-        scale,
-        model.jsxMetadata,
-        model.selectedViews,
-        focusPoint,
-        false,
-      )
-
-      return {
-        ...model,
-        canvas: {
-          ...model.canvas,
-          scale: scale,
-          snappingThreshold: BaseSnappingThreshold / scale,
-          realCanvasOffset: newCanvasOffset,
-          roundedCanvasOffset: roundPointToNearestWhole(newCanvasOffset),
-        },
-      }
+      return model
     }
     case 'CREATE_INTERACTION_SESSION':
       const metadata = model.canvas.interactionSession?.latestMetadata ?? model.jsxMetadata
