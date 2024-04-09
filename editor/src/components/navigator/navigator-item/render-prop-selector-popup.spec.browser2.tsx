@@ -14,6 +14,7 @@ import {
   componentPickerOptionTestId,
   componentPickerTestIdForProp,
 } from './component-picker'
+import { waitFor } from '@testing-library/react'
 
 describe('The navigator render prop picker', () => {
   const PreferredChildComponents = [
@@ -147,6 +148,9 @@ describe('The navigator render prop picker', () => {
     )
     await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
 
+    const moreButton = await waitFor(() => editor.renderedDOM.getByText('More...'))
+    await mouseClickAtPoint(moreButton, { x: 3, y: 3 })
+
     const renderPropPicker = editor.renderedDOM.queryByTestId(componentPickerTestIdForProp('title'))
     expect(renderPropPicker).not.toBeNull()
 
@@ -164,6 +168,9 @@ describe('The navigator render prop picker', () => {
       'toggle-render-prop-NavigatorItemTestId-slot_sb/card/prop_label_title',
     )
     await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
+
+    const moreButton = await waitFor(() => editor.renderedDOM.getByText('More...'))
+    await mouseClickAtPoint(moreButton, { x: 3, y: 3 })
 
     for (const childComponent of PreferredChildComponents) {
       const renderedOptionLabel = editor.renderedDOM.queryByTestId(
@@ -187,6 +194,9 @@ describe('The navigator render prop picker', () => {
       'toggle-render-prop-NavigatorItemTestId-slot_sb/card/prop_label_title',
     )
     await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
+
+    const moreButton = await waitFor(() => editor.renderedDOM.getByText('More...'))
+    await mouseClickAtPoint(moreButton, { x: 3, y: 3 })
 
     // Select the search bar
     const filterInput = editor.renderedDOM.getByTestId(componentPickerFilterInputTestId)
@@ -228,6 +238,9 @@ describe('The navigator render prop picker', () => {
     )
     await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
 
+    const moreButton = await waitFor(() => editor.renderedDOM.getByText('More...'))
+    await mouseClickAtPoint(moreButton, { x: 3, y: 3 })
+
     // Select the search bar
     const filterInput = editor.renderedDOM.getByTestId(componentPickerFilterInputTestId)
     filterInput.focus()
@@ -260,6 +273,9 @@ describe('The navigator render prop picker', () => {
     )
     await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
 
+    const moreButton = await waitFor(() => editor.renderedDOM.getByText('More...'))
+    await mouseClickAtPoint(moreButton, { x: 3, y: 3 })
+
     const renderPropPickerBefore = editor.renderedDOM.queryByTestId(
       componentPickerTestIdForProp('title'),
     )
@@ -282,6 +298,9 @@ describe('The navigator render prop picker', () => {
     )
     await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
 
+    const moreButton = await waitFor(() => editor.renderedDOM.getByText('More...'))
+    await mouseClickAtPoint(moreButton, { x: 3, y: 3 })
+
     const renderPropPickerBefore = editor.renderedDOM.queryByTestId(
       componentPickerTestIdForProp('title'),
     )
@@ -302,6 +321,9 @@ describe('The navigator render prop picker', () => {
       'toggle-render-prop-NavigatorItemTestId-slot_sb/card/prop_label_title',
     )
     await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
+
+    const moreButton = await waitFor(() => editor.renderedDOM.getByText('More...'))
+    await mouseClickAtPoint(moreButton, { x: 3, y: 3 })
 
     const optionLabel = 'FlexRow'
     const optionVariantName = 'with three placeholders'
@@ -338,9 +360,7 @@ describe('The navigator render prop picker', () => {
             height: 87,
           }}
           title={
-            <FlexRow style={{ width: 100, height: 100 }}>
-              three totally real placeholders
-            </FlexRow>
+            <FlexRow>three totally real placeholders</FlexRow>
           }
         />
       </Storyboard>
