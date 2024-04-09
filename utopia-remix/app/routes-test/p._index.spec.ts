@@ -3,7 +3,9 @@ import { prisma } from '../db.server'
 import { createTestSession, createTestUser, newTestRequest, truncateTables } from '../test-util'
 import { loader as p_loader } from '../routes/p._index'
 import { ServerEnvironment } from '../env.server'
+import { authenticateUrl } from '../util/auth0.server'
 import * as serverProxy from '../util/proxy.server'
+import { urlToRelative } from '../util/common'
 
 describe('handleEditorWithLogin', () => {
   let pageProxy: jest.SpyInstance
@@ -49,7 +51,7 @@ describe('handleEditorWithLogin', () => {
       expect(redirectResponse.status).toBe(302)
       const redirectLocation = redirectResponse.headers.get('Location')
       const redirectToParam = getParamFromLoginURL(redirectLocation ?? '', 'redirectTo')
-      expect(redirectToParam).toBe(request.url)
+      expect(redirectToParam).toBe(urlToRelative(request.url))
     }
     expect(response).toBeUndefined()
   })
@@ -78,11 +80,11 @@ describe('handleEditorWithLogin', () => {
       const redirectResponse = err as Response
       expect(redirectResponse.status).toBe(302)
       const redirectLocation = redirectResponse.headers.get('Location')
-      expect(redirectLocation).toContain(`${ServerEnvironment.CORS_ORIGIN}/authenticate`)
+      expect(redirectLocation).toContain(authenticateUrl().toString())
       const redirectToParam = getDecodedParam(redirectLocation, 'redirectTo')
       const expectedRedirectUrl = new URL(request.url)
       expectedRedirectUrl.searchParams.delete('fakeUser')
-      expect(redirectToParam).toBe(expectedRedirectUrl.toString())
+      expect(redirectToParam).toBe(urlToRelative(expectedRedirectUrl.toString()))
       const codeParam = getDecodedParam(redirectLocation, 'code')
       expect(codeParam).toBe('alice')
     }

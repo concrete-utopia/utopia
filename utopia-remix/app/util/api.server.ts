@@ -12,6 +12,7 @@ import { Status } from './statusCodes'
 import { ServerEnvironment } from '../env.server'
 import { maybeGetUserFromSession } from '../models/session.server'
 import { auth0LoginURL } from './auth0.server'
+import { urlToRelative } from './common'
 
 interface ErrorResponse {
   error: string
@@ -199,7 +200,9 @@ export async function requireUser(
   } catch (error) {
     if (error instanceof ApiError && error.status === Status.UNAUTHORIZED) {
       if (options?.redirect != null) {
-        throw redirect(options.redirect)
+        throw redirect(options.redirect, {
+          headers: { 'cache-control': 'no-cache' },
+        })
       }
     }
     throw error
@@ -213,7 +216,8 @@ export async function requireUserOrRedirectToLogin(request: Request): Promise<Us
 
   return await requireUser(request, {
     redirect: auth0LoginURL({
-      redirectTo: url.toString(),
+      // send relative urls as our servers sometime redirect internally to different domains
+      redirectTo: urlToRelative(url.toString()),
       fakeUser: fakeUser,
     }),
   })
