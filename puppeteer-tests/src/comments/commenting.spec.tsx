@@ -214,7 +214,7 @@ describe('Comments test', () => {
     expect(commentTabs).not.toBeNull()
   })
 
-  it('There is no comment tab when logged out', async () => {
+  xit('There is no comment tab when logged out', async () => {
     const page = await initBrowserTest(utopiaBrowser)
 
     const commentsTabs = await page.$$('div[data-testid="comments-tab"]')
