@@ -1900,7 +1900,6 @@ export var ${BakedInStoryboardVariableName} = (props) => {
             const guidelines =
               renderResult.getEditorState().editor.canvas.controls.snappingGuidelines
             expect(guidelines).toHaveLength(2)
-            await wait(5000)
           },
         },
       )
@@ -1960,7 +1959,6 @@ export var ${BakedInStoryboardVariableName} = (props) => {
             const guidelines =
               renderResult.getEditorState().editor.canvas.controls.snappingGuidelines
             expect(guidelines).toHaveLength(2)
-            await wait(5000)
           },
           moveBeforeMouseDown: true,
           staggerMoveEvents: true,
@@ -2020,7 +2018,6 @@ export var ${BakedInStoryboardVariableName} = (props) => {
             const guidelines =
               renderResult.getEditorState().editor.canvas.controls.snappingGuidelines
             expect(guidelines).toHaveLength(2)
-            await wait(5000)
           },
         },
       )

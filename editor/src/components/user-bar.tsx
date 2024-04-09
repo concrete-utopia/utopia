@@ -196,6 +196,12 @@ const MultiplayerUserBar = React.memo(() => {
     return ownerId === myUser.id
   }, [ownerId, myUser])
 
+  const hasPendingRequests = useEditorState(
+    Substores.projectServerState,
+    (store) => store.projectServerState.projectData?.hasPendingRequests ?? false,
+    'MultiplayerUserBar hasPendingRequests',
+  )
+
   const toggleFollowing = React.useCallback(
     (target: FollowTarget) => () => {
       let actions: EditorAction[] = []
@@ -322,6 +328,7 @@ const MultiplayerUserBar = React.memo(() => {
             '&:active': {
               border: `1px solid ${colorTheme.primary30.value}`,
             },
+            position: 'relative',
           }}
         >
           <MultiplayerAvatar
@@ -336,6 +343,21 @@ const MultiplayerUserBar = React.memo(() => {
             style={{ outline: 'undefined' }}
           />
           <div style={{ padding: '0 8px 0 5px', fontWeight: 500 }}>Share</div>
+          {when(
+            hasPendingRequests,
+            <div
+              style={{
+                position: 'absolute',
+                top: -2,
+                right: -2,
+                width: 9,
+                height: 9,
+                background: 'red',
+                borderRadius: '100%',
+                border: `1px solid ${colorTheme.bg0.value}`,
+              }}
+            />,
+          )}
         </FlexRow>
       ) : (
         <FlexRow>

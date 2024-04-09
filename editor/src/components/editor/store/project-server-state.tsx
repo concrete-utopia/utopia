@@ -11,17 +11,20 @@ export interface ProjectMetadataFromServer {
   title: string
   ownerName: string | null
   ownerPicture: string | null
+  hasPendingRequests?: boolean
 }
 
 export function projectMetadataFromServer(
   title: string,
   ownerName: string | null,
   ownerPicture: string | null,
+  hasPendingRequests?: boolean,
 ): ProjectMetadataFromServer {
   return {
     title: title,
     ownerName: ownerName,
     ownerPicture: ownerPicture,
+    hasPendingRequests: hasPendingRequests,
   }
 }
 
@@ -69,6 +72,7 @@ function projectListingToProjectMetadataFromServer(
       title: projectListing.title,
       ownerName: projectListing.ownerName ?? null,
       ownerPicture: projectListing.ownerPicture ?? null,
+      hasPendingRequests: projectListing.hasPendingRequests,
     }
   }
 }

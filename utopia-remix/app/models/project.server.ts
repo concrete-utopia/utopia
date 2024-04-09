@@ -2,8 +2,8 @@ import { prisma } from '../db.server'
 import type {
   CollaboratorsByProject,
   GithubRepository,
-  ProjectAccessRequestWithUserDetails,
   ProjectListing,
+  ProjectMetadataForEditor,
   ProjectSharingDetails,
 } from '../types'
 import {
@@ -263,4 +263,28 @@ export async function updateGithubRepository(params: {
       modified_at: new Date(),
     },
   })
+}
+
+export async function getProjectExtraMetadataForEditor(params: {
+  projectId: string
+  userId: string
+}): Promise<ProjectMetadataForEditor | null> {
+  const project = await prisma.project.findUnique({
+    where: {
+      proj_id: params.projectId,
+      owner_id: params.userId,
+    },
+    select: {
+      ProjectAccessRequest: true,
+    },
+  })
+  if (project == null) {
+    return null
+  }
+
+  return {
+    hasPendingRequests: project.ProjectAccessRequest.some(
+      (r) => r.status === AccessRequestStatus.PENDING,
+    ),
+  }
 }
