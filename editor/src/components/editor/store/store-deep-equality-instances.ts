@@ -78,7 +78,7 @@ import {
   exportType,
   singleFileBuildResult,
 } from '../../../core/workers/common/worker-types'
-import type { PreferredChildComponent, Sides } from 'utopia-api/core'
+import type { Sides, Focus, Styling, Emphasis, Icon } from 'utopia-api/core'
 import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
@@ -3338,7 +3338,7 @@ export function ComponentDescriptorSourceKeepDeepEquality(): KeepDeepEqualityCal
 }
 
 export const ComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<ComponentDescriptor> =
-  combine5EqualityCalls(
+  combine9EqualityCalls(
     (descriptor) => descriptor.properties,
     PropertyControlsKeepDeepEquality,
     (descriptor) => descriptor.supportsChildren,
@@ -3349,6 +3349,14 @@ export const ComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<Component
     arrayDeepEquality(PreferredChildComponentDescriptorKeepDeepEquality),
     (descriptor) => descriptor.source,
     ComponentDescriptorSourceKeepDeepEquality(),
+    (descriptor) => descriptor.focus,
+    undefinableDeepEquality(createCallWithTripleEquals<Focus>()),
+    (descriptor) => descriptor.inspector,
+    undefinableDeepEquality(arrayDeepEquality(createCallWithTripleEquals<Styling>())),
+    (descriptor) => descriptor.emphasis,
+    undefinableDeepEquality(createCallWithTripleEquals<Emphasis>()),
+    (descriptor) => descriptor.icon,
+    undefinableDeepEquality(createCallWithTripleEquals<Icon>()),
     componentDescriptor,
   )
 
