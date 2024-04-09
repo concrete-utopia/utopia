@@ -10,6 +10,7 @@ export interface ProjectListing {
   createdAt: string
   modifiedAt: string
   thumbnail: string
+  hasPendingRequests?: boolean
 }
 
 export const LOCAL_PROJECT_PREFIX = 'local-project-'

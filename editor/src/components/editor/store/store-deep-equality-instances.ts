@@ -590,13 +590,15 @@ import type {
 } from '../../custom-code/internal-property-controls'
 
 export const ProjectMetadataFromServerKeepDeepEquality: KeepDeepEqualityCall<ProjectMetadataFromServer> =
-  combine3EqualityCalls(
+  combine4EqualityCalls(
     (entry) => entry.title,
     StringKeepDeepEquality,
     (entry) => entry.ownerName,
     NullableStringKeepDeepEquality,
     (entry) => entry.ownerPicture,
     NullableStringKeepDeepEquality,
+    (entry) => entry.hasPendingRequests,
+    undefinableDeepEquality(BooleanKeepDeepEquality),
     projectMetadataFromServer,
   )
 
