@@ -6,6 +6,7 @@ import {
   BASE_URL,
   IS_TEST_ENVIRONMENT,
   DEVELOPMENT_ENV,
+  UTOPIA_BACKEND_BASE_URL,
 } from './env-vars'
 import type { ProjectListing } from './persistence'
 import type { LoginState } from './user'
@@ -60,6 +61,10 @@ export function assetURL(projectId: string, fileName: string): string {
 
 export function projectURL(projectId: string): string {
   return urljoin(PROJECT_ENDPOINT, projectId)
+}
+
+export function newProjectURL(): string {
+  return urljoin(PROJECT_ENDPOINT)
 }
 
 export function projectEditorURL(projectId: string): string {
@@ -282,4 +287,8 @@ export async function deleteProjectFromServer(projectId: string): Promise<void> 
       `Failed to delete project ${projectId} (${response.status}): ${response.statusText}`,
     )
   }
+}
+
+export function editorShareDialogIframeUrl(projectId: string): string {
+  return urljoin(UTOPIA_BACKEND_BASE_URL, `/internal/editor/projects/${projectId}/sharing`)
 }

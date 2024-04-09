@@ -5025,6 +5025,47 @@ describe('Navigator', () => {
   })
 
   describe('render props', () => {
+    it('can insert an empty intrinsic element into render prop', async () => {
+      const renderResult = await renderTestEditorWithModel(
+        projectWithRenderProp(''), // <- no render prop
+        'await-first-dom-report',
+      )
+
+      const slotElement = renderResult.renderedDOM.getByTestId(
+        'toggle-render-prop-NavigatorItemTestId-slot_sb/scene/pg:dbc/78c/prop_label_header',
+      )
+
+      await mouseClickAtPoint(slotElement, { x: 3, y: 3 })
+      const renderPropOptionElement = await waitFor(() =>
+        renderResult.renderedDOM.getByText('(empty)'),
+      )
+      await mouseClickAtPoint(renderPropOptionElement, { x: 3, y: 3 })
+
+      expect(
+        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-sb/scene',
+        'regular-sb/scene/pg',
+        'regular-sb/scene/pg:dbc',
+        'regular-sb/scene/pg:dbc/78c',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
+        'regular-sb/scene/pg:dbc/78c/pro', // <- the inserted render prop
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
+        'regular-sb/scene/pg:dbc/78c/88b',
+      ])
+      expect(
+        renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-sb/scene',
+        'regular-sb/scene/pg',
+        'regular-sb/scene/pg:dbc',
+        'regular-sb/scene/pg:dbc/78c',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
+        'regular-sb/scene/pg:dbc/78c/pro', // <- the inserted render prop
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
+        'regular-sb/scene/pg:dbc/78c/88b',
+      ])
+    })
     it('can insert an intrinsic element into render prop', async () => {
       const renderResult = await renderTestEditorWithModel(
         projectWithRenderProp(''), // <- no render prop
@@ -5379,34 +5420,34 @@ describe('Navigator row order', () => {
         'regular-sb/group/foo',
         'regular-sb/group/b68',
         'regular-sb/group/b68/46a~~~1',
-        'regular-sb/group/b68/46a~~~1/433',
+        'regular-sb/group/b68/46a~~~1/b2e',
         'regular-sb/group/b68/a59~~~2',
-        'regular-sb/group/b68/a59~~~2/b2e',
+        'regular-sb/group/b68/a59~~~2/441',
         'regular-sb/group/b68/46a~~~3',
-        'regular-sb/group/b68/46a~~~3/433',
+        'regular-sb/group/b68/46a~~~3/b2e',
         'regular-sb/group/b68/a59~~~4',
-        'regular-sb/group/b68/a59~~~4/b2e',
+        'regular-sb/group/b68/a59~~~4/441',
         'regular-sb/group/b68/46a~~~5',
-        'regular-sb/group/b68/46a~~~5/433',
+        'regular-sb/group/b68/46a~~~5/b2e',
         'regular-sb/group/b68/a59~~~6',
-        'regular-sb/group/b68/a59~~~6/b2e',
+        'regular-sb/group/b68/a59~~~6/441',
         'regular-sb/group/cond',
         'conditional-clause-sb/group/cond-true-case',
         'regular-sb/group/cond/929',
         'regular-sb/group/cond/929/f23~~~1',
-        'regular-sb/group/cond/929/f23~~~1/441',
+        'regular-sb/group/cond/929/f23~~~1/fd7',
         'regular-sb/group/cond/929/f23~~~2',
-        'regular-sb/group/cond/929/f23~~~2/441',
+        'regular-sb/group/cond/929/f23~~~2/fd7',
         'regular-sb/group/cond/929/f23~~~3',
-        'regular-sb/group/cond/929/f23~~~3/441',
+        'regular-sb/group/cond/929/f23~~~3/fd7',
         'conditional-clause-sb/group/cond-false-case',
         'synthetic-sb/group/cond/15e-element-15e',
         'regular-sb/group/bar',
         'regular-sb/group/651',
         'regular-sb/group/651/3bc~~~1',
-        'regular-sb/group/651/3bc~~~1/50a',
+        'regular-sb/group/651/3bc~~~1/38a',
         'regular-sb/group/651/3bc~~~2',
-        'regular-sb/group/651/3bc~~~2/50a',
+        'regular-sb/group/651/3bc~~~2/38a',
         'regular-sb/group/text-expr-cond-wrapper',
         'regular-sb/group/text-expr-cond-wrapper/text-expr-cond',
         'conditional-clause-sb/group/text-expr-cond-wrapper/text-expr-cond-true-case',
@@ -5471,17 +5512,17 @@ describe('Navigator row order', () => {
         'regular-sb/group/0b5/33d~~~1',
         'regular-sb/group/foo',
         'regular-sb/group/809',
-        'regular-sb/group/809/46a~~~1',
-        'regular-sb/group/809/46a~~~2',
+        'regular-sb/group/809/a59~~~1',
+        'regular-sb/group/809/a59~~~2',
         'regular-sb/group/cond',
         'conditional-clause-sb/group/cond-true-case',
         'regular-sb/group/cond/4ce',
-        'regular-sb/group/cond/4ce/f23~~~1',
+        'regular-sb/group/cond/4ce/2f3~~~1',
         'conditional-clause-sb/group/cond-false-case',
-        'synthetic-sb/group/cond/15e-element-15e',
+        'synthetic-sb/group/cond/30e-element-30e',
         'regular-sb/group/bar',
         'regular-sb/group/bf0',
-        'regular-sb/group/bf0/3bc~~~1',
+        'regular-sb/group/bf0/e63~~~1',
       ],
     )
     expect(
@@ -5492,17 +5533,17 @@ describe('Navigator row order', () => {
       'regular-sb/group/0b5/33d~~~1',
       'regular-sb/group/foo',
       'regular-sb/group/809',
-      'regular-sb/group/809/46a~~~1',
-      'regular-sb/group/809/46a~~~2',
+      'regular-sb/group/809/a59~~~1',
+      'regular-sb/group/809/a59~~~2',
       'regular-sb/group/cond',
       'conditional-clause-sb/group/cond-true-case',
       'regular-sb/group/cond/4ce',
-      'regular-sb/group/cond/4ce/f23~~~1',
+      'regular-sb/group/cond/4ce/2f3~~~1',
       'conditional-clause-sb/group/cond-false-case',
-      'synthetic-sb/group/cond/15e-element-15e',
+      'synthetic-sb/group/cond/30e-element-30e',
       'regular-sb/group/bar',
       'regular-sb/group/bf0',
-      'regular-sb/group/bf0/3bc~~~1',
+      'regular-sb/group/bf0/e63~~~1',
     ])
   })
 

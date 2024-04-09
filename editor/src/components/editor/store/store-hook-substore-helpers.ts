@@ -141,6 +141,7 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   codeEditorErrors: {
     buildErrors: {},
     lintErrors: {},
+    componentDescriptorErrors: {},
   },
   thumbnailLastGenerated: 0,
   pasteTargetsToIgnore: [],
@@ -175,4 +176,5 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   commentFilterMode: 'all',
   forking: false,
   collaborators: [],
+  sharingDialogOpen: false,
 }

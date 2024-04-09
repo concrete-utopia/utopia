@@ -10,6 +10,7 @@ import {
 } from '../test-util'
 import {
   getProjectOwnership,
+  getProjectSharingDetails,
   hardDeleteAllProjects,
   hardDeleteProject,
   listDeletedProjects,
@@ -524,6 +525,80 @@ describe('project model', () => {
           ':' +
           repo.branch.slice(0, MaxGithubBranchNameLength),
       )
+    })
+  })
+
+  describe('getProjectSharingDetails', () => {
+    beforeEach(async () => {
+      await createTestUser(prisma, { id: 'bob' })
+      await createTestUser(prisma, { id: 'alice' })
+      await createTestUser(prisma, { id: 'carol' })
+      await createTestUser(prisma, { id: 'dorothy' })
+
+      await createTestProject(prisma, {
+        id: 'one',
+        ownerId: 'bob',
+        accessLevel: AccessLevel.PRIVATE,
+      })
+      await createTestProject(prisma, {
+        id: 'two',
+        ownerId: 'bob',
+        accessLevel: AccessLevel.COLLABORATIVE,
+      })
+      await createTestProject(prisma, { id: 'three', ownerId: 'bob' })
+
+      await createTestProjectAccessRequest(prisma, {
+        projectId: 'two',
+        status: AccessRequestStatus.PENDING,
+        userId: 'alice',
+        token: 't1',
+      })
+      await createTestProjectAccessRequest(prisma, {
+        projectId: 'two',
+        status: AccessRequestStatus.PENDING,
+        userId: 'carol',
+        token: 't2',
+      })
+      await createTestProjectAccessRequest(prisma, {
+        projectId: 'two',
+        status: AccessRequestStatus.APPROVED,
+        userId: 'dorothy',
+        token: 't3',
+      })
+      await createTestProjectAccessRequest(prisma, {
+        projectId: 'three',
+        status: AccessRequestStatus.APPROVED,
+        userId: 'dorothy',
+        token: 't4',
+      })
+    })
+
+    it('returns null if the project does not exist', async () => {
+      const got = await getProjectSharingDetails({ projectId: 'WRONG', userId: 'bob' })
+      expect(got).toBe(null)
+    })
+    it('returns null if the user does not own the project', async () => {
+      const got = await getProjectSharingDetails({ projectId: 'one', userId: 'alice' })
+      expect(got).toBe(null)
+    })
+    it('returns the project details with the access requests', async () => {
+      let got = await getProjectSharingDetails({ projectId: 'one', userId: 'bob' })
+      if (got == null) {
+        throw new Error('expected not null project')
+      }
+      expect(got.proj_id).toBe('one')
+      expect(got.ProjectAccess?.access_level).toBe(AccessLevel.PRIVATE)
+      expect(got.ProjectAccessRequest.length).toBe(0)
+
+      got = await getProjectSharingDetails({ projectId: 'two', userId: 'bob' })
+      if (got == null) {
+        throw new Error('expected not null project')
+      }
+      expect(got.proj_id).toBe('two')
+      expect(got.ProjectAccess?.access_level).toBe(AccessLevel.COLLABORATIVE)
+      expect(got.ProjectAccessRequest.length).toBe(3)
+      expect(got.ProjectAccessRequest[0].token).toBe('t1')
+      expect(got.ProjectAccessRequest[0].User?.name).toBe('alice')
     })
   })
 })

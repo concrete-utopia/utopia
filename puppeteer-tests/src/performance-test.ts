@@ -13,10 +13,11 @@ const TARGET_BRANCH_NAME = process.env.TARGET_BRANCH_NAME
   ? `&branch_name=${process.env.TARGET_BRANCH_NAME}`
   : ''
 const STAGING_EDITOR_URL =
-  process.env.EDITOR_URL ?? `https://utopia.fish/p?code_editor_disabled=true${BRANCH_NAME}`
+  process.env.EDITOR_URL ??
+  `https://utopia.fish/p?fakeUser=alice&code_editor_disabled=true${BRANCH_NAME}`
 const MASTER_EDITOR_URL =
   process.env.MASTER_EDITOR_URL ??
-  `https://utopia.fish/p?code_editor_disabled=true${TARGET_BRANCH_NAME}`
+  `https://utopia.fish/p?fakeUser=alice&code_editor_disabled=true${TARGET_BRANCH_NAME}`
 
 interface FrameResult {
   title: string

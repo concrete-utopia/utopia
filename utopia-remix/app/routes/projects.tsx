@@ -17,7 +17,7 @@ import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import { useFetcher, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
 import type { UserDetails } from 'prisma-client'
-import React from 'react'
+import React, { useCallback } from 'react'
 import { ProjectActionsMenu } from '../components/projectActionContextMenu'
 import { SharingDialogWrapper } from '../components/sharingDialog'
 import { SortingContextMenu } from '../components/sortProjectsContextMenu'
@@ -207,6 +207,26 @@ const ProjectsPageInner = React.memo(() => {
     return activeProjects.find((p) => p.proj_id === sharingProjectId) ?? null
   }, [activeProjects, sharingProjectId])
 
+  const setSelectedProjectId = useProjectsStore((store) => store.setSelectedProjectId)
+
+  const containerRef = React.useRef<HTMLDivElement | null>(null)
+
+  const onContainerMouseDown = React.useCallback(
+    (e: React.MouseEvent) => {
+      const target = e.target as HTMLElement
+      // check if target is inside the projects' container
+      // since this handler fires also on context menu clicks
+      if (
+        containerRef.current != null &&
+        containerRef.current.contains(target) &&
+        target.closest('[data-role="project"]') == null
+      ) {
+        setSelectedProjectId(null)
+      }
+    },
+    [setSelectedProjectId],
+  )
+
   return (
     <div
       style={{
@@ -219,6 +239,8 @@ const ProjectsPageInner = React.memo(() => {
         flexDirection: 'row',
         userSelect: 'none',
       }}
+      ref={containerRef}
+      onMouseDown={onContainerMouseDown}
     >
       <Sidebar user={data.user} />
       <div
@@ -381,6 +403,12 @@ const TopActionBar = React.memo(() => {
         title: '+ New Project',
         onClick: () => window.open(projectEditorLink(null), '_blank'),
         color: 'blue',
+      },
+      {
+        id: 'createPublicProject',
+        title: '+ New Public Project',
+        onClick: () => window.open(`${projectEditorLink(null)}?accessLevel=public`, '_blank'),
+        color: 'green',
       },
     ] as const
   }, [projectEditorLink])
@@ -593,9 +621,8 @@ const Projects = React.memo(
     const setSelectedProjectId = useProjectsStore((store) => store.setSelectedProjectId)
 
     const handleProjectSelect = React.useCallback(
-      (project: ProjectListing) =>
-        setSelectedProjectId(project.proj_id === selectedProjectId ? null : project.proj_id),
-      [setSelectedProjectId, selectedProjectId],
+      (project: ProjectListing) => setSelectedProjectId(project.proj_id),
+      [setSelectedProjectId],
     )
 
     return (
@@ -698,20 +725,19 @@ const ProjectCard = React.memo(
       }
     }, [openShareDialog, canOpenShareDialog])
 
-    const onMouseDown = React.useCallback(
-      (event: React.MouseEvent) => {
-        // on right click only allow selection (not de-selction)
-        if (event.button !== 2 || !selected) {
-          onSelect()
-        }
+    const onMouseDown = useCallback(
+      (e: React.MouseEvent) => {
+        e.stopPropagation()
+        onSelect()
       },
-      [onSelect, selected],
+      [onSelect],
     )
 
     return (
       <ContextMenu.Root>
         <ContextMenu.Trigger>
           <div
+            data-role='project'
             style={{
               minHeight: 200,
               flex: 1,
@@ -722,6 +748,7 @@ const ProjectCard = React.memo(
               gap: 5,
               filter: activeOperations.length > 0 ? 'grayscale(1)' : undefined,
             }}
+            onMouseDown={onMouseDown}
           >
             <div
               style={{
@@ -736,7 +763,6 @@ const ProjectCard = React.memo(
                 position: 'relative',
                 filter: project.deleted === true ? 'grayscale(1)' : undefined,
               }}
-              onMouseDown={onMouseDown}
               onDoubleClick={openProject}
             >
               {when(
@@ -917,14 +943,12 @@ const ProjectRow = React.memo(
       }
     }, [openShareDialog, canOpenShareDialog])
 
-    const onMouseDown = React.useCallback(
-      (event: React.MouseEvent) => {
-        // on right click only allow selection (not de-selction)
-        if (event.button !== 2 || !selected) {
-          onSelect()
-        }
+    const onMouseDown = useCallback(
+      (e: React.MouseEvent) => {
+        e.stopPropagation()
+        onSelect()
       },
-      [onSelect, selected],
+      [onSelect],
     )
 
     return (
@@ -932,6 +956,7 @@ const ProjectRow = React.memo(
         <ContextMenu.Trigger>
           <div style={{ padding: '8px 0' }}>
             <div
+              data-role='project'
               style={{
                 height: 60,
                 display: 'flex',
