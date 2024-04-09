@@ -128,7 +128,21 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
           />
         )
       } else if (warningText == null) {
-        return <Icn {...defaults} testId={iconTestId} />
+        return (
+          <div
+            style={{
+              transform: isPositionAbsolute ? 'scale(.8)' : undefined,
+            }}
+          >
+            <Icn
+              {...defaults}
+              category='navigator-element'
+              width={12}
+              height={12}
+              testId={iconTestId}
+            />
+          </div>
+        )
       } else if (isErroredGroup) {
         return (
           <Icons.GroupProblematic testId={iconTestId} color={color} tooltipText={warningText} />
@@ -147,6 +161,7 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
       isErroredGroup,
       isErroredGroupChild,
       iconTestId,
+      isPositionAbsolute,
     ])
 
     const marker = React.useMemo(() => {
@@ -162,32 +177,29 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
         )
       } else if (isPositionAbsolute) {
         return (
-          <div
-            style={{
-              color: colorTheme.brandNeonPink.value,
-              fontSize: 11,
-              fontWeight: 600,
-              paddingTop: 3,
-            }}
-          >
-            *
-          </div>
+          <Icn
+            category='navigator-element'
+            type='absolute-corners'
+            width={12}
+            height={12}
+            testId={iconTestId}
+            style={{ position: 'relative', left: 11 }}
+          />
         )
       } else {
         return null
       }
-    }, [isPositionAbsolute, color, warningText, isErroredGroupChild])
+    }, [isPositionAbsolute, color, warningText, isErroredGroupChild, iconTestId])
 
     return (
       <div
         style={{
           width: 18,
-          height: 18,
+          height: 12,
           display: 'flex',
           alignItems: 'center',
           justifyItems: 'center',
           position: 'relative',
-          transform: 'scale(.8)',
         }}
       >
         <div
