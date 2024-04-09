@@ -2440,11 +2440,8 @@ export function createNewProjectName(): string {
 }
 
 export const BaseSnappingThreshold = 5
-export const BaseCanvasOffset = { x: 100, y: 60 } as CanvasPoint
-export const BaseCanvasOffsetLeftPane = {
-  x: BaseCanvasOffset.x + DefaultNavigatorWidth,
-  y: BaseCanvasOffset.y,
-} as CanvasPoint
+export const BaseCanvasOffset = { x: 0, y: 0 } as CanvasPoint
+export const BaseCanvasOffsetLeftPane = BaseCanvasOffset
 
 export function createEditorState(dispatch: EditorDispatch): EditorState {
   return {
