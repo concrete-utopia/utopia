@@ -80,6 +80,8 @@ import { isIntrinsicHTMLElement } from '../shared/element-template'
 import type { ErrorMessage } from '../shared/error-messages'
 import { errorMessage } from '../shared/error-messages'
 import { dropFileExtension } from '../shared/file-utils'
+import type { FancyError } from '../shared/code-exec-utils'
+import type { ScriptLine } from '../../third-party/react-error-overlay/utils/stack-frame'
 
 async function parseInsertOption(
   insertOption: ComponentInsertOption,
@@ -407,7 +409,7 @@ function simpleErrorMessage(fileName: string, error: string): ErrorMessage {
     null,
     null,
     '',
-    'warning',
+    'fatal',
     '',
     error,
     '',
@@ -428,6 +430,13 @@ function errorsFromComponentRegistration(
       case 'file-parse-failure':
         return error.parseErrorMessages
       case 'evaluation-error':
+        if ((error.evaluationError as FancyError).hasOwnProperty('stackFrames')) {
+          const fancyError = error.evaluationError as FancyError
+          const errorMsgFromFancyError = fancyErrorToErrorMessage(fancyError)
+          if (errorMsgFromFancyError != null) {
+            return errorMsgFromFancyError
+          }
+        }
         return [
           simpleErrorMessage(
             fileName,
@@ -870,4 +879,55 @@ export function getThirdPartyControlsIntrinsic(
     return propertyControlsInfo[foundPackageWithElement]?.[elementName]?.properties
   }
   return null
+}
+
+function fancyErrorToErrorMessage(error: FancyError): ErrorMessage | null {
+  const frames = error.stackFrames
+  if (frames != null && frames.length > 0) {
+    const code = printScriptLines(frames[0]._originalScriptCode ?? [], frames[0].columnNumber)
+    return errorMessage(
+      frames[0]._originalFileName ?? '',
+      frames[0].lineNumber,
+      frames[0].columnNumber,
+      null,
+      null,
+      code,
+      'fatal',
+      '',
+      `Components file evaluation error: ${error}`,
+      '',
+      'component-descriptor',
+      null,
+    )
+  }
+  return null
+}
+
+function printScriptLines(scriptLines: Array<ScriptLine>, columnNumber: number | null): string {
+  const maxLineNumberLength = Math.max(...scriptLines.map((c) => c.lineNumber.toString().length))
+  const printedCode =
+    scriptLines
+      .map((c) => {
+        const prefix = c.highlight ? `> ` : '  '
+
+        // we need to have the same length for all line numbers
+        const lineNumberStr =
+          c.lineNumber.toString().length < maxLineNumberLength
+            ? ` ${c.lineNumber.toString()}`
+            : c.lineNumber.toString()
+
+        // an extra line is added to after the highlighted line when we have a column number,
+        // so we can highlight the actual column with a ^
+        let extraLine = ''
+        if (c.highlight && columnNumber != null) {
+          extraLine = `\n${Array(columnNumber + maxLineNumberLength + 2)
+            .fill(' ')
+            .join('')}^`
+        }
+
+        return `${prefix}${lineNumberStr} | ${c.content}${extraLine}`
+      })
+      .join('\n') ?? ''
+
+  return printedCode
 }
