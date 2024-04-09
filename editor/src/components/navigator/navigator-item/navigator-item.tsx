@@ -869,7 +869,6 @@ export const NavigatorItem: React.FunctionComponent<
                   style={{
                     transform: 'scale(0.6)',
                     opacity: 'var(--paneHoverOpacity)',
-                    background: 'pink',
                   }}
                   testId={`navigator-item-collapse-${navigatorEntryToKey(props.navigatorEntry)}`}
                   iconColor={iconColor}
