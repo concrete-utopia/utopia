@@ -38,6 +38,9 @@ import {
   jsOpaqueArbitraryStatement,
   jsAssignment,
   jsAssignmentStatement,
+  functionParam,
+  regularParam,
+  simpleJSAssignmentStatement,
 } from '../../shared/element-template'
 import { sampleCode } from '../../model/new-project-files'
 import { addImport, emptyImports } from '../common/project-file-utils'
@@ -1178,7 +1181,8 @@ export var whatever = (props) => <View data-uid='aaa'>
       false,
       emptyComments,
     )
-    const jsCode1 = `function getSizing(n) {
+    const jsCode1 = `
+function getSizing(n) {
   return 100 + n
 }`
     const transpiledJsCode1 = `return (() => {
@@ -1207,7 +1211,7 @@ export var whatever = (props) => <View data-uid='aaa'>
         file: 'code.tsx',
       }),
       {},
-      [jsOpaqueArbitraryStatement(jsCode1, ['getSizing'], [], '')],
+      [jsOpaqueArbitraryStatement(jsCode1.trim(), ['getSizing'], [], '')],
     )
     const jsCode2 = `var spacing = 20`
     const transpiledJsCode2 = `return (() => {
@@ -1233,7 +1237,7 @@ export var whatever = (props) => <View data-uid='aaa'>
         file: 'code.tsx',
       }),
       {},
-      [jsOpaqueArbitraryStatement(jsCode2, ['spacing'], [], '')],
+      [simpleJSAssignmentStatement('var', 'spacing', 20, expect.objectContaining({}))],
     )
     const combinedJsCode = `function getSizing(n) {
   return 100 + n
@@ -1269,7 +1273,7 @@ var spacing = 20`
       {},
       [
         jsOpaqueArbitraryStatement(jsCode1, ['getSizing'], [], ''),
-        jsOpaqueArbitraryStatement(jsCode2, ['spacing'], [], ''),
+        simpleJSAssignmentStatement('var', 'spacing', 20, expect.objectContaining({})),
       ],
     )
     const topLevelElements = [arbitraryBlock1, arbitraryBlock2, exported].map(
@@ -1367,7 +1371,8 @@ export var whatever = (props) => <View data-uid='aaa'>
       false,
       emptyComments,
     )
-    const jsCode = `export default function getSizing(n) {
+    const jsCode = `
+export default function getSizing(n) {
   return 100 + n
 }`
     const transpiledJsCode = `return (() => {
@@ -1379,9 +1384,9 @@ export var whatever = (props) => <View data-uid='aaa'>
     getSizing: getSizing
   });
 })();`
-    const arbitraryBlock = arbitraryJSBlock(
+    const arbitraryBlockCombinedBlock = arbitraryJSBlock(
       [],
-      jsCode,
+      jsCode.trim(),
       transpiledJsCode,
       ['getSizing'],
       [
@@ -1398,7 +1403,26 @@ export var whatever = (props) => <View data-uid='aaa'>
       {},
       [jsOpaqueArbitraryStatement(jsCode, ['getSizing'], [], '')],
     )
-    const topLevelElements = [arbitraryBlock, exported].map(
+    const arbitraryBlockTopLevelElement = arbitraryJSBlock(
+      [],
+      jsCode.trim(),
+      transpiledJsCode,
+      ['getSizing'],
+      [
+        JSX_CANVAS_LOOKUP_FUNCTION_NAME,
+        BLOCK_RAN_TO_END_FUNCTION_NAME,
+        EARLY_RETURN_RESULT_FUNCTION_NAME,
+        EARLY_RETURN_VOID_FUNCTION_NAME,
+      ],
+      expect.objectContaining({
+        sources: ['code.tsx'],
+        version: 3,
+        file: 'code.tsx',
+      }),
+      {},
+      [jsOpaqueArbitraryStatement(jsCode.trim(), ['getSizing'], [], '')],
+    )
+    const topLevelElements = [arbitraryBlockTopLevelElement, exported].map(
       clearTopLevelElementUniqueIDsAndEmptyBlocks,
     )
     const { imports } = addImport(
@@ -1414,7 +1438,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
-      clearArbitraryJSBlockUniqueIDs(arbitraryBlock),
+      clearArbitraryJSBlockUniqueIDs(arbitraryBlockCombinedBlock),
       [exportDefaultFunctionOrClass('getSizing'), exportFunction('whatever')],
       expect.objectContaining({}),
     )
@@ -1498,7 +1522,8 @@ export var whatever = (props) => <View data-uid='aaa'>
       false,
       emptyComments,
     )
-    const jsCode = `export function getSizing(n) {
+    const jsCode = `
+export function getSizing(n) {
   switch (n) {
     case 100:
       return 1
@@ -1521,9 +1546,28 @@ export var whatever = (props) => <View data-uid='aaa'>
     getSizing: getSizing
   });
 })();`
-    const arbitraryBlock = arbitraryJSBlock(
+    const arbitraryBlockTopLevelElement = arbitraryJSBlock(
       [],
-      jsCode,
+      jsCode.trim(),
+      transpiledJsCode,
+      ['getSizing'],
+      [
+        JSX_CANVAS_LOOKUP_FUNCTION_NAME,
+        BLOCK_RAN_TO_END_FUNCTION_NAME,
+        EARLY_RETURN_RESULT_FUNCTION_NAME,
+        EARLY_RETURN_VOID_FUNCTION_NAME,
+      ],
+      expect.objectContaining({
+        sources: ['code.tsx'],
+        version: 3,
+        file: 'code.tsx',
+      }),
+      {},
+      [jsOpaqueArbitraryStatement(jsCode.trim(), ['getSizing'], [], '')],
+    )
+    const arbitraryBlockCombinedBlock = arbitraryJSBlock(
+      [],
+      jsCode.trim(),
       transpiledJsCode,
       ['getSizing'],
       [
@@ -1540,7 +1584,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       {},
       [jsOpaqueArbitraryStatement(jsCode, ['getSizing'], [], '')],
     )
-    const topLevelElements = [arbitraryBlock, exported].map(
+    const topLevelElements = [arbitraryBlockTopLevelElement, exported].map(
       clearTopLevelElementUniqueIDsAndEmptyBlocks,
     )
     const { imports } = addImport(
@@ -1556,7 +1600,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
-      clearArbitraryJSBlockUniqueIDs(arbitraryBlock),
+      clearArbitraryJSBlockUniqueIDs(arbitraryBlockCombinedBlock),
       [exportFunction('getSizing'), exportFunction('whatever')],
       expect.objectContaining({}),
     )
@@ -1751,7 +1795,7 @@ export var whatever = (props) => <View data-uid='aaa'>
         file: 'code.tsx',
       }),
       {},
-      [jsOpaqueArbitraryStatement('var spacing = 20', ['spacing'], [], '')],
+      [simpleJSAssignmentStatement('var', 'spacing', 20, expect.objectContaining({}))],
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const { imports } = addImport(
@@ -1835,8 +1879,41 @@ export var whatever = (props) => {
       }),
       {},
       [
-        jsOpaqueArbitraryStatement(`const bgs = ['black', 'grey']`, ['bgs'], [], ''),
-        jsOpaqueArbitraryStatement(`const bg = bgs[0]`, ['bg'], ['bgs'], ''),
+        jsAssignmentStatement(
+          'const',
+          [
+            jsAssignment(
+              jsIdentifier('bgs', '', expect.objectContaining({}), emptyComments),
+              jsExpressionNestedArray(
+                [
+                  jsxArrayValue(jsExpressionValue('black', emptyComments, ''), emptyComments),
+                  jsxArrayValue(jsExpressionValue('grey', emptyComments, ''), emptyComments),
+                ],
+                emptyComments,
+                '',
+              ),
+            ),
+          ],
+          expect.objectContaining({}),
+        ),
+        jsAssignmentStatement(
+          'const',
+          [
+            jsAssignment(
+              jsIdentifier('bg', '', expect.objectContaining({}), emptyComments),
+              jsElementAccess(
+                jsIdentifier('bgs', '', expect.objectContaining({}), emptyComments),
+                jsExpressionValue(0, emptyComments, ''),
+                '',
+                expect.objectContaining({}),
+                emptyComments,
+                'bgs[0]',
+                'not-optionally-chained',
+              ),
+            ),
+          ],
+          expect.objectContaining({}),
+        ),
       ],
     )
     const exported = utopiaJSXComponent(
@@ -1916,7 +1993,25 @@ export var whatever = (props) => {
         file: 'code.tsx',
       }),
       {},
-      [jsOpaqueArbitraryStatement(jsCode, ['greys'], [], '')],
+      [
+        jsAssignmentStatement(
+          'const',
+          [
+            jsAssignment(
+              jsIdentifier('greys', '', expect.objectContaining({}), emptyComments),
+              jsExpressionNestedArray(
+                [
+                  jsxArrayValue(jsExpressionValue('lightGrey', emptyComments, ''), emptyComments),
+                  jsxArrayValue(jsExpressionValue('grey', emptyComments, ''), emptyComments),
+                ],
+                emptyComments,
+                '',
+              ),
+            ),
+          ],
+          expect.objectContaining({}),
+        ),
+      ],
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -2004,8 +2099,8 @@ export var whatever = (props) => {
       }),
       {},
       [
-        jsOpaqueArbitraryStatement(`const a = 10`, ['a'], [], ''),
-        jsOpaqueArbitraryStatement(`const b = 20`, ['b'], [], ''),
+        simpleJSAssignmentStatement('const', 'a', 10, expect.objectContaining({})),
+        simpleJSAssignmentStatement('const', 'b', 20, expect.objectContaining({})),
       ],
     )
     const exported = utopiaJSXComponent(
@@ -2098,9 +2193,9 @@ export var whatever = (props) => {
       }),
       {},
       [
-        jsOpaqueArbitraryStatement(`const a = true`, ['a'], [], ''),
-        jsOpaqueArbitraryStatement(`const b = 10`, ['b'], [], ''),
-        jsOpaqueArbitraryStatement(`const c = 20`, ['c'], [], ''),
+        simpleJSAssignmentStatement('const', 'a', true, expect.objectContaining({})),
+        simpleJSAssignmentStatement('const', 'b', 10, expect.objectContaining({})),
+        simpleJSAssignmentStatement('const', 'c', 20, expect.objectContaining({})),
       ],
     )
     const exported = utopiaJSXComponent(
@@ -2198,7 +2293,7 @@ export var whatever = (props) => {
         file: 'code.tsx',
       }),
       {},
-      [jsOpaqueArbitraryStatement(jsCode, ['a'], [], '')],
+      [simpleJSAssignmentStatement('let', 'a', 10, expect.objectContaining({}))],
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -2283,8 +2378,28 @@ export var whatever = (props) => {
       }),
       {},
       [
-        jsOpaqueArbitraryStatement(`const a = 10`, ['a'], [], ''),
-        jsOpaqueArbitraryStatement(`const b = { a: a }`, ['b'], ['a'], ''),
+        simpleJSAssignmentStatement('const', 'a', 10, expect.objectContaining({})),
+        jsAssignmentStatement(
+          'const',
+          [
+            jsAssignment(
+              jsIdentifier('b', '', expect.objectContaining({}), emptyComments),
+              jsExpressionNestedObject(
+                [
+                  jsxPropertyAssignment(
+                    'a',
+                    jsIdentifier('a', '', expect.objectContaining({}), emptyComments),
+                    emptyComments,
+                    emptyComments,
+                  ),
+                ],
+                emptyComments,
+                '',
+              ),
+            ),
+          ],
+          '',
+        ),
       ],
     )
     const exported = utopiaJSXComponent(
@@ -2425,7 +2540,29 @@ export var whatever = (props) => {
         file: 'code.tsx',
       }),
       {},
-      [jsOpaqueArbitraryStatement(jsCode, ['bg'], [], '')],
+      [
+        jsAssignmentStatement(
+          'const',
+          [
+            jsAssignment(
+              jsIdentifier('bg', '', expect.objectContaining({}), emptyComments),
+              jsExpressionNestedObject(
+                [
+                  jsxPropertyAssignment(
+                    'backgroundColor',
+                    jsExpressionValue('grey', emptyComments, ''),
+                    emptyComments,
+                    emptyComments,
+                  ),
+                ],
+                emptyComments,
+                '',
+              ),
+            ),
+          ],
+          '',
+        ),
+      ],
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -2534,7 +2671,7 @@ export var whatever = (props) => <View data-uid='aaa'>
         file: 'code.tsx',
       }),
       {},
-      [jsOpaqueArbitraryStatement(jsCode, ['count'], [], '')],
+      [simpleJSAssignmentStatement('var', 'count', 10, expect.objectContaining({}))],
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const { imports } = addImport(
@@ -2640,7 +2777,7 @@ export var whatever = (props) => <View data-uid='aaa'>
         file: 'code.tsx',
       }),
       {},
-      [jsOpaqueArbitraryStatement('var use20 = true', ['use20'], [], '')],
+      [simpleJSAssignmentStatement('var', 'use20', true, expect.objectContaining({}))],
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const { imports } = addImport(
@@ -2724,7 +2861,27 @@ export var whatever = (props) => <View data-uid='aaa'>
         file: 'code.tsx',
       }),
       {},
-      [jsOpaqueArbitraryStatement('var mySet = new Set()', ['mySet'], ['Set'], '')],
+      [
+        jsAssignmentStatement(
+          'var',
+          [
+            jsAssignment(
+              jsIdentifier('mySet', '', expect.objectContaining({}), emptyComments),
+              jsExpressionOtherJavaScript(
+                [],
+                expect.stringContaining(''),
+                expect.stringContaining(''),
+                expect.stringContaining(''),
+                ['Set'],
+                expect.objectContaining({}),
+                {},
+                emptyComments,
+              ),
+            ),
+          ],
+          '',
+        ),
+      ],
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const expectedResult = parseSuccess(
@@ -2822,7 +2979,18 @@ export var whatever = (props) => <View data-uid='aaa'>
         file: 'code.tsx',
       }),
       {},
-      [jsOpaqueArbitraryStatement('var spacing = 20', ['spacing'], [], '')],
+      [
+        jsAssignmentStatement(
+          'var',
+          [
+            jsAssignment(
+              jsIdentifier('spacing', '', expect.objectContaining({}), emptyComments),
+              jsExpressionValue(20, emptyComments),
+            ),
+          ],
+          '',
+        ),
+      ],
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const { imports } = addImport(
@@ -2924,7 +3092,28 @@ export var whatever = (props) => <View data-uid='aaa'>
         file: 'code.tsx',
       }),
       {},
-      [jsOpaqueArbitraryStatement(jsCode, ['MyComp'], ['React'], '')],
+      [
+        jsAssignmentStatement(
+          'var',
+          [
+            jsAssignment(
+              jsIdentifier('MyComp', '', expect.objectContaining({}), emptyComments),
+              jsExpressionOtherJavaScript(
+                [functionParam(false, regularParam('props', null))],
+                expect.stringContaining(''),
+                expect.stringContaining(''),
+                expect.stringContaining(''),
+                ['React'],
+                expect.objectContaining({}),
+                {},
+                emptyComments,
+                '',
+              ),
+            ),
+          ],
+          '',
+        ),
+      ],
     )
     const myCompAttributes: JSXAttributes = jsxAttributesFromMap({
       'data-uid': jsExpressionValue('aab', emptyComments),
@@ -3489,7 +3678,7 @@ export var App = (props) => <View data-uid='bbb'>
 
   it('parses back and forth as a var, with some arbitrary javascript', () => {
     const cakeAttributes: JSXAttributes = jsxAttributesFromMap({
-      'data-uid': jsExpressionValue('aab', emptyComments),
+      'data-uid': jsExpressionValue('cake', emptyComments),
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsExpressionOtherJavaScript(
         [],
@@ -3508,11 +3697,11 @@ export var App = (props) => <View data-uid='bbb'>
       right: jsExpressionValue(20, emptyComments),
       top: jsExpressionValue(-20, emptyComments),
     })
-    const cake = jsxElement('cake', 'aab', cakeAttributes, [])
+    const cake = jsxElement('cake', 'cake', cakeAttributes, [])
     const view = jsxElement(
       'View',
-      'aaa',
-      jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
+      'view',
+      jsxAttributesFromMap({ 'data-uid': jsExpressionValue('view', emptyComments) }),
       [cake],
     )
     const exported = utopiaJSXComponent(
@@ -3527,7 +3716,8 @@ export var App = (props) => <View data-uid='bbb'>
       false,
       emptyComments,
     )
-    const jsCode1 = `function getSizing(n) {
+    const jsCode1 = `
+function getSizing(n) {
   return 100 + n
 }`
     const transpiledJSCode1 = `return (() => {
@@ -3556,7 +3746,7 @@ export var App = (props) => <View data-uid='bbb'>
         file: 'code.tsx',
       }),
       {},
-      [jsOpaqueArbitraryStatement(jsCode1, ['getSizing'], [], '')],
+      [jsOpaqueArbitraryStatement(jsCode1.trim(), ['getSizing'], [], '')],
     )
     const jsCode2 = `var spacing = 20`
     const transpiledJSCode2 = `return (() => {
@@ -3582,7 +3772,18 @@ export var App = (props) => <View data-uid='bbb'>
         file: 'code.tsx',
       }),
       {},
-      [jsOpaqueArbitraryStatement(jsCode2, ['spacing'], [], '')],
+      [
+        jsAssignmentStatement(
+          'var',
+          [
+            jsAssignment(
+              jsIdentifier('spacing', '', expect.objectContaining({}), emptyComments),
+              jsExpressionValue(20, emptyComments),
+            ),
+          ],
+          '',
+        ),
+      ],
     )
     const combinedJSCode = `function getSizing(n) {
   return 100 + n
@@ -3618,7 +3819,16 @@ var spacing = 20`
       {},
       [
         jsOpaqueArbitraryStatement(jsCode1, ['getSizing'], [], ''),
-        jsOpaqueArbitraryStatement(jsCode2, ['spacing'], [], ''),
+        jsAssignmentStatement(
+          'var',
+          [
+            jsAssignment(
+              jsIdentifier('spacing', '', expect.objectContaining({}), emptyComments),
+              jsExpressionValue(20, emptyComments),
+            ),
+          ],
+          '',
+        ),
       ],
     )
     const topLevelElements = [arbitraryBlock1, arbitraryBlock2, exported].map(
@@ -4078,7 +4288,8 @@ export var whatever = props => {
   );
 };
 `
-    const jsCode = `function test(n) {
+    const jsCode = `
+  function test(n) {
     return n * 2
   }`
     const transpiledJSCode = `return (() => {
@@ -4178,7 +4389,8 @@ export var whatever = props => {
     expect(actualResult).toEqual(expectedResult)
   })
   it('parses arbitrary code in a component back and forth', () => {
-    const jsCode = `function test(n) {
+    const jsCode = `
+  function test(n) {
     return n * 2
   }`
     const transpiledJSCode = `return (() => {
@@ -4826,19 +5038,66 @@ export var App = props => {
           file: 'code.tsx',
         }),
         {
-          abc: expect.objectContaining({
-            name: expect.objectContaining({
-              baseVariable: 'View',
-            }),
-          }),
+          abc: expect.objectContaining({}),
         },
         [
-          jsOpaqueArbitraryStatement(`const a = 20;`, ['a'], [], ''),
-          jsOpaqueArbitraryStatement(`const b = 40;`, ['b'], [], ''),
-          jsOpaqueArbitraryStatement(
-            `const MyCustomComponent = props => <View data-uid="abc">{props.children}</View>;`,
-            ['MyCustomComponent'],
-            ['React', 'View'],
+          jsAssignmentStatement(
+            'const',
+            [
+              jsAssignment(
+                jsIdentifier('a', '', expect.objectContaining({}), emptyComments),
+                jsExpressionValue(20, emptyComments, ''),
+              ),
+            ],
+            '',
+          ),
+          jsAssignmentStatement(
+            'const',
+            [
+              jsAssignment(
+                jsIdentifier('b', '', expect.objectContaining({}), emptyComments),
+                jsExpressionValue(40, emptyComments, ''),
+              ),
+            ],
+            '',
+          ),
+          jsAssignmentStatement(
+            'const',
+            [
+              jsAssignment(
+                jsIdentifier('MyCustomComponent', '', expect.objectContaining({}), emptyComments),
+                jsExpressionOtherJavaScript(
+                  [functionParam(false, regularParam('props', null))],
+                  'props => <View data-uid="abc">{props.children}</View>',
+                  '(props) => <View data-uid="abc">{props.children}</View>;',
+                  `return props => React.createElement(View, {\n  \"data-uid\": \"abc\"\n}, props.children);`,
+                  ['React', 'View', JSX_CANVAS_LOOKUP_FUNCTION_NAME],
+                  expect.objectContaining({}),
+                  {
+                    cb4: jsxElement(
+                      'View',
+                      '',
+                      jsxAttributesFromMap({
+                        'data-uid': jsExpressionValue('cb4', emptyComments, ''),
+                      }),
+                      [
+                        jsPropertyAccess(
+                          jsIdentifier('props', '', expect.objectContaining({}), emptyComments),
+                          'children',
+                          '',
+                          expect.objectContaining({}),
+                          emptyComments,
+                          'props.children',
+                          'not-optionally-chained',
+                        ),
+                      ],
+                    ),
+                  },
+                  emptyComments,
+                  '',
+                ),
+              ),
+            ],
             '',
           ),
         ],
@@ -5071,7 +5330,8 @@ export var whatever = props => {
       {},
       [
         jsOpaqueArbitraryStatement(
-          `for (var n = 0; n != -1; n++) {
+          `
+  for (var n = 0; n != -1; n++) {
     const n2 = n * 2
   }`,
           [],
@@ -5079,7 +5339,8 @@ export var whatever = props => {
           '',
         ),
         jsOpaqueArbitraryStatement(
-          `while (true) {
+          `
+  while (true) {
     const a = 1
   }`,
           [],
@@ -5181,9 +5442,19 @@ export var whatever = props => {
         }),
       },
       [
-        jsOpaqueArbitraryStatement(`let result = []`, ['result'], [], ''),
+        jsAssignmentStatement(
+          'let',
+          [
+            jsAssignment(
+              jsIdentifier('result', '', expect.objectContaining({}), emptyComments),
+              jsExpressionNestedArray([], emptyComments, ''),
+            ),
+          ],
+          '',
+        ),
         jsOpaqueArbitraryStatement(
-          `for (var n = 0; n < 5; n++) {
+          `
+  for (var n = 0; n < 5; n++) {
     const n2 = n * 2
     result.push(<div style={{ left: n, top: n2 }} data-uid='bbb' />)
   }`,

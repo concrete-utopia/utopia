@@ -1296,8 +1296,8 @@ export var storyboard = (
       expect(results.alone).toMatchInlineSnapshot(`
         Object {
           "elements": Array [
-            "833",
-            "65e",
+            "219",
+            "971",
           ],
           "js": "return (() => {
           function getPicker() {

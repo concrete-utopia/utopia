@@ -1513,7 +1513,10 @@ function parseOtherJavaScript<T extends { uid: string }>(
             topLevelNames,
             initialPropsObjectName,
             existingHighlightBounds,
-            alreadyExistingUIDs,
+            // This is here so that the parsed statements _can_ re-use the UIDs of the expressions
+            // that are being parsed in the main arbitrary blocks, otherwise they cause even elements
+            // with defined or overriden UIDs to be regenerated in those arbitrary blocks.
+            new Set(),
             '',
             applySteganography,
           )

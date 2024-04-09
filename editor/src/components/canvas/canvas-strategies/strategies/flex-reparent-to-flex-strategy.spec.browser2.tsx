@@ -412,7 +412,7 @@ describe('Flex Reparent To Flex Strategy', () => {
         'regular-utopia-storyboard-uid/parent2/fragment/b71',
         'regular-utopia-storyboard-uid/parent2/fragment/050',
         'regular-utopia-storyboard-uid/parent1',
-        'regular-utopia-storyboard-uid/parent1/2c6',
+        'regular-utopia-storyboard-uid/parent1/aac',
         'regular-utopia-storyboard-uid/parent1/aad',
       ])
     })

@@ -516,7 +516,7 @@ describe('fixParseSuccessUIDs', () => {
       "4ed
         565
       434
-        593
+        c85
           f9b
       storyboard
         scene
@@ -533,7 +533,7 @@ describe('fixParseSuccessUIDs', () => {
       "4ed
         565
       434
-        593
+        c85
           aab
             f9b
       storyboard

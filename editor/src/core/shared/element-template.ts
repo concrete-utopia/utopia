@@ -234,6 +234,24 @@ export function jsAssignmentStatement(
   }
 }
 
+export function simpleJSAssignmentStatement(
+  declarationKeyword: JSAssignmentStatement['declarationKeyword'],
+  name: string,
+  value: unknown,
+  identifierSourceMap: RawSourceMap | null,
+): JSAssignmentStatement {
+  return jsAssignmentStatement(
+    declarationKeyword,
+    [
+      jsAssignment(
+        jsIdentifier(name, '', identifierSourceMap, emptyComments),
+        jsExpressionValue(value, emptyComments),
+      ),
+    ],
+    '',
+  )
+}
+
 export type JSArbitraryStatement = JSOpaqueArbitraryStatement | JSAssignmentStatement
 
 export interface JSExpressionOtherJavaScript extends WithComments, WithElementsWithin {
