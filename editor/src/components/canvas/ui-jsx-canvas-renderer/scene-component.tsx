@@ -30,6 +30,7 @@ export const SceneComponent = React.memo(
       left: 0,
       width: '100%',
       height: '100%',
+      overflow: 'scroll',
     }
 
     // TODO right now we don't actually change the invalidated paths, just let the dom-walker know it should walk again

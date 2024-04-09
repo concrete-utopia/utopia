@@ -726,9 +726,9 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
       // which means all the wheel events will be preventDefaulted in the descendants of EditorCanvas. Which means
       // it is not possible to scroll elements inside the canvas, except if you add an event listener manually with
       // a ref to stop propagation. In that case the event will not reach the listener here.
-      this.canvasWrapperRef.addEventListener('wheel', this.suppressBrowserNavigation, {
-        passive: false,
-      })
+      // this.canvasWrapperRef.addEventListener('wheel', this.suppressBrowserNavigation, {
+      //   passive: false,
+      // })
       this.resizeObserver = new ResizeObserver((entries: Array<ResizeObserverEntry>) => {
         if (entries.length === 0) {
           return
@@ -747,7 +747,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
 
   componentWillUnmount() {
     if (this.canvasWrapperRef != null) {
-      this.canvasWrapperRef.removeEventListener('wheel', this.suppressBrowserNavigation)
+      // this.canvasWrapperRef.removeEventListener('wheel', this.suppressBrowserNavigation)
       if (this.resizeObserver != null) {
         this.resizeObserver.unobserve(this.canvasWrapperRef)
       }
