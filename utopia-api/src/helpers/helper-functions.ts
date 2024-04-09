@@ -13,11 +13,29 @@ export interface PreferredChildComponent {
   variants?: Array<ComponentInsertOption>
 }
 
+export const FocusOptions = ['default', 'always', 'never'] as const
+export type Focus = (typeof FocusOptions)[number]
+
+export const StylingOptions = ['all', 'layout', 'layout-system', 'visual', 'typography'] as const
+export type Styling = (typeof StylingOptions)[number]
+
+export type InspectorSpec = Styling[]
+
+export const EmphasisOptions = ['subdued', 'regular', 'emphasized'] as const
+export type Emphasis = (typeof EmphasisOptions)[number]
+
+export const IconOptions = ['column', 'row', 'regular'] as const // and others
+export type Icon = (typeof IconOptions)[number]
+
 export interface ComponentToRegister {
   component: any
   properties: PropertyControls
   supportsChildren: boolean
   preferredChildComponents?: Array<PreferredChildComponent>
+  focus?: Focus
+  inspector?: InspectorSpec
+  emphasis?: Emphasis
+  icon?: Icon
   variants: Array<ComponentInsertOption>
 }
 
