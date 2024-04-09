@@ -24,3 +24,8 @@ export function mapArrayToDictionary<From, Values, Keys extends string | number>
     },
   )
 }
+
+export function urlToRelative(url: string): string {
+  const parsed = new URL(url)
+  return parsed.href.replace(parsed.origin, '')
+}
