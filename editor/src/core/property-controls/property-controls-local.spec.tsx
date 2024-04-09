@@ -202,6 +202,7 @@ describe('registered property controls', () => {
                 }),
               },
               variants: [],
+              inspector: 'all',
             },
           },
         }
@@ -220,7 +221,7 @@ describe('registered property controls', () => {
           "emphasis": undefined,
           "focus": undefined,
           "icon": undefined,
-          "inspector": undefined,
+          "inspector": "all",
           "preferredChildComponents": Array [],
           "properties": Object {
             "label": Object {

@@ -5,6 +5,7 @@ import type {
   ComponentToRegister,
   ComponentInsertOption,
   PreferredChildComponent,
+  Styling,
 } from 'utopia-api/core'
 import {
   EmphasisOptions,
@@ -38,9 +39,11 @@ import {
   getParseErrorDetails,
   objectKeyParser,
   optionalObjectKeyParser,
+  parseAlternative,
   parseAny,
   parseArray,
   parseBoolean,
+  parseConstant,
   parseEnum,
   parseObject,
   parseString,
@@ -87,6 +90,7 @@ import { errorMessage } from '../shared/error-messages'
 import { dropFileExtension } from '../shared/file-utils'
 import type { FancyError } from '../shared/code-exec-utils'
 import type { ScriptLine } from '../../third-party/react-error-overlay/utils/stack-frame'
+import { parseEnumValue } from './property-control-values'
 
 async function parseInsertOption(
   insertOption: ComponentInsertOption,
@@ -882,7 +886,13 @@ function parseComponentToRegister(value: unknown): ParseResult<ComponentToRegist
     objectKeyParser(parseArray(parseComponentInsertOption), 'variants')(value),
     optionalObjectKeyParser(parseArray(parsePreferredChild), 'preferredChildComponents')(value),
     optionalObjectKeyParser(parseEnum(FocusOptions), 'focus')(value),
-    optionalObjectKeyParser(parseArray(parseEnum(StylingOptions)), 'inspector')(value),
+    optionalObjectKeyParser(
+      parseAlternative<'all' | Styling[]>(
+        [parseConstant('all'), parseArray(parseEnum(StylingOptions))],
+        'inspector value invalid',
+      ),
+      'inspector',
+    )(value),
     optionalObjectKeyParser(parseEnum(EmphasisOptions), 'emphasis')(value),
     optionalObjectKeyParser(parseEnum(IconOptions), 'icon')(value),
   )
