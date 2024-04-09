@@ -130,7 +130,8 @@ function variantItem(
     enabled: true,
     action: () =>
       onItemClick({
-        elementToInsert: (uid: string) => elementFromInsertMenuItem(variant.elementToInsert(), uid),
+        elementToInsert: (uid: string) =>
+          elementFromInsertMenuItem(variant.elementToInsert(), uid, 'no-defaults'),
         additionalImports: variant.importsToAdd,
       }),
   }
