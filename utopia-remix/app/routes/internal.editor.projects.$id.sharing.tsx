@@ -99,6 +99,7 @@ const EditorProjectSharingPageInner = React.memo(() => {
 })
 EditorProjectSharingPage.displayName = 'EditorProjectSharingPage'
 
+// Revalidate the loader at fixed intervals of the given timeout milliseconds.
 function useRevalidateWithInterval(timeout: number) {
   const revalidator = useRevalidator()
 
@@ -115,6 +116,7 @@ function getAccessRequestsKey(reqs: ProjectAccessRequestWithUserDetails[]): stri
   return reqs.map((r) => `${r.id}:${r.status}`).join(',')
 }
 
+// Update the store's sharing requests data if they changed after a refresh.
 function useUpdateSharingRequests(initialRequests: ProjectAccessRequestWithUserDetails[]) {
   const [lastRequestsKey, setLastRequestsKey] = React.useState<string | null>(null)
 
