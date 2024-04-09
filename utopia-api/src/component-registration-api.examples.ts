@@ -132,7 +132,6 @@ const Components: ComponentRegistrations = {
       properties: {
         level: ButtonLevelControl,
       },
-      inspector: { suppress: ['style', 'classname'] },
       children: { renders: 'text', placeholder: { type: 'text', contents: 'Button' } },
     },
     Text: {
@@ -140,7 +139,6 @@ const Components: ComponentRegistrations = {
       properties: {
         level: TextLevelControl,
       },
-      inspector: { suppress: ['style', 'classname'] },
       children: { renders: 'text', placeholder: { type: 'text', contents: 'Button' } },
     },
     Heading: {
@@ -148,7 +146,6 @@ const Components: ComponentRegistrations = {
       properties: {
         level: TextLevelControl,
       },
-      inspector: { suppress: ['style', 'classname'] },
       children: { renders: 'text', placeholder: { type: 'text', contents: 'Button' } },
     },
     Image: {
@@ -158,11 +155,10 @@ const Components: ComponentRegistrations = {
         rounded: { control: 'checkbox' },
         borderRadius: { control: 'number-input', required: false },
       },
-      inspector: { suppress: ['style', 'classname'] },
     },
     Card: {
       component: Card,
-      autofocus: 'always',
+      focus: 'on',
       properties: {
         title: {
           control: 'jsx',
@@ -195,7 +191,6 @@ const Components: ComponentRegistrations = {
     },
     Section: {
       component: Section,
-      inspector: { suppress: ['style', 'classname'] },
       children: { renders: [{ component: 'Row' }, { component: 'Column' }, { component: 'Grid' }] },
     },
     Row: {
@@ -204,14 +199,12 @@ const Components: ComponentRegistrations = {
         gap: { control: 'checkbox' },
         padded: { control: 'checkbox' },
       },
-      inspector: { suppress: ['layout'] },
       children: {
         renders: [{ component: 'Column' }, { component: 'Card' }, { component: 'Image' }],
       },
     },
     Column: {
       component: Column,
-      inspector: { suppress: ['layout'] },
       properties: {
         padded: { control: 'checkbox' },
         alignment: AlignmentControl,
@@ -222,7 +215,6 @@ const Components: ComponentRegistrations = {
     },
     Grid: {
       component: Grid,
-      inspector: { allow: [] },
       properties: {
         left: {
           control: 'jsx',
@@ -288,8 +280,7 @@ const Components: ComponentRegistrations = {
   'src/sample-store-components': {
     FeaturedCollection: {
       component: FeaturedCollection,
-      autofocus: 'always',
-      inspector: { allow: [] },
+      focus: 'on',
       variants: [
         {
           label: 'Featured collection',

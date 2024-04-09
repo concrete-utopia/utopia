@@ -396,15 +396,11 @@ export interface ControlDescriptionInfer {
 
 export type ControlDescriptionSpec = ControlDescriptionFilter | ControlDescriptionInfer
 
-export type InspectorSection = 'style' | 'classname' | 'text' | 'layout'
+export type Styling = 'layout' | 'layout-system' | 'visual' | 'typography'
 
-export type InspectorSpec =
-  // inspector sections to show when the component is selected
-  | { allow: InspectorSection[] }
-  // inspector sections to hide when the component is selected
-  | { suppress: InspectorSection[] }
+export type InspectorSpec = 'all' | Styling[]
 
-export type AutoFocus = 'always' | 'never'
+export type Focus = 'default' | 'always' | 'never'
 
 export type PropertyControls = Record<string, ControlDescription>
 
@@ -436,11 +432,11 @@ export interface ComponentToRegister {
   properties?: ControlDescriptionSpec | PropertyControls
 
   // inspector-related configuration
-  // by default, nothing is changed in the inspector
+  // by default, everything is hidden but the component section
   inspector?: InspectorSpec
 
   // speciies whether the component should be autofocused in the navigator
-  autofocus?: AutoFocus
+  focus?: Focus
 
   // specifies how the `children` prop should be used
   // `undefined`: Utopia assumes that the component doesn't support children
@@ -451,8 +447,13 @@ export interface ComponentToRegister {
   // lists templates to insert
   // if left undefined, any empty element will be inserted
   variants?: ComponentVariant[]
+
+  icon?: never // TODO
+
+  emphasis?: never // TODO
 }
 
+// TODO: we need to be able to specify controls for builtin elements as well
 export type ComponentRegistrations = {
   // registrations are grouped by module name...
   [moduleName: string]: {
