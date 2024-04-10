@@ -123,26 +123,64 @@ export function componentInfo(
   }
 }
 
+type AdditionalImports = string | string[]
+
+export type ComponentExample =
+  // if only the component name is specified, and the element is not an
+  // intrinsic element, we try to infer the necessary info from the existing
+  // component registration. If we can't, a validation error is shown
+  | { name: string }
+
+  // if the actual component is passed, we try to infer the component
+  // name/module name from that
+  | { component: any }
+
+  // detailed description with the path to import the element from and component
+  // variants
+  | {
+      imports?: AdditionalImports
+      label: string
+      code: string
+    }
+
+export type PlaceholderSpec =
+  // a placeholder that inserts a span with that wraps `contents`. This will be
+  // editable with the text editor
+  | { type: 'text'; contents: string }
+  // inserts a `div` with the specified width and height
+  | { type: 'spacer'; width: number; height: number }
+
+export interface ChildrenSpec {
+  // specifies what component(s) are preferred.
+  // `undefined`: any component can be rendered
+  // `'text'`: means only JSX text is accepted
+  // `RendersComponent`: detailed spec
+  preferredContent?: 'text' | ComponentExample | ComponentExample[]
+
+  // specifies the placeholder to use
+  placeholder?: PlaceholderSpec
+}
+
+export type Children = 'supported' | 'not-supported' | ChildrenSpec
+
 export interface ComponentDescriptor {
   properties: PropertyControls
-  supportsChildren: boolean
-  preferredChildComponents: Array<PreferredChildComponentDescriptor>
+  children: Children
   variants: ComponentInfo[]
   source: ComponentDescriptorSource
 }
 
 export function componentDescriptor(
   properties: PropertyControls,
-  supportsChildren: boolean,
+  children: Children,
   variants: Array<ComponentInfo>,
   preferredChildComponents: Array<PreferredChildComponentDescriptor>,
   source: ComponentDescriptorSource,
 ): ComponentDescriptor {
   return {
     properties: properties,
-    supportsChildren: supportsChildren,
+    children: children,
     variants: variants,
-    preferredChildComponents: preferredChildComponents,
     source: source,
   }
 }

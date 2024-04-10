@@ -185,8 +185,7 @@ function callPropertyControlsHook(
       '/utopia/storyboard': {
         App: {
           properties: propertyControlsForApp,
-          supportsChildren: false,
-          preferredChildComponents: [],
+          children: 'not-supported',
           variants: [
             {
               insertMenuLabel: 'App',
@@ -198,8 +197,7 @@ function callPropertyControlsHook(
         },
         OtherComponent: {
           properties: propertyControlsForOtherComponent,
-          supportsChildren: false,
-          preferredChildComponents: [],
+          children: 'not-supported',
           variants: [
             {
               insertMenuLabel: 'OtherComponent',

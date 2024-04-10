@@ -23,8 +23,7 @@ function createBasicComponent(
 ): ComponentDescriptor {
   return {
     properties: { ...StyleObjectProps, ...propertyControls },
-    supportsChildren: false, // TODO
-    preferredChildComponents: [],
+    children: 'not-supported',
     variants: [
       {
         insertMenuLabel: [baseVariable, ...propertyPathParts].join('.'),

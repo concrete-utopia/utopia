@@ -554,9 +554,8 @@ export function updatePropertyControlsOnDescriptorFileUpdate(
 
       updatedPropertyControls[descriptor.moduleName][descriptor.componentName] = {
         properties: descriptor.properties,
-        supportsChildren: descriptor.supportsChildren,
+        children: descriptor.children,
         variants: descriptor.variants,
-        preferredChildComponents: descriptor.preferredChildComponents ?? [],
         source: descriptor.source,
       }
     })
