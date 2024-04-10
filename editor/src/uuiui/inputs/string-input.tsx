@@ -11,6 +11,7 @@ import { preventDefault, stopPropagation } from '../../components/inspector/comm
 import { useColorTheme } from '../styles/theme'
 import { InspectorInputEmotionStyle, getControlStylesAwarePlaceholder } from './base-input'
 import { useControlsDisabledInSubtree } from '../utilities/disable-subtree'
+import { Clipboard } from '../../utils/clipboard'
 
 interface StringInputOptions {
   focusOnMount?: boolean
@@ -77,6 +78,46 @@ export const StringInput = React.memo(
 
       const placeholder = getControlStylesAwarePlaceholder(controlStyles) ?? initialPlaceHolder
 
+      const onChange = React.useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+          if (inputProps.onChange != null) {
+            inputProps.onChange(e)
+          }
+        },
+        [inputProps],
+      )
+
+      // Handle paste events like if they were change events.
+      const onPaste = React.useCallback(
+        async (e: React.ClipboardEvent) => {
+          // if there's not a handler for the change events, stop here
+          if (inputProps.onChange == null) {
+            return
+          }
+
+          // if the pasted data is utopia data, stop here
+          const maybeUtopiaData = await Clipboard.parseClipboardData(e.clipboardData)
+          if (maybeUtopiaData.utopiaData.length > 0 || maybeUtopiaData.files.length > 0) {
+            return
+          }
+
+          // if the pasted data is not valid text, stop here
+          const data = e.clipboardData.getData('text')
+          if (data.length === 0) {
+            return
+          }
+
+          const event: React.ChangeEvent<HTMLInputElement> = {
+            target: { value: data },
+            currentTarget: { value: data },
+            preventDefault: () => {},
+            stopPropagation: () => {},
+          } as React.ChangeEvent<HTMLInputElement>
+          inputProps.onChange(event)
+        },
+        [inputProps],
+      )
+
       return (
         <form
           autoComplete='off'
@@ -101,6 +142,8 @@ export const StringInput = React.memo(
           >
             <HeadlessStringInput
               {...inputProps}
+              onChange={onChange}
+              onPaste={onPaste}
               data-testid={testId}
               data-controlstatus={controlStatus}
               value={inputProps.value}
