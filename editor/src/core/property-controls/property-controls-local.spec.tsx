@@ -218,9 +218,9 @@ describe('registered property controls', () => {
     expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
       Object {
         "Card": Object {
-          "emphasis": undefined,
-          "focus": undefined,
-          "icon": undefined,
+          "emphasis": "regular",
+          "focus": "default",
+          "icon": "regular",
           "inspector": "all",
           "preferredChildComponents": Array [],
           "properties": Object {
@@ -735,10 +735,10 @@ describe('registered property controls', () => {
     expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
       Object {
         "Card": Object {
-          "emphasis": undefined,
-          "focus": undefined,
-          "icon": undefined,
-          "inspector": undefined,
+          "emphasis": "regular",
+          "focus": "default",
+          "icon": "regular",
+          "inspector": "all",
           "preferredChildComponents": Array [],
           "properties": Object {
             "background": Object {
