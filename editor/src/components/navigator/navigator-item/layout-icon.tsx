@@ -217,7 +217,7 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
             type='absolute-corners'
             width={12}
             height={12}
-            testId={iconTestId}
+            testId={`absolute-marker-for-${iconTestId}`}
             style={{ position: 'relative', left: 11, transform: 'scale(1.1)' }}
           />
         )
