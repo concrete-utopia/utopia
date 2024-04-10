@@ -102,7 +102,7 @@ describe('StringInput', () => {
       }
 
       firePasteTextEvent(inputElement, 'well hello there!')
-      await wait(100)
+      await wait(0)
 
       expect(inputElement.value).toBe('hello')
     })
@@ -125,7 +125,7 @@ describe('StringInput', () => {
 
       const imagesToPaste = [await makeImageFile(imgBase641x1, 'chucknorris.png')]
       firePasteImageEvent(inputElement, imagesToPaste)
-      await wait(100)
+      await wait(0)
 
       expect(inputElement.value).toBe('hello')
     })
@@ -147,7 +147,7 @@ describe('StringInput', () => {
       }
 
       firePasteTextEvent(inputElement, '')
-      await wait(100)
+      await wait(0)
 
       expect(inputElement.value).toBe('hello')
     })
@@ -169,7 +169,7 @@ describe('StringInput', () => {
       }
 
       firePasteTextEvent(inputElement, 'well hello there!')
-      await wait(100)
+      await wait(0)
 
       expect(inputElement.value).toBe('well hello there!')
     })
