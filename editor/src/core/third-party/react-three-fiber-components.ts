@@ -4,6 +4,7 @@ import {
   defaultComponentDescriptor,
   type ComponentDescriptor,
   type ComponentDescriptorsForFile,
+  ComponentDescriptorDefaults,
 } from '../../components/custom-code/code-file'
 import type { JSXAttributes, JSXAttributesEntry } from '../shared/element-template'
 import {
@@ -53,6 +54,7 @@ function createBasicComponent(
       },
     ],
     source: defaultComponentDescriptor(),
+    ...ComponentDescriptorDefaults,
   }
 }
 

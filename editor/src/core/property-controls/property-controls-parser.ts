@@ -48,7 +48,6 @@ import {
   parseArray,
   parseBoolean,
   parseConstant,
-  parseEnum,
   parseFunction,
   parseNull,
   parseNullable,
