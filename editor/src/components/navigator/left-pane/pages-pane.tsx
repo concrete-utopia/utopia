@@ -1,6 +1,7 @@
 import { useAtom } from 'jotai'
 import React from 'react'
-import { matchRoutes, type DataRouteObject } from 'react-router'
+import { matchRoutes } from 'react-router'
+import { uniqBy } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
 import { FlexColumn, FlexRow, UtopiaTheme, colorTheme } from '../../../uuiui'
 import { RemixIndexPathLabel } from '../../canvas/remix/remix-utils'
@@ -10,16 +11,31 @@ import {
 } from '../../canvas/remix/utopia-remix-root-component'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 
-const sortByFilename = (a: DataRouteObject, b: DataRouteObject) =>
-  a.path?.localeCompare(b.path ?? '') ?? 0
+type RouteMatch = {
+  path: string
+  resolvedPath: string
+}
 
 export const PagesPane = React.memo((props) => {
-  const remixRoutes: Array<DataRouteObject> = useEditorState(
+  const remixRoutes: Array<RouteMatch> = useEditorState(
     Substores.derived,
-    (store) =>
-      (store.derived.remixData?.routes ?? [])
-        .flatMap((route) => route.children ?? [])
-        .sort(sortByFilename),
+    (store) => {
+      const result = uniqBy(
+        registeredExampleRoutes.flatMap((exampleRoute) => {
+          const matchResult = matchRoutes(store.derived.remixData?.routes ?? [], exampleRoute) ?? []
+
+          return matchResult?.map(
+            (match): RouteMatch => ({
+              resolvedPath: match.pathname,
+              path: match.route.path ?? '/',
+            }),
+          )
+        }),
+        (l, r) => l?.resolvedPath === r?.resolvedPath,
+      )
+
+      return result
+    },
     'PagesPane remixRoutes',
   )
 
@@ -32,16 +48,12 @@ export const PagesPane = React.memo((props) => {
 
   return (
     <FlexColumn style={{ height: '100%', overflowY: 'scroll' }}>
-      {remixRoutes.map((route: DataRouteObject, index) => {
-        const { path } = route
-        const pathToDisplay = path ?? RemixIndexPathLabel
-        return (
-          <PageRouteEntry
-            key={path}
-            filepath={pathToDisplay}
-            active={matchResult?.[0].route.path === path}
-          />
-        )
+      {remixRoutes.map((route: RouteMatch, index) => {
+        const { path, resolvedPath } = route
+        const pathMatchesActivePath = matchResult?.[0].route.path === path
+        const pathToDisplay = pathMatchesActivePath ? pathname : resolvedPath ?? RemixIndexPathLabel
+
+        return <PageRouteEntry key={path} filepath={pathToDisplay} active={pathMatchesActivePath} />
       })}
     </FlexColumn>
   )
@@ -81,8 +93,16 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
           textOverflow: 'ellipsis',
         }}
       >
-        {props.filepath === '' ? '(index)' : props.filepath}
+        {props.filepath === '' ? RemixIndexPathLabel : props.filepath}
       </span>
     </FlexRow>
   )
 })
+
+const registeredExampleRoutes = [
+  '/',
+  '/products/beanie',
+  '/collections/unisex',
+  '/blogs/news',
+  '/blogs/news/making-liquid',
+]
