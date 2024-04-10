@@ -98,10 +98,15 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
     void navigationControls[EP.toString(activeRemixScene)]?.navigate(props.resolvedPath)
   }, [navigationControls, activeRemixScene, props.resolvedPath])
 
-  const routeSegments = props.routePath.split('/')
-  const lastSegment = routeSegments[routeSegments.length - 1]
+  const resolvedRouteSegments = props.resolvedPath.split('/')
+  const templateRouteSegments = props.routePath.split('/')
 
-  const indentation = routeSegments.length - 2
+  const lastResolvedSegment = resolvedRouteSegments[resolvedRouteSegments.length - 1]
+  const lastTemplateSegment = templateRouteSegments[templateRouteSegments.length - 1]
+
+  const indentation = resolvedRouteSegments.length - 2
+
+  const isDynamicPathSegment = lastTemplateSegment.startsWith(':')
 
   return (
     <FlexRow
@@ -138,6 +143,7 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
           transform: 'scale(.85)',
         }}
         category='filetype'
+        color={'main'}
         type={props.matchesRealRoute ? 'other' : 'folder-open'}
         width={18}
         height={18}
@@ -145,6 +151,9 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
       {/* TODO if we want renaming, cannibalize it from FileBrowserItem */}
       <span
         style={{
+          color: isDynamicPathSegment
+            ? colorTheme.primary.value
+            : colorTheme.neutralForeground.value,
           flex: 1,
           marginLeft: 6,
           display: 'inline-block',
@@ -153,7 +162,7 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
           textOverflow: 'ellipsis',
         }}
       >
-        {lastSegment === '' ? RemixIndexPathLabel : '/' + lastSegment}
+        {lastResolvedSegment === '' ? RemixIndexPathLabel : '/' + lastResolvedSegment}
       </span>
     </FlexRow>
   )
