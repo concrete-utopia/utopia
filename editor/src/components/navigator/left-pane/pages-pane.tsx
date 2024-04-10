@@ -117,8 +117,8 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
 
 const registeredExampleRoutes = [
   '/',
-  '/products/beanie',
   '/collections/unisex',
+  '/products/beanie',
   '/blogs/news',
   '/blogs/news/making-liquid',
 ]
