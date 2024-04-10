@@ -1007,6 +1007,21 @@ export function firePasteImageEvent(eventSourceElement: HTMLElement, images: Arr
   })
 }
 
+export function firePasteTextEvent(eventSourceElement: HTMLElement, text: string): void {
+  const pasteEvent = createEvent.paste(eventSourceElement)
+  Object.defineProperty(pasteEvent, 'clipboardData', {
+    value: {
+      getData: () => text,
+      items: [],
+      files: {},
+    },
+  })
+
+  act(() => {
+    fireEvent(eventSourceElement, pasteEvent)
+  })
+}
+
 export function firePasteEvent(eventSourceElement: HTMLElement): void {
   const pasteEvent = createEvent.paste(eventSourceElement)
   Object.defineProperty(pasteEvent, 'clipboardData', {

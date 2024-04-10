@@ -7,6 +7,12 @@ import {
   TestInspectorContextProvider,
   getStoreHook,
 } from '../../components/inspector/common/inspector.test-utils'
+import {
+  firePasteImageEvent,
+  firePasteTextEvent,
+} from '../../components/canvas/event-helpers.test-utils'
+import { wait } from '../../core/model/performance-scripts'
+import { imgBase641x1, makeImageFile } from '../../components/canvas/image-insert.test-utils'
 
 describe('StringInput', () => {
   function checkPlaceholder(renderResult: RenderResult, expectedPlaceholder: string | null): void {
@@ -77,4 +83,102 @@ describe('StringInput', () => {
     )
     checkPlaceholder(result, 'Mixed')
   })
+  describe('paste events', () => {
+    it('does nothing if there is no change handler', async () => {
+      const storeHookForTest = getStoreHook()
+      const result = render(
+        <TestInspectorContextProvider
+          selectedViews={storeHookForTest.getState().editor.selectedViews}
+          editorStoreData={storeHookForTest}
+        >
+          <StringInput testId='the-input' value='hello' />
+        </TestInspectorContextProvider>,
+      )
+
+      const inputElement = await result.findByTestId('the-input')
+      if (inputElement == null || !(inputElement instanceof HTMLInputElement)) {
+        throw new Error('Could not find input element.')
+      }
+
+      firePasteTextEvent(inputElement, 'well hello there!')
+      await wait(100)
+
+      expect(inputElement.value).toBe('hello')
+    })
+    it('does nothing if the pasted text is utopia data', async () => {
+      const storeHookForTest = getStoreHook()
+      const result = render(
+        <TestInspectorContextProvider
+          selectedViews={storeHookForTest.getState().editor.selectedViews}
+          editorStoreData={storeHookForTest}
+        >
+          <StringInputWithChangeHandler testId='the-input' value='hello' />
+        </TestInspectorContextProvider>,
+      )
+
+      const inputElement = await result.findByTestId('the-input')
+      if (inputElement == null || !(inputElement instanceof HTMLInputElement)) {
+        throw new Error('Could not find input element.')
+      }
+
+      const imagesToPaste = [await makeImageFile(imgBase641x1, 'chucknorris.png')]
+      firePasteImageEvent(inputElement, imagesToPaste)
+      await wait(100)
+
+      expect(inputElement.value).toBe('hello')
+    })
+    it('does nothing if the pasted text is empty', async () => {
+      const storeHookForTest = getStoreHook()
+      const result = render(
+        <TestInspectorContextProvider
+          selectedViews={storeHookForTest.getState().editor.selectedViews}
+          editorStoreData={storeHookForTest}
+        >
+          <StringInputWithChangeHandler testId='the-input' value='hello' />
+        </TestInspectorContextProvider>,
+      )
+
+      const inputElement = await result.findByTestId('the-input')
+      if (inputElement == null || !(inputElement instanceof HTMLInputElement)) {
+        throw new Error('Could not find input element.')
+      }
+
+      firePasteTextEvent(inputElement, '')
+      await wait(100)
+
+      expect(inputElement.value).toBe('hello')
+    })
+    it('accepts pasted text', async () => {
+      const storeHookForTest = getStoreHook()
+      const result = render(
+        <TestInspectorContextProvider
+          selectedViews={storeHookForTest.getState().editor.selectedViews}
+          editorStoreData={storeHookForTest}
+        >
+          <StringInputWithChangeHandler testId='the-input' value='hello' />
+        </TestInspectorContextProvider>,
+      )
+
+      const inputElement = await result.findByTestId('the-input')
+      if (inputElement == null || !(inputElement instanceof HTMLInputElement)) {
+        throw new Error('Could not find input element.')
+      }
+
+      firePasteTextEvent(inputElement, 'well hello there!')
+      await wait(100)
+
+      expect(inputElement.value).toBe('well hello there!')
+    })
+  })
 })
+
+function StringInputWithChangeHandler(props: { testId: string; value: string }) {
+  const [value, setValue] = React.useState(props.value)
+  const onChange = React.useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setValue(e.currentTarget.value),
+    [],
+  )
+  return (
+    <StringInput onChange={onChange} testId={props.testId} controlStatus='simple' value={value} />
+  )
+}
