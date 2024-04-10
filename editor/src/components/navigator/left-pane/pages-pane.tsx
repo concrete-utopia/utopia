@@ -8,7 +8,7 @@ import { matchRoutes } from 'react-router'
 import { uniqBy } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
 import { NO_OP } from '../../../core/shared/utils'
-import { FlexColumn, FlexRow, Icn, UtopiaTheme, colorTheme } from '../../../uuiui'
+import { FlexColumn, FlexRow, Icn, Subdued, UtopiaTheme, colorTheme } from '../../../uuiui'
 import { RemixIndexPathLabel } from '../../canvas/remix/remix-utils'
 import {
   ActiveRemixSceneAtom,
@@ -16,6 +16,8 @@ import {
 } from '../../canvas/remix/utopia-remix-root-component'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { ExpandableIndicator } from '../navigator-item/expandable-indicator'
+import { getFeaturedRoutesFromPackageJSON } from '../../../printer-parsers/html/external-resources-parser'
+import { defaultEither } from '../../../core/shared/either'
 
 type RouteMatch = {
   path: string
@@ -24,6 +26,15 @@ type RouteMatch = {
 }
 
 export const PagesPane = React.memo((props) => {
+  const featuredRoutes = useEditorState(
+    Substores.projectContents,
+    (store) => {
+      return defaultEither([], getFeaturedRoutesFromPackageJSON(store.editor.projectContents))
+    },
+    'PagesPane featuredRoutes',
+  )
+  const registeredExampleRoutes = fillInGapsInRoute(featuredRoutes)
+
   const remixRoutes: Array<RouteMatch> = useEditorState(
     Substores.derived,
     (store) => {
@@ -67,6 +78,24 @@ export const PagesPane = React.memo((props) => {
 
   const matchResult = matchRoutes(remixRoutes, pathname)
 
+  if (remixRoutes.length === 0) {
+    return (
+      <FlexColumn
+        style={{
+          height: '100%',
+          overflowY: 'scroll',
+          whiteSpace: 'normal',
+          padding: 16,
+          paddingTop: 64,
+        }}
+      >
+        <Subdued>
+          No featured routes were found in the project. Please add a 'featuredRoutes' field to the
+          'utopia' field in the package.json file.
+        </Subdued>
+      </FlexColumn>
+    )
+  }
   return (
     <FlexColumn style={{ height: '100%', overflowY: 'scroll' }}>
       {remixRoutes.map((route: RouteMatch, index) => {
@@ -191,14 +220,6 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
     </FlexRow>
   )
 })
-
-const registeredExampleRoutes = fillInGapsInRoute([
-  '/',
-  '/collections/unisex',
-  '/products/beanie',
-  '/blogs/news',
-  '/blogs/news/making-liquid',
-])
 
 function fillInGapsInRoute(routes: Array<string>): Array<string> {
   // if we find a route /collections, and a route /collections/hats/beanies, we should create an entry for /collections/hats, so there are no gaps in the tree structure
