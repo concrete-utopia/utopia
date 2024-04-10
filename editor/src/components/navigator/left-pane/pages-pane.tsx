@@ -78,7 +78,7 @@ export const PagesPane = React.memo((props) => {
           <PageRouteEntry
             key={path}
             routePath={pathToDisplay}
-            resolvedPath={resolvedPath}
+            resolvedPath={pathMatchesActivePath ? matchResult?.[0].pathname : resolvedPath}
             active={pathMatchesActivePath}
             matchesRealRoute={route.matchesRealRoute}
           />
