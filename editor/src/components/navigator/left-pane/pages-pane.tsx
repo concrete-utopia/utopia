@@ -183,9 +183,6 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
       {/* TODO if we want renaming, cannibalize it from FileBrowserItem */}
       <span
         style={{
-          // color: isDynamicPathSegment
-          //   ? colorTheme.primary.value
-          //   : colorTheme.neutralForeground.value,
           marginLeft: 6,
           display: 'inline-block',
           whiteSpace: 'nowrap',
