@@ -169,19 +169,20 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
       </span>
       <span
         style={{
-          display: !isDynamicPathSegment ? 'none' : 'inline-block',
-          opacity: props.active ? 1 : undefined,
+          flexShrink: 0,
+          display: !isDynamicPathSegment ? 'none' : props.active ? 'inline-block' : undefined, // I'm sorry
           color: colorTheme.subduedForeground.value,
           marginLeft: 6,
           whiteSpace: 'nowrap',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
           paddingRight: 8,
+          paddingLeft: 2,
         }}
         css={{
-          opacity: 0,
+          display: 'none',
           '*:hover > &': {
-            opacity: 1,
+            display: 'inline-block',
           },
         }}
       >
@@ -196,7 +197,7 @@ const registeredExampleRoutes = fillInGapsInRoute([
   '/collections/unisex',
   '/products/beanie',
   '/blogs/news',
-  '/blogs/news/making-liquid',
+  '/blogs/news/making-liquid-too-long!-watch-out-for-this!',
   '/my/awesome/collection',
 ])
 
