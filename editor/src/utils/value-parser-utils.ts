@@ -411,7 +411,7 @@ export function parseJsx(_: unknown, value: unknown): ParseResult<JSXParsedValue
   })
 }
 
-export function parseEnum<E extends string | number>(possibleValues: Array<E>): Parser<E> {
+export function parseEnum<E extends string | number>(possibleValues: ReadonlyArray<E>): Parser<E> {
   return (value: unknown) => {
     for (const possibleValue of possibleValues) {
       if (possibleValue === value) {

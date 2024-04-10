@@ -81,6 +81,10 @@ describe('registered property controls', () => {
               defaultValue: true,
             },
           },
+          focus: 'default',
+          inspector: ['visual', 'typography'],
+          emphasis: 'regular',
+          icon: 'regular',
           variants: [
             {
               code: '<Card />',
@@ -107,6 +111,13 @@ describe('registered property controls', () => {
     expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
       Object {
         "Card": Object {
+          "emphasis": "regular",
+          "focus": "default",
+          "icon": "regular",
+          "inspector": Array [
+            "visual",
+            "typography",
+          ],
           "preferredChildComponents": Array [],
           "properties": Object {
             "background": Object {
@@ -191,6 +202,7 @@ describe('registered property controls', () => {
                 }),
               },
               variants: [],
+              inspector: 'all',
             },
           },
         }
@@ -206,6 +218,10 @@ describe('registered property controls', () => {
     expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
       Object {
         "Card": Object {
+          "emphasis": "regular",
+          "focus": "default",
+          "icon": "regular",
+          "inspector": "all",
           "preferredChildComponents": Array [],
           "properties": Object {
             "label": Object {
@@ -719,6 +735,10 @@ describe('registered property controls', () => {
     expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
       Object {
         "Card": Object {
+          "emphasis": "regular",
+          "focus": "default",
+          "icon": "regular",
+          "inspector": "all",
           "preferredChildComponents": Array [],
           "properties": Object {
             "background": Object {

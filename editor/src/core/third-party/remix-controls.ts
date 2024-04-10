@@ -1,6 +1,7 @@
 import {
   defaultComponentDescriptor,
   type ComponentDescriptorsForFile,
+  ComponentDescriptorDefaults,
 } from '../../components/custom-code/code-file'
 import {
   emptyComments,
@@ -40,6 +41,7 @@ export const RemixRunReactComponents: ComponentDescriptorsForFile = {
       },
     ],
     source: defaultComponentDescriptor(),
+    ...ComponentDescriptorDefaults,
   },
   Outlet: {
     properties: {},
@@ -63,5 +65,6 @@ export const RemixRunReactComponents: ComponentDescriptorsForFile = {
       },
     ],
     source: defaultComponentDescriptor(),
+    ...ComponentDescriptorDefaults,
   },
 }

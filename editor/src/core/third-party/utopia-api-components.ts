@@ -3,6 +3,7 @@ import {
   type ComponentDescriptor,
   type ComponentDescriptorsForFile,
   type Children,
+  ComponentDescriptorDefaults,
 } from '../../components/custom-code/code-file'
 import {
   defaultFlexRowOrColStyle,
@@ -50,6 +51,7 @@ const BasicUtopiaComponentDescriptor = (
       },
     ],
     source: defaultComponentDescriptor(),
+    ...ComponentDescriptorDefaults,
   }
 }
 
@@ -96,6 +98,7 @@ const BasicUtopiaSceneDescriptor = (
       },
     ],
     source: defaultComponentDescriptor(),
+    ...ComponentDescriptorDefaults,
   }
 }
 
