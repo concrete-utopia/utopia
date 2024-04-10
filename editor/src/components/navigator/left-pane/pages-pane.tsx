@@ -41,7 +41,7 @@ export const PagesPane = React.memo((props) => {
 
           return matchResult?.map(
             (match): RouteMatch => ({
-              resolvedPath: '/' + match.pathname,
+              resolvedPath: match.pathname,
               path: '/' + (match.route.path ?? ''),
               matchesRealRoute: true,
             }),
