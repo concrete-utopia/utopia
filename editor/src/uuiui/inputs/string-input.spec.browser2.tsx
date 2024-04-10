@@ -83,6 +83,7 @@ describe('StringInput', () => {
     )
     checkPlaceholder(result, 'Mixed')
   })
+
   describe('paste events', () => {
     it('does nothing if there is no change handler', async () => {
       const storeHookForTest = getStoreHook()
@@ -105,6 +106,7 @@ describe('StringInput', () => {
 
       expect(inputElement.value).toBe('hello')
     })
+
     it('does nothing if the pasted text is utopia data', async () => {
       const storeHookForTest = getStoreHook()
       const result = render(
@@ -127,6 +129,7 @@ describe('StringInput', () => {
 
       expect(inputElement.value).toBe('hello')
     })
+
     it('does nothing if the pasted text is empty', async () => {
       const storeHookForTest = getStoreHook()
       const result = render(
@@ -148,6 +151,7 @@ describe('StringInput', () => {
 
       expect(inputElement.value).toBe('hello')
     })
+
     it('accepts pasted text', async () => {
       const storeHookForTest = getStoreHook()
       const result = render(
