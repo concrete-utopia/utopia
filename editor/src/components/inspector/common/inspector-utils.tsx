@@ -236,12 +236,3 @@ export function useControlModeWithCycle(
 
   return [controlMode, cycleToNextMode, resetMode]
 }
-
-export function setValueFromClipboardText(setter: (s: string) => void) {
-  return function (e: React.ClipboardEvent) {
-    const data = e.clipboardData.getData('text')
-    if (data.length > 0) {
-      setter(data)
-    }
-  }
-}
