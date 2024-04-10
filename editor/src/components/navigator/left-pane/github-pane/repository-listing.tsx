@@ -29,6 +29,7 @@ import { Ellipsis } from './github-file-changes-list'
 import { GithubSpinner } from './github-spinner'
 import { RefreshIcon } from './refresh-icon'
 import { GithubOperations } from '../../../../core/shared/github/operations'
+import { setValueFromClipboardText } from '../../../inspector/common/inspector-utils'
 
 interface RepositoryRowProps extends RepositoryEntry {
   importPermitted: boolean
@@ -267,6 +268,7 @@ export const RepositoryListing = React.memo(
                 : 'owner/repository'
             }
             onChange={onInputChangeTargetRepository}
+            onPaste={setValueFromClipboardText(setTargetRepository)}
             list={'repositories-list'}
             id={'repositories-input'}
             testId={'repositories-input'}
