@@ -3,6 +3,7 @@ import React from 'react'
 import { matchRoutes } from 'react-router'
 import { uniqBy } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
+import { NO_OP } from '../../../core/shared/utils'
 import { FlexColumn, FlexRow, UtopiaTheme, colorTheme } from '../../../uuiui'
 import { RemixIndexPathLabel } from '../../canvas/remix/remix-utils'
 import {
@@ -10,7 +11,6 @@ import {
   RemixNavigationAtom,
 } from '../../canvas/remix/utopia-remix-root-component'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
-import { NO_OP } from '../../../core/shared/utils'
 
 type RouteMatch = {
   path: string
