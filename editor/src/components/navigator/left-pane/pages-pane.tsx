@@ -197,8 +197,7 @@ const registeredExampleRoutes = fillInGapsInRoute([
   '/collections/unisex',
   '/products/beanie',
   '/blogs/news',
-  '/blogs/news/making-liquid-too-long!-watch-out-for-this!',
-  '/my/awesome/collection',
+  '/blogs/news/making-liquid',
 ])
 
 function fillInGapsInRoute(routes: Array<string>): Array<string> {
