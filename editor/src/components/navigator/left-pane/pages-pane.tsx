@@ -4,13 +4,14 @@ import { matchRoutes } from 'react-router'
 import { uniqBy } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
 import { NO_OP } from '../../../core/shared/utils'
-import { FlexColumn, FlexRow, UtopiaTheme, colorTheme } from '../../../uuiui'
+import { FlexColumn, FlexRow, Icn, UtopiaTheme, colorTheme } from '../../../uuiui'
 import { RemixIndexPathLabel } from '../../canvas/remix/remix-utils'
 import {
   ActiveRemixSceneAtom,
   RemixNavigationAtom,
 } from '../../canvas/remix/utopia-remix-root-component'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
+import { ExpandableIndicator } from '../navigator-item/expandable-indicator'
 
 type RouteMatch = {
   path: string
@@ -123,6 +124,24 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
       }}
       onClick={props.matchesRealRoute ? onClick : NO_OP}
     >
+      <ExpandableIndicator
+        key='expandable-indicator'
+        visible={true}
+        collapsed={false}
+        selected={false}
+        style={{ transform: 'scale(0.6)', opacity: 'var(--paneHoverOpacity)' }}
+        iconColor={'main'}
+      />
+      <Icn
+        style={{
+          marginRight: 0,
+          transform: 'scale(.85)',
+        }}
+        category='filetype'
+        type={props.matchesRealRoute ? 'other' : 'folder-open'}
+        width={18}
+        height={18}
+      />
       {/* TODO if we want renaming, cannibalize it from FileBrowserItem */}
       <span
         style={{
@@ -134,7 +153,7 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
           textOverflow: 'ellipsis',
         }}
       >
-        {lastSegment === '' ? RemixIndexPathLabel : lastSegment}
+        {lastSegment === '' ? RemixIndexPathLabel : '/' + lastSegment}
       </span>
     </FlexRow>
   )
