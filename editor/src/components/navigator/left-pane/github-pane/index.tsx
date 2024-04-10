@@ -51,6 +51,7 @@ import { RefreshIcon } from './refresh-icon'
 import { RepositoryListing } from './repository-listing'
 import { GithubOperations } from '../../../../core/shared/github/operations'
 import { useOnClickAuthenticateWithGithub } from '../../../../utils/github-auth-hooks'
+import { setFocus } from '../../../common/actions'
 
 const compactTimeagoFormatter = (value: number, unit: string) => {
   return `${value}${unit.charAt(0)}`
@@ -1101,6 +1102,15 @@ const PullRequestBlock = () => {
 }
 
 export const GithubPane = React.memo(() => {
+  const dispatch = useDispatch()
+
+  const onFocus = React.useCallback(
+    (_: React.FocusEvent<HTMLElement>) => {
+      dispatch([setFocus('githuboptions')])
+    },
+    [dispatch],
+  )
+
   const githubUser = useEditorState(
     Substores.github,
     (store) => store.editor.githubData.githubUserDetails,
@@ -1120,7 +1130,7 @@ export const GithubPane = React.memo(() => {
     }
   }, [githubUser])
   return (
-    <div style={{ height: '100%', overflowY: 'scroll' }}>
+    <div style={{ height: '100%', overflowY: 'scroll' }} onFocus={onFocus}>
       <Section>
         <SectionTitleRow minimised={false} hideButton>
           <FlexRow>
