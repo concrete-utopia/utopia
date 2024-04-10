@@ -53,17 +53,32 @@ export const PagesPane = React.memo((props) => {
         const pathMatchesActivePath = matchResult?.[0].route.path === path
         const pathToDisplay = path ?? RemixIndexPathLabel
 
-        return <PageRouteEntry key={path} filepath={pathToDisplay} active={pathMatchesActivePath} />
+        return (
+          <PageRouteEntry
+            key={path}
+            routePath={pathToDisplay}
+            resolvedPath={resolvedPath}
+            active={pathMatchesActivePath}
+          />
+        )
       })}
     </FlexColumn>
   )
 })
 
 interface PageRouteEntryProps {
-  filepath: string
+  routePath: string
+  resolvedPath: string
   active: boolean
 }
 const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
+  const [navigationControls] = useAtom(RemixNavigationAtom)
+  const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
+
+  const onClick = React.useCallback(() => {
+    void navigationControls[EP.toString(activeRemixScene)]?.navigate(props.resolvedPath)
+  }, [navigationControls, activeRemixScene, props.resolvedPath])
+
   return (
     <FlexRow
       style={{
@@ -81,6 +96,7 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
         borderRadius: 2,
         position: 'relative',
       }}
+      onClick={onClick}
     >
       {/* TODO if we want renaming, cannibalize it from FileBrowserItem */}
       <span
@@ -93,7 +109,7 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
           textOverflow: 'ellipsis',
         }}
       >
-        {props.filepath === '' ? RemixIndexPathLabel : props.filepath}
+        {props.routePath === '' ? RemixIndexPathLabel : props.routePath}
       </span>
     </FlexRow>
   )
