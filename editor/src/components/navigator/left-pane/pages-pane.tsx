@@ -51,7 +51,7 @@ export const PagesPane = React.memo((props) => {
       {remixRoutes.map((route: RouteMatch, index) => {
         const { path, resolvedPath } = route
         const pathMatchesActivePath = matchResult?.[0].route.path === path
-        const pathToDisplay = pathMatchesActivePath ? pathname : resolvedPath ?? RemixIndexPathLabel
+        const pathToDisplay = path ?? RemixIndexPathLabel
 
         return <PageRouteEntry key={path} filepath={pathToDisplay} active={pathMatchesActivePath} />
       })}
