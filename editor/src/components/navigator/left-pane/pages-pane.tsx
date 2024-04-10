@@ -41,8 +41,8 @@ export const PagesPane = React.memo((props) => {
 
           return matchResult?.map(
             (match): RouteMatch => ({
-              resolvedPath: match.pathname,
-              path: match.route.path ?? '/',
+              resolvedPath: '/' + match.pathname,
+              path: '/' + (match.route.path ?? ''),
               matchesRealRoute: true,
             }),
           )
@@ -97,6 +97,11 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
     void navigationControls[EP.toString(activeRemixScene)]?.navigate(props.resolvedPath)
   }, [navigationControls, activeRemixScene, props.resolvedPath])
 
+  const routeSegments = props.routePath.split('/')
+  const lastSegment = routeSegments[routeSegments.length - 1]
+
+  const indentation = routeSegments.length - 2
+
   return (
     <FlexRow
       style={{
@@ -107,7 +112,7 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
         backgroundColor: props.active ? colorTheme.subtleBackground.value : 'transparent',
         marginLeft: 8,
         marginRight: 8,
-        paddingLeft: 3,
+        paddingLeft: 3 + indentation * 15,
         paddingTop: 3,
         paddingBottom: 3,
         height: UtopiaTheme.layout.rowHeight.smaller,
@@ -129,7 +134,7 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
           textOverflow: 'ellipsis',
         }}
       >
-        {props.routePath === '' ? RemixIndexPathLabel : props.routePath}
+        {lastSegment === '' ? RemixIndexPathLabel : lastSegment}
       </span>
     </FlexRow>
   )
