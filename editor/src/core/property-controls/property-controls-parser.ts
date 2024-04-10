@@ -131,7 +131,7 @@ export function parseNumberInputControlDescription(
 }
 
 function parseBasicControlOption<V>(valueParser: Parser<V>): Parser<BasicControlOption<V>> {
-  return (value: unknown) => {
+  return (value: unknown, ctx?: string) => {
     return applicative2Either(
       (label, optionValue) => {
         return {
@@ -139,8 +139,8 @@ function parseBasicControlOption<V>(valueParser: Parser<V>): Parser<BasicControl
           label: label,
         }
       },
-      objectKeyParser(parseString, 'label')(value),
-      objectKeyParser(valueParser, 'value')(value),
+      objectKeyParser(parseString, 'label')(value, ctx),
+      objectKeyParser(valueParser, 'value')(value, ctx),
     )
   }
 }
@@ -512,7 +512,12 @@ export function parseTupleControlDescription(value: unknown): ParseResult<TupleC
     },
     optionalObjectKeyParser(parseString, 'label')(value),
     objectKeyParser(parseConstant('tuple'), 'control')(value),
-    objectKeyParser(parseArray(parseRegularControlDescription), 'propertyControls')(value),
+    objectKeyParser(
+      parseArray((v: unknown, index: number, ctx?: string) =>
+        parseRegularControlDescription(v, `${ctx}[${index}]`),
+      ),
+      'propertyControls',
+    )(value),
     optionalObjectKeyParser(parseBoolean, 'visibleByDefault')(value),
     requiredFieldParser(value),
     optionalObjectKeyParser(parseArray(parseAny), 'defaultValue')(value),
@@ -559,7 +564,12 @@ export function parseUnionControlDescription(value: unknown): ParseResult<UnionC
     },
     optionalObjectKeyParser(parseString, 'label')(value),
     objectKeyParser(parseConstant('union'), 'control')(value),
-    objectKeyParser(parseArray(parseRegularControlDescription), 'controls')(value),
+    objectKeyParser(
+      parseArray((v: unknown, index: number, ctx?: string) =>
+        parseRegularControlDescription(v, `${ctx}[${index}]`),
+      ),
+      'controls',
+    )(value),
     optionalObjectKeyParser(parseBoolean, 'visibleByDefault')(value),
     requiredFieldParser(value),
     optionalObjectKeyParser(parseAny, 'defaultValue')(value),
@@ -567,7 +577,7 @@ export function parseUnionControlDescription(value: unknown): ParseResult<UnionC
 }
 
 export const parseVector2 = flatMapParser<Array<number>, [number, number]>(
-  parseArray(parseNumber),
+  parseArray((v: unknown, _: number, ctx?: string) => parseNumber(v, ctx)),
   (array) => {
     if (array.length === 2) {
       return right(array as [number, number])
@@ -603,7 +613,7 @@ export function parseVector2ControlDescription(
 }
 
 export const parseVector3 = flatMapParser<Array<number>, [number, number, number]>(
-  parseArray(parseNumber),
+  parseArray((v: unknown, _: number, ctx?: string) => parseNumber(v, ctx)),
   (array) => {
     if (array.length === 3) {
       return right(array as [number, number, number])
@@ -639,7 +649,7 @@ export function parseVector3ControlDescription(
 }
 
 export const parseVector4 = flatMapParser<Array<number>, [number, number, number, number]>(
-  parseArray(parseNumber),
+  parseArray((v: unknown, _: number, ctx?: string) => parseNumber(v, ctx)),
   (array) => {
     if (array.length === 4) {
       return right(array as [number, number, number, number])
@@ -719,7 +729,7 @@ export function parseEulerControlDescription(value: unknown): ParseResult<EulerC
 }
 
 export const parseMatrix3 = flatMapParser<Array<number>, Matrix3>(
-  parseArray(parseNumber),
+  parseArray((v: unknown, _: number, ctx?: string) => parseNumber(v, ctx)),
   (array) => {
     if (array.length === 9) {
       return right(array as Matrix3)
@@ -755,7 +765,7 @@ export function parseMatrix3ControlDescription(
 }
 
 export const parseMatrix4 = flatMapParser<Array<number>, Matrix4>(
-  parseArray(parseNumber),
+  parseArray((v: unknown, _: number, ctx?: string) => parseNumber(v, ctx)),
   (array) => {
     if (array.length === 16) {
       return right(array as Matrix4)
@@ -792,9 +802,10 @@ export function parseMatrix4ControlDescription(
 
 export function parseFolderControlDescription(
   value: unknown,
+  ctx?: string,
 ): ParseResult<FolderControlDescription> {
   // Results in parse errors within individual property names.
-  const propertiesResult = objectKeyParser((v) => parsePropertyControls(v), 'controls')(value)
+  const propertiesResult = objectKeyParser((v) => parsePropertyControls(v), 'controls')(value, ctx)
   // Flatten out the errors within each property.
   const parsedControlDescriptions: ParseResult<PropertyControls> = flatMapEither(
     (parsedControlResults) => {
@@ -806,6 +817,7 @@ export function parseFolderControlDescription(
             objectFieldParseError(
               'controls',
               objectFieldParseError(propertyName, propertyResult.value),
+              ctx,
             ),
           )
         } else {
@@ -826,8 +838,8 @@ export function parseFolderControlDescription(
       setOptionalProp(controlDescription, 'label', label)
       return controlDescription
     },
-    optionalObjectKeyParser(parseString, 'label')(value),
-    objectKeyParser(parseConstant<'folder'>('folder'), 'control')(value),
+    optionalObjectKeyParser(parseString, 'label')(value, ctx),
+    objectKeyParser(parseConstant<'folder'>('folder'), 'control')(value, ctx),
     parsedControlDescriptions,
   )
 }
@@ -849,13 +861,19 @@ export function parseJSXControlDescription(value: unknown): ParseResult<JSXContr
     optionalObjectKeyParser(parseString, 'label')(value),
     objectKeyParser(parseConstant('jsx'), 'control')(value),
     optionalObjectKeyParser(parseBoolean, 'visibleByDefault')(value),
-    optionalObjectKeyParser(parseArray(parsePreferredChild), 'preferredChildComponents')(value),
+    optionalObjectKeyParser(
+      parseArray((v, _, c) => parsePreferredChild(v, c)),
+      'preferredChildComponents',
+    )(value),
     requiredFieldParser(value),
     optionalObjectKeyParser(parseAny, 'defaultValue')(value),
   )
 }
 
-function parseRegularControlDescription(value: unknown): ParseResult<RegularControlDescription> {
+function parseRegularControlDescription(
+  value: unknown,
+  ctx?: string,
+): ParseResult<RegularControlDescription> {
   if (typeof value === 'object' && !Array.isArray(value) && value != null) {
     const controlType = (value as any)['control'] as RegularControlType
     switch (controlType) {
@@ -915,20 +933,23 @@ function parseRegularControlDescription(value: unknown): ParseResult<RegularCont
         )
     }
   } else {
-    return left(descriptionParseError('Not an object.'))
+    return left(descriptionParseError('Not an object.', ctx))
   }
 }
 
-export function parseControlDescription(value: unknown): ParseResult<ControlDescription> {
+export function parseControlDescription(
+  value: unknown,
+  ctx?: string,
+): ParseResult<ControlDescription> {
   if (typeof value === 'object' && !Array.isArray(value) && value != null) {
     switch ((value as any)['control']) {
       case 'folder':
-        return parseFolderControlDescription(value)
+        return parseFolderControlDescription(value, ctx)
       default:
-        return parseRegularControlDescription(value)
+        return parseRegularControlDescription(value, ctx)
     }
   } else {
-    return left(descriptionParseError('Not an object.'))
+    return left(descriptionParseError('Not an object.', ctx))
   }
 }
 
@@ -937,10 +958,13 @@ export type ParsedPropertyControlsForFile = {
   [componentName: string]: ParseResult<ParsedPropertyControls>
 }
 
-export function parsePropertyControls(value: unknown): ParseResult<ParsedPropertyControls> {
+export function parsePropertyControls(
+  value: unknown,
+  ctx?: string,
+): ParseResult<ParsedPropertyControls> {
   if (typeof value === 'object' && !Array.isArray(value) && value != null) {
-    return right(objectMap((v) => parseControlDescription(v), value as any))
+    return right(objectMap((v) => parseControlDescription(v, ctx), value as any))
   } else {
-    return left(descriptionParseError('Not an object.'))
+    return left(descriptionParseError('Not an object.', ctx))
   }
 }

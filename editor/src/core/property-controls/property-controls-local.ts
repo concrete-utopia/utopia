@@ -363,7 +363,10 @@ async function getComponentDescriptorPromisesFromParseResult(
     let errors: ComponentDescriptorRegistrationError[] = []
 
     for await (const [moduleName, descriptor] of Object.entries(descriptors)) {
-      const parsedComponents = parseComponents(descriptor)
+      const parsedComponents = parseComponents(
+        descriptor,
+        `${exportDefaultIdentifier.name}.${moduleName}`,
+      )
 
       if (parsedComponents.type === 'LEFT') {
         errors.push({ type: 'invalid-schema', invalidSchemaError: parsedComponents.value })
@@ -458,10 +461,11 @@ function errorsFromComponentRegistration(
       case 'no-exported-component-descriptors':
         return [simpleErrorMessage(fileName, `Cannot extract default export from file`)]
       case 'invalid-schema':
+        const errorDetails = getParseErrorDetails(error.invalidSchemaError)
         return [
           simpleErrorMessage(
             fileName,
-            `Malformed component registration: ${
+            `${errorDetails.path}: Malformed component registration: ${
               getParseErrorDetails(error.invalidSchemaError).description
             }`,
           ),
@@ -825,11 +829,17 @@ export async function componentDescriptorForComponentToRegister(
   }, parsedVariants)
 }
 
-function fullyParsePropertyControls(value: unknown): ParseResult<PropertyControlsFromUtopiaAPI> {
-  return parseObject(parseControlDescription)(value)
+function fullyParsePropertyControls(
+  value: unknown,
+  ctx?: string,
+): ParseResult<PropertyControlsFromUtopiaAPI> {
+  return parseObject(parseControlDescription)(value, ctx)
 }
 
-function parseComponentInsertOption(value: unknown): ParseResult<ComponentInsertOption> {
+function parseComponentInsertOption(
+  value: unknown,
+  ctx?: string,
+): ParseResult<ComponentInsertOption> {
   return applicative3Either(
     (code, additionalImports, label) => {
       let insertOption: ComponentInsertOption = {
@@ -841,22 +851,28 @@ function parseComponentInsertOption(value: unknown): ParseResult<ComponentInsert
 
       return insertOption
     },
-    objectKeyParser(parseString, 'code')(value),
-    optionalObjectKeyParser(parseString, 'additionalImports')(value),
-    optionalObjectKeyParser(parseString, 'label')(value),
+    objectKeyParser(parseString, 'code')(value, ctx),
+    optionalObjectKeyParser(parseString, 'additionalImports')(value, ctx),
+    optionalObjectKeyParser(parseString, 'label')(value, ctx),
   )
 }
 
-export function parsePreferredChild(value: unknown): ParseResult<PreferredChildComponent> {
+export function parsePreferredChild(
+  value: unknown,
+  ctx?: string,
+): ParseResult<PreferredChildComponent> {
   return applicative3Either(
     (name, additionalImports, variants) => ({ name, additionalImports, variants }),
-    objectKeyParser(parseString, 'name')(value),
-    optionalObjectKeyParser(parseString, 'additionalImports')(value),
-    optionalObjectKeyParser(parseArray(parseComponentInsertOption), 'variants')(value),
+    objectKeyParser(parseString, 'name')(value, ctx),
+    optionalObjectKeyParser(parseString, 'additionalImports')(value, ctx),
+    optionalObjectKeyParser(
+      parseArray((v, _, c) => parseComponentInsertOption(v, c)),
+      'variants',
+    )(value, ctx),
   )
 }
 
-function parseComponentToRegister(value: unknown): ParseResult<ComponentToRegister> {
+function parseComponentToRegister(value: unknown, ctx?: string): ParseResult<ComponentToRegister> {
   return applicative9Either(
     (
       component,
@@ -881,26 +897,33 @@ function parseComponentToRegister(value: unknown): ParseResult<ComponentToRegist
         icon: icon,
       }
     },
-    objectKeyParser(parseAny, 'component')(value),
-    objectKeyParser(fullyParsePropertyControls, 'properties')(value),
-    objectKeyParser(parseBoolean, 'supportsChildren')(value),
-    objectKeyParser(parseArray(parseComponentInsertOption), 'variants')(value),
-    optionalObjectKeyParser(parseArray(parsePreferredChild), 'preferredChildComponents')(value),
-    optionalObjectKeyParser(parseEnum(FocusOptions), 'focus')(value),
+    objectKeyParser(parseAny, 'component')(value, ctx),
+    objectKeyParser(fullyParsePropertyControls, 'properties')(value, ctx),
+    objectKeyParser(parseBoolean, 'supportsChildren')(value, ctx),
+    objectKeyParser(
+      parseArray((v, _, c) => parseComponentInsertOption(v, c)),
+      'variants',
+    )(value, ctx),
+    optionalObjectKeyParser(
+      parseArray((v, _, c) => parsePreferredChild(v, c)),
+      'preferredChildComponents',
+    )(value, ctx),
+    optionalObjectKeyParser(parseEnum(FocusOptions), 'focus')(value, ctx),
     optionalObjectKeyParser(
       parseAlternative<'all' | Styling[]>(
         [parseConstant('all'), parseArray(parseEnum(StylingOptions))],
         'inspector value invalid',
       ),
       'inspector',
-    )(value),
-    optionalObjectKeyParser(parseEnum(EmphasisOptions), 'emphasis')(value),
-    optionalObjectKeyParser(parseEnum(IconOptions), 'icon')(value),
+    )(value, ctx),
+    optionalObjectKeyParser(parseEnum(EmphasisOptions), 'emphasis')(value, ctx),
+    optionalObjectKeyParser(parseEnum(IconOptions), 'icon')(value, ctx),
   )
 }
 
-export const parseComponents: (
+const parseComponents: (
   value: unknown,
+  ctx?: string,
 ) => ParseResult<{ [componentName: string]: ComponentToRegister }> =
   parseObject(parseComponentToRegister)
 

@@ -16,12 +16,17 @@ import type { ComponentRendererComponent } from '../components/canvas/ui-jsx-can
 export interface ArrayIndexNotPresentParseError {
   type: 'ARRAY_INDEX_NOT_PRESENT_PARSE_ERROR'
   index: number
+  ctx?: string
 }
 
-export function arrayIndexNotPresentParseError(index: number): ArrayIndexNotPresentParseError {
+export function arrayIndexNotPresentParseError(
+  index: number,
+  ctx?: string,
+): ArrayIndexNotPresentParseError {
   return {
     type: 'ARRAY_INDEX_NOT_PRESENT_PARSE_ERROR',
     index: index,
+    ctx: ctx,
   }
 }
 
@@ -29,25 +34,36 @@ export interface ArrayIndexParseError {
   type: 'ARRAY_INDEX_PARSE_ERROR'
   index: number
   innerError: ParseError
+  ctx?: string
 }
 
-export function arrayIndexParseError(index: number, innerError: ParseError): ArrayIndexParseError {
+export function arrayIndexParseError(
+  index: number,
+  innerError: ParseError,
+  ctx?: string,
+): ArrayIndexParseError {
   return {
     type: 'ARRAY_INDEX_PARSE_ERROR',
     index: index,
     innerError: innerError,
+    ctx: ctx,
   }
 }
 
 export interface ObjectFieldNotPresentParseError {
   type: 'OBJECT_FIELD_NOT_PRESENT_PARSE_ERROR'
   field: string
+  ctx?: string
 }
 
-export function objectFieldNotPresentParseError(field: string): ObjectFieldNotPresentParseError {
+export function objectFieldNotPresentParseError(
+  field: string,
+  ctx?: string,
+): ObjectFieldNotPresentParseError {
   return {
     type: 'OBJECT_FIELD_NOT_PRESENT_PARSE_ERROR',
     field: field,
+    ctx: ctx,
   }
 }
 
@@ -55,28 +71,33 @@ export interface ObjectFieldParseError {
   type: 'OBJECT_FIELD_PARSE_ERROR'
   field: string
   innerError: ParseError
+  ctx?: string
 }
 
 export function objectFieldParseError(
   field: string,
   innerError: ParseError,
+  ctx?: string,
 ): ObjectFieldParseError {
   return {
     type: 'OBJECT_FIELD_PARSE_ERROR',
     field: field,
     innerError: innerError,
+    ctx: ctx,
   }
 }
 
 export interface DescriptionParseError {
   type: 'DESCRIPTION_PARSE_ERROR'
   description: string
+  ctx?: string
 }
 
-export function descriptionParseError(description: string): DescriptionParseError {
+export function descriptionParseError(description: string, ctx?: string): DescriptionParseError {
   return {
     type: 'DESCRIPTION_PARSE_ERROR',
     description: description,
+    ctx: ctx,
   }
 }
 
@@ -107,21 +128,28 @@ export function parseErrorDetails(path: string, description: string): ParseError
 
 export function getParseErrorDetails(parseError: ParseError): ParseErrorDetails {
   function innerDetails(pathSoFar: string[], parseErrorHere: ParseError): ParseErrorDetails {
+    const context = parseError.ctx ?? ''
     switch (parseErrorHere.type) {
       case 'DESCRIPTION_PARSE_ERROR':
-        return parseErrorDetails(pathSoFar.join('.'), parseErrorHere.description)
+        return parseErrorDetails(context, parseErrorHere.description)
       case 'OBJECT_FIELD_PARSE_ERROR':
-        return innerDetails(pathSoFar.concat(parseErrorHere.field), parseErrorHere.innerError)
+        return innerDetails(
+          [context, ...pathSoFar.concat(parseErrorHere.field)],
+          parseErrorHere.innerError,
+        )
       case 'OBJECT_FIELD_NOT_PRESENT_PARSE_ERROR':
         return parseErrorDetails(
-          pathSoFar.concat(parseErrorHere.field).join('.'),
+          [context, ...pathSoFar.concat(parseErrorHere.field)].join('.'),
           'Missing object field',
         )
       case 'ARRAY_INDEX_PARSE_ERROR':
-        return innerDetails(pathSoFar.concat(`${parseErrorHere.index}`), parseErrorHere.innerError)
+        return innerDetails(
+          [...context, ...pathSoFar.concat(`${parseErrorHere.index}`)],
+          parseErrorHere.innerError,
+        )
       case 'ARRAY_INDEX_NOT_PRESENT_PARSE_ERROR':
         return parseErrorDetails(
-          pathSoFar.concat(`${parseErrorHere.index}`).join(','),
+          [...context, ...pathSoFar.concat(`${parseErrorHere.index}`)].join(','),
           'Missing array index.',
         )
       default:
@@ -153,32 +181,34 @@ export function parseAny(value: unknown): ParseResult<any> {
 
 // Wraps around an existing parser to add to the "error stack" an ObjectFieldParseError.
 export function objectValueParserWithError<V>(
-  parser: (v: unknown, key: string) => ParseResult<V>,
-): (v: unknown, key: string) => ParseResult<V> {
-  return (v: unknown, key: string) => {
-    const parsed = parser(v, key)
+  parser: (v: unknown, key: string, ctx?: string) => ParseResult<V>,
+): (v: unknown, key: string, ctx?: string) => ParseResult<V> {
+  return (v: unknown, key: string, ctx?: string) => {
+    const newContext = ctx === undefined ? undefined : `${ctx}.${key}`
+    const parsed = parser(v, key, newContext)
     return leftMapEither((err) => {
-      return objectFieldParseError(key, err)
+      return objectFieldParseError(key, err, newContext)
     }, parsed)
   }
 }
 
 // Parses a single key out of an object.
 export function objectKeyParser<V>(
-  parser: (v: unknown, k: string) => ParseResult<V>,
+  parser: (v: unknown, k: string, ctx?: string) => ParseResult<V>,
   key: string,
-): (v: unknown) => ParseResult<V> {
-  return (value: unknown) => {
+): (v: unknown, ctx?: string) => ParseResult<V> {
+  return (value: unknown, ctx?: string) => {
+    const newContext = ctx === undefined ? undefined : `${ctx}.${key}`
     if (typeof value === 'object' && !Array.isArray(value) && value != null) {
       const withErrorParser = objectValueParserWithError(parser)
       const valueAsObject: any = value
       if (key in valueAsObject) {
-        return withErrorParser(valueAsObject[key], key)
+        return withErrorParser(valueAsObject[key], key, newContext)
       } else {
-        return left(objectFieldNotPresentParseError(key))
+        return left(objectFieldNotPresentParseError(key, newContext))
       }
     } else {
-      return left(descriptionParseError('Not an object.'))
+      return left(descriptionParseError('Not an object.', newContext))
     }
   }
 }
@@ -186,28 +216,29 @@ export function objectKeyParser<V>(
 // Parses a single key out of an object, returning
 // undefined if the key doesn't exist.
 export function optionalObjectKeyParser<V>(
-  parser: (v: unknown, k: string) => ParseResult<V>,
+  parser: (v: unknown, k: string, ctx?: string) => ParseResult<V>,
   key: string,
-): (v: unknown) => ParseResult<V | undefined> {
-  return (value: unknown) => {
+): (v: unknown, ctx?: string) => ParseResult<V | undefined> {
+  return (value: unknown, ctx?: string) => {
+    const newContext = ctx === undefined ? undefined : `${ctx}.${key}`
     if (typeof value === 'object' && !Array.isArray(value) && value != null) {
       const withErrorParser = objectValueParserWithError(parser)
       const valueAsObject: any = value
       if (key in valueAsObject) {
-        return withErrorParser(valueAsObject[key], key)
+        return withErrorParser(valueAsObject[key], key, newContext)
       } else {
         return right(undefined)
       }
     } else {
-      return left(descriptionParseError('Not an object.'))
+      return left(descriptionParseError('Not an object.', newContext))
     }
   }
 }
 
 export function parseObject<V>(
-  objectValueParser: (v: unknown, key: string) => ParseResult<V>,
-): Parser<MapLike<V>> {
-  return (value: unknown) => {
+  objectValueParser: (v: unknown, key: string, ctx?: string) => ParseResult<V>,
+): (v: unknown, ctx?: string) => ParseResult<MapLike<V>> {
+  return (value: unknown, ctx?: string) => {
     if (typeof value === 'object' && !Array.isArray(value) && value != null) {
       const valueAsObject: any = value
       const withErrorParser = objectValueParserWithError(objectValueParser)
@@ -218,48 +249,48 @@ export function parseObject<V>(
               ...working,
               [objectKey]: parsedObjectValue,
             }
-          }, withErrorParser(valueAsObject[objectKey], objectKey))
+          }, withErrorParser(valueAsObject[objectKey], objectKey, `${ctx}.${objectKey}`))
         },
         {},
         Object.keys(valueAsObject),
       )
     } else {
-      return left(descriptionParseError('Not an object.'))
+      return left(descriptionParseError('Not an object.', ctx))
     }
   }
 }
 
 // Wraps around an existing parser to add to the "error stack" an ArrayIndexParseError.
 export function arrayValueParserWithError<V>(
-  parser: (v: unknown, index: number) => ParseResult<V>,
-): (v: unknown, index: number) => ParseResult<V> {
-  return (v: unknown, index: number) => {
+  parser: (v: unknown, index: number, ctx?: string) => ParseResult<V>,
+): (v: unknown, index: number, ctx?: string) => ParseResult<V> {
+  return (v: unknown, index: number, ctx?: string) => {
     const parsed = parser(v, index)
     return leftMapEither((err) => {
-      return arrayIndexParseError(index, err)
+      return arrayIndexParseError(index, err, ctx)
     }, parsed)
   }
 }
 
 export function parseArray<V>(
-  arrayValueParser: (v: unknown, index: number) => ParseResult<V>,
+  arrayValueParser: (v: unknown, index: number, ctx?: string) => ParseResult<V>,
 ): Parser<Array<V>> {
-  return (value: unknown) => {
+  return (value: unknown, ctx?: string) => {
     if (typeof value === 'object' && Array.isArray(value) && value != null) {
       const valueAsArray: Array<unknown> = value
       const withErrorParser = arrayValueParserWithError(arrayValueParser)
       return traverseEither(withErrorParser, valueAsArray)
     } else {
-      return left(descriptionParseError('Not an array.'))
+      return left(descriptionParseError('Not an array.', ctx))
     }
   }
 }
 
 export function parseTuple<T extends Array<unknown>>(
-  arrayValueParser: (v: unknown, index: number) => ParseResult<unknown>,
+  arrayValueParser: (v: unknown, index: number, ctx?: string) => ParseResult<unknown>,
   length: number,
 ): Parser<T> {
-  return (value: unknown) => {
+  return (value: unknown, ctx?: string) => {
     if (typeof value === 'object' && Array.isArray(value) && value != null) {
       const valueAsArray: Array<unknown> = value
       const withErrorParser = arrayValueParserWithError(arrayValueParser)
@@ -268,44 +299,44 @@ export function parseTuple<T extends Array<unknown>>(
         (arr) =>
           arr.length === length
             ? right(arr as T)
-            : left(descriptionParseError('Tuple has incorrect length.')),
+            : left(descriptionParseError('Tuple has incorrect length.', ctx)),
         parsedArray,
       )
     } else {
-      return left(descriptionParseError('Not a tuple.'))
+      return left(descriptionParseError('Not a tuple.', ctx))
     }
   }
 }
 
-export function parseBoolean(value: unknown): ParseResult<boolean> {
+export function parseBoolean(value: unknown, ctx?: string): ParseResult<boolean> {
   if (typeof value === 'boolean') {
     return right(value)
   } else {
-    return left(descriptionParseError('Not a boolean.'))
+    return left(descriptionParseError('Not a boolean.', ctx))
   }
 }
 
-export function parseFalse(value: unknown): ParseResult<false> {
+export function parseFalse(value: unknown, ctx?: string): ParseResult<false> {
   if (typeof value === 'boolean' && value === false) {
     return right(value)
   } else {
-    return left(descriptionParseError('Not a boolean false.'))
+    return left(descriptionParseError('Not a boolean false.', ctx))
   }
 }
 
-export function parseNumber(value: unknown): ParseResult<number> {
+export function parseNumber(value: unknown, ctx?: string): ParseResult<number> {
   if (typeof value === 'number') {
     return right(value)
   } else {
-    return left(descriptionParseError('Not a number.'))
+    return left(descriptionParseError('Not a number.', ctx))
   }
 }
 
-export function parseString(value: unknown): ParseResult<string> {
+export function parseString(value: unknown, ctx?: string): ParseResult<string> {
   if (typeof value === 'string') {
     return right(value)
   } else {
-    return left(descriptionParseError('Not a string.'))
+    return left(descriptionParseError('Not a string.', ctx))
   }
 }
 
@@ -412,24 +443,24 @@ export function parseJsx(_: unknown, value: unknown): ParseResult<JSXParsedValue
 }
 
 export function parseEnum<E extends string | number>(possibleValues: ReadonlyArray<E>): Parser<E> {
-  return (value: unknown) => {
+  return (value: unknown, ctx?: string) => {
     for (const possibleValue of possibleValues) {
       if (possibleValue === value) {
         return right(possibleValue)
       }
     }
-    return left(descriptionParseError('Not a member of an enum.'))
+    return left(descriptionParseError('Not a member of an enum.', ctx))
   }
 }
 
 export function parseConstant<T extends string | number | boolean | bigint | undefined | null>(
   constant: T,
 ): Parser<T> {
-  return (value: unknown) => {
+  return (value: unknown, ctx?: string) => {
     if (value === constant) {
       return right(constant)
     } else {
-      return left(descriptionParseError(`Value was not ${constant}.`))
+      return left(descriptionParseError(`Value was not ${constant}.`, ctx))
     }
   }
 }
@@ -438,33 +469,35 @@ export const parseNull: Parser<null> = parseConstant(null)
 
 export const parseUndefined: Parser<undefined> = parseConstant(undefined)
 
-export function parseNullable<T>(valueParser: Parser<T>): Parser<T | null> {
-  return (value: unknown) => {
+export function parseNullable<T>(
+  valueParser: (v: unknown, ctx?: string) => ParseResult<T>,
+): (v: unknown, ctx?: string) => ParseResult<T | null> {
+  return (value: unknown, ctx?: string) => {
     if (value === null) {
       return right(null)
     } else {
-      return valueParser(value)
+      return valueParser(value, ctx)
     }
   }
 }
 
-export function parseFunction<T>(value: unknown): ParseResult<T> {
+export function parseFunction<T>(value: unknown, ctx?: string): ParseResult<T> {
   if (typeof value === 'function') {
     return right(value as any)
   } else {
-    return left(descriptionParseError('Not a function.'))
+    return left(descriptionParseError('Not a function.', ctx))
   }
 }
 
 export function parseAlternative<T>(parsers: Array<Parser<T>>, failMessage: string): Parser<T> {
-  return (v: unknown) => {
+  return (v: unknown, ctx?: string) => {
     for (const parser of parsers) {
       const result = parser(v)
       if (isRight(result)) {
         return result
       }
     }
-    return left(descriptionParseError(failMessage))
+    return left(descriptionParseError(failMessage, ctx))
   }
 }
 
@@ -473,13 +506,13 @@ export function parseValidate<T>(
   predicate: (value: T) => boolean,
   failMessage: string,
 ): Parser<T> {
-  return function (value: unknown) {
+  return function (value: unknown, ctx?: string) {
     const parsed = parser(value)
     if (isRight(parsed)) {
       if (predicate(parsed.value)) {
         return parsed
       } else {
-        return left(descriptionParseError(`${JSON.stringify(parsed.value)} is not valid`))
+        return left(descriptionParseError(`${JSON.stringify(parsed.value)} is not valid`, ctx))
       }
     } else {
       return parsed

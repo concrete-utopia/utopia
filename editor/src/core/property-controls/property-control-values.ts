@@ -291,7 +291,9 @@ export function unwrapperAndParserForBaseControl(
       return defaultUnwrapFirst(parseArray(parseAny))
     case 'matrix3':
     case 'matrix4':
-      return defaultUnwrapFirst(parseArray(parseNumber))
+      return defaultUnwrapFirst(
+        parseArray((v: unknown, _: number, ctx?: string) => parseNumber(v, ctx)),
+      )
     case 'none':
       return defaultUnwrapFirst(parseAny)
     case 'number-input':
@@ -311,7 +313,9 @@ export function unwrapperAndParserForBaseControl(
     case 'vector2':
     case 'vector3':
     case 'vector4':
-      return defaultUnwrapFirst(parseArray(parseNumber)) // FIXME Also needs to handle a single number
+      return defaultUnwrapFirst(
+        parseArray((v: unknown, _: number, ctx?: string) => parseNumber(v, ctx)),
+      ) // FIXME Also needs to handle a single number
     default:
       const _exhaustiveCheck: never = control
       throw new Error(`Unhandled control ${JSON.stringify(control)}`)
