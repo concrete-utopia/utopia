@@ -71,7 +71,6 @@ const config = {
     preview: hot
       ? ['react-hot-loader/patch', './src/templates/preview/preview.tsx']
       : './src/templates/preview/preview.tsx',
-    notFound: './src/templates/project-not-found/not-found-entry-point.tsx',
   },
 
   output: {
@@ -98,15 +97,6 @@ const config = {
       inject: 'head', // Add the script tags to the end of the <head>
       scriptLoading: 'defer',
       template: './src/templates/index.html',
-      minify: false,
-      templateParameters: htmlTemplateParameters,
-    }),
-    new HtmlWebpackPlugin({
-      chunks: ['notFound'],
-      inject: 'head', // Add the script tags to the end of the <head>
-      scriptLoading: 'defer',
-      template: './src/templates/project-not-found/index.html',
-      filename: 'project-not-found/index.html',
       minify: false,
       templateParameters: htmlTemplateParameters,
     }),

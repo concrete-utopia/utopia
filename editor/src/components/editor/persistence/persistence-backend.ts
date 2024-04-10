@@ -93,6 +93,7 @@ async function loadProject(projectId: string): Promise<ProjectLoadResult<Persist
       case 'ProjectNotFound':
         return {
           type: 'PROJECT_NOT_FOUND',
+          projectId: projectId,
         }
 
       case 'ProjectNotAuthorized':
