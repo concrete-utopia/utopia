@@ -42,6 +42,7 @@ import type {
   ComponentInfo,
 } from '../custom-code/code-file'
 import {
+  ComponentDescriptorDefaults,
   clearComponentElementToInsertUniqueIDs,
   defaultComponentDescriptor,
 } from '../custom-code/code-file'
@@ -370,6 +371,7 @@ function makeHTMLDescriptor(
       },
     ],
     source: defaultComponentDescriptor(),
+    ...ComponentDescriptorDefaults,
   }
 }
 
@@ -462,6 +464,7 @@ const conditionalElementsDescriptors: ComponentDescriptorsForFile = {
       },
     ],
     source: defaultComponentDescriptor(),
+    ...ComponentDescriptorDefaults,
   },
 }
 
@@ -478,6 +481,7 @@ const groupElementsDescriptors: ComponentDescriptorsForFile = {
       },
     ],
     source: defaultComponentDescriptor(),
+    ...ComponentDescriptorDefaults,
   },
 }
 
@@ -500,6 +504,7 @@ const fragmentElementsDescriptors: ComponentDescriptorsForFile = {
     variants: [fragmentComponentInfo],
     preferredChildComponents: [],
     source: defaultComponentDescriptor(),
+    ...ComponentDescriptorDefaults,
   },
 }
 
@@ -516,6 +521,7 @@ const samplesDescriptors: ComponentDescriptorsForFile = {
       },
     ],
     source: defaultComponentDescriptor(),
+    ...ComponentDescriptorDefaults,
   },
 }
 
