@@ -10,10 +10,12 @@ import {
   RemixNavigationAtom,
 } from '../../canvas/remix/utopia-remix-root-component'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
+import { NO_OP } from '../../../core/shared/utils'
 
 type RouteMatch = {
   path: string
   resolvedPath: string
+  matchesRealRoute: boolean
 }
 
 export const PagesPane = React.memo((props) => {
@@ -21,13 +23,27 @@ export const PagesPane = React.memo((props) => {
     Substores.derived,
     (store) => {
       const result = uniqBy(
-        registeredExampleRoutes.flatMap((exampleRoute) => {
+        registeredExampleRoutes.flatMap((exampleRoute): Array<RouteMatch> => {
           const matchResult = matchRoutes(store.derived.remixData?.routes ?? [], exampleRoute) ?? []
+
+          if (
+            matchResult[matchResult.length - 1]?.pathname !==
+            matchResult[matchResult.length - 1]?.pathnameBase
+          ) {
+            return [
+              {
+                path: exampleRoute,
+                resolvedPath: exampleRoute,
+                matchesRealRoute: false,
+              },
+            ]
+          }
 
           return matchResult?.map(
             (match): RouteMatch => ({
               resolvedPath: match.pathname,
               path: match.route.path ?? '/',
+              matchesRealRoute: true,
             }),
           )
         }),
@@ -59,6 +75,7 @@ export const PagesPane = React.memo((props) => {
             routePath={pathToDisplay}
             resolvedPath={resolvedPath}
             active={pathMatchesActivePath}
+            matchesRealRoute={route.matchesRealRoute}
           />
         )
       })}
@@ -70,6 +87,7 @@ interface PageRouteEntryProps {
   routePath: string
   resolvedPath: string
   active: boolean
+  matchesRealRoute: boolean
 }
 const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
   const [navigationControls] = useAtom(RemixNavigationAtom)
@@ -83,7 +101,9 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
     <FlexRow
       style={{
         flexShrink: 0,
-        color: colorTheme.neutralForeground.value,
+        color: props.matchesRealRoute
+          ? colorTheme.neutralForeground.value
+          : colorTheme.subduedForeground.value,
         backgroundColor: props.active ? colorTheme.subtleBackground.value : 'transparent',
         marginLeft: 8,
         marginRight: 8,
@@ -96,7 +116,7 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
         borderRadius: 2,
         position: 'relative',
       }}
-      onClick={onClick}
+      onClick={props.matchesRealRoute ? onClick : NO_OP}
     >
       {/* TODO if we want renaming, cannibalize it from FileBrowserItem */}
       <span
@@ -115,10 +135,28 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
   )
 })
 
-const registeredExampleRoutes = [
+const registeredExampleRoutes = fillInGapsInRoute([
   '/',
   '/collections/unisex',
   '/products/beanie',
   '/blogs/news',
   '/blogs/news/making-liquid',
-]
+  '/my/awesome/collection',
+])
+
+function fillInGapsInRoute(routes: Array<string>): Array<string> {
+  // if we find a route /collections, and a route /collections/hats/beanies, we should create an entry for /collections/hats, so there are no gaps in the tree structure
+  const result: Array<string> = []
+  for (const route of routes) {
+    const parts = route.split('/')
+    for (let i = 1; i < parts.length - 1; i++) {
+      const parentRoute = parts.slice(0, i + 1).join('/')
+      if (!result.includes(parentRoute)) {
+        result.push(parentRoute)
+      }
+    }
+    result.push(route)
+  }
+
+  return result
+}
