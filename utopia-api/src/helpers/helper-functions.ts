@@ -1,13 +1,13 @@
 import type React from 'react'
 import type { PropertyControls } from '../property-controls/property-controls'
 
-export interface ComponentInsertOption {
-  code: string
-  additionalImports?: string
-  label?: string
-}
+export type AdditionalImports = string | string[]
 
-type AdditionalImports = string | string[]
+export interface ComponentInsertOption {
+  imports?: AdditionalImports
+  label: string
+  code: string
+}
 
 export type ComponentExample =
   // if only the component name is specified, and the element is not an
@@ -21,25 +21,23 @@ export type ComponentExample =
 
   // detailed description with the path to import the element from and component
   // variants
-  | {
-      imports?: AdditionalImports
-      label: string
-      code: string
-    }
+  | ComponentInsertOption
 
 export type PlaceholderSpec =
   // a placeholder that inserts a span with that wraps `contents`. This will be
   // editable with the text editor
-  | { type: 'text'; contents: string }
+  | { text: string }
   // inserts a `div` with the specified width and height
-  | { type: 'spacer'; width: number; height: number }
+  | { width: number; height: number }
+
+export type PreferredContent = 'text' | ComponentExample | ComponentExample[]
 
 export interface ChildrenSpec {
   // specifies what component(s) are preferred.
   // `undefined`: any component can be rendered
   // `'text'`: means only JSX text is accepted
   // `RendersComponent`: detailed spec
-  preferredContent?: 'text' | ComponentExample | ComponentExample[]
+  preferredContent?: PreferredContent
 
   // specifies the placeholder to use
   placeholder?: PlaceholderSpec
@@ -55,6 +53,8 @@ export interface ChildrenSpec {
   // specifies the placeholder to use
   placeholder?: PlaceholderSpec
 }
+
+export type Children = 'supported' | 'not-supported' | ChildrenSpec
 
 export const FocusOptions = ['default', 'always', 'never'] as const
 export type Focus = (typeof FocusOptions)[number]
@@ -73,12 +73,12 @@ export type Icon = (typeof IconOptions)[number]
 export interface ComponentToRegister {
   component: any
   properties: PropertyControls
-  children?: 'supported' | 'not-supported' | ChildrenSpec
+  children?: Children
   focus?: Focus
   inspector?: InspectorSpec
   emphasis?: Emphasis
   icon?: Icon
-  variants: Array<ComponentInsertOption>
+  variants?: ComponentExample | Array<ComponentExample>
 }
 
 export type RawSingleBorderWidth = number | string

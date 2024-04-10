@@ -349,15 +349,14 @@ function makeHTMLDescriptor(
   attributes?: () => JSXAttributes,
 ): ComponentDescriptor {
   const supportsChildren = intrinsicHTMLElementNamesThatSupportChildren.includes(tag)
-    ? 'supported'
-    : 'not-supported'
   const propertyControls: PropertyControls = {
     ...stockHTMLPropertyControls,
     ...extraPropertyControls,
   }
   return {
     properties: propertyControls,
-    children: supportsChildren,
+    supportsChildren: supportsChildren,
+    preferredChildComponents: [],
     variants: [
       {
         insertMenuLabel: tag,
@@ -448,7 +447,8 @@ const divComponentGroup = {
 const conditionalElementsDescriptors: ComponentDescriptorsForFile = {
   conditional: {
     properties: {},
-    children: 'supported',
+    supportsChildren: true,
+    preferredChildComponents: [],
     variants: [
       {
         insertMenuLabel: 'Conditional',
@@ -471,7 +471,8 @@ const conditionalElementsDescriptors: ComponentDescriptorsForFile = {
 const groupElementsDescriptors: ComponentDescriptorsForFile = {
   group: {
     properties: {},
-    children: 'supported',
+    supportsChildren: true,
+    preferredChildComponents: [],
     variants: [
       {
         insertMenuLabel: 'Group',
@@ -499,8 +500,9 @@ export const fragmentComponentInfo: ComponentInfo = {
 const fragmentElementsDescriptors: ComponentDescriptorsForFile = {
   fragment: {
     properties: {},
-    children: 'supported',
+    supportsChildren: true,
     variants: [fragmentComponentInfo],
+    preferredChildComponents: [],
     source: defaultComponentDescriptor(),
     ...ComponentDescriptorDefaults,
   },
@@ -509,7 +511,8 @@ const fragmentElementsDescriptors: ComponentDescriptorsForFile = {
 const samplesDescriptors: ComponentDescriptorsForFile = {
   sampleText: {
     properties: {},
-    children: 'not-supported',
+    supportsChildren: false,
+    preferredChildComponents: [],
     variants: [
       {
         insertMenuLabel: 'Sample text',
@@ -600,7 +603,7 @@ function isDescriptorEligibleForMode(
   insertMenuMode: InsertMenuMode,
   component: ComponentDescriptor,
 ): boolean {
-  return insertMenuMode === 'wrap' ? component.children !== 'not-supported' : true
+  return insertMenuMode === 'wrap' ? component.supportsChildren : true
 }
 
 function isUtopiaJSXComponentEligibleForMode(

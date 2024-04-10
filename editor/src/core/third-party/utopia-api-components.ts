@@ -2,7 +2,6 @@ import {
   defaultComponentDescriptor,
   type ComponentDescriptor,
   type ComponentDescriptorsForFile,
-  type Children,
   ComponentDescriptorDefaults,
 } from '../../components/custom-code/code-file'
 import {
@@ -21,7 +20,7 @@ import {
 
 const BasicUtopiaComponentDescriptor = (
   name: string,
-  children: Children,
+  supportsChildren: boolean,
   styleProp: () => JSExpression,
 ): ComponentDescriptor => {
   return {
@@ -30,7 +29,8 @@ const BasicUtopiaComponentDescriptor = (
         control: 'style-controls',
       },
     },
-    children: children,
+    supportsChildren: supportsChildren,
+    preferredChildComponents: [],
     variants: [
       {
         insertMenuLabel: name,
@@ -57,7 +57,7 @@ const BasicUtopiaComponentDescriptor = (
 
 const BasicUtopiaSceneDescriptor = (
   name: string,
-  children: Children,
+  supportsChildren: boolean,
   styleProp: () => JSExpression,
 ): ComponentDescriptor => {
   return {
@@ -66,7 +66,8 @@ const BasicUtopiaSceneDescriptor = (
         control: 'style-controls',
       },
     },
-    children: children,
+    supportsChildren: supportsChildren,
+    preferredChildComponents: [],
     variants: [
       {
         insertMenuLabel: name,
@@ -103,17 +104,11 @@ const BasicUtopiaSceneDescriptor = (
 }
 
 export const UtopiaApiComponents: ComponentDescriptorsForFile = {
-  Ellipse: BasicUtopiaComponentDescriptor('Ellipse', 'not-supported', defaultElementStyle),
-  Rectangle: BasicUtopiaComponentDescriptor(
-    'Rectangle',
-    'not-supported',
-    defaultRectangleElementStyle,
-  ),
-  View: BasicUtopiaComponentDescriptor('View', 'supported', defaultElementStyle),
-  FlexRow: BasicUtopiaComponentDescriptor('FlexRow', 'supported', defaultFlexRowOrColStyle),
-  FlexCol: BasicUtopiaComponentDescriptor('FlexCol', 'supported', defaultFlexRowOrColStyle),
-  Scene: BasicUtopiaSceneDescriptor('Scene', 'supported', () => defaultSceneElementStyle(null)),
-  RemixScene: BasicUtopiaSceneDescriptor('RemixScene', 'not-supported', () =>
-    defaultSceneElementStyle(null),
-  ),
+  Ellipse: BasicUtopiaComponentDescriptor('Ellipse', false, defaultElementStyle),
+  Rectangle: BasicUtopiaComponentDescriptor('Rectangle', false, defaultRectangleElementStyle),
+  View: BasicUtopiaComponentDescriptor('View', true, defaultElementStyle),
+  FlexRow: BasicUtopiaComponentDescriptor('FlexRow', true, defaultFlexRowOrColStyle),
+  FlexCol: BasicUtopiaComponentDescriptor('FlexCol', true, defaultFlexRowOrColStyle),
+  Scene: BasicUtopiaSceneDescriptor('Scene', true, () => defaultSceneElementStyle(null)),
+  RemixScene: BasicUtopiaSceneDescriptor('RemixScene', false, () => defaultSceneElementStyle(null)),
 }

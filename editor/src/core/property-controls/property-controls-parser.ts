@@ -33,6 +33,7 @@ import type {
   AllowedEnumType,
   Matrix3,
   Matrix4,
+  ComponentExample,
 } from 'utopia-api/core'
 import { parseColor } from '../../components/inspector/common/css-utils'
 import type { Parser, ParseResult } from '../../utils/value-parser-utils'
@@ -82,7 +83,7 @@ import {
   objectMapDropNulls,
 } from '../shared/object-utils'
 import { parseEnumValue } from './property-control-values'
-import { parsePreferredChild } from './property-controls-local'
+import { parseChildrenSpec, parseComponentExample } from './property-controls-local'
 
 const requiredFieldParser = optionalObjectKeyParser(parseBoolean, 'required')
 
@@ -840,7 +841,7 @@ export function parseJSXControlDescription(value: unknown): ParseResult<JSXContr
       }
       setOptionalProp(jsxControlDescription, 'label', label)
       setOptionalProp(jsxControlDescription, 'visibleByDefault', visibleByDefault)
-      setOptionalProp(jsxControlDescription, 'preferredChildComponents', preferredChildComponents)
+      setOptionalProp(jsxControlDescription, 'preferredContents', preferredChildComponents)
       setOptionalProp(jsxControlDescription, 'required', required)
       setOptionalProp(jsxControlDescription, 'defaultValue', defaultValue)
 
@@ -849,7 +850,13 @@ export function parseJSXControlDescription(value: unknown): ParseResult<JSXContr
     optionalObjectKeyParser(parseString, 'label')(value),
     objectKeyParser(parseConstant('jsx'), 'control')(value),
     optionalObjectKeyParser(parseBoolean, 'visibleByDefault')(value),
-    optionalObjectKeyParser(parseArray(parsePreferredChild), 'preferredChildComponents')(value),
+    optionalObjectKeyParser(
+      parseAlternative<ComponentExample | Array<ComponentExample>>(
+        [parseComponentExample, parseArray(parseComponentExample)],
+        'Invalid `preferredContents` value',
+      ),
+      'preferredContents',
+    )(value),
     requiredFieldParser(value),
     optionalObjectKeyParser(parseAny, 'defaultValue')(value),
   )

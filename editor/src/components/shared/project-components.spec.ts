@@ -51,7 +51,8 @@ describe('getComponentGroups', () => {
       '@heroicons/react/solid': {
         BeakerIcon: {
           properties: {},
-          children: 'not-supported',
+          supportsChildren: false,
+          preferredChildComponents: [],
           variants: [],
           source: defaultComponentDescriptor(),
           ...ComponentDescriptorDefaults,
@@ -77,7 +78,8 @@ describe('getDependencyStatus', () => {
       '@heroicons/react/solid': {
         BeakerIcon: {
           properties: {},
-          children: 'not-supported',
+          supportsChildren: false,
+          preferredChildComponents: [],
           variants: [],
           source: defaultComponentDescriptor(),
           ...ComponentDescriptorDefaults,

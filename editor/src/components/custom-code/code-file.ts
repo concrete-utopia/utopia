@@ -166,7 +166,9 @@ export type Children = 'supported' | 'not-supported' | ChildrenSpec
 
 export interface ComponentDescriptor {
   properties: PropertyControls
-  children: Children
+  supportsChildren: boolean
+  preferredChildComponents: Array<PreferredChildComponentDescriptor>
+  childrenPropPlaceholder: PlaceholderSpec | null
   variants: ComponentInfo[]
   source: ComponentDescriptorSource
   focus: Focus
@@ -177,19 +179,21 @@ export interface ComponentDescriptor {
 
 export const ComponentDescriptorDefaults: Pick<
   ComponentDescriptor,
-  'focus' | 'inspector' | 'emphasis' | 'icon'
+  'focus' | 'inspector' | 'emphasis' | 'icon' | 'childrenPropPlaceholder'
 > = {
   focus: 'default',
   inspector: 'all',
   emphasis: 'regular',
   icon: 'regular',
+  childrenPropPlaceholder: null,
 }
 
 export function componentDescriptor(
   properties: PropertyControls,
-  children: Children,
+  supportsChildren: boolean,
   variants: Array<ComponentInfo>,
   preferredChildComponents: Array<PreferredChildComponentDescriptor>,
+  childrenPropPlaceholder: PlaceholderSpec | null,
   source: ComponentDescriptorSource,
   focus: Focus,
   inspector: InspectorSpec,
@@ -198,8 +202,10 @@ export function componentDescriptor(
 ): ComponentDescriptor {
   return {
     properties: properties,
-    children: children,
+    supportsChildren: supportsChildren,
     variants: variants,
+    preferredChildComponents: preferredChildComponents,
+    childrenPropPlaceholder: childrenPropPlaceholder,
     source: source,
     focus: focus,
     inspector: inspector,
