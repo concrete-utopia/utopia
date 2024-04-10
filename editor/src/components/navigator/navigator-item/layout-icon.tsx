@@ -62,6 +62,8 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
     const { elementWarnings, color, warningText: propsWarningText, navigatorEntry } = props
     const { iconProps, isPositionAbsolute } = useLayoutOrElementIcon(navigatorEntry)
 
+    const addAbsoltueMarkerToIcon = isPositionAbsolute
+
     const isZeroSized = useEditorState(
       Substores.metadata,
       (store) => isZeroSizedDivSelector(store, props.navigatorEntry.elementPath),
@@ -135,7 +137,9 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
         return (
           <div
             style={{
-              transform: isPositionAbsolute ? 'scale(.8)' : undefined,
+              // with the current design, for absolute elements we apply a 4 corner overlay over the icon,
+              // so we shrink it to make it visually fit inside the box
+              transform: addAbsoltueMarkerToIcon ? 'scale(.8)' : undefined,
             }}
           >
             <Icn
@@ -192,7 +196,7 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
       isErroredGroup,
       isErroredGroupChild,
       iconTestId,
-      isPositionAbsolute,
+      addAbsoltueMarkerToIcon,
     ])
 
     const marker = React.useMemo(() => {
@@ -206,7 +210,7 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
             }}
           />
         )
-      } else if (isPositionAbsolute) {
+      } else if (addAbsoltueMarkerToIcon) {
         return (
           <Icn
             category='navigator-element'
@@ -220,7 +224,7 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
       } else {
         return null
       }
-    }, [isPositionAbsolute, color, warningText, isErroredGroupChild, iconTestId])
+    }, [addAbsoltueMarkerToIcon, color, warningText, isErroredGroupChild, iconTestId])
 
     return (
       <div
