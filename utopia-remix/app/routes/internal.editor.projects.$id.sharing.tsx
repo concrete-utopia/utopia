@@ -10,7 +10,7 @@ import { ensure, requireUser } from '../util/api.server'
 import { Status } from '../util/statusCodes'
 import type { UserDetails } from 'prisma-client'
 
-const RevalidateInterval = 10_000 //ms
+const RevalidateInterval = 15_000 //ms
 
 export async function loader(args: LoaderFunctionArgs) {
   const projectId = args.params.id
