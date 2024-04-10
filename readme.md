@@ -19,6 +19,19 @@ Please note: to use Utopia, visit [utopia.app](https://utopia.app/). Installing 
 
 To contribute to Utopia, you'll need to clone the repo, install the prerequisites, and then run the editor for the first time.
 
+## Quick Start for contemporary MacOS
+1. Clone the repo
+2. Install Nix-Shell [nix-shell](https://nixos.org/download.html) `sh <(curl -L https://nixos.org/nix/install)`
+3. Close terminal, start new terminal session, navigate to repo folder, run `nix-shell`. first run will take a while it will look like nothing will happen.
+4. Generate and copy a Github Token [here](https://github.com/settings/tokens) (fine-grained or classic, longest expiration. No need to tick any of the permission checkboxes for classic)
+5. First run and build: open terminal `GITHUB_TOKEN=<token from above> start-full`.
+6. Wait - this step will take a while and start with (harmless) errors. Once you see the scratchpad, check the server tab - it'll take the longest (many minutes).
+7. Load the editor at `http://localhost:8000/p`. 
+8. Subsequent runs: `start-minimal` (this won't rebuild everything) except for server and infra-level changes
+9. Editor hot-reloads and rebuilds as needed; refresh browser for asset changes
+10. `stop-dev` in the Scratchpad stops the server.
+11. Install [direnv](https://github.com/concrete-utopia/utopia#using-direnv-to-make-your-life-easier) to start nix-shell automatically `brew install direnv`
+
 ## Install the Prerequisites
 
 - [nix-shell](https://nixos.org/download.html). If you are on macOS Catalina or later, you will be prompted to include an extra flag in the install script. If using Windows follow [this guide](https://nathan.gs/2019/04/12/nix-on-windows/). If you don't want to use nix, we have instructions [here](https://github.com/concrete-utopia/utopia#running-this-without-nix)
