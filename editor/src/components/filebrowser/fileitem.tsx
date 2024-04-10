@@ -766,7 +766,7 @@ class FileBrowserItemInner extends React.PureComponent<
             }}
           >
             <ExpandableIndicator
-              key='expandable-indicator'
+              key='expandable-indicator-small'
               visible={
                 this.props.type === 'file' &&
                 this.props.fileType != null &&
