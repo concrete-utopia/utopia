@@ -23,6 +23,7 @@ import type {
 } from '../../components/custom-code/internal-property-controls'
 import { packageJsonFileFromProjectContents } from '../../components/assets'
 import {
+  ComponentDescriptorDefaults,
   componentDescriptorFromDescriptorFile,
   isDefaultComponentDescriptor,
 } from '../../components/custom-code/code-file'
@@ -816,10 +817,10 @@ export async function componentDescriptorForComponentToRegister(
       variants: variants,
       moduleName: moduleName,
       source: source,
-      focus: componentToRegister.focus,
-      inspector: componentToRegister.inspector,
-      emphasis: componentToRegister.emphasis,
-      icon: componentToRegister.icon,
+      focus: componentToRegister.focus ?? ComponentDescriptorDefaults.focus,
+      inspector: componentToRegister.inspector ?? ComponentDescriptorDefaults.inspector,
+      emphasis: componentToRegister.emphasis ?? ComponentDescriptorDefaults.emphasis,
+      icon: componentToRegister.icon ?? ComponentDescriptorDefaults.icon,
     }
   }, parsedVariants)
 }

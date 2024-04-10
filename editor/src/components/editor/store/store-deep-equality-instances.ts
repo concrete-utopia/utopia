@@ -3364,13 +3364,13 @@ export const ComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<Component
     (descriptor) => descriptor.source,
     ComponentDescriptorSourceKeepDeepEquality(),
     (descriptor) => descriptor.focus,
-    undefinableDeepEquality(createCallWithTripleEquals<Focus>()),
+    createCallWithTripleEquals<Focus>(),
     (descriptor) => descriptor.inspector,
-    undefinableDeepEquality(InspectorSpecKeepDeepEquality),
+    InspectorSpecKeepDeepEquality,
     (descriptor) => descriptor.emphasis,
-    undefinableDeepEquality(createCallWithTripleEquals<Emphasis>()),
+    createCallWithTripleEquals<Emphasis>(),
     (descriptor) => descriptor.icon,
-    undefinableDeepEquality(createCallWithTripleEquals<Icon>()),
+    createCallWithTripleEquals<Icon>(),
     componentDescriptor,
   )
 
