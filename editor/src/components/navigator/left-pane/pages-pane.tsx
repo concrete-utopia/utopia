@@ -1,3 +1,7 @@
+/** @jsxRuntime classic */
+/** @jsx jsx */
+import { jsx } from '@emotion/react'
+
 import { useAtom } from 'jotai'
 import React from 'react'
 import { matchRoutes } from 'react-router'
@@ -123,7 +127,6 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
         paddingBottom: 3,
         height: UtopiaTheme.layout.rowHeight.smaller,
         alignItems: 'center',
-        justifyContent: 'space-between',
         borderRadius: 2,
         position: 'relative',
       }}
@@ -151,18 +154,38 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
       {/* TODO if we want renaming, cannibalize it from FileBrowserItem */}
       <span
         style={{
-          color: isDynamicPathSegment
-            ? colorTheme.primary.value
-            : colorTheme.neutralForeground.value,
-          flex: 1,
+          // color: isDynamicPathSegment
+          //   ? colorTheme.primary.value
+          //   : colorTheme.neutralForeground.value,
           marginLeft: 6,
           display: 'inline-block',
           whiteSpace: 'nowrap',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
+          flexGrow: 1,
         }}
       >
         {lastResolvedSegment === '' ? RemixIndexPathLabel : '/' + lastResolvedSegment}
+      </span>
+      <span
+        style={{
+          display: !isDynamicPathSegment ? 'none' : 'inline-block',
+          opacity: props.active ? 1 : undefined,
+          color: colorTheme.subduedForeground.value,
+          marginLeft: 6,
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          paddingRight: 8,
+        }}
+        css={{
+          opacity: 0,
+          '*:hover > &': {
+            opacity: 1,
+          },
+        }}
+      >
+        {lastTemplateSegment}
       </span>
     </FlexRow>
   )
