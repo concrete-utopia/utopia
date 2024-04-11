@@ -763,6 +763,7 @@ class FileBrowserItemInner extends React.PureComponent<
               display: 'flex',
               flexDirection: 'row',
               overflow: 'hidden',
+              gap: 5,
             }}
           >
             <ExpandableIndicator
@@ -781,6 +782,7 @@ class FileBrowserItemInner extends React.PureComponent<
                 style={{
                   ...flexRowStyle,
                   overflow: 'hidden',
+                  gap: 5,
                 }}
               >
                 {this.renderIcon()}

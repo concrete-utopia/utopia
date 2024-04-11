@@ -20,14 +20,10 @@ export const ComponentPreview: React.FunctionComponent<
     return (
       <div
         style={{
-          width: 18,
-          height: 18,
           display: 'flex',
           justifyItems: 'center',
           alignItems: 'center',
           position: 'relative',
-          paddingTop: 1,
-          marginLeft: 2,
         }}
       >
         <Icn {...iconProps} color={props.color} />
