@@ -829,23 +829,23 @@ export async function parsePreferredChildrenExamples(
       ? null
       : placeholderFromJSPlaceholder(componentToRegister.children.placeholder)
   if (
-    componentToRegister.children.preferredContent == null ||
-    componentToRegister.children.preferredContent === 'text'
+    componentToRegister.children.preferredContents == null ||
+    componentToRegister.children.preferredContents === 'text'
   ) {
     return right([
       {
         placeholder: placeholder,
-        name: componentName,
+        name: 'span',
         imports: {},
         variants: [],
       },
     ])
   }
 
-  if (Array.isArray(componentToRegister.children.preferredContent)) {
+  if (Array.isArray(componentToRegister.children.preferredContents)) {
     const examples = sequenceEither(
       await Promise.all(
-        componentToRegister.children.preferredContent.map((c) =>
+        componentToRegister.children.preferredContents.map((c) =>
           parseCodeFromInsertOption(
             componentInsertOptionFromExample(c, moduleName),
             componentName,
@@ -869,7 +869,7 @@ export async function parsePreferredChildrenExamples(
   }
 
   const preferredChild = await parseCodeFromInsertOption(
-    componentInsertOptionFromExample(componentToRegister.children.preferredContent, moduleName),
+    componentInsertOptionFromExample(componentToRegister.children.preferredContents, moduleName),
     componentName,
     workers,
   )
@@ -1002,7 +1002,7 @@ function fullyParsePropertyControls(value: unknown): ParseResult<PropertyControl
   return parseObject(parseControlDescription)(value)
 }
 
-export function parseComponentExample(value: unknown): ParseResult<ComponentExample> {
+export function parseComponentInsertOption(value: unknown): ParseResult<ComponentInsertOption> {
   return applicative3Either(
     (code, imports, label) => {
       let insertOption: ComponentInsertOption = {
@@ -1026,6 +1026,16 @@ export function parseComponentExample(value: unknown): ParseResult<ComponentExam
   )
 }
 
+const parseComponentName = (value: unknown) =>
+  mapEither((name) => ({ name }), objectKeyParser(parseString, 'name')(value))
+const parseComponentFunction = (value: unknown) =>
+  mapEither((component) => ({ component }), objectKeyParser(parseAny, 'component')(value))
+
+const parseComponentExample = parseAlternative<ComponentExample>(
+  [parseComponentName, parseComponentFunction, parseComponentInsertOption],
+  'Invalid component example',
+)
+
 function parsePreferredContent(value: unknown): ParseResult<PreferredContent> {
   return parseAlternative<PreferredContent>(
     [parseConstant('text'), parseComponentExample, parseArray(parseComponentExample)],
@@ -1047,8 +1057,8 @@ function parseSpacerPlaceholder(value: unknown): ParseResult<PlaceholderSpecFrom
 
 export function parseChildrenSpec(value: unknown): ParseResult<ChildrenSpec> {
   return applicative2Either(
-    (preferredContent, placeholder) => ({ preferredContent, placeholder }),
-    optionalObjectKeyParser(parsePreferredContent, 'preferredContent')(value),
+    (preferredContents, placeholder) => ({ preferredContents, placeholder }),
+    optionalObjectKeyParser(parsePreferredContent, 'preferredContents')(value),
     optionalObjectKeyParser(
       parseAlternative([parseTextPlaceholder, parseSpacerPlaceholder], 'Invalid placeholder value'),
       'placeholder',
@@ -1083,7 +1093,7 @@ function parseComponentToRegister(value: unknown): ParseResult<ComponentToRegist
     objectKeyParser(fullyParsePropertyControls, 'properties')(value),
     optionalObjectKeyParser(
       parseAlternative<ComponentExample | Array<ComponentExample>>(
-        [parseComponentExample, parseArray(parseComponentExample)],
+        [parseComponentInsertOption, parseArray(parseComponentInsertOption)],
         'Invalid variants prop',
       ),
       'variants',

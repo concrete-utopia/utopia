@@ -83,7 +83,7 @@ import {
   objectMapDropNulls,
 } from '../shared/object-utils'
 import { parseEnumValue } from './property-control-values'
-import { parseChildrenSpec, parseComponentExample } from './property-controls-local'
+import { parseChildrenSpec, parseComponentInsertOption } from './property-controls-local'
 
 const requiredFieldParser = optionalObjectKeyParser(parseBoolean, 'required')
 
@@ -852,7 +852,7 @@ export function parseJSXControlDescription(value: unknown): ParseResult<JSXContr
     optionalObjectKeyParser(parseBoolean, 'visibleByDefault')(value),
     optionalObjectKeyParser(
       parseAlternative<ComponentExample | Array<ComponentExample>>(
-        [parseComponentExample, parseArray(parseComponentExample)],
+        [parseComponentInsertOption, parseArray(parseComponentInsertOption)],
         'Invalid `preferredContents` value',
       ),
       'preferredContents',

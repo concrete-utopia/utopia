@@ -1108,6 +1108,418 @@ describe('registered property controls', () => {
       ]
     `)
   })
+
+  describe('registering the children prop', () => {
+    it('can omit the children prop', async () => {
+      const renderResult = await renderTestEditorWithModel(
+        project({
+          ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
+          
+          const Components = {
+        '/src/card': {
+          Card: {
+            component: Card,
+            properties: { }
+          },
+        },
+      }
+      
+      export default Components
+    `,
+        }),
+        'await-first-dom-report',
+      )
+      const editorState = renderResult.getEditorState().editor
+
+      expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
+        Object {
+          "Card": Object {
+            "childrenPropPlaceholder": null,
+            "emphasis": "regular",
+            "focus": "default",
+            "icon": "regular",
+            "inspector": "all",
+            "preferredChildComponents": Array [],
+            "properties": Object {},
+            "source": Object {
+              "sourceDescriptorFile": "/utopia/components.utopia.js",
+              "type": "DESCRIPTOR_FILE",
+            },
+            "supportsChildren": false,
+            "variants": Array [
+              Object {
+                "elementToInsert": [Function],
+                "importsToAdd": Object {
+                  "/src/card": Object {
+                    "importedAs": null,
+                    "importedFromWithin": Array [
+                      Object {
+                        "alias": "Card",
+                        "name": "Card",
+                      },
+                    ],
+                    "importedWithName": null,
+                  },
+                },
+                "insertMenuLabel": "Card",
+              },
+            ],
+          },
+        }
+      `)
+    })
+
+    it('can use `supported` for the children prop', async () => {
+      const renderResult = await renderTestEditorWithModel(
+        project({
+          ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
+          
+          const Components = {
+        '/src/card': {
+          Card: {
+            component: Card,
+            properties: { },
+            children: 'supported'
+          },
+        },
+      }
+      
+      export default Components
+    `,
+        }),
+        'await-first-dom-report',
+      )
+      const editorState = renderResult.getEditorState().editor
+
+      expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
+        Object {
+          "Card": Object {
+            "childrenPropPlaceholder": null,
+            "emphasis": "regular",
+            "focus": "default",
+            "icon": "regular",
+            "inspector": "all",
+            "preferredChildComponents": Array [],
+            "properties": Object {},
+            "source": Object {
+              "sourceDescriptorFile": "/utopia/components.utopia.js",
+              "type": "DESCRIPTOR_FILE",
+            },
+            "supportsChildren": true,
+            "variants": Array [
+              Object {
+                "elementToInsert": [Function],
+                "importsToAdd": Object {
+                  "/src/card": Object {
+                    "importedAs": null,
+                    "importedFromWithin": Array [
+                      Object {
+                        "alias": "Card",
+                        "name": "Card",
+                      },
+                    ],
+                    "importedWithName": null,
+                  },
+                },
+                "insertMenuLabel": "Card",
+              },
+            ],
+          },
+        }
+      `)
+    })
+
+    it('can use `not-supported` for the children prop', async () => {
+      const renderResult = await renderTestEditorWithModel(
+        project({
+          ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
+          
+          const Components = {
+        '/src/card': {
+          Card: {
+            component: Card,
+            properties: { },
+            children: 'not-supported'
+          },
+        },
+      }
+      
+      export default Components
+    `,
+        }),
+        'await-first-dom-report',
+      )
+      const editorState = renderResult.getEditorState().editor
+
+      expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
+        Object {
+          "Card": Object {
+            "childrenPropPlaceholder": null,
+            "emphasis": "regular",
+            "focus": "default",
+            "icon": "regular",
+            "inspector": "all",
+            "preferredChildComponents": Array [],
+            "properties": Object {},
+            "source": Object {
+              "sourceDescriptorFile": "/utopia/components.utopia.js",
+              "type": "DESCRIPTOR_FILE",
+            },
+            "supportsChildren": false,
+            "variants": Array [
+              Object {
+                "elementToInsert": [Function],
+                "importsToAdd": Object {
+                  "/src/card": Object {
+                    "importedAs": null,
+                    "importedFromWithin": Array [
+                      Object {
+                        "alias": "Card",
+                        "name": "Card",
+                      },
+                    ],
+                    "importedWithName": null,
+                  },
+                },
+                "insertMenuLabel": "Card",
+              },
+            ],
+          },
+        }
+      `)
+    })
+
+    it('can specify text-only children', async () => {
+      const renderResult = await renderTestEditorWithModel(
+        project({
+          ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
+          
+          const Components = {
+        '/src/card': {
+          Card: {
+            component: Card,
+            properties: { },
+            children: { preferredContents: 'text' }
+          },
+        },
+      }
+      
+      export default Components
+    `,
+        }),
+        'await-first-dom-report',
+      )
+      const editorState = renderResult.getEditorState().editor
+
+      expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
+        Object {
+          "Card": Object {
+            "childrenPropPlaceholder": null,
+            "emphasis": "regular",
+            "focus": "default",
+            "icon": "regular",
+            "inspector": "all",
+            "preferredChildComponents": Array [
+              Object {
+                "imports": Object {},
+                "name": "span",
+                "placeholder": null,
+                "variants": Array [],
+              },
+            ],
+            "properties": Object {},
+            "source": Object {
+              "sourceDescriptorFile": "/utopia/components.utopia.js",
+              "type": "DESCRIPTOR_FILE",
+            },
+            "supportsChildren": true,
+            "variants": Array [
+              Object {
+                "elementToInsert": [Function],
+                "importsToAdd": Object {
+                  "/src/card": Object {
+                    "importedAs": null,
+                    "importedFromWithin": Array [
+                      Object {
+                        "alias": "Card",
+                        "name": "Card",
+                      },
+                    ],
+                    "importedWithName": null,
+                  },
+                },
+                "insertMenuLabel": "Card",
+              },
+            ],
+          },
+        }
+      `)
+    })
+
+    it('can use placeholders and examples for children', async () => {
+      const renderResult = await renderTestEditorWithModel(
+        project({
+          ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
+          import { Card2 } from '../src/card2'
+          
+          const Components = {
+        '/src/card': {
+          Card: {
+            component: Card,
+            properties: { },
+            children: {
+              placeholder: { text: "Content" },
+              preferredContents: [
+                { name: 'span' },
+                { component: Card2 },
+                {
+                  code: '<Card2 label={DefaultLabel} />',
+                  label: 'ID Card',
+                  imports: [
+                    'import { Card2 } from "/src/card2"',
+                    "import { DefaultLabel } from '/src/defaults';",
+                  ],
+                }
+              ]
+            }
+          },
+        },
+      }
+      
+      export default Components
+    `,
+        }),
+        'await-first-dom-report',
+      )
+      const editorState = renderResult.getEditorState().editor
+
+      expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
+        Object {
+          "Card": Object {
+            "childrenPropPlaceholder": Object {
+              "contents": "Content",
+              "type": "text",
+            },
+            "emphasis": "regular",
+            "focus": "default",
+            "icon": "regular",
+            "inspector": "all",
+            "preferredChildComponents": Array [
+              Object {
+                "imports": Object {},
+                "name": "Card",
+                "placeholder": Object {
+                  "contents": "Content",
+                  "type": "text",
+                },
+                "variants": Array [
+                  Object {
+                    "elementToInsert": [Function],
+                    "importsToAdd": Object {
+                      "/src/card": Object {
+                        "importedAs": null,
+                        "importedFromWithin": Array [
+                          Object {
+                            "alias": "span",
+                            "name": "span",
+                          },
+                        ],
+                        "importedWithName": null,
+                      },
+                    },
+                    "insertMenuLabel": "span",
+                  },
+                  Object {
+                    "elementToInsert": [Function],
+                    "importsToAdd": Object {
+                      "/src/card2.js": Object {
+                        "importedAs": null,
+                        "importedFromWithin": Array [
+                          Object {
+                            "alias": "Card2",
+                            "name": "Card2",
+                          },
+                        ],
+                        "importedWithName": null,
+                      },
+                    },
+                    "insertMenuLabel": "Card2",
+                  },
+                  Object {
+                    "elementToInsert": [Function],
+                    "importsToAdd": Object {
+                      "/src/card2": Object {
+                        "importedAs": null,
+                        "importedFromWithin": Array [
+                          Object {
+                            "alias": "Card2",
+                            "name": "Card2",
+                          },
+                        ],
+                        "importedWithName": null,
+                      },
+                      "/src/defaults": Object {
+                        "importedAs": null,
+                        "importedFromWithin": Array [
+                          Object {
+                            "alias": "DefaultLabel",
+                            "name": "DefaultLabel",
+                          },
+                        ],
+                        "importedWithName": null,
+                      },
+                    },
+                    "insertMenuLabel": "ID Card",
+                  },
+                ],
+              },
+            ],
+            "properties": Object {},
+            "source": Object {
+              "sourceDescriptorFile": "/utopia/components.utopia.js",
+              "type": "DESCRIPTOR_FILE",
+            },
+            "supportsChildren": true,
+            "variants": Array [
+              Object {
+                "elementToInsert": [Function],
+                "importsToAdd": Object {
+                  "/src/card": Object {
+                    "importedAs": null,
+                    "importedFromWithin": Array [
+                      Object {
+                        "alias": "Card",
+                        "name": "Card",
+                      },
+                    ],
+                    "importedWithName": null,
+                  },
+                },
+                "insertMenuLabel": "Card",
+              },
+            ],
+          },
+        }
+      `)
+    })
+  })
+
+  describe('registering the jsx controls', () => {
+    it('can register placeholder', async () => {
+      expect('not implemented').toEqual('implemented')
+    })
+    it('can register builtin element as preferred content', async () => {
+      expect('not implemented').toEqual('implemented')
+    })
+
+    it('can register component function as preferred content', async () => {
+      expect('not implemented').toEqual('implemented')
+    })
+
+    it('can use examples', async () => {
+      expect('not implemented').toEqual('implemented')
+    })
+  })
 })
 
 describe('Lifecycle management of registering components', () => {

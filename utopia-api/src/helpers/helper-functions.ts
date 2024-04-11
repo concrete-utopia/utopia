@@ -37,7 +37,7 @@ export interface ChildrenSpec {
   // `undefined`: any component can be rendered
   // `'text'`: means only JSX text is accepted
   // `RendersComponent`: detailed spec
-  preferredContent?: PreferredContent
+  preferredContents?: PreferredContent
 
   // specifies the placeholder to use
   placeholder?: PlaceholderSpec
