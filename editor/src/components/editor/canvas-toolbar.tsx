@@ -594,67 +594,6 @@ export const CanvasToolbar = React.memo(() => {
           allowedToEdit,
         <>
           {when(
-            insertMenuMode === 'closed',
-            wrapInSubmenu(
-              <FlexRow
-                style={{
-                  gap: 25,
-                  padding: '0 18px',
-                  alignSelf: 'stretch',
-                }}
-              >
-                <FlexRow
-                  onClick={wrapInGroupCallback}
-                  css={{
-                    gap: 8,
-                    '&:hover': {
-                      color: colorTheme.dynamicBlue.value,
-                    },
-                  }}
-                >
-                  <Icn category='tools' type='group-action' width={18} height={18} />
-                  Group
-                </FlexRow>
-                <FlexRow
-                  onClick={openFloatingWrapInMenuCallback}
-                  css={{
-                    gap: 8,
-                    '&:hover': {
-                      color: colorTheme.dynamicBlue.value,
-                    },
-                  }}
-                >
-                  <Icn category='tools' type='wrap-action' width={18} height={18} />
-                  Wrap
-                </FlexRow>
-                <FlexRow
-                  onClick={openFloatingConvertMenuCallback}
-                  css={{
-                    gap: 8,
-                    '&:hover': {
-                      color: colorTheme.dynamicBlue.value,
-                    },
-                  }}
-                >
-                  <Icn category='tools' type='convert-action' width={18} height={18} />
-                  Swap
-                </FlexRow>
-                <FlexRow
-                  onClick={toggleAbsolutePositioningCallback}
-                  css={{
-                    gap: 8,
-                    '&:hover': {
-                      color: colorTheme.dynamicBlue.value,
-                    },
-                  }}
-                >
-                  <Icn category='tools' type='position-action' width={18} height={18} />
-                  Position
-                </FlexRow>
-              </FlexRow>,
-            ),
-          )}
-          {when(
             insertMenuMode === 'wrap',
             wrapInSubmenu(
               <FlexRow style={{ padding: '0 8px' }}>
@@ -771,7 +710,10 @@ export const CanvasToolbar = React.memo(() => {
           )
         : null}
       {/* Live Mode */}
-      {canvasToolbarMode.primary === 'play' ? wrapInSubmenu(<RemixNavigationBar />) : null}
+      {(canvasToolbarMode.primary === 'edit' && insertMenuMode === 'closed') ||
+      canvasToolbarMode.primary === 'play'
+        ? wrapInSubmenu(<RemixNavigationBar />)
+        : null}
       <ToolbarSearchListing />
     </FlexColumn>
   )
