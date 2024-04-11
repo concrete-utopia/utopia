@@ -23,6 +23,7 @@ import { getElementFragmentLikeType } from '../canvas/canvas-strategies/strategi
 import { findMaybeConditionalExpression } from '../../core/model/conditionals'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { treatElementAsGroupLike } from '../canvas/canvas-strategies/strategies/group-helpers'
+import { isConditional } from '@babel/types'
 
 interface LayoutIconResult {
   iconProps: IcnPropsBase
@@ -456,7 +457,7 @@ function createComponentIconProps(
     autoFocusedPaths,
     filePathMappings,
   )
-  if (isComponent) {
+  if (isComponent && !isConditional) {
     return {
       category: 'navigator-element',
       type: 'component-solid',
