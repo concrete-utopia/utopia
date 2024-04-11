@@ -5,7 +5,12 @@ import type { DataRouteObject, Location, RouteObject } from 'react-router'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
 import type { ElementPath } from '../../../core/shared/project-file-types'
-import { useRefEditorState, useEditorState, Substores } from '../../editor/store/store-hook'
+import {
+  useRefEditorState,
+  useEditorState,
+  Substores,
+  useSelectorWithCallback,
+} from '../../editor/store/store-hook'
 import * as EP from '../../../core/shared/element-path'
 import { PathPropHOC } from './path-props-hoc'
 import { atom, useAtom, useSetAtom } from 'jotai'
@@ -37,6 +42,25 @@ export interface RemixNavigationAtomData {
 
 export const ActiveRemixSceneAtom = atom<ElementPath>(EP.emptyElementPath)
 export const RemixNavigationAtom = atom<RemixNavigationAtomData>({})
+
+export function useUpdateActiveRemixSceneOnSelectionChange() {
+  const setActiveRemixScene = useSetAtom(ActiveRemixSceneAtom)
+
+  useSelectorWithCallback(
+    Substores.fullStore,
+    (store) => ({
+      selectedViews: store.editor.selectedViews,
+      liveMode: store.editor.mode.type === 'live', // when we exit Live Mode, we want to re-run this selector so the active scene switches back to match the selection
+    }),
+    ({ selectedViews }) => {
+      if (selectedViews.length > 0) {
+        const scenePath = EP.createBackwardsCompatibleScenePath(selectedViews[0])
+        setActiveRemixScene(scenePath)
+      }
+    },
+    'useUpdateActiveRemixSceneOnSelectionChange useSelectorWithCallback',
+  )
+}
 
 export function useRemixNavigationContext(
   scenePath: ElementPath | null,
