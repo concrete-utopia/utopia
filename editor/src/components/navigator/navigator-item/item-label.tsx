@@ -220,6 +220,7 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
         fontSize: 11,
         fontStyle: isDynamic ? 'italic' : 'normal',
         gap: isConditionalClause ? 10 : undefined,
+        padding: isConditionalClause ? undefined : '0 4px',
       }}
     >
       {isConditionalClause && (
@@ -252,6 +253,7 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
             value={name}
             onKeyDown={onInputLabelKeyDown}
             onBlur={onInputLabelBlur}
+            /* eslint-disable-next-line react/jsx-no-bind */
             onChange={onInputLabelChange}
           />
         </div>
