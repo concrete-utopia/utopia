@@ -271,7 +271,7 @@ interface RouteLike {
   children?: RouteLike[]
 }
 
-function traverseRoutesAndGetIDs(routes: RouteLike[]) {
+function traverseRoutesAndGetIDs(routes: RouteLike[]): Set<string> {
   function traverse(route: RouteLike, ids: Set<string>) {
     ids.add(route.id ?? '0')
     if (route.children != null && route.children.length > 0) {
