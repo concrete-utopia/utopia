@@ -389,6 +389,7 @@ async function getComponentDescriptorPromisesFromParseResult(
     }
     return { descriptors: result, errors: errors }
   } catch (e) {
+    console.error(e)
     return { descriptors: [], errors: [{ type: 'evaluation-error', evaluationError: e }] }
   }
 }
@@ -579,83 +580,63 @@ function componentExampleToTyped(example: ComponentExample): TypedComponentExamp
 }
 
 async function parseCodeFromExample(
-  componentExample: ComponentExample,
+  componentInsertOption: ComponentInsertOption,
   componentName: string,
   workers: UtopiaTsWorkers,
 ): Promise<Either<string, ComponentInfo>> {
-  const example = componentExampleToTyped(componentExample)
+  const info = await parseComponentFromInsertOption(componentInsertOption, workers)
 
-  if (example.type === 'component-reference') {
-    const requireInfo = getRequireInfoFromComponent(example.reference)
-    if (requireInfo.moduleName == null || requireInfo.name == null) {
-      // TODO: we need a way better error message here
-      return left('Cannot find require info')
-    }
-
-    const info = await parseComponentFromInsertOption(
-      { label: componentName, code: `<${componentName} />` },
-      workers,
-    )
-
-    if (isLeft(info)) {
-      return info
-    }
-
-    return right({
-      insertMenuLabel: componentName,
-      elementToInsert: () => info.value.elementToInsert,
-      importsToAdd: info.value.imports,
-    })
-  } else if (example.type === 'name-as-string') {
-    if (intrinsicHTMLElementNamesAsStrings.includes(example.name)) {
-      return right({
-        insertMenuLabel: example.name,
-        importsToAdd: {},
-        elementToInsert: () => jsxElement(example.name, '', jsxAttributesFromMap({}), []),
-      })
-    }
-
-    // TODO: infer it from already parsed components
-    throw new Error('Not implemented')
-  } else if (example.type === 'component-insert-option') {
-    const info = await parseComponentFromInsertOption(example.example, workers)
-
-    if (isLeft(info)) {
-      return info
-    }
-
-    return right({
-      insertMenuLabel: componentName,
-      elementToInsert: () => info.value.elementToInsert,
-      importsToAdd: info.value.imports,
-    })
+  if (isLeft(info)) {
+    return info
   }
 
-  assertNever(example)
+  return right({
+    insertMenuLabel: componentName,
+    elementToInsert: () => info.value.elementToInsert,
+    importsToAdd: info.value.imports,
+  })
 }
 
-function componentInsertOptionFromExample(example: ComponentExample): ComponentInsertOption {
-  throw new Error('not implemented')
+function componentInsertOptionFromExample(
+  example: ComponentExample,
+  moduleName: string,
+): ComponentInsertOption {
+  const typed = componentExampleToTyped(example)
+  switch (typed.type) {
+    case 'name-as-string':
+      // TODO: test for intrinsic HTML element
+      return {
+        label: typed.name,
+        imports: `import {${typed.name}} from '${moduleName}'`,
+        code: `<${typed.name} />`,
+      }
+    case 'component-reference':
+      const requireInfo = getRequireInfoFromComponent(typed.reference)
+      if (requireInfo.moduleName == null || requireInfo.name == null) {
+        // TODO: we need a way better error message here
+        throw new Error('Cannot find component info')
+      }
+      return {
+        label: requireInfo.name,
+        imports: `import {${requireInfo.name}} from '${requireInfo.moduleName}'`,
+        code: `<${requireInfo.name} />`,
+      }
+    case 'component-insert-option':
+      return typed.example
+    default:
+      assertNever(typed)
+  }
 }
 
 function variantsFromJSComponentExample(
   variants: ComponentExample | ComponentExample[],
-  componentName: string,
+  moduleName: string,
 ): Array<ComponentInsertOption> {
-  if (variants == null) {
-    return [
-      {
-        label: componentName,
-        code: `<${componentName} />`,
-      },
-    ]
-  }
-
   if (Array.isArray(variants)) {
-    return variants.map(componentInsertOptionFromExample)
+    return variants.map((v) => componentInsertOptionFromExample(v, moduleName))
   }
 
-  return [componentInsertOptionFromExample(variants)]
+  return [componentInsertOptionFromExample(variants, moduleName)]
 }
 
 function getImportsCodeFromInsertOption(insertOption: ComponentInsertOption): string {
@@ -714,7 +695,15 @@ async function parseJSXControlDescription(
     : [descriptor.preferredContents]
 
   const parsedInsertOptions = sequenceEither(
-    await Promise.all(examples.map((e) => parseCodeFromExample(e, 'placeholder', context.workers))),
+    await Promise.all(
+      examples.map((e) =>
+        parseCodeFromExample(
+          componentInsertOptionFromExample(e, context.moduleName),
+          'placeholder',
+          context.workers,
+        ),
+      ),
+    ),
   )
   if (isLeft(parsedInsertOptions)) {
     return parsedInsertOptions
@@ -827,6 +816,7 @@ function placeholderFromJSPlaceholder(placeholder: PlaceholderSpecFromUtopia): P
 
 export async function parsePreferredChildrenExamples(
   componentName: string,
+  moduleName: string,
   componentToRegister: ComponentToRegister,
   workers: UtopiaTsWorkers,
 ): Promise<Either<string, Array<PreferredChildComponentDescriptor>>> {
@@ -856,7 +846,11 @@ export async function parsePreferredChildrenExamples(
     const examples = sequenceEither(
       await Promise.all(
         componentToRegister.children.preferredContent.map((c) =>
-          parseCodeFromExample(c, componentName, workers),
+          parseCodeFromExample(
+            componentInsertOptionFromExample(c, moduleName),
+            componentName,
+            workers,
+          ),
         ),
       ),
     )
@@ -875,7 +869,7 @@ export async function parsePreferredChildrenExamples(
   }
 
   const preferredChild = await parseCodeFromExample(
-    componentToRegister.children.preferredContent,
+    componentInsertOptionFromExample(componentToRegister.children.preferredContent, moduleName),
     componentName,
     workers,
   )
@@ -915,7 +909,10 @@ export async function componentDescriptorForComponentToRegister(
   workers: UtopiaTsWorkers,
   source: ComponentDescriptorSource,
 ): Promise<Either<string, ComponentDescriptorWithName>> {
-  const insertOptionsToParse = variantsFromJSComponentExample(componentToRegister, componentName)
+  const insertOptionsToParse =
+    componentToRegister.variants == null
+      ? []
+      : variantsFromJSComponentExample(componentToRegister.variants, moduleName)
 
   const parsedInsertOptionPromises = insertOptionsToParse.map((insertOption) =>
     parseCodeFromExample(insertOption, componentName, workers),
@@ -928,6 +925,7 @@ export async function componentDescriptorForComponentToRegister(
   }
   const preferredChildExamples = await parsePreferredChildrenExamples(
     componentName,
+    moduleName,
     componentToRegister,
     workers,
   )
@@ -982,7 +980,13 @@ export function parseComponentExample(value: unknown): ParseResult<ComponentExam
       return insertOption
     },
     objectKeyParser(parseString, 'code')(value),
-    optionalObjectKeyParser(parseString, 'imports')(value),
+    optionalObjectKeyParser(
+      parseAlternative<string | string[]>(
+        [parseString, parseArray(parseString)],
+        'Invalid imports prop',
+      ),
+      'imports',
+    )(value),
     objectKeyParser(parseString, 'label')(value),
   )
 }
