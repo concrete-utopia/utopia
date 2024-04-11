@@ -330,3 +330,17 @@ export function githubRepositoryStringOrNull(repo: GithubRepository | null): str
 
   return branch == null ? `${owner}/${repository}` : `${owner}/${repository}:${branch}`
 }
+
+export interface ProjectMetadataV1 {
+  id: string
+  title: string
+}
+
+export function isProjectMetadataV1(u: unknown): u is ProjectMetadataV1 {
+  const maybe = u as ProjectMetadataV1
+  return u != null && typeof u === 'object' && maybe.id != null && maybe.id != null
+}
+
+export type ProjectMetadataForEditor = {
+  hasPendingRequests: boolean
+}

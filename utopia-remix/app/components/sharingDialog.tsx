@@ -280,6 +280,11 @@ function AccessRequests(props: {
   // the last successfully-obtained access requests that can be used to roll-back in case of issues when updating requests
   const [previousAccessRequests, setPreviousAccessRequests] = React.useState(props.accessRequests)
 
+  React.useEffect(() => {
+    setAccessRequests(props.accessRequests)
+    setPreviousAccessRequests(props.accessRequests)
+  }, [props.accessRequests])
+
   const updateAccessRequestFetcher = useFetcherWithOperation(projectId, 'updateAccessRequest')
   const onUpdateAccessRequest = React.useCallback(
     (token: string, action: UpdateAccessRequestAction) => () => {

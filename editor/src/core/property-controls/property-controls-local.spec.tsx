@@ -81,6 +81,10 @@ describe('registered property controls', () => {
               defaultValue: true,
             },
           },
+          focus: 'default',
+          inspector: ['visual', 'typography'],
+          emphasis: 'regular',
+          icon: 'regular',
           variants: [
             {
               code: '<Card />',
@@ -107,6 +111,13 @@ describe('registered property controls', () => {
     expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
       Object {
         "Card": Object {
+          "emphasis": "regular",
+          "focus": "default",
+          "icon": "regular",
+          "inspector": Array [
+            "visual",
+            "typography",
+          ],
           "preferredChildComponents": Array [],
           "properties": Object {
             "background": Object {
@@ -191,6 +202,7 @@ describe('registered property controls', () => {
                 }),
               },
               variants: [],
+              inspector: 'all',
             },
           },
         }
@@ -206,6 +218,10 @@ describe('registered property controls', () => {
     expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
       Object {
         "Card": Object {
+          "emphasis": "regular",
+          "focus": "default",
+          "icon": "regular",
+          "inspector": "all",
           "preferredChildComponents": Array [],
           "properties": Object {
             "label": Object {
@@ -342,6 +358,60 @@ describe('registered property controls', () => {
             source: 'component-descriptor',
             startColumn: 25,
             startLine: 4,
+            type: '',
+          },
+        ],
+      },
+    })
+
+    const srcCardKey = Object.keys(renderResult.getEditorState().editor.propertyControlsInfo).find(
+      (key) => key === '/src/card',
+    )
+
+    expect(srcCardKey).toBeUndefined()
+  })
+  it('control registration fails when there is an invalid schema error', async () => {
+    const renderResult = await renderTestEditorWithModel(
+      project({
+        ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
+        
+        const Components = {
+      '/src/card': {
+        Card: {
+          component: Card,
+          supportsChildren: false,
+          properties: {
+            label: 'foo',
+          },
+          variants: [ ],
+        },
+      },
+    }
+    
+    export default Components
+  `,
+      }),
+      'await-first-dom-report',
+    )
+    const editorState = renderResult.getEditorState().editor
+
+    expect(editorState.codeEditorErrors).toEqual({
+      buildErrors: {},
+      lintErrors: {},
+      componentDescriptorErrors: {
+        '/utopia/components.utopia.js': [
+          {
+            codeSnippet: '',
+            endColumn: null,
+            endLine: null,
+            errorCode: '',
+            fileName: '/utopia/components.utopia.js',
+            message: 'Malformed component registration: Card.properties.label: Not an object.',
+            passTime: null,
+            severity: 'fatal',
+            source: 'component-descriptor',
+            startColumn: null,
+            startLine: null,
             type: '',
           },
         ],
@@ -719,6 +789,10 @@ describe('registered property controls', () => {
     expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
       Object {
         "Card": Object {
+          "emphasis": "regular",
+          "focus": "default",
+          "icon": "regular",
+          "inspector": "all",
           "preferredChildComponents": Array [],
           "properties": Object {
             "background": Object {

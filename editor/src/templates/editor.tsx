@@ -123,7 +123,6 @@ import {
   getGithubRepoToLoad,
   LoadActionsDispatched,
 } from '../components/github/github-repository-clone-flow'
-import ProjectNotFound from './project-not-found/ProjectNotFound'
 import { hasReactRouterErrorBeenLogged } from '../core/shared/runtime-report-logs'
 
 if (PROBABLY_ELECTRON) {
@@ -261,7 +260,6 @@ export class Editor {
         PersistenceBackend,
         this.boundDispatch,
         renderProjectNotFound,
-        renderProjectNotAuthorized,
         onCreatedOrLoadedProject,
       ),
       builtInDependencies: builtInDependencies,
@@ -814,18 +812,6 @@ async function renderProjectLoadError(error: string): Promise<void> {
   }
 }
 
-async function renderProjectNotFound(): Promise<void> {
-  const rootElement = document.getElementById(EditorID)
-  if (rootElement != null) {
-    const root = createRoot(rootElement)
-    root.render(<ProjectNotFound projectId={null} loggedIn={false} />)
-  }
-}
-
-async function renderProjectNotAuthorized(projectId: string, loggedIn: boolean): Promise<void> {
-  const rootElement = document.getElementById(EditorID)
-  if (rootElement != null) {
-    const root = createRoot(rootElement)
-    root.render(<ProjectNotFound projectId={projectId} loggedIn={loggedIn} />)
-  }
+async function renderProjectNotFound(projectId: string): Promise<void> {
+  window.location.href = `/project/${projectId}`
 }

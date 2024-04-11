@@ -5,8 +5,15 @@ import type {
   ComponentToRegister,
   ComponentInsertOption,
   PreferredChildComponent,
+  Styling,
 } from 'utopia-api/core'
-import { isBaseControlDescription } from 'utopia-api/core'
+import {
+  EmphasisOptions,
+  FocusOptions,
+  IconOptions,
+  StylingOptions,
+  isBaseControlDescription,
+} from 'utopia-api/core'
 import type {
   ObjectControlDescription,
   PropertyControls,
@@ -16,6 +23,7 @@ import type {
 } from '../../components/custom-code/internal-property-controls'
 import { packageJsonFileFromProjectContents } from '../../components/assets'
 import {
+  ComponentDescriptorDefaults,
   componentDescriptorFromDescriptorFile,
   isDefaultComponentDescriptor,
 } from '../../components/custom-code/code-file'
@@ -32,24 +40,25 @@ import {
   getParseErrorDetails,
   objectKeyParser,
   optionalObjectKeyParser,
+  parseAlternative,
   parseAny,
   parseArray,
   parseBoolean,
+  parseConstant,
+  parseEnum,
   parseObject,
   parseString,
 } from '../../utils/value-parser-utils'
-import type { ParseOrPrintResult, UtopiaTsWorkers } from '../workers/common/worker-types'
+import type { UtopiaTsWorkers } from '../workers/common/worker-types'
 import { getCachedParseResultForUserStrings } from './property-controls-local-parser-bridge'
 import type { Either } from '../shared/either'
 import {
   applicative3Either,
-  applicative4Either,
-  applicative5Either,
+  applicative9Either,
   defaultEither,
   foldEither,
   forEachRight,
   isLeft,
-  isRight,
   left,
   mapEither,
   right,
@@ -58,7 +67,7 @@ import {
 import { setOptionalProp } from '../shared/object-utils'
 import { assertNever } from '../shared/utils'
 import type { ParsedTextFile } from '../shared/project-file-types'
-import { isExportDefault, isParseSuccess } from '../shared/project-file-types'
+import { isExportDefault } from '../shared/project-file-types'
 import type { UiJsxCanvasContextData } from '../../components/canvas/ui-jsx-canvas'
 import type { EditorState } from '../../components/editor/store/editor-state'
 import type { MutableUtopiaCtxRefData } from '../../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
@@ -82,6 +91,7 @@ import { errorMessage } from '../shared/error-messages'
 import { dropFileExtension } from '../shared/file-utils'
 import type { FancyError } from '../shared/code-exec-utils'
 import type { ScriptLine } from '../../third-party/react-error-overlay/utils/stack-frame'
+import { parseEnumValue } from './property-control-values'
 
 async function parseInsertOption(
   insertOption: ComponentInsertOption,
@@ -448,12 +458,11 @@ function errorsFromComponentRegistration(
       case 'no-exported-component-descriptors':
         return [simpleErrorMessage(fileName, `Cannot extract default export from file`)]
       case 'invalid-schema':
+        const errorDetails = getParseErrorDetails(error.invalidSchemaError)
         return [
           simpleErrorMessage(
             fileName,
-            `Malformed component registration: ${
-              getParseErrorDetails(error.invalidSchemaError).description
-            }`,
+            `Malformed component registration: ${errorDetails.path}: ${errorDetails.description}`,
           ),
         ]
       case 'cannot-extract-component':
@@ -558,6 +567,10 @@ export function updatePropertyControlsOnDescriptorFileUpdate(
         variants: descriptor.variants,
         preferredChildComponents: descriptor.preferredChildComponents ?? [],
         source: descriptor.source,
+        focus: descriptor.focus,
+        inspector: descriptor.inspector,
+        emphasis: descriptor.emphasis,
+        icon: descriptor.icon,
       }
     })
   })
@@ -803,6 +816,10 @@ export async function componentDescriptorForComponentToRegister(
       variants: variants,
       moduleName: moduleName,
       source: source,
+      focus: componentToRegister.focus ?? ComponentDescriptorDefaults.focus,
+      inspector: componentToRegister.inspector ?? ComponentDescriptorDefaults.inspector,
+      emphasis: componentToRegister.emphasis ?? ComponentDescriptorDefaults.emphasis,
+      icon: componentToRegister.icon ?? ComponentDescriptorDefaults.icon,
     }
   }, parsedVariants)
 }
@@ -839,14 +856,28 @@ export function parsePreferredChild(value: unknown): ParseResult<PreferredChildC
 }
 
 function parseComponentToRegister(value: unknown): ParseResult<ComponentToRegister> {
-  return applicative5Either(
-    (component, properties, supportsChildren, variants, preferredChildComponents) => {
+  return applicative9Either(
+    (
+      component,
+      properties,
+      supportsChildren,
+      variants,
+      preferredChildComponents,
+      focus,
+      inspector,
+      emphasis,
+      icon,
+    ) => {
       return {
         component: component,
         properties: properties,
         supportsChildren: supportsChildren,
         variants: variants,
         preferredChildComponents: preferredChildComponents,
+        focus: focus,
+        inspector: inspector,
+        emphasis: emphasis,
+        icon: icon,
       }
     },
     objectKeyParser(parseAny, 'component')(value),
@@ -854,6 +885,16 @@ function parseComponentToRegister(value: unknown): ParseResult<ComponentToRegist
     objectKeyParser(parseBoolean, 'supportsChildren')(value),
     objectKeyParser(parseArray(parseComponentInsertOption), 'variants')(value),
     optionalObjectKeyParser(parseArray(parsePreferredChild), 'preferredChildComponents')(value),
+    optionalObjectKeyParser(parseEnum(FocusOptions), 'focus')(value),
+    optionalObjectKeyParser(
+      parseAlternative<'all' | Styling[]>(
+        [parseConstant('all'), parseArray(parseEnum(StylingOptions))],
+        'inspector value invalid',
+      ),
+      'inspector',
+    )(value),
+    optionalObjectKeyParser(parseEnum(EmphasisOptions), 'emphasis')(value),
+    optionalObjectKeyParser(parseEnum(IconOptions), 'icon')(value),
   )
 }
 

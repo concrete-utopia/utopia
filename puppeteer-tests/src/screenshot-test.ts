@@ -1,14 +1,15 @@
 /* eslint-disable no-console */
 require('dotenv').config({ path: 'src/.env' })
 import { v4 as UUID } from 'uuid'
-import { initialiseTests, setupBrowser, uploadPNGtoAWS } from './utils'
+import { addFakeUserParam, initialiseTests, setupBrowser, uploadPNGtoAWS } from './utils'
 
 const PROJECT_ID = process.env.PROJECT_ID ?? ''
 const BASE_EDITOR_URL = process.env.BASE_EDITOR_URL ?? `https://utopia.pizza`
 const EDITOR_URL = process.env.EDITOR_URL ?? `${BASE_EDITOR_URL}/project/${PROJECT_ID}`
+const EDITOR_URL_WITH_FAKE_USER = addFakeUserParam(EDITOR_URL)
 
 async function takeScreenshot() {
-  const { page, browser } = await setupBrowser(EDITOR_URL, 120000)
+  const { page, browser } = await setupBrowser(EDITOR_URL_WITH_FAKE_USER, 120000)
   try {
     try {
       await initialiseTests(page)

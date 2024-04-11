@@ -129,6 +129,37 @@ function getPreviewHTMLFilePath(
   }
 }
 
+export function getFeaturedRoutesFromPackageJSON(
+  projectContents: ProjectContentTreeRoot,
+): Either<DescriptionParseError, Array<string>> {
+  const packageJson = getProjectFileByFilePath(projectContents, '/package.json')
+  if (packageJson != null && isTextFile(packageJson)) {
+    try {
+      const parsedJSON = json5.parse(packageJson.fileContents.code)
+      if (parsedJSON != null && 'utopia' in parsedJSON) {
+        const featuredRoutesArray = parsedJSON.utopia?.featuredRoutes
+        if (featuredRoutesArray != null) {
+          if (Array.isArray(featuredRoutesArray)) {
+            return right(featuredRoutesArray)
+          } else {
+            return left(descriptionParseError(`'featuredRoutes' in package.json is not an array`))
+          }
+        } else {
+          return left(descriptionParseError(`'featuredRoutes' in package.json is not specified`))
+        }
+      } else {
+        return left(
+          descriptionParseError(`'utopia' field in package.json couldn't be parsed properly`),
+        )
+      }
+    } catch (e) {
+      return left(descriptionParseError(`package.json is not formatted correctly`))
+    }
+  } else {
+    return left(descriptionParseError('No package.json is found in project'))
+  }
+}
+
 function getTextFileContentsFromPath(
   filePath: string,
   projectContents: ProjectContentTreeRoot,
