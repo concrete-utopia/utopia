@@ -301,10 +301,7 @@ export const UtopiaRemixRootComponent = (props: UtopiaRemixRootComponentProps) =
 
   const [navigationData, setNavigationData] = useAtom(RemixNavigationAtom)
 
-  const currentEntries = React.useMemo(
-    () => navigationData[EP.toString(basePath)]?.entries,
-    [navigationData, basePath],
-  )
+  const currentEntries = navigationData[EP.toString(basePath)]?.entries
   const currentEntriesRef = React.useRef(currentEntries)
   currentEntriesRef.current = currentEntries
 
