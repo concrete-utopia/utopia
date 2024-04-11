@@ -1,7 +1,11 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
-import { isInfinityRectangle, windowPoint } from '../../../../core/shared/math-utils'
+import {
+  isInfinityRectangle,
+  isNotNullFiniteRectangle,
+  windowPoint,
+} from '../../../../core/shared/math-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { NO_OP } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
@@ -134,6 +138,18 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
         store.editor.jsxMetadata,
       ),
     'SceneLabel label',
+  )
+
+  const sceneSize = useEditorState(
+    Substores.metadata,
+    (store) => {
+      const element = store.editor.jsxMetadata[EP.toString(props.target)]
+      if (element == null || !isNotNullFiniteRectangle(element.globalFrame)) {
+        return ''
+      }
+      return `${element.globalFrame.width} × ${element.globalFrame.height}`
+    },
+    'SceneLabel sceneSize',
   )
 
   const currentLocationMatchesRoutes = useCurrentLocationMatchesRoutes(props.target)
@@ -305,8 +321,8 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
       >
         <FlexRow style={{ gap: paddingX }}>
           <div data-testid={RemixSceneLabelTestId(props.target)} style={{ gap: 20 }}>
-            <span style={{ fontWeight: 600 }}>{scenelabel}</span>
-            <span style={{ fontWeight: 400 }}>1200 TODO FIXME</span>
+            <span style={{ fontWeight: 600 }}>{scenelabel}</span>{' '}
+            <span style={{ fontWeight: 400 }}>{sceneSize}</span>
           </div>
           <div
             data-testid={RemixSceneLabelPathTestId(props.target)}
