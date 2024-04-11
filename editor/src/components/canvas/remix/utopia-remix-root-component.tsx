@@ -45,6 +45,7 @@ export const RemixNavigationAtom = atom<RemixNavigationAtomData>({})
 
 export function useUpdateActiveRemixSceneOnSelectionChange() {
   const setActiveRemixScene = useSetAtom(ActiveRemixSceneAtom)
+  const [remixNavigationState] = useAtom(RemixNavigationAtom)
 
   useSelectorWithCallback(
     Substores.fullStore,
@@ -55,7 +56,12 @@ export function useUpdateActiveRemixSceneOnSelectionChange() {
     ({ selectedViews }) => {
       if (selectedViews.length > 0) {
         const scenePath = EP.createBackwardsCompatibleScenePath(selectedViews[0])
-        setActiveRemixScene(scenePath)
+        // if the scene is a Remix scene, set it as the active scene
+        const sceneIsRemixScene = EP.toString(scenePath) in remixNavigationState
+
+        if (sceneIsRemixScene) {
+          setActiveRemixScene(scenePath)
+        }
       }
     },
     'useUpdateActiveRemixSceneOnSelectionChange useSelectorWithCallback',
