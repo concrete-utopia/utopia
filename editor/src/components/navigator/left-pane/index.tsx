@@ -19,6 +19,7 @@ import { GithubPane } from './github-pane'
 import type { StoredPanel } from '../../canvas/stored-layout'
 import { useIsMyProject } from '../../editor/store/collaborative-editing'
 import { when } from '../../../utils/react-conditionals'
+import { PagesPane } from './pages-pane'
 
 export interface LeftPaneProps {
   editorState: EditorState
@@ -52,6 +53,10 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
     },
     [dispatch],
   )
+
+  const onClickPagesTab = React.useCallback(() => {
+    onClickTab(LeftMenuTab.Pages)
+  }, [onClickTab])
 
   const onClickProjectTab = React.useCallback(() => {
     onClickTab(LeftMenuTab.Project)
@@ -96,6 +101,11 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
             isMyProject,
             <FlexRow style={{ marginBottom: 10, gap: 10 }} css={undefined}>
               <MenuTab
+                label={'Pages'}
+                selected={selectedTab === LeftMenuTab.Pages}
+                onClick={onClickPagesTab}
+              />
+              <MenuTab
                 label={'Navigator'}
                 selected={selectedTab === LeftMenuTab.Navigator}
                 onClick={onClickNavigatorTab}
@@ -112,6 +122,7 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
               />
             </FlexRow>,
           )}
+          {when(isMyProject && selectedTab === LeftMenuTab.Pages, <PagesPane />)}
           {when(selectedTab === LeftMenuTab.Navigator, <NavigatorComponent />)}
           {when(isMyProject && selectedTab === LeftMenuTab.Project, <ContentsPane />)}
           {when(isMyProject && selectedTab === LeftMenuTab.Github, <GithubPane />)}
