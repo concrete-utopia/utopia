@@ -1,7 +1,11 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
-import { isFiniteRectangle, windowPoint } from '../../../../core/shared/math-utils'
+import {
+  isFiniteRectangle,
+  isNotNullFiniteRectangle,
+  windowPoint,
+} from '../../../../core/shared/math-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { NO_OP } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
@@ -83,6 +87,19 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
       ),
     'SceneLabel label',
   )
+
+  const sceneSize = useEditorState(
+    Substores.metadata,
+    (store) => {
+      const element = store.editor.jsxMetadata[EP.toString(props.target)]
+      if (element == null || !isNotNullFiniteRectangle(element.globalFrame)) {
+        return ''
+      }
+      return `${element.globalFrame.width} × ${element.globalFrame.height}`
+    },
+    'SceneLabel sceneSize',
+  )
+
   const frame = useEditorState(
     Substores.metadata,
     (store) => MetadataUtils.getFrameInCanvasCoords(props.target, store.editor.jsxMetadata),
@@ -236,7 +253,7 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
               fontWeight: 400,
             }}
           >
-            1000px TODO FIX ME
+            {sceneSize}
           </div>
         </FlexRow>
       </CanvasOffsetWrapper>
