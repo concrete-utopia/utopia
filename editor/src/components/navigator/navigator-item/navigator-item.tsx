@@ -254,6 +254,7 @@ const computeResultingStyle = (
     ...result.style,
     fontWeight: isProbablyParentOfSelected || isProbablyScene ? 600 : 'inherit',
     // TODO compute better borderRadius style by if it has children or siblings
+
     borderRadius: selected ? '5px 5px 0 0' : undefined,
   }
 
