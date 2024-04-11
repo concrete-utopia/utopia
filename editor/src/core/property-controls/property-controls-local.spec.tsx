@@ -1415,18 +1415,7 @@ describe('registered property controls', () => {
                 "variants": Array [
                   Object {
                     "elementToInsert": [Function],
-                    "importsToAdd": Object {
-                      "/src/card": Object {
-                        "importedAs": null,
-                        "importedFromWithin": Array [
-                          Object {
-                            "alias": "span",
-                            "name": "span",
-                          },
-                        ],
-                        "importedWithName": null,
-                      },
-                    },
+                    "importsToAdd": Object {},
                     "insertMenuLabel": "span",
                   },
                   Object {
@@ -1506,18 +1495,278 @@ describe('registered property controls', () => {
 
   describe('registering the jsx controls', () => {
     it('can register placeholder', async () => {
-      expect('not implemented').toEqual('implemented')
-    })
-    it('can register builtin element as preferred content', async () => {
-      expect('not implemented').toEqual('implemented')
-    })
+      const renderResult = await renderTestEditorWithModel(
+        project({
+          ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
+          
+          const Components = {
+        '/src/card': {
+          Card: {
+            component: Card,
+            properties: {
+              label: {
+                control: 'jsx',
+                placeholder: { width: 200, height: 200 }
+              }
+            }
+          },
+        },
+      }
+      
+      export default Components
+    `,
+        }),
+        'await-first-dom-report',
+      )
+      const editorState = renderResult.getEditorState().editor
 
-    it('can register component function as preferred content', async () => {
-      expect('not implemented').toEqual('implemented')
+      expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
+        Object {
+          "Card": Object {
+            "childrenPropPlaceholder": null,
+            "emphasis": "regular",
+            "focus": "default",
+            "icon": "regular",
+            "inspector": "all",
+            "preferredChildComponents": Array [],
+            "properties": Object {
+              "label": Object {
+                "control": "jsx",
+                "placeholder": Object {
+                  "height": 200,
+                  "type": "spacer",
+                  "width": 200,
+                },
+                "preferredChildComponents": Array [],
+              },
+            },
+            "source": Object {
+              "sourceDescriptorFile": "/utopia/components.utopia.js",
+              "type": "DESCRIPTOR_FILE",
+            },
+            "supportsChildren": false,
+            "variants": Array [
+              Object {
+                "elementToInsert": [Function],
+                "importsToAdd": Object {
+                  "/src/card": Object {
+                    "importedAs": null,
+                    "importedFromWithin": Array [
+                      Object {
+                        "alias": "Card",
+                        "name": "Card",
+                      },
+                    ],
+                    "importedWithName": null,
+                  },
+                },
+                "insertMenuLabel": "Card",
+              },
+            ],
+          },
+        }
+      `)
     })
 
     it('can use examples', async () => {
-      expect('not implemented').toEqual('implemented')
+      const renderResult = await renderTestEditorWithModel(
+        project({
+          ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
+          import { Card2 } from '../src/card2'
+          
+          const Components = {
+        '/src/card': {
+          Card: {
+            component: Card,
+            properties: {
+              label: {
+                control: 'jsx',
+                placeholder: { width: 200, height: 200 },
+                preferredContents: [
+                  { name: 'span' },
+                  { component: Card2 },
+                  {
+                    code: '<Card2 label={DefaultLabel} />',
+                    label: 'ID Card',
+                    imports: [
+                      'import { Card2 } from "/src/card2"',
+                      "import { DefaultLabel } from '/src/defaults';",
+                    ],
+                  }
+                ]
+              }
+            }
+          },
+        },
+      }
+      
+      export default Components
+    `,
+        }),
+        'await-first-dom-report',
+      )
+      const editorState = renderResult.getEditorState().editor
+
+      expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
+        Object {
+          "Card": Object {
+            "childrenPropPlaceholder": null,
+            "emphasis": "regular",
+            "focus": "default",
+            "icon": "regular",
+            "inspector": "all",
+            "preferredChildComponents": Array [],
+            "properties": Object {
+              "label": Object {
+                "control": "jsx",
+                "placeholder": Object {
+                  "height": 200,
+                  "type": "spacer",
+                  "width": 200,
+                },
+                "preferredChildComponents": Array [
+                  Object {
+                    "imports": Object {},
+                    "name": "span",
+                    "variants": Array [
+                      Object {
+                        "elementToInsert": [Function],
+                        "importsToAdd": Object {},
+                        "insertMenuLabel": "span",
+                      },
+                    ],
+                  },
+                  Object {
+                    "imports": Object {
+                      "/src/card2.js": Object {
+                        "importedAs": null,
+                        "importedFromWithin": Array [
+                          Object {
+                            "alias": "Card2",
+                            "name": "Card2",
+                          },
+                        ],
+                        "importedWithName": null,
+                      },
+                    },
+                    "name": "Card2",
+                    "variants": Array [
+                      Object {
+                        "elementToInsert": [Function],
+                        "importsToAdd": Object {
+                          "/src/card2.js": Object {
+                            "importedAs": null,
+                            "importedFromWithin": Array [
+                              Object {
+                                "alias": "Card2",
+                                "name": "Card2",
+                              },
+                            ],
+                            "importedWithName": null,
+                          },
+                        },
+                        "insertMenuLabel": "Card2",
+                      },
+                    ],
+                  },
+                  Object {
+                    "imports": Object {
+                      "/src/card2": Object {
+                        "importedAs": null,
+                        "importedFromWithin": Array [
+                          Object {
+                            "alias": "Card2",
+                            "name": "Card2",
+                          },
+                        ],
+                        "importedWithName": null,
+                      },
+                      "/src/defaults": Object {
+                        "importedAs": null,
+                        "importedFromWithin": Array [
+                          Object {
+                            "alias": "DefaultLabel",
+                            "name": "DefaultLabel",
+                          },
+                        ],
+                        "importedWithName": null,
+                      },
+                    },
+                    "name": "ID Card",
+                    "variants": Array [
+                      Object {
+                        "elementToInsert": [Function],
+                        "importsToAdd": Object {
+                          "/src/card2": Object {
+                            "importedAs": null,
+                            "importedFromWithin": Array [
+                              Object {
+                                "alias": "Card2",
+                                "name": "Card2",
+                              },
+                            ],
+                            "importedWithName": null,
+                          },
+                          "/src/defaults": Object {
+                            "importedAs": null,
+                            "importedFromWithin": Array [
+                              Object {
+                                "alias": "DefaultLabel",
+                                "name": "DefaultLabel",
+                              },
+                            ],
+                            "importedWithName": null,
+                          },
+                        },
+                        "insertMenuLabel": "ID Card",
+                      },
+                    ],
+                  },
+                ],
+                "preferredContents": Array [
+                  Object {
+                    "name": "span",
+                  },
+                  Object {
+                    "component": [Function],
+                  },
+                  Object {
+                    "code": "<Card2 label={DefaultLabel} />",
+                    "imports": Array [
+                      "import { Card2 } from \\"/src/card2\\"",
+                      "import { DefaultLabel } from '/src/defaults';",
+                    ],
+                    "label": "ID Card",
+                  },
+                ],
+              },
+            },
+            "source": Object {
+              "sourceDescriptorFile": "/utopia/components.utopia.js",
+              "type": "DESCRIPTOR_FILE",
+            },
+            "supportsChildren": false,
+            "variants": Array [
+              Object {
+                "elementToInsert": [Function],
+                "importsToAdd": Object {
+                  "/src/card": Object {
+                    "importedAs": null,
+                    "importedFromWithin": Array [
+                      Object {
+                        "alias": "Card",
+                        "name": "Card",
+                      },
+                    ],
+                    "importedWithName": null,
+                  },
+                },
+                "insertMenuLabel": "Card",
+              },
+            ],
+          },
+        }
+      `)
     })
   })
 })

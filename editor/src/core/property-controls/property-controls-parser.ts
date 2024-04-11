@@ -83,7 +83,12 @@ import {
   objectMapDropNulls,
 } from '../shared/object-utils'
 import { parseEnumValue } from './property-control-values'
-import { parseChildrenSpec, parseComponentInsertOption } from './property-controls-local'
+import {
+  parseComponentExample,
+  parseComponentInsertOption,
+  parsePlaceholder,
+  parsePreferredContents,
+} from './property-controls-local'
 
 const requiredFieldParser = optionalObjectKeyParser(parseBoolean, 'required')
 
@@ -834,14 +839,15 @@ export function parseFolderControlDescription(
 }
 
 export function parseJSXControlDescription(value: unknown): ParseResult<JSXControlDescription> {
-  return applicative6Either(
-    (label, control, visibleByDefault, preferredChildComponents, required, defaultValue) => {
+  return applicative7Either(
+    (label, control, visibleByDefault, preferredContents, placeholder, required, defaultValue) => {
       let jsxControlDescription: JSXControlDescription = {
         control: control,
       }
       setOptionalProp(jsxControlDescription, 'label', label)
       setOptionalProp(jsxControlDescription, 'visibleByDefault', visibleByDefault)
-      setOptionalProp(jsxControlDescription, 'preferredContents', preferredChildComponents)
+      setOptionalProp(jsxControlDescription, 'preferredContents', preferredContents)
+      setOptionalProp(jsxControlDescription, 'placeholder', placeholder)
       setOptionalProp(jsxControlDescription, 'required', required)
       setOptionalProp(jsxControlDescription, 'defaultValue', defaultValue)
 
@@ -851,12 +857,13 @@ export function parseJSXControlDescription(value: unknown): ParseResult<JSXContr
     objectKeyParser(parseConstant('jsx'), 'control')(value),
     optionalObjectKeyParser(parseBoolean, 'visibleByDefault')(value),
     optionalObjectKeyParser(
-      parseAlternative<ComponentExample | Array<ComponentExample>>(
-        [parseComponentInsertOption, parseArray(parseComponentInsertOption)],
-        'Invalid `preferredContents` value',
+      parseAlternative<ComponentExample | ComponentExample[]>(
+        [parseComponentExample, parseArray(parseComponentExample)],
+        'Invalid preferredContents value',
       ),
       'preferredContents',
     )(value),
+    optionalObjectKeyParser(parsePlaceholder, 'placeholder')(value),
     requiredFieldParser(value),
     optionalObjectKeyParser(parseAny, 'defaultValue')(value),
   )

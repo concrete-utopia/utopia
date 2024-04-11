@@ -604,7 +604,12 @@ function componentInsertOptionFromExample(
   const typed = componentExampleToTyped(example)
   switch (typed.type) {
     case 'name-as-string':
-      // TODO: test for intrinsic HTML element
+      if (intrinsicHTMLElementNamesAsStrings.includes(typed.name)) {
+        return {
+          label: typed.name,
+          code: `<${typed.name} />`,
+        }
+      }
       return {
         label: typed.name,
         imports: `import {${typed.name}} from '${moduleName}'`,
@@ -1031,12 +1036,12 @@ const parseComponentName = (value: unknown) =>
 const parseComponentFunction = (value: unknown) =>
   mapEither((component) => ({ component }), objectKeyParser(parseAny, 'component')(value))
 
-const parseComponentExample = parseAlternative<ComponentExample>(
+export const parseComponentExample = parseAlternative<ComponentExample>(
   [parseComponentName, parseComponentFunction, parseComponentInsertOption],
   'Invalid component example',
 )
 
-function parsePreferredContent(value: unknown): ParseResult<PreferredContent> {
+export function parsePreferredContents(value: unknown): ParseResult<PreferredContent> {
   return parseAlternative<PreferredContent>(
     [parseConstant('text'), parseComponentExample, parseArray(parseComponentExample)],
     'Invalid preferred content',
@@ -1055,14 +1060,16 @@ function parseSpacerPlaceholder(value: unknown): ParseResult<PlaceholderSpecFrom
   )
 }
 
+export const parsePlaceholder = parseAlternative(
+  [parseTextPlaceholder, parseSpacerPlaceholder],
+  'Invalid placeholder value',
+)
+
 export function parseChildrenSpec(value: unknown): ParseResult<ChildrenSpec> {
   return applicative2Either(
     (preferredContents, placeholder) => ({ preferredContents, placeholder }),
-    optionalObjectKeyParser(parsePreferredContent, 'preferredContents')(value),
-    optionalObjectKeyParser(
-      parseAlternative([parseTextPlaceholder, parseSpacerPlaceholder], 'Invalid placeholder value'),
-      'placeholder',
-    )(value),
+    optionalObjectKeyParser(parsePreferredContents, 'preferredContents')(value),
+    optionalObjectKeyParser(parsePlaceholder, 'placeholder')(value),
   )
 }
 
