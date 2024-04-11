@@ -356,7 +356,8 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
   return (
     <FlexRow
       style={{
-        padding: '4px 5px',
+        padding: '4px',
+        borderRadius: '0 5px 5px 0',
         position: 'fixed',
         right: 0,
         background:

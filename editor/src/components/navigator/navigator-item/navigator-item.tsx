@@ -253,6 +253,7 @@ const computeResultingStyle = (
   result.style = {
     ...result.style,
     fontWeight: isProbablyParentOfSelected || isProbablyScene ? 600 : 'inherit',
+    borderRadius: selected ? '5px 5px 0 0' : undefined,
   }
 
   return result
@@ -856,7 +857,7 @@ export const NavigatorItem: React.FunctionComponent<
             {props.label}
           </div>
         ) : (
-          <FlexRow style={{ justifyContent: 'space-between', ...containerStyle }}>
+          <FlexRow style={{ justifyContent: 'space-between', ...containerStyle, padding: '0 5px' }}>
             <FlexRow>
               {unless(
                 props.navigatorEntry.type === 'CONDITIONAL_CLAUSE',

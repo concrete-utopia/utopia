@@ -26,8 +26,6 @@ export const ExpandableIndicator: React.FunctionComponent<
       data-testid={props.testId}
       style={{
         ...props.style,
-        width: 18,
-        height: 18,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
