@@ -526,6 +526,32 @@ describe('Routes', () => {
 }`.trim(),
       )
     })
+    it('does nothing if the route is already there', async () => {
+      const got = addNewFeaturedRouteToPackageJson('foo.bar')(`
+{
+  "hey": "there",
+  "utopia": {
+  	"featuredRoutes": [
+  	  "/",
+  	  "/foo",
+  	  "/test"
+  	]
+  }
+}`)
+      expect(got).toEqual(
+        `
+{
+  "hey": "there",
+  "utopia": {
+    "featuredRoutes": [
+      "/",
+      "/foo",
+      "/test"
+    ]
+  }
+}`.trim(),
+      )
+    })
     it('adds the new filename to the featured routes even if without an extension', async () => {
       const got = addNewFeaturedRouteToPackageJson('foo')(
         `{ "hey": "there", "utopia": { "featuredRoutes": [ "/", "/test" ] } }`,

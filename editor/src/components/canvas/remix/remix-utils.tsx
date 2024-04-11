@@ -480,15 +480,20 @@ export function addNewFeaturedRouteToPackageJson(fileName: string) {
       throw new Error("the 'utopia' key in package.json should be an object")
     }
 
+    // if the featuredRoutes prop is not defined, set it to an empty array
     if (parsedJSON.utopia.featuredRoutes == null) {
       parsedJSON.utopia.featuredRoutes = []
     } else if (!Array.isArray(parsedJSON.utopia.featuredRoutes)) {
       throw new Error("the 'utopia.featuredRoutes' key in package.json should be an array")
     }
 
+    // append the file name if not there yet
     const fileNameWithoutExtension = fileName.replace(/\.[^.]+$/, '')
     const newRoute = urljoin('/', fileNameWithoutExtension)
-    parsedJSON.utopia.featuredRoutes.push(newRoute)
+    const currentRoutes: string[] = parsedJSON.utopia.featuredRoutes
+    if (!currentRoutes.includes(newRoute)) {
+      parsedJSON.utopia.featuredRoutes.push(newRoute)
+    }
 
     return JSON.stringify(parsedJSON, null, 2)
   }
