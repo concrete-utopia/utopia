@@ -573,8 +573,7 @@ import {
   createModuleEvaluator,
   maybeUpdatePropertyControls,
 } from '../../../core/property-controls/property-controls-local'
-import json5 from 'json5'
-import urljoin from 'url-join'
+import { addNewFeaturedRouteToPackageJson } from '../../canvas/remix/remix-utils'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -3837,26 +3836,23 @@ export const UPDATE_FNS = {
     }
   },
   ADD_TEXT_FILE: (action: AddTextFile, editor: EditorModel): EditorModel => {
-    return addTextFile(editor, action.parentPath, action.fileName, codeFile('', null))
+    const withAddedFile = addTextFile(
+      editor,
+      action.parentPath,
+      action.fileName,
+      codeFile('', null),
+    )
+    return UPDATE_FNS.OPEN_CODE_EDITOR_FILE(
+      openCodeEditorFile(withAddedFile.newFileKey, false),
+      withAddedFile.editorState,
+    )
   },
   ADD_NEW_PAGE: (action: AddNewPage, editor: EditorModel): EditorModel => {
     // 1. add the new page to the featured routes
-    const withPackageJson = updatePackageJsonInEditorState(editor, (packageJson) => {
-      const parsedJSON = json5.parse(packageJson)
-      if (parsedJSON.utopia == null) {
-        parsedJSON.utopia = {}
-      }
-
-      if (parsedJSON.utopia.featuredRoutes == null) {
-        parsedJSON.utopia.featuredRoutes = []
-      }
-
-      const fileNameWithoutExtension = action.fileName.replace(/\.[^.]+$/, '')
-
-      const newRoute = urljoin('/', fileNameWithoutExtension)
-      parsedJSON.utopia.featuredRoutes.push(newRoute)
-      return JSON.stringify(parsedJSON, null, 2)
-    })
+    const withPackageJson = updatePackageJsonInEditorState(
+      editor,
+      addNewFeaturedRouteToPackageJson(action.fileName),
+    )
 
     // 2. write the new text file
     const withTextFile = addTextFile(
@@ -3866,8 +3862,11 @@ export const UPDATE_FNS = {
       codeFile(action.code, RevisionsState.CodeAhead),
     )
 
-    // 3. return it
-    return withTextFile
+    // 3. open the text file
+    return UPDATE_FNS.OPEN_CODE_EDITOR_FILE(
+      openCodeEditorFile(withTextFile.newFileKey, false),
+      withTextFile.editorState,
+    )
   },
   DELETE_FILE: (
     action: DeleteFile | DeleteFileFromVSCode | DeleteFileFromCollaboration,
@@ -6119,7 +6118,7 @@ function addTextFile(
   parentPath: string,
   fileName: string,
   newTextFile: TextFile,
-): EditorState {
+): { editorState: EditorState; newFileKey: string } {
   const pathPrefix = parentPath == '' ? '' : parentPath + '/'
   const newFileKey = uniqueProjectContentID(pathPrefix + fileName, editor.projectContents)
 
@@ -6130,9 +6129,11 @@ function addTextFile(
   )
 
   // Update the model.
-  const updatedEditor: EditorModel = {
-    ...editor,
-    projectContents: updatedProjectContents,
+  return {
+    editorState: {
+      ...editor,
+      projectContents: updatedProjectContents,
+    },
+    newFileKey: newFileKey,
   }
-  return UPDATE_FNS.OPEN_CODE_EDITOR_FILE(openCodeEditorFile(newFileKey, false), updatedEditor)
 }
