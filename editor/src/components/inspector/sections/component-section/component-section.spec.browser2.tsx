@@ -25,7 +25,6 @@ import { StoryboardFilePath } from '../../../editor/store/editor-state'
 import { applyPrettier } from 'utopia-vscode-common'
 import { ImagePreviewTestId } from './property-content-preview'
 
-// describe.only('Set element prop via the data picker', () => {
 describe('Set element prop via the data picker', () => {
   it('can pick from the property data picker', async () => {
     function checkIsItalicised(testID: string, shouldBeItalicised: boolean): void {
@@ -685,7 +684,6 @@ describe('Set element prop via the data picker', () => {
               propertyControl: { control: 'jsx' },
             },
           },
-          supportsChildren: true,
           variants: [],
         },
       },
@@ -775,7 +773,6 @@ describe('Set element prop via the data picker', () => {
 //   })
 // })
 
-// describe.only('Controls from registering components', () => {
 describe('Controls from registering components', () => {
   it('registering internal component', async () => {
     const editor = await renderTestEditorWithModel(
@@ -855,14 +852,14 @@ describe('Controls from registering components', () => {
                 propertyControl: { control: 'jsx' },
               },
             },
-      
-            preferredChildComponents: [
-              {
-                name: 'span',
-                variants: [{ code: '<span>Link</span>' }],
-              },
-            ],
-            supportsChildren: true,
+            children: {
+              preferredContents: [
+                {
+                  label: 'Link',
+                  variants: { label: 'span', code: '<span>Link</span>' }
+                },
+              ]
+            },
             variants: [],
           },
         },
@@ -879,7 +876,7 @@ describe('Controls from registering components', () => {
         Link: {
           preferredChildComponents: [
             {
-              name: 'span',
+              name: 'Link',
               variants: [
                 {
                   importsToAdd: {},
@@ -896,7 +893,6 @@ describe('Controls from registering components', () => {
               },
             },
           },
-          supportsChildren: true,
           variants: [
             {
               importsToAdd: {
@@ -948,7 +944,12 @@ describe('Controls from registering components', () => {
                 control: 'array',
                 propertyControl: {
                   control: 'jsx',
-                  preferredContents: [{ label: 'span', code: '<span>Title</span>' }],
+                  preferredContents: [
+                    {
+                      label: 'span',
+                      variants: { label: 'span', code: '<span>Title</span>' }
+                    },
+                  ],
                 },
               },
             },
@@ -987,7 +988,6 @@ describe('Controls from registering components', () => {
               },
             },
           },
-          supportsChildren: true,
           variants: [
             {
               importsToAdd: {
@@ -1157,7 +1157,6 @@ function registerComponentProjectWithCartouche(propertyExtras: string, textField
     ['/utopia/components.utopia.js']: `const Components = {
     '/utopia/storyboard': {
       Title: {
-        supportsChildren: false,
         properties: {
           text: {
             control: 'string-input',${propertyExtras}
@@ -1236,7 +1235,6 @@ export var storyboard = (
   '/utopia/storyboard': {
     Title: {
       component: Title,
-      supportsChildren: false,
       properties: {
         text: {
           control: 'string-input',
@@ -1244,6 +1242,8 @@ export var storyboard = (
       },
       variants: [
         {
+          label: 'Title',
+          imports: 'import { Title } from "/utopia/storyboard"',
           code: '<Title />',
         },
       ],
@@ -1313,7 +1313,6 @@ export var storyboard = (
     'utopia-api': {
       View: {
         component: View,
-        supportsChildren: false,
         properties: {
           sampleprop: {
             control: 'string-input',
@@ -1323,6 +1322,8 @@ export var storyboard = (
         },
         variants: [
           {
+            label: 'View',
+            imports: 'import { View } from "utopia-api"',
             code: '<View />',
           },
         ],
@@ -1362,7 +1363,6 @@ var Playground = () => {
           control: 'number-input',
         },
       },
-      supportsChildren: false,
       variants: [],
     },
   },
@@ -1425,7 +1425,6 @@ var Playground = () => {
           propertyControl: { control: 'string-input' },
         },
       },
-      supportsChildren: false,
       variants: [],
     },
     BookDetail: {
@@ -1441,7 +1440,6 @@ var Playground = () => {
           },
         },
       },
-      supportsChildren: false,
       variants: [],
     },
   },
@@ -1566,7 +1564,6 @@ const registerComponentProjectWithHtmlProp = createModifiedProject({
     '/utopia/storyboard': {
       Title: {
         component: Title,
-        supportsChildren: false,
         properties: {
           text: {
             control: 'html-input',
@@ -1574,6 +1571,8 @@ const registerComponentProjectWithHtmlProp = createModifiedProject({
         },
         variants: [
           {
+            label: 'Title',
+            imports: 'import { Title } from "/utopia/storyboard"',
             code: '<Title />',
           },
         ],
@@ -1642,7 +1641,6 @@ export var storyboard = (
     ['/utopia/components.utopia.js']: `const Components = {
   '/utopia/storyboard': {
     Image: {
-      supportsChildren: false,
       properties: {
         url: {
           control: 'string-input',

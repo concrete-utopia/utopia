@@ -8,8 +8,8 @@ import type {
   ComponentExample,
   ChildrenSpec,
   PlaceholderSpec as PlaceholderSpecFromUtopia,
-  PreferredContent,
   Children,
+  PreferredContents,
 } from 'utopia-api/core'
 import {
   EmphasisOptions,
@@ -92,13 +92,14 @@ import {
 } from '../../components/editor/actions/action-creators'
 import type { ProjectContentTreeRoot } from '../../components/assets'
 import type { JSXElementChildWithoutUID } from '../shared/element-template'
-import { jsxAttributesFromMap, jsxElement } from '../shared/element-template'
+import { jsxAttributesFromMap, jsxElement, jsxTextBlock } from '../shared/element-template'
 import type { ErrorMessage } from '../shared/error-messages'
 import { errorMessage } from '../shared/error-messages'
 import { dropFileExtension } from '../shared/file-utils'
 import type { FancyError } from '../shared/code-exec-utils'
 import type { ScriptLine } from '../../third-party/react-error-overlay/utils/stack-frame'
 import { intrinsicHTMLElementNamesAsStrings } from '../shared/dom-utils'
+import { valueOrArrayToArray } from '../shared/array-utils'
 
 const exportedNameSymbol = Symbol('__utopia__exportedName')
 const moduleNameSymbol = Symbol('__utopia__moduleName')
@@ -695,35 +696,21 @@ async function parseJSXControlDescription(
     })
   }
 
-  const examples = Array.isArray(descriptor.preferredContents)
-    ? descriptor.preferredContents
-    : [descriptor.preferredContents]
-
-  const parsedInsertOptions = sequenceEither(
-    await Promise.all(
-      examples.map((e) =>
-        parseCodeFromInsertOption(
-          componentInsertOptionFromExample(e, context.moduleName),
-          'placeholder',
-          context.workers,
-        ),
-      ),
-    ),
+  const preferredChildComponents = await parsePreferredChildren(
+    valueOrArrayToArray(descriptor.preferredContents),
+    'placeholder',
+    context.moduleName,
+    context.workers,
   )
-  if (isLeft(parsedInsertOptions)) {
-    return parsedInsertOptions
-  }
 
-  const preferredChildComponents = parsedInsertOptions.value.map((o) => ({
-    name: o.insertMenuLabel,
-    imports: o.importsToAdd,
-    variants: [o],
-  }))
+  if (isLeft(preferredChildComponents)) {
+    return preferredChildComponents
+  }
 
   return right({
     ...descriptor,
     placeholder: placeholder,
-    preferredChildComponents: preferredChildComponents,
+    preferredChildComponents: preferredChildComponents.value,
   })
 }
 
@@ -819,78 +806,78 @@ function placeholderFromJSPlaceholder(placeholder: PlaceholderSpecFromUtopia): P
   return { type: 'spacer', width: placeholder.width, height: placeholder.height }
 }
 
+async function parsePreferredChildren(
+  preferredContents: PreferredContents[],
+  componentName: string,
+  moduleName: string,
+  workers: UtopiaTsWorkers,
+): Promise<Either<string, Array<PreferredChildComponentDescriptor>>> {
+  let descriptors: PreferredChildComponentDescriptor[] = []
+
+  for await (const contents of preferredContents) {
+    if (contents.variants === 'text') {
+      descriptors.push({
+        name: componentName,
+        imports: {},
+        variants: [
+          {
+            insertMenuLabel: 'text',
+            elementToInsert: () => jsxElement('span', '', jsxAttributesFromMap({}), []),
+            importsToAdd: {},
+          },
+        ],
+      })
+    } else {
+      const variants = valueOrArrayToArray(contents.variants)
+      const parsedVariants = sequenceEither(
+        await Promise.all(
+          variants.map((c) =>
+            parseCodeFromInsertOption(
+              componentInsertOptionFromExample(c, moduleName),
+              componentName,
+              workers,
+            ),
+          ),
+        ),
+      )
+
+      if (isLeft(parsedVariants)) {
+        return parsedVariants
+      }
+
+      descriptors.push({
+        name: contents.label,
+        imports: {},
+        variants: parsedVariants.value,
+      })
+    }
+  }
+
+  return right(descriptors)
+}
+
 export async function parsePreferredChildrenExamples(
   componentName: string,
   moduleName: string,
   componentToRegister: ComponentToRegister,
   workers: UtopiaTsWorkers,
 ): Promise<Either<string, Array<PreferredChildComponentDescriptor>>> {
-  if (componentToRegister.children == null || typeof componentToRegister.children === 'string') {
+  if (
+    componentToRegister.children == null ||
+    typeof componentToRegister.children === 'string' ||
+    componentToRegister.children.preferredContents == null
+  ) {
     return right([])
   }
 
-  const placeholder =
-    componentToRegister.children.placeholder == null
-      ? null
-      : placeholderFromJSPlaceholder(componentToRegister.children.placeholder)
-  if (
-    componentToRegister.children.preferredContents == null ||
-    componentToRegister.children.preferredContents === 'text'
-  ) {
-    return right([
-      {
-        placeholder: placeholder,
-        name: 'span',
-        imports: {},
-        variants: [],
-      },
-    ])
-  }
-
-  if (Array.isArray(componentToRegister.children.preferredContents)) {
-    const examples = sequenceEither(
-      await Promise.all(
-        componentToRegister.children.preferredContents.map((c) =>
-          parseCodeFromInsertOption(
-            componentInsertOptionFromExample(c, moduleName),
-            componentName,
-            workers,
-          ),
-        ),
-      ),
-    )
-    if (isLeft(examples)) {
-      return examples
-    }
-
-    return right([
-      {
-        placeholder: placeholder,
-        name: componentName,
-        imports: {},
-        variants: examples.value,
-      },
-    ])
-  }
-
-  const preferredChild = await parseCodeFromInsertOption(
-    componentInsertOptionFromExample(componentToRegister.children.preferredContents, moduleName),
+  const descriptors = await parsePreferredChildren(
+    valueOrArrayToArray(componentToRegister.children.preferredContents),
     componentName,
+    moduleName,
     workers,
   )
 
-  if (isLeft(preferredChild)) {
-    return preferredChild
-  }
-
-  return right([
-    {
-      placeholder: placeholder,
-      name: componentName,
-      imports: {},
-      variants: [preferredChild.value],
-    },
-  ])
+  return descriptors
 }
 
 function parseChildrenPlaceholder(
@@ -963,14 +950,14 @@ export async function componentDescriptorForComponentToRegister(
   if (isLeft(parsedVariants)) {
     return parsedVariants
   }
-  const preferredChildExamples = await parsePreferredChildrenExamples(
+  const childrenPropSpec = await parsePreferredChildrenExamples(
     componentName,
     moduleName,
     componentToRegister,
     workers,
   )
-  if (isLeft(preferredChildExamples)) {
-    return preferredChildExamples
+  if (isLeft(childrenPropSpec)) {
+    return childrenPropSpec
   }
 
   const properties = await makePropertyDescriptors(componentToRegister.properties, {
@@ -994,7 +981,7 @@ export async function componentDescriptorForComponentToRegister(
     moduleName: moduleName,
     source: source,
     supportsChildren: supportsChildren,
-    preferredChildComponents: preferredChildExamples.value,
+    preferredChildComponents: childrenPropSpec.value,
     childrenPropPlaceholder: placeholder,
     focus: componentToRegister.focus ?? ComponentDescriptorDefaults.focus,
     inspector: componentToRegister.inspector ?? ComponentDescriptorDefaults.inspector,
@@ -1041,11 +1028,18 @@ export const parseComponentExample = parseAlternative<ComponentExample>(
   'Invalid component example',
 )
 
-export function parsePreferredContents(value: unknown): ParseResult<PreferredContent> {
-  return parseAlternative<PreferredContent>(
-    [parseConstant('text'), parseComponentExample, parseArray(parseComponentExample)],
-    'Invalid preferred content',
-  )(value)
+export function parsePreferredContents(value: unknown): ParseResult<PreferredContents> {
+  return applicative2Either(
+    (label, variants) => ({ label, variants }),
+    objectKeyParser(parseString, 'label')(value),
+    objectKeyParser(
+      parseAlternative<'text' | ComponentExample | ComponentExample[]>(
+        [parseConstant('text'), parseComponentExample, parseArray(parseComponentExample)],
+        'Invalid preferred content',
+      ),
+      'variants',
+    )(value),
+  )
 }
 
 function parseTextPlaceholder(value: unknown): ParseResult<PlaceholderSpecFromUtopia> {
@@ -1068,7 +1062,13 @@ export const parsePlaceholder = parseAlternative(
 export function parseChildrenSpec(value: unknown): ParseResult<ChildrenSpec> {
   return applicative2Either(
     (preferredContents, placeholder) => ({ preferredContents, placeholder }),
-    optionalObjectKeyParser(parsePreferredContents, 'preferredContents')(value),
+    optionalObjectKeyParser(
+      parseAlternative<PreferredContents | PreferredContents[]>(
+        [parsePreferredContents, parseArray(parsePreferredContents)],
+        'Invalid preferredContents value',
+      ),
+      'preferredContents',
+    )(value),
     optionalObjectKeyParser(parsePlaceholder, 'placeholder')(value),
   )
 }

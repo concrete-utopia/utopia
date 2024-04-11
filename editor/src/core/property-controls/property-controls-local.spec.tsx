@@ -1299,7 +1299,13 @@ describe('registered property controls', () => {
           Card: {
             component: Card,
             properties: { },
-            children: { preferredContents: 'text' }
+            children: {
+              label: 'text',
+              preferredContents: {
+                label: 'text',
+                variants: 'text'
+              }
+            }
           },
         },
       }
@@ -1322,9 +1328,14 @@ describe('registered property controls', () => {
             "preferredChildComponents": Array [
               Object {
                 "imports": Object {},
-                "name": "span",
-                "placeholder": null,
-                "variants": Array [],
+                "name": "Card",
+                "variants": Array [
+                  Object {
+                    "elementToInsert": [Function],
+                    "importsToAdd": Object {},
+                    "insertMenuLabel": "text",
+                  },
+                ],
               },
             ],
             "properties": Object {},
@@ -1370,15 +1381,20 @@ describe('registered property controls', () => {
             children: {
               placeholder: { text: "Content" },
               preferredContents: [
-                { name: 'span' },
-                { component: Card2 },
+                { label: 'span', variants: { name: 'span' } },
+                { label: 'Card 2', variants: { component: Card2 } },
                 {
-                  code: '<Card2 label={DefaultLabel} />',
-                  label: 'ID Card',
-                  imports: [
-                    'import { Card2 } from "/src/card2"',
-                    "import { DefaultLabel } from '/src/defaults';",
-                  ],
+                  label: 'ID card',
+                  variants: [
+                    {
+                      code: '<Card2 label={DefaultLabel} />',
+                      label: 'ID Card',
+                      imports: [
+                        'import { Card2 } from "/src/card2"',
+                        "import { DefaultLabel } from '/src/defaults';",
+                      ],
+                    }
+                  ]
                 }
               ]
             }
@@ -1407,17 +1423,19 @@ describe('registered property controls', () => {
             "preferredChildComponents": Array [
               Object {
                 "imports": Object {},
-                "name": "Card",
-                "placeholder": Object {
-                  "contents": "Content",
-                  "type": "text",
-                },
+                "name": "span",
                 "variants": Array [
                   Object {
                     "elementToInsert": [Function],
                     "importsToAdd": Object {},
                     "insertMenuLabel": "span",
                   },
+                ],
+              },
+              Object {
+                "imports": Object {},
+                "name": "Card 2",
+                "variants": Array [
                   Object {
                     "elementToInsert": [Function],
                     "importsToAdd": Object {
@@ -1434,6 +1452,12 @@ describe('registered property controls', () => {
                     },
                     "insertMenuLabel": "Card2",
                   },
+                ],
+              },
+              Object {
+                "imports": Object {},
+                "name": "ID card",
+                "variants": Array [
                   Object {
                     "elementToInsert": [Function],
                     "importsToAdd": Object {
@@ -1572,9 +1596,9 @@ describe('registered property controls', () => {
       const renderResult = await renderTestEditorWithModel(
         project({
           ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
-          import { Card2 } from '../src/card2'
-          
-          const Components = {
+      import { Card2 } from '../src/card2'
+      
+      const Components = {
         '/src/card': {
           Card: {
             component: Card,
@@ -1583,19 +1607,27 @@ describe('registered property controls', () => {
                 control: 'jsx',
                 placeholder: { width: 200, height: 200 },
                 preferredContents: [
-                  { name: 'span' },
-                  { component: Card2 },
+                  { label: 'span', variants: { name: 'span' } },
                   {
-                    code: '<Card2 label={DefaultLabel} />',
-                    label: 'ID Card',
-                    imports: [
-                      'import { Card2 } from "/src/card2"',
-                      "import { DefaultLabel } from '/src/defaults';",
+                    label: 'Card 2',
+                    variants: { component: Card2 },
+                  },
+                  {
+                    label: 'ID card',
+                    variants: [
+                      {
+                        code: '<Card2 label={DefaultLabel} />',
+                        label: 'ID Card',
+                        imports: [
+                          'import { Card2 } from "/src/card2"',
+                          "import { DefaultLabel } from '/src/defaults';",
+                        ],
+                      },
                     ],
-                  }
-                ]
-              }
-            }
+                  },
+                ],
+              },
+            },
           },
         },
       }
@@ -1637,19 +1669,8 @@ describe('registered property controls', () => {
                     ],
                   },
                   Object {
-                    "imports": Object {
-                      "/src/card2.js": Object {
-                        "importedAs": null,
-                        "importedFromWithin": Array [
-                          Object {
-                            "alias": "Card2",
-                            "name": "Card2",
-                          },
-                        ],
-                        "importedWithName": null,
-                      },
-                    },
-                    "name": "Card2",
+                    "imports": Object {},
+                    "name": "Card 2",
                     "variants": Array [
                       Object {
                         "elementToInsert": [Function],
@@ -1670,29 +1691,8 @@ describe('registered property controls', () => {
                     ],
                   },
                   Object {
-                    "imports": Object {
-                      "/src/card2": Object {
-                        "importedAs": null,
-                        "importedFromWithin": Array [
-                          Object {
-                            "alias": "Card2",
-                            "name": "Card2",
-                          },
-                        ],
-                        "importedWithName": null,
-                      },
-                      "/src/defaults": Object {
-                        "importedAs": null,
-                        "importedFromWithin": Array [
-                          Object {
-                            "alias": "DefaultLabel",
-                            "name": "DefaultLabel",
-                          },
-                        ],
-                        "importedWithName": null,
-                      },
-                    },
-                    "name": "ID Card",
+                    "imports": Object {},
+                    "name": "ID card",
                     "variants": Array [
                       Object {
                         "elementToInsert": [Function],
@@ -1725,18 +1725,29 @@ describe('registered property controls', () => {
                 ],
                 "preferredContents": Array [
                   Object {
-                    "name": "span",
+                    "label": "span",
+                    "variants": Object {
+                      "name": "span",
+                    },
                   },
                   Object {
-                    "component": [Function],
+                    "label": "Card 2",
+                    "variants": Object {
+                      "component": [Function],
+                    },
                   },
                   Object {
-                    "code": "<Card2 label={DefaultLabel} />",
-                    "imports": Array [
-                      "import { Card2 } from \\"/src/card2\\"",
-                      "import { DefaultLabel } from '/src/defaults';",
+                    "label": "ID card",
+                    "variants": Array [
+                      Object {
+                        "code": "<Card2 label={DefaultLabel} />",
+                        "imports": Array [
+                          "import { Card2 } from \\"/src/card2\\"",
+                          "import { DefaultLabel } from '/src/defaults';",
+                        ],
+                        "label": "ID Card",
+                      },
                     ],
-                    "label": "ID Card",
                   },
                 ],
               },

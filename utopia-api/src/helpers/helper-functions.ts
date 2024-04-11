@@ -30,14 +30,17 @@ export type PlaceholderSpec =
   // inserts a `div` with the specified width and height
   | { width: number; height: number }
 
-export type PreferredContent = 'text' | ComponentExample | ComponentExample[]
+export interface PreferredContents {
+  label: string
+  variants: 'text' | ComponentExample | ComponentExample[]
+}
 
 export interface ChildrenSpec {
   // specifies what component(s) are preferred.
   // `undefined`: any component can be rendered
   // `'text'`: means only JSX text is accepted
   // `RendersComponent`: detailed spec
-  preferredContents?: PreferredContent
+  preferredContents?: PreferredContents | PreferredContents[]
 
   // specifies the placeholder to use
   placeholder?: PlaceholderSpec

@@ -18,30 +18,44 @@ import {
 describe('The navigator render prop picker', () => {
   const PreferredChildComponents = [
     {
-      name: 'FlexRow',
+      label: 'FlexRow',
       variants: [
         {
           label: 'with three placeholders',
+          imports: 'import { FlexRow } from "/src/utils"',
           code: '<FlexRow>three totally real placeholders</FlexRow>',
         },
         {
           label: 'Fully Loaded (limited time only!)',
+          imports: 'import { FlexRow } from "/src/utils"',
           code: '<FlexRow>The Fully Loaded one</FlexRow>',
         },
         {
           label: 'With Auto-Sizing Content',
+          imports: 'import { FlexRow } from "/src/utils"',
           code: '<FlexRow>Sizes automatically</FlexRow>',
         },
       ],
-      additionalImports: '/src/utils',
     },
     {
-      name: 'FlexCol',
-      additionalImports: '/src/utils',
+      label: 'FlexCol',
+      variants: [
+        {
+          label: 'FlexCol',
+          imports: 'import { FlexCol } from "/src/utils"',
+          code: '<FlexCol />',
+        },
+      ],
     },
     {
-      name: 'Flex',
-      additionalImports: '/src/utils',
+      label: 'Flex',
+      variants: [
+        {
+          label: 'Flex',
+          imports: 'import { Flex } from "/src/utils"',
+          code: '<Flex />',
+        },
+      ],
     },
   ]
 
@@ -85,7 +99,7 @@ describe('The navigator render prop picker', () => {
           properties: {
             title: {
               control: 'jsx',
-              preferredChildComponents: ${JSON.stringify(PreferredChildComponents)},
+              preferredContents: ${JSON.stringify(PreferredChildComponents)},
             },
           },
           variants: [],
@@ -135,7 +149,7 @@ describe('The navigator render prop picker', () => {
   function variantsForComponent(componentName: string) {
     return [
       { label: '(empty)', code: `<${componentName} />` },
-      ...(PreferredChildComponents.find((v) => v.name === componentName)?.variants ?? []),
+      ...(PreferredChildComponents.find((v) => v.label === componentName)?.variants ?? []),
     ]
   }
 
@@ -167,13 +181,13 @@ describe('The navigator render prop picker', () => {
 
     for (const childComponent of PreferredChildComponents) {
       const renderedOptionLabel = editor.renderedDOM.queryByTestId(
-        componentPickerOptionTestId(childComponent.name),
+        componentPickerOptionTestId(childComponent.label),
       )
       expect(renderedOptionLabel).not.toBeNull()
 
-      for (const variant of variantsForComponent(childComponent.name)) {
+      for (const variant of variantsForComponent(childComponent.label)) {
         const renderedOptionVariant = editor.renderedDOM.queryByTestId(
-          componentPickerOptionTestId(childComponent.name, variant.label),
+          componentPickerOptionTestId(childComponent.label, variant.label),
         )
         expect(renderedOptionVariant).not.toBeNull()
       }
@@ -197,21 +211,21 @@ describe('The navigator render prop picker', () => {
     // Check that it was filtered correctly
     for (const childComponent of PreferredChildComponents) {
       const renderedOptionLabel = editor.renderedDOM.queryByTestId(
-        componentPickerOptionTestId(childComponent.name),
+        componentPickerOptionTestId(childComponent.label),
       )
 
-      if (childComponent.name === 'FlexRow') {
+      if (childComponent.label === 'FlexRow') {
         expect(renderedOptionLabel).not.toBeNull()
       } else {
         expect(renderedOptionLabel).toBeNull()
       }
 
-      for (const variant of variantsForComponent(childComponent.name)) {
+      for (const variant of variantsForComponent(childComponent.label)) {
         const renderedOptionVariant = editor.renderedDOM.queryByTestId(
-          componentPickerOptionTestId(childComponent.name, variant.label),
+          componentPickerOptionTestId(childComponent.label, variant.label),
         )
 
-        if (childComponent.name === 'FlexRow') {
+        if (childComponent.label === 'FlexRow') {
           expect(renderedOptionVariant).not.toBeNull()
         } else {
           expect(renderedOptionVariant).toBeNull()
@@ -237,14 +251,14 @@ describe('The navigator render prop picker', () => {
 
     for (const childComponent of PreferredChildComponents) {
       const renderedOptionLabel = editor.renderedDOM.queryByTestId(
-        componentPickerOptionTestId(childComponent.name),
+        componentPickerOptionTestId(childComponent.label),
       )
 
       expect(renderedOptionLabel).not.toBeNull()
 
-      for (const variant of variantsForComponent(childComponent.name)) {
+      for (const variant of variantsForComponent(childComponent.label)) {
         const renderedOptionVariant = editor.renderedDOM.queryByTestId(
-          componentPickerOptionTestId(childComponent.name, variant.label),
+          componentPickerOptionTestId(childComponent.label, variant.label),
         )
 
         expect(renderedOptionVariant).not.toBeNull()

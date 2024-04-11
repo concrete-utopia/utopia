@@ -34,6 +34,7 @@ import type {
   Matrix3,
   Matrix4,
   ComponentExample,
+  PreferredContents,
 } from 'utopia-api/core'
 import { parseColor } from '../../components/inspector/common/css-utils'
 import type { Parser, ParseResult } from '../../utils/value-parser-utils'
@@ -857,8 +858,8 @@ export function parseJSXControlDescription(value: unknown): ParseResult<JSXContr
     objectKeyParser(parseConstant('jsx'), 'control')(value),
     optionalObjectKeyParser(parseBoolean, 'visibleByDefault')(value),
     optionalObjectKeyParser(
-      parseAlternative<ComponentExample | ComponentExample[]>(
-        [parseComponentExample, parseArray(parseComponentExample)],
+      parseAlternative<PreferredContents | PreferredContents[]>(
+        [parsePreferredContents, parseArray(parsePreferredContents)],
         'Invalid preferredContents value',
       ),
       'preferredContents',
