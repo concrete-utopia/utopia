@@ -186,7 +186,7 @@ type SelectedType = 'unselected' | 'selected' | 'descendantOfSelected'
 const styleTypeColors: Record<StyleType, { color: keyof ThemeObject; iconColor: IcnColor }> = {
   default: { color: 'fg0', iconColor: 'main' },
   dynamic: { color: 'dynamicBlue', iconColor: 'dynamic' },
-  component: { color: 'componentOrange', iconColor: 'component-orange' },
+  component: { color: 'componentPurple', iconColor: 'component' },
   componentInstance: { color: 'fg0', iconColor: 'main' },
   erroredGroup: { color: 'error', iconColor: 'error' },
 }
@@ -230,7 +230,7 @@ const computeResultingStyle = (
 
   if (isErroredGroup) {
     styleType = 'erroredGroup'
-  } else if (isInsideComponent) {
+  } else if (isInsideComponent || isFocusedComponent) {
     styleType = 'component'
   } else if (isFocusableComponent) {
     styleType = 'componentInstance'
