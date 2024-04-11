@@ -130,10 +130,10 @@ type UtopiaJsonProp = {
   pageTemplates?: PageTemplate[]
 }
 
-function getUtopiaKeyFromPackageJSON<T>(
+function getUtopiaKeyFromPackageJSON(
   projectContents: ProjectContentTreeRoot,
   key: keyof UtopiaJsonProp,
-): Either<DescriptionParseError, T> {
+): Either<DescriptionParseError, unknown> {
   const packageJson = getProjectFileByFilePath(projectContents, '/package.json')
   if (packageJson != null && isTextFile(packageJson)) {
     try {
