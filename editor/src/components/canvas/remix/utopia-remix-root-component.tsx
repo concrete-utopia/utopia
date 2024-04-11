@@ -272,15 +272,15 @@ interface RouteLike {
 }
 
 function traverseRoutesAndGetIDs(routes: RouteLike[]): Set<string> {
-  function traverse(route: RouteLike, ids: Set<string>) {
+  const ids = new Set<string>()
+
+  function traverse(route: RouteLike) {
     ids.add(route.id ?? '0')
-    route.children?.forEach((c) => traverse(c, ids))
+    route.children?.forEach(traverse)
   }
+  routes.forEach((route) => traverse(route))
 
-  const routeIds = new Set<string>()
-  routes.forEach((route) => traverse(route, routeIds))
-
-  return routeIds
+  return ids
 }
 
 export interface UtopiaRemixRootComponentProps {
