@@ -160,6 +160,45 @@ export function getFeaturedRoutesFromPackageJSON(
   }
 }
 
+// TODO clean up this stuff
+export type PageTemplate = { label: string; path: string }
+
+function isPageTemplate(u: unknown): u is PageTemplate {
+  const maybe = u as PageTemplate
+  return u != null && typeof u == 'object' && maybe.label != null && maybe.path != null
+}
+
+export function getPageTemplatesFromPackageJSON(
+  projectContents: ProjectContentTreeRoot,
+): Either<DescriptionParseError, Array<PageTemplate>> {
+  const packageJson = getProjectFileByFilePath(projectContents, '/package.json')
+  if (packageJson != null && isTextFile(packageJson)) {
+    try {
+      const parsedJSON = json5.parse(packageJson.fileContents.code)
+      if (parsedJSON != null && 'utopia' in parsedJSON) {
+        const pageTemplates = parsedJSON.utopia?.pageTemplates
+        if (pageTemplates != null) {
+          if (Array.isArray(pageTemplates) && pageTemplates.every(isPageTemplate)) {
+            return right(pageTemplates)
+          } else {
+            return left(descriptionParseError(`'pageTemplates' in package.json is not an array`))
+          }
+        } else {
+          return left(descriptionParseError(`'pageTemplates' in package.json is not specified`))
+        }
+      } else {
+        return left(
+          descriptionParseError(`'utopia' field in package.json couldn't be parsed properly`),
+        )
+      }
+    } catch (e) {
+      return left(descriptionParseError(`package.json is not formatted correctly`))
+    }
+  } else {
+    return left(descriptionParseError('No package.json is found in project'))
+  }
+}
+
 function getTextFileContentsFromPath(
   filePath: string,
   projectContents: ProjectContentTreeRoot,
