@@ -280,7 +280,7 @@ function traverseRoutesAndGetIDs(routes: RouteLike[]): Set<string> {
   }
 
   const routeIds = new Set<string>()
-  routes.forEach((node) => traverse(node, routeIds))
+  routes.forEach((route) => traverse(route, routeIds))
 
   return routeIds
 }
