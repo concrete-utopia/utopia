@@ -330,6 +330,7 @@ import type {
   ExtractPropertyControlsFromDescriptorFiles,
   SetCodeEditorComponentDescriptorErrors,
   SetSharingDialogOpen,
+  AddNewPage,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -376,6 +377,7 @@ import {
   getPackageJsonFromProjectContents,
   modifyUnderlyingTargetJSXElement,
   getAllComponentDescriptorErrors,
+  updatePackageJsonInEditorState,
 } from '../store/editor-state'
 import {
   areGeneratedElementsTargeted,
@@ -571,6 +573,8 @@ import {
   createModuleEvaluator,
   maybeUpdatePropertyControls,
 } from '../../../core/property-controls/property-controls-local'
+import json5 from 'json5'
+import urljoin from 'url-join'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -3833,22 +3837,37 @@ export const UPDATE_FNS = {
     }
   },
   ADD_TEXT_FILE: (action: AddTextFile, editor: EditorModel): EditorModel => {
-    const pathPrefix = action.parentPath == '' ? '' : action.parentPath + '/'
-    const newFileKey = uniqueProjectContentID(pathPrefix + action.fileName, editor.projectContents)
-    const newTextFile = codeFile('', null)
+    return addTextFile(editor, action.parentPath, action.fileName, codeFile('', null))
+  },
+  ADD_NEW_PAGE: (action: AddNewPage, editor: EditorModel): EditorModel => {
+    // 1. add the new page to the featured routes
+    const withPackageJson = updatePackageJsonInEditorState(editor, (packageJson) => {
+      const parsedJSON = json5.parse(packageJson)
+      if (parsedJSON.utopia == null) {
+        parsedJSON.utopia = {}
+      }
 
-    const updatedProjectContents = addFileToProjectContents(
-      editor.projectContents,
-      newFileKey,
-      newTextFile,
+      if (parsedJSON.utopia.featuredRoutes == null) {
+        parsedJSON.utopia.featuredRoutes = []
+      }
+
+      const fileNameWithoutExtension = action.fileName.replace(/\.[^.]+$/, '')
+
+      const newRoute = urljoin('/', fileNameWithoutExtension)
+      parsedJSON.utopia.featuredRoutes.push(newRoute)
+      return JSON.stringify(parsedJSON, null, 2)
+    })
+
+    // 2. write the new text file
+    const withTextFile = addTextFile(
+      withPackageJson,
+      action.parentPath,
+      action.fileName,
+      codeFile(action.code, RevisionsState.CodeAhead),
     )
 
-    // Update the model.
-    const updatedEditor: EditorModel = {
-      ...editor,
-      projectContents: updatedProjectContents,
-    }
-    return UPDATE_FNS.OPEN_CODE_EDITOR_FILE(openCodeEditorFile(newFileKey, false), updatedEditor)
+    // 3. return it
+    return withTextFile
   },
   DELETE_FILE: (
     action: DeleteFile | DeleteFileFromVSCode | DeleteFileFromCollaboration,
@@ -6094,3 +6113,26 @@ export var storyboard = (
   </Storyboard>
   )
 `
+
+function addTextFile(
+  editor: EditorState,
+  parentPath: string,
+  fileName: string,
+  newTextFile: TextFile,
+): EditorState {
+  const pathPrefix = parentPath == '' ? '' : parentPath + '/'
+  const newFileKey = uniqueProjectContentID(pathPrefix + fileName, editor.projectContents)
+
+  const updatedProjectContents = addFileToProjectContents(
+    editor.projectContents,
+    newFileKey,
+    newTextFile,
+  )
+
+  // Update the model.
+  const updatedEditor: EditorModel = {
+    ...editor,
+    projectContents: updatedProjectContents,
+  }
+  return UPDATE_FNS.OPEN_CODE_EDITOR_FILE(openCodeEditorFile(newFileKey, false), updatedEditor)
+}

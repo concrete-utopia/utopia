@@ -692,6 +692,14 @@ export interface AddTextFile {
   parentPath: string
 }
 
+export interface AddNewPage {
+  action: 'ADD_NEW_PAGE'
+  fileName: string
+  parentPath: string
+  code: string
+  label: string
+}
+
 export interface SetMainUIFile {
   action: 'SET_MAIN_UI_FILE'
   uiFile: string
@@ -1208,6 +1216,7 @@ export type EditorAction =
   | DeleteFile
   | DeleteFileFromCollaboration
   | AddTextFile
+  | AddNewPage
   | SetMainUIFile
   | SetCodeEditorBuildErrors
   | SetCodeEditorLintErrors

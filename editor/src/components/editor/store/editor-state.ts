@@ -2432,12 +2432,20 @@ export function mergePersistentModel(
   }
 }
 
+function randomArrayElement(array: string[]): string {
+  return array[Math.floor(Math.random() * array.length)]
+}
+
 export function createNewProjectName(): string {
-  const friendlyWordsPredicate =
-    friendlyWords.predicates[Math.floor(Math.random() * friendlyWords.predicates.length)]
-  const friendlyWordsObject =
-    friendlyWords.objects[Math.floor(Math.random() * friendlyWords.objects.length)]
+  const friendlyWordsPredicate = randomArrayElement(friendlyWords.predicates)
+  const friendlyWordsObject = randomArrayElement(friendlyWords.objects)
   return `${friendlyWordsPredicate}-${friendlyWordsObject}`
+}
+
+export function createNewPageName(): string {
+  return `page-${randomArrayElement(friendlyWords.predicates)}-${randomArrayElement(
+    friendlyWords.objects,
+  )}`
 }
 
 export const BaseSnappingThreshold = 5

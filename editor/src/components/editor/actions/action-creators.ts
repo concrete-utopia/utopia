@@ -223,6 +223,7 @@ import type {
   ExtractPropertyControlsFromDescriptorFiles,
   SetSharingDialogOpen,
   SetCodeEditorComponentDescriptorErrors,
+  AddNewPage,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -1113,6 +1114,21 @@ export function addTextFile(parentPath: string, fileName: string): AddTextFile {
     action: 'ADD_TEXT_FILE',
     fileName: fileName,
     parentPath: parentPath,
+  }
+}
+
+export function addNewPage(
+  parentPath: string,
+  fileName: string,
+  code: string,
+  label: string,
+): AddNewPage {
+  return {
+    action: 'ADD_NEW_PAGE',
+    fileName: fileName,
+    parentPath: parentPath,
+    code: code,
+    label: label,
   }
 }
 
