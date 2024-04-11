@@ -579,7 +579,7 @@ function componentExampleToTyped(example: ComponentExample): TypedComponentExamp
   return { type: 'component-insert-option', example: example }
 }
 
-async function parseCodeFromExample(
+async function parseCodeFromInsertOption(
   componentInsertOption: ComponentInsertOption,
   componentName: string,
   workers: UtopiaTsWorkers,
@@ -591,7 +591,7 @@ async function parseCodeFromExample(
   }
 
   return right({
-    insertMenuLabel: componentName,
+    insertMenuLabel: componentInsertOption.label,
     elementToInsert: () => info.value.elementToInsert,
     importsToAdd: info.value.imports,
   })
@@ -697,7 +697,7 @@ async function parseJSXControlDescription(
   const parsedInsertOptions = sequenceEither(
     await Promise.all(
       examples.map((e) =>
-        parseCodeFromExample(
+        parseCodeFromInsertOption(
           componentInsertOptionFromExample(e, context.moduleName),
           'placeholder',
           context.workers,
@@ -846,7 +846,7 @@ export async function parsePreferredChildrenExamples(
     const examples = sequenceEither(
       await Promise.all(
         componentToRegister.children.preferredContent.map((c) =>
-          parseCodeFromExample(
+          parseCodeFromInsertOption(
             componentInsertOptionFromExample(c, moduleName),
             componentName,
             workers,
@@ -868,7 +868,7 @@ export async function parsePreferredChildrenExamples(
     ])
   }
 
-  const preferredChild = await parseCodeFromExample(
+  const preferredChild = await parseCodeFromInsertOption(
     componentInsertOptionFromExample(componentToRegister.children.preferredContent, moduleName),
     componentName,
     workers,
@@ -902,6 +902,45 @@ function parseChildrenPlaceholder(
   return placeholderFromJSPlaceholder(componentToRegister.children.placeholder)
 }
 
+async function parseComponentVariants(
+  componentToRegister: ComponentToRegister,
+  componentName: string,
+  moduleName: string,
+  workers: UtopiaTsWorkers,
+): Promise<Either<string, ComponentInfo[]>> {
+  if (
+    componentToRegister.variants == null ||
+    (Array.isArray(componentToRegister.variants) && componentToRegister.variants.length === 0)
+  ) {
+    const parsed = await parseCodeFromInsertOption(
+      {
+        label: componentName,
+        imports: `import { ${componentName} } from '${moduleName}'`,
+        code: `<${componentName} />`,
+      },
+      componentName,
+      workers,
+    )
+
+    return mapEither((p) => [p], parsed)
+  }
+
+  const insertOptionsToParse =
+    componentToRegister.variants == null
+      ? []
+      : variantsFromJSComponentExample(componentToRegister.variants, moduleName)
+
+  const parsedVariants = sequenceEither(
+    await Promise.all(
+      insertOptionsToParse.map((insertOption) =>
+        parseCodeFromInsertOption(insertOption, componentName, workers),
+      ),
+    ),
+  )
+
+  return parsedVariants
+}
+
 export async function componentDescriptorForComponentToRegister(
   componentToRegister: ComponentToRegister,
   componentName: string,
@@ -909,17 +948,13 @@ export async function componentDescriptorForComponentToRegister(
   workers: UtopiaTsWorkers,
   source: ComponentDescriptorSource,
 ): Promise<Either<string, ComponentDescriptorWithName>> {
-  const insertOptionsToParse =
-    componentToRegister.variants == null
-      ? []
-      : variantsFromJSComponentExample(componentToRegister.variants, moduleName)
-
-  const parsedInsertOptionPromises = insertOptionsToParse.map((insertOption) =>
-    parseCodeFromExample(insertOption, componentName, workers),
+  const parsedVariants = await parseComponentVariants(
+    componentToRegister,
+    componentName,
+    moduleName,
+    workers,
   )
 
-  const parsedVariantsUnsequenced = await Promise.all(parsedInsertOptionPromises)
-  const parsedVariants = sequenceEither(parsedVariantsUnsequenced)
   if (isLeft(parsedVariants)) {
     return parsedVariants
   }

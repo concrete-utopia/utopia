@@ -87,13 +87,16 @@ describe('registered property controls', () => {
           variants: [
             {
               code: '<Card />',
+              imports: 'import { Card } from "/src/card"',
               label: 'Card',
             },
             {
               code: '<Card person={DefaultPerson} />',
               label: 'ID Card',
-              additionalImports:
+              imports: [
+                'import { Card } from "/src/card"',
                 "import { DefaultPerson } from '/src/defaults';",
+              ],
             },
           ],
         },
@@ -110,6 +113,7 @@ describe('registered property controls', () => {
     expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
       Object {
         "Card": Object {
+          "childrenPropPlaceholder": null,
           "emphasis": "regular",
           "focus": "default",
           "icon": "regular",
@@ -216,6 +220,7 @@ describe('registered property controls', () => {
     expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
       Object {
         "Card": Object {
+          "childrenPropPlaceholder": null,
           "emphasis": "regular",
           "focus": "default",
           "icon": "regular",
@@ -754,13 +759,16 @@ describe('registered property controls', () => {
           variants: [
             {
               code: '<Card />',
+              imports: 'import { Card } from "/src/card"',
               label: 'Card',
             },
             {
               code: '<Card person={DefaultPerson} />',
               label: 'ID Card',
-              additionalImports:
+              imports: [
+                'import { Card } from "/src/card"',
                 "import { DefaultPerson } from '/src/defaults';",
+              ],
             },
           ],
         },
@@ -777,6 +785,7 @@ describe('registered property controls', () => {
     expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
       Object {
         "Card": Object {
+          "childrenPropPlaceholder": null,
           "emphasis": "regular",
           "focus": "default",
           "icon": "regular",
@@ -872,13 +881,16 @@ describe('registered property controls', () => {
           variants: [
             {
               code: '<Card />',
+              imports: 'import { Card } from "/src/card"',
               label: 'Card',
             },
             {
               code: '<Card person={DefaultPerson} />',
               label: 'ID Card',
-              additionalImports:
-                "import { DefaultPerson } from '/src/defaults';",
+              imports: [
+                'import { Card } from "/src/card"',
+                "import { DefaultLabel } from '/src/defaults';",
+              ],
             },
           ],
         },
@@ -893,13 +905,16 @@ describe('registered property controls', () => {
           variants: [
             {
               code: '<Card2 />',
+              imports: 'import { Card2 } from "/src/card2"',
               label: 'Card2',
             },
             {
               code: '<Card2 label={DefaultLabel} />',
               label: 'ID Card',
-              additionalImports:
+              imports: [
+                'import { Card2 } from "/src/card2"',
                 "import { DefaultLabel } from '/src/defaults';",
+              ],
             },
           ],
         },
@@ -944,13 +959,16 @@ describe('registered property controls', () => {
             variants: [
               {
                 code: '<Card />',
+                imports: 'import { Card } from "/src/card"',
                 label: 'Card',
               },
               {
                 code: '<Card person={DefaultPerson} />',
                 label: 'ID Card',
-                additionalImports:
-                  "import { DefaultPerson } from '/src/defaults';",
+                imports: [
+                  'import { Card } from "/src/card"',
+                  "import { DefaultLabel } from '/src/defaults';",
+                ],
               },
             ],
           },
@@ -967,13 +985,16 @@ describe('registered property controls', () => {
             variants: [
               {
                 code: '<Card2 />',
+                imports: 'import { Card2 } from "/src/card2"',
                 label: 'Card2',
               },
               {
                 code: '<Card2 label={DefaultLabel} />',
                 label: 'ID Card',
-                additionalImports:
+                imports: [
+                  'import { Card2 } from "/src/card2"',
                   "import { DefaultLabel } from '/src/defaults';",
+                ],
               },
             ],
           },
@@ -1022,13 +1043,16 @@ describe('registered property controls', () => {
               variants: [
                 {
                   code: '<Card />',
+                  imports: 'import { Card } from "/src/card"',
                   label: 'Card',
                 },
                 {
                   code: '<Card person={DefaultPerson} />',
                   label: 'ID Card',
-                  additionalImports:
+                  imports: [
+                    'import { Card } from "/src/card"',
                     "import { DefaultPerson } from '/src/defaults';",
+                  ]
                 },
               ],
             },
@@ -1050,13 +1074,16 @@ describe('registered property controls', () => {
               variants: [
                 {
                   code: '<Card2 />',
+                  imports: 'import { Card2 } from "/src/card"',
                   label: 'Card2',
                 },
                 {
                   code: '<Card2 label={DefaultLabel} />',
                   label: 'ID Card',
-                  additionalImports:
+                  imports: [
+                    'import { Card2 } from "/src/card2"',
                     "import { DefaultLabel } from '/src/defaults';",
+                  ],
                 },
               ],
             },

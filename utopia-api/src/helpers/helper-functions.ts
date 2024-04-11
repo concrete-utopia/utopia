@@ -43,17 +43,6 @@ export interface ChildrenSpec {
   placeholder?: PlaceholderSpec
 }
 
-export interface ChildrenSpec {
-  // specifies what component(s) are preferred.
-  // `undefined`: any component can be rendered
-  // `'text'`: means only JSX text is accepted
-  // `RendersComponent`: detailed spec
-  preferredContent?: 'text' | ComponentExample | ComponentExample[]
-
-  // specifies the placeholder to use
-  placeholder?: PlaceholderSpec
-}
-
 export type Children = 'supported' | 'not-supported' | ChildrenSpec
 
 export const FocusOptions = ['default', 'always', 'never'] as const
