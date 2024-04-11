@@ -300,7 +300,7 @@ export const AddPageContextMenu = React.memo(
 
     const addPageAction = React.useCallback(
       (template: PageTemplate) => () => {
-        dispatch([addNewPage(`/app/routes`, template)])
+        dispatch([addNewPage('/app/routes', template)])
       },
       [dispatch],
     )
