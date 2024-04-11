@@ -415,7 +415,8 @@ const ComponentPickerVariant = React.memo((props: ComponentPickerVariantProps) =
   return (
     <div
       onClick={onItemClick({
-        elementToInsert: (uid) => elementFromInsertMenuItem(variant.elementToInsert(), uid),
+        elementToInsert: (uid) =>
+          elementFromInsertMenuItem(variant.elementToInsert(), uid, 'no-defaults'),
         additionalImports: variant.importsToAdd,
       })}
       css={{
