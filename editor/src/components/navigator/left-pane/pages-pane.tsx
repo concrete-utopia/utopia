@@ -217,7 +217,7 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
 
 function fillInGapsInRoute(routes: Array<string>): Array<string> {
   // if we find a route /collections, and a route /collections/hats/beanies, we should create an entry for /collections/hats, so there are no gaps in the tree structure
-  const result: Array<string> = []
+  let result: Array<string> = []
   for (const route of routes) {
     const parts = route.split('/')
     for (let i = 1; i < parts.length - 1; i++) {
