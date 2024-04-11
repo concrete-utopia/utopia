@@ -3,6 +3,7 @@ import type { dark } from './dark'
 
 const lightBase = {
   primary: createUtopiColor('oklch(59% 0.25 254)'),
+  primary10solid: createUtopiColor('oklch(0.98 0.01 253.75)'),
   primary10: createUtopiColor('oklch(59% 0.25 254 / 10%)'),
   primary25: createUtopiColor('oklch(59% 0.25 254 / 25%)'),
   primary30: createUtopiColor('oklch(59% 0.25 254 / 30%)'),
@@ -35,8 +36,8 @@ const lightBase = {
   unavailable: createUtopiColor('oklch(54.52% 0 0 / 5%)'),
   unavailableGrey: createUtopiColor('oklch(0% 0 0 / 22%)'),
   unavailableGrey10: createUtopiColor('oklch(0% 0 0 / 10%)'),
-  aqua: createUtopiColor('oklch(0.74 0.18 218.28)'),
-  aqua10: createUtopiColor('oklch(0.74 0.18 218.28 / 10%)'),
+  aqua: createUtopiColor('oklch(51.89% 0.09 211.12)'),
+  aqua10: createUtopiColor('oklch(51.89% 0.09 211.12 / 10%)'),
   aqua05solid: createUtopiColor('oklch(91.86% 0.016 216.68)'),
   bg510solid: createUtopiColor('oklch(90.97% 0 0)'),
   bg0: createUtopiColor('hsl(0,0%,100%)'),

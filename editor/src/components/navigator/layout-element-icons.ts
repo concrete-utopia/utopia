@@ -412,6 +412,7 @@ function createComponentIconProps(
     return null
   }
   if (element?.isEmotionOrStyledComponent) {
+    // todo make 12x12 version if we still support this
     return {
       category: 'component',
       type: 'styled',
@@ -421,6 +422,7 @@ function createComponentIconProps(
   }
   const isAnimatedComponent = isAnimatedElement(element)
   if (isAnimatedComponent) {
+    // todo make 12x12 version if we still support this
     return {
       category: 'component',
       type: 'animated',
@@ -433,10 +435,10 @@ function createComponentIconProps(
     MetadataUtils.isProbablyRemixSceneFromMetadata(element)
   if (isRemixComponent) {
     return {
-      category: 'component',
+      category: 'navigator-element',
       type: 'remix',
-      width: 18,
-      height: 18,
+      width: 12,
+      height: 12,
     }
   }
   const isImported = isImportedComponent(element, filePathMappings)
@@ -456,10 +458,10 @@ function createComponentIconProps(
   )
   if (isComponent) {
     return {
-      category: 'component',
-      type: 'default',
-      width: 18,
-      height: 18,
+      category: 'navigator-element',
+      type: 'component-solid',
+      width: 12,
+      height: 12,
     }
   }
 

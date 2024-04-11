@@ -230,13 +230,12 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
       <Icn
         style={{
           marginRight: 0,
-          transform: 'scale(.85)',
         }}
         category='filetype'
         color={'main'}
         type={props.matchesRealRoute ? 'other' : 'folder-open'}
-        width={18}
-        height={18}
+        width={12}
+        height={12}
       />
       {/* TODO if we want renaming, cannibalize it from FileBrowserItem */}
       <span
