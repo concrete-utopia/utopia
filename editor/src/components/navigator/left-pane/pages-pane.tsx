@@ -5,7 +5,7 @@ import { jsx } from '@emotion/react'
 import { useAtom } from 'jotai'
 import React from 'react'
 import { matchRoutes } from 'react-router'
-import { uniqBy } from '../../../core/shared/array-utils'
+import { safeIndex, uniqBy } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
 import { NO_OP } from '../../../core/shared/utils'
 import { FlexColumn, FlexRow, Icn, Subdued, UtopiaTheme, colorTheme } from '../../../uuiui'
@@ -42,10 +42,9 @@ export const PagesPane = React.memo((props) => {
         registeredExampleRoutes.flatMap((exampleRoute): Array<RouteMatch> => {
           const matchResult = matchRoutes(store.derived.remixData?.routes ?? [], exampleRoute) ?? []
 
-          if (
-            matchResult[matchResult.length - 1]?.pathname !==
-            matchResult[matchResult.length - 1]?.pathnameBase
-          ) {
+          const lastMatchResult = safeIndex(matchResult, matchResult.length - 1)
+
+          if (lastMatchResult?.pathname !== lastMatchResult?.pathnameBase) {
             return [
               {
                 path: exampleRoute,
@@ -55,7 +54,7 @@ export const PagesPane = React.memo((props) => {
             ]
           }
 
-          return matchResult?.map(
+          return matchResult.map(
             (match): RouteMatch => ({
               resolvedPath: match.pathname,
               path: '/' + (match.route.path ?? ''),
