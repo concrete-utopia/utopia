@@ -249,10 +249,11 @@ function useRoutesWithIdEquality(
       return nextRoutes
     }
 
-    let prevIdsSet = new Set(previousRoutes.current.map((r) => r.id ?? '0'))
-    let currentIdsSet = new Set(nextRoutes.map((r) => r.id ?? '0'))
+    const prevIdsSet = traverseRoutesAndGetIDs(previousRoutes.current)
+    const currentIdsSet = traverseRoutesAndGetIDs(nextRoutes)
 
-    const same = [...prevIdsSet].every((id) => currentIdsSet.has(id))
+    const same =
+      prevIdsSet.size === currentIdsSet.size && [...prevIdsSet].every((id) => currentIdsSet.has(id))
 
     if (!same) {
       previousRoutes.current = nextRoutes
@@ -263,6 +264,23 @@ function useRoutesWithIdEquality(
   }, [nextRoutes])
 
   return routes
+}
+
+interface RouteLike {
+  id?: string
+  children?: RouteLike[]
+}
+
+function traverseRoutesAndGetIDs(routes: RouteLike[]): Set<string> {
+  const ids = new Set<string>()
+
+  function traverse(route: RouteLike) {
+    ids.add(route.id ?? '0')
+    route.children?.forEach(traverse)
+  }
+  routes.forEach((route) => traverse(route))
+
+  return ids
 }
 
 export interface UtopiaRemixRootComponentProps {
