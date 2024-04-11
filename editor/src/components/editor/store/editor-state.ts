@@ -195,6 +195,7 @@ export enum LeftMenuTab {
   Project = 'project',
   Github = 'github',
   Navigator = 'navigator',
+  Pages = 'pages',
 }
 
 export const DefaultNavigatorWidth = GridMenuWidth

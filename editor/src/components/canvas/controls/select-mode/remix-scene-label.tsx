@@ -1,7 +1,11 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
-import { isInfinityRectangle, windowPoint } from '../../../../core/shared/math-utils'
+import {
+  isInfinityRectangle,
+  isNotNullFiniteRectangle,
+  windowPoint,
+} from '../../../../core/shared/math-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { NO_OP } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
@@ -136,6 +140,18 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
     'SceneLabel label',
   )
 
+  const sceneSize = useEditorState(
+    Substores.metadata,
+    (store) => {
+      const element = store.editor.jsxMetadata[EP.toString(props.target)]
+      if (element == null || !isNotNullFiniteRectangle(element.globalFrame)) {
+        return ''
+      }
+      return `${element.globalFrame.width} × ${element.globalFrame.height}`
+    },
+    'SceneLabel sceneSize',
+  )
+
   const currentLocationMatchesRoutes = useCurrentLocationMatchesRoutes(props.target)
 
   const forward = React.useCallback(
@@ -175,12 +191,12 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
   )
   const baseFontSize = 10
   const scaledFontSize = baseFontSize / scale
-  const scaledLineHeight = 17 / scale
+  const scaledLineHeight = 23 / scale
   const paddingY = scaledFontSize / 4
   const paddingX = paddingY * 2
   const offsetY = scaledFontSize / 1.5
   const offsetX = scaledFontSize / 2
-  const borderRadius = 3 / scale
+  const borderRadius = 5 / scale
 
   const editorModeRef = useRefEditorState((store) => {
     return {
@@ -268,8 +284,6 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
     }
   }, [onMouseUp])
 
-  const backgroundColor = isSelected ? colorTheme.aqua05solid.value : 'transparent'
-
   if (frame == null || isInfinityRectangle(frame)) {
     return null
   }
@@ -288,7 +302,8 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
         className='roleComponentName'
         style={{
           pointerEvents: labelSelectable ? 'initial' : 'none',
-          color: colorTheme.aqua.value,
+          color: colorTheme.primary.value,
+          backgroundColor: colorTheme.bg1subdued.value,
           position: 'absolute',
           left: frame.x,
           bottom: -frame.y + offsetY,
@@ -301,18 +316,13 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
           overflow: 'hidden',
           textOverflow: 'ellipsis',
           borderRadius: borderRadius,
-          backgroundColor: backgroundColor,
           justifyContent: 'space-between',
         }}
       >
         <FlexRow style={{ gap: paddingX }}>
-          <div
-            data-testid={RemixSceneLabelTestId(props.target)}
-            style={{
-              fontWeight: 600,
-            }}
-          >
-            {scenelabel}
+          <div data-testid={RemixSceneLabelTestId(props.target)} style={{ gap: 20 }}>
+            <span style={{ fontWeight: 600 }}>{scenelabel}</span>{' '}
+            <span style={{ fontWeight: 400 }}>{sceneSize}</span>
           </div>
           <div
             data-testid={RemixSceneLabelPathTestId(props.target)}

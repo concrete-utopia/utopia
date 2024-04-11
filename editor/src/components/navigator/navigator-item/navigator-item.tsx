@@ -186,7 +186,7 @@ type SelectedType = 'unselected' | 'selected' | 'descendantOfSelected'
 const styleTypeColors: Record<StyleType, { color: keyof ThemeObject; iconColor: IcnColor }> = {
   default: { color: 'fg0', iconColor: 'main' },
   dynamic: { color: 'dynamicBlue', iconColor: 'dynamic' },
-  component: { color: 'componentOrange', iconColor: 'component-orange' },
+  component: { color: 'componentPurple', iconColor: 'component' },
   componentInstance: { color: 'fg0', iconColor: 'main' },
   erroredGroup: { color: 'error', iconColor: 'error' },
 }
@@ -230,7 +230,7 @@ const computeResultingStyle = (
 
   if (isErroredGroup) {
     styleType = 'erroredGroup'
-  } else if (isInsideComponent) {
+  } else if (isInsideComponent || isFocusedComponent) {
     styleType = 'component'
   } else if (isFocusableComponent) {
     styleType = 'componentInstance'
@@ -253,6 +253,9 @@ const computeResultingStyle = (
   result.style = {
     ...result.style,
     fontWeight: isProbablyParentOfSelected || isProbablyScene ? 600 : 'inherit',
+    // TODO compute better borderRadius style by if it has children or siblings
+
+    borderRadius: selected ? '5px 5px 0 0' : undefined,
   }
 
   return result
@@ -856,7 +859,7 @@ export const NavigatorItem: React.FunctionComponent<
             {props.label}
           </div>
         ) : (
-          <FlexRow style={{ justifyContent: 'space-between', ...containerStyle }}>
+          <FlexRow style={{ justifyContent: 'space-between', ...containerStyle, padding: '0 5px' }}>
             <FlexRow>
               {unless(
                 props.navigatorEntry.type === 'CONDITIONAL_CLAUSE',
@@ -867,7 +870,6 @@ export const NavigatorItem: React.FunctionComponent<
                   selected={selected && !isInsideComponent}
                   onMouseDown={collapse}
                   style={{
-                    transform: 'scale(0.6)',
                     opacity: 'var(--paneHoverOpacity)',
                   }}
                   testId={`navigator-item-collapse-${navigatorEntryToKey(props.navigatorEntry)}`}
@@ -961,9 +963,8 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         gap: 5,
         borderRadius: 20,
         height: 22,
-        paddingLeft: 10,
-        paddingRight: props.codeItemType === 'map' ? 0 : 10,
-        backgroundColor: backgroundLozengeColor,
+        paddingLeft: 5,
+        paddingRight: props.codeItemType === 'map' ? 0 : 5,
         color: textColor,
         textTransform: isCodeItem ? 'uppercase' : undefined,
       }}

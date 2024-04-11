@@ -76,6 +76,7 @@ import { ForkSearchParamKey, ProjectForkFlow } from './project-fork-flow'
 import { isRoomId, projectIdToRoomId } from '../../utils/room-id'
 import { SharingDialog } from './sharing-dialog'
 import { AccessLevelParamKey } from './persistence/persistence-backend'
+import { useUpdateActiveRemixSceneOnSelectionChange } from '../canvas/remix/utopia-remix-root-component'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -578,6 +579,8 @@ export function EditorComponent(props: EditorProps) {
   const dispatch = useDispatch()
 
   useDataThemeAttributeOnBody()
+
+  useUpdateActiveRemixSceneOnSelectionChange()
 
   const roomId = React.useMemo(
     () => (projectId == null ? generateUUID() : projectIdToRoomId(projectId)),

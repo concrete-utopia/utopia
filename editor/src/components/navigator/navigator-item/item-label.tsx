@@ -162,9 +162,9 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
     triggerRenameComponent()
   }, [triggerRenameComponent])
 
-  function onInputLabelChange(event: React.ChangeEvent<HTMLInputElement>) {
+  const onInputLabelChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setName(event.target.value)
-  }
+  }, [])
 
   const isActiveBranchOfOverriddenConditional = useEditorState(
     Substores.metadata,
@@ -220,6 +220,7 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
         fontSize: 11,
         fontStyle: isDynamic ? 'italic' : 'normal',
         gap: isConditionalClause ? 10 : undefined,
+        padding: isConditionalClause ? undefined : '0 4px',
       }}
     >
       {isConditionalClause && (

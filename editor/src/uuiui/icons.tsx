@@ -239,6 +239,13 @@ export const Icons = {
     width: 18,
     height: 18,
   }),
+  FolderClosed: makeIcon({
+    type: 'folder-closed',
+    category: 'filetype',
+    color: 'main',
+    width: 12,
+    height: 12,
+  }),
   Threedots: makeIcon({ type: 'threedots', color: 'main' }),
   LinkClosed: makeIcon({ type: 'link-closed', color: 'main' }),
   LinkStrikethrough: makeIcon({ type: 'link-strikethrough', color: 'main' }),
@@ -266,8 +273,8 @@ export const Icons = {
   NewTextFile: makeIcon({
     category: 'filetype',
     type: 'other',
-    width: 18,
-    height: 18,
+    width: 12,
+    height: 12,
   }),
   NewFolder: makeIcon({
     category: 'filetype',

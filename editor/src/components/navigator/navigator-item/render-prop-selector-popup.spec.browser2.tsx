@@ -7,13 +7,18 @@ import {
 } from '../../canvas/ui-jsx.test-utils'
 import { StoryboardFilePath } from '../../editor/store/editor-state'
 import * as EP from '../../../core/shared/element-path'
-import { mouseClickAtPoint, pressKey } from '../../canvas/event-helpers.test-utils'
+import {
+  mouseClickAtPoint,
+  mouseMoveToPoint,
+  pressKey,
+} from '../../canvas/event-helpers.test-utils'
 import {
   componentPickerCloseButtonTestId,
   componentPickerFilterInputTestId,
   componentPickerOptionTestId,
   componentPickerTestIdForProp,
 } from './component-picker'
+import { waitFor } from '@testing-library/react'
 
 describe('The navigator render prop picker', () => {
   const PreferredChildComponents = [
@@ -161,6 +166,9 @@ describe('The navigator render prop picker', () => {
     )
     await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
 
+    const moreButton = await waitFor(() => editor.renderedDOM.getByText('More...'))
+    await mouseClickAtPoint(moreButton, { x: 3, y: 3 })
+
     const renderPropPicker = editor.renderedDOM.queryByTestId(componentPickerTestIdForProp('title'))
     expect(renderPropPicker).not.toBeNull()
 
@@ -178,6 +186,9 @@ describe('The navigator render prop picker', () => {
       'toggle-render-prop-NavigatorItemTestId-slot_sb/card/prop_label_title',
     )
     await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
+
+    const moreButton = await waitFor(() => editor.renderedDOM.getByText('More...'))
+    await mouseClickAtPoint(moreButton, { x: 3, y: 3 })
 
     for (const childComponent of PreferredChildComponents) {
       const renderedOptionLabel = editor.renderedDOM.queryByTestId(
@@ -201,6 +212,9 @@ describe('The navigator render prop picker', () => {
       'toggle-render-prop-NavigatorItemTestId-slot_sb/card/prop_label_title',
     )
     await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
+
+    const moreButton = await waitFor(() => editor.renderedDOM.getByText('More...'))
+    await mouseClickAtPoint(moreButton, { x: 3, y: 3 })
 
     // Select the search bar
     const filterInput = editor.renderedDOM.getByTestId(componentPickerFilterInputTestId)
@@ -242,6 +256,9 @@ describe('The navigator render prop picker', () => {
     )
     await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
 
+    const moreButton = await waitFor(() => editor.renderedDOM.getByText('More...'))
+    await mouseClickAtPoint(moreButton, { x: 3, y: 3 })
+
     // Select the search bar
     const filterInput = editor.renderedDOM.getByTestId(componentPickerFilterInputTestId)
     filterInput.focus()
@@ -274,6 +291,9 @@ describe('The navigator render prop picker', () => {
     )
     await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
 
+    const moreButton = await waitFor(() => editor.renderedDOM.getByText('More...'))
+    await mouseClickAtPoint(moreButton, { x: 3, y: 3 })
+
     const renderPropPickerBefore = editor.renderedDOM.queryByTestId(
       componentPickerTestIdForProp('title'),
     )
@@ -296,6 +316,9 @@ describe('The navigator render prop picker', () => {
     )
     await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
 
+    const moreButton = await waitFor(() => editor.renderedDOM.getByText('More...'))
+    await mouseClickAtPoint(moreButton, { x: 3, y: 3 })
+
     const renderPropPickerBefore = editor.renderedDOM.queryByTestId(
       componentPickerTestIdForProp('title'),
     )
@@ -309,13 +332,16 @@ describe('The navigator render prop picker', () => {
     expect(renderPropPickerAfter).not.toBeNull()
   })
 
-  it('Selecting a component should insert that component into the render prop', async () => {
+  it('Selecting a component from the full picker should insert that component into the render prop', async () => {
     const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString('sb/card')])
     const emptySlot = editor.renderedDOM.getByTestId(
       'toggle-render-prop-NavigatorItemTestId-slot_sb/card/prop_label_title',
     )
     await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
+
+    const moreButton = await waitFor(() => editor.renderedDOM.getByText('More...'))
+    await mouseClickAtPoint(moreButton, { x: 3, y: 3 })
 
     const optionLabel = 'FlexRow'
     const optionVariantName = 'with three placeholders'
@@ -352,9 +378,109 @@ describe('The navigator render prop picker', () => {
             height: 87,
           }}
           title={
-            <FlexRow style={{ width: 100, height: 100 }}>
-              three totally real placeholders
-            </FlexRow>
+            <FlexRow>three totally real placeholders</FlexRow>
+          }
+        />
+      </Storyboard>
+    )
+    `),
+    )
+  })
+
+  it('Selecting a component with no variants from the simple picker should insert that component into the render prop', async () => {
+    const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
+    await selectComponentsForTest(editor, [EP.fromString('sb/card')])
+    const emptySlot = editor.renderedDOM.getByTestId(
+      'toggle-render-prop-NavigatorItemTestId-slot_sb/card/prop_label_title',
+    )
+    await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
+
+    const menuButton = await waitFor(() => editor.renderedDOM.getByText('FlexCol'))
+    await mouseClickAtPoint(menuButton, { x: 3, y: 3 })
+
+    await editor.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState(), StoryboardFilePath)).toEqual(
+      formatTestProjectCode(`
+    import * as React from 'react'
+    import { Storyboard } from 'utopia-api'
+    import { FlexCol } from '/src/utils'
+
+    export const Card = (props) => {
+      return (
+        <div style={props.style}>
+          {props.title}
+          {props.children}
+        </div>
+      )
+    }
+
+    export var storyboard = (
+      <Storyboard>
+        <Card
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 945,
+            top: 111,
+            width: 139,
+            height: 87,
+          }}
+          title={
+            <FlexCol />
+          }
+        />
+      </Storyboard>
+    )
+    `),
+    )
+  })
+
+  it('Selecting a component from the simple picker in a submenu should insert that component into the render prop', async () => {
+    const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
+    await selectComponentsForTest(editor, [EP.fromString('sb/card')])
+    const emptySlot = editor.renderedDOM.getByTestId(
+      'toggle-render-prop-NavigatorItemTestId-slot_sb/card/prop_label_title',
+    )
+    await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
+
+    const submenuButton = await waitFor(() => editor.renderedDOM.getByText('FlexRow'))
+    await mouseMoveToPoint(submenuButton, { x: 3, y: 3 })
+
+    const renderedOptionVariant = await waitFor(() =>
+      editor.renderedDOM.getByText('with three placeholders'),
+    )
+    await mouseClickAtPoint(renderedOptionVariant, { x: 2, y: 2 })
+    await editor.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState(), StoryboardFilePath)).toEqual(
+      formatTestProjectCode(`
+    import * as React from 'react'
+    import { Storyboard } from 'utopia-api'
+    import { FlexRow } from '/src/utils'
+
+    export const Card = (props) => {
+      return (
+        <div style={props.style}>
+          {props.title}
+          {props.children}
+        </div>
+      )
+    }
+
+    export var storyboard = (
+      <Storyboard>
+        <Card
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 945,
+            top: 111,
+            width: 139,
+            height: 87,
+          }}
+          title={
+            <FlexRow>three totally real placeholders</FlexRow>
           }
         />
       </Storyboard>

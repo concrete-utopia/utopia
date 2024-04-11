@@ -26,8 +26,6 @@ export const ExpandableIndicator: React.FunctionComponent<
       data-testid={props.testId}
       style={{
         ...props.style,
-        width: 18,
-        height: 18,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -35,7 +33,7 @@ export const ExpandableIndicator: React.FunctionComponent<
     >
       <Icn
         category='semantic'
-        type={`expansionarrow-${props.collapsed ? 'right' : 'down'}`}
+        type={`expansionarrow-small-${props.collapsed ? 'right' : 'down'}`}
         color={color}
         style={{
           pointerEvents: props.visible ? 'all' : 'none',

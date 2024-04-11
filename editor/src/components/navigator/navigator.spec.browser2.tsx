@@ -5032,6 +5032,10 @@ describe('Navigator', () => {
       )
 
       await mouseClickAtPoint(slotElement, { x: 3, y: 3 })
+
+      const moreButton = await waitFor(() => renderResult.renderedDOM.getByText('More...'))
+      await mouseClickAtPoint(moreButton, { x: 3, y: 3 })
+
       const renderPropOptionElement = await waitFor(() =>
         renderResult.renderedDOM.getByText('(empty)'),
       )
@@ -5073,6 +5077,10 @@ describe('Navigator', () => {
       )
 
       await mouseClickAtPoint(slotElement, { x: 3, y: 3 })
+
+      const moreButton = await waitFor(() => renderResult.renderedDOM.getByText('More...'))
+      await mouseClickAtPoint(moreButton, { x: 3, y: 3 })
+
       const renderPropOptionElement = await waitFor(() =>
         renderResult.renderedDOM.getByText('Span with Title'),
       )
@@ -5115,7 +5123,9 @@ describe('Navigator', () => {
 
       await mouseClickAtPoint(slotElement, { x: 3, y: 3 })
 
-      await mouseClickAtPoint(slotElement, { x: 3, y: 3 })
+      const moreButton = await waitFor(() => renderResult.renderedDOM.getByText('More...'))
+      await mouseClickAtPoint(moreButton, { x: 3, y: 3 })
+
       const renderPropOptionElement = await waitFor(() =>
         renderResult.renderedDOM.getByText('Heading with Title'),
       )
