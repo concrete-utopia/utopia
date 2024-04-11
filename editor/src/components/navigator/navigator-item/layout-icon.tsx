@@ -229,7 +229,7 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
     return (
       <div
         style={{
-          width: 18,
+          width: 12,
           height: 12,
           display: 'flex',
           alignItems: 'center',
