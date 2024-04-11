@@ -587,136 +587,6 @@ export const CanvasToolbar = React.memo(() => {
         <ElementsOutsideVisibleAreaIndicator />
         {unless(isMyProject, <ViewOnlyBadge />)}
       </div>
-      {/* Edit Mode submenus */}
-      {when(
-        canvasToolbarMode.primary === 'edit' &&
-          canvasToolbarMode.secondary === 'selected' &&
-          allowedToEdit,
-        <>
-          {when(
-            insertMenuMode === 'closed',
-            wrapInSubmenu(
-              <FlexRow
-                style={{
-                  gap: 25,
-                  padding: '0 18px',
-                  alignSelf: 'stretch',
-                }}
-              >
-                <FlexRow
-                  onClick={wrapInGroupCallback}
-                  css={{
-                    gap: 8,
-                    '&:hover': {
-                      color: colorTheme.dynamicBlue.value,
-                    },
-                  }}
-                >
-                  <Icn category='tools' type='group-action' width={18} height={18} />
-                  Group
-                </FlexRow>
-                <FlexRow
-                  onClick={openFloatingWrapInMenuCallback}
-                  css={{
-                    gap: 8,
-                    '&:hover': {
-                      color: colorTheme.dynamicBlue.value,
-                    },
-                  }}
-                >
-                  <Icn category='tools' type='wrap-action' width={18} height={18} />
-                  Wrap
-                </FlexRow>
-                <FlexRow
-                  onClick={openFloatingConvertMenuCallback}
-                  css={{
-                    gap: 8,
-                    '&:hover': {
-                      color: colorTheme.dynamicBlue.value,
-                    },
-                  }}
-                >
-                  <Icn category='tools' type='convert-action' width={18} height={18} />
-                  Swap
-                </FlexRow>
-                <FlexRow
-                  onClick={toggleAbsolutePositioningCallback}
-                  css={{
-                    gap: 8,
-                    '&:hover': {
-                      color: colorTheme.dynamicBlue.value,
-                    },
-                  }}
-                >
-                  <Icn category='tools' type='position-action' width={18} height={18} />
-                  Position
-                </FlexRow>
-              </FlexRow>,
-            ),
-          )}
-          {when(
-            insertMenuMode === 'wrap',
-            wrapInSubmenu(
-              <FlexRow style={{ padding: '0 8px' }}>
-                <Tooltip title='Back' placement='bottom'>
-                  <InsertModeButton
-                    iconCategory='semantic'
-                    iconType='icon-semantic-back'
-                    onClick={dispatchSwitchToSelectModeCloseMenus}
-                    style={{ width: undefined }}
-                  />
-                </Tooltip>
-                <Icn
-                  category='tools'
-                  type='wrap-action'
-                  width={18}
-                  height={18}
-                  style={{ marginRight: 10 }}
-                />
-
-                <Tooltip title='Wrap in div' placement='bottom'>
-                  <InsertModeButton
-                    testid={WrapInDivButtonTestId}
-                    iconType='div'
-                    onClick={wrapInDivAndClose}
-                  />
-                </Tooltip>
-                <Tile style={{ height: '100%' }}>
-                  <CanvasToolbarSearch actionWith={convertToAndClose} />
-                </Tile>
-              </FlexRow>,
-            ),
-          )}
-          {when(
-            insertMenuMode === 'swap',
-            wrapInSubmenu(
-              <FlexRow style={{ padding: '0 8px' }}>
-                <Tooltip title='Back' placement='bottom'>
-                  <InsertModeButton
-                    iconCategory='semantic'
-                    iconType='icon-semantic-back'
-                    onClick={dispatchSwitchToSelectModeCloseMenus}
-                    style={{ width: undefined }}
-                  />
-                </Tooltip>
-                <Icn
-                  category='tools'
-                  type='convert-action'
-                  width={18}
-                  height={18}
-                  style={{ marginRight: 10 }}
-                />
-                <Tooltip title='Swap to Fragment' placement='bottom'>
-                  <InsertModeButton iconType='fragment' onClick={convertToFragment} />
-                </Tooltip>
-                <Tile style={{ height: '100%' }}>
-                  <CanvasToolbarSearch actionWith={convertToAndClose} />
-                </Tile>
-              </FlexRow>,
-            ),
-          )}
-        </>,
-      )}
       {when(
         canvasToolbarMode.primary === 'edit' &&
           canvasToolbarMode.secondary === 'strategy-active' &&
@@ -770,8 +640,10 @@ export const CanvasToolbar = React.memo(() => {
             </FlexRow>,
           )
         : null}
-      {/* Live Mode */}
-      {canvasToolbarMode.primary === 'play' ? wrapInSubmenu(<RemixNavigationBar />) : null}
+      {/* Edit and Live Mode */}
+      {canvasToolbarMode.primary === 'edit' || canvasToolbarMode.primary === 'play'
+        ? wrapInSubmenu(<RemixNavigationBar />)
+        : null}
       <ToolbarSearchListing />
     </FlexColumn>
   )

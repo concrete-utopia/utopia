@@ -24,9 +24,9 @@ export const RemixNavigationBar = React.memo(() => {
   const [navigationControls] = useAtom(RemixNavigationAtom)
   const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
 
-  const isLiveMode = useEditorState(
+  const isSelectOrLiveMode = useEditorState(
     Substores.restOfEditor,
-    (store) => store.editor.mode.type === 'live',
+    (store) => store.editor.mode.type === 'select' || store.editor.mode.type === 'live',
     'RemixNavigationBar isLiveMode',
   )
 
@@ -47,7 +47,7 @@ export const RemixNavigationBar = React.memo(() => {
 
   const label = getRemixLocationLabel(pathname)
 
-  if (!isLiveMode || navigationControls == null || pathname == null) {
+  if (!isSelectOrLiveMode || navigationControls == null || pathname == null) {
     return null
   }
 
