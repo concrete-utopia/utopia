@@ -101,12 +101,12 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
   )
   const baseFontSize = 10
   const scaledFontSize = baseFontSize / scale
-  const scaledLineHeight = 17 / scale
+  const scaledLineHeight = 23 / scale
   const paddingY = scaledFontSize / 4
   const paddingX = paddingY * 2
   const offsetY = scaledFontSize / 1.5
   const offsetX = scaledFontSize / 2
-  const borderRadius = 3 / scale
+  const borderRadius = 5 / scale
 
   const storeRef = useRefEditorState((store) => {
     return {
@@ -194,11 +194,6 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
     }
   }, [onMouseUp])
 
-  const selectedBackgroundColor = sceneHasSingleChild
-    ? colorTheme.componentPurple05solid.value
-    : colorTheme.bg510solid.value
-  const backgroundColor = isSelected ? selectedBackgroundColor : 'transparent'
-
   if (frame != null && isFiniteRectangle(frame)) {
     return (
       <CanvasOffsetWrapper>
@@ -211,7 +206,8 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
           className='roleComponentName'
           style={{
             pointerEvents: labelSelectable ? 'initial' : 'none',
-            color: sceneHasSingleChild ? colorTheme.componentPurple.value : colorTheme.fg2.value,
+            color: sceneHasSingleChild ? colorTheme.primary.value : colorTheme.fg6.value,
+            backgroundColor: colorTheme.bg1subdued.value,
             position: 'absolute',
             fontWeight: 600,
             left: frame.x,
@@ -223,9 +219,9 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
             lineHeight: `${scaledLineHeight}px`,
             whiteSpace: 'nowrap',
             overflow: 'hidden',
-            textOverflow: 'ellipsis',
             borderRadius: borderRadius,
-            backgroundColor: backgroundColor,
+            textOverflow: 'ellipsis',
+            gap: 20,
           }}
         >
           <div
@@ -234,6 +230,13 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
             }}
           >
             {label}
+          </div>
+          <div
+            style={{
+              fontWeight: 400,
+            }}
+          >
+            1000px TODO FIX ME
           </div>
         </FlexRow>
       </CanvasOffsetWrapper>
