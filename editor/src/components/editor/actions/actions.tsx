@@ -378,6 +378,7 @@ import {
   modifyUnderlyingTargetJSXElement,
   getAllComponentDescriptorErrors,
   updatePackageJsonInEditorState,
+  createNewPageName,
 } from '../store/editor-state'
 import {
   areGeneratedElementsTargeted,
@@ -3848,18 +3849,27 @@ export const UPDATE_FNS = {
     )
   },
   ADD_NEW_PAGE: (action: AddNewPage, editor: EditorModel): EditorModel => {
+    const newPageName = createNewPageName()
+    const newFileName = `${newPageName}.jsx` // TODO maybe reuse the original extension?
+
+    const templateFile = getProjectFileByFilePath(editor.projectContents, action.template.path)
+    if (templateFile == null || !isTextFile(templateFile)) {
+      // nothing to do
+      return editor
+    }
+
     // 1. add the new page to the featured routes
     const withPackageJson = updatePackageJsonInEditorState(
       editor,
-      addNewFeaturedRouteToPackageJson(action.fileName),
+      addNewFeaturedRouteToPackageJson(newFileName),
     )
 
     // 2. write the new text file
     const withTextFile = addTextFile(
       withPackageJson,
       action.parentPath,
-      action.fileName,
-      codeFile(action.code, RevisionsState.CodeAhead),
+      newFileName,
+      codeFile(templateFile.fileContents.code, RevisionsState.CodeAhead),
     )
 
     // 3. open the text file

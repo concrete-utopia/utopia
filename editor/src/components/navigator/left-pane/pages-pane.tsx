@@ -38,9 +38,6 @@ import { useDispatch } from '../../editor/store/dispatch-context'
 import { addNewPage, showContextMenu } from '../../editor/actions/action-creators'
 import type { ElementContextMenuInstance } from '../../element-context-menu'
 import ReactDOM from 'react-dom'
-import { createNewPageName } from '../../editor/store/editor-state'
-import { getProjectFileByFilePath } from '../../assets'
-import { isTextFile } from '../../../core/shared/project-file-types'
 
 type RouteMatch = {
   path: string
@@ -184,7 +181,6 @@ interface PageRouteEntryProps {
 }
 const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
   const [navigationControls] = useAtom(RemixNavigationAtom)
-
   const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
 
   const onClick = React.useCallback(() => {
@@ -302,39 +298,31 @@ export const AddPageContextMenu = React.memo(
   }) => {
     const dispatch = useDispatch()
 
-    const projectContents = useEditorState(
-      Substores.projectContents,
-      (store) => store.editor.projectContents,
-      'AddPageContextMenu projectContents',
+    const addPageAction = React.useCallback(
+      (template: PageTemplate) => () => {
+        dispatch([addNewPage(`/app/routes`, template)])
+      },
+      [dispatch],
     )
 
     const portalTarget = document.getElementById(PortalTargetID)
     if (portalTarget == null) {
       return null
-    } else {
-      return ReactDOM.createPortal(
-        <MomentumContextMenu
-          id={contextMenuInstance}
-          key='add-page-context-menu'
-          items={pageTemplates.map((t) => ({
-            name: t.label,
-            enabled: true,
-            action: () => {
-              const newPageName = createNewPageName()
-              const newFileName = `${newPageName}.jsx` // TODO maybe reuse the original extension?
-
-              const templateFile = getProjectFileByFilePath(projectContents, t.path)
-              if (templateFile != null && isTextFile(templateFile)) {
-                const templateFileCode = templateFile.fileContents.code
-                dispatch([addNewPage(`/app/routes`, newFileName, templateFileCode, t.label)])
-              }
-            },
-          }))}
-          dispatch={dispatch}
-          getData={NO_OP}
-        />,
-        portalTarget,
-      )
     }
+
+    return ReactDOM.createPortal(
+      <MomentumContextMenu
+        id={contextMenuInstance}
+        key='add-page-context-menu'
+        items={pageTemplates.map((t) => ({
+          name: t.label,
+          enabled: true,
+          action: addPageAction(t),
+        }))}
+        dispatch={dispatch}
+        getData={NO_OP}
+      />,
+      portalTarget,
+    )
   },
 )

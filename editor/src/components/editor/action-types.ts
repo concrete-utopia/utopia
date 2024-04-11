@@ -80,6 +80,7 @@ import type { SetHuggingParentToFixed } from '../canvas/canvas-strategies/strate
 import type { MapLike } from 'typescript'
 import type { CommentFilterMode } from '../inspector/sections/comment-section'
 import type { Collaborator } from '../../core/shared/multiplayer'
+import type { PageTemplate } from '../../printer-parsers/html/external-resources-parser'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -694,10 +695,8 @@ export interface AddTextFile {
 
 export interface AddNewPage {
   action: 'ADD_NEW_PAGE'
-  fileName: string
   parentPath: string
-  code: string
-  label: string
+  template: PageTemplate
 }
 
 export interface SetMainUIFile {

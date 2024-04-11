@@ -252,6 +252,7 @@ import type { ProjectServerState } from '../store/project-server-state'
 import type { SetHuggingParentToFixed } from '../../canvas/canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
 import type { CommentFilterMode } from '../../inspector/sections/comment-section'
 import type { Collaborator } from '../../../core/shared/multiplayer'
+import type { PageTemplate } from '../../../printer-parsers/html/external-resources-parser'
 
 export function clearSelection(): EditorAction {
   return {
@@ -1117,18 +1118,11 @@ export function addTextFile(parentPath: string, fileName: string): AddTextFile {
   }
 }
 
-export function addNewPage(
-  parentPath: string,
-  fileName: string,
-  code: string,
-  label: string,
-): AddNewPage {
+export function addNewPage(parentPath: string, template: PageTemplate): AddNewPage {
   return {
     action: 'ADD_NEW_PAGE',
-    fileName: fileName,
+    template: template,
     parentPath: parentPath,
-    code: code,
-    label: label,
   }
 }
 
