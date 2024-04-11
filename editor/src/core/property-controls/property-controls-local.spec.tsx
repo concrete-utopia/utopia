@@ -68,7 +68,6 @@ describe('registered property controls', () => {
       '/src/card': {
         Card: {
           component: Card,
-          supportsChildren: false,
           properties: {
             label: {
               control: 'string-input',
@@ -194,7 +193,6 @@ describe('registered property controls', () => {
           '/src/card': {
             Card: {
               component: Card,
-              supportsChildren: false,
               properties: {
                 label: Utopia.stringControl('type here', {
                   required: true,
@@ -267,7 +265,6 @@ describe('registered property controls', () => {
       '/src/card': {
         Card: {
           component: Cart,
-          supportsChildren: false,
           properties: { },
           variants: [ ],
         },
@@ -320,7 +317,6 @@ describe('registered property controls', () => {
       '/src/card': {
         Card: {
           component: Card,
-          supportsChildren: false,
           properties: { },
           variants: [ ],
         },
@@ -433,7 +429,6 @@ describe('registered property controls', () => {
       '/src/card': {
         Cart: {
           component: Card,
-          supportsChildren: false,
           properties: { },
           variants: [ ],
         },
@@ -486,7 +481,6 @@ describe('registered property controls', () => {
       '/src/cardd': {
         Card: {
           component: Card,
-          supportsChildren: false,
           properties: { },
           variants: [ ],
         },
@@ -539,7 +533,6 @@ describe('registered property controls', () => {
       'utopia-api': {
         Vieww: {
           component: View,
-          supportsChildren: false,
           properties: { },
           variants: [ ],
         },
@@ -592,7 +585,6 @@ describe('registered property controls', () => {
       'utopia-apii': {
         View: {
           component: View,
-          supportsChildren: false,
           properties: { },
           variants: [ ],
         },
@@ -645,7 +637,6 @@ describe('registered property controls', () => {
       '/src/card': {
         Cart: {
           component: Card,
-          supportsChildren: false,
           properties: { },
           variants: [ ],
         },
@@ -698,7 +689,6 @@ describe('registered property controls', () => {
       '/src/card': {
         Cart: {
           component: Card,
-          supportsChildren: false,
           properties: { },
           variants: [ ],
         },
@@ -713,7 +703,6 @@ describe('registered property controls', () => {
       '/src/card': {
         Card: {
           component: Card,
-          supportsChildren: false,
           properties: { },
           variants: [ ],
         },
@@ -752,7 +741,6 @@ describe('registered property controls', () => {
       '/src/card': {
         Card: {
           component: Card,
-          supportsChildren: false,
           properties: {
             label: Utopia.stringControl(),
             background: {
@@ -869,7 +857,6 @@ describe('registered property controls', () => {
       '/src/card': {
         Card: {
           component: Card,
-          supportsChildren: false,
           properties: {
             label: {
               control: 'string-input',
@@ -942,7 +929,6 @@ describe('registered property controls', () => {
         '/src/card': {
           Card: {
             component: Card,
-            supportsChildren: false,
             properties: {
               label: {
                 control: 'string-input',
@@ -1021,7 +1007,6 @@ describe('registered property controls', () => {
           '/src/card': {
             Card: {
               component: Card,
-              supportsChildren: false,
               properties: {
                 label: {
                   control: 'string-input',
@@ -1057,7 +1042,6 @@ describe('registered property controls', () => {
           '/src/card2': {
             Card2: {
               component: Card2,
-              supportsChildren: false,
               properties: {
                 label: {
                   control: 'string-input',
@@ -1112,13 +1096,11 @@ describe('Lifecycle management of registering components', () => {
       '/src/card': {
         Card: {
           component: Card,
-          supportsChildren: false,
           properties: {
             label: {
               control: 'string-input',
             },
           },
-          variants: [],
         },
       },
     }
@@ -1131,13 +1113,11 @@ describe('Lifecycle management of registering components', () => {
     '/src/card2': {
       Card2: {
         component: Card2,
-        supportsChildren: false,
         properties: {
           label: {
             control: 'string-input',
           },
         },
-        variants: [],
       },
     },
   }
@@ -1183,13 +1163,11 @@ describe('Lifecycle management of registering components', () => {
       '/src/card2': {
         Card2: {
           component: Card2,
-          supportsChildren: false,
           properties: {
             label: {
               control: 'string-input',
             },
           },
-          variants: [],
         },
       },
     }
@@ -1204,13 +1182,11 @@ describe('Lifecycle management of registering components', () => {
       '/src/card': {
         Card: {
           component: Card,
-          supportsChildren: false,
           properties: {
             label: {
               control: 'string-input',
             },
           },
-          variants: [],
         },
       },
     }
@@ -1254,13 +1230,11 @@ describe('Lifecycle management of registering components', () => {
       '/src/card': {
         Card: {
           component: Card,
-          supportsChildren: false,
           properties: {
             label2: {
               control: 'string-input',
             },
           },
-          variants: [],
         },
       },
     }
@@ -1307,13 +1281,11 @@ describe('Lifecycle management of registering components', () => {
       '/src/card': {
         Card: {
           component: Card,
-          supportsChildren: false,
           properties: {
             label: {
               control: 'string-input',
             },
           },
-          variants: [],
         },
       },
     }
@@ -1347,23 +1319,19 @@ describe('Lifecycle management of registering components', () => {
       '/src/card': {
         Card: {
           component: Card,
-          supportsChildren: false,
           properties: {
             label2: {
               control: 'string-input',
             },
           },
-          variants: [],
         },
         NewCard: {
           component: NewCard,
-          supportsChildren: false,
           properties: {
             label2: {
               control: 'string-input',
             },
           },
-          variants: [],
         },
       },
     }
@@ -1404,23 +1372,19 @@ describe('Lifecycle management of registering components', () => {
       '/src/card': {
         Card: {
           component: Card,
-          supportsChildren: false,
           properties: {
             label: {
               control: 'string-input',
             },
           },
-          variants: [],
         },
         CardToDelete: {
           component: CardToDelete,
-          supportsChildren: false,
           properties: {
             label2: {
               control: 'string-input',
             },
           },
-          variants: [],
         },
       },
     }
@@ -1457,13 +1421,11 @@ describe('Lifecycle management of registering components', () => {
       '/src/card': {
         Card: {
           component: Card,
-          supportsChildren: false,
           properties: {
             label2: {
               control: 'string-input',
             },
           },
-          variants: [],
         },
       },
     }
@@ -1503,13 +1465,11 @@ describe('Lifecycle management of registering components', () => {
       '/src/card': {
         Card: {
           component: Card,
-          supportsChildren: false,
           properties: {
             label: {
               control: 'string-input',
             },
           },
-          variants: [],
         },
       },
     }
@@ -1550,25 +1510,21 @@ describe('Lifecycle management of registering components', () => {
       '/src/card': {
         Card: {
           component: Card,
-          supportsChildren: false,
           properties: {
             label2: {
               control: 'string-input',
             },
           },
-          variants: [],
         },
       },
       '/src/new-module': {
         NewCard: {
           component: NewCard,
-          supportsChildren: false,
           properties: {
             label: {
               control: 'string-input',
             },
           },
-          variants: [],
         },
       },
     }
@@ -1616,13 +1572,11 @@ describe('Lifecycle management of registering components', () => {
       '/src/card': {
         Card: {
           component: Card,
-          supportsChildren: false,
           properties: {
             label: {
               control: 'string-input',
             },
           },
-          variants: [],
         },
       },
       
@@ -1663,13 +1617,11 @@ describe('Lifecycle management of registering components', () => {
       '/src/card': {
         Card: {
           component: Card,
-          supportsChildren: false,
           properties: {
             label2: {
               control: 'string-input',
             },
           },
-          variants: [],
         },
       },
     }
@@ -1715,13 +1667,11 @@ describe('Lifecycle management of registering components', () => {
       '/src/card': {
         Card: {
           component: Card,
-          supportsChildren: false,
           properties: {
             label: {
               control: 'string-input',
             },
           },
-          variants: [],
         },
       },
     }
@@ -1763,13 +1713,11 @@ describe('Lifecycle management of registering components', () => {
       '/src/card': {
         Card: {
           component: Card,
-          supportsChildren: false,
           properties: {
             label: {
               control: 'string-input',
             },
           },
-          variants: [],
         },
       },
     }
@@ -1805,13 +1753,11 @@ describe('Lifecycle management of registering components', () => {
       '/src/card': {
         Card: {
           component: Card,
-          supportsChildren: false,
           properties: {
             label: {
               control: 'string-input',
             },
           },
-          variants: [],
         },
       },
     }
