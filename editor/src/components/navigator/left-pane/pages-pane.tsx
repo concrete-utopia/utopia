@@ -145,9 +145,7 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
     <FlexRow
       style={{
         flexShrink: 0,
-        color: props.matchesRealRoute
-          ? colorTheme.neutralForeground.value
-          : colorTheme.subduedForeground.value,
+        color: colorTheme.neutralForeground.value,
         backgroundColor: props.active ? colorTheme.subtleBackground.value : 'transparent',
         marginLeft: 8,
         marginRight: 8,
