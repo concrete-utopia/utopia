@@ -440,12 +440,11 @@ function errorsFromComponentRegistration(
       case 'no-exported-component-descriptors':
         return [simpleErrorMessage(fileName, `Cannot extract default export from file`)]
       case 'invalid-schema':
+        const errorDetails = getParseErrorDetails(error.invalidSchemaError)
         return [
           simpleErrorMessage(
             fileName,
-            `Malformed component registration: ${
-              getParseErrorDetails(error.invalidSchemaError).description
-            }`,
+            `Malformed component registration: ${errorDetails.path}: ${errorDetails.description}`,
           ),
         ]
       case 'cannot-extract-component':

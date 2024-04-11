@@ -370,6 +370,60 @@ describe('registered property controls', () => {
 
     expect(srcCardKey).toBeUndefined()
   })
+  it('control registration fails when there is an invalid schema error', async () => {
+    const renderResult = await renderTestEditorWithModel(
+      project({
+        ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
+        
+        const Components = {
+      '/src/card': {
+        Card: {
+          component: Card,
+          supportsChildren: false,
+          properties: {
+            label: 'foo',
+          },
+          variants: [ ],
+        },
+      },
+    }
+    
+    export default Components
+  `,
+      }),
+      'await-first-dom-report',
+    )
+    const editorState = renderResult.getEditorState().editor
+
+    expect(editorState.codeEditorErrors).toEqual({
+      buildErrors: {},
+      lintErrors: {},
+      componentDescriptorErrors: {
+        '/utopia/components.utopia.js': [
+          {
+            codeSnippet: '',
+            endColumn: null,
+            endLine: null,
+            errorCode: '',
+            fileName: '/utopia/components.utopia.js',
+            message: 'Malformed component registration: Card.properties.label: Not an object.',
+            passTime: null,
+            severity: 'fatal',
+            source: 'component-descriptor',
+            startColumn: null,
+            startLine: null,
+            type: '',
+          },
+        ],
+      },
+    })
+
+    const srcCardKey = Object.keys(renderResult.getEditorState().editor.propertyControlsInfo).find(
+      (key) => key === '/src/card',
+    )
+
+    expect(srcCardKey).toBeUndefined()
+  })
   it('control registration fails when the imported internal component does not match the name of registration key', async () => {
     const renderResult = await renderTestEditorWithModel(
       project({
