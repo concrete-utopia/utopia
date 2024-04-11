@@ -249,10 +249,11 @@ function useRoutesWithIdEquality(
       return nextRoutes
     }
 
-    let prevIdsSet = new Set(previousRoutes.current.map((r) => r.id ?? '0'))
-    let currentIdsSet = new Set(nextRoutes.map((r) => r.id ?? '0'))
+    const prevIdsSet = traverseRoutesAndGetIDs(previousRoutes.current)
+    const currentIdsSet = traverseRoutesAndGetIDs(nextRoutes)
 
-    const same = [...prevIdsSet].every((id) => currentIdsSet.has(id))
+    const same =
+      prevIdsSet.size === currentIdsSet.size && [...prevIdsSet].every((id) => currentIdsSet.has(id))
 
     if (!same) {
       previousRoutes.current = nextRoutes
@@ -263,6 +264,25 @@ function useRoutesWithIdEquality(
   }, [nextRoutes])
 
   return routes
+}
+
+interface RouteLike {
+  id?: string
+  children?: RouteLike[]
+}
+
+function traverseRoutesAndGetIDs(routes: RouteLike[]) {
+  function traverse(route: RouteLike, ids: Set<string>) {
+    ids.add(route.id ?? '0')
+    if (route.children != null && route.children.length > 0) {
+      route.children.forEach((c) => traverse(c, ids))
+    }
+  }
+
+  const routeIds = new Set<string>()
+  routes.forEach((node) => traverse(node, routeIds))
+
+  return routeIds
 }
 
 export interface UtopiaRemixRootComponentProps {
@@ -281,7 +301,10 @@ export const UtopiaRemixRootComponent = (props: UtopiaRemixRootComponentProps) =
 
   const [navigationData, setNavigationData] = useAtom(RemixNavigationAtom)
 
-  const currentEntries = navigationData[EP.toString(basePath)]?.entries
+  const currentEntries = React.useMemo(
+    () => navigationData[EP.toString(basePath)]?.entries,
+    [navigationData, basePath],
+  )
   const currentEntriesRef = React.useRef(currentEntries)
   currentEntriesRef.current = currentEntries
 
