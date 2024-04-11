@@ -19,6 +19,7 @@ import {
   UtopiaTheme,
   colorTheme,
 } from '../../../uuiui'
+import type { PageTemplate } from '../../canvas/remix/remix-utils'
 import { RemixIndexPathLabel } from '../../canvas/remix/remix-utils'
 import {
   ActiveRemixSceneAtom,
@@ -26,7 +27,6 @@ import {
 } from '../../canvas/remix/utopia-remix-root-component'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { ExpandableIndicator } from '../navigator-item/expandable-indicator'
-import type { PageTemplate } from '../../../printer-parsers/html/external-resources-parser'
 import {
   getFeaturedRoutesFromPackageJSON,
   getPageTemplatesFromPackageJSON,

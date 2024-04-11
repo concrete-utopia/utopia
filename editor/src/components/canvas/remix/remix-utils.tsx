@@ -498,3 +498,10 @@ export function addNewFeaturedRouteToPackageJson(fileName: string) {
     return JSON.stringify(parsedJSON, null, 2)
   }
 }
+
+export type PageTemplate = { label: string; path: string }
+
+export function isPageTemplate(u: unknown): u is PageTemplate {
+  const maybe = u as PageTemplate
+  return u != null && typeof u == 'object' && maybe.label != null && maybe.path != null
+}
