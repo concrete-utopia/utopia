@@ -457,7 +457,7 @@ function createComponentIconProps(
     autoFocusedPaths,
     filePathMappings,
   )
-  if (isComponent && !isConditional) {
+  if (isComponent) {
     return {
       category: 'navigator-element',
       type: 'component-solid',

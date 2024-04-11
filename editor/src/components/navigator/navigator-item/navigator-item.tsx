@@ -964,7 +964,7 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         height: 22,
         paddingLeft: 5,
         paddingRight: props.codeItemType === 'map' ? 0 : 5,
-        backgroundColor: backgroundLozengeColor,
+        // backgroundColor: backgroundLozengeColor,
         color: textColor,
         textTransform: isCodeItem ? 'uppercase' : undefined,
       }}
