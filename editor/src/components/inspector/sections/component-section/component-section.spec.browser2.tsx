@@ -25,6 +25,7 @@ import { StoryboardFilePath } from '../../../editor/store/editor-state'
 import { applyPrettier } from 'utopia-vscode-common'
 import { ImagePreviewTestId } from './property-content-preview'
 
+// describe.only('Set element prop via the data picker', () => {
 describe('Set element prop via the data picker', () => {
   it('can pick from the property data picker', async () => {
     function checkIsItalicised(testID: string, shouldBeItalicised: boolean): void {
@@ -615,7 +616,6 @@ describe('Set element prop via the data picker', () => {
           '/utopia/storyboard': {
             Title: {
               component: Title,
-              supportsChildren: false,
               properties: {
                 text: {
                   control: 'jsx',
@@ -623,6 +623,8 @@ describe('Set element prop via the data picker', () => {
               },
               variants: [
                 {
+                  label: 'title',
+                  imports: 'import { Title } from "/utopia/storyboard"',
                   code: '<Title />',
                 },
               ],
@@ -773,6 +775,7 @@ describe('Set element prop via the data picker', () => {
 //   })
 // })
 
+// describe.only('Controls from registering components', () => {
 describe('Controls from registering components', () => {
   it('registering internal component', async () => {
     const editor = await renderTestEditorWithModel(
@@ -945,16 +948,11 @@ describe('Controls from registering components', () => {
                 control: 'array',
                 propertyControl: {
                   control: 'jsx',
-                  preferredChildComponents: [
-                    {
-                      name: 'span',
-                      variants: [{ code: '<span>Title</span>' }],
-                    },
-                  ],
+                  preferredContents: [{ label: 'span', code: '<span>Title</span>' }],
                 },
               },
             },
-            supportsChildren: true,
+            children: 'supported',
             variants: [],
           },
         },
