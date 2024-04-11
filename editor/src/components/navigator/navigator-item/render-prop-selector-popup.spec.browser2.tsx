@@ -46,7 +46,7 @@ describe('The navigator render prop picker', () => {
       label: 'FlexCol',
       variants: [
         {
-          label: 'FlexCol',
+          label: 'Basic FlexCol',
           imports: 'import { FlexCol } from "/src/utils"',
           code: '<FlexCol />',
         },
@@ -395,7 +395,7 @@ describe('The navigator render prop picker', () => {
     )
     await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
 
-    const menuButton = await waitFor(() => editor.renderedDOM.getByText('FlexCol'))
+    const menuButton = await waitFor(() => editor.renderedDOM.getByText('Basic FlexCol'))
     await mouseClickAtPoint(menuButton, { x: 3, y: 3 })
 
     await editor.getDispatchFollowUpActionsFinished()
