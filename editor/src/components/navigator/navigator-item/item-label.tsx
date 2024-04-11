@@ -162,9 +162,9 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
     triggerRenameComponent()
   }, [triggerRenameComponent])
 
-  function onInputLabelChange(event: React.ChangeEvent<HTMLInputElement>) {
+  const onInputLabelChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setName(event.target.value)
-  }
+  }, [])
 
   const isActiveBranchOfOverriddenConditional = useEditorState(
     Substores.metadata,
@@ -253,7 +253,6 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
             value={name}
             onKeyDown={onInputLabelKeyDown}
             onBlur={onInputLabelBlur}
-            /* eslint-disable-next-line react/jsx-no-bind */
             onChange={onInputLabelChange}
           />
         </div>
