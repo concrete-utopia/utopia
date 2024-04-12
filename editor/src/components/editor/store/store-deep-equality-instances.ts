@@ -139,6 +139,9 @@ import type {
   EarlyReturnResult,
   EarlyReturnVoid,
   JSArbitraryStatement,
+  JSOpaqueArbitraryStatement,
+  JSAssignmentStatement,
+  JSAssignment,
 } from '../../../core/shared/element-template'
 import {
   elementInstanceMetadata,
@@ -206,7 +209,9 @@ import {
   isJSPropertyAccess,
   isJSElementAccess,
   earlyReturnResult,
-  jsArbitraryStatement,
+  jsOpaqueArbitraryStatement,
+  jsAssignmentStatement,
+  jsAssignment,
 } from '../../../core/shared/element-template'
 import type {
   CanvasRectangle,
@@ -938,19 +943,63 @@ export const RawSourceMapKeepDeepEquality: KeepDeepEqualityCall<RawSourceMap> =
     },
   )
 
-export const JSArbitraryStatementKeepDeepEqualityCall: KeepDeepEqualityCall<JSArbitraryStatement> =
-  combine3EqualityCalls(
+export function JSAssignmentKeepDeepEqualityCall(): KeepDeepEqualityCall<JSAssignment> {
+  return combine2EqualityCalls(
+    (assignment) => assignment.leftHandSide,
+    JSIdentifierKeepDeepEquality(),
+    (assignment) => assignment.rightHandSide,
+    JSExpressionKeepDeepEqualityCall,
+    jsAssignment,
+  )
+}
+
+export function JSAssignmentStatementKeepDeepEqualityCall(): KeepDeepEqualityCall<JSAssignmentStatement> {
+  return combine3EqualityCalls(
+    (statement) => statement.declarationKeyword,
+    createCallWithTripleEquals<'let' | 'const' | 'var'>(),
+    (statement) => statement.assignments,
+    arrayDeepEquality(JSAssignmentKeepDeepEqualityCall()),
+    (statement) => statement.uid,
+    createCallWithTripleEquals<string>(),
+    jsAssignmentStatement,
+  )
+}
+
+export const JSOpaqueArbitraryStatementKeepDeepEqualityCall: KeepDeepEqualityCall<JSOpaqueArbitraryStatement> =
+  combine4EqualityCalls(
     (statement) => statement.originalJavascript,
     createCallWithTripleEquals<string>(),
     (statement) => statement.definedWithin,
     arrayDeepEquality(createCallWithTripleEquals<string>()),
     (statement) => statement.definedElsewhere,
     arrayDeepEquality(createCallWithTripleEquals<string>()),
-    jsArbitraryStatement,
+    (statement) => statement.uid,
+    createCallWithTripleEquals<string>(),
+    jsOpaqueArbitraryStatement,
   )
 
+export const JSArbitraryStatementKeepDeepEqualityCall: KeepDeepEqualityCall<
+  JSArbitraryStatement
+> = (oldValue, newValue) => {
+  switch (oldValue.type) {
+    case 'JS_OPAQUE_ARBITRARY_STATEMENT':
+      if (oldValue.type === newValue.type) {
+        return JSOpaqueArbitraryStatementKeepDeepEqualityCall(oldValue, newValue)
+      }
+      break
+    case 'JS_ASSIGNMENT_STATEMENT':
+      if (oldValue.type === newValue.type) {
+        return JSAssignmentStatementKeepDeepEqualityCall()(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
 export function JSExpressionOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqualityCall<JSExpressionOtherJavaScript> {
-  return combine10EqualityCalls(
+  return combine9EqualityCalls(
     (attribute) => attribute.params,
     arrayDeepEquality(ParamKeepDeepEquality()),
     (attribute) => attribute.originalJavascript,
@@ -967,8 +1016,6 @@ export function JSExpressionOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqual
     ElementsWithinKeepDeepEqualityCall(),
     (block) => block.comments,
     ParsedCommentsKeepDeepEqualityCall,
-    (attribute) => attribute.statements,
-    arrayDeepEquality(JSArbitraryStatementKeepDeepEqualityCall),
     (attribute) => attribute.uid,
     createCallWithTripleEquals(),
     jsExpressionOtherJavaScript,

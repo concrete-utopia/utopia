@@ -4364,7 +4364,7 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6 utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6/aaa utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6/aaa/e0c utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6/aaa/e0c/bbb utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6/aaa/e0c/bbb/2eb\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61 utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61/aaa utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61/aaa/d43 utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61/aaa/d43/bbb utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61/aaa/d43/bbb/8f4\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -4397,69 +4397,69 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
       >
         <div
           data-uid=\\"aaa~~~1\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6/aaa~~~1\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61/aaa~~~1\\"
         >
           <div
             data-uid=\\"bbb~~~1\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6/aaa~~~1/e0c/bbb~~~1\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61/aaa~~~1/d43/bbb~~~1\\"
           >
             4
           </div>
           <div
             data-uid=\\"bbb~~~2\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6/aaa~~~1/e0c/bbb~~~2\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61/aaa~~~1/d43/bbb~~~2\\"
           >
             5
           </div>
           <div
             data-uid=\\"bbb~~~3\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6/aaa~~~1/e0c/bbb~~~3\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61/aaa~~~1/d43/bbb~~~3\\"
           >
             6
           </div>
         </div>
         <div
           data-uid=\\"aaa~~~2\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6/aaa~~~2\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61/aaa~~~2\\"
         >
           <div
             data-uid=\\"bbb~~~1\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6/aaa~~~2/e0c/bbb~~~1\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61/aaa~~~2/d43/bbb~~~1\\"
           >
             8
           </div>
           <div
             data-uid=\\"bbb~~~2\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6/aaa~~~2/e0c/bbb~~~2\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61/aaa~~~2/d43/bbb~~~2\\"
           >
             10
           </div>
           <div
             data-uid=\\"bbb~~~3\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6/aaa~~~2/e0c/bbb~~~3\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61/aaa~~~2/d43/bbb~~~3\\"
           >
             12
           </div>
         </div>
         <div
           data-uid=\\"aaa~~~3\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6/aaa~~~3\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61/aaa~~~3\\"
         >
           <div
             data-uid=\\"bbb~~~1\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6/aaa~~~3/e0c/bbb~~~1\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61/aaa~~~3/d43/bbb~~~1\\"
           >
             12
           </div>
           <div
             data-uid=\\"bbb~~~2\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6/aaa~~~3/e0c/bbb~~~2\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61/aaa~~~3/d43/bbb~~~2\\"
           >
             15
           </div>
           <div
             data-uid=\\"bbb~~~3\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6/aaa~~~3/e0c/bbb~~~3\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61/aaa~~~3/d43/bbb~~~3\\"
           >
             18
           </div>
@@ -4903,17 +4903,6 @@ Object {
                               ],
                               "version": 3,
                             },
-                            "statements": Array [
-                              Object {
-                                "definedElsewhere": Array [
-                                  "n",
-                                  "m",
-                                ],
-                                "definedWithin": Array [],
-                                "originalJavascript": "n * m",
-                                "type": "JS_ARBITRARY_STATEMENT",
-                              },
-                            ],
                             "transpiledJavascript": "return n * m;",
                             "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                             "uid": "",
@@ -5239,7 +5228,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -5331,17 +5320,6 @@ Object {
                           ],
                           "version": 3,
                         },
-                        "statements": Array [
-                          Object {
-                            "definedElsewhere": Array [
-                              "n",
-                              "m",
-                            ],
-                            "definedWithin": Array [],
-                            "originalJavascript": "n * m",
-                            "type": "JS_ARBITRARY_STATEMENT",
-                          },
-                        ],
                         "transpiledJavascript": "return n * m;",
                         "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                         "uid": "",
@@ -5565,7 +5543,7 @@ Object {
         ],
         Array [
           "zzz",
-          "cc6",
+          "a61",
         ],
       ],
       "type": "elementpath",
@@ -5635,7 +5613,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6/aaa~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61/aaa~~~1": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -5717,17 +5695,6 @@ Object {
                       ],
                       "version": 3,
                     },
-                    "statements": Array [
-                      Object {
-                        "definedElsewhere": Array [
-                          "n",
-                          "m",
-                        ],
-                        "definedWithin": Array [],
-                        "originalJavascript": "n * m",
-                        "type": "JS_ARBITRARY_STATEMENT",
-                      },
-                    ],
                     "transpiledJavascript": "return n * m;",
                     "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                     "uid": "",
@@ -5871,7 +5838,7 @@ Object {
         ],
         Array [
           "zzz",
-          "cc6",
+          "a61",
           "aaa~~~1",
         ],
       ],
@@ -5946,7 +5913,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6/aaa~~~1/e0c": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61/aaa~~~1/d43": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -6026,17 +5993,6 @@ Object {
                   ],
                   "version": 3,
                 },
-                "statements": Array [
-                  Object {
-                    "definedElsewhere": Array [
-                      "n",
-                      "m",
-                    ],
-                    "definedWithin": Array [],
-                    "originalJavascript": "n * m",
-                    "type": "JS_ARBITRARY_STATEMENT",
-                  },
-                ],
                 "transpiledJavascript": "return n * m;",
                 "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                 "uid": "",
@@ -6151,9 +6107,9 @@ Object {
         ],
         Array [
           "zzz",
-          "cc6",
+          "a61",
           "aaa~~~1",
-          "e0c",
+          "d43",
         ],
       ],
       "type": "elementpath",
@@ -6223,7 +6179,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6/aaa~~~1/e0c/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61/aaa~~~1/d43/bbb~~~1": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -6292,17 +6248,6 @@ Object {
               ],
               "version": 3,
             },
-            "statements": Array [
-              Object {
-                "definedElsewhere": Array [
-                  "n",
-                  "m",
-                ],
-                "definedWithin": Array [],
-                "originalJavascript": "n * m",
-                "type": "JS_ARBITRARY_STATEMENT",
-              },
-            ],
             "transpiledJavascript": "return n * m;",
             "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
             "uid": "",
@@ -6346,9 +6291,9 @@ Object {
         ],
         Array [
           "zzz",
-          "cc6",
+          "a61",
           "aaa~~~1",
-          "e0c",
+          "d43",
           "bbb~~~1",
         ],
       ],
@@ -6423,7 +6368,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6/aaa~~~1/e0c/bbb~~~1/2eb": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61/aaa~~~1/d43/bbb~~~1/8f4": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -6490,17 +6435,6 @@ Object {
           ],
           "version": 3,
         },
-        "statements": Array [
-          Object {
-            "definedElsewhere": Array [
-              "n",
-              "m",
-            ],
-            "definedWithin": Array [],
-            "originalJavascript": "n * m",
-            "type": "JS_ARBITRARY_STATEMENT",
-          },
-        ],
         "transpiledJavascript": "return n * m;",
         "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
         "uid": "",
@@ -6515,11 +6449,11 @@ Object {
         ],
         Array [
           "zzz",
-          "cc6",
+          "a61",
           "aaa~~~1",
-          "e0c",
+          "d43",
           "bbb~~~1",
-          "2eb",
+          "8f4",
         ],
       ],
       "type": "elementpath",
@@ -6589,7 +6523,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6/aaa~~~1/e0c/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61/aaa~~~1/d43/bbb~~~2": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -6658,17 +6592,6 @@ Object {
               ],
               "version": 3,
             },
-            "statements": Array [
-              Object {
-                "definedElsewhere": Array [
-                  "n",
-                  "m",
-                ],
-                "definedWithin": Array [],
-                "originalJavascript": "n * m",
-                "type": "JS_ARBITRARY_STATEMENT",
-              },
-            ],
             "transpiledJavascript": "return n * m;",
             "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
             "uid": "",
@@ -6712,9 +6635,9 @@ Object {
         ],
         Array [
           "zzz",
-          "cc6",
+          "a61",
           "aaa~~~1",
-          "e0c",
+          "d43",
           "bbb~~~2",
         ],
       ],
@@ -6789,7 +6712,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6/aaa~~~1/e0c/bbb~~~2/2eb": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61/aaa~~~1/d43/bbb~~~2/8f4": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -6856,17 +6779,6 @@ Object {
           ],
           "version": 3,
         },
-        "statements": Array [
-          Object {
-            "definedElsewhere": Array [
-              "n",
-              "m",
-            ],
-            "definedWithin": Array [],
-            "originalJavascript": "n * m",
-            "type": "JS_ARBITRARY_STATEMENT",
-          },
-        ],
         "transpiledJavascript": "return n * m;",
         "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
         "uid": "",
@@ -6881,11 +6793,11 @@ Object {
         ],
         Array [
           "zzz",
-          "cc6",
+          "a61",
           "aaa~~~1",
-          "e0c",
+          "d43",
           "bbb~~~2",
-          "2eb",
+          "8f4",
         ],
       ],
       "type": "elementpath",
@@ -6955,7 +6867,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6/aaa~~~1/e0c/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61/aaa~~~1/d43/bbb~~~3": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -7024,17 +6936,6 @@ Object {
               ],
               "version": 3,
             },
-            "statements": Array [
-              Object {
-                "definedElsewhere": Array [
-                  "n",
-                  "m",
-                ],
-                "definedWithin": Array [],
-                "originalJavascript": "n * m",
-                "type": "JS_ARBITRARY_STATEMENT",
-              },
-            ],
             "transpiledJavascript": "return n * m;",
             "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
             "uid": "",
@@ -7078,9 +6979,9 @@ Object {
         ],
         Array [
           "zzz",
-          "cc6",
+          "a61",
           "aaa~~~1",
-          "e0c",
+          "d43",
           "bbb~~~3",
         ],
       ],
@@ -7155,7 +7056,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6/aaa~~~1/e0c/bbb~~~3/2eb": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61/aaa~~~1/d43/bbb~~~3/8f4": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -7222,17 +7123,6 @@ Object {
           ],
           "version": 3,
         },
-        "statements": Array [
-          Object {
-            "definedElsewhere": Array [
-              "n",
-              "m",
-            ],
-            "definedWithin": Array [],
-            "originalJavascript": "n * m",
-            "type": "JS_ARBITRARY_STATEMENT",
-          },
-        ],
         "transpiledJavascript": "return n * m;",
         "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
         "uid": "",
@@ -7247,11 +7137,11 @@ Object {
         ],
         Array [
           "zzz",
-          "cc6",
+          "a61",
           "aaa~~~1",
-          "e0c",
+          "d43",
           "bbb~~~3",
-          "2eb",
+          "8f4",
         ],
       ],
       "type": "elementpath",
@@ -7321,7 +7211,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6/aaa~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61/aaa~~~2": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -7403,17 +7293,6 @@ Object {
                       ],
                       "version": 3,
                     },
-                    "statements": Array [
-                      Object {
-                        "definedElsewhere": Array [
-                          "n",
-                          "m",
-                        ],
-                        "definedWithin": Array [],
-                        "originalJavascript": "n * m",
-                        "type": "JS_ARBITRARY_STATEMENT",
-                      },
-                    ],
                     "transpiledJavascript": "return n * m;",
                     "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                     "uid": "",
@@ -7557,7 +7436,7 @@ Object {
         ],
         Array [
           "zzz",
-          "cc6",
+          "a61",
           "aaa~~~2",
         ],
       ],
@@ -7632,7 +7511,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6/aaa~~~2/e0c": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61/aaa~~~2/d43": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -7712,17 +7591,6 @@ Object {
                   ],
                   "version": 3,
                 },
-                "statements": Array [
-                  Object {
-                    "definedElsewhere": Array [
-                      "n",
-                      "m",
-                    ],
-                    "definedWithin": Array [],
-                    "originalJavascript": "n * m",
-                    "type": "JS_ARBITRARY_STATEMENT",
-                  },
-                ],
                 "transpiledJavascript": "return n * m;",
                 "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                 "uid": "",
@@ -7837,9 +7705,9 @@ Object {
         ],
         Array [
           "zzz",
-          "cc6",
+          "a61",
           "aaa~~~2",
-          "e0c",
+          "d43",
         ],
       ],
       "type": "elementpath",
@@ -7909,7 +7777,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6/aaa~~~2/e0c/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61/aaa~~~2/d43/bbb~~~1": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -7978,17 +7846,6 @@ Object {
               ],
               "version": 3,
             },
-            "statements": Array [
-              Object {
-                "definedElsewhere": Array [
-                  "n",
-                  "m",
-                ],
-                "definedWithin": Array [],
-                "originalJavascript": "n * m",
-                "type": "JS_ARBITRARY_STATEMENT",
-              },
-            ],
             "transpiledJavascript": "return n * m;",
             "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
             "uid": "",
@@ -8032,9 +7889,9 @@ Object {
         ],
         Array [
           "zzz",
-          "cc6",
+          "a61",
           "aaa~~~2",
-          "e0c",
+          "d43",
           "bbb~~~1",
         ],
       ],
@@ -8109,7 +7966,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6/aaa~~~2/e0c/bbb~~~1/2eb": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61/aaa~~~2/d43/bbb~~~1/8f4": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -8176,17 +8033,6 @@ Object {
           ],
           "version": 3,
         },
-        "statements": Array [
-          Object {
-            "definedElsewhere": Array [
-              "n",
-              "m",
-            ],
-            "definedWithin": Array [],
-            "originalJavascript": "n * m",
-            "type": "JS_ARBITRARY_STATEMENT",
-          },
-        ],
         "transpiledJavascript": "return n * m;",
         "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
         "uid": "",
@@ -8201,11 +8047,11 @@ Object {
         ],
         Array [
           "zzz",
-          "cc6",
+          "a61",
           "aaa~~~2",
-          "e0c",
+          "d43",
           "bbb~~~1",
-          "2eb",
+          "8f4",
         ],
       ],
       "type": "elementpath",
@@ -8275,7 +8121,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6/aaa~~~2/e0c/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61/aaa~~~2/d43/bbb~~~2": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -8344,17 +8190,6 @@ Object {
               ],
               "version": 3,
             },
-            "statements": Array [
-              Object {
-                "definedElsewhere": Array [
-                  "n",
-                  "m",
-                ],
-                "definedWithin": Array [],
-                "originalJavascript": "n * m",
-                "type": "JS_ARBITRARY_STATEMENT",
-              },
-            ],
             "transpiledJavascript": "return n * m;",
             "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
             "uid": "",
@@ -8398,9 +8233,9 @@ Object {
         ],
         Array [
           "zzz",
-          "cc6",
+          "a61",
           "aaa~~~2",
-          "e0c",
+          "d43",
           "bbb~~~2",
         ],
       ],
@@ -8475,7 +8310,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6/aaa~~~2/e0c/bbb~~~2/2eb": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61/aaa~~~2/d43/bbb~~~2/8f4": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -8542,17 +8377,6 @@ Object {
           ],
           "version": 3,
         },
-        "statements": Array [
-          Object {
-            "definedElsewhere": Array [
-              "n",
-              "m",
-            ],
-            "definedWithin": Array [],
-            "originalJavascript": "n * m",
-            "type": "JS_ARBITRARY_STATEMENT",
-          },
-        ],
         "transpiledJavascript": "return n * m;",
         "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
         "uid": "",
@@ -8567,11 +8391,11 @@ Object {
         ],
         Array [
           "zzz",
-          "cc6",
+          "a61",
           "aaa~~~2",
-          "e0c",
+          "d43",
           "bbb~~~2",
-          "2eb",
+          "8f4",
         ],
       ],
       "type": "elementpath",
@@ -8641,7 +8465,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6/aaa~~~2/e0c/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61/aaa~~~2/d43/bbb~~~3": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -8710,17 +8534,6 @@ Object {
               ],
               "version": 3,
             },
-            "statements": Array [
-              Object {
-                "definedElsewhere": Array [
-                  "n",
-                  "m",
-                ],
-                "definedWithin": Array [],
-                "originalJavascript": "n * m",
-                "type": "JS_ARBITRARY_STATEMENT",
-              },
-            ],
             "transpiledJavascript": "return n * m;",
             "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
             "uid": "",
@@ -8764,9 +8577,9 @@ Object {
         ],
         Array [
           "zzz",
-          "cc6",
+          "a61",
           "aaa~~~2",
-          "e0c",
+          "d43",
           "bbb~~~3",
         ],
       ],
@@ -8841,7 +8654,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6/aaa~~~2/e0c/bbb~~~3/2eb": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61/aaa~~~2/d43/bbb~~~3/8f4": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -8908,17 +8721,6 @@ Object {
           ],
           "version": 3,
         },
-        "statements": Array [
-          Object {
-            "definedElsewhere": Array [
-              "n",
-              "m",
-            ],
-            "definedWithin": Array [],
-            "originalJavascript": "n * m",
-            "type": "JS_ARBITRARY_STATEMENT",
-          },
-        ],
         "transpiledJavascript": "return n * m;",
         "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
         "uid": "",
@@ -8933,11 +8735,11 @@ Object {
         ],
         Array [
           "zzz",
-          "cc6",
+          "a61",
           "aaa~~~2",
-          "e0c",
+          "d43",
           "bbb~~~3",
-          "2eb",
+          "8f4",
         ],
       ],
       "type": "elementpath",
@@ -9007,7 +8809,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6/aaa~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61/aaa~~~3": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -9089,17 +8891,6 @@ Object {
                       ],
                       "version": 3,
                     },
-                    "statements": Array [
-                      Object {
-                        "definedElsewhere": Array [
-                          "n",
-                          "m",
-                        ],
-                        "definedWithin": Array [],
-                        "originalJavascript": "n * m",
-                        "type": "JS_ARBITRARY_STATEMENT",
-                      },
-                    ],
                     "transpiledJavascript": "return n * m;",
                     "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                     "uid": "",
@@ -9243,7 +9034,7 @@ Object {
         ],
         Array [
           "zzz",
-          "cc6",
+          "a61",
           "aaa~~~3",
         ],
       ],
@@ -9318,7 +9109,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6/aaa~~~3/e0c": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61/aaa~~~3/d43": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -9398,17 +9189,6 @@ Object {
                   ],
                   "version": 3,
                 },
-                "statements": Array [
-                  Object {
-                    "definedElsewhere": Array [
-                      "n",
-                      "m",
-                    ],
-                    "definedWithin": Array [],
-                    "originalJavascript": "n * m",
-                    "type": "JS_ARBITRARY_STATEMENT",
-                  },
-                ],
                 "transpiledJavascript": "return n * m;",
                 "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                 "uid": "",
@@ -9523,9 +9303,9 @@ Object {
         ],
         Array [
           "zzz",
-          "cc6",
+          "a61",
           "aaa~~~3",
-          "e0c",
+          "d43",
         ],
       ],
       "type": "elementpath",
@@ -9595,7 +9375,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6/aaa~~~3/e0c/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61/aaa~~~3/d43/bbb~~~1": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -9664,17 +9444,6 @@ Object {
               ],
               "version": 3,
             },
-            "statements": Array [
-              Object {
-                "definedElsewhere": Array [
-                  "n",
-                  "m",
-                ],
-                "definedWithin": Array [],
-                "originalJavascript": "n * m",
-                "type": "JS_ARBITRARY_STATEMENT",
-              },
-            ],
             "transpiledJavascript": "return n * m;",
             "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
             "uid": "",
@@ -9718,9 +9487,9 @@ Object {
         ],
         Array [
           "zzz",
-          "cc6",
+          "a61",
           "aaa~~~3",
-          "e0c",
+          "d43",
           "bbb~~~1",
         ],
       ],
@@ -9795,7 +9564,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6/aaa~~~3/e0c/bbb~~~1/2eb": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61/aaa~~~3/d43/bbb~~~1/8f4": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -9862,17 +9631,6 @@ Object {
           ],
           "version": 3,
         },
-        "statements": Array [
-          Object {
-            "definedElsewhere": Array [
-              "n",
-              "m",
-            ],
-            "definedWithin": Array [],
-            "originalJavascript": "n * m",
-            "type": "JS_ARBITRARY_STATEMENT",
-          },
-        ],
         "transpiledJavascript": "return n * m;",
         "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
         "uid": "",
@@ -9887,11 +9645,11 @@ Object {
         ],
         Array [
           "zzz",
-          "cc6",
+          "a61",
           "aaa~~~3",
-          "e0c",
+          "d43",
           "bbb~~~1",
-          "2eb",
+          "8f4",
         ],
       ],
       "type": "elementpath",
@@ -9961,7 +9719,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6/aaa~~~3/e0c/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61/aaa~~~3/d43/bbb~~~2": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -10030,17 +9788,6 @@ Object {
               ],
               "version": 3,
             },
-            "statements": Array [
-              Object {
-                "definedElsewhere": Array [
-                  "n",
-                  "m",
-                ],
-                "definedWithin": Array [],
-                "originalJavascript": "n * m",
-                "type": "JS_ARBITRARY_STATEMENT",
-              },
-            ],
             "transpiledJavascript": "return n * m;",
             "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
             "uid": "",
@@ -10084,9 +9831,9 @@ Object {
         ],
         Array [
           "zzz",
-          "cc6",
+          "a61",
           "aaa~~~3",
-          "e0c",
+          "d43",
           "bbb~~~2",
         ],
       ],
@@ -10161,7 +9908,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6/aaa~~~3/e0c/bbb~~~2/2eb": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61/aaa~~~3/d43/bbb~~~2/8f4": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -10228,17 +9975,6 @@ Object {
           ],
           "version": 3,
         },
-        "statements": Array [
-          Object {
-            "definedElsewhere": Array [
-              "n",
-              "m",
-            ],
-            "definedWithin": Array [],
-            "originalJavascript": "n * m",
-            "type": "JS_ARBITRARY_STATEMENT",
-          },
-        ],
         "transpiledJavascript": "return n * m;",
         "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
         "uid": "",
@@ -10253,11 +9989,11 @@ Object {
         ],
         Array [
           "zzz",
-          "cc6",
+          "a61",
           "aaa~~~3",
-          "e0c",
+          "d43",
           "bbb~~~2",
-          "2eb",
+          "8f4",
         ],
       ],
       "type": "elementpath",
@@ -10327,7 +10063,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6/aaa~~~3/e0c/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61/aaa~~~3/d43/bbb~~~3": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -10396,17 +10132,6 @@ Object {
               ],
               "version": 3,
             },
-            "statements": Array [
-              Object {
-                "definedElsewhere": Array [
-                  "n",
-                  "m",
-                ],
-                "definedWithin": Array [],
-                "originalJavascript": "n * m",
-                "type": "JS_ARBITRARY_STATEMENT",
-              },
-            ],
             "transpiledJavascript": "return n * m;",
             "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
             "uid": "",
@@ -10450,9 +10175,9 @@ Object {
         ],
         Array [
           "zzz",
-          "cc6",
+          "a61",
           "aaa~~~3",
-          "e0c",
+          "d43",
           "bbb~~~3",
         ],
       ],
@@ -10527,7 +10252,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/cc6/aaa~~~3/e0c/bbb~~~3/2eb": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/a61/aaa~~~3/d43/bbb~~~3/8f4": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -10594,17 +10319,6 @@ Object {
           ],
           "version": 3,
         },
-        "statements": Array [
-          Object {
-            "definedElsewhere": Array [
-              "n",
-              "m",
-            ],
-            "definedWithin": Array [],
-            "originalJavascript": "n * m",
-            "type": "JS_ARBITRARY_STATEMENT",
-          },
-        ],
         "transpiledJavascript": "return n * m;",
         "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
         "uid": "",
@@ -10619,11 +10333,11 @@ Object {
         ],
         Array [
           "zzz",
-          "cc6",
+          "a61",
           "aaa~~~3",
-          "e0c",
+          "d43",
           "bbb~~~3",
-          "2eb",
+          "8f4",
         ],
       ],
       "type": "elementpath",
@@ -12144,7 +11858,7 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are not the ap
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/ff2 utopia-storyboard-uid/scene-aaa/app-entity:aaa/ff2/bbb\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/679 utopia-storyboard-uid/scene-aaa/app-entity:aaa/679/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -12177,19 +11891,19 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are not the ap
       >
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/ff2/bbb~~~1:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/679/bbb~~~1:xxx\\"
         >
           n1
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/ff2/bbb~~~2:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/679/bbb~~~2:xxx\\"
         >
           n2
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/ff2/bbb~~~3:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/679/bbb~~~3:xxx\\"
         >
           n3
         </div>
@@ -12646,16 +12360,6 @@ Object {
                         ],
                         "version": 3,
                       },
-                      "statements": Array [
-                        Object {
-                          "definedElsewhere": Array [
-                            "n",
-                          ],
-                          "definedWithin": Array [],
-                          "originalJavascript": "'n' + n",
-                          "type": "JS_ARBITRARY_STATEMENT",
-                        },
-                      ],
                       "transpiledJavascript": "return 'n' + n;",
                       "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                       "uid": "",
@@ -12838,7 +12542,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/ff2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/679": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -12944,16 +12648,6 @@ Object {
                     ],
                     "version": 3,
                   },
-                  "statements": Array [
-                    Object {
-                      "definedElsewhere": Array [
-                        "n",
-                      ],
-                      "definedWithin": Array [],
-                      "originalJavascript": "'n' + n",
-                      "type": "JS_ARBITRARY_STATEMENT",
-                    },
-                  ],
                   "transpiledJavascript": "return 'n' + n;",
                   "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                   "uid": "",
@@ -13033,7 +12727,7 @@ Object {
         ],
         Array [
           "aaa",
-          "ff2",
+          "679",
         ],
       ],
       "type": "elementpath",
@@ -13103,7 +12797,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/ff2/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/679/bbb~~~1": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -13198,16 +12892,6 @@ Object {
                 ],
                 "version": 3,
               },
-              "statements": Array [
-                Object {
-                  "definedElsewhere": Array [
-                    "n",
-                  ],
-                  "definedWithin": Array [],
-                  "originalJavascript": "'n' + n",
-                  "type": "JS_ARBITRARY_STATEMENT",
-                },
-              ],
               "transpiledJavascript": "return 'n' + n;",
               "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
               "uid": "",
@@ -13227,7 +12911,7 @@ Object {
         ],
         Array [
           "aaa",
-          "ff2",
+          "679",
           "bbb~~~1",
         ],
       ],
@@ -13302,7 +12986,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/ff2/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/679/bbb~~~2": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -13397,16 +13081,6 @@ Object {
                 ],
                 "version": 3,
               },
-              "statements": Array [
-                Object {
-                  "definedElsewhere": Array [
-                    "n",
-                  ],
-                  "definedWithin": Array [],
-                  "originalJavascript": "'n' + n",
-                  "type": "JS_ARBITRARY_STATEMENT",
-                },
-              ],
               "transpiledJavascript": "return 'n' + n;",
               "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
               "uid": "",
@@ -13426,7 +13100,7 @@ Object {
         ],
         Array [
           "aaa",
-          "ff2",
+          "679",
           "bbb~~~2",
         ],
       ],
@@ -13501,7 +13175,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/ff2/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/679/bbb~~~3": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -13596,16 +13270,6 @@ Object {
                 ],
                 "version": 3,
               },
-              "statements": Array [
-                Object {
-                  "definedElsewhere": Array [
-                    "n",
-                  ],
-                  "definedWithin": Array [],
-                  "originalJavascript": "'n' + n",
-                  "type": "JS_ARBITRARY_STATEMENT",
-                },
-              ],
               "transpiledJavascript": "return 'n' + n;",
               "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
               "uid": "",
@@ -13625,7 +13289,7 @@ Object {
         ],
         Array [
           "aaa",
-          "ff2",
+          "679",
           "bbb~~~3",
         ],
       ],
@@ -13709,7 +13373,7 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are undefined 
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/474 utopia-storyboard-uid/scene-aaa/app-entity:aaa/474/bbb\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/3e4 utopia-storyboard-uid/scene-aaa/app-entity:aaa/3e4/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -13742,19 +13406,19 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are undefined 
       >
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/474/bbb~~~1:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/3e4/bbb~~~1:xxx\\"
         >
           n1
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/474/bbb~~~2:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/3e4/bbb~~~2:xxx\\"
         >
           n2
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/474/bbb~~~3:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/3e4/bbb~~~3:xxx\\"
         >
           n3
         </div>
@@ -14211,16 +13875,6 @@ Object {
                         ],
                         "version": 3,
                       },
-                      "statements": Array [
-                        Object {
-                          "definedElsewhere": Array [
-                            "n",
-                          ],
-                          "definedWithin": Array [],
-                          "originalJavascript": "'n' + n",
-                          "type": "JS_ARBITRARY_STATEMENT",
-                        },
-                      ],
                       "transpiledJavascript": "return 'n' + n;",
                       "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                       "uid": "",
@@ -14403,7 +14057,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/474": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/3e4": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -14509,16 +14163,6 @@ Object {
                     ],
                     "version": 3,
                   },
-                  "statements": Array [
-                    Object {
-                      "definedElsewhere": Array [
-                        "n",
-                      ],
-                      "definedWithin": Array [],
-                      "originalJavascript": "'n' + n",
-                      "type": "JS_ARBITRARY_STATEMENT",
-                    },
-                  ],
                   "transpiledJavascript": "return 'n' + n;",
                   "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                   "uid": "",
@@ -14598,7 +14242,7 @@ Object {
         ],
         Array [
           "aaa",
-          "474",
+          "3e4",
         ],
       ],
       "type": "elementpath",
@@ -14668,7 +14312,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/474/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/3e4/bbb~~~1": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -14763,16 +14407,6 @@ Object {
                 ],
                 "version": 3,
               },
-              "statements": Array [
-                Object {
-                  "definedElsewhere": Array [
-                    "n",
-                  ],
-                  "definedWithin": Array [],
-                  "originalJavascript": "'n' + n",
-                  "type": "JS_ARBITRARY_STATEMENT",
-                },
-              ],
               "transpiledJavascript": "return 'n' + n;",
               "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
               "uid": "",
@@ -14792,7 +14426,7 @@ Object {
         ],
         Array [
           "aaa",
-          "474",
+          "3e4",
           "bbb~~~1",
         ],
       ],
@@ -14867,7 +14501,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/474/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/3e4/bbb~~~2": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -14962,16 +14596,6 @@ Object {
                 ],
                 "version": 3,
               },
-              "statements": Array [
-                Object {
-                  "definedElsewhere": Array [
-                    "n",
-                  ],
-                  "definedWithin": Array [],
-                  "originalJavascript": "'n' + n",
-                  "type": "JS_ARBITRARY_STATEMENT",
-                },
-              ],
               "transpiledJavascript": "return 'n' + n;",
               "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
               "uid": "",
@@ -14991,7 +14615,7 @@ Object {
         ],
         Array [
           "aaa",
-          "474",
+          "3e4",
           "bbb~~~2",
         ],
       ],
@@ -15066,7 +14690,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/474/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/3e4/bbb~~~3": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -15161,16 +14785,6 @@ Object {
                 ],
                 "version": 3,
               },
-              "statements": Array [
-                Object {
-                  "definedElsewhere": Array [
-                    "n",
-                  ],
-                  "definedWithin": Array [],
-                  "originalJavascript": "'n' + n",
-                  "type": "JS_ARBITRARY_STATEMENT",
-                },
-              ],
               "transpiledJavascript": "return 'n' + n;",
               "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
               "uid": "",
@@ -15190,7 +14804,7 @@ Object {
         ],
         Array [
           "aaa",
-          "474",
+          "3e4",
           "bbb~~~3",
         ],
       ],
@@ -34291,16 +33905,6 @@ Object {
                 ],
                 "version": 3,
               },
-              "statements": Array [
-                Object {
-                  "definedElsewhere": Array [
-                    "console",
-                  ],
-                  "definedWithin": Array [],
-                  "originalJavascript": "() => console.log('class component')",
-                  "type": "JS_ARBITRARY_STATEMENT",
-                },
-              ],
               "transpiledJavascript": "return () => console.log('class component');",
               "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
               "uid": "",
@@ -34869,16 +34473,6 @@ Object {
                 ],
                 "version": 3,
               },
-              "statements": Array [
-                Object {
-                  "definedElsewhere": Array [
-                    "console",
-                  ],
-                  "definedWithin": Array [],
-                  "originalJavascript": "() => console.log('functional component')",
-                  "type": "JS_ARBITRARY_STATEMENT",
-                },
-              ],
               "transpiledJavascript": "return () => console.log('functional component');",
               "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
               "uid": "",
@@ -37317,16 +36911,6 @@ Object {
                       ],
                       "version": 3,
                     },
-                    "statements": Array [
-                      Object {
-                        "definedElsewhere": Array [
-                          "Test",
-                        ],
-                        "definedWithin": Array [],
-                        "originalJavascript": "Test.specialValue * 2",
-                        "type": "JS_ARBITRARY_STATEMENT",
-                      },
-                    ],
                     "transpiledJavascript": "return Test.specialValue * 2;",
                     "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                     "uid": "",
@@ -41922,7 +41506,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/5c3 utopia-storyboard-uid/scene-aaa/app-entity:aaa/5c3/bbb\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/ead utopia-storyboard-uid/scene-aaa/app-entity:aaa/ead/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -41955,19 +41539,19 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
       >
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/5c3/bbb~~~1:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/ead/bbb~~~1:xxx\\"
         >
           n1
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/5c3/bbb~~~2:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/ead/bbb~~~2:xxx\\"
         >
           n2
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/5c3/bbb~~~3:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/ead/bbb~~~3:xxx\\"
         >
           n3
         </div>
@@ -42424,16 +42008,6 @@ Object {
                         ],
                         "version": 3,
                       },
-                      "statements": Array [
-                        Object {
-                          "definedElsewhere": Array [
-                            "n",
-                          ],
-                          "definedWithin": Array [],
-                          "originalJavascript": "'n' + n",
-                          "type": "JS_ARBITRARY_STATEMENT",
-                        },
-                      ],
                       "transpiledJavascript": "return 'n' + n;",
                       "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                       "uid": "",
@@ -42616,7 +42190,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/5c3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/ead": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -42722,16 +42296,6 @@ Object {
                     ],
                     "version": 3,
                   },
-                  "statements": Array [
-                    Object {
-                      "definedElsewhere": Array [
-                        "n",
-                      ],
-                      "definedWithin": Array [],
-                      "originalJavascript": "'n' + n",
-                      "type": "JS_ARBITRARY_STATEMENT",
-                    },
-                  ],
                   "transpiledJavascript": "return 'n' + n;",
                   "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                   "uid": "",
@@ -42811,7 +42375,7 @@ Object {
         ],
         Array [
           "aaa",
-          "5c3",
+          "ead",
         ],
       ],
       "type": "elementpath",
@@ -42881,7 +42445,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/5c3/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/ead/bbb~~~1": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -42976,16 +42540,6 @@ Object {
                 ],
                 "version": 3,
               },
-              "statements": Array [
-                Object {
-                  "definedElsewhere": Array [
-                    "n",
-                  ],
-                  "definedWithin": Array [],
-                  "originalJavascript": "'n' + n",
-                  "type": "JS_ARBITRARY_STATEMENT",
-                },
-              ],
               "transpiledJavascript": "return 'n' + n;",
               "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
               "uid": "",
@@ -43005,7 +42559,7 @@ Object {
         ],
         Array [
           "aaa",
-          "5c3",
+          "ead",
           "bbb~~~1",
         ],
       ],
@@ -43080,7 +42634,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/5c3/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/ead/bbb~~~2": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -43175,16 +42729,6 @@ Object {
                 ],
                 "version": 3,
               },
-              "statements": Array [
-                Object {
-                  "definedElsewhere": Array [
-                    "n",
-                  ],
-                  "definedWithin": Array [],
-                  "originalJavascript": "'n' + n",
-                  "type": "JS_ARBITRARY_STATEMENT",
-                },
-              ],
               "transpiledJavascript": "return 'n' + n;",
               "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
               "uid": "",
@@ -43204,7 +42748,7 @@ Object {
         ],
         Array [
           "aaa",
-          "5c3",
+          "ead",
           "bbb~~~2",
         ],
       ],
@@ -43279,7 +42823,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/5c3/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/ead/bbb~~~3": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -43374,16 +42918,6 @@ Object {
                 ],
                 "version": 3,
               },
-              "statements": Array [
-                Object {
-                  "definedElsewhere": Array [
-                    "n",
-                  ],
-                  "definedWithin": Array [],
-                  "originalJavascript": "'n' + n",
-                  "type": "JS_ARBITRARY_STATEMENT",
-                },
-              ],
               "transpiledJavascript": "return 'n' + n;",
               "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
               "uid": "",
@@ -43403,7 +42937,7 @@ Object {
         ],
         Array [
           "aaa",
-          "5c3",
+          "ead",
           "bbb~~~3",
         ],
       ],
@@ -43487,7 +43021,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/e5e utopia-storyboard-uid/scene-aaa/app-entity:aaa/e5e/bbb\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/145 utopia-storyboard-uid/scene-aaa/app-entity:aaa/145/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -43520,19 +43054,19 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
       >
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/e5e/bbb~~~1:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/145/bbb~~~1:xxx\\"
         >
           n1
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/e5e/bbb~~~2:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/145/bbb~~~2:xxx\\"
         >
           n2
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/e5e/bbb~~~3:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/145/bbb~~~3:xxx\\"
         >
           n3
         </div>
@@ -43989,16 +43523,6 @@ Object {
                         ],
                         "version": 3,
                       },
-                      "statements": Array [
-                        Object {
-                          "definedElsewhere": Array [
-                            "div",
-                          ],
-                          "definedWithin": Array [],
-                          "originalJavascript": "'n' + div",
-                          "type": "JS_ARBITRARY_STATEMENT",
-                        },
-                      ],
                       "transpiledJavascript": "return 'n' + div;",
                       "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                       "uid": "",
@@ -44180,7 +43704,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/e5e": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/145": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -44286,16 +43810,6 @@ Object {
                     ],
                     "version": 3,
                   },
-                  "statements": Array [
-                    Object {
-                      "definedElsewhere": Array [
-                        "div",
-                      ],
-                      "definedWithin": Array [],
-                      "originalJavascript": "'n' + div",
-                      "type": "JS_ARBITRARY_STATEMENT",
-                    },
-                  ],
                   "transpiledJavascript": "return 'n' + div;",
                   "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                   "uid": "",
@@ -44374,7 +43888,7 @@ Object {
         ],
         Array [
           "aaa",
-          "e5e",
+          "145",
         ],
       ],
       "type": "elementpath",
@@ -44444,7 +43958,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/e5e/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/145/bbb~~~1": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -44539,16 +44053,6 @@ Object {
                 ],
                 "version": 3,
               },
-              "statements": Array [
-                Object {
-                  "definedElsewhere": Array [
-                    "div",
-                  ],
-                  "definedWithin": Array [],
-                  "originalJavascript": "'n' + div",
-                  "type": "JS_ARBITRARY_STATEMENT",
-                },
-              ],
               "transpiledJavascript": "return 'n' + div;",
               "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
               "uid": "",
@@ -44568,7 +44072,7 @@ Object {
         ],
         Array [
           "aaa",
-          "e5e",
+          "145",
           "bbb~~~1",
         ],
       ],
@@ -44643,7 +44147,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/e5e/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/145/bbb~~~2": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -44738,16 +44242,6 @@ Object {
                 ],
                 "version": 3,
               },
-              "statements": Array [
-                Object {
-                  "definedElsewhere": Array [
-                    "div",
-                  ],
-                  "definedWithin": Array [],
-                  "originalJavascript": "'n' + div",
-                  "type": "JS_ARBITRARY_STATEMENT",
-                },
-              ],
               "transpiledJavascript": "return 'n' + div;",
               "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
               "uid": "",
@@ -44767,7 +44261,7 @@ Object {
         ],
         Array [
           "aaa",
-          "e5e",
+          "145",
           "bbb~~~2",
         ],
       ],
@@ -44842,7 +44336,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/e5e/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/145/bbb~~~3": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -44937,16 +44431,6 @@ Object {
                 ],
                 "version": 3,
               },
-              "statements": Array [
-                Object {
-                  "definedElsewhere": Array [
-                    "div",
-                  ],
-                  "definedWithin": Array [],
-                  "originalJavascript": "'n' + div",
-                  "type": "JS_ARBITRARY_STATEMENT",
-                },
-              ],
               "transpiledJavascript": "return 'n' + div;",
               "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
               "uid": "",
@@ -44966,7 +44450,7 @@ Object {
         ],
         Array [
           "aaa",
-          "e5e",
+          "145",
           "bbb~~~3",
         ],
       ],
@@ -45050,7 +44534,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block with 
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/534 utopia-storyboard-uid/scene-aaa/app-entity:aaa/534/bbb\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/5e8 utopia-storyboard-uid/scene-aaa/app-entity:aaa/5e8/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -45083,19 +44567,19 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block with 
       >
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/534/bbb~~~1:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/5e8/bbb~~~1:xxx\\"
         >
           n1
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/534/bbb~~~2:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/5e8/bbb~~~2:xxx\\"
         >
           n2
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/534/bbb~~~3:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/5e8/bbb~~~3:xxx\\"
         >
           n3
         </div>
@@ -45553,16 +45037,6 @@ Object {
                         ],
                         "version": 3,
                       },
-                      "statements": Array [
-                        Object {
-                          "definedElsewhere": Array [
-                            "n",
-                          ],
-                          "definedWithin": Array [],
-                          "originalJavascript": "'n' + n",
-                          "type": "JS_ARBITRARY_STATEMENT",
-                        },
-                      ],
                       "transpiledJavascript": "return 'n' + n;",
                       "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                       "uid": "",
@@ -45751,7 +45225,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/534": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/5e8": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -45858,16 +45332,6 @@ Object {
                     ],
                     "version": 3,
                   },
-                  "statements": Array [
-                    Object {
-                      "definedElsewhere": Array [
-                        "n",
-                      ],
-                      "definedWithin": Array [],
-                      "originalJavascript": "'n' + n",
-                      "type": "JS_ARBITRARY_STATEMENT",
-                    },
-                  ],
                   "transpiledJavascript": "return 'n' + n;",
                   "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                   "uid": "",
@@ -45953,7 +45417,7 @@ Object {
         ],
         Array [
           "aaa",
-          "534",
+          "5e8",
         ],
       ],
       "type": "elementpath",
@@ -46023,7 +45487,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/534/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/5e8/bbb~~~1": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -46118,16 +45582,6 @@ Object {
                 ],
                 "version": 3,
               },
-              "statements": Array [
-                Object {
-                  "definedElsewhere": Array [
-                    "n",
-                  ],
-                  "definedWithin": Array [],
-                  "originalJavascript": "'n' + n",
-                  "type": "JS_ARBITRARY_STATEMENT",
-                },
-              ],
               "transpiledJavascript": "return 'n' + n;",
               "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
               "uid": "",
@@ -46147,7 +45601,7 @@ Object {
         ],
         Array [
           "aaa",
-          "534",
+          "5e8",
           "bbb~~~1",
         ],
       ],
@@ -46222,7 +45676,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/534/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/5e8/bbb~~~2": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -46317,16 +45771,6 @@ Object {
                 ],
                 "version": 3,
               },
-              "statements": Array [
-                Object {
-                  "definedElsewhere": Array [
-                    "n",
-                  ],
-                  "definedWithin": Array [],
-                  "originalJavascript": "'n' + n",
-                  "type": "JS_ARBITRARY_STATEMENT",
-                },
-              ],
               "transpiledJavascript": "return 'n' + n;",
               "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
               "uid": "",
@@ -46346,7 +45790,7 @@ Object {
         ],
         Array [
           "aaa",
-          "534",
+          "5e8",
           "bbb~~~2",
         ],
       ],
@@ -46421,7 +45865,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/534/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/5e8/bbb~~~3": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -46516,16 +45960,6 @@ Object {
                 ],
                 "version": 3,
               },
-              "statements": Array [
-                Object {
-                  "definedElsewhere": Array [
-                    "n",
-                  ],
-                  "definedWithin": Array [],
-                  "originalJavascript": "'n' + n",
-                  "type": "JS_ARBITRARY_STATEMENT",
-                },
-              ],
               "transpiledJavascript": "return 'n' + n;",
               "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
               "uid": "",
@@ -46545,7 +45979,7 @@ Object {
         ],
         Array [
           "aaa",
-          "534",
+          "5e8",
           "bbb~~~3",
         ],
       ],
@@ -50962,7 +50396,7 @@ exports[`UiJsxCanvas render renders fine with two circularly referencing arbitra
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene utopia-storyboard-uid/scene/app-entity utopia-storyboard-uid/scene/app-entity:aaa utopia-storyboard-uid/scene/app-entity:aaa/497 utopia-storyboard-uid/scene/app-entity:aaa/5cb\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene utopia-storyboard-uid/scene/app-entity utopia-storyboard-uid/scene/app-entity:aaa utopia-storyboard-uid/scene/app-entity:aaa/53f utopia-storyboard-uid/scene/app-entity:aaa/e36\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -51374,16 +50808,6 @@ export var storyboard = (
               ],
               "version": 3,
             },
-            "statements": Array [
-              Object {
-                "definedElsewhere": Array [
-                  "b",
-                ],
-                "definedWithin": Array [],
-                "originalJavascript": "b(5)",
-                "type": "JS_ARBITRARY_STATEMENT",
-              },
-            ],
             "transpiledJavascript": "return b(5);",
             "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
             "uid": "",
@@ -51463,16 +50887,6 @@ export var storyboard = (
               ],
               "version": 3,
             },
-            "statements": Array [
-              Object {
-                "definedElsewhere": Array [
-                  "a",
-                ],
-                "definedWithin": Array [],
-                "originalJavascript": "a(5)",
-                "type": "JS_ARBITRARY_STATEMENT",
-              },
-            ],
             "transpiledJavascript": "return a(5);",
             "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
             "uid": "",
@@ -51610,7 +51024,7 @@ export var storyboard = (
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene/app-entity:aaa/497": Object {
+  "utopia-storyboard-uid/scene/app-entity:aaa/53f": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -51688,16 +51102,6 @@ export var storyboard = (
           ],
           "version": 3,
         },
-        "statements": Array [
-          Object {
-            "definedElsewhere": Array [
-              "b",
-            ],
-            "definedWithin": Array [],
-            "originalJavascript": "b(5)",
-            "type": "JS_ARBITRARY_STATEMENT",
-          },
-        ],
         "transpiledJavascript": "return b(5);",
         "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
         "uid": "",
@@ -51712,7 +51116,7 @@ export var storyboard = (
         ],
         Array [
           "aaa",
-          "497",
+          "53f",
         ],
       ],
       "type": "elementpath",
@@ -51782,7 +51186,7 @@ export var storyboard = (
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene/app-entity:aaa/5cb": Object {
+  "utopia-storyboard-uid/scene/app-entity:aaa/e36": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -51860,16 +51264,6 @@ export var storyboard = (
           ],
           "version": 3,
         },
-        "statements": Array [
-          Object {
-            "definedElsewhere": Array [
-              "a",
-            ],
-            "definedWithin": Array [],
-            "originalJavascript": "a(5)",
-            "type": "JS_ARBITRARY_STATEMENT",
-          },
-        ],
         "transpiledJavascript": "return a(5);",
         "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
         "uid": "",
@@ -51884,7 +51278,7 @@ export var storyboard = (
         ],
         Array [
           "aaa",
-          "5cb",
+          "e36",
         ],
       ],
       "type": "elementpath",

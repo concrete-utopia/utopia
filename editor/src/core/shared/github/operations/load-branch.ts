@@ -8,6 +8,7 @@ import {
 import { notice } from '../../../../components/common/notice'
 import type { EditorDispatch } from '../../../../components/editor/action-types'
 import {
+  extractPropertyControlsFromDescriptorFiles,
   showToast,
   truncateHistory,
   updateBranchContents,
@@ -35,6 +36,7 @@ import {
 import { updateProjectContentsWithParseResults } from '../../parser-projectcontents-utils'
 import type { GithubOperationContext } from './github-operation-context'
 import { createStoryboardFileIfNecessary } from '../../../../components/editor/actions/actions'
+import { getAllComponentDescriptorFilePaths } from '../../../property-controls/property-controls-local'
 
 export const saveAssetsToProject =
   (operationContext: GithubOperationContext) =>
@@ -169,6 +171,9 @@ export const updateProjectWithBranchContent =
               'everyone',
             )
 
+            const componentDescriptorFiles =
+              getAllComponentDescriptorFilePaths(parsedProjectContents)
+
             // If there's a package.json file, then attempt to load the dependencies for it.
             let dependenciesPromise: Promise<void> = Promise.resolve()
             const packageJson = packageJsonFileFromProjectContents(parsedProjectContents)
@@ -200,6 +205,7 @@ export const updateProjectWithBranchContent =
               .finally(() => {
                 dispatch(
                   [
+                    extractPropertyControlsFromDescriptorFiles(componentDescriptorFiles),
                     showToast(
                       notice(
                         `Github: Updated the project with the content from ${branchName}`,
