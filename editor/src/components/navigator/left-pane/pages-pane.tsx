@@ -118,6 +118,9 @@ export const PagesPane = React.memo((props) => {
     [dispatch],
   )
 
+  const activeRoute = matchResult?.[0].pathname ?? ''
+  const activeRouteDoesntMatchAnyFavorites = !featuredRoutes.includes(activeRoute)
+
   if (remixRoutes.length === 0) {
     return (
       <FlexColumn
@@ -145,8 +148,25 @@ export const PagesPane = React.memo((props) => {
         {featuredRoutes.map((favorite: string) => {
           const pathMatchesActivePath = matchResult?.[0].pathname === favorite
 
-          return <FavoriteEntry key={favorite} favorite={favorite} active={pathMatchesActivePath} />
+          return (
+            <FavoriteEntry
+              key={favorite}
+              favorite={favorite}
+              active={pathMatchesActivePath}
+              addedToFavorites={true}
+            />
+          )
         })}
+        {activeRouteDoesntMatchAnyFavorites ? (
+          <FavoriteEntry
+            key={activeRoute}
+            favorite={activeRoute}
+            active={true}
+            addedToFavorites={false}
+          />
+        ) : (
+          <div style={{ height: UtopiaTheme.layout.rowHeight.smaller }} />
+        )}
       </FlexColumn>
       <InspectorSectionHeader>
         <FlexRow style={{ flexGrow: 1 }}>Routes</FlexRow>
@@ -284,9 +304,10 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
 interface FavoriteEntryProps {
   favorite: string
   active: boolean
+  addedToFavorites: boolean
 }
 
-const FavoriteEntry = React.memo(({ favorite, active }: FavoriteEntryProps) => {
+const FavoriteEntry = React.memo(({ favorite, active, addedToFavorites }: FavoriteEntryProps) => {
   const [navigationControls] = useAtom(RemixNavigationAtom)
   const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
 
@@ -298,8 +319,11 @@ const FavoriteEntry = React.memo(({ favorite, active }: FavoriteEntryProps) => {
     <FlexRow
       style={{
         flexShrink: 0,
-        color: colorTheme.neutralForeground.value,
+        color: addedToFavorites
+          ? colorTheme.neutralForeground.value
+          : colorTheme.subduedForeground.value,
         backgroundColor: active ? colorTheme.subtleBackground.value : 'transparent',
+        border: addedToFavorites ? undefined : '1px dashed ' + colorTheme.border3.value,
         marginLeft: 8,
         marginRight: 8,
         paddingLeft: 19, // to visually align the icons with the route entries underneath the favorites section
