@@ -378,7 +378,6 @@ import {
   modifyUnderlyingTargetJSXElement,
   getAllComponentDescriptorErrors,
   updatePackageJsonInEditorState,
-  createNewPageName,
 } from '../store/editor-state'
 import {
   areGeneratedElementsTargeted,
@@ -3851,8 +3850,7 @@ export const UPDATE_FNS = {
     )
   },
   ADD_NEW_PAGE: (action: AddNewPage, editor: EditorModel): EditorModel => {
-    const newPageName = createNewPageName()
-    const newFileName = `${newPageName}.jsx` // TODO maybe reuse the original extension?
+    const newFileName = `${action.newPageName}.jsx` // TODO maybe reuse the original extension?
 
     const templateFile = getProjectFileByFilePath(editor.projectContents, action.template.path)
     if (templateFile == null || !isTextFile(templateFile)) {
