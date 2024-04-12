@@ -33,11 +33,7 @@ import {
   RemixNavigationAtom,
 } from '../../canvas/remix/utopia-remix-root-component'
 import { MomentumContextMenu } from '../../context-menu-wrapper'
-import {
-  addNewPage,
-  setShouldNavigateToRemixRoute,
-  showContextMenu,
-} from '../../editor/actions/action-creators'
+import { addNewPage, showContextMenu } from '../../editor/actions/action-creators'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { createNewPageName } from '../../editor/store/editor-state'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
@@ -123,7 +119,15 @@ export const PagesPane = React.memo((props) => {
     [dispatch],
   )
 
-  useNavigateToRouteWhenAvailable(remixRoutes)
+  const [navigateTo, setNavigateTo] = React.useState<string | null>(null)
+
+  const onAfterPageAdd = React.useCallback((pageName: string) => {
+    setNavigateTo(`/${pageName}`)
+  }, [])
+
+  useNavigateToRouteWhenAvailable(remixRoutes, navigateTo, () => {
+    setNavigateTo(null)
+  })
 
   if (remixRoutes.length === 0) {
     return (
@@ -156,6 +160,7 @@ export const PagesPane = React.memo((props) => {
             <AddPageContextMenu
               contextMenuInstance={'context-menu-add-page'}
               pageTemplates={pageTemplates}
+              onAfterPageAdd={onAfterPageAdd}
             />
           </React.Fragment>,
         )}
@@ -173,6 +178,7 @@ export const PagesPane = React.memo((props) => {
             resolvedPath={pathMatchesActivePath ? matchResult?.[0].pathname : resolvedPath}
             active={pathMatchesActivePath}
             matchesRealRoute={route.matchesRealRoute}
+            navigateTo={navigateTo}
           />
         )
       })}
@@ -185,10 +191,11 @@ interface PageRouteEntryProps {
   resolvedPath: string
   active: boolean
   matchesRealRoute: boolean
+  navigateTo: string | null
 }
 const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
   const ref = React.useRef<HTMLDivElement | null>(null)
-  useScrollToNavigateToRoute(ref, props.resolvedPath)
+  useScrollToNavigateToRoute(ref, props.resolvedPath, props.navigateTo)
 
   const [navigationControls] = useAtom(RemixNavigationAtom)
   const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
@@ -303,9 +310,11 @@ export const AddPageContextMenu = React.memo(
   ({
     contextMenuInstance,
     pageTemplates,
+    onAfterPageAdd,
   }: {
     contextMenuInstance: ElementContextMenuInstance
     pageTemplates: PageTemplate[]
+    onAfterPageAdd: (pageName: string) => void
   }) => {
     const dispatch = useDispatch()
 
@@ -313,8 +322,9 @@ export const AddPageContextMenu = React.memo(
       (template: PageTemplate) => () => {
         const newPageName = createNewPageName()
         dispatch([addNewPage('/app/routes', template, newPageName)])
+        onAfterPageAdd(newPageName)
       },
-      [dispatch],
+      [dispatch, onAfterPageAdd],
     )
 
     const portalTarget = document.getElementById(PortalTargetID)
@@ -342,39 +352,30 @@ export const AddPageContextMenu = React.memo(
 function useScrollToNavigateToRoute(
   ref: React.MutableRefObject<HTMLDivElement | null>,
   path: string,
+  navigateTo: string | null,
 ) {
-  const shouldNavigateToRemixRoute = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.shouldNavigateToRemixRoute,
-    'useScrollToNavigateToRoute shouldNavigateToRemixRoute',
-  )
-
   React.useEffect(() => {
-    if (shouldNavigateToRemixRoute === path) {
+    if (navigateTo === path) {
       ref.current?.scrollIntoView()
     }
-  }, [shouldNavigateToRemixRoute, ref, path])
+  }, [navigateTo, ref, path])
 }
 
-function useNavigateToRouteWhenAvailable(remixRoutes: RouteMatch[]) {
-  const dispatch = useDispatch()
-
+function useNavigateToRouteWhenAvailable(
+  remixRoutes: RouteMatch[],
+  navigateTo: string | null,
+  onNavigate: () => void,
+) {
   const [navigationControls] = useAtom(RemixNavigationAtom)
   const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
 
-  const shouldNavigateToRemixRoute = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.shouldNavigateToRemixRoute,
-    'useNavigateToRouteWhenAvailable shouldNavigateToRemixRoute',
-  )
-
   React.useEffect(() => {
-    if (shouldNavigateToRemixRoute == null) {
+    if (navigateTo == null) {
       return
     }
-    if (remixRoutes.some((r) => r.resolvedPath === shouldNavigateToRemixRoute)) {
-      void navigationControls[EP.toString(activeRemixScene)]?.navigate(shouldNavigateToRemixRoute)
-      dispatch([setShouldNavigateToRemixRoute(null)])
+    if (remixRoutes.some((r) => r.resolvedPath === navigateTo)) {
+      void navigationControls[EP.toString(activeRemixScene)]?.navigate(navigateTo)
+      onNavigate()
     }
-  }, [shouldNavigateToRemixRoute, remixRoutes, navigationControls, activeRemixScene, dispatch])
+  }, [navigateTo, remixRoutes, navigationControls, activeRemixScene, onNavigate])
 }
