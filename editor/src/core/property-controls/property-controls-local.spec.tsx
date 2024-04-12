@@ -5,6 +5,9 @@ import { createModifiedProject } from '../../sample-projects/sample-project-util
 import { StoryboardFilePath } from '../../components/editor/store/editor-state'
 import { deleteFile, updateFilePath } from '../../components/editor/actions/action-creators'
 import { updateFromCodeEditor } from '../../components/editor/actions/actions-from-vscode'
+import type { ComponentDescriptor } from '../../components/custom-code/code-file'
+import { PropertyControlsInfo } from '../../components/custom-code/code-file'
+import { pick } from '../shared/object-utils'
 
 const project = (componentDescriptorFiles: { [filename: string]: string }) =>
   createModifiedProject({
@@ -1109,6 +1112,58 @@ describe('registered property controls', () => {
     `)
   })
 
+  describe('variants', () => {
+    it('generates an empty variant if the variants prop is omitted', async () => {
+      const renderResult = await renderTestEditorWithModel(
+        project({
+          ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
+          
+          const Components = {
+        '/src/card': {
+          Card: {
+            component: Card,
+            properties: { }
+          },
+        },
+      }
+      
+      export default Components
+    `,
+        }),
+        'await-first-dom-report',
+      )
+      const editorState = renderResult.getEditorState().editor
+
+      const cardRegistration = editorState.propertyControlsInfo['/src/card']['Card']
+      expect(cardRegistration).not.toBeUndefined()
+
+      const propsToCheck = pick(['variants'], cardRegistration)
+
+      expect(propsToCheck).toMatchInlineSnapshot(`
+        Object {
+          "variants": Array [
+            Object {
+              "elementToInsert": [Function],
+              "importsToAdd": Object {
+                "/src/card": Object {
+                  "importedAs": null,
+                  "importedFromWithin": Array [
+                    Object {
+                      "alias": "Card",
+                      "name": "Card",
+                    },
+                  ],
+                  "importedWithName": null,
+                },
+              },
+              "insertMenuLabel": "Card",
+            },
+          ],
+        }
+      `)
+    })
+  })
+
   describe('registering the children prop', () => {
     it('can omit the children prop', async () => {
       const renderResult = await renderTestEditorWithModel(
@@ -1131,40 +1186,19 @@ describe('registered property controls', () => {
       )
       const editorState = renderResult.getEditorState().editor
 
-      expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
+      const cardRegistration = editorState.propertyControlsInfo['/src/card']['Card']
+      expect(cardRegistration).not.toBeUndefined()
+
+      const propsToCheck = pick(
+        ['childrenPropPlaceholder', 'preferredChildComponents', 'supportsChildren'],
+        cardRegistration,
+      )
+
+      expect(propsToCheck).toMatchInlineSnapshot(`
         Object {
-          "Card": Object {
-            "childrenPropPlaceholder": null,
-            "emphasis": "regular",
-            "focus": "default",
-            "icon": "regular",
-            "inspector": "all",
-            "preferredChildComponents": Array [],
-            "properties": Object {},
-            "source": Object {
-              "sourceDescriptorFile": "/utopia/components.utopia.js",
-              "type": "DESCRIPTOR_FILE",
-            },
-            "supportsChildren": false,
-            "variants": Array [
-              Object {
-                "elementToInsert": [Function],
-                "importsToAdd": Object {
-                  "/src/card": Object {
-                    "importedAs": null,
-                    "importedFromWithin": Array [
-                      Object {
-                        "alias": "Card",
-                        "name": "Card",
-                      },
-                    ],
-                    "importedWithName": null,
-                  },
-                },
-                "insertMenuLabel": "Card",
-              },
-            ],
-          },
+          "childrenPropPlaceholder": null,
+          "preferredChildComponents": Array [],
+          "supportsChildren": false,
         }
       `)
     })
@@ -1191,40 +1225,19 @@ describe('registered property controls', () => {
       )
       const editorState = renderResult.getEditorState().editor
 
-      expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
+      const cardRegistration = editorState.propertyControlsInfo['/src/card']['Card']
+      expect(cardRegistration).not.toBeUndefined()
+
+      const propsToCheck = pick(
+        ['childrenPropPlaceholder', 'preferredChildComponents', 'supportsChildren'],
+        cardRegistration,
+      )
+
+      expect(propsToCheck).toMatchInlineSnapshot(`
         Object {
-          "Card": Object {
-            "childrenPropPlaceholder": null,
-            "emphasis": "regular",
-            "focus": "default",
-            "icon": "regular",
-            "inspector": "all",
-            "preferredChildComponents": Array [],
-            "properties": Object {},
-            "source": Object {
-              "sourceDescriptorFile": "/utopia/components.utopia.js",
-              "type": "DESCRIPTOR_FILE",
-            },
-            "supportsChildren": true,
-            "variants": Array [
-              Object {
-                "elementToInsert": [Function],
-                "importsToAdd": Object {
-                  "/src/card": Object {
-                    "importedAs": null,
-                    "importedFromWithin": Array [
-                      Object {
-                        "alias": "Card",
-                        "name": "Card",
-                      },
-                    ],
-                    "importedWithName": null,
-                  },
-                },
-                "insertMenuLabel": "Card",
-              },
-            ],
-          },
+          "childrenPropPlaceholder": null,
+          "preferredChildComponents": Array [],
+          "supportsChildren": true,
         }
       `)
     })
@@ -1251,40 +1264,19 @@ describe('registered property controls', () => {
       )
       const editorState = renderResult.getEditorState().editor
 
-      expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
+      const cardRegistration = editorState.propertyControlsInfo['/src/card']['Card']
+      expect(cardRegistration).not.toBeUndefined()
+
+      const propsToCheck = pick(
+        ['childrenPropPlaceholder', 'preferredChildComponents', 'supportsChildren'],
+        cardRegistration,
+      )
+
+      expect(propsToCheck).toMatchInlineSnapshot(`
         Object {
-          "Card": Object {
-            "childrenPropPlaceholder": null,
-            "emphasis": "regular",
-            "focus": "default",
-            "icon": "regular",
-            "inspector": "all",
-            "preferredChildComponents": Array [],
-            "properties": Object {},
-            "source": Object {
-              "sourceDescriptorFile": "/utopia/components.utopia.js",
-              "type": "DESCRIPTOR_FILE",
-            },
-            "supportsChildren": false,
-            "variants": Array [
-              Object {
-                "elementToInsert": [Function],
-                "importsToAdd": Object {
-                  "/src/card": Object {
-                    "importedAs": null,
-                    "importedFromWithin": Array [
-                      Object {
-                        "alias": "Card",
-                        "name": "Card",
-                      },
-                    ],
-                    "importedWithName": null,
-                  },
-                },
-                "insertMenuLabel": "Card",
-              },
-            ],
-          },
+          "childrenPropPlaceholder": null,
+          "preferredChildComponents": Array [],
+          "supportsChildren": false,
         }
       `)
     })
@@ -1317,52 +1309,31 @@ describe('registered property controls', () => {
       )
       const editorState = renderResult.getEditorState().editor
 
-      expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
+      const cardRegistration = editorState.propertyControlsInfo['/src/card']['Card']
+      expect(cardRegistration).not.toBeUndefined()
+
+      const propsToCheck = pick(
+        ['childrenPropPlaceholder', 'preferredChildComponents', 'supportsChildren'],
+        cardRegistration,
+      )
+
+      expect(propsToCheck).toMatchInlineSnapshot(`
         Object {
-          "Card": Object {
-            "childrenPropPlaceholder": null,
-            "emphasis": "regular",
-            "focus": "default",
-            "icon": "regular",
-            "inspector": "all",
-            "preferredChildComponents": Array [
-              Object {
-                "imports": Object {},
-                "name": "Card",
-                "variants": Array [
-                  Object {
-                    "elementToInsert": [Function],
-                    "importsToAdd": Object {},
-                    "insertMenuLabel": "text",
-                  },
-                ],
-              },
-            ],
-            "properties": Object {},
-            "source": Object {
-              "sourceDescriptorFile": "/utopia/components.utopia.js",
-              "type": "DESCRIPTOR_FILE",
-            },
-            "supportsChildren": true,
-            "variants": Array [
-              Object {
-                "elementToInsert": [Function],
-                "importsToAdd": Object {
-                  "/src/card": Object {
-                    "importedAs": null,
-                    "importedFromWithin": Array [
-                      Object {
-                        "alias": "Card",
-                        "name": "Card",
-                      },
-                    ],
-                    "importedWithName": null,
-                  },
+          "childrenPropPlaceholder": null,
+          "preferredChildComponents": Array [
+            Object {
+              "imports": Object {},
+              "name": "Card",
+              "variants": Array [
+                Object {
+                  "elementToInsert": [Function],
+                  "importsToAdd": Object {},
+                  "insertMenuLabel": "text",
                 },
-                "insertMenuLabel": "Card",
-              },
-            ],
-          },
+              ],
+            },
+          ],
+          "supportsChildren": true,
         }
       `)
     })
@@ -1409,109 +1380,88 @@ describe('registered property controls', () => {
       )
       const editorState = renderResult.getEditorState().editor
 
-      expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
+      const cardRegistration = editorState.propertyControlsInfo['/src/card']['Card']
+      expect(cardRegistration).not.toBeUndefined()
+
+      const propsToCheck = pick(
+        ['childrenPropPlaceholder', 'preferredChildComponents', 'supportsChildren'],
+        cardRegistration,
+      )
+
+      expect(propsToCheck).toMatchInlineSnapshot(`
         Object {
-          "Card": Object {
-            "childrenPropPlaceholder": Object {
-              "contents": "Content",
-              "type": "text",
-            },
-            "emphasis": "regular",
-            "focus": "default",
-            "icon": "regular",
-            "inspector": "all",
-            "preferredChildComponents": Array [
-              Object {
-                "imports": Object {},
-                "name": "span",
-                "variants": Array [
-                  Object {
-                    "elementToInsert": [Function],
-                    "importsToAdd": Object {},
-                    "insertMenuLabel": "span",
-                  },
-                ],
-              },
-              Object {
-                "imports": Object {},
-                "name": "Card 2",
-                "variants": Array [
-                  Object {
-                    "elementToInsert": [Function],
-                    "importsToAdd": Object {
-                      "/src/card2.js": Object {
-                        "importedAs": null,
-                        "importedFromWithin": Array [
-                          Object {
-                            "alias": "Card2",
-                            "name": "Card2",
-                          },
-                        ],
-                        "importedWithName": null,
-                      },
-                    },
-                    "insertMenuLabel": "Card2",
-                  },
-                ],
-              },
-              Object {
-                "imports": Object {},
-                "name": "ID card",
-                "variants": Array [
-                  Object {
-                    "elementToInsert": [Function],
-                    "importsToAdd": Object {
-                      "/src/card2": Object {
-                        "importedAs": null,
-                        "importedFromWithin": Array [
-                          Object {
-                            "alias": "Card2",
-                            "name": "Card2",
-                          },
-                        ],
-                        "importedWithName": null,
-                      },
-                      "/src/defaults": Object {
-                        "importedAs": null,
-                        "importedFromWithin": Array [
-                          Object {
-                            "alias": "DefaultLabel",
-                            "name": "DefaultLabel",
-                          },
-                        ],
-                        "importedWithName": null,
-                      },
-                    },
-                    "insertMenuLabel": "ID Card",
-                  },
-                ],
-              },
-            ],
-            "properties": Object {},
-            "source": Object {
-              "sourceDescriptorFile": "/utopia/components.utopia.js",
-              "type": "DESCRIPTOR_FILE",
-            },
-            "supportsChildren": true,
-            "variants": Array [
-              Object {
-                "elementToInsert": [Function],
-                "importsToAdd": Object {
-                  "/src/card": Object {
-                    "importedAs": null,
-                    "importedFromWithin": Array [
-                      Object {
-                        "alias": "Card",
-                        "name": "Card",
-                      },
-                    ],
-                    "importedWithName": null,
-                  },
-                },
-                "insertMenuLabel": "Card",
-              },
-            ],
+          "childrenPropPlaceholder": Object {
+            "contents": "Content",
+            "type": "text",
           },
+          "preferredChildComponents": Array [
+            Object {
+              "imports": Object {},
+              "name": "span",
+              "variants": Array [
+                Object {
+                  "elementToInsert": [Function],
+                  "importsToAdd": Object {},
+                  "insertMenuLabel": "span",
+                },
+              ],
+            },
+            Object {
+              "imports": Object {},
+              "name": "Card 2",
+              "variants": Array [
+                Object {
+                  "elementToInsert": [Function],
+                  "importsToAdd": Object {
+                    "/src/card2.js": Object {
+                      "importedAs": null,
+                      "importedFromWithin": Array [
+                        Object {
+                          "alias": "Card2",
+                          "name": "Card2",
+                        },
+                      ],
+                      "importedWithName": null,
+                    },
+                  },
+                  "insertMenuLabel": "Card2",
+                },
+              ],
+            },
+            Object {
+              "imports": Object {},
+              "name": "ID card",
+              "variants": Array [
+                Object {
+                  "elementToInsert": [Function],
+                  "importsToAdd": Object {
+                    "/src/card2": Object {
+                      "importedAs": null,
+                      "importedFromWithin": Array [
+                        Object {
+                          "alias": "Card2",
+                          "name": "Card2",
+                        },
+                      ],
+                      "importedWithName": null,
+                    },
+                    "/src/defaults": Object {
+                      "importedAs": null,
+                      "importedFromWithin": Array [
+                        Object {
+                          "alias": "DefaultLabel",
+                          "name": "DefaultLabel",
+                        },
+                      ],
+                      "importedWithName": null,
+                    },
+                  },
+                  "insertMenuLabel": "ID Card",
+                },
+              ],
+            },
+          ],
+          "supportsChildren": true,
         }
       `)
     })
