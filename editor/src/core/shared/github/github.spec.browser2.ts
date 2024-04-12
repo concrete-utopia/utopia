@@ -5,7 +5,10 @@ import {
   optOutFromCheckFileTimestamps,
   renderTestEditorWithCode,
 } from '../../../components/canvas/ui-jsx.test-utils'
-import { createTestProjectWithCode } from '../../../sample-projects/sample-project-utils.test-utils'
+import {
+  createModifiedProject,
+  createTestProjectWithCode,
+} from '../../../sample-projects/sample-project-utils.test-utils'
 import { wait } from '../../model/performance-scripts'
 import { GithubEndpoints } from './endpoints'
 import type { GetBranchContentResponse, GetGithubUserSuccess } from './helpers'
@@ -55,11 +58,57 @@ describe('Github integration', () => {
           type: 'SUCCESS',
           branch: {
             originCommit: 'initial',
-            content: createTestProjectWithCode(
-              makeTestProjectCodeWithSnippet(`
+            content: createModifiedProject({
+              ['/utopia/storyboard.js']: makeTestProjectCodeWithSnippet(`
             <h1>Editor from Github</h1>
-            `),
-            ).projectContents,
+                `),
+              ['/src/card.js']: `import React from 'react'
+
+                export const Card = ({ label }) => {
+                  return <div>{label}</div>
+                }
+                `,
+              ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
+        
+              const Components = {
+            '/src/card': {
+              Card: {
+                component: Card,
+                supportsChildren: false,
+                properties: {
+                  label: {
+                    control: 'string-input',
+                  },
+                  background: {
+                    control: 'color',
+                  },
+                  visible: {
+                    control: 'checkbox',
+                    defaultValue: true,
+                  },
+                },
+                focus: 'default',
+                inspector: ['visual', 'typography'],
+                emphasis: 'regular',
+                icon: 'regular',
+                variants: [
+                  {
+                    code: '<Card />',
+                    label: 'Card',
+                  },
+                  {
+                    code: '<Card person={DefaultPerson} />',
+                    label: 'ID Card',
+                    additionalImports:
+                      "import { DefaultPerson } from '/src/defaults';",
+                  },
+                ],
+              },
+            },
+          }
+          
+          export default Components`,
+            }).projectContents,
           },
         }),
     },
@@ -89,6 +138,36 @@ describe('Github integration', () => {
     await mock.updateProjectWithBranchContent
 
     expect(renderResult.renderedDOM.getByText('Editor from Github')).toBeDefined()
+  })
+
+  it('updates property controls after cloning the branch', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+          <h1>Starting Editor</h1>
+          `),
+      'await-first-dom-report',
+    )
+
+    await loginUserToGithubForTests(renderResult.dispatch)
+
+    await clickTextOnScreen(renderResult, 'Github')
+    await mock.getUsersPublicGithubRepositories
+
+    await clickTextOnScreen(renderResult, 'bob/awesome-project')
+    await mock.getBranchesForGithubRepository
+
+    await clickTextOnScreen(renderResult, 'main')
+    await clickTextOnScreen(renderResult, 'Load from Branch')
+    await clickTextOnScreen(renderResult, 'Yes, Load from this Branch.')
+    await mock.updateProjectWithBranchContent
+
+    expect(renderResult.getEditorState().editor.propertyControlsInfo).toHaveProperty('/src/card')
+    expect(renderResult.getEditorState().editor.propertyControlsInfo['/src/card']).toHaveProperty(
+      'Card',
+    )
+    expect(
+      renderResult.getEditorState().editor.propertyControlsInfo['/src/card']['Card'].properties,
+    ).toHaveProperty('label')
   })
 })
 
