@@ -25,7 +25,7 @@ import type {
   JSXControlDescription,
   PreferredChildComponentDescriptor,
 } from '../../components/custom-code/internal-property-controls'
-import { packageJsonFileFromProjectContents } from '../../components/assets'
+import { packageJsonFileFromProjectContents, walkContentsTree } from '../../components/assets'
 import {
   ComponentDescriptorDefaults,
   componentDescriptorFromDescriptorFile,
@@ -73,7 +73,7 @@ import {
 import { setOptionalProp } from '../shared/object-utils'
 import { assertNever } from '../shared/utils'
 import type { Imports, ParsedTextFile } from '../shared/project-file-types'
-import { isExportDefault } from '../shared/project-file-types'
+import { isExportDefault, isTextFile } from '../shared/project-file-types'
 import type { UiJsxCanvasContextData } from '../../components/canvas/ui-jsx-canvas'
 import type { EditorState } from '../../components/editor/store/editor-state'
 import type { MutableUtopiaCtxRefData } from '../../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
@@ -1201,4 +1201,17 @@ function printScriptLines(scriptLines: Array<ScriptLine>, columnNumber: number |
       .join('\n') ?? ''
 
   return printedCode
+}
+
+export function getAllComponentDescriptorFilePaths(
+  projectContents: ProjectContentTreeRoot,
+): Array<string> {
+  let componentDescriptorFiles: Array<string> = []
+
+  walkContentsTree(projectContents, (fullPath, file) => {
+    if (isTextFile(file) && isComponentDescriptorFile(fullPath)) {
+      componentDescriptorFiles.push(fullPath)
+    }
+  })
+  return componentDescriptorFiles
 }

@@ -6,12 +6,8 @@ import { notice } from '../../components/common/notice'
 import type { EditorDispatch } from '../../components/editor/action-types'
 import { addToast, updateFile } from '../../components/editor/actions/action-creators'
 import { useDispatch } from '../../components/editor/store/dispatch-context'
-import {
-  defaultIndexHtmlFilePath,
-  EditorStorePatched,
-} from '../../components/editor/store/editor-state'
+import { defaultIndexHtmlFilePath } from '../../components/editor/store/editor-state'
 import { Substores, useEditorState } from '../../components/editor/store/store-hook'
-import { ProjectContentSubstate } from '../../components/editor/store/store-hook-substore-types'
 import type { UseSubmitValueFactory } from '../../components/inspector/common/property-path-hooks'
 import { useCallbackFactory } from '../../components/inspector/common/property-path-hooks'
 import type {
@@ -27,11 +23,10 @@ import {
   generatedExternalResourcesLinksOpen,
 } from '../../core/model/new-project-files'
 import type { Either } from '../../core/shared/either'
-import { isRight, left, mapEither, right } from '../../core/shared/either'
+import { isLeft, isRight, left, mapEither, right } from '../../core/shared/either'
 import type { TextFile } from '../../core/shared/project-file-types'
 import {
   isTextFile,
-  ProjectContents,
   textFileContents,
   textFile,
   unparsed,
@@ -41,6 +36,7 @@ import { NO_OP } from '../../core/shared/utils'
 import type { DescriptionParseError } from '../../utils/value-parser-utils'
 import { descriptionParseError } from '../../utils/value-parser-utils'
 import type { OnSubmitValue } from '../../uuiui-deps'
+import { isPageTemplate, type PageTemplate } from '../../components/canvas/remix/remix-utils'
 
 const googleFontsURIBase = 'https://fonts.googleapis.com/css2'
 
@@ -129,21 +125,23 @@ function getPreviewHTMLFilePath(
   }
 }
 
-export function getFeaturedRoutesFromPackageJSON(
+type UtopiaJsonProp = {
+  featuredRoutes?: string[]
+  pageTemplates?: PageTemplate[]
+}
+
+function getUtopiaKeyFromPackageJSON(
   projectContents: ProjectContentTreeRoot,
-): Either<DescriptionParseError, Array<string>> {
+  key: keyof UtopiaJsonProp,
+): Either<DescriptionParseError, unknown> {
   const packageJson = getProjectFileByFilePath(projectContents, '/package.json')
   if (packageJson != null && isTextFile(packageJson)) {
     try {
       const parsedJSON = json5.parse(packageJson.fileContents.code)
       if (parsedJSON != null && 'utopia' in parsedJSON) {
-        const featuredRoutesArray = parsedJSON.utopia?.featuredRoutes
-        if (featuredRoutesArray != null) {
-          if (Array.isArray(featuredRoutesArray)) {
-            return right(featuredRoutesArray)
-          } else {
-            return left(descriptionParseError(`'featuredRoutes' in package.json is not an array`))
-          }
+        const value = parsedJSON.utopia?.[key]
+        if (value != null) {
+          return right(value)
         } else {
           return left(descriptionParseError(`'featuredRoutes' in package.json is not specified`))
         }
@@ -157,6 +155,34 @@ export function getFeaturedRoutesFromPackageJSON(
     }
   } else {
     return left(descriptionParseError('No package.json is found in project'))
+  }
+}
+
+export function getFeaturedRoutesFromPackageJSON(
+  projectContents: ProjectContentTreeRoot,
+): Either<DescriptionParseError, Array<string>> {
+  const featuredRoutesArray = getUtopiaKeyFromPackageJSON(projectContents, 'featuredRoutes')
+  if (isLeft(featuredRoutesArray)) {
+    return featuredRoutesArray
+  } else if (!Array.isArray(featuredRoutesArray.value)) {
+    return left(descriptionParseError(`'featuredRoutes' in package.json is not an array`))
+  } else {
+    return right(featuredRoutesArray.value)
+  }
+}
+
+export function getPageTemplatesFromPackageJSON(
+  projectContents: ProjectContentTreeRoot,
+): Either<DescriptionParseError, Array<PageTemplate>> {
+  const pageTemplates = getUtopiaKeyFromPackageJSON(projectContents, 'pageTemplates')
+  if (isLeft(pageTemplates)) {
+    return pageTemplates
+  } else if (!Array.isArray(pageTemplates.value)) {
+    return left(descriptionParseError(`'pageTemplates' in package.json is not an array`))
+  } else if (pageTemplates.value.some((v) => !isPageTemplate(v))) {
+    return left(descriptionParseError(`'pageTemplates' in package.json contains malformed values`))
+  } else {
+    return right(pageTemplates.value)
   }
 }
 

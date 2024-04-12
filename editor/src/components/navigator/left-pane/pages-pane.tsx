@@ -7,8 +7,19 @@ import React from 'react'
 import { matchRoutes } from 'react-router'
 import { safeIndex, uniqBy } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
-import { NO_OP } from '../../../core/shared/utils'
-import { FlexColumn, FlexRow, Icn, Subdued, UtopiaTheme, colorTheme } from '../../../uuiui'
+import { NO_OP, PortalTargetID } from '../../../core/shared/utils'
+import {
+  FlexColumn,
+  FlexRow,
+  FunctionIcons,
+  Icn,
+  InspectorSectionHeader,
+  SquareButton,
+  Subdued,
+  UtopiaTheme,
+  colorTheme,
+} from '../../../uuiui'
+import type { PageTemplate } from '../../canvas/remix/remix-utils'
 import { RemixIndexPathLabel } from '../../canvas/remix/remix-utils'
 import {
   ActiveRemixSceneAtom,
@@ -16,8 +27,17 @@ import {
 } from '../../canvas/remix/utopia-remix-root-component'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { ExpandableIndicator } from '../navigator-item/expandable-indicator'
-import { getFeaturedRoutesFromPackageJSON } from '../../../printer-parsers/html/external-resources-parser'
+import {
+  getFeaturedRoutesFromPackageJSON,
+  getPageTemplatesFromPackageJSON,
+} from '../../../printer-parsers/html/external-resources-parser'
 import { defaultEither } from '../../../core/shared/either'
+import { when } from '../../../utils/react-conditionals'
+import { MomentumContextMenu } from '../../context-menu-wrapper'
+import { useDispatch } from '../../editor/store/dispatch-context'
+import { addNewPage, showContextMenu } from '../../editor/actions/action-creators'
+import type { ElementContextMenuInstance } from '../../element-context-menu'
+import ReactDOM from 'react-dom'
 
 type RouteMatch = {
   path: string
@@ -77,6 +97,27 @@ export const PagesPane = React.memo((props) => {
 
   const matchResult = matchRoutes(remixRoutes, pathname)
 
+  const pageTemplates = useEditorState(
+    Substores.projectContents,
+    (store) => {
+      return defaultEither([], getPageTemplatesFromPackageJSON(store.editor.projectContents))
+    },
+    'PagesPane pageTemplates',
+  )
+
+  const canAddPage = React.useMemo(() => {
+    return pageTemplates.length > 0 // TODO more constraints
+  }, [pageTemplates])
+
+  const dispatch = useDispatch()
+
+  const onClickAddPage = React.useCallback(
+    (e: React.MouseEvent) => {
+      dispatch([showContextMenu('context-menu-add-page', e.nativeEvent)])
+    },
+    [dispatch],
+  )
+
   if (remixRoutes.length === 0) {
     return (
       <FlexColumn
@@ -97,6 +138,22 @@ export const PagesPane = React.memo((props) => {
   }
   return (
     <FlexColumn style={{ height: '100%', overflowY: 'scroll' }}>
+      <InspectorSectionHeader>
+        <FlexRow style={{ flexGrow: 1 }}>Pages</FlexRow>
+        {when(
+          canAddPage,
+          <React.Fragment>
+            <SquareButton onClick={onClickAddPage}>
+              <FunctionIcons.Add />
+            </SquareButton>
+            <AddPageContextMenu
+              contextMenuInstance={'context-menu-add-page'}
+              pageTemplates={pageTemplates}
+            />
+          </React.Fragment>,
+        )}
+      </InspectorSectionHeader>
+
       {remixRoutes.map((route: RouteMatch, index) => {
         const { path, resolvedPath } = route
         const pathMatchesActivePath = matchResult?.[0].route.path === path
@@ -230,3 +287,42 @@ function fillInGapsInRoute(routes: Array<string>): Array<string> {
 
   return result
 }
+
+export const AddPageContextMenu = React.memo(
+  ({
+    contextMenuInstance,
+    pageTemplates,
+  }: {
+    contextMenuInstance: ElementContextMenuInstance
+    pageTemplates: PageTemplate[]
+  }) => {
+    const dispatch = useDispatch()
+
+    const addPageAction = React.useCallback(
+      (template: PageTemplate) => () => {
+        dispatch([addNewPage('/app/routes', template)])
+      },
+      [dispatch],
+    )
+
+    const portalTarget = document.getElementById(PortalTargetID)
+    if (portalTarget == null) {
+      return null
+    }
+
+    return ReactDOM.createPortal(
+      <MomentumContextMenu
+        id={contextMenuInstance}
+        key='add-page-context-menu'
+        items={pageTemplates.map((t) => ({
+          name: t.label,
+          enabled: true,
+          action: addPageAction(t),
+        }))}
+        dispatch={dispatch}
+        getData={NO_OP}
+      />,
+      portalTarget,
+    )
+  },
+)

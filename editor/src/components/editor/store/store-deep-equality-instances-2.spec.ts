@@ -19,7 +19,7 @@ import {
   jsExpressionValue,
   BoundParam,
   jsxElementName,
-  jsArbitraryStatement,
+  jsOpaqueArbitraryStatement,
 } from '../../../core/shared/element-template'
 import {
   ArbitraryJSBlockKeepDeepEquality,
@@ -175,7 +175,7 @@ describe('ArbitraryJsBlockKeepDeepEquality', () => {
     sourceMap: { a: 1, b: [2] } as any,
     uid: 'old',
     elementsWithin: {},
-    statements: [jsArbitraryStatement('old', [], [])],
+    statements: [jsOpaqueArbitraryStatement('old', [], [], '')],
   }
   const newSameValue: ArbitraryJSBlock = {
     type: 'ARBITRARY_JS_BLOCK',
@@ -187,7 +187,7 @@ describe('ArbitraryJsBlockKeepDeepEquality', () => {
     sourceMap: { a: 1, b: [2] } as any,
     uid: 'old',
     elementsWithin: {},
-    statements: [jsArbitraryStatement('old', [], [])],
+    statements: [jsOpaqueArbitraryStatement('old', [], [], '')],
   }
   const newDifferentValue: ArbitraryJSBlock = {
     type: 'ARBITRARY_JS_BLOCK',
@@ -199,7 +199,7 @@ describe('ArbitraryJsBlockKeepDeepEquality', () => {
     sourceMap: { a: 1, b: [2] } as any,
     uid: 'old',
     elementsWithin: {},
-    statements: [jsArbitraryStatement('new', [], [])],
+    statements: [jsOpaqueArbitraryStatement('new', [], [], '')],
   }
 
   it('same reference returns the same reference', () => {
@@ -826,7 +826,7 @@ describe('UtopiaJSXComponentKeepDeepEquality', () => {
       sourceMap: { a: 1, b: [2] } as any,
       uid: 'old',
       elementsWithin: {},
-      statements: [jsArbitraryStatement('old', [], [])],
+      statements: [jsOpaqueArbitraryStatement('old', [], [], '')],
     },
     usedInReactDOMRender: false,
     returnStatementComments: emptyComments,
@@ -875,7 +875,7 @@ describe('UtopiaJSXComponentKeepDeepEquality', () => {
       sourceMap: { a: 1, b: [2] } as any,
       uid: 'old',
       elementsWithin: {},
-      statements: [jsArbitraryStatement('old', [], [])],
+      statements: [jsOpaqueArbitraryStatement('old', [], [], '')],
     },
     usedInReactDOMRender: false,
     returnStatementComments: emptyComments,
@@ -924,7 +924,7 @@ describe('UtopiaJSXComponentKeepDeepEquality', () => {
       sourceMap: { a: 1, b: [2] } as any,
       uid: 'old',
       elementsWithin: {},
-      statements: [jsArbitraryStatement('old', [], [])],
+      statements: [jsOpaqueArbitraryStatement('old', [], [], '')],
     },
     usedInReactDOMRender: false,
     returnStatementComments: emptyComments,
