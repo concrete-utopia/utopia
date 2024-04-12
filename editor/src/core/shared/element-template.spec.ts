@@ -20,7 +20,7 @@ import {
   jsExpressionOtherJavaScriptSimple,
   jsxMapExpression,
   jsxElement,
-  jsArbitraryStatement,
+  jsOpaqueArbitraryStatement,
 } from './element-template'
 
 describe('setJSXAttributesAttribute', () => {
@@ -96,7 +96,6 @@ describe('attributeReferencesElsewhere', () => {
           null,
           {},
           emptyComments,
-          [jsArbitraryStatement('otherThing', [], [])],
         ),
       ),
     ).toEqual(true)
@@ -104,9 +103,7 @@ describe('attributeReferencesElsewhere', () => {
   it('ATTRIBUTE_OTHER_JAVASCRIPT returns false if it does not have a definedElsewhere entry', () => {
     expect(
       attributeReferencesElsewhere(
-        jsExpressionOtherJavaScript([], '5', '5', 'return 5', [], null, {}, emptyComments, [
-          jsArbitraryStatement('5', [], []),
-        ]),
+        jsExpressionOtherJavaScript([], '5', '5', 'return 5', [], null, {}, emptyComments),
       ),
     ).toEqual(false)
   })
@@ -125,7 +122,6 @@ describe('attributeReferencesElsewhere', () => {
                 null,
                 {},
                 emptyComments,
-                [jsArbitraryStatement('otherThing', [], [])],
               ),
               emptyComments,
             ),
@@ -141,9 +137,7 @@ describe('attributeReferencesElsewhere', () => {
         jsExpressionNestedArray(
           [
             jsxArrayValue(
-              jsExpressionOtherJavaScript([], '5', '5', 'return 5', [], null, {}, emptyComments, [
-                jsArbitraryStatement('5', [], []),
-              ]),
+              jsExpressionOtherJavaScript([], '5', '5', 'return 5', [], null, {}, emptyComments),
               emptyComments,
             ),
           ],
@@ -168,7 +162,6 @@ describe('attributeReferencesElsewhere', () => {
                 null,
                 {},
                 emptyComments,
-                [jsArbitraryStatement('otherThing', [], [])],
               ),
               emptyComments,
               emptyComments,
@@ -186,9 +179,7 @@ describe('attributeReferencesElsewhere', () => {
           [
             jsxPropertyAssignment(
               'someKey',
-              jsExpressionOtherJavaScript([], '5', '5', 'return 5', [], null, {}, emptyComments, [
-                jsArbitraryStatement('5', [], []),
-              ]),
+              jsExpressionOtherJavaScript([], '5', '5', 'return 5', [], null, {}, emptyComments),
               emptyComments,
               emptyComments,
             ),
@@ -212,7 +203,6 @@ describe('attributeReferencesElsewhere', () => {
             null,
             {},
             emptyComments,
-            [jsArbitraryStatement('otherThing', [], [])],
           ),
         ]),
       ),
@@ -222,9 +212,7 @@ describe('attributeReferencesElsewhere', () => {
     expect(
       attributeReferencesElsewhere(
         jsExpressionFunctionCall('someFn', [
-          jsExpressionOtherJavaScript([], '5', '5', 'return 5', [], null, {}, emptyComments, [
-            jsArbitraryStatement('5', [], []),
-          ]),
+          jsExpressionOtherJavaScript([], '5', '5', 'return 5', [], null, {}, emptyComments),
         ]),
       ),
     ).toEqual(false)
