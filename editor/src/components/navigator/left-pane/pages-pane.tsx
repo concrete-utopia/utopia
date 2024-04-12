@@ -142,12 +142,10 @@ export const PagesPane = React.memo((props) => {
         <FlexRow style={{ flexGrow: 1 }}>Favorites</FlexRow>
       </InspectorSectionHeader>
       <FlexColumn style={{ paddingBottom: 24 }}>
-        {featuredRoutes.map((favorites: string) => {
-          const pathMatchesActivePath = false // TODO
+        {featuredRoutes.map((favorite: string) => {
+          const pathMatchesActivePath = matchResult?.[0].pathname === favorite
 
-          return (
-            <FavoriteEntry key={favorites} favorite={favorites} active={pathMatchesActivePath} />
-          )
+          return <FavoriteEntry key={favorite} favorite={favorite} active={pathMatchesActivePath} />
         })}
       </FlexColumn>
       <InspectorSectionHeader>
