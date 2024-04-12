@@ -70,44 +70,47 @@ describe('Github integration', () => {
                 `,
               ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
         
-              const Components = {
-            '/src/card': {
-              Card: {
-                component: Card,
-                supportsChildren: false,
-                properties: {
-                  label: {
-                    control: 'string-input',
+                const Components = {
+              '/src/card': {
+                Card: {
+                  component: Card,
+                  properties: {
+                    label: {
+                      control: 'string-input',
+                    },
+                    background: {
+                      control: 'color',
+                    },
+                    visible: {
+                      control: 'checkbox',
+                      defaultValue: true,
+                    },
                   },
-                  background: {
-                    control: 'color',
-                  },
-                  visible: {
-                    control: 'checkbox',
-                    defaultValue: true,
-                  },
+                  focus: 'default',
+                  inspector: ['visual', 'typography'],
+                  emphasis: 'regular',
+                  icon: 'regular',
+                  variants: [
+                    {
+                      code: '<Card />',
+                      imports: 'import { Card } from "/src/card"',
+                      label: 'Card',
+                    },
+                    {
+                      code: '<Card person={DefaultPerson} />',
+                      label: 'ID Card',
+                      imports: [
+                        'import { Card } from "/src/card"',
+                        "import { DefaultPerson } from '/src/defaults';",
+                      ],
+                    },
+                  ],
                 },
-                focus: 'default',
-                inspector: ['visual', 'typography'],
-                emphasis: 'regular',
-                icon: 'regular',
-                variants: [
-                  {
-                    code: '<Card />',
-                    label: 'Card',
-                  },
-                  {
-                    code: '<Card person={DefaultPerson} />',
-                    label: 'ID Card',
-                    additionalImports:
-                      "import { DefaultPerson } from '/src/defaults';",
-                  },
-                ],
               },
-            },
-          }
-          
-          export default Components`,
+            }
+            
+            export default Components
+          `,
             }).projectContents,
           },
         }),
@@ -116,59 +119,59 @@ describe('Github integration', () => {
 
   optOutFromCheckFileTimestamps()
 
-  // it('can clone a branch', async () => {
-  //   const renderResult = await renderTestEditorWithCode(
-  //     makeTestProjectCodeWithSnippet(`
-  //         <h1>Starting Editor</h1>
-  //         `),
-  //     'await-first-dom-report',
-  //   )
+  it('can clone a branch', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+          <h1>Starting Editor</h1>
+          `),
+      'await-first-dom-report',
+    )
 
-  //   await loginUserToGithubForTests(renderResult.dispatch)
+    await loginUserToGithubForTests(renderResult.dispatch)
 
-  //   await clickTextOnScreen(renderResult, 'Github')
-  //   await mock.getUsersPublicGithubRepositories
+    await clickTextOnScreen(renderResult, 'Github')
+    await mock.getUsersPublicGithubRepositories
 
-  //   await clickTextOnScreen(renderResult, 'bob/awesome-project')
-  //   await mock.getBranchesForGithubRepository
+    await clickTextOnScreen(renderResult, 'bob/awesome-project')
+    await mock.getBranchesForGithubRepository
 
-  //   await clickTextOnScreen(renderResult, 'main')
-  //   await clickTextOnScreen(renderResult, 'Load from Branch')
-  //   await clickTextOnScreen(renderResult, 'Yes, Load from this Branch.')
-  //   await mock.updateProjectWithBranchContent
+    await clickTextOnScreen(renderResult, 'main')
+    await clickTextOnScreen(renderResult, 'Load from Branch')
+    await clickTextOnScreen(renderResult, 'Yes, Load from this Branch.')
+    await mock.updateProjectWithBranchContent
 
-  //   expect(renderResult.renderedDOM.getByText('Editor from Github')).toBeDefined()
-  // })
+    expect(renderResult.renderedDOM.getByText('Editor from Github')).toBeDefined()
+  })
 
-  // it('updates property controls after cloning the branch', async () => {
-  //   const renderResult = await renderTestEditorWithCode(
-  //     makeTestProjectCodeWithSnippet(`
-  //         <h1>Starting Editor</h1>
-  //         `),
-  //     'await-first-dom-report',
-  //   )
+  it('updates property controls after cloning the branch', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+          <h1>Starting Editor</h1>
+          `),
+      'await-first-dom-report',
+    )
 
-  //   await loginUserToGithubForTests(renderResult.dispatch)
+    await loginUserToGithubForTests(renderResult.dispatch)
 
-  //   await clickTextOnScreen(renderResult, 'Github')
-  //   await mock.getUsersPublicGithubRepositories
+    await clickTextOnScreen(renderResult, 'Github')
+    await mock.getUsersPublicGithubRepositories
 
-  //   await clickTextOnScreen(renderResult, 'bob/awesome-project')
-  //   await mock.getBranchesForGithubRepository
+    await clickTextOnScreen(renderResult, 'bob/awesome-project')
+    await mock.getBranchesForGithubRepository
 
-  //   await clickTextOnScreen(renderResult, 'main')
-  //   await clickTextOnScreen(renderResult, 'Load from Branch')
-  //   await clickTextOnScreen(renderResult, 'Yes, Load from this Branch.')
-  //   await mock.updateProjectWithBranchContent
+    await clickTextOnScreen(renderResult, 'main')
+    await clickTextOnScreen(renderResult, 'Load from Branch')
+    await clickTextOnScreen(renderResult, 'Yes, Load from this Branch.')
+    await mock.updateProjectWithBranchContent
 
-  //   expect(renderResult.getEditorState().editor.propertyControlsInfo).toHaveProperty('/src/card')
-  //   expect(renderResult.getEditorState().editor.propertyControlsInfo['/src/card']).toHaveProperty(
-  //     'Card',
-  //   )
-  //   expect(
-  //     renderResult.getEditorState().editor.propertyControlsInfo['/src/card']['Card'].properties,
-  //   ).toHaveProperty('label')
-  // })
+    expect(renderResult.getEditorState().editor.propertyControlsInfo).toHaveProperty('/src/card')
+    expect(renderResult.getEditorState().editor.propertyControlsInfo['/src/card']).toHaveProperty(
+      'Card',
+    )
+    expect(
+      renderResult.getEditorState().editor.propertyControlsInfo['/src/card']['Card'].properties,
+    ).toHaveProperty('label')
+  })
 })
 
 async function clickTextOnScreen(renderResult: EditorRenderResult, text: string) {
