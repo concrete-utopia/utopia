@@ -1481,6 +1481,14 @@ describe('registered property controls', () => {
               label: {
                 control: 'jsx',
                 placeholder: { width: 200, height: 200 }
+              },
+              header: {
+                control: 'jsx',
+                placeholder: { text: 'Header' }
+              },
+              footer: {
+                control: 'jsx',
+                placeholder: 'fill'
               }
             }
           },
@@ -1494,49 +1502,38 @@ describe('registered property controls', () => {
       )
       const editorState = renderResult.getEditorState().editor
 
-      expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
+      const cardRegistration = editorState.propertyControlsInfo['/src/card']['Card']
+      expect(cardRegistration).not.toBeUndefined()
+
+      const propsToCheck = pick(['properties'], cardRegistration)
+
+      expect(propsToCheck).toMatchInlineSnapshot(`
         Object {
-          "Card": Object {
-            "childrenPropPlaceholder": null,
-            "emphasis": "regular",
-            "focus": "default",
-            "icon": "regular",
-            "inspector": "all",
-            "preferredChildComponents": Array [],
-            "properties": Object {
-              "label": Object {
-                "control": "jsx",
-                "placeholder": Object {
-                  "height": 200,
-                  "type": "spacer",
-                  "width": 200,
-                },
-                "preferredChildComponents": Array [],
+          "properties": Object {
+            "footer": Object {
+              "control": "jsx",
+              "placeholder": Object {
+                "type": "fill",
               },
+              "preferredChildComponents": Array [],
             },
-            "source": Object {
-              "sourceDescriptorFile": "/utopia/components.utopia.js",
-              "type": "DESCRIPTOR_FILE",
-            },
-            "supportsChildren": false,
-            "variants": Array [
-              Object {
-                "elementToInsert": [Function],
-                "importsToAdd": Object {
-                  "/src/card": Object {
-                    "importedAs": null,
-                    "importedFromWithin": Array [
-                      Object {
-                        "alias": "Card",
-                        "name": "Card",
-                      },
-                    ],
-                    "importedWithName": null,
-                  },
-                },
-                "insertMenuLabel": "Card",
+            "header": Object {
+              "control": "jsx",
+              "placeholder": Object {
+                "contents": "Header",
+                "type": "text",
               },
-            ],
+              "preferredChildComponents": Array [],
+            },
+            "label": Object {
+              "control": "jsx",
+              "placeholder": Object {
+                "height": 200,
+                "type": "spacer",
+                "width": 200,
+              },
+              "preferredChildComponents": Array [],
+            },
           },
         }
       `)

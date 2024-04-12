@@ -22,11 +22,13 @@ export type ComponentExample =
   | ComponentInsertOption
 
 export type PlaceholderSpec =
-  // a placeholder that inserts a span that wraps `contents`. This will be
+  // a placeholder that inserts a span that wraps `text`. This will be
   // editable with the text editor
   | { text: string }
   // inserts a `div` with the specified width and height
   | { width: number; height: number }
+  // inserts a spacer that completely fills the available space
+  | 'fill'
 
 export interface PreferredContents {
   label: string

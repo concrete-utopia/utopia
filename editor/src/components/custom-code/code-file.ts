@@ -130,6 +130,7 @@ export type PlaceholderSpec =
   | { type: 'text'; contents: string }
   // inserts a `div` with the specified width and height
   | { type: 'spacer'; width: number; height: number }
+  | { type: 'fill' }
 
 export interface ComponentDescriptor {
   properties: PropertyControls

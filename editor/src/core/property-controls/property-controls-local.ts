@@ -800,6 +800,9 @@ async function makePropertyDescriptors(
 }
 
 function placeholderFromJSPlaceholder(placeholder: PlaceholderSpecFromUtopia): PlaceholderSpec {
+  if (typeof placeholder === 'string') {
+    return { type: 'fill' }
+  }
   if ('text' in placeholder) {
     return { type: 'text', contents: placeholder.text }
   }
@@ -1055,7 +1058,7 @@ function parseSpacerPlaceholder(value: unknown): ParseResult<PlaceholderSpecFrom
 }
 
 export const parsePlaceholder = parseAlternative(
-  [parseTextPlaceholder, parseSpacerPlaceholder],
+  [parseConstant('fill'), parseTextPlaceholder, parseSpacerPlaceholder],
   'Invalid placeholder value',
 )
 
