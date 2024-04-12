@@ -244,7 +244,7 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
           flexGrow: 1,
         }}
       >
-        {lastResolvedSegment === '' ? RemixIndexPathLabel : '/' + lastResolvedSegment}
+        {lastTemplateSegment === '' ? RemixIndexPathLabel : '/' + lastTemplateSegment}
       </span>
       <span
         style={{
@@ -265,7 +265,7 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
           },
         }}
       >
-        {lastTemplateSegment}
+        {lastResolvedSegment}
       </span>
     </FlexRow>
   )
