@@ -905,7 +905,7 @@ export var storyboard = (
         header: {
           control: 'jsx',
           preferredContents: {
-            label: 'span',
+            component: 'span',
             variants: {
               label: 'Span with Title',
               code: '<span>Title</span>',
@@ -995,7 +995,7 @@ export var storyboard = (
               control: 'jsx',
               preferredContents: [
                 {
-                  label: 'Heading',
+                  component: 'Heading',
                   variants: [
                     {
                       label: 'Heading with Title',

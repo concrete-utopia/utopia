@@ -31,7 +31,7 @@ export type PlaceholderSpec =
   | 'fill'
 
 export interface PreferredContents {
-  label: string
+  component: string
   variants: 'text' | ComponentExample | ComponentExample[]
 }
 

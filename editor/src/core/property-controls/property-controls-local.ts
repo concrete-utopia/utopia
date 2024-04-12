@@ -849,7 +849,7 @@ async function parsePreferredChildren(
       }
 
       descriptors.push({
-        name: contents.label,
+        name: contents.component,
         imports: {},
         variants: parsedVariants.value,
       })
@@ -1033,8 +1033,8 @@ export const parseComponentExample = parseAlternative<ComponentExample>(
 
 export function parsePreferredContents(value: unknown): ParseResult<PreferredContents> {
   return applicative2Either(
-    (label, variants) => ({ label, variants }),
-    objectKeyParser(parseString, 'label')(value),
+    (component, variants) => ({ component, variants }),
+    objectKeyParser(parseString, 'component')(value),
     objectKeyParser(
       parseAlternative<'text' | ComponentExample | ComponentExample[]>(
         [parseConstant('text'), parseComponentExample, parseArray(parseComponentExample)],

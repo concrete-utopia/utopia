@@ -5,8 +5,6 @@ import { createModifiedProject } from '../../sample-projects/sample-project-util
 import { StoryboardFilePath } from '../../components/editor/store/editor-state'
 import { deleteFile, updateFilePath } from '../../components/editor/actions/action-creators'
 import { updateFromCodeEditor } from '../../components/editor/actions/actions-from-vscode'
-import type { ComponentDescriptor } from '../../components/custom-code/code-file'
-import { PropertyControlsInfo } from '../../components/custom-code/code-file'
 import { pick } from '../shared/object-utils'
 
 const project = (componentDescriptorFiles: { [filename: string]: string }) =>
@@ -1292,9 +1290,8 @@ describe('registered property controls', () => {
             component: Card,
             properties: { },
             children: {
-              label: 'text',
               preferredContents: {
-                label: 'text',
+                component: 'text',
                 variants: 'text'
               }
             }
@@ -1352,11 +1349,11 @@ describe('registered property controls', () => {
             children: {
               placeholder: { text: "Content" },
               preferredContents: [
-                { label: 'span', variants: { name: 'span' } },
-                { label: 'Card 2', variants: { component: Card2 } },
+                { component: 'span', variants: { name: 'span' } },
                 {
-                  label: 'ID card',
+                  component: 'Card2',
                   variants: [
+                    { component: Card2 },
                     {
                       code: '<Card2 label={DefaultLabel} />',
                       label: 'ID Card',
@@ -1366,7 +1363,7 @@ describe('registered property controls', () => {
                       ],
                     }
                   ]
-                }
+                },
               ]
             }
           },
@@ -1408,7 +1405,7 @@ describe('registered property controls', () => {
             },
             Object {
               "imports": Object {},
-              "name": "Card 2",
+              "name": "Card2",
               "variants": Array [
                 Object {
                   "elementToInsert": [Function],
@@ -1426,12 +1423,6 @@ describe('registered property controls', () => {
                   },
                   "insertMenuLabel": "Card2",
                 },
-              ],
-            },
-            Object {
-              "imports": Object {},
-              "name": "ID card",
-              "variants": Array [
                 Object {
                   "elementToInsert": [Function],
                   "importsToAdd": Object {
@@ -1554,14 +1545,11 @@ describe('registered property controls', () => {
                 control: 'jsx',
                 placeholder: { width: 200, height: 200 },
                 preferredContents: [
-                  { label: 'span', variants: { name: 'span' } },
+                  { component: 'span', variants: { name: 'span' } },
                   {
-                    label: 'Card 2',
-                    variants: { component: Card2 },
-                  },
-                  {
-                    label: 'ID card',
+                    component: 'Card2',
                     variants: [
+                      { component: Card2 },
                       {
                         code: '<Card2 label={DefaultLabel} />',
                         label: 'ID Card',
@@ -1569,8 +1557,8 @@ describe('registered property controls', () => {
                           'import { Card2 } from "/src/card2"',
                           "import { DefaultLabel } from '/src/defaults';",
                         ],
-                      },
-                    ],
+                      }
+                    ]
                   },
                 ],
               },
@@ -1617,7 +1605,7 @@ describe('registered property controls', () => {
                   },
                   Object {
                     "imports": Object {},
-                    "name": "Card 2",
+                    "name": "Card2",
                     "variants": Array [
                       Object {
                         "elementToInsert": [Function],
@@ -1635,12 +1623,6 @@ describe('registered property controls', () => {
                         },
                         "insertMenuLabel": "Card2",
                       },
-                    ],
-                  },
-                  Object {
-                    "imports": Object {},
-                    "name": "ID card",
-                    "variants": Array [
                       Object {
                         "elementToInsert": [Function],
                         "importsToAdd": Object {
@@ -1672,20 +1654,17 @@ describe('registered property controls', () => {
                 ],
                 "preferredContents": Array [
                   Object {
-                    "label": "span",
+                    "component": "span",
                     "variants": Object {
                       "name": "span",
                     },
                   },
                   Object {
-                    "label": "Card 2",
-                    "variants": Object {
-                      "component": [Function],
-                    },
-                  },
-                  Object {
-                    "label": "ID card",
+                    "component": "Card2",
                     "variants": Array [
+                      Object {
+                        "component": [Function],
+                      },
                       Object {
                         "code": "<Card2 label={DefaultLabel} />",
                         "imports": Array [
