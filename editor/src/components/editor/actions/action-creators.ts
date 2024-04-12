@@ -224,7 +224,6 @@ import type {
   SetSharingDialogOpen,
   SetCodeEditorComponentDescriptorErrors,
   AddNewPage,
-  SetShouldNavigateToRemixRoute,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -1129,13 +1128,6 @@ export function addNewPage(
     template: template,
     parentPath: parentPath,
     newPageName: newPageName,
-  }
-}
-
-export function setShouldNavigateToRemixRoute(path: string | null): SetShouldNavigateToRemixRoute {
-  return {
-    action: 'SET_SHOULD_NAVIGATE_TO_REMIX_ROUTE',
-    path: path,
   }
 }
 

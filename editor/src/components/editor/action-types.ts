@@ -700,11 +700,6 @@ export interface AddNewPage {
   newPageName: string
 }
 
-export interface SetShouldNavigateToRemixRoute {
-  action: 'SET_SHOULD_NAVIGATE_TO_REMIX_ROUTE'
-  path: string | null
-}
-
 export interface SetMainUIFile {
   action: 'SET_MAIN_UI_FILE'
   uiFile: string
@@ -1222,7 +1217,6 @@ export type EditorAction =
   | DeleteFileFromCollaboration
   | AddTextFile
   | AddNewPage
-  | SetShouldNavigateToRemixRoute
   | SetMainUIFile
   | SetCodeEditorBuildErrors
   | SetCodeEditorLintErrors

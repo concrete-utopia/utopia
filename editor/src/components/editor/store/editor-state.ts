@@ -1492,7 +1492,6 @@ export interface EditorState {
   forking: boolean
   collaborators: Collaborator[]
   sharingDialogOpen: boolean
-  shouldNavigateToRemixRoute: string | null
 }
 
 export function editorState(
@@ -1578,7 +1577,6 @@ export function editorState(
   forking: boolean,
   collaborators: Collaborator[],
   sharingDialogOpen: boolean,
-  shouldNavigateToRemixRoute: string | null,
 ): EditorState {
   return {
     id: id,
@@ -1663,7 +1661,6 @@ export function editorState(
     forking: forking,
     collaborators: collaborators,
     sharingDialogOpen: sharingDialogOpen,
-    shouldNavigateToRemixRoute: shouldNavigateToRemixRoute,
   }
 }
 
@@ -2636,7 +2633,6 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     forking: false,
     collaborators: [],
     sharingDialogOpen: false,
-    shouldNavigateToRemixRoute: null,
   }
 }
 
@@ -3023,7 +3019,6 @@ export function editorModelFromPersistentModel(
     forking: false,
     collaborators: [],
     sharingDialogOpen: false,
-    shouldNavigateToRemixRoute: null,
   }
   return editor
 }

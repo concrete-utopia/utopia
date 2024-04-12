@@ -297,8 +297,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.ADD_TEXT_FILE(action, state)
     case 'ADD_NEW_PAGE':
       return UPDATE_FNS.ADD_NEW_PAGE(action, state)
-    case 'SET_SHOULD_NAVIGATE_TO_REMIX_ROUTE':
-      return UPDATE_FNS.SET_SHOULD_NAVIGATE_TO_REMIX_ROUTE(action, state)
     case 'SET_MAIN_UI_FILE':
       return UPDATE_FNS.SET_MAIN_UI_FILE_OLDWORLD(action, state)
     case 'SET_CODE_EDITOR_BUILD_ERRORS':
