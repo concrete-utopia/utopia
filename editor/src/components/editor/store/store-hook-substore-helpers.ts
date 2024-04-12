@@ -177,4 +177,5 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   forking: false,
   collaborators: [],
   sharingDialogOpen: false,
+  shouldNavigateToRemixRoute: null,
 }

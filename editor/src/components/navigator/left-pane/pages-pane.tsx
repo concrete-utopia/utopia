@@ -35,7 +35,11 @@ import { defaultEither } from '../../../core/shared/either'
 import { when } from '../../../utils/react-conditionals'
 import { MomentumContextMenu } from '../../context-menu-wrapper'
 import { useDispatch } from '../../editor/store/dispatch-context'
-import { addNewPage, showContextMenu } from '../../editor/actions/action-creators'
+import {
+  addNewPage,
+  setShouldNavigateToRemixRoute,
+  showContextMenu,
+} from '../../editor/actions/action-creators'
 import type { ElementContextMenuInstance } from '../../element-context-menu'
 import ReactDOM from 'react-dom'
 import { createNewPageName } from '../../editor/store/editor-state'
@@ -94,19 +98,6 @@ export const PagesPane = React.memo((props) => {
   const [navigationControls] = useAtom(RemixNavigationAtom)
   const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
 
-  const [navigateTo, setNavigateTo] = React.useState<string | null>(null)
-
-  React.useEffect(() => {
-    if (navigateTo == null) {
-      return
-    }
-    if (remixRoutes.some((r) => r.resolvedPath === navigateTo)) {
-      void navigationControls[EP.toString(activeRemixScene)]?.navigate(navigateTo)
-      setNavigateTo(null)
-    }
-    setNavigateTo(null)
-  }, [navigateTo, remixRoutes, navigationControls, activeRemixScene])
-
   const pathname = navigationControls[EP.toString(activeRemixScene)]?.location?.pathname ?? ''
 
   const matchResult = matchRoutes(remixRoutes, pathname)
@@ -132,9 +123,7 @@ export const PagesPane = React.memo((props) => {
     [dispatch],
   )
 
-  const onAfterAddPage = React.useCallback((name: string) => {
-    setNavigateTo(name)
-  }, [])
+  useNavigateToRouteWhenAvailable(remixRoutes)
 
   if (remixRoutes.length === 0) {
     return (
@@ -167,7 +156,6 @@ export const PagesPane = React.memo((props) => {
             <AddPageContextMenu
               contextMenuInstance={'context-menu-add-page'}
               pageTemplates={pageTemplates}
-              onAfterClickAdd={onAfterAddPage}
             />
           </React.Fragment>,
         )}
@@ -181,7 +169,6 @@ export const PagesPane = React.memo((props) => {
         return (
           <PageRouteEntry
             key={path}
-            navigateTo={navigateTo}
             routePath={pathToDisplay}
             resolvedPath={pathMatchesActivePath ? matchResult?.[0].pathname : resolvedPath}
             active={pathMatchesActivePath}
@@ -198,10 +185,10 @@ interface PageRouteEntryProps {
   resolvedPath: string
   active: boolean
   matchesRealRoute: boolean
-  navigateTo: string | null
 }
 const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
   const ref = React.useRef<HTMLDivElement | null>(null)
+  useScrollToNavigateToRoute(ref, props.resolvedPath)
 
   const [navigationControls] = useAtom(RemixNavigationAtom)
   const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
@@ -219,12 +206,6 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
   const indentation = resolvedRouteSegments.length - 2
 
   const isDynamicPathSegment = lastTemplateSegment.startsWith(':')
-
-  React.useEffect(() => {
-    if (props.navigateTo === props.resolvedPath) {
-      ref.current?.scrollIntoView()
-    }
-  }, [props.navigateTo, props.resolvedPath])
 
   return (
     <FlexRow
@@ -322,22 +303,18 @@ export const AddPageContextMenu = React.memo(
   ({
     contextMenuInstance,
     pageTemplates,
-    onAfterClickAdd,
   }: {
     contextMenuInstance: ElementContextMenuInstance
     pageTemplates: PageTemplate[]
-    onAfterClickAdd: (name: string) => void
   }) => {
     const dispatch = useDispatch()
 
     const addPageAction = React.useCallback(
       (template: PageTemplate) => () => {
         const newPageName = createNewPageName()
-        const newFileName = `${newPageName}.jsx` // TODO maybe reuse the original extension?
-        onAfterClickAdd(`/${newPageName}`)
-        dispatch([addNewPage('/app/routes', template, newFileName)])
+        dispatch([addNewPage('/app/routes', template, newPageName)])
       },
-      [dispatch, onAfterClickAdd],
+      [dispatch],
     )
 
     const portalTarget = document.getElementById(PortalTargetID)
@@ -361,3 +338,43 @@ export const AddPageContextMenu = React.memo(
     )
   },
 )
+
+function useScrollToNavigateToRoute(
+  ref: React.MutableRefObject<HTMLDivElement | null>,
+  path: string,
+) {
+  const shouldNavigateToRemixRoute = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.shouldNavigateToRemixRoute,
+    'useScrollToNavigateToRoute shouldNavigateToRemixRoute',
+  )
+
+  React.useEffect(() => {
+    if (shouldNavigateToRemixRoute === path) {
+      ref.current?.scrollIntoView()
+    }
+  }, [shouldNavigateToRemixRoute, ref, path])
+}
+
+function useNavigateToRouteWhenAvailable(remixRoutes: RouteMatch[]) {
+  const dispatch = useDispatch()
+
+  const [navigationControls] = useAtom(RemixNavigationAtom)
+  const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
+
+  const shouldNavigateToRemixRoute = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.shouldNavigateToRemixRoute,
+    'useNavigateToRouteWhenAvailable shouldNavigateToRemixRoute',
+  )
+
+  React.useEffect(() => {
+    if (shouldNavigateToRemixRoute == null) {
+      return
+    }
+    if (remixRoutes.some((r) => r.resolvedPath === shouldNavigateToRemixRoute)) {
+      void navigationControls[EP.toString(activeRemixScene)]?.navigate(shouldNavigateToRemixRoute)
+      dispatch([setShouldNavigateToRemixRoute(null)])
+    }
+  }, [shouldNavigateToRemixRoute, remixRoutes, navigationControls, activeRemixScene, dispatch])
+}
