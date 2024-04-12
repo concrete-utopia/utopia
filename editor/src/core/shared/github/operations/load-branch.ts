@@ -153,9 +153,6 @@ export const updateProjectWithBranchContent =
               currentProjectContents,
             )
 
-            const componentDescriptorFiles =
-              getAllComponentDescriptorFilePaths(parsedProjectContents)
-
             // Update the editor with everything so that if anything else fails past this point
             // there's no loss of data from the user's perspective.
             dispatch(
@@ -168,12 +165,14 @@ export const updateProjectWithBranchContent =
                   true,
                 ),
                 updateProjectContents(parsedProjectContents),
-                extractPropertyControlsFromDescriptorFiles(componentDescriptorFiles),
                 updateBranchContents(parsedProjectContents),
                 truncateHistory(),
               ],
               'everyone',
             )
+
+            const componentDescriptorFiles =
+              getAllComponentDescriptorFilePaths(parsedProjectContents)
 
             // If there's a package.json file, then attempt to load the dependencies for it.
             let dependenciesPromise: Promise<void> = Promise.resolve()
@@ -206,6 +205,7 @@ export const updateProjectWithBranchContent =
               .finally(() => {
                 dispatch(
                   [
+                    extractPropertyControlsFromDescriptorFiles(componentDescriptorFiles),
                     showToast(
                       notice(
                         `Github: Updated the project with the content from ${branchName}`,
