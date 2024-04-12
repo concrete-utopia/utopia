@@ -699,6 +699,11 @@ export interface AddNewPage {
   template: PageTemplate
 }
 
+export interface AddNewFeaturedRoute {
+  action: 'ADD_NEW_FEATURED_ROUTE'
+  featuredRoute: string
+}
+
 export interface SetMainUIFile {
   action: 'SET_MAIN_UI_FILE'
   uiFile: string
@@ -1216,6 +1221,7 @@ export type EditorAction =
   | DeleteFileFromCollaboration
   | AddTextFile
   | AddNewPage
+  | AddNewFeaturedRoute
   | SetMainUIFile
   | SetCodeEditorBuildErrors
   | SetCodeEditorLintErrors

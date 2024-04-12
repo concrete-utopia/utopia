@@ -224,6 +224,7 @@ import type {
   SetSharingDialogOpen,
   SetCodeEditorComponentDescriptorErrors,
   AddNewPage,
+  AddNewFeaturedRoute,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -1123,6 +1124,13 @@ export function addNewPage(parentPath: string, template: PageTemplate): AddNewPa
     action: 'ADD_NEW_PAGE',
     template: template,
     parentPath: parentPath,
+  }
+}
+
+export function addNewFeaturedRoute(featuredRoute: string): AddNewFeaturedRoute {
+  return {
+    action: 'ADD_NEW_FEATURED_ROUTE',
+    featuredRoute: featuredRoute,
   }
 }
 

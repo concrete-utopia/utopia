@@ -331,6 +331,7 @@ import type {
   SetCodeEditorComponentDescriptorErrors,
   SetSharingDialogOpen,
   AddNewPage,
+  AddNewFeaturedRoute,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -3878,6 +3879,12 @@ export const UPDATE_FNS = {
     return UPDATE_FNS.OPEN_CODE_EDITOR_FILE(
       openCodeEditorFile(withTextFile.newFileKey, false),
       withTextFile.editorState,
+    )
+  },
+  ADD_NEW_FEATURED_ROUTE: (action: AddNewFeaturedRoute, editor: EditorModel): EditorModel => {
+    return updatePackageJsonInEditorState(
+      editor,
+      addNewFeaturedRouteToPackageJson(action.featuredRoute),
     )
   },
   DELETE_FILE: (
