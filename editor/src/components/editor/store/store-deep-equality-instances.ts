@@ -3355,6 +3355,11 @@ export function PlaceholderKeepDeepEquality(): KeepDeepEqualityCall<PlaceholderS
           return { areEqual: areEqual, value: areEqual ? oldValue : newValue }
         }
         break
+      case 'fill':
+        if (oldValue.type === newValue.type) {
+          return { areEqual: true, value: oldValue }
+        }
+        break
       default:
         assertNever(oldValue)
     }
