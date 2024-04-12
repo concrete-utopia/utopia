@@ -64,7 +64,7 @@ const ExportsDetailKey = 'exportsDetail'
 const ImportsKey = 'imports'
 
 // FIXME: This is very slow an inefficient, but is a stopgap measure for right now.
-function removeSourceMaps(topLevelElements: Array<TopLevelElement>): Array<TopLevelElement> {
+export function removeSourceMaps(topLevelElements: Array<TopLevelElement>): Array<TopLevelElement> {
   return JSON.parse(JSON.stringify(topLevelElements, (k, v) => (k === 'sourceMap' ? null : v)))
 }
 

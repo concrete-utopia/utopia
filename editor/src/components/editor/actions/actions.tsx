@@ -575,6 +575,8 @@ import {
   maybeUpdatePropertyControls,
 } from '../../../core/property-controls/property-controls-local'
 import { addNewFeaturedRouteToPackageJson } from '../../canvas/remix/remix-utils'
+import type { FixUIDsState } from '../../../core/workers/parser-printer/uid-fix'
+import { fixTopLevelElementsUIDs } from '../../../core/workers/parser-printer/uid-fix'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -4282,7 +4284,6 @@ export const UPDATE_FNS = {
             null,
             oldElementsWithin,
             emptyComments,
-            [],
           ),
           originalConditionString: action.expression,
         }
@@ -4569,7 +4570,6 @@ export const UPDATE_FNS = {
                 null,
                 {},
                 comments,
-                [],
                 element.uid,
               )
             }
@@ -4611,7 +4611,6 @@ export const UPDATE_FNS = {
                       null,
                       {},
                       comments,
-                      [],
                       textElement.uid,
                     )
                   } else {
@@ -5594,9 +5593,24 @@ export const UPDATE_FNS = {
           if (newTopLevelElementsDeepEquals.areEqual) {
             return parsed
           } else {
+            const alreadyExistingUIDs = getAllUniqueUids(
+              removeFromProjectContents(editor.projectContents, action.fullPath),
+            ).uniqueIDs
+            const fixUIDsState: FixUIDsState = {
+              mutableAllNewUIDs: new Set(alreadyExistingUIDs),
+              uidsExpectedToBeSeen: new Set(),
+              mappings: [],
+              uidUpdateMethod: 'copy-uids-fix-duplicates',
+            }
+            const fixedUpTopLevelElements = fixTopLevelElementsUIDs(
+              parsed.topLevelElements,
+              newTopLevelElementsDeepEquals.value,
+              fixUIDsState,
+            )
+
             return {
               ...parsed,
-              topLevelElements: newTopLevelElementsDeepEquals.value,
+              topLevelElements: fixedUpTopLevelElements,
             }
           }
         },

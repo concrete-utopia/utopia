@@ -126,14 +126,15 @@ export function mergeImports(
   } = {}
   let imports: Imports = {}
 
+  const fileUriWithoutExtension = stripExtension(fileUri)
+
   allImportSources.forEach((importSource) => {
     const rawAbsolutePath = absolutePathFromRelativePath(fileUri, false, importSource)
-    if (fileUri === rawAbsolutePath) {
+    const absoluteImportSource = stripExtension(rawAbsolutePath)
+    if (fileUriWithoutExtension === absoluteImportSource) {
       // Prevent accidentally importing the current file
       return
     }
-
-    const absoluteImportSource = stripExtension(rawAbsolutePath)
 
     let existingImportSourceToUse: string | undefined =
       absoluteImportSourcePathsToRelativeImportSourcePaths[absoluteImportSource]
