@@ -8,6 +8,7 @@ import {
 import { notice } from '../../../../components/common/notice'
 import type { EditorDispatch } from '../../../../components/editor/action-types'
 import {
+  extractPropertyControlsFromDescriptorFiles,
   showToast,
   truncateHistory,
   updateBranchContents,
@@ -35,6 +36,7 @@ import {
 import { updateProjectContentsWithParseResults } from '../../parser-projectcontents-utils'
 import type { GithubOperationContext } from './github-operation-context'
 import { createStoryboardFileIfNecessary } from '../../../../components/editor/actions/actions'
+import { getAllComponentDescriptorFilePaths } from '../../../property-controls/property-controls-local'
 
 export const saveAssetsToProject =
   (operationContext: GithubOperationContext) =>
@@ -151,6 +153,9 @@ export const updateProjectWithBranchContent =
               currentProjectContents,
             )
 
+            const componentDescriptorFiles =
+              getAllComponentDescriptorFilePaths(parsedProjectContents)
+
             // Update the editor with everything so that if anything else fails past this point
             // there's no loss of data from the user's perspective.
             dispatch(
@@ -163,6 +168,7 @@ export const updateProjectWithBranchContent =
                   true,
                 ),
                 updateProjectContents(parsedProjectContents),
+                extractPropertyControlsFromDescriptorFiles(componentDescriptorFiles),
                 updateBranchContents(parsedProjectContents),
                 truncateHistory(),
               ],
