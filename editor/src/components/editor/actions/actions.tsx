@@ -331,6 +331,7 @@ import type {
   SetCodeEditorComponentDescriptorErrors,
   SetSharingDialogOpen,
   AddNewPage,
+  SetShouldNavigateToRemixRoute,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -378,7 +379,6 @@ import {
   modifyUnderlyingTargetJSXElement,
   getAllComponentDescriptorErrors,
   updatePackageJsonInEditorState,
-  createNewPageName,
 } from '../store/editor-state'
 import {
   areGeneratedElementsTargeted,
@@ -482,6 +482,7 @@ import {
   setFocusedElement,
   setPackageStatus,
   setScrollAnimation,
+  setShouldNavigateToRemixRoute,
   showToast,
   updateFile,
   updateFromWorker,
@@ -950,6 +951,7 @@ export function restoreEditorState(
     forking: currentEditor.forking,
     collaborators: currentEditor.collaborators,
     sharingDialogOpen: currentEditor.sharingDialogOpen,
+    shouldNavigateToRemixRoute: currentEditor.shouldNavigateToRemixRoute,
   }
 }
 
@@ -3851,8 +3853,7 @@ export const UPDATE_FNS = {
     )
   },
   ADD_NEW_PAGE: (action: AddNewPage, editor: EditorModel): EditorModel => {
-    const newPageName = createNewPageName()
-    const newFileName = `${newPageName}.jsx` // TODO maybe reuse the original extension?
+    const newFileName = `${action.newPageName}.jsx` // TODO maybe reuse the original extension?
 
     const templateFile = getProjectFileByFilePath(editor.projectContents, action.template.path)
     if (templateFile == null || !isTextFile(templateFile)) {
@@ -3875,10 +3876,21 @@ export const UPDATE_FNS = {
     )
 
     // 3. open the text file
-    return UPDATE_FNS.OPEN_CODE_EDITOR_FILE(
+    const withTextFileOpened = UPDATE_FNS.OPEN_CODE_EDITOR_FILE(
       openCodeEditorFile(withTextFile.newFileKey, false),
       withTextFile.editorState,
     )
+
+    return UPDATE_FNS.SET_SHOULD_NAVIGATE_TO_REMIX_ROUTE(
+      setShouldNavigateToRemixRoute(`/${action.newPageName}`),
+      withTextFileOpened,
+    )
+  },
+  SET_SHOULD_NAVIGATE_TO_REMIX_ROUTE: (
+    action: SetShouldNavigateToRemixRoute,
+    editor: EditorState,
+  ): EditorState => {
+    return { ...editor, shouldNavigateToRemixRoute: action.path }
   },
   DELETE_FILE: (
     action: DeleteFile | DeleteFileFromVSCode | DeleteFileFromCollaboration,

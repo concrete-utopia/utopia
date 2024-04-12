@@ -224,6 +224,7 @@ import type {
   SetSharingDialogOpen,
   SetCodeEditorComponentDescriptorErrors,
   AddNewPage,
+  SetShouldNavigateToRemixRoute,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -1118,11 +1119,23 @@ export function addTextFile(parentPath: string, fileName: string): AddTextFile {
   }
 }
 
-export function addNewPage(parentPath: string, template: PageTemplate): AddNewPage {
+export function addNewPage(
+  parentPath: string,
+  template: PageTemplate,
+  newPageName: string,
+): AddNewPage {
   return {
     action: 'ADD_NEW_PAGE',
     template: template,
     parentPath: parentPath,
+    newPageName: newPageName,
+  }
+}
+
+export function setShouldNavigateToRemixRoute(path: string | null): SetShouldNavigateToRemixRoute {
+  return {
+    action: 'SET_SHOULD_NAVIGATE_TO_REMIX_ROUTE',
+    path: path,
   }
 }
 

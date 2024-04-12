@@ -4904,6 +4904,11 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.sharingDialogOpen,
   )
 
+  const shouldNavigateToRemixRouteResults = nullableDeepEquality(StringKeepDeepEquality)(
+    oldValue.shouldNavigateToRemixRoute,
+    newValue.shouldNavigateToRemixRoute,
+  )
+
   const areEqual =
     idResult.areEqual &&
     forkedFromProjectIdResult.areEqual &&
@@ -4985,7 +4990,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     commentFilterModeResults.areEqual &&
     forkingResults.areEqual &&
     collaboratorsResults.areEqual &&
-    sharingDialogOpenResults.areEqual
+    sharingDialogOpenResults.areEqual &&
+    shouldNavigateToRemixRouteResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -5073,6 +5079,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       forkingResults.value,
       collaboratorsResults.value,
       sharingDialogOpenResults.value,
+      shouldNavigateToRemixRouteResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)
