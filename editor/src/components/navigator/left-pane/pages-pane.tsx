@@ -359,6 +359,27 @@ const FavoriteEntry = React.memo(({ favorite, active, addedToFavorites }: Favori
       >
         {favorite}
       </span>
+      <span
+        style={{
+          flexShrink: 0,
+          display: addedToFavorites ? 'none' : 'inline-block',
+          color: colorTheme.subduedForeground.value,
+          marginLeft: 6,
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          paddingRight: 8,
+          paddingLeft: 2,
+        }}
+        css={{
+          display: 'none',
+          '*:hover > &': {
+            display: 'inline-block',
+          },
+        }}
+      >
+        🤩
+      </span>
     </FlexRow>
   )
 })
