@@ -125,7 +125,7 @@ export function componentInfo(
 }
 
 export type PlaceholderSpec =
-  // a placeholder that inserts a span with that wraps `contents`. This will be
+  // a placeholder that inserts a span that wraps `contents`. This will be
   // editable with the text editor
   | { type: 'text'; contents: string }
   // inserts a `div` with the specified width and height

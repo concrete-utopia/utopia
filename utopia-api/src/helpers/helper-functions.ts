@@ -10,9 +10,7 @@ export interface ComponentInsertOption {
 }
 
 export type ComponentExample =
-  // if only the component name is specified, and the element is not an
-  // intrinsic element, we try to infer the necessary info from the existing
-  // component registration. If we can't, a validation error is shown
+  // for intrinsic elements
   | { name: string }
 
   // if the actual component is passed, we try to infer the component
@@ -24,7 +22,7 @@ export type ComponentExample =
   | ComponentInsertOption
 
 export type PlaceholderSpec =
-  // a placeholder that inserts a span with that wraps `contents`. This will be
+  // a placeholder that inserts a span that wraps `contents`. This will be
   // editable with the text editor
   | { text: string }
   // inserts a `div` with the specified width and height
