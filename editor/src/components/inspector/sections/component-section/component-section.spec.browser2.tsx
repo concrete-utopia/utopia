@@ -855,7 +855,7 @@ describe('Controls from registering components', () => {
             children: {
               preferredContents: [
                 {
-                  label: 'Link',
+                  component: 'Link',
                   variants: { label: 'span', code: '<span>Link</span>' }
                 },
               ]
@@ -946,7 +946,7 @@ describe('Controls from registering components', () => {
                   control: 'jsx',
                   preferredContents: [
                     {
-                      label: 'span',
+                      component: 'span',
                       variants: { label: 'span', code: '<span>Title</span>' }
                     },
                   ],
