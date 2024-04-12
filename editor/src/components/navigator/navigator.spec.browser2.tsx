@@ -904,18 +904,15 @@ export var storyboard = (
       properties: {
         header: {
           control: 'jsx',
-          preferredChildComponents: [
-            {
-              name: 'span',
-              variants: [{
-                label: 'Span with Title',
-                code: '<span>Title</span>',
-              }],
-            },
-          ],
+          preferredContents: {
+            component: 'span',
+            variants: {
+              label: 'Span with Title',
+              code: '<span>Title</span>',
+            }
+          },
         },
       },
-      supportsChildren: true,
       variants: [],
     },
   },
@@ -996,13 +993,13 @@ export var storyboard = (
           properties: {
             [ExportedForTheSakeOfExportingIt]: {
               control: 'jsx',
-              preferredChildComponents: [
+              preferredContents: [
                 {
-                  name: 'Heading',
-                  additionalImports: '/src/heading',
+                  component: 'Heading',
                   variants: [
                     {
                       label: 'Heading with Title',
+                      imports: 'import { Heading } from "/src/heading"',
                       code: '<Heading>Title</Heading>',
                     },
                   ],
@@ -1010,7 +1007,6 @@ export var storyboard = (
               ],
             },
           },
-          supportsChildren: true,
           variants: [],
         },
       },
