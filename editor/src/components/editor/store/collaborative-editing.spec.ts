@@ -12,6 +12,7 @@ import { addFileToProjectContents, removeFromProjectContents } from '../../asset
 import {
   addHookForProjectChanges,
   collateCollaborativeProjectChanges,
+  removeSourceMaps,
   updateCollaborativeProjectContents,
 } from './collaborative-editing'
 import type { EditorAction } from '../action-types'
@@ -133,7 +134,7 @@ describe('addHookForProjectChanges', () => {
         const fixedElements = set(
           elementArrayToSourceMapOptic,
           null,
-          newParsedCode.topLevelElements,
+          removeSourceMaps(newParsedCode.topLevelElements),
         )
         expect(secondSessionPromises).toEqual([
           updateTopLevelElementsFromCollaborationUpdate('/assets/test1.js', fixedElements),
@@ -292,7 +293,10 @@ describe('addHookForProjectChanges', () => {
           secondFileParsedCode.topLevelElements,
         )
         expect(secondSessionPromises).toEqual([
-          updateTopLevelElementsFromCollaborationUpdate('/assets/test1.js', firstFileFixedElements),
+          updateTopLevelElementsFromCollaborationUpdate(
+            '/assets/test1.js',
+            removeSourceMaps(firstFileFixedElements),
+          ),
           updateExportsDetailFromCollaborationUpdate(
             '/assets/test1.js',
             firstFileParsedCode.exportsDetail,
@@ -300,7 +304,7 @@ describe('addHookForProjectChanges', () => {
           updateImportsFromCollaborationUpdate('/assets/test1.js', firstFileParsedCode.imports),
           updateTopLevelElementsFromCollaborationUpdate(
             '/assets/test2.js',
-            secondFileFixedElements,
+            removeSourceMaps(secondFileFixedElements),
           ),
           updateExportsDetailFromCollaborationUpdate(
             '/assets/test2.js',
@@ -357,12 +361,12 @@ describe('addHookForProjectChanges', () => {
         const secondFileFixedElements = set(
           elementArrayToSourceMapOptic,
           null,
-          secondFileParsedCode.topLevelElements,
+          removeSourceMaps(secondFileParsedCode.topLevelElements),
         )
         expect(secondSessionPromises).toEqual([
           updateTopLevelElementsFromCollaborationUpdate(
             '/assets/test2.js',
-            secondFileFixedElements,
+            removeSourceMaps(secondFileFixedElements),
           ),
           updateExportsDetailFromCollaborationUpdate(
             '/assets/test2.js',
