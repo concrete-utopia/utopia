@@ -4,17 +4,10 @@ import { jsx } from '@emotion/react'
 
 import { useAtom } from 'jotai'
 import React from 'react'
-import ReactDOM from 'react-dom'
 import { matchRoutes } from 'react-router'
 import { safeIndex, uniqBy } from '../../../core/shared/array-utils'
-import { defaultEither } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import { NO_OP, PortalTargetID } from '../../../core/shared/utils'
-import {
-  getFeaturedRoutesFromPackageJSON,
-  getPageTemplatesFromPackageJSON,
-} from '../../../printer-parsers/html/external-resources-parser'
-import { when } from '../../../utils/react-conditionals'
 import {
   FlexColumn,
   FlexRow,
@@ -32,14 +25,20 @@ import {
   ActiveRemixSceneAtom,
   RemixNavigationAtom,
 } from '../../canvas/remix/utopia-remix-root-component'
-import { MomentumContextMenu } from '../../context-menu-wrapper'
-import { addNewPage, showContextMenu } from '../../editor/actions/action-creators'
-import { useDispatch } from '../../editor/store/dispatch-context'
-import { createNewPageName } from '../../editor/store/editor-state'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
-import type { ElementContextMenuInstance } from '../../element-context-menu'
 import { ExpandableIndicator } from '../navigator-item/expandable-indicator'
-
+import {
+  getFeaturedRoutesFromPackageJSON,
+  getPageTemplatesFromPackageJSON,
+} from '../../../printer-parsers/html/external-resources-parser'
+import { defaultEither } from '../../../core/shared/either'
+import { when } from '../../../utils/react-conditionals'
+import { MomentumContextMenu } from '../../context-menu-wrapper'
+import { useDispatch } from '../../editor/store/dispatch-context'
+import { addNewPage, showContextMenu } from '../../editor/actions/action-creators'
+import type { ElementContextMenuInstance } from '../../element-context-menu'
+import ReactDOM from 'react-dom'
+import { createNewPageName } from '../../editor/store/editor-state'
 type RouteMatch = {
   path: string
   resolvedPath: string
