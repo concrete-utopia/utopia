@@ -231,7 +231,9 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
     <FlexRow
       style={{
         flexShrink: 0,
-        color: colorTheme.neutralForeground.value,
+        color: props.active
+          ? colorTheme.neutralForeground.value
+          : colorTheme.subduedForeground.value,
         backgroundColor: props.active ? colorTheme.subtleBackground.value : 'transparent',
         marginLeft: 8,
         marginRight: 8,
@@ -251,14 +253,14 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
         collapsed={false}
         selected={false}
         style={{ transform: 'scale(0.6)', opacity: 'var(--paneHoverOpacity)' }}
-        iconColor={'main'}
+        iconColor={'secondary'}
       />
       <Icn
         style={{
           marginRight: 0,
         }}
         category='filetype'
-        color={'main'}
+        color={props.active ? 'main' : 'secondary'}
         type={props.matchesRealRoute ? 'other' : 'folder-open'}
         width={12}
         height={12}
@@ -319,9 +321,7 @@ const FavoriteEntry = React.memo(({ favorite, active, addedToFavorites }: Favori
     <FlexRow
       style={{
         flexShrink: 0,
-        color: addedToFavorites
-          ? colorTheme.neutralForeground.value
-          : colorTheme.subduedForeground.value,
+        color: active ? colorTheme.neutralForeground.value : colorTheme.subduedForeground.value,
         backgroundColor: active ? colorTheme.subtleBackground.value : 'transparent',
         border: addedToFavorites ? undefined : '1px dashed ' + colorTheme.border3.value,
         marginLeft: 8,
@@ -341,7 +341,7 @@ const FavoriteEntry = React.memo(({ favorite, active, addedToFavorites }: Favori
           marginRight: 0,
         }}
         category='filetype'
-        color={'main'}
+        color={active ? 'main' : 'secondary'}
         type={'other'}
         width={12}
         height={12}
