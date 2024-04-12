@@ -35,7 +35,11 @@ import { defaultEither } from '../../../core/shared/either'
 import { when } from '../../../utils/react-conditionals'
 import { MomentumContextMenu } from '../../context-menu-wrapper'
 import { useDispatch } from '../../editor/store/dispatch-context'
-import { addNewPage, showContextMenu } from '../../editor/actions/action-creators'
+import {
+  addNewFeaturedRoute,
+  addNewPage,
+  showContextMenu,
+} from '../../editor/actions/action-creators'
 import type { ElementContextMenuInstance } from '../../element-context-menu'
 import ReactDOM from 'react-dom'
 
@@ -310,12 +314,17 @@ interface FavoriteEntryProps {
 }
 
 const FavoriteEntry = React.memo(({ favorite, active, addedToFavorites }: FavoriteEntryProps) => {
+  const dispatch = useDispatch()
   const [navigationControls] = useAtom(RemixNavigationAtom)
   const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
 
   const onClick = React.useCallback(() => {
     void navigationControls[EP.toString(activeRemixScene)]?.navigate(favorite)
   }, [navigationControls, activeRemixScene, favorite])
+
+  const onClickAddToFavorites = React.useCallback(() => {
+    dispatch([addNewFeaturedRoute(favorite)])
+  }, [dispatch, favorite])
 
   return (
     <FlexRow
@@ -360,6 +369,7 @@ const FavoriteEntry = React.memo(({ favorite, active, addedToFavorites }: Favori
         {favorite}
       </span>
       <span
+        onClick={onClickAddToFavorites}
         style={{
           flexShrink: 0,
           display: addedToFavorites ? 'none' : 'inline-block',
