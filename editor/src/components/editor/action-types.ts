@@ -697,6 +697,7 @@ export interface AddNewPage {
   action: 'ADD_NEW_PAGE'
   parentPath: string
   template: PageTemplate
+  newFileName: string
 }
 
 export interface SetMainUIFile {

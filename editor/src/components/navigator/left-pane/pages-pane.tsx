@@ -38,6 +38,7 @@ import { useDispatch } from '../../editor/store/dispatch-context'
 import { addNewPage, showContextMenu } from '../../editor/actions/action-creators'
 import type { ElementContextMenuInstance } from '../../element-context-menu'
 import ReactDOM from 'react-dom'
+import { createNewPageName } from '../../editor/store/editor-state'
 
 type RouteMatch = {
   path: string
@@ -93,6 +94,19 @@ export const PagesPane = React.memo((props) => {
   const [navigationControls] = useAtom(RemixNavigationAtom)
   const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
 
+  const [navigateTo, setNavigateTo] = React.useState<string | null>(null)
+
+  React.useEffect(() => {
+    if (navigateTo == null) {
+      return
+    }
+    if (remixRoutes.some((r) => r.resolvedPath === navigateTo)) {
+      void navigationControls[EP.toString(activeRemixScene)]?.navigate(navigateTo)
+      setNavigateTo(null)
+    }
+    setNavigateTo(null)
+  }, [navigateTo, remixRoutes, navigationControls, activeRemixScene])
+
   const pathname = navigationControls[EP.toString(activeRemixScene)]?.location?.pathname ?? ''
 
   const matchResult = matchRoutes(remixRoutes, pathname)
@@ -117,6 +131,10 @@ export const PagesPane = React.memo((props) => {
     },
     [dispatch],
   )
+
+  const onAfterAddPage = React.useCallback((name: string) => {
+    setNavigateTo(name)
+  }, [])
 
   if (remixRoutes.length === 0) {
     return (
@@ -149,6 +167,7 @@ export const PagesPane = React.memo((props) => {
             <AddPageContextMenu
               contextMenuInstance={'context-menu-add-page'}
               pageTemplates={pageTemplates}
+              onAfterClickAdd={onAfterAddPage}
             />
           </React.Fragment>,
         )}
@@ -162,6 +181,7 @@ export const PagesPane = React.memo((props) => {
         return (
           <PageRouteEntry
             key={path}
+            navigateTo={navigateTo}
             routePath={pathToDisplay}
             resolvedPath={pathMatchesActivePath ? matchResult?.[0].pathname : resolvedPath}
             active={pathMatchesActivePath}
@@ -178,8 +198,11 @@ interface PageRouteEntryProps {
   resolvedPath: string
   active: boolean
   matchesRealRoute: boolean
+  navigateTo: string | null
 }
 const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
+  const ref = React.useRef<HTMLDivElement | null>(null)
+
   const [navigationControls] = useAtom(RemixNavigationAtom)
   const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
 
@@ -197,8 +220,15 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
 
   const isDynamicPathSegment = lastTemplateSegment.startsWith(':')
 
+  React.useEffect(() => {
+    if (props.navigateTo === props.resolvedPath) {
+      ref.current?.scrollIntoView()
+    }
+  }, [props.navigateTo, props.resolvedPath])
+
   return (
     <FlexRow
+      ref={ref}
       style={{
         flexShrink: 0,
         color: colorTheme.neutralForeground.value,
@@ -292,17 +322,22 @@ export const AddPageContextMenu = React.memo(
   ({
     contextMenuInstance,
     pageTemplates,
+    onAfterClickAdd,
   }: {
     contextMenuInstance: ElementContextMenuInstance
     pageTemplates: PageTemplate[]
+    onAfterClickAdd: (name: string) => void
   }) => {
     const dispatch = useDispatch()
 
     const addPageAction = React.useCallback(
       (template: PageTemplate) => () => {
-        dispatch([addNewPage('/app/routes', template)])
+        const newPageName = createNewPageName()
+        const newFileName = `${newPageName}.jsx` // TODO maybe reuse the original extension?
+        onAfterClickAdd(`/${newPageName}`)
+        dispatch([addNewPage('/app/routes', template, newFileName)])
       },
-      [dispatch],
+      [dispatch, onAfterClickAdd],
     )
 
     const portalTarget = document.getElementById(PortalTargetID)
