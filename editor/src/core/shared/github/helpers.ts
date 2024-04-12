@@ -18,6 +18,7 @@ import { notice } from '../../../components/common/notice'
 import type { EditorAction, EditorDispatch } from '../../../components/editor/action-types'
 import {
   deleteFile,
+  extractPropertyControlsFromDescriptorFiles,
   removeFileConflict,
   setGithubState,
   showToast,
@@ -65,6 +66,7 @@ import { set } from '../optics/optic-utilities'
 import { fromField } from '../optics/optic-creators'
 import type { GithubOperationContext } from './operations/github-operation-context'
 import { GithubEndpoints } from './endpoints'
+import { getAllComponentDescriptorFilePaths } from '../../property-controls/property-controls-local'
 
 export function dispatchPromiseActions(
   dispatch: EditorDispatch,
@@ -474,7 +476,9 @@ export async function revertAllGithubFiles(
       workers,
       branchContents,
     )
+    const componentDescriptorFiles = getAllComponentDescriptorFilePaths(parsedBranchContents)
     actions.push(updateProjectContents(parsedBranchContents))
+    actions.push(extractPropertyControlsFromDescriptorFiles(componentDescriptorFiles))
   }
   return actions
 }
@@ -501,7 +505,9 @@ export async function revertGithubFile(
         const previousFile = getProjectFileByFilePath(parsedBranchContents, filename)
         if (previousFile != null) {
           const newTree = addFileToProjectContents(projectContents, filename, previousFile)
+          const componentDescriptorFiles = getAllComponentDescriptorFilePaths(newTree)
           actions.push(updateProjectContents(newTree))
+          actions.push(extractPropertyControlsFromDescriptorFiles(componentDescriptorFiles))
         }
         break
     }
