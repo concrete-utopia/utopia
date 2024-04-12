@@ -252,7 +252,7 @@ import type { ProjectServerState } from '../store/project-server-state'
 import type { SetHuggingParentToFixed } from '../../canvas/canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
 import type { CommentFilterMode } from '../../inspector/sections/comment-section'
 import type { Collaborator } from '../../../core/shared/multiplayer'
-import type { PageTemplate } from '../../../printer-parsers/html/external-resources-parser'
+import type { PageTemplate } from '../../canvas/remix/remix-utils'
 
 export function clearSelection(): EditorAction {
   return {
