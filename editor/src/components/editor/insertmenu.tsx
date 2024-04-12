@@ -559,11 +559,15 @@ const InsertMenuInner = React.memo((props: InsertMenuProps) => {
     }
   }, [options, filter, filterOption])
 
-  function onFilterChange(newValue: string, actionMeta: InputActionMeta) {
+  const onFilterChange = React.useCallback(function (
+    newValue: string,
+    actionMeta: InputActionMeta,
+  ) {
     if (actionMeta.action !== 'input-blur' && actionMeta.action !== 'menu-close') {
       setFilter(newValue.trim())
     }
-  }
+  },
+  [])
 
   const [focusedOption, setFocusedOption] = React.useState<ComponentOptionItem | null>(null)
 
@@ -610,7 +614,7 @@ const InsertMenuInner = React.memo((props: InsertMenuProps) => {
         'everyone',
       )
     },
-    [dispatch],
+    [dispatch, onFilterChange],
   )
 
   function alwaysTrue() {

@@ -331,6 +331,7 @@ const BranchBlock = () => {
                   fontWeight: isCurrent ? 'bold' : 'normal',
                   color: branch.new === true ? colorTheme.dynamicBlue.value : 'inherit',
                 }}
+                // eslint-disable-next-line react/jsx-no-bind
                 onClick={selectBranch}
               >
                 <Ellipsis>

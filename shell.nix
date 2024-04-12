@@ -45,6 +45,13 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/eslint-config-utopia
       ${pnpm}/bin/pnpm install
     '')
+    (pkgs.writeScriptBin "install-runtime-eslint" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor/packages/runtime-eslint
+      ${pnpm}/bin/pnpm install
+      ${pnpm}/bin/pnpm run build
+    '')
     (pkgs.writeScriptBin "build-vscode-common" ''
       #!/usr/bin/env bash
       set -e
@@ -59,6 +66,7 @@ let
       ${pnpm}/bin/pnpm install
       install-utopia-api
       install-eslint-config-utopia
+      install-runtime-eslint
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
       ${pnpm}/bin/pnpm install
     '')
@@ -67,6 +75,7 @@ let
       set -e
       install-utopia-api
       install-eslint-config-utopia
+      install-runtime-eslint
       build-utopia-vscode-common
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
       ${pnpm}/bin/pnpm install
