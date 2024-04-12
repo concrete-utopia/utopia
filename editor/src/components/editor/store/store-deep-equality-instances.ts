@@ -594,6 +594,8 @@ import type {
   PreferredChildComponentDescriptor,
   PropertyControls,
 } from '../../custom-code/internal-property-controls'
+import type { OnlineState } from '../online-status'
+import { onlineState } from '../online-status'
 
 export const ProjectMetadataFromServerKeepDeepEquality: KeepDeepEqualityCall<ProjectMetadataFromServer> =
   combine4EqualityCalls(
@@ -634,12 +636,18 @@ export const CollaboratorKeepDeepEquality: KeepDeepEqualityCall<Collaborator> =
     (id, name, avatar) => ({ id, name, avatar }),
   )
 
-export const MutiplayerSubstateKeepDeepEquality: KeepDeepEqualityCall<MultiplayerSubstate> =
+export const MultiplayerSubstateKeepDeepEquality: KeepDeepEqualityCall<MultiplayerSubstate> =
   combine1EqualityCall(
     (entry) => entry.editor.collaborators,
     arrayDeepEquality(CollaboratorKeepDeepEquality),
     (collaborators) => ({ editor: { collaborators: collaborators } }),
   )
+
+export const OnlineStateKeepDeepEquality: KeepDeepEqualityCall<OnlineState> = combine1EqualityCall(
+  (status) => status.runningFailureCount,
+  createCallWithTripleEquals<number>(),
+  onlineState,
+)
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
   oldValue: TransientFilesState,

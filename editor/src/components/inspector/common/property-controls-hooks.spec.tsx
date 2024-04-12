@@ -38,6 +38,7 @@ import {
   ComponentDescriptorDefaults,
   defaultComponentDescriptor,
 } from '../../custom-code/code-file'
+import { InitialOnlineState } from '../../editor/online-status'
 
 const TestAppUID2 = 'app-entity-2'
 const TestOtherComponentUID = 'other-component-entity-1'
@@ -234,6 +235,7 @@ function callPropertyControlsHook(
     storeName: 'editor-store',
     projectServerState: emptyProjectServerState(),
     collaborativeEditingSupport: emptyCollaborativeEditingSupport(),
+    onlineState: InitialOnlineState,
   }
 
   const storeHook = createStoresAndState(initialEditorStore)

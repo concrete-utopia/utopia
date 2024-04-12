@@ -48,6 +48,7 @@ import { styleStringInArray } from '../../../utils/common-constants'
 import { fireEvent } from '@testing-library/react'
 import type { EditorRenderResult } from '../../canvas/ui-jsx.test-utils'
 import { emptyProjectServerState } from '../../editor/store/project-server-state'
+import { InitialOnlineState } from '../../editor/online-status'
 
 type UpdateFunctionHelpers = {
   updateStoreWithImmer: (fn: (store: EditorStorePatched) => void) => void
@@ -76,6 +77,7 @@ export function getStoreHook(): UtopiaStoreAPI & UpdateFunctionHelpers {
     builtInDependencies: createBuiltInDependenciesList(null),
     projectServerState: emptyProjectServerState(),
     collaborativeEditingSupport: emptyCollaborativeEditingSupport(),
+    onlineState: InitialOnlineState,
   }
 
   const storeHook: UtopiaStoreAPI = createStoresAndState(defaultState)
