@@ -41,6 +41,8 @@ import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { safeIndex } from '../../../core/shared/array-utils'
 import { createClientRoutes, groupRoutesByParentId } from '../../../third-party/remix/client-routes'
 import path from 'path'
+import urljoin from 'url-join'
+import json5 from 'json5'
 
 export const OutletPathContext = React.createContext<ElementPath | null>(null)
 
@@ -465,4 +467,41 @@ export function getRemixLocationLabel(location: string | undefined): string | nu
   }
 
   return location
+}
+
+export function addNewFeaturedRouteToPackageJson(fileName: string) {
+  return function (packageJson: string) {
+    const parsedJSON = json5.parse(packageJson)
+
+    // if the utopia prop is not defined, set it to an empty object
+    if (parsedJSON.utopia == null) {
+      parsedJSON.utopia = {}
+    } else if (typeof parsedJSON.utopia !== 'object') {
+      throw new Error("the 'utopia' key in package.json should be an object")
+    }
+
+    // if the featuredRoutes prop is not defined, set it to an empty array
+    if (parsedJSON.utopia.featuredRoutes == null) {
+      parsedJSON.utopia.featuredRoutes = []
+    } else if (!Array.isArray(parsedJSON.utopia.featuredRoutes)) {
+      throw new Error("the 'utopia.featuredRoutes' key in package.json should be an array")
+    }
+
+    // append the file name if not there yet
+    const fileNameWithoutExtension = fileName.replace(/\.[^.]+$/, '')
+    const newRoute = urljoin('/', fileNameWithoutExtension)
+    const currentRoutes: string[] = parsedJSON.utopia.featuredRoutes
+    if (!currentRoutes.includes(newRoute)) {
+      parsedJSON.utopia.featuredRoutes.push(newRoute)
+    }
+
+    return JSON.stringify(parsedJSON, null, 2)
+  }
+}
+
+export type PageTemplate = { label: string; path: string }
+
+export function isPageTemplate(u: unknown): u is PageTemplate {
+  const maybe = u as PageTemplate
+  return u != null && typeof u == 'object' && maybe.label != null && maybe.path != null
 }

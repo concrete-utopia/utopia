@@ -174,6 +174,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'DELETE_FILE_FROM_VSCODE':
     case 'DELETE_FILE_FROM_COLLABORATION':
     case 'ADD_TEXT_FILE':
+    case 'ADD_NEW_PAGE':
     case 'UPDATE_FILE':
     case 'UPDATE_PROJECT_CONTENTS':
     case 'UPDATE_BRANCH_CONTENTS':

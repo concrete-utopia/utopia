@@ -223,6 +223,7 @@ import type {
   ExtractPropertyControlsFromDescriptorFiles,
   SetSharingDialogOpen,
   SetCodeEditorComponentDescriptorErrors,
+  AddNewPage,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -251,6 +252,7 @@ import type { ProjectServerState } from '../store/project-server-state'
 import type { SetHuggingParentToFixed } from '../../canvas/canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
 import type { CommentFilterMode } from '../../inspector/sections/comment-section'
 import type { Collaborator } from '../../../core/shared/multiplayer'
+import type { PageTemplate } from '../../canvas/remix/remix-utils'
 
 export function clearSelection(): EditorAction {
   return {
@@ -1112,6 +1114,14 @@ export function addTextFile(parentPath: string, fileName: string): AddTextFile {
   return {
     action: 'ADD_TEXT_FILE',
     fileName: fileName,
+    parentPath: parentPath,
+  }
+}
+
+export function addNewPage(parentPath: string, template: PageTemplate): AddNewPage {
+  return {
+    action: 'ADD_NEW_PAGE',
+    template: template,
     parentPath: parentPath,
   }
 }
