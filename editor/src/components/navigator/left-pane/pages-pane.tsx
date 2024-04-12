@@ -139,7 +139,7 @@ export const PagesPane = React.memo((props) => {
   return (
     <FlexColumn style={{ height: '100%', overflowY: 'scroll' }}>
       <InspectorSectionHeader>
-        <FlexRow style={{ flexGrow: 1 }}>Bookmarks</FlexRow>
+        <FlexRow style={{ flexGrow: 1 }}>Favorites</FlexRow>
       </InspectorSectionHeader>
       <FlexColumn style={{ paddingBottom: 24 }}>
         {featuredRoutes.map((favorites: string) => {
