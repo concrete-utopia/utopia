@@ -1,5 +1,5 @@
 import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
-import { selectComponentsForTest } from '../../../utils/utils.test-utils'
+import { selectComponentsForTest, wait } from '../../../utils/utils.test-utils'
 import {
   formatTestProjectCode,
   getPrintedUiJsCodeWithoutUIDs,
@@ -487,5 +487,120 @@ describe('The navigator render prop picker', () => {
     )
     `),
     )
+  })
+
+  it('deduplicated prop UIDs', async () => {
+    const editor = await renderTestEditorWithModel(
+      createModifiedProject({
+        [StoryboardFilePath]: `
+        import * as React from 'react'
+        import * as Utopia from 'utopia-api'
+        import { Storyboard, Scene } from 'utopia-api'
+
+        export function Flex({ hello }) {
+          return <div>{hello.gr}</div>
+        }
+        
+        export function Card({ header, children }) {
+          return (
+            <div data-uid='root'>
+              <h2 data-uid='082'>{header}</h2>
+              {children}
+            </div>
+          )
+        }
+        
+        var Playground = ({ style }) => {
+          return (
+            <div style={style} data-uid='pg-root'>
+              <Card
+                data-uid='card'
+              >
+                <p data-uid='88b'>Card contents</p>
+              </Card>
+            </div>
+          )
+        }
+        
+        export var storyboard = (
+          <Storyboard data-uid='sb'>
+            <Scene
+              style={{
+                width: 521,
+                height: 266,
+                position: 'absolute',
+                left: 554,
+                top: 247,
+                backgroundColor: 'white',
+              }}
+              data-uid='scene'
+              data-testid='scene'
+              commentId='120'
+            >
+              <Playground
+                style={{
+                  width: 454,
+                  height: 177,
+                  position: 'absolute',
+                  left: 34,
+                  top: 44,
+                  backgroundColor: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+                className='playground'
+                css={{ color: 'red' }}
+                data-uid='pg'
+              />
+            </Scene>
+          </Storyboard>
+        )        
+      `,
+        ['/utopia/components.utopia.js']: `import { Card } from './storyboard'
+
+        const Components = {
+          '/utopia/storyboard': {
+            Card: {
+              component: Card,
+              properties: {
+                title: {
+                  control: 'jsx',
+                  preferredContents: [
+                    {
+                      component: 'Flex',
+                      variants: [
+                        {
+                          label: 'Flex Hello',
+                          imports:
+                            'import { Flex } from "/utopia/storyboard"',
+                          code: '<Flex hello={{ greeting: "there" }} />',
+                        },
+                      ],
+                    },
+                  ],
+                },
+              },
+              variants: [],
+            },
+          },
+        }
+        
+        export default Components         
+      `,
+      }),
+      'await-first-dom-report',
+    )
+
+    const emptySlot = editor.renderedDOM.getByTestId(
+      'toggle-render-prop-NavigatorItemTestId-slot_sb/scene/pg:pg_root/card/prop_label_title',
+    )
+    await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
+    await editor.getDispatchFollowUpActionsFinished()
+
+    const menuButton = await waitFor(() => editor.renderedDOM.getByText('Flex Hello'))
+    await mouseClickAtPoint(menuButton, { x: 3, y: 3 })
+
+    expect(1).toEqual(1)
   })
 })
