@@ -5,7 +5,7 @@ import {
   getPrintedUiJsCodeWithoutUIDs,
   renderTestEditorWithModel,
 } from '../../canvas/ui-jsx.test-utils'
-import { StoryboardFilePath } from '../../editor/store/editor-state'
+import { StoryboardFilePath, navigatorEntryToKey } from '../../editor/store/editor-state'
 import * as EP from '../../../core/shared/element-path'
 import {
   mouseClickAtPoint,
@@ -489,7 +489,7 @@ describe('The navigator render prop picker', () => {
     )
   })
 
-  it('deduplicated prop UIDs', async () => {
+  it('deduplicates render prop UIDs', async () => {
     const editor = await renderTestEditorWithModel(
       createModifiedProject({
         [StoryboardFilePath]: `
@@ -516,7 +516,7 @@ describe('The navigator render prop picker', () => {
               <Card
                 data-uid='card'
               >
-                <p data-uid='88b'>Card contents</p>
+                <p data-uid='contents'>Card contents</p>
               </Card>
             </div>
           )
@@ -601,6 +601,27 @@ describe('The navigator render prop picker', () => {
     const menuButton = await waitFor(() => editor.renderedDOM.getByText('Flex Hello'))
     await mouseClickAtPoint(menuButton, { x: 3, y: 3 })
 
-    expect(1).toEqual(1)
+    expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+      'regular-sb/scene',
+      'regular-sb/scene/pg',
+      'regular-sb/scene/pg:pg-root',
+      'regular-sb/scene/pg:pg-root/card',
+      'render-prop-sb/scene/pg:pg-root/card/prop-label-title-title',
+      'synthetic-sb/scene/pg:pg-root/card/aab-element-aab',
+      'render-prop-sb/scene/pg:pg-root/card/prop-label-children-children',
+      'regular-sb/scene/pg:pg-root/card/contents',
+    ])
+    expect(
+      editor.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+    ).toEqual([
+      'regular-sb/scene',
+      'regular-sb/scene/pg',
+      'regular-sb/scene/pg:pg-root',
+      'regular-sb/scene/pg:pg-root/card',
+      'render-prop-sb/scene/pg:pg-root/card/prop-label-title-title',
+      'synthetic-sb/scene/pg:pg-root/card/aab-element-aab',
+      'render-prop-sb/scene/pg:pg-root/card/prop-label-children-children',
+      'regular-sb/scene/pg:pg-root/card/contents',
+    ])
   })
 })
