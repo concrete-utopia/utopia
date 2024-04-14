@@ -87,6 +87,7 @@ import {
   exportDefaultIdentifier,
   isImportSideEffects,
   isParseSuccess,
+  unparsed,
 } from '../../shared/project-file-types'
 import * as PP from '../../shared/property-path'
 import { assertNever, fastForEach } from '../../shared/utils'
@@ -1334,6 +1335,9 @@ export function parseCode(
   alreadyExistingUIDs_MUTABLE: Set<string>,
   applySteganography: SteganographyMode,
 ): ParsedTextFile {
+  if (filePath.endsWith('package-lock.json')) {
+    return unparsed
+  }
   const originalAlreadyExistingUIDs_MUTABLE: Set<string> = new Set(alreadyExistingUIDs_MUTABLE)
   const sourceFile = TS.createSourceFile(filePath, sourceText, TS.ScriptTarget.ES3)
 
