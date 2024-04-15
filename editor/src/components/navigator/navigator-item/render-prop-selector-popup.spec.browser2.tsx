@@ -1,5 +1,5 @@
 import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
-import { selectComponentsForTest, wait } from '../../../utils/utils.test-utils'
+import { selectComponentsForTest } from '../../../utils/utils.test-utils'
 import {
   formatTestProjectCode,
   getPrintedUiJsCodeWithoutUIDs,
@@ -607,7 +607,7 @@ describe('The navigator render prop picker', () => {
       'regular-sb/scene/pg:pg-root',
       'regular-sb/scene/pg:pg-root/card',
       'render-prop-sb/scene/pg:pg-root/card/prop-label-title-title',
-      'synthetic-sb/scene/pg:pg-root/card/aab-element-aab',
+      'synthetic-sb/scene/pg:pg-root/card/pro-element-pro',
       'render-prop-sb/scene/pg:pg-root/card/prop-label-children-children',
       'regular-sb/scene/pg:pg-root/card/contents',
     ])
@@ -619,7 +619,7 @@ describe('The navigator render prop picker', () => {
       'regular-sb/scene/pg:pg-root',
       'regular-sb/scene/pg:pg-root/card',
       'render-prop-sb/scene/pg:pg-root/card/prop-label-title-title',
-      'synthetic-sb/scene/pg:pg-root/card/aab-element-aab',
+      'synthetic-sb/scene/pg:pg-root/card/pro-element-pro',
       'render-prop-sb/scene/pg:pg-root/card/prop-label-children-children',
       'regular-sb/scene/pg:pg-root/card/contents',
     ])

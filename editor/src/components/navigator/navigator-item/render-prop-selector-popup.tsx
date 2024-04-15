@@ -190,9 +190,8 @@ function insertPreferredChild(
   dispatch: EditorDispatch,
 ) {
   const uniqueIds = new Set(getAllUniqueUids(projectContents).uniqueIDs)
-  const uid = generateConsistentUID('prop', new Set(getAllUniqueUids(projectContents).uniqueIDs))
+  const uid = generateConsistentUID('prop', uniqueIds)
   let element = preferredChildToInsert.elementToInsert(uid)
-  uniqueIds.add(uid)
 
   element = fixUtopiaElement(element, uniqueIds).value
 
