@@ -11,6 +11,7 @@ import {
   FlexRow,
   H2,
   HeadlessStringInput,
+  Icn,
   Icons,
   marginBottom,
   PopupList,
@@ -270,7 +271,6 @@ export const SettingsPane = React.memo(() => {
               value={name}
               onChange={onChangeProjectName}
               onKeyDown={handleKeyPress}
-              // style={{ width: 150 }}
               onBlur={handleBlurProjectName}
             />
           </UIGridRow>
@@ -282,7 +282,6 @@ export const SettingsPane = React.memo(() => {
               onChange={onChangeProjectDescription}
               onKeyDown={handleKeyPress}
               onBlur={handleBlurProjectDescription}
-              // style={{ width: 150 }}
             />
           </UIGridRow>
           <UIGridRow padded variant='|--80px--|<--------1fr-------->' style={{ marginBottom: 10 }}>
@@ -321,12 +320,13 @@ export const SettingsPane = React.memo(() => {
                 cursor: 'pointer',
                 height: UtopiaTheme.layout.inputHeight.default,
                 color: colorTheme.dynamicBlue.value,
-                gap: 4,
+                gap: 6,
                 borderRadius: UtopiaTheme.layout.inputHeight.default,
                 background: 'transparent',
               }}
             >
-              <Icons.ExternalLinkSmaller color='dynamic' /> My Projects
+              <Icn category='semantic' type='externallink' color='dynamic' width={18} height={18} />
+              My Projects
             </Button>
           </a>
         </UIGridRow>
