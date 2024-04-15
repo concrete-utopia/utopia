@@ -90,7 +90,7 @@ export const PagesPane = React.memo((props) => {
             }),
           )
         }),
-        (l, r) => l?.resolvedPath === r?.resolvedPath,
+        (l, r) => l?.path === r?.path,
       )
 
       return result
