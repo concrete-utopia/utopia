@@ -431,12 +431,16 @@ function errorsFromComponentRegistration(
             return errorMsgFromFancyError
           }
         }
-        return [
-          simpleErrorMessage(
-            fileName,
-            `Components file evaluation error: ${JSON.stringify(error.evaluationError)}`,
-          ),
-        ]
+        if (error.evaluationError instanceof Error) {
+          return [
+            simpleErrorMessage(
+              fileName,
+              `${error.evaluationError.name}: ${error.evaluationError.message}`,
+            ),
+          ]
+        }
+        // Note: this is very ugly and should not happen at all, but I keep it here so we see if it happens
+        return [simpleErrorMessage(fileName, JSON.stringify(error))]
       case 'no-export-default':
         return [simpleErrorMessage(fileName, `Components file has no default export`)]
       case 'no-exported-component-descriptors':
@@ -1165,7 +1169,7 @@ function fancyErrorToErrorMessage(error: FancyError): ErrorMessage | null {
       code,
       'fatal',
       '',
-      `Components file evaluation error: ${error}`,
+      `${error.name}: ${error.message}`,
       '',
       'component-descriptor',
       null,

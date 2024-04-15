@@ -353,8 +353,7 @@ describe('registered property controls', () => {
             endLine: null,
             errorCode: '',
             fileName: '/utopia/components.utopia.js',
-            message:
-              "Components file evaluation error: TypeError: Cannot read properties of undefined (reading 'foo')",
+            message: "TypeError: Cannot read properties of undefined (reading 'foo')",
             passTime: null,
             severity: 'fatal',
             source: 'component-descriptor',
