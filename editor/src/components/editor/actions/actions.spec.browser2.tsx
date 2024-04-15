@@ -571,9 +571,9 @@ describe('actions', () => {
                 ["test"].map(() => (
                   <Card
                     data-uid='card'
-                    header={<h3 data-uid='b82'>woot</h3>}
+                    header={<h3 data-uid='render-prop-element'>woot</h3>}
                   >
-                    <p data-uid='render-prop'>Card contents</p>
+                    <p data-uid='child-element'>Card contents</p>
                   </Card>
                 ))
               }
@@ -609,13 +609,13 @@ describe('actions', () => {
         'regular-sb/scene/map',
         'regular-sb/scene/map/card~~~1',
         'render-prop-sb/scene/map/card~~~1/prop-label-header-header',
-        'regular-sb/scene/map/card~~~1/b82',
+        'regular-sb/scene/map/card~~~1/render-prop-element',
         'render-prop-sb/scene/map/card~~~1/prop-label-children-children',
-        'regular-sb/scene/map/card~~~1/render-prop',
+        'regular-sb/scene/map/card~~~1/child-element',
       ])
 
       const renderPropEntry = editor.renderedDOM.getByTestId(
-        'NavigatorItemTestId-regular_sb/scene/map/card~~~1/b82',
+        'NavigatorItemTestId-regular_sb/scene/map/card~~~1/render_prop_element',
       )
 
       await mouseClickAtPoint(renderPropEntry, { x: 2, y: 2 })
@@ -629,7 +629,7 @@ describe('actions', () => {
         'render-prop-sb/scene/map/card~~~1/prop-label-header-header',
         'slot_sb/scene/map/card~~~1/prop-label-header',
         'render-prop-sb/scene/map/card~~~1/prop-label-children-children',
-        'regular-sb/scene/map/card~~~1/render-prop',
+        'regular-sb/scene/map/card~~~1/child-element',
       ])
     })
   })
