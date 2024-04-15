@@ -87,7 +87,7 @@ function otherFn(n) {
 }",
     "params": Array [],
     "sourceMap": Object {
-      "file": "code.jsx",
+      "file": "code.tsx",
       "mappings": "AAWoBA,CAAAA,MAAAA;AACnBC,WAASC,MAATD,CAAgBE,CAAhBF,EAAmBG;AACjBC,WAAOF,CAAPE;AACDL;;AACDC,WAASK,OAATL,CAAiBE,CAAjBF,EAAoBG;AAClBC,WAAOF,CAAPE;AACFE;;AANmBP;AAAAA;AAAAA;AAAAA;AAMnBO,CANmBP",
       "names": Array [
         "
@@ -101,7 +101,7 @@ function otherFn(n) {
         "}",
       ],
       "sources": Array [
-        "code.jsx",
+        "code.tsx",
       ],
       "sourcesContent": Array [
         "import { cake } from 'cake'
@@ -186,57 +186,27 @@ function otherFn(n) {
     },
   ],
   "fullHighlightBounds": Object {
-    "6f0": Object {
-      "endCol": 24,
-      "endLine": 20,
-      "startCol": 19,
-      "startLine": 20,
-      "uid": "6f0",
-    },
-    "847": Object {
-      "endCol": 1,
-      "endLine": 17,
-      "startCol": 0,
-      "startLine": 15,
-      "uid": "847",
-    },
-    "aaa": Object {
-      "endCol": 11,
-      "endLine": 25,
-      "startCol": 4,
-      "startLine": 20,
-      "uid": "aaa",
-    },
-    "aab": Object {
-      "endCol": 8,
-      "endLine": 24,
-      "startCol": 6,
-      "startLine": 21,
-      "uid": "aab",
-    },
-    "d56": Object {
-      "endCol": 22,
-      "endLine": 22,
-      "startCol": 17,
-      "startLine": 22,
-      "uid": "d56",
-    },
-    "d62": Object {
+    "32a": Object {
       "endCol": 1,
       "endLine": 14,
       "startCol": 0,
       "startLine": 12,
-      "uid": "d62",
+      "uid": "32a",
     },
-    "eb2": Object {
+    "6e3": Object {
+      "endCol": 24,
+      "endLine": 20,
+      "startCol": 19,
+      "startLine": 20,
+      "uid": "6e3",
+    },
+    "8f7": Object {
       "endCol": 38,
       "endLine": 23,
       "startCol": 14,
       "startLine": 23,
-      "uid": "eb2",
+      "uid": "8f7",
     },
-  },
-  "highlightBounds": Object {
     "aaa": Object {
       "endCol": 11,
       "endLine": 25,
@@ -251,12 +221,42 @@ function otherFn(n) {
       "startLine": 21,
       "uid": "aab",
     },
-    "eb2": Object {
+    "b90": Object {
+      "endCol": 1,
+      "endLine": 17,
+      "startCol": 0,
+      "startLine": 15,
+      "uid": "b90",
+    },
+    "feb": Object {
+      "endCol": 22,
+      "endLine": 22,
+      "startCol": 17,
+      "startLine": 22,
+      "uid": "feb",
+    },
+  },
+  "highlightBounds": Object {
+    "8f7": Object {
       "endCol": 38,
       "endLine": 23,
       "startCol": 14,
       "startLine": 23,
-      "uid": "eb2",
+      "uid": "8f7",
+    },
+    "aaa": Object {
+      "endCol": 11,
+      "endLine": 25,
+      "startCol": 4,
+      "startLine": 20,
+      "uid": "aaa",
+    },
+    "aab": Object {
+      "endCol": 8,
+      "endLine": 24,
+      "startCol": 6,
+      "startLine": 21,
+      "uid": "aab",
     },
   },
   "imports": Object {
@@ -391,7 +391,7 @@ function otherFn(n) {
 }",
       "params": Array [],
       "sourceMap": Object {
-        "file": "code.jsx",
+        "file": "code.tsx",
         "mappings": "AAYCA,CAAAA,MAAAA;AAAQC,WAASC,MAATD,CAAYE,CAAZF,EAAYE;AAClBC,WAAOC,CAAPD;AACFE;;AAFAN;AAAAA;AAAAA;AAEAM,CAFAN",
         "names": Array [
           "function",
@@ -404,7 +404,7 @@ function otherFn(n) {
           "}",
         ],
         "sources": Array [
-          "code.jsx",
+          "code.tsx",
         ],
         "sourcesContent": Array [
           "import { cake } from 'cake'
@@ -485,7 +485,7 @@ export var whatever = (props) => {
 }",
       "params": Array [],
       "sourceMap": Object {
-        "file": "code.jsx",
+        "file": "code.tsx",
         "mappings": "AAeCA,CAAAA,MAAAA;AAAQC,WAASC,OAATD,CAAaE,CAAbF,EAAaE;AACnBC,WAAOF,CAAPE;AACFC;;AAFAL;AAAAA;AAAAA;AAEAK,CAFAL",
         "names": Array [
           "function",
@@ -497,7 +497,7 @@ export var whatever = (props) => {
           "}",
         ],
         "sources": Array [
-          "code.jsx",
+          "code.tsx",
         ],
         "sourcesContent": Array [
           "import { cake } from 'cake'
@@ -631,7 +631,7 @@ export var whatever = (props) => {
                   "originalJavascript": "cakeFn(otherFn('b') + 2)",
                   "params": Array [],
                   "sourceMap": Object {
-                    "file": "code.jsx",
+                    "file": "code.tsx",
                     "mappings": "OAuBeA,MAAOC,QAASC,CAATD,GAASC,CAATD,GAAPD,CAAOC,CAAPD",
                     "names": Array [
                       "cakeFn",
@@ -639,7 +639,7 @@ export var whatever = (props) => {
                       "b",
                     ],
                     "sources": Array [
-                      "code.jsx",
+                      "code.tsx",
                     ],
                     "sourcesContent": Array [
                       "import { cake } from 'cake'
@@ -735,68 +735,75 @@ Object {
     },
   ],
   "fullHighlightBounds": Object {
-    "0e0": Object {
-      "endCol": 37,
-      "endLine": 6,
-      "startCol": 25,
-      "startLine": 6,
-      "uid": "0e0",
-    },
-    "17e": Object {
+    "13e": Object {
       "endCol": 22,
-      "endLine": 4,
-      "startCol": 17,
-      "startLine": 4,
-      "uid": "17e",
-    },
-    "18b": Object {
-      "endCol": 45,
       "endLine": 6,
       "startCol": 17,
       "startLine": 6,
-      "uid": "18b",
+      "uid": "13e",
     },
-    "1ab": Object {
+    "1e3": Object {
+      "endCol": 37,
+      "endLine": 6,
+      "startCol": 25,
+      "startLine": 6,
+      "uid": "1e3",
+    },
+    "34a": Object {
       "endCol": 31,
-      "endLine": 4,
-      "startCol": 30,
-      "startLine": 4,
-      "uid": "1ab",
-    },
-    "1db": Object {
-      "endCol": 45,
-      "endLine": 4,
-      "startCol": 40,
-      "startLine": 4,
-      "uid": "1db",
-    },
-    "2ba": Object {
-      "endCol": 45,
       "endLine": 6,
-      "startCol": 40,
+      "startCol": 30,
       "startLine": 6,
-      "uid": "2ba",
+      "uid": "34a",
     },
-    "5b4": Object {
+    "4cf": Object {
       "endCol": 37,
       "endLine": 4,
       "startCol": 25,
       "startLine": 4,
-      "uid": "5b4",
+      "uid": "4cf",
     },
-    "6f0": Object {
+    "58b": Object {
+      "endCol": 45,
+      "endLine": 4,
+      "startCol": 40,
+      "startLine": 4,
+      "uid": "58b",
+    },
+    "67f": Object {
+      "endCol": 45,
+      "endLine": 4,
+      "startCol": 17,
+      "startLine": 4,
+      "uid": "67f",
+    },
+    "6c7": Object {
+      "endCol": 45,
+      "endLine": 6,
+      "startCol": 17,
+      "startLine": 6,
+      "uid": "6c7",
+    },
+    "6e3": Object {
       "endCol": 53,
       "endLine": 5,
       "startCol": 48,
       "startLine": 5,
-      "uid": "6f0",
+      "uid": "6e3",
     },
-    "95b": Object {
-      "endCol": 37,
+    "7cb": Object {
+      "endCol": 22,
+      "endLine": 4,
+      "startCol": 17,
+      "startLine": 4,
+      "uid": "7cb",
+    },
+    "7df": Object {
+      "endCol": 45,
       "endLine": 6,
-      "startCol": 25,
+      "startCol": 40,
       "startLine": 6,
-      "uid": "95b",
+      "uid": "7df",
     },
     "aaa": Object {
       "endCol": 56,
@@ -805,77 +812,77 @@ Object {
       "startLine": 5,
       "uid": "aaa",
     },
-    "dd4": Object {
-      "endCol": 31,
+    "b93": Object {
+      "endCol": 37,
       "endLine": 6,
-      "startCol": 30,
+      "startCol": 25,
       "startLine": 6,
-      "uid": "dd4",
+      "uid": "b93",
     },
-    "df5": Object {
-      "endCol": 22,
-      "endLine": 6,
-      "startCol": 17,
-      "startLine": 6,
-      "uid": "df5",
-    },
-    "eb0": Object {
-      "endCol": 45,
-      "endLine": 4,
-      "startCol": 17,
-      "startLine": 4,
-      "uid": "eb0",
-    },
-    "edd": Object {
+    "fa9": Object {
       "endCol": 37,
       "endLine": 4,
       "startCol": 25,
       "startLine": 4,
-      "uid": "edd",
+      "uid": "fa9",
+    },
+    "fbe": Object {
+      "endCol": 31,
+      "endLine": 4,
+      "startCol": 30,
+      "startLine": 4,
+      "uid": "fbe",
     },
   },
   "highlightBounds": Object {
-    "0e0": Object {
-      "endCol": 37,
+    "13e": Object {
+      "endCol": 22,
       "endLine": 6,
-      "startCol": 25,
+      "startCol": 17,
       "startLine": 6,
-      "uid": "0e0",
+      "uid": "13e",
     },
-    "17e": Object {
+    "4cf": Object {
+      "endCol": 37,
+      "endLine": 4,
+      "startCol": 25,
+      "startLine": 4,
+      "uid": "4cf",
+    },
+    "58b": Object {
+      "endCol": 45,
+      "endLine": 4,
+      "startCol": 40,
+      "startLine": 4,
+      "uid": "58b",
+    },
+    "67f": Object {
+      "endCol": 45,
+      "endLine": 4,
+      "startCol": 17,
+      "startLine": 4,
+      "uid": "67f",
+    },
+    "6c7": Object {
+      "endCol": 45,
+      "endLine": 6,
+      "startCol": 17,
+      "startLine": 6,
+      "uid": "6c7",
+    },
+    "7cb": Object {
       "endCol": 22,
       "endLine": 4,
       "startCol": 17,
       "startLine": 4,
-      "uid": "17e",
+      "uid": "7cb",
     },
-    "18b": Object {
-      "endCol": 45,
-      "endLine": 6,
-      "startCol": 17,
-      "startLine": 6,
-      "uid": "18b",
-    },
-    "1db": Object {
-      "endCol": 45,
-      "endLine": 4,
-      "startCol": 40,
-      "startLine": 4,
-      "uid": "1db",
-    },
-    "2ba": Object {
+    "7df": Object {
       "endCol": 45,
       "endLine": 6,
       "startCol": 40,
       "startLine": 6,
-      "uid": "2ba",
-    },
-    "5b4": Object {
-      "endCol": 37,
-      "endLine": 4,
-      "startCol": 25,
-      "startLine": 4,
-      "uid": "5b4",
+      "uid": "7df",
     },
     "aaa": Object {
       "endCol": 56,
@@ -884,19 +891,12 @@ Object {
       "startLine": 5,
       "uid": "aaa",
     },
-    "df5": Object {
-      "endCol": 22,
+    "b93": Object {
+      "endCol": 37,
       "endLine": 6,
-      "startCol": 17,
+      "startCol": 25,
       "startLine": 6,
-      "uid": "df5",
-    },
-    "eb0": Object {
-      "endCol": 45,
-      "endLine": 4,
-      "startCol": 17,
-      "startLine": 4,
-      "uid": "eb0",
+      "uid": "b93",
     },
   },
   "imports": Object {
@@ -991,7 +991,7 @@ Object {
           "originalJavascript": "n > 0",
           "params": Array [],
           "sourceMap": Object {
-            "file": "code.jsx",
+            "file": "code.tsx",
             "mappings": "OAImBA,IAAFC,CAACC",
             "names": Array [
               ">",
@@ -999,7 +999,7 @@ Object {
               " ",
             ],
             "sources": Array [
-              "code.jsx",
+              "code.tsx",
             ],
             "sourcesContent": Array [
               "import * as React from \\"react\\";
@@ -1033,7 +1033,7 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
           "originalJavascript": "b(10)",
           "params": Array [],
           "sourceMap": Object {
-            "file": "code.jsx",
+            "file": "code.tsx",
             "mappings": "OAI0CA,EAAFC,EAAED,CAADE",
             "names": Array [
               "10",
@@ -1041,7 +1041,7 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
               "(",
             ],
             "sources": Array [
-              "code.jsx",
+              "code.tsx",
             ],
             "sourcesContent": Array [
               "import * as React from \\"react\\";
@@ -1088,7 +1088,7 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
                 },
                 "type": "ATTRIBUTE_VALUE",
                 "uid": "",
-                "value": "5b4",
+                "value": "4cf",
               },
             },
           ],
@@ -1205,7 +1205,7 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
           "originalJavascript": "n > 0",
           "params": Array [],
           "sourceMap": Object {
-            "file": "code.jsx",
+            "file": "code.tsx",
             "mappings": "OAMmBA,IAAFC,CAACC",
             "names": Array [
               ">",
@@ -1213,7 +1213,7 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
               " ",
             ],
             "sources": Array [
-              "code.jsx",
+              "code.tsx",
             ],
             "sourcesContent": Array [
               "import * as React from \\"react\\";
@@ -1247,7 +1247,7 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
           "originalJavascript": "a(10)",
           "params": Array [],
           "sourceMap": Object {
-            "file": "code.jsx",
+            "file": "code.tsx",
             "mappings": "OAM0CA,EAAFC,EAAED,CAADE",
             "names": Array [
               "10",
@@ -1255,7 +1255,7 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
               "(",
             ],
             "sources": Array [
-              "code.jsx",
+              "code.tsx",
             ],
             "sourcesContent": Array [
               "import * as React from \\"react\\";
@@ -1302,7 +1302,7 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
                 },
                 "type": "ATTRIBUTE_VALUE",
                 "uid": "",
-                "value": "0e0",
+                "value": "b93",
               },
             },
           ],
@@ -1339,7 +1339,7 @@ Object {
     "javascript": "const a = \\"cake\\"",
     "params": Array [],
     "sourceMap": Object {
-      "file": "code.jsx",
+      "file": "code.tsx",
       "mappings": "AAUqBA,CAAAA,MAAAA;AACpBC,QAAMC,CAACC,GAAGC,MAAVH;AADoBD;AAAAA;AAAAA;AACLI,CADKJ",
       "names": Array [
         "
@@ -1350,7 +1350,7 @@ Object {
         "\\"",
       ],
       "sources": Array [
-        "code.jsx",
+        "code.tsx",
       ],
       "sourcesContent": Array [
         "import * as React from \\"react\\";
@@ -1386,7 +1386,7 @@ export var App = (props) => <View data-uid='bbb'>
                 "mappings": "CAWO",
                 "names": Array [],
                 "sources": Array [
-                  "code.jsx",
+                  "code.tsx",
                 ],
                 "sourcesContent": Array [
                   "import * as React from \\"react\\";
@@ -1444,49 +1444,49 @@ export var App = (props) => <View data-uid='bbb'>
     },
   ],
   "fullHighlightBounds": Object {
-    "271": Object {
+    "5b5": Object {
+      "endCol": 9,
+      "endLine": 13,
+      "startCol": 3,
+      "startLine": 13,
+      "uid": "5b5",
+    },
+    "854": Object {
       "endCol": 48,
       "endLine": 12,
       "startCol": 43,
       "startLine": 12,
-      "uid": "271",
+      "uid": "854",
     },
-    "754": Object {
+    "bbb": Object {
+      "endCol": 7,
+      "endLine": 14,
+      "startCol": 28,
+      "startLine": 12,
+      "uid": "bbb",
+    },
+    "d0b": Object {
       "endCol": 16,
       "endLine": 11,
       "startCol": 0,
       "startLine": 11,
-      "uid": "754",
-    },
-    "bbb": Object {
-      "endCol": 7,
-      "endLine": 14,
-      "startCol": 28,
-      "startLine": 12,
-      "uid": "bbb",
-    },
-    "cf3": Object {
-      "endCol": 9,
-      "endLine": 13,
-      "startCol": 3,
-      "startLine": 13,
-      "uid": "cf3",
+      "uid": "d0b",
     },
   },
   "highlightBounds": Object {
+    "5b5": Object {
+      "endCol": 9,
+      "endLine": 13,
+      "startCol": 3,
+      "startLine": 13,
+      "uid": "5b5",
+    },
     "bbb": Object {
       "endCol": 7,
       "endLine": 14,
       "startCol": 28,
       "startLine": 12,
       "uid": "bbb",
-    },
-    "cf3": Object {
-      "endCol": 9,
-      "endLine": 13,
-      "startCol": 3,
-      "startLine": 13,
-      "uid": "cf3",
     },
   },
   "imports": Object {
@@ -1594,7 +1594,7 @@ export var App = (props) => <View data-uid='bbb'>
       "javascript": "const a = \\"cake\\"",
       "params": Array [],
       "sourceMap": Object {
-        "file": "code.jsx",
+        "file": "code.tsx",
         "mappings": "AAWCA,CAAAA,MAAOC;AAACC,QAAGC,CAAIC,GAAAA,MAAPF;AAADD;AAAAA;AAAAA;AAAQG,CAAfJ",
         "names": Array [
           "const",
@@ -1604,7 +1604,7 @@ export var App = (props) => <View data-uid='bbb'>
           "\\"",
         ],
         "sources": Array [
-          "code.jsx",
+          "code.tsx",
         ],
         "sourcesContent": Array [
           "import * as React from \\"react\\";
@@ -1640,7 +1640,7 @@ export var App = (props) => <View data-uid='bbb'>
                   "mappings": "CAWO",
                   "names": Array [],
                   "sources": Array [
-                    "code.jsx",
+                    "code.tsx",
                   ],
                   "sourcesContent": Array [
                     "import * as React from \\"react\\";
@@ -1731,7 +1731,7 @@ export var App = (props) => <View data-uid='bbb'>
             "originalJavascript": "{a: a}",
             "params": Array [],
             "sourceMap": Object {
-              "file": "code.jsx",
+              "file": "code.tsx",
               "mappings": "OAaIA,CAACC;AAAEC,KAAHF;AAACC,CAADD",
               "names": Array [
                 "{",
@@ -1739,7 +1739,7 @@ export var App = (props) => <View data-uid='bbb'>
                 " ",
               ],
               "sources": Array [
-                "code.jsx",
+                "code.tsx",
               ],
               "sourcesContent": Array [
                 "import * as React from \\"react\\";

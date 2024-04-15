@@ -111,13 +111,13 @@ Array [
           "originalJavascript": "<div data-uid='bbb' />",
           "params": Array [],
           "sourceMap": Object {
-            "file": "code.jsx",
+            "file": "code.tsx",
             "mappings": "OAMQA;AAAAA;AAAAA",
             "names": Array [
               "<",
             ],
             "sources": Array [
-              "code.jsx",
+              "code.tsx",
             ],
             "sourcesContent": Array [
               "import * as React from 'react'
@@ -228,7 +228,7 @@ export var storyboard = (props) => {
 }",
     "params": Array [],
     "sourceMap": Object {
-      "file": "code.jsx",
+      "file": "code.tsx",
       "mappings": "AAWOA,CAACC,MAAIC;AAAAA,MAAAA,UAAcC,GAAQE,KAADD,IAAIE;AAClCC,WACEC,oBAACC,UAADD;AAAYE,kBAASC;AAArBH,OACEA,oBAACI,KAADJ;AACEK,MAAAA,KAAKT,EAAEU;AAAEC,QAAAA,IAAIC,EAAEC,CAARH;AAAWI,QAAAA,GAAGF,EAAEC,CAAhBH;AAAmBK,QAAAA,KAAKH,EAAEI,GAA1BN;AAA+BO,QAAAA,MAAML,EAAEI;AAAvCN,OADTN;AAEEE,kBAASC;AAFXH,OAIEA,oBAACc,GAADd;AACEE,kBAASC,YADXH;AAEEK,MAAAA,KAAKT,EAAEU;AAAES,QAAAA,MAAMP,EAAEC,CAAVH;AAAaC,QAAAA,IAAIC,EAAEC,CAAnBH;AAAsBU,QAAAA,KAAKR,EAAEC,CAA7BH;AAAgCI,QAAAA,GAAGF,EAAEC;AAArCH;AAFTN,MAJFA,CADFA,CADFD;AAaFkB,GAdWvB;;AAAAA;AAAAA;AAAAA;AAcXuB,CAdMzB",
       "names": Array [
         " ",
@@ -260,7 +260,7 @@ export var storyboard = (props) => {
         "}",
       ],
       "sources": Array [
-        "code.jsx",
+        "code.tsx",
       ],
       "sourcesContent": Array [
         "import * as React from 'react'
@@ -307,7 +307,7 @@ export var storyboard = (props) => {
                 "mappings": "CAWY",
                 "names": Array [],
                 "sources": Array [
-                  "code.jsx",
+                  "code.tsx",
                 ],
                 "sourcesContent": Array [
                   "import * as React from 'react'
@@ -397,7 +397,7 @@ export var storyboard = (props) => {
                 },
               ],
               "sourceMap": Object {
-                "file": "code.jsx",
+                "file": "code.tsx",
                 "mappings": "OAWyBA,SAAWC;AACjCC,SACEC;AAAYC,gBAAZD;AAAAA,KACEA,oBAACE,KAADF;AACEG,WAAOC;AAAEC,UAAIC,EAANF;AAAWG,SAAGD,EAAdF;AAAmBI,WAAKF,EAAxBF;AAA+BK,YAAMH,EAAtCF;AAACA,KADTJ;AAEEC,gBAFFD;AAAAA,KAIEA,oBAACU,GAADV;AACEC,gBAASU,YADXX;AAEEG,WAAOC;AAAEQ,YAAMN,EAARF;AAAaC,UAAIC,EAAjBF;AAAsBS,WAAKP,EAA3BF;AAAgCG,SAAGD,EAF5CN;AAESI;AAFTJ,IAJFA,CADFA,CADFD;AADqBe,CAACjB",
                 "names": Array [
                   "props",
@@ -421,7 +421,7 @@ export var storyboard = (props) => {
                   "(",
                 ],
                 "sources": Array [
-                  "code.jsx",
+                  "code.tsx",
                 ],
                 "sourcesContent": Array [
                   "import * as React from 'react'

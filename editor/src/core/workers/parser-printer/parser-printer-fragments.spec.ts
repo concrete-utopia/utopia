@@ -18,11 +18,11 @@ describe('JSX parser', () => {
           JSX_ELEMENT - View - aaa
             JSX_FRAGMENT - ggg
               JSX_ELEMENT - div - bbb
-                JSX_TEXT_BLOCK - 3c2
-                JSX_FRAGMENT - 651
+                JSX_TEXT_BLOCK - 3ed
+                JSX_FRAGMENT - 7fd
                   JSX_ELEMENT - div - ccc
             JSX_ELEMENT - div - ddd
-              JSX_TEXT_BLOCK - db1
+              JSX_TEXT_BLOCK - 3d0
         UNPARSED_CODE
         UTOPIA_JSX_COMPONENT - storyboard
           JSX_ELEMENT - Storyboard - eee

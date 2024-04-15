@@ -28,9 +28,9 @@ describe('Conditonals JSX parser', () => {
           JSX_ELEMENT - div - div
             JSX_CONDITIONAL_EXPRESSION - conditional
               JSX_ELEMENT - div - hello
-                JSX_TEXT_BLOCK - c7a
+                JSX_TEXT_BLOCK - 9e1
               JSX_ELEMENT - div - world
-                JSX_TEXT_BLOCK - db1
+                JSX_TEXT_BLOCK - 3d0
         UNPARSED_CODE
         UTOPIA_JSX_COMPONENT - storyboard
           JSX_ELEMENT - Storyboard - eee
