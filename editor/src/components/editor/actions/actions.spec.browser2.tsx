@@ -57,7 +57,10 @@ import {
   FOR_TESTS_setNextGeneratedUid,
   FOR_TESTS_setNextGeneratedUids,
 } from '../../../core/model/element-template-utils.test-utils'
-import { createTestProjectWithMultipleFiles } from '../../../sample-projects/sample-project-utils.test-utils'
+import {
+  createModifiedProject,
+  createTestProjectWithMultipleFiles,
+} from '../../../sample-projects/sample-project-utils.test-utils'
 import {
   LeftMenuTab,
   navigatorEntryToKey,
@@ -530,6 +533,104 @@ describe('actions', () => {
         expect(got.code).toEqual(makeTestProjectCodeWithSnippet(tt.wantCode))
         expect(got.selection).toEqual(tt.wantSelection)
       })
+    })
+
+    it('can delete render props from an element in a map expression', async () => {
+      const editor = await renderTestEditorWithModel(
+        createModifiedProject({
+          [StoryboardFilePath]: `import * as React from 'react'
+        import * as Utopia from 'utopia-api'
+        import { Storyboard, Scene } from 'utopia-api'
+        
+        export function Card({ header, children }) {
+          return (
+            <div data-uid='dbc'>
+              <h2 data-uid='4b3'>{header}</h2>
+              {children}
+            </div>
+          )
+        }
+        
+        export var storyboard = (
+          <Storyboard data-uid='sb'>
+            <Scene
+              style={{
+                width: 521,
+                height: 266,
+                position: 'absolute',
+                left: 717,
+                top: 597,
+                backgroundColor: 'white',
+              }}
+              data-uid='scene'
+              data-testid='scene'
+              commentId='sce'
+            >
+              {
+                // @utopia/uid=map
+                ["test"].map(() => (
+                  <Card
+                    data-uid='card'
+                    header={<h3 data-uid='render-prop-element'>woot</h3>}
+                  >
+                    <p data-uid='child-element'>Card contents</p>
+                  </Card>
+                ))
+              }
+            </Scene>
+          </Storyboard>
+        )
+        
+      `,
+          ['/utopia/components.utopia.js']: `import { Card } from './storyboard'
+
+          const Components = {
+            '/utopia/storyboard': {
+              Card: {
+                component: Card,
+                properties: {
+                  header: {
+                    control: 'jsx',
+                  },
+                },
+                variants: [],
+              },
+            },
+          }
+          
+          export default Components          
+      `,
+        }),
+        'await-first-dom-report',
+      )
+
+      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        'regular-sb/scene',
+        'regular-sb/scene/map',
+        'regular-sb/scene/map/card~~~1',
+        'render-prop-sb/scene/map/card~~~1/prop-label-header-header',
+        'regular-sb/scene/map/card~~~1/render-prop-element',
+        'render-prop-sb/scene/map/card~~~1/prop-label-children-children',
+        'regular-sb/scene/map/card~~~1/child-element',
+      ])
+
+      const renderPropEntry = editor.renderedDOM.getByTestId(
+        'NavigatorItemTestId-regular_sb/scene/map/card~~~1/render_prop_element',
+      )
+
+      await mouseClickAtPoint(renderPropEntry, { x: 2, y: 2 })
+
+      await pressKey('Backspace')
+
+      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        'regular-sb/scene',
+        'regular-sb/scene/map',
+        'regular-sb/scene/map/card~~~1',
+        'render-prop-sb/scene/map/card~~~1/prop-label-header-header',
+        'slot_sb/scene/map/card~~~1/prop-label-header',
+        'render-prop-sb/scene/map/card~~~1/prop-label-children-children',
+        'regular-sb/scene/map/card~~~1/child-element',
+      ])
     })
   })
 
