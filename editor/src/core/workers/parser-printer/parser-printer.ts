@@ -121,7 +121,7 @@ import { fromField } from '../../../core/shared/optics/optic-creators'
 import type { Optic } from '../../../core/shared/optics/optics'
 import { modify } from '../../../core/shared/optics/optic-utilities'
 import { identifyValuesDefinedInNode } from './parser-printer-expressions'
-import { getFileExtension } from '../../shared/file-utils'
+import { getFileExtension, isJsFile } from '../../shared/file-utils'
 
 const BakedInStoryboardVariableName = 'storyboard'
 
@@ -1942,8 +1942,7 @@ export function lintAndParse(
   shouldTrimBounds: 'trim-bounds' | 'do-not-trim-bounds',
   applySteganography: SteganographyMode,
 ): ParsedTextFile {
-  const fileExtension = getFileExtension(filename)
-  if (!FileExtensionsToParse.includes(fileExtension.toLowerCase())) {
+  if (!isJsFile(filename)) {
     return unparsed
   }
 
