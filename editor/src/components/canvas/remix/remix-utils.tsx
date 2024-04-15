@@ -469,33 +469,52 @@ export function getRemixLocationLabel(location: string | undefined): string | nu
   return location
 }
 
-export function addNewFeaturedRouteToPackageJson(fileName: string) {
-  return function (packageJson: string) {
-    const parsedJSON = json5.parse(packageJson)
+function modifyFeaturedRoutesInPackageJson(
+  packageJson: string,
+  modifyFn: (routes: string[]) => string[],
+): string {
+  const parsedJSON = json5.parse(packageJson)
 
-    // if the utopia prop is not defined, set it to an empty object
-    if (parsedJSON.utopia == null) {
-      parsedJSON.utopia = {}
-    } else if (typeof parsedJSON.utopia !== 'object') {
-      throw new Error("the 'utopia' key in package.json should be an object")
+  // if the utopia prop is not defined, set it to an empty object
+  if (parsedJSON.utopia == null) {
+    parsedJSON.utopia = {}
+  } else if (typeof parsedJSON.utopia !== 'object') {
+    throw new Error("the 'utopia' key in package.json should be an object")
+  }
+
+  // if the featuredRoutes prop is not defined, set it to an empty array
+  if (parsedJSON.utopia.featuredRoutes == null) {
+    parsedJSON.utopia.featuredRoutes = []
+  } else if (!Array.isArray(parsedJSON.utopia.featuredRoutes)) {
+    throw new Error("the 'utopia.featuredRoutes' key in package.json should be an array")
+  }
+
+  parsedJSON.utopia.featuredRoutes = modifyFn(parsedJSON.utopia.featuredRoutes)
+
+  return JSON.stringify(parsedJSON, null, 2)
+}
+
+export function addNewFeaturedRouteToPackageJson(urlRoute: string) {
+  return function (packageJson: string): string {
+    if (urlRoute === '') {
+      throw new Error('Cannot add an empty route to the featured routes')
     }
+    const newRoute = urljoin('/', urlRoute)
+    return modifyFeaturedRoutesInPackageJson(packageJson, (currentRoutes) => {
+      if (!currentRoutes.includes(newRoute)) {
+        return [...currentRoutes, newRoute]
+      }
+      return currentRoutes
+    })
+  }
+}
 
-    // if the featuredRoutes prop is not defined, set it to an empty array
-    if (parsedJSON.utopia.featuredRoutes == null) {
-      parsedJSON.utopia.featuredRoutes = []
-    } else if (!Array.isArray(parsedJSON.utopia.featuredRoutes)) {
-      throw new Error("the 'utopia.featuredRoutes' key in package.json should be an array")
-    }
-
-    // append the file name if not there yet
-    const fileNameWithoutExtension = fileName.replace(/\.[^.]+$/, '')
-    const newRoute = urljoin('/', fileNameWithoutExtension)
-    const currentRoutes: string[] = parsedJSON.utopia.featuredRoutes
-    if (!currentRoutes.includes(newRoute)) {
-      parsedJSON.utopia.featuredRoutes.push(newRoute)
-    }
-
-    return JSON.stringify(parsedJSON, null, 2)
+export function removeFeaturedRouteFromPackageJson(routeToRemove: string) {
+  return function (packageJson: string): string {
+    const actualRouteToRemove = urljoin('/', routeToRemove)
+    return modifyFeaturedRoutesInPackageJson(packageJson, (currentRoutes) => {
+      return currentRoutes.filter((route) => route !== actualRouteToRemove)
+    })
   }
 }
 

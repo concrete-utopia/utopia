@@ -700,6 +700,16 @@ export interface AddNewPage {
   newPageName: string
 }
 
+export interface AddNewFeaturedRoute {
+  action: 'ADD_NEW_FEATURED_ROUTE'
+  featuredRoute: string
+}
+
+export interface RemoveFeaturedRoute {
+  action: 'REMOVE_FEATURED_ROUTE'
+  routeToRemove: string
+}
+
 export interface SetMainUIFile {
   action: 'SET_MAIN_UI_FILE'
   uiFile: string
@@ -1225,6 +1235,8 @@ export type EditorAction =
   | DeleteFileFromCollaboration
   | AddTextFile
   | AddNewPage
+  | AddNewFeaturedRoute
+  | RemoveFeaturedRoute
   | SetMainUIFile
   | SetCodeEditorBuildErrors
   | SetCodeEditorLintErrors

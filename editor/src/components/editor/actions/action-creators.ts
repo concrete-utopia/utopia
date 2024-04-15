@@ -224,6 +224,8 @@ import type {
   SetSharingDialogOpen,
   SetCodeEditorComponentDescriptorErrors,
   AddNewPage,
+  AddNewFeaturedRoute,
+  RemoveFeaturedRoute,
   ResetOnlineState,
   IncreaseOnlineStateFailureCount,
 } from '../action-types'
@@ -1130,6 +1132,20 @@ export function addNewPage(
     template: template,
     parentPath: parentPath,
     newPageName: newPageName,
+  }
+}
+
+export function addNewFeaturedRoute(featuredRoute: string): AddNewFeaturedRoute {
+  return {
+    action: 'ADD_NEW_FEATURED_ROUTE',
+    featuredRoute: featuredRoute,
+  }
+}
+
+export function removeFeaturedRoute(routeToRemove: string): RemoveFeaturedRoute {
+  return {
+    action: 'REMOVE_FEATURED_ROUTE',
+    routeToRemove: routeToRemove,
   }
 }
 

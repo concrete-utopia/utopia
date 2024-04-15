@@ -331,6 +331,8 @@ import type {
   SetCodeEditorComponentDescriptorErrors,
   SetSharingDialogOpen,
   AddNewPage,
+  AddNewFeaturedRoute,
+  RemoveFeaturedRoute,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -573,7 +575,10 @@ import {
   createModuleEvaluator,
   maybeUpdatePropertyControls,
 } from '../../../core/property-controls/property-controls-local'
-import { addNewFeaturedRouteToPackageJson } from '../../canvas/remix/remix-utils'
+import {
+  addNewFeaturedRouteToPackageJson,
+  removeFeaturedRouteFromPackageJson,
+} from '../../canvas/remix/remix-utils'
 import type { FixUIDsState } from '../../../core/workers/parser-printer/uid-fix'
 import { fixTopLevelElementsUIDs } from '../../../core/workers/parser-printer/uid-fix'
 
@@ -3861,7 +3866,7 @@ export const UPDATE_FNS = {
     // 1. add the new page to the featured routes
     const withPackageJson = updatePackageJsonInEditorState(
       editor,
-      addNewFeaturedRouteToPackageJson(newFileName),
+      addNewFeaturedRouteToPackageJson(action.newPageName),
     )
 
     // 2. write the new text file
@@ -3876,6 +3881,18 @@ export const UPDATE_FNS = {
     return UPDATE_FNS.OPEN_CODE_EDITOR_FILE(
       openCodeEditorFile(withTextFile.newFileKey, false),
       withTextFile.editorState,
+    )
+  },
+  ADD_NEW_FEATURED_ROUTE: (action: AddNewFeaturedRoute, editor: EditorModel): EditorModel => {
+    return updatePackageJsonInEditorState(
+      editor,
+      addNewFeaturedRouteToPackageJson(action.featuredRoute),
+    )
+  },
+  REMOVE_FEATURED_ROUTE: (action: RemoveFeaturedRoute, editor: EditorModel): EditorModel => {
+    return updatePackageJsonInEditorState(
+      editor,
+      removeFeaturedRouteFromPackageJson(action.routeToRemove),
     )
   },
   DELETE_FILE: (

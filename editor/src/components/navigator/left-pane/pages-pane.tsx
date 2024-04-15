@@ -1,5 +1,6 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
+/** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/react'
 
 import { useAtom } from 'jotai'
@@ -16,6 +17,7 @@ import {
   InspectorSectionHeader,
   SquareButton,
   Subdued,
+  Tooltip,
   UtopiaTheme,
   colorTheme,
 } from '../../../uuiui'
@@ -35,10 +37,16 @@ import { defaultEither } from '../../../core/shared/either'
 import { when } from '../../../utils/react-conditionals'
 import { MomentumContextMenu } from '../../context-menu-wrapper'
 import { useDispatch } from '../../editor/store/dispatch-context'
-import { addNewPage, showContextMenu } from '../../editor/actions/action-creators'
+import {
+  addNewFeaturedRoute,
+  addNewPage,
+  removeFeaturedRoute,
+  showContextMenu,
+} from '../../editor/actions/action-creators'
 import type { ElementContextMenuInstance } from '../../element-context-menu'
 import ReactDOM from 'react-dom'
 import { createNewPageName } from '../../editor/store/editor-state'
+
 type RouteMatch = {
   path: string
   resolvedPath: string
@@ -82,7 +90,7 @@ export const PagesPane = React.memo((props) => {
             }),
           )
         }),
-        (l, r) => l?.resolvedPath === r?.resolvedPath,
+        (l, r) => l?.path === r?.path,
       )
 
       return result
@@ -128,28 +136,40 @@ export const PagesPane = React.memo((props) => {
     setNavigateTo(null)
   })
 
-  if (remixRoutes.length === 0) {
-    return (
-      <FlexColumn
-        style={{
-          height: '100%',
-          overflowY: 'scroll',
-          whiteSpace: 'normal',
-          padding: 16,
-          paddingTop: 64,
-        }}
-      >
-        <Subdued>
-          No featured routes were found in the project. Please add a 'featuredRoutes' field to the
-          'utopia' field in the package.json file.
-        </Subdued>
-      </FlexColumn>
-    )
-  }
+  const activeRoute = matchResult?.[0].pathname ?? pathname
+  const activeRouteDoesntMatchAnyFavorites = !featuredRoutes.includes(activeRoute)
+
   return (
     <FlexColumn style={{ height: '100%', overflowY: 'scroll' }}>
       <InspectorSectionHeader>
-        <FlexRow style={{ flexGrow: 1 }}>Pages</FlexRow>
+        <FlexRow style={{ flexGrow: 1 }}>Favorites</FlexRow>
+      </InspectorSectionHeader>
+      <FlexColumn style={{ paddingBottom: 24 }}>
+        {featuredRoutes.map((favorite: string) => {
+          const pathMatchesActivePath = matchResult?.[0].pathname === favorite
+
+          return (
+            <FavoriteEntry
+              key={favorite}
+              favorite={favorite}
+              active={pathMatchesActivePath}
+              addedToFavorites={true}
+            />
+          )
+        })}
+        {activeRouteDoesntMatchAnyFavorites ? (
+          <FavoriteEntry
+            key={activeRoute}
+            favorite={activeRoute}
+            active={true}
+            addedToFavorites={false}
+          />
+        ) : (
+          <div style={{ height: UtopiaTheme.layout.rowHeight.smaller }} />
+        )}
+      </FlexColumn>
+      <InspectorSectionHeader>
+        <FlexRow style={{ flexGrow: 1 }}>Routes</FlexRow>
         {when(
           canAddPage,
           <React.Fragment>
@@ -165,6 +185,23 @@ export const PagesPane = React.memo((props) => {
         )}
       </InspectorSectionHeader>
 
+      {when(
+        remixRoutes.length === 0,
+        <FlexColumn
+          style={{
+            height: '100%',
+            overflowY: 'scroll',
+            whiteSpace: 'normal',
+            padding: 16,
+            paddingTop: 32,
+          }}
+        >
+          <Subdued>
+            No featured routes were found in the project. Please add a favorite route using the
+            Favorites section.
+          </Subdued>
+        </FlexColumn>,
+      )}
       {remixRoutes.map((route: RouteMatch, index) => {
         const { path, resolvedPath } = route
         const pathMatchesActivePath = matchResult?.[0].route.path === path
@@ -218,7 +255,9 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
       ref={ref}
       style={{
         flexShrink: 0,
-        color: colorTheme.neutralForeground.value,
+        color: props.active
+          ? colorTheme.neutralForeground.value
+          : colorTheme.subduedForeground.value,
         backgroundColor: props.active ? colorTheme.subtleBackground.value : 'transparent',
         marginLeft: 8,
         marginRight: 8,
@@ -238,14 +277,14 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
         collapsed={false}
         selected={false}
         style={{ transform: 'scale(0.6)', opacity: 'var(--paneHoverOpacity)' }}
-        iconColor={'main'}
+        iconColor={'secondary'}
       />
       <Icn
         style={{
           marginRight: 0,
         }}
         category='filetype'
-        color={'main'}
+        color={props.active ? 'main' : 'secondary'}
         type={props.matchesRealRoute ? 'other' : 'folder-open'}
         width={12}
         height={12}
@@ -261,7 +300,7 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
           flexGrow: 1,
         }}
       >
-        {lastResolvedSegment === '' ? RemixIndexPathLabel : '/' + lastResolvedSegment}
+        {lastTemplateSegment === '' ? RemixIndexPathLabel : '/' + lastTemplateSegment}
       </span>
       <span
         style={{
@@ -282,9 +321,143 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
           },
         }}
       >
-        {lastTemplateSegment}
+        {lastResolvedSegment}
       </span>
     </FlexRow>
+  )
+})
+
+interface FavoriteEntryProps {
+  favorite: string
+  active: boolean
+  addedToFavorites: boolean
+}
+
+const FavoriteEntry = React.memo(({ favorite, active, addedToFavorites }: FavoriteEntryProps) => {
+  const [navigationControls] = useAtom(RemixNavigationAtom)
+  const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
+
+  const onClick = React.useCallback(() => {
+    void navigationControls[EP.toString(activeRemixScene)]?.navigate(favorite)
+  }, [navigationControls, activeRemixScene, favorite])
+
+  return (
+    <FlexRow
+      style={{
+        flexShrink: 0,
+        color: active ? colorTheme.neutralForeground.value : colorTheme.subduedForeground.value,
+        backgroundColor: active ? colorTheme.subtleBackground.value : 'transparent',
+        border: addedToFavorites
+          ? '1px solid transparent'
+          : '1px dashed ' + colorTheme.border3.value,
+        boxSizing: 'border-box',
+        marginLeft: 8,
+        marginRight: 8,
+        paddingLeft: 19, // to visually align the icons with the route entries underneath the favorites section
+        paddingTop: 3,
+        paddingBottom: 3,
+        height: UtopiaTheme.layout.rowHeight.smaller,
+        alignItems: 'center',
+        borderRadius: 2,
+        position: 'relative',
+      }}
+      onClick={onClick}
+    >
+      <Icn
+        style={{
+          marginRight: 0,
+        }}
+        category='filetype'
+        color={active ? 'main' : 'secondary'}
+        type={'other'}
+        width={12}
+        height={12}
+      />
+      {/* TODO if we want renaming, cannibalize it from FileBrowserItem */}
+      <span
+        style={{
+          marginLeft: 6,
+          display: 'inline-block',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          flexGrow: 1,
+        }}
+      >
+        {favorite}
+      </span>
+      <StarUnstarIcon url={favorite} selected={active} addedToFavorites={addedToFavorites} />
+    </FlexRow>
+  )
+})
+
+interface StarUnstarIconProps {
+  url: string
+  addedToFavorites: boolean
+  selected: boolean
+}
+
+const StarUnstarIcon = React.memo(({ url, addedToFavorites, selected }: StarUnstarIconProps) => {
+  const dispatch = useDispatch()
+
+  const onClickAddOrRemoveFavorite = React.useCallback(
+    (e: React.MouseEvent) => {
+      if (!addedToFavorites) {
+        dispatch([addNewFeaturedRoute(url)])
+      } else {
+        dispatch([removeFeaturedRoute(url)])
+      }
+      e.stopPropagation()
+    },
+    [dispatch, url, addedToFavorites],
+  )
+
+  const [mouseOver, setMouseOver] = React.useState(false)
+  const onMouseOver = React.useCallback(() => {
+    setMouseOver(true)
+  }, [])
+  const onMouseLeave = React.useCallback(() => {
+    setMouseOver(false)
+  }, [])
+
+  const type: 'star' | 'starfilled' = (() => {
+    if (addedToFavorites) {
+      return mouseOver ? 'star' : 'starfilled'
+    } else {
+      return mouseOver ? 'starfilled' : 'star'
+    }
+  })()
+
+  return (
+    <Tooltip title={addedToFavorites ? 'Remove from Favorites' : 'Add to Favorites'}>
+      <Icn
+        onMouseOver={onMouseOver}
+        onMouseLeave={onMouseLeave}
+        onClick={onClickAddOrRemoveFavorite}
+        category='navigator-element'
+        type={type}
+        color={'main'}
+        width={12}
+        height={12}
+        style={{
+          flexShrink: 0,
+          opacity: selected ? 1 : undefined,
+          color: colorTheme.subduedForeground.value,
+          marginLeft: 6,
+          marginRight: 6,
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          cursor: 'pointer',
+        }}
+        css={{
+          opacity: 0,
+          '*:hover > &': {
+            opacity: 1,
+          },
+        }}
+      />
+    </Tooltip>
   )
 })
 
