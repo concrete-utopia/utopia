@@ -4,7 +4,7 @@ import type { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as EP from '../../../core/shared/element-path'
 import type { IcnProps } from '../../../uuiui'
-import { useColorTheme, Button, Icons, FlexRow } from '../../../uuiui'
+import { useColorTheme, Button, FlexRow, Icn } from '../../../uuiui'
 import { stopPropagation } from '../../inspector/common/inspector-utils'
 import { when } from '../../../utils/react-conditionals'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
@@ -182,9 +182,9 @@ export const VisibilityIndicator: React.FunctionComponent<
       }}
     >
       {props.visibilityEnabled ? (
-        <Icons.EyeOpen color={color} style={{ transform: 'scale(.85)' }} />
+        <Icn category='semantic' type='eyeopen' color={color} width={12} height={12} />
       ) : (
-        <Icons.EyeStrikethrough color={color} style={{ transform: 'scale(.85)' }} />
+        <Icn category='semantic' type='eye-strikethrough' color={color} width={12} height={12} />
       )}
     </Button>
   )
@@ -228,27 +228,27 @@ export const SelectionLockedIndicator: React.FunctionComponent<
       onClick={handleClick}
       onMouseDown={stopPropagation}
       style={{
-        height: 18,
-        width: 18,
+        height: 12,
+        width: 12,
         display: shouldShow ? 'block' : 'none',
         paddingRight: 1,
       }}
     >
       {when(
         value === 'locked',
-        <Icons.LockClosed color={color} style={{ transform: 'scale(.85)' }} />,
+        <Icn category='semantic' type='lockclosed' color={color} width={12} height={12} />,
       )}
       {when(
         value === 'locked-hierarchy',
-        <Icons.LockClosedDot color={color} style={{ transform: 'scale(.85)' }} />,
+        <Icn category='semantic' type='lockcloseddot' color={color} width={12} height={12} />,
       )}
       {when(
         value === 'selectable' && !isDescendantOfLocked,
-        <Icons.LockOpen color={color} style={{ transform: 'scale(.85)' }} />,
+        <Icn category='semantic' type='lockopen' color={color} width={12} height={12} />,
       )}
       {when(
         value === 'selectable' && isDescendantOfLocked,
-        <Icons.Dot color={color} style={{ transform: 'scale(.85)' }} />,
+        <Icn category='semantic' type='dot' color={color} width={12} height={12} />,
       )}
     </Button>
   )
@@ -358,6 +358,7 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
       style={{
         padding: '4px 5px',
         position: 'fixed',
+        gap: 3,
         right: 0,
         background:
           props.highlighted ||
