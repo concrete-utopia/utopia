@@ -14,7 +14,7 @@ import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
 import { ComponentPicker, type ElementToInsert } from './component-picker'
 import type { PreferredChildComponentDescriptor } from '../../custom-code/internal-property-controls'
-import { generateConsistentUID } from '../../../core/shared/uid-utils'
+import { fixUtopiaElement, generateConsistentUID } from '../../../core/shared/uid-utils'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { elementFromInsertMenuItem } from '../../editor/insert-callbacks'
 import { MomentumContextMenu } from '../../context-menu-wrapper'
@@ -189,9 +189,12 @@ function insertPreferredChild(
   projectContents: ProjectContentTreeRoot,
   dispatch: EditorDispatch,
 ) {
-  const uid = generateConsistentUID('prop', new Set(getAllUniqueUids(projectContents).uniqueIDs))
+  const uniqueIds = new Set(getAllUniqueUids(projectContents).uniqueIDs)
+  const uid = generateConsistentUID('prop', uniqueIds)
+  let element = preferredChildToInsert.elementToInsert(uid)
 
-  const element = preferredChildToInsert.elementToInsert(uid)
+  element = fixUtopiaElement(element, uniqueIds).value
+
   if (element.type !== 'JSX_ELEMENT') {
     throw new Error('only JSX elements are supported as preferred components')
   }
