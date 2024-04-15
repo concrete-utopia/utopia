@@ -18,17 +18,47 @@ import { fixUtopiaElement, generateConsistentUID } from '../../../core/shared/ui
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { elementFromInsertMenuItem } from '../../editor/insert-callbacks'
 import { MomentumContextMenu } from '../../context-menu-wrapper'
-import { NO_OP } from '../../../core/shared/utils'
+import { NO_OP, assertNever } from '../../../core/shared/utils'
 import { type ContextMenuItem } from '../../context-menu-items'
-import { FlexRow, Icn } from '../../../uuiui'
+import { FlexRow, Icn, type IcnProps } from '../../../uuiui'
 import { type EditorDispatch } from '../../editor/action-types'
 import { type ProjectContentTreeRoot } from '../../assets'
-import { type ComponentInfo } from '../../custom-code/code-file'
+import {
+  type PropertyControlsInfo,
+  type ComponentInfo,
+  type ComponentDescriptor,
+} from '../../custom-code/code-file'
+import { type Icon } from 'utopia-api'
+
+function getRegisteredComponent(
+  targetName: string,
+  propertyControlsInfo: PropertyControlsInfo,
+): ComponentDescriptor | null {
+  for (const componentsFile of Object.values(propertyControlsInfo)) {
+    // FIXME This isn't good enough - we need to know which module the target is coming from,
+    // otherwise we'll be returning the first component with a matching name
+    if (componentsFile[targetName] != null) {
+      return componentsFile[targetName]
+    }
+  }
+
+  return null
+}
+
+function getIconForComponent(targetName: string, propertyControlsInfo: PropertyControlsInfo): Icon {
+  const registeredComponent = getRegisteredComponent(targetName, propertyControlsInfo)
+
+  return registeredComponent?.icon ?? 'regular'
+}
+
+interface PreferredChildComponentDescriptorWithIcon extends PreferredChildComponentDescriptor {
+  icon: Icon
+}
 
 const usePreferredChildrenForTargetProp = (
   target: ElementPath,
   prop: string,
-): Array<PreferredChildComponentDescriptor> => {
+): Array<PreferredChildComponentDescriptorWithIcon> => {
   const selectedJSXElement = useEditorState(
     Substores.metadata,
     (store) => MetadataUtils.getJSXElementFromMetadata(store.editor.jsxMetadata, target),
@@ -43,21 +73,25 @@ const usePreferredChildrenForTargetProp = (
       }
 
       const targetName = getJSXElementNameAsString(selectedJSXElement.name)
+      const registeredComponent = getRegisteredComponent(
+        targetName,
+        store.editor.propertyControlsInfo,
+      )
+
       // TODO: we don't deal with components registered with the same name in multiple files
-      for (const file of Object.values(store.editor.propertyControlsInfo)) {
-        for (const [name, value] of Object.entries(file)) {
-          if (name === targetName) {
-            for (const [registeredPropName, registeredPropValue] of Object.entries(
-              value.properties,
-            )) {
-              if (
-                registeredPropName === prop &&
-                registeredPropValue.control === 'jsx' &&
-                registeredPropValue.preferredChildComponents != null
-              ) {
-                return registeredPropValue.preferredChildComponents
-              }
-            }
+      if (registeredComponent != null) {
+        for (const [registeredPropName, registeredPropValue] of Object.entries(
+          registeredComponent.properties,
+        )) {
+          if (
+            registeredPropName === prop &&
+            registeredPropValue.control === 'jsx' &&
+            registeredPropValue.preferredChildComponents != null
+          ) {
+            return registeredPropValue.preferredChildComponents.map((v) => ({
+              ...v,
+              icon: getIconForComponent(v.name, store.editor.propertyControlsInfo),
+            }))
           }
         }
       }
@@ -216,6 +250,31 @@ interface RenderPropPickerProps {
   id: string
 }
 
+function iconPropsForIcon(icon: Icon): IcnProps {
+  switch (icon) {
+    case 'column':
+      return {
+        category: 'navigator-element',
+        type: 'flex-column',
+        color: 'main',
+      }
+    case 'row':
+      return {
+        category: 'navigator-element',
+        type: 'flex-row',
+        color: 'main',
+      }
+    case 'regular':
+      return {
+        category: 'navigator-element',
+        type: 'component',
+        color: 'main',
+      }
+    default:
+      assertNever(icon)
+  }
+}
+
 const RenderPropPickerSimple = React.memo<RenderPropPickerProps>(({ key, id, target, prop }) => {
   const { showRenderPropPicker } = useShowRenderPropPicker(`${id}-full`)
 
@@ -247,9 +306,11 @@ const RenderPropPickerSimple = React.memo<RenderPropPickerProps>(({ key, id, tar
 
   const items: Array<ContextMenuItem<unknown>> = preferredChildrenForTargetProp
     .flatMap<ContextMenuItem<unknown>>((data) => {
+      const iconProps = iconPropsForIcon(data.icon)
+
       const submenuLabel = (
-        <FlexRow>
-          <Icn category='component' type='default' width={18} height={18} />
+        <FlexRow style={{ gap: 5 }}>
+          <Icn {...iconProps} width={12} height={12} />
           {data.name}
         </FlexRow>
       )
