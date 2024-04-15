@@ -92,7 +92,7 @@ import {
 import * as PP from '../../shared/property-path'
 import { assertNever, fastForEach } from '../../shared/utils'
 import { addImport, emptyImports } from '../common/project-file-utils'
-import { FileExtensionsToParse, lintCode } from '../linter/linter'
+import { lintCode } from '../linter/linter'
 import type { FunctionContents, WithParserMetadata } from './parser-printer-parsing'
 import {
   flattenOutAnnoyingContainers,
@@ -121,7 +121,7 @@ import { fromField } from '../../../core/shared/optics/optic-creators'
 import type { Optic } from '../../../core/shared/optics/optics'
 import { modify } from '../../../core/shared/optics/optic-utilities'
 import { identifyValuesDefinedInNode } from './parser-printer-expressions'
-import { getFileExtension, isJsFile } from '../../shared/file-utils'
+import { isJsFile } from '../../shared/file-utils'
 
 const BakedInStoryboardVariableName = 'storyboard'
 
