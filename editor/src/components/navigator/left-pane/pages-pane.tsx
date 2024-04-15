@@ -136,7 +136,7 @@ export const PagesPane = React.memo((props) => {
     setNavigateTo(null)
   })
 
-  const activeRoute = matchResult?.[0].pathname ?? ''
+  const activeRoute = matchResult?.[0].pathname ?? pathname
   const activeRouteDoesntMatchAnyFavorites = !featuredRoutes.includes(activeRoute)
 
   if (remixRoutes.length === 0) {
