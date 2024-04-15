@@ -1119,11 +1119,16 @@ export function addTextFile(parentPath: string, fileName: string): AddTextFile {
   }
 }
 
-export function addNewPage(parentPath: string, template: PageTemplate): AddNewPage {
+export function addNewPage(
+  parentPath: string,
+  template: PageTemplate,
+  newPageName: string,
+): AddNewPage {
   return {
     action: 'ADD_NEW_PAGE',
     template: template,
     parentPath: parentPath,
+    newPageName: newPageName,
   }
 }
 
