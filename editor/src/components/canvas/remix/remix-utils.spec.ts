@@ -1,8 +1,8 @@
 import { addNewFeaturedRouteToPackageJson } from './remix-utils'
 
 describe('addNewFeaturedRouteToPackageJson', () => {
-  it('adds the new filename to the featured routes', async () => {
-    const got = addNewFeaturedRouteToPackageJson('foo.bar')(`
+  it('adds the new path to the featured routes', async () => {
+    const got = addNewFeaturedRouteToPackageJson('foo/bar')(`
 {
   "hey": "there",
   "utopia": {
@@ -20,20 +20,20 @@ describe('addNewFeaturedRouteToPackageJson', () => {
     "featuredRoutes": [
       "/",
       "/test",
-      "/foo"
+      "/foo/bar"
     ]
   }
 }`.trim(),
     )
   })
   it('does nothing if the route is already there', async () => {
-    const got = addNewFeaturedRouteToPackageJson('foo.bar')(`
+    const got = addNewFeaturedRouteToPackageJson('foo/bar')(`
 {
   "hey": "there",
   "utopia": {
   	"featuredRoutes": [
   	  "/",
-  	  "/foo",
+  	  "/foo/bar",
   	  "/test"
   	]
   }
@@ -52,44 +52,27 @@ describe('addNewFeaturedRouteToPackageJson', () => {
 }`.trim(),
     )
   })
-  it('adds the new filename to the featured routes even if without an extension', async () => {
-    const got = addNewFeaturedRouteToPackageJson('foo')(
-      `{ "hey": "there", "utopia": { "featuredRoutes": [ "/", "/test" ] } }`,
-    )
-    const want = `
-{
-  "hey": "there",
-  "utopia": {
-    "featuredRoutes": [
-      "/",
-      "/test",
-      "/foo"
-    ]
-  }
-}`
-    expect(got).toEqual(want.trim())
-  })
   it('adds the featured routes prop if missing', async () => {
-    const got = addNewFeaturedRouteToPackageJson('foo.bar')(`{ "hey": "there", "utopia": {} }`)
+    const got = addNewFeaturedRouteToPackageJson('foo/bar')(`{ "hey": "there", "utopia": {} }`)
     const want = `
 {
   "hey": "there",
   "utopia": {
     "featuredRoutes": [
-      "/foo"
+      "/foo/bar"
     ]
   }
 }`
     expect(got).toEqual(want.trim())
   })
   it('adds the utopia prop if missing', async () => {
-    const got = addNewFeaturedRouteToPackageJson('foo.bar')(`{ "hey": "there" }`)
+    const got = addNewFeaturedRouteToPackageJson('foo/bar')(`{ "hey": "there" }`)
     const want = `
 {
   "hey": "there",
   "utopia": {
     "featuredRoutes": [
-      "/foo"
+      "/foo/bar"
     ]
   }
 }`
