@@ -1419,7 +1419,7 @@ function toastOnGeneratedElementsTargeted(
   }
 
   if (!generatedElementsTargeted || allowActionRegardless) {
-    result = actionOtherwise(result)
+    result = actionOtherwise(editor)
   }
 
   return result
@@ -1826,6 +1826,9 @@ export const UPDATE_FNS = {
 
         const staticSelectedElements = editor.selectedViews
           .filter((selectedView) => {
+            if (MetadataUtils.isRenderPropsFromMetadata(editor.jsxMetadata, selectedView)) {
+              return true
+            }
             return !MetadataUtils.isElementGenerated(selectedView)
           })
           .map((path, _, allSelectedPaths) => {
@@ -1939,11 +1942,15 @@ export const UPDATE_FNS = {
     )
   },
   DELETE_VIEW: (action: DeleteView, editor: EditorModel, dispatch: EditorDispatch): EditorModel => {
+    const allSelectedElementsRenderProps = editor.selectedViews.every((path) =>
+      MetadataUtils.isRenderPropsFromMetadata(editor.jsxMetadata, path),
+    )
+
     return toastOnGeneratedElementsTargeted(
       'Generated elements can only be deleted in code.',
       [action.target],
       editor,
-      false,
+      allSelectedElementsRenderProps,
       (e) => {
         const updatedEditor = deleteElements([action.target], e, { trueUpHuggingElements: false })
         const parentPath = EP.parentPath(action.target)
