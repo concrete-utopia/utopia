@@ -75,7 +75,7 @@ import { useIsLoggedIn, useLiveblocksConnectionListener } from '../../core/share
 import { ForkSearchParamKey, ProjectForkFlow } from './project-fork-flow'
 import { isRoomId, projectIdToRoomId } from '../../utils/room-id'
 import { SharingDialog } from './sharing-dialog'
-import { AccessLevelParamKey } from './persistence/persistence-backend'
+import { AccessLevelParamKey, CloneParamKey } from './persistence/persistence-backend'
 import { useUpdateActiveRemixSceneOnSelectionChange } from '../canvas/remix/utopia-remix-root-component'
 
 const liveModeToastId = 'play-mode-toast'
@@ -91,8 +91,10 @@ function pushProjectURLToBrowserHistory(
     // …but if it's forking, remove the fork param
     queryParams.delete(ForkSearchParamKey)
   }
-  // remove accessLevel param
-  queryParams.delete(AccessLevelParamKey)
+  // remove one-time creation params
+  ;[AccessLevelParamKey, CloneParamKey].forEach((key) => {
+    queryParams.delete(key)
+  })
 
   const queryParamsStr = queryParams.size > 0 ? `?${queryParams.toString()}` : ''
 
