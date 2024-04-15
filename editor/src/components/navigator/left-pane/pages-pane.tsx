@@ -40,6 +40,7 @@ import { useDispatch } from '../../editor/store/dispatch-context'
 import {
   addNewFeaturedRoute,
   addNewPage,
+  removeFeaturedRoute,
   showContextMenu,
 } from '../../editor/actions/action-creators'
 import type { ElementContextMenuInstance } from '../../element-context-menu'
@@ -334,7 +335,6 @@ interface FavoriteEntryProps {
 }
 
 const FavoriteEntry = React.memo(({ favorite, active, addedToFavorites }: FavoriteEntryProps) => {
-  const dispatch = useDispatch()
   const [navigationControls] = useAtom(RemixNavigationAtom)
   const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
 
@@ -403,10 +403,14 @@ const StarUnstarIcon = React.memo(({ url, addedToFavorites, selected }: StarUnst
 
   const onClickAddOrRemoveFavorite = React.useCallback(
     (e: React.MouseEvent) => {
-      dispatch([addNewFeaturedRoute(url)])
+      if (!addedToFavorites) {
+        dispatch([addNewFeaturedRoute(url)])
+      } else {
+        dispatch([removeFeaturedRoute(url)])
+      }
       e.stopPropagation()
     },
-    [dispatch, url],
+    [dispatch, url, addedToFavorites],
   )
 
   const [mouseOver, setMouseOver] = React.useState(false)
@@ -426,7 +430,7 @@ const StarUnstarIcon = React.memo(({ url, addedToFavorites, selected }: StarUnst
   })()
 
   return (
-    <Tooltip title='Add to Favorites'>
+    <Tooltip title={addedToFavorites ? 'Remove from Favorites' : 'Add to Favorites'}>
       <Icn
         onMouseOver={onMouseOver}
         onMouseLeave={onMouseLeave}

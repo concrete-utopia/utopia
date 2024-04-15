@@ -470,7 +470,7 @@ export function getRemixLocationLabel(location: string | undefined): string | nu
 }
 
 export function addNewFeaturedRouteToPackageJson(urlRoute: string) {
-  return function (packageJson: string) {
+  return function (packageJson: string): string {
     const parsedJSON = json5.parse(packageJson)
 
     // if the utopia prop is not defined, set it to an empty object
@@ -492,6 +492,33 @@ export function addNewFeaturedRouteToPackageJson(urlRoute: string) {
     const currentRoutes: string[] = parsedJSON.utopia.featuredRoutes
     if (!currentRoutes.includes(newRoute)) {
       parsedJSON.utopia.featuredRoutes.push(newRoute)
+    }
+
+    return JSON.stringify(parsedJSON, null, 2)
+  }
+}
+
+export function removeFeaturedRouteFromPackageJson(routeToRemove: string) {
+  return function (packageJson: string): string {
+    const parsedJSON = json5.parse(packageJson)
+
+    // if the utopia prop is not defined, set it to an empty object
+    if (parsedJSON.utopia == null) {
+      parsedJSON.utopia = {}
+    } else if (typeof parsedJSON.utopia !== 'object') {
+      throw new Error("the 'utopia' key in package.json should be an object")
+    }
+
+    // if the featuredRoutes prop is not defined, set it to an empty array
+    if (parsedJSON.utopia.featuredRoutes == null) {
+      parsedJSON.utopia.featuredRoutes = []
+    } else if (!Array.isArray(parsedJSON.utopia.featuredRoutes)) {
+      throw new Error("the 'utopia.featuredRoutes' key in package.json should be an array")
+    }
+
+    const currentRoutes: string[] = parsedJSON.utopia.featuredRoutes
+    if (currentRoutes.includes(routeToRemove)) {
+      parsedJSON.utopia.featuredRoutes = currentRoutes.filter((route) => route !== routeToRemove)
     }
 
     return JSON.stringify(parsedJSON, null, 2)

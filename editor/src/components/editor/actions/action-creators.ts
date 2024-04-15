@@ -225,6 +225,7 @@ import type {
   SetCodeEditorComponentDescriptorErrors,
   AddNewPage,
   AddNewFeaturedRoute,
+  RemoveFeaturedRoute,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -1136,6 +1137,13 @@ export function addNewFeaturedRoute(featuredRoute: string): AddNewFeaturedRoute 
   return {
     action: 'ADD_NEW_FEATURED_ROUTE',
     featuredRoute: featuredRoute,
+  }
+}
+
+export function removeFeaturedRoute(routeToRemove: string): RemoveFeaturedRoute {
+  return {
+    action: 'REMOVE_FEATURED_ROUTE',
+    routeToRemove: routeToRemove,
   }
 }
 

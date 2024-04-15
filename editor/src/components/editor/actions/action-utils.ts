@@ -176,6 +176,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'ADD_TEXT_FILE':
     case 'ADD_NEW_PAGE':
     case 'ADD_NEW_FEATURED_ROUTE':
+    case 'REMOVE_FEATURED_ROUTE':
     case 'UPDATE_FILE':
     case 'UPDATE_PROJECT_CONTENTS':
     case 'UPDATE_BRANCH_CONTENTS':

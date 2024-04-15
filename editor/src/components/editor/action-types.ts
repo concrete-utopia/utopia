@@ -705,6 +705,11 @@ export interface AddNewFeaturedRoute {
   featuredRoute: string
 }
 
+export interface RemoveFeaturedRoute {
+  action: 'REMOVE_FEATURED_ROUTE'
+  routeToRemove: string
+}
+
 export interface SetMainUIFile {
   action: 'SET_MAIN_UI_FILE'
   uiFile: string
@@ -1223,6 +1228,7 @@ export type EditorAction =
   | AddTextFile
   | AddNewPage
   | AddNewFeaturedRoute
+  | RemoveFeaturedRoute
   | SetMainUIFile
   | SetCodeEditorBuildErrors
   | SetCodeEditorLintErrors
