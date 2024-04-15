@@ -3,6 +3,7 @@ import { auth0Url } from '../../common/env-vars'
 import { Substores, useEditorState } from './store/store-hook'
 
 import { NotificationBar } from '../common/notices'
+import { useGetOnlineStatus } from './online-status'
 
 export const BrowserInfoBar = React.memo(() => {
   return (
@@ -25,17 +26,14 @@ export const LoginStatusBar = React.memo(() => {
     (store) => store.userState.loginState,
     'LoginStatusBar',
   )
-  const saveError = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.saveError,
-    'EditorComponentInner saveError',
-  )
+
+  const isOnline = useGetOnlineStatus()
 
   const onClickLoginNewTab = React.useCallback(() => {
     window.open(auth0Url('auto-close'), '_blank')
   }, [])
 
-  if (saveError) {
+  if (!isOnline) {
     return <EditorOfflineBar />
   }
 
@@ -45,7 +43,7 @@ export const LoginStatusBar = React.memo(() => {
     case 'LOGGED_IN':
       return null
     case 'OFFLINE_STATE':
-      return <EditorOfflineBar />
+      return null
     case 'NOT_LOGGED_IN':
       return null
     case 'LOGIN_LOST':
