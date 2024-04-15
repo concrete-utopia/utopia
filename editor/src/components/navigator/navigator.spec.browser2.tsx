@@ -5049,7 +5049,7 @@ describe('Navigator', () => {
         'regular-sb/scene/pg:dbc',
         'regular-sb/scene/pg:dbc/78c',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-        'regular-sb/scene/pg:dbc/78c/pro', // <- the inserted render prop
+        'regular-sb/scene/pg:dbc/78c/aaa', // <- the inserted render prop
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
         'regular-sb/scene/pg:dbc/78c/88b',
       ])
@@ -5061,7 +5061,7 @@ describe('Navigator', () => {
         'regular-sb/scene/pg:dbc',
         'regular-sb/scene/pg:dbc/78c',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-        'regular-sb/scene/pg:dbc/78c/pro', // <- the inserted render prop
+        'regular-sb/scene/pg:dbc/78c/aaa', // <- the inserted render prop
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
         'regular-sb/scene/pg:dbc/78c/88b',
       ])
@@ -5094,7 +5094,7 @@ describe('Navigator', () => {
         'regular-sb/scene/pg:dbc',
         'regular-sb/scene/pg:dbc/78c',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-        'regular-sb/scene/pg:dbc/78c/pro', // <- the inserted render prop
+        'regular-sb/scene/pg:dbc/78c/aaa', // <- the inserted render prop
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
         'regular-sb/scene/pg:dbc/78c/88b',
       ])
@@ -5106,7 +5106,7 @@ describe('Navigator', () => {
         'regular-sb/scene/pg:dbc',
         'regular-sb/scene/pg:dbc/78c',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-        'regular-sb/scene/pg:dbc/78c/pro', // <- the inserted render prop
+        'regular-sb/scene/pg:dbc/78c/aaa', // <- the inserted render prop
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
         'regular-sb/scene/pg:dbc/78c/88b',
       ])
@@ -5139,7 +5139,7 @@ describe('Navigator', () => {
         'regular-sb/scene/pg:dbc',
         'regular-sb/scene/pg:dbc/78c',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-        'regular-sb/scene/pg:dbc/78c/pro', // <- the inserted render prop
+        'regular-sb/scene/pg:dbc/78c/aaa', // <- the inserted render prop
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
         'regular-sb/scene/pg:dbc/78c/88b',
       ])
@@ -5151,7 +5151,7 @@ describe('Navigator', () => {
         'regular-sb/scene/pg:dbc',
         'regular-sb/scene/pg:dbc/78c',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-        'regular-sb/scene/pg:dbc/78c/pro', // <- the inserted render prop
+        'regular-sb/scene/pg:dbc/78c/aaa', // <- the inserted render prop
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
         'regular-sb/scene/pg:dbc/78c/88b',
       ])
