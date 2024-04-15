@@ -498,7 +498,7 @@ describe('The navigator render prop picker', () => {
         import { Storyboard, Scene } from 'utopia-api'
 
         export function Flex({ hello }) {
-          return <div>{hello.gr}</div>
+          return <div>{hello.greeting}</div>
         }
         
         export function Card({ header, children }) {
