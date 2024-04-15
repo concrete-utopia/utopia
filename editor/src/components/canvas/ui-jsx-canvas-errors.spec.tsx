@@ -37,7 +37,7 @@ describe('UiJsxCanvas errors', () => {
           "stackFrames": Array [
             Object {
               "columnNumber": 32,
-              "fileName": "code.tsx",
+              "fileName": "code.jsx",
               "lineNumber": 5,
               "originalCode": Array [
                 ScriptLine {
@@ -121,7 +121,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           "stackFrames": Array [
             Object {
               "columnNumber": 2,
-              "fileName": "code.tsx",
+              "fileName": "code.jsx",
               "lineNumber": 4,
               "originalCode": Array [
                 ScriptLine {
@@ -163,7 +163,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
             },
             Object {
               "columnNumber": 61,
-              "fileName": "code.tsx",
+              "fileName": "code.jsx",
               "lineNumber": 3,
               "originalCode": Array [
                 ScriptLine {
@@ -240,7 +240,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           "stackFrames": Array [
             Object {
               "columnNumber": 46,
-              "fileName": "code.tsx",
+              "fileName": "code.jsx",
               "lineNumber": 7,
               "originalCode": Array [
                 ScriptLine {
@@ -322,7 +322,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           "stackFrames": Array [
             Object {
               "columnNumber": 46,
-              "fileName": "code.tsx",
+              "fileName": "code.jsx",
               "lineNumber": 7,
               "originalCode": Array [
                 ScriptLine {
@@ -407,7 +407,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           "stackFrames": Array [
             Object {
               "columnNumber": 9,
-              "fileName": "code.tsx",
+              "fileName": "code.jsx",
               "lineNumber": 7,
               "originalCode": Array [
                 ScriptLine {
@@ -449,7 +449,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
             },
             Object {
               "columnNumber": 46,
-              "fileName": "code.tsx",
+              "fileName": "code.jsx",
               "lineNumber": 10,
               "originalCode": Array [
                 ScriptLine {
@@ -534,7 +534,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           "stackFrames": Array [
             Object {
               "columnNumber": 20,
-              "fileName": "code.tsx",
+              "fileName": "code.jsx",
               "lineNumber": 8,
               "originalCode": Array [
                 ScriptLine {
@@ -621,7 +621,7 @@ export var App = (props) => {
           "stackFrames": Array [
             Object {
               "columnNumber": 8,
-              "fileName": "code.tsx",
+              "fileName": "code.jsx",
               "lineNumber": 9,
               "originalCode": Array [
                 ScriptLine {
@@ -708,7 +708,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           "stackFrames": Array [
             Object {
               "columnNumber": 57,
-              "fileName": "code.tsx",
+              "fileName": "code.jsx",
               "lineNumber": 8,
               "originalCode": Array [
                 ScriptLine {
@@ -795,7 +795,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           "stackFrames": Array [
             Object {
               "columnNumber": 45,
-              "fileName": "code.tsx",
+              "fileName": "code.jsx",
               "lineNumber": 8,
               "originalCode": Array [
                 ScriptLine {
@@ -883,7 +883,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           "stackFrames": Array [
             Object {
               "columnNumber": 10,
-              "fileName": "code.tsx",
+              "fileName": "code.jsx",
               "lineNumber": 7,
               "originalCode": Array [
                 ScriptLine {
@@ -925,7 +925,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
             },
             Object {
               "columnNumber": 30,
-              "fileName": "code.tsx",
+              "fileName": "code.jsx",
               "lineNumber": 6,
               "originalCode": Array [
                 ScriptLine {
@@ -1013,7 +1013,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           "stackFrames": Array [
             Object {
               "columnNumber": 4,
-              "fileName": "code.tsx",
+              "fileName": "code.jsx",
               "lineNumber": 7,
               "originalCode": Array [
                 ScriptLine {
@@ -1055,7 +1055,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
             },
             Object {
               "columnNumber": 30,
-              "fileName": "code.tsx",
+              "fileName": "code.jsx",
               "lineNumber": 6,
               "originalCode": Array [
                 ScriptLine {
@@ -1550,7 +1550,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
             },
             Object {
               "columnNumber": 9,
-              "fileName": "code.tsx",
+              "fileName": "code.jsx",
               "lineNumber": 6,
               "originalCode": Array [
                 ScriptLine {
@@ -1592,7 +1592,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
             },
             Object {
               "columnNumber": 36,
-              "fileName": "code.tsx",
+              "fileName": "code.jsx",
               "lineNumber": 5,
               "originalCode": Array [
                 ScriptLine {

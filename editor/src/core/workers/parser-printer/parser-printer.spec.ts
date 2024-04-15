@@ -6046,11 +6046,11 @@ export var App = props => {
           UNPARSED_CODE
           UTOPIA_JSX_COMPONENT - MyComp
             JSX_ELEMENT - View - aaa
-              JS_PROPERTY_ACCESS - 807
-                JS_IDENTIFIER - 09c
+              JS_PROPERTY_ACCESS - 73f
+                JS_IDENTIFIER - 9da
           UNPARSED_CODE
           UTOPIA_JSX_COMPONENT - App
-            JSX_ELEMENT - MyComp - e13"
+            JSX_ELEMENT - MyComp - 3b5"
         `)
 
         const appComponent = success.topLevelElements.find(
@@ -6107,11 +6107,11 @@ export var App = props => {
           UNPARSED_CODE
           UTOPIA_JSX_COMPONENT - MyComp
             JSX_ELEMENT - View - aaa
-              JS_PROPERTY_ACCESS - 807
-                JS_IDENTIFIER - 09c
+              JS_PROPERTY_ACCESS - 73f
+                JS_IDENTIFIER - 9da
           UNPARSED_CODE
           UTOPIA_JSX_COMPONENT - App
-            JSX_ELEMENT - MyComp - 26c"
+            JSX_ELEMENT - MyComp - 329"
         `)
 
         const appComponent = success.topLevelElements.find(

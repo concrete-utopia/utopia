@@ -31,7 +31,7 @@ function b(n) {
 }",
     "params": Array [],
     "sourceMap": Object {
-      "file": "code.tsx",
+      "file": "code.jsx",
       "mappings": "AAKoBA,CAAAA,MAAAA;AAEnBC,WAASC,CAATD,CAAWE,CAAXF,EAAcG;AACZC,QAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,aAAOD,CAAPC;AACDF,KAFDD,MAEOD;AACLI,aAAOC,CAACC,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDR;AAWFA;;AAEDC,WAASQ,CAATR,CAAWE,CAAXF,EAAcG;AACZC,QAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,aAAOD,CAAPC;AACDF,KAFDD,MAEOD;AACLI,aAAON,CAACQ,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDR;AACHY;;AA1BmBZ;AAAAA;AAAAA;AAAAA;AA0BnBY,CA1BmBZ",
       "names": Array [
         "
@@ -50,7 +50,7 @@ function b(n) {
         "}",
       ],
       "sources": Array [
-        "code.tsx",
+        "code.jsx",
       ],
       "sourcesContent": Array [
         "
@@ -175,145 +175,117 @@ function b(n) {
     },
   ],
   "fullHighlightBounds": Object {
-    "0a3": Object {
+    "0a8": Object {
       "endCol": 28,
       "endLine": 19,
       "startCol": 22,
       "startLine": 19,
-      "uid": "0a3",
+      "uid": "0a8",
     },
-    "12c": Object {
-      "endCol": 66,
-      "endLine": 34,
-      "startCol": 37,
-      "startLine": 34,
-      "uid": "12c",
-    },
-    "138": Object {
-      "endCol": 74,
-      "endLine": 19,
-      "startCol": 13,
-      "startLine": 19,
-      "uid": "138",
-    },
-    "207": Object {
-      "endCol": 35,
-      "endLine": 37,
-      "startCol": 25,
-      "startLine": 37,
-      "uid": "207",
-    },
-    "356": Object {
-      "endCol": 64,
-      "endLine": 34,
-      "startCol": 53,
-      "startLine": 34,
-      "uid": "356",
-    },
-    "375": Object {
-      "endCol": 1,
-      "endLine": 13,
-      "startCol": 0,
-      "startLine": 7,
-      "uid": "375",
-    },
-    "377": Object {
+    "159": Object {
       "endCol": 43,
       "endLine": 20,
       "startCol": 14,
       "startLine": 20,
-      "uid": "377",
+      "uid": "159",
     },
-    "4bd": Object {
-      "endCol": 64,
-      "endLine": 37,
-      "startCol": 61,
-      "startLine": 37,
-      "uid": "4bd",
-    },
-    "53f": Object {
-      "endCol": 10,
-      "endLine": 21,
-      "startCol": 6,
-      "startLine": 21,
-      "uid": "53f",
-    },
-    "5e7": Object {
-      "endCol": 79,
-      "endLine": 37,
-      "startCol": 13,
-      "startLine": 37,
-      "uid": "5e7",
-    },
-    "6e3": Object {
-      "endCol": 20,
-      "endLine": 18,
-      "startCol": 15,
-      "startLine": 18,
-      "uid": "6e3",
-    },
-    "77c": Object {
-      "endCol": 20,
-      "endLine": 36,
-      "startCol": 15,
-      "startLine": 36,
-      "uid": "77c",
-    },
-    "78a": Object {
-      "endCol": 77,
-      "endLine": 37,
-      "startCol": 74,
-      "startLine": 37,
-      "uid": "78a",
-    },
-    "791": Object {
-      "endCol": 44,
-      "endLine": 37,
-      "startCol": 43,
-      "startLine": 37,
-      "uid": "791",
-    },
-    "854": Object {
-      "endCol": 28,
-      "endLine": 34,
-      "startCol": 23,
-      "startLine": 34,
-      "uid": "854",
-    },
-    "873": Object {
-      "endCol": 1,
-      "endLine": 31,
-      "startCol": 0,
-      "startLine": 25,
-      "uid": "873",
-    },
-    "8b3": Object {
-      "endCol": 25,
-      "endLine": 39,
-      "startCol": 20,
-      "startLine": 39,
-      "uid": "8b3",
-    },
-    "a42": Object {
+    "187": Object {
       "endCol": 44,
       "endLine": 19,
       "startCol": 38,
       "startLine": 19,
-      "uid": "a42",
+      "uid": "187",
     },
-    "aaa": Object {
-      "endCol": 26,
+    "271": Object {
+      "endCol": 28,
+      "endLine": 34,
+      "startCol": 23,
+      "startLine": 34,
+      "uid": "271",
+    },
+    "35d": Object {
+      "endCol": 66,
+      "endLine": 34,
+      "startCol": 37,
+      "startLine": 34,
+      "uid": "35d",
+    },
+    "62d": Object {
+      "endCol": 20,
+      "endLine": 36,
+      "startCol": 15,
+      "startLine": 36,
+      "uid": "62d",
+    },
+    "694": Object {
+      "endCol": 19,
       "endLine": 21,
-      "startCol": 4,
-      "startLine": 17,
-      "uid": "aaa",
+      "startCol": 15,
+      "startLine": 21,
+      "uid": "694",
     },
-    "ab2": Object {
+    "6f0": Object {
+      "endCol": 20,
+      "endLine": 18,
+      "startCol": 15,
+      "startLine": 18,
+      "uid": "6f0",
+    },
+    "857": Object {
       "endCol": 72,
       "endLine": 19,
       "startCol": 63,
       "startLine": 19,
-      "uid": "ab2",
+      "uid": "857",
+    },
+    "885": Object {
+      "endCol": 25,
+      "endLine": 39,
+      "startCol": 20,
+      "startLine": 39,
+      "uid": "885",
+    },
+    "93b": Object {
+      "endCol": 74,
+      "endLine": 19,
+      "startCol": 13,
+      "startLine": 19,
+      "uid": "93b",
+    },
+    "99a": Object {
+      "endCol": 10,
+      "endLine": 21,
+      "startCol": 6,
+      "startLine": 21,
+      "uid": "99a",
+    },
+    "9d2": Object {
+      "endCol": 35,
+      "endLine": 37,
+      "startCol": 25,
+      "startLine": 37,
+      "uid": "9d2",
+    },
+    "9e7": Object {
+      "endCol": 44,
+      "endLine": 37,
+      "startCol": 43,
+      "startLine": 37,
+      "uid": "9e7",
+    },
+    "aaa": Object {
+      "endCol": 26,
+      "endLine": 21,
+      "startCol": 4,
+      "startLine": 17,
+      "uid": "aaa",
+    },
+    "add": Object {
+      "endCol": 77,
+      "endLine": 37,
+      "startCol": 74,
+      "startLine": 37,
+      "uid": "add",
     },
     "app": Object {
       "endCol": 28,
@@ -322,6 +294,13 @@ function b(n) {
       "startLine": 39,
       "uid": "app",
     },
+    "bb5": Object {
+      "endCol": 14,
+      "endLine": 21,
+      "startCol": 12,
+      "startLine": 21,
+      "uid": "bb5",
+    },
     "bbb": Object {
       "endCol": 15,
       "endLine": 41,
@@ -329,12 +308,26 @@ function b(n) {
       "startLine": 34,
       "uid": "bbb",
     },
-    "bd1": Object {
+    "be7": Object {
       "endCol": 52,
       "endLine": 37,
       "startCol": 51,
       "startLine": 37,
-      "uid": "bd1",
+      "uid": "be7",
+    },
+    "bfc": Object {
+      "endCol": 1,
+      "endLine": 13,
+      "startCol": 0,
+      "startLine": 7,
+      "uid": "bfc",
+    },
+    "c56": Object {
+      "endCol": 79,
+      "endLine": 37,
+      "startCol": 13,
+      "startLine": 37,
+      "uid": "c56",
     },
     "ccc": Object {
       "endCol": 12,
@@ -343,35 +336,49 @@ function b(n) {
       "startLine": 35,
       "uid": "ccc",
     },
-    "d01": Object {
-      "endCol": 14,
-      "endLine": 21,
-      "startCol": 12,
-      "startLine": 21,
-      "uid": "d01",
+    "fa0": Object {
+      "endCol": 64,
+      "endLine": 34,
+      "startCol": 53,
+      "startLine": 34,
+      "uid": "fa0",
     },
-    "d4f": Object {
+    "fd0": Object {
       "endCol": 41,
       "endLine": 20,
       "startCol": 30,
       "startLine": 20,
-      "uid": "d4f",
+      "uid": "fd0",
     },
-    "e36": Object {
+    "fe1": Object {
+      "endCol": 64,
+      "endLine": 37,
+      "startCol": 61,
+      "startLine": 37,
+      "uid": "fe1",
+    },
+    "feb": Object {
+      "endCol": 1,
+      "endLine": 31,
+      "startCol": 0,
+      "startLine": 25,
+      "uid": "feb",
+    },
+  },
+  "highlightBounds": Object {
+    "694": Object {
       "endCol": 19,
       "endLine": 21,
       "startCol": 15,
       "startLine": 21,
-      "uid": "e36",
+      "uid": "694",
     },
-  },
-  "highlightBounds": Object {
-    "53f": Object {
+    "99a": Object {
       "endCol": 10,
       "endLine": 21,
       "startCol": 6,
       "startLine": 21,
-      "uid": "53f",
+      "uid": "99a",
     },
     "aaa": Object {
       "endCol": 26,
@@ -400,13 +407,6 @@ function b(n) {
       "startCol": 4,
       "startLine": 35,
       "uid": "ccc",
-    },
-    "e36": Object {
-      "endCol": 19,
-      "endLine": 21,
-      "startCol": 15,
-      "startLine": 21,
-      "uid": "e36",
     },
   },
   "imports": Object {
@@ -491,7 +491,7 @@ function b(n) {
 }",
       "params": Array [],
       "sourceMap": Object {
-        "file": "code.tsx",
+        "file": "code.jsx",
         "mappings": "AAOCA,CAAAA,MAAAA;AAAQC,WAAOC,CAAPD,CAAOC,CAAPD,EAAOC;AACbC,QAAIC,CAACH,IAAII,CAATF,EAAYG;AACVC,aAAOF,CAAPE;AACDN,KAFDE,MAEOG;AACLC,aAAOC,CAACC,CAACL,CAACH,GAAGS,CAALD,CAARF;AACDL;AACHS;;AANAX;AAAAA;AAAAA;AAMAW,CANAX",
         "names": Array [
           "function",
@@ -509,7 +509,7 @@ function b(n) {
           "}",
         ],
         "sources": Array [
-          "code.tsx",
+          "code.jsx",
         ],
         "sourcesContent": Array [
           "
@@ -634,7 +634,7 @@ export var storyboard = (
             "originalJavascript": "b(5)",
             "params": Array [],
             "sourceMap": Object {
-              "file": "code.tsx",
+              "file": "code.jsx",
               "mappings": "OAqBSA,CAACC,CAAHC,CAAGD,CAAFE",
               "names": Array [
                 "5",
@@ -643,7 +643,7 @@ export var storyboard = (
                 "(",
               ],
               "sources": Array [
-                "code.tsx",
+                "code.jsx",
               ],
               "sourcesContent": Array [
                 "
@@ -714,7 +714,7 @@ export var storyboard = (
             "originalJavascript": "a(5)",
             "params": Array [],
             "sourceMap": Object {
-              "file": "code.tsx",
+              "file": "code.jsx",
               "mappings": "OAqBkBA,CAACC,CAAHC,CAAGD,CAAFE",
               "names": Array [
                 "5",
@@ -723,7 +723,7 @@ export var storyboard = (
                 "(",
               ],
               "sources": Array [
-                "code.tsx",
+                "code.jsx",
               ],
               "sourcesContent": Array [
                 "
@@ -875,7 +875,7 @@ export var storyboard = (
 }",
       "params": Array [],
       "sourceMap": Object {
-        "file": "code.tsx",
+        "file": "code.jsx",
         "mappings": "AAyBCA,CAAAA,MAAAA;AAAQC,WAAOC,CAAPD,CAAOC,CAAPD,EAAOC;AACbC,QAAIC,CAACH,IAAII,CAATF,EAAYG;AACVC,aAAOF,CAAPE;AACDN,KAFDE,MAEOG;AACLC,aAAOC,CAACC,CAACL,CAACH,GAAGS,CAALD,CAARF;AACDL;AACHS;;AANAX;AAAAA;AAAAA;AAMAW,CANAX",
         "names": Array [
           "function",
@@ -893,7 +893,7 @@ export var storyboard = (
           "}",
         ],
         "sources": Array [
-          "code.tsx",
+          "code.jsx",
         ],
         "sourcesContent": Array [
           "
