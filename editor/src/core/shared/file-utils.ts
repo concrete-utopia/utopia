@@ -261,5 +261,5 @@ export function isJsOrTsFile(filename: string): boolean {
 }
 
 export function isParseableFile(filename: string): boolean {
-  return isJsFile(filename)
+  return isJsOrTsFile(filename)
 }
