@@ -109,7 +109,7 @@ getDatabaseConnectionString = lookupEnv "DATABASE_URL"
 createDatabasePoolFromConnection :: IO Connection -> IO DBPool
 createDatabasePoolFromConnection createConnection = do
   let keepResourceOpenFor = 10
-  createPool createConnection close 3 keepResourceOpenFor 3
+  createPool createConnection close 2 keepResourceOpenFor 1
 
 createLocalDatabasePool :: IO DBPool
 createLocalDatabasePool = do
