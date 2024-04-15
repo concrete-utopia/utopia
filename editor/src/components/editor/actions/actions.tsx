@@ -3864,7 +3864,7 @@ export const UPDATE_FNS = {
     // 1. add the new page to the featured routes
     const withPackageJson = updatePackageJsonInEditorState(
       editor,
-      addNewFeaturedRouteToPackageJson(newFileName),
+      addNewFeaturedRouteToPackageJson(newPageName),
     )
 
     // 2. write the new text file

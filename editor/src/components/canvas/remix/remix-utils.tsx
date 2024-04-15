@@ -469,7 +469,7 @@ export function getRemixLocationLabel(location: string | undefined): string | nu
   return location
 }
 
-export function addNewFeaturedRouteToPackageJson(fileName: string) {
+export function addNewFeaturedRouteToPackageJson(urlRoute: string) {
   return function (packageJson: string) {
     const parsedJSON = json5.parse(packageJson)
 
@@ -488,8 +488,7 @@ export function addNewFeaturedRouteToPackageJson(fileName: string) {
     }
 
     // append the file name if not there yet
-    const fileNameWithoutExtension = fileName.replace(/\.[^.]+$/, '')
-    const newRoute = urljoin('/', fileNameWithoutExtension)
+    const newRoute = urljoin('/', urlRoute)
     const currentRoutes: string[] = parsedJSON.utopia.featuredRoutes
     if (!currentRoutes.includes(newRoute)) {
       parsedJSON.utopia.featuredRoutes.push(newRoute)
