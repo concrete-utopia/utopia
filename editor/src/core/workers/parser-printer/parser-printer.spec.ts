@@ -1136,9 +1136,9 @@ export var whatever = (props) => <View data-uid='aaa'>
         'return getSizing(spacing);',
         ['getSizing', 'spacing'],
         expect.objectContaining({
-          sources: ['code.jsx'],
+          sources: ['code.tsx'],
           version: 3,
-          file: 'code.jsx',
+          file: 'code.tsx',
         }),
         {},
         emptyComments,
@@ -1154,9 +1154,9 @@ export var whatever = (props) => <View data-uid='aaa'>
 });`,
         ['console'],
         expect.objectContaining({
-          sources: ['code.jsx'],
+          sources: ['code.tsx'],
           version: 3,
-          file: 'code.jsx',
+          file: 'code.tsx',
         }),
         {},
         emptyComments,
@@ -1206,9 +1206,9 @@ function getSizing(n) {
         EARLY_RETURN_VOID_FUNCTION_NAME,
       ],
       expect.objectContaining({
-        sources: ['code.jsx'],
+        sources: ['code.tsx'],
         version: 3,
-        file: 'code.jsx',
+        file: 'code.tsx',
       }),
       {},
       [jsOpaqueArbitraryStatement(jsCode1.trim(), ['getSizing'], [], '')],
@@ -1232,9 +1232,9 @@ function getSizing(n) {
         EARLY_RETURN_VOID_FUNCTION_NAME,
       ],
       expect.objectContaining({
-        sources: ['code.jsx'],
+        sources: ['code.tsx'],
         version: 3,
-        file: 'code.jsx',
+        file: 'code.tsx',
       }),
       {},
       [simpleJSAssignmentStatement('var', 'spacing', 20, expect.objectContaining({}))],
@@ -1266,9 +1266,9 @@ var spacing = 20`
         EARLY_RETURN_VOID_FUNCTION_NAME,
       ],
       expect.objectContaining({
-        sources: ['code.jsx'],
+        sources: ['code.tsx'],
         version: 3,
-        file: 'code.jsx',
+        file: 'code.tsx',
       }),
       {},
       [
@@ -1396,9 +1396,9 @@ export default function getSizing(n) {
         EARLY_RETURN_VOID_FUNCTION_NAME,
       ],
       expect.objectContaining({
-        sources: ['code.jsx'],
+        sources: ['code.tsx'],
         version: 3,
-        file: 'code.jsx',
+        file: 'code.tsx',
       }),
       {},
       [jsOpaqueArbitraryStatement(jsCode, ['getSizing'], [], '')],
@@ -1415,9 +1415,9 @@ export default function getSizing(n) {
         EARLY_RETURN_VOID_FUNCTION_NAME,
       ],
       expect.objectContaining({
-        sources: ['code.jsx'],
+        sources: ['code.tsx'],
         version: 3,
-        file: 'code.jsx',
+        file: 'code.tsx',
       }),
       {},
       [jsOpaqueArbitraryStatement(jsCode.trim(), ['getSizing'], [], '')],
@@ -1558,9 +1558,9 @@ export function getSizing(n) {
         EARLY_RETURN_VOID_FUNCTION_NAME,
       ],
       expect.objectContaining({
-        sources: ['code.jsx'],
+        sources: ['code.tsx'],
         version: 3,
-        file: 'code.jsx',
+        file: 'code.tsx',
       }),
       {},
       [jsOpaqueArbitraryStatement(jsCode.trim(), ['getSizing'], [], '')],
@@ -1577,9 +1577,9 @@ export function getSizing(n) {
         EARLY_RETURN_VOID_FUNCTION_NAME,
       ],
       expect.objectContaining({
-        sources: ['code.jsx'],
+        sources: ['code.tsx'],
         version: 3,
-        file: 'code.jsx',
+        file: 'code.tsx',
       }),
       {},
       [jsOpaqueArbitraryStatement(jsCode, ['getSizing'], [], '')],
@@ -1696,9 +1696,9 @@ return {  };`
       [],
       [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
-        sources: ['code.jsx'],
+        sources: ['code.tsx'],
         version: 3,
-        file: 'code.jsx',
+        file: 'code.tsx',
       }),
       {},
       [],
@@ -1790,9 +1790,9 @@ export var whatever = (props) => <View data-uid='aaa'>
         EARLY_RETURN_VOID_FUNCTION_NAME,
       ],
       expect.objectContaining({
-        sources: ['code.jsx'],
+        sources: ['code.tsx'],
         version: 3,
-        file: 'code.jsx',
+        file: 'code.tsx',
       }),
       {},
       [simpleJSAssignmentStatement('var', 'spacing', 20, expect.objectContaining({}))],
@@ -1873,9 +1873,9 @@ export var whatever = (props) => {
         EARLY_RETURN_VOID_FUNCTION_NAME,
       ],
       expect.objectContaining({
-        sources: ['code.jsx'],
+        sources: ['code.tsx'],
         version: 3,
-        file: 'code.jsx',
+        file: 'code.tsx',
       }),
       {},
       [
@@ -1988,9 +1988,9 @@ export var whatever = (props) => {
         EARLY_RETURN_VOID_FUNCTION_NAME,
       ],
       expect.objectContaining({
-        sources: ['code.jsx'],
+        sources: ['code.tsx'],
         version: 3,
-        file: 'code.jsx',
+        file: 'code.tsx',
       }),
       {},
       [
@@ -2062,9 +2062,9 @@ export var whatever = (props) => {
         'return a + b;',
         ['a', 'b'],
         expect.objectContaining({
-          sources: ['code.jsx'],
+          sources: ['code.tsx'],
           version: 3,
-          file: 'code.jsx',
+          file: 'code.tsx',
         }),
         {},
         emptyComments,
@@ -2093,9 +2093,9 @@ export var whatever = (props) => {
         EARLY_RETURN_VOID_FUNCTION_NAME,
       ],
       expect.objectContaining({
-        sources: ['code.jsx'],
+        sources: ['code.tsx'],
         version: 3,
-        file: 'code.jsx',
+        file: 'code.tsx',
       }),
       {},
       [
@@ -2153,9 +2153,9 @@ export var whatever = (props) => {
         'return a ? b : c;',
         ['a', 'b', 'c'],
         expect.objectContaining({
-          sources: ['code.jsx'],
+          sources: ['code.tsx'],
           version: 3,
-          file: 'code.jsx',
+          file: 'code.tsx',
         }),
         {},
         emptyComments,
@@ -2187,9 +2187,9 @@ export var whatever = (props) => {
         EARLY_RETURN_VOID_FUNCTION_NAME,
       ],
       expect.objectContaining({
-        sources: ['code.jsx'],
+        sources: ['code.tsx'],
         version: 3,
-        file: 'code.jsx',
+        file: 'code.tsx',
       }),
       {},
       [
@@ -2246,9 +2246,9 @@ export var whatever = (props) => {
         'return a++;',
         ['a'],
         expect.objectContaining({
-          sources: ['code.jsx'],
+          sources: ['code.tsx'],
           version: 3,
-          file: 'code.jsx',
+          file: 'code.tsx',
         }),
         {},
         emptyComments,
@@ -2260,9 +2260,9 @@ export var whatever = (props) => {
         'return ++a;',
         ['a'],
         expect.objectContaining({
-          sources: ['code.jsx'],
+          sources: ['code.tsx'],
           version: 3,
-          file: 'code.jsx',
+          file: 'code.tsx',
         }),
         {},
         emptyComments,
@@ -2288,9 +2288,9 @@ export var whatever = (props) => {
         EARLY_RETURN_VOID_FUNCTION_NAME,
       ],
       expect.objectContaining({
-        sources: ['code.jsx'],
+        sources: ['code.tsx'],
         version: 3,
-        file: 'code.jsx',
+        file: 'code.tsx',
       }),
       {},
       [simpleJSAssignmentStatement('let', 'a', 10, expect.objectContaining({}))],
@@ -2372,9 +2372,9 @@ export var whatever = (props) => {
         EARLY_RETURN_VOID_FUNCTION_NAME,
       ],
       expect.objectContaining({
-        sources: ['code.jsx'],
+        sources: ['code.tsx'],
         version: 3,
-        file: 'code.jsx',
+        file: 'code.tsx',
       }),
       {},
       [
@@ -2535,9 +2535,9 @@ export var whatever = (props) => {
         EARLY_RETURN_VOID_FUNCTION_NAME,
       ],
       expect.objectContaining({
-        sources: ['code.jsx'],
+        sources: ['code.tsx'],
         version: 3,
-        file: 'code.jsx',
+        file: 'code.tsx',
       }),
       {},
       [
@@ -2620,9 +2620,9 @@ export var whatever = (props) => <View data-uid='aaa'>
         'return `Count ${count}`;',
         ['count'],
         expect.objectContaining({
-          sources: ['code.jsx'],
+          sources: ['code.tsx'],
           version: 3,
-          file: 'code.jsx',
+          file: 'code.tsx',
         }),
         {},
         emptyComments,
@@ -2666,9 +2666,9 @@ export var whatever = (props) => <View data-uid='aaa'>
         EARLY_RETURN_VOID_FUNCTION_NAME,
       ],
       expect.objectContaining({
-        sources: ['code.jsx'],
+        sources: ['code.tsx'],
         version: 3,
-        file: 'code.jsx',
+        file: 'code.tsx',
       }),
       {},
       [simpleJSAssignmentStatement('var', 'count', 10, expect.objectContaining({}))],
@@ -2725,9 +2725,9 @@ export var whatever = (props) => <View data-uid='aaa'>
         'return use20 ? 20 : 10;',
         ['use20'],
         expect.objectContaining({
-          sources: ['code.jsx'],
+          sources: ['code.tsx'],
           version: 3,
-          file: 'code.jsx',
+          file: 'code.tsx',
         }),
         {},
         emptyComments,
@@ -2772,9 +2772,9 @@ export var whatever = (props) => <View data-uid='aaa'>
         EARLY_RETURN_VOID_FUNCTION_NAME,
       ],
       expect.objectContaining({
-        sources: ['code.jsx'],
+        sources: ['code.tsx'],
         version: 3,
-        file: 'code.jsx',
+        file: 'code.tsx',
       }),
       {},
       [simpleJSAssignmentStatement('var', 'use20', true, expect.objectContaining({}))],
@@ -2856,9 +2856,9 @@ export var whatever = (props) => <View data-uid='aaa'>
         EARLY_RETURN_VOID_FUNCTION_NAME,
       ],
       expect.objectContaining({
-        sources: ['code.jsx'],
+        sources: ['code.tsx'],
         version: 3,
-        file: 'code.jsx',
+        file: 'code.tsx',
       }),
       {},
       [
@@ -2927,9 +2927,9 @@ export var whatever = (props) => <View data-uid='aaa'>
         'return props.left + spacing;',
         ['spacing', 'props'],
         expect.objectContaining({
-          sources: ['code.jsx'],
+          sources: ['code.tsx'],
           version: 3,
-          file: 'code.jsx',
+          file: 'code.tsx',
         }),
         {},
         emptyComments,
@@ -2974,9 +2974,9 @@ export var whatever = (props) => <View data-uid='aaa'>
         EARLY_RETURN_VOID_FUNCTION_NAME,
       ],
       expect.objectContaining({
-        sources: ['code.jsx'],
+        sources: ['code.tsx'],
         version: 3,
-        file: 'code.jsx',
+        file: 'code.tsx',
       }),
       {},
       [
@@ -3087,9 +3087,9 @@ export var whatever = (props) => <View data-uid='aaa'>
       ['MyComp'],
       definedElseWhere,
       expect.objectContaining({
-        sources: ['code.jsx'],
+        sources: ['code.tsx'],
         version: 3,
-        file: 'code.jsx',
+        file: 'code.tsx',
       }),
       {},
       [
@@ -3687,9 +3687,9 @@ export var App = (props) => <View data-uid='bbb'>
         'return getSizing(spacing);',
         ['getSizing', 'spacing'],
         expect.objectContaining({
-          sources: ['code.jsx'],
+          sources: ['code.tsx'],
           version: 3,
-          file: 'code.jsx',
+          file: 'code.tsx',
         }),
         {},
         emptyComments,
@@ -3741,9 +3741,9 @@ function getSizing(n) {
         EARLY_RETURN_VOID_FUNCTION_NAME,
       ],
       expect.objectContaining({
-        sources: ['code.jsx'],
+        sources: ['code.tsx'],
         version: 3,
-        file: 'code.jsx',
+        file: 'code.tsx',
       }),
       {},
       [jsOpaqueArbitraryStatement(jsCode1.trim(), ['getSizing'], [], '')],
@@ -3767,9 +3767,9 @@ function getSizing(n) {
         EARLY_RETURN_VOID_FUNCTION_NAME,
       ],
       expect.objectContaining({
-        sources: ['code.jsx'],
+        sources: ['code.tsx'],
         version: 3,
-        file: 'code.jsx',
+        file: 'code.tsx',
       }),
       {},
       [
@@ -3812,9 +3812,9 @@ var spacing = 20`
         EARLY_RETURN_VOID_FUNCTION_NAME,
       ],
       expect.objectContaining({
-        sources: ['code.jsx'],
+        sources: ['code.tsx'],
         version: 3,
-        file: 'code.jsx',
+        file: 'code.tsx',
       }),
       {},
       [
@@ -4324,9 +4324,9 @@ export var whatever = props => {
         EARLY_RETURN_VOID_FUNCTION_NAME,
       ],
       expect.objectContaining({
-        sources: ['code.jsx'],
+        sources: ['code.tsx'],
         version: 3,
-        file: 'code.jsx',
+        file: 'code.tsx',
       }),
       {},
       [jsOpaqueArbitraryStatement(jsCode, ['test'], [], '')],
@@ -4361,9 +4361,9 @@ export var whatever = props => {
                       'return test(100);',
                       ['test'],
                       expect.objectContaining({
-                        sources: ['code.jsx'],
+                        sources: ['code.tsx'],
                         version: 3,
-                        file: 'code.jsx',
+                        file: 'code.tsx',
                       }),
                       {},
                       emptyComments,
@@ -4438,9 +4438,9 @@ export var whatever = props => {
                     'return test(100);',
                     ['test'],
                     expect.objectContaining({
-                      sources: ['code.jsx'],
+                      sources: ['code.tsx'],
                       version: 3,
-                      file: 'code.jsx',
+                      file: 'code.tsx',
                     }),
                     {},
                     emptyComments,
@@ -4462,9 +4462,9 @@ export var whatever = props => {
               EARLY_RETURN_VOID_FUNCTION_NAME,
             ],
             expect.objectContaining({
-              sources: ['code.jsx'],
+              sources: ['code.tsx'],
               version: 3,
-              file: 'code.jsx',
+              file: 'code.tsx',
             }),
             {},
             [jsOpaqueArbitraryStatement(jsCode, ['test'], [], '')],
@@ -4563,9 +4563,9 @@ export var App = props => {
 }));`,
             ['React', 'View', 'utopiaCanvasJSXLookup'],
             expect.objectContaining({
-              sources: ['code.jsx'],
+              sources: ['code.tsx'],
               version: 3,
-              file: 'code.jsx',
+              file: 'code.tsx',
             }),
             {
               abc: jsxElement(
@@ -4696,9 +4696,9 @@ export var App = props => {
 }));`,
             ['React', 'utopiaCanvasJSXLookup'],
             expect.objectContaining({
-              sources: ['code.jsx'],
+              sources: ['code.tsx'],
               version: 3,
-              file: 'code.jsx',
+              file: 'code.tsx',
             }),
             {
               abc: jsxElement(
@@ -4759,9 +4759,9 @@ export var App = props => {
 }));`,
             ['React', 'utopiaCanvasJSXLookup'],
             expect.objectContaining({
-              sources: ['code.jsx'],
+              sources: ['code.tsx'],
               version: 3,
-              file: 'code.jsx',
+              file: 'code.tsx',
             }),
             {
               abc: jsxElement(
@@ -5033,9 +5033,9 @@ export var App = props => {
           EARLY_RETURN_VOID_FUNCTION_NAME,
         ],
         expect.objectContaining({
-          sources: ['code.jsx'],
+          sources: ['code.tsx'],
           version: 3,
-          file: 'code.jsx',
+          file: 'code.tsx',
         }),
         {
           abc: expect.objectContaining({}),
@@ -5323,9 +5323,9 @@ export var whatever = props => {
         EARLY_RETURN_VOID_FUNCTION_NAME,
       ],
       expect.objectContaining({
-        sources: ['code.jsx'],
+        sources: ['code.tsx'],
         version: 3,
-        file: 'code.jsx',
+        file: 'code.tsx',
       }),
       {},
       [
@@ -5430,9 +5430,9 @@ export var whatever = props => {
         EARLY_RETURN_VOID_FUNCTION_NAME,
       ],
       expect.objectContaining({
-        sources: ['code.jsx'],
+        sources: ['code.tsx'],
         version: 3,
-        file: 'code.jsx',
+        file: 'code.tsx',
       }),
       {
         bbb: expect.objectContaining({
@@ -5569,9 +5569,9 @@ export var whatever = props => {
       arbitraryBlockTranspiledCode,
       ['React', 'utopiaCanvasJSXLookup'],
       expect.objectContaining({
-        sources: ['code.jsx'],
+        sources: ['code.tsx'],
         version: 3,
-        file: 'code.jsx',
+        file: 'code.tsx',
       }),
       { bbb: innerElement },
       emptyComments,
@@ -5685,9 +5685,9 @@ export var whatever = props => {
       arbitraryBlockTranspiledCode,
       ['a', 'React', JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
-        sources: ['code.jsx'],
+        sources: ['code.tsx'],
         version: 3,
-        file: 'code.jsx',
+        file: 'code.tsx',
       }),
       { bbb: innerElement },
       emptyComments,
@@ -5711,9 +5711,9 @@ export var whatever = props => {
         EARLY_RETURN_VOID_FUNCTION_NAME,
       ],
       expect.objectContaining({
-        sources: ['code.jsx'],
+        sources: ['code.tsx'],
         version: 3,
-        file: 'code.jsx',
+        file: 'code.tsx',
       }),
       {},
       [

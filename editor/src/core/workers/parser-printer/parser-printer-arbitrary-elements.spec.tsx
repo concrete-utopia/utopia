@@ -334,9 +334,9 @@ export var whatever = props => (
 });`,
       ['React', 'MyComp', 'utopiaCanvasJSXLookup'],
       expect.objectContaining({
-        sources: ['code.jsx'],
+        sources: ['code.tsx'],
         version: 3,
-        file: 'code.jsx',
+        file: 'code.tsx',
       }),
       {
         aab: jsxElement(
@@ -410,9 +410,9 @@ export var whatever = (props) => {
 }));`,
           ['arr', 'React', 'View', 'utopiaCanvasJSXLookup'],
           expect.objectContaining({
-            sources: ['code.jsx'],
+            sources: ['code.tsx'],
             version: 3,
-            file: 'code.jsx',
+            file: 'code.tsx',
           }),
           {
             aab: jsxElement(
@@ -451,9 +451,9 @@ export var whatever = (props) => {
         EARLY_RETURN_VOID_FUNCTION_NAME,
       ],
       expect.objectContaining({
-        sources: ['code.jsx'],
+        sources: ['code.tsx'],
         version: 3,
-        file: 'code.jsx',
+        file: 'code.tsx',
       }),
       {},
       [
@@ -545,9 +545,9 @@ export var whatever = (props) => {
 }));`,
           ['arr', 'React', 'View', 'utopiaCanvasJSXLookup'],
           expect.objectContaining({
-            sources: ['code.jsx'],
+            sources: ['code.tsx'],
             version: 3,
-            file: 'code.jsx',
+            file: 'code.tsx',
           }),
           {
             aab: jsxElement(
@@ -588,9 +588,9 @@ export var whatever = (props) => {
         EARLY_RETURN_VOID_FUNCTION_NAME,
       ],
       expect.objectContaining({
-        sources: ['code.jsx'],
+        sources: ['code.tsx'],
         version: 3,
-        file: 'code.jsx',
+        file: 'code.tsx',
       }),
       {},
       [
@@ -691,9 +691,9 @@ export var whatever = (props) => {
           transpiledMapJsCode,
           ['arr', 'React', 'View', 'utopiaCanvasJSXLookup'],
           expect.objectContaining({
-            sources: ['code.jsx'],
+            sources: ['code.tsx'],
             version: 3,
-            file: 'code.jsx',
+            file: 'code.tsx',
           }),
           {
             aab: jsxElement(
@@ -730,9 +730,9 @@ export var whatever = (props) => {
         EARLY_RETURN_VOID_FUNCTION_NAME,
       ],
       expect.objectContaining({
-        sources: ['code.jsx'],
+        sources: ['code.tsx'],
         version: 3,
-        file: 'code.jsx',
+        file: 'code.tsx',
       }),
       {},
       [
@@ -811,9 +811,9 @@ export var whatever = (props) => {
 }));`,
           ['React', 'utopiaCanvasJSXLookup'],
           expect.objectContaining({
-            sources: ['code.jsx'],
+            sources: ['code.tsx'],
             version: 3,
-            file: 'code.jsx',
+            file: 'code.tsx',
           }),
           {
             aab: jsxElement(
@@ -902,9 +902,9 @@ export var whatever = (props) => {
           transpiledMapJsCode,
           ['arr', 'React', 'View', 'utopiaCanvasJSXLookup'],
           expect.objectContaining({
-            sources: ['code.jsx'],
+            sources: ['code.tsx'],
             version: 3,
-            file: 'code.jsx',
+            file: 'code.tsx',
           }),
           {
             aab: jsxElement(
@@ -919,9 +919,9 @@ export var whatever = (props) => {
                   'return n;',
                   ['n'],
                   expect.objectContaining({
-                    sources: ['code.jsx'],
+                    sources: ['code.tsx'],
                     version: 3,
-                    file: 'code.jsx',
+                    file: 'code.tsx',
                   }),
                   {},
                   emptyComments,
@@ -944,9 +944,9 @@ return { arr: arr };`
       ['arr'],
       [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
-        sources: ['code.jsx'],
+        sources: ['code.tsx'],
         version: 3,
-        file: 'code.jsx',
+        file: 'code.tsx',
       }),
       {},
       [jsOpaqueArbitraryStatement(jsCode, ['arr'], [], '')],
@@ -1003,9 +1003,9 @@ export var whatever = (props) => {
 }));`,
           ['React', 'utopiaCanvasJSXLookup'],
           expect.objectContaining({
-            sources: ['code.jsx'],
+            sources: ['code.tsx'],
             version: 3,
-            file: 'code.jsx',
+            file: 'code.tsx',
           }),
           {
             aab: jsxElement(
@@ -1093,9 +1093,9 @@ export var whatever = (props) => {
           transpiledMapJsCode,
           ['arr', 'React', 'View', 'utopiaCanvasJSXLookup'],
           expect.objectContaining({
-            sources: ['code.jsx'],
+            sources: ['code.tsx'],
             version: 3,
-            file: 'code.jsx',
+            file: 'code.tsx',
           }),
           {
             aab: jsxElement(
@@ -1110,9 +1110,9 @@ export var whatever = (props) => {
                   'return n;',
                   ['n'],
                   expect.objectContaining({
-                    sources: ['code.jsx'],
+                    sources: ['code.tsx'],
                     version: 3,
-                    file: 'code.jsx',
+                    file: 'code.tsx',
                   }),
                   {},
                   emptyComments,
@@ -1136,9 +1136,9 @@ return { arr: arr };`
       ['arr'],
       [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
-        sources: ['code.jsx'],
+        sources: ['code.tsx'],
         version: 3,
-        file: 'code.jsx',
+        file: 'code.tsx',
       }),
       {},
       [jsOpaqueArbitraryStatement(jsCode, ['arr'], [], '')],
@@ -1296,8 +1296,8 @@ export var storyboard = (
       expect(results.alone).toMatchInlineSnapshot(`
         Object {
           "elements": Array [
-            "234",
-            "4c8",
+            "219",
+            "971",
           ],
           "js": "return (() => {
           function getPicker() {
@@ -1330,8 +1330,8 @@ export var storyboard = (
       expect(results.combined).toMatchInlineSnapshot(`
         Object {
           "elements": Array [
-            "f71",
-            "1a1",
+            "d1b",
+            "064",
           ],
           "js": "return (() => {
           class RenderPropsFunctionChild extends React.Component {

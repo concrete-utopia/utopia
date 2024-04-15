@@ -49,7 +49,7 @@ async function getParseResultForUserStrings(
     }`
   const parseResult = await getParseResult(
     workers,
-    [createParseFile('code.jsx', codeToParse, null, Date.now())],
+    [createParseFile('code.tsx', codeToParse, null, Date.now())],
     emptySet(),
     isSteganographyEnabled(),
   )
