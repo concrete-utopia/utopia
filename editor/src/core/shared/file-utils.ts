@@ -259,3 +259,7 @@ export function isCssFile(filename: string): boolean {
 export function isJsOrTsFile(filename: string): boolean {
   return isJsFile(filename) || isTsFile(filename)
 }
+
+export function isParseableFile(filename: string): boolean {
+  return isJsFile(filename)
+}
