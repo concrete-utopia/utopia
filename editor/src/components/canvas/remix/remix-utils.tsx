@@ -496,6 +496,9 @@ function modifyFeaturedRoutesInPackageJson(
 
 export function addNewFeaturedRouteToPackageJson(urlRoute: string) {
   return function (packageJson: string): string {
+    if (urlRoute === '') {
+      throw new Error('Cannot add an empty route to the featured routes')
+    }
     const newRoute = urljoin('/', urlRoute)
     return modifyFeaturedRoutesInPackageJson(packageJson, (currentRoutes) => {
       if (!currentRoutes.includes(newRoute)) {
