@@ -595,6 +595,15 @@ export interface UpdateFilePath {
   newPath: string
 }
 
+export interface UpdateRemixRoute {
+  action: 'UPDATE_REMIX_ROUTE'
+  oldPath: string
+  newPath: string
+  oldRoute: string
+  newRoute: string
+  asPrefix: boolean
+}
+
 export interface OpenCodeEditorFile {
   action: 'OPEN_CODE_EDITOR_FILE'
   filename: string
@@ -1202,6 +1211,7 @@ export type EditorAction =
   | UpdateDuplicationState
   | SendPreviewModel
   | UpdateFilePath
+  | UpdateRemixRoute
   | OpenCodeEditorFile
   | CloseDesignerFile
   | UpdateFile

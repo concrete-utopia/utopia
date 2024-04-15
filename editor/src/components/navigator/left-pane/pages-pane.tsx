@@ -15,6 +15,7 @@ import {
   Icn,
   InspectorSectionHeader,
   SquareButton,
+  StringInput,
   Subdued,
   UtopiaTheme,
   colorTheme,
@@ -32,13 +33,20 @@ import {
   getPageTemplatesFromPackageJSON,
 } from '../../../printer-parsers/html/external-resources-parser'
 import { defaultEither } from '../../../core/shared/either'
-import { when } from '../../../utils/react-conditionals'
+import { unless, when } from '../../../utils/react-conditionals'
 import { MomentumContextMenu } from '../../context-menu-wrapper'
 import { useDispatch } from '../../editor/store/dispatch-context'
-import { addNewPage, showContextMenu } from '../../editor/actions/action-creators'
+import {
+  addNewPage,
+  showContextMenu,
+  showToast,
+  updateRemixRoute,
+} from '../../editor/actions/action-creators'
 import type { ElementContextMenuInstance } from '../../element-context-menu'
 import ReactDOM from 'react-dom'
 import { createNewPageName } from '../../editor/store/editor-state'
+import urljoin from 'url-join'
+import { notice } from '../../common/notice'
 type RouteMatch = {
   path: string
   resolvedPath: string
@@ -213,6 +221,80 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
 
   const isDynamicPathSegment = lastTemplateSegment.startsWith(':')
 
+  const [renaming, setRenaming] = React.useState(false)
+
+  const onDoubleClick = React.useCallback(() => {
+    const canRename = props.routePath !== '/'
+    if (canRename) {
+      setRenaming(true)
+    }
+  }, [props.routePath])
+
+  const dispatch = useDispatch()
+
+  const doneRenaming = React.useCallback(
+    (newPath: string | null) => {
+      setRenaming(false)
+      if (newPath != null) {
+        function slashPathToRemixPath(path: string): string {
+          return (
+            path
+              .replace(/\//g, '.') // slashes to dots
+              .replace(/:/g, '$') // colons to dollars
+              .replace(/^\./, '') // chomp first dot
+              .trim() + (props.matchesRealRoute ? '.jsx' : '') // add extension // TODO grab the actual extension
+          )
+        }
+
+        const routeTokens = props.routePath.split('/')
+        const resolvedTokens = props.resolvedPath.split('/')
+        const replacements: { [key: string]: string } = {}
+        for (let i = 0; i < routeTokens.length; i++) {
+          const token = routeTokens[i]
+          if (token.startsWith(':')) {
+            replacements[token] = resolvedTokens[i]
+          }
+        }
+
+        const newRoutePathReplacementTokens = newPath.split('/').filter(isReplacementToken)
+        const replacementTokens = routeTokens.filter(isReplacementToken)
+
+        if (!replacementTokensMatch(replacementTokens, newRoutePathReplacementTokens)) {
+          dispatch([
+            showToast(
+              notice(
+                `Invalid tokens ${Array.from(newRoutePathReplacementTokens).join(', ')}`,
+                'ERROR',
+                false,
+              ),
+            ),
+          ])
+          return
+        }
+
+        let newRoutePath = newPath
+        for (const key of Object.keys(replacements)) {
+          const value = replacements[key]
+          newRoutePath = newRoutePath.replace(key, value)
+        }
+
+        dispatch(
+          [
+            updateRemixRoute(
+              urljoin('/app/routes', slashPathToRemixPath(props.routePath)),
+              urljoin('/app/routes', slashPathToRemixPath(newPath)),
+              props.resolvedPath,
+              newRoutePath,
+              !props.matchesRealRoute,
+            ),
+          ],
+          'everyone',
+        )
+      }
+    },
+    [props, dispatch],
+  )
+
   return (
     <FlexRow
       ref={ref}
@@ -250,43 +332,99 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
         width={12}
         height={12}
       />
-      {/* TODO if we want renaming, cannibalize it from FileBrowserItem */}
-      <span
-        style={{
-          marginLeft: 6,
-          display: 'inline-block',
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          flexGrow: 1,
-        }}
-      >
-        {lastResolvedSegment === '' ? RemixIndexPathLabel : '/' + lastResolvedSegment}
-      </span>
-      <span
-        style={{
-          flexShrink: 0,
-          display: !isDynamicPathSegment ? 'none' : props.active ? 'inline-block' : undefined, // I'm sorry
-          color: colorTheme.subduedForeground.value,
-          marginLeft: 6,
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          paddingRight: 8,
-          paddingLeft: 2,
-        }}
-        css={{
-          display: 'none',
-          '*:hover > &': {
-            display: 'inline-block',
-          },
-        }}
-      >
-        {lastTemplateSegment}
-      </span>
+      {when(renaming, <RenameInputField doneRenaming={doneRenaming} routePath={props.routePath} />)}
+      {unless(
+        renaming,
+        <React.Fragment>
+          <span
+            onDoubleClick={onDoubleClick}
+            style={{
+              marginLeft: 6,
+              display: 'inline-block',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              flexGrow: 1,
+            }}
+          >
+            {lastResolvedSegment === '' ? RemixIndexPathLabel : '/' + lastResolvedSegment}
+          </span>
+          <span
+            style={{
+              flexShrink: 0,
+              display: !isDynamicPathSegment ? 'none' : props.active ? 'inline-block' : undefined, // I'm sorry
+              color: colorTheme.subduedForeground.value,
+              marginLeft: 6,
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              paddingRight: 8,
+              paddingLeft: 2,
+            }}
+            css={{
+              display: 'none',
+              '*:hover > &': {
+                display: 'inline-block',
+              },
+            }}
+          >
+            {lastTemplateSegment}
+          </span>
+        </React.Fragment>,
+      )}
     </FlexRow>
   )
 })
+
+type RenameInputFieldProps = {
+  doneRenaming: (newPath: string | null) => void
+  routePath: string
+}
+
+const RenameInputField = React.memo((props: RenameInputFieldProps) => {
+  const [value, setValue] = React.useState(props.routePath)
+
+  const onBlur = React.useCallback(() => {
+    props.doneRenaming(null)
+  }, [props])
+
+  const onFocus = React.useCallback((e: React.FocusEvent<HTMLInputElement>) => {
+    e.target.select()
+  }, [])
+
+  const onKeyDown = React.useCallback(
+    (e: React.KeyboardEvent) => {
+      switch (e.key) {
+        case 'Escape':
+          props.doneRenaming(null)
+          break
+        case 'Enter':
+          props.doneRenaming(value)
+          break
+      }
+    },
+    [props, value],
+  )
+
+  const onChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setValue(e.target.value)
+  }, [])
+
+  return (
+    <StringInput
+      testId='pages-pane-rename-route-input'
+      type='text'
+      autoFocus={true}
+      onFocus={onFocus}
+      onBlur={onBlur}
+      onKeyDown={onKeyDown}
+      value={value}
+      onChange={onChange}
+    />
+  )
+})
+
+RenameInputField.displayName = 'RenameInputField'
 
 function fillInGapsInRoute(routes: Array<string>): Array<string> {
   // if we find a route /collections, and a route /collections/hats/beanies, we should create an entry for /collections/hats, so there are no gaps in the tree structure
@@ -377,4 +515,20 @@ function useNavigateToRouteWhenAvailable(
       onNavigate()
     }
   }, [navigateTo, remixRoutes, navigationControls, activeRemixScene, onNavigate])
+}
+
+function replacementTokensMatch(oldTokens: string[], newTokens: string[]): boolean {
+  if (oldTokens.length !== newTokens.length) {
+    return false
+  }
+  for (let i = 0; i < oldTokens.length; i++) {
+    if (oldTokens[i] !== newTokens[i]) {
+      return false
+    }
+  }
+  return true
+}
+
+function isReplacementToken(token: string): boolean {
+  return token.startsWith(':')
 }

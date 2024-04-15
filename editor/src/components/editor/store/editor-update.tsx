@@ -259,6 +259,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SEND_PREVIEW_MODEL(action, state)
     case 'UPDATE_FILE_PATH':
       return UPDATE_FNS.UPDATE_FILE_PATH(action, state, userState)
+    case 'UPDATE_REMIX_ROUTE':
+      return UPDATE_FNS.UPDATE_REMIX_ROUTE(action, state, userState)
     case 'SET_FOCUS':
       return UPDATE_FNS.SET_FOCUS(action, state)
     case 'OPEN_CODE_EDITOR_FILE':

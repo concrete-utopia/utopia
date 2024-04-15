@@ -331,6 +331,7 @@ import type {
   SetCodeEditorComponentDescriptorErrors,
   SetSharingDialogOpen,
   AddNewPage,
+  UpdateRemixRoute,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -573,7 +574,10 @@ import {
   createModuleEvaluator,
   maybeUpdatePropertyControls,
 } from '../../../core/property-controls/property-controls-local'
-import { addNewFeaturedRouteToPackageJson } from '../../canvas/remix/remix-utils'
+import {
+  addNewFeaturedRouteToPackageJson,
+  addOrReplaceFeaturedRouteToPackageJson,
+} from '../../canvas/remix/remix-utils'
 import type { FixUIDsState } from '../../../core/workers/parser-printer/uid-fix'
 import { fixTopLevelElementsUIDs } from '../../../core/workers/parser-printer/uid-fix'
 
@@ -1238,18 +1242,18 @@ function replaceFilePath(
   oldPath: string,
   newPath: string,
   projectContentsTree: ProjectContentTreeRoot,
+  asPrefix: boolean,
 ): ReplaceFilePathResult {
   // FIXME: Reimplement this in a way that doesn't require converting to and from `ProjectContents`.
   const projectContents = treeToContents(projectContentsTree)
   // if there is no file in projectContents it's probably a non-empty directory
-  const oldFolderRegex = new RegExp('^' + oldPath)
   let error: string | null = null
   let updatedProjectContents: ProjectContents = {
     ...projectContents,
   }
   let updatedFiles: Array<{ oldPath: string; newPath: string }> = []
   Utils.fastForEach(Object.keys(projectContents), (filename) => {
-    if (oldFolderRegex.test(filename)) {
+    if (filename === oldPath || (asPrefix && filename.startsWith(oldPath))) {
       const projectFile = projectContents[filename]
       const newFilePath = filename.replace(oldPath, newPath)
       const fileType = isDirectory(projectFile) ? 'DIRECTORY' : fileTypeFromFileName(newFilePath)
@@ -3479,71 +3483,29 @@ export const UPDATE_FNS = {
     editor: EditorModel,
     userState: UserState,
   ): EditorModel => {
-    const replaceFilePathResults = replaceFilePath(
-      action.oldPath,
-      action.newPath,
-      editor.projectContents,
-    )
-    if (replaceFilePathResults.type === 'FAILURE') {
-      const toastAction = showToast(notice(replaceFilePathResults.errorMessage, 'ERROR', true))
-      return UPDATE_FNS.ADD_TOAST(toastAction, editor)
-    } else {
-      let currentDesignerFile = editor.canvas.openFile
-      const { projectContents, updatedFiles } = replaceFilePathResults
-      const mainUIFile = getMainUIFromModel(editor)
-      let updateUIFile: (e: EditorModel) => EditorModel = (e) => e
-      let updatePropertyControls: (e: EditorModel) => EditorModel = (e) => e
-      Utils.fastForEach(updatedFiles, (updatedFile) => {
-        const { oldPath, newPath } = updatedFile
-        // If the main UI file is what we have renamed, update that later.
-        if (oldPath === mainUIFile) {
-          updateUIFile = (e: EditorModel) => {
-            return updateMainUIInEditorState(e, newPath)
-          }
-        }
-        // update currently open file
-        if (currentDesignerFile != null && currentDesignerFile.filename === oldPath) {
-          currentDesignerFile = {
-            filename: newPath,
-          }
-        }
-        const oldContent = getProjectFileByFilePath(editor.projectContents, oldPath)
-        if (oldContent != null && (isImageFile(oldContent) || isAssetFile(oldContent))) {
-          // Update assets.
-          if (isLoggedIn(userState.loginState) && editor.id != null) {
-            void updateAssetFileName(editor.id, stripLeadingSlash(oldPath), newPath)
-          }
-        }
-        // when we rename a component descriptor file, we need to remove it from property controls
-        // if the new name is a component descriptor filename too, the controls will be readded
-        // if the new name is not a component descriptor filename, then we really have to remove the property controls
-        if (isComponentDescriptorFile(oldPath) && oldPath !== newPath) {
-          updatePropertyControls = (e: EditorModel) => ({
-            ...e,
-            propertyControlsInfo: updatePropertyControlsOnDescriptorFileDelete(
-              e.propertyControlsInfo,
-              oldPath,
-            ),
-          })
-        }
-      })
+    return updateFilePath(editor, userState, {
+      oldPath: action.oldPath,
+      newPath: action.newPath,
+      asPrefix: true,
+    })
+  },
+  UPDATE_REMIX_ROUTE: (
+    action: UpdateRemixRoute,
+    editor: EditorModel,
+    userState: UserState,
+  ): EditorModel => {
+    const withUpdatedFilePath = updateFilePath(editor, userState, {
+      oldPath: action.oldPath,
+      newPath: action.newPath,
+      asPrefix: action.asPrefix,
+    })
 
-      return updatePropertyControls(
-        updateUIFile({
-          ...editor,
-          projectContents: projectContents,
-          codeEditorErrors: {
-            buildErrors: {},
-            lintErrors: {},
-            componentDescriptorErrors: {},
-          },
-          canvas: {
-            ...editor.canvas,
-            openFile: currentDesignerFile,
-          },
-        }),
-      )
-    }
+    const withUpdatedFeaturedRoute = updatePackageJsonInEditorState(
+      withUpdatedFilePath,
+      addOrReplaceFeaturedRouteToPackageJson(action.oldRoute, action.newRoute, action.asPrefix),
+    )
+
+    return withUpdatedFeaturedRoute
   },
   SET_FOCUS: (action: SetFocus, editor: EditorModel): EditorModel => {
     if (editor.focusedPanel === action.focusedPanel) {
@@ -6157,5 +6119,82 @@ function addTextFile(
       projectContents: updatedProjectContents,
     },
     newFileKey: newFileKey,
+  }
+}
+
+function updateFilePath(
+  editor: EditorModel,
+  userState: UserState,
+  params: {
+    oldPath: string
+    newPath: string
+    asPrefix: boolean
+  },
+) {
+  const replaceFilePathResults = replaceFilePath(
+    params.oldPath,
+    params.newPath,
+    editor.projectContents,
+    params.asPrefix,
+  )
+  if (replaceFilePathResults.type === 'FAILURE') {
+    const toastAction = showToast(notice(replaceFilePathResults.errorMessage, 'ERROR', true))
+    return UPDATE_FNS.ADD_TOAST(toastAction, editor)
+  } else {
+    let currentDesignerFile = editor.canvas.openFile
+    const { projectContents, updatedFiles } = replaceFilePathResults
+    const mainUIFile = getMainUIFromModel(editor)
+    let updateUIFile: (e: EditorModel) => EditorModel = (e) => e
+    let updatePropertyControls: (e: EditorModel) => EditorModel = (e) => e
+    Utils.fastForEach(updatedFiles, (updatedFile) => {
+      const { oldPath, newPath } = updatedFile
+      // If the main UI file is what we have renamed, update that later.
+      if (oldPath === mainUIFile) {
+        updateUIFile = (e: EditorModel) => {
+          return updateMainUIInEditorState(e, newPath)
+        }
+      }
+      // update currently open file
+      if (currentDesignerFile != null && currentDesignerFile.filename === oldPath) {
+        currentDesignerFile = {
+          filename: newPath,
+        }
+      }
+      const oldContent = getProjectFileByFilePath(editor.projectContents, oldPath)
+      if (oldContent != null && (isImageFile(oldContent) || isAssetFile(oldContent))) {
+        // Update assets.
+        if (isLoggedIn(userState.loginState) && editor.id != null) {
+          void updateAssetFileName(editor.id, stripLeadingSlash(oldPath), newPath)
+        }
+      }
+      // when we rename a component descriptor file, we need to remove it from property controls
+      // if the new name is a component descriptor filename too, the controls will be readded
+      // if the new name is not a component descriptor filename, then we really have to remove the property controls
+      if (isComponentDescriptorFile(oldPath) && oldPath !== newPath) {
+        updatePropertyControls = (e: EditorModel) => ({
+          ...e,
+          propertyControlsInfo: updatePropertyControlsOnDescriptorFileDelete(
+            e.propertyControlsInfo,
+            oldPath,
+          ),
+        })
+      }
+    })
+
+    return updatePropertyControls(
+      updateUIFile({
+        ...editor,
+        projectContents: projectContents,
+        codeEditorErrors: {
+          buildErrors: {},
+          lintErrors: {},
+          componentDescriptorErrors: {},
+        },
+        canvas: {
+          ...editor.canvas,
+          openFile: currentDesignerFile,
+        },
+      }),
+    )
   }
 }
