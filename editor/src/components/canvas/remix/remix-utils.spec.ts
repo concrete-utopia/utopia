@@ -1,4 +1,4 @@
-import { addNewFeaturedRouteToPackageJson } from './remix-utils'
+import { addNewFeaturedRouteToPackageJson, removeFeaturedRouteFromPackageJson } from './remix-utils'
 
 describe('addNewFeaturedRouteToPackageJson', () => {
   it('adds the new path to the featured routes', async () => {
@@ -6,10 +6,10 @@ describe('addNewFeaturedRouteToPackageJson', () => {
 {
   "hey": "there",
   "utopia": {
-  	"featuredRoutes": [
-  	  "/",
-  	  "/test"
-  	]
+    "featuredRoutes": [
+      "/",
+      "/test"
+    ]
   }
 }`)
     expect(got).toEqual(
@@ -31,11 +31,11 @@ describe('addNewFeaturedRouteToPackageJson', () => {
 {
   "hey": "there",
   "utopia": {
-  	"featuredRoutes": [
-  	  "/",
-  	  "/foo/bar",
-  	  "/test"
-  	]
+    "featuredRoutes": [
+      "/",
+      "/foo/bar",
+      "/test"
+    ]
   }
 }`)
     expect(got).toEqual(
@@ -45,7 +45,7 @@ describe('addNewFeaturedRouteToPackageJson', () => {
   "utopia": {
     "featuredRoutes": [
       "/",
-      "/foo",
+      "/foo/bar",
       "/test"
     ]
   }
@@ -86,6 +86,70 @@ describe('addNewFeaturedRouteToPackageJson', () => {
   it('errors if the featured routes prop if not an array', async () => {
     expect(() =>
       addNewFeaturedRouteToPackageJson('foo.bar')(
+        `{ "hey": "there", "utopia": {"featuredRoutes": "WRONG"} }`,
+      ),
+    ).toThrow('should be an array')
+  })
+})
+
+describe('removeFeaturedRouteFromPackageJson', () => {
+  it('removes the path from the featured routes', async () => {
+    const got = removeFeaturedRouteFromPackageJson('foo/bar')(`
+{
+  "hey": "there",
+  "utopia": {
+    "featuredRoutes": [
+      "/",
+      "/foo/bar",
+      "/test"
+    ]
+  }
+}`)
+    expect(got).toEqual(
+      `
+{
+  "hey": "there",
+  "utopia": {
+    "featuredRoutes": [
+      "/",
+      "/test"
+    ]
+  }
+}`.trim(),
+    )
+  })
+  it('does nothing if the route is not there', async () => {
+    const got = removeFeaturedRouteFromPackageJson('foo/bar')(`
+{
+  "hey": "there",
+  "utopia": {
+    "featuredRoutes": [
+      "/",
+      "/test"
+    ]
+  }
+}`)
+    expect(got).toEqual(
+      `
+{
+  "hey": "there",
+  "utopia": {
+    "featuredRoutes": [
+      "/",
+      "/test"
+    ]
+  }
+}`.trim(),
+    )
+  })
+  it('errors if the utopia prop if not an object', async () => {
+    expect(() =>
+      removeFeaturedRouteFromPackageJson('foo.bar')(`{ "hey": "there", "utopia": "WRONG" }`),
+    ).toThrow('should be an object')
+  })
+  it('errors if the featured routes prop if not an array', async () => {
+    expect(() =>
+      removeFeaturedRouteFromPackageJson('foo.bar')(
         `{ "hey": "there", "utopia": {"featuredRoutes": "WRONG"} }`,
       ),
     ).toThrow('should be an array')
