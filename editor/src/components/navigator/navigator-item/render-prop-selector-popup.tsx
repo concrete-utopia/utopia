@@ -194,7 +194,7 @@ function insertPreferredChild(
   let element = preferredChildToInsert.elementToInsert(uid)
   uniqueIds.add(uid)
 
-  element = fixUtopiaElement(preferredChildToInsert.elementToInsert(uid), uniqueIds).value
+  element = fixUtopiaElement(element, uniqueIds).value
 
   if (element.type !== 'JSX_ELEMENT') {
     throw new Error('only JSX elements are supported as preferred components')
