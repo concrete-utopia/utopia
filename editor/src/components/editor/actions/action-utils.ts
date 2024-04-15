@@ -136,6 +136,8 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_COLLABORATORS':
     case 'EXTRACT_PROPERTY_CONTROLS_FROM_DESCRIPTOR_FILES':
     case 'SET_SHARING_DIALOG_OPEN':
+    case 'RESET_ONLINE_STATE':
+    case 'INCREASE_ONLINE_STATE_FAILURE_COUNT':
       return true
 
     case 'TRUE_UP_ELEMENTS':

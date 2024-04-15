@@ -28,6 +28,7 @@ import { setProp_UNSAFE, unsetProperty } from '../../editor/actions/action-creat
 import { DispatchContext } from '../../editor/store/dispatch-context'
 import { styleStringInArray } from '../../../utils/common-constants'
 import { emptyProjectServerState } from '../../editor/store/project-server-state'
+import { InitialOnlineState } from '../../editor/online-status'
 
 const TestSelectedComponent = EP.elementPath([['scene1'], ['aaa', 'bbb']])
 
@@ -70,6 +71,7 @@ function getPaddingHookResult<P extends ParsedPropertiesKeys, S extends ParsedPr
       storeName: 'editor-store',
       projectServerState: emptyProjectServerState(),
       collaborativeEditingSupport: emptyCollaborativeEditingSupport(),
+      onlineState: InitialOnlineState,
     }
 
     const storeHook: UtopiaStoreAPI = createStoresAndState(initialEditorStore)
