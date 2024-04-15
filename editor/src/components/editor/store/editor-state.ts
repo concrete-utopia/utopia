@@ -187,6 +187,7 @@ import { removeUnusedImportsForRemovedElement } from '../import-utils'
 import { emptyImports } from '../../../core/workers/common/project-file-utils'
 import type { CommentFilterMode } from '../../inspector/sections/comment-section'
 import type { Collaborator } from '../../../core/shared/multiplayer'
+import type { OnlineState } from '../online-status'
 
 const ObjectPathImmutable: any = OPI
 
@@ -195,6 +196,7 @@ export enum LeftMenuTab {
   Project = 'project',
   Github = 'github',
   Navigator = 'navigator',
+  Pages = 'pages',
 }
 
 export const DefaultNavigatorWidth = GridMenuWidth
@@ -484,6 +486,7 @@ export type EditorStoreShared = {
   saveCountThisSession: number
   projectServerState: ProjectServerState
   collaborativeEditingSupport: CollaborativeEditingSupport
+  onlineState: OnlineState
 }
 
 export type EditorStoreFull = EditorStoreShared & {
@@ -2431,12 +2434,20 @@ export function mergePersistentModel(
   }
 }
 
+function randomArrayElement(array: string[]): string {
+  return array[Math.floor(Math.random() * array.length)]
+}
+
 export function createNewProjectName(): string {
-  const friendlyWordsPredicate =
-    friendlyWords.predicates[Math.floor(Math.random() * friendlyWords.predicates.length)]
-  const friendlyWordsObject =
-    friendlyWords.objects[Math.floor(Math.random() * friendlyWords.objects.length)]
+  const friendlyWordsPredicate = randomArrayElement(friendlyWords.predicates)
+  const friendlyWordsObject = randomArrayElement(friendlyWords.objects)
   return `${friendlyWordsPredicate}-${friendlyWordsObject}`
+}
+
+export function createNewPageName(): string {
+  return `page-${randomArrayElement(friendlyWords.predicates)}-${randomArrayElement(
+    friendlyWords.objects,
+  )}`
 }
 
 export const BaseSnappingThreshold = 5

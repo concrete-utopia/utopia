@@ -5,7 +5,7 @@ import { getJSXAttributesAtPath, setJSXValueAtPath } from './jsx-attribute-utils
 import type { JSXAttributes } from './element-template'
 import {
   emptyComments,
-  jsArbitraryStatement,
+  jsOpaqueArbitraryStatement,
   jsExpressionNestedObject,
   jsExpressionOtherJavaScript,
   jsExpressionValue,
@@ -43,7 +43,6 @@ function sampleJsxAttributes(): JSXAttributes {
             null,
             {},
             emptyComments,
-            [jsArbitraryStatement('props.someShadow', [], [])],
           ),
           emptyComments,
           emptyComments,
@@ -112,7 +111,6 @@ function sampleJsxAttributes(): JSXAttributes {
       null,
       {},
       emptyComments,
-      [jsArbitraryStatement('props.hello', [], [])],
     ),
     objectValue: jsExpressionValue(
       {
@@ -133,7 +131,6 @@ function sampleJsxAttributes(): JSXAttributes {
       null,
       {},
       emptyComments,
-      [jsArbitraryStatement('true ? 10 : 5', [], [])],
     ),
     'data-uid': jsExpressionValue('aaa', emptyComments),
   })

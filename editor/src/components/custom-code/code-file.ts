@@ -124,10 +124,19 @@ export function componentInfo(
   }
 }
 
+export type PlaceholderSpec =
+  // a placeholder that inserts a span that wraps `contents`. This will be
+  // editable with the text editor
+  | { type: 'text'; contents: string }
+  // inserts a `div` with the specified width and height
+  | { type: 'spacer'; width: number; height: number }
+  | { type: 'fill' }
+
 export interface ComponentDescriptor {
   properties: PropertyControls
   supportsChildren: boolean
   preferredChildComponents: Array<PreferredChildComponentDescriptor>
+  childrenPropPlaceholder: PlaceholderSpec | null
   variants: ComponentInfo[]
   source: ComponentDescriptorSource
   focus: Focus
@@ -138,12 +147,13 @@ export interface ComponentDescriptor {
 
 export const ComponentDescriptorDefaults: Pick<
   ComponentDescriptor,
-  'focus' | 'inspector' | 'emphasis' | 'icon'
+  'focus' | 'inspector' | 'emphasis' | 'icon' | 'childrenPropPlaceholder'
 > = {
   focus: 'default',
   inspector: 'all',
   emphasis: 'regular',
   icon: 'regular',
+  childrenPropPlaceholder: null,
 }
 
 export function componentDescriptor(
@@ -151,6 +161,7 @@ export function componentDescriptor(
   supportsChildren: boolean,
   variants: Array<ComponentInfo>,
   preferredChildComponents: Array<PreferredChildComponentDescriptor>,
+  childrenPropPlaceholder: PlaceholderSpec | null,
   source: ComponentDescriptorSource,
   focus: Focus,
   inspector: InspectorSpec,
@@ -162,6 +173,7 @@ export function componentDescriptor(
     supportsChildren: supportsChildren,
     variants: variants,
     preferredChildComponents: preferredChildComponents,
+    childrenPropPlaceholder: childrenPropPlaceholder,
     source: source,
     focus: focus,
     inspector: inspector,

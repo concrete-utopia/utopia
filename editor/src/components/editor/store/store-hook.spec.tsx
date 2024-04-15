@@ -17,6 +17,7 @@ import { shallowEqual } from '../../../core/shared/equality-utils'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { notLoggedIn } from '../action-types'
 import { emptyProjectServerState } from './project-server-state'
+import { InitialOnlineState } from '../online-status'
 
 const initialEditorStore: EditorStorePatched = {
   editor: createEditorState(NO_OP),
@@ -40,6 +41,7 @@ const initialEditorStore: EditorStorePatched = {
   storeName: 'editor-store',
   projectServerState: emptyProjectServerState(),
   collaborativeEditingSupport: emptyCollaborativeEditingSupport(),
+  onlineState: InitialOnlineState,
 }
 
 function createEmptyEditorStoreHook() {

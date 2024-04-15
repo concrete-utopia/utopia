@@ -51,6 +51,7 @@ export type ElementContextMenuInstance =
   | 'context-menu-navigator'
   | 'context-menu-canvas'
   | 'context-menu-canvas-no-selection'
+  | 'context-menu-add-page'
 
 interface ElementContextMenuProps {
   contextMenuInstance: ElementContextMenuInstance

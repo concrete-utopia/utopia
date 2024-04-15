@@ -139,6 +139,9 @@ import type {
   EarlyReturnResult,
   EarlyReturnVoid,
   JSArbitraryStatement,
+  JSOpaqueArbitraryStatement,
+  JSAssignmentStatement,
+  JSAssignment,
 } from '../../../core/shared/element-template'
 import {
   elementInstanceMetadata,
@@ -206,7 +209,9 @@ import {
   isJSPropertyAccess,
   isJSElementAccess,
   earlyReturnResult,
-  jsArbitraryStatement,
+  jsOpaqueArbitraryStatement,
+  jsAssignmentStatement,
+  jsAssignment,
 } from '../../../core/shared/element-template'
 import type {
   CanvasRectangle,
@@ -467,6 +472,7 @@ import type {
   CurriedUtopiaRequireFn,
   PropertyControlsInfo,
   ComponentDescriptorFromDescriptorFile,
+  PlaceholderSpec,
 } from '../../custom-code/code-file'
 import {
   codeResult,
@@ -588,6 +594,8 @@ import type {
   PreferredChildComponentDescriptor,
   PropertyControls,
 } from '../../custom-code/internal-property-controls'
+import type { OnlineState } from '../online-status'
+import { onlineState } from '../online-status'
 
 export const ProjectMetadataFromServerKeepDeepEquality: KeepDeepEqualityCall<ProjectMetadataFromServer> =
   combine4EqualityCalls(
@@ -628,12 +636,18 @@ export const CollaboratorKeepDeepEquality: KeepDeepEqualityCall<Collaborator> =
     (id, name, avatar) => ({ id, name, avatar }),
   )
 
-export const MutiplayerSubstateKeepDeepEquality: KeepDeepEqualityCall<MultiplayerSubstate> =
+export const MultiplayerSubstateKeepDeepEquality: KeepDeepEqualityCall<MultiplayerSubstate> =
   combine1EqualityCall(
     (entry) => entry.editor.collaborators,
     arrayDeepEquality(CollaboratorKeepDeepEquality),
     (collaborators) => ({ editor: { collaborators: collaborators } }),
   )
+
+export const OnlineStateKeepDeepEquality: KeepDeepEqualityCall<OnlineState> = combine1EqualityCall(
+  (status) => status.runningFailureCount,
+  createCallWithTripleEquals<number>(),
+  onlineState,
+)
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
   oldValue: TransientFilesState,
@@ -938,19 +952,63 @@ export const RawSourceMapKeepDeepEquality: KeepDeepEqualityCall<RawSourceMap> =
     },
   )
 
-export const JSArbitraryStatementKeepDeepEqualityCall: KeepDeepEqualityCall<JSArbitraryStatement> =
-  combine3EqualityCalls(
+export function JSAssignmentKeepDeepEqualityCall(): KeepDeepEqualityCall<JSAssignment> {
+  return combine2EqualityCalls(
+    (assignment) => assignment.leftHandSide,
+    JSIdentifierKeepDeepEquality(),
+    (assignment) => assignment.rightHandSide,
+    JSExpressionKeepDeepEqualityCall,
+    jsAssignment,
+  )
+}
+
+export function JSAssignmentStatementKeepDeepEqualityCall(): KeepDeepEqualityCall<JSAssignmentStatement> {
+  return combine3EqualityCalls(
+    (statement) => statement.declarationKeyword,
+    createCallWithTripleEquals<'let' | 'const' | 'var'>(),
+    (statement) => statement.assignments,
+    arrayDeepEquality(JSAssignmentKeepDeepEqualityCall()),
+    (statement) => statement.uid,
+    createCallWithTripleEquals<string>(),
+    jsAssignmentStatement,
+  )
+}
+
+export const JSOpaqueArbitraryStatementKeepDeepEqualityCall: KeepDeepEqualityCall<JSOpaqueArbitraryStatement> =
+  combine4EqualityCalls(
     (statement) => statement.originalJavascript,
     createCallWithTripleEquals<string>(),
     (statement) => statement.definedWithin,
     arrayDeepEquality(createCallWithTripleEquals<string>()),
     (statement) => statement.definedElsewhere,
     arrayDeepEquality(createCallWithTripleEquals<string>()),
-    jsArbitraryStatement,
+    (statement) => statement.uid,
+    createCallWithTripleEquals<string>(),
+    jsOpaqueArbitraryStatement,
   )
 
+export const JSArbitraryStatementKeepDeepEqualityCall: KeepDeepEqualityCall<
+  JSArbitraryStatement
+> = (oldValue, newValue) => {
+  switch (oldValue.type) {
+    case 'JS_OPAQUE_ARBITRARY_STATEMENT':
+      if (oldValue.type === newValue.type) {
+        return JSOpaqueArbitraryStatementKeepDeepEqualityCall(oldValue, newValue)
+      }
+      break
+    case 'JS_ASSIGNMENT_STATEMENT':
+      if (oldValue.type === newValue.type) {
+        return JSAssignmentStatementKeepDeepEqualityCall()(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
 export function JSExpressionOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqualityCall<JSExpressionOtherJavaScript> {
-  return combine10EqualityCalls(
+  return combine9EqualityCalls(
     (attribute) => attribute.params,
     arrayDeepEquality(ParamKeepDeepEquality()),
     (attribute) => attribute.originalJavascript,
@@ -967,8 +1025,6 @@ export function JSExpressionOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqual
     ElementsWithinKeepDeepEqualityCall(),
     (block) => block.comments,
     ParsedCommentsKeepDeepEqualityCall,
-    (attribute) => attribute.statements,
-    arrayDeepEquality(JSArbitraryStatementKeepDeepEqualityCall),
     (attribute) => attribute.uid,
     createCallWithTripleEquals(),
     jsExpressionOtherJavaScript,
@@ -3339,6 +3395,33 @@ export function ComponentDescriptorSourceKeepDeepEquality(): KeepDeepEqualityCal
   }
 }
 
+export function PlaceholderKeepDeepEquality(): KeepDeepEqualityCall<PlaceholderSpec> {
+  return (oldValue, newValue) => {
+    switch (oldValue.type) {
+      case 'text':
+        if (oldValue.type === newValue.type) {
+          const areEqual = oldValue.contents === newValue.contents
+          return { areEqual: areEqual, value: areEqual ? oldValue : newValue }
+        }
+        break
+      case 'spacer':
+        if (oldValue.type === newValue.type) {
+          const areEqual = oldValue.width === newValue.width && oldValue.height === newValue.height
+          return { areEqual: areEqual, value: areEqual ? oldValue : newValue }
+        }
+        break
+      case 'fill':
+        if (oldValue.type === newValue.type) {
+          return { areEqual: true, value: oldValue }
+        }
+        break
+      default:
+        assertNever(oldValue)
+    }
+    return keepDeepEqualityResult(newValue, false)
+  }
+}
+
 const InspectorSpecKeepDeepEquality: KeepDeepEqualityCall<InspectorSpec> = (oldValue, newValue) => {
   if (typeof oldValue === 'string' && typeof newValue === 'string') {
     return StringKeepDeepEquality(oldValue, newValue) as KeepDeepEqualityResult<InspectorSpec>
@@ -3352,7 +3435,7 @@ const InspectorSpecKeepDeepEquality: KeepDeepEqualityCall<InspectorSpec> = (oldV
 }
 
 export const ComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<ComponentDescriptor> =
-  combine9EqualityCalls(
+  combine10EqualityCalls(
     (descriptor) => descriptor.properties,
     PropertyControlsKeepDeepEquality,
     (descriptor) => descriptor.supportsChildren,
@@ -3361,6 +3444,8 @@ export const ComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<Component
     arrayDeepEquality(ComponentInfoKeepDeepEquality),
     (descriptor) => descriptor.preferredChildComponents,
     arrayDeepEquality(PreferredChildComponentDescriptorKeepDeepEquality),
+    (descriptor) => descriptor.childrenPropPlaceholder,
+    nullableDeepEquality(PlaceholderKeepDeepEquality()),
     (descriptor) => descriptor.source,
     ComponentDescriptorSourceKeepDeepEquality(),
     (descriptor) => descriptor.focus,

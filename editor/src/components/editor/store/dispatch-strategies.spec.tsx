@@ -48,6 +48,7 @@ import { toggleBackgroundLayers, toggleStylePropPaths } from '../../inspector/co
 import { EditorDispatch, notLoggedIn } from '../action-types'
 import { saveDOMReport, selectComponents, toggleProperty } from '../actions/action-creators'
 import * as History from '../history'
+import { InitialOnlineState } from '../online-status'
 import { DummyPersistenceMachine } from '../persistence/persistence.test-utils'
 import type { DispatchResult } from './dispatch'
 import {
@@ -114,6 +115,7 @@ function createEditorStore(
     postActionInteractionSession: null,
     projectServerState: emptyProjectServerState(),
     collaborativeEditingSupport: emptyCollaborativeEditingSupport(),
+    onlineState: InitialOnlineState,
   }
 
   return initialEditorStore

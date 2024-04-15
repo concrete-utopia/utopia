@@ -1390,7 +1390,7 @@ describe('actions', () => {
             height: 101,
             contain: 'layout',
           }}
-          data-uid='ffb'
+          data-uid='b41'
         />
       </div>
       <div
@@ -1465,7 +1465,7 @@ describe('actions', () => {
             height: 101,
             contain: 'layout',
           }}
-          data-uid='ffb'
+          data-uid='b41'
         />
         <div
           style={{

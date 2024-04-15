@@ -153,6 +153,7 @@ import {
   getUpdateProjectServerStateInStoreRunCount,
 } from '../editor/store/project-server-state'
 import { uniqBy } from '../../core/shared/array-utils'
+import { InitialOnlineState } from '../editor/online-status'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -578,6 +579,7 @@ export async function renderTestEditorWithModel(
       isMyProject: 'yes',
     },
     collaborativeEditingSupport: emptyCollaborativeEditingSupport(),
+    onlineState: InitialOnlineState,
   }
 
   const canvasStoreHook: UtopiaStoreAPI = createStoresAndState(

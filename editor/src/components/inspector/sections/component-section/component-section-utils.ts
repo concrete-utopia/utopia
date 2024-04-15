@@ -24,6 +24,8 @@ function inferControlTypeBasedOnValueInner(
     return {
       control: 'jsx',
       label: propName,
+      placeholder: null,
+      preferredChildComponents: [],
     }
   }
 

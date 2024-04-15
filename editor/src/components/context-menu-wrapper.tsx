@@ -39,7 +39,7 @@ export interface ContextMenuProps<T> {
 
 interface Submenu<T> {
   type: 'submenu'
-  label: string
+  label: string | React.ReactNode
   items: Array<ContextMenuItem<T>>
 }
 
@@ -117,7 +117,7 @@ export class MomentumContextMenu<T> extends ReactComponent<ContextMenuProps<T>> 
             }
             return windowPoint({ x: triggerEvent.clientX, y: triggerEvent.clientY })
           })()
-          item.action(this.props.getData(), this.props.dispatch, rightClickCoordinate)
+          item.action(this.props.getData(), this.props.dispatch, rightClickCoordinate, event)
           contextMenu.hideAll()
         }}
         hidden={this.isHidden(item)}

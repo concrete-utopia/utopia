@@ -223,6 +223,9 @@ import type {
   ExtractPropertyControlsFromDescriptorFiles,
   SetSharingDialogOpen,
   SetCodeEditorComponentDescriptorErrors,
+  AddNewPage,
+  ResetOnlineState,
+  IncreaseOnlineStateFailureCount,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -251,6 +254,7 @@ import type { ProjectServerState } from '../store/project-server-state'
 import type { SetHuggingParentToFixed } from '../../canvas/canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
 import type { CommentFilterMode } from '../../inspector/sections/comment-section'
 import type { Collaborator } from '../../../core/shared/multiplayer'
+import type { PageTemplate } from '../../canvas/remix/remix-utils'
 
 export function clearSelection(): EditorAction {
   return {
@@ -1116,6 +1120,19 @@ export function addTextFile(parentPath: string, fileName: string): AddTextFile {
   }
 }
 
+export function addNewPage(
+  parentPath: string,
+  template: PageTemplate,
+  newPageName: string,
+): AddNewPage {
+  return {
+    action: 'ADD_NEW_PAGE',
+    template: template,
+    parentPath: parentPath,
+    newPageName: newPageName,
+  }
+}
+
 export function setMainUIFile(uiFile: string): SetMainUIFile {
   return {
     action: 'SET_MAIN_UI_FILE',
@@ -1762,5 +1779,17 @@ export function setSharingDialogOpen(open: boolean): SetSharingDialogOpen {
   return {
     action: 'SET_SHARING_DIALOG_OPEN',
     open: open,
+  }
+}
+
+export function resetOnlineState(): ResetOnlineState {
+  return {
+    action: 'RESET_ONLINE_STATE',
+  }
+}
+
+export function increaseOnlineStateFailureCount(): IncreaseOnlineStateFailureCount {
+  return {
+    action: 'INCREASE_ONLINE_STATE_FAILURE_COUNT',
   }
 }

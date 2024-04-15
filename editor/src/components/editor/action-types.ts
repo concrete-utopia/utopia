@@ -80,6 +80,7 @@ import type { SetHuggingParentToFixed } from '../canvas/canvas-strategies/strate
 import type { MapLike } from 'typescript'
 import type { CommentFilterMode } from '../inspector/sections/comment-section'
 import type { Collaborator } from '../../core/shared/multiplayer'
+import type { PageTemplate } from '../canvas/remix/remix-utils'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -692,6 +693,13 @@ export interface AddTextFile {
   parentPath: string
 }
 
+export interface AddNewPage {
+  action: 'ADD_NEW_PAGE'
+  parentPath: string
+  template: PageTemplate
+  newPageName: string
+}
+
 export interface SetMainUIFile {
   action: 'SET_MAIN_UI_FILE'
   uiFile: string
@@ -1110,6 +1118,14 @@ export interface SetSharingDialogOpen {
   open: boolean
 }
 
+export interface ResetOnlineState {
+  action: 'RESET_ONLINE_STATE'
+}
+
+export interface IncreaseOnlineStateFailureCount {
+  action: 'INCREASE_ONLINE_STATE_FAILURE_COUNT'
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertJSXElement
@@ -1208,6 +1224,7 @@ export type EditorAction =
   | DeleteFile
   | DeleteFileFromCollaboration
   | AddTextFile
+  | AddNewPage
   | SetMainUIFile
   | SetCodeEditorBuildErrors
   | SetCodeEditorLintErrors
@@ -1290,6 +1307,8 @@ export type EditorAction =
   | SetCollaborators
   | ExtractPropertyControlsFromDescriptorFiles
   | SetSharingDialogOpen
+  | ResetOnlineState
+  | IncreaseOnlineStateFailureCount
 
 export type DispatchPriority =
   | 'everyone'

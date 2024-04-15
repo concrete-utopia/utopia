@@ -24,7 +24,7 @@ function createBasicComponent(
 ): ComponentDescriptor {
   return {
     properties: { ...StyleObjectProps, ...propertyControls },
-    supportsChildren: false, // TODO
+    supportsChildren: false,
     preferredChildComponents: [],
     variants: [
       {

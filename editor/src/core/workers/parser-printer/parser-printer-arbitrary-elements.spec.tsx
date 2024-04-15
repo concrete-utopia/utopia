@@ -20,7 +20,13 @@ import {
   jsxMapExpression,
   jsIdentifier,
   isJSXAttributesEntry,
-  jsArbitraryStatement,
+  jsOpaqueArbitraryStatement,
+  jsAssignmentStatement,
+  jsAssignment,
+  jsExpressionNestedArray,
+  jsxArrayValue,
+  jsExpressionNestedObject,
+  jsxPropertyAssignment,
 } from '../../shared/element-template'
 import { setJSXValueAtPath } from '../../shared/jsx-attribute-utils'
 import { forEachRight } from '../../shared/either'
@@ -341,7 +347,6 @@ export var whatever = props => (
         ),
       },
       emptyComments,
-      [jsArbitraryStatement(`<MyComp data-uid='aab'/>`, [], ['React', 'MyComp'])],
     )
     const view = jsxElement(
       'View',
@@ -451,7 +456,36 @@ export var whatever = (props) => {
         file: 'code.tsx',
       }),
       {},
-      [jsArbitraryStatement(jsCode, ['arr'], [])],
+      [
+        jsAssignmentStatement(
+          'const',
+          [
+            jsAssignment(
+              jsIdentifier('arr', '', expect.objectContaining({}), emptyComments),
+              jsExpressionNestedArray(
+                [
+                  jsxArrayValue(
+                    jsExpressionNestedObject(
+                      [
+                        jsxPropertyAssignment(
+                          'n',
+                          jsExpressionValue(1, emptyComments, ''),
+                          emptyComments,
+                          emptyComments,
+                        ),
+                      ],
+                      emptyComments,
+                    ),
+                    emptyComments,
+                  ),
+                ],
+                emptyComments,
+              ),
+            ),
+          ],
+          '',
+        ),
+      ],
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -559,7 +593,46 @@ export var whatever = (props) => {
         file: 'code.tsx',
       }),
       {},
-      [jsArbitraryStatement(jsCode, ['arr'], [])],
+      [
+        jsAssignmentStatement(
+          'const',
+          [
+            jsAssignment(
+              jsIdentifier('arr', '', expect.objectContaining({}), emptyComments),
+              jsExpressionNestedArray(
+                [
+                  jsxArrayValue(
+                    jsExpressionNestedObject(
+                      [
+                        jsxPropertyAssignment(
+                          'a',
+                          jsExpressionNestedObject(
+                            [
+                              jsxPropertyAssignment(
+                                'n',
+                                jsExpressionValue(1, emptyComments, ''),
+                                emptyComments,
+                                emptyComments,
+                              ),
+                            ],
+                            emptyComments,
+                          ),
+                          emptyComments,
+                          emptyComments,
+                        ),
+                      ],
+                      emptyComments,
+                    ),
+                    emptyComments,
+                  ),
+                ],
+                emptyComments,
+              ),
+            ),
+          ],
+          '',
+        ),
+      ],
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -662,7 +735,29 @@ export var whatever = (props) => {
         file: 'code.tsx',
       }),
       {},
-      [jsArbitraryStatement(jsCode, ['arr'], [])],
+      [
+        jsAssignmentStatement(
+          'const',
+          [
+            jsAssignment(
+              jsIdentifier('arr', '', expect.objectContaining({}), emptyComments),
+              jsExpressionNestedArray(
+                [
+                  jsxArrayValue(
+                    jsExpressionNestedArray(
+                      [jsxArrayValue(jsExpressionValue(1, emptyComments), emptyComments)],
+                      emptyComments,
+                    ),
+                    emptyComments,
+                  ),
+                ],
+                emptyComments,
+              ),
+            ),
+          ],
+          '',
+        ),
+      ],
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -830,14 +925,12 @@ export var whatever = (props) => {
                   }),
                   {},
                   emptyComments,
-                  [jsArbitraryStatement(`n`, [], [])],
                 ),
               }),
               [],
             ),
           },
           emptyComments,
-          [jsArbitraryStatement(mapJsCode, [], [])],
         ),
       ],
     )
@@ -856,7 +949,7 @@ return { arr: arr };`
         file: 'code.tsx',
       }),
       {},
-      [jsArbitraryStatement(jsCode, ['arr'], [])],
+      [jsOpaqueArbitraryStatement(jsCode, ['arr'], [], '')],
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -1023,7 +1116,6 @@ export var whatever = (props) => {
                   }),
                   {},
                   emptyComments,
-                  [jsArbitraryStatement(`n`, [], [])],
                 ),
               }),
               [],
@@ -1049,7 +1141,7 @@ return { arr: arr };`
         file: 'code.tsx',
       }),
       {},
-      [jsArbitraryStatement(jsCode, ['arr'], [])],
+      [jsOpaqueArbitraryStatement(jsCode, ['arr'], [], '')],
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -1204,8 +1296,8 @@ export var storyboard = (
       expect(results.alone).toMatchInlineSnapshot(`
         Object {
           "elements": Array [
-            "833",
-            "65e",
+            "219",
+            "971",
           ],
           "js": "return (() => {
           function getPicker() {

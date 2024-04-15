@@ -330,6 +330,7 @@ import type {
   ExtractPropertyControlsFromDescriptorFiles,
   SetCodeEditorComponentDescriptorErrors,
   SetSharingDialogOpen,
+  AddNewPage,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -376,6 +377,7 @@ import {
   getPackageJsonFromProjectContents,
   modifyUnderlyingTargetJSXElement,
   getAllComponentDescriptorErrors,
+  updatePackageJsonInEditorState,
 } from '../store/editor-state'
 import {
   areGeneratedElementsTargeted,
@@ -571,6 +573,9 @@ import {
   createModuleEvaluator,
   maybeUpdatePropertyControls,
 } from '../../../core/property-controls/property-controls-local'
+import { addNewFeaturedRouteToPackageJson } from '../../canvas/remix/remix-utils'
+import type { FixUIDsState } from '../../../core/workers/parser-printer/uid-fix'
+import { fixTopLevelElementsUIDs } from '../../../core/workers/parser-printer/uid-fix'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -3833,22 +3838,45 @@ export const UPDATE_FNS = {
     }
   },
   ADD_TEXT_FILE: (action: AddTextFile, editor: EditorModel): EditorModel => {
-    const pathPrefix = action.parentPath == '' ? '' : action.parentPath + '/'
-    const newFileKey = uniqueProjectContentID(pathPrefix + action.fileName, editor.projectContents)
-    const newTextFile = codeFile('', null)
+    const withAddedFile = addTextFile(
+      editor,
+      action.parentPath,
+      action.fileName,
+      codeFile('', null),
+    )
+    return UPDATE_FNS.OPEN_CODE_EDITOR_FILE(
+      openCodeEditorFile(withAddedFile.newFileKey, false),
+      withAddedFile.editorState,
+    )
+  },
+  ADD_NEW_PAGE: (action: AddNewPage, editor: EditorModel): EditorModel => {
+    const newFileName = `${action.newPageName}.jsx` // TODO maybe reuse the original extension?
 
-    const updatedProjectContents = addFileToProjectContents(
-      editor.projectContents,
-      newFileKey,
-      newTextFile,
+    const templateFile = getProjectFileByFilePath(editor.projectContents, action.template.path)
+    if (templateFile == null || !isTextFile(templateFile)) {
+      // nothing to do
+      return editor
+    }
+
+    // 1. add the new page to the featured routes
+    const withPackageJson = updatePackageJsonInEditorState(
+      editor,
+      addNewFeaturedRouteToPackageJson(newFileName),
     )
 
-    // Update the model.
-    const updatedEditor: EditorModel = {
-      ...editor,
-      projectContents: updatedProjectContents,
-    }
-    return UPDATE_FNS.OPEN_CODE_EDITOR_FILE(openCodeEditorFile(newFileKey, false), updatedEditor)
+    // 2. write the new text file
+    const withTextFile = addTextFile(
+      withPackageJson,
+      action.parentPath,
+      newFileName,
+      codeFile(templateFile.fileContents.code, RevisionsState.CodeAhead),
+    )
+
+    // 3. open the text file
+    return UPDATE_FNS.OPEN_CODE_EDITOR_FILE(
+      openCodeEditorFile(withTextFile.newFileKey, false),
+      withTextFile.editorState,
+    )
   },
   DELETE_FILE: (
     action: DeleteFile | DeleteFileFromVSCode | DeleteFileFromCollaboration,
@@ -4254,7 +4282,6 @@ export const UPDATE_FNS = {
             null,
             oldElementsWithin,
             emptyComments,
-            [],
           ),
           originalConditionString: action.expression,
         }
@@ -4541,7 +4568,6 @@ export const UPDATE_FNS = {
                 null,
                 {},
                 comments,
-                [],
                 element.uid,
               )
             }
@@ -4583,7 +4609,6 @@ export const UPDATE_FNS = {
                       null,
                       {},
                       comments,
-                      [],
                       textElement.uid,
                     )
                   } else {
@@ -5566,9 +5591,24 @@ export const UPDATE_FNS = {
           if (newTopLevelElementsDeepEquals.areEqual) {
             return parsed
           } else {
+            const alreadyExistingUIDs = getAllUniqueUids(
+              removeFromProjectContents(editor.projectContents, action.fullPath),
+            ).uniqueIDs
+            const fixUIDsState: FixUIDsState = {
+              mutableAllNewUIDs: new Set(alreadyExistingUIDs),
+              uidsExpectedToBeSeen: new Set(),
+              mappings: [],
+              uidUpdateMethod: 'copy-uids-fix-duplicates',
+            }
+            const fixedUpTopLevelElements = fixTopLevelElementsUIDs(
+              parsed.topLevelElements,
+              newTopLevelElementsDeepEquals.value,
+              fixUIDsState,
+            )
+
             return {
               ...parsed,
-              topLevelElements: newTopLevelElementsDeepEquals.value,
+              topLevelElements: fixedUpTopLevelElements,
             }
           }
         },
@@ -6094,3 +6134,28 @@ export var storyboard = (
   </Storyboard>
   )
 `
+
+function addTextFile(
+  editor: EditorState,
+  parentPath: string,
+  fileName: string,
+  newTextFile: TextFile,
+): { editorState: EditorState; newFileKey: string } {
+  const pathPrefix = parentPath == '' ? '' : parentPath + '/'
+  const newFileKey = uniqueProjectContentID(pathPrefix + fileName, editor.projectContents)
+
+  const updatedProjectContents = addFileToProjectContents(
+    editor.projectContents,
+    newFileKey,
+    newTextFile,
+  )
+
+  // Update the model.
+  return {
+    editorState: {
+      ...editor,
+      projectContents: updatedProjectContents,
+    },
+    newFileKey: newFileKey,
+  }
+}
