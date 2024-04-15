@@ -92,7 +92,7 @@ import {
 import * as PP from '../../shared/property-path'
 import { assertNever, fastForEach } from '../../shared/utils'
 import { addImport, emptyImports } from '../common/project-file-utils'
-import { FileExtensionsToLint, lintCode } from '../linter/linter'
+import { FileExtensionsToParse, lintCode } from '../linter/linter'
 import type { FunctionContents, WithParserMetadata } from './parser-printer-parsing'
 import {
   flattenOutAnnoyingContainers,
@@ -1943,7 +1943,7 @@ export function lintAndParse(
   applySteganography: SteganographyMode,
 ): ParsedTextFile {
   const fileExtension = getFileExtension(filename)
-  if (!FileExtensionsToLint.includes(fileExtension.toLowerCase())) {
+  if (!FileExtensionsToParse.includes(fileExtension.toLowerCase())) {
     return unparsed
   }
 
