@@ -139,24 +139,6 @@ export const PagesPane = React.memo((props) => {
   const activeRoute = matchResult?.[0].pathname ?? pathname
   const activeRouteDoesntMatchAnyFavorites = !featuredRoutes.includes(activeRoute)
 
-  if (remixRoutes.length === 0) {
-    return (
-      <FlexColumn
-        style={{
-          height: '100%',
-          overflowY: 'scroll',
-          whiteSpace: 'normal',
-          padding: 16,
-          paddingTop: 64,
-        }}
-      >
-        <Subdued>
-          No featured routes were found in the project. Please add a 'featuredRoutes' field to the
-          'utopia' field in the package.json file.
-        </Subdued>
-      </FlexColumn>
-    )
-  }
   return (
     <FlexColumn style={{ height: '100%', overflowY: 'scroll' }}>
       <InspectorSectionHeader>
@@ -203,6 +185,23 @@ export const PagesPane = React.memo((props) => {
         )}
       </InspectorSectionHeader>
 
+      {when(
+        remixRoutes.length === 0,
+        <FlexColumn
+          style={{
+            height: '100%',
+            overflowY: 'scroll',
+            whiteSpace: 'normal',
+            padding: 16,
+            paddingTop: 32,
+          }}
+        >
+          <Subdued>
+            No featured routes were found in the project. Please add a favorite route using the
+            Favorites section.
+          </Subdued>
+        </FlexColumn>,
+      )}
       {remixRoutes.map((route: RouteMatch, index) => {
         const { path, resolvedPath } = route
         const pathMatchesActivePath = matchResult?.[0].route.path === path
