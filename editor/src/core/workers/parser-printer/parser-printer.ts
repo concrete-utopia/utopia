@@ -87,11 +87,12 @@ import {
   exportDefaultIdentifier,
   isImportSideEffects,
   isParseSuccess,
+  unparsed,
 } from '../../shared/project-file-types'
 import * as PP from '../../shared/property-path'
 import { assertNever, fastForEach } from '../../shared/utils'
 import { addImport, emptyImports } from '../common/project-file-utils'
-import { lintCode } from '../linter/linter'
+import { FileExtensionsToLint, lintCode } from '../linter/linter'
 import type { FunctionContents, WithParserMetadata } from './parser-printer-parsing'
 import {
   flattenOutAnnoyingContainers,
@@ -120,6 +121,7 @@ import { fromField } from '../../../core/shared/optics/optic-creators'
 import type { Optic } from '../../../core/shared/optics/optics'
 import { modify } from '../../../core/shared/optics/optic-utilities'
 import { identifyValuesDefinedInNode } from './parser-printer-expressions'
+import { getFileExtension } from '../../shared/file-utils'
 
 const BakedInStoryboardVariableName = 'storyboard'
 
@@ -1940,6 +1942,11 @@ export function lintAndParse(
   shouldTrimBounds: 'trim-bounds' | 'do-not-trim-bounds',
   applySteganography: SteganographyMode,
 ): ParsedTextFile {
+  const fileExtension = getFileExtension(filename)
+  if (!FileExtensionsToLint.includes(fileExtension.toLowerCase())) {
+    return unparsed
+  }
+
   const lintResult = lintCode(filename, content)
   // Only fatal or error messages should bounce the parse.
   if (lintResult.filter(messageisFatal).length === 0) {
