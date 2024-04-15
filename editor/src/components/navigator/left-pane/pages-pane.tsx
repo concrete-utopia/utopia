@@ -1,5 +1,6 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
+/** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/react'
 
 import { useAtom } from 'jotai'
@@ -16,6 +17,7 @@ import {
   InspectorSectionHeader,
   SquareButton,
   Subdued,
+  Tooltip,
   UtopiaTheme,
   colorTheme,
 } from '../../../uuiui'
@@ -43,6 +45,7 @@ import {
 import type { ElementContextMenuInstance } from '../../element-context-menu'
 import ReactDOM from 'react-dom'
 import { createNewPageName } from '../../editor/store/editor-state'
+
 type RouteMatch = {
   path: string
   resolvedPath: string
@@ -339,17 +342,16 @@ const FavoriteEntry = React.memo(({ favorite, active, addedToFavorites }: Favori
     void navigationControls[EP.toString(activeRemixScene)]?.navigate(favorite)
   }, [navigationControls, activeRemixScene, favorite])
 
-  const onClickAddToFavorites = React.useCallback(() => {
-    dispatch([addNewFeaturedRoute(favorite)])
-  }, [dispatch, favorite])
-
   return (
     <FlexRow
       style={{
         flexShrink: 0,
         color: active ? colorTheme.neutralForeground.value : colorTheme.subduedForeground.value,
         backgroundColor: active ? colorTheme.subtleBackground.value : 'transparent',
-        border: addedToFavorites ? undefined : '1px dashed ' + colorTheme.border3.value,
+        border: addedToFavorites
+          ? '1px solid transparent'
+          : '1px dashed ' + colorTheme.border3.value,
+        boxSizing: 'border-box',
         marginLeft: 8,
         marginRight: 8,
         paddingLeft: 19, // to visually align the icons with the route entries underneath the favorites section
@@ -385,29 +387,74 @@ const FavoriteEntry = React.memo(({ favorite, active, addedToFavorites }: Favori
       >
         {favorite}
       </span>
-      <span
-        onClick={onClickAddToFavorites}
+      <StarUnstarIcon url={favorite} selected={active} addedToFavorites={addedToFavorites} />
+    </FlexRow>
+  )
+})
+
+interface StarUnstarIconProps {
+  url: string
+  addedToFavorites: boolean
+  selected: boolean
+}
+
+const StarUnstarIcon = React.memo(({ url, addedToFavorites, selected }: StarUnstarIconProps) => {
+  const dispatch = useDispatch()
+
+  const onClickAddOrRemoveFavorite = React.useCallback(
+    (e: React.MouseEvent) => {
+      dispatch([addNewFeaturedRoute(url)])
+      e.stopPropagation()
+    },
+    [dispatch, url],
+  )
+
+  const [mouseOver, setMouseOver] = React.useState(false)
+  const onMouseOver = React.useCallback(() => {
+    setMouseOver(true)
+  }, [])
+  const onMouseLeave = React.useCallback(() => {
+    setMouseOver(false)
+  }, [])
+
+  const type: 'star' | 'starfilled' = (() => {
+    if (addedToFavorites) {
+      return mouseOver ? 'star' : 'starfilled'
+    } else {
+      return mouseOver ? 'starfilled' : 'star'
+    }
+  })()
+
+  return (
+    <Tooltip title='Add to Favorites'>
+      <Icn
+        onMouseOver={onMouseOver}
+        onMouseLeave={onMouseLeave}
+        onClick={onClickAddOrRemoveFavorite}
+        category='navigator-element'
+        type={type}
+        color={'main'}
+        width={12}
+        height={12}
         style={{
           flexShrink: 0,
-          display: addedToFavorites ? 'none' : 'inline-block',
+          opacity: selected ? 1 : undefined,
           color: colorTheme.subduedForeground.value,
           marginLeft: 6,
+          marginRight: 6,
           whiteSpace: 'nowrap',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
-          paddingRight: 8,
-          paddingLeft: 2,
+          cursor: 'pointer',
         }}
         css={{
-          display: 'none',
+          opacity: 0,
           '*:hover > &': {
-            display: 'inline-block',
+            opacity: 1,
           },
         }}
-      >
-        🤩
-      </span>
-    </FlexRow>
+      />
+    </Tooltip>
   )
 })
 
