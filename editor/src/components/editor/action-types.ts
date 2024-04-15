@@ -1128,6 +1128,14 @@ export interface SetSharingDialogOpen {
   open: boolean
 }
 
+export interface ResetOnlineState {
+  action: 'RESET_ONLINE_STATE'
+}
+
+export interface IncreaseOnlineStateFailureCount {
+  action: 'INCREASE_ONLINE_STATE_FAILURE_COUNT'
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertJSXElement
@@ -1311,6 +1319,8 @@ export type EditorAction =
   | SetCollaborators
   | ExtractPropertyControlsFromDescriptorFiles
   | SetSharingDialogOpen
+  | ResetOnlineState
+  | IncreaseOnlineStateFailureCount
 
 export type DispatchPriority =
   | 'everyone'

@@ -124,6 +124,7 @@ import {
   LoadActionsDispatched,
 } from '../components/github/github-repository-clone-flow'
 import { hasReactRouterErrorBeenLogged } from '../core/shared/runtime-report-logs'
+import { InitialOnlineState, startOnlineStatusPolling } from '../components/editor/online-status'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -266,6 +267,7 @@ export class Editor {
       saveCountThisSession: 0,
       projectServerState: emptyProjectServerState(),
       collaborativeEditingSupport: emptyCollaborativeEditingSupport(),
+      onlineState: InitialOnlineState,
     }
 
     const store = createStoresAndState(patchedStoreFromFullStore(this.storedState, 'editor-store'))
@@ -292,6 +294,7 @@ export class Editor {
     void renderRootEditor()
 
     void GithubOperations.startGithubPolling(this.utopiaStoreHook, this.boundDispatch)
+    startOnlineStatusPolling(this.boundDispatch)
 
     reduxDevtoolsSendInitialState(this.storedState)
 
