@@ -202,7 +202,7 @@ export function testParseCode(
   contents: string,
   alreadyExistingUIDs: Set<string> = emptySet(),
 ): ParsedTextFile {
-  const filename = 'code.tsx'
+  const filename = 'code.jsx'
   const result = lintAndParse(
     filename,
     contents,
