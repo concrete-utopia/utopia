@@ -46,6 +46,7 @@ import { notice } from '../../common/notice'
 import { gridMenuDefaultPanels } from '../../canvas/stored-layout'
 import { usePermissions } from '../../editor/store/permissions'
 import { DisableControlsInSubtree } from '../../../uuiui/utilities/disable-subtree'
+import { useIsMyProject } from '../../editor/store/collaborative-editing'
 
 const themeOptions = [
   {
@@ -125,11 +126,7 @@ export const SettingsPane = React.memo(() => {
   )
   const themeConfig = userState.themeConfig
 
-  const isMyProject = useEditorState(
-    Substores.projectServerState,
-    (store) => store.projectServerState.isMyProject,
-    'SettingsPane isMyProject',
-  )
+  const isMyProject = useIsMyProject()
 
   const [theme, setTheme] = React.useState<SelectOption>(
     themeOptions.find((option) => option.value === themeConfig) ?? defaultTheme,
@@ -262,7 +259,6 @@ export const SettingsPane = React.memo(() => {
         <span style={{ fontWeight: 700 }}>Project</span>
       </UIGridRow>
       <Section>
-        {isMyProject === 'yes' ? null : <ForksGiven />}
         <DisableControlsInSubtree disable={!canEditProject}>
           <UIGridRow padded variant='|--80px--|<--------1fr-------->'>
             <span style={{ fontWeight: 500 }}>Name</span>
@@ -286,7 +282,9 @@ export const SettingsPane = React.memo(() => {
           </UIGridRow>
           <UIGridRow padded variant='|--80px--|<--------1fr-------->' style={{ marginBottom: 10 }}>
             <span style={{ fontWeight: 500 }}>Owner</span>
-            {projectOwnerMetadata?.ownerName}
+            <FlexRow style={{ gap: 5 }}>
+              {projectOwnerMetadata?.ownerName} {isMyProject ? <span>(you)</span> : ''}
+            </FlexRow>
           </UIGridRow>
         </DisableControlsInSubtree>
         {when(
