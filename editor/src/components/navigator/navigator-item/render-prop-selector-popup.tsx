@@ -266,6 +266,14 @@ function iconPropsForIcon(icon: Icon): IcnProps {
   }
 }
 
+export function labelTestIdForComponentIcon(
+  componentName: string,
+  moduleName: string,
+  icon: Icon,
+): string {
+  return `variant-label-${componentName}-${moduleName}-${icon}`
+}
+
 const RenderPropPickerSimple = React.memo<RenderPropPickerProps>(({ key, id, target, prop }) => {
   const { showRenderPropPicker } = useShowRenderPropPicker(`${id}-full`)
 
@@ -300,7 +308,10 @@ const RenderPropPickerSimple = React.memo<RenderPropPickerProps>(({ key, id, tar
       const iconProps = iconPropsForIcon(data.icon)
 
       const submenuLabel = (
-        <FlexRow style={{ gap: 5 }}>
+        <FlexRow
+          style={{ gap: 5 }}
+          data-testId={labelTestIdForComponentIcon(data.name, data.moduleName ?? '', data.icon)}
+        >
           <Icn {...iconProps} width={12} height={12} />
           {data.name}
         </FlexRow>
