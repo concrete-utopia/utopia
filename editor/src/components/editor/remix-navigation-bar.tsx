@@ -43,11 +43,9 @@ export const RemixNavigationBar = React.memo(() => {
     [activeRemixScene, navigationControls],
   )
 
-  const url = getRemixUrlFromLocation(navigationControls[EP.toString(activeRemixScene)]?.location)
+  const label = getRemixUrlFromLocation(navigationControls[EP.toString(activeRemixScene)]?.location)
 
-  const label = getRemixLocationLabel(url)
-
-  if (!isSelectOrLiveMode || navigationControls == null || url == null) {
+  if (!isSelectOrLiveMode || navigationControls == null || label == null) {
     return null
   }
 

@@ -22,7 +22,7 @@ import {
   colorTheme,
 } from '../../../uuiui'
 import type { PageTemplate } from '../../canvas/remix/remix-utils'
-import { RemixIndexPathLabel } from '../../canvas/remix/remix-utils'
+import { RemixIndexPathLabel, getRemixUrlFromLocation } from '../../canvas/remix/remix-utils'
 import {
   ActiveRemixSceneAtom,
   RemixNavigationAtom,
@@ -101,8 +101,11 @@ export const PagesPane = React.memo((props) => {
   const [navigationControls] = useAtom(RemixNavigationAtom)
   const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
 
-  const pathname = navigationControls[EP.toString(activeRemixScene)]?.location?.pathname ?? ''
+  const activeLocation = navigationControls[EP.toString(activeRemixScene)]?.location
 
+  const url = getRemixUrlFromLocation(activeLocation)
+
+  const pathname = activeLocation?.pathname ?? ''
   const matchResult = matchRoutes(remixRoutes, pathname)
 
   const pageTemplates = useEditorState(
@@ -136,8 +139,8 @@ export const PagesPane = React.memo((props) => {
     setNavigateTo(null)
   })
 
-  const activeRoute = matchResult?.[0].pathname ?? pathname
-  const activeRouteDoesntMatchAnyFavorites = !featuredRoutes.includes(activeRoute)
+  const activeRoute = url ?? ''
+  const activeRouteDoesntMatchAnyFavorites = !featuredRoutes.includes(activeRoute!)
 
   return (
     <FlexColumn style={{ height: '100%', overflowY: 'scroll' }}>
@@ -146,7 +149,7 @@ export const PagesPane = React.memo((props) => {
       </InspectorSectionHeader>
       <FlexColumn style={{ paddingBottom: 24 }}>
         {featuredRoutes.map((favorite: string) => {
-          const pathMatchesActivePath = matchResult?.[0].pathname === favorite
+          const pathMatchesActivePath = activeRoute === favorite
 
           return (
             <FavoriteEntry

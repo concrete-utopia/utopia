@@ -461,7 +461,7 @@ export function getRemixUrlFromLocation(remixPath: Path | undefined): string | n
   if (remixPath == null) {
     return null
   }
-  return urljoin(remixPath.pathname, remixPath.search, remixPath.hash)
+  return getRemixLocationLabel(urljoin(remixPath.pathname, remixPath.search, remixPath.hash))
 }
 
 export function getRemixLocationLabel(location: string | null | undefined): string | null {
@@ -469,7 +469,7 @@ export function getRemixLocationLabel(location: string | null | undefined): stri
     return null
   }
 
-  if (location === '/') {
+  if (location === '/' || location === '') {
     return RemixIndexPathLabel
   }
 
