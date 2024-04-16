@@ -525,16 +525,16 @@ export function addOrReplaceFeaturedRouteToPackageJson(
 ) {
   return function (packageJson: string) {
     return modifyFeaturedRoutesInPackageJson(packageJson, (currentRoutes) => {
-      let newRoutes: string[] = []
+      let newRoutes = [...currentRoutes]
       if (prefix) {
-        newRoutes = currentRoutes.map((route) => {
+        newRoutes = newRoutes.map((route) => {
           if (route.startsWith(oldRoute + '/')) {
             return route.replace(oldRoute, newRoute) // just once (string replace instead of a regex), it's ok
           }
           return route
         })
       } else {
-        const routeIndex = currentRoutes.indexOf(oldRoute)
+        const routeIndex = newRoutes.indexOf(oldRoute)
         if (routeIndex < 0) {
           newRoutes.push(newRoute)
         } else {

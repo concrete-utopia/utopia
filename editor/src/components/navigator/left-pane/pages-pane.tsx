@@ -255,79 +255,7 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
 
   const isDynamicPathSegment = lastTemplateSegment.startsWith(':')
 
-  const [renaming, setRenaming] = React.useState(false)
-
-  const onDoubleClick = React.useCallback(() => {
-    const canRename = props.routePath !== '/'
-    if (canRename) {
-      setRenaming(true)
-    }
-  }, [props.routePath])
-
-  const dispatch = useDispatch()
-
-  const doneRenaming = React.useCallback(
-    (newPath: string | null) => {
-      setRenaming(false)
-      if (newPath != null) {
-        function slashPathToRemixPath(path: string): string {
-          return (
-            path
-              .replace(/\//g, '.') // slashes to dots
-              .replace(/:/g, '$') // colons to dollars
-              .replace(/^\./, '') // chomp first dot
-              .trim() + (props.matchesRealRoute ? '.jsx' : '') // add extension // TODO grab the actual extension
-          )
-        }
-
-        const routeTokens = props.routePath.split('/')
-        const resolvedTokens = props.resolvedPath.split('/')
-        const replacements: { [key: string]: string } = {}
-        for (let i = 0; i < routeTokens.length; i++) {
-          const token = routeTokens[i]
-          if (token.startsWith(':')) {
-            replacements[token] = resolvedTokens[i]
-          }
-        }
-
-        const newRoutePathReplacementTokens = newPath.split('/').filter(isReplacementToken)
-        const replacementTokens = routeTokens.filter(isReplacementToken)
-
-        if (!replacementTokensMatch(replacementTokens, newRoutePathReplacementTokens)) {
-          dispatch([
-            showToast(
-              notice(
-                `Invalid tokens ${Array.from(newRoutePathReplacementTokens).join(', ')}`,
-                'ERROR',
-                false,
-              ),
-            ),
-          ])
-          return
-        }
-
-        let newRoutePath = newPath
-        for (const key of Object.keys(replacements)) {
-          const value = replacements[key]
-          newRoutePath = newRoutePath.replace(key, value)
-        }
-
-        dispatch(
-          [
-            updateRemixRoute(
-              urljoin('/app/routes', slashPathToRemixPath(props.routePath)),
-              urljoin('/app/routes', slashPathToRemixPath(newPath)),
-              props.resolvedPath,
-              newRoutePath,
-              !props.matchesRealRoute,
-            ),
-          ],
-          'everyone',
-        )
-      }
-    },
-    [props, dispatch],
-  )
+  const renaming = useRenaming(props)
 
   return (
     <FlexRow
@@ -368,11 +296,12 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
         width={12}
         height={12}
       />
-      {when(renaming, <RenameInputField doneRenaming={doneRenaming} routePath={props.routePath} />)}
+      {when(renaming.isRenaming, renaming.InputField)}
       {unless(
-        renaming,
+        renaming.isRenaming,
         <React.Fragment>
           <span
+            onDoubleClick={renaming.startRenaming}
             style={{
               marginLeft: 6,
               display: 'inline-block',
@@ -411,55 +340,6 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
   )
 })
 
-type RenameInputFieldProps = {
-  doneRenaming: (newPath: string | null) => void
-  routePath: string
-}
-
-const RenameInputField = React.memo((props: RenameInputFieldProps) => {
-  const [value, setValue] = React.useState(props.routePath)
-
-  const onBlur = React.useCallback(() => {
-    props.doneRenaming(null)
-  }, [props])
-
-  const onFocus = React.useCallback((e: React.FocusEvent<HTMLInputElement>) => {
-    e.target.select()
-  }, [])
-
-  const onKeyDown = React.useCallback(
-    (e: React.KeyboardEvent) => {
-      switch (e.key) {
-        case 'Escape':
-          props.doneRenaming(null)
-          break
-        case 'Enter':
-          props.doneRenaming(value)
-          break
-      }
-    },
-    [props, value],
-  )
-
-  const onChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setValue(e.target.value)
-  }, [])
-
-  return (
-    <StringInput
-      testId='pages-pane-rename-route-input'
-      type='text'
-      autoFocus={true}
-      onFocus={onFocus}
-      onBlur={onBlur}
-      onKeyDown={onKeyDown}
-      value={value}
-      onChange={onChange}
-    />
-  )
-})
-
-RenameInputField.displayName = 'RenameInputField'
 interface FavoriteEntryProps {
   favorite: string
   active: boolean
@@ -506,7 +386,6 @@ const FavoriteEntry = React.memo(({ favorite, active, addedToFavorites }: Favori
         width={12}
         height={12}
       />
-      {/* TODO if we want renaming, cannibalize it from FileBrowserItem */}
       <span
         style={{
           marginLeft: 6,
@@ -700,3 +579,141 @@ function replacementTokensMatch(oldTokens: string[], newTokens: string[]): boole
 function isReplacementToken(token: string): boolean {
   return token.startsWith(':')
 }
+
+function slashPathToRemixPath(path: string, matchesRealRoute: boolean): string {
+  return (
+    path
+      .replace(/\//g, '.') // slashes to dots
+      .replace(/:/g, '$') // colons to dollars
+      .replace(/^\./, '') // chomp first dot
+      .trim() + (matchesRealRoute ? '.jsx' : '') // add extension // TODO grab the actual extension
+  )
+}
+
+// keeping this as a hook so we can reuse it if, for example, we want to add renaming abilities to the favorites section
+function useRenaming(props: {
+  routePath: string
+  resolvedPath: string
+  matchesRealRoute: boolean
+}) {
+  const dispatch = useDispatch()
+
+  const [isRenaming, setIsRenaming] = React.useState(false)
+
+  const startRenaming = React.useCallback(() => {
+    const canRename = props.routePath !== '/'
+    if (canRename) {
+      setIsRenaming(true)
+    }
+  }, [props.routePath])
+
+  const onDoneRenaming = React.useCallback(
+    (newPath: string | null) => {
+      setIsRenaming(false)
+      if (newPath != null) {
+        const routeTokens = props.routePath.split('/')
+        const resolvedTokens = props.resolvedPath.split('/')
+        const replacements: { [key: string]: string } = {}
+        for (let i = 0; i < routeTokens.length; i++) {
+          const token = routeTokens[i]
+          if (token.startsWith(':')) {
+            replacements[token] = resolvedTokens[i]
+          }
+        }
+
+        const newRoutePathReplacementTokens = newPath.split('/').filter(isReplacementToken)
+        const replacementTokens = routeTokens.filter(isReplacementToken)
+
+        if (!replacementTokensMatch(replacementTokens, newRoutePathReplacementTokens)) {
+          dispatch([
+            showToast(
+              notice(
+                `Invalid tokens ${Array.from(newRoutePathReplacementTokens).join(', ')}`,
+                'ERROR',
+                false,
+              ),
+            ),
+          ])
+          return
+        }
+
+        let newRoutePath = newPath
+        for (const key of Object.keys(replacements)) {
+          const value = replacements[key]
+          newRoutePath = newRoutePath.replace(key, value)
+        }
+
+        dispatch(
+          [
+            updateRemixRoute(
+              urljoin('/app/routes', slashPathToRemixPath(props.routePath, props.matchesRealRoute)),
+              urljoin('/app/routes', slashPathToRemixPath(newPath, props.matchesRealRoute)),
+              props.resolvedPath,
+              newRoutePath,
+              !props.matchesRealRoute,
+            ),
+          ],
+          'everyone',
+        )
+      }
+    },
+    [props, dispatch],
+  )
+
+  return {
+    isRenaming: isRenaming,
+    InputField: isRenaming ? (
+      <RenameInputField doneRenaming={onDoneRenaming} routePath={props.routePath} />
+    ) : null,
+    startRenaming: startRenaming,
+  }
+}
+
+type RenameInputFieldProps = {
+  doneRenaming: (newPath: string | null) => void
+  routePath: string
+}
+
+const RenameInputField = React.memo((props: RenameInputFieldProps) => {
+  const [value, setValue] = React.useState(props.routePath)
+
+  const onBlur = React.useCallback(() => {
+    props.doneRenaming(null)
+  }, [props])
+
+  const onFocus = React.useCallback((e: React.FocusEvent<HTMLInputElement>) => {
+    e.target.select()
+  }, [])
+
+  const onKeyDown = React.useCallback(
+    (e: React.KeyboardEvent) => {
+      switch (e.key) {
+        case 'Escape':
+          props.doneRenaming(null)
+          break
+        case 'Enter':
+          props.doneRenaming(value)
+          break
+      }
+    },
+    [props, value],
+  )
+
+  const onChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setValue(e.target.value)
+  }, [])
+
+  return (
+    <StringInput
+      testId='pages-pane-rename-route-input'
+      type='text'
+      autoFocus={true}
+      onFocus={onFocus}
+      onBlur={onBlur}
+      onKeyDown={onKeyDown}
+      value={value}
+      onChange={onChange}
+    />
+  )
+})
+RenameInputField.displayName = 'RenameInputField'
