@@ -12,8 +12,6 @@ import {
   H2,
   HeadlessStringInput,
   Icn,
-  Icons,
-  marginBottom,
   PopupList,
   Section,
   SectionBodyArea,
@@ -22,14 +20,12 @@ import {
 } from '../../../uuiui'
 import { getControlStyles } from '../../../uuiui-deps'
 import { InspectorInputEmotionStyle } from '../../../uuiui/inputs/base-input'
-
 import type { SelectOption } from '../../../uuiui-deps'
 import * as EditorActions from '../../editor/actions/action-creators'
 import { setProjectDescription, setProjectName } from '../../editor/actions/action-creators'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { UIGridRow } from '../../inspector/widgets/ui-grid-row'
-import { ForksGiven } from './forks-given'
 import type { FeatureName } from '../../../utils/feature-switches'
 import {
   toggleFeatureEnabled,
