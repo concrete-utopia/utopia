@@ -14,12 +14,9 @@ import {
   Icn,
   PopupList,
   Section,
-  SectionBodyArea,
   StringInput,
   UtopiaTheme,
 } from '../../../uuiui'
-import { getControlStyles } from '../../../uuiui-deps'
-import { InspectorInputEmotionStyle } from '../../../uuiui/inputs/base-input'
 import type { SelectOption } from '../../../uuiui-deps'
 import * as EditorActions from '../../editor/actions/action-creators'
 import { setProjectDescription, setProjectName } from '../../editor/actions/action-creators'
