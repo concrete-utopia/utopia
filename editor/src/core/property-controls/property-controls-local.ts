@@ -307,9 +307,6 @@ function isComponentRegistrationValid(
     }
   }
 
-  // TODO check whether non-intrinsic element in preferredContents has
-  // `moduleName` specified
-
   return { type: 'valid' }
 }
 
