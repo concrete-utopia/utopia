@@ -581,14 +581,12 @@ function isReplacementToken(token: string): boolean {
   return token.startsWith(':')
 }
 
-function slashPathToRemixPath(path: string, matchesRealRoute: boolean): string {
-  return (
-    path
-      .replace(/\//g, '.') // slashes to dots
-      .replace(/:/g, '$') // colons to dollars
-      .replace(/^\./, '') // chomp first dot
-      .trim() + (matchesRealRoute ? '.jsx' : '') // add extension // TODO grab the actual extension
-  )
+function slashPathToRemixPath(path: string): string {
+  return path
+    .replace(/\//g, '.') // slashes to dots
+    .replace(/:/g, '$') // colons to dollars
+    .replace(/^\./, '') // chomp first dot
+    .trim()
 }
 
 // keeping this as a hook so we can reuse it if, for example, we want to add renaming abilities to the favorites section
@@ -611,11 +609,7 @@ function useRenaming(props: {
   const onDoneRenaming = React.useCallback(
     (newPath: string | null) => {
       setIsRenaming(false)
-      runUpdateRemixRoute(dispatch, newPath, {
-        path: props.routePath,
-        resolvedPath: props.resolvedPath,
-        matchesRealRoute: props.matchesRealRoute,
-      })
+      runUpdateRemixRoute(dispatch, newPath, props.routePath, props.resolvedPath)
     },
     [props, dispatch],
   )
@@ -627,14 +621,19 @@ function useRenaming(props: {
   }
 }
 
-function runUpdateRemixRoute(dispatch: EditorDispatch, newPath: string | null, match: RouteMatch) {
+function runUpdateRemixRoute(
+  dispatch: EditorDispatch,
+  newPath: string | null,
+  routePath: string,
+  resolvedPath: string,
+) {
   if (newPath == null) {
     return
   }
 
   // split route and resolved path by `/` so we get every path token
-  const routeTokens = match.path.split('/')
-  const resolvedTokens = match.resolvedPath.split('/')
+  const routeTokens = routePath.split('/')
+  const resolvedTokens = resolvedPath.split('/')
 
   // keep track of the replacement tokens (:token) and their resolved values
   let replacements: { [key: string]: string } = {}
@@ -671,9 +670,9 @@ function runUpdateRemixRoute(dispatch: EditorDispatch, newPath: string | null, m
   dispatch(
     [
       updateRemixRoute(
-        urljoin('/app/routes', slashPathToRemixPath(match.path, match.matchesRealRoute)),
-        urljoin('/app/routes', slashPathToRemixPath(newPath, match.matchesRealRoute)),
-        match.resolvedPath,
+        urljoin('/app/routes', slashPathToRemixPath(routePath)),
+        urljoin('/app/routes', slashPathToRemixPath(newPath)),
+        resolvedPath,
         urljoin('/', newRoutePath),
       ),
     ],

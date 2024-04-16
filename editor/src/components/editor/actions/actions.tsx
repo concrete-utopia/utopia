@@ -1255,7 +1255,13 @@ function replaceFilePath(
   }
   let updatedFiles: Array<{ oldPath: string; newPath: string }> = []
   Utils.fastForEach(Object.keys(projectContents), (filename) => {
-    if (filename.startsWith(oldPath)) {
+    const tokens = filename.split('.')
+    const extension = tokens[tokens.length - 1]
+    if (
+      filename === oldPath ||
+      filename.startsWith(oldPath + '/') ||
+      (extension === 'jsx' && filename.startsWith(oldPath + '.')) // remix routes
+    ) {
       // TODO make sure the prefix search only happens when it makes sense so
       const projectFile = projectContents[filename]
       const newFilePath = filename.replace(oldPath, newPath)
@@ -3510,11 +3516,7 @@ export const UPDATE_FNS = {
 
     const withUpdatedFeaturedRoute = updatePackageJsonInEditorState(
       withUpdatedFilePath,
-      addOrReplaceFeaturedRouteToPackageJson(
-        action.oldRoute,
-        action.newRoute,
-        action.oldPath.endsWith('.jsx'), // if the route is a file, replace exactly
-      ),
+      addOrReplaceFeaturedRouteToPackageJson(action.oldRoute, action.newRoute),
     )
 
     return withUpdatedFeaturedRoute

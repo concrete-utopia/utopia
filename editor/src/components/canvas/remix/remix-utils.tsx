@@ -518,20 +518,14 @@ export function removeFeaturedRouteFromPackageJson(routeToRemove: string) {
   }
 }
 
-export function addOrReplaceFeaturedRouteToPackageJson(
-  oldRoute: string,
-  newRoute: string,
-  replaceExactMatch: boolean,
-) {
+export function addOrReplaceFeaturedRouteToPackageJson(oldRoute: string, newRoute: string) {
   return function (packageJson: string) {
     return modifyFeaturedRoutesInPackageJson(packageJson, (currentRoutes): string[] => {
-      return replaceExactMatch
-        ? currentRoutes.filter((route) => route !== oldRoute).concat(newRoute)
-        : currentRoutes.map((route) => {
-            return route.startsWith(oldRoute + '/')
-              ? route.replace(oldRoute, newRoute) // just once (string replace instead of a regex), it's ok
-              : route
-          })
+      return currentRoutes.map((route) => {
+        return route.startsWith(oldRoute)
+          ? route.replace(oldRoute, newRoute) // just once (string replace instead of a regex), it's ok
+          : route
+      })
     })
   }
 }
