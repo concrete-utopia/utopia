@@ -455,7 +455,7 @@ export function getRouteComponentNameForOutlet(
   return defaultExport.name
 }
 
-export const RemixIndexPathLabel = '(home)'
+export const RemixIndexPathLabel = '/'
 
 export function getRemixLocationLabel(location: string | undefined): string | null {
   if (location == null) {
