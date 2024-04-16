@@ -12,6 +12,7 @@ import { useDispatch } from '../editor/store/dispatch-context'
 import { type EditorStorePatched, type GithubRepoWithBranch } from '../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { onClickSignIn } from '../titlebar/title-bar'
+import { CloneParamKey } from '../editor/persistence/persistence-backend'
 
 export const LoadActionsDispatched = 'loadActionDispatched'
 
@@ -155,7 +156,7 @@ export function getGithubRepoToLoad(urlSearchParams: string): GithubRepoWithBran
   const urlParams = new URLSearchParams(urlSearchParams)
   const githubBranch = urlParams.get('github_branch')
 
-  const githubCloneUrl = urlParams.get('clone')
+  const githubCloneUrl = urlParams.get(CloneParamKey)
   if (githubCloneUrl != null) {
     const splitGitRepoUrl = githubCloneUrl.split('/')
     return {
