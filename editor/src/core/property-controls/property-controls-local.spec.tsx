@@ -1315,7 +1315,7 @@ describe('registered property controls', () => {
           "childrenPropPlaceholder": null,
           "preferredChildComponents": Array [
             Object {
-              "imports": Object {},
+              "moduleName": null,
               "name": "Card",
               "variants": Array [
                 Object {
@@ -1390,7 +1390,7 @@ describe('registered property controls', () => {
           },
           "preferredChildComponents": Array [
             Object {
-              "imports": Object {},
+              "moduleName": null,
               "name": "span",
               "variants": Array [
                 Object {
@@ -1401,7 +1401,7 @@ describe('registered property controls', () => {
               ],
             },
             Object {
-              "imports": Object {},
+              "moduleName": "/src/card2",
               "name": "Card2",
               "variants": Array [
                 Object {
@@ -1591,7 +1591,7 @@ describe('registered property controls', () => {
                 },
                 "preferredChildComponents": Array [
                   Object {
-                    "imports": Object {},
+                    "moduleName": null,
                     "name": "span",
                     "variants": Array [
                       Object {
@@ -1602,7 +1602,7 @@ describe('registered property controls', () => {
                     ],
                   },
                   Object {
-                    "imports": Object {},
+                    "moduleName": "/src/card2",
                     "name": "Card2",
                     "variants": Array [
                       Object {
