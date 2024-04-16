@@ -92,9 +92,8 @@ function pushProjectURLToBrowserHistory(
     queryParams.delete(ForkSearchParamKey)
   }
   // remove one-time creation params
-  ;[AccessLevelParamKey, CloneParamKey].forEach((key) => {
-    queryParams.delete(key)
-  })
+  queryParams.delete(AccessLevelParamKey)
+  queryParams.delete(CloneParamKey)
 
   const queryParamsStr = queryParams.size > 0 ? `?${queryParams.toString()}` : ''
 
