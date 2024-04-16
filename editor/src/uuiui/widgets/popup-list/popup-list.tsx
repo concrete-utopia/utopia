@@ -637,7 +637,15 @@ export const PopupList = React.memo<PopupListProps>(
           menuPortalTarget={document.getElementById(CommonUtils.PortalTargetID)}
           filterOption={createFilter({ ignoreAccents: true })}
           isDisabled={disabled}
-          isOptionDisabled={isOptionDisabled}
+          // isOptionDisabled={isOptionDisabled}
+          css={{
+            '&:hover': {
+              boxShadow: `inset 0px 0px 0px 1px ${colorTheme.fg7.value}`,
+            },
+            '&:focus-within': {
+              boxShadow: `inset 0px 0px 0px 1px ${colorTheme.dynamicBlue.value}`,
+            },
+          }}
           styles={{
             container,
             indicatorsContainer: (base) => ({
