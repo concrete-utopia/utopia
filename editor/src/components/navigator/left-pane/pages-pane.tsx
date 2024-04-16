@@ -8,7 +8,7 @@ import React from 'react'
 import { matchRoutes } from 'react-router'
 import { safeIndex, uniqBy } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
-import { NO_OP, PortalTargetID } from '../../../core/shared/utils'
+import { NO_OP, PortalTargetID, assertNever } from '../../../core/shared/utils'
 import {
   FlexColumn,
   FlexRow,
@@ -62,7 +62,12 @@ type RouteMatch = {
 type NavigateTo = {
   resolvedPath: string
   routePath: string
+  mode: NavigateMode
 }
+
+type NavigateMode =
+  | 'only-active-scene' // apply navigation only on the active scene
+  | 'all-scenes' // apply navigation to all scenes
 
 export const PagesPane = React.memo((props) => {
   const featuredRoutes = useEditorState(
@@ -144,6 +149,7 @@ export const PagesPane = React.memo((props) => {
     setNavigateTo({
       resolvedPath: resolvedPath,
       routePath: resolvedPath, // it's a straight path anyways
+      mode: 'only-active-scene',
     })
   }, [])
 
@@ -151,6 +157,7 @@ export const PagesPane = React.memo((props) => {
     setNavigateTo({
       routePath: urljoin('/', routePath),
       resolvedPath: urljoin('/', resolvedPath),
+      mode: 'all-scenes',
     })
   }, [])
 
@@ -572,6 +579,20 @@ function useNavigateToRouteWhenAvailable(
   const [navigationControls] = useAtom(RemixNavigationAtom)
   const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
 
+  const scenesToNavigate: string[] = React.useMemo(() => {
+    if (navigateTo == null) {
+      return []
+    }
+    switch (navigateTo.mode) {
+      case 'all-scenes':
+        return Object.keys(navigationControls)
+      case 'only-active-scene':
+        return [EP.toString(activeRemixScene)]
+      default:
+        assertNever(navigateTo.mode)
+    }
+  }, [navigationControls, activeRemixScene, navigateTo])
+
   React.useEffect(() => {
     if (navigateTo == null) {
       return
@@ -589,10 +610,12 @@ function useNavigateToRouteWhenAvailable(
           ?.resolvedPath ?? null
 
     if (navigationTarget != null) {
-      void navigationControls[EP.toString(activeRemixScene)]?.navigate(navigationTarget)
+      scenesToNavigate.forEach((path) => {
+        void navigationControls[path]?.navigate(navigationTarget)
+      })
       onNavigate()
     }
-  }, [navigateTo, remixRoutes, navigationControls, activeRemixScene, onNavigate])
+  }, [navigateTo, remixRoutes, navigationControls, activeRemixScene, onNavigate, scenesToNavigate])
 }
 
 function replacementTokensMatch(oldTokens: string[], newTokens: string[]): boolean {
