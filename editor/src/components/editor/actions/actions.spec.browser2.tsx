@@ -7695,7 +7695,7 @@ export var storyboard = (
           'utopia-storyboard-uid/scene-aaa/app-entity:root/child1',
         ])
         expect(renderResult.getEditorState().editor.leftMenu.selectedTab).toEqual(
-          LeftMenuTab.Navigator,
+          LeftMenuTab.Github,
         )
       }
 
@@ -7734,7 +7734,7 @@ export var storyboard = (
           'utopia-storyboard-uid/scene-aaa/app-entity:root',
         ])
         expect(renderResult.getEditorState().editor.leftMenu.selectedTab).toEqual(
-          LeftMenuTab.Navigator,
+          LeftMenuTab.Github,
         )
       }
     })
