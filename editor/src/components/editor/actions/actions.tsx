@@ -3517,7 +3517,7 @@ export const UPDATE_FNS = {
       ),
     )
 
-    return editor
+    return withUpdatedFeaturedRoute
   },
   SET_FOCUS: (action: SetFocus, editor: EditorModel): EditorModel => {
     if (editor.focusedPanel === action.focusedPanel) {
