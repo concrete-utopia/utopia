@@ -11,5 +11,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   await proxy(onlineStatusRequest, { rawOutput: true })
 
   // Return a simple response.
-  return new Response('Online', { headers: { 'content-type': 'text/plain' } })
+  return new Response('Online', {
+    headers: { 'content-type': 'text/plain', 'cache-control': 'no-cache' },
+  })
 }
