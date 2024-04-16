@@ -59,6 +59,11 @@ type RouteMatch = {
   matchesRealRoute: boolean
 }
 
+type NavigateTo = {
+  resolvedPath: string
+  routePath: string
+}
+
 export const PagesPane = React.memo((props) => {
   const featuredRoutes = useEditorState(
     Substores.projectContents,
@@ -132,10 +137,21 @@ export const PagesPane = React.memo((props) => {
     [dispatch],
   )
 
-  const [navigateTo, setNavigateTo] = React.useState<string | null>(null)
+  const [navigateTo, setNavigateTo] = React.useState<NavigateTo | null>(null)
 
   const onAfterPageAdd = React.useCallback((pageName: string) => {
-    setNavigateTo(`/${pageName}`)
+    const resolvedPath = urljoin('/', pageName)
+    setNavigateTo({
+      resolvedPath: resolvedPath,
+      routePath: resolvedPath, // it's a straight path anyways
+    })
+  }, [])
+
+  const onAfterRouteRenamed = React.useCallback((routePath: string, resolvedPath: string) => {
+    setNavigateTo({
+      routePath: urljoin('/', routePath),
+      resolvedPath: urljoin('/', resolvedPath),
+    })
   }, [])
 
   useNavigateToRouteWhenAvailable(remixRoutes, navigateTo, () => {
@@ -221,6 +237,7 @@ export const PagesPane = React.memo((props) => {
             active={pathMatchesActivePath}
             matchesRealRoute={route.matchesRealRoute}
             navigateTo={navigateTo}
+            onAfterRouteRenamed={onAfterRouteRenamed}
           />
         )
       })}
@@ -233,7 +250,8 @@ interface PageRouteEntryProps {
   resolvedPath: string
   active: boolean
   matchesRealRoute: boolean
-  navigateTo: string | null
+  navigateTo: NavigateTo | null
+  onAfterRouteRenamed: (routePath: string, resolvedPath: string) => void
 }
 const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
   const ref = React.useRef<HTMLDivElement | null>(null)
@@ -537,10 +555,10 @@ export const AddPageContextMenu = React.memo(
 function useScrollToNavigateToRoute(
   ref: React.MutableRefObject<HTMLDivElement | null>,
   path: string,
-  navigateTo: string | null,
+  navigateTo: NavigateTo | null,
 ) {
   React.useEffect(() => {
-    if (navigateTo === path) {
+    if (navigateTo?.resolvedPath === path) {
       ref.current?.scrollIntoView()
     }
   }, [navigateTo, ref, path])
@@ -548,7 +566,7 @@ function useScrollToNavigateToRoute(
 
 function useNavigateToRouteWhenAvailable(
   remixRoutes: RouteMatch[],
-  navigateTo: string | null,
+  navigateTo: NavigateTo | null,
   onNavigate: () => void,
 ) {
   const [navigationControls] = useAtom(RemixNavigationAtom)
@@ -558,8 +576,20 @@ function useNavigateToRouteWhenAvailable(
     if (navigateTo == null) {
       return
     }
-    if (remixRoutes.some((r) => r.resolvedPath === navigateTo)) {
-      void navigationControls[EP.toString(activeRemixScene)]?.navigate(navigateTo)
+
+    // if the target is a specific route, go to it
+    const navigateToMatchesRealRoute = remixRoutes.find((r) => {
+      return r.resolvedPath === navigateTo.resolvedPath
+    })?.matchesRealRoute
+
+    // otherwise if the target is not a specific route, go to the first valid match for its prefix
+    const navigationTarget = navigateToMatchesRealRoute
+      ? navigateTo.resolvedPath
+      : remixRoutes.find((r) => r.matchesRealRoute && r.path.startsWith(navigateTo.routePath))
+          ?.resolvedPath ?? null
+
+    if (navigationTarget != null) {
+      void navigationControls[EP.toString(activeRemixScene)]?.navigate(navigationTarget)
       onNavigate()
     }
   }, [navigateTo, remixRoutes, navigationControls, activeRemixScene, onNavigate])
@@ -590,11 +620,7 @@ function slashPathToRemixPath(path: string): string {
 }
 
 // keeping this as a hook so we can reuse it if, for example, we want to add renaming abilities to the favorites section
-function useRenaming(props: {
-  routePath: string
-  resolvedPath: string
-  matchesRealRoute: boolean
-}) {
+function useRenaming(props: PageRouteEntryProps) {
   const dispatch = useDispatch()
 
   const [isRenaming, setIsRenaming] = React.useState(false)
@@ -609,7 +635,15 @@ function useRenaming(props: {
   const onDoneRenaming = React.useCallback(
     (newPath: string | null) => {
       setIsRenaming(false)
-      runUpdateRemixRoute(dispatch, newPath, props.routePath, props.resolvedPath)
+      const newResolvedPath = runRenameRemixRoute(
+        dispatch,
+        newPath,
+        props.routePath,
+        props.resolvedPath,
+      )
+      if (newPath != null && newResolvedPath != null) {
+        props.onAfterRouteRenamed(newPath, newResolvedPath)
+      }
     },
     [props, dispatch],
   )
@@ -621,14 +655,17 @@ function useRenaming(props: {
   }
 }
 
-function runUpdateRemixRoute(
+/**
+ * Rename a Remix route, update the related featured entry in the package.json and return the new resolved path.
+ */
+function runRenameRemixRoute(
   dispatch: EditorDispatch,
   newPath: string | null,
   routePath: string,
   resolvedPath: string,
-) {
+): string | null {
   if (newPath == null) {
-    return
+    return null
   }
 
   // split route and resolved path by `/` so we get every path token
@@ -645,25 +682,25 @@ function runUpdateRemixRoute(
   }
 
   // if the renamed value does not match the original replacement tokens, stop here
-  const newRoutePathReplacementTokens = newPath.split('/').filter(isReplacementToken)
+  const newResolvedPathReplacementTokens = newPath.split('/').filter(isReplacementToken)
   const replacementTokens = routeTokens.filter(isReplacementToken)
-  if (!replacementTokensMatch(replacementTokens, newRoutePathReplacementTokens)) {
+  if (!replacementTokensMatch(replacementTokens, newResolvedPathReplacementTokens)) {
     dispatch([
       showToast(
         notice(
-          `Invalid tokens ${Array.from(newRoutePathReplacementTokens).join(', ')}`,
+          `Invalid tokens ${Array.from(newResolvedPathReplacementTokens).join(', ')}`,
           'ERROR',
           false,
         ),
       ),
     ])
-    return
+    return null
   }
 
   // build the new route path by applying the relevant replacements
-  let newRoutePath = newPath
+  let newResolvedPath = newPath
   for (const [key, value] of Object.entries(replacements)) {
-    newRoutePath = newRoutePath.replace(key, value)
+    newResolvedPath = newResolvedPath.replace(key, value)
   }
 
   // update the remix route
@@ -673,11 +710,13 @@ function runUpdateRemixRoute(
         urljoin('/app/routes', slashPathToRemixPath(routePath)),
         urljoin('/app/routes', slashPathToRemixPath(newPath)),
         resolvedPath,
-        urljoin('/', newRoutePath),
+        urljoin('/', newResolvedPath),
       ),
     ],
     'everyone',
   )
+
+  return newResolvedPath
 }
 
 type RenameInputFieldProps = {
