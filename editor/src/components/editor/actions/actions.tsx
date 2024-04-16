@@ -336,7 +336,7 @@ import type {
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
-import { isCommentMode, isFollowMode, isTextEditMode, nextSelectedTab } from '../editor-modes'
+import { isCommentMode, isFollowMode, isTextEditMode } from '../editor-modes'
 import { EditorModes, isLiveMode, isSelectMode } from '../editor-modes'
 import * as History from '../history'
 import type { StateHistory } from '../history'
@@ -581,6 +581,7 @@ import {
 } from '../../canvas/remix/remix-utils'
 import type { FixUIDsState } from '../../../core/workers/parser-printer/uid-fix'
 import { fixTopLevelElementsUIDs } from '../../../core/workers/parser-printer/uid-fix'
+import { nextSelectedTab } from '../../navigator/left-pane/left-pane-utils'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -2033,7 +2034,10 @@ export const UPDATE_FNS = {
     const updatedEditor: EditorModel = {
       ...editor,
       selectedViews: newlySelectedPaths,
-      leftMenu: { visible: editor.leftMenu.visible, selectedTab: nextSelectedTab(editor) },
+      leftMenu: {
+        visible: editor.leftMenu.visible,
+        selectedTab: nextSelectedTab(editor.leftMenu.selectedTab, newlySelectedPaths),
+      },
       navigator:
         newlySelectedPaths === editor.selectedViews
           ? editor.navigator
@@ -2048,12 +2052,17 @@ export const UPDATE_FNS = {
       return UPDATE_FNS.SET_FOCUSED_ELEMENT(setFocusedElement(null), editor, derived)
     }
 
+    const newlySelectedPaths: Array<ElementPath> = []
+
     return {
       ...editor,
-      leftMenu: { visible: editor.leftMenu.visible, selectedTab: nextSelectedTab(editor) },
+      leftMenu: {
+        visible: editor.leftMenu.visible,
+        selectedTab: nextSelectedTab(editor.leftMenu.selectedTab, newlySelectedPaths),
+      },
       selectedViews: [],
       navigator: updateNavigatorCollapsedState([], editor.navigator),
-      pasteTargetsToIgnore: [],
+      pasteTargetsToIgnore: newlySelectedPaths,
     }
   },
   SELECT_ALL_SIBLINGS: (
@@ -2079,10 +2088,15 @@ export const UPDATE_FNS = {
         })
     }, uniqueParents)
 
+    const nextSelectedViews = [...editor.selectedViews, ...additionalTargets]
+
     return {
       ...editor,
-      leftMenu: { visible: editor.leftMenu.visible, selectedTab: nextSelectedTab(editor) },
-      selectedViews: [...editor.selectedViews, ...additionalTargets],
+      leftMenu: {
+        visible: editor.leftMenu.visible,
+        selectedTab: nextSelectedTab(editor.leftMenu.selectedTab, nextSelectedViews),
+      },
+      selectedViews: nextSelectedViews,
       pasteTargetsToIgnore: [],
     }
   },

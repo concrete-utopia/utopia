@@ -7669,74 +7669,117 @@ export var storyboard = (
       await renderResult.getDispatchFollowUpActionsFinished()
       expect(renderResult.getEditorState().editor.selectedViews).toEqual([makeTargetPath('aaa')])
     })
-    it('the navigator pane is shown when selection changes', async () => {
-      const renderResult = await renderTestEditorWithCode(
-        makeTestProjectCodeWithSnippet(`
-      <div data-uid='root'>
-        <div data-uid='child1' />
-        <div data-uid='child2' />
-      </div>`),
-        'await-first-dom-report',
-      )
+    describe('setting the left pane when selection changes', () => {
+      const deselectActions = (renderResult: EditorRenderResult) => [
+        async () => renderResult.dispatch([selectComponents([], false)], true),
+        async () => renderResult.dispatch([clearSelection()], true),
+        async () =>
+          renderResult.dispatch([applyCommandsAction([updateSelectedViews('always', [])])], true),
+      ]
 
-      {
-        // selectComponents
-        await renderResult.dispatch([setLeftMenuTab(LeftMenuTab.Github)], true)
-        expect(renderResult.getEditorState().editor.leftMenu.selectedTab).toEqual(
-          LeftMenuTab.Github,
+      const selectActions = (renderResult: EditorRenderResult) => [
+        async (paths: ElementPath[]) =>
+          renderResult.dispatch([selectComponents(paths, false)], false),
+        async (paths: ElementPath[]) =>
+          renderResult.dispatch(
+            [applyCommandsAction([updateSelectedViews('always', paths)])],
+            true,
+          ),
+      ]
+
+      it('does not jump when all elements are deselected', async () => {
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(`
+        <div data-uid='root'>
+          <div data-uid='child1' />
+          <div data-uid='child2' />
+        </div>`),
+          'await-first-dom-report',
         )
 
-        await renderResult.dispatch(
-          [selectComponents([EP.appendNewElementPath(TestScenePath, ['root', 'child1'])], false)],
-          true,
+        const entryPoints = deselectActions(renderResult)
+
+        const pages = [LeftMenuTab.Github, LeftMenuTab.Pages, LeftMenuTab.Project]
+
+        for await (const page of pages) {
+          for await (const deselect of entryPoints) {
+            await selectComponentsForTest(renderResult, [
+              EP.appendNewElementPath(TestScenePath, ['root', 'child1']),
+            ])
+            await renderResult.dispatch([setLeftMenuTab(page)], true)
+            await deselect()
+            expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([])
+            expect(renderResult.getEditorState().editor.leftMenu.selectedTab).toEqual(page)
+          }
+        }
+      })
+
+      it('does not jump when an element is selected and the pages tab is selected', async () => {
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(`
+        <div data-uid='root'>
+          <div data-uid='child1' />
+          <div data-uid='child2' />
+        </div>`),
+          'await-first-dom-report',
         )
 
-        expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
-          'utopia-storyboard-uid/scene-aaa/app-entity:root/child1',
-        ])
-        expect(renderResult.getEditorState().editor.leftMenu.selectedTab).toEqual(
-          LeftMenuTab.Github,
-        )
-      }
+        const entryPoints = selectActions(renderResult)
 
-      {
-        // clearSelection
-        await renderResult.dispatch([setLeftMenuTab(LeftMenuTab.Github)], true)
-        expect(renderResult.getEditorState().editor.leftMenu.selectedTab).toEqual(
-          LeftMenuTab.Github,
-        )
+        const pages = [{ fromPage: LeftMenuTab.Pages, toPage: LeftMenuTab.Pages }]
 
-        await renderResult.dispatch([clearSelection()], true)
+        for await (const { fromPage, toPage } of pages) {
+          for await (const select of entryPoints) {
+            await selectComponentsForTest(renderResult, [
+              EP.appendNewElementPath(TestScenePath, ['root', 'child1']),
+            ])
+            await renderResult.dispatch([setLeftMenuTab(fromPage)], true)
+            const pathToSelect = EP.appendNewElementPath(TestScenePath, ['root', 'child2'])
+            await select([pathToSelect])
+            expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
+              EP.toString(pathToSelect),
+            ])
+            expect(renderResult.getEditorState().editor.leftMenu.selectedTab).toEqual(toPage)
+          }
+        }
+      })
 
-        expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([])
-        expect(renderResult.getEditorState().editor.leftMenu.selectedTab).toEqual(
-          LeftMenuTab.Github,
-        )
-      }
-
-      {
-        // updateSelectedViews command
-        await renderResult.dispatch([setLeftMenuTab(LeftMenuTab.Github)], true)
-        expect(renderResult.getEditorState().editor.leftMenu.selectedTab).toEqual(
-          LeftMenuTab.Github,
-        )
-
-        await renderResult.dispatch(
-          [
-            applyCommandsAction([
-              updateSelectedViews('always', [EP.appendNewElementPath(TestScenePath, ['root'])]),
-            ]),
-          ],
-          true,
+      it('jumps when an element is selected', async () => {
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(`
+        <div data-uid='root'>
+          <div data-uid='child1' />
+          <div data-uid='child2' />
+        </div>`),
+          'await-first-dom-report',
         )
 
-        expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
-          'utopia-storyboard-uid/scene-aaa/app-entity:root',
-        ])
-        expect(renderResult.getEditorState().editor.leftMenu.selectedTab).toEqual(
-          LeftMenuTab.Github,
-        )
-      }
+        const entryPoints = selectActions(renderResult)
+
+        const pages = [
+          { start: LeftMenuTab.Github, end: LeftMenuTab.Navigator },
+          { start: LeftMenuTab.Project, end: LeftMenuTab.Navigator },
+          { start: LeftMenuTab.Navigator, end: LeftMenuTab.Navigator },
+          { start: LeftMenuTab.UIInsert, end: LeftMenuTab.Navigator },
+
+          { start: LeftMenuTab.Pages, end: LeftMenuTab.Pages }, // this doesn't jump, but it's included for completeness
+        ]
+
+        for await (const { start, end } of pages) {
+          for await (const select of entryPoints) {
+            await selectComponentsForTest(renderResult, [
+              EP.appendNewElementPath(TestScenePath, ['root', 'child1']),
+            ])
+            await renderResult.dispatch([setLeftMenuTab(start)], true)
+            const pathToSelect = EP.appendNewElementPath(TestScenePath, ['root', 'child2'])
+            await select([pathToSelect])
+            expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
+              EP.toString(pathToSelect),
+            ])
+            expect(renderResult.getEditorState().editor.leftMenu.selectedTab).toEqual(end)
+          }
+        }
+      })
     })
   })
 
