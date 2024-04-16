@@ -607,9 +607,9 @@ export const PopupList = React.memo<PopupListProps>(
 
       const container: styleFn = getContainer(containerMode, controlStyles, style)
 
-      function isOptionDisabled(option: SelectOption) {
+      const isOptionDisabled = React.useCallback((option: SelectOption) => {
         return option.disabled === true
-      }
+      }, [])
 
       const stopPropagation: KeyboardEventHandler = React.useCallback((event) => {
         if (event.key.includes('Arrow')) {
@@ -637,15 +637,7 @@ export const PopupList = React.memo<PopupListProps>(
           menuPortalTarget={document.getElementById(CommonUtils.PortalTargetID)}
           filterOption={createFilter({ ignoreAccents: true })}
           isDisabled={disabled}
-          // isOptionDisabled={isOptionDisabled}
-          css={{
-            '&:hover': {
-              boxShadow: `inset 0px 0px 0px 1px ${colorTheme.fg7.value}`,
-            },
-            '&:focus-within': {
-              boxShadow: `inset 0px 0px 0px 1px ${colorTheme.dynamicBlue.value}`,
-            },
-          }}
+          isOptionDisabled={isOptionDisabled}
           styles={{
             container,
             indicatorsContainer: (base) => ({
@@ -753,6 +745,14 @@ export const PopupList = React.memo<PopupListProps>(
             indicatorSeparator: displayNone,
             clearIndicator: displayNone,
             loadingIndicator: displayNone,
+          }}
+          css={{
+            '&:hover': {
+              boxShadow: `inset 0px 0px 0px 1px ${colorTheme.fg7.value}`,
+            },
+            '&:focus-within': {
+              boxShadow: `inset 0px 0px 0px 1px ${colorTheme.dynamicBlue.value}`,
+            },
           }}
         />
       )

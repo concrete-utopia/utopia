@@ -164,7 +164,6 @@ export const InspectorInput = React.memo(
         data-testid={props.testId}
         data-controlstatus={props.controlStatus}
         placeholder='—'
-        // style={{ textAlign: 'center' }}
       />
     )
   }),
