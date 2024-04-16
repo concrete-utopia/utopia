@@ -194,6 +194,10 @@ export interface ProjectServerStateSubstate {
   projectServerState: EditorStoreShared['projectServerState']
 }
 
+export interface OnlineStateSubstate {
+  onlineState: EditorStoreShared['onlineState']
+}
+
 export const restOfStoreKeys: ReadonlyArray<keyof Omit<EditorStorePatched, 'editor' | 'derived'>> =
   [
     'storeName',
@@ -205,4 +209,5 @@ export const restOfStoreKeys: ReadonlyArray<keyof Omit<EditorStorePatched, 'edit
     'builtInDependencies',
     'saveCountThisSession',
     'projectServerState',
+    'onlineState',
   ]

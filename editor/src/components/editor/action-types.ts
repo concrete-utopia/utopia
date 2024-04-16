@@ -709,6 +709,16 @@ export interface AddNewPage {
   newPageName: string
 }
 
+export interface AddNewFeaturedRoute {
+  action: 'ADD_NEW_FEATURED_ROUTE'
+  featuredRoute: string
+}
+
+export interface RemoveFeaturedRoute {
+  action: 'REMOVE_FEATURED_ROUTE'
+  routeToRemove: string
+}
+
 export interface SetMainUIFile {
   action: 'SET_MAIN_UI_FILE'
   uiFile: string
@@ -1127,6 +1137,14 @@ export interface SetSharingDialogOpen {
   open: boolean
 }
 
+export interface ResetOnlineState {
+  action: 'RESET_ONLINE_STATE'
+}
+
+export interface IncreaseOnlineStateFailureCount {
+  action: 'INCREASE_ONLINE_STATE_FAILURE_COUNT'
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertJSXElement
@@ -1227,6 +1245,8 @@ export type EditorAction =
   | DeleteFileFromCollaboration
   | AddTextFile
   | AddNewPage
+  | AddNewFeaturedRoute
+  | RemoveFeaturedRoute
   | SetMainUIFile
   | SetCodeEditorBuildErrors
   | SetCodeEditorLintErrors
@@ -1309,6 +1329,8 @@ export type EditorAction =
   | SetCollaborators
   | ExtractPropertyControlsFromDescriptorFiles
   | SetSharingDialogOpen
+  | ResetOnlineState
+  | IncreaseOnlineStateFailureCount
 
 export type DispatchPriority =
   | 'everyone'

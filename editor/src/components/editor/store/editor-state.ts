@@ -187,6 +187,7 @@ import { removeUnusedImportsForRemovedElement } from '../import-utils'
 import { emptyImports } from '../../../core/workers/common/project-file-utils'
 import type { CommentFilterMode } from '../../inspector/sections/comment-section'
 import type { Collaborator } from '../../../core/shared/multiplayer'
+import type { OnlineState } from '../online-status'
 
 const ObjectPathImmutable: any = OPI
 
@@ -485,6 +486,7 @@ export type EditorStoreShared = {
   saveCountThisSession: number
   projectServerState: ProjectServerState
   collaborativeEditingSupport: CollaborativeEditingSupport
+  onlineState: OnlineState
 }
 
 export type EditorStoreFull = EditorStoreShared & {

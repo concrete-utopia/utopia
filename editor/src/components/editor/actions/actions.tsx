@@ -332,6 +332,8 @@ import type {
   SetSharingDialogOpen,
   AddNewPage,
   UpdateRemixRoute,
+  AddNewFeaturedRoute,
+  RemoveFeaturedRoute,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -577,6 +579,7 @@ import {
 import {
   addNewFeaturedRouteToPackageJson,
   addOrReplaceFeaturedRouteToPackageJson,
+  removeFeaturedRouteFromPackageJson,
 } from '../../canvas/remix/remix-utils'
 import type { FixUIDsState } from '../../../core/workers/parser-printer/uid-fix'
 import { fixTopLevelElementsUIDs } from '../../../core/workers/parser-printer/uid-fix'
@@ -1423,7 +1426,7 @@ function toastOnGeneratedElementsTargeted(
   }
 
   if (!generatedElementsTargeted || allowActionRegardless) {
-    result = actionOtherwise(result)
+    result = actionOtherwise(editor)
   }
 
   return result
@@ -1830,6 +1833,9 @@ export const UPDATE_FNS = {
 
         const staticSelectedElements = editor.selectedViews
           .filter((selectedView) => {
+            if (MetadataUtils.isRenderPropsFromMetadata(editor.jsxMetadata, selectedView)) {
+              return true
+            }
             return !MetadataUtils.isElementGenerated(selectedView)
           })
           .map((path, _, allSelectedPaths) => {
@@ -1943,11 +1949,15 @@ export const UPDATE_FNS = {
     )
   },
   DELETE_VIEW: (action: DeleteView, editor: EditorModel, dispatch: EditorDispatch): EditorModel => {
+    const allSelectedElementsRenderProps = editor.selectedViews.every((path) =>
+      MetadataUtils.isRenderPropsFromMetadata(editor.jsxMetadata, path),
+    )
+
     return toastOnGeneratedElementsTargeted(
       'Generated elements can only be deleted in code.',
       [action.target],
       editor,
-      false,
+      allSelectedElementsRenderProps,
       (e) => {
         const updatedEditor = deleteElements([action.target], e, { trueUpHuggingElements: false })
         const parentPath = EP.parentPath(action.target)
@@ -3823,7 +3833,7 @@ export const UPDATE_FNS = {
     // 1. add the new page to the featured routes
     const withPackageJson = updatePackageJsonInEditorState(
       editor,
-      addNewFeaturedRouteToPackageJson(newFileName),
+      addNewFeaturedRouteToPackageJson(action.newPageName),
     )
 
     // 2. write the new text file
@@ -3838,6 +3848,18 @@ export const UPDATE_FNS = {
     return UPDATE_FNS.OPEN_CODE_EDITOR_FILE(
       openCodeEditorFile(withTextFile.newFileKey, false),
       withTextFile.editorState,
+    )
+  },
+  ADD_NEW_FEATURED_ROUTE: (action: AddNewFeaturedRoute, editor: EditorModel): EditorModel => {
+    return updatePackageJsonInEditorState(
+      editor,
+      addNewFeaturedRouteToPackageJson(action.featuredRoute),
+    )
+  },
+  REMOVE_FEATURED_ROUTE: (action: RemoveFeaturedRoute, editor: EditorModel): EditorModel => {
+    return updatePackageJsonInEditorState(
+      editor,
+      removeFeaturedRouteFromPackageJson(action.routeToRemove),
     )
   },
   DELETE_FILE: (

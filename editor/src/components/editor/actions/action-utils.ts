@@ -136,6 +136,8 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_COLLABORATORS':
     case 'EXTRACT_PROPERTY_CONTROLS_FROM_DESCRIPTOR_FILES':
     case 'SET_SHARING_DIALOG_OPEN':
+    case 'RESET_ONLINE_STATE':
+    case 'INCREASE_ONLINE_STATE_FAILURE_COUNT':
       return true
 
     case 'TRUE_UP_ELEMENTS':
@@ -176,6 +178,8 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'DELETE_FILE_FROM_COLLABORATION':
     case 'ADD_TEXT_FILE':
     case 'ADD_NEW_PAGE':
+    case 'ADD_NEW_FEATURED_ROUTE':
+    case 'REMOVE_FEATURED_ROUTE':
     case 'UPDATE_FILE':
     case 'UPDATE_PROJECT_CONTENTS':
     case 'UPDATE_BRANCH_CONTENTS':
