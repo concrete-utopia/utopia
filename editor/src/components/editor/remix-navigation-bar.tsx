@@ -114,6 +114,7 @@ export const RemixNavigationBar = React.memo(() => {
           borderRadius: 20,
           padding: '2px 10px',
           fontSize: 11,
+          minWidth: 150,
         }}
       >
         {label}
