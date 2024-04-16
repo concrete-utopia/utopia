@@ -336,7 +336,7 @@ import type {
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
-import { isCommentMode, isFollowMode, isTextEditMode } from '../editor-modes'
+import { isCommentMode, isFollowMode, isTextEditMode, nextSelectedTab } from '../editor-modes'
 import { EditorModes, isLiveMode, isSelectMode } from '../editor-modes'
 import * as History from '../history'
 import type { StateHistory } from '../history'
@@ -2033,7 +2033,7 @@ export const UPDATE_FNS = {
     const updatedEditor: EditorModel = {
       ...editor,
       selectedViews: newlySelectedPaths,
-      leftMenu: { visible: editor.leftMenu.visible, selectedTab: LeftMenuTab.Navigator },
+      leftMenu: { visible: editor.leftMenu.visible, selectedTab: nextSelectedTab(editor) },
       navigator:
         newlySelectedPaths === editor.selectedViews
           ? editor.navigator
@@ -2050,7 +2050,7 @@ export const UPDATE_FNS = {
 
     return {
       ...editor,
-      leftMenu: { visible: editor.leftMenu.visible, selectedTab: LeftMenuTab.Navigator },
+      leftMenu: { visible: editor.leftMenu.visible, selectedTab: nextSelectedTab(editor) },
       selectedViews: [],
       navigator: updateNavigatorCollapsedState([], editor.navigator),
       pasteTargetsToIgnore: [],
@@ -2081,7 +2081,7 @@ export const UPDATE_FNS = {
 
     return {
       ...editor,
-      leftMenu: { visible: editor.leftMenu.visible, selectedTab: LeftMenuTab.Navigator },
+      leftMenu: { visible: editor.leftMenu.visible, selectedTab: nextSelectedTab(editor) },
       selectedViews: [...editor.selectedViews, ...additionalTargets],
       pasteTargetsToIgnore: [],
     }

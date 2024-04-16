@@ -6,6 +6,7 @@ import type {
 } from '../../core/shared/project-file-types'
 import type { JSXElement } from '../../core/shared/element-template'
 import type { CanvasPoint, LocalPoint, Size } from '../../core/shared/math-utils'
+import type { EditorState, LeftMenuTab } from './store/editor-state'
 
 export const DefaultInsertSize: Size = { width: 100, height: 100 }
 
@@ -297,4 +298,8 @@ export function convertModeToSavedMode(mode: Mode): PersistedMode {
     case 'follow':
       return EditorModes.selectMode(null, false, 'none')
   }
+}
+
+export function nextSelectedTab(editor: EditorState): LeftMenuTab {
+  return editor.leftMenu.selectedTab // keep it the same
 }

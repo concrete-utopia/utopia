@@ -1,10 +1,7 @@
 import * as EP from '../../../core/shared/element-path'
 import type { ElementPath } from '../../../core/shared/project-file-types'
-import {
-  LeftMenuTab,
-  type EditorState,
-  type EditorStatePatch,
-} from '../../editor/store/editor-state'
+import { nextSelectedTab } from '../../editor/editor-modes'
+import { type EditorState, type EditorStatePatch } from '../../editor/store/editor-state'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 
 export interface UpdateSelectedViews extends BaseCommand {
@@ -24,7 +21,7 @@ export function updateSelectedViews(
 }
 
 export const runUpdateSelectedViews: CommandFunction<UpdateSelectedViews> = (
-  _: EditorState,
+  editorState: EditorState,
   command: UpdateSelectedViews,
 ) => {
   const editorStatePatch: EditorStatePatch = {
@@ -33,7 +30,7 @@ export const runUpdateSelectedViews: CommandFunction<UpdateSelectedViews> = (
     },
     leftMenu: {
       selectedTab: {
-        $set: LeftMenuTab.Navigator,
+        $set: nextSelectedTab(editorState),
       },
     },
   }
