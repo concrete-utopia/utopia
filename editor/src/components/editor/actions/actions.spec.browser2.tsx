@@ -7700,7 +7700,7 @@ export var storyboard = (
       }
 
       {
-        // setLeftMenuTab
+        // clearSelection
         await renderResult.dispatch([setLeftMenuTab(LeftMenuTab.Github)], true)
         expect(renderResult.getEditorState().editor.leftMenu.selectedTab).toEqual(
           LeftMenuTab.Github,
@@ -7710,7 +7710,7 @@ export var storyboard = (
 
         expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([])
         expect(renderResult.getEditorState().editor.leftMenu.selectedTab).toEqual(
-          LeftMenuTab.Navigator,
+          LeftMenuTab.Github,
         )
       }
 
