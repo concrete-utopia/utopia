@@ -77,6 +77,7 @@ import { memoize } from '../shared/memoize'
 import { filenameFromParts, getFilenameParts } from '../../components/images'
 import globToRegexp from 'glob-to-regexp'
 import { is } from '../shared/equality-utils'
+import { absolutePathFromRelativePath } from '../../utils/path-utils'
 
 export const sceneMetadata = _sceneMetadata // This is a hotfix for a circular dependency AND a leaking of utopia-api into the workers
 
@@ -289,12 +290,14 @@ export function importInfoFromImportDetails(
       (fromWithin) => fromWithin.alias === baseVariable,
     )
 
+    const absolutePath = absolutePathFromRelativePath(filePath, false, pathOrModuleName)
+
     if (importAlias != null) {
-      return createImportedFrom(importAlias.alias, importAlias.name, pathOrModuleName)
+      return createImportedFrom(importAlias.alias, importAlias.name, absolutePath)
     } else if (importDetail.importedAs === baseVariable) {
-      return createImportedFrom(importDetail.importedAs, null, pathOrModuleName)
+      return createImportedFrom(importDetail.importedAs, null, absolutePath)
     } else if (importDetail.importedWithName === baseVariable) {
-      return createImportedFrom(importDetail.importedWithName, null, pathOrModuleName)
+      return createImportedFrom(importDetail.importedWithName, null, absolutePath)
     } else {
       return null
     }

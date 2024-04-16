@@ -3358,11 +3358,11 @@ const PreferredChildComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<Pr
   combine3EqualityCalls(
     (d) => d.name,
     StringKeepDeepEquality,
-    (d) => d.imports,
-    createCallWithTripleEquals(),
+    (d) => d.moduleName,
+    nullableDeepEquality(StringKeepDeepEquality),
     (d) => d.variants,
     arrayDeepEquality(createCallWithTripleEquals()),
-    (name, imports, variants) => ({ name, imports, variants }),
+    (name, moduleName, variants) => ({ name, moduleName, variants }),
   )
 
 export const DescriptorFileComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<ComponentDescriptorFromDescriptorFile> =

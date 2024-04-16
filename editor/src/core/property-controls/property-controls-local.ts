@@ -73,7 +73,12 @@ import {
 import { setOptionalProp } from '../shared/object-utils'
 import { assertNever } from '../shared/utils'
 import type { Imports, ParsedTextFile } from '../shared/project-file-types'
-import { isExportDefault, isTextFile } from '../shared/project-file-types'
+import {
+  importAlias,
+  importDetails,
+  isExportDefault,
+  isTextFile,
+} from '../shared/project-file-types'
 import type { UiJsxCanvasContextData } from '../../components/canvas/ui-jsx-canvas'
 import type { EditorState } from '../../components/editor/store/editor-state'
 import type { MutableUtopiaCtxRefData } from '../../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
@@ -814,7 +819,7 @@ async function parsePreferredChildren(
     if (contents === 'text') {
       descriptors.push({
         name: componentName,
-        imports: {},
+        moduleName: null,
         variants: [
           {
             insertMenuLabel: 'text',
@@ -839,13 +844,24 @@ async function parsePreferredChildren(
 
       descriptors.push({
         name: contents.component,
-        imports: {},
+        moduleName: contents.moduleName ?? null,
         variants: parsedVariants.value,
       })
     }
   }
 
   return right(descriptors)
+}
+
+export function defaultImportsForComponentModule(
+  componentName: string,
+  moduleName: string | null,
+): Imports {
+  return moduleName == null
+    ? {}
+    : {
+        [moduleName]: importDetails(null, [importAlias(componentName)], null),
+      }
 }
 
 export async function parsePreferredChildrenExamples(
