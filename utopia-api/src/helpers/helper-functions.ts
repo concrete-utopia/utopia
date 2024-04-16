@@ -30,10 +30,13 @@ export type PlaceholderSpec =
   // inserts a spacer that completely fills the available space
   | 'fill'
 
-export interface PreferredContents {
-  component: string
-  variants: 'text' | ComponentExample | ComponentExample[]
-}
+export type PreferredContents =
+  | 'text'
+  | {
+      component: string
+      moduleName?: string
+      variants: ComponentExample | ComponentExample[]
+    }
 
 export interface ChildrenSpec {
   // specifies what component(s) are preferred.

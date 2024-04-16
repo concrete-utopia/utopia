@@ -1289,10 +1289,7 @@ describe('registered property controls', () => {
             component: Card,
             properties: { },
             children: {
-              preferredContents: {
-                component: 'text',
-                variants: 'text'
-              }
+              preferredContents: 'text'
             }
           },
         },
@@ -1351,6 +1348,7 @@ describe('registered property controls', () => {
                 { component: 'span', variants: { name: 'span' } },
                 {
                   component: 'Card2',
+                  moduleName: '/src/card2',
                   variants: [
                     { component: Card2 },
                     {
@@ -1547,6 +1545,7 @@ describe('registered property controls', () => {
                   { component: 'span', variants: { name: 'span' } },
                   {
                     component: 'Card2',
+                    moduleName: '/src/card2',
                     variants: [
                       { component: Card2 },
                       {
@@ -1660,6 +1659,7 @@ describe('registered property controls', () => {
                   },
                   Object {
                     "component": "Card2",
+                    "moduleName": "/src/card2",
                     "variants": Array [
                       Object {
                         "component": [Function],

@@ -1,6 +1,6 @@
 import React from 'react'
 import type { IcnProps } from '../../../uuiui'
-import { Icn, Icons } from '../../../uuiui'
+import { Icn } from '../../../uuiui'
 
 export const ExpansionArrowWidth = 8
 export const ExpansionArrowHeight = 8
@@ -26,6 +26,8 @@ export const ExpandableIndicator: React.FunctionComponent<
       data-testid={props.testId}
       style={{
         ...props.style,
+        width: 12,
+        height: 12,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -43,6 +45,8 @@ export const ExpandableIndicator: React.FunctionComponent<
         onMouseDown={props.onMouseDown}
         onClick={props.onClick}
         testId={`${props.testId}-button`}
+        width={12}
+        height={12}
       />
     </div>
   )
