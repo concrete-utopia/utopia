@@ -326,7 +326,7 @@ export function getProjectChanges(
       : null,
     selectedChanged:
       !updatedFromVSCode && shouldIncludeSelectedElementChanges(oldEditorState, newEditorState)
-        ? getSelectedElementChangedMessage(newEditorState)
+        ? getSelectedElementChangedMessage(newEditorState, 'do-not-force-navigation')
         : null,
   }
 }
