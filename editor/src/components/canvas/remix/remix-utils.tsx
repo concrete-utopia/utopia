@@ -11,7 +11,7 @@ import { getContentsTreeFromPath, getProjectFileByFilePath } from '../../assets'
 import type { FileOps } from '../../../third-party/remix/flat-routes'
 import { flatRoutes } from '../../../third-party/remix/flat-routes'
 import type { ConfigRoute } from '../../../third-party/remix/routes'
-import type { DataRouteObject } from 'react-router-dom'
+import type { DataRouteObject, Path } from 'react-router-dom'
 import type { CurriedResolveFn, CurriedUtopiaRequireFn } from '../../custom-code/code-file'
 import type { MapLike } from 'typescript'
 import type { UiJsxCanvasContextData } from '../ui-jsx-canvas'
@@ -457,7 +457,14 @@ export function getRouteComponentNameForOutlet(
 
 export const RemixIndexPathLabel = '/'
 
-export function getRemixLocationLabel(location: string | undefined): string | null {
+export function getRemixUrlFromLocation(remixPath: Path | undefined): string | null {
+  if (remixPath == null) {
+    return null
+  }
+  return urljoin(remixPath.pathname, remixPath.search, remixPath.hash)
+}
+
+export function getRemixLocationLabel(location: string | null | undefined): string | null {
   if (location == null) {
     return null
   }

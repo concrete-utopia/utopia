@@ -11,7 +11,7 @@ import { Substores, useEditorState } from './store/store-hook'
 import { FlexRow, Tooltip, colorTheme } from '../../uuiui'
 import { stopPropagation } from '../inspector/common/inspector-utils'
 import * as EP from '../../core/shared/element-path'
-import { getRemixLocationLabel } from '../canvas/remix/remix-utils'
+import { getRemixLocationLabel, getRemixUrlFromLocation } from '../canvas/remix/remix-utils'
 
 export const RemixNavigationBarPathTestId = 'remix-navigation-bar-path'
 
@@ -43,11 +43,11 @@ export const RemixNavigationBar = React.memo(() => {
     [activeRemixScene, navigationControls],
   )
 
-  const pathname = navigationControls[EP.toString(activeRemixScene)]?.location?.pathname
+  const url = getRemixUrlFromLocation(navigationControls[EP.toString(activeRemixScene)]?.location)
 
-  const label = getRemixLocationLabel(pathname)
+  const label = getRemixLocationLabel(url)
 
-  if (!isSelectOrLiveMode || navigationControls == null || pathname == null) {
+  if (!isSelectOrLiveMode || navigationControls == null || url == null) {
     return null
   }
 
