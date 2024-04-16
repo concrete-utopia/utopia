@@ -607,6 +607,9 @@ getPackageLatestVersionEndpoint javascriptPackageName = getPackageVersionsEndpoi
 getMatchingPackageVersionsEndpoint :: Text -> Text -> ServerMonad Value
 getMatchingPackageVersionsEndpoint javascriptPackageName javascriptPackageVersion = getPackageVersionsEndpoint javascriptPackageName (Just javascriptPackageVersion)
 
+getOnlineStatusEndpoint :: ServerMonad Text
+getOnlineStatusEndpoint = pure "Online"
+
 hashedAssetPathsEndpoint :: ServerMonad Value
 hashedAssetPathsEndpoint = getHashedAssetPaths
 
@@ -780,6 +783,7 @@ unprotected = authenticate
          :<|> getPackageVersionJSONEndpoint
          :<|> getPackageLatestVersionEndpoint
          :<|> getMatchingPackageVersionsEndpoint
+         :<|> getOnlineStatusEndpoint
          :<|> hashedAssetPathsEndpoint
          :<|> editorAssetsEndpoint "./editor"
          :<|> editorAssetsEndpoint "./sockjs-node" Nothing
