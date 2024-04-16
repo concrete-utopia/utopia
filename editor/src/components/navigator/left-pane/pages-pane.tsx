@@ -51,6 +51,7 @@ import ReactDOM from 'react-dom'
 import { createNewPageName } from '../../editor/store/editor-state'
 import urljoin from 'url-join'
 import { notice } from '../../common/notice'
+import type { EditorDispatch } from '../../editor/action-types'
 
 type RouteMatch = {
   path: string
@@ -610,62 +611,74 @@ function useRenaming(props: {
   const onDoneRenaming = React.useCallback(
     (newPath: string | null) => {
       setIsRenaming(false)
-      if (newPath != null) {
-        const routeTokens = props.routePath.split('/')
-        const resolvedTokens = props.resolvedPath.split('/')
-        const replacements: { [key: string]: string } = {}
-        for (let i = 0; i < routeTokens.length; i++) {
-          const token = routeTokens[i]
-          if (token.startsWith(':')) {
-            replacements[token] = resolvedTokens[i]
-          }
-        }
-
-        const newRoutePathReplacementTokens = newPath.split('/').filter(isReplacementToken)
-        const replacementTokens = routeTokens.filter(isReplacementToken)
-
-        if (!replacementTokensMatch(replacementTokens, newRoutePathReplacementTokens)) {
-          dispatch([
-            showToast(
-              notice(
-                `Invalid tokens ${Array.from(newRoutePathReplacementTokens).join(', ')}`,
-                'ERROR',
-                false,
-              ),
-            ),
-          ])
-          return
-        }
-
-        let newRoutePath = newPath
-        for (const key of Object.keys(replacements)) {
-          const value = replacements[key]
-          newRoutePath = newRoutePath.replace(key, value)
-        }
-
-        dispatch(
-          [
-            updateRemixRoute(
-              urljoin('/app/routes', slashPathToRemixPath(props.routePath, props.matchesRealRoute)),
-              urljoin('/app/routes', slashPathToRemixPath(newPath, props.matchesRealRoute)),
-              props.resolvedPath,
-              urljoin('/', newRoutePath),
-            ),
-          ],
-          'everyone',
-        )
-      }
+      runUpdateRemixRoute(dispatch, newPath, {
+        path: props.routePath,
+        resolvedPath: props.resolvedPath,
+        matchesRealRoute: props.matchesRealRoute,
+      })
     },
     [props, dispatch],
   )
 
   return {
     isRenaming: isRenaming,
-    InputField: isRenaming ? (
-      <RenameInputField doneRenaming={onDoneRenaming} routePath={props.routePath} />
-    ) : null,
+    InputField: <RenameInputField doneRenaming={onDoneRenaming} routePath={props.routePath} />,
     startRenaming: startRenaming,
   }
+}
+
+function runUpdateRemixRoute(dispatch: EditorDispatch, newPath: string | null, match: RouteMatch) {
+  if (newPath == null) {
+    return
+  }
+
+  // split route and resolved path by `/` so we get every path token
+  const routeTokens = match.path.split('/')
+  const resolvedTokens = match.resolvedPath.split('/')
+
+  // keep track of the replacement tokens (:token) and their resolved values
+  let replacements: { [key: string]: string } = {}
+  for (let i = 0; i < routeTokens.length; i++) {
+    const token = routeTokens[i]
+    if (isReplacementToken(token)) {
+      replacements[token] = resolvedTokens[i]
+    }
+  }
+
+  // if the renamed value does not match the original replacement tokens, stop here
+  const newRoutePathReplacementTokens = newPath.split('/').filter(isReplacementToken)
+  const replacementTokens = routeTokens.filter(isReplacementToken)
+  if (!replacementTokensMatch(replacementTokens, newRoutePathReplacementTokens)) {
+    dispatch([
+      showToast(
+        notice(
+          `Invalid tokens ${Array.from(newRoutePathReplacementTokens).join(', ')}`,
+          'ERROR',
+          false,
+        ),
+      ),
+    ])
+    return
+  }
+
+  // build the new route path by applying the relevant replacements
+  let newRoutePath = newPath
+  for (const [key, value] of Object.entries(replacements)) {
+    newRoutePath = newRoutePath.replace(key, value)
+  }
+
+  // update the remix route
+  dispatch(
+    [
+      updateRemixRoute(
+        urljoin('/app/routes', slashPathToRemixPath(match.path, match.matchesRealRoute)),
+        urljoin('/app/routes', slashPathToRemixPath(newPath, match.matchesRealRoute)),
+        match.resolvedPath,
+        urljoin('/', newRoutePath),
+      ),
+    ],
+    'everyone',
+  )
 }
 
 type RenameInputFieldProps = {
