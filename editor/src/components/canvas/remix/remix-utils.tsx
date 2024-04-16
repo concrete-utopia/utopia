@@ -521,27 +521,17 @@ export function removeFeaturedRouteFromPackageJson(routeToRemove: string) {
 export function addOrReplaceFeaturedRouteToPackageJson(
   oldRoute: string,
   newRoute: string,
-  prefix: boolean,
+  replaceExactMatch: boolean,
 ) {
   return function (packageJson: string) {
-    return modifyFeaturedRoutesInPackageJson(packageJson, (currentRoutes) => {
-      let newRoutes = [...currentRoutes]
-      if (prefix) {
-        newRoutes = newRoutes.map((route) => {
-          if (route.startsWith(oldRoute + '/')) {
-            return route.replace(oldRoute, newRoute) // just once (string replace instead of a regex), it's ok
-          }
-          return route
-        })
-      } else {
-        const routeIndex = newRoutes.indexOf(oldRoute)
-        if (routeIndex < 0) {
-          newRoutes.push(newRoute)
-        } else {
-          newRoutes[routeIndex] = newRoute
-        }
-      }
-      return newRoutes
+    return modifyFeaturedRoutesInPackageJson(packageJson, (currentRoutes): string[] => {
+      return replaceExactMatch
+        ? currentRoutes.filter((route) => route !== oldRoute).concat(newRoute)
+        : currentRoutes.map((route) => {
+            return route.startsWith(oldRoute + '/')
+              ? route.replace(oldRoute, newRoute) // just once (string replace instead of a regex), it's ok
+              : route
+          })
     })
   }
 }

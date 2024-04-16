@@ -601,7 +601,6 @@ export interface UpdateRemixRoute {
   newPath: string
   oldRoute: string
   newRoute: string
-  asPrefix: boolean
 }
 
 export interface OpenCodeEditorFile {

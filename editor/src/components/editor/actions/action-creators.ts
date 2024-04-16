@@ -962,7 +962,6 @@ export function updateRemixRoute(
   newPath: string,
   oldRoute: string,
   newRoute: string,
-  asPrefix: boolean,
 ): UpdateRemixRoute {
   return {
     action: 'UPDATE_REMIX_ROUTE',
@@ -970,7 +969,6 @@ export function updateRemixRoute(
     newPath: newPath,
     oldRoute: oldRoute,
     newRoute: newRoute,
-    asPrefix: asPrefix,
   }
 }
 

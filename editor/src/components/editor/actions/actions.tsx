@@ -1245,7 +1245,6 @@ function replaceFilePath(
   oldPath: string,
   newPath: string,
   projectContentsTree: ProjectContentTreeRoot,
-  asPrefix: boolean,
 ): ReplaceFilePathResult {
   // FIXME: Reimplement this in a way that doesn't require converting to and from `ProjectContents`.
   const projectContents = treeToContents(projectContentsTree)
@@ -1256,7 +1255,8 @@ function replaceFilePath(
   }
   let updatedFiles: Array<{ oldPath: string; newPath: string }> = []
   Utils.fastForEach(Object.keys(projectContents), (filename) => {
-    if (filename === oldPath || (asPrefix && filename.startsWith(oldPath))) {
+    if (filename.startsWith(oldPath)) {
+      // TODO make sure the prefix search only happens when it makes sense so
       const projectFile = projectContents[filename]
       const newFilePath = filename.replace(oldPath, newPath)
       const fileType = isDirectory(projectFile) ? 'DIRECTORY' : fileTypeFromFileName(newFilePath)
@@ -3496,7 +3496,6 @@ export const UPDATE_FNS = {
     return updateFilePath(editor, userState, {
       oldPath: action.oldPath,
       newPath: action.newPath,
-      asPrefix: true,
     })
   },
   UPDATE_REMIX_ROUTE: (
@@ -3507,15 +3506,18 @@ export const UPDATE_FNS = {
     const withUpdatedFilePath = updateFilePath(editor, userState, {
       oldPath: action.oldPath,
       newPath: action.newPath,
-      asPrefix: action.asPrefix,
     })
 
     const withUpdatedFeaturedRoute = updatePackageJsonInEditorState(
       withUpdatedFilePath,
-      addOrReplaceFeaturedRouteToPackageJson(action.oldRoute, action.newRoute, action.asPrefix),
+      addOrReplaceFeaturedRouteToPackageJson(
+        action.oldRoute,
+        action.newRoute,
+        action.oldPath.endsWith('.jsx'), // if the route is a file, replace exactly
+      ),
     )
 
-    return withUpdatedFeaturedRoute
+    return editor
   },
   SET_FOCUS: (action: SetFocus, editor: EditorModel): EditorModel => {
     if (editor.focusedPanel === action.focusedPanel) {
@@ -6150,14 +6152,12 @@ function updateFilePath(
   params: {
     oldPath: string
     newPath: string
-    asPrefix: boolean
   },
 ) {
   const replaceFilePathResults = replaceFilePath(
     params.oldPath,
     params.newPath,
     editor.projectContents,
-    params.asPrefix,
   )
   if (replaceFilePathResults.type === 'FAILURE') {
     const toastAction = showToast(notice(replaceFilePathResults.errorMessage, 'ERROR', true))
