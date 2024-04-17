@@ -22,7 +22,7 @@ import { useAtom } from 'jotai'
 import { RemixNavigationAtom } from '../../remix/utopia-remix-root-component'
 import { matchRoutes } from 'react-router'
 import { unless } from '../../../../utils/react-conditionals'
-import { getRemixLocationLabel } from '../../remix/remix-utils'
+import { getRemixLocationLabel, getRemixUrlFromLocation } from '../../remix/remix-utils'
 import { useUpdateRemixSceneRouteInLiveblocks } from '../../../../core/shared/multiplayer'
 import { MultiplayerWrapper } from '../../../../utils/multiplayer-wrapper'
 import { getIdOfScene } from '../comment-mode/comment-mode-hooks'
@@ -124,9 +124,9 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
 
   const [navigationData] = useAtom(RemixNavigationAtom)
 
-  const currentPath = (navigationData[EP.toString(props.target)] ?? null)?.location.pathname
+  const location = (navigationData[EP.toString(props.target)] ?? null)?.location
 
-  const pathLabel = getRemixLocationLabel(currentPath)
+  const pathLabel = getRemixUrlFromLocation(location)
 
   const scenelabel = useEditorState(
     Substores.metadata,
