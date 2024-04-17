@@ -95,7 +95,6 @@ export const PagesPane = React.memo((props) => {
     'PagesPane featuredRoutes',
   )
 
-  // all remix routes in the project, ordered alphabetically
   const remixRoutesObject: RouteMatches = useEditorState(
     Substores.derived,
     (store) => {
@@ -127,6 +126,7 @@ export const PagesPane = React.memo((props) => {
     'PagesPane remixRoutes',
   )
 
+  // all remix routes in the project, ordered alphabetically
   const remixRoutes = fillInGapsInRoutes(remixRoutesObject)
 
   const pageTemplates = useEditorState(
