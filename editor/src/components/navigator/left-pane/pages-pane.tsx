@@ -404,7 +404,7 @@ const FavoriteEntry = React.memo(({ favorite, active, addedToFavorites }: Favori
                 flexDirection: 'row',
                 alignItems: 'center',
                 borderRadius: 2,
-                marginLeft: 4,
+                marginLeft: 6,
                 paddingLeft: 2,
                 paddingRight: 2,
                 paddingBottom: 6,
