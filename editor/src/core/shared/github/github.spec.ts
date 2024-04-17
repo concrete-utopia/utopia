@@ -3,7 +3,7 @@ import type { EditorDispatch } from '../../../components/editor/action-types'
 import { emptyGithubData } from '../../../components/editor/store/editor-state'
 import {
   getRefreshGithubActions,
-  getUserDetailsFromServer,
+  GithubHelpers,
   updateUserDetailsWhenAuthenticated,
 } from './helpers'
 import type { GithubOperationContext } from './operations/github-operation-context'
@@ -23,13 +23,13 @@ describe('github helpers', () => {
   describe('getUserDetailsFromServer', () => {
     it('returns null if the response is not ok', async () => {
       mockFetch.mockResolvedValue(new Response(null, { status: 418 }))
-      const got = await getUserDetailsFromServer()
+      const got = await GithubHelpers.getUserDetailsFromServer()
       expect(got).toBe(null)
     })
 
     it('returns null if the request returns a failure', async () => {
       mockFetch.mockResolvedValue(new Response(JSON.stringify({ type: 'FAILURE' })))
-      const got = await getUserDetailsFromServer()
+      const got = await GithubHelpers.getUserDetailsFromServer()
       expect(got).toBe(null)
     })
 
@@ -37,7 +37,7 @@ describe('github helpers', () => {
       mockFetch.mockResolvedValue(
         new Response(JSON.stringify({ type: 'SUCCESS', user: { id: 'that-guy' } })),
       )
-      const got = await getUserDetailsFromServer()
+      const got = await GithubHelpers.getUserDetailsFromServer()
       expect(got).toEqual({ id: 'that-guy' })
     })
   })

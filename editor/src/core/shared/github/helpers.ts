@@ -203,7 +203,7 @@ export async function runGithubOperation(
   logic: GithubOperationLogic,
 ): Promise<Array<EditorAction>> {
   let result: Array<EditorAction> = []
-  const userDetails = await getUserDetailsFromServer()
+  const userDetails = await GithubHelpers.getUserDetailsFromServer()
   if (userDetails == null) {
     dispatch(resetGithubStateAndDataActions())
     return result
@@ -325,36 +325,38 @@ function updateUserDetailsFromServerActions(userDetails: GithubUser): EditorActi
   return [updateGithubData({ githubUserDetails: userDetails })]
 }
 
-export async function getUserDetailsFromServer(): Promise<GithubUser | null> {
-  const url = GithubEndpoints.userDetails()
+export const GithubHelpers = {
+  getUserDetailsFromServer: async (): Promise<GithubUser | null> => {
+    const url = GithubEndpoints.userDetails()
 
-  const response = await fetch(url, {
-    method: 'GET',
-    credentials: 'include',
-    headers: HEADERS,
-    mode: MODE,
-  })
+    const response = await fetch(url, {
+      method: 'GET',
+      credentials: 'include',
+      headers: HEADERS,
+      mode: MODE,
+    })
 
-  if (response.ok) {
-    const responseBody: GetGithubUserResponse = await response.json()
-    switch (responseBody.type) {
-      case 'FAILURE':
-        console.error(
-          `Error when attempting to retrieve the user details: ${responseBody.failureReason}`,
-        )
-        return null
-      case 'SUCCESS':
-        return responseBody.user
-      default:
-        const _exhaustiveCheck: never = responseBody
-        throw new Error(`Unhandled response body ${JSON.stringify(responseBody)}`)
+    if (response.ok) {
+      const responseBody: GetGithubUserResponse = await response.json()
+      switch (responseBody.type) {
+        case 'FAILURE':
+          console.error(
+            `Error when attempting to retrieve the user details: ${responseBody.failureReason}`,
+          )
+          return null
+        case 'SUCCESS':
+          return responseBody.user
+        default:
+          const _exhaustiveCheck: never = responseBody
+          throw new Error(`Unhandled response body ${JSON.stringify(responseBody)}`)
+      }
+    } else {
+      console.error(
+        `Github: Unexpected status returned from user details endpoint: ${response.status}`,
+      )
+      return null
     }
-  } else {
-    console.error(
-      `Github: Unexpected status returned from user details endpoint: ${response.status}`,
-    )
-    return null
-  }
+  },
 }
 
 // Designed to wrap around a function that checks for a valid Github authentication.
@@ -367,7 +369,7 @@ export async function updateUserDetailsWhenAuthenticated(
     return false
   }
 
-  const userDetails = await getUserDetailsFromServer()
+  const userDetails = await GithubHelpers.getUserDetailsFromServer()
   if (userDetails == null) {
     // if the user details are not available while the auth is successful, it means that
     // there a mismatch between the cookies and the actual auth, so return false overall.
@@ -911,7 +913,7 @@ export function getRefreshGithubActions(
   if (!githubAuthenticated) {
     promises.push(Promise.resolve([updateGithubData(emptyGithubData())]))
   } else if (githubUserDetails === null) {
-    const noUserDetailsActions = getUserDetailsFromServer().then((userDetails) => {
+    const noUserDetailsActions = GithubHelpers.getUserDetailsFromServer().then((userDetails) => {
       return userDetails == null
         ? resetGithubStateAndDataActions()
         : updateUserDetailsFromServerActions(userDetails)
