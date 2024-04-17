@@ -18,9 +18,15 @@ import type { EditorStorePatched } from '../../editor/store/editor-state'
 import React from 'react'
 import { objectValues } from '../../../core/shared/object-utils'
 import { eitherToMaybe } from '../../../core/shared/either'
-import type { MetadataSubstate } from '../../editor/store/store-hook-substore-types'
+import type {
+  CanvasSubstate,
+  MetadataSubstate,
+  ProjectContentSubstate,
+} from '../../editor/store/store-hook-substore-types'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import type { FilePathMappings } from '../../../core/model/project-file-utils'
+import type { PropertyControlsInfo } from '../../custom-code/code-file'
+import type { ProjectContentTreeRoot } from '../../assets'
 
 export interface NameAndIconResult {
   path: ElementPath
@@ -39,7 +45,19 @@ const namesAndIconsAllPathsResultSelector = createSelector(
   (store: MetadataSubstate) => store.editor.elementPathTree,
   (store: EditorStorePatched) => store.derived.autoFocusedPaths,
   (store: EditorStorePatched) => store.derived.filePathMappings,
-  (metadata, allElementProps, pathTrees, autoFocusedPaths, filePathMappings) => {
+  (store: EditorStorePatched) => store.editor.propertyControlsInfo,
+  (store: CanvasSubstate) => store.editor.canvas.openFile?.filename ?? null,
+  (store: ProjectContentSubstate) => store.editor.projectContents,
+  (
+    metadata,
+    allElementProps,
+    pathTrees,
+    autoFocusedPaths,
+    filePathMappings,
+    propertyControlsInfo,
+    openFilePath,
+    projectContents,
+  ) => {
     let result: Array<NameAndIconResult> = []
     for (const metadataElement of objectValues(metadata)) {
       const nameAndIconResult = getNameAndIconResult(
@@ -49,6 +67,9 @@ const namesAndIconsAllPathsResultSelector = createSelector(
         pathTrees,
         autoFocusedPaths,
         filePathMappings,
+        propertyControlsInfo,
+        openFilePath,
+        projectContents,
       )
       result.push(nameAndIconResult)
     }
@@ -75,6 +96,9 @@ function getNameAndIconResult(
   pathTrees: ElementPathTrees,
   autoFocusedPaths: Array<ElementPath>,
   filePathMappings: FilePathMappings,
+  propertyControlsInfo: PropertyControlsInfo,
+  openFilePath: string | null,
+  projectContents: ProjectContentTreeRoot,
 ): NameAndIconResult {
   const elementName = MetadataUtils.getJSXElementName(
     eitherToMaybe(elementInstanceMetadata.element),
@@ -96,6 +120,9 @@ function getNameAndIconResult(
       null,
       allElementProps,
       filePathMappings,
+      propertyControlsInfo,
+      openFilePath,
+      projectContents,
     ),
   }
 }

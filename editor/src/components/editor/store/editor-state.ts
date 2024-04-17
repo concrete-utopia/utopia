@@ -2746,7 +2746,14 @@ function deriveCacheableStateInner(
 
   const autoFocusedPaths = MetadataUtils.getAllPaths(jsxMetadata, elementPathTree).filter(
     (path) => {
-      return MetadataUtils.isAutofocusable(jsxMetadata, elementPathTree, path)
+      return MetadataUtils.isAutofocusable(
+        jsxMetadata,
+        elementPathTree,
+        path,
+        propertyControlsInfo,
+        openFilePath,
+        projectContents,
+      )
     },
   )
 

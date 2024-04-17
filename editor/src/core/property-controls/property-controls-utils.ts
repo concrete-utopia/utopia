@@ -131,6 +131,76 @@ export function getPropertyControlsForTarget(
   )
 }
 
+export function getComponentDescriptorForTarget(
+  target: ElementPath,
+  propertyControlsInfo: PropertyControlsInfo,
+  openFilePath: string | null,
+  projectContents: ProjectContentTreeRoot,
+): ComponentDescriptor | null {
+  return withUnderlyingTarget(
+    target,
+    projectContents,
+    null,
+    (
+      success: ParseSuccess,
+      element: JSXElementChild,
+      underlyingTarget: StaticElementPath,
+      underlyingFilePath: string,
+    ) => {
+      if (isJSXElement(element)) {
+        const importedFrom = importedFromWhere(
+          underlyingFilePath,
+          element.name.baseVariable,
+          success.topLevelElements,
+          success.imports,
+        )
+
+        let filenameForLookup: string | null = null
+        if (importedFrom == null) {
+          if (isIntrinsicElement(element.name)) {
+            return null
+          } else if (openFilePath != null) {
+            filenameForLookup = openFilePath.replace(/\.(js|jsx|ts|tsx)$/, '')
+          }
+        } else {
+          filenameForLookup = importedFrom.filePath
+        }
+
+        if (filenameForLookup == null) {
+          return null
+        } else {
+          const originalName =
+            importedFrom?.type === 'IMPORTED_ORIGIN' ? importedFrom.exportedName : null
+          const nameAsString = originalName ?? getJSXElementNameAsString(element.name)
+
+          const componentDescriptor = propertyControlsInfo[filenameForLookup]?.[nameAsString]
+
+          // if the filename works as it is, then it is either a package name or an absolute file name and
+          // we can just use it as it is
+          if (componentDescriptor != null) {
+            return componentDescriptor
+          }
+
+          // We need to create the absolute path to the file to look up the property controls
+          const absolutePath = absolutePathFromRelativePath(
+            underlyingFilePath,
+            false,
+            filenameForLookup,
+          )
+
+          const trimmedPath = absolutePath.includes('/')
+            ? absolutePath.replace(/\.(js|jsx|ts|tsx)$/, '')
+            : absolutePath
+
+          return propertyControlsInfo[trimmedPath]?.[nameAsString]
+        }
+      } else {
+        return null
+      }
+    },
+  )
+}
+
 export function getRegisteredComponent(
   component: string,
   moduleName: string,

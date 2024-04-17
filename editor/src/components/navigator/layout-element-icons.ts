@@ -23,6 +23,8 @@ import { getElementFragmentLikeType } from '../canvas/canvas-strategies/strategi
 import { findMaybeConditionalExpression } from '../../core/model/conditionals'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { treatElementAsGroupLike } from '../canvas/canvas-strategies/strategies/group-helpers'
+import type { PropertyControlsInfo } from '../custom-code/code-file'
+import type { ProjectContentTreeRoot } from '../assets'
 
 interface LayoutIconResult {
   iconProps: IcnPropsBase
@@ -66,7 +68,7 @@ export function useComponentIcon(navigatorEntry: NavigatorEntry): IcnPropsBase |
   )
 
   return useEditorState(
-    Substores.metadata,
+    Substores.fullStore,
     (store) => {
       const metadata = store.editor.jsxMetadata
       return createComponentIconProps(
@@ -74,6 +76,9 @@ export function useComponentIcon(navigatorEntry: NavigatorEntry): IcnPropsBase |
         metadata,
         autoFocusedPaths,
         filePathMappings,
+        store.editor.propertyControlsInfo,
+        store.editor.canvas.openFile?.filename ?? null,
+        store.editor.projectContents,
       )
     },
     'useComponentIcon',
@@ -88,9 +93,20 @@ export function createComponentOrElementIconProps(
   navigatorEntry: NavigatorEntry | null,
   allElementProps: AllElementProps,
   filePathMappings: FilePathMappings,
+  propertyControlsInfo: PropertyControlsInfo,
+  openFilePath: string | null,
+  projectContents: ProjectContentTreeRoot,
 ): IcnPropsBase {
   return (
-    createComponentIconProps(elementPath, metadata, autoFocusedPaths, filePathMappings) ??
+    createComponentIconProps(
+      elementPath,
+      metadata,
+      autoFocusedPaths,
+      filePathMappings,
+      propertyControlsInfo,
+      openFilePath,
+      projectContents,
+    ) ??
     createElementIconPropsFromMetadata(
       elementPath,
       metadata,
@@ -406,6 +422,9 @@ function createComponentIconProps(
   metadata: ElementInstanceMetadataMap,
   autoFocusedPaths: Array<ElementPath>,
   filePathMappings: FilePathMappings,
+  propertyControlsInfo: PropertyControlsInfo,
+  openFilePath: string | null,
+  projectContents: ProjectContentTreeRoot,
 ): IcnPropsBase | null {
   const element = MetadataUtils.findElementByElementPath(metadata, path)
   if (MetadataUtils.isProbablySceneFromMetadata(element)) {
@@ -455,6 +474,9 @@ function createComponentIconProps(
     metadata,
     autoFocusedPaths,
     filePathMappings,
+    propertyControlsInfo,
+    openFilePath,
+    projectContents,
   )
   if (isComponent) {
     return {

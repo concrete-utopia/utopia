@@ -139,6 +139,7 @@ import type { ProjectContentTreeRoot } from '../../components/assets'
 import { memoize } from '../shared/memoize'
 import type { ElementPathTree, ElementPathTrees } from '../shared/element-path-tree'
 import { buildTree, getSubTree, getCanvasRoots, elementPathTree } from '../shared/element-path-tree'
+import type { PropertyControlsInfo } from '../../components/custom-code/code-file'
 import { findUnderlyingTargetComponentImplementationFromImportInfo } from '../../components/custom-code/code-file'
 import type {
   Direction,
@@ -168,6 +169,11 @@ import { treatElementAsGroupLikeFromMetadata } from '../../components/canvas/can
 import type { RemixRoutingTable } from '../../components/editor/store/remix-derived-data'
 import { exists } from '../shared/optics/optic-utilities'
 import { eitherRight, fromField, fromTypeGuard, notNull } from '../shared/optics/optic-creators'
+import { Prop } from 'xstate/lib/model.types'
+import {
+  getComponentDescriptorForTarget,
+  getPropertyControlsForTarget,
+} from '../property-controls/property-controls-utils'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1924,10 +1930,20 @@ export const MetadataUtils = {
     metadata: ElementInstanceMetadataMap,
     pathTrees: ElementPathTrees,
     path: ElementPath,
+    propertyControlsInfo: PropertyControlsInfo,
+    openFilePath: string | null,
+    projectContents: ProjectContentTreeRoot,
   ): boolean {
+    const componentDescriptor = getComponentDescriptorForTarget(
+      path,
+      propertyControlsInfo,
+      openFilePath,
+      projectContents,
+    )
     return (
-      EP.isStoryboardDescendant(path) &&
-      MetadataUtils.parentIsSceneWithOneChild(metadata, pathTrees, path)
+      componentDescriptor?.focus === 'always' ||
+      (EP.isStoryboardDescendant(path) &&
+        MetadataUtils.parentIsSceneWithOneChild(metadata, pathTrees, path))
     )
   },
   isAutomaticOrManuallyFocusableComponent(
@@ -1935,10 +1951,21 @@ export const MetadataUtils = {
     metadata: ElementInstanceMetadataMap,
     autoFocusedPaths: Array<ElementPath>,
     filePathMappings: FilePathMappings,
+    propertyControlsInfo: PropertyControlsInfo,
+    openFilePath: string | null,
+    projectContents: ProjectContentTreeRoot,
   ): boolean {
     return (
       EP.containsPath(path, autoFocusedPaths) ||
-      MetadataUtils.isManuallyFocusableComponent(path, metadata, autoFocusedPaths, filePathMappings)
+      MetadataUtils.isManuallyFocusableComponent(
+        path,
+        metadata,
+        autoFocusedPaths,
+        filePathMappings,
+        propertyControlsInfo,
+        openFilePath,
+        projectContents,
+      )
     )
   },
   isManuallyFocusableComponent(
@@ -1946,7 +1973,19 @@ export const MetadataUtils = {
     metadata: ElementInstanceMetadataMap,
     autoFocusedPaths: Array<ElementPath>,
     filePathMappings: FilePathMappings,
+    propertyControlsInfo: PropertyControlsInfo,
+    openFilePath: string | null,
+    projectContents: ProjectContentTreeRoot,
   ): boolean {
+    const componentDescriptor = getComponentDescriptorForTarget(
+      path,
+      propertyControlsInfo,
+      openFilePath,
+      projectContents,
+    )
+    if (componentDescriptor?.focus !== 'default') {
+      return false
+    }
     const element = MetadataUtils.findElementByElementPath(metadata, path)
     const isAnimatedComponent = isAnimatedElement(element)
     if (isAnimatedComponent) {

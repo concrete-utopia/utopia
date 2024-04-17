@@ -505,7 +505,7 @@ export const NavigatorItem: React.FunctionComponent<
   )
 
   const isManuallyFocusableComponent = useEditorState(
-    Substores.metadata,
+    Substores.fullStore,
     (store) => {
       return (
         isRegularNavigatorEntry(navigatorEntry) &&
@@ -514,6 +514,9 @@ export const NavigatorItem: React.FunctionComponent<
           store.editor.jsxMetadata,
           autoFocusedPaths,
           filePathMappings,
+          store.editor.propertyControlsInfo,
+          store.editor.canvas.openFile?.filename ?? null,
+          store.editor.projectContents,
         )
       )
     },

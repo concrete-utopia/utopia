@@ -15,6 +15,7 @@ import {
   formatTestProjectCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
+  renderTestEditorWithModel,
   renderTestEditorWithProjectContent,
   TestAppUID,
   TestScenePath,
@@ -38,6 +39,8 @@ import { BakedInStoryboardUID, BakedInStoryboardVariableName } from './scene-uti
 import type { HugPropertyWidthHeight } from '../shared/element-template'
 import { contentsToTree } from '../../components/assets'
 import type { VariableData } from '../../components/canvas/ui-jsx-canvas'
+import { StoryboardFilePath } from '../../components/editor/store/editor-state'
+import { createModifiedProject } from '../../sample-projects/sample-project-utils.test-utils'
 
 describe('Frame calculation for fragments', () => {
   // Components with root fragments do not appear in the DOM, so the dom walker does not find them, and they
@@ -842,8 +845,18 @@ describe('isAutofocusable/isManuallyFocusableComponent', () => {
     const pathTrees = editor.getEditorState().editor.elementPathTree
     const autoFocusedPaths = editor.getEditorState().derived.autoFocusedPaths
     const allPaths = MetadataUtils.getAllPaths(metadata, pathTrees)
+    const propertyControlsInfo = editor.getEditorState().editor.propertyControlsInfo
+    const openFile = editor.getEditorState().editor.canvas.openFile?.filename ?? null
+    const projectContents = editor.getEditorState().editor.projectContents
     const isAutofocusableResults = allPaths.map((path) => {
-      return `${EP.toString(path)}: ${MetadataUtils.isAutofocusable(metadata, pathTrees, path)}`
+      return `${EP.toString(path)}: ${MetadataUtils.isAutofocusable(
+        metadata,
+        pathTrees,
+        path,
+        propertyControlsInfo,
+        openFile,
+        projectContents,
+      )}`
     })
     expect(isAutofocusableResults).toEqual([
       'story/scene: false',
@@ -858,6 +871,9 @@ describe('isAutofocusable/isManuallyFocusableComponent', () => {
         metadata,
         autoFocusedPaths,
         [],
+        propertyControlsInfo,
+        openFile,
+        projectContents,
       )}`
     })
     expect(isFocusableComponentResults).toEqual([
@@ -866,6 +882,55 @@ describe('isAutofocusable/isManuallyFocusableComponent', () => {
       'story/scene/app:app-inner-div: false',
       'story/scene/app:app-inner-div/inner-app-1: true',
       'story/scene/app:app-inner-div/inner-app-2: true',
+    ])
+  })
+
+  it('uses the focus property in the component descriptor', async () => {
+    const editor = await renderTestEditorWithModel(
+      TestProjectWithComponentDescriptor,
+      'await-first-dom-report',
+    )
+    const metadata = editor.getEditorState().editor.jsxMetadata
+    const pathTrees = editor.getEditorState().editor.elementPathTree
+    const autoFocusedPaths = editor.getEditorState().derived.autoFocusedPaths
+    const allPaths = MetadataUtils.getAllPaths(metadata, pathTrees)
+    const propertyControlsInfo = editor.getEditorState().editor.propertyControlsInfo
+    const openFile = editor.getEditorState().editor.canvas.openFile?.filename ?? null
+    const projectContents = editor.getEditorState().editor.projectContents
+    const isAutofocusableResults = allPaths.map((path) => {
+      return `${EP.toString(path)}: ${MetadataUtils.isAutofocusable(
+        metadata,
+        pathTrees,
+        path,
+        propertyControlsInfo,
+        openFile,
+        projectContents,
+      )}`
+    })
+    expect(isAutofocusableResults).toEqual([
+      'story/scene: false',
+      'story/scene/app: true',
+      'story/scene/app:app-inner-div: false',
+      'story/scene/app:app-inner-div/inner-app-1: true', // focus set to always
+      'story/scene/app:app-inner-div/inner-app-2: false',
+    ])
+    const isFocusableComponentResults = allPaths.map((path) => {
+      return `${EP.toString(path)}: ${MetadataUtils.isManuallyFocusableComponent(
+        path,
+        metadata,
+        autoFocusedPaths,
+        [],
+        propertyControlsInfo,
+        openFile,
+        projectContents,
+      )}`
+    })
+    expect(isFocusableComponentResults).toEqual([
+      'story/scene: false',
+      'story/scene/app: false',
+      'story/scene/app:app-inner-div: false',
+      'story/scene/app:app-inner-div/inner-app-1: false', // not focusable because autofocused
+      'story/scene/app:app-inner-div/inner-app-2: false', // focus set to never
     ])
   })
 
@@ -941,14 +1006,29 @@ describe('isAutofocusable/isManuallyFocusableComponent', () => {
     const pathTrees = renderResult.getEditorState().editor.elementPathTree
     const autoFocusedPaths = renderResult.getEditorState().derived.autoFocusedPaths
     const filePathMappings = renderResult.getEditorState().derived.filePathMappings
+    const propertyControlsInfo = renderResult.getEditorState().editor.propertyControlsInfo
+    const openFile = renderResult.getEditorState().editor.canvas.openFile?.filename ?? null
+    const projectContents = renderResult.getEditorState().editor.projectContents
     const targetPath = EP.fromString('sb/card')
-    expect(MetadataUtils.isAutofocusable(metadata, pathTrees, targetPath)).toBeFalsy()
+    expect(
+      MetadataUtils.isAutofocusable(
+        metadata,
+        pathTrees,
+        targetPath,
+        propertyControlsInfo,
+        openFile,
+        projectContents,
+      ),
+    ).toBeFalsy()
     expect(
       MetadataUtils.isManuallyFocusableComponent(
         targetPath,
         metadata,
         autoFocusedPaths,
         filePathMappings,
+        propertyControlsInfo,
+        openFile,
+        projectContents,
       ),
     ).toEqual(true)
   })
@@ -1451,6 +1531,33 @@ export var storyboard = (
   </Storyboard>
 )
 `
+
+const TestProjectWithComponentDescriptor = createModifiedProject({
+  [StoryboardFilePath]: TestProjectWithSeveralComponents,
+  ['/utopia/components.utopia.js']: `import { InnerApp1, InnerApp2 } from './storyboard'
+  
+  const Components = {
+    '/utopia/storyboard': {
+      InnerApp1: {
+        component: InnerApp1,
+        focus: 'always',
+        supportsChildren: false,
+        properties: {},
+        variants: [],
+      },
+      InnerApp2: {
+        component: InnerApp1,
+        focus: 'never',
+        supportsChildren: false,
+        properties: {},
+        variants: [],
+      },
+    },
+  }
+
+  export default Components
+  `,
+})
 
 const TestProjectWithFragment = `
 import * as React from 'react'
