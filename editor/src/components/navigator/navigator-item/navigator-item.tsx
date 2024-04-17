@@ -23,7 +23,7 @@ import type {
   ElementInstanceMetadataMap,
 } from '../../../core/shared/element-template'
 import { hasElementsWithin } from '../../../core/shared/element-template'
-import type { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath, HighlightBoundsWithFile } from '../../../core/shared/project-file-types'
 import { unless } from '../../../utils/react-conditionals'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import type { IcnColor, IcnProps } from '../../../uuiui'
@@ -61,6 +61,12 @@ import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { MapCounter } from './map-counter'
 import ReactDOM from 'react-dom'
 import { RenderPropPicker, useShowRenderPropPicker } from './render-prop-selector-popup'
+import { getHighlightBoundsForProject } from '../../../core/model/project-file-utils'
+import {
+  selectedElementChangedMessageFromHighlightBounds,
+  sendMessage,
+} from '../../../core/vscode/vscode-bridge'
+import { toVSCodeExtensionMessage } from 'utopia-vscode-common'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -139,15 +145,29 @@ function selectItem(
   selected: boolean,
   event: React.MouseEvent<HTMLDivElement>,
   conditionalOverrideUpdate: ConditionalOverrideUpdate,
+  highlightBounds: HighlightBoundsWithFile | null,
 ) {
   const elementPath = navigatorEntry.elementPath
-  const selectionActions =
+
+  const shouldSelect = !(
     isConditionalClauseNavigatorEntry(navigatorEntry) ||
     isInvalidOverrideNavigatorEntry(navigatorEntry) ||
     isRenderPropNavigatorEntry(navigatorEntry) ||
     isSlotNavigatorEntry(navigatorEntry)
-      ? []
-      : getSelectionActions(getSelectedViewsInRange, index, elementPath, selected, event)
+  )
+
+  const selectionActions = shouldSelect
+    ? getSelectionActions(getSelectedViewsInRange, index, elementPath, selected, event)
+    : []
+
+  // when we click on an already selected item we should force vscode to navigate there
+  if (selected && shouldSelect && highlightBounds != null) {
+    sendMessage(
+      toVSCodeExtensionMessage(
+        selectedElementChangedMessageFromHighlightBounds(highlightBounds, 'force-navigation'),
+      ),
+    )
+  }
 
   const conditionalOverrideActions = isConditionalClauseNavigatorEntry(navigatorEntry)
     ? getConditionalOverrideActions(elementPath, conditionalOverrideUpdate)
@@ -435,6 +455,23 @@ export const NavigatorItem: React.FunctionComponent<
     index,
   } = props
 
+  const highlightBounds = useEditorState(
+    Substores.projectContents,
+    (store) => {
+      const staticPath = EP.dynamicPathToStaticPath(navigatorEntry.elementPath)
+      if (staticPath != null) {
+        const bounds = getHighlightBoundsForProject(store.editor.projectContents)
+        if (bounds != null) {
+          const highlightedUID = EP.toUid(staticPath)
+          return bounds[highlightedUID]
+        }
+      }
+
+      return null
+    },
+    'NavigatorItem highlightBounds',
+  )
+
   const colorTheme = useColorTheme()
 
   const autoFocusedPaths = useEditorState(
@@ -698,6 +735,7 @@ export const NavigatorItem: React.FunctionComponent<
     },
     [dispatch, navigatorEntry.elementPath],
   )
+
   const select = React.useCallback(
     (event: any) =>
       selectItem(
@@ -708,8 +746,17 @@ export const NavigatorItem: React.FunctionComponent<
         selected,
         event,
         conditionalOverrideUpdate,
+        highlightBounds,
       ),
-    [dispatch, getSelectedViewsInRange, navigatorEntry, index, selected, conditionalOverrideUpdate],
+    [
+      dispatch,
+      getSelectedViewsInRange,
+      navigatorEntry,
+      index,
+      selected,
+      conditionalOverrideUpdate,
+      highlightBounds,
+    ],
   )
   const highlight = React.useCallback(
     () => highlightItem(dispatch, navigatorEntry.elementPath, selected, isHighlighted),

@@ -77,15 +77,22 @@ export function updateDecorationsMessage(
   }
 }
 
+export type ForceNavigation = 'do-not-force-navigation' | 'force-navigation'
+
 export interface SelectedElementChanged {
   type: 'SELECTED_ELEMENT_CHANGED'
   boundsInFile: BoundsInFile
+  forceNavigation: ForceNavigation
 }
 
-export function selectedElementChanged(bounds: BoundsInFile): SelectedElementChanged {
+export function selectedElementChanged(
+  bounds: BoundsInFile,
+  forceNavigation: ForceNavigation,
+): SelectedElementChanged {
   return {
     type: 'SELECTED_ELEMENT_CHANGED',
     boundsInFile: bounds,
+    forceNavigation: forceNavigation,
   }
 }
 
