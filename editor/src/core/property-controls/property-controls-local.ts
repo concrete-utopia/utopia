@@ -73,7 +73,12 @@ import {
 import { setOptionalProp } from '../shared/object-utils'
 import { assertNever } from '../shared/utils'
 import type { Imports, ParsedTextFile } from '../shared/project-file-types'
-import { isExportDefault, isTextFile } from '../shared/project-file-types'
+import {
+  importAlias,
+  importDetails,
+  isExportDefault,
+  isTextFile,
+} from '../shared/project-file-types'
 import type { UiJsxCanvasContextData } from '../../components/canvas/ui-jsx-canvas'
 import type { EditorState } from '../../components/editor/store/editor-state'
 import type { MutableUtopiaCtxRefData } from '../../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
@@ -586,7 +591,6 @@ function componentExampleToTyped(example: ComponentExample): TypedComponentExamp
 
 async function parseCodeFromInsertOption(
   componentInsertOption: ComponentInsertOption,
-  componentName: string,
   workers: UtopiaTsWorkers,
 ): Promise<Either<string, ComponentInfo>> {
   const info = await parseComponentFromInsertOption(componentInsertOption, workers)
@@ -649,18 +653,6 @@ function variantsFromJSComponentExample(
   return [componentInsertOptionFromExample(variants, moduleName)]
 }
 
-function getImportsCodeFromInsertOption(insertOption: ComponentInsertOption): string {
-  if (insertOption.imports == null) {
-    return ''
-  }
-
-  if (Array.isArray(insertOption.imports)) {
-    return insertOption.imports.join('\n')
-  }
-
-  return insertOption.imports
-}
-
 interface ParsedComponentVariant {
   imports: Imports
   elementToInsert: JSXElementChildWithoutUID
@@ -670,7 +662,9 @@ async function parseComponentFromInsertOption(
   insertOption: ComponentInsertOption,
   workers: UtopiaTsWorkers,
 ): Promise<Either<string, ParsedComponentVariant>> {
-  const imports = getImportsCodeFromInsertOption(insertOption)
+  const imports =
+    insertOption.imports == null ? '' : valueOrArrayToArray(insertOption.imports).join('\n')
+
   const parsedParams = await getCachedParseResultForUserStrings(workers, imports, insertOption.code)
 
   if (isLeft(parsedParams)) {
@@ -822,10 +816,10 @@ async function parsePreferredChildren(
   let descriptors: PreferredChildComponentDescriptor[] = []
 
   for await (const contents of preferredContents) {
-    if (contents.variants === 'text') {
+    if (contents === 'text') {
       descriptors.push({
         name: componentName,
-        imports: {},
+        moduleName: null,
         variants: [
           {
             insertMenuLabel: 'text',
@@ -839,11 +833,7 @@ async function parsePreferredChildren(
       const parsedVariants = sequenceEither(
         await Promise.all(
           variants.map((c) =>
-            parseCodeFromInsertOption(
-              componentInsertOptionFromExample(c, moduleName),
-              componentName,
-              workers,
-            ),
+            parseCodeFromInsertOption(componentInsertOptionFromExample(c, moduleName), workers),
           ),
         ),
       )
@@ -854,13 +844,24 @@ async function parsePreferredChildren(
 
       descriptors.push({
         name: contents.component,
-        imports: {},
+        moduleName: contents.moduleName ?? null,
         variants: parsedVariants.value,
       })
     }
   }
 
   return right(descriptors)
+}
+
+export function defaultImportsForComponentModule(
+  componentName: string,
+  moduleName: string | null,
+): Imports {
+  return moduleName == null
+    ? {}
+    : {
+        [moduleName]: importDetails(null, [importAlias(componentName)], null),
+      }
 }
 
 export async function parsePreferredChildrenExamples(
@@ -917,7 +918,6 @@ async function parseComponentVariants(
         imports: `import { ${componentName} } from '${moduleName}'`,
         code: `<${componentName} />`,
       },
-      componentName,
       workers,
     )
 
@@ -931,9 +931,7 @@ async function parseComponentVariants(
 
   const parsedVariants = sequenceEither(
     await Promise.all(
-      insertOptionsToParse.map((insertOption) =>
-        parseCodeFromInsertOption(insertOption, componentName, workers),
-      ),
+      insertOptionsToParse.map((insertOption) => parseCodeFromInsertOption(insertOption, workers)),
     ),
   )
 
@@ -1036,17 +1034,28 @@ export const parseComponentExample = parseAlternative<ComponentExample>(
 )
 
 export function parsePreferredContents(value: unknown): ParseResult<PreferredContents> {
-  return applicative2Either(
-    (component, variants) => ({ component, variants }),
-    objectKeyParser(parseString, 'component')(value),
-    objectKeyParser(
-      parseAlternative<'text' | ComponentExample | ComponentExample[]>(
-        [parseConstant('text'), parseComponentExample, parseArray(parseComponentExample)],
-        'Invalid preferred content',
-      ),
-      'variants',
-    )(value),
-  )
+  const parsePreferredComponentObject = (v: unknown) =>
+    applicative3Either(
+      (component, moduleName, variants) => {
+        const preferredContents: PreferredContents = { component, variants }
+        setOptionalProp(preferredContents, 'moduleName', moduleName)
+        return preferredContents
+      },
+      objectKeyParser(parseString, 'component')(v),
+      optionalObjectKeyParser(parseString, 'moduleName')(v),
+      objectKeyParser(
+        parseAlternative<ComponentExample | ComponentExample[]>(
+          [parseComponentExample, parseArray(parseComponentExample)],
+          'Invalid preferred content',
+        ),
+        'variants',
+      )(v),
+    )
+
+  return parseAlternative<PreferredContents>(
+    [parseConstant('text'), parsePreferredComponentObject],
+    'Invalid preferred contents value',
+  )(value)
 }
 
 function parseTextPlaceholder(value: unknown): ParseResult<PlaceholderSpecFromUtopia> {

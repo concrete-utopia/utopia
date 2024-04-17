@@ -19,11 +19,13 @@ import {
   componentPickerTestIdForProp,
 } from './component-picker'
 import { waitFor } from '@testing-library/react'
+import { labelTestIdForComponentIcon } from './render-prop-selector-popup'
 
 describe('The navigator render prop picker', () => {
   const PreferredChildComponents = [
     {
       component: 'FlexRow',
+      moduleName: '/src/utils',
       variants: [
         {
           label: 'with three placeholders',
@@ -44,23 +46,13 @@ describe('The navigator render prop picker', () => {
     },
     {
       component: 'FlexCol',
-      variants: [
-        {
-          label: 'Basic FlexCol',
-          imports: 'import { FlexCol } from "/src/utils"',
-          code: '<FlexCol />',
-        },
-      ],
+      moduleName: '/src/utils',
+      variants: [],
     },
     {
-      component: 'Flex',
-      variants: [
-        {
-          label: 'Flex',
-          imports: 'import { Flex } from "/src/utils"',
-          code: '<Flex />',
-        },
-      ],
+      component: 'RandomComponent',
+      moduleName: '/src/utils',
+      variants: [],
     },
   ]
 
@@ -94,9 +86,77 @@ describe('The navigator render prop picker', () => {
       </Storyboard>
     )
     `,
-    ['/utopia/components.utopia.js']: `import { Card } from './storyboard'
-
+    ['/utopia/other-components.utopia.js']: `import {
+      Card,
+      FlexRow,
+      FlexCol,
+      RandomComponent,
+    } from '/src/other-utils'
+    // These components have the wrong icons and preferredContents so that we can check we're getting the correct components in the lookup
+    
     const Components = {
+      '/src/other-utils': {
+        FlexRow: {
+          component: FlexRow,
+          supportsChildren: true,
+          icon: 'column',
+          properties: {},
+        },
+        FlexCol: {
+          component: FlexCol,
+          supportsChildren: true,
+          icon: 'regular',
+          properties: {},
+        },
+        RandomComponent: {
+          component: RandomComponent,
+          supportsChildren: true,
+          icon: 'row',
+          properties: {},
+        },
+        Card: {
+          component: Card,
+          supportsChildren: true,
+          properties: {
+            title: {
+              control: 'jsx',
+              preferredContents: [],
+            },
+          },
+          variants: [],
+        },
+      },
+    }
+    
+    export default Components    
+    `,
+    ['/utopia/components.utopia.js']: `import { Card } from './storyboard'
+    import {
+      FlexRow,
+      FlexCol,
+      RandomComponent,
+    } from '/src/utils'
+    
+    const Components = {
+      '/src/utils': {
+        FlexRow: {
+          component: FlexRow,
+          supportsChildren: true,
+          icon: 'row',
+          properties: {},
+        },
+        FlexCol: {
+          component: FlexCol,
+          supportsChildren: true,
+          icon: 'column',
+          properties: {},
+        },
+        RandomComponent: {
+          component: RandomComponent,
+          supportsChildren: true,
+          properties: {},
+        },
+      },
       '/utopia/storyboard': {
         Card: {
           component: Card,
@@ -113,6 +173,49 @@ describe('The navigator render prop picker', () => {
     }
     
     export default Components    
+    `,
+    ['/src/other-utils.js']: `
+    import * as React from 'react'
+
+    export function FlexRow({ children, style, ...props }) {
+      return (
+        <div
+          {...props}
+          style={{
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'row',
+            ...style,
+          }}
+        >
+          {children}
+        </div>
+      )
+    }
+
+    export function FlexCol({ children, style, ...props }) {
+      return (
+        <div
+          {...props}
+          style={{
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+            ...style,
+          }}
+        >
+          {children}
+        </div>
+      )
+    }
+
+    export function RandomComponent() {
+      return <div />
+    }
+
+    export function Card() {
+      return <div />
+    }
     `,
     ['/src/utils.js']: `
     import * as React from 'react'
@@ -147,6 +250,10 @@ describe('The navigator render prop picker', () => {
           {children}
         </div>
       )
+    }
+
+    export function RandomComponent() {
+      return <div />
     }
     `,
   })
@@ -387,6 +494,30 @@ describe('The navigator render prop picker', () => {
     )
   })
 
+  it('simple picker returns the correct registered components', async () => {
+    const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
+    await selectComponentsForTest(editor, [EP.fromString('sb/card')])
+    const emptySlot = editor.renderedDOM.getByTestId(
+      'toggle-render-prop-NavigatorItemTestId-slot_sb/card/prop_label_title',
+    )
+    await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
+
+    const flexRowRow = editor.renderedDOM.queryByTestId(
+      labelTestIdForComponentIcon('FlexRow', '/src/utils', 'row'),
+    )
+    expect(flexRowRow).not.toBeNull()
+
+    const flexColRow = editor.renderedDOM.queryByTestId(
+      labelTestIdForComponentIcon('FlexCol', '/src/utils', 'column'),
+    )
+    expect(flexColRow).not.toBeNull()
+
+    const randomComponentRow = editor.renderedDOM.queryByTestId(
+      labelTestIdForComponentIcon('RandomComponent', '/src/utils', 'regular'),
+    )
+    expect(randomComponentRow).not.toBeNull()
+  })
+
   it('Selecting a component with no variants from the simple picker should insert that component into the render prop', async () => {
     const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString('sb/card')])
@@ -395,7 +526,7 @@ describe('The navigator render prop picker', () => {
     )
     await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
 
-    const menuButton = await waitFor(() => editor.renderedDOM.getByText('Basic FlexCol'))
+    const menuButton = await waitFor(() => editor.renderedDOM.getByText('FlexCol'))
     await mouseClickAtPoint(menuButton, { x: 3, y: 3 })
 
     await editor.getDispatchFollowUpActionsFinished()

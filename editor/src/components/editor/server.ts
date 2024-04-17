@@ -40,6 +40,7 @@ import type { Collaborator } from '../../core/shared/multiplayer'
 import type { LiveObject } from '@liveblocks/client'
 import { projectIdToRoomId } from '../../utils/room-id'
 import { assertNever } from '../../core/shared/utils'
+import { checkOnlineState } from './online-status'
 
 export { fetchProjectList, fetchShowcaseProjects, getLoginState } from '../../common/server'
 
@@ -477,48 +478,51 @@ export function startPollingLoginState(
 ): void {
   let previousLoginState: LoginState = initialLoginState
   setInterval(async () => {
-    const loginState = await getLoginState('no-cache')
-    if (previousLoginState.type !== loginState.type) {
-      if (isLoggedIn(loginState)) {
-        // Fetch the user configuration
-        void getUserConfiguration(loginState).then((userConfig) =>
-          dispatch([setUserConfiguration(userConfig)]),
-        )
+    const isOnline = await checkOnlineState()
+    if (isOnline) {
+      const loginState = await getLoginState('no-cache')
+      if (previousLoginState.type !== loginState.type) {
+        if (isLoggedIn(loginState)) {
+          // Fetch the user configuration
+          void getUserConfiguration(loginState).then((userConfig) =>
+            dispatch([setUserConfiguration(userConfig)]),
+          )
 
-        // Fetch the github auth status
-        void updateUserDetailsWhenAuthenticated(
-          dispatch,
-          GithubAuth.isAuthenticatedWithGithub(loginState),
-        ).then((authenticatedWithGithub) =>
+          // Fetch the github auth status
+          void updateUserDetailsWhenAuthenticated(
+            dispatch,
+            GithubAuth.isAuthenticatedWithGithub(loginState),
+          ).then((authenticatedWithGithub) =>
+            dispatch([
+              setGithubState({
+                authenticated: authenticatedWithGithub,
+              }),
+            ]),
+          )
+
+          if (isLoginLost(previousLoginState)) {
+            // Login was lost and subsequently regained so remove the persistent toast.
+            dispatch([removeToast(loginLostNoticeID)])
+          }
+        }
+
+        dispatch([setLoginState(loginState)])
+
+        if (isLoginLost(loginState)) {
           dispatch([
-            setGithubState({
-              authenticated: authenticatedWithGithub,
-            }),
-          ]),
-        )
-
-        if (isLoginLost(previousLoginState)) {
-          // Login was lost and subsequently regained so remove the persistent toast.
-          dispatch([removeToast(loginLostNoticeID)])
+            showToast(
+              notice(
+                `You have been logged out. You can continue working, but your work won't be saved until you log in again.`,
+                'ERROR',
+                true,
+                loginLostNoticeID,
+              ),
+            ),
+          ])
         }
       }
-
-      dispatch([setLoginState(loginState)])
-
-      if (isLoginLost(loginState)) {
-        dispatch([
-          showToast(
-            notice(
-              `You have been logged out. You can continue working, but your work won't be saved until you log in again.`,
-              'ERROR',
-              true,
-              loginLostNoticeID,
-            ),
-          ),
-        ])
-      }
+      previousLoginState = loginState
     }
-    previousLoginState = loginState
   }, 5000)
 }
 

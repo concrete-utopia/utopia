@@ -18,46 +18,75 @@ import { fixUtopiaElement, generateConsistentUID } from '../../../core/shared/ui
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { elementFromInsertMenuItem } from '../../editor/insert-callbacks'
 import { MomentumContextMenu } from '../../context-menu-wrapper'
-import { NO_OP } from '../../../core/shared/utils'
+import { NO_OP, assertNever } from '../../../core/shared/utils'
 import { type ContextMenuItem } from '../../context-menu-items'
-import { FlexRow, Icn } from '../../../uuiui'
+import { FlexRow, Icn, type IcnProps } from '../../../uuiui'
 import { type EditorDispatch } from '../../editor/action-types'
 import { type ProjectContentTreeRoot } from '../../assets'
-import { type ComponentInfo } from '../../custom-code/code-file'
+import { type PropertyControlsInfo, type ComponentInfo } from '../../custom-code/code-file'
+import { type Icon } from 'utopia-api'
+import { getRegisteredComponent } from '../../../core/property-controls/property-controls-utils'
+import { defaultImportsForComponentModule } from '../../../core/property-controls/property-controls-local'
+
+function getIconForComponent(
+  targetName: string,
+  moduleName: string | null,
+  propertyControlsInfo: PropertyControlsInfo,
+): Icon {
+  if (moduleName == null) {
+    return 'regular'
+  }
+
+  const registeredComponent = getRegisteredComponent(targetName, moduleName, propertyControlsInfo)
+
+  return registeredComponent?.icon ?? 'regular'
+}
+
+interface PreferredChildComponentDescriptorWithIcon extends PreferredChildComponentDescriptor {
+  icon: Icon
+}
 
 const usePreferredChildrenForTargetProp = (
   target: ElementPath,
   prop: string,
-): Array<PreferredChildComponentDescriptor> => {
-  const selectedJSXElement = useEditorState(
+): Array<PreferredChildComponentDescriptorWithIcon> => {
+  const selectedElement = useEditorState(
     Substores.metadata,
-    (store) => MetadataUtils.getJSXElementFromMetadata(store.editor.jsxMetadata, target),
-    'usePreferredChildrenForSelectedElement selectedJSXElement',
+    (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, target),
+    'usePreferredChildrenForTargetProp selectedElement',
   )
 
   const preferredChildrenForTargetProp = useEditorState(
     Substores.restOfEditor,
     (store) => {
-      if (selectedJSXElement == null) {
+      const selectedJSXElement =
+        MetadataUtils.getJSXElementFromElementInstanceMetadata(selectedElement)
+      const elementImportInfo = selectedElement?.importInfo
+      if (elementImportInfo == null || selectedJSXElement == null) {
         return null
       }
 
       const targetName = getJSXElementNameAsString(selectedJSXElement.name)
+      const registeredComponent = getRegisteredComponent(
+        targetName,
+        elementImportInfo.filePath,
+        store.editor.propertyControlsInfo,
+      )
+
       // TODO: we don't deal with components registered with the same name in multiple files
-      for (const file of Object.values(store.editor.propertyControlsInfo)) {
-        for (const [name, value] of Object.entries(file)) {
-          if (name === targetName) {
-            for (const [registeredPropName, registeredPropValue] of Object.entries(
-              value.properties,
-            )) {
-              if (
-                registeredPropName === prop &&
-                registeredPropValue.control === 'jsx' &&
-                registeredPropValue.preferredChildComponents != null
-              ) {
-                return registeredPropValue.preferredChildComponents
-              }
-            }
+      if (registeredComponent != null) {
+        for (const [registeredPropName, registeredPropValue] of Object.entries(
+          registeredComponent.properties,
+        )) {
+          if (
+            registeredPropName === prop &&
+            registeredPropValue.control === 'jsx' &&
+            registeredPropValue.preferredChildComponents != null
+          ) {
+            return registeredPropValue.preferredChildComponents.map((v) => ({
+              ...v,
+              icon: getIconForComponent(v.name, v.moduleName, store.editor.propertyControlsInfo),
+            }))
           }
         }
       }
@@ -67,11 +96,7 @@ const usePreferredChildrenForTargetProp = (
     'usePreferredChildrenForSelectedElement propertyControlsInfo',
   )
 
-  if (selectedJSXElement == null || preferredChildrenForTargetProp == null) {
-    return []
-  }
-
-  return preferredChildrenForTargetProp
+  return preferredChildrenForTargetProp ?? []
 }
 
 type ShowRenderPropPicker = (
@@ -216,6 +241,39 @@ interface RenderPropPickerProps {
   id: string
 }
 
+function iconPropsForIcon(icon: Icon): IcnProps {
+  switch (icon) {
+    case 'column':
+      return {
+        category: 'navigator-element',
+        type: 'flex-column',
+        color: 'main',
+      }
+    case 'row':
+      return {
+        category: 'navigator-element',
+        type: 'flex-row',
+        color: 'main',
+      }
+    case 'regular':
+      return {
+        category: 'navigator-element',
+        type: 'component',
+        color: 'main',
+      }
+    default:
+      assertNever(icon)
+  }
+}
+
+export function labelTestIdForComponentIcon(
+  componentName: string,
+  moduleName: string,
+  icon: Icon,
+): string {
+  return `variant-label-${componentName}-${moduleName}-${icon}`
+}
+
 const RenderPropPickerSimple = React.memo<RenderPropPickerProps>(({ key, id, target, prop }) => {
   const { showRenderPropPicker } = useShowRenderPropPicker(`${id}-full`)
 
@@ -247,18 +305,33 @@ const RenderPropPickerSimple = React.memo<RenderPropPickerProps>(({ key, id, tar
 
   const items: Array<ContextMenuItem<unknown>> = preferredChildrenForTargetProp
     .flatMap<ContextMenuItem<unknown>>((data) => {
+      const iconProps = iconPropsForIcon(data.icon)
+
       const submenuLabel = (
-        <FlexRow>
-          <Icn category='component' type='default' width={18} height={18} />
+        <FlexRow
+          style={{ gap: 5 }}
+          data-testId={labelTestIdForComponentIcon(data.name, data.moduleName ?? '', data.icon)}
+        >
+          <Icn {...iconProps} width={12} height={12} />
           {data.name}
         </FlexRow>
       )
 
+      const defaultVariantImports = defaultImportsForComponentModule(data.name, data.moduleName)
+
       if (data.variants == null || data.variants.length === 0) {
-        return [defaultVariantItem(data.name, submenuLabel, data.imports, null, onItemClick)]
+        return [
+          defaultVariantItem(data.name, submenuLabel, defaultVariantImports, null, onItemClick),
+        ]
       } else {
         return [
-          defaultVariantItem(data.name, '(empty)', data.imports, submenuLabel, onItemClick),
+          defaultVariantItem(
+            data.name,
+            '(empty)',
+            defaultVariantImports,
+            submenuLabel,
+            onItemClick,
+          ),
           ...data.variants.map((variant) => {
             return variantItem(variant, submenuLabel, onItemClick)
           }),

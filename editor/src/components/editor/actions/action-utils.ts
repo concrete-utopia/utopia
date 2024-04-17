@@ -171,12 +171,15 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'DISTRIBUTE_SELECTED_VIEWS':
     case 'TOGGLE_HIDDEN':
     case 'UPDATE_FILE_PATH':
+    case 'UPDATE_REMIX_ROUTE':
     case 'ADD_FOLDER':
     case 'DELETE_FILE':
     case 'DELETE_FILE_FROM_VSCODE':
     case 'DELETE_FILE_FROM_COLLABORATION':
     case 'ADD_TEXT_FILE':
     case 'ADD_NEW_PAGE':
+    case 'ADD_NEW_FEATURED_ROUTE':
+    case 'REMOVE_FEATURED_ROUTE':
     case 'UPDATE_FILE':
     case 'UPDATE_PROJECT_CONTENTS':
     case 'UPDATE_BRANCH_CONTENTS':

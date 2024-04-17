@@ -119,6 +119,8 @@ async function loadProject(projectId: string): Promise<ProjectLoadResult<Persist
 
 export const AccessLevelParamKey = 'accessLevel'
 
+export const CloneParamKey = 'clone'
+
 async function createNewProjectInServer(
   projectModel: ProjectModel<PersistentModel>,
 ): Promise<ProjectCreationResult<PersistentModel, ProjectFile>> {

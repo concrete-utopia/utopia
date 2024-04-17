@@ -331,6 +331,9 @@ import type {
   SetCodeEditorComponentDescriptorErrors,
   SetSharingDialogOpen,
   AddNewPage,
+  UpdateRemixRoute,
+  AddNewFeaturedRoute,
+  RemoveFeaturedRoute,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -573,9 +576,14 @@ import {
   createModuleEvaluator,
   maybeUpdatePropertyControls,
 } from '../../../core/property-controls/property-controls-local'
-import { addNewFeaturedRouteToPackageJson } from '../../canvas/remix/remix-utils'
+import {
+  addNewFeaturedRouteToPackageJson,
+  addOrReplaceFeaturedRouteToPackageJson,
+  removeFeaturedRouteFromPackageJson,
+} from '../../canvas/remix/remix-utils'
 import type { FixUIDsState } from '../../../core/workers/parser-printer/uid-fix'
 import { fixTopLevelElementsUIDs } from '../../../core/workers/parser-printer/uid-fix'
+import { nextSelectedTab } from '../../navigator/left-pane/left-pane-utils'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -1242,14 +1250,20 @@ function replaceFilePath(
   // FIXME: Reimplement this in a way that doesn't require converting to and from `ProjectContents`.
   const projectContents = treeToContents(projectContentsTree)
   // if there is no file in projectContents it's probably a non-empty directory
-  const oldFolderRegex = new RegExp('^' + oldPath)
   let error: string | null = null
   let updatedProjectContents: ProjectContents = {
     ...projectContents,
   }
   let updatedFiles: Array<{ oldPath: string; newPath: string }> = []
   Utils.fastForEach(Object.keys(projectContents), (filename) => {
-    if (oldFolderRegex.test(filename)) {
+    const tokens = filename.split('.')
+    const extension = tokens[tokens.length - 1]
+    if (
+      filename === oldPath ||
+      filename.startsWith(oldPath + '/') ||
+      (extension === 'jsx' && filename.startsWith(oldPath + '.')) // remix routes
+    ) {
+      // TODO make sure the prefix search only happens when it makes sense so
       const projectFile = projectContents[filename]
       const newFilePath = filename.replace(oldPath, newPath)
       const fileType = isDirectory(projectFile) ? 'DIRECTORY' : fileTypeFromFileName(newFilePath)
@@ -1419,7 +1433,7 @@ function toastOnGeneratedElementsTargeted(
   }
 
   if (!generatedElementsTargeted || allowActionRegardless) {
-    result = actionOtherwise(result)
+    result = actionOtherwise(editor)
   }
 
   return result
@@ -1438,23 +1452,28 @@ function updateSelectedComponentsFromEditorPosition(
   if (Object.keys(editor.jsxMetadata).length === 0) {
     // Looks like the canvas has errored out, so leave it alone for now.
     return editor
-  } else {
-    const highlightBoundsForUids = getHighlightBoundsForFile(editor, filePath)
-    const allElementPathsOptic = traverseArray<NavigatorEntry>().compose(fromField('elementPath'))
-    const newlySelectedElements = getElementPathsInBounds(
-      line,
-      highlightBoundsForUids,
-      toArrayOf(
-        allElementPathsOptic,
-        derived.navigatorTargets.filter((t) => !isConditionalClauseNavigatorEntry(t)),
-      ),
-    )
-    return UPDATE_FNS.SELECT_COMPONENTS(
-      selectComponents(newlySelectedElements, false),
-      editor,
-      dispatch,
-    )
   }
+
+  const highlightBoundsForUids = getHighlightBoundsForFile(editor, filePath)
+  const allElementPathsOptic = traverseArray<NavigatorEntry>().compose(fromField('elementPath'))
+  const newlySelectedElements = getElementPathsInBounds(
+    line,
+    highlightBoundsForUids,
+    toArrayOf(
+      allElementPathsOptic,
+      derived.navigatorTargets.filter((t) => !isConditionalClauseNavigatorEntry(t)),
+    ),
+  )
+
+  if (newlySelectedElements.length === 0) {
+    return editor
+  }
+
+  return UPDATE_FNS.SELECT_COMPONENTS(
+    selectComponents(newlySelectedElements, false),
+    editor,
+    dispatch,
+  )
 }
 
 function normalizeGithubData(editor: EditorModel): EditorModel {
@@ -1826,6 +1845,9 @@ export const UPDATE_FNS = {
 
         const staticSelectedElements = editor.selectedViews
           .filter((selectedView) => {
+            if (MetadataUtils.isRenderPropsFromMetadata(editor.jsxMetadata, selectedView)) {
+              return true
+            }
             return !MetadataUtils.isElementGenerated(selectedView)
           })
           .map((path, _, allSelectedPaths) => {
@@ -1939,11 +1961,15 @@ export const UPDATE_FNS = {
     )
   },
   DELETE_VIEW: (action: DeleteView, editor: EditorModel, dispatch: EditorDispatch): EditorModel => {
+    const allSelectedElementsRenderProps = editor.selectedViews.every((path) =>
+      MetadataUtils.isRenderPropsFromMetadata(editor.jsxMetadata, path),
+    )
+
     return toastOnGeneratedElementsTargeted(
       'Generated elements can only be deleted in code.',
       [action.target],
       editor,
-      false,
+      allSelectedElementsRenderProps,
       (e) => {
         const updatedEditor = deleteElements([action.target], e, { trueUpHuggingElements: false })
         const parentPath = EP.parentPath(action.target)
@@ -2021,7 +2047,10 @@ export const UPDATE_FNS = {
     const updatedEditor: EditorModel = {
       ...editor,
       selectedViews: newlySelectedPaths,
-      leftMenu: { visible: editor.leftMenu.visible, selectedTab: LeftMenuTab.Navigator },
+      leftMenu: {
+        visible: editor.leftMenu.visible,
+        selectedTab: nextSelectedTab(editor.leftMenu.selectedTab, newlySelectedPaths),
+      },
       navigator:
         newlySelectedPaths === editor.selectedViews
           ? editor.navigator
@@ -2036,12 +2065,17 @@ export const UPDATE_FNS = {
       return UPDATE_FNS.SET_FOCUSED_ELEMENT(setFocusedElement(null), editor, derived)
     }
 
+    const newlySelectedPaths: Array<ElementPath> = []
+
     return {
       ...editor,
-      leftMenu: { visible: editor.leftMenu.visible, selectedTab: LeftMenuTab.Navigator },
+      leftMenu: {
+        visible: editor.leftMenu.visible,
+        selectedTab: nextSelectedTab(editor.leftMenu.selectedTab, newlySelectedPaths),
+      },
       selectedViews: [],
       navigator: updateNavigatorCollapsedState([], editor.navigator),
-      pasteTargetsToIgnore: [],
+      pasteTargetsToIgnore: newlySelectedPaths,
     }
   },
   SELECT_ALL_SIBLINGS: (
@@ -2067,10 +2101,15 @@ export const UPDATE_FNS = {
         })
     }, uniqueParents)
 
+    const nextSelectedViews = [...editor.selectedViews, ...additionalTargets]
+
     return {
       ...editor,
-      leftMenu: { visible: editor.leftMenu.visible, selectedTab: LeftMenuTab.Navigator },
-      selectedViews: [...editor.selectedViews, ...additionalTargets],
+      leftMenu: {
+        visible: editor.leftMenu.visible,
+        selectedTab: nextSelectedTab(editor.leftMenu.selectedTab, nextSelectedViews),
+      },
+      selectedViews: nextSelectedViews,
       pasteTargetsToIgnore: [],
     }
   },
@@ -3479,71 +3518,27 @@ export const UPDATE_FNS = {
     editor: EditorModel,
     userState: UserState,
   ): EditorModel => {
-    const replaceFilePathResults = replaceFilePath(
-      action.oldPath,
-      action.newPath,
-      editor.projectContents,
-    )
-    if (replaceFilePathResults.type === 'FAILURE') {
-      const toastAction = showToast(notice(replaceFilePathResults.errorMessage, 'ERROR', true))
-      return UPDATE_FNS.ADD_TOAST(toastAction, editor)
-    } else {
-      let currentDesignerFile = editor.canvas.openFile
-      const { projectContents, updatedFiles } = replaceFilePathResults
-      const mainUIFile = getMainUIFromModel(editor)
-      let updateUIFile: (e: EditorModel) => EditorModel = (e) => e
-      let updatePropertyControls: (e: EditorModel) => EditorModel = (e) => e
-      Utils.fastForEach(updatedFiles, (updatedFile) => {
-        const { oldPath, newPath } = updatedFile
-        // If the main UI file is what we have renamed, update that later.
-        if (oldPath === mainUIFile) {
-          updateUIFile = (e: EditorModel) => {
-            return updateMainUIInEditorState(e, newPath)
-          }
-        }
-        // update currently open file
-        if (currentDesignerFile != null && currentDesignerFile.filename === oldPath) {
-          currentDesignerFile = {
-            filename: newPath,
-          }
-        }
-        const oldContent = getProjectFileByFilePath(editor.projectContents, oldPath)
-        if (oldContent != null && (isImageFile(oldContent) || isAssetFile(oldContent))) {
-          // Update assets.
-          if (isLoggedIn(userState.loginState) && editor.id != null) {
-            void updateAssetFileName(editor.id, stripLeadingSlash(oldPath), newPath)
-          }
-        }
-        // when we rename a component descriptor file, we need to remove it from property controls
-        // if the new name is a component descriptor filename too, the controls will be readded
-        // if the new name is not a component descriptor filename, then we really have to remove the property controls
-        if (isComponentDescriptorFile(oldPath) && oldPath !== newPath) {
-          updatePropertyControls = (e: EditorModel) => ({
-            ...e,
-            propertyControlsInfo: updatePropertyControlsOnDescriptorFileDelete(
-              e.propertyControlsInfo,
-              oldPath,
-            ),
-          })
-        }
-      })
+    return updateFilePath(editor, userState, {
+      oldPath: action.oldPath,
+      newPath: action.newPath,
+    })
+  },
+  UPDATE_REMIX_ROUTE: (
+    action: UpdateRemixRoute,
+    editor: EditorModel,
+    userState: UserState,
+  ): EditorModel => {
+    const withUpdatedFilePath = updateFilePath(editor, userState, {
+      oldPath: action.oldPath,
+      newPath: action.newPath,
+    })
 
-      return updatePropertyControls(
-        updateUIFile({
-          ...editor,
-          projectContents: projectContents,
-          codeEditorErrors: {
-            buildErrors: {},
-            lintErrors: {},
-            componentDescriptorErrors: {},
-          },
-          canvas: {
-            ...editor.canvas,
-            openFile: currentDesignerFile,
-          },
-        }),
-      )
-    }
+    const withUpdatedFeaturedRoute = updatePackageJsonInEditorState(
+      withUpdatedFilePath,
+      addOrReplaceFeaturedRouteToPackageJson(action.oldRoute, action.newRoute),
+    )
+
+    return withUpdatedFeaturedRoute
   },
   SET_FOCUS: (action: SetFocus, editor: EditorModel): EditorModel => {
     if (editor.focusedPanel === action.focusedPanel) {
@@ -3861,7 +3856,7 @@ export const UPDATE_FNS = {
     // 1. add the new page to the featured routes
     const withPackageJson = updatePackageJsonInEditorState(
       editor,
-      addNewFeaturedRouteToPackageJson(newFileName),
+      addNewFeaturedRouteToPackageJson(action.newPageName),
     )
 
     // 2. write the new text file
@@ -3876,6 +3871,18 @@ export const UPDATE_FNS = {
     return UPDATE_FNS.OPEN_CODE_EDITOR_FILE(
       openCodeEditorFile(withTextFile.newFileKey, false),
       withTextFile.editorState,
+    )
+  },
+  ADD_NEW_FEATURED_ROUTE: (action: AddNewFeaturedRoute, editor: EditorModel): EditorModel => {
+    return updatePackageJsonInEditorState(
+      editor,
+      addNewFeaturedRouteToPackageJson(action.featuredRoute),
+    )
+  },
+  REMOVE_FEATURED_ROUTE: (action: RemoveFeaturedRoute, editor: EditorModel): EditorModel => {
+    return updatePackageJsonInEditorState(
+      editor,
+      removeFeaturedRouteFromPackageJson(action.routeToRemove),
     )
   },
   DELETE_FILE: (
@@ -6157,5 +6164,80 @@ function addTextFile(
       projectContents: updatedProjectContents,
     },
     newFileKey: newFileKey,
+  }
+}
+
+function updateFilePath(
+  editor: EditorModel,
+  userState: UserState,
+  params: {
+    oldPath: string
+    newPath: string
+  },
+) {
+  const replaceFilePathResults = replaceFilePath(
+    params.oldPath,
+    params.newPath,
+    editor.projectContents,
+  )
+  if (replaceFilePathResults.type === 'FAILURE') {
+    const toastAction = showToast(notice(replaceFilePathResults.errorMessage, 'ERROR', true))
+    return UPDATE_FNS.ADD_TOAST(toastAction, editor)
+  } else {
+    let currentDesignerFile = editor.canvas.openFile
+    const { projectContents, updatedFiles } = replaceFilePathResults
+    const mainUIFile = getMainUIFromModel(editor)
+    let updateUIFile: (e: EditorModel) => EditorModel = (e) => e
+    let updatePropertyControls: (e: EditorModel) => EditorModel = (e) => e
+    Utils.fastForEach(updatedFiles, (updatedFile) => {
+      const { oldPath, newPath } = updatedFile
+      // If the main UI file is what we have renamed, update that later.
+      if (oldPath === mainUIFile) {
+        updateUIFile = (e: EditorModel) => {
+          return updateMainUIInEditorState(e, newPath)
+        }
+      }
+      // update currently open file
+      if (currentDesignerFile != null && currentDesignerFile.filename === oldPath) {
+        currentDesignerFile = {
+          filename: newPath,
+        }
+      }
+      const oldContent = getProjectFileByFilePath(editor.projectContents, oldPath)
+      if (oldContent != null && (isImageFile(oldContent) || isAssetFile(oldContent))) {
+        // Update assets.
+        if (isLoggedIn(userState.loginState) && editor.id != null) {
+          void updateAssetFileName(editor.id, stripLeadingSlash(oldPath), newPath)
+        }
+      }
+      // when we rename a component descriptor file, we need to remove it from property controls
+      // if the new name is a component descriptor filename too, the controls will be readded
+      // if the new name is not a component descriptor filename, then we really have to remove the property controls
+      if (isComponentDescriptorFile(oldPath) && oldPath !== newPath) {
+        updatePropertyControls = (e: EditorModel) => ({
+          ...e,
+          propertyControlsInfo: updatePropertyControlsOnDescriptorFileDelete(
+            e.propertyControlsInfo,
+            oldPath,
+          ),
+        })
+      }
+    })
+
+    return updatePropertyControls(
+      updateUIFile({
+        ...editor,
+        projectContents: projectContents,
+        codeEditorErrors: {
+          buildErrors: {},
+          lintErrors: {},
+          componentDescriptorErrors: {},
+        },
+        canvas: {
+          ...editor.canvas,
+          openFile: currentDesignerFile,
+        },
+      }),
+    )
   }
 }

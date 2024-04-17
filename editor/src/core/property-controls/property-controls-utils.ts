@@ -1,4 +1,7 @@
-import type { PropertyControlsInfo } from '../../components/custom-code/code-file'
+import type {
+  ComponentDescriptor,
+  PropertyControlsInfo,
+} from '../../components/custom-code/code-file'
 import type { JSXElementChild } from '../shared/element-template'
 import {
   getJSXElementNameAsString,
@@ -18,6 +21,7 @@ import { importedFromWhere } from '../../components/editor/import-utils'
 import { absolutePathFromRelativePath } from '../../utils/path-utils'
 import { getThirdPartyControlsIntrinsic } from './property-controls-local'
 import type { PropertyControls } from '../../components/custom-code/internal-property-controls'
+import { dropFileExtension } from '../shared/file-utils'
 
 export function propertyControlsForComponentInFile(
   componentName: string,
@@ -125,6 +129,16 @@ export function getPropertyControlsForTarget(
       }
     },
   )
+}
+
+export function getRegisteredComponent(
+  component: string,
+  moduleName: string,
+  propertyControlsInfo: PropertyControlsInfo,
+): ComponentDescriptor | null {
+  const registeredModule =
+    propertyControlsInfo[moduleName] ?? propertyControlsInfo[dropFileExtension(moduleName)]
+  return registeredModule?.[component]
 }
 
 export function hasStyleControls(propertyControls: PropertyControls): boolean {

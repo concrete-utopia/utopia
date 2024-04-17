@@ -83,7 +83,7 @@ export function absolutePathFromRelativePath(
   originIsDir: boolean,
   relativePath: string,
 ): string {
-  if (relativePath.startsWith('/') || !relativePath.includes('/')) {
+  if (!relativePath.startsWith('.')) {
     // Not actually relative in this case.
     return relativePath
   } else {

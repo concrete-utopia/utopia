@@ -5,6 +5,7 @@ import type {
   ProjectFile as CommonProjectFile,
   SelectedElementChanged,
   UpdateDecorationsMessage,
+  ForceNavigation,
 } from 'utopia-vscode-common'
 import {
   boundsInFile,
@@ -36,7 +37,11 @@ import { getHighlightBoundsForElementPath } from '../../components/editor/store/
 import type { ProjectFileChange } from '../../components/editor/store/vscode-changes'
 import type { Theme } from '../../uuiui'
 import { getSavedCodeFromTextFile, getUnsavedCodeFromTextFile } from '../model/project-file-utils'
-import type { ElementPath, ProjectFile } from '../shared/project-file-types'
+import type {
+  ElementPath,
+  HighlightBoundsWithFile,
+  ProjectFile,
+} from '../shared/project-file-types'
 import { assertNever, NO_OP } from '../shared/utils'
 import type { FromVSCodeAction } from '../../components/editor/actions/actions-from-vscode'
 import {
@@ -239,6 +244,7 @@ export function sendCodeEditorDecorations(editorState: EditorState) {
 
 export function getSelectedElementChangedMessage(
   newEditorState: EditorState,
+  forceNavigation: ForceNavigation,
 ): SelectedElementChanged | null {
   const selectedView = newEditorState.selectedViews[0]
   if (selectedView == null) {
@@ -248,20 +254,31 @@ export function getSelectedElementChangedMessage(
   if (highlightBounds == null) {
     return null
   } else {
-    return selectedElementChanged(
-      boundsInFile(
-        highlightBounds.filePath,
-        highlightBounds.startLine,
-        highlightBounds.startCol,
-        highlightBounds.endLine,
-        highlightBounds.endCol,
-      ),
-    )
+    return selectedElementChangedMessageFromHighlightBounds(highlightBounds, forceNavigation)
   }
 }
 
+export function selectedElementChangedMessageFromHighlightBounds(
+  highlightBounds: HighlightBoundsWithFile,
+  forceNavigation: ForceNavigation,
+): SelectedElementChanged {
+  return selectedElementChanged(
+    boundsInFile(
+      highlightBounds.filePath,
+      highlightBounds.startLine,
+      highlightBounds.startCol,
+      highlightBounds.endLine,
+      highlightBounds.endCol,
+    ),
+    forceNavigation,
+  )
+}
+
 export function sendSelectedElement(newEditorState: EditorState) {
-  const selectedElementChangedMessage = getSelectedElementChangedMessage(newEditorState)
+  const selectedElementChangedMessage = getSelectedElementChangedMessage(
+    newEditorState,
+    'do-not-force-navigation',
+  )
   if (selectedElementChangedMessage != null) {
     sendMessage(toVSCodeExtensionMessage(selectedElementChangedMessage))
   }

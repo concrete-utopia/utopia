@@ -224,6 +224,9 @@ import type {
   SetSharingDialogOpen,
   SetCodeEditorComponentDescriptorErrors,
   AddNewPage,
+  UpdateRemixRoute,
+  AddNewFeaturedRoute,
+  RemoveFeaturedRoute,
   ResetOnlineState,
   IncreaseOnlineStateFailureCount,
 } from '../action-types'
@@ -954,6 +957,21 @@ export function updateFilePath(oldPath: string, newPath: string): UpdateFilePath
   }
 }
 
+export function updateRemixRoute(
+  oldPath: string,
+  newPath: string,
+  oldRoute: string,
+  newRoute: string,
+): UpdateRemixRoute {
+  return {
+    action: 'UPDATE_REMIX_ROUTE',
+    oldPath: oldPath,
+    newPath: newPath,
+    oldRoute: oldRoute,
+    newRoute: newRoute,
+  }
+}
+
 export function deleteFile(filename: string): DeleteFile {
   return {
     action: 'DELETE_FILE',
@@ -1130,6 +1148,20 @@ export function addNewPage(
     template: template,
     parentPath: parentPath,
     newPageName: newPageName,
+  }
+}
+
+export function addNewFeaturedRoute(featuredRoute: string): AddNewFeaturedRoute {
+  return {
+    action: 'ADD_NEW_FEATURED_ROUTE',
+    featuredRoute: featuredRoute,
+  }
+}
+
+export function removeFeaturedRoute(routeToRemove: string): RemoveFeaturedRoute {
+  return {
+    action: 'REMOVE_FEATURED_ROUTE',
+    routeToRemove: routeToRemove,
   }
 }
 

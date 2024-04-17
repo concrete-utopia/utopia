@@ -595,6 +595,14 @@ export interface UpdateFilePath {
   newPath: string
 }
 
+export interface UpdateRemixRoute {
+  action: 'UPDATE_REMIX_ROUTE'
+  oldPath: string
+  newPath: string
+  oldRoute: string
+  newRoute: string
+}
+
 export interface OpenCodeEditorFile {
   action: 'OPEN_CODE_EDITOR_FILE'
   filename: string
@@ -698,6 +706,16 @@ export interface AddNewPage {
   parentPath: string
   template: PageTemplate
   newPageName: string
+}
+
+export interface AddNewFeaturedRoute {
+  action: 'ADD_NEW_FEATURED_ROUTE'
+  featuredRoute: string
+}
+
+export interface RemoveFeaturedRoute {
+  action: 'REMOVE_FEATURED_ROUTE'
+  routeToRemove: string
 }
 
 export interface SetMainUIFile {
@@ -1210,6 +1228,7 @@ export type EditorAction =
   | UpdateDuplicationState
   | SendPreviewModel
   | UpdateFilePath
+  | UpdateRemixRoute
   | OpenCodeEditorFile
   | CloseDesignerFile
   | UpdateFile
@@ -1225,6 +1244,8 @@ export type EditorAction =
   | DeleteFileFromCollaboration
   | AddTextFile
   | AddNewPage
+  | AddNewFeaturedRoute
+  | RemoveFeaturedRoute
   | SetMainUIFile
   | SetCodeEditorBuildErrors
   | SetCodeEditorLintErrors

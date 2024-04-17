@@ -217,7 +217,7 @@ export interface Vector4ControlDescription {
 
 export interface PreferredChildComponentDescriptor {
   name: string
-  imports: Imports
+  moduleName: string | null
   variants: Array<ComponentInfo>
 }
 
