@@ -10,7 +10,7 @@ export function nextSelectedTab(
   }
 
   if (currentLeftMenuTab === LeftMenuTab.Pages) {
-    return LeftMenuTab.Pages // same as LeftMenuTab.Pages
+    return LeftMenuTab.Pages
   }
 
   return LeftMenuTab.Navigator
