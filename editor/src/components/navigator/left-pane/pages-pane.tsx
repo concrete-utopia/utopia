@@ -98,10 +98,10 @@ export const PagesPane = React.memo((props) => {
   const remixRoutesObject: RouteMatches = useEditorState(
     Substores.derived,
     (store) => {
-      function processRoutes(routes: Array<any>, prefix: string | null): RouteMatches {
+      function processRoutes(routes: Array<any>, prefix: string): RouteMatches {
         let result: RouteMatches = {}
         for (const route of routes) {
-          const path = prefix == null ? route.path : prefix + '/' + (route.path ?? '')
+          const path = urljoin(prefix, '/', route.path ?? '')
           const firstMatchingFavorite = mapFirstApplicable(
             [...featuredRoutes, activeRoute],
             (favorite) => matchPath(path, favorite)?.pathname ?? null,
@@ -120,7 +120,7 @@ export const PagesPane = React.memo((props) => {
         }
         return result
       }
-      const routes = processRoutes(store.derived.remixData?.routes ?? [], null)
+      const routes = processRoutes(store.derived.remixData?.routes ?? [], '')
       return routes
     },
     'PagesPane remixRoutes',
