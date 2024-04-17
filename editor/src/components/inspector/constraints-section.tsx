@@ -525,6 +525,7 @@ const ChildConstraintSelect = React.memo(
         controlStyles={{
           ...styles,
           mainColor: activeOption.invalid ? colorTheme.error.value : styles.mainColor,
+          backgroundColor: 'transparent',
         }}
       />
     )
