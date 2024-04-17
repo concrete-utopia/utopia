@@ -337,6 +337,10 @@ interface FavoriteEntryProps {
 }
 
 const FavoriteEntry = React.memo(({ favorite, active, addedToFavorites }: FavoriteEntryProps) => {
+  const url = favorite
+  const routeWithoutQueryOrHash = url.split('?')[0].split('#')[0]
+  const queryAndHash = url.slice(routeWithoutQueryOrHash.length)
+
   const [navigationControls] = useAtom(RemixNavigationAtom)
   const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
 
@@ -387,7 +391,25 @@ const FavoriteEntry = React.memo(({ favorite, active, addedToFavorites }: Favori
           flexGrow: 1,
         }}
       >
-        {favorite}
+        {routeWithoutQueryOrHash}
+        {when(
+          queryAndHash.length > 0,
+          <Tooltip title={queryAndHash}>
+            <span
+              style={{
+                color: colorTheme.neutralInvertedForeground.value,
+                backgroundColor: active
+                  ? colorTheme.neutralForeground.value
+                  : colorTheme.subduedForeground.value,
+                borderRadius: 2,
+                marginLeft: 4,
+                padding: 1,
+              }}
+            >
+              ?=
+            </span>
+          </Tooltip>,
+        )}
       </span>
       <StarUnstarIcon url={favorite} selected={active} addedToFavorites={addedToFavorites} />
     </FlexRow>
