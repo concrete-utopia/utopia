@@ -57,6 +57,7 @@ import { createNewPageName } from '../../editor/store/editor-state'
 import urljoin from 'url-join'
 import { notice } from '../../common/notice'
 import type { EditorDispatch } from '../../editor/action-types'
+import { maybeToArray } from '../../../core/shared/optional-utils'
 
 type RouteMatch = {
   path: string
@@ -79,6 +80,13 @@ type NavigateMode =
   | 'all-scenes' // apply navigation to all scenes
 
 export const PagesPane = React.memo((props) => {
+  const [navigationControls] = useAtom(RemixNavigationAtom)
+  const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
+
+  const activeLocation = navigationControls[EP.toString(activeRemixScene)]?.location
+  const pathname = activeLocation?.pathname ?? ''
+  const activeRoute = getRemixUrlFromLocation(activeLocation) ?? ''
+
   const featuredRoutes = useEditorState(
     Substores.projectContents,
     (store) => {
@@ -96,7 +104,7 @@ export const PagesPane = React.memo((props) => {
         for (const route of routes) {
           const path = prefix == null ? route.path : prefix + '/' + (route.path ?? '')
           const firstMatchingFavorite = mapFirstApplicable(
-            featuredRoutes,
+            [...featuredRoutes, activeRoute],
             (favorite) => matchPath(path, favorite)?.pathname ?? null,
           )
 
@@ -120,16 +128,6 @@ export const PagesPane = React.memo((props) => {
   )
 
   const remixRoutes = fillInGapsInRoutes(remixRoutesObject)
-
-  const [navigationControls] = useAtom(RemixNavigationAtom)
-  const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
-
-  const activeLocation = navigationControls[EP.toString(activeRemixScene)]?.location
-
-  const url = getRemixUrlFromLocation(activeLocation)
-
-  const pathname = activeLocation?.pathname ?? ''
-  const matchResult = matchRoutes(remixRoutes, pathname)
 
   const pageTemplates = useEditorState(
     Substores.projectContents,
@@ -175,8 +173,8 @@ export const PagesPane = React.memo((props) => {
     setNavigateTo(null)
   })
 
-  const activeRoute = url ?? ''
   const activeRouteDoesntMatchAnyFavorites = !featuredRoutes.includes(activeRoute!)
+  const activeRouteTemplatePath = matchRoutes(remixRoutes, pathname)?.[0].route.path
 
   return (
     <FlexColumn style={{ height: '100%', overflowY: 'scroll' }}>
@@ -226,16 +224,14 @@ export const PagesPane = React.memo((props) => {
 
       {remixRoutes.map((route: RouteMatch, index) => {
         const { path, resolvedPath } = route
-        const pathMatchesActivePath = matchResult?.[0].route.path === path
+        const pathMatchesActivePath = path === activeRouteTemplatePath
         const pathToDisplay = path ?? RemixIndexPathLabel
-
-        const activePathIfMatches = pathMatchesActivePath ? url : resolvedPath
 
         return (
           <PageRouteEntry
             key={path}
             routePath={pathToDisplay}
-            resolvedPath={activePathIfMatches}
+            resolvedPath={resolvedPath}
             active={pathMatchesActivePath}
             matchesRealRoute={route.matchesRealRoute}
             navigateTo={navigateTo}
