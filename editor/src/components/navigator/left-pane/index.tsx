@@ -20,6 +20,8 @@ import type { StoredPanel } from '../../canvas/stored-layout'
 import { useIsMyProject } from '../../editor/store/collaborative-editing'
 import { when } from '../../../utils/react-conditionals'
 import { PagesPane } from './pages-pane'
+import { getRemixRootFile } from '../../canvas/remix/remix-utils'
+import { getRemixRootDir } from '../../editor/store/remix-derived-data'
 
 export interface LeftPaneProps {
   editorState: EditorState
@@ -72,6 +74,15 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
 
   const isMyProject = useIsMyProject()
 
+  const isRemixProject = useEditorState(
+    Substores.projectContents,
+    (store) =>
+      getRemixRootFile(
+        getRemixRootDir(store.editor.projectContents),
+        store.editor.projectContents,
+      ) != null,
+    'LeftPaneComponent isRemixProject',
+  )
   return (
     <LowPriorityStoreProvider>
       <FlexColumn
@@ -100,11 +111,14 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
           {when(
             isMyProject,
             <FlexRow style={{ marginBottom: 10, gap: 10 }} css={undefined}>
-              <MenuTab
-                label={'Pages'}
-                selected={selectedTab === LeftMenuTab.Pages}
-                onClick={onClickPagesTab}
-              />
+              {when(
+                isRemixProject,
+                <MenuTab
+                  label={'Pages'}
+                  selected={selectedTab === LeftMenuTab.Pages}
+                  onClick={onClickPagesTab}
+                />,
+              )}
               <MenuTab
                 label={'Navigator'}
                 selected={selectedTab === LeftMenuTab.Navigator}
@@ -122,7 +136,7 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
               />
             </FlexRow>,
           )}
-          {when(isMyProject && selectedTab === LeftMenuTab.Pages, <PagesPane />)}
+          {when(isMyProject && isRemixProject && selectedTab === LeftMenuTab.Pages, <PagesPane />)}
           {when(selectedTab === LeftMenuTab.Navigator, <NavigatorComponent />)}
           {when(isMyProject && selectedTab === LeftMenuTab.Project, <ContentsPane />)}
           {when(isMyProject && selectedTab === LeftMenuTab.Github, <GithubPane />)}
