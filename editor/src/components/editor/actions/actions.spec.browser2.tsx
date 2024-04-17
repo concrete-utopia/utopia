@@ -7709,6 +7709,8 @@ export var storyboard = (
             await renderResult.dispatch([setLeftMenuTab(page)], true)
             await deselect()
             expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([])
+
+            // stays on the same page
             expect(renderResult.getEditorState().editor.leftMenu.selectedTab).toEqual(page)
           }
         }
@@ -7726,21 +7728,21 @@ export var storyboard = (
 
         const entryPoints = selectActions(renderResult)
 
-        const pages = [{ fromPage: LeftMenuTab.Pages, toPage: LeftMenuTab.Pages }]
+        for await (const select of entryPoints) {
+          await selectComponentsForTest(renderResult, [
+            EP.appendNewElementPath(TestScenePath, ['root', 'child1']),
+          ])
+          await renderResult.dispatch([setLeftMenuTab(LeftMenuTab.Pages)], true)
+          const pathToSelect = EP.appendNewElementPath(TestScenePath, ['root', 'child2'])
+          await select([pathToSelect])
+          expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
+            EP.toString(pathToSelect),
+          ])
 
-        for await (const { fromPage, toPage } of pages) {
-          for await (const select of entryPoints) {
-            await selectComponentsForTest(renderResult, [
-              EP.appendNewElementPath(TestScenePath, ['root', 'child1']),
-            ])
-            await renderResult.dispatch([setLeftMenuTab(fromPage)], true)
-            const pathToSelect = EP.appendNewElementPath(TestScenePath, ['root', 'child2'])
-            await select([pathToSelect])
-            expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
-              EP.toString(pathToSelect),
-            ])
-            expect(renderResult.getEditorState().editor.leftMenu.selectedTab).toEqual(toPage)
-          }
+          // stays on the pages tab
+          expect(renderResult.getEditorState().editor.leftMenu.selectedTab).toEqual(
+            LeftMenuTab.Pages,
+          )
         }
       })
 
