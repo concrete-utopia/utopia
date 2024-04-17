@@ -257,14 +257,23 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
   const [navigationControls] = useAtom(RemixNavigationAtom)
   const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
 
+  const pathCanBeClickedToNavigate =
+    props.matchesRealRoute && !(props.resolvedPath == null && props.routePath.includes(':'))
+
   const onClick = React.useCallback(() => {
-    if (props.resolvedPath == null && props.routePath.includes(':')) {
+    if (!pathCanBeClickedToNavigate) {
       return
     }
     void navigationControls[EP.toString(activeRemixScene)]?.navigate(
       props.resolvedPath ?? props.routePath,
     )
-  }, [navigationControls, activeRemixScene, props.resolvedPath, props.routePath])
+  }, [
+    navigationControls,
+    activeRemixScene,
+    pathCanBeClickedToNavigate,
+    props.resolvedPath,
+    props.routePath,
+  ])
 
   const resolvedPathWithoutQueryOrHash = props.resolvedPath?.split('?')[0].split('#')[0]
 
@@ -298,6 +307,7 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
         alignItems: 'center',
         borderRadius: 2,
         position: 'relative',
+        cursor: pathCanBeClickedToNavigate ? 'pointer' : 'auto',
       }}
       onClick={props.matchesRealRoute ? onClick : NO_OP}
     >
