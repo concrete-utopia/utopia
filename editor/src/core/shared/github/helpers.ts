@@ -192,13 +192,11 @@ export async function runGithubOperation(
     if (userDetails == null) {
       actions.push(...resetGithubStateAndDataActions())
     } else {
-      actions.push(
-        showToast(notice(`${opName} failed. See the console for more information.`, 'ERROR')),
-      )
+      actions.push(showToast(notice(`Couldn't ${opName} (see console)`, 'ERROR')))
     }
 
     dispatch(actions, 'everyone')
-    console.error(`[GitHub] operation "${opName}" failed:`, error)
+    console.error(`Couldn't ${opName}`, error)
     throw error
   } finally {
     dispatch([updateGithubOperations(operation, 'remove')], 'everyone')

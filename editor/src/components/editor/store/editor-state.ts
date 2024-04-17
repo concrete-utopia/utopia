@@ -342,22 +342,23 @@ export type GithubOperation =
   | GithubListPullRequestsForBranch
   | GithubSaveAsset
 
+// context: "Couldn't ${opName}"
 export function githubOperationPrettyName(op: GithubOperation): string {
   switch (op.name) {
     case 'commitAndPush':
-      return 'Saving to GitHub'
+      return 'save to Github'
     case 'listBranches':
-      return 'Listing branches from GitHub'
+      return 'list branches from GitHub'
     case 'loadBranch':
-      return 'Loading branch from GitHub'
+      return 'load branch from GitHub'
     case 'loadRepositories':
-      return 'Loading Repositories'
+      return 'load repositories'
     case 'updateAgainstBranch':
-      return 'Updating against branch from GitHub'
+      return 'update against branch from GitHub'
     case 'listPullRequestsForBranch':
-      return 'Listing GitHub pull requests'
+      return 'list GitHub pull requests'
     case 'saveAsset':
-      return 'Saving asset to GitHub'
+      return 'save asset to GitHub'
     default:
       assertNever(op)
   }
