@@ -53,7 +53,7 @@ const usePreferredChildrenForTargetProp = (
   const selectedElement = useEditorState(
     Substores.metadata,
     (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, target),
-    'usePreferredChildrenForSelectedElement selectedElement',
+    'usePreferredChildrenForTargetProp selectedElement',
   )
 
   const preferredChildrenForTargetProp = useEditorState(
