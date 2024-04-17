@@ -23,30 +23,21 @@ import { type ContextMenuItem } from '../../context-menu-items'
 import { FlexRow, Icn, type IcnProps } from '../../../uuiui'
 import { type EditorDispatch } from '../../editor/action-types'
 import { type ProjectContentTreeRoot } from '../../assets'
-import {
-  type PropertyControlsInfo,
-  type ComponentInfo,
-  type ComponentDescriptor,
-} from '../../custom-code/code-file'
+import { type PropertyControlsInfo, type ComponentInfo } from '../../custom-code/code-file'
 import { type Icon } from 'utopia-api'
+import { getRegisteredComponent } from '../../../core/property-controls/property-controls-utils'
+import { defaultImportsForComponentModule } from '../../../core/property-controls/property-controls-local'
 
-function getRegisteredComponent(
+function getIconForComponent(
   targetName: string,
+  moduleName: string | null,
   propertyControlsInfo: PropertyControlsInfo,
-): ComponentDescriptor | null {
-  for (const componentsFile of Object.values(propertyControlsInfo)) {
-    // FIXME This isn't good enough - we need to know which module the target is coming from,
-    // otherwise we'll be returning the first component with a matching name
-    if (componentsFile[targetName] != null) {
-      return componentsFile[targetName]
-    }
+): Icon {
+  if (moduleName == null) {
+    return 'regular'
   }
 
-  return null
-}
-
-function getIconForComponent(targetName: string, propertyControlsInfo: PropertyControlsInfo): Icon {
-  const registeredComponent = getRegisteredComponent(targetName, propertyControlsInfo)
+  const registeredComponent = getRegisteredComponent(targetName, moduleName, propertyControlsInfo)
 
   return registeredComponent?.icon ?? 'regular'
 }
@@ -59,22 +50,26 @@ const usePreferredChildrenForTargetProp = (
   target: ElementPath,
   prop: string,
 ): Array<PreferredChildComponentDescriptorWithIcon> => {
-  const selectedJSXElement = useEditorState(
+  const selectedElement = useEditorState(
     Substores.metadata,
-    (store) => MetadataUtils.getJSXElementFromMetadata(store.editor.jsxMetadata, target),
-    'usePreferredChildrenForSelectedElement selectedJSXElement',
+    (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, target),
+    'usePreferredChildrenForTargetProp selectedElement',
   )
 
   const preferredChildrenForTargetProp = useEditorState(
     Substores.restOfEditor,
     (store) => {
-      if (selectedJSXElement == null) {
+      const selectedJSXElement =
+        MetadataUtils.getJSXElementFromElementInstanceMetadata(selectedElement)
+      const elementImportInfo = selectedElement?.importInfo
+      if (elementImportInfo == null || selectedJSXElement == null) {
         return null
       }
 
       const targetName = getJSXElementNameAsString(selectedJSXElement.name)
       const registeredComponent = getRegisteredComponent(
         targetName,
+        elementImportInfo.filePath,
         store.editor.propertyControlsInfo,
       )
 
@@ -90,7 +85,7 @@ const usePreferredChildrenForTargetProp = (
           ) {
             return registeredPropValue.preferredChildComponents.map((v) => ({
               ...v,
-              icon: getIconForComponent(v.name, store.editor.propertyControlsInfo),
+              icon: getIconForComponent(v.name, v.moduleName, store.editor.propertyControlsInfo),
             }))
           }
         }
@@ -101,11 +96,7 @@ const usePreferredChildrenForTargetProp = (
     'usePreferredChildrenForSelectedElement propertyControlsInfo',
   )
 
-  if (selectedJSXElement == null || preferredChildrenForTargetProp == null) {
-    return []
-  }
-
-  return preferredChildrenForTargetProp
+  return preferredChildrenForTargetProp ?? []
 }
 
 type ShowRenderPropPicker = (
@@ -275,6 +266,14 @@ function iconPropsForIcon(icon: Icon): IcnProps {
   }
 }
 
+export function labelTestIdForComponentIcon(
+  componentName: string,
+  moduleName: string,
+  icon: Icon,
+): string {
+  return `variant-label-${componentName}-${moduleName}-${icon}`
+}
+
 const RenderPropPickerSimple = React.memo<RenderPropPickerProps>(({ key, id, target, prop }) => {
   const { showRenderPropPicker } = useShowRenderPropPicker(`${id}-full`)
 
@@ -309,17 +308,30 @@ const RenderPropPickerSimple = React.memo<RenderPropPickerProps>(({ key, id, tar
       const iconProps = iconPropsForIcon(data.icon)
 
       const submenuLabel = (
-        <FlexRow style={{ gap: 5 }}>
+        <FlexRow
+          style={{ gap: 5 }}
+          data-testId={labelTestIdForComponentIcon(data.name, data.moduleName ?? '', data.icon)}
+        >
           <Icn {...iconProps} width={12} height={12} />
           {data.name}
         </FlexRow>
       )
 
+      const defaultVariantImports = defaultImportsForComponentModule(data.name, data.moduleName)
+
       if (data.variants == null || data.variants.length === 0) {
-        return [defaultVariantItem(data.name, submenuLabel, data.imports, null, onItemClick)]
+        return [
+          defaultVariantItem(data.name, submenuLabel, defaultVariantImports, null, onItemClick),
+        ]
       } else {
         return [
-          defaultVariantItem(data.name, '(empty)', data.imports, submenuLabel, onItemClick),
+          defaultVariantItem(
+            data.name,
+            '(empty)',
+            defaultVariantImports,
+            submenuLabel,
+            onItemClick,
+          ),
           ...data.variants.map((variant) => {
             return variantItem(variant, submenuLabel, onItemClick)
           }),
