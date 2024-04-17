@@ -224,6 +224,7 @@ import type {
   SetSharingDialogOpen,
   SetCodeEditorComponentDescriptorErrors,
   AddNewPage,
+  UpdateRemixRoute,
   AddNewFeaturedRoute,
   RemoveFeaturedRoute,
   ResetOnlineState,
@@ -953,6 +954,21 @@ export function updateFilePath(oldPath: string, newPath: string): UpdateFilePath
     action: 'UPDATE_FILE_PATH',
     oldPath: oldPath,
     newPath: newPath,
+  }
+}
+
+export function updateRemixRoute(
+  oldPath: string,
+  newPath: string,
+  oldRoute: string,
+  newRoute: string,
+): UpdateRemixRoute {
+  return {
+    action: 'UPDATE_REMIX_ROUTE',
+    oldPath: oldPath,
+    newPath: newPath,
+    oldRoute: oldRoute,
+    newRoute: newRoute,
   }
 }
 

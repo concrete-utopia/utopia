@@ -525,6 +525,18 @@ export function removeFeaturedRouteFromPackageJson(routeToRemove: string) {
   }
 }
 
+export function addOrReplaceFeaturedRouteToPackageJson(oldRoute: string, newRoute: string) {
+  return function (packageJson: string) {
+    return modifyFeaturedRoutesInPackageJson(packageJson, (currentRoutes): string[] => {
+      return currentRoutes.map((route) => {
+        return route.startsWith(oldRoute)
+          ? route.replace(oldRoute, newRoute) // just once (string replace instead of a regex), it's ok
+          : route
+      })
+    })
+  }
+}
+
 export type PageTemplate = { label: string; path: string }
 
 export function isPageTemplate(u: unknown): u is PageTemplate {

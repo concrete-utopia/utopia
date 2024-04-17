@@ -171,6 +171,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'DISTRIBUTE_SELECTED_VIEWS':
     case 'TOGGLE_HIDDEN':
     case 'UPDATE_FILE_PATH':
+    case 'UPDATE_REMIX_ROUTE':
     case 'ADD_FOLDER':
     case 'DELETE_FILE':
     case 'DELETE_FILE_FROM_VSCODE':
