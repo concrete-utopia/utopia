@@ -8,7 +8,12 @@ import React from 'react'
 import { matchRoutes } from 'react-router'
 import { safeIndex, uniqBy } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
-import { NO_OP, PortalTargetID, assertNever } from '../../../core/shared/utils'
+import {
+  NO_OP,
+  PortalTargetID,
+  arrayEqualsByReference,
+  assertNever,
+} from '../../../core/shared/utils'
 import {
   FlexColumn,
   FlexRow,
@@ -618,18 +623,6 @@ function useNavigateToRouteWhenAvailable(
   }, [navigateTo, remixRoutes, navigationControls, activeRemixScene, onNavigate, scenesToNavigate])
 }
 
-function replacementTokensMatch(oldTokens: string[], newTokens: string[]): boolean {
-  if (oldTokens.length !== newTokens.length) {
-    return false
-  }
-  for (let i = 0; i < oldTokens.length; i++) {
-    if (oldTokens[i] !== newTokens[i]) {
-      return false
-    }
-  }
-  return true
-}
-
 function isReplacementToken(token: string): boolean {
   return token.startsWith(':')
 }
@@ -707,7 +700,7 @@ function runRenameRemixRoute(
   // if the renamed value does not match the original replacement tokens, stop here
   const newResolvedPathReplacementTokens = newPath.split('/').filter(isReplacementToken)
   const replacementTokens = routeTokens.filter(isReplacementToken)
-  if (!replacementTokensMatch(replacementTokens, newResolvedPathReplacementTokens)) {
+  if (!arrayEqualsByReference(replacementTokens, newResolvedPathReplacementTokens)) {
     dispatch([
       showToast(
         notice(
