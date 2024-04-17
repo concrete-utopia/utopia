@@ -41,7 +41,7 @@ import { isParseSuccess } from '../../shared/project-file-types'
 import type { Optic } from '../../../core/shared/optics/optics'
 import { set, unsafeGet } from '../../../core/shared/optics/optic-utilities'
 import { fromField, identityOptic } from '../../../core/shared/optics/optic-creators'
-import { assertNever } from '../../../core/shared/utils'
+import { assertNever, fastForEach } from '../../../core/shared/utils'
 import { emptySet } from '../../../core/shared/set-utils'
 import type { UIDMappings } from '../../../core/shared/uid-utils'
 import { generateConsistentUID, updateHighlightBounds } from '../../../core/shared/uid-utils'
@@ -531,9 +531,20 @@ export function fixElementsWithin(
   fixUIDsState: FixUIDsState,
 ): ElementsWithin {
   let result: ElementsWithin = {}
-  for (const newWithinKey of Object.keys(newExpression)) {
+  const fallbackIdMatch: Record<string, string> = {}
+  const newKeys = Object.keys(newExpression)
+  const oldKeys = Object.keys(oldExpression)
+  if (newKeys.length === oldKeys.length) {
+    fastForEach(newKeys, (newWithinKey, index) => {
+      fallbackIdMatch[newWithinKey] = oldKeys[index]
+    })
+  }
+  for (const newWithinKey of newKeys) {
     const newElement = newExpression[newWithinKey]
-    const oldElement = oldExpression[newWithinKey]
+    let oldElement = oldExpression[newWithinKey]
+    if (oldElement == null) {
+      oldElement = oldExpression[fallbackIdMatch[newWithinKey]]
+    }
     const fixedElement = fixJSXElementUIDs(oldElement, newElement, fixUIDsState)
     result[fixedElement.uid] = fixedElement
   }

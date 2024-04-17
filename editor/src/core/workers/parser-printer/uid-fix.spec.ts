@@ -307,6 +307,31 @@ describe('fixParseSuccessUIDs', () => {
     `)
   })
 
+  it('finds and fixes a component inside a code block', () => {
+    const baseTernary = createFileText(baseTernaryText)
+    const base = lintAndParseAndValidateResult(
+      'test.js',
+      baseTernary,
+      null,
+      emptySet(),
+      'trim-bounds',
+    )
+    const baseTernaryChangedText = baseTernaryText.replace(
+      /<Money /g,
+      `<Money withoutCurrency={false}`,
+    )
+    expect(baseTernaryChangedText).not.toEqual(baseTernaryText)
+    const baseTernaryChanged = createFileText(baseTernaryChangedText)
+    const newFile = lintAndParseAndValidateResult(
+      'test.js',
+      baseTernaryChanged,
+      asParseSuccessOrNull(base),
+      emptySet(),
+      'trim-bounds',
+    )
+    expect(getUidTree(newFile)).toEqual(getUidTree(base))
+  })
+
   it('avoids uid shifting caused by single prepending insertion', () => {
     const newFile = lintAndParseAndValidateResult(
       'test.js',
@@ -968,6 +993,14 @@ export var SameFileApp = (props) => {
 }
 `)
 
+const baseTernaryText = `
+return (
+  <div className='product-price'>
+    {<Money />}
+  </div>
+)
+`
+
 const fileWithChildAndParentUpdated = createFileText(`
 export var SameFileApp = (props) => {
   return (
@@ -1154,13 +1187,13 @@ export var SameFileApp = (props) => {
     <div
       style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
     >
-      {[1, 2, 3].map((index) => {
+      {[1, 2, 3].map((index) => (
       <View
         style={{
           width: 191 + index,
         }}
       />
-      })}
+      ))}
     </div>
   )
 }
@@ -1172,13 +1205,13 @@ export var SameFileApp = (props) => {
     <div
       style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
     >
-      {[1, 2, 3].map((index) => {
+      {[1, 2, 3].map((index) => (
       <View
         style={{
           width: 161 + index,
         }}
       />
-      })}
+      ))}
     </div>
   )
 }
