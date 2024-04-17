@@ -6,7 +6,7 @@ import { jsx } from '@emotion/react'
 import { useAtom } from 'jotai'
 import React from 'react'
 import { matchPath, matchRoutes } from 'react-router'
-import { safeIndex, uniqBy } from '../../../core/shared/array-utils'
+import { mapFirstApplicable, safeIndex, uniqBy } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
 import {
   NO_OP,
@@ -95,12 +95,14 @@ export const PagesPane = React.memo((props) => {
         let result: RouteMatches = {}
         for (const route of routes) {
           const path = prefix == null ? route.path : prefix + '/' + (route.path ?? '')
-          const pathMatchesAnyFavorite = featuredRoutes.find(
-            (favorite) => matchPath(path, favorite) != null,
+          const firstMatchingFavorite = mapFirstApplicable(
+            featuredRoutes,
+            (favorite) => matchPath(path, favorite)?.pathname ?? null,
           )
+
           result[path] = {
             path: path,
-            resolvedPath: pathMatchesAnyFavorite ?? null,
+            resolvedPath: firstMatchingFavorite,
             matchesRealRoute: true,
           }
           if (route.children != null) {
@@ -242,7 +244,7 @@ export const PagesPane = React.memo((props) => {
         const pathMatchesActivePath = matchResult?.[0].route.path === path
         const pathToDisplay = path ?? RemixIndexPathLabel
 
-        const activePathIfMatches = pathMatchesActivePath ? pathname : resolvedPath
+        const activePathIfMatches = pathMatchesActivePath ? url : resolvedPath
 
         return (
           <PageRouteEntry
@@ -284,7 +286,9 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
     )
   }, [navigationControls, activeRemixScene, props.resolvedPath, props.routePath])
 
-  const resolvedRouteSegments = props.resolvedPath?.split('/')
+  const resolvedPathWithoutQueryOrHash = props.resolvedPath?.split('?')[0].split('#')[0]
+
+  const resolvedRouteSegments = resolvedPathWithoutQueryOrHash?.split('/')
   const templateRouteSegments = props.routePath.split('/')
 
   const lastResolvedSegment = resolvedRouteSegments?.[resolvedRouteSegments.length - 1]
