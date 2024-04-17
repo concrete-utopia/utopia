@@ -347,7 +347,8 @@ function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscod
       case 'SELECTED_ELEMENT_CHANGED':
         const followSelectionEnabled = getFollowSelectionEnabledConfig()
         const shouldFollowSelection =
-          followSelectionEnabled && shouldFollowSelectionWithActiveFile()
+          followSelectionEnabled &&
+          (shouldFollowSelectionWithActiveFile() || message.forceNavigation === 'force-navigation')
         if (shouldFollowSelection) {
           currentSelection = message.boundsInFile
           revealRangeIfPossible(workspaceRootUri, message.boundsInFile)
