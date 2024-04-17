@@ -192,7 +192,7 @@ export async function runGithubOperation(
     if (userDetails == null) {
       actions.push(...resetGithubStateAndDataActions())
     } else {
-      actions.push(showToast(notice(`Couldn't ${opName} (see console)`, 'ERROR')))
+      actions.push(showToast(notice(`Couldn't ${opName} (see console)`, 'PRIMARY')))
     }
 
     dispatch(actions, 'everyone')
