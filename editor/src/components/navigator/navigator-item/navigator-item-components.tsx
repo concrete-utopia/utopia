@@ -1,5 +1,5 @@
 import React from 'react'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import { type ElementPath } from '../../../core/shared/project-file-types'
 import type { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as EP from '../../../core/shared/element-path'
@@ -17,6 +17,8 @@ import {
   varSafeNavigatorEntryToKey,
 } from '../../editor/store/editor-state'
 import type { SelectionLocked } from '../../canvas/canvas-types'
+import { getJSXElementNameAsString } from '../../../core/shared/element-template'
+import { getRegisteredComponent } from '../../../core/property-controls/property-controls-utils'
 
 export const NavigatorHintCircleDiameter = 8
 
@@ -190,6 +192,67 @@ export const VisibilityIndicator: React.FunctionComponent<
   )
 })
 
+const useSupportsChildren = (target: ElementPath): boolean => {
+  const targetElement = useEditorState(
+    Substores.metadata,
+    (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, target),
+    'useSupportsChildren targetElement',
+  )
+
+  return useEditorState(
+    Substores.restOfEditor,
+    (store) => {
+      const targetJSXElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(targetElement)
+      const elementImportInfo = targetElement?.importInfo
+      if (elementImportInfo == null || targetJSXElement == null) {
+        return false
+      }
+
+      const targetName = getJSXElementNameAsString(targetJSXElement.name)
+      const registeredComponent = getRegisteredComponent(
+        targetName,
+        elementImportInfo.filePath,
+        store.editor.propertyControlsInfo,
+      )
+
+      // FIXME we should really be using the below
+      // return registeredComponent?.supportsChildren ?? false
+      return (registeredComponent?.preferredChildComponents?.length ?? 0) > 0
+    },
+    'useSupportsChildren supportsChildren',
+  )
+}
+
+interface AddChildButtonProps {
+  target: ElementPath
+  iconColor: IcnProps['color']
+  onClick: React.MouseEventHandler<HTMLDivElement>
+}
+
+const AddChildButton = React.memo((props: AddChildButtonProps) => {
+  const color = props.iconColor
+  const shouldShow = useSupportsChildren(props.target)
+
+  return (
+    <Button
+      onClick={props.onClick}
+      style={{
+        height: 18,
+        width: 18,
+        opacity: shouldShow ? 1 : 0,
+      }}
+    >
+      <Icn
+        category='semantic'
+        type='plus-in-white-translucent-circle'
+        color={color}
+        width={12}
+        height={12}
+      />
+    </Button>
+  )
+})
+
 interface SelectionLockedIndicatorProps {
   shouldShow: boolean
   value: SelectionLocked
@@ -289,6 +352,7 @@ interface NavigatorItemActionSheetProps {
   iconColor: IcnProps['color']
   background?: string | any
   dispatch: EditorDispatch
+  showInsertChildPicker: React.MouseEventHandler<HTMLDivElement>
 }
 
 export const NavigatorItemActionSheet: React.FunctionComponent<
@@ -376,6 +440,15 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
         selected={props.selected}
         instanceOriginalComponentName={props.instanceOriginalComponentName}
       />
+      {isRegularNavigatorEntry(navigatorEntry) &&
+      !props.isSlot &&
+      (props.highlighted || props.selected) ? (
+        <AddChildButton
+          target={navigatorEntry.elementPath}
+          iconColor={props.iconColor}
+          onClick={props.showInsertChildPicker}
+        />
+      ) : null}
       <SelectionLockedIndicator
         key={`selection-locked-indicator-${varSafeNavigatorEntryToKey(navigatorEntry)}`}
         shouldShow={

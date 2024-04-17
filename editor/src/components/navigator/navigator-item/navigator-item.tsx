@@ -841,14 +841,18 @@ export const NavigatorItem: React.FunctionComponent<
         outlineOffset: props.parentOutline === 'solid' ? '-1px' : 0,
       }}
     >
-      {portalTarget == null || navigatorEntry.type !== 'SLOT'
+      {portalTarget == null || (navigatorEntry.type !== 'SLOT' && navigatorEntry.type !== 'REGULAR')
         ? null
         : ReactDOM.createPortal(
             <RenderPropPicker
-              target={props.navigatorEntry.elementPath}
+              target={
+                navigatorEntry.type === 'SLOT'
+                  ? EP.parentPath(props.navigatorEntry.elementPath)
+                  : props.navigatorEntry.elementPath
+              }
               key={renderPropPickerId}
               id={renderPropPickerId}
-              prop={navigatorEntry.prop}
+              prop={navigatorEntry.type === 'SLOT' ? navigatorEntry.prop : undefined}
             />,
             portalTarget,
           )}
@@ -950,6 +954,7 @@ export const NavigatorItem: React.FunctionComponent<
                 isSlot={isPlaceholder}
                 iconColor={iconColor}
                 background={rowStyle.background}
+                showInsertChildPicker={showContextMenu}
               />,
             )}
           </FlexRow>

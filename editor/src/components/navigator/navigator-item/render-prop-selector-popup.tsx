@@ -9,7 +9,7 @@ import {
 import type { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
-import { setProp_UNSAFE } from '../../editor/actions/action-creators'
+import { insertJSXElement, setProp_UNSAFE } from '../../editor/actions/action-creators'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
 import { ComponentPicker, type ElementToInsert } from './component-picker'
@@ -23,7 +23,11 @@ import { type ContextMenuItem } from '../../context-menu-items'
 import { FlexRow, Icn, type IcnProps } from '../../../uuiui'
 import { type EditorDispatch } from '../../editor/action-types'
 import { type ProjectContentTreeRoot } from '../../assets'
-import { type PropertyControlsInfo, type ComponentInfo } from '../../custom-code/code-file'
+import {
+  type PropertyControlsInfo,
+  type ComponentInfo,
+  ComponentDescriptor,
+} from '../../custom-code/code-file'
 import { type Icon } from 'utopia-api'
 import { getRegisteredComponent } from '../../../core/property-controls/property-controls-utils'
 import { defaultImportsForComponentModule } from '../../../core/property-controls/property-controls-local'
@@ -48,25 +52,24 @@ interface PreferredChildComponentDescriptorWithIcon extends PreferredChildCompon
 
 const usePreferredChildrenForTargetProp = (
   target: ElementPath,
-  prop: string,
+  prop?: string,
 ): Array<PreferredChildComponentDescriptorWithIcon> => {
-  const selectedElement = useEditorState(
+  const targetElement = useEditorState(
     Substores.metadata,
     (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, target),
-    'usePreferredChildrenForTargetProp selectedElement',
+    'usePreferredChildrenForTargetProp targetElement',
   )
 
   const preferredChildrenForTargetProp = useEditorState(
     Substores.restOfEditor,
     (store) => {
-      const selectedJSXElement =
-        MetadataUtils.getJSXElementFromElementInstanceMetadata(selectedElement)
-      const elementImportInfo = selectedElement?.importInfo
-      if (elementImportInfo == null || selectedJSXElement == null) {
+      const targetJSXElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(targetElement)
+      const elementImportInfo = targetElement?.importInfo
+      if (elementImportInfo == null || targetJSXElement == null) {
         return null
       }
 
-      const targetName = getJSXElementNameAsString(selectedJSXElement.name)
+      const targetName = getJSXElementNameAsString(targetJSXElement.name)
       const registeredComponent = getRegisteredComponent(
         targetName,
         elementImportInfo.filePath,
@@ -75,18 +78,25 @@ const usePreferredChildrenForTargetProp = (
 
       // TODO: we don't deal with components registered with the same name in multiple files
       if (registeredComponent != null) {
-        for (const [registeredPropName, registeredPropValue] of Object.entries(
-          registeredComponent.properties,
-        )) {
-          if (
-            registeredPropName === prop &&
-            registeredPropValue.control === 'jsx' &&
-            registeredPropValue.preferredChildComponents != null
-          ) {
-            return registeredPropValue.preferredChildComponents.map((v) => ({
-              ...v,
-              icon: getIconForComponent(v.name, v.moduleName, store.editor.propertyControlsInfo),
-            }))
+        if (prop == null) {
+          return registeredComponent.preferredChildComponents.map((v) => ({
+            ...v,
+            icon: getIconForComponent(v.name, v.moduleName, store.editor.propertyControlsInfo),
+          }))
+        } else {
+          for (const [registeredPropName, registeredPropValue] of Object.entries(
+            registeredComponent.properties,
+          )) {
+            if (
+              registeredPropName === prop &&
+              registeredPropValue.control === 'jsx' &&
+              registeredPropValue.preferredChildComponents != null
+            ) {
+              return registeredPropValue.preferredChildComponents.map((v) => ({
+                ...v,
+                icon: getIconForComponent(v.name, v.moduleName, store.editor.propertyControlsInfo),
+              }))
+            }
           }
         }
       }
@@ -210,9 +220,9 @@ function moreItem(
 function insertPreferredChild(
   preferredChildToInsert: ElementToInsert,
   target: ElementPath,
-  prop: string,
   projectContents: ProjectContentTreeRoot,
   dispatch: EditorDispatch,
+  prop?: string,
 ) {
   const uniqueIds = new Set(getAllUniqueUids(projectContents).uniqueIDs)
   const uid = generateConsistentUID('prop', uniqueIds)
@@ -224,19 +234,22 @@ function insertPreferredChild(
     throw new Error('only JSX elements are supported as preferred components')
   }
 
-  dispatch([
-    setProp_UNSAFE(
-      EP.parentPath(target),
-      PP.create(prop),
-      element,
-      preferredChildToInsert.additionalImports ?? undefined,
-    ),
-  ])
+  const insertionAction =
+    prop == null
+      ? insertJSXElement(element, target, preferredChildToInsert.additionalImports ?? undefined)
+      : setProp_UNSAFE(
+          target,
+          PP.create(prop),
+          element,
+          preferredChildToInsert.additionalImports ?? undefined,
+        )
+
+  dispatch([insertionAction])
 }
 
 interface RenderPropPickerProps {
   target: ElementPath
-  prop: string
+  prop?: string
   key: string
   id: string
 }
@@ -277,10 +290,7 @@ export function labelTestIdForComponentIcon(
 const RenderPropPickerSimple = React.memo<RenderPropPickerProps>(({ key, id, target, prop }) => {
   const { showRenderPropPicker } = useShowRenderPropPicker(`${id}-full`)
 
-  const preferredChildrenForTargetProp = usePreferredChildrenForTargetProp(
-    EP.parentPath(target),
-    prop,
-  )
+  const preferredChildrenForTargetProp = usePreferredChildrenForTargetProp(target, prop)
 
   const dispatch = useDispatch()
 
@@ -291,9 +301,9 @@ const RenderPropPickerSimple = React.memo<RenderPropPickerProps>(({ key, id, tar
       insertPreferredChild(
         preferredChildToInsert,
         target,
-        prop,
         projectContentsRef.current,
         dispatch,
+        prop,
       ),
     [dispatch, projectContentsRef, prop, target],
   )
@@ -350,10 +360,7 @@ const RenderPropPickerSimple = React.memo<RenderPropPickerProps>(({ key, id, tar
 const RenderPropPickerFull = React.memo<RenderPropPickerProps>(({ key, id, target, prop }) => {
   const { hideRenderPropPicker } = useShowRenderPropPicker(`${id}-full`)
 
-  const preferredChildrenForTargetProp = usePreferredChildrenForTargetProp(
-    EP.parentPath(target),
-    prop,
-  )
+  const preferredChildrenForTargetProp = usePreferredChildrenForTargetProp(target, prop)
 
   const dispatch = useDispatch()
 
@@ -367,9 +374,9 @@ const RenderPropPickerFull = React.memo<RenderPropPickerProps>(({ key, id, targe
       insertPreferredChild(
         preferredChildToInsert,
         target,
-        prop,
         projectContentsRef.current,
         dispatch,
+        prop,
       )
     },
     [dispatch, projectContentsRef, prop, target],
@@ -386,7 +393,7 @@ const RenderPropPickerFull = React.memo<RenderPropPickerProps>(({ key, id, targe
   return (
     <Menu key={key} id={id} animation={false} style={{ width: 457 }} onClick={squashEvents}>
       <ComponentPicker
-        insertionTargetName={prop}
+        insertionTargetName={prop ?? 'Child'}
         preferredComponents={preferredChildrenForTargetProp}
         allComponents={preferredChildrenForTargetProp}
         onItemClick={onItemClick}
