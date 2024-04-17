@@ -110,9 +110,6 @@ async function cloneGithubRepo(
     [],
     storeRef.current.builtInDependencies,
     {}, // Assuming a totally empty project (that is being saved probably parallel to this operation, hopefully not causing any race conditions)
-
-    // this is technically user initiated, but since the github clone is
-    // triggered by loading a URL this should be a different category
     'user-initiated',
   )
 
