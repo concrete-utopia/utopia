@@ -344,7 +344,7 @@ function safeGetClientRoutes(
   }
 }
 
-export function getRootFile(
+export function getRemixRootFile(
   rootDir: string,
   projectContents: ProjectContentTreeRoot,
 ): { file: TextFile; path: string } | null {
