@@ -224,23 +224,6 @@ export const PagesPane = React.memo((props) => {
         )}
       </InspectorSectionHeader>
 
-      {when(
-        remixRoutes.length === 0,
-        <FlexColumn
-          style={{
-            height: '100%',
-            overflowY: 'scroll',
-            whiteSpace: 'normal',
-            padding: 16,
-            paddingTop: 32,
-          }}
-        >
-          <Subdued>
-            No featured routes were found in the project. Please add a favorite route using the
-            Favorites section.
-          </Subdued>
-        </FlexColumn>,
-      )}
       {remixRoutes.map((route: RouteMatch, index) => {
         const { path, resolvedPath } = route
         const pathMatchesActivePath = matchResult?.[0].route.path === path
