@@ -686,7 +686,8 @@ function useRenaming(props: PageRouteEntryProps) {
   const onDoneRenaming = React.useCallback(
     (newPath: string | null) => {
       setIsRenaming(false)
-      if (props.resolvedPath == null && props.routePath.includes(':')) {
+      const pathIsDynamicUnresolved = props.resolvedPath == null && props.routePath.includes(':')
+      if (pathIsDynamicUnresolved) {
         return
       }
       const newResolvedPath = runRenameRemixRoute(
