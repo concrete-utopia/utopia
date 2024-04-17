@@ -397,16 +397,24 @@ const FavoriteEntry = React.memo(({ favorite, active, addedToFavorites }: Favori
           <Tooltip title={queryAndHash}>
             <span
               style={{
-                color: colorTheme.neutralInvertedForeground.value,
-                backgroundColor: active
-                  ? colorTheme.neutralForeground.value
-                  : colorTheme.subduedForeground.value,
+                position: 'relative',
+                bottom: 3,
+                height: 10,
+                display: 'inline-flex',
+                flexDirection: 'row',
+                alignItems: 'center',
                 borderRadius: 2,
                 marginLeft: 4,
-                padding: 1,
+                paddingLeft: 2,
+                paddingRight: 2,
+                paddingBottom: 6,
+                color: colorTheme.neutralInvertedForeground.value,
+                backgroundColor: active
+                  ? colorTheme.subduedForeground.value
+                  : colorTheme.verySubduedForeground.value,
               }}
             >
-              ?=
+              …
             </span>
           </Tooltip>,
         )}
