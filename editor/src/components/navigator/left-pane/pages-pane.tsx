@@ -22,7 +22,7 @@ import {
   colorTheme,
 } from '../../../uuiui'
 import type { PageTemplate } from '../../canvas/remix/remix-utils'
-import { RemixIndexPathLabel } from '../../canvas/remix/remix-utils'
+import { RemixIndexPathLabel, getRemixUrlFromLocation } from '../../canvas/remix/remix-utils'
 import {
   ActiveRemixSceneAtom,
   RemixNavigationAtom,
@@ -101,8 +101,11 @@ export const PagesPane = React.memo((props) => {
   const [navigationControls] = useAtom(RemixNavigationAtom)
   const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
 
-  const pathname = navigationControls[EP.toString(activeRemixScene)]?.location?.pathname ?? ''
+  const activeLocation = navigationControls[EP.toString(activeRemixScene)]?.location
 
+  const url = getRemixUrlFromLocation(activeLocation)
+
+  const pathname = activeLocation?.pathname ?? ''
   const matchResult = matchRoutes(remixRoutes, pathname)
 
   const pageTemplates = useEditorState(
@@ -136,8 +139,8 @@ export const PagesPane = React.memo((props) => {
     setNavigateTo(null)
   })
 
-  const activeRoute = matchResult?.[0].pathname ?? pathname
-  const activeRouteDoesntMatchAnyFavorites = !featuredRoutes.includes(activeRoute)
+  const activeRoute = url ?? ''
+  const activeRouteDoesntMatchAnyFavorites = !featuredRoutes.includes(activeRoute!)
 
   return (
     <FlexColumn style={{ height: '100%', overflowY: 'scroll' }}>
@@ -146,7 +149,7 @@ export const PagesPane = React.memo((props) => {
       </InspectorSectionHeader>
       <FlexColumn style={{ paddingBottom: 24 }}>
         {featuredRoutes.map((favorite: string) => {
-          const pathMatchesActivePath = matchResult?.[0].pathname === favorite
+          const pathMatchesActivePath = activeRoute === favorite
 
           return (
             <FavoriteEntry
@@ -334,6 +337,11 @@ interface FavoriteEntryProps {
 }
 
 const FavoriteEntry = React.memo(({ favorite, active, addedToFavorites }: FavoriteEntryProps) => {
+  const url = favorite
+  const routeWithoutQueryOrHash = url.split('?')[0].split('#')[0]
+  // We insert a line break before every param
+  const queryAndHashWithLineBreaks = url.slice(routeWithoutQueryOrHash.length).replace(/&/g, '\n&')
+
   const [navigationControls] = useAtom(RemixNavigationAtom)
   const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
 
@@ -384,7 +392,43 @@ const FavoriteEntry = React.memo(({ favorite, active, addedToFavorites }: Favori
           flexGrow: 1,
         }}
       >
-        {favorite}
+        {routeWithoutQueryOrHash}
+        {when(
+          queryAndHashWithLineBreaks.length > 0,
+          <Tooltip
+            title={
+              <span
+                style={{
+                  whiteSpace: 'pre-line',
+                }}
+              >
+                {queryAndHashWithLineBreaks}
+              </span>
+            }
+          >
+            <span
+              style={{
+                position: 'relative',
+                bottom: 3,
+                height: 10,
+                display: 'inline-flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+                borderRadius: 2,
+                marginLeft: 6,
+                paddingLeft: 2,
+                paddingRight: 2,
+                paddingBottom: 6,
+                color: colorTheme.neutralInvertedForeground.value,
+                backgroundColor: active
+                  ? colorTheme.subduedForeground.value
+                  : colorTheme.verySubduedForeground.value,
+              }}
+            >
+              …
+            </span>
+          </Tooltip>,
+        )}
       </span>
       <StarUnstarIcon url={favorite} selected={active} addedToFavorites={addedToFavorites} />
     </FlexRow>
