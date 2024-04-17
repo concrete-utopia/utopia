@@ -257,7 +257,6 @@ interface PageRouteEntryProps {
 }
 const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
   const ref = React.useRef<HTMLDivElement | null>(null)
-  useScrollToNavigateToRoute(ref, props.resolvedPath, props.navigateTo)
 
   const [navigationControls] = useAtom(RemixNavigationAtom)
   const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
@@ -605,18 +604,6 @@ export const AddPageContextMenu = React.memo(
     )
   },
 )
-
-function useScrollToNavigateToRoute(
-  ref: React.MutableRefObject<HTMLDivElement | null>,
-  path: string | null,
-  navigateTo: NavigateTo | null,
-) {
-  React.useEffect(() => {
-    if (navigateTo?.resolvedPath === path) {
-      ref.current?.scrollIntoView()
-    }
-  }, [navigateTo, ref, path])
-}
 
 function useNavigateToRouteWhenAvailable(
   remixRoutes: RouteMatch[],
