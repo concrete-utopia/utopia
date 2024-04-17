@@ -1443,23 +1443,28 @@ function updateSelectedComponentsFromEditorPosition(
   if (Object.keys(editor.jsxMetadata).length === 0) {
     // Looks like the canvas has errored out, so leave it alone for now.
     return editor
-  } else {
-    const highlightBoundsForUids = getHighlightBoundsForFile(editor, filePath)
-    const allElementPathsOptic = traverseArray<NavigatorEntry>().compose(fromField('elementPath'))
-    const newlySelectedElements = getElementPathsInBounds(
-      line,
-      highlightBoundsForUids,
-      toArrayOf(
-        allElementPathsOptic,
-        derived.navigatorTargets.filter((t) => !isConditionalClauseNavigatorEntry(t)),
-      ),
-    )
-    return UPDATE_FNS.SELECT_COMPONENTS(
-      selectComponents(newlySelectedElements, false),
-      editor,
-      dispatch,
-    )
   }
+
+  const highlightBoundsForUids = getHighlightBoundsForFile(editor, filePath)
+  const allElementPathsOptic = traverseArray<NavigatorEntry>().compose(fromField('elementPath'))
+  const newlySelectedElements = getElementPathsInBounds(
+    line,
+    highlightBoundsForUids,
+    toArrayOf(
+      allElementPathsOptic,
+      derived.navigatorTargets.filter((t) => !isConditionalClauseNavigatorEntry(t)),
+    ),
+  )
+
+  if (newlySelectedElements.length === 0) {
+    return editor
+  }
+
+  return UPDATE_FNS.SELECT_COMPONENTS(
+    selectComponents(newlySelectedElements, false),
+    editor,
+    dispatch,
+  )
 }
 
 function normalizeGithubData(editor: EditorModel): EditorModel {
