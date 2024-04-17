@@ -633,9 +633,8 @@ function useNavigateToRouteWhenAvailable(
     }
 
     // if the target is a specific route, go to it
-    const navigateToMatchesRealRoute = remixRoutes.find((r) => {
-      return r.resolvedPath === navigateTo.resolvedPath
-    })?.matchesRealRoute
+    const navigateToMatchesRealRoute =
+      matchRoutes(remixRoutes, navigateTo.resolvedPath)?.[0].route.matchesRealRoute ?? false
 
     // otherwise if the target is not a specific route, go to the first valid match for its prefix
     const navigationTarget = navigateToMatchesRealRoute
