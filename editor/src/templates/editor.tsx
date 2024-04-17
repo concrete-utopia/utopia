@@ -456,8 +456,8 @@ export class Editor {
         !dispatchResult.nothingChanged ||
         dispatchedActions.some((a) => a.action === 'RUN_DOM_WALKER')
 
+      const updateId = canvasUpdateId++
       if (shouldRunDOMWalker) {
-        const updateId = canvasUpdateId++
         Measure.taskTime(`update canvas ${updateId}`, () => {
           const currentElementsToRender = fixElementsToRerender(
             this.storedState.patchedEditor.canvas.elementsToRerender,
@@ -564,47 +564,48 @@ export class Editor {
           },
           reactRouterErrorPreviouslyLogged,
         )
+      }
 
-        Measure.taskTime(`Update Editor ${updateId}`, () => {
-          ReactDOM.flushSync(() => {
-            ReactDOM.unstable_batchedUpdates(() => {
-              Measure.taskTime(`Update Main Store ${updateId}`, () => {
-                this.utopiaStoreHook.setState(
-                  patchedStoreFromFullStore(this.storedState, 'editor-store'),
+      Measure.taskTime(`Update Editor ${updateId}`, () => {
+        ReactDOM.flushSync(() => {
+          ReactDOM.unstable_batchedUpdates(() => {
+            Measure.taskTime(`Update Main Store ${updateId}`, () => {
+              this.utopiaStoreHook.setState(
+                patchedStoreFromFullStore(this.storedState, 'editor-store'),
+              )
+            })
+
+            if (
+              shouldUpdateLowPriorityUI(
+                this.storedState.strategyState,
+                ElementsToRerenderGLOBAL.current,
+              )
+            ) {
+              Measure.taskTime(`Update Low Prio Store ${updateId}`, () => {
+                this.lowPriorityStore.setState(
+                  patchedStoreFromFullStore(this.storedState, 'low-priority-store'),
                 )
               })
+            }
+            if (MeasureSelectors) {
+              logSelectorTimings('store update phase')
+            }
+            if (PerformanceMarks) {
+              performance.mark(`react wrap up ${updateId}`)
+            }
 
-              if (
-                shouldUpdateLowPriorityUI(
-                  this.storedState.strategyState,
-                  ElementsToRerenderGLOBAL.current,
-                )
-              ) {
-                Measure.taskTime(`Update Low Prio Store ${updateId}`, () => {
-                  this.lowPriorityStore.setState(
-                    patchedStoreFromFullStore(this.storedState, 'low-priority-store'),
-                  )
-                })
-              }
-              if (MeasureSelectors) {
-                logSelectorTimings('store update phase')
-              }
-              if (PerformanceMarks) {
-                performance.mark(`react wrap up ${updateId}`)
-              }
+            // reset selector timings right before the end of flushSync means we'll capture the re-render related selector data with a clean slate
+            resetSelectorTimings()
 
-              // reset selector timings right before the end of flushSync means we'll capture the re-render related selector data with a clean slate
-              resetSelectorTimings()
-            })
+            if (PerformanceMarks) {
+              performance.measure(
+                `Our Components Rendering + React Doing Stuff`,
+                `react wrap up ${updateId}`,
+              )
+            }
           })
         })
-        if (PerformanceMarks) {
-          performance.measure(
-            `Our Components Rendering + React Doing Stuff`,
-            `react wrap up ${updateId}`,
-          )
-        }
-      }
+      })
 
       return {
         entireUpdateFinished: entireUpdateFinished,

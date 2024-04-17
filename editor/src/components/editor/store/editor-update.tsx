@@ -29,6 +29,7 @@ import { InitialOnlineState } from '../online-status'
 import type { Optic } from '../../../core/shared/optics/optics'
 import { fromField } from '../../../core/shared/optics/optic-creators'
 import { modify } from '../../../core/shared/optics/optic-utilities'
+import { ProjectServerStateKeepDeepEquality } from './store-deep-equality-instances'
 
 export function runLocalEditorAction(
   state: EditorState,
@@ -549,12 +550,20 @@ export function runUpdateProjectServerState(
   working: EditorStoreUnpatched,
   action: UpdateProjectServerState,
 ): EditorStoreUnpatched {
-  return {
-    ...working,
-    projectServerState: {
+  const projectServerStateKeepDeepResult = ProjectServerStateKeepDeepEquality(
+    working.projectServerState,
+    {
       ...working.projectServerState,
       ...action.serverState,
     },
+  )
+  if (projectServerStateKeepDeepResult.areEqual) {
+    return working
+  } else {
+    return {
+      ...working,
+      projectServerState: projectServerStateKeepDeepResult.value,
+    }
   }
 }
 
