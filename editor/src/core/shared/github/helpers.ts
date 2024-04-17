@@ -40,7 +40,6 @@ import type {
 import {
   emptyGithubData,
   emptyGithubSettings,
-  githubOperationPrettyName,
   projectGithubSettings,
 } from '../../../components/editor/store/editor-state'
 import type { UtopiaStoreAPI } from '../../../components/editor/store/store-hook'
@@ -57,7 +56,7 @@ import {
 } from '../project-file-types'
 import { emptySet } from '../set-utils'
 import { trimUpToAndIncluding } from '../string-utils'
-import { arrayEqualsByReference } from '../utils'
+import { arrayEqualsByReference, assertNever } from '../utils'
 import { getBranchChecksums } from './operations/get-branch-checksums'
 import { getBranchesForGithubRepository } from './operations/list-branches'
 import { updatePullRequestsForBranch } from './operations/list-pull-requests-for-branch'
@@ -165,6 +164,27 @@ export function repositoryEntry(
   }
 }
 
+function githubOperationPrettyNameForToast(op: GithubOperation): string {
+  switch (op.name) {
+    case 'commitAndPush':
+      return 'save to Github'
+    case 'listBranches':
+      return 'list branches from GitHub'
+    case 'loadBranch':
+      return 'load branch from GitHub'
+    case 'loadRepositories':
+      return 'load repositories'
+    case 'updateAgainstBranch':
+      return 'update against branch from GitHub'
+    case 'listPullRequestsForBranch':
+      return 'list GitHub pull requests'
+    case 'saveAsset':
+      return 'save asset to GitHub'
+    default:
+      assertNever(op)
+  }
+}
+
 export interface GetGithubUserSuccess {
   type: 'SUCCESS'
   user: GithubUser
@@ -189,7 +209,7 @@ export async function runGithubOperation(
     return result
   }
 
-  const opName = githubOperationPrettyName(operation)
+  const opName = githubOperationPrettyNameForToast(operation)
   try {
     dispatch([updateGithubOperations(operation, 'add')], 'everyone')
     result = await logic(operation)
