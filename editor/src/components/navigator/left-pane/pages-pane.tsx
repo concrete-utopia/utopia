@@ -100,10 +100,12 @@ export const PagesPane = React.memo((props) => {
             (favorite) => matchPath(path, favorite)?.pathname ?? null,
           )
 
-          result[path] = {
-            path: path,
-            resolvedPath: firstMatchingFavorite,
-            matchesRealRoute: true,
+          if (path !== '') {
+            result[path] = {
+              path: path,
+              resolvedPath: firstMatchingFavorite,
+              matchesRealRoute: true,
+            }
           }
           if (route.children != null) {
             result = { ...result, ...processRoutes(route.children, path) }
@@ -354,7 +356,7 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
               flexGrow: 1,
             }}
           >
-            {lastTemplateSegment === '' ? RemixIndexPathLabel : '/' + lastTemplateSegment}
+            {props.routePath}
           </span>
           <span
             style={{
