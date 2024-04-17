@@ -339,7 +339,8 @@ interface FavoriteEntryProps {
 const FavoriteEntry = React.memo(({ favorite, active, addedToFavorites }: FavoriteEntryProps) => {
   const url = favorite
   const routeWithoutQueryOrHash = url.split('?')[0].split('#')[0]
-  const queryAndHash = url.slice(routeWithoutQueryOrHash.length)
+  // We insert a line break before every param
+  const queryAndHashWithLineBreaks = url.slice(routeWithoutQueryOrHash.length).replace(/&/g, '\n&')
 
   const [navigationControls] = useAtom(RemixNavigationAtom)
   const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
@@ -393,8 +394,18 @@ const FavoriteEntry = React.memo(({ favorite, active, addedToFavorites }: Favori
       >
         {routeWithoutQueryOrHash}
         {when(
-          queryAndHash.length > 0,
-          <Tooltip title={queryAndHash}>
+          queryAndHashWithLineBreaks.length > 0,
+          <Tooltip
+            title={
+              <span
+                style={{
+                  whiteSpace: 'pre-line',
+                }}
+              >
+                {queryAndHashWithLineBreaks}
+              </span>
+            }
+          >
             <span
               style={{
                 position: 'relative',
