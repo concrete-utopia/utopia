@@ -69,7 +69,7 @@ describe('Data Tracing', () => {
   it('Traces back a destrucuted prop to a string literal jsx attribute', async () => {
     const editor = await renderTestEditorWithCode(
       makeTestProjectCodeWithStoryboard(`
-      function MyComponent({title}) {
+      function MyComponent({ propA, title, propC, ...restOfProps }) {
         return <div data-uid='component-root' title={title} />
       }
 

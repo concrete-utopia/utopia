@@ -30,7 +30,7 @@ import {
 } from '../shared/jsx-attribute-utils'
 import { withUnderlyingTarget } from '../../components/editor/store/editor-state'
 import { findContainingComponentForPath } from '../model/element-template-utils'
-import { create } from '../../components/template-property-path'
+import * as TPP from '../../components/template-property-path'
 import { assertNever } from '../shared/utils'
 
 export type DataPath = Array<string>
@@ -129,21 +129,35 @@ function processJSPropertyAccessors(
 function propUsedByIdentifierOrAccess(
   param: Param,
   access: { originalIdentifier: JSIdentifier; path: DataPath },
-): Either<string, string | null> {
+): Either<string, { propertyName: string; pathDrillInProperty: DataPath }> {
   switch (param.boundParam.type) {
     case 'REGULAR_PARAM': {
       // in case of a regular prop param, first we want to match the param name to the original identifier
       if (param.boundParam.paramName !== access.originalIdentifier.name) {
-        return right(null)
+        return left('identifier does not match the prop name')
+      }
+
+      const path = access.path
+      if (path.length === 0) {
+        return left('identifier matches the prop name, but no path to drill in')
       }
 
       // the prop name we are looking for is going to be the first element of the path!
-      return right(access.path[0] ?? null)
+      return right({ propertyName: path[0], pathDrillInProperty: path.slice(1) })
     }
     case 'DESTRUCTURED_OBJECT': {
-      return left('Finish writing this!')
-      // for (const paramPart of param.boundParam.parts) {
-      // }
+      for (const paramPart of param.boundParam.parts) {
+        if (paramPart.param.boundParam.type === 'REGULAR_PARAM') {
+          if (paramPart.param.boundParam.paramName === access.originalIdentifier.name) {
+            const path = access.path
+            return right({
+              propertyName: paramPart.param.boundParam.paramName,
+              pathDrillInProperty: path,
+            })
+          }
+        }
+      }
+      return left('identifier does not match any of the destructured object properties')
     }
     case 'DESTRUCTURED_ARRAY': {
       return left('Destructured array properties are not yet supported')
@@ -214,16 +228,19 @@ export function traceDataFromProp(
     const identifier = dataPath.value.originalIdentifier
 
     // let's try to match the name to the containing component's props!
-    const foundPropSameName = componentHoldingElement.propsUsed.includes(identifier.name)
+    const foundPropSameName = propUsedByIdentifierOrAccess(
+      componentHoldingElement.param!,
+      dataPath.value,
+    )
 
-    if (foundPropSameName) {
+    if (isRight(foundPropSameName)) {
       // ok, so let's now travel to the containing component's instance in the metadata and continue the lookup!
       const parentComponentInstance = EP.getContainingComponent(startFrom.elementPath)
       return traceDataFromProp(
-        create(parentComponentInstance, PP.create(identifier.name)),
+        TPP.create(parentComponentInstance, PP.create(foundPropSameName.value.propertyName)),
         metadata,
         projectContents,
-        [...dataPath.value.path, ...pathDrillSoFar],
+        [...foundPropSameName.value.pathDrillInProperty, ...pathDrillSoFar],
       )
     }
   }
