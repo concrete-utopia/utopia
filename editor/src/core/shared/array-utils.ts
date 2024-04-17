@@ -504,3 +504,7 @@ export function isPrefixOf<T>(
     return false
   }
 }
+
+export function valueOrArrayToArray<T>(ts: T | T[]): T[] {
+  return Array.isArray(ts) ? ts : [ts]
+}

@@ -1,24 +1,79 @@
 import type React from 'react'
 import type { PropertyControls } from '../property-controls/property-controls'
 
+export type AdditionalImports = string | string[]
+
 export interface ComponentInsertOption {
+  imports?: AdditionalImports
+  label: string
   code: string
-  additionalImports?: string
-  label?: string
 }
 
-export interface PreferredChildComponent {
-  name: string
-  additionalImports?: string
-  variants?: Array<ComponentInsertOption>
+export type ComponentExample =
+  // for intrinsic elements
+  | { name: string }
+
+  // if the actual component is passed, we try to infer the component
+  // name/module name from that
+  | { component: any }
+
+  // detailed description with the path to import the element from and component
+  // variants
+  | ComponentInsertOption
+
+export type PlaceholderSpec =
+  // a placeholder that inserts a span that wraps `text`. This will be
+  // editable with the text editor
+  | { text: string }
+  // inserts a `div` with the specified width and height
+  | { width: number; height: number }
+  // inserts a spacer that completely fills the available space
+  | 'fill'
+
+export type PreferredContents =
+  | 'text'
+  | {
+      component: string
+      moduleName?: string
+      variants: ComponentExample | ComponentExample[]
+    }
+
+export interface ChildrenSpec {
+  // specifies what component(s) are preferred.
+  // `undefined`: any component can be rendered
+  // `'text'`: means only JSX text is accepted
+  // `RendersComponent`: detailed spec
+  preferredContents?: PreferredContents | PreferredContents[]
+
+  // specifies the placeholder to use
+  placeholder?: PlaceholderSpec
 }
+
+export type Children = 'supported' | 'not-supported' | ChildrenSpec
+
+export const FocusOptions = ['default', 'always', 'never'] as const
+export type Focus = (typeof FocusOptions)[number]
+
+export const StylingOptions = ['layout', 'layout-system', 'visual', 'typography'] as const
+export type Styling = (typeof StylingOptions)[number]
+
+export type InspectorSpec = 'all' | Styling[]
+
+export const EmphasisOptions = ['subdued', 'regular', 'emphasized'] as const
+export type Emphasis = (typeof EmphasisOptions)[number]
+
+export const IconOptions = ['column', 'row', 'regular'] as const // and others
+export type Icon = (typeof IconOptions)[number]
 
 export interface ComponentToRegister {
   component: any
   properties: PropertyControls
-  supportsChildren: boolean
-  preferredChildComponents?: Array<PreferredChildComponent>
-  variants: Array<ComponentInsertOption>
+  children?: Children
+  focus?: Focus
+  inspector?: InspectorSpec
+  emphasis?: Emphasis
+  icon?: Icon
+  variants?: ComponentExample | Array<ComponentExample>
 }
 
 export type RawSingleBorderWidth = number | string

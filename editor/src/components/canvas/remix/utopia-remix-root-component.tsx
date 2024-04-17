@@ -5,7 +5,12 @@ import type { DataRouteObject, Location, RouteObject } from 'react-router'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
 import type { ElementPath } from '../../../core/shared/project-file-types'
-import { useRefEditorState, useEditorState, Substores } from '../../editor/store/store-hook'
+import {
+  useRefEditorState,
+  useEditorState,
+  Substores,
+  useSelectorWithCallback,
+} from '../../editor/store/store-hook'
 import * as EP from '../../../core/shared/element-path'
 import { PathPropHOC } from './path-props-hoc'
 import { atom, useAtom, useSetAtom } from 'jotai'
@@ -37,6 +42,31 @@ export interface RemixNavigationAtomData {
 
 export const ActiveRemixSceneAtom = atom<ElementPath>(EP.emptyElementPath)
 export const RemixNavigationAtom = atom<RemixNavigationAtomData>({})
+
+export function useUpdateActiveRemixSceneOnSelectionChange() {
+  const setActiveRemixScene = useSetAtom(ActiveRemixSceneAtom)
+  const [remixNavigationState] = useAtom(RemixNavigationAtom)
+
+  useSelectorWithCallback(
+    Substores.fullStore,
+    (store) => ({
+      selectedViews: store.editor.selectedViews,
+      liveMode: store.editor.mode.type === 'live', // when we exit Live Mode, we want to re-run this selector so the active scene switches back to match the selection
+    }),
+    ({ selectedViews }) => {
+      if (selectedViews.length > 0) {
+        const scenePath = EP.createBackwardsCompatibleScenePath(selectedViews[0])
+        // if the scene is a Remix scene, set it as the active scene
+        const sceneIsRemixScene = EP.toString(scenePath) in remixNavigationState
+
+        if (sceneIsRemixScene) {
+          setActiveRemixScene(scenePath)
+        }
+      }
+    },
+    'useUpdateActiveRemixSceneOnSelectionChange useSelectorWithCallback',
+  )
+}
 
 export function useRemixNavigationContext(
   scenePath: ElementPath | null,
@@ -219,10 +249,11 @@ function useRoutesWithIdEquality(
       return nextRoutes
     }
 
-    let prevIdsSet = new Set(previousRoutes.current.map((r) => r.id ?? '0'))
-    let currentIdsSet = new Set(nextRoutes.map((r) => r.id ?? '0'))
+    const prevIdsSet = traverseRoutesAndGetIDs(previousRoutes.current)
+    const currentIdsSet = traverseRoutesAndGetIDs(nextRoutes)
 
-    const same = [...prevIdsSet].every((id) => currentIdsSet.has(id))
+    const same =
+      prevIdsSet.size === currentIdsSet.size && [...prevIdsSet].every((id) => currentIdsSet.has(id))
 
     if (!same) {
       previousRoutes.current = nextRoutes
@@ -233,6 +264,23 @@ function useRoutesWithIdEquality(
   }, [nextRoutes])
 
   return routes
+}
+
+interface RouteLike {
+  id?: string
+  children?: RouteLike[]
+}
+
+function traverseRoutesAndGetIDs(routes: RouteLike[]): Set<string> {
+  const ids = new Set<string>()
+
+  function traverse(route: RouteLike) {
+    ids.add(route.id ?? '0')
+    route.children?.forEach(traverse)
+  }
+  routes.forEach((route) => traverse(route))
+
+  return ids
 }
 
 export interface UtopiaRemixRootComponentProps {

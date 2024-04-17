@@ -80,6 +80,7 @@ import type { SetHuggingParentToFixed } from '../canvas/canvas-strategies/strate
 import type { MapLike } from 'typescript'
 import type { CommentFilterMode } from '../inspector/sections/comment-section'
 import type { Collaborator } from '../../core/shared/multiplayer'
+import type { PageTemplate } from '../canvas/remix/remix-utils'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -594,6 +595,14 @@ export interface UpdateFilePath {
   newPath: string
 }
 
+export interface UpdateRemixRoute {
+  action: 'UPDATE_REMIX_ROUTE'
+  oldPath: string
+  newPath: string
+  oldRoute: string
+  newRoute: string
+}
+
 export interface OpenCodeEditorFile {
   action: 'OPEN_CODE_EDITOR_FILE'
   filename: string
@@ -692,6 +701,23 @@ export interface AddTextFile {
   parentPath: string
 }
 
+export interface AddNewPage {
+  action: 'ADD_NEW_PAGE'
+  parentPath: string
+  template: PageTemplate
+  newPageName: string
+}
+
+export interface AddNewFeaturedRoute {
+  action: 'ADD_NEW_FEATURED_ROUTE'
+  featuredRoute: string
+}
+
+export interface RemoveFeaturedRoute {
+  action: 'REMOVE_FEATURED_ROUTE'
+  routeToRemove: string
+}
+
 export interface SetMainUIFile {
   action: 'SET_MAIN_UI_FILE'
   uiFile: string
@@ -705,6 +731,11 @@ export interface SetCodeEditorBuildErrors {
 export interface SetCodeEditorLintErrors {
   action: 'SET_CODE_EDITOR_LINT_ERRORS'
   lintErrors: ErrorMessages
+}
+
+export interface SetCodeEditorComponentDescriptorErrors {
+  action: 'SET_CODE_EDITOR_COMPONENT_DESCRIPTOR_ERRORS'
+  componentDescriptorErrors: ErrorMessages
 }
 
 export interface SaveDOMReport {
@@ -1100,6 +1131,19 @@ export interface ExtractPropertyControlsFromDescriptorFiles {
   paths: string[]
 }
 
+export interface SetSharingDialogOpen {
+  action: 'SET_SHARING_DIALOG_OPEN'
+  open: boolean
+}
+
+export interface ResetOnlineState {
+  action: 'RESET_ONLINE_STATE'
+}
+
+export interface IncreaseOnlineStateFailureCount {
+  action: 'INCREASE_ONLINE_STATE_FAILURE_COUNT'
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertJSXElement
@@ -1184,6 +1228,7 @@ export type EditorAction =
   | UpdateDuplicationState
   | SendPreviewModel
   | UpdateFilePath
+  | UpdateRemixRoute
   | OpenCodeEditorFile
   | CloseDesignerFile
   | UpdateFile
@@ -1198,9 +1243,13 @@ export type EditorAction =
   | DeleteFile
   | DeleteFileFromCollaboration
   | AddTextFile
+  | AddNewPage
+  | AddNewFeaturedRoute
+  | RemoveFeaturedRoute
   | SetMainUIFile
   | SetCodeEditorBuildErrors
   | SetCodeEditorLintErrors
+  | SetCodeEditorComponentDescriptorErrors
   | SaveDOMReport
   | RunDOMWalker
   | TrueUpElements
@@ -1278,6 +1327,9 @@ export type EditorAction =
   | SetForking
   | SetCollaborators
   | ExtractPropertyControlsFromDescriptorFiles
+  | SetSharingDialogOpen
+  | ResetOnlineState
+  | IncreaseOnlineStateFailureCount
 
 export type DispatchPriority =
   | 'everyone'

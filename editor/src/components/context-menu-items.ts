@@ -48,7 +48,7 @@ import {
 export interface ContextMenuItem<T> {
   name: string | React.ReactNode
   enabled: boolean | ((data: T) => boolean)
-  submenuName?: string | null
+  submenuName?: string | React.ReactNode | null
   shortcut?: string
   isSeparator?: boolean
   isHidden?: (data: T) => boolean
@@ -56,6 +56,7 @@ export interface ContextMenuItem<T> {
     data: T,
     dispatch: EditorDispatch | undefined,
     rightClickCoordinate: WindowPoint | null,
+    event: React.MouseEvent | React.TouchEvent | React.KeyboardEvent,
   ) => void
 }
 

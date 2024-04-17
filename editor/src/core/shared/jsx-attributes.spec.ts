@@ -39,7 +39,7 @@ import {
   jsExpressionOtherJavaScriptSimple,
   modifiableAttributeIsJsxElement,
   isJSIdentifier,
-  jsArbitraryStatement,
+  jsOpaqueArbitraryStatement,
 } from '../shared/element-template'
 import {
   getAllPathsFromAttributes,
@@ -94,7 +94,6 @@ function sampleJsxAttributes(): JSXAttributes {
               null,
               {},
               emptyComments,
-              [jsArbitraryStatement('props.someShadow', [], [])],
             ),
             emptyComments,
             emptyComments,
@@ -152,7 +151,6 @@ function sampleJsxAttributes(): JSXAttributes {
         null,
         {},
         emptyComments,
-        [jsArbitraryStatement('props.hello', [], [])],
       ),
       objectValue: jsExpressionValue(
         {
@@ -173,7 +171,6 @@ function sampleJsxAttributes(): JSXAttributes {
         null,
         {},
         emptyComments,
-        [jsArbitraryStatement('true ? 10 : 5', [], [])],
       ),
       otherJsReturningObject: jsExpressionOtherJavaScript(
         [],
@@ -184,7 +181,6 @@ function sampleJsxAttributes(): JSXAttributes {
         null,
         {},
         emptyComments,
-        [jsArbitraryStatement('true ? {value: 10} : {value: 5}', [], [])],
       ),
       'data-uid': jsExpressionValue('aaa', emptyComments),
     }),
@@ -1344,7 +1340,6 @@ describe('unsetJSXValueAtPath', () => {
         null,
         {},
         emptyComments,
-        [jsArbitraryStatement('undefined', [], [])],
       ),
       'data-uid': jsExpressionValue('aaa', emptyComments),
     })

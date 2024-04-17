@@ -17,7 +17,7 @@ import {
   jsExpressionOtherJavaScript,
   jsxAttributesFromMap,
   emptyComments,
-  jsArbitraryStatement,
+  jsOpaqueArbitraryStatement,
 } from '../shared/element-template'
 import * as EP from '../shared/element-path'
 import * as PP from '../shared/property-path'
@@ -63,7 +63,6 @@ export function mapScene(scene: SceneMetadata): JSXElement {
       null,
       {},
       emptyComments,
-      [jsArbitraryStatement(scene.component ?? 'null', [], [])],
     ),
     props: jsExpressionValue(scene.props, emptyComments),
     style: jsExpressionValue(scene.frame, emptyComments),

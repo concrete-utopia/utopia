@@ -16,9 +16,13 @@ import React from 'react'
 import { useFetcherDataUnkown } from '../hooks/useFetcherData'
 import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
 import { useProjectAccessMatchesSelectedCategory } from '../hooks/useProjectMatchingCategory'
+import type {
+  SharingProjectAccessRequests,
+  SharingProjectAccessRequestsState,
+} from '../stores/projectsStore'
 import { useProjectsStore } from '../stores/projectsStore'
 import { sprinkles } from '../styles/sprinkles.css'
-import type { UpdateAccessRequestAction } from '../types'
+import type { ProjectSharingDetails, UpdateAccessRequestAction } from '../types'
 import {
   AccessLevel,
   AccessRequestStatus,
@@ -52,10 +56,12 @@ export const SharingDialogWrapper = React.memo(
       [setSharingProjectId],
     )
 
+    const accessRequests = useProjectsStore((store) => store.sharingProjectAccessRequests)
+
     return (
       <Dialog.Root open={sharingProjectId === project?.proj_id} onOpenChange={onOpenChange}>
         <Dialog.Content>
-          <SharingDialog project={project} />
+          <SharingDialog project={project} accessRequests={accessRequests} />
         </Dialog.Content>
       </Dialog.Root>
     )
@@ -63,9 +69,14 @@ export const SharingDialogWrapper = React.memo(
 )
 SharingDialogWrapper.displayName = 'SharingDialogWrapper'
 
-function SharingDialog({ project }: { project: ProjectListing | null }) {
+type SharingDialogProps = {
+  project: ProjectListing | null
+  accessRequests: SharingProjectAccessRequests
+}
+
+export const SharingDialog = React.memo((props: SharingDialogProps) => {
+  const { project, accessRequests } = props
   const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
-  const accessRequests = useProjectsStore((store) => store.sharingProjectAccessRequests)
 
   const projectAccessLevel = React.useMemo(() => {
     return asAccessLevel(project?.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
@@ -73,7 +84,9 @@ function SharingDialog({ project }: { project: ProjectListing | null }) {
 
   const [accessLevel, setAccessLevel] = React.useState<AccessLevel>(projectAccessLevel)
 
-  const projectAccessMatchesSelectedCategory = useProjectAccessMatchesSelectedCategory(project)
+  const projectAccessMatchesSelectedCategory = useProjectAccessMatchesSelectedCategory(
+    asAccessLevel(project?.ProjectAccess?.access_level),
+  )
 
   const changeAccessFetcherCallback = React.useCallback(
     (data: unknown) => {
@@ -110,40 +123,74 @@ function SharingDialog({ project }: { project: ProjectListing | null }) {
   }
 
   return (
-    <Flex direction='column' style={{ gap: 20 }}>
-      <Flex justify='between' align='center'>
-        <Flex align={'center'} gap='2'>
-          <Text size='3'>Project Sharing</Text>
-          <AnimatePresence>
-            {when(
-              accessRequests.state === 'loading',
-              <motion.div style={{ opacity: 0.1 }} exit={{ opacity: 0 }}>
-                <Spinner className={sprinkles({ backgroundColor: 'black' })} />
-              </motion.div>,
-            )}
-          </AnimatePresence>
-        </Flex>
-        <Dialog.Close>
-          <IconButton variant='ghost' color='gray'>
-            <Cross2Icon width='18' height='18' />
-          </IconButton>
-        </Dialog.Close>
-      </Flex>
-      <Flex justify='between'>
-        <Text size='1'>Project Visibility</Text>
-        <VisibilityDropdown
-          accessLevel={accessLevel}
-          changeProjectAccessLevel={changeProjectAccessLevel}
-        />
-      </Flex>
-      {when(
-        accessLevel === AccessLevel.COLLABORATIVE || accessLevel === AccessLevel.PUBLIC,
-        <ProjectLink projectId={project.proj_id} />,
-      )}
-      <AccessRequestsList projectId={project.proj_id} accessLevel={accessLevel} />
-    </Flex>
+    <SharingDialogContent
+      project={{ ...project, ProjectAccessRequest: accessRequests.requests }}
+      accessRequestsState={accessRequests.state}
+      accessLevel={accessLevel}
+      changeProjectAccessLevel={changeProjectAccessLevel}
+      asDialog={true}
+    />
   )
-}
+})
+SharingDialog.displayName = 'SharingDialog'
+
+export const SharingDialogContent = React.memo(
+  ({
+    project,
+    accessRequestsState,
+    accessLevel,
+    changeProjectAccessLevel,
+    asDialog,
+  }: {
+    project: ProjectSharingDetails
+    accessRequestsState: SharingProjectAccessRequestsState
+    accessLevel: AccessLevel
+    changeProjectAccessLevel: (newAccessLevel: AccessLevel) => void
+    asDialog: boolean
+  }) => {
+    return (
+      <Flex direction='column' style={{ maxHeight: '75vh', padding: asDialog ? 0 : 14 }} gap='4'>
+        <Flex direction='column' gap='4'>
+          <Flex justify='between' align='center' gap='2'>
+            <Flex align={'center'} gap='2'>
+              <Text size='3'>Project Sharing</Text>
+              <AnimatePresence>
+                {when(
+                  accessRequestsState === 'loading',
+                  <motion.div style={{ opacity: 0.1 }} exit={{ opacity: 0 }}>
+                    <Spinner className={sprinkles({ backgroundColor: 'black' })} />
+                  </motion.div>,
+                )}
+              </AnimatePresence>
+            </Flex>
+            {when(
+              asDialog,
+              <Dialog.Close>
+                <IconButton variant='ghost' color='gray'>
+                  <Cross2Icon width='18' height='18' />
+                </IconButton>
+              </Dialog.Close>,
+            )}
+          </Flex>
+          <Flex justify='between' align='center' style={{ paddingTop: 4 }}>
+            <Text size='1'>Project Visibility</Text>
+            <VisibilityDropdown
+              accessLevel={accessLevel}
+              changeProjectAccessLevel={changeProjectAccessLevel}
+            />
+          </Flex>
+          {when(
+            accessLevel === AccessLevel.COLLABORATIVE || accessLevel === AccessLevel.PUBLIC,
+            <ProjectLink projectId={project.proj_id} />,
+          )}
+        </Flex>
+        <Separator size='4' />
+        <AccessRequestsList projectId={project.proj_id} accessLevel={accessLevel} />
+      </Flex>
+    )
+  },
+)
+SharingDialogContent.displayName = 'SharingDialogContent'
 
 type AccessRequestListProps = {
   projectId: string
@@ -163,10 +210,8 @@ const AccessRequestsList = React.memo(({ projectId, accessLevel }: AccessRequest
 
   return (
     <AnimatePresence>
-      <motion.div>
-        <Flex direction={'column'} gap='4'>
-          <Separator size='4' />
-
+      <motion.div style={{ flex: '1 1' }}>
+        <Flex direction={'column'} gap='4' style={{}}>
           {when(hasGonePrivate, <HasGonePrivate />)}
 
           <OwnerCollaboratorRow />
@@ -234,6 +279,11 @@ function AccessRequests(props: {
   const [accessRequests, setAccessRequests] = React.useState(props.accessRequests)
   // the last successfully-obtained access requests that can be used to roll-back in case of issues when updating requests
   const [previousAccessRequests, setPreviousAccessRequests] = React.useState(props.accessRequests)
+
+  React.useEffect(() => {
+    setAccessRequests(props.accessRequests)
+    setPreviousAccessRequests(props.accessRequests)
+  }, [props.accessRequests])
 
   const updateAccessRequestFetcher = useFetcherWithOperation(projectId, 'updateAccessRequest')
   const onUpdateAccessRequest = React.useCallback(
@@ -454,6 +504,15 @@ function VisibilityDropdown({
   accessLevel: AccessLevel
   changeProjectAccessLevel: (newAccessLevel: AccessLevel) => void
 }) {
+  const onCheckedChange = React.useCallback(
+    (newLevel: AccessLevel) => () => {
+      if (accessLevel === newLevel) {
+        return
+      }
+      changeProjectAccessLevel(newLevel)
+    },
+    [changeProjectAccessLevel, accessLevel],
+  )
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger>
@@ -470,20 +529,13 @@ function VisibilityDropdown({
       </DropdownMenu.Trigger>
       <DropdownMenu.Content>
         {[AccessLevel.PUBLIC, AccessLevel.PRIVATE, AccessLevel.COLLABORATIVE].map((level) => {
-          function onCheckedChange() {
-            if (accessLevel === level) {
-              return
-            }
-            changeProjectAccessLevel(level)
-          }
           return (
             <DropdownMenu.CheckboxItem
               key={level}
               style={{ height: 28, fontSize: 12, paddingLeft: 30 }}
               checked={accessLevel === level}
               disabled={accessLevel === level}
-              // eslint-disable-next-line react/jsx-no-bind
-              onCheckedChange={onCheckedChange}
+              onCheckedChange={onCheckedChange(level)}
             >
               {VisibilityUIComponents[level].text}
             </DropdownMenu.CheckboxItem>

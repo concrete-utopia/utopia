@@ -26,13 +26,15 @@ import { unless, when } from '../utils/react-conditionals'
 import { Avatar, FlexRow, Icn, Tooltip, colorTheme } from '../uuiui'
 import { notice } from './common/notice'
 import type { EditorAction } from './editor/action-types'
-import { showToast, switchEditorMode } from './editor/actions/action-creators'
+import { setSharingDialogOpen, showToast, switchEditorMode } from './editor/actions/action-creators'
 import { EditorModes, isFollowMode } from './editor/editor-modes'
 import { useDispatch } from './editor/store/dispatch-context'
 import { Substores, useEditorState } from './editor/store/store-hook'
 import { useIsMyProject } from './editor/store/collaborative-editing'
 import { motion } from 'framer-motion'
 import { useIsBeingFollowed, useSortMultiplayerUsers } from '../core/shared/multiplayer-hooks'
+import { useTriggerForkProject } from './editor/persistence-hooks'
+import { isBackendBFF } from '../common/env-vars'
 
 const MAX_VISIBLE_OTHER_PLAYERS = 4
 
@@ -132,6 +134,16 @@ const MultiplayerUserBar = React.memo(() => {
     }
   }, [dispatch, url])
 
+  const handleClickShare = React.useCallback(() => {
+    if (!isBackendBFF()) {
+      void handleCopyToClipboard()
+      return
+    }
+    dispatch([setSharingDialogOpen(true)])
+  }, [dispatch, handleCopyToClipboard])
+
+  const handleClickFork = useTriggerForkProject()
+
   const collabs = useCollaborators()
 
   const connections = useConnections()
@@ -183,6 +195,12 @@ const MultiplayerUserBar = React.memo(() => {
   const amIOwner = React.useMemo(() => {
     return ownerId === myUser.id
   }, [ownerId, myUser])
+
+  const hasPendingRequests = useEditorState(
+    Substores.projectServerState,
+    (store) => store.projectServerState.projectData?.hasPendingRequests ?? false,
+    'MultiplayerUserBar hasPendingRequests',
+  )
 
   const toggleFollowing = React.useCallback(
     (target: FollowTarget) => () => {
@@ -294,35 +312,96 @@ const MultiplayerUserBar = React.memo(() => {
           )
         }),
       )}
-      <FlexRow
-        onClick={handleCopyToClipboard}
-        css={{
-          background: colorTheme.primary30.value,
-          borderRadius: 24,
-          height: 24,
-          padding: 2,
-          border: `1px solid ${colorTheme.transparent.value}`,
-          transition: 'all .1s ease-in-out',
-          '&:hover': {
-            background: colorTheme.primary25.value,
-          },
-          '&:active': {
-            border: `1px solid ${colorTheme.primary30.value}`,
-          },
-        }}
-      >
-        <MultiplayerAvatar
-          name={multiplayerInitialsFromName(myUser.name)}
-          color={multiplayerColorFromIndex(
-            getConnectionById(connections, myUser.id, myPresence.connectionId)?.colorIndex ?? null,
+      {amIOwner ? (
+        <FlexRow
+          onClick={handleClickShare}
+          css={{
+            background: colorTheme.primary30.value,
+            borderRadius: 24,
+            height: 24,
+            padding: 2,
+            border: `1px solid ${colorTheme.transparent.value}`,
+            transition: 'all .1s ease-in-out',
+            '&:hover': {
+              background: colorTheme.primary25.value,
+            },
+            '&:active': {
+              border: `1px solid ${colorTheme.primary30.value}`,
+            },
+            position: 'relative',
+          }}
+        >
+          <MultiplayerAvatar
+            name={multiplayerInitialsFromName(myUser.name)}
+            color={multiplayerColorFromIndex(
+              getConnectionById(connections, myUser.id, myPresence.connectionId)?.colorIndex ??
+                null,
+            )}
+            picture={myUser.avatar}
+            isOwner={true}
+            size={AvatarSize}
+            style={{ outline: 'undefined' }}
+          />
+          <div style={{ padding: '0 8px 0 5px', fontWeight: 500 }}>Share</div>
+          {when(
+            hasPendingRequests,
+            <div
+              style={{
+                position: 'absolute',
+                top: -2,
+                right: -2,
+                width: 9,
+                height: 9,
+                background: 'red',
+                borderRadius: '100%',
+                border: `1px solid ${colorTheme.bg0.value}`,
+              }}
+            />,
           )}
-          picture={myUser.avatar}
-          isOwner={amIOwner}
-          size={AvatarSize}
-          style={{ outline: 'undefined' }}
-        />
-        <div style={{ padding: '0 8px 0 5px', fontWeight: 500 }}>Share</div>
-      </FlexRow>
+        </FlexRow>
+      ) : (
+        <FlexRow>
+          <MultiplayerAvatar
+            name={multiplayerInitialsFromName(myUser.name)}
+            color={multiplayerColorFromIndex(
+              getConnectionById(connections, myUser.id, myPresence.connectionId)?.colorIndex ??
+                null,
+            )}
+            picture={myUser.avatar}
+            isOwner={false}
+            size={AvatarSize}
+            style={{ outline: 'undefined' }}
+          />
+          <div
+            onClick={handleClickFork}
+            css={{
+              marginLeft: 6,
+              height: 22,
+              borderRadius: 6,
+              padding: '4px 8px 4px 4px',
+              color: 'white',
+              fontWeight: 500,
+              background:
+                'linear-gradient(180deg, rgba(113, 192, 204) 8.38%, rgba(0, 117, 249) 109.97%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 2,
+              transition: 'all .1s ease-in-out',
+              '&:hover': {
+                background:
+                  'linear-gradient(180deg, rgba(113, 192, 204, 0.7) 8.38%, rgba(0, 117, 249, 0.7) 109.97%)',
+              },
+              '&:active': {
+                border: `1px solid ${colorTheme.primary30.value}`,
+              },
+            }}
+          >
+            <Icn category='semantic' type='fork' width={18} height={18} color='on-highlight-main' />
+            Fork
+          </div>
+        </FlexRow>
+      )}
     </motion.div>
   )
 })

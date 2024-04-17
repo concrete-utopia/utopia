@@ -22,6 +22,7 @@ function checkProjectOwned(_loggedIn: boolean, _projectId: string): Promise<Proj
 function loadProject<ModelType>(projectId: string): Promise<ProjectLoadResult<ModelType>> {
   return Promise.resolve({
     type: 'PROJECT_NOT_FOUND',
+    projectId: projectId,
   })
 }
 

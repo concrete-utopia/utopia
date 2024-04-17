@@ -174,6 +174,8 @@ type MonitoringAPI = "monitoring" :> "secret" :> "location" :> Get '[JSON] Value
 
 type ClearBranchAPI = "internal" :> "branch" :> QueryParam' '[Required, Strict] "branch_name" Text :> Delete '[JSON] NoContent
 
+type OnlineStatusAPI = "online-status" :> Get '[PlainText] Text
+
 type HashedAssetPathsAPI = "hashed-assets.json" :> Get '[JSON] Value
 
 type EditorAssetsAPI = "editor" :> BranchNameParam :> RawM
@@ -239,6 +241,7 @@ type Unprotected = AuthenticateAPI H.Html
               :<|> GetPackageVersionJSONAPI
               :<|> GetLatestPackageAPI
               :<|> GetPackageVersionsAPI
+              :<|> OnlineStatusAPI
               :<|> HashedAssetPathsAPI
               :<|> EditorAssetsAPI
               :<|> WebpackSockJSAPI

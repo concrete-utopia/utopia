@@ -52,11 +52,7 @@ describe('shortcuts', () => {
 
       expect(editor.getEditorState().editor.selectedViews.length).toEqual(1)
 
-      await wait(5000)
-
       keyDown('c', { modifiers: ctrlModifier })
-
-      await wait(5000)
 
       const div2 = editor.renderedDOM.getByTestId(TestIdTwo)
       const div2Bounds = div2.getBoundingClientRect()
@@ -68,8 +64,6 @@ describe('shortcuts', () => {
       await mouseClickAtPoint(canvasControlsLayer, div2Corner)
 
       await editor.getDispatchFollowUpActionsFinished()
-
-      await wait(10000)
 
       //   expect(div.style.backgroundColor).toEqual(backgroundColor)
       expect(div2.style.backgroundColor).toEqual(backgroundColor)

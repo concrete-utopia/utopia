@@ -62,6 +62,8 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
     const { elementWarnings, color, warningText: propsWarningText, navigatorEntry } = props
     const { iconProps, isPositionAbsolute } = useLayoutOrElementIcon(navigatorEntry)
 
+    const addAbsoltueMarkerToIcon = isPositionAbsolute
+
     const isZeroSized = useEditorState(
       Substores.metadata,
       (store) => isZeroSizedDivSelector(store, props.navigatorEntry.elementPath),
@@ -110,33 +112,80 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
       if (isZeroSized) {
         return (
           <Icn
-            category='element'
+            category='navigator-element'
             type='zerosized-div'
             testId={iconTestId}
             color={'main'}
-            width={18}
-            height={18}
+            width={12}
+            height={12}
           />
         )
       }
       if (isInvalidOverrideNavigatorEntry(navigatorEntry)) {
         return (
-          <Icons.WarningTriangle
-            color={'overridden'}
+          <Icn
+            category='navigator-element'
+            type='warningtriangle'
             tooltipText={navigatorEntry.message}
             testId={iconTestId}
+            color={'main'}
+            width={12}
+            height={12}
           />
         )
       } else if (warningText == null) {
-        return <Icn {...defaults} testId={iconTestId} />
+        return (
+          <div
+            style={{
+              // with the current design, for absolute elements we apply a 4 corner overlay over the icon,
+              // so we shrink it to make it visually fit inside the box
+              transform: addAbsoltueMarkerToIcon ? 'scale(.8)' : undefined,
+            }}
+          >
+            <Icn
+              {...defaults}
+              category='navigator-element'
+              width={12}
+              height={12}
+              testId={iconTestId}
+            />
+          </div>
+        )
       } else if (isErroredGroup) {
         return (
-          <Icons.GroupProblematic testId={iconTestId} color={color} tooltipText={warningText} />
+          <Icn
+            category='navigator-element'
+            type='group-problematic'
+            tooltipText={warningText}
+            testId={iconTestId}
+            color={color}
+            width={12}
+            height={12}
+          />
         )
       } else if (isErroredGroupChild) {
-        return <Icn {...defaults} testId={iconTestId} tooltipText={warningText} />
+        return (
+          <Icn
+            {...defaults}
+            testId={iconTestId}
+            tooltipText={warningText}
+            category='navigator-element'
+            width={12}
+            height={12}
+          />
+        )
       } else {
-        return <WarningIcon tooltipText={warningText} testId={iconTestId} />
+        return (
+          <Icn
+            category='navigator-element'
+            type='warningtriangle'
+            tooltipText={warningText}
+            testId={iconTestId}
+            color={'main'}
+            width={12}
+            height={12}
+          />
+        )
       }
     }, [
       iconProps,
@@ -147,6 +196,7 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
       isErroredGroup,
       isErroredGroupChild,
       iconTestId,
+      addAbsoltueMarkerToIcon,
     ])
 
     const marker = React.useMemo(() => {
@@ -160,34 +210,31 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
             }}
           />
         )
-      } else if (isPositionAbsolute) {
+      } else if (addAbsoltueMarkerToIcon) {
         return (
-          <div
-            style={{
-              color: colorTheme.brandNeonPink.value,
-              fontSize: 11,
-              fontWeight: 600,
-              paddingTop: 3,
-            }}
-          >
-            *
-          </div>
+          <Icn
+            category='navigator-element'
+            type='absolute-corners'
+            width={12}
+            height={12}
+            testId={`absolute-marker-for-${iconTestId}`}
+            style={{ position: 'relative', left: 11, transform: 'scale(1.1)' }}
+          />
         )
       } else {
         return null
       }
-    }, [isPositionAbsolute, color, warningText, isErroredGroupChild])
+    }, [addAbsoltueMarkerToIcon, color, warningText, isErroredGroupChild, iconTestId])
 
     return (
       <div
         style={{
-          width: 18,
-          height: 18,
+          width: 12,
+          height: 12,
           display: 'flex',
           alignItems: 'center',
           justifyItems: 'center',
           position: 'relative',
-          transform: 'scale(.8)',
         }}
       >
         <div

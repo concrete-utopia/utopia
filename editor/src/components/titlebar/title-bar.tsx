@@ -316,14 +316,15 @@ export const TitleBarUserProfile = React.memo((props: { panelData: StoredPanel }
             style={{
               paddingLeft: 8,
               paddingRight: 8,
-              background: colorTheme.dynamicBlue.value,
-              color: colorTheme.bg1.value,
+              background: colorTheme.primary.value,
+              color: colorTheme.white.value,
               fontWeight: 600,
+              borderRadius: 30,
             }}
             onClick={onClickSignIn}
             onMouseDown={onMouseDown}
           >
-            Sign In To Save
+            Sign In
           </Button>,
         )}
         <UserBar />

@@ -346,7 +346,10 @@ function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscod
         break
       case 'SELECTED_ELEMENT_CHANGED':
         const followSelectionEnabled = getFollowSelectionEnabledConfig()
-        if (followSelectionEnabled) {
+        const shouldFollowSelection =
+          followSelectionEnabled &&
+          (shouldFollowSelectionWithActiveFile() || message.forceNavigation === 'force-navigation')
+        if (shouldFollowSelection) {
           currentSelection = message.boundsInFile
           revealRangeIfPossible(workspaceRootUri, message.boundsInFile)
         }
@@ -603,4 +606,20 @@ function toFileSystemProviderError(projectID: string, error: FSError): vscode.Fi
       const _exhaustiveCheck: never = code
       throw new Error(`Unhandled FS Error ${JSON.stringify(error)}`)
   }
+}
+
+function shouldFollowSelectionWithActiveFile() {
+  const { activeTextEditor } = vscode.window
+  if (activeTextEditor == null) {
+    return true
+  }
+
+  const filePath = activeTextEditor.document.uri.path
+  const isJs =
+    filePath.endsWith('.js') ||
+    filePath.endsWith('.jsx') ||
+    filePath.endsWith('.cjs') ||
+    filePath.endsWith('.mjs')
+  const isComponentDescriptor = filePath.startsWith('/utopia/') && filePath.endsWith('.utopia.js')
+  return isJs && !isComponentDescriptor
 }

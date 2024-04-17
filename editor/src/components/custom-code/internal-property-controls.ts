@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import type { ComponentInfo } from './code-file'
+import type { ComponentInfo, PlaceholderSpec } from './code-file'
 import type { Imports } from '../../core/shared/project-file-types'
 
 export type BaseControlType =
@@ -217,7 +217,7 @@ export interface Vector4ControlDescription {
 
 export interface PreferredChildComponentDescriptor {
   name: string
-  imports: Imports
+  moduleName: string | null
   variants: Array<ComponentInfo>
 }
 
@@ -225,7 +225,8 @@ export interface JSXControlDescription {
   control: 'jsx'
   label?: string
   visibleByDefault?: boolean
-  preferredChildComponents?: Array<PreferredChildComponentDescriptor>
+  preferredChildComponents: Array<PreferredChildComponentDescriptor>
+  placeholder: PlaceholderSpec | null
   required?: boolean
   defaultValue?: unknown
 }

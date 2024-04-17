@@ -67,6 +67,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_CODE_RESULT_CACHE':
     case 'SET_CODE_EDITOR_BUILD_ERRORS':
     case 'SET_CODE_EDITOR_LINT_ERRORS':
+    case 'SET_CODE_EDITOR_COMPONENT_DESCRIPTOR_ERRORS':
     case 'SAVE_DOM_REPORT':
     case 'RUN_DOM_WALKER':
     case 'SET_FILEBROWSER_RENAMING_TARGET':
@@ -134,6 +135,9 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_FORKING':
     case 'SET_COLLABORATORS':
     case 'EXTRACT_PROPERTY_CONTROLS_FROM_DESCRIPTOR_FILES':
+    case 'SET_SHARING_DIALOG_OPEN':
+    case 'RESET_ONLINE_STATE':
+    case 'INCREASE_ONLINE_STATE_FAILURE_COUNT':
       return true
 
     case 'TRUE_UP_ELEMENTS':
@@ -167,11 +171,15 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'DISTRIBUTE_SELECTED_VIEWS':
     case 'TOGGLE_HIDDEN':
     case 'UPDATE_FILE_PATH':
+    case 'UPDATE_REMIX_ROUTE':
     case 'ADD_FOLDER':
     case 'DELETE_FILE':
     case 'DELETE_FILE_FROM_VSCODE':
     case 'DELETE_FILE_FROM_COLLABORATION':
     case 'ADD_TEXT_FILE':
+    case 'ADD_NEW_PAGE':
+    case 'ADD_NEW_FEATURED_ROUTE':
+    case 'REMOVE_FEATURED_ROUTE':
     case 'UPDATE_FILE':
     case 'UPDATE_PROJECT_CONTENTS':
     case 'UPDATE_BRANCH_CONTENTS':

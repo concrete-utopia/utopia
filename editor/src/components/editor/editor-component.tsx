@@ -74,7 +74,9 @@ import { CommentMaintainer } from '../../core/commenting/comment-maintainer'
 import { useIsLoggedIn, useLiveblocksConnectionListener } from '../../core/shared/multiplayer-hooks'
 import { ForkSearchParamKey, ProjectForkFlow } from './project-fork-flow'
 import { isRoomId, projectIdToRoomId } from '../../utils/room-id'
-import { AccessLevelParamKey } from './persistence/persistence-backend'
+import { SharingDialog } from './sharing-dialog'
+import { AccessLevelParamKey, CloneParamKey } from './persistence/persistence-backend'
+import { useUpdateActiveRemixSceneOnSelectionChange } from '../canvas/remix/utopia-remix-root-component'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -89,8 +91,9 @@ function pushProjectURLToBrowserHistory(
     // …but if it's forking, remove the fork param
     queryParams.delete(ForkSearchParamKey)
   }
-  // remove accessLevel param
+  // remove one-time creation params
   queryParams.delete(AccessLevelParamKey)
+  queryParams.delete(CloneParamKey)
 
   const queryParamsStr = queryParams.size > 0 ? `?${queryParams.toString()}` : ''
 
@@ -498,6 +501,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
         <GithubRepositoryCloneFlow />
         <ProjectForkFlow />
         <LockedOverlay />
+        <SharingDialog />
       </SimpleFlexRow>
       <EditorCommon
         mouseDown={onWindowMouseDown}
@@ -576,6 +580,8 @@ export function EditorComponent(props: EditorProps) {
   const dispatch = useDispatch()
 
   useDataThemeAttributeOnBody()
+
+  useUpdateActiveRemixSceneOnSelectionChange()
 
   const roomId = React.useMemo(
     () => (projectId == null ? generateUUID() : projectIdToRoomId(projectId)),

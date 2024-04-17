@@ -40,22 +40,16 @@ async function getParseResultForUserStrings(
   imports: string,
   toInsert: string,
 ): Promise<ProcessedParseResult> {
+  const codeToParse = `${imports};
+
+  function Utopia$$$Component(props) {
+     return (
+       ${toInsert}
+     )
+    }`
   const parseResult = await getParseResult(
     workers,
-    [
-      createParseFile(
-        'code.tsx',
-        `${imports};
-
-       function Utopia$$$Component(props) {
-          return (
-            ${toInsert}
-          )
-         }`,
-        null,
-        Date.now(),
-      ),
-    ],
+    [createParseFile('code.tsx', codeToParse, null, Date.now())],
     emptySet(),
     isSteganographyEnabled(),
   )

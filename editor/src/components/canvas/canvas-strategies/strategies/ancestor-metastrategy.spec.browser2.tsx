@@ -71,7 +71,7 @@ export var storyboard = (
             width: '100%',
             height: 104,
           }}
-          data-uid='a50'
+          data-uid='ed9'
         >
           <div
             data-testid='${DraggedDivId}'
@@ -126,7 +126,7 @@ export var storyboard = (
           width: 100,
           height: 100,
         }}
-        data-uid='a50'
+        data-uid='ed9'
       >
         <div
           data-testid='${DraggedDivId}'
@@ -191,7 +191,7 @@ export var storyboard = (
             width: '100%',
             height: 104,
           }}
-          data-uid='a50'
+          data-uid='ed9'
         >
           <Rectangle
             style={{
@@ -285,7 +285,7 @@ export var storyboard = (
               width: '100%',
               height: 104,
             }}
-            data-uid='a50'
+            data-uid='ed9'
           >
             <div
               data-uid='a75'
@@ -505,8 +505,8 @@ async function dragElement(
   })
 }
 
-const pathForShallowNestedElement = EP.elementPath([['0cd', '3fc', '932', 'a50', 'a75']])
-const pathForDeeplyNestedElement = EP.elementPath([['0cd', '3fc', '932', 'bb3', 'a50', 'a75']])
+const pathForShallowNestedElement = EP.elementPath([['0cd', '3fc', '932', 'ed9', 'a75']])
+const pathForDeeplyNestedElement = EP.elementPath([['0cd', '3fc', '932', 'bb3', 'ed9', 'a75']])
 
 async function runTest(
   code: string,

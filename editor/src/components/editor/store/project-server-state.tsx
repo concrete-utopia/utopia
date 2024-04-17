@@ -6,22 +6,26 @@ import { updateProjectServerState } from '../actions/action-creators'
 import { checkProjectOwned, projectIsStoredLocally } from '../persistence/persistence-backend'
 import type { ProjectOwnership } from '../persistence/generic/persistence-types'
 import { CollaborationEndpoints } from '../collaborative-endpoints'
+import { checkOnlineState } from '../online-status'
 
 export interface ProjectMetadataFromServer {
   title: string
   ownerName: string | null
   ownerPicture: string | null
+  hasPendingRequests?: boolean
 }
 
 export function projectMetadataFromServer(
   title: string,
   ownerName: string | null,
   ownerPicture: string | null,
+  hasPendingRequests?: boolean,
 ): ProjectMetadataFromServer {
   return {
     title: title,
     ownerName: ownerName,
     ownerPicture: ownerPicture,
+    hasPendingRequests: hasPendingRequests,
   }
 }
 
@@ -69,6 +73,7 @@ function projectListingToProjectMetadataFromServer(
       title: projectListing.title,
       ownerName: projectListing.ownerName ?? null,
       ownerPicture: projectListing.ownerPicture ?? null,
+      hasPendingRequests: projectListing.hasPendingRequests,
     }
   }
 }
@@ -78,7 +83,12 @@ export async function getProjectServerState(
   dispatch: EditorDispatch,
   projectId: string | null,
   forkedFromProjectId: string | null,
-): Promise<ProjectServerState> {
+): Promise<ProjectServerState | null> {
+  // If the editor is offline, then skip this lookup for the moment.
+  const isOnline = await checkOnlineState()
+  if (!isOnline) {
+    return null
+  }
   const existsLocally = projectId == null ? true : await projectIsStoredLocally(projectId)
   const projectListing =
     projectId == null || existsLocally ? null : await fetchProjectMetadata(projectId)
@@ -143,7 +153,9 @@ export async function updateProjectServerStateInStore(
 ): Promise<SuccessOrFailure> {
   return getProjectServerState(loggedIn, dispatch, projectId, forkedFromProjectId)
     .then<SuccessOrFailure, SuccessOrFailure>((serverState) => {
-      dispatch([updateProjectServerState(serverState)], 'everyone')
+      if (serverState != null) {
+        dispatch([updateProjectServerState(serverState)], 'everyone')
+      }
       return 'success'
     })
     .catch<SuccessOrFailure>((error) => {

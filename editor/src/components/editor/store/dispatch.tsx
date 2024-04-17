@@ -38,7 +38,9 @@ import {
   runClearPostActionSession,
   runExecuteStartPostActionMenuAction,
   runExecuteWithPostActionMenuAction,
+  runIncreaseOnlineStateFailureCount,
   runLocalEditorAction,
+  runResetOnlineState,
   runUpdateProjectServerState,
 } from './editor-update'
 import { isBrowserEnvironment } from '../../../core/shared/utils'
@@ -200,6 +202,14 @@ function processAction(
         working = runUpdateProjectServerState(working, action)
       }
 
+      if (action.action === 'RESET_ONLINE_STATE') {
+        working = runResetOnlineState(working, action)
+      }
+
+      if (action.action === 'INCREASE_ONLINE_STATE_FAILURE_COUNT') {
+        working = runIncreaseOnlineStateFailureCount(working, action)
+      }
+
       // Process action on the JS side.
       const editorAfterUpdateFunction = runLocalEditorAction(
         working.unpatchedEditor,
@@ -277,6 +287,7 @@ function processAction(
         builtInDependencies: working.builtInDependencies,
         projectServerState: working.projectServerState,
         collaborativeEditingSupport: working.collaborativeEditingSupport,
+        onlineState: working.onlineState,
       }
     },
   )
@@ -648,6 +659,7 @@ export function editorDispatchClosingOut(
     builtInDependencies: storedState.builtInDependencies,
     projectServerState: result.projectServerState,
     collaborativeEditingSupport: storedState.collaborativeEditingSupport,
+    onlineState: result.onlineState,
   }
 
   reduxDevtoolsSendActions(actionGroupsToProcess, finalStore, allTransient)
@@ -823,7 +835,8 @@ function applyProjectChangesToEditor(
   }
 }
 
-export const UTOPIA_IRRECOVERABLE_ERROR_MESSAGE = `Utopia has suffered from an irrecoverable error, please reload the editor.`
+export const UTOPIA_DUPLICATE_UID_ERROR_MESSAGE = (dispatchedActions: string) =>
+  `A dispatched action resulted in duplicated UIDs. Suspicious actions: ${dispatchedActions}`
 function editorDispatchInner(
   boundDispatch: EditorDispatch,
   dispatchedActions: EditorAction[],
@@ -942,7 +955,7 @@ function editorDispatchInner(
       // When running in the browser log the error and tell the user to restart the editor.
       console.error(errorMessage)
       const errorToast = EditorActions.addToast(
-        notice(UTOPIA_IRRECOVERABLE_ERROR_MESSAGE, 'ERROR', true, 'reload-editor'),
+        notice(UTOPIA_DUPLICATE_UID_ERROR_MESSAGE(actionNames), 'ERROR', false),
       )
       result = {
         ...result,
@@ -1018,6 +1031,7 @@ function editorDispatchInner(
       builtInDependencies: storedState.builtInDependencies,
       projectServerState: result.projectServerState,
       collaborativeEditingSupport: result.collaborativeEditingSupport,
+      onlineState: result.onlineState,
     }
   } else {
     //empty return
@@ -1041,6 +1055,7 @@ function filterEditorForFiles(editor: EditorState) {
     codeEditorErrors: {
       buildErrors: pick(allFiles, editor.codeEditorErrors.buildErrors),
       lintErrors: pick(allFiles, editor.codeEditorErrors.lintErrors),
+      componentDescriptorErrors: pick(allFiles, editor.codeEditorErrors.componentDescriptorErrors),
     },
   }
 }

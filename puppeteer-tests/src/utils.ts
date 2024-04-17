@@ -175,3 +175,9 @@ export function wait(timeout: number): Promise<void> {
     setTimeout(resolve, timeout)
   })
 }
+
+export function addFakeUserParam(url: string): string {
+  const urlObj = new URL(url)
+  urlObj.searchParams.set('fakeUser', 'alice')
+  return urlObj.toString()
+}

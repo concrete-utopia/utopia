@@ -196,9 +196,11 @@ describe('Navigator item row icons', () => {
         const expectedType =
           expectWarningIcon === 'expect-warning-icon' ? 'warningtriangle' : expectedIcnProps.type
         expect({
+          description: description,
           category: imgData['category'],
           type: imgData['type'],
         }).toEqual({
+          description: description,
           category: expectedCategory,
           type: expectedType,
         })
@@ -209,49 +211,49 @@ describe('Navigator item row icons', () => {
 
     await checkNavigatorIcon(
       'Regular div',
-      { category: 'element', type: 'div' },
+      { category: 'navigator-element', type: 'div' },
       visibleNavigatorTargets[0],
     )
     await checkNavigatorIcon(
       'Div with text',
-      { category: 'element', type: 'div' },
+      { category: 'navigator-element', type: 'div' },
       visibleNavigatorTargets[1],
     )
     await checkNavigatorIcon(
       'Display Inline',
-      { category: 'element', type: 'pure-text' },
+      { category: 'navigator-element', type: 'pure-text' },
       visibleNavigatorTargets[2],
     )
     await checkNavigatorIcon(
       'Span',
-      { category: 'element', type: 'pure-text' },
+      { category: 'navigator-element', type: 'pure-text' },
       visibleNavigatorTargets[3],
     )
     await checkNavigatorIcon(
       'Group',
-      { category: 'element', type: 'group-closed' },
+      { category: 'navigator-element', type: 'group-closed' },
       visibleNavigatorTargets[4],
     )
     await checkNavigatorIcon(
       'Component',
-      { category: 'element', type: 'div' },
+      { category: 'navigator-element', type: 'div' },
       visibleNavigatorTargets[5],
     )
     await checkNavigatorIcon(
       'Button',
-      { category: 'element', type: 'clickable' },
+      { category: 'navigator-element', type: 'clickable' },
       visibleNavigatorTargets[6],
     )
     await checkNavigatorIcon(
       'Conditional',
-      { category: 'element', type: 'conditional' },
+      { category: 'navigator-element', type: 'conditional' },
       visibleNavigatorTargets[7],
     )
     // No icon for conditional labels
     await checkNavigatorIcon('Conditional label: True', 'no-icon', visibleNavigatorTargets[8])
     await checkNavigatorIcon(
       'Grid layout',
-      { category: 'layout/systems', type: 'grid' },
+      { category: 'navigator-element', type: 'grid' },
       visibleNavigatorTargets[9],
     )
     // No icon for conditional labels
@@ -259,47 +261,47 @@ describe('Navigator item row icons', () => {
     await checkNavigatorIcon('Empty Slot', 'no-icon', visibleNavigatorTargets[11])
     await checkNavigatorIcon(
       'Code element',
-      { category: 'element', type: 'genericcode' },
+      { category: 'navigator-element', type: 'genericcode' },
       visibleNavigatorTargets[12],
     )
     await checkNavigatorIcon(
       'Flex row',
-      { category: 'layout/systems', type: 'flex-row' },
+      { category: 'navigator-element', type: 'flex-row' },
       visibleNavigatorTargets[13],
     )
     await checkNavigatorIcon(
       'Map',
-      { category: 'element', type: 'lists' },
+      { category: 'navigator-element', type: 'lists' },
       visibleNavigatorTargets[14],
     )
     await checkNavigatorIcon(
       'Flex column',
-      { category: 'layout/systems', type: 'flex-column' },
+      { category: 'navigator-element', type: 'flex-column' },
       visibleNavigatorTargets[15],
     )
     await checkNavigatorIcon(
       'Fragment',
-      { category: 'element', type: 'fragment' },
+      { category: 'navigator-element', type: 'fragment' },
       visibleNavigatorTargets[16],
     )
     await checkNavigatorIcon(
       'Sizeless div',
-      { category: 'element', type: 'zerosized-div' },
+      { category: 'navigator-element', type: 'zerosized-div' },
       visibleNavigatorTargets[17],
     )
     await checkNavigatorIcon(
       'Generated text',
-      { category: 'element', type: 'text-generated' },
+      { category: 'navigator-element', type: 'text-generated' },
       visibleNavigatorTargets[18],
     )
     await checkNavigatorIcon(
       'Scene',
-      { category: 'component', type: 'scene' },
+      { category: 'navigator-element', type: 'scene' },
       visibleNavigatorTargets[19],
     )
     await checkNavigatorIcon(
       'Img',
-      { category: 'element', type: 'image' },
+      { category: 'navigator-element', type: 'image' },
       visibleNavigatorTargets[20],
     )
   })

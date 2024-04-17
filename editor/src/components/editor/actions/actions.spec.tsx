@@ -106,10 +106,12 @@ import {
   setProp_UNSAFE,
   updateFilePath,
   updateFromWorker,
+  updateTopLevelElementsFromCollaborationUpdate,
   workerCodeAndParsedUpdate,
 } from './action-creators'
 import { UPDATE_FNS } from './actions'
 import { CURRENT_PROJECT_VERSION } from './migrations/migrations'
+import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 
 const chaiExpect = Chai.expect
 
@@ -341,6 +343,7 @@ describe('LOAD', () => {
       codeEditorErrors: {
         buildErrors: {},
         lintErrors: {},
+        componentDescriptorErrors: {},
       },
       lastUsedFont: null,
       hiddenInstances: [],
@@ -1180,5 +1183,23 @@ describe('UPDATE_FROM_WORKER', () => {
     expect(updatedAppJSVersionNumberFromState).toBeGreaterThanOrEqual(versionNumberOfAppJS)
     expect(updatedStoryboardFileFromState).toStrictEqual(updatedStoryboardFile)
     expect(updatedAppJSFileFromState).toStrictEqual(updatedAppJSFile)
+  })
+})
+
+describe('UPDATE_TOP_LEVEL_ELEMENTS_FROM_COLLABORATION', () => {
+  it('fixes up the uids if there are duplicates', () => {
+    // Setup and getting some starting values.
+    const project = complexDefaultProjectPreParsed()
+    const startingEditorState = editorModelFromPersistentModel(project, NO_OP)
+    const appJSFile = unsafeGet(parsedTextFileOptic('/src/app.js'), startingEditorState)
+    // Doubling up the top level elements should definitely create some duplicates.
+    const newTopLevelElements = [...appJSFile.topLevelElements, ...appJSFile.topLevelElements]
+    const action = updateTopLevelElementsFromCollaborationUpdate('/src/app.js', newTopLevelElements)
+    const updatedEditorState = UPDATE_FNS.UPDATE_TOP_LEVEL_ELEMENTS_FROM_COLLABORATION_UPDATE(
+      action,
+      startingEditorState,
+    )
+    const uniqueUIDsResult = getAllUniqueUids(updatedEditorState.projectContents)
+    expect(uniqueUIDsResult.duplicateIDs).toEqual({})
   })
 })

@@ -221,6 +221,14 @@ import type {
   SetForking,
   SetCollaborators,
   ExtractPropertyControlsFromDescriptorFiles,
+  SetSharingDialogOpen,
+  SetCodeEditorComponentDescriptorErrors,
+  AddNewPage,
+  UpdateRemixRoute,
+  AddNewFeaturedRoute,
+  RemoveFeaturedRoute,
+  ResetOnlineState,
+  IncreaseOnlineStateFailureCount,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -249,6 +257,7 @@ import type { ProjectServerState } from '../store/project-server-state'
 import type { SetHuggingParentToFixed } from '../../canvas/canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
 import type { CommentFilterMode } from '../../inspector/sections/comment-section'
 import type { Collaborator } from '../../../core/shared/multiplayer'
+import type { PageTemplate } from '../../canvas/remix/remix-utils'
 
 export function clearSelection(): EditorAction {
   return {
@@ -948,6 +957,21 @@ export function updateFilePath(oldPath: string, newPath: string): UpdateFilePath
   }
 }
 
+export function updateRemixRoute(
+  oldPath: string,
+  newPath: string,
+  oldRoute: string,
+  newRoute: string,
+): UpdateRemixRoute {
+  return {
+    action: 'UPDATE_REMIX_ROUTE',
+    oldPath: oldPath,
+    newPath: newPath,
+    oldRoute: oldRoute,
+    newRoute: newRoute,
+  }
+}
+
 export function deleteFile(filename: string): DeleteFile {
   return {
     action: 'DELETE_FILE',
@@ -1114,6 +1138,33 @@ export function addTextFile(parentPath: string, fileName: string): AddTextFile {
   }
 }
 
+export function addNewPage(
+  parentPath: string,
+  template: PageTemplate,
+  newPageName: string,
+): AddNewPage {
+  return {
+    action: 'ADD_NEW_PAGE',
+    template: template,
+    parentPath: parentPath,
+    newPageName: newPageName,
+  }
+}
+
+export function addNewFeaturedRoute(featuredRoute: string): AddNewFeaturedRoute {
+  return {
+    action: 'ADD_NEW_FEATURED_ROUTE',
+    featuredRoute: featuredRoute,
+  }
+}
+
+export function removeFeaturedRoute(routeToRemove: string): RemoveFeaturedRoute {
+  return {
+    action: 'REMOVE_FEATURED_ROUTE',
+    routeToRemove: routeToRemove,
+  }
+}
+
 export function setMainUIFile(uiFile: string): SetMainUIFile {
   return {
     action: 'SET_MAIN_UI_FILE',
@@ -1199,6 +1250,15 @@ export function setCodeEditorLintErrors(lintErrors: ErrorMessages): SetCodeEdito
   return {
     action: 'SET_CODE_EDITOR_LINT_ERRORS',
     lintErrors: lintErrors,
+  }
+}
+
+export function setCodeEditorComponentDescriptorErrors(
+  componentDescriptorErrors: ErrorMessages,
+): SetCodeEditorComponentDescriptorErrors {
+  return {
+    action: 'SET_CODE_EDITOR_COMPONENT_DESCRIPTOR_ERRORS',
+    componentDescriptorErrors: componentDescriptorErrors,
   }
 }
 
@@ -1744,5 +1804,24 @@ export function extractPropertyControlsFromDescriptorFiles(
   return {
     action: 'EXTRACT_PROPERTY_CONTROLS_FROM_DESCRIPTOR_FILES',
     paths: paths,
+  }
+}
+
+export function setSharingDialogOpen(open: boolean): SetSharingDialogOpen {
+  return {
+    action: 'SET_SHARING_DIALOG_OPEN',
+    open: open,
+  }
+}
+
+export function resetOnlineState(): ResetOnlineState {
+  return {
+    action: 'RESET_ONLINE_STATE',
+  }
+}
+
+export function increaseOnlineStateFailureCount(): IncreaseOnlineStateFailureCount {
+  return {
+    action: 'INCREASE_ONLINE_STATE_FAILURE_COUNT',
   }
 }

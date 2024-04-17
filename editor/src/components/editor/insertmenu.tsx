@@ -65,6 +65,8 @@ import { usePossiblyResolvedPackageDependencies } from './npm-dependency/npm-dep
 import { useDispatch } from './store/dispatch-context'
 import { Substores, useEditorState } from './store/store-hook'
 
+export const InsertMenuId = 'insert-menu-inspector-tab'
+
 export const InsertMenuFilterTestId = 'insert-menu-filter'
 
 interface InsertMenuProps {
@@ -626,12 +628,18 @@ const InsertMenuInner = React.memo((props: InsertMenuProps) => {
   }
 
   return (
-    <div style={{ height: '100%' }} onMouseLeave={onMouseLeave} onMouseEnter={onMouseEnter}>
+    <div
+      id={InsertMenuId}
+      style={{ height: '100%' }}
+      onMouseLeave={onMouseLeave}
+      onMouseEnter={onMouseEnter}
+    >
       <WindowedSelect
         autoFocus
         key={'insert-menu-select'}
         value={focusedOption}
         inputValue={filter}
+        // eslint-disable-next-line react/jsx-no-bind
         onInputChange={onFilterChange}
         isMulti={false}
         controlShouldRenderValue={false}
@@ -656,6 +664,7 @@ const InsertMenuInner = React.memo((props: InsertMenuProps) => {
     </div>
   )
 })
+InsertMenuInner.displayName = 'InsertMenuInner'
 
 function addPositionAbsoluteToProps(props: JSXAttributes) {
   const styleAttributes = getJSXAttribute(props, 'style') ?? jsExpressionValue({}, emptyComments)

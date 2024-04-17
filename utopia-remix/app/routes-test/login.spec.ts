@@ -1,6 +1,7 @@
 import { newTestRequest } from '../test-util'
 import { handleLogin } from '../routes/login'
 import { ServerEnvironment } from '../env.server'
+import { authenticateUrl } from '../util/auth0.server'
 
 describe('handleLogin', () => {
   it('should redirect to auth0 login with the correct redirectTo param', async () => {
@@ -37,7 +38,7 @@ describe('handleLogin', () => {
     const response = await handleLogin(request, {})
     expect(response.status).toBe(302)
     const redirectLocation = response.headers.get('Location')
-    expect(redirectLocation).toContain(`${ServerEnvironment.CORS_ORIGIN}/authenticate`)
+    expect(redirectLocation).toContain(authenticateUrl().toString())
     const redirectToParam = getDecodedParam(redirectLocation, 'redirectTo')
     expect(redirectToParam).toBe('/p/test-project')
     const codeParam = getDecodedParam(redirectLocation, 'code')

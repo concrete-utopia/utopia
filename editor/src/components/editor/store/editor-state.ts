@@ -187,6 +187,7 @@ import { removeUnusedImportsForRemovedElement } from '../import-utils'
 import { emptyImports } from '../../../core/workers/common/project-file-utils'
 import type { CommentFilterMode } from '../../inspector/sections/comment-section'
 import type { Collaborator } from '../../../core/shared/multiplayer'
+import type { OnlineState } from '../online-status'
 
 const ObjectPathImmutable: any = OPI
 
@@ -195,6 +196,7 @@ export enum LeftMenuTab {
   Project = 'project',
   Github = 'github',
   Navigator = 'navigator',
+  Pages = 'pages',
 }
 
 export const DefaultNavigatorWidth = GridMenuWidth
@@ -484,6 +486,7 @@ export type EditorStoreShared = {
   saveCountThisSession: number
   projectServerState: ProjectServerState
   collaborativeEditingSupport: CollaborativeEditingSupport
+  onlineState: OnlineState
 }
 
 export type EditorStoreFull = EditorStoreShared & {
@@ -1166,15 +1169,18 @@ export function editorStateHome(visible: boolean): EditorStateHome {
 export interface EditorStateCodeEditorErrors {
   buildErrors: ErrorMessages
   lintErrors: ErrorMessages
+  componentDescriptorErrors: ErrorMessages
 }
 
 export function editorStateCodeEditorErrors(
   buildErrors: ErrorMessages,
   lintErrors: ErrorMessages,
+  componentDescriptorErrors: ErrorMessages,
 ): EditorStateCodeEditorErrors {
   return {
     buildErrors: buildErrors,
     lintErrors: lintErrors,
+    componentDescriptorErrors: componentDescriptorErrors,
   }
 }
 
@@ -1487,6 +1493,7 @@ export interface EditorState {
   commentFilterMode: CommentFilterMode
   forking: boolean
   collaborators: Collaborator[]
+  sharingDialogOpen: boolean
 }
 
 export function editorState(
@@ -1571,6 +1578,7 @@ export function editorState(
   commentFilterMode: CommentFilterMode,
   forking: boolean,
   collaborators: Collaborator[],
+  sharingDialogOpen: boolean,
 ): EditorState {
   return {
     id: id,
@@ -1654,6 +1662,7 @@ export function editorState(
     commentFilterMode: commentFilterMode,
     forking: forking,
     collaborators: collaborators,
+    sharingDialogOpen: sharingDialogOpen,
   }
 }
 
@@ -2365,6 +2374,7 @@ export interface PersistentModel {
   codeEditorErrors: {
     buildErrors: ErrorMessages
     lintErrors: ErrorMessages
+    componentDescriptorErrors: ErrorMessages
   }
   fileBrowser: {
     minimised: boolean
@@ -2424,12 +2434,20 @@ export function mergePersistentModel(
   }
 }
 
+function randomArrayElement(array: string[]): string {
+  return array[Math.floor(Math.random() * array.length)]
+}
+
 export function createNewProjectName(): string {
-  const friendlyWordsPredicate =
-    friendlyWords.predicates[Math.floor(Math.random() * friendlyWords.predicates.length)]
-  const friendlyWordsObject =
-    friendlyWords.objects[Math.floor(Math.random() * friendlyWords.objects.length)]
+  const friendlyWordsPredicate = randomArrayElement(friendlyWords.predicates)
+  const friendlyWordsObject = randomArrayElement(friendlyWords.objects)
   return `${friendlyWordsPredicate}-${friendlyWordsObject}`
+}
+
+export function createNewPageName(): string {
+  return `page-${randomArrayElement(friendlyWords.predicates)}-${randomArrayElement(
+    friendlyWords.objects,
+  )}`
 }
 
 export const BaseSnappingThreshold = 5
@@ -2581,6 +2599,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     codeEditorErrors: {
       buildErrors: {},
       lintErrors: {},
+      componentDescriptorErrors: {},
     },
     thumbnailLastGenerated: 0,
     pasteTargetsToIgnore: [],
@@ -2615,6 +2634,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     commentFilterMode: 'all',
     forking: false,
     collaborators: [],
+    sharingDialogOpen: false,
   }
 }
 
@@ -3000,6 +3020,7 @@ export function editorModelFromPersistentModel(
     commentFilterMode: 'all',
     forking: false,
     collaborators: [],
+    sharingDialogOpen: false,
   }
   return editor
 }
@@ -3053,6 +3074,7 @@ export function persistentModelForProjectContents(
     codeEditorErrors: {
       buildErrors: {},
       lintErrors: {},
+      componentDescriptorErrors: {},
     },
     lastUsedFont: null,
     hiddenInstances: [],
@@ -3176,7 +3198,7 @@ export function updatePackageJsonInEditorState(
       // There is a package.json file, we should update it.
       updatedPackageJsonFile = codeFile(
         transformPackageJson(packageJsonFile.fileContents.code),
-        null,
+        RevisionsState.CodeAhead,
       )
     } else {
       // There is something else called package.json, we should bulldoze over it.
@@ -3216,7 +3238,10 @@ export function getAllCodeEditorErrors(
 ): Array<ErrorMessage> {
   const allLintErrors = getAllLintErrors(codeEditorErrors)
   const allBuildErrors = getAllBuildErrors(codeEditorErrors)
-  const errorsAndWarnings = skipTsErrors ? allLintErrors : [...allBuildErrors, ...allLintErrors]
+  const allComponentDescriptorErrors = getAllComponentDescriptorErrors(codeEditorErrors)
+  const errorsAndWarnings = skipTsErrors
+    ? [...allLintErrors, ...allComponentDescriptorErrors]
+    : [...allBuildErrors, ...allLintErrors, ...allComponentDescriptorErrors]
   if (minimumSeverity === 'fatal') {
     return errorsAndWarnings.filter((error) => error.severity === 'fatal')
   } else if (minimumSeverity === 'error') {
@@ -3238,6 +3263,12 @@ export function getAllLintErrors(
   codeEditorErrors: EditorStateCodeEditorErrors,
 ): Array<ErrorMessage> {
   return getAllErrorsFromFiles(codeEditorErrors.lintErrors)
+}
+
+export function getAllComponentDescriptorErrors(
+  codeEditorErrors: EditorStateCodeEditorErrors,
+): Array<ErrorMessage> {
+  return getAllErrorsFromFiles(codeEditorErrors.componentDescriptorErrors)
 }
 
 export function getAllErrorsFromFiles(errorsInFiles: ErrorMessages): Array<ErrorMessage> {
