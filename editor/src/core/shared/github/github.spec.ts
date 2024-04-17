@@ -86,6 +86,7 @@ describe('github helpers', () => {
         null,
         null,
         makeMockContext(),
+        'user-initiated',
       )
       expect(got.length).toBe(1)
       const promises = await got[0]
@@ -108,6 +109,7 @@ describe('github helpers', () => {
         null,
         null,
         makeMockContext(),
+        'user-initiated',
       )
       expect(got.length).toBe(1)
       const promises = await got[0]
@@ -136,6 +138,7 @@ describe('github helpers', () => {
         null,
         null,
         makeMockContext(),
+        'user-initiated',
       )
       expect(got.length).toBe(1)
       const promises = await got[0]
@@ -167,6 +170,7 @@ describe('github helpers', () => {
         null,
         null,
         makeMockContext(mockFetch.getMockImplementation()),
+        'user-initiated',
       )
       expect(got.length).toBe(2)
 

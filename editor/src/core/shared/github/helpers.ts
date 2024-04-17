@@ -174,28 +174,30 @@ export type GetGithubUserResponse = GetGithubUserSuccess | GithubFailure
 
 export type GithubOperationLogic = (operation: GithubOperation) => Promise<Array<EditorAction>>
 
+export type GithubOperationSource = 'polling' | 'user-initiated'
+
 export async function runGithubOperation(
   operation: GithubOperation,
   dispatch: EditorDispatch,
+  source: GithubOperationSource,
   logic: GithubOperationLogic,
 ): Promise<Array<EditorAction>> {
   let result: Array<EditorAction> = []
+  const userDetails = await getUserDetailsFromServer()
+  if (userDetails == null) {
+    dispatch(resetGithubStateAndDataActions())
+    return result
+  }
 
   const opName = githubOperationPrettyName(operation)
   try {
     dispatch([updateGithubOperations(operation, 'add')], 'everyone')
     result = await logic(operation)
   } catch (error: any) {
-    let actions: EditorAction[] = []
-
-    const userDetails = await getUserDetailsFromServer()
-    if (userDetails == null) {
-      actions.push(...resetGithubStateAndDataActions())
-    } else {
-      actions.push(showToast(notice(`Couldn't ${opName} (see console)`, 'PRIMARY')))
+    if (source === 'user-initiated') {
+      dispatch([showToast(notice(`Couldn't ${opName} (see console)`, 'PRIMARY'))], 'everyone')
     }
 
-    dispatch(actions, 'everyone')
     console.error(`Couldn't ${opName}`, error)
     throw error
   } finally {
@@ -859,6 +861,7 @@ export const startGithubPolling =
           lastRefreshedCommit,
           originCommitSha,
           operationContext,
+          'polling',
         )
       } finally {
         // Trigger another one to run Xms _after_ this has finished.
@@ -880,6 +883,7 @@ export function getRefreshGithubActions(
   previousCommitSha: string | null,
   originCommitSha: string | null,
   operationContext: GithubOperationContext,
+  initiator: GithubOperationSource,
 ): Array<Promise<Array<EditorAction>>> {
   // Collect actions which are the results of the various requests,
   // but not those that show which Github operations are running.
@@ -894,9 +898,11 @@ export function getRefreshGithubActions(
     })
     promises.push(noUserDetailsActions)
   } else {
-    promises.push(getUsersPublicGithubRepositories(operationContext)(dispatch))
+    promises.push(getUsersPublicGithubRepositories(operationContext)(dispatch, initiator))
     if (githubRepo != null) {
-      promises.push(getBranchesForGithubRepository(operationContext)(dispatch, githubRepo))
+      promises.push(
+        getBranchesForGithubRepository(operationContext)(dispatch, githubRepo, initiator),
+      )
       promises.push(
         updateUpstreamChanges(
           branchName,
@@ -915,7 +921,12 @@ export function getRefreshGithubActions(
           }
         } else {
           promises.push(
-            updatePullRequestsForBranch(operationContext)(dispatch, githubRepo, branchName),
+            updatePullRequestsForBranch(operationContext)(
+              dispatch,
+              githubRepo,
+              branchName,
+              initiator,
+            ),
           )
         }
       }
@@ -937,6 +948,7 @@ export async function refreshGithubData(
   previousCommitSha: string | null,
   originCommitSha: string | null,
   operationContext: GithubOperationContext,
+  initiator: GithubOperationSource,
 ): Promise<void> {
   const promises = await getRefreshGithubActions(
     dispatch,
@@ -948,6 +960,7 @@ export async function refreshGithubData(
     previousCommitSha,
     originCommitSha,
     operationContext,
+    initiator,
   )
   // Resolve all the promises.
   await Promise.allSettled(promises).then((results) => {
@@ -1037,10 +1050,12 @@ export async function saveGithubAsset(
   path: string,
   dispatch: EditorDispatch,
   operationContext: GithubOperationContext,
+  initiator: GithubOperationSource,
 ): Promise<void> {
   await runGithubOperation(
     { name: 'saveAsset', path: path },
     dispatch,
+    initiator,
     async (operation: GithubOperation) => {
       const url = GithubEndpoints.asset(githubRepo, assetSha)
 
@@ -1086,6 +1101,7 @@ export const resolveConflict =
     conflict: Conflict,
     whichChange: 'utopia' | 'branch',
     dispatch: EditorDispatch,
+    initiator: GithubOperationSource,
   ): Promise<void> => {
     async function updateFileInProjectContents(file: ProjectContentsTree): Promise<void> {
       // Update the file in the server first before putting it into the project contents.
@@ -1109,6 +1125,7 @@ export const resolveConflict =
           path,
           dispatch,
           operationContext,
+          initiator,
         )
       }
       void saveAssetPromise.then(() => {
