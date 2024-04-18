@@ -173,25 +173,24 @@ export const BorderSubsection: React.FunctionComponent<React.PropsWithChildren<u
             <span>Border</span>
           </FlexRow>
           {propertyStatus.overwritable ? (
-            <>
+            <FlexRow style={{ gap: 4 }}>
               <SquareButton
                 highlight
                 onMouseDown={onUnsetValues}
                 data-testid={'inspector-border-remove-all'}
+                style={{ width: 12 }}
               >
-                <Icons.Cross color={propertyStatus.controlled ? 'primary' : 'secondary'} />
+                <Icn category='semantic' type='cross' width={12} height={12} />
               </SquareButton>
-              <SquareButton highlight onMouseDown={onInsertMouseDown} disabled={borderSet}>
-                <Icn
-                  style={{ paddingTop: 1 }}
-                  category='semantic'
-                  type='plus'
-                  color={propertyStatus.controlled ? 'primary' : 'secondary'}
-                  width={16}
-                  height={16}
-                />
+              <SquareButton
+                highlight
+                onMouseDown={onInsertMouseDown}
+                disabled={borderSet}
+                style={{ width: 12 }}
+              >
+                <Icn category='semantic' type='plus' width={12} height={12} />
               </SquareButton>
-            </>
+            </FlexRow>
           ) : null}
         </InspectorSubsectionHeader>
 
