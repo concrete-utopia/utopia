@@ -229,6 +229,10 @@ interface AddChildButtonProps {
   onClick: React.MouseEventHandler<HTMLDivElement>
 }
 
+export function addChildButtonTestId(target: ElementPath): string {
+  return `add-child-button-${EP.toString(target)}`
+}
+
 const AddChildButton = React.memo((props: AddChildButtonProps) => {
   const color = props.iconColor
   const shouldShow = useSupportsChildren(props.target)
@@ -241,6 +245,7 @@ const AddChildButton = React.memo((props: AddChildButtonProps) => {
         width: 18,
         opacity: shouldShow ? 1 : 0,
       }}
+      data-testid={addChildButtonTestId(props.target)}
     >
       <Icn
         category='semantic'

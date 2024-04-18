@@ -63,7 +63,7 @@ import ReactDOM from 'react-dom'
 import {
   ComponentPickerContextMenu,
   useShowComponentPickerContextMenu,
-} from './render-prop-selector-popup'
+} from './component-picker-context-menu'
 import { getHighlightBoundsForProject } from '../../../core/model/project-file-utils'
 import {
   selectedElementChangedMessageFromHighlightBounds,
