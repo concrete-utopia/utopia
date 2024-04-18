@@ -1042,6 +1042,25 @@ export function useInspectorLayoutInfo<P extends StyleLayoutProp>(
   return inspectorInfo
 }
 
+export function useShouldShowImgSection(): boolean {
+  return useEditorState(
+    Substores.fullStore,
+    (store) =>
+      store.editor.selectedViews.every((view) =>
+        withUnderlyingTarget(
+          view,
+          store.editor.projectContents,
+          null,
+          (underlyingSuccess, underlyingElement) =>
+            isJSXElement(underlyingElement) &&
+            isHTMLComponent(underlyingElement.name, underlyingSuccess.imports) &&
+            underlyingElement.name.baseVariable === 'img',
+        ),
+      ),
+    'useShouldShowImgSection',
+  )
+}
+
 export function useIsSubSectionVisible(sectionName: string): boolean {
   const selectedViews = useRefSelectedViews()
 
