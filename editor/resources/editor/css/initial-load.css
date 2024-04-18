@@ -40,7 +40,7 @@ body {
   font-family: utopian-inter, -apple-system, BlinkMacSystemFont, Helvetica, 'Segoe UI', Roboto,
     Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; /* from GitHub */
   font-size: 11px !important;
-  /* font-feature-settings: 'cv01', 'tnum', 'salt', 'zero'; */
+  font-feature-settings: 'cv01', 'tnum', 'salt', 'zero';
   letter-spacing: 0.2px;
   line-height: 17px;
   overflow: hidden;
