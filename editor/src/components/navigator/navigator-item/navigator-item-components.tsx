@@ -215,7 +215,7 @@ const useSupportsChildren = (target: ElementPath): boolean => {
         store.editor.propertyControlsInfo,
       )
 
-      // FIXME we should really be using the below
+      // FIXME use the below when we are no longer restricted to preferredChildComponents only
       // return registeredComponent?.supportsChildren ?? false
       return (registeredComponent?.preferredChildComponents?.length ?? 0) > 0
     },

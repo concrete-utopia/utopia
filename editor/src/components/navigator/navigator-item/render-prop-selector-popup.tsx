@@ -109,16 +109,16 @@ const usePreferredChildrenForTargetProp = (
   return preferredChildrenForTargetProp ?? []
 }
 
-type ShowRenderPropPicker = (
+type ShowComponentPickerContextMenu = (
   event: React.MouseEvent<HTMLDivElement>,
   params?: Pick<ContextMenuParams, 'id' | 'props' | 'position'> | undefined,
 ) => void
 
-export const useShowRenderPropPicker = (
+export const useShowComponentPickerContextMenu = (
   id: string,
 ): {
-  showRenderPropPicker: ShowRenderPropPicker
-  hideRenderPropPicker: () => void
+  showComponentPickerContextMenu: ShowComponentPickerContextMenu
+  hideComponentPickerContextMenu: () => void
 } => {
   const { show, hideAll } = useContextMenu({ id })
   const onClick = React.useCallback(
@@ -131,7 +131,7 @@ export const useShowRenderPropPicker = (
     [show],
   )
 
-  return { showRenderPropPicker: onClick, hideRenderPropPicker: hideAll }
+  return { showComponentPickerContextMenu: onClick, hideComponentPickerContextMenu: hideAll }
 }
 
 function defaultVariantItem(
@@ -181,7 +181,7 @@ const separatorItem: ContextMenuItem<unknown> = {
 
 function moreItem(
   menuWrapperRef: React.RefObject<HTMLDivElement>,
-  showRenderPropPicker: ShowRenderPropPicker,
+  showComponentPickerContextMenu: ShowComponentPickerContextMenu,
 ): ContextMenuItem<unknown> {
   return {
     name: (
@@ -210,7 +210,7 @@ function moreItem(
               y: currentMenu.offsetTop,
             }
 
-      showRenderPropPicker(e as React.MouseEvent<any>, {
+      showComponentPickerContextMenu(e as React.MouseEvent<any>, {
         position: position,
       })
     },
@@ -247,7 +247,7 @@ function insertPreferredChild(
   dispatch([insertionAction])
 }
 
-interface RenderPropPickerProps {
+interface ComponentPickerContextMenuProps {
   target: ElementPath
   prop?: string
   key: string
@@ -287,127 +287,138 @@ export function labelTestIdForComponentIcon(
   return `variant-label-${componentName}-${moduleName}-${icon}`
 }
 
-const RenderPropPickerSimple = React.memo<RenderPropPickerProps>(({ key, id, target, prop }) => {
-  const { showRenderPropPicker } = useShowRenderPropPicker(`${id}-full`)
+const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuProps>(
+  ({ key, id, target, prop }) => {
+    const { showComponentPickerContextMenu } = useShowComponentPickerContextMenu(`${id}-full`)
 
-  const preferredChildrenForTargetProp = usePreferredChildrenForTargetProp(target, prop)
+    const preferredChildrenForTargetProp = usePreferredChildrenForTargetProp(target, prop)
 
-  const dispatch = useDispatch()
+    const dispatch = useDispatch()
 
-  const projectContentsRef = useRefEditorState((state) => state.editor.projectContents)
+    const projectContentsRef = useRefEditorState((state) => state.editor.projectContents)
 
-  const onItemClick = React.useCallback(
-    (preferredChildToInsert: ElementToInsert) =>
-      insertPreferredChild(
-        preferredChildToInsert,
-        target,
-        projectContentsRef.current,
-        dispatch,
-        prop,
-      ),
-    [dispatch, projectContentsRef, prop, target],
-  )
-  const wrapperRef = React.useRef<HTMLDivElement>(null)
+    const onItemClick = React.useCallback(
+      (preferredChildToInsert: ElementToInsert) =>
+        insertPreferredChild(
+          preferredChildToInsert,
+          target,
+          projectContentsRef.current,
+          dispatch,
+          prop,
+        ),
+      [dispatch, projectContentsRef, prop, target],
+    )
+    const wrapperRef = React.useRef<HTMLDivElement>(null)
 
-  if (preferredChildrenForTargetProp == null) {
-    return null
-  }
+    if (preferredChildrenForTargetProp == null) {
+      return null
+    }
 
-  const items: Array<ContextMenuItem<unknown>> = preferredChildrenForTargetProp
-    .flatMap<ContextMenuItem<unknown>>((data) => {
-      const iconProps = iconPropsForIcon(data.icon)
+    const items: Array<ContextMenuItem<unknown>> = preferredChildrenForTargetProp
+      .flatMap<ContextMenuItem<unknown>>((data) => {
+        const iconProps = iconPropsForIcon(data.icon)
 
-      const submenuLabel = (
-        <FlexRow
-          style={{ gap: 5 }}
-          data-testId={labelTestIdForComponentIcon(data.name, data.moduleName ?? '', data.icon)}
-        >
-          <Icn {...iconProps} width={12} height={12} />
-          {data.name}
-        </FlexRow>
-      )
+        const submenuLabel = (
+          <FlexRow
+            style={{ gap: 5 }}
+            data-testId={labelTestIdForComponentIcon(data.name, data.moduleName ?? '', data.icon)}
+          >
+            <Icn {...iconProps} width={12} height={12} />
+            {data.name}
+          </FlexRow>
+        )
 
-      const defaultVariantImports = defaultImportsForComponentModule(data.name, data.moduleName)
+        const defaultVariantImports = defaultImportsForComponentModule(data.name, data.moduleName)
 
-      if (data.variants == null || data.variants.length === 0) {
-        return [
-          defaultVariantItem(data.name, submenuLabel, defaultVariantImports, null, onItemClick),
-        ]
-      } else {
-        return [
-          defaultVariantItem(
-            data.name,
-            '(empty)',
-            defaultVariantImports,
-            submenuLabel,
-            onItemClick,
-          ),
-          ...data.variants.map((variant) => {
-            return variantItem(variant, submenuLabel, onItemClick)
-          }),
-        ]
-      }
-    })
-    .concat([separatorItem, moreItem(wrapperRef, showRenderPropPicker)])
+        if (data.variants == null || data.variants.length === 0) {
+          return [
+            defaultVariantItem(data.name, submenuLabel, defaultVariantImports, null, onItemClick),
+          ]
+        } else {
+          return [
+            defaultVariantItem(
+              data.name,
+              '(empty)',
+              defaultVariantImports,
+              submenuLabel,
+              onItemClick,
+            ),
+            ...data.variants.map((variant) => {
+              return variantItem(variant, submenuLabel, onItemClick)
+            }),
+          ]
+        }
+      })
+      .concat([separatorItem, moreItem(wrapperRef, showComponentPickerContextMenu)])
 
-  return (
-    <div ref={wrapperRef}>
-      <MomentumContextMenu id={id} items={items} getData={NO_OP} />
-    </div>
-  )
-})
+    return (
+      <div ref={wrapperRef}>
+        <MomentumContextMenu id={id} items={items} getData={NO_OP} />
+      </div>
+    )
+  },
+)
 
-const RenderPropPickerFull = React.memo<RenderPropPickerProps>(({ key, id, target, prop }) => {
-  const { hideRenderPropPicker } = useShowRenderPropPicker(`${id}-full`)
+const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProps>(
+  ({ key, id, target, prop }) => {
+    const { hideComponentPickerContextMenu } = useShowComponentPickerContextMenu(`${id}-full`)
 
-  const preferredChildrenForTargetProp = usePreferredChildrenForTargetProp(target, prop)
+    const preferredChildrenForTargetProp = usePreferredChildrenForTargetProp(target, prop)
 
-  const dispatch = useDispatch()
+    const dispatch = useDispatch()
 
-  const projectContentsRef = useRefEditorState((state) => state.editor.projectContents)
+    const projectContentsRef = useRefEditorState((state) => state.editor.projectContents)
 
-  const onItemClick = React.useCallback(
-    (preferredChildToInsert: ElementToInsert) => (e: React.MouseEvent) => {
+    const onItemClick = React.useCallback(
+      (preferredChildToInsert: ElementToInsert) => (e: React.MouseEvent) => {
+        e.stopPropagation()
+        e.preventDefault()
+
+        insertPreferredChild(
+          preferredChildToInsert,
+          target,
+          projectContentsRef.current,
+          dispatch,
+          prop,
+        )
+      },
+      [dispatch, projectContentsRef, prop, target],
+    )
+
+    const squashEvents = React.useCallback((e: React.MouseEvent<unknown>) => {
       e.stopPropagation()
-      e.preventDefault()
+    }, [])
 
-      insertPreferredChild(
-        preferredChildToInsert,
-        target,
-        projectContentsRef.current,
-        dispatch,
-        prop,
-      )
-    },
-    [dispatch, projectContentsRef, prop, target],
-  )
+    if (preferredChildrenForTargetProp == null) {
+      return null
+    }
 
-  const squashEvents = React.useCallback((e: React.MouseEvent<unknown>) => {
-    e.stopPropagation()
-  }, [])
+    return (
+      <Menu key={key} id={id} animation={false} style={{ width: 457 }} onClick={squashEvents}>
+        <ComponentPicker
+          insertionTargetName={prop ?? 'Child'}
+          preferredComponents={preferredChildrenForTargetProp}
+          allComponents={preferredChildrenForTargetProp}
+          onItemClick={onItemClick}
+          onClickCloseButton={hideComponentPickerContextMenu}
+        />
+      </Menu>
+    )
+  },
+)
 
-  if (preferredChildrenForTargetProp == null) {
-    return null
-  }
-
-  return (
-    <Menu key={key} id={id} animation={false} style={{ width: 457 }} onClick={squashEvents}>
-      <ComponentPicker
-        insertionTargetName={prop ?? 'Child'}
-        preferredComponents={preferredChildrenForTargetProp}
-        allComponents={preferredChildrenForTargetProp}
-        onItemClick={onItemClick}
-        onClickCloseButton={hideRenderPropPicker}
-      />
-    </Menu>
-  )
-})
-
-export const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, target, prop }) => {
-  return (
-    <React.Fragment>
-      <RenderPropPickerSimple target={target} key={key} id={id} prop={prop} />
-      <RenderPropPickerFull target={target} key={`${key}-full`} id={`${id}-full`} prop={prop} />
-    </React.Fragment>
-  )
-})
+export const ComponentPickerContextMenu = React.memo<ComponentPickerContextMenuProps>(
+  ({ key, id, target, prop }) => {
+    return (
+      <React.Fragment>
+        <ComponentPickerContextMenuSimple target={target} key={key} id={id} prop={prop} />
+        <ComponentPickerContextMenuFull
+          target={target}
+          key={`${key}-full`}
+          id={`${id}-full`}
+          prop={prop}
+        />
+      </React.Fragment>
+    )
+  },
+)
