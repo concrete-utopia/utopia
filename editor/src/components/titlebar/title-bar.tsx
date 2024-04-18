@@ -58,7 +58,6 @@ const ProjectTitle: React.FC<React.PropsWithChildren<ProjectTitleProps>> = ({ ch
         whiteSpace: 'nowrap',
         textOverflow: 'ellipsis',
       }}
-      css={undefined}
     >
       {children}
     </span>
