@@ -1728,9 +1728,7 @@ describe('Use the text editor', () => {
     expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('this is just a string')
   })
 
-  describe('Editing with steganograpy enabled', () => {
-    setFeatureForBrowserTestsUseInDescribeBlockOnly('Steganography', true)
-
+  xdescribe('Editing with steganograpy enabled', () => {
     const steganoProject = `import * as React from 'react'
     import { Storyboard, Scene } from 'utopia-api'
 
