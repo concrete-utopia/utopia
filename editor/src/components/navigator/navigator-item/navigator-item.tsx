@@ -22,7 +22,7 @@ import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
 } from '../../../core/shared/element-template'
-import { hasElementsWithin, isJSXElement } from '../../../core/shared/element-template'
+import { hasElementsWithin } from '../../../core/shared/element-template'
 import type { ElementPath, HighlightBoundsWithFile } from '../../../core/shared/project-file-types'
 import { unless } from '../../../utils/react-conditionals'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
@@ -70,7 +70,6 @@ import {
   sendMessage,
 } from '../../../core/vscode/vscode-bridge'
 import { toVSCodeExtensionMessage } from 'utopia-vscode-common'
-import { isRight } from '../../../core/shared/either'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -741,7 +740,7 @@ export const NavigatorItem: React.FunctionComponent<
   )
 
   const select = React.useCallback(
-    (event: any) => {
+    (event: any) =>
       selectItem(
         dispatch,
         getSelectedViewsInRange,
@@ -751,8 +750,7 @@ export const NavigatorItem: React.FunctionComponent<
         event,
         conditionalOverrideUpdate,
         highlightBounds,
-      )
-    },
+      ),
     [
       dispatch,
       getSelectedViewsInRange,
