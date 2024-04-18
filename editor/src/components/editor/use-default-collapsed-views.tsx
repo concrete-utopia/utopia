@@ -11,7 +11,7 @@ export function useDefaultCollapsedViews() {
 
   // keep track of the previously collapsed element paths, or they will be re-collapsed
   type PreviouslyCollapsed = { [path: string]: boolean }
-  const [previouslyCollapsed, setPreviouslyCollapsed] = React.useState<PreviouslyCollapsed>({})
+  const previouslyCollapsed = React.useRef<PreviouslyCollapsed>({})
 
   const elementNamesByElementPath = useEditorState(
     Substores.metadata,
@@ -39,7 +39,7 @@ export function useDefaultCollapsedViews() {
         // the collapsed views don't already contain the element
         !collapsedPaths.has(path) &&
         // the collapsed view wasn't already collapsed before
-        previouslyCollapsed[path] == null &&
+        previouslyCollapsed.current[path] == null &&
         // the element is a `head`
         elementNamesByElementPath[path] === 'head'
       )
@@ -49,8 +49,9 @@ export function useDefaultCollapsedViews() {
       // 1. add the new collapsed views
       dispatch([addCollapsedViews(newCollapsedViews.map(EP.fromString))])
       // 2. store the new added views to the previous ones
-      setPreviouslyCollapsed(
-        newCollapsedViews.reduce((acc, path) => ({ ...acc, [path]: true }), previouslyCollapsed),
+      previouslyCollapsed.current = newCollapsedViews.reduce(
+        (acc, path) => ({ ...acc, [path]: true }),
+        previouslyCollapsed.current,
       )
     }
   }, [elementNamesByElementPath, collapsedPaths, dispatch, previouslyCollapsed])
