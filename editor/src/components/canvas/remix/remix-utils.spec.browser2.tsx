@@ -9,7 +9,7 @@ import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import {
   DefaultFutureConfig,
   createRouteManifestFromProjectContents,
-  getRootFile,
+  getRemixRootFile,
   getRoutesAndModulesFromManifest,
 } from './remix-utils'
 import { RouteExportsForRouteObject } from './utopia-remix-root-component'
@@ -122,7 +122,7 @@ describe('Route manifest', () => {
 
     const rootDir = getRemixRootDir(renderResult.getEditorState().editor.projectContents)
     const rootFilePath =
-      getRootFile(rootDir, renderResult.getEditorState().editor.projectContents)?.path ?? ''
+      getRemixRootFile(rootDir, renderResult.getEditorState().editor.projectContents)?.path ?? ''
     const remixManifest = createRouteManifestFromProjectContents(
       { rootDir, rootFilePath },
       renderResult.getEditorState().editor.projectContents,
@@ -181,7 +181,7 @@ describe('Route manifest', () => {
 
     const rootDir = getRemixRootDir(renderResult.getEditorState().editor.projectContents)
     const rootFilePath =
-      getRootFile(rootDir, renderResult.getEditorState().editor.projectContents)?.path ?? ''
+      getRemixRootFile(rootDir, renderResult.getEditorState().editor.projectContents)?.path ?? ''
     const remixManifest = createRouteManifestFromProjectContents(
       { rootDir, rootFilePath },
       renderResult.getEditorState().editor.projectContents,
@@ -206,7 +206,7 @@ describe('Route manifest', () => {
 
     const rootDir = getRemixRootDir(renderResult.getEditorState().editor.projectContents)
     const rootFilePath =
-      getRootFile(rootDir, renderResult.getEditorState().editor.projectContents)?.path ?? ''
+      getRemixRootFile(rootDir, renderResult.getEditorState().editor.projectContents)?.path ?? ''
     const remixManifest = createRouteManifestFromProjectContents(
       { rootDir, rootFilePath },
       renderResult.getEditorState().editor.projectContents,
@@ -320,7 +320,7 @@ describe('Routes', () => {
 
     const rootDir = getRemixRootDir(renderResult.getEditorState().editor.projectContents)
     const rootFilePath =
-      getRootFile(rootDir, renderResult.getEditorState().editor.projectContents)?.path ?? ''
+      getRemixRootFile(rootDir, renderResult.getEditorState().editor.projectContents)?.path ?? ''
     const remixManifest = createRouteManifestFromProjectContents(
       { rootDir, rootFilePath },
       renderResult.getEditorState().editor.projectContents,
@@ -329,7 +329,7 @@ describe('Routes', () => {
 
     let routeModuleCache = { current: {} }
     const remixRoutes = getRoutesAndModulesFromManifest(
-      getRootFile(rootDir, renderResult.getEditorState().editor.projectContents)!.file,
+      getRemixRootFile(rootDir, renderResult.getEditorState().editor.projectContents)!.file,
       remixManifest!,
       DefaultFutureConfig,
       renderResult.getEditorState().editor.codeResultCache.curriedRequireFn,
@@ -442,7 +442,7 @@ describe('Routes', () => {
 
     const rootDir = getRemixRootDir(renderResult.getEditorState().editor.projectContents)
     const rootFilePath =
-      getRootFile(rootDir, renderResult.getEditorState().editor.projectContents)?.path ?? ''
+      getRemixRootFile(rootDir, renderResult.getEditorState().editor.projectContents)?.path ?? ''
     const remixManifest = createRouteManifestFromProjectContents(
       { rootDir, rootFilePath },
       renderResult.getEditorState().editor.projectContents,
@@ -451,7 +451,7 @@ describe('Routes', () => {
     let routeModuleCache = { current: {} }
     expect(remixManifest).not.toBeNull()
     const remixRoutes = getRoutesAndModulesFromManifest(
-      getRootFile(rootDir, renderResult.getEditorState().editor.projectContents)!.file,
+      getRemixRootFile(rootDir, renderResult.getEditorState().editor.projectContents)!.file,
       remixManifest!,
       DefaultFutureConfig,
       renderResult.getEditorState().editor.codeResultCache.curriedRequireFn,

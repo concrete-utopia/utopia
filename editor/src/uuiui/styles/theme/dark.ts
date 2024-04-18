@@ -213,11 +213,11 @@ const darkTheme: typeof light = {
   navigatorComponentSelected: darkBase.componentChild20,
   navigatorComponentIconBorder: darkBase.componentChild,
 
-  contextMenuBackground: darkPrimitives.secondaryBackground,
-  contextMenuForeground: darkPrimitives.neutralForeground,
+  contextMenuBackground: darkBase.bg1,
+  contextMenuForeground: darkBase.white,
   contextMenuHighlightForeground: darkBase.bg1,
   contextMenuHighlightBackground: darkBase.dynamicBlue,
-  contextMenuSeparator: createUtopiColor('rgba(0,0,0,0.1)'),
+  contextMenuSeparator: createUtopiColor('rgba(255,255,255,0.35)'),
 
   inspectorHoverColor: darkBase.fg8,
   inspectorFocusedColor: darkBase.dynamicBlue,

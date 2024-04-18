@@ -46,7 +46,7 @@ import { toString } from '../../core/shared/element-path'
 import type { SteganoTextData } from '../../core/shared/stegano-text'
 import { cleanSteganoTextData, decodeSteganoData } from '../../core/shared/stegano-text'
 import { useUpdateStringRun } from '../../core/model/project-file-helper-hooks'
-import { isFeatureEnabled } from '../../utils/feature-switches'
+import { STEGANOGRAPHY_ENABLED } from '../../utils/feature-switches'
 
 export const TextEditorSpanId = 'text-editor'
 
@@ -300,7 +300,7 @@ function getTextToUse({
   text: string
   originalText: string | null
 }): TextEditedText {
-  if (isFeatureEnabled('Steganography') && originalText != null) {
+  if (STEGANOGRAPHY_ENABLED && originalText != null) {
     const data = decodeSteganoData(originalText)
     if (data != null) {
       const { cleaned } = cleanSteganoTextData(originalText)

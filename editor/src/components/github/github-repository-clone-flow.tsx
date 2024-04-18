@@ -110,6 +110,7 @@ async function cloneGithubRepo(
     [],
     storeRef.current.builtInDependencies,
     {}, // Assuming a totally empty project (that is being saved probably parallel to this operation, hopefully not causing any race conditions)
+    'user-initiated',
   )
 
   // at this point we can assume the repo is loaded and we can finally hide the overlay

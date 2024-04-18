@@ -2,7 +2,6 @@ import type { ContextMenuItem } from '../../components/context-menu-items'
 import type { EditorDispatch } from '../../components/editor/action-types'
 import type { GithubRepo } from '../../components/editor/store/editor-state'
 import type { Conflict } from './github/helpers'
-import { resolveConflict } from './github/helpers'
 import { GithubOperations } from './github/operations'
 
 export function getConflictMenuItems(
@@ -21,6 +20,7 @@ export function getConflictMenuItems(
       conflict,
       whichChange,
       dispatch,
+      'user-initiated',
     )
   }
   switch (conflict.type) {

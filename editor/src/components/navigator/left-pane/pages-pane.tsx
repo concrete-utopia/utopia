@@ -5,8 +5,8 @@ import { jsx } from '@emotion/react'
 
 import { useAtom } from 'jotai'
 import React from 'react'
-import { matchRoutes } from 'react-router'
-import { safeIndex, uniqBy } from '../../../core/shared/array-utils'
+import { matchPath, matchRoutes } from 'react-router'
+import { mapFirstApplicable, safeIndex, uniqBy } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
 import {
   NO_OP,
@@ -57,11 +57,16 @@ import { createNewPageName } from '../../editor/store/editor-state'
 import urljoin from 'url-join'
 import { notice } from '../../common/notice'
 import type { EditorDispatch } from '../../editor/action-types'
+import { maybeToArray } from '../../../core/shared/optional-utils'
 
 type RouteMatch = {
   path: string
-  resolvedPath: string
+  resolvedPath: string | null
   matchesRealRoute: boolean
+}
+
+type RouteMatches = {
+  [path: string]: RouteMatch
 }
 
 type NavigateTo = {
@@ -75,6 +80,13 @@ type NavigateMode =
   | 'all-scenes' // apply navigation to all scenes
 
 export const PagesPane = React.memo((props) => {
+  const [navigationControls] = useAtom(RemixNavigationAtom)
+  const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
+
+  const activeLocation = navigationControls[EP.toString(activeRemixScene)]?.location
+  const pathname = activeLocation?.pathname ?? ''
+  const activeRoute = getRemixUrlFromLocation(activeLocation) ?? ''
+
   const featuredRoutes = useEditorState(
     Substores.projectContents,
     (store) => {
@@ -82,52 +94,40 @@ export const PagesPane = React.memo((props) => {
     },
     'PagesPane featuredRoutes',
   )
-  const registeredExampleRoutes = fillInGapsInRoute(featuredRoutes)
 
-  const remixRoutes: Array<RouteMatch> = useEditorState(
+  const remixRoutesObject: RouteMatches = useEditorState(
     Substores.derived,
     (store) => {
-      const result = uniqBy(
-        registeredExampleRoutes.flatMap((exampleRoute): Array<RouteMatch> => {
-          const matchResult = matchRoutes(store.derived.remixData?.routes ?? [], exampleRoute) ?? []
-
-          const lastMatchResult = safeIndex(matchResult, matchResult.length - 1)
-
-          if (lastMatchResult?.pathname !== lastMatchResult?.pathnameBase) {
-            return [
-              {
-                path: exampleRoute,
-                resolvedPath: exampleRoute,
-                matchesRealRoute: false,
-              },
-            ]
-          }
-
-          return matchResult.map(
-            (match): RouteMatch => ({
-              resolvedPath: match.pathname,
-              path: '/' + (match.route.path ?? ''),
-              matchesRealRoute: true,
-            }),
+      function processRoutes(routes: Array<any>, prefix: string): RouteMatches {
+        let result: RouteMatches = {}
+        for (const route of routes) {
+          const path = urljoin(prefix, '/', route.path ?? '')
+          const firstMatchingFavorite = mapFirstApplicable(
+            [...featuredRoutes, activeRoute],
+            (favorite) => matchPath(path, favorite)?.pathname ?? null,
           )
-        }),
-        (l, r) => l?.path === r?.path,
-      )
 
-      return result
+          if (path !== '') {
+            result[path] = {
+              path: path,
+              resolvedPath: firstMatchingFavorite,
+              matchesRealRoute: true,
+            }
+          }
+          if (route.children != null) {
+            result = { ...result, ...processRoutes(route.children, path) }
+          }
+        }
+        return result
+      }
+      const routes = processRoutes(store.derived.remixData?.routes ?? [], '')
+      return routes
     },
     'PagesPane remixRoutes',
   )
 
-  const [navigationControls] = useAtom(RemixNavigationAtom)
-  const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
-
-  const activeLocation = navigationControls[EP.toString(activeRemixScene)]?.location
-
-  const url = getRemixUrlFromLocation(activeLocation)
-
-  const pathname = activeLocation?.pathname ?? ''
-  const matchResult = matchRoutes(remixRoutes, pathname)
+  // all remix routes in the project, ordered alphabetically
+  const remixRoutes = fillInGapsInRoutes(remixRoutesObject)
 
   const pageTemplates = useEditorState(
     Substores.projectContents,
@@ -173,8 +173,8 @@ export const PagesPane = React.memo((props) => {
     setNavigateTo(null)
   })
 
-  const activeRoute = url ?? ''
   const activeRouteDoesntMatchAnyFavorites = !featuredRoutes.includes(activeRoute!)
+  const activeRouteTemplatePath = matchRoutes(remixRoutes, pathname)?.[0].route.path
 
   return (
     <FlexColumn style={{ height: '100%', overflowY: 'scroll' }}>
@@ -222,33 +222,16 @@ export const PagesPane = React.memo((props) => {
         )}
       </InspectorSectionHeader>
 
-      {when(
-        remixRoutes.length === 0,
-        <FlexColumn
-          style={{
-            height: '100%',
-            overflowY: 'scroll',
-            whiteSpace: 'normal',
-            padding: 16,
-            paddingTop: 32,
-          }}
-        >
-          <Subdued>
-            No featured routes were found in the project. Please add a favorite route using the
-            Favorites section.
-          </Subdued>
-        </FlexColumn>,
-      )}
       {remixRoutes.map((route: RouteMatch, index) => {
         const { path, resolvedPath } = route
-        const pathMatchesActivePath = matchResult?.[0].route.path === path
+        const pathMatchesActivePath = path === activeRouteTemplatePath
         const pathToDisplay = path ?? RemixIndexPathLabel
 
         return (
           <PageRouteEntry
             key={path}
             routePath={pathToDisplay}
-            resolvedPath={pathMatchesActivePath ? matchResult?.[0].pathname : resolvedPath}
+            resolvedPath={resolvedPath}
             active={pathMatchesActivePath}
             matchesRealRoute={route.matchesRealRoute}
             navigateTo={navigateTo}
@@ -262,7 +245,7 @@ export const PagesPane = React.memo((props) => {
 
 interface PageRouteEntryProps {
   routePath: string
-  resolvedPath: string
+  resolvedPath: string | null
   active: boolean
   matchesRealRoute: boolean
   navigateTo: NavigateTo | null
@@ -270,22 +253,37 @@ interface PageRouteEntryProps {
 }
 const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
   const ref = React.useRef<HTMLDivElement | null>(null)
-  useScrollToNavigateToRoute(ref, props.resolvedPath, props.navigateTo)
 
   const [navigationControls] = useAtom(RemixNavigationAtom)
   const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
 
-  const onClick = React.useCallback(() => {
-    void navigationControls[EP.toString(activeRemixScene)]?.navigate(props.resolvedPath)
-  }, [navigationControls, activeRemixScene, props.resolvedPath])
+  const pathCanBeClickedToNavigate =
+    props.matchesRealRoute && !(props.resolvedPath == null && props.routePath.includes(':'))
 
-  const resolvedRouteSegments = props.resolvedPath.split('/')
+  const onClick = React.useCallback(() => {
+    if (!pathCanBeClickedToNavigate) {
+      return
+    }
+    void navigationControls[EP.toString(activeRemixScene)]?.navigate(
+      props.resolvedPath ?? props.routePath,
+    )
+  }, [
+    navigationControls,
+    activeRemixScene,
+    pathCanBeClickedToNavigate,
+    props.resolvedPath,
+    props.routePath,
+  ])
+
+  const resolvedPathWithoutQueryOrHash = props.resolvedPath?.split('?')[0].split('#')[0]
+
+  const resolvedRouteSegments = resolvedPathWithoutQueryOrHash?.split('/')
   const templateRouteSegments = props.routePath.split('/')
 
-  const lastResolvedSegment = resolvedRouteSegments[resolvedRouteSegments.length - 1]
+  const lastResolvedSegment = resolvedRouteSegments?.[resolvedRouteSegments.length - 1]
   const lastTemplateSegment = templateRouteSegments[templateRouteSegments.length - 1]
 
-  const indentation = resolvedRouteSegments.length - 2
+  const indentation = templateRouteSegments.length - 2
 
   const isDynamicPathSegment = lastTemplateSegment.startsWith(':')
 
@@ -309,6 +307,7 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
         alignItems: 'center',
         borderRadius: 2,
         position: 'relative',
+        cursor: pathCanBeClickedToNavigate ? 'pointer' : 'auto',
       }}
       onClick={props.matchesRealRoute ? onClick : NO_OP}
     >
@@ -345,7 +344,7 @@ const PageRouteEntry = React.memo<PageRouteEntryProps>((props) => {
               flexGrow: 1,
             }}
           >
-            {lastTemplateSegment === '' ? RemixIndexPathLabel : '/' + lastTemplateSegment}
+            {props.routePath}
           </span>
           <span
             style={{
@@ -403,6 +402,7 @@ const FavoriteEntry = React.memo(({ favorite, active, addedToFavorites }: Favori
           ? '1px solid transparent'
           : '1px dashed ' + colorTheme.border3.value,
         boxSizing: 'border-box',
+        fontStyle: !addedToFavorites ? 'italic' : 'normal',
         marginLeft: 8,
         marginRight: 8,
         paddingLeft: 19, // to visually align the icons with the route entries underneath the favorites section
@@ -548,21 +548,25 @@ const StarUnstarIcon = React.memo(({ url, addedToFavorites, selected }: StarUnst
   )
 })
 
-function fillInGapsInRoute(routes: Array<string>): Array<string> {
+function fillInGapsInRoutes(routes: RouteMatches): Array<RouteMatch> {
   // if we find a route /collections, and a route /collections/hats/beanies, we should create an entry for /collections/hats, so there are no gaps in the tree structure
-  let result: Array<string> = []
-  for (const route of routes) {
-    const parts = route.split('/')
+  let result: RouteMatches = {}
+  for (const route of Object.values(routes)) {
+    const parts = route.path.split('/')
     for (let i = 1; i < parts.length - 1; i++) {
       const parentRoute = parts.slice(0, i + 1).join('/')
-      if (!result.includes(parentRoute)) {
-        result.push(parentRoute)
+      if (!(parentRoute in result)) {
+        result[parentRoute] = {
+          path: parentRoute,
+          resolvedPath: null,
+          matchesRealRoute: false,
+        }
       }
     }
-    result.push(route)
+    result[route.path] = route
   }
 
-  return result
+  return Object.values(result).sort((a, b) => a.path.localeCompare(b.path))
 }
 
 export const AddPageContextMenu = React.memo(
@@ -608,18 +612,6 @@ export const AddPageContextMenu = React.memo(
   },
 )
 
-function useScrollToNavigateToRoute(
-  ref: React.MutableRefObject<HTMLDivElement | null>,
-  path: string,
-  navigateTo: NavigateTo | null,
-) {
-  React.useEffect(() => {
-    if (navigateTo?.resolvedPath === path) {
-      ref.current?.scrollIntoView()
-    }
-  }, [navigateTo, ref, path])
-}
-
 function useNavigateToRouteWhenAvailable(
   remixRoutes: RouteMatch[],
   navigateTo: NavigateTo | null,
@@ -648,9 +640,8 @@ function useNavigateToRouteWhenAvailable(
     }
 
     // if the target is a specific route, go to it
-    const navigateToMatchesRealRoute = remixRoutes.find((r) => {
-      return r.resolvedPath === navigateTo.resolvedPath
-    })?.matchesRealRoute
+    const navigateToMatchesRealRoute =
+      matchRoutes(remixRoutes, navigateTo.resolvedPath)?.[0].route.matchesRealRoute ?? false
 
     // otherwise if the target is not a specific route, go to the first valid match for its prefix
     const navigationTarget = navigateToMatchesRealRoute
@@ -686,20 +677,25 @@ function useRenaming(props: PageRouteEntryProps) {
   const [isRenaming, setIsRenaming] = React.useState(false)
 
   const startRenaming = React.useCallback(() => {
-    const canRename = props.routePath !== '/'
+    const canRename =
+      props.routePath !== '/' && (props.resolvedPath != null || !props.routePath.includes(':'))
     if (canRename) {
       setIsRenaming(true)
     }
-  }, [props.routePath])
+  }, [props.routePath, props.resolvedPath])
 
   const onDoneRenaming = React.useCallback(
     (newPath: string | null) => {
       setIsRenaming(false)
+      const pathIsDynamicUnresolved = props.resolvedPath == null && props.routePath.includes(':')
+      if (pathIsDynamicUnresolved) {
+        return
+      }
       const newResolvedPath = runRenameRemixRoute(
         dispatch,
         newPath,
         props.routePath,
-        props.resolvedPath,
+        props.resolvedPath ?? props.routePath,
       )
       if (newPath != null && newResolvedPath != null) {
         props.onAfterRouteRenamed(newPath, newResolvedPath)
