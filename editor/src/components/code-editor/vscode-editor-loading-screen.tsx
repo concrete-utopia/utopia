@@ -102,7 +102,7 @@ export const VSCodeLoadingScreen = React.memo((): React.ReactElement | null => {
         fontSize: 11,
         display: 'flex',
         flexDirection: 'column',
-        fontFamily: '-apple-system, system-ui, sans-serif',
+        fontFamily: 'sans-serif',
         backgroundColor: colorTheme.inspectorBackground.value,
       }}
       id={VSCodeLoadingScreenID}

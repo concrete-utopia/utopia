@@ -17,7 +17,7 @@
 /* Tab styles */
 .tab {
   font-weight: 500;
-  font-family: 'Inter';
+  font-family: sans-serif;
   border-right: none !important;
   background-color: transparent !important;
 }
