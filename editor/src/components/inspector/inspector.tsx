@@ -353,6 +353,11 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
 
   const shouldShowAlignmentButtons = !hideAllSections && inspectorPreferences.includes('layout')
   const shouldShowClassNameSubsection = isTwindEnabled() && inspectorPreferences.includes('visual')
+  const shouldShowTargetSelectorSection = canEdit && inspectorPreferences.includes('visual')
+  const shouldShowFlexSection =
+    multiselectedContract === 'frame' && inspectorPreferences.includes('layout-system')
+
+  const shouldShowSimplifiedLayoutSection = inspectorPreferences.includes('layout-system')
 
   function renderInspectorContents() {
     return (
@@ -404,7 +409,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
                 hideAllSections,
                 <>
                   {when(
-                    canEdit,
+                    shouldShowTargetSelectorSection,
                     <TargetSelectorSection
                       targets={props.targets}
                       selectedTargetPath={props.selectedTargetPath}
@@ -415,20 +420,15 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
                     />,
                   )}
                   {when(multiselectedContract === 'fragment', <FragmentSection />)}
-                  {unless(
-                    multiselectedContract === 'fragment',
+                  {when(
+                    multiselectedContract !== 'fragment' && shouldShowSimplifiedLayoutSection,
                     // Position and Sizing sections are shown if Frame or Group is selected
                     <>
                       <SimplifiedLayoutSubsection />
                       <ConstraintsSection />
                     </>,
                   )}
-                  {when(
-                    multiselectedContract === 'frame',
-                    <>
-                      <FlexSection />
-                    </>,
-                  )}
+                  {when(shouldShowFlexSection, <FlexSection />)}
                   {when(
                     multiselectedContract === 'frame' || multiselectedContract === 'wrapper-div',
                     // All the regular inspector sections are only visible if frames are selected
