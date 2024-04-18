@@ -334,6 +334,7 @@ import type {
   UpdateRemixRoute,
   AddNewFeaturedRoute,
   RemoveFeaturedRoute,
+  AddCollapsedViews,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -3023,7 +3024,6 @@ export const UPDATE_FNS = {
   SET_RIGHT_MENU_EXPANDED: (action: SetRightMenuExpanded, editor: EditorModel): EditorModel => {
     return updateRightMenuExpanded(editor, action.expanded)
   },
-
   TOGGLE_COLLAPSE: (action: ToggleCollapse, editor: EditorModel): EditorModel => {
     if (editor.navigator.collapsedViews.some((element) => EP.pathsEqual(element, action.target))) {
       return {
@@ -3043,6 +3043,18 @@ export const UPDATE_FNS = {
           collapsedViews: editor.navigator.collapsedViews.concat(action.target),
         }).value,
       }
+    }
+  },
+  ADD_COLLAPSED_VIEWS: (action: AddCollapsedViews, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      navigator: {
+        ...editor.navigator,
+        collapsedViews: uniqBy(
+          [...editor.navigator.collapsedViews, ...action.collapsedViews],
+          EP.pathsEqual,
+        ),
+      },
     }
   },
   UPDATE_KEYS_PRESSED: (action: UpdateKeysPressed, editor: EditorModel): EditorModel => {

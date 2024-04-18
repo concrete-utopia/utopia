@@ -15,6 +15,7 @@ import Utils from '../../utils/utils'
 import { FlexColumn, Section, SectionBodyArea } from '../../uuiui'
 import { setFocus } from '../common/actions'
 import {
+  addCollapsedViews,
   clearHighlightedViews,
   clearSelection,
   showContextMenu,
@@ -31,6 +32,8 @@ import { ElementContextMenu } from '../element-context-menu'
 import { getItemHeight } from './navigator-item/navigator-item'
 import { NavigatorDragLayer } from './navigator-drag-layer'
 import { NavigatorItemWrapper } from './navigator-item/navigator-item-wrapper'
+import { isRight } from '../../core/shared/either'
+import { isJSXElement } from '../../core/shared/element-template'
 
 interface ItemProps extends ListChildComponentProps {}
 
@@ -261,6 +264,8 @@ export const NavigatorComponent = React.memo(() => {
     [dispatch],
   )
 
+  useDefaultCollapsed()
+
   return (
     <Section
       data-name='Navigator'
@@ -323,3 +328,46 @@ export const NavigatorComponent = React.memo(() => {
   )
 })
 NavigatorComponent.displayName = 'NavigatorComponent'
+
+function useDefaultCollapsed() {
+  const dispatch = useDispatch()
+
+  const [defaultExpanded, setDefaultExpanded] = React.useState<{ [path: string]: boolean }>({})
+
+  const jsxMetadata = useEditorState(
+    Substores.metadata,
+    (store) => store.editor.jsxMetadata,
+    'useDefaultCollapsed jsxMetadata',
+  )
+
+  const collapsedViews = useEditorState(
+    Substores.navigator,
+    (store) => store.editor.navigator.collapsedViews,
+    'useDefaultCollapsed collapsedViews',
+  )
+
+  React.useEffect(() => {
+    const collapsedViewsSet = new Set(collapsedViews.map(EP.toString))
+
+    let newCollapsedViews: ElementPath[] = []
+    for (const element of Object.values(jsxMetadata)) {
+      const pathString = EP.toString(element.elementPath)
+
+      const addToViews =
+        !collapsedViewsSet.has(pathString) &&
+        defaultExpanded[pathString] == null &&
+        isRight(element.element) &&
+        isJSXElement(element.element.value) &&
+        element.element.value.name.baseVariable === 'head'
+
+      if (addToViews) {
+        newCollapsedViews.push(element.elementPath)
+        setDefaultExpanded((v) => ({ ...v, [pathString]: true }))
+      }
+    }
+
+    if (newCollapsedViews.length > 0) {
+      dispatch([addCollapsedViews(newCollapsedViews)])
+    }
+  }, [jsxMetadata, collapsedViews, dispatch, defaultExpanded])
+}
