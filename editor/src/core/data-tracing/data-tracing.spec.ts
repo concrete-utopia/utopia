@@ -14,33 +14,34 @@ import * as PP from '../shared/property-path'
 import { dataTracingToLiteralAttribute, traceDataFromProp } from './data-tracing'
 
 describe('Data Tracing', () => {
-  it('Pointing it at a string literal prop just returns the string literal prop all right', async () => {
-    const editor = await renderTestEditorWithCode(
-      makeTestProjectCodeWithStoryboard(`
+  describe('Tracing through direct props use', () => {
+    it('Pointing it at a string literal prop just returns the string literal prop all right', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithStoryboard(`
       function App() {
         return <div data-uid='my-component' title='string literal here' />
       }
       `),
-      'await-first-dom-report',
-    )
+        'await-first-dom-report',
+      )
 
-    await focusOnComponentForTest(editor, EP.fromString('sb/app'))
+      await focusOnComponentForTest(editor, EP.fromString('sb/app'))
 
-    const traceResult = traceDataFromProp(
-      EPP.create(EP.fromString('sb/app:my-component'), PP.create('title')),
-      editor.getEditorState().editor.jsxMetadata,
-      editor.getEditorState().editor.projectContents,
-      [],
-    )
+      const traceResult = traceDataFromProp(
+        EPP.create(EP.fromString('sb/app:my-component'), PP.create('title')),
+        editor.getEditorState().editor.jsxMetadata,
+        editor.getEditorState().editor.projectContents,
+        [],
+      )
 
-    expect(traceResult).toEqual(
-      dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('title'), []),
-    )
-  })
+      expect(traceResult).toEqual(
+        dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('title'), []),
+      )
+    })
 
-  it('Traces back a regular prop to a string literal jsx attribute', async () => {
-    const editor = await renderTestEditorWithCode(
-      makeTestProjectCodeWithStoryboard(`
+    it('Traces back a regular prop to a string literal jsx attribute', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithStoryboard(`
       function MyComponent(props) {
         return <div data-uid='component-root' title={props.title} />
       }
@@ -49,26 +50,26 @@ describe('Data Tracing', () => {
         return <MyComponent data-uid='my-component' title='string literal here' />
       }
       `),
-      'await-first-dom-report',
-    )
+        'await-first-dom-report',
+      )
 
-    await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component'))
+      await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component'))
 
-    const traceResult = traceDataFromProp(
-      EPP.create(EP.fromString('sb/app:my-component:component-root'), PP.create('title')),
-      editor.getEditorState().editor.jsxMetadata,
-      editor.getEditorState().editor.projectContents,
-      [],
-    )
+      const traceResult = traceDataFromProp(
+        EPP.create(EP.fromString('sb/app:my-component:component-root'), PP.create('title')),
+        editor.getEditorState().editor.jsxMetadata,
+        editor.getEditorState().editor.projectContents,
+        [],
+      )
 
-    expect(traceResult).toEqual(
-      dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('title'), []),
-    )
-  })
+      expect(traceResult).toEqual(
+        dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('title'), []),
+      )
+    })
 
-  it('Traces back a destrucuted prop to a string literal jsx attribute', async () => {
-    const editor = await renderTestEditorWithCode(
-      makeTestProjectCodeWithStoryboard(`
+    it('Traces back a destrucuted prop to a string literal jsx attribute', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithStoryboard(`
       function MyComponent({ propA, title, propC, ...restOfProps }) {
         return <div data-uid='component-root' title={title} />
       }
@@ -77,26 +78,26 @@ describe('Data Tracing', () => {
         return <MyComponent data-uid='my-component' title='string literal here' />
       }
       `),
-      'await-first-dom-report',
-    )
+        'await-first-dom-report',
+      )
 
-    await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component'))
+      await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component'))
 
-    const traceResult = traceDataFromProp(
-      EPP.create(EP.fromString('sb/app:my-component:component-root'), PP.create('title')),
-      editor.getEditorState().editor.jsxMetadata,
-      editor.getEditorState().editor.projectContents,
-      [],
-    )
+      const traceResult = traceDataFromProp(
+        EPP.create(EP.fromString('sb/app:my-component:component-root'), PP.create('title')),
+        editor.getEditorState().editor.jsxMetadata,
+        editor.getEditorState().editor.projectContents,
+        [],
+      )
 
-    expect(traceResult).toEqual(
-      dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('title'), []),
-    )
-  })
+      expect(traceResult).toEqual(
+        dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('title'), []),
+      )
+    })
 
-  it('Traces back a spread destructured prop to a string literal jsx attribute', async () => {
-    const editor = await renderTestEditorWithCode(
-      makeTestProjectCodeWithStoryboard(`
+    it('Traces back a spread destructured prop to a string literal jsx attribute', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithStoryboard(`
       function MyComponent({ propA, propC, ...restOfProps }) {
         return <div data-uid='component-root' title={restOfProps.title} />
       }
@@ -105,26 +106,26 @@ describe('Data Tracing', () => {
         return <MyComponent data-uid='my-component' title='string literal here' />
       }
       `),
-      'await-first-dom-report',
-    )
+        'await-first-dom-report',
+      )
 
-    await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component'))
+      await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component'))
 
-    const traceResult = traceDataFromProp(
-      EPP.create(EP.fromString('sb/app:my-component:component-root'), PP.create('title')),
-      editor.getEditorState().editor.jsxMetadata,
-      editor.getEditorState().editor.projectContents,
-      [],
-    )
+      const traceResult = traceDataFromProp(
+        EPP.create(EP.fromString('sb/app:my-component:component-root'), PP.create('title')),
+        editor.getEditorState().editor.jsxMetadata,
+        editor.getEditorState().editor.projectContents,
+        [],
+      )
 
-    expect(traceResult).toEqual(
-      dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('title'), []),
-    )
-  })
+      expect(traceResult).toEqual(
+        dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('title'), []),
+      )
+    })
 
-  it('Traces back an evil undrilled prop use to a string literal jsx attribute', async () => {
-    const editor = await renderTestEditorWithCode(
-      makeTestProjectCodeWithStoryboard(`
+    it('Traces back an evil undrilled prop use to a string literal jsx attribute', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithStoryboard(`
       function MyInnerComponent(props) {
         return <div data-uid='component-inner-root' title={props.allProps.title} />
       }
@@ -137,29 +138,29 @@ describe('Data Tracing', () => {
         return <MyComponent data-uid='my-component' title='string literal here' />
       }
       `),
-      'await-first-dom-report',
-    )
+        'await-first-dom-report',
+      )
 
-    await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component:component-root'))
+      await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component:component-root'))
 
-    const traceResult = traceDataFromProp(
-      EPP.create(
-        EP.fromString('sb/app:my-component:component-root:component-inner-root'),
-        PP.create('title'),
-      ),
-      editor.getEditorState().editor.jsxMetadata,
-      editor.getEditorState().editor.projectContents,
-      [],
-    )
+      const traceResult = traceDataFromProp(
+        EPP.create(
+          EP.fromString('sb/app:my-component:component-root:component-inner-root'),
+          PP.create('title'),
+        ),
+        editor.getEditorState().editor.jsxMetadata,
+        editor.getEditorState().editor.projectContents,
+        [],
+      )
 
-    expect(traceResult).toEqual(
-      dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('title'), []),
-    )
-  })
+      expect(traceResult).toEqual(
+        dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('title'), []),
+      )
+    })
 
-  it('Traces back a prop to an object literal jsx attribute with a data path', async () => {
-    const editor = await renderTestEditorWithCode(
-      makeTestProjectCodeWithStoryboard(`
+    it('Traces back a prop to an object literal jsx attribute with a data path', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithStoryboard(`
       function MyComponent({doc}) {
         return <div data-uid='component-root' title={doc.title} />
       }
@@ -168,28 +169,28 @@ describe('Data Tracing', () => {
         return <MyComponent data-uid='my-component' doc={{title: 'string literal here'}} />
       }
       `),
-      'await-first-dom-report',
-    )
+        'await-first-dom-report',
+      )
 
-    await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component'))
+      await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component'))
 
-    const traceResult = traceDataFromProp(
-      EPP.create(EP.fromString('sb/app:my-component:component-root'), PP.create('title')),
-      editor.getEditorState().editor.jsxMetadata,
-      editor.getEditorState().editor.projectContents,
-      [],
-    )
+      const traceResult = traceDataFromProp(
+        EPP.create(EP.fromString('sb/app:my-component:component-root'), PP.create('title')),
+        editor.getEditorState().editor.jsxMetadata,
+        editor.getEditorState().editor.projectContents,
+        [],
+      )
 
-    expect(traceResult).toEqual(
-      dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('doc'), [
-        'title',
-      ]),
-    )
-  })
+      expect(traceResult).toEqual(
+        dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('doc'), [
+          'title',
+        ]),
+      )
+    })
 
-  it('Traces back a prop to an object literal jsx attribute with a deep data path', async () => {
-    const editor = await renderTestEditorWithCode(
-      makeTestProjectCodeWithStoryboard(`
+    it('Traces back a prop to an object literal jsx attribute with a deep data path', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithStoryboard(`
       function MyComponent({doc}) {
         return <div data-uid='component-root' title={doc.very.deep.title} />
       }
@@ -198,30 +199,30 @@ describe('Data Tracing', () => {
         return <MyComponent data-uid='my-component' doc={{very: { deep: { title: 'string literal here' } } }} />
       }
       `),
-      'await-first-dom-report',
-    )
+        'await-first-dom-report',
+      )
 
-    await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component'))
+      await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component'))
 
-    const traceResult = traceDataFromProp(
-      EPP.create(EP.fromString('sb/app:my-component:component-root'), PP.create('title')),
-      editor.getEditorState().editor.jsxMetadata,
-      editor.getEditorState().editor.projectContents,
-      [],
-    )
+      const traceResult = traceDataFromProp(
+        EPP.create(EP.fromString('sb/app:my-component:component-root'), PP.create('title')),
+        editor.getEditorState().editor.jsxMetadata,
+        editor.getEditorState().editor.projectContents,
+        [],
+      )
 
-    expect(traceResult).toEqual(
-      dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('doc'), [
-        'very',
-        'deep',
-        'title',
-      ]),
-    )
-  })
+      expect(traceResult).toEqual(
+        dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('doc'), [
+          'very',
+          'deep',
+          'title',
+        ]),
+      )
+    })
 
-  it('Traces back a prop to an object literal jsx attribute with a deep data path through multiple components', async () => {
-    const editor = await renderTestEditorWithCode(
-      makeTestProjectCodeWithStoryboard(`
+    it('Traces back a prop to an object literal jsx attribute with a deep data path through multiple components', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithStoryboard(`
       function MyInnerComponent({title}) {
         return <div data-uid='inner-component-root' innerTitle={title.value} />
       }
@@ -234,29 +235,61 @@ describe('Data Tracing', () => {
         return <MyComponent data-uid='my-component' doc={{very: { deep: { title: {value: 'string literal here'} } } }} />
       }
       `),
-      'await-first-dom-report',
-    )
+        'await-first-dom-report',
+      )
 
-    await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component:component-root'))
+      await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component:component-root'))
 
-    const traceResult = traceDataFromProp(
-      EPP.create(
-        EP.fromString('sb/app:my-component:component-root:inner-component-root'),
-        PP.create('innerTitle'),
-      ),
-      editor.getEditorState().editor.jsxMetadata,
-      editor.getEditorState().editor.projectContents,
-      [],
-    )
+      const traceResult = traceDataFromProp(
+        EPP.create(
+          EP.fromString('sb/app:my-component:component-root:inner-component-root'),
+          PP.create('innerTitle'),
+        ),
+        editor.getEditorState().editor.jsxMetadata,
+        editor.getEditorState().editor.projectContents,
+        [],
+      )
 
-    expect(traceResult).toEqual(
-      dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('doc'), [
-        'very',
-        'deep',
-        'title',
-        'value',
-      ]),
-    )
+      expect(traceResult).toEqual(
+        dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('doc'), [
+          'very',
+          'deep',
+          'title',
+          'value',
+        ]),
+      )
+    })
+  })
+
+  describe('Tracing through local variable indirection', () => {
+    it('Traces back a regular prop to a string literal jsx attribute via a single const indirection', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithStoryboard(`
+      function MyComponent(props) {
+        const title = props.title
+        return <div data-uid='component-root' title={title} />
+      }
+
+      function App() {
+        return <MyComponent data-uid='my-component' title='string literal here' />
+      }
+      `),
+        'await-first-dom-report',
+      )
+
+      await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component'))
+
+      const traceResult = traceDataFromProp(
+        EPP.create(EP.fromString('sb/app:my-component:component-root'), PP.create('title')),
+        editor.getEditorState().editor.jsxMetadata,
+        editor.getEditorState().editor.projectContents,
+        [],
+      )
+
+      expect(traceResult).toEqual(
+        dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('title'), []),
+      )
+    })
   })
 })
 
