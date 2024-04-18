@@ -80,9 +80,9 @@ import { SettingsPanel } from './sections/settings-panel/inspector-settingspanel
 import { strictEvery } from '../../core/shared/array-utils'
 import { SimplifiedLayoutSubsection } from './sections/layout-section/self-layout-subsection/simplified-layout-subsection'
 import { ConstraintsSection } from './constraints-section'
-import { useIsMyProject } from '../editor/store/collaborative-editing'
 import { usePermissions } from '../editor/store/permissions'
 import { DisableControlsInSubtree } from '../../uuiui/utilities/disable-subtree'
+import { getInspectorPreferencesForTargets } from '../../core/property-controls/property-controls-utils'
 
 export interface ElementPathElement {
   name?: string
@@ -340,6 +340,20 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
 
   const canEdit = usePermissions().edit
 
+  const inspectorPreferences = useEditorState(
+    Substores.propertyControlsInfo,
+    (store) =>
+      getInspectorPreferencesForTargets(
+        store.editor.selectedViews,
+        store.editor.propertyControlsInfo,
+        store.editor.projectContents,
+      ),
+    'Inspector inspectorPreferences',
+  )
+
+  const shouldShowAlignmentButtons = !hideAllSections && inspectorPreferences.includes('layout')
+  const shouldShowClassNameSubsection = isTwindEnabled() && inspectorPreferences.includes('visual')
+
   function renderInspectorContents() {
     return (
       <React.Fragment>
@@ -370,12 +384,15 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
               {rootElementIsSelected ? (
                 <RootElementIndicator />
               ) : (
-                unless(hideAllSections, <AlignmentButtons numberOfTargets={selectedViews.length} />)
+                when(
+                  shouldShowAlignmentButtons,
+                  <AlignmentButtons numberOfTargets={selectedViews.length} />,
+                )
               )}
               {unless(
                 hideAllSections,
                 <>
-                  {when(isTwindEnabled(), <ClassNameSubsection />)}
+                  {when(shouldShowClassNameSubsection, <ClassNameSubsection />)}
                   {anyComponents || multiselectedContract === 'fragment' ? (
                     <ComponentSection isScene={false} />
                   ) : null}
