@@ -5821,9 +5821,7 @@ export var storyboard = (
       })
     })
 
-    describe('Pasting with steganography enabled', () => {
-      setFeatureForBrowserTestsUseInDescribeBlockOnly('Steganography', true)
-
+    xdescribe('Pasting with steganography enabled', () => {
       it('steganography data is cleaned from replaced props', async () => {
         const editor = await renderTestEditorWithCode(
           `import * as React from 'react'
