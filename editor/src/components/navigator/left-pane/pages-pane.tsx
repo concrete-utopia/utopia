@@ -403,6 +403,7 @@ const FavoriteEntry = React.memo(({ favorite, active, addedToFavorites }: Favori
           ? '1px solid transparent'
           : '1px dashed ' + colorTheme.border3.value,
         boxSizing: 'border-box',
+        fontStyle: !addedToFavorites ? 'italic' : 'normal',
         marginLeft: 8,
         marginRight: 8,
         paddingLeft: 19, // to visually align the icons with the route entries underneath the favorites section
