@@ -213,11 +213,11 @@ const lightTheme = {
   navigatorComponentSelected: lightBase.componentChild20,
   navigatorComponentIconBorder: lightBase.componentChild,
 
-  contextMenuBackground: lightPrimitives.secondaryBackground,
-  contextMenuForeground: lightPrimitives.neutralForeground,
+  contextMenuBackground: createUtopiColor('#181C20'),
+  contextMenuForeground: lightBase.white,
   contextMenuHighlightForeground: lightBase.white,
   contextMenuHighlightBackground: lightBase.primary,
-  contextMenuSeparator: createUtopiColor('rgba(0,0,0,0.1)'),
+  contextMenuSeparator: createUtopiColor('rgba(255,255,255,0.35)'),
 
   inspectorHoverColor: lightBase.fg8,
   inspectorFocusedColor: lightBase.primary,
