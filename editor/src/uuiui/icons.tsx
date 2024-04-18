@@ -214,6 +214,7 @@ export const Icons = {
   ExpansionArrowControlled: makeIcon({ type: 'expansionarrow-down', color: 'primary' }),
   ExpansionArrowDown: makeIcon({ type: 'expansionarrow-down', color: 'main' }),
   ExpansionArrowRight: makeIcon({ type: 'expansionarrow-right', color: 'main' }),
+  ExpansionArrowRightWhite: makeIcon({ type: 'expansionarrow-right', color: 'white' }),
   ExternalLink: makeIcon({ type: 'externallink', color: 'main' }),
   ExternalLinkSmaller: makeIcon({ type: 'externallink-smaller', color: 'main' }),
   EyeStrikethrough: makeIcon({ type: 'eye-strikethrough', color: 'main' }),

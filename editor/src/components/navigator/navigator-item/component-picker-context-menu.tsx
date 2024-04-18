@@ -260,19 +260,19 @@ function iconPropsForIcon(icon: Icon): IcnProps {
       return {
         category: 'navigator-element',
         type: 'flex-column',
-        color: 'main',
+        color: 'white',
       }
     case 'row':
       return {
         category: 'navigator-element',
         type: 'flex-row',
-        color: 'main',
+        color: 'white',
       }
     case 'regular':
       return {
         category: 'navigator-element',
         type: 'component',
-        color: 'main',
+        color: 'white',
       }
     default:
       assertNever(icon)
