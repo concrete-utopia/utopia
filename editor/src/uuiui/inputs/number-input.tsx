@@ -663,7 +663,17 @@ export const NumberInput = React.memo<NumberInputProps>(
         : undefined
 
     return (
-      <div style={style} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
+      <div
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        style={{
+          ...style,
+          display: 'flex',
+          flexDirection: 'row-reverse',
+          alignItems: 'center',
+          gap: 4,
+        }}
+      >
         <div
           className='number-input-container'
           css={{
@@ -836,11 +846,6 @@ export const NumberInput = React.memo<NumberInputProps>(
             {isFauxcused ? (
               <div
                 style={{
-                  position: 'fixed',
-                  left: 0,
-                  top: 0,
-                  bottom: 0,
-                  right: 0,
                   background: 'transparent',
                   zIndex: 1,
                 }}
@@ -854,7 +859,6 @@ export const NumberInput = React.memo<NumberInputProps>(
                 textAlign: 'center',
                 display: 'block',
                 color: controlStyles.secondaryColor,
-                paddingTop: 2,
               }}
             >
               {DEPRECATED_labelBelow}
@@ -991,6 +995,7 @@ export const ChainedNumberInput: React.FunctionComponent<
                 chained='first'
                 roundCorners='left'
                 setGlobalCursor={setGlobalCursor}
+                incrementControls={false}
               />
             )
           }
@@ -1003,6 +1008,7 @@ export const ChainedNumberInput: React.FunctionComponent<
                 chained='last'
                 roundCorners='right'
                 setGlobalCursor={setGlobalCursor}
+                incrementControls={false}
               />
             )
           }
@@ -1015,6 +1021,7 @@ export const ChainedNumberInput: React.FunctionComponent<
                 chained='middle'
                 roundCorners='none'
                 setGlobalCursor={setGlobalCursor}
+                incrementControls={false}
               />
             )
           }
