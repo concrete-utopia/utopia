@@ -41,6 +41,7 @@ import {
   Icn,
   FlexColumn,
   UtopiaStyles,
+  color,
 } from '../../../../uuiui'
 import type { CSSCursor } from '../../../../uuiui-deps'
 import { getControlStyles } from '../../../../uuiui-deps'
@@ -1102,25 +1103,22 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
     <React.Fragment>
       <FlexRow
         style={{
+          borderTop: `1px solid ${colorTheme.seperator.value}`,
           padding: `0 ${UtopiaTheme.layout.inspectorXPadding}px`,
         }}
       >
         <FlexRow
           style={{
             flexGrow: 1,
-            color: colorTheme.componentPurple.value,
-            gap: 8,
             height: UtopiaTheme.layout.rowHeight.large,
           }}
         >
-          <Icons.Component color='component' />
           <div
             onClick={OpenFile}
             style={{
               color: colorTheme.componentPurple.value,
-              textDecoration: 'none',
+              fontWeight: 600,
               cursor: 'pointer',
-              padding: '0 2px',
             }}
           >
             Component
