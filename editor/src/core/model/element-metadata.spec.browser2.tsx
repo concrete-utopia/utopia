@@ -907,6 +907,8 @@ describe('isAutofocusable/isManuallyFocusableComponent', () => {
       'story/scene/app: true',
       'story/scene/app:app-inner-div: false',
       'story/scene/app:app-inner-div/inner-app-1: true', // focus set to always
+      'story/scene/app:app-inner-div/inner-app-1:inner-app-1-div: false',
+      'story/scene/app:app-inner-div/inner-app-1:inner-app-1-div/inner-app-1-nested-div: false',
       'story/scene/app:app-inner-div/inner-app-2: false',
     ])
     const isFocusableComponentResults = allPaths.map((path) => {
@@ -924,6 +926,8 @@ describe('isAutofocusable/isManuallyFocusableComponent', () => {
       'story/scene/app: false',
       'story/scene/app:app-inner-div: false',
       'story/scene/app:app-inner-div/inner-app-1: false', // not focusable because autofocused
+      'story/scene/app:app-inner-div/inner-app-1:inner-app-1-div: false',
+      'story/scene/app:app-inner-div/inner-app-1:inner-app-1-div/inner-app-1-nested-div: false',
       'story/scene/app:app-inner-div/inner-app-2: false', // focus set to never
     ])
   })
@@ -1537,7 +1541,7 @@ const TestProjectWithComponentDescriptor = createModifiedProject({
         variants: [],
       },
       InnerApp2: {
-        component: InnerApp1,
+        component: InnerApp2,
         focus: 'never',
         supportsChildren: false,
         properties: {},
