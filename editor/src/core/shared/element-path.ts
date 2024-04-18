@@ -340,9 +340,8 @@ export function isInsideFocusedComponent(
   autoFocusedPaths: Array<ElementPath>,
 ): boolean {
   return (
-    path.parts.length > 2 ||
-    (path.parts.length > 1 &&
-      !autoFocusedPaths.some((autoFocusedPath) => isDescendantOf(path, autoFocusedPath)))
+    path.parts.length > 1 &&
+    !autoFocusedPaths.some((autoFocusedPath) => isDescendantOf(path, autoFocusedPath))
   )
 }
 

@@ -156,6 +156,8 @@ import type { ErrorMessage } from '../../core/shared/error-messages'
 import type { OverlayError } from '../../core/shared/runtime-report-logs'
 import type { RouteModulesWithRelativePaths } from './remix/remix-utils'
 import type { IsCenterBased } from './canvas-strategies/strategies/resize-helpers'
+import { getComponentDescriptorForTarget } from '../../core/property-controls/property-controls-utils'
+import type { PropertyControlsInfo } from '../custom-code/code-file'
 
 function dragDeltaScaleForProp(prop: LayoutTargetableProp): number {
   switch (prop) {
@@ -1688,6 +1690,7 @@ export function getValidElementPaths(
   topLevelElementName: string,
   instancePath: ElementPath,
   projectContents: ProjectContentTreeRoot,
+  propertyControlsInfo: PropertyControlsInfo,
   filePath: string,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
   getRemixValidPathsGenerationContext: (path: ElementPath) => RemixValidPathsGenerationContext,
@@ -1720,6 +1723,7 @@ export function getValidElementPaths(
           topLevelElement.rootElement,
           instancePath,
           projectContents,
+          propertyControlsInfo,
           resolvedFilePath,
           filePath,
           false,
@@ -1738,6 +1742,7 @@ function getValidElementPathsFromElement(
   element: JSXElementChild,
   parentPath: ElementPath,
   projectContents: ProjectContentTreeRoot,
+  propertyControlsInfo: PropertyControlsInfo,
   filePath: string,
   uiFilePath: string,
   isOnlyChildOfScene: boolean,
@@ -1773,6 +1778,7 @@ function getValidElementPathsFromElement(
             topLevelElement,
             parentPathInner,
             projectContents,
+            propertyControlsInfo,
             routeModulePath,
             uiFilePath,
             false,
@@ -1812,6 +1818,7 @@ function getValidElementPathsFromElement(
           c,
           path,
           projectContents,
+          propertyControlsInfo,
           filePath,
           uiFilePath,
           isSceneWithOneChild,
@@ -1833,6 +1840,7 @@ function getValidElementPathsFromElement(
                 prop,
                 path,
                 projectContents,
+                propertyControlsInfo,
                 filePath,
                 uiFilePath,
                 isSceneWithOneChild,
@@ -1853,7 +1861,14 @@ function getValidElementPathsFromElement(
         ? null
         : EP.pathUpToElementPath(focusedElementPath, lastElementPathPart, 'static-path')
 
-    const isFocused = isOnlyChildOfScene || matchingFocusedPathPart != null
+    const componentDescriptor = getComponentDescriptorForTarget(
+      path,
+      propertyControlsInfo,
+      projectContents,
+    )
+    const isAutofocused = componentDescriptor?.focus === 'always'
+
+    const isFocused = isOnlyChildOfScene || matchingFocusedPathPart != null || isAutofocused
     if (isFocused) {
       paths.push(
         ...getValidElementPaths(
@@ -1861,6 +1876,7 @@ function getValidElementPathsFromElement(
           name,
           matchingFocusedPathPart ?? path,
           projectContents,
+          propertyControlsInfo,
           filePath,
           resolve,
           getRemixValidPathsGenerationContext,
@@ -1909,6 +1925,7 @@ function getValidElementPathsFromElement(
           e,
           path,
           projectContents,
+          propertyControlsInfo,
           filePath,
           uiFilePath,
           false,
@@ -1932,6 +1949,7 @@ function getValidElementPathsFromElement(
           e,
           path,
           projectContents,
+          propertyControlsInfo,
           filePath,
           uiFilePath,
           false,

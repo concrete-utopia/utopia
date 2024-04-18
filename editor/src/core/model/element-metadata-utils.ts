@@ -1977,7 +1977,7 @@ export const MetadataUtils = {
       propertyControlsInfo,
       projectContents,
     )
-    if (componentDescriptor?.focus !== 'default') {
+    if (componentDescriptor != null && componentDescriptor.focus !== 'default') {
       return false
     }
     const element = MetadataUtils.findElementByElementPath(metadata, path)
