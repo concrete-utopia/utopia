@@ -358,7 +358,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
   const shouldShowFlexSection =
     multiselectedContract === 'frame' && inspectorPreferences.includes('layout-system')
 
-  const shouldShowSimplifiedLayoutSection = inspectorPreferences.includes('layout-system')
+  const shouldShowSimplifiedLayoutSection = inspectorPreferences.includes('layout')
   const shouldShowImgSection = useShouldShowImgSection()
 
   function renderInspectorContents() {

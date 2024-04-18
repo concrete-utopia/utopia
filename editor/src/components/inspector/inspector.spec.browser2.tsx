@@ -491,7 +491,7 @@ export var storyboard = (
       }
     })
 
-    it('shows the simplified layout section and the flex section when `layout-system` is set', async () => {
+    it('shows the flex section when `layout-system` is set', async () => {
       const editor = await renderTestEditorWithModel(
         project(JSON.stringify(['layout'])),
         'await-first-dom-report',
@@ -499,7 +499,7 @@ export var storyboard = (
 
       await selectComponentsForTest(editor, [fromString('sb/scene/card')])
 
-      for (const section of ['Frame', 'Layout System']) {
+      for (const section of ['Layout System']) {
         expect(editor.renderedDOM.queryByText(section)?.innerText).toEqual(section)
       }
     })
