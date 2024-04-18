@@ -20,6 +20,7 @@ export type IcnColor =
   | 'on-light-main'
   | 'darkgray'
   | 'black'
+  | 'white'
   | 'overridden'
   | 'dynamic'
   | 'remix'
@@ -79,6 +80,8 @@ function useIconColor(intent: IcnColor): IcnResultingColor {
         return 'white'
       case 'remix':
         return 'aqua'
+      case 'white':
+        return 'white'
       default:
         return 'white'
     }
@@ -114,6 +117,8 @@ function useIconColor(intent: IcnColor): IcnResultingColor {
         return 'black'
       case 'remix':
         return 'lightaqua'
+      case 'white':
+        return 'white'
       default:
         return 'white'
     }
