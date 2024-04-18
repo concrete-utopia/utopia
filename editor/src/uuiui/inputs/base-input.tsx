@@ -163,7 +163,6 @@ export const InspectorInput = React.memo(
         data-inspector-input={true}
         data-testid={props.testId}
         data-controlstatus={props.controlStatus}
-        placeholder='-'
       />
     )
   }),
