@@ -846,7 +846,6 @@ describe('isAutofocusable/isManuallyFocusableComponent', () => {
     const autoFocusedPaths = editor.getEditorState().derived.autoFocusedPaths
     const allPaths = MetadataUtils.getAllPaths(metadata, pathTrees)
     const propertyControlsInfo = editor.getEditorState().editor.propertyControlsInfo
-    const openFile = editor.getEditorState().editor.canvas.openFile?.filename ?? null
     const projectContents = editor.getEditorState().editor.projectContents
     const isAutofocusableResults = allPaths.map((path) => {
       return `${EP.toString(path)}: ${MetadataUtils.isAutofocusable(
@@ -854,7 +853,6 @@ describe('isAutofocusable/isManuallyFocusableComponent', () => {
         pathTrees,
         path,
         propertyControlsInfo,
-        openFile,
         projectContents,
       )}`
     })
@@ -872,7 +870,6 @@ describe('isAutofocusable/isManuallyFocusableComponent', () => {
         autoFocusedPaths,
         [],
         propertyControlsInfo,
-        openFile,
         projectContents,
       )}`
     })
@@ -895,7 +892,6 @@ describe('isAutofocusable/isManuallyFocusableComponent', () => {
     const autoFocusedPaths = editor.getEditorState().derived.autoFocusedPaths
     const allPaths = MetadataUtils.getAllPaths(metadata, pathTrees)
     const propertyControlsInfo = editor.getEditorState().editor.propertyControlsInfo
-    const openFile = editor.getEditorState().editor.canvas.openFile?.filename ?? null
     const projectContents = editor.getEditorState().editor.projectContents
     const isAutofocusableResults = allPaths.map((path) => {
       return `${EP.toString(path)}: ${MetadataUtils.isAutofocusable(
@@ -903,7 +899,6 @@ describe('isAutofocusable/isManuallyFocusableComponent', () => {
         pathTrees,
         path,
         propertyControlsInfo,
-        openFile,
         projectContents,
       )}`
     })
@@ -921,7 +916,6 @@ describe('isAutofocusable/isManuallyFocusableComponent', () => {
         autoFocusedPaths,
         [],
         propertyControlsInfo,
-        openFile,
         projectContents,
       )}`
     })
@@ -1007,7 +1001,6 @@ describe('isAutofocusable/isManuallyFocusableComponent', () => {
     const autoFocusedPaths = renderResult.getEditorState().derived.autoFocusedPaths
     const filePathMappings = renderResult.getEditorState().derived.filePathMappings
     const propertyControlsInfo = renderResult.getEditorState().editor.propertyControlsInfo
-    const openFile = renderResult.getEditorState().editor.canvas.openFile?.filename ?? null
     const projectContents = renderResult.getEditorState().editor.projectContents
     const targetPath = EP.fromString('sb/card')
     expect(
@@ -1016,7 +1009,6 @@ describe('isAutofocusable/isManuallyFocusableComponent', () => {
         pathTrees,
         targetPath,
         propertyControlsInfo,
-        openFile,
         projectContents,
       ),
     ).toBeFalsy()
@@ -1027,7 +1019,6 @@ describe('isAutofocusable/isManuallyFocusableComponent', () => {
         autoFocusedPaths,
         filePathMappings,
         propertyControlsInfo,
-        openFile,
         projectContents,
       ),
     ).toEqual(true)

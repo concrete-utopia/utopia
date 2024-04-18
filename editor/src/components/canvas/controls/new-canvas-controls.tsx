@@ -302,7 +302,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     autoFocusedPaths,
     filePathMappings,
     propertyControlsInfo,
-    openFilePath,
   } = useEditorState(
     Substores.fullStore,
     (store) => {
@@ -322,7 +321,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         autoFocusedPaths: store.derived.autoFocusedPaths,
         filePathMappings: store.derived.filePathMappings,
         propertyControlsInfo: store.editor.propertyControlsInfo,
-        openFilePath: store.editor.canvas.openFile?.filename ?? null,
       }
     },
     'NewCanvasControlsInner',
@@ -452,7 +450,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
               autoFocusedPaths,
               filePathMappings,
               propertyControlsInfo,
-              openFilePath,
               projectContents,
             )
           const isFocusedComponent = EP.isFocused(focusedElementPath, path)

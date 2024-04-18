@@ -690,7 +690,6 @@ function useSelectOrLiveModeSelectAndHover(
             editorStoreRef.current.derived.autoFocusedPaths,
             editorStoreRef.current.derived.filePathMappings,
             editorStoreRef.current.editor.propertyControlsInfo,
-            editorStoreRef.current.editor.canvas.openFile?.filename ?? null,
             editorStoreRef.current.editor.projectContents,
           )
           if (isFocusableComponent) {

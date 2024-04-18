@@ -4776,7 +4776,6 @@ export const UPDATE_FNS = {
         derived.autoFocusedPaths,
         derived.filePathMappings,
         editor.propertyControlsInfo,
-        editor.canvas.openFile?.filename ?? null,
         editor.projectContents,
       )
     ) {

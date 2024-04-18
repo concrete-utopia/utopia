@@ -78,7 +78,6 @@ export interface CanvasData {
   autoFocusedPaths: Array<ElementPath>
   navigatorTargets: Array<NavigatorEntry>
   propertyControlsInfo: PropertyControlsInfo
-  openFilePath: string | null
 }
 
 export function requireDispatch(dispatch: EditorDispatch | null | undefined): EditorDispatch {
@@ -263,7 +262,6 @@ export const setAsFocusedElement: ContextMenuItem<CanvasData> = {
         data.autoFocusedPaths,
         data.filePathMappings,
         data.propertyControlsInfo,
-        data.openFilePath,
         data.projectContents,
       )
     })

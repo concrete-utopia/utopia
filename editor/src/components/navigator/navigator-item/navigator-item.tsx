@@ -515,7 +515,6 @@ export const NavigatorItem: React.FunctionComponent<
           autoFocusedPaths,
           filePathMappings,
           store.editor.propertyControlsInfo,
-          store.editor.canvas.openFile?.filename ?? null,
           store.editor.projectContents,
         )
       )

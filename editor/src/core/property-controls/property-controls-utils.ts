@@ -11,10 +11,7 @@ import {
 } from '../shared/element-template'
 import type { ParseSuccess, StaticElementPath, ElementPath } from '../shared/project-file-types'
 import type { EditorState } from '../../components/editor/store/editor-state'
-import {
-  getOpenUIJSFileKey,
-  withUnderlyingTarget,
-} from '../../components/editor/store/editor-state'
+import { withUnderlyingTarget } from '../../components/editor/store/editor-state'
 import { HtmlElementStyleObjectProps } from '../third-party/html-intrinsic-elements'
 import type { ProjectContentTreeRoot } from '../../components/assets'
 import { importedFromWhere } from '../../components/editor/import-utils'
@@ -37,19 +34,12 @@ export function getPropertyControlsForTargetFromEditor(
   target: ElementPath,
   editor: EditorState,
 ): PropertyControls | null {
-  const openFilePath = getOpenUIJSFileKey(editor)
-  return getPropertyControlsForTarget(
-    target,
-    editor.propertyControlsInfo,
-    openFilePath,
-    editor.projectContents,
-  )
+  return getPropertyControlsForTarget(target, editor.propertyControlsInfo, editor.projectContents)
 }
 
 export function getPropertyControlsForTarget(
   target: ElementPath,
   propertyControlsInfo: PropertyControlsInfo,
-  openFilePath: string | null,
   projectContents: ProjectContentTreeRoot,
 ): PropertyControls | null {
   return withUnderlyingTarget(
@@ -59,7 +49,7 @@ export function getPropertyControlsForTarget(
     (
       success: ParseSuccess,
       element: JSXElementChild,
-      underlyingTarget: StaticElementPath,
+      _: StaticElementPath,
       underlyingFilePath: string,
     ) => {
       if (isJSXElement(element)) {
@@ -89,8 +79,8 @@ export function getPropertyControlsForTarget(
                 projectContents,
               )
             }
-          } else if (openFilePath != null) {
-            filenameForLookup = openFilePath.replace(/\.(js|jsx|ts|tsx)$/, '')
+          } else {
+            filenameForLookup = underlyingFilePath.replace(/\.(js|jsx|ts|tsx)$/, '')
           }
         } else {
           filenameForLookup = importedFrom.filePath
@@ -134,7 +124,6 @@ export function getPropertyControlsForTarget(
 export function getComponentDescriptorForTarget(
   target: ElementPath,
   propertyControlsInfo: PropertyControlsInfo,
-  openFilePath: string | null,
   projectContents: ProjectContentTreeRoot,
 ): ComponentDescriptor | null {
   return withUnderlyingTarget(
@@ -144,7 +133,7 @@ export function getComponentDescriptorForTarget(
     (
       success: ParseSuccess,
       element: JSXElementChild,
-      underlyingTarget: StaticElementPath,
+      _: StaticElementPath,
       underlyingFilePath: string,
     ) => {
       if (isJSXElement(element)) {
@@ -159,8 +148,8 @@ export function getComponentDescriptorForTarget(
         if (importedFrom == null) {
           if (isIntrinsicElement(element.name)) {
             return null
-          } else if (openFilePath != null) {
-            filenameForLookup = openFilePath.replace(/\.(js|jsx|ts|tsx)$/, '')
+          } else {
+            filenameForLookup = underlyingFilePath.replace(/\.(js|jsx|ts|tsx)$/, '')
           }
         } else {
           filenameForLookup = importedFrom.filePath

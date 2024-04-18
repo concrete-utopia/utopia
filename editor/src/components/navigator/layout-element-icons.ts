@@ -475,7 +475,6 @@ function createComponentIconProps(
     autoFocusedPaths,
     filePathMappings,
     propertyControlsInfo,
-    openFilePath,
     projectContents,
   )
   if (isComponent) {

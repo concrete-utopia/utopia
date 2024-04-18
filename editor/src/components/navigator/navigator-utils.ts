@@ -85,7 +85,6 @@ export function getNavigatorTargets(
   collapsedViews: Array<ElementPath>,
   hiddenInNavigator: Array<ElementPath>,
   propertyControlsInfo: PropertyControlsInfo,
-  openFilePath: string | null,
   projectContents: ProjectContentTreeRoot,
 ): GetNavigatorTargetsResults {
   // Note: This value will not necessarily be representative of the structured ordering in
@@ -169,7 +168,6 @@ export function getNavigatorTargets(
       const propertyControls = getPropertyControlsForTarget(
         path,
         propertyControlsInfo,
-        openFilePath,
         projectContents,
       )
 

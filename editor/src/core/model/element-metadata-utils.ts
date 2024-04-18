@@ -1931,13 +1931,11 @@ export const MetadataUtils = {
     pathTrees: ElementPathTrees,
     path: ElementPath,
     propertyControlsInfo: PropertyControlsInfo,
-    openFilePath: string | null,
     projectContents: ProjectContentTreeRoot,
   ): boolean {
     const componentDescriptor = getComponentDescriptorForTarget(
       path,
       propertyControlsInfo,
-      openFilePath,
       projectContents,
     )
     return (
@@ -1952,7 +1950,6 @@ export const MetadataUtils = {
     autoFocusedPaths: Array<ElementPath>,
     filePathMappings: FilePathMappings,
     propertyControlsInfo: PropertyControlsInfo,
-    openFilePath: string | null,
     projectContents: ProjectContentTreeRoot,
   ): boolean {
     return (
@@ -1963,7 +1960,6 @@ export const MetadataUtils = {
         autoFocusedPaths,
         filePathMappings,
         propertyControlsInfo,
-        openFilePath,
         projectContents,
       )
     )
@@ -1974,13 +1970,11 @@ export const MetadataUtils = {
     autoFocusedPaths: Array<ElementPath>,
     filePathMappings: FilePathMappings,
     propertyControlsInfo: PropertyControlsInfo,
-    openFilePath: string | null,
     projectContents: ProjectContentTreeRoot,
   ): boolean {
     const componentDescriptor = getComponentDescriptorForTarget(
       path,
       propertyControlsInfo,
-      openFilePath,
       projectContents,
     )
     if (componentDescriptor?.focus !== 'default') {
