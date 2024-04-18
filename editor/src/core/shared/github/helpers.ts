@@ -40,7 +40,6 @@ import type {
 import {
   emptyGithubData,
   emptyGithubSettings,
-  githubOperationPrettyName,
   projectGithubSettings,
 } from '../../../components/editor/store/editor-state'
 import type { UtopiaStoreAPI } from '../../../components/editor/store/store-hook'
@@ -57,7 +56,7 @@ import {
 } from '../project-file-types'
 import { emptySet } from '../set-utils'
 import { trimUpToAndIncluding } from '../string-utils'
-import { arrayEqualsByReference } from '../utils'
+import { arrayEqualsByReference, assertNever } from '../utils'
 import { getBranchChecksums } from './operations/get-branch-checksums'
 import { getBranchesForGithubRepository } from './operations/list-branches'
 import { updatePullRequestsForBranch } from './operations/list-pull-requests-for-branch'
@@ -165,6 +164,27 @@ export function repositoryEntry(
   }
 }
 
+function githubOperationPrettyNameForToast(op: GithubOperation): string {
+  switch (op.name) {
+    case 'commitAndPush':
+      return 'save to Github'
+    case 'listBranches':
+      return 'list branches from GitHub'
+    case 'loadBranch':
+      return 'load branch from GitHub'
+    case 'loadRepositories':
+      return 'load repositories'
+    case 'updateAgainstBranch':
+      return 'update against branch from GitHub'
+    case 'listPullRequestsForBranch':
+      return 'list GitHub pull requests'
+    case 'saveAsset':
+      return 'save asset to GitHub'
+    default:
+      assertNever(op)
+  }
+}
+
 export interface GetGithubUserSuccess {
   type: 'SUCCESS'
   user: GithubUser
@@ -174,31 +194,31 @@ export type GetGithubUserResponse = GetGithubUserSuccess | GithubFailure
 
 export type GithubOperationLogic = (operation: GithubOperation) => Promise<Array<EditorAction>>
 
+export type GithubOperationSource = 'polling' | 'user-initiated'
+
 export async function runGithubOperation(
   operation: GithubOperation,
   dispatch: EditorDispatch,
+  source: GithubOperationSource,
   logic: GithubOperationLogic,
 ): Promise<Array<EditorAction>> {
   let result: Array<EditorAction> = []
+  const userDetails = await GithubHelpers.getUserDetailsFromServer()
+  if (userDetails == null) {
+    dispatch(resetGithubStateAndDataActions())
+    return result
+  }
 
-  const opName = githubOperationPrettyName(operation)
+  const opName = githubOperationPrettyNameForToast(operation)
   try {
     dispatch([updateGithubOperations(operation, 'add')], 'everyone')
     result = await logic(operation)
   } catch (error: any) {
-    let actions: EditorAction[] = []
-
-    const userDetails = await getUserDetailsFromServer()
-    if (userDetails == null) {
-      actions.push(...resetGithubStateAndDataActions())
-    } else {
-      actions.push(
-        showToast(notice(`${opName} failed. See the console for more information.`, 'ERROR')),
-      )
+    if (source === 'user-initiated') {
+      dispatch([showToast(notice(`Couldn't ${opName} (see console)`, 'PRIMARY'))], 'everyone')
     }
 
-    dispatch(actions, 'everyone')
-    console.error(`[GitHub] operation "${opName}" failed:`, error)
+    console.error(`Couldn't ${opName}`, error)
     throw error
   } finally {
     dispatch([updateGithubOperations(operation, 'remove')], 'everyone')
@@ -305,36 +325,38 @@ function updateUserDetailsFromServerActions(userDetails: GithubUser): EditorActi
   return [updateGithubData({ githubUserDetails: userDetails })]
 }
 
-export async function getUserDetailsFromServer(): Promise<GithubUser | null> {
-  const url = GithubEndpoints.userDetails()
+export const GithubHelpers = {
+  getUserDetailsFromServer: async (): Promise<GithubUser | null> => {
+    const url = GithubEndpoints.userDetails()
 
-  const response = await fetch(url, {
-    method: 'GET',
-    credentials: 'include',
-    headers: HEADERS,
-    mode: MODE,
-  })
+    const response = await fetch(url, {
+      method: 'GET',
+      credentials: 'include',
+      headers: HEADERS,
+      mode: MODE,
+    })
 
-  if (response.ok) {
-    const responseBody: GetGithubUserResponse = await response.json()
-    switch (responseBody.type) {
-      case 'FAILURE':
-        console.error(
-          `Error when attempting to retrieve the user details: ${responseBody.failureReason}`,
-        )
-        return null
-      case 'SUCCESS':
-        return responseBody.user
-      default:
-        const _exhaustiveCheck: never = responseBody
-        throw new Error(`Unhandled response body ${JSON.stringify(responseBody)}`)
+    if (response.ok) {
+      const responseBody: GetGithubUserResponse = await response.json()
+      switch (responseBody.type) {
+        case 'FAILURE':
+          console.error(
+            `Error when attempting to retrieve the user details: ${responseBody.failureReason}`,
+          )
+          return null
+        case 'SUCCESS':
+          return responseBody.user
+        default:
+          const _exhaustiveCheck: never = responseBody
+          throw new Error(`Unhandled response body ${JSON.stringify(responseBody)}`)
+      }
+    } else {
+      console.error(
+        `Github: Unexpected status returned from user details endpoint: ${response.status}`,
+      )
+      return null
     }
-  } else {
-    console.error(
-      `Github: Unexpected status returned from user details endpoint: ${response.status}`,
-    )
-    return null
-  }
+  },
 }
 
 // Designed to wrap around a function that checks for a valid Github authentication.
@@ -347,7 +369,7 @@ export async function updateUserDetailsWhenAuthenticated(
     return false
   }
 
-  const userDetails = await getUserDetailsFromServer()
+  const userDetails = await GithubHelpers.getUserDetailsFromServer()
   if (userDetails == null) {
     // if the user details are not available while the auth is successful, it means that
     // there a mismatch between the cookies and the actual auth, so return false overall.
@@ -861,6 +883,7 @@ export const startGithubPolling =
           lastRefreshedCommit,
           originCommitSha,
           operationContext,
+          'polling',
         )
       } finally {
         // Trigger another one to run Xms _after_ this has finished.
@@ -882,6 +905,7 @@ export function getRefreshGithubActions(
   previousCommitSha: string | null,
   originCommitSha: string | null,
   operationContext: GithubOperationContext,
+  initiator: GithubOperationSource,
 ): Array<Promise<Array<EditorAction>>> {
   // Collect actions which are the results of the various requests,
   // but not those that show which Github operations are running.
@@ -889,16 +913,18 @@ export function getRefreshGithubActions(
   if (!githubAuthenticated) {
     promises.push(Promise.resolve([updateGithubData(emptyGithubData())]))
   } else if (githubUserDetails === null) {
-    const noUserDetailsActions = getUserDetailsFromServer().then((userDetails) => {
+    const noUserDetailsActions = GithubHelpers.getUserDetailsFromServer().then((userDetails) => {
       return userDetails == null
         ? resetGithubStateAndDataActions()
         : updateUserDetailsFromServerActions(userDetails)
     })
     promises.push(noUserDetailsActions)
   } else {
-    promises.push(getUsersPublicGithubRepositories(operationContext)(dispatch))
+    promises.push(getUsersPublicGithubRepositories(operationContext)(dispatch, initiator))
     if (githubRepo != null) {
-      promises.push(getBranchesForGithubRepository(operationContext)(dispatch, githubRepo))
+      promises.push(
+        getBranchesForGithubRepository(operationContext)(dispatch, githubRepo, initiator),
+      )
       promises.push(
         updateUpstreamChanges(
           branchName,
@@ -917,7 +943,12 @@ export function getRefreshGithubActions(
           }
         } else {
           promises.push(
-            updatePullRequestsForBranch(operationContext)(dispatch, githubRepo, branchName),
+            updatePullRequestsForBranch(operationContext)(
+              dispatch,
+              githubRepo,
+              branchName,
+              initiator,
+            ),
           )
         }
       }
@@ -939,6 +970,7 @@ export async function refreshGithubData(
   previousCommitSha: string | null,
   originCommitSha: string | null,
   operationContext: GithubOperationContext,
+  initiator: GithubOperationSource,
 ): Promise<void> {
   const promises = await getRefreshGithubActions(
     dispatch,
@@ -950,6 +982,7 @@ export async function refreshGithubData(
     previousCommitSha,
     originCommitSha,
     operationContext,
+    initiator,
   )
   // Resolve all the promises.
   await Promise.allSettled(promises).then((results) => {
@@ -1039,10 +1072,12 @@ export async function saveGithubAsset(
   path: string,
   dispatch: EditorDispatch,
   operationContext: GithubOperationContext,
+  initiator: GithubOperationSource,
 ): Promise<void> {
   await runGithubOperation(
     { name: 'saveAsset', path: path },
     dispatch,
+    initiator,
     async (operation: GithubOperation) => {
       const url = GithubEndpoints.asset(githubRepo, assetSha)
 
@@ -1088,6 +1123,7 @@ export const resolveConflict =
     conflict: Conflict,
     whichChange: 'utopia' | 'branch',
     dispatch: EditorDispatch,
+    initiator: GithubOperationSource,
   ): Promise<void> => {
     async function updateFileInProjectContents(file: ProjectContentsTree): Promise<void> {
       // Update the file in the server first before putting it into the project contents.
@@ -1111,6 +1147,7 @@ export const resolveConflict =
           path,
           dispatch,
           operationContext,
+          initiator,
         )
       }
       void saveAssetPromise.then(() => {

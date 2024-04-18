@@ -178,18 +178,27 @@ const BranchBlock = () => {
     [githubOperations],
   )
 
-  const refreshBranches = React.useCallback(() => {
+  const refreshBranchesOnMouseUp = React.useCallback(() => {
     if (targetRepository != null) {
       void dispatchPromiseActions(
         dispatch,
-        GithubOperations.getBranchesForGithubRepository(dispatch, targetRepository),
+        GithubOperations.getBranchesForGithubRepository(
+          dispatch,
+          targetRepository,
+          'user-initiated',
+        ),
       )
     }
   }, [dispatch, targetRepository])
 
   React.useEffect(() => {
-    refreshBranches()
-  }, [refreshBranches])
+    if (targetRepository != null) {
+      void dispatchPromiseActions(
+        dispatch,
+        GithubOperations.getBranchesForGithubRepository(dispatch, targetRepository, 'polling'),
+      )
+    }
+  }, [dispatch, targetRepository])
 
   const [expandedFlag, setExpandedFlag] = React.useState(false)
 
@@ -358,7 +367,7 @@ const BranchBlock = () => {
             spotlight
             highlight
             style={{ padding: '0 6px', marginTop: 6 }}
-            onMouseUp={refreshBranches}
+            onMouseUp={refreshBranchesOnMouseUp}
             disabled={isListingBranches}
           >
             {isListingBranches ? (
@@ -389,7 +398,7 @@ const BranchBlock = () => {
     branchFilter,
     updateBranchFilter,
     filteredBranches,
-    refreshBranches,
+    refreshBranchesOnMouseUp,
     isListingBranches,
     currentBranch,
     clearBranch,
@@ -502,6 +511,7 @@ const RemoteChangesBlock = () => {
         commit,
         forceNotNull('Should have a project ID by now.', projectIDRef.current),
         currentContentsRef.current,
+        'user-initiated',
       )
     }
   }, [workersRef, dispatch, repo, branch, commit, projectIDRef, currentContentsRef])
@@ -676,6 +686,7 @@ const LocalChangesBlock = () => {
             ? {}
             : fileChecksumsWithFileToFileChecksums(branchOriginContentsChecksums),
       },
+      'user-initiated',
     )
   }, [
     dispatch,
@@ -882,6 +893,7 @@ const BranchNotLoadedBlock = () => {
         currentDependencies,
         builtInDependencies,
         projectContentsRef.current,
+        'user-initiated',
       )
     }
   }, [
@@ -942,6 +954,7 @@ const BranchNotLoadedBlock = () => {
         branchName: branchName,
         commitMessage: commitMessage ?? 'Committed automatically',
       },
+      'user-initiated',
     )
   }, [
     dispatch,

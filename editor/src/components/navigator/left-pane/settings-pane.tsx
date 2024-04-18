@@ -11,23 +11,18 @@ import {
   FlexRow,
   H2,
   HeadlessStringInput,
-  Icons,
+  Icn,
   PopupList,
   Section,
-  SectionBodyArea,
   StringInput,
   UtopiaTheme,
 } from '../../../uuiui'
-import { getControlStyles } from '../../../uuiui-deps'
-import { InspectorInputEmotionStyle } from '../../../uuiui/inputs/base-input'
-
 import type { SelectOption } from '../../../uuiui-deps'
 import * as EditorActions from '../../editor/actions/action-creators'
 import { setProjectDescription, setProjectName } from '../../editor/actions/action-creators'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { UIGridRow } from '../../inspector/widgets/ui-grid-row'
-import { ForksGiven } from './forks-given'
 import type { FeatureName } from '../../../utils/feature-switches'
 import {
   toggleFeatureEnabled,
@@ -44,6 +39,7 @@ import { notice } from '../../common/notice'
 import { gridMenuDefaultPanels } from '../../canvas/stored-layout'
 import { usePermissions } from '../../editor/store/permissions'
 import { DisableControlsInSubtree } from '../../../uuiui/utilities/disable-subtree'
+import { useIsMyProject } from '../../editor/store/collaborative-editing'
 
 const themeOptions = [
   {
@@ -65,14 +61,14 @@ const defaultTheme = themeOptions[0]
 export const FeatureSwitchesSection = React.memo(() => {
   if (AllFeatureNames.length > 0) {
     return (
-      <React.Fragment>
-        <FlexRow style={{ marginTop: 8, marginBottom: 12, paddingLeft: 8 }}>
-          <H2>Experimental Feature Toggles</H2>
-        </FlexRow>
+      <Section>
+        <UIGridRow padded variant='<---1fr--->|------172px-------|'>
+          <H2>Experimental Toggle Features</H2>
+        </UIGridRow>
         {AllFeatureNames.map((name) => (
           <FeatureSwitchRow key={`feature-switch-${name}`} name={name} />
         ))}
-      </React.Fragment>
+      </Section>
     )
   } else {
     return null
@@ -89,9 +85,7 @@ const FeatureSwitchRow = React.memo((props: { name: FeatureName }) => {
     forceRender()
   }, [forceRender, name])
   return (
-    <FlexRow
-      style={{ paddingLeft: 12, paddingRight: 12, height: UtopiaTheme.layout.rowHeight.normal }}
-    >
+    <FlexRow style={{ paddingLeft: 16, height: UtopiaTheme.layout.rowHeight.normal }}>
       <CheckboxInput
         style={{ marginRight: 8 }}
         id={id}
@@ -123,11 +117,7 @@ export const SettingsPane = React.memo(() => {
   )
   const themeConfig = userState.themeConfig
 
-  const isMyProject = useEditorState(
-    Substores.projectServerState,
-    (store) => store.projectServerState.isMyProject,
-    'SettingsPane isMyProject',
-  )
+  const isMyProject = useIsMyProject()
 
   const [theme, setTheme] = React.useState<SelectOption>(
     themeOptions.find((option) => option.value === themeConfig) ?? defaultTheme,
@@ -238,6 +228,12 @@ export const SettingsPane = React.memo(() => {
 
   const canEditProject = usePermissions().edit
 
+  const projectOwnerMetadata = useEditorState(
+    Substores.projectServerState,
+    (store) => store.projectServerState.projectData,
+    'ForksGiven projectOwnerMetadata',
+  )
+
   return (
     <FlexColumn
       id='leftPaneSettings'
@@ -248,64 +244,44 @@ export const SettingsPane = React.memo(() => {
         paddingBottom: 50,
         overflowY: 'scroll',
         alignSelf: 'stretch',
+        gap: 16,
       }}
     >
       <Section>
-        {isMyProject === 'yes' ? null : <ForksGiven />}
-        <UIGridRow padded variant='<-------------1fr------------->' style={{ marginBottom: 8 }}>
-          <a href='/projects' target='_blank' rel='noopener rofererrer'>
-            <Button
-              highlight
-              spotlight
-              outline={false}
-              style={{
-                width: '100%',
-                cursor: 'pointer',
-                height: UtopiaTheme.layout.inputHeight.default,
-                background: colorTheme.dynamicBlue.value,
-                color: colorTheme.bg1.value,
-                gap: 4,
-              }}
-            >
-              <Icons.ExternalLinkSmaller color='black' /> All projects
-            </Button>
-          </a>
+        <UIGridRow padded variant='<---1fr--->|------172px-------|'>
+          <H2>Project</H2>
         </UIGridRow>
         <DisableControlsInSubtree disable={!canEditProject}>
-          <UIGridRow padded variant='<---1fr--->|------172px-------|'>
-            <span style={{ color: colorTheme.fg2.value }}>Name</span>
+          <UIGridRow padded variant='|--80px--|<--------1fr-------->'>
+            <span style={{ fontWeight: 500 }}>Name</span>
             <StringInput
               testId='projectName'
               value={name}
               onChange={onChangeProjectName}
               onKeyDown={handleKeyPress}
-              style={{ width: 150 }}
               onBlur={handleBlurProjectName}
             />
           </UIGridRow>
-          <UIGridRow padded variant='<---1fr--->|------172px-------|'>
-            <span style={{ color: colorTheme.fg2.value }}> Description </span>
+          <UIGridRow padded variant='|--80px--|<--------1fr-------->'>
+            <span style={{ fontWeight: 500 }}>Description</span>
             <StringInput
               testId='projectDescription'
               value={description}
               onChange={onChangeProjectDescription}
               onKeyDown={handleKeyPress}
               onBlur={handleBlurProjectDescription}
-              style={{ width: 150 }}
             />
+          </UIGridRow>
+          <UIGridRow padded variant='|--80px--|<--------1fr-------->' style={{ marginBottom: 10 }}>
+            <span style={{ fontWeight: 500 }}>Owner</span>
+            <FlexRow style={{ gap: 5 }}>
+              {projectOwnerMetadata?.ownerName} {isMyProject ? <span>(you)</span> : ''}
+            </FlexRow>
           </UIGridRow>
         </DisableControlsInSubtree>
         {when(
           userState.loginState.type === 'LOGGED_IN',
-          <div
-            style={{
-              height: UtopiaTheme.layout.rowHeight.normal,
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              margin: '0 8px',
-            }}
-          >
+          <UIGridRow padded variant='<-------------1fr------------->'>
             <Button
               outline={false}
               highlight
@@ -316,71 +292,87 @@ export const SettingsPane = React.memo(() => {
                 height: UtopiaTheme.layout.inputHeight.default,
                 background: colorTheme.dynamicBlue.value,
                 color: colorTheme.bg1.value,
+                borderRadius: UtopiaTheme.layout.inputHeight.default,
               }}
             >
-              Fork this project
+              Fork Project
             </Button>
-          </div>,
+          </UIGridRow>,
         )}
-        <SectionBodyArea minimised={false}>
-          {/** Theme Toggle: */}
-          <UIGridRow
-            style={{ color: colorTheme.fg1.value, marginTop: 16 }}
-            padded
-            variant='<---1fr--->|------172px-------|'
-          >
-            <H2>Application</H2>
-          </UIGridRow>
-          <UIGridRow padded variant='<---1fr--->|------172px-------|'>
-            <span style={{ color: colorTheme.fg2.value }}>Theme </span>
-            <PopupList
-              value={theme}
-              options={themeOptions}
-              onSubmitValue={handleSubmitValueTheme}
-              style={{ width: 150 }}
-            />
-          </UIGridRow>
-          <UIGridRow
-            padded
-            variant='<---1fr--->|------172px-------|'
-            style={{ alignItems: 'flex-start' }}
-          >
-            <span style={{ color: colorTheme.fg2.value }}>Panels </span>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <Button
-                outline={false}
-                highlight
-                onClick={onSavePanelsDefaultLayout}
-                style={{
-                  cursor: 'pointer',
-                  background: colorTheme.dynamicBlue.value,
-                  color: colorTheme.bg1.value,
-                }}
-              >
-                Set as default
-              </Button>
-              <Button outline={false} highlight spotlight onClick={onResetPanelsLayout}>
-                Reset for this project
-              </Button>
-              <Button outline={false} highlight spotlight onClick={onResetPanelsDefaultLayout}>
-                Restore defaults
-              </Button>
-            </div>
-          </UIGridRow>
-          <UIGridRow padded variant='<-------------1fr------------->'>
-            <br />
-            <HeadlessStringInput
-              placeholder='Project Contents JSON'
-              onSubmitValue={loadProjectContentJson}
-              css={InspectorInputEmotionStyle({
-                hasLabel: false,
-                controlStyles: getControlStyles('simple'),
-              })}
-            />
-          </UIGridRow>
-        </SectionBodyArea>
-        <FeatureSwitchesSection />
+        <UIGridRow padded variant='<-------------1fr------------->'>
+          <a href='/projects' target='_blank' rel='noopener rofererrer'>
+            <Button
+              highlight
+              spotlight
+              outline={false}
+              style={{
+                width: '100%',
+                cursor: 'pointer',
+                height: UtopiaTheme.layout.inputHeight.default,
+                color: colorTheme.dynamicBlue.value,
+                gap: 6,
+                borderRadius: UtopiaTheme.layout.inputHeight.default,
+                background: 'transparent',
+              }}
+            >
+              <Icn category='semantic' type='externallink' color='dynamic' width={18} height={18} />
+              My Projects
+            </Button>
+          </a>
+        </UIGridRow>
       </Section>
+
+      <Section>
+        <UIGridRow padded variant='<---1fr--->|------172px-------|'>
+          <H2>Application</H2>
+        </UIGridRow>
+        <UIGridRow padded variant='|--80px--|<--------1fr-------->'>
+          <span style={{ fontWeight: 500 }}>Theme</span>
+          <PopupList value={theme} options={themeOptions} onSubmitValue={handleSubmitValueTheme} />
+        </UIGridRow>
+        <UIGridRow
+          padded
+          variant='|--80px--|<--------1fr-------->'
+          style={{ alignItems: 'flex-start', paddingTop: 6 }}
+        >
+          <div style={{ height: 22, fontWeight: 500 }}>Panels</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <Button
+              outline={false}
+              highlight
+              onClick={onSavePanelsDefaultLayout}
+              style={{
+                cursor: 'pointer',
+                background: colorTheme.dynamicBlue.value,
+                color: colorTheme.bg1.value,
+              }}
+            >
+              Set as default
+            </Button>
+            <Button outline={false} highlight spotlight onClick={onResetPanelsLayout}>
+              Reset for this project
+            </Button>
+            <Button outline={false} highlight spotlight onClick={onResetPanelsDefaultLayout}>
+              Restore defaults
+            </Button>
+          </div>
+        </UIGridRow>
+        <UIGridRow padded variant='|--80px--|<--------1fr-------->' style={{ marginTop: 6 }}>
+          <div style={{ fontWeight: 500 }}>Contents</div>
+          <HeadlessStringInput
+            placeholder='Project Contents JSON'
+            onSubmitValue={loadProjectContentJson}
+            css={{
+              color: colorTheme.fg1.value,
+              background: colorTheme.bg2.value,
+              border: 'none',
+              height: 22,
+              borderRadius: 1,
+            }}
+          />
+        </UIGridRow>
+      </Section>
+      <FeatureSwitchesSection />
     </FlexColumn>
   )
 })

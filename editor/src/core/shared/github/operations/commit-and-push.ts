@@ -13,7 +13,7 @@ import type {
   PersistentModel,
 } from '../../../../components/editor/store/editor-state'
 import { projectGithubSettings } from '../../../../components/editor/store/editor-state'
-import type { GetBranchContentResponse, GithubFailure } from '../helpers'
+import type { GetBranchContentResponse, GithubFailure, GithubOperationSource } from '../helpers'
 import {
   dispatchPromiseActions,
   getBranchContentFromServer,
@@ -48,10 +48,12 @@ export const saveProjectToGithub =
     persistentModel: PersistentModel,
     dispatch: EditorDispatch,
     options: SaveProjectToGithubOptions,
+    initiator: GithubOperationSource,
   ): Promise<void> => {
     await runGithubOperation(
       { name: 'commitAndPush' },
       dispatch,
+      initiator,
       async (operation: GithubOperation) => {
         const { branchName, commitMessage } = options
 
@@ -136,7 +138,11 @@ export const saveProjectToGithub =
             // refresh the branches after the content was saved
             await dispatchPromiseActions(
               dispatch,
-              getBranchesForGithubRepository(operationContext)(dispatch, targetRepository),
+              getBranchesForGithubRepository(operationContext)(
+                dispatch,
+                targetRepository,
+                initiator,
+              ),
             )
             break
           default:
