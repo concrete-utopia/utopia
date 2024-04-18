@@ -323,10 +323,11 @@ function useStyleFullyVisible(
           }
         })
 
-        let isInsideFocusedComponent =
-          !MetadataUtils.isContainingComponentRemixSceneOrOutlet(store.editor.jsxMetadata, path) &&
-          (EP.isFocused(store.editor.focusedElementPath, path) ||
-            EP.isInsideFocusedComponent(path, autoFocusedPaths))
+        const isInsideFocusedComponent = EP.isInExplicitlyFocusedSubtree(
+          store.editor.focusedElementPath,
+          autoFocusedPaths,
+          navigatorEntry.elementPath,
+        )
 
         return (
           isStoryboardChild ||
@@ -490,6 +491,18 @@ export const NavigatorItem: React.FunctionComponent<
         navigatorEntry.elementPath,
       ),
     'NavigatorItem isFocusedComponent',
+  )
+
+  const isInFocusedComponentSubtree = useEditorState(
+    Substores.focusedElement,
+    (store) =>
+      isRegularNavigatorEntry(navigatorEntry) &&
+      EP.isInExplicitlyFocusedSubtree(
+        store.editor.focusedElementPath,
+        autoFocusedPaths,
+        navigatorEntry.elementPath,
+      ),
+    'NavigatorItem isInFocusedComponentSubtree',
   )
 
   const elementWarnings = useEditorState(
@@ -683,10 +696,7 @@ export const NavigatorItem: React.FunctionComponent<
     'NavigatorItem conditionalOverrideUpdate',
   )
 
-  const isInsideComponent =
-    !isContainingComponentRemixSceneOrOutlet &&
-    (EP.isInsideFocusedComponent(navigatorEntry.elementPath, autoFocusedPaths) ||
-      isFocusedComponent)
+  const isInsideComponent = isInFocusedComponentSubtree
   const fullyVisible = useStyleFullyVisible(navigatorEntry, autoFocusedPaths)
   const isProbablyScene = useIsProbablyScene(navigatorEntry)
 
