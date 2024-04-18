@@ -1690,7 +1690,7 @@ export function getValidElementPaths(
   topLevelElementName: string,
   instancePath: ElementPath,
   projectContents: ProjectContentTreeRoot,
-  propertyControlsInfo: PropertyControlsInfo,
+  autoFocusedPaths: Array<ElementPath>,
   filePath: string,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
   getRemixValidPathsGenerationContext: (path: ElementPath) => RemixValidPathsGenerationContext,
@@ -1723,7 +1723,7 @@ export function getValidElementPaths(
           topLevelElement.rootElement,
           instancePath,
           projectContents,
-          propertyControlsInfo,
+          autoFocusedPaths,
           resolvedFilePath,
           filePath,
           false,
@@ -1742,7 +1742,7 @@ function getValidElementPathsFromElement(
   element: JSXElementChild,
   parentPath: ElementPath,
   projectContents: ProjectContentTreeRoot,
-  propertyControlsInfo: PropertyControlsInfo,
+  autoFocusedPaths: Array<ElementPath>,
   filePath: string,
   uiFilePath: string,
   isOnlyChildOfScene: boolean,
@@ -1778,7 +1778,7 @@ function getValidElementPathsFromElement(
             topLevelElement,
             parentPathInner,
             projectContents,
-            propertyControlsInfo,
+            autoFocusedPaths,
             routeModulePath,
             uiFilePath,
             false,
@@ -1818,7 +1818,7 @@ function getValidElementPathsFromElement(
           c,
           path,
           projectContents,
-          propertyControlsInfo,
+          autoFocusedPaths,
           filePath,
           uiFilePath,
           isSceneWithOneChild,
@@ -1840,7 +1840,7 @@ function getValidElementPathsFromElement(
                 prop,
                 path,
                 projectContents,
-                propertyControlsInfo,
+                autoFocusedPaths,
                 filePath,
                 uiFilePath,
                 isSceneWithOneChild,
@@ -1861,12 +1861,8 @@ function getValidElementPathsFromElement(
         ? null
         : EP.pathUpToElementPath(focusedElementPath, lastElementPathPart, 'static-path')
 
-    const componentDescriptor = getComponentDescriptorForTarget(
-      path,
-      propertyControlsInfo,
-      projectContents,
-    )
-    const isAutofocused = componentDescriptor?.focus === 'always'
+    const isAutofocused =
+      autoFocusedPaths.find((p) => EP.pathsEqual(EP.dynamicPathToStaticPath(p), path)) != null
 
     const isFocused = isOnlyChildOfScene || matchingFocusedPathPart != null || isAutofocused
     if (isFocused) {
@@ -1876,7 +1872,7 @@ function getValidElementPathsFromElement(
           name,
           matchingFocusedPathPart ?? path,
           projectContents,
-          propertyControlsInfo,
+          autoFocusedPaths,
           filePath,
           resolve,
           getRemixValidPathsGenerationContext,
@@ -1925,7 +1921,7 @@ function getValidElementPathsFromElement(
           e,
           path,
           projectContents,
-          propertyControlsInfo,
+          autoFocusedPaths,
           filePath,
           uiFilePath,
           false,
@@ -1949,7 +1945,7 @@ function getValidElementPathsFromElement(
           e,
           path,
           projectContents,
-          propertyControlsInfo,
+          autoFocusedPaths,
           filePath,
           uiFilePath,
           false,
