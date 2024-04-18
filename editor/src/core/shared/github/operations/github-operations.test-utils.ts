@@ -16,7 +16,7 @@ import {
 } from '../../../../components/editor/actions/action-creators'
 import { getUsersPublicGithubRepositories } from './load-repositories'
 import { updateProjectAgainstGithub } from './update-against-branch'
-import { resolveConflict, startGithubPolling } from '../helpers'
+import { GithubHelpers, resolveConflict, startGithubPolling } from '../helpers'
 import type { AsyncEditorDispatch } from '../../../../components/canvas/ui-jsx.test-utils'
 
 export async function loginUserToGithubForTests(dispatch: AsyncEditorDispatch) {
@@ -79,6 +79,17 @@ export class MockGithubOperations {
   mock(options: MockOperationContextOptions): MockGithubOperations {
     beforeEach(() => {
       this.sandbox = Sinon.createSandbox()
+
+      const getUserDetailsFromServerStub = this.sandbox.stub(
+        GithubHelpers,
+        'getUserDetailsFromServer',
+      )
+      getUserDetailsFromServerStub.callsFake(async () => ({
+        login: 'stub',
+        avatarURL: 'stub',
+        htmlURL: 'stub',
+        name: null,
+      }))
 
       const startGithubAuthenticationStub = this.sandbox.stub(
         GithubAuth,

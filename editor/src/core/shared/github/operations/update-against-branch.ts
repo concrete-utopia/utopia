@@ -7,11 +7,10 @@ import {
   updateAgainstGithub,
   updateBranchContents,
   updateGithubData,
-  updateProjectContents,
 } from '../../../../components/editor/actions/action-creators'
 import type { GithubOperation, GithubRepo } from '../../../../components/editor/store/editor-state'
 import { updateProjectContentsWithParseResults } from '../../parser-projectcontents-utils'
-import type { GetBranchContentResponse } from '../helpers'
+import type { GetBranchContentResponse, GithubOperationSource } from '../helpers'
 import {
   getBranchContentFromServer,
   githubAPIError,
@@ -31,10 +30,12 @@ export const updateProjectAgainstGithub =
     commitSha: string,
     projectID: string,
     currentProjectContents: ProjectContentTreeRoot,
+    initiator: GithubOperationSource,
   ): Promise<void> => {
     await runGithubOperation(
       { name: 'updateAgainstBranch' },
       dispatch,
+      initiator,
       async (operation: GithubOperation) => {
         const branchLatestRequest = getBranchContentFromServer(
           githubRepo,
@@ -95,6 +96,7 @@ export const updateProjectAgainstGithub =
           branchLatestContent.branch,
           dispatch,
           currentProjectContents,
+          initiator,
         )
 
         dispatch(
