@@ -219,13 +219,15 @@ export function hasStyleControls(propertyControls: PropertyControls): boolean {
 
 export const specialPropertiesToIgnore: Array<string> = ['style', 'children']
 
+export type InspectorSectionPreference = 'layout' | 'layout-system' | 'visual' | 'typography'
+
 export type TypedInspectorSpec = { type: 'all' } | { type: 'sections'; sections: Styling[] }
 
 export function getInspectorPreferencesForTargets(
   targets: ElementPath[],
   propertyControlsInfo: PropertyControlsInfo,
   projectContents: ProjectContentTreeRoot,
-): Styling[] {
+): InspectorSectionPreference[] {
   const inspectorPreferences = targets.map((target) => {
     const controls = getComponentDescriptorForTarget(target, propertyControlsInfo, projectContents)
     if (controls == null || controls.inspector == null || controls.inspector === 'all') {
