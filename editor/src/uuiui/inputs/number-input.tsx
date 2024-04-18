@@ -710,7 +710,7 @@ export const NumberInput = React.memo<NumberInputProps>(
             value={displayValue}
             ref={ref}
             style={{
-              color: controlStyles.mainColor,
+              color: colorTheme.fg1.value,
             }}
             css={{
               '::placeholder': { color: invalid ? colorTheme.error.value : undefined },
