@@ -43,6 +43,7 @@ import {
 } from '../../core/shared/element-template'
 import {
   guaranteeUniqueUids,
+  isSceneElement,
   getIndexInParent,
   generateUidWithExistingComponents,
   insertJSXElementChildren,
@@ -1689,7 +1690,7 @@ export function getValidElementPaths(
   topLevelElementName: string,
   instancePath: ElementPath,
   projectContents: ProjectContentTreeRoot,
-  autoFocusedPaths: Array<ElementPath>,
+  propertyControlsInfo: PropertyControlsInfo,
   filePath: string,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
   getRemixValidPathsGenerationContext: (path: ElementPath) => RemixValidPathsGenerationContext,
@@ -1722,9 +1723,10 @@ export function getValidElementPaths(
           topLevelElement.rootElement,
           instancePath,
           projectContents,
-          autoFocusedPaths,
+          propertyControlsInfo,
           resolvedFilePath,
           filePath,
+          false,
           true,
           resolve,
           getRemixValidPathsGenerationContext,
@@ -1740,9 +1742,10 @@ function getValidElementPathsFromElement(
   element: JSXElementChild,
   parentPath: ElementPath,
   projectContents: ProjectContentTreeRoot,
-  autoFocusedPaths: Array<ElementPath>,
+  propertyControlsInfo: PropertyControlsInfo,
   filePath: string,
   uiFilePath: string,
+  isOnlyChildOfScene: boolean,
   parentIsInstance: boolean,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
   getRemixValidPathsGenerationContext: (path: ElementPath) => RemixValidPathsGenerationContext,
@@ -1775,9 +1778,10 @@ function getValidElementPathsFromElement(
             topLevelElement,
             parentPathInner,
             projectContents,
-            autoFocusedPaths,
+            propertyControlsInfo,
             routeModulePath,
             uiFilePath,
+            false,
             true,
             resolve,
             getRemixValidPathsGenerationContext,
@@ -1804,6 +1808,9 @@ function getValidElementPathsFromElement(
       return paths
     }
 
+    const isScene = isSceneElement(element, filePath, projectContents)
+    const isSceneWithOneChild = isScene && element.children.length === 1
+
     fastForEach(element.children, (c) =>
       paths.push(
         ...getValidElementPathsFromElement(
@@ -1811,9 +1818,10 @@ function getValidElementPathsFromElement(
           c,
           path,
           projectContents,
-          autoFocusedPaths,
+          propertyControlsInfo,
           filePath,
           uiFilePath,
+          isSceneWithOneChild,
           false,
           resolve,
           getRemixValidPathsGenerationContext,
@@ -1832,9 +1840,10 @@ function getValidElementPathsFromElement(
                 prop,
                 path,
                 projectContents,
-                autoFocusedPaths,
+                propertyControlsInfo,
                 filePath,
                 uiFilePath,
+                isSceneWithOneChild,
                 false,
                 resolve,
                 getRemixValidPathsGenerationContext,
@@ -1852,11 +1861,14 @@ function getValidElementPathsFromElement(
         ? null
         : EP.pathUpToElementPath(focusedElementPath, lastElementPathPart, 'static-path')
 
-    const isAutofocused =
-      autoFocusedPaths.find((p) => EP.pathsEqual(EP.dynamicPathToStaticPath(p), path)) != null
+    const componentDescriptor = getComponentDescriptorForTarget(
+      path,
+      propertyControlsInfo,
+      projectContents,
+    )
+    const isAutofocused = componentDescriptor?.focus === 'always'
 
-    const isFocused = matchingFocusedPathPart != null || isAutofocused
-
+    const isFocused = isOnlyChildOfScene || matchingFocusedPathPart != null || isAutofocused
     if (isFocused) {
       paths.push(
         ...getValidElementPaths(
@@ -1864,7 +1876,7 @@ function getValidElementPathsFromElement(
           name,
           matchingFocusedPathPart ?? path,
           projectContents,
-          autoFocusedPaths,
+          propertyControlsInfo,
           filePath,
           resolve,
           getRemixValidPathsGenerationContext,
@@ -1913,9 +1925,10 @@ function getValidElementPathsFromElement(
           e,
           path,
           projectContents,
-          autoFocusedPaths,
+          propertyControlsInfo,
           filePath,
           uiFilePath,
+          false,
           false,
           resolve,
           getRemixValidPathsGenerationContext,
@@ -1936,9 +1949,10 @@ function getValidElementPathsFromElement(
           e,
           path,
           projectContents,
-          autoFocusedPaths,
+          propertyControlsInfo,
           filePath,
           uiFilePath,
+          false,
           false,
           resolve,
           getRemixValidPathsGenerationContext,
