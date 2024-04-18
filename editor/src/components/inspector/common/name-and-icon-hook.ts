@@ -46,7 +46,6 @@ const namesAndIconsAllPathsResultSelector = createSelector(
   (store: EditorStorePatched) => store.derived.autoFocusedPaths,
   (store: EditorStorePatched) => store.derived.filePathMappings,
   (store: EditorStorePatched) => store.editor.propertyControlsInfo,
-  (store: CanvasSubstate) => store.editor.canvas.openFile?.filename ?? null,
   (store: ProjectContentSubstate) => store.editor.projectContents,
   (
     metadata,
@@ -55,7 +54,6 @@ const namesAndIconsAllPathsResultSelector = createSelector(
     autoFocusedPaths,
     filePathMappings,
     propertyControlsInfo,
-    openFilePath,
     projectContents,
   ) => {
     let result: Array<NameAndIconResult> = []
@@ -68,7 +66,6 @@ const namesAndIconsAllPathsResultSelector = createSelector(
         autoFocusedPaths,
         filePathMappings,
         propertyControlsInfo,
-        openFilePath,
         projectContents,
       )
       result.push(nameAndIconResult)
@@ -97,7 +94,6 @@ function getNameAndIconResult(
   autoFocusedPaths: Array<ElementPath>,
   filePathMappings: FilePathMappings,
   propertyControlsInfo: PropertyControlsInfo,
-  openFilePath: string | null,
   projectContents: ProjectContentTreeRoot,
 ): NameAndIconResult {
   const elementName = MetadataUtils.getJSXElementName(
@@ -121,7 +117,6 @@ function getNameAndIconResult(
       allElementProps,
       filePathMappings,
       propertyControlsInfo,
-      openFilePath,
       projectContents,
     ),
   }

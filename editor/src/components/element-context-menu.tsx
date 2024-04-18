@@ -221,7 +221,6 @@ function useCanvasContextMenuGetData(
       autoFocusedPaths: store.derived.autoFocusedPaths,
       navigatorTargets: store.derived.navigatorTargets,
       propertyControlsInfo: store.editor.propertyControlsInfo,
-      openFilePath: store.editor.canvas.openFile?.filename ?? null,
     }
   })
 
@@ -247,7 +246,6 @@ function useCanvasContextMenuGetData(
       autoFocusedPaths: currentEditor.autoFocusedPaths,
       navigatorTargets: currentEditor.navigatorTargets,
       propertyControlsInfo: currentEditor.propertyControlsInfo,
-      openFilePath: currentEditor.openFilePath,
     }
   }, [editorSliceRef, contextMenuInstance])
 }

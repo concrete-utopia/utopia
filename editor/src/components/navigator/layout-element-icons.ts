@@ -77,7 +77,6 @@ export function useComponentIcon(navigatorEntry: NavigatorEntry): IcnPropsBase |
         autoFocusedPaths,
         filePathMappings,
         store.editor.propertyControlsInfo,
-        store.editor.canvas.openFile?.filename ?? null,
         store.editor.projectContents,
       )
     },
@@ -94,7 +93,6 @@ export function createComponentOrElementIconProps(
   allElementProps: AllElementProps,
   filePathMappings: FilePathMappings,
   propertyControlsInfo: PropertyControlsInfo,
-  openFilePath: string | null,
   projectContents: ProjectContentTreeRoot,
 ): IcnPropsBase {
   return (
@@ -104,7 +102,6 @@ export function createComponentOrElementIconProps(
       autoFocusedPaths,
       filePathMappings,
       propertyControlsInfo,
-      openFilePath,
       projectContents,
     ) ??
     createElementIconPropsFromMetadata(
@@ -423,7 +420,6 @@ function createComponentIconProps(
   autoFocusedPaths: Array<ElementPath>,
   filePathMappings: FilePathMappings,
   propertyControlsInfo: PropertyControlsInfo,
-  openFilePath: string | null,
   projectContents: ProjectContentTreeRoot,
 ): IcnPropsBase | null {
   const element = MetadataUtils.findElementByElementPath(metadata, path)
