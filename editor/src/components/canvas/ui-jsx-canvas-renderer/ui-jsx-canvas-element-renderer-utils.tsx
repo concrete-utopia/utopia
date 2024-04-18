@@ -75,7 +75,7 @@ import {
   isUtopiaCommentFlagMapCount,
 } from '../../../core/shared/comment-flags'
 import { RemixSceneComponent } from './remix-scene-component'
-import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { STEGANOGRAPHY_ENABLED } from '../../../utils/feature-switches'
 import { jsxElementChildToText } from './jsx-element-child-to-text'
 
 export interface RenderContext {
@@ -285,7 +285,7 @@ export function renderCoreElement(
           return runJSExpression(element, elementPath, blockScope, renderContext, uid, codeError)
         }
 
-        const originalTextContent = isFeatureEnabled('Steganography') ? runJSExpressionLazy() : null
+        const originalTextContent = STEGANOGRAPHY_ENABLED ? runJSExpressionLazy() : null
 
         const textContent = trimJoinUnescapeTextFromJSXElements([element])
         const textEditorProps: TextEditorProps = {
@@ -662,7 +662,7 @@ function renderJSXElement(
         return result
       }
 
-      const originalTextContent = isFeatureEnabled('Steganography') ? runJSExpressionLazy() : null
+      const originalTextContent = STEGANOGRAPHY_ENABLED ? runJSExpressionLazy() : null
 
       const textContent = trimJoinUnescapeTextFromJSXElements(childrenWithNewTextBlock)
       const textEditorProps: TextEditorProps = {

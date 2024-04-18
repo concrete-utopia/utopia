@@ -13,7 +13,6 @@ export type FeatureName =
   | 'Canvas Strategies Debug Panel'
   | 'Project Thumbnail Generation'
   | 'Debug - Print UIDs'
-  | 'Steganography'
   | 'Debug – Connections'
   | 'Render Props in Navigator'
 
@@ -29,7 +28,6 @@ export const AllFeatureNames: FeatureName[] = [
   'Canvas Strategies Debug Panel',
   'Project Thumbnail Generation',
   'Debug - Print UIDs',
-  'Steganography',
   'Debug – Connections',
   'Render Props in Navigator',
 ]
@@ -45,10 +43,11 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Canvas Strategies Debug Panel': false,
   'Project Thumbnail Generation': false,
   'Debug - Print UIDs': false,
-  Steganography: false,
   'Debug – Connections': false,
   'Render Props in Navigator': true,
 }
+
+export const STEGANOGRAPHY_ENABLED = false
 
 let FeatureSwitchLoaded: { [feature in FeatureName]?: boolean } = {}
 

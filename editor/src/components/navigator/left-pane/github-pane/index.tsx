@@ -38,7 +38,7 @@ import {
   isGithubLoadingAnyBranch,
   isGithubLoadingBranch,
   isGithubUpdating,
-  persistentModelForProjectContents,
+  persistentModelFromEditorModel,
 } from '../../../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import { UIGridRow } from '../../../inspector/widgets/ui-grid-row'
@@ -650,11 +650,7 @@ const LocalChangesBlock = () => {
     'Github branchOriginContentsChecksums',
   )
 
-  const projectContents = useEditorState(
-    Substores.projectContents,
-    (store) => store.editor.projectContents,
-    'project contents',
-  )
+  const editorStateRef = useRefEditorState((store) => store.editor)
 
   const triggerSaveToGithub = React.useCallback(() => {
     if (repo == null) {
@@ -676,7 +672,7 @@ const LocalChangesBlock = () => {
     void GithubOperations.saveProjectToGithub(
       projectId,
       repo,
-      persistentModelForProjectContents(projectContents),
+      persistentModelFromEditorModel(editorStateRef.current),
       dispatch,
       {
         branchName: cleanedCommitBranchName,
@@ -689,13 +685,13 @@ const LocalChangesBlock = () => {
       'user-initiated',
     )
   }, [
-    dispatch,
     repo,
-    commitMessage,
     cleanedCommitBranchName,
-    branchOriginContentsChecksums,
-    projectContents,
+    commitMessage,
     projectId,
+    editorStateRef,
+    dispatch,
+    branchOriginContentsChecksums,
   ])
 
   const githubAuthenticated = useEditorState(
@@ -931,11 +927,7 @@ const BranchNotLoadedBlock = () => {
     'Github branchOriginContentsChecksums',
   )
 
-  const projectContents = useEditorState(
-    Substores.projectContents,
-    (store) => store.editor.projectContents,
-    'project contents',
-  )
+  const editorStateRef = useRefEditorState((store) => store.editor)
 
   const pushToBranch = React.useCallback(() => {
     if (githubRepo == null || branchName == null || projectId == null) {
@@ -944,7 +936,7 @@ const BranchNotLoadedBlock = () => {
     void GithubOperations.saveProjectToGithub(
       projectId,
       githubRepo,
-      persistentModelForProjectContents(projectContents),
+      persistentModelFromEditorModel(editorStateRef.current),
       dispatch,
       {
         branchOriginChecksums:
@@ -957,13 +949,13 @@ const BranchNotLoadedBlock = () => {
       'user-initiated',
     )
   }, [
-    dispatch,
     githubRepo,
     branchName,
-    commitMessage,
     projectId,
-    projectContents,
+    editorStateRef,
+    dispatch,
     branchOriginContentsChecksums,
+    commitMessage,
   ])
 
   type LoadFlow = 'loadFromBranch' | 'pushToBranch' | 'createBranch'
