@@ -740,39 +740,18 @@ export const NavigatorItem: React.FunctionComponent<
     [dispatch, navigatorEntry.elementPath],
   )
 
-  const canBeSelected = useEditorState(
-    Substores.metadata,
-    (store) => {
-      const element = MetadataUtils.findElementByElementPath(
-        store.editor.jsxMetadata,
-        navigatorEntry.elementPath,
-      )
-
-      const isHTMLTagElement =
-        element != null &&
-        isRight(element.element) &&
-        isJSXElement(element.element.value) &&
-        element.element.value.name.baseVariable === 'html'
-
-      return !isHTMLTagElement
-    },
-    'NavigatorItem canBeSelected',
-  )
-
   const select = React.useCallback(
     (event: any) => {
-      if (canBeSelected) {
-        selectItem(
-          dispatch,
-          getSelectedViewsInRange,
-          navigatorEntry,
-          index,
-          selected,
-          event,
-          conditionalOverrideUpdate,
-          highlightBounds,
-        )
-      }
+      selectItem(
+        dispatch,
+        getSelectedViewsInRange,
+        navigatorEntry,
+        index,
+        selected,
+        event,
+        conditionalOverrideUpdate,
+        highlightBounds,
+      )
     },
     [
       dispatch,
@@ -782,7 +761,6 @@ export const NavigatorItem: React.FunctionComponent<
       selected,
       conditionalOverrideUpdate,
       highlightBounds,
-      canBeSelected,
     ],
   )
   const highlight = React.useCallback(
