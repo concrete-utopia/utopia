@@ -29,6 +29,7 @@ export type Substates = {
   userState: UserStateSubstate
   projectServerState: ProjectServerStateSubstate
   variablesInScope: VariablesInScopeSubstate
+  propertyControlsInfo: PropertyControlsInfoSubstate
 }
 
 export type StoreKey = keyof Substates
@@ -130,6 +131,17 @@ const emptyMultiplayerSubstate = {
   editor: pick(multiplayerSubstateKeys, EmptyEditorStateForKeysOnly),
 } as const
 export type MultiplayerSubstate = typeof emptyMultiplayerSubstate
+
+// property controls info
+export const propertyControlsInfoSubstateKeys = [
+  'projectContents',
+  'propertyControlsInfo',
+  'selectedViews',
+] as const
+const propertyControlsInfoSubstate = {
+  editor: pick(propertyControlsInfoSubstateKeys, EmptyEditorStateForKeysOnly),
+} as const
+export type PropertyControlsInfoSubstate = typeof propertyControlsInfoSubstate
 
 export interface DerivedSubstate {
   derived: DerivedState
