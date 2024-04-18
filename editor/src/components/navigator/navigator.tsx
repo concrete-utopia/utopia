@@ -332,42 +332,49 @@ NavigatorComponent.displayName = 'NavigatorComponent'
 function useDefaultCollapsed() {
   const dispatch = useDispatch()
 
-  const [defaultExpanded, setDefaultExpanded] = React.useState<{ [path: string]: boolean }>({})
+  // keep track of the previously collapsed element paths, or they will be re-collapsed
+  type PreviouslyCollapsed = { [path: string]: boolean }
+  const [previouslyCollapsed, setPreviouslyCollapsed] = React.useState<PreviouslyCollapsed>({})
 
-  const jsxMetadata = useEditorState(
+  const elementNamesByElementPath = useEditorState(
     Substores.metadata,
-    (store) => store.editor.jsxMetadata,
-    'useDefaultCollapsed jsxMetadata',
+    (store) => {
+      const elements = Object.values(store.editor.jsxMetadata)
+      return elements.reduce((acc, element) => {
+        if (isRight(element.element) && isJSXElement(element.element.value)) {
+          acc[EP.toString(element.elementPath)] = element.element.value.name.baseVariable
+        }
+        return acc
+      }, {} as { [key: string]: string })
+    },
+    'useDefaultCollapsed elementNamesByElementPath',
   )
 
-  const collapsedViews = useEditorState(
+  const collapsedPaths = useEditorState(
     Substores.navigator,
-    (store) => store.editor.navigator.collapsedViews,
-    'useDefaultCollapsed collapsedViews',
+    (store): Set<string> => new Set(store.editor.navigator.collapsedViews.map(EP.toString)),
+    'useDefaultCollapsed collapsedPaths',
   )
 
   React.useEffect(() => {
-    const collapsedViewsSet = new Set(collapsedViews.map(EP.toString))
-
-    let newCollapsedViews: ElementPath[] = []
-    for (const element of Object.values(jsxMetadata)) {
-      const pathString = EP.toString(element.elementPath)
-
-      const addToViews =
-        !collapsedViewsSet.has(pathString) &&
-        defaultExpanded[pathString] == null &&
-        isRight(element.element) &&
-        isJSXElement(element.element.value) &&
-        element.element.value.name.baseVariable === 'head'
-
-      if (addToViews) {
-        newCollapsedViews.push(element.elementPath)
-        setDefaultExpanded((v) => ({ ...v, [pathString]: true }))
-      }
-    }
+    const newCollapsedViews = Object.keys(elementNamesByElementPath).filter((path) => {
+      return (
+        // the collapsed views don't already contain the element
+        !collapsedPaths.has(path) &&
+        // the collapsed view wasn't already collapsed before
+        previouslyCollapsed[path] == null &&
+        // the element is a `head`
+        elementNamesByElementPath[path] === 'head'
+      )
+    })
 
     if (newCollapsedViews.length > 0) {
-      dispatch([addCollapsedViews(newCollapsedViews)])
+      // 1. add the new collapsed views
+      dispatch([addCollapsedViews(newCollapsedViews.map(EP.fromString))])
+      // 2. store the new added views to the previous ones
+      setPreviouslyCollapsed(
+        newCollapsedViews.reduce((acc, path) => ({ ...acc, [path]: true }), previouslyCollapsed),
+      )
     }
-  }, [jsxMetadata, collapsedViews, dispatch, defaultExpanded])
+  }, [elementNamesByElementPath, collapsedPaths, dispatch, previouslyCollapsed])
 }
