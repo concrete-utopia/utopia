@@ -1109,6 +1109,8 @@ export function isInExplicitlyFocusedSubtree(
   autoFocusedPaths: Array<ElementPath>,
   path: ElementPath,
 ): boolean {
+  // we exclude children of a potentially focused component as children are not part of the focus system
+  const componentToCheck = dropLastPathPart(path)
   // the focusedElementPath can contain multiple focused components along its path parts
   // if the path to check is a descendant of any of the focused components, it is considered focused
   let focusedAncestor = focusedElementPath
@@ -1120,7 +1122,7 @@ export function isInExplicitlyFocusedSubtree(
     // but if an ancestor is also autofocused, we should not consider it as explicitly focused
     !autoFocusedPaths.some((autoFocusedPath) => pathsEqual(autoFocusedPath, focusedAncestor))
   ) {
-    if (isDescendantOfOrEqualTo(path, focusedAncestor)) {
+    if (isDescendantOfOrEqualTo(componentToCheck, focusedAncestor)) {
       return true
     }
     focusedAncestor = getContainingComponent(focusedAncestor)
