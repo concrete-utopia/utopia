@@ -74,6 +74,7 @@ executable utopia-web
       JuicyPixels
     , aeson ==2.0.3.0
     , aeson-pretty
+    , async
     , aws
     , base >=4.7 && <5
     , base16-bytestring
@@ -223,6 +224,7 @@ test-suite utopia-web-test
     , JuicyPixels
     , aeson ==2.0.3.0
     , aeson-pretty
+    , async
     , aws
     , base >=4.7 && <5
     , base16-bytestring

@@ -19,9 +19,10 @@ import {
   componentPickerTestIdForProp,
 } from './component-picker'
 import { waitFor } from '@testing-library/react'
-import { labelTestIdForComponentIcon } from './render-prop-selector-popup'
+import { labelTestIdForComponentIcon } from './component-picker-context-menu'
+import { addChildButtonTestId } from './navigator-item-components'
 
-describe('The navigator render prop picker', () => {
+describe('The navigator component picker context menu', () => {
   const PreferredChildComponents = [
     {
       component: 'FlexRow',
@@ -98,25 +99,21 @@ describe('The navigator render prop picker', () => {
       '/src/other-utils': {
         FlexRow: {
           component: FlexRow,
-          supportsChildren: true,
           icon: 'column',
           properties: {},
         },
         FlexCol: {
           component: FlexCol,
-          supportsChildren: true,
           icon: 'regular',
           properties: {},
         },
         RandomComponent: {
           component: RandomComponent,
-          supportsChildren: true,
           icon: 'row',
           properties: {},
         },
         Card: {
           component: Card,
-          supportsChildren: true,
           properties: {
             title: {
               control: 'jsx',
@@ -141,31 +138,30 @@ describe('The navigator render prop picker', () => {
       '/src/utils': {
         FlexRow: {
           component: FlexRow,
-          supportsChildren: true,
           icon: 'row',
           properties: {},
         },
         FlexCol: {
           component: FlexCol,
-          supportsChildren: true,
           icon: 'column',
           properties: {},
         },
         RandomComponent: {
           component: RandomComponent,
-          supportsChildren: true,
           properties: {},
         },
       },
       '/utopia/storyboard': {
         Card: {
           component: Card,
-          supportsChildren: true,
           properties: {
             title: {
               control: 'jsx',
               preferredContents: ${JSON.stringify(PreferredChildComponents)},
             },
+          },
+          children: {
+            preferredContents: ${JSON.stringify(PreferredChildComponents)},
           },
           variants: [],
         },
@@ -494,7 +490,7 @@ describe('The navigator render prop picker', () => {
     )
   })
 
-  it('simple picker returns the correct registered components', async () => {
+  it('simple picker returns the correct registered components for render props', async () => {
     const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString('sb/card')])
     const emptySlot = editor.renderedDOM.getByTestId(
@@ -518,7 +514,31 @@ describe('The navigator render prop picker', () => {
     expect(randomComponentRow).not.toBeNull()
   })
 
-  it('Selecting a component with no variants from the simple picker should insert that component into the render prop', async () => {
+  it('simple picker returns the correct registered components for children', async () => {
+    const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
+    await selectComponentsForTest(editor, [EP.fromString('sb/card')])
+    const addChildButton = editor.renderedDOM.getByTestId(
+      addChildButtonTestId(EP.fromString('sb/card')),
+    )
+    await mouseClickAtPoint(addChildButton, { x: 2, y: 2 })
+
+    const flexRowRow = editor.renderedDOM.queryByTestId(
+      labelTestIdForComponentIcon('FlexRow', '/src/utils', 'row'),
+    )
+    expect(flexRowRow).not.toBeNull()
+
+    const flexColRow = editor.renderedDOM.queryByTestId(
+      labelTestIdForComponentIcon('FlexCol', '/src/utils', 'column'),
+    )
+    expect(flexColRow).not.toBeNull()
+
+    const randomComponentRow = editor.renderedDOM.queryByTestId(
+      labelTestIdForComponentIcon('RandomComponent', '/src/utils', 'regular'),
+    )
+    expect(randomComponentRow).not.toBeNull()
+  })
+
+  it('Selecting a component with no variants from the simple picker for a render prop should insert that component into the render prop', async () => {
     const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString('sb/card')])
     const emptySlot = editor.renderedDOM.getByTestId(
@@ -567,7 +587,55 @@ describe('The navigator render prop picker', () => {
     )
   })
 
-  it('Selecting a component from the simple picker in a submenu should insert that component into the render prop', async () => {
+  it('Selecting a component with no variants from the simple picker for adding a child should insert that component into the render prop', async () => {
+    const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
+    await selectComponentsForTest(editor, [EP.fromString('sb/card')])
+    const addChildButton = editor.renderedDOM.getByTestId(
+      addChildButtonTestId(EP.fromString('sb/card')),
+    )
+    await mouseClickAtPoint(addChildButton, { x: 2, y: 2 })
+
+    const menuButton = await waitFor(() => editor.renderedDOM.getByText('FlexCol'))
+    await mouseClickAtPoint(menuButton, { x: 3, y: 3 })
+
+    await editor.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState(), StoryboardFilePath)).toEqual(
+      formatTestProjectCode(`
+    import * as React from 'react'
+    import { Storyboard } from 'utopia-api'
+    import { FlexCol } from '/src/utils'
+
+    export const Card = (props) => {
+      return (
+        <div style={props.style}>
+          {props.title}
+          {props.children}
+        </div>
+      )
+    }
+
+    export var storyboard = (
+      <Storyboard>
+        <Card
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 945,
+            top: 111,
+            width: 139,
+            height: 87,
+          }}
+        >
+          <FlexCol />
+        </Card>
+      </Storyboard>
+    )
+    `),
+    )
+  })
+
+  it('Selecting a component from the simple picker in a submenu for a render prop should insert that component into the render prop', async () => {
     const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString('sb/card')])
     const emptySlot = editor.renderedDOM.getByTestId(
@@ -614,6 +682,58 @@ describe('The navigator render prop picker', () => {
             <FlexRow>three totally real placeholders</FlexRow>
           }
         />
+      </Storyboard>
+    )
+    `),
+    )
+  })
+
+  it('Selecting a component from the simple picker in a submenu for adding a child should insert that component into the render prop', async () => {
+    const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
+    await selectComponentsForTest(editor, [EP.fromString('sb/card')])
+    const addChildButton = editor.renderedDOM.getByTestId(
+      addChildButtonTestId(EP.fromString('sb/card')),
+    )
+    await mouseClickAtPoint(addChildButton, { x: 2, y: 2 })
+
+    const submenuButton = await waitFor(() => editor.renderedDOM.getByText('FlexRow'))
+    await mouseMoveToPoint(submenuButton, { x: 3, y: 3 })
+
+    const renderedOptionVariant = await waitFor(() =>
+      editor.renderedDOM.getByText('with three placeholders'),
+    )
+    await mouseClickAtPoint(renderedOptionVariant, { x: 2, y: 2 })
+    await editor.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState(), StoryboardFilePath)).toEqual(
+      formatTestProjectCode(`
+    import * as React from 'react'
+    import { Storyboard } from 'utopia-api'
+    import { FlexRow } from '/src/utils'
+
+    export const Card = (props) => {
+      return (
+        <div style={props.style}>
+          {props.title}
+          {props.children}
+        </div>
+      )
+    }
+
+    export var storyboard = (
+      <Storyboard>
+        <Card
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 945,
+            top: 111,
+            width: 139,
+            height: 87,
+          }}
+        >
+          <FlexRow>three totally real placeholders</FlexRow>
+        </Card>
       </Storyboard>
     )
     `),

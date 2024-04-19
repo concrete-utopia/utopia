@@ -1,6 +1,6 @@
 import { vercelStegaCombine, vercelStegaDecode, vercelStegaSplit } from '@vercel/stega'
 import type { SteganographyMode } from '../workers/parser-printer/parser-printer'
-import { isFeatureEnabled } from '../../utils/feature-switches'
+import { STEGANOGRAPHY_ENABLED } from '../../utils/feature-switches'
 
 export interface SteganoTextData {
   filePath: string
@@ -45,7 +45,7 @@ export function cleanSteganoTextData(text: string): { cleaned: string } {
 }
 
 export function isSteganographyEnabled(): SteganographyMode {
-  if (isFeatureEnabled('Steganography')) {
+  if (STEGANOGRAPHY_ENABLED) {
     return 'apply-steganography'
   }
   return 'do-not-apply-steganography'

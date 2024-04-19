@@ -24,7 +24,7 @@ import { refreshDependencies } from '../../dependencies'
 import type { RequestedNpmDependency } from '../../npm-dependency-types'
 import { forceNotNull } from '../../optional-utils'
 import { isTextFile } from '../../project-file-types'
-import type { BranchContent, GetBranchContentResponse } from '../helpers'
+import type { BranchContent, GetBranchContentResponse, GithubOperationSource } from '../helpers'
 import {
   connectRepo,
   getBranchContentFromServer,
@@ -46,6 +46,7 @@ export const saveAssetsToProject =
     branchContent: BranchContent,
     dispatch: EditorDispatch,
     currentProjectContents: ProjectContentTreeRoot,
+    initiator: GithubOperationSource,
   ): Promise<void> => {
     await walkContentsTreeAsync(branchContent.content, async (fullPath, projectFile) => {
       const alreadyExistingFile = getProjectFileByFilePath(currentProjectContents, fullPath)
@@ -70,6 +71,7 @@ export const saveAssetsToProject =
                 fullPath,
                 dispatch,
                 operationContext,
+                initiator,
               )
               break
             case 'ASSET_FILE':
@@ -80,6 +82,7 @@ export const saveAssetsToProject =
                 fullPath,
                 dispatch,
                 operationContext,
+                initiator,
               )
               break
             default:
@@ -102,6 +105,7 @@ export const updateProjectWithBranchContent =
     currentDeps: Array<RequestedNpmDependency>,
     builtInDependencies: BuiltInDependencies,
     currentProjectContents: ProjectContentTreeRoot,
+    initiator: GithubOperationSource,
   ): Promise<void> => {
     await runGithubOperation(
       {
@@ -110,6 +114,7 @@ export const updateProjectWithBranchContent =
         githubRepo: githubRepo,
       },
       dispatch,
+      initiator,
       async (operation: GithubOperation) => {
         const response = await getBranchContentFromServer(
           githubRepo,
@@ -151,6 +156,7 @@ export const updateProjectWithBranchContent =
               responseBody.branch,
               dispatch,
               currentProjectContents,
+              initiator,
             )
 
             // Update the editor with everything so that if anything else fails past this point
