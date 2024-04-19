@@ -663,13 +663,7 @@ export const NumberInput = React.memo<NumberInputProps>(
         : undefined
 
     return (
-      <div
-        onMouseEnter={onMouseEnter}
-        onMouseLeave={onMouseLeave}
-        style={{
-          ...style,
-        }}
-      >
+      <div onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} style={style}>
         <div
           className='number-input-container'
           css={{
@@ -677,11 +671,11 @@ export const NumberInput = React.memo<NumberInputProps>(
             zIndex: isFocused ? 3 : undefined,
             position: 'relative',
             borderRadius: 2,
-            ...chainedStyles,
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
             boxShadow: 'inset 0px 0px 0px 1px transparent',
+            ...chainedStyles,
             '&:hover': {
               boxShadow: `inset 0px 0px 0px 1px ${colorTheme.fg7.value}`,
             },
