@@ -44,6 +44,8 @@ export const ImgSection = React.memo(() => {
     onUnsetValues: altOnUnsetValues,
   } = useInspectorElementInfo('alt')
 
+  const isVisible = useIsSubSectionVisible('img')
+
   const srcContextMenuItems = utils.stripNulls([
     srcValue != null ? addOnUnsetValues(['srcValue'], srcOnUnsetValues) : null,
   ])
@@ -58,6 +60,10 @@ export const ImgSection = React.memo(() => {
         ({naturalWidth} × {naturalHeight})
       </span>
     )
+  }
+
+  if (!isVisible) {
+    return null
   }
 
   return (

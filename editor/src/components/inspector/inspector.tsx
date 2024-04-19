@@ -35,7 +35,6 @@ import {
   InspectorCallbackContext,
   InspectorPropsContext,
   stylePropPathMappingFn,
-  useShouldShowImgSection,
 } from './common/property-path-hooks'
 import { ComponentSection } from './sections/component-section/component-section'
 import { EventHandlersSection } from './sections/event-handlers-section/event-handlers-section'
@@ -359,7 +358,6 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     multiselectedContract === 'frame' && inspectorPreferences.includes('layout-system')
 
   const shouldShowSimplifiedLayoutSection = inspectorPreferences.includes('layout')
-  const shouldShowImgSection = useShouldShowImgSection()
 
   function renderInspectorContents() {
     return (
@@ -437,7 +435,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
                     <>
                       <StyleSection />
                       <WarningSubsection />
-                      {when(shouldShowImgSection, <ImgSection />)}
+                      <ImgSection />,
                       <EventHandlersSection />
                     </>,
                   )}

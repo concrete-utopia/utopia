@@ -61,6 +61,7 @@ import {
   getJSXAttribute,
   isRegularJSXAttribute,
   clearExpressionUniqueIDs,
+  getJSXElementNameAsString,
 } from '../../../core/shared/element-template'
 import type {
   GetModifiableAttributeResult,
@@ -1042,25 +1043,6 @@ export function useInspectorLayoutInfo<P extends StyleLayoutProp>(
   return inspectorInfo
 }
 
-export function useShouldShowImgSection(): boolean {
-  return useEditorState(
-    Substores.fullStore,
-    (store) =>
-      store.editor.selectedViews.every((view) =>
-        withUnderlyingTarget(
-          view,
-          store.editor.projectContents,
-          null,
-          (underlyingSuccess, underlyingElement) =>
-            isJSXElement(underlyingElement) &&
-            isHTMLComponent(underlyingElement.name, underlyingSuccess.imports) &&
-            underlyingElement.name.baseVariable === 'img',
-        ),
-      ),
-    'useShouldShowImgSection',
-  )
-}
-
 export function useIsSubSectionVisible(sectionName: string): boolean {
   const selectedViews = useRefSelectedViews()
 
@@ -1079,7 +1061,7 @@ export function useIsSubSectionVisible(sectionName: string): boolean {
               } else if (isHTMLComponent(underlyingElement.name, underlyingSuccess.imports)) {
                 return underlyingElement.name.baseVariable
               } else {
-                return null
+                return getJSXElementNameAsString(underlyingElement.name)
               }
             } else {
               return null
