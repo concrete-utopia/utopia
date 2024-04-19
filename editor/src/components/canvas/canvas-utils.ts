@@ -158,6 +158,7 @@ import type { RouteModulesWithRelativePaths } from './remix/remix-utils'
 import type { IsCenterBased } from './canvas-strategies/strategies/resize-helpers'
 import { getComponentDescriptorForTarget } from '../../core/property-controls/property-controls-utils'
 import type { PropertyControlsInfo } from '../custom-code/code-file'
+import { mapDropNulls } from '../../core/shared/array-utils'
 
 function dragDeltaScaleForProp(prop: LayoutTargetableProp): number {
   switch (prop) {
@@ -1861,24 +1862,39 @@ function getValidElementPathsFromElement(
         ? null
         : EP.pathUpToElementPath(focusedElementPath, lastElementPathPart, 'static-path')
 
-    const isAutofocused =
-      autoFocusedPaths.find((p) => EP.pathsEqual(EP.dynamicPathToStaticPath(p), path)) != null
+    const matchingAutofocusedPathParts: Array<ElementPath> = mapDropNulls((autofocusedPath) => {
+      return autofocusedPath == null || lastElementPathPart == null
+        ? null
+        : EP.pathUpToElementPath(autofocusedPath, lastElementPathPart, 'static-path')
+    }, autoFocusedPaths)
 
-    const isFocused = isOnlyChildOfScene || matchingFocusedPathPart != null || isAutofocused
+    const isFocused = isOnlyChildOfScene || matchingFocusedPathPart != null
     if (isFocused) {
-      paths.push(
-        ...getValidElementPaths(
-          focusedElementPath,
-          name,
-          matchingFocusedPathPart ?? path,
-          projectContents,
-          autoFocusedPaths,
-          filePath,
-          resolve,
-          getRemixValidPathsGenerationContext,
-        ),
+      const result = getValidElementPaths(
+        focusedElementPath,
+        name,
+        matchingFocusedPathPart ?? path,
+        projectContents,
+        autoFocusedPaths,
+        filePath,
+        resolve,
+        getRemixValidPathsGenerationContext,
       )
+      paths.push(...result)
     }
+    matchingAutofocusedPathParts.forEach((autofocusedPathPart) => {
+      const result = getValidElementPaths(
+        focusedElementPath,
+        name,
+        autofocusedPathPart,
+        projectContents,
+        autoFocusedPaths,
+        filePath,
+        resolve,
+        getRemixValidPathsGenerationContext,
+      )
+      paths.push(...result)
+    })
 
     return paths
   } else if (
