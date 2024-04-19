@@ -288,7 +288,7 @@ export function labelTestIdForComponentIcon(
 }
 
 const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuProps>(
-  ({ key, id, target, prop }) => {
+  ({ id, target, prop }) => {
     const { showComponentPickerContextMenu } = useShowComponentPickerContextMenu(`${id}-full`)
 
     const preferredChildrenForTargetProp = usePreferredChildrenForTargetProp(target, prop)
@@ -360,7 +360,7 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
 )
 
 const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProps>(
-  ({ key, id, target, prop }) => {
+  ({ id, target, prop }) => {
     const { hideComponentPickerContextMenu } = useShowComponentPickerContextMenu(`${id}-full`)
 
     const preferredChildrenForTargetProp = usePreferredChildrenForTargetProp(target, prop)
@@ -394,7 +394,7 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
     }
 
     return (
-      <Menu key={key} id={id} animation={false} style={{ width: 457 }} onClick={squashEvents}>
+      <Menu key={id} id={id} animation={false} style={{ width: 457 }} onClick={squashEvents}>
         <ComponentPicker
           insertionTargetName={prop ?? 'Child'}
           preferredComponents={preferredChildrenForTargetProp}
@@ -408,13 +408,13 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
 )
 
 export const ComponentPickerContextMenu = React.memo<ComponentPickerContextMenuProps>(
-  ({ key, id, target, prop }) => {
+  ({ id, target, prop }) => {
     return (
       <React.Fragment>
-        <ComponentPickerContextMenuSimple target={target} key={key} id={id} prop={prop} />
+        <ComponentPickerContextMenuSimple target={target} key={id} id={id} prop={prop} />
         <ComponentPickerContextMenuFull
           target={target}
-          key={`${key}-full`}
+          key={`${id}-full`}
           id={`${id}-full`}
           prop={prop}
         />
