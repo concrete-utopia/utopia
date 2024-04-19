@@ -435,7 +435,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
                     <>
                       <StyleSection />
                       <WarningSubsection />
-                      <ImgSection />,
+                      <ImgSection />
                       <EventHandlersSection />
                     </>,
                   )}

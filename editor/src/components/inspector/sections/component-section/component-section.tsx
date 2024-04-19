@@ -894,7 +894,7 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
                 style={{
                   ...objectPropertyLabelStyle,
                   paddingLeft: indentation,
-                  paddingRight: 4,
+                  paddingRight: 6,
                   cursor: props.disableToggling ? 'default' : 'pointer',
                 }}
               >
