@@ -1233,7 +1233,7 @@ describe('replaceFilePath', () => {
         Object {
           "/package.json": "BOTH_MATCH",
           "/public/index.html": "BOTH_MATCH",
-          "/src/app2.js": "BOTH_MATCH",
+          "/src/app2.js": "PARSED_AHEAD",
           "/src/card.js": "BOTH_MATCH",
           "/src/index.js": "PARSED_AHEAD",
           "/utopia/storyboard.js": "PARSED_AHEAD",

@@ -1366,8 +1366,12 @@ export function replaceFilePath(
         }
       })
 
-      // Only mark these as parsed ahead if they have meaningfully changed.
+      // Only mark these as parsed ahead if they have meaningfully changed,
+      // or if the filename has been changed for this file.
+      const oldFilename =
+        updatedFiles.find((updatedFile) => updatedFile.newPath === filename) ?? filename
       if (
+        oldFilename !== filename ||
         !ParseSuccessKeepDeepEquality(projectFile.fileContents.parsed, updatedParseResult).areEqual
       ) {
         updatedProjectContents[filename] = saveTextFileContents(
