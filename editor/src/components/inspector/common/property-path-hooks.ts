@@ -61,6 +61,7 @@ import {
   getJSXAttribute,
   isRegularJSXAttribute,
   clearExpressionUniqueIDs,
+  getJSXElementNameAsString,
 } from '../../../core/shared/element-template'
 import type {
   GetModifiableAttributeResult,
@@ -1060,7 +1061,7 @@ export function useIsSubSectionVisible(sectionName: string): boolean {
               } else if (isHTMLComponent(underlyingElement.name, underlyingSuccess.imports)) {
                 return underlyingElement.name.baseVariable
               } else {
-                return null
+                return getJSXElementNameAsString(underlyingElement.name)
               }
             } else {
               return null
