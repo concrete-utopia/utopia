@@ -751,7 +751,7 @@ const LockedOverlay = React.memo(() => {
             opacity: 1,
             fontSize: 12,
             fontWeight: 500,
-            background: colorTheme.contextMenuBackground.value,
+            backgroundColor: colorTheme.bg2.value,
             border: `1px solid ${colorTheme.neutralBorder.value}`,
             padding: 30,
             borderRadius: 2,
