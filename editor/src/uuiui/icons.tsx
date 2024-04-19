@@ -307,6 +307,12 @@ export const Icons = {
     width: 18,
     height: 18,
   }),
+  ComponentInstance: makeIcon({
+    category: 'element',
+    type: 'componentinstance',
+    width: 18,
+    height: 18,
+  }),
   CircleSmall: makeIcon({ type: 'circle-small', color: 'secondary' }),
   CrossSmall: makeIcon({ type: 'cross-small', color: 'secondary' }),
   CrossInTranslucentCircle: makeIcon({ type: 'cross-in-translucent-circle', color: 'main' }),
