@@ -142,15 +142,13 @@ export function getNavigatorTargets(
               renderPropNavigatorEntry(fakeRenderPropPath, prop),
               slotNavigatorEntry(fakeRenderPropPath, prop),
             ]
-            navigatorTargets.push(...entries)
-            visibleNavigatorTargets.push(...entries)
+            addNavigatorTargetsUnlessCollapsed(...entries)
             return
           }
 
           const childPath = EP.appendToPath(path, propValue.uid)
           const entry = renderPropNavigatorEntry(fakeRenderPropPath, prop)
-          navigatorTargets.push(entry)
-          visibleNavigatorTargets.push(entry)
+          addNavigatorTargetsUnlessCollapsed(entry)
 
           const subTreeChild = subTree?.children.find((child) =>
             EP.pathsEqual(child.path, childPath),
@@ -160,10 +158,20 @@ export function getNavigatorTargets(
             walkAndAddKeys(subTreeChild, collapsedAncestor)
           } else {
             const synthEntry = syntheticNavigatorEntry(childPath, propValue)
-            navigatorTargets.push(synthEntry)
-            visibleNavigatorTargets.push(synthEntry)
+            addNavigatorTargetsUnlessCollapsed(synthEntry)
           }
         })
+      }
+
+      const isCollapsed = EP.containsPath(path, collapsedViews)
+      const newCollapsedAncestor = collapsedAncestor || isCollapsed || isHiddenInNavigator
+
+      function addNavigatorTargetsUnlessCollapsed(...entries: Array<NavigatorEntry>) {
+        if (newCollapsedAncestor) {
+          return
+        }
+        navigatorTargets.push(...entries)
+        visibleNavigatorTargets.push(...entries)
       }
 
       const propertyControls = getPropertyControlsForTarget(
@@ -175,17 +183,6 @@ export function getNavigatorTargets(
 
       if (isFeatureEnabled('Render Props in Navigator') && propertyControls != null) {
         walkPropertyControls(propertyControls)
-      }
-
-      const isCollapsed = EP.containsPath(path, collapsedViews)
-      const newCollapsedAncestor = collapsedAncestor || isCollapsed || isHiddenInNavigator
-
-      function addNavigatorTargetUnlessCollapsed(entry: NavigatorEntry) {
-        if (newCollapsedAncestor) {
-          return
-        }
-        navigatorTargets.push(entry)
-        visibleNavigatorTargets.push(entry)
       }
 
       function walkConditionalClause(
@@ -204,7 +201,7 @@ export function getNavigatorTargets(
           conditionalSubTree.path,
           conditionalCase,
         )
-        addNavigatorTargetUnlessCollapsed(clauseTitleEntry)
+        addNavigatorTargetsUnlessCollapsed(clauseTitleEntry)
 
         const isDynamic = (elementPath: ElementPath) => {
           return (
@@ -242,7 +239,7 @@ export function getNavigatorTargets(
           (clausePathTrees.length === 0 || !clausePathTrees.some((t) => isDynamic(t.path)))
         ) {
           const clauseValueEntry = syntheticNavigatorEntry(clausePath, clauseValue)
-          addNavigatorTargetUnlessCollapsed(clauseValueEntry)
+          addNavigatorTargetsUnlessCollapsed(clauseValueEntry)
         }
       }
 
@@ -283,7 +280,7 @@ export function getNavigatorTargets(
                 EP.appendToPath(path, `invalid-override-${i + 1}`),
                 'data source not found',
               )
-              addNavigatorTargetUnlessCollapsed(entry)
+              addNavigatorTargetsUnlessCollapsed(entry)
             }
           }
         }
@@ -299,8 +296,7 @@ export function getNavigatorTargets(
             EP.appendToPath(path, renderPropId('children')),
             'children',
           )
-          navigatorTargets.push(entry)
-          visibleNavigatorTargets.push(entry)
+          addNavigatorTargetsUnlessCollapsed(entry)
         }
         fastForEach(notRenderPropChildren, (child) => {
           walkAndAddKeys(child, newCollapsedAncestor)
