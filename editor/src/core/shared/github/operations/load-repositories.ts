@@ -8,7 +8,7 @@ import {
 import type { GithubOperation } from '../../../../components/editor/store/editor-state'
 import { emptyGithubSettings } from '../../../../components/editor/store/editor-state'
 import { GithubEndpoints } from '../endpoints'
-import type { GithubFailure, RepositoryEntry } from '../helpers'
+import type { GithubFailure, GithubOperationSource, RepositoryEntry } from '../helpers'
 import { githubAPIError, githubAPIErrorFromResponse, runGithubOperation } from '../helpers'
 import type { GithubOperationContext } from './github-operation-context'
 
@@ -21,10 +21,14 @@ export type GetUsersPublicRepositoriesResponse = GetUsersPublicRepositoriesSucce
 
 export const getUsersPublicGithubRepositories =
   (operationContext: GithubOperationContext) =>
-  async (dispatch: EditorDispatch): Promise<Array<EditorAction>> => {
+  async (
+    dispatch: EditorDispatch,
+    initiator: GithubOperationSource,
+  ): Promise<Array<EditorAction>> => {
     return runGithubOperation(
       { name: 'loadRepositories' },
       dispatch,
+      initiator,
       async (operation: GithubOperation) => {
         const url = GithubEndpoints.repositories()
 

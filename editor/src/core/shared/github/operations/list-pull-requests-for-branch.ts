@@ -7,7 +7,7 @@ import type {
   PullRequest,
 } from '../../../../components/editor/store/editor-state'
 import { GithubEndpoints } from '../endpoints'
-import type { GithubFailure } from '../helpers'
+import type { GithubFailure, GithubOperationSource } from '../helpers'
 import { githubAPIError, githubAPIErrorFromResponse, runGithubOperation } from '../helpers'
 import type { GithubOperationContext } from './github-operation-context'
 
@@ -34,6 +34,7 @@ export const updatePullRequestsForBranch =
     dispatch: EditorDispatch,
     githubRepo: GithubRepo,
     branchName: string,
+    initiator: GithubOperationSource,
   ): Promise<Array<EditorAction>> => {
     return runGithubOperation(
       {
@@ -42,6 +43,7 @@ export const updatePullRequestsForBranch =
         branchName: branchName,
       },
       dispatch,
+      initiator,
       async (operation: GithubOperation) => {
         const url = GithubEndpoints.updatePullRequests(githubRepo, branchName)
 

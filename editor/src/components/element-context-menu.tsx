@@ -163,35 +163,10 @@ interface SelectableElementItemProps {
 const SelectableElementItem = (props: SelectableElementItemProps) => {
   const rawRef = React.useRef<HTMLDivElement>(null)
   const { dispatch, path, iconProps, label } = props
-  const isHighlighted = useEditorState(
-    Substores.highlightedHoveredViews,
-    (store) => store.editor.highlightedViews.some((view) => EP.pathsEqual(path, view)),
-    'SelectableElementItem isHighlighted',
-  )
-  const highlightElement = React.useCallback(
-    () => dispatch([setHighlightedView(path)]),
-    [dispatch, path],
-  )
-
-  React.useEffect(() => {
-    const current = rawRef.current
-    if (current != null) {
-      const parent = current.parentElement?.parentElement
-      // eslint-disable-next-line no-unused-expressions
-      parent?.addEventListener('mousemove', highlightElement)
-    }
-    return function cleanup() {
-      if (current != null) {
-        const parent = current.parentElement?.parentElement
-        // eslint-disable-next-line no-unused-expressions
-        parent?.removeEventListener('mousemove', highlightElement)
-      }
-    }
-  }, [highlightElement])
 
   return (
     <FlexRow ref={rawRef}>
-      <Icn {...iconProps} color={isHighlighted ? 'on-highlight-main' : 'main'} />
+      <Icn {...iconProps} color={'white'} />
       <span style={{ paddingLeft: 6 }}>{label}</span>
     </FlexRow>
   )
@@ -220,6 +195,7 @@ function useCanvasContextMenuGetData(
       internalClipboard: store.editor.internalClipboard,
       autoFocusedPaths: store.derived.autoFocusedPaths,
       navigatorTargets: store.derived.navigatorTargets,
+      propertyControlsInfo: store.editor.propertyControlsInfo,
     }
   })
 
@@ -244,6 +220,7 @@ function useCanvasContextMenuGetData(
       contextMenuInstance: contextMenuInstance,
       autoFocusedPaths: currentEditor.autoFocusedPaths,
       navigatorTargets: currentEditor.navigatorTargets,
+      propertyControlsInfo: currentEditor.propertyControlsInfo,
     }
   }, [editorSliceRef, contextMenuInstance])
 }

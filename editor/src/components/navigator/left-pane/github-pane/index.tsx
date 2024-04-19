@@ -38,7 +38,7 @@ import {
   isGithubLoadingAnyBranch,
   isGithubLoadingBranch,
   isGithubUpdating,
-  persistentModelForProjectContents,
+  persistentModelFromEditorModel,
 } from '../../../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import { UIGridRow } from '../../../inspector/widgets/ui-grid-row'
@@ -178,18 +178,27 @@ const BranchBlock = () => {
     [githubOperations],
   )
 
-  const refreshBranches = React.useCallback(() => {
+  const refreshBranchesOnMouseUp = React.useCallback(() => {
     if (targetRepository != null) {
       void dispatchPromiseActions(
         dispatch,
-        GithubOperations.getBranchesForGithubRepository(dispatch, targetRepository),
+        GithubOperations.getBranchesForGithubRepository(
+          dispatch,
+          targetRepository,
+          'user-initiated',
+        ),
       )
     }
   }, [dispatch, targetRepository])
 
   React.useEffect(() => {
-    refreshBranches()
-  }, [refreshBranches])
+    if (targetRepository != null) {
+      void dispatchPromiseActions(
+        dispatch,
+        GithubOperations.getBranchesForGithubRepository(dispatch, targetRepository, 'polling'),
+      )
+    }
+  }, [dispatch, targetRepository])
 
   const [expandedFlag, setExpandedFlag] = React.useState(false)
 
@@ -358,7 +367,7 @@ const BranchBlock = () => {
             spotlight
             highlight
             style={{ padding: '0 6px', marginTop: 6 }}
-            onMouseUp={refreshBranches}
+            onMouseUp={refreshBranchesOnMouseUp}
             disabled={isListingBranches}
           >
             {isListingBranches ? (
@@ -389,7 +398,7 @@ const BranchBlock = () => {
     branchFilter,
     updateBranchFilter,
     filteredBranches,
-    refreshBranches,
+    refreshBranchesOnMouseUp,
     isListingBranches,
     currentBranch,
     clearBranch,
@@ -502,6 +511,7 @@ const RemoteChangesBlock = () => {
         commit,
         forceNotNull('Should have a project ID by now.', projectIDRef.current),
         currentContentsRef.current,
+        'user-initiated',
       )
     }
   }, [workersRef, dispatch, repo, branch, commit, projectIDRef, currentContentsRef])
@@ -640,11 +650,7 @@ const LocalChangesBlock = () => {
     'Github branchOriginContentsChecksums',
   )
 
-  const projectContents = useEditorState(
-    Substores.projectContents,
-    (store) => store.editor.projectContents,
-    'project contents',
-  )
+  const editorStateRef = useRefEditorState((store) => store.editor)
 
   const triggerSaveToGithub = React.useCallback(() => {
     if (repo == null) {
@@ -666,7 +672,7 @@ const LocalChangesBlock = () => {
     void GithubOperations.saveProjectToGithub(
       projectId,
       repo,
-      persistentModelForProjectContents(projectContents),
+      persistentModelFromEditorModel(editorStateRef.current),
       dispatch,
       {
         branchName: cleanedCommitBranchName,
@@ -676,15 +682,16 @@ const LocalChangesBlock = () => {
             ? {}
             : fileChecksumsWithFileToFileChecksums(branchOriginContentsChecksums),
       },
+      'user-initiated',
     )
   }, [
-    dispatch,
     repo,
-    commitMessage,
     cleanedCommitBranchName,
-    branchOriginContentsChecksums,
-    projectContents,
+    commitMessage,
     projectId,
+    editorStateRef,
+    dispatch,
+    branchOriginContentsChecksums,
   ])
 
   const githubAuthenticated = useEditorState(
@@ -882,6 +889,7 @@ const BranchNotLoadedBlock = () => {
         currentDependencies,
         builtInDependencies,
         projectContentsRef.current,
+        'user-initiated',
       )
     }
   }, [
@@ -919,11 +927,7 @@ const BranchNotLoadedBlock = () => {
     'Github branchOriginContentsChecksums',
   )
 
-  const projectContents = useEditorState(
-    Substores.projectContents,
-    (store) => store.editor.projectContents,
-    'project contents',
-  )
+  const editorStateRef = useRefEditorState((store) => store.editor)
 
   const pushToBranch = React.useCallback(() => {
     if (githubRepo == null || branchName == null || projectId == null) {
@@ -932,7 +936,7 @@ const BranchNotLoadedBlock = () => {
     void GithubOperations.saveProjectToGithub(
       projectId,
       githubRepo,
-      persistentModelForProjectContents(projectContents),
+      persistentModelFromEditorModel(editorStateRef.current),
       dispatch,
       {
         branchOriginChecksums:
@@ -942,15 +946,16 @@ const BranchNotLoadedBlock = () => {
         branchName: branchName,
         commitMessage: commitMessage ?? 'Committed automatically',
       },
+      'user-initiated',
     )
   }, [
-    dispatch,
     githubRepo,
     branchName,
-    commitMessage,
     projectId,
-    projectContents,
+    editorStateRef,
+    dispatch,
     branchOriginContentsChecksums,
+    commitMessage,
   ])
 
   type LoadFlow = 'loadFromBranch' | 'pushToBranch' | 'createBranch'

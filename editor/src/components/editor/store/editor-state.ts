@@ -342,27 +342,6 @@ export type GithubOperation =
   | GithubListPullRequestsForBranch
   | GithubSaveAsset
 
-export function githubOperationPrettyName(op: GithubOperation): string {
-  switch (op.name) {
-    case 'commitAndPush':
-      return 'Saving to GitHub'
-    case 'listBranches':
-      return 'Listing branches from GitHub'
-    case 'loadBranch':
-      return 'Loading branch from GitHub'
-    case 'loadRepositories':
-      return 'Loading Repositories'
-    case 'updateAgainstBranch':
-      return 'Updating against branch from GitHub'
-    case 'listPullRequestsForBranch':
-      return 'Listing GitHub pull requests'
-    case 'saveAsset':
-      return 'Saving asset to GitHub'
-    default:
-      assertNever(op)
-  }
-}
-
 export function githubOperationLocksEditor(op: GithubOperation): boolean {
   switch (op.name) {
     case 'listBranches':
@@ -2725,7 +2704,6 @@ function deriveCacheableStateInner(
   collapsedViews: ElementPath[],
   hiddenInNavigator: ElementPath[],
   propertyControlsInfo: PropertyControlsInfo,
-  openFilePath: string | null,
 ): CacheableDerivedState {
   const { navigatorTargets, visibleNavigatorTargets } = getNavigatorTargets(
     jsxMetadata,
@@ -2733,7 +2711,6 @@ function deriveCacheableStateInner(
     collapsedViews,
     hiddenInNavigator,
     propertyControlsInfo,
-    openFilePath,
     projectContents,
   )
 
@@ -2746,7 +2723,13 @@ function deriveCacheableStateInner(
 
   const autoFocusedPaths = MetadataUtils.getAllPaths(jsxMetadata, elementPathTree).filter(
     (path) => {
-      return MetadataUtils.isAutofocusable(jsxMetadata, elementPathTree, path)
+      return MetadataUtils.isAutofocusable(
+        jsxMetadata,
+        elementPathTree,
+        path,
+        propertyControlsInfo,
+        projectContents,
+      )
     },
   )
 
@@ -2785,7 +2768,6 @@ export function deriveState(
     editor.navigator.collapsedViews,
     editor.navigator.hiddenInNavigator,
     editor.propertyControlsInfo,
-    getOpenUIJSFileKey(editor),
   )
 
   const remixDerivedData = createRemixDerivedDataMemo(

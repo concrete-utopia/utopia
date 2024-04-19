@@ -7,7 +7,7 @@ import React from 'react'
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { IS_TEST_ENVIRONMENT } from '../../common/env-vars'
-import { projectURLForProject } from '../../core/shared/utils'
+import { assertNever, projectURLForProject } from '../../core/shared/utils'
 import Keyboard from '../../utils/keyboard'
 import { Modifier } from '../../utils/modifiers'
 import {
@@ -40,12 +40,8 @@ import { FatalIndexedDBErrorComponent } from './fatal-indexeddb-error-component'
 import { editorIsTarget, handleKeyDown, handleKeyUp } from './global-shortcuts'
 import { BrowserInfoBar, LoginStatusBar } from './notification-bar'
 import { applyShortcutConfigurationToDefaults } from './shortcut-definitions'
-import {
-  githubOperationLocksEditor,
-  githubOperationPrettyName,
-  LeftMenuTab,
-  RightMenuTab,
-} from './store/editor-state'
+import type { GithubOperation } from './store/editor-state'
+import { githubOperationLocksEditor, LeftMenuTab, RightMenuTab } from './store/editor-state'
 import {
   Substores,
   useEditorState,
@@ -77,6 +73,7 @@ import { isRoomId, projectIdToRoomId } from '../../utils/room-id'
 import { SharingDialog } from './sharing-dialog'
 import { AccessLevelParamKey, CloneParamKey } from './persistence/persistence-backend'
 import { useUpdateActiveRemixSceneOnSelectionChange } from '../canvas/remix/utopia-remix-root-component'
+import { useDefaultCollapsedViews } from './use-default-collapsed-views'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -101,6 +98,27 @@ function pushProjectURLToBrowserHistory(
   const title = `Utopia ${projectName}`
 
   window.top?.history.replaceState({}, title, `${projectURL}${queryParamsStr}`)
+}
+
+function githubOperationPrettyNameForOverlay(op: GithubOperation): string {
+  switch (op.name) {
+    case 'commitAndPush':
+      return 'Saving to GitHub'
+    case 'listBranches':
+      return 'Listing branches from GitHub'
+    case 'loadBranch':
+      return 'Loading branch from GitHub'
+    case 'loadRepositories':
+      return 'Loading Repositories'
+    case 'updateAgainstBranch':
+      return 'Updating against branch from GitHub'
+    case 'listPullRequestsForBranch':
+      return 'Listing GitHub pull requests'
+    case 'saveAsset':
+      return 'Saving asset to GitHub'
+    default:
+      assertNever(op)
+  }
 }
 
 export interface EditorProps {}
@@ -389,23 +407,27 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     Substores.userStateAndProjectServerState,
     (store) => ({ projectServerState: store.projectServerState, userState: store.userState }),
     (state) => {
-      let actions: EditorAction[] = []
-      const permissions = getPermissions(state)
-      if (!permissions.edit && permissions.comment) {
-        actions.push(
-          EditorActions.switchEditorMode(EditorModes.commentMode(null, 'not-dragging')),
-          EditorActions.setRightMenuTab(RightMenuTab.Comments),
-          EditorActions.setCodeEditorVisibility(false),
-        )
-      } else {
-        actions.push(EditorActions.setCodeEditorVisibility(true))
-      }
-      dispatch(actions)
+      queueMicrotask(() => {
+        let actions: EditorAction[] = []
+        const permissions = getPermissions(state)
+        if (!permissions.edit && permissions.comment) {
+          actions.push(
+            EditorActions.switchEditorMode(EditorModes.commentMode(null, 'not-dragging')),
+            EditorActions.setRightMenuTab(RightMenuTab.Comments),
+            EditorActions.setCodeEditorVisibility(false),
+          )
+        } else {
+          actions.push(EditorActions.setCodeEditorVisibility(true))
+        }
+        dispatch(actions)
+      })
     },
     'EditorComponentInner viewer mode',
   )
 
   useLiveblocksConnectionListener()
+
+  useDefaultCollapsedViews()
 
   return (
     <>
@@ -686,7 +708,7 @@ const LockedOverlay = React.memo(() => {
       return 'Refreshing dependencies…'
     }
     if (githubOperations.length > 0) {
-      return `${githubOperationPrettyName(githubOperations[0])}…`
+      return `${githubOperationPrettyNameForOverlay(githubOperations[0])}…`
     }
     if (forking) {
       return 'Forking project…'
@@ -731,7 +753,7 @@ const LockedOverlay = React.memo(() => {
             opacity: 1,
             fontSize: 12,
             fontWeight: 500,
-            background: colorTheme.contextMenuBackground.value,
+            backgroundColor: colorTheme.bg2.value,
             border: `1px solid ${colorTheme.neutralBorder.value}`,
             padding: 30,
             borderRadius: 2,

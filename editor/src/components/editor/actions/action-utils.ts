@@ -43,6 +43,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_RIGHT_MENU_TAB':
     case 'SET_RIGHT_MENU_EXPANDED':
     case 'TOGGLE_COLLAPSE':
+    case 'ADD_COLLAPSED_VIEWS':
     case 'ADD_TOAST':
     case 'REMOVE_TOAST':
     case 'SET_HIGHLIGHTED_VIEWS':
