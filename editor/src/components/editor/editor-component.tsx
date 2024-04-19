@@ -407,18 +407,20 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     Substores.userStateAndProjectServerState,
     (store) => ({ projectServerState: store.projectServerState, userState: store.userState }),
     (state) => {
-      let actions: EditorAction[] = []
-      const permissions = getPermissions(state)
-      if (!permissions.edit && permissions.comment) {
-        actions.push(
-          EditorActions.switchEditorMode(EditorModes.commentMode(null, 'not-dragging')),
-          EditorActions.setRightMenuTab(RightMenuTab.Comments),
-          EditorActions.setCodeEditorVisibility(false),
-        )
-      } else {
-        actions.push(EditorActions.setCodeEditorVisibility(true))
-      }
-      dispatch(actions)
+      setTimeout(() => {
+        let actions: EditorAction[] = []
+        const permissions = getPermissions(state)
+        if (!permissions.edit && permissions.comment) {
+          actions.push(
+            EditorActions.switchEditorMode(EditorModes.commentMode(null, 'not-dragging')),
+            EditorActions.setRightMenuTab(RightMenuTab.Comments),
+            EditorActions.setCodeEditorVisibility(false),
+          )
+        } else {
+          actions.push(EditorActions.setCodeEditorVisibility(true))
+        }
+        dispatch(actions)
+      }, 0)
     },
     'EditorComponentInner viewer mode',
   )
