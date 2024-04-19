@@ -1,9 +1,10 @@
-import type { ElementInstanceMetadataMap } from './element-template'
+import { isJSXElement, type ElementInstanceMetadataMap } from './element-template'
 import type { ElementPath } from './project-file-types'
 import * as EP from './element-path'
 import type { LockedElements } from '../../components/editor/store/editor-state'
 import type { ElementPathTrees } from './element-path-tree'
 import { MetadataUtils } from '../model/element-metadata-utils'
+import { isRight } from './either'
 
 export function updateSimpleLocks(
   priorMetadata: ElementInstanceMetadataMap,
@@ -24,8 +25,16 @@ export function updateSimpleLocks(
     // Remix Outlet are rarely needed to be selected
     const isRemixOutlet = MetadataUtils.isProbablyRemixOutlet(newMetadata, value.elementPath)
 
+    // This entry is a `html` tag
+    const element = MetadataUtils.findElementByElementPath(newMetadata, value.elementPath)
+    const isHTMLTag =
+      element != null &&
+      isRight(element.element) &&
+      isJSXElement(element.element.value) &&
+      element.element.value.name.baseVariable === 'html'
+
     // This entry is a newly added non-leaf root element or a remix Outlet, it should be autolocked
-    if (isNewlyAdded && (isNonLeafRootElement || isRemixOutlet)) {
+    if (isNewlyAdded && (isNonLeafRootElement || isRemixOutlet || isHTMLTag)) {
       result.push(value.elementPath)
     }
   }

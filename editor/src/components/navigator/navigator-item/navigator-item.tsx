@@ -326,10 +326,11 @@ function useStyleFullyVisible(
           }
         })
 
-        let isInsideFocusedComponent =
-          !MetadataUtils.isContainingComponentRemixSceneOrOutlet(store.editor.jsxMetadata, path) &&
-          (EP.isFocused(store.editor.focusedElementPath, path) ||
-            EP.isInsideFocusedComponent(path, autoFocusedPaths))
+        const isInsideFocusedComponent = EP.isInExplicitlyFocusedSubtree(
+          store.editor.focusedElementPath,
+          autoFocusedPaths,
+          navigatorEntry.elementPath,
+        )
 
         return (
           isStoryboardChild ||
@@ -495,6 +496,18 @@ export const NavigatorItem: React.FunctionComponent<
     'NavigatorItem isFocusedComponent',
   )
 
+  const isInFocusedComponentSubtree = useEditorState(
+    Substores.focusedElement,
+    (store) =>
+      isRegularNavigatorEntry(navigatorEntry) &&
+      EP.isInExplicitlyFocusedSubtree(
+        store.editor.focusedElementPath,
+        autoFocusedPaths,
+        navigatorEntry.elementPath,
+      ),
+    'NavigatorItem isInFocusedComponentSubtree',
+  )
+
   const elementWarnings = useEditorState(
     Substores.derived,
     (store) => elementWarningsSelector(store, props.navigatorEntry),
@@ -508,7 +521,7 @@ export const NavigatorItem: React.FunctionComponent<
   )
 
   const isManuallyFocusableComponent = useEditorState(
-    Substores.metadata,
+    Substores.fullStore,
     (store) => {
       return (
         isRegularNavigatorEntry(navigatorEntry) &&
@@ -517,6 +530,8 @@ export const NavigatorItem: React.FunctionComponent<
           store.editor.jsxMetadata,
           autoFocusedPaths,
           filePathMappings,
+          store.editor.propertyControlsInfo,
+          store.editor.projectContents,
         )
       )
     },
@@ -684,10 +699,7 @@ export const NavigatorItem: React.FunctionComponent<
     'NavigatorItem conditionalOverrideUpdate',
   )
 
-  const isInsideComponent =
-    !isContainingComponentRemixSceneOrOutlet &&
-    (EP.isInsideFocusedComponent(navigatorEntry.elementPath, autoFocusedPaths) ||
-      isFocusedComponent)
+  const isInsideComponent = isInFocusedComponentSubtree
   const fullyVisible = useStyleFullyVisible(navigatorEntry, autoFocusedPaths)
   const isProbablyScene = useIsProbablyScene(navigatorEntry)
 

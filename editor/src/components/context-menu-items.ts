@@ -22,6 +22,7 @@ import { createWrapInGroupActions } from './canvas/canvas-strategies/strategies/
 import { areAllSelectedElementsNonAbsolute } from './canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
 import { windowToCanvasCoordinates } from './canvas/dom-lookup'
 import { setFocus } from './common/actions'
+import type { PropertyControlsInfo } from './custom-code/code-file'
 import type { EditorDispatch } from './editor/action-types'
 import * as EditorActions from './editor/actions/action-creators'
 import {
@@ -76,6 +77,7 @@ export interface CanvasData {
   contextMenuInstance: ElementContextMenuInstance
   autoFocusedPaths: Array<ElementPath>
   navigatorTargets: Array<NavigatorEntry>
+  propertyControlsInfo: PropertyControlsInfo
 }
 
 export function requireDispatch(dispatch: EditorDispatch | null | undefined): EditorDispatch {
@@ -259,6 +261,8 @@ export const setAsFocusedElement: ContextMenuItem<CanvasData> = {
         data.jsxMetadata,
         data.autoFocusedPaths,
         data.filePathMappings,
+        data.propertyControlsInfo,
+        data.projectContents,
       )
     })
   },

@@ -33,6 +33,7 @@ import type {
   ProjectContentAndMetadataSubstate,
   ProjectContentSubstate,
   ProjectServerStateSubstate,
+  PropertyControlsInfoSubstate,
   RestOfEditorState,
   SelectedViewsSubstate,
   StoreKey,
@@ -49,6 +50,7 @@ import {
   highlightedHoveredViewsSubstateKeys,
   metadataSubstateKeys,
   projectContentsKeys,
+  propertyControlsInfoSubstateKeys,
   restOfEditorStateKeys,
   restOfStoreKeys,
   selectedViewsSubstateKeys,
@@ -319,6 +321,9 @@ export const Substores = {
   },
   onlineState: (a: OnlineStateSubstate, b: OnlineStateSubstate): boolean => {
     return OnlineStateKeepDeepEquality(a.onlineState, b.onlineState).areEqual
+  },
+  propertyControlsInfo: (a: PropertyControlsInfoSubstate, b: PropertyControlsInfoSubstate) => {
+    return keysEquality(propertyControlsInfoSubstateKeys, a.editor, b.editor)
   },
 } as const
 

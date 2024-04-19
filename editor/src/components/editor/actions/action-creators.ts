@@ -229,6 +229,7 @@ import type {
   RemoveFeaturedRoute,
   ResetOnlineState,
   IncreaseOnlineStateFailureCount,
+  AddCollapsedViews,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -485,6 +486,13 @@ export function toggleCollapse(target: ElementPath): ToggleCollapse {
   return {
     action: 'TOGGLE_COLLAPSE',
     target: target,
+  }
+}
+
+export function addCollapsedViews(collapsedViews: ElementPath[]): AddCollapsedViews {
+  return {
+    action: 'ADD_COLLAPSED_VIEWS',
+    collapsedViews: collapsedViews,
   }
 }
 

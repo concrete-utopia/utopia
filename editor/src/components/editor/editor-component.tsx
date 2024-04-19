@@ -73,6 +73,7 @@ import { isRoomId, projectIdToRoomId } from '../../utils/room-id'
 import { SharingDialog } from './sharing-dialog'
 import { AccessLevelParamKey, CloneParamKey } from './persistence/persistence-backend'
 import { useUpdateActiveRemixSceneOnSelectionChange } from '../canvas/remix/utopia-remix-root-component'
+import { useDefaultCollapsedViews } from './use-default-collapsed-views'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -406,23 +407,27 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     Substores.userStateAndProjectServerState,
     (store) => ({ projectServerState: store.projectServerState, userState: store.userState }),
     (state) => {
-      let actions: EditorAction[] = []
-      const permissions = getPermissions(state)
-      if (!permissions.edit && permissions.comment) {
-        actions.push(
-          EditorActions.switchEditorMode(EditorModes.commentMode(null, 'not-dragging')),
-          EditorActions.setRightMenuTab(RightMenuTab.Comments),
-          EditorActions.setCodeEditorVisibility(false),
-        )
-      } else {
-        actions.push(EditorActions.setCodeEditorVisibility(true))
-      }
-      dispatch(actions)
+      queueMicrotask(() => {
+        let actions: EditorAction[] = []
+        const permissions = getPermissions(state)
+        if (!permissions.edit && permissions.comment) {
+          actions.push(
+            EditorActions.switchEditorMode(EditorModes.commentMode(null, 'not-dragging')),
+            EditorActions.setRightMenuTab(RightMenuTab.Comments),
+            EditorActions.setCodeEditorVisibility(false),
+          )
+        } else {
+          actions.push(EditorActions.setCodeEditorVisibility(true))
+        }
+        dispatch(actions)
+      })
     },
     'EditorComponentInner viewer mode',
   )
 
   useLiveblocksConnectionListener()
+
+  useDefaultCollapsedViews()
 
   return (
     <>
@@ -748,7 +753,7 @@ const LockedOverlay = React.memo(() => {
             opacity: 1,
             fontSize: 12,
             fontWeight: 500,
-            background: colorTheme.contextMenuBackground.value,
+            backgroundColor: colorTheme.bg2.value,
             border: `1px solid ${colorTheme.neutralBorder.value}`,
             padding: 30,
             borderRadius: 2,

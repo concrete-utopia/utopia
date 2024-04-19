@@ -195,6 +195,7 @@ function useCanvasContextMenuGetData(
       internalClipboard: store.editor.internalClipboard,
       autoFocusedPaths: store.derived.autoFocusedPaths,
       navigatorTargets: store.derived.navigatorTargets,
+      propertyControlsInfo: store.editor.propertyControlsInfo,
     }
   })
 
@@ -219,6 +220,7 @@ function useCanvasContextMenuGetData(
       contextMenuInstance: contextMenuInstance,
       autoFocusedPaths: currentEditor.autoFocusedPaths,
       navigatorTargets: currentEditor.navigatorTargets,
+      propertyControlsInfo: currentEditor.propertyControlsInfo,
     }
   }, [editorSliceRef, contextMenuInstance])
 }

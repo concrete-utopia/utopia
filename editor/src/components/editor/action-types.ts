@@ -388,6 +388,11 @@ export interface ToggleCollapse {
   target: ElementPath
 }
 
+export interface AddCollapsedViews {
+  action: 'ADD_COLLAPSED_VIEWS'
+  collapsedViews: ElementPath[]
+}
+
 export interface AddToast {
   action: 'ADD_TOAST'
   // FIXME: This contains React.ReactChild and is likely not serializable.
@@ -1191,6 +1196,7 @@ export type EditorAction =
   | SetRightMenuTab
   | SetRightMenuExpanded
   | ToggleCollapse
+  | AddCollapsedViews
   | AddToast
   | RemoveToast
   | SetHighlightedViews
