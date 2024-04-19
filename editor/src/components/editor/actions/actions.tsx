@@ -1257,12 +1257,10 @@ function replaceFilePath(
   }
   let updatedFiles: Array<{ oldPath: string; newPath: string }> = []
   Utils.fastForEach(Object.keys(projectContents), (filename) => {
-    const tokens = filename.split('.')
-    const extension = tokens[tokens.length - 1]
     if (
       filename === oldPath ||
       filename.startsWith(oldPath + '/') ||
-      (extension === 'jsx' && filename.startsWith(oldPath + '.')) // remix routes
+      matchRemixRoutePrefix(filename, oldPath)
     ) {
       // TODO make sure the prefix search only happens when it makes sense so
       const projectFile = projectContents[filename]
@@ -1389,6 +1387,19 @@ function replaceFilePath(
       errorMessage: error,
     }
   }
+}
+
+/**
+ * Return whether the given filename is a valid Remix route filename that is
+ * a prefix of the oldPath.
+ */
+function matchRemixRoutePrefix(filename: string, oldPath: string): boolean {
+  const tokens = filename.split('.')
+  const extension = tokens[tokens.length - 1]
+  return (
+    extension === 'jsx' &&
+    (filename.startsWith(oldPath + '.') || filename.startsWith(oldPath + '_.'))
+  )
 }
 
 function loadModel(newModel: EditorModel, oldModel: EditorModel): EditorModel {
