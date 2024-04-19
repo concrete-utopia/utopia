@@ -272,7 +272,6 @@ export const NavigatorComponent = React.memo(() => {
       tabIndex={-1}
       css={{
         flexGrow: 1,
-        height: '100%',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'stretch',
