@@ -1275,7 +1275,9 @@ function replaceFilePath(
       const maybeNewFilePathForRemix = isInsideRemixFolder(filename)
         ? renameRemixFile(filename, oldPath, newPath)
         : null
-      renamedOptionalPrefix ||= maybeNewFilePathForRemix?.renamedOptionalPrefix ?? false
+      if (maybeNewFilePathForRemix?.renamedOptionalPrefix) {
+        renamedOptionalPrefix = true
+      }
 
       const newFilePath = maybeNewFilePathForRemix?.filename ?? filename.replace(oldPath, newPath)
 
