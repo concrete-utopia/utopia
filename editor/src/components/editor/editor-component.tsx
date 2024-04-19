@@ -407,7 +407,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     Substores.userStateAndProjectServerState,
     (store) => ({ projectServerState: store.projectServerState, userState: store.userState }),
     (state) => {
-      setTimeout(() => {
+      queueMicrotask(() => {
         let actions: EditorAction[] = []
         const permissions = getPermissions(state)
         if (!permissions.edit && permissions.comment) {
@@ -420,7 +420,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
           actions.push(EditorActions.setCodeEditorVisibility(true))
         }
         dispatch(actions)
-      }, 0)
+      })
     },
     'EditorComponentInner viewer mode',
   )
