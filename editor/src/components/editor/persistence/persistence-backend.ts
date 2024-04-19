@@ -93,6 +93,7 @@ async function loadProject(projectId: string): Promise<ProjectLoadResult<Persist
       case 'ProjectNotFound':
         return {
           type: 'PROJECT_NOT_FOUND',
+          projectId: projectId,
         }
 
       case 'ProjectNotAuthorized':
@@ -117,6 +118,8 @@ async function loadProject(projectId: string): Promise<ProjectLoadResult<Persist
 }
 
 export const AccessLevelParamKey = 'accessLevel'
+
+export const CloneParamKey = 'clone'
 
 async function createNewProjectInServer(
   projectModel: ProjectModel<PersistentModel>,

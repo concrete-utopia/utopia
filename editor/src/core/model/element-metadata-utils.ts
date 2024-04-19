@@ -2056,6 +2056,31 @@ export const MetadataUtils = {
       isJSXConditionalExpression(element.element.value)
     )
   },
+  isRenderPropsFromMetadata(
+    componentMetadata: ElementInstanceMetadataMap,
+    elementPath: ElementPath,
+  ): boolean {
+    const staticElementPath = EP.dynamicPathToStaticPath(elementPath)
+    const selectedElementUid = EP.toUid(staticElementPath)
+    const parentPath = EP.parentPath(elementPath)
+    const element = MetadataUtils.findElementByElementPath(componentMetadata, parentPath)
+    if (
+      element == null ||
+      !isRight(element.element) ||
+      element.element.value.type !== 'JSX_ELEMENT'
+    ) {
+      return false
+    }
+
+    const elementInProps = element.element.value.props.some(
+      (prop) =>
+        prop.type === 'JSX_ATTRIBUTES_ENTRY' &&
+        prop.value.type === 'JSX_ELEMENT' &&
+        prop.value.uid === selectedElementUid,
+    )
+
+    return elementInProps
+  },
   isIdentifierFromMetadata(element: ElementInstanceMetadata | null): boolean {
     return exists(
       notNull<ElementInstanceMetadata>()

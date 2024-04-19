@@ -87,6 +87,7 @@ import {
   exportDefaultIdentifier,
   isImportSideEffects,
   isParseSuccess,
+  unparsed,
 } from '../../shared/project-file-types'
 import * as PP from '../../shared/property-path'
 import { assertNever, fastForEach } from '../../shared/utils'
@@ -120,6 +121,7 @@ import { fromField } from '../../../core/shared/optics/optic-creators'
 import type { Optic } from '../../../core/shared/optics/optics'
 import { modify } from '../../../core/shared/optics/optic-utilities'
 import { identifyValuesDefinedInNode } from './parser-printer-expressions'
+import { isParseableFile } from '../../shared/file-utils'
 
 const BakedInStoryboardVariableName = 'storyboard'
 
@@ -1940,6 +1942,10 @@ export function lintAndParse(
   shouldTrimBounds: 'trim-bounds' | 'do-not-trim-bounds',
   applySteganography: SteganographyMode,
 ): ParsedTextFile {
+  if (!isParseableFile(filename)) {
+    return unparsed
+  }
+
   const lintResult = lintCode(filename, content)
   // Only fatal or error messages should bounce the parse.
   if (lintResult.filter(messageisFatal).length === 0) {

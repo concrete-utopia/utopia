@@ -37,3 +37,7 @@ getPackageVersionLock locksRef versionedPackageName = do
   possibleRef <- getLockFromRef locksRef versionedPackageName
   maybe (getOrUpdateLockFromRef locksRef versionedPackageName) pure possibleRef
 
+cleanupWriteLock :: RWLock -> Bool -> IO ()
+cleanupWriteLock lock True = releaseWrite lock
+cleanupWriteLock _ False   = pure ()
+

@@ -8,6 +8,7 @@ import {
 import { notice } from '../../../../components/common/notice'
 import type { EditorDispatch } from '../../../../components/editor/action-types'
 import {
+  extractPropertyControlsFromDescriptorFiles,
   showToast,
   truncateHistory,
   updateBranchContents,
@@ -23,7 +24,7 @@ import { refreshDependencies } from '../../dependencies'
 import type { RequestedNpmDependency } from '../../npm-dependency-types'
 import { forceNotNull } from '../../optional-utils'
 import { isTextFile } from '../../project-file-types'
-import type { BranchContent, GetBranchContentResponse } from '../helpers'
+import type { BranchContent, GetBranchContentResponse, GithubOperationSource } from '../helpers'
 import {
   connectRepo,
   getBranchContentFromServer,
@@ -35,6 +36,7 @@ import {
 import { updateProjectContentsWithParseResults } from '../../parser-projectcontents-utils'
 import type { GithubOperationContext } from './github-operation-context'
 import { createStoryboardFileIfNecessary } from '../../../../components/editor/actions/actions'
+import { getAllComponentDescriptorFilePaths } from '../../../property-controls/property-controls-local'
 
 export const saveAssetsToProject =
   (operationContext: GithubOperationContext) =>
@@ -44,6 +46,7 @@ export const saveAssetsToProject =
     branchContent: BranchContent,
     dispatch: EditorDispatch,
     currentProjectContents: ProjectContentTreeRoot,
+    initiator: GithubOperationSource,
   ): Promise<void> => {
     await walkContentsTreeAsync(branchContent.content, async (fullPath, projectFile) => {
       const alreadyExistingFile = getProjectFileByFilePath(currentProjectContents, fullPath)
@@ -68,6 +71,7 @@ export const saveAssetsToProject =
                 fullPath,
                 dispatch,
                 operationContext,
+                initiator,
               )
               break
             case 'ASSET_FILE':
@@ -78,6 +82,7 @@ export const saveAssetsToProject =
                 fullPath,
                 dispatch,
                 operationContext,
+                initiator,
               )
               break
             default:
@@ -100,6 +105,7 @@ export const updateProjectWithBranchContent =
     currentDeps: Array<RequestedNpmDependency>,
     builtInDependencies: BuiltInDependencies,
     currentProjectContents: ProjectContentTreeRoot,
+    initiator: GithubOperationSource,
   ): Promise<void> => {
     await runGithubOperation(
       {
@@ -108,6 +114,7 @@ export const updateProjectWithBranchContent =
         githubRepo: githubRepo,
       },
       dispatch,
+      initiator,
       async (operation: GithubOperation) => {
         const response = await getBranchContentFromServer(
           githubRepo,
@@ -149,6 +156,7 @@ export const updateProjectWithBranchContent =
               responseBody.branch,
               dispatch,
               currentProjectContents,
+              initiator,
             )
 
             // Update the editor with everything so that if anything else fails past this point
@@ -168,6 +176,9 @@ export const updateProjectWithBranchContent =
               ],
               'everyone',
             )
+
+            const componentDescriptorFiles =
+              getAllComponentDescriptorFilePaths(parsedProjectContents)
 
             // If there's a package.json file, then attempt to load the dependencies for it.
             let dependenciesPromise: Promise<void> = Promise.resolve()
@@ -200,6 +211,7 @@ export const updateProjectWithBranchContent =
               .finally(() => {
                 dispatch(
                   [
+                    extractPropertyControlsFromDescriptorFiles(componentDescriptorFiles),
                     showToast(
                       notice(
                         `Github: Updated the project with the content from ${branchName}`,

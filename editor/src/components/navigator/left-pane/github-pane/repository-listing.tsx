@@ -20,7 +20,6 @@ import {
 import { UIGridRow } from '../../../../components/inspector/widgets/ui-grid-row'
 import type { RepositoryEntry } from '../../../../core/shared/github/helpers'
 import { connectRepo, parseGithubProjectString } from '../../../../core/shared/github/helpers'
-import { getUsersPublicGithubRepositories } from '../../../../core/shared/github/operations/load-repositories'
 import { when } from '../../../../utils/react-conditionals'
 import { Button, colorTheme, FlexColumn, FlexRow, StringInput } from '../../../../uuiui'
 import { useDispatch } from '../../../editor/store/dispatch-context'
@@ -240,9 +239,19 @@ export const RepositoryListing = React.memo(
     const dispatch = useDispatch()
 
     const refreshRepos = React.useCallback(() => {
-      void GithubOperations.getUsersPublicGithubRepositories(dispatch).then((actions) => {
-        dispatch(actions, 'everyone')
-      })
+      void GithubOperations.getUsersPublicGithubRepositories(dispatch, 'polling').then(
+        (actions) => {
+          dispatch(actions, 'everyone')
+        },
+      )
+    }, [dispatch])
+
+    const refreshReposOnClick = React.useCallback(() => {
+      void GithubOperations.getUsersPublicGithubRepositories(dispatch, 'user-initiated').then(
+        (actions) => {
+          dispatch(actions, 'everyone')
+        },
+      )
     }, [dispatch])
 
     React.useEffect(() => {
@@ -299,7 +308,7 @@ export const RepositoryListing = React.memo(
           highlight
           style={{ padding: '0 6px' }}
           disabled={isLoadingRepositories}
-          onMouseDown={refreshRepos}
+          onMouseDown={refreshReposOnClick}
         >
           {isLoadingRepositories ? (
             <GithubSpinner />

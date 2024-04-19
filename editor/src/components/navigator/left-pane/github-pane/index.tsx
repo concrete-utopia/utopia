@@ -6,6 +6,7 @@ import React, { useEffect } from 'react'
 import TimeAgo from 'react-timeago'
 import { forceNotNull } from '../../../../core/shared/optional-utils'
 import { projectDependenciesSelector } from '../../../../core/shared/dependencies'
+import type { GithubBranch } from '../../../../core/shared/github/helpers'
 import {
   dispatchPromiseActions,
   getGithubFileChangesCount,
@@ -37,7 +38,7 @@ import {
   isGithubLoadingAnyBranch,
   isGithubLoadingBranch,
   isGithubUpdating,
-  persistentModelForProjectContents,
+  persistentModelFromEditorModel,
 } from '../../../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import { UIGridRow } from '../../../inspector/widgets/ui-grid-row'
@@ -50,6 +51,7 @@ import { RefreshIcon } from './refresh-icon'
 import { RepositoryListing } from './repository-listing'
 import { GithubOperations } from '../../../../core/shared/github/operations'
 import { useOnClickAuthenticateWithGithub } from '../../../../utils/github-auth-hooks'
+import { setFocus } from '../../../common/actions'
 
 const compactTimeagoFormatter = (value: number, unit: string) => {
   return `${value}${unit.charAt(0)}`
@@ -176,18 +178,27 @@ const BranchBlock = () => {
     [githubOperations],
   )
 
-  const refreshBranches = React.useCallback(() => {
+  const refreshBranchesOnMouseUp = React.useCallback(() => {
     if (targetRepository != null) {
       void dispatchPromiseActions(
         dispatch,
-        GithubOperations.getBranchesForGithubRepository(dispatch, targetRepository),
+        GithubOperations.getBranchesForGithubRepository(
+          dispatch,
+          targetRepository,
+          'user-initiated',
+        ),
       )
     }
   }, [dispatch, targetRepository])
 
   React.useEffect(() => {
-    refreshBranches()
-  }, [refreshBranches])
+    if (targetRepository != null) {
+      void dispatchPromiseActions(
+        dispatch,
+        GithubOperations.getBranchesForGithubRepository(dispatch, targetRepository, 'polling'),
+      )
+    }
+  }, [dispatch, targetRepository])
 
   const [expandedFlag, setExpandedFlag] = React.useState(false)
 
@@ -259,6 +270,24 @@ const BranchBlock = () => {
     )
   }, [dispatch])
 
+  const selectBranch = React.useCallback(
+    (branch: GithubBranch) => () => {
+      if (isListingBranches) {
+        return
+      }
+      dispatch(
+        [
+          EditorActions.updateGithubSettings({
+            branchName: branch.name,
+            branchLoaded: false,
+          }),
+        ],
+        'everyone',
+      )
+    },
+    [dispatch, isListingBranches],
+  )
+
   const listBranchesUI = React.useMemo(() => {
     return (
       <UIGridRow padded={false} variant='<-------------1fr------------->' style={{ width: '100%' }}>
@@ -291,20 +320,6 @@ const BranchBlock = () => {
           }}
         >
           {filteredBranches.map((branch, index) => {
-            function selectBranch() {
-              if (isListingBranches) {
-                return
-              }
-              dispatch(
-                [
-                  EditorActions.updateGithubSettings({
-                    branchName: branch.name,
-                    branchLoaded: false,
-                  }),
-                ],
-                'everyone',
-              )
-            }
             const loadingThisBranch = isGithubLoadingBranch(
               githubOperations,
               branch.name,
@@ -331,7 +346,7 @@ const BranchBlock = () => {
                   fontWeight: isCurrent ? 'bold' : 'normal',
                   color: branch.new === true ? colorTheme.dynamicBlue.value : 'inherit',
                 }}
-                onClick={selectBranch}
+                onClick={selectBranch(branch)}
               >
                 <Ellipsis>
                   {when(isCurrent, <span>&rarr; </span>)}
@@ -352,7 +367,7 @@ const BranchBlock = () => {
             spotlight
             highlight
             style={{ padding: '0 6px', marginTop: 6 }}
-            onMouseUp={refreshBranches}
+            onMouseUp={refreshBranchesOnMouseUp}
             disabled={isListingBranches}
           >
             {isListingBranches ? (
@@ -383,14 +398,14 @@ const BranchBlock = () => {
     branchFilter,
     updateBranchFilter,
     filteredBranches,
-    refreshBranches,
+    refreshBranchesOnMouseUp,
     isListingBranches,
     currentBranch,
     clearBranch,
     githubOperations,
     targetRepository,
     repositoryData?.defaultBranch,
-    dispatch,
+    selectBranch,
   ])
 
   const githubAuthenticated = useEditorState(
@@ -496,6 +511,7 @@ const RemoteChangesBlock = () => {
         commit,
         forceNotNull('Should have a project ID by now.', projectIDRef.current),
         currentContentsRef.current,
+        'user-initiated',
       )
     }
   }, [workersRef, dispatch, repo, branch, commit, projectIDRef, currentContentsRef])
@@ -634,11 +650,7 @@ const LocalChangesBlock = () => {
     'Github branchOriginContentsChecksums',
   )
 
-  const projectContents = useEditorState(
-    Substores.projectContents,
-    (store) => store.editor.projectContents,
-    'project contents',
-  )
+  const editorStateRef = useRefEditorState((store) => store.editor)
 
   const triggerSaveToGithub = React.useCallback(() => {
     if (repo == null) {
@@ -660,7 +672,7 @@ const LocalChangesBlock = () => {
     void GithubOperations.saveProjectToGithub(
       projectId,
       repo,
-      persistentModelForProjectContents(projectContents),
+      persistentModelFromEditorModel(editorStateRef.current),
       dispatch,
       {
         branchName: cleanedCommitBranchName,
@@ -670,15 +682,16 @@ const LocalChangesBlock = () => {
             ? {}
             : fileChecksumsWithFileToFileChecksums(branchOriginContentsChecksums),
       },
+      'user-initiated',
     )
   }, [
-    dispatch,
     repo,
-    commitMessage,
     cleanedCommitBranchName,
-    branchOriginContentsChecksums,
-    projectContents,
+    commitMessage,
     projectId,
+    editorStateRef,
+    dispatch,
+    branchOriginContentsChecksums,
   ])
 
   const githubAuthenticated = useEditorState(
@@ -876,6 +889,7 @@ const BranchNotLoadedBlock = () => {
         currentDependencies,
         builtInDependencies,
         projectContentsRef.current,
+        'user-initiated',
       )
     }
   }, [
@@ -913,11 +927,7 @@ const BranchNotLoadedBlock = () => {
     'Github branchOriginContentsChecksums',
   )
 
-  const projectContents = useEditorState(
-    Substores.projectContents,
-    (store) => store.editor.projectContents,
-    'project contents',
-  )
+  const editorStateRef = useRefEditorState((store) => store.editor)
 
   const pushToBranch = React.useCallback(() => {
     if (githubRepo == null || branchName == null || projectId == null) {
@@ -926,7 +936,7 @@ const BranchNotLoadedBlock = () => {
     void GithubOperations.saveProjectToGithub(
       projectId,
       githubRepo,
-      persistentModelForProjectContents(projectContents),
+      persistentModelFromEditorModel(editorStateRef.current),
       dispatch,
       {
         branchOriginChecksums:
@@ -936,15 +946,16 @@ const BranchNotLoadedBlock = () => {
         branchName: branchName,
         commitMessage: commitMessage ?? 'Committed automatically',
       },
+      'user-initiated',
     )
   }, [
-    dispatch,
     githubRepo,
     branchName,
-    commitMessage,
     projectId,
-    projectContents,
+    editorStateRef,
+    dispatch,
     branchOriginContentsChecksums,
+    commitMessage,
   ])
 
   type LoadFlow = 'loadFromBranch' | 'pushToBranch' | 'createBranch'
@@ -1096,6 +1107,15 @@ const PullRequestBlock = () => {
 }
 
 export const GithubPane = React.memo(() => {
+  const dispatch = useDispatch()
+
+  const onFocus = React.useCallback(
+    (_: React.FocusEvent<HTMLElement>) => {
+      dispatch([setFocus('githuboptions')])
+    },
+    [dispatch],
+  )
+
   const githubUser = useEditorState(
     Substores.github,
     (store) => store.editor.githubData.githubUserDetails,
@@ -1115,7 +1135,7 @@ export const GithubPane = React.memo(() => {
     }
   }, [githubUser])
   return (
-    <div style={{ height: '100%', overflowY: 'scroll' }}>
+    <div style={{ height: '100%', overflowY: 'scroll' }} onFocus={onFocus}>
       <Section>
         <SectionTitleRow minimised={false} hideButton>
           <FlexRow>

@@ -11,7 +11,7 @@ import { getContentsTreeFromPath, getProjectFileByFilePath } from '../../assets'
 import type { FileOps } from '../../../third-party/remix/flat-routes'
 import { flatRoutes } from '../../../third-party/remix/flat-routes'
 import type { ConfigRoute } from '../../../third-party/remix/routes'
-import type { DataRouteObject } from 'react-router-dom'
+import type { DataRouteObject, Path } from 'react-router-dom'
 import type { CurriedResolveFn, CurriedUtopiaRequireFn } from '../../custom-code/code-file'
 import type { MapLike } from 'typescript'
 import type { UiJsxCanvasContextData } from '../ui-jsx-canvas'
@@ -41,6 +41,8 @@ import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { safeIndex } from '../../../core/shared/array-utils'
 import { createClientRoutes, groupRoutesByParentId } from '../../../third-party/remix/client-routes'
 import path from 'path'
+import urljoin from 'url-join'
+import json5 from 'json5'
 
 export const OutletPathContext = React.createContext<ElementPath | null>(null)
 
@@ -342,7 +344,7 @@ function safeGetClientRoutes(
   }
 }
 
-export function getRootFile(
+export function getRemixRootFile(
   rootDir: string,
   projectContents: ProjectContentTreeRoot,
 ): { file: TextFile; path: string } | null {
@@ -453,16 +455,91 @@ export function getRouteComponentNameForOutlet(
   return defaultExport.name
 }
 
-export const RemixIndexPathLabel = '(home)'
+export const RemixIndexPathLabel = '/'
 
-export function getRemixLocationLabel(location: string | undefined): string | null {
+export function getRemixUrlFromLocation(remixPath: Path | undefined): string | null {
+  if (remixPath == null) {
+    return null
+  }
+  return getRemixLocationLabel(urljoin(remixPath.pathname, remixPath.search, remixPath.hash))
+}
+
+export function getRemixLocationLabel(location: string | null | undefined): string | null {
   if (location == null) {
     return null
   }
 
-  if (location === '/') {
+  if (location === '/' || location === '') {
     return RemixIndexPathLabel
   }
 
   return location
+}
+
+function modifyFeaturedRoutesInPackageJson(
+  packageJson: string,
+  modifyFn: (routes: string[]) => string[],
+): string {
+  const parsedJSON = json5.parse(packageJson)
+
+  // if the utopia prop is not defined, set it to an empty object
+  if (parsedJSON.utopia == null) {
+    parsedJSON.utopia = {}
+  } else if (typeof parsedJSON.utopia !== 'object') {
+    throw new Error("the 'utopia' key in package.json should be an object")
+  }
+
+  // if the featuredRoutes prop is not defined, set it to an empty array
+  if (parsedJSON.utopia.featuredRoutes == null) {
+    parsedJSON.utopia.featuredRoutes = []
+  } else if (!Array.isArray(parsedJSON.utopia.featuredRoutes)) {
+    throw new Error("the 'utopia.featuredRoutes' key in package.json should be an array")
+  }
+
+  parsedJSON.utopia.featuredRoutes = modifyFn(parsedJSON.utopia.featuredRoutes)
+
+  return JSON.stringify(parsedJSON, null, 2)
+}
+
+export function addNewFeaturedRouteToPackageJson(urlRoute: string) {
+  return function (packageJson: string): string {
+    if (urlRoute === '') {
+      throw new Error('Cannot add an empty route to the featured routes')
+    }
+    const newRoute = urljoin('/', urlRoute)
+    return modifyFeaturedRoutesInPackageJson(packageJson, (currentRoutes) => {
+      if (!currentRoutes.includes(newRoute)) {
+        return [...currentRoutes, newRoute]
+      }
+      return currentRoutes
+    })
+  }
+}
+
+export function removeFeaturedRouteFromPackageJson(routeToRemove: string) {
+  return function (packageJson: string): string {
+    const actualRouteToRemove = urljoin('/', routeToRemove)
+    return modifyFeaturedRoutesInPackageJson(packageJson, (currentRoutes) => {
+      return currentRoutes.filter((route) => route !== actualRouteToRemove)
+    })
+  }
+}
+
+export function addOrReplaceFeaturedRouteToPackageJson(oldRoute: string, newRoute: string) {
+  return function (packageJson: string) {
+    return modifyFeaturedRoutesInPackageJson(packageJson, (currentRoutes): string[] => {
+      return currentRoutes.map((route) => {
+        return route.startsWith(oldRoute)
+          ? route.replace(oldRoute, newRoute) // just once (string replace instead of a regex), it's ok
+          : route
+      })
+    })
+  }
+}
+
+export type PageTemplate = { label: string; path: string }
+
+export function isPageTemplate(u: unknown): u is PageTemplate {
+  const maybe = u as PageTemplate
+  return u != null && typeof u == 'object' && maybe.label != null && maybe.path != null
 }

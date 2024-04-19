@@ -38,7 +38,9 @@ import {
   runClearPostActionSession,
   runExecuteStartPostActionMenuAction,
   runExecuteWithPostActionMenuAction,
+  runIncreaseOnlineStateFailureCount,
   runLocalEditorAction,
+  runResetOnlineState,
   runUpdateProjectServerState,
 } from './editor-update'
 import { isBrowserEnvironment } from '../../../core/shared/utils'
@@ -200,6 +202,14 @@ function processAction(
         working = runUpdateProjectServerState(working, action)
       }
 
+      if (action.action === 'RESET_ONLINE_STATE') {
+        working = runResetOnlineState(working, action)
+      }
+
+      if (action.action === 'INCREASE_ONLINE_STATE_FAILURE_COUNT') {
+        working = runIncreaseOnlineStateFailureCount(working, action)
+      }
+
       // Process action on the JS side.
       const editorAfterUpdateFunction = runLocalEditorAction(
         working.unpatchedEditor,
@@ -277,6 +287,7 @@ function processAction(
         builtInDependencies: working.builtInDependencies,
         projectServerState: working.projectServerState,
         collaborativeEditingSupport: working.collaborativeEditingSupport,
+        onlineState: working.onlineState,
       }
     },
   )
@@ -648,6 +659,7 @@ export function editorDispatchClosingOut(
     builtInDependencies: storedState.builtInDependencies,
     projectServerState: result.projectServerState,
     collaborativeEditingSupport: storedState.collaborativeEditingSupport,
+    onlineState: result.onlineState,
   }
 
   reduxDevtoolsSendActions(actionGroupsToProcess, finalStore, allTransient)
@@ -1019,6 +1031,7 @@ function editorDispatchInner(
       builtInDependencies: storedState.builtInDependencies,
       projectServerState: result.projectServerState,
       collaborativeEditingSupport: result.collaborativeEditingSupport,
+      onlineState: result.onlineState,
     }
   } else {
     //empty return

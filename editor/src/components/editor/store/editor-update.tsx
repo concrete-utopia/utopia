@@ -9,7 +9,9 @@ import type {
   EditorAction,
   EditorDispatch,
   ExecutePostActionMenuChoice,
+  IncreaseOnlineStateFailureCount,
   LoginState,
+  ResetOnlineState,
   StartPostActionSession,
   UpdateProjectServerState,
 } from '../action-types'
@@ -23,6 +25,11 @@ import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
 import type { ProjectServerState } from './project-server-state'
 import { isTransientAction } from '../actions/action-utils'
 import { allowedToEditProject } from './collaborative-editing'
+import { InitialOnlineState } from '../online-status'
+import type { Optic } from '../../../core/shared/optics/optics'
+import { fromField } from '../../../core/shared/optics/optic-creators'
+import { modify } from '../../../core/shared/optics/optic-utilities'
+import { ProjectServerStateKeepDeepEquality } from './store-deep-equality-instances'
 
 export function runLocalEditorAction(
   state: EditorState,
@@ -201,6 +208,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_RIGHT_MENU_EXPANDED(action, state)
     case 'TOGGLE_COLLAPSE':
       return UPDATE_FNS.TOGGLE_COLLAPSE(action, state)
+    case 'ADD_COLLAPSED_VIEWS':
+      return UPDATE_FNS.ADD_COLLAPSED_VIEWS(action, state)
     case 'ADD_TOAST':
       return UPDATE_FNS.ADD_TOAST(action, state)
     case 'SET_REFRESHING_DEPENDENCIES':
@@ -259,6 +268,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SEND_PREVIEW_MODEL(action, state)
     case 'UPDATE_FILE_PATH':
       return UPDATE_FNS.UPDATE_FILE_PATH(action, state, userState)
+    case 'UPDATE_REMIX_ROUTE':
+      return UPDATE_FNS.UPDATE_REMIX_ROUTE(action, state, userState)
     case 'SET_FOCUS':
       return UPDATE_FNS.SET_FOCUS(action, state)
     case 'OPEN_CODE_EDITOR_FILE':
@@ -295,6 +306,12 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.DELETE_FILE(action, state, derivedState, userState)
     case 'ADD_TEXT_FILE':
       return UPDATE_FNS.ADD_TEXT_FILE(action, state)
+    case 'ADD_NEW_PAGE':
+      return UPDATE_FNS.ADD_NEW_PAGE(action, state)
+    case 'ADD_NEW_FEATURED_ROUTE':
+      return UPDATE_FNS.ADD_NEW_FEATURED_ROUTE(action, state)
+    case 'REMOVE_FEATURED_ROUTE':
+      return UPDATE_FNS.REMOVE_FEATURED_ROUTE(action, state)
     case 'SET_MAIN_UI_FILE':
       return UPDATE_FNS.SET_MAIN_UI_FILE_OLDWORLD(action, state)
     case 'SET_CODE_EDITOR_BUILD_ERRORS':
@@ -537,11 +554,41 @@ export function runUpdateProjectServerState(
   working: EditorStoreUnpatched,
   action: UpdateProjectServerState,
 ): EditorStoreUnpatched {
-  return {
-    ...working,
-    projectServerState: {
+  const projectServerStateKeepDeepResult = ProjectServerStateKeepDeepEquality(
+    working.projectServerState,
+    {
       ...working.projectServerState,
       ...action.serverState,
     },
+  )
+  if (projectServerStateKeepDeepResult.areEqual) {
+    return working
+  } else {
+    return {
+      ...working,
+      projectServerState: projectServerStateKeepDeepResult.value,
+    }
   }
+}
+
+export function runResetOnlineState(
+  working: EditorStoreUnpatched,
+  _action: ResetOnlineState,
+): EditorStoreUnpatched {
+  return {
+    ...working,
+    onlineState: InitialOnlineState,
+  }
+}
+
+export const editorStateRunningFailureCountOptic: Optic<EditorStoreUnpatched, number> = fromField<
+  EditorStoreUnpatched,
+  'onlineState'
+>('onlineState').compose(fromField('runningFailureCount'))
+
+export function runIncreaseOnlineStateFailureCount(
+  working: EditorStoreUnpatched,
+  _action: IncreaseOnlineStateFailureCount,
+): EditorStoreUnpatched {
+  return modify(editorStateRunningFailureCountOptic, (count) => count + 1, working)
 }

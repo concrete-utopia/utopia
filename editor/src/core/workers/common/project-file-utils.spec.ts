@@ -192,6 +192,8 @@ describe('mergeImports', () => {
       {
         '/src/code.js': importDetails(null, [importAlias('FlexRow')], null),
         './code.js': importDetails(null, [importAlias('FlexCol')], null),
+        '/src/code': importDetails(null, [importAlias('OtherFlexRow')], null),
+        './code': importDetails(null, [importAlias('OtherFlexCol')], null),
       },
     )
 

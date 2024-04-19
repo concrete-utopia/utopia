@@ -10,6 +10,7 @@ import { type Imports } from '../../../core/shared/project-file-types'
 import { elementFromInsertMenuItem } from '../../editor/insert-callbacks'
 import { componentInfo, type ComponentInfo } from '../../custom-code/code-file'
 import { when } from '../../../utils/react-conditionals'
+import { defaultImportsForComponentModule } from '../../../core/property-controls/property-controls-local'
 
 export interface ComponentPickerProps {
   insertionTargetName: string
@@ -348,7 +349,11 @@ interface ComponentPickerOptionProps {
 
 function variantsForComponent(component: PreferredChildComponentDescriptor): ComponentInfo[] {
   return [
-    componentInfo('(empty)', () => jsxElementWithoutUID(component.name, [], []), component.imports),
+    componentInfo(
+      '(empty)',
+      () => jsxElementWithoutUID(component.name, [], []),
+      defaultImportsForComponentModule(component.name, component.moduleName),
+    ),
     ...(component.variants ?? []),
   ]
 }
@@ -415,7 +420,8 @@ const ComponentPickerVariant = React.memo((props: ComponentPickerVariantProps) =
   return (
     <div
       onClick={onItemClick({
-        elementToInsert: (uid) => elementFromInsertMenuItem(variant.elementToInsert(), uid),
+        elementToInsert: (uid) =>
+          elementFromInsertMenuItem(variant.elementToInsert(), uid, 'no-defaults'),
         additionalImports: variant.importsToAdd,
       })}
       css={{

@@ -80,6 +80,7 @@ import type { SetHuggingParentToFixed } from '../canvas/canvas-strategies/strate
 import type { MapLike } from 'typescript'
 import type { CommentFilterMode } from '../inspector/sections/comment-section'
 import type { Collaborator } from '../../core/shared/multiplayer'
+import type { PageTemplate } from '../canvas/remix/remix-utils'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -387,6 +388,11 @@ export interface ToggleCollapse {
   target: ElementPath
 }
 
+export interface AddCollapsedViews {
+  action: 'ADD_COLLAPSED_VIEWS'
+  collapsedViews: ElementPath[]
+}
+
 export interface AddToast {
   action: 'ADD_TOAST'
   // FIXME: This contains React.ReactChild and is likely not serializable.
@@ -594,6 +600,14 @@ export interface UpdateFilePath {
   newPath: string
 }
 
+export interface UpdateRemixRoute {
+  action: 'UPDATE_REMIX_ROUTE'
+  oldPath: string
+  newPath: string
+  oldRoute: string
+  newRoute: string
+}
+
 export interface OpenCodeEditorFile {
   action: 'OPEN_CODE_EDITOR_FILE'
   filename: string
@@ -690,6 +704,23 @@ export interface AddTextFile {
   action: 'ADD_TEXT_FILE'
   fileName: string
   parentPath: string
+}
+
+export interface AddNewPage {
+  action: 'ADD_NEW_PAGE'
+  parentPath: string
+  template: PageTemplate
+  newPageName: string
+}
+
+export interface AddNewFeaturedRoute {
+  action: 'ADD_NEW_FEATURED_ROUTE'
+  featuredRoute: string
+}
+
+export interface RemoveFeaturedRoute {
+  action: 'REMOVE_FEATURED_ROUTE'
+  routeToRemove: string
 }
 
 export interface SetMainUIFile {
@@ -1110,6 +1141,14 @@ export interface SetSharingDialogOpen {
   open: boolean
 }
 
+export interface ResetOnlineState {
+  action: 'RESET_ONLINE_STATE'
+}
+
+export interface IncreaseOnlineStateFailureCount {
+  action: 'INCREASE_ONLINE_STATE_FAILURE_COUNT'
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertJSXElement
@@ -1157,6 +1196,7 @@ export type EditorAction =
   | SetRightMenuTab
   | SetRightMenuExpanded
   | ToggleCollapse
+  | AddCollapsedViews
   | AddToast
   | RemoveToast
   | SetHighlightedViews
@@ -1194,6 +1234,7 @@ export type EditorAction =
   | UpdateDuplicationState
   | SendPreviewModel
   | UpdateFilePath
+  | UpdateRemixRoute
   | OpenCodeEditorFile
   | CloseDesignerFile
   | UpdateFile
@@ -1208,6 +1249,9 @@ export type EditorAction =
   | DeleteFile
   | DeleteFileFromCollaboration
   | AddTextFile
+  | AddNewPage
+  | AddNewFeaturedRoute
+  | RemoveFeaturedRoute
   | SetMainUIFile
   | SetCodeEditorBuildErrors
   | SetCodeEditorLintErrors
@@ -1290,6 +1334,8 @@ export type EditorAction =
   | SetCollaborators
   | ExtractPropertyControlsFromDescriptorFiles
   | SetSharingDialogOpen
+  | ResetOnlineState
+  | IncreaseOnlineStateFailureCount
 
 export type DispatchPriority =
   | 'everyone'

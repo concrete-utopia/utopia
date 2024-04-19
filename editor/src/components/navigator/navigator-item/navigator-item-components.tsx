@@ -1,10 +1,10 @@
 import React from 'react'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import { type ElementPath } from '../../../core/shared/project-file-types'
 import type { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as EP from '../../../core/shared/element-path'
 import type { IcnProps } from '../../../uuiui'
-import { useColorTheme, Button, Icons, FlexRow } from '../../../uuiui'
+import { useColorTheme, Button, FlexRow, Icn } from '../../../uuiui'
 import { stopPropagation } from '../../inspector/common/inspector-utils'
 import { when } from '../../../utils/react-conditionals'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
@@ -17,6 +17,8 @@ import {
   varSafeNavigatorEntryToKey,
 } from '../../editor/store/editor-state'
 import type { SelectionLocked } from '../../canvas/canvas-types'
+import { getJSXElementNameAsString } from '../../../core/shared/element-template'
+import { getRegisteredComponent } from '../../../core/property-controls/property-controls-utils'
 
 export const NavigatorHintCircleDiameter = 8
 
@@ -182,10 +184,76 @@ export const VisibilityIndicator: React.FunctionComponent<
       }}
     >
       {props.visibilityEnabled ? (
-        <Icons.EyeOpen color={color} style={{ transform: 'scale(.85)' }} />
+        <Icn category='semantic' type='eyeopen' color={color} width={12} height={12} />
       ) : (
-        <Icons.EyeStrikethrough color={color} style={{ transform: 'scale(.85)' }} />
+        <Icn category='semantic' type='eye-strikethrough' color={color} width={12} height={12} />
       )}
+    </Button>
+  )
+})
+
+const useSupportsChildren = (target: ElementPath): boolean => {
+  const targetElement = useEditorState(
+    Substores.metadata,
+    (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, target),
+    'useSupportsChildren targetElement',
+  )
+
+  return useEditorState(
+    Substores.restOfEditor,
+    (store) => {
+      const targetJSXElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(targetElement)
+      const elementImportInfo = targetElement?.importInfo
+      if (elementImportInfo == null || targetJSXElement == null) {
+        return false
+      }
+
+      const targetName = getJSXElementNameAsString(targetJSXElement.name)
+      const registeredComponent = getRegisteredComponent(
+        targetName,
+        elementImportInfo.filePath,
+        store.editor.propertyControlsInfo,
+      )
+
+      // FIXME use the below when we are no longer restricted to preferredChildComponents only
+      // return registeredComponent?.supportsChildren ?? false
+      return (registeredComponent?.preferredChildComponents?.length ?? 0) > 0
+    },
+    'useSupportsChildren supportsChildren',
+  )
+}
+
+interface AddChildButtonProps {
+  target: ElementPath
+  iconColor: IcnProps['color']
+  onClick: React.MouseEventHandler<HTMLDivElement>
+}
+
+export function addChildButtonTestId(target: ElementPath): string {
+  return `add-child-button-${EP.toString(target)}`
+}
+
+const AddChildButton = React.memo((props: AddChildButtonProps) => {
+  const color = props.iconColor
+  const shouldShow = useSupportsChildren(props.target)
+
+  return (
+    <Button
+      onClick={props.onClick}
+      style={{
+        height: 18,
+        width: 18,
+        opacity: shouldShow ? 1 : 0,
+      }}
+      data-testid={addChildButtonTestId(props.target)}
+    >
+      <Icn
+        category='semantic'
+        type='plus-in-white-translucent-circle'
+        color={color}
+        width={12}
+        height={12}
+      />
     </Button>
   )
 })
@@ -228,27 +296,27 @@ export const SelectionLockedIndicator: React.FunctionComponent<
       onClick={handleClick}
       onMouseDown={stopPropagation}
       style={{
-        height: 18,
-        width: 18,
+        height: 12,
+        width: 12,
         display: shouldShow ? 'block' : 'none',
         paddingRight: 1,
       }}
     >
       {when(
         value === 'locked',
-        <Icons.LockClosed color={color} style={{ transform: 'scale(.85)' }} />,
+        <Icn category='semantic' type='lockclosed' color={color} width={12} height={12} />,
       )}
       {when(
         value === 'locked-hierarchy',
-        <Icons.LockClosedDot color={color} style={{ transform: 'scale(.85)' }} />,
+        <Icn category='semantic' type='lockcloseddot' color={color} width={12} height={12} />,
       )}
       {when(
         value === 'selectable' && !isDescendantOfLocked,
-        <Icons.LockOpen color={color} style={{ transform: 'scale(.85)' }} />,
+        <Icn category='semantic' type='lockopen' color={color} width={12} height={12} />,
       )}
       {when(
         value === 'selectable' && isDescendantOfLocked,
-        <Icons.Dot color={color} style={{ transform: 'scale(.85)' }} />,
+        <Icn category='semantic' type='dot' color={color} width={12} height={12} />,
       )}
     </Button>
   )
@@ -289,6 +357,7 @@ interface NavigatorItemActionSheetProps {
   iconColor: IcnProps['color']
   background?: string | any
   dispatch: EditorDispatch
+  showInsertChildPicker: React.MouseEventHandler<HTMLDivElement>
 }
 
 export const NavigatorItemActionSheet: React.FunctionComponent<
@@ -356,8 +425,10 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
   return (
     <FlexRow
       style={{
-        padding: '4px 5px',
+        padding: '4px',
+        borderRadius: '0 5px 5px 0',
         position: 'fixed',
+        gap: 3,
         right: 0,
         background:
           props.highlighted ||
@@ -374,6 +445,15 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
         selected={props.selected}
         instanceOriginalComponentName={props.instanceOriginalComponentName}
       />
+      {isRegularNavigatorEntry(navigatorEntry) &&
+      !props.isSlot &&
+      (props.highlighted || props.selected) ? (
+        <AddChildButton
+          target={navigatorEntry.elementPath}
+          iconColor={props.iconColor}
+          onClick={props.showInsertChildPicker}
+        />
+      ) : null}
       <SelectionLockedIndicator
         key={`selection-locked-indicator-${varSafeNavigatorEntryToKey(navigatorEntry)}`}
         shouldShow={

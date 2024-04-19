@@ -340,8 +340,8 @@ class FileBrowserItemInner extends React.PureComponent<
           this.props.exportedFunction,
         )}
         color={severityFromErrors(this.props.errorMessages) === 'error' ? 'error' : undefined}
-        width={18}
-        height={18}
+        width={12}
+        height={12}
         onDoubleClick={this.toggleCollapse}
       />
     )
@@ -763,10 +763,12 @@ class FileBrowserItemInner extends React.PureComponent<
               display: 'flex',
               flexDirection: 'row',
               overflow: 'hidden',
+              gap: 5,
+              alignItems: 'center',
             }}
           >
             <ExpandableIndicator
-              key='expandable-indicator'
+              key='expandable-indicator-small'
               visible={
                 this.props.type === 'file' &&
                 this.props.fileType != null &&
@@ -781,6 +783,7 @@ class FileBrowserItemInner extends React.PureComponent<
                 style={{
                   ...flexRowStyle,
                   overflow: 'hidden',
+                  gap: 5,
                 }}
               >
                 {this.renderIcon()}
@@ -812,7 +815,7 @@ class FileBrowserItemInner extends React.PureComponent<
               ) : null}
               {displayAddFolder ? (
                 <Button onClick={this.showAddingFolderRow}>
-                  <Icons.GroupClosed style={fileIconStyle} tooltipText='Add New Folder' />
+                  <Icons.FolderClosed style={fileIconStyle} tooltipText='Add New Folder' />
                 </Button>
               ) : null}
               {displayAddTextFile ? (

@@ -4,6 +4,7 @@ import {
   defaultComponentDescriptor,
   type ComponentDescriptor,
   type ComponentDescriptorsForFile,
+  ComponentDescriptorDefaults,
 } from '../../components/custom-code/code-file'
 import type { JSXAttributes } from '../shared/element-template'
 import { jsxElementName, jsxElementWithoutUID, simpleAttribute } from '../shared/element-template'
@@ -23,7 +24,7 @@ function createBasicComponent(
 ): ComponentDescriptor {
   return {
     properties: { ...StyleObjectProps, ...propertyControls },
-    supportsChildren: false, // TODO
+    supportsChildren: false,
     preferredChildComponents: [],
     variants: [
       {
@@ -54,6 +55,7 @@ function createBasicComponent(
       },
     ],
     source: defaultComponentDescriptor(),
+    ...ComponentDescriptorDefaults,
   }
 }
 

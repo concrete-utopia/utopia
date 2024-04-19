@@ -3,6 +3,7 @@ import type { light } from './light'
 
 const darkBase = {
   primary: createUtopiColor('oklch(59% 0.25 254)'),
+  primary10solid: createUtopiColor('oklch(0.98 0.01 253.75)'),
   primary10: createUtopiColor('oklch(59% 0.25 254 / 10%)'),
   primary25: createUtopiColor('oklch(59% 0.25 254 / 25%)'),
   primary30: createUtopiColor('oklch(59% 0.25 254 / 30%)'),
@@ -212,11 +213,11 @@ const darkTheme: typeof light = {
   navigatorComponentSelected: darkBase.componentChild20,
   navigatorComponentIconBorder: darkBase.componentChild,
 
-  contextMenuBackground: darkPrimitives.secondaryBackground,
-  contextMenuForeground: darkPrimitives.neutralForeground,
+  contextMenuBackground: darkBase.bg1,
+  contextMenuForeground: darkBase.white,
   contextMenuHighlightForeground: darkBase.bg1,
   contextMenuHighlightBackground: darkBase.dynamicBlue,
-  contextMenuSeparator: createUtopiColor('rgba(0,0,0,0.1)'),
+  contextMenuSeparator: createUtopiColor('rgba(255,255,255,0.35)'),
 
   inspectorHoverColor: darkBase.fg8,
   inspectorFocusedColor: darkBase.dynamicBlue,

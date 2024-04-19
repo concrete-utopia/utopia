@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react'
 import { fastForEach } from '../utils'
-import type { PreferredChildComponent } from '../core'
+import type { PlaceholderSpec, PreferredContents } from '../core'
 
 // these fields are shared among all RegularControlDescription. the helper function getControlSharedFields makes sure the types line up
 // Ensure that the fields are also added to the object within `getControlSharedFields` for that typechecking.
@@ -240,7 +240,8 @@ export interface JSXControlDescription {
   control: 'jsx'
   label?: string
   visibleByDefault?: boolean
-  preferredChildComponents?: Array<PreferredChildComponent>
+  preferredContents?: PreferredContents | PreferredContents[]
+  placeholder?: PlaceholderSpec
   required?: boolean
   defaultValue?: unknown
 }

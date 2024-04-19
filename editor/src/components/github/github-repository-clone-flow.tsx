@@ -12,6 +12,7 @@ import { useDispatch } from '../editor/store/dispatch-context'
 import { type EditorStorePatched, type GithubRepoWithBranch } from '../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { onClickSignIn } from '../titlebar/title-bar'
+import { CloneParamKey } from '../editor/persistence/persistence-backend'
 
 export const LoadActionsDispatched = 'loadActionDispatched'
 
@@ -109,6 +110,7 @@ async function cloneGithubRepo(
     [],
     storeRef.current.builtInDependencies,
     {}, // Assuming a totally empty project (that is being saved probably parallel to this operation, hopefully not causing any race conditions)
+    'user-initiated',
   )
 
   // at this point we can assume the repo is loaded and we can finally hide the overlay
@@ -155,7 +157,7 @@ export function getGithubRepoToLoad(urlSearchParams: string): GithubRepoWithBran
   const urlParams = new URLSearchParams(urlSearchParams)
   const githubBranch = urlParams.get('github_branch')
 
-  const githubCloneUrl = urlParams.get('clone')
+  const githubCloneUrl = urlParams.get(CloneParamKey)
   if (githubCloneUrl != null) {
     const splitGitRepoUrl = githubCloneUrl.split('/')
     return {

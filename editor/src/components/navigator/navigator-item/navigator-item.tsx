@@ -23,7 +23,7 @@ import type {
   ElementInstanceMetadataMap,
 } from '../../../core/shared/element-template'
 import { hasElementsWithin } from '../../../core/shared/element-template'
-import type { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath, HighlightBoundsWithFile } from '../../../core/shared/project-file-types'
 import { unless } from '../../../utils/react-conditionals'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import type { IcnColor, IcnProps } from '../../../uuiui'
@@ -60,7 +60,16 @@ import { CanvasContextMenuPortalTargetID, NO_OP, assertNever } from '../../../co
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { MapCounter } from './map-counter'
 import ReactDOM from 'react-dom'
-import { RenderPropPicker, useShowRenderPropPicker } from './render-prop-selector-popup'
+import {
+  ComponentPickerContextMenu,
+  useShowComponentPickerContextMenu,
+} from './component-picker-context-menu'
+import { getHighlightBoundsForProject } from '../../../core/model/project-file-utils'
+import {
+  selectedElementChangedMessageFromHighlightBounds,
+  sendMessage,
+} from '../../../core/vscode/vscode-bridge'
+import { toVSCodeExtensionMessage } from 'utopia-vscode-common'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -139,15 +148,29 @@ function selectItem(
   selected: boolean,
   event: React.MouseEvent<HTMLDivElement>,
   conditionalOverrideUpdate: ConditionalOverrideUpdate,
+  highlightBounds: HighlightBoundsWithFile | null,
 ) {
   const elementPath = navigatorEntry.elementPath
-  const selectionActions =
+
+  const shouldSelect = !(
     isConditionalClauseNavigatorEntry(navigatorEntry) ||
     isInvalidOverrideNavigatorEntry(navigatorEntry) ||
     isRenderPropNavigatorEntry(navigatorEntry) ||
     isSlotNavigatorEntry(navigatorEntry)
-      ? []
-      : getSelectionActions(getSelectedViewsInRange, index, elementPath, selected, event)
+  )
+
+  const selectionActions = shouldSelect
+    ? getSelectionActions(getSelectedViewsInRange, index, elementPath, selected, event)
+    : []
+
+  // when we click on an already selected item we should force vscode to navigate there
+  if (selected && shouldSelect && highlightBounds != null) {
+    sendMessage(
+      toVSCodeExtensionMessage(
+        selectedElementChangedMessageFromHighlightBounds(highlightBounds, 'force-navigation'),
+      ),
+    )
+  }
 
   const conditionalOverrideActions = isConditionalClauseNavigatorEntry(navigatorEntry)
     ? getConditionalOverrideActions(elementPath, conditionalOverrideUpdate)
@@ -186,7 +209,7 @@ type SelectedType = 'unselected' | 'selected' | 'descendantOfSelected'
 const styleTypeColors: Record<StyleType, { color: keyof ThemeObject; iconColor: IcnColor }> = {
   default: { color: 'fg0', iconColor: 'main' },
   dynamic: { color: 'dynamicBlue', iconColor: 'dynamic' },
-  component: { color: 'componentOrange', iconColor: 'component-orange' },
+  component: { color: 'componentPurple', iconColor: 'component' },
   componentInstance: { color: 'fg0', iconColor: 'main' },
   erroredGroup: { color: 'error', iconColor: 'error' },
 }
@@ -230,7 +253,7 @@ const computeResultingStyle = (
 
   if (isErroredGroup) {
     styleType = 'erroredGroup'
-  } else if (isInsideComponent) {
+  } else if (isInsideComponent || isFocusedComponent) {
     styleType = 'component'
   } else if (isFocusableComponent) {
     styleType = 'componentInstance'
@@ -253,6 +276,9 @@ const computeResultingStyle = (
   result.style = {
     ...result.style,
     fontWeight: isProbablyParentOfSelected || isProbablyScene ? 600 : 'inherit',
+    // TODO compute better borderRadius style by if it has children or siblings
+
+    borderRadius: selected ? '5px 5px 0 0' : undefined,
   }
 
   return result
@@ -431,6 +457,23 @@ export const NavigatorItem: React.FunctionComponent<
     getSelectedViewsInRange,
     index,
   } = props
+
+  const highlightBounds = useEditorState(
+    Substores.projectContents,
+    (store) => {
+      const staticPath = EP.dynamicPathToStaticPath(navigatorEntry.elementPath)
+      if (staticPath != null) {
+        const bounds = getHighlightBoundsForProject(store.editor.projectContents)
+        if (bounds != null) {
+          const highlightedUID = EP.toUid(staticPath)
+          return bounds[highlightedUID]
+        }
+      }
+
+      return null
+    },
+    'NavigatorItem highlightBounds',
+  )
 
   const colorTheme = useColorTheme()
 
@@ -695,6 +738,7 @@ export const NavigatorItem: React.FunctionComponent<
     },
     [dispatch, navigatorEntry.elementPath],
   )
+
   const select = React.useCallback(
     (event: any) =>
       selectItem(
@@ -705,8 +749,17 @@ export const NavigatorItem: React.FunctionComponent<
         selected,
         event,
         conditionalOverrideUpdate,
+        highlightBounds,
       ),
-    [dispatch, getSelectedViewsInRange, navigatorEntry, index, selected, conditionalOverrideUpdate],
+    [
+      dispatch,
+      getSelectedViewsInRange,
+      navigatorEntry,
+      index,
+      selected,
+      conditionalOverrideUpdate,
+      highlightBounds,
+    ],
   )
   const highlight = React.useCallback(
     () => highlightItem(dispatch, navigatorEntry.elementPath, selected, isHighlighted),
@@ -763,9 +816,11 @@ export const NavigatorItem: React.FunctionComponent<
     )
   }, [childComponentCount, isFocusedComponent, isConditional])
 
-  const renderPropPickerId = varSafeNavigatorEntryToKey(navigatorEntry)
-  const { showRenderPropPicker: showContextMenu, hideRenderPropPicker: hideContextMenu } =
-    useShowRenderPropPicker(renderPropPickerId)
+  const componentPickerContextMenuId = varSafeNavigatorEntryToKey(navigatorEntry)
+  const {
+    showComponentPickerContextMenu: showContextMenu,
+    hideComponentPickerContextMenu: hideContextMenu,
+  } = useShowComponentPickerContextMenu(componentPickerContextMenuId)
 
   const portalTarget = document.getElementById(CanvasContextMenuPortalTargetID)
 
@@ -791,14 +846,18 @@ export const NavigatorItem: React.FunctionComponent<
         outlineOffset: props.parentOutline === 'solid' ? '-1px' : 0,
       }}
     >
-      {portalTarget == null || navigatorEntry.type !== 'SLOT'
+      {portalTarget == null || (navigatorEntry.type !== 'SLOT' && navigatorEntry.type !== 'REGULAR')
         ? null
         : ReactDOM.createPortal(
-            <RenderPropPicker
-              target={props.navigatorEntry.elementPath}
-              key={renderPropPickerId}
-              id={renderPropPickerId}
-              prop={navigatorEntry.prop}
+            <ComponentPickerContextMenu
+              target={
+                navigatorEntry.type === 'SLOT'
+                  ? EP.parentPath(props.navigatorEntry.elementPath)
+                  : props.navigatorEntry.elementPath
+              }
+              key={componentPickerContextMenuId}
+              id={componentPickerContextMenuId}
+              prop={navigatorEntry.type === 'SLOT' ? navigatorEntry.prop : undefined}
             />,
             portalTarget,
           )}
@@ -856,7 +915,7 @@ export const NavigatorItem: React.FunctionComponent<
             {props.label}
           </div>
         ) : (
-          <FlexRow style={{ justifyContent: 'space-between', ...containerStyle }}>
+          <FlexRow style={{ justifyContent: 'space-between', ...containerStyle, padding: '0 5px' }}>
             <FlexRow>
               {unless(
                 props.navigatorEntry.type === 'CONDITIONAL_CLAUSE',
@@ -866,7 +925,9 @@ export const NavigatorItem: React.FunctionComponent<
                   collapsed={collapsed}
                   selected={selected && !isInsideComponent}
                   onMouseDown={collapse}
-                  style={{ transform: 'scale(0.6)', opacity: 'var(--paneHoverOpacity)' }}
+                  style={{
+                    opacity: 'var(--paneHoverOpacity)',
+                  }}
                   testId={`navigator-item-collapse-${navigatorEntryToKey(props.navigatorEntry)}`}
                   iconColor={iconColor}
                 />,
@@ -898,6 +959,7 @@ export const NavigatorItem: React.FunctionComponent<
                 isSlot={isPlaceholder}
                 iconColor={iconColor}
                 background={rowStyle.background}
+                showInsertChildPicker={showContextMenu}
               />,
             )}
           </FlexRow>
@@ -955,12 +1017,11 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'flex-start',
-        gap: 10,
+        gap: 5,
         borderRadius: 20,
         height: 22,
-        paddingLeft: 10,
-        paddingRight: props.codeItemType === 'map' ? 0 : 10,
-        backgroundColor: backgroundLozengeColor,
+        paddingLeft: 5,
+        paddingRight: props.codeItemType === 'map' ? 0 : 5,
         color: textColor,
         textTransform: isCodeItem ? 'uppercase' : undefined,
       }}

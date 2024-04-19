@@ -4,11 +4,12 @@ import {
   defaultComponentDescriptor,
   type ComponentDescriptor,
   type ComponentDescriptorsForFile,
+  ComponentDescriptorDefaults,
 } from '../../components/custom-code/code-file'
 import type { JSXAttributes, JSXAttributesEntry } from '../shared/element-template'
 import {
   emptyComments,
-  jsArbitraryStatement,
+  jsOpaqueArbitraryStatement,
   jsExpressionOtherJavaScript,
   jsxAttributesEntry,
   jsxElementWithoutUID,
@@ -29,7 +30,6 @@ function threeAttribute(key: string, fromThree: string): JSXAttributesEntry {
       null,
       {},
       emptyComments,
-      [jsArbitraryStatement(`THREE.${fromThree}`, [], [])],
     ),
     emptyComments,
   )
@@ -53,6 +53,7 @@ function createBasicComponent(
       },
     ],
     source: defaultComponentDescriptor(),
+    ...ComponentDescriptorDefaults,
   }
 }
 

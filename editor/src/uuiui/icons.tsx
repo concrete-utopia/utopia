@@ -214,6 +214,7 @@ export const Icons = {
   ExpansionArrowControlled: makeIcon({ type: 'expansionarrow-down', color: 'primary' }),
   ExpansionArrowDown: makeIcon({ type: 'expansionarrow-down', color: 'main' }),
   ExpansionArrowRight: makeIcon({ type: 'expansionarrow-right', color: 'main' }),
+  ExpansionArrowRightWhite: makeIcon({ type: 'expansionarrow-right', color: 'white' }),
   ExternalLink: makeIcon({ type: 'externallink', color: 'main' }),
   ExternalLinkSmaller: makeIcon({ type: 'externallink-smaller', color: 'main' }),
   EyeStrikethrough: makeIcon({ type: 'eye-strikethrough', color: 'main' }),
@@ -238,6 +239,13 @@ export const Icons = {
     color: 'main',
     width: 18,
     height: 18,
+  }),
+  FolderClosed: makeIcon({
+    type: 'folder-closed',
+    category: 'filetype',
+    color: 'main',
+    width: 12,
+    height: 12,
   }),
   Threedots: makeIcon({ type: 'threedots', color: 'main' }),
   LinkClosed: makeIcon({ type: 'link-closed', color: 'main' }),
@@ -266,8 +274,8 @@ export const Icons = {
   NewTextFile: makeIcon({
     category: 'filetype',
     type: 'other',
-    width: 18,
-    height: 18,
+    width: 12,
+    height: 12,
   }),
   NewFolder: makeIcon({
     category: 'filetype',

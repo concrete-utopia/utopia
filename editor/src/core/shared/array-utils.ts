@@ -63,6 +63,19 @@ export function mapAndFilter<T, U>(
   }, a)
 }
 
+export function mapFirstApplicable<T, U>(
+  array: ReadonlyArray<T>,
+  mapFn: (t: T, i: number) => U | null,
+): U | null {
+  for (const value of array) {
+    const mapped = mapFn(value, 0)
+    if (mapped != null) {
+      return mapped
+    }
+  }
+  return null
+}
+
 // Dumb version of:
 // traverse :: (Traversable t, Applicative f) => (a -> f b) -> t a -> f (t b)
 export function traverseArray<T, U>(
@@ -503,4 +516,8 @@ export function isPrefixOf<T>(
     // Prefix is too long to be a prefix.
     return false
   }
+}
+
+export function valueOrArrayToArray<T>(ts: T | T[]): T[] {
+  return Array.isArray(ts) ? ts : [ts]
 }

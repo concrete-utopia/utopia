@@ -57,6 +57,7 @@ import { Y } from '../../../core/shared/yjs'
 import type { ProjectServerState } from './project-server-state'
 import { Substores, useEditorState } from './store-hook'
 import { forceNotNull } from '../../../core/shared/optional-utils'
+import { isParseableFile } from '../../../core/shared/file-utils'
 
 const CodeKey = 'code'
 const TopLevelElementsKey = 'topLevelElements'
@@ -64,7 +65,7 @@ const ExportsDetailKey = 'exportsDetail'
 const ImportsKey = 'imports'
 
 // FIXME: This is very slow an inefficient, but is a stopgap measure for right now.
-function removeSourceMaps(topLevelElements: Array<TopLevelElement>): Array<TopLevelElement> {
+export function removeSourceMaps(topLevelElements: Array<TopLevelElement>): Array<TopLevelElement> {
   return JSON.parse(JSON.stringify(topLevelElements, (k, v) => (k === 'sourceMap' ? null : v)))
 }
 
@@ -84,7 +85,7 @@ export function collateCollaborativeProjectChanges(
         if (firstContents.content === secondContents.content) {
           // Do nothing, no change.
         } else if (isTextFile(firstContents.content) && isTextFile(secondContents.content)) {
-          if (looksLikeParseableSourceCode(fullPath)) {
+          if (isParseableFile(fullPath)) {
             if (
               ParsedTextFileKeepDeepEquality(
                 firstContents.content.fileContents.parsed,
@@ -162,15 +163,6 @@ export function collateCollaborativeProjectChanges(
   return changesToProcess
 }
 
-function looksLikeParseableSourceCode(filePath: string): boolean {
-  return (
-    filePath.endsWith('.js') ||
-    filePath.endsWith('.jsx') ||
-    filePath.endsWith('.ts') ||
-    filePath.endsWith('.tsx')
-  )
-}
-
 function applyFileChangeToMap(
   change: ProjectFileChange,
   projectContentsMap: CollaborativeEditingSupportSession['projectContents'],
@@ -191,7 +183,7 @@ function applyFileChangeToMap(
       switch (change.projectFile.type) {
         case 'TEXT_FILE':
           {
-            if (looksLikeParseableSourceCode(change.fullPath)) {
+            if (isParseableFile(change.fullPath)) {
               if (change.projectFile.fileContents.parsed.type === 'PARSE_SUCCESS') {
                 updateFromParseSuccess(
                   projectContentsMap,

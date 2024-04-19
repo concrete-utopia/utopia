@@ -5,6 +5,7 @@ import { createModifiedProject } from '../../sample-projects/sample-project-util
 import { StoryboardFilePath } from '../../components/editor/store/editor-state'
 import { deleteFile, updateFilePath } from '../../components/editor/actions/action-creators'
 import { updateFromCodeEditor } from '../../components/editor/actions/actions-from-vscode'
+import { pick } from '../shared/object-utils'
 
 const project = (componentDescriptorFiles: { [filename: string]: string }) =>
   createModifiedProject({
@@ -68,7 +69,6 @@ describe('registered property controls', () => {
       '/src/card': {
         Card: {
           component: Card,
-          supportsChildren: false,
           properties: {
             label: {
               control: 'string-input',
@@ -81,16 +81,23 @@ describe('registered property controls', () => {
               defaultValue: true,
             },
           },
+          focus: 'default',
+          inspector: ['visual', 'typography'],
+          emphasis: 'regular',
+          icon: 'regular',
           variants: [
             {
               code: '<Card />',
+              imports: 'import { Card } from "/src/card"',
               label: 'Card',
             },
             {
               code: '<Card person={DefaultPerson} />',
               label: 'ID Card',
-              additionalImports:
+              imports: [
+                'import { Card } from "/src/card"',
                 "import { DefaultPerson } from '/src/defaults';",
+              ],
             },
           ],
         },
@@ -107,6 +114,14 @@ describe('registered property controls', () => {
     expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
       Object {
         "Card": Object {
+          "childrenPropPlaceholder": null,
+          "emphasis": "regular",
+          "focus": "default",
+          "icon": "regular",
+          "inspector": Array [
+            "visual",
+            "typography",
+          ],
           "preferredChildComponents": Array [],
           "properties": Object {
             "background": Object {
@@ -183,7 +198,6 @@ describe('registered property controls', () => {
           '/src/card': {
             Card: {
               component: Card,
-              supportsChildren: false,
               properties: {
                 label: Utopia.stringControl('type here', {
                   required: true,
@@ -191,6 +205,7 @@ describe('registered property controls', () => {
                 }),
               },
               variants: [],
+              inspector: 'all',
             },
           },
         }
@@ -206,6 +221,11 @@ describe('registered property controls', () => {
     expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
       Object {
         "Card": Object {
+          "childrenPropPlaceholder": null,
+          "emphasis": "regular",
+          "focus": "default",
+          "icon": "regular",
+          "inspector": "all",
           "preferredChildComponents": Array [],
           "properties": Object {
             "label": Object {
@@ -251,7 +271,6 @@ describe('registered property controls', () => {
       '/src/card': {
         Card: {
           component: Cart,
-          supportsChildren: false,
           properties: { },
           variants: [ ],
         },
@@ -304,7 +323,6 @@ describe('registered property controls', () => {
       '/src/card': {
         Card: {
           component: Card,
-          supportsChildren: false,
           properties: { },
           variants: [ ],
         },
@@ -335,13 +353,66 @@ describe('registered property controls', () => {
             endLine: null,
             errorCode: '',
             fileName: '/utopia/components.utopia.js',
-            message:
-              "Components file evaluation error: TypeError: Cannot read properties of undefined (reading 'foo')",
+            message: "TypeError: Cannot read properties of undefined (reading 'foo')",
             passTime: null,
             severity: 'fatal',
             source: 'component-descriptor',
             startColumn: 25,
             startLine: 4,
+            type: '',
+          },
+        ],
+      },
+    })
+
+    const srcCardKey = Object.keys(renderResult.getEditorState().editor.propertyControlsInfo).find(
+      (key) => key === '/src/card',
+    )
+
+    expect(srcCardKey).toBeUndefined()
+  })
+  it('control registration fails when there is an invalid schema error', async () => {
+    const renderResult = await renderTestEditorWithModel(
+      project({
+        ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
+        
+        const Components = {
+      '/src/card': {
+        Card: {
+          component: Card,
+          supportsChildren: false,
+          properties: {
+            label: 'foo',
+          },
+          variants: [ ],
+        },
+      },
+    }
+    
+    export default Components
+  `,
+      }),
+      'await-first-dom-report',
+    )
+    const editorState = renderResult.getEditorState().editor
+
+    expect(editorState.codeEditorErrors).toEqual({
+      buildErrors: {},
+      lintErrors: {},
+      componentDescriptorErrors: {
+        '/utopia/components.utopia.js': [
+          {
+            codeSnippet: '',
+            endColumn: null,
+            endLine: null,
+            errorCode: '',
+            fileName: '/utopia/components.utopia.js',
+            message: 'Malformed component registration: Card.properties.label: Not an object.',
+            passTime: null,
+            severity: 'fatal',
+            source: 'component-descriptor',
+            startColumn: null,
+            startLine: null,
             type: '',
           },
         ],
@@ -363,7 +434,6 @@ describe('registered property controls', () => {
       '/src/card': {
         Cart: {
           component: Card,
-          supportsChildren: false,
           properties: { },
           variants: [ ],
         },
@@ -416,7 +486,6 @@ describe('registered property controls', () => {
       '/src/cardd': {
         Card: {
           component: Card,
-          supportsChildren: false,
           properties: { },
           variants: [ ],
         },
@@ -469,7 +538,6 @@ describe('registered property controls', () => {
       'utopia-api': {
         Vieww: {
           component: View,
-          supportsChildren: false,
           properties: { },
           variants: [ ],
         },
@@ -522,7 +590,6 @@ describe('registered property controls', () => {
       'utopia-apii': {
         View: {
           component: View,
-          supportsChildren: false,
           properties: { },
           variants: [ ],
         },
@@ -575,7 +642,6 @@ describe('registered property controls', () => {
       '/src/card': {
         Cart: {
           component: Card,
-          supportsChildren: false,
           properties: { },
           variants: [ ],
         },
@@ -628,7 +694,6 @@ describe('registered property controls', () => {
       '/src/card': {
         Cart: {
           component: Card,
-          supportsChildren: false,
           properties: { },
           variants: [ ],
         },
@@ -643,7 +708,6 @@ describe('registered property controls', () => {
       '/src/card': {
         Card: {
           component: Card,
-          supportsChildren: false,
           properties: { },
           variants: [ ],
         },
@@ -682,7 +746,6 @@ describe('registered property controls', () => {
       '/src/card': {
         Card: {
           component: Card,
-          supportsChildren: false,
           properties: {
             label: Utopia.stringControl(),
             background: {
@@ -696,13 +759,16 @@ describe('registered property controls', () => {
           variants: [
             {
               code: '<Card />',
+              imports: 'import { Card } from "/src/card"',
               label: 'Card',
             },
             {
               code: '<Card person={DefaultPerson} />',
               label: 'ID Card',
-              additionalImports:
+              imports: [
+                'import { Card } from "/src/card"',
                 "import { DefaultPerson } from '/src/defaults';",
+              ],
             },
           ],
         },
@@ -719,6 +785,11 @@ describe('registered property controls', () => {
     expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
       Object {
         "Card": Object {
+          "childrenPropPlaceholder": null,
+          "emphasis": "regular",
+          "focus": "default",
+          "icon": "regular",
+          "inspector": "all",
           "preferredChildComponents": Array [],
           "properties": Object {
             "background": Object {
@@ -795,7 +866,6 @@ describe('registered property controls', () => {
       '/src/card': {
         Card: {
           component: Card,
-          supportsChildren: false,
           properties: {
             label: {
               control: 'string-input',
@@ -811,13 +881,16 @@ describe('registered property controls', () => {
           variants: [
             {
               code: '<Card />',
+              imports: 'import { Card } from "/src/card"',
               label: 'Card',
             },
             {
               code: '<Card person={DefaultPerson} />',
               label: 'ID Card',
-              additionalImports:
-                "import { DefaultPerson } from '/src/defaults';",
+              imports: [
+                'import { Card } from "/src/card"',
+                "import { DefaultLabel } from '/src/defaults';",
+              ],
             },
           ],
         },
@@ -832,13 +905,16 @@ describe('registered property controls', () => {
           variants: [
             {
               code: '<Card2 />',
+              imports: 'import { Card2 } from "/src/card2"',
               label: 'Card2',
             },
             {
               code: '<Card2 label={DefaultLabel} />',
               label: 'ID Card',
-              additionalImports:
+              imports: [
+                'import { Card2 } from "/src/card2"',
                 "import { DefaultLabel } from '/src/defaults';",
+              ],
             },
           ],
         },
@@ -868,7 +944,6 @@ describe('registered property controls', () => {
         '/src/card': {
           Card: {
             component: Card,
-            supportsChildren: false,
             properties: {
               label: {
                 control: 'string-input',
@@ -884,13 +959,16 @@ describe('registered property controls', () => {
             variants: [
               {
                 code: '<Card />',
+                imports: 'import { Card } from "/src/card"',
                 label: 'Card',
               },
               {
                 code: '<Card person={DefaultPerson} />',
                 label: 'ID Card',
-                additionalImports:
-                  "import { DefaultPerson } from '/src/defaults';",
+                imports: [
+                  'import { Card } from "/src/card"',
+                  "import { DefaultLabel } from '/src/defaults';",
+                ],
               },
             ],
           },
@@ -907,13 +985,16 @@ describe('registered property controls', () => {
             variants: [
               {
                 code: '<Card2 />',
+                imports: 'import { Card2 } from "/src/card2"',
                 label: 'Card2',
               },
               {
                 code: '<Card2 label={DefaultLabel} />',
                 label: 'ID Card',
-                additionalImports:
+                imports: [
+                  'import { Card2 } from "/src/card2"',
                   "import { DefaultLabel } from '/src/defaults';",
+                ],
               },
             ],
           },
@@ -947,7 +1028,6 @@ describe('registered property controls', () => {
           '/src/card': {
             Card: {
               component: Card,
-              supportsChildren: false,
               properties: {
                 label: {
                   control: 'string-input',
@@ -963,13 +1043,16 @@ describe('registered property controls', () => {
               variants: [
                 {
                   code: '<Card />',
+                  imports: 'import { Card } from "/src/card"',
                   label: 'Card',
                 },
                 {
                   code: '<Card person={DefaultPerson} />',
                   label: 'ID Card',
-                  additionalImports:
+                  imports: [
+                    'import { Card } from "/src/card"',
                     "import { DefaultPerson } from '/src/defaults';",
+                  ]
                 },
               ],
             },
@@ -983,7 +1066,6 @@ describe('registered property controls', () => {
           '/src/card2': {
             Card2: {
               component: Card2,
-              supportsChildren: false,
               properties: {
                 label: {
                   control: 'string-input',
@@ -992,13 +1074,16 @@ describe('registered property controls', () => {
               variants: [
                 {
                   code: '<Card2 />',
+                  imports: 'import { Card2 } from "/src/card"',
                   label: 'Card2',
                 },
                 {
                   code: '<Card2 label={DefaultLabel} />',
                   label: 'ID Card',
-                  additionalImports:
+                  imports: [
+                    'import { Card2 } from "/src/card2"',
                     "import { DefaultLabel } from '/src/defaults';",
+                  ],
                 },
               ],
             },
@@ -1023,6 +1108,603 @@ describe('registered property controls', () => {
       ]
     `)
   })
+
+  describe('variants', () => {
+    it('generates an empty variant if the variants prop is omitted', async () => {
+      const renderResult = await renderTestEditorWithModel(
+        project({
+          ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
+          
+          const Components = {
+        '/src/card': {
+          Card: {
+            component: Card,
+            properties: { }
+          },
+        },
+      }
+      
+      export default Components
+    `,
+        }),
+        'await-first-dom-report',
+      )
+      const editorState = renderResult.getEditorState().editor
+
+      const cardRegistration = editorState.propertyControlsInfo['/src/card']['Card']
+      expect(cardRegistration).not.toBeUndefined()
+
+      const propsToCheck = pick(['variants'], cardRegistration)
+
+      expect(propsToCheck).toMatchInlineSnapshot(`
+        Object {
+          "variants": Array [
+            Object {
+              "elementToInsert": [Function],
+              "importsToAdd": Object {
+                "/src/card": Object {
+                  "importedAs": null,
+                  "importedFromWithin": Array [
+                    Object {
+                      "alias": "Card",
+                      "name": "Card",
+                    },
+                  ],
+                  "importedWithName": null,
+                },
+              },
+              "insertMenuLabel": "Card",
+            },
+          ],
+        }
+      `)
+    })
+  })
+
+  describe('registering the children prop', () => {
+    it('can omit the children prop', async () => {
+      const renderResult = await renderTestEditorWithModel(
+        project({
+          ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
+          
+          const Components = {
+        '/src/card': {
+          Card: {
+            component: Card,
+            properties: { }
+          },
+        },
+      }
+      
+      export default Components
+    `,
+        }),
+        'await-first-dom-report',
+      )
+      const editorState = renderResult.getEditorState().editor
+
+      const cardRegistration = editorState.propertyControlsInfo['/src/card']['Card']
+      expect(cardRegistration).not.toBeUndefined()
+
+      const propsToCheck = pick(
+        ['childrenPropPlaceholder', 'preferredChildComponents', 'supportsChildren'],
+        cardRegistration,
+      )
+
+      expect(propsToCheck).toMatchInlineSnapshot(`
+        Object {
+          "childrenPropPlaceholder": null,
+          "preferredChildComponents": Array [],
+          "supportsChildren": false,
+        }
+      `)
+    })
+
+    it('can use `supported` for the children prop', async () => {
+      const renderResult = await renderTestEditorWithModel(
+        project({
+          ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
+          
+          const Components = {
+        '/src/card': {
+          Card: {
+            component: Card,
+            properties: { },
+            children: 'supported'
+          },
+        },
+      }
+      
+      export default Components
+    `,
+        }),
+        'await-first-dom-report',
+      )
+      const editorState = renderResult.getEditorState().editor
+
+      const cardRegistration = editorState.propertyControlsInfo['/src/card']['Card']
+      expect(cardRegistration).not.toBeUndefined()
+
+      const propsToCheck = pick(
+        ['childrenPropPlaceholder', 'preferredChildComponents', 'supportsChildren'],
+        cardRegistration,
+      )
+
+      expect(propsToCheck).toMatchInlineSnapshot(`
+        Object {
+          "childrenPropPlaceholder": null,
+          "preferredChildComponents": Array [],
+          "supportsChildren": true,
+        }
+      `)
+    })
+
+    it('can use `not-supported` for the children prop', async () => {
+      const renderResult = await renderTestEditorWithModel(
+        project({
+          ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
+          
+          const Components = {
+        '/src/card': {
+          Card: {
+            component: Card,
+            properties: { },
+            children: 'not-supported'
+          },
+        },
+      }
+      
+      export default Components
+    `,
+        }),
+        'await-first-dom-report',
+      )
+      const editorState = renderResult.getEditorState().editor
+
+      const cardRegistration = editorState.propertyControlsInfo['/src/card']['Card']
+      expect(cardRegistration).not.toBeUndefined()
+
+      const propsToCheck = pick(
+        ['childrenPropPlaceholder', 'preferredChildComponents', 'supportsChildren'],
+        cardRegistration,
+      )
+
+      expect(propsToCheck).toMatchInlineSnapshot(`
+        Object {
+          "childrenPropPlaceholder": null,
+          "preferredChildComponents": Array [],
+          "supportsChildren": false,
+        }
+      `)
+    })
+
+    it('can specify text-only children', async () => {
+      const renderResult = await renderTestEditorWithModel(
+        project({
+          ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
+          
+          const Components = {
+        '/src/card': {
+          Card: {
+            component: Card,
+            properties: { },
+            children: {
+              preferredContents: 'text'
+            }
+          },
+        },
+      }
+      
+      export default Components
+    `,
+        }),
+        'await-first-dom-report',
+      )
+      const editorState = renderResult.getEditorState().editor
+
+      const cardRegistration = editorState.propertyControlsInfo['/src/card']['Card']
+      expect(cardRegistration).not.toBeUndefined()
+
+      const propsToCheck = pick(
+        ['childrenPropPlaceholder', 'preferredChildComponents', 'supportsChildren'],
+        cardRegistration,
+      )
+
+      expect(propsToCheck).toMatchInlineSnapshot(`
+        Object {
+          "childrenPropPlaceholder": null,
+          "preferredChildComponents": Array [
+            Object {
+              "moduleName": null,
+              "name": "Card",
+              "variants": Array [
+                Object {
+                  "elementToInsert": [Function],
+                  "importsToAdd": Object {},
+                  "insertMenuLabel": "text",
+                },
+              ],
+            },
+          ],
+          "supportsChildren": true,
+        }
+      `)
+    })
+
+    it('can use placeholders and examples for children', async () => {
+      const renderResult = await renderTestEditorWithModel(
+        project({
+          ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
+          import { Card2 } from '../src/card2'
+          
+          const Components = {
+        '/src/card': {
+          Card: {
+            component: Card,
+            properties: { },
+            children: {
+              placeholder: { text: "Content" },
+              preferredContents: [
+                { component: 'span', variants: { name: 'span' } },
+                {
+                  component: 'Card2',
+                  moduleName: '/src/card2',
+                  variants: [
+                    { component: Card2 },
+                    {
+                      code: '<Card2 label={DefaultLabel} />',
+                      label: 'ID Card',
+                      imports: [
+                        'import { Card2 } from "/src/card2"',
+                        "import { DefaultLabel } from '/src/defaults';",
+                      ],
+                    }
+                  ]
+                },
+              ]
+            }
+          },
+        },
+      }
+      
+      export default Components
+    `,
+        }),
+        'await-first-dom-report',
+      )
+      const editorState = renderResult.getEditorState().editor
+
+      const cardRegistration = editorState.propertyControlsInfo['/src/card']['Card']
+      expect(cardRegistration).not.toBeUndefined()
+
+      const propsToCheck = pick(
+        ['childrenPropPlaceholder', 'preferredChildComponents', 'supportsChildren'],
+        cardRegistration,
+      )
+
+      expect(propsToCheck).toMatchInlineSnapshot(`
+        Object {
+          "childrenPropPlaceholder": Object {
+            "contents": "Content",
+            "type": "text",
+          },
+          "preferredChildComponents": Array [
+            Object {
+              "moduleName": null,
+              "name": "span",
+              "variants": Array [
+                Object {
+                  "elementToInsert": [Function],
+                  "importsToAdd": Object {},
+                  "insertMenuLabel": "span",
+                },
+              ],
+            },
+            Object {
+              "moduleName": "/src/card2",
+              "name": "Card2",
+              "variants": Array [
+                Object {
+                  "elementToInsert": [Function],
+                  "importsToAdd": Object {
+                    "/src/card2.js": Object {
+                      "importedAs": null,
+                      "importedFromWithin": Array [
+                        Object {
+                          "alias": "Card2",
+                          "name": "Card2",
+                        },
+                      ],
+                      "importedWithName": null,
+                    },
+                  },
+                  "insertMenuLabel": "Card2",
+                },
+                Object {
+                  "elementToInsert": [Function],
+                  "importsToAdd": Object {
+                    "/src/card2": Object {
+                      "importedAs": null,
+                      "importedFromWithin": Array [
+                        Object {
+                          "alias": "Card2",
+                          "name": "Card2",
+                        },
+                      ],
+                      "importedWithName": null,
+                    },
+                    "/src/defaults": Object {
+                      "importedAs": null,
+                      "importedFromWithin": Array [
+                        Object {
+                          "alias": "DefaultLabel",
+                          "name": "DefaultLabel",
+                        },
+                      ],
+                      "importedWithName": null,
+                    },
+                  },
+                  "insertMenuLabel": "ID Card",
+                },
+              ],
+            },
+          ],
+          "supportsChildren": true,
+        }
+      `)
+    })
+  })
+
+  describe('registering the jsx controls', () => {
+    it('can register placeholder', async () => {
+      const renderResult = await renderTestEditorWithModel(
+        project({
+          ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
+          
+          const Components = {
+        '/src/card': {
+          Card: {
+            component: Card,
+            properties: {
+              label: {
+                control: 'jsx',
+                placeholder: { width: 200, height: 200 }
+              },
+              header: {
+                control: 'jsx',
+                placeholder: { text: 'Header' }
+              },
+              footer: {
+                control: 'jsx',
+                placeholder: 'fill'
+              }
+            }
+          },
+        },
+      }
+      
+      export default Components
+    `,
+        }),
+        'await-first-dom-report',
+      )
+      const editorState = renderResult.getEditorState().editor
+
+      const cardRegistration = editorState.propertyControlsInfo['/src/card']['Card']
+      expect(cardRegistration).not.toBeUndefined()
+
+      const propsToCheck = pick(['properties'], cardRegistration)
+
+      expect(propsToCheck).toMatchInlineSnapshot(`
+        Object {
+          "properties": Object {
+            "footer": Object {
+              "control": "jsx",
+              "placeholder": Object {
+                "type": "fill",
+              },
+              "preferredChildComponents": Array [],
+            },
+            "header": Object {
+              "control": "jsx",
+              "placeholder": Object {
+                "contents": "Header",
+                "type": "text",
+              },
+              "preferredChildComponents": Array [],
+            },
+            "label": Object {
+              "control": "jsx",
+              "placeholder": Object {
+                "height": 200,
+                "type": "spacer",
+                "width": 200,
+              },
+              "preferredChildComponents": Array [],
+            },
+          },
+        }
+      `)
+    })
+
+    it('can use examples', async () => {
+      const renderResult = await renderTestEditorWithModel(
+        project({
+          ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
+      import { Card2 } from '../src/card2'
+      
+      const Components = {
+        '/src/card': {
+          Card: {
+            component: Card,
+            properties: {
+              label: {
+                control: 'jsx',
+                placeholder: { width: 200, height: 200 },
+                preferredContents: [
+                  { component: 'span', variants: { name: 'span' } },
+                  {
+                    component: 'Card2',
+                    moduleName: '/src/card2',
+                    variants: [
+                      { component: Card2 },
+                      {
+                        code: '<Card2 label={DefaultLabel} />',
+                        label: 'ID Card',
+                        imports: [
+                          'import { Card2 } from "/src/card2"',
+                          "import { DefaultLabel } from '/src/defaults';",
+                        ],
+                      }
+                    ]
+                  },
+                ],
+              },
+            },
+          },
+        },
+      }
+      
+      export default Components
+    `,
+        }),
+        'await-first-dom-report',
+      )
+      const editorState = renderResult.getEditorState().editor
+
+      expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
+        Object {
+          "Card": Object {
+            "childrenPropPlaceholder": null,
+            "emphasis": "regular",
+            "focus": "default",
+            "icon": "regular",
+            "inspector": "all",
+            "preferredChildComponents": Array [],
+            "properties": Object {
+              "label": Object {
+                "control": "jsx",
+                "placeholder": Object {
+                  "height": 200,
+                  "type": "spacer",
+                  "width": 200,
+                },
+                "preferredChildComponents": Array [
+                  Object {
+                    "moduleName": null,
+                    "name": "span",
+                    "variants": Array [
+                      Object {
+                        "elementToInsert": [Function],
+                        "importsToAdd": Object {},
+                        "insertMenuLabel": "span",
+                      },
+                    ],
+                  },
+                  Object {
+                    "moduleName": "/src/card2",
+                    "name": "Card2",
+                    "variants": Array [
+                      Object {
+                        "elementToInsert": [Function],
+                        "importsToAdd": Object {
+                          "/src/card2.js": Object {
+                            "importedAs": null,
+                            "importedFromWithin": Array [
+                              Object {
+                                "alias": "Card2",
+                                "name": "Card2",
+                              },
+                            ],
+                            "importedWithName": null,
+                          },
+                        },
+                        "insertMenuLabel": "Card2",
+                      },
+                      Object {
+                        "elementToInsert": [Function],
+                        "importsToAdd": Object {
+                          "/src/card2": Object {
+                            "importedAs": null,
+                            "importedFromWithin": Array [
+                              Object {
+                                "alias": "Card2",
+                                "name": "Card2",
+                              },
+                            ],
+                            "importedWithName": null,
+                          },
+                          "/src/defaults": Object {
+                            "importedAs": null,
+                            "importedFromWithin": Array [
+                              Object {
+                                "alias": "DefaultLabel",
+                                "name": "DefaultLabel",
+                              },
+                            ],
+                            "importedWithName": null,
+                          },
+                        },
+                        "insertMenuLabel": "ID Card",
+                      },
+                    ],
+                  },
+                ],
+                "preferredContents": Array [
+                  Object {
+                    "component": "span",
+                    "variants": Object {
+                      "name": "span",
+                    },
+                  },
+                  Object {
+                    "component": "Card2",
+                    "moduleName": "/src/card2",
+                    "variants": Array [
+                      Object {
+                        "component": [Function],
+                      },
+                      Object {
+                        "code": "<Card2 label={DefaultLabel} />",
+                        "imports": Array [
+                          "import { Card2 } from \\"/src/card2\\"",
+                          "import { DefaultLabel } from '/src/defaults';",
+                        ],
+                        "label": "ID Card",
+                      },
+                    ],
+                  },
+                ],
+              },
+            },
+            "source": Object {
+              "sourceDescriptorFile": "/utopia/components.utopia.js",
+              "type": "DESCRIPTOR_FILE",
+            },
+            "supportsChildren": false,
+            "variants": Array [
+              Object {
+                "elementToInsert": [Function],
+                "importsToAdd": Object {
+                  "/src/card": Object {
+                    "importedAs": null,
+                    "importedFromWithin": Array [
+                      Object {
+                        "alias": "Card",
+                        "name": "Card",
+                      },
+                    ],
+                    "importedWithName": null,
+                  },
+                },
+                "insertMenuLabel": "Card",
+              },
+            ],
+          },
+        }
+      `)
+    })
+  })
 })
 
 describe('Lifecycle management of registering components', () => {
@@ -1038,13 +1720,11 @@ describe('Lifecycle management of registering components', () => {
       '/src/card': {
         Card: {
           component: Card,
-          supportsChildren: false,
           properties: {
             label: {
               control: 'string-input',
             },
           },
-          variants: [],
         },
       },
     }
@@ -1057,13 +1737,11 @@ describe('Lifecycle management of registering components', () => {
     '/src/card2': {
       Card2: {
         component: Card2,
-        supportsChildren: false,
         properties: {
           label: {
             control: 'string-input',
           },
         },
-        variants: [],
       },
     },
   }
@@ -1109,13 +1787,11 @@ describe('Lifecycle management of registering components', () => {
       '/src/card2': {
         Card2: {
           component: Card2,
-          supportsChildren: false,
           properties: {
             label: {
               control: 'string-input',
             },
           },
-          variants: [],
         },
       },
     }
@@ -1130,13 +1806,11 @@ describe('Lifecycle management of registering components', () => {
       '/src/card': {
         Card: {
           component: Card,
-          supportsChildren: false,
           properties: {
             label: {
               control: 'string-input',
             },
           },
-          variants: [],
         },
       },
     }
@@ -1180,13 +1854,11 @@ describe('Lifecycle management of registering components', () => {
       '/src/card': {
         Card: {
           component: Card,
-          supportsChildren: false,
           properties: {
             label2: {
               control: 'string-input',
             },
           },
-          variants: [],
         },
       },
     }
@@ -1233,13 +1905,11 @@ describe('Lifecycle management of registering components', () => {
       '/src/card': {
         Card: {
           component: Card,
-          supportsChildren: false,
           properties: {
             label: {
               control: 'string-input',
             },
           },
-          variants: [],
         },
       },
     }
@@ -1273,23 +1943,19 @@ describe('Lifecycle management of registering components', () => {
       '/src/card': {
         Card: {
           component: Card,
-          supportsChildren: false,
           properties: {
             label2: {
               control: 'string-input',
             },
           },
-          variants: [],
         },
         NewCard: {
           component: NewCard,
-          supportsChildren: false,
           properties: {
             label2: {
               control: 'string-input',
             },
           },
-          variants: [],
         },
       },
     }
@@ -1330,23 +1996,19 @@ describe('Lifecycle management of registering components', () => {
       '/src/card': {
         Card: {
           component: Card,
-          supportsChildren: false,
           properties: {
             label: {
               control: 'string-input',
             },
           },
-          variants: [],
         },
         CardToDelete: {
           component: CardToDelete,
-          supportsChildren: false,
           properties: {
             label2: {
               control: 'string-input',
             },
           },
-          variants: [],
         },
       },
     }
@@ -1383,13 +2045,11 @@ describe('Lifecycle management of registering components', () => {
       '/src/card': {
         Card: {
           component: Card,
-          supportsChildren: false,
           properties: {
             label2: {
               control: 'string-input',
             },
           },
-          variants: [],
         },
       },
     }
@@ -1429,13 +2089,11 @@ describe('Lifecycle management of registering components', () => {
       '/src/card': {
         Card: {
           component: Card,
-          supportsChildren: false,
           properties: {
             label: {
               control: 'string-input',
             },
           },
-          variants: [],
         },
       },
     }
@@ -1476,25 +2134,21 @@ describe('Lifecycle management of registering components', () => {
       '/src/card': {
         Card: {
           component: Card,
-          supportsChildren: false,
           properties: {
             label2: {
               control: 'string-input',
             },
           },
-          variants: [],
         },
       },
       '/src/new-module': {
         NewCard: {
           component: NewCard,
-          supportsChildren: false,
           properties: {
             label: {
               control: 'string-input',
             },
           },
-          variants: [],
         },
       },
     }
@@ -1542,13 +2196,11 @@ describe('Lifecycle management of registering components', () => {
       '/src/card': {
         Card: {
           component: Card,
-          supportsChildren: false,
           properties: {
             label: {
               control: 'string-input',
             },
           },
-          variants: [],
         },
       },
       
@@ -1589,13 +2241,11 @@ describe('Lifecycle management of registering components', () => {
       '/src/card': {
         Card: {
           component: Card,
-          supportsChildren: false,
           properties: {
             label2: {
               control: 'string-input',
             },
           },
-          variants: [],
         },
       },
     }
@@ -1641,13 +2291,11 @@ describe('Lifecycle management of registering components', () => {
       '/src/card': {
         Card: {
           component: Card,
-          supportsChildren: false,
           properties: {
             label: {
               control: 'string-input',
             },
           },
-          variants: [],
         },
       },
     }
@@ -1689,13 +2337,11 @@ describe('Lifecycle management of registering components', () => {
       '/src/card': {
         Card: {
           component: Card,
-          supportsChildren: false,
           properties: {
             label: {
               control: 'string-input',
             },
           },
-          variants: [],
         },
       },
     }
@@ -1731,13 +2377,11 @@ describe('Lifecycle management of registering components', () => {
       '/src/card': {
         Card: {
           component: Card,
-          supportsChildren: false,
           properties: {
             label: {
               control: 'string-input',
             },
           },
-          variants: [],
         },
       },
     }
