@@ -579,7 +579,14 @@ export function remixFilenameMatchPrefix(filename: string, oldPath: string): boo
   return v
 }
 
-export function renameRemixFile(filename: string, oldPath: string, newPath: string): string {
+export function renameRemixFile(
+  filename: string,
+  oldPath: string,
+  newPath: string,
+): {
+  filename: string
+  renamedOptionalPrefix: boolean
+} {
   // 1. to make things easier, make all the paths relative to the Remix folder
   const relativeFilename = filename.replace(AppRoutesPrefix, '')
   const relativeOldPath = oldPath.replace(AppRoutesPrefix, '')
@@ -589,6 +596,8 @@ export function renameRemixFile(filename: string, oldPath: string, newPath: stri
   const filenameTokens = tokenizeRemixFilename(relativeFilename)
   const oldPathTokens = tokenizeRemixFilename(relativeOldPath)
   const newPathTokens = tokenizeRemixFilename(relativeNewPath)
+
+  let renamedOptionalPrefix = false
 
   // 3. build the result tokens by replacing the right tokens
   let resultTokens: string[] = []
@@ -605,9 +614,11 @@ export function renameRemixFile(filename: string, oldPath: string, newPath: stri
         return newPathTokens[i] + '_'
       } else if (filenameTokens[i].endsWith(').' + oldPathTokens[i])) {
         // the filename token contains optional prefixes, so manipulate the replacement accordingly
+        renamedOptionalPrefix = true
         return replaceTokenForOptionalPrefix(filenameTokens[i], oldPathTokens[i], newPathTokens[i])
       } else if (filenameTokens[i].endsWith(').' + oldPathTokens[i] + '_')) {
         // the filename token contains optional prefixes and an underscore suffix, so manipulate the replacement accordingly
+        renamedOptionalPrefix = true
         return replaceTokenForOptionalPrefix(
           filenameTokens[i],
           oldPathTokens[i] + '_',
@@ -623,7 +634,11 @@ export function renameRemixFile(filename: string, oldPath: string, newPath: stri
 
   // 4. merge the result tokens with the dot separator and prepend /app/routes for the final filename
   const result = urljoin(AppRoutesPrefix, resultTokens.join('.'))
-  return result
+
+  return {
+    filename: result,
+    renamedOptionalPrefix: renamedOptionalPrefix,
+  }
 }
 
 /**

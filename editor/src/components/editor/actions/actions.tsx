@@ -475,6 +475,7 @@ import type { ShortcutConfiguration } from '../shortcut-definitions'
 import { ElementInstanceMetadataMapKeepDeepEquality } from '../store/store-deep-equality-instances'
 import {
   addImports,
+  addToast,
   clearImageFileBlob,
   enableInsertModeForJSXElement,
   finishCheckpointTimer,
@@ -1237,6 +1238,7 @@ interface ReplaceFilePathSuccess {
   type: 'SUCCESS'
   projectContents: ProjectContentTreeRoot
   updatedFiles: Array<{ oldPath: string; newPath: string }>
+  renamedOptionalPrefix: boolean
 }
 
 interface ReplaceFilePathFailure {
@@ -1259,6 +1261,8 @@ function replaceFilePath(
     ...projectContents,
   }
   let updatedFiles: Array<{ oldPath: string; newPath: string }> = []
+
+  let renamedOptionalPrefix = false
   Utils.fastForEach(Object.keys(projectContents), (filename) => {
     if (
       filename === oldPath ||
@@ -1267,9 +1271,14 @@ function replaceFilePath(
     ) {
       // TODO make sure the prefix search only happens when it makes sense so
       const projectFile = projectContents[filename]
-      const newFilePath = isInsideRemixFolder(filename)
+
+      const maybeNewFilePathForRemix = isInsideRemixFolder(filename)
         ? renameRemixFile(filename, oldPath, newPath)
-        : filename.replace(oldPath, newPath)
+        : null
+      renamedOptionalPrefix ||= maybeNewFilePathForRemix?.renamedOptionalPrefix ?? false
+
+      const newFilePath = maybeNewFilePathForRemix?.filename ?? filename.replace(oldPath, newPath)
+
       const fileType = isDirectory(projectFile) ? 'DIRECTORY' : fileTypeFromFileName(newFilePath)
       if (fileType == null) {
         // Can't identify the file type.
@@ -1385,6 +1394,7 @@ function replaceFilePath(
       type: 'SUCCESS',
       projectContents: contentsToTree(updatedProjectContents),
       updatedFiles: updatedFiles,
+      renamedOptionalPrefix: renamedOptionalPrefix,
     }
   } else {
     return {
@@ -6200,7 +6210,7 @@ function updateFilePath(
     return UPDATE_FNS.ADD_TOAST(toastAction, editor)
   } else {
     let currentDesignerFile = editor.canvas.openFile
-    const { projectContents, updatedFiles } = replaceFilePathResults
+    const { projectContents, updatedFiles, renamedOptionalPrefix } = replaceFilePathResults
     const mainUIFile = getMainUIFromModel(editor)
     let updateUIFile: (e: EditorModel) => EditorModel = (e) => e
     let updatePropertyControls: (e: EditorModel) => EditorModel = (e) => e
@@ -6239,7 +6249,7 @@ function updateFilePath(
       }
     })
 
-    return updatePropertyControls(
+    const withUpdatedPropertyControls = updatePropertyControls(
       updateUIFile({
         ...editor,
         projectContents: projectContents,
@@ -6254,5 +6264,12 @@ function updateFilePath(
         },
       }),
     )
+
+    return renamedOptionalPrefix
+      ? UPDATE_FNS.ADD_TOAST(
+          addToast(notice('Renamed Remix routes with optional prefixes.', 'NOTICE')),
+          withUpdatedPropertyControls,
+        )
+      : withUpdatedPropertyControls
   }
 }

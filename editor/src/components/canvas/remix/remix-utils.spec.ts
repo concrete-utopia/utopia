@@ -217,7 +217,8 @@ describe('remixFilenameMatchPrefix', () => {
 describe('renameRemixFile', () => {
   it('rename a file with match', async () => {
     const got = renameRemixFile('/app/routes/foo.jsx', '/app/routes/foo', '/app/routes/bar')
-    expect(got).toBe('/app/routes/bar.jsx')
+    expect(got.filename).toBe('/app/routes/bar.jsx')
+    expect(got.renamedOptionalPrefix).toBe(false)
   })
   it('rename a file with underscore suffix', async () => {
     const got = renameRemixFile(
@@ -225,11 +226,13 @@ describe('renameRemixFile', () => {
       '/app/routes/foo',
       '/app/routes/HELLO',
     )
-    expect(got).toBe('/app/routes/HELLO_.bar.$baz.$qux.jsx')
+    expect(got.filename).toBe('/app/routes/HELLO_.bar.$baz.$qux.jsx')
+    expect(got.renamedOptionalPrefix).toBe(false)
   })
   it('rename a file with prefix', async () => {
     const got = renameRemixFile('/app/routes/foo.bar.jsx', '/app/routes/foo', '/app/routes/baz')
-    expect(got).toBe('/app/routes/baz.bar.jsx')
+    expect(got.filename).toBe('/app/routes/baz.bar.jsx')
+    expect(got.renamedOptionalPrefix).toBe(false)
   })
   it('rename a file with optional prefix', async () => {
     const got = renameRemixFile(
@@ -237,7 +240,8 @@ describe('renameRemixFile', () => {
       '/app/routes/foo',
       '/app/routes/baz',
     )
-    expect(got).toBe('/app/routes/($lang).baz.bar.jsx')
+    expect(got.filename).toBe('/app/routes/($lang).baz.bar.jsx')
+    expect(got.renamedOptionalPrefix).toBe(true)
   })
   it('rename a file with multiple optional prefixes', async () => {
     const got = renameRemixFile(
@@ -245,7 +249,8 @@ describe('renameRemixFile', () => {
       '/app/routes/foo',
       '/app/routes/baz',
     )
-    expect(got).toBe('/app/routes/($lang1).($lang2).(lang3).baz.bar.jsx')
+    expect(got.filename).toBe('/app/routes/($lang1).($lang2).(lang3).baz.bar.jsx')
+    expect(got.renamedOptionalPrefix).toBe(true)
   })
   it('rename a file with nested optional prefix', async () => {
     const got = renameRemixFile(
@@ -253,7 +258,8 @@ describe('renameRemixFile', () => {
       '/app/routes/($lang).account.foo',
       '/app/routes/($lang).account.baz',
     )
-    expect(got).toBe('/app/routes/($lang).account.($var).baz.bar.jsx')
+    expect(got.filename).toBe('/app/routes/($lang).account.($var).baz.bar.jsx')
+    expect(got.renamedOptionalPrefix).toBe(true)
   })
   it('rename a file with nested optional prefix and an underscore suffix', async () => {
     const got = renameRemixFile(
@@ -261,6 +267,7 @@ describe('renameRemixFile', () => {
       '/app/routes/($lang).account.foo',
       '/app/routes/($lang).account.baz',
     )
-    expect(got).toBe('/app/routes/($lang).account.($var).baz_.bar.jsx')
+    expect(got.filename).toBe('/app/routes/($lang).account.($var).baz_.bar.jsx')
+    expect(got.renamedOptionalPrefix).toBe(true)
   })
 })
