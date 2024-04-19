@@ -4787,6 +4787,8 @@ export const UPDATE_FNS = {
         editor.jsxMetadata,
         derived.autoFocusedPaths,
         derived.filePathMappings,
+        editor.propertyControlsInfo,
+        editor.projectContents,
       )
     ) {
       shouldApplyChange = true

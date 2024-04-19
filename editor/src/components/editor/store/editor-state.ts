@@ -2704,7 +2704,6 @@ function deriveCacheableStateInner(
   collapsedViews: ElementPath[],
   hiddenInNavigator: ElementPath[],
   propertyControlsInfo: PropertyControlsInfo,
-  openFilePath: string | null,
 ): CacheableDerivedState {
   const { navigatorTargets, visibleNavigatorTargets } = getNavigatorTargets(
     jsxMetadata,
@@ -2712,7 +2711,6 @@ function deriveCacheableStateInner(
     collapsedViews,
     hiddenInNavigator,
     propertyControlsInfo,
-    openFilePath,
     projectContents,
   )
 
@@ -2725,7 +2723,13 @@ function deriveCacheableStateInner(
 
   const autoFocusedPaths = MetadataUtils.getAllPaths(jsxMetadata, elementPathTree).filter(
     (path) => {
-      return MetadataUtils.isAutofocusable(jsxMetadata, elementPathTree, path)
+      return MetadataUtils.isAutofocusable(
+        jsxMetadata,
+        elementPathTree,
+        path,
+        propertyControlsInfo,
+        projectContents,
+      )
     },
   )
 
@@ -2764,7 +2768,6 @@ export function deriveState(
     editor.navigator.collapsedViews,
     editor.navigator.hiddenInNavigator,
     editor.propertyControlsInfo,
-    getOpenUIJSFileKey(editor),
   )
 
   const remixDerivedData = createRemixDerivedDataMemo(
