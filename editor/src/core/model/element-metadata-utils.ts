@@ -169,11 +169,7 @@ import { treatElementAsGroupLikeFromMetadata } from '../../components/canvas/can
 import type { RemixRoutingTable } from '../../components/editor/store/remix-derived-data'
 import { exists } from '../shared/optics/optic-utilities'
 import { eitherRight, fromField, fromTypeGuard, notNull } from '../shared/optics/optic-creators'
-import { Prop } from 'xstate/lib/model.types'
-import {
-  getComponentDescriptorForTarget,
-  getPropertyControlsForTarget,
-} from '../property-controls/property-controls-utils'
+import { getComponentDescriptorForTarget } from '../property-controls/property-controls-utils'
 
 const ObjectPathImmutable: any = OPI
 
