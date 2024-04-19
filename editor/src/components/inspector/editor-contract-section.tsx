@@ -341,7 +341,7 @@ export const EditorContractDropdown = React.memo(() => {
   }, [groupProblems, dispatch, metadataRef])
 
   return (
-    <FlexRow data-testid={EditorContractSelectorTestID} style={{ flex: 1 }}>
+    <FlexRow data-testid={EditorContractSelectorTestID} style={{ flex: 1, gap: 6 }}>
       <PopupList
         id={'editor-contract-popup-list'}
         value={currentValue}
@@ -349,10 +349,10 @@ export const EditorContractDropdown = React.memo(() => {
         onSubmitValue={onChange}
         controlStyles={simpleControlStyles}
         containerMode={'noBorder'}
-        style={{ position: 'relative', left: -8 }}
+        style={{ borderRadius: 2, width: 'min-wdith', paddingRight: 6 }}
       />
       {when(
-        groupProblems.length > 0,
+        groupProblems.length == 0,
         <Tooltip
           title={groupProblems
             .map((problem) => `Fix: ${invalidGroupStateToString(problem.state).toLowerCase()}`)
