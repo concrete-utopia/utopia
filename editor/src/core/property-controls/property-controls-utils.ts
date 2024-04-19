@@ -22,6 +22,9 @@ import { absolutePathFromRelativePath } from '../../utils/path-utils'
 import { getThirdPartyControlsIntrinsic } from './property-controls-local'
 import type { PropertyControls } from '../../components/custom-code/internal-property-controls'
 import { dropFileExtension } from '../shared/file-utils'
+import type { Styling } from 'utopia-api'
+import { StylingOptions } from 'utopia-api'
+import { intersection } from '../shared/set-utils'
 
 export function propertyControlsForComponentInFile(
   componentName: string,
@@ -131,6 +134,75 @@ export function getPropertyControlsForTarget(
   )
 }
 
+export function getComponentDescriptorForTarget(
+  target: ElementPath,
+  propertyControlsInfo: PropertyControlsInfo,
+  projectContents: ProjectContentTreeRoot,
+): ComponentDescriptor | null {
+  return withUnderlyingTarget(
+    target,
+    projectContents,
+    null,
+    (
+      success: ParseSuccess,
+      element: JSXElementChild,
+      _: StaticElementPath,
+      underlyingFilePath: string,
+    ) => {
+      if (isJSXElement(element)) {
+        const importedFrom = importedFromWhere(
+          underlyingFilePath,
+          element.name.baseVariable,
+          success.topLevelElements,
+          success.imports,
+        )
+
+        let filenameForLookup: string | null = null
+        if (importedFrom == null) {
+          if (isIntrinsicElement(element.name)) {
+            return null
+          } else {
+            filenameForLookup = underlyingFilePath.replace(/\.(js|jsx|ts|tsx)$/, '')
+          }
+        } else {
+          filenameForLookup = importedFrom.filePath
+        }
+
+        if (filenameForLookup == null) {
+          return null
+        } else {
+          const originalName =
+            importedFrom?.type === 'IMPORTED_ORIGIN' ? importedFrom.exportedName : null
+          const nameAsString = originalName ?? getJSXElementNameAsString(element.name)
+
+          const componentDescriptor = propertyControlsInfo[filenameForLookup]?.[nameAsString]
+
+          // if the filename works as it is, then it is either a package name or an absolute file name and
+          // we can just use it as it is
+          if (componentDescriptor != null) {
+            return componentDescriptor
+          }
+
+          // We need to create the absolute path to the file to look up the property controls
+          const absolutePath = absolutePathFromRelativePath(
+            underlyingFilePath,
+            false,
+            filenameForLookup,
+          )
+
+          const trimmedPath = absolutePath.includes('/')
+            ? absolutePath.replace(/\.(js|jsx|ts|tsx)$/, '')
+            : absolutePath
+
+          return propertyControlsInfo[trimmedPath]?.[nameAsString]
+        }
+      } else {
+        return null
+      }
+    },
+  )
+}
+
 export function getRegisteredComponent(
   component: string,
   moduleName: string,
@@ -146,3 +218,36 @@ export function hasStyleControls(propertyControls: PropertyControls): boolean {
 }
 
 export const specialPropertiesToIgnore: Array<string> = ['style', 'children']
+
+export type InspectorSectionPreference = 'layout' | 'layout-system' | 'visual' | 'typography'
+
+export type TypedInspectorSpec = { type: 'all' } | { type: 'sections'; sections: Styling[] }
+
+export function getInspectorPreferencesForTargets(
+  targets: ElementPath[],
+  propertyControlsInfo: PropertyControlsInfo,
+  projectContents: ProjectContentTreeRoot,
+): InspectorSectionPreference[] {
+  const inspectorPreferences = targets.map((target) => {
+    const controls = getComponentDescriptorForTarget(target, propertyControlsInfo, projectContents)
+    if (controls == null || controls.inspector == null || controls.inspector === 'all') {
+      return { type: 'all' }
+    }
+
+    return { type: 'sections', sections: controls.inspector }
+  })
+
+  let sectionsToShow: Set<Styling> = new Set(StylingOptions)
+  inspectorPreferences.forEach((preference) => {
+    if (preference.type === 'all') {
+      return
+    }
+
+    // only returning the sections that are supported by all the elements, so
+    // that the editing UI we expose only makes valid edits to all the
+    // components
+    sectionsToShow = intersection([sectionsToShow, new Set(preference.sections)])
+  })
+
+  return [...sectionsToShow]
+}
