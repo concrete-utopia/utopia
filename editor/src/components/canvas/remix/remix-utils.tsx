@@ -43,6 +43,7 @@ import { createClientRoutes, groupRoutesByParentId } from '../../../third-party/
 import path from 'path'
 import urljoin from 'url-join'
 import json5 from 'json5'
+import { getFilenameExtension } from '../../../utils/path-utils'
 
 export const OutletPathContext = React.createContext<ElementPath | null>(null)
 
@@ -542,4 +543,37 @@ export type PageTemplate = { label: string; path: string }
 export function isPageTemplate(u: unknown): u is PageTemplate {
   const maybe = u as PageTemplate
   return u != null && typeof u == 'object' && maybe.label != null && maybe.path != null
+}
+
+const AppRoutesPrefix = '/app/routes/'
+
+function isInsideRemixFolder(filename: string): boolean {
+  return filename.startsWith(AppRoutesPrefix)
+}
+
+const possibleRemixSuffixSeparators = ['.', '_.']
+
+/**
+ * Return whether the given filename is a valid Remix route filename that is
+ * a prefix of the oldPath.
+ */
+export function remixFilenameMatchPrefix(filename: string, oldPath: string): boolean {
+  // if it's not a remix route (meaning a .jsx file inside the /app/routes/ folder), stop here
+  const isRemixRoute =
+    isInsideRemixFolder(oldPath) &&
+    isInsideRemixFolder(filename) &&
+    getFilenameExtension(filename) === 'jsx'
+  if (!isRemixRoute) {
+    return false
+  }
+
+  // to make it easier to compare paths, make them relative to the /app/routes folder and remove any optional prefixes
+  const relativeOldPath = oldPath.replace(AppRoutesPrefix, '') // without /app/routes
+  const relativeFilename = filename
+    .replace(AppRoutesPrefix, '') // without /app/routes
+    .replace(/^\([^)]+\)\./, '') // without optional prefix
+
+  return possibleRemixSuffixSeparators.some((sep) =>
+    relativeFilename.startsWith(relativeOldPath + sep),
+  )
 }

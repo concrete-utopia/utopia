@@ -1,4 +1,8 @@
-import { addNewFeaturedRouteToPackageJson, removeFeaturedRouteFromPackageJson } from './remix-utils'
+import {
+  addNewFeaturedRouteToPackageJson,
+  remixFilenameMatchPrefix,
+  removeFeaturedRouteFromPackageJson,
+} from './remix-utils'
 
 describe('addNewFeaturedRouteToPackageJson', () => {
   it('adds the new path to the featured routes', async () => {
@@ -153,5 +157,58 @@ describe('removeFeaturedRouteFromPackageJson', () => {
         `{ "hey": "there", "utopia": {"featuredRoutes": "WRONG"} }`,
       ),
     ).toThrow('should be an array')
+  })
+})
+
+describe('remixFilenameMatchPrefix', () => {
+  function findChildrenPaths(tree: string[], target: string) {
+    return tree.filter((path) => remixFilenameMatchPrefix(path, target))
+  }
+  it('simple paths', async () => {
+    const got = findChildrenPaths(
+      [
+        '/app/routes/auth.jsx',
+        '/app/routes/auth.login.jsx',
+        '/app/routes/auth.login.callback.jsx',
+        '/app/routes/another.jsx',
+        '/app/routes/another.auth.jsx',
+      ],
+      '/app/routes/auth.login',
+    )
+    expect(got).toEqual(['/app/routes/auth.login.jsx', '/app/routes/auth.login.callback.jsx'])
+  })
+  it('complex paths', async () => {
+    const got = findChildrenPaths(
+      [
+        // direct
+        '/app/routes/auth.jsx',
+        // child
+        '/app/routes/auth.login.jsx',
+        // child
+        '/app/routes/auth_.logout.jsx',
+        // child
+        '/app/routes/auth._index.jsx',
+        // NO!
+        '/app/routes/another.jsx',
+        // child
+        '/app/routes/auth_._index.jsx',
+        // child, with optional prefix
+        '/app/routes/($lang).auth.something.jsx',
+        // child, with optional prefix
+        '/app/routes/(foo).auth.something.jsx',
+        // NO!
+        '/app/routes/another.auth.jsx',
+      ],
+      '/app/routes/auth',
+    )
+    expect(got).toEqual([
+      '/app/routes/auth.jsx',
+      '/app/routes/auth.login.jsx',
+      '/app/routes/auth_.logout.jsx',
+      '/app/routes/auth._index.jsx',
+      '/app/routes/auth_._index.jsx',
+      '/app/routes/($lang).auth.something.jsx',
+      '/app/routes/(foo).auth.something.jsx',
+    ])
   })
 })
