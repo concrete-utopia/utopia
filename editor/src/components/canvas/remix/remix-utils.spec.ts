@@ -1,6 +1,7 @@
 import {
   addNewFeaturedRouteToPackageJson,
   remixFilenameMatchPrefix,
+  renameRemixFile,
   removeFeaturedRouteFromPackageJson,
 } from './remix-utils'
 
@@ -210,5 +211,56 @@ describe('remixFilenameMatchPrefix', () => {
       '/app/routes/($lang).auth.something.jsx',
       '/app/routes/(foo).auth.something.jsx',
     ])
+  })
+})
+
+describe('renameRemixFile', () => {
+  it('rename a file with match', async () => {
+    const got = renameRemixFile('/app/routes/foo.jsx', '/app/routes/foo', '/app/routes/bar')
+    expect(got).toBe('/app/routes/bar.jsx')
+  })
+  it('rename a file with underscore suffix', async () => {
+    const got = renameRemixFile(
+      '/app/routes/foo_.bar.$baz.$qux.jsx',
+      '/app/routes/foo',
+      '/app/routes/HELLO',
+    )
+    expect(got).toBe('/app/routes/HELLO_.bar.$baz.$qux.jsx')
+  })
+  it('rename a file with prefix', async () => {
+    const got = renameRemixFile('/app/routes/foo.bar.jsx', '/app/routes/foo', '/app/routes/baz')
+    expect(got).toBe('/app/routes/baz.bar.jsx')
+  })
+  it('rename a file with optional prefix', async () => {
+    const got = renameRemixFile(
+      '/app/routes/($lang).foo.bar.jsx',
+      '/app/routes/foo',
+      '/app/routes/baz',
+    )
+    expect(got).toBe('/app/routes/($lang).baz.bar.jsx')
+  })
+  it('rename a file with multiple optional prefixes', async () => {
+    const got = renameRemixFile(
+      '/app/routes/($lang1).($lang2).(lang3).foo.bar.jsx',
+      '/app/routes/foo',
+      '/app/routes/baz',
+    )
+    expect(got).toBe('/app/routes/($lang1).($lang2).(lang3).baz.bar.jsx')
+  })
+  it('rename a file with nested optional prefix', async () => {
+    const got = renameRemixFile(
+      '/app/routes/($lang).account.($var).foo.bar.jsx',
+      '/app/routes/($lang).account.foo',
+      '/app/routes/($lang).account.baz',
+    )
+    expect(got).toBe('/app/routes/($lang).account.($var).baz.bar.jsx')
+  })
+  it('rename a file with nested optional prefix and an underscore suffix', async () => {
+    const got = renameRemixFile(
+      '/app/routes/($lang).account.($var).foo_.bar.jsx',
+      '/app/routes/($lang).account.foo',
+      '/app/routes/($lang).account.baz',
+    )
+    expect(got).toBe('/app/routes/($lang).account.($var).baz_.bar.jsx')
   })
 })

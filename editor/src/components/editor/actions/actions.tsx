@@ -580,7 +580,9 @@ import {
 import {
   addNewFeaturedRouteToPackageJson,
   addOrReplaceFeaturedRouteToPackageJson,
+  isInsideRemixFolder,
   remixFilenameMatchPrefix,
+  renameRemixFile,
   removeFeaturedRouteFromPackageJson,
 } from '../../canvas/remix/remix-utils'
 import type { FixUIDsState } from '../../../core/workers/parser-printer/uid-fix'
@@ -1265,7 +1267,9 @@ function replaceFilePath(
     ) {
       // TODO make sure the prefix search only happens when it makes sense so
       const projectFile = projectContents[filename]
-      const newFilePath = filename.replace(oldPath, newPath)
+      const newFilePath = isInsideRemixFolder(filename)
+        ? renameRemixFile(filename, oldPath, newPath)
+        : filename.replace(oldPath, newPath)
       const fileType = isDirectory(projectFile) ? 'DIRECTORY' : fileTypeFromFileName(newFilePath)
       if (fileType == null) {
         // Can't identify the file type.
