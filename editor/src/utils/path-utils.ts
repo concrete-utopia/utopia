@@ -98,8 +98,3 @@ export function absolutePathFromRelativePath(
     return makePathFromParts(normalized)
   }
 }
-
-export function getFilenameExtension(filename: string): string {
-  const tokens = filename.split('.')
-  return tokens[tokens.length - 1]
-}

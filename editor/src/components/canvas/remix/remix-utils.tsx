@@ -43,7 +43,6 @@ import { createClientRoutes, groupRoutesByParentId } from '../../../third-party/
 import path from 'path'
 import urljoin from 'url-join'
 import json5 from 'json5'
-import { getFilenameExtension } from '../../../utils/path-utils'
 
 export const OutletPathContext = React.createContext<ElementPath | null>(null)
 
@@ -562,7 +561,7 @@ export function remixFilenameMatchPrefix(filename: string, oldPath: string): boo
   const isRemixRoute =
     isInsideRemixFolder(oldPath) &&
     isInsideRemixFolder(filename) &&
-    getFilenameExtension(filename) === 'jsx'
+    path.extname(filename) === '.jsx'
   if (!isRemixRoute) {
     return false
   }
