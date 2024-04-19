@@ -90,7 +90,7 @@ export const StringInput = React.memo(
               borderRadius: 2,
               color: controlStyles.mainColor,
               position: 'relative',
-              background: colorTheme.bg2.value,
+              background: 'transparent',
               '&:hover': {
                 boxShadow: `inset 0px 0px 0px 1px ${colorTheme.fg7.value}`,
               },

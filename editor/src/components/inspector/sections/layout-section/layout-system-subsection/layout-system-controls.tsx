@@ -156,26 +156,26 @@ export const PaddingRow = React.memo(() => {
       items={contextMenuItems}
       data={null}
     >
-      <UIGridRow
+      <div
         onMouseEnter={onMouseEnterWithPaddingControls}
         onMouseLeave={onMouseLeave}
-        tall
-        padded
-        variant='<---1fr--->|------172px-------|'
+        style={{ margin: '8px 8px', display: 'flex', flexDirection: 'row' }}
       >
-        <div onMouseEnter={onMouseEnterWithPaddingControls} onMouseLeave={onMouseLeave}>
+        <div
+          onMouseEnter={onMouseEnterWithPaddingControls}
+          onMouseLeave={onMouseLeave}
+          style={{ width: 'min-contents', paddingRight: 2 }}
+        >
           <PropertyLabel
             target={paddingPropsToUnset}
             propNamesToUnset={contextMenuLabel}
-            style={{
-              paddingBottom: 20,
-            }}
+            style={{ padding: '2px 0 4px 0' }}
           >
             Padding
           </PropertyLabel>
         </div>
         <PaddingControl />
-      </UIGridRow>
+      </div>
     </InspectorContextMenuWrapper>
   )
 })
