@@ -251,25 +251,29 @@ filePairsToBytes filePairs =
 
 preloadNPMDependencies :: FastLogger -> NPMMetrics -> QSem -> PackageVersionLocksRef -> IO ()
 preloadNPMDependencies logger metrics semaphore packageLocksRef = do
-  -- Get the environment variable to see what should be preloaded.
-  preloadEnvVar <- lookupEnv "PRELOAD_DEPENDENCIES"
-  forM_ preloadEnvVar $ \preloadEnvVarText -> do
-    -- Log out that the preloading is starting.
-    loggerLn logger "Preloading NPM dependencies..."
-    -- Split the content of the variable to get the URLs of the package.json files.
-    let packageJsonURLs = splitOn "," (toS preloadEnvVarText)
-    -- Pull the package.json files and parse out the dependencies from them.
-    packageJSONEntries <- mapConcurrently getPackageJSONContent packageJsonURLs
-    let allDependencies = HS.fromList $ foldMap packageJSONToDependencies packageJSONEntries
-    -- Preload the dependencies, doing nothing with their content.
-    let flipMap = flip foldMap
-    _ <- flipMap allDependencies $ \ProjectDependency{..} -> do
-      -- Log out exceptions per dependency.
-      handle (logException logger) $ do
-        -- Get and cache the content of the dependency.
-        let versionedPackageName = packageAndVersionAsText dependencyName (Just dependencyVersion)
-        bytesAndDate <- getPackagerContent logger metrics semaphore packageLocksRef versionedPackageName
-        let (conduitBytes, _) = bytesAndDate
-        runResourceT $ runConduit (conduitBytes .| C.sinkNull)
-    -- Log out that the preloading has finished.
-    loggerLn logger "Finished preloading NPM dependencies..."
+  -- Ignore the thread ID we get back from forking.
+  void $ do
+    -- Fork this onto a new thread so that it doesn't block the caller.
+    forkIO $ do
+      -- Get the environment variable to see what should be preloaded.
+      preloadEnvVar <- lookupEnv "PRELOAD_DEPENDENCIES"
+      forM_ preloadEnvVar $ \preloadEnvVarText -> do
+        -- Log out that the preloading is starting.
+        loggerLn logger "Preloading NPM dependencies..."
+        -- Split the content of the variable to get the URLs of the package.json files.
+        let packageJsonURLs = splitOn "," (toS preloadEnvVarText)
+        -- Pull the package.json files and parse out the dependencies from them.
+        packageJSONEntries <- mapConcurrently getPackageJSONContent packageJsonURLs
+        let allDependencies = HS.fromList $ foldMap packageJSONToDependencies packageJSONEntries
+        -- Preload the dependencies, doing nothing with their content.
+        let flipMap = flip foldMap
+        _ <- flipMap allDependencies $ \ProjectDependency{..} -> do
+          -- Log out exceptions per dependency.
+          handle (logException logger) $ do
+            -- Get and cache the content of the dependency.
+            let versionedPackageName = packageAndVersionAsText dependencyName (Just dependencyVersion)
+            bytesAndDate <- getPackagerContent logger metrics semaphore packageLocksRef versionedPackageName
+            let (conduitBytes, _) = bytesAndDate
+            runResourceT $ runConduit (conduitBytes .| C.sinkNull)
+        -- Log out that the preloading has finished.
+        loggerLn logger "Finished preloading NPM dependencies..."
