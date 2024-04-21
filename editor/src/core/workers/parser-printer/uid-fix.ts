@@ -556,7 +556,17 @@ export function fixElementsWithin(
 export function fixUIDsInJavascriptString(jsString: string, fixUIDsState: FixUIDsState): string {
   let result = jsString
   fixUIDsState.mappings.forEach((mapping) => {
-    result = result.replace(new RegExp(`"${mapping.originalUID}"`, 'g'), `"${mapping.newUID}"`)
+    // for fields such as `javascriptWithUIDs`
+    result = result
+      .replace(
+        new RegExp(`data-uid=(["'])${mapping.originalUID}\\1`, 'g'),
+        `data-uid=$1${mapping.newUID}$1`,
+      )
+      // for fields such as `transpiledJavascript`
+      .replace(
+        new RegExp(`utopiaCanvasJSXLookup\\((["'])${mapping.originalUID}\\1`, 'g'),
+        `utopiaCanvasJSXLookup($1${mapping.newUID}$1`,
+      )
   })
   return result
 }
