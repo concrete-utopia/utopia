@@ -363,11 +363,9 @@ export function fixArbitraryJSBlockUIDs(
     fixUIDsState,
   )
 
-  const fixUIDsInString = fixUIDsInJavascriptStrings(newElement, fixUIDsState)
-
   return updateUID(arbitraryJSBlockUIDOptic, oldElement?.uid ?? newElement.uid, fixUIDsState, {
     ...newElement,
-    ...fixUIDsInString,
+    ...fixUIDsInJavascriptStrings(newElement, fixUIDsState),
     elementsWithin: fixedElementsWithin,
   })
 }
@@ -383,10 +381,10 @@ export function fixCombinedArbitraryJSBlockUIDs(
     newElement.elementsWithin,
     useMappingsState,
   )
-  const fixUidInString = fixUIDsInJavascriptStrings(newElement, useMappingsState)
+
   return updateUID(arbitraryJSBlockUIDOptic, oldElement?.uid ?? newElement.uid, useMappingsState, {
     ...newElement,
-    ...fixUidInString,
+    ...fixUIDsInJavascriptStrings(newElement, useMappingsState),
     elementsWithin: fixedElementsWithin,
   })
 }
@@ -823,15 +821,13 @@ export function fixExpressionUIDs(
         fixUIDsState,
       )
 
-      const fixedUIDsInString = fixUIDsInJavascriptStrings(newExpression, fixUIDsState)
-
       return updateUID(
         expressionOtherJavaScriptUIDOptic,
         oldExpression?.uid ?? newExpression.uid,
         fixUIDsState,
         {
           ...newExpression,
-          ...fixedUIDsInString,
+          ...fixUIDsInJavascriptStrings(newExpression, fixUIDsState),
           elementsWithin: fixedElementsWithin,
         },
       )
@@ -845,15 +841,13 @@ export function fixExpressionUIDs(
         fixUIDsState,
       )
 
-      const fixedUIDsInString = fixUIDsInJavascriptStrings(newExpression, fixUIDsState)
-
       return updateUID(
         expressionJSXMapExpressionUIDOptic,
         oldExpression?.uid ?? newExpression.uid,
         fixUIDsState,
         {
           ...newExpression,
-          ...fixedUIDsInString,
+          ...fixUIDsInJavascriptStrings(newExpression, fixUIDsState),
           elementsWithin: fixedElementsWithin,
         },
       )
