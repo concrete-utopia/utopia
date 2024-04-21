@@ -2,7 +2,7 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import createCachedSelector from 're-reselect'
-import React from 'react'
+import React, { useMemo } from 'react'
 import type { ConditionalCase } from '../../../core/model/conditionals'
 import {
   findMaybeConditionalExpression,
@@ -844,6 +844,11 @@ export const NavigatorItem: React.FunctionComponent<
     ? 'component'
     : resultingStyle.iconColor
 
+  const currentlyRenaming = useMemo(
+    () => EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath),
+    [props.renamingTarget, props.navigatorEntry.elementPath],
+  )
+
   return (
     <div
       onClick={hideContextMenu}
@@ -927,8 +932,15 @@ export const NavigatorItem: React.FunctionComponent<
             {props.label}
           </div>
         ) : (
-          <FlexRow style={{ justifyContent: 'space-between', ...containerStyle, padding: '0 5px' }}>
-            <FlexRow>
+          <FlexRow
+            style={{
+              justifyContent: 'space-between',
+              ...containerStyle,
+              padding: '0 5px',
+              width: '100%',
+            }}
+          >
+            <FlexRow style={{ width: '100%' }}>
               {unless(
                 props.navigatorEntry.type === 'CONDITIONAL_CLAUSE',
                 <ExpandableIndicator
@@ -960,7 +972,7 @@ export const NavigatorItem: React.FunctionComponent<
               />
             </FlexRow>
             {unless(
-              props.navigatorEntry.type === 'CONDITIONAL_CLAUSE',
+              currentlyRenaming || props.navigatorEntry.type === 'CONDITIONAL_CLAUSE',
               <NavigatorItemActionSheet
                 navigatorEntry={navigatorEntry}
                 selected={selected}
@@ -1022,6 +1034,11 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
     ? colorTheme.componentPurple.value
     : undefined
 
+  const currentlyRenaming = useMemo(
+    () => EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath),
+    [props.renamingTarget, props.navigatorEntry.elementPath],
+  )
+
   return (
     <div
       style={{
@@ -1057,7 +1074,7 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         target={props.navigatorEntry}
         selected={props.selected}
         dispatch={props.dispatch}
-        inputVisible={EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath)}
+        inputVisible={currentlyRenaming}
         remixItemType={props.remixItemType}
       />
       <MapCounter navigatorEntry={props.navigatorEntry} dispatch={props.dispatch} />
