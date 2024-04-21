@@ -4,6 +4,7 @@ import type {
   JSElementAccess,
   JSExpression,
   JSExpressionFunctionCall,
+  JSExpressionMapOrOtherJavascript,
   JSExpressionNestedArray,
   JSExpressionNestedObject,
   JSExpressionOtherJavaScript,
@@ -27,7 +28,6 @@ import { isArbitraryJSBlock, isUtopiaJSXComponent } from '../../shared/element-t
 import {
   emptyComments,
   getJSXAttribute,
-  isJSExpressionValue,
   isJSXElement,
   jsExpressionValue,
   setJSXAttributesAttribute,
@@ -45,10 +45,6 @@ import { assertNever, fastForEach } from '../../../core/shared/utils'
 import { emptySet } from '../../../core/shared/set-utils'
 import type { UIDMappings } from '../../../core/shared/uid-utils'
 import { generateConsistentUID, updateHighlightBounds } from '../../../core/shared/uid-utils'
-import {
-  emptyGetAllUniqueUIDsWorkingResult,
-  extractUIDFromTopLevelElement,
-} from '../../model/get-unique-ids'
 
 const jsxElementChildUIDOptic: Optic<JSXElementChild, string> = fromField('uid')
 
@@ -367,8 +363,11 @@ export function fixArbitraryJSBlockUIDs(
     fixUIDsState,
   )
 
+  const fixUIDsInString = fixUIDsInJavascriptStrings(newElement, fixUIDsState)
+
   return updateUID(arbitraryJSBlockUIDOptic, oldElement?.uid ?? newElement.uid, fixUIDsState, {
     ...newElement,
+    ...fixUIDsInString,
     elementsWithin: fixedElementsWithin,
   })
 }
@@ -384,8 +383,10 @@ export function fixCombinedArbitraryJSBlockUIDs(
     newElement.elementsWithin,
     useMappingsState,
   )
+  const fixUidInString = fixUIDsInJavascriptStrings(newElement, useMappingsState)
   return updateUID(arbitraryJSBlockUIDOptic, oldElement?.uid ?? newElement.uid, useMappingsState, {
     ...newElement,
+    ...fixUidInString,
     elementsWithin: fixedElementsWithin,
   })
 }
@@ -550,6 +551,38 @@ export function fixElementsWithin(
   }
 
   return result
+}
+
+export function fixUIDsInJavascriptString(jsString: string, fixUIDsState: FixUIDsState): string {
+  let result = jsString
+  fixUIDsState.mappings.forEach((mapping) => {
+    result = result.replace(new RegExp(`"${mapping.originalUID}"`, 'g'), `"${mapping.newUID}"`)
+  })
+  return result
+}
+
+export function fixUIDsInJavascriptStrings<
+  T extends JSExpressionMapOrOtherJavascript | ArbitraryJSBlock,
+>(jsExpression: T, fixUIDsState: FixUIDsState): T {
+  if (jsExpression.type === 'ARBITRARY_JS_BLOCK') {
+    return {
+      ...jsExpression,
+      javascript: fixUIDsInJavascriptString(jsExpression.javascript, fixUIDsState),
+      transpiledJavascript: fixUIDsInJavascriptString(
+        jsExpression.transpiledJavascript,
+        fixUIDsState,
+      ),
+    }
+  }
+  return {
+    ...jsExpression,
+    javascriptWithUIDs: fixUIDsInJavascriptString(jsExpression.javascriptWithUIDs, fixUIDsState),
+    originalJavascript: fixUIDsInJavascriptString(jsExpression.originalJavascript, fixUIDsState),
+    transpiledJavascript: fixUIDsInJavascriptString(
+      jsExpression.transpiledJavascript,
+      fixUIDsState,
+    ),
+  }
 }
 
 export function fixJSXElementChildUIDs(
@@ -780,12 +813,15 @@ export function fixExpressionUIDs(
         fixUIDsState,
       )
 
+      const fixedUIDsInString = fixUIDsInJavascriptStrings(newExpression, fixUIDsState)
+
       return updateUID(
         expressionOtherJavaScriptUIDOptic,
         oldExpression?.uid ?? newExpression.uid,
         fixUIDsState,
         {
           ...newExpression,
+          ...fixedUIDsInString,
           elementsWithin: fixedElementsWithin,
         },
       )
@@ -799,12 +835,15 @@ export function fixExpressionUIDs(
         fixUIDsState,
       )
 
+      const fixedUIDsInString = fixUIDsInJavascriptStrings(newExpression, fixUIDsState)
+
       return updateUID(
         expressionJSXMapExpressionUIDOptic,
         oldExpression?.uid ?? newExpression.uid,
         fixUIDsState,
         {
           ...newExpression,
+          ...fixedUIDsInString,
           elementsWithin: fixedElementsWithin,
         },
       )
