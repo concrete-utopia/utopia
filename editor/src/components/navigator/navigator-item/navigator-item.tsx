@@ -1034,11 +1034,6 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
     ? colorTheme.componentPurple.value
     : undefined
 
-  const currentlyRenaming = useMemo(
-    () => EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath),
-    [props.renamingTarget, props.navigatorEntry.elementPath],
-  )
-
   return (
     <div
       style={{
@@ -1074,7 +1069,7 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         target={props.navigatorEntry}
         selected={props.selected}
         dispatch={props.dispatch}
-        inputVisible={currentlyRenaming}
+        inputVisible={EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath)}
         remixItemType={props.remixItemType}
       />
       <MapCounter navigatorEntry={props.navigatorEntry} dispatch={props.dispatch} />
