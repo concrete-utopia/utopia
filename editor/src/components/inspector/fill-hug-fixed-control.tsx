@@ -290,6 +290,7 @@ export const FixedHugDropdown = React.memo((props: { dimension: 'width' | 'heigh
       options={fixedHugFillOptions}
       onSubmitValue={onSubmitFixedFillHugType}
       controlStyles={getControlStyles(currentValue.controlStatus)}
+      style={{ background: 'transparent' }}
     />
   )
 })

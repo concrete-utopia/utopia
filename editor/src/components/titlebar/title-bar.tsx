@@ -46,7 +46,7 @@ export const TitleHeight = 40
 
 const ProjectTitle: React.FC<React.PropsWithChildren<ProjectTitleProps>> = ({ children }) => {
   return (
-    <FlexRow
+    <span
       style={{
         fontWeight: 400,
         fontSize: 12,
@@ -54,11 +54,13 @@ const ProjectTitle: React.FC<React.PropsWithChildren<ProjectTitleProps>> = ({ ch
         color: colorTheme.fg0.value,
         height: TitleHeight,
         alignItems: 'center',
+        overflow: 'hidden',
+        whiteSpace: 'nowrap',
+        textOverflow: 'ellipsis',
       }}
-      css={undefined}
     >
       {children}
-    </FlexRow>
+    </span>
   )
 }
 
@@ -193,59 +195,71 @@ export const TitleBarProjectTitle = React.memo((props: { panelData: StoredPanel 
       onMouseEnter={setIsHoveredTrue}
       onMouseLeave={setIsHoveredFalse}
     >
-      <FlexRow css={{ gap: 10, alignItems: 'center' }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '22px 1fr auto',
+          width: '100%',
+          alignItems: 'center',
+          gap: 4,
+        }}
+      >
         <FlexRow css={{ gap: 6 }}>
           <PanelButton onClick={toggleNavigatorVisible} color='#FF5F57' isHovered={isHovered} />
           <PanelButton isHovered={isHovered} color={colorTheme.unavailableGrey.value} />
         </FlexRow>
-        {currentBranch != null ? (
-          <SimpleFlexRow
-            onClick={showMergeConflict}
-            style={{
-              gap: 4,
-              color: hasMergeConflicts ? colorTheme.error.value : colorTheme.fg1.value,
-            }}
-          >
-            {hasMergeConflicts ? (
-              <Icons.WarningTriangle style={{ width: 18, height: 18 }} color={'error'} />
-            ) : (
-              <Icons.Branch style={{ width: 18, height: 18 }} />
-            )}
-            {currentBranch}
-          </SimpleFlexRow>
-        ) : (
-          <ProjectTitle>{projectName}</ProjectTitle>
-        )}
-      </FlexRow>
-      {when(
-        loggedIn && currentBranch != null,
-        <FlexRow
-          css={{
-            gap: 2,
-          }}
-        >
-          {when(
-            hasUpstreamChanges,
-            <RoundButton
-              color={colorTheme.secondaryOrange.value}
-              onClick={openLeftPaneltoGithubTab}
-              onMouseDown={onMouseDown}
+        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {currentBranch != null ? (
+            <SimpleFlexRow
+              onClick={showMergeConflict}
+              style={{
+                gap: 4,
+                color: hasMergeConflicts ? colorTheme.error.value : colorTheme.fg1.value,
+              }}
             >
-              {<Icons.Download style={{ width: 18, height: 18 }} color={'component-orange'} />}
-            </RoundButton>,
+              {hasMergeConflicts ? (
+                <Icons.WarningTriangle style={{ width: 18, height: 18 }} color={'error'} />
+              ) : (
+                <Icons.Branch style={{ width: 18, height: 18 }} />
+              )}
+              {currentBranch}
+            </SimpleFlexRow>
+          ) : (
+            <ProjectTitle>{projectName}</ProjectTitle>
           )}
+        </span>
+        <span>
           {when(
-            hasDownstreamChanges,
-            <RoundButton
-              color={colorTheme.secondaryBlue.value}
-              onClick={openLeftPaneltoGithubTab}
-              onMouseDown={onMouseDown}
+            loggedIn && currentBranch != null,
+            <FlexRow
+              css={{
+                gap: 2,
+              }}
             >
-              {<Icons.Upload style={{ width: 18, height: 18 }} color={'dynamic'} />}
-            </RoundButton>,
+              {when(
+                hasUpstreamChanges,
+                <RoundButton
+                  color={colorTheme.secondaryOrange.value}
+                  onClick={openLeftPaneltoGithubTab}
+                  onMouseDown={onMouseDown}
+                >
+                  {<Icons.Download style={{ width: 18, height: 18 }} color={'component-orange'} />}
+                </RoundButton>,
+              )}
+              {when(
+                hasDownstreamChanges,
+                <RoundButton
+                  color={colorTheme.secondaryBlue.value}
+                  onClick={openLeftPaneltoGithubTab}
+                  onMouseDown={onMouseDown}
+                >
+                  {<Icons.Upload style={{ width: 18, height: 18 }} color={'dynamic'} />}
+                </RoundButton>,
+              )}
+            </FlexRow>,
           )}
-        </FlexRow>,
-      )}
+        </span>
+      </div>
     </div>
   )
 })
