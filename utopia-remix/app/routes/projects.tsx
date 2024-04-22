@@ -189,6 +189,8 @@ const ProjectsPageInner = React.memo(() => {
   const projectMatchesQuery = useProjectMatchesQuery()
   const projectIsOnActiveOperation = useProjectIsOnActiveOperation()
 
+  const isAllProjects = selectedCategory === 'allProjects'
+
   const filteredProjects = React.useMemo(
     () =>
       activeProjects
@@ -251,10 +253,29 @@ const ProjectsPageInner = React.memo(() => {
           flexDirection: 'column',
           gap: 30,
           margin: '30px 30px 0px 0',
+          overflowY: isAllProjects ? 'auto' : 'hidden',
+          scrollbarColor: '#a1a1a130 transparent',
         }}
       >
-        <ProjectTemplates />
         <TopActionBar />
+        {when(
+          isAllProjects,
+          <>
+            <Text
+              style={{
+                fontSize: '16px',
+                fontWeight: 600,
+                display: 'flex',
+                flex: 'none',
+                alignItems: 'center',
+                height: '32px',
+              }}
+            >
+              Create From Template
+            </Text>
+            <ProjectTemplates />
+          </>,
+        )}
         <ProjectsHeader projects={filteredProjects} />
         <Projects projects={filteredProjects} collaborators={data.collaborators} />
         <ActiveOperations projects={activeProjects} />
@@ -627,11 +648,16 @@ const Projects = React.memo(
       [setSelectedProjectId],
     )
 
+    const selectedCategory = useProjectsStore((store) => store.selectedCategory)
+
+    const isAllProjects = selectedCategory === 'allProjects'
+    const scrollStyle = isAllProjects ? { overflow: 'initial' } : {}
+
     return (
       <>
         {when(
           projects.length > 0 && !gridView,
-          <div className={projectRows()}>
+          <div className={projectRows()} style={{ ...scrollStyle }}>
             {projects.map((project) => (
               <ProjectRow
                 key={project.proj_id}
@@ -647,7 +673,7 @@ const Projects = React.memo(
         )}
         {when(
           projects.length > 0 && gridView,
-          <div className={projectCards()}>
+          <div className={projectCards()} style={{ ...scrollStyle }}>
             {projects.map((project) => (
               <ProjectCard
                 key={project.proj_id}
@@ -1312,7 +1338,9 @@ function ProjectTemplates() {
             display: 'flex',
             flexDirection: 'column',
             gap: 5,
+            cursor: 'pointer',
           }}
+          onClick={template.onClick}
         >
           <div
             style={{
