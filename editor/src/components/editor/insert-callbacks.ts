@@ -192,7 +192,7 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
 
       const element = elementToReparent(
         fixUtopiaElement(
-          elementFromInsertMenuItem(elementToInsert.value.element(), elementUid, 'use-defaults'),
+          elementFromInsertMenuItem(elementToInsert.value.element(), elementUid),
           allElementUids,
         ).value,
         elementToInsert.value.importsToAdd,
@@ -254,42 +254,14 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
   )
 }
 
-function attributesWithDefaults(initialProps: JSXAttributes): JSXAttributes {
-  const styleAttributes =
-    getJSXAttribute(initialProps, 'style') ?? jsExpressionValue({}, emptyComments)
-
-  const styleWithWidth = defaultEither(
-    styleAttributes,
-    setJSXValueInAttributeAtPath(
-      styleAttributes,
-      PP.fromString('width'),
-      jsExpressionValue(100, emptyComments),
-    ),
-  )
-  const styleWithHeight = defaultEither(
-    styleAttributes,
-    setJSXValueInAttributeAtPath(
-      styleWithWidth,
-      PP.fromString('height'),
-      jsExpressionValue(100, emptyComments),
-    ),
-  )
-
-  return setJSXAttributesAttribute(initialProps, 'style', styleWithHeight)
-}
-
 export function elementFromInsertMenuItem(
   element: ComponentElementToInsert,
   uid: string,
-  useDefaults: 'use-defaults' | 'no-defaults',
 ): JSXElementChild {
   switch (element.type) {
     case 'JSX_ELEMENT':
-      const attributes =
-        useDefaults === 'use-defaults' ? attributesWithDefaults(element.props) : element.props
-
       const attributesWithUid = setJSXAttributesAttribute(
-        attributes,
+        element.props,
         'data-uid',
         jsExpressionValue(uid, emptyComments),
       )

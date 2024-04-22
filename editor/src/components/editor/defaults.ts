@@ -13,6 +13,7 @@ import {
 } from '../../core/shared/element-template'
 import type { NormalisedFrame } from 'utopia-api/core'
 import { defaultImageAttributes } from '../shared/project-components'
+import { type Size } from '../../core/shared/math-utils'
 
 export function defaultSceneElement(
   uid: string,
@@ -39,11 +40,12 @@ export function defaultSceneElementStyle(frame: NormalisedFrame | null): JSExpre
   )
 }
 
-export function defaultElementStyle(): JSExpression {
+export function defaultElementStyle(size?: Size): JSExpression {
   return jsExpressionValue(
     {
       backgroundColor: '#aaaaaa33',
       position: 'absolute',
+      ...(size ?? {}),
     },
     emptyComments,
   )

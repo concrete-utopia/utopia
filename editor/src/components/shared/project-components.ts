@@ -389,7 +389,12 @@ const basicHTMLElementsDescriptors = {
   h1: makeHTMLDescriptor('h1', {}),
   h2: makeHTMLDescriptor('h2', {}),
   p: makeHTMLDescriptor('p', {}),
-  button: makeHTMLDescriptor('button', {}),
+  button: makeHTMLDescriptor('button', {}, () => [
+    simpleAttribute('style', {
+      width: '100px',
+      height: '100px',
+    }),
+  ]),
   input: makeHTMLDescriptor('input', {}),
   video: makeHTMLDescriptor(
     'video',
@@ -439,7 +444,7 @@ const basicHTMLElementsDescriptors = {
 const divComponentGroup = {
   div: makeHTMLDescriptor('div', {}, () =>
     jsxAttributesFromMap({
-      style: defaultElementStyle(),
+      style: defaultElementStyle({ width: 100, height: 100 }),
     }),
   ),
 }
