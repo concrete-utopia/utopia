@@ -30,8 +30,16 @@ import {
   getProjectStoredLayoutOrDefault,
   saveUserPreferencesProjectLayout,
 } from '../common/user-preferences'
+import { usePermissions } from '../editor/store/permissions'
 
 export const GridPanelsStateAtom = atom(gridMenuDefaultPanels())
+
+function filterCodeEditorFromPanelState(layout: StoredLayout): StoredLayout {
+  return layout.map((column) => ({
+    ...column,
+    panels: column.panels.filter((panel) => panel.name !== 'code-editor'),
+  }))
+}
 
 export function useGridPanelState() {
   const [loaded, setLoaded] = React.useState(false)
@@ -62,6 +70,13 @@ export function useGridPanelState() {
     }
     void saveUserPreferencesProjectLayout(projectId, state)
   }, [loaded, state, projectId])
+
+  const permissions = usePermissions()
+  React.useEffect(() => {
+    if (!permissions.edit) {
+      setState(filterCodeEditorFromPanelState(state))
+    }
+  }, [permissions.edit, setState, state])
 
   return stateAtom
 }
