@@ -450,6 +450,7 @@ import {
   ExportDetailKeepDeepEquality,
   ImportDetailsKeepDeepEquality,
   NavigatorStateKeepDeepEquality,
+  ParseSuccessKeepDeepEquality,
   TopLevelElementKeepDeepEquality,
 } from '../store/store-deep-equality-instances'
 import type { MouseButtonsPressed } from '../../../utils/mouse'
@@ -1243,7 +1244,7 @@ interface ReplaceFilePathFailure {
 
 type ReplaceFilePathResult = ReplaceFilePathFailure | ReplaceFilePathSuccess
 
-function replaceFilePath(
+export function replaceFilePath(
   oldPath: string,
   newPath: string,
   projectContentsTree: ProjectContentTreeRoot,
@@ -1365,15 +1366,24 @@ function replaceFilePath(
         }
       })
 
-      updatedProjectContents[filename] = saveTextFileContents(
-        projectFile,
-        textFileContents(
-          projectFile.fileContents.code,
-          updatedParseResult,
-          RevisionsState.ParsedAhead,
-        ),
-        projectFile.lastSavedContents == null,
-      )
+      // Only mark these as parsed ahead if they have meaningfully changed,
+      // or if the filename has been changed for this file.
+      const oldFilename =
+        updatedFiles.find((updatedFile) => updatedFile.newPath === filename) ?? filename
+      if (
+        oldFilename !== filename ||
+        !ParseSuccessKeepDeepEquality(projectFile.fileContents.parsed, updatedParseResult).areEqual
+      ) {
+        updatedProjectContents[filename] = saveTextFileContents(
+          projectFile,
+          textFileContents(
+            projectFile.fileContents.code,
+            updatedParseResult,
+            RevisionsState.ParsedAhead,
+          ),
+          projectFile.lastSavedContents == null,
+        )
+      }
     }
   })
   // Check if we discovered an error.
@@ -6188,7 +6198,7 @@ function updateFilePath(
     oldPath: string
     newPath: string
   },
-) {
+): EditorState {
   const replaceFilePathResults = replaceFilePath(
     params.oldPath,
     params.newPath,
