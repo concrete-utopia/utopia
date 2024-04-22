@@ -3,6 +3,7 @@ import type { MapLike } from 'typescript'
 import type { Either } from '../core/shared/either'
 import {
   flatMapEither,
+  isLeft,
   isRight,
   left,
   leftMapEither,
@@ -12,6 +13,7 @@ import {
   traverseEither,
 } from '../core/shared/either'
 import type { ComponentRendererComponent } from '../components/canvas/ui-jsx-canvas-renderer/component-renderer-component'
+import { difference } from '../core/shared/set-utils'
 
 export interface ArrayIndexNotPresentParseError {
   type: 'ARRAY_INDEX_NOT_PRESENT_PARSE_ERROR'
@@ -160,6 +162,51 @@ export function objectValueParserWithError<V>(
     return leftMapEither((err) => {
       return objectFieldParseError(key, err)
     }, parsed)
+  }
+}
+
+export function objectParser<Type>(spec: {
+  [Key in keyof Type]: (v: unknown, key: string) => ParseResult<Type[Key]>
+}): (v: unknown) => ParseResult<Type> {
+  return (value: unknown) => {
+    if (typeof value !== 'object') {
+      // TODO: check whether this produces a sensible error message
+      return left(descriptionParseError('Not an object'))
+    }
+    if (Array.isArray(value)) {
+      return left(descriptionParseError('Object is an array'))
+    }
+    if (value == null) {
+      return left(descriptionParseError('Object is `null`'))
+    }
+
+    const allProps: Set<string> = new Set(Object.keys(value))
+    const checkedProps: Set<string> = new Set()
+
+    const partialResult: Partial<Type> = {}
+
+    for (const [key, parser] of Object.entries(spec)) {
+      const withErrorParser = objectValueParserWithError(parser as any)
+      if (key in value) {
+        const parsed = withErrorParser((value as any)[key], key)
+        if (isLeft(parsed)) {
+          return parsed
+        }
+
+        ;(partialResult as any)[key] = parsed.value
+        checkedProps.add(key)
+      } else {
+        return left(objectFieldNotPresentParseError(key))
+      }
+    }
+
+    const unnecessaryProps = [...difference(allProps, checkedProps)]
+
+    if (unnecessaryProps.length > 0) {
+      return left(descriptionParseError(`Found unnecessary props: ${unnecessaryProps.join(', ')}`))
+    }
+
+    return right(partialResult as Type)
   }
 }
 
