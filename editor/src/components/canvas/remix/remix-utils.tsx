@@ -572,10 +572,9 @@ export function remixFilenameMatchPrefix(filename: string, oldPath: string): boo
     .replace(AppRoutesPrefix, '') // without /app/routes
     .replace(/^\([^)]+\)\./, '') // without optional prefix
 
-  const v = possibleRemixSuffixSeparators.some((sep) => {
-    return relativeFilename.startsWith(relativeOldPath + sep)
-  })
-  return v
+  return possibleRemixSuffixSeparators.some((sep) =>
+    relativeFilename.startsWith(relativeOldPath + sep),
+  )
 }
 
 export function renameRemixFile(
