@@ -250,10 +250,6 @@ export const CanvasToolbar = React.memo(() => {
 
   const canvasToolbarMode = useToolbarMode()
 
-  const editorStateRef = useRefEditorState((store) => store.editor)
-  const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
-  const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
-
   const insertDivCallback = useEnterDrawToInsertForDiv()
   const insertImgCallback = useEnterDrawToInsertForImage()
   const insertTextCallback = useEnterTextEditMode()
@@ -269,43 +265,6 @@ export const CanvasToolbar = React.memo(() => {
 
   const convertToCallback = useConvertTo()
   const toInsertCallback = useToInsert()
-
-  const openFloatingConvertMenuCallback = React.useCallback(() => {
-    dispatch([openFloatingInsertMenu(floatingInsertMenuStateSwap())])
-  }, [dispatch])
-
-  const openFloatingWrapInMenuCallback = React.useCallback(() => {
-    dispatch([
-      openFloatingInsertMenu({
-        insertMenuMode: 'wrap',
-      }),
-    ])
-  }, [dispatch])
-
-  const wrapInGroupCallback = React.useCallback(() => {
-    dispatch([
-      wrapInElement(selectedViewsRef.current, {
-        element: defaultTransparentViewElement(
-          generateUidWithExistingComponents(projectContentsRef.current),
-        ),
-        importsToAdd: {},
-      }),
-    ])
-  }, [dispatch, selectedViewsRef, projectContentsRef])
-
-  const toggleAbsolutePositioningCallback = React.useCallback(() => {
-    const editorState = editorStateRef.current
-    const commands = toggleAbsolutePositioningCommands(
-      editorState.jsxMetadata,
-      editorState.allElementProps,
-      editorState.elementPathTree,
-      editorState.selectedViews,
-    )
-    if (commands.length === 0) {
-      return
-    }
-    dispatch([applyCommandsAction(commands)])
-  }, [dispatch, editorStateRef])
 
   // Back to select mode, close the "floating" menu and turn off the forced insert mode.
   const dispatchSwitchToSelectModeCloseMenus = React.useCallback(() => {

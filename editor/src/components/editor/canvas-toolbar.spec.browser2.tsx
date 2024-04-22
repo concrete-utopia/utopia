@@ -464,7 +464,7 @@ describe('canvas toolbar', () => {
     data-uid='container'
   >
     <div data-uid='a3d' />
-    <span style={{ width: 100, height: 100, top: 0, left: 0, position: 'absolute' }} data-uid='sample-text'>Sample text</span>
+    <span data-uid='sample-text' style={{ top: 0, left: 0, position: 'absolute' }}>Sample text</span>
   </div>`),
     )
   })
@@ -515,7 +515,7 @@ describe('canvas toolbar', () => {
         data-uid='container'
       >
         <div data-uid='a3d' />
-        <span style={{ width: 100, height: 100, top: 0, left: 0, position: 'absolute' }} data-uid='sample-text'>{myText}</span>
+        <span data-uid='sample-text' style={{ top: 0, left: 0, position: 'absolute' }}>{myText}</span>
   </div>
   )`),
     )
@@ -567,7 +567,7 @@ describe('canvas toolbar', () => {
         data-uid='container'
       >
         <div data-uid='a3d' />
-        <span style={{ width: 100, height: 100, top: 0, left: 0, position: 'absolute' }} data-uid='sample-text'>{myObj.test}</span>
+        <span data-uid='sample-text' style={{ top: 0, left: 0, position: 'absolute' }}>{myObj.test}</span>
         </div>
     )`),
     )
@@ -718,7 +718,7 @@ describe('canvas toolbar', () => {
         data-uid='container'
       >
         <div data-uid='a3d' />
-        <img src={myImage} style={{width: 100, height: 100, top:0, left: 0, position: 'absolute'}} data-uid='ele'/>
+        <img src={myImage} data-uid='ele' style={{top:0, left: 0, position: 'absolute'}}/>
       </div>
     )`),
     )
@@ -825,13 +825,7 @@ export var storyboard = (
         }}
       >
         <DefaultExportedComponent
-          style={{
-            width: 100,
-            height: 100,
-            top: 0,
-            left: 0,
-            position: 'absolute',
-          }}
+          style={{ top: 0, left: 0, position: 'absolute' }}
         />
       </div>
     </Scene>
@@ -889,8 +883,8 @@ export var storyboard = (
     <div data-uid='a3d' />
     <img
       style={{
-        width: 100,
-        height: 100,
+        width: '64px',
+        height: '64px',
         position: 'absolute',
         top: 0,
         left: 0,
@@ -900,8 +894,8 @@ export var storyboard = (
     />
     <img
       style={{
-        width: 100,
-        height: 100,
+        width: '64px',
+        height: '64px',
         position: 'absolute',
         top: 0,
         left: 0,
@@ -947,8 +941,8 @@ export var storyboard = (
           }
           <img
             style={{
-              width: 100,
-              height: 100,
+              width: '64px',
+              height: '64px',
               position: 'absolute',
               top: 0,
               left: 0,
@@ -990,8 +984,8 @@ export var storyboard = (
           [].length === 0 ? (
             <img
               style={{
-                width: 100,
-                height: 100,
+                width: '64px',
+                height: '64px',
                 position: 'absolute',
                 top: 0,
                 left: 0,
@@ -1040,8 +1034,8 @@ export var storyboard = (
         ) : (
           <img
             style={{
-              width: 100,
-              height: 100,
+              width: '64px',
+              height: '64px',
               position: 'absolute',
               top: 0,
               left: 0,
@@ -1098,8 +1092,8 @@ export var storyboard = (
             <React.Fragment>
               <img
                 style={{
-                  width: 100,
-                  height: 100,
+                  width: '64px',
+                  height: '64px',
                   position: 'absolute',
                 }}
                 src='/editor/utopia-logo-white-fill.png?hash=nocommit'
@@ -1176,8 +1170,8 @@ export var storyboard = (
           >
             <img
               style={{
-                width: 100,
-                height: 100,
+                width: '64px',
+                height: '64px',
                 position: 'absolute',
                 top: 0,
                 left: 0,
