@@ -352,7 +352,7 @@ export const EditorContractDropdown = React.memo(() => {
         style={{ borderRadius: 2, width: 'min-wdith', paddingRight: 6 }}
       />
       {when(
-        groupProblems.length == 0,
+        groupProblems.length > 0,
         <Tooltip
           title={groupProblems
             .map((problem) => `Fix: ${invalidGroupStateToString(problem.state).toLowerCase()}`)
