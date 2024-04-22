@@ -13,9 +13,6 @@ import type {
   ElementsWithin,
   JSExpression,
   JSXElementLike,
-  JSIdentifier,
-  JSPropertyAccess,
-  JSElementAccess,
 } from '../../../core/shared/element-template'
 import {
   isJSXElement,
