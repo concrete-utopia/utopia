@@ -389,12 +389,7 @@ const basicHTMLElementsDescriptors = {
   h1: makeHTMLDescriptor('h1', {}),
   h2: makeHTMLDescriptor('h2', {}),
   p: makeHTMLDescriptor('p', {}),
-  button: makeHTMLDescriptor('button', {}, () => [
-    simpleAttribute('style', {
-      width: '100px',
-      height: '100px',
-    }),
-  ]),
+  button: makeHTMLDescriptor('button', {}),
   input: makeHTMLDescriptor('input', {}),
   video: makeHTMLDescriptor(
     'video',
@@ -444,7 +439,7 @@ const basicHTMLElementsDescriptors = {
 const divComponentGroup = {
   div: makeHTMLDescriptor('div', {}, () =>
     jsxAttributesFromMap({
-      style: defaultElementStyle({ width: 100, height: 100 }),
+      style: defaultElementStyle(),
     }),
   ),
 }
@@ -709,6 +704,7 @@ export function getComponentGroups(
   function addDependencyDescriptor(
     groupType: InsertableComponentGroupType,
     components: ComponentDescriptorsForFile,
+    defaultSize?: Size,
   ): void {
     let insertableComponents: Array<InsertableComponent> = []
     fastForEach(Object.keys(components), (componentName) => {
@@ -726,7 +722,7 @@ export function getComponentGroups(
               insertOption.elementToInsert,
               insertOption.insertMenuLabel,
               stylePropOptions,
-              null,
+              defaultSize ?? null,
               null,
             ),
           )

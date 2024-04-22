@@ -46,6 +46,7 @@ import { executeFirstApplicableStrategy } from '../inspector/inspector-strategie
 import { insertAsAbsoluteStrategy } from './one-shot-insertion-strategies/insert-as-absolute-strategy'
 import { insertAsStaticStrategy } from './one-shot-insertion-strategies/insert-as-static-strategy'
 import { getStoryboardElementPath } from '../../core/model/scene-utils'
+import { type Size } from '../../core/shared/math-utils'
 
 function shouldSubjectBeWrappedWithConditional(
   subject: InsertionSubject,
@@ -192,7 +193,11 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
 
       const element = elementToReparent(
         fixUtopiaElement(
-          elementFromInsertMenuItem(elementToInsert.value.element(), elementUid),
+          elementFromInsertMenuItem(
+            elementToInsert.value.element(),
+            elementUid,
+            elementToInsert.value.defaultSize ?? undefined,
+          ),
           allElementUids,
         ).value,
         elementToInsert.value.importsToAdd,
@@ -253,15 +258,42 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
     ],
   )
 }
+function attributesWithDefaults(initialProps: JSXAttributes, defaultSize: Size): JSXAttributes {
+  const styleAttributes =
+    getJSXAttribute(initialProps, 'style') ?? jsExpressionValue({}, emptyComments)
+
+  const styleWithWidth = defaultEither(
+    styleAttributes,
+    setJSXValueInAttributeAtPath(
+      styleAttributes,
+      PP.fromString('width'),
+      jsExpressionValue(defaultSize.width, emptyComments),
+    ),
+  )
+  const styleWithHeight = defaultEither(
+    styleAttributes,
+    setJSXValueInAttributeAtPath(
+      styleWithWidth,
+      PP.fromString('height'),
+      jsExpressionValue(defaultSize.height, emptyComments),
+    ),
+  )
+
+  return setJSXAttributesAttribute(initialProps, 'style', styleWithHeight)
+}
 
 export function elementFromInsertMenuItem(
   element: ComponentElementToInsert,
   uid: string,
+  defaultSize?: Size,
 ): JSXElementChild {
   switch (element.type) {
     case 'JSX_ELEMENT':
+      const attributes =
+        defaultSize == null ? element.props : attributesWithDefaults(element.props, defaultSize)
+
       const attributesWithUid = setJSXAttributesAttribute(
-        element.props,
+        attributes,
         'data-uid',
         jsExpressionValue(uid, emptyComments),
       )
