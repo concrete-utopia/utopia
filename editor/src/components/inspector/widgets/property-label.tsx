@@ -43,7 +43,6 @@ export const PropertyLabel = React.memo((props: PropertyLabelProps) => {
         ...(props.style as any), // TODO Emotion and React 18 types don't like each other
         display: 'flex',
         alignItems: 'center',
-        overflowX: 'scroll',
         whiteSpace: 'nowrap',
         textOverflow: 'ellipsis',
         color: colorTheme.fg1.value,

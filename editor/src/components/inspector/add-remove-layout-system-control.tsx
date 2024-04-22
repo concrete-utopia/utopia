@@ -9,6 +9,7 @@ import {
   FunctionIcons,
   InspectorSectionHeader,
   useColorTheme,
+  Icn,
 } from '../../uuiui'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
@@ -94,7 +95,7 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
           highlight
           onClick={removeLayoutSystem}
         >
-          <FunctionIcons.Remove />
+          <Icn category='semantic' type='cross' width={12} height={12} />
         </SquareButton>
       ) : (
         <SquareButton
@@ -102,7 +103,7 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
           highlight
           onClick={addLayoutSystem}
         >
-          <Icons.Plus style={{ opacity: 'var(--buttonContentOpacity)' }} />
+          <Icn category='semantic' type='plus' width={12} height={12} />
         </SquareButton>
       )}
     </InspectorSectionHeader>
