@@ -1,6 +1,5 @@
 import type { CSSProperties } from 'react'
-import type { ComponentInfo, PlaceholderSpec } from './code-file'
-import type { Imports } from '../../core/shared/project-file-types'
+import type { ComponentInfo } from './code-file'
 
 export type BaseControlType =
   | 'checkbox'
@@ -226,7 +225,6 @@ export interface JSXControlDescription {
   label?: string
   visibleByDefault?: boolean
   preferredChildComponents: Array<PreferredChildComponentDescriptor>
-  placeholder: PlaceholderSpec | null
   required?: boolean
   defaultValue?: unknown
 }

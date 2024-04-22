@@ -21,15 +21,6 @@ export type ComponentExample =
   // variants
   | ComponentInsertOption
 
-export type PlaceholderSpec =
-  // a placeholder that inserts a span that wraps `text`. This will be
-  // editable with the text editor
-  | { text: string }
-  // inserts a `div` with the specified width and height
-  | { width: number; height: number }
-  // inserts a spacer that completely fills the available space
-  | 'fill'
-
 export type PreferredContents =
   | 'text'
   | {
@@ -44,9 +35,6 @@ export interface ChildrenSpec {
   // `'text'`: means only JSX text is accepted
   // `RendersComponent`: detailed spec
   preferredContents?: PreferredContents | PreferredContents[]
-
-  // specifies the placeholder to use
-  placeholder?: PlaceholderSpec
 }
 
 export type Children = 'supported' | 'not-supported' | ChildrenSpec
