@@ -6,9 +6,16 @@ import type {
   JSExpression,
   JSXElement,
   JSXElementChild,
+  JSXMapExpression,
   TopLevelElement,
 } from '../../shared/element-template'
-import { isUtopiaJSXComponent } from '../../shared/element-template'
+import {
+  arbitraryJSBlock,
+  isUtopiaJSXComponent,
+  jsExpressionValue,
+  jsxAttributesFromMap,
+  jsxMapExpression,
+} from '../../shared/element-template'
 import { unparsedCode } from '../../shared/element-template'
 import {
   emptyComments,
@@ -36,7 +43,13 @@ import {
 } from './parser-printer.test-utils'
 import type { Arbitrary } from 'fast-check'
 import type { FixUIDsState } from './uid-fix'
-import { fixExpressionUIDs, fixJSXElementChildUIDs, fixParseSuccessUIDs } from './uid-fix'
+import {
+  fixElementsWithin,
+  fixExpressionUIDs,
+  fixJSXElementChildUIDs,
+  fixParseSuccessUIDs,
+  fixUIDsInJavascriptStrings,
+} from './uid-fix'
 import { foldEither } from '../../../core/shared/either'
 import {
   getAllUniqueUids,
@@ -305,6 +318,31 @@ describe('fixParseSuccessUIDs', () => {
         scene
           component"
     `)
+  })
+
+  it('finds and fixes a component inside a code block', () => {
+    const baseTernary = createFileText(baseTernaryText)
+    const base = lintAndParseAndValidateResult(
+      'test.js',
+      baseTernary,
+      null,
+      emptySet(),
+      'trim-bounds',
+    )
+    const baseTernaryChangedText = baseTernaryText.replace(
+      /<Money /g,
+      `<Money withoutCurrency={false}`,
+    )
+    expect(baseTernaryChangedText).not.toEqual(baseTernaryText)
+    const baseTernaryChanged = createFileText(baseTernaryChangedText)
+    const newFile = lintAndParseAndValidateResult(
+      'test.js',
+      baseTernaryChanged,
+      asParseSuccessOrNull(base),
+      emptySet(),
+      'trim-bounds',
+    )
+    expect(getUidTree(newFile)).toEqual(getUidTree(base))
   })
 
   it('avoids uid shifting caused by single prepending insertion', () => {
@@ -667,7 +705,7 @@ describe('fixJSXElementChildUIDs', () => {
     )
     const fixUIDsState: FixUIDsState = {
       mutableAllNewUIDs: emptySet(),
-      uidsExpectedToBeSeen: new Set('div-uid'),
+      uidsExpectedToBeSeen: new Set(['div-uid']),
       mappings: [],
       uidUpdateMethod: 'copy-uids-fix-duplicates',
     }
@@ -968,6 +1006,14 @@ export var SameFileApp = (props) => {
 }
 `)
 
+const baseTernaryText = `
+return (
+  <div className='product-price'>
+    {<Money />}
+  </div>
+)
+`
+
 const fileWithChildAndParentUpdated = createFileText(`
 export var SameFileApp = (props) => {
   return (
@@ -1154,13 +1200,13 @@ export var SameFileApp = (props) => {
     <div
       style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
     >
-      {[1, 2, 3].map((index) => {
+      {[1, 2, 3].map((index) => (
       <View
         style={{
           width: 191 + index,
         }}
       />
-      })}
+      ))}
     </div>
   )
 }
@@ -1172,13 +1218,13 @@ export var SameFileApp = (props) => {
     <div
       style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
     >
-      {[1, 2, 3].map((index) => {
+      {[1, 2, 3].map((index) => (
       <View
         style={{
           width: 161 + index,
         }}
       />
-      })}
+      ))}
     </div>
   )
 }
@@ -1324,3 +1370,84 @@ function getUidTree(parsedFile: ParsedTextFile): string {
     return printedUidLines.join('\n')
   }
 }
+
+describe('fixUIDsInJavascriptStrings', () => {
+  let jsMapExpressionOld: JSXMapExpression,
+    jsMapExpressionNew: JSXMapExpression,
+    fixUIDsState: FixUIDsState
+  beforeEach(() => {
+    jsMapExpressionOld = jsxMapExpression(
+      `[1,2,3].map(x=> <View data-uid='abc' />)`,
+      `[1, 2, 3].map((x) => <View data-uid='abc' />);`,
+      `return [1, 2, 3].map(x => utopiaCanvasJSXLookup("abc", {
+      x: x,
+      callerThis: this
+      }));`,
+      ['React', 'View', 'utopiaCanvasJSXLookup'],
+      null,
+      {
+        abc: jsxElement(
+          'View',
+          'abc',
+          jsxAttributesFromMap({ 'data-uid': jsExpressionValue('abc', emptyComments) }),
+          [],
+        ),
+      },
+      emptyComments,
+      ['x'],
+    )
+    jsMapExpressionNew = jsxMapExpression(
+      `[1,2,3].map(x=> <View data-uid='efg' bool={true} />)`,
+      `[1, 2, 3].map((x) => <View data-uid='efg' bool={true} />);`,
+      `return [1, 2, 3].map(x => utopiaCanvasJSXLookup("efg", {
+      x: x,
+      callerThis: this
+      }));`,
+      ['React', 'View', 'utopiaCanvasJSXLookup'],
+      null,
+      {
+        efg: jsxElement(
+          'View',
+          'efg',
+          jsxAttributesFromMap({
+            'data-uid': jsExpressionValue('efg', emptyComments),
+            bool: jsExpressionValue('true', emptyComments),
+          }),
+          [],
+        ),
+      },
+      emptyComments,
+      ['x'],
+    )
+    fixUIDsState = {
+      mutableAllNewUIDs: emptySet(),
+      uidsExpectedToBeSeen: new Set(['efg']),
+      mappings: [],
+      uidUpdateMethod: 'copy-uids-fix-duplicates',
+    }
+  })
+  it('changes uids according to the mapping', () => {
+    const elementsWithin = fixElementsWithin(
+      jsMapExpressionOld.elementsWithin,
+      jsMapExpressionNew.elementsWithin,
+      fixUIDsState,
+    )
+    expect(elementsWithin).toEqual({
+      ...jsMapExpressionOld.elementsWithin,
+      abc: {
+        ...jsMapExpressionOld.elementsWithin.abc,
+        props: [
+          ...jsMapExpressionOld.elementsWithin.abc.props,
+          jsMapExpressionNew.elementsWithin.efg.props[1],
+        ],
+      },
+    })
+    const expression = fixUIDsInJavascriptStrings(jsMapExpressionNew, fixUIDsState)
+    expect(expression.javascriptWithUIDs).toEqual(
+      jsMapExpressionNew.javascriptWithUIDs.replace('efg', 'abc'),
+    )
+    expect(expression.transpiledJavascript).toEqual(
+      jsMapExpressionNew.transpiledJavascript.replace('efg', 'abc'),
+    )
+  })
+})
