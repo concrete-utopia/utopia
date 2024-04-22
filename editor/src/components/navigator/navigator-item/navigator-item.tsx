@@ -844,6 +844,8 @@ export const NavigatorItem: React.FunctionComponent<
     ? 'component'
     : resultingStyle.iconColor
 
+  const currentlyRenaming = EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath)
+
   return (
     <div
       onClick={hideContextMenu}
@@ -927,8 +929,15 @@ export const NavigatorItem: React.FunctionComponent<
             {props.label}
           </div>
         ) : (
-          <FlexRow style={{ justifyContent: 'space-between', ...containerStyle, padding: '0 5px' }}>
-            <FlexRow>
+          <FlexRow
+            style={{
+              justifyContent: 'space-between',
+              ...containerStyle,
+              padding: '0 5px',
+              width: '100%',
+            }}
+          >
+            <FlexRow style={{ width: '100%' }}>
               {unless(
                 props.navigatorEntry.type === 'CONDITIONAL_CLAUSE',
                 <ExpandableIndicator
@@ -960,7 +969,7 @@ export const NavigatorItem: React.FunctionComponent<
               />
             </FlexRow>
             {unless(
-              props.navigatorEntry.type === 'CONDITIONAL_CLAUSE',
+              currentlyRenaming || props.navigatorEntry.type === 'CONDITIONAL_CLAUSE',
               <NavigatorItemActionSheet
                 navigatorEntry={navigatorEntry}
                 selected={selected}
