@@ -101,7 +101,7 @@ export const PagesPane = React.memo((props) => {
       function processRoutes(routes: Array<any>, prefix: string): RouteMatches {
         let result: RouteMatches = {}
         for (const route of routes) {
-          const delimiter = prefix.startsWith('/') ? '' : '/'
+          const delimiter = prefix == '' ? '/' : ''
           const path = urljoin(prefix, delimiter, route.path ?? '')
           const firstMatchingFavorite = mapFirstApplicable(
             [...featuredRoutes, activeRoute],
