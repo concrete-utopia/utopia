@@ -534,6 +534,8 @@ export function fixElementsWithin(
   const newKeys = Object.keys(newExpression)
   const oldKeys = Object.keys(oldExpression)
   if (newKeys.length === oldKeys.length) {
+    // we will try to match by order - this relies on insertion order
+    // but is used only as a fallback in case the ids are not the same
     fastForEach(newKeys, (newWithinKey, index) => {
       fallbackIdMatch[newWithinKey] = oldKeys[index]
     })
