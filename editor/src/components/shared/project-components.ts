@@ -704,6 +704,7 @@ export function getComponentGroups(
   function addDependencyDescriptor(
     groupType: InsertableComponentGroupType,
     components: ComponentDescriptorsForFile,
+    defaultSize?: Size,
   ): void {
     let insertableComponents: Array<InsertableComponent> = []
     fastForEach(Object.keys(components), (componentName) => {
@@ -721,7 +722,7 @@ export function getComponentGroups(
               insertOption.elementToInsert,
               insertOption.insertMenuLabel,
               stylePropOptions,
-              null,
+              defaultSize ?? null,
               null,
             ),
           )
@@ -731,7 +732,10 @@ export function getComponentGroups(
     result.push(insertableComponentGroup(groupType, insertableComponents))
   }
 
-  addDependencyDescriptor(insertableComponentGroupDiv(), divComponentGroup)
+  addDependencyDescriptor(insertableComponentGroupDiv(), divComponentGroup, {
+    width: 100,
+    height: 100,
+  })
 
   // Add HTML entries.
   addDependencyDescriptor(insertableComponentGroupHTML(), basicHTMLElementsDescriptors)
