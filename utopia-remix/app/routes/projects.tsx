@@ -244,6 +244,7 @@ const ProjectsPageInner = React.memo(() => {
     >
       <Sidebar user={data.user} />
       <div
+        className='projects-container'
         style={{
           display: 'flex',
           flexGrow: 1,
@@ -252,6 +253,7 @@ const ProjectsPageInner = React.memo(() => {
           margin: '30px 30px 0px 0',
         }}
       >
+        <ProjectTemplates />
         <TopActionBar />
         <ProjectsHeader projects={filteredProjects} />
         <Projects projects={filteredProjects} collaborators={data.collaborators} />
@@ -1275,4 +1277,78 @@ ActiveOperationToast.displayName = 'ActiveOperation'
 function getOwnerName(ownerId: string, collaborators: Collaborator[]) {
   const collaborator = collaborators.find((c) => c.id === ownerId)
   return collaborator?.name ?? 'Utopia user' // This is a fallback required in case we have misconfigured user details
+}
+
+function ProjectTemplates() {
+  const projectTemplates = [
+    {
+      title: 'Public Project',
+      onClick: () => window.open('/p?accessLevel=public', '_blank'),
+    },
+    {
+      title: 'Remix Project',
+      onClick: () =>
+        window.open('/p?accessLevel=public&clone=concrete-utopia/hydrogen-november', '_blank'),
+    },
+    {
+      title: 'Hydrogen Project',
+      onClick: () =>
+        window.open('/p?accessLevel=public&clone=concrete-utopia/hydrogen-november', '_blank'),
+    },
+  ]
+  return (
+    <Flex gap='4'>
+      {projectTemplates.map((template) => (
+        <Flex
+          key={template.title}
+          gap='5'
+          direction='column'
+          align='center'
+          style={{
+            flex: 1,
+            width: '100%',
+            maxWidth: '270px',
+            height: 'min-content',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 5,
+          }}
+        >
+          <div
+            style={{
+              border: '2px solid transparent',
+              borderRadius: '10px',
+              overflow: 'hidden',
+              height: '100%',
+              aspectRatio: '1.6 / 1',
+              background:
+                'linear-gradient(rgba(161, 161, 161, 0.19), rgba(161, 161, 161, 0.082)) no-repeat local',
+              position: 'relative',
+              width: '100%',
+            }}
+          ></div>
+          <Flex
+            direction='column'
+            gap='5'
+            align='start'
+            style={{
+              width: '100%',
+              padding: '10px',
+            }}
+          >
+            <Text
+              size='1'
+              align='left'
+              style={{
+                fontWeight: 500,
+                alignSelf: 'flex-start',
+              }}
+            >
+              {template.title}
+            </Text>
+          </Flex>
+        </Flex>
+      ))}
+    </Flex>
+  )
 }
