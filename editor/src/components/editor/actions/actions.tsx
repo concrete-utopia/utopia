@@ -589,6 +589,7 @@ import {
 import type { FixUIDsState } from '../../../core/workers/parser-printer/uid-fix'
 import { fixTopLevelElementsUIDs } from '../../../core/workers/parser-printer/uid-fix'
 import { nextSelectedTab } from '../../navigator/left-pane/left-pane-utils'
+import { getRemixRootDir } from '../store/remix-derived-data'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -1262,18 +1263,25 @@ function replaceFilePath(
   }
   let updatedFiles: Array<{ oldPath: string; newPath: string }> = []
 
+  const remixRootDir = getRemixRootDir(projectContentsTree)
+
   let renamedOptionalPrefix = false
   Utils.fastForEach(Object.keys(projectContents), (filename) => {
     if (
       filename === oldPath ||
       filename.startsWith(oldPath + '/') ||
-      remixFilenameMatchPrefix(filename, oldPath)
+      remixFilenameMatchPrefix(remixRootDir, filename, oldPath)
     ) {
       // TODO make sure the prefix search only happens when it makes sense so
       const projectFile = projectContents[filename]
 
-      const maybeNewFilePathForRemix = isInsideRemixFolder(filename)
-        ? renameRemixFile(filename, oldPath, newPath)
+      const maybeNewFilePathForRemix = isInsideRemixFolder(remixRootDir, filename)
+        ? renameRemixFile({
+            remixRootDir: remixRootDir,
+            filename: filename,
+            oldPath: oldPath,
+            newPath: newPath,
+          })
         : null
       if (maybeNewFilePathForRemix?.renamedOptionalPrefix) {
         renamedOptionalPrefix = true

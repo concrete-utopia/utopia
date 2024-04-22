@@ -21,7 +21,7 @@ import type { MutableUtopiaCtxRefData } from '../ui-jsx-canvas-renderer/ui-jsx-c
 import type { ElementPath, TextFile } from '../../../core/shared/project-file-types'
 import type { ExecutionScope } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import { createExecutionScope } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
-import type { RemixRoutingTable } from '../../editor/store/remix-derived-data'
+import { type RemixRoutingTable } from '../../editor/store/remix-derived-data'
 import { NO_OP } from '../../../core/shared/utils'
 import * as EP from '../../../core/shared/element-path'
 import {
@@ -544,10 +544,12 @@ export function isPageTemplate(u: unknown): u is PageTemplate {
   return u != null && typeof u == 'object' && maybe.label != null && maybe.path != null
 }
 
-const AppRoutesPrefix = '/app/routes/'
+function appRoutesPrefix(remixRootDir: string): string {
+  return remixRootDir.replace(/\/*$/, '/') // make sure there's a trailing slash
+}
 
-export function isInsideRemixFolder(filename: string): boolean {
-  return filename.startsWith(AppRoutesPrefix)
+export function isInsideRemixFolder(remixRootDir: string, filename: string): boolean {
+  return filename.startsWith(appRoutesPrefix(remixRootDir))
 }
 
 const possibleRemixSuffixSeparators = ['.', '_.']
@@ -556,20 +558,25 @@ const possibleRemixSuffixSeparators = ['.', '_.']
  * Return whether the given filename is a valid Remix route filename that is
  * a prefix of the oldPath.
  */
-export function remixFilenameMatchPrefix(filename: string, oldPath: string): boolean {
+export function remixFilenameMatchPrefix(
+  remixRootDir: string,
+  filename: string,
+  oldPath: string,
+): boolean {
+  const remixRootDirPrefix = appRoutesPrefix(remixRootDir)
   // if it's not a remix route (meaning a .jsx file inside the /app/routes/ folder), stop here
   const isRemixRoute =
-    isInsideRemixFolder(oldPath) &&
-    isInsideRemixFolder(filename) &&
+    isInsideRemixFolder(remixRootDirPrefix, oldPath) &&
+    isInsideRemixFolder(remixRootDirPrefix, filename) &&
     path.extname(filename) === '.jsx'
   if (!isRemixRoute) {
     return false
   }
 
   // to make it easier to compare paths, make them relative to the /app/routes folder and remove any optional prefixes
-  const relativeOldPath = oldPath.replace(AppRoutesPrefix, '') // without /app/routes
+  const relativeOldPath = oldPath.replace(remixRootDirPrefix, '') // without /app/routes
   const relativeFilename = filename
-    .replace(AppRoutesPrefix, '') // without /app/routes
+    .replace(remixRootDirPrefix, '') // without /app/routes
     .replace(/^\([^)]+\)\./, '') // without optional prefix
 
   return possibleRemixSuffixSeparators.some((sep) =>
@@ -577,18 +584,25 @@ export function remixFilenameMatchPrefix(filename: string, oldPath: string): boo
   )
 }
 
-export function renameRemixFile(
-  filename: string,
-  oldPath: string,
-  newPath: string,
-): {
+export function renameRemixFile({
+  remixRootDir,
+  filename,
+  oldPath,
+  newPath,
+}: {
+  remixRootDir: string
+  filename: string
+  oldPath: string
+  newPath: string
+}): {
   filename: string
   renamedOptionalPrefix: boolean
 } {
+  const remixRootDirPrefix = appRoutesPrefix(remixRootDir)
   // 1. to make things easier, make all the paths relative to the Remix folder
-  const relativeFilename = filename.replace(AppRoutesPrefix, '')
-  const relativeOldPath = oldPath.replace(AppRoutesPrefix, '')
-  const relativeNewPath = newPath.replace(AppRoutesPrefix, '')
+  const relativeFilename = filename.replace(remixRootDirPrefix, '')
+  const relativeOldPath = oldPath.replace(remixRootDirPrefix, '')
+  const relativeNewPath = newPath.replace(remixRootDirPrefix, '')
 
   // 2. tokenize the relative paths, where each token is a "piece" of the path (see the comment doc for tokenizeRemixFilename).
   const filenameTokens = tokenizeRemixFilename(relativeFilename)
@@ -631,7 +645,7 @@ export function renameRemixFile(
   }
 
   // 4. merge the result tokens with the dot separator and prepend /app/routes for the final filename
-  const result = urljoin(AppRoutesPrefix, resultTokens.join('.'))
+  const result = urljoin(remixRootDir, resultTokens.join('.'))
 
   return {
     filename: result,

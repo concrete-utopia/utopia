@@ -5,6 +5,8 @@ import {
   removeFeaturedRouteFromPackageJson,
 } from './remix-utils'
 
+const remixRootDir = '/app/routes'
+
 describe('addNewFeaturedRouteToPackageJson', () => {
   it('adds the new path to the featured routes', async () => {
     const got = addNewFeaturedRouteToPackageJson('foo/bar')(`
@@ -163,7 +165,7 @@ describe('removeFeaturedRouteFromPackageJson', () => {
 
 describe('remixFilenameMatchPrefix', () => {
   function findChildrenPaths(tree: string[], target: string) {
-    return tree.filter((path) => remixFilenameMatchPrefix(path, target))
+    return tree.filter((path) => remixFilenameMatchPrefix(remixRootDir, path, target))
   }
   it('simple paths', async () => {
     const got = findChildrenPaths(
@@ -216,57 +218,72 @@ describe('remixFilenameMatchPrefix', () => {
 
 describe('renameRemixFile', () => {
   it('rename a file with match', async () => {
-    const got = renameRemixFile('/app/routes/foo.jsx', '/app/routes/foo', '/app/routes/bar')
+    const got = renameRemixFile({
+      remixRootDir: remixRootDir,
+      filename: '/app/routes/foo.jsx',
+      oldPath: '/app/routes/foo',
+      newPath: '/app/routes/bar',
+    })
     expect(got.filename).toBe('/app/routes/bar.jsx')
     expect(got.renamedOptionalPrefix).toBe(false)
   })
   it('rename a file with underscore suffix', async () => {
-    const got = renameRemixFile(
-      '/app/routes/foo_.bar.$baz.$qux.jsx',
-      '/app/routes/foo',
-      '/app/routes/HELLO',
-    )
+    const got = renameRemixFile({
+      remixRootDir: remixRootDir,
+      filename: '/app/routes/foo_.bar.$baz.$qux.jsx',
+      oldPath: '/app/routes/foo',
+      newPath: '/app/routes/HELLO',
+    })
     expect(got.filename).toBe('/app/routes/HELLO_.bar.$baz.$qux.jsx')
     expect(got.renamedOptionalPrefix).toBe(false)
   })
   it('rename a file with prefix', async () => {
-    const got = renameRemixFile('/app/routes/foo.bar.jsx', '/app/routes/foo', '/app/routes/baz')
+    const got = renameRemixFile({
+      remixRootDir: remixRootDir,
+      filename: '/app/routes/foo.bar.jsx',
+      oldPath: '/app/routes/foo',
+      newPath: '/app/routes/baz',
+    })
     expect(got.filename).toBe('/app/routes/baz.bar.jsx')
     expect(got.renamedOptionalPrefix).toBe(false)
   })
   it('rename a file with optional prefix', async () => {
-    const got = renameRemixFile(
-      '/app/routes/($lang).foo.bar.jsx',
-      '/app/routes/foo',
-      '/app/routes/baz',
-    )
+    const got = renameRemixFile({
+      remixRootDir: remixRootDir,
+      filename: '/app/routes/($lang).foo.bar.jsx',
+      oldPath: '/app/routes/foo',
+      newPath: '/app/routes/baz',
+    })
     expect(got.filename).toBe('/app/routes/($lang).baz.bar.jsx')
     expect(got.renamedOptionalPrefix).toBe(true)
   })
   it('rename a file with multiple optional prefixes', async () => {
-    const got = renameRemixFile(
-      '/app/routes/($lang1).($lang2).(lang3).foo.bar.jsx',
-      '/app/routes/foo',
-      '/app/routes/baz',
-    )
+    const got = renameRemixFile({
+      remixRootDir: remixRootDir,
+      filename: '/app/routes/($lang1).($lang2).(lang3).foo.bar.jsx',
+      oldPath: '/app/routes/foo',
+      newPath: '/app/routes/baz',
+    })
     expect(got.filename).toBe('/app/routes/($lang1).($lang2).(lang3).baz.bar.jsx')
     expect(got.renamedOptionalPrefix).toBe(true)
   })
   it('rename a file with nested optional prefix', async () => {
-    const got = renameRemixFile(
-      '/app/routes/($lang).account.($var).foo.bar.jsx',
-      '/app/routes/($lang).account.foo',
-      '/app/routes/($lang).account.baz',
-    )
+    const got = renameRemixFile({
+      remixRootDir: remixRootDir,
+      filename: '/app/routes/($lang).account.($var).foo.bar.jsx',
+      oldPath: '/app/routes/($lang).account.foo',
+      newPath: '/app/routes/($lang).account.baz',
+    })
     expect(got.filename).toBe('/app/routes/($lang).account.($var).baz.bar.jsx')
     expect(got.renamedOptionalPrefix).toBe(true)
   })
   it('rename a file with nested optional prefix and an underscore suffix', async () => {
-    const got = renameRemixFile(
-      '/app/routes/($lang).account.($var).foo_.bar.jsx',
-      '/app/routes/($lang).account.foo',
-      '/app/routes/($lang).account.baz',
-    )
+    const got = renameRemixFile({
+      remixRootDir: remixRootDir,
+      filename: '/app/routes/($lang).account.($var).foo_.bar.jsx',
+      oldPath: '/app/routes/($lang).account.foo',
+      newPath: '/app/routes/($lang).account.baz',
+    })
     expect(got.filename).toBe('/app/routes/($lang).account.($var).baz_.bar.jsx')
     expect(got.renamedOptionalPrefix).toBe(true)
   })
