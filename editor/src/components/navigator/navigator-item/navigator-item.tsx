@@ -2,7 +2,7 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import createCachedSelector from 're-reselect'
-import React, { useMemo } from 'react'
+import React from 'react'
 import type { ConditionalCase } from '../../../core/model/conditionals'
 import {
   findMaybeConditionalExpression,
@@ -844,10 +844,7 @@ export const NavigatorItem: React.FunctionComponent<
     ? 'component'
     : resultingStyle.iconColor
 
-  const currentlyRenaming = useMemo(
-    () => EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath),
-    [props.renamingTarget, props.navigatorEntry.elementPath],
-  )
+  const currentlyRenaming = EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath)
 
   return (
     <div
