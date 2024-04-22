@@ -87,7 +87,6 @@ import { parseEnumValue } from './property-control-values'
 import {
   parseComponentExample,
   parseComponentInsertOption,
-  parsePlaceholder,
   parsePreferredContents,
 } from './property-controls-local'
 

@@ -7,7 +7,6 @@ import type {
   ComponentInsertOption,
   ComponentExample,
   ChildrenSpec,
-  PlaceholderSpec as PlaceholderSpecFromUtopia,
   Children,
   PreferredContents,
 } from 'utopia-api/core'
@@ -1024,26 +1023,9 @@ export function parsePreferredContents(value: unknown): ParseResult<PreferredCon
   )(value)
 }
 
-function parseTextPlaceholder(value: unknown): ParseResult<PlaceholderSpecFromUtopia> {
-  return mapEither((text) => ({ text }), objectKeyParser(parseString, 'text')(value))
-}
-
-function parseSpacerPlaceholder(value: unknown): ParseResult<PlaceholderSpecFromUtopia> {
-  return applicative2Either(
-    (width, height) => ({ width, height }),
-    objectKeyParser(parseNumber, 'width')(value),
-    objectKeyParser(parseNumber, 'height')(value),
-  )
-}
-
-export const parsePlaceholder = parseAlternative(
-  [parseConstant('fill'), parseTextPlaceholder, parseSpacerPlaceholder],
-  'Invalid placeholder value',
-)
-
-export function parseChildrenSpec(value: unknown): ParseResult<ChildrenSpec> {
-  return applicative2Either(
-    (preferredContents, placeholder) => ({ preferredContents, placeholder }),
+export const parseChildrenSpec = (value: unknown): ParseResult<ChildrenSpec> => {
+  return mapEither(
+    (preferredContents) => ({ preferredContents }),
     optionalObjectKeyParser(
       parseAlternative<PreferredContents | PreferredContents[]>(
         [parsePreferredContents, parseArray(parsePreferredContents)],
@@ -1051,7 +1033,6 @@ export function parseChildrenSpec(value: unknown): ParseResult<ChildrenSpec> {
       ),
       'preferredContents',
     )(value),
-    optionalObjectKeyParser(parsePlaceholder, 'placeholder')(value),
   )
 }
 

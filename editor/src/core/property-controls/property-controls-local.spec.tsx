@@ -1324,7 +1324,6 @@ describe('registered property controls', () => {
             component: Card,
             properties: { },
             children: {
-              placeholder: { text: "Content" },
               preferredContents: [
                 { component: 'span', variants: { name: 'span' } },
                 {
@@ -1442,15 +1441,12 @@ describe('registered property controls', () => {
             properties: {
               label: {
                 control: 'jsx',
-                placeholder: { width: 200, height: 200 }
               },
               header: {
                 control: 'jsx',
-                placeholder: { text: 'Header' }
               },
               footer: {
                 control: 'jsx',
-                placeholder: 'fill'
               }
             }
           },
@@ -1502,7 +1498,6 @@ describe('registered property controls', () => {
             properties: {
               label: {
                 control: 'jsx',
-                placeholder: { width: 200, height: 200 },
                 preferredContents: [
                   { component: 'span', variants: { name: 'span' } },
                   {
