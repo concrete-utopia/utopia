@@ -5,7 +5,7 @@ import {
   removeFeaturedRouteFromPackageJson,
 } from './remix-utils'
 
-const remixRootDir = '/app/routes'
+const remixRootDir = '/app'
 
 describe('addNewFeaturedRouteToPackageJson', () => {
   it('adds the new path to the featured routes', async () => {
