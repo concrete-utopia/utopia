@@ -2520,6 +2520,7 @@ export interface ElementInstanceMetadata {
   conditionValue: ConditionValue
   textContent: string | null
   earlyReturn: EarlyReturn | null
+  isPlaceholder: boolean
 }
 
 export function elementInstanceMetadata(
@@ -2538,6 +2539,7 @@ export function elementInstanceMetadata(
   conditionValue: ConditionValue,
   textContent: string | null,
   earlyReturn: EarlyReturnResult | EarlyReturnVoid | null,
+  isPlaceholder: boolean,
 ): ElementInstanceMetadata {
   return {
     elementPath: elementPath,
@@ -2555,6 +2557,7 @@ export function elementInstanceMetadata(
     conditionValue: conditionValue,
     textContent: textContent,
     earlyReturn: earlyReturn,
+    isPlaceholder: isPlaceholder,
   }
 }
 

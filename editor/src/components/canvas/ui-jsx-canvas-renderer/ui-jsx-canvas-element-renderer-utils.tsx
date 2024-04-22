@@ -257,6 +257,7 @@ export function renderCoreElement(
           imports,
           'not-a-conditional',
           null,
+          false,
         )
       }
 
@@ -312,6 +313,8 @@ export function renderCoreElement(
           imports,
           filePath,
           variablesInScope,
+          'real-element',
+          false,
         )
       }
       const innerRender = createLookupRender(
@@ -392,6 +395,7 @@ export function renderCoreElement(
             default: defaultConditionValue,
           },
           null,
+          false,
         )
       }
 
@@ -444,6 +448,8 @@ export function renderCoreElement(
           imports,
           filePath,
           variablesInScope,
+          'real-element',
+          false,
         )
       }
 
@@ -466,6 +472,7 @@ export function renderCoreElement(
           imports,
           'not-a-conditional',
           null,
+          false,
         )
       }
 
@@ -496,6 +503,8 @@ export function renderCoreElement(
           imports,
           filePath,
           variablesInScope,
+          'real-element',
+          false,
         )
       }
 
@@ -583,6 +592,7 @@ function renderJSXElement(
 
   const elementIsScene = isElementImportedFromModule('utopia-api', 'Scene')
   const elementIsRemixScene = isElementImportedFromModule('utopia-api', 'RemixScene')
+  const elementIsPlaceholder = isElementImportedFromModule('utopia-api', 'Placeholder')
 
   const element = (() => {
     if (elementIsScene) {
@@ -690,6 +700,7 @@ function renderJSXElement(
         filePath,
         variablesInScope,
         'text-editor',
+        elementIsPlaceholder,
       )
     }
     return buildSpyWrappedElement(
@@ -706,6 +717,8 @@ function renderJSXElement(
       imports,
       filePath,
       variablesInScope,
+      'real-element',
+      elementIsPlaceholder,
     )
   } else {
     return renderComponentUsingJsxFactoryFunction(

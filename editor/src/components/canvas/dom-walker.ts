@@ -814,6 +814,7 @@ function collectAndCreateMetadataForElement(
       'not-a-conditional',
       textContentsMaybe,
       null,
+      false,
     )
   })
 
@@ -1196,6 +1197,7 @@ function walkCanvasRootFragment(
       'not-a-conditional',
       null,
       null,
+      false,
     )
 
     rootMetadata[EP.toString(canvasRootPath)] = metadata

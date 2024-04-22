@@ -72,6 +72,7 @@ import { useStatus } from '../../../../liveblocks.config'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { MultiplayerPresence } from '../multiplayer-presence'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { PlaceholderChildrenOutlineControl } from './placeholder-outline'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -591,6 +592,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
                 )}
                 {when(isSelectMode(editorMode), <DistanceGuidelineControl />)}
                 <GuidelineControls />
+                {when(isSelectMode(editorMode), <PlaceholderChildrenOutlineControl />)}
               </>,
             )}
           </>,

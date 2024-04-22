@@ -1734,6 +1734,7 @@ export const MetadataUtils = {
           isEmotionOrStyledComponent: spyElem.isEmotionOrStyledComponent,
           label: spyElem.label,
           importInfo: spyElem.importInfo,
+          isPlaceholder: spyElem.isPlaceholder,
         }
         workingElements[EP.toString(domElem.elementPath)] = elem
       }
@@ -2864,6 +2865,7 @@ export function createFakeMetadataForElement(
     'not-a-conditional',
     null,
     null,
+    false,
   )
 }
 

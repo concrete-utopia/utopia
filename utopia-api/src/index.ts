@@ -7,6 +7,7 @@ export * from './primitives/ellipse'
 export * from './primitives/scene'
 export * from './primitives/remix-scene'
 export * from './primitives/storyboard'
+export * from './primitives/placeholder'
 
 export * from './helpers/helper-functions'
 export * from './property-controls/factories'
