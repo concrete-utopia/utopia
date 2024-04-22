@@ -74,9 +74,9 @@ export function useGridPanelState() {
   const permissions = usePermissions()
   React.useEffect(() => {
     if (!permissions.edit) {
-      setState(filterCodeEditorFromPanelState(state))
+      setState((s) => filterCodeEditorFromPanelState(s))
     }
-  }, [permissions.edit, setState, state])
+  }, [permissions.edit, setState])
 
   return stateAtom
 }
@@ -267,7 +267,7 @@ export function updateLayout(
 }
 
 export function useUpdateGridPanelLayout(): (panelName: PanelName, update: LayoutUpdate) => void {
-  const setStoredState = useSetAtom(GridPanelsStateAtom)
+  const [, setStoredState] = useGridPanelState()
 
   return React.useCallback(
     (panelName: PanelName, update: LayoutUpdate) => {
@@ -290,7 +290,7 @@ export function useUpdateGridPanelLayout(): (panelName: PanelName, update: Layou
 }
 
 export function useUpdateGridPanelLayoutPutCodeEditorBelowNavigator(): () => void {
-  const setStoredState = useSetAtom(GridPanelsStateAtom)
+  const [, setStoredState] = useGridPanelState()
 
   return React.useCallback(() => {
     setStoredState((stored) => {
@@ -329,7 +329,7 @@ export function useColumnWidths(): [
   Array<number>,
   (columnIndex: number, newWidth: number) => void,
 ] {
-  const [panelState, setPanelState] = useAtom(GridPanelsStateAtom)
+  const [, setPanelState] = useGridPanelState()
   const visiblePanels = useVisibleGridPanels()
 
   // start with the default value
