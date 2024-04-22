@@ -545,7 +545,7 @@ export function isPageTemplate(u: unknown): u is PageTemplate {
 }
 
 function appRoutesPrefix(remixRootDir: string): string {
-  return remixRootDir.replace(/\/*$/, '/') // make sure there's a trailing slash
+  return urljoin(remixRootDir, 'routes') + '/' // the trailing slash acts as a separator
 }
 
 export function isInsideRemixFolder(remixRootDir: string, filename: string): boolean {
@@ -563,15 +563,16 @@ export function remixFilenameMatchPrefix(
   filename: string,
   oldPath: string,
 ): boolean {
-  const remixRootDirPrefix = appRoutesPrefix(remixRootDir)
   // if it's not a remix route (meaning a .jsx file inside the /app/routes/ folder), stop here
   const isRemixRoute =
-    isInsideRemixFolder(remixRootDirPrefix, oldPath) &&
-    isInsideRemixFolder(remixRootDirPrefix, filename) &&
+    isInsideRemixFolder(remixRootDir, oldPath) &&
+    isInsideRemixFolder(remixRootDir, filename) &&
     path.extname(filename) === '.jsx'
   if (!isRemixRoute) {
     return false
   }
+
+  const remixRootDirPrefix = appRoutesPrefix(remixRootDir)
 
   // to make it easier to compare paths, make them relative to the /app/routes folder and remove any optional prefixes
   const relativeOldPath = oldPath.replace(remixRootDirPrefix, '') // without /app/routes
@@ -649,7 +650,7 @@ export function renameRemixFile({
   }
 
   // 4. merge the result tokens with the dot separator and prepend /app/routes for the final filename
-  const result = urljoin(remixRootDir, resultTokens.join('.'))
+  const result = urljoin(remixRootDirPrefix, resultTokens.join('.'))
 
   return {
     filename: result,
