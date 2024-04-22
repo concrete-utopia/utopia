@@ -450,6 +450,7 @@ import {
   ExportDetailKeepDeepEquality,
   ImportDetailsKeepDeepEquality,
   NavigatorStateKeepDeepEquality,
+  ParseSuccessKeepDeepEquality,
   TopLevelElementKeepDeepEquality,
 } from '../store/store-deep-equality-instances'
 import type { MouseButtonsPressed } from '../../../utils/mouse'
@@ -475,6 +476,7 @@ import type { ShortcutConfiguration } from '../shortcut-definitions'
 import { ElementInstanceMetadataMapKeepDeepEquality } from '../store/store-deep-equality-instances'
 import {
   addImports,
+  addToast,
   clearImageFileBlob,
   enableInsertModeForJSXElement,
   finishCheckpointTimer,
@@ -580,11 +582,15 @@ import {
 import {
   addNewFeaturedRouteToPackageJson,
   addOrReplaceFeaturedRouteToPackageJson,
+  isInsideRemixFolder,
+  remixFilenameMatchPrefix,
+  renameRemixFile,
   removeFeaturedRouteFromPackageJson,
 } from '../../canvas/remix/remix-utils'
 import type { FixUIDsState } from '../../../core/workers/parser-printer/uid-fix'
 import { fixTopLevelElementsUIDs } from '../../../core/workers/parser-printer/uid-fix'
 import { nextSelectedTab } from '../../navigator/left-pane/left-pane-utils'
+import { getRemixRootDir } from '../store/remix-derived-data'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -1234,6 +1240,7 @@ interface ReplaceFilePathSuccess {
   type: 'SUCCESS'
   projectContents: ProjectContentTreeRoot
   updatedFiles: Array<{ oldPath: string; newPath: string }>
+  renamedOptionalPrefix: boolean
 }
 
 interface ReplaceFilePathFailure {
@@ -1243,7 +1250,7 @@ interface ReplaceFilePathFailure {
 
 type ReplaceFilePathResult = ReplaceFilePathFailure | ReplaceFilePathSuccess
 
-function replaceFilePath(
+export function replaceFilePath(
   oldPath: string,
   newPath: string,
   projectContentsTree: ProjectContentTreeRoot,
@@ -1256,17 +1263,33 @@ function replaceFilePath(
     ...projectContents,
   }
   let updatedFiles: Array<{ oldPath: string; newPath: string }> = []
+
+  const remixRootDir = getRemixRootDir(projectContentsTree)
+
+  let renamedOptionalPrefix = false
   Utils.fastForEach(Object.keys(projectContents), (filename) => {
-    const tokens = filename.split('.')
-    const extension = tokens[tokens.length - 1]
     if (
       filename === oldPath ||
       filename.startsWith(oldPath + '/') ||
-      (extension === 'jsx' && filename.startsWith(oldPath + '.')) // remix routes
+      remixFilenameMatchPrefix(remixRootDir, filename, oldPath)
     ) {
       // TODO make sure the prefix search only happens when it makes sense so
       const projectFile = projectContents[filename]
-      const newFilePath = filename.replace(oldPath, newPath)
+
+      const maybeNewFilePathForRemix = isInsideRemixFolder(remixRootDir, filename)
+        ? renameRemixFile({
+            remixRootDir: remixRootDir,
+            filename: filename,
+            oldPath: oldPath,
+            newPath: newPath,
+          })
+        : null
+      if (maybeNewFilePathForRemix?.renamedOptionalPrefix) {
+        renamedOptionalPrefix = true
+      }
+
+      const newFilePath = maybeNewFilePathForRemix?.filename ?? filename.replace(oldPath, newPath)
+
       const fileType = isDirectory(projectFile) ? 'DIRECTORY' : fileTypeFromFileName(newFilePath)
       if (fileType == null) {
         // Can't identify the file type.
@@ -1365,15 +1388,24 @@ function replaceFilePath(
         }
       })
 
-      updatedProjectContents[filename] = saveTextFileContents(
-        projectFile,
-        textFileContents(
-          projectFile.fileContents.code,
-          updatedParseResult,
-          RevisionsState.ParsedAhead,
-        ),
-        projectFile.lastSavedContents == null,
-      )
+      // Only mark these as parsed ahead if they have meaningfully changed,
+      // or if the filename has been changed for this file.
+      const oldFilename =
+        updatedFiles.find((updatedFile) => updatedFile.newPath === filename) ?? filename
+      if (
+        oldFilename !== filename ||
+        !ParseSuccessKeepDeepEquality(projectFile.fileContents.parsed, updatedParseResult).areEqual
+      ) {
+        updatedProjectContents[filename] = saveTextFileContents(
+          projectFile,
+          textFileContents(
+            projectFile.fileContents.code,
+            updatedParseResult,
+            RevisionsState.ParsedAhead,
+          ),
+          projectFile.lastSavedContents == null,
+        )
+      }
     }
   })
   // Check if we discovered an error.
@@ -1382,6 +1414,7 @@ function replaceFilePath(
       type: 'SUCCESS',
       projectContents: contentsToTree(updatedProjectContents),
       updatedFiles: updatedFiles,
+      renamedOptionalPrefix: renamedOptionalPrefix,
     }
   } else {
     return {
@@ -6188,7 +6221,7 @@ function updateFilePath(
     oldPath: string
     newPath: string
   },
-) {
+): EditorState {
   const replaceFilePathResults = replaceFilePath(
     params.oldPath,
     params.newPath,
@@ -6199,7 +6232,7 @@ function updateFilePath(
     return UPDATE_FNS.ADD_TOAST(toastAction, editor)
   } else {
     let currentDesignerFile = editor.canvas.openFile
-    const { projectContents, updatedFiles } = replaceFilePathResults
+    const { projectContents, updatedFiles, renamedOptionalPrefix } = replaceFilePathResults
     const mainUIFile = getMainUIFromModel(editor)
     let updateUIFile: (e: EditorModel) => EditorModel = (e) => e
     let updatePropertyControls: (e: EditorModel) => EditorModel = (e) => e
@@ -6238,7 +6271,7 @@ function updateFilePath(
       }
     })
 
-    return updatePropertyControls(
+    const withUpdatedPropertyControls = updatePropertyControls(
       updateUIFile({
         ...editor,
         projectContents: projectContents,
@@ -6253,5 +6286,12 @@ function updateFilePath(
         },
       }),
     )
+
+    return renamedOptionalPrefix
+      ? UPDATE_FNS.ADD_TOAST(
+          addToast(notice('Renamed Remix routes with optional prefixes.', 'NOTICE')),
+          withUpdatedPropertyControls,
+        )
+      : withUpdatedPropertyControls
   }
 }
