@@ -627,15 +627,19 @@ export function renameRemixFile({
       } else if (filenameTokens[i].endsWith(').' + oldPathTokens[i])) {
         // the filename token contains optional prefixes, so manipulate the replacement accordingly
         renamedOptionalPrefix = true
-        return replaceTokenForOptionalPrefix(filenameTokens[i], oldPathTokens[i], newPathTokens[i])
+        return replaceTokenForOptionalPrefix({
+          originalToken: filenameTokens[i],
+          portionToBeReplaced: oldPathTokens[i],
+          replacementPortion: newPathTokens[i],
+        })
       } else if (filenameTokens[i].endsWith(').' + oldPathTokens[i] + '_')) {
         // the filename token contains optional prefixes and an underscore suffix, so manipulate the replacement accordingly
         renamedOptionalPrefix = true
-        return replaceTokenForOptionalPrefix(
-          filenameTokens[i],
-          oldPathTokens[i] + '_',
-          newPathTokens[i] + '_',
-        )
+        return replaceTokenForOptionalPrefix({
+          originalToken: filenameTokens[i],
+          portionToBeReplaced: oldPathTokens[i] + '_',
+          replacementPortion: newPathTokens[i] + '_',
+        })
       } else {
         // no match, return the original token and keep going
         return filenameTokens[i]
@@ -689,11 +693,15 @@ function tokenizeRemixFilename(filename: string): string[] {
  * 	returns
  * 	'($foo).(bar).qux'
  */
-function replaceTokenForOptionalPrefix(
-  originalToken: string,
-  portionToBeReplaced: string,
-  replacementPortion: string,
-): string {
+function replaceTokenForOptionalPrefix({
+  originalToken,
+  portionToBeReplaced,
+  replacementPortion,
+}: {
+  originalToken: string
+  portionToBeReplaced: string
+  replacementPortion: string
+}): string {
   const lastPortionOfOptional = '\\)\\.'
   const endOfString = '$'
   const re = new RegExp(lastPortionOfOptional + portionToBeReplaced + endOfString)
