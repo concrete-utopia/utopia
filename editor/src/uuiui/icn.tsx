@@ -217,6 +217,7 @@ export const Icn = React.memo(
         data-testid={props.testId}
         data-category={props.category}
         data-type={props.type}
+        data-color={iconColor}
       />
     )
     if (props.tooltipText == null) {
