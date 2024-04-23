@@ -147,6 +147,7 @@ export interface InsertJSXElement {
   jsxElement: JSXElement
   parent: ElementPath | null
   importsToAdd: Imports
+  elementToReplace: ElementPath | null
 }
 
 export interface InsertAttributeOtherJavascriptIntoElement {

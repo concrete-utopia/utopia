@@ -196,6 +196,8 @@ export function getNavigatorEntryLabel(
     }
     case 'RENDER_PROP':
       return navigatorEntry.propName
+    case 'RENDER_PROP_VALUE':
+      return labelForTheElement
     case 'INVALID_OVERRIDE':
       return navigatorEntry.message
     case 'SLOT':
@@ -347,6 +349,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     renamingTarget: renamingTarget,
     windowStyle: props.windowStyle,
     visibleNavigatorTargets: visibleNavigatorTargets,
+    navigatorEntry: props.navigatorEntry,
   }
 
   if (props.navigatorEntry.type === 'REGULAR') {
@@ -394,6 +397,14 @@ export const NavigatorItemWrapper: React.FunctionComponent<
       isOutletOrDescendantOfOutlet: false,
     }
     return <RenderPropNavigatorItemContainer {...entryProps} />
+  }
+
+  if (props.navigatorEntry.type === 'RENDER_PROP_VALUE') {
+    const entryProps: NavigatorItemDragAndDropWrapperProps = {
+      ...navigatorItemProps,
+      elementPath: props.navigatorEntry.elementPath,
+    }
+    return <NavigatorItemContainer {...entryProps} />
   }
 
   if (props.navigatorEntry.type === 'SLOT') {
