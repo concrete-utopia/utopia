@@ -2053,7 +2053,7 @@ export const MetadataUtils = {
         )
         if (isRight(attributes)) {
           const styleAttributes = getJSXAttribute(attributes.value, 'style')
-          if (styleAttributes != null) {
+          if (styleAttributes == null) {
             return 'subdued'
           }
         }
