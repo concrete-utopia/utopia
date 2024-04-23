@@ -1,5 +1,5 @@
 import immutableUpdate from 'immutability-helper'
-import { atom, useAtom, useSetAtom } from 'jotai'
+import { atom, useAtom } from 'jotai'
 import findLastIndex from 'lodash.findlastindex'
 import React from 'react'
 import { accumulate, insert, removeAll, removeIndexFromArray } from '../../core/shared/array-utils'
@@ -41,7 +41,10 @@ function filterCodeEditorFromPanelState(layout: StoredLayout): StoredLayout {
   }))
 }
 
-export function useGridPanelState() {
+export function useGridPanelState(): [
+  StoredLayout,
+  (cb: StoredLayout | ((prev: StoredLayout) => StoredLayout)) => void,
+] {
   const [loaded, setLoaded] = React.useState(false)
   const stateAtom = useAtom(GridPanelsStateAtom)
   const [state, setState] = stateAtom
@@ -72,13 +75,9 @@ export function useGridPanelState() {
   }, [loaded, state, projectId])
 
   const permissions = usePermissions()
-  React.useEffect(() => {
-    if (!permissions.edit) {
-      setState((s) => filterCodeEditorFromPanelState(s))
-    }
-  }, [permissions.edit, setState])
+  const filteredState = permissions.edit ? state : filterCodeEditorFromPanelState(state)
 
-  return stateAtom
+  return [filteredState, setState]
 }
 
 function useVisibleGridPanels() {
