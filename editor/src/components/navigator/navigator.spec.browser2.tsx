@@ -4757,8 +4757,8 @@ describe('Navigator', () => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/old-container',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/old-container/wrapper',
-          'regular-utopia-storyboard-uid/dragme1',
           'regular-utopia-storyboard-uid/dragme2',
+          'regular-utopia-storyboard-uid/dragme1',
         ])
         expect(
           MetadataUtils.getFrameOrZeroRectInCanvasCoords(
@@ -5049,7 +5049,7 @@ describe('Navigator', () => {
         'regular-sb/scene/pg:dbc',
         'regular-sb/scene/pg:dbc/78c',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-        'regular-sb/scene/pg:dbc/78c/pro', // <- the inserted render prop
+        'render-prop-value-sb/scene/pg:dbc/78c/pro-header', // <- the inserted render prop
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
         'regular-sb/scene/pg:dbc/78c/88b',
       ])
@@ -5061,7 +5061,7 @@ describe('Navigator', () => {
         'regular-sb/scene/pg:dbc',
         'regular-sb/scene/pg:dbc/78c',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-        'regular-sb/scene/pg:dbc/78c/pro', // <- the inserted render prop
+        'render-prop-value-sb/scene/pg:dbc/78c/pro-header', // <- the inserted render prop
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
         'regular-sb/scene/pg:dbc/78c/88b',
       ])
@@ -5094,7 +5094,7 @@ describe('Navigator', () => {
         'regular-sb/scene/pg:dbc',
         'regular-sb/scene/pg:dbc/78c',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-        'regular-sb/scene/pg:dbc/78c/pro', // <- the inserted render prop
+        'render-prop-value-sb/scene/pg:dbc/78c/pro-header', // <- the inserted render prop
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
         'regular-sb/scene/pg:dbc/78c/88b',
       ])
@@ -5106,7 +5106,7 @@ describe('Navigator', () => {
         'regular-sb/scene/pg:dbc',
         'regular-sb/scene/pg:dbc/78c',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-        'regular-sb/scene/pg:dbc/78c/pro', // <- the inserted render prop
+        'render-prop-value-sb/scene/pg:dbc/78c/pro-header', // <- the inserted render prop
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
         'regular-sb/scene/pg:dbc/78c/88b',
       ])
@@ -5139,7 +5139,7 @@ describe('Navigator', () => {
         'regular-sb/scene/pg:dbc',
         'regular-sb/scene/pg:dbc/78c',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-        'regular-sb/scene/pg:dbc/78c/pro', // <- the inserted render prop
+        'render-prop-value-sb/scene/pg:dbc/78c/pro-header', // <- the inserted render prop
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
         'regular-sb/scene/pg:dbc/78c/88b',
       ])
@@ -5151,7 +5151,7 @@ describe('Navigator', () => {
         'regular-sb/scene/pg:dbc',
         'regular-sb/scene/pg:dbc/78c',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-        'regular-sb/scene/pg:dbc/78c/pro', // <- the inserted render prop
+        'render-prop-value-sb/scene/pg:dbc/78c/pro-header', // <- the inserted render prop
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
         'regular-sb/scene/pg:dbc/78c/88b',
       ])
@@ -5172,7 +5172,7 @@ describe('Navigator', () => {
         'regular-sb/scene/pg:dbc',
         'regular-sb/scene/pg:dbc/78c',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-        'regular-sb/scene/pg:dbc/78c/render-prop-parent',
+        'render-prop-value-sb/scene/pg:dbc/78c/render-prop-parent-header',
         'regular-sb/scene/pg:dbc/78c/render-prop-parent/render-prop-child',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
         'regular-sb/scene/pg:dbc/78c/88b',
@@ -5190,7 +5190,7 @@ describe('Navigator', () => {
         'regular-sb/scene/pg:dbc',
         'regular-sb/scene/pg:dbc/78c',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-        'regular-sb/scene/pg:dbc/78c/render-prop-parent',
+        'render-prop-value-sb/scene/pg:dbc/78c/render-prop-parent-header',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
         'regular-sb/scene/pg:dbc/78c/88b',
       ])
@@ -5201,7 +5201,7 @@ describe('Navigator', () => {
         'regular-sb/scene/pg:dbc',
         'regular-sb/scene/pg:dbc/78c',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-        'regular-sb/scene/pg:dbc/78c/render-prop-parent',
+        'render-prop-value-sb/scene/pg:dbc/78c/render-prop-parent-header',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
         'regular-sb/scene/pg:dbc/78c/88b',
       ])
@@ -5222,7 +5222,7 @@ describe('Navigator', () => {
         'regular-sb/scene/pg:dbc',
         'regular-sb/scene/pg:dbc/78c',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-        'regular-sb/scene/pg:dbc/78c/render-prop-parent',
+        'render-prop-value-sb/scene/pg:dbc/78c/render-prop-parent-header',
         'regular-sb/scene/pg:dbc/78c/render-prop-parent/render-prop-child',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
         'regular-sb/scene/pg:dbc/78c/88b',
@@ -5568,7 +5568,7 @@ describe('Navigator row order', () => {
         'regular-sb/scene/pg:dbc',
         'regular-sb/scene/pg:dbc/78c',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-        'regular-sb/scene/pg:dbc/78c/a6e',
+        'render-prop-value-sb/scene/pg:dbc/78c/a6e-header',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
         'regular-sb/scene/pg:dbc/78c/88b',
       ],
@@ -5581,7 +5581,7 @@ describe('Navigator row order', () => {
       'regular-sb/scene/pg:dbc',
       'regular-sb/scene/pg:dbc/78c',
       'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-      'regular-sb/scene/pg:dbc/78c/a6e',
+      'render-prop-value-sb/scene/pg:dbc/78c/a6e-header',
       'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
       'regular-sb/scene/pg:dbc/78c/88b',
     ])
