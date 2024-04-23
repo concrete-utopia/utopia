@@ -136,7 +136,7 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
               />
             </FlexRow>,
           )}
-          {when(isMyProject && isRemixProject && selectedTab === LeftMenuTab.Pages, <PagesPane />)}
+          {when(isRemixProject && selectedTab === LeftMenuTab.Pages, <PagesPane />)}
           {when(selectedTab === LeftMenuTab.Navigator, <NavigatorComponent />)}
           {when(isMyProject && selectedTab === LeftMenuTab.Project, <ContentsPane />)}
           {when(isMyProject && selectedTab === LeftMenuTab.Github, <GithubPane />)}
