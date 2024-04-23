@@ -472,7 +472,6 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
         instanceOriginalComponentName={props.instanceOriginalComponentName}
       />
       {(navigatorEntry.type === 'REGULAR' || navigatorEntry.type === 'RENDER_PROP_VALUE') &&
-      !props.isSlot &&
       (props.highlighted || props.selected) ? (
         <>
           <ReplaceElementButton

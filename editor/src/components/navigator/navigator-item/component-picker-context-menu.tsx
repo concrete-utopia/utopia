@@ -50,7 +50,7 @@ interface PreferredChildComponentDescriptorWithIcon extends PreferredChildCompon
   icon: Icon
 }
 
-const usePreferredChildrenForTargetProp = (
+const usePreferredChildrenForTarget = (
   target: ElementPath,
   insertionTarget: InsertionTarget,
 ): Array<PreferredChildComponentDescriptorWithIcon> => {
@@ -59,10 +59,10 @@ const usePreferredChildrenForTargetProp = (
   const targetElement = useEditorState(
     Substores.metadata,
     (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, targetParent),
-    'usePreferredChildrenForTargetProp targetElement',
+    'usePreferredChildrenForTarget targetElement',
   )
 
-  const preferredChildrenForTargetProp = useEditorState(
+  const preferredChildrenForTarget = useEditorState(
     Substores.restOfEditor,
     (store) => {
       const targetJSXElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(targetElement)
@@ -108,7 +108,7 @@ const usePreferredChildrenForTargetProp = (
     'usePreferredChildrenForSelectedElement propertyControlsInfo',
   )
 
-  return preferredChildrenForTargetProp ?? []
+  return preferredChildrenForTarget ?? []
 }
 
 type ShowComponentPickerContextMenu = (
@@ -299,10 +299,7 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
   ({ id, target, insertionTarget }) => {
     const { showComponentPickerContextMenu } = useShowComponentPickerContextMenu(`${id}-full`)
 
-    const preferredChildrenForTargetProp = usePreferredChildrenForTargetProp(
-      target,
-      insertionTarget,
-    )
+    const preferredChildrenForTarget = usePreferredChildrenForTarget(target, insertionTarget)
 
     const dispatch = useDispatch()
 
@@ -321,11 +318,11 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
     )
     const wrapperRef = React.useRef<HTMLDivElement>(null)
 
-    if (preferredChildrenForTargetProp == null) {
+    if (preferredChildrenForTarget == null) {
       return null
     }
 
-    const items: Array<ContextMenuItem<unknown>> = preferredChildrenForTargetProp
+    const items: Array<ContextMenuItem<unknown>> = preferredChildrenForTarget
       .flatMap<ContextMenuItem<unknown>>((data) => {
         const iconProps = iconPropsForIcon(data.icon)
 
@@ -374,10 +371,7 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
   ({ id, target, insertionTarget }) => {
     const { hideComponentPickerContextMenu } = useShowComponentPickerContextMenu(`${id}-full`)
 
-    const preferredChildrenForTargetProp = usePreferredChildrenForTargetProp(
-      target,
-      insertionTarget,
-    )
+    const preferredChildrenForTarget = usePreferredChildrenForTarget(target, insertionTarget)
 
     const dispatch = useDispatch()
 
@@ -403,16 +397,16 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
       e.stopPropagation()
     }, [])
 
-    if (preferredChildrenForTargetProp == null) {
+    if (preferredChildrenForTarget == null) {
       return null
     }
 
     return (
       <Menu key={id} id={id} animation={false} style={{ width: 457 }} onClick={squashEvents}>
         <ComponentPicker
-          insertionTargetName={(insertionTarget as any)?.prop ?? 'Child'}
-          preferredComponents={preferredChildrenForTargetProp}
-          allComponents={preferredChildrenForTargetProp}
+          insertionTargetName={(insertionTarget as any)?.prop ?? 'Child'} // This is horrible and needs to go in the bin anyway
+          preferredComponents={preferredChildrenForTarget}
+          allComponents={preferredChildrenForTarget}
           onItemClick={onItemClick}
           onClickCloseButton={hideComponentPickerContextMenu}
         />
