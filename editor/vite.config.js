@@ -22,7 +22,7 @@ export default defineConfig(({ mode }) => {
     publicDir: '../../resources/editor',
     server: {
       port: 8088,
-      host: '0.0.0.0',
+      host: '127.0.0.1',
       fs: {
         allow: [
           '../..',
@@ -34,7 +34,7 @@ export default defineConfig(({ mode }) => {
       },
       hmr: {
         protocol: 'ws',
-        host: '0.0.0.0',
+        host: '127.0.0.1',
         port: 8088,
       },
     },
