@@ -6,7 +6,15 @@ import React, { useCallback } from 'react'
 import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import type { PropertyPath } from '../../../../core/shared/project-file-types'
-import { useColorTheme, Button, FlexColumn, UtopiaStyles } from '../../../../uuiui'
+import {
+  useColorTheme,
+  Button,
+  FlexColumn,
+  UtopiaStyles,
+  UtopiaTheme,
+  SquareButton,
+  PopupList,
+} from '../../../../uuiui'
 import { setProp_UNSAFE } from '../../../editor/actions/action-creators'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { useRefEditorState } from '../../../editor/store/store-hook'
@@ -21,8 +29,10 @@ import type {
   VariableInfo,
 } from './variables-in-scope-utils'
 import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'
-import { assertNever } from '../../../../core/shared/utils'
+import { NO_OP, assertNever } from '../../../../core/shared/utils'
 import { isPrefixOf } from '../../../../core/shared/array-utils'
+import { ExpandableIndicator } from '../../../navigator/navigator-item/expandable-indicator'
+import { FlexRow } from 'utopia-api'
 
 export interface PrimitiveOption {
   type: 'primitive'
@@ -154,18 +164,32 @@ export const DataPickerPopup = React.memo(
           style={{
             ...props.style,
             backgroundColor: colorTheme.neutralBackground.value,
-            padding: '8px 16px',
+            padding: '8px 4px',
             boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
-            borderRadius: 8,
+            border: '1px solid lightgrey',
+            borderRadius: 4,
             alignItems: 'flex-start',
             width: '96%',
             maxWidth: '260px',
           }}
           data-testid={DataPickerPopupTestId}
         >
-          <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 16 }}>
-            <span>Data</span>
-          </div>
+          <UIGridRow
+            padded
+            variant='<-------1fr------>|----80px----|'
+            css={{ marginBottom: 16, alignSelf: 'stretch' }}
+          >
+            <div style={{ fontWeight: 600, flexGrow: 1 }}>Data</div>
+            <PopupList
+              containerMode='showBorderOnHover'
+              options={[
+                { value: 'Preferred', label: 'Preferred' },
+                { value: 'All', label: 'All' },
+              ]}
+              value={{ value: 'Preferred', label: 'Preferred' }}
+              onSubmitValue={NO_OP}
+            />
+          </UIGridRow>
           {variableNamesInScope.map((variableOption, idx) => {
             return (
               <ValueRow
@@ -242,9 +266,11 @@ function ValueRow({
       <Button
         data-testid={VariableFromScopeOptionTestId(idx)}
         style={{
+          borderRadius: 8,
           width: '100%',
-          height: 25,
+          height: 29,
           cursor: variableOption.variableInfo.matches ? 'pointer' : 'default',
+          background: currentExpressionMatches ? colorTheme.secondaryBackground.value : undefined,
         }}
         onClick={isArray ? stopPropagation : tweakProperty}
         css={{
@@ -256,7 +282,7 @@ function ValueRow({
         }}
       >
         <UIGridRow
-          padded={false}
+          padded
           variant='<--1fr--><--1fr-->'
           style={{
             justifyContent: 'space-between',
@@ -274,7 +300,6 @@ function ValueRow({
                 marginLeft: 4 * variableOption.depth,
                 borderRadius: 2,
                 fontWeight: 400,
-                fontStyle: currentExpressionMatches ? 'italic' : undefined,
                 display: 'flex',
                 maxWidth: '100%',
               }}
@@ -301,7 +326,6 @@ function ValueRow({
           <div
             style={{
               display: 'flex',
-              justifyContent: 'flex-end',
               width: '94%',
             }}
             onClick={isArray ? stopPropagation : tweakProperty}
@@ -324,7 +348,7 @@ function ValueRow({
                   setSelectedIndex={setSelectedIndex}
                 />
               ) : (
-                valueToDisplay(variableOption)
+                <div style={{ opacity: 0.3 }}>{valueToDisplay(variableOption)}</div>
               )}
             </span>
           </div>
@@ -389,12 +413,13 @@ function PrefixIcon({
   )
   if (hasObjectChildren) {
     return (
-      <span
+      <FlexRow
+        css={{}}
         style={{ color: colorTheme.neutralBorder.value, fontSize: 6, ...style }}
         onClick={onClick}
       >
-        {open ? '▼' : '▶'}
-      </span>
+        <ExpandableIndicator visible collapsed={!open} selected={false} />
+      </FlexRow>
     )
   }
   if (depth > 0) {
@@ -427,21 +452,22 @@ function ArrayPaginator({
     setSelectedIndex(Math.max(0, selectedIndex - 1))
   }, [selectedIndex, setSelectedIndex])
   return (
-    <span
-      style={{
-        fontSize: 9,
-        color: 'gray',
+    <FlexRow
+      css={{
+        alignItems: 'center',
+        fontSize: 10,
+        color: colorTheme.neutralForeground.value,
       }}
     >
-      <span onClick={decreaseIndex} style={{ width: 30, height: 30 }}>
+      <div onClick={decreaseIndex} style={{ width: 30, height: 30, cursor: 'pointer' }}>
         {'< '}
-      </span>
+      </div>
       <span>
         {selectedIndex + 1} / {totalChildCount}
       </span>
-      <span onClick={increaseIndex} style={{ width: 30, height: 30 }}>
+      <span onClick={increaseIndex} style={{ width: 30, height: 30, cursor: 'pointer' }}>
         {' >'}
       </span>
-    </span>
+    </FlexRow>
   )
 }
