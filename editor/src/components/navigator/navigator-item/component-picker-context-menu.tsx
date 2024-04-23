@@ -237,16 +237,13 @@ function insertPreferredChild(
     throw new Error('only JSX elements are supported as preferred components')
   }
 
-  const targetParent = replacesTarget ? EP.parentPath(target) : target
-  const elementToReplace = replacesTarget ? target : null
-
   const insertionAction =
     prop == null
       ? insertJSXElement(
           element,
-          targetParent,
+          target,
           preferredChildToInsert.additionalImports ?? undefined,
-          elementToReplace,
+          replacesTarget ? 'replace-target' : 'insert-as-child',
         )
       : setProp_UNSAFE(
           target,
