@@ -287,6 +287,44 @@ export function createElementIconPropsFromMetadata(
     }
   }
 
+  if (MetadataUtils.isReactSuspense(element)) {
+    return {
+      iconProps: {
+        category: 'element',
+        type: 'div',
+        width: 18,
+        height: 18,
+      },
+      isPositionAbsolute: isPositionAbsolute,
+    }
+  }
+
+  const isHTMLElement = element != null && MetadataUtils.isHTML(element)
+  if (isHTMLElement) {
+    return {
+      iconProps: {
+        category: 'element',
+        type: 'html',
+        width: 12,
+        height: 12,
+      },
+      isPositionAbsolute: isPositionAbsolute,
+    }
+  }
+
+  const isBodyElement = element != null && MetadataUtils.isBody(element)
+  if (isBodyElement) {
+    return {
+      iconProps: {
+        category: 'element',
+        type: 'body',
+        width: 12,
+        height: 12,
+      },
+      isPositionAbsolute: isPositionAbsolute,
+    }
+  }
+
   const isButton = MetadataUtils.isButtonFromMetadata(element)
   if (isButton) {
     return {

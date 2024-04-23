@@ -1,5 +1,5 @@
 import immutableUpdate from 'immutability-helper'
-import { atom, useAtom, useSetAtom } from 'jotai'
+import { atom, useAtom } from 'jotai'
 import findLastIndex from 'lodash.findlastindex'
 import React from 'react'
 import { accumulate, insert, removeAll, removeIndexFromArray } from '../../core/shared/array-utils'
@@ -30,10 +30,21 @@ import {
   getProjectStoredLayoutOrDefault,
   saveUserPreferencesProjectLayout,
 } from '../common/user-preferences'
+import { usePermissions } from '../editor/store/permissions'
 
 export const GridPanelsStateAtom = atom(gridMenuDefaultPanels())
 
-export function useGridPanelState() {
+function filterCodeEditorFromPanelState(layout: StoredLayout): StoredLayout {
+  return layout.map((column) => ({
+    ...column,
+    panels: column.panels.filter((panel) => panel.name !== 'code-editor'),
+  }))
+}
+
+export function useGridPanelState(): [
+  StoredLayout,
+  (cb: StoredLayout | ((prev: StoredLayout) => StoredLayout)) => void,
+] {
   const [loaded, setLoaded] = React.useState(false)
   const stateAtom = useAtom(GridPanelsStateAtom)
   const [state, setState] = stateAtom
@@ -63,7 +74,10 @@ export function useGridPanelState() {
     void saveUserPreferencesProjectLayout(projectId, state)
   }, [loaded, state, projectId])
 
-  return stateAtom
+  const permissions = usePermissions()
+  const filteredState = permissions.edit ? state : filterCodeEditorFromPanelState(state)
+
+  return [filteredState, setState]
 }
 
 function useVisibleGridPanels() {
@@ -252,7 +266,7 @@ export function updateLayout(
 }
 
 export function useUpdateGridPanelLayout(): (panelName: PanelName, update: LayoutUpdate) => void {
-  const setStoredState = useSetAtom(GridPanelsStateAtom)
+  const [, setStoredState] = useGridPanelState()
 
   return React.useCallback(
     (panelName: PanelName, update: LayoutUpdate) => {
@@ -275,7 +289,7 @@ export function useUpdateGridPanelLayout(): (panelName: PanelName, update: Layou
 }
 
 export function useUpdateGridPanelLayoutPutCodeEditorBelowNavigator(): () => void {
-  const setStoredState = useSetAtom(GridPanelsStateAtom)
+  const [, setStoredState] = useGridPanelState()
 
   return React.useCallback(() => {
     setStoredState((stored) => {
@@ -314,7 +328,7 @@ export function useColumnWidths(): [
   Array<number>,
   (columnIndex: number, newWidth: number) => void,
 ] {
-  const [panelState, setPanelState] = useAtom(GridPanelsStateAtom)
+  const [, setPanelState] = useGridPanelState()
   const visiblePanels = useVisibleGridPanels()
 
   // start with the default value
