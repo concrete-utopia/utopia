@@ -91,7 +91,7 @@ describe('handleSearchPublicRepository', () => {
         throw new Error('should be a response')
       }
       const body = await got.json()
-      expect(body).toEqual(toApiFailure('repository not found (418)'))
+      expect(body).toEqual(toApiFailure('Error: repository not found (418)'))
     })
   })
   describe('when the gh call succeeds', () => {

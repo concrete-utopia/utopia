@@ -1,13 +1,8 @@
-import { json } from '@remix-run/node'
 import { getGithubAuthentication } from '../models/githubAuthentication.server'
-import {
-  isSearchPublicRepositoriesRequest,
-  toApiFailure,
-  toApiSuccess,
-  isResponseWithMessageData,
-} from '../types'
-import { requireUser, ensure } from '../util/api.server'
-import { newOctokitClient } from '../util/github'
+import { isSearchPublicRepositoriesRequest } from '../types'
+import { ensure, requireUser } from '../util/api.server'
+import { ApiError } from '../util/errors'
+import { newOctokitClient, wrapGithubAPIRequest } from '../util/github'
 import { Status } from '../util/statusCodes'
 
 export async function handleSearchPublicRepository(req: Request) {
@@ -26,41 +21,27 @@ export async function handleSearchPublicRepository(req: Request) {
 
   const octokit = newOctokitClient(githubAuth.access_token)
 
-  try {
-    const response = await octokit.request('GET /repos/{owner}/{repo}', {
+  return wrapGithubAPIRequest(octokit, async (client) => {
+    const response = await client.request('GET /repos/{owner}/{repo}', {
       owner: owner,
       repo: repo,
     })
+
     if (response.status < 200 || response.status > 299) {
-      return json(toApiFailure(`repository not found (${response.status})`), {
-        status: response.status,
-        headers: { 'cache-control': 'no-cache' },
-      })
+      throw new ApiError(`repository not found (${response.status})`, response.status)
     }
 
-    const { data } = response
-
-    return toApiSuccess({
+    return {
       repository: {
-        avatarUrl: data.owner.avatar_url,
-        defaultBranch: data.default_branch,
-        description: data.description,
-        fullName: data.full_name,
-        isPrivate: data.private,
-        name: data.name,
-        permissions: data.permissions,
-        updatedAt: data.updated_at,
+        avatarUrl: response.data.owner.avatar_url,
+        defaultBranch: response.data.default_branch,
+        description: response.data.description,
+        fullName: response.data.full_name,
+        isPrivate: response.data.private,
+        name: response.data.name,
+        permissions: response.data.permissions,
+        updatedAt: response.data.updated_at,
       },
-    })
-  } catch (err) {
-    return isResponseWithMessageData(err)
-      ? json(toApiFailure(err.response.data.message), {
-          status: err.status,
-          headers: { 'cache-control': 'no-cache' },
-        })
-      : json(toApiFailure(`${err}`), {
-          status: Status.INTERNAL_ERROR,
-          headers: { 'cache-control': 'no-cache' },
-        })
-  }
+    }
+  })
 }

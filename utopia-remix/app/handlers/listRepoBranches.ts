@@ -1,9 +1,9 @@
-import { json, type Params } from '@remix-run/react'
+import { type Params } from '@remix-run/react'
 import { getGithubAuthentication } from '../models/githubAuthentication.server'
-import { toApiFailure, isResponseWithMessageData } from '../types'
-import { requireUser, ensure } from '../util/api.server'
+import { ensure, requireUser } from '../util/api.server'
+import { ApiError } from '../util/errors'
+import { newOctokitClient, wrapGithubAPIRequest } from '../util/github'
 import { Status } from '../util/statusCodes'
-import { newOctokitClient } from '../util/github'
 
 export async function handleListRepoBranches(req: Request, params: Params<string>) {
   const user = await requireUser(req)
@@ -17,31 +17,18 @@ export async function handleListRepoBranches(req: Request, params: Params<string
 
   const octokit = newOctokitClient(githubAuth.access_token)
 
-  try {
-    const branches = await octokit.request('GET /repos/{owner}/{repo}/branches', {
+  return wrapGithubAPIRequest(octokit, async (client) => {
+    const branches = await client.request('GET /repos/{owner}/{repo}/branches', {
       owner: owner,
       repo: repo,
     })
+
     if (branches.status < 200 || branches.status > 299) {
-      return json(toApiFailure(`branches not found (${branches.status})`), {
-        status: branches.status,
-        headers: { 'cache-control': 'no-cache' },
-      })
+      throw new ApiError(`branches not found (${branches.status})`, branches.status)
     }
 
     return {
-      type: 'SUCCESS',
       branches: branches.data.map((branch) => ({ name: branch.name })),
     }
-  } catch (err) {
-    return isResponseWithMessageData(err)
-      ? json(toApiFailure(err.response.data.message), {
-          status: err.status,
-          headers: { 'cache-control': 'no-cache' },
-        })
-      : json(toApiFailure(`${err}`), {
-          status: Status.INTERNAL_ERROR,
-          headers: { 'cache-control': 'no-cache' },
-        })
-  }
+  })
 }
