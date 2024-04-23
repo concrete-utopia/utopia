@@ -6,11 +6,11 @@ import {
   newTestRequest,
   truncateTables,
 } from '../test-util'
-import { handleListRepoBranches } from './listRepoBranches'
 import * as githubUtil from '../util/github'
 import { toApiFailure, toApiSuccess } from '../types'
+import { handleSearchPublicRepository } from './searchPublicRepository'
 
-describe('handleListRepoBranches', () => {
+describe('handleSearchPublicRepository', () => {
   let mockOctokit: jest.SpyInstance
   afterEach(async () => {
     await truncateTables([
@@ -38,16 +38,26 @@ describe('handleListRepoBranches', () => {
     owner?: string
     repo?: string
     auth?: string
-  }) => handleListRepoBranches(newTestRequest({ authCookie: auth }), { owner, repo })
+  }) =>
+    handleSearchPublicRepository(
+      newTestRequest({ method: 'POST', authCookie: auth, body: JSON.stringify({ owner, repo }) }),
+    )
 
   it('requires a user', async () => {
     await expect(doRequest({ owner: 'foo', repo: 'bar' })).rejects.toThrow('missing session cookie')
   })
+  it('requires a valid request', async () => {
+    await expect(doRequest({ auth: 'bob-key' })).rejects.toThrow('invalid request')
+  })
   it('requires a valid owner', async () => {
-    await expect(doRequest({ repo: 'bar', auth: 'bob-key' })).rejects.toThrow('missing owner')
+    await expect(doRequest({ owner: '', repo: 'bar', auth: 'bob-key' })).rejects.toThrow(
+      'invalid owner',
+    )
   })
   it('requires a valid repo', async () => {
-    await expect(doRequest({ owner: 'foo', auth: 'bob-key' })).rejects.toThrow('missing repo')
+    await expect(doRequest({ owner: 'foo', repo: '', auth: 'bob-key' })).rejects.toThrow(
+      'invalid repo',
+    )
   })
   it('requires a gh auth token', async () => {
     await expect(doRequest({ owner: 'foo', repo: 'bar', auth: 'bob-key' })).rejects.toThrow(
@@ -81,7 +91,7 @@ describe('handleListRepoBranches', () => {
         throw new Error('should be a response')
       }
       const body = await got.json()
-      expect(body).toEqual(toApiFailure('branches not found (418)'))
+      expect(body).toEqual(toApiFailure('repository not found (418)'))
     })
   })
   describe('when the gh call succeeds', () => {
@@ -90,14 +100,18 @@ describe('handleListRepoBranches', () => {
         request: () => {
           return {
             status: 200,
-            data: [{ name: 'branch-1' }, { name: 'branch-2' }],
+            data: { owner: { avatar_url: 'test.png' }, name: 'bar', default_branch: 'main' },
           }
         },
       })
       const got = await doRequest({ owner: 'foo', repo: 'bar', auth: 'alice-key' })
       expect(got).toEqual(
         toApiSuccess({
-          branches: [{ name: 'branch-1' }, { name: 'branch-2' }],
+          repository: {
+            avatarUrl: 'test.png',
+            defaultBranch: 'main',
+            name: 'bar',
+          },
         }),
       )
     })
