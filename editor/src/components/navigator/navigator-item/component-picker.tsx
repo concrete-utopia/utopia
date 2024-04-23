@@ -11,11 +11,13 @@ import { elementFromInsertMenuItem } from '../../editor/insert-callbacks'
 import { componentInfo, type ComponentInfo } from '../../custom-code/code-file'
 import { when } from '../../../utils/react-conditionals'
 import { defaultImportsForComponentModule } from '../../../core/property-controls/property-controls-local'
+import type { InsertMenuItem, InsertMenuItemGroup } from '../../canvas/ui/floating-insert-menu'
+import { assertNever } from '../../../core/shared/utils'
 
 export interface ComponentPickerProps {
   insertionTargetName: string
-  preferredComponents: PreferredChildComponentDescriptor[]
-  allComponents: PreferredChildComponentDescriptor[]
+  preferredComponents: Array<PreferredChildComponentDescriptor>
+  allComponents: Array<InsertMenuItemGroup>
   onItemClick: (elementToInsert: ElementToInsert) => React.MouseEventHandler
   onClickCloseButton?: React.MouseEventHandler
 }
@@ -42,14 +44,26 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
   const [selectedTab, setSelectedTab] = React.useState<'preferred' | 'all'>('preferred')
   const [filter, setFilter] = React.useState<string>('')
 
-  const unfilteredComponentsToShow =
-    selectedTab === 'preferred' ? props.preferredComponents : props.allComponents
-  const componentsToShow =
+  const preferredComponentsToShow =
     filter.trim() === ''
-      ? unfilteredComponentsToShow
-      : unfilteredComponentsToShow.filter((v) =>
+      ? props.preferredComponents
+      : props.preferredComponents.filter((v) =>
           v.name.toLocaleLowerCase().includes(filter.toLocaleLowerCase().trim()),
         )
+
+  const allComponentsToShow =
+    filter.trim() === ''
+      ? props.allComponents
+      : props.allComponents.filter((v) =>
+          v.label.toLocaleLowerCase().includes(filter.toLocaleLowerCase().trim()),
+        )
+
+  const componentsToShow:
+    | { type: 'component-descriptor'; value: Array<PreferredChildComponentDescriptor> }
+    | { type: 'insert-menu-item'; value: Array<InsertMenuItemGroup> } =
+    selectedTab === 'preferred'
+      ? { type: 'component-descriptor', value: preferredComponentsToShow }
+      : { type: 'insert-menu-item', value: allComponentsToShow }
 
   return (
     <div
@@ -309,7 +323,9 @@ const FilterBar = React.memo((props: FilterBarProps) => {
 })
 
 interface ComponentPickerComponentSectionProps {
-  components: PreferredChildComponentDescriptor[]
+  components:
+    | { type: 'component-descriptor'; value: Array<PreferredChildComponentDescriptor> }
+    | { type: 'insert-menu-item'; value: Array<InsertMenuItemGroup> }
   onItemClick: (elementToInsert: ElementToInsert) => React.MouseEventHandler
 }
 
@@ -325,44 +341,73 @@ const ComponentPickerComponentSection = React.memo(
           flexDirection: 'column',
           width: '100%',
           height: 'max-content',
+          overflowY: 'auto',
           gap: 10,
         }}
       >
-        {components.map((componentDescriptor) => {
-          return (
-            <ComponentPickerOption
-              key={`${componentDescriptor.name}-label`}
-              componentDescriptor={componentDescriptor}
-              onItemClick={onItemClick}
-            />
-          )
-        })}
+        {components.type === 'component-descriptor'
+          ? components.value.map((comp) => {
+              return (
+                <ComponentPickerOption
+                  key={`${comp.name}-label`}
+                  component={{ type: 'component-descriptor', value: comp }}
+                  onItemClick={onItemClick}
+                />
+              )
+            })
+          : components.value.map((comp) => {
+              return (
+                <ComponentPickerOption
+                  key={`${comp.label}-label`}
+                  component={{ type: 'insert-menu-item', value: comp }}
+                  onItemClick={onItemClick}
+                />
+              )
+            })}
       </div>
     )
   },
 )
 
 interface ComponentPickerOptionProps {
-  componentDescriptor: PreferredChildComponentDescriptor
+  component:
+    | { type: 'component-descriptor'; value: PreferredChildComponentDescriptor }
+    | { type: 'insert-menu-item'; value: InsertMenuItemGroup }
   onItemClick: (elementToInsert: ElementToInsert) => React.MouseEventHandler
 }
 
-function variantsForComponent(component: PreferredChildComponentDescriptor): ComponentInfo[] {
-  return [
-    componentInfo(
-      '(empty)',
-      () => jsxElementWithoutUID(component.name, [], []),
-      defaultImportsForComponentModule(component.name, component.moduleName),
-    ),
-    ...(component.variants ?? []),
-  ]
+function variantsForComponent(
+  component:
+    | { type: 'component-descriptor'; value: PreferredChildComponentDescriptor }
+    | { type: 'insert-menu-item'; value: InsertMenuItemGroup },
+): ComponentInfo[] {
+  switch (component.type) {
+    case 'component-descriptor':
+      return [
+        componentInfo(
+          '(empty)',
+          () => jsxElementWithoutUID(component.value.name, [], []),
+          defaultImportsForComponentModule(component.value.name, component.value.moduleName),
+        ),
+        ...(component.value.variants ?? []),
+      ]
+    case 'insert-menu-item':
+      return component.value.options.map((v) =>
+        componentInfo(v.label, v.value.element, v.value.importsToAdd),
+      )
+    default:
+      assertNever(component)
+  }
 }
 
 const ComponentPickerOption = React.memo((props: ComponentPickerOptionProps) => {
   const colorTheme = useColorTheme()
-  const { componentDescriptor, onItemClick } = props
+  const { component, onItemClick } = props
 
-  const variants = variantsForComponent(componentDescriptor)
+  const variants = variantsForComponent(component)
+
+  const name =
+    component.type === 'component-descriptor' ? component.value.name : component.value.label
 
   return (
     <div
@@ -379,9 +424,9 @@ const ComponentPickerOption = React.memo((props: ComponentPickerOptionProps) => 
         fontWeight: 500,
         fontSize: '11px',
       }}
-      data-testId={componentPickerOptionTestId(componentDescriptor.name)}
+      data-testId={componentPickerOptionTestId(name)}
     >
-      <div style={{ fontWeight: 700 }}>{componentDescriptor.name}</div>
+      <div style={{ fontWeight: 700 }}>{name}</div>
       <div
         style={{
           display: 'flex',
@@ -396,8 +441,8 @@ const ComponentPickerOption = React.memo((props: ComponentPickerOptionProps) => 
       >
         {variants?.map((v) => (
           <ComponentPickerVariant
-            key={`${componentDescriptor.name}-${v.insertMenuLabel}`}
-            componentName={componentDescriptor.name}
+            key={`${name}-${v.insertMenuLabel}`}
+            componentName={name}
             variant={v}
             onItemClick={onItemClick}
           />

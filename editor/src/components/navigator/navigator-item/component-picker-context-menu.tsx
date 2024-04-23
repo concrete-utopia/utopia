@@ -31,6 +31,8 @@ import {
 import { type Icon } from 'utopia-api'
 import { getRegisteredComponent } from '../../../core/property-controls/property-controls-utils'
 import { defaultImportsForComponentModule } from '../../../core/property-controls/property-controls-local'
+import { useGetInsertableComponents } from '../../canvas/ui/floating-insert-menu'
+import { getInsertableGroupLabel } from '../../shared/project-components'
 
 function getIconForComponent(
   targetName: string,
@@ -386,6 +388,11 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
       replacesTarget,
     )
 
+    const allInsertableComponents = useGetInsertableComponents('insert').flatMap((g) => ({
+      label: g.label,
+      options: g.options,
+    }))
+
     const dispatch = useDispatch()
 
     const projectContentsRef = useRefEditorState((state) => state.editor.projectContents)
@@ -414,13 +421,12 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
     if (preferredChildrenForTargetProp == null) {
       return null
     }
-
     return (
       <Menu key={id} id={id} animation={false} style={{ width: 457 }} onClick={squashEvents}>
         <ComponentPicker
           insertionTargetName={prop ?? 'Child'}
           preferredComponents={preferredChildrenForTargetProp}
-          allComponents={preferredChildrenForTargetProp}
+          allComponents={allInsertableComponents}
           onItemClick={onItemClick}
           onClickCloseButton={hideComponentPickerContextMenu}
         />
