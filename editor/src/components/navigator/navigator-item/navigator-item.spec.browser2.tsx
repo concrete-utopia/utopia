@@ -219,12 +219,12 @@ describe('Navigator item row icons', () => {
     )
     await checkNavigatorIcon(
       'Div with text',
-      { category: 'navigator-element', type: 'div', color: 'lightgray' },
+      { category: 'navigator-element', type: 'div', color: 'black' },
       visibleNavigatorTargets[1],
     )
     await checkNavigatorIcon(
       'Display Inline',
-      { category: 'navigator-element', type: 'pure-text', color: 'lightgray' },
+      { category: 'navigator-element', type: 'pure-text', color: 'black' },
       visibleNavigatorTargets[2],
     )
     await checkNavigatorIcon(
@@ -289,12 +289,12 @@ describe('Navigator item row icons', () => {
     )
     await checkNavigatorIcon(
       'Sizeless div',
-      { category: 'navigator-element', type: 'zerosized-div', color: 'black' },
+      { category: 'navigator-element', type: 'zerosized-div', color: 'lightgray' },
       visibleNavigatorTargets[17],
     )
     await checkNavigatorIcon(
       'Generated text',
-      { category: 'navigator-element', type: 'text-generated', color: 'lightgray' },
+      { category: 'navigator-element', type: 'text-generated', color: 'blue' },
       visibleNavigatorTargets[18],
     )
     await checkNavigatorIcon(

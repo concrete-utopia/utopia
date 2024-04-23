@@ -264,6 +264,8 @@ const computeResultingStyle = (
 
   if (isErroredGroup) {
     styleType = 'erroredGroup'
+  } else if (isDynamic) {
+    styleType = 'dynamic'
   } else if (emphasis === 'subdued') {
     styleType = 'lowEmphasis'
   } else if (emphasis === 'emphasized') {
@@ -274,8 +276,6 @@ const computeResultingStyle = (
     styleType = 'componentInstance'
   } else if (isHighlightedForInteraction) {
     styleType = 'default'
-  } else if (isDynamic) {
-    styleType = 'dynamic'
   }
 
   if (selected) {
@@ -873,18 +873,19 @@ export const NavigatorItem: React.FunctionComponent<
 
   const portalTarget = document.getElementById(CanvasContextMenuPortalTargetID)
 
-  const iconColor =
-    emphasis === 'subdued'
-      ? 'subdued'
-      : emphasis === 'emphasized'
-      ? 'primary'
-      : isRemixItem
-      ? 'remix'
-      : isCodeItem
-      ? 'dynamic'
-      : isComponentScene
-      ? 'component'
-      : resultingStyle.iconColor
+  const iconColor = isRemixItem
+    ? 'remix'
+    : isDynamic
+    ? 'dynamic'
+    : emphasis === 'subdued'
+    ? 'subdued'
+    : emphasis === 'emphasized'
+    ? 'primary'
+    : isCodeItem
+    ? 'dynamic'
+    : isComponentScene
+    ? 'component'
+    : resultingStyle.iconColor
 
   const currentlyRenaming = EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath)
 
@@ -1058,18 +1059,19 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
   const isComponentScene =
     useIsProbablyScene(props.navigatorEntry) && props.childComponentCount === 1
 
-  const textColor =
-    props.emphasis === 'subdued'
-      ? colorTheme.fg5.value
-      : props.emphasis === 'emphasized'
-      ? colorTheme.dynamicBlue.value
-      : isCodeItem
-      ? colorTheme.dynamicBlue.value
-      : isRemixItem
-      ? colorTheme.aqua.value
-      : isComponentScene
-      ? colorTheme.componentPurple.value
-      : undefined
+  const textColor = isRemixItem
+    ? colorTheme.aqua.value
+    : props.isDynamic
+    ? colorTheme.dynamicBlue.value
+    : props.emphasis === 'subdued'
+    ? colorTheme.fg5.value
+    : props.emphasis === 'emphasized'
+    ? colorTheme.dynamicBlue.value
+    : isCodeItem
+    ? colorTheme.dynamicBlue.value
+    : isComponentScene
+    ? colorTheme.componentPurple.value
+    : undefined
 
   return (
     <div
