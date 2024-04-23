@@ -6,7 +6,7 @@ import type { GithubOperationContext } from './github-operation-context'
 import { getBranchesForGithubRepository } from './list-branches'
 import { updatePullRequestsForBranch } from './list-pull-requests-for-branch'
 import { saveAssetsToProject, updateProjectWithBranchContent } from './load-branch'
-import { getUsersPublicGithubRepositories } from './load-repositories'
+import { getUsersPublicGithubRepositories, searchPublicGithubRepository } from './load-repositories'
 import { updateProjectAgainstGithub } from './update-against-branch'
 
 const OperationContext: GithubOperationContext = {
@@ -21,6 +21,7 @@ export const GithubOperations = {
   updatePullRequestsForBranch: updatePullRequestsForBranch(OperationContext),
   saveAssetsToProject: saveAssetsToProject(OperationContext),
   getUsersPublicGithubRepositories: getUsersPublicGithubRepositories(OperationContext),
+  searchPublicGithubRepository: searchPublicGithubRepository(OperationContext),
   updateProjectAgainstGithub: updateProjectAgainstGithub(OperationContext),
   startGithubPolling: startGithubPolling(OperationContext),
   resolveConflict: resolveConflict(OperationContext),

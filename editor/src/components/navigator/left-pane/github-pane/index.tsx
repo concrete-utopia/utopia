@@ -24,7 +24,6 @@ import {
   Section,
   SectionTitleRow,
   StringInput,
-  Title,
   UtopiaTheme,
 } from '../../../../uuiui'
 import { User } from '../../../../uuiui-deps'
@@ -167,7 +166,10 @@ const BranchBlock = () => {
   const repositoryData = useEditorState(
     Substores.github,
     (store) =>
-      store.editor.githubData.publicRepositories.find(
+      [
+        ...store.editor.githubData.userRepositories,
+        ...store.editor.githubData.publicRepositories,
+      ].find(
         (r) => r.fullName === githubRepoFullName(store.editor.githubSettings.targetRepository),
       ) ?? null,
     'BranchBlock Repository data',
@@ -803,7 +805,7 @@ const PullRequestButton = () => {
   const repo = useEditorState(
     Substores.github,
     (store) =>
-      store.editor.githubData.publicRepositories.find(
+      store.editor.githubData.userRepositories.find(
         (r) => r.fullName === githubRepoFullName(store.editor.githubSettings.targetRepository),
       ) ?? null,
     'PullRequestButton repository',

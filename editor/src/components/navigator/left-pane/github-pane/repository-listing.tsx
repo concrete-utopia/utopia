@@ -28,9 +28,11 @@ import { Ellipsis } from './github-file-changes-list'
 import { GithubSpinner } from './github-spinner'
 import { RefreshIcon } from './refresh-icon'
 import { GithubOperations } from '../../../../core/shared/github/operations'
+import type { EditorDispatch } from '../../../editor/action-types'
 
 interface RepositoryRowProps extends RepositoryEntry {
   importPermitted: boolean
+  searchable: boolean
 }
 
 const RepositoryRow = (props: RepositoryRowProps) => {
@@ -96,6 +98,22 @@ const RepositoryRow = (props: RepositoryRowProps) => {
     }
   }, [dispatch, props.fullName, props.defaultBranch, loadingRepos, currentRepo])
 
+  const githubUserDetails = useEditorState(
+    Substores.github,
+    (store) => store.editor.githubData.githubUserDetails,
+    'RepositoryRow githubUserDetails',
+  )
+
+  const searchPublicRepo = React.useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation()
+      if (githubUserDetails != null) {
+        void searchPublicRepoFromString(dispatch, githubUserDetails.login, props.fullName)
+      }
+    },
+    [dispatch, githubUserDetails, props],
+  )
+
   return (
     <UIGridRow
       padded
@@ -107,27 +125,47 @@ const RepositoryRow = (props: RepositoryRowProps) => {
           : loadingRepos || !props.importPermitted
           ? 'not-allowed'
           : 'pointer',
-        opacity: loadingRepos || !props.importPermitted ? 0.5 : 1,
+        opacity: loadingRepos || (!props.importPermitted && !props.searchable) ? 0.5 : 1,
         '&:hover': {
           background: colorTheme.dynamicBlue.value,
           color: colorTheme.bg1.value,
           svg: { stroke: colorTheme.bg1.value },
+          '.search-button': {
+            color: colorTheme.fg0.value,
+          },
         },
       }}
       onClick={importRepository}
     >
       <div>
-        <Ellipsis style={{ maxWidth: 170 }}>{props.fullName}</Ellipsis>
+        <Ellipsis style={{ maxWidth: 170 }}>{props.name}</Ellipsis>
         <span style={{ fontSize: 10, opacity: 0.5 }}>
-          {props.isPrivate ? 'private' : 'public'}
-          {props.updatedAt == null ? null : (
-            <>
-              {' '}
-              &middot; <TimeAgo date={props.updatedAt} />
-            </>
+          {when(
+            !props.searchable,
+            <React.Fragment>
+              {props.isPrivate ? 'private' : 'public'}
+              {props.updatedAt == null ? null : (
+                <>
+                  {' '}
+                  &middot; <TimeAgo date={props.updatedAt} />
+                </>
+              )}
+            </React.Fragment>,
           )}
         </span>
       </div>
+      {when(
+        props.searchable,
+        <Button
+          className='search-button'
+          highlight
+          spotlight
+          style={{ padding: '0 6px' }}
+          onClick={searchPublicRepo}
+        >
+          Search
+        </Button>,
+      )}
       {when(importing, <GithubSpinner />)}
     </UIGridRow>
   )
@@ -166,20 +204,31 @@ export const RepositoryListing = React.memo(
       [setTargetRepository],
     )
 
-    const usersRepositories = useEditorState(
+    const githubUserDetails = useEditorState(
       Substores.github,
-      (store) => store.editor.githubData.publicRepositories,
+      (store) => store.editor.githubData.githubUserDetails,
+      'RepositoryListing githubUserDetails',
+    )
+
+    const repositories = useEditorState(
+      Substores.github,
+      (store) => [
+        ...store.editor.githubData.userRepositories,
+        ...store.editor.githubData.publicRepositories,
+      ],
       'Github repositories',
     )
 
     const filteredRepositories = React.useMemo(() => {
       let filteredResult: Array<RepositoryRowProps> = []
-      for (const repository of usersRepositories) {
-        // Only include a repository if the user can push to it.
-        if (repository.permissions.push) {
+      for (const repository of repositories) {
+        // Only include a repository if the user can pull it.
+        if (repository.permissions.pull) {
+          // TODO make sure to disable commit/push blocks if the repo does not have push permissions
           filteredResult.push({
             ...repository,
             importPermitted: true,
+            searchable: false,
           })
         }
       }
@@ -189,7 +238,7 @@ export const RepositoryListing = React.memo(
         })
       }
       return filteredResult
-    }, [usersRepositories, targetRepository])
+    }, [repositories, targetRepository])
 
     const filteredRepositoriesWithSpecialCases = React.useMemo(() => {
       if (filteredRepositories == null) {
@@ -207,7 +256,7 @@ export const RepositoryListing = React.memo(
             return filteredRepositories
           } else {
             const additionalEntry: RepositoryRowProps = {
-              fullName: parsedRepo.repository,
+              fullName: `${parsedRepo.owner}/${parsedRepo.repository}`,
               name: parsedRepo.repository,
               avatarUrl: null,
               isPrivate: true,
@@ -220,6 +269,7 @@ export const RepositoryListing = React.memo(
                 push: false,
                 pull: false,
               },
+              searchable: true,
             }
             return [...filteredRepositories, additionalEntry]
           }
@@ -262,6 +312,16 @@ export const RepositoryListing = React.memo(
       dispatch([updateGithubSettings(emptyGithubSettings())], 'everyone')
     }, [dispatch])
 
+    const onKeyDown = React.useCallback(
+      (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' && targetRepository != null && githubUserDetails != null) {
+          void searchPublicRepoFromString(dispatch, githubUserDetails.login, targetRepository)
+          return
+        }
+      },
+      [targetRepository, dispatch, githubUserDetails],
+    )
+
     if (!githubAuthenticated) {
       return null
     }
@@ -276,6 +336,7 @@ export const RepositoryListing = React.memo(
                 : 'owner/repository'
             }
             onChange={onInputChangeTargetRepository}
+            onKeyDown={onKeyDown}
             list={'repositories-list'}
             id={'repositories-input'}
             testId={'repositories-input'}
@@ -343,3 +404,28 @@ export const RepositoryListing = React.memo(
     )
   },
 )
+
+async function searchPublicRepoFromString(
+  dispatch: EditorDispatch,
+  login: string,
+  fullName: string,
+) {
+  const parts = fullName.trim().toLowerCase().split('/')
+  if (parts.length !== 2) {
+    return
+  }
+  const [owner, repo] = parts
+  if (owner === login) {
+    return
+  }
+  if (owner.length < 1 || repo.length < 1) {
+    return
+  }
+
+  const actions = await GithubOperations.searchPublicGithubRepository(dispatch, 'user-initiated', {
+    owner: owner,
+    repo: repo,
+  })
+
+  dispatch(actions, 'everyone')
+}
