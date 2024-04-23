@@ -163,3 +163,18 @@ export function newFormData(data: { [key: string]: string }): FormData {
   }
   return formData
 }
+
+export async function createTestGithubAuth(
+  client: UtopiaPrismaClient,
+  params: {
+    token: string
+    userId: string
+  },
+) {
+  await client.githubAuthentication.create({
+    data: {
+      access_token: params.token,
+      user_id: params.userId,
+    },
+  })
+}
