@@ -214,7 +214,7 @@ describe('Remix navigator', () => {
         ),
       ),
     )
-    expect(navigatorItemElement.style.color).toEqual('var(--utopitheme-fg0)')
+    expect(navigatorItemElement.style.color).toEqual('var(--utopitheme-fg5)')
   })
 
   it('Remix Outlet navigator item label contains the suffix of the full path', async () => {
