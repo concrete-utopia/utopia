@@ -906,42 +906,45 @@ export const NavigatorItem: React.FunctionComponent<
         outlineOffset: props.parentOutline === 'solid' ? '-1px' : 0,
       }}
     >
-      {portalTarget == null ||
-      (navigatorEntry.type !== 'SLOT' &&
-        navigatorEntry.type !== 'REGULAR' &&
-        navigatorEntry.type !== 'RENDER_PROP_VALUE')
-        ? null
-        : ReactDOM.createPortal(
+      {portalTarget != null && navigatorEntry.type === 'SLOT'
+        ? ReactDOM.createPortal(
+            <ComponentPickerContextMenu
+              target={EP.parentPath(props.navigatorEntry.elementPath)}
+              key={componentPickerContextMenuId}
+              id={componentPickerContextMenuId}
+              insertionTarget={{ prop: navigatorEntry.prop }}
+            />,
+            portalTarget,
+          )
+        : null}
+      {portalTarget != null &&
+      (navigatorEntry.type === 'REGULAR' || navigatorEntry.type === 'RENDER_PROP_VALUE')
+        ? ReactDOM.createPortal(
             <React.Fragment>
               <ComponentPickerContextMenu
-                target={
-                  navigatorEntry.type === 'SLOT'
-                    ? EP.parentPath(props.navigatorEntry.elementPath)
-                    : props.navigatorEntry.elementPath
-                }
+                target={props.navigatorEntry.elementPath}
                 key={componentPickerContextMenuId}
                 id={componentPickerContextMenuId}
-                prop={navigatorEntry.type === 'SLOT' ? navigatorEntry.prop : null}
-                replacesTarget={false}
+                insertionTarget={'insert-as-child'}
               />
               <ComponentPickerContextMenu
                 target={
-                  navigatorEntry.type === 'SLOT' || navigatorEntry.type === 'RENDER_PROP_VALUE'
+                  navigatorEntry.type === 'RENDER_PROP_VALUE'
                     ? EP.parentPath(props.navigatorEntry.elementPath)
                     : props.navigatorEntry.elementPath
                 }
                 key={replaceComponentPickerContextMenuId}
                 id={replaceComponentPickerContextMenuId}
-                prop={
-                  navigatorEntry.type === 'SLOT' || navigatorEntry.type === 'RENDER_PROP_VALUE'
-                    ? navigatorEntry.prop
-                    : null
+                insertionTarget={
+                  navigatorEntry.type === 'RENDER_PROP_VALUE'
+                    ? { prop: navigatorEntry.prop }
+                    : 'replace-target'
                 }
-                replacesTarget={true}
               />
             </React.Fragment>,
             portalTarget,
-          )}
+          )
+        : null}
       <FlexRow
         data-testid={NavigatorItemTestId(varSafeNavigatorEntryToKey(navigatorEntry))}
         style={rowStyle}

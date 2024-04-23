@@ -271,7 +271,6 @@ const ReplaceElementButton = React.memo((props: AddChildButtonProps) => {
         width: 12,
         opacity: shouldShow ? 1 : 0,
       }}
-      // data-testid={addChildButtonTestId(props.target)}
     >
       <Icn
         category='tools'
