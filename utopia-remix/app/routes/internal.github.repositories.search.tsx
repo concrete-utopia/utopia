@@ -10,6 +10,7 @@ import {
 } from '../types'
 import { ensure, handle, requireUser } from '../util/api.server'
 import { Status } from '../util/statusCodes'
+import { newOctokitClient } from '../util/github'
 
 export async function action(args: ActionFunctionArgs) {
   return handle(args, {
@@ -34,7 +35,7 @@ export async function handleSearchPublicRepositories(req: Request) {
   const repo = body.repo.trim()
   ensure(repo.length > 0, 'invalid owner', Status.BAD_REQUEST)
 
-  const octokit = new Octokit({ auth: githubAuth.access_token })
+  const octokit = newOctokitClient(githubAuth.access_token)
 
   try {
     const response = await octokit.request('GET /repos/{owner}/{repo}', {
