@@ -3712,12 +3712,17 @@ export const UPDATE_FNS = {
     })
   },
   UPDATE_GITHUB_DATA: (action: UpdateGithubData, editor: EditorModel): EditorModel => {
+    const newPublicRepos = [
+      ...editor.githubData.publicRepositories,
+      ...(action.data.userRepositories ?? []),
+    ]
     return {
       ...editor,
       githubData: {
         ...editor.githubData,
         lastUpdatedAt: Date.now(),
         ...action.data,
+        publicRepositories: newPublicRepos,
       },
     }
   },

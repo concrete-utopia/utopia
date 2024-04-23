@@ -1,13 +1,15 @@
 import urljoin from 'url-join'
-import { UTOPIA_BACKEND } from '../../../common/env-vars'
+import { UTOPIA_BACKEND, UTOPIA_BACKEND_BASE_URL } from '../../../common/env-vars'
 import type { GithubRepo } from '../../../components/editor/store/editor-state'
 
 export const GithubEndpoints = {
   repositories: () => urljoin(UTOPIA_BACKEND, 'github', 'user', 'repositories'),
+  searchRepository: () =>
+    urljoin(UTOPIA_BACKEND_BASE_URL, 'internal', 'github', 'repositories', 'search'),
   userDetails: () => urljoin(UTOPIA_BACKEND, 'github', 'user'),
   save: (projectID: string) => urljoin(UTOPIA_BACKEND, 'github', 'save', projectID),
   getBranches: ({ owner, repository }: GithubRepo) =>
-    urljoin(UTOPIA_BACKEND, 'github', 'branches', owner, repository),
+    urljoin(UTOPIA_BACKEND_BASE_URL, 'internal', 'github', 'branches', owner, repository),
   branchContents: (githubRepo: GithubRepo, branchName: string) =>
     urljoin(
       UTOPIA_BACKEND,

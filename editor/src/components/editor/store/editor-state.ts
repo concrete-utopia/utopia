@@ -318,6 +318,10 @@ export interface GithubLoadRepositories {
   name: 'loadRepositories'
 }
 
+export interface GithubSearchRepository {
+  name: 'searchRepository'
+}
+
 export interface GithubUpdateAgainstBranch {
   name: 'updateAgainstBranch'
 }
@@ -341,6 +345,7 @@ export type GithubOperation =
   | GithubUpdateAgainstBranch
   | GithubListPullRequestsForBranch
   | GithubSaveAsset
+  | GithubSearchRepository
 
 export function githubOperationLocksEditor(op: GithubOperation): boolean {
   switch (op.name) {
@@ -1246,6 +1251,7 @@ export interface GithubUser {
 
 export interface GithubData {
   branches: Array<GithubBranch> | null
+  userRepositories: Array<RepositoryEntry>
   publicRepositories: Array<RepositoryEntry>
   treeConflicts: TreeConflicts
   lastUpdatedAt: number | null
@@ -1258,6 +1264,7 @@ export interface GithubData {
 export function emptyGithubData(): GithubData {
   return {
     branches: null,
+    userRepositories: [],
     publicRepositories: [],
     treeConflicts: {},
     lastUpdatedAt: null,
