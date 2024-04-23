@@ -896,7 +896,6 @@ describe('registered property controls', () => {
         },
         Card2: {
           component: Card2,
-          supportsChildren: false,
           properties: {
             label: {
               control: 'string-input',
@@ -976,7 +975,6 @@ describe('registered property controls', () => {
         '/src/card2': {
           Card2: {
             component: Card2,
-            supportsChildren: false,
             properties: {
               label: {
                 control: 'string-input',

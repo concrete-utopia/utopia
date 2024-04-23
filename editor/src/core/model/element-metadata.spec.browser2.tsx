@@ -1536,14 +1536,12 @@ const TestProjectWithComponentDescriptor = createModifiedProject({
       InnerApp1: {
         component: InnerApp1,
         focus: 'always',
-        supportsChildren: false,
         properties: {},
         variants: [],
       },
       InnerApp2: {
         component: InnerApp2,
         focus: 'never',
-        supportsChildren: false,
         properties: {},
         variants: [],
       },
