@@ -932,6 +932,13 @@ export const MetadataUtils = {
   isRemixAwait(instance: ElementInstanceMetadata | null): boolean {
     return MetadataUtils.isImportedComponentFromMetadata(instance, '@remix-run/react', 'Await')
   },
+  isRemixScrollRestoration(instance: ElementInstanceMetadata | null): boolean {
+    return MetadataUtils.isImportedComponentFromMetadata(
+      instance,
+      '@remix-run/react',
+      'ScrollRestoration',
+    )
+  },
   targetIsScene(metadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
     const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
     return elementMetadata != null && isSceneFromMetadata(elementMetadata)
@@ -2061,7 +2068,11 @@ export const MetadataUtils = {
     }
 
     // Suspense and Await get low emphasis.
-    if (MetadataUtils.isReactSuspense(element) || MetadataUtils.isRemixAwait(element)) {
+    if (
+      MetadataUtils.isReactSuspense(element) ||
+      MetadataUtils.isRemixAwait(element) ||
+      MetadataUtils.isRemixScrollRestoration(element)
+    ) {
       return 'subdued'
     }
 
