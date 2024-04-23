@@ -21,7 +21,7 @@ import type { MutableUtopiaCtxRefData } from '../ui-jsx-canvas-renderer/ui-jsx-c
 import type { ElementPath, TextFile } from '../../../core/shared/project-file-types'
 import type { ExecutionScope } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import { createExecutionScope } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
-import type { RemixRoutingTable } from '../../editor/store/remix-derived-data'
+import { type RemixRoutingTable } from '../../editor/store/remix-derived-data'
 import { NO_OP } from '../../../core/shared/utils'
 import * as EP from '../../../core/shared/element-path'
 import {
@@ -542,4 +542,169 @@ export type PageTemplate = { label: string; path: string }
 export function isPageTemplate(u: unknown): u is PageTemplate {
   const maybe = u as PageTemplate
   return u != null && typeof u == 'object' && maybe.label != null && maybe.path != null
+}
+
+function appRoutesPrefix(remixRootDir: string): string {
+  return urljoin(remixRootDir, 'routes') + '/' // the trailing slash acts as a separator
+}
+
+export function isInsideRemixFolder(remixRootDir: string, filename: string): boolean {
+  return filename.startsWith(appRoutesPrefix(remixRootDir))
+}
+
+const possibleRemixSuffixSeparators = ['.', '_.']
+
+/**
+ * Return whether the given filename is a valid Remix route filename that is
+ * a prefix of the oldPath.
+ */
+export function remixFilenameMatchPrefix(
+  remixRootDir: string,
+  filename: string,
+  oldPath: string,
+): boolean {
+  // if it's not a remix route (meaning a .jsx file inside the /app/routes/ folder), stop here
+  const isRemixRoute =
+    isInsideRemixFolder(remixRootDir, oldPath) &&
+    isInsideRemixFolder(remixRootDir, filename) &&
+    path.extname(filename) === '.jsx'
+  if (!isRemixRoute) {
+    return false
+  }
+
+  const remixRootDirPrefix = appRoutesPrefix(remixRootDir)
+
+  // to make it easier to compare paths, make them relative to the /app/routes folder and remove any optional prefixes
+  const relativeOldPath = oldPath.replace(remixRootDirPrefix, '') // without /app/routes
+  const relativeFilename = filename
+    .replace(remixRootDirPrefix, '') // without /app/routes
+    .replace(/^\([^)]+\)\./, '') // without optional prefix
+
+  return possibleRemixSuffixSeparators.some((sep) =>
+    relativeFilename.startsWith(relativeOldPath + sep),
+  )
+}
+
+export function renameRemixFile({
+  remixRootDir,
+  filename,
+  oldPath,
+  newPath,
+}: {
+  remixRootDir: string
+  filename: string
+  oldPath: string
+  newPath: string
+}): {
+  filename: string
+  renamedOptionalPrefix: boolean
+} {
+  const remixRootDirPrefix = appRoutesPrefix(remixRootDir)
+  // 1. to make things easier, make all the paths relative to the Remix folder
+  const relativeFilename = filename.replace(remixRootDirPrefix, '')
+  const relativeOldPath = oldPath.replace(remixRootDirPrefix, '')
+  const relativeNewPath = newPath.replace(remixRootDirPrefix, '')
+
+  // 2. tokenize the relative paths, where each token is a "piece" of the path (see the comment doc for tokenizeRemixFilename).
+  const filenameTokens = tokenizeRemixFilename(relativeFilename)
+  const oldPathTokens = tokenizeRemixFilename(relativeOldPath)
+  const newPathTokens = tokenizeRemixFilename(relativeNewPath)
+
+  let renamedOptionalPrefix = false
+
+  // 3. build the result tokens by replacing the right tokens
+  let resultTokens: string[] = []
+  for (let i = 0; i < filenameTokens.length; i++) {
+    function getNewToken() {
+      if (i >= oldPathTokens.length) {
+        // the cursor is beyond the boundaries of the old tokens, so we can just return the original token
+        return filenameTokens[i]
+      } else if (filenameTokens[i] === oldPathTokens[i]) {
+        // the filename token matches exactly the old one, so we can replace immediately
+        return newPathTokens[i]
+      } else if (filenameTokens[i] === oldPathTokens[i] + '_') {
+        // the filename token matches exactly the old one with a trailing underscore, so we can replace immediately
+        return newPathTokens[i] + '_'
+      } else if (filenameTokens[i].endsWith(').' + oldPathTokens[i])) {
+        // the filename token contains optional prefixes, so manipulate the replacement accordingly
+        renamedOptionalPrefix = true
+        return replaceTokenForOptionalPrefix({
+          originalToken: filenameTokens[i],
+          portionToBeReplaced: oldPathTokens[i],
+          replacementPortion: newPathTokens[i],
+        })
+      } else if (filenameTokens[i].endsWith(').' + oldPathTokens[i] + '_')) {
+        // the filename token contains optional prefixes and an underscore suffix, so manipulate the replacement accordingly
+        renamedOptionalPrefix = true
+        return replaceTokenForOptionalPrefix({
+          originalToken: filenameTokens[i],
+          portionToBeReplaced: oldPathTokens[i] + '_',
+          replacementPortion: newPathTokens[i] + '_',
+        })
+      } else {
+        // no match, return the original token and keep going
+        return filenameTokens[i]
+      }
+    }
+    resultTokens.push(getNewToken())
+  }
+
+  // 4. merge the result tokens with the dot separator and prepend /app/routes for the final filename
+  const result = urljoin(remixRootDirPrefix, resultTokens.join('.'))
+
+  return {
+    filename: result,
+    renamedOptionalPrefix: renamedOptionalPrefix,
+  }
+}
+
+/**
+ * Merge the input tokens array into another array where optional tokens are prefixed
+ * to non-optional tokens.
+ *
+ * For example:
+ * 	['($foo)', 'bar', 'baz', '(qux)', 'waldo']
+ * 	becomes
+ * 	['($foo).bar', 'baz', '(qux).waldo']
+ */
+function tokenizeRemixFilename(filename: string): string[] {
+  const tokens = filename.split('.')
+  const merged: string[] = []
+  let currentToken: string[] = []
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i]
+    currentToken.push(token)
+    if (!token.startsWith('(')) {
+      merged.push(currentToken.join('.'))
+      currentToken = []
+    }
+  }
+  if (currentToken.length > 0) {
+    merged.push(currentToken.join('.'))
+  }
+  return merged
+}
+
+/**
+ * Replaces the target `portionToBeReplaced` suffix of the `originalToken` with
+ * the given `replacementPortion`, keeping the optional prefix.
+ *
+ * For example:
+ * 	replaceTokenForOptionalPrefix('($foo).(bar).baz', 'baz', 'qux')
+ * 	returns
+ * 	'($foo).(bar).qux'
+ */
+function replaceTokenForOptionalPrefix({
+  originalToken,
+  portionToBeReplaced,
+  replacementPortion,
+}: {
+  originalToken: string
+  portionToBeReplaced: string
+  replacementPortion: string
+}): string {
+  const lastPortionOfOptional = '\\)\\.'
+  const endOfString = '$'
+  const re = new RegExp(lastPortionOfOptional + portionToBeReplaced + endOfString)
+  return originalToken.replace(re, ').' + replacementPortion)
 }

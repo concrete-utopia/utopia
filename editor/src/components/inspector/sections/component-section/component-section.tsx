@@ -41,6 +41,7 @@ import {
   Icn,
   FlexColumn,
   UtopiaStyles,
+  color,
 } from '../../../../uuiui'
 import type { CSSCursor } from '../../../../uuiui-deps'
 import { getControlStyles } from '../../../../uuiui-deps'
@@ -893,14 +894,14 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
                 style={{
                   ...objectPropertyLabelStyle,
                   paddingLeft: indentation,
-                  paddingRight: 4,
+                  paddingRight: 6,
                   cursor: props.disableToggling ? 'default' : 'pointer',
                 }}
               >
                 {title}
                 {unless(props.disableToggling, <ObjectIndicator open={open} />)}
               </PropertyLabel>
-              <div style={{ minWidth: 0, flex: 1 }} onClick={stopPropagation}>
+              <div style={{ minWidth: 0 }} onClick={stopPropagation}>
                 <ControlForProp
                   propPath={propPath}
                   propName={propName}
@@ -1102,25 +1103,22 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
     <React.Fragment>
       <FlexRow
         style={{
+          borderTop: `1px solid ${colorTheme.seperator.value}`,
           padding: `0 ${UtopiaTheme.layout.inspectorXPadding}px`,
         }}
       >
         <FlexRow
           style={{
             flexGrow: 1,
-            color: colorTheme.componentPurple.value,
-            gap: 8,
             height: UtopiaTheme.layout.rowHeight.large,
           }}
         >
-          <Icons.Component color='component' />
           <div
             onClick={OpenFile}
             style={{
               color: colorTheme.componentPurple.value,
-              textDecoration: 'none',
+              fontWeight: 600,
               cursor: 'pointer',
-              padding: '0 2px',
             }}
           >
             Component

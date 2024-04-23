@@ -37,7 +37,10 @@ Array [
   Object {
     "insertableComponents": Array [
       Object {
-        "defaultSize": null,
+        "defaultSize": Object {
+          "height": 100,
+          "width": 100,
+        },
         "element": [Function],
         "importsToAdd": Object {
           "react": Object {
@@ -306,7 +309,10 @@ Array [
   Object {
     "insertableComponents": Array [
       Object {
-        "defaultSize": null,
+        "defaultSize": Object {
+          "height": 100,
+          "width": 100,
+        },
         "element": [Function],
         "importsToAdd": Object {
           "react": Object {

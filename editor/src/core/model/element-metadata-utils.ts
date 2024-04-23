@@ -1,5 +1,5 @@
 import * as OPI from 'object-path-immutable'
-import type { FlexLength, Sides } from 'utopia-api/core'
+import type { Emphasis, FlexLength, Sides } from 'utopia-api/core'
 import { sides } from 'utopia-api/core'
 import { getReorderDirection } from '../../components/canvas/controls/select-mode/yoga-utils'
 import { getImageSize, scaleImageDimensions } from '../../components/images'
@@ -167,7 +167,7 @@ import {
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { treatElementAsGroupLikeFromMetadata } from '../../components/canvas/canvas-strategies/strategies/group-helpers'
 import type { RemixRoutingTable } from '../../components/editor/store/remix-derived-data'
-import { exists } from '../shared/optics/optic-utilities'
+import { exists, toFirst } from '../shared/optics/optic-utilities'
 import { eitherRight, fromField, fromTypeGuard, notNull } from '../shared/optics/optic-creators'
 import { getComponentDescriptorForTarget } from '../property-controls/property-controls-utils'
 
@@ -232,6 +232,9 @@ export const MetadataUtils = {
   },
   isProbablyRemixLinkFromMetadata(element: ElementInstanceMetadata | null): boolean {
     return MetadataUtils.isImportedComponentFromMetadata(element, '@remix-run/react', 'Link')
+  },
+  isReactComponentFromMetadata(element: ElementInstanceMetadata | null): boolean {
+    return MetadataUtils.isImportedComponentFromMetadata(element, 'react', null)
   },
   isImportedComponent(
     jsxMetadata: ElementInstanceMetadataMap,
@@ -916,6 +919,25 @@ export const MetadataUtils = {
   },
   isSpan(instance: ElementInstanceMetadata): boolean {
     return this.isElementOfType(instance, 'span')
+  },
+  isHTML(instance: ElementInstanceMetadata): boolean {
+    return this.isElementOfType(instance, 'html')
+  },
+  isBody(instance: ElementInstanceMetadata): boolean {
+    return this.isElementOfType(instance, 'body')
+  },
+  isReactSuspense(instance: ElementInstanceMetadata | null): boolean {
+    return MetadataUtils.isImportedComponentFromMetadata(instance, 'react', 'Suspense')
+  },
+  isRemixAwait(instance: ElementInstanceMetadata | null): boolean {
+    return MetadataUtils.isImportedComponentFromMetadata(instance, '@remix-run/react', 'Await')
+  },
+  isRemixScrollRestoration(instance: ElementInstanceMetadata | null): boolean {
+    return MetadataUtils.isImportedComponentFromMetadata(
+      instance,
+      '@remix-run/react',
+      'ScrollRestoration',
+    )
   },
   targetIsScene(metadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
     const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
@@ -1999,6 +2021,63 @@ export const MetadataUtils = {
     } else {
       return false
     }
+  },
+  getEmphasisOfComponent(
+    path: ElementPath,
+    metadata: ElementInstanceMetadataMap,
+    propertyControlsInfo: PropertyControlsInfo,
+    projectContents: ProjectContentTreeRoot,
+  ): Emphasis {
+    // Look up the emphasis of the component from the property controls.
+    const componentDescriptor = getComponentDescriptorForTarget(
+      path,
+      propertyControlsInfo,
+      projectContents,
+    )
+    if (componentDescriptor != null) {
+      return componentDescriptor.emphasis
+    }
+
+    const element = MetadataUtils.findElementByElementPath(metadata, path)
+    // Element with flex or grid get high emphasis.
+    if (
+      MetadataUtils.isFlexLayoutedContainer(element) ||
+      MetadataUtils.isGridLayoutedContainer(element)
+    ) {
+      return 'emphasized'
+    }
+
+    // Divs without styling that contain one or zero elements get low emphasis.
+    if (element != null && MetadataUtils.isDiv(element)) {
+      const children = MetadataUtils.getChildrenUnordered(metadata, path)
+      if (children.length <= 1) {
+        const attributes = toFirst(
+          fromField<ElementInstanceMetadata, 'element'>('element')
+            .compose(eitherRight())
+            .compose(fromTypeGuard(isJSXElement))
+            .compose(fromField('props')),
+          element,
+        )
+        if (isRight(attributes)) {
+          const styleAttributes = getJSXAttribute(attributes.value, 'style')
+          if (styleAttributes == null) {
+            return 'subdued'
+          }
+        }
+      }
+    }
+
+    // Suspense and Await get low emphasis.
+    if (
+      MetadataUtils.isReactSuspense(element) ||
+      MetadataUtils.isRemixAwait(element) ||
+      MetadataUtils.isRemixScrollRestoration(element)
+    ) {
+      return 'subdued'
+    }
+
+    // Default to regular.
+    return 'regular'
   },
   isEmotionOrStyledComponent(path: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
     const element = MetadataUtils.findElementByElementPath(metadata, path)
