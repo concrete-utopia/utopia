@@ -165,9 +165,19 @@ export function objectValueParserWithError<V>(
   }
 }
 
-export function objectParser<Type>(spec: {
-  [Key in keyof Type]: (v: unknown, key: string) => ParseResult<Type[Key]>
-}): (v: unknown) => ParseResult<Type> {
+type PropertyParserFn<T> = (v: unknown, key: string) => ParseResult<T>
+type PropertyParser<T> = PropertyParserFn<T> | { optional: PropertyParserFn<T> }
+type ObjectParserSpec<Type> = {
+  [Key in keyof Type]: PropertyParser<Type[Key]>
+}
+
+export const optionalProp = <T>(
+  parser: PropertyParserFn<T>,
+): { optional: PropertyParserFn<T> } => ({ optional: parser })
+
+export function objectParser<Type>(
+  spec: ObjectParserSpec<Type>,
+): (v: unknown) => ParseResult<Type> {
   return (value: unknown) => {
     if (typeof value !== 'object') {
       // TODO: check whether this produces a sensible error message
@@ -185,19 +195,24 @@ export function objectParser<Type>(spec: {
 
     const partialResult: Partial<Type> = {}
 
-    for (const [key, parser] of Object.entries(spec)) {
-      const withErrorParser = objectValueParserWithError(parser as any)
-      if (key in value) {
-        const parsed = withErrorParser((value as any)[key], key)
-        if (isLeft(parsed)) {
-          return parsed
+    for (const [key, parser] of Object.entries<PropertyParser<unknown>>(spec)) {
+      const optional = typeof parser !== 'function'
+      if (!(key in value)) {
+        if (optional) {
+          continue
         }
-
-        ;(partialResult as any)[key] = parsed.value
-        checkedProps.add(key)
-      } else {
         return left(objectFieldNotPresentParseError(key))
       }
+
+      const parserFn = typeof parser === 'function' ? parser : parser.optional
+      const withErrorParser = objectValueParserWithError(parserFn as any)
+      const parsed = withErrorParser((value as any)[key], key)
+      if (isLeft(parsed)) {
+        return parsed
+      }
+
+      ;(partialResult as any)[key] = parsed.value
+      checkedProps.add(key)
     }
 
     const unnecessaryProps = [...difference(allProps, checkedProps)]

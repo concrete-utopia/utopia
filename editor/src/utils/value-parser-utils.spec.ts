@@ -7,6 +7,7 @@ import {
   parseArray,
   parseObject,
   parseConstant,
+  optionalProp,
 } from './value-parser-utils'
 import { left, right } from '../core/shared/either'
 
@@ -100,6 +101,36 @@ describe('objectParser', () => {
               ],
             },
           },
+          "string": "string",
+        },
+      }
+    `)
+  })
+  it('can parse object with optional props', () => {
+    const parser = objectParser<{ string: string; number: number; boolOptional?: boolean }>({
+      string: parseString,
+      number: parseNumber,
+      boolOptional: optionalProp(parseBoolean),
+    })
+
+    const input1 = { string: 'string', number: 1, boolOptional: true }
+    const input2 = { string: 'string', number: 1 }
+
+    expect(parser(input1)).toMatchInlineSnapshot(`
+      Object {
+        "type": "RIGHT",
+        "value": Object {
+          "boolOptional": true,
+          "number": 1,
+          "string": "string",
+        },
+      }
+    `)
+    expect(parser(input2)).toMatchInlineSnapshot(`
+      Object {
+        "type": "RIGHT",
+        "value": Object {
+          "number": 1,
           "string": "string",
         },
       }
