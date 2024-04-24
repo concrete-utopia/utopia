@@ -82,7 +82,6 @@ import { getDomRectCenter } from '../../../core/shared/dom-utils'
 import { FloatingPostActionMenuTestId } from '../../canvas/controls/select-mode/post-action-menu'
 import { safeIndex } from '../../../core/shared/array-utils'
 import { updateSelectedViews } from '../../canvas/commands/update-selected-views-command'
-import { wait } from '../../../core/model/performance-scripts'
 
 async function deleteFromScene(
   inputSnippet: string,
