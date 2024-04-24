@@ -204,8 +204,16 @@ const useSupportsChildren = (target: ElementPath): boolean => {
     Substores.restOfEditor,
     (store) => {
       const targetJSXElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(targetElement)
+      if (targetJSXElement == null) {
+        return false
+      }
+
+      if (MetadataUtils.intrinsicElementThatSupportsChildren(targetJSXElement)) {
+        return true
+      }
+
       const elementImportInfo = targetElement?.importInfo
-      if (elementImportInfo == null || targetJSXElement == null) {
+      if (elementImportInfo == null) {
         return false
       }
 
@@ -217,8 +225,7 @@ const useSupportsChildren = (target: ElementPath): boolean => {
       )
 
       // FIXME use the below when we are no longer restricted to preferredChildComponents only
-      // return registeredComponent?.supportsChildren ?? false
-      return (registeredComponent?.preferredChildComponents?.length ?? 0) > 0
+      return registeredComponent?.supportsChildren ?? false
     },
     'useSupportsChildren supportsChildren',
   )
@@ -244,10 +251,7 @@ const AddChildButton = React.memo((props: AddChildButtonProps) => {
       style={{
         height: 12,
         width: 12,
-        background: 'green',
-        // display: shouldShow ? 'block' : 'none',
-        // opacity: shouldShow ? 1 : 0.4,
-        opacity: shouldShow ? 1 : 1,
+        display: shouldShow ? 'block' : 'none',
       }}
       data-testid={addChildButtonTestId(props.target)}
     >
@@ -264,7 +268,6 @@ const AddChildButton = React.memo((props: AddChildButtonProps) => {
 
 const ReplaceElementButton = React.memo((props: AddChildButtonProps) => {
   const color = props.iconColor
-  const shouldShow = useSupportsChildren(EP.parentPath(props.target))
 
   return (
     <Button
@@ -272,7 +275,6 @@ const ReplaceElementButton = React.memo((props: AddChildButtonProps) => {
       style={{
         height: 12,
         width: 12,
-        opacity: shouldShow ? 1 : 0,
       }}
     >
       <Icn
@@ -477,15 +479,15 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
       {(navigatorEntry.type === 'REGULAR' || navigatorEntry.type === 'RENDER_PROP_VALUE') &&
       (props.highlighted || props.selected) ? (
         <>
-          <ReplaceElementButton
-            target={navigatorEntry.elementPath}
-            iconColor={props.iconColor}
-            onClick={props.showReplaceElementPicker}
-          />
           <AddChildButton
             target={navigatorEntry.elementPath}
             iconColor={props.iconColor}
             onClick={props.showInsertChildPicker}
+          />
+          <ReplaceElementButton
+            target={navigatorEntry.elementPath}
+            iconColor={props.iconColor}
+            onClick={props.showReplaceElementPicker}
           />
         </>
       ) : null}
