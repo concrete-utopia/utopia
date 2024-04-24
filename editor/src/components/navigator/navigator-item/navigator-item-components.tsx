@@ -276,7 +276,6 @@ const AddChildButton = React.memo((props: AddChildButtonProps) => {
 })
 
 const ReplaceElementButton = React.memo((props: AddChildButtonProps) => {
-  const color = props.iconColor
   const showPreferred = useSupportsChildren(EP.parentPath(props.target)) === 'all-with-preferred'
 
   return (
@@ -290,7 +289,7 @@ const ReplaceElementButton = React.memo((props: AddChildButtonProps) => {
       <Icn
         category='tools'
         type='convert-action'
-        color={color}
+        color={'main'} // FIXME Add missing colours
         width={18}
         height={18}
         style={{ transform: 'scale(0.67)' }}
