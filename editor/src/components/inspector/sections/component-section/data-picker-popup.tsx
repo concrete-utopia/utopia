@@ -391,10 +391,6 @@ function PrefixIcon({
 }) {
   const colorTheme = useColorTheme()
   const style = {
-    // manually center relative to anchor container above (see relative)
-    position: 'absolute',
-    top: 4,
-    left: -22,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -406,21 +402,21 @@ function PrefixIcon({
     },
     [onIconClick],
   )
-  if (hasObjectChildren) {
-    return (
-      <span
-        css={{
-          color: colorTheme.neutralBorder.value,
-          fontSize: 6,
-          ...style,
-        }}
-        onClick={onClick}
-      >
+
+  return (
+    <span
+      css={{
+        color: colorTheme.neutralBorder.value,
+        fontSize: 6,
+        ...style,
+      }}
+      onClick={onClick}
+    >
+      {hasObjectChildren ? (
         <ExpandableIndicator visible collapsed={!open} selected={false} />
-      </span>
-    )
-  }
-  return <span />
+      ) : null}
+    </span>
+  )
 }
 
 function ArrayPaginator({
