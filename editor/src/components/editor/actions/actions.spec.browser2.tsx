@@ -82,6 +82,7 @@ import { getDomRectCenter } from '../../../core/shared/dom-utils'
 import { FloatingPostActionMenuTestId } from '../../canvas/controls/select-mode/post-action-menu'
 import { safeIndex } from '../../../core/shared/array-utils'
 import { updateSelectedViews } from '../../canvas/commands/update-selected-views-command'
+import { wait } from '../../../core/model/performance-scripts'
 
 async function deleteFromScene(
   inputSnippet: string,
@@ -615,7 +616,7 @@ describe('actions', () => {
       ])
 
       const renderPropEntry = editor.renderedDOM.getByTestId(
-        'NavigatorItemTestId-regular_sb/scene/map/card~~~1/render_prop_element',
+        'NavigatorItemTestId-renderpropvalue_sb/scene/map/card~~~1/render_prop_element_header',
       )
 
       await mouseClickAtPoint(renderPropEntry, { x: 2, y: 2 })
