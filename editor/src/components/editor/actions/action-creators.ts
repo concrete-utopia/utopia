@@ -270,12 +270,14 @@ export function insertJSXElement(
   element: JSXElement,
   parent: ElementPath | null,
   importsToAdd: Imports,
+  elementToReplace: ElementPath | null = null,
 ): InsertJSXElement {
   return {
     action: 'INSERT_JSX_ELEMENT',
     jsxElement: element,
     parent: parent,
     importsToAdd: importsToAdd,
+    elementToReplace: elementToReplace,
   }
 }
 

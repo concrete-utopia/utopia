@@ -147,7 +147,7 @@ import { assertNever, fastForEach, getProjectLockedKey, identity } from '../../.
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
 import type { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import type { IndexPosition } from '../../../utils/utils'
-import Utils from '../../../utils/utils'
+import Utils, { absolute } from '../../../utils/utils'
 import type { ProjectContentTreeRoot } from '../../assets'
 import {
   isProjectContentFile,
@@ -2296,7 +2296,7 @@ export const UPDATE_FNS = {
       editor,
       (element) => element,
       (success, _, underlyingFilePath) => {
-        const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
+        const startingComponents = getUtopiaJSXComponentsFromSuccess(success)
         const targetParent =
           action.parent == null
             ? // action.parent == null means Canvas, which means storyboard root element
@@ -2311,9 +2311,25 @@ export const UPDATE_FNS = {
           return success
         }
 
+        const insertionIndex =
+          action.elementToReplace == null
+            ? -1
+            : getIndexInParent(
+                success.topLevelElements,
+                EP.dynamicPathToStaticPath(action.elementToReplace),
+              )
+
+        const withReplacedElementDeleted =
+          action.elementToReplace == null
+            ? {
+                components: startingComponents,
+                imports: success.imports,
+              }
+            : removeElementAtPath(action.elementToReplace, startingComponents, success.imports)
+
         const updatedImports = mergeImports(
           underlyingFilePath,
-          success.imports,
+          withReplacedElementDeleted.imports,
           action.importsToAdd,
         )
 
@@ -2324,8 +2340,8 @@ export const UPDATE_FNS = {
         const withInsertedElement = insertJSXElementChildren(
           childInsertionPath(targetParent),
           [renamedJsxElement],
-          utopiaComponents,
-          null,
+          withReplacedElementDeleted.components,
+          insertionIndex >= 0 ? absolute(insertionIndex) : null,
         )
 
         const uid = getUtopiaID(renamedJsxElement)

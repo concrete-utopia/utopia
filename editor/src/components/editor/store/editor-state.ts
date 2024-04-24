@@ -126,6 +126,7 @@ import {
   ElementInstanceMetadataMapKeepDeepEquality,
   InvalidOverrideNavigatorEntryKeepDeepEquality,
   RenderPropNavigatorEntryKeepDeepEquality,
+  RenderPropValueNavigatorEntryKeepDeepEquality,
   SyntheticNavigatorEntryKeepDeepEquality,
 } from './store-deep-equality-instances'
 
@@ -2153,7 +2154,7 @@ export function syntheticNavigatorEntriesEqual(
 
 export interface RenderPropNavigatorEntry {
   type: 'RENDER_PROP'
-  elementPath: ElementPath
+  elementPath: ElementPath // path of the element containing this render prop
   propName: string
 }
 
@@ -2173,6 +2174,36 @@ export function renderPropNavigatorEntriesEqual(
   second: RenderPropNavigatorEntry,
 ): boolean {
   return RenderPropNavigatorEntryKeepDeepEquality(first, second).areEqual
+}
+
+export interface RenderPropValueNavigatorEntry {
+  type: 'RENDER_PROP_VALUE'
+  elementPath: ElementPath // path of the actual element being used inside a render prop
+  prop: string
+}
+
+export function renderPropValueNavigatorEntry(
+  elementPath: ElementPath,
+  prop: string,
+): RenderPropValueNavigatorEntry {
+  return {
+    type: 'RENDER_PROP_VALUE',
+    elementPath: elementPath,
+    prop: prop,
+  }
+}
+
+export function isRenderPropValueNavigatorEntry(
+  v: NavigatorEntry,
+): v is RenderPropValueNavigatorEntry {
+  return v.type === 'RENDER_PROP_VALUE'
+}
+
+export function renderPropValueNavigatorEntriesEqual(
+  first: RenderPropValueNavigatorEntry,
+  second: RenderPropValueNavigatorEntry,
+): boolean {
+  return RenderPropValueNavigatorEntryKeepDeepEquality(first, second).areEqual
 }
 
 export interface InvalidOverrideNavigatorEntry {
@@ -2211,6 +2242,7 @@ export type NavigatorEntry =
   | SyntheticNavigatorEntry
   | InvalidOverrideNavigatorEntry
   | RenderPropNavigatorEntry
+  | RenderPropValueNavigatorEntry
   | SlotNavigatorEntry
 
 export function navigatorEntriesEqual(
@@ -2249,6 +2281,9 @@ export function navigatorEntryToKey(entry: NavigatorEntry): string {
     case 'RENDER_PROP': {
       return `render-prop-${EP.toComponentId(entry.elementPath)}-${entry.propName}`
     }
+    case 'RENDER_PROP_VALUE': {
+      return `render-prop-value-${EP.toComponentId(entry.elementPath)}-${entry.prop}`
+    }
     case 'INVALID_OVERRIDE':
       return `error-${EP.toComponentId(entry.elementPath)}`
     case 'SLOT':
@@ -2271,6 +2306,8 @@ export function varSafeNavigatorEntryToKey(entry: NavigatorEntry): string {
       return `synthetic_${EP.toVarSafeComponentId(entry.elementPath)}_${childOrAttributeDetails}`
     case 'RENDER_PROP':
       return `renderprop_${EP.toVarSafeComponentId(entry.elementPath)}_${entry.propName}`
+    case 'RENDER_PROP_VALUE':
+      return `renderpropvalue_${EP.toVarSafeComponentId(entry.elementPath)}_${entry.prop}`
     case 'INVALID_OVERRIDE':
       return `error_${EP.toVarSafeComponentId(entry.elementPath)}`
     case 'SLOT':

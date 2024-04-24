@@ -31,6 +31,8 @@ import {
 import { type Icon } from 'utopia-api'
 import { getRegisteredComponent } from '../../../core/property-controls/property-controls-utils'
 import { defaultImportsForComponentModule } from '../../../core/property-controls/property-controls-local'
+import { useGetInsertableComponents } from '../../canvas/ui/floating-insert-menu'
+import { getInsertableGroupLabel } from '../../shared/project-components'
 
 function getIconForComponent(
   targetName: string,
@@ -52,11 +54,14 @@ interface PreferredChildComponentDescriptorWithIcon extends PreferredChildCompon
 
 const usePreferredChildrenForTargetProp = (
   target: ElementPath,
-  prop?: string,
+  prop: string | null,
+  replacesTarget: boolean,
 ): Array<PreferredChildComponentDescriptorWithIcon> => {
+  const actualTarget = replacesTarget && prop == null ? EP.parentPath(target) : target
+
   const targetElement = useEditorState(
     Substores.metadata,
-    (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, target),
+    (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, actualTarget),
     'usePreferredChildrenForTargetProp targetElement',
   )
 
@@ -221,7 +226,8 @@ function insertPreferredChild(
   target: ElementPath,
   projectContents: ProjectContentTreeRoot,
   dispatch: EditorDispatch,
-  prop?: string,
+  prop: string | null,
+  replacesTarget: boolean,
 ) {
   const uniqueIds = new Set(getAllUniqueUids(projectContents).uniqueIDs)
   const uid = generateConsistentUID('prop', uniqueIds)
@@ -233,9 +239,17 @@ function insertPreferredChild(
     throw new Error('only JSX elements are supported as preferred components')
   }
 
+  const targetParent = replacesTarget ? EP.parentPath(target) : target
+  const elementToReplace = replacesTarget ? target : null
+
   const insertionAction =
     prop == null
-      ? insertJSXElement(element, target, preferredChildToInsert.additionalImports ?? undefined)
+      ? insertJSXElement(
+          element,
+          targetParent,
+          preferredChildToInsert.additionalImports ?? undefined,
+          elementToReplace,
+        )
       : setProp_UNSAFE(
           target,
           PP.create(prop),
@@ -248,9 +262,10 @@ function insertPreferredChild(
 
 interface ComponentPickerContextMenuProps {
   target: ElementPath
-  prop?: string
+  prop: string | null
   key: string
   id: string
+  replacesTarget: boolean
 }
 
 function iconPropsForIcon(icon: Icon): IcnProps {
@@ -287,10 +302,14 @@ export function labelTestIdForComponentIcon(
 }
 
 const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuProps>(
-  ({ id, target, prop }) => {
+  ({ id, target, prop, replacesTarget }) => {
     const { showComponentPickerContextMenu } = useShowComponentPickerContextMenu(`${id}-full`)
 
-    const preferredChildrenForTargetProp = usePreferredChildrenForTargetProp(target, prop)
+    const preferredChildrenForTargetProp = usePreferredChildrenForTargetProp(
+      target,
+      prop,
+      replacesTarget,
+    )
 
     const dispatch = useDispatch()
 
@@ -304,8 +323,9 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
           projectContentsRef.current,
           dispatch,
           prop,
+          replacesTarget,
         ),
-      [dispatch, projectContentsRef, prop, target],
+      [dispatch, projectContentsRef, prop, target, replacesTarget],
     )
     const wrapperRef = React.useRef<HTMLDivElement>(null)
 
@@ -359,10 +379,19 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
 )
 
 const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProps>(
-  ({ id, target, prop }) => {
+  ({ id, target, prop, replacesTarget }) => {
     const { hideComponentPickerContextMenu } = useShowComponentPickerContextMenu(`${id}-full`)
 
-    const preferredChildrenForTargetProp = usePreferredChildrenForTargetProp(target, prop)
+    const preferredChildrenForTargetProp = usePreferredChildrenForTargetProp(
+      target,
+      prop,
+      replacesTarget,
+    )
+
+    const allInsertableComponents = useGetInsertableComponents('insert').flatMap((g) => ({
+      label: g.label,
+      options: g.options,
+    }))
 
     const dispatch = useDispatch()
 
@@ -379,9 +408,10 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
           projectContentsRef.current,
           dispatch,
           prop,
+          replacesTarget,
         )
       },
-      [dispatch, projectContentsRef, prop, target],
+      [dispatch, projectContentsRef, prop, target, replacesTarget],
     )
 
     const squashEvents = React.useCallback((e: React.MouseEvent<unknown>) => {
@@ -391,13 +421,12 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
     if (preferredChildrenForTargetProp == null) {
       return null
     }
-
     return (
-      <Menu key={id} id={id} animation={false} style={{ width: 457 }} onClick={squashEvents}>
+      <Menu key={id} id={id} animation={false} style={{ width: 260 }} onClick={squashEvents}>
         <ComponentPicker
           insertionTargetName={prop ?? 'Child'}
           preferredComponents={preferredChildrenForTargetProp}
-          allComponents={preferredChildrenForTargetProp}
+          allComponents={allInsertableComponents}
           onItemClick={onItemClick}
           onClickCloseButton={hideComponentPickerContextMenu}
         />
@@ -407,15 +436,22 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
 )
 
 export const ComponentPickerContextMenu = React.memo<ComponentPickerContextMenuProps>(
-  ({ id, target, prop }) => {
+  ({ id, target, prop, replacesTarget }) => {
     return (
       <React.Fragment>
-        <ComponentPickerContextMenuSimple target={target} key={id} id={id} prop={prop} />
+        <ComponentPickerContextMenuSimple
+          target={target}
+          key={id}
+          id={id}
+          prop={prop}
+          replacesTarget={replacesTarget}
+        />
         <ComponentPickerContextMenuFull
           target={target}
           key={`${id}-full`}
           id={`${id}-full`}
           prop={prop}
+          replacesTarget={replacesTarget}
         />
       </React.Fragment>
     )
