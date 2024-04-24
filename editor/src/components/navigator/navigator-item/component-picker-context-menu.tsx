@@ -1,5 +1,5 @@
 import React from 'react'
-import { useContextMenu, Menu, type ContextMenuParams } from 'react-contexify'
+import { useContextMenu, Menu, type ContextMenuParams, contextMenu } from 'react-contexify'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   getJSXElementNameAsString,
@@ -394,6 +394,8 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
           dispatch,
           insertionTarget,
         )
+
+        contextMenu.hideAll()
       },
       [dispatch, projectContentsRef, insertionTarget, target],
     )
