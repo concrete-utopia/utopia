@@ -250,7 +250,6 @@ export function addChildButtonTestId(target: ElementPath): string {
 const AddChildButton = React.memo((props: AddChildButtonProps) => {
   const color = props.iconColor
   const supportsChildren = useSupportsChildren(props.target)
-  const shouldShow = supportsChildren !== 'none'
 
   return (
     <Button
@@ -260,7 +259,6 @@ const AddChildButton = React.memo((props: AddChildButtonProps) => {
       style={{
         height: 12,
         width: 12,
-        display: shouldShow ? 'block' : 'none',
       }}
       data-testid={addChildButtonTestId(props.target)}
     >
