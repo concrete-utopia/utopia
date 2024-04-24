@@ -179,7 +179,7 @@ export const DataPickerPopup = React.memo(
           <UIGridRow
             padded
             variant='<-------1fr------>|----80px----|'
-            css={{ marginBottom: 16, alignSelf: 'stretch' }}
+            css={{ marginBottom: 4, alignSelf: 'stretch' }}
           >
             <div style={{ fontWeight: 600, flexGrow: 1 }}>Data</div>
             <PopupList
@@ -271,6 +271,7 @@ function ValueRow({
           borderRadius: 8,
           width: '100%',
           height: 29,
+          marginTop: variableChildren != null && variableOption.depth === 0 ? 12 : 0, // add some space between top-level variables
           cursor: variableOption.variableInfo.matches ? 'pointer' : 'default',
           background: currentExpressionExactMatch
             ? colorTheme.secondaryBackground.value
