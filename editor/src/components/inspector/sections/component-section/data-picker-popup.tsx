@@ -21,6 +21,7 @@ import { useRefEditorState } from '../../../editor/store/store-hook'
 import { UIGridRow } from '../../widgets/ui-grid-row'
 import { DataPickerPopupTestId, VariableFromScopeOptionTestId } from './component-section'
 import * as EP from '../../../../core/shared/element-path'
+import * as PP from '../../../../core/shared/property-path'
 import type {
   ArrayInfo,
   JSXInfo,
@@ -36,6 +37,7 @@ import { FlexRow } from 'utopia-api'
 import { is } from '../../../../core/shared/equality-utils'
 import { atom, useAtom } from 'jotai'
 import type { SelectOption } from '../../controls/select-control'
+import { InspectorModal } from '../../widgets/inspector-modal'
 
 export interface PrimitiveOption {
   type: 'primitive'
@@ -183,63 +185,75 @@ export const DataPickerPopup = React.memo(
     )
 
     return (
-      <div
+      <InspectorModal
+        offsetX={0}
+        offsetY={0}
+        closePopup={props.closePopup}
         style={{
-          background: 'transparent',
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          zIndex: 1, // so it's above the inspector
+          zIndex: 1,
         }}
-        onClick={closePopup}
+        closePopupOnUnmount={false}
+        outsideClickIgnoreClass={`ignore-react-onclickoutside-data-picker-${PP.toString(propPath)}`}
       >
-        <FlexColumn
-          ref={forwardedRef}
-          tabIndex={0}
+        <div // this entire wrapper div was made before using the InspectorModal, so it should be re-done
           style={{
-            ...props.style,
-            backgroundColor: colorTheme.neutralBackground.value,
-            padding: '8px 4px',
-            boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
-            border: '1px solid lightgrey',
-            borderRadius: 4,
-            alignItems: 'flex-start',
-            width: '96%',
-            maxWidth: '260px',
+            background: 'transparent',
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 1, // so it's above the inspector
           }}
-          data-testid={DataPickerPopupTestId}
+          onClick={closePopup}
         >
-          <UIGridRow
-            padded
-            variant='<-------1fr------>|----80px----|'
-            css={{ marginBottom: 4, alignSelf: 'stretch' }}
+          <FlexColumn
+            ref={forwardedRef}
+            tabIndex={0}
+            style={{
+              ...props.style,
+              left: -5, // to make it align with the inspector
+              backgroundColor: colorTheme.neutralBackground.value,
+              padding: '8px 4px',
+              boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
+              border: '1px solid lightgrey',
+              borderRadius: 4,
+              alignItems: 'flex-start',
+              width: '96%',
+              maxWidth: '260px',
+            }}
+            data-testid={DataPickerPopupTestId}
           >
-            <div style={{ fontWeight: 600, flexGrow: 1 }}>Data</div>
-            <PopupList
-              containerMode='showBorderOnHover'
-              options={filterOptions}
-              value={{
-                value: preferredAllState,
-                label: dataPickerFilterOptionToString(preferredAllState),
-              }}
-              onSubmitValue={setMode}
-            />
-          </UIGridRow>
-          {variableNamesInScope.map((variableOption, idx) => {
-            return (
-              <ValueRow
-                key={variableOption.valuePath.toString()}
-                variableOption={variableOption}
-                idx={`${idx}`}
-                onTweakProperty={onTweakProperty}
-                currentPropExpressionPath={propExpressionPath}
+            <UIGridRow
+              padded
+              variant='<-------1fr------>|----80px----|'
+              css={{ marginBottom: 4, alignSelf: 'stretch' }}
+            >
+              <div style={{ fontWeight: 600, flexGrow: 1 }}>Data</div>
+              <PopupList
+                containerMode='showBorderOnHover'
+                options={filterOptions}
+                value={{
+                  value: preferredAllState,
+                  label: dataPickerFilterOptionToString(preferredAllState),
+                }}
+                onSubmitValue={setMode}
               />
-            )
-          })}
-        </FlexColumn>
-      </div>
+            </UIGridRow>
+            {variableNamesInScope.map((variableOption, idx) => {
+              return (
+                <ValueRow
+                  key={variableOption.valuePath.toString()}
+                  variableOption={variableOption}
+                  idx={`${idx}`}
+                  onTweakProperty={onTweakProperty}
+                  currentPropExpressionPath={propExpressionPath}
+                />
+              )
+            })}
+          </FlexColumn>
+        </div>
+      </InspectorModal>
     )
   }),
 )

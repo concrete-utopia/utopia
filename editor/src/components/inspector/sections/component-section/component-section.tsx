@@ -337,16 +337,14 @@ function useDataPickerButton(
 
   const DataPickerComponent = React.useMemo(
     () => (
-      <OnClickOutsideHOC onClickOutside={closePopup}>
-        <DataPickerPopup
-          {...popper.attributes.popper}
-          style={popper.styles.popper}
-          closePopup={closePopup}
-          ref={setPopperElement}
-          propPath={propPath}
-          propExpressionPath={propExpressionPath}
-        />
-      </OnClickOutsideHOC>
+      <DataPickerPopup
+        {...popper.attributes.popper}
+        style={popper.styles.popper}
+        closePopup={closePopup}
+        ref={setPopperElement}
+        propPath={propPath}
+        propExpressionPath={propExpressionPath}
+      />
     ),
     [closePopup, popper.attributes.popper, popper.styles.popper, propExpressionPath, propPath],
   )
