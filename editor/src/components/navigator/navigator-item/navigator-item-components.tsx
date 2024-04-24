@@ -193,7 +193,7 @@ export const VisibilityIndicator: React.FunctionComponent<
   )
 })
 
-const useSupportsChildren = (target: ElementPath): boolean => {
+const useSupportsChildren = (target: ElementPath): 'all' | 'all-with-preferred' | 'none' => {
   const targetElement = useEditorState(
     Substores.metadata,
     (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, target),
@@ -205,16 +205,16 @@ const useSupportsChildren = (target: ElementPath): boolean => {
     (store) => {
       const targetJSXElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(targetElement)
       if (targetJSXElement == null) {
-        return false
+        return 'none'
       }
 
       if (MetadataUtils.intrinsicElementThatSupportsChildren(targetJSXElement)) {
-        return true
+        return 'all'
       }
 
       const elementImportInfo = targetElement?.importInfo
       if (elementImportInfo == null) {
-        return false
+        return 'none'
       }
 
       const targetName = getJSXElementNameAsString(targetJSXElement.name)
@@ -224,8 +224,13 @@ const useSupportsChildren = (target: ElementPath): boolean => {
         store.editor.propertyControlsInfo,
       )
 
-      // FIXME use the below when we are no longer restricted to preferredChildComponents only
-      return registeredComponent?.supportsChildren ?? false
+      if ((registeredComponent?.preferredChildComponents?.length ?? 0) > 0) {
+        return 'all-with-preferred'
+      } else if (registeredComponent?.supportsChildren ?? false) {
+        return 'all'
+      } else {
+        return 'none'
+      }
     },
     'useSupportsChildren supportsChildren',
   )
@@ -234,7 +239,8 @@ const useSupportsChildren = (target: ElementPath): boolean => {
 interface AddChildButtonProps {
   target: ElementPath
   iconColor: IcnProps['color']
-  onClick: React.MouseEventHandler<HTMLDivElement>
+  showPreferredPicker: React.MouseEventHandler<HTMLDivElement>
+  showFullPicker: React.MouseEventHandler<HTMLDivElement>
 }
 
 export function addChildButtonTestId(target: ElementPath): string {
@@ -243,11 +249,14 @@ export function addChildButtonTestId(target: ElementPath): string {
 
 const AddChildButton = React.memo((props: AddChildButtonProps) => {
   const color = props.iconColor
-  const shouldShow = useSupportsChildren(props.target)
+  const supportsChildren = useSupportsChildren(props.target)
+  const shouldShow = supportsChildren !== 'none'
 
   return (
     <Button
-      onClick={props.onClick}
+      onClick={
+        supportsChildren === 'all-with-preferred' ? props.showPreferredPicker : props.showFullPicker
+      }
       style={{
         height: 12,
         width: 12,
@@ -268,10 +277,11 @@ const AddChildButton = React.memo((props: AddChildButtonProps) => {
 
 const ReplaceElementButton = React.memo((props: AddChildButtonProps) => {
   const color = props.iconColor
+  const showPreferred = useSupportsChildren(EP.parentPath(props.target)) === 'all-with-preferred'
 
   return (
     <Button
-      onClick={props.onClick}
+      onClick={showPreferred ? props.showPreferredPicker : props.showFullPicker}
       style={{
         height: 12,
         width: 12,
@@ -387,8 +397,10 @@ interface NavigatorItemActionSheetProps {
   iconColor: IcnProps['color']
   background?: string | any
   dispatch: EditorDispatch
-  showInsertChildPicker: React.MouseEventHandler<HTMLDivElement>
-  showReplaceElementPicker: React.MouseEventHandler<HTMLDivElement>
+  showInsertChildPickerPreferred: React.MouseEventHandler<HTMLDivElement>
+  showInsertChildPickerFull: React.MouseEventHandler<HTMLDivElement>
+  showReplaceElementPickerPreferred: React.MouseEventHandler<HTMLDivElement>
+  showReplaceElementPickerFull: React.MouseEventHandler<HTMLDivElement>
 }
 
 export const NavigatorItemActionSheet: React.FunctionComponent<
@@ -482,12 +494,14 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
           <AddChildButton
             target={navigatorEntry.elementPath}
             iconColor={props.iconColor}
-            onClick={props.showInsertChildPicker}
+            showPreferredPicker={props.showInsertChildPickerPreferred}
+            showFullPicker={props.showInsertChildPickerFull}
           />
           <ReplaceElementButton
             target={navigatorEntry.elementPath}
             iconColor={props.iconColor}
-            onClick={props.showReplaceElementPicker}
+            showPreferredPicker={props.showReplaceElementPickerPreferred}
+            showFullPicker={props.showReplaceElementPickerFull}
           />
         </>
       ) : null}
