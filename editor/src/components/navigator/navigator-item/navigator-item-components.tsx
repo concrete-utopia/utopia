@@ -244,7 +244,10 @@ const AddChildButton = React.memo((props: AddChildButtonProps) => {
       style={{
         height: 12,
         width: 12,
-        opacity: shouldShow ? 1 : 0,
+        background: 'green',
+        // display: shouldShow ? 'block' : 'none',
+        // opacity: shouldShow ? 1 : 0.4,
+        opacity: shouldShow ? 1 : 1,
       }}
       data-testid={addChildButtonTestId(props.target)}
     >
@@ -481,7 +484,6 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
           />
           <AddChildButton
             target={navigatorEntry.elementPath}
-            iconColor={props.iconColor}
             onClick={props.showInsertChildPicker}
           />
         </>
