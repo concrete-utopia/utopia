@@ -225,7 +225,7 @@ function variableInfoFromVariableData(variableNamesInScope: VariableData): Array
 }
 
 function orderVariablesForRelevance(
-  variableNamesInScope: Array<VariableInfo>,
+  variableNamesInScope_MUTABLE: Array<VariableInfo>,
   controlDescription: ControlDescription | null,
   currentPropertyValue: PropertyValue,
 ): Array<VariableInfo> {
@@ -235,7 +235,7 @@ function orderVariablesForRelevance(
   let valueElementMatches: Array<VariableInfo> = []
   let restOfValues: Array<VariableInfo> = []
 
-  for (let variable of variableNamesInScope) {
+  for (let variable of variableNamesInScope_MUTABLE) {
     if (variable.type === 'array') {
       variable.elements = orderVariablesForRelevance(
         variable.elements,
