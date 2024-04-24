@@ -2,7 +2,8 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import { useColorTheme } from '../../../uuiui'
+import { Icons, UtopiaTheme, useColorTheme } from '../../../uuiui'
+import { dark } from '../../../uuiui/styles/theme/dark'
 import { capitalize } from '../../../core/shared/string-utils'
 import { type PreferredChildComponentDescriptor } from '../../custom-code/internal-property-controls'
 import { jsxElementWithoutUID, type JSXElementChild } from '../../../core/shared/element-template'
@@ -13,6 +14,8 @@ import { when } from '../../../utils/react-conditionals'
 import { defaultImportsForComponentModule } from '../../../core/property-controls/property-controls-local'
 import type { InsertMenuItem, InsertMenuItemGroup } from '../../canvas/ui/floating-insert-menu'
 import { assertNever } from '../../../core/shared/utils'
+import { UIGridRow } from '../../../components/inspector/widgets/ui-grid-row'
+import { FlexRow } from 'utopia-api'
 
 export interface ComponentPickerProps {
   insertionTargetName: string
@@ -74,7 +77,7 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
         width: '100%',
         height: '100%',
         padding: 0,
-        backgroundColor: colorTheme.white.value,
+        color: dark.fg3.value,
         borderRadius: 10,
       }}
       data-testId={componentPickerTestIdForProp(props.insertionTargetName)}
@@ -85,14 +88,99 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
         onSelectTab={setSelectedTab}
         onClickCloseButton={props.onClickCloseButton}
       />
-      <div
-        style={{
-          width: '100%',
-          borderWidth: '1px 0 0 0',
-          borderStyle: 'solid',
-          borderColor: colorTheme.subduedBorder.value,
+      {/* fake!! fraud!! */}
+      <FlexRow
+        css={{
+          marginLeft: 8,
+          marginRight: 8,
+          borderRadius: 4,
+          // indentation!
+          paddingLeft: 8,
+          color: '#EEE',
+          '&:hover': {
+            background: '#007aff',
+            color: 'white',
+          },
         }}
-      />
+      >
+        <UIGridRow
+          variant='|--32px--|<--------auto-------->'
+          padded={false}
+          // required to overwrite minHeight on the bloody thing
+          style={{ minHeight: 29 }}
+          css={{
+            height: 27,
+          }}
+        >
+          <Icons.ComponentInstance
+            color='white'
+            style={{ transformOrigin: 'center center', transform: 'scale(.8)' }}
+          />
+          <label>Column</label>
+        </UIGridRow>
+      </FlexRow>
+      <FlexRow
+        css={{
+          marginLeft: 8,
+          marginRight: 8,
+          borderRadius: 4,
+          // indentation!
+          paddingLeft: 17,
+          color: '#EEE',
+          '&:hover': {
+            background: '#007aff',
+            color: 'white',
+          },
+        }}
+      >
+        <UIGridRow
+          variant='|--32px--|<--------auto-------->'
+          padded={false}
+          // required to overwrite minHeight on the bloody thing
+          style={{ minHeight: 29 }}
+          css={{
+            height: 27,
+          }}
+        >
+          {/* TODO BRANCH swap out for the new 12x12 navigator icons, instead of transform scale */}
+          <Icons.ComponentInstance
+            color='white'
+            style={{ transformOrigin: 'center center', transform: 'scale(.8)' }}
+          />
+          <label>Column</label>
+        </UIGridRow>
+      </FlexRow>
+      <FlexRow
+        css={{
+          marginLeft: 8,
+          marginRight: 8,
+          borderRadius: 4,
+          // indentation!
+          paddingLeft: 17,
+          color: '#EEE',
+          '&:hover': {
+            background: '#007aff',
+            color: 'white',
+          },
+        }}
+      >
+        <UIGridRow
+          variant='|--32px--|<--------auto-------->'
+          padded={false}
+          // required to overwrite minHeight on the bloody thing
+          style={{ minHeight: 29 }}
+          css={{
+            height: 27,
+          }}
+        >
+          <Icons.ComponentInstance
+            color='white'
+            style={{ transformOrigin: 'center center', transform: 'scale(.8)' }}
+          />
+          <label>Column</label>
+        </UIGridRow>
+      </FlexRow>
+
       <ComponentPickerComponentSection
         components={componentsToShow}
         onItemClick={props.onItemClick}
@@ -127,51 +215,11 @@ const ComponentPickerTopSection = React.memo((props: ComponentPickerTopSectionPr
   return (
     <div
       style={{
-        padding: '16px 16px',
+        padding: '8px 8px',
         display: 'flex',
         flexDirection: 'column',
-        width: '100%',
-        alignItems: 'flex-start',
-        justifyContent: 'flex-start',
-        gap: 10,
-        height: 'max-content',
       }}
     >
-      <div
-        style={{
-          width: '100%',
-          display: 'flex',
-          flexDirection: 'row',
-          gap: 5,
-          fontFamily: 'Utopian-Inter',
-          fontWeight: 700,
-          fontSize: '11px',
-        }}
-      >
-        <div>Insert into</div>
-        <PickerPropLabel targetProp={targetProp} />
-        <div style={{ flexGrow: 100 }} />
-        <PickerTabButton
-          title={'Preferred'}
-          isSelected={selectedTab === 'preferred'}
-          onClick={switchToPreferredTab}
-        />
-        <PickerTabButton
-          title={'All Components'}
-          isSelected={selectedTab === 'all'}
-          onClick={switchToAllTab}
-        />
-        <div style={{ flexGrow: 1 }} />
-        {when(onClickCloseButton != null, () => (
-          <div
-            style={{ fontWeight: 600, cursor: 'pointer' }}
-            onClick={onClickCloseButton}
-            data-testId={componentPickerCloseButtonTestId}
-          >
-            X
-          </div>
-        ))}
-      </div>
       <FilterBar onFilterChange={onFilterChange} />
     </div>
   )
@@ -275,50 +323,31 @@ const FilterBar = React.memo((props: FilterBarProps) => {
   )
 
   return (
-    <div
-      style={{
-        padding: '10px 6px',
-        display: 'flex',
-        flexDirection: 'row',
+    <input
+      css={{
+        height: 25,
+        paddingLeft: 8,
+        paddingRight: 8,
+        background: 'transparent',
+        // border: `1px solid ${dark.fg3.value}`, --> doesn't work because uses the css var
+        border: `1px solid #888`,
+        color: `#888`,
+        borderRadius: 4,
         width: '100%',
-        height: 27,
-        alignItems: 'center',
-        justifyContent: 'flex-start',
-        gap: 8,
-        border: '1px solid #989999',
-        borderColor: colorTheme.subduedBorder.value,
-        borderRadius: 6,
+        '&:focus': {
+          color: '#ccc',
+          borderColor: '#ccc',
+        },
       }}
-    >
-      <div
-        style={{
-          fontFamily: 'Utopian-Inter',
-          fontStyle: 'normal',
-          fontWeight: 500,
-          fontSize: '11px',
-          color: colorTheme.subduedForeground.value,
-        }}
-      >
-        🔍
-      </div>
-      <input
-        style={{
-          fontFamily: 'Utopian-Inter',
-          fontStyle: 'normal',
-          fontWeight: 500,
-          fontSize: '11px',
-          width: '100%',
-          border: 'none',
-        }}
-        placeholder='Filter...'
-        autoComplete='off'
-        spellCheck={false}
-        onKeyDown={handleFilterKeydown}
-        onChange={handleFilterChange}
-        value={filter}
-        data-testId={componentPickerFilterInputTestId}
-      />
-    </div>
+      placeholder='Filter...'
+      autoComplete='off'
+      autoFocus={true}
+      spellCheck={false}
+      onKeyDown={handleFilterKeydown}
+      onChange={handleFilterChange}
+      value={filter}
+      data-testId={componentPickerFilterInputTestId}
+    />
   )
 })
 
@@ -410,6 +439,10 @@ const ComponentPickerOption = React.memo((props: ComponentPickerOptionProps) => 
     component.type === 'component-descriptor' ? component.value.name : component.value.label
 
   return (
+    // TODO BRANCH
+    // this should return a fragment, consisting of the main element, and any variants of it with an indented label
+    // basically what we're doing in the page selector!
+    // if there are any variants, put an 8px margin underneath the last one
     <div
       style={{
         backgroundColor: colorTheme.bg2.value,
@@ -420,7 +453,6 @@ const ComponentPickerOption = React.memo((props: ComponentPickerOptionProps) => 
         height: 'max-content',
         gap: 5,
         padding: 10,
-        fontFamily: 'Utopian-Inter',
         fontWeight: 500,
         fontSize: '11px',
       }}
@@ -478,6 +510,8 @@ const ComponentPickerVariant = React.memo((props: ComponentPickerVariantProps) =
         borderTopRightRadius: 3,
         borderBottomRightRadius: 3,
         borderBottomLeftRadius: 3,
+        // TODO BRANCH this needs to go since (empty) should just be the component name
+        // once we've stratified this
         color:
           variant.insertMenuLabel === '(empty)'
             ? colorTheme.subduedForeground.value
