@@ -484,6 +484,7 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
           />
           <AddChildButton
             target={navigatorEntry.elementPath}
+            iconColor={props.iconColor}
             onClick={props.showInsertChildPicker}
           />
         </>
