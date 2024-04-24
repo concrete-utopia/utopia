@@ -408,7 +408,7 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
       return null
     }
     return (
-      <Menu key={id} id={id} animation={false} style={{ width: 457 }} onClick={squashEvents}>
+      <Menu key={id} id={id} animation={false} style={{ width: 260 }} onClick={squashEvents}>
         <ComponentPicker
           insertionTargetName={(insertionTarget as any)?.prop ?? 'Child'} // This is horrible and needs to go in the bin anyway
           preferredComponents={preferredChildrenForTarget}
