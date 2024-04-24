@@ -3,7 +3,7 @@
   position: fixed;
   opacity: 0;
   user-select: none;
-  border-radius: 3px;
+  border-radius: 7px;
   background-color: var(--utopitheme-contextMenuBackground);
   box-sizing: border-box;
   /* the same as boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow */
