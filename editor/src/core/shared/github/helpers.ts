@@ -854,7 +854,7 @@ export function mergeProjectContentsTree(
   }
 }
 
-const GITHUB_REFRESH_INTERVAL_MILLISECONDS = 5_000
+const GITHUB_REFRESH_INTERVAL_MILLISECONDS = 30_000
 
 export function githubOperationContext(): GithubOperationContext {
   // this copied here from core/shared/github/operations/index.ts due to a circular import
