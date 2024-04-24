@@ -42,6 +42,7 @@ import {
   FlexColumn,
   UtopiaStyles,
   color,
+  OnClickOutsideHOC,
 } from '../../../../uuiui'
 import type { CSSCursor } from '../../../../uuiui-deps'
 import { getControlStyles } from '../../../../uuiui-deps'
@@ -336,14 +337,16 @@ function useDataPickerButton(
 
   const DataPickerComponent = React.useMemo(
     () => (
-      <DataPickerPopup
-        {...popper.attributes.popper}
-        style={popper.styles.popper}
-        closePopup={closePopup}
-        ref={setPopperElement}
-        propPath={propPath}
-        propExpressionPath={propExpressionPath}
-      />
+      <OnClickOutsideHOC onClickOutside={closePopup}>
+        <DataPickerPopup
+          {...popper.attributes.popper}
+          style={popper.styles.popper}
+          closePopup={closePopup}
+          ref={setPopperElement}
+          propPath={propPath}
+          propExpressionPath={propExpressionPath}
+        />
+      </OnClickOutsideHOC>
     ),
     [closePopup, popper.attributes.popper, popper.styles.popper, propExpressionPath, propPath],
   )
