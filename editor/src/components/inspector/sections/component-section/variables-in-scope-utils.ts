@@ -225,6 +225,19 @@ function variableInfoFromVariableData(variableNamesInScope: VariableData): Array
   return info
 }
 
+function keepOnlyFirstMatch(variables: Array<VariableInfo>): Array<VariableInfo> {
+  let foundFirstMatch: boolean = false
+  let result: Array<VariableInfo> = []
+  for (const variable of variables) {
+    const matches = foundFirstMatch ? false : variable.matches
+    result.push({ ...variable, matches })
+    if (variable.matches) {
+      foundFirstMatch = true
+    }
+  }
+  return result
+}
+
 function orderVariablesForRelevance(
   variableNamesInScope_MUTABLE: Array<VariableInfo>,
   controlDescription: ControlDescription | null,
@@ -290,14 +303,14 @@ function orderVariablesForRelevance(
     }
   }
 
-  return [
+  return keepOnlyFirstMatch([
     ...valuesExactlyMatchingPropertyName,
     ...valuesExactlyMatchingPropertyDescription,
     ...valuesMatchingPropertyDescription,
     ...valuesMatchingPropertyShape,
     ...valueElementMatches,
     ...restOfValues,
-  ]
+  ])
 }
 
 const filterKeyFromObject =
