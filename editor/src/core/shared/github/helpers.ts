@@ -941,7 +941,7 @@ export function useGithubPolling() {
         })
         break
       case 'ready':
-        if (lastTick !== tick) {
+        if (lastTick == null || lastTick < tick) {
           setLastTick(() => {
             void refreshAndScheduleGithubData()
             return tick
