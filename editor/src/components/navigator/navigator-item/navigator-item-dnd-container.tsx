@@ -116,6 +116,7 @@ export interface NavigatorItemDragAndDropWrapperPropsBase {
   renamingTarget: ElementPath | null
   windowStyle: React.CSSProperties
   visibleNavigatorTargets: Array<NavigatorEntry>
+  navigatorEntry: NavigatorEntry
 }
 
 export interface NavigatorItemDragAndDropWrapperProps
@@ -824,11 +825,6 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
   const shouldBottomDropLineInterceptMouseEvents =
     isDragSessionInProgress && isCollapsedCondtionalEntry
 
-  const navigatorEntry = React.useMemo(
-    () => regularNavigatorEntry(props.elementPath),
-    [props.elementPath],
-  )
-
   const isOutletOrDescendantOfOutlet = useEditorState(
     Substores.metadata,
     (store) => isDescendantOfOutletOrOutletSelector(store, props.elementPath),
@@ -871,7 +867,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         data-testid={ReparentDropTargetTestId(safeComponentId)}
       >
         <NavigatorItem
-          navigatorEntry={navigatorEntry}
+          navigatorEntry={props.navigatorEntry}
           index={props.index}
           getSelectedViewsInRange={props.getSelectedViewsInRange}
           noOfChildren={props.noOfChildren}

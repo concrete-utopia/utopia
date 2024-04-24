@@ -14,6 +14,7 @@ import {
   getMetadata,
   isConditionalClauseNavigatorEntry,
   isRegularNavigatorEntry,
+  isRenderPropValueNavigatorEntry,
   varSafeNavigatorEntryToKey,
 } from '../../editor/store/editor-state'
 import type { SelectionLocked } from '../../canvas/canvas-types'
@@ -178,8 +179,8 @@ export const VisibilityIndicator: React.FunctionComponent<
     <Button
       onClick={props.onClick}
       style={{
-        height: 18,
-        width: 18,
+        height: 12,
+        width: 12,
         opacity: props.shouldShow ? 1 : 0,
       }}
     >
@@ -241,8 +242,8 @@ const AddChildButton = React.memo((props: AddChildButtonProps) => {
     <Button
       onClick={props.onClick}
       style={{
-        height: 18,
-        width: 18,
+        height: 12,
+        width: 12,
         opacity: shouldShow ? 1 : 0,
       }}
       data-testid={addChildButtonTestId(props.target)}
@@ -253,6 +254,31 @@ const AddChildButton = React.memo((props: AddChildButtonProps) => {
         color={color}
         width={12}
         height={12}
+      />
+    </Button>
+  )
+})
+
+const ReplaceElementButton = React.memo((props: AddChildButtonProps) => {
+  const color = props.iconColor
+  const shouldShow = useSupportsChildren(EP.parentPath(props.target))
+
+  return (
+    <Button
+      onClick={props.onClick}
+      style={{
+        height: 12,
+        width: 12,
+        opacity: shouldShow ? 1 : 0,
+      }}
+    >
+      <Icn
+        category='tools'
+        type='convert-action'
+        color={color}
+        width={18}
+        height={18}
+        style={{ transform: 'scale(0.67)' }}
       />
     </Button>
   )
@@ -299,7 +325,6 @@ export const SelectionLockedIndicator: React.FunctionComponent<
         height: 12,
         width: 12,
         display: shouldShow ? 'block' : 'none',
-        paddingRight: 1,
       }}
     >
       {when(
@@ -358,6 +383,7 @@ interface NavigatorItemActionSheetProps {
   background?: string | any
   dispatch: EditorDispatch
   showInsertChildPicker: React.MouseEventHandler<HTMLDivElement>
+  showReplaceElementPicker: React.MouseEventHandler<HTMLDivElement>
 }
 
 export const NavigatorItemActionSheet: React.FunctionComponent<
@@ -425,10 +451,10 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
   return (
     <FlexRow
       style={{
-        padding: '4px',
+        padding: '4px 5px 4px 4px',
         borderRadius: '0 5px 5px 0',
         position: 'fixed',
-        gap: 3,
+        gap: 4,
         right: 0,
         background:
           props.highlighted ||
@@ -445,14 +471,20 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
         selected={props.selected}
         instanceOriginalComponentName={props.instanceOriginalComponentName}
       />
-      {isRegularNavigatorEntry(navigatorEntry) &&
-      !props.isSlot &&
+      {(navigatorEntry.type === 'REGULAR' || navigatorEntry.type === 'RENDER_PROP_VALUE') &&
       (props.highlighted || props.selected) ? (
-        <AddChildButton
-          target={navigatorEntry.elementPath}
-          iconColor={props.iconColor}
-          onClick={props.showInsertChildPicker}
-        />
+        <>
+          <ReplaceElementButton
+            target={navigatorEntry.elementPath}
+            iconColor={props.iconColor}
+            onClick={props.showReplaceElementPicker}
+          />
+          <AddChildButton
+            target={navigatorEntry.elementPath}
+            iconColor={props.iconColor}
+            onClick={props.showInsertChildPicker}
+          />
+        </>
       ) : null}
       <SelectionLockedIndicator
         key={`selection-locked-indicator-${varSafeNavigatorEntryToKey(navigatorEntry)}`}

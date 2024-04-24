@@ -344,3 +344,55 @@ export function isProjectMetadataV1(u: unknown): u is ProjectMetadataV1 {
 export type ProjectMetadataForEditor = {
   hasPendingRequests: boolean
 }
+
+export type SearchPublicRepositoriesRequest = {
+  owner: string
+  repo: string
+}
+
+export function isSearchPublicRepositoriesRequest(
+  u: unknown,
+): u is SearchPublicRepositoriesRequest {
+  const maybe = u as SearchPublicRepositoriesRequest
+  return u != null && typeof u === 'object' && maybe.owner != null && maybe.repo != null
+}
+
+type ApiSuccess<T> = T & { type: 'SUCCESS' }
+
+export function toApiSuccess<T>(data: T): ApiSuccess<T> {
+  return {
+    type: 'SUCCESS',
+    ...data,
+  }
+}
+
+type ApiFailure = {
+  type: 'FAILURE'
+  failureReason: string
+}
+
+export function toApiFailure(reason: string): ApiFailure {
+  return {
+    type: 'FAILURE',
+    failureReason: reason,
+  }
+}
+
+interface WithMessageData {
+  status: number
+  response: {
+    data: { message: string }
+  }
+}
+
+export function isResponseWithMessageData(u: unknown): u is WithMessageData {
+  const maybe = u as WithMessageData
+  return (
+    u != null &&
+    typeof u === 'object' &&
+    maybe.response != null &&
+    maybe.response.data != null &&
+    maybe.response.data.message != null &&
+    maybe.status != null
+  )
+}
