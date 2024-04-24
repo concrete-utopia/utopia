@@ -8,6 +8,7 @@ import type { VariableData } from '../../../canvas/ui-jsx-canvas'
 import { useEditorState, Substores } from '../../../editor/store/store-hook'
 import type { VariableOption } from './data-picker-popup'
 import * as EP from '../../../../core/shared/element-path'
+import * as PP from '../../../../core/shared/property-path'
 import React from 'react'
 import { useGetPropertyControlsForSelectedComponents } from '../../common/property-controls-hooks'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
@@ -228,8 +229,10 @@ function orderVariablesForRelevance(
   variableNamesInScope_MUTABLE: Array<VariableInfo>,
   controlDescription: ControlDescription | null,
   currentPropertyValue: PropertyValue,
+  targetPropertyName: string,
   mode: 'all' | 'preferred',
 ): Array<VariableInfo> {
+  let valuesExactlyMatchingPropertyName: Array<VariableInfo> = []
   let valuesExactlyMatchingPropertyDescription: Array<VariableInfo> = []
   let valuesMatchingPropertyDescription: Array<VariableInfo> = []
   let valuesMatchingPropertyShape: Array<VariableInfo> = []
@@ -242,6 +245,7 @@ function orderVariablesForRelevance(
         variable.elements,
         controlDescription,
         currentPropertyValue,
+        targetPropertyName,
         mode,
       )
     } else if (variable.type === 'object') {
@@ -249,9 +253,12 @@ function orderVariablesForRelevance(
         variable.props,
         controlDescription,
         currentPropertyValue,
+        targetPropertyName,
         mode,
       )
     }
+
+    const valueExactlyMatchesPropertyName = variable.expressionPathPart === targetPropertyName
 
     const valueExactlyMatchesControlDescription =
       controlDescription?.control === 'jsx' && React.isValidElement(variable.value)
@@ -268,7 +275,9 @@ function orderVariablesForRelevance(
       (variable.type === 'array' && variable.elements.some((e) => e.matches)) ||
       (variable.type === 'object' && variable.props.some((e) => e.matches))
 
-    if (valueExactlyMatchesControlDescription) {
+    if (valueExactlyMatchesPropertyName) {
+      valuesExactlyMatchingPropertyName.push({ ...variable, matches: true })
+    } else if (valueExactlyMatchesControlDescription) {
       valuesExactlyMatchingPropertyDescription.push({ ...variable, matches: true })
     } else if (valueMatchesControlDescription) {
       valuesMatchingPropertyDescription.push({ ...variable, matches: true })
@@ -282,6 +291,7 @@ function orderVariablesForRelevance(
   }
 
   return [
+    ...valuesExactlyMatchingPropertyName,
     ...valuesExactlyMatchingPropertyDescription,
     ...valuesMatchingPropertyDescription,
     ...valuesMatchingPropertyShape,
@@ -392,13 +402,21 @@ export function useVariablesInScopeForSelectedElement(
       variableInfo,
       controlDescriptions,
       currentPropertyValue,
+      '' + PP.lastPart(propertyPath),
       mode,
     )
 
     return orderedVariablesInScope.flatMap((variable) =>
       valuesFromVariable(variable, 0, variable.expression, [variable.expressionPathPart]),
     )
-  }, [controlDescriptions, currentPropertyValue, mode, selectedViewPath, variablesInScope])
+  }, [
+    controlDescriptions,
+    currentPropertyValue,
+    mode,
+    selectedViewPath,
+    variablesInScope,
+    propertyPath,
+  ])
 
   return variableNamesInScope
 }
