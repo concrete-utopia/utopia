@@ -54,19 +54,18 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
           v.name.toLocaleLowerCase().includes(filter.toLocaleLowerCase().trim()),
         )
 
-  const allComponentsToShow =
-    filter.trim() === ''
-      ? props.allComponents
-      : props.allComponents.filter((v) =>
-          v.label.toLocaleLowerCase().includes(filter.toLocaleLowerCase().trim()),
-        )
+  const allComponentsToShow: InsertMenuItemGroup[] = []
 
-  const componentsToShow:
-    | { type: 'component-descriptor'; value: Array<PreferredChildComponentDescriptor> }
-    | { type: 'insert-menu-item'; value: Array<InsertMenuItemGroup> } =
-    selectedTab === 'preferred'
-      ? { type: 'component-descriptor', value: preferredComponentsToShow }
-      : { type: 'insert-menu-item', value: allComponentsToShow }
+  props.allComponents.forEach((c) => {
+    allComponentsToShow.push({
+      ...c,
+      options: c.options.filter((o) =>
+        o.label.toLocaleLowerCase().includes(filter.toLocaleLowerCase().trim()),
+      ),
+    })
+  })
+
+  const componentsToShow = allComponentsToShow
 
   return (
     <div
@@ -88,99 +87,6 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
         onSelectTab={setSelectedTab}
         onClickCloseButton={props.onClickCloseButton}
       />
-      {/* fake!! fraud!! */}
-      <FlexRow
-        css={{
-          marginLeft: 8,
-          marginRight: 8,
-          borderRadius: 4,
-          // indentation!
-          paddingLeft: 8,
-          color: '#EEE',
-          '&:hover': {
-            background: '#007aff',
-            color: 'white',
-          },
-        }}
-      >
-        <UIGridRow
-          variant='|--32px--|<--------auto-------->'
-          padded={false}
-          // required to overwrite minHeight on the bloody thing
-          style={{ minHeight: 29 }}
-          css={{
-            height: 27,
-          }}
-        >
-          <Icons.ComponentInstance
-            color='white'
-            style={{ transformOrigin: 'center center', transform: 'scale(.8)' }}
-          />
-          <label>Column</label>
-        </UIGridRow>
-      </FlexRow>
-      <FlexRow
-        css={{
-          marginLeft: 8,
-          marginRight: 8,
-          borderRadius: 4,
-          // indentation!
-          paddingLeft: 17,
-          color: '#EEE',
-          '&:hover': {
-            background: '#007aff',
-            color: 'white',
-          },
-        }}
-      >
-        <UIGridRow
-          variant='|--32px--|<--------auto-------->'
-          padded={false}
-          // required to overwrite minHeight on the bloody thing
-          style={{ minHeight: 29 }}
-          css={{
-            height: 27,
-          }}
-        >
-          {/* TODO BRANCH swap out for the new 12x12 navigator icons, instead of transform scale */}
-          <Icons.ComponentInstance
-            color='white'
-            style={{ transformOrigin: 'center center', transform: 'scale(.8)' }}
-          />
-          <label>Column</label>
-        </UIGridRow>
-      </FlexRow>
-      <FlexRow
-        css={{
-          marginLeft: 8,
-          marginRight: 8,
-          borderRadius: 4,
-          // indentation!
-          paddingLeft: 17,
-          color: '#EEE',
-          '&:hover': {
-            background: '#007aff',
-            color: 'white',
-          },
-        }}
-      >
-        <UIGridRow
-          variant='|--32px--|<--------auto-------->'
-          padded={false}
-          // required to overwrite minHeight on the bloody thing
-          style={{ minHeight: 29 }}
-          css={{
-            height: 27,
-          }}
-        >
-          <Icons.ComponentInstance
-            color='white'
-            style={{ transformOrigin: 'center center', transform: 'scale(.8)' }}
-          />
-          <label>Column</label>
-        </UIGridRow>
-      </FlexRow>
-
       <ComponentPickerComponentSection
         components={componentsToShow}
         onItemClick={props.onItemClick}
@@ -352,81 +258,71 @@ const FilterBar = React.memo((props: FilterBarProps) => {
 })
 
 interface ComponentPickerComponentSectionProps {
-  components:
-    | { type: 'component-descriptor'; value: Array<PreferredChildComponentDescriptor> }
-    | { type: 'insert-menu-item'; value: Array<InsertMenuItemGroup> }
+  components: Array<InsertMenuItemGroup>
   onItemClick: (elementToInsert: ElementToInsert) => React.MouseEventHandler
 }
 
 const ComponentPickerComponentSection = React.memo(
   (props: ComponentPickerComponentSectionProps) => {
     const { components, onItemClick } = props
-
     return (
-      <div
-        style={{
-          padding: 16,
-          display: 'flex',
-          flexDirection: 'column',
-          width: '100%',
-          height: 'max-content',
-          overflowY: 'auto',
-          gap: 10,
-        }}
-      >
-        {components.type === 'component-descriptor'
-          ? components.value.map((comp) => {
-              return (
-                <ComponentPickerOption
-                  key={`${comp.name}-label`}
-                  component={{ type: 'component-descriptor', value: comp }}
-                  onItemClick={onItemClick}
-                />
-              )
-            })
-          : components.value.map((comp) => {
-              return (
-                <ComponentPickerOption
-                  key={`${comp.label}-label`}
-                  component={{ type: 'insert-menu-item', value: comp }}
-                  onItemClick={onItemClick}
-                />
-              )
-            })}
+      <div>
+        {components.map((comp) => {
+          return (
+            <ComponentPickerOption
+              key={`${comp.label}-label`}
+              component={comp}
+              onItemClick={onItemClick}
+            />
+          )
+        })}
       </div>
     )
+
+    //   return (
+    //     <div
+    //       style={{
+    //         padding: 16,
+    //         display: 'flex',
+    //         flexDirection: 'column',
+    //         width: '100%',
+    //         height: 'max-content',
+    //         overflowY: 'auto',
+    //         gap: 10,
+    //       }}
+    //     >
+    //       {components.type === 'component-descriptor'
+    //         ? components.value.map((comp) => {
+    //             return (
+    //               <ComponentPickerOption
+    //                 key={`${comp.name}-label`}
+    //                 component={{ type: 'component-descriptor', value: comp }}
+    //                 onItemClick={onItemClick}
+    //               />
+    //             )
+    //           })
+    //         : components.value.map((comp) => {
+    //             return (
+    //               <ComponentPickerOption
+    //                 key={`${comp.label}-label`}
+    //                 component={{ type: 'insert-menu-item', value: comp }}
+    //                 onItemClick={onItemClick}
+    //               />
+    //             )
+    //           })}
+    //     </div>
+    //   )
+    // },
   },
 )
 
 interface ComponentPickerOptionProps {
-  component:
-    | { type: 'component-descriptor'; value: PreferredChildComponentDescriptor }
-    | { type: 'insert-menu-item'; value: InsertMenuItemGroup }
+  component: InsertMenuItemGroup
   onItemClick: (elementToInsert: ElementToInsert) => React.MouseEventHandler
 }
 
-function variantsForComponent(
-  component:
-    | { type: 'component-descriptor'; value: PreferredChildComponentDescriptor }
-    | { type: 'insert-menu-item'; value: InsertMenuItemGroup },
-): ComponentInfo[] {
-  switch (component.type) {
-    case 'component-descriptor':
-      return [
-        componentInfo(
-          '(empty)',
-          () => jsxElementWithoutUID(component.value.name, [], []),
-          defaultImportsForComponentModule(component.value.name, component.value.moduleName),
-        ),
-        ...(component.value.variants ?? []),
-      ]
-    case 'insert-menu-item':
-      return component.value.options.map((v) =>
-        componentInfo(v.label, v.value.element, v.value.importsToAdd),
-      )
-    default:
-      assertNever(component)
-  }
+function variantsForComponent(component: InsertMenuItemGroup): ComponentInfo[] {
+  return component.options.map((v) => componentInfo(v.label, v.value.element, v.value.importsToAdd))
 }
 
 const ComponentPickerOption = React.memo((props: ComponentPickerOptionProps) => {
@@ -435,51 +331,47 @@ const ComponentPickerOption = React.memo((props: ComponentPickerOptionProps) => 
 
   const variants = variantsForComponent(component)
 
-  const name =
-    component.type === 'component-descriptor' ? component.value.name : component.value.label
+  const name = component.label
 
   return (
-    // TODO BRANCH
-    // this should return a fragment, consisting of the main element, and any variants of it with an indented label
-    // basically what we're doing in the page selector!
-    // if there are any variants, put an 8px margin underneath the last one
-    <div
-      style={{
-        backgroundColor: colorTheme.bg2.value,
-        borderRadius: 5,
-        display: 'flex',
-        flexDirection: 'column',
-        width: '100%',
-        height: 'max-content',
-        gap: 5,
-        padding: 10,
-        fontWeight: 500,
-        fontSize: '11px',
-      }}
-      data-testId={componentPickerOptionTestId(name)}
-    >
-      <div style={{ fontWeight: 700 }}>{name}</div>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'row',
-          width: '100%',
-          height: 'max-content',
-          alignItems: 'center',
-          justifyContent: 'flex-start',
-          flexWrap: 'wrap',
-          gap: 9,
-        }}
-      >
-        {variants?.map((v) => (
-          <ComponentPickerVariant
-            key={`${name}-${v.insertMenuLabel}`}
-            componentName={name}
-            variant={v}
-            onItemClick={onItemClick}
-          />
-        ))}
-      </div>
+    <div>
+      {variants.map((v) => (
+        <FlexRow
+          key={`${name}-${v.insertMenuLabel}`}
+          css={{
+            marginLeft: 8,
+            marginRight: 8,
+            borderRadius: 4,
+            // indentation!
+            paddingLeft: 8,
+            color: '#EEE',
+            '&:hover': {
+              background: '#007aff',
+              color: 'white',
+            },
+          }}
+          onClick={onItemClick({
+            elementToInsert: (uid) => elementFromInsertMenuItem(v.elementToInsert(), uid),
+            additionalImports: v.importsToAdd,
+          })}
+        >
+          <UIGridRow
+            variant='|--32px--|<--------auto-------->'
+            padded={false}
+            // required to overwrite minHeight on the bloody thing
+            style={{ minHeight: 29 }}
+            css={{
+              height: 27,
+            }}
+          >
+            <Icons.ComponentInstance
+              color='white'
+              style={{ transformOrigin: 'center center', transform: 'scale(.8)' }}
+            />
+            <label>{v.insertMenuLabel}</label>
+          </UIGridRow>
+        </FlexRow>
+      ))}
     </div>
   )
 })
