@@ -445,6 +445,7 @@ function ArrayPaginator({
   totalChildCount: number
   setSelectedIndex: (index: number) => void
 }) {
+  const colorTheme = useColorTheme()
   const increaseIndex = useCallback(() => {
     setSelectedIndex(Math.min(totalChildCount - 1, selectedIndex + 1))
   }, [selectedIndex, setSelectedIndex, totalChildCount])
