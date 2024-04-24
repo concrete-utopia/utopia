@@ -1,5 +1,5 @@
 import { updateProjectContentsWithParseResults } from '../../parser-projectcontents-utils'
-import { resolveConflict, startGithubPolling } from '../helpers'
+import { resolveConflict } from '../helpers'
 import { saveProjectToGithub } from './commit-and-push'
 import { getBranchChecksums } from './get-branch-checksums'
 import type { GithubOperationContext } from './github-operation-context'
@@ -22,7 +22,6 @@ export const GithubOperations = {
   saveAssetsToProject: saveAssetsToProject(OperationContext),
   getUsersPublicGithubRepositories: getUsersPublicGithubRepositories(OperationContext),
   updateProjectAgainstGithub: updateProjectAgainstGithub(OperationContext),
-  startGithubPolling: startGithubPolling(OperationContext),
   resolveConflict: resolveConflict(OperationContext),
   updateProjectWithBranchContent: updateProjectWithBranchContent(OperationContext),
 } as const

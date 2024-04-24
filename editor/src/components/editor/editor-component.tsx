@@ -74,6 +74,7 @@ import { SharingDialog } from './sharing-dialog'
 import { AccessLevelParamKey, CloneParamKey } from './persistence/persistence-backend'
 import { useUpdateActiveRemixSceneOnSelectionChange } from '../canvas/remix/utopia-remix-root-component'
 import { useDefaultCollapsedViews } from './use-default-collapsed-views'
+import { useGithubPolling } from '../../core/shared/github/helpers'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -428,6 +429,8 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
   useLiveblocksConnectionListener()
 
   useDefaultCollapsedViews()
+
+  useGithubPolling()
 
   return (
     <>

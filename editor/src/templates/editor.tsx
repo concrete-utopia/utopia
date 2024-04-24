@@ -116,7 +116,6 @@ import { runDomWalkerAndSaveResults } from '../components/canvas/editor-dispatch
 import { simpleStringifyActions } from '../components/editor/actions/action-utils'
 import { unpatchedCreateRemixDerivedDataMemo } from '../components/editor/store/remix-derived-data'
 import { emptyProjectServerState } from '../components/editor/store/project-server-state'
-import { GithubOperations } from '../core/shared/github/operations'
 import { GithubAuth } from '../utils/github-auth'
 import { Provider as JotaiProvider } from 'jotai'
 import {
@@ -293,7 +292,6 @@ export class Editor {
 
     void renderRootEditor()
 
-    void GithubOperations.startGithubPolling(this.utopiaStoreHook, this.boundDispatch)
     startOnlineStatusPolling(this.boundDispatch)
 
     reduxDevtoolsSendInitialState(this.storedState)
@@ -436,10 +434,6 @@ export class Editor {
         oldEditorState,
         this.spyCollector,
       )
-      const anyLoadActions = dispatchedActions.some((action) => action.action === 'LOAD')
-      if (anyLoadActions) {
-        void GithubOperations.startGithubPolling(this.utopiaStoreHook, this.boundDispatch)
-      }
 
       invalidateDomWalkerIfNecessary(
         this.domWalkerMutableState,
