@@ -916,11 +916,13 @@ export function useGithubPolling() {
   }, [dispatch, branchOriginContentsChecksums, githubData])
 
   const authState = React.useMemo((): GithubAuthState => {
-    return !githubAuthenticated
-      ? 'not-authenticated'
-      : githubData.githubUserDetails == null
-      ? 'missing-user-details'
-      : 'ready'
+    if (!githubAuthenticated) {
+      return 'not-authenticated'
+    } else if (githubData.githubUserDetails == null) {
+      return 'missing-user-details'
+    } else {
+      return 'ready'
+    }
   }, [githubAuthenticated, githubData])
 
   // react to auth state and tick changes
