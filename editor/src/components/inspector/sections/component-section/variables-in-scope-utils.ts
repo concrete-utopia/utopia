@@ -6,7 +6,7 @@ import type {
 import type { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
 import type { VariableData } from '../../../canvas/ui-jsx-canvas'
 import { useEditorState, Substores } from '../../../editor/store/store-hook'
-import type { VariableOption } from './data-picker-popup'
+import type { DataPickerFilterOption, VariableOption } from './data-picker-popup'
 import * as EP from '../../../../core/shared/element-path'
 import * as PP from '../../../../core/shared/property-path'
 import React from 'react'
@@ -230,7 +230,7 @@ function orderVariablesForRelevance(
   controlDescription: ControlDescription | null,
   currentPropertyValue: PropertyValue,
   targetPropertyName: string,
-  mode: 'all' | 'preferred',
+  mode: DataPickerFilterOption,
 ): Array<VariableInfo> {
   let valuesExactlyMatchingPropertyName: Array<VariableInfo> = []
   let valuesExactlyMatchingPropertyDescription: Array<VariableInfo> = []
@@ -356,7 +356,7 @@ const keepLocalestScope =
 export function useVariablesInScopeForSelectedElement(
   selectedView: ElementPath,
   propertyPath: PropertyPath,
-  mode: 'all' | 'preferred',
+  mode: DataPickerFilterOption,
 ): Array<VariableOption> {
   const selectedViewPath = useEditorState(
     Substores.selectedViews,
