@@ -296,19 +296,12 @@ function ValueRow({
             gridTemplateColumns: '48% 48%',
           }}
         >
-          <div onClick={tweakProperty}>
-            <span
+          <div onClick={tweakProperty} data-label='left column cell'>
+            <div
               data-testid={`variable-from-scope-span-${variableOption.valuePath}`}
-              style={{
-                marginLeft: 4 * variableOption.depth,
-                borderRadius: 2,
-                fontWeight: 400,
-                display: 'flex',
-                maxWidth: '100%',
-              }}
+              style={{ display: 'grid', gridTemplateColumns: '16px 1fr' }}
             >
               <PrefixIcon
-                depth={variableOption.depth}
                 hasObjectChildren={hasObjectChildren}
                 onIconClick={toggleChildrenOpen}
                 open={childrenOpen}
@@ -324,9 +317,11 @@ function ValueRow({
               >
                 {overriddenTitle ?? variableOption.variableInfo.expressionPathPart}
               </span>
-            </span>
+            </div>
           </div>
+
           <div
+            data-label='right-column cell'
             style={{
               display: 'flex',
               width: '94%',
@@ -386,26 +381,23 @@ function ValueRow({
 }
 
 function PrefixIcon({
-  depth,
   hasObjectChildren,
   onIconClick,
   open,
 }: {
-  depth: number
   hasObjectChildren: boolean
   onIconClick: () => void
   open: boolean
 }) {
   const colorTheme = useColorTheme()
   const style = {
-    width: 5,
-    display: 'inline-block',
-    height: 10,
-    marginRight: 4,
-    position: 'relative',
-    top: 0,
-    marginLeft: (depth - 1) * 8,
-    flex: 'none',
+    // manually center relative to anchor container above (see relative)
+    position: 'absolute',
+    top: 4,
+    left: -22,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   } as const
   const onClick = useCallback(
     (e: React.MouseEvent) => {
@@ -416,27 +408,19 @@ function PrefixIcon({
   )
   if (hasObjectChildren) {
     return (
-      <FlexRow
-        css={{}}
-        style={{ color: colorTheme.neutralBorder.value, fontSize: 6, ...style }}
+      <span
+        css={{
+          color: colorTheme.neutralBorder.value,
+          fontSize: 6,
+          ...style,
+        }}
         onClick={onClick}
       >
         <ExpandableIndicator visible collapsed={!open} selected={false} />
-      </FlexRow>
+      </span>
     )
   }
-  if (depth > 0) {
-    return (
-      <span
-        style={{
-          borderLeft: `1px solid ${colorTheme.neutralBorder.value}`,
-          borderBottom: `1px solid ${colorTheme.neutralBorder.value}`,
-          ...style,
-        }}
-      ></span>
-    )
-  }
-  return null
+  return <span />
 }
 
 function ArrayPaginator({
@@ -463,13 +447,13 @@ function ArrayPaginator({
         color: colorTheme.neutralForeground.value,
       }}
     >
-      <div onClick={decreaseIndex} style={{ width: 30, height: 30, cursor: 'pointer' }}>
+      <div onClick={decreaseIndex} style={{ cursor: 'pointer', paddingLeft: 4, paddingRight: 4 }}>
         {'< '}
       </div>
       <span>
         {selectedIndex + 1} / {totalChildCount}
       </span>
-      <span onClick={increaseIndex} style={{ width: 30, height: 30, cursor: 'pointer' }}>
+      <span onClick={increaseIndex} style={{ cursor: 'pointer', paddingLeft: 4, paddingRight: 4 }}>
         {' >'}
       </span>
     </FlexRow>
