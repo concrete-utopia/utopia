@@ -11,7 +11,8 @@ import { Substores, useEditorState } from './store/store-hook'
 import { togglePanel } from './actions/action-creators'
 import { stopPropagation } from '../inspector/common/inspector-utils'
 import { setFocus } from '../common/actions'
-import { useGridPanelState } from '../canvas/grid-panels-state'
+import { useAtom } from 'jotai'
+import { GridPanelsStateAtom } from '../canvas/grid-panels-state'
 import type { StoredLayout, StoredPanel } from '../canvas/stored-layout'
 import { assertNever } from '../../core/shared/utils'
 import { TestMenu } from '../titlebar/test-menu'
@@ -30,7 +31,7 @@ function getPanelColumn(side: 'left' | 'right', panels: StoredLayout): Array<Sto
 
 export const ClosedPanels = React.memo((props: { side: 'left' | 'right' }) => {
   const dispatch = useDispatch()
-  const [panelState] = useGridPanelState()
+  const [panelState] = useAtom(GridPanelsStateAtom)
   const thisColumn = getPanelColumn(props.side, panelState)
 
   const inspectorInvisible = useEditorState(
