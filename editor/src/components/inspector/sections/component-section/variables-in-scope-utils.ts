@@ -11,7 +11,7 @@ import * as EP from '../../../../core/shared/element-path'
 import React from 'react'
 import { useGetPropertyControlsForSelectedComponents } from '../../common/property-controls-hooks'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
-import { assertNever } from '../../../../core/shared/utils'
+import { assertNever, identity } from '../../../../core/shared/utils'
 import { isValidReactNode } from '../../../../utils/react-utils'
 
 function valuesFromObject(
@@ -228,6 +228,7 @@ function orderVariablesForRelevance(
   variableNamesInScope_MUTABLE: Array<VariableInfo>,
   controlDescription: ControlDescription | null,
   currentPropertyValue: PropertyValue,
+  mode: 'all' | 'preferred',
 ): Array<VariableInfo> {
   let valuesExactlyMatchingPropertyDescription: Array<VariableInfo> = []
   let valuesMatchingPropertyDescription: Array<VariableInfo> = []
@@ -241,12 +242,14 @@ function orderVariablesForRelevance(
         variable.elements,
         controlDescription,
         currentPropertyValue,
+        mode,
       )
     } else if (variable.type === 'object') {
       variable.props = orderVariablesForRelevance(
         variable.props,
         controlDescription,
         currentPropertyValue,
+        mode,
       )
     }
 
@@ -310,9 +313,40 @@ const filterObjectPropFromVariablesInScope =
     return next
   }
 
+const keepLocalestScope =
+  () =>
+  (variablesInScope: VariableData): VariableData => {
+    let deepestInsertionCeiling = -Infinity
+    Object.values(variablesInScope).forEach((variable) => {
+      if (variable.insertionCeiling == null) {
+        return
+      }
+
+      deepestInsertionCeiling = Math.max(
+        deepestInsertionCeiling,
+        EP.fullDepth(variable.insertionCeiling),
+      )
+    })
+
+    const result: VariableData = {}
+    Object.entries(variablesInScope).forEach(([key, variable]) => {
+      if (variable.insertionCeiling == null) {
+        result[key] = variable
+        return
+      }
+
+      if (EP.fullDepth(variable.insertionCeiling) === deepestInsertionCeiling) {
+        result[key] = variable
+      }
+    })
+
+    return result
+  }
+
 export function useVariablesInScopeForSelectedElement(
   selectedView: ElementPath,
   propertyPath: PropertyPath,
+  mode: 'all' | 'preferred',
 ): Array<VariableOption> {
   const selectedViewPath = useEditorState(
     Substores.selectedViews,
@@ -341,6 +375,7 @@ export function useVariablesInScopeForSelectedElement(
     }
 
     variablesInScopeForSelectedPath = [
+      mode === 'preferred' ? keepLocalestScope() : identity,
       filterKeyFromObject('className'),
       filterKeyFromObject('data-uid'),
       filterKeyFromObject('style'),
@@ -357,12 +392,13 @@ export function useVariablesInScopeForSelectedElement(
       variableInfo,
       controlDescriptions,
       currentPropertyValue,
+      mode,
     )
 
     return orderedVariablesInScope.flatMap((variable) =>
       valuesFromVariable(variable, 0, variable.expression, [variable.expressionPathPart]),
     )
-  }, [controlDescriptions, currentPropertyValue, selectedViewPath, variablesInScope])
+  }, [controlDescriptions, currentPropertyValue, mode, selectedViewPath, variablesInScope])
 
   return variableNamesInScope
 }

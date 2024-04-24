@@ -144,6 +144,7 @@ export const DataPickerPopup = React.memo(
     const variableNamesInScope = useVariablesInScopeForSelectedElement(
       selectedViewPathRef.current ?? EP.emptyElementPath,
       props.propPath,
+      'preferred', // TODO
     )
 
     return (
