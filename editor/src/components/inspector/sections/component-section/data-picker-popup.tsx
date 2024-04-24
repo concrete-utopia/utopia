@@ -29,10 +29,11 @@ import type {
   VariableInfo,
 } from './variables-in-scope-utils'
 import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'
-import { NO_OP, assertNever } from '../../../../core/shared/utils'
+import { NO_OP, arrayEqualsByValue, assertNever } from '../../../../core/shared/utils'
 import { isPrefixOf } from '../../../../core/shared/array-utils'
 import { ExpandableIndicator } from '../../../navigator/navigator-item/expandable-indicator'
 import { FlexRow } from 'utopia-api'
+import { is } from '../../../../core/shared/equality-utils'
 
 export interface PrimitiveOption {
   type: 'primitive'
@@ -257,9 +258,9 @@ function ValueRow({
 
   const hasObjectChildren = variableOption.type === 'object' && variableOption.children.length > 0
 
-  const currentExpressionMatches =
+  const currentExpressionExactMatch =
     currentPropExpressionPath != null &&
-    isPrefixOf(variableOption.valuePath, currentPropExpressionPath)
+    arrayEqualsByValue(variableOption.valuePath, currentPropExpressionPath, is)
 
   return (
     <>
@@ -270,7 +271,9 @@ function ValueRow({
           width: '100%',
           height: 29,
           cursor: variableOption.variableInfo.matches ? 'pointer' : 'default',
-          background: currentExpressionMatches ? colorTheme.secondaryBackground.value : undefined,
+          background: currentExpressionExactMatch
+            ? colorTheme.secondaryBackground.value
+            : undefined,
         }}
         onClick={isArray ? stopPropagation : tweakProperty}
         css={{
