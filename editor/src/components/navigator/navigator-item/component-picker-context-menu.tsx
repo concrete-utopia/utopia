@@ -422,7 +422,7 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
       return null
     }
     return (
-      <Menu key={id} id={id} animation={false} style={{ width: 457 }} onClick={squashEvents}>
+      <Menu key={id} id={id} animation={false} style={{ width: 260 }} onClick={squashEvents}>
         <ComponentPicker
           insertionTargetName={prop ?? 'Child'}
           preferredComponents={preferredChildrenForTargetProp}
