@@ -865,14 +865,18 @@ export const NavigatorItem: React.FunctionComponent<
     )
   }, [childComponentCount, isFocusedComponent, isConditional])
 
-  const componentPickerContextMenuId = varSafeNavigatorEntryToKey(navigatorEntry)
-  const replaceComponentPickerContextMenuId = `${componentPickerContextMenuId}-replace`
-  const {
-    showComponentPickerContextMenu: showContextMenu,
-    hideComponentPickerContextMenu: hideContextMenu,
-  } = useShowComponentPickerContextMenu(componentPickerContextMenuId)
-  const { showComponentPickerContextMenu: showReplaceContextMenu } =
-    useShowComponentPickerContextMenu(replaceComponentPickerContextMenuId)
+  const insertChildPickerId = varSafeNavigatorEntryToKey(navigatorEntry)
+  const insertChildPickerFullId = `${insertChildPickerId}-full`
+  const replaceElementPickerId = `${insertChildPickerId}-replace`
+  const replaceElementPickerFullId = `${replaceElementPickerId}-full`
+  const { showComponentPickerContextMenu: showInsertChildPicker } =
+    useShowComponentPickerContextMenu(insertChildPickerId)
+  const { showComponentPickerContextMenu: showInsertChildPickerFull } =
+    useShowComponentPickerContextMenu(insertChildPickerFullId)
+  const { showComponentPickerContextMenu: showReplaceElementPicker } =
+    useShowComponentPickerContextMenu(replaceElementPickerId)
+  const { showComponentPickerContextMenu: showReplaceElementPickerFull } =
+    useShowComponentPickerContextMenu(replaceElementPickerFullId)
 
   const portalTarget = document.getElementById(CanvasContextMenuPortalTargetID)
 
@@ -894,7 +898,6 @@ export const NavigatorItem: React.FunctionComponent<
 
   return (
     <div
-      onClick={hideContextMenu}
       style={{
         outline: `1px solid ${
           props.parentOutline === 'solid' && isOutletOrDescendantOfOutlet
@@ -910,8 +913,8 @@ export const NavigatorItem: React.FunctionComponent<
         ? ReactDOM.createPortal(
             <ComponentPickerContextMenu
               target={EP.parentPath(props.navigatorEntry.elementPath)}
-              key={componentPickerContextMenuId}
-              id={componentPickerContextMenuId}
+              key={insertChildPickerId}
+              id={insertChildPickerId}
               insertionTarget={{ prop: navigatorEntry.prop }}
             />,
             portalTarget,
@@ -923,8 +926,8 @@ export const NavigatorItem: React.FunctionComponent<
             <React.Fragment>
               <ComponentPickerContextMenu
                 target={props.navigatorEntry.elementPath}
-                key={componentPickerContextMenuId}
-                id={componentPickerContextMenuId}
+                key={insertChildPickerId}
+                id={insertChildPickerId}
                 insertionTarget={'insert-as-child'}
               />
               <ComponentPickerContextMenu
@@ -933,8 +936,8 @@ export const NavigatorItem: React.FunctionComponent<
                     ? EP.parentPath(props.navigatorEntry.elementPath)
                     : props.navigatorEntry.elementPath
                 }
-                key={replaceComponentPickerContextMenuId}
-                id={replaceComponentPickerContextMenuId}
+                key={replaceElementPickerId}
+                id={replaceElementPickerId}
                 insertionTarget={
                   navigatorEntry.type === 'RENDER_PROP_VALUE'
                     ? { prop: navigatorEntry.prop }
@@ -955,7 +958,7 @@ export const NavigatorItem: React.FunctionComponent<
         {isPlaceholder ? (
           <div
             key={`label-${props.label}-slot`}
-            onClick={navigatorEntry.type === 'SLOT' ? showContextMenu : NO_OP}
+            onClick={navigatorEntry.type === 'SLOT' ? showInsertChildPicker : NO_OP}
             style={{
               width: 140,
               height: 19,
@@ -1051,8 +1054,10 @@ export const NavigatorItem: React.FunctionComponent<
                 isSlot={isPlaceholder}
                 iconColor={iconColor}
                 background={rowStyle.background}
-                showInsertChildPicker={showContextMenu}
-                showReplaceElementPicker={showReplaceContextMenu}
+                showInsertChildPickerPreferred={showInsertChildPicker}
+                showInsertChildPickerFull={showInsertChildPickerFull}
+                showReplaceElementPickerPreferred={showReplaceElementPicker}
+                showReplaceElementPickerFull={showReplaceElementPickerFull}
               />,
             )}
           </FlexRow>

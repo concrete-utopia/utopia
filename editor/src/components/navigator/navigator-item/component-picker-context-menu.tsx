@@ -1,5 +1,5 @@
 import React from 'react'
-import { useContextMenu, Menu, type ContextMenuParams } from 'react-contexify'
+import { useContextMenu, Menu, type ContextMenuParams, contextMenu } from 'react-contexify'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   getJSXElementNameAsString,
@@ -31,6 +31,8 @@ import {
 import { type Icon } from 'utopia-api'
 import { getRegisteredComponent } from '../../../core/property-controls/property-controls-utils'
 import { defaultImportsForComponentModule } from '../../../core/property-controls/property-controls-local'
+import { useGetInsertableComponents } from '../../canvas/ui/floating-insert-menu'
+import { getInsertableGroupLabel } from '../../shared/project-components'
 
 function getIconForComponent(
   targetName: string,
@@ -371,7 +373,10 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
   ({ id, target, insertionTarget }) => {
     const { hideComponentPickerContextMenu } = useShowComponentPickerContextMenu(`${id}-full`)
 
-    const preferredChildrenForTarget = usePreferredChildrenForTarget(target, insertionTarget)
+    const allInsertableComponents = useGetInsertableComponents('insert').flatMap((g) => ({
+      label: g.label,
+      options: g.options,
+    }))
 
     const dispatch = useDispatch()
 
@@ -389,6 +394,8 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
           dispatch,
           insertionTarget,
         )
+
+        contextMenu.hideAll()
       },
       [dispatch, projectContentsRef, insertionTarget, target],
     )
@@ -397,16 +404,11 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
       e.stopPropagation()
     }, [])
 
-    if (preferredChildrenForTarget == null) {
-      return null
-    }
-
     return (
-      <Menu key={id} id={id} animation={false} style={{ width: 457 }} onClick={squashEvents}>
+      <Menu key={id} id={id} animation={false} style={{ width: 260 }} onClick={squashEvents}>
         <ComponentPicker
           insertionTargetName={(insertionTarget as any)?.prop ?? 'Child'} // This is horrible and needs to go in the bin anyway
-          preferredComponents={preferredChildrenForTarget}
-          allComponents={preferredChildrenForTarget}
+          allComponents={allInsertableComponents}
           onItemClick={onItemClick}
           onClickCloseButton={hideComponentPickerContextMenu}
         />
