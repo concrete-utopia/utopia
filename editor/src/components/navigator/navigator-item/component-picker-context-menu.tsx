@@ -373,8 +373,6 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
   ({ id, target, insertionTarget }) => {
     const { hideComponentPickerContextMenu } = useShowComponentPickerContextMenu(`${id}-full`)
 
-    const preferredChildrenForTarget = usePreferredChildrenForTarget(target, insertionTarget)
-
     const allInsertableComponents = useGetInsertableComponents('insert').flatMap((g) => ({
       label: g.label,
       options: g.options,
@@ -404,14 +402,10 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
       e.stopPropagation()
     }, [])
 
-    if (preferredChildrenForTarget == null) {
-      return null
-    }
     return (
       <Menu key={id} id={id} animation={false} style={{ width: 260 }} onClick={squashEvents}>
         <ComponentPicker
           insertionTargetName={(insertionTarget as any)?.prop ?? 'Child'} // This is horrible and needs to go in the bin anyway
-          preferredComponents={preferredChildrenForTarget}
           allComponents={allInsertableComponents}
           onItemClick={onItemClick}
           onClickCloseButton={hideComponentPickerContextMenu}

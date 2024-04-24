@@ -2,15 +2,16 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import { Icons } from '../../../uuiui'
+import { Icn, type IcnProps } from '../../../uuiui'
 import { dark } from '../../../uuiui/styles/theme/dark'
 import type { JSXElementChild } from '../../../core/shared/element-template'
 import { type Imports } from '../../../core/shared/project-file-types'
 import { elementFromInsertMenuItem } from '../../editor/insert-callbacks'
-import { componentInfo, type ComponentInfo } from '../../custom-code/code-file'
+import { type ComponentElementToInsert } from '../../custom-code/code-file'
 import type { InsertMenuItemGroup } from '../../canvas/ui/floating-insert-menu'
 import { UIGridRow } from '../../../components/inspector/widgets/ui-grid-row'
-import { FlexRow } from 'utopia-api'
+import { FlexRow, type Icon } from 'utopia-api'
+import { assertNever } from '../../../core/shared/utils'
 
 export interface ComponentPickerProps {
   insertionTargetName: string
@@ -183,13 +184,67 @@ const ComponentPickerComponentSection = React.memo(
   },
 )
 
+// FIXME Copy pasted from component-picker-context-menu.tsx
+function iconPropsForIcon(icon: Icon): IcnProps {
+  switch (icon) {
+    case 'column':
+      return {
+        category: 'navigator-element',
+        type: 'flex-column',
+        color: 'white',
+      }
+    case 'row':
+      return {
+        category: 'navigator-element',
+        type: 'flex-row',
+        color: 'white',
+      }
+    case 'regular':
+      return {
+        category: 'navigator-element',
+        type: 'component',
+        color: 'white',
+      }
+    default:
+      assertNever(icon)
+  }
+}
+
+interface ComponentInfoWithIcon {
+  insertMenuLabel: string
+  elementToInsert: () => ComponentElementToInsert
+  importsToAdd: Imports
+  icon: Icon
+}
+
+function componentInfoWithIcon(
+  insertMenuLabel: string,
+  elementToInsert: () => ComponentElementToInsert,
+  importsToAdd: Imports,
+  icon: Icon,
+): ComponentInfoWithIcon {
+  return {
+    insertMenuLabel: insertMenuLabel,
+    elementToInsert: elementToInsert,
+    importsToAdd: importsToAdd,
+    icon: icon,
+  }
+}
+
 interface ComponentPickerOptionProps {
   component: InsertMenuItemGroup
   onItemClick: (elementToInsert: ElementToInsert) => React.MouseEventHandler
 }
 
-function variantsForComponent(component: InsertMenuItemGroup): ComponentInfo[] {
-  return component.options.map((v) => componentInfo(v.label, v.value.element, v.value.importsToAdd))
+function variantsForComponent(component: InsertMenuItemGroup): ComponentInfoWithIcon[] {
+  return component.options.map((v) =>
+    componentInfoWithIcon(
+      v.label,
+      v.value.element,
+      v.value.importsToAdd,
+      v.value.icon ?? 'regular',
+    ),
+  )
 }
 
 const ComponentPickerOption = React.memo((props: ComponentPickerOptionProps) => {
@@ -230,10 +285,7 @@ const ComponentPickerOption = React.memo((props: ComponentPickerOptionProps) => 
               height: 27,
             }}
           >
-            <Icons.ComponentInstance
-              color='white'
-              style={{ transformOrigin: 'center center', transform: 'scale(.8)' }}
-            />
+            <Icn {...iconPropsForIcon(v.icon)} width={12} height={12} />
             <label>{v.insertMenuLabel}</label>
           </UIGridRow>
         </FlexRow>

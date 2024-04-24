@@ -86,7 +86,7 @@ export function changeConditionalOrFragment(
       actionsToDispatch = [
         insertInsertable(
           insertionPath,
-          insertableComponent(importsToAdd, () => element, '', [], null, null),
+          insertableComponent(importsToAdd, () => element, '', [], null, null, null),
           fixedSizeForInsertion ? 'add-size' : 'do-not-add',
           floatingMenuState.indexPosition,
         ),
