@@ -266,7 +266,7 @@ const ComponentPickerComponentSection = React.memo(
   (props: ComponentPickerComponentSectionProps) => {
     const { components, onItemClick } = props
     return (
-      <div>
+      <div style={{ maxHeight: 250, overflowY: 'scroll' }}>
         {components.map((comp) => {
           return (
             <ComponentPickerOption
