@@ -351,6 +351,7 @@ import type {
   TrueUpHuggingElement,
   RenderPropNavigatorEntry,
   SlotNavigatorEntry,
+  RenderPropValueNavigatorEntry,
 } from './editor-state'
 import {
   trueUpGroupElementChanged,
@@ -358,6 +359,7 @@ import {
   invalidOverrideNavigatorEntry,
   trueUpHuggingElement,
   renderPropNavigatorEntry,
+  renderPropValueNavigatorEntry,
 } from './editor-state'
 import {
   editorStateNodeModules,
@@ -690,6 +692,15 @@ export const RenderPropNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<Rend
     renderPropNavigatorEntry,
   )
 
+export const RenderPropValueNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<RenderPropValueNavigatorEntry> =
+  combine2EqualityCalls(
+    (entry) => entry.elementPath,
+    ElementPathKeepDeepEquality,
+    (entry) => entry.prop,
+    StringKeepDeepEquality,
+    renderPropValueNavigatorEntry,
+  )
+
 export const InvalidOverrideNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<InvalidOverrideNavigatorEntry> =
   combine2EqualityCalls(
     (entry) => entry.elementPath,
@@ -731,6 +742,11 @@ export const NavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<NavigatorEntry
     case 'RENDER_PROP':
       if (oldValue.type === newValue.type) {
         return RenderPropNavigatorEntryKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'RENDER_PROP_VALUE':
+      if (oldValue.type === newValue.type) {
+        return RenderPropValueNavigatorEntryKeepDeepEquality(oldValue, newValue)
       }
       break
     case 'INVALID_OVERRIDE':

@@ -866,10 +866,13 @@ export const NavigatorItem: React.FunctionComponent<
   }, [childComponentCount, isFocusedComponent, isConditional])
 
   const componentPickerContextMenuId = varSafeNavigatorEntryToKey(navigatorEntry)
+  const replaceComponentPickerContextMenuId = `${componentPickerContextMenuId}-replace`
   const {
     showComponentPickerContextMenu: showContextMenu,
     hideComponentPickerContextMenu: hideContextMenu,
   } = useShowComponentPickerContextMenu(componentPickerContextMenuId)
+  const { showComponentPickerContextMenu: showReplaceContextMenu } =
+    useShowComponentPickerContextMenu(replaceComponentPickerContextMenuId)
 
   const portalTarget = document.getElementById(CanvasContextMenuPortalTargetID)
 
@@ -903,21 +906,45 @@ export const NavigatorItem: React.FunctionComponent<
         outlineOffset: props.parentOutline === 'solid' ? '-1px' : 0,
       }}
     >
-      {portalTarget == null || (navigatorEntry.type !== 'SLOT' && navigatorEntry.type !== 'REGULAR')
-        ? null
-        : ReactDOM.createPortal(
+      {portalTarget != null && navigatorEntry.type === 'SLOT'
+        ? ReactDOM.createPortal(
             <ComponentPickerContextMenu
-              target={
-                navigatorEntry.type === 'SLOT'
-                  ? EP.parentPath(props.navigatorEntry.elementPath)
-                  : props.navigatorEntry.elementPath
-              }
+              target={EP.parentPath(props.navigatorEntry.elementPath)}
               key={componentPickerContextMenuId}
               id={componentPickerContextMenuId}
-              prop={navigatorEntry.type === 'SLOT' ? navigatorEntry.prop : undefined}
+              insertionTarget={{ prop: navigatorEntry.prop }}
             />,
             portalTarget,
-          )}
+          )
+        : null}
+      {portalTarget != null &&
+      (navigatorEntry.type === 'REGULAR' || navigatorEntry.type === 'RENDER_PROP_VALUE')
+        ? ReactDOM.createPortal(
+            <React.Fragment>
+              <ComponentPickerContextMenu
+                target={props.navigatorEntry.elementPath}
+                key={componentPickerContextMenuId}
+                id={componentPickerContextMenuId}
+                insertionTarget={'insert-as-child'}
+              />
+              <ComponentPickerContextMenu
+                target={
+                  navigatorEntry.type === 'RENDER_PROP_VALUE'
+                    ? EP.parentPath(props.navigatorEntry.elementPath)
+                    : props.navigatorEntry.elementPath
+                }
+                key={replaceComponentPickerContextMenuId}
+                id={replaceComponentPickerContextMenuId}
+                insertionTarget={
+                  navigatorEntry.type === 'RENDER_PROP_VALUE'
+                    ? { prop: navigatorEntry.prop }
+                    : 'replace-target'
+                }
+              />
+            </React.Fragment>,
+            portalTarget,
+          )
+        : null}
       <FlexRow
         data-testid={NavigatorItemTestId(varSafeNavigatorEntryToKey(navigatorEntry))}
         style={rowStyle}
@@ -1025,6 +1052,7 @@ export const NavigatorItem: React.FunctionComponent<
                 iconColor={iconColor}
                 background={rowStyle.background}
                 showInsertChildPicker={showContextMenu}
+                showReplaceElementPicker={showReplaceContextMenu}
               />,
             )}
           </FlexRow>
