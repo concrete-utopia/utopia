@@ -34,6 +34,8 @@ import { isPrefixOf } from '../../../../core/shared/array-utils'
 import { ExpandableIndicator } from '../../../navigator/navigator-item/expandable-indicator'
 import { FlexRow } from 'utopia-api'
 import { is } from '../../../../core/shared/equality-utils'
+import { atom, useAtom } from 'jotai'
+import type { SelectOption } from '../../controls/select-control'
 
 export interface PrimitiveOption {
   type: 'primitive'
@@ -71,6 +73,21 @@ export interface JSXOption {
 
 export type VariableOption = PrimitiveOption | ArrayOption | ObjectOption | JSXOption
 
+const DataPickerFilterOptions = ['all', 'preferred'] as const
+export type DataPickerFilterOption = (typeof DataPickerFilterOptions)[number]
+export function dataPickerFilterOptionToString(mode: DataPickerFilterOption): string {
+  switch (mode) {
+    case 'all':
+      return 'All'
+    case 'preferred':
+      return 'Preferred'
+    default:
+      assertNever(mode)
+  }
+}
+
+export const DataPickerPreferredAllAtom = atom<DataPickerFilterOption>('preferred')
+
 function valueToDisplay(option: VariableOption): string {
   switch (option.variableInfo.type) {
     case 'array':
@@ -105,6 +122,8 @@ export const DataPickerPopup = React.memo(
   React.forwardRef<HTMLDivElement, DataPickerPopupProps>((props, forwardedRef) => {
     const { closePopup, propPath, propExpressionPath } = props
 
+    const [preferredAllState, setPreferredAllState] = useAtom(DataPickerPreferredAllAtom)
+
     const selectedViewPathRef = useRefEditorState(
       (store) => store.editor.selectedViews.at(0) ?? null,
     )
@@ -112,6 +131,13 @@ export const DataPickerPopup = React.memo(
     const colorTheme = useColorTheme()
     const dispatch = useDispatch()
     const isTargetingChildrenProp = isChildrenProp(propPath)
+
+    const setMode = React.useCallback(
+      (option: SelectOption<DataPickerFilterOption>) => {
+        setPreferredAllState(option.value)
+      },
+      [setPreferredAllState],
+    )
 
     const onTweakProperty = React.useCallback(
       (name: string, definedElsewhere: string | null) => (e: React.MouseEvent) => {
@@ -144,6 +170,16 @@ export const DataPickerPopup = React.memo(
     const variableNamesInScope = useVariablesInScopeForSelectedElement(
       selectedViewPathRef.current ?? EP.emptyElementPath,
       props.propPath,
+      preferredAllState,
+    )
+
+    const filterOptions = React.useMemo(
+      () =>
+        DataPickerFilterOptions.map((option) => ({
+          value: option,
+          label: dataPickerFilterOptionToString(option),
+        })),
+      [],
     )
 
     return (
@@ -178,17 +214,17 @@ export const DataPickerPopup = React.memo(
           <UIGridRow
             padded
             variant='<-------1fr------>|----80px----|'
-            css={{ marginBottom: 16, alignSelf: 'stretch' }}
+            css={{ marginBottom: 4, alignSelf: 'stretch' }}
           >
             <div style={{ fontWeight: 600, flexGrow: 1 }}>Data</div>
             <PopupList
               containerMode='showBorderOnHover'
-              options={[
-                { value: 'Preferred', label: 'Preferred' },
-                { value: 'All', label: 'All' },
-              ]}
-              value={{ value: 'Preferred', label: 'Preferred' }}
-              onSubmitValue={NO_OP}
+              options={filterOptions}
+              value={{
+                value: preferredAllState,
+                label: dataPickerFilterOptionToString(preferredAllState),
+              }}
+              onSubmitValue={setMode}
             />
           </UIGridRow>
           {variableNamesInScope.map((variableOption, idx) => {
@@ -270,6 +306,7 @@ function ValueRow({
           borderRadius: 8,
           width: '100%',
           height: 29,
+          marginTop: variableChildren != null && variableOption.depth === 0 ? 12 : 0, // add some space between top-level variables
           cursor: variableOption.variableInfo.matches ? 'pointer' : 'default',
           background: currentExpressionExactMatch
             ? colorTheme.secondaryBackground.value
