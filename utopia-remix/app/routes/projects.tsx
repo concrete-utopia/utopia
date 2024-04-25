@@ -1314,32 +1314,32 @@ function createCloneLink(
   return `/p?accessLevel=${accessLevelParam}${cloneRepoParam}${cloneBranchParam}`
 }
 
+const projectTemplates = [
+  {
+    title: 'Public Project',
+    onClick: () => window.open(createCloneLink(AccessLevel.PUBLIC), '_blank'),
+  },
+  {
+    title: 'Remix Project',
+    onClick: () =>
+      window.open(
+        createCloneLink(AccessLevel.PUBLIC, {
+          cloneRepo: 'concrete-utopia/utopia-remix-starter',
+        }),
+        '_blank',
+      ),
+  },
+  {
+    title: 'Hydrogen Project',
+    onClick: () =>
+      window.open(
+        createCloneLink(AccessLevel.PUBLIC, { cloneRepo: 'concrete-utopia/hydrogen-november' }),
+        '_blank',
+      ),
+  },
+]
 function ProjectTemplates() {
   const isDarkMode = useIsDarkMode()
-  const projectTemplates = [
-    {
-      title: 'Public Project',
-      onClick: () => window.open(createCloneLink(AccessLevel.PUBLIC), '_blank'),
-    },
-    {
-      title: 'Remix Project',
-      onClick: () =>
-        window.open(
-          createCloneLink(AccessLevel.PUBLIC, {
-            cloneRepo: 'concrete-utopia/utopia-remix-starter',
-          }),
-          '_blank',
-        ),
-    },
-    {
-      title: 'Hydrogen Project',
-      onClick: () =>
-        window.open(
-          createCloneLink(AccessLevel.PUBLIC, { cloneRepo: 'concrete-utopia/hydrogen-november' }),
-          '_blank',
-        ),
-    },
-  ]
   return (
     <Flex
       direction='column'
