@@ -180,7 +180,6 @@ export function objectParser<Type>(
 ): (v: unknown) => ParseResult<Type> {
   return (value: unknown) => {
     if (typeof value !== 'object') {
-      // TODO: check whether this produces a sensible error message
       return left(descriptionParseError('Not an object'))
     }
     if (Array.isArray(value)) {
