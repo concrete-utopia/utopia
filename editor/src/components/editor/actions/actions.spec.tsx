@@ -692,6 +692,7 @@ describe('INSERT_INSERTABLE', () => {
       [],
       null,
       null,
+      null,
     )
 
     const targetPath = EP.elementPath([

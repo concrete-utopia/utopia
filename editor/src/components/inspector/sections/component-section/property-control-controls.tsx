@@ -829,7 +829,7 @@ export const IdentifierExpressionCartoucheControl = React.memo(
         style={{
           cursor: 'pointer',
           fontSize: 10,
-          color: props.matchType === 'full' ? colorTheme.bg1.value : colorTheme.primary.value,
+          color: props.matchType === 'full' ? colorTheme.white.value : colorTheme.primary.value,
           backgroundColor:
             props.matchType === 'full' ? colorTheme.primary.value : colorTheme.primary10.value,
           padding: '0px 4px',

@@ -57,6 +57,7 @@ import { insertMenuModes } from '../canvas/ui/floating-insert-menu-helpers'
 import { elementUsesProperty } from '../../core/model/element-template-utils'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../../core/shared/dom-utils'
 import { getTopLevelElementByExportsDetail } from '../../core/model/project-file-utils'
+import { type Icon } from 'utopia-api'
 
 export type StylePropOption = 'do-not-add' | 'add-size'
 
@@ -67,6 +68,7 @@ export interface InsertableComponent {
   stylePropOptions: Array<StylePropOption>
   defaultSize: Size | null
   insertionCeiling: ElementPath | null
+  icon: Icon | null
 }
 
 export function insertableComponent(
@@ -76,6 +78,7 @@ export function insertableComponent(
   stylePropOptions: Array<StylePropOption>,
   defaultSize: Size | null,
   insertionCeiling: ElementPath | null,
+  icon: Icon | null,
 ): InsertableComponent {
   const component = {
     importsToAdd: importsToAdd,
@@ -84,6 +87,7 @@ export function insertableComponent(
     stylePropOptions: stylePropOptions,
     defaultSize: defaultSize,
     insertionCeiling: insertionCeiling,
+    icon: icon,
   }
   return component
 }
@@ -299,6 +303,7 @@ export function insertableVariable(
       stylePropOptions,
       defaultSize,
       insertionCeiling,
+      null,
     ),
     variableType: variableType,
     depth: depth,
@@ -497,7 +502,7 @@ export const fragmentComponentInfo: ComponentInfo = {
   },
 }
 
-const fragmentElementsDescriptors: ComponentDescriptorsForFile = {
+export const fragmentElementsDescriptors: ComponentDescriptorsForFile = {
   fragment: {
     properties: {},
     supportsChildren: true,
@@ -590,6 +595,7 @@ export function moveSceneToTheBeginningAndSetDefaultSize(
             scene.stylePropOptions,
             size(SceneDefaultWidth, SceneDefaultHeight),
             null,
+            null,
           ),
         ],
       )
@@ -672,6 +678,7 @@ export function getComponentGroups(
                   stylePropOptions,
                   null,
                   null,
+                  descriptor.icon,
                 ),
               )
             })
@@ -685,6 +692,7 @@ export function getComponentGroups(
                 () => jsxElementWithoutUID(exportedComponent.listingName, [], []),
                 exportedComponent.listingName,
                 stylePropOptions,
+                null,
                 null,
                 null,
               ),
@@ -704,6 +712,7 @@ export function getComponentGroups(
   function addDependencyDescriptor(
     groupType: InsertableComponentGroupType,
     components: ComponentDescriptorsForFile,
+    defaultSize?: Size,
   ): void {
     let insertableComponents: Array<InsertableComponent> = []
     fastForEach(Object.keys(components), (componentName) => {
@@ -721,8 +730,9 @@ export function getComponentGroups(
               insertOption.elementToInsert,
               insertOption.insertMenuLabel,
               stylePropOptions,
+              defaultSize ?? null,
               null,
-              null,
+              component.icon,
             ),
           )
         })
@@ -731,7 +741,10 @@ export function getComponentGroups(
     result.push(insertableComponentGroup(groupType, insertableComponents))
   }
 
-  addDependencyDescriptor(insertableComponentGroupDiv(), divComponentGroup)
+  addDependencyDescriptor(insertableComponentGroupDiv(), divComponentGroup, {
+    width: 100,
+    height: 100,
+  })
 
   // Add HTML entries.
   addDependencyDescriptor(insertableComponentGroupHTML(), basicHTMLElementsDescriptors)

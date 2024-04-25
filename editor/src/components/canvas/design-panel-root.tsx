@@ -19,7 +19,7 @@ import {
 } from '../../uuiui'
 import { ConsoleAndErrorsPane } from '../code-editor/console-and-errors-pane'
 import { CanvasStrategyInspector } from './canvas-strategies/canvas-strategy-inspector'
-import { getQueryParam } from '../../common/env-vars'
+import { IS_TEST_ENVIRONMENT, getQueryParam } from '../../common/env-vars'
 import { when } from '../../utils/react-conditionals'
 import { InsertMenuPane } from '../navigator/insert-menu-pane'
 import { VariablesMenuPane } from '../navigator/variables-menu-pane'
@@ -199,11 +199,14 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
         {when(
           allowedToEdit,
           <>
-            <MenuTab
-              label={'Insert'}
-              selected={selectedTab === RightMenuTab.Insert}
-              onClick={onClickInsertTab}
-            />
+            {when(
+              IS_TEST_ENVIRONMENT,
+              <MenuTab
+                label={'Insert'}
+                selected={selectedTab === RightMenuTab.Insert}
+                onClick={onClickInsertTab}
+              />,
+            )}
             <MenuTab
               label={'Variables'}
               selected={selectedTab === RightMenuTab.Variables}

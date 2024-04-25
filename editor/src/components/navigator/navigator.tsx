@@ -49,6 +49,7 @@ const Item = React.memo(({ index, style }: ItemProps) => {
   const editorSliceRef = useRefEditorState((store) => {
     const currentlySelectedNavigatorEntries = getSelectedNavigatorEntries(
       store.editor.selectedViews,
+      store.derived.navigatorTargets,
     )
     return {
       selectedViews: store.editor.selectedViews,

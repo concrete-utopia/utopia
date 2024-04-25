@@ -70,6 +70,7 @@ import {
   sendMessage,
 } from '../../../core/vscode/vscode-bridge'
 import { toVSCodeExtensionMessage } from 'utopia-vscode-common'
+import type { Emphasis } from 'utopia-api'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -203,7 +204,14 @@ const collapseItem = (
   e.stopPropagation()
 }
 
-type StyleType = 'default' | 'dynamic' | 'component' | 'componentInstance' | 'erroredGroup'
+type StyleType =
+  | 'default'
+  | 'dynamic'
+  | 'component'
+  | 'componentInstance'
+  | 'erroredGroup'
+  | 'lowEmphasis'
+  | 'highEmphasis'
 type SelectedType = 'unselected' | 'selected' | 'descendantOfSelected'
 
 const styleTypeColors: Record<StyleType, { color: keyof ThemeObject; iconColor: IcnColor }> = {
@@ -212,6 +220,8 @@ const styleTypeColors: Record<StyleType, { color: keyof ThemeObject; iconColor: 
   component: { color: 'componentPurple', iconColor: 'component' },
   componentInstance: { color: 'fg0', iconColor: 'main' },
   erroredGroup: { color: 'error', iconColor: 'error' },
+  lowEmphasis: { color: 'fg5', iconColor: 'darkgray' },
+  highEmphasis: { color: 'dynamicBlue', iconColor: 'primary' },
 }
 
 const selectedTypeBackground: Record<SelectedType, keyof ThemeObject> = {
@@ -237,6 +247,7 @@ const getColors = (
 
 const computeResultingStyle = (
   selected: boolean,
+  emphasis: Emphasis,
   isInsideComponent: boolean,
   isDynamic: boolean,
   isProbablyScene: boolean,
@@ -253,14 +264,18 @@ const computeResultingStyle = (
 
   if (isErroredGroup) {
     styleType = 'erroredGroup'
+  } else if (isDynamic) {
+    styleType = 'dynamic'
+  } else if (emphasis === 'subdued') {
+    styleType = 'lowEmphasis'
+  } else if (emphasis === 'emphasized') {
+    styleType = 'highEmphasis'
   } else if (isInsideComponent || isFocusedComponent) {
     styleType = 'component'
   } else if (isFocusableComponent) {
     styleType = 'componentInstance'
   } else if (isHighlightedForInteraction) {
     styleType = 'default'
-  } else if (isDynamic) {
-    styleType = 'dynamic'
   }
 
   if (selected) {
@@ -699,6 +714,27 @@ export const NavigatorItem: React.FunctionComponent<
     'NavigatorItem conditionalOverrideUpdate',
   )
 
+  const metadata = useEditorState(
+    Substores.metadata,
+    (store): ElementInstanceMetadataMap => {
+      return store.editor.jsxMetadata
+    },
+    'NavigatorItem metadata',
+  )
+
+  const emphasis = useEditorState(
+    Substores.propertyControlsInfo,
+    (store): Emphasis => {
+      return MetadataUtils.getEmphasisOfComponent(
+        navigatorEntry.elementPath,
+        metadata,
+        store.editor.propertyControlsInfo,
+        store.editor.projectContents,
+      )
+    },
+    'NavigatorItem emphasis',
+  )
+
   const isInsideComponent = isInFocusedComponentSubtree
   const fullyVisible = useStyleFullyVisible(navigatorEntry, autoFocusedPaths)
   const isProbablyScene = useIsProbablyScene(navigatorEntry)
@@ -731,6 +767,7 @@ export const NavigatorItem: React.FunctionComponent<
 
   const resultingStyle = computeResultingStyle(
     selected,
+    emphasis,
     isInsideComponent,
     isDynamic,
     isProbablyScene,
@@ -828,16 +865,29 @@ export const NavigatorItem: React.FunctionComponent<
     )
   }, [childComponentCount, isFocusedComponent, isConditional])
 
-  const componentPickerContextMenuId = varSafeNavigatorEntryToKey(navigatorEntry)
-  const {
-    showComponentPickerContextMenu: showContextMenu,
-    hideComponentPickerContextMenu: hideContextMenu,
-  } = useShowComponentPickerContextMenu(componentPickerContextMenuId)
+  const insertChildPickerId = varSafeNavigatorEntryToKey(navigatorEntry)
+  const insertChildPickerFullId = `${insertChildPickerId}-full`
+  const replaceElementPickerId = `${insertChildPickerId}-replace`
+  const replaceElementPickerFullId = `${replaceElementPickerId}-full`
+  const { showComponentPickerContextMenu: showInsertChildPicker } =
+    useShowComponentPickerContextMenu(insertChildPickerId)
+  const { showComponentPickerContextMenu: showInsertChildPickerFull } =
+    useShowComponentPickerContextMenu(insertChildPickerFullId)
+  const { showComponentPickerContextMenu: showReplaceElementPicker } =
+    useShowComponentPickerContextMenu(replaceElementPickerId)
+  const { showComponentPickerContextMenu: showReplaceElementPickerFull } =
+    useShowComponentPickerContextMenu(replaceElementPickerFullId)
 
   const portalTarget = document.getElementById(CanvasContextMenuPortalTargetID)
 
   const iconColor = isRemixItem
     ? 'remix'
+    : isDynamic
+    ? 'dynamic'
+    : emphasis === 'subdued'
+    ? 'subdued'
+    : emphasis === 'emphasized'
+    ? 'primary'
     : isCodeItem
     ? 'dynamic'
     : isComponentScene
@@ -848,7 +898,6 @@ export const NavigatorItem: React.FunctionComponent<
 
   return (
     <div
-      onClick={hideContextMenu}
       style={{
         outline: `1px solid ${
           props.parentOutline === 'solid' && isOutletOrDescendantOfOutlet
@@ -860,21 +909,45 @@ export const NavigatorItem: React.FunctionComponent<
         outlineOffset: props.parentOutline === 'solid' ? '-1px' : 0,
       }}
     >
-      {portalTarget == null || (navigatorEntry.type !== 'SLOT' && navigatorEntry.type !== 'REGULAR')
-        ? null
-        : ReactDOM.createPortal(
+      {portalTarget != null && navigatorEntry.type === 'SLOT'
+        ? ReactDOM.createPortal(
             <ComponentPickerContextMenu
-              target={
-                navigatorEntry.type === 'SLOT'
-                  ? EP.parentPath(props.navigatorEntry.elementPath)
-                  : props.navigatorEntry.elementPath
-              }
-              key={componentPickerContextMenuId}
-              id={componentPickerContextMenuId}
-              prop={navigatorEntry.type === 'SLOT' ? navigatorEntry.prop : undefined}
+              target={EP.parentPath(props.navigatorEntry.elementPath)}
+              key={insertChildPickerId}
+              id={insertChildPickerId}
+              insertionTarget={{ prop: navigatorEntry.prop }}
             />,
             portalTarget,
-          )}
+          )
+        : null}
+      {portalTarget != null &&
+      (navigatorEntry.type === 'REGULAR' || navigatorEntry.type === 'RENDER_PROP_VALUE')
+        ? ReactDOM.createPortal(
+            <React.Fragment>
+              <ComponentPickerContextMenu
+                target={props.navigatorEntry.elementPath}
+                key={insertChildPickerId}
+                id={insertChildPickerId}
+                insertionTarget={'insert-as-child'}
+              />
+              <ComponentPickerContextMenu
+                target={
+                  navigatorEntry.type === 'RENDER_PROP_VALUE'
+                    ? EP.parentPath(props.navigatorEntry.elementPath)
+                    : props.navigatorEntry.elementPath
+                }
+                key={replaceElementPickerId}
+                id={replaceElementPickerId}
+                insertionTarget={
+                  navigatorEntry.type === 'RENDER_PROP_VALUE'
+                    ? { prop: navigatorEntry.prop }
+                    : 'replace-target'
+                }
+              />
+            </React.Fragment>,
+            portalTarget,
+          )
+        : null}
       <FlexRow
         data-testid={NavigatorItemTestId(varSafeNavigatorEntryToKey(navigatorEntry))}
         style={rowStyle}
@@ -885,7 +958,7 @@ export const NavigatorItem: React.FunctionComponent<
         {isPlaceholder ? (
           <div
             key={`label-${props.label}-slot`}
-            onClick={navigatorEntry.type === 'SLOT' ? showContextMenu : NO_OP}
+            onClick={navigatorEntry.type === 'SLOT' ? showInsertChildPicker : NO_OP}
             style={{
               width: 140,
               height: 19,
@@ -961,6 +1034,7 @@ export const NavigatorItem: React.FunctionComponent<
                 selected={props.selected}
                 codeItemType={codeItemType}
                 remixItemType={remixItemType}
+                emphasis={emphasis}
                 dispatch={props.dispatch}
                 isDynamic={isDynamic}
                 iconColor={iconColor}
@@ -980,7 +1054,10 @@ export const NavigatorItem: React.FunctionComponent<
                 isSlot={isPlaceholder}
                 iconColor={iconColor}
                 background={rowStyle.background}
-                showInsertChildPicker={showContextMenu}
+                showInsertChildPickerPreferred={showInsertChildPicker}
+                showInsertChildPickerFull={showInsertChildPickerFull}
+                showReplaceElementPickerPreferred={showReplaceElementPicker}
+                showReplaceElementPickerFull={showReplaceElementPickerFull}
               />,
             )}
           </FlexRow>
@@ -1001,6 +1078,7 @@ interface NavigatorRowLabelProps {
   selected: boolean
   codeItemType: CodeItemType
   remixItemType: RemixItemType
+  emphasis: Emphasis
   shouldShowParentOutline: boolean
   childComponentCount: number
   dispatch: EditorDispatch
@@ -1014,19 +1092,16 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
   const isComponentScene =
     useIsProbablyScene(props.navigatorEntry) && props.childComponentCount === 1
 
-  const isOutlet = props.remixItemType === 'outlet'
-
-  const backgroundLozengeColor =
-    isCodeItem && !props.selected
-      ? colorTheme.dynamicBlue10.value
-      : isOutlet && !props.selected
-      ? colorTheme.aqua10.value
-      : 'transparent'
-
-  const textColor = isCodeItem
-    ? colorTheme.dynamicBlue.value
-    : isRemixItem
+  const textColor = isRemixItem
     ? colorTheme.aqua.value
+    : props.isDynamic
+    ? colorTheme.dynamicBlue.value
+    : props.emphasis === 'subdued'
+    ? colorTheme.fg5.value
+    : props.emphasis === 'emphasized'
+    ? colorTheme.dynamicBlue.value
+    : isCodeItem
+    ? colorTheme.dynamicBlue.value
     : isComponentScene
     ? colorTheme.componentPurple.value
     : undefined

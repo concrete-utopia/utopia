@@ -6,12 +6,13 @@ import type {
 import type { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
 import type { VariableData } from '../../../canvas/ui-jsx-canvas'
 import { useEditorState, Substores } from '../../../editor/store/store-hook'
-import type { VariableOption } from './data-picker-popup'
+import type { DataPickerFilterOption, VariableOption } from './data-picker-popup'
 import * as EP from '../../../../core/shared/element-path'
+import * as PP from '../../../../core/shared/property-path'
 import React from 'react'
 import { useGetPropertyControlsForSelectedComponents } from '../../common/property-controls-hooks'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
-import { assertNever } from '../../../../core/shared/utils'
+import { assertNever, identity } from '../../../../core/shared/utils'
 import { isValidReactNode } from '../../../../utils/react-utils'
 
 function valuesFromObject(
@@ -224,31 +225,53 @@ function variableInfoFromVariableData(variableNamesInScope: VariableData): Array
   return info
 }
 
+function keepOnlyFirstMatch(variables: Array<VariableInfo>): Array<VariableInfo> {
+  let foundFirstMatch: boolean = false
+  let result: Array<VariableInfo> = []
+  for (const variable of variables) {
+    const matches = foundFirstMatch ? false : variable.matches
+    result.push({ ...variable, matches })
+    if (variable.matches) {
+      foundFirstMatch = true
+    }
+  }
+  return result
+}
+
 function orderVariablesForRelevance(
-  variableNamesInScope: Array<VariableInfo>,
+  variableNamesInScope_MUTABLE: Array<VariableInfo>,
   controlDescription: ControlDescription | null,
   currentPropertyValue: PropertyValue,
+  targetPropertyName: string,
+  mode: DataPickerFilterOption,
 ): Array<VariableInfo> {
+  let valuesExactlyMatchingPropertyName: Array<VariableInfo> = []
   let valuesExactlyMatchingPropertyDescription: Array<VariableInfo> = []
   let valuesMatchingPropertyDescription: Array<VariableInfo> = []
   let valuesMatchingPropertyShape: Array<VariableInfo> = []
   let valueElementMatches: Array<VariableInfo> = []
   let restOfValues: Array<VariableInfo> = []
 
-  for (let variable of variableNamesInScope) {
+  for (let variable of variableNamesInScope_MUTABLE) {
     if (variable.type === 'array') {
       variable.elements = orderVariablesForRelevance(
         variable.elements,
         controlDescription,
         currentPropertyValue,
+        targetPropertyName,
+        mode,
       )
     } else if (variable.type === 'object') {
       variable.props = orderVariablesForRelevance(
         variable.props,
         controlDescription,
         currentPropertyValue,
+        targetPropertyName,
+        mode,
       )
     }
+
+    const valueExactlyMatchesPropertyName = variable.expressionPathPart === targetPropertyName
 
     const valueExactlyMatchesControlDescription =
       controlDescription?.control === 'jsx' && React.isValidElement(variable.value)
@@ -265,7 +288,9 @@ function orderVariablesForRelevance(
       (variable.type === 'array' && variable.elements.some((e) => e.matches)) ||
       (variable.type === 'object' && variable.props.some((e) => e.matches))
 
-    if (valueExactlyMatchesControlDescription) {
+    if (valueExactlyMatchesPropertyName) {
+      valuesExactlyMatchingPropertyName.push({ ...variable, matches: true })
+    } else if (valueExactlyMatchesControlDescription) {
       valuesExactlyMatchingPropertyDescription.push({ ...variable, matches: true })
     } else if (valueMatchesControlDescription) {
       valuesMatchingPropertyDescription.push({ ...variable, matches: true })
@@ -278,13 +303,14 @@ function orderVariablesForRelevance(
     }
   }
 
-  return [
+  return keepOnlyFirstMatch([
+    ...valuesExactlyMatchingPropertyName,
     ...valuesExactlyMatchingPropertyDescription,
     ...valuesMatchingPropertyDescription,
     ...valuesMatchingPropertyShape,
     ...valueElementMatches,
     ...restOfValues,
-  ]
+  ])
 }
 
 const filterKeyFromObject =
@@ -310,9 +336,40 @@ const filterObjectPropFromVariablesInScope =
     return next
   }
 
+const keepLocalestScope =
+  () =>
+  (variablesInScope: VariableData): VariableData => {
+    let deepestInsertionCeiling = -Infinity
+    Object.values(variablesInScope).forEach((variable) => {
+      if (variable.insertionCeiling == null) {
+        return
+      }
+
+      deepestInsertionCeiling = Math.max(
+        deepestInsertionCeiling,
+        EP.fullDepth(variable.insertionCeiling),
+      )
+    })
+
+    const result: VariableData = {}
+    Object.entries(variablesInScope).forEach(([key, variable]) => {
+      if (variable.insertionCeiling == null) {
+        result[key] = variable
+        return
+      }
+
+      if (EP.fullDepth(variable.insertionCeiling) === deepestInsertionCeiling) {
+        result[key] = variable
+      }
+    })
+
+    return result
+  }
+
 export function useVariablesInScopeForSelectedElement(
   selectedView: ElementPath,
   propertyPath: PropertyPath,
+  mode: DataPickerFilterOption,
 ): Array<VariableOption> {
   const selectedViewPath = useEditorState(
     Substores.selectedViews,
@@ -341,6 +398,7 @@ export function useVariablesInScopeForSelectedElement(
     }
 
     variablesInScopeForSelectedPath = [
+      mode === 'preferred' ? keepLocalestScope() : identity,
       filterKeyFromObject('className'),
       filterKeyFromObject('data-uid'),
       filterKeyFromObject('style'),
@@ -357,12 +415,21 @@ export function useVariablesInScopeForSelectedElement(
       variableInfo,
       controlDescriptions,
       currentPropertyValue,
+      '' + PP.lastPart(propertyPath),
+      mode,
     )
 
     return orderedVariablesInScope.flatMap((variable) =>
       valuesFromVariable(variable, 0, variable.expression, [variable.expressionPathPart]),
     )
-  }, [controlDescriptions, currentPropertyValue, selectedViewPath, variablesInScope])
+  }, [
+    controlDescriptions,
+    currentPropertyValue,
+    mode,
+    selectedViewPath,
+    variablesInScope,
+    propertyPath,
+  ])
 
   return variableNamesInScope
 }

@@ -12,6 +12,8 @@ import type { DerivedState, EditorState } from '../editor/store/editor-state'
 import { RightMenuTab } from '../editor/store/editor-state'
 import { Substores, useEditorState } from '../editor/store/store-hook'
 import { setRightMenuTab } from '../editor/actions/action-creators'
+import { unless, when } from '../../utils/react-conditionals'
+import { IS_TEST_ENVIRONMENT } from '../../common/env-vars'
 
 export interface LeftPaneProps {
   editorState: EditorState
@@ -53,7 +55,7 @@ export const InsertMenuPane = React.memo(() => {
       style={{ width: '100%', height: '100%' }}
     >
       <SectionBodyArea minimised={false} style={{ height: '100%' }}>
-        <InsertMenu />
+        {when(IS_TEST_ENVIRONMENT, <InsertMenu />)}
       </SectionBodyArea>
     </Section>
   )
