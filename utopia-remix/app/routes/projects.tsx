@@ -1288,22 +1288,56 @@ function getOwnerName(ownerId: string, collaborators: Collaborator[]) {
   return collaborator?.name ?? 'Utopia user' // This is a fallback required in case we have misconfigured user details
 }
 
+function createCloneLink(
+  accessLevel: AccessLevel,
+  { cloneRepo, cloneBranch }: { cloneBranch?: string; cloneRepo?: string } = {},
+): string {
+  let accessLevelParam
+  switch (accessLevel) {
+    case AccessLevel.PUBLIC:
+      accessLevelParam = 'public'
+      break
+    case AccessLevel.WITH_LINK:
+      accessLevelParam = 'withLink'
+      break
+    case AccessLevel.COLLABORATIVE:
+      accessLevelParam = 'collaborative'
+      break
+    case AccessLevel.PRIVATE:
+      accessLevelParam = 'private'
+      break
+    default:
+      assertNever(accessLevel)
+  }
+  const cloneRepoParam = cloneRepo != null ? `&clone=${cloneRepo}` : ''
+  const cloneBranchParam = cloneBranch != null ? `&github_branch=${cloneBranch}` : ''
+  return `/p?accessLevel=${accessLevelParam}${cloneRepoParam}${cloneBranchParam}`
+}
+
 function ProjectTemplates() {
   const isDarkMode = useIsDarkMode()
   const projectTemplates = [
     {
       title: 'Public Project',
-      onClick: () => window.open('/p?accessLevel=public', '_blank'),
+      onClick: () => window.open(createCloneLink(AccessLevel.PUBLIC), '_blank'),
     },
     {
       title: 'Remix Project',
       onClick: () =>
-        window.open('/p?accessLevel=public&clone=concrete-utopia/hydrogen-november', '_blank'),
+        window.open(
+          createCloneLink(AccessLevel.PUBLIC, {
+            cloneRepo: 'concrete-utopia/utopia-remix-starter',
+          }),
+          '_blank',
+        ),
     },
     {
       title: 'Hydrogen Project',
       onClick: () =>
-        window.open('/p?accessLevel=public&clone=concrete-utopia/hydrogen-november', '_blank'),
+        window.open(
+          createCloneLink(AccessLevel.PUBLIC, { cloneRepo: 'concrete-utopia/hydrogen-november' }),
+          '_blank',
+        ),
     },
   ]
   return (
