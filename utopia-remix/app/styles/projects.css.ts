@@ -27,3 +27,22 @@ export const projectRows = recipe({
     },
   ],
 })
+
+export const projectTemplate = recipe({
+  base: [
+    {
+      border: '2px solid transparent',
+      borderRadius: '10px',
+      overflow: 'hidden',
+      height: '100%',
+      aspectRatio: '1.6 / 1',
+      background:
+        'linear-gradient(rgba(161, 161, 161, 0.19), rgba(161, 161, 161, 0.082)) no-repeat local',
+      position: 'relative',
+      width: '100%',
+      ':hover': {
+        border: '2px solid rgb(0, 144, 255)',
+      },
+    },
+  ],
+})

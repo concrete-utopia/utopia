@@ -32,7 +32,7 @@ import {
 } from '../models/project.server'
 import { getCollaborators } from '../models/projectCollaborators.server'
 import { button } from '../styles/button.css'
-import { projectCards, projectRows } from '../styles/projects.css'
+import { projectCards, projectRows, projectTemplate } from '../styles/projects.css'
 import { projectCategoryButton, userName } from '../styles/sidebarComponents.css'
 import { sprinkles } from '../styles/sprinkles.css'
 import type { Collaborator, CollaboratorsByProject, Operation, ProjectListing } from '../types'
@@ -159,7 +159,7 @@ const ProjectsPageInner = React.memo(() => {
   useCleanupOperations()
 
   const data = useLoaderData() as unknown as LoaderData
-
+  const searchQuery = useProjectsStore((store) => store.searchQuery)
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
 
   const activeProjects = React.useMemo(() => {
@@ -258,24 +258,7 @@ const ProjectsPageInner = React.memo(() => {
         }}
       >
         <TopActionBar />
-        {when(
-          isAllProjects,
-          <>
-            <Text
-              style={{
-                fontSize: '16px',
-                fontWeight: 600,
-                display: 'flex',
-                flex: 'none',
-                alignItems: 'center',
-                height: '32px',
-              }}
-            >
-              Create From Template
-            </Text>
-            <ProjectTemplates />
-          </>,
-        )}
+        {when(isAllProjects && searchQuery == '', <ProjectTemplates />)}
         <ProjectsHeader projects={filteredProjects} />
         <Projects projects={filteredProjects} collaborators={data.collaborators} />
         <ActiveOperations projects={activeProjects} />
@@ -1323,60 +1306,70 @@ function ProjectTemplates() {
     },
   ]
   return (
-    <Flex gap='4'>
-      {projectTemplates.map((template) => (
-        <Flex
-          key={template.title}
-          gap='5'
-          direction='column'
-          align='center'
-          style={{
-            flex: 1,
-            width: '100%',
-            maxWidth: '270px',
-            height: 'min-content',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 5,
-            cursor: 'pointer',
-          }}
-          onClick={template.onClick}
-        >
-          <div
-            style={{
-              border: '2px solid transparent',
-              borderRadius: '10px',
-              overflow: 'hidden',
-              height: '100%',
-              aspectRatio: '1.6 / 1',
-              background:
-                'linear-gradient(rgba(161, 161, 161, 0.19), rgba(161, 161, 161, 0.082)) no-repeat local',
-              position: 'relative',
-              width: '100%',
-            }}
-          ></div>
+    <Flex
+      direction='column'
+      gap='5'
+      style={{
+        padding: '10px 20px',
+        backgroundColor: 'rgba(0,0,0,0.05)',
+        borderRadius: '10px',
+      }}
+    >
+      <Text
+        style={{
+          fontSize: '16px',
+          fontWeight: 600,
+          display: 'flex',
+          flex: 'none',
+          alignItems: 'center',
+          height: '32px',
+        }}
+      >
+        Create From Template
+      </Text>
+      <Flex gap='4'>
+        {projectTemplates.map((template) => (
           <Flex
-            direction='column'
+            key={template.title}
             gap='5'
-            align='start'
+            direction='column'
+            align='center'
             style={{
+              flex: 1,
               width: '100%',
-              padding: '10px',
+              maxWidth: '220px',
+              height: 'min-content',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 5,
+              cursor: 'pointer',
             }}
+            onClick={template.onClick}
           >
-            <Text
-              size='1'
-              align='left'
+            <div className={projectTemplate()} style={{}}></div>
+            <Flex
+              direction='column'
+              gap='5'
+              align='start'
               style={{
-                fontWeight: 500,
-                alignSelf: 'flex-start',
+                width: '100%',
+                padding: '10px',
               }}
             >
-              {template.title}
-            </Text>
+              <Text
+                size='1'
+                align='left'
+                style={{
+                  fontWeight: 500,
+                  alignSelf: 'flex-start',
+                }}
+              >
+                {template.title}
+              </Text>
+            </Flex>
           </Flex>
-        </Flex>
-      ))}
+        ))}
+      </Flex>
     </Flex>
   )
 }
