@@ -1400,51 +1400,51 @@ describe('record variable values', () => {
     const editor = await renderTestEditorWithCode(ProjectWithVariables, 'await-first-dom-report')
     const { variablesInScope } = editor.getEditorState().editor
     expect(variablesInScope['sb/scene/pg:root']).toEqual<VariableData>({
-      definedInsideNumber: { spiedValue: 12, insertionCeiling: null },
+      definedInsideNumber: { spiedValue: 12, insertionCeiling: EP.fromString('sb/scene/pg') },
       definedInsideObject: {
         spiedValue: {
           prop: [33],
         },
-        insertionCeiling: null,
+        insertionCeiling: EP.fromString('sb/scene/pg'),
       },
-      definedInsideString: { spiedValue: 'hello', insertionCeiling: null },
-      functionResult: { spiedValue: 35, insertionCeiling: null },
+      definedInsideString: { spiedValue: 'hello', insertionCeiling: EP.fromString('sb/scene/pg') },
+      functionResult: { spiedValue: 35, insertionCeiling: EP.fromString('sb/scene/pg') },
       style: { spiedValue: {}, insertionCeiling: EP.fromString('sb/scene/pg') },
     })
     expect(variablesInScope['sb/scene/pg:root/111']).toEqual<VariableData>({
-      definedInsideNumber: { spiedValue: 12, insertionCeiling: null },
+      definedInsideNumber: { spiedValue: 12, insertionCeiling: EP.fromString('sb/scene/pg') },
       definedInsideObject: {
         spiedValue: {
           prop: [33],
         },
-        insertionCeiling: null,
+        insertionCeiling: EP.fromString('sb/scene/pg'),
       },
-      definedInsideString: { spiedValue: 'hello', insertionCeiling: null },
-      functionResult: { spiedValue: 35, insertionCeiling: null },
+      definedInsideString: { spiedValue: 'hello', insertionCeiling: EP.fromString('sb/scene/pg') },
+      functionResult: { spiedValue: 35, insertionCeiling: EP.fromString('sb/scene/pg') },
       style: { spiedValue: {}, insertionCeiling: EP.fromString('sb/scene/pg') },
     })
     expect(variablesInScope['sb/scene/pg:root/222']).toEqual<VariableData>({
-      definedInsideNumber: { spiedValue: 12, insertionCeiling: null },
+      definedInsideNumber: { spiedValue: 12, insertionCeiling: EP.fromString('sb/scene/pg') },
       definedInsideObject: {
         spiedValue: {
           prop: [33],
         },
-        insertionCeiling: null,
+        insertionCeiling: EP.fromString('sb/scene/pg'),
       },
-      definedInsideString: { spiedValue: 'hello', insertionCeiling: null },
-      functionResult: { spiedValue: 35, insertionCeiling: null },
+      definedInsideString: { spiedValue: 'hello', insertionCeiling: EP.fromString('sb/scene/pg') },
+      functionResult: { spiedValue: 35, insertionCeiling: EP.fromString('sb/scene/pg') },
       style: { spiedValue: {}, insertionCeiling: EP.fromString('sb/scene/pg') },
     })
     expect(variablesInScope['sb/scene/pg:root/333']).toEqual<VariableData>({
-      definedInsideNumber: { spiedValue: 12, insertionCeiling: null },
+      definedInsideNumber: { spiedValue: 12, insertionCeiling: EP.fromString('sb/scene/pg') },
       definedInsideObject: {
         spiedValue: {
           prop: [33],
         },
-        insertionCeiling: null,
+        insertionCeiling: EP.fromString('sb/scene/pg'),
       },
-      definedInsideString: { spiedValue: 'hello', insertionCeiling: null },
-      functionResult: { spiedValue: 35, insertionCeiling: null },
+      definedInsideString: { spiedValue: 'hello', insertionCeiling: EP.fromString('sb/scene/pg') },
+      functionResult: { spiedValue: 35, insertionCeiling: EP.fromString('sb/scene/pg') },
       style: { spiedValue: {}, insertionCeiling: EP.fromString('sb/scene/pg') },
     })
   })

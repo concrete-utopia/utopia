@@ -268,14 +268,16 @@ export function clearSelection(): EditorAction {
 
 export function insertJSXElement(
   element: JSXElement,
-  parent: ElementPath | null,
+  target: ElementPath | null,
   importsToAdd: Imports,
+  insertionBehaviour: 'insert-as-child' | 'replace-target',
 ): InsertJSXElement {
   return {
     action: 'INSERT_JSX_ELEMENT',
     jsxElement: element,
-    parent: parent,
+    target: target,
     importsToAdd: importsToAdd,
+    insertionBehaviour: insertionBehaviour,
   }
 }
 
