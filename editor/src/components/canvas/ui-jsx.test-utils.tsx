@@ -624,14 +624,17 @@ li,
 label {
   box-sizing: border-box !important;
 }`}</style>
-      <EditorRoot
-        dispatch={asyncTestDispatch as EditorDispatch}
-        mainStore={storeHook}
-        canvasStore={canvasStoreHook}
-        spyCollector={spyCollector}
-        lowPriorityStore={lowPriorityStoreHook}
-        domWalkerMutableState={domWalkerMutableState}
-      />
+      <div id='portal-target'></div>
+      <div id='utopia-editor-root'>
+        <EditorRoot
+          dispatch={asyncTestDispatch as EditorDispatch}
+          mainStore={storeHook}
+          canvasStore={canvasStoreHook}
+          spyCollector={spyCollector}
+          lowPriorityStore={lowPriorityStoreHook}
+          domWalkerMutableState={domWalkerMutableState}
+        />
+      </div>
     </React.Profiler>,
   )
 
