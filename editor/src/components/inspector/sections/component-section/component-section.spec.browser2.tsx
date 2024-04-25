@@ -23,7 +23,6 @@ import {
 import { createModifiedProject } from '../../../../sample-projects/sample-project-utils.test-utils'
 import { StoryboardFilePath } from '../../../editor/store/editor-state'
 import { applyPrettier } from 'utopia-vscode-common'
-import { ImagePreviewTestId } from './property-content-preview'
 
 describe('Set element prop via the data picker', () => {
   it('can pick from the property data picker', async () => {
@@ -37,7 +36,7 @@ describe('Set element prop via the data picker', () => {
     expect(dataPickerPopup).not.toBeNull()
 
     const theScene = editor.renderedDOM.getByTestId('scene')
-    const theInspector = editor.renderedDOM.getByTestId('inspector-sections-container')
+    const cartouche = editor.renderedDOM.getByTestId('control-for-prop-for-text')
 
     const options = getRenderedOptions(editor)
 
@@ -58,32 +57,31 @@ describe('Set element prop via the data picker', () => {
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
 
     expect(theScene.innerText).toEqual('Title too')
-    // expect(within(theInspector).queryByText('titleToo')).not.toBeNull()
+    expect(cartouche.innerText).toEqual(`titleToo‎`)
 
     // choose another string-valued variable
     currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId('1'))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(theScene.innerText).toEqual('Alternate title')
-    // expect(within(theInspector).queryByText('Alternate title')).not.toBeNull()
+    expect(cartouche.innerText).toEqual(`alternateTitle‎`)
 
     // choose an object prop
     currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId('2-0'))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(theScene.innerText).toEqual('The First Title')
-    // expect(within(theInspector).queryByText('The First Title')).not.toBeNull()
+    expect(cartouche.innerText).toEqual(`titles['one']‎`)
 
     // choose an object prop
     currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId('2-1'))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(theScene.innerText).toEqual('Sweet')
-    // expect(within(theInspector).queryByText('Sweet')).not.toBeNull()
+    expect(cartouche.innerText).toEqual(`titles['also JS']‎`)
 
     // choose an array element
     currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId('3-0'))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(theScene.innerText).toEqual('Chapter One')
-    // expect(within(theScene).queryByText('Chapter One')).not.toBeNull()
-    // expect(within(theInspector).queryByText('Chapter One')).not.toBeNull()
+    expect(cartouche.innerText).toEqual(`titleIdeas[0]‎`)
   })
 
   it('with number input control descriptor present', async () => {

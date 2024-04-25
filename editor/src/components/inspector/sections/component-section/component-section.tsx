@@ -460,6 +460,7 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
           style={{
             minWidth: 0, // this ensures that the div can never expand the allocated grid space
           }}
+          data-testid={`control-for-prop-for-${propName}`}
           ref={dataPickerButtonData.setReferenceElement}
         >
           <ControlForProp
