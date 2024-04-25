@@ -7,7 +7,6 @@ import type {
   ComponentInsertOption,
   ComponentExample,
   ChildrenSpec,
-  PlaceholderSpec as PlaceholderSpecFromUtopia,
   Children,
   PreferredContents,
 } from 'utopia-api/core'
@@ -35,7 +34,6 @@ import type {
   ComponentDescriptorSource,
   ComponentDescriptorWithName,
   ComponentInfo,
-  PlaceholderSpec,
   PropertyControlsInfo,
 } from '../../components/custom-code/code-file'
 import { dependenciesFromPackageJson } from '../../components/editor/npm-dependency/npm-dependency'
@@ -559,7 +557,6 @@ export function updatePropertyControlsOnDescriptorFileUpdate(
         supportsChildren: descriptor.supportsChildren,
         preferredChildComponents: descriptor.preferredChildComponents,
         variants: descriptor.variants,
-        childrenPropPlaceholder: descriptor.childrenPropPlaceholder,
         source: descriptor.source,
         focus: descriptor.focus,
         inspector: descriptor.inspector,
@@ -683,14 +680,10 @@ async function parseJSXControlDescription(
   descriptor: JSXControlDescriptionFromUtopia,
   context: { moduleName: string; workers: UtopiaTsWorkers },
 ): Promise<PropertyDescriptorResult<JSXControlDescription>> {
-  const placeholder =
-    descriptor.placeholder == null ? null : placeholderFromJSPlaceholder(descriptor.placeholder)
-
   if (descriptor.preferredContents == null) {
     return right({
       ...descriptor,
       preferredChildComponents: [],
-      placeholder: placeholder,
     })
   }
 
@@ -707,7 +700,6 @@ async function parseJSXControlDescription(
 
   return right({
     ...descriptor,
-    placeholder: placeholder,
     preferredChildComponents: preferredChildComponents.value,
   })
 }
@@ -797,16 +789,6 @@ async function makePropertyDescriptors(
   return right(result)
 }
 
-function placeholderFromJSPlaceholder(placeholder: PlaceholderSpecFromUtopia): PlaceholderSpec {
-  if (typeof placeholder === 'string') {
-    return { type: 'fill' }
-  }
-  if ('text' in placeholder) {
-    return { type: 'text', contents: placeholder.text }
-  }
-  return { type: 'spacer', width: placeholder.width, height: placeholder.height }
-}
-
 async function parsePreferredChildren(
   preferredContents: PreferredContents[],
   componentName: string,
@@ -888,20 +870,6 @@ export async function parsePreferredChildrenExamples(
   return descriptors
 }
 
-function parseChildrenPlaceholder(
-  componentToRegister: ComponentToRegister,
-): PlaceholderSpec | null {
-  if (
-    componentToRegister.children == null ||
-    typeof componentToRegister.children === 'string' ||
-    componentToRegister.children.placeholder == null
-  ) {
-    return null
-  }
-
-  return placeholderFromJSPlaceholder(componentToRegister.children.placeholder)
-}
-
 async function parseComponentVariants(
   componentToRegister: ComponentToRegister,
   componentName: string,
@@ -974,8 +942,6 @@ export async function componentDescriptorForComponentToRegister(
     return properties
   }
 
-  const placeholder = parseChildrenPlaceholder(componentToRegister)
-
   const supportsChildren =
     componentToRegister.children != null && componentToRegister.children !== 'not-supported'
 
@@ -987,7 +953,6 @@ export async function componentDescriptorForComponentToRegister(
     source: source,
     supportsChildren: supportsChildren,
     preferredChildComponents: childrenPropSpec.value,
-    childrenPropPlaceholder: placeholder,
     focus: componentToRegister.focus ?? ComponentDescriptorDefaults.focus,
     inspector: componentToRegister.inspector ?? ComponentDescriptorDefaults.inspector,
     emphasis: componentToRegister.emphasis ?? ComponentDescriptorDefaults.emphasis,
@@ -1058,26 +1023,9 @@ export function parsePreferredContents(value: unknown): ParseResult<PreferredCon
   )(value)
 }
 
-function parseTextPlaceholder(value: unknown): ParseResult<PlaceholderSpecFromUtopia> {
-  return mapEither((text) => ({ text }), objectKeyParser(parseString, 'text')(value))
-}
-
-function parseSpacerPlaceholder(value: unknown): ParseResult<PlaceholderSpecFromUtopia> {
-  return applicative2Either(
-    (width, height) => ({ width, height }),
-    objectKeyParser(parseNumber, 'width')(value),
-    objectKeyParser(parseNumber, 'height')(value),
-  )
-}
-
-export const parsePlaceholder = parseAlternative(
-  [parseConstant('fill'), parseTextPlaceholder, parseSpacerPlaceholder],
-  'Invalid placeholder value',
-)
-
-export function parseChildrenSpec(value: unknown): ParseResult<ChildrenSpec> {
-  return applicative2Either(
-    (preferredContents, placeholder) => ({ preferredContents, placeholder }),
+export const parseChildrenSpec = (value: unknown): ParseResult<ChildrenSpec> => {
+  return mapEither(
+    (preferredContents) => ({ preferredContents }),
     optionalObjectKeyParser(
       parseAlternative<PreferredContents | PreferredContents[]>(
         [parsePreferredContents, parseArray(parsePreferredContents)],
@@ -1085,7 +1033,6 @@ export function parseChildrenSpec(value: unknown): ParseResult<ChildrenSpec> {
       ),
       'preferredContents',
     )(value),
-    optionalObjectKeyParser(parsePlaceholder, 'placeholder')(value),
   )
 }
 
