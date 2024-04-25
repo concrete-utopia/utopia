@@ -361,6 +361,7 @@ export const SettingsPane = React.memo(() => {
           <div style={{ fontWeight: 500 }}>Contents</div>
           <HeadlessStringInput
             placeholder='Project Contents JSON'
+            testId='project-contents-json-input'
             onSubmitValue={loadProjectContentJson}
             css={{
               color: colorTheme.fg1.value,
