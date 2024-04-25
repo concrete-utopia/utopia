@@ -1318,6 +1318,7 @@ const projectTemplates = [
   {
     title: 'Public Project',
     onClick: () => window.open(createCloneLink(AccessLevel.PUBLIC), '_blank'),
+    thumbnail: '/assets/thumbnail-new.png',
   },
   {
     title: 'Remix Project',
@@ -1328,6 +1329,7 @@ const projectTemplates = [
         }),
         '_blank',
       ),
+    thumbnail: '/assets/thumbnail-remix.png',
   },
   {
     title: 'Hydrogen Project',
@@ -1336,6 +1338,7 @@ const projectTemplates = [
         createCloneLink(AccessLevel.PUBLIC, { cloneRepo: 'concrete-utopia/hydrogen-november' }),
         '_blank',
       ),
+    thumbnail: '/assets/thumbnail-hydrogen.png',
   },
 ]
 function ProjectTemplates() {
@@ -1372,7 +1375,7 @@ function ProjectTemplates() {
             style={{
               flex: 1,
               width: '100%',
-              maxWidth: '160px',
+              maxWidth: '200px',
               height: 'min-content',
               display: 'flex',
               flexDirection: 'column',
@@ -1381,7 +1384,15 @@ function ProjectTemplates() {
             }}
             onClick={template.onClick}
           >
-            <div className={projectTemplate()} style={{}}></div>
+            <div
+              className={projectTemplate()}
+              style={{
+                backgroundImage: `url(${template.thumbnail})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+              }}
+            ></div>
             <Flex
               direction='column'
               gap='5'
