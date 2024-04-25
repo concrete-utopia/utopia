@@ -58,7 +58,6 @@ import type { UtopiaTsWorkers } from '../workers/common/worker-types'
 import { getCachedParseResultForUserStrings } from './property-controls-local-parser-bridge'
 import type { Either } from '../shared/either'
 import {
-  applicative2Either,
   defaultEither,
   foldEither,
   forEachRight,
