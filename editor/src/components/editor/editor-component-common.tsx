@@ -77,7 +77,7 @@ function recreateEventHandlers(dispatch: EditorDispatch): void {
 
 export interface EditorCommonProps {
   mouseDown: MouseHandlerActions
-  mouseUp: MouseHandlerActions
+  mouseUp?: MouseHandlerActions
   keyDown?: KeyboardHandlerActions
   keyUp?: KeyboardHandlerActions
 }
@@ -88,7 +88,9 @@ export function EditorCommon(props: EditorCommonProps): React.ReactElement | nul
   const dispatch = useDispatch()
   React.useEffect(() => {
     mouseDownHandlers = [...mouseDownHandlers, props.mouseDown]
-    mouseUpHandlers = [...mouseUpHandlers, props.mouseUp]
+    if (props.mouseUp != null) {
+      mouseUpHandlers = [...mouseUpHandlers, props.mouseUp]
+    }
     if (props.keyDown != null) {
       keyDownHandlers = [...keyDownHandlers, props.keyDown]
     }
