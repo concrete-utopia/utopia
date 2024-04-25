@@ -1372,7 +1372,7 @@ function ProjectTemplates() {
             style={{
               flex: 1,
               width: '100%',
-              maxWidth: '220px',
+              maxWidth: '160px',
               height: 'min-content',
               display: 'flex',
               flexDirection: 'column',

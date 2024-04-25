@@ -35,7 +35,7 @@ export const projectTemplate = recipe({
       borderRadius: '10px',
       overflow: 'hidden',
       height: '100%',
-      aspectRatio: '1.6 / 1',
+      aspectRatio: '1 / 1',
       background:
         'linear-gradient(rgba(161, 161, 161, 0.19), rgba(161, 161, 161, 0.082)) no-repeat local',
       position: 'relative',
