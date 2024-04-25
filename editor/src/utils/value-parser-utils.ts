@@ -215,10 +215,10 @@ export function objectParser<Type>(
       checkedProps.add(key)
     }
 
-    const unnecessaryProps = [...difference(allProps, checkedProps)]
+    const unknownProps = [...difference(allProps, checkedProps)]
 
-    if (unnecessaryProps.length > 0) {
-      return left(descriptionParseError(`Found unnecessary props: ${unnecessaryProps.join(', ')}`))
+    if (unknownProps.length > 0) {
+      return left(descriptionParseError(`Found unknown props: ${unknownProps.join(', ')}`))
     }
 
     return right(partialResult as Type)

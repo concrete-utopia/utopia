@@ -154,7 +154,7 @@ describe('objectParser', () => {
       Object {
         "type": "LEFT",
         "value": Object {
-          "description": "Found unnecessary props: unnecessaryProp",
+          "description": "Found unknown props: unnecessaryProp",
           "type": "DESCRIPTION_PARSE_ERROR",
         },
       }
