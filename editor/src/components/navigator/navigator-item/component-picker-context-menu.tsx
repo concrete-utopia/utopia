@@ -32,7 +32,18 @@ import { type Icon } from 'utopia-api'
 import { getRegisteredComponent } from '../../../core/property-controls/property-controls-utils'
 import { defaultImportsForComponentModule } from '../../../core/property-controls/property-controls-local'
 import { useGetInsertableComponents } from '../../canvas/ui/floating-insert-menu'
-import { getInsertableGroupLabel } from '../../shared/project-components'
+import { atom, useAtom } from 'jotai'
+
+export type InsertionTarget = { prop: string } | 'replace-target' | 'insert-as-child'
+interface ComponentPickerContextMenuAtomData {
+  target: ElementPath
+  insertionTarget: InsertionTarget
+}
+
+export const ComponentPickerContextMenuAtom = atom<ComponentPickerContextMenuAtomData>({
+  target: EP.emptyElementPath,
+  insertionTarget: 'insert-as-child',
+})
 
 function getIconForComponent(
   targetName: string,
@@ -118,7 +129,7 @@ type ShowComponentPickerContextMenu = (
   params?: Pick<ContextMenuParams, 'id' | 'props' | 'position'> | undefined,
 ) => void
 
-export const useShowComponentPickerContextMenu = (
+const useShowComponentPickerContextMenuInner = (
   id: string,
 ): {
   showComponentPickerContextMenu: ShowComponentPickerContextMenu
@@ -137,6 +148,14 @@ export const useShowComponentPickerContextMenu = (
 
   return { showComponentPickerContextMenu: onClick, hideComponentPickerContextMenu: hideAll }
 }
+
+const ComponentPickerContextMenuId = 'component-picker-context-menu'
+const ComponentPickerContextMenuFullId = 'component-picker-context-menu-full'
+
+export const useShowComponentPickerContextMenu = () =>
+  useShowComponentPickerContextMenuInner(ComponentPickerContextMenuId)
+export const useShowComponentPickerContextMenuFull = () =>
+  useShowComponentPickerContextMenuInner(ComponentPickerContextMenuFullId)
 
 function defaultVariantItem(
   elementName: string,
@@ -255,13 +274,9 @@ function insertPreferredChild(
   dispatch([insertionAction])
 }
 
-export type InsertionTarget = { prop: string } | 'replace-target' | 'insert-as-child'
-
 interface ComponentPickerContextMenuProps {
   target: ElementPath
   insertionTarget: InsertionTarget
-  key: string
-  id: string
 }
 
 function iconPropsForIcon(icon: Icon): IcnProps {
@@ -298,8 +313,8 @@ export function labelTestIdForComponentIcon(
 }
 
 const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuProps>(
-  ({ id, target, insertionTarget }) => {
-    const { showComponentPickerContextMenu } = useShowComponentPickerContextMenu(`${id}-full`)
+  ({ target, insertionTarget }) => {
+    const { showComponentPickerContextMenu } = useShowComponentPickerContextMenuFull()
 
     const preferredChildrenForTarget = usePreferredChildrenForTarget(target, insertionTarget)
 
@@ -363,16 +378,14 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
 
     return (
       <div ref={wrapperRef}>
-        <MomentumContextMenu id={id} items={items} getData={NO_OP} />
+        <MomentumContextMenu id={ComponentPickerContextMenuId} items={items} getData={NO_OP} />
       </div>
     )
   },
 )
 
 const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProps>(
-  ({ id, target, insertionTarget }) => {
-    const { hideComponentPickerContextMenu } = useShowComponentPickerContextMenu(`${id}-full`)
-
+  ({ target, insertionTarget }) => {
     const allInsertableComponents = useGetInsertableComponents('insert').flatMap((g) => ({
       label: g.label,
       options: g.options,
@@ -405,35 +418,25 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
     }, [])
 
     return (
-      <Menu key={id} id={id} animation={false} style={{ width: 260 }} onClick={squashEvents}>
-        <ComponentPicker
-          insertionTargetName={(insertionTarget as any)?.prop ?? 'Child'} // This is horrible and needs to go in the bin anyway
-          allComponents={allInsertableComponents}
-          onItemClick={onItemClick}
-          onClickCloseButton={hideComponentPickerContextMenu}
-        />
+      <Menu
+        id={ComponentPickerContextMenuFullId}
+        animation={false}
+        style={{ width: 260 }}
+        onClick={squashEvents}
+      >
+        <ComponentPicker allComponents={allInsertableComponents} onItemClick={onItemClick} />
       </Menu>
     )
   },
 )
 
-export const ComponentPickerContextMenu = React.memo<ComponentPickerContextMenuProps>(
-  ({ id, target, insertionTarget }) => {
-    return (
-      <React.Fragment>
-        <ComponentPickerContextMenuSimple
-          target={target}
-          key={id}
-          id={id}
-          insertionTarget={insertionTarget}
-        />
-        <ComponentPickerContextMenuFull
-          target={target}
-          key={`${id}-full`}
-          id={`${id}-full`}
-          insertionTarget={insertionTarget}
-        />
-      </React.Fragment>
-    )
-  },
-)
+export const ComponentPickerContextMenu = React.memo(() => {
+  const [{ target, insertionTarget }] = useAtom(ComponentPickerContextMenuAtom)
+
+  return (
+    <React.Fragment>
+      <ComponentPickerContextMenuSimple target={target} insertionTarget={insertionTarget} />
+      <ComponentPickerContextMenuFull target={target} insertionTarget={insertionTarget} />
+    </React.Fragment>
+  )
+})

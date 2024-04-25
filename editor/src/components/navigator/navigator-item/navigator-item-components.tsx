@@ -20,6 +20,13 @@ import {
 import type { SelectionLocked } from '../../canvas/canvas-types'
 import { getJSXElementNameAsString } from '../../../core/shared/element-template'
 import { getRegisteredComponent } from '../../../core/property-controls/property-controls-utils'
+import {
+  ComponentPickerContextMenuAtom,
+  type InsertionTarget,
+  useShowComponentPickerContextMenu,
+  useShowComponentPickerContextMenuFull,
+} from './component-picker-context-menu'
+import { useSetAtom } from 'jotai'
 
 export const NavigatorHintCircleDiameter = 8
 
@@ -236,11 +243,35 @@ const useSupportsChildren = (target: ElementPath): 'all' | 'all-with-preferred' 
   )
 }
 
+function useShowComponentPickerForTarget(
+  target: ElementPath,
+  insertionTarget: InsertionTarget,
+): React.MouseEventHandler<HTMLDivElement> {
+  const { showComponentPickerContextMenu: showPreferredPicker } =
+    useShowComponentPickerContextMenu()
+  const { showComponentPickerContextMenu: showFullPicker } = useShowComponentPickerContextMenuFull()
+  const targetParent = insertionTarget === 'replace-target' ? EP.parentPath(target) : target
+  const showComponentPicker =
+    useSupportsChildren(targetParent) === 'all-with-preferred'
+      ? showPreferredPicker
+      : showFullPicker
+  const setContextMenuProps = useSetAtom(ComponentPickerContextMenuAtom)
+  return React.useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      setContextMenuProps({
+        target: target,
+        insertionTarget: insertionTarget,
+      })
+
+      showComponentPicker(e)
+    },
+    [target, insertionTarget, setContextMenuProps, showComponentPicker],
+  )
+}
+
 interface AddChildButtonProps {
   target: ElementPath
   iconColor: IcnProps['color']
-  showPreferredPicker: React.MouseEventHandler<HTMLDivElement>
-  showFullPicker: React.MouseEventHandler<HTMLDivElement>
 }
 
 export function addChildButtonTestId(target: ElementPath): string {
@@ -248,24 +279,22 @@ export function addChildButtonTestId(target: ElementPath): string {
 }
 
 const AddChildButton = React.memo((props: AddChildButtonProps) => {
-  const color = props.iconColor
-  const supportsChildren = useSupportsChildren(props.target)
+  const { target, iconColor } = props
+  const onClick = useShowComponentPickerForTarget(target, 'insert-as-child')
 
   return (
     <Button
-      onClick={
-        supportsChildren === 'all-with-preferred' ? props.showPreferredPicker : props.showFullPicker
-      }
+      onClick={onClick}
       style={{
         height: 12,
         width: 12,
       }}
-      data-testid={addChildButtonTestId(props.target)}
+      data-testid={addChildButtonTestId(target)}
     >
       <Icn
         category='semantic'
         type='plus-in-white-translucent-circle'
-        color={color}
+        color={iconColor}
         width={12}
         height={12}
       />
@@ -274,11 +303,12 @@ const AddChildButton = React.memo((props: AddChildButtonProps) => {
 })
 
 const ReplaceElementButton = React.memo((props: AddChildButtonProps) => {
-  const showPreferred = useSupportsChildren(EP.parentPath(props.target)) === 'all-with-preferred'
+  const { target } = props
+  const onClick = useShowComponentPickerForTarget(target, 'replace-target')
 
   return (
     <Button
-      onClick={showPreferred ? props.showPreferredPicker : props.showFullPicker}
+      onClick={onClick}
       style={{
         height: 12,
         width: 12,
@@ -394,10 +424,6 @@ interface NavigatorItemActionSheetProps {
   iconColor: IcnProps['color']
   background?: string | any
   dispatch: EditorDispatch
-  showInsertChildPickerPreferred: React.MouseEventHandler<HTMLDivElement>
-  showInsertChildPickerFull: React.MouseEventHandler<HTMLDivElement>
-  showReplaceElementPickerPreferred: React.MouseEventHandler<HTMLDivElement>
-  showReplaceElementPickerFull: React.MouseEventHandler<HTMLDivElement>
 }
 
 export const NavigatorItemActionSheet: React.FunctionComponent<
@@ -488,18 +514,8 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
       {(navigatorEntry.type === 'REGULAR' || navigatorEntry.type === 'RENDER_PROP_VALUE') &&
       (props.highlighted || props.selected) ? (
         <>
-          <AddChildButton
-            target={navigatorEntry.elementPath}
-            iconColor={props.iconColor}
-            showPreferredPicker={props.showInsertChildPickerPreferred}
-            showFullPicker={props.showInsertChildPickerFull}
-          />
-          <ReplaceElementButton
-            target={navigatorEntry.elementPath}
-            iconColor={props.iconColor}
-            showPreferredPicker={props.showReplaceElementPickerPreferred}
-            showFullPicker={props.showReplaceElementPickerFull}
-          />
+          <AddChildButton target={navigatorEntry.elementPath} iconColor={props.iconColor} />
+          <ReplaceElementButton target={navigatorEntry.elementPath} iconColor={props.iconColor} />
         </>
       ) : null}
       <SelectionLockedIndicator

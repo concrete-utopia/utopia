@@ -14,10 +14,8 @@ import { FlexRow, type Icon } from 'utopia-api'
 import { assertNever } from '../../../core/shared/utils'
 
 export interface ComponentPickerProps {
-  insertionTargetName: string
   allComponents: Array<InsertMenuItemGroup>
   onItemClick: (elementToInsert: ElementToInsert) => React.MouseEventHandler
-  onClickCloseButton?: React.MouseEventHandler
 }
 
 export interface ElementToInsert {
@@ -65,7 +63,6 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
         color: dark.fg3.value,
         borderRadius: 10,
       }}
-      data-testId={componentPickerTestIdForProp(props.insertionTargetName)}
     >
       <ComponentPickerTopSection onFilterChange={setFilter} />
       <ComponentPickerComponentSection

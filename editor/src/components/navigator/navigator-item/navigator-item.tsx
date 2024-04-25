@@ -56,12 +56,11 @@ import { ExpandableIndicator } from './expandable-indicator'
 import { ItemLabel } from './item-label'
 import { LayoutIcon } from './layout-icon'
 import { NavigatorItemActionSheet } from './navigator-item-components'
-import { CanvasContextMenuPortalTargetID, NO_OP, assertNever } from '../../../core/shared/utils'
+import { assertNever } from '../../../core/shared/utils'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { MapCounter } from './map-counter'
-import ReactDOM from 'react-dom'
 import {
-  ComponentPickerContextMenu,
+  ComponentPickerContextMenuAtom,
   useShowComponentPickerContextMenu,
 } from './component-picker-context-menu'
 import { getHighlightBoundsForProject } from '../../../core/model/project-file-utils'
@@ -71,6 +70,7 @@ import {
 } from '../../../core/vscode/vscode-bridge'
 import { toVSCodeExtensionMessage } from 'utopia-vscode-common'
 import type { Emphasis } from 'utopia-api'
+import { useSetAtom } from 'jotai'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -604,16 +604,6 @@ export const NavigatorItem: React.FunctionComponent<
     'NavigatorItem isConditionalDynamicBranch',
   )
 
-  const isContainingComponentRemixSceneOrOutlet = useEditorState(
-    Substores.metadata,
-    (store) =>
-      MetadataUtils.isContainingComponentRemixSceneOrOutlet(
-        store.editor.jsxMetadata,
-        navigatorEntry.elementPath,
-      ),
-    'NavigatorItem isInsideRemixOutlet',
-  )
-
   const childComponentCount = props.noOfChildren
 
   const isGenerated = MetadataUtils.isElementGenerated(navigatorEntry.elementPath)
@@ -865,20 +855,22 @@ export const NavigatorItem: React.FunctionComponent<
     )
   }, [childComponentCount, isFocusedComponent, isConditional])
 
-  const insertChildPickerId = varSafeNavigatorEntryToKey(navigatorEntry)
-  const insertChildPickerFullId = `${insertChildPickerId}-full`
-  const replaceElementPickerId = `${insertChildPickerId}-replace`
-  const replaceElementPickerFullId = `${replaceElementPickerId}-full`
-  const { showComponentPickerContextMenu: showInsertChildPicker } =
-    useShowComponentPickerContextMenu(insertChildPickerId)
-  const { showComponentPickerContextMenu: showInsertChildPickerFull } =
-    useShowComponentPickerContextMenu(insertChildPickerFullId)
-  const { showComponentPickerContextMenu: showReplaceElementPicker } =
-    useShowComponentPickerContextMenu(replaceElementPickerId)
-  const { showComponentPickerContextMenu: showReplaceElementPickerFull } =
-    useShowComponentPickerContextMenu(replaceElementPickerFullId)
+  const { showComponentPickerContextMenu } = useShowComponentPickerContextMenu()
 
-  const portalTarget = document.getElementById(CanvasContextMenuPortalTargetID)
+  const setContextMenuProps = useSetAtom(ComponentPickerContextMenuAtom)
+  const onClickSlot = React.useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (navigatorEntry.type === 'SLOT') {
+        setContextMenuProps({
+          target: EP.parentPath(navigatorEntry.elementPath),
+          insertionTarget: { prop: navigatorEntry.prop },
+        })
+
+        showComponentPickerContextMenu(e)
+      }
+    },
+    [navigatorEntry, setContextMenuProps, showComponentPickerContextMenu],
+  )
 
   const iconColor = isRemixItem
     ? 'remix'
@@ -909,45 +901,6 @@ export const NavigatorItem: React.FunctionComponent<
         outlineOffset: props.parentOutline === 'solid' ? '-1px' : 0,
       }}
     >
-      {portalTarget != null && navigatorEntry.type === 'SLOT'
-        ? ReactDOM.createPortal(
-            <ComponentPickerContextMenu
-              target={EP.parentPath(props.navigatorEntry.elementPath)}
-              key={insertChildPickerId}
-              id={insertChildPickerId}
-              insertionTarget={{ prop: navigatorEntry.prop }}
-            />,
-            portalTarget,
-          )
-        : null}
-      {portalTarget != null &&
-      (navigatorEntry.type === 'REGULAR' || navigatorEntry.type === 'RENDER_PROP_VALUE')
-        ? ReactDOM.createPortal(
-            <React.Fragment>
-              <ComponentPickerContextMenu
-                target={props.navigatorEntry.elementPath}
-                key={insertChildPickerId}
-                id={insertChildPickerId}
-                insertionTarget={'insert-as-child'}
-              />
-              <ComponentPickerContextMenu
-                target={
-                  navigatorEntry.type === 'RENDER_PROP_VALUE'
-                    ? EP.parentPath(props.navigatorEntry.elementPath)
-                    : props.navigatorEntry.elementPath
-                }
-                key={replaceElementPickerId}
-                id={replaceElementPickerId}
-                insertionTarget={
-                  navigatorEntry.type === 'RENDER_PROP_VALUE'
-                    ? { prop: navigatorEntry.prop }
-                    : 'replace-target'
-                }
-              />
-            </React.Fragment>,
-            portalTarget,
-          )
-        : null}
       <FlexRow
         data-testid={NavigatorItemTestId(varSafeNavigatorEntryToKey(navigatorEntry))}
         style={rowStyle}
@@ -958,7 +911,7 @@ export const NavigatorItem: React.FunctionComponent<
         {isPlaceholder ? (
           <div
             key={`label-${props.label}-slot`}
-            onClick={navigatorEntry.type === 'SLOT' ? showInsertChildPicker : NO_OP}
+            onClick={onClickSlot}
             style={{
               width: 140,
               height: 19,
@@ -1054,10 +1007,6 @@ export const NavigatorItem: React.FunctionComponent<
                 isSlot={isPlaceholder}
                 iconColor={iconColor}
                 background={rowStyle.background}
-                showInsertChildPickerPreferred={showInsertChildPicker}
-                showInsertChildPickerFull={showInsertChildPickerFull}
-                showReplaceElementPickerPreferred={showReplaceElementPicker}
-                showReplaceElementPickerFull={showReplaceElementPickerFull}
               />,
             )}
           </FlexRow>
