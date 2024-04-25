@@ -1289,6 +1289,7 @@ function getOwnerName(ownerId: string, collaborators: Collaborator[]) {
 }
 
 function ProjectTemplates() {
+  const isDarkMode = useIsDarkMode()
   const projectTemplates = [
     {
       title: 'Public Project',
@@ -1311,7 +1312,7 @@ function ProjectTemplates() {
       gap='5'
       style={{
         padding: '10px 20px',
-        backgroundColor: 'rgba(0,0,0,0.05)',
+        backgroundColor: isDarkMode ? '#232323' : 'rgba(0,0,0,0.05)',
         borderRadius: '10px',
       }}
     >
