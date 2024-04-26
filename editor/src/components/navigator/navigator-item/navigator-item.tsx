@@ -71,6 +71,7 @@ import {
 } from '../../../core/vscode/vscode-bridge'
 import { toVSCodeExtensionMessage } from 'utopia-vscode-common'
 import type { Emphasis } from 'utopia-api'
+import { contextMenu } from 'react-contexify'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -870,9 +871,11 @@ export const NavigatorItem: React.FunctionComponent<
     : resultingStyle.iconColor
 
   const currentlyRenaming = EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath)
+  const hideContextMenu = React.useCallback(() => contextMenu.hideAll(), [])
 
   return (
     <div
+      onClick={hideContextMenu}
       style={{
         outline: `1px solid ${
           props.parentOutline === 'solid' && isOutletOrDescendantOfOutlet
