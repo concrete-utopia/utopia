@@ -77,6 +77,7 @@ describe('github helpers', () => {
     }
 
     function mockFetchUser() {
+      // TODO this is because every runGithubOperation calls getUserDetailsFromServer, this should really go!
       mockFetch.mockResolvedValueOnce(
         new Response(
           JSON.stringify({
