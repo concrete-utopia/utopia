@@ -1056,7 +1056,9 @@ export async function refreshGithubData(
   dispatch(actions, 'everyone')
 }
 
-async function sequentialPromiseAllSettled<T>(promises: Promise<T>[]) {
+async function sequentialPromiseAllSettled<T>(
+  promises: Promise<T>[],
+): Promise<Array<PromiseSettledResult<T>>> {
   function toSettledResult(promise: Promise<T>): Promise<PromiseSettledResult<T>> {
     return promise.then(
       (value) => ({ status: 'fulfilled', value: value }),
@@ -1064,7 +1066,7 @@ async function sequentialPromiseAllSettled<T>(promises: Promise<T>[]) {
     )
   }
 
-  let results: PromiseSettledResult<T>[] = []
+  let results: Array<PromiseSettledResult<T>> = []
   for await (const result of promises.map(toSettledResult)) {
     results.push(result)
   }
