@@ -3740,7 +3740,7 @@ export const UPDATE_FNS = {
   UPDATE_GITHUB_DATA: (action: UpdateGithubData, editor: EditorModel): EditorModel => {
     const newPublicRepos = [
       ...editor.githubData.publicRepositories,
-      ...(action.data.userRepositories ?? []),
+      ...(action.data.publicRepositories ?? []),
     ]
     return {
       ...editor,
