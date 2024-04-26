@@ -20,7 +20,7 @@ import {
 import { UIGridRow } from '../../../../components/inspector/widgets/ui-grid-row'
 import type { RepositoryEntry } from '../../../../core/shared/github/helpers'
 import { connectRepo, parseGithubProjectString } from '../../../../core/shared/github/helpers'
-import { when } from '../../../../utils/react-conditionals'
+import { unless, when } from '../../../../utils/react-conditionals'
 import { Button, colorTheme, FlexColumn, FlexRow, StringInput } from '../../../../uuiui'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
@@ -140,8 +140,8 @@ const RepositoryRow = (props: RepositoryRowProps) => {
       <div>
         <Ellipsis style={{ maxWidth: 170 }}>{props.fullName}</Ellipsis>
         <span style={{ fontSize: 10, opacity: 0.5 }}>
-          {when(
-            !props.searchable,
+          {unless(
+            props.searchable,
             <React.Fragment>
               {props.isPrivate ? 'private' : 'public'}
               {props.updatedAt == null ? null : (
