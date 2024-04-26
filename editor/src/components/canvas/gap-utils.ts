@@ -106,7 +106,6 @@ function inset(sidess: Sides, rect: CanvasRectangle): CanvasRectangle {
 
 export function gapControlBoundsFromMetadata(
   elementMetadata: ElementInstanceMetadataMap,
-  pathTrees: ElementPathTrees,
   parentPath: ElementPath,
   children: ElementPath[],
   gap: number,
@@ -154,11 +153,29 @@ export interface FlexGapData {
   direction: FlexDirection
 }
 
-export function maybeFlexGapFromElementChild(
-  metadata: ElementInstanceMetadataMap,
-  elementPath: ElementPath,
-): FlexGapData | null {
+function getFlexGapFromProps(metadata: ElementInstanceMetadataMap, elementPath: ElementPath) {
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  if (
+    element == null ||
+    element.specialSizeMeasurements.display !== 'flex' ||
+    isLeft(element.element) ||
+    !isJSXElement(element.element.value)
+  ) {
+    return null
+  }
+
+  return defaultEither(
+    null,
+    getLayoutProperty('gap', right(element.element.value.props), styleStringInArray),
+  )
+}
+
+export function maybeFlexGapData(
+  metadata: ElementInstanceMetadataMap,
+  parentPath: ElementPath,
+  childPath: ElementPath,
+): FlexGapData | null {
+  const element = MetadataUtils.findElementByElementPath(metadata, childPath)
   if (element == null) {
     return null
   }
@@ -166,7 +183,9 @@ export function maybeFlexGapFromElementChild(
   return {
     value: {
       renderedValuePx: element.specialSizeMeasurements.parentFlexGap,
-      value: cssNumber(element.specialSizeMeasurements.parentFlexGap),
+      value:
+        getFlexGapFromProps(metadata, parentPath) ??
+        cssNumber(element.specialSizeMeasurements.parentFlexGap),
     },
     direction: element.specialSizeMeasurements.parentFlexDirection ?? 'row',
   }

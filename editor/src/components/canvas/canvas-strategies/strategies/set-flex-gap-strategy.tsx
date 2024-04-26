@@ -25,11 +25,7 @@ import { FlexGapControl } from '../../controls/select-mode/flex-gap-control'
 import type { FloatingIndicatorProps } from '../../controls/select-mode/floating-number-indicator'
 import { FloatingIndicator } from '../../controls/select-mode/floating-number-indicator'
 import type { FlexGapData } from '../../gap-utils'
-import {
-  cursorFromFlexDirection,
-  dragDeltaForOrientation,
-  maybeFlexGapFromElementChild,
-} from '../../gap-utils'
+import { cursorFromFlexDirection, dragDeltaForOrientation, maybeFlexGapData } from '../../gap-utils'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
 import type { InteractionCanvasState } from '../canvas-strategy-types'
@@ -60,18 +56,18 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
   }
 
   const selectedElement = selectedElements[0]
-  const children = MetadataUtils.getNonCodeChildrenUnordered(
+  const childrenPaths = MetadataUtils.getNonCodeChildrenUnordered(
     canvasState.startingMetadata,
     selectedElement,
-  )
+  ).map((c) => c.elementPath)
 
-  if (children.length < 2) {
+  if (childrenPaths.length < 2) {
     return null
   }
 
   if (
     !areAllSiblingsInOneDimensionFlexOrFlow(
-      children[0].elementPath,
+      childrenPaths[0],
       canvasState.startingMetadata,
       canvasState.startingElementPathTree,
     )
@@ -79,10 +75,7 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
     return null
   }
 
-  const flexGap = maybeFlexGapFromElementChild(
-    canvasState.startingMetadata,
-    children[0].elementPath,
-  )
+  const flexGap = maybeFlexGapData(canvasState.startingMetadata, selectedElement, childrenPaths[0])
   if (flexGap == null) {
     return null
   }
@@ -172,7 +165,7 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
           printCSSNumber(updatedFlexGapMeasurement.value, null),
         ),
         setCursorCommand(cursorFromFlexDirection(flexGap.direction)),
-        setElementsToRerenderCommand([...selectedElements, ...children.map((c) => c.elementPath)]),
+        setElementsToRerenderCommand([...selectedElements, ...childrenPaths]),
         setActiveFrames([
           {
             action: 'set-gap',

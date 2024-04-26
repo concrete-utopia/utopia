@@ -24,7 +24,7 @@ import { createInteractionViaMouse, flexGapHandle } from '../../canvas-strategie
 import { windowToCanvasCoordinates } from '../../dom-lookup'
 import {
   cursorFromFlexDirection,
-  maybeFlexGapFromElementChild,
+  maybeFlexGapData,
   gapControlBoundsFromMetadata,
 } from '../../gap-utils'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
@@ -95,11 +95,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
     (store) => store.editor.jsxMetadata,
     'FlexGapControl metadata',
   )
-  const pathTrees = useEditorState(
-    Substores.metadata,
-    (store) => store.editor.elementPathTree,
-    'FlexGapControl pathTrees',
-  )
+
   const isDragging = useEditorState(
     Substores.canvas,
     (store) => store.editor.canvas.interactionSession?.activeControl.type === 'FLEX_GAP_HANDLE',
@@ -116,7 +112,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
   )
 
   const children = MetadataUtils.getNonCodeChildrenUnordered(metadata, selectedElement)
-  const flexGap = maybeFlexGapFromElementChild(metadata, children[0].elementPath)
+  const flexGap = maybeFlexGapData(metadata, selectedElement, children[0].elementPath)
   if (flexGap == null) {
     return null
   }
@@ -125,7 +121,6 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
 
   const controlBounds = gapControlBoundsFromMetadata(
     metadata,
-    pathTrees,
     selectedElement,
     children.map((c) => c.elementPath),
     flexGapValue.renderedValuePx,
