@@ -1,19 +1,20 @@
 import type { ElementPath } from '../core/shared/project-file-types'
+import * as EP from '../core/shared/element-path'
 import type {
   DerivedState,
   EditorState,
   NavigatorEntry,
 } from '../components/editor/store/editor-state'
-import { regularNavigatorEntry } from '../components/editor/store/editor-state'
 import type { LocalNavigatorAction } from '../components/navigator/actions'
 import { NavigatorStateKeepDeepEquality } from '../components/editor/store/store-deep-equality-instances'
 
-// Currently only "real" elements can be selected, we produce the selected entries
-// directly from `selectedViews`.
 export function getSelectedNavigatorEntries(
   selectedViews: Array<ElementPath>,
+  navigatorEntries: Array<NavigatorEntry>,
 ): Array<NavigatorEntry> {
-  return selectedViews.map(regularNavigatorEntry)
+  return navigatorEntries.filter((v) =>
+    selectedViews.some((selectedView) => EP.pathsEqual(selectedView, v.elementPath)),
+  )
 }
 
 export const runLocalNavigatorAction = function (

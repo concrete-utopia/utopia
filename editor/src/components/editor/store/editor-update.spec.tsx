@@ -636,9 +636,14 @@ describe('INSERT_JSX_ELEMENT', () => {
       jsxAttributesFromMap({ 'data-uid': jsExpressionValue('TestView', emptyComments) }),
       [],
     )
-    const insertAction = insertJSXElement(elementToInsert, parentPath, {
-      'utopia-api': importDetails(null, [importAlias('View')], null),
-    })
+    const insertAction = insertJSXElement(
+      elementToInsert,
+      parentPath,
+      {
+        'utopia-api': importDetails(null, [importAlias('View')], null),
+      },
+      'insert-as-child',
+    )
     const updatedEditor = runLocalEditorAction(
       editor,
       derivedState,
@@ -717,9 +722,14 @@ describe('INSERT_JSX_ELEMENT', () => {
       jsxAttributesFromMap({ 'data-uid': jsExpressionValue('TestView', emptyComments) }),
       [],
     )
-    const insertAction = insertJSXElement(elementToInsert, null, {
-      'utopia-api': importDetails(null, [importAlias('View')], null),
-    })
+    const insertAction = insertJSXElement(
+      elementToInsert,
+      null,
+      {
+        'utopia-api': importDetails(null, [importAlias('View')], null),
+      },
+      'insert-as-child',
+    )
     const updatedEditor = runLocalEditorAction(
       editorWithNoHighlighted,
       derivedState,

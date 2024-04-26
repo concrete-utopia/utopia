@@ -7,7 +7,6 @@ import type {
   ComponentInsertOption,
   ComponentExample,
   ChildrenSpec,
-  PlaceholderSpec as PlaceholderSpecFromUtopia,
   Children,
   PreferredContents,
 } from 'utopia-api/core'
@@ -35,7 +34,6 @@ import type {
   ComponentDescriptorSource,
   ComponentDescriptorWithName,
   ComponentInfo,
-  PlaceholderSpec,
   PropertyControlsInfo,
 } from '../../components/custom-code/code-file'
 import { dependenciesFromPackageJson } from '../../components/editor/npm-dependency/npm-dependency'
@@ -44,7 +42,9 @@ import type { ParseError, ParseResult } from '../../utils/value-parser-utils'
 import {
   getParseErrorDetails,
   objectKeyParser,
+  objectParser,
   optionalObjectKeyParser,
+  optionalProp,
   parseAlternative,
   parseAny,
   parseArray,
@@ -58,9 +58,6 @@ import type { UtopiaTsWorkers } from '../workers/common/worker-types'
 import { getCachedParseResultForUserStrings } from './property-controls-local-parser-bridge'
 import type { Either } from '../shared/either'
 import {
-  applicative2Either,
-  applicative3Either,
-  applicative8Either,
   defaultEither,
   foldEither,
   forEachRight,
@@ -559,7 +556,6 @@ export function updatePropertyControlsOnDescriptorFileUpdate(
         supportsChildren: descriptor.supportsChildren,
         preferredChildComponents: descriptor.preferredChildComponents,
         variants: descriptor.variants,
-        childrenPropPlaceholder: descriptor.childrenPropPlaceholder,
         source: descriptor.source,
         focus: descriptor.focus,
         inspector: descriptor.inspector,
@@ -683,14 +679,10 @@ async function parseJSXControlDescription(
   descriptor: JSXControlDescriptionFromUtopia,
   context: { moduleName: string; workers: UtopiaTsWorkers },
 ): Promise<PropertyDescriptorResult<JSXControlDescription>> {
-  const placeholder =
-    descriptor.placeholder == null ? null : placeholderFromJSPlaceholder(descriptor.placeholder)
-
   if (descriptor.preferredContents == null) {
     return right({
       ...descriptor,
       preferredChildComponents: [],
-      placeholder: placeholder,
     })
   }
 
@@ -707,7 +699,6 @@ async function parseJSXControlDescription(
 
   return right({
     ...descriptor,
-    placeholder: placeholder,
     preferredChildComponents: preferredChildComponents.value,
   })
 }
@@ -797,16 +788,6 @@ async function makePropertyDescriptors(
   return right(result)
 }
 
-function placeholderFromJSPlaceholder(placeholder: PlaceholderSpecFromUtopia): PlaceholderSpec {
-  if (typeof placeholder === 'string') {
-    return { type: 'fill' }
-  }
-  if ('text' in placeholder) {
-    return { type: 'text', contents: placeholder.text }
-  }
-  return { type: 'spacer', width: placeholder.width, height: placeholder.height }
-}
-
 async function parsePreferredChildren(
   preferredContents: PreferredContents[],
   componentName: string,
@@ -888,20 +869,6 @@ export async function parsePreferredChildrenExamples(
   return descriptors
 }
 
-function parseChildrenPlaceholder(
-  componentToRegister: ComponentToRegister,
-): PlaceholderSpec | null {
-  if (
-    componentToRegister.children == null ||
-    typeof componentToRegister.children === 'string' ||
-    componentToRegister.children.placeholder == null
-  ) {
-    return null
-  }
-
-  return placeholderFromJSPlaceholder(componentToRegister.children.placeholder)
-}
-
 async function parseComponentVariants(
   componentToRegister: ComponentToRegister,
   componentName: string,
@@ -974,8 +941,6 @@ export async function componentDescriptorForComponentToRegister(
     return properties
   }
 
-  const placeholder = parseChildrenPlaceholder(componentToRegister)
-
   const supportsChildren =
     componentToRegister.children != null && componentToRegister.children !== 'not-supported'
 
@@ -987,7 +952,6 @@ export async function componentDescriptorForComponentToRegister(
     source: source,
     supportsChildren: supportsChildren,
     preferredChildComponents: childrenPropSpec.value,
-    childrenPropPlaceholder: placeholder,
     focus: componentToRegister.focus ?? ComponentDescriptorDefaults.focus,
     inspector: componentToRegister.inspector ?? ComponentDescriptorDefaults.inspector,
     emphasis: componentToRegister.emphasis ?? ComponentDescriptorDefaults.emphasis,
@@ -999,29 +963,16 @@ function fullyParsePropertyControls(value: unknown): ParseResult<PropertyControl
   return parseObject(parseControlDescription)(value)
 }
 
-export function parseComponentInsertOption(value: unknown): ParseResult<ComponentInsertOption> {
-  return applicative3Either(
-    (code, imports, label) => {
-      let insertOption: ComponentInsertOption = {
-        code: code,
-        label: label,
-      }
-
-      setOptionalProp(insertOption, 'imports', imports)
-
-      return insertOption
-    },
-    objectKeyParser(parseString, 'code')(value),
-    optionalObjectKeyParser(
-      parseAlternative<string | string[]>(
-        [parseString, parseArray(parseString)],
-        'Invalid imports prop',
-      ),
-      'imports',
-    )(value),
-    objectKeyParser(parseString, 'label')(value),
-  )
-}
+export const parseComponentInsertOption = objectParser<ComponentInsertOption>({
+  code: parseString,
+  label: parseString,
+  imports: optionalProp(
+    parseAlternative<string | string[]>(
+      [parseString, parseArray(parseString)],
+      'Invalid imports prop',
+    ),
+  ),
+})
 
 const parseComponentName = (value: unknown) =>
   mapEither((name) => ({ name }), objectKeyParser(parseString, 'name')(value))
@@ -1034,23 +985,18 @@ export const parseComponentExample = parseAlternative<ComponentExample>(
 )
 
 export function parsePreferredContents(value: unknown): ParseResult<PreferredContents> {
-  const parsePreferredComponentObject = (v: unknown) =>
-    applicative3Either(
-      (component, moduleName, variants) => {
-        const preferredContents: PreferredContents = { component, variants }
-        setOptionalProp(preferredContents, 'moduleName', moduleName)
-        return preferredContents
-      },
-      objectKeyParser(parseString, 'component')(v),
-      optionalObjectKeyParser(parseString, 'moduleName')(v),
-      objectKeyParser(
-        parseAlternative<ComponentExample | ComponentExample[]>(
-          [parseComponentExample, parseArray(parseComponentExample)],
-          'Invalid preferred content',
-        ),
-        'variants',
-      )(v),
-    )
+  const parsePreferredComponentObject = objectParser<{
+    component: string
+    moduleName?: string
+    variants: ComponentExample | ComponentExample[]
+  }>({
+    component: parseString,
+    moduleName: optionalProp(parseString),
+    variants: parseAlternative<ComponentExample | ComponentExample[]>(
+      [parseComponentExample, parseArray(parseComponentExample)],
+      'Invalid preferred content',
+    ),
+  })
 
   return parseAlternative<PreferredContents>(
     [parseConstant('text'), parsePreferredComponentObject],
@@ -1058,26 +1004,9 @@ export function parsePreferredContents(value: unknown): ParseResult<PreferredCon
   )(value)
 }
 
-function parseTextPlaceholder(value: unknown): ParseResult<PlaceholderSpecFromUtopia> {
-  return mapEither((text) => ({ text }), objectKeyParser(parseString, 'text')(value))
-}
-
-function parseSpacerPlaceholder(value: unknown): ParseResult<PlaceholderSpecFromUtopia> {
-  return applicative2Either(
-    (width, height) => ({ width, height }),
-    objectKeyParser(parseNumber, 'width')(value),
-    objectKeyParser(parseNumber, 'height')(value),
-  )
-}
-
-export const parsePlaceholder = parseAlternative(
-  [parseConstant('fill'), parseTextPlaceholder, parseSpacerPlaceholder],
-  'Invalid placeholder value',
-)
-
-export function parseChildrenSpec(value: unknown): ParseResult<ChildrenSpec> {
-  return applicative2Either(
-    (preferredContents, placeholder) => ({ preferredContents, placeholder }),
+export const parseChildrenSpec = (value: unknown): ParseResult<ChildrenSpec> => {
+  return mapEither(
+    (preferredContents) => ({ preferredContents }),
     optionalObjectKeyParser(
       parseAlternative<PreferredContents | PreferredContents[]>(
         [parsePreferredContents, parseArray(parsePreferredContents)],
@@ -1085,61 +1014,34 @@ export function parseChildrenSpec(value: unknown): ParseResult<ChildrenSpec> {
       ),
       'preferredContents',
     )(value),
-    optionalObjectKeyParser(parsePlaceholder, 'placeholder')(value),
   )
 }
 
-function parseComponentToRegister(value: unknown): ParseResult<ComponentToRegister> {
-  return applicative8Either(
-    (
-      component,
-      properties,
-      variants,
-      children,
-      focus,
-      inspector,
-      emphasis,
-      icon,
-    ): ComponentToRegister => {
-      return {
-        component: component,
-        properties: properties,
-        children: children,
-        variants: variants,
-        focus: focus,
-        inspector: inspector,
-        emphasis: emphasis,
-        icon: icon,
-      }
-    },
-    objectKeyParser(parseAny, 'component')(value),
-    objectKeyParser(fullyParsePropertyControls, 'properties')(value),
-    optionalObjectKeyParser(
-      parseAlternative<ComponentExample | Array<ComponentExample>>(
-        [parseComponentInsertOption, parseArray(parseComponentInsertOption)],
-        'Invalid variants prop',
-      ),
-      'variants',
-    )(value),
-    optionalObjectKeyParser(
-      parseAlternative<Children>(
-        [parseConstant('supported'), parseConstant('not-supported'), parseChildrenSpec],
-        'Invalid children prop',
-      ),
-      'children',
-    )(value),
-    optionalObjectKeyParser(parseEnum(FocusOptions), 'focus')(value),
-    optionalObjectKeyParser(
-      parseAlternative<'all' | Styling[]>(
-        [parseConstant('all'), parseArray(parseEnum(StylingOptions))],
-        'inspector value invalid',
-      ),
-      'inspector',
-    )(value),
-    optionalObjectKeyParser(parseEnum(EmphasisOptions), 'emphasis')(value),
-    optionalObjectKeyParser(parseEnum(IconOptions), 'icon')(value),
-  )
-}
+const parseComponentToRegister = objectParser<ComponentToRegister>({
+  component: parseAny,
+  properties: fullyParsePropertyControls,
+  variants: optionalProp(
+    parseAlternative<ComponentExample | Array<ComponentExample>>(
+      [parseComponentInsertOption, parseArray(parseComponentInsertOption)],
+      'Invalid variants prop',
+    ),
+  ),
+  children: optionalProp(
+    parseAlternative<Children>(
+      [parseConstant('supported'), parseConstant('not-supported'), parseChildrenSpec],
+      'Invalid children prop',
+    ),
+  ),
+  focus: optionalProp(parseEnum(FocusOptions)),
+  inspector: optionalProp(
+    parseAlternative<'all' | Styling[]>(
+      [parseConstant('all'), parseArray(parseEnum(StylingOptions))],
+      'inspector value invalid',
+    ),
+  ),
+  emphasis: optionalProp(parseEnum(EmphasisOptions)),
+  icon: optionalProp(parseEnum(IconOptions)),
+})
 
 export const parseComponents: (
   value: unknown,

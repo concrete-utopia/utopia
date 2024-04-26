@@ -1073,7 +1073,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
       React.createElement(CanvasComponentEntry, {}),
       canvasControls,
       React.createElement(CursorComponent, {}),
-      <EditorCommon mouseDown={this.handleMouseDown} mouseUp={this.handleMouseUp} />,
+      <EditorCommon mouseDown={this.handleMouseDown} />,
     )
   }
 

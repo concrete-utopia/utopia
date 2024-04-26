@@ -145,8 +145,9 @@ export type ClearSelection = {
 export interface InsertJSXElement {
   action: 'INSERT_JSX_ELEMENT'
   jsxElement: JSXElement
-  parent: ElementPath | null
+  target: ElementPath | null
   importsToAdd: Imports
+  insertionBehaviour: 'insert-as-child' | 'replace-target'
 }
 
 export interface InsertAttributeOtherJavascriptIntoElement {

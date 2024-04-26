@@ -71,7 +71,11 @@ import { useIsLoggedIn, useLiveblocksConnectionListener } from '../../core/share
 import { ForkSearchParamKey, ProjectForkFlow } from './project-fork-flow'
 import { isRoomId, projectIdToRoomId } from '../../utils/room-id'
 import { SharingDialog } from './sharing-dialog'
-import { AccessLevelParamKey, CloneParamKey } from './persistence/persistence-backend'
+import {
+  AccessLevelParamKey,
+  CloneParamKey,
+  GithubBranchParamKey,
+} from './persistence/persistence-backend'
 import { useUpdateActiveRemixSceneOnSelectionChange } from '../canvas/remix/utopia-remix-root-component'
 import { useDefaultCollapsedViews } from './use-default-collapsed-views'
 
@@ -91,6 +95,7 @@ function pushProjectURLToBrowserHistory(
   // remove one-time creation params
   queryParams.delete(AccessLevelParamKey)
   queryParams.delete(CloneParamKey)
+  queryParams.delete(GithubBranchParamKey)
 
   const queryParamsStr = queryParams.size > 0 ? `?${queryParams.toString()}` : ''
 

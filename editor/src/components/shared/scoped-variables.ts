@@ -142,7 +142,10 @@ function getContainerPropsValue(
       if (isJSXAttributesEntry(prop)) {
         const value = simplifyAttributeIfPossible(prop.value)
         if (isJSXAttributeValue(value)) {
-          runtimeProps[prop.key] = { spiedValue: value.value as unknown, insertionCeiling: null }
+          runtimeProps[prop.key] = {
+            spiedValue: value.value as unknown,
+            insertionCeiling: elementPath,
+          }
         }
       }
     })

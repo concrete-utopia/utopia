@@ -114,7 +114,6 @@ describe('registered property controls', () => {
     expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
       Object {
         "Card": Object {
-          "childrenPropPlaceholder": null,
           "emphasis": "regular",
           "focus": "default",
           "icon": "regular",
@@ -221,7 +220,6 @@ describe('registered property controls', () => {
     expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
       Object {
         "Card": Object {
-          "childrenPropPlaceholder": null,
           "emphasis": "regular",
           "focus": "default",
           "icon": "regular",
@@ -359,6 +357,58 @@ describe('registered property controls', () => {
             source: 'component-descriptor',
             startColumn: 25,
             startLine: 4,
+            type: '',
+          },
+        ],
+      },
+    })
+
+    const srcCardKey = Object.keys(renderResult.getEditorState().editor.propertyControlsInfo).find(
+      (key) => key === '/src/card',
+    )
+
+    expect(srcCardKey).toBeUndefined()
+  })
+  it('control registration fails when there is an unknown prop in the component descriptor', async () => {
+    const renderResult = await renderTestEditorWithModel(
+      project({
+        ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
+        
+        const Components = {
+      '/src/card': {
+        Card: {
+          component: Card,
+          inpector: 'all',
+          properties: { },
+          variants: [ ],
+        },
+      },
+    }
+    
+    export default Components
+  `,
+      }),
+      'await-first-dom-report',
+    )
+    const editorState = renderResult.getEditorState().editor
+
+    expect(editorState.codeEditorErrors).toEqual({
+      buildErrors: {},
+      lintErrors: {},
+      componentDescriptorErrors: {
+        '/utopia/components.utopia.js': [
+          {
+            codeSnippet: '',
+            endColumn: null,
+            endLine: null,
+            errorCode: '',
+            fileName: '/utopia/components.utopia.js',
+            message: 'Malformed component registration: Card: Found unknown props: inpector',
+            passTime: null,
+            severity: 'fatal',
+            source: 'component-descriptor',
+            startColumn: null,
+            startLine: null,
             type: '',
           },
         ],
@@ -785,7 +835,6 @@ describe('registered property controls', () => {
     expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
       Object {
         "Card": Object {
-          "childrenPropPlaceholder": null,
           "emphasis": "regular",
           "focus": "default",
           "icon": "regular",
@@ -896,7 +945,6 @@ describe('registered property controls', () => {
         },
         Card2: {
           component: Card2,
-          supportsChildren: false,
           properties: {
             label: {
               control: 'string-input',
@@ -976,7 +1024,6 @@ describe('registered property controls', () => {
         '/src/card2': {
           Card2: {
             component: Card2,
-            supportsChildren: false,
             properties: {
               label: {
                 control: 'string-input',
@@ -1186,14 +1233,10 @@ describe('registered property controls', () => {
       const cardRegistration = editorState.propertyControlsInfo['/src/card']['Card']
       expect(cardRegistration).not.toBeUndefined()
 
-      const propsToCheck = pick(
-        ['childrenPropPlaceholder', 'preferredChildComponents', 'supportsChildren'],
-        cardRegistration,
-      )
+      const propsToCheck = pick(['preferredChildComponents', 'supportsChildren'], cardRegistration)
 
       expect(propsToCheck).toMatchInlineSnapshot(`
         Object {
-          "childrenPropPlaceholder": null,
           "preferredChildComponents": Array [],
           "supportsChildren": false,
         }
@@ -1225,14 +1268,10 @@ describe('registered property controls', () => {
       const cardRegistration = editorState.propertyControlsInfo['/src/card']['Card']
       expect(cardRegistration).not.toBeUndefined()
 
-      const propsToCheck = pick(
-        ['childrenPropPlaceholder', 'preferredChildComponents', 'supportsChildren'],
-        cardRegistration,
-      )
+      const propsToCheck = pick(['preferredChildComponents', 'supportsChildren'], cardRegistration)
 
       expect(propsToCheck).toMatchInlineSnapshot(`
         Object {
-          "childrenPropPlaceholder": null,
           "preferredChildComponents": Array [],
           "supportsChildren": true,
         }
@@ -1264,14 +1303,10 @@ describe('registered property controls', () => {
       const cardRegistration = editorState.propertyControlsInfo['/src/card']['Card']
       expect(cardRegistration).not.toBeUndefined()
 
-      const propsToCheck = pick(
-        ['childrenPropPlaceholder', 'preferredChildComponents', 'supportsChildren'],
-        cardRegistration,
-      )
+      const propsToCheck = pick(['preferredChildComponents', 'supportsChildren'], cardRegistration)
 
       expect(propsToCheck).toMatchInlineSnapshot(`
         Object {
-          "childrenPropPlaceholder": null,
           "preferredChildComponents": Array [],
           "supportsChildren": false,
         }
@@ -1305,14 +1340,10 @@ describe('registered property controls', () => {
       const cardRegistration = editorState.propertyControlsInfo['/src/card']['Card']
       expect(cardRegistration).not.toBeUndefined()
 
-      const propsToCheck = pick(
-        ['childrenPropPlaceholder', 'preferredChildComponents', 'supportsChildren'],
-        cardRegistration,
-      )
+      const propsToCheck = pick(['preferredChildComponents', 'supportsChildren'], cardRegistration)
 
       expect(propsToCheck).toMatchInlineSnapshot(`
         Object {
-          "childrenPropPlaceholder": null,
           "preferredChildComponents": Array [
             Object {
               "moduleName": null,
@@ -1343,7 +1374,6 @@ describe('registered property controls', () => {
             component: Card,
             properties: { },
             children: {
-              placeholder: { text: "Content" },
               preferredContents: [
                 { component: 'span', variants: { name: 'span' } },
                 {
@@ -1377,17 +1407,10 @@ describe('registered property controls', () => {
       const cardRegistration = editorState.propertyControlsInfo['/src/card']['Card']
       expect(cardRegistration).not.toBeUndefined()
 
-      const propsToCheck = pick(
-        ['childrenPropPlaceholder', 'preferredChildComponents', 'supportsChildren'],
-        cardRegistration,
-      )
+      const propsToCheck = pick(['preferredChildComponents', 'supportsChildren'], cardRegistration)
 
       expect(propsToCheck).toMatchInlineSnapshot(`
         Object {
-          "childrenPropPlaceholder": Object {
-            "contents": "Content",
-            "type": "text",
-          },
           "preferredChildComponents": Array [
             Object {
               "moduleName": null,
@@ -1468,15 +1491,12 @@ describe('registered property controls', () => {
             properties: {
               label: {
                 control: 'jsx',
-                placeholder: { width: 200, height: 200 }
               },
               header: {
                 control: 'jsx',
-                placeholder: { text: 'Header' }
               },
               footer: {
                 control: 'jsx',
-                placeholder: 'fill'
               }
             }
           },
@@ -1500,26 +1520,14 @@ describe('registered property controls', () => {
           "properties": Object {
             "footer": Object {
               "control": "jsx",
-              "placeholder": Object {
-                "type": "fill",
-              },
               "preferredChildComponents": Array [],
             },
             "header": Object {
               "control": "jsx",
-              "placeholder": Object {
-                "contents": "Header",
-                "type": "text",
-              },
               "preferredChildComponents": Array [],
             },
             "label": Object {
               "control": "jsx",
-              "placeholder": Object {
-                "height": 200,
-                "type": "spacer",
-                "width": 200,
-              },
               "preferredChildComponents": Array [],
             },
           },
@@ -1540,7 +1548,6 @@ describe('registered property controls', () => {
             properties: {
               label: {
                 control: 'jsx',
-                placeholder: { width: 200, height: 200 },
                 preferredContents: [
                   { component: 'span', variants: { name: 'span' } },
                   {
@@ -1575,7 +1582,6 @@ describe('registered property controls', () => {
       expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
         Object {
           "Card": Object {
-            "childrenPropPlaceholder": null,
             "emphasis": "regular",
             "focus": "default",
             "icon": "regular",
@@ -1584,11 +1590,6 @@ describe('registered property controls', () => {
             "properties": Object {
               "label": Object {
                 "control": "jsx",
-                "placeholder": Object {
-                  "height": 200,
-                  "type": "spacer",
-                  "width": 200,
-                },
                 "preferredChildComponents": Array [
                   Object {
                     "moduleName": null,

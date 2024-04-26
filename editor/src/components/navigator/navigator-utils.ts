@@ -25,6 +25,7 @@ import {
   isConditionalClauseNavigatorEntry,
   regularNavigatorEntry,
   renderPropNavigatorEntry,
+  renderPropValueNavigatorEntry,
   slotNavigatorEntry,
   syntheticNavigatorEntry,
 } from '../editor/store/editor-state'
@@ -96,20 +97,28 @@ export function getNavigatorTargets(
   let navigatorTargets: Array<NavigatorEntry> = []
   let visibleNavigatorTargets: Array<NavigatorEntry> = []
 
-  function walkAndAddKeys(subTree: ElementPathTree | null, collapsedAncestor: boolean): void {
+  function walkAndAddKeys(
+    subTree: ElementPathTree | null,
+    collapsedAncestor: boolean,
+    propName: string | null,
+  ): void {
     if (subTree != null) {
       const path = subTree.path
       const isHiddenInNavigator = EP.containsPath(path, hiddenInNavigator)
       const isConditional = MetadataUtils.isElementPathConditionalFromMetadata(metadata, path)
       const isMap = MetadataUtils.isJSXMapExpression(path, metadata)
       // const isComponent = MetadataUtils.isComponentInstance(path, metadata)
-      navigatorTargets.push(regularNavigatorEntry(path))
+      const navigatorTarget =
+        propName == null
+          ? regularNavigatorEntry(path)
+          : renderPropValueNavigatorEntry(path, propName)
+      navigatorTargets.push(navigatorTarget)
       if (
         !collapsedAncestor &&
         !isHiddenInNavigator &&
         !MetadataUtils.isElementTypeHiddenInNavigator(path, metadata, elementPathTree)
       ) {
-        visibleNavigatorTargets.push(regularNavigatorEntry(path))
+        visibleNavigatorTargets.push(navigatorTarget)
       }
       // We collect the paths which are shown in render props, so we can filter them out from regular
       // children to avoid duplications.
@@ -154,7 +163,7 @@ export function getNavigatorTargets(
           )
           if (subTreeChild != null) {
             processedPathsAsRenderProp.add(EP.toString(subTreeChild.path))
-            walkAndAddKeys(subTreeChild, collapsedAncestor)
+            walkAndAddKeys(subTreeChild, collapsedAncestor, prop)
           } else {
             const synthEntry = syntheticNavigatorEntry(childPath, propValue)
             addNavigatorTargetsUnlessCollapsed(synthEntry)
@@ -227,7 +236,7 @@ export function getNavigatorTargets(
           return EP.pathsEqual(childPath.path, clausePath)
         })
         if (clausePathTrees.length > 0) {
-          clausePathTrees.map((t) => walkAndAddKeys(t, newCollapsedAncestor))
+          clausePathTrees.map((t) => walkAndAddKeys(t, newCollapsedAncestor, null))
         }
 
         // Create the entry for the value of the clause.
@@ -270,7 +279,7 @@ export function getNavigatorTargets(
             ? commentFlag.value
             : null
           fastForEach(Object.values(subTree.children), (child) => {
-            walkAndAddKeys(child, newCollapsedAncestor)
+            walkAndAddKeys(child, newCollapsedAncestor, null)
           })
           if (mapCountOverride != null) {
             for (let i = Object.values(subTree.children).length; i < mapCountOverride; i++) {
@@ -297,7 +306,7 @@ export function getNavigatorTargets(
           addNavigatorTargetsUnlessCollapsed(entry)
         }
         fastForEach(notRenderPropChildren, (child) => {
-          walkAndAddKeys(child, newCollapsedAncestor)
+          walkAndAddKeys(child, newCollapsedAncestor, null)
         })
       }
     }
@@ -307,7 +316,7 @@ export function getNavigatorTargets(
   fastForEach(canvasRoots, (childElement) => {
     const subTree = getSubTree(projectTree, childElement.path)
 
-    walkAndAddKeys(subTree, false)
+    walkAndAddKeys(subTree, false, null)
   })
 
   return {
