@@ -42,7 +42,9 @@ import type { ParseError, ParseResult } from '../../utils/value-parser-utils'
 import {
   getParseErrorDetails,
   objectKeyParser,
+  objectParser,
   optionalObjectKeyParser,
+  optionalProp,
   parseAlternative,
   parseAny,
   parseArray,
@@ -56,9 +58,6 @@ import type { UtopiaTsWorkers } from '../workers/common/worker-types'
 import { getCachedParseResultForUserStrings } from './property-controls-local-parser-bridge'
 import type { Either } from '../shared/either'
 import {
-  applicative2Either,
-  applicative3Either,
-  applicative8Either,
   defaultEither,
   foldEither,
   forEachRight,
@@ -964,29 +963,16 @@ function fullyParsePropertyControls(value: unknown): ParseResult<PropertyControl
   return parseObject(parseControlDescription)(value)
 }
 
-export function parseComponentInsertOption(value: unknown): ParseResult<ComponentInsertOption> {
-  return applicative3Either(
-    (code, imports, label) => {
-      let insertOption: ComponentInsertOption = {
-        code: code,
-        label: label,
-      }
-
-      setOptionalProp(insertOption, 'imports', imports)
-
-      return insertOption
-    },
-    objectKeyParser(parseString, 'code')(value),
-    optionalObjectKeyParser(
-      parseAlternative<string | string[]>(
-        [parseString, parseArray(parseString)],
-        'Invalid imports prop',
-      ),
-      'imports',
-    )(value),
-    objectKeyParser(parseString, 'label')(value),
-  )
-}
+export const parseComponentInsertOption = objectParser<ComponentInsertOption>({
+  code: parseString,
+  label: parseString,
+  imports: optionalProp(
+    parseAlternative<string | string[]>(
+      [parseString, parseArray(parseString)],
+      'Invalid imports prop',
+    ),
+  ),
+})
 
 const parseComponentName = (value: unknown) =>
   mapEither((name) => ({ name }), objectKeyParser(parseString, 'name')(value))
@@ -999,23 +985,18 @@ export const parseComponentExample = parseAlternative<ComponentExample>(
 )
 
 export function parsePreferredContents(value: unknown): ParseResult<PreferredContents> {
-  const parsePreferredComponentObject = (v: unknown) =>
-    applicative3Either(
-      (component, moduleName, variants) => {
-        const preferredContents: PreferredContents = { component, variants }
-        setOptionalProp(preferredContents, 'moduleName', moduleName)
-        return preferredContents
-      },
-      objectKeyParser(parseString, 'component')(v),
-      optionalObjectKeyParser(parseString, 'moduleName')(v),
-      objectKeyParser(
-        parseAlternative<ComponentExample | ComponentExample[]>(
-          [parseComponentExample, parseArray(parseComponentExample)],
-          'Invalid preferred content',
-        ),
-        'variants',
-      )(v),
-    )
+  const parsePreferredComponentObject = objectParser<{
+    component: string
+    moduleName?: string
+    variants: ComponentExample | ComponentExample[]
+  }>({
+    component: parseString,
+    moduleName: optionalProp(parseString),
+    variants: parseAlternative<ComponentExample | ComponentExample[]>(
+      [parseComponentExample, parseArray(parseComponentExample)],
+      'Invalid preferred content',
+    ),
+  })
 
   return parseAlternative<PreferredContents>(
     [parseConstant('text'), parsePreferredComponentObject],
@@ -1036,57 +1017,31 @@ export const parseChildrenSpec = (value: unknown): ParseResult<ChildrenSpec> => 
   )
 }
 
-function parseComponentToRegister(value: unknown): ParseResult<ComponentToRegister> {
-  return applicative8Either(
-    (
-      component,
-      properties,
-      variants,
-      children,
-      focus,
-      inspector,
-      emphasis,
-      icon,
-    ): ComponentToRegister => {
-      return {
-        component: component,
-        properties: properties,
-        children: children,
-        variants: variants,
-        focus: focus,
-        inspector: inspector,
-        emphasis: emphasis,
-        icon: icon,
-      }
-    },
-    objectKeyParser(parseAny, 'component')(value),
-    objectKeyParser(fullyParsePropertyControls, 'properties')(value),
-    optionalObjectKeyParser(
-      parseAlternative<ComponentExample | Array<ComponentExample>>(
-        [parseComponentInsertOption, parseArray(parseComponentInsertOption)],
-        'Invalid variants prop',
-      ),
-      'variants',
-    )(value),
-    optionalObjectKeyParser(
-      parseAlternative<Children>(
-        [parseConstant('supported'), parseConstant('not-supported'), parseChildrenSpec],
-        'Invalid children prop',
-      ),
-      'children',
-    )(value),
-    optionalObjectKeyParser(parseEnum(FocusOptions), 'focus')(value),
-    optionalObjectKeyParser(
-      parseAlternative<'all' | Styling[]>(
-        [parseConstant('all'), parseArray(parseEnum(StylingOptions))],
-        'inspector value invalid',
-      ),
-      'inspector',
-    )(value),
-    optionalObjectKeyParser(parseEnum(EmphasisOptions), 'emphasis')(value),
-    optionalObjectKeyParser(parseEnum(IconOptions), 'icon')(value),
-  )
-}
+const parseComponentToRegister = objectParser<ComponentToRegister>({
+  component: parseAny,
+  properties: fullyParsePropertyControls,
+  variants: optionalProp(
+    parseAlternative<ComponentExample | Array<ComponentExample>>(
+      [parseComponentInsertOption, parseArray(parseComponentInsertOption)],
+      'Invalid variants prop',
+    ),
+  ),
+  children: optionalProp(
+    parseAlternative<Children>(
+      [parseConstant('supported'), parseConstant('not-supported'), parseChildrenSpec],
+      'Invalid children prop',
+    ),
+  ),
+  focus: optionalProp(parseEnum(FocusOptions)),
+  inspector: optionalProp(
+    parseAlternative<'all' | Styling[]>(
+      [parseConstant('all'), parseArray(parseEnum(StylingOptions))],
+      'inspector value invalid',
+    ),
+  ),
+  emphasis: optionalProp(parseEnum(EmphasisOptions)),
+  icon: optionalProp(parseEnum(IconOptions)),
+})
 
 export const parseComponents: (
   value: unknown,

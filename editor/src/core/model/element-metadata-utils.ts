@@ -1609,7 +1609,7 @@ export const MetadataUtils = {
             case 'JSX_TEXT_BLOCK':
               return '(text)'
             case 'JSX_MAP_EXPRESSION':
-              return 'Map'
+              return 'List'
             case 'ATTRIBUTE_OTHER_JAVASCRIPT':
               return 'Code'
             case 'JSX_FRAGMENT':

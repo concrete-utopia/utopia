@@ -369,6 +369,58 @@ describe('registered property controls', () => {
 
     expect(srcCardKey).toBeUndefined()
   })
+  it('control registration fails when there is an unknown prop in the component descriptor', async () => {
+    const renderResult = await renderTestEditorWithModel(
+      project({
+        ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
+        
+        const Components = {
+      '/src/card': {
+        Card: {
+          component: Card,
+          inpector: 'all',
+          properties: { },
+          variants: [ ],
+        },
+      },
+    }
+    
+    export default Components
+  `,
+      }),
+      'await-first-dom-report',
+    )
+    const editorState = renderResult.getEditorState().editor
+
+    expect(editorState.codeEditorErrors).toEqual({
+      buildErrors: {},
+      lintErrors: {},
+      componentDescriptorErrors: {
+        '/utopia/components.utopia.js': [
+          {
+            codeSnippet: '',
+            endColumn: null,
+            endLine: null,
+            errorCode: '',
+            fileName: '/utopia/components.utopia.js',
+            message: 'Malformed component registration: Card: Found unknown props: inpector',
+            passTime: null,
+            severity: 'fatal',
+            source: 'component-descriptor',
+            startColumn: null,
+            startLine: null,
+            type: '',
+          },
+        ],
+      },
+    })
+
+    const srcCardKey = Object.keys(renderResult.getEditorState().editor.propertyControlsInfo).find(
+      (key) => key === '/src/card',
+    )
+
+    expect(srcCardKey).toBeUndefined()
+  })
   it('control registration fails when there is an invalid schema error', async () => {
     const renderResult = await renderTestEditorWithModel(
       project({
@@ -893,7 +945,6 @@ describe('registered property controls', () => {
         },
         Card2: {
           component: Card2,
-          supportsChildren: false,
           properties: {
             label: {
               control: 'string-input',
@@ -973,7 +1024,6 @@ describe('registered property controls', () => {
         '/src/card2': {
           Card2: {
             component: Card2,
-            supportsChildren: false,
             properties: {
               label: {
                 control: 'string-input',

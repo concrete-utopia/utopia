@@ -345,7 +345,7 @@ describe('Navigator item row icons', () => {
     await checkNavigatorLabel(visibleNavigatorTargets[11], null)
     await checkNavigatorLabel(visibleNavigatorTargets[12], 'CODE')
     await checkNavigatorLabel(visibleNavigatorTargets[13], 'div')
-    await checkNavigatorLabel(visibleNavigatorTargets[14], 'MAP')
+    await checkNavigatorLabel(visibleNavigatorTargets[14], 'LIST')
     await checkNavigatorLabel(visibleNavigatorTargets[15], 'div')
     await checkNavigatorLabel(visibleNavigatorTargets[16], 'Fragment')
     await checkNavigatorLabel(visibleNavigatorTargets[17], 'div')
