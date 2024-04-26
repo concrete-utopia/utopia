@@ -361,9 +361,10 @@ export function fixUtopiaElement(
   }
 
   function addAndMaybeUpdateUID(currentUID: string): string {
-    const fixedUID = uniqueIDsMutable.has(currentUID)
-      ? generateConsistentUID(currentUID, uniqueIDsMutable)
-      : currentUID
+    const fixedUID =
+      uniqueIDsMutable.has(currentUID) || currentUID === ''
+        ? generateConsistentUID(currentUID, uniqueIDsMutable)
+        : currentUID
     if (fixedUID !== currentUID) {
       mappings.push({ originalUID: currentUID, newUID: fixedUID })
     }
