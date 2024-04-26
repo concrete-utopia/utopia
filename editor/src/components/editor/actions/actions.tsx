@@ -15,6 +15,7 @@ import {
   insertJSXElementChildren,
   renameJsxElementChild,
   renameJsxElementChildWithoutId,
+  transformJSXComponentAtPath,
 } from '../../../core/model/element-template-utils'
 import {
   applyToAllUIJSFiles,
@@ -2387,22 +2388,45 @@ export const UPDATE_FNS = {
     const withNewElement = modifyUnderlyingTarget(
       parentPath,
       editor,
-      (element) => {
-        if (!isJSXMapExpression(element)) {
-          return element
-        }
-
-        const uidToUse = Object.keys(element.elementsWithin)[0] ?? action.jsxElement.uid
-        return {
-          ...element,
-          elementsWithin: { [uidToUse]: { ...action.jsxElement, uid: uidToUse } },
-        }
-      },
+      (element) => element,
       (success, _, underlyingFilePath) => {
-        const { imports } = mergeImports(underlyingFilePath, success.imports, action.importsToAdd)
+        const startingComponents = getUtopiaJSXComponentsFromSuccess(success)
+        const updatedImports = mergeImports(
+          underlyingFilePath,
+          success.imports,
+          action.importsToAdd,
+        )
+
+        const renamedJsxElement = renameJsxElementChild(
+          action.jsxElement,
+          updatedImports.duplicateNameMapping,
+        )
+
+        const withInsertedElement = transformJSXComponentAtPath(
+          startingComponents,
+          EP.dynamicPathToStaticPath(parentPath),
+          (parentElement) => {
+            if (!isJSXMapExpression(parentElement)) {
+              return parentElement
+            }
+
+            const uidToUse = Object.keys(parentElement.elementsWithin)[0] ?? renamedJsxElement.uid
+            return {
+              ...parentElement,
+              elementsWithin: { [uidToUse]: { ...renamedJsxElement, uid: uidToUse } },
+            }
+          },
+        )
+
+        const updatedTopLevelElements = applyUtopiaJSXComponentsChanges(
+          success.topLevelElements,
+          withInsertedElement,
+        )
+
         return {
           ...success,
-          imports: imports,
+          topLevelElements: updatedTopLevelElements,
+          imports: updatedImports.imports,
         }
       },
     )
