@@ -59,10 +59,7 @@ import { NavigatorItemActionSheet } from './navigator-item-components'
 import { assertNever } from '../../../core/shared/utils'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { MapCounter } from './map-counter'
-import {
-  ComponentPickerContextMenuAtom,
-  useShowComponentPickerContextMenu,
-} from './component-picker-context-menu'
+import { useShowComponentPickerContextMenu } from './component-picker-context-menu'
 import { getHighlightBoundsForProject } from '../../../core/model/project-file-utils'
 import {
   selectedElementChangedMessageFromHighlightBounds,
@@ -855,21 +852,16 @@ export const NavigatorItem: React.FunctionComponent<
     )
   }, [childComponentCount, isFocusedComponent, isConditional])
 
-  const { showComponentPickerContextMenu } = useShowComponentPickerContextMenu()
-
-  const setContextMenuProps = useSetAtom(ComponentPickerContextMenuAtom)
-  const onClickSlot = React.useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      if (navigatorEntry.type === 'SLOT') {
-        setContextMenuProps({
+  const pickerProps =
+    navigatorEntry.type === 'SLOT'
+      ? {
           target: EP.parentPath(navigatorEntry.elementPath),
           insertionTarget: { prop: navigatorEntry.prop },
-        })
-
-        showComponentPickerContextMenu(e)
-      }
-    },
-    [navigatorEntry, setContextMenuProps, showComponentPickerContextMenu],
+        }
+      : null
+  const { showComponentPickerContextMenu } = useShowComponentPickerContextMenu(
+    pickerProps,
+    'preferred',
   )
 
   const iconColor = isRemixItem
@@ -911,7 +903,7 @@ export const NavigatorItem: React.FunctionComponent<
         {isPlaceholder ? (
           <div
             key={`label-${props.label}-slot`}
-            onClick={onClickSlot}
+            onClick={showComponentPickerContextMenu}
             style={{
               width: 140,
               height: 19,

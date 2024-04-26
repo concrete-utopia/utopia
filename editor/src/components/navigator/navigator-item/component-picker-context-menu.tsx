@@ -32,7 +32,7 @@ import { type Icon } from 'utopia-api'
 import { getRegisteredComponent } from '../../../core/property-controls/property-controls-utils'
 import { defaultImportsForComponentModule } from '../../../core/property-controls/property-controls-local'
 import { useGetInsertableComponents } from '../../canvas/ui/floating-insert-menu'
-import { atom, useAtom } from 'jotai'
+import { atom, useAtom, useSetAtom } from 'jotai'
 
 export type InsertionTarget = { prop: string } | 'replace-target' | 'insert-as-child'
 interface ComponentPickerContextMenuAtomData {
@@ -40,7 +40,7 @@ interface ComponentPickerContextMenuAtomData {
   insertionTarget: InsertionTarget
 }
 
-export const ComponentPickerContextMenuAtom = atom<ComponentPickerContextMenuAtomData>({
+const ComponentPickerContextMenuAtom = atom<ComponentPickerContextMenuAtomData>({
   target: EP.emptyElementPath,
   insertionTarget: 'insert-as-child',
 })
@@ -63,10 +63,10 @@ interface PreferredChildComponentDescriptorWithIcon extends PreferredChildCompon
   icon: Icon
 }
 
-const usePreferredChildrenForTarget = (
+export const usePreferredChildrenForTarget = (
   target: ElementPath,
   insertionTarget: InsertionTarget,
-): Array<PreferredChildComponentDescriptorWithIcon> => {
+): Array<PreferredChildComponentDescriptorWithIcon> | 'none' => {
   const targetParent = insertionTarget === 'replace-target' ? EP.parentPath(target) : target
 
   const targetElement = useEditorState(
@@ -81,7 +81,7 @@ const usePreferredChildrenForTarget = (
       const targetJSXElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(targetElement)
       const elementImportInfo = targetElement?.importInfo
       if (elementImportInfo == null || targetJSXElement == null) {
-        return null
+        return 'none'
       }
 
       const targetName = getJSXElementNameAsString(targetJSXElement.name)
@@ -116,12 +116,12 @@ const usePreferredChildrenForTarget = (
         }
       }
 
-      return null
+      return 'none'
     },
     'usePreferredChildrenForSelectedElement propertyControlsInfo',
   )
 
-  return preferredChildrenForTarget ?? []
+  return preferredChildrenForTarget
 }
 
 type ShowComponentPickerContextMenu = (
@@ -129,33 +129,36 @@ type ShowComponentPickerContextMenu = (
   params?: Pick<ContextMenuParams, 'id' | 'props' | 'position'> | undefined,
 ) => void
 
-const useShowComponentPickerContextMenuInner = (
-  id: string,
+const PreferredMenuId = 'component-picker-context-menu'
+const FullMenuId = 'component-picker-context-menu-full'
+
+// TODO add a version of this which checks if we can even show the preferred version
+
+export const useShowComponentPickerContextMenu = (
+  pickerProps: ComponentPickerContextMenuAtomData | null,
+  pickerType: 'preferred' | 'full',
 ): {
   showComponentPickerContextMenu: ShowComponentPickerContextMenu
   hideComponentPickerContextMenu: () => void
 } => {
+  const id = pickerType === 'preferred' ? PreferredMenuId : FullMenuId
   const { show, hideAll } = useContextMenu({ id })
+  const setContextMenuProps = useSetAtom(ComponentPickerContextMenuAtom)
   const onClick = React.useCallback(
     (
       event: React.MouseEvent<HTMLDivElement>,
       params?: Pick<ContextMenuParams, 'id' | 'props' | 'position'> | undefined,
     ) => {
-      show(event, params)
+      if (pickerProps != null) {
+        setContextMenuProps(pickerProps)
+        show(event, params)
+      }
     },
-    [show],
+    [show, setContextMenuProps, pickerProps],
   )
 
   return { showComponentPickerContextMenu: onClick, hideComponentPickerContextMenu: hideAll }
 }
-
-const ComponentPickerContextMenuId = 'component-picker-context-menu'
-const ComponentPickerContextMenuFullId = 'component-picker-context-menu-full'
-
-export const useShowComponentPickerContextMenu = () =>
-  useShowComponentPickerContextMenuInner(ComponentPickerContextMenuId)
-export const useShowComponentPickerContextMenuFull = () =>
-  useShowComponentPickerContextMenuInner(ComponentPickerContextMenuFullId)
 
 function defaultVariantItem(
   elementName: string,
@@ -314,7 +317,13 @@ export function labelTestIdForComponentIcon(
 
 const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuProps>(
   ({ target, insertionTarget }) => {
-    const { showComponentPickerContextMenu } = useShowComponentPickerContextMenuFull()
+    const { showComponentPickerContextMenu } = useShowComponentPickerContextMenu(
+      {
+        target,
+        insertionTarget,
+      },
+      'full',
+    )
 
     const preferredChildrenForTarget = usePreferredChildrenForTarget(target, insertionTarget)
 
@@ -335,7 +344,7 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
     )
     const wrapperRef = React.useRef<HTMLDivElement>(null)
 
-    if (preferredChildrenForTarget == null) {
+    if (preferredChildrenForTarget === 'none') {
       return null
     }
 
@@ -378,7 +387,7 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
 
     return (
       <div ref={wrapperRef}>
-        <MomentumContextMenu id={ComponentPickerContextMenuId} items={items} getData={NO_OP} />
+        <MomentumContextMenu id={PreferredMenuId} items={items} getData={NO_OP} />
       </div>
     )
   },
@@ -418,12 +427,7 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
     }, [])
 
     return (
-      <Menu
-        id={ComponentPickerContextMenuFullId}
-        animation={false}
-        style={{ width: 260 }}
-        onClick={squashEvents}
-      >
+      <Menu id={FullMenuId} animation={false} style={{ width: 260 }} onClick={squashEvents}>
         <ComponentPicker allComponents={allInsertableComponents} onItemClick={onItemClick} />
       </Menu>
     )

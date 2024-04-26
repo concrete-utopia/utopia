@@ -14,17 +14,15 @@ import {
   getMetadata,
   isConditionalClauseNavigatorEntry,
   isRegularNavigatorEntry,
-  isRenderPropValueNavigatorEntry,
   varSafeNavigatorEntryToKey,
 } from '../../editor/store/editor-state'
 import type { SelectionLocked } from '../../canvas/canvas-types'
 import { getJSXElementNameAsString } from '../../../core/shared/element-template'
 import { getRegisteredComponent } from '../../../core/property-controls/property-controls-utils'
 import {
-  ComponentPickerContextMenuAtom,
   type InsertionTarget,
   useShowComponentPickerContextMenu,
-  useShowComponentPickerContextMenuFull,
+  usePreferredChildrenForTarget,
 } from './component-picker-context-menu'
 import { useSetAtom } from 'jotai'
 
@@ -200,73 +198,43 @@ export const VisibilityIndicator: React.FunctionComponent<
   )
 })
 
-const useSupportsChildren = (target: ElementPath): 'all' | 'all-with-preferred' | 'none' => {
-  const targetElement = useEditorState(
-    Substores.metadata,
-    (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, target),
-    'useSupportsChildren targetElement',
-  )
+const useSupportsChildren = (
+  target: ElementPath,
+  insertionTarget: InsertionTarget,
+): 'all' | 'all-with-preferred' | 'none' => {
+  const preferredChildrenForTarget = usePreferredChildrenForTarget(target, insertionTarget)
 
-  return useEditorState(
-    Substores.restOfEditor,
-    (store) => {
-      const targetJSXElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(targetElement)
-      if (targetJSXElement == null) {
-        return 'none'
-      }
-
-      if (MetadataUtils.intrinsicElementThatSupportsChildren(targetJSXElement)) {
-        return 'all'
-      }
-
-      const elementImportInfo = targetElement?.importInfo
-      if (elementImportInfo == null) {
-        return 'none'
-      }
-
-      const targetName = getJSXElementNameAsString(targetJSXElement.name)
-      const registeredComponent = getRegisteredComponent(
-        targetName,
-        elementImportInfo.filePath,
-        store.editor.propertyControlsInfo,
-      )
-
-      if ((registeredComponent?.preferredChildComponents?.length ?? 0) > 0) {
-        return 'all-with-preferred'
-      } else if (registeredComponent?.supportsChildren ?? false) {
-        return 'all'
-      } else {
-        return 'none'
-      }
-    },
-    'useSupportsChildren supportsChildren',
-  )
+  if (preferredChildrenForTarget === 'none') {
+    return 'none'
+  } else if (preferredChildrenForTarget.length > 0) {
+    return 'all-with-preferred'
+  } else {
+    return 'all'
+  }
 }
 
 function useShowComponentPickerForTarget(
   target: ElementPath,
   insertionTarget: InsertionTarget,
 ): React.MouseEventHandler<HTMLDivElement> {
-  const { showComponentPickerContextMenu: showPreferredPicker } =
-    useShowComponentPickerContextMenu()
-  const { showComponentPickerContextMenu: showFullPicker } = useShowComponentPickerContextMenuFull()
-  const targetParent = insertionTarget === 'replace-target' ? EP.parentPath(target) : target
-  const showComponentPicker =
-    useSupportsChildren(targetParent) === 'all-with-preferred'
-      ? showPreferredPicker
-      : showFullPicker
-  const setContextMenuProps = useSetAtom(ComponentPickerContextMenuAtom)
-  return React.useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      setContextMenuProps({
-        target: target,
-        insertionTarget: insertionTarget,
-      })
+  const pickerProps = {
+    target: target,
+    insertionTarget: insertionTarget,
+  }
 
-      showComponentPicker(e)
-    },
-    [target, insertionTarget, setContextMenuProps, showComponentPicker],
+  const { showComponentPickerContextMenu: showPreferredPicker } = useShowComponentPickerContextMenu(
+    pickerProps,
+    'preferred',
   )
+  const { showComponentPickerContextMenu: showFullPicker } = useShowComponentPickerContextMenu(
+    pickerProps,
+    'full',
+  )
+
+  const targetParent = insertionTarget === 'replace-target' ? EP.parentPath(target) : target
+  return useSupportsChildren(targetParent, insertionTarget) === 'all-with-preferred'
+    ? showPreferredPicker
+    : showFullPicker
 }
 
 interface AddChildButtonProps {
@@ -302,9 +270,18 @@ const AddChildButton = React.memo((props: AddChildButtonProps) => {
   )
 })
 
-const ReplaceElementButton = React.memo((props: AddChildButtonProps) => {
-  const { target } = props
-  const onClick = useShowComponentPickerForTarget(target, 'replace-target')
+interface ReplaceElementButtonProps {
+  target: ElementPath
+  iconColor: IcnProps['color']
+  prop: string | null
+}
+
+const ReplaceElementButton = React.memo((props: ReplaceElementButtonProps) => {
+  const { target, prop } = props
+  const onClick = useShowComponentPickerForTarget(
+    target,
+    prop == null ? 'replace-target' : { prop: prop },
+  )
 
   return (
     <Button
@@ -515,7 +492,15 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
       (props.highlighted || props.selected) ? (
         <>
           <AddChildButton target={navigatorEntry.elementPath} iconColor={props.iconColor} />
-          <ReplaceElementButton target={navigatorEntry.elementPath} iconColor={props.iconColor} />
+          <ReplaceElementButton
+            target={
+              navigatorEntry.type === 'RENDER_PROP_VALUE'
+                ? EP.parentPath(navigatorEntry.elementPath)
+                : navigatorEntry.elementPath
+            }
+            iconColor={props.iconColor}
+            prop={navigatorEntry.type === 'RENDER_PROP_VALUE' ? navigatorEntry.prop : null}
+          />
         </>
       ) : null}
       <SelectionLockedIndicator
