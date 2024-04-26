@@ -138,7 +138,7 @@ const RepositoryRow = (props: RepositoryRowProps) => {
       onClick={importRepository}
     >
       <div>
-        <Ellipsis style={{ maxWidth: 170 }}>{props.name}</Ellipsis>
+        <Ellipsis style={{ maxWidth: 170 }}>{props.fullName}</Ellipsis>
         <span style={{ fontSize: 10, opacity: 0.5 }}>
           {when(
             !props.searchable,
