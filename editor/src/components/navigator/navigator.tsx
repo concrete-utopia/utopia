@@ -2,7 +2,6 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import ReactDOM from 'react-dom'
 import type { Size } from 'react-virtualized-auto-sizer'
 import AutoSizer from 'react-virtualized-auto-sizer'
 import type { ListChildComponentProps } from 'react-window'
@@ -32,8 +31,6 @@ import { ElementContextMenu } from '../element-context-menu'
 import { getItemHeight } from './navigator-item/navigator-item'
 import { NavigatorDragLayer } from './navigator-drag-layer'
 import { NavigatorItemWrapper } from './navigator-item/navigator-item-wrapper'
-import { CanvasContextMenuPortalTargetID } from '../../core/shared/utils'
-import { ComponentPickerContextMenu } from './navigator-item/component-picker-context-menu'
 
 interface ItemProps extends ListChildComponentProps {}
 
@@ -265,8 +262,6 @@ export const NavigatorComponent = React.memo(() => {
     [dispatch],
   )
 
-  const portalTarget = document.getElementById(CanvasContextMenuPortalTargetID)
-
   return (
     <Section
       data-name='Navigator'
@@ -303,9 +298,6 @@ export const NavigatorComponent = React.memo(() => {
         }}
       >
         <ElementContextMenu contextMenuInstance={'context-menu-navigator'} />
-        {portalTarget != null
-          ? ReactDOM.createPortal(<ComponentPickerContextMenu />, portalTarget)
-          : null}
         <FlexColumn
           style={{
             flexGrow: 1,
