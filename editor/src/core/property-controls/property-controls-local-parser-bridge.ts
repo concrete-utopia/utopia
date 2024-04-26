@@ -69,7 +69,7 @@ async function getParseResultForUserStrings(
           topLevelElement.definedWithin.includes('Utopia$$$Component'),
       )
       if (parsedWrapperComponent != null) {
-        const elementToInsert = clearJSXElementChildUniqueIDs(parsedWrapperComponent.rootElement)
+        const elementToInsert = parsedWrapperComponent.rootElement
 
         if (elementToInsert.type === 'JSX_ELEMENT') {
           return right({

@@ -318,12 +318,7 @@ export function fixUtopiaElement(
 
     const uid = element.uid
     const uidProp = getJSXAttribute(fixedProps, 'data-uid')
-    if (
-      uidProp == null ||
-      uid === '' ||
-      !isJSXAttributeValue(uidProp) ||
-      uniqueIDsMutable.has(uid)
-    ) {
+    if (uidProp == null || !isJSXAttributeValue(uidProp) || uniqueIDsMutable.has(uid)) {
       const newUID = generateConsistentUID(uid, uniqueIDsMutable)
       mappings.push({ originalUID: uid, newUID: newUID })
       uniqueIDsMutable.add(newUID)
@@ -361,10 +356,9 @@ export function fixUtopiaElement(
   }
 
   function addAndMaybeUpdateUID(currentUID: string): string {
-    const fixedUID =
-      uniqueIDsMutable.has(currentUID) || currentUID === ''
-        ? generateConsistentUID(currentUID, uniqueIDsMutable)
-        : currentUID
+    const fixedUID = uniqueIDsMutable.has(currentUID)
+      ? generateConsistentUID(currentUID, uniqueIDsMutable)
+      : currentUID
     if (fixedUID !== currentUID) {
       mappings.push({ originalUID: currentUID, newUID: fixedUID })
     }
