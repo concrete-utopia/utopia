@@ -1,11 +1,14 @@
 import type { LoaderFunctionArgs } from '@remix-run/node'
-import { proxy } from '../util/proxy.server'
 import { handle, handleOptions } from '../util/api.server'
 import { ALLOW } from '../handlers/validators'
+import { handleListRepoBranches } from '../handlers/listRepoBranches'
 
 export async function loader(args: LoaderFunctionArgs) {
   return handle(args, {
     OPTIONS: handleOptions,
-    GET: { handler: proxy, validator: ALLOW },
+    GET: {
+      validator: ALLOW,
+      handler: handleListRepoBranches,
+    },
   })
 }

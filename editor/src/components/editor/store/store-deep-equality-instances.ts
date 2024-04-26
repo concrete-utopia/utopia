@@ -474,7 +474,6 @@ import type {
   CurriedUtopiaRequireFn,
   PropertyControlsInfo,
   ComponentDescriptorFromDescriptorFile,
-  PlaceholderSpec,
 } from '../../custom-code/code-file'
 import {
   codeResult,
@@ -3411,33 +3410,6 @@ export function ComponentDescriptorSourceKeepDeepEquality(): KeepDeepEqualityCal
   }
 }
 
-export function PlaceholderKeepDeepEquality(): KeepDeepEqualityCall<PlaceholderSpec> {
-  return (oldValue, newValue) => {
-    switch (oldValue.type) {
-      case 'text':
-        if (oldValue.type === newValue.type) {
-          const areEqual = oldValue.contents === newValue.contents
-          return { areEqual: areEqual, value: areEqual ? oldValue : newValue }
-        }
-        break
-      case 'spacer':
-        if (oldValue.type === newValue.type) {
-          const areEqual = oldValue.width === newValue.width && oldValue.height === newValue.height
-          return { areEqual: areEqual, value: areEqual ? oldValue : newValue }
-        }
-        break
-      case 'fill':
-        if (oldValue.type === newValue.type) {
-          return { areEqual: true, value: oldValue }
-        }
-        break
-      default:
-        assertNever(oldValue)
-    }
-    return keepDeepEqualityResult(newValue, false)
-  }
-}
-
 const InspectorSpecKeepDeepEquality: KeepDeepEqualityCall<InspectorSpec> = (oldValue, newValue) => {
   if (typeof oldValue === 'string' && typeof newValue === 'string') {
     return StringKeepDeepEquality(oldValue, newValue) as KeepDeepEqualityResult<InspectorSpec>
@@ -3451,7 +3423,7 @@ const InspectorSpecKeepDeepEquality: KeepDeepEqualityCall<InspectorSpec> = (oldV
 }
 
 export const ComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<ComponentDescriptor> =
-  combine10EqualityCalls(
+  combine9EqualityCalls(
     (descriptor) => descriptor.properties,
     PropertyControlsKeepDeepEquality,
     (descriptor) => descriptor.supportsChildren,
@@ -3460,8 +3432,6 @@ export const ComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<Component
     arrayDeepEquality(ComponentInfoKeepDeepEquality),
     (descriptor) => descriptor.preferredChildComponents,
     arrayDeepEquality(PreferredChildComponentDescriptorKeepDeepEquality),
-    (descriptor) => descriptor.childrenPropPlaceholder,
-    nullableDeepEquality(PlaceholderKeepDeepEquality()),
     (descriptor) => descriptor.source,
     ComponentDescriptorSourceKeepDeepEquality(),
     (descriptor) => descriptor.focus,
@@ -4362,9 +4332,11 @@ export const GithubFileChangesKeepDeepEquality: KeepDeepEqualityCall<GithubFileC
     emptyGithubFileChanges,
   )
 
-export const GithubDataKeepDeepEquality: KeepDeepEqualityCall<GithubData> = combine4EqualityCalls(
+export const GithubDataKeepDeepEquality: KeepDeepEqualityCall<GithubData> = combine5EqualityCalls(
   (data) => data.branches,
   nullableDeepEquality(arrayDeepEquality(GithubBranchKeepDeepEquality)),
+  (data) => data.userRepositories,
+  arrayDeepEquality(RepositoryEntryKeepDeepEquality),
   (data) => data.publicRepositories,
   arrayDeepEquality(RepositoryEntryKeepDeepEquality),
   (data) => data.lastUpdatedAt,
