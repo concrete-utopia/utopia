@@ -1036,23 +1036,39 @@ export async function refreshGithubData(
     operationContext,
     initiator,
   )
-  // Resolve all the promises.
-  await Promise.allSettled(promises).then((results) => {
-    let actions: Array<EditorAction> = []
-    for (const result of results) {
-      switch (result.status) {
-        case 'rejected':
-          console.error(`Error while polling Github: ${result.reason}`)
-          break
-        case 'fulfilled':
-          actions.push(...result.value)
-          break
-      }
-    }
 
-    // Dispatch all the actions from all the polling functions.
-    dispatch(actions, 'everyone')
-  })
+  // Resolve all the promises (sequentially).
+  const results = await sequentialPromiseAllSettled(promises)
+
+  let actions: Array<EditorAction> = []
+  for (const result of results) {
+    switch (result.status) {
+      case 'rejected':
+        console.error(`Error while polling Github: ${result.reason}`)
+        break
+      case 'fulfilled':
+        actions.push(...result.value)
+        break
+    }
+  }
+
+  // Dispatch all the actions from all the polling functions.
+  dispatch(actions, 'everyone')
+}
+
+async function sequentialPromiseAllSettled<T>(promises: Promise<T>[]) {
+  function toSettledResult(promise: Promise<T>): Promise<PromiseSettledResult<T>> {
+    return promise.then(
+      (value) => ({ status: 'fulfilled', value: value }),
+      (reason) => ({ status: 'rejected', reason: reason }),
+    )
+  }
+
+  let results: PromiseSettledResult<T>[] = []
+  for await (const result of promises.map(toSettledResult)) {
+    results.push(result)
+  }
+  return results
 }
 
 async function updateUpstreamChanges(
