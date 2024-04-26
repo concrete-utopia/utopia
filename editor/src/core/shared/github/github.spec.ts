@@ -179,7 +179,7 @@ describe('github helpers', () => {
       expect(promises[0].action).toBe('UPDATE_GITHUB_DATA')
       if (promises[0].action === 'UPDATE_GITHUB_DATA') {
         expect(promises[0].data).toEqual({
-          publicRepositories: [],
+          userRepositories: [],
         })
       }
 
