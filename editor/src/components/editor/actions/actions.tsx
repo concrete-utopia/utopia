@@ -335,6 +335,7 @@ import type {
   AddNewFeaturedRoute,
   RemoveFeaturedRoute,
   AddCollapsedViews,
+  ReplaceMappedElement,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -382,6 +383,7 @@ import {
   modifyUnderlyingTargetJSXElement,
   getAllComponentDescriptorErrors,
   updatePackageJsonInEditorState,
+  modifyUnderlyingTarget,
 } from '../store/editor-state'
 import {
   areGeneratedElementsTargeted,
@@ -2361,6 +2363,45 @@ export const UPDATE_FNS = {
         return {
           ...success,
           topLevelElements: updatedTopLevelElements,
+          imports: imports,
+        }
+      },
+    )
+    return {
+      ...withNewElement,
+      leftMenu: { visible: editor.leftMenu.visible, selectedTab: LeftMenuTab.Navigator },
+      selectedViews: newSelectedViews,
+    }
+  },
+  REPLACE_MAPPED_ELEMENT: (action: ReplaceMappedElement, editor: EditorModel): EditorModel => {
+    let newSelectedViews: ElementPath[] = []
+    const parentPath =
+      action.target == null
+        ? // action.target == null means Canvas, which means storyboard root element
+          forceNotNull(
+            'found no element path for the storyboard root',
+            getStoryboardElementPath(editor.projectContents, editor.canvas.openFile?.filename),
+          )
+        : EP.parentPath(action.target)
+
+    const withNewElement = modifyUnderlyingTarget(
+      parentPath,
+      editor,
+      (element) => {
+        if (!isJSXMapExpression(element)) {
+          return element
+        }
+
+        const uidToUse = Object.keys(element.elementsWithin)[0] ?? action.jsxElement.uid
+        return {
+          ...element,
+          elementsWithin: { [uidToUse]: { ...action.jsxElement, uid: uidToUse } },
+        }
+      },
+      (success, _, underlyingFilePath) => {
+        const { imports } = mergeImports(underlyingFilePath, success.imports, action.importsToAdd)
+        return {
+          ...success,
           imports: imports,
         }
       },
