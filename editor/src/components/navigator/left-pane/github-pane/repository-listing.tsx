@@ -255,8 +255,15 @@ export const RepositoryListing = React.memo(
           if (alreadyIncludesEntry) {
             return filteredRepositories
           } else {
+            const fullName = `${parsedRepo.owner}/${parsedRepo.repository}`
+            const isSearchable =
+              githubUserDetails != null &&
+              isSearchableRepository(
+                lookupSearchableRepositoryDetails(githubUserDetails.login, fullName),
+              )
+
             const additionalEntry: RepositoryRowProps = {
-              fullName: `${parsedRepo.owner}/${parsedRepo.repository}`,
+              fullName: fullName,
               name: parsedRepo.repository,
               avatarUrl: null,
               isPrivate: true,
@@ -269,13 +276,13 @@ export const RepositoryListing = React.memo(
                 push: false,
                 pull: false,
               },
-              searchable: true,
+              searchable: isSearchable,
             }
             return [...filteredRepositories, additionalEntry]
           }
         }
       }
-    }, [filteredRepositories, targetRepository])
+    }, [filteredRepositories, targetRepository, githubUserDetails])
 
     const githubOperations = useEditorState(
       Substores.github,
@@ -405,26 +412,49 @@ export const RepositoryListing = React.memo(
   },
 )
 
+type NotSearchableRepository = { type: 'not-searchable' }
+type SearchableRepository = { type: 'searchable'; owner: string; repo: string }
+
+type SearchableRepositoryDetails = NotSearchableRepository | SearchableRepository
+
+function isSearchableRepository(
+  details: SearchableRepositoryDetails,
+): details is SearchableRepository {
+  return details.type === 'searchable'
+}
+
+function lookupSearchableRepositoryDetails(
+  login: string,
+  fullName: string,
+): SearchableRepositoryDetails {
+  const parts = fullName.trim().toLowerCase().split('/')
+  if (parts.length !== 2) {
+    return { type: 'not-searchable' }
+  }
+  const [owner, repo] = parts
+  if (owner === login) {
+    return { type: 'not-searchable' }
+  }
+  if (owner.length < 1 || repo.length < 1) {
+    return { type: 'not-searchable' }
+  }
+
+  return { type: 'searchable', owner: owner, repo: repo }
+}
+
 async function searchPublicRepoFromString(
   dispatch: EditorDispatch,
   login: string,
   fullName: string,
 ) {
-  const parts = fullName.trim().toLowerCase().split('/')
-  if (parts.length !== 2) {
-    return
-  }
-  const [owner, repo] = parts
-  if (owner === login) {
-    return
-  }
-  if (owner.length < 1 || repo.length < 1) {
+  const details = lookupSearchableRepositoryDetails(login, fullName)
+  if (!isSearchableRepository(details)) {
     return
   }
 
   const actions = await GithubOperations.searchPublicGithubRepository(dispatch, 'user-initiated', {
-    owner: owner,
-    repo: repo,
+    owner: details.owner,
+    repo: details.repo,
   })
 
   dispatch(actions, 'everyone')
