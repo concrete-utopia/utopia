@@ -14,6 +14,7 @@ import {
   getMetadata,
   isConditionalClauseNavigatorEntry,
   isRegularNavigatorEntry,
+  isRenderPropValueNavigatorEntry,
   varSafeNavigatorEntryToKey,
 } from '../../editor/store/editor-state'
 import type { SelectionLocked } from '../../canvas/canvas-types'
@@ -178,8 +179,8 @@ export const VisibilityIndicator: React.FunctionComponent<
     <Button
       onClick={props.onClick}
       style={{
-        height: 18,
-        width: 18,
+        height: 12,
+        width: 12,
         opacity: props.shouldShow ? 1 : 0,
       }}
     >
@@ -192,7 +193,7 @@ export const VisibilityIndicator: React.FunctionComponent<
   )
 })
 
-const useSupportsChildren = (target: ElementPath): boolean => {
+const useSupportsChildren = (target: ElementPath): 'all' | 'all-with-preferred' | 'none' => {
   const targetElement = useEditorState(
     Substores.metadata,
     (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, target),
@@ -203,9 +204,17 @@ const useSupportsChildren = (target: ElementPath): boolean => {
     Substores.restOfEditor,
     (store) => {
       const targetJSXElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(targetElement)
+      if (targetJSXElement == null) {
+        return 'none'
+      }
+
+      if (MetadataUtils.intrinsicElementThatSupportsChildren(targetJSXElement)) {
+        return 'all'
+      }
+
       const elementImportInfo = targetElement?.importInfo
-      if (elementImportInfo == null || targetJSXElement == null) {
-        return false
+      if (elementImportInfo == null) {
+        return 'none'
       }
 
       const targetName = getJSXElementNameAsString(targetJSXElement.name)
@@ -215,9 +224,13 @@ const useSupportsChildren = (target: ElementPath): boolean => {
         store.editor.propertyControlsInfo,
       )
 
-      // FIXME use the below when we are no longer restricted to preferredChildComponents only
-      // return registeredComponent?.supportsChildren ?? false
-      return (registeredComponent?.preferredChildComponents?.length ?? 0) > 0
+      if ((registeredComponent?.preferredChildComponents?.length ?? 0) > 0) {
+        return 'all-with-preferred'
+      } else if (registeredComponent?.supportsChildren ?? false) {
+        return 'all'
+      } else {
+        return 'none'
+      }
     },
     'useSupportsChildren supportsChildren',
   )
@@ -226,7 +239,8 @@ const useSupportsChildren = (target: ElementPath): boolean => {
 interface AddChildButtonProps {
   target: ElementPath
   iconColor: IcnProps['color']
-  onClick: React.MouseEventHandler<HTMLDivElement>
+  showPreferredPicker: React.MouseEventHandler<HTMLDivElement>
+  showFullPicker: React.MouseEventHandler<HTMLDivElement>
 }
 
 export function addChildButtonTestId(target: ElementPath): string {
@@ -235,15 +249,16 @@ export function addChildButtonTestId(target: ElementPath): string {
 
 const AddChildButton = React.memo((props: AddChildButtonProps) => {
   const color = props.iconColor
-  const shouldShow = useSupportsChildren(props.target)
+  const supportsChildren = useSupportsChildren(props.target)
 
   return (
     <Button
-      onClick={props.onClick}
+      onClick={
+        supportsChildren === 'all-with-preferred' ? props.showPreferredPicker : props.showFullPicker
+      }
       style={{
-        height: 18,
-        width: 18,
-        opacity: shouldShow ? 1 : 0,
+        height: 12,
+        width: 12,
       }}
       data-testid={addChildButtonTestId(props.target)}
     >
@@ -253,6 +268,29 @@ const AddChildButton = React.memo((props: AddChildButtonProps) => {
         color={color}
         width={12}
         height={12}
+      />
+    </Button>
+  )
+})
+
+const ReplaceElementButton = React.memo((props: AddChildButtonProps) => {
+  const showPreferred = useSupportsChildren(EP.parentPath(props.target)) === 'all-with-preferred'
+
+  return (
+    <Button
+      onClick={showPreferred ? props.showPreferredPicker : props.showFullPicker}
+      style={{
+        height: 12,
+        width: 12,
+      }}
+    >
+      <Icn
+        category='tools'
+        type='convert-action'
+        color={'main'} // FIXME Add missing colours
+        width={18}
+        height={18}
+        style={{ transform: 'scale(0.67)' }}
       />
     </Button>
   )
@@ -299,7 +337,6 @@ export const SelectionLockedIndicator: React.FunctionComponent<
         height: 12,
         width: 12,
         display: shouldShow ? 'block' : 'none',
-        paddingRight: 1,
       }}
     >
       {when(
@@ -357,7 +394,10 @@ interface NavigatorItemActionSheetProps {
   iconColor: IcnProps['color']
   background?: string | any
   dispatch: EditorDispatch
-  showInsertChildPicker: React.MouseEventHandler<HTMLDivElement>
+  showInsertChildPickerPreferred: React.MouseEventHandler<HTMLDivElement>
+  showInsertChildPickerFull: React.MouseEventHandler<HTMLDivElement>
+  showReplaceElementPickerPreferred: React.MouseEventHandler<HTMLDivElement>
+  showReplaceElementPickerFull: React.MouseEventHandler<HTMLDivElement>
 }
 
 export const NavigatorItemActionSheet: React.FunctionComponent<
@@ -425,10 +465,10 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
   return (
     <FlexRow
       style={{
-        padding: '4px',
+        padding: '4px 5px 4px 4px',
         borderRadius: '0 5px 5px 0',
         position: 'fixed',
-        gap: 3,
+        gap: 4,
         right: 0,
         background:
           props.highlighted ||
@@ -445,14 +485,22 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
         selected={props.selected}
         instanceOriginalComponentName={props.instanceOriginalComponentName}
       />
-      {isRegularNavigatorEntry(navigatorEntry) &&
-      !props.isSlot &&
+      {(navigatorEntry.type === 'REGULAR' || navigatorEntry.type === 'RENDER_PROP_VALUE') &&
       (props.highlighted || props.selected) ? (
-        <AddChildButton
-          target={navigatorEntry.elementPath}
-          iconColor={props.iconColor}
-          onClick={props.showInsertChildPicker}
-        />
+        <>
+          <AddChildButton
+            target={navigatorEntry.elementPath}
+            iconColor={props.iconColor}
+            showPreferredPicker={props.showInsertChildPickerPreferred}
+            showFullPicker={props.showInsertChildPickerFull}
+          />
+          <ReplaceElementButton
+            target={navigatorEntry.elementPath}
+            iconColor={props.iconColor}
+            showPreferredPicker={props.showReplaceElementPickerPreferred}
+            showFullPicker={props.showReplaceElementPickerFull}
+          />
+        </>
       ) : null}
       <SelectionLockedIndicator
         key={`selection-locked-indicator-${varSafeNavigatorEntryToKey(navigatorEntry)}`}

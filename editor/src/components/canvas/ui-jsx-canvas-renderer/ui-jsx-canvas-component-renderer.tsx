@@ -268,7 +268,7 @@ export function createComponentRendererComponent(params: {
             ...objectMap(
               (spiedValue) => ({
                 spiedValue: spiedValue,
-                insertionCeiling: null,
+                insertionCeiling: instancePath,
               }),
               arbitraryBlockResult.scope,
             ),

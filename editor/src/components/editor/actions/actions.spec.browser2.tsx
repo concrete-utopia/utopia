@@ -609,13 +609,13 @@ describe('actions', () => {
         'regular-sb/scene/map',
         'regular-sb/scene/map/card~~~1',
         'render-prop-sb/scene/map/card~~~1/prop-label-header-header',
-        'regular-sb/scene/map/card~~~1/render-prop-element',
+        'render-prop-value-sb/scene/map/card~~~1/render-prop-element-header',
         'render-prop-sb/scene/map/card~~~1/prop-label-children-children',
         'regular-sb/scene/map/card~~~1/child-element',
       ])
 
       const renderPropEntry = editor.renderedDOM.getByTestId(
-        'NavigatorItemTestId-regular_sb/scene/map/card~~~1/render_prop_element',
+        'NavigatorItemTestId-renderpropvalue_sb/scene/map/card~~~1/render_prop_element_header',
       )
 
       await mouseClickAtPoint(renderPropEntry, { x: 2, y: 2 })

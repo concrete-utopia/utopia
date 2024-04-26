@@ -54,6 +54,7 @@ import { ElementsOutsideVisibleAreaIndicator } from './elements-outside-visible-
 import { RemixNavigationBar } from './remix-navigation-bar'
 import {
   fragmentComponentInfo,
+  fragmentElementsDescriptors,
   insertableComponentGroupFragment,
 } from '../shared/project-components'
 import { setFocus } from '../common/actions'
@@ -295,6 +296,7 @@ export const CanvasToolbar = React.memo(() => {
         source: insertableComponentGroupFragment(),
         key: fragmentComponentInfo.insertMenuLabel,
         insertionCeiling: null,
+        icon: fragmentElementsDescriptors.fragment.icon,
       },
     }
     convertToAndClose(convertToFragmentMenuItem)

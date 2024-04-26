@@ -147,7 +147,7 @@ import { assertNever, fastForEach, getProjectLockedKey, identity } from '../../.
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
 import type { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import type { IndexPosition } from '../../../utils/utils'
-import Utils from '../../../utils/utils'
+import Utils, { absolute } from '../../../utils/utils'
 import type { ProjectContentTreeRoot } from '../../assets'
 import {
   isProjectContentFile,
@@ -2286,50 +2286,71 @@ export const UPDATE_FNS = {
   INSERT_JSX_ELEMENT: (action: InsertJSXElement, editor: EditorModel): EditorModel => {
     let newSelectedViews: ElementPath[] = []
     const parentPath =
-      action.parent ??
-      forceNotNull(
-        'found no element path for the storyboard root',
-        getStoryboardElementPath(editor.projectContents, editor.canvas.openFile?.filename),
-      )
+      action.target == null
+        ? // action.target == null means Canvas, which means storyboard root element
+          forceNotNull(
+            'found no element path for the storyboard root',
+            getStoryboardElementPath(editor.projectContents, editor.canvas.openFile?.filename),
+          )
+        : action.insertionBehaviour === 'insert-as-child'
+        ? action.target
+        : EP.parentPath(action.target)
+
     const withNewElement = modifyUnderlyingTargetElement(
       parentPath,
       editor,
       (element) => element,
       (success, _, underlyingFilePath) => {
-        const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
-        const targetParent =
-          action.parent == null
-            ? // action.parent == null means Canvas, which means storyboard root element
-              getStoryboardElementPath(
-                editor.projectContents,
-                editor.canvas.openFile?.filename ?? null,
-              )
-            : action.parent
+        const startingComponents = getUtopiaJSXComponentsFromSuccess(success)
 
-        if (targetParent == null) {
-          // This means there is no storyboard element to add it to
-          return success
+        const removeElementAndReturnIndex = () => {
+          if (action.insertionBehaviour === 'insert-as-child' || action.target == null) {
+            return {
+              components: startingComponents,
+              imports: success.imports,
+              insertionIndex: null,
+            }
+          } else {
+            const indexInParent = getIndexInParent(
+              success.topLevelElements,
+              EP.dynamicPathToStaticPath(action.target),
+            )
+
+            const withTargetDeleted = removeElementAtPath(
+              action.target,
+              startingComponents,
+              success.imports,
+            )
+
+            return {
+              components: withTargetDeleted.components,
+              imports: withTargetDeleted.imports,
+              insertionIndex: indexInParent >= 0 ? absolute(indexInParent) : null,
+            }
+          }
         }
 
-        const updatedImports = mergeImports(
-          underlyingFilePath,
-          success.imports,
-          action.importsToAdd,
-        )
+        const {
+          insertionIndex,
+          components,
+          imports: workingImports,
+        } = removeElementAndReturnIndex()
+
+        const updatedImports = mergeImports(underlyingFilePath, workingImports, action.importsToAdd)
 
         const { imports, duplicateNameMapping } = updatedImports
 
         const renamedJsxElement = renameJsxElementChild(action.jsxElement, duplicateNameMapping)
 
         const withInsertedElement = insertJSXElementChildren(
-          childInsertionPath(targetParent),
+          childInsertionPath(parentPath),
           [renamedJsxElement],
-          utopiaComponents,
-          null,
+          components,
+          insertionIndex,
         )
 
         const uid = getUtopiaID(renamedJsxElement)
-        const newPath = EP.appendToPath(targetParent, uid)
+        const newPath = EP.appendToPath(parentPath, uid)
         newSelectedViews.push(newPath)
 
         const updatedTopLevelElements = applyUtopiaJSXComponentsChanges(
@@ -3423,7 +3444,12 @@ export const UPDATE_FNS = {
             [],
           )
 
-          const insertJSXElementAction = insertJSXElement(imageElement, parent, {})
+          const insertJSXElementAction = insertJSXElement(
+            imageElement,
+            parent,
+            {},
+            'insert-as-child',
+          )
 
           const withComponentCreated = UPDATE_FNS.INSERT_JSX_ELEMENT(insertJSXElementAction, {
             ...editorWithToast,
@@ -4437,7 +4463,7 @@ export const UPDATE_FNS = {
       [],
     )
 
-    const insertJSXElementAction = insertJSXElement(imageElement, parent, {})
+    const insertJSXElementAction = insertJSXElement(imageElement, parent, {}, 'insert-as-child')
     return UPDATE_FNS.INSERT_JSX_ELEMENT(insertJSXElementAction, editor)
   },
   REMOVE_FROM_NODE_MODULES_CONTENTS: (

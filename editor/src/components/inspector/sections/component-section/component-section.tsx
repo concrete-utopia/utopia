@@ -42,6 +42,7 @@ import {
   FlexColumn,
   UtopiaStyles,
   color,
+  OnClickOutsideHOC,
 } from '../../../../uuiui'
 import type { CSSCursor } from '../../../../uuiui-deps'
 import { getControlStyles } from '../../../../uuiui-deps'
@@ -314,7 +315,7 @@ function useDataPickerButton(
   const selectedElement = selectedElements.at(0) ?? EP.emptyElementPath
 
   const variablePickerButtonAvailable =
-    useVariablesInScopeForSelectedElement(selectedElement, propPath).length > 0
+    useVariablesInScopeForSelectedElement(selectedElement, propPath, 'all').length > 0
   const variablePickerButtonTooltipText = variablePickerButtonAvailable
     ? 'Pick data source'
     : 'No data sources available'
