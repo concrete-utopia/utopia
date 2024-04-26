@@ -4332,9 +4332,11 @@ export const GithubFileChangesKeepDeepEquality: KeepDeepEqualityCall<GithubFileC
     emptyGithubFileChanges,
   )
 
-export const GithubDataKeepDeepEquality: KeepDeepEqualityCall<GithubData> = combine4EqualityCalls(
+export const GithubDataKeepDeepEquality: KeepDeepEqualityCall<GithubData> = combine5EqualityCalls(
   (data) => data.branches,
   nullableDeepEquality(arrayDeepEquality(GithubBranchKeepDeepEquality)),
+  (data) => data.userRepositories,
+  arrayDeepEquality(RepositoryEntryKeepDeepEquality),
   (data) => data.publicRepositories,
   arrayDeepEquality(RepositoryEntryKeepDeepEquality),
   (data) => data.lastUpdatedAt,

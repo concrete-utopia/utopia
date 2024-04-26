@@ -180,6 +180,8 @@ function githubOperationPrettyNameForToast(op: GithubOperation): string {
       return 'list GitHub pull requests'
     case 'saveAsset':
       return 'save asset to GitHub'
+    case 'searchRepository':
+      return 'search public repository'
     default:
       assertNever(op)
   }

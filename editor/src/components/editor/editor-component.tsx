@@ -121,6 +121,8 @@ function githubOperationPrettyNameForOverlay(op: GithubOperation): string {
       return 'Listing GitHub pull requests'
     case 'saveAsset':
       return 'Saving asset to GitHub'
+    case 'searchRepository':
+      return 'Searching public repository'
     default:
       assertNever(op)
   }
