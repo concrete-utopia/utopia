@@ -107,25 +107,20 @@ function inset(sidess: Sides, rect: CanvasRectangle): CanvasRectangle {
 export function gapControlBoundsFromMetadata(
   elementMetadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
-  selectedElement: ElementPath,
+  parentPath: ElementPath,
+  children: ElementPath[],
   gap: number,
   flexDirection: FlexDirection,
 ): Array<PathWithBounds> {
   const elementPadding =
-    MetadataUtils.findElementByElementPath(elementMetadata, selectedElement)
-      ?.specialSizeMeasurements.padding ?? sides(0, 0, 0, 0)
-  const parentFrame = MetadataUtils.getFrameInCanvasCoords(selectedElement, elementMetadata)
+    MetadataUtils.findElementByElementPath(elementMetadata, parentPath)?.specialSizeMeasurements
+      .padding ?? sides(0, 0, 0, 0)
+  const parentFrame = MetadataUtils.getFrameInCanvasCoords(parentPath, elementMetadata)
   if (parentFrame == null || isInfinityRectangle(parentFrame)) {
     return []
   }
 
   const parentBounds = inset(elementPadding, parentFrame)
-
-  const children = MetadataUtils.getChildrenPathsOrdered(
-    elementMetadata,
-    pathTrees,
-    selectedElement,
-  )
 
   // Needs to handle reversed content as that will be flipped in the visual order, which changes
   // what elements will be either side of the gaps.
@@ -159,41 +154,20 @@ export interface FlexGapData {
   direction: FlexDirection
 }
 
-export function maybeFlexGapFromElement(
+export function maybeFlexGapFromElementChild(
   metadata: ElementInstanceMetadataMap,
-  pathTrees: ElementPathTrees,
   elementPath: ElementPath,
 ): FlexGapData | null {
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
-  if (
-    element == null ||
-    element.specialSizeMeasurements.display !== 'flex' ||
-    isLeft(element.element) ||
-    !isJSXElement(element.element.value)
-  ) {
+  if (element == null) {
     return null
   }
-
-  if (element.specialSizeMeasurements.justifyContent?.startsWith('space')) {
-    return null
-  }
-
-  const children = MetadataUtils.getChildrenOrdered(metadata, pathTrees, elementPath)
-  if (children.length < 2) {
-    return null
-  }
-
-  const gap = element.specialSizeMeasurements.gap ?? 0
-
-  const gapFromProps: CSSNumber | undefined = defaultEither(
-    undefined,
-    getLayoutProperty('gap', right(element.element.value.props), styleStringInArray),
-  )
-
-  const flexDirection = element.specialSizeMeasurements.flexDirection ?? 'row'
 
   return {
-    value: { renderedValuePx: gap, value: gapFromProps ?? cssNumber(0) },
-    direction: flexDirection,
+    value: {
+      renderedValuePx: element.specialSizeMeasurements.parentFlexGap,
+      value: cssNumber(element.specialSizeMeasurements.parentFlexGap),
+    },
+    direction: element.specialSizeMeasurements.parentFlexDirection ?? 'row',
   }
 }

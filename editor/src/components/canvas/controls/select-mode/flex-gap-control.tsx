@@ -24,8 +24,8 @@ import { createInteractionViaMouse, flexGapHandle } from '../../canvas-strategie
 import { windowToCanvasCoordinates } from '../../dom-lookup'
 import {
   cursorFromFlexDirection,
+  maybeFlexGapFromElementChild,
   gapControlBoundsFromMetadata,
-  maybeFlexGapFromElement,
 } from '../../gap-utils'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import type { CSSNumberWithRenderedValue } from './controls-common'
@@ -115,7 +115,8 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
     [canvasOffset, dispatch, scale],
   )
 
-  const flexGap = maybeFlexGapFromElement(metadata, pathTrees, selectedElement)
+  const children = MetadataUtils.getNonCodeChildrenUnordered(metadata, selectedElement)
+  const flexGap = maybeFlexGapFromElementChild(metadata, children[0].elementPath)
   if (flexGap == null) {
     return null
   }
@@ -126,6 +127,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
     metadata,
     pathTrees,
     selectedElement,
+    children.map((c) => c.elementPath),
     flexGapValue.renderedValuePx,
     flexGap.direction,
   )
@@ -140,7 +142,6 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
       return directions.includes(direction) ? directionSize : gapSize
     }
 
-    const children = MetadataUtils.getChildrenUnordered(metadata, selectedElement)
     const bounds = boundingRectangleArray(
       mapDropNulls(
         (c) => (c.localFrame != null && isFiniteRectangle(c.localFrame) ? c.localFrame : null),
@@ -166,7 +167,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
         ),
       }
     }
-  }, [selectedElement, metadata, flexGap, flexGapValue])
+  }, [children, flexGap.direction, flexGapValue.renderedValuePx])
 
   const justifyContent = React.useMemo(() => {
     return (

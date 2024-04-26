@@ -28,7 +28,7 @@ import type { FlexGapData } from '../../gap-utils'
 import {
   cursorFromFlexDirection,
   dragDeltaForOrientation,
-  maybeFlexGapFromElement,
+  maybeFlexGapFromElementChild,
 } from '../../gap-utils'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
@@ -60,9 +60,8 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
   }
 
   const selectedElement = selectedElements[0]
-  const children = MetadataUtils.getChildrenPathsOrdered(
+  const children = MetadataUtils.getNonCodeChildrenUnordered(
     canvasState.startingMetadata,
-    canvasState.startingElementPathTree,
     selectedElement,
   )
 
@@ -72,7 +71,7 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
 
   if (
     !areAllSiblingsInOneDimensionFlexOrFlow(
-      children[0],
+      children[0].elementPath,
       canvasState.startingMetadata,
       canvasState.startingElementPathTree,
     )
@@ -80,10 +79,9 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
     return null
   }
 
-  const flexGap = maybeFlexGapFromElement(
+  const flexGap = maybeFlexGapFromElementChild(
     canvasState.startingMetadata,
-    canvasState.startingElementPathTree,
-    selectedElements[0],
+    children[0].elementPath,
   )
   if (flexGap == null) {
     return null
@@ -174,7 +172,7 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
           printCSSNumber(updatedFlexGapMeasurement.value, null),
         ),
         setCursorCommand(cursorFromFlexDirection(flexGap.direction)),
-        setElementsToRerenderCommand([...selectedElements, ...children]),
+        setElementsToRerenderCommand([...selectedElements, ...children.map((c) => c.elementPath)]),
         setActiveFrames([
           {
             action: 'set-gap',
