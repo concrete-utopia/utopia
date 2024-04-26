@@ -273,12 +273,16 @@ const AddChildButton = React.memo((props: AddChildButtonProps) => {
   )
 })
 
+export const ReplaceElementButtonTestId = (path: ElementPath) =>
+  `replace-element-button-${EP.toString(path)}`
+
 const ReplaceElementButton = React.memo((props: AddChildButtonProps) => {
   const showPreferred = useSupportsChildren(EP.parentPath(props.target)) === 'all-with-preferred'
 
   return (
     <Button
       onClick={showPreferred ? props.showPreferredPicker : props.showFullPicker}
+      data-testid={ReplaceElementButtonTestId(props.target)}
       style={{
         height: 12,
         width: 12,
