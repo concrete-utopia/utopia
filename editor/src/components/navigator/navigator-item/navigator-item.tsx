@@ -33,7 +33,11 @@ import { isEntryAPlaceholder } from '../../canvas/canvas-utils'
 import type { EditorAction, EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as MetaActions from '../../editor/actions/meta-actions'
-import type { ElementWarnings, NavigatorEntry } from '../../editor/store/editor-state'
+import type {
+  ElementWarnings,
+  NavigatorEntry,
+  SlotNavigatorEntry,
+} from '../../editor/store/editor-state'
 import {
   defaultElementWarnings,
   isConditionalClauseNavigatorEntry,
@@ -67,7 +71,6 @@ import {
 } from '../../../core/vscode/vscode-bridge'
 import { toVSCodeExtensionMessage } from 'utopia-vscode-common'
 import type { Emphasis } from 'utopia-api'
-import { useSetAtom } from 'jotai'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -852,18 +855,6 @@ export const NavigatorItem: React.FunctionComponent<
     )
   }, [childComponentCount, isFocusedComponent, isConditional])
 
-  const pickerProps =
-    navigatorEntry.type === 'SLOT'
-      ? {
-          target: EP.parentPath(navigatorEntry.elementPath),
-          insertionTarget: { prop: navigatorEntry.prop },
-        }
-      : null
-  const { showComponentPickerContextMenu } = useShowComponentPickerContextMenu(
-    pickerProps,
-    'preferred',
-  )
-
   const iconColor = isRemixItem
     ? 'remix'
     : isDynamic
@@ -901,34 +892,15 @@ export const NavigatorItem: React.FunctionComponent<
         onDoubleClick={focusComponent}
       >
         {isPlaceholder ? (
-          <div
-            key={`label-${props.label}-slot`}
-            onClick={showComponentPickerContextMenu}
-            style={{
-              width: 140,
-              height: 19,
-              borderRadius: 20,
-              textAlign: 'center',
-              textTransform: 'lowercase',
-              backgroundColor: colorTheme.unavailable.value,
-              color:
-                props.parentOutline === 'child'
-                  ? colorTheme.navigatorResizeHintBorder.value
-                  : colorTheme.unavailableGrey10.value,
-              border: `1px solid ${
-                props.parentOutline === 'child'
-                  ? colorTheme.navigatorResizeHintBorder.value
-                  : colorTheme.unavailableGrey10.value
-              }`,
-              marginLeft: 28,
-              cursor: navigatorEntry.type === 'SLOT' ? 'pointer' : 'inherit',
-            }}
-            data-testid={`toggle-render-prop-${NavigatorItemTestId(
-              varSafeNavigatorEntryToKey(navigatorEntry),
-            )}`}
-          >
-            Empty
-          </div>
+          navigatorEntry.type === 'SLOT' ? (
+            <RenderPropSlot
+              label={props.label}
+              parentOutline={props.parentOutline}
+              navigatorEntry={navigatorEntry}
+            />
+          ) : (
+            <PlaceholderSlot label={props.label} parentOutline={props.parentOutline} />
+          )
         ) : isRenderProp ? (
           <div
             key={`label-${props.label}-slot`}
@@ -1009,6 +981,73 @@ export const NavigatorItem: React.FunctionComponent<
 })
 NavigatorItem.displayName = 'NavigatorItem'
 
+interface RenderPropSlotProps {
+  label: string
+  parentOutline: ParentOutline
+  navigatorEntry: SlotNavigatorEntry
+}
+
+const RenderPropSlot = React.memo((props: RenderPropSlotProps) => {
+  const { label, parentOutline, navigatorEntry } = props
+  const target = EP.parentPath(navigatorEntry.elementPath)
+  const insertionTarget = { prop: navigatorEntry.prop }
+
+  const showComponentPickerContextMenu = useShowComponentPickerContextMenu(target, insertionTarget)
+
+  return (
+    <PlaceholderSlot
+      label={label}
+      parentOutline={parentOutline}
+      cursor={'pointer'}
+      onClick={showComponentPickerContextMenu}
+      testId={`toggle-render-prop-${NavigatorItemTestId(
+        varSafeNavigatorEntryToKey(navigatorEntry),
+      )}`}
+    />
+  )
+})
+
+interface PlaceholderSlotProps {
+  label: string
+  parentOutline: ParentOutline
+  cursor?: 'pointer' | 'inherit'
+  testId?: string
+  onClick?: React.MouseEventHandler
+}
+
+const PlaceholderSlot = React.memo((props: PlaceholderSlotProps) => {
+  const { label, parentOutline, cursor, testId, onClick } = props
+  const colorTheme = useColorTheme()
+
+  return (
+    <div
+      key={`label-${label}-slot`}
+      onClick={onClick}
+      style={{
+        width: 140,
+        height: 19,
+        borderRadius: 20,
+        textAlign: 'center',
+        textTransform: 'lowercase',
+        backgroundColor: colorTheme.unavailable.value,
+        color:
+          parentOutline === 'child'
+            ? colorTheme.navigatorResizeHintBorder.value
+            : colorTheme.unavailableGrey10.value,
+        border: `1px solid ${
+          parentOutline === 'child'
+            ? colorTheme.navigatorResizeHintBorder.value
+            : colorTheme.unavailableGrey10.value
+        }`,
+        marginLeft: 28,
+        cursor: cursor ?? 'inherit',
+      }}
+      data-testid={testId}
+    >
+      Empty
+    </div>
+  )
+})
 interface NavigatorRowLabelProps {
   navigatorEntry: NavigatorEntry
   iconColor: IcnProps['color']

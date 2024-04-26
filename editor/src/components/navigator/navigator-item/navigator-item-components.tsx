@@ -17,14 +17,10 @@ import {
   varSafeNavigatorEntryToKey,
 } from '../../editor/store/editor-state'
 import type { SelectionLocked } from '../../canvas/canvas-types'
-import { getJSXElementNameAsString } from '../../../core/shared/element-template'
-import { getRegisteredComponent } from '../../../core/property-controls/property-controls-utils'
 import {
   type InsertionTarget,
   useShowComponentPickerContextMenu,
-  usePreferredChildrenForTarget,
 } from './component-picker-context-menu'
-import { useSetAtom } from 'jotai'
 
 export const NavigatorHintCircleDiameter = 8
 
@@ -198,45 +194,6 @@ export const VisibilityIndicator: React.FunctionComponent<
   )
 })
 
-const useSupportsChildren = (
-  target: ElementPath,
-  insertionTarget: InsertionTarget,
-): 'all' | 'all-with-preferred' | 'none' => {
-  const preferredChildrenForTarget = usePreferredChildrenForTarget(target, insertionTarget)
-
-  if (preferredChildrenForTarget === 'none') {
-    return 'none'
-  } else if (preferredChildrenForTarget.length > 0) {
-    return 'all-with-preferred'
-  } else {
-    return 'all'
-  }
-}
-
-function useShowComponentPickerForTarget(
-  target: ElementPath,
-  insertionTarget: InsertionTarget,
-): React.MouseEventHandler<HTMLDivElement> {
-  const pickerProps = {
-    target: target,
-    insertionTarget: insertionTarget,
-  }
-
-  const { showComponentPickerContextMenu: showPreferredPicker } = useShowComponentPickerContextMenu(
-    pickerProps,
-    'preferred',
-  )
-  const { showComponentPickerContextMenu: showFullPicker } = useShowComponentPickerContextMenu(
-    pickerProps,
-    'full',
-  )
-
-  const targetParent = insertionTarget === 'replace-target' ? EP.parentPath(target) : target
-  return useSupportsChildren(targetParent, insertionTarget) === 'all-with-preferred'
-    ? showPreferredPicker
-    : showFullPicker
-}
-
 interface AddChildButtonProps {
   target: ElementPath
   iconColor: IcnProps['color']
@@ -248,7 +205,7 @@ export function addChildButtonTestId(target: ElementPath): string {
 
 const AddChildButton = React.memo((props: AddChildButtonProps) => {
   const { target, iconColor } = props
-  const onClick = useShowComponentPickerForTarget(target, 'insert-as-child')
+  const onClick = useShowComponentPickerContextMenu(target, 'insert-as-child')
 
   return (
     <Button
@@ -278,7 +235,7 @@ interface ReplaceElementButtonProps {
 
 const ReplaceElementButton = React.memo((props: ReplaceElementButtonProps) => {
   const { target, prop } = props
-  const onClick = useShowComponentPickerForTarget(
+  const onClick = useShowComponentPickerContextMenu(
     target,
     prop == null ? 'replace-target' : { prop: prop },
   )

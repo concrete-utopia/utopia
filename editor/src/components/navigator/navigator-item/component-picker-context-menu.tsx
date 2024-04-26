@@ -63,10 +63,10 @@ interface PreferredChildComponentDescriptorWithIcon extends PreferredChildCompon
   icon: Icon
 }
 
-export const usePreferredChildrenForTarget = (
+const usePreferredChildrenForTarget = (
   target: ElementPath,
   insertionTarget: InsertionTarget,
-): Array<PreferredChildComponentDescriptorWithIcon> | 'none' => {
+): Array<PreferredChildComponentDescriptorWithIcon> => {
   const targetParent = insertionTarget === 'replace-target' ? EP.parentPath(target) : target
 
   const targetElement = useEditorState(
@@ -81,7 +81,7 @@ export const usePreferredChildrenForTarget = (
       const targetJSXElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(targetElement)
       const elementImportInfo = targetElement?.importInfo
       if (elementImportInfo == null || targetJSXElement == null) {
-        return 'none'
+        return null
       }
 
       const targetName = getJSXElementNameAsString(targetJSXElement.name)
@@ -116,12 +116,20 @@ export const usePreferredChildrenForTarget = (
         }
       }
 
-      return 'none'
+      return null
     },
     'usePreferredChildrenForSelectedElement propertyControlsInfo',
   )
 
-  return preferredChildrenForTarget
+  return preferredChildrenForTarget ?? []
+}
+
+const useDetectPickerType = (
+  target: ElementPath,
+  insertionTarget: InsertionTarget,
+): 'preferred' | 'full' => {
+  const preferredChildrenForTarget = usePreferredChildrenForTarget(target, insertionTarget)
+  return preferredChildrenForTarget.length > 0 ? 'preferred' : 'full'
 }
 
 type ShowComponentPickerContextMenu = (
@@ -132,32 +140,32 @@ type ShowComponentPickerContextMenu = (
 const PreferredMenuId = 'component-picker-context-menu'
 const FullMenuId = 'component-picker-context-menu-full'
 
-// TODO add a version of this which checks if we can even show the preferred version
-
-export const useShowComponentPickerContextMenu = (
-  pickerProps: ComponentPickerContextMenuAtomData | null,
+const useShowComponentPickerContextMenuInner = (
+  target: ElementPath,
+  insertionTarget: InsertionTarget,
   pickerType: 'preferred' | 'full',
-): {
-  showComponentPickerContextMenu: ShowComponentPickerContextMenu
-  hideComponentPickerContextMenu: () => void
-} => {
+): ShowComponentPickerContextMenu => {
   const id = pickerType === 'preferred' ? PreferredMenuId : FullMenuId
-  const { show, hideAll } = useContextMenu({ id })
+  const { show } = useContextMenu({ id })
   const setContextMenuProps = useSetAtom(ComponentPickerContextMenuAtom)
-  const onClick = React.useCallback(
+  return React.useCallback(
     (
       event: React.MouseEvent<HTMLDivElement>,
       params?: Pick<ContextMenuParams, 'id' | 'props' | 'position'> | undefined,
     ) => {
-      if (pickerProps != null) {
-        setContextMenuProps(pickerProps)
-        show(event, params)
-      }
+      setContextMenuProps({ target: target, insertionTarget: insertionTarget })
+      show(event, params)
     },
-    [show, setContextMenuProps, pickerProps],
+    [show, setContextMenuProps, target, insertionTarget],
   )
+}
 
-  return { showComponentPickerContextMenu: onClick, hideComponentPickerContextMenu: hideAll }
+export const useShowComponentPickerContextMenu = (
+  target: ElementPath,
+  insertionTarget: InsertionTarget,
+): ShowComponentPickerContextMenu => {
+  const pickerType = useDetectPickerType(target, insertionTarget)
+  return useShowComponentPickerContextMenuInner(target, insertionTarget, pickerType)
 }
 
 function defaultVariantItem(
@@ -317,13 +325,7 @@ export function labelTestIdForComponentIcon(
 
 const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuProps>(
   ({ target, insertionTarget }) => {
-    const { showComponentPickerContextMenu } = useShowComponentPickerContextMenu(
-      {
-        target,
-        insertionTarget,
-      },
-      'full',
-    )
+    const showFullMenu = useShowComponentPickerContextMenuInner(target, insertionTarget, 'full')
 
     const preferredChildrenForTarget = usePreferredChildrenForTarget(target, insertionTarget)
 
@@ -343,10 +345,6 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
       [dispatch, projectContentsRef, insertionTarget, target],
     )
     const wrapperRef = React.useRef<HTMLDivElement>(null)
-
-    if (preferredChildrenForTarget === 'none') {
-      return null
-    }
 
     const items: Array<ContextMenuItem<unknown>> = preferredChildrenForTarget
       .flatMap<ContextMenuItem<unknown>>((data) => {
@@ -383,7 +381,7 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
           ]
         }
       })
-      .concat([separatorItem, moreItem(wrapperRef, showComponentPickerContextMenu)])
+      .concat([separatorItem, moreItem(wrapperRef, showFullMenu)])
 
     return (
       <div ref={wrapperRef}>
