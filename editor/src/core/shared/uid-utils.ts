@@ -318,7 +318,12 @@ export function fixUtopiaElement(
 
     const uid = element.uid
     const uidProp = getJSXAttribute(fixedProps, 'data-uid')
-    if (uidProp == null || !isJSXAttributeValue(uidProp) || uniqueIDsMutable.has(uid)) {
+    if (
+      uidProp == null ||
+      uid === '' ||
+      !isJSXAttributeValue(uidProp) ||
+      uniqueIDsMutable.has(uid)
+    ) {
       const newUID = generateConsistentUID(uid, uniqueIDsMutable)
       mappings.push({ originalUID: uid, newUID: newUID })
       uniqueIDsMutable.add(newUID)
