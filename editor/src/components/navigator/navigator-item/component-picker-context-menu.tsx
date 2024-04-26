@@ -1,6 +1,7 @@
 import React from 'react'
 import { useContextMenu, Menu, type ContextMenuParams, contextMenu } from 'react-contexify'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import {
   getJSXElementNameAsString,
   jsxAttributesFromMap,
@@ -9,7 +10,11 @@ import {
 import type { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
-import { insertJSXElement, setProp_UNSAFE } from '../../editor/actions/action-creators'
+import {
+  insertJSXElement,
+  replaceMappedElement,
+  setProp_UNSAFE,
+} from '../../editor/actions/action-creators'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
 import { ComponentPicker, type ElementToInsert } from './component-picker'
@@ -23,16 +28,11 @@ import { type ContextMenuItem } from '../../context-menu-items'
 import { FlexRow, Icn, type IcnProps } from '../../../uuiui'
 import { type EditorDispatch } from '../../editor/action-types'
 import { type ProjectContentTreeRoot } from '../../assets'
-import {
-  type PropertyControlsInfo,
-  type ComponentInfo,
-  ComponentDescriptor,
-} from '../../custom-code/code-file'
+import { type PropertyControlsInfo, type ComponentInfo } from '../../custom-code/code-file'
 import { type Icon } from 'utopia-api'
 import { getRegisteredComponent } from '../../../core/property-controls/property-controls-utils'
 import { defaultImportsForComponentModule } from '../../../core/property-controls/property-controls-local'
 import { useGetInsertableComponents } from '../../canvas/ui/floating-insert-menu'
-import { getInsertableGroupLabel } from '../../shared/project-components'
 
 function getIconForComponent(
   targetName: string,
@@ -224,6 +224,7 @@ function insertPreferredChild(
   preferredChildToInsert: ElementToInsert,
   target: ElementPath,
   projectContents: ProjectContentTreeRoot,
+  metadata: ElementInstanceMetadataMap,
   dispatch: EditorDispatch,
   insertionTarget: InsertionTarget,
 ) {
@@ -235,6 +236,11 @@ function insertPreferredChild(
 
   if (element.type !== 'JSX_ELEMENT') {
     throw new Error('only JSX elements are supported as preferred components')
+  }
+
+  if (MetadataUtils.isJSXMapExpression(EP.parentPath(target), metadata)) {
+    dispatch([replaceMappedElement(element, target, preferredChildToInsert.additionalImports)])
+    return
   }
 
   const insertionAction =
@@ -306,6 +312,7 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
     const dispatch = useDispatch()
 
     const projectContentsRef = useRefEditorState((state) => state.editor.projectContents)
+    const metadataRef = useRefEditorState((state) => state.editor.jsxMetadata)
 
     const onItemClick = React.useCallback(
       (preferredChildToInsert: ElementToInsert) =>
@@ -313,10 +320,11 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
           preferredChildToInsert,
           target,
           projectContentsRef.current,
+          metadataRef.current,
           dispatch,
           insertionTarget,
         ),
-      [dispatch, projectContentsRef, insertionTarget, target],
+      [target, projectContentsRef, metadataRef, dispatch, insertionTarget],
     )
     const wrapperRef = React.useRef<HTMLDivElement>(null)
 
@@ -381,6 +389,7 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
     const dispatch = useDispatch()
 
     const projectContentsRef = useRefEditorState((state) => state.editor.projectContents)
+    const metadataRef = useRefEditorState((state) => state.editor.jsxMetadata)
 
     const onItemClick = React.useCallback(
       (preferredChildToInsert: ElementToInsert) => (e: React.MouseEvent) => {
@@ -391,13 +400,14 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
           preferredChildToInsert,
           target,
           projectContentsRef.current,
+          metadataRef.current,
           dispatch,
           insertionTarget,
         )
 
         contextMenu.hideAll()
       },
-      [dispatch, projectContentsRef, insertionTarget, target],
+      [target, projectContentsRef, metadataRef, dispatch, insertionTarget],
     )
 
     const squashEvents = React.useCallback((e: React.MouseEvent<unknown>) => {
