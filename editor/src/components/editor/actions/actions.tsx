@@ -5330,10 +5330,7 @@ export const UPDATE_FNS = {
 
             addNewSelectedView(newUID)
           } else if (element.type === 'JSX_MAP_EXPRESSION') {
-            const fixedElement: JSXMapExpression = fixUtopiaElement(
-              { ...element, uid: newUID },
-              existingUids,
-            ).value as JSXMapExpression
+            const fixedElement = fixUtopiaElement({ ...element, uid: newUID }, existingUids).value
 
             withInsertedElement = insertJSXElementChildren(
               insertionPath,
