@@ -1,6 +1,6 @@
 import type { EditorAction } from '../../../../components/editor/action-types'
 import { updateBranchContents } from '../../../../components/editor/actions/action-creators'
-import type { GithubRepo } from '../../../../components/editor/store/editor-state'
+import type { GithubRepo, GithubUser } from '../../../../components/editor/store/editor-state'
 import type { GetBranchContentResponse } from '../helpers'
 import { getBranchContentFromServer } from '../helpers'
 import type { GithubOperationContext } from './github-operation-context'
@@ -8,6 +8,7 @@ import type { GithubOperationContext } from './github-operation-context'
 export const getBranchChecksums =
   (operationContext: GithubOperationContext) =>
   async (
+    userDetails: GithubUser | null,
     githubRepo: GithubRepo,
     branchName: string,
     commitSha: string,

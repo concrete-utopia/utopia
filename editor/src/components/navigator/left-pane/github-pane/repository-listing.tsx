@@ -9,7 +9,7 @@ import {
   showToast,
   updateGithubSettings,
 } from '../../../../components/editor/actions/action-creators'
-import type { GithubRepo } from '../../../../components/editor/store/editor-state'
+import type { GithubRepo, GithubUser } from '../../../../components/editor/store/editor-state'
 import {
   emptyGithubSettings,
   githubRepoEquals,
@@ -108,7 +108,7 @@ const RepositoryRow = (props: RepositoryRowProps) => {
     (e: React.MouseEvent) => {
       e.stopPropagation()
       if (githubUserDetails != null) {
-        void searchPublicRepoFromString(dispatch, githubUserDetails.login, props.fullName)
+        void searchPublicRepoFromString(dispatch, githubUserDetails, props.fullName)
       }
     },
     [dispatch, githubUserDetails, props],
@@ -296,20 +296,24 @@ export const RepositoryListing = React.memo(
     const dispatch = useDispatch()
 
     const refreshRepos = React.useCallback(() => {
-      void GithubOperations.getUsersPublicGithubRepositories(dispatch, 'polling').then(
-        (actions) => {
-          dispatch(actions, 'everyone')
-        },
-      )
-    }, [dispatch])
+      void GithubOperations.getUsersPublicGithubRepositories(
+        dispatch,
+        githubUserDetails,
+        'polling',
+      ).then((actions) => {
+        dispatch(actions, 'everyone')
+      })
+    }, [dispatch, githubUserDetails])
 
     const refreshReposOnClick = React.useCallback(() => {
-      void GithubOperations.getUsersPublicGithubRepositories(dispatch, 'user-initiated').then(
-        (actions) => {
-          dispatch(actions, 'everyone')
-        },
-      )
-    }, [dispatch])
+      void GithubOperations.getUsersPublicGithubRepositories(
+        dispatch,
+        githubUserDetails,
+        'user-initiated',
+      ).then((actions) => {
+        dispatch(actions, 'everyone')
+      })
+    }, [dispatch, githubUserDetails])
 
     React.useEffect(() => {
       setTimeout(() => refreshRepos(), 0)
@@ -322,7 +326,7 @@ export const RepositoryListing = React.memo(
     const onKeyDown = React.useCallback(
       (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && targetRepository != null && githubUserDetails != null) {
-          void searchPublicRepoFromString(dispatch, githubUserDetails.login, targetRepository)
+          void searchPublicRepoFromString(dispatch, githubUserDetails, targetRepository)
           return
         }
       },
@@ -444,18 +448,23 @@ function lookupSearchableRepositoryDetails(
 
 async function searchPublicRepoFromString(
   dispatch: EditorDispatch,
-  login: string,
+  userDetails: GithubUser,
   fullName: string,
 ) {
-  const details = lookupSearchableRepositoryDetails(login, fullName)
+  const details = lookupSearchableRepositoryDetails(userDetails.login, fullName)
   if (!isSearchableRepository(details)) {
     return
   }
 
-  const actions = await GithubOperations.searchPublicGithubRepository(dispatch, 'user-initiated', {
-    owner: details.owner,
-    repo: details.repo,
-  })
+  const actions = await GithubOperations.searchPublicGithubRepository(
+    dispatch,
+    userDetails,
+    'user-initiated',
+    {
+      owner: details.owner,
+      repo: details.repo,
+    },
+  )
 
   dispatch(actions, 'everyone')
 }

@@ -204,12 +204,12 @@ export type GithubOperationSource = 'polling' | 'user-initiated'
 
 export async function runGithubOperation(
   operation: GithubOperation,
+  userDetails: GithubUser | null,
   dispatch: EditorDispatch,
   source: GithubOperationSource,
   logic: GithubOperationLogic,
 ): Promise<Array<EditorAction>> {
   let result: Array<EditorAction> = []
-  const userDetails = await GithubHelpers.getUserDetailsFromServer()
   if (userDetails == null) {
     dispatch(resetGithubStateAndDataActions())
     return result
@@ -895,6 +895,7 @@ export function useGithubPolling() {
   const refreshAndScheduleGithubData = React.useCallback(async () => {
     await refreshGithubData(
       dispatch,
+      githubData.githubUserDetails,
       githubData.targetRepository,
       githubData.branchName,
       branchOriginContentsChecksums,
@@ -957,6 +958,7 @@ export function useGithubPolling() {
 
 export async function getRefreshGithubActions(
   dispatch: EditorDispatch,
+  userDetails: GithubUser | null,
   githubRepo: GithubRepo | null,
   branchName: string | null,
   branchOriginChecksums: FileChecksumsWithFile | null,
@@ -970,13 +972,18 @@ export async function getRefreshGithubActions(
   let actions: EditorAction[] = []
 
   // 1. list the repos
-  const userRepos = await getUsersPublicGithubRepositories(operationContext)(dispatch, initiator)
+  const userRepos = await getUsersPublicGithubRepositories(operationContext)(
+    dispatch,
+    userDetails,
+    initiator,
+  )
   actions.push(...userRepos)
 
   if (githubRepo != null) {
     // 2. get the branches
     const branches = await getBranchesForGithubRepository(operationContext)(
       dispatch,
+      userDetails,
       githubRepo,
       initiator,
     )
@@ -987,6 +994,7 @@ export async function getRefreshGithubActions(
         if (originCommitSha != null) {
           // 3. get the checksums
           const checksums = await getBranchChecksums(operationContext)(
+            userDetails,
             githubRepo,
             branchName,
             originCommitSha,
@@ -997,6 +1005,7 @@ export async function getRefreshGithubActions(
         // 4. update PRs
         const pullRequests = await updatePullRequestsForBranch(operationContext)(
           dispatch,
+          userDetails,
           githubRepo,
           branchName,
           initiator,
@@ -1022,6 +1031,7 @@ export async function getRefreshGithubActions(
 
 export async function refreshGithubData(
   dispatch: EditorDispatch,
+  userDetails: GithubUser | null,
   githubRepo: GithubRepo | null,
   branchName: string | null,
   branchOriginChecksums: FileChecksumsWithFile | null,
@@ -1033,6 +1043,7 @@ export async function refreshGithubData(
   try {
     const actions = await getRefreshGithubActions(
       dispatch,
+      userDetails,
       githubRepo,
       branchName,
       branchOriginChecksums,
@@ -1112,6 +1123,7 @@ interface GithubSaveAssetResponseSuccess {
 type GithubSaveAssetResponse = GithubSaveAssetResponseSuccess | GithubFailure
 
 export async function saveGithubAsset(
+  userDetails: GithubUser | null,
   githubRepo: GithubRepo,
   assetSha: string,
   projectID: string,
@@ -1122,6 +1134,7 @@ export async function saveGithubAsset(
 ): Promise<void> {
   await runGithubOperation(
     { name: 'saveAsset', path: path },
+    userDetails,
     dispatch,
     initiator,
     async (operation: GithubOperation) => {
@@ -1164,6 +1177,7 @@ export const resolveConflict =
   (operationContext: GithubOperationContext) =>
   async (
     githubRepo: GithubRepo,
+    userDetails: GithubUser | null,
     projectID: string,
     path: string,
     conflict: Conflict,
@@ -1187,6 +1201,7 @@ export const resolveConflict =
         saveAssetPromise = Promise.resolve()
       } else {
         saveAssetPromise = saveGithubAsset(
+          userDetails,
           githubRepo,
           gitBlobSha,
           projectID,

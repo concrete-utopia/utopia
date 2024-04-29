@@ -1,10 +1,11 @@
 import type { ContextMenuItem } from '../../components/context-menu-items'
 import type { EditorDispatch } from '../../components/editor/action-types'
-import type { GithubRepo } from '../../components/editor/store/editor-state'
+import type { GithubRepo, GithubUser } from '../../components/editor/store/editor-state'
 import type { Conflict } from './github/helpers'
 import { GithubOperations } from './github/operations'
 
 export function getConflictMenuItems(
+  userDetails: GithubUser | null,
   githubRepo: GithubRepo,
   projectID: string,
   dispatch: EditorDispatch,
@@ -15,6 +16,7 @@ export function getConflictMenuItems(
   function applyChange(whichChange: 'utopia' | 'branch'): void {
     void GithubOperations.resolveConflict(
       githubRepo,
+      userDetails,
       projectID,
       path,
       conflict,

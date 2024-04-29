@@ -871,6 +871,7 @@ class FileBrowserItemInner extends React.PureComponent<
       ) {
         items.push(
           ...getConflictMenuItems(
+            this.props.githubUserDetails,
             this.props.githubRepo,
             this.props.projectID,
             this.props.dispatch,

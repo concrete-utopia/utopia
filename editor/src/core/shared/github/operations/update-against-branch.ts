@@ -8,7 +8,11 @@ import {
   updateBranchContents,
   updateGithubData,
 } from '../../../../components/editor/actions/action-creators'
-import type { GithubOperation, GithubRepo } from '../../../../components/editor/store/editor-state'
+import type {
+  GithubOperation,
+  GithubRepo,
+  GithubUser,
+} from '../../../../components/editor/store/editor-state'
 import { updateProjectContentsWithParseResults } from '../../parser-projectcontents-utils'
 import type { GetBranchContentResponse, GithubOperationSource } from '../helpers'
 import {
@@ -24,6 +28,7 @@ export const updateProjectAgainstGithub =
   (operationContext: GithubOperationContext) =>
   async (
     workers: UtopiaTsWorkers,
+    userDetails: GithubUser | null,
     dispatch: EditorDispatch,
     githubRepo: GithubRepo,
     branchName: string,
@@ -34,6 +39,7 @@ export const updateProjectAgainstGithub =
   ): Promise<void> => {
     await runGithubOperation(
       { name: 'updateAgainstBranch' },
+      userDetails,
       dispatch,
       initiator,
       async (operation: GithubOperation) => {
@@ -91,6 +97,7 @@ export const updateProjectAgainstGithub =
 
         // Save assets to the server from Github.
         await saveAssetsToProject(operationContext)(
+          userDetails,
           githubRepo,
           projectID,
           branchLatestContent.branch,

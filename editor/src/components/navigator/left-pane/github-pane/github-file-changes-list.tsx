@@ -107,9 +107,15 @@ const ConflictButton = React.memo((props: ConflictButtonProps) => {
     },
     'ConflictButton projectID',
   )
+  const githubUser = useEditorState(
+    Substores.github,
+    (store) => store.editor.githubData.githubUserDetails,
+    'Github userDetails',
+  )
   const menuItems = React.useMemo(() => {
     if (githubRepo != null && projectID != null) {
       return getConflictMenuItems(
+        githubUser,
         githubRepo,
         projectID,
         dispatch,
@@ -120,7 +126,7 @@ const ConflictButton = React.memo((props: ConflictButtonProps) => {
     } else {
       return []
     }
-  }, [props.fullPath, props.conflict, dispatch, githubRepo, projectID])
+  }, [props.fullPath, props.conflict, dispatch, githubRepo, projectID, githubUser])
   const { show } = useContextMenu({
     id: menuId,
   })

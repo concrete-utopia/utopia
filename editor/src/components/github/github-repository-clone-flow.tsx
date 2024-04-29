@@ -9,6 +9,7 @@ import { Dialog, FormButton } from '../../uuiui'
 import { isLoggedIn, type EditorDispatch } from '../editor/action-types'
 import { setGithubState } from '../editor/actions/action-creators'
 import { useDispatch } from '../editor/store/dispatch-context'
+import type { GithubUser } from '../editor/store/editor-state'
 import { type EditorStorePatched, type GithubRepoWithBranch } from '../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { onClickSignIn } from '../titlebar/title-bar'
@@ -32,6 +33,11 @@ export const GithubRepositoryCloneFlow = React.memo(() => {
     Substores.userState,
     (store) => store.userState.githubState.authenticated,
     'GithubRepositoryCloneFlow githubAuthenticated',
+  )
+  const githubUser = useEditorState(
+    Substores.github,
+    (store) => store.editor.githubData.githubUserDetails,
+    'Github userDetails',
   )
 
   const onClickAuthenticateWithGithub = useOnClickAuthenticateWithGithub()
@@ -77,7 +83,7 @@ export const GithubRepositoryCloneFlow = React.memo(() => {
   }
 
   // The GitClonePseudoElement triggers the actual repo cloning
-  return <GitClonePseudoElement githubRepo={githubRepo} />
+  return <GitClonePseudoElement githubRepo={githubRepo} userDetails={githubUser} />
 })
 
 // The git repo clone flow is initiated from the URL, which means we only ever want to do it once per editor load
@@ -85,6 +91,7 @@ let didWeInitiateGitRepoDownloadSinceTheEditorLoaded = false
 
 async function cloneGithubRepo(
   dispatch: EditorDispatch,
+  userDetails: GithubUser | null,
   storeRef: { current: EditorStorePatched },
   githubRepo: GithubRepoWithBranch,
 ) {
@@ -102,6 +109,7 @@ async function cloneGithubRepo(
   const createdProjectID = loadActionDispatchedByPersistenceMachine.projectId
   await GithubOperations.updateProjectWithBranchContent(
     storeRef.current.workers,
+    userDetails,
     dispatch,
     forceNotNull('Should have a project ID by now.', createdProjectID),
     githubRepo,
@@ -123,21 +131,23 @@ async function cloneGithubRepo(
   // TODO make sure the EditorState knows we have a github repo connected!!!
 }
 
-const GitClonePseudoElement = React.memo((props: { githubRepo: GithubRepoWithBranch }) => {
-  const { githubRepo } = props
-  const dispatch = useDispatch()
+const GitClonePseudoElement = React.memo(
+  (props: { githubRepo: GithubRepoWithBranch; userDetails: GithubUser | null }) => {
+    const { githubRepo, userDetails } = props
+    const dispatch = useDispatch()
 
-  const editorStoreRef = useRefEditorState((store) => store)
+    const editorStoreRef = useRefEditorState((store) => store)
 
-  React.useEffect(() => {
-    void cloneGithubRepo(dispatch, editorStoreRef, githubRepo)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    React.useEffect(() => {
+      void cloneGithubRepo(dispatch, userDetails, editorStoreRef, githubRepo)
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
-  // The GitClonePseudoElement's sole job is to call cloneGithubRepo in a useEffect.
-  // I pulled it to a dedicated component so it's purpose remains clear and this useEffect doesn't get lost in the noise
-  return null
-})
+    // The GitClonePseudoElement's sole job is to call cloneGithubRepo in a useEffect.
+    // I pulled it to a dedicated component so it's purpose remains clear and this useEffect doesn't get lost in the noise
+    return null
+  },
+)
 
 function awaitLoadActionDispatchedByPersistenceMachine(): Promise<{ projectId: string }> {
   invariant(

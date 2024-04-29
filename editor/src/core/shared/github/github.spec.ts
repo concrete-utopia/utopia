@@ -1,6 +1,7 @@
 import type { ProjectContentTreeRoot } from '../../../components/assets'
 import type { EditorDispatch } from '../../../components/editor/action-types'
 import { updateGithubData } from '../../../components/editor/actions/action-creators'
+import type { GithubUser } from '../../../components/editor/store/editor-state'
 import type { RepositoryEntry } from './helpers'
 import {
   getRefreshGithubActions,
@@ -104,6 +105,7 @@ describe('github helpers', () => {
 
         const got = await getRefreshGithubActions(
           mockDispatch,
+          { login: 'bob' } as GithubUser,
           null,
           null,
           null,
@@ -150,6 +152,7 @@ describe('github helpers', () => {
 
         const got = await getRefreshGithubActions(
           mockDispatch,
+          { login: 'bob' } as GithubUser,
           { owner: 'foo', repository: 'bar' },
           null,
           null,

@@ -4,6 +4,7 @@ import { updateGithubData } from '../../../../components/editor/actions/action-c
 import type {
   GithubOperation,
   GithubRepo,
+  GithubUser,
   PullRequest,
 } from '../../../../components/editor/store/editor-state'
 import { GithubEndpoints } from '../endpoints'
@@ -32,6 +33,7 @@ export const updatePullRequestsForBranch =
   (operationContext: GithubOperationContext) =>
   async (
     dispatch: EditorDispatch,
+    userDetails: GithubUser | null,
     githubRepo: GithubRepo,
     branchName: string,
     initiator: GithubOperationSource,
@@ -42,6 +44,7 @@ export const updatePullRequestsForBranch =
         githubRepo: githubRepo,
         branchName: branchName,
       },
+      userDetails,
       dispatch,
       initiator,
       async (operation: GithubOperation) => {

@@ -182,6 +182,11 @@ const BranchBlock = () => {
     () => isGithubListingBranches(githubOperations),
     [githubOperations],
   )
+  const githubUser = useEditorState(
+    Substores.github,
+    (store) => store.editor.githubData.githubUserDetails,
+    'Github userDetails',
+  )
 
   const refreshBranchesOnMouseUp = React.useCallback(() => {
     if (targetRepository != null) {
@@ -189,21 +194,27 @@ const BranchBlock = () => {
         dispatch,
         GithubOperations.getBranchesForGithubRepository(
           dispatch,
+          githubUser,
           targetRepository,
           'user-initiated',
         ),
       )
     }
-  }, [dispatch, targetRepository])
+  }, [dispatch, targetRepository, githubUser])
 
   React.useEffect(() => {
     if (targetRepository != null) {
       void dispatchPromiseActions(
         dispatch,
-        GithubOperations.getBranchesForGithubRepository(dispatch, targetRepository, 'polling'),
+        GithubOperations.getBranchesForGithubRepository(
+          dispatch,
+          githubUser,
+          targetRepository,
+          'polling',
+        ),
       )
     }
-  }, [dispatch, targetRepository])
+  }, [dispatch, targetRepository, githubUser])
 
   const [expandedFlag, setExpandedFlag] = React.useState(false)
 
@@ -506,10 +517,16 @@ const RemoteChangesBlock = () => {
     (store) => store.editor.githubSettings.originCommit,
     'Github commit',
   )
+  const githubUser = useEditorState(
+    Substores.github,
+    (store) => store.editor.githubData.githubUserDetails,
+    'Github userDetails',
+  )
   const triggerUpdateAgainstGithub = React.useCallback(() => {
     if (repo != null && branch != null && commit != null) {
       void GithubOperations.updateProjectAgainstGithub(
         workersRef.current,
+        githubUser,
         dispatch,
         repo,
         branch,
@@ -519,7 +536,7 @@ const RemoteChangesBlock = () => {
         'user-initiated',
       )
     }
-  }, [workersRef, dispatch, repo, branch, commit, projectIDRef, currentContentsRef])
+  }, [workersRef, dispatch, repo, branch, commit, projectIDRef, currentContentsRef, githubUser])
   const githubAuthenticated = useEditorState(
     Substores.restOfStore,
     (store) => store.userState.githubState.authenticated,
@@ -600,6 +617,11 @@ const LocalChangesBlock = () => {
     (store) => store.editor.githubSettings.targetRepository,
     'Github repo',
   )
+  const githubUser = useEditorState(
+    Substores.github,
+    (store) => store.editor.githubData.githubUserDetails,
+    'Github userDetails',
+  )
 
   const branch = useEditorState(
     Substores.github,
@@ -675,6 +697,7 @@ const LocalChangesBlock = () => {
       return
     }
     void GithubOperations.saveProjectToGithub(
+      githubUser,
       projectId,
       repo,
       persistentModelFromEditorModel(editorStateRef.current),
@@ -690,6 +713,7 @@ const LocalChangesBlock = () => {
       'user-initiated',
     )
   }, [
+    githubUser,
     repo,
     cleanedCommitBranchName,
     commitMessage,
@@ -881,11 +905,17 @@ const BranchNotLoadedBlock = () => {
     projectDependenciesSelector,
     'Project dependencies',
   )
+  const githubUser = useEditorState(
+    Substores.github,
+    (store) => store.editor.githubData.githubUserDetails,
+    'Github userDetails',
+  )
 
   const loadFromBranch = React.useCallback(() => {
     if (githubRepo != null && branchName != null) {
       void GithubOperations.updateProjectWithBranchContent(
         workersRef.current,
+        githubUser,
         dispatch,
         forceNotNull('Should have a project ID by now.', projectID),
         githubRepo,
@@ -898,6 +928,7 @@ const BranchNotLoadedBlock = () => {
       )
     }
   }, [
+    githubUser,
     workersRef,
     dispatch,
     githubRepo,
@@ -939,6 +970,7 @@ const BranchNotLoadedBlock = () => {
       return
     }
     void GithubOperations.saveProjectToGithub(
+      githubUser,
       projectId,
       githubRepo,
       persistentModelFromEditorModel(editorStateRef.current),
@@ -954,6 +986,7 @@ const BranchNotLoadedBlock = () => {
       'user-initiated',
     )
   }, [
+    githubUser,
     githubRepo,
     branchName,
     projectId,
