@@ -13,6 +13,7 @@ import { GithubAuth } from '../../../../utils/github-auth'
 import {
   setGithubState,
   setLoginState,
+  updateGithubData,
 } from '../../../../components/editor/actions/action-creators'
 import { getUsersPublicGithubRepositories } from './load-repositories'
 import { updateProjectAgainstGithub } from './update-against-branch'
@@ -24,6 +25,9 @@ export async function loginUserToGithubForTests(dispatch: AsyncEditorDispatch) {
     [
       setLoginState({ type: 'LOGGED_IN', user: { userId: 'user' } }),
       setGithubState({ authenticated: true }),
+      updateGithubData({
+        githubUserDetails: { login: 'stub', avatarURL: 'stub', htmlURL: 'stub', name: null },
+      }),
     ],
     true,
   )

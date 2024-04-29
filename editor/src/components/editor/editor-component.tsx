@@ -4,10 +4,15 @@
 import { css, jsx, keyframes } from '@emotion/react'
 import { chrome as isChrome } from 'platform-detect'
 import React from 'react'
+import ReactDOM from 'react-dom'
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { IS_TEST_ENVIRONMENT } from '../../common/env-vars'
-import { assertNever, projectURLForProject } from '../../core/shared/utils'
+import {
+  CanvasContextMenuPortalTargetID,
+  assertNever,
+  projectURLForProject,
+} from '../../core/shared/utils'
 import Keyboard from '../../utils/keyboard'
 import { Modifier } from '../../utils/modifiers'
 import {
@@ -78,6 +83,7 @@ import {
 } from './persistence/persistence-backend'
 import { useUpdateActiveRemixSceneOnSelectionChange } from '../canvas/remix/utopia-remix-root-component'
 import { useDefaultCollapsedViews } from './use-default-collapsed-views'
+import { ComponentPickerContextMenu } from '../navigator/navigator-item/component-picker-context-menu'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -121,6 +127,8 @@ function githubOperationPrettyNameForOverlay(op: GithubOperation): string {
       return 'Listing GitHub pull requests'
     case 'saveAsset':
       return 'Saving asset to GitHub'
+    case 'searchRepository':
+      return 'Searching public repository'
     default:
       assertNever(op)
   }
@@ -434,6 +442,8 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
 
   useDefaultCollapsedViews()
 
+  const portalTarget = document.getElementById(CanvasContextMenuPortalTargetID)
+
   return (
     <>
       <ColorThemeComponent />
@@ -530,6 +540,9 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
         <LockedOverlay />
         <SharingDialog />
       </SimpleFlexRow>
+      {portalTarget != null
+        ? ReactDOM.createPortal(<ComponentPickerContextMenu />, portalTarget)
+        : null}
       <EditorCommon
         mouseDown={onWindowMouseDown}
         mouseUp={onWindowMouseUp}

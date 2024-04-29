@@ -24,7 +24,6 @@ import {
   Section,
   SectionTitleRow,
   StringInput,
-  Title,
   UtopiaTheme,
 } from '../../../../uuiui'
 import { User } from '../../../../uuiui-deps'
@@ -59,6 +58,30 @@ const compactTimeagoFormatter = (value: number, unit: string) => {
 
 type IndicatorState = 'incomplete' | 'failed' | 'successful' | 'pending'
 
+export const AuthenticateWithGithubButton = () => {
+  const triggerAuthentication = useOnClickAuthenticateWithGithub()
+  return (
+    <Button
+      spotlight
+      highlight
+      style={{
+        padding: '1em',
+        borderRadius: 3,
+        background: colorTheme.dynamicBlue.value,
+        color: colorTheme.bg1.value,
+      }}
+      css={{
+        '&:hover': {
+          opacity: 0.7,
+        },
+      }}
+      onMouseUp={triggerAuthentication}
+    >
+      Authenticate With Github
+    </Button>
+  )
+}
+
 const AccountBlock = () => {
   const authenticated = useEditorState(
     Substores.restOfStore,
@@ -67,32 +90,13 @@ const AccountBlock = () => {
   )
   const state = React.useMemo(() => (authenticated ? 'successful' : 'incomplete'), [authenticated])
 
-  const triggerAuthentication = useOnClickAuthenticateWithGithub()
-
   if (authenticated) {
     return null
   }
 
   return (
     <Block title='Account' status={state} first={true} last={true} expanded={true}>
-      <Button
-        spotlight
-        highlight
-        style={{
-          padding: '1em',
-          borderRadius: 3,
-          background: colorTheme.dynamicBlue.value,
-          color: colorTheme.bg1.value,
-        }}
-        css={{
-          '&:hover': {
-            opacity: 0.7,
-          },
-        }}
-        onMouseUp={triggerAuthentication}
-      >
-        Authenticate With Github
-      </Button>
+      <AuthenticateWithGithubButton />
     </Block>
   )
 }
@@ -138,9 +142,7 @@ const RepositoryBlock = () => {
     >
       <FlexColumn style={{ gap: 4 }}>
         <UIGridRow padded={false} variant='<-------------1fr------------->'>
-          <div>
-            We only support <strong>public</strong> repositories at this time.
-          </div>
+          <div>Check your project sharing settings when importing from private repositories</div>
         </UIGridRow>
         <RepositoryListing
           githubAuthenticated={githubAuthenticated}
@@ -167,7 +169,10 @@ const BranchBlock = () => {
   const repositoryData = useEditorState(
     Substores.github,
     (store) =>
-      store.editor.githubData.publicRepositories.find(
+      [
+        ...store.editor.githubData.userRepositories,
+        ...store.editor.githubData.publicRepositories,
+      ].find(
         (r) => r.fullName === githubRepoFullName(store.editor.githubSettings.targetRepository),
       ) ?? null,
     'BranchBlock Repository data',
@@ -803,7 +808,7 @@ const PullRequestButton = () => {
   const repo = useEditorState(
     Substores.github,
     (store) =>
-      store.editor.githubData.publicRepositories.find(
+      store.editor.githubData.userRepositories.find(
         (r) => r.fullName === githubRepoFullName(store.editor.githubSettings.targetRepository),
       ) ?? null,
     'PullRequestButton repository',
@@ -1138,8 +1143,7 @@ export const GithubPane = React.memo(() => {
     <div style={{ height: '100%', overflowY: 'scroll' }} onFocus={onFocus}>
       <Section>
         <SectionTitleRow minimised={false} hideButton>
-          <FlexRow>
-            <MenuIcons.Octocat style={{ width: 19, height: 19 }} />
+          <FlexRow style={{ alignItems: 'flex-start' }}>
             {githubUser != null ? (
               <Button
                 style={{ gap: 4, padding: '0 6px' }}
@@ -1152,7 +1156,19 @@ export const GithubPane = React.memo(() => {
               >
                 @{githubUser?.login}
               </Button>
-            ) : null}
+            ) : (
+              <UIGridRow
+                variant='<-auto-><----------1fr--------->'
+                padded
+                style={{
+                  minHeight: UtopiaTheme.layout.rowHeight.normal,
+                  color: colorTheme.fg1.value,
+                }}
+              >
+                <MenuIcons.Octocat style={{ width: 19, height: 19 }} />
+                <AuthenticateWithGithubButton />
+              </UIGridRow>
+            )}
           </FlexRow>
         </SectionTitleRow>
         {unless(
@@ -1168,7 +1184,7 @@ export const GithubPane = React.memo(() => {
         )}
       </Section>
       {when(
-        isLoggedIn,
+        isLoggedIn && githubUser != null,
         <Section style={{ padding: '10px' }}>
           <AccountBlock />
           <RepositoryBlock />
