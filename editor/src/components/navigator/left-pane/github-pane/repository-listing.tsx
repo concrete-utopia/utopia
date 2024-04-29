@@ -108,7 +108,7 @@ const RepositoryRow = (props: RepositoryRowProps) => {
     (e: React.MouseEvent) => {
       e.stopPropagation()
       if (githubUserDetails != null) {
-        void searchPublicRepoFromString(dispatch, githubUserDetails, props.fullName)
+        void searchPublicRepoFromString(dispatch, githubUserDetails.login, props.fullName)
       }
     },
     [dispatch, githubUserDetails, props],
@@ -322,7 +322,7 @@ export const RepositoryListing = React.memo(
     const onKeyDown = React.useCallback(
       (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && targetRepository != null && githubUserDetails != null) {
-          void searchPublicRepoFromString(dispatch, githubUserDetails, targetRepository)
+          void searchPublicRepoFromString(dispatch, githubUserDetails.login, targetRepository)
           return
         }
       },
@@ -444,10 +444,10 @@ function lookupSearchableRepositoryDetails(
 
 async function searchPublicRepoFromString(
   dispatch: EditorDispatch,
-  userDetails: GithubUser,
+  login: string,
   fullName: string,
 ) {
-  const details = lookupSearchableRepositoryDetails(userDetails.login, fullName)
+  const details = lookupSearchableRepositoryDetails(login, fullName)
   if (!isSearchableRepository(details)) {
     return
   }
