@@ -10,7 +10,6 @@ import type {
   FileChecksums,
   GithubOperation,
   GithubRepo,
-  GithubUser,
   PersistentModel,
 } from '../../../../components/editor/store/editor-state'
 import { projectGithubSettings } from '../../../../components/editor/store/editor-state'

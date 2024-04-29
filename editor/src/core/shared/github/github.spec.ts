@@ -1,7 +1,6 @@
 import type { ProjectContentTreeRoot } from '../../../components/assets'
 import type { EditorDispatch } from '../../../components/editor/action-types'
 import { updateGithubData } from '../../../components/editor/actions/action-creators'
-import type { GithubUser } from '../../../components/editor/store/editor-state'
 import type { RepositoryEntry } from './helpers'
 import {
   getRefreshGithubActions,

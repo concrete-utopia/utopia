@@ -9,7 +9,7 @@ import {
   showToast,
   updateGithubSettings,
 } from '../../../../components/editor/actions/action-creators'
-import type { GithubRepo, GithubUser } from '../../../../components/editor/store/editor-state'
+import type { GithubRepo } from '../../../../components/editor/store/editor-state'
 import {
   emptyGithubSettings,
   githubRepoEquals,

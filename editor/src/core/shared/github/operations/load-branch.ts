@@ -18,7 +18,6 @@ import type {
   GithubData,
   GithubOperation,
   GithubRepo,
-  GithubUser,
 } from '../../../../components/editor/store/editor-state'
 import type { BuiltInDependencies } from '../../../es-modules/package-manager/built-in-dependencies-list'
 import { refreshDependencies } from '../../dependencies'
