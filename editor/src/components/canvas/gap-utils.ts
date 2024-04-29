@@ -1,8 +1,11 @@
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { reverse, stripNulls } from '../../core/shared/array-utils'
 import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
-import { defaultEither, isLeft, right } from '../../core/shared/either'
-import type { ElementInstanceMetadataMap } from '../../core/shared/element-template'
+import { defaultEither, isLeft, mapEither, right } from '../../core/shared/either'
+import type {
+  ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
+} from '../../core/shared/element-template'
 import { isJSXElement } from '../../core/shared/element-template'
 import type { CanvasRectangle, CanvasVector } from '../../core/shared/math-utils'
 import { canvasRectangle, isInfinityRectangle } from '../../core/shared/math-utils'
@@ -15,8 +18,11 @@ import { cssNumber } from '../inspector/common/css-utils'
 import type { Sides } from 'utopia-api/core'
 import { sides } from 'utopia-api/core'
 import { styleStringInArray } from '../../utils/common-constants'
-import type { ElementPathTrees } from '../../core/shared/element-path-tree'
+import { getSubTree, type ElementPathTrees } from '../../core/shared/element-path-tree'
 import { isReversedFlexDirection } from '../../core/model/flex-utils'
+import * as EP from '../../core/shared/element-path'
+import { treatElementAsFragmentLike } from './canvas-strategies/strategies/fragment-like-helpers'
+import type { AllElementProps } from '../editor/store/editor-state'
 
 export interface PathWithBounds {
   bounds: CanvasRectangle
@@ -106,26 +112,20 @@ function inset(sidess: Sides, rect: CanvasRectangle): CanvasRectangle {
 
 export function gapControlBoundsFromMetadata(
   elementMetadata: ElementInstanceMetadataMap,
-  pathTrees: ElementPathTrees,
-  selectedElement: ElementPath,
+  parentPath: ElementPath,
+  children: ElementPath[],
   gap: number,
   flexDirection: FlexDirection,
 ): Array<PathWithBounds> {
   const elementPadding =
-    MetadataUtils.findElementByElementPath(elementMetadata, selectedElement)
-      ?.specialSizeMeasurements.padding ?? sides(0, 0, 0, 0)
-  const parentFrame = MetadataUtils.getFrameInCanvasCoords(selectedElement, elementMetadata)
+    MetadataUtils.findElementByElementPath(elementMetadata, parentPath)?.specialSizeMeasurements
+      .padding ?? sides(0, 0, 0, 0)
+  const parentFrame = MetadataUtils.getFrameInCanvasCoords(parentPath, elementMetadata)
   if (parentFrame == null || isInfinityRectangle(parentFrame)) {
     return []
   }
 
   const parentBounds = inset(elementPadding, parentFrame)
-
-  const children = MetadataUtils.getChildrenPathsOrdered(
-    elementMetadata,
-    pathTrees,
-    selectedElement,
-  )
 
   // Needs to handle reversed content as that will be flipped in the visual order, which changes
   // what elements will be either side of the gaps.
@@ -159,9 +159,8 @@ export interface FlexGapData {
   direction: FlexDirection
 }
 
-export function maybeFlexGapFromElement(
+export function maybeFlexGapData(
   metadata: ElementInstanceMetadataMap,
-  pathTrees: ElementPathTrees,
   elementPath: ElementPath,
 ): FlexGapData | null {
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
@@ -178,11 +177,6 @@ export function maybeFlexGapFromElement(
     return null
   }
 
-  const children = MetadataUtils.getChildrenOrdered(metadata, pathTrees, elementPath)
-  if (children.length < 2) {
-    return null
-  }
-
   const gap = element.specialSizeMeasurements.gap ?? 0
 
   const gapFromProps: CSSNumber | undefined = defaultEither(
@@ -196,4 +190,42 @@ export function maybeFlexGapFromElement(
     value: { renderedValuePx: gap, value: gapFromProps ?? cssNumber(0) },
     direction: flexDirection,
   }
+}
+
+export function recurseIntoChildrenOfMapOrFragment(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
+  target: ElementPath,
+): Array<ElementInstanceMetadata> {
+  const subTree = getSubTree(pathTrees, target)
+  if (subTree == null) {
+    return []
+  }
+
+  return subTree.children.flatMap((element) => {
+    const elementPath = element.path
+    if (EP.isRootElementOfInstance(elementPath)) {
+      return []
+    }
+
+    const isMap = MetadataUtils.isJSXMapExpression(elementPath, metadata)
+    const isFragmentLike = treatElementAsFragmentLike(
+      metadata,
+      allElementProps,
+      pathTrees,
+      elementPath,
+      'sizeless-div-not-considered-fragment-like',
+    )
+
+    if (isFragmentLike || isMap) {
+      return recurseIntoChildrenOfMapOrFragment(metadata, allElementProps, pathTrees, elementPath)
+    }
+    const instance = MetadataUtils.findElementByElementPath(metadata, elementPath)
+    if (instance == null) {
+      return []
+    }
+
+    return [instance]
+  })
 }

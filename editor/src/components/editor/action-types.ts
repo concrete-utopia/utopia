@@ -150,6 +150,13 @@ export interface InsertJSXElement {
   insertionBehaviour: 'insert-as-child' | 'replace-target'
 }
 
+export interface ReplaceMappedElement {
+  action: 'REPLACE_MAPPED_ELEMENT'
+  jsxElement: JSXElement
+  target: ElementPath
+  importsToAdd: Imports
+}
+
 export interface InsertAttributeOtherJavascriptIntoElement {
   action: 'INSERT_ATTRIBUTE_OTHER_JAVASCRIPT_INTO_ELEMENT'
   expression: JSExpressionOtherJavaScript
@@ -1153,6 +1160,7 @@ export interface IncreaseOnlineStateFailureCount {
 export type EditorAction =
   | ClearSelection
   | InsertJSXElement
+  | ReplaceMappedElement
   | InsertAttributeOtherJavascriptIntoElement
   | DeleteSelected
   | DeleteView

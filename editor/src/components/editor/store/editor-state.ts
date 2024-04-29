@@ -3516,7 +3516,7 @@ export function defaultModifyParseSuccess(success: ParseSuccess): ParseSuccess {
   return success
 }
 
-function modifyUnderlyingTarget(
+export function modifyUnderlyingTarget(
   target: ElementPath | null,
   editor: EditorState,
   modifyElement: (

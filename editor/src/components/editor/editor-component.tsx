@@ -87,6 +87,7 @@ import {
   ComponentPickerContextMenu,
   useCreateCallbackToShowComponentPicker,
 } from '../navigator/navigator-item/component-picker-context-menu'
+import { useGithubPolling } from '../../core/shared/github/helpers'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -448,6 +449,8 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
   useLiveblocksConnectionListener()
 
   useDefaultCollapsedViews()
+
+  useGithubPolling()
 
   const portalTarget = document.getElementById(CanvasContextMenuPortalTargetID)
 
