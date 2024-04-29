@@ -726,6 +726,80 @@ describe('canvas toolbar', () => {
     )
   })
 
+  xit('can insert map via the floating insert menu', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`<div
+    style={{
+      backgroundColor: '#fefefe',
+      position: 'absolute',
+      left: 46,
+      top: 95,
+      width: 604,
+      height: 256,
+      display: 'flex',
+      gap: 10,
+    }}
+    data-uid='flex-row'
+  />`),
+      'await-first-dom-report',
+    )
+
+    await selectComponentsForTest(editor, [
+      EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:flex-row`),
+    ])
+
+    await insertViaAddElementPopup(editor, 'List')
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Scene, Storyboard, View, Group } from 'utopia-api'
+import { Placeholder } from 'utopia-api'
+
+export var App = (props) => {
+  return (
+    <div
+      style={{
+        backgroundColor: '#fefefe',
+        position: 'absolute',
+        left: 46,
+        top: 95,
+        width: 604,
+        height: 256,
+        display: 'flex',
+        gap: 10,
+      }}
+      data-uid='flex-row'
+    >
+      {[1, 2, 3].map((v) => (
+        <Placeholder data-uid='pla' />
+      ))}
+    </div>
+  )
+}
+
+export var storyboard = (props) => {
+  return (
+    <Storyboard data-uid='utopia-storyboard-uid'>
+      <Scene
+        style={{ left: 0, top: 0, width: 400, height: 400 }}
+        data-uid='scene-aaa'
+      >
+        <App
+          data-uid='app-entity'
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            top: 0,
+          }}
+        />
+      </Scene>
+    </Storyboard>
+  )
+}
+`)
+  })
+
   xit('can search for and insert default exported component', async () => {
     const editor = await renderTestEditorWithModel(
       createTestProjectWithMultipleFiles({
@@ -1532,8 +1606,4 @@ async function wrapViaAddElementPopup(editor: EditorRenderResult, query: string)
 async function convertViaAddElementPopup(editor: EditorRenderResult, query: string) {
   await pressKey('s')
   await searchInFloatingMenu(editor, query)
-}
-
-function getFloatingMenuItems() {
-  return screen.queryAllByTestId(/^floating-menu-item-/gi)
 }

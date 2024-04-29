@@ -6,16 +6,16 @@ import { Icn, type IcnProps } from '../../../uuiui'
 import { dark } from '../../../uuiui/styles/theme/dark'
 import type { JSXElementChild } from '../../../core/shared/element-template'
 import { type Imports } from '../../../core/shared/project-file-types'
-import { elementFromInsertMenuItem } from '../../editor/insert-callbacks'
 import { type ComponentElementToInsert } from '../../custom-code/code-file'
 import type { InsertMenuItemGroup } from '../../canvas/ui/floating-insert-menu'
 import { UIGridRow } from '../../../components/inspector/widgets/ui-grid-row'
 import { FlexRow, type Icon } from 'utopia-api'
 import { assertNever } from '../../../core/shared/utils'
+import type { InsertableComponent } from '../../shared/project-components'
 
 export interface ComponentPickerProps {
   allComponents: Array<InsertMenuItemGroup>
-  onItemClick: (elementToInsert: ElementToInsert) => React.MouseEventHandler
+  onItemClick: (elementToInsert: InsertableComponent) => React.MouseEventHandler
 }
 
 export interface ElementToInsert {
@@ -159,7 +159,7 @@ const FilterBar = React.memo((props: FilterBarProps) => {
 
 interface ComponentPickerComponentSectionProps {
   components: Array<InsertMenuItemGroup>
-  onItemClick: (elementToInsert: ElementToInsert) => React.MouseEventHandler
+  onItemClick: (elementToInsert: InsertableComponent) => React.MouseEventHandler
 }
 
 const ComponentPickerComponentSection = React.memo(
@@ -207,47 +207,15 @@ function iconPropsForIcon(icon: Icon): IcnProps {
   }
 }
 
-interface ComponentInfoWithIcon {
-  insertMenuLabel: string
-  elementToInsert: () => ComponentElementToInsert
-  importsToAdd: Imports
-  icon: Icon
-}
-
-function componentInfoWithIcon(
-  insertMenuLabel: string,
-  elementToInsert: () => ComponentElementToInsert,
-  importsToAdd: Imports,
-  icon: Icon,
-): ComponentInfoWithIcon {
-  return {
-    insertMenuLabel: insertMenuLabel,
-    elementToInsert: elementToInsert,
-    importsToAdd: importsToAdd,
-    icon: icon,
-  }
-}
-
 interface ComponentPickerOptionProps {
   component: InsertMenuItemGroup
-  onItemClick: (elementToInsert: ElementToInsert) => React.MouseEventHandler
-}
-
-function variantsForComponent(component: InsertMenuItemGroup): ComponentInfoWithIcon[] {
-  return component.options.map((v) =>
-    componentInfoWithIcon(
-      v.label,
-      v.value.element,
-      v.value.importsToAdd,
-      v.value.icon ?? 'regular',
-    ),
-  )
+  onItemClick: (elementToInsert: InsertableComponent) => React.MouseEventHandler
 }
 
 const ComponentPickerOption = React.memo((props: ComponentPickerOptionProps) => {
   const { component, onItemClick } = props
 
-  const variants = variantsForComponent(component)
+  const variants = component.options
 
   const name = component.label
 
@@ -255,7 +223,7 @@ const ComponentPickerOption = React.memo((props: ComponentPickerOptionProps) => 
     <div>
       {variants.map((v) => (
         <FlexRow
-          key={`${name}-${v.insertMenuLabel}`}
+          key={`${name}-${v.label}`}
           css={{
             marginLeft: 8,
             marginRight: 8,
@@ -268,10 +236,7 @@ const ComponentPickerOption = React.memo((props: ComponentPickerOptionProps) => 
               color: 'white',
             },
           }}
-          onClick={onItemClick({
-            elementToInsert: (uid) => elementFromInsertMenuItem(v.elementToInsert(), uid),
-            additionalImports: v.importsToAdd,
-          })}
+          onClick={onItemClick(v.value)}
         >
           <UIGridRow
             variant='|--32px--|<--------auto-------->'
@@ -282,8 +247,8 @@ const ComponentPickerOption = React.memo((props: ComponentPickerOptionProps) => 
               height: 27,
             }}
           >
-            <Icn {...iconPropsForIcon(v.icon)} width={12} height={12} />
-            <label>{v.insertMenuLabel}</label>
+            <Icn {...iconPropsForIcon(v.value.icon ?? 'regular')} width={12} height={12} />
+            <label>{v.label}</label>
           </UIGridRow>
         </FlexRow>
       ))}
