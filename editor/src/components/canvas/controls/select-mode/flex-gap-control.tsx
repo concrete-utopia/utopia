@@ -111,7 +111,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
     [canvasOffset, dispatch, scale],
   )
 
-  const children = MetadataUtils.getNonCodeChildrenUnordered(metadata, selectedElement)
+  const children = MetadataUtils.getDOMChildrenUnordered(metadata, selectedElement)
   const flexGap = maybeFlexGapData(metadata, selectedElement, children[0].elementPath)
   if (flexGap == null) {
     return null

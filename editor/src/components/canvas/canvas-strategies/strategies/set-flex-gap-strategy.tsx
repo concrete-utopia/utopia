@@ -56,7 +56,7 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
   }
 
   const selectedElement = selectedElements[0]
-  const childrenPaths = MetadataUtils.getNonCodeChildrenUnordered(
+  const childrenPaths = MetadataUtils.getDOMChildrenUnordered(
     canvasState.startingMetadata,
     selectedElement,
   ).map((c) => c.elementPath)

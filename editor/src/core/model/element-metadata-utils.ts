@@ -716,7 +716,7 @@ export const MetadataUtils = {
     }
     return result
   },
-  getNonCodeChildrenUnordered(
+  getDOMChildrenUnordered(
     elements: ElementInstanceMetadataMap,
     target: ElementPath,
   ): Array<ElementInstanceMetadata> {
@@ -725,16 +725,16 @@ export const MetadataUtils = {
       const element = elements[elementKey]
       const elementPath = element.elementPath
       if (EP.isChildOf(elementPath, target) && !EP.isRootElementOfInstance(elementPath)) {
-        if (
-          defaultEither(
-            false,
-            mapEither(
-              (e) => e.type === 'JSX_MAP_EXPRESSION' || e.type === 'JSX_FRAGMENT',
-              element.element,
-            ),
-          )
-        ) {
-          return MetadataUtils.getNonCodeChildrenUnordered(elements, elementPath)
+        const jsxElementNotInDOM = defaultEither(
+          false,
+          mapEither(
+            (e) => e.type === 'JSX_MAP_EXPRESSION' || e.type === 'JSX_FRAGMENT',
+            element.element,
+          ),
+        )
+
+        if (jsxElementNotInDOM) {
+          return MetadataUtils.getDOMChildrenUnordered(elements, elementPath)
         } else {
           result.push(element)
         }
