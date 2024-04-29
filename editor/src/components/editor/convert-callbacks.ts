@@ -258,6 +258,8 @@ export function getActionsToApplyChange(
         insertMenuItemValue,
         insertMenuItemValue.source,
       )
+    case 'JSX_MAP_EXPRESSION':
+      return [] // TODO
     default:
       assertNever(element)
   }

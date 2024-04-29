@@ -7,6 +7,7 @@ import {
 import type {
   JSXAttributes,
   JSXElementChild,
+  JSXMapExpressionWithoutUID,
   UtopiaJSXComponent,
 } from '../../core/shared/element-template'
 import {
@@ -14,8 +15,10 @@ import {
   jsExpressionValue,
   jsxAttributesFromMap,
   jsxConditionalExpressionWithoutUID,
+  jsxElement,
   jsxElementWithoutUID,
   jsxFragmentWithoutUID,
+  jsxMapExpression,
   jsxTextBlock,
   simpleAttribute,
 } from '../../core/shared/element-template'
@@ -131,6 +134,10 @@ export interface InsertableComponentGroupConditionals {
   type: 'CONDITIONALS_GROUP'
 }
 
+export interface InsertableComponentGroupMap {
+  type: 'MAP_GROUP'
+}
+
 export function insertableComponentGroupConditionals(): InsertableComponentGroupConditionals {
   return {
     type: 'CONDITIONALS_GROUP',
@@ -197,6 +204,7 @@ export type InsertableComponentGroupType =
   | InsertableComponentGroupFragment
   | InsertableComponentGroupSamples
   | InsertableComponentGroupGroups
+  | InsertableComponentGroupMap
 
 export interface InsertableComponentGroup {
   source: InsertableComponentGroupType
@@ -242,6 +250,8 @@ export function getInsertableGroupLabel(insertableType: InsertableComponentGroup
       return 'Group'
     case 'HTML_DIV':
       return 'Div'
+    case 'MAP_GROUP':
+      return 'List'
     default:
       assertNever(insertableType)
   }
@@ -258,6 +268,7 @@ export function getInsertableGroupPackageStatus(
     case 'FRAGMENT_GROUP':
     case 'GROUPS_GROUP':
     case 'HTML_DIV':
+    case 'MAP_GROUP':
       return 'loaded'
     case 'PROJECT_DEPENDENCY_GROUP':
       return insertableType.dependencyStatus
@@ -502,11 +513,47 @@ export const fragmentComponentInfo: ComponentInfo = {
   },
 }
 
+export const mapComponentInfo: ComponentInfo = {
+  insertMenuLabel: 'Map',
+  elementToInsert: (): JSXMapExpressionWithoutUID => ({
+    type: 'JSX_MAP_EXPRESSION',
+    javascriptWithUIDs: '[1, 2, 3].map(() => <\nPlaceholder data-uid="placeholder-id" />);',
+    originalJavascript: '[1, 2, 3].map(() => (\n            <Placeholder />\n          ))',
+    transpiledJavascript:
+      'return [1, 2, 3].map(() => utopiaCanvasJSXLookup("placeholder-id", {\n  callerThis: this\n}));',
+    definedElsewhere: ['React', 'Placeholder', 'utopiaCanvasJSXLookup'],
+    sourceMap: null,
+    elementsWithin: {
+      'placeholder-id': jsxElement('Placeholder', 'placeholder-id', jsxAttributesFromMap({}), []),
+    },
+    comments: emptyComments,
+    valuesInScopeFromParameters: [],
+  }),
+  importsToAdd: {
+    react: {
+      importedAs: 'React',
+      importedFromWithin: [],
+      importedWithName: null,
+    },
+  },
+}
+
 export const fragmentElementsDescriptors: ComponentDescriptorsForFile = {
   fragment: {
     properties: {},
     supportsChildren: true,
     variants: [fragmentComponentInfo],
+    preferredChildComponents: [],
+    source: defaultComponentDescriptor(),
+    ...ComponentDescriptorDefaults,
+  },
+}
+
+export const mapElementDescriptors: ComponentDescriptorsForFile = {
+  map: {
+    properties: {},
+    supportsChildren: false,
+    variants: [mapComponentInfo],
     preferredChildComponents: [],
     source: defaultComponentDescriptor(),
     ...ComponentDescriptorDefaults,
@@ -755,6 +802,9 @@ export function getComponentGroups(
   // Add fragment group.
   addDependencyDescriptor(insertableComponentGroupFragment(), fragmentElementsDescriptors)
 
+  // Add map group.
+  addDependencyDescriptor({ type: 'MAP_GROUP' }, mapElementDescriptors)
+
   // Add samples group.
   addDependencyDescriptor({ type: 'SAMPLES_GROUP' }, samplesDescriptors)
 
@@ -837,6 +887,7 @@ export function insertMenuModesForInsertableComponentGroupType(
     case 'PROJECT_DEPENDENCY_GROUP':
     case 'SAMPLES_GROUP':
     case 'HTML_DIV':
+    case 'MAP_GROUP':
       return insertMenuModes.all
     case 'GROUPS_GROUP':
       return insertMenuModes.onlyWrap

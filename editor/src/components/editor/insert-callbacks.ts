@@ -310,6 +310,8 @@ export function elementFromInsertMenuItem(
       )
     case 'JSX_FRAGMENT':
       return jsxFragment(uid, element.children, element.longForm)
+    case 'JSX_MAP_EXPRESSION':
+      return { ...element, uid }
     default:
       assertNever(element)
   }
