@@ -794,7 +794,8 @@ export var storyboard = (props) => {
       </Scene>
     </Storyboard>
   )
-}`)
+}
+`)
   })
 
   it('can search for and insert default exported component', async () => {
