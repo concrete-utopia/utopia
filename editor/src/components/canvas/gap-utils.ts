@@ -1,8 +1,11 @@
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { reverse, stripNulls } from '../../core/shared/array-utils'
 import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
-import { defaultEither, isLeft, right } from '../../core/shared/either'
-import type { ElementInstanceMetadataMap } from '../../core/shared/element-template'
+import { defaultEither, isLeft, mapEither, right } from '../../core/shared/either'
+import type {
+  ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
+} from '../../core/shared/element-template'
 import { isJSXElement } from '../../core/shared/element-template'
 import type { CanvasRectangle, CanvasVector } from '../../core/shared/math-utils'
 import { canvasRectangle, isInfinityRectangle } from '../../core/shared/math-utils'
@@ -17,6 +20,7 @@ import { sides } from 'utopia-api/core'
 import { styleStringInArray } from '../../utils/common-constants'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { isReversedFlexDirection } from '../../core/model/flex-utils'
+import * as EP from '../../core/shared/element-path'
 
 export interface PathWithBounds {
   bounds: CanvasRectangle
@@ -153,7 +157,10 @@ export interface FlexGapData {
   direction: FlexDirection
 }
 
-function getFlexGapFromProps(metadata: ElementInstanceMetadataMap, elementPath: ElementPath) {
+export function maybeFlexGapData(
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): FlexGapData | null {
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
   if (
     element == null ||
@@ -164,29 +171,48 @@ function getFlexGapFromProps(metadata: ElementInstanceMetadataMap, elementPath: 
     return null
   }
 
-  return defaultEither(
-    null,
-    getLayoutProperty('gap', right(element.element.value.props), styleStringInArray),
-  )
-}
-
-export function maybeFlexGapData(
-  metadata: ElementInstanceMetadataMap,
-  parentPath: ElementPath,
-  childPath: ElementPath,
-): FlexGapData | null {
-  const element = MetadataUtils.findElementByElementPath(metadata, childPath)
-  if (element == null) {
+  if (element.specialSizeMeasurements.justifyContent?.startsWith('space')) {
     return null
   }
 
+  const gap = element.specialSizeMeasurements.gap ?? 0
+
+  const gapFromProps: CSSNumber | undefined = defaultEither(
+    undefined,
+    getLayoutProperty('gap', right(element.element.value.props), styleStringInArray),
+  )
+
+  const flexDirection = element.specialSizeMeasurements.flexDirection ?? 'row'
+
   return {
-    value: {
-      renderedValuePx: element.specialSizeMeasurements.parentFlexGap,
-      value:
-        getFlexGapFromProps(metadata, parentPath) ??
-        cssNumber(element.specialSizeMeasurements.parentFlexGap),
-    },
-    direction: element.specialSizeMeasurements.parentFlexDirection ?? 'row',
+    value: { renderedValuePx: gap, value: gapFromProps ?? cssNumber(0) },
+    direction: flexDirection,
   }
+}
+
+export function recurseIntoChildrenOfMapOrFragment(
+  elements: ElementInstanceMetadataMap,
+  target: ElementPath,
+): Array<ElementInstanceMetadata> {
+  let result: Array<ElementInstanceMetadata> = []
+  for (const elementKey in elements) {
+    const element = elements[elementKey]
+    const elementPath = element.elementPath
+    if (EP.isChildOf(elementPath, target) && !EP.isRootElementOfInstance(elementPath)) {
+      const isMapOrFragment = defaultEither(
+        false,
+        mapEither(
+          (e) => e.type === 'JSX_MAP_EXPRESSION' || e.type === 'JSX_FRAGMENT',
+          element.element,
+        ),
+      )
+
+      if (isMapOrFragment) {
+        return recurseIntoChildrenOfMapOrFragment(elements, elementPath)
+      } else {
+        result.push(element)
+      }
+    }
+  }
+  return result
 }
