@@ -533,9 +533,10 @@ export var storyboard = (
 
   describe('elements inside maps/fragments', () => {
     async function dragGapHandle(editor: EditorRenderResult, delta: CanvasPoint) {
-      const gapControlHandle = editor.renderedDOM.getByTestId((testId) =>
+      const gapControlHandle = editor.renderedDOM.getAllByTestId((testId) =>
         testId.startsWith(FlexGapControlHandleTestId),
-      )
+      )[0]
+
       const gapControlBounds = gapControlHandle.getBoundingClientRect()
 
       const center = {
@@ -635,6 +636,78 @@ export var storyboard = (
       await selectComponentsForTest(editor, [
         EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:flex-row`),
       ])
+
+      await dragGapHandle(editor, canvasPoint({ x: 10, y: 0 }))
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(code(20))
+    })
+
+    it('shows the gap control for all children of a flex parent', async () => {
+      const code = (gap: number) =>
+        makeTestProjectCodeWithSnippet(`<div
+      data-uid='flex-row'
+      data-testid='${DivTestId}'
+      style={{
+        height: 'max-content',
+        position: 'absolute',
+        left: 48,
+        top: 112,
+        display: 'flex',
+        flexDirection: 'row',
+        width: 'max-content',
+        gap: ${gap},
+      }}
+    >
+      <div data-uid='my-component'>MyComponent</div>
+      {[1, 2, 3].map(({ a, b, c }) => (
+        <img
+          src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+          alt='Utopia logo'
+          style={{ width: 118, height: 150 }}
+          data-uid='img'
+        />
+      ))}
+      <React.Fragment>
+        <View
+          src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+          alt='Utopia logo'
+          style={{
+            backgroundColor: '#0074ff',
+            width: 118,
+            height: 150,
+          }}
+          data-uid='view-1'
+        />
+        <View
+          src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+          alt='Utopia logo'
+          style={{
+            backgroundColor: '#0074ff',
+            width: 118,
+            height: 150,
+          }}
+          data-uid='view-2'
+        />
+      </React.Fragment>
+      <img
+        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+        alt='Utopia logo'
+        style={{ width: 118, height: 150 }}
+        data-uid='img-standalone'
+      />
+    </div>`)
+
+      const editor = await renderTestEditorWithCode(code(10), 'await-first-dom-report')
+
+      await selectComponentsForTest(editor, [
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:flex-row`),
+      ])
+
+      const gapControlHandles = editor.renderedDOM.getAllByTestId((testId) =>
+        testId.startsWith(FlexGapControlHandleTestId),
+      )
+
+      expect(gapControlHandles).toHaveLength(6)
 
       await dragGapHandle(editor, canvasPoint({ x: 10, y: 0 }))
 

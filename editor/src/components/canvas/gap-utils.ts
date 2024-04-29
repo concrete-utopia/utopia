@@ -208,7 +208,7 @@ export function recurseIntoChildrenOfMapOrFragment(
       )
 
       if (isMapOrFragment) {
-        return recurseIntoChildrenOfMapOrFragment(elements, elementPath)
+        result.push(...recurseIntoChildrenOfMapOrFragment(elements, elementPath))
       } else {
         result.push(element)
       }
