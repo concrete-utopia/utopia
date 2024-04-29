@@ -1,7 +1,14 @@
 import React from 'react'
-import { useContextMenu, Menu, type ContextMenuParams, contextMenu } from 'react-contexify'
+import {
+  useContextMenu,
+  Menu,
+  type ContextMenuParams,
+  contextMenu,
+  type TriggerEvent,
+} from 'react-contexify'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
+  type ElementInstanceMetadata,
   getJSXElementNameAsString,
   jsxAttributesFromMap,
   jsxElement,
@@ -63,6 +70,52 @@ interface PreferredChildComponentDescriptorWithIcon extends PreferredChildCompon
   icon: Icon
 }
 
+export function preferredChildrenForTarget(
+  targetElement: ElementInstanceMetadata | null,
+  insertionTarget: InsertionTarget,
+  propertyControlsInfo: PropertyControlsInfo,
+): Array<PreferredChildComponentDescriptorWithIcon> {
+  const targetJSXElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(targetElement)
+  const elementImportInfo = targetElement?.importInfo
+  if (elementImportInfo == null || targetJSXElement == null) {
+    return []
+  }
+
+  const targetName = getJSXElementNameAsString(targetJSXElement.name)
+  const registeredComponent = getRegisteredComponent(
+    targetName,
+    elementImportInfo.filePath,
+    propertyControlsInfo,
+  )
+
+  // TODO: we don't deal with components registered with the same name in multiple files
+  if (registeredComponent != null) {
+    if (insertionTarget === 'insert-as-child' || insertionTarget === 'replace-target') {
+      return registeredComponent.preferredChildComponents.map((v) => ({
+        ...v,
+        icon: getIconForComponent(v.name, v.moduleName, propertyControlsInfo),
+      }))
+    } else {
+      for (const [registeredPropName, registeredPropValue] of Object.entries(
+        registeredComponent.properties,
+      )) {
+        if (
+          registeredPropName === insertionTarget.prop &&
+          registeredPropValue.control === 'jsx' &&
+          registeredPropValue.preferredChildComponents != null
+        ) {
+          return registeredPropValue.preferredChildComponents.map((v) => ({
+            ...v,
+            icon: getIconForComponent(v.name, v.moduleName, propertyControlsInfo),
+          }))
+        }
+      }
+    }
+  }
+
+  return []
+}
+
 const usePreferredChildrenForTarget = (
   target: ElementPath,
   insertionTarget: InsertionTarget,
@@ -75,98 +128,80 @@ const usePreferredChildrenForTarget = (
     'usePreferredChildrenForTarget targetElement',
   )
 
-  const preferredChildrenForTarget = useEditorState(
+  return useEditorState(
     Substores.restOfEditor,
     (store) => {
-      const targetJSXElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(targetElement)
-      const elementImportInfo = targetElement?.importInfo
-      if (elementImportInfo == null || targetJSXElement == null) {
-        return null
-      }
-
-      const targetName = getJSXElementNameAsString(targetJSXElement.name)
-      const registeredComponent = getRegisteredComponent(
-        targetName,
-        elementImportInfo.filePath,
+      return preferredChildrenForTarget(
+        targetElement,
+        insertionTarget,
         store.editor.propertyControlsInfo,
       )
-
-      // TODO: we don't deal with components registered with the same name in multiple files
-      if (registeredComponent != null) {
-        if (insertionTarget === 'insert-as-child' || insertionTarget === 'replace-target') {
-          return registeredComponent.preferredChildComponents.map((v) => ({
-            ...v,
-            icon: getIconForComponent(v.name, v.moduleName, store.editor.propertyControlsInfo),
-          }))
-        } else {
-          for (const [registeredPropName, registeredPropValue] of Object.entries(
-            registeredComponent.properties,
-          )) {
-            if (
-              registeredPropName === insertionTarget.prop &&
-              registeredPropValue.control === 'jsx' &&
-              registeredPropValue.preferredChildComponents != null
-            ) {
-              return registeredPropValue.preferredChildComponents.map((v) => ({
-                ...v,
-                icon: getIconForComponent(v.name, v.moduleName, store.editor.propertyControlsInfo),
-              }))
-            }
-          }
-        }
-      }
-
-      return null
     },
     'usePreferredChildrenForSelectedElement propertyControlsInfo',
   )
-
-  return preferredChildrenForTarget ?? []
 }
 
-const useDetectPickerType = (
+export type ShowComponentPickerContextMenuCallback = (
   target: ElementPath,
   insertionTarget: InsertionTarget,
-): 'preferred' | 'full' => {
-  const preferredChildrenForTarget = usePreferredChildrenForTarget(target, insertionTarget)
-  return preferredChildrenForTarget.length > 0 ? 'preferred' : 'full'
-}
+  pickerType?: 'preferred' | 'full',
+) => ShowComponentPickerContextMenu
 
 type ShowComponentPickerContextMenu = (
-  event: React.MouseEvent<HTMLDivElement>,
+  event: TriggerEvent,
   params?: Pick<ContextMenuParams, 'id' | 'props' | 'position'> | undefined,
 ) => void
 
 const PreferredMenuId = 'component-picker-context-menu'
 const FullMenuId = 'component-picker-context-menu-full'
 
-const useShowComponentPickerContextMenuInner = (
-  target: ElementPath,
-  insertionTarget: InsertionTarget,
-  pickerType: 'preferred' | 'full',
-): ShowComponentPickerContextMenu => {
-  const id = pickerType === 'preferred' ? PreferredMenuId : FullMenuId
-  const { show } = useContextMenu({ id })
-  const setContextMenuProps = useSetAtom(ComponentPickerContextMenuAtom)
-  return React.useCallback(
-    (
-      event: React.MouseEvent<HTMLDivElement>,
-      params?: Pick<ContextMenuParams, 'id' | 'props' | 'position'> | undefined,
-    ) => {
-      setContextMenuProps({ target: target, insertionTarget: insertionTarget })
-      show(event, params)
-    },
-    [show, setContextMenuProps, target, insertionTarget],
-  )
-}
+export const useCreateCallbackToShowComponentPicker =
+  (): ShowComponentPickerContextMenuCallback => {
+    const { show: showPreferred } = useContextMenu({ id: PreferredMenuId })
+    const { show: showFull } = useContextMenu({ id: FullMenuId })
+    const setContextMenuProps = useSetAtom(ComponentPickerContextMenuAtom)
+    const editorRef = useRefEditorState((store) => ({
+      jsxMetadata: store.editor.jsxMetadata,
+      propertyControlsInfo: store.editor.propertyControlsInfo,
+    }))
 
-export const useShowComponentPickerContextMenu = (
-  target: ElementPath,
-  insertionTarget: InsertionTarget,
-): ShowComponentPickerContextMenu => {
-  const pickerType = useDetectPickerType(target, insertionTarget)
-  return useShowComponentPickerContextMenuInner(target, insertionTarget, pickerType)
-}
+    return React.useCallback(
+      (
+          target: ElementPath,
+          insertionTarget: InsertionTarget,
+          overridePickerType?: 'preferred' | 'full',
+        ) =>
+        (
+          event: TriggerEvent,
+          params?: Pick<ContextMenuParams, 'id' | 'props' | 'position'> | undefined,
+        ) => {
+          let pickerType: 'preferred' | 'full'
+
+          if (overridePickerType == null) {
+            const targetParent =
+              insertionTarget === 'replace-target' ? EP.parentPath(target) : target
+            const targetElement = MetadataUtils.findElementByElementPath(
+              editorRef.current.jsxMetadata,
+              targetParent,
+            )
+            const preferredChildren = preferredChildrenForTarget(
+              targetElement,
+              insertionTarget,
+              editorRef.current.propertyControlsInfo,
+            )
+
+            pickerType = preferredChildren.length > 0 ? 'preferred' : 'full'
+          } else {
+            pickerType = overridePickerType
+          }
+
+          setContextMenuProps({ target: target, insertionTarget: insertionTarget })
+          const show = pickerType === 'preferred' ? showPreferred : showFull
+          show(event, params)
+        },
+      [editorRef, showPreferred, showFull, setContextMenuProps],
+    )
+  }
 
 function defaultVariantItem(
   elementName: string,
@@ -325,9 +360,9 @@ export function labelTestIdForComponentIcon(
 
 const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuProps>(
   ({ target, insertionTarget }) => {
-    const showFullMenu = useShowComponentPickerContextMenuInner(target, insertionTarget, 'full')
+    const showFullMenu = useCreateCallbackToShowComponentPicker()(target, insertionTarget, 'full')
 
-    const preferredChildrenForTarget = usePreferredChildrenForTarget(target, insertionTarget)
+    const preferredChildren = usePreferredChildrenForTarget(target, insertionTarget)
 
     const dispatch = useDispatch()
 
@@ -346,7 +381,7 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
     )
     const wrapperRef = React.useRef<HTMLDivElement>(null)
 
-    const items: Array<ContextMenuItem<unknown>> = preferredChildrenForTarget
+    const items: Array<ContextMenuItem<unknown>> = preferredChildren
       .flatMap<ContextMenuItem<unknown>>((data) => {
         const iconProps = iconPropsForIcon(data.icon)
 

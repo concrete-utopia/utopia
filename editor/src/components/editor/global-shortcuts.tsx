@@ -148,6 +148,7 @@ import { wrapInDivStrategy } from './wrap-in-callbacks'
 import { type ProjectServerState } from './store/project-server-state'
 import { allowedToEditProject } from './store/collaborative-editing'
 import { hasCommentPermission } from './store/permissions'
+import { type ShowComponentPickerContextMenuCallback } from '../navigator/navigator-item/component-picker-context-menu'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -362,6 +363,7 @@ export function handleKeyDown(
   navigatorTargetsRef: { current: Array<NavigatorEntry> },
   namesByKey: ShortcutNamesByKey,
   dispatch: EditorDispatch,
+  showComponentPicker: ShowComponentPickerContextMenuCallback,
 ): Array<EditorAction> {
   // Stop the browser from firing things like save dialogs.
   preventBrowserShortcuts(editor, event)
@@ -751,7 +753,11 @@ export function handleKeyDown(
           )
         })
         if (isSelectMode(editor.mode) && possibleToConvert) {
-          return [EditorActions.openFloatingInsertMenu(floatingInsertMenuStateSwap())]
+          const mousePoint = WindowMousePositionRaw ?? zeroCanvasPoint
+          showComponentPicker(editor.selectedViews[0], 'replace-target')(event, {
+            position: mousePoint,
+          })
+          return []
         } else {
           return []
         }
@@ -759,13 +765,11 @@ export function handleKeyDown(
       [ADD_ELEMENT_SHORTCUT]: () => {
         if (allowedToEdit) {
           if (isSelectMode(editor.mode)) {
-            return [
-              EditorActions.openFloatingInsertMenu({
-                insertMenuMode: 'insert',
-                parentPath: null,
-                indexPosition: null,
-              }),
-            ]
+            const mousePoint = WindowMousePositionRaw ?? zeroCanvasPoint
+            showComponentPicker(editor.selectedViews[0], 'insert-as-child')(event, {
+              position: mousePoint,
+            })
+            return []
           }
         }
         return []
