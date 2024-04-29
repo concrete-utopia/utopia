@@ -129,25 +129,28 @@ async function cloneGithubRepo(
   // TODO make sure the EditorState knows we have a github repo connected!!!
 }
 
-const GitClonePseudoElement = React.memo(
-  (props: { githubRepo: GithubRepoWithBranch; userDetails: GithubUser | null }) => {
-    const { githubRepo, userDetails } = props
-    const dispatch = useDispatch()
+type GitClonePseudeElementProps = {
+  githubRepo: GithubRepoWithBranch
+  userDetails: GithubUser | null
+}
 
-    const editorStoreRef = useRefEditorState((store) => store)
+const GitClonePseudoElement = React.memo((props: GitClonePseudeElementProps) => {
+  const { githubRepo, userDetails } = props
+  const dispatch = useDispatch()
 
-    React.useEffect(() => {
-      if (userDetails != null) {
-        void cloneGithubRepo(dispatch, editorStoreRef, githubRepo)
-      }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+  const editorStoreRef = useRefEditorState((store) => store)
 
-    // The GitClonePseudoElement's sole job is to call cloneGithubRepo in a useEffect.
-    // I pulled it to a dedicated component so it's purpose remains clear and this useEffect doesn't get lost in the noise
-    return null
-  },
-)
+  React.useEffect(() => {
+    if (userDetails != null) {
+      void cloneGithubRepo(dispatch, editorStoreRef, githubRepo)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // The GitClonePseudoElement's sole job is to call cloneGithubRepo in a useEffect.
+  // I pulled it to a dedicated component so it's purpose remains clear and this useEffect doesn't get lost in the noise
+  return null
+})
 
 function awaitLoadActionDispatchedByPersistenceMachine(): Promise<{ projectId: string }> {
   invariant(
