@@ -3225,6 +3225,7 @@ export function updatePackageJsonInEditorState(
       updatedPackageJsonFile = codeFile(
         transformPackageJson(packageJsonFile.fileContents.code),
         RevisionsState.CodeAhead,
+        packageJsonFile.versionNumber + 1,
       )
     } else {
       // There is something else called package.json, we should bulldoze over it.
@@ -3515,7 +3516,7 @@ export function defaultModifyParseSuccess(success: ParseSuccess): ParseSuccess {
   return success
 }
 
-function modifyUnderlyingTarget(
+export function modifyUnderlyingTarget(
   target: ElementPath | null,
   editor: EditorState,
   modifyElement: (

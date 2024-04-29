@@ -2,7 +2,9 @@ import { createModifiedProject } from '../../../sample-projects/sample-project-u
 import { selectComponentsForTest } from '../../../utils/utils.test-utils'
 import {
   formatTestProjectCode,
+  getPrintedUiJsCode,
   getPrintedUiJsCodeWithoutUIDs,
+  renderTestEditorWithCode,
   renderTestEditorWithModel,
 } from '../../canvas/ui-jsx.test-utils'
 import { StoryboardFilePath, navigatorEntryToKey } from '../../editor/store/editor-state'
@@ -874,5 +876,99 @@ describe('The navigator component picker context menu', () => {
       'render-prop-sb/scene/pg:pg-root/card/prop-label-children-children',
       'regular-sb/scene/pg:pg-root/card/contents',
     ])
+  })
+
+  it('can replace element inside map', async () => {
+    const editor = await renderTestEditorWithCode(
+      `import * as React from 'react'
+    import { Scene, Storyboard, FlexRow } from 'utopia-api'
+    
+    export var storyboard = (
+      <Storyboard data-uid='sb'>
+        <Scene
+          id='playground-scene'
+          commentId='playground-scene'
+          style={{
+            width: 700,
+            height: 759,
+            position: 'absolute',
+            left: 212,
+            top: 128,
+          }}
+          data-label='Playground'
+          data-uid='scene'
+        >
+          <FlexRow data-uid='flexrow'>
+            {
+              // @utopia/uid=map
+              [1, 1].map(() => (
+              <img
+                style={{
+                  width: 220,
+                  height: 220,
+                  display: 'inline-block',
+                }}
+                src='/editor/utopia-logo-white-fill.png?hash=4c7df4ba0e8686df4fe14e3570f2d3002304b930'
+                data-uid='img'
+              />
+              ))
+            }
+          </FlexRow>
+        </Scene>
+      </Storyboard>
+    )
+`,
+      'await-first-dom-report',
+    )
+
+    await mouseClickAtPoint(
+      editor.renderedDOM.getByTestId('NavigatorItemTestId-regular_sb/scene/flexrow/map/img~~~1'),
+      { x: 2, y: 2 },
+    )
+
+    await mouseClickAtPoint(
+      editor.renderedDOM.getByTestId('replace-element-button-sb/scene/flexrow/map/img~~~1'),
+      { x: 2, y: 2 },
+    )
+
+    await mouseClickAtPoint(editor.renderedDOM.getByText('div'), { x: 2, y: 2 })
+
+    // the element inside the map has been changed to a `div`
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Scene, Storyboard, FlexRow } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      id='playground-scene'
+      commentId='playground-scene'
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <FlexRow data-uid='flexrow'>
+        {
+          // @utopia/uid=map
+          [1, 1].map(() => (
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+              }}
+              data-uid='pro'
+            />
+          ))
+        }
+      </FlexRow>
+    </Scene>
+  </Storyboard>
+)
+`)
   })
 })
