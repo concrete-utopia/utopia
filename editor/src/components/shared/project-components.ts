@@ -516,10 +516,10 @@ export const mapComponentInfo: ComponentInfo = {
   insertMenuLabel: 'List',
   elementToInsert: (): JSXMapExpressionWithoutUID => ({
     type: 'JSX_MAP_EXPRESSION',
-    javascriptWithUIDs: '[1, 2, 3].map(() => <\nPlaceholder data-uid="placeholder-id" />);',
-    originalJavascript: '[1, 2, 3].map(() => (\n            <Placeholder />\n          ))',
+    javascriptWithUIDs: '[1, 2, 3].map((v) => <\nPlaceholder data-uid="placeholder-id" />);',
+    originalJavascript: '[1, 2, 3].map((v) => (\n            <Placeholder />\n          ))',
     transpiledJavascript:
-      'return [1, 2, 3].map(() => utopiaCanvasJSXLookup("placeholder-id", {\n  callerThis: this\n}));',
+      'return [1, 2, 3].map((v) => utopiaCanvasJSXLookup("placeholder-id", {\n  callerThis: this\n}));',
     definedElsewhere: ['React', 'Placeholder', 'utopiaCanvasJSXLookup'],
     sourceMap: null,
     elementsWithin: {

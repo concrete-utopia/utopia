@@ -767,7 +767,7 @@ export var App = (props) => {
       }}
       data-uid='flex-row'
     >
-      {[1, 2, 3].map(() => (
+      {[1, 2, 3].map((v) => (
         <Placeholder data-uid='pla' />
       ))}
     </div>
