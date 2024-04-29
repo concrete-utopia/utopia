@@ -14,7 +14,6 @@ export type FeatureName =
   | 'Project Thumbnail Generation'
   | 'Debug - Print UIDs'
   | 'Debug – Connections'
-  | 'Render Props in Navigator'
 
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -29,7 +28,6 @@ export const AllFeatureNames: FeatureName[] = [
   'Project Thumbnail Generation',
   'Debug - Print UIDs',
   'Debug – Connections',
-  'Render Props in Navigator',
 ]
 
 let FeatureSwitches: { [feature in FeatureName]: boolean } = {
@@ -44,7 +42,6 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Project Thumbnail Generation': false,
   'Debug - Print UIDs': false,
   'Debug – Connections': false,
-  'Render Props in Navigator': true,
 }
 
 export const STEGANOGRAPHY_ENABLED = false
