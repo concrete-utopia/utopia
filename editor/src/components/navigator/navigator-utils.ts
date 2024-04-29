@@ -294,6 +294,22 @@ export function getNavigatorTargets(
             }
           }
         }
+      } else if (subTree.children.length === 0) {
+        const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
+        if (
+          elementMetadata != null &&
+          isRight(elementMetadata.element) &&
+          isJSXElement(elementMetadata.element.value) &&
+          elementMetadata.element.value.children.length > 0
+        ) {
+          const jsxElement = elementMetadata.element.value
+          const children = jsxElement.children
+          children.forEach((child) => {
+            const childPath = EP.appendToPath(path, child.uid)
+            const synthEntry = syntheticNavigatorEntry(childPath, child)
+            addNavigatorTargetsUnlessCollapsed(synthEntry)
+          })
+        }
       } else {
         const notRenderPropChildren = Object.values(subTree.children).filter(
           (c) => !processedPathsAsRenderProp.has(c.pathString),
@@ -311,24 +327,6 @@ export function getNavigatorTargets(
         fastForEach(notRenderPropChildren, (child) => {
           walkAndAddKeys(child, newCollapsedAncestor, null)
         })
-      }
-
-      if (subTree.children.length === 0) {
-        const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
-        if (
-          elementMetadata != null &&
-          isRight(elementMetadata.element) &&
-          isJSXElement(elementMetadata.element.value) &&
-          elementMetadata.element.value.children.length > 0
-        ) {
-          const jsxElement = elementMetadata.element.value
-          const children = jsxElement.children
-          children.forEach((child) => {
-            const childPath = EP.appendToPath(path, child.uid)
-            const synthEntry = syntheticNavigatorEntry(childPath, child)
-            addNavigatorTargetsUnlessCollapsed(synthEntry)
-          })
-        }
       }
     }
   }
