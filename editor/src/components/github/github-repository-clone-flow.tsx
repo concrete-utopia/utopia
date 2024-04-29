@@ -34,10 +34,10 @@ export const GithubRepositoryCloneFlow = React.memo(() => {
     (store) => store.userState.githubState.authenticated,
     'GithubRepositoryCloneFlow githubAuthenticated',
   )
-  const githubUser = useEditorState(
+  const githubUserDetails = useEditorState(
     Substores.github,
     (store) => store.editor.githubData.githubUserDetails,
-    'Github userDetails',
+    'GithubRepositoryCloneFlow githubUserDetails',
   )
 
   const onClickAuthenticateWithGithub = useOnClickAuthenticateWithGithub()
@@ -83,7 +83,7 @@ export const GithubRepositoryCloneFlow = React.memo(() => {
   }
 
   // The GitClonePseudoElement triggers the actual repo cloning
-  return <GitClonePseudoElement githubRepo={githubRepo} userDetails={githubUser} />
+  return <GitClonePseudoElement githubRepo={githubRepo} userDetails={githubUserDetails} />
 })
 
 // The git repo clone flow is initiated from the URL, which means we only ever want to do it once per editor load

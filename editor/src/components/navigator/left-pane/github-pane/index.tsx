@@ -182,14 +182,14 @@ const BranchBlock = () => {
     () => isGithubListingBranches(githubOperations),
     [githubOperations],
   )
-  const githubUser = useEditorState(
+  const githubUserDetails = useEditorState(
     Substores.github,
     (store) => store.editor.githubData.githubUserDetails,
-    'Github userDetails',
+    'BranchBlock userDetails',
   )
 
   const refreshBranchesOnMouseUp = React.useCallback(() => {
-    if (targetRepository != null && githubUser != null) {
+    if (targetRepository != null && githubUserDetails != null) {
       void dispatchPromiseActions(
         dispatch,
         GithubOperations.getBranchesForGithubRepository(
@@ -199,16 +199,16 @@ const BranchBlock = () => {
         ),
       )
     }
-  }, [dispatch, targetRepository, githubUser])
+  }, [dispatch, targetRepository, githubUserDetails])
 
   React.useEffect(() => {
-    if (targetRepository != null && githubUser != null) {
+    if (targetRepository != null && githubUserDetails != null) {
       void dispatchPromiseActions(
         dispatch,
         GithubOperations.getBranchesForGithubRepository(dispatch, targetRepository, 'polling'),
       )
     }
-  }, [dispatch, targetRepository, githubUser])
+  }, [dispatch, targetRepository, githubUserDetails])
 
   const [expandedFlag, setExpandedFlag] = React.useState(false)
 
@@ -511,13 +511,13 @@ const RemoteChangesBlock = () => {
     (store) => store.editor.githubSettings.originCommit,
     'Github commit',
   )
-  const githubUser = useEditorState(
+  const githubUserDetails = useEditorState(
     Substores.github,
     (store) => store.editor.githubData.githubUserDetails,
-    'Github userDetails',
+    'Github githubUserDetails',
   )
   const triggerUpdateAgainstGithub = React.useCallback(() => {
-    if (repo != null && branch != null && commit != null && githubUser != null) {
+    if (repo != null && branch != null && commit != null && githubUserDetails != null) {
       void GithubOperations.updateProjectAgainstGithub(
         workersRef.current,
         dispatch,
@@ -529,7 +529,16 @@ const RemoteChangesBlock = () => {
         'user-initiated',
       )
     }
-  }, [workersRef, dispatch, repo, branch, commit, projectIDRef, currentContentsRef, githubUser])
+  }, [
+    workersRef,
+    dispatch,
+    repo,
+    branch,
+    commit,
+    projectIDRef,
+    currentContentsRef,
+    githubUserDetails,
+  ])
   const githubAuthenticated = useEditorState(
     Substores.restOfStore,
     (store) => store.userState.githubState.authenticated,
@@ -610,10 +619,10 @@ const LocalChangesBlock = () => {
     (store) => store.editor.githubSettings.targetRepository,
     'Github repo',
   )
-  const githubUser = useEditorState(
+  const githubUserDetails = useEditorState(
     Substores.github,
     (store) => store.editor.githubData.githubUserDetails,
-    'Github userDetails',
+    'Github githubUserDetails',
   )
 
   const branch = useEditorState(
@@ -689,7 +698,7 @@ const LocalChangesBlock = () => {
       console.warn('project id is not set')
       return
     }
-    if (githubUser == null) {
+    if (githubUserDetails == null) {
       console.warn('github user is null')
       return
     }
@@ -709,7 +718,7 @@ const LocalChangesBlock = () => {
       'user-initiated',
     )
   }, [
-    githubUser,
+    githubUserDetails,
     repo,
     cleanedCommitBranchName,
     commitMessage,
@@ -901,14 +910,14 @@ const BranchNotLoadedBlock = () => {
     projectDependenciesSelector,
     'Project dependencies',
   )
-  const githubUser = useEditorState(
+  const githubUserDetails = useEditorState(
     Substores.github,
     (store) => store.editor.githubData.githubUserDetails,
-    'Github userDetails',
+    'Project githubUserDetails',
   )
 
   const loadFromBranch = React.useCallback(() => {
-    if (githubRepo != null && branchName != null && githubUser != null) {
+    if (githubRepo != null && branchName != null && githubUserDetails != null) {
       void GithubOperations.updateProjectWithBranchContent(
         workersRef.current,
         dispatch,
@@ -923,7 +932,7 @@ const BranchNotLoadedBlock = () => {
       )
     }
   }, [
-    githubUser,
+    githubUserDetails,
     workersRef,
     dispatch,
     githubRepo,
@@ -961,7 +970,12 @@ const BranchNotLoadedBlock = () => {
   const editorStateRef = useRefEditorState((store) => store.editor)
 
   const pushToBranch = React.useCallback(() => {
-    if (githubRepo == null || branchName == null || projectId == null || githubUser == null) {
+    if (
+      githubRepo == null ||
+      branchName == null ||
+      projectId == null ||
+      githubUserDetails == null
+    ) {
       return
     }
     void GithubOperations.saveProjectToGithub(
@@ -980,7 +994,7 @@ const BranchNotLoadedBlock = () => {
       'user-initiated',
     )
   }, [
-    githubUser,
+    githubUserDetails,
     githubRepo,
     branchName,
     projectId,
@@ -1148,10 +1162,10 @@ export const GithubPane = React.memo(() => {
     [dispatch],
   )
 
-  const githubUser = useEditorState(
+  const githubUserDetails = useEditorState(
     Substores.github,
     (store) => store.editor.githubData.githubUserDetails,
-    'GithubPane githubUser',
+    'GithubPane githubUserDetails',
   )
   const isLoggedIn = useEditorState(
     Substores.restOfStore,
@@ -1162,16 +1176,16 @@ export const GithubPane = React.memo(() => {
   )
 
   const openGithubProfile = React.useCallback(() => {
-    if (githubUser != null) {
-      window.open(githubUser.htmlURL, '_blank')
+    if (githubUserDetails != null) {
+      window.open(githubUserDetails.htmlURL, '_blank')
     }
-  }, [githubUser])
+  }, [githubUserDetails])
   return (
     <div style={{ height: '100%', overflowY: 'scroll' }} onFocus={onFocus}>
       <Section>
         <SectionTitleRow minimised={false} hideButton>
           <FlexRow style={{ alignItems: 'flex-start' }}>
-            {githubUser != null ? (
+            {githubUserDetails != null ? (
               <Button
                 style={{ gap: 4, padding: '0 6px' }}
                 onClick={openGithubProfile}
@@ -1181,7 +1195,7 @@ export const GithubPane = React.memo(() => {
                   },
                 }}
               >
-                @{githubUser?.login}
+                @{githubUserDetails?.login}
               </Button>
             ) : (
               <UIGridRow
@@ -1211,7 +1225,7 @@ export const GithubPane = React.memo(() => {
         )}
       </Section>
       {when(
-        isLoggedIn && githubUser != null,
+        isLoggedIn && githubUserDetails != null,
         <Section style={{ padding: '10px' }}>
           <AccountBlock />
           <RepositoryBlock />
