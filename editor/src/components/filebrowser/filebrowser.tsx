@@ -12,8 +12,8 @@ import { setFocus } from '../common/actions'
 import type { CodeResultCache } from '../custom-code/code-file'
 import { isJavascriptOrTypescript } from '../custom-code/code-file'
 import * as EditorActions from '../editor/actions/action-creators'
-import type { GithubRepo, GithubUser } from '../editor/store/editor-state'
-import { getAllCodeEditorErrors } from '../editor/store/editor-state'
+import type { GithubRepo } from '../editor/store/editor-state'
+import { getAllCodeEditorErrors, getOpenFilename } from '../editor/store/editor-state'
 import { Substores, useEditorState } from '../editor/store/store-hook'
 import { addingChildElement, FileBrowserItem } from './fileitem'
 import {
@@ -21,6 +21,7 @@ import {
   SectionBodyArea,
   SectionTitleRow,
   FlexRow,
+  Title,
   ActionSheet,
   SquareButton,
   Icons,
@@ -56,7 +57,6 @@ export interface FileBrowserItemInfo {
   conflict: Conflict | null
   githubRepo: GithubRepo | null
   projectID: string | null
-  githubUserDetails: GithubUser | null
 }
 
 export function filterErrorMessages(
@@ -79,7 +79,6 @@ function collectFileBrowserItems(
   projectID: string | null,
   conflicts: TreeConflicts,
   githubRepo: GithubRepo | null,
-  githubUserDetails: GithubUser | null,
 ): FileBrowserItemInfo[] {
   const getGithubStatus = (filename: string) => {
     if (githubChanges?.untracked.includes(filename)) {
@@ -113,7 +112,6 @@ function collectFileBrowserItems(
         githubRepo: githubRepo,
         conflict: conflicts[fullPath] ?? null,
         projectID: projectID,
-        githubUserDetails: githubUserDetails,
       })
       if (
         element.type === 'TEXT_FILE' &&
@@ -140,7 +138,6 @@ function collectFileBrowserItems(
                 githubRepo: githubRepo,
                 conflict: conflicts[fullPath] ?? null,
                 projectID: projectID,
-                githubUserDetails: githubUserDetails,
               })
             }
           })
@@ -285,13 +282,12 @@ const FileBrowserItems = React.memo(() => {
     'FileBrowserItems projectContents',
   )
 
-  const { githubRepo, conflicts, githubUserDetails } = useEditorState(
+  const { githubRepo, conflicts } = useEditorState(
     Substores.github,
     (store) => {
       return {
         githubRepo: store.editor.githubSettings.targetRepository,
         conflicts: store.editor.githubData.treeConflicts,
-        githubUserDetails: store.editor.githubData.githubUserDetails,
       }
     },
     'FileBrowserItems github',
@@ -343,7 +339,6 @@ const FileBrowserItems = React.memo(() => {
       projectID,
       conflicts,
       githubRepo,
-      githubUserDetails,
     )
   }, [
     projectContents,
@@ -354,7 +349,6 @@ const FileBrowserItems = React.memo(() => {
     projectID,
     conflicts,
     githubRepo,
-    githubUserDetails,
   ])
 
   const generateNewUid = React.useCallback(

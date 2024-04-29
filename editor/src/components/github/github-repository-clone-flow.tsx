@@ -9,7 +9,6 @@ import { Dialog, FormButton } from '../../uuiui'
 import { isLoggedIn, type EditorDispatch } from '../editor/action-types'
 import { setGithubState } from '../editor/actions/action-creators'
 import { useDispatch } from '../editor/store/dispatch-context'
-import type { GithubUser } from '../editor/store/editor-state'
 import { type EditorStorePatched, type GithubRepoWithBranch } from '../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { onClickSignIn } from '../titlebar/title-bar'
@@ -33,11 +32,6 @@ export const GithubRepositoryCloneFlow = React.memo(() => {
     Substores.userState,
     (store) => store.userState.githubState.authenticated,
     'GithubRepositoryCloneFlow githubAuthenticated',
-  )
-  const githubUserDetails = useEditorState(
-    Substores.github,
-    (store) => store.editor.githubData.githubUserDetails,
-    'GithubRepositoryCloneFlow githubUserDetails',
   )
 
   const onClickAuthenticateWithGithub = useOnClickAuthenticateWithGithub()
@@ -83,7 +77,7 @@ export const GithubRepositoryCloneFlow = React.memo(() => {
   }
 
   // The GitClonePseudoElement triggers the actual repo cloning
-  return <GitClonePseudoElement githubRepo={githubRepo} userDetails={githubUserDetails} />
+  return <GitClonePseudoElement githubRepo={githubRepo} />
 })
 
 // The git repo clone flow is initiated from the URL, which means we only ever want to do it once per editor load
@@ -129,21 +123,14 @@ async function cloneGithubRepo(
   // TODO make sure the EditorState knows we have a github repo connected!!!
 }
 
-type GitClonePseudeElementProps = {
-  githubRepo: GithubRepoWithBranch
-  userDetails: GithubUser | null
-}
-
-const GitClonePseudoElement = React.memo((props: GitClonePseudeElementProps) => {
-  const { githubRepo, userDetails } = props
+const GitClonePseudoElement = React.memo((props: { githubRepo: GithubRepoWithBranch }) => {
+  const { githubRepo } = props
   const dispatch = useDispatch()
 
   const editorStoreRef = useRefEditorState((store) => store)
 
   React.useEffect(() => {
-    if (userDetails != null) {
-      void cloneGithubRepo(dispatch, editorStoreRef, githubRepo)
-    }
+    void cloneGithubRepo(dispatch, editorStoreRef, githubRepo)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
