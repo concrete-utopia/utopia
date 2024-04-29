@@ -514,7 +514,7 @@ export const fragmentComponentInfo: ComponentInfo = {
 }
 
 export const mapComponentInfo: ComponentInfo = {
-  insertMenuLabel: 'Map',
+  insertMenuLabel: 'List',
   elementToInsert: (): JSXMapExpressionWithoutUID => ({
     type: 'JSX_MAP_EXPRESSION',
     javascriptWithUIDs: '[1, 2, 3].map(() => <\nPlaceholder data-uid="placeholder-id" />);',

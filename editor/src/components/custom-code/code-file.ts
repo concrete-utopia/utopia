@@ -31,7 +31,6 @@ import type {
   JSXConditionalExpressionWithoutUID,
   JSXElementWithoutUID,
   JSXFragmentWithoutUID,
-  JSXMapExpression,
   JSXMapExpressionWithoutUID,
   UtopiaJSXComponent,
 } from '../../core/shared/element-template'
