@@ -230,6 +230,7 @@ import type {
   ResetOnlineState,
   IncreaseOnlineStateFailureCount,
   AddCollapsedViews,
+  ReplaceMappedElement,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -278,6 +279,19 @@ export function insertJSXElement(
     target: target,
     importsToAdd: importsToAdd,
     insertionBehaviour: insertionBehaviour,
+  }
+}
+
+export function replaceMappedElement(
+  element: JSXElement,
+  target: ElementPath,
+  importsToAdd: Imports,
+): ReplaceMappedElement {
+  return {
+    action: 'REPLACE_MAPPED_ELEMENT',
+    jsxElement: element,
+    target: target,
+    importsToAdd: importsToAdd,
   }
 }
 

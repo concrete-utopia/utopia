@@ -33,7 +33,11 @@ import { isEntryAPlaceholder } from '../../canvas/canvas-utils'
 import type { EditorAction, EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as MetaActions from '../../editor/actions/meta-actions'
-import type { ElementWarnings, NavigatorEntry } from '../../editor/store/editor-state'
+import type {
+  ElementWarnings,
+  NavigatorEntry,
+  SlotNavigatorEntry,
+} from '../../editor/store/editor-state'
 import {
   defaultElementWarnings,
   isConditionalClauseNavigatorEntry,
@@ -56,14 +60,10 @@ import { ExpandableIndicator } from './expandable-indicator'
 import { ItemLabel } from './item-label'
 import { LayoutIcon } from './layout-icon'
 import { NavigatorItemActionSheet } from './navigator-item-components'
-import { CanvasContextMenuPortalTargetID, NO_OP, assertNever } from '../../../core/shared/utils'
+import { assertNever } from '../../../core/shared/utils'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { MapCounter } from './map-counter'
-import ReactDOM from 'react-dom'
-import {
-  ComponentPickerContextMenu,
-  useShowComponentPickerContextMenu,
-} from './component-picker-context-menu'
+import { useShowComponentPickerContextMenu } from './component-picker-context-menu'
 import { getHighlightBoundsForProject } from '../../../core/model/project-file-utils'
 import {
   selectedElementChangedMessageFromHighlightBounds,
@@ -71,6 +71,7 @@ import {
 } from '../../../core/vscode/vscode-bridge'
 import { toVSCodeExtensionMessage } from 'utopia-vscode-common'
 import type { Emphasis } from 'utopia-api'
+import { contextMenu } from 'react-contexify'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -639,16 +640,6 @@ export const NavigatorItem: React.FunctionComponent<
     'NavigatorItem isConditionalDynamicBranch',
   )
 
-  const isContainingComponentRemixSceneOrOutlet = useEditorState(
-    Substores.metadata,
-    (store) =>
-      MetadataUtils.isContainingComponentRemixSceneOrOutlet(
-        store.editor.jsxMetadata,
-        navigatorEntry.elementPath,
-      ),
-    'NavigatorItem isInsideRemixOutlet',
-  )
-
   const childComponentCount = props.noOfChildren
 
   const isGenerated = MetadataUtils.isElementGenerated(navigatorEntry.elementPath)
@@ -902,21 +893,6 @@ export const NavigatorItem: React.FunctionComponent<
     )
   }, [childComponentCount, isFocusedComponent, isConditional])
 
-  const insertChildPickerId = varSafeNavigatorEntryToKey(navigatorEntry)
-  const insertChildPickerFullId = `${insertChildPickerId}-full`
-  const replaceElementPickerId = `${insertChildPickerId}-replace`
-  const replaceElementPickerFullId = `${replaceElementPickerId}-full`
-  const { showComponentPickerContextMenu: showInsertChildPicker } =
-    useShowComponentPickerContextMenu(insertChildPickerId)
-  const { showComponentPickerContextMenu: showInsertChildPickerFull } =
-    useShowComponentPickerContextMenu(insertChildPickerFullId)
-  const { showComponentPickerContextMenu: showReplaceElementPicker } =
-    useShowComponentPickerContextMenu(replaceElementPickerId)
-  const { showComponentPickerContextMenu: showReplaceElementPickerFull } =
-    useShowComponentPickerContextMenu(replaceElementPickerFullId)
-
-  const portalTarget = document.getElementById(CanvasContextMenuPortalTargetID)
-
   const iconColor = isRemixItem
     ? 'remix'
     : isDynamic
@@ -932,9 +908,11 @@ export const NavigatorItem: React.FunctionComponent<
     : resultingStyle.iconColor
 
   const currentlyRenaming = EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath)
+  const hideContextMenu = React.useCallback(() => contextMenu.hideAll(), [])
 
   return (
     <div
+      onClick={hideContextMenu}
       style={{
         outline: `1px solid ${
           props.parentOutline === 'solid' && isOutletOrDescendantOfOutlet
@@ -946,45 +924,6 @@ export const NavigatorItem: React.FunctionComponent<
         outlineOffset: props.parentOutline === 'solid' ? '-1px' : 0,
       }}
     >
-      {portalTarget != null && navigatorEntry.type === 'SLOT'
-        ? ReactDOM.createPortal(
-            <ComponentPickerContextMenu
-              target={EP.parentPath(props.navigatorEntry.elementPath)}
-              key={insertChildPickerId}
-              id={insertChildPickerId}
-              insertionTarget={{ prop: navigatorEntry.prop }}
-            />,
-            portalTarget,
-          )
-        : null}
-      {portalTarget != null &&
-      (navigatorEntry.type === 'REGULAR' || navigatorEntry.type === 'RENDER_PROP_VALUE')
-        ? ReactDOM.createPortal(
-            <React.Fragment>
-              <ComponentPickerContextMenu
-                target={props.navigatorEntry.elementPath}
-                key={insertChildPickerId}
-                id={insertChildPickerId}
-                insertionTarget={'insert-as-child'}
-              />
-              <ComponentPickerContextMenu
-                target={
-                  navigatorEntry.type === 'RENDER_PROP_VALUE'
-                    ? EP.parentPath(props.navigatorEntry.elementPath)
-                    : props.navigatorEntry.elementPath
-                }
-                key={replaceElementPickerId}
-                id={replaceElementPickerId}
-                insertionTarget={
-                  navigatorEntry.type === 'RENDER_PROP_VALUE'
-                    ? { prop: navigatorEntry.prop }
-                    : 'replace-target'
-                }
-              />
-            </React.Fragment>,
-            portalTarget,
-          )
-        : null}
       <FlexRow
         data-testid={NavigatorItemTestId(varSafeNavigatorEntryToKey(navigatorEntry))}
         style={rowStyle}
@@ -993,34 +932,15 @@ export const NavigatorItem: React.FunctionComponent<
         onDoubleClick={focusComponent}
       >
         {isPlaceholder ? (
-          <div
-            key={`label-${props.label}-slot`}
-            onClick={navigatorEntry.type === 'SLOT' ? showInsertChildPicker : NO_OP}
-            style={{
-              width: 140,
-              height: 19,
-              borderRadius: 20,
-              textAlign: 'center',
-              textTransform: 'lowercase',
-              backgroundColor: colorTheme.unavailable.value,
-              color:
-                props.parentOutline === 'child'
-                  ? colorTheme.navigatorResizeHintBorder.value
-                  : colorTheme.unavailableGrey10.value,
-              border: `1px solid ${
-                props.parentOutline === 'child'
-                  ? colorTheme.navigatorResizeHintBorder.value
-                  : colorTheme.unavailableGrey10.value
-              }`,
-              marginLeft: 28,
-              cursor: navigatorEntry.type === 'SLOT' ? 'pointer' : 'inherit',
-            }}
-            data-testid={`toggle-render-prop-${NavigatorItemTestId(
-              varSafeNavigatorEntryToKey(navigatorEntry),
-            )}`}
-          >
-            Empty
-          </div>
+          navigatorEntry.type === 'SLOT' ? (
+            <RenderPropSlot
+              label={props.label}
+              parentOutline={props.parentOutline}
+              navigatorEntry={navigatorEntry}
+            />
+          ) : (
+            <PlaceholderSlot label={props.label} parentOutline={props.parentOutline} />
+          )
         ) : isRenderProp ? (
           <div
             key={`label-${props.label}-slot`}
@@ -1107,10 +1027,6 @@ export const NavigatorItem: React.FunctionComponent<
                 isSlot={isPlaceholder}
                 iconColor={iconColor}
                 background={rowStyle.background}
-                showInsertChildPickerPreferred={showInsertChildPicker}
-                showInsertChildPickerFull={showInsertChildPickerFull}
-                showReplaceElementPickerPreferred={showReplaceElementPicker}
-                showReplaceElementPickerFull={showReplaceElementPickerFull}
               />,
             )}
           </FlexRow>
@@ -1121,6 +1037,73 @@ export const NavigatorItem: React.FunctionComponent<
 })
 NavigatorItem.displayName = 'NavigatorItem'
 
+interface RenderPropSlotProps {
+  label: string
+  parentOutline: ParentOutline
+  navigatorEntry: SlotNavigatorEntry
+}
+
+const RenderPropSlot = React.memo((props: RenderPropSlotProps) => {
+  const { label, parentOutline, navigatorEntry } = props
+  const target = EP.parentPath(navigatorEntry.elementPath)
+  const insertionTarget = { prop: navigatorEntry.prop }
+
+  const showComponentPickerContextMenu = useShowComponentPickerContextMenu(target, insertionTarget)
+
+  return (
+    <PlaceholderSlot
+      label={label}
+      parentOutline={parentOutline}
+      cursor={'pointer'}
+      onClick={showComponentPickerContextMenu}
+      testId={`toggle-render-prop-${NavigatorItemTestId(
+        varSafeNavigatorEntryToKey(navigatorEntry),
+      )}`}
+    />
+  )
+})
+
+interface PlaceholderSlotProps {
+  label: string
+  parentOutline: ParentOutline
+  cursor?: 'pointer' | 'inherit'
+  testId?: string
+  onClick?: React.MouseEventHandler
+}
+
+const PlaceholderSlot = React.memo((props: PlaceholderSlotProps) => {
+  const { label, parentOutline, cursor, testId, onClick } = props
+  const colorTheme = useColorTheme()
+
+  return (
+    <div
+      key={`label-${label}-slot`}
+      onClick={onClick}
+      style={{
+        width: 140,
+        height: 19,
+        borderRadius: 20,
+        textAlign: 'center',
+        textTransform: 'lowercase',
+        backgroundColor: colorTheme.unavailable.value,
+        color:
+          parentOutline === 'child'
+            ? colorTheme.navigatorResizeHintBorder.value
+            : colorTheme.unavailableGrey10.value,
+        border: `1px solid ${
+          parentOutline === 'child'
+            ? colorTheme.navigatorResizeHintBorder.value
+            : colorTheme.unavailableGrey10.value
+        }`,
+        marginLeft: 28,
+        cursor: cursor ?? 'inherit',
+      }}
+      data-testid={testId}
+    >
+      Empty
+    </div>
+  )
+})
 interface NavigatorRowLabelProps {
   navigatorEntry: NavigatorEntry
   iconColor: IcnProps['color']

@@ -487,6 +487,8 @@ export function runSimpleLocalEditorAction(
       )
     case 'SET_SHARING_DIALOG_OPEN':
       return UPDATE_FNS.SET_SHARING_DIALOG_OPEN(action, state)
+    case 'REPLACE_MAPPED_ELEMENT':
+      return UPDATE_FNS.REPLACE_MAPPED_ELEMENT(action, state)
     default:
       return state
   }
