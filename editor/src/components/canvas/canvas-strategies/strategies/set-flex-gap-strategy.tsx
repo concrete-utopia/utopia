@@ -41,7 +41,7 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
-import { areAllSiblingsInOneDimensionFlexOrFlow } from './flow-reorder-helpers'
+import { singleAxisAutoLayoutDirections } from './flow-reorder-helpers'
 import { colorTheme } from '../../../../uuiui'
 import { activeFrameTargetPath, setActiveFrames } from '../../commands/set-active-frames-command'
 
@@ -61,21 +61,35 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
   }
 
   const selectedElement = selectedElements[0]
-  const childrenPaths = recurseIntoChildrenOfMapOrFragment(
-    canvasState.startingMetadata,
-    selectedElement,
-  ).map((c) => c.elementPath)
-
-  if (childrenPaths.length < 2) {
+  if (
+    !MetadataUtils.isFlexLayoutedContainer(
+      MetadataUtils.findElementByElementPath(canvasState.startingMetadata, selectedElement),
+    )
+  ) {
     return null
   }
 
+  const children = recurseIntoChildrenOfMapOrFragment(
+    canvasState.startingMetadata,
+    canvasState.startingAllElementProps,
+    canvasState.startingElementPathTree,
+    selectedElement,
+  )
+
+  if (children.length < 2) {
+    return null
+  }
+
+  // do not show the gap control if the children are wrapped
   if (
-    !areAllSiblingsInOneDimensionFlexOrFlow(
-      childrenPaths[0],
+    singleAxisAutoLayoutDirections(
+      children,
       canvasState.startingMetadata,
-      canvasState.startingElementPathTree,
-    )
+      children[0].specialSizeMeasurements.parentLayoutSystem ?? 'none',
+      MetadataUtils.flexDirectionToSimpleFlexDirection(
+        children[0].specialSizeMeasurements.parentFlexDirection ?? 'row',
+      ),
+    ) === 'non-single-axis-autolayout'
   ) {
     return null
   }
@@ -170,7 +184,7 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
           printCSSNumber(updatedFlexGapMeasurement.value, null),
         ),
         setCursorCommand(cursorFromFlexDirection(flexGap.direction)),
-        setElementsToRerenderCommand([...selectedElements, ...childrenPaths]),
+        setElementsToRerenderCommand([...selectedElements, ...children.map((c) => c.elementPath)]),
         setActiveFrames([
           {
             action: 'set-gap',

@@ -18,9 +18,11 @@ import { cssNumber } from '../inspector/common/css-utils'
 import type { Sides } from 'utopia-api/core'
 import { sides } from 'utopia-api/core'
 import { styleStringInArray } from '../../utils/common-constants'
-import type { ElementPathTrees } from '../../core/shared/element-path-tree'
+import { getSubTree, type ElementPathTrees } from '../../core/shared/element-path-tree'
 import { isReversedFlexDirection } from '../../core/model/flex-utils'
 import * as EP from '../../core/shared/element-path'
+import { treatElementAsFragmentLike } from './canvas-strategies/strategies/fragment-like-helpers'
+import type { AllElementProps } from '../editor/store/editor-state'
 
 export interface PathWithBounds {
   bounds: CanvasRectangle
@@ -191,28 +193,39 @@ export function maybeFlexGapData(
 }
 
 export function recurseIntoChildrenOfMapOrFragment(
-  elements: ElementInstanceMetadataMap,
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
   target: ElementPath,
 ): Array<ElementInstanceMetadata> {
-  let result: Array<ElementInstanceMetadata> = []
-  for (const elementKey in elements) {
-    const element = elements[elementKey]
-    const elementPath = element.elementPath
-    if (EP.isChildOf(elementPath, target) && !EP.isRootElementOfInstance(elementPath)) {
-      const isMapOrFragment = defaultEither(
-        false,
-        mapEither(
-          (e) => e.type === 'JSX_MAP_EXPRESSION' || e.type === 'JSX_FRAGMENT',
-          element.element,
-        ),
-      )
-
-      if (isMapOrFragment) {
-        result.push(...recurseIntoChildrenOfMapOrFragment(elements, elementPath))
-      } else {
-        result.push(element)
-      }
-    }
+  const subTree = getSubTree(pathTrees, target)
+  if (subTree == null) {
+    return []
   }
-  return result
+
+  return subTree.children.flatMap((element) => {
+    const elementPath = element.path
+    if (EP.isRootElementOfInstance(elementPath)) {
+      return []
+    }
+
+    const isMap = MetadataUtils.isJSXMapExpression(elementPath, metadata)
+    const isFragmentLike = treatElementAsFragmentLike(
+      metadata,
+      allElementProps,
+      pathTrees,
+      elementPath,
+      'sizeless-div-not-considered-fragment-like',
+    )
+
+    if (isFragmentLike || isMap) {
+      return recurseIntoChildrenOfMapOrFragment(metadata, allElementProps, pathTrees, elementPath)
+    }
+    const instance = MetadataUtils.findElementByElementPath(metadata, elementPath)
+    if (instance == null) {
+      return []
+    }
+
+    return [instance]
+  })
 }
