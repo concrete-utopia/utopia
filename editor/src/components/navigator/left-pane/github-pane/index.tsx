@@ -1162,10 +1162,10 @@ export const GithubPane = React.memo(() => {
     [dispatch],
   )
 
-  const githubUserDetails = useEditorState(
+  const githubUser = useEditorState(
     Substores.github,
     (store) => store.editor.githubData.githubUserDetails,
-    'GithubPane githubUserDetails',
+    'GithubPane githubUser',
   )
   const isLoggedIn = useEditorState(
     Substores.restOfStore,
@@ -1176,16 +1176,16 @@ export const GithubPane = React.memo(() => {
   )
 
   const openGithubProfile = React.useCallback(() => {
-    if (githubUserDetails != null) {
-      window.open(githubUserDetails.htmlURL, '_blank')
+    if (githubUser != null) {
+      window.open(githubUser.htmlURL, '_blank')
     }
-  }, [githubUserDetails])
+  }, [githubUser])
   return (
     <div style={{ height: '100%', overflowY: 'scroll' }} onFocus={onFocus}>
       <Section>
         <SectionTitleRow minimised={false} hideButton>
           <FlexRow style={{ alignItems: 'flex-start' }}>
-            {githubUserDetails != null ? (
+            {githubUser != null ? (
               <Button
                 style={{ gap: 4, padding: '0 6px' }}
                 onClick={openGithubProfile}
@@ -1195,7 +1195,7 @@ export const GithubPane = React.memo(() => {
                   },
                 }}
               >
-                @{githubUserDetails?.login}
+                @{githubUser?.login}
               </Button>
             ) : (
               <UIGridRow
@@ -1225,7 +1225,7 @@ export const GithubPane = React.memo(() => {
         )}
       </Section>
       {when(
-        isLoggedIn && githubUserDetails != null,
+        isLoggedIn && githubUser != null,
         <Section style={{ padding: '10px' }}>
           <AccountBlock />
           <RepositoryBlock />
