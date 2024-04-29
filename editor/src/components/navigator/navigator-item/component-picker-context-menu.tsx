@@ -463,7 +463,13 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
   ({ target, insertionTarget }) => {
     const allInsertableComponents = useGetInsertableComponents('insert').flatMap((g) => ({
       label: g.label,
-      options: g.options,
+      options: g.options.filter((o) => {
+        if (insertionTarget === 'insert-as-child') {
+          return true
+        }
+        // Right now we only support inserting JSX elements when we insert into a render prop or when replacing elements
+        return o.value.element().type === 'JSX_ELEMENT'
+      }),
     }))
 
     const dispatch = useDispatch()
