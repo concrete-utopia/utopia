@@ -209,11 +209,6 @@ export async function runGithubOperation(
   logic: GithubOperationLogic,
 ): Promise<Array<EditorAction>> {
   let result: Array<EditorAction> = []
-  const userDetails = await GithubHelpers.getUserDetailsFromServer()
-  if (userDetails == null) {
-    dispatch(resetGithubStateAndDataActions())
-    return result
-  }
 
   const opName = githubOperationPrettyNameForToast(operation)
   try {
@@ -867,7 +862,7 @@ export function useGithubPolling() {
   const dispatch = useDispatch()
 
   const [tick, setTick] = React.useState(0)
-  const [lastTick, setLastTick] = React.useState<number>(-1)
+  const [lastTick, setLastTick] = React.useState<number | null>(null)
   const [timeoutId, setTimeoutId] = React.useState<number | null>(null)
 
   const githubAuthenticated = useEditorState(
@@ -938,7 +933,7 @@ export function useGithubPolling() {
         })
         break
       case 'ready':
-        if (lastTick < tick) {
+        if (lastTick == null || lastTick < tick) {
           setLastTick(() => {
             void refreshAndScheduleGithubData()
             return tick
