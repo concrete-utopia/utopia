@@ -1,5 +1,8 @@
 import * as React from 'react'
-import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
+import {
+  generateUidWithExistingComponents,
+  removeJSXElement,
+} from '../../core/model/element-template-utils'
 import { safeIndex } from '../..//core/shared/array-utils'
 import { emptyElementPath } from '../..//core/shared/element-path'
 import type {
@@ -219,6 +222,15 @@ export function changeElement(
   }
 
   return actionsToDispatch
+}
+
+function wrapIntoMap() {
+  /**
+   * - remove the target(s) from the project
+   * - insert the map under the parent of the selected elements
+   * - if there is more than one element, group them into a fragment
+   * - insert the fragment into the map
+   */
 }
 
 export function getActionsToApplyChange(

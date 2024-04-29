@@ -660,7 +660,9 @@ function isDescriptorEligibleForMode(
   insertMenuMode: InsertMenuMode,
   component: ComponentDescriptor,
 ): boolean {
-  return insertMenuMode === 'wrap' ? component.supportsChildren : true
+  const isMap = component.variants.some((v) => v.elementToInsert().type === 'JSX_MAP_EXPRESSION')
+  const canBeWrapper = component.supportsChildren || isMap
+  return insertMenuMode === 'wrap' ? canBeWrapper : true
 }
 
 function isUtopiaJSXComponentEligibleForMode(
