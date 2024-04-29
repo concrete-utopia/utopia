@@ -58,7 +58,7 @@ import urljoin from 'url-join'
 import { notice } from '../../common/notice'
 import type { EditorDispatch } from '../../editor/action-types'
 import { maybeToArray } from '../../../core/shared/optional-utils'
-import { StarUnstarIcon } from '../../canvas/starunstaricon'
+import { StarUnstarIcon } from '../../canvas/star-unstar-icon'
 
 type RouteMatch = {
   path: string

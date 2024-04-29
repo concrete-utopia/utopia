@@ -12,7 +12,7 @@ import { FlexRow, StringInput, Tooltip, colorTheme } from '../../uuiui'
 import { stopPropagation } from '../inspector/common/inspector-utils'
 import * as EP from '../../core/shared/element-path'
 import { getRemixLocationLabel, getRemixUrlFromLocation } from '../canvas/remix/remix-utils'
-import { StarUnstarIcon } from '../canvas/starunstaricon'
+import { StarUnstarIcon } from '../canvas/star-unstar-icon'
 import { matchPath, matchRoutes } from 'react-router'
 import { useDispatch } from './store/dispatch-context'
 import { showToast } from './actions/action-creators'
@@ -64,15 +64,17 @@ export const RemixNavigationBar = React.memo(() => {
     [activeRemixScene, navigationControls],
   )
 
-  const label = getRemixUrlFromLocation(navigationControls[EP.toString(activeRemixScene)]?.location)
+  const activeRemixURL = getRemixUrlFromLocation(
+    navigationControls[EP.toString(activeRemixScene)]?.location,
+  )
 
-  const [currentURL, setCurrentURL] = React.useState<string | null>(label)
+  const [currentURL, setCurrentURL] = React.useState<string | null>(activeRemixURL)
 
   const addedToFavorites = currentURL != null && featuredRoutes.includes(currentURL)
 
   React.useEffect(() => {
-    setCurrentURL(label)
-  }, [label])
+    setCurrentURL(activeRemixURL)
+  }, [activeRemixURL])
 
   const onInputChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setCurrentURL(e.target.value)
@@ -110,10 +112,10 @@ export const RemixNavigationBar = React.memo(() => {
   )
 
   const resetURL = React.useCallback(() => {
-    setCurrentURL(label)
-  }, [label])
+    setCurrentURL(activeRemixURL)
+  }, [activeRemixURL])
 
-  if (!isSelectOrLiveMode || navigationControls == null || label == null) {
+  if (!isSelectOrLiveMode || navigationControls == null || activeRemixURL == null) {
     return null
   }
 
