@@ -285,12 +285,13 @@ const FileBrowserItems = React.memo(() => {
     'FileBrowserItems projectContents',
   )
 
-  const { githubRepo, conflicts } = useEditorState(
+  const { githubRepo, conflicts, githubUserDetails } = useEditorState(
     Substores.github,
     (store) => {
       return {
         githubRepo: store.editor.githubSettings.targetRepository,
         conflicts: store.editor.githubData.treeConflicts,
+        githubUserDetails: store.editor.githubData.githubUserDetails,
       }
     },
     'FileBrowserItems github',
@@ -329,12 +330,6 @@ const FileBrowserItems = React.memo(() => {
       setSelectedPath(item.path)
     }
   }, [])
-
-  const githubUserDetails = useEditorState(
-    Substores.github,
-    (store) => store.editor.githubData.githubUserDetails,
-    'Github githubUserDetails',
-  )
 
   const githubFileChanges = useGithubFileChanges()
 
