@@ -955,7 +955,7 @@ export function useGithubPolling() {
   }, [authState, dispatch, timeoutId, refreshAndScheduleGithubData, tick, lastTick])
 }
 
-export function getRefreshGithubActions(
+export async function getRefreshGithubActions(
   dispatch: EditorDispatch,
   githubRepo: GithubRepo | null,
   branchName: string | null,
@@ -964,51 +964,60 @@ export function getRefreshGithubActions(
   originCommitSha: string | null,
   operationContext: GithubOperationContext,
   initiator: GithubOperationSource,
-): Array<Promise<Array<EditorAction>>> {
+): Promise<EditorAction[]> {
   // Collect actions which are the results of the various requests,
   // but not those that show which Github operations are running.
-  let promises: Array<Promise<Array<EditorAction>>> = []
+  let actions: EditorAction[] = []
 
   // 1. list the repos
-  promises.push(getUsersPublicGithubRepositories(operationContext)(dispatch, initiator))
+  const userRepos = await getUsersPublicGithubRepositories(operationContext)(dispatch, initiator)
+  actions.push(...userRepos)
+
   if (githubRepo != null) {
     // 2. get the branches
-    promises.push(getBranchesForGithubRepository(operationContext)(dispatch, githubRepo, initiator))
+    const branches = await getBranchesForGithubRepository(operationContext)(
+      dispatch,
+      githubRepo,
+      initiator,
+    )
+    actions.push(...branches)
+
     if (branchName != null) {
       if (branchOriginChecksums == null) {
         if (originCommitSha != null) {
           // 3. get the checksums
-          promises.push(
-            getBranchChecksums(operationContext)(githubRepo, branchName, originCommitSha),
+          const checksums = await getBranchChecksums(operationContext)(
+            githubRepo,
+            branchName,
+            originCommitSha,
           )
+          actions.push(...checksums)
         }
       } else {
         // 4. update PRs
-        promises.push(
-          updatePullRequestsForBranch(operationContext)(
-            dispatch,
-            githubRepo,
-            branchName,
-            initiator,
-          ),
+        const pullRequests = await updatePullRequestsForBranch(operationContext)(
+          dispatch,
+          githubRepo,
+          branchName,
+          initiator,
         )
+        actions.push(...pullRequests)
       }
     }
     // 5. finally update upstream changes
-    promises.push(
-      updateUpstreamChanges(
-        branchName,
-        branchOriginChecksums,
-        githubRepo,
-        previousCommitSha,
-        operationContext,
-      ),
+    const upstreamChanges = await updateUpstreamChanges(
+      branchName,
+      branchOriginChecksums,
+      githubRepo,
+      previousCommitSha,
+      operationContext,
     )
+    actions.push(...upstreamChanges)
   } else {
-    promises.push(Promise.resolve([updateGithubData({ branches: null })]))
+    actions.push(updateGithubData({ branches: null }))
   }
 
-  return promises
+  return actions
 }
 
 export async function refreshGithubData(
@@ -1021,51 +1030,23 @@ export async function refreshGithubData(
   operationContext: GithubOperationContext,
   initiator: GithubOperationSource,
 ): Promise<void> {
-  const promises = getRefreshGithubActions(
-    dispatch,
-    githubRepo,
-    branchName,
-    branchOriginChecksums,
-    previousCommitSha,
-    originCommitSha,
-    operationContext,
-    initiator,
-  )
-
-  // Resolve all the promises (sequentially).
-  const results = await sequentialPromiseAllSettled(promises)
-
-  let actions: Array<EditorAction> = []
-  for (const result of results) {
-    switch (result.status) {
-      case 'rejected':
-        console.error(`Error while polling Github: ${result.reason}`)
-        break
-      case 'fulfilled':
-        actions.push(...result.value)
-        break
-    }
-  }
-
-  // Dispatch all the actions from all the polling functions.
-  dispatch(actions, 'everyone')
-}
-
-async function sequentialPromiseAllSettled<T>(
-  promises: Promise<T>[],
-): Promise<Array<PromiseSettledResult<T>>> {
-  function toSettledResult(promise: Promise<T>): Promise<PromiseSettledResult<T>> {
-    return promise.then(
-      (value) => ({ status: 'fulfilled', value: value }),
-      (reason) => ({ status: 'rejected', reason: reason }),
+  try {
+    const actions = await getRefreshGithubActions(
+      dispatch,
+      githubRepo,
+      branchName,
+      branchOriginChecksums,
+      previousCommitSha,
+      originCommitSha,
+      operationContext,
+      initiator,
     )
-  }
 
-  let results: Array<PromiseSettledResult<T>> = []
-  for await (const result of promises.map(toSettledResult)) {
-    results.push(result)
+    // Dispatch all the actions from all the polling functions.
+    dispatch(actions, 'everyone')
+  } catch (err) {
+    console.error(`Error while polling Github: ${err}`)
   }
-  return results
 }
 
 async function updateUpstreamChanges(

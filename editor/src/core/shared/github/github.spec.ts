@@ -102,7 +102,7 @@ describe('github helpers', () => {
           ),
         )
 
-        const got = getRefreshGithubActions(
+        const got = await getRefreshGithubActions(
           mockDispatch,
           null,
           null,
@@ -114,17 +114,15 @@ describe('github helpers', () => {
         )
         expect(got.length).toBe(2)
 
-        const one = await got[0]
-        expect(one).toEqual([
+        expect(got).toEqual([
           updateGithubData({
             userRepositories: [
               { name: 'foo' } as RepositoryEntry,
               { name: 'bar' } as RepositoryEntry,
             ],
           }),
+          updateGithubData({ branches: null }),
         ])
-        const two = await got[1]
-        expect(two).toEqual([updateGithubData({ branches: null })])
       })
     })
     describe('when the repo is not null', () => {
@@ -150,7 +148,7 @@ describe('github helpers', () => {
           ),
         )
 
-        const got = getRefreshGithubActions(
+        const got = await getRefreshGithubActions(
           mockDispatch,
           { owner: 'foo', repository: 'bar' },
           null,
@@ -160,12 +158,12 @@ describe('github helpers', () => {
           makeMockContext(),
           'user-initiated',
         )
-        expect(got.length).toBe(3)
+        expect(got.length).toBe(2)
 
-        const two = await got[1]
-        expect(two).toEqual([updateGithubData({ branches: [{ name: 'one' }, { name: 'two' }] })])
-        const three = await got[2]
-        expect(three).toEqual([updateGithubData({ upstreamChanges: null })])
+        expect(got).toEqual([
+          updateGithubData({ branches: [{ name: 'one' }, { name: 'two' }] }),
+          updateGithubData({ upstreamChanges: null }),
+        ])
       })
     })
   })
