@@ -209,6 +209,11 @@ export async function runGithubOperation(
   logic: GithubOperationLogic,
 ): Promise<Array<EditorAction>> {
   let result: Array<EditorAction> = []
+  const userDetails = await GithubHelpers.getUserDetailsFromServer()
+  if (userDetails == null) {
+    dispatch(resetGithubStateAndDataActions())
+    return result
+  }
 
   const opName = githubOperationPrettyNameForToast(operation)
   try {
