@@ -290,11 +290,11 @@ function insertComponentPickerItem(
 
       // if we are inserting into a map expression then we replace the mapped element
       if (MetadataUtils.isJSXMapExpression(EP.parentPath(target), metadata)) {
-        return [replaceMappedElement(element, target, toInsert.importsToAdd)]
+        return [replaceMappedElement(fixedElement, target, toInsert.importsToAdd)]
       }
 
       return [
-        insertJSXElement(element, target, toInsert.importsToAdd ?? undefined, insertionTarget),
+        insertJSXElement(fixedElement, target, toInsert.importsToAdd ?? undefined, insertionTarget),
       ]
     }
 
