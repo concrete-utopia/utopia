@@ -121,7 +121,7 @@ export function getNavigatorTargets(
         visibleNavigatorTargets.push(...entries)
       }
 
-      if (isDataReference) {
+      if (isDataReference && isFeatureEnabled('Data Entries in the Navigator')) {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
         if (elementMetadata != null && isRight(elementMetadata.element)) {
           // add synthetic entry
@@ -310,7 +310,10 @@ export function getNavigatorTargets(
             }
           }
         }
-      } else if (subTree.children.length === 0) {
+      } else if (
+        subTree.children.length === 0 &&
+        isFeatureEnabled('Data Entries in the Navigator')
+      ) {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
         if (
           elementMetadata != null &&
