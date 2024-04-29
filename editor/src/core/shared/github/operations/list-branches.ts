@@ -1,11 +1,7 @@
 import { HEADERS, MODE } from '../../../../common/server'
 import type { EditorAction, EditorDispatch } from '../../../../components/editor/action-types'
 import { updateGithubData } from '../../../../components/editor/actions/action-creators'
-import type {
-  GithubOperation,
-  GithubRepo,
-  GithubUser,
-} from '../../../../components/editor/store/editor-state'
+import type { GithubOperation, GithubRepo } from '../../../../components/editor/store/editor-state'
 import { GithubEndpoints } from '../endpoints'
 import type { GithubBranch, GithubFailure, GithubOperationSource } from '../helpers'
 import { githubAPIError, githubAPIErrorFromResponse, runGithubOperation } from '../helpers'
@@ -24,13 +20,11 @@ export const getBranchesForGithubRepository =
   (operationContext: GithubOperationContext) =>
   async (
     dispatch: EditorDispatch,
-    userDetails: GithubUser | null,
     githubRepo: GithubRepo,
     initiator: GithubOperationSource,
   ): Promise<Array<EditorAction>> => {
     return runGithubOperation(
       { name: 'listBranches' },
-      userDetails,
       dispatch,
       initiator,
       async (operation: GithubOperation) => {

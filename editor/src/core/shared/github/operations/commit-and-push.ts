@@ -44,7 +44,6 @@ export type SaveToGithubResponse = SaveToGithubSuccess | GithubFailure
 export const saveProjectToGithub =
   (operationContext: GithubOperationContext) =>
   async (
-    userDetails: GithubUser | null,
     projectID: string,
     targetRepository: GithubRepo,
     persistentModel: PersistentModel,
@@ -54,7 +53,6 @@ export const saveProjectToGithub =
   ): Promise<void> => {
     await runGithubOperation(
       { name: 'commitAndPush' },
-      userDetails,
       dispatch,
       initiator,
       async (operation: GithubOperation) => {
@@ -143,7 +141,6 @@ export const saveProjectToGithub =
               dispatch,
               getBranchesForGithubRepository(operationContext)(
                 dispatch,
-                userDetails,
                 targetRepository,
                 initiator,
               ),

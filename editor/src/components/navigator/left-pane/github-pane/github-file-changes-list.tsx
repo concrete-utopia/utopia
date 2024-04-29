@@ -113,9 +113,8 @@ const ConflictButton = React.memo((props: ConflictButtonProps) => {
     'Github userDetails',
   )
   const menuItems = React.useMemo(() => {
-    if (githubRepo != null && projectID != null) {
+    if (githubRepo != null && projectID != null && githubUser != null) {
       return getConflictMenuItems(
-        githubUser,
         githubRepo,
         projectID,
         dispatch,

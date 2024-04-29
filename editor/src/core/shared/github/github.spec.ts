@@ -105,7 +105,6 @@ describe('github helpers', () => {
 
         const got = await getRefreshGithubActions(
           mockDispatch,
-          { login: 'bob' } as GithubUser,
           null,
           null,
           null,
@@ -152,7 +151,6 @@ describe('github helpers', () => {
 
         const got = await getRefreshGithubActions(
           mockDispatch,
-          { login: 'bob' } as GithubUser,
           { owner: 'foo', repository: 'bar' },
           null,
           null,

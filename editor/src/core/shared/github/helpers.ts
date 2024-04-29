@@ -204,16 +204,11 @@ export type GithubOperationSource = 'polling' | 'user-initiated'
 
 export async function runGithubOperation(
   operation: GithubOperation,
-  userDetails: GithubUser | null,
   dispatch: EditorDispatch,
   source: GithubOperationSource,
   logic: GithubOperationLogic,
 ): Promise<Array<EditorAction>> {
   let result: Array<EditorAction> = []
-  if (userDetails == null) {
-    dispatch(resetGithubStateAndDataActions())
-    return result
-  }
 
   const opName = githubOperationPrettyNameForToast(operation)
   try {
@@ -867,7 +862,7 @@ export function useGithubPolling() {
   const dispatch = useDispatch()
 
   const [tick, setTick] = React.useState(0)
-  const [lastTick, setLastTick] = React.useState<number>(-1)
+  const [lastTick, setLastTick] = React.useState<number | null>(null)
   const [timeoutId, setTimeoutId] = React.useState<number | null>(null)
 
   const githubAuthenticated = useEditorState(
@@ -895,7 +890,6 @@ export function useGithubPolling() {
   const refreshAndScheduleGithubData = React.useCallback(async () => {
     await refreshGithubData(
       dispatch,
-      githubData.githubUserDetails,
       githubData.targetRepository,
       githubData.branchName,
       branchOriginContentsChecksums,
@@ -939,7 +933,7 @@ export function useGithubPolling() {
         })
         break
       case 'ready':
-        if (lastTick < tick) {
+        if (lastTick == null || lastTick < tick) {
           setLastTick(() => {
             void refreshAndScheduleGithubData()
             return tick
@@ -958,7 +952,6 @@ export function useGithubPolling() {
 
 export async function getRefreshGithubActions(
   dispatch: EditorDispatch,
-  userDetails: GithubUser | null,
   githubRepo: GithubRepo | null,
   branchName: string | null,
   branchOriginChecksums: FileChecksumsWithFile | null,
@@ -972,18 +965,13 @@ export async function getRefreshGithubActions(
   let actions: EditorAction[] = []
 
   // 1. list the repos
-  const userRepos = await getUsersPublicGithubRepositories(operationContext)(
-    dispatch,
-    userDetails,
-    initiator,
-  )
+  const userRepos = await getUsersPublicGithubRepositories(operationContext)(dispatch, initiator)
   actions.push(...userRepos)
 
   if (githubRepo != null) {
     // 2. get the branches
     const branches = await getBranchesForGithubRepository(operationContext)(
       dispatch,
-      userDetails,
       githubRepo,
       initiator,
     )
@@ -994,7 +982,6 @@ export async function getRefreshGithubActions(
         if (originCommitSha != null) {
           // 3. get the checksums
           const checksums = await getBranchChecksums(operationContext)(
-            userDetails,
             githubRepo,
             branchName,
             originCommitSha,
@@ -1005,7 +992,6 @@ export async function getRefreshGithubActions(
         // 4. update PRs
         const pullRequests = await updatePullRequestsForBranch(operationContext)(
           dispatch,
-          userDetails,
           githubRepo,
           branchName,
           initiator,
@@ -1031,7 +1017,6 @@ export async function getRefreshGithubActions(
 
 export async function refreshGithubData(
   dispatch: EditorDispatch,
-  userDetails: GithubUser | null,
   githubRepo: GithubRepo | null,
   branchName: string | null,
   branchOriginChecksums: FileChecksumsWithFile | null,
@@ -1043,7 +1028,6 @@ export async function refreshGithubData(
   try {
     const actions = await getRefreshGithubActions(
       dispatch,
-      userDetails,
       githubRepo,
       branchName,
       branchOriginChecksums,
@@ -1123,7 +1107,6 @@ interface GithubSaveAssetResponseSuccess {
 type GithubSaveAssetResponse = GithubSaveAssetResponseSuccess | GithubFailure
 
 export async function saveGithubAsset(
-  userDetails: GithubUser | null,
   githubRepo: GithubRepo,
   assetSha: string,
   projectID: string,
@@ -1134,7 +1117,6 @@ export async function saveGithubAsset(
 ): Promise<void> {
   await runGithubOperation(
     { name: 'saveAsset', path: path },
-    userDetails,
     dispatch,
     initiator,
     async (operation: GithubOperation) => {
@@ -1177,7 +1159,6 @@ export const resolveConflict =
   (operationContext: GithubOperationContext) =>
   async (
     githubRepo: GithubRepo,
-    userDetails: GithubUser | null,
     projectID: string,
     path: string,
     conflict: Conflict,
@@ -1201,7 +1182,6 @@ export const resolveConflict =
         saveAssetPromise = Promise.resolve()
       } else {
         saveAssetPromise = saveGithubAsset(
-          userDetails,
           githubRepo,
           gitBlobSha,
           projectID,

@@ -42,7 +42,6 @@ import { getAllComponentDescriptorFilePaths } from '../../../property-controls/p
 export const saveAssetsToProject =
   (operationContext: GithubOperationContext) =>
   async (
-    userDetails: GithubUser | null,
     githubRepo: GithubRepo,
     projectID: string,
     branchContent: BranchContent,
@@ -67,7 +66,6 @@ export const saveAssetsToProject =
           switch (projectFile.type) {
             case 'IMAGE_FILE':
               await saveGithubAsset(
-                userDetails,
                 githubRepo,
                 forceNotNull('Commit sha should exist.', projectFile.gitBlobSha),
                 projectID,
@@ -79,7 +77,6 @@ export const saveAssetsToProject =
               break
             case 'ASSET_FILE':
               await saveGithubAsset(
-                userDetails,
                 githubRepo,
                 forceNotNull('Commit sha should exist.', projectFile.gitBlobSha),
                 projectID,
@@ -101,7 +98,6 @@ export const updateProjectWithBranchContent =
   (operationContext: GithubOperationContext) =>
   async (
     workers: UtopiaTsWorkers,
-    userDetails: GithubUser | null,
     dispatch: EditorDispatch,
     projectID: string,
     githubRepo: GithubRepo,
@@ -118,7 +114,6 @@ export const updateProjectWithBranchContent =
         branchName: branchName,
         githubRepo: githubRepo,
       },
-      userDetails,
       dispatch,
       initiator,
       async (operation: GithubOperation) => {
@@ -157,7 +152,6 @@ export const updateProjectWithBranchContent =
 
             // Save assets to the server from Github.
             await saveAssetsToProject(operationContext)(
-              userDetails,
               githubRepo,
               projectID,
               responseBody.branch,

@@ -91,7 +91,6 @@ let didWeInitiateGitRepoDownloadSinceTheEditorLoaded = false
 
 async function cloneGithubRepo(
   dispatch: EditorDispatch,
-  userDetails: GithubUser | null,
   storeRef: { current: EditorStorePatched },
   githubRepo: GithubRepoWithBranch,
 ) {
@@ -109,7 +108,6 @@ async function cloneGithubRepo(
   const createdProjectID = loadActionDispatchedByPersistenceMachine.projectId
   await GithubOperations.updateProjectWithBranchContent(
     storeRef.current.workers,
-    userDetails,
     dispatch,
     forceNotNull('Should have a project ID by now.', createdProjectID),
     githubRepo,
@@ -139,7 +137,9 @@ const GitClonePseudoElement = React.memo(
     const editorStoreRef = useRefEditorState((store) => store)
 
     React.useEffect(() => {
-      void cloneGithubRepo(dispatch, userDetails, editorStoreRef, githubRepo)
+      if (userDetails != null) {
+        void cloneGithubRepo(dispatch, editorStoreRef, githubRepo)
+      }
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 

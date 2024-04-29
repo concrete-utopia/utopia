@@ -189,12 +189,11 @@ const BranchBlock = () => {
   )
 
   const refreshBranchesOnMouseUp = React.useCallback(() => {
-    if (targetRepository != null) {
+    if (targetRepository != null && githubUser != null) {
       void dispatchPromiseActions(
         dispatch,
         GithubOperations.getBranchesForGithubRepository(
           dispatch,
-          githubUser,
           targetRepository,
           'user-initiated',
         ),
@@ -203,15 +202,10 @@ const BranchBlock = () => {
   }, [dispatch, targetRepository, githubUser])
 
   React.useEffect(() => {
-    if (targetRepository != null) {
+    if (targetRepository != null && githubUser != null) {
       void dispatchPromiseActions(
         dispatch,
-        GithubOperations.getBranchesForGithubRepository(
-          dispatch,
-          githubUser,
-          targetRepository,
-          'polling',
-        ),
+        GithubOperations.getBranchesForGithubRepository(dispatch, targetRepository, 'polling'),
       )
     }
   }, [dispatch, targetRepository, githubUser])
@@ -523,10 +517,9 @@ const RemoteChangesBlock = () => {
     'Github userDetails',
   )
   const triggerUpdateAgainstGithub = React.useCallback(() => {
-    if (repo != null && branch != null && commit != null) {
+    if (repo != null && branch != null && commit != null && githubUser != null) {
       void GithubOperations.updateProjectAgainstGithub(
         workersRef.current,
-        githubUser,
         dispatch,
         repo,
         branch,
@@ -696,8 +689,11 @@ const LocalChangesBlock = () => {
       console.warn('project id is not set')
       return
     }
+    if (githubUser == null) {
+      console.warn('github user is null')
+      return
+    }
     void GithubOperations.saveProjectToGithub(
-      githubUser,
       projectId,
       repo,
       persistentModelFromEditorModel(editorStateRef.current),
@@ -912,10 +908,9 @@ const BranchNotLoadedBlock = () => {
   )
 
   const loadFromBranch = React.useCallback(() => {
-    if (githubRepo != null && branchName != null) {
+    if (githubRepo != null && branchName != null && githubUser != null) {
       void GithubOperations.updateProjectWithBranchContent(
         workersRef.current,
-        githubUser,
         dispatch,
         forceNotNull('Should have a project ID by now.', projectID),
         githubRepo,
@@ -966,11 +961,10 @@ const BranchNotLoadedBlock = () => {
   const editorStateRef = useRefEditorState((store) => store.editor)
 
   const pushToBranch = React.useCallback(() => {
-    if (githubRepo == null || branchName == null || projectId == null) {
+    if (githubRepo == null || branchName == null || projectId == null || githubUser == null) {
       return
     }
     void GithubOperations.saveProjectToGithub(
-      githubUser,
       projectId,
       githubRepo,
       persistentModelFromEditorModel(editorStateRef.current),

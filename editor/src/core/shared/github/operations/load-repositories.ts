@@ -5,7 +5,7 @@ import {
   updateGithubData,
   updateGithubSettings,
 } from '../../../../components/editor/actions/action-creators'
-import type { GithubOperation, GithubUser } from '../../../../components/editor/store/editor-state'
+import type { GithubOperation } from '../../../../components/editor/store/editor-state'
 import { emptyGithubSettings } from '../../../../components/editor/store/editor-state'
 import { assertNever } from '../../utils'
 import { GithubEndpoints } from '../endpoints'
@@ -24,12 +24,10 @@ export const getUsersPublicGithubRepositories =
   (operationContext: GithubOperationContext) =>
   async (
     dispatch: EditorDispatch,
-    userDetails: GithubUser | null,
     initiator: GithubOperationSource,
   ): Promise<Array<EditorAction>> => {
     return runGithubOperation(
       { name: 'loadRepositories' },
-      userDetails,
       dispatch,
       initiator,
       async (operation: GithubOperation) => {
@@ -86,7 +84,6 @@ export const searchPublicGithubRepository =
   (operationContext: GithubOperationContext) =>
   async (
     dispatch: EditorDispatch,
-    userDetails: GithubUser | null,
     initiator: GithubOperationSource,
     params: {
       owner: string
@@ -95,7 +92,6 @@ export const searchPublicGithubRepository =
   ): Promise<Array<EditorAction>> => {
     return runGithubOperation(
       { name: 'searchRepository' },
-      userDetails,
       dispatch,
       initiator,
       async (operation: GithubOperation) => {

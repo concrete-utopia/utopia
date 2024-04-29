@@ -296,24 +296,20 @@ export const RepositoryListing = React.memo(
     const dispatch = useDispatch()
 
     const refreshRepos = React.useCallback(() => {
-      void GithubOperations.getUsersPublicGithubRepositories(
-        dispatch,
-        githubUserDetails,
-        'polling',
-      ).then((actions) => {
-        dispatch(actions, 'everyone')
-      })
-    }, [dispatch, githubUserDetails])
+      void GithubOperations.getUsersPublicGithubRepositories(dispatch, 'polling').then(
+        (actions) => {
+          dispatch(actions, 'everyone')
+        },
+      )
+    }, [dispatch])
 
     const refreshReposOnClick = React.useCallback(() => {
-      void GithubOperations.getUsersPublicGithubRepositories(
-        dispatch,
-        githubUserDetails,
-        'user-initiated',
-      ).then((actions) => {
-        dispatch(actions, 'everyone')
-      })
-    }, [dispatch, githubUserDetails])
+      void GithubOperations.getUsersPublicGithubRepositories(dispatch, 'user-initiated').then(
+        (actions) => {
+          dispatch(actions, 'everyone')
+        },
+      )
+    }, [dispatch])
 
     React.useEffect(() => {
       setTimeout(() => refreshRepos(), 0)
@@ -456,15 +452,10 @@ async function searchPublicRepoFromString(
     return
   }
 
-  const actions = await GithubOperations.searchPublicGithubRepository(
-    dispatch,
-    userDetails,
-    'user-initiated',
-    {
-      owner: details.owner,
-      repo: details.repo,
-    },
-  )
+  const actions = await GithubOperations.searchPublicGithubRepository(dispatch, 'user-initiated', {
+    owner: details.owner,
+    repo: details.repo,
+  })
 
   dispatch(actions, 'everyone')
 }
