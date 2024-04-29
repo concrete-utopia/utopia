@@ -25,7 +25,12 @@ import { FlexGapControl } from '../../controls/select-mode/flex-gap-control'
 import type { FloatingIndicatorProps } from '../../controls/select-mode/floating-number-indicator'
 import { FloatingIndicator } from '../../controls/select-mode/floating-number-indicator'
 import type { FlexGapData } from '../../gap-utils'
-import { cursorFromFlexDirection, dragDeltaForOrientation, maybeFlexGapData } from '../../gap-utils'
+import {
+  cursorFromFlexDirection,
+  dragDeltaForOrientation,
+  maybeFlexGapData,
+  recurseIntoChildrenOfMapOrFragment,
+} from '../../gap-utils'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
 import type { InteractionCanvasState } from '../canvas-strategy-types'
@@ -56,7 +61,7 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
   }
 
   const selectedElement = selectedElements[0]
-  const childrenPaths = MetadataUtils.getDOMChildrenUnordered(
+  const childrenPaths = recurseIntoChildrenOfMapOrFragment(
     canvasState.startingMetadata,
     selectedElement,
   ).map((c) => c.elementPath)
@@ -75,7 +80,7 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
     return null
   }
 
-  const flexGap = maybeFlexGapData(canvasState.startingMetadata, selectedElement, childrenPaths[0])
+  const flexGap = maybeFlexGapData(canvasState.startingMetadata, selectedElement)
   if (flexGap == null) {
     return null
   }

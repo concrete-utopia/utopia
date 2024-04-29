@@ -26,6 +26,7 @@ import {
   cursorFromFlexDirection,
   maybeFlexGapData,
   gapControlBoundsFromMetadata,
+  recurseIntoChildrenOfMapOrFragment,
 } from '../../gap-utils'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import type { CSSNumberWithRenderedValue } from './controls-common'
@@ -111,8 +112,8 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
     [canvasOffset, dispatch, scale],
   )
 
-  const children = MetadataUtils.getDOMChildrenUnordered(metadata, selectedElement)
-  const flexGap = maybeFlexGapData(metadata, selectedElement, children[0].elementPath)
+  const children = recurseIntoChildrenOfMapOrFragment(metadata, selectedElement)
+  const flexGap = maybeFlexGapData(metadata, selectedElement)
   if (flexGap == null) {
     return null
   }

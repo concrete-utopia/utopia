@@ -31,8 +31,6 @@ import {
   right,
   maybeEitherToMaybe,
   isLeft,
-  mapEither,
-  defaultEither,
 } from '../shared/either'
 import type {
   ElementInstanceMetadata,
@@ -712,32 +710,6 @@ export const MetadataUtils = {
       const elementPath = element.elementPath
       if (EP.isChildOf(elementPath, target) && !EP.isRootElementOfInstance(elementPath)) {
         result.push(element)
-      }
-    }
-    return result
-  },
-  getDOMChildrenUnordered(
-    elements: ElementInstanceMetadataMap,
-    target: ElementPath,
-  ): Array<ElementInstanceMetadata> {
-    let result: Array<ElementInstanceMetadata> = []
-    for (const elementKey in elements) {
-      const element = elements[elementKey]
-      const elementPath = element.elementPath
-      if (EP.isChildOf(elementPath, target) && !EP.isRootElementOfInstance(elementPath)) {
-        const jsxElementNotInDOM = defaultEither(
-          false,
-          mapEither(
-            (e) => e.type === 'JSX_MAP_EXPRESSION' || e.type === 'JSX_FRAGMENT',
-            element.element,
-          ),
-        )
-
-        if (jsxElementNotInDOM) {
-          return MetadataUtils.getDOMChildrenUnordered(elements, elementPath)
-        } else {
-          result.push(element)
-        }
       }
     }
     return result
