@@ -15,6 +15,7 @@ import {
   insertJSXElementChildren,
   renameJsxElementChild,
   renameJsxElementChildWithoutId,
+  transformJSXComponentAtPath,
 } from '../../../core/model/element-template-utils'
 import {
   applyToAllUIJSFiles,
@@ -336,6 +337,7 @@ import type {
   AddNewFeaturedRoute,
   RemoveFeaturedRoute,
   AddCollapsedViews,
+  ReplaceMappedElement,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -383,6 +385,7 @@ import {
   modifyUnderlyingTargetJSXElement,
   getAllComponentDescriptorErrors,
   updatePackageJsonInEditorState,
+  modifyUnderlyingTarget,
 } from '../store/editor-state'
 import {
   areGeneratedElementsTargeted,
@@ -2363,6 +2366,68 @@ export const UPDATE_FNS = {
           ...success,
           topLevelElements: updatedTopLevelElements,
           imports: imports,
+        }
+      },
+    )
+    return {
+      ...withNewElement,
+      leftMenu: { visible: editor.leftMenu.visible, selectedTab: LeftMenuTab.Navigator },
+      selectedViews: newSelectedViews,
+    }
+  },
+  REPLACE_MAPPED_ELEMENT: (action: ReplaceMappedElement, editor: EditorModel): EditorModel => {
+    let newSelectedViews: ElementPath[] = []
+    const parentPath =
+      action.target == null
+        ? // action.target == null means Canvas, which means storyboard root element
+          forceNotNull(
+            'found no element path for the storyboard root',
+            getStoryboardElementPath(editor.projectContents, editor.canvas.openFile?.filename),
+          )
+        : EP.parentPath(action.target)
+
+    const withNewElement = modifyUnderlyingTarget(
+      parentPath,
+      editor,
+      (element) => element,
+      (success, _, underlyingFilePath) => {
+        const startingComponents = getUtopiaJSXComponentsFromSuccess(success)
+        const updatedImports = mergeImports(
+          underlyingFilePath,
+          success.imports,
+          action.importsToAdd,
+        )
+
+        const renamedJsxElement = renameJsxElementChild(
+          action.jsxElement,
+          updatedImports.duplicateNameMapping,
+        )
+
+        const withInsertedElement = transformJSXComponentAtPath(
+          startingComponents,
+          EP.dynamicPathToStaticPath(parentPath),
+          (parentElement) => {
+            if (!isJSXMapExpression(parentElement)) {
+              return parentElement
+            }
+
+            const uidToUse = Object.keys(parentElement.elementsWithin)[0] ?? renamedJsxElement.uid
+            return {
+              ...parentElement,
+              elementsWithin: { [uidToUse]: { ...renamedJsxElement, uid: uidToUse } },
+            }
+          },
+        )
+
+        const updatedTopLevelElements = applyUtopiaJSXComponentsChanges(
+          success.topLevelElements,
+          withInsertedElement,
+        )
+
+        return {
+          ...success,
+          topLevelElements: updatedTopLevelElements,
+          imports: updatedImports.imports,
         }
       },
     )

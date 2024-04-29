@@ -24,8 +24,9 @@ import { createInteractionViaMouse, flexGapHandle } from '../../canvas-strategie
 import { windowToCanvasCoordinates } from '../../dom-lookup'
 import {
   cursorFromFlexDirection,
+  maybeFlexGapData,
   gapControlBoundsFromMetadata,
-  maybeFlexGapFromElement,
+  recurseIntoChildrenOfMapOrFragment,
 } from '../../gap-utils'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import type { CSSNumberWithRenderedValue } from './controls-common'
@@ -95,11 +96,19 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
     (store) => store.editor.jsxMetadata,
     'FlexGapControl metadata',
   )
-  const pathTrees = useEditorState(
+
+  const elementPathTrees = useEditorState(
     Substores.metadata,
     (store) => store.editor.elementPathTree,
-    'FlexGapControl pathTrees',
+    'FlexGapControl metadata',
   )
+
+  const allElementProps = useEditorState(
+    Substores.metadata,
+    (store) => store.editor.allElementProps,
+    'FlexGapControl metadata',
+  )
+
   const isDragging = useEditorState(
     Substores.canvas,
     (store) => store.editor.canvas.interactionSession?.activeControl.type === 'FLEX_GAP_HANDLE',
@@ -115,7 +124,13 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
     [canvasOffset, dispatch, scale],
   )
 
-  const flexGap = maybeFlexGapFromElement(metadata, pathTrees, selectedElement)
+  const children = recurseIntoChildrenOfMapOrFragment(
+    metadata,
+    allElementProps,
+    elementPathTrees,
+    selectedElement,
+  )
+  const flexGap = maybeFlexGapData(metadata, selectedElement)
   if (flexGap == null) {
     return null
   }
@@ -124,8 +139,8 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
 
   const controlBounds = gapControlBoundsFromMetadata(
     metadata,
-    pathTrees,
     selectedElement,
+    children.map((c) => c.elementPath),
     flexGapValue.renderedValuePx,
     flexGap.direction,
   )
@@ -140,7 +155,6 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
       return directions.includes(direction) ? directionSize : gapSize
     }
 
-    const children = MetadataUtils.getChildrenUnordered(metadata, selectedElement)
     const bounds = boundingRectangleArray(
       mapDropNulls(
         (c) => (c.localFrame != null && isFiniteRectangle(c.localFrame) ? c.localFrame : null),
@@ -166,7 +180,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
         ),
       }
     }
-  }, [selectedElement, metadata, flexGap, flexGapValue])
+  }, [children, flexGap.direction, flexGapValue.renderedValuePx])
 
   const justifyContent = React.useMemo(() => {
     return (
