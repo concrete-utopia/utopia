@@ -52,7 +52,7 @@ import type { SelectOption } from '../../controls/select-control'
 import { OptionChainControl } from '../../controls/option-chain-control'
 import { useKeepReferenceEqualityIfPossible } from '../../../../utils/react-performance'
 import { UIGridRow } from '../../widgets/ui-grid-row'
-import type { Imports, PropertyPath } from '../../../../core/shared/project-file-types'
+import type { ElementPath, Imports, PropertyPath } from '../../../../core/shared/project-file-types'
 import { importDetailsFromImportOption } from '../../../../core/shared/project-file-types'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { addImports, forceParseFile } from '../../../editor/actions/action-creators'
@@ -65,15 +65,21 @@ import {
 } from '../../../custom-code/code-file'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { HtmlPreview, ImagePreview } from './property-content-preview'
+import type {
+  ElementInstanceMetadata,
+  JSXElementChild,
+} from '../../../../core/shared/element-template'
 import {
   JSElementAccess,
   JSIdentifier,
   JSPropertyAccess,
+  getJSXElementNameLastPart,
 } from '../../../../core/shared/element-template'
 import type { JSXParsedType, JSXParsedValue } from '../../../../utils/value-parser-utils'
 import { assertNever } from '../../../../core/shared/utils'
 import { preventDefault, stopPropagation } from '../../common/inspector-utils'
 import { unless, when } from '../../../../utils/react-conditionals'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 
 export interface ControlForPropProps<T extends RegularControlDescription> {
   propPath: PropertyPath
@@ -801,6 +807,45 @@ export const Matrix4PropertyControl = React.memo(
     )
   },
 )
+interface DataReferenceCartoucheControlProps {
+  elementPath: ElementPath
+  childOrAttribute: JSXElementChild
+}
+
+export const DataReferenceCartoucheControl = React.memo(
+  (props: DataReferenceCartoucheControlProps) => {
+    const { elementPath, childOrAttribute } = props
+    const dispatch = useDispatch()
+
+    const contentsToDisplay = useEditorState(
+      Substores.metadata,
+      (store) =>
+        getTextContentOfElement(
+          childOrAttribute,
+          MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, elementPath),
+        ),
+      'DataReferenceCartoucheControl contentsToDisplay',
+    )
+
+    const onOpenDataPicker = React.useCallback(() => {}, [])
+
+    const onDeleteCartouche = React.useCallback(() => {}, [])
+
+    const safeToDelete = true
+
+    return (
+      <IdentifierExpressionCartoucheControl
+        contents={contentsToDisplay ?? 'DATA'}
+        dataType='string-input'
+        matchType='full'
+        onOpenDataPicker={onOpenDataPicker}
+        onDeleteCartouche={onDeleteCartouche}
+        safeToDelete={safeToDelete}
+        testId={'data-reference-cartouche'}
+      />
+    )
+  },
+)
 
 interface IdentifierExpressionCartoucheControlProps {
   contents: string
@@ -852,7 +897,7 @@ export const IdentifierExpressionCartoucheControl = React.memo(
               textOverflow: 'ellipsis',
 
               /* Beginning of string */
-              direction: 'rtl',
+              // direction: 'rtl',
               textAlign: 'left',
             }}
           >
@@ -877,3 +922,42 @@ export const IdentifierExpressionCartoucheControl = React.memo(
     )
   },
 )
+
+function getTextContentOfElement(
+  element: JSXElementChild,
+  metadata: ElementInstanceMetadata | null,
+): string | null {
+  switch (element.type) {
+    case 'ATTRIBUTE_VALUE':
+      return `${JSON.stringify(element.value)}`
+    case 'JSX_TEXT_BLOCK':
+      return `"${element.text}"`
+    case 'JS_IDENTIFIER':
+      return element.name
+    case 'JS_ELEMENT_ACCESS':
+      return `${getTextContentOfElement(element.onValue, null)}[${getTextContentOfElement(
+        element.element,
+        null,
+      )}]`
+    case 'JS_PROPERTY_ACCESS':
+      return `${getTextContentOfElement(element.onValue, null)}.${element.property}`
+    case 'ATTRIBUTE_FUNCTION_CALL':
+      return `${element.functionName}(...`
+    case 'JSX_ELEMENT':
+      return metadata?.textContent ?? `<${getJSXElementNameLastPart(element.name)}>`
+    case 'ATTRIBUTE_NESTED_ARRAY':
+      return '[...]'
+    case 'ATTRIBUTE_NESTED_OBJECT':
+      return '{...}'
+    case 'JSX_MAP_EXPRESSION':
+      return 'List'
+    case 'JSX_CONDITIONAL_EXPRESSION':
+      return 'Conditional'
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+      return element.originalJavascript
+    case 'JSX_FRAGMENT':
+      return 'Fragment'
+    default:
+      assertNever(element)
+  }
+}
