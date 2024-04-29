@@ -34,7 +34,7 @@ import type {
 import type { ElementPath, Imports } from '../../core/shared/project-file-types'
 import { importsEquals } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
-import { assertNever } from '../../core/shared/utils'
+import { NO_OP, assertNever } from '../../core/shared/utils'
 import { Modifier, emptyModifiers } from '../../utils/modifiers'
 import { Icn, InspectorSubsectionHeader, UIRow, UtopiaTheme, useColorTheme } from '../../uuiui'
 import { getControlStyles } from '../../uuiui-deps'
@@ -152,6 +152,9 @@ type ElementBeingInserted =
   | {
       type: 'conditional'
     }
+  | {
+      type: 'map'
+    }
 
 function componentBeingInserted(
   importsToAdd: Imports,
@@ -173,6 +176,8 @@ function elementBeingInserted(insertableComponent: InsertableComponent): Element
       return { type: 'conditional' }
     case 'JSX_FRAGMENT':
       return { type: 'fragment' }
+    case 'JSX_MAP_EXPRESSION':
+      return { type: 'map' }
     case 'JSX_ELEMENT':
       return componentBeingInserted(insertableComponent.importsToAdd, element.name, element.props)
     default:
@@ -256,6 +261,8 @@ const enableInsertMode = (
         ],
         'everyone',
       )
+    case 'JSX_MAP_EXPRESSION':
+      return NO_OP() // we don't support draw to insert for maps
     default:
       assertNever(element)
   }
