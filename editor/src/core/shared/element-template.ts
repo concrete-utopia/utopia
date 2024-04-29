@@ -1626,6 +1626,16 @@ export function clearJSXFragmentWithoutUIDUniqueIDs(
   }
 }
 
+export function clearJSXMapExpressionWithoutUIDUniqueIDs(
+  attribute: JSXMapExpressionWithoutUID,
+): JSXMapExpressionWithoutUID {
+  const updatedElementsWithin = objectMap(clearJSXElementUniqueIDs, attribute.elementsWithin)
+  return {
+    ...attribute,
+    elementsWithin: updatedElementsWithin,
+  }
+}
+
 export type ElementsWithin = { [uid: string]: JSXElement }
 
 export interface WithElementsWithin {

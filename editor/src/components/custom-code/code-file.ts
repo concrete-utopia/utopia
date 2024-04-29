@@ -38,6 +38,7 @@ import {
   clearJSXConditionalExpressionWithoutUIDUniqueIDs,
   clearJSXElementWithoutUIDUniqueIDs,
   clearJSXFragmentWithoutUIDUniqueIDs,
+  clearJSXMapExpressionWithoutUIDUniqueIDs,
 } from '../../core/shared/element-template'
 import { objectMap } from '../../core/shared/object-utils'
 import { getTransitiveReverseDependencies } from '../../core/shared/project-contents-dependencies'
@@ -104,7 +105,7 @@ export function clearComponentElementToInsertUniqueIDs(
     case 'JSX_FRAGMENT':
       return clearJSXFragmentWithoutUIDUniqueIDs(toInsert)
     case 'JSX_MAP_EXPRESSION':
-      return toInsert // TODO (?)
+      return clearJSXMapExpressionWithoutUIDUniqueIDs(toInsert)
     default:
       assertNever(toInsert)
   }

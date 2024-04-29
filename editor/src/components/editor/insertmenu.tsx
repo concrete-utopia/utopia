@@ -262,7 +262,7 @@ const enableInsertMode = (
         'everyone',
       )
     case 'JSX_MAP_EXPRESSION':
-      return NO_OP() // // we don't support draw to insert for maps
+      return NO_OP() // we don't support draw to insert for maps
     default:
       assertNever(element)
   }
