@@ -3225,6 +3225,7 @@ export function updatePackageJsonInEditorState(
       updatedPackageJsonFile = codeFile(
         transformPackageJson(packageJsonFile.fileContents.code),
         RevisionsState.CodeAhead,
+        packageJsonFile.versionNumber + 1,
       )
     } else {
       // There is something else called package.json, we should bulldoze over it.
