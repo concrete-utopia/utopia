@@ -18,7 +18,6 @@ import {
   jsxElement,
   jsxElementWithoutUID,
   jsxFragmentWithoutUID,
-  jsxMapExpression,
   jsxTextBlock,
   simpleAttribute,
 } from '../../core/shared/element-template'
@@ -32,7 +31,7 @@ import type {
 } from '../../core/shared/npm-dependency-types'
 import { isResolvedNpmDependency } from '../../core/shared/npm-dependency-types'
 import type { ElementPath, Imports, ProjectFile } from '../../core/shared/project-file-types'
-import { isTextFile } from '../../core/shared/project-file-types'
+import { importAlias, isTextFile } from '../../core/shared/project-file-types'
 import { assertNever, fastForEach } from '../../core/shared/utils'
 import type { SelectOption } from '../../uuiui-deps'
 import type { ProjectContentTreeRoot } from '../assets'
@@ -533,6 +532,11 @@ export const mapComponentInfo: ComponentInfo = {
     react: {
       importedAs: 'React',
       importedFromWithin: [],
+      importedWithName: null,
+    },
+    'utopia-api': {
+      importedAs: null,
+      importedFromWithin: [importAlias('Placeholder')],
       importedWithName: null,
     },
   },
