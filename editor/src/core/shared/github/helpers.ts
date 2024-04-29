@@ -62,7 +62,10 @@ import { updatePullRequestsForBranch } from './operations/list-pull-requests-for
 import { getUsersPublicGithubRepositories } from './operations/load-repositories'
 import { set } from '../optics/optic-utilities'
 import { fromField } from '../optics/optic-creators'
-import type { GithubOperationContext } from './operations/github-operation-context'
+import {
+  OperationContext,
+  type GithubOperationContext,
+} from './operations/github-operation-context'
 import { GithubEndpoints } from './endpoints'
 import { getAllComponentDescriptorFilePaths } from '../../property-controls/property-controls-local'
 import React from 'react'
@@ -206,11 +209,6 @@ export async function runGithubOperation(
   logic: GithubOperationLogic,
 ): Promise<Array<EditorAction>> {
   let result: Array<EditorAction> = []
-  const userDetails = await GithubHelpers.getUserDetailsFromServer()
-  if (userDetails == null) {
-    dispatch(resetGithubStateAndDataActions())
-    return result
-  }
 
   const opName = githubOperationPrettyNameForToast(operation)
   try {
@@ -858,14 +856,6 @@ export function mergeProjectContentsTree(
 
 const GITHUB_REFRESH_INTERVAL_MILLISECONDS = 15_000
 
-export function githubOperationContext(): GithubOperationContext {
-  // this copied here from core/shared/github/operations/index.ts due to a circular import
-  return {
-    fetch: (...args) => window.fetch(...args),
-    updateProjectContentsWithParseResults: updateProjectContentsWithParseResults,
-  }
-}
-
 type GithubAuthState = 'not-authenticated' | 'missing-user-details' | 'ready'
 
 export function useGithubPolling() {
@@ -905,7 +895,7 @@ export function useGithubPolling() {
       branchOriginContentsChecksums,
       githubData.lastRefreshedCommit,
       githubData.originCommit,
-      githubOperationContext(),
+      OperationContext,
       'polling',
     )
 
