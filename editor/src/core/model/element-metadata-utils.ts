@@ -123,7 +123,7 @@ import {
   isGivenUtopiaElementFromMetadata,
   type FilePathMappings,
 } from './project-file-utils'
-import { fastForEach } from '../shared/utils'
+import { assertNever, fastForEach } from '../shared/utils'
 import { mapValues, objectValues, omit } from '../shared/object-utils'
 import { UTOPIA_LABEL_KEY } from './utopia-constants'
 import type {
@@ -2386,6 +2386,38 @@ export const MetadataUtils = {
       )
     }
     return element.element.value
+  },
+  isElementDataReference(target: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
+    const foundMetadata = MetadataUtils.findElementByElementPath(metadata, target)
+    const element: JSXElementChild | null = maybeEitherToMaybe(foundMetadata?.element)
+
+    if (element == null) {
+      return false
+    }
+
+    switch (element.type) {
+      case 'ATTRIBUTE_FUNCTION_CALL':
+      case 'ATTRIBUTE_NESTED_ARRAY': // TODO: reconsider nested array and nested object
+      case 'ATTRIBUTE_NESTED_OBJECT':
+      case 'JSX_ELEMENT':
+      case 'JSX_FRAGMENT':
+      case 'JSX_MAP_EXPRESSION':
+      case 'JSX_CONDITIONAL_EXPRESSION':
+        return false
+      case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
+        const children = MetadataUtils.getChildrenUnordered(metadata, target)
+        // Attribute other javascript is only true if it does not have children entries in the metadata
+        return children.length === 0
+      }
+      case 'ATTRIBUTE_VALUE':
+      case 'JSX_TEXT_BLOCK':
+      case 'JS_IDENTIFIER':
+      case 'JS_ELEMENT_ACCESS':
+      case 'JS_PROPERTY_ACCESS':
+        return true
+      default:
+        assertNever(element)
+    }
   },
 }
 

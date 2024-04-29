@@ -374,41 +374,6 @@ function useIsProbablyScene(navigatorEntry: NavigatorEntry): boolean {
   )
 }
 
-function shouldShowDataCartouche(navigatorEntry: NavigatorEntry): boolean {
-  switch (navigatorEntry.type) {
-    case 'REGULAR':
-    case 'RENDER_PROP':
-    case 'RENDER_PROP_VALUE':
-    case 'INVALID_OVERRIDE':
-    case 'SLOT':
-    case 'CONDITIONAL_CLAUSE':
-      return false
-    case 'SYNTHETIC': {
-      switch (navigatorEntry.childOrAttribute.type) {
-        case 'JSX_ELEMENT':
-        case 'JSX_MAP_EXPRESSION':
-        case 'JSX_FRAGMENT':
-        case 'JSX_CONDITIONAL_EXPRESSION':
-        case 'ATTRIBUTE_FUNCTION_CALL':
-        case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-          return false
-        case 'ATTRIBUTE_NESTED_ARRAY':
-        case 'ATTRIBUTE_NESTED_OBJECT':
-        case 'ATTRIBUTE_VALUE':
-        case 'JSX_TEXT_BLOCK':
-        case 'JS_IDENTIFIER':
-        case 'JS_ELEMENT_ACCESS':
-        case 'JS_PROPERTY_ACCESS':
-          return true
-        default:
-          throw assertNever(navigatorEntry.childOrAttribute)
-      }
-    }
-    default:
-      assertNever(navigatorEntry)
-  }
-}
-
 const isHiddenConditionalBranchSelector = createCachedSelector(
   (store: MetadataSubstate) => store.editor.jsxMetadata,
   (store: MetadataSubstate, _elementPath: ElementPath, parentPath: ElementPath) =>
@@ -765,7 +730,7 @@ export const NavigatorItem: React.FunctionComponent<
   const fullyVisible = useStyleFullyVisible(navigatorEntry, autoFocusedPaths)
   const isProbablyScene = useIsProbablyScene(navigatorEntry)
 
-  const elementIsData = shouldShowDataCartouche(navigatorEntry)
+  const elementIsData = navigatorEntry.type === 'DATA_REFERENCE'
 
   const isHighlightedForInteraction = useEditorState(
     Substores.restOfEditor,

@@ -21,6 +21,7 @@ import { foldEither, isLeft, isRight } from '../../core/shared/either'
 import type { ConditionalClauseNavigatorEntry, NavigatorEntry } from '../editor/store/editor-state'
 import {
   conditionalClauseNavigatorEntry,
+  dataReferenceNavigatorEntry,
   invalidOverrideNavigatorEntry,
   isConditionalClauseNavigatorEntry,
   regularNavigatorEntry,
@@ -107,6 +108,32 @@ export function getNavigatorTargets(
       const isHiddenInNavigator = EP.containsPath(path, hiddenInNavigator)
       const isConditional = MetadataUtils.isElementPathConditionalFromMetadata(metadata, path)
       const isMap = MetadataUtils.isJSXMapExpression(path, metadata)
+      const isDataReference = MetadataUtils.isElementDataReference(path, metadata)
+
+      const isCollapsed = EP.containsPath(path, collapsedViews)
+      const newCollapsedAncestor = collapsedAncestor || isCollapsed || isHiddenInNavigator
+
+      function addNavigatorTargetsUnlessCollapsed(...entries: Array<NavigatorEntry>) {
+        if (newCollapsedAncestor) {
+          return
+        }
+        navigatorTargets.push(...entries)
+        visibleNavigatorTargets.push(...entries)
+      }
+
+      if (isDataReference) {
+        const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
+        if (elementMetadata != null && isRight(elementMetadata.element)) {
+          // add synthetic entry
+          const element = elementMetadata.element.value
+          const dataRefEntry = dataReferenceNavigatorEntry(path, element)
+          addNavigatorTargetsUnlessCollapsed(dataRefEntry)
+        } else {
+          throw new Error(`internal error: Unexpected non-element found at ${EP.toString(path)}`)
+        }
+        return // early return!!
+      }
+
       // const isComponent = MetadataUtils.isComponentInstance(path, metadata)
       const navigatorTarget =
         propName == null
@@ -172,17 +199,6 @@ export function getNavigatorTargets(
             addNavigatorTargetsUnlessCollapsed(synthEntry)
           }
         })
-      }
-
-      const isCollapsed = EP.containsPath(path, collapsedViews)
-      const newCollapsedAncestor = collapsedAncestor || isCollapsed || isHiddenInNavigator
-
-      function addNavigatorTargetsUnlessCollapsed(...entries: Array<NavigatorEntry>) {
-        if (newCollapsedAncestor) {
-          return
-        }
-        navigatorTargets.push(...entries)
-        visibleNavigatorTargets.push(...entries)
       }
 
       const propertyControls = getPropertyControlsForTarget(
@@ -306,8 +322,8 @@ export function getNavigatorTargets(
           const children = jsxElement.children
           children.forEach((child) => {
             const childPath = EP.appendToPath(path, child.uid)
-            const synthEntry = syntheticNavigatorEntry(childPath, child)
-            addNavigatorTargetsUnlessCollapsed(synthEntry)
+            const dataRefEntry = dataReferenceNavigatorEntry(childPath, child)
+            addNavigatorTargetsUnlessCollapsed(dataRefEntry)
           })
         }
       } else {
