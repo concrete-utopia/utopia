@@ -1349,33 +1349,6 @@ export const MetadataUtils = {
           if (isJSXElement(r)) {
             return VoidElementsToFilter.includes(r.name.baseVariable)
           }
-          if (isJSIdentifier(r) || isJSPropertyAccess(r) || isJSElementAccess(r)) {
-            return true
-          }
-          if (
-            isJSExpressionOtherJavaScript(r) &&
-            !MetadataUtils.isElementPathConditionalFromMetadata(metadata, EP.parentPath(path))
-          ) {
-            const children = MetadataUtils.getChildrenOrdered(metadata, pathTree, path)
-            // if the expression has children we have to show it in the navigator
-            if (children.length > 0) {
-              return false
-            }
-            const parentElement = MetadataUtils.findElementByElementPath(
-              metadata,
-              EP.parentPath(path),
-            )
-            // When the expression doesn't have children and the parent has text content, that
-            // means this is a text expression, which should not appear in the navigator.
-            // The generated text content itself will be the label of the parent.
-            if (parentElement?.textContent != null && parentElement?.textContent.length > 0) {
-              return true
-            }
-            // When the expression doesn't have children and the parent has no text content, then
-            // the expression does not generate neither elements nor text.
-            // In this case the expression doesn't generate anything, but we still want to show it in
-            // the navigator, mostly to make sure to map expressions with zero elements are visible.
-          }
           return false
         },
         element.element,
@@ -1556,24 +1529,25 @@ export const MetadataUtils = {
                 pathTree,
                 element.elementPath,
               ).length
-              if (numberOfChildrenElements === 0) {
-                if (PossibleTextElements.includes(lastNamePart)) {
-                  if (element.textContent != null && element.textContent !== '') {
-                    return element.textContent
-                  }
+              // TODO review before merge
+              // if (numberOfChildrenElements === 0) {
+              //   if (PossibleTextElements.includes(lastNamePart)) {
+              //     if (element.textContent != null && element.textContent !== '') {
+              //       return element.textContent
+              //     }
 
-                  // fall back to the old way of showing text content – this can probably be deleted now
-                  const firstChild = jsxElement.children[0]
-                  if (firstChild != null) {
-                    if (isJSXTextBlock(firstChild)) {
-                      return firstChild.text
-                    }
-                    if (isJSExpressionOtherJavaScript(firstChild)) {
-                      return `{${firstChild.originalJavascript}}`
-                    }
-                  }
-                }
-              }
+              //     // fall back to the old way of showing text content – this can probably be deleted now
+              //     const firstChild = jsxElement.children[0]
+              //     if (firstChild != null) {
+              //       if (isJSXTextBlock(firstChild)) {
+              //         return firstChild.text
+              //       }
+              //       if (isJSExpressionOtherJavaScript(firstChild)) {
+              //         return `{${firstChild.originalJavascript}}`
+              //       }
+              //     }
+              //   }
+              // }
               // With images, take their alt and src properties as possible names first.
               const elementProps = allElementProps[EP.toString(element.elementPath)] ?? {}
               if (lastNamePart === 'img') {

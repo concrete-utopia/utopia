@@ -113,11 +113,14 @@ export function getNavigatorTargets(
           ? regularNavigatorEntry(path)
           : renderPropValueNavigatorEntry(path, propName)
       navigatorTargets.push(navigatorTarget)
-      if (
-        !collapsedAncestor &&
-        !isHiddenInNavigator &&
-        !MetadataUtils.isElementTypeHiddenInNavigator(path, metadata, elementPathTree)
-      ) {
+
+      const elementTypeHidden = MetadataUtils.isElementTypeHiddenInNavigator(
+        path,
+        metadata,
+        elementPathTree,
+      )
+
+      if (!collapsedAncestor && !isHiddenInNavigator && !elementTypeHidden) {
         visibleNavigatorTargets.push(navigatorTarget)
       }
       // We collect the paths which are shown in render props, so we can filter them out from regular
@@ -308,6 +311,24 @@ export function getNavigatorTargets(
         fastForEach(notRenderPropChildren, (child) => {
           walkAndAddKeys(child, newCollapsedAncestor, null)
         })
+      }
+
+      if (subTree.children.length === 0) {
+        const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
+        if (
+          elementMetadata != null &&
+          isRight(elementMetadata.element) &&
+          isJSXElement(elementMetadata.element.value) &&
+          elementMetadata.element.value.children.length > 0
+        ) {
+          const jsxElement = elementMetadata.element.value
+          const children = jsxElement.children
+          children.forEach((child) => {
+            const childPath = EP.appendToPath(path, child.uid)
+            const synthEntry = syntheticNavigatorEntry(childPath, child)
+            addNavigatorTargetsUnlessCollapsed(synthEntry)
+          })
+        }
       }
     }
   }
