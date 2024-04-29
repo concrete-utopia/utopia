@@ -14,12 +14,13 @@ import {
   getMetadata,
   isConditionalClauseNavigatorEntry,
   isRegularNavigatorEntry,
-  isRenderPropValueNavigatorEntry,
   varSafeNavigatorEntryToKey,
 } from '../../editor/store/editor-state'
 import type { SelectionLocked } from '../../canvas/canvas-types'
-import { getJSXElementNameAsString } from '../../../core/shared/element-template'
-import { getRegisteredComponent } from '../../../core/property-controls/property-controls-utils'
+import {
+  type InsertionTarget,
+  useShowComponentPickerContextMenu,
+} from './component-picker-context-menu'
 
 export const NavigatorHintCircleDiameter = 8
 
@@ -193,54 +194,9 @@ export const VisibilityIndicator: React.FunctionComponent<
   )
 })
 
-const useSupportsChildren = (target: ElementPath): 'all' | 'all-with-preferred' | 'none' => {
-  const targetElement = useEditorState(
-    Substores.metadata,
-    (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, target),
-    'useSupportsChildren targetElement',
-  )
-
-  return useEditorState(
-    Substores.restOfEditor,
-    (store) => {
-      const targetJSXElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(targetElement)
-      if (targetJSXElement == null) {
-        return 'none'
-      }
-
-      if (MetadataUtils.intrinsicElementThatSupportsChildren(targetJSXElement)) {
-        return 'all'
-      }
-
-      const elementImportInfo = targetElement?.importInfo
-      if (elementImportInfo == null) {
-        return 'none'
-      }
-
-      const targetName = getJSXElementNameAsString(targetJSXElement.name)
-      const registeredComponent = getRegisteredComponent(
-        targetName,
-        elementImportInfo.filePath,
-        store.editor.propertyControlsInfo,
-      )
-
-      if ((registeredComponent?.preferredChildComponents?.length ?? 0) > 0) {
-        return 'all-with-preferred'
-      } else if (registeredComponent?.supportsChildren ?? false) {
-        return 'all'
-      } else {
-        return 'none'
-      }
-    },
-    'useSupportsChildren supportsChildren',
-  )
-}
-
 interface AddChildButtonProps {
   target: ElementPath
   iconColor: IcnProps['color']
-  showPreferredPicker: React.MouseEventHandler<HTMLDivElement>
-  showFullPicker: React.MouseEventHandler<HTMLDivElement>
 }
 
 export function addChildButtonTestId(target: ElementPath): string {
@@ -248,24 +204,22 @@ export function addChildButtonTestId(target: ElementPath): string {
 }
 
 const AddChildButton = React.memo((props: AddChildButtonProps) => {
-  const color = props.iconColor
-  const supportsChildren = useSupportsChildren(props.target)
+  const { target, iconColor } = props
+  const onClick = useShowComponentPickerContextMenu(target, 'insert-as-child')
 
   return (
     <Button
-      onClick={
-        supportsChildren === 'all-with-preferred' ? props.showPreferredPicker : props.showFullPicker
-      }
+      onClick={onClick}
       style={{
         height: 12,
         width: 12,
       }}
-      data-testid={addChildButtonTestId(props.target)}
+      data-testid={addChildButtonTestId(target)}
     >
       <Icn
         category='semantic'
         type='plus-in-white-translucent-circle'
-        color={color}
+        color={iconColor}
         width={12}
         height={12}
       />
@@ -273,12 +227,22 @@ const AddChildButton = React.memo((props: AddChildButtonProps) => {
   )
 })
 
-const ReplaceElementButton = React.memo((props: AddChildButtonProps) => {
-  const showPreferred = useSupportsChildren(EP.parentPath(props.target)) === 'all-with-preferred'
+interface ReplaceElementButtonProps {
+  target: ElementPath
+  iconColor: IcnProps['color']
+  prop: string | null
+}
+
+const ReplaceElementButton = React.memo((props: ReplaceElementButtonProps) => {
+  const { target, prop } = props
+  const onClick = useShowComponentPickerContextMenu(
+    target,
+    prop == null ? 'replace-target' : { prop: prop },
+  )
 
   return (
     <Button
-      onClick={showPreferred ? props.showPreferredPicker : props.showFullPicker}
+      onClick={onClick}
       style={{
         height: 12,
         width: 12,
@@ -394,10 +358,6 @@ interface NavigatorItemActionSheetProps {
   iconColor: IcnProps['color']
   background?: string | any
   dispatch: EditorDispatch
-  showInsertChildPickerPreferred: React.MouseEventHandler<HTMLDivElement>
-  showInsertChildPickerFull: React.MouseEventHandler<HTMLDivElement>
-  showReplaceElementPickerPreferred: React.MouseEventHandler<HTMLDivElement>
-  showReplaceElementPickerFull: React.MouseEventHandler<HTMLDivElement>
 }
 
 export const NavigatorItemActionSheet: React.FunctionComponent<
@@ -488,17 +448,15 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
       {(navigatorEntry.type === 'REGULAR' || navigatorEntry.type === 'RENDER_PROP_VALUE') &&
       (props.highlighted || props.selected) ? (
         <>
-          <AddChildButton
-            target={navigatorEntry.elementPath}
-            iconColor={props.iconColor}
-            showPreferredPicker={props.showInsertChildPickerPreferred}
-            showFullPicker={props.showInsertChildPickerFull}
-          />
+          <AddChildButton target={navigatorEntry.elementPath} iconColor={props.iconColor} />
           <ReplaceElementButton
-            target={navigatorEntry.elementPath}
+            target={
+              navigatorEntry.type === 'RENDER_PROP_VALUE'
+                ? EP.parentPath(navigatorEntry.elementPath)
+                : navigatorEntry.elementPath
+            }
             iconColor={props.iconColor}
-            showPreferredPicker={props.showReplaceElementPickerPreferred}
-            showFullPicker={props.showReplaceElementPickerFull}
+            prop={navigatorEntry.type === 'RENDER_PROP_VALUE' ? navigatorEntry.prop : null}
           />
         </>
       ) : null}
