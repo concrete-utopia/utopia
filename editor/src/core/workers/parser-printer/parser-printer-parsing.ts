@@ -1666,7 +1666,7 @@ export function parseJSExpressionMapOrOtherJavascript(
     applySteganography,
   )
   const possibleMapExpressionResult = mapEither((rightValue) => {
-    return mapParserMetadata((value) => {
+    const mapWithMetadata = mapParserMetadata((value) => {
       return createMapExpression(
         sourceFile,
         value.valueToMap,
@@ -1676,6 +1676,13 @@ export function parseJSExpressionMapOrOtherJavascript(
         alreadyExistingUIDs,
       )
     }, rightValue)
+    return {
+      ...mapWithMetadata,
+      highlightBounds: {
+        ...mapWithMetadata.highlightBounds,
+        ...buildHighlightBoundsForUids(sourceFile, jsxExpression, mapWithMetadata.value.uid),
+      },
+    }
   }, possibleMapExpressionParts)
 
   if (isRight(possibleMapExpressionResult)) {

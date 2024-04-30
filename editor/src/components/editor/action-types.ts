@@ -825,6 +825,12 @@ export interface UpdateConditionalExpression {
   expression: string
 }
 
+export interface UpdateMapExpression {
+  action: 'UPDATE_MAP_EXPRESSION'
+  target: ElementPath
+  expression: string
+}
+
 export interface AddImports {
   action: 'ADD_IMPORTS'
   target: ElementPath
@@ -1328,6 +1334,7 @@ export type EditorAction =
   | SetMapCountOverride
   | SwitchConditionalBranches
   | UpdateConditionalExpression
+  | UpdateMapExpression
   | ExecutePostActionMenuChoice
   | ClearPostActionSession
   | StartPostActionSession

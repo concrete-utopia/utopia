@@ -1628,6 +1628,18 @@ export type JSXFragmentWithoutUID = Omit<JSXFragment, 'uid'>
 
 export type JSXMapExpressionWithoutUID = Omit<JSXMapExpression, 'uid'>
 
+export function clearJSXMapExpressionWithoutUIDUniqueIDs(
+  mapExpression: JSXMapExpressionWithoutUID,
+): JSXMapExpressionWithoutUID {
+  const updatedValueToMap = clearExpressionUniqueIDs(mapExpression.valueToMap)
+  const updatedMapFunction = clearExpressionUniqueIDs(mapExpression.mapFunction)
+  return {
+    ...mapExpression,
+    valueToMap: updatedValueToMap,
+    mapFunction: updatedMapFunction,
+  }
+}
+
 export function clearJSXElementWithoutUIDUniqueIDs(
   element: JSXElementWithoutUID,
 ): JSXElementWithoutUID {
@@ -1655,16 +1667,6 @@ export function clearJSXFragmentWithoutUIDUniqueIDs(
   return {
     ...fragment,
     children: fragment.children.map(clearJSXElementChildUniqueIDs),
-  }
-}
-
-export function clearJSXMapExpressionWithoutUIDUniqueIDs(
-  attribute: JSXMapExpressionWithoutUID,
-): JSXMapExpressionWithoutUID {
-  const updatedElementsWithin = objectMap(clearJSXElementUniqueIDs, attribute.elementsWithin)
-  return {
-    ...attribute,
-    elementsWithin: updatedElementsWithin,
   }
 }
 

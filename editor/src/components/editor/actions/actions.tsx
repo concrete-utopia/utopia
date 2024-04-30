@@ -80,6 +80,7 @@ import {
   getDefinedElsewhereFromElementChild,
   isJSXFragment,
   jsxConditionalExpressionConditionOptic,
+  isJSExpressionOtherJavaScript,
 } from '../../../core/shared/element-template'
 import type { ValueAtPath } from '../../../core/shared/jsx-attributes'
 import {
@@ -338,6 +339,7 @@ import type {
   RemoveFeaturedRoute,
   AddCollapsedViews,
   ReplaceMappedElement,
+  UpdateMapExpression,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -2390,7 +2392,7 @@ export const UPDATE_FNS = {
       parentPath,
       editor,
       (element) => element,
-      (success, _, underlyingFilePath) => {
+      (success, _, underlyingFilePath): ParseSuccess => {
         const startingComponents = getUtopiaJSXComponentsFromSuccess(success)
         const updatedImports = mergeImports(
           underlyingFilePath,
@@ -2410,11 +2412,18 @@ export const UPDATE_FNS = {
             if (!isJSXMapExpression(parentElement)) {
               return parentElement
             }
+            const mapFunction = parentElement.mapFunction
+            if (!isJSExpressionOtherJavaScript(mapFunction)) {
+              return parentElement
+            }
 
-            const uidToUse = Object.keys(parentElement.elementsWithin)[0] ?? renamedJsxElement.uid
+            const uidToUse = Object.keys(mapFunction.elementsWithin)[0] ?? renamedJsxElement.uid
             return {
               ...parentElement,
-              elementsWithin: { [uidToUse]: { ...renamedJsxElement, uid: uidToUse } },
+              mapFunction: {
+                ...mapFunction,
+                elementsWithin: { [uidToUse]: { ...renamedJsxElement, uid: uidToUse } },
+              },
             }
           },
         )
@@ -4393,6 +4402,31 @@ export const UPDATE_FNS = {
             trailingComments: element.comments.trailingComments.filter(isNotMapCountFlag),
             questionTokenComments: element.comments.questionTokenComments,
           },
+        }
+      },
+      editor,
+    )
+  },
+  UPDATE_MAP_EXPRESSION: (action: UpdateMapExpression, editor: EditorModel): EditorModel => {
+    return modifyOpenJsxChildAtPath(
+      action.target,
+      (element): JSXElementChild => {
+        if (isJSXMapExpression(element)) {
+          return {
+            ...element,
+            valueToMap: jsExpressionOtherJavaScript(
+              [],
+              action.expression,
+              action.expression,
+              action.expression,
+              [],
+              null,
+              {},
+              emptyComments,
+            ),
+          }
+        } else {
+          return element
         }
       },
       editor,
