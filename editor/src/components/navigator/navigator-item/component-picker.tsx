@@ -5,7 +5,7 @@ import React from 'react'
 import { Icn, type IcnProps } from '../../../uuiui'
 import { dark } from '../../../uuiui/styles/theme/dark'
 import type { JSXElementChild } from '../../../core/shared/element-template'
-import { type Imports } from '../../../core/shared/project-file-types'
+import type { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { type ComponentElementToInsert } from '../../custom-code/code-file'
 import type { InsertMenuItemGroup } from '../../canvas/ui/floating-insert-menu'
 import { UIGridRow } from '../../../components/inspector/widgets/ui-grid-row'
@@ -13,6 +13,7 @@ import { FlexRow, type Icon } from 'utopia-api'
 import { assertNever } from '../../../core/shared/utils'
 import { insertableComponent } from '../../shared/project-components'
 import type { StylePropOption, InsertableComponent } from '../../shared/project-components'
+import type { Size } from '../../../core/shared/math-utils'
 
 export interface ComponentPickerProps {
   allComponents: Array<InsertMenuItemGroup>
@@ -29,6 +30,9 @@ export function elementToInsertToInsertableComponent(
   elementToInsert: ElementToInsert,
   uid: string,
   stylePropOptions: Array<StylePropOption>,
+  defaultSize: Size | null,
+  insertionCeiling: ElementPath | null,
+  icon: Icon | null,
 ): InsertableComponent {
   const element = elementToInsert.elementToInsert(uid)
   return insertableComponent(
@@ -36,9 +40,9 @@ export function elementToInsertToInsertableComponent(
     () => element as ComponentElementToInsert,
     elementToInsert.name,
     stylePropOptions,
-    null,
-    null,
-    null,
+    defaultSize,
+    insertionCeiling,
+    icon,
   )
 }
 

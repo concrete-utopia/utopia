@@ -334,7 +334,14 @@ function insertPreferredChild(
 ) {
   const uniqueIds = new Set(getAllUniqueUids(projectContents).uniqueIDs)
   const uid = generateConsistentUID('prop', uniqueIds)
-  const toInsert = elementToInsertToInsertableComponent(preferredChildToInsert, uid, ['do-not-add'])
+  const toInsert = elementToInsertToInsertableComponent(
+    preferredChildToInsert,
+    uid,
+    ['do-not-add'],
+    null,
+    null,
+    null,
+  )
 
   insertComponentPickerItem(toInsert, target, projectContents, metadata, dispatch, insertionTarget)
 }
