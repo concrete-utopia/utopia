@@ -1317,7 +1317,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
     const selectedViews = editor.selectedViews
 
     if (isPasteHandler(event.target)) {
-      // components with data-pastehandler have precedence
+      // components with data-pastehandler='true' have precedence
       return
     }
 
