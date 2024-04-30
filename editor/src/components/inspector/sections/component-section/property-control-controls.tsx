@@ -81,6 +81,8 @@ import { assertNever } from '../../../../core/shared/utils'
 import { preventDefault, stopPropagation } from '../../common/inspector-utils'
 import { unless, when } from '../../../../utils/react-conditionals'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { useDataPickerButton } from './component-section'
+import { parseNoneControlDescription } from '../../../../core/property-controls/property-controls-parser'
 
 export interface ControlForPropProps<T extends RegularControlDescription> {
   propPath: PropertyPath
@@ -828,20 +830,37 @@ export const DataReferenceCartoucheControl = React.memo(
       'DataReferenceCartoucheControl contentsToDisplay',
     )
 
-    const onOpenDataPicker = React.useCallback(() => {}, [])
+    const dataPickerButtonData = useDataPickerButton(
+      [elementPath],
+      PP.fromString('children'), // TODO
+      false, // TODO
+      {
+        control: 'none',
+      },
+    )
 
     const onDeleteCartouche = React.useCallback(() => {}, [])
 
     return (
-      <IdentifierExpressionCartoucheControl
-        contents={contentsToDisplay.label ?? 'DATA'}
-        icon={contentsToDisplay.type === 'reference' ? '🌸' : <Icons.StringInputControl />}
-        matchType={contentsToDisplay.type === 'reference' ? 'full' : 'none'}
-        onOpenDataPicker={onOpenDataPicker}
-        onDeleteCartouche={onDeleteCartouche}
-        safeToDelete={false}
-        testId={'data-reference-cartouche'}
-      />
+      <>
+        {dataPickerButtonData.popupIsOpen ? dataPickerButtonData.DataPickerComponent : null}
+        <div
+          style={{
+            minWidth: 0, // this ensures that the div can never expand the allocated grid space
+          }}
+          ref={dataPickerButtonData.setReferenceElement}
+        >
+          <IdentifierExpressionCartoucheControl
+            contents={contentsToDisplay.label ?? 'DATA'}
+            icon={contentsToDisplay.type === 'reference' ? '🌸' : <Icons.StringInputControl />}
+            matchType={contentsToDisplay.type === 'reference' ? 'full' : 'none'}
+            onOpenDataPicker={dataPickerButtonData.openPopup}
+            onDeleteCartouche={onDeleteCartouche}
+            safeToDelete={false}
+            testId={'data-reference-cartouche'}
+          />
+        </div>
+      </>
     )
   },
 )

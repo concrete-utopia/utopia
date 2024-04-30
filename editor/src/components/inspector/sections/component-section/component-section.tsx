@@ -279,7 +279,7 @@ function getLabelControlStyle(
 
 const isBaseIndentationLevel = (props: AbstractRowForControlProps) => props.indentationLevel === 1
 
-function useDataPickerButton(
+export function useDataPickerButton(
   selectedElements: Array<ElementPath>,
   propPath: PropertyPath,
   isScene: boolean,
