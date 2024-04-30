@@ -11,7 +11,8 @@ import type { InsertMenuItemGroup } from '../../canvas/ui/floating-insert-menu'
 import { UIGridRow } from '../../../components/inspector/widgets/ui-grid-row'
 import { FlexRow, type Icon } from 'utopia-api'
 import { assertNever } from '../../../core/shared/utils'
-import type { InsertableComponent } from '../../shared/project-components'
+import { insertableComponent } from '../../shared/project-components'
+import type { StylePropOption, InsertableComponent } from '../../shared/project-components'
 
 export interface ComponentPickerProps {
   allComponents: Array<InsertMenuItemGroup>
@@ -19,8 +20,26 @@ export interface ComponentPickerProps {
 }
 
 export interface ElementToInsert {
+  name: string
   elementToInsert: (uid: string) => JSXElementChild
   additionalImports: Imports
+}
+
+export function elementToInsertToInsertableComponent(
+  elementToInsert: ElementToInsert,
+  uid: string,
+  stylePropOptions: Array<StylePropOption>,
+): InsertableComponent {
+  const element = elementToInsert.elementToInsert(uid)
+  return insertableComponent(
+    elementToInsert.additionalImports,
+    () => element as ComponentElementToInsert,
+    elementToInsert.name,
+    stylePropOptions,
+    null,
+    null,
+    null,
+  )
 }
 
 export function componentPickerTestIdForProp(prop: string): string {

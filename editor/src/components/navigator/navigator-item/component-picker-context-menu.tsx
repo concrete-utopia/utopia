@@ -19,7 +19,11 @@ import {
 } from '../../editor/actions/action-creators'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
-import { ComponentPicker, type ElementToInsert } from './component-picker'
+import {
+  ComponentPicker,
+  elementToInsertToInsertableComponent,
+  type ElementToInsert,
+} from './component-picker'
 import type { PreferredChildComponentDescriptor } from '../../custom-code/internal-property-controls'
 import { fixUtopiaElement, generateConsistentUID } from '../../../core/shared/uid-utils'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
@@ -30,14 +34,18 @@ import { type ContextMenuItem } from '../../context-menu-items'
 import { FlexRow, Icn, type IcnProps } from '../../../uuiui'
 import type { EditorAction, EditorDispatch } from '../../editor/action-types'
 import { type ProjectContentTreeRoot } from '../../assets'
-import { type PropertyControlsInfo, type ComponentInfo } from '../../custom-code/code-file'
+import {
+  type PropertyControlsInfo,
+  type ComponentInfo,
+  ComponentElementToInsert,
+} from '../../custom-code/code-file'
 import { type Icon } from 'utopia-api'
 import { getRegisteredComponent } from '../../../core/property-controls/property-controls-utils'
 import { defaultImportsForComponentModule } from '../../../core/property-controls/property-controls-local'
 import { useGetInsertableComponents } from '../../canvas/ui/floating-insert-menu'
 import { atom, useAtom, useSetAtom } from 'jotai'
 import { childInsertionPath } from '../../editor/store/insertion-path'
-import type { InsertableComponent } from '../../shared/project-components'
+import { insertableComponent, type InsertableComponent } from '../../shared/project-components'
 
 export type InsertionTarget = { prop: string } | 'replace-target' | 'insert-as-child'
 interface ComponentPickerContextMenuAtomData {
@@ -186,6 +194,7 @@ function defaultVariantItem(
     enabled: true,
     action: () =>
       onItemClick({
+        name: elementName,
         elementToInsert: (uid: string) =>
           jsxElement(elementName, uid, jsxAttributesFromMap({}), []),
         additionalImports: imports,
@@ -204,6 +213,7 @@ function variantItem(
     enabled: true,
     action: () =>
       onItemClick({
+        name: variant.insertMenuLabel,
         elementToInsert: (uid: string) => elementFromInsertMenuItem(variant.elementToInsert(), uid),
         additionalImports: variant.importsToAdd,
       }),
@@ -303,7 +313,11 @@ function insertComponentPickerItem(
       return [insertInsertable(childInsertionPath(target), toInsert, 'do-not-add', null)]
     }
 
-    console.warn(`Component picker error: can not insert "${toInsert.name}" as ${insertionTarget}`)
+    console.warn(
+      insertionTarget === 'replace-target'
+        ? `Component picker error: can not replace to "${toInsert.name}"`
+        : `Component picker error: can not insert "${toInsert.name}"`,
+    )
     return []
   })()
 
@@ -320,35 +334,9 @@ function insertPreferredChild(
 ) {
   const uniqueIds = new Set(getAllUniqueUids(projectContents).uniqueIDs)
   const uid = generateConsistentUID('prop', uniqueIds)
-  let element = preferredChildToInsert.elementToInsert(uid)
+  const toInsert = elementToInsertToInsertableComponent(preferredChildToInsert, uid, ['do-not-add'])
 
-  element = fixUtopiaElement(element, uniqueIds).value
-
-  if (element.type !== 'JSX_ELEMENT') {
-    throw new Error('only JSX elements are supported as preferred components')
-  }
-
-  if (MetadataUtils.isJSXMapExpression(EP.parentPath(target), metadata)) {
-    dispatch([replaceMappedElement(element, target, preferredChildToInsert.additionalImports)])
-    return
-  }
-
-  const insertionAction =
-    insertionTarget === 'replace-target' || insertionTarget === 'insert-as-child'
-      ? insertJSXElement(
-          element,
-          target,
-          preferredChildToInsert.additionalImports ?? undefined,
-          insertionTarget,
-        )
-      : setProp_UNSAFE(
-          target,
-          PP.create(insertionTarget.prop),
-          element,
-          preferredChildToInsert.additionalImports ?? undefined,
-        )
-
-  dispatch([insertionAction])
+  insertComponentPickerItem(toInsert, target, projectContents, metadata, dispatch, insertionTarget)
 }
 
 interface ComponentPickerContextMenuProps {
