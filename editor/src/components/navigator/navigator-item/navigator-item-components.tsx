@@ -17,10 +17,7 @@ import {
   varSafeNavigatorEntryToKey,
 } from '../../editor/store/editor-state'
 import type { SelectionLocked } from '../../canvas/canvas-types'
-import {
-  type InsertionTarget,
-  useShowComponentPickerContextMenu,
-} from './component-picker-context-menu'
+import { useCreateCallbackToShowComponentPicker } from './component-picker-context-menu'
 
 export const NavigatorHintCircleDiameter = 8
 
@@ -205,7 +202,7 @@ export function addChildButtonTestId(target: ElementPath): string {
 
 const AddChildButton = React.memo((props: AddChildButtonProps) => {
   const { target, iconColor } = props
-  const onClick = useShowComponentPickerContextMenu(target, 'insert-as-child')
+  const onClick = useCreateCallbackToShowComponentPicker()(target, 'insert-as-child')
 
   return (
     <Button
@@ -238,7 +235,7 @@ interface ReplaceElementButtonProps {
 
 const ReplaceElementButton = React.memo((props: ReplaceElementButtonProps) => {
   const { target, prop } = props
-  const onClick = useShowComponentPickerContextMenu(
+  const onClick = useCreateCallbackToShowComponentPicker()(
     target,
     prop == null ? 'replace-target' : { prop: prop },
   )
