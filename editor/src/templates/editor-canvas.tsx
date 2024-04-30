@@ -105,6 +105,7 @@ import * as ResizeObserverSyntheticDefault from 'resize-observer-polyfill'
 import { isFeatureEnabled } from '../utils/feature-switches'
 import { getCanvasViewportCenter } from './paste-helpers'
 import { InsertMenuId } from '../components/editor/insertmenu'
+import { DataPasteHandler, isPasteHandler } from '../utils/paste-handler'
 const ResizeObserver = ResizeObserverSyntheticDefault.default ?? ResizeObserverSyntheticDefault
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
@@ -1314,6 +1315,11 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
   handlePaste = (event: ClipboardEvent) => {
     const editor = this.props.editor
     const selectedViews = editor.selectedViews
+
+    if (isPasteHandler(event.target)) {
+      // components with data-pastehandler have precedence
+      return
+    }
 
     // Utopia handles all paste events for these panes first
     const paneFocusedWhereUtopiaHandlesPasteEvents =

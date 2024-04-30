@@ -11,6 +11,7 @@ import { preventDefault, stopPropagation } from '../../components/inspector/comm
 import { useColorTheme } from '../styles/theme'
 import { InspectorInputEmotionStyle, getControlStylesAwarePlaceholder } from './base-input'
 import { useControlsDisabledInSubtree } from '../utilities/disable-subtree'
+import { dataPasteHandler } from '../../utils/paste-handler'
 
 interface StringInputOptions {
   focusOnMount?: boolean
@@ -30,6 +31,7 @@ export interface StringInputProps
   includeBoxShadow?: boolean
   onSubmitValue?: (value: string) => void
   onEscape?: () => void
+  pasteHandler?: boolean
 }
 
 export const StringInput = React.memo(
@@ -159,6 +161,7 @@ export type HeadlessStringInputProps = React.InputHTMLAttributes<HTMLInputElemen
   onEscape?: () => void
   growInputAutomatically?: boolean
   testId: string
+  pasteHandler?: boolean
 }
 
 export const HeadlessStringInput = React.forwardRef<HTMLInputElement, HeadlessStringInputProps>(
@@ -171,6 +174,7 @@ export const HeadlessStringInput = React.forwardRef<HTMLInputElement, HeadlessSt
       style = {},
       value,
       testId,
+      pasteHandler,
       ...otherProps
     } = props
     const { disabled, onKeyDown, onFocus } = otherProps
@@ -222,6 +226,7 @@ export const HeadlessStringInput = React.forwardRef<HTMLInputElement, HeadlessSt
       <input
         ref={composeRefs(ref, propsRef)}
         data-testid={testId}
+        {...dataPasteHandler(props.pasteHandler)}
         {...otherProps}
         disabled={disabled}
         onKeyDown={handleOnKeyDown}
