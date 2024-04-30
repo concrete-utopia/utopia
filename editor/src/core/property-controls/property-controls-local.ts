@@ -804,7 +804,8 @@ async function parsePreferredChildren(
         variants: [
           {
             insertMenuLabel: 'text',
-            elementToInsert: () => jsxElement('span', '', jsxAttributesFromMap({}), []),
+            elementToInsert: () =>
+              jsxElement('span', '', jsxAttributesFromMap({}), [jsxTextBlock('Sample text')]),
             importsToAdd: {},
           },
         ],
