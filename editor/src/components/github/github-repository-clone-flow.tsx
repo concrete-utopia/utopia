@@ -140,12 +140,15 @@ const GitClonePseudoElement = React.memo((props: GitClonePseudeElementProps) => 
 
   const editorStoreRef = useRefEditorState((store) => store)
 
+  const [cloned, setCloned] = React.useState(false)
+
   React.useEffect(() => {
-    if (userDetails != null) {
+    if (userDetails != null && !cloned) {
       void cloneGithubRepo(dispatch, editorStoreRef, githubRepo)
+      setCloned(true)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [userDetails, cloned])
 
   // The GitClonePseudoElement's sole job is to call cloneGithubRepo in a useEffect.
   // I pulled it to a dedicated component so it's purpose remains clear and this useEffect doesn't get lost in the noise
