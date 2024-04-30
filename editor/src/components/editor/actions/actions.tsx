@@ -53,6 +53,7 @@ import type {
   JSXElementChild,
   JSXConditionalExpression,
   JSXFragment,
+  JSXMapExpression,
 } from '../../../core/shared/element-template'
 import {
   deleteJSXAttribute,
@@ -5318,6 +5319,18 @@ export const UPDATE_FNS = {
             newSelectedViews.push(newPath)
           } else if (element.type === 'JSX_FRAGMENT') {
             const fixedElement = jsxFragment(newUID, element.children, element.longForm)
+
+            withInsertedElement = insertJSXElementChildren(
+              insertionPath,
+              [fixedElement],
+              utopiaComponents,
+              action.indexPosition,
+            )
+            detailsOfUpdate = withInsertedElement.insertionDetails
+
+            addNewSelectedView(newUID)
+          } else if (element.type === 'JSX_MAP_EXPRESSION') {
+            const fixedElement = fixUtopiaElement({ ...element, uid: newUID }, existingUids).value
 
             withInsertedElement = insertJSXElementChildren(
               insertionPath,

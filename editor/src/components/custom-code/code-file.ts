@@ -31,12 +31,14 @@ import type {
   JSXConditionalExpressionWithoutUID,
   JSXElementWithoutUID,
   JSXFragmentWithoutUID,
+  JSXMapExpressionWithoutUID,
   UtopiaJSXComponent,
 } from '../../core/shared/element-template'
 import {
   clearJSXConditionalExpressionWithoutUIDUniqueIDs,
   clearJSXElementWithoutUIDUniqueIDs,
   clearJSXFragmentWithoutUIDUniqueIDs,
+  clearJSXMapExpressionWithoutUIDUniqueIDs,
 } from '../../core/shared/element-template'
 import { objectMap } from '../../core/shared/object-utils'
 import { getTransitiveReverseDependencies } from '../../core/shared/project-contents-dependencies'
@@ -90,6 +92,7 @@ export type ComponentElementToInsert =
   | JSXElementWithoutUID
   | JSXConditionalExpressionWithoutUID
   | JSXFragmentWithoutUID
+  | JSXMapExpressionWithoutUID
 
 export function clearComponentElementToInsertUniqueIDs(
   toInsert: ComponentElementToInsert,
@@ -101,6 +104,8 @@ export function clearComponentElementToInsertUniqueIDs(
       return clearJSXConditionalExpressionWithoutUIDUniqueIDs(toInsert)
     case 'JSX_FRAGMENT':
       return clearJSXFragmentWithoutUIDUniqueIDs(toInsert)
+    case 'JSX_MAP_EXPRESSION':
+      return clearJSXMapExpressionWithoutUIDUniqueIDs(toInsert)
     default:
       assertNever(toInsert)
   }

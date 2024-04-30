@@ -1,16 +1,18 @@
 import React from 'react'
 import { useContextMenu, Menu, type ContextMenuParams, contextMenu } from 'react-contexify'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import type { ElementInstanceMetadataMap, JSXElement } from '../../../core/shared/element-template'
 import {
   getJSXElementNameAsString,
   jsxAttributesFromMap,
   jsxElement,
+  jsxElementFromJSXElementWithoutUID,
 } from '../../../core/shared/element-template'
 import type { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import {
+  insertInsertable,
   insertJSXElement,
   replaceMappedElement,
   setProp_UNSAFE,
@@ -26,7 +28,7 @@ import { MomentumContextMenu } from '../../context-menu-wrapper'
 import { NO_OP, assertNever } from '../../../core/shared/utils'
 import { type ContextMenuItem } from '../../context-menu-items'
 import { FlexRow, Icn, type IcnProps } from '../../../uuiui'
-import { type EditorDispatch } from '../../editor/action-types'
+import type { EditorAction, EditorDispatch } from '../../editor/action-types'
 import { type ProjectContentTreeRoot } from '../../assets'
 import { type PropertyControlsInfo, type ComponentInfo } from '../../custom-code/code-file'
 import { type Icon } from 'utopia-api'
@@ -34,6 +36,8 @@ import { getRegisteredComponent } from '../../../core/property-controls/property
 import { defaultImportsForComponentModule } from '../../../core/property-controls/property-controls-local'
 import { useGetInsertableComponents } from '../../canvas/ui/floating-insert-menu'
 import { atom, useAtom, useSetAtom } from 'jotai'
+import { childInsertionPath } from '../../editor/store/insertion-path'
+import type { InsertableComponent } from '../../shared/project-components'
 
 export type InsertionTarget = { prop: string } | 'replace-target' | 'insert-as-child'
 interface ComponentPickerContextMenuAtomData {
@@ -251,6 +255,61 @@ function moreItem(
   }
 }
 
+function insertComponentPickerItem(
+  toInsert: InsertableComponent,
+  target: ElementPath,
+  projectContents: ProjectContentTreeRoot,
+  metadata: ElementInstanceMetadataMap,
+  dispatch: EditorDispatch,
+  insertionTarget: InsertionTarget,
+) {
+  const uniqueIds = new Set(getAllUniqueUids(projectContents).uniqueIDs)
+  const uid = generateConsistentUID('prop', uniqueIds)
+  const elementWithoutUID = toInsert.element()
+
+  const actions = ((): Array<EditorAction> => {
+    if (elementWithoutUID.type === 'JSX_ELEMENT') {
+      const element = jsxElementFromJSXElementWithoutUID(elementWithoutUID, uid)
+      const fixedElement = fixUtopiaElement(element, uniqueIds).value
+
+      if (fixedElement.type !== 'JSX_ELEMENT') {
+        throw new Error('JSXElementWithoutUid is not converted to JSXElement')
+      }
+
+      // if we are inserting into a render prop
+      if (insertionTarget !== 'replace-target' && insertionTarget !== 'insert-as-child') {
+        return [
+          setProp_UNSAFE(
+            target,
+            PP.create(insertionTarget.prop),
+            fixedElement,
+            toInsert.importsToAdd ?? undefined,
+          ),
+        ]
+      }
+
+      // if we are inserting into a map expression then we replace the mapped element
+      if (MetadataUtils.isJSXMapExpression(EP.parentPath(target), metadata)) {
+        return [replaceMappedElement(fixedElement, target, toInsert.importsToAdd)]
+      }
+
+      return [
+        insertJSXElement(fixedElement, target, toInsert.importsToAdd ?? undefined, insertionTarget),
+      ]
+    }
+
+    // TODO: for non-jsx-elements we only support insertion as a child today, this should be extended
+    if (insertionTarget === 'insert-as-child') {
+      return [insertInsertable(childInsertionPath(target), toInsert, 'do-not-add', null)]
+    }
+
+    console.warn(`Component picker error: can not insert "${toInsert.name}" as ${insertionTarget}`)
+    return []
+  })()
+
+  dispatch(actions)
+}
+
 function insertPreferredChild(
   preferredChildToInsert: ElementToInsert,
   target: ElementPath,
@@ -404,7 +463,13 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
   ({ target, insertionTarget }) => {
     const allInsertableComponents = useGetInsertableComponents('insert').flatMap((g) => ({
       label: g.label,
-      options: g.options,
+      options: g.options.filter((o) => {
+        if (insertionTarget === 'insert-as-child') {
+          return true
+        }
+        // Right now we only support inserting JSX elements when we insert into a render prop or when replacing elements
+        return o.value.element().type === 'JSX_ELEMENT'
+      }),
     }))
 
     const dispatch = useDispatch()
@@ -413,11 +478,11 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
     const metadataRef = useRefEditorState((state) => state.editor.jsxMetadata)
 
     const onItemClick = React.useCallback(
-      (preferredChildToInsert: ElementToInsert) => (e: React.MouseEvent) => {
+      (preferredChildToInsert: InsertableComponent) => (e: React.MouseEvent) => {
         e.stopPropagation()
         e.preventDefault()
 
-        insertPreferredChild(
+        insertComponentPickerItem(
           preferredChildToInsert,
           target,
           projectContentsRef.current,
