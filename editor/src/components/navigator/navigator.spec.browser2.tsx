@@ -2955,7 +2955,7 @@ describe('Navigator', () => {
       ])
     })
 
-    it('reparentsa map expression under the first sibling', async () => {
+    it('reparents a map expression under the first sibling', async () => {
       const renderResult = await renderTestEditorWithCode(
         getProjectCodeWithMapExpression(),
         'await-first-dom-report',
@@ -5452,7 +5452,7 @@ describe('Navigator row order', () => {
         'conditional-clause-sb/group/text-expr-cond-wrapper/text-expr-cond-false-case',
         'synthetic-sb/group/text-expr-cond-wrapper/text-expr-cond/15e-element-15e',
         'regular-sb/group/zero-length-map-wrapper',
-        'regular-sb/group/zero-length-map-wrapper/6ec',
+        'regular-sb/group/zero-length-map-wrapper/c54',
       ],
     )
     expect(
@@ -5490,7 +5490,7 @@ describe('Navigator row order', () => {
       'conditional-clause-sb/group/text-expr-cond-wrapper/text-expr-cond-false-case',
       'synthetic-sb/group/text-expr-cond-wrapper/text-expr-cond/15e-element-15e',
       'regular-sb/group/zero-length-map-wrapper',
-      'regular-sb/group/zero-length-map-wrapper/6ec',
+      'regular-sb/group/zero-length-map-wrapper/c54',
     ])
   })
 

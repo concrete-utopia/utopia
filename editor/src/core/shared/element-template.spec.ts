@@ -21,6 +21,9 @@ import {
   jsxMapExpression,
   jsxElement,
   jsOpaqueArbitraryStatement,
+  jsxAttributeNestedArraySimple,
+  functionParam,
+  regularParam,
 } from './element-template'
 
 describe('setJSXAttributesAttribute', () => {
@@ -321,14 +324,25 @@ describe('modifiableAttributeToValuePath', () => {
   it('rejects a map expression', () => {
     const actualResult = modifiableAttributeToValuePath(
       jsxMapExpression(
-        '[1, 2, 3].map(a => <div />)',
-        '[1, 2, 3].map(a => <div />)',
-        '[1, 2, 3].map(a => <div />)',
-        [],
-        null,
-        {},
+        jsxAttributeNestedArraySimple([
+          jsExpressionValue(1, emptyComments, ''),
+          jsExpressionValue(2, emptyComments, ''),
+          jsExpressionValue(3, emptyComments, ''),
+        ]),
+        jsExpressionOtherJavaScript(
+          [functionParam(false, regularParam('a', null))],
+          `a => <div />`,
+          `a => <div />`,
+          `a => <div />`,
+          [],
+          null,
+          {},
+          emptyComments,
+          '',
+        ),
         emptyComments,
         [],
+        '',
       ),
     )
     expect(actualResult).toEqual(left('Unable to handle this expression type.'))

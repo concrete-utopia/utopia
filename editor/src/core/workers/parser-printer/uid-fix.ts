@@ -572,7 +572,7 @@ export function fixUIDsInJavascriptString(jsString: string, fixUIDsState: FixUID
 }
 
 export function fixUIDsInJavascriptStrings<
-  T extends JSExpressionMapOrOtherJavascript | ArbitraryJSBlock,
+  T extends JSExpressionOtherJavaScript | ArbitraryJSBlock,
 >(jsExpression: T, fixUIDsState: FixUIDsState): T {
   if (jsExpression.type === 'ARBITRARY_JS_BLOCK') {
     return {
@@ -835,22 +835,28 @@ export function fixExpressionUIDs(
       )
     }
     case 'JSX_MAP_EXPRESSION': {
-      const fixedElementsWithin = fixElementsWithin(
+      const valueToMap = fixExpressionUIDs(
         oldExpression?.type === newExpression.type
-          ? oldExpression.elementsWithin
-          : newExpression.elementsWithin,
-        newExpression.elementsWithin,
+          ? oldExpression.valueToMap
+          : newExpression.valueToMap,
+        newExpression.valueToMap,
         fixUIDsState,
       )
-
+      const mapFunction = fixExpressionUIDs(
+        oldExpression?.type === newExpression.type
+          ? oldExpression.mapFunction
+          : newExpression.mapFunction,
+        newExpression.mapFunction,
+        fixUIDsState,
+      )
       return updateUID(
         expressionJSXMapExpressionUIDOptic,
         oldExpression?.uid ?? newExpression.uid,
         fixUIDsState,
         {
           ...newExpression,
-          ...fixUIDsInJavascriptStrings(newExpression, fixUIDsState),
-          elementsWithin: fixedElementsWithin,
+          valueToMap: valueToMap,
+          mapFunction: mapFunction,
         },
       )
     }

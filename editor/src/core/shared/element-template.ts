@@ -306,38 +306,27 @@ export function jsExpressionOtherJavaScriptSimple(
   )
 }
 
-export interface JSXMapExpression extends WithComments, WithElementsWithin {
+export interface JSXMapExpression extends WithComments {
   type: 'JSX_MAP_EXPRESSION'
-  originalJavascript: string
-  javascriptWithUIDs: string
-  transpiledJavascript: string
-  definedElsewhere: Array<string>
-  sourceMap: RawSourceMap | null
+  valueToMap: JSExpression
+  mapFunction: JSExpression
   valuesInScopeFromParameters: Array<string>
   uid: string
 }
 
 export function jsxMapExpression(
-  originalJavascript: string,
-  javascriptWithUIDs: string,
-  transpiledJavascript: string,
-  definedElsewhere: Array<string>,
-  sourceMap: RawSourceMap | null,
-  elementsWithin: ElementsWithin,
+  valueToMap: JSExpression,
+  mapFunction: JSExpression,
   comments: ParsedComments,
   valuesInScopeFromParameters: Array<string>,
   uid: string = UUID(),
 ): JSXMapExpression {
   return {
     type: 'JSX_MAP_EXPRESSION',
-    originalJavascript: originalJavascript,
-    javascriptWithUIDs: javascriptWithUIDs,
-    transpiledJavascript: transpiledJavascript,
-    definedElsewhere: definedElsewhere,
-    sourceMap: sourceMap,
+    valueToMap: valueToMap,
+    mapFunction: mapFunction,
     uid: uid,
     comments: comments,
-    elementsWithin: elementsWithin,
     valuesInScopeFromParameters: valuesInScopeFromParameters,
   }
 }
@@ -634,14 +623,35 @@ export type JSExpression =
 
 export type JSExpressionMapOrOtherJavascript = JSExpressionOtherJavaScript | JSXMapExpression
 
-export function clearJSExpressionOtherJavaScriptUniqueIDs(
-  attribute: JSExpressionMapOrOtherJavascript,
-): JSExpressionMapOrOtherJavascript {
-  const updatedElementsWithin = objectMap(clearJSXElementUniqueIDs, attribute.elementsWithin)
+export function clearJSXMapExpressionUniqueIDs(mapExpression: JSXMapExpression): JSXMapExpression {
+  const updatedValueToMap = clearExpressionUniqueIDs(mapExpression.valueToMap)
+  const updatedMapFunction = clearExpressionUniqueIDs(mapExpression.mapFunction)
   return {
-    ...attribute,
+    ...mapExpression,
+    uid: '',
+    valueToMap: updatedValueToMap,
+    mapFunction: updatedMapFunction,
+  }
+}
+
+export function clearJSExpressionOtherJavaScriptUniqueIDs(
+  expression: JSExpressionOtherJavaScript,
+): JSExpressionOtherJavaScript {
+  const updatedElementsWithin = objectMap(clearJSXElementUniqueIDs, expression.elementsWithin)
+  return {
+    ...expression,
     uid: '',
     elementsWithin: updatedElementsWithin,
+  }
+}
+
+export function clearJSExpressionOtherJavaScriptOrMapExpressionUniqueIDs(
+  expression: JSExpressionMapOrOtherJavascript,
+): JSExpressionMapOrOtherJavascript {
+  if (isJSXMapExpression(expression)) {
+    return clearJSXMapExpressionUniqueIDs(expression)
+  } else {
+    return clearJSExpressionOtherJavaScriptUniqueIDs(expression)
   }
 }
 
@@ -773,6 +783,7 @@ export function clearExpressionUniqueIDs(attribute: JSExpression): JSExpression 
     case 'ATTRIBUTE_VALUE':
       return jsExpressionValue(attribute.value, attribute.comments, '')
     case 'JSX_MAP_EXPRESSION':
+      return clearJSXMapExpressionUniqueIDs(attribute)
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return clearJSExpressionOtherJavaScriptUniqueIDs(attribute)
     case 'ATTRIBUTE_NESTED_ARRAY':
@@ -849,9 +860,19 @@ export function clearExpressionUniqueIDs(attribute: JSExpression): JSExpression 
 export function clearJSXAttributeOtherJavaScriptSourceMaps(
   attribute: JSExpressionMapOrOtherJavascript,
 ): JSExpressionMapOrOtherJavascript {
-  return {
-    ...attribute,
-    sourceMap: null,
+  if (isJSXMapExpression(attribute)) {
+    const updatedValueToMap = clearExpressionSourceMaps(attribute.valueToMap)
+    const updatedMapFunction = clearExpressionSourceMaps(attribute.mapFunction)
+    return {
+      ...attribute,
+      valueToMap: updatedValueToMap,
+      mapFunction: updatedMapFunction,
+    }
+  } else {
+    return {
+      ...attribute,
+      sourceMap: null,
+    }
   }
 }
 
@@ -1235,6 +1256,10 @@ export function attributeReferencesElsewhere(attribute: JSExpression): boolean {
     case 'ATTRIBUTE_VALUE':
       return false
     case 'JSX_MAP_EXPRESSION':
+      return (
+        attributeReferencesElsewhere(attribute.valueToMap) ||
+        attributeReferencesElsewhere(attribute.mapFunction)
+      )
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return (
         attribute.definedElsewhere.filter((r) => !AllowedExternalReferences.includes(r)).length > 0
@@ -1385,7 +1410,10 @@ export function getDefinedElsewhereFromAttribute(attribute: JSExpression): Array
     case 'ATTRIBUTE_VALUE':
       return []
     case 'JSX_MAP_EXPRESSION':
-      return attribute.definedElsewhere
+      return addAllUniquely(
+        getDefinedElsewhereFromAttribute(attribute.valueToMap),
+        getDefinedElsewhereFromAttribute(attribute.mapFunction),
+      )
     case 'ATTRIBUTE_FUNCTION_CALL':
       return attribute.parameters.reduce<Array<string>>((working, elem) => {
         return addAllUniquely(working, getDefinedElsewhereFromAttribute(elem))
@@ -1415,8 +1443,12 @@ export function getDefinedElsewhereFromElementChild(
 ): Array<string> {
   switch (child.type) {
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-    case 'JSX_MAP_EXPRESSION':
       return addAllUniquely(working, child.definedElsewhere)
+    case 'JSX_MAP_EXPRESSION':
+      return addAllUniquely(working, [
+        ...getDefinedElsewhereFromAttribute(child.valueToMap),
+        ...getDefinedElsewhereFromAttribute(child.mapFunction),
+      ])
     case 'JSX_CONDITIONAL_EXPRESSION':
       const withCondition = getDefinedElsewhereFromElementChild(working, child.condition)
       const withWhenTrue = getDefinedElsewhereFromElementChild(withCondition, child.whenTrue)
@@ -2333,7 +2365,7 @@ export function clearDestructuredParamPartUniqueIDs(
     clearParamUniqueIDs(paramPart.param),
     paramPart.defaultExpression == null
       ? null
-      : clearJSExpressionOtherJavaScriptUniqueIDs(paramPart.defaultExpression),
+      : clearJSExpressionOtherJavaScriptOrMapExpressionUniqueIDs(paramPart.defaultExpression),
   )
 }
 
@@ -2348,7 +2380,7 @@ export function clearBoundParamUniqueIDs(boundParam: BoundParam): BoundParam {
         boundParam.paramName,
         boundParam.defaultExpression == null
           ? null
-          : clearJSExpressionOtherJavaScriptUniqueIDs(boundParam.defaultExpression),
+          : clearJSExpressionOtherJavaScriptOrMapExpressionUniqueIDs(boundParam.defaultExpression),
       )
     default:
       const _exhaustiveCheck: never = boundParam
@@ -2787,6 +2819,10 @@ export function walkElement(
       forEach(element, parentPath, depth)
       break
     case 'JSX_MAP_EXPRESSION':
+      forEach(element, parentPath, depth)
+      walkElement(element.valueToMap, parentPath, depth + 1, forEach)
+      walkElement(element.mapFunction, parentPath, depth + 1, forEach)
+      break
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       forEach(element, parentPath, depth)
       fastForEach(Object.keys(element.elementsWithin), (childKey) =>
