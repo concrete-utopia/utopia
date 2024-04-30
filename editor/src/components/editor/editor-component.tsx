@@ -83,8 +83,11 @@ import {
 } from './persistence/persistence-backend'
 import { useUpdateActiveRemixSceneOnSelectionChange } from '../canvas/remix/utopia-remix-root-component'
 import { useDefaultCollapsedViews } from './use-default-collapsed-views'
+import {
+  ComponentPickerContextMenu,
+  useCreateCallbackToShowComponentPicker,
+} from '../navigator/navigator-item/component-picker-context-menu'
 import { useGithubPolling } from '../../core/shared/github/helpers'
-import { ComponentPickerContextMenu } from '../navigator/navigator-item/component-picker-context-menu'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -224,6 +227,8 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     [mode.type],
   )
 
+  const showComponentPicker = useCreateCallbackToShowComponentPicker()
+
   const onWindowKeyDown = React.useCallback(
     (event: KeyboardEvent) => {
       let actions: Array<EditorAction> = []
@@ -288,6 +293,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
           navigatorTargetsRef,
           namesByKey,
           dispatch,
+          showComponentPicker,
         ),
       )
       return actions
@@ -299,6 +305,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
       navigatorTargetsRef,
       namesByKey,
       setClearKeyboardInteraction,
+      showComponentPicker,
     ],
   )
 

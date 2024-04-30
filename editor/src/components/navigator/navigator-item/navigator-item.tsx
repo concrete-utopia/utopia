@@ -63,7 +63,7 @@ import { NavigatorItemActionSheet } from './navigator-item-components'
 import { assertNever } from '../../../core/shared/utils'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { MapCounter } from './map-counter'
-import { useShowComponentPickerContextMenu } from './component-picker-context-menu'
+import { useCreateCallbackToShowComponentPicker } from './component-picker-context-menu'
 import { getHighlightBoundsForProject } from '../../../core/model/project-file-utils'
 import {
   selectedElementChangedMessageFromHighlightBounds,
@@ -995,7 +995,10 @@ const RenderPropSlot = React.memo((props: RenderPropSlotProps) => {
   const target = EP.parentPath(navigatorEntry.elementPath)
   const insertionTarget = { prop: navigatorEntry.prop }
 
-  const showComponentPickerContextMenu = useShowComponentPickerContextMenu(target, insertionTarget)
+  const showComponentPickerContextMenu = useCreateCallbackToShowComponentPicker()(
+    target,
+    insertionTarget,
+  )
 
   return (
     <PlaceholderSlot
