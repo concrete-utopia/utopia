@@ -295,14 +295,6 @@ export const RepositoryListing = React.memo(
     )
     const dispatch = useDispatch()
 
-    const refreshRepos = React.useCallback(() => {
-      void GithubOperations.getUsersPublicGithubRepositories(dispatch, 'polling').then(
-        (actions) => {
-          dispatch(actions, 'everyone')
-        },
-      )
-    }, [dispatch])
-
     const refreshReposOnClick = React.useCallback(() => {
       void GithubOperations.getUsersPublicGithubRepositories(dispatch, 'user-initiated').then(
         (actions) => {
@@ -310,10 +302,6 @@ export const RepositoryListing = React.memo(
         },
       )
     }, [dispatch])
-
-    React.useEffect(() => {
-      setTimeout(() => refreshRepos(), 0)
-    }, [refreshRepos])
 
     const clearRepository = React.useCallback(() => {
       dispatch([updateGithubSettings(emptyGithubSettings())], 'everyone')

@@ -76,22 +76,8 @@ describe('github helpers', () => {
       }
     }
 
-    function mockFetchUser() {
-      // TODO this is because every runGithubOperation calls getUserDetailsFromServer, this should really go!
-      mockFetch.mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({
-            type: 'SUCCESS',
-            user: { login: 'bob' },
-          }),
-          { status: 200 },
-        ),
-      )
-    }
-
     describe('when the repo is null', () => {
       it('returns the public repos and nullifies the branches', async () => {
-        mockFetchUser()
         mockFetch.mockResolvedValueOnce(
           new Response(
             JSON.stringify({
@@ -137,7 +123,6 @@ describe('github helpers', () => {
           ),
         )
 
-        mockFetchUser()
         mockFetch.mockResolvedValueOnce(
           new Response(
             JSON.stringify({
@@ -158,9 +143,15 @@ describe('github helpers', () => {
           makeMockContext(),
           'user-initiated',
         )
-        expect(got.length).toBe(2)
+        expect(got.length).toBe(3)
 
         expect(got).toEqual([
+          updateGithubData({
+            userRepositories: [
+              { name: 'foo' } as RepositoryEntry,
+              { name: 'bar' } as RepositoryEntry,
+            ],
+          }),
           updateGithubData({ branches: [{ name: 'one' }, { name: 'two' }] }),
           updateGithubData({ upstreamChanges: null }),
         ])
