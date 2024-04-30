@@ -1476,6 +1476,83 @@ describe('registered property controls', () => {
         }
       `)
     })
+    it('can use conditional for children', async () => {
+      const renderResult = await renderTestEditorWithModel(
+        project({
+          ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
+          import { Card2 } from '../src/card2'
+          
+          const Components = {
+        '/src/card': {
+          Card: {
+            component: Card,
+            properties: { },
+            children: {
+              preferredContents: [
+                { component: 'span', variants: { name: 'span' } },
+                {
+                  component: 'Conditional',
+                  moduleName: '',
+                  variants: [
+                    {
+                      code: 'true ? <div /> : null',
+                      label: 'Conditional',
+                      imports: '',
+                    }
+                  ]
+                },
+              ]
+            }
+          },
+        },
+      }
+      
+      export default Components
+    `,
+        }),
+        'await-first-dom-report',
+      )
+      const editorState = renderResult.getEditorState().editor
+
+      const cardRegistration = editorState.propertyControlsInfo['/src/card']['Card']
+      expect(cardRegistration).not.toBeUndefined()
+
+      const propsToCheck = pick(['preferredChildComponents', 'supportsChildren'], cardRegistration)
+
+      expect(propsToCheck).toMatchInlineSnapshot(`
+        Object {
+          "preferredChildComponents": Array [
+            Object {
+              "moduleName": null,
+              "name": "span",
+              "variants": Array [
+                Object {
+                  "elementToInsert": [Function],
+                  "importsToAdd": Object {},
+                  "insertMenuLabel": "span",
+                },
+              ],
+            },
+            Object {
+              "moduleName": "",
+              "name": "Conditional",
+              "variants": Array [
+                Object {
+                  "elementToInsert": [Function],
+                  "importsToAdd": Object {},
+                  "insertMenuLabel": "Conditional",
+                },
+              ],
+            },
+          ],
+          "supportsChildren": true,
+        }
+      `)
+
+      expect(propsToCheck.preferredChildComponents[1].variants[0].elementToInsert().type).toEqual(
+        'JSX_CONDITIONAL_EXPRESSION',
+      )
+    })
   })
 
   describe('registering the jsx controls', () => {
