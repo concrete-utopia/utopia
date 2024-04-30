@@ -17,7 +17,7 @@ import {
 } from '../../../../components/editor/actions/action-creators'
 import { getUsersPublicGithubRepositories } from './load-repositories'
 import { updateProjectAgainstGithub } from './update-against-branch'
-import { GithubHelpers, resolveConflict, startGithubPolling } from '../helpers'
+import { GithubHelpers, resolveConflict } from '../helpers'
 import type { AsyncEditorDispatch } from '../../../../components/canvas/ui-jsx.test-utils'
 
 export async function loginUserToGithubForTests(dispatch: AsyncEditorDispatch) {
@@ -153,9 +153,6 @@ export class MockGithubOperations {
         'updateProjectAgainstGithub',
       )
       updateProjectAgainstGithubStub.callsFake(updateProjectAgainstGithub(operationContext))
-
-      const startGithubPollingStub = this.sandbox.stub(GithubOperations, 'startGithubPolling')
-      startGithubPollingStub.callsFake(startGithubPolling(operationContext))
 
       const resolveConflictStub = this.sandbox.stub(GithubOperations, 'resolveConflict')
       resolveConflictStub.callsFake(resolveConflict(operationContext))

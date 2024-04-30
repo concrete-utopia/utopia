@@ -207,7 +207,7 @@ export function getNavigatorTargets(
         projectContents,
       )
 
-      if (isFeatureEnabled('Render Props in Navigator') && propertyControls != null) {
+      if (propertyControls != null) {
         walkPropertyControls(propertyControls)
       }
 

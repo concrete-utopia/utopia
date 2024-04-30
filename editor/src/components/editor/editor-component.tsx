@@ -83,6 +83,7 @@ import {
 } from './persistence/persistence-backend'
 import { useUpdateActiveRemixSceneOnSelectionChange } from '../canvas/remix/utopia-remix-root-component'
 import { useDefaultCollapsedViews } from './use-default-collapsed-views'
+import { useGithubPolling } from '../../core/shared/github/helpers'
 import { ComponentPickerContextMenu } from '../navigator/navigator-item/component-picker-context-menu'
 
 const liveModeToastId = 'play-mode-toast'
@@ -441,6 +442,8 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
   useLiveblocksConnectionListener()
 
   useDefaultCollapsedViews()
+
+  useGithubPolling()
 
   const portalTarget = document.getElementById(CanvasContextMenuPortalTargetID)
 

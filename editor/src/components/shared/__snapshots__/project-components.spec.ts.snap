@@ -262,6 +262,40 @@ Array [
         "defaultSize": null,
         "element": [Function],
         "icon": "regular",
+        "importsToAdd": Object {
+          "react": Object {
+            "importedAs": "React",
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+          "utopia-api": Object {
+            "importedAs": null,
+            "importedFromWithin": Array [
+              Object {
+                "alias": "Placeholder",
+                "name": "Placeholder",
+              },
+            ],
+            "importedWithName": null,
+          },
+        },
+        "insertionCeiling": null,
+        "name": "List",
+        "stylePropOptions": Array [
+          "do-not-add",
+        ],
+      },
+    ],
+    "source": Object {
+      "type": "MAP_GROUP",
+    },
+  },
+  Object {
+    "insertableComponents": Array [
+      Object {
+        "defaultSize": null,
+        "element": [Function],
+        "icon": "regular",
         "importsToAdd": Object {},
         "insertionCeiling": null,
         "name": "Sample text",
@@ -539,6 +573,40 @@ Array [
     ],
     "source": Object {
       "type": "FRAGMENT_GROUP",
+    },
+  },
+  Object {
+    "insertableComponents": Array [
+      Object {
+        "defaultSize": null,
+        "element": [Function],
+        "icon": "regular",
+        "importsToAdd": Object {
+          "react": Object {
+            "importedAs": "React",
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+          "utopia-api": Object {
+            "importedAs": null,
+            "importedFromWithin": Array [
+              Object {
+                "alias": "Placeholder",
+                "name": "Placeholder",
+              },
+            ],
+            "importedWithName": null,
+          },
+        },
+        "insertionCeiling": null,
+        "name": "List",
+        "stylePropOptions": Array [
+          "do-not-add",
+        ],
+      },
+    ],
+    "source": Object {
+      "type": "MAP_GROUP",
     },
   },
   Object {
