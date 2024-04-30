@@ -959,19 +959,18 @@ function getTextContentOfElement(
     case 'JSX_TEXT_BLOCK':
       return { type: 'literal', label: `'${element.text}'` }
     case 'JS_IDENTIFIER':
-      return { type: 'reference', label: `{${element.name}}` }
+      return { type: 'reference', label: `${element.name}` }
     case 'JS_ELEMENT_ACCESS':
       return {
         type: 'reference',
-        label: `${getTextContentOfElement(element.onValue, null)}[${getTextContentOfElement(
-          element.element,
-          null,
-        )}]`,
+        label: `${getTextContentOfElement(element.onValue, null).label}[${
+          getTextContentOfElement(element.element, null).label
+        }]`,
       }
     case 'JS_PROPERTY_ACCESS':
       return {
         type: 'reference',
-        label: `${getTextContentOfElement(element.onValue, null)}.${element.property}`,
+        label: `${getTextContentOfElement(element.onValue, null).label}.${element.property}`,
       }
     case 'ATTRIBUTE_FUNCTION_CALL':
       return { type: 'reference', label: `${element.functionName}(...` }
