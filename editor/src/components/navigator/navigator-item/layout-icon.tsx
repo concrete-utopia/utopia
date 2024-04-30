@@ -215,6 +215,7 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
           <Icn
             category='navigator-element'
             type='absolute-corners'
+            color={color}
             width={12}
             height={12}
             testId={`absolute-marker-for-${iconTestId}`}
