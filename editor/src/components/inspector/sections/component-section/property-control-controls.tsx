@@ -833,9 +833,9 @@ export const DataReferenceCartoucheControl = React.memo(
 
     return (
       <IdentifierExpressionCartoucheControl
-        contents={contentsToDisplay ?? 'DATA'}
+        contents={contentsToDisplay.label ?? 'DATA'}
         icon={'🌸'}
-        matchType='full'
+        matchType={contentsToDisplay.type === 'reference' ? 'full' : 'none'}
         onOpenDataPicker={onOpenDataPicker}
         onDeleteCartouche={onDeleteCartouche}
         safeToDelete={false}
@@ -848,7 +848,7 @@ export const DataReferenceCartoucheControl = React.memo(
 interface IdentifierExpressionCartoucheControlProps {
   contents: string
   icon: React.ReactChild
-  matchType: 'full' | 'partial'
+  matchType: 'full' | 'partial' | 'none'
   onOpenDataPicker: () => void
   onDeleteCartouche: () => void
   safeToDelete: boolean
@@ -870,9 +870,18 @@ export const IdentifierExpressionCartoucheControl = React.memo(
         style={{
           cursor: 'pointer',
           fontSize: 10,
-          color: props.matchType === 'full' ? colorTheme.white.value : colorTheme.primary.value,
+          color:
+            props.matchType === 'full'
+              ? colorTheme.white.value
+              : props.matchType === 'partial'
+              ? colorTheme.primary.value
+              : colorTheme.neutralForeground.value,
           backgroundColor:
-            props.matchType === 'full' ? colorTheme.primary.value : colorTheme.primary10.value,
+            props.matchType === 'full'
+              ? colorTheme.primary.value
+              : props.matchType === 'partial'
+              ? colorTheme.primary10.value
+              : colorTheme.bg4.value,
           padding: '0px 4px',
           borderRadius: 4,
           height: 22,
@@ -922,37 +931,46 @@ export const IdentifierExpressionCartoucheControl = React.memo(
 function getTextContentOfElement(
   element: JSXElementChild,
   metadata: ElementInstanceMetadata | null,
-): string | null {
+): { type: 'literal' | 'reference'; label: string | null } {
   switch (element.type) {
     case 'ATTRIBUTE_VALUE':
-      return `${JSON.stringify(element.value)}`
+      return { type: 'literal', label: `${JSON.stringify(element.value)}` }
     case 'JSX_TEXT_BLOCK':
-      return `"${element.text}"`
+      return { type: 'literal', label: `"${element.text}"` }
     case 'JS_IDENTIFIER':
-      return element.name
+      return { type: 'reference', label: `{${element.name}}` }
     case 'JS_ELEMENT_ACCESS':
-      return `${getTextContentOfElement(element.onValue, null)}[${getTextContentOfElement(
-        element.element,
-        null,
-      )}]`
+      return {
+        type: 'reference',
+        label: `${getTextContentOfElement(element.onValue, null)}[${getTextContentOfElement(
+          element.element,
+          null,
+        )}]`,
+      }
     case 'JS_PROPERTY_ACCESS':
-      return `${getTextContentOfElement(element.onValue, null)}.${element.property}`
+      return {
+        type: 'reference',
+        label: `${getTextContentOfElement(element.onValue, null)}.${element.property}`,
+      }
     case 'ATTRIBUTE_FUNCTION_CALL':
-      return `${element.functionName}(...`
+      return { type: 'reference', label: `${element.functionName}(...` }
     case 'JSX_ELEMENT':
-      return metadata?.textContent ?? `<${getJSXElementNameLastPart(element.name)}>`
+      return {
+        type: 'literal',
+        label: metadata?.textContent ?? `<${getJSXElementNameLastPart(element.name)}>`,
+      }
     case 'ATTRIBUTE_NESTED_ARRAY':
-      return '[...]'
+      return { type: 'literal', label: '[...]' }
     case 'ATTRIBUTE_NESTED_OBJECT':
-      return '{...}'
+      return { type: 'literal', label: '{...}' }
     case 'JSX_MAP_EXPRESSION':
-      return 'List'
+      return { type: 'literal', label: 'List' }
     case 'JSX_CONDITIONAL_EXPRESSION':
-      return 'Conditional'
+      return { type: 'literal', label: 'Conditional' }
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      return element.originalJavascript
+      return { type: 'literal', label: element.originalJavascript }
     case 'JSX_FRAGMENT':
-      return 'Fragment'
+      return { type: 'literal', label: 'Fragment' }
     default:
       assertNever(element)
   }
