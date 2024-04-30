@@ -260,6 +260,7 @@ export const SettingsPane = React.memo(() => {
               onChange={onChangeProjectName}
               onKeyDown={handleKeyPress}
               onBlur={handleBlurProjectName}
+              pasteHandler={true}
             />
           </UIGridRow>
           <UIGridRow padded variant='|--80px--|<--------1fr-------->'>
@@ -270,6 +271,7 @@ export const SettingsPane = React.memo(() => {
               onChange={onChangeProjectDescription}
               onKeyDown={handleKeyPress}
               onBlur={handleBlurProjectDescription}
+              pasteHandler={true}
             />
           </UIGridRow>
           <UIGridRow padded variant='|--80px--|<--------1fr-------->' style={{ marginBottom: 10 }}>
