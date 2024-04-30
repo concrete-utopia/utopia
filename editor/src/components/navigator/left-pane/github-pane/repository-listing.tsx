@@ -29,6 +29,7 @@ import { GithubSpinner } from './github-spinner'
 import { RefreshIcon } from './refresh-icon'
 import { GithubOperations } from '../../../../core/shared/github/operations'
 import type { EditorDispatch } from '../../../editor/action-types'
+import { MaxBlockWidth } from './block'
 
 interface RepositoryRowProps extends RepositoryEntry {
   importPermitted: boolean
@@ -134,11 +135,14 @@ const RepositoryRow = (props: RepositoryRowProps) => {
             color: colorTheme.fg0.value,
           },
         },
+        maxWidth: MaxBlockWidth,
       }}
       onClick={importRepository}
     >
       <div>
-        <Ellipsis style={{ maxWidth: 170 }}>{props.fullName}</Ellipsis>
+        <Ellipsis style={{ maxWidth: 120 }} title={props.fullName}>
+          {props.fullName}
+        </Ellipsis>
         <span style={{ fontSize: 10, opacity: 0.5 }}>
           {unless(
             props.searchable,
