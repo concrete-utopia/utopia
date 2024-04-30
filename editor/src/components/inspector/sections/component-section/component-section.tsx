@@ -345,9 +345,17 @@ export function useDataPickerButton(
         ref={setPopperElement}
         propPath={propPath}
         propExpressionPath={propExpressionPath}
+        targetPath={selectedElement}
       />
     ),
-    [closePopup, popper.attributes.popper, popper.styles.popper, propExpressionPath, propPath],
+    [
+      closePopup,
+      popper.attributes.popper,
+      popper.styles.popper,
+      propExpressionPath,
+      propPath,
+      selectedElement,
+    ],
   )
 
   const DataPickerOpener = React.useMemo(

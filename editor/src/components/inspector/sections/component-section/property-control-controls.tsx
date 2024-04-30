@@ -83,6 +83,7 @@ import { unless, when } from '../../../../utils/react-conditionals'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { useDataPickerButton } from './component-section'
 import { parseNoneControlDescription } from '../../../../core/property-controls/property-controls-parser'
+import * as EP from '../../../../core/shared/element-path'
 
 export interface ControlForPropProps<T extends RegularControlDescription> {
   propPath: PropertyPath
@@ -831,7 +832,7 @@ export const DataReferenceCartoucheControl = React.memo(
     )
 
     const dataPickerButtonData = useDataPickerButton(
-      [elementPath],
+      [EP.parentPath(elementPath)],
       PP.fromString('children'), // TODO
       false, // TODO
       {
