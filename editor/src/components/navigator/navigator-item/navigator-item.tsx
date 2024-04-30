@@ -212,8 +212,14 @@ type StyleType =
   | 'componentInstance'
   | 'erroredGroup'
   | 'lowEmphasis'
-  | 'highEmphasis'
-type SelectedType = 'unselected' | 'selected' | 'descendantOfSelected'
+  // | 'highEmphasis'
+  | 'selected'
+type SelectedType =
+  | 'unselected'
+  | 'selected'
+  | 'descendantOfSelected'
+  | 'selectedFocusedComponent'
+  | 'descendantOfSelectedFocusedComponent'
 
 const styleTypeColors: Record<StyleType, { color: keyof ThemeObject; iconColor: IcnColor }> = {
   default: { color: 'fg0', iconColor: 'main' },
@@ -222,13 +228,16 @@ const styleTypeColors: Record<StyleType, { color: keyof ThemeObject; iconColor: 
   componentInstance: { color: 'fg0', iconColor: 'main' },
   erroredGroup: { color: 'error', iconColor: 'error' },
   lowEmphasis: { color: 'fg5', iconColor: 'darkgray' },
-  highEmphasis: { color: 'dynamicBlue', iconColor: 'primary' },
+  // highEmphasis: { color: 'fg1', iconColor: 'primary' },
+  selected: { color: 'white', iconColor: 'white' },
 }
 
 const selectedTypeBackground: Record<SelectedType, keyof ThemeObject> = {
   unselected: 'bg1',
-  selected: 'denimBlue',
-  descendantOfSelected: 'lightDenimBlue',
+  selected: 'selectionBlue',
+  descendantOfSelected: 'childSelectionBlue',
+  selectedFocusedComponent: 'selectionPurple',
+  descendantOfSelectedFocusedComponent: 'childSelectionPurple',
 }
 
 const getColors = (
@@ -254,6 +263,7 @@ const computeResultingStyle = (
   isProbablyScene: boolean,
   fullyVisible: boolean,
   isFocusedComponent: boolean,
+  isInFocusedComponentSubtree: boolean,
   isFocusableComponent: boolean,
   isHighlightedForInteraction: boolean,
   isDescendantOfSelected: boolean,
@@ -263,26 +273,34 @@ const computeResultingStyle = (
   let styleType: StyleType = 'default'
   let selectedType: SelectedType = 'unselected'
 
-  if (isErroredGroup) {
+  if (selected) {
+    styleType = 'selected'
+  } else if (isErroredGroup) {
     styleType = 'erroredGroup'
-  } else if (isDynamic) {
-    styleType = 'dynamic'
+    // } else if (isDynamic) {
+    //   styleType = 'dynamic'
+  } else if (isFocusedComponent) {
+    styleType = 'component'
   } else if (emphasis === 'subdued') {
     styleType = 'lowEmphasis'
-  } else if (emphasis === 'emphasized') {
-    styleType = 'highEmphasis'
-  } else if (isInsideComponent || isFocusedComponent) {
-    styleType = 'component'
+    // } else if (emphasis === 'emphasized') {
+    //   styleType = 'highEmphasis'
   } else if (isFocusableComponent) {
     styleType = 'componentInstance'
   } else if (isHighlightedForInteraction) {
     styleType = 'default'
   }
 
-  if (selected) {
+  if (selected && isFocusedComponent) {
+    selectedType = 'selectedFocusedComponent'
+  } else if (isDescendantOfSelected && isInsideComponent) {
+    selectedType = 'descendantOfSelectedFocusedComponent'
+  } else if (selected) {
     selectedType = 'selected'
   } else if (isDescendantOfSelected) {
     selectedType = 'descendantOfSelected'
+  } else {
+    selectedType = 'unselected'
   }
 
   let result = getColors(styleType, selectedType, colorTheme)
@@ -293,7 +311,6 @@ const computeResultingStyle = (
     ...result.style,
     fontWeight: isProbablyParentOfSelected || isProbablyScene ? 600 : 'inherit',
     // TODO compute better borderRadius style by if it has children or siblings
-
     borderRadius: selected ? '5px 5px 0 0' : undefined,
   }
 
@@ -764,6 +781,7 @@ export const NavigatorItem: React.FunctionComponent<
     isProbablyScene,
     fullyVisible,
     isFocusedComponent,
+    isInFocusedComponentSubtree,
     isManuallyFocusableComponent,
     isHighlightedForInteraction,
     isDescendantOfSelected,
@@ -856,19 +874,21 @@ export const NavigatorItem: React.FunctionComponent<
     )
   }, [childComponentCount, isFocusedComponent, isConditional])
 
-  const iconColor = isRemixItem
-    ? 'remix'
-    : isDynamic
-    ? 'dynamic'
-    : emphasis === 'subdued'
-    ? 'subdued'
-    : emphasis === 'emphasized'
-    ? 'primary'
-    : isCodeItem
-    ? 'dynamic'
-    : isComponentScene
-    ? 'component'
-    : resultingStyle.iconColor
+  // const iconColor = isRemixItem
+  //   ? 'remix'
+  //   : isDynamic
+  //   ? 'dynamic'
+  //   : emphasis === 'subdued'
+  //   ? 'subdued'
+  //   : emphasis === 'emphasized'
+  //   ? 'primary'
+  //   : isCodeItem
+  //   ? 'dynamic'
+  //   : isComponentScene
+  //   ? 'component'
+  //   : resultingStyle.iconColor
+
+  const iconColor = resultingStyle.iconColor
 
   const currentlyRenaming = EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath)
   const hideContextMenu = React.useCallback(() => contextMenu.hideAll(), [])
@@ -960,6 +980,7 @@ export const NavigatorItem: React.FunctionComponent<
                 iconColor={iconColor}
                 elementWarnings={!isConditional ? elementWarnings : null}
                 childComponentCount={childComponentCount}
+                focusedComponent={isFocusedComponent || isInFocusedComponentSubtree}
               />
             </FlexRow>
             {unless(
@@ -1068,6 +1089,7 @@ interface NavigatorRowLabelProps {
   shouldShowParentOutline: boolean
   childComponentCount: number
   dispatch: EditorDispatch
+  focusedComponent: boolean
 }
 
 export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
@@ -1078,19 +1100,21 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
   const isComponentScene =
     useIsProbablyScene(props.navigatorEntry) && props.childComponentCount === 1
 
-  const textColor = isRemixItem
-    ? colorTheme.aqua.value
-    : props.isDynamic
-    ? colorTheme.dynamicBlue.value
-    : props.emphasis === 'subdued'
-    ? colorTheme.fg5.value
-    : props.emphasis === 'emphasized'
-    ? colorTheme.dynamicBlue.value
-    : isCodeItem
-    ? colorTheme.dynamicBlue.value
-    : isComponentScene
-    ? colorTheme.componentPurple.value
-    : undefined
+  // const textColor = isRemixItem
+  //   ? colorTheme.aqua.value
+  //   : props.isDynamic
+  //   ? colorTheme.dynamicBlue.value
+  //   : props.emphasis === 'subdued'
+  //   ? colorTheme.fg5.value
+  //   : props.emphasis === 'emphasized'
+  //   ? colorTheme.dynamicBlue.value
+  //   : isCodeItem
+  //   ? colorTheme.dynamicBlue.value
+  //   : isComponentScene
+  //   ? colorTheme.componentPurple.value
+  //   : undefined
+
+  const textColor = props.emphasis === 'subdued' ? colorTheme.fg5.value : undefined
 
   return (
     <div
@@ -1114,7 +1138,16 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         <LayoutIcon
           key={`layout-type-${props.label}`}
           navigatorEntry={props.navigatorEntry}
-          color={props.iconColor}
+          // color={props.iconColor}
+          color={
+            props.selected
+              ? 'white'
+              : props.focusedComponent
+              ? 'component'
+              : props.emphasis === 'emphasized'
+              ? 'dynamic'
+              : props.iconColor
+          }
           elementWarnings={props.elementWarnings}
         />,
       )}

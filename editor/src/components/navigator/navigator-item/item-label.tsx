@@ -206,7 +206,7 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
     if (isInvalidOverride) {
       return colorTheme.brandNeonPink.value
     }
-    return undefined
+    return style?.color
   })()
 
   return (
