@@ -917,8 +917,12 @@ export function useGithubPolling() {
     }
   }, [githubAuthenticated, githubData])
 
-  // react to auth state and tick changes
+  // react to non-ready auth states
   React.useEffect(() => {
+    if (authState == 'ready') {
+      return
+    }
+
     switch (authState) {
       case 'not-authenticated':
         dispatch([updateGithubData(emptyGithubData())])
@@ -932,22 +936,28 @@ export function useGithubPolling() {
           )
         })
         break
-      case 'ready':
-        if (lastTick == null || lastTick < tick) {
-          setLastTick(() => {
-            void refreshAndScheduleGithubData()
-            return tick
-          })
-        }
-        break
       default:
         assertNever(authState)
     }
 
-    if (authState !== 'ready' && timeoutId != null) {
+    if (timeoutId != null) {
       window.clearTimeout(timeoutId)
     }
-  }, [authState, dispatch, timeoutId, refreshAndScheduleGithubData, tick, lastTick])
+  }, [authState, dispatch, timeoutId])
+
+  // react to ready auth state and tick changes
+  React.useEffect(() => {
+    if (authState !== 'ready') {
+      return
+    }
+
+    if (lastTick == null || lastTick < tick) {
+      setLastTick(() => {
+        void refreshAndScheduleGithubData()
+        return tick
+      })
+    }
+  }, [authState, refreshAndScheduleGithubData, tick, lastTick])
 }
 
 export async function getRefreshGithubActions(
