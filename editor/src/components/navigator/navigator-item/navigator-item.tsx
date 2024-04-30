@@ -928,7 +928,7 @@ export const NavigatorItem: React.FunctionComponent<
           <div
             key={`label-${props.label}-slot`}
             style={{
-              width: 140,
+              maxWidth: 140,
               color: colorTheme.fg5.value,
               border: colorTheme.navigatorResizeHintBorder.value,
               marginLeft: 23,
