@@ -814,6 +814,7 @@ function collectAndCreateMetadataForElement(
       'not-a-conditional',
       textContentsMaybe,
       null,
+      null,
     )
   })
 
@@ -1194,6 +1195,7 @@ function walkCanvasRootFragment(
       null,
       null, // this comes from the Spy Wrapper
       'not-a-conditional',
+      null,
       null,
       null,
     )

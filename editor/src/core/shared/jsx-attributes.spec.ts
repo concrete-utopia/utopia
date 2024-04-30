@@ -430,6 +430,7 @@ describe('jsxAttributeToValue', () => {
             testRenderContext,
             undefined,
             null,
+            '',
           )
         }
         function getActualResult() {
@@ -440,6 +441,7 @@ describe('jsxAttributeToValue', () => {
             testRenderContext,
             undefined,
             null,
+            '',
           )
         }
         expect(resultOrError(getActualResult)).toEqual(resultOrError(getExpectedResult))

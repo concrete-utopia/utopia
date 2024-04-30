@@ -155,10 +155,19 @@ export function jsxAttributeToValue(
   renderContext: RenderContext,
   uid: string | undefined,
   codeError: Error | null,
+  prop: string,
 ): any {
   if (isExpressionAccessLike(attribute)) {
     try {
-      return innerAttributeToValue(attribute, elementPath, inScope, renderContext, uid, codeError)
+      return innerAttributeToValue(
+        attribute,
+        elementPath,
+        inScope,
+        renderContext,
+        uid,
+        codeError,
+        prop,
+      )
     } catch {
       const originalJavascript = isJSIdentifier(attribute)
         ? attribute.name
@@ -183,7 +192,15 @@ export function jsxAttributeToValue(
       )
     }
   } else {
-    return innerAttributeToValue(attribute, elementPath, inScope, renderContext, uid, codeError)
+    return innerAttributeToValue(
+      attribute,
+      elementPath,
+      inScope,
+      renderContext,
+      uid,
+      codeError,
+      prop,
+    )
   }
 }
 
@@ -200,19 +217,20 @@ function isExpressionAccessLike(
   }
 }
 
-export function innerAttributeToValue(
+function innerAttributeToValue(
   attribute: JSExpression,
   elementPath: ElementPath | null,
   inScope: MapLike<any>,
   renderContext: RenderContext,
   uid: string | undefined,
   codeError: Error | null,
+  prop: string,
 ): any {
   const { filePath, requireResult } = renderContext
   switch (attribute.type) {
     case 'JSX_ELEMENT':
       const innerPath = optionalMap((path) => EP.appendToPath(path, attribute.uid), elementPath)
-      return renderCoreElement(attribute, innerPath, inScope, renderContext, uid, codeError)
+      return renderCoreElement(attribute, innerPath, inScope, renderContext, uid, codeError, prop)
     case 'ATTRIBUTE_VALUE':
       return attribute.value
     case 'JS_IDENTIFIER':
@@ -231,6 +249,7 @@ export function innerAttributeToValue(
         renderContext,
         uid,
         codeError,
+        prop,
       )
 
       if (onValue == null) {
@@ -255,6 +274,7 @@ export function innerAttributeToValue(
         renderContext,
         uid,
         codeError,
+        prop,
       )
       const element = jsxAttributeToValue(
         inScope,
@@ -263,6 +283,7 @@ export function innerAttributeToValue(
         renderContext,
         uid,
         codeError,
+        prop,
       )
       if (attribute.optionallyChained === 'optionally-chained') {
         return onValue == null ? undefined : onValue[element]
@@ -280,6 +301,7 @@ export function innerAttributeToValue(
           renderContext,
           uid,
           codeError,
+          prop,
         )
         switch (elem.type) {
           case 'ARRAY_VALUE':
@@ -296,25 +318,26 @@ export function innerAttributeToValue(
       return returnArray
     case 'ATTRIBUTE_NESTED_OBJECT':
       let returnObject: { [key: string]: any } = {}
-      for (const prop of attribute.content) {
+      for (const innerProp of attribute.content) {
         const value = jsxAttributeToValue(
           inScope,
-          prop.value,
+          innerProp.value,
           elementPath,
           renderContext,
           uid,
           codeError,
+          prop,
         )
 
-        switch (prop.type) {
+        switch (innerProp.type) {
           case 'PROPERTY_ASSIGNMENT':
-            returnObject[prop.key] = value
+            returnObject[innerProp.key] = value
             break
           case 'SPREAD_ASSIGNMENT':
             Object.assign(returnObject, value)
             break
           default:
-            assertNever(prop)
+            assertNever(innerProp)
         }
       }
 
@@ -323,7 +346,15 @@ export function innerAttributeToValue(
       const foundFunction = (UtopiaUtils as any)[attribute.functionName]
       if (foundFunction != null) {
         const resolvedParameters = attribute.parameters.map((param) => {
-          return jsxAttributeToValue(inScope, param, elementPath, renderContext, uid, codeError)
+          return jsxAttributeToValue(
+            inScope,
+            param,
+            elementPath,
+            renderContext,
+            uid,
+            codeError,
+            prop,
+          )
         })
         return foundFunction(...resolvedParameters)
       }
@@ -355,6 +386,7 @@ export function jsxAttributesToProps(
           renderContext,
           uid,
           codeError,
+          entry.key as string, // FIXME or not?
         )
         break
       case 'JSX_ATTRIBUTES_SPREAD':
@@ -367,6 +399,7 @@ export function jsxAttributesToProps(
             renderContext,
             uid,
             codeError,
+            '', // FIXME this would make no sense
           ),
         )
         break

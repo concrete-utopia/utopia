@@ -104,6 +104,7 @@ export function createLookupRender(
   context: RenderContext,
   renderLimit: number | null,
   valuesInScopeFromParameters: Array<string>,
+  prop: string | null,
 ): (element: JSXElement, scope: MapLike<any>) => React.ReactChild | null {
   let index = 0
 
@@ -147,6 +148,7 @@ export function createLookupRender(
       { ...context, variablesInScope: innerVariablesInScope },
       generatedUID,
       null,
+      prop,
     )
   }
 }
@@ -176,6 +178,7 @@ export function renderCoreElement(
   renderContext: RenderContext,
   uid: string | undefined,
   codeError: Error | null,
+  prop: string | null,
 ): React.ReactChild {
   const {
     requireResult,
@@ -200,7 +203,7 @@ export function renderCoreElement(
       const anyElementsWithin = Object.keys(elementsWithinProps).length > 0
 
       const innerRender = anyElementsWithin
-        ? createLookupRender(elementPath, renderContext, null, [])
+        ? createLookupRender(elementPath, renderContext, null, [], prop)
         : NoOpLookupRender
 
       const blockScope = anyElementsWithin
@@ -235,6 +238,7 @@ export function renderCoreElement(
         passthroughProps,
         renderContext,
         null, // this null passed as the codeError param is matching the old version of the codebase, but codeError should probably not be passed around anyways as we try to throw it as high as possible
+        prop,
       )
     }
     case 'JSX_MAP_EXPRESSION':
@@ -257,6 +261,7 @@ export function renderCoreElement(
           imports,
           'not-a-conditional',
           null,
+          prop,
         )
       }
 
@@ -272,6 +277,7 @@ export function renderCoreElement(
             renderContext,
             mapCountOverride,
             valuesInScopeFromParameters,
+            prop,
           )
 
           const blockScope = {
@@ -312,6 +318,8 @@ export function renderCoreElement(
           imports,
           filePath,
           variablesInScope,
+          'real-element',
+          prop,
         )
       }
       const innerRender = createLookupRender(
@@ -319,6 +327,7 @@ export function renderCoreElement(
         renderContext,
         mapCountOverride,
         valuesInScopeFromParameters,
+        prop,
       )
 
       const blockScope = {
@@ -334,7 +343,16 @@ export function renderCoreElement(
     case 'JSX_FRAGMENT': {
       const key = optionalMap(EP.toString, elementPath) ?? element.uid
 
-      return renderJSXElement(key, element, elementPath, inScope, [], renderContext, codeError)
+      return renderJSXElement(
+        key,
+        element,
+        elementPath,
+        inScope,
+        [],
+        renderContext,
+        codeError,
+        prop,
+      )
     }
     case 'JSX_TEXT_BLOCK': {
       const parentPath = Utils.optionalMap(EP.parentPath, elementPath)
@@ -365,6 +383,7 @@ export function renderCoreElement(
         renderContext,
         uid,
         codeError,
+        prop ?? '', // FIXME
       )
       // Coerce `defaultConditionValueAsAny` to a value that is definitely a boolean, not something that is truthy.
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
@@ -392,6 +411,7 @@ export function renderCoreElement(
             default: defaultConditionValue,
           },
           null,
+          prop,
         )
       }
 
@@ -444,10 +464,20 @@ export function renderCoreElement(
           imports,
           filePath,
           variablesInScope,
+          'real-element',
+          prop,
         )
       }
 
-      return renderCoreElement(actualElement, childPath, inScope, renderContext, uid, codeError)
+      return renderCoreElement(
+        actualElement,
+        childPath,
+        inScope,
+        renderContext,
+        uid,
+        codeError,
+        prop,
+      )
     }
     case 'ATTRIBUTE_VALUE':
     case 'ATTRIBUTE_NESTED_ARRAY':
@@ -466,6 +496,7 @@ export function renderCoreElement(
           imports,
           'not-a-conditional',
           null,
+          prop,
         )
       }
 
@@ -496,10 +527,20 @@ export function renderCoreElement(
           imports,
           filePath,
           variablesInScope,
+          'real-element',
+          prop,
         )
       }
 
-      return jsxAttributeToValue(inScope, element, elementPath, renderContext, uid, codeError)
+      return jsxAttributeToValue(
+        inScope,
+        element,
+        elementPath,
+        renderContext,
+        uid,
+        codeError,
+        prop ?? '', // FIXME
+      )
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled type ${JSON.stringify(element)}`)
@@ -529,6 +570,7 @@ function renderJSXElement(
   passthroughProps: MapLike<any>,
   renderContext: RenderContext,
   codeError: Error | null,
+  prop: string | null,
 ): React.ReactElement {
   const {
     requireResult,
@@ -549,7 +591,7 @@ function renderJSXElement(
   } = renderContext
   const createChildrenElement = (child: JSXElementChild): React.ReactChild => {
     const childPath = optionalMap((path) => EP.appendToPath(path, getUtopiaID(child)), elementPath)
-    return renderCoreElement(child, childPath, inScope, renderContext, undefined, codeError)
+    return renderCoreElement(child, childPath, inScope, renderContext, undefined, codeError, null)
   }
 
   const elementIsIntrinsic = isJSXElement(jsx) && isIntrinsicElement(jsx.name)
@@ -639,7 +681,7 @@ function renderJSXElement(
   ) {
     if (elementIsTextEdited) {
       const runJSExpressionLazy = () => {
-        const innerRender = createLookupRender(elementPath, renderContext, null, [])
+        const innerRender = createLookupRender(elementPath, renderContext, null, [], prop)
 
         const blockScope: Record<any, any> = {
           ...inScope,
@@ -690,6 +732,7 @@ function renderJSXElement(
         filePath,
         variablesInScope,
         'text-editor',
+        prop,
       )
     }
     return buildSpyWrappedElement(
@@ -706,6 +749,8 @@ function renderJSXElement(
       imports,
       filePath,
       variablesInScope,
+      'real-element',
+      prop,
     )
   } else {
     return renderComponentUsingJsxFactoryFunction(
@@ -789,7 +834,15 @@ function runJSExpression(
     case 'JS_ELEMENT_ACCESS':
     case 'JS_IDENTIFIER':
     case 'JSX_ELEMENT':
-      return jsxAttributeToValue(currentScope, block, elementPath, renderContext, uid, codeError)
+      return jsxAttributeToValue(
+        currentScope,
+        block,
+        elementPath,
+        renderContext,
+        uid,
+        codeError,
+        '', // FIXME
+      )
 
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':

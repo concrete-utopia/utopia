@@ -245,6 +245,7 @@ export function createComponentRendererComponent(params: {
         },
         null,
         propertiesFromParams,
+        '', // FIXME
       )
 
       scope[JSX_CANVAS_LOOKUP_FUNCTION_NAME] = utopiaCanvasJSXLookup(
@@ -303,6 +304,7 @@ export function createComponentRendererComponent(params: {
         },
         realPassedProps['data-uid'],
         codeError,
+        null, // FIXME
       )
 
       if (typeof renderedCoreElement === 'string' || typeof renderedCoreElement === 'number') {
@@ -323,6 +325,7 @@ export function createComponentRendererComponent(params: {
           imports,
           'not-a-conditional',
           earlyReturn,
+          null, // FIXME
         )
       }
     } else if (shouldUpdate()) {
