@@ -1276,6 +1276,30 @@ export function emptyGithubData(): GithubData {
   }
 }
 
+export function newGithubData(
+  branches: Array<GithubBranch> | null,
+  userRepositories: Array<RepositoryEntry>,
+  publicRepositories: Array<RepositoryEntry>,
+  treeConflicts: TreeConflicts,
+  lastUpdatedAt: number | null,
+  upstreamChanges: GithubFileChanges | null,
+  currentBranchPullRequests: Array<PullRequest> | null,
+  githubUserDetails: GithubUser | null,
+  lastRefreshedCommit: string | null,
+): GithubData {
+  return {
+    branches: branches,
+    userRepositories: userRepositories,
+    publicRepositories: publicRepositories,
+    treeConflicts: treeConflicts,
+    lastUpdatedAt: lastUpdatedAt,
+    upstreamChanges: upstreamChanges,
+    currentBranchPullRequests: currentBranchPullRequests,
+    githubUserDetails: githubUserDetails,
+    lastRefreshedCommit: lastRefreshedCommit,
+  }
+}
+
 export type ColorSwatch = {
   id: string
   hex: string

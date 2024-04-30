@@ -353,6 +353,8 @@ import type {
   SlotNavigatorEntry,
   RenderPropValueNavigatorEntry,
   DataReferenceNavigatorEntry,
+  GithubUser,
+  PullRequest,
 } from './editor-state'
 import {
   trueUpGroupElementChanged,
@@ -362,6 +364,7 @@ import {
   renderPropNavigatorEntry,
   renderPropValueNavigatorEntry,
   dataReferenceNavigatorEntry,
+  newGithubData,
 } from './editor-state'
 import {
   editorStateNodeModules,
@@ -4348,18 +4351,53 @@ export const GithubFileChangesKeepDeepEquality: KeepDeepEqualityCall<GithubFileC
     emptyGithubFileChanges,
   )
 
-export const GithubDataKeepDeepEquality: KeepDeepEqualityCall<GithubData> = combine5EqualityCalls(
+export const PullRequestKeepDeepEquality: KeepDeepEqualityCall<PullRequest> = combine3EqualityCalls(
+  (data) => data.htmlURL,
+  StringKeepDeepEquality,
+  (data) => data.number,
+  NumberKeepDeepEquality,
+  (data) => data.title,
+  StringKeepDeepEquality,
+  (htmlURL, number, title) => ({ htmlURL: htmlURL, number: number, title: title }),
+)
+
+export const GithubUserKeepDeepEquality: KeepDeepEqualityCall<GithubUser> = combine4EqualityCalls(
+  (data) => data.avatarURL,
+  StringKeepDeepEquality,
+  (data) => data.htmlURL,
+  StringKeepDeepEquality,
+  (data) => data.login,
+  StringKeepDeepEquality,
+  (data) => data.name,
+  NullableStringKeepDeepEquality,
+  (login, avatarURL, htmlURL, name) => ({
+    login: login,
+    avatarURL: avatarURL,
+    htmlURL: htmlURL,
+    name: name,
+  }),
+)
+
+export const GithubDataKeepDeepEquality: KeepDeepEqualityCall<GithubData> = combine9EqualityCalls(
   (data) => data.branches,
   nullableDeepEquality(arrayDeepEquality(GithubBranchKeepDeepEquality)),
   (data) => data.userRepositories,
   arrayDeepEquality(RepositoryEntryKeepDeepEquality),
   (data) => data.publicRepositories,
   arrayDeepEquality(RepositoryEntryKeepDeepEquality),
+  (data) => data.treeConflicts,
+  createCallWithTripleEquals(),
   (data) => data.lastUpdatedAt,
   NullableNumberKeepDeepEquality,
   (data) => data.upstreamChanges,
   nullableDeepEquality(GithubFileChangesKeepDeepEquality),
-  emptyGithubData,
+  (data) => data.currentBranchPullRequests,
+  nullableDeepEquality(arrayDeepEquality(PullRequestKeepDeepEquality)),
+  (data) => data.githubUserDetails,
+  nullableDeepEquality(GithubUserKeepDeepEquality),
+  (data) => data.lastRefreshedCommit,
+  NullableStringKeepDeepEquality,
+  newGithubData,
 )
 
 export const GithubOperationKeepDeepEquality: KeepDeepEqualityCall<GithubOperation> = (

@@ -46,6 +46,7 @@ import { WindowMousePositionRaw } from '../utils/global-positions'
 import type { WindowPoint } from '../core/shared/math-utils'
 import { pointsEqual } from '../core/shared/math-utils'
 import { useDispatch } from './editor/store/dispatch-context'
+import { useCreateCallbackToShowComponentPicker } from './navigator/navigator-item/component-picker-context-menu'
 
 export type ElementContextMenuInstance =
   | 'context-menu-navigator'
@@ -198,6 +199,7 @@ function useCanvasContextMenuGetData(
       propertyControlsInfo: store.editor.propertyControlsInfo,
     }
   })
+  const showComponentPicker = useCreateCallbackToShowComponentPicker()
 
   return React.useCallback(() => {
     const currentEditor = editorSliceRef.current
@@ -221,8 +223,9 @@ function useCanvasContextMenuGetData(
       autoFocusedPaths: currentEditor.autoFocusedPaths,
       navigatorTargets: currentEditor.navigatorTargets,
       propertyControlsInfo: currentEditor.propertyControlsInfo,
+      showComponentPicker: showComponentPicker,
     }
-  }, [editorSliceRef, contextMenuInstance])
+  }, [editorSliceRef, contextMenuInstance, showComponentPicker])
 }
 
 export const ElementContextMenu = React.memo(({ contextMenuInstance }: ElementContextMenuProps) => {

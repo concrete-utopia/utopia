@@ -1,11 +1,7 @@
+import type { ComponentElementToInsert } from '../../components/custom-code/code-file'
 import type { Either } from '../shared/either'
-import { isRight, left, mapEither, right } from '../shared/either'
-import type {
-  ArbitraryJSBlock,
-  JSXElementWithoutUID,
-  UtopiaJSXComponent,
-} from '../shared/element-template'
-import { clearJSXElementChildUniqueIDs, JSXElementChild } from '../shared/element-template'
+import { left, right } from '../shared/either'
+import type { ArbitraryJSBlock, UtopiaJSXComponent } from '../shared/element-template'
 import type { Imports } from '../shared/project-file-types'
 import { isParseFailure, isParseSuccess } from '../shared/project-file-types'
 import { emptySet } from '../shared/set-utils'
@@ -15,7 +11,7 @@ import { createParseFile, getParseResult } from '../workers/common/worker-types'
 
 type ProcessedParseResult = Either<
   string,
-  { importsToAdd: Imports; elementToInsert: JSXElementWithoutUID }
+  { importsToAdd: Imports; elementToInsert: ComponentElementToInsert }
 >
 const resultCache: Map<string, ProcessedParseResult> = new Map()
 
@@ -71,13 +67,20 @@ async function getParseResultForUserStrings(
       if (parsedWrapperComponent != null) {
         const elementToInsert = parsedWrapperComponent.rootElement
 
-        if (elementToInsert.type === 'JSX_ELEMENT') {
+        if (
+          elementToInsert.type === 'JSX_ELEMENT' ||
+          elementToInsert.type === 'JSX_FRAGMENT' ||
+          elementToInsert.type === 'JSX_MAP_EXPRESSION' ||
+          elementToInsert.type === 'JSX_CONDITIONAL_EXPRESSION'
+        ) {
           return right({
             importsToAdd: parsedImports,
             elementToInsert: elementToInsert,
           })
         } else {
-          return left('Element to insert must be a correct JSXElement')
+          return left(
+            'Element to insert must be a correct jsx element, fragment, conditional expression or map expression',
+          )
         }
       } else if (parsedWrapperIsArbitrary != null) {
         const missingElements = parsedWrapperIsArbitrary.definedElsewhere.filter(
