@@ -29,7 +29,8 @@ import { GithubSpinner } from './github-spinner'
 import { RefreshIcon } from './refresh-icon'
 import { GithubOperations } from '../../../../core/shared/github/operations'
 import type { EditorDispatch } from '../../../editor/action-types'
-import { MaxBlockWidth } from './block'
+import { useGridPanelState } from '../../../canvas/grid-panels-state'
+import { GridMenuMinWidth } from '../../../canvas/stored-layout'
 
 interface RepositoryRowProps extends RepositoryEntry {
   importPermitted: boolean
@@ -115,6 +116,14 @@ const RepositoryRow = (props: RepositoryRowProps) => {
     [dispatch, githubUserDetails, props],
   )
 
+  const [panelState] = useGridPanelState()
+  const panelWidth = React.useMemo(() => {
+    return (
+      panelState.find((panel) => panel.panels.some(({ name }) => name === 'navigator'))
+        ?.menuWidth ?? GridMenuMinWidth
+    )
+  }, [panelState])
+
   return (
     <UIGridRow
       padded
@@ -135,12 +144,12 @@ const RepositoryRow = (props: RepositoryRowProps) => {
             color: colorTheme.fg0.value,
           },
         },
-        maxWidth: MaxBlockWidth,
+        maxWidth: panelWidth,
       }}
       onClick={importRepository}
     >
       <div>
-        <Ellipsis style={{ maxWidth: 120 }} title={props.fullName}>
+        <Ellipsis style={{ maxWidth: panelWidth - 150 }} title={props.fullName}>
           {props.fullName}
         </Ellipsis>
         <span style={{ fontSize: 10, opacity: 0.5 }}>

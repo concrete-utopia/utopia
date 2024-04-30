@@ -7,8 +7,6 @@ import { when } from '../../../../utils/react-conditionals'
 import { colorTheme, FlexColumn, FlexRow, UtopiaTheme } from '../../../../uuiui'
 import { UIGridRow } from '../../../inspector/widgets/ui-grid-row'
 
-export const MaxBlockWidth = 200
-
 export const IndicatorLight = React.memo((props: { status: BlockStatus }) => (
   <div
     style={{
