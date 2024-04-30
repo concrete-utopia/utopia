@@ -358,6 +358,13 @@ export const Icons = {
     width: 3,
     height: 8,
   }),
+  StringInputControl: makeIcon({
+    category: 'controltype',
+    type: 'string-input',
+    color: 'main',
+    width: 18,
+    height: 18,
+  }),
 }
 
 export const FunctionIcons = {

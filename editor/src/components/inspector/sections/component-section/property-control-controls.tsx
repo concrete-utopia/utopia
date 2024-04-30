@@ -42,6 +42,7 @@ import {
   Icn,
   Tooltip,
   iconForControlType,
+  Icons,
 } from '../../../../uuiui'
 import type { CSSNumber } from '../../common/css-utils'
 import { printCSSNumber, cssNumber, defaultCSSColor } from '../../common/css-utils'
@@ -834,7 +835,7 @@ export const DataReferenceCartoucheControl = React.memo(
     return (
       <IdentifierExpressionCartoucheControl
         contents={contentsToDisplay.label ?? 'DATA'}
-        icon={'🌸'}
+        icon={contentsToDisplay.type === 'reference' ? '🌸' : <Icons.StringInputControl />}
         matchType={contentsToDisplay.type === 'reference' ? 'full' : 'none'}
         onOpenDataPicker={onOpenDataPicker}
         onDeleteCartouche={onDeleteCartouche}
@@ -936,7 +937,7 @@ function getTextContentOfElement(
     case 'ATTRIBUTE_VALUE':
       return { type: 'literal', label: `${JSON.stringify(element.value)}` }
     case 'JSX_TEXT_BLOCK':
-      return { type: 'literal', label: `"${element.text}"` }
+      return { type: 'literal', label: `'${element.text}'` }
     case 'JS_IDENTIFIER':
       return { type: 'reference', label: `{${element.name}}` }
     case 'JS_ELEMENT_ACCESS':
