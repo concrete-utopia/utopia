@@ -130,6 +130,9 @@ describe('Github integration', () => {
     await loginUserToGithubForTests(renderResult.dispatch)
 
     await clickTextOnScreen(renderResult, 'Github')
+
+    await clickTextOnScreen(renderResult, 'Refresh list')
+
     await mock.getUsersPublicGithubRepositories
 
     await clickTextOnScreen(renderResult, 'bob/awesome-project')
