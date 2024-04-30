@@ -43,6 +43,7 @@ import {
   UtopiaStyles,
   color,
   OnClickOutsideHOC,
+  iconForControlType,
 } from '../../../../uuiui'
 import type { CSSCursor } from '../../../../uuiui-deps'
 import { getControlStyles } from '../../../../uuiui-deps'
@@ -161,7 +162,7 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
       return (
         <IdentifierExpressionCartoucheControl
           contents={jsxElementChildToText(attributeExpression, null, null, 'jsx', 'inner')}
-          dataType={props.controlDescription.control}
+          icon={React.createElement(iconForControlType(props.controlDescription.control))}
           matchType='full'
           onOpenDataPicker={props.onOpenDataPicker}
           onDeleteCartouche={onDeleteCartouche}
@@ -180,7 +181,7 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
         return (
           <IdentifierExpressionCartoucheControl
             contents={'Expression'}
-            dataType='none'
+            icon={React.createElement(iconForControlType('none'))}
             matchType='partial'
             onOpenDataPicker={props.onOpenDataPicker}
             onDeleteCartouche={onDeleteCartouche}

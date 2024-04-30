@@ -831,16 +831,14 @@ export const DataReferenceCartoucheControl = React.memo(
 
     const onDeleteCartouche = React.useCallback(() => {}, [])
 
-    const safeToDelete = true
-
     return (
       <IdentifierExpressionCartoucheControl
         contents={contentsToDisplay ?? 'DATA'}
-        dataType='string-input'
+        icon={'🌸'}
         matchType='full'
         onOpenDataPicker={onOpenDataPicker}
         onDeleteCartouche={onDeleteCartouche}
-        safeToDelete={safeToDelete}
+        safeToDelete={false}
         testId={'data-reference-cartouche'}
       />
     )
@@ -849,7 +847,7 @@ export const DataReferenceCartoucheControl = React.memo(
 
 interface IdentifierExpressionCartoucheControlProps {
   contents: string
-  dataType: RegularControlType
+  icon: React.ReactChild
   matchType: 'full' | 'partial'
   onOpenDataPicker: () => void
   onDeleteCartouche: () => void
@@ -866,8 +864,6 @@ export const IdentifierExpressionCartoucheControl = React.memo(
       },
       [onDeleteCartouche],
     )
-
-    const Icon = iconForControlType(props.dataType)
 
     return (
       <FlexRow
@@ -886,7 +882,7 @@ export const IdentifierExpressionCartoucheControl = React.memo(
         }}
         onClick={props.onOpenDataPicker}
       >
-        <Icon />
+        {props.icon}
         <Tooltip title={props.contents}>
           <div
             style={{
