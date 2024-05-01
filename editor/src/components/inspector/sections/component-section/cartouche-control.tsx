@@ -60,7 +60,7 @@ export const IdentifierExpressionCartoucheControl = React.memo(
               textOverflow: 'ellipsis',
 
               /* Beginning of string */
-              // direction: 'rtl',
+              direction: 'rtl', // TODO we need a better way to ellipsize the beginnign because rtl eats ' " marks
               textAlign: 'left',
             }}
           >
