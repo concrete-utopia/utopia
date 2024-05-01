@@ -158,6 +158,7 @@ function selectItem(
   const elementPath = navigatorEntry.elementPath
 
   const shouldSelect = !(
+    isDataReferenceNavigatorEntry(navigatorEntry) ||
     isConditionalClauseNavigatorEntry(navigatorEntry) ||
     isInvalidOverrideNavigatorEntry(navigatorEntry) ||
     isRenderPropNavigatorEntry(navigatorEntry) ||
@@ -916,7 +917,7 @@ export const NavigatorItem: React.FunctionComponent<
           data-testid={NavigatorItemTestId(varSafeNavigatorEntryToKey(navigatorEntry))}
           style={rowStyle}
           // TODO onMouseDown should probably _deselect_
-          // onMouseDown={select}
+          onMouseDown={select}
           onMouseMove={highlight}
           onDoubleClick={focusComponent}
         >
@@ -934,7 +935,6 @@ export const NavigatorItem: React.FunctionComponent<
               elementPath={navigatorEntry.elementPath}
               childOrAttribute={navigatorEntry.childOrAttribute}
               selected={selected}
-              onClick={select}
             />
           </div>
         </FlexRow>

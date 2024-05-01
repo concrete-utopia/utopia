@@ -13,9 +13,10 @@ import { FlexRow, Icn, Icons, Tooltip, UtopiaStyles, colorTheme } from '../../..
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { IdentifierExpressionCartoucheControl } from './cartouche-control'
 import { useDataPickerButton } from './component-section'
+import { useDispatch } from '../../../editor/store/dispatch-context'
+import { selectComponents } from '../../../editor/actions/meta-actions'
 
 interface DataReferenceCartoucheControlProps {
-  onClick: (event: React.MouseEvent<HTMLDivElement>) => void
   elementPath: ElementPath
   childOrAttribute: JSXElementChild
   selected: boolean
@@ -23,7 +24,9 @@ interface DataReferenceCartoucheControlProps {
 
 export const DataReferenceCartoucheControl = React.memo(
   (props: DataReferenceCartoucheControlProps) => {
-    const { elementPath, childOrAttribute, selected, onClick } = props
+    const { elementPath, childOrAttribute, selected } = props
+
+    const dispatch = useDispatch()
 
     const contentsToDisplay = useEditorState(
       Substores.metadata,
@@ -35,6 +38,8 @@ export const DataReferenceCartoucheControl = React.memo(
       'DataReferenceCartoucheControl contentsToDisplay',
     )
 
+    // TODO get the actual data _value_ to display in the cartouche, and only show the data reference in the tooltip
+
     const dataPickerButtonData = useDataPickerButton(
       [EP.parentPath(elementPath)],
       PP.fromString('children'), // TODO
@@ -44,10 +49,11 @@ export const DataReferenceCartoucheControl = React.memo(
       },
     )
 
-    const onDeleteCartouche = React.useCallback(() => {}, [])
+    const onClick = React.useCallback(() => {
+      dispatch(selectComponents([elementPath], false))
+    }, [dispatch, elementPath])
 
     const cartoucheIconColor = contentsToDisplay.type === 'reference' ? 'primary' : 'secondary'
-    const editButtonIconColor = contentsToDisplay.type === 'reference' ? 'primary' : 'secondary'
     const foregroundColor =
       contentsToDisplay.type === 'reference'
         ? colorTheme.primary.value
@@ -62,6 +68,7 @@ export const DataReferenceCartoucheControl = React.memo(
         {dataPickerButtonData.popupIsOpen ? dataPickerButtonData.DataPickerComponent : null}
         <div
           onClick={onClick}
+          onDoubleClick={dataPickerButtonData.openPopup}
           style={{
             minWidth: 0, // this ensures that the div can never expand the allocated grid space
           }}
@@ -108,15 +115,6 @@ export const DataReferenceCartoucheControl = React.memo(
                 {/* the &lrm; non-printing character is added to fix the punctuation marks disappearing because of direction: rtl */}
               </div>
             </Tooltip>
-            <Icn
-              category='semantic'
-              type='pipette'
-              color={editButtonIconColor}
-              width={18}
-              height={18}
-              onClick={dataPickerButtonData.openPopup}
-              style={{ zoom: 0.6 }}
-            />
           </FlexRow>
         </div>
       </>
