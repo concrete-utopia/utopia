@@ -44,6 +44,8 @@ export const DataReferenceCartoucheControl = React.memo(
 
     const onDeleteCartouche = React.useCallback(() => {}, [])
 
+    const cartoucheColor = contentsToDisplay.type === 'reference' ? 'remix' : 'secondary'
+
     return (
       <>
         {dataPickerButtonData.popupIsOpen ? dataPickerButtonData.DataPickerComponent : null}
@@ -55,8 +57,14 @@ export const DataReferenceCartoucheControl = React.memo(
         >
           <IdentifierExpressionCartoucheControl
             contents={contentsToDisplay.label ?? 'DATA'}
-            icon={contentsToDisplay.type === 'reference' ? '🌸' : <Icons.StringInputControl />}
-            matchType={contentsToDisplay.type === 'reference' ? 'full' : 'none'}
+            icon={
+              contentsToDisplay.type === 'reference' ? (
+                <Icons.NavigatorData color={cartoucheColor} />
+              ) : (
+                <Icons.NavigatorText color={cartoucheColor} />
+              )
+            }
+            matchType={contentsToDisplay.type === 'reference' ? 'partial' : 'none'}
             onOpenDataPicker={dataPickerButtonData.openPopup}
             onDeleteCartouche={onDeleteCartouche}
             safeToDelete={false}
