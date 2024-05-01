@@ -157,6 +157,7 @@ Object {
     "label": null,
     "localFrame": null,
     "nonRoundedGlobalFrame": null,
+    "prop": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -275,6 +276,7 @@ Object {
     "label": null,
     "localFrame": null,
     "nonRoundedGlobalFrame": null,
+    "prop": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
