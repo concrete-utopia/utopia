@@ -249,7 +249,7 @@ describe('Navigator item row icons', () => {
     )
     await checkNavigatorIcon(
       'Conditional',
-      { category: 'navigator-element', type: 'conditional', color: 'blue' },
+      { category: 'navigator-element', type: 'conditional', color: 'black' },
       visibleNavigatorTargets[7],
     )
     // No icon for conditional labels
