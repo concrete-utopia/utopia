@@ -634,6 +634,50 @@ describe('Data Tracing', () => {
       )
     })
   })
+
+  describe('Tracing through a map function', () => {
+    it('Traces back a prop to a string literal jsx attribute via a map function', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithStoryboard(`
+      function MyComponent(props) {
+        return <div data-uid='component-root'>
+          {
+            // @utopia/uid=map
+            props.titles.map((title) => 
+              (<div data-uid='mapped' key={title} title={title}>{title}</div>)
+            )
+          }
+        </div>
+      }
+
+      function App() {
+        return <MyComponent data-uid='my-component' titles={['a', 'b', 'c']} />
+      }
+      `),
+        'await-first-dom-report',
+      )
+
+      await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component:component-root'))
+
+      const traceResult = traceDataFromProp(
+        EPP.create(
+          EP.fromString('sb/app:my-component:component-root/map/mapped~~~2'),
+          PP.create('title'),
+        ),
+        editor.getEditorState().editor.jsxMetadata,
+        editor.getEditorState().editor.projectContents,
+        [],
+      )
+
+      expect(traceResult).toEqual(
+        dataTracingToLiteralAttribute(
+          EP.fromString('sb/app:my-component'),
+          PP.create('titles'),
+          [],
+        ),
+      )
+    })
+  })
 })
 
 function makeTestProjectCodeWithStoryboard(codeForComponents: string): string {
