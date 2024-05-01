@@ -303,6 +303,81 @@ describe('Data Tracing', () => {
       )
     })
 
+    xit('Traces back a prop to a destructured useLoaderData() hook', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithStoryboard(`
+        function useLoaderData() {
+          return { title: 'string literal here' }
+        }
+
+      function MyComponent(props) {
+        const { title } = useLoaderData()
+        return <div data-uid='component-root' title={title} />
+      }
+
+      function App() {
+        return <MyComponent data-uid='my-component' />
+      }
+      `),
+        'await-first-dom-report',
+      )
+
+      await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component'))
+
+      const traceResult = traceDataFromProp(
+        EPP.create(EP.fromString('sb/app:my-component:component-root'), PP.create('title')),
+        editor.getEditorState().editor.jsxMetadata,
+        editor.getEditorState().editor.projectContents,
+        [],
+      )
+
+      expect(traceResult).toEqual(
+        dataTracingToAHookCall(
+          EP.fromString('sb/app:my-component:component-root'),
+          'useLoaderData',
+          ['title'],
+        ),
+      )
+    })
+
+    it('Traces back a prop through local consts to useLoaderData() hook', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithStoryboard(`
+        function useLoaderData() {
+          return { title: 'string literal here' }
+        }
+
+      function MyComponent(props) {
+        const data = useLoaderData()
+        const title = data.title
+        return <div data-uid='component-root' title={title} />
+      }
+
+      function App() {
+        return <MyComponent data-uid='my-component' />
+      }
+      `),
+        'await-first-dom-report',
+      )
+
+      await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component'))
+
+      const traceResult = traceDataFromProp(
+        EPP.create(EP.fromString('sb/app:my-component:component-root'), PP.create('title')),
+        editor.getEditorState().editor.jsxMetadata,
+        editor.getEditorState().editor.projectContents,
+        [],
+      )
+
+      expect(traceResult).toEqual(
+        dataTracingToAHookCall(
+          EP.fromString('sb/app:my-component:component-root'),
+          'useLoaderData',
+          ['title'],
+        ),
+      )
+    })
+
     it('Traces back a prop to a useLoaderData with a deep data path through multiple components', async () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCodeWithStoryboard(`
