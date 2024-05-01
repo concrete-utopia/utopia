@@ -22,7 +22,7 @@ interface DataReferenceCartoucheControlProps {
 
 export const DataReferenceCartoucheControl = React.memo(
   (props: DataReferenceCartoucheControlProps) => {
-    const { elementPath, childOrAttribute } = props
+    const { elementPath, childOrAttribute, selected } = props
 
     const contentsToDisplay = useEditorState(
       Substores.metadata,
@@ -70,6 +70,7 @@ export const DataReferenceCartoucheControl = React.memo(
               fontSize: 10,
               color: foregroundColor,
               backgroundColor: backgroundColor,
+              border: selected ? '1px solid ' + colorTheme.primary.value : '1px solid transparent',
               padding: '0px 4px',
               borderRadius: 4,
               height: 22,
