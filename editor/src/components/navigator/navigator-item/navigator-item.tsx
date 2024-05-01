@@ -15,6 +15,7 @@ import {
   isOverriddenConditional,
   maybeConditionalActiveBranch,
   maybeConditionalExpression,
+  useConditionalCaseCorrespondingToBranchPath,
 } from '../../../core/model/conditionals'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
@@ -840,14 +841,8 @@ export const NavigatorItem: React.FunctionComponent<
     'NavigatorItem isHiddenConditionalBranch',
   )
 
-  const conditionalCase = useEditorState(
-    Substores.metadata,
-    (store) =>
-      getConditionalCaseCorrespondingToBranchPath(
-        props.navigatorEntry.elementPath,
-        store.editor.jsxMetadata,
-      ),
-    'NavigatorItem, conditionalCase',
+  const conditionalCase = useConditionalCaseCorrespondingToBranchPath(
+    props.navigatorEntry.elementPath,
   )
 
   const isPlaceholder = isEntryAPlaceholder(props.navigatorEntry)
