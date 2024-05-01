@@ -214,7 +214,6 @@ type StyleType =
   | 'componentInstance'
   | 'erroredGroup'
   | 'lowEmphasis'
-  // | 'highEmphasis'
   | 'selected'
 type SelectedType =
   | 'unselected'
@@ -230,7 +229,6 @@ const styleTypeColors: Record<StyleType, { color: keyof ThemeObject; iconColor: 
   componentInstance: { color: 'fg0', iconColor: 'main' },
   erroredGroup: { color: 'error', iconColor: 'error' },
   lowEmphasis: { color: 'fg5', iconColor: 'darkgray' },
-  // highEmphasis: { color: 'fg1', iconColor: 'primary' },
   selected: { color: 'white', iconColor: 'white' },
 }
 
@@ -279,14 +277,10 @@ const computeResultingStyle = (
     styleType = 'selected'
   } else if (isErroredGroup) {
     styleType = 'erroredGroup'
-    // } else if (isDynamic) {
-    //   styleType = 'dynamic'
   } else if (isFocusedComponent) {
     styleType = 'component'
   } else if (emphasis === 'subdued') {
     styleType = 'lowEmphasis'
-    // } else if (emphasis === 'emphasized') {
-    //   styleType = 'highEmphasis'
   } else if (isFocusableComponent) {
     styleType = 'componentInstance'
   } else if (isHighlightedForInteraction) {
@@ -312,7 +306,7 @@ const computeResultingStyle = (
   result.style = {
     ...result.style,
     fontWeight: isProbablyParentOfSelected || isProbablyScene ? 600 : 'inherit',
-    // TODO compute better borderRadius style by if it has children or siblings
+    // TODO compute bottom borderRadius style by if it has children or siblings
     borderRadius: selected ? '5px 5px 0 0' : undefined,
   }
 
@@ -888,20 +882,6 @@ export const NavigatorItem: React.FunctionComponent<
     )
   }, [childComponentCount, isFocusedComponent, isConditional])
 
-  // const iconColor = isRemixItem
-  //   ? 'remix'
-  //   : isDynamic
-  //   ? 'dynamic'
-  //   : emphasis === 'subdued'
-  //   ? 'subdued'
-  //   : emphasis === 'emphasized'
-  //   ? 'primary'
-  //   : isCodeItem
-  //   ? 'dynamic'
-  //   : isComponentScene
-  //   ? 'component'
-  //   : resultingStyle.iconColor
-
   const iconColor = resultingStyle.iconColor
 
   const currentlyRenaming = EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath)
@@ -1160,28 +1140,7 @@ interface NavigatorRowLabelProps {
 }
 
 export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
-  const colorTheme = useColorTheme()
-
   const isCodeItem = props.codeItemType !== 'none' && props.codeItemType !== 'remix'
-  const isRemixItem = props.codeItemType === 'remix'
-  const isComponentScene =
-    useIsProbablyScene(props.navigatorEntry) && props.childComponentCount === 1
-
-  // const textColor = isRemixItem
-  //   ? colorTheme.aqua.value
-  //   : props.isDynamic
-  //   ? colorTheme.dynamicBlue.value
-  //   : props.emphasis === 'subdued'
-  //   ? colorTheme.fg5.value
-  //   : props.emphasis === 'emphasized'
-  //   ? colorTheme.dynamicBlue.value
-  //   : isCodeItem
-  //   ? colorTheme.dynamicBlue.value
-  //   : isComponentScene
-  //   ? colorTheme.componentPurple.value
-  //   : undefined
-
-  const textColor = props.emphasis === 'subdued' ? colorTheme.fg5.value : undefined
 
   return (
     <div
@@ -1195,7 +1154,6 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         height: 22,
         paddingLeft: 5,
         paddingRight: props.codeItemType === 'map' ? 0 : 5,
-        color: textColor,
         textTransform: isCodeItem ? 'uppercase' : undefined,
       }}
     >
@@ -1205,7 +1163,6 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         <LayoutIcon
           key={`layout-type-${props.label}`}
           navigatorEntry={props.navigatorEntry}
-          // color={props.iconColor}
           color={
             props.selected
               ? 'white'
