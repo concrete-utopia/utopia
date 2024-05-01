@@ -5,7 +5,7 @@ import { jsx } from '@emotion/react'
 import React, { useCallback } from 'react'
 import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
-import type { PropertyPath } from '../../../../core/shared/project-file-types'
+import type { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
 import {
   useColorTheme,
   Button,
@@ -116,19 +116,16 @@ function isChildrenProp(path: PropertyPath): boolean {
 export interface DataPickerPopupProps {
   closePopup: () => void
   style: React.CSSProperties
+  targetPath: ElementPath | null // TODO make it not nullable
   propPath: PropertyPath
   propExpressionPath: Array<string | number> | null
 }
 
 export const DataPickerPopup = React.memo(
   React.forwardRef<HTMLDivElement, DataPickerPopupProps>((props, forwardedRef) => {
-    const { closePopup, propPath, propExpressionPath } = props
+    const { closePopup, propPath, propExpressionPath, targetPath } = props
 
     const [preferredAllState, setPreferredAllState] = useAtom(DataPickerPreferredAllAtom)
-
-    const selectedViewPathRef = useRefEditorState(
-      (store) => store.editor.selectedViews.at(0) ?? null,
-    )
 
     const colorTheme = useColorTheme()
     const dispatch = useDispatch()
@@ -143,7 +140,7 @@ export const DataPickerPopup = React.memo(
 
     const onTweakProperty = React.useCallback(
       (name: string, definedElsewhere: string | null) => (e: React.MouseEvent) => {
-        if (selectedViewPathRef.current == null) {
+        if (targetPath == null) {
           return
         }
 
@@ -158,19 +155,18 @@ export const DataPickerPopup = React.memo(
             {
               action: 'INSERT_ATTRIBUTE_OTHER_JAVASCRIPT_INTO_ELEMENT',
               expression: expression,
-              parent: selectedViewPathRef.current,
+              parent: targetPath,
             },
           ])
           return
         }
-
-        dispatch([setProp_UNSAFE(selectedViewPathRef.current, propPath, expression)])
+        dispatch([setProp_UNSAFE(targetPath, propPath, expression)])
       },
-      [dispatch, isTargetingChildrenProp, propPath, selectedViewPathRef],
+      [dispatch, isTargetingChildrenProp, propPath, targetPath],
     )
 
     const variableNamesInScope = useVariablesInScopeForSelectedElement(
-      selectedViewPathRef.current ?? EP.emptyElementPath,
+      targetPath ?? EP.emptyElementPath,
       props.propPath,
       preferredAllState,
     )

@@ -353,6 +353,7 @@ import type {
   RenderPropNavigatorEntry,
   SlotNavigatorEntry,
   RenderPropValueNavigatorEntry,
+  DataReferenceNavigatorEntry,
   GithubUser,
   PullRequest,
 } from './editor-state'
@@ -363,6 +364,7 @@ import {
   trueUpHuggingElement,
   renderPropNavigatorEntry,
   renderPropValueNavigatorEntry,
+  dataReferenceNavigatorEntry,
   newGithubData,
 } from './editor-state'
 import {
@@ -686,6 +688,15 @@ export const SyntheticNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<Synth
     syntheticNavigatorEntry,
   )
 
+export const DataReferenceNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<DataReferenceNavigatorEntry> =
+  combine2EqualityCalls(
+    (entry) => entry.elementPath,
+    ElementPathKeepDeepEquality,
+    (entry) => entry.childOrAttribute,
+    JSXElementChildKeepDeepEquality(),
+    dataReferenceNavigatorEntry,
+  )
+
 export const RenderPropNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<RenderPropNavigatorEntry> =
   combine2EqualityCalls(
     (entry) => entry.elementPath,
@@ -740,6 +751,11 @@ export const NavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<NavigatorEntry
     case 'SYNTHETIC':
       if (oldValue.type === newValue.type) {
         return SyntheticNavigatorEntryKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'DATA_REFERENCE':
+      if (oldValue.type === newValue.type) {
+        return DataReferenceNavigatorEntryKeepDeepEquality(oldValue, newValue)
       }
       break
     case 'RENDER_PROP':

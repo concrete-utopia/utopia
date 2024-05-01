@@ -1,5 +1,5 @@
 import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
-import { selectComponentsForTest } from '../../../utils/utils.test-utils'
+import { selectComponentsForTest, wait } from '../../../utils/utils.test-utils'
 import {
   formatTestProjectCode,
   getPrintedUiJsCode,
@@ -585,6 +585,58 @@ describe('The navigator component picker context menu', () => {
         />
       </Storyboard>
     )
+    `),
+    )
+  })
+
+  it('Selecting a component with no variants from the simple picker for a conditional slot should insert that component into the render prop', async () => {
+    const editor = await renderTestEditorWithCode(
+      `import * as React from 'react'
+      import { Storyboard } from 'utopia-api'
+      
+      export var storyboard = (
+        <Storyboard data-uid='sb'>
+          {true ? null : null}
+        </Storyboard>
+      )
+      
+      export const Column = () => (
+        <div
+          style={{ display: 'flex', flexDirection: 'column' }}
+        ></div>
+      )
+    `,
+      'await-first-dom-report',
+    )
+    const emptySlot = editor.renderedDOM.getByTestId(
+      'toggle-render-prop-NavigatorItemTestId-synthetic_sb/5af/129_attribute',
+    )
+    await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
+
+    const menuButton = await waitFor(() => editor.renderedDOM.getByText('Column'))
+    await mouseClickAtPoint(menuButton, { x: 3, y: 3 })
+
+    await editor.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState(), StoryboardFilePath)).toEqual(
+      formatTestProjectCode(`
+      import * as React from 'react'
+      import { Storyboard } from 'utopia-api'
+  
+      export var storyboard = (
+       <Storyboard>
+          {
+            // @utopia/conditional=false
+            true ? null : <Column />
+          }
+        </Storyboard>
+      )
+    
+      export const Column = () => (
+        <div
+          style={{ display: 'flex', flexDirection: 'column' }}
+        />
+      )
     `),
     )
   })
