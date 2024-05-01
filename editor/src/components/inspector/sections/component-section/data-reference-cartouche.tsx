@@ -97,7 +97,7 @@ export const DataReferenceCartoucheControl = React.memo(
                   textOverflow: 'ellipsis',
 
                   /* Beginning of string */
-                  // direction: 'rtl', // TODO we need a better way to ellipsize the beginnign because rtl eats ' " marks
+                  direction: contentsToDisplay.type === 'reference' ? 'rtl' : 'ltr', // TODO we need a better way to ellipsize the beginnign because rtl eats ' " marks
                   textAlign: 'left',
                   ...UtopiaStyles.fontStyles.monospaced,
                 }}
