@@ -9,7 +9,7 @@ import { getJSXElementNameLastPart } from '../../../../core/shared/element-templ
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
 import { assertNever } from '../../../../core/shared/utils'
-import { Icons } from '../../../../uuiui'
+import { FlexRow, Icons, Tooltip, colorTheme } from '../../../../uuiui'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { IdentifierExpressionCartoucheControl } from './cartouche-control'
 import { useDataPickerButton } from './component-section'
@@ -17,6 +17,7 @@ import { useDataPickerButton } from './component-section'
 interface DataReferenceCartoucheControlProps {
   elementPath: ElementPath
   childOrAttribute: JSXElementChild
+  selected: boolean
 }
 
 export const DataReferenceCartoucheControl = React.memo(
@@ -45,6 +46,14 @@ export const DataReferenceCartoucheControl = React.memo(
     const onDeleteCartouche = React.useCallback(() => {}, [])
 
     const cartoucheColor = contentsToDisplay.type === 'reference' ? 'remix' : 'secondary'
+    const foregroundColor =
+      contentsToDisplay.type === 'reference'
+        ? colorTheme.primary.value
+        : colorTheme.neutralForeground.value
+    const backgroundColor =
+      contentsToDisplay.type === 'reference' ? colorTheme.primary10.value : colorTheme.bg4.value
+
+    const label = contentsToDisplay.label ?? 'DATA'
 
     return (
       <>
@@ -55,21 +64,46 @@ export const DataReferenceCartoucheControl = React.memo(
           }}
           ref={dataPickerButtonData.setReferenceElement}
         >
-          <IdentifierExpressionCartoucheControl
-            contents={contentsToDisplay.label ?? 'DATA'}
-            icon={
-              contentsToDisplay.type === 'reference' ? (
-                <Icons.NavigatorData color={cartoucheColor} />
-              ) : (
-                <Icons.NavigatorText color={cartoucheColor} />
-              )
-            }
-            matchType={contentsToDisplay.type === 'reference' ? 'partial' : 'none'}
-            onOpenDataPicker={dataPickerButtonData.openPopup}
-            onDeleteCartouche={onDeleteCartouche}
-            safeToDelete={false}
-            testId={'data-reference-cartouche'}
-          />
+          <FlexRow
+            style={{
+              cursor: 'pointer',
+              fontSize: 10,
+              color: foregroundColor,
+              backgroundColor: backgroundColor,
+              padding: '0px 4px',
+              borderRadius: 4,
+              height: 22,
+              display: 'flex',
+              flex: 1,
+              gap: 4,
+            }}
+            onClick={dataPickerButtonData.openPopup}
+          >
+            {contentsToDisplay.type === 'reference' ? (
+              <Icons.NavigatorData color={cartoucheColor} />
+            ) : (
+              <Icons.NavigatorText color={cartoucheColor} />
+            )}
+            <Tooltip title={label}>
+              <div
+                style={{
+                  flex: 1,
+                  /* Standard CSS ellipsis */
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+
+                  /* Beginning of string */
+                  // direction: 'rtl', // TODO we need a better way to ellipsize the beginnign because rtl eats ' " marks
+                  textAlign: 'left',
+                }}
+              >
+                {label}
+                &lrm;
+                {/* the &lrm; non-printing character is added to fix the punctuation marks disappearing because of direction: rtl */}
+              </div>
+            </Tooltip>
+          </FlexRow>
         </div>
       </>
     )

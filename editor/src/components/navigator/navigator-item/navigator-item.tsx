@@ -959,6 +959,7 @@ export const NavigatorItem: React.FunctionComponent<
             <DataReferenceCartoucheControl
               elementPath={navigatorEntry.elementPath}
               childOrAttribute={navigatorEntry.childOrAttribute}
+              selected={selected}
             />
           </div>
         ) : (
