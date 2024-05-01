@@ -1023,4 +1023,103 @@ export var storyboard = (
 )
 `)
   })
+
+  it('can replace element inside conditional', async () => {
+    const editor = await renderTestEditorWithCode(
+      `import * as React from 'react'
+      import { Scene, Storyboard, FlexRow } from 'utopia-api'
+      
+      export var storyboard = (
+        <Storyboard data-uid='sb'>
+          <Scene
+            id='playground-scene'
+            commentId='playground-scene'
+            style={{
+              width: 700,
+              height: 759,
+              position: 'absolute',
+              left: 212,
+              top: 128,
+            }}
+            data-label='Playground'
+            data-uid='scene'
+          >
+            <FlexRow data-uid='flexrow'>
+              {
+                // @utopia/uid=conditional
+                true ? (
+                  <img
+                    style={{
+                      width: 220,
+                      height: 220,
+                      display: 'inline-block',
+                    }}
+                    src='/editor/utopia-logo-white-fill.png?hash=4c7df4ba0e8686df4fe14e3570f2d3002304b930'
+                    data-uid='img'
+                  />
+                ) : null
+              }
+            </FlexRow>
+          </Scene>
+        </Storyboard>
+      )
+      export const Column = () => (
+        <div
+          style={{ display: 'flex', flexDirection: 'column' }}
+        ></div>
+      )      
+`,
+      'await-first-dom-report',
+    )
+
+    await mouseClickAtPoint(
+      editor.renderedDOM.getByTestId(
+        'NavigatorItemTestId-regular_sb/scene/flexrow/conditional/img-label',
+      ),
+      { x: 2, y: 2 },
+    )
+
+    await mouseClickAtPoint(
+      editor.renderedDOM.getByTestId('replace-element-button-sb/scene/flexrow/conditional/img'),
+      { x: 2, y: 2 },
+    )
+
+    await mouseClickAtPoint(editor.renderedDOM.getByText('Column'), { x: 2, y: 2 })
+
+    // the element inside the map has been changed to a `div`
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Scene, Storyboard, FlexRow } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      id='playground-scene'
+      commentId='playground-scene'
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <FlexRow data-uid='flexrow'>
+        {
+          // @utopia/uid=conditional
+          true ? <Column data-uid='new' /> : null
+        }
+      </FlexRow>
+    </Scene>
+  </Storyboard>
+)
+export const Column = () => (
+  <div
+    style={{ display: 'flex', flexDirection: 'column' }}
+    data-uid='45a'
+  />
+)
+`)
+  })
 })

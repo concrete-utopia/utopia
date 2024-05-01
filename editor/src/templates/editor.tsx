@@ -37,6 +37,7 @@ import {
   getUserPermissions,
   startPollingLoginState,
 } from '../components/editor/server'
+import type { DispatchResult } from '../components/editor/store/dispatch'
 import {
   editorDispatchActionRunner,
   editorDispatchClosingOut,
@@ -446,12 +447,12 @@ export class Editor {
 
       const reactRouterErrorPreviouslyLogged = hasReactRouterErrorBeenLogged()
 
-      const shouldRunDOMWalker =
-        !dispatchResult.nothingChanged ||
-        dispatchedActions.some((a) => a.action === 'RUN_DOM_WALKER')
+      const runDomWalker = shouldRunDOMWalker(dispatchedActions, dispatchResult)
+      const shouldRerender = !dispatchResult.nothingChanged || runDomWalker
 
       const updateId = canvasUpdateId++
-      if (shouldRunDOMWalker) {
+      if (shouldRerender) {
+        // TODO: not running this if nothing has changed in the result might give another performance benefit
         Measure.taskTime(`update canvas ${updateId}`, () => {
           const currentElementsToRender = fixElementsToRerender(
             this.storedState.patchedEditor.canvas.elementsToRerender,
@@ -466,7 +467,7 @@ export class Editor {
         })
 
         // run the dom-walker
-        {
+        if (runDomWalker) {
           const domWalkerDispatchResult = runDomWalkerAndSaveResults(
             this.boundDispatch,
             this.domWalkerMutableState,
@@ -812,4 +813,19 @@ async function renderProjectLoadError(error: string): Promise<void> {
 
 async function renderProjectNotFound(projectId: string): Promise<void> {
   window.location.href = `/project/${projectId}`
+}
+
+function shouldRunDOMWalker(
+  dispatchedActions: readonly EditorAction[],
+  dispatchResult: DispatchResult,
+): boolean {
+  // if the only thing that changed was the scroll position - we don't need to run the DOMWalker
+  // TODO: make it a more robust check on the contents of the result - or even better - add a specific flag for 'domContentsChanged'
+  const canSkipDomWalker = dispatchedActions.every((a) => a.action === 'SCROLL_CANVAS')
+  if (canSkipDomWalker) {
+    return false
+  }
+  return (
+    !dispatchResult.nothingChanged || dispatchedActions.some((a) => a.action === 'RUN_DOM_WALKER')
+  )
 }

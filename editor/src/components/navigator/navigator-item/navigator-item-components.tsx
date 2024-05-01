@@ -17,7 +17,10 @@ import {
   varSafeNavigatorEntryToKey,
 } from '../../editor/store/editor-state'
 import type { SelectionLocked } from '../../canvas/canvas-types'
+import type { InsertionTarget } from './component-picker-context-menu'
 import { useCreateCallbackToShowComponentPicker } from './component-picker-context-menu'
+import type { ConditionalCase } from '../../../core/model/conditionals'
+import { useConditionalCaseCorrespondingToBranchPath } from '../../../core/model/conditionals'
 
 export const NavigatorHintCircleDiameter = 8
 
@@ -231,14 +234,35 @@ interface ReplaceElementButtonProps {
   target: ElementPath
   iconColor: IcnProps['color']
   prop: string | null
+  conditionalCase: ConditionalCase | null
 }
 
 const ReplaceElementButton = React.memo((props: ReplaceElementButtonProps) => {
-  const { target, prop, iconColor } = props
-  const onClick = useCreateCallbackToShowComponentPicker()(
-    target,
-    prop == null ? 'replace-target' : { prop: prop },
-  )
+  const { target, prop, iconColor, conditionalCase } = props
+
+  const { target: realTarget, insertionTarget } = ((): {
+    target: ElementPath
+    insertionTarget: InsertionTarget
+  } => {
+    if (prop != null) {
+      return {
+        target: EP.parentPath(target),
+        insertionTarget: { prop: prop },
+      }
+    }
+    if (conditionalCase != null) {
+      return {
+        target: EP.parentPath(target),
+        insertionTarget: conditionalCase,
+      }
+    }
+    return {
+      target: target,
+      insertionTarget: 'replace-target',
+    }
+  })()
+
+  const onClick = useCreateCallbackToShowComponentPicker()(realTarget, insertionTarget)
 
   return (
     <Button
@@ -422,6 +446,10 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
 
   const isConditionalClauseTitle = isConditionalClauseNavigatorEntry(props.navigatorEntry)
 
+  const conditionalCase = useConditionalCaseCorrespondingToBranchPath(
+    props.navigatorEntry.elementPath,
+  )
+
   return (
     <FlexRow
       style={{
@@ -450,13 +478,10 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
         <>
           <AddChildButton target={navigatorEntry.elementPath} iconColor={props.iconColor} />
           <ReplaceElementButton
-            target={
-              navigatorEntry.type === 'RENDER_PROP_VALUE'
-                ? EP.parentPath(navigatorEntry.elementPath)
-                : navigatorEntry.elementPath
-            }
+            target={navigatorEntry.elementPath}
             iconColor={props.iconColor}
             prop={navigatorEntry.type === 'RENDER_PROP_VALUE' ? navigatorEntry.prop : null}
+            conditionalCase={conditionalCase}
           />
         </>
       ) : null}
