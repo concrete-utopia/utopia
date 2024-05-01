@@ -1,10 +1,11 @@
 import type { ProjectContentTreeRoot } from '../../components/assets'
 import { walkContentsTreeForParseSuccess } from '../../components/assets'
-import type {
-  ArbitraryJSBlock,
-  JSXAttributes,
-  JSXElementChild,
-  TopLevelElement,
+import {
+  getDefinedElsewhereFromElementChild,
+  type ArbitraryJSBlock,
+  type JSXAttributes,
+  type JSXElementChild,
+  type TopLevelElement,
 } from '../shared/element-template'
 import { emptySet } from '../shared/set-utils'
 import { assertNever, fastForEach } from '../shared/utils'
@@ -128,6 +129,9 @@ function extractUidFromJSXElementChild(
       }
       break
     case 'JSX_MAP_EXPRESSION':
+      extractUidFromJSXElementChild(workingResult, filePath, newDebugPath, element.valueToMap)
+      extractUidFromJSXElementChild(workingResult, filePath, newDebugPath, element.mapFunction)
+      break
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       for (const elementWithin of Object.values(element.elementsWithin)) {
         extractUidFromJSXElementChild(workingResult, filePath, newDebugPath, elementWithin)

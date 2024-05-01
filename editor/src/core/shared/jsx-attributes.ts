@@ -369,6 +369,23 @@ function innerAttributeToValue(
       }
       throw new Error(`Couldn't find helper function with name ${attribute.functionName}`)
     case 'JSX_MAP_EXPRESSION':
+      const valueToMap = jsxAttributeToValue(
+        inScope,
+        attribute.valueToMap,
+        elementPath,
+        renderContext,
+        uid,
+        codeError,
+      )
+      const mapFunction = jsxAttributeToValue(
+        inScope,
+        attribute.mapFunction,
+        elementPath,
+        renderContext,
+        uid,
+        codeError,
+      )
+      return valueToMap.map(mapFunction)
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return resolveParamsAndRunJsCode(filePath, attribute, requireResult, inScope)
     default:

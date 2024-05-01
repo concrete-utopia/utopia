@@ -80,7 +80,7 @@ describe('parseCode', () => {
           ),
         )
         const result = getAllUniqueUids(projectContents)
-        expect(result.uniqueIDs).toHaveLength(486)
+        expect(result.uniqueIDs).toHaveLength(493)
         expect(result.duplicateIDs).toEqual({})
       },
       (_) => {
@@ -365,7 +365,7 @@ export var app = (props) => {
             const rootElement = tle.rootElement
             if (isJSXElement(rootElement)) {
               const firstChild = rootElement.children[0]
-              if (isJSExpressionMapOrOtherJavaScript(firstChild)) {
+              if (isJSExpressionOtherJavaScript(firstChild)) {
                 const firstKey = Object.keys(firstChild.elementsWithin)[0]
                 const firstElementWithin = firstChild.elementsWithin[firstKey]
                 const updatedAttributes = jsxAttributesFromMap({

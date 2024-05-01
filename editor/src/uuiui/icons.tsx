@@ -365,6 +365,20 @@ export const Icons = {
     width: 18,
     height: 18,
   }),
+  NavigatorText: makeIcon({
+    category: 'navigator-element',
+    type: 'text',
+    color: 'main',
+    width: 12,
+    height: 12,
+  }),
+  NavigatorData: makeIcon({
+    category: 'navigator-element',
+    type: 'data',
+    color: 'main',
+    width: 12,
+    height: 12,
+  }),
 }
 
 export const FunctionIcons = {

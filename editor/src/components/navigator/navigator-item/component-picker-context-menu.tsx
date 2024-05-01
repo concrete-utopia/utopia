@@ -536,7 +536,10 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
     const allInsertableComponents = useGetInsertableComponents('insert').flatMap((g) => ({
       label: g.label,
       options: g.options.filter((o) => {
-        if (insertionTarget === 'insert-as-child') {
+        if (
+          insertionTarget === 'insert-as-child' ||
+          isConditionalCaseInsertionTarget(insertionTarget)
+        ) {
           return true
         }
         // Right now we only support inserting JSX elements when we insert into a render prop or when replacing elements

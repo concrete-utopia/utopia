@@ -29,6 +29,7 @@ import {
   isJSXMapExpression,
   propertiesExposedByParam,
   propertiesExposedByParams,
+  hasElementsWithin,
 } from '../../../core/shared/element-template'
 import {
   getAccumulatedElementsWithin,
@@ -241,7 +242,96 @@ export function renderCoreElement(
         assignedToProp,
       )
     }
-    case 'JSX_MAP_EXPRESSION':
+    case 'JSX_MAP_EXPRESSION': {
+      const commentFlag = findUtopiaCommentFlag(element.comments, 'map-count')
+      const mapCountOverride = isUtopiaCommentFlagMapCount(commentFlag) ? commentFlag.value : null
+
+      const elementIsTextEdited = elementPath != null && EP.pathsEqual(elementPath, editedText)
+
+      if (elementPath != null) {
+        addFakeSpyEntry(
+          validPaths,
+          metadataContext,
+          elementPath,
+          element,
+          filePath,
+          imports,
+          'not-a-conditional',
+          null,
+        )
+      }
+
+      const valuesInScopeFromParameters = element.valuesInScopeFromParameters
+      const elementsWithin: ElementsWithin = {
+        ...(hasElementsWithin(element.valueToMap) ? element.valueToMap.elementsWithin : {}),
+        ...(hasElementsWithin(element.mapFunction) ? element.mapFunction.elementsWithin : {}),
+      }
+      if (elementIsTextEdited) {
+        const runJSExpressionLazy = () => {
+          const innerRender = createLookupRender(
+            elementPath,
+            renderContext,
+            mapCountOverride,
+            valuesInScopeFromParameters,
+          )
+
+          const blockScope = {
+            ...inScope,
+            [JSX_CANVAS_LOOKUP_FUNCTION_NAME]: utopiaCanvasJSXLookup(
+              elementsWithin,
+              inScope,
+              innerRender,
+            ),
+          }
+          return runJSExpression(element, elementPath, blockScope, renderContext, uid, codeError)
+        }
+
+        const originalTextContent = STEGANOGRAPHY_ENABLED ? runJSExpressionLazy() : null
+
+        const textContent = trimJoinUnescapeTextFromJSXElements([element])
+        const textEditorProps: TextEditorProps = {
+          elementPath: elementPath,
+          filePath: filePath,
+          text: textContent,
+          originalText: originalTextContent,
+          component: React.Fragment,
+          passthroughProps: {},
+          textProp: 'itself',
+        }
+
+        return buildSpyWrappedElement(
+          element,
+          textEditorProps,
+          elementPath,
+          metadataContext,
+          updateInvalidatedPaths,
+          [],
+          TextEditorWrapper,
+          inScope,
+          jsxFactoryFunctionName,
+          shouldIncludeCanvasRootInTheSpy,
+          imports,
+          filePath,
+          variablesInScope,
+        )
+      }
+      const innerRender = createLookupRender(
+        elementPath,
+        renderContext,
+        mapCountOverride,
+        valuesInScopeFromParameters,
+      )
+
+      const blockScope = {
+        ...inScope,
+        [JSX_CANVAS_LOOKUP_FUNCTION_NAME]: utopiaCanvasJSXLookup(
+          elementsWithin,
+          inScope,
+          innerRender,
+        ),
+      }
+      return runJSExpression(element, elementPath, blockScope, renderContext, uid, codeError)
+    }
     case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
       const commentFlag = findUtopiaCommentFlag(element.comments, 'map-count')
       const mapCountOverride =
@@ -265,10 +355,7 @@ export function renderCoreElement(
         )
       }
 
-      const valuesInScopeFromParameters =
-        element.type === 'JSX_MAP_EXPRESSION'
-          ? element.valuesInScopeFromParameters
-          : propertiesExposedByParams(element.params)
+      const valuesInScopeFromParameters = propertiesExposedByParams(element.params)
 
       if (elementIsTextEdited) {
         const runJSExpressionLazy = () => {
@@ -877,6 +964,24 @@ function runJSExpression(
       )
 
     case 'JSX_MAP_EXPRESSION':
+      const valueToMap = runJSExpression(
+        block.valueToMap,
+        elementPath,
+        currentScope,
+        renderContext,
+        uid,
+        codeError,
+      )
+      const mapFunction = runJSExpression(
+        block.mapFunction,
+        elementPath,
+        currentScope,
+        renderContext,
+        uid,
+        codeError,
+      )
+      const result = valueToMap.map(mapFunction)
+      return result
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return resolveParamsAndRunJsCode(
         renderContext.filePath,

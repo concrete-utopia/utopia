@@ -231,6 +231,7 @@ import type {
   IncreaseOnlineStateFailureCount,
   AddCollapsedViews,
   ReplaceMappedElement,
+  UpdateMapExpression,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -1723,6 +1724,14 @@ export function updateConditionalExpression(
 ): UpdateConditionalExpression {
   return {
     action: 'UPDATE_CONIDTIONAL_EXPRESSION',
+    target: target,
+    expression: expression,
+  }
+}
+
+export function updateMapExpression(target: ElementPath, expression: string): UpdateMapExpression {
+  return {
+    action: 'UPDATE_MAP_EXPRESSION',
     target: target,
     expression: expression,
   }

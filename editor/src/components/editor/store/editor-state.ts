@@ -2179,6 +2179,12 @@ export function dataReferenceNavigatorEntry(
   }
 }
 
+export function isDataReferenceNavigatorEntry(
+  entry: NavigatorEntry,
+): entry is DataReferenceNavigatorEntry {
+  return entry.type === 'DATA_REFERENCE'
+}
+
 export interface SlotNavigatorEntry {
   type: 'SLOT'
   elementPath: ElementPath

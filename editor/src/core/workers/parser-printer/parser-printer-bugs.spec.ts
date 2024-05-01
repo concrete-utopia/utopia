@@ -8,6 +8,7 @@ import {
   UtopiaJSXComponent,
   clearAttributesUniqueIDs,
   simplifyAttributesIfPossible,
+  getDefinedElsewhereFromElementChild,
 } from '../../shared/element-template'
 import { forEachLeft, isRight } from '../../shared/either'
 import {
@@ -47,11 +48,15 @@ export var App = props => {
         UNPARSED_CODE
         UTOPIA_JSX_COMPONENT - App
           JSX_ELEMENT - div - aaa
-            JSX_MAP_EXPRESSION - 330
-              JSX_ELEMENT - div - bbb
-                JS_IDENTIFIER - 833
-                JSX_TEXT_BLOCK - d01
-                JS_IDENTIFIER - b90"
+            JSX_MAP_EXPRESSION - de5
+                ATTRIBUTE_VALUE - 625
+                ATTRIBUTE_VALUE - 294
+                ATTRIBUTE_VALUE - 3e9
+              ATTRIBUTE_OTHER_JAVASCRIPT - eb1
+                JSX_ELEMENT - div - bbb
+                  JS_IDENTIFIER - 833
+                  JSX_TEXT_BLOCK - d01
+                  JS_IDENTIFIER - b90"
       `)
 
       const aaaElement = findJSXElementAtStaticPath(
@@ -59,8 +64,9 @@ export var App = props => {
         EP.dynamicPathToStaticPath(EP.elementPath([['App'], ['aaa']])),
       )
       const aaaJSXMapExpression = aaaElement?.children[0]
-      if (aaaJSXMapExpression?.type === 'JSX_MAP_EXPRESSION') {
-        expect(aaaJSXMapExpression.definedElsewhere).toMatchInlineSnapshot(`
+      if (aaaJSXMapExpression != null) {
+        const definedElsewhere = getDefinedElsewhereFromElementChild([], aaaJSXMapExpression)
+        expect(definedElsewhere).toMatchInlineSnapshot(`
           Array [
             "React",
             "cake",
@@ -180,8 +186,11 @@ export var App = props => {
       UNPARSED_CODE
       UTOPIA_JSX_COMPONENT - Test
         JSX_ELEMENT - div - mapper-parent
-          JSX_MAP_EXPRESSION - f62
-            JSX_ELEMENT - Card - card"
+          JSX_MAP_EXPRESSION - 589
+            JS_PROPERTY_ACCESS - 4f7
+              JS_IDENTIFIER - 09c
+            ATTRIBUTE_OTHER_JAVASCRIPT - f44
+              JSX_ELEMENT - Card - card"
     `)
     expect(elementsStructure((testParseCode(spreadCode) as any).topLevelElements))
       .toMatchInlineSnapshot(`
@@ -192,8 +201,11 @@ export var App = props => {
       UNPARSED_CODE
       UTOPIA_JSX_COMPONENT - Test
         JSX_ELEMENT - div - mapper-parent
-          JSX_MAP_EXPRESSION - 62e
-            JSX_ELEMENT - Card - card"
+          JSX_MAP_EXPRESSION - 0af
+            JS_PROPERTY_ACCESS - 4f7
+              JS_IDENTIFIER - 09c
+            ATTRIBUTE_OTHER_JAVASCRIPT - 8a6
+              JSX_ELEMENT - Card - card"
     `)
   })
 })

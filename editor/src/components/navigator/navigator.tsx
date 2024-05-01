@@ -283,6 +283,7 @@ export const NavigatorComponent = React.memo(() => {
           '--paneHoverOpacity': 1,
         },
         padding: 5,
+        height: 0,
       }}
       onClick={containerClick}
     >
