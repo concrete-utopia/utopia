@@ -9,7 +9,7 @@ import { getJSXElementNameLastPart } from '../../../../core/shared/element-templ
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
 import { assertNever } from '../../../../core/shared/utils'
-import { FlexRow, Icons, Tooltip, colorTheme } from '../../../../uuiui'
+import { FlexRow, Icn, Icons, Tooltip, colorTheme } from '../../../../uuiui'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { IdentifierExpressionCartoucheControl } from './cartouche-control'
 import { useDataPickerButton } from './component-section'
@@ -105,6 +105,14 @@ export const DataReferenceCartoucheControl = React.memo(
                 {/* the &lrm; non-printing character is added to fix the punctuation marks disappearing because of direction: rtl */}
               </div>
             </Tooltip>
+            <Icn
+              category='semantic'
+              type='editpencil'
+              color={cartoucheColor}
+              width={16}
+              height={16}
+              onClick={dataPickerButtonData.openPopup}
+            />
           </FlexRow>
         </div>
       </>
