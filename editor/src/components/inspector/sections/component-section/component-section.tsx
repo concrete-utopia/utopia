@@ -78,7 +78,6 @@ import {
   VectorPropertyControl,
   HtmlInputPropertyControl,
   JSXPropertyControl,
-  IdentifierExpressionCartoucheControl,
 } from './property-control-controls'
 import { ExpandableIndicator } from '../../../navigator/navigator-item/expandable-indicator'
 import { unless, when } from '../../../../utils/react-conditionals'
@@ -107,6 +106,7 @@ import { jsxElementChildToText } from '../../../canvas/ui-jsx-canvas-renderer/js
 import { foldEither } from '../../../../core/shared/either'
 import { stopPropagation } from '../../common/inspector-utils'
 import { NO_OP } from '../../../../core/shared/utils'
+import { IdentifierExpressionCartoucheControl } from './cartouche-control'
 
 export const VariableFromScopeOptionTestId = (idx: string) => `variable-from-scope-${idx}`
 export const DataPickerPopupButtonTestId = `data-picker-popup-button-test-id`

@@ -72,7 +72,7 @@ import {
 import { toVSCodeExtensionMessage } from 'utopia-vscode-common'
 import type { Emphasis } from 'utopia-api'
 import { contextMenu } from 'react-contexify'
-import { DataReferenceCartoucheControl } from '../../inspector/sections/component-section/property-control-controls'
+import { DataReferenceCartoucheControl } from '../../inspector/sections/component-section/data-reference-cartouche'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
