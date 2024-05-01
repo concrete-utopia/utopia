@@ -2463,6 +2463,11 @@ export const UPDATE_FNS = {
       editorForAction,
       false,
       (editor) => {
+        if (action.whatToWrapWith.element.type === 'JSX_MAP_EXPRESSION') {
+          return
+          return editor
+        }
+
         const orderedActionTargets = getZIndexOrderedViewsWithoutDirectChildren(
           action.targets,
           derived.navigatorTargets,
@@ -6404,3 +6409,5 @@ function updateFilePath(
       : withUpdatedPropertyControls
   }
 }
+
+function wrapIntoMapInner(editor: EditorModel, mapToUse: JSXMapExpression): EditorModel {}

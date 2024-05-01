@@ -1,14 +1,13 @@
 import * as React from 'react'
-import {
-  generateUidWithExistingComponents,
-  removeJSXElement,
-} from '../../core/model/element-template-utils'
+import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import { safeIndex } from '../..//core/shared/array-utils'
 import { emptyElementPath } from '../..//core/shared/element-path'
 import type {
   ElementInstanceMetadataMap,
   JSXConditionalExpressionWithoutUID,
   JSXFragmentWithoutUID,
+  JSXMapExpression,
+  JSXMapExpressionWithoutUID,
 } from '../..//core/shared/element-template'
 import {
   emptyComments,
@@ -224,13 +223,14 @@ export function changeElement(
   return actionsToDispatch
 }
 
-function wrapIntoMap() {
-  /**
-   * - remove the target(s) from the project
-   * - insert the map under the parent of the selected elements
-   * - if there is more than one element, group them into a fragment
-   * - insert the fragment into the map
-   */
+function wrapIntoMapActions(
+  projectContents: ProjectContentTreeRoot,
+  selectedViews: Array<ElementPath>,
+  jsxMapExpressionWithoutUID: JSXMapExpressionWithoutUID,
+) {
+  const newUID = generateUidWithExistingComponents(projectContents)
+  const jsxMapExpressionWithUID: JSXMapExpression = { ...jsxMapExpressionWithoutUID, uid: newUID }
+  return [wrapInElement(selectedViews, { element: jsxMapExpressionWithUID, importsToAdd: {} })]
 }
 
 export function getActionsToApplyChange(
@@ -271,7 +271,7 @@ export function getActionsToApplyChange(
         insertMenuItemValue.source,
       )
     case 'JSX_MAP_EXPRESSION':
-      return [] // we don't support converting to maps
+      return wrapIntoMapActions(projectContents, selectedViews, element)
     default:
       assertNever(element)
   }
