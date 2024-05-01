@@ -148,6 +148,7 @@ export function jsxFunctionAttributeToRawValue(
   }
 }
 
+// FIXME The naming here is **BAD**, because this is actually for JSExpressions, not just attributes
 export function jsxAttributeToValue(
   inScope: MapLike<any>,
   attribute: JSExpression,
@@ -155,7 +156,7 @@ export function jsxAttributeToValue(
   renderContext: RenderContext,
   uid: string | undefined,
   codeError: Error | null,
-  prop: string,
+  prop: string | null,
 ): any {
   if (isExpressionAccessLike(attribute)) {
     try {
@@ -224,7 +225,7 @@ function innerAttributeToValue(
   renderContext: RenderContext,
   uid: string | undefined,
   codeError: Error | null,
-  prop: string,
+  prop: string | null,
 ): any {
   const { filePath, requireResult } = renderContext
   switch (attribute.type) {
@@ -386,7 +387,7 @@ export function jsxAttributesToProps(
           renderContext,
           uid,
           codeError,
-          entry.key as string, // FIXME or not?
+          `${entry.key}`,
         )
         break
       case 'JSX_ATTRIBUTES_SPREAD':
@@ -399,7 +400,7 @@ export function jsxAttributesToProps(
             renderContext,
             uid,
             codeError,
-            '', // FIXME this would make no sense
+            null,
           ),
         )
         break

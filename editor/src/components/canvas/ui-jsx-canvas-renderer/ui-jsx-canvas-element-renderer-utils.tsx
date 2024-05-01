@@ -288,7 +288,15 @@ export function renderCoreElement(
               innerRender,
             ),
           }
-          return runJSExpression(element, elementPath, blockScope, renderContext, uid, codeError)
+          return runJSExpression(
+            element,
+            elementPath,
+            blockScope,
+            renderContext,
+            uid,
+            codeError,
+            prop,
+          )
         }
 
         const originalTextContent = STEGANOGRAPHY_ENABLED ? runJSExpressionLazy() : null
@@ -338,7 +346,7 @@ export function renderCoreElement(
           innerRender,
         ),
       }
-      return runJSExpression(element, elementPath, blockScope, renderContext, uid, codeError)
+      return runJSExpression(element, elementPath, blockScope, renderContext, uid, codeError, prop)
     }
     case 'JSX_FRAGMENT': {
       const key = optionalMap(EP.toString, elementPath) ?? element.uid
@@ -383,7 +391,7 @@ export function renderCoreElement(
         renderContext,
         uid,
         codeError,
-        prop ?? '', // FIXME
+        prop,
       )
       // Coerce `defaultConditionValueAsAny` to a value that is definitely a boolean, not something that is truthy.
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
@@ -532,15 +540,7 @@ export function renderCoreElement(
         )
       }
 
-      return jsxAttributeToValue(
-        inScope,
-        element,
-        elementPath,
-        renderContext,
-        uid,
-        codeError,
-        prop ?? '', // FIXME
-      )
+      return jsxAttributeToValue(inScope, element, elementPath, renderContext, uid, codeError, prop)
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled type ${JSON.stringify(element)}`)
@@ -700,6 +700,7 @@ function renderJSXElement(
           renderContext,
           jsx.uid,
           codeError,
+          prop,
         )
         return result
       }
@@ -824,6 +825,7 @@ function runJSExpression(
   renderContext: RenderContext,
   uid: string | undefined,
   codeError: Error | null, // this can be probably deleted, it is passed down through multiple layers but we just throw the error in the end
+  prop: string | null,
 ): any {
   switch (block.type) {
     case 'ATTRIBUTE_VALUE':
@@ -841,7 +843,7 @@ function runJSExpression(
         renderContext,
         uid,
         codeError,
-        '', // FIXME
+        prop,
       )
 
     case 'JSX_MAP_EXPRESSION':
