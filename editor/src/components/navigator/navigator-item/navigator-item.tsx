@@ -990,24 +990,6 @@ export const NavigatorItem: React.FunctionComponent<
           >
             {props.label}
           </div>
-        ) : elementIsData ? (
-          <div
-            key={`label-${props.label}-slot`}
-            style={{
-              maxWidth: 140,
-              color: colorTheme.fg5.value,
-              border: colorTheme.navigatorResizeHintBorder.value,
-              marginLeft: 23,
-              overflow: 'hidden',
-            }}
-          >
-            <DataReferenceCartoucheControl
-              elementPath={navigatorEntry.elementPath}
-              childOrAttribute={navigatorEntry.childOrAttribute}
-              selected={selected}
-              onClick={select}
-            />
-          </div>
         ) : (
           <FlexRow
             style={{
