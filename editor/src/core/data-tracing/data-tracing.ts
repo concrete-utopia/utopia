@@ -156,50 +156,33 @@ function processJSPropertyAccessors(
 
 function propUsedByIdentifierOrAccess(
   param: Param,
-  access: { originalIdentifier: JSIdentifier; path: DataPath },
+  originalIdentifier: JSIdentifier,
   pathDrillSoFar: DataPath,
-): Either<
-  string,
-  { propertyName: string; pathDrillInProperty: DataPath; modifiedPathDrillSoFar: DataPath }
-> {
+): Either<string, { propertyName: string; modifiedPathDrillSoFar: DataPath }> {
   switch (param.boundParam.type) {
     case 'REGULAR_PARAM': {
       // in case of a regular prop param, first we want to match the param name to the original identifier
-      if (param.boundParam.paramName !== access.originalIdentifier.name) {
+      if (param.boundParam.paramName !== originalIdentifier.name) {
         return left('identifier does not match the prop name')
       }
 
-      const path = access.path
-      if (path.length === 0) {
-        return right({
-          propertyName: pathDrillSoFar[0],
-          pathDrillInProperty: [],
-          modifiedPathDrillSoFar: pathDrillSoFar.slice(1),
-        })
-      }
-
-      // the prop name we are looking for is going to be the first element of the path!
       return right({
-        propertyName: path[0],
-        pathDrillInProperty: path.slice(1),
-        modifiedPathDrillSoFar: pathDrillSoFar,
+        propertyName: pathDrillSoFar[0],
+        modifiedPathDrillSoFar: pathDrillSoFar.slice(1),
       })
     }
     case 'DESTRUCTURED_OBJECT': {
       for (const paramPart of param.boundParam.parts) {
         if (paramPart.param.boundParam.type === 'REGULAR_PARAM') {
-          if (paramPart.param.boundParam.paramName === access.originalIdentifier.name) {
-            const path = access.path
+          if (paramPart.param.boundParam.paramName === originalIdentifier.name) {
             if (paramPart.param.dotDotDotToken) {
               return right({
-                propertyName: path[0],
-                pathDrillInProperty: path.slice(1),
-                modifiedPathDrillSoFar: pathDrillSoFar,
+                propertyName: pathDrillSoFar[0],
+                modifiedPathDrillSoFar: pathDrillSoFar.slice(1),
               })
             } else {
               return right({
                 propertyName: paramPart.param.boundParam.paramName,
-                pathDrillInProperty: path,
                 modifiedPathDrillSoFar: pathDrillSoFar,
               })
             }
@@ -274,12 +257,14 @@ export function traceDataFromProp(
       return dataTracingFailed(dataPath.value)
     }
 
+    const identifier = dataPath.value.originalIdentifier
+
     if (componentHoldingElement.param != null) {
       // let's try to match the name to the containing component's props!
       const foundPropSameName = propUsedByIdentifierOrAccess(
         componentHoldingElement.param,
-        dataPath.value,
-        pathDrillSoFar,
+        identifier,
+        [...dataPath.value.path, ...pathDrillSoFar],
       )
 
       if (isRight(foundPropSameName)) {
@@ -289,15 +274,10 @@ export function traceDataFromProp(
           TPP.create(parentComponentInstance, PP.create(foundPropSameName.value.propertyName)),
           metadata,
           projectContents,
-          [
-            ...foundPropSameName.value.pathDrillInProperty,
-            ...foundPropSameName.value.modifiedPathDrillSoFar,
-          ],
+          [...foundPropSameName.value.modifiedPathDrillSoFar],
         )
       }
     }
-
-    const identifier = dataPath.value.originalIdentifier
 
     const resultInComponentArbitraryBlock: DataTracingResult = lookupInArbitraryBlock(
       startFrom.elementPath,
