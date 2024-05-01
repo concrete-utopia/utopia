@@ -325,38 +325,38 @@ function lookupInComponentScope(
     }
   }
 
-  // const foundAssignmentOfIdentifier: JSAssignment<JSIdentifier, JSExpression> | null =
-  //   mapFirstApplicable(componentHoldingElement.arbitraryJSBlock?.statements ?? [], (statement) => {
-  //     if (statement.type !== 'JS_ASSIGNMENT_STATEMENT') {
-  //       return null
-  //     }
+  const foundAssignmentOfIdentifier: JSAssignment<JSIdentifier, JSExpression> | null =
+    mapFirstApplicable(componentHoldingElement.arbitraryJSBlock?.statements ?? [], (statement) => {
+      if (statement.type !== 'JS_ASSIGNMENT_STATEMENT') {
+        return null
+      }
 
-  //     return mapFirstApplicable(statement.assignments, (assignment) => {
-  //       if (assignment.leftHandSide.name === identifier.name) {
-  //         return assignment
-  //       }
-  //       return null
-  //     })
-  //   })
+      return mapFirstApplicable(statement.assignments, (assignment) => {
+        if (assignment.leftHandSide.name === identifier.name) {
+          return assignment
+        }
+        return null
+      })
+    })
 
-  // if (foundAssignmentOfIdentifier != null) {
-  //   if (
-  //     foundAssignmentOfIdentifier.rightHandSide.type === 'JS_IDENTIFIER' ||
-  //     foundAssignmentOfIdentifier.rightHandSide.type === 'JS_ELEMENT_ACCESS' ||
-  //     foundAssignmentOfIdentifier.rightHandSide.type === 'JS_PROPERTY_ACCESS'
-  //   ) {
-  //     const dataPath = processJSPropertyAccessors(foundAssignmentOfIdentifier.rightHandSide)
+  if (foundAssignmentOfIdentifier != null) {
+    if (
+      foundAssignmentOfIdentifier.rightHandSide.type === 'JS_IDENTIFIER' ||
+      foundAssignmentOfIdentifier.rightHandSide.type === 'JS_ELEMENT_ACCESS' ||
+      foundAssignmentOfIdentifier.rightHandSide.type === 'JS_PROPERTY_ACCESS'
+    ) {
+      const dataPath = processJSPropertyAccessors(foundAssignmentOfIdentifier.rightHandSide)
 
-  //     if (isRight(dataPath)) {
-  //       return traceDataFromProp(
-  //         TPP.create(componentPath, PP.create(foundAssignmentOfIdentifier.leftHandSide.name)),
-  //         MetadataUtils.elementInstanceMetadataMap(componentHoldingElement),
-  //         componentHoldingElement.projectContents,
-  //         [...dataPath.value.path, ...pathDrillSoFar],
-  //       )
-  //     }
-  //   }
-  // }
+      if (isRight(dataPath)) {
+        return lookupInComponentScope(
+          componentPath,
+          componentHoldingElement,
+          dataPath.value.originalIdentifier,
+          [...dataPath.value.path, ...pathDrillSoFar],
+        )
+      }
+    }
+  }
 
   const foundHookCall: JSAssignment<JSIdentifier, JSExpressionOtherJavaScript> | null =
     mapFirstApplicable(componentHoldingElement.arbitraryJSBlock?.statements ?? [], (statement) => {

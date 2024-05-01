@@ -424,7 +424,7 @@ describe('Data Tracing', () => {
     })
   })
 
-  xdescribe('Tracing through local variable indirection', () => {
+  describe('Tracing through local variable indirection', () => {
     it('Traces back a regular prop to a string literal jsx attribute via a single const indirection', async () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCodeWithStoryboard(`
