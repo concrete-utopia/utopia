@@ -435,67 +435,6 @@ export const CanvasToolbar = React.memo(() => {
 
   const isMyProject = useIsMyProject()
 
-  const callUpdateMetaobjectApi = React.useCallback(() => {
-    const projectId = getProjectID()
-    if (projectId == null) {
-      throw new Error('projectId == null')
-    }
-
-    const routeId_HARDCODED = 'routes/_index'
-    const dataPath_HARDCODED = ['reviews', 0, 'rating']
-    const newValue_HARDCODED = 3
-
-    const requestUpdateData = REQUEST_UPDATE_CONTEXT_GLOABAL_HACKED[routeId_HARDCODED]
-    const lastLoaderResult =
-      REQUEST_UPDATE_CONTEXT_GLOABAL_HACKED[routeId_HARDCODED].lastLoaderResult
-    if (lastLoaderResult == null) {
-      console.error('lastLoaderResult is null')
-      return
-    }
-
-    const requestUpdateResult = requestUpdateData.requestUpdateCallback?.(
-      dataPath_HARDCODED,
-      lastLoaderResult,
-      newValue_HARDCODED,
-    )
-    if (requestUpdateResult == null || isLeft(requestUpdateResult)) {
-      console.error('Request update failed', requestUpdateResult)
-      return
-    }
-
-    void fetch(urljoin('/internal/metaobjectupdate', projectId), {
-      method: 'POST',
-      credentials: 'include',
-      headers: HEADERS,
-      mode: MODE,
-      body: JSON.stringify(requestUpdateResult.value),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        // console.log(data)
-        if (data.result.data.metaobjectUpdate.userErrors.length > 0) {
-          dispatch([
-            showToast(
-              notice(
-                `Metaobject update failed: ${JSON.stringify(
-                  data.data.metaobjectUpdate.userErrors,
-                )}`,
-                'ERROR',
-                false,
-                'metaobject-update-error',
-              ),
-            ),
-          ])
-        } else {
-          dispatch([
-            showToast(
-              notice(`Metaobject update requested`, 'SUCCESS', false, 'metaobject-update-success'),
-            ),
-          ])
-        }
-      })
-  }, [dispatch])
-
   return (
     <FlexColumn
       style={{ alignItems: 'start', justifySelf: 'center' }}
@@ -526,16 +465,6 @@ export const CanvasToolbar = React.memo(() => {
             onClick={dispatchSwitchToSelectModeCloseMenus}
             keepActiveInLiveMode
             testid={CanvasToolbarEditButtonID}
-            style={{ width: 36 }}
-          />
-        </Tooltip>
-        <Tooltip title='Call Metaobject API' placement='bottom'>
-          <InsertModeButton
-            iconType={editButtonIcon.type}
-            iconCategory={editButtonIcon.category}
-            primary={canvasToolbarMode.primary === 'edit'}
-            onClick={callUpdateMetaobjectApi}
-            keepActiveInLiveMode
             style={{ width: 36 }}
           />
         </Tooltip>

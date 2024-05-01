@@ -1,5 +1,45 @@
 import type { JSXElementChild } from '../../../core/shared/element-template'
+import { optionalMap } from '../../../core/shared/optional-utils'
 import { assertNever } from '../../../core/shared/utils'
+
+export function jsxElementToDataPath(element: JSXElementChild): (string | number)[] | null {
+  switch (element.type) {
+    case 'JSX_ELEMENT':
+    case 'JSX_TEXT_BLOCK':
+    case 'JSX_FRAGMENT':
+    case 'JSX_MAP_EXPRESSION':
+    case 'JSX_CONDITIONAL_EXPRESSION':
+    case 'ATTRIBUTE_NESTED_ARRAY':
+    case 'ATTRIBUTE_NESTED_OBJECT':
+    case 'ATTRIBUTE_FUNCTION_CALL':
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+      return null
+    case 'JS_IDENTIFIER':
+      return [element.name]
+    case 'ATTRIBUTE_VALUE': {
+      switch (typeof element.value) {
+        case 'number':
+          return [element.value]
+        case 'string':
+          return [element.value]
+        default:
+          return null
+      }
+    }
+    case 'JS_ELEMENT_ACCESS':
+      return optionalMap(
+        (e) => optionalMap((onValue) => [...onValue, ...e], jsxElementToDataPath(element.onValue)),
+        jsxElementToDataPath(element.element),
+      )
+    case 'JS_PROPERTY_ACCESS':
+      return optionalMap(
+        (onValue) => [...onValue, element.property],
+        jsxElementToDataPath(element.onValue),
+      )
+    default:
+      assertNever(element)
+  }
+}
 
 export function jsxElementChildToText(
   element: JSXElementChild,

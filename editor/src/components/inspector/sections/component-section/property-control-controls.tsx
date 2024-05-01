@@ -42,6 +42,8 @@ import {
   Icn,
   Tooltip,
   iconForControlType,
+  UtopiaStyles,
+  StringInput,
 } from '../../../../uuiui'
 import type { CSSNumber } from '../../common/css-utils'
 import { printCSSNumber, cssNumber, defaultCSSColor } from '../../common/css-utils'
@@ -55,7 +57,7 @@ import { UIGridRow } from '../../widgets/ui-grid-row'
 import type { Imports, PropertyPath } from '../../../../core/shared/project-file-types'
 import { importDetailsFromImportOption } from '../../../../core/shared/project-file-types'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
-import { addImports, forceParseFile } from '../../../editor/actions/action-creators'
+import { addImports, forceParseFile, showToast } from '../../../editor/actions/action-creators'
 import type { EditorAction } from '../../../editor/action-types'
 import { forceNotNull } from '../../../../core/shared/optional-utils'
 import type { DEPRECATEDSliderControlOptions } from '../../controls/slider-control'
@@ -74,6 +76,14 @@ import type { JSXParsedType, JSXParsedValue } from '../../../../utils/value-pars
 import { assertNever } from '../../../../core/shared/utils'
 import { preventDefault, stopPropagation } from '../../common/inspector-utils'
 import { unless, when } from '../../../../utils/react-conditionals'
+import { getProjectID } from '../../../../common/env-vars'
+import { REQUEST_UPDATE_CONTEXT_GLOABAL_HACKED } from '../../../editor/store/remix-derived-data'
+import { isLeft } from '../../../../core/shared/either'
+import urljoin from 'url-join'
+import { HEADERS, MODE } from '../../../../common/server'
+import { notice } from '../../../common/notice'
+import { InspectorModal } from '../../widgets/inspector-modal'
+import { usePopper } from 'react-popper'
 
 export interface ControlForPropProps<T extends RegularControlDescription> {
   propPath: PropertyPath
@@ -805,6 +815,7 @@ export const Matrix4PropertyControl = React.memo(
 interface IdentifierExpressionCartoucheControlProps {
   contents: string
   dataType: RegularControlType
+  dataPath: (string | number)[] | null
   matchType: 'full' | 'partial'
   onOpenDataPicker: () => void
   onDeleteCartouche: () => void
@@ -821,6 +832,32 @@ export const IdentifierExpressionCartoucheControl = React.memo(
       },
       [onDeleteCartouche],
     )
+
+    const [referenceElement, setReferenceElement] = React.useState<HTMLDivElement | null>(null)
+    const [popperElement, setPopperElement] = React.useState<HTMLDivElement | null>(null)
+    const popper = usePopper(referenceElement, popperElement, {
+      modifiers: [
+        {
+          name: 'offset',
+          options: {
+            offset: [0, 8],
+          },
+        },
+      ],
+    })
+
+    const [editPopupVisible, setEditPopupVisible] = React.useState(false)
+    const closeMetaObjectEditPopupWithClick = React.useCallback((e: React.MouseEvent) => {
+      e.stopPropagation()
+      e.preventDefault()
+      setEditPopupVisible(false)
+    }, [])
+
+    const openEditPopupWithClick = React.useCallback((e: React.MouseEvent) => {
+      e.stopPropagation()
+      e.preventDefault()
+      setEditPopupVisible(true)
+    }, [])
 
     const Icon = iconForControlType(props.dataType)
 
@@ -840,6 +877,7 @@ export const IdentifierExpressionCartoucheControl = React.memo(
           gap: 2,
         }}
         onClick={props.onOpenDataPicker}
+        ref={setReferenceElement}
       >
         <Icon />
         <Tooltip title={props.contents}>
@@ -861,6 +899,26 @@ export const IdentifierExpressionCartoucheControl = React.memo(
             {/* the &lrm; non-printing character is added to fix the punctuation marks disappearing because of direction: rtl */}
           </div>
         </Tooltip>
+        {props.dataPath == null ? null : (
+          <Icn
+            category='semantic'
+            type='editpencil'
+            color='on-highlight-main'
+            width={16}
+            height={16}
+            data-testid={`edit-${testId}`}
+            onClick={openEditPopupWithClick}
+          />
+        )}
+        {!editPopupVisible || props.dataPath == null ? null : (
+          <MetaObjectUpdatePopup
+            {...popper.attributes.popper}
+            style={popper.styles.popper}
+            ref={setPopperElement}
+            close={closeMetaObjectEditPopupWithClick}
+            dataPath={props.dataPath}
+          />
+        )}
         {when(
           safeToDelete,
           <Icn
@@ -874,6 +932,164 @@ export const IdentifierExpressionCartoucheControl = React.memo(
           />,
         )}
       </FlexRow>
+    )
+  },
+)
+
+interface MetaobjectEditPopupProps {
+  close: () => void
+  dataPath: (string | number)[]
+  style: React.CSSProperties
+  currentValue: string
+}
+
+/**
+ * TODO
+ * cannot focus stringinput with mouse
+ * pass the current value to the cartouche
+ */
+
+const MetaObjectUpdatePopup = React.forwardRef<HTMLDivElement, MetaobjectEditPopupProps>(
+  (props, forwardedRef) => {
+    const dispatch = useDispatch()
+
+    const [currentValue, setCurrentValue] = React.useState<string>('')
+
+    const updateCurrentValue = React.useCallback(
+      (e: React.ChangeEvent<HTMLInputElement>) => {
+        setCurrentValue(e.target.value)
+      },
+      [setCurrentValue],
+    )
+
+    const callUpdateMetaobjectApi = React.useCallback(
+      (newValue: any) => {
+        const projectId = getProjectID()
+        if (projectId == null) {
+          throw new Error('projectId == null')
+        }
+
+        const routeId_HARDCODED = 'routes/_index'
+
+        const requestUpdateData = REQUEST_UPDATE_CONTEXT_GLOABAL_HACKED[routeId_HARDCODED]
+        const lastLoaderResult =
+          REQUEST_UPDATE_CONTEXT_GLOABAL_HACKED[routeId_HARDCODED].lastLoaderResult
+        if (lastLoaderResult == null) {
+          console.error('lastLoaderResult is null')
+          return
+        }
+
+        const requestUpdateResult = requestUpdateData.requestUpdateCallback?.(
+          props.dataPath,
+          lastLoaderResult,
+          newValue,
+        )
+        if (requestUpdateResult == null || isLeft(requestUpdateResult)) {
+          console.error('Request update failed', requestUpdateResult)
+          return
+        }
+
+        void fetch(urljoin('/internal/metaobjectupdate', projectId), {
+          method: 'POST',
+          credentials: 'include',
+          headers: HEADERS,
+          mode: MODE,
+          body: JSON.stringify(requestUpdateResult.value),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            // console.log(data)
+            if (data.result.data.metaobjectUpdate.userErrors.length > 0) {
+              dispatch([
+                showToast(
+                  notice(
+                    `Metaobject update failed: ${JSON.stringify(
+                      data.result.data.metaobjectUpdate.userErrors,
+                    )}`,
+                    'ERROR',
+                    false,
+                    'metaobject-update-error',
+                  ),
+                ),
+              ])
+            } else {
+              dispatch([
+                showToast(
+                  notice(
+                    `Metaobject update requested`,
+                    'SUCCESS',
+                    false,
+                    'metaobject-update-success',
+                  ),
+                ),
+              ])
+            }
+          })
+      },
+      [dispatch, props.dataPath],
+    )
+
+    const onSubmitValue = React.useCallback(
+      (newValue: any) => {
+        callUpdateMetaobjectApi(newValue)
+        props.close()
+      },
+      [callUpdateMetaobjectApi, props],
+    )
+
+    return (
+      <InspectorModal
+        offsetX={0}
+        offsetY={0}
+        closePopup={props.close}
+        style={{
+          zIndex: 1,
+        }}
+        closePopupOnUnmount={false}
+        outsideClickIgnoreClass={`ignore-react-onclickoutside-${props.dataPath.join('-')}`}
+      >
+        <div // this entire wrapper div was made before using the InspectorModal, so it should be re-done
+          style={{
+            background: 'transparent',
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 1, // so it's above the inspector
+          }}
+          onClick={props.close}
+        >
+          <FlexColumn
+            ref={forwardedRef}
+            tabIndex={0}
+            style={{
+              ...props.style,
+              left: -5, // to make it align with the inspector
+              backgroundColor: colorTheme.neutralBackground.value,
+              padding: '8px 4px',
+              boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
+              border: '1px solid lightgrey',
+              borderRadius: 4,
+              alignItems: 'flex-start',
+              width: '96%',
+              maxWidth: '260px',
+            }}
+          >
+            <StringInput
+              placeholder='Type new value here'
+              focusOnMount
+              value={currentValue}
+              onChange={updateCurrentValue}
+              growInputAutomatically={true}
+              includeBoxShadow={false}
+              onSubmitValue={onSubmitValue}
+              onEscape={props.close}
+              testId={`metaobject-update-${props.dataPath.join('-')}`}
+            />
+          </FlexColumn>
+        </div>
+      </InspectorModal>
     )
   },
 )

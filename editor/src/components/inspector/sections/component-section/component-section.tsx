@@ -102,7 +102,10 @@ import type { VariableData } from '../../../canvas/ui-jsx-canvas'
 import { array } from 'prop-types'
 import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'
 import { DataPickerPopup } from './data-picker-popup'
-import { jsxElementChildToText } from '../../../canvas/ui-jsx-canvas-renderer/jsx-element-child-to-text'
+import {
+  jsxElementChildToText,
+  jsxElementToDataPath,
+} from '../../../canvas/ui-jsx-canvas-renderer/jsx-element-child-to-text'
 import { foldEither } from '../../../../core/shared/either'
 import { stopPropagation } from '../../common/inspector-utils'
 import { NO_OP } from '../../../../core/shared/utils'
@@ -161,6 +164,7 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
       return (
         <IdentifierExpressionCartoucheControl
           contents={jsxElementChildToText(attributeExpression, null, null, 'jsx', 'inner')}
+          dataPath={jsxElementToDataPath(attributeExpression)}
           dataType={props.controlDescription.control}
           matchType='full'
           onOpenDataPicker={props.onOpenDataPicker}
@@ -180,6 +184,7 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
         return (
           <IdentifierExpressionCartoucheControl
             contents={'Expression'}
+            dataPath={null}
             dataType='none'
             matchType='partial'
             onOpenDataPicker={props.onOpenDataPicker}
