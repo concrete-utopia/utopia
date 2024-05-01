@@ -27,7 +27,7 @@ export const NavigatorHintCircleDiameter = 8
 const outletAwareBackgroundColor = (
   colorTheme: ReturnType<typeof useColorTheme>,
   isOutlet: boolean,
-) => (isOutlet ? colorTheme.aqua.value : colorTheme.navigatorResizeHintBorder.value)
+) => colorTheme.navigatorResizeHintBorder.value
 
 interface NavigatorHintProps {
   testId: string

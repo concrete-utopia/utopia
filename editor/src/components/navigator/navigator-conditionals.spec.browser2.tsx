@@ -1677,7 +1677,7 @@ describe('conditionals in the navigator', () => {
 
       expect(generatedElementLabel.innerText).toEqual('HELLO!')
     })
-    it('shows generated expression values in blue', async () => {
+    it('shows generated expression values in black', async () => {
       await renderTestEditorWithCode(
         getProjectCodeMapExpressionWithMultipleValues(),
         'await-first-dom-report',
@@ -1689,7 +1689,7 @@ describe('conditionals in the navigator', () => {
         )
       ).style.color
 
-      expect(labelColor).toEqual('var(--utopitheme-dynamicBlue)')
+      expect(labelColor).toEqual('var(--utopitheme-fg5)')
     })
     it('supports map expressions that return multiple values', async () => {
       const renderResult = await renderTestEditorWithCode(

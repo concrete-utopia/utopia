@@ -94,7 +94,7 @@ interface ComputedLook {
   iconColor: IcnProps['color']
 }
 
-export const BasePaddingUnit = 15
+export const BasePaddingUnit = 17
 
 export function getElementPadding(withNavigatorDepth: number): number {
   const paddingOffset = withNavigatorDepth - 1
@@ -218,8 +218,13 @@ type StyleType =
   | 'componentInstance'
   | 'erroredGroup'
   | 'lowEmphasis'
-  | 'highEmphasis'
-type SelectedType = 'unselected' | 'selected' | 'descendantOfSelected'
+  | 'selected'
+type SelectedType =
+  | 'unselected'
+  | 'selected'
+  | 'descendantOfSelected'
+  | 'selectedFocusedComponent'
+  | 'descendantOfSelectedFocusedComponent'
 
 const styleTypeColors: Record<StyleType, { color: keyof ThemeObject; iconColor: IcnColor }> = {
   default: { color: 'fg0', iconColor: 'main' },
@@ -228,13 +233,15 @@ const styleTypeColors: Record<StyleType, { color: keyof ThemeObject; iconColor: 
   componentInstance: { color: 'fg0', iconColor: 'main' },
   erroredGroup: { color: 'error', iconColor: 'error' },
   lowEmphasis: { color: 'fg5', iconColor: 'darkgray' },
-  highEmphasis: { color: 'dynamicBlue', iconColor: 'primary' },
+  selected: { color: 'white', iconColor: 'white' },
 }
 
 const selectedTypeBackground: Record<SelectedType, keyof ThemeObject> = {
   unselected: 'bg1',
-  selected: 'denimBlue',
-  descendantOfSelected: 'lightDenimBlue',
+  selected: 'selectionBlue',
+  descendantOfSelected: 'childSelectionBlue',
+  selectedFocusedComponent: 'selectionPurple',
+  descendantOfSelectedFocusedComponent: 'childSelectionPurple',
 }
 
 const getColors = (
@@ -260,6 +267,7 @@ const computeResultingStyle = (
   isProbablyScene: boolean,
   fullyVisible: boolean,
   isFocusedComponent: boolean,
+  isInFocusedComponentSubtree: boolean,
   isFocusableComponent: boolean,
   isHighlightedForInteraction: boolean,
   isDescendantOfSelected: boolean,
@@ -269,37 +277,47 @@ const computeResultingStyle = (
   let styleType: StyleType = 'default'
   let selectedType: SelectedType = 'unselected'
 
-  if (isErroredGroup) {
+  if (selected) {
+    styleType = 'selected'
+  } else if (isErroredGroup) {
     styleType = 'erroredGroup'
-  } else if (isDynamic) {
-    styleType = 'dynamic'
+  } else if (
+    (!isProbablyScene && isFocusedComponent) ||
+    (isDescendantOfSelected && isInsideComponent)
+  ) {
+    styleType = 'component'
   } else if (emphasis === 'subdued') {
     styleType = 'lowEmphasis'
-  } else if (emphasis === 'emphasized') {
-    styleType = 'highEmphasis'
-  } else if (isInsideComponent || isFocusedComponent) {
-    styleType = 'component'
   } else if (isFocusableComponent) {
     styleType = 'componentInstance'
   } else if (isHighlightedForInteraction) {
     styleType = 'default'
   }
+  const isProbablyParentOfSelected = (isProbablyScene || fullyVisible) && !selected
 
-  if (selected) {
+  if (
+    selected &&
+    (isFocusedComponent || isInsideComponent) &&
+    !isProbablyScene &&
+    !isProbablyParentOfSelected
+  ) {
+    selectedType = 'selectedFocusedComponent'
+  } else if (selected) {
     selectedType = 'selected'
+  } else if (isDescendantOfSelected && isInsideComponent) {
+    selectedType = 'descendantOfSelectedFocusedComponent'
   } else if (isDescendantOfSelected) {
     selectedType = 'descendantOfSelected'
+  } else {
+    selectedType = 'unselected'
   }
 
   let result = getColors(styleType, selectedType, colorTheme)
 
-  const isProbablyParentOfSelected = (isProbablyScene || fullyVisible) && !selected
-
   result.style = {
     ...result.style,
     fontWeight: isProbablyParentOfSelected || isProbablyScene ? 600 : 'inherit',
-    // TODO compute better borderRadius style by if it has children or siblings
-
+    // TODO compute bottom borderRadius style by if it has children or siblings
     borderRadius: selected ? '5px 5px 0 0' : undefined,
   }
 
@@ -772,6 +790,7 @@ export const NavigatorItem: React.FunctionComponent<
     isProbablyScene,
     fullyVisible,
     isFocusedComponent,
+    isInFocusedComponentSubtree,
     isManuallyFocusableComponent,
     isHighlightedForInteraction,
     elementIsData && selected ? false : isDescendantOfSelected,
@@ -876,19 +895,7 @@ export const NavigatorItem: React.FunctionComponent<
     )
   }, [childComponentCount, isFocusedComponent, isConditional])
 
-  const iconColor = isRemixItem
-    ? 'remix'
-    : isDynamic
-    ? 'dynamic'
-    : emphasis === 'subdued'
-    ? 'subdued'
-    : emphasis === 'emphasized'
-    ? 'primary'
-    : isCodeItem
-    ? 'dynamic'
-    : isComponentScene
-    ? 'component'
-    : resultingStyle.iconColor
+  const iconColor = resultingStyle.iconColor
 
   const currentlyRenaming = EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath)
   const hideContextMenu = React.useCallback(() => contextMenu.hideAll(), [])
@@ -897,10 +904,9 @@ export const NavigatorItem: React.FunctionComponent<
     <div
       onClick={hideContextMenu}
       style={{
+        borderRadius: 5,
         outline: `1px solid ${
-          props.parentOutline === 'solid' && isOutletOrDescendantOfOutlet
-            ? colorTheme.aqua.value
-            : props.parentOutline === 'solid'
+          props.parentOutline === 'solid'
             ? colorTheme.navigatorResizeHintBorder.value
             : 'transparent'
         }`,
@@ -1004,6 +1010,7 @@ export const NavigatorItem: React.FunctionComponent<
                 iconColor={iconColor}
                 elementWarnings={!isConditional ? elementWarnings : null}
                 childComponentCount={childComponentCount}
+                insideFocusedComponent={isInsideComponent && isDescendantOfSelected}
               />
             </FlexRow>
             {unless(
@@ -1141,29 +1148,11 @@ interface NavigatorRowLabelProps {
   shouldShowParentOutline: boolean
   childComponentCount: number
   dispatch: EditorDispatch
+  insideFocusedComponent: boolean
 }
 
 export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
-  const colorTheme = useColorTheme()
-
   const isCodeItem = props.codeItemType !== 'none' && props.codeItemType !== 'remix'
-  const isRemixItem = props.codeItemType === 'remix'
-  const isComponentScene =
-    useIsProbablyScene(props.navigatorEntry) && props.childComponentCount === 1
-
-  const textColor = isRemixItem
-    ? colorTheme.aqua.value
-    : props.isDynamic
-    ? colorTheme.dynamicBlue.value
-    : props.emphasis === 'subdued'
-    ? colorTheme.fg5.value
-    : props.emphasis === 'emphasized'
-    ? colorTheme.dynamicBlue.value
-    : isCodeItem
-    ? colorTheme.dynamicBlue.value
-    : isComponentScene
-    ? colorTheme.componentPurple.value
-    : undefined
 
   return (
     <div
@@ -1177,7 +1166,6 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         height: 22,
         paddingLeft: 5,
         paddingRight: props.codeItemType === 'map' ? 0 : 5,
-        color: textColor,
         textTransform: isCodeItem ? 'uppercase' : undefined,
       }}
     >
@@ -1187,7 +1175,17 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         <LayoutIcon
           key={`layout-type-${props.label}`}
           navigatorEntry={props.navigatorEntry}
-          color={props.iconColor}
+          color={
+            props.selected
+              ? 'white'
+              : props.insideFocusedComponent
+              ? 'component'
+              : props.emphasis === 'emphasized'
+              ? 'dynamic'
+              : isCodeItem || props.codeItemType === 'map'
+              ? props.iconColor
+              : props.iconColor
+          }
           elementWarnings={props.elementWarnings}
         />,
       )}
