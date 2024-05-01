@@ -23,8 +23,12 @@ import { AlwaysFalse, usePubSubAtomReadOnly } from '../../../core/shared/atom-wi
 import { CreateRemixDerivedDataRefsGLOBAL } from '../../editor/store/remix-derived-data'
 import { patchRoutesWithContext } from '../../../third-party/remix/create-remix-stub'
 import type { AppLoadContext } from '@remix-run/server-runtime'
+import { left, right } from '../../../core/shared/either'
 
-type RouteModule = RouteModules[keyof RouteModules]
+type RouteModule = RouteModules[keyof RouteModules] & {
+  requestUpdateFn: ((...args: any[]) => any) | null
+}
+
 type RouterType = ReturnType<typeof createMemoryRouter>
 
 interface RemixNavigationContext {
@@ -136,6 +140,13 @@ function useGetRouteModules(basePath: ElementPath) {
 
       const links: RouteModule['links'] = () => createExecutionScope()['links']?.() ?? null
       const meta: RouteModule['meta'] = (args) => createExecutionScope()['meta']?.(args) ?? null
+      const requestUpdate = (...args: any[]) => {
+        const requestUpdateFn = createExecutionScope()['requestUpdate']
+        if (requestUpdateFn == null) {
+          return left('No requestUpdate function found')
+        }
+        return right(requestUpdateFn(...args))
+      }
 
       const routeModule: RouteModule = {
         ...value,
@@ -143,6 +154,7 @@ function useGetRouteModules(basePath: ElementPath) {
         default: PathPropHOC(defaultComponent),
         links: links,
         meta: meta,
+        requestUpdateFn: requestUpdate,
       }
 
       routeModulesResult[routeId] = routeModule
