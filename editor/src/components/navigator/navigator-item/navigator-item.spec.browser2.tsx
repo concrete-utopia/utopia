@@ -274,7 +274,7 @@ describe('Navigator item row icons', () => {
     )
     await checkNavigatorIcon(
       'Map',
-      { category: 'navigator-element', type: 'lists', color: 'blue' },
+      { category: 'navigator-element', type: 'lists', color: 'black' },
       visibleNavigatorTargets[14],
     )
     await checkNavigatorIcon(
