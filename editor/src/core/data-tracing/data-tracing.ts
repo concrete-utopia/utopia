@@ -9,11 +9,17 @@ import type {
   JSExpressionFunctionCall,
   JSExpressionOtherJavaScript,
   JSIdentifier,
+  JSOpaqueArbitraryStatement,
   JSPropertyAccess,
   Param,
   UtopiaJSXComponent,
 } from '../shared/element-template'
-import { isJSXElement, type ElementInstanceMetadataMap } from '../shared/element-template'
+import {
+  emptyComments,
+  isJSXElement,
+  jsIdentifier,
+  type ElementInstanceMetadataMap,
+} from '../shared/element-template'
 import { forceNotNull } from '../shared/optional-utils'
 import type {
   ElementPath,
@@ -371,6 +377,77 @@ function lookupInComponentScope(
       )
     }
   }
+
+  // TODO we must support the object binding pattern in the parser
+  // until we do proper support, this is a temporary stopgap
+
+  const foundOpaqueStatementProbablyMatchingIdentifier: {
+    assignedTo: string
+    pathSoFar: DataPath
+  } | null = mapFirstApplicable(
+    componentHoldingElement.arbitraryJSBlock?.statements ?? [],
+    (statement) => {
+      // check that the originalJavascript matches the shape "const { <identifier> } = <expression>"
+      // copilot:
+      if (
+        statement.type === 'JS_OPAQUE_ARBITRARY_STATEMENT' &&
+        statement.originalJavascript.includes('const {') &&
+        statement.originalJavascript.includes(identifier.name)
+      ) {
+        const splitStatement = statement.originalJavascript.split('=')
+        if (splitStatement.length !== 2) {
+          return null
+        }
+        const leftHandSide = splitStatement[0]
+        const rightHandSide = splitStatement[1]
+
+        if (leftHandSide.includes('{') && leftHandSide.includes('}')) {
+          const leftHandSideSplit = leftHandSide.split('{')
+          if (leftHandSideSplit.length !== 2) {
+            return null
+          }
+          const leftHandSideIdentifier = leftHandSideSplit[1].split('}')[0].trim()
+          if (leftHandSideIdentifier === identifier.name) {
+            return {
+              assignedTo: rightHandSide.trim(),
+              pathSoFar: [identifier.name, ...pathDrillSoFar],
+            }
+          }
+        }
+      }
+      return null
+    },
+  )
+
+  if (foundOpaqueStatementProbablyMatchingIdentifier != null) {
+    if (
+      foundOpaqueStatementProbablyMatchingIdentifier.assignedTo.startsWith('use') &&
+      foundOpaqueStatementProbablyMatchingIdentifier.assignedTo.endsWith('()') &&
+      foundOpaqueStatementProbablyMatchingIdentifier.assignedTo.match(/^use[A-Za-z]+\(\)$/) != null
+    ) {
+      return dataTracingToAHookCall(
+        componentPath,
+        foundOpaqueStatementProbablyMatchingIdentifier.assignedTo.split('(')[0],
+        foundOpaqueStatementProbablyMatchingIdentifier.pathSoFar,
+      )
+    }
+    // check if assignedTo is a simple identifier
+    if (foundOpaqueStatementProbablyMatchingIdentifier.assignedTo.match(/^[A-Za-z]+$/) != null) {
+      return lookupInComponentScope(
+        componentPath,
+        componentHoldingElement,
+        jsIdentifier(
+          foundOpaqueStatementProbablyMatchingIdentifier.assignedTo,
+          '', // warning this is a fake uid here
+          null,
+          emptyComments,
+        ),
+        foundOpaqueStatementProbablyMatchingIdentifier.pathSoFar,
+      )
+    }
+  }
+
+  // end of temporary stopgap
 
   return dataTracingFailed('Could not find a hook call')
 }
