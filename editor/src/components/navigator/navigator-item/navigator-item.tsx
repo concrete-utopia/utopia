@@ -155,7 +155,7 @@ function selectItem(
   conditionalOverrideUpdate: ConditionalOverrideUpdate,
   highlightBounds: HighlightBoundsWithFile | null,
 ) {
-  const elementPath = getSelectionTargetForNavigatorEntry(navigatorEntry)
+  const elementPath = navigatorEntry.elementPath
 
   const shouldSelect = !(
     isConditionalClauseNavigatorEntry(navigatorEntry) ||
@@ -772,7 +772,7 @@ export const NavigatorItem: React.FunctionComponent<
     isFocusedComponent,
     isManuallyFocusableComponent,
     isHighlightedForInteraction,
-    elementIsData ? false : isDescendantOfSelected,
+    elementIsData && selected ? false : isDescendantOfSelected,
     isErroredGroup,
     colorTheme,
   )
@@ -807,10 +807,17 @@ export const NavigatorItem: React.FunctionComponent<
       highlightBounds,
     ],
   )
+
   const highlight = React.useCallback(
     () => highlightItem(dispatch, navigatorEntry, selected, isHighlighted),
     [dispatch, navigatorEntry, selected, isHighlighted],
   )
+
+  const removeHighlight = React.useCallback(
+    () => dispatch([EditorActions.clearHighlightedViews()]),
+    [dispatch],
+  )
+
   const focusComponent = React.useCallback(
     (event: React.MouseEvent) => {
       if (isManuallyFocusableComponent && !event.altKey) {
@@ -910,8 +917,8 @@ export const NavigatorItem: React.FunctionComponent<
           style={rowStyle}
           // TODO onMouseDown should probably _deselect_
           // onMouseDown={select}
-          // onMouseMove={highlight}
-          // onDoubleClick={focusComponent}
+          onMouseMove={highlight}
+          onDoubleClick={focusComponent}
         >
           <div
             key={`label-${props.label}-slot`}
@@ -1247,7 +1254,7 @@ function elementContainsExpressions(
 }
 
 function getSelectionTargetForNavigatorEntry(navigatorEntry: NavigatorEntry): ElementPath {
-  const shouldSelectParentInstead = false // isDataReferenceNavigatorEntry(navigatorEntry)
+  const shouldSelectParentInstead = isDataReferenceNavigatorEntry(navigatorEntry)
   const elementPath = shouldSelectParentInstead
     ? EP.parentPath(navigatorEntry.elementPath)
     : navigatorEntry.elementPath
