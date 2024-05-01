@@ -44,13 +44,13 @@ export type DataTracingToLiteralAttribute = {
   type: 'literal-attribute'
   elementPath: ElementPath
   property: PropertyPath
-  dataPathIntoAttribute: Array<string | number>
+  dataPathIntoAttribute: DataPath
 }
 
 export function dataTracingToLiteralAttribute(
   elementPath: ElementPath,
   property: PropertyPath,
-  dataPathIntoAttribute: Array<string | number>,
+  dataPathIntoAttribute: DataPath,
 ): DataTracingToLiteralAttribute {
   return {
     type: 'literal-attribute',
@@ -64,18 +64,38 @@ export type DataTracingToAHookCall = {
   type: 'hook-result'
   hookName: string
   elementPath: ElementPath
-  dataPathIntoAttribute: Array<string | number>
+  dataPathIntoAttribute: DataPath
 }
 
 export function dataTracingToAHookCall(
   elementPath: ElementPath,
   hookName: string,
-  dataPathIntoAttribute: Array<string | number>,
+  dataPathIntoAttribute: DataPath,
 ): DataTracingToAHookCall {
   return {
     type: 'hook-result',
     hookName: hookName,
     elementPath: elementPath,
+    dataPathIntoAttribute: dataPathIntoAttribute,
+  }
+}
+
+export type DataTracingToAComponentProp = {
+  type: 'component-prop'
+  elementPath: ElementPath
+  propertyPath: PropertyPath
+  dataPathIntoAttribute: DataPath
+}
+
+export function dataTracingToAComponentProp(
+  elementPath: ElementPath,
+  propertyPath: PropertyPath,
+  dataPathIntoAttribute: DataPath,
+): DataTracingToAComponentProp {
+  return {
+    type: 'component-prop',
+    elementPath: elementPath,
+    propertyPath: propertyPath,
     dataPathIntoAttribute: dataPathIntoAttribute,
   }
 }
@@ -89,6 +109,7 @@ export function dataTracingFailed(reason: string): DataTracingFailed {
 export type DataTracingResult =
   | DataTracingToLiteralAttribute
   | DataTracingToAHookCall
+  | DataTracingToAComponentProp
   | DataTracingFailed
 
 function findContainingComponentForElementPath(
@@ -236,9 +257,6 @@ export function traceDataFromProp(
     ])
   }
   if (propDeclaration.attribute.type === 'ATTRIBUTE_NESTED_OBJECT') {
-    const partOfObject = getJSExpressionAtPathParts(propDeclaration.attribute, pathDrillSoFar, 0)
-    // TODO we may want to actually do something with this partOfObject, for validation?
-
     return dataTracingToLiteralAttribute(
       startFrom.elementPath,
       startFrom.propertyPath,
@@ -259,46 +277,53 @@ export function traceDataFromProp(
 
     const identifier = dataPath.value.originalIdentifier
 
-    if (componentHoldingElement.param != null) {
-      // let's try to match the name to the containing component's props!
-      const foundPropSameName = propUsedByIdentifierOrAccess(
-        componentHoldingElement.param,
-        identifier,
-        [...dataPath.value.path, ...pathDrillSoFar],
-      )
-
-      if (isRight(foundPropSameName)) {
-        // ok, so let's now travel to the containing component's instance in the metadata and continue the lookup!
-        const parentComponentInstance = EP.getContainingComponent(startFrom.elementPath)
-        return traceDataFromProp(
-          TPP.create(parentComponentInstance, PP.create(foundPropSameName.value.propertyName)),
-          metadata,
-          projectContents,
-          [...foundPropSameName.value.modifiedPathDrillSoFar],
-        )
-      }
-    }
-
-    const resultInComponentArbitraryBlock: DataTracingResult = lookupInArbitraryBlock(
+    const resultInComponentScope: DataTracingResult = lookupInComponentScope(
       startFrom.elementPath,
       componentHoldingElement,
       identifier,
       [...dataPath.value.path, ...pathDrillSoFar],
     )
-    if (resultInComponentArbitraryBlock.type !== 'failed') {
-      return resultInComponentArbitraryBlock
+    if (resultInComponentScope.type === 'component-prop') {
+      return traceDataFromProp(
+        TPP.create(resultInComponentScope.elementPath, resultInComponentScope.propertyPath),
+        metadata,
+        projectContents,
+        resultInComponentScope.dataPathIntoAttribute,
+      )
+    }
+    if (resultInComponentScope.type !== 'failed') {
+      return resultInComponentScope
     }
   }
   return dataTracingFailed('We only support simple JSIdentifiers')
 }
 
-function lookupInArbitraryBlock(
+function lookupInComponentScope(
   componentPath: ElementPath,
   componentHoldingElement: UtopiaJSXComponent,
   originalIdentifier: JSIdentifier,
   pathDrillSoFar: DataPath,
 ): DataTracingResult {
   const identifier = originalIdentifier
+
+  if (componentHoldingElement.param != null) {
+    // let's try to match the name to the containing component's props!
+    const foundPropSameName = propUsedByIdentifierOrAccess(
+      componentHoldingElement.param,
+      identifier,
+      [...pathDrillSoFar],
+    )
+
+    if (isRight(foundPropSameName)) {
+      // ok, so let's now travel to the containing component's instance in the metadata and continue the lookup!
+      const parentComponentInstance = EP.getContainingComponent(componentPath)
+      return dataTracingToAComponentProp(
+        parentComponentInstance,
+        PP.create(foundPropSameName.value.propertyName),
+        foundPropSameName.value.modifiedPathDrillSoFar,
+      )
+    }
+  }
 
   // const foundAssignmentOfIdentifier: JSAssignment<JSIdentifier, JSExpression> | null =
   //   mapFirstApplicable(componentHoldingElement.arbitraryJSBlock?.statements ?? [], (statement) => {
