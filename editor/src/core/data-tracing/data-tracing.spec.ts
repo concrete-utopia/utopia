@@ -604,11 +604,10 @@ describe('Data Tracing', () => {
         dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('title'), []),
       )
     })
-  })
 
-  it('Traces back a regular prop to a string literal jsx attribute via a destructured indirection', async () => {
-    const editor = await renderTestEditorWithCode(
-      makeTestProjectCodeWithStoryboard(`
+    it('Traces back a regular prop to a string literal jsx attribute via a destructured indirection', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithStoryboard(`
       function MyComponent(props) {
         const { title } = props
         return <div data-uid='component-root' title={title} />
@@ -618,21 +617,22 @@ describe('Data Tracing', () => {
         return <MyComponent data-uid='my-component' title='string literal here' />
       }
       `),
-      'await-first-dom-report',
-    )
+        'await-first-dom-report',
+      )
 
-    await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component'))
+      await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component'))
 
-    const traceResult = traceDataFromProp(
-      EPP.create(EP.fromString('sb/app:my-component:component-root'), PP.create('title')),
-      editor.getEditorState().editor.jsxMetadata,
-      editor.getEditorState().editor.projectContents,
-      [],
-    )
+      const traceResult = traceDataFromProp(
+        EPP.create(EP.fromString('sb/app:my-component:component-root'), PP.create('title')),
+        editor.getEditorState().editor.jsxMetadata,
+        editor.getEditorState().editor.projectContents,
+        [],
+      )
 
-    expect(traceResult).toEqual(
-      dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('title'), []),
-    )
+      expect(traceResult).toEqual(
+        dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('title'), []),
+      )
+    })
   })
 })
 
