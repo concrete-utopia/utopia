@@ -2,8 +2,12 @@ import type { ProjectContentTreeRoot } from '../../components/assets'
 import { MetadataUtils } from '../model/element-metadata-utils'
 import type {
   IdentifierOrAccess,
+  JSAssignment,
+  JSAssignmentStatement,
   JSElementAccess,
   JSExpression,
+  JSExpressionFunctionCall,
+  JSExpressionOtherJavaScript,
   JSIdentifier,
   JSPropertyAccess,
   Param,
@@ -32,6 +36,7 @@ import { withUnderlyingTarget } from '../../components/editor/store/editor-state
 import { findContainingComponentForPath } from '../model/element-template-utils'
 import * as TPP from '../../components/template-property-path'
 import { assertNever } from '../shared/utils'
+import { mapFirstApplicable } from '../shared/array-utils'
 
 export type DataPath = Array<string>
 
@@ -269,26 +274,58 @@ export function traceDataFromProp(
       return dataTracingFailed(dataPath.value)
     }
 
+    if (componentHoldingElement.param != null) {
+      // let's try to match the name to the containing component's props!
+      const foundPropSameName = propUsedByIdentifierOrAccess(
+        componentHoldingElement.param,
+        dataPath.value,
+        pathDrillSoFar,
+      )
+
+      if (isRight(foundPropSameName)) {
+        // ok, so let's now travel to the containing component's instance in the metadata and continue the lookup!
+        const parentComponentInstance = EP.getContainingComponent(startFrom.elementPath)
+        return traceDataFromProp(
+          TPP.create(parentComponentInstance, PP.create(foundPropSameName.value.propertyName)),
+          metadata,
+          projectContents,
+          [
+            ...foundPropSameName.value.pathDrillInProperty,
+            ...foundPropSameName.value.modifiedPathDrillSoFar,
+          ],
+        )
+      }
+    }
+
     const identifier = dataPath.value.originalIdentifier
 
-    // let's try to match the name to the containing component's props!
-    const foundPropSameName = propUsedByIdentifierOrAccess(
-      componentHoldingElement.param!,
-      dataPath.value,
-      pathDrillSoFar,
-    )
+    const foundHookCall: JSAssignment<JSIdentifier, JSExpressionOtherJavaScript> | null =
+      mapFirstApplicable(
+        componentHoldingElement.arbitraryJSBlock?.statements ?? [],
+        (statement) => {
+          if (statement.type !== 'JS_ASSIGNMENT_STATEMENT') {
+            return null
+          }
 
-    if (isRight(foundPropSameName)) {
-      // ok, so let's now travel to the containing component's instance in the metadata and continue the lookup!
-      const parentComponentInstance = EP.getContainingComponent(startFrom.elementPath)
-      return traceDataFromProp(
-        TPP.create(parentComponentInstance, PP.create(foundPropSameName.value.propertyName)),
-        metadata,
-        projectContents,
-        [
-          ...foundPropSameName.value.pathDrillInProperty,
-          ...foundPropSameName.value.modifiedPathDrillSoFar,
-        ],
+          return mapFirstApplicable(statement.assignments, (assignment) => {
+            if (
+              assignment.leftHandSide.name === identifier.name &&
+              assignment.rightHandSide.type === 'ATTRIBUTE_OTHER_JAVASCRIPT' &&
+              assignment.rightHandSide.originalJavascript.startsWith('use') &&
+              assignment.rightHandSide.originalJavascript.endsWith('()') &&
+              assignment.rightHandSide.originalJavascript.match(/^use[A-Za-z]+\(\)$/) != null
+            ) {
+              return assignment as JSAssignment<JSIdentifier, JSExpressionOtherJavaScript>
+            }
+            return null
+          })
+        },
+      )
+    if (foundHookCall != null) {
+      return dataTracingToAHookCall(
+        startFrom.elementPath,
+        foundHookCall.rightHandSide.originalJavascript.split('()')[0],
+        [...dataPath.value.path, ...pathDrillSoFar],
       )
     }
   }

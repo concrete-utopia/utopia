@@ -295,7 +295,56 @@ describe('Data Tracing', () => {
       )
 
       expect(traceResult).toEqual(
-        dataTracingToAHookCall(EP.fromString('sb/app:my-component'), 'useLoaderData', ['title']),
+        dataTracingToAHookCall(
+          EP.fromString('sb/app:my-component:component-root'),
+          'useLoaderData',
+          ['title'],
+        ),
+      )
+    })
+
+    it('Traces back a prop to a useLoaderData with a deep data path through multiple components', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithStoryboard(`
+      function MyInnerComponent({title}) {
+        return <div data-uid='inner-component-root' innerTitle={title.value} />
+      }
+      
+      function MyComponent({doc}) {
+        return <MyInnerComponent data-uid='component-root' title={doc.very.deep.title} />
+      }
+
+      function useLoaderData() {
+        return {very: { deep: { title: {value: 'string literal here'} } } }
+      }
+
+      function App() {
+        const data = useLoaderData()
+        return <MyComponent data-uid='my-component' doc={data} />
+      }
+      `),
+        'await-first-dom-report',
+      )
+
+      await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component:component-root'))
+
+      const traceResult = traceDataFromProp(
+        EPP.create(
+          EP.fromString('sb/app:my-component:component-root:inner-component-root'),
+          PP.create('innerTitle'),
+        ),
+        editor.getEditorState().editor.jsxMetadata,
+        editor.getEditorState().editor.projectContents,
+        [],
+      )
+
+      expect(traceResult).toEqual(
+        dataTracingToAHookCall(EP.fromString('sb/app:my-component'), 'useLoaderData', [
+          'very',
+          'deep',
+          'title',
+          'value',
+        ]),
       )
     })
   })
