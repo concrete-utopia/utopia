@@ -64,6 +64,7 @@ import { assertNever } from '../../../core/shared/utils'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { MapCounter } from './map-counter'
 import { useCreateCallbackToShowComponentPicker } from './component-picker-context-menu'
+import type { InsertionTarget } from './component-picker-context-menu'
 import { getHighlightBoundsForProject } from '../../../core/model/project-file-utils'
 import {
   selectedElementChangedMessageFromHighlightBounds,
@@ -825,6 +826,16 @@ export const NavigatorItem: React.FunctionComponent<
     'NavigatorItem isHiddenConditionalBranch',
   )
 
+  const conditionalCase = useEditorState(
+    Substores.metadata,
+    (store) =>
+      getConditionalCaseCorrespondingToBranchPath(
+        props.navigatorEntry.elementPath,
+        store.editor.jsxMetadata,
+      ),
+    'NavigatorItem, conditionalCase',
+  )
+
   const isPlaceholder = isEntryAPlaceholder(props.navigatorEntry)
 
   const isComponentScene = useIsProbablyScene(navigatorEntry) && childComponentCount === 1
@@ -900,6 +911,13 @@ export const NavigatorItem: React.FunctionComponent<
               label={props.label}
               parentOutline={props.parentOutline}
               navigatorEntry={navigatorEntry}
+            />
+          ) : conditionalCase !== null ? (
+            <ConditionalBranchSlot
+              label={props.label}
+              parentOutline={props.parentOutline}
+              navigatorEntry={navigatorEntry}
+              conditionalCase={conditionalCase}
             />
           ) : (
             <PlaceholderSlot label={props.label} parentOutline={props.parentOutline} />
@@ -998,6 +1016,35 @@ const RenderPropSlot = React.memo((props: RenderPropSlotProps) => {
   const showComponentPickerContextMenu = useCreateCallbackToShowComponentPicker()(
     target,
     insertionTarget,
+  )
+
+  return (
+    <PlaceholderSlot
+      label={label}
+      parentOutline={parentOutline}
+      cursor={'pointer'}
+      onClick={showComponentPickerContextMenu}
+      testId={`toggle-render-prop-${NavigatorItemTestId(
+        varSafeNavigatorEntryToKey(navigatorEntry),
+      )}`}
+    />
+  )
+})
+
+interface ConditionalBranchSlotProps {
+  label: string
+  parentOutline: ParentOutline
+  navigatorEntry: NavigatorEntry
+  conditionalCase: ConditionalCase
+}
+
+const ConditionalBranchSlot = React.memo((props: ConditionalBranchSlotProps) => {
+  const { label, parentOutline, navigatorEntry, conditionalCase } = props
+  const target = EP.parentPath(navigatorEntry.elementPath)
+
+  const showComponentPickerContextMenu = useCreateCallbackToShowComponentPicker()(
+    target,
+    conditionalCase,
   )
 
   return (
