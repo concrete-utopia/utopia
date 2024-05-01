@@ -311,6 +311,8 @@ export function getNavigatorTargets(
           }
         }
       } else if (
+        // if the metadata doesn't contain children elements, we still want to look through the in-code children, maybe we find some data entries to show
+        // ideally this should be done in the metadata, in the future this part should be removed
         subTree.children.length === 0 &&
         isFeatureEnabled('Data Entries in the Navigator')
       ) {
