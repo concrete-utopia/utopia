@@ -108,11 +108,12 @@ export const DataReferenceCartoucheControl = React.memo(
             </Tooltip>
             <Icn
               category='semantic'
-              type='editpencil'
+              type='pipette'
               color={editButtonIconColor}
-              width={16}
-              height={16}
+              width={18}
+              height={18}
               onClick={dataPickerButtonData.openPopup}
+              style={{ zoom: 0.8 }}
             />
           </FlexRow>
         </div>
