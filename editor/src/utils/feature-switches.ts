@@ -44,7 +44,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Project Thumbnail Generation': false,
   'Debug - Print UIDs': false,
   'Debug – Connections': false,
-  'Data Entries in the Navigator': !IS_TEST_ENVIRONMENT,
+  'Data Entries in the Navigator': false, // !IS_TEST_ENVIRONMENT,
 }
 
 export const STEGANOGRAPHY_ENABLED = false
