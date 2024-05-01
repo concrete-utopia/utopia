@@ -21,10 +21,12 @@ import { foldEither, isLeft, isRight } from '../../core/shared/either'
 import type { ConditionalClauseNavigatorEntry, NavigatorEntry } from '../editor/store/editor-state'
 import {
   conditionalClauseNavigatorEntry,
+  dataReferenceNavigatorEntry,
   invalidOverrideNavigatorEntry,
   isConditionalClauseNavigatorEntry,
   regularNavigatorEntry,
   renderPropNavigatorEntry,
+  renderPropValueNavigatorEntry,
   slotNavigatorEntry,
   syntheticNavigatorEntry,
 } from '../editor/store/editor-state'
@@ -85,7 +87,6 @@ export function getNavigatorTargets(
   collapsedViews: Array<ElementPath>,
   hiddenInNavigator: Array<ElementPath>,
   propertyControlsInfo: PropertyControlsInfo,
-  openFilePath: string | null,
   projectContents: ProjectContentTreeRoot,
 ): GetNavigatorTargetsResults {
   // Note: This value will not necessarily be representative of the structured ordering in
@@ -97,20 +98,57 @@ export function getNavigatorTargets(
   let navigatorTargets: Array<NavigatorEntry> = []
   let visibleNavigatorTargets: Array<NavigatorEntry> = []
 
-  function walkAndAddKeys(subTree: ElementPathTree | null, collapsedAncestor: boolean): void {
+  function walkAndAddKeys(
+    subTree: ElementPathTree | null,
+    collapsedAncestor: boolean,
+    propName: string | null,
+  ): void {
     if (subTree != null) {
       const path = subTree.path
       const isHiddenInNavigator = EP.containsPath(path, hiddenInNavigator)
       const isConditional = MetadataUtils.isElementPathConditionalFromMetadata(metadata, path)
       const isMap = MetadataUtils.isJSXMapExpression(path, metadata)
+      const isDataReference = MetadataUtils.isElementDataReference(path, metadata)
+
+      const isCollapsed = EP.containsPath(path, collapsedViews)
+      const newCollapsedAncestor = collapsedAncestor || isCollapsed || isHiddenInNavigator
+
+      function addNavigatorTargetsUnlessCollapsed(...entries: Array<NavigatorEntry>) {
+        if (newCollapsedAncestor) {
+          return
+        }
+        navigatorTargets.push(...entries)
+        visibleNavigatorTargets.push(...entries)
+      }
+
+      if (isDataReference && isFeatureEnabled('Data Entries in the Navigator')) {
+        const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
+        if (elementMetadata != null && isRight(elementMetadata.element)) {
+          // add synthetic entry
+          const element = elementMetadata.element.value
+          const dataRefEntry = dataReferenceNavigatorEntry(path, element)
+          addNavigatorTargetsUnlessCollapsed(dataRefEntry)
+        } else {
+          throw new Error(`internal error: Unexpected non-element found at ${EP.toString(path)}`)
+        }
+        return // early return!!
+      }
+
       // const isComponent = MetadataUtils.isComponentInstance(path, metadata)
-      navigatorTargets.push(regularNavigatorEntry(path))
-      if (
-        !collapsedAncestor &&
-        !isHiddenInNavigator &&
-        !MetadataUtils.isElementTypeHiddenInNavigator(path, metadata, elementPathTree)
-      ) {
-        visibleNavigatorTargets.push(regularNavigatorEntry(path))
+      const navigatorTarget =
+        propName == null
+          ? regularNavigatorEntry(path)
+          : renderPropValueNavigatorEntry(path, propName)
+      navigatorTargets.push(navigatorTarget)
+
+      const elementTypeHidden = MetadataUtils.isElementTypeHiddenInNavigator(
+        path,
+        metadata,
+        elementPathTree,
+      )
+
+      if (!collapsedAncestor && !isHiddenInNavigator && !elementTypeHidden) {
+        visibleNavigatorTargets.push(navigatorTarget)
       }
       // We collect the paths which are shown in render props, so we can filter them out from regular
       // children to avoid duplications.
@@ -142,26 +180,25 @@ export function getNavigatorTargets(
               renderPropNavigatorEntry(fakeRenderPropPath, prop),
               slotNavigatorEntry(fakeRenderPropPath, prop),
             ]
-            navigatorTargets.push(...entries)
-            visibleNavigatorTargets.push(...entries)
+            addNavigatorTargetsUnlessCollapsed(...entries)
             return
           }
 
           const childPath = EP.appendToPath(path, propValue.uid)
           const entry = renderPropNavigatorEntry(fakeRenderPropPath, prop)
-          navigatorTargets.push(entry)
-          visibleNavigatorTargets.push(entry)
+          addNavigatorTargetsUnlessCollapsed(entry)
 
           const subTreeChild = subTree?.children.find((child) =>
             EP.pathsEqual(child.path, childPath),
           )
           if (subTreeChild != null) {
             processedPathsAsRenderProp.add(EP.toString(subTreeChild.path))
-            walkAndAddKeys(subTreeChild, collapsedAncestor)
+            walkAndAddKeys(subTreeChild, collapsedAncestor, prop)
           } else {
-            const synthEntry = syntheticNavigatorEntry(childPath, propValue)
-            navigatorTargets.push(synthEntry)
-            visibleNavigatorTargets.push(synthEntry)
+            const synthEntry = isFeatureEnabled('Data Entries in the Navigator')
+              ? dataReferenceNavigatorEntry(childPath, propValue)
+              : syntheticNavigatorEntry(childPath, propValue)
+            addNavigatorTargetsUnlessCollapsed(synthEntry)
           }
         })
       }
@@ -169,23 +206,11 @@ export function getNavigatorTargets(
       const propertyControls = getPropertyControlsForTarget(
         path,
         propertyControlsInfo,
-        openFilePath,
         projectContents,
       )
 
-      if (isFeatureEnabled('Render Props in Navigator') && propertyControls != null) {
+      if (propertyControls != null) {
         walkPropertyControls(propertyControls)
-      }
-
-      const isCollapsed = EP.containsPath(path, collapsedViews)
-      const newCollapsedAncestor = collapsedAncestor || isCollapsed || isHiddenInNavigator
-
-      function addNavigatorTargetUnlessCollapsed(entry: NavigatorEntry) {
-        if (newCollapsedAncestor) {
-          return
-        }
-        navigatorTargets.push(entry)
-        visibleNavigatorTargets.push(entry)
       }
 
       function walkConditionalClause(
@@ -204,7 +229,7 @@ export function getNavigatorTargets(
           conditionalSubTree.path,
           conditionalCase,
         )
-        addNavigatorTargetUnlessCollapsed(clauseTitleEntry)
+        addNavigatorTargetsUnlessCollapsed(clauseTitleEntry)
 
         const isDynamic = (elementPath: ElementPath) => {
           return (
@@ -232,7 +257,7 @@ export function getNavigatorTargets(
           return EP.pathsEqual(childPath.path, clausePath)
         })
         if (clausePathTrees.length > 0) {
-          clausePathTrees.map((t) => walkAndAddKeys(t, newCollapsedAncestor))
+          clausePathTrees.map((t) => walkAndAddKeys(t, newCollapsedAncestor, null))
         }
 
         // Create the entry for the value of the clause.
@@ -242,7 +267,7 @@ export function getNavigatorTargets(
           (clausePathTrees.length === 0 || !clausePathTrees.some((t) => isDynamic(t.path)))
         ) {
           const clauseValueEntry = syntheticNavigatorEntry(clausePath, clauseValue)
-          addNavigatorTargetUnlessCollapsed(clauseValueEntry)
+          addNavigatorTargetsUnlessCollapsed(clauseValueEntry)
         }
       }
 
@@ -275,7 +300,7 @@ export function getNavigatorTargets(
             ? commentFlag.value
             : null
           fastForEach(Object.values(subTree.children), (child) => {
-            walkAndAddKeys(child, newCollapsedAncestor)
+            walkAndAddKeys(child, newCollapsedAncestor, null)
           })
           if (mapCountOverride != null) {
             for (let i = Object.values(subTree.children).length; i < mapCountOverride; i++) {
@@ -283,9 +308,30 @@ export function getNavigatorTargets(
                 EP.appendToPath(path, `invalid-override-${i + 1}`),
                 'data source not found',
               )
-              addNavigatorTargetUnlessCollapsed(entry)
+              addNavigatorTargetsUnlessCollapsed(entry)
             }
           }
+        }
+      } else if (
+        // if the metadata doesn't contain children elements, we still want to look through the in-code children, maybe we find some data entries to show
+        // ideally this should be done in the metadata, in the future this part should be removed
+        subTree.children.length === 0 &&
+        isFeatureEnabled('Data Entries in the Navigator')
+      ) {
+        const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
+        if (
+          elementMetadata != null &&
+          isRight(elementMetadata.element) &&
+          isJSXElement(elementMetadata.element.value) &&
+          elementMetadata.element.value.children.length > 0
+        ) {
+          const jsxElement = elementMetadata.element.value
+          const children = jsxElement.children
+          children.forEach((child) => {
+            const childPath = EP.appendToPath(path, child.uid)
+            const dataRefEntry = dataReferenceNavigatorEntry(childPath, child)
+            addNavigatorTargetsUnlessCollapsed(dataRefEntry)
+          })
         }
       } else {
         const notRenderPropChildren = Object.values(subTree.children).filter(
@@ -299,11 +345,10 @@ export function getNavigatorTargets(
             EP.appendToPath(path, renderPropId('children')),
             'children',
           )
-          navigatorTargets.push(entry)
-          visibleNavigatorTargets.push(entry)
+          addNavigatorTargetsUnlessCollapsed(entry)
         }
         fastForEach(notRenderPropChildren, (child) => {
-          walkAndAddKeys(child, newCollapsedAncestor)
+          walkAndAddKeys(child, newCollapsedAncestor, null)
         })
       }
     }
@@ -313,7 +358,7 @@ export function getNavigatorTargets(
   fastForEach(canvasRoots, (childElement) => {
     const subTree = getSubTree(projectTree, childElement.path)
 
-    walkAndAddKeys(subTree, false)
+    walkAndAddKeys(subTree, false, null)
   })
 
   return {

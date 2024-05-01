@@ -208,7 +208,7 @@ export function createInsertImageAction(
       }),
       [],
     )
-    return insertJSXElement(imageElement, parentPath, {})
+    return insertJSXElement(imageElement, parentPath, {}, 'insert-as-child')
   } else {
     throw new Error(`Attempting to insert ${imagePath} as an image when it is not stored as such.`)
   }

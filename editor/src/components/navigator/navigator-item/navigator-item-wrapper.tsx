@@ -163,6 +163,7 @@ export function getNavigatorEntryLabel(
         default:
           throw assertNever(navigatorEntry.clause)
       }
+    case 'DATA_REFERENCE':
     case 'SYNTHETIC': {
       switch (navigatorEntry.childOrAttribute.type) {
         case 'JSX_ELEMENT':
@@ -196,6 +197,8 @@ export function getNavigatorEntryLabel(
     }
     case 'RENDER_PROP':
       return navigatorEntry.propName
+    case 'RENDER_PROP_VALUE':
+      return labelForTheElement
     case 'INVALID_OVERRIDE':
       return navigatorEntry.message
     case 'SLOT':
@@ -347,6 +350,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     renamingTarget: renamingTarget,
     windowStyle: props.windowStyle,
     visibleNavigatorTargets: visibleNavigatorTargets,
+    navigatorEntry: props.navigatorEntry,
   }
 
   if (props.navigatorEntry.type === 'REGULAR') {
@@ -357,7 +361,10 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     return <NavigatorItemContainer {...entryProps} />
   }
 
-  if (props.navigatorEntry.type === 'SYNTHETIC') {
+  if (
+    props.navigatorEntry.type === 'SYNTHETIC' ||
+    props.navigatorEntry.type === 'DATA_REFERENCE' // TODO remove this once we have a proper navigator item container for data references
+  ) {
     const entryProps: SyntheticNavigatorItemContainerProps = {
       ...navigatorItemProps,
       childOrAttribute: props.navigatorEntry.childOrAttribute,
@@ -394,6 +401,14 @@ export const NavigatorItemWrapper: React.FunctionComponent<
       isOutletOrDescendantOfOutlet: false,
     }
     return <RenderPropNavigatorItemContainer {...entryProps} />
+  }
+
+  if (props.navigatorEntry.type === 'RENDER_PROP_VALUE') {
+    const entryProps: NavigatorItemDragAndDropWrapperProps = {
+      ...navigatorItemProps,
+      elementPath: props.navigatorEntry.elementPath,
+    }
+    return <NavigatorItemContainer {...entryProps} />
   }
 
   if (props.navigatorEntry.type === 'SLOT') {

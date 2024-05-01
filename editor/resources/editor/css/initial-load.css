@@ -1,31 +1,38 @@
 @font-face {
   font-family: 'utopian-inter';
-  src: url('../fonts/Inter-Regular.woff') format('woff');
+  src: url('../fonts/Inter-Regular.woff2') format('woff');
   font-weight: 400;
 }
 
 @font-face {
   font-family: 'utopian-inter';
-  src: url('../fonts/Inter-Medium.woff') format('woff');
+  src: url('../fonts/Inter-Italic.woff2') format('woff');
+  font-weight: 400;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'utopian-inter';
+  src: url('../fonts/Inter-Medium.woff2') format('woff');
   font-weight: 500;
 }
 
 @font-face {
   font-family: 'utopian-inter';
-  src: url('../fonts/Inter-MediumItalic.woff') format('woff');
+  src: url('../fonts/Inter-MediumItalic.woff2') format('woff');
   font-weight: 500;
   font-style: italic;
 }
 
 @font-face {
   font-family: 'utopian-inter';
-  src: url('../fonts/Inter-SemiBold.woff') format('woff');
+  src: url('../fonts/Inter-SemiBold.woff2') format('woff');
   font-weight: 600;
 }
 
 @font-face {
   font-family: 'utopian-inter';
-  src: url('../fonts/Inter-SemiBoldItalic.woff') format('woff');
+  src: url('../fonts/Inter-SemiBoldItalic.woff2') format('woff');
   font-weight: 600;
   font-style: italic;
 }
@@ -37,10 +44,9 @@
 body {
   margin: 0;
   background-color: transparent;
-  font-family: utopian-inter, -apple-system, BlinkMacSystemFont, Helvetica, 'Segoe UI', Roboto,
-    Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; /* from GitHub */
+  font-family: 'utopian-inter', 'sans-serif';
   font-size: 11px !important;
-  font-feature-settings: 'cv01', 'tnum', 'salt', 'zero';
+  font-feature-settings: 'cv01', 'tnum', 'zero';
   letter-spacing: 0.2px;
   line-height: 17px;
   overflow: hidden;
@@ -51,8 +57,6 @@ body {
 a {
   text-decoration: none;
   color: #007aff;
-}
-a:hover {
 }
 
 div,

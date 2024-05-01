@@ -28,7 +28,8 @@ import type { FlexGapData } from '../../gap-utils'
 import {
   cursorFromFlexDirection,
   dragDeltaForOrientation,
-  maybeFlexGapFromElement,
+  maybeFlexGapData,
+  recurseIntoChildrenOfMapOrFragment,
 } from '../../gap-utils'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
@@ -40,7 +41,7 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
-import { areAllSiblingsInOneDimensionFlexOrFlow } from './flow-reorder-helpers'
+import { singleAxisAutoLayoutDirections } from './flow-reorder-helpers'
 import { colorTheme } from '../../../../uuiui'
 import { activeFrameTargetPath, setActiveFrames } from '../../commands/set-active-frames-command'
 
@@ -60,8 +61,17 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
   }
 
   const selectedElement = selectedElements[0]
-  const children = MetadataUtils.getChildrenPathsOrdered(
+  if (
+    !MetadataUtils.isFlexLayoutedContainer(
+      MetadataUtils.findElementByElementPath(canvasState.startingMetadata, selectedElement),
+    )
+  ) {
+    return null
+  }
+
+  const children = recurseIntoChildrenOfMapOrFragment(
     canvasState.startingMetadata,
+    canvasState.startingAllElementProps,
     canvasState.startingElementPathTree,
     selectedElement,
   )
@@ -70,21 +80,21 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
     return null
   }
 
+  // do not show the gap control if the children are wrapped
   if (
-    !areAllSiblingsInOneDimensionFlexOrFlow(
-      children[0],
+    singleAxisAutoLayoutDirections(
+      children,
       canvasState.startingMetadata,
-      canvasState.startingElementPathTree,
-    )
+      children[0].specialSizeMeasurements.parentLayoutSystem ?? 'none',
+      MetadataUtils.flexDirectionToSimpleFlexDirection(
+        children[0].specialSizeMeasurements.parentFlexDirection ?? 'row',
+      ),
+    ) === 'non-single-axis-autolayout'
   ) {
     return null
   }
 
-  const flexGap = maybeFlexGapFromElement(
-    canvasState.startingMetadata,
-    canvasState.startingElementPathTree,
-    selectedElements[0],
-  )
+  const flexGap = maybeFlexGapData(canvasState.startingMetadata, selectedElement)
   if (flexGap == null) {
     return null
   }
@@ -174,7 +184,7 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
           printCSSNumber(updatedFlexGapMeasurement.value, null),
         ),
         setCursorCommand(cursorFromFlexDirection(flexGap.direction)),
-        setElementsToRerenderCommand([...selectedElements, ...children]),
+        setElementsToRerenderCommand([...selectedElements, ...children.map((c) => c.elementPath)]),
         setActiveFrames([
           {
             action: 'set-gap',

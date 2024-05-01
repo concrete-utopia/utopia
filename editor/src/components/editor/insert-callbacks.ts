@@ -46,6 +46,7 @@ import { executeFirstApplicableStrategy } from '../inspector/inspector-strategie
 import { insertAsAbsoluteStrategy } from './one-shot-insertion-strategies/insert-as-absolute-strategy'
 import { insertAsStaticStrategy } from './one-shot-insertion-strategies/insert-as-static-strategy'
 import { getStoryboardElementPath } from '../../core/model/scene-utils'
+import { type Size } from '../../core/shared/math-utils'
 
 function shouldSubjectBeWrappedWithConditional(
   subject: InsertionSubject,
@@ -192,7 +193,11 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
 
       const element = elementToReparent(
         fixUtopiaElement(
-          elementFromInsertMenuItem(elementToInsert.value.element(), elementUid, 'use-defaults'),
+          elementFromInsertMenuItem(
+            elementToInsert.value.element(),
+            elementUid,
+            elementToInsert.value.defaultSize ?? undefined,
+          ),
           allElementUids,
         ).value,
         elementToInsert.value.importsToAdd,
@@ -253,8 +258,7 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
     ],
   )
 }
-
-function attributesWithDefaults(initialProps: JSXAttributes): JSXAttributes {
+function attributesWithDefaults(initialProps: JSXAttributes, defaultSize: Size): JSXAttributes {
   const styleAttributes =
     getJSXAttribute(initialProps, 'style') ?? jsExpressionValue({}, emptyComments)
 
@@ -263,7 +267,7 @@ function attributesWithDefaults(initialProps: JSXAttributes): JSXAttributes {
     setJSXValueInAttributeAtPath(
       styleAttributes,
       PP.fromString('width'),
-      jsExpressionValue(100, emptyComments),
+      jsExpressionValue(defaultSize.width, emptyComments),
     ),
   )
   const styleWithHeight = defaultEither(
@@ -271,7 +275,7 @@ function attributesWithDefaults(initialProps: JSXAttributes): JSXAttributes {
     setJSXValueInAttributeAtPath(
       styleWithWidth,
       PP.fromString('height'),
-      jsExpressionValue(100, emptyComments),
+      jsExpressionValue(defaultSize.height, emptyComments),
     ),
   )
 
@@ -281,12 +285,12 @@ function attributesWithDefaults(initialProps: JSXAttributes): JSXAttributes {
 export function elementFromInsertMenuItem(
   element: ComponentElementToInsert,
   uid: string,
-  useDefaults: 'use-defaults' | 'no-defaults',
+  defaultSize?: Size,
 ): JSXElementChild {
   switch (element.type) {
     case 'JSX_ELEMENT':
       const attributes =
-        useDefaults === 'use-defaults' ? attributesWithDefaults(element.props) : element.props
+        defaultSize == null ? element.props : attributesWithDefaults(element.props, defaultSize)
 
       const attributesWithUid = setJSXAttributesAttribute(
         attributes,
@@ -306,6 +310,8 @@ export function elementFromInsertMenuItem(
       )
     case 'JSX_FRAGMENT':
       return jsxFragment(uid, element.children, element.longForm)
+    case 'JSX_MAP_EXPRESSION':
+      return { ...element, uid }
     default:
       assertNever(element)
   }

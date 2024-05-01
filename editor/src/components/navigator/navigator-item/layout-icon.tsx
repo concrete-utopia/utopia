@@ -62,7 +62,7 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
     const { elementWarnings, color, warningText: propsWarningText, navigatorEntry } = props
     const { iconProps, isPositionAbsolute } = useLayoutOrElementIcon(navigatorEntry)
 
-    const addAbsoltueMarkerToIcon = isPositionAbsolute
+    const addAbsoluteMarkerToIcon = isPositionAbsolute
 
     const isZeroSized = useEditorState(
       Substores.metadata,
@@ -115,7 +115,7 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
             category='navigator-element'
             type='zerosized-div'
             testId={iconTestId}
-            color={'main'}
+            color={color === 'subdued' ? 'subdued' : 'main'}
             width={12}
             height={12}
           />
@@ -139,7 +139,7 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
             style={{
               // with the current design, for absolute elements we apply a 4 corner overlay over the icon,
               // so we shrink it to make it visually fit inside the box
-              transform: addAbsoltueMarkerToIcon ? 'scale(.8)' : undefined,
+              transform: addAbsoluteMarkerToIcon ? 'scale(.8)' : undefined,
             }}
           >
             <Icn
@@ -196,7 +196,7 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
       isErroredGroup,
       isErroredGroupChild,
       iconTestId,
-      addAbsoltueMarkerToIcon,
+      addAbsoluteMarkerToIcon,
     ])
 
     const marker = React.useMemo(() => {
@@ -210,11 +210,12 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
             }}
           />
         )
-      } else if (addAbsoltueMarkerToIcon) {
+      } else if (addAbsoluteMarkerToIcon) {
         return (
           <Icn
             category='navigator-element'
             type='absolute-corners'
+            color={color}
             width={12}
             height={12}
             testId={`absolute-marker-for-${iconTestId}`}
@@ -224,7 +225,7 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
       } else {
         return null
       }
-    }, [addAbsoltueMarkerToIcon, color, warningText, isErroredGroupChild, iconTestId])
+    }, [addAbsoluteMarkerToIcon, color, warningText, isErroredGroupChild, iconTestId])
 
     return (
       <div

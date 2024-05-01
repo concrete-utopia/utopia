@@ -229,6 +229,8 @@ import type {
   RemoveFeaturedRoute,
   ResetOnlineState,
   IncreaseOnlineStateFailureCount,
+  AddCollapsedViews,
+  ReplaceMappedElement,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -267,13 +269,28 @@ export function clearSelection(): EditorAction {
 
 export function insertJSXElement(
   element: JSXElement,
-  parent: ElementPath | null,
+  target: ElementPath | null,
   importsToAdd: Imports,
+  insertionBehaviour: 'insert-as-child' | 'replace-target',
 ): InsertJSXElement {
   return {
     action: 'INSERT_JSX_ELEMENT',
     jsxElement: element,
-    parent: parent,
+    target: target,
+    importsToAdd: importsToAdd,
+    insertionBehaviour: insertionBehaviour,
+  }
+}
+
+export function replaceMappedElement(
+  element: JSXElement,
+  target: ElementPath,
+  importsToAdd: Imports,
+): ReplaceMappedElement {
+  return {
+    action: 'REPLACE_MAPPED_ELEMENT',
+    jsxElement: element,
+    target: target,
     importsToAdd: importsToAdd,
   }
 }
@@ -485,6 +502,13 @@ export function toggleCollapse(target: ElementPath): ToggleCollapse {
   return {
     action: 'TOGGLE_COLLAPSE',
     target: target,
+  }
+}
+
+export function addCollapsedViews(collapsedViews: ElementPath[]): AddCollapsedViews {
+  return {
+    action: 'ADD_COLLAPSED_VIEWS',
+    collapsedViews: collapsedViews,
   }
 }
 

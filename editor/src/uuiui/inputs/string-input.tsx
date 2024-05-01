@@ -26,6 +26,10 @@ export interface StringInputProps
   className?: string
   DEPRECATED_labelBelow?: React.ReactChild
   controlStatus?: ControlStatus
+  growInputAutomatically?: boolean
+  includeBoxShadow?: boolean
+  onSubmitValue?: (value: string) => void
+  onEscape?: () => void
 }
 
 export const StringInput = React.memo(
@@ -35,6 +39,7 @@ export const StringInput = React.memo(
         controlStatus = 'simple',
         style,
         focusOnMount = false,
+        includeBoxShadow = true,
         placeholder: initialPlaceHolder,
         DEPRECATED_labelBelow: labelBelow,
         testId,
@@ -90,18 +95,22 @@ export const StringInput = React.memo(
               borderRadius: 2,
               color: controlStyles.mainColor,
               position: 'relative',
-              background: colorTheme.bg2.value,
+              background: 'transparent',
               '&:hover': {
-                boxShadow: `inset 0px 0px 0px 1px ${colorTheme.fg7.value}`,
+                boxShadow: includeBoxShadow
+                  ? `inset 0px 0px 0px 1px ${colorTheme.fg7.value}`
+                  : undefined,
               },
               '&:focus-within': {
-                boxShadow: `inset 0px 0px 0px 1px ${colorTheme.dynamicBlue.value}`,
+                boxShadow: includeBoxShadow
+                  ? `inset 0px 0px 0px 1px ${colorTheme.dynamicBlue.value}`
+                  : undefined,
               },
             }}
           >
             <HeadlessStringInput
               {...inputProps}
-              data-testid={testId}
+              testId={testId}
               data-controlstatus={controlStatus}
               value={inputProps.value}
               css={[
@@ -113,7 +122,7 @@ export const StringInput = React.memo(
                   },
                 },
                 InspectorInputEmotionStyle({
-                  controlStyles,
+                  controlStyles: controlStyles,
                   hasLabel: false,
                 }),
               ]}
@@ -124,6 +133,7 @@ export const StringInput = React.memo(
               disabled={disabled}
               autoComplete='off'
               spellCheck={false}
+              growInputAutomatically={inputProps.growInputAutomatically}
             />
             {labelBelow == null ? null : (
               <LabelBelow htmlFor={inputProps.id} style={{ color: controlStyles.secondaryColor }}>
@@ -147,14 +157,27 @@ const LabelBelow = styled.label({
 export type HeadlessStringInputProps = React.InputHTMLAttributes<HTMLInputElement> & {
   onSubmitValue?: (value: string) => void
   onEscape?: () => void
+  growInputAutomatically?: boolean
+  testId: string
 }
 
 export const HeadlessStringInput = React.forwardRef<HTMLInputElement, HeadlessStringInputProps>(
   (props, propsRef) => {
-    const { onSubmitValue, onEscape, ...otherProps } = props
+    const {
+      onSubmitValue,
+      onEscape,
+      onChange,
+      growInputAutomatically = false,
+      style = {},
+      value,
+      testId,
+      ...otherProps
+    } = props
     const { disabled, onKeyDown, onFocus } = otherProps
 
     const ref = React.useRef<HTMLInputElement>(null)
+
+    const spanRef = React.useRef<HTMLSpanElement>(null)
 
     const handleOnKeyDown = React.useCallback(
       (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -195,14 +218,51 @@ export const HeadlessStringInput = React.forwardRef<HTMLInputElement, HeadlessSt
       [disabled, onFocus],
     )
 
-    return (
+    const inputComponent = (
       <input
         ref={composeRefs(ref, propsRef)}
+        data-testid={testId}
         {...otherProps}
         disabled={disabled}
         onKeyDown={handleOnKeyDown}
         onFocus={handleOnFocus}
+        onChange={onChange}
+        style={{
+          ...style,
+          gridRowStart: growInputAutomatically ? 1 : style.gridRowStart,
+          gridColumnStart: growInputAutomatically ? 1 : style.gridColumnStart,
+        }}
+        value={value ?? ''}
       />
     )
+
+    if (growInputAutomatically) {
+      return (
+        <div
+          style={{
+            display: 'inline-grid',
+            background: 'transparent',
+          }}
+        >
+          {inputComponent}
+          <span
+            ref={spanRef}
+            data-testid={`${testId}-span`}
+            {...otherProps}
+            style={{
+              ...style,
+              visibility: 'hidden',
+              whiteSpace: 'nowrap',
+              gridRowStart: 1,
+              gridColumnStart: 1,
+            }}
+          >
+            {value ?? ''}
+          </span>
+        </div>
+      )
+    } else {
+      return inputComponent
+    }
   },
 )

@@ -1,8 +1,11 @@
+/** @jsxRuntime classic */
+/** @jsx jsx */
+import { jsx } from '@emotion/react'
 import React from 'react'
 import { usePopper } from 'react-popper'
 import { identity } from '../../../../../core/shared/utils'
 import utils from '../../../../../utils/utils'
-import { FlexRow, UtopiaTheme, Icons, UtopiaStyles } from '../../../../../uuiui'
+import { FlexRow, UtopiaTheme, colorTheme, SmallerIcons } from '../../../../../uuiui'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { addOnUnsetValues } from '../../../common/context-menu-items'
 import { stylePropPathMappingFn, useInspectorInfo } from '../../../common/property-path-hooks'
@@ -70,17 +73,22 @@ export const FontFamilySelect = React.memo(() => {
           ref={setReferenceElement}
           onMouseDown={onMouseDown}
           style={{
-            background: controlStyles.backgroundColor,
             color: controlStyles.mainColor,
-            boxShadow: `0 0 0 1px ${controlStyles.borderColor} inset`,
-            padding: 4,
-            fontSize: 14,
-            height: 30,
+            padding: '0 8px',
+            height: 22,
             borderRadius: UtopiaTheme.inputBorderRadius,
+          }}
+          css={{
+            '&:hover': {
+              boxShadow: `inset 0px 0px 0px 1px ${colorTheme.fg7.value}`,
+            },
+            '&:focus-within': {
+              boxShadow: `inset 0px 0px 0px 1px ${colorTheme.dynamicBlue.value}`,
+            },
           }}
         >
           <div style={{ flexGrow: 1 }}>{value.fontFamily[0]}</div>
-          <Icons.ExpansionArrowDown />
+          <SmallerIcons.ExpansionArrowDown />
         </FlexRow>
       </InspectorContextMenuWrapper>
     </PropertyRow>

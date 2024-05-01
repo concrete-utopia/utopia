@@ -37,15 +37,9 @@ import { setJSXValueAtPath } from '../shared/jsx-attribute-utils'
 export function targetRespectsLayout(
   target: ElementPath,
   propertyControlsInfo: PropertyControlsInfo,
-  openFilePath: string | null,
   projectContents: ProjectContentTreeRoot,
 ): boolean {
-  const propControls = getPropertyControlsForTarget(
-    target,
-    propertyControlsInfo,
-    openFilePath,
-    projectContents,
-  )
+  const propControls = getPropertyControlsForTarget(target, propertyControlsInfo, projectContents)
 
   return propControls != null && hasStyleControls(propControls)
 }

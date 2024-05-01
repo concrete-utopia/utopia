@@ -40,6 +40,7 @@ import {
   isJSPropertyAccess,
   isJSElementAccess,
   isJSExpression,
+  isJSXTextBlock,
 } from '../../core/shared/element-template'
 import {
   guaranteeUniqueUids,
@@ -156,6 +157,10 @@ import type { ErrorMessage } from '../../core/shared/error-messages'
 import type { OverlayError } from '../../core/shared/runtime-report-logs'
 import type { RouteModulesWithRelativePaths } from './remix/remix-utils'
 import type { IsCenterBased } from './canvas-strategies/strategies/resize-helpers'
+import { getComponentDescriptorForTarget } from '../../core/property-controls/property-controls-utils'
+import type { PropertyControlsInfo } from '../custom-code/code-file'
+import { mapDropNulls } from '../../core/shared/array-utils'
+import { isFeatureEnabled } from '../../utils/feature-switches'
 
 function dragDeltaScaleForProp(prop: LayoutTargetableProp): number {
   switch (prop) {
@@ -1688,6 +1693,7 @@ export function getValidElementPaths(
   topLevelElementName: string,
   instancePath: ElementPath,
   projectContents: ProjectContentTreeRoot,
+  autoFocusedPaths: Array<ElementPath>,
   filePath: string,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
   getRemixValidPathsGenerationContext: (path: ElementPath) => RemixValidPathsGenerationContext,
@@ -1720,6 +1726,7 @@ export function getValidElementPaths(
           topLevelElement.rootElement,
           instancePath,
           projectContents,
+          autoFocusedPaths,
           resolvedFilePath,
           filePath,
           false,
@@ -1738,6 +1745,7 @@ function getValidElementPathsFromElement(
   element: JSXElementChild,
   parentPath: ElementPath,
   projectContents: ProjectContentTreeRoot,
+  autoFocusedPaths: Array<ElementPath>,
   filePath: string,
   uiFilePath: string,
   isOnlyChildOfScene: boolean,
@@ -1773,6 +1781,7 @@ function getValidElementPathsFromElement(
             topLevelElement,
             parentPathInner,
             projectContents,
+            autoFocusedPaths,
             routeModulePath,
             uiFilePath,
             false,
@@ -1812,6 +1821,7 @@ function getValidElementPathsFromElement(
           c,
           path,
           projectContents,
+          autoFocusedPaths,
           filePath,
           uiFilePath,
           isSceneWithOneChild,
@@ -1833,6 +1843,7 @@ function getValidElementPathsFromElement(
                 prop,
                 path,
                 projectContents,
+                autoFocusedPaths,
                 filePath,
                 uiFilePath,
                 isSceneWithOneChild,
@@ -1853,25 +1864,46 @@ function getValidElementPathsFromElement(
         ? null
         : EP.pathUpToElementPath(focusedElementPath, lastElementPathPart, 'static-path')
 
+    const matchingAutofocusedPathParts: Array<ElementPath> = mapDropNulls((autofocusedPath) => {
+      return autofocusedPath == null || lastElementPathPart == null
+        ? null
+        : EP.pathUpToElementPath(autofocusedPath, lastElementPathPart, 'static-path')
+    }, autoFocusedPaths)
+
     const isFocused = isOnlyChildOfScene || matchingFocusedPathPart != null
     if (isFocused) {
-      paths.push(
-        ...getValidElementPaths(
-          focusedElementPath,
-          name,
-          matchingFocusedPathPart ?? path,
-          projectContents,
-          filePath,
-          resolve,
-          getRemixValidPathsGenerationContext,
-        ),
+      const result = getValidElementPaths(
+        focusedElementPath,
+        name,
+        matchingFocusedPathPart ?? path,
+        projectContents,
+        autoFocusedPaths,
+        filePath,
+        resolve,
+        getRemixValidPathsGenerationContext,
       )
+      paths.push(...result)
     }
+    matchingAutofocusedPathParts.forEach((autofocusedPathPart) => {
+      const result = getValidElementPaths(
+        focusedElementPath,
+        name,
+        autofocusedPathPart,
+        projectContents,
+        autoFocusedPaths,
+        filePath,
+        resolve,
+        getRemixValidPathsGenerationContext,
+      )
+      paths.push(...result)
+    })
 
     return paths
   } else if (
-    isJSExpression(element) &&
-    (isJSIdentifier(element) || isJSPropertyAccess(element) || isJSElementAccess(element))
+    (isJSXTextBlock(element) && isFeatureEnabled('Data Entries in the Navigator')) ||
+    isJSIdentifier(element) ||
+    isJSPropertyAccess(element) ||
+    isJSElementAccess(element)
   ) {
     const uid = getUtopiaID(element)
     const path = parentIsInstance
@@ -1909,6 +1941,7 @@ function getValidElementPathsFromElement(
           e,
           path,
           projectContents,
+          autoFocusedPaths,
           filePath,
           uiFilePath,
           false,
@@ -1932,6 +1965,7 @@ function getValidElementPathsFromElement(
           e,
           path,
           projectContents,
+          autoFocusedPaths,
           filePath,
           uiFilePath,
           false,

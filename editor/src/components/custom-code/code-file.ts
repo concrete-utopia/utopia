@@ -31,12 +31,14 @@ import type {
   JSXConditionalExpressionWithoutUID,
   JSXElementWithoutUID,
   JSXFragmentWithoutUID,
+  JSXMapExpressionWithoutUID,
   UtopiaJSXComponent,
 } from '../../core/shared/element-template'
 import {
   clearJSXConditionalExpressionWithoutUIDUniqueIDs,
   clearJSXElementWithoutUIDUniqueIDs,
   clearJSXFragmentWithoutUIDUniqueIDs,
+  clearJSXMapExpressionWithoutUIDUniqueIDs,
 } from '../../core/shared/element-template'
 import { objectMap } from '../../core/shared/object-utils'
 import { getTransitiveReverseDependencies } from '../../core/shared/project-contents-dependencies'
@@ -90,6 +92,7 @@ export type ComponentElementToInsert =
   | JSXElementWithoutUID
   | JSXConditionalExpressionWithoutUID
   | JSXFragmentWithoutUID
+  | JSXMapExpressionWithoutUID
 
 export function clearComponentElementToInsertUniqueIDs(
   toInsert: ComponentElementToInsert,
@@ -101,6 +104,8 @@ export function clearComponentElementToInsertUniqueIDs(
       return clearJSXConditionalExpressionWithoutUIDUniqueIDs(toInsert)
     case 'JSX_FRAGMENT':
       return clearJSXFragmentWithoutUIDUniqueIDs(toInsert)
+    case 'JSX_MAP_EXPRESSION':
+      return clearJSXMapExpressionWithoutUIDUniqueIDs(toInsert)
     default:
       assertNever(toInsert)
   }
@@ -124,19 +129,10 @@ export function componentInfo(
   }
 }
 
-export type PlaceholderSpec =
-  // a placeholder that inserts a span that wraps `contents`. This will be
-  // editable with the text editor
-  | { type: 'text'; contents: string }
-  // inserts a `div` with the specified width and height
-  | { type: 'spacer'; width: number; height: number }
-  | { type: 'fill' }
-
 export interface ComponentDescriptor {
   properties: PropertyControls
   supportsChildren: boolean
   preferredChildComponents: Array<PreferredChildComponentDescriptor>
-  childrenPropPlaceholder: PlaceholderSpec | null
   variants: ComponentInfo[]
   source: ComponentDescriptorSource
   focus: Focus
@@ -147,13 +143,12 @@ export interface ComponentDescriptor {
 
 export const ComponentDescriptorDefaults: Pick<
   ComponentDescriptor,
-  'focus' | 'inspector' | 'emphasis' | 'icon' | 'childrenPropPlaceholder'
+  'focus' | 'inspector' | 'emphasis' | 'icon'
 > = {
   focus: 'default',
   inspector: 'all',
   emphasis: 'regular',
   icon: 'regular',
-  childrenPropPlaceholder: null,
 }
 
 export function componentDescriptor(
@@ -161,7 +156,6 @@ export function componentDescriptor(
   supportsChildren: boolean,
   variants: Array<ComponentInfo>,
   preferredChildComponents: Array<PreferredChildComponentDescriptor>,
-  childrenPropPlaceholder: PlaceholderSpec | null,
   source: ComponentDescriptorSource,
   focus: Focus,
   inspector: InspectorSpec,
@@ -173,7 +167,6 @@ export function componentDescriptor(
     supportsChildren: supportsChildren,
     variants: variants,
     preferredChildComponents: preferredChildComponents,
-    childrenPropPlaceholder: childrenPropPlaceholder,
     source: source,
     focus: focus,
     inspector: inspector,

@@ -17,7 +17,7 @@
 /* Tab styles */
 .tab {
   font-weight: 500;
-  font-family: 'Inter';
+  font-family: sans-serif;
   border-right: none !important;
   background-color: transparent !important;
 }
@@ -49,8 +49,8 @@
 }
 
 /* smaller 'edited / close'  marker, to match Utopia house style */
-.monaco-action-bar .actions-container {
-  transform: scale(0.7);
+.monaco-menu-container {
+  transform: scale(0.8);
 }
 
 /* Tab bar heights */

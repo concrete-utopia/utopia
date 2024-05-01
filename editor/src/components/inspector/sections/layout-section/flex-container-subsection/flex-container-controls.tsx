@@ -186,6 +186,7 @@ export const FlexWrapControl = React.memo((props: FlexWrapControlProps) => {
         options={FlexWrapOptions}
         onSubmitValue={onSubmitValue}
         controlStyles={props.controlStyles}
+        style={{ background: 'transparent' }}
       />
     </InspectorContextMenuWrapper>
   )

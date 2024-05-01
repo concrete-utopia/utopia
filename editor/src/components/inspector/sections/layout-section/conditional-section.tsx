@@ -98,7 +98,6 @@ const branchNavigatorEntriesSelector = createCachedSelector(
       [],
       [],
       {},
-      null,
       {},
     ).navigatorTargets
 
@@ -313,18 +312,24 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
     'NavigatorItemWrapper labelSelector',
   )
 
-  function onExpressionChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setConditionExpression(e.target.value)
-    setConditionOverride(null)
-  }
+  const onExpressionChange = React.useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setConditionExpression(e.target.value)
+      setConditionOverride(null)
+    },
+    [setConditionExpression, setConditionOverride],
+  )
 
-  function onExpressionKeyUp(e: React.KeyboardEvent) {
-    if (e.key === 'Enter') {
-      e.nativeEvent.stopImmediatePropagation()
-      e.preventDefault()
-      onUpdateExpression()
-    }
-  }
+  const onExpressionKeyUp = React.useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        e.nativeEvent.stopImmediatePropagation()
+        e.preventDefault()
+        onUpdateExpression()
+      }
+    },
+    [onUpdateExpression],
+  )
 
   if (
     conditionOverride === 'not-a-conditional' ||

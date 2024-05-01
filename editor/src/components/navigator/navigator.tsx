@@ -49,6 +49,7 @@ const Item = React.memo(({ index, style }: ItemProps) => {
   const editorSliceRef = useRefEditorState((store) => {
     const currentlySelectedNavigatorEntries = getSelectedNavigatorEntries(
       store.editor.selectedViews,
+      store.derived.navigatorTargets,
     )
     return {
       selectedViews: store.editor.selectedViews,
@@ -272,7 +273,6 @@ export const NavigatorComponent = React.memo(() => {
       tabIndex={-1}
       css={{
         flexGrow: 1,
-        height: '100%',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'stretch',

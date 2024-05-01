@@ -75,7 +75,7 @@ import {
   isUtopiaCommentFlagMapCount,
 } from '../../../core/shared/comment-flags'
 import { RemixSceneComponent } from './remix-scene-component'
-import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { STEGANOGRAPHY_ENABLED, isFeatureEnabled } from '../../../utils/feature-switches'
 import { jsxElementChildToText } from './jsx-element-child-to-text'
 
 export interface RenderContext {
@@ -285,7 +285,7 @@ export function renderCoreElement(
           return runJSExpression(element, elementPath, blockScope, renderContext, uid, codeError)
         }
 
-        const originalTextContent = isFeatureEnabled('Steganography') ? runJSExpressionLazy() : null
+        const originalTextContent = STEGANOGRAPHY_ENABLED ? runJSExpressionLazy() : null
 
         const textContent = trimJoinUnescapeTextFromJSXElements([element])
         const textEditorProps: TextEditorProps = {
@@ -341,6 +341,19 @@ export function renderCoreElement(
       // when the text is just edited its parent renders it in a text editor, so no need to render anything here
       if (parentPath != null && EP.pathsEqual(parentPath, editedText)) {
         return <></>
+      }
+
+      if (elementPath != null && isFeatureEnabled('Data Entries in the Navigator')) {
+        addFakeSpyEntry(
+          validPaths,
+          metadataContext,
+          elementPath,
+          element,
+          filePath,
+          imports,
+          'not-a-conditional',
+          null,
+        )
       }
 
       const lines = element.text.split('<br />').map((line) => unescapeHTML(line))
@@ -662,7 +675,7 @@ function renderJSXElement(
         return result
       }
 
-      const originalTextContent = isFeatureEnabled('Steganography') ? runJSExpressionLazy() : null
+      const originalTextContent = STEGANOGRAPHY_ENABLED ? runJSExpressionLazy() : null
 
       const textContent = trimJoinUnescapeTextFromJSXElements(childrenWithNewTextBlock)
       const textEditorProps: TextEditorProps = {

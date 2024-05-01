@@ -24,6 +24,7 @@ export const ComponentPreview: React.FunctionComponent<
           justifyItems: 'center',
           alignItems: 'center',
           position: 'relative',
+          opacity: 'var(--paneHoverOpacity)',
         }}
       >
         <Icn {...iconProps} color={props.color} />

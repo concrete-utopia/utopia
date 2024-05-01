@@ -208,6 +208,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_RIGHT_MENU_EXPANDED(action, state)
     case 'TOGGLE_COLLAPSE':
       return UPDATE_FNS.TOGGLE_COLLAPSE(action, state)
+    case 'ADD_COLLAPSED_VIEWS':
+      return UPDATE_FNS.ADD_COLLAPSED_VIEWS(action, state)
     case 'ADD_TOAST':
       return UPDATE_FNS.ADD_TOAST(action, state)
     case 'SET_REFRESHING_DEPENDENCIES':
@@ -485,6 +487,8 @@ export function runSimpleLocalEditorAction(
       )
     case 'SET_SHARING_DIALOG_OPEN':
       return UPDATE_FNS.SET_SHARING_DIALOG_OPEN(action, state)
+    case 'REPLACE_MAPPED_ELEMENT':
+      return UPDATE_FNS.REPLACE_MAPPED_ELEMENT(action, state)
     default:
       return state
   }

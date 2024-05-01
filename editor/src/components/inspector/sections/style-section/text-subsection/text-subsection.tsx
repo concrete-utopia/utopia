@@ -17,6 +17,7 @@ import {
   Icons,
   NumberInput,
   SquareButton,
+  Icn,
 } from '../../../../../uuiui'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { EditorAction } from '../../../../editor/action-types'
@@ -215,8 +216,9 @@ export const TextSubsection = React.memo(() => {
             highlight
             onMouseDown={onUnsetSubsectionValues}
             data-testid={'inspector-text-remove-all'}
+            style={{ width: 12, marginRight: 4 }}
           >
-            <Icons.Cross color={'secondary'} />
+            <Icn category='semantic' type='cross' width={12} height={12} />
           </SquareButton>
           <Icons.Threedots color={expanded ? 'secondary' : 'subdued'} onClick={toggleExpanded} />
         </InspectorSubsectionHeader>

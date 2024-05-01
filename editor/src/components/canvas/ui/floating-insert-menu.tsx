@@ -42,7 +42,7 @@ export type InsertMenuItem = {
   value: InsertMenuItemValue
 }
 
-type InsertMenuItemGroup = {
+export type InsertMenuItemGroup = {
   label: string
   options: Array<InsertMenuItem>
 }

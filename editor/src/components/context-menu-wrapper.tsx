@@ -148,7 +148,7 @@ export class MomentumContextMenu<T> extends ReactComponent<ContextMenuProps<T>> 
                     {item.label}
                   </span>
                 }
-                arrow={<Icons.ExpansionArrowRight style={{ marginLeft: 8 }} />}
+                arrow={<Icons.ExpansionArrowRightWhite style={{ marginLeft: 8 }} />}
               >
                 {item.items.map((submenuItem, submenuIndex) =>
                   this.renderItem(submenuItem, submenuIndex),

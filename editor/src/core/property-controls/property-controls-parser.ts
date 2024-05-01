@@ -87,7 +87,6 @@ import { parseEnumValue } from './property-control-values'
 import {
   parseComponentExample,
   parseComponentInsertOption,
-  parsePlaceholder,
   parsePreferredContents,
 } from './property-controls-local'
 
@@ -840,15 +839,14 @@ export function parseFolderControlDescription(
 }
 
 export function parseJSXControlDescription(value: unknown): ParseResult<JSXControlDescription> {
-  return applicative7Either(
-    (label, control, visibleByDefault, preferredContents, placeholder, required, defaultValue) => {
+  return applicative6Either(
+    (label, control, visibleByDefault, preferredContents, required, defaultValue) => {
       let jsxControlDescription: JSXControlDescription = {
         control: control,
       }
       setOptionalProp(jsxControlDescription, 'label', label)
       setOptionalProp(jsxControlDescription, 'visibleByDefault', visibleByDefault)
       setOptionalProp(jsxControlDescription, 'preferredContents', preferredContents)
-      setOptionalProp(jsxControlDescription, 'placeholder', placeholder)
       setOptionalProp(jsxControlDescription, 'required', required)
       setOptionalProp(jsxControlDescription, 'defaultValue', defaultValue)
 
@@ -864,7 +862,6 @@ export function parseJSXControlDescription(value: unknown): ParseResult<JSXContr
       ),
       'preferredContents',
     )(value),
-    optionalObjectKeyParser(parsePlaceholder, 'placeholder')(value),
     requiredFieldParser(value),
     optionalObjectKeyParser(parseAny, 'defaultValue')(value),
   )

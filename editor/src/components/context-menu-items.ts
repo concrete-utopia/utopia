@@ -22,6 +22,7 @@ import { createWrapInGroupActions } from './canvas/canvas-strategies/strategies/
 import { areAllSelectedElementsNonAbsolute } from './canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
 import { windowToCanvasCoordinates } from './canvas/dom-lookup'
 import { setFocus } from './common/actions'
+import type { PropertyControlsInfo } from './custom-code/code-file'
 import type { EditorDispatch } from './editor/action-types'
 import * as EditorActions from './editor/actions/action-creators'
 import {
@@ -44,6 +45,7 @@ import {
   toggleStylePropPath,
   toggleStylePropPaths,
 } from './inspector/common/css-utils'
+import { type ShowComponentPickerContextMenuCallback } from './navigator/navigator-item/component-picker-context-menu'
 
 export interface ContextMenuItem<T> {
   name: string | React.ReactNode
@@ -76,6 +78,8 @@ export interface CanvasData {
   contextMenuInstance: ElementContextMenuInstance
   autoFocusedPaths: Array<ElementPath>
   navigatorTargets: Array<NavigatorEntry>
+  propertyControlsInfo: PropertyControlsInfo
+  showComponentPicker: ShowComponentPickerContextMenuCallback
 }
 
 export function requireDispatch(dispatch: EditorDispatch | null | undefined): EditorDispatch {
@@ -259,6 +263,8 @@ export const setAsFocusedElement: ContextMenuItem<CanvasData> = {
         data.jsxMetadata,
         data.autoFocusedPaths,
         data.filePathMappings,
+        data.propertyControlsInfo,
+        data.projectContents,
       )
     })
   },
@@ -337,15 +343,9 @@ export const insert: ContextMenuItem<CanvasData> = {
   name: 'Add Element…',
   shortcut: 'A',
   enabled: true,
-  action: (data, dispatch) => {
-    requireDispatch(dispatch)([
-      setFocus('canvas'),
-      EditorActions.openFloatingInsertMenu({
-        insertMenuMode: 'insert',
-        parentPath: null,
-        indexPosition: null,
-      }),
-    ])
+  action: (data, _dispatch, _coord, event) => {
+    // FIXME Render prop support
+    data.showComponentPicker(data.selectedViews[0], 'insert-as-child')(event)
   },
 }
 
@@ -353,16 +353,19 @@ export const convert: ContextMenuItem<CanvasData> = {
   name: 'Swap Element With…',
   shortcut: 'S',
   enabled: (data) => {
-    return data.selectedViews.every((path) => {
-      const element = MetadataUtils.findElementByElementPath(data.jsxMetadata, path)
-      return element != null && isRight(element.element) && isJSXElementLike(element.element.value)
-    })
+    return (
+      data.selectedViews.length > 0 &&
+      data.selectedViews.every((path) => {
+        const element = MetadataUtils.findElementByElementPath(data.jsxMetadata, path)
+        return (
+          element != null && isRight(element.element) && isJSXElementLike(element.element.value)
+        )
+      })
+    )
   },
-  action: (data, dispatch) => {
-    requireDispatch(dispatch)([
-      setFocus('canvas'),
-      EditorActions.openFloatingInsertMenu(floatingInsertMenuStateSwap()),
-    ])
+  action: (data, _dispatch, _coord, event) => {
+    // FIXME Render prop support
+    data.showComponentPicker(data.selectedViews[0], 'replace-target')(event)
   },
 }
 

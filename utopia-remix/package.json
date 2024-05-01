@@ -15,6 +15,9 @@
   },
   "dependencies": {
     "@headlessui/react": "1.7.18",
+    "@octokit/request-error": "6.1.1",
+    "@octokit/rest": "20.1.0",
+    "@octokit/types": "13.4.1",
     "@openfga/sdk": "0.3.2",
     "@prisma/client": "5.9.0",
     "@radix-ui/primitive": "1.0.1",

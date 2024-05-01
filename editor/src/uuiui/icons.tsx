@@ -214,6 +214,7 @@ export const Icons = {
   ExpansionArrowControlled: makeIcon({ type: 'expansionarrow-down', color: 'primary' }),
   ExpansionArrowDown: makeIcon({ type: 'expansionarrow-down', color: 'main' }),
   ExpansionArrowRight: makeIcon({ type: 'expansionarrow-right', color: 'main' }),
+  ExpansionArrowRightWhite: makeIcon({ type: 'expansionarrow-right', color: 'white' }),
   ExternalLink: makeIcon({ type: 'externallink', color: 'main' }),
   ExternalLinkSmaller: makeIcon({ type: 'externallink-smaller', color: 'main' }),
   EyeStrikethrough: makeIcon({ type: 'eye-strikethrough', color: 'main' }),
@@ -306,6 +307,12 @@ export const Icons = {
     width: 18,
     height: 18,
   }),
+  ComponentInstance: makeIcon({
+    category: 'element',
+    type: 'componentinstance',
+    width: 18,
+    height: 18,
+  }),
   CircleSmall: makeIcon({ type: 'circle-small', color: 'secondary' }),
   CrossSmall: makeIcon({ type: 'cross-small', color: 'secondary' }),
   CrossInTranslucentCircle: makeIcon({ type: 'cross-in-translucent-circle', color: 'main' }),
@@ -350,6 +357,13 @@ export const Icons = {
     category: 'semantic',
     width: 3,
     height: 8,
+  }),
+  StringInputControl: makeIcon({
+    category: 'controltype',
+    type: 'string-input',
+    color: 'main',
+    width: 18,
+    height: 18,
   }),
 }
 

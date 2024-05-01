@@ -334,7 +334,7 @@ export interface CombinedPinControlProps {
 
 export const CombinedPinControl = React.memo((props: CombinedPinControlProps) => {
   return (
-    <FlexRow css={{ border: `1px solid ${colorTheme.subduedBorder.value}`, margin: `2px` }}>
+    <FlexRow css={{ border: `1px solid ${colorTheme.fg8.value}`, borderRadius: 2 }}>
       <PinControl
         handlePinMouseDown={props.handlePinMouseDown}
         name={'pin-control'}
@@ -346,7 +346,7 @@ export const CombinedPinControl = React.memo((props: CombinedPinControlProps) =>
       <FlexCol
         css={{
           justifyContent: 'space-evenly',
-          borderLeft: `1px solid ${colorTheme.subduedBorder.value}`,
+          borderLeft: `1px solid ${colorTheme.fg8.value}`,
         }}
       >
         <FlexRow css={{ flexGrow: 1, alignItems: 'center' }}>

@@ -33,6 +33,7 @@ import {
   InspectorSubsectionHeader,
   FlexRow,
   Icons,
+  Icn,
 } from '../../../../../uuiui'
 
 function getIndexedToggleTextShadowEnabled(index: number) {
@@ -301,21 +302,19 @@ export const TextShadowSubsection = React.memo(() => {
             <span>Text Shadow</span>
           </FlexRow>
           {propertyStatus.overwritable ? (
-            <>
+            <FlexRow style={{ gap: 4 }}>
               <SquareButton
                 highlight
                 onMouseDown={onUnsetValues}
                 data-testid={'inspector-text-shadow-remove-all'}
+                style={{ width: 12 }}
               >
-                <Icons.Cross color={propertyStatus.controlled ? 'primary' : 'secondary'} />
+                <Icn category='semantic' type='cross' width={12} height={12} />
               </SquareButton>
-              <SquareButton highlight onMouseDown={insertShadow}>
-                <Icons.Plus
-                  style={{ paddingTop: 1 }}
-                  color={propertyStatus.controlled ? 'primary' : 'secondary'}
-                />
+              <SquareButton highlight onMouseDown={insertShadow} style={{ width: 12 }}>
+                <Icn category='semantic' type='plus' width={12} height={12} />
               </SquareButton>
-            </>
+            </FlexRow>
           ) : null}
         </InspectorSubsectionHeader>
         <div

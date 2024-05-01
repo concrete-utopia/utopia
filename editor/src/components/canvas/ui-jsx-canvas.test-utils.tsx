@@ -240,6 +240,7 @@ export function renderCanvasReturnResultAndError(
       dispatch: NO_OP,
       domWalkerAdditionalElementsToUpdate: [],
       editedText: null,
+      autoFocusedPaths: storeHookForTest.getState().derived.autoFocusedPaths,
     }
   } else {
     canvasProps = {
@@ -263,6 +264,7 @@ export function renderCanvasReturnResultAndError(
       dispatch: NO_OP,
       domWalkerAdditionalElementsToUpdate: [],
       editedText: null,
+      autoFocusedPaths: storeHookForTest.getState().derived.autoFocusedPaths,
     }
   }
 

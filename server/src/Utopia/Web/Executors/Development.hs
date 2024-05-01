@@ -516,6 +516,7 @@ startup :: DevServerResources -> IO Stop
 startup DevServerResources{..} = do
   migrateDatabase (not _silentMigration) True _projectPool
   DB.cleanupCollaborationControl _databaseMetrics _projectPool getCurrentTime
+  preloadNPMDependencies _logger _npmMetrics _nodeSemaphore _locksRef
   hashedFilenamesThread <- forkIO $ watchFilenamesWithHashes (_hashCache _assetsCaches) (_assetResultCache _assetsCaches) assetPathsAndBuilders
   return $ do
         killThread hashedFilenamesThread

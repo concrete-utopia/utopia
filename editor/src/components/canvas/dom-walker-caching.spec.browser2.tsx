@@ -52,6 +52,7 @@ describe('Dom-walker Caching', () => {
     expect(saveDomReportActions.length).toBe(0)
   })
 
+  // FIXME The below two tests have become flaky because of the UPDATE_PROJECT_SERVER_STATE action
   it('resizing an out-of-file element invalidates the cache for only that scene', async () => {
     const renderResult = await prepareTestProject()
 

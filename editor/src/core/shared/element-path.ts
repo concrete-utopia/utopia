@@ -335,17 +335,6 @@ export function fullDepth(path: ElementPath): number {
   return path.parts.reduce((working, part) => working + part.length, 0)
 }
 
-export function isInsideFocusedComponent(
-  path: ElementPath,
-  autoFocusedPaths: Array<ElementPath>,
-): boolean {
-  return (
-    path.parts.length > 2 ||
-    (path.parts.length > 1 &&
-      !autoFocusedPaths.some((autoFocusedPath) => isDescendantOf(path, autoFocusedPath)))
-  )
-}
-
 function fullElementPathParent(path: StaticElementPathPart[]): StaticElementPathPart[]
 function fullElementPathParent(path: ElementPathPart[]): ElementPathPart[]
 function fullElementPathParent(path: ElementPathPart[]): ElementPathPart[] {
@@ -1113,6 +1102,32 @@ export function isExplicitlyFocused(
     path.parts.length > 1 ||
     !autoFocusedPaths.some((autoFocusedPath) => isDescendantOfOrEqualTo(path, autoFocusedPath))
   return isNotAutoFocused && isFocused(focusedElementPath, path)
+}
+
+export function isInExplicitlyFocusedSubtree(
+  focusedElementPath: ElementPath | null,
+  autoFocusedPaths: Array<ElementPath>,
+  path: ElementPath,
+): boolean {
+  // we exclude children of a potentially focused component as children are not part of the focus system
+  const componentToCheck = dropLastPathPart(path)
+  // the focusedElementPath can contain multiple focused components along its path parts
+  // if the path to check is a descendant of any of the focused components, it is considered focused
+  let focusedAncestor = focusedElementPath
+  while (
+    focusedAncestor != null &&
+    !isEmptyPath(focusedAncestor) &&
+    !isStoryboardDescendant(focusedAncestor) &&
+    // since there is a single focusedElementPath by default we considered all ancestors as focused
+    // but if an ancestor is also autofocused, we should not consider it as explicitly focused
+    !autoFocusedPaths.some((autoFocusedPath) => pathsEqual(autoFocusedPath, focusedAncestor))
+  ) {
+    if (isDescendantOfOrEqualTo(componentToCheck, focusedAncestor)) {
+      return true
+    }
+    focusedAncestor = getContainingComponent(focusedAncestor)
+  }
+  return false
 }
 
 export function getOrderedPathsByDepth(elementPaths: Array<ElementPath>): Array<ElementPath> {

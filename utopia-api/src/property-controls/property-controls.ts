@@ -1,6 +1,5 @@
 import type { CSSProperties } from 'react'
-import { fastForEach } from '../utils'
-import type { PlaceholderSpec, PreferredContents } from '../core'
+import type { PreferredContents } from '../core'
 
 // these fields are shared among all RegularControlDescription. the helper function getControlSharedFields makes sure the types line up
 // Ensure that the fields are also added to the object within `getControlSharedFields` for that typechecking.
@@ -10,15 +9,6 @@ interface ControlBaseFields {
   visibleByDefault?: boolean
   required?: boolean
   defaultValue?: unknown
-}
-function getControlSharedFields(control: RegularControlDescription): ControlBaseFields {
-  return {
-    control: control.control,
-    label: control.label,
-    visibleByDefault: control.visibleByDefault,
-    required: control.required,
-    defaultValue: control.defaultValue,
-  }
 }
 
 // Base Level Controls
@@ -241,7 +231,6 @@ export interface JSXControlDescription {
   label?: string
   visibleByDefault?: boolean
   preferredContents?: PreferredContents | PreferredContents[]
-  placeholder?: PlaceholderSpec
   required?: boolean
   defaultValue?: unknown
 }

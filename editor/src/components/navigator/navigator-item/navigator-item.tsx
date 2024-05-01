@@ -15,6 +15,7 @@ import {
   isOverriddenConditional,
   maybeConditionalActiveBranch,
   maybeConditionalExpression,
+  useConditionalCaseCorrespondingToBranchPath,
 } from '../../../core/model/conditionals'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
@@ -33,7 +34,11 @@ import { isEntryAPlaceholder } from '../../canvas/canvas-utils'
 import type { EditorAction, EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as MetaActions from '../../editor/actions/meta-actions'
-import type { ElementWarnings, NavigatorEntry } from '../../editor/store/editor-state'
+import type {
+  ElementWarnings,
+  NavigatorEntry,
+  SlotNavigatorEntry,
+} from '../../editor/store/editor-state'
 import {
   defaultElementWarnings,
   isConditionalClauseNavigatorEntry,
@@ -56,17 +61,20 @@ import { ExpandableIndicator } from './expandable-indicator'
 import { ItemLabel } from './item-label'
 import { LayoutIcon } from './layout-icon'
 import { NavigatorItemActionSheet } from './navigator-item-components'
-import { CanvasContextMenuPortalTargetID, NO_OP, assertNever } from '../../../core/shared/utils'
+import { assertNever } from '../../../core/shared/utils'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { MapCounter } from './map-counter'
-import ReactDOM from 'react-dom'
-import { RenderPropPicker, useShowRenderPropPicker } from './render-prop-selector-popup'
+import { useCreateCallbackToShowComponentPicker } from './component-picker-context-menu'
+import type { InsertionTarget } from './component-picker-context-menu'
 import { getHighlightBoundsForProject } from '../../../core/model/project-file-utils'
 import {
   selectedElementChangedMessageFromHighlightBounds,
   sendMessage,
 } from '../../../core/vscode/vscode-bridge'
 import { toVSCodeExtensionMessage } from 'utopia-vscode-common'
+import type { Emphasis } from 'utopia-api'
+import { contextMenu } from 'react-contexify'
+import { DataReferenceCartoucheControl } from '../../inspector/sections/component-section/data-reference-cartouche'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -200,7 +208,14 @@ const collapseItem = (
   e.stopPropagation()
 }
 
-type StyleType = 'default' | 'dynamic' | 'component' | 'componentInstance' | 'erroredGroup'
+type StyleType =
+  | 'default'
+  | 'dynamic'
+  | 'component'
+  | 'componentInstance'
+  | 'erroredGroup'
+  | 'lowEmphasis'
+  | 'highEmphasis'
 type SelectedType = 'unselected' | 'selected' | 'descendantOfSelected'
 
 const styleTypeColors: Record<StyleType, { color: keyof ThemeObject; iconColor: IcnColor }> = {
@@ -209,6 +224,8 @@ const styleTypeColors: Record<StyleType, { color: keyof ThemeObject; iconColor: 
   component: { color: 'componentPurple', iconColor: 'component' },
   componentInstance: { color: 'fg0', iconColor: 'main' },
   erroredGroup: { color: 'error', iconColor: 'error' },
+  lowEmphasis: { color: 'fg5', iconColor: 'darkgray' },
+  highEmphasis: { color: 'dynamicBlue', iconColor: 'primary' },
 }
 
 const selectedTypeBackground: Record<SelectedType, keyof ThemeObject> = {
@@ -234,6 +251,7 @@ const getColors = (
 
 const computeResultingStyle = (
   selected: boolean,
+  emphasis: Emphasis,
   isInsideComponent: boolean,
   isDynamic: boolean,
   isProbablyScene: boolean,
@@ -250,14 +268,18 @@ const computeResultingStyle = (
 
   if (isErroredGroup) {
     styleType = 'erroredGroup'
+  } else if (isDynamic) {
+    styleType = 'dynamic'
+  } else if (emphasis === 'subdued') {
+    styleType = 'lowEmphasis'
+  } else if (emphasis === 'emphasized') {
+    styleType = 'highEmphasis'
   } else if (isInsideComponent || isFocusedComponent) {
     styleType = 'component'
   } else if (isFocusableComponent) {
     styleType = 'componentInstance'
   } else if (isHighlightedForInteraction) {
     styleType = 'default'
-  } else if (isDynamic) {
-    styleType = 'dynamic'
   }
 
   if (selected) {
@@ -323,10 +345,11 @@ function useStyleFullyVisible(
           }
         })
 
-        let isInsideFocusedComponent =
-          !MetadataUtils.isContainingComponentRemixSceneOrOutlet(store.editor.jsxMetadata, path) &&
-          (EP.isFocused(store.editor.focusedElementPath, path) ||
-            EP.isInsideFocusedComponent(path, autoFocusedPaths))
+        const isInsideFocusedComponent = EP.isInExplicitlyFocusedSubtree(
+          store.editor.focusedElementPath,
+          autoFocusedPaths,
+          navigatorEntry.elementPath,
+        )
 
         return (
           isStoryboardChild ||
@@ -492,6 +515,18 @@ export const NavigatorItem: React.FunctionComponent<
     'NavigatorItem isFocusedComponent',
   )
 
+  const isInFocusedComponentSubtree = useEditorState(
+    Substores.focusedElement,
+    (store) =>
+      isRegularNavigatorEntry(navigatorEntry) &&
+      EP.isInExplicitlyFocusedSubtree(
+        store.editor.focusedElementPath,
+        autoFocusedPaths,
+        navigatorEntry.elementPath,
+      ),
+    'NavigatorItem isInFocusedComponentSubtree',
+  )
+
   const elementWarnings = useEditorState(
     Substores.derived,
     (store) => elementWarningsSelector(store, props.navigatorEntry),
@@ -505,7 +540,7 @@ export const NavigatorItem: React.FunctionComponent<
   )
 
   const isManuallyFocusableComponent = useEditorState(
-    Substores.metadata,
+    Substores.fullStore,
     (store) => {
       return (
         isRegularNavigatorEntry(navigatorEntry) &&
@@ -514,6 +549,8 @@ export const NavigatorItem: React.FunctionComponent<
           store.editor.jsxMetadata,
           autoFocusedPaths,
           filePathMappings,
+          store.editor.propertyControlsInfo,
+          store.editor.projectContents,
         )
       )
     },
@@ -569,16 +606,6 @@ export const NavigatorItem: React.FunctionComponent<
       )
     },
     'NavigatorItem isConditionalDynamicBranch',
-  )
-
-  const isContainingComponentRemixSceneOrOutlet = useEditorState(
-    Substores.metadata,
-    (store) =>
-      MetadataUtils.isContainingComponentRemixSceneOrOutlet(
-        store.editor.jsxMetadata,
-        navigatorEntry.elementPath,
-      ),
-    'NavigatorItem isInsideRemixOutlet',
   )
 
   const childComponentCount = props.noOfChildren
@@ -681,12 +708,32 @@ export const NavigatorItem: React.FunctionComponent<
     'NavigatorItem conditionalOverrideUpdate',
   )
 
-  const isInsideComponent =
-    !isContainingComponentRemixSceneOrOutlet &&
-    (EP.isInsideFocusedComponent(navigatorEntry.elementPath, autoFocusedPaths) ||
-      isFocusedComponent)
+  const metadata = useEditorState(
+    Substores.metadata,
+    (store): ElementInstanceMetadataMap => {
+      return store.editor.jsxMetadata
+    },
+    'NavigatorItem metadata',
+  )
+
+  const emphasis = useEditorState(
+    Substores.propertyControlsInfo,
+    (store): Emphasis => {
+      return MetadataUtils.getEmphasisOfComponent(
+        navigatorEntry.elementPath,
+        metadata,
+        store.editor.propertyControlsInfo,
+        store.editor.projectContents,
+      )
+    },
+    'NavigatorItem emphasis',
+  )
+
+  const isInsideComponent = isInFocusedComponentSubtree
   const fullyVisible = useStyleFullyVisible(navigatorEntry, autoFocusedPaths)
   const isProbablyScene = useIsProbablyScene(navigatorEntry)
+
+  const elementIsData = navigatorEntry.type === 'DATA_REFERENCE'
 
   const isHighlightedForInteraction = useEditorState(
     Substores.restOfEditor,
@@ -716,6 +763,7 @@ export const NavigatorItem: React.FunctionComponent<
 
   const resultingStyle = computeResultingStyle(
     selected,
+    emphasis,
     isInsideComponent,
     isDynamic,
     isProbablyScene,
@@ -782,6 +830,10 @@ export const NavigatorItem: React.FunctionComponent<
     'NavigatorItem isHiddenConditionalBranch',
   )
 
+  const conditionalCase = useConditionalCaseCorrespondingToBranchPath(
+    props.navigatorEntry.elementPath,
+  )
+
   const isPlaceholder = isEntryAPlaceholder(props.navigatorEntry)
 
   const isComponentScene = useIsProbablyScene(navigatorEntry) && childComponentCount === 1
@@ -813,19 +865,22 @@ export const NavigatorItem: React.FunctionComponent<
     )
   }, [childComponentCount, isFocusedComponent, isConditional])
 
-  const renderPropPickerId = varSafeNavigatorEntryToKey(navigatorEntry)
-  const { showRenderPropPicker: showContextMenu, hideRenderPropPicker: hideContextMenu } =
-    useShowRenderPropPicker(renderPropPickerId)
-
-  const portalTarget = document.getElementById(CanvasContextMenuPortalTargetID)
-
   const iconColor = isRemixItem
     ? 'remix'
+    : isDynamic
+    ? 'dynamic'
+    : emphasis === 'subdued'
+    ? 'subdued'
+    : emphasis === 'emphasized'
+    ? 'primary'
     : isCodeItem
     ? 'dynamic'
     : isComponentScene
     ? 'component'
     : resultingStyle.iconColor
+
+  const currentlyRenaming = EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath)
+  const hideContextMenu = React.useCallback(() => contextMenu.hideAll(), [])
 
   return (
     <div
@@ -841,17 +896,6 @@ export const NavigatorItem: React.FunctionComponent<
         outlineOffset: props.parentOutline === 'solid' ? '-1px' : 0,
       }}
     >
-      {portalTarget == null || navigatorEntry.type !== 'SLOT'
-        ? null
-        : ReactDOM.createPortal(
-            <RenderPropPicker
-              target={props.navigatorEntry.elementPath}
-              key={renderPropPickerId}
-              id={renderPropPickerId}
-              prop={navigatorEntry.prop}
-            />,
-            portalTarget,
-          )}
       <FlexRow
         data-testid={NavigatorItemTestId(varSafeNavigatorEntryToKey(navigatorEntry))}
         style={rowStyle}
@@ -860,34 +904,22 @@ export const NavigatorItem: React.FunctionComponent<
         onDoubleClick={focusComponent}
       >
         {isPlaceholder ? (
-          <div
-            key={`label-${props.label}-slot`}
-            onClick={navigatorEntry.type === 'SLOT' ? showContextMenu : NO_OP}
-            style={{
-              width: 140,
-              height: 19,
-              borderRadius: 20,
-              textAlign: 'center',
-              textTransform: 'lowercase',
-              backgroundColor: colorTheme.unavailable.value,
-              color:
-                props.parentOutline === 'child'
-                  ? colorTheme.navigatorResizeHintBorder.value
-                  : colorTheme.unavailableGrey10.value,
-              border: `1px solid ${
-                props.parentOutline === 'child'
-                  ? colorTheme.navigatorResizeHintBorder.value
-                  : colorTheme.unavailableGrey10.value
-              }`,
-              marginLeft: 28,
-              cursor: navigatorEntry.type === 'SLOT' ? 'pointer' : 'inherit',
-            }}
-            data-testid={`toggle-render-prop-${NavigatorItemTestId(
-              varSafeNavigatorEntryToKey(navigatorEntry),
-            )}`}
-          >
-            Empty
-          </div>
+          navigatorEntry.type === 'SLOT' ? (
+            <RenderPropSlot
+              label={props.label}
+              parentOutline={props.parentOutline}
+              navigatorEntry={navigatorEntry}
+            />
+          ) : conditionalCase !== null ? (
+            <ConditionalBranchSlot
+              label={props.label}
+              parentOutline={props.parentOutline}
+              navigatorEntry={navigatorEntry}
+              conditionalCase={conditionalCase}
+            />
+          ) : (
+            <PlaceholderSlot label={props.label} parentOutline={props.parentOutline} />
+          )
         ) : isRenderProp ? (
           <div
             key={`label-${props.label}-slot`}
@@ -905,9 +937,33 @@ export const NavigatorItem: React.FunctionComponent<
           >
             {props.label}
           </div>
+        ) : elementIsData ? (
+          <div
+            key={`label-${props.label}-slot`}
+            style={{
+              maxWidth: 140,
+              color: colorTheme.fg5.value,
+              border: colorTheme.navigatorResizeHintBorder.value,
+              marginLeft: 23,
+              paddingTop: 6,
+              overflow: 'hidden',
+            }}
+          >
+            <DataReferenceCartoucheControl
+              elementPath={navigatorEntry.elementPath}
+              childOrAttribute={navigatorEntry.childOrAttribute}
+            />
+          </div>
         ) : (
-          <FlexRow style={{ justifyContent: 'space-between', ...containerStyle, padding: '0 5px' }}>
-            <FlexRow>
+          <FlexRow
+            style={{
+              justifyContent: 'space-between',
+              ...containerStyle,
+              padding: '0 5px',
+              width: '100%',
+            }}
+          >
+            <FlexRow style={{ width: '100%' }}>
               {unless(
                 props.navigatorEntry.type === 'CONDITIONAL_CLAUSE',
                 <ExpandableIndicator
@@ -931,6 +987,7 @@ export const NavigatorItem: React.FunctionComponent<
                 selected={props.selected}
                 codeItemType={codeItemType}
                 remixItemType={remixItemType}
+                emphasis={emphasis}
                 dispatch={props.dispatch}
                 isDynamic={isDynamic}
                 iconColor={iconColor}
@@ -939,7 +996,7 @@ export const NavigatorItem: React.FunctionComponent<
               />
             </FlexRow>
             {unless(
-              props.navigatorEntry.type === 'CONDITIONAL_CLAUSE',
+              currentlyRenaming || props.navigatorEntry.type === 'CONDITIONAL_CLAUSE',
               <NavigatorItemActionSheet
                 navigatorEntry={navigatorEntry}
                 selected={selected}
@@ -960,6 +1017,105 @@ export const NavigatorItem: React.FunctionComponent<
 })
 NavigatorItem.displayName = 'NavigatorItem'
 
+interface RenderPropSlotProps {
+  label: string
+  parentOutline: ParentOutline
+  navigatorEntry: SlotNavigatorEntry
+}
+
+const RenderPropSlot = React.memo((props: RenderPropSlotProps) => {
+  const { label, parentOutline, navigatorEntry } = props
+  const target = EP.parentPath(navigatorEntry.elementPath)
+  const insertionTarget = { prop: navigatorEntry.prop }
+
+  const showComponentPickerContextMenu = useCreateCallbackToShowComponentPicker()(
+    target,
+    insertionTarget,
+  )
+
+  return (
+    <PlaceholderSlot
+      label={label}
+      parentOutline={parentOutline}
+      cursor={'pointer'}
+      onClick={showComponentPickerContextMenu}
+      testId={`toggle-render-prop-${NavigatorItemTestId(
+        varSafeNavigatorEntryToKey(navigatorEntry),
+      )}`}
+    />
+  )
+})
+
+interface ConditionalBranchSlotProps {
+  label: string
+  parentOutline: ParentOutline
+  navigatorEntry: NavigatorEntry
+  conditionalCase: ConditionalCase
+}
+
+const ConditionalBranchSlot = React.memo((props: ConditionalBranchSlotProps) => {
+  const { label, parentOutline, navigatorEntry, conditionalCase } = props
+  const target = EP.parentPath(navigatorEntry.elementPath)
+
+  const showComponentPickerContextMenu = useCreateCallbackToShowComponentPicker()(
+    target,
+    conditionalCase,
+  )
+
+  return (
+    <PlaceholderSlot
+      label={label}
+      parentOutline={parentOutline}
+      cursor={'pointer'}
+      onClick={showComponentPickerContextMenu}
+      testId={`toggle-render-prop-${NavigatorItemTestId(
+        varSafeNavigatorEntryToKey(navigatorEntry),
+      )}`}
+    />
+  )
+})
+
+interface PlaceholderSlotProps {
+  label: string
+  parentOutline: ParentOutline
+  cursor?: 'pointer' | 'inherit'
+  testId?: string
+  onClick?: React.MouseEventHandler
+}
+
+const PlaceholderSlot = React.memo((props: PlaceholderSlotProps) => {
+  const { label, parentOutline, cursor, testId, onClick } = props
+  const colorTheme = useColorTheme()
+
+  return (
+    <div
+      key={`label-${label}-slot`}
+      onClick={onClick}
+      style={{
+        width: 140,
+        height: 19,
+        borderRadius: 20,
+        textAlign: 'center',
+        textTransform: 'lowercase',
+        backgroundColor: colorTheme.unavailable.value,
+        color:
+          parentOutline === 'child'
+            ? colorTheme.navigatorResizeHintBorder.value
+            : colorTheme.unavailableGrey10.value,
+        border: `1px solid ${
+          parentOutline === 'child'
+            ? colorTheme.navigatorResizeHintBorder.value
+            : colorTheme.unavailableGrey10.value
+        }`,
+        marginLeft: 28,
+        cursor: cursor ?? 'inherit',
+      }}
+      data-testid={testId}
+    >
+      Empty
+    </div>
+  )
+})
 interface NavigatorRowLabelProps {
   navigatorEntry: NavigatorEntry
   iconColor: IcnProps['color']
@@ -970,6 +1126,7 @@ interface NavigatorRowLabelProps {
   selected: boolean
   codeItemType: CodeItemType
   remixItemType: RemixItemType
+  emphasis: Emphasis
   shouldShowParentOutline: boolean
   childComponentCount: number
   dispatch: EditorDispatch
@@ -983,19 +1140,16 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
   const isComponentScene =
     useIsProbablyScene(props.navigatorEntry) && props.childComponentCount === 1
 
-  const isOutlet = props.remixItemType === 'outlet'
-
-  const backgroundLozengeColor =
-    isCodeItem && !props.selected
-      ? colorTheme.dynamicBlue10.value
-      : isOutlet && !props.selected
-      ? colorTheme.aqua10.value
-      : 'transparent'
-
-  const textColor = isCodeItem
-    ? colorTheme.dynamicBlue.value
-    : isRemixItem
+  const textColor = isRemixItem
     ? colorTheme.aqua.value
+    : props.isDynamic
+    ? colorTheme.dynamicBlue.value
+    : props.emphasis === 'subdued'
+    ? colorTheme.fg5.value
+    : props.emphasis === 'emphasized'
+    ? colorTheme.dynamicBlue.value
+    : isCodeItem
+    ? colorTheme.dynamicBlue.value
     : isComponentScene
     ? colorTheme.componentPurple.value
     : undefined

@@ -1604,6 +1604,8 @@ export type JSXConditionalExpressionWithoutUID = Omit<JSXConditionalExpression, 
 
 export type JSXFragmentWithoutUID = Omit<JSXFragment, 'uid'>
 
+export type JSXMapExpressionWithoutUID = Omit<JSXMapExpression, 'uid'>
+
 export function clearJSXElementWithoutUIDUniqueIDs(
   element: JSXElementWithoutUID,
 ): JSXElementWithoutUID {
@@ -1631,6 +1633,16 @@ export function clearJSXFragmentWithoutUIDUniqueIDs(
   return {
     ...fragment,
     children: fragment.children.map(clearJSXElementChildUniqueIDs),
+  }
+}
+
+export function clearJSXMapExpressionWithoutUIDUniqueIDs(
+  attribute: JSXMapExpressionWithoutUID,
+): JSXMapExpressionWithoutUID {
+  const updatedElementsWithin = objectMap(clearJSXElementUniqueIDs, attribute.elementsWithin)
+  return {
+    ...attribute,
+    elementsWithin: updatedElementsWithin,
   }
 }
 
@@ -1762,6 +1774,7 @@ export type JSXElementChildWithoutUID =
   | JSXElementWithoutUID
   | JSXConditionalExpressionWithoutUID
   | JSXFragmentWithoutUID
+  | JSXMapExpressionWithoutUID
 
 export function canBeRootElementOfComponent(element: JSXElementChild): boolean {
   if (isJSXElement(element) || isJSXFragment(element) || isJSXConditionalExpression(element)) {

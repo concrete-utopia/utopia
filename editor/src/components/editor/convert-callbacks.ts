@@ -86,7 +86,7 @@ export function changeConditionalOrFragment(
       actionsToDispatch = [
         insertInsertable(
           insertionPath,
-          insertableComponent(importsToAdd, () => element, '', [], null, null),
+          insertableComponent(importsToAdd, () => element, '', [], null, null, null),
           fixedSizeForInsertion ? 'add-size' : 'do-not-add',
           floatingMenuState.indexPosition,
         ),
@@ -258,6 +258,8 @@ export function getActionsToApplyChange(
         insertMenuItemValue,
         insertMenuItemValue.source,
       )
+    case 'JSX_MAP_EXPRESSION':
+      return [] // we don't support converting to maps
     default:
       assertNever(element)
   }

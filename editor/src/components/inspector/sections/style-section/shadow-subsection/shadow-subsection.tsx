@@ -308,26 +308,25 @@ export const ShadowSubsection = React.memo(() => {
           <span>Shadow</span>
         </FlexRow>
         {propertyStatus.overwritable ? (
-          <>
+          <FlexRow style={{ gap: 4 }}>
             <SquareButton
               highlight
               onMouseDown={onUnsetValues}
               data-testid={'inspector-shadow-remove-all'}
+              style={{ width: 12 }}
             >
-              <Icons.Cross color={propertyStatus.controlled ? 'primary' : 'secondary'} />
+              <Icn category='semantic' type='cross' width={12} height={12} />
             </SquareButton>
-            <SquareButton highlight onMouseDown={insertShadowValue}>
+            <SquareButton highlight onMouseDown={insertShadowValue} style={{ width: 12 }}>
               <Icn
                 onMouseDown={insertShadowValue}
-                style={{ paddingTop: 1 }}
                 category='semantic'
                 type='plus'
-                color={propertyStatus.controlled ? 'primary' : 'secondary'}
-                width={16}
-                height={16}
+                width={12}
+                height={12}
               />
             </SquareButton>
-          </>
+          </FlexRow>
         ) : null}
       </InspectorSubsectionHeader>
       <div

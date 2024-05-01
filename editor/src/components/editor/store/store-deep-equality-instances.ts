@@ -351,6 +351,10 @@ import type {
   TrueUpHuggingElement,
   RenderPropNavigatorEntry,
   SlotNavigatorEntry,
+  RenderPropValueNavigatorEntry,
+  DataReferenceNavigatorEntry,
+  GithubUser,
+  PullRequest,
 } from './editor-state'
 import {
   trueUpGroupElementChanged,
@@ -358,6 +362,9 @@ import {
   invalidOverrideNavigatorEntry,
   trueUpHuggingElement,
   renderPropNavigatorEntry,
+  renderPropValueNavigatorEntry,
+  dataReferenceNavigatorEntry,
+  newGithubData,
 } from './editor-state'
 import {
   editorStateNodeModules,
@@ -472,7 +479,6 @@ import type {
   CurriedUtopiaRequireFn,
   PropertyControlsInfo,
   ComponentDescriptorFromDescriptorFile,
-  PlaceholderSpec,
 } from '../../custom-code/code-file'
 import {
   codeResult,
@@ -681,6 +687,15 @@ export const SyntheticNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<Synth
     syntheticNavigatorEntry,
   )
 
+export const DataReferenceNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<DataReferenceNavigatorEntry> =
+  combine2EqualityCalls(
+    (entry) => entry.elementPath,
+    ElementPathKeepDeepEquality,
+    (entry) => entry.childOrAttribute,
+    JSXElementChildKeepDeepEquality(),
+    dataReferenceNavigatorEntry,
+  )
+
 export const RenderPropNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<RenderPropNavigatorEntry> =
   combine2EqualityCalls(
     (entry) => entry.elementPath,
@@ -688,6 +703,15 @@ export const RenderPropNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<Rend
     (entry) => entry.propName,
     StringKeepDeepEquality,
     renderPropNavigatorEntry,
+  )
+
+export const RenderPropValueNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<RenderPropValueNavigatorEntry> =
+  combine2EqualityCalls(
+    (entry) => entry.elementPath,
+    ElementPathKeepDeepEquality,
+    (entry) => entry.prop,
+    StringKeepDeepEquality,
+    renderPropValueNavigatorEntry,
   )
 
 export const InvalidOverrideNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<InvalidOverrideNavigatorEntry> =
@@ -728,9 +752,19 @@ export const NavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<NavigatorEntry
         return SyntheticNavigatorEntryKeepDeepEquality(oldValue, newValue)
       }
       break
+    case 'DATA_REFERENCE':
+      if (oldValue.type === newValue.type) {
+        return DataReferenceNavigatorEntryKeepDeepEquality(oldValue, newValue)
+      }
+      break
     case 'RENDER_PROP':
       if (oldValue.type === newValue.type) {
         return RenderPropNavigatorEntryKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'RENDER_PROP_VALUE':
+      if (oldValue.type === newValue.type) {
+        return RenderPropValueNavigatorEntryKeepDeepEquality(oldValue, newValue)
       }
       break
     case 'INVALID_OVERRIDE':
@@ -3395,33 +3429,6 @@ export function ComponentDescriptorSourceKeepDeepEquality(): KeepDeepEqualityCal
   }
 }
 
-export function PlaceholderKeepDeepEquality(): KeepDeepEqualityCall<PlaceholderSpec> {
-  return (oldValue, newValue) => {
-    switch (oldValue.type) {
-      case 'text':
-        if (oldValue.type === newValue.type) {
-          const areEqual = oldValue.contents === newValue.contents
-          return { areEqual: areEqual, value: areEqual ? oldValue : newValue }
-        }
-        break
-      case 'spacer':
-        if (oldValue.type === newValue.type) {
-          const areEqual = oldValue.width === newValue.width && oldValue.height === newValue.height
-          return { areEqual: areEqual, value: areEqual ? oldValue : newValue }
-        }
-        break
-      case 'fill':
-        if (oldValue.type === newValue.type) {
-          return { areEqual: true, value: oldValue }
-        }
-        break
-      default:
-        assertNever(oldValue)
-    }
-    return keepDeepEqualityResult(newValue, false)
-  }
-}
-
 const InspectorSpecKeepDeepEquality: KeepDeepEqualityCall<InspectorSpec> = (oldValue, newValue) => {
   if (typeof oldValue === 'string' && typeof newValue === 'string') {
     return StringKeepDeepEquality(oldValue, newValue) as KeepDeepEqualityResult<InspectorSpec>
@@ -3435,7 +3442,7 @@ const InspectorSpecKeepDeepEquality: KeepDeepEqualityCall<InspectorSpec> = (oldV
 }
 
 export const ComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<ComponentDescriptor> =
-  combine10EqualityCalls(
+  combine9EqualityCalls(
     (descriptor) => descriptor.properties,
     PropertyControlsKeepDeepEquality,
     (descriptor) => descriptor.supportsChildren,
@@ -3444,8 +3451,6 @@ export const ComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<Component
     arrayDeepEquality(ComponentInfoKeepDeepEquality),
     (descriptor) => descriptor.preferredChildComponents,
     arrayDeepEquality(PreferredChildComponentDescriptorKeepDeepEquality),
-    (descriptor) => descriptor.childrenPropPlaceholder,
-    nullableDeepEquality(PlaceholderKeepDeepEquality()),
     (descriptor) => descriptor.source,
     ComponentDescriptorSourceKeepDeepEquality(),
     (descriptor) => descriptor.focus,
@@ -4346,16 +4351,53 @@ export const GithubFileChangesKeepDeepEquality: KeepDeepEqualityCall<GithubFileC
     emptyGithubFileChanges,
   )
 
-export const GithubDataKeepDeepEquality: KeepDeepEqualityCall<GithubData> = combine4EqualityCalls(
+export const PullRequestKeepDeepEquality: KeepDeepEqualityCall<PullRequest> = combine3EqualityCalls(
+  (data) => data.htmlURL,
+  StringKeepDeepEquality,
+  (data) => data.number,
+  NumberKeepDeepEquality,
+  (data) => data.title,
+  StringKeepDeepEquality,
+  (htmlURL, number, title) => ({ htmlURL: htmlURL, number: number, title: title }),
+)
+
+export const GithubUserKeepDeepEquality: KeepDeepEqualityCall<GithubUser> = combine4EqualityCalls(
+  (data) => data.avatarURL,
+  StringKeepDeepEquality,
+  (data) => data.htmlURL,
+  StringKeepDeepEquality,
+  (data) => data.login,
+  StringKeepDeepEquality,
+  (data) => data.name,
+  NullableStringKeepDeepEquality,
+  (login, avatarURL, htmlURL, name) => ({
+    login: login,
+    avatarURL: avatarURL,
+    htmlURL: htmlURL,
+    name: name,
+  }),
+)
+
+export const GithubDataKeepDeepEquality: KeepDeepEqualityCall<GithubData> = combine9EqualityCalls(
   (data) => data.branches,
   nullableDeepEquality(arrayDeepEquality(GithubBranchKeepDeepEquality)),
+  (data) => data.userRepositories,
+  arrayDeepEquality(RepositoryEntryKeepDeepEquality),
   (data) => data.publicRepositories,
   arrayDeepEquality(RepositoryEntryKeepDeepEquality),
+  (data) => data.treeConflicts,
+  createCallWithTripleEquals(),
   (data) => data.lastUpdatedAt,
   NullableNumberKeepDeepEquality,
   (data) => data.upstreamChanges,
   nullableDeepEquality(GithubFileChangesKeepDeepEquality),
-  emptyGithubData,
+  (data) => data.currentBranchPullRequests,
+  nullableDeepEquality(arrayDeepEquality(PullRequestKeepDeepEquality)),
+  (data) => data.githubUserDetails,
+  nullableDeepEquality(GithubUserKeepDeepEquality),
+  (data) => data.lastRefreshedCommit,
+  NullableStringKeepDeepEquality,
+  newGithubData,
 )
 
 export const GithubOperationKeepDeepEquality: KeepDeepEqualityCall<GithubOperation> = (

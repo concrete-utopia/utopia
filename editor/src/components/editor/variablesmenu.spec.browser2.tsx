@@ -154,7 +154,7 @@ describe('variables menu', () => {
             data-uid='container'
           >
             <div data-uid='a3d' />
-            <img src={imgProp} style={{width: 100, height: 100, top:0, left: 0, position: 'absolute'}} data-uid='ele'/>
+            <img src={imgProp} data-uid='ele' style={{top:0, left: 0, position: 'absolute'}}/>
           </div>
           )
         }
@@ -263,12 +263,8 @@ describe('variables menu', () => {
                         data-uid='img-2'
                       />
                       <span
-                        style={{
-                          width: 100,
-                          height: 100,
-                          position: 'absolute',
-                        }}
                         data-uid='ele'
+                        style={{ position: 'absolute' }}
                       >
                         {index}
                       </span>
@@ -348,12 +344,8 @@ describe('variables menu', () => {
                         data-uid='img-2'
                       />
                       <span
-                        style={{
-                          width: 100,
-                          height: 100,
-                          position: 'absolute',
-                        }}
                         data-uid='ele'
+                        style={{ position: 'absolute' }}
                       >
                         {JSON.stringify(unusedProp)}
                       </span>
@@ -434,12 +426,8 @@ describe('variables menu', () => {
                         data-uid='img-2'
                       />
                       <span
-                        style={{
-                          width: 100,
-                          height: 100,
-                          position: 'absolute',
-                        }}
                         data-uid='ele'
+                        style={{ position: 'absolute' }}
                       >
                         {JSON.stringify(bestProp)}
                       </span>
@@ -520,12 +508,8 @@ describe('variables menu', () => {
                         data-uid='img-2'
                       />
                       <span
-                        style={{
-                          width: 100,
-                          height: 100,
-                          position: 'absolute',
-                        }}
                         data-uid='ele'
+                        style={{ position: 'absolute' }}
                       >
                         {background}
                       </span>
@@ -606,12 +590,8 @@ describe('variables menu', () => {
                         data-uid='img-2'
                       />
                       <span
-                        style={{
-                          width: 100,
-                          height: 100,
-                          position: 'absolute',
-                        }}
                         data-uid='ele'
+                        style={{ position: 'absolute' }}
                       >
                         {rightThere}
                       </span>
@@ -695,12 +675,8 @@ describe('variables menu', () => {
                         data-uid='img-2'
                       />
                       <span
-                        style={{
-                          width: 100,
-                          height: 100,
-                          position: 'absolute',
-                        }}
                         data-uid='ele'
+                        style={{ position: 'absolute' }}
                       >
                         {index}
                       </span>
@@ -769,7 +745,7 @@ describe('variables menu', () => {
           data-uid='container'
         >
           <div data-uid='a3d' />
-          <img src={myObj.image} style={{width: 100, height: 100, top:0, left: 0, position: 'absolute'}} data-uid='ele'/>
+          <img src={myObj.image} data-uid='ele' style={{top:0, left: 0, position: 'absolute'}}/>
           </div>
       )`),
       )
@@ -825,7 +801,7 @@ describe('variables menu', () => {
           data-uid='container'
         >
           <div data-uid='a3d' />
-          <span style={{ width: 100, height: 100, top: 0, left: 0, position: 'absolute' }} data-uid='ele'>{myText}</span>
+          <span data-uid='ele' style={{ top: 0, left: 0, position: 'absolute' }}>{myText}</span>
           </div>
       )`),
       )

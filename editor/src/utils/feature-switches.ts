@@ -13,9 +13,8 @@ export type FeatureName =
   | 'Canvas Strategies Debug Panel'
   | 'Project Thumbnail Generation'
   | 'Debug - Print UIDs'
-  | 'Steganography'
   | 'Debug – Connections'
-  | 'Render Props in Navigator'
+  | 'Data Entries in the Navigator'
 
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -29,9 +28,8 @@ export const AllFeatureNames: FeatureName[] = [
   'Canvas Strategies Debug Panel',
   'Project Thumbnail Generation',
   'Debug - Print UIDs',
-  'Steganography',
   'Debug – Connections',
-  'Render Props in Navigator',
+  'Data Entries in the Navigator',
 ]
 
 let FeatureSwitches: { [feature in FeatureName]: boolean } = {
@@ -45,10 +43,11 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Canvas Strategies Debug Panel': false,
   'Project Thumbnail Generation': false,
   'Debug - Print UIDs': false,
-  Steganography: false,
   'Debug – Connections': false,
-  'Render Props in Navigator': true,
+  'Data Entries in the Navigator': false, // !IS_TEST_ENVIRONMENT,
 }
+
+export const STEGANOGRAPHY_ENABLED = false
 
 let FeatureSwitchLoaded: { [feature in FeatureName]?: boolean } = {}
 

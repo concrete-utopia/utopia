@@ -171,6 +171,7 @@ export interface UiJsxCanvasProps {
   dispatch: EditorDispatch
   domWalkerAdditionalElementsToUpdate: Array<ElementPath>
   editedText: ElementPath | null
+  autoFocusedPaths: Array<ElementPath>
 }
 
 export interface CanvasReactReportErrorCallback {
@@ -246,6 +247,7 @@ export function pickUiJsxCanvasProps(
       dispatch: dispatch,
       domWalkerAdditionalElementsToUpdate: editor.canvas.domWalkerAdditionalElementsToUpdate,
       editedText: editedText,
+      autoFocusedPaths: derived.autoFocusedPaths,
     }
   }
 }
@@ -316,6 +318,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     propertyControlsInfo,
     dispatch,
     editedText,
+    autoFocusedPaths,
   } = props
 
   clearListOfEvaluatedFiles()
@@ -517,6 +520,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     topLevelElementsMap,
     executionScope,
     projectContentsForRequireFn,
+    autoFocusedPaths,
     uiFilePath,
     resolve,
     getRemixPathValidationContext,
@@ -770,6 +774,7 @@ function useGetStoryboardRoot(
   topLevelElementsMap: Map<string | null, UtopiaJSXComponent>,
   executionScope: MapLike<any>,
   projectContents: ProjectContentTreeRoot,
+  autoFocusedPaths: Array<ElementPath>,
   uiFilePath: string,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
   getRemixValidPathsGenerationContext: (path: ElementPath) => RemixValidPathsGenerationContext,
@@ -794,6 +799,7 @@ function useGetStoryboardRoot(
           BakedInStoryboardVariableName,
           EP.emptyElementPath,
           projectContents,
+          autoFocusedPaths,
           uiFilePath,
           resolve,
           getRemixValidPathsGenerationContext,

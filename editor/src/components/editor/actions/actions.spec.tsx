@@ -1,7 +1,7 @@
 import * as Chai from 'chai'
 import type { FramePin } from 'utopia-api/core'
 import { LayoutSystem } from 'utopia-api/core'
-import { contentsTreeOptic } from '../../../components/assets'
+import { contentsTreeOptic, walkContentsTree } from '../../../components/assets'
 import { getLayoutPropertyOr } from '../../../core/layout/getLayoutProperty'
 import { sampleCode } from '../../../core/model/new-project-files'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
@@ -51,6 +51,7 @@ import type { Optic } from '../../../core/shared/optics/optics'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import type {
   ParseSuccess,
+  RevisionsStateType,
   TextFile,
   TextFileContents,
 } from '../../../core/shared/project-file-types'
@@ -109,7 +110,7 @@ import {
   updateTopLevelElementsFromCollaborationUpdate,
   workerCodeAndParsedUpdate,
 } from './action-creators'
-import { UPDATE_FNS } from './actions'
+import { UPDATE_FNS, replaceFilePath } from './actions'
 import { CURRENT_PROJECT_VERSION } from './migrations/migrations'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 
@@ -691,6 +692,7 @@ describe('INSERT_INSERTABLE', () => {
       [],
       null,
       null,
+      null,
     )
 
     const targetPath = EP.elementPath([
@@ -1201,5 +1203,45 @@ describe('UPDATE_TOP_LEVEL_ELEMENTS_FROM_COLLABORATION', () => {
     )
     const uniqueUIDsResult = getAllUniqueUids(updatedEditorState.projectContents)
     expect(uniqueUIDsResult.duplicateIDs).toEqual({})
+  })
+})
+
+describe('replaceFilePath', () => {
+  it('only marks the relevant files as parsed ahead', () => {
+    const project = complexDefaultProjectPreParsed()
+    const editorState = editorModelFromPersistentModel(project, NO_OP)
+    const replaceResults = replaceFilePath(
+      '/src/app.js',
+      '/src/app2.js',
+      editorState.projectContents,
+    )
+    if (replaceResults.type === 'SUCCESS') {
+      expect(replaceResults.updatedFiles).toMatchInlineSnapshot(`
+        Array [
+          Object {
+            "newPath": "/src/app2.js",
+            "oldPath": "/src/app.js",
+          },
+        ]
+      `)
+      let textFilesAndRevisionStates: { [filename: string]: RevisionsStateType } = {}
+      walkContentsTree(replaceResults.projectContents, (fullPath, file) => {
+        if (isTextFile(file)) {
+          textFilesAndRevisionStates[fullPath] = file.fileContents.revisionsState
+        }
+      })
+      expect(textFilesAndRevisionStates).toMatchInlineSnapshot(`
+        Object {
+          "/package.json": "BOTH_MATCH",
+          "/public/index.html": "BOTH_MATCH",
+          "/src/app2.js": "PARSED_AHEAD",
+          "/src/card.js": "BOTH_MATCH",
+          "/src/index.js": "PARSED_AHEAD",
+          "/utopia/storyboard.js": "PARSED_AHEAD",
+        }
+      `)
+    } else {
+      throw new Error('Should have returned a success.')
+    }
   })
 })

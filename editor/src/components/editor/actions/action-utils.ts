@@ -43,6 +43,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_RIGHT_MENU_TAB':
     case 'SET_RIGHT_MENU_EXPANDED':
     case 'TOGGLE_COLLAPSE':
+    case 'ADD_COLLAPSED_VIEWS':
     case 'ADD_TOAST':
     case 'REMOVE_TOAST':
     case 'SET_HIGHLIGHTED_VIEWS':
@@ -212,6 +213,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_EXPORTS_DETAIL_FROM_COLLABORATION_UPDATE':
     case 'UPDATE_IMPORTS_FROM_COLLABORATION_UPDATE':
     case 'UPDATE_CODE_FROM_COLLABORATION_UPDATE':
+    case 'REPLACE_MAPPED_ELEMENT':
       return false
     case 'SAVE_ASSET':
       return (

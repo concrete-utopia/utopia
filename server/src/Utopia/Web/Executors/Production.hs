@@ -462,6 +462,7 @@ startup :: ProductionServerResources -> IO Stop
 startup ProductionServerResources{..} = do
   migrateDatabase True False _projectPool
   DB.cleanupCollaborationControl _databaseMetrics _projectPool getCurrentTime
+  preloadNPMDependencies _logger _npmMetrics _nodeSemaphore _locksRef
   hashedFilenamesThread <- forkIO $ watchFilenamesWithHashes (_hashCache _assetsCaches) (_assetResultCache _assetsCaches) assetPathsAndBuilders
   return $ do
         killThread hashedFilenamesThread

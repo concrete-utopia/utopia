@@ -145,7 +145,15 @@ export type ClearSelection = {
 export interface InsertJSXElement {
   action: 'INSERT_JSX_ELEMENT'
   jsxElement: JSXElement
-  parent: ElementPath | null
+  target: ElementPath | null
+  importsToAdd: Imports
+  insertionBehaviour: 'insert-as-child' | 'replace-target'
+}
+
+export interface ReplaceMappedElement {
+  action: 'REPLACE_MAPPED_ELEMENT'
+  jsxElement: JSXElement
+  target: ElementPath
   importsToAdd: Imports
 }
 
@@ -386,6 +394,11 @@ export interface SetRightMenuExpanded {
 export interface ToggleCollapse {
   action: 'TOGGLE_COLLAPSE'
   target: ElementPath
+}
+
+export interface AddCollapsedViews {
+  action: 'ADD_COLLAPSED_VIEWS'
+  collapsedViews: ElementPath[]
 }
 
 export interface AddToast {
@@ -1147,6 +1160,7 @@ export interface IncreaseOnlineStateFailureCount {
 export type EditorAction =
   | ClearSelection
   | InsertJSXElement
+  | ReplaceMappedElement
   | InsertAttributeOtherJavascriptIntoElement
   | DeleteSelected
   | DeleteView
@@ -1191,6 +1205,7 @@ export type EditorAction =
   | SetRightMenuTab
   | SetRightMenuExpanded
   | ToggleCollapse
+  | AddCollapsedViews
   | AddToast
   | RemoveToast
   | SetHighlightedViews

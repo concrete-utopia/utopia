@@ -309,7 +309,6 @@ let
         , ("ghc", ["--version"], ["The Glorious Glasgow Haskell Compilation System, version 9.0.2"])
         , ("cabal", ["--version"], ["cabal-install version 3.8.1.0", "compiled using version 3.8.1.0 of the Cabal library "])
         ]
-
       checkVersion :: (String, [String], [String]) -> IO All
       checkVersion (executable, arguments, expectedOutput) = do
         let commandToRun = unwords (executable : arguments)

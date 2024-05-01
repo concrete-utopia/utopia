@@ -275,55 +275,6 @@ emptyAssetsCaches _assetPathDetails = do
   _assetResultCache <- newIORef $ AssetResultCache (toJSON $ object []) mempty
   return $ AssetsCaches{..}
 
-getRoundedAccessTime :: String -> IO UTCTime
-getRoundedAccessTime filePath = do
-  time <- getAccessTime filePath
-  let roundedDiffTime = fromInteger $ round $ utctDayTime time
-  return $ time { utctDayTime = roundedDiffTime }
-
-type ConduitBytes m = ConduitT () ByteString m ()
-
-cleanupWriteLock :: RWLock -> Bool -> IO ()
-cleanupWriteLock lock True = releaseWrite lock
-cleanupWriteLock _ False   = pure ()
-
-cachePackagerContent :: (MonadResource m, MonadMask m) => PackageVersionLocksRef -> Text -> ConduitBytes m -> IO (ConduitBytes m, UTCTime)
-cachePackagerContent locksRef versionedPackageName fallback = do
-  let cacheFileParentPath = ".utopia-cache" </> "packager" </> toS versionedPackageName
-  let cacheFilePath = cacheFileParentPath </> "cache.json"
-  fileExists <- doesFileExist cacheFilePath
-  -- Use the parent path as we can create that and get a last modified date
-  -- from it before the file is fully written to disk.
-  unless fileExists $ createDirectoryIfMissing True cacheFileParentPath
-  lastModified <- getRoundedAccessTime cacheFileParentPath
-  let whenFileExists = sourceFile cacheFilePath
-  let whenFileDoesNotExist =
-            -- Write out the file as well as returning the content.
-            let writeToFile = passthroughSink (sinkFileCautious cacheFilePath) (const $ pure ())
-            -- Include the fallback.
-            in (fallback .| writeToFile)
-  let whenFileDoesNotExistSafe = do
-            lock <- getPackageVersionLock locksRef versionedPackageName
-            pure $ bracketP (tryAcquireWrite lock) (cleanupWriteLock lock) $ \writeAcquired -> do
-              if writeAcquired
-                 then whenFileDoesNotExist
-                 else bracketP (acquireRead lock) (const $ releaseRead lock) (const whenFileExists)
-
-  conduit <- if fileExists then pure whenFileExists else whenFileDoesNotExistSafe
-  pure (conduit, lastModified)
-
-filePairsToBytes :: (Monad m) => ConduitT () (FilePath, Value) m () -> ConduitBytes m
-filePairsToBytes filePairs =
-  let pairToBytes (filePath, pathValue) = BL.toStrict (encode filePath) <> ": " <> BL.toStrict (encode pathValue)
-      pairsAsBytes = filePairs .| C.map pairToBytes
-      withCommas = pairsAsBytes .| C.intersperse ", "
-   in sequence_ [yield "{\"contents\": {", withCommas, yield "}}"]
-
-getPackagerContent :: (MonadResource m, MonadMask m) => FastLogger -> NPMMetrics -> QSem -> PackageVersionLocksRef -> Text -> IO (ConduitBytes m, UTCTime)
-getPackagerContent logger npmMetrics npmSemaphore packageLocksRef versionedPackageName = do
-  cachePackagerContent packageLocksRef versionedPackageName $ do
-    withInstalledProject logger npmMetrics npmSemaphore versionedPackageName (filePairsToBytes . getModuleAndDependenciesFiles)
-
 getUserConfigurationWithDBPool :: (MonadIO m) => DB.DatabaseMetrics -> DBPool -> Text -> (Maybe DecodedUserConfiguration -> a) -> m a
 getUserConfigurationWithDBPool metrics pool userID action = do
   possibleUserConfiguration <- liftIO $ DB.getUserConfiguration metrics pool userID

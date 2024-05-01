@@ -499,15 +499,10 @@ const ClassNameControl = React.memo(() => {
   )
 
   return (
-    <div
-      style={{
-        backgroundColor: theme.emphasizedBackground.value,
-        margin: 4,
-      }}
-    >
+    <div>
       <InspectorSubsectionHeader
         style={{
-          color: theme.primary.value,
+          color: theme.dynamicBlue.value,
           border: 'none',
         }}
       >

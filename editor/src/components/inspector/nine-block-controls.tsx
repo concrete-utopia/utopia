@@ -334,7 +334,6 @@ export const NineBlockControl = React.memo(() => {
       onMouseEnter={onMouseEnterWithPaddingControls}
       onMouseLeave={onMouseLeave}
       style={{
-        margin: 2,
         height: 100,
         display: shouldShow ? 'grid' : 'none',
         aspectRatio: '1',

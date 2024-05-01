@@ -24,7 +24,6 @@ import {
   Section,
   SectionTitleRow,
   StringInput,
-  Title,
   UtopiaTheme,
 } from '../../../../uuiui'
 import { User } from '../../../../uuiui-deps'
@@ -38,7 +37,7 @@ import {
   isGithubLoadingAnyBranch,
   isGithubLoadingBranch,
   isGithubUpdating,
-  persistentModelForProjectContents,
+  persistentModelFromEditorModel,
 } from '../../../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import { UIGridRow } from '../../../inspector/widgets/ui-grid-row'
@@ -59,6 +58,30 @@ const compactTimeagoFormatter = (value: number, unit: string) => {
 
 type IndicatorState = 'incomplete' | 'failed' | 'successful' | 'pending'
 
+export const AuthenticateWithGithubButton = () => {
+  const triggerAuthentication = useOnClickAuthenticateWithGithub()
+  return (
+    <Button
+      spotlight
+      highlight
+      style={{
+        padding: '1em',
+        borderRadius: 3,
+        background: colorTheme.dynamicBlue.value,
+        color: colorTheme.bg1.value,
+      }}
+      css={{
+        '&:hover': {
+          opacity: 0.7,
+        },
+      }}
+      onMouseUp={triggerAuthentication}
+    >
+      Authenticate With Github
+    </Button>
+  )
+}
+
 const AccountBlock = () => {
   const authenticated = useEditorState(
     Substores.restOfStore,
@@ -67,32 +90,13 @@ const AccountBlock = () => {
   )
   const state = React.useMemo(() => (authenticated ? 'successful' : 'incomplete'), [authenticated])
 
-  const triggerAuthentication = useOnClickAuthenticateWithGithub()
-
   if (authenticated) {
     return null
   }
 
   return (
     <Block title='Account' status={state} first={true} last={true} expanded={true}>
-      <Button
-        spotlight
-        highlight
-        style={{
-          padding: '1em',
-          borderRadius: 3,
-          background: colorTheme.dynamicBlue.value,
-          color: colorTheme.bg1.value,
-        }}
-        css={{
-          '&:hover': {
-            opacity: 0.7,
-          },
-        }}
-        onMouseUp={triggerAuthentication}
-      >
-        Authenticate With Github
-      </Button>
+      <AuthenticateWithGithubButton />
     </Block>
   )
 }
@@ -138,9 +142,7 @@ const RepositoryBlock = () => {
     >
       <FlexColumn style={{ gap: 4 }}>
         <UIGridRow padded={false} variant='<-------------1fr------------->'>
-          <div>
-            We only support <strong>public</strong> repositories at this time.
-          </div>
+          <div>Check your project sharing settings when importing from private repositories</div>
         </UIGridRow>
         <RepositoryListing
           githubAuthenticated={githubAuthenticated}
@@ -167,7 +169,10 @@ const BranchBlock = () => {
   const repositoryData = useEditorState(
     Substores.github,
     (store) =>
-      store.editor.githubData.publicRepositories.find(
+      [
+        ...store.editor.githubData.userRepositories,
+        ...store.editor.githubData.publicRepositories,
+      ].find(
         (r) => r.fullName === githubRepoFullName(store.editor.githubSettings.targetRepository),
       ) ?? null,
     'BranchBlock Repository data',
@@ -177,19 +182,33 @@ const BranchBlock = () => {
     () => isGithubListingBranches(githubOperations),
     [githubOperations],
   )
+  const githubUserDetails = useEditorState(
+    Substores.github,
+    (store) => store.editor.githubData.githubUserDetails,
+    'BranchBlock userDetails',
+  )
 
-  const refreshBranches = React.useCallback(() => {
-    if (targetRepository != null) {
+  const refreshBranchesOnMouseUp = React.useCallback(() => {
+    if (targetRepository != null && githubUserDetails != null) {
       void dispatchPromiseActions(
         dispatch,
-        GithubOperations.getBranchesForGithubRepository(dispatch, targetRepository),
+        GithubOperations.getBranchesForGithubRepository(
+          dispatch,
+          targetRepository,
+          'user-initiated',
+        ),
       )
     }
-  }, [dispatch, targetRepository])
+  }, [dispatch, targetRepository, githubUserDetails])
 
   React.useEffect(() => {
-    refreshBranches()
-  }, [refreshBranches])
+    if (targetRepository != null && githubUserDetails != null) {
+      void dispatchPromiseActions(
+        dispatch,
+        GithubOperations.getBranchesForGithubRepository(dispatch, targetRepository, 'polling'),
+      )
+    }
+  }, [dispatch, targetRepository, githubUserDetails])
 
   const [expandedFlag, setExpandedFlag] = React.useState(false)
 
@@ -358,7 +377,7 @@ const BranchBlock = () => {
             spotlight
             highlight
             style={{ padding: '0 6px', marginTop: 6 }}
-            onMouseUp={refreshBranches}
+            onMouseUp={refreshBranchesOnMouseUp}
             disabled={isListingBranches}
           >
             {isListingBranches ? (
@@ -389,7 +408,7 @@ const BranchBlock = () => {
     branchFilter,
     updateBranchFilter,
     filteredBranches,
-    refreshBranches,
+    refreshBranchesOnMouseUp,
     isListingBranches,
     currentBranch,
     clearBranch,
@@ -492,8 +511,13 @@ const RemoteChangesBlock = () => {
     (store) => store.editor.githubSettings.originCommit,
     'Github commit',
   )
+  const githubUserDetails = useEditorState(
+    Substores.github,
+    (store) => store.editor.githubData.githubUserDetails,
+    'Github githubUserDetails',
+  )
   const triggerUpdateAgainstGithub = React.useCallback(() => {
-    if (repo != null && branch != null && commit != null) {
+    if (repo != null && branch != null && commit != null && githubUserDetails != null) {
       void GithubOperations.updateProjectAgainstGithub(
         workersRef.current,
         dispatch,
@@ -502,9 +526,19 @@ const RemoteChangesBlock = () => {
         commit,
         forceNotNull('Should have a project ID by now.', projectIDRef.current),
         currentContentsRef.current,
+        'user-initiated',
       )
     }
-  }, [workersRef, dispatch, repo, branch, commit, projectIDRef, currentContentsRef])
+  }, [
+    workersRef,
+    dispatch,
+    repo,
+    branch,
+    commit,
+    projectIDRef,
+    currentContentsRef,
+    githubUserDetails,
+  ])
   const githubAuthenticated = useEditorState(
     Substores.restOfStore,
     (store) => store.userState.githubState.authenticated,
@@ -585,6 +619,11 @@ const LocalChangesBlock = () => {
     (store) => store.editor.githubSettings.targetRepository,
     'Github repo',
   )
+  const githubUserDetails = useEditorState(
+    Substores.github,
+    (store) => store.editor.githubData.githubUserDetails,
+    'Github githubUserDetails',
+  )
 
   const branch = useEditorState(
     Substores.github,
@@ -640,11 +679,7 @@ const LocalChangesBlock = () => {
     'Github branchOriginContentsChecksums',
   )
 
-  const projectContents = useEditorState(
-    Substores.projectContents,
-    (store) => store.editor.projectContents,
-    'project contents',
-  )
+  const editorStateRef = useRefEditorState((store) => store.editor)
 
   const triggerSaveToGithub = React.useCallback(() => {
     if (repo == null) {
@@ -663,10 +698,14 @@ const LocalChangesBlock = () => {
       console.warn('project id is not set')
       return
     }
+    if (githubUserDetails == null) {
+      console.warn('github user is null')
+      return
+    }
     void GithubOperations.saveProjectToGithub(
       projectId,
       repo,
-      persistentModelForProjectContents(projectContents),
+      persistentModelFromEditorModel(editorStateRef.current),
       dispatch,
       {
         branchName: cleanedCommitBranchName,
@@ -676,15 +715,17 @@ const LocalChangesBlock = () => {
             ? {}
             : fileChecksumsWithFileToFileChecksums(branchOriginContentsChecksums),
       },
+      'user-initiated',
     )
   }, [
-    dispatch,
+    githubUserDetails,
     repo,
-    commitMessage,
     cleanedCommitBranchName,
-    branchOriginContentsChecksums,
-    projectContents,
+    commitMessage,
     projectId,
+    editorStateRef,
+    dispatch,
+    branchOriginContentsChecksums,
   ])
 
   const githubAuthenticated = useEditorState(
@@ -796,7 +837,7 @@ const PullRequestButton = () => {
   const repo = useEditorState(
     Substores.github,
     (store) =>
-      store.editor.githubData.publicRepositories.find(
+      store.editor.githubData.userRepositories.find(
         (r) => r.fullName === githubRepoFullName(store.editor.githubSettings.targetRepository),
       ) ?? null,
     'PullRequestButton repository',
@@ -869,9 +910,14 @@ const BranchNotLoadedBlock = () => {
     projectDependenciesSelector,
     'Project dependencies',
   )
+  const githubUserDetails = useEditorState(
+    Substores.github,
+    (store) => store.editor.githubData.githubUserDetails,
+    'Project githubUserDetails',
+  )
 
   const loadFromBranch = React.useCallback(() => {
-    if (githubRepo != null && branchName != null) {
+    if (githubRepo != null && branchName != null && githubUserDetails != null) {
       void GithubOperations.updateProjectWithBranchContent(
         workersRef.current,
         dispatch,
@@ -882,9 +928,11 @@ const BranchNotLoadedBlock = () => {
         currentDependencies,
         builtInDependencies,
         projectContentsRef.current,
+        'user-initiated',
       )
     }
   }, [
+    githubUserDetails,
     workersRef,
     dispatch,
     githubRepo,
@@ -919,20 +967,21 @@ const BranchNotLoadedBlock = () => {
     'Github branchOriginContentsChecksums',
   )
 
-  const projectContents = useEditorState(
-    Substores.projectContents,
-    (store) => store.editor.projectContents,
-    'project contents',
-  )
+  const editorStateRef = useRefEditorState((store) => store.editor)
 
   const pushToBranch = React.useCallback(() => {
-    if (githubRepo == null || branchName == null || projectId == null) {
+    if (
+      githubRepo == null ||
+      branchName == null ||
+      projectId == null ||
+      githubUserDetails == null
+    ) {
       return
     }
     void GithubOperations.saveProjectToGithub(
       projectId,
       githubRepo,
-      persistentModelForProjectContents(projectContents),
+      persistentModelFromEditorModel(editorStateRef.current),
       dispatch,
       {
         branchOriginChecksums:
@@ -942,15 +991,17 @@ const BranchNotLoadedBlock = () => {
         branchName: branchName,
         commitMessage: commitMessage ?? 'Committed automatically',
       },
+      'user-initiated',
     )
   }, [
-    dispatch,
+    githubUserDetails,
     githubRepo,
     branchName,
-    commitMessage,
     projectId,
-    projectContents,
+    editorStateRef,
+    dispatch,
     branchOriginContentsChecksums,
+    commitMessage,
   ])
 
   type LoadFlow = 'loadFromBranch' | 'pushToBranch' | 'createBranch'
@@ -1133,8 +1184,7 @@ export const GithubPane = React.memo(() => {
     <div style={{ height: '100%', overflowY: 'scroll' }} onFocus={onFocus}>
       <Section>
         <SectionTitleRow minimised={false} hideButton>
-          <FlexRow>
-            <MenuIcons.Octocat style={{ width: 19, height: 19 }} />
+          <FlexRow style={{ alignItems: 'flex-start' }}>
             {githubUser != null ? (
               <Button
                 style={{ gap: 4, padding: '0 6px' }}
@@ -1147,7 +1197,19 @@ export const GithubPane = React.memo(() => {
               >
                 @{githubUser?.login}
               </Button>
-            ) : null}
+            ) : (
+              <UIGridRow
+                variant='<-auto-><----------1fr--------->'
+                padded
+                style={{
+                  minHeight: UtopiaTheme.layout.rowHeight.normal,
+                  color: colorTheme.fg1.value,
+                }}
+              >
+                <MenuIcons.Octocat style={{ width: 19, height: 19 }} />
+                <AuthenticateWithGithubButton />
+              </UIGridRow>
+            )}
           </FlexRow>
         </SectionTitleRow>
         {unless(
@@ -1163,7 +1225,7 @@ export const GithubPane = React.memo(() => {
         )}
       </Section>
       {when(
-        isLoggedIn,
+        isLoggedIn && githubUser != null,
         <Section style={{ padding: '10px' }}>
           <AccountBlock />
           <RepositoryBlock />

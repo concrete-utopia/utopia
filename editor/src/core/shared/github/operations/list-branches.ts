@@ -3,7 +3,7 @@ import type { EditorAction, EditorDispatch } from '../../../../components/editor
 import { updateGithubData } from '../../../../components/editor/actions/action-creators'
 import type { GithubOperation, GithubRepo } from '../../../../components/editor/store/editor-state'
 import { GithubEndpoints } from '../endpoints'
-import type { GithubBranch, GithubFailure } from '../helpers'
+import type { GithubBranch, GithubFailure, GithubOperationSource } from '../helpers'
 import { githubAPIError, githubAPIErrorFromResponse, runGithubOperation } from '../helpers'
 import type { GithubOperationContext } from './github-operation-context'
 
@@ -18,10 +18,15 @@ export type GetBranchesResponse = GetBranchesSuccess | GithubFailure
 
 export const getBranchesForGithubRepository =
   (operationContext: GithubOperationContext) =>
-  async (dispatch: EditorDispatch, githubRepo: GithubRepo): Promise<Array<EditorAction>> => {
+  async (
+    dispatch: EditorDispatch,
+    githubRepo: GithubRepo,
+    initiator: GithubOperationSource,
+  ): Promise<Array<EditorAction>> => {
     return runGithubOperation(
       { name: 'listBranches' },
       dispatch,
+      initiator,
       async (operation: GithubOperation) => {
         const url = GithubEndpoints.getBranches(githubRepo)
 

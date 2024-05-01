@@ -13,10 +13,11 @@ import { GithubAuth } from '../../../../utils/github-auth'
 import {
   setGithubState,
   setLoginState,
+  updateGithubData,
 } from '../../../../components/editor/actions/action-creators'
 import { getUsersPublicGithubRepositories } from './load-repositories'
 import { updateProjectAgainstGithub } from './update-against-branch'
-import { resolveConflict, startGithubPolling } from '../helpers'
+import { GithubHelpers, resolveConflict } from '../helpers'
 import type { AsyncEditorDispatch } from '../../../../components/canvas/ui-jsx.test-utils'
 
 export async function loginUserToGithubForTests(dispatch: AsyncEditorDispatch) {
@@ -24,6 +25,9 @@ export async function loginUserToGithubForTests(dispatch: AsyncEditorDispatch) {
     [
       setLoginState({ type: 'LOGGED_IN', user: { userId: 'user' } }),
       setGithubState({ authenticated: true }),
+      updateGithubData({
+        githubUserDetails: { login: 'stub', avatarURL: 'stub', htmlURL: 'stub', name: null },
+      }),
     ],
     true,
   )
@@ -79,6 +83,17 @@ export class MockGithubOperations {
   mock(options: MockOperationContextOptions): MockGithubOperations {
     beforeEach(() => {
       this.sandbox = Sinon.createSandbox()
+
+      const getUserDetailsFromServerStub = this.sandbox.stub(
+        GithubHelpers,
+        'getUserDetailsFromServer',
+      )
+      getUserDetailsFromServerStub.callsFake(async () => ({
+        login: 'stub',
+        avatarURL: 'stub',
+        htmlURL: 'stub',
+        name: null,
+      }))
 
       const startGithubAuthenticationStub = this.sandbox.stub(
         GithubAuth,
@@ -138,9 +153,6 @@ export class MockGithubOperations {
         'updateProjectAgainstGithub',
       )
       updateProjectAgainstGithubStub.callsFake(updateProjectAgainstGithub(operationContext))
-
-      const startGithubPollingStub = this.sandbox.stub(GithubOperations, 'startGithubPolling')
-      startGithubPollingStub.callsFake(startGithubPolling(operationContext))
 
       const resolveConflictStub = this.sandbox.stub(GithubOperations, 'resolveConflict')
       resolveConflictStub.callsFake(resolveConflict(operationContext))

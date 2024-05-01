@@ -1,5 +1,5 @@
 import React from 'react'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import { type ElementPath } from '../../../core/shared/project-file-types'
 import type { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as EP from '../../../core/shared/element-path'
@@ -17,6 +17,10 @@ import {
   varSafeNavigatorEntryToKey,
 } from '../../editor/store/editor-state'
 import type { SelectionLocked } from '../../canvas/canvas-types'
+import type { InsertionTarget } from './component-picker-context-menu'
+import { useCreateCallbackToShowComponentPicker } from './component-picker-context-menu'
+import type { ConditionalCase } from '../../../core/model/conditionals'
+import { useConditionalCaseCorrespondingToBranchPath } from '../../../core/model/conditionals'
 
 export const NavigatorHintCircleDiameter = 8
 
@@ -176,8 +180,8 @@ export const VisibilityIndicator: React.FunctionComponent<
     <Button
       onClick={props.onClick}
       style={{
-        height: 18,
-        width: 18,
+        height: 12,
+        width: 12,
         opacity: props.shouldShow ? 1 : 0,
       }}
     >
@@ -186,6 +190,96 @@ export const VisibilityIndicator: React.FunctionComponent<
       ) : (
         <Icn category='semantic' type='eye-strikethrough' color={color} width={12} height={12} />
       )}
+    </Button>
+  )
+})
+
+interface AddChildButtonProps {
+  target: ElementPath
+  iconColor: IcnProps['color']
+}
+
+export function addChildButtonTestId(target: ElementPath): string {
+  return `add-child-button-${EP.toString(target)}`
+}
+
+const AddChildButton = React.memo((props: AddChildButtonProps) => {
+  const { target, iconColor } = props
+  const onClick = useCreateCallbackToShowComponentPicker()(target, 'insert-as-child')
+
+  return (
+    <Button
+      onClick={onClick}
+      style={{
+        height: 12,
+        width: 12,
+      }}
+      data-testid={addChildButtonTestId(target)}
+    >
+      <Icn
+        category='semantic'
+        type='plus-in-white-translucent-circle'
+        color={iconColor}
+        width={12}
+        height={12}
+      />
+    </Button>
+  )
+})
+
+export const ReplaceElementButtonTestId = (path: ElementPath) =>
+  `replace-element-button-${EP.toString(path)}`
+
+interface ReplaceElementButtonProps {
+  target: ElementPath
+  iconColor: IcnProps['color']
+  prop: string | null
+  conditionalCase: ConditionalCase | null
+}
+
+const ReplaceElementButton = React.memo((props: ReplaceElementButtonProps) => {
+  const { target, prop, iconColor, conditionalCase } = props
+
+  const { target: realTarget, insertionTarget } = ((): {
+    target: ElementPath
+    insertionTarget: InsertionTarget
+  } => {
+    if (prop != null) {
+      return {
+        target: EP.parentPath(target),
+        insertionTarget: { prop: prop },
+      }
+    }
+    if (conditionalCase != null) {
+      return {
+        target: EP.parentPath(target),
+        insertionTarget: conditionalCase,
+      }
+    }
+    return {
+      target: target,
+      insertionTarget: 'replace-target',
+    }
+  })()
+
+  const onClick = useCreateCallbackToShowComponentPicker()(realTarget, insertionTarget)
+
+  return (
+    <Button
+      data-testid={ReplaceElementButtonTestId(props.target)}
+      onClick={onClick}
+      style={{
+        height: 12,
+        width: 12,
+      }}
+    >
+      <Icn
+        category='navigator-element'
+        type='convert-action'
+        color={iconColor}
+        width={12}
+        height={12}
+      />
     </Button>
   )
 })
@@ -231,7 +325,6 @@ export const SelectionLockedIndicator: React.FunctionComponent<
         height: 12,
         width: 12,
         display: shouldShow ? 'block' : 'none',
-        paddingRight: 1,
       }}
     >
       {when(
@@ -353,13 +446,17 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
 
   const isConditionalClauseTitle = isConditionalClauseNavigatorEntry(props.navigatorEntry)
 
+  const conditionalCase = useConditionalCaseCorrespondingToBranchPath(
+    props.navigatorEntry.elementPath,
+  )
+
   return (
     <FlexRow
       style={{
-        padding: '4px',
+        padding: '4px 5px 4px 4px',
         borderRadius: '0 5px 5px 0',
         position: 'fixed',
-        gap: 3,
+        gap: 4,
         right: 0,
         background:
           props.highlighted ||
@@ -376,6 +473,18 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
         selected={props.selected}
         instanceOriginalComponentName={props.instanceOriginalComponentName}
       />
+      {(navigatorEntry.type === 'REGULAR' || navigatorEntry.type === 'RENDER_PROP_VALUE') &&
+      (props.highlighted || props.selected) ? (
+        <>
+          <AddChildButton target={navigatorEntry.elementPath} iconColor={props.iconColor} />
+          <ReplaceElementButton
+            target={navigatorEntry.elementPath}
+            iconColor={props.iconColor}
+            prop={navigatorEntry.type === 'RENDER_PROP_VALUE' ? navigatorEntry.prop : null}
+            conditionalCase={conditionalCase}
+          />
+        </>
+      ) : null}
       <SelectionLockedIndicator
         key={`selection-locked-indicator-${varSafeNavigatorEntryToKey(navigatorEntry)}`}
         shouldShow={
