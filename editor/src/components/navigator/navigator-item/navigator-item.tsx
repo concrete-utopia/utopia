@@ -64,6 +64,7 @@ import { assertNever } from '../../../core/shared/utils'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { MapCounter } from './map-counter'
 import { useCreateCallbackToShowComponentPicker } from './component-picker-context-menu'
+import type { InsertionTarget } from './component-picker-context-menu'
 import { getHighlightBoundsForProject } from '../../../core/model/project-file-utils'
 import {
   selectedElementChangedMessageFromHighlightBounds,
@@ -72,6 +73,7 @@ import {
 import { toVSCodeExtensionMessage } from 'utopia-vscode-common'
 import type { Emphasis } from 'utopia-api'
 import { contextMenu } from 'react-contexify'
+import { DataReferenceCartoucheControl } from '../../inspector/sections/component-section/data-reference-cartouche'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -747,6 +749,8 @@ export const NavigatorItem: React.FunctionComponent<
   const fullyVisible = useStyleFullyVisible(navigatorEntry, autoFocusedPaths)
   const isProbablyScene = useIsProbablyScene(navigatorEntry)
 
+  const elementIsData = navigatorEntry.type === 'DATA_REFERENCE'
+
   const isHighlightedForInteraction = useEditorState(
     Substores.restOfEditor,
     (store) => {
@@ -843,6 +847,16 @@ export const NavigatorItem: React.FunctionComponent<
     'NavigatorItem isHiddenConditionalBranch',
   )
 
+  const conditionalCase = useEditorState(
+    Substores.metadata,
+    (store) =>
+      getConditionalCaseCorrespondingToBranchPath(
+        props.navigatorEntry.elementPath,
+        store.editor.jsxMetadata,
+      ),
+    'NavigatorItem, conditionalCase',
+  )
+
   const isPlaceholder = isEntryAPlaceholder(props.navigatorEntry)
 
   const isComponentScene = useIsProbablyScene(navigatorEntry) && childComponentCount === 1
@@ -921,6 +935,13 @@ export const NavigatorItem: React.FunctionComponent<
               parentOutline={props.parentOutline}
               navigatorEntry={navigatorEntry}
             />
+          ) : conditionalCase !== null ? (
+            <ConditionalBranchSlot
+              label={props.label}
+              parentOutline={props.parentOutline}
+              navigatorEntry={navigatorEntry}
+              conditionalCase={conditionalCase}
+            />
           ) : (
             <PlaceholderSlot label={props.label} parentOutline={props.parentOutline} />
           )
@@ -940,6 +961,23 @@ export const NavigatorItem: React.FunctionComponent<
             }}
           >
             {props.label}
+          </div>
+        ) : elementIsData ? (
+          <div
+            key={`label-${props.label}-slot`}
+            style={{
+              maxWidth: 140,
+              color: colorTheme.fg5.value,
+              border: colorTheme.navigatorResizeHintBorder.value,
+              marginLeft: 23,
+              paddingTop: 6,
+              overflow: 'hidden',
+            }}
+          >
+            <DataReferenceCartoucheControl
+              elementPath={navigatorEntry.elementPath}
+              childOrAttribute={navigatorEntry.childOrAttribute}
+            />
           </div>
         ) : (
           <FlexRow
@@ -1019,6 +1057,35 @@ const RenderPropSlot = React.memo((props: RenderPropSlotProps) => {
   const showComponentPickerContextMenu = useCreateCallbackToShowComponentPicker()(
     target,
     insertionTarget,
+  )
+
+  return (
+    <PlaceholderSlot
+      label={label}
+      parentOutline={parentOutline}
+      cursor={'pointer'}
+      onClick={showComponentPickerContextMenu}
+      testId={`toggle-render-prop-${NavigatorItemTestId(
+        varSafeNavigatorEntryToKey(navigatorEntry),
+      )}`}
+    />
+  )
+})
+
+interface ConditionalBranchSlotProps {
+  label: string
+  parentOutline: ParentOutline
+  navigatorEntry: NavigatorEntry
+  conditionalCase: ConditionalCase
+}
+
+const ConditionalBranchSlot = React.memo((props: ConditionalBranchSlotProps) => {
+  const { label, parentOutline, navigatorEntry, conditionalCase } = props
+  const target = EP.parentPath(navigatorEntry.elementPath)
+
+  const showComponentPickerContextMenu = useCreateCallbackToShowComponentPicker()(
+    target,
+    conditionalCase,
   )
 
   return (

@@ -41,20 +41,44 @@ import { type ContextMenuItem } from '../../context-menu-items'
 import { FlexRow, Icn, type IcnProps } from '../../../uuiui'
 import type { EditorAction, EditorDispatch } from '../../editor/action-types'
 import { type ProjectContentTreeRoot } from '../../assets'
-import {
-  type PropertyControlsInfo,
-  type ComponentInfo,
-  ComponentElementToInsert,
-} from '../../custom-code/code-file'
+import type { PropertyControlsInfo, ComponentInfo } from '../../custom-code/code-file'
 import { type Icon } from 'utopia-api'
 import { getRegisteredComponent } from '../../../core/property-controls/property-controls-utils'
 import { defaultImportsForComponentModule } from '../../../core/property-controls/property-controls-local'
 import { useGetInsertableComponents } from '../../canvas/ui/floating-insert-menu'
 import { atom, useAtom, useSetAtom } from 'jotai'
-import { childInsertionPath } from '../../editor/store/insertion-path'
-import { insertableComponent, type InsertableComponent } from '../../shared/project-components'
+import {
+  childInsertionPath,
+  conditionalClauseInsertionPath,
+  replaceWithSingleElement,
+} from '../../editor/store/insertion-path'
+import type { InsertableComponent } from '../../shared/project-components'
+import type { ConditionalCase } from '../../../core/model/conditionals'
 
-export type InsertionTarget = { prop: string } | 'replace-target' | 'insert-as-child'
+type RenderPropInsertionTarget = { prop: string }
+
+export type InsertionTarget =
+  | RenderPropInsertionTarget
+  | 'replace-target'
+  | 'insert-as-child'
+  | ConditionalCase
+
+export function isRenderPropInsertionTarget(
+  insertionTarget: InsertionTarget,
+): insertionTarget is RenderPropInsertionTarget {
+  return (
+    insertionTarget !== 'insert-as-child' &&
+    insertionTarget !== 'replace-target' &&
+    !isConditionalCaseInsertionTarget(insertionTarget)
+  )
+}
+
+export function isConditionalCaseInsertionTarget(
+  insertionTarget: InsertionTarget,
+): insertionTarget is ConditionalCase {
+  return insertionTarget === 'true-case' || insertionTarget === 'false-case'
+}
+
 interface ComponentPickerContextMenuAtomData {
   target: ElementPath
   insertionTarget: InsertionTarget
@@ -108,7 +132,7 @@ export function preferredChildrenForTarget(
         ...v,
         icon: getIconForComponent(v.name, v.moduleName, propertyControlsInfo),
       }))
-    } else {
+    } else if (insertionTarget !== 'true-case' && insertionTarget !== 'false-case') {
       for (const [registeredPropName, registeredPropValue] of Object.entries(
         registeredComponent.properties,
       )) {
@@ -322,7 +346,7 @@ function insertComponentPickerItem(
       }
 
       // if we are inserting into a render prop
-      if (insertionTarget !== 'replace-target' && insertionTarget !== 'insert-as-child') {
+      if (isRenderPropInsertionTarget(insertionTarget)) {
         return [
           setProp_UNSAFE(
             target,
@@ -338,14 +362,32 @@ function insertComponentPickerItem(
         return [replaceMappedElement(fixedElement, target, toInsert.importsToAdd)]
       }
 
-      return [
-        insertJSXElement(fixedElement, target, toInsert.importsToAdd ?? undefined, insertionTarget),
-      ]
+      if (!isConditionalCaseInsertionTarget(insertionTarget)) {
+        return [
+          insertJSXElement(
+            fixedElement,
+            target,
+            toInsert.importsToAdd ?? undefined,
+            insertionTarget,
+          ),
+        ]
+      }
     }
 
     // TODO: for non-jsx-elements we only support insertion as a child today, this should be extended
     if (insertionTarget === 'insert-as-child') {
       return [insertInsertable(childInsertionPath(target), toInsert, 'do-not-add', null)]
+    }
+
+    if (isConditionalCaseInsertionTarget(insertionTarget)) {
+      return [
+        insertInsertable(
+          conditionalClauseInsertionPath(target, insertionTarget, replaceWithSingleElement()),
+          toInsert,
+          'do-not-add',
+          null,
+        ),
+      ]
     }
 
     console.warn(
