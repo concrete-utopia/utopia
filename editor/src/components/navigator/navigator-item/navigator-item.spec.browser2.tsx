@@ -294,7 +294,7 @@ describe('Navigator item row icons', () => {
     )
     await checkNavigatorIcon(
       'Generated text',
-      { category: 'navigator-element', type: 'text-generated', color: 'blue' },
+      { category: 'navigator-element', type: 'text-generated', color: 'black' },
       visibleNavigatorTargets[18],
     )
     await checkNavigatorIcon(
