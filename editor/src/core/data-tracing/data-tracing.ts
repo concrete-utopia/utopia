@@ -55,13 +55,36 @@ export function dataTracingToLiteralAttribute(
   }
 }
 
+export type DataTracingToAHookCall = {
+  type: 'hook-result'
+  hookName: string
+  elementPath: ElementPath
+  dataPathIntoAttribute: Array<string | number>
+}
+
+export function dataTracingToAHookCall(
+  elementPath: ElementPath,
+  hookName: string,
+  dataPathIntoAttribute: Array<string | number>,
+): DataTracingToAHookCall {
+  return {
+    type: 'hook-result',
+    hookName: hookName,
+    elementPath: elementPath,
+    dataPathIntoAttribute: dataPathIntoAttribute,
+  }
+}
+
 export type DataTracingFailed = { type: 'failed'; reason: string }
 
 export function dataTracingFailed(reason: string): DataTracingFailed {
   return { type: 'failed', reason: reason }
 }
 
-export type DataTracingResult = DataTracingToLiteralAttribute | DataTracingFailed
+export type DataTracingResult =
+  | DataTracingToLiteralAttribute
+  | DataTracingToAHookCall
+  | DataTracingFailed
 
 function findContainingComponentForElementPath(
   elementPath: ElementPath,

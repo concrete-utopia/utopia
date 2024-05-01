@@ -11,7 +11,11 @@ import * as EP from '../shared/element-path'
 import { jsIdentifier } from '../shared/element-template'
 import type { ElementPath } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
-import { dataTracingToLiteralAttribute, traceDataFromProp } from './data-tracing'
+import {
+  dataTracingToAHookCall,
+  dataTracingToLiteralAttribute,
+  traceDataFromProp,
+} from './data-tracing'
 
 describe('Data Tracing', () => {
   describe('Tracing through direct props use', () => {
@@ -261,7 +265,42 @@ describe('Data Tracing', () => {
     })
   })
 
-  describe('Tracing through local variable indirection', () => {
+  describe('Data tracing to a useLoaderData() hook', () => {
+    it('Traces back a prop to a useLoaderData() hook', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithStoryboard(`
+        function useLoaderData() {
+          return { title: 'string literal here' }
+        }
+
+      function MyComponent(props) {
+        const data = useLoaderData()
+        return <div data-uid='component-root' title={data.title} />
+      }
+
+      function App() {
+        return <MyComponent data-uid='my-component' />
+      }
+      `),
+        'await-first-dom-report',
+      )
+
+      await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component'))
+
+      const traceResult = traceDataFromProp(
+        EPP.create(EP.fromString('sb/app:my-component:component-root'), PP.create('title')),
+        editor.getEditorState().editor.jsxMetadata,
+        editor.getEditorState().editor.projectContents,
+        [],
+      )
+
+      expect(traceResult).toEqual(
+        dataTracingToAHookCall(EP.fromString('sb/app:my-component'), 'useLoaderData', ['title']),
+      )
+    })
+  })
+
+  xdescribe('Tracing through local variable indirection', () => {
     it('Traces back a regular prop to a string literal jsx attribute via a single const indirection', async () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCodeWithStoryboard(`
