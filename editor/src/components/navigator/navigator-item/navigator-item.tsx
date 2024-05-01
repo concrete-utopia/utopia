@@ -1218,7 +1218,7 @@ function elementContainsExpressions(
 }
 
 function getSelectionTargetForNavigatorEntry(navigatorEntry: NavigatorEntry): ElementPath {
-  const shouldSelectParentInstead = isDataReferenceNavigatorEntry(navigatorEntry)
+  const shouldSelectParentInstead = false // isDataReferenceNavigatorEntry(navigatorEntry)
   const elementPath = shouldSelectParentInstead
     ? EP.parentPath(navigatorEntry.elementPath)
     : navigatorEntry.elementPath
