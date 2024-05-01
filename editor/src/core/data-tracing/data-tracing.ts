@@ -356,33 +356,20 @@ function lookupInComponentScope(
         )
       }
     }
-  }
 
-  const foundHookCall: JSAssignment<JSIdentifier, JSExpressionOtherJavaScript> | null =
-    mapFirstApplicable(componentHoldingElement.arbitraryJSBlock?.statements ?? [], (statement) => {
-      if (statement.type !== 'JS_ASSIGNMENT_STATEMENT') {
-        return null
-      }
-
-      return mapFirstApplicable(statement.assignments, (assignment) => {
-        if (
-          assignment.leftHandSide.name === identifier.name &&
-          assignment.rightHandSide.type === 'ATTRIBUTE_OTHER_JAVASCRIPT' &&
-          assignment.rightHandSide.originalJavascript.startsWith('use') &&
-          assignment.rightHandSide.originalJavascript.endsWith('()') &&
-          assignment.rightHandSide.originalJavascript.match(/^use[A-Za-z]+\(\)$/) != null
-        ) {
-          return assignment as JSAssignment<JSIdentifier, JSExpressionOtherJavaScript>
-        }
-        return null
-      })
-    })
-  if (foundHookCall != null) {
-    return dataTracingToAHookCall(
-      componentPath,
-      foundHookCall.rightHandSide.originalJavascript.split('()')[0],
-      [...pathDrillSoFar],
-    )
+    if (
+      foundAssignmentOfIdentifier.rightHandSide.type === 'ATTRIBUTE_OTHER_JAVASCRIPT' &&
+      foundAssignmentOfIdentifier.rightHandSide.originalJavascript.startsWith('use') &&
+      foundAssignmentOfIdentifier.rightHandSide.originalJavascript.endsWith('()') &&
+      foundAssignmentOfIdentifier.rightHandSide.originalJavascript.match(/^use[A-Za-z]+\(\)$/) !=
+        null
+    ) {
+      return dataTracingToAHookCall(
+        componentPath,
+        foundAssignmentOfIdentifier.rightHandSide.originalJavascript.split('()')[0],
+        [...pathDrillSoFar],
+      )
+    }
   }
 
   return dataTracingFailed('Could not find a hook call')
