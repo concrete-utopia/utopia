@@ -195,7 +195,9 @@ export function getNavigatorTargets(
             processedPathsAsRenderProp.add(EP.toString(subTreeChild.path))
             walkAndAddKeys(subTreeChild, collapsedAncestor, prop)
           } else {
-            const synthEntry = dataReferenceNavigatorEntry(childPath, propValue)
+            const synthEntry = isFeatureEnabled('Data Entries in the Navigator')
+              ? dataReferenceNavigatorEntry(childPath, propValue)
+              : syntheticNavigatorEntry(childPath, propValue)
             addNavigatorTargetsUnlessCollapsed(synthEntry)
           }
         })
