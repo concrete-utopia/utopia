@@ -289,7 +289,7 @@ describe('Navigator item row icons', () => {
     )
     await checkNavigatorIcon(
       'Sizeless div',
-      { category: 'navigator-element', type: 'zerosized-div', color: 'lightgray' },
+      { category: 'navigator-element', type: 'zerosized-div', color: 'black' },
       visibleNavigatorTargets[17],
     )
     await checkNavigatorIcon(
