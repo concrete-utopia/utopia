@@ -234,7 +234,7 @@ interface ReplaceElementButtonProps {
 }
 
 const ReplaceElementButton = React.memo((props: ReplaceElementButtonProps) => {
-  const { target, prop } = props
+  const { target, prop, iconColor } = props
   const onClick = useCreateCallbackToShowComponentPicker()(
     target,
     prop == null ? 'replace-target' : { prop: prop },
@@ -250,12 +250,11 @@ const ReplaceElementButton = React.memo((props: ReplaceElementButtonProps) => {
       }}
     >
       <Icn
-        category='tools'
+        category='navigator-element'
         type='convert-action'
-        color={'main'} // FIXME Add missing colours
-        width={18}
-        height={18}
-        style={{ transform: 'scale(0.67)' }}
+        color={iconColor}
+        width={12}
+        height={12}
       />
     </Button>
   )
