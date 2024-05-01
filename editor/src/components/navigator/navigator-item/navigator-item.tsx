@@ -277,7 +277,10 @@ const computeResultingStyle = (
     styleType = 'selected'
   } else if (isErroredGroup) {
     styleType = 'erroredGroup'
-  } else if (isFocusedComponent) {
+  } else if (
+    (!isProbablyScene && isFocusedComponent) ||
+    (isDescendantOfSelected && isInsideComponent)
+  ) {
     styleType = 'component'
   } else if (emphasis === 'subdued') {
     styleType = 'lowEmphasis'
@@ -286,8 +289,14 @@ const computeResultingStyle = (
   } else if (isHighlightedForInteraction) {
     styleType = 'default'
   }
+  const isProbablyParentOfSelected = (isProbablyScene || fullyVisible) && !selected
 
-  if (selected && (isFocusedComponent || isInsideComponent)) {
+  if (
+    selected &&
+    (isFocusedComponent || isInsideComponent) &&
+    !isProbablyScene &&
+    !isProbablyParentOfSelected
+  ) {
     selectedType = 'selectedFocusedComponent'
   } else if (selected) {
     selectedType = 'selected'
@@ -300,8 +309,6 @@ const computeResultingStyle = (
   }
 
   let result = getColors(styleType, selectedType, colorTheme)
-
-  const isProbablyParentOfSelected = (isProbablyScene || fullyVisible) && !selected
 
   result.style = {
     ...result.style,
@@ -998,7 +1005,7 @@ export const NavigatorItem: React.FunctionComponent<
                 iconColor={iconColor}
                 elementWarnings={!isConditional ? elementWarnings : null}
                 childComponentCount={childComponentCount}
-                focusedComponent={isFocusedComponent || isInFocusedComponentSubtree}
+                insideFocusedComponent={isInsideComponent && isDescendantOfSelected}
               />
             </FlexRow>
             {unless(
@@ -1136,7 +1143,7 @@ interface NavigatorRowLabelProps {
   shouldShowParentOutline: boolean
   childComponentCount: number
   dispatch: EditorDispatch
-  focusedComponent: boolean
+  insideFocusedComponent: boolean
 }
 
 export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
@@ -1166,7 +1173,7 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
           color={
             props.selected
               ? 'white'
-              : props.focusedComponent
+              : props.insideFocusedComponent
               ? 'component'
               : props.emphasis === 'emphasized'
               ? 'dynamic'
