@@ -45,7 +45,7 @@ export const IdentifierExpressionCartoucheControl = React.memo(
           height: 22,
           display: 'flex',
           flex: 1,
-          gap: 4,
+          gap: 2,
         }}
         onClick={props.onOpenDataPicker}
       >
