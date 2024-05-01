@@ -898,10 +898,9 @@ export const NavigatorItem: React.FunctionComponent<
     <div
       onClick={hideContextMenu}
       style={{
+        borderRadius: 5,
         outline: `1px solid ${
-          props.parentOutline === 'solid' && isOutletOrDescendantOfOutlet
-            ? colorTheme.aqua.value
-            : props.parentOutline === 'solid'
+          props.parentOutline === 'solid'
             ? colorTheme.navigatorResizeHintBorder.value
             : 'transparent'
         }`,
