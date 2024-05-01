@@ -287,12 +287,12 @@ const computeResultingStyle = (
     styleType = 'default'
   }
 
-  if (selected && isFocusedComponent) {
+  if (selected && (isFocusedComponent || isInsideComponent)) {
     selectedType = 'selectedFocusedComponent'
-  } else if (isDescendantOfSelected && isInsideComponent) {
-    selectedType = 'descendantOfSelectedFocusedComponent'
   } else if (selected) {
     selectedType = 'selected'
+  } else if (isDescendantOfSelected && isInsideComponent) {
+    selectedType = 'descendantOfSelectedFocusedComponent'
   } else if (isDescendantOfSelected) {
     selectedType = 'descendantOfSelected'
   } else {
