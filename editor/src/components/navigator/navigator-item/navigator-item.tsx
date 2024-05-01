@@ -898,50 +898,6 @@ export const NavigatorItem: React.FunctionComponent<
   const currentlyRenaming = EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath)
   const hideContextMenu = React.useCallback(() => contextMenu.hideAll(), [])
 
-  if (elementIsData) {
-    return (
-      <div
-        onClick={hideContextMenu}
-        style={{
-          outline: `1px solid ${
-            props.parentOutline === 'solid' && isOutletOrDescendantOfOutlet
-              ? colorTheme.aqua.value
-              : props.parentOutline === 'solid'
-              ? colorTheme.navigatorResizeHintBorder.value
-              : 'transparent'
-          }`,
-          outlineOffset: props.parentOutline === 'solid' ? '-1px' : 0,
-        }}
-      >
-        <FlexRow
-          data-testid={NavigatorItemTestId(varSafeNavigatorEntryToKey(navigatorEntry))}
-          style={rowStyle}
-          // TODO onMouseDown should probably _deselect_
-          onMouseDown={select}
-          onMouseMove={highlight}
-          onDoubleClick={focusComponent}
-        >
-          <div
-            key={`label-${props.label}-slot`}
-            style={{
-              maxWidth: 140,
-              color: colorTheme.fg5.value,
-              border: colorTheme.navigatorResizeHintBorder.value,
-              marginLeft: 23,
-              overflow: 'hidden',
-            }}
-          >
-            <DataReferenceCartoucheControl
-              elementPath={navigatorEntry.elementPath}
-              childOrAttribute={navigatorEntry.childOrAttribute}
-              selected={selected}
-            />
-          </div>
-        </FlexRow>
-      </div>
-    )
-  }
-
   return (
     <div
       onClick={hideContextMenu}
@@ -996,6 +952,23 @@ export const NavigatorItem: React.FunctionComponent<
             }}
           >
             {props.label}
+          </div>
+        ) : elementIsData ? (
+          <div
+            key={`data-reference-${props.label}`}
+            style={{
+              maxWidth: 140,
+              color: colorTheme.fg5.value,
+              border: colorTheme.navigatorResizeHintBorder.value,
+              marginLeft: 23,
+              overflow: 'hidden',
+            }}
+          >
+            <DataReferenceCartoucheControl
+              elementPath={navigatorEntry.elementPath}
+              childOrAttribute={navigatorEntry.childOrAttribute}
+              selected={selected}
+            />
           </div>
         ) : (
           <FlexRow
