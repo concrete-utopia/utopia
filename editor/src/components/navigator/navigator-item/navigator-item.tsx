@@ -786,7 +786,7 @@ export const NavigatorItem: React.FunctionComponent<
   )
 
   const select = React.useCallback(
-    (event: any) =>
+    (event: React.MouseEvent<HTMLDivElement>) =>
       selectItem(
         dispatch,
         getSelectedViewsInRange,
@@ -960,6 +960,7 @@ export const NavigatorItem: React.FunctionComponent<
               elementPath={navigatorEntry.elementPath}
               childOrAttribute={navigatorEntry.childOrAttribute}
               selected={selected}
+              onClick={select}
             />
           </div>
         ) : (

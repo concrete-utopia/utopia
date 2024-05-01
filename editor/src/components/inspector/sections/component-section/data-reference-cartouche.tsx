@@ -15,6 +15,7 @@ import { IdentifierExpressionCartoucheControl } from './cartouche-control'
 import { useDataPickerButton } from './component-section'
 
 interface DataReferenceCartoucheControlProps {
+  onClick: (event: React.MouseEvent<HTMLDivElement>) => void
   elementPath: ElementPath
   childOrAttribute: JSXElementChild
   selected: boolean
@@ -22,7 +23,7 @@ interface DataReferenceCartoucheControlProps {
 
 export const DataReferenceCartoucheControl = React.memo(
   (props: DataReferenceCartoucheControlProps) => {
-    const { elementPath, childOrAttribute, selected } = props
+    const { elementPath, childOrAttribute, selected, onClick } = props
 
     const contentsToDisplay = useEditorState(
       Substores.metadata,
@@ -59,6 +60,7 @@ export const DataReferenceCartoucheControl = React.memo(
       <>
         {dataPickerButtonData.popupIsOpen ? dataPickerButtonData.DataPickerComponent : null}
         <div
+          onClick={onClick}
           style={{
             minWidth: 0, // this ensures that the div can never expand the allocated grid space
           }}
@@ -78,7 +80,6 @@ export const DataReferenceCartoucheControl = React.memo(
               flex: 1,
               gap: 4,
             }}
-            onClick={dataPickerButtonData.openPopup}
           >
             {contentsToDisplay.type === 'reference' ? (
               <Icons.NavigatorData color={cartoucheColor} />
