@@ -33,6 +33,8 @@ export const ServerEnvironment = {
   // Github OAuth credentials
   GITHUB_OAUTH_CLIENT_ID: mustEnvOrLocalFallback('GITHUB_OAUTH_CLIENT_ID', ''),
   GITHUB_OAUTH_REDIRECT_URL: mustEnvOrLocalFallback('GITHUB_OAUTH_REDIRECT_URL', ''),
+  SHOPIFY_STORE_ACCESS_TOKEN: mustEnvOrLocalFallback('SHOPIFY_STORE_ACCESS_TOKEN', ''),
+  SHOPIFY_STORE_URL: mustEnvOrLocalFallback('SHOPIFY_STORE_URL', ''),
 }
 
 export type BrowserEnvironmentType = {
