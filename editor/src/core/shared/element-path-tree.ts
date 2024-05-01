@@ -1,3 +1,4 @@
+import { isFeatureEnabled } from '../../utils/feature-switches'
 import { MetadataUtils } from '../model/element-metadata-utils'
 import { isLeft, isRight } from './either'
 import * as EP from './element-path'
@@ -98,7 +99,9 @@ function getChildrenPaths(
     childrenFromElement = element.element.value.children
       .filter((child) => {
         return (
-          !isJSXTextBlock(child) &&
+          (!isJSXTextBlock(child) ||
+            // if Data Entries are enabled, we don't want to filter out the text blocks
+            isFeatureEnabled('Data Entries in the Navigator')) &&
           !isJSExpressionMapOrOtherJavaScript(child) &&
           !isJSIdentifier(child) &&
           !isJSPropertyAccess(child) &&
