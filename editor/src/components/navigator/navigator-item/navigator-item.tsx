@@ -1170,6 +1170,8 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
               ? 'component'
               : props.emphasis === 'emphasized'
               ? 'dynamic'
+              : isCodeItem || props.codeItemType === 'map'
+              ? props.iconColor
               : props.iconColor
           }
           elementWarnings={props.elementWarnings}
