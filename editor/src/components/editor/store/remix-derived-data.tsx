@@ -28,6 +28,7 @@ import type { CurriedUtopiaRequireFn, CurriedResolveFn } from '../../custom-code
 import { memoize } from '../../../core/shared/memoize'
 import { shallowEqual } from '../../../core/shared/equality-utils'
 import { evaluator } from '../../../core/es-modules/evaluator/evaluator'
+import type { Either } from '../../../core/shared/either'
 
 export interface RemixRoutingTable {
   [rootElementUid: string]: string /* file path */
@@ -52,6 +53,19 @@ export const CreateRemixDerivedDataRefsGLOBAL: {
   routeModulesCache: { current: {} },
 }
 export const REMIX_CONFIG_JS_PATH = '/remix.config.js'
+
+export const REQUEST_UPDATE_CONTEXT_GLOABAL_HACKED: {
+  [routeId: string]: {
+    requestUpdateCallback?: null | ((...any: any) => Either<string, any>)
+    lastLoaderResult?: any
+  }
+} = {}
+
+export const initRequestUpdateContextGlobalHacked = (routeId: string) => {
+  if (REQUEST_UPDATE_CONTEXT_GLOABAL_HACKED[routeId] == null) {
+    REQUEST_UPDATE_CONTEXT_GLOABAL_HACKED[routeId] = {}
+  }
+}
 
 export function getRemixRootDir(projectContents: ProjectContentTreeRoot): string {
   const defaultRootDirName = 'app'
