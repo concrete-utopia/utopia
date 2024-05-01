@@ -42,6 +42,7 @@ import {
   Icn,
   Tooltip,
   iconForControlType,
+  Icons,
 } from '../../../../uuiui'
 import type { CSSNumber } from '../../common/css-utils'
 import { printCSSNumber, cssNumber, defaultCSSColor } from '../../common/css-utils'
@@ -52,7 +53,7 @@ import type { SelectOption } from '../../controls/select-control'
 import { OptionChainControl } from '../../controls/option-chain-control'
 import { useKeepReferenceEqualityIfPossible } from '../../../../utils/react-performance'
 import { UIGridRow } from '../../widgets/ui-grid-row'
-import type { Imports, PropertyPath } from '../../../../core/shared/project-file-types'
+import type { ElementPath, Imports, PropertyPath } from '../../../../core/shared/project-file-types'
 import { importDetailsFromImportOption } from '../../../../core/shared/project-file-types'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { addImports, forceParseFile } from '../../../editor/actions/action-creators'
@@ -65,15 +66,24 @@ import {
 } from '../../../custom-code/code-file'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { HtmlPreview, ImagePreview } from './property-content-preview'
+import type {
+  ElementInstanceMetadata,
+  JSXElementChild,
+} from '../../../../core/shared/element-template'
 import {
   JSElementAccess,
   JSIdentifier,
   JSPropertyAccess,
+  getJSXElementNameLastPart,
 } from '../../../../core/shared/element-template'
 import type { JSXParsedType, JSXParsedValue } from '../../../../utils/value-parser-utils'
 import { assertNever } from '../../../../core/shared/utils'
 import { preventDefault, stopPropagation } from '../../common/inspector-utils'
 import { unless, when } from '../../../../utils/react-conditionals'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { useDataPickerButton } from './component-section'
+import { parseNoneControlDescription } from '../../../../core/property-controls/property-controls-parser'
+import * as EP from '../../../../core/shared/element-path'
 
 export interface ControlForPropProps<T extends RegularControlDescription> {
   propPath: PropertyPath
@@ -798,82 +808,6 @@ export const Matrix4PropertyControl = React.memo(
           />
         </FlexRow>
       </FlexColumn>
-    )
-  },
-)
-
-interface IdentifierExpressionCartoucheControlProps {
-  contents: string
-  dataType: RegularControlType
-  matchType: 'full' | 'partial'
-  onOpenDataPicker: () => void
-  onDeleteCartouche: () => void
-  safeToDelete: boolean
-  testId: string
-}
-export const IdentifierExpressionCartoucheControl = React.memo(
-  (props: IdentifierExpressionCartoucheControlProps) => {
-    const { onDeleteCartouche, testId, safeToDelete } = props
-    const onDelete = React.useCallback<React.MouseEventHandler<HTMLDivElement>>(
-      (e) => {
-        stopPropagation(e)
-        onDeleteCartouche()
-      },
-      [onDeleteCartouche],
-    )
-
-    const Icon = iconForControlType(props.dataType)
-
-    return (
-      <FlexRow
-        style={{
-          cursor: 'pointer',
-          fontSize: 10,
-          color: props.matchType === 'full' ? colorTheme.white.value : colorTheme.primary.value,
-          backgroundColor:
-            props.matchType === 'full' ? colorTheme.primary.value : colorTheme.primary10.value,
-          padding: '0px 4px',
-          borderRadius: 4,
-          height: 22,
-          display: 'flex',
-          flex: 1,
-          gap: 2,
-        }}
-        onClick={props.onOpenDataPicker}
-      >
-        <Icon />
-        <Tooltip title={props.contents}>
-          <div
-            style={{
-              flex: 1,
-              /* Standard CSS ellipsis */
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-
-              /* Beginning of string */
-              direction: 'rtl',
-              textAlign: 'left',
-            }}
-          >
-            {props.contents}
-            &lrm;
-            {/* the &lrm; non-printing character is added to fix the punctuation marks disappearing because of direction: rtl */}
-          </div>
-        </Tooltip>
-        {when(
-          safeToDelete,
-          <Icn
-            category='semantic'
-            type='cross-medium'
-            color='on-highlight-main'
-            width={16}
-            height={16}
-            data-testid={`delete-${testId}`}
-            onClick={onDelete}
-          />,
-        )}
-      </FlexRow>
     )
   },
 )

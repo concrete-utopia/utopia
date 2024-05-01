@@ -1276,6 +1276,30 @@ export function emptyGithubData(): GithubData {
   }
 }
 
+export function newGithubData(
+  branches: Array<GithubBranch> | null,
+  userRepositories: Array<RepositoryEntry>,
+  publicRepositories: Array<RepositoryEntry>,
+  treeConflicts: TreeConflicts,
+  lastUpdatedAt: number | null,
+  upstreamChanges: GithubFileChanges | null,
+  currentBranchPullRequests: Array<PullRequest> | null,
+  githubUserDetails: GithubUser | null,
+  lastRefreshedCommit: string | null,
+): GithubData {
+  return {
+    branches: branches,
+    userRepositories: userRepositories,
+    publicRepositories: publicRepositories,
+    treeConflicts: treeConflicts,
+    lastUpdatedAt: lastUpdatedAt,
+    upstreamChanges: upstreamChanges,
+    currentBranchPullRequests: currentBranchPullRequests,
+    githubUserDetails: githubUserDetails,
+    lastRefreshedCommit: lastRefreshedCommit,
+  }
+}
+
 export type ColorSwatch = {
   id: string
   hex: string
@@ -2138,6 +2162,29 @@ export function syntheticNavigatorEntry(
   }
 }
 
+export interface DataReferenceNavigatorEntry {
+  type: 'DATA_REFERENCE'
+  elementPath: ElementPath
+  childOrAttribute: JSXElementChild
+}
+
+export function dataReferenceNavigatorEntry(
+  elementPath: ElementPath,
+  childOrAttribute: JSXElementChild,
+): DataReferenceNavigatorEntry {
+  return {
+    type: 'DATA_REFERENCE',
+    elementPath: elementPath,
+    childOrAttribute: childOrAttribute,
+  }
+}
+
+export function isDataReferenceNavigatorEntry(
+  entry: NavigatorEntry,
+): entry is DataReferenceNavigatorEntry {
+  return entry.type === 'DATA_REFERENCE'
+}
+
 export interface SlotNavigatorEntry {
   type: 'SLOT'
   elementPath: ElementPath
@@ -2247,6 +2294,7 @@ export type NavigatorEntry =
   | RegularNavigatorEntry
   | ConditionalClauseNavigatorEntry
   | SyntheticNavigatorEntry
+  | DataReferenceNavigatorEntry
   | InvalidOverrideNavigatorEntry
   | RenderPropNavigatorEntry
   | RenderPropValueNavigatorEntry
@@ -2285,6 +2333,12 @@ export function navigatorEntryToKey(entry: NavigatorEntry): string {
         : `element-${getUtopiaID(entry.childOrAttribute)}`
       return `synthetic-${EP.toComponentId(entry.elementPath)}-${childOrAttributeDetails}`
     }
+    case 'DATA_REFERENCE': {
+      const childOrAttributeDetails = isJSExpression(entry.childOrAttribute)
+        ? `attribute`
+        : `element-${getUtopiaID(entry.childOrAttribute)}`
+      return `data-reference-${EP.toComponentId(entry.elementPath)}-${childOrAttributeDetails}`
+    }
     case 'RENDER_PROP': {
       return `render-prop-${EP.toComponentId(entry.elementPath)}-${entry.propName}`
     }
@@ -2306,11 +2360,20 @@ export function varSafeNavigatorEntryToKey(entry: NavigatorEntry): string {
       return `regular_${EP.toVarSafeComponentId(entry.elementPath)}`
     case 'CONDITIONAL_CLAUSE':
       return `conditional_clause_${EP.toVarSafeComponentId(entry.elementPath)}_${entry.clause}`
-    case 'SYNTHETIC':
+    case 'SYNTHETIC': {
       const childOrAttributeDetails = isJSExpression(entry.childOrAttribute)
         ? `attribute`
         : `element_${getUtopiaID(entry.childOrAttribute)}`
       return `synthetic_${EP.toVarSafeComponentId(entry.elementPath)}_${childOrAttributeDetails}`
+    }
+    case 'DATA_REFERENCE': {
+      const childOrAttributeDetails = isJSExpression(entry.childOrAttribute)
+        ? `attribute`
+        : `element_${getUtopiaID(entry.childOrAttribute)}`
+      return `data_reference_${EP.toVarSafeComponentId(
+        entry.elementPath,
+      )}_${childOrAttributeDetails}`
+    }
     case 'RENDER_PROP':
       return `renderprop_${EP.toVarSafeComponentId(entry.elementPath)}_${entry.propName}`
     case 'RENDER_PROP_VALUE':

@@ -1,5 +1,5 @@
 import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
-import { selectComponentsForTest } from '../../../utils/utils.test-utils'
+import { selectComponentsForTest, wait } from '../../../utils/utils.test-utils'
 import {
   formatTestProjectCode,
   getPrintedUiJsCode,
@@ -589,6 +589,58 @@ describe('The navigator component picker context menu', () => {
     )
   })
 
+  it('Selecting a component with no variants from the simple picker for a conditional slot should insert that component into the render prop', async () => {
+    const editor = await renderTestEditorWithCode(
+      `import * as React from 'react'
+      import { Storyboard } from 'utopia-api'
+      
+      export var storyboard = (
+        <Storyboard data-uid='sb'>
+          {true ? null : null}
+        </Storyboard>
+      )
+      
+      export const Column = () => (
+        <div
+          style={{ display: 'flex', flexDirection: 'column' }}
+        ></div>
+      )
+    `,
+      'await-first-dom-report',
+    )
+    const emptySlot = editor.renderedDOM.getByTestId(
+      'toggle-render-prop-NavigatorItemTestId-synthetic_sb/5af/129_attribute',
+    )
+    await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
+
+    const menuButton = await waitFor(() => editor.renderedDOM.getByText('Column'))
+    await mouseClickAtPoint(menuButton, { x: 3, y: 3 })
+
+    await editor.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState(), StoryboardFilePath)).toEqual(
+      formatTestProjectCode(`
+      import * as React from 'react'
+      import { Storyboard } from 'utopia-api'
+  
+      export var storyboard = (
+       <Storyboard>
+          {
+            // @utopia/conditional=false
+            true ? null : <Column />
+          }
+        </Storyboard>
+      )
+    
+      export const Column = () => (
+        <div
+          style={{ display: 'flex', flexDirection: 'column' }}
+        />
+      )
+    `),
+    )
+  })
+
   it('Selecting a component with no variants from the simple picker for adding a child should insert that component into the render prop', async () => {
     const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString('sb/card')])
@@ -968,6 +1020,105 @@ export var storyboard = (
       </FlexRow>
     </Scene>
   </Storyboard>
+)
+`)
+  })
+
+  it('can replace element inside conditional', async () => {
+    const editor = await renderTestEditorWithCode(
+      `import * as React from 'react'
+      import { Scene, Storyboard, FlexRow } from 'utopia-api'
+      
+      export var storyboard = (
+        <Storyboard data-uid='sb'>
+          <Scene
+            id='playground-scene'
+            commentId='playground-scene'
+            style={{
+              width: 700,
+              height: 759,
+              position: 'absolute',
+              left: 212,
+              top: 128,
+            }}
+            data-label='Playground'
+            data-uid='scene'
+          >
+            <FlexRow data-uid='flexrow'>
+              {
+                // @utopia/uid=conditional
+                true ? (
+                  <img
+                    style={{
+                      width: 220,
+                      height: 220,
+                      display: 'inline-block',
+                    }}
+                    src='/editor/utopia-logo-white-fill.png?hash=4c7df4ba0e8686df4fe14e3570f2d3002304b930'
+                    data-uid='img'
+                  />
+                ) : null
+              }
+            </FlexRow>
+          </Scene>
+        </Storyboard>
+      )
+      export const Column = () => (
+        <div
+          style={{ display: 'flex', flexDirection: 'column' }}
+        ></div>
+      )      
+`,
+      'await-first-dom-report',
+    )
+
+    await mouseClickAtPoint(
+      editor.renderedDOM.getByTestId(
+        'NavigatorItemTestId-regular_sb/scene/flexrow/conditional/img-label',
+      ),
+      { x: 2, y: 2 },
+    )
+
+    await mouseClickAtPoint(
+      editor.renderedDOM.getByTestId('replace-element-button-sb/scene/flexrow/conditional/img'),
+      { x: 2, y: 2 },
+    )
+
+    await mouseClickAtPoint(editor.renderedDOM.getByText('Column'), { x: 2, y: 2 })
+
+    // the element inside the map has been changed to a `div`
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Scene, Storyboard, FlexRow } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      id='playground-scene'
+      commentId='playground-scene'
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <FlexRow data-uid='flexrow'>
+        {
+          // @utopia/uid=conditional
+          true ? <Column data-uid='new' /> : null
+        }
+      </FlexRow>
+    </Scene>
+  </Storyboard>
+)
+export const Column = () => (
+  <div
+    style={{ display: 'flex', flexDirection: 'column' }}
+    data-uid='45a'
+  />
 )
 `)
   })

@@ -932,10 +932,7 @@ export const SyntheticNavigatorItemContainer = React.memo(
 
     const [, updateDragSessionInProgress] = useAtom(DragSessionInProgressAtom)
 
-    const navigatorEntry = React.useMemo(
-      () => syntheticNavigatorEntry(props.elementPath, props.childOrAttribute),
-      [props.childOrAttribute, props.elementPath],
-    )
+    const navigatorEntry = props.navigatorEntry
 
     const [{ isOver }, reparentDropRef] = useDrop<
       NavigatorItemDragAndDropWrapperProps,

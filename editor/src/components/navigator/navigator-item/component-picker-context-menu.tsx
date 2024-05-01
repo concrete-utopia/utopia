@@ -1,8 +1,15 @@
 import React from 'react'
-import { useContextMenu, Menu, type ContextMenuParams, contextMenu } from 'react-contexify'
+import {
+  useContextMenu,
+  Menu,
+  type ContextMenuParams,
+  contextMenu,
+  type TriggerEvent,
+} from 'react-contexify'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import type { ElementInstanceMetadataMap, JSXElement } from '../../../core/shared/element-template'
 import {
+  type ElementInstanceMetadata,
   getJSXElementNameAsString,
   jsxAttributesFromMap,
   jsxElement,
@@ -19,7 +26,11 @@ import {
 } from '../../editor/actions/action-creators'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
-import { ComponentPicker, type ElementToInsert } from './component-picker'
+import {
+  ComponentPicker,
+  elementToInsertToInsertableComponent,
+  type ElementToInsert,
+} from './component-picker'
 import type { PreferredChildComponentDescriptor } from '../../custom-code/internal-property-controls'
 import { fixUtopiaElement, generateConsistentUID } from '../../../core/shared/uid-utils'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
@@ -30,16 +41,44 @@ import { type ContextMenuItem } from '../../context-menu-items'
 import { FlexRow, Icn, type IcnProps } from '../../../uuiui'
 import type { EditorAction, EditorDispatch } from '../../editor/action-types'
 import { type ProjectContentTreeRoot } from '../../assets'
-import { type PropertyControlsInfo, type ComponentInfo } from '../../custom-code/code-file'
+import type { PropertyControlsInfo, ComponentInfo } from '../../custom-code/code-file'
 import { type Icon } from 'utopia-api'
 import { getRegisteredComponent } from '../../../core/property-controls/property-controls-utils'
 import { defaultImportsForComponentModule } from '../../../core/property-controls/property-controls-local'
 import { useGetInsertableComponents } from '../../canvas/ui/floating-insert-menu'
 import { atom, useAtom, useSetAtom } from 'jotai'
-import { childInsertionPath } from '../../editor/store/insertion-path'
+import {
+  childInsertionPath,
+  conditionalClauseInsertionPath,
+  replaceWithSingleElement,
+} from '../../editor/store/insertion-path'
 import type { InsertableComponent } from '../../shared/project-components'
+import type { ConditionalCase } from '../../../core/model/conditionals'
 
-export type InsertionTarget = { prop: string } | 'replace-target' | 'insert-as-child'
+type RenderPropInsertionTarget = { prop: string }
+
+export type InsertionTarget =
+  | RenderPropInsertionTarget
+  | 'replace-target'
+  | 'insert-as-child'
+  | ConditionalCase
+
+export function isRenderPropInsertionTarget(
+  insertionTarget: InsertionTarget,
+): insertionTarget is RenderPropInsertionTarget {
+  return (
+    insertionTarget !== 'insert-as-child' &&
+    insertionTarget !== 'replace-target' &&
+    !isConditionalCaseInsertionTarget(insertionTarget)
+  )
+}
+
+export function isConditionalCaseInsertionTarget(
+  insertionTarget: InsertionTarget,
+): insertionTarget is ConditionalCase {
+  return insertionTarget === 'true-case' || insertionTarget === 'false-case'
+}
+
 interface ComponentPickerContextMenuAtomData {
   target: ElementPath
   insertionTarget: InsertionTarget
@@ -68,6 +107,52 @@ interface PreferredChildComponentDescriptorWithIcon extends PreferredChildCompon
   icon: Icon
 }
 
+export function preferredChildrenForTarget(
+  targetElement: ElementInstanceMetadata | null,
+  insertionTarget: InsertionTarget,
+  propertyControlsInfo: PropertyControlsInfo,
+): Array<PreferredChildComponentDescriptorWithIcon> {
+  const targetJSXElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(targetElement)
+  const elementImportInfo = targetElement?.importInfo
+  if (elementImportInfo == null || targetJSXElement == null) {
+    return []
+  }
+
+  const targetName = getJSXElementNameAsString(targetJSXElement.name)
+  const registeredComponent = getRegisteredComponent(
+    targetName,
+    elementImportInfo.filePath,
+    propertyControlsInfo,
+  )
+
+  // TODO: we don't deal with components registered with the same name in multiple files
+  if (registeredComponent != null) {
+    if (insertionTarget === 'insert-as-child' || insertionTarget === 'replace-target') {
+      return registeredComponent.preferredChildComponents.map((v) => ({
+        ...v,
+        icon: getIconForComponent(v.name, v.moduleName, propertyControlsInfo),
+      }))
+    } else if (insertionTarget !== 'true-case' && insertionTarget !== 'false-case') {
+      for (const [registeredPropName, registeredPropValue] of Object.entries(
+        registeredComponent.properties,
+      )) {
+        if (
+          registeredPropName === insertionTarget.prop &&
+          registeredPropValue.control === 'jsx' &&
+          registeredPropValue.preferredChildComponents != null
+        ) {
+          return registeredPropValue.preferredChildComponents.map((v) => ({
+            ...v,
+            icon: getIconForComponent(v.name, v.moduleName, propertyControlsInfo),
+          }))
+        }
+      }
+    }
+  }
+
+  return []
+}
+
 const usePreferredChildrenForTarget = (
   target: ElementPath,
   insertionTarget: InsertionTarget,
@@ -80,98 +165,80 @@ const usePreferredChildrenForTarget = (
     'usePreferredChildrenForTarget targetElement',
   )
 
-  const preferredChildrenForTarget = useEditorState(
+  return useEditorState(
     Substores.restOfEditor,
     (store) => {
-      const targetJSXElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(targetElement)
-      const elementImportInfo = targetElement?.importInfo
-      if (elementImportInfo == null || targetJSXElement == null) {
-        return null
-      }
-
-      const targetName = getJSXElementNameAsString(targetJSXElement.name)
-      const registeredComponent = getRegisteredComponent(
-        targetName,
-        elementImportInfo.filePath,
+      return preferredChildrenForTarget(
+        targetElement,
+        insertionTarget,
         store.editor.propertyControlsInfo,
       )
-
-      // TODO: we don't deal with components registered with the same name in multiple files
-      if (registeredComponent != null) {
-        if (insertionTarget === 'insert-as-child' || insertionTarget === 'replace-target') {
-          return registeredComponent.preferredChildComponents.map((v) => ({
-            ...v,
-            icon: getIconForComponent(v.name, v.moduleName, store.editor.propertyControlsInfo),
-          }))
-        } else {
-          for (const [registeredPropName, registeredPropValue] of Object.entries(
-            registeredComponent.properties,
-          )) {
-            if (
-              registeredPropName === insertionTarget.prop &&
-              registeredPropValue.control === 'jsx' &&
-              registeredPropValue.preferredChildComponents != null
-            ) {
-              return registeredPropValue.preferredChildComponents.map((v) => ({
-                ...v,
-                icon: getIconForComponent(v.name, v.moduleName, store.editor.propertyControlsInfo),
-              }))
-            }
-          }
-        }
-      }
-
-      return null
     },
     'usePreferredChildrenForSelectedElement propertyControlsInfo',
   )
-
-  return preferredChildrenForTarget ?? []
 }
 
-const useDetectPickerType = (
+export type ShowComponentPickerContextMenuCallback = (
   target: ElementPath,
   insertionTarget: InsertionTarget,
-): 'preferred' | 'full' => {
-  const preferredChildrenForTarget = usePreferredChildrenForTarget(target, insertionTarget)
-  return preferredChildrenForTarget.length > 0 ? 'preferred' : 'full'
-}
+  pickerType?: 'preferred' | 'full',
+) => ShowComponentPickerContextMenu
 
 type ShowComponentPickerContextMenu = (
-  event: React.MouseEvent<HTMLDivElement>,
+  event: TriggerEvent,
   params?: Pick<ContextMenuParams, 'id' | 'props' | 'position'> | undefined,
 ) => void
 
 const PreferredMenuId = 'component-picker-context-menu'
 const FullMenuId = 'component-picker-context-menu-full'
 
-const useShowComponentPickerContextMenuInner = (
-  target: ElementPath,
-  insertionTarget: InsertionTarget,
-  pickerType: 'preferred' | 'full',
-): ShowComponentPickerContextMenu => {
-  const id = pickerType === 'preferred' ? PreferredMenuId : FullMenuId
-  const { show } = useContextMenu({ id })
-  const setContextMenuProps = useSetAtom(ComponentPickerContextMenuAtom)
-  return React.useCallback(
-    (
-      event: React.MouseEvent<HTMLDivElement>,
-      params?: Pick<ContextMenuParams, 'id' | 'props' | 'position'> | undefined,
-    ) => {
-      setContextMenuProps({ target: target, insertionTarget: insertionTarget })
-      show(event, params)
-    },
-    [show, setContextMenuProps, target, insertionTarget],
-  )
-}
+export const useCreateCallbackToShowComponentPicker =
+  (): ShowComponentPickerContextMenuCallback => {
+    const { show: showPreferred } = useContextMenu({ id: PreferredMenuId })
+    const { show: showFull } = useContextMenu({ id: FullMenuId })
+    const setContextMenuProps = useSetAtom(ComponentPickerContextMenuAtom)
+    const editorRef = useRefEditorState((store) => ({
+      jsxMetadata: store.editor.jsxMetadata,
+      propertyControlsInfo: store.editor.propertyControlsInfo,
+    }))
 
-export const useShowComponentPickerContextMenu = (
-  target: ElementPath,
-  insertionTarget: InsertionTarget,
-): ShowComponentPickerContextMenu => {
-  const pickerType = useDetectPickerType(target, insertionTarget)
-  return useShowComponentPickerContextMenuInner(target, insertionTarget, pickerType)
-}
+    return React.useCallback(
+      (
+          target: ElementPath,
+          insertionTarget: InsertionTarget,
+          overridePickerType?: 'preferred' | 'full',
+        ) =>
+        (
+          event: TriggerEvent,
+          params?: Pick<ContextMenuParams, 'id' | 'props' | 'position'> | undefined,
+        ) => {
+          let pickerType: 'preferred' | 'full'
+
+          if (overridePickerType == null) {
+            const targetParent =
+              insertionTarget === 'replace-target' ? EP.parentPath(target) : target
+            const targetElement = MetadataUtils.findElementByElementPath(
+              editorRef.current.jsxMetadata,
+              targetParent,
+            )
+            const preferredChildren = preferredChildrenForTarget(
+              targetElement,
+              insertionTarget,
+              editorRef.current.propertyControlsInfo,
+            )
+
+            pickerType = preferredChildren.length > 0 ? 'preferred' : 'full'
+          } else {
+            pickerType = overridePickerType
+          }
+
+          setContextMenuProps({ target: target, insertionTarget: insertionTarget })
+          const show = pickerType === 'preferred' ? showPreferred : showFull
+          show(event, params)
+        },
+      [editorRef, showPreferred, showFull, setContextMenuProps],
+    )
+  }
 
 function defaultVariantItem(
   elementName: string,
@@ -186,6 +253,7 @@ function defaultVariantItem(
     enabled: true,
     action: () =>
       onItemClick({
+        name: elementName,
         elementToInsert: (uid: string) =>
           jsxElement(elementName, uid, jsxAttributesFromMap({}), []),
         additionalImports: imports,
@@ -204,6 +272,7 @@ function variantItem(
     enabled: true,
     action: () =>
       onItemClick({
+        name: variant.insertMenuLabel,
         elementToInsert: (uid: string) => elementFromInsertMenuItem(variant.elementToInsert(), uid),
         additionalImports: variant.importsToAdd,
       }),
@@ -277,7 +346,7 @@ function insertComponentPickerItem(
       }
 
       // if we are inserting into a render prop
-      if (insertionTarget !== 'replace-target' && insertionTarget !== 'insert-as-child') {
+      if (isRenderPropInsertionTarget(insertionTarget)) {
         return [
           setProp_UNSAFE(
             target,
@@ -293,9 +362,16 @@ function insertComponentPickerItem(
         return [replaceMappedElement(fixedElement, target, toInsert.importsToAdd)]
       }
 
-      return [
-        insertJSXElement(fixedElement, target, toInsert.importsToAdd ?? undefined, insertionTarget),
-      ]
+      if (!isConditionalCaseInsertionTarget(insertionTarget)) {
+        return [
+          insertJSXElement(
+            fixedElement,
+            target,
+            toInsert.importsToAdd ?? undefined,
+            insertionTarget,
+          ),
+        ]
+      }
     }
 
     // TODO: for non-jsx-elements we only support insertion as a child today, this should be extended
@@ -303,7 +379,22 @@ function insertComponentPickerItem(
       return [insertInsertable(childInsertionPath(target), toInsert, 'do-not-add', null)]
     }
 
-    console.warn(`Component picker error: can not insert "${toInsert.name}" as ${insertionTarget}`)
+    if (isConditionalCaseInsertionTarget(insertionTarget)) {
+      return [
+        insertInsertable(
+          conditionalClauseInsertionPath(target, insertionTarget, replaceWithSingleElement()),
+          toInsert,
+          'do-not-add',
+          null,
+        ),
+      ]
+    }
+
+    console.warn(
+      insertionTarget === 'replace-target'
+        ? `Component picker error: can not replace to "${toInsert.name}"`
+        : `Component picker error: can not insert "${toInsert.name}"`,
+    )
     return []
   })()
 
@@ -320,35 +411,16 @@ function insertPreferredChild(
 ) {
   const uniqueIds = new Set(getAllUniqueUids(projectContents).uniqueIDs)
   const uid = generateConsistentUID('prop', uniqueIds)
-  let element = preferredChildToInsert.elementToInsert(uid)
+  const toInsert = elementToInsertToInsertableComponent(
+    preferredChildToInsert,
+    uid,
+    ['do-not-add'],
+    null,
+    null,
+    null,
+  )
 
-  element = fixUtopiaElement(element, uniqueIds).value
-
-  if (element.type !== 'JSX_ELEMENT') {
-    throw new Error('only JSX elements are supported as preferred components')
-  }
-
-  if (MetadataUtils.isJSXMapExpression(EP.parentPath(target), metadata)) {
-    dispatch([replaceMappedElement(element, target, preferredChildToInsert.additionalImports)])
-    return
-  }
-
-  const insertionAction =
-    insertionTarget === 'replace-target' || insertionTarget === 'insert-as-child'
-      ? insertJSXElement(
-          element,
-          target,
-          preferredChildToInsert.additionalImports ?? undefined,
-          insertionTarget,
-        )
-      : setProp_UNSAFE(
-          target,
-          PP.create(insertionTarget.prop),
-          element,
-          preferredChildToInsert.additionalImports ?? undefined,
-        )
-
-  dispatch([insertionAction])
+  insertComponentPickerItem(toInsert, target, projectContents, metadata, dispatch, insertionTarget)
 }
 
 interface ComponentPickerContextMenuProps {
@@ -391,9 +463,9 @@ export function labelTestIdForComponentIcon(
 
 const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuProps>(
   ({ target, insertionTarget }) => {
-    const showFullMenu = useShowComponentPickerContextMenuInner(target, insertionTarget, 'full')
+    const showFullMenu = useCreateCallbackToShowComponentPicker()(target, insertionTarget, 'full')
 
-    const preferredChildrenForTarget = usePreferredChildrenForTarget(target, insertionTarget)
+    const preferredChildren = usePreferredChildrenForTarget(target, insertionTarget)
 
     const dispatch = useDispatch()
 
@@ -414,7 +486,7 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
     )
     const wrapperRef = React.useRef<HTMLDivElement>(null)
 
-    const items: Array<ContextMenuItem<unknown>> = preferredChildrenForTarget
+    const items: Array<ContextMenuItem<unknown>> = preferredChildren
       .flatMap<ContextMenuItem<unknown>>((data) => {
         const iconProps = iconPropsForIcon(data.icon)
 
@@ -464,7 +536,10 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
     const allInsertableComponents = useGetInsertableComponents('insert').flatMap((g) => ({
       label: g.label,
       options: g.options.filter((o) => {
-        if (insertionTarget === 'insert-as-child') {
+        if (
+          insertionTarget === 'insert-as-child' ||
+          isConditionalCaseInsertionTarget(insertionTarget)
+        ) {
           return true
         }
         // Right now we only support inserting JSX elements when we insert into a render prop or when replacing elements

@@ -123,7 +123,7 @@ import {
   isGivenUtopiaElementFromMetadata,
   type FilePathMappings,
 } from './project-file-utils'
-import { fastForEach } from '../shared/utils'
+import { assertNever, fastForEach } from '../shared/utils'
 import { mapValues, objectValues, omit } from '../shared/object-utils'
 import { UTOPIA_LABEL_KEY } from './utopia-constants'
 import type {
@@ -1349,32 +1349,37 @@ export const MetadataUtils = {
           if (isJSXElement(r)) {
             return VoidElementsToFilter.includes(r.name.baseVariable)
           }
-          if (isJSIdentifier(r) || isJSPropertyAccess(r) || isJSElementAccess(r)) {
-            return true
-          }
           if (
-            isJSExpressionOtherJavaScript(r) &&
-            !MetadataUtils.isElementPathConditionalFromMetadata(metadata, EP.parentPath(path))
+            // when Data Entries are enabled, we want to show all expressions in the navigator
+            !isFeatureEnabled('Data Entries in the Navigator')
           ) {
-            const children = MetadataUtils.getChildrenOrdered(metadata, pathTree, path)
-            // if the expression has children we have to show it in the navigator
-            if (children.length > 0) {
-              return false
-            }
-            const parentElement = MetadataUtils.findElementByElementPath(
-              metadata,
-              EP.parentPath(path),
-            )
-            // When the expression doesn't have children and the parent has text content, that
-            // means this is a text expression, which should not appear in the navigator.
-            // The generated text content itself will be the label of the parent.
-            if (parentElement?.textContent != null && parentElement?.textContent.length > 0) {
+            if (isJSIdentifier(r) || isJSPropertyAccess(r) || isJSElementAccess(r)) {
               return true
             }
-            // When the expression doesn't have children and the parent has no text content, then
-            // the expression does not generate neither elements nor text.
-            // In this case the expression doesn't generate anything, but we still want to show it in
-            // the navigator, mostly to make sure to map expressions with zero elements are visible.
+            if (
+              isJSExpressionOtherJavaScript(r) &&
+              !MetadataUtils.isElementPathConditionalFromMetadata(metadata, EP.parentPath(path))
+            ) {
+              const children = MetadataUtils.getChildrenOrdered(metadata, pathTree, path)
+              // if the expression has children we have to show it in the navigator
+              if (children.length > 0) {
+                return false
+              }
+              const parentElement = MetadataUtils.findElementByElementPath(
+                metadata,
+                EP.parentPath(path),
+              )
+              // When the expression doesn't have children and the parent has text content, that
+              // means this is a text expression, which should not appear in the navigator.
+              // The generated text content itself will be the label of the parent.
+              if (parentElement?.textContent != null && parentElement?.textContent.length > 0) {
+                return true
+              }
+              // When the expression doesn't have children and the parent has no text content, then
+              // the expression does not generate neither elements nor text.
+              // In this case the expression doesn't generate anything, but we still want to show it in
+              // the navigator, mostly to make sure to map expressions with zero elements are visible.
+            }
           }
           return false
         },
@@ -1556,20 +1561,25 @@ export const MetadataUtils = {
                 pathTree,
                 element.elementPath,
               ).length
-              if (numberOfChildrenElements === 0) {
-                if (PossibleTextElements.includes(lastNamePart)) {
-                  if (element.textContent != null && element.textContent !== '') {
-                    return element.textContent
-                  }
-
-                  // fall back to the old way of showing text content – this can probably be deleted now
-                  const firstChild = jsxElement.children[0]
-                  if (firstChild != null) {
-                    if (isJSXTextBlock(firstChild)) {
-                      return firstChild.text
+              if (
+                // When Data Entries are enabled, we don't want to rename the parent elements based on their text / expression content
+                !isFeatureEnabled('Data Entries in the Navigator')
+              ) {
+                if (numberOfChildrenElements === 0) {
+                  if (PossibleTextElements.includes(lastNamePart)) {
+                    if (element.textContent != null && element.textContent !== '') {
+                      return element.textContent
                     }
-                    if (isJSExpressionOtherJavaScript(firstChild)) {
-                      return `{${firstChild.originalJavascript}}`
+
+                    // fall back to the old way of showing text content – this can probably be deleted now
+                    const firstChild = jsxElement.children[0]
+                    if (firstChild != null) {
+                      if (isJSXTextBlock(firstChild)) {
+                        return firstChild.text
+                      }
+                      if (isJSExpressionOtherJavaScript(firstChild)) {
+                        return `{${firstChild.originalJavascript}}`
+                      }
                     }
                   }
                 }
@@ -2412,6 +2422,38 @@ export const MetadataUtils = {
       )
     }
     return element.element.value
+  },
+  isElementDataReference(target: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
+    const foundMetadata = MetadataUtils.findElementByElementPath(metadata, target)
+    const element: JSXElementChild | null = maybeEitherToMaybe(foundMetadata?.element)
+
+    if (element == null) {
+      return false
+    }
+
+    switch (element.type) {
+      case 'ATTRIBUTE_FUNCTION_CALL':
+      case 'ATTRIBUTE_NESTED_ARRAY': // TODO: reconsider nested array and nested object
+      case 'ATTRIBUTE_NESTED_OBJECT':
+      case 'JSX_ELEMENT':
+      case 'JSX_FRAGMENT':
+      case 'JSX_MAP_EXPRESSION':
+      case 'JSX_CONDITIONAL_EXPRESSION':
+        return false
+      case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
+        const children = MetadataUtils.getChildrenUnordered(metadata, target)
+        // Attribute other javascript is only true if it does not have children entries in the metadata
+        return children.length === 0
+      }
+      case 'ATTRIBUTE_VALUE':
+      case 'JSX_TEXT_BLOCK':
+      case 'JS_IDENTIFIER':
+      case 'JS_ELEMENT_ACCESS':
+      case 'JS_PROPERTY_ACCESS':
+        return true
+      default:
+        assertNever(element)
+    }
   },
 }
 

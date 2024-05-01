@@ -29,6 +29,8 @@ import { GithubSpinner } from './github-spinner'
 import { RefreshIcon } from './refresh-icon'
 import { GithubOperations } from '../../../../core/shared/github/operations'
 import type { EditorDispatch } from '../../../editor/action-types'
+import { useGridPanelState } from '../../../canvas/grid-panels-state'
+import { GridMenuMinWidth } from '../../../canvas/stored-layout'
 
 interface RepositoryRowProps extends RepositoryEntry {
   importPermitted: boolean
@@ -114,6 +116,14 @@ const RepositoryRow = (props: RepositoryRowProps) => {
     [dispatch, githubUserDetails, props],
   )
 
+  const [panelState] = useGridPanelState()
+  const panelWidth = React.useMemo(() => {
+    return (
+      panelState.find((panel) => panel.panels.some(({ name }) => name === 'navigator'))
+        ?.menuWidth ?? GridMenuMinWidth
+    )
+  }, [panelState])
+
   return (
     <UIGridRow
       padded
@@ -134,11 +144,14 @@ const RepositoryRow = (props: RepositoryRowProps) => {
             color: colorTheme.fg0.value,
           },
         },
+        maxWidth: panelWidth,
       }}
       onClick={importRepository}
     >
       <div>
-        <Ellipsis style={{ maxWidth: 170 }}>{props.fullName}</Ellipsis>
+        <Ellipsis style={{ maxWidth: panelWidth - 150 }} title={props.fullName}>
+          {props.fullName}
+        </Ellipsis>
         <span style={{ fontSize: 10, opacity: 0.5 }}>
           {unless(
             props.searchable,
@@ -295,14 +308,6 @@ export const RepositoryListing = React.memo(
     )
     const dispatch = useDispatch()
 
-    const refreshRepos = React.useCallback(() => {
-      void GithubOperations.getUsersPublicGithubRepositories(dispatch, 'polling').then(
-        (actions) => {
-          dispatch(actions, 'everyone')
-        },
-      )
-    }, [dispatch])
-
     const refreshReposOnClick = React.useCallback(() => {
       void GithubOperations.getUsersPublicGithubRepositories(dispatch, 'user-initiated').then(
         (actions) => {
@@ -310,10 +315,6 @@ export const RepositoryListing = React.memo(
         },
       )
     }, [dispatch])
-
-    React.useEffect(() => {
-      setTimeout(() => refreshRepos(), 0)
-    }, [refreshRepos])
 
     const clearRepository = React.useCallback(() => {
       dispatch([updateGithubSettings(emptyGithubSettings())], 'everyone')

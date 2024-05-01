@@ -3821,8 +3821,8 @@ export const UPDATE_FNS = {
       ...editor,
       githubData: {
         ...editor.githubData,
-        lastUpdatedAt: Date.now(),
         ...action.data,
+        lastUpdatedAt: Date.now(),
         publicRepositories: newPublicRepos,
       },
     }

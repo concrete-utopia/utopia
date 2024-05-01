@@ -353,6 +353,9 @@ import type {
   RenderPropNavigatorEntry,
   SlotNavigatorEntry,
   RenderPropValueNavigatorEntry,
+  DataReferenceNavigatorEntry,
+  GithubUser,
+  PullRequest,
 } from './editor-state'
 import {
   trueUpGroupElementChanged,
@@ -361,6 +364,8 @@ import {
   trueUpHuggingElement,
   renderPropNavigatorEntry,
   renderPropValueNavigatorEntry,
+  dataReferenceNavigatorEntry,
+  newGithubData,
 } from './editor-state'
 import {
   editorStateNodeModules,
@@ -683,6 +688,15 @@ export const SyntheticNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<Synth
     syntheticNavigatorEntry,
   )
 
+export const DataReferenceNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<DataReferenceNavigatorEntry> =
+  combine2EqualityCalls(
+    (entry) => entry.elementPath,
+    ElementPathKeepDeepEquality,
+    (entry) => entry.childOrAttribute,
+    JSXElementChildKeepDeepEquality(),
+    dataReferenceNavigatorEntry,
+  )
+
 export const RenderPropNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<RenderPropNavigatorEntry> =
   combine2EqualityCalls(
     (entry) => entry.elementPath,
@@ -737,6 +751,11 @@ export const NavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<NavigatorEntry
     case 'SYNTHETIC':
       if (oldValue.type === newValue.type) {
         return SyntheticNavigatorEntryKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'DATA_REFERENCE':
+      if (oldValue.type === newValue.type) {
+        return DataReferenceNavigatorEntryKeepDeepEquality(oldValue, newValue)
       }
       break
     case 'RENDER_PROP':
@@ -4302,18 +4321,53 @@ export const GithubFileChangesKeepDeepEquality: KeepDeepEqualityCall<GithubFileC
     emptyGithubFileChanges,
   )
 
-export const GithubDataKeepDeepEquality: KeepDeepEqualityCall<GithubData> = combine5EqualityCalls(
+export const PullRequestKeepDeepEquality: KeepDeepEqualityCall<PullRequest> = combine3EqualityCalls(
+  (data) => data.htmlURL,
+  StringKeepDeepEquality,
+  (data) => data.number,
+  NumberKeepDeepEquality,
+  (data) => data.title,
+  StringKeepDeepEquality,
+  (htmlURL, number, title) => ({ htmlURL: htmlURL, number: number, title: title }),
+)
+
+export const GithubUserKeepDeepEquality: KeepDeepEqualityCall<GithubUser> = combine4EqualityCalls(
+  (data) => data.avatarURL,
+  StringKeepDeepEquality,
+  (data) => data.htmlURL,
+  StringKeepDeepEquality,
+  (data) => data.login,
+  StringKeepDeepEquality,
+  (data) => data.name,
+  NullableStringKeepDeepEquality,
+  (login, avatarURL, htmlURL, name) => ({
+    login: login,
+    avatarURL: avatarURL,
+    htmlURL: htmlURL,
+    name: name,
+  }),
+)
+
+export const GithubDataKeepDeepEquality: KeepDeepEqualityCall<GithubData> = combine9EqualityCalls(
   (data) => data.branches,
   nullableDeepEquality(arrayDeepEquality(GithubBranchKeepDeepEquality)),
   (data) => data.userRepositories,
   arrayDeepEquality(RepositoryEntryKeepDeepEquality),
   (data) => data.publicRepositories,
   arrayDeepEquality(RepositoryEntryKeepDeepEquality),
+  (data) => data.treeConflicts,
+  createCallWithTripleEquals(),
   (data) => data.lastUpdatedAt,
   NullableNumberKeepDeepEquality,
   (data) => data.upstreamChanges,
   nullableDeepEquality(GithubFileChangesKeepDeepEquality),
-  emptyGithubData,
+  (data) => data.currentBranchPullRequests,
+  nullableDeepEquality(arrayDeepEquality(PullRequestKeepDeepEquality)),
+  (data) => data.githubUserDetails,
+  nullableDeepEquality(GithubUserKeepDeepEquality),
+  (data) => data.lastRefreshedCommit,
+  NullableStringKeepDeepEquality,
+  newGithubData,
 )
 
 export const GithubOperationKeepDeepEquality: KeepDeepEqualityCall<GithubOperation> = (
