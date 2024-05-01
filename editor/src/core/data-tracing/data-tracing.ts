@@ -302,8 +302,8 @@ export function traceDataFromProp(
     const resultInComponentArbitraryBlock: DataTracingResult = lookupInArbitraryBlock(
       startFrom.elementPath,
       componentHoldingElement,
-      dataPath.value,
-      pathDrillSoFar,
+      identifier,
+      [...dataPath.value.path, ...pathDrillSoFar],
     )
     if (resultInComponentArbitraryBlock.type !== 'failed') {
       return resultInComponentArbitraryBlock
@@ -315,13 +315,44 @@ export function traceDataFromProp(
 function lookupInArbitraryBlock(
   componentPath: ElementPath,
   componentHoldingElement: UtopiaJSXComponent,
-  access: {
-    originalIdentifier: JSIdentifier
-    path: DataPath
-  },
+  originalIdentifier: JSIdentifier,
   pathDrillSoFar: DataPath,
 ): DataTracingResult {
-  const identifier = access.originalIdentifier
+  const identifier = originalIdentifier
+
+  // const foundAssignmentOfIdentifier: JSAssignment<JSIdentifier, JSExpression> | null =
+  //   mapFirstApplicable(componentHoldingElement.arbitraryJSBlock?.statements ?? [], (statement) => {
+  //     if (statement.type !== 'JS_ASSIGNMENT_STATEMENT') {
+  //       return null
+  //     }
+
+  //     return mapFirstApplicable(statement.assignments, (assignment) => {
+  //       if (assignment.leftHandSide.name === identifier.name) {
+  //         return assignment
+  //       }
+  //       return null
+  //     })
+  //   })
+
+  // if (foundAssignmentOfIdentifier != null) {
+  //   if (
+  //     foundAssignmentOfIdentifier.rightHandSide.type === 'JS_IDENTIFIER' ||
+  //     foundAssignmentOfIdentifier.rightHandSide.type === 'JS_ELEMENT_ACCESS' ||
+  //     foundAssignmentOfIdentifier.rightHandSide.type === 'JS_PROPERTY_ACCESS'
+  //   ) {
+  //     const dataPath = processJSPropertyAccessors(foundAssignmentOfIdentifier.rightHandSide)
+
+  //     if (isRight(dataPath)) {
+  //       return traceDataFromProp(
+  //         TPP.create(componentPath, PP.create(foundAssignmentOfIdentifier.leftHandSide.name)),
+  //         MetadataUtils.elementInstanceMetadataMap(componentHoldingElement),
+  //         componentHoldingElement.projectContents,
+  //         [...dataPath.value.path, ...pathDrillSoFar],
+  //       )
+  //     }
+  //   }
+  // }
+
   const foundHookCall: JSAssignment<JSIdentifier, JSExpressionOtherJavaScript> | null =
     mapFirstApplicable(componentHoldingElement.arbitraryJSBlock?.statements ?? [], (statement) => {
       if (statement.type !== 'JS_ASSIGNMENT_STATEMENT') {
@@ -345,8 +376,9 @@ function lookupInArbitraryBlock(
     return dataTracingToAHookCall(
       componentPath,
       foundHookCall.rightHandSide.originalJavascript.split('()')[0],
-      [...access.path, ...pathDrillSoFar],
+      [...pathDrillSoFar],
     )
   }
+
   return dataTracingFailed('Could not find a hook call')
 }
