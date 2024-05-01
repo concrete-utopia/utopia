@@ -40,6 +40,7 @@ import {
   isJSPropertyAccess,
   isJSElementAccess,
   isJSExpression,
+  isJSXTextBlock,
 } from '../../core/shared/element-template'
 import {
   guaranteeUniqueUids,
@@ -159,6 +160,7 @@ import type { IsCenterBased } from './canvas-strategies/strategies/resize-helper
 import { getComponentDescriptorForTarget } from '../../core/property-controls/property-controls-utils'
 import type { PropertyControlsInfo } from '../custom-code/code-file'
 import { mapDropNulls } from '../../core/shared/array-utils'
+import { isFeatureEnabled } from '../../utils/feature-switches'
 
 function dragDeltaScaleForProp(prop: LayoutTargetableProp): number {
   switch (prop) {
@@ -1898,8 +1900,10 @@ function getValidElementPathsFromElement(
 
     return paths
   } else if (
-    isJSExpression(element) &&
-    (isJSIdentifier(element) || isJSPropertyAccess(element) || isJSElementAccess(element))
+    (isJSXTextBlock(element) && isFeatureEnabled('Data Entries in the Navigator')) ||
+    isJSIdentifier(element) ||
+    isJSPropertyAccess(element) ||
+    isJSElementAccess(element)
   ) {
     const uid = getUtopiaID(element)
     const path = parentIsInstance

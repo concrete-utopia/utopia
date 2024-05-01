@@ -73,6 +73,7 @@ import {
 import { toVSCodeExtensionMessage } from 'utopia-vscode-common'
 import type { Emphasis } from 'utopia-api'
 import { contextMenu } from 'react-contexify'
+import { DataReferenceCartoucheControl } from '../../inspector/sections/component-section/data-reference-cartouche'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -731,6 +732,8 @@ export const NavigatorItem: React.FunctionComponent<
   const fullyVisible = useStyleFullyVisible(navigatorEntry, autoFocusedPaths)
   const isProbablyScene = useIsProbablyScene(navigatorEntry)
 
+  const elementIsData = navigatorEntry.type === 'DATA_REFERENCE'
+
   const isHighlightedForInteraction = useEditorState(
     Substores.restOfEditor,
     (store) => {
@@ -938,6 +941,23 @@ export const NavigatorItem: React.FunctionComponent<
             }}
           >
             {props.label}
+          </div>
+        ) : elementIsData ? (
+          <div
+            key={`label-${props.label}-slot`}
+            style={{
+              maxWidth: 140,
+              color: colorTheme.fg5.value,
+              border: colorTheme.navigatorResizeHintBorder.value,
+              marginLeft: 23,
+              paddingTop: 6,
+              overflow: 'hidden',
+            }}
+          >
+            <DataReferenceCartoucheControl
+              elementPath={navigatorEntry.elementPath}
+              childOrAttribute={navigatorEntry.childOrAttribute}
+            />
           </div>
         ) : (
           <FlexRow
