@@ -2179,6 +2179,12 @@ export function dataReferenceNavigatorEntry(
   }
 }
 
+export function isDataReferenceNavigatorEntry(
+  entry: NavigatorEntry,
+): entry is DataReferenceNavigatorEntry {
+  return entry.type === 'DATA_REFERENCE'
+}
+
 export interface SlotNavigatorEntry {
   type: 'SLOT'
   elementPath: ElementPath
@@ -2403,8 +2409,7 @@ export function isSyntheticNavigatorEntry(entry: NavigatorEntry): entry is Synth
   return entry.type === 'SYNTHETIC'
 }
 
-export const syntheticNavigatorEntryOptic: Optic<NavigatorEntry, SyntheticNavigatorEntry> =
-  fromTypeGuard(isSyntheticNavigatorEntry)
+fromTypeGuard(isSyntheticNavigatorEntry)
 
 export function isRenderPropNavigatorEntry(
   entry: NavigatorEntry,

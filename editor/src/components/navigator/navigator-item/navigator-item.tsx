@@ -41,6 +41,7 @@ import type {
 import {
   defaultElementWarnings,
   isConditionalClauseNavigatorEntry,
+  isDataReferenceNavigatorEntry,
   isInvalidOverrideNavigatorEntry,
   isRegularNavigatorEntry,
   isRenderPropNavigatorEntry,
@@ -153,7 +154,7 @@ function selectItem(
   conditionalOverrideUpdate: ConditionalOverrideUpdate,
   highlightBounds: HighlightBoundsWithFile | null,
 ) {
-  const elementPath = navigatorEntry.elementPath
+  const elementPath = getSelectionTargetForNavigatorEntry(navigatorEntry)
 
   const shouldSelect = !(
     isConditionalClauseNavigatorEntry(navigatorEntry) ||
@@ -184,10 +185,11 @@ function selectItem(
 
 const highlightItem = (
   dispatch: EditorDispatch,
-  elementPath: ElementPath,
+  navigatorEntry: NavigatorEntry,
   selected: boolean,
   highlighted: boolean,
 ) => {
+  const elementPath = getSelectionTargetForNavigatorEntry(navigatorEntry)
   if (!highlighted) {
     if (selected) {
       dispatch([EditorActions.clearHighlightedViews()], 'leftpane')
@@ -805,16 +807,17 @@ export const NavigatorItem: React.FunctionComponent<
     ],
   )
   const highlight = React.useCallback(
-    () => highlightItem(dispatch, navigatorEntry.elementPath, selected, isHighlighted),
-    [dispatch, navigatorEntry.elementPath, selected, isHighlighted],
+    () => highlightItem(dispatch, navigatorEntry, selected, isHighlighted),
+    [dispatch, navigatorEntry, selected, isHighlighted],
   )
   const focusComponent = React.useCallback(
     (event: React.MouseEvent) => {
       if (isManuallyFocusableComponent && !event.altKey) {
-        dispatch([EditorActions.setFocusedElement(navigatorEntry.elementPath)])
+        const elementPath = getSelectionTargetForNavigatorEntry(navigatorEntry)
+        dispatch([EditorActions.setFocusedElement(elementPath)])
       }
     },
-    [dispatch, navigatorEntry.elementPath, isManuallyFocusableComponent],
+    [dispatch, navigatorEntry, isManuallyFocusableComponent],
   )
 
   const isHiddenConditionalBranch = useEditorState(
@@ -1166,4 +1169,13 @@ function elementContainsExpressions(
   pathTrees: ElementPathTrees,
 ): boolean {
   return MetadataUtils.isGeneratedTextFromMetadata(path, pathTrees, metadata)
+}
+
+function getSelectionTargetForNavigatorEntry(navigatorEntry: NavigatorEntry): ElementPath {
+  const shouldSelectParentInstead = isDataReferenceNavigatorEntry(navigatorEntry)
+  const elementPath = shouldSelectParentInstead
+    ? EP.parentPath(navigatorEntry.elementPath)
+    : navigatorEntry.elementPath
+
+  return elementPath
 }
