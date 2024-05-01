@@ -935,7 +935,6 @@ export const NavigatorItem: React.FunctionComponent<
               color: colorTheme.fg5.value,
               border: colorTheme.navigatorResizeHintBorder.value,
               marginLeft: 23,
-              paddingTop: 6,
               overflow: 'hidden',
             }}
           >
