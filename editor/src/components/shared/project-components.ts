@@ -12,6 +12,9 @@ import type {
 } from '../../core/shared/element-template'
 import {
   emptyComments,
+  functionParam,
+  jsExpressionOtherJavaScript,
+  jsExpressionOtherJavaScriptSimple,
   jsExpressionValue,
   jsxAttributesFromMap,
   jsxConditionalExpressionWithoutUID,
@@ -19,6 +22,7 @@ import {
   jsxElementWithoutUID,
   jsxFragmentWithoutUID,
   jsxTextBlock,
+  regularParam,
   simpleAttribute,
 } from '../../core/shared/element-template'
 import { dropFileExtension } from '../../core/shared/file-utils'
@@ -516,17 +520,22 @@ export const mapComponentInfo: ComponentInfo = {
   insertMenuLabel: 'List',
   elementToInsert: (): JSXMapExpressionWithoutUID => ({
     type: 'JSX_MAP_EXPRESSION',
-    javascriptWithUIDs: '[1, 2, 3].map((v) => <\nPlaceholder data-uid="placeholder-id" />);',
-    originalJavascript: '[1, 2, 3].map((v) => (\n            <Placeholder />\n          ))',
-    transpiledJavascript:
-      'return [1, 2, 3].map((v) => utopiaCanvasJSXLookup("placeholder-id", {\n  callerThis: this\n}));',
-    definedElsewhere: ['React', 'Placeholder', 'utopiaCanvasJSXLookup'],
-    sourceMap: null,
-    elementsWithin: {
-      'placeholder-id': jsxElement('Placeholder', 'placeholder-id', jsxAttributesFromMap({}), []),
-    },
+    valueToMap: jsExpressionValue([1, 2, 3], emptyComments),
+    mapFunction: jsExpressionOtherJavaScript(
+      [functionParam(false, regularParam('v', null))],
+      `(v) => (\n            <Placeholder />\n          )`,
+      `(v) => <\nPlaceholder data-uid="placeholder-id" />);`,
+      `return (v) => utopiaCanvasJSXLookup("placeholder-id", {\n  callerThis: this\n})`,
+      ['React', 'Placeholder', 'utopiaCanvasJSXLookup'],
+      null,
+      {
+        'placeholder-id': jsxElement('Placeholder', 'placeholder-id', jsxAttributesFromMap({}), []),
+      },
+      emptyComments,
+      '',
+    ),
+    valuesInScopeFromParameters: ['v'],
     comments: emptyComments,
-    valuesInScopeFromParameters: [],
   }),
   importsToAdd: {
     react: {

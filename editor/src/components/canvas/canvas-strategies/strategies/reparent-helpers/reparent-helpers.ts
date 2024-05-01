@@ -371,9 +371,10 @@ function getComponentNamesFromJSXElementChild(element: JSXElementChild): Array<J
         ...getComponentNamesFromJSXElementChild(element.whenFalse),
       ]
     case 'JSX_MAP_EXPRESSION':
-      return Object.values(element.elementsWithin).flatMap((c) =>
-        getComponentNamesFromJSXElementChild(c),
-      )
+      return [
+        ...getComponentNamesFromJSXElementChild(element.valueToMap),
+        ...getComponentNamesFromJSXElementChild(element.mapFunction),
+      ]
     case 'ATTRIBUTE_FUNCTION_CALL':
     case 'ATTRIBUTE_NESTED_ARRAY':
     case 'ATTRIBUTE_NESTED_OBJECT':
