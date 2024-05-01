@@ -9,7 +9,7 @@ import { getJSXElementNameLastPart } from '../../../../core/shared/element-templ
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
 import { assertNever } from '../../../../core/shared/utils'
-import { FlexRow, Icn, Icons, Tooltip, colorTheme } from '../../../../uuiui'
+import { FlexRow, Icn, Icons, Tooltip, UtopiaStyles, colorTheme } from '../../../../uuiui'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { IdentifierExpressionCartoucheControl } from './cartouche-control'
 import { useDataPickerButton } from './component-section'
@@ -99,6 +99,7 @@ export const DataReferenceCartoucheControl = React.memo(
                   /* Beginning of string */
                   // direction: 'rtl', // TODO we need a better way to ellipsize the beginnign because rtl eats ' " marks
                   textAlign: 'left',
+                  ...UtopiaStyles.fontStyles.monospaced,
                 }}
               >
                 {label}
