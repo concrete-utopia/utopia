@@ -97,7 +97,7 @@ export function addFakeSpyEntry(
       conditionValue: conditionValue,
       textContent: null,
       earlyReturn: earlyReturn,
-      prop: prop,
+      assignedToProp: prop,
     }
     const elementPathString = EP.toComponentId(elementPath)
     metadataContext.current.spyValues.metadata[elementPathString] = instanceMetadata
@@ -119,7 +119,7 @@ export function buildSpyWrappedElement(
   filePath: string,
   variablesInScope: VariableData,
   isTextEditor: 'text-editor' | 'real-element' = 'real-element',
-  prop: string | null,
+  assignedToProp: string | null,
 ): React.ReactElement {
   const props = {
     ...finalProps,
@@ -155,7 +155,7 @@ export function buildSpyWrappedElement(
       conditionValue: 'not-a-conditional',
       textContent: null,
       earlyReturn: null,
-      prop: prop,
+      assignedToProp: assignedToProp,
     }
     if (!EP.isStoryboardPath(elementPath) || shouldIncludeCanvasRootInTheSpy) {
       const elementPathString = EP.toComponentId(elementPath)

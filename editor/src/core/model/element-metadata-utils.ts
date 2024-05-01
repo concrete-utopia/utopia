@@ -1766,7 +1766,7 @@ export const MetadataUtils = {
           isEmotionOrStyledComponent: spyElem.isEmotionOrStyledComponent,
           label: spyElem.label,
           importInfo: spyElem.importInfo,
-          prop: spyElem.prop,
+          assignedToProp: spyElem.assignedToProp,
         }
         workingElements[EP.toString(domElem.elementPath)] = elem
       }

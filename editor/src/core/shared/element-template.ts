@@ -2533,7 +2533,7 @@ export interface ElementInstanceMetadata {
   conditionValue: ConditionValue
   textContent: string | null
   earlyReturn: EarlyReturn | null
-  prop: string | null
+  assignedToProp: string | null
 }
 
 export function elementInstanceMetadata(
@@ -2552,7 +2552,7 @@ export function elementInstanceMetadata(
   conditionValue: ConditionValue,
   textContent: string | null,
   earlyReturn: EarlyReturnResult | EarlyReturnVoid | null,
-  prop: string | null,
+  assignedToProp: string | null,
 ): ElementInstanceMetadata {
   return {
     elementPath: elementPath,
@@ -2570,7 +2570,7 @@ export function elementInstanceMetadata(
     conditionValue: conditionValue,
     textContent: textContent,
     earlyReturn: earlyReturn,
-    prop: prop,
+    assignedToProp: assignedToProp,
   }
 }
 

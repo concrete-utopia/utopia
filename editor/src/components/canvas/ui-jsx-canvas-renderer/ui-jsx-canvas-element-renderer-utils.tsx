@@ -104,7 +104,7 @@ export function createLookupRender(
   context: RenderContext,
   renderLimit: number | null,
   valuesInScopeFromParameters: Array<string>,
-  prop: string | null,
+  assignedToProp: string | null,
 ): (element: JSXElement, scope: MapLike<any>) => React.ReactChild | null {
   let index = 0
 
@@ -148,7 +148,7 @@ export function createLookupRender(
       { ...context, variablesInScope: innerVariablesInScope },
       generatedUID,
       null,
-      prop,
+      assignedToProp,
     )
   }
 }
@@ -178,7 +178,7 @@ export function renderCoreElement(
   renderContext: RenderContext,
   uid: string | undefined,
   codeError: Error | null,
-  prop: string | null,
+  assignedToProp: string | null,
 ): React.ReactChild {
   const {
     requireResult,
@@ -203,7 +203,7 @@ export function renderCoreElement(
       const anyElementsWithin = Object.keys(elementsWithinProps).length > 0
 
       const innerRender = anyElementsWithin
-        ? createLookupRender(elementPath, renderContext, null, [], prop)
+        ? createLookupRender(elementPath, renderContext, null, [], assignedToProp)
         : NoOpLookupRender
 
       const blockScope = anyElementsWithin
@@ -238,7 +238,7 @@ export function renderCoreElement(
         passthroughProps,
         renderContext,
         null, // this null passed as the codeError param is matching the old version of the codebase, but codeError should probably not be passed around anyways as we try to throw it as high as possible
-        prop,
+        assignedToProp,
       )
     }
     case 'JSX_MAP_EXPRESSION':
@@ -261,7 +261,7 @@ export function renderCoreElement(
           imports,
           'not-a-conditional',
           null,
-          prop,
+          assignedToProp,
         )
       }
 
@@ -277,7 +277,7 @@ export function renderCoreElement(
             renderContext,
             mapCountOverride,
             valuesInScopeFromParameters,
-            prop,
+            assignedToProp,
           )
 
           const blockScope = {
@@ -295,7 +295,7 @@ export function renderCoreElement(
             renderContext,
             uid,
             codeError,
-            prop,
+            assignedToProp,
           )
         }
 
@@ -327,7 +327,7 @@ export function renderCoreElement(
           filePath,
           variablesInScope,
           'real-element',
-          prop,
+          assignedToProp,
         )
       }
       const innerRender = createLookupRender(
@@ -335,7 +335,7 @@ export function renderCoreElement(
         renderContext,
         mapCountOverride,
         valuesInScopeFromParameters,
-        prop,
+        assignedToProp,
       )
 
       const blockScope = {
@@ -346,7 +346,15 @@ export function renderCoreElement(
           innerRender,
         ),
       }
-      return runJSExpression(element, elementPath, blockScope, renderContext, uid, codeError, prop)
+      return runJSExpression(
+        element,
+        elementPath,
+        blockScope,
+        renderContext,
+        uid,
+        codeError,
+        assignedToProp,
+      )
     }
     case 'JSX_FRAGMENT': {
       const key = optionalMap(EP.toString, elementPath) ?? element.uid
@@ -359,7 +367,7 @@ export function renderCoreElement(
         [],
         renderContext,
         codeError,
-        prop,
+        assignedToProp,
       )
     }
     case 'JSX_TEXT_BLOCK': {
@@ -379,7 +387,7 @@ export function renderCoreElement(
           imports,
           'not-a-conditional',
           null,
-          prop,
+          assignedToProp,
         )
       }
 
@@ -405,7 +413,7 @@ export function renderCoreElement(
         renderContext,
         uid,
         codeError,
-        prop,
+        assignedToProp,
       )
       // Coerce `defaultConditionValueAsAny` to a value that is definitely a boolean, not something that is truthy.
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
@@ -433,7 +441,7 @@ export function renderCoreElement(
             default: defaultConditionValue,
           },
           null,
-          prop,
+          assignedToProp,
         )
       }
 
@@ -487,7 +495,7 @@ export function renderCoreElement(
           filePath,
           variablesInScope,
           'real-element',
-          prop,
+          assignedToProp,
         )
       }
 
@@ -498,7 +506,7 @@ export function renderCoreElement(
         renderContext,
         uid,
         codeError,
-        prop,
+        assignedToProp,
       )
     }
     case 'ATTRIBUTE_VALUE':
@@ -518,7 +526,7 @@ export function renderCoreElement(
           imports,
           'not-a-conditional',
           null,
-          prop,
+          assignedToProp,
         )
       }
 
@@ -550,11 +558,19 @@ export function renderCoreElement(
           filePath,
           variablesInScope,
           'real-element',
-          prop,
+          assignedToProp,
         )
       }
 
-      return jsxAttributeToValue(inScope, element, elementPath, renderContext, uid, codeError, prop)
+      return jsxAttributeToValue(
+        inScope,
+        element,
+        elementPath,
+        renderContext,
+        uid,
+        codeError,
+        assignedToProp,
+      )
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled type ${JSON.stringify(element)}`)
@@ -584,7 +600,7 @@ function renderJSXElement(
   passthroughProps: MapLike<any>,
   renderContext: RenderContext,
   codeError: Error | null,
-  prop: string | null,
+  assignedToProp: string | null,
 ): React.ReactElement {
   const {
     requireResult,
@@ -695,7 +711,7 @@ function renderJSXElement(
   ) {
     if (elementIsTextEdited) {
       const runJSExpressionLazy = () => {
-        const innerRender = createLookupRender(elementPath, renderContext, null, [], prop)
+        const innerRender = createLookupRender(elementPath, renderContext, null, [], assignedToProp)
 
         const blockScope: Record<any, any> = {
           ...inScope,
@@ -714,7 +730,7 @@ function renderJSXElement(
           renderContext,
           jsx.uid,
           codeError,
-          prop,
+          assignedToProp,
         )
         return result
       }
@@ -747,7 +763,7 @@ function renderJSXElement(
         filePath,
         variablesInScope,
         'text-editor',
-        prop,
+        assignedToProp,
       )
     }
     return buildSpyWrappedElement(
@@ -765,7 +781,7 @@ function renderJSXElement(
       filePath,
       variablesInScope,
       'real-element',
-      prop,
+      assignedToProp,
     )
   } else {
     return renderComponentUsingJsxFactoryFunction(
@@ -839,7 +855,7 @@ function runJSExpression(
   renderContext: RenderContext,
   uid: string | undefined,
   codeError: Error | null, // this can be probably deleted, it is passed down through multiple layers but we just throw the error in the end
-  prop: string | null,
+  assignedToProp: string | null,
 ): any {
   switch (block.type) {
     case 'ATTRIBUTE_VALUE':
@@ -857,7 +873,7 @@ function runJSExpression(
         renderContext,
         uid,
         codeError,
-        prop,
+        assignedToProp,
       )
 
     case 'JSX_MAP_EXPRESSION':

@@ -2118,7 +2118,7 @@ export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<Eleme
     nullableDeepEquality(StringKeepDeepEquality),
     (metadata) => metadata.earlyReturn,
     nullableDeepEquality(EarlyReturnKeepDeepEquality),
-    (metadata) => metadata.prop,
+    (metadata) => metadata.assignedToProp,
     nullableDeepEquality(StringKeepDeepEquality),
     elementInstanceMetadata,
   )

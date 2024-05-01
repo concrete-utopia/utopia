@@ -74,7 +74,7 @@ const testComponentMetadataChild1: ElementInstanceMetadata = {
   conditionValue: 'not-a-conditional',
   textContent: null,
   earlyReturn: null,
-  prop: null,
+  assignedToProp: null,
 }
 const testComponentMetadataChild2: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
@@ -95,7 +95,7 @@ const testComponentMetadataChild2: ElementInstanceMetadata = {
   conditionValue: 'not-a-conditional',
   textContent: null,
   earlyReturn: null,
-  prop: null,
+  assignedToProp: null,
 }
 
 const testComponentMetadataGrandchild: ElementInstanceMetadata = {
@@ -117,7 +117,7 @@ const testComponentMetadataGrandchild: ElementInstanceMetadata = {
   conditionValue: 'not-a-conditional',
   textContent: null,
   earlyReturn: null,
-  prop: null,
+  assignedToProp: null,
 }
 
 const testComponentPropsGrandchild: ElementProps = {
@@ -143,7 +143,7 @@ const testComponentMetadataChild3: ElementInstanceMetadata = {
   conditionValue: 'not-a-conditional',
   textContent: null,
   earlyReturn: null,
-  prop: null,
+  assignedToProp: null,
 }
 
 const testComponentRoot1: ElementInstanceMetadata = {
@@ -162,7 +162,7 @@ const testComponentRoot1: ElementInstanceMetadata = {
   conditionValue: 'not-a-conditional',
   textContent: null,
   earlyReturn: null,
-  prop: null,
+  assignedToProp: null,
 }
 
 const testComponentSceneChildElementRootChild: ElementInstanceMetadata = {
@@ -184,7 +184,7 @@ const testComponentSceneChildElementRootChild: ElementInstanceMetadata = {
   conditionValue: 'not-a-conditional',
   textContent: null,
   earlyReturn: null,
-  prop: null,
+  assignedToProp: null,
 }
 
 const testComponentSceneChildElementRoot: ElementInstanceMetadata = {
@@ -206,7 +206,7 @@ const testComponentSceneChildElementRoot: ElementInstanceMetadata = {
   conditionValue: 'not-a-conditional',
   textContent: null,
   earlyReturn: null,
-  prop: null,
+  assignedToProp: null,
 }
 
 const testComponentSceneChildElement: ElementInstanceMetadata = {
@@ -225,7 +225,7 @@ const testComponentSceneChildElement: ElementInstanceMetadata = {
   conditionValue: 'not-a-conditional',
   textContent: null,
   earlyReturn: null,
-  prop: null,
+  assignedToProp: null,
 }
 
 const testComponentSceneElement: ElementInstanceMetadata = {
@@ -244,7 +244,7 @@ const testComponentSceneElement: ElementInstanceMetadata = {
   conditionValue: 'not-a-conditional',
   textContent: null,
   earlyReturn: null,
-  prop: null,
+  assignedToProp: null,
 }
 
 const testComponentSceneElementProps: ElementProps = {
@@ -270,7 +270,7 @@ const testStoryboardGrandChildElement: ElementInstanceMetadata = {
   conditionValue: 'not-a-conditional',
   textContent: null,
   earlyReturn: null,
-  prop: null,
+  assignedToProp: null,
 }
 
 const testStoryboardChildElement: ElementInstanceMetadata = {
@@ -289,7 +289,7 @@ const testStoryboardChildElement: ElementInstanceMetadata = {
   conditionValue: 'not-a-conditional',
   textContent: null,
   earlyReturn: null,
-  prop: null,
+  assignedToProp: null,
 }
 
 const testStoryboardElement: ElementInstanceMetadata = {
@@ -308,7 +308,7 @@ const testStoryboardElement: ElementInstanceMetadata = {
   conditionValue: 'not-a-conditional',
   textContent: null,
   earlyReturn: null,
-  prop: null,
+  assignedToProp: null,
 }
 
 const testElementMetadataMap: ElementInstanceMetadataMap = {
@@ -401,7 +401,7 @@ function dummyInstanceDataForElementType(
     conditionValue: 'not-a-conditional',
     textContent: null,
     earlyReturn: null,
-    prop: null,
+    assignedToProp: null,
   }
 }
 

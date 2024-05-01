@@ -156,7 +156,7 @@ export function jsxAttributeToValue(
   renderContext: RenderContext,
   uid: string | undefined,
   codeError: Error | null,
-  prop: string | null,
+  assignedToProp: string | null,
 ): any {
   if (isExpressionAccessLike(attribute)) {
     try {
@@ -167,7 +167,7 @@ export function jsxAttributeToValue(
         renderContext,
         uid,
         codeError,
-        prop,
+        assignedToProp,
       )
     } catch {
       const originalJavascript = isJSIdentifier(attribute)
@@ -200,7 +200,7 @@ export function jsxAttributeToValue(
       renderContext,
       uid,
       codeError,
-      prop,
+      assignedToProp,
     )
   }
 }
@@ -225,13 +225,21 @@ function innerAttributeToValue(
   renderContext: RenderContext,
   uid: string | undefined,
   codeError: Error | null,
-  prop: string | null,
+  assignedToProp: string | null,
 ): any {
   const { filePath, requireResult } = renderContext
   switch (attribute.type) {
     case 'JSX_ELEMENT':
       const innerPath = optionalMap((path) => EP.appendToPath(path, attribute.uid), elementPath)
-      return renderCoreElement(attribute, innerPath, inScope, renderContext, uid, codeError, prop)
+      return renderCoreElement(
+        attribute,
+        innerPath,
+        inScope,
+        renderContext,
+        uid,
+        codeError,
+        assignedToProp,
+      )
     case 'ATTRIBUTE_VALUE':
       return attribute.value
     case 'JS_IDENTIFIER':
@@ -250,7 +258,7 @@ function innerAttributeToValue(
         renderContext,
         uid,
         codeError,
-        prop,
+        assignedToProp,
       )
 
       if (onValue == null) {
@@ -275,7 +283,7 @@ function innerAttributeToValue(
         renderContext,
         uid,
         codeError,
-        prop,
+        assignedToProp,
       )
       const element = jsxAttributeToValue(
         inScope,
@@ -284,7 +292,7 @@ function innerAttributeToValue(
         renderContext,
         uid,
         codeError,
-        prop,
+        assignedToProp,
       )
       if (attribute.optionallyChained === 'optionally-chained') {
         return onValue == null ? undefined : onValue[element]
@@ -302,7 +310,7 @@ function innerAttributeToValue(
           renderContext,
           uid,
           codeError,
-          prop,
+          assignedToProp,
         )
         switch (elem.type) {
           case 'ARRAY_VALUE':
@@ -319,26 +327,26 @@ function innerAttributeToValue(
       return returnArray
     case 'ATTRIBUTE_NESTED_OBJECT':
       let returnObject: { [key: string]: any } = {}
-      for (const innerProp of attribute.content) {
+      for (const prop of attribute.content) {
         const value = jsxAttributeToValue(
           inScope,
-          innerProp.value,
+          prop.value,
           elementPath,
           renderContext,
           uid,
           codeError,
-          prop,
+          assignedToProp,
         )
 
-        switch (innerProp.type) {
+        switch (prop.type) {
           case 'PROPERTY_ASSIGNMENT':
-            returnObject[innerProp.key] = value
+            returnObject[prop.key] = value
             break
           case 'SPREAD_ASSIGNMENT':
             Object.assign(returnObject, value)
             break
           default:
-            assertNever(innerProp)
+            assertNever(prop)
         }
       }
 
@@ -354,7 +362,7 @@ function innerAttributeToValue(
             renderContext,
             uid,
             codeError,
-            prop,
+            assignedToProp,
           )
         })
         return foundFunction(...resolvedParameters)

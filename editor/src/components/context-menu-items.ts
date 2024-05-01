@@ -358,7 +358,7 @@ export function showReplaceComponentPicker(
   showComponentPicker: ShowComponentPickerContextMenuCallback,
 ): ShowComponentPickerContextMenu {
   const element = MetadataUtils.findElementByElementPath(jsxMetadata, targetElement)
-  const prop = element?.prop
+  const prop = element?.assignedToProp
   const target = prop == null ? targetElement : EP.parentPath(targetElement)
   const insertionTarget: InsertionTarget = prop == null ? 'replace-target' : { prop: prop }
   return showComponentPicker(target, insertionTarget)
