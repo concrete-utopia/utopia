@@ -91,6 +91,7 @@ export const DataReferenceCartoucheControl = React.memo(
               <div
                 style={{
                   flex: 1,
+                  paddingTop: 1,
                   /* Standard CSS ellipsis */
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
@@ -114,7 +115,7 @@ export const DataReferenceCartoucheControl = React.memo(
               width={18}
               height={18}
               onClick={dataPickerButtonData.openPopup}
-              style={{ zoom: 0.8 }}
+              style={{ zoom: 0.6 }}
             />
           </FlexRow>
         </div>
