@@ -42,6 +42,7 @@ import type {
 import {
   defaultElementWarnings,
   isConditionalClauseNavigatorEntry,
+  isDataReferenceNavigatorEntry,
   isInvalidOverrideNavigatorEntry,
   isRegularNavigatorEntry,
   isRenderPropNavigatorEntry,
@@ -158,6 +159,7 @@ function selectItem(
   const elementPath = navigatorEntry.elementPath
 
   const shouldSelect = !(
+    isDataReferenceNavigatorEntry(navigatorEntry) ||
     isConditionalClauseNavigatorEntry(navigatorEntry) ||
     isInvalidOverrideNavigatorEntry(navigatorEntry) ||
     isRenderPropNavigatorEntry(navigatorEntry) ||
@@ -186,10 +188,11 @@ function selectItem(
 
 const highlightItem = (
   dispatch: EditorDispatch,
-  elementPath: ElementPath,
+  navigatorEntry: NavigatorEntry,
   selected: boolean,
   highlighted: boolean,
 ) => {
+  const elementPath = getSelectionTargetForNavigatorEntry(navigatorEntry)
   if (!highlighted) {
     if (selected) {
       dispatch([EditorActions.clearHighlightedViews()], 'leftpane')
@@ -762,7 +765,7 @@ export const NavigatorItem: React.FunctionComponent<
   }, [elementWarnings])
 
   const resultingStyle = computeResultingStyle(
-    selected,
+    elementIsData ? false : selected,
     emphasis,
     isInsideComponent,
     isDynamic,
@@ -771,7 +774,7 @@ export const NavigatorItem: React.FunctionComponent<
     isFocusedComponent,
     isManuallyFocusableComponent,
     isHighlightedForInteraction,
-    isDescendantOfSelected,
+    elementIsData && selected ? false : isDescendantOfSelected,
     isErroredGroup,
     colorTheme,
   )
@@ -785,7 +788,7 @@ export const NavigatorItem: React.FunctionComponent<
   )
 
   const select = React.useCallback(
-    (event: any) =>
+    (event: React.MouseEvent<HTMLDivElement>) =>
       selectItem(
         dispatch,
         getSelectedViewsInRange,
@@ -806,17 +809,25 @@ export const NavigatorItem: React.FunctionComponent<
       highlightBounds,
     ],
   )
+
   const highlight = React.useCallback(
-    () => highlightItem(dispatch, navigatorEntry.elementPath, selected, isHighlighted),
-    [dispatch, navigatorEntry.elementPath, selected, isHighlighted],
+    () => highlightItem(dispatch, navigatorEntry, selected, isHighlighted),
+    [dispatch, navigatorEntry, selected, isHighlighted],
   )
+
+  const removeHighlight = React.useCallback(
+    () => dispatch([EditorActions.clearHighlightedViews()]),
+    [dispatch],
+  )
+
   const focusComponent = React.useCallback(
     (event: React.MouseEvent) => {
       if (isManuallyFocusableComponent && !event.altKey) {
-        dispatch([EditorActions.setFocusedElement(navigatorEntry.elementPath)])
+        const elementPath = getSelectionTargetForNavigatorEntry(navigatorEntry)
+        dispatch([EditorActions.setFocusedElement(elementPath)])
       }
     },
-    [dispatch, navigatorEntry.elementPath, isManuallyFocusableComponent],
+    [dispatch, navigatorEntry, isManuallyFocusableComponent],
   )
 
   const isHiddenConditionalBranch = useEditorState(
@@ -939,19 +950,19 @@ export const NavigatorItem: React.FunctionComponent<
           </div>
         ) : elementIsData ? (
           <div
-            key={`label-${props.label}-slot`}
+            key={`data-reference-${props.label}`}
             style={{
               maxWidth: 140,
               color: colorTheme.fg5.value,
               border: colorTheme.navigatorResizeHintBorder.value,
               marginLeft: 23,
-              paddingTop: 6,
               overflow: 'hidden',
             }}
           >
             <DataReferenceCartoucheControl
               elementPath={navigatorEntry.elementPath}
               childOrAttribute={navigatorEntry.childOrAttribute}
+              selected={selected}
             />
           </div>
         ) : (
@@ -1208,4 +1219,13 @@ function elementContainsExpressions(
   pathTrees: ElementPathTrees,
 ): boolean {
   return MetadataUtils.isGeneratedTextFromMetadata(path, pathTrees, metadata)
+}
+
+function getSelectionTargetForNavigatorEntry(navigatorEntry: NavigatorEntry): ElementPath {
+  const shouldSelectParentInstead = isDataReferenceNavigatorEntry(navigatorEntry)
+  const elementPath = shouldSelectParentInstead
+    ? EP.parentPath(navigatorEntry.elementPath)
+    : navigatorEntry.elementPath
+
+  return elementPath
 }
