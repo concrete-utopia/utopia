@@ -1534,9 +1534,9 @@ export function findContainingComponentForPath(
   target: ElementPath,
 ): UtopiaJSXComponent | null {
   // Identify the UID of the containing component.
-  const containingElementPath = target // TODO get at the root element of the last part of path
-  if (!EP.isEmptyPath(containingElementPath)) {
-    const componentUID = EP.toUid(containingElementPath)
+  const containingElementPath = EP.lastElementPathForPath(target)
+  if (containingElementPath != null) {
+    const componentUID = containingElementPath[0]
 
     // Find the component in the top level elements that we're looking for.
     for (const topLevelElement of topLevelElements) {

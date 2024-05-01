@@ -236,9 +236,9 @@ export function traceDataFromProp(
     'traceDataFromProp did not find element at path',
     MetadataUtils.findElementByElementPath(metadata, startFrom.elementPath),
   )
-  const componentHoldingElement = forceNotNull(
-    'traceDataFromProp did not find containing component for path',
-    findContainingComponentForElementPath(startFrom.elementPath, projectContents),
+  const componentHoldingElement: UtopiaJSXComponent | null = findContainingComponentForElementPath(
+    startFrom.elementPath,
+    projectContents,
   )
 
   invariant(isRight(elementHoldingProp.element), 'element must be a parsed element')
@@ -283,25 +283,27 @@ export function traceDataFromProp(
 
     const identifier = dataPath.value.originalIdentifier
 
-    const resultInComponentScope: DataTracingResult = lookupInComponentScope(
-      startFrom.elementPath,
-      componentHoldingElement,
-      identifier,
-      [...dataPath.value.path, ...pathDrillSoFar],
-    )
-    if (resultInComponentScope.type === 'component-prop') {
-      return traceDataFromProp(
-        TPP.create(resultInComponentScope.elementPath, resultInComponentScope.propertyPath),
-        metadata,
-        projectContents,
-        resultInComponentScope.dataPathIntoAttribute,
+    if (componentHoldingElement != null) {
+      const resultInComponentScope: DataTracingResult = lookupInComponentScope(
+        startFrom.elementPath,
+        componentHoldingElement,
+        identifier,
+        [...dataPath.value.path, ...pathDrillSoFar],
       )
-    }
-    if (resultInComponentScope.type !== 'failed') {
-      return resultInComponentScope
+      if (resultInComponentScope.type === 'component-prop') {
+        return traceDataFromProp(
+          TPP.create(resultInComponentScope.elementPath, resultInComponentScope.propertyPath),
+          metadata,
+          projectContents,
+          resultInComponentScope.dataPathIntoAttribute,
+        )
+      }
+      if (resultInComponentScope.type !== 'failed') {
+        return resultInComponentScope
+      }
     }
   }
-  return dataTracingFailed('We only support simple JSIdentifiers')
+  return dataTracingFailed('we need to improve the data tracing error messages')
 }
 
 function lookupInComponentScope(
