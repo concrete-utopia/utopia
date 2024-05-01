@@ -46,7 +46,8 @@ export const DataReferenceCartoucheControl = React.memo(
 
     const onDeleteCartouche = React.useCallback(() => {}, [])
 
-    const cartoucheColor = contentsToDisplay.type === 'reference' ? 'remix' : 'secondary'
+    const cartoucheIconColor = contentsToDisplay.type === 'reference' ? 'primary' : 'secondary'
+    const editButtonIconColor = contentsToDisplay.type === 'reference' ? 'primary' : 'secondary'
     const foregroundColor =
       contentsToDisplay.type === 'reference'
         ? colorTheme.primary.value
@@ -82,9 +83,9 @@ export const DataReferenceCartoucheControl = React.memo(
             }}
           >
             {contentsToDisplay.type === 'reference' ? (
-              <Icons.NavigatorData color={cartoucheColor} />
+              <Icons.NavigatorData color={cartoucheIconColor} />
             ) : (
-              <Icons.NavigatorText color={cartoucheColor} />
+              <Icons.NavigatorText color={cartoucheIconColor} />
             )}
             <Tooltip title={label}>
               <div
@@ -108,7 +109,7 @@ export const DataReferenceCartoucheControl = React.memo(
             <Icn
               category='semantic'
               type='editpencil'
-              color={cartoucheColor}
+              color={editButtonIconColor}
               width={16}
               height={16}
               onClick={dataPickerButtonData.openPopup}
