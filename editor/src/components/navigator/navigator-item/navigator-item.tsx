@@ -763,7 +763,7 @@ export const NavigatorItem: React.FunctionComponent<
   }, [elementWarnings])
 
   const resultingStyle = computeResultingStyle(
-    selected,
+    elementIsData ? false : selected,
     emphasis,
     isInsideComponent,
     isDynamic,
@@ -772,7 +772,7 @@ export const NavigatorItem: React.FunctionComponent<
     isFocusedComponent,
     isManuallyFocusableComponent,
     isHighlightedForInteraction,
-    isDescendantOfSelected,
+    elementIsData ? false : isDescendantOfSelected,
     isErroredGroup,
     colorTheme,
   )
