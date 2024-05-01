@@ -299,35 +299,54 @@ export function traceDataFromProp(
 
     const identifier = dataPath.value.originalIdentifier
 
-    const foundHookCall: JSAssignment<JSIdentifier, JSExpressionOtherJavaScript> | null =
-      mapFirstApplicable(
-        componentHoldingElement.arbitraryJSBlock?.statements ?? [],
-        (statement) => {
-          if (statement.type !== 'JS_ASSIGNMENT_STATEMENT') {
-            return null
-          }
-
-          return mapFirstApplicable(statement.assignments, (assignment) => {
-            if (
-              assignment.leftHandSide.name === identifier.name &&
-              assignment.rightHandSide.type === 'ATTRIBUTE_OTHER_JAVASCRIPT' &&
-              assignment.rightHandSide.originalJavascript.startsWith('use') &&
-              assignment.rightHandSide.originalJavascript.endsWith('()') &&
-              assignment.rightHandSide.originalJavascript.match(/^use[A-Za-z]+\(\)$/) != null
-            ) {
-              return assignment as JSAssignment<JSIdentifier, JSExpressionOtherJavaScript>
-            }
-            return null
-          })
-        },
-      )
-    if (foundHookCall != null) {
-      return dataTracingToAHookCall(
-        startFrom.elementPath,
-        foundHookCall.rightHandSide.originalJavascript.split('()')[0],
-        [...dataPath.value.path, ...pathDrillSoFar],
-      )
+    const resultInComponentArbitraryBlock: DataTracingResult = lookupInArbitraryBlock(
+      startFrom.elementPath,
+      componentHoldingElement,
+      dataPath.value,
+      pathDrillSoFar,
+    )
+    if (resultInComponentArbitraryBlock.type !== 'failed') {
+      return resultInComponentArbitraryBlock
     }
   }
   return dataTracingFailed('We only support simple JSIdentifiers')
+}
+
+function lookupInArbitraryBlock(
+  componentPath: ElementPath,
+  componentHoldingElement: UtopiaJSXComponent,
+  access: {
+    originalIdentifier: JSIdentifier
+    path: DataPath
+  },
+  pathDrillSoFar: DataPath,
+): DataTracingResult {
+  const identifier = access.originalIdentifier
+  const foundHookCall: JSAssignment<JSIdentifier, JSExpressionOtherJavaScript> | null =
+    mapFirstApplicable(componentHoldingElement.arbitraryJSBlock?.statements ?? [], (statement) => {
+      if (statement.type !== 'JS_ASSIGNMENT_STATEMENT') {
+        return null
+      }
+
+      return mapFirstApplicable(statement.assignments, (assignment) => {
+        if (
+          assignment.leftHandSide.name === identifier.name &&
+          assignment.rightHandSide.type === 'ATTRIBUTE_OTHER_JAVASCRIPT' &&
+          assignment.rightHandSide.originalJavascript.startsWith('use') &&
+          assignment.rightHandSide.originalJavascript.endsWith('()') &&
+          assignment.rightHandSide.originalJavascript.match(/^use[A-Za-z]+\(\)$/) != null
+        ) {
+          return assignment as JSAssignment<JSIdentifier, JSExpressionOtherJavaScript>
+        }
+        return null
+      })
+    })
+  if (foundHookCall != null) {
+    return dataTracingToAHookCall(
+      componentPath,
+      foundHookCall.rightHandSide.originalJavascript.split('()')[0],
+      [...access.path, ...pathDrillSoFar],
+    )
+  }
+  return dataTracingFailed('Could not find a hook call')
 }
