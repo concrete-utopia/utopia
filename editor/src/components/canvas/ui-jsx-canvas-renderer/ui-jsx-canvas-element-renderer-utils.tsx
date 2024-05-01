@@ -379,6 +379,7 @@ export function renderCoreElement(
           imports,
           'not-a-conditional',
           null,
+          prop,
         )
       }
 
