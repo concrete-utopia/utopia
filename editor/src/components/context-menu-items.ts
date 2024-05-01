@@ -46,6 +46,7 @@ import {
   toggleStylePropPaths,
 } from './inspector/common/css-utils'
 import {
+  type ShowComponentPickerContextMenu,
   type InsertionTarget,
   type ShowComponentPickerContextMenuCallback,
 } from './navigator/navigator-item/component-picker-context-menu'
@@ -351,6 +352,18 @@ export const insert: ContextMenuItem<CanvasData> = {
   },
 }
 
+export function showReplaceComponentPicker(
+  targetElement: ElementPath,
+  jsxMetadata: ElementInstanceMetadataMap,
+  showComponentPicker: ShowComponentPickerContextMenuCallback,
+): ShowComponentPickerContextMenu {
+  const element = MetadataUtils.findElementByElementPath(jsxMetadata, targetElement)
+  const prop = element?.prop
+  const target = prop == null ? targetElement : EP.parentPath(targetElement)
+  const insertionTarget: InsertionTarget = prop == null ? 'replace-target' : { prop: prop }
+  return showComponentPicker(target, insertionTarget)
+}
+
 export const convert: ContextMenuItem<CanvasData> = {
   name: 'Swap Element With…',
   shortcut: 'S',
@@ -366,11 +379,11 @@ export const convert: ContextMenuItem<CanvasData> = {
     )
   },
   action: (data, _dispatch, _coord, event) => {
-    const target = data.selectedViews[0]
-    const element = MetadataUtils.findElementByElementPath(data.jsxMetadata, target)
-    const prop = element?.prop
-    const insertionTarget: InsertionTarget = prop == null ? 'replace-target' : { prop: prop }
-    data.showComponentPicker(target, insertionTarget)(event)
+    showReplaceComponentPicker(
+      data.selectedViews[0],
+      data.jsxMetadata,
+      data.showComponentPicker,
+    )(event)
   },
 }
 
