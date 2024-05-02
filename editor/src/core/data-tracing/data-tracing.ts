@@ -147,7 +147,7 @@ function processJSPropertyAccessors(
       return right({ path: [], originalIdentifier: expression })
     }
     case 'JS_ELEMENT_ACCESS': {
-      const elementToSimpleValue = jsxSimpleAttributeToValue(expression.onValue)
+      const elementToSimpleValue = jsxSimpleAttributeToValue(expression.element)
       if (isLeft(elementToSimpleValue)) {
         return left(
           `Cannot convert JS_ELEMENT_ACCESS element into simple value, reason: ${elementToSimpleValue.value}`,
