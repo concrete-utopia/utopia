@@ -347,16 +347,17 @@ const ComponentPickerOption = React.memo((props: ComponentPickerOptionProps) => 
             : {}
         return (
           <FlexRow
+            css={{}}
             key={`${name}-${v.label}`}
-            css={{
+            style={{
               marginLeft: 8,
               marginRight: 8,
               borderRadius: 4,
               // indentation!
               paddingLeft: 8,
               color: '#EEE',
+              ...selectedStyle,
             }}
-            style={selectedStyle}
             onClick={onItemClick(v.value)}
             onMouseOver={onItemHover(v.value)}
             data-key={v.value.key}
