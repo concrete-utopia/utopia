@@ -351,7 +351,27 @@ export const insert: ContextMenuItem<CanvasData> = {
 
 export const convert: ContextMenuItem<CanvasData> = {
   name: 'Swap Element With…',
-  shortcut: 'S',
+  shortcut: '',
+  enabled: (data) => {
+    return (
+      data.selectedViews.length > 0 &&
+      data.selectedViews.every((path) => {
+        const element = MetadataUtils.findElementByElementPath(data.jsxMetadata, path)
+        return (
+          element != null && isRight(element.element) && isJSXElementLike(element.element.value)
+        )
+      })
+    )
+  },
+  action: (data, _dispatch, _coord, event) => {
+    // FIXME Render prop support
+    data.showComponentPicker(data.selectedViews[0], 'replace-target-keep-children-and-style')(event)
+  },
+}
+
+export const replace: ContextMenuItem<CanvasData> = {
+  name: 'Replace Element With…',
+  shortcut: '',
   enabled: (data) => {
     return (
       data.selectedViews.length > 0 &&

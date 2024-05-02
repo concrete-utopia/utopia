@@ -84,7 +84,6 @@ import {
   ZOOM_CANVAS_OUT_SHORTCUT,
   ZOOM_UI_IN_SHORTCUT,
   ZOOM_UI_OUT_SHORTCUT,
-  CONVERT_ELEMENT_SHORTCUT,
   ADD_ELEMENT_SHORTCUT,
   GROUP_ELEMENT_PICKER_SHORTCUT,
   GROUP_ELEMENT_DEFAULT_SHORTCUT,
@@ -744,23 +743,6 @@ export function handleKeyDown(
       },
       [TOGGLE_INSPECTOR_AND_NAVIGATOR_SHORTCUT]: () => {
         return [EditorActions.togglePanel('rightmenu'), EditorActions.togglePanel('leftmenu')]
-      },
-      [CONVERT_ELEMENT_SHORTCUT]: () => {
-        const possibleToConvert = editor.selectedViews.every((path) => {
-          const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, path)
-          return (
-            element != null && isRight(element.element) && isJSXElementLike(element.element.value)
-          )
-        })
-        if (isSelectMode(editor.mode) && possibleToConvert) {
-          const mousePoint = WindowMousePositionRaw ?? zeroCanvasPoint
-          showComponentPicker(editor.selectedViews[0], 'replace-target')(event, {
-            position: mousePoint,
-          })
-          return []
-        } else {
-          return []
-        }
       },
       [ADD_ELEMENT_SHORTCUT]: () => {
         if (allowedToEdit) {
