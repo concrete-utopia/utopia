@@ -14,7 +14,7 @@ import Utils from '../utils/utils'
 import type { Size, CanvasRectangle, CanvasPoint } from '../core/shared/math-utils'
 import { canvasRectangle } from '../core/shared/math-utils'
 import type { EditorAction } from './editor/action-types'
-import { insertJSXElement } from './editor/actions/action-creators'
+import { insertAsChildTarget, insertJSXElement } from './editor/actions/action-creators'
 import { forceNotNull, optionalMap } from '../core/shared/optional-utils'
 import type { AllElementProps } from './editor/store/editor-state'
 import * as EP from '../core/shared/element-path'
@@ -208,7 +208,7 @@ export function createInsertImageAction(
       }),
       [],
     )
-    return insertJSXElement(imageElement, parentPath, {}, 'insert-as-child')
+    return insertJSXElement(imageElement, parentPath, {}, insertAsChildTarget())
   } else {
     throw new Error(`Attempting to insert ${imagePath} as an image when it is not stored as such.`)
   }

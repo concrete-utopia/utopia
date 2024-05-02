@@ -65,7 +65,11 @@ import { NavigatorItemActionSheet } from './navigator-item-components'
 import { assertNever } from '../../../core/shared/utils'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { MapCounter } from './map-counter'
-import { useCreateCallbackToShowComponentPicker } from './component-picker-context-menu'
+import {
+  conditionalTarget,
+  renderPropTarget,
+  useCreateCallbackToShowComponentPicker,
+} from './component-picker-context-menu'
 import type { InsertionTarget } from './component-picker-context-menu'
 import { getHighlightBoundsForProject } from '../../../core/model/project-file-utils'
 import {
@@ -1044,7 +1048,7 @@ interface RenderPropSlotProps {
 const RenderPropSlot = React.memo((props: RenderPropSlotProps) => {
   const { label, parentOutline, navigatorEntry } = props
   const target = EP.parentPath(navigatorEntry.elementPath)
-  const insertionTarget = { prop: navigatorEntry.prop }
+  const insertionTarget = renderPropTarget(navigatorEntry.prop)
 
   const showComponentPickerContextMenu = useCreateCallbackToShowComponentPicker()(
     target,
@@ -1077,7 +1081,7 @@ const ConditionalBranchSlot = React.memo((props: ConditionalBranchSlotProps) => 
 
   const showComponentPickerContextMenu = useCreateCallbackToShowComponentPicker()(
     target,
-    conditionalCase,
+    conditionalTarget(conditionalCase),
   )
 
   return (

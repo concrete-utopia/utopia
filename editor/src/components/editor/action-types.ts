@@ -142,12 +142,16 @@ export type ClearSelection = {
   action: 'CLEAR_SELECTION'
 }
 
+export type ReplaceTarget = { type: 'replace-target' }
+export type InsertAsChildTarget = { type: 'insert-as-child'; indexPosition?: IndexPosition }
+export type InsertionBehaviour = InsertAsChildTarget | ReplaceTarget
+
 export interface InsertJSXElement {
   action: 'INSERT_JSX_ELEMENT'
   jsxElement: JSXElement
   target: ElementPath | null
   importsToAdd: Imports
-  insertionBehaviour: 'insert-as-child' | 'replace-target'
+  insertionBehaviour: InsertionBehaviour
 }
 
 export interface ReplaceMappedElement {
