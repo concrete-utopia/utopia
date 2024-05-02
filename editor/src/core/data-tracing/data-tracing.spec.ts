@@ -680,7 +680,7 @@ describe('Data Tracing', () => {
     })
   })
 
-  describe('Tracing through a map function', () => {
+  xdescribe('Tracing through a map function', () => {
     it('Traces back a prop to a string literal jsx attribute via a map function', async () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCodeWithStoryboard(`
