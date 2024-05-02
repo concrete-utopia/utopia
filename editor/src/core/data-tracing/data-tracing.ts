@@ -286,6 +286,7 @@ export function traceDataFromProp(
     if (componentHoldingElement != null) {
       const resultInComponentScope: DataTracingResult = lookupInComponentScope(
         startFrom.elementPath,
+        startFrom.elementPath, // TODO change this to the containing component path!
         componentHoldingElement,
         identifier,
         [...dataPath.value.path, ...pathDrillSoFar],
@@ -307,6 +308,7 @@ export function traceDataFromProp(
 }
 
 function lookupInComponentScope(
+  elementPathInsideComponent: ElementPath,
   componentPath: ElementPath,
   componentHoldingElement: UtopiaJSXComponent,
   originalIdentifier: JSIdentifier,
@@ -314,138 +316,152 @@ function lookupInComponentScope(
 ): DataTracingResult {
   const identifier = originalIdentifier
 
-  if (componentHoldingElement.param != null) {
-    // let's try to match the name to the containing component's props!
-    const foundPropSameName = propUsedByIdentifierOrAccess(
-      componentHoldingElement.param,
-      identifier,
-      [...pathDrillSoFar],
-    )
-
-    if (isRight(foundPropSameName)) {
-      // ok, so let's now travel to the containing component's instance in the metadata and continue the lookup!
-      const parentComponentInstance = EP.getContainingComponent(componentPath)
-      return dataTracingToAComponentProp(
-        parentComponentInstance,
-        PP.create(foundPropSameName.value.propertyName),
-        foundPropSameName.value.modifiedPathDrillSoFar,
+  // let's see if the identifier points to a component prop
+  {
+    if (componentHoldingElement.param != null) {
+      // let's try to match the name to the containing component's props!
+      const foundPropSameName = propUsedByIdentifierOrAccess(
+        componentHoldingElement.param,
+        identifier,
+        [...pathDrillSoFar],
       )
-    }
-  }
 
-  const foundAssignmentOfIdentifier: JSAssignment<JSIdentifier, JSExpression> | null =
-    mapFirstApplicable(componentHoldingElement.arbitraryJSBlock?.statements ?? [], (statement) => {
-      if (statement.type !== 'JS_ASSIGNMENT_STATEMENT') {
-        return null
-      }
-
-      return mapFirstApplicable(statement.assignments, (assignment) => {
-        if (assignment.leftHandSide.name === identifier.name) {
-          return assignment
-        }
-        return null
-      })
-    })
-
-  if (foundAssignmentOfIdentifier != null) {
-    if (
-      foundAssignmentOfIdentifier.rightHandSide.type === 'JS_IDENTIFIER' ||
-      foundAssignmentOfIdentifier.rightHandSide.type === 'JS_ELEMENT_ACCESS' ||
-      foundAssignmentOfIdentifier.rightHandSide.type === 'JS_PROPERTY_ACCESS'
-    ) {
-      const dataPath = processJSPropertyAccessors(foundAssignmentOfIdentifier.rightHandSide)
-
-      if (isRight(dataPath)) {
-        return lookupInComponentScope(
-          componentPath,
-          componentHoldingElement,
-          dataPath.value.originalIdentifier,
-          [...dataPath.value.path, ...pathDrillSoFar],
+      if (isRight(foundPropSameName)) {
+        // ok, so let's now travel to the containing component's instance in the metadata and continue the lookup!
+        const parentComponentInstance = EP.getContainingComponent(componentPath)
+        return dataTracingToAComponentProp(
+          parentComponentInstance,
+          PP.create(foundPropSameName.value.propertyName),
+          foundPropSameName.value.modifiedPathDrillSoFar,
         )
       }
     }
+  }
 
-    if (
-      foundAssignmentOfIdentifier.rightHandSide.type === 'ATTRIBUTE_OTHER_JAVASCRIPT' &&
-      foundAssignmentOfIdentifier.rightHandSide.originalJavascript.startsWith('use') &&
-      foundAssignmentOfIdentifier.rightHandSide.originalJavascript.endsWith('()') &&
-      foundAssignmentOfIdentifier.rightHandSide.originalJavascript.match(/^use[A-Za-z]+\(\)$/) !=
-        null
-    ) {
-      return dataTracingToAHookCall(
-        componentPath,
-        foundAssignmentOfIdentifier.rightHandSide.originalJavascript.split('()')[0],
-        [...pathDrillSoFar],
+  // let's see if the identifier points to a hook call or variable declaration
+  {
+    const foundAssignmentOfIdentifier: JSAssignment<JSIdentifier, JSExpression> | null =
+      mapFirstApplicable(
+        componentHoldingElement.arbitraryJSBlock?.statements ?? [],
+        (statement) => {
+          if (statement.type !== 'JS_ASSIGNMENT_STATEMENT') {
+            return null
+          }
+
+          return mapFirstApplicable(statement.assignments, (assignment) => {
+            if (assignment.leftHandSide.name === identifier.name) {
+              return assignment
+            }
+            return null
+          })
+        },
       )
+
+    if (foundAssignmentOfIdentifier != null) {
+      if (
+        foundAssignmentOfIdentifier.rightHandSide.type === 'JS_IDENTIFIER' ||
+        foundAssignmentOfIdentifier.rightHandSide.type === 'JS_ELEMENT_ACCESS' ||
+        foundAssignmentOfIdentifier.rightHandSide.type === 'JS_PROPERTY_ACCESS'
+      ) {
+        const dataPath = processJSPropertyAccessors(foundAssignmentOfIdentifier.rightHandSide)
+
+        if (isRight(dataPath)) {
+          return lookupInComponentScope(
+            elementPathInsideComponent,
+            componentPath,
+            componentHoldingElement,
+            dataPath.value.originalIdentifier,
+            [...dataPath.value.path, ...pathDrillSoFar],
+          )
+        }
+      }
+
+      if (
+        foundAssignmentOfIdentifier.rightHandSide.type === 'ATTRIBUTE_OTHER_JAVASCRIPT' &&
+        foundAssignmentOfIdentifier.rightHandSide.originalJavascript.startsWith('use') &&
+        foundAssignmentOfIdentifier.rightHandSide.originalJavascript.endsWith('()') &&
+        foundAssignmentOfIdentifier.rightHandSide.originalJavascript.match(/^use[A-Za-z]+\(\)$/) !=
+          null
+      ) {
+        return dataTracingToAHookCall(
+          componentPath,
+          foundAssignmentOfIdentifier.rightHandSide.originalJavascript.split('()')[0],
+          [...pathDrillSoFar],
+        )
+      }
     }
   }
 
-  // TODO we must support the object binding pattern in the parser
-  // until we do proper support, this is a temporary stopgap
-
-  const foundOpaqueStatementProbablyMatchingIdentifier: {
-    assignedTo: string
-    pathSoFar: DataPath
-  } | null = mapFirstApplicable(
-    componentHoldingElement.arbitraryJSBlock?.statements ?? [],
-    (statement) => {
-      // check that the originalJavascript matches the shape "const { <identifier> } = <expression>"
-      // copilot:
-      if (
-        statement.type === 'JS_OPAQUE_ARBITRARY_STATEMENT' &&
-        statement.originalJavascript.includes('const {') &&
-        statement.originalJavascript.includes(identifier.name)
-      ) {
-        const splitStatement = statement.originalJavascript.split('=')
-        if (splitStatement.length !== 2) {
-          return null
-        }
-        const leftHandSide = splitStatement[0]
-        const rightHandSide = splitStatement[1]
-
-        if (leftHandSide.includes('{') && leftHandSide.includes('}')) {
-          const leftHandSideSplit = leftHandSide.split('{')
-          if (leftHandSideSplit.length !== 2) {
+  // let's try to find "const { <identifier> } = <expression>" shaped statements
+  {
+    // TODO we must support the object binding pattern in the parser
+    // until we do proper support, this is a temporary stopgap
+    const foundOpaqueStatementProbablyMatchingIdentifier: {
+      assignedTo: string
+      pathSoFar: DataPath
+    } | null = mapFirstApplicable(
+      componentHoldingElement.arbitraryJSBlock?.statements ?? [],
+      (statement) => {
+        // check that the originalJavascript matches the shape "const { <identifier> } = <expression>"
+        // copilot:
+        if (
+          statement.type === 'JS_OPAQUE_ARBITRARY_STATEMENT' &&
+          statement.originalJavascript.includes('const {') &&
+          statement.originalJavascript.includes(identifier.name)
+        ) {
+          const splitStatement = statement.originalJavascript.split('=')
+          if (splitStatement.length !== 2) {
             return null
           }
-          const leftHandSideIdentifier = leftHandSideSplit[1].split('}')[0].trim()
-          if (leftHandSideIdentifier === identifier.name) {
-            return {
-              assignedTo: rightHandSide.trim(),
-              pathSoFar: [identifier.name, ...pathDrillSoFar],
+          const leftHandSide = splitStatement[0]
+          const rightHandSide = splitStatement[1]
+
+          if (leftHandSide.includes('{') && leftHandSide.includes('}')) {
+            const leftHandSideSplit = leftHandSide.split('{')
+            if (leftHandSideSplit.length !== 2) {
+              return null
+            }
+            const leftHandSideIdentifier = leftHandSideSplit[1].split('}')[0].trim()
+            if (leftHandSideIdentifier === identifier.name) {
+              return {
+                assignedTo: rightHandSide.trim(),
+                pathSoFar: [identifier.name, ...pathDrillSoFar],
+              }
             }
           }
         }
-      }
-      return null
-    },
-  )
+        return null
+      },
+    )
 
-  if (foundOpaqueStatementProbablyMatchingIdentifier != null) {
-    if (
-      foundOpaqueStatementProbablyMatchingIdentifier.assignedTo.startsWith('use') &&
-      foundOpaqueStatementProbablyMatchingIdentifier.assignedTo.endsWith('()') &&
-      foundOpaqueStatementProbablyMatchingIdentifier.assignedTo.match(/^use[A-Za-z]+\(\)$/) != null
-    ) {
-      return dataTracingToAHookCall(
-        componentPath,
-        foundOpaqueStatementProbablyMatchingIdentifier.assignedTo.split('(')[0],
-        foundOpaqueStatementProbablyMatchingIdentifier.pathSoFar,
-      )
-    }
-    // check if assignedTo is a simple identifier
-    if (foundOpaqueStatementProbablyMatchingIdentifier.assignedTo.match(/^[A-Za-z]+$/) != null) {
-      return lookupInComponentScope(
-        componentPath,
-        componentHoldingElement,
-        jsIdentifier(
-          foundOpaqueStatementProbablyMatchingIdentifier.assignedTo,
-          '', // warning this is a fake uid here
-          null,
-          emptyComments,
-        ),
-        foundOpaqueStatementProbablyMatchingIdentifier.pathSoFar,
-      )
+    if (foundOpaqueStatementProbablyMatchingIdentifier != null) {
+      if (
+        foundOpaqueStatementProbablyMatchingIdentifier.assignedTo.startsWith('use') &&
+        foundOpaqueStatementProbablyMatchingIdentifier.assignedTo.endsWith('()') &&
+        foundOpaqueStatementProbablyMatchingIdentifier.assignedTo.match(/^use[A-Za-z]+\(\)$/) !=
+          null
+      ) {
+        return dataTracingToAHookCall(
+          componentPath,
+          foundOpaqueStatementProbablyMatchingIdentifier.assignedTo.split('(')[0],
+          foundOpaqueStatementProbablyMatchingIdentifier.pathSoFar,
+        )
+      }
+      // check if assignedTo is a simple identifier
+      if (foundOpaqueStatementProbablyMatchingIdentifier.assignedTo.match(/^[A-Za-z]+$/) != null) {
+        return lookupInComponentScope(
+          elementPathInsideComponent,
+          componentPath,
+          componentHoldingElement,
+          jsIdentifier(
+            foundOpaqueStatementProbablyMatchingIdentifier.assignedTo,
+            '', // warning this is a fake uid here
+            null,
+            emptyComments,
+          ),
+          foundOpaqueStatementProbablyMatchingIdentifier.pathSoFar,
+        )
+      }
     }
   }
 
