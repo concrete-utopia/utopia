@@ -152,7 +152,7 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
                   : defaults.type === 'flex-row' ||
                     defaults.type === 'flex-column' ||
                     defaults.type === 'grid'
-                  ? 'dynamic'
+                  ? 'primary'
                   : defaults.color
               }
               category='navigator-element'
