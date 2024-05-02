@@ -403,6 +403,7 @@ class FileBrowserItemInner extends React.PureComponent<
             <StringInput
               testId=''
               value={this.state.filename}
+              pasteHandler={true}
               onChange={this.onChangeFilename}
               onKeyDown={this.onKeyDownFilename}
               onFocus={this.onFocusFilename}

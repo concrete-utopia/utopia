@@ -249,7 +249,7 @@ describe('Navigator item row icons', () => {
     )
     await checkNavigatorIcon(
       'Conditional',
-      { category: 'navigator-element', type: 'conditional', color: 'blue' },
+      { category: 'navigator-element', type: 'conditional', color: 'black' },
       visibleNavigatorTargets[7],
     )
     // No icon for conditional labels
@@ -264,7 +264,7 @@ describe('Navigator item row icons', () => {
     await checkNavigatorIcon('Empty Slot', 'no-icon', visibleNavigatorTargets[11])
     await checkNavigatorIcon(
       'Code element',
-      { category: 'navigator-element', type: 'genericcode', color: 'blue' },
+      { category: 'navigator-element', type: 'genericcode', color: 'black' },
       visibleNavigatorTargets[12],
     )
     await checkNavigatorIcon(
@@ -274,7 +274,7 @@ describe('Navigator item row icons', () => {
     )
     await checkNavigatorIcon(
       'Map',
-      { category: 'navigator-element', type: 'lists', color: 'blue' },
+      { category: 'navigator-element', type: 'lists', color: 'black' },
       visibleNavigatorTargets[14],
     )
     await checkNavigatorIcon(
@@ -289,12 +289,12 @@ describe('Navigator item row icons', () => {
     )
     await checkNavigatorIcon(
       'Sizeless div',
-      { category: 'navigator-element', type: 'zerosized-div', color: 'lightgray' },
+      { category: 'navigator-element', type: 'zerosized-div', color: 'black' },
       visibleNavigatorTargets[17],
     )
     await checkNavigatorIcon(
       'Generated text',
-      { category: 'navigator-element', type: 'text-generated', color: 'blue' },
+      { category: 'navigator-element', type: 'text-generated', color: 'black' },
       visibleNavigatorTargets[18],
     )
     await checkNavigatorIcon(

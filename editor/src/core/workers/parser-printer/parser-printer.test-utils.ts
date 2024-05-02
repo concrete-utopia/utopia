@@ -961,6 +961,21 @@ function walkElements(
     case 'JSX_TEXT_BLOCK':
       break
     case 'JSX_MAP_EXPRESSION':
+      walkElements(
+        jsxElementChild.valueToMap,
+        includeDataUIDAttribute,
+        walkWith,
+        shouldWalkElement,
+        shouldWalkAttributes,
+      )
+      walkElements(
+        jsxElementChild.mapFunction,
+        includeDataUIDAttribute,
+        walkWith,
+        shouldWalkElement,
+        shouldWalkAttributes,
+      )
+      break
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       walkElementsWithin(
         jsxElementChild.elementsWithin,

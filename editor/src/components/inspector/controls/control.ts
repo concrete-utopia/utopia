@@ -59,4 +59,5 @@ export interface InspectorControlProps {
   className?: string
   controlStatus?: ControlStatus
   DEPRECATED_labelBelow?: React.ReactChild
+  pasteHandler?: boolean
 }
