@@ -227,8 +227,8 @@ const AddChildButton = React.memo((props: AddChildButtonProps) => {
   )
 })
 
-export const ReplaceElementButtonTestId = (path: ElementPath) =>
-  `replace-element-button-${EP.toString(path)}`
+export const ReplaceElementButtonTestId = (path: ElementPath, prop: string | null) =>
+  `replace-element-button-${EP.toString(path)}${prop == null ? '' : `-${prop}`}`
 
 interface ReplaceElementButtonProps {
   target: ElementPath
@@ -266,7 +266,7 @@ const ReplaceElementButton = React.memo((props: ReplaceElementButtonProps) => {
 
   return (
     <Button
-      data-testid={ReplaceElementButtonTestId(props.target)}
+      data-testid={ReplaceElementButtonTestId(target, prop)}
       onClick={onClick}
       style={{
         height: 12,

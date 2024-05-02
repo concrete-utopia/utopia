@@ -995,6 +995,7 @@ describe('SET_FOCUSED_ELEMENT', () => {
       'not-a-conditional',
       null,
       null,
+      null,
     )
     const fakeMetadata: ElementInstanceMetadataMap = {
       [EP.toString(pathToFocus)]: divElementMetadata,
@@ -1031,6 +1032,7 @@ describe('SET_FOCUSED_ELEMENT', () => {
       null,
       null,
       'not-a-conditional',
+      null,
       null,
       null,
     )

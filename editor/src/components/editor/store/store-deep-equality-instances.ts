@@ -258,6 +258,7 @@ import {
   combine14EqualityCalls,
   combine11EqualityCalls,
   combine15EqualityCalls,
+  combine16EqualityCalls,
 } from '../../../utils/deep-equality'
 import {
   ElementPathArrayKeepDeepEquality,
@@ -2056,7 +2057,7 @@ export const EarlyReturnKeepDeepEquality: KeepDeepEqualityCall<
 }
 
 export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<ElementInstanceMetadata> =
-  combine15EqualityCalls(
+  combine16EqualityCalls(
     (metadata) => metadata.elementPath,
     ElementPathKeepDeepEquality,
     (metadata) => metadata.element,
@@ -2087,6 +2088,8 @@ export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<Eleme
     nullableDeepEquality(StringKeepDeepEquality),
     (metadata) => metadata.earlyReturn,
     nullableDeepEquality(EarlyReturnKeepDeepEquality),
+    (metadata) => metadata.assignedToProp,
+    nullableDeepEquality(StringKeepDeepEquality),
     elementInstanceMetadata,
   )
 

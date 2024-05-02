@@ -148,6 +148,7 @@ export function jsxFunctionAttributeToRawValue(
   }
 }
 
+// FIXME The naming here is **BAD**, because this is actually for JSExpressions, not just attributes
 export function jsxAttributeToValue(
   inScope: MapLike<any>,
   attribute: JSExpression,
@@ -155,10 +156,19 @@ export function jsxAttributeToValue(
   renderContext: RenderContext,
   uid: string | undefined,
   codeError: Error | null,
+  assignedToProp: string | null,
 ): any {
   if (isExpressionAccessLike(attribute)) {
     try {
-      return innerAttributeToValue(attribute, elementPath, inScope, renderContext, uid, codeError)
+      return innerAttributeToValue(
+        attribute,
+        elementPath,
+        inScope,
+        renderContext,
+        uid,
+        codeError,
+        assignedToProp,
+      )
     } catch {
       const originalJavascript = isJSIdentifier(attribute)
         ? attribute.name
@@ -183,7 +193,15 @@ export function jsxAttributeToValue(
       )
     }
   } else {
-    return innerAttributeToValue(attribute, elementPath, inScope, renderContext, uid, codeError)
+    return innerAttributeToValue(
+      attribute,
+      elementPath,
+      inScope,
+      renderContext,
+      uid,
+      codeError,
+      assignedToProp,
+    )
   }
 }
 
@@ -200,19 +218,28 @@ function isExpressionAccessLike(
   }
 }
 
-export function innerAttributeToValue(
+function innerAttributeToValue(
   attribute: JSExpression,
   elementPath: ElementPath | null,
   inScope: MapLike<any>,
   renderContext: RenderContext,
   uid: string | undefined,
   codeError: Error | null,
+  assignedToProp: string | null,
 ): any {
   const { filePath, requireResult } = renderContext
   switch (attribute.type) {
     case 'JSX_ELEMENT':
       const innerPath = optionalMap((path) => EP.appendToPath(path, attribute.uid), elementPath)
-      return renderCoreElement(attribute, innerPath, inScope, renderContext, uid, codeError)
+      return renderCoreElement(
+        attribute,
+        innerPath,
+        inScope,
+        renderContext,
+        uid,
+        codeError,
+        assignedToProp,
+      )
     case 'ATTRIBUTE_VALUE':
       return attribute.value
     case 'JS_IDENTIFIER':
@@ -231,6 +258,7 @@ export function innerAttributeToValue(
         renderContext,
         uid,
         codeError,
+        assignedToProp,
       )
 
       if (onValue == null) {
@@ -255,6 +283,7 @@ export function innerAttributeToValue(
         renderContext,
         uid,
         codeError,
+        assignedToProp,
       )
       const element = jsxAttributeToValue(
         inScope,
@@ -263,6 +292,7 @@ export function innerAttributeToValue(
         renderContext,
         uid,
         codeError,
+        assignedToProp,
       )
       if (attribute.optionallyChained === 'optionally-chained') {
         return onValue == null ? undefined : onValue[element]
@@ -280,6 +310,7 @@ export function innerAttributeToValue(
           renderContext,
           uid,
           codeError,
+          assignedToProp,
         )
         switch (elem.type) {
           case 'ARRAY_VALUE':
@@ -304,6 +335,7 @@ export function innerAttributeToValue(
           renderContext,
           uid,
           codeError,
+          assignedToProp,
         )
 
         switch (prop.type) {
@@ -323,7 +355,15 @@ export function innerAttributeToValue(
       const foundFunction = (UtopiaUtils as any)[attribute.functionName]
       if (foundFunction != null) {
         const resolvedParameters = attribute.parameters.map((param) => {
-          return jsxAttributeToValue(inScope, param, elementPath, renderContext, uid, codeError)
+          return jsxAttributeToValue(
+            inScope,
+            param,
+            elementPath,
+            renderContext,
+            uid,
+            codeError,
+            assignedToProp,
+          )
         })
         return foundFunction(...resolvedParameters)
       }
@@ -336,6 +376,7 @@ export function innerAttributeToValue(
         renderContext,
         uid,
         codeError,
+        null,
       )
       const mapFunction = jsxAttributeToValue(
         inScope,
@@ -344,6 +385,7 @@ export function innerAttributeToValue(
         renderContext,
         uid,
         codeError,
+        null,
       )
       return valueToMap.map(mapFunction)
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
@@ -372,6 +414,7 @@ export function jsxAttributesToProps(
           renderContext,
           uid,
           codeError,
+          `${entry.key}`,
         )
         break
       case 'JSX_ATTRIBUTES_SPREAD':
@@ -384,6 +427,7 @@ export function jsxAttributesToProps(
             renderContext,
             uid,
             codeError,
+            null,
           ),
         )
         break
