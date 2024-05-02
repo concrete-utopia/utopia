@@ -147,10 +147,7 @@ import { wrapInDivStrategy } from './wrap-in-callbacks'
 import { type ProjectServerState } from './store/project-server-state'
 import { allowedToEditProject } from './store/collaborative-editing'
 import { hasCommentPermission } from './store/permissions'
-import {
-  InsertionTarget,
-  type ShowComponentPickerContextMenuCallback,
-} from '../navigator/navigator-item/component-picker-context-menu'
+import { type ShowComponentPickerContextMenuCallback } from '../navigator/navigator-item/component-picker-context-menu'
 import { showReplaceComponentPicker } from '../context-menu-items'
 
 function updateKeysPressed(
@@ -752,9 +749,12 @@ export function handleKeyDown(
         if (allowedToEdit) {
           if (isSelectMode(editor.mode)) {
             const mousePoint = WindowMousePositionRaw ?? zeroCanvasPoint
-            showComponentPicker(editor.selectedViews[0], 'insert-as-child')(event, {
-              position: mousePoint,
-            })
+            showComponentPicker(editor.selectedViews[0], EditorActions.insertAsChildTarget())(
+              event,
+              {
+                position: mousePoint,
+              },
+            )
             return []
           }
         }

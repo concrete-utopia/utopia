@@ -81,10 +81,6 @@ import type { MapLike } from 'typescript'
 import type { CommentFilterMode } from '../inspector/sections/comment-section'
 import type { Collaborator } from '../../core/shared/multiplayer'
 import type { PageTemplate } from '../canvas/remix/remix-utils'
-import type {
-  ChildInsertionTarget,
-  ReplaceInsertionTarget,
-} from '../navigator/navigator-item/component-picker-context-menu'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -146,12 +142,20 @@ export type ClearSelection = {
   action: 'CLEAR_SELECTION'
 }
 
+export type ReplaceTarget = { type: 'replace-target' }
+export type ReplaceKeepChildrenAndStyleTarget = { type: 'replace-target-keep-children-and-style' }
+export type InsertAsChildTarget = { type: 'insert-as-child'; indexPosition?: IndexPosition }
+export type InsertionBehaviour =
+  | InsertAsChildTarget
+  | ReplaceTarget
+  | ReplaceKeepChildrenAndStyleTarget
+
 export interface InsertJSXElement {
   action: 'INSERT_JSX_ELEMENT'
   jsxElement: JSXElement
   target: ElementPath | null
   importsToAdd: Imports
-  insertionBehaviour: ChildInsertionTarget | ReplaceInsertionTarget
+  insertionBehaviour: InsertionBehaviour
 }
 
 export interface ReplaceMappedElement {

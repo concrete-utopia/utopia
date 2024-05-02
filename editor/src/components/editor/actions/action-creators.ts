@@ -232,6 +232,10 @@ import type {
   AddCollapsedViews,
   ReplaceMappedElement,
   UpdateMapExpression,
+  InsertionBehaviour,
+  ReplaceTarget,
+  InsertAsChildTarget,
+  ReplaceKeepChildrenAndStyleTarget,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -261,10 +265,6 @@ import type { SetHuggingParentToFixed } from '../../canvas/canvas-strategies/str
 import type { CommentFilterMode } from '../../inspector/sections/comment-section'
 import type { Collaborator } from '../../../core/shared/multiplayer'
 import type { PageTemplate } from '../../canvas/remix/remix-utils'
-import type {
-  ChildInsertionTarget,
-  ReplaceInsertionTarget,
-} from '../../navigator/navigator-item/component-picker-context-menu'
 
 export function clearSelection(): EditorAction {
   return {
@@ -272,11 +272,19 @@ export function clearSelection(): EditorAction {
   }
 }
 
+export const replaceTarget: ReplaceTarget = { type: 'replace-target' }
+export const replaceKeepChildrenAndStyleTarget: ReplaceKeepChildrenAndStyleTarget = {
+  type: 'replace-target-keep-children-and-style',
+}
+export function insertAsChildTarget(indexPosition?: IndexPosition): InsertAsChildTarget {
+  return { type: 'insert-as-child', indexPosition: indexPosition }
+}
+
 export function insertJSXElement(
   element: JSXElement,
   target: ElementPath | null,
   importsToAdd: Imports,
-  insertionBehaviour: ChildInsertionTarget | ReplaceInsertionTarget,
+  insertionBehaviour: InsertionBehaviour,
 ): InsertJSXElement {
   return {
     action: 'INSERT_JSX_ELEMENT',

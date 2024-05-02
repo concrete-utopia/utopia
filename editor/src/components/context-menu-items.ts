@@ -49,6 +49,7 @@ import {
   type ShowComponentPickerContextMenu,
   type InsertionTarget,
   type ShowComponentPickerContextMenuCallback,
+  renderPropTarget,
 } from './navigator/navigator-item/component-picker-context-menu'
 
 export interface ContextMenuItem<T> {
@@ -348,7 +349,7 @@ export const insert: ContextMenuItem<CanvasData> = {
   shortcut: 'A',
   enabled: true,
   action: (data, _dispatch, _coord, event) => {
-    data.showComponentPicker(data.selectedViews[0], 'insert-as-child')(event)
+    data.showComponentPicker(data.selectedViews[0], EditorActions.insertAsChildTarget())(event)
   },
 }
 
@@ -360,7 +361,8 @@ export function showReplaceComponentPicker(
   const element = MetadataUtils.findElementByElementPath(jsxMetadata, targetElement)
   const prop = element?.assignedToProp
   const target = prop == null ? targetElement : EP.parentPath(targetElement)
-  const insertionTarget: InsertionTarget = prop == null ? 'replace-target' : { prop: prop }
+  const insertionTarget: InsertionTarget =
+    prop == null ? EditorActions.replaceTarget : renderPropTarget(prop)
   return showComponentPicker(target, insertionTarget)
 }
 
