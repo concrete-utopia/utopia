@@ -838,7 +838,7 @@ describe('registered property controls', () => {
           "emphasis": "regular",
           "focus": "default",
           "icon": "regular",
-          "inspector": "all",
+          "inspector": Array [],
           "preferredChildComponents": Array [],
           "properties": Object {
             "background": Object {
@@ -1662,7 +1662,7 @@ describe('registered property controls', () => {
             "emphasis": "regular",
             "focus": "default",
             "icon": "regular",
-            "inspector": "all",
+            "inspector": Array [],
             "preferredChildComponents": Array [],
             "properties": Object {
               "label": Object {

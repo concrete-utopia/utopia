@@ -146,7 +146,7 @@ export const ComponentDescriptorDefaults: Pick<
   'focus' | 'inspector' | 'emphasis' | 'icon'
 > = {
   focus: 'default',
-  inspector: 'all',
+  inspector: [],
   emphasis: 'regular',
   icon: 'regular',
 }
