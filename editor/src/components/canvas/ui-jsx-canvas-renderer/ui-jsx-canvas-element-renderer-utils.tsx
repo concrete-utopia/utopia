@@ -258,6 +258,7 @@ export function renderCoreElement(
           imports,
           'not-a-conditional',
           null,
+          null,
         )
       }
 
@@ -273,6 +274,7 @@ export function renderCoreElement(
             renderContext,
             mapCountOverride,
             valuesInScopeFromParameters,
+            null,
           )
 
           const blockScope = {
@@ -283,7 +285,15 @@ export function renderCoreElement(
               innerRender,
             ),
           }
-          return runJSExpression(element, elementPath, blockScope, renderContext, uid, codeError)
+          return runJSExpression(
+            element,
+            elementPath,
+            blockScope,
+            renderContext,
+            uid,
+            codeError,
+            null,
+          )
         }
 
         const originalTextContent = STEGANOGRAPHY_ENABLED ? runJSExpressionLazy() : null
@@ -313,6 +323,8 @@ export function renderCoreElement(
           imports,
           filePath,
           variablesInScope,
+          'real-element',
+          null,
         )
       }
       const innerRender = createLookupRender(
@@ -320,6 +332,7 @@ export function renderCoreElement(
         renderContext,
         mapCountOverride,
         valuesInScopeFromParameters,
+        null,
       )
 
       const blockScope = {
@@ -330,7 +343,7 @@ export function renderCoreElement(
           innerRender,
         ),
       }
-      return runJSExpression(element, elementPath, blockScope, renderContext, uid, codeError)
+      return runJSExpression(element, elementPath, blockScope, renderContext, uid, codeError, null)
     }
     case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
       const commentFlag = findUtopiaCommentFlag(element.comments, 'map-count')
@@ -971,6 +984,7 @@ function runJSExpression(
         renderContext,
         uid,
         codeError,
+        null,
       )
       const mapFunction = runJSExpression(
         block.mapFunction,
@@ -979,6 +993,7 @@ function runJSExpression(
         renderContext,
         uid,
         codeError,
+        null,
       )
       const result = valueToMap.map(mapFunction)
       return result

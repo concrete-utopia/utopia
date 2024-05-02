@@ -376,6 +376,7 @@ function innerAttributeToValue(
         renderContext,
         uid,
         codeError,
+        null,
       )
       const mapFunction = jsxAttributeToValue(
         inScope,
@@ -384,6 +385,7 @@ function innerAttributeToValue(
         renderContext,
         uid,
         codeError,
+        null,
       )
       return valueToMap.map(mapFunction)
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
