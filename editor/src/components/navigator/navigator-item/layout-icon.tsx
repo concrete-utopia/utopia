@@ -144,6 +144,17 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
           >
             <Icn
               {...defaults}
+              color={
+                defaults.color == 'white'
+                  ? 'white'
+                  : defaults.color == 'component'
+                  ? 'component'
+                  : defaults.type === 'flex-row' ||
+                    defaults.type === 'flex-column' ||
+                    defaults.type === 'grid'
+                  ? 'dynamic'
+                  : defaults.color
+              }
               category='navigator-element'
               width={12}
               height={12}
