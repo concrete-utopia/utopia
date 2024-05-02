@@ -84,6 +84,7 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
         height: '100%',
         padding: 0,
         color: dark.fg3.value,
+        colorScheme: 'dark',
         borderRadius: 10,
       }}
     >
@@ -189,7 +190,7 @@ const ComponentPickerComponentSection = React.memo(
   (props: ComponentPickerComponentSectionProps) => {
     const { components, onItemClick } = props
     return (
-      <div style={{ maxHeight: 250, overflowY: 'scroll' }}>
+      <div style={{ maxHeight: 250, overflowY: 'scroll', scrollbarWidth: 'auto' }}>
         {components.map((comp) => {
           return (
             <ComponentPickerOption
