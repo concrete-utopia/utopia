@@ -258,7 +258,6 @@ const ReplaceElementButton = React.memo((props: ReplaceElementButtonProps) => {
     }
     return {
       target: target,
-      // TODO: not always
       insertionTarget: 'replace-target',
     }
   })()
