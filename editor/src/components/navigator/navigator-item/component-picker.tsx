@@ -14,6 +14,7 @@ import { assertNever } from '../../../core/shared/utils'
 import { insertableComponent } from '../../shared/project-components'
 import type { StylePropOption, InsertableComponent } from '../../shared/project-components'
 import type { Size } from '../../../core/shared/math-utils'
+import { dataPasteHandler } from '../../../utils/paste-handler'
 
 export interface ComponentPickerProps {
   allComponents: Array<InsertMenuItemGroup>
@@ -177,6 +178,7 @@ const FilterBar = React.memo((props: FilterBarProps) => {
       onChange={handleFilterChange}
       value={filter}
       data-testId={componentPickerFilterInputTestId}
+      {...dataPasteHandler(true)}
     />
   )
 })
