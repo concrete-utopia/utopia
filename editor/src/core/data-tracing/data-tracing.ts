@@ -2,6 +2,7 @@ import type { ProjectContentTreeRoot } from '../../components/assets'
 import { MetadataUtils } from '../model/element-metadata-utils'
 import type {
   IdentifierOrAccess,
+  JSArbitraryStatement,
   JSAssignment,
   JSAssignmentStatement,
   JSElementAccess,
@@ -28,7 +29,7 @@ import type {
   PropertyPathPart,
 } from '../shared/project-file-types'
 import type { Either } from '../shared/either'
-import { isLeft, isRight, left, mapEither, right } from '../shared/either'
+import { isLeft, isRight, left, mapEither, maybeEitherToMaybe, right } from '../shared/either'
 import * as EP from '../shared/element-path'
 import * as PP from '../shared/property-path'
 import invariant from '../../third-party/remix/invariant'
@@ -256,13 +257,12 @@ export function traceDataFromProp(
   if (propDeclaration.remainingPath != null) {
     return dataTracingFailed("We don't yet support propertyPaths pointing deeper into attributes")
   }
-  if (propDeclaration.attribute.type === 'ATTRIBUTE_VALUE') {
+  if (
+    propDeclaration.attribute.type === 'ATTRIBUTE_VALUE' ||
+    propDeclaration.attribute.type === 'ATTRIBUTE_NESTED_OBJECT' ||
+    propDeclaration.attribute.type === 'ATTRIBUTE_NESTED_ARRAY'
+  ) {
     // bingo
-    return dataTracingToLiteralAttribute(startFrom.elementPath, startFrom.propertyPath, [
-      ...pathDrillSoFar,
-    ])
-  }
-  if (propDeclaration.attribute.type === 'ATTRIBUTE_NESTED_OBJECT') {
     return dataTracingToLiteralAttribute(
       startFrom.elementPath,
       startFrom.propertyPath,
@@ -285,13 +285,17 @@ export function traceDataFromProp(
 
     if (componentHoldingElement != null) {
       const componentRootPath = EP.getPathOfComponentRoot(startFrom.elementPath)
-      const resultInComponentScope: DataTracingResult = lookupInComponentScope(
+
+      const resultInComponentScope: DataTracingResult = walkUpInnerScopesUntilReachingComponent(
+        metadata,
+        startFrom.elementPath,
         startFrom.elementPath,
         componentRootPath,
         componentHoldingElement,
         identifier,
         [...dataPath.value.path, ...pathDrillSoFar],
       )
+
       if (resultInComponentScope.type === 'component-prop') {
         return traceDataFromProp(
           TPP.create(resultInComponentScope.elementPath, resultInComponentScope.propertyPath),
@@ -300,12 +304,111 @@ export function traceDataFromProp(
           resultInComponentScope.dataPathIntoAttribute,
         )
       }
-      if (resultInComponentScope.type !== 'failed') {
-        return resultInComponentScope
+      return resultInComponentScope
+    }
+  }
+  return dataTracingFailed(
+    `We couldn\'t walk past ${EP.toString(startFrom.elementPath)} @ ${PP.toString(
+      startFrom.propertyPath,
+    )}`,
+  )
+}
+
+function walkUpInnerScopesUntilReachingComponent(
+  metadata: ElementInstanceMetadataMap,
+  originalElementPath: ElementPath,
+  currentElementPathOfWalk: ElementPath,
+  containingComponentRootPath: ElementPath,
+  componentHoldingElement: UtopiaJSXComponent,
+  identifier: JSIdentifier,
+  pathDrillSoFar: DataPath,
+): DataTracingResult {
+  if (EP.pathsEqual(currentElementPathOfWalk, containingComponentRootPath)) {
+    return lookupInComponentScope(
+      originalElementPath,
+      containingComponentRootPath,
+      componentHoldingElement,
+      identifier,
+      pathDrillSoFar,
+    )
+  }
+  if (!EP.isDescendantOf(currentElementPathOfWalk, containingComponentRootPath)) {
+    return dataTracingFailed('somehow walked beyond parent component')
+  }
+
+  // is the parent element of the element we are currently visiting a Map?
+  // if so, we want to look at the mapFunction and see if the identifier's target is declared there
+  {
+    const parentElementMetadata = MetadataUtils.findElementByElementPath(
+      metadata,
+      EP.parentPath(currentElementPathOfWalk),
+    )
+    const parentElement = maybeEitherToMaybe(parentElementMetadata?.element)
+    if (parentElement != null && parentElement.type === 'JSX_MAP_EXPRESSION') {
+      const mapFunction = parentElement.mapFunction
+      if (mapFunction.type === 'ATTRIBUTE_OTHER_JAVASCRIPT') {
+        // let's see if the identifier points to a component prop
+        {
+          for (const param of mapFunction.params) {
+            // let's try to match the name to the containing component's props!
+            const foundPropSameName = propUsedByIdentifierOrAccess(param, identifier, [
+              ...pathDrillSoFar,
+            ])
+
+            if (isRight(foundPropSameName)) {
+              // ok, so now we need to figure out what the map is mapping over
+              const mapOver = parentElement.valueToMap
+              // figure out the identifier of the mapOver
+              if (
+                mapOver.type === 'JS_IDENTIFIER' ||
+                mapOver.type === 'JS_ELEMENT_ACCESS' ||
+                mapOver.type === 'JS_PROPERTY_ACCESS'
+              ) {
+                const dataPath = processJSPropertyAccessors(mapOver)
+
+                if (isRight(dataPath)) {
+                  const mapIndexHack = EP.extractIndexFromIndexedUid(
+                    EP.toUid(currentElementPathOfWalk),
+                  )
+                  if (mapIndexHack == null) {
+                    return dataTracingFailed(
+                      `Could not extract index from map uid: ${EP.toString(
+                        currentElementPathOfWalk,
+                      )}`,
+                    )
+                  }
+                  return walkUpInnerScopesUntilReachingComponent(
+                    metadata,
+                    originalElementPath,
+                    EP.parentPath(currentElementPathOfWalk),
+                    containingComponentRootPath,
+                    componentHoldingElement,
+                    dataPath.value.originalIdentifier,
+                    [
+                      ...dataPath.value.path,
+                      mapIndexHack,
+                      ...foundPropSameName.value.modifiedPathDrillSoFar,
+                      ...pathDrillSoFar,
+                    ],
+                  )
+                }
+              }
+            }
+          }
+        }
       }
     }
   }
-  return dataTracingFailed('we need to improve the data tracing error messages')
+
+  return walkUpInnerScopesUntilReachingComponent(
+    metadata,
+    originalElementPath,
+    EP.parentPath(currentElementPathOfWalk),
+    containingComponentRootPath,
+    componentHoldingElement,
+    identifier,
+    pathDrillSoFar,
+  )
 }
 
 function lookupInComponentScope(

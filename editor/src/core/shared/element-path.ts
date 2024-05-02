@@ -1182,6 +1182,15 @@ export function extractOriginalUidFromIndexedUid(uid: string): string {
   }
 }
 
+export function extractIndexFromIndexedUid(originaUid: string): string | null {
+  const separatorIndex = originaUid.indexOf(GeneratedUIDSeparator)
+  if (separatorIndex >= 0) {
+    return originaUid.slice(separatorIndex + GeneratedUIDSeparator.length)
+  } else {
+    return null
+  }
+}
+
 export function getStoryboardPathFromPath(path: ElementPath): ElementPath | null {
   if (isEmptyPath(path)) {
     return null
