@@ -332,6 +332,46 @@ describe('Data Tracing', () => {
     })
   })
 
+  describe('Element Access', () => {
+    it('simple element access is supported', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithStoryboard(`
+        function useLoaderData() {
+          return { reviews: [{ hello: 'there'}] }
+        }
+
+      function MyComponent(props) {
+        const data = useLoaderData()
+        const reviews = data.reviews
+        return <div data-uid='component-root' title={reviews[0].hello} />
+      }
+
+      function App() {
+        return <MyComponent data-uid='my-component' />
+      }
+      `),
+        'await-first-dom-report',
+      )
+
+      await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component'))
+
+      const traceResult = traceDataFromProp(
+        EPP.create(EP.fromString('sb/app:my-component:component-root'), PP.create('title')),
+        editor.getEditorState().editor.jsxMetadata,
+        editor.getEditorState().editor.projectContents,
+        [],
+      )
+
+      expect(traceResult).toEqual(
+        dataTracingToAHookCall(
+          EP.fromString('sb/app:my-component:component-root'),
+          'useLoaderData',
+          ['reviews', '0', 'hello'],
+        ),
+      )
+    })
+  })
+
   describe('Data tracing to a useLoaderData() hook', () => {
     it('Traces back a prop to a useLoaderData() hook', async () => {
       const editor = await renderTestEditorWithCode(
