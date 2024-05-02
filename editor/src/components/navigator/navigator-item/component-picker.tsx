@@ -62,6 +62,7 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
   const { onItemClick } = props
   const [selectedComponentKey, setSelectedComponentKey] = React.useState<string | null>(null)
   const [filter, setFilter] = React.useState<string>('')
+  const menuRef = React.useRef<HTMLDivElement | null>(null)
 
   const changeFilter = useCallback(
     (newFilter: string) => {
@@ -114,14 +115,24 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
           (c) => c.value.key === highlightedComponentKey,
         )
         if (currentIndex >= 0 && currentIndex < flatComponentsToShow.length - 1) {
-          setSelectedComponentKey(flatComponentsToShow[currentIndex + 1].value.key)
+          const newKey = flatComponentsToShow[currentIndex + 1].value.key
+          setSelectedComponentKey(newKey)
+          const selectedComponent = menuRef.current?.querySelector(`[data-key="${newKey}"]`)
+          if (selectedComponent != null) {
+            selectedComponent.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+          }
         }
       } else if (e.key === 'ArrowUp') {
         const currentIndex = flatComponentsToShow.findIndex(
           (c) => c.value.key === highlightedComponentKey,
         )
         if (currentIndex > 0) {
-          setSelectedComponentKey(flatComponentsToShow[currentIndex - 1].value.key)
+          const newKey = flatComponentsToShow[currentIndex - 1].value.key
+          setSelectedComponentKey(newKey)
+          const selectedComponent = menuRef.current?.querySelector(`[data-key="${newKey}"]`)
+          if (selectedComponent != null) {
+            selectedComponent.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+          }
         }
       } else if (e.key === 'Enter') {
         const selectedComponent = flatComponentsToShow.find(
@@ -154,6 +165,7 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
         borderRadius: 10,
       }}
       onKeyDown={onKeyDown}
+      ref={menuRef}
     >
       <ComponentPickerTopSection onFilterChange={changeFilter} onKeyDown={onKeyDown} />
       <ComponentPickerComponentSection
@@ -212,9 +224,7 @@ const FilterBar = React.memo((props: FilterBarProps) => {
         }
       } else if (e.key === 'Escape') {
         setFilter('')
-        ;(e.target as HTMLInputElement).blur()
-      }
-      if (onKeyDown != null) {
+      } else if (onKeyDown != null) {
         onKeyDown(e)
       }
       e.stopPropagation()
@@ -349,6 +359,7 @@ const ComponentPickerOption = React.memo((props: ComponentPickerOptionProps) => 
             style={selectedStyle}
             onClick={onItemClick(v.value)}
             onMouseOver={onItemHover(v.value)}
+            data-key={v.value.key}
           >
             <UIGridRow
               variant='|--32px--|<--------auto-------->'
