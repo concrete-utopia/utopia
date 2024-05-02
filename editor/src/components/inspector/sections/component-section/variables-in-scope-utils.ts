@@ -549,35 +549,3 @@ function usePropertyValue(selectedView: ElementPath, propertyPath: PropertyPath)
 
   return { type: 'existing', value: prop }
 }
-
-function unrollVariableOption(option: VariableOption): VariableOption[] {
-  switch (option.type) {
-    case 'array':
-    case 'object':
-      return [option, ...option.children.flatMap(unrollVariableOption)]
-    case 'jsx':
-    case 'primitive':
-      return [option]
-    default:
-      assertNever(option)
-  }
-}
-
-export function useVariableValue(
-  elementPath: ElementPath,
-  propertyPath: PropertyPath,
-  dataPath: (string | number)[],
-) {
-  const variables = useVariablesInScopeForSelectedElement(elementPath, propertyPath, 'all')
-  const allVars = variables.flatMap(unrollVariableOption)
-  const found = allVars.find((v) => {
-    const stringifiedValuePath = v.valuePath.map((part) => `${part}`)
-    const eq = arrayEqualsByValue(stringifiedValuePath, dataPath, is)
-    if (eq) {
-      // console.log(stringifiedValuePath, dataPath)
-      return true
-    }
-    return false
-  })
-  return found?.variableInfo?.value ?? null
-}

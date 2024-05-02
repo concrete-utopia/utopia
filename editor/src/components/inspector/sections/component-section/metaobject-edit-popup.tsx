@@ -11,9 +11,11 @@ import { InspectorModal } from '../../widgets/inspector-modal'
 import urljoin from 'url-join'
 import { usePopper } from 'react-popper'
 import { stopPropagation } from '../../common/inspector-utils'
-import { useVariableValue } from './variables-in-scope-utils'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import type { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
+import * as EP from '../../../../core/shared/element-path'
+import * as PP from '../../../../core/shared/property-path'
 
 export type MetaObjectDataPath = (string | number)[]
 
@@ -200,7 +202,12 @@ export function useMetaobjectEditPopup(
     setEditPopupVisible(true)
   }, [])
 
-  const currentValue = useVariableValue(elementPath, propertyPath, dataPath ?? [])
+  const currentValue = useEditorState(
+    Substores.metadata,
+    (store) =>
+      store.editor.allElementProps[EP.toString(elementPath)]?.[PP.toString(propertyPath)] ?? null,
+    'useMetaobjectEditPopup currentValue',
+  )
 
   if (dataPath == null) {
     return null
