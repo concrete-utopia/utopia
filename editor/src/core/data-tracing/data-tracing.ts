@@ -528,7 +528,8 @@ function lookupInComponentScope(
             const leftHandSideIdentifier = leftHandSideSplit[1].split('}')[0].trim()
             if (
               leftHandSideIdentifier === identifier.name ||
-              leftHandSideIdentifier.includes(`${identifier.name}, `)
+              leftHandSideIdentifier.includes(`${identifier.name}, `) ||
+              leftHandSideIdentifier.includes(`, ${identifier.name}`)
             ) {
               return {
                 assignedTo: rightHandSide.trim(),
