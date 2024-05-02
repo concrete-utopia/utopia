@@ -828,7 +828,7 @@ export interface UpdateConditionalExpression {
 export interface UpdateMapExpression {
   action: 'UPDATE_MAP_EXPRESSION'
   target: ElementPath
-  expression: string
+  expression: JSExpression
 }
 
 export interface AddImports {

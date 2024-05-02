@@ -101,7 +101,7 @@ import { optionalMap } from '../../../../core/shared/optional-utils'
 import type { VariableData } from '../../../canvas/ui-jsx-canvas'
 import { array } from 'prop-types'
 import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'
-import { DataPickerPopup } from './data-picker-popup'
+import { DataPickerPopup, dataPickerForAProperty } from './data-picker-popup'
 import { jsxElementChildToText } from '../../../canvas/ui-jsx-canvas-renderer/jsx-element-child-to-text'
 import { foldEither } from '../../../../core/shared/either'
 import { stopPropagation } from '../../common/inspector-utils'
@@ -336,6 +336,10 @@ export function useDataPickerButton(
         )
   }, [propMetadata.attributeExpression])
 
+  const pickerType = React.useMemo(() => {
+    return dataPickerForAProperty(selectedElement, propPath, propExpressionPath)
+  }, [propExpressionPath, propPath, selectedElement])
+
   const DataPickerComponent = React.useMemo(
     () => (
       <DataPickerPopup
@@ -343,19 +347,10 @@ export function useDataPickerButton(
         style={popper.styles.popper}
         closePopup={closePopup}
         ref={setPopperElement}
-        propPath={propPath}
-        propExpressionPath={propExpressionPath}
-        targetPath={selectedElement}
+        pickerType={pickerType}
       />
     ),
-    [
-      closePopup,
-      popper.attributes.popper,
-      popper.styles.popper,
-      propExpressionPath,
-      propPath,
-      selectedElement,
-    ],
+    [closePopup, pickerType, popper.attributes.popper, popper.styles.popper],
   )
 
   const DataPickerOpener = React.useMemo(

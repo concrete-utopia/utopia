@@ -63,6 +63,7 @@ export function addFakeSpyEntry(
   imports: Imports,
   conditionValue: ConditionValue,
   earlyReturn: EarlyReturn | null,
+  variablesInScope: VariableData,
 ): void {
   // Ensure that entries are not created which aren't included in `validPaths`,
   // so that ghost like entries are not created.
@@ -99,6 +100,7 @@ export function addFakeSpyEntry(
     }
     const elementPathString = EP.toComponentId(elementPath)
     metadataContext.current.spyValues.metadata[elementPathString] = instanceMetadata
+    metadataContext.current.spyValues.variablesInScope[elementPathString] = variablesInScope
   }
 }
 

@@ -1729,7 +1729,10 @@ export function updateConditionalExpression(
   }
 }
 
-export function updateMapExpression(target: ElementPath, expression: string): UpdateMapExpression {
+export function updateMapExpression(
+  target: ElementPath,
+  expression: JSExpression,
+): UpdateMapExpression {
   return {
     action: 'UPDATE_MAP_EXPRESSION',
     target: target,
