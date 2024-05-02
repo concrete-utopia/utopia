@@ -4,6 +4,7 @@ import { getChainSegmentEdge } from '../../utils/utils'
 import type { ControlStyles, ControlStatus } from '../../uuiui-deps'
 import { colorTheme, UtopiaTheme } from '../styles/theme'
 import React from 'react'
+import { dataPasteHandler } from '../../utils/paste-handler'
 
 export type ChainedType = 'not-chained' | 'first' | 'last' | 'middle'
 
@@ -116,6 +117,7 @@ interface InspectorInputProps extends React.InputHTMLAttributes<HTMLInputElement
   roundCorners?: BoxCorners
   mixed?: boolean
   value?: string | readonly string[] | number
+  pasteHandler?: boolean
 }
 
 type InspectorInputEmotionStyleProps = {
@@ -163,6 +165,7 @@ export const InspectorInput = React.memo(
         data-inspector-input={true}
         data-testid={props.testId}
         data-controlstatus={props.controlStatus}
+        {...dataPasteHandler(props.pasteHandler)}
       />
     )
   }),
