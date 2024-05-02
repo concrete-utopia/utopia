@@ -526,7 +526,10 @@ function lookupInComponentScope(
               return null
             }
             const leftHandSideIdentifier = leftHandSideSplit[1].split('}')[0].trim()
-            if (leftHandSideIdentifier === identifier.name) {
+            if (
+              leftHandSideIdentifier === identifier.name ||
+              leftHandSideIdentifier.includes(`${identifier.name}, `)
+            ) {
               return {
                 assignedTo: rightHandSide.trim(),
                 pathSoFar: [identifier.name, ...pathDrillSoFar],

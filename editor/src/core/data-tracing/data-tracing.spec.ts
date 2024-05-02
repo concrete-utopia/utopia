@@ -381,7 +381,7 @@ describe('Data Tracing', () => {
         }
 
       function MyComponent(props) {
-        const { reviews } = useLoaderData()
+        const { reviews, otherStuff } = useLoaderData()
         const review = reviews[0]
 
         return <div data-uid='component-root' title={review['hello']} />
