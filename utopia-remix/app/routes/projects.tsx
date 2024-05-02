@@ -1351,6 +1351,7 @@ function ProjectTemplates() {
         padding: '10px 20px',
         backgroundColor: isDarkMode ? '#232323' : 'rgba(0,0,0,0.05)',
         borderRadius: '10px',
+        gap: 10,
       }}
     >
       <Text

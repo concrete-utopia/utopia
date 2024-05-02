@@ -358,6 +358,27 @@ export const Icons = {
     width: 3,
     height: 8,
   }),
+  StringInputControl: makeIcon({
+    category: 'controltype',
+    type: 'string-input',
+    color: 'main',
+    width: 18,
+    height: 18,
+  }),
+  NavigatorText: makeIcon({
+    category: 'navigator-element',
+    type: 'text',
+    color: 'main',
+    width: 12,
+    height: 12,
+  }),
+  NavigatorData: makeIcon({
+    category: 'navigator-element',
+    type: 'data',
+    color: 'main',
+    width: 12,
+    height: 12,
+  }),
 }
 
 export const FunctionIcons = {

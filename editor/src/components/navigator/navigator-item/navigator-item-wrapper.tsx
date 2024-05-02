@@ -163,6 +163,7 @@ export function getNavigatorEntryLabel(
         default:
           throw assertNever(navigatorEntry.clause)
       }
+    case 'DATA_REFERENCE':
     case 'SYNTHETIC': {
       switch (navigatorEntry.childOrAttribute.type) {
         case 'JSX_ELEMENT':
@@ -360,7 +361,10 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     return <NavigatorItemContainer {...entryProps} />
   }
 
-  if (props.navigatorEntry.type === 'SYNTHETIC') {
+  if (
+    props.navigatorEntry.type === 'SYNTHETIC' ||
+    props.navigatorEntry.type === 'DATA_REFERENCE' // TODO remove this once we have a proper navigator item container for data references
+  ) {
     const entryProps: SyntheticNavigatorItemContainerProps = {
       ...navigatorItemProps,
       childOrAttribute: props.navigatorEntry.childOrAttribute,

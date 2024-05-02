@@ -392,7 +392,20 @@ export function useVariablesInScopeForSelectedElement(
       return []
     }
 
-    let variablesInScopeForSelectedPath = variablesInScope[EP.toString(selectedViewPath)]
+    let variablesInScopeForSelectedPath: VariableData | null = (() => {
+      // if the selected element doesn't have an associacted variablesInScope, we assume it's safe to walk up the path within the same component
+      let path = selectedViewPath
+      while (
+        EP.pathsEqual(EP.getContainingComponent(path), EP.getContainingComponent(selectedViewPath))
+      ) {
+        const pathAsString = EP.toString(path)
+        if (pathAsString in variablesInScope) {
+          return variablesInScope[pathAsString]
+        }
+        path = EP.parentPath(path)
+      }
+      return null
+    })()
 
     if (variablesInScopeForSelectedPath == null) {
       return []

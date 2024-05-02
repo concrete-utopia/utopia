@@ -206,7 +206,7 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
     if (isInvalidOverride) {
       return colorTheme.brandNeonPink.value
     }
-    return undefined
+    return style?.color
   })()
 
   return (
@@ -236,7 +236,6 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
             color: isActiveBranchOfOverriddenConditional
               ? colorTheme.brandNeonPink.value
               : colorTheme.dynamicBlue.value,
-            marginLeft: 6,
           }}
         >
           ✓

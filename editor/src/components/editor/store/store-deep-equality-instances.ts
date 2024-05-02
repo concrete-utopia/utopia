@@ -212,6 +212,7 @@ import {
   jsOpaqueArbitraryStatement,
   jsAssignmentStatement,
   jsAssignment,
+  jsxMapExpression,
 } from '../../../core/shared/element-template'
 import type {
   CanvasRectangle,
@@ -352,6 +353,7 @@ import type {
   RenderPropNavigatorEntry,
   SlotNavigatorEntry,
   RenderPropValueNavigatorEntry,
+  DataReferenceNavigatorEntry,
   GithubUser,
   PullRequest,
 } from './editor-state'
@@ -362,6 +364,7 @@ import {
   trueUpHuggingElement,
   renderPropNavigatorEntry,
   renderPropValueNavigatorEntry,
+  dataReferenceNavigatorEntry,
   newGithubData,
 } from './editor-state'
 import {
@@ -685,6 +688,15 @@ export const SyntheticNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<Synth
     syntheticNavigatorEntry,
   )
 
+export const DataReferenceNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<DataReferenceNavigatorEntry> =
+  combine2EqualityCalls(
+    (entry) => entry.elementPath,
+    ElementPathKeepDeepEquality,
+    (entry) => entry.childOrAttribute,
+    JSXElementChildKeepDeepEquality(),
+    dataReferenceNavigatorEntry,
+  )
+
 export const RenderPropNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<RenderPropNavigatorEntry> =
   combine2EqualityCalls(
     (entry) => entry.elementPath,
@@ -739,6 +751,11 @@ export const NavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<NavigatorEntry
     case 'SYNTHETIC':
       if (oldValue.type === newValue.type) {
         return SyntheticNavigatorEntryKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'DATA_REFERENCE':
+      if (oldValue.type === newValue.type) {
+        return DataReferenceNavigatorEntryKeepDeepEquality(oldValue, newValue)
       }
       break
     case 'RENDER_PROP':
@@ -1050,49 +1067,18 @@ export function JSExpressionOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqual
 }
 
 export function JSXMapExpressionKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXMapExpression> {
-  return combine9EqualityCalls(
-    (attribute) => attribute.javascriptWithUIDs,
-    createCallWithTripleEquals<string>(),
-    (attribute) => attribute.originalJavascript,
-    createCallWithTripleEquals<string>(),
-    (attribute) => attribute.transpiledJavascript,
-    createCallWithTripleEquals<string>(),
-    (attribute) => attribute.definedElsewhere,
-    arrayDeepEquality(createCallWithTripleEquals()),
-    (attribute) => attribute.sourceMap,
-    nullableDeepEquality(RawSourceMapKeepDeepEquality),
-    (attribute) => attribute.uid,
-    createCallWithTripleEquals(),
-    (block) => block.elementsWithin,
-    ElementsWithinKeepDeepEqualityCall(),
-    (block) => block.comments,
+  return combine5EqualityCalls(
+    (expression) => expression.valueToMap,
+    JSExpressionKeepDeepEqualityCall,
+    (expression) => expression.mapFunction,
+    JSExpressionKeepDeepEqualityCall,
+    (expression) => expression.comments,
     ParsedCommentsKeepDeepEqualityCall,
     (block) => block.valuesInScopeFromParameters,
     arrayDeepEquality(createCallWithTripleEquals<string>()),
-    (
-      javascript,
-      originalJavascript,
-      transpiledJavascript,
-      definedElsewhere,
-      sourceMap,
-      uniqueID,
-      elementsWithin,
-      comments,
-      valuesInScopeFromParameters,
-    ) => {
-      return {
-        type: 'JSX_MAP_EXPRESSION',
-        javascriptWithUIDs: javascript,
-        originalJavascript: originalJavascript,
-        transpiledJavascript: transpiledJavascript,
-        definedElsewhere: definedElsewhere,
-        sourceMap: sourceMap,
-        uid: uniqueID,
-        elementsWithin: elementsWithin,
-        comments: comments,
-        valuesInScopeFromParameters: valuesInScopeFromParameters,
-      }
-    },
+    (expression) => expression.uid,
+    createCallWithTripleEquals<string>(),
+    jsxMapExpression,
   )
 }
 

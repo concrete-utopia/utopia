@@ -105,7 +105,7 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
             color: colorTheme.fg1.value,
             display: 'flex',
             flexDirection: 'column',
-            overflowY: 'scroll',
+            overflowY: 'hidden',
           }}
         >
           {when(

@@ -406,9 +406,19 @@ export function fixUtopiaElement(
     }
   }
 
+  function fixJSMapExpression(mapExpression: JSXMapExpression): JSXMapExpression {
+    const fixedUID = addAndMaybeUpdateUID(mapExpression.uid)
+    return {
+      ...mapExpression,
+      uid: fixedUID,
+      valueToMap: fixJSExpression(mapExpression.valueToMap),
+      mapFunction: fixJSExpression(mapExpression.mapFunction),
+    }
+  }
+
   function fixJSOtherJavaScript(
-    otherJavaScript: JSExpressionMapOrOtherJavascript,
-  ): JSExpressionMapOrOtherJavascript {
+    otherJavaScript: JSExpressionOtherJavaScript,
+  ): JSExpressionOtherJavaScript {
     const fixedUID = addAndMaybeUpdateUID(otherJavaScript.uid)
     return {
       ...otherJavaScript,
@@ -492,6 +502,7 @@ export function fixUtopiaElement(
       case 'ATTRIBUTE_FUNCTION_CALL':
         return fixJSFunctionCall(value)
       case 'JSX_MAP_EXPRESSION':
+        return fixJSMapExpression(value)
       case 'ATTRIBUTE_OTHER_JAVASCRIPT':
         return fixJSOtherJavaScript(value)
       case 'JS_ELEMENT_ACCESS':
@@ -631,6 +642,9 @@ export function findElementWithUID(
       case 'JSX_TEXT_BLOCK':
         return null
       case 'JSX_MAP_EXPRESSION':
+        return (
+          findForJSXElementChild(element.valueToMap) ?? findForJSXElementChild(element.mapFunction)
+        )
       case 'ATTRIBUTE_OTHER_JAVASCRIPT':
         if (targetUID in element.elementsWithin) {
           return element.elementsWithin[targetUID]
@@ -832,12 +846,8 @@ export function setUtopiaID(element: JSXElementChild, uid: string): JSXElementCh
     )
   } else if (isUtopiaJSXMapExpression(element)) {
     return jsxMapExpression(
-      element.originalJavascript,
-      element.javascriptWithUIDs,
-      element.transpiledJavascript,
-      element.definedElsewhere,
-      element.sourceMap,
-      element.elementsWithin,
+      element.valueToMap,
+      element.mapFunction,
       element.comments,
       element.valuesInScopeFromParameters,
       uid,

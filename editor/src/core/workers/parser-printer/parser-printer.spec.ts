@@ -4555,28 +4555,39 @@ export var App = props => {
         }),
         [
           jsxMapExpression(
-            `[1,2,3].map(x=> <View data-uid='abc' />)`,
-            `[1, 2, 3].map((x) => <View data-uid='abc' />);`,
-            `return [1, 2, 3].map(x => utopiaCanvasJSXLookup("abc", {
+            jsxAttributeNestedArraySimple([
+              jsExpressionValue(1, emptyComments),
+              jsExpressionValue(2, emptyComments),
+              jsExpressionValue(3, emptyComments),
+            ]),
+            jsExpressionOtherJavaScript(
+              [functionParam(false, regularParam('x', null))],
+              `x=> <View data-uid='abc' />`,
+              `(x) => <View data-uid='abc' />;`,
+              `return x => utopiaCanvasJSXLookup("abc", {
   x: x,
   callerThis: this
-}));`,
-            ['React', 'View', 'utopiaCanvasJSXLookup'],
-            expect.objectContaining({
-              sources: ['code.tsx'],
-              version: 3,
-              file: 'code.tsx',
-            }),
-            {
-              abc: jsxElement(
-                'View',
-                'abc',
-                jsxAttributesFromMap({ 'data-uid': jsExpressionValue('abc', emptyComments) }),
-                [],
-              ),
-            },
+});`,
+              ['React', 'View', JSX_CANVAS_LOOKUP_FUNCTION_NAME],
+              expect.objectContaining({
+                sources: ['code.tsx'],
+                version: 3,
+                file: 'code.tsx',
+              }),
+              {
+                abc: jsxElement(
+                  'View',
+                  'abc',
+                  jsxAttributesFromMap({ 'data-uid': jsExpressionValue('abc', emptyComments) }),
+                  [],
+                ),
+              },
+              emptyComments,
+              '',
+            ),
             emptyComments,
             ['x'],
+            '',
           ),
         ],
       ),
@@ -4685,31 +4696,42 @@ export var App = props => {
         }),
         [
           jsxMapExpression(
-            `[1, 2, 3].map(n => (
+            jsxAttributeNestedArraySimple([
+              jsExpressionValue(1, emptyComments),
+              jsExpressionValue(2, emptyComments),
+              jsExpressionValue(3, emptyComments),
+            ]),
+            jsExpressionOtherJavaScript(
+              [functionParam(false, regularParam('n', null))],
+              `n => (
         <div data-uid="abc" />
-      ))`,
-            `[1, 2, 3].map((n) =>
-<div data-uid="abc" />);`,
-            `return [1, 2, 3].map(n => utopiaCanvasJSXLookup("abc", {
+      )`,
+              `(n) =>
+<div data-uid="abc" />;`,
+              `return n => utopiaCanvasJSXLookup("abc", {
   n: n,
   callerThis: this
-}));`,
-            ['React', 'utopiaCanvasJSXLookup'],
-            expect.objectContaining({
-              sources: ['code.tsx'],
-              version: 3,
-              file: 'code.tsx',
-            }),
-            {
-              abc: jsxElement(
-                'div',
-                'abc',
-                jsxAttributesFromMap({ 'data-uid': jsExpressionValue('abc', emptyComments) }),
-                [],
-              ),
-            },
+});`,
+              ['React', JSX_CANVAS_LOOKUP_FUNCTION_NAME],
+              expect.objectContaining({
+                sources: ['code.tsx'],
+                version: 3,
+                file: 'code.tsx',
+              }),
+              {
+                abc: jsxElement(
+                  'div',
+                  'abc',
+                  jsxAttributesFromMap({ 'data-uid': jsExpressionValue('abc', emptyComments) }),
+                  [],
+                ),
+              },
+              emptyComments,
+              '',
+            ),
             emptyComments,
             ['n'],
+            '',
           ),
         ],
       ),
@@ -4748,33 +4770,42 @@ export var App = props => {
         }),
         [
           jsxMapExpression(
-            `[1, 2, 3].map((n) => (
-      <div data-uid='abc' />
-    ))`,
-            `[1, 2, 3].map((n) =>
-<div data-uid='abc' />);`,
-            `return [1, 2, 3].map(n => utopiaCanvasJSXLookup("abc", {
-  n: n,
+            jsxAttributeNestedArraySimple([
+              jsExpressionValue(1, emptyComments),
+              jsExpressionValue(2, emptyComments),
+              jsExpressionValue(3, emptyComments),
+            ]),
+            jsExpressionOtherJavaScript(
+              [functionParam(false, regularParam('x', null))],
+              `(x) => (
+      <View data-uid='abc' />
+    )`,
+              `(x) =>
+<View data-uid='abc' />;`,
+              `return x => utopiaCanvasJSXLookup("abc", {
+  x: x,
   callerThis: this
-}));`,
-            ['React', 'utopiaCanvasJSXLookup'],
-            expect.objectContaining({
-              sources: ['code.tsx'],
-              version: 3,
-              file: 'code.tsx',
-            }),
-            {
-              abc: jsxElement(
-                'div',
-                'abc',
-                jsxAttributesFromMap({
-                  'data-uid': jsExpressionValue('abc', emptyComments),
-                }),
-                [],
-              ),
-            },
+});`,
+              ['React', 'View', JSX_CANVAS_LOOKUP_FUNCTION_NAME],
+              expect.objectContaining({
+                sources: ['code.tsx'],
+                version: 3,
+                file: 'code.tsx',
+              }),
+              {
+                abc: jsxElement(
+                  'View',
+                  'abc',
+                  jsxAttributesFromMap({ 'data-uid': jsExpressionValue('abc', emptyComments) }),
+                  [],
+                ),
+              },
+              emptyComments,
+              '',
+            ),
             emptyComments,
-            ['n'],
+            ['x'],
+            '',
           ),
         ],
       ),
@@ -5506,18 +5537,18 @@ export var whatever = props => {
     const actualResult = simplifyParsedTextFileAttributes(
       clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code)),
     )
-    const arbitraryBlockOriginalCode = `[1, 2, 3].map(n => {
+    const arbitraryBlockOriginalCode = `n => {
       return <div style={{left: n * 30, top: n * 30}} data-uid='bbb' />
-    })`
-    const arbitraryBlockCode = `[1, 2, 3].map((n) => {
+    }`
+    const arbitraryBlockCode = `(n) => {
   return <div style={{ left: n * 30, top: n * 30 }} data-uid='bbb' />;
-});`
-    const arbitraryBlockTranspiledCode = `return [1, 2, 3].map(n => {
+};`
+    const arbitraryBlockTranspiledCode = `return n => {
   return utopiaCanvasJSXLookup("bbb", {
     n: n,
     callerThis: this
   });
-});`
+};`
     const innerElement = clearJSXElementUniqueIDs(
       jsxElement(
         'div',
@@ -5563,19 +5594,33 @@ export var whatever = props => {
         [],
       ),
     )
+
     const arbitraryBlock = jsxMapExpression(
-      arbitraryBlockOriginalCode,
-      arbitraryBlockCode,
-      arbitraryBlockTranspiledCode,
-      ['React', 'utopiaCanvasJSXLookup'],
-      expect.objectContaining({
-        sources: ['code.tsx'],
-        version: 3,
-        file: 'code.tsx',
-      }),
-      { bbb: innerElement },
+      jsxAttributeNestedArraySimple([
+        jsExpressionValue(1, emptyComments),
+        jsExpressionValue(2, emptyComments),
+        jsExpressionValue(3, emptyComments),
+      ]),
+      jsExpressionOtherJavaScript(
+        [functionParam(false, regularParam('n', null))],
+        arbitraryBlockOriginalCode,
+        arbitraryBlockCode,
+        arbitraryBlockTranspiledCode,
+        ['React', JSX_CANVAS_LOOKUP_FUNCTION_NAME],
+        expect.objectContaining({
+          sources: ['code.tsx'],
+          version: 3,
+          file: 'code.tsx',
+        }),
+        {
+          bbb: innerElement,
+        },
+        emptyComments,
+        '',
+      ),
       emptyComments,
       ['n'],
+      '',
     )
     const view = clearJSXElementChildUniqueIDs(
       jsxElement(
@@ -5621,19 +5666,19 @@ export var whatever = props => {
     const actualResult = simplifyParsedTextFileAttributes(
       clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code)),
     )
-    const arbitraryBlockOriginalCode = `[1, 2, 3].map(n => {
+    const arbitraryBlockOriginalCode = `n => {
       return <div style={{left: n * a, top: n * a}} data-uid='bbb' />
-    })`
-    const arbitraryBlockCode = `[1, 2, 3].map((n) => {
+    }`
+    const arbitraryBlockCode = `(n) => {
   return <div style={{ left: n * a, top: n * a }} data-uid='bbb' />;
-});`
-    const arbitraryBlockTranspiledCode = `return [1, 2, 3].map(n => {
+};`
+    const arbitraryBlockTranspiledCode = `return n => {
   return utopiaCanvasJSXLookup("bbb", {
     n: n,
     a: a,
     callerThis: this
   });
-});`
+};`
     const innerElement = clearJSXElementUniqueIDs(
       jsxElement(
         'div',
@@ -5680,18 +5725,31 @@ export var whatever = props => {
       ),
     )
     const arbitraryBlock = jsxMapExpression(
-      arbitraryBlockOriginalCode,
-      arbitraryBlockCode,
-      arbitraryBlockTranspiledCode,
-      ['a', 'React', JSX_CANVAS_LOOKUP_FUNCTION_NAME],
-      expect.objectContaining({
-        sources: ['code.tsx'],
-        version: 3,
-        file: 'code.tsx',
-      }),
-      { bbb: innerElement },
+      jsxAttributeNestedArraySimple([
+        jsExpressionValue(1, emptyComments),
+        jsExpressionValue(2, emptyComments),
+        jsExpressionValue(3, emptyComments),
+      ]),
+      jsExpressionOtherJavaScript(
+        [functionParam(false, regularParam('n', null))],
+        arbitraryBlockOriginalCode,
+        arbitraryBlockCode,
+        arbitraryBlockTranspiledCode,
+        ['a', 'React', 'utopiaCanvasJSXLookup'],
+        expect.objectContaining({
+          sources: ['code.tsx'],
+          version: 3,
+          file: 'code.tsx',
+        }),
+        {
+          bbb: innerElement,
+        },
+        emptyComments,
+        '',
+      ),
       emptyComments,
       ['n'],
+      '',
     )
 
     const topLevelArbitraryBlock = arbitraryJSBlock(

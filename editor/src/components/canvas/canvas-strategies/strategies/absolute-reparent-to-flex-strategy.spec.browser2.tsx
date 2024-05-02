@@ -468,7 +468,6 @@ describe('Absolute Reparent To Flex Strategy', () => {
       makeTestProjectCodeWithSnippet(defaultTestCode),
       'await-first-dom-report',
     )
-
     const generatedAbsolutechildren = await renderResult.renderedDOM.findAllByTestId(
       'generatedabsolutechild',
     )

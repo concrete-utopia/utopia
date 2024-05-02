@@ -15,6 +15,7 @@ import {
   isOverriddenConditional,
   maybeConditionalActiveBranch,
   maybeConditionalExpression,
+  useConditionalCaseCorrespondingToBranchPath,
 } from '../../../core/model/conditionals'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
@@ -41,6 +42,7 @@ import type {
 import {
   defaultElementWarnings,
   isConditionalClauseNavigatorEntry,
+  isDataReferenceNavigatorEntry,
   isInvalidOverrideNavigatorEntry,
   isRegularNavigatorEntry,
   isRenderPropNavigatorEntry,
@@ -64,6 +66,7 @@ import { assertNever } from '../../../core/shared/utils'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { MapCounter } from './map-counter'
 import { useCreateCallbackToShowComponentPicker } from './component-picker-context-menu'
+import type { InsertionTarget } from './component-picker-context-menu'
 import { getHighlightBoundsForProject } from '../../../core/model/project-file-utils'
 import {
   selectedElementChangedMessageFromHighlightBounds,
@@ -72,6 +75,7 @@ import {
 import { toVSCodeExtensionMessage } from 'utopia-vscode-common'
 import type { Emphasis } from 'utopia-api'
 import { contextMenu } from 'react-contexify'
+import { DataReferenceCartoucheControl } from '../../inspector/sections/component-section/data-reference-cartouche'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -90,7 +94,7 @@ interface ComputedLook {
   iconColor: IcnProps['color']
 }
 
-export const BasePaddingUnit = 15
+export const BasePaddingUnit = 17
 
 export function getElementPadding(withNavigatorDepth: number): number {
   const paddingOffset = withNavigatorDepth - 1
@@ -155,6 +159,7 @@ function selectItem(
   const elementPath = navigatorEntry.elementPath
 
   const shouldSelect = !(
+    isDataReferenceNavigatorEntry(navigatorEntry) ||
     isConditionalClauseNavigatorEntry(navigatorEntry) ||
     isInvalidOverrideNavigatorEntry(navigatorEntry) ||
     isRenderPropNavigatorEntry(navigatorEntry) ||
@@ -183,10 +188,11 @@ function selectItem(
 
 const highlightItem = (
   dispatch: EditorDispatch,
-  elementPath: ElementPath,
+  navigatorEntry: NavigatorEntry,
   selected: boolean,
   highlighted: boolean,
 ) => {
+  const elementPath = getSelectionTargetForNavigatorEntry(navigatorEntry)
   if (!highlighted) {
     if (selected) {
       dispatch([EditorActions.clearHighlightedViews()], 'leftpane')
@@ -212,8 +218,13 @@ type StyleType =
   | 'componentInstance'
   | 'erroredGroup'
   | 'lowEmphasis'
-  | 'highEmphasis'
-type SelectedType = 'unselected' | 'selected' | 'descendantOfSelected'
+  | 'selected'
+type SelectedType =
+  | 'unselected'
+  | 'selected'
+  | 'descendantOfSelected'
+  | 'selectedFocusedComponent'
+  | 'descendantOfSelectedFocusedComponent'
 
 const styleTypeColors: Record<StyleType, { color: keyof ThemeObject; iconColor: IcnColor }> = {
   default: { color: 'fg0', iconColor: 'main' },
@@ -222,13 +233,15 @@ const styleTypeColors: Record<StyleType, { color: keyof ThemeObject; iconColor: 
   componentInstance: { color: 'fg0', iconColor: 'main' },
   erroredGroup: { color: 'error', iconColor: 'error' },
   lowEmphasis: { color: 'fg5', iconColor: 'darkgray' },
-  highEmphasis: { color: 'dynamicBlue', iconColor: 'primary' },
+  selected: { color: 'white', iconColor: 'white' },
 }
 
 const selectedTypeBackground: Record<SelectedType, keyof ThemeObject> = {
   unselected: 'bg1',
-  selected: 'denimBlue',
-  descendantOfSelected: 'lightDenimBlue',
+  selected: 'selectionBlue',
+  descendantOfSelected: 'childSelectionBlue',
+  selectedFocusedComponent: 'selectionPurple',
+  descendantOfSelectedFocusedComponent: 'childSelectionPurple',
 }
 
 const getColors = (
@@ -254,6 +267,7 @@ const computeResultingStyle = (
   isProbablyScene: boolean,
   fullyVisible: boolean,
   isFocusedComponent: boolean,
+  isInFocusedComponentSubtree: boolean,
   isFocusableComponent: boolean,
   isHighlightedForInteraction: boolean,
   isDescendantOfSelected: boolean,
@@ -263,37 +277,47 @@ const computeResultingStyle = (
   let styleType: StyleType = 'default'
   let selectedType: SelectedType = 'unselected'
 
-  if (isErroredGroup) {
+  if (selected) {
+    styleType = 'selected'
+  } else if (isErroredGroup) {
     styleType = 'erroredGroup'
-  } else if (isDynamic) {
-    styleType = 'dynamic'
+  } else if (
+    (!isProbablyScene && isFocusedComponent) ||
+    (isDescendantOfSelected && isInsideComponent)
+  ) {
+    styleType = 'component'
   } else if (emphasis === 'subdued') {
     styleType = 'lowEmphasis'
-  } else if (emphasis === 'emphasized') {
-    styleType = 'highEmphasis'
-  } else if (isInsideComponent || isFocusedComponent) {
-    styleType = 'component'
   } else if (isFocusableComponent) {
     styleType = 'componentInstance'
   } else if (isHighlightedForInteraction) {
     styleType = 'default'
   }
+  const isProbablyParentOfSelected = (isProbablyScene || fullyVisible) && !selected
 
-  if (selected) {
+  if (
+    selected &&
+    (isFocusedComponent || isInsideComponent) &&
+    !isProbablyScene &&
+    !isProbablyParentOfSelected
+  ) {
+    selectedType = 'selectedFocusedComponent'
+  } else if (selected) {
     selectedType = 'selected'
+  } else if (isDescendantOfSelected && isInsideComponent) {
+    selectedType = 'descendantOfSelectedFocusedComponent'
   } else if (isDescendantOfSelected) {
     selectedType = 'descendantOfSelected'
+  } else {
+    selectedType = 'unselected'
   }
 
   let result = getColors(styleType, selectedType, colorTheme)
 
-  const isProbablyParentOfSelected = (isProbablyScene || fullyVisible) && !selected
-
   result.style = {
     ...result.style,
     fontWeight: isProbablyParentOfSelected || isProbablyScene ? 600 : 'inherit',
-    // TODO compute better borderRadius style by if it has children or siblings
-
+    // TODO compute bottom borderRadius style by if it has children or siblings
     borderRadius: selected ? '5px 5px 0 0' : undefined,
   }
 
@@ -730,6 +754,8 @@ export const NavigatorItem: React.FunctionComponent<
   const fullyVisible = useStyleFullyVisible(navigatorEntry, autoFocusedPaths)
   const isProbablyScene = useIsProbablyScene(navigatorEntry)
 
+  const elementIsData = navigatorEntry.type === 'DATA_REFERENCE'
+
   const isHighlightedForInteraction = useEditorState(
     Substores.restOfEditor,
     (store) => {
@@ -757,16 +783,17 @@ export const NavigatorItem: React.FunctionComponent<
   }, [elementWarnings])
 
   const resultingStyle = computeResultingStyle(
-    selected,
+    elementIsData ? false : selected,
     emphasis,
     isInsideComponent,
     isDynamic,
     isProbablyScene,
     fullyVisible,
     isFocusedComponent,
+    isInFocusedComponentSubtree,
     isManuallyFocusableComponent,
     isHighlightedForInteraction,
-    isDescendantOfSelected,
+    elementIsData && selected ? false : isDescendantOfSelected,
     isErroredGroup,
     colorTheme,
   )
@@ -780,7 +807,7 @@ export const NavigatorItem: React.FunctionComponent<
   )
 
   const select = React.useCallback(
-    (event: any) =>
+    (event: React.MouseEvent<HTMLDivElement>) =>
       selectItem(
         dispatch,
         getSelectedViewsInRange,
@@ -801,17 +828,25 @@ export const NavigatorItem: React.FunctionComponent<
       highlightBounds,
     ],
   )
+
   const highlight = React.useCallback(
-    () => highlightItem(dispatch, navigatorEntry.elementPath, selected, isHighlighted),
-    [dispatch, navigatorEntry.elementPath, selected, isHighlighted],
+    () => highlightItem(dispatch, navigatorEntry, selected, isHighlighted),
+    [dispatch, navigatorEntry, selected, isHighlighted],
   )
+
+  const removeHighlight = React.useCallback(
+    () => dispatch([EditorActions.clearHighlightedViews()]),
+    [dispatch],
+  )
+
   const focusComponent = React.useCallback(
     (event: React.MouseEvent) => {
       if (isManuallyFocusableComponent && !event.altKey) {
-        dispatch([EditorActions.setFocusedElement(navigatorEntry.elementPath)])
+        const elementPath = getSelectionTargetForNavigatorEntry(navigatorEntry)
+        dispatch([EditorActions.setFocusedElement(elementPath)])
       }
     },
-    [dispatch, navigatorEntry.elementPath, isManuallyFocusableComponent],
+    [dispatch, navigatorEntry, isManuallyFocusableComponent],
   )
 
   const isHiddenConditionalBranch = useEditorState(
@@ -823,6 +858,10 @@ export const NavigatorItem: React.FunctionComponent<
         EP.parentPath(props.navigatorEntry.elementPath),
       ),
     'NavigatorItem isHiddenConditionalBranch',
+  )
+
+  const conditionalCase = useConditionalCaseCorrespondingToBranchPath(
+    props.navigatorEntry.elementPath,
   )
 
   const isPlaceholder = isEntryAPlaceholder(props.navigatorEntry)
@@ -856,19 +895,7 @@ export const NavigatorItem: React.FunctionComponent<
     )
   }, [childComponentCount, isFocusedComponent, isConditional])
 
-  const iconColor = isRemixItem
-    ? 'remix'
-    : isDynamic
-    ? 'dynamic'
-    : emphasis === 'subdued'
-    ? 'subdued'
-    : emphasis === 'emphasized'
-    ? 'primary'
-    : isCodeItem
-    ? 'dynamic'
-    : isComponentScene
-    ? 'component'
-    : resultingStyle.iconColor
+  const iconColor = resultingStyle.iconColor
 
   const currentlyRenaming = EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath)
   const hideContextMenu = React.useCallback(() => contextMenu.hideAll(), [])
@@ -877,10 +904,9 @@ export const NavigatorItem: React.FunctionComponent<
     <div
       onClick={hideContextMenu}
       style={{
+        borderRadius: 5,
         outline: `1px solid ${
-          props.parentOutline === 'solid' && isOutletOrDescendantOfOutlet
-            ? colorTheme.aqua.value
-            : props.parentOutline === 'solid'
+          props.parentOutline === 'solid'
             ? colorTheme.navigatorResizeHintBorder.value
             : 'transparent'
         }`,
@@ -901,6 +927,13 @@ export const NavigatorItem: React.FunctionComponent<
               parentOutline={props.parentOutline}
               navigatorEntry={navigatorEntry}
             />
+          ) : conditionalCase !== null ? (
+            <ConditionalBranchSlot
+              label={props.label}
+              parentOutline={props.parentOutline}
+              navigatorEntry={navigatorEntry}
+              conditionalCase={conditionalCase}
+            />
           ) : (
             <PlaceholderSlot label={props.label} parentOutline={props.parentOutline} />
           )
@@ -920,6 +953,23 @@ export const NavigatorItem: React.FunctionComponent<
             }}
           >
             {props.label}
+          </div>
+        ) : elementIsData ? (
+          <div
+            key={`data-reference-${props.label}`}
+            style={{
+              maxWidth: 140,
+              color: colorTheme.fg5.value,
+              border: colorTheme.navigatorResizeHintBorder.value,
+              marginLeft: 23,
+              overflow: 'hidden',
+            }}
+          >
+            <DataReferenceCartoucheControl
+              elementPath={navigatorEntry.elementPath}
+              childOrAttribute={navigatorEntry.childOrAttribute}
+              selected={selected}
+            />
           </div>
         ) : (
           <FlexRow
@@ -960,6 +1010,7 @@ export const NavigatorItem: React.FunctionComponent<
                 iconColor={iconColor}
                 elementWarnings={!isConditional ? elementWarnings : null}
                 childComponentCount={childComponentCount}
+                insideFocusedComponent={isInsideComponent && isDescendantOfSelected}
               />
             </FlexRow>
             {unless(
@@ -998,6 +1049,35 @@ const RenderPropSlot = React.memo((props: RenderPropSlotProps) => {
   const showComponentPickerContextMenu = useCreateCallbackToShowComponentPicker()(
     target,
     insertionTarget,
+  )
+
+  return (
+    <PlaceholderSlot
+      label={label}
+      parentOutline={parentOutline}
+      cursor={'pointer'}
+      onClick={showComponentPickerContextMenu}
+      testId={`toggle-render-prop-${NavigatorItemTestId(
+        varSafeNavigatorEntryToKey(navigatorEntry),
+      )}`}
+    />
+  )
+})
+
+interface ConditionalBranchSlotProps {
+  label: string
+  parentOutline: ParentOutline
+  navigatorEntry: NavigatorEntry
+  conditionalCase: ConditionalCase
+}
+
+const ConditionalBranchSlot = React.memo((props: ConditionalBranchSlotProps) => {
+  const { label, parentOutline, navigatorEntry, conditionalCase } = props
+  const target = EP.parentPath(navigatorEntry.elementPath)
+
+  const showComponentPickerContextMenu = useCreateCallbackToShowComponentPicker()(
+    target,
+    conditionalCase,
   )
 
   return (
@@ -1068,29 +1148,11 @@ interface NavigatorRowLabelProps {
   shouldShowParentOutline: boolean
   childComponentCount: number
   dispatch: EditorDispatch
+  insideFocusedComponent: boolean
 }
 
 export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
-  const colorTheme = useColorTheme()
-
   const isCodeItem = props.codeItemType !== 'none' && props.codeItemType !== 'remix'
-  const isRemixItem = props.codeItemType === 'remix'
-  const isComponentScene =
-    useIsProbablyScene(props.navigatorEntry) && props.childComponentCount === 1
-
-  const textColor = isRemixItem
-    ? colorTheme.aqua.value
-    : props.isDynamic
-    ? colorTheme.dynamicBlue.value
-    : props.emphasis === 'subdued'
-    ? colorTheme.fg5.value
-    : props.emphasis === 'emphasized'
-    ? colorTheme.dynamicBlue.value
-    : isCodeItem
-    ? colorTheme.dynamicBlue.value
-    : isComponentScene
-    ? colorTheme.componentPurple.value
-    : undefined
 
   return (
     <div
@@ -1104,7 +1166,6 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         height: 22,
         paddingLeft: 5,
         paddingRight: props.codeItemType === 'map' ? 0 : 5,
-        color: textColor,
         textTransform: isCodeItem ? 'uppercase' : undefined,
       }}
     >
@@ -1114,7 +1175,17 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         <LayoutIcon
           key={`layout-type-${props.label}`}
           navigatorEntry={props.navigatorEntry}
-          color={props.iconColor}
+          color={
+            props.selected
+              ? 'white'
+              : props.insideFocusedComponent
+              ? 'component'
+              : props.emphasis === 'emphasized'
+              ? 'dynamic'
+              : isCodeItem || props.codeItemType === 'map'
+              ? props.iconColor
+              : props.iconColor
+          }
           elementWarnings={props.elementWarnings}
         />,
       )}
@@ -1146,4 +1217,13 @@ function elementContainsExpressions(
   pathTrees: ElementPathTrees,
 ): boolean {
   return MetadataUtils.isGeneratedTextFromMetadata(path, pathTrees, metadata)
+}
+
+function getSelectionTargetForNavigatorEntry(navigatorEntry: NavigatorEntry): ElementPath {
+  const shouldSelectParentInstead = isDataReferenceNavigatorEntry(navigatorEntry)
+  const elementPath = shouldSelectParentInstead
+    ? EP.parentPath(navigatorEntry.elementPath)
+    : navigatorEntry.elementPath
+
+  return elementPath
 }

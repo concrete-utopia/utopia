@@ -21,6 +21,7 @@ import { foldEither, isLeft, isRight } from '../../core/shared/either'
 import type { ConditionalClauseNavigatorEntry, NavigatorEntry } from '../editor/store/editor-state'
 import {
   conditionalClauseNavigatorEntry,
+  dataReferenceNavigatorEntry,
   invalidOverrideNavigatorEntry,
   isConditionalClauseNavigatorEntry,
   regularNavigatorEntry,
@@ -107,17 +108,46 @@ export function getNavigatorTargets(
       const isHiddenInNavigator = EP.containsPath(path, hiddenInNavigator)
       const isConditional = MetadataUtils.isElementPathConditionalFromMetadata(metadata, path)
       const isMap = MetadataUtils.isJSXMapExpression(path, metadata)
+      const isDataReference = MetadataUtils.isElementDataReference(path, metadata)
+
+      const isCollapsed = EP.containsPath(path, collapsedViews)
+      const newCollapsedAncestor = collapsedAncestor || isCollapsed || isHiddenInNavigator
+
+      function addNavigatorTargetsUnlessCollapsed(...entries: Array<NavigatorEntry>) {
+        if (newCollapsedAncestor) {
+          return
+        }
+        navigatorTargets.push(...entries)
+        visibleNavigatorTargets.push(...entries)
+      }
+
+      if (isDataReference && isFeatureEnabled('Data Entries in the Navigator')) {
+        const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
+        if (elementMetadata != null && isRight(elementMetadata.element)) {
+          // add synthetic entry
+          const element = elementMetadata.element.value
+          const dataRefEntry = dataReferenceNavigatorEntry(path, element)
+          addNavigatorTargetsUnlessCollapsed(dataRefEntry)
+        } else {
+          throw new Error(`internal error: Unexpected non-element found at ${EP.toString(path)}`)
+        }
+        return // early return!!
+      }
+
       // const isComponent = MetadataUtils.isComponentInstance(path, metadata)
       const navigatorTarget =
         propName == null
           ? regularNavigatorEntry(path)
           : renderPropValueNavigatorEntry(path, propName)
       navigatorTargets.push(navigatorTarget)
-      if (
-        !collapsedAncestor &&
-        !isHiddenInNavigator &&
-        !MetadataUtils.isElementTypeHiddenInNavigator(path, metadata, elementPathTree)
-      ) {
+
+      const elementTypeHidden = MetadataUtils.isElementTypeHiddenInNavigator(
+        path,
+        metadata,
+        elementPathTree,
+      )
+
+      if (!collapsedAncestor && !isHiddenInNavigator && !elementTypeHidden) {
         visibleNavigatorTargets.push(navigatorTarget)
       }
       // We collect the paths which are shown in render props, so we can filter them out from regular
@@ -165,21 +195,12 @@ export function getNavigatorTargets(
             processedPathsAsRenderProp.add(EP.toString(subTreeChild.path))
             walkAndAddKeys(subTreeChild, collapsedAncestor, prop)
           } else {
-            const synthEntry = syntheticNavigatorEntry(childPath, propValue)
+            const synthEntry = isFeatureEnabled('Data Entries in the Navigator')
+              ? dataReferenceNavigatorEntry(childPath, propValue)
+              : syntheticNavigatorEntry(childPath, propValue)
             addNavigatorTargetsUnlessCollapsed(synthEntry)
           }
         })
-      }
-
-      const isCollapsed = EP.containsPath(path, collapsedViews)
-      const newCollapsedAncestor = collapsedAncestor || isCollapsed || isHiddenInNavigator
-
-      function addNavigatorTargetsUnlessCollapsed(...entries: Array<NavigatorEntry>) {
-        if (newCollapsedAncestor) {
-          return
-        }
-        navigatorTargets.push(...entries)
-        visibleNavigatorTargets.push(...entries)
       }
 
       const propertyControls = getPropertyControlsForTarget(
@@ -290,6 +311,27 @@ export function getNavigatorTargets(
               addNavigatorTargetsUnlessCollapsed(entry)
             }
           }
+        }
+      } else if (
+        // if the metadata doesn't contain children elements, we still want to look through the in-code children, maybe we find some data entries to show
+        // ideally this should be done in the metadata, in the future this part should be removed
+        subTree.children.length === 0 &&
+        isFeatureEnabled('Data Entries in the Navigator')
+      ) {
+        const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
+        if (
+          elementMetadata != null &&
+          isRight(elementMetadata.element) &&
+          isJSXElement(elementMetadata.element.value) &&
+          elementMetadata.element.value.children.length > 0
+        ) {
+          const jsxElement = elementMetadata.element.value
+          const children = jsxElement.children
+          children.forEach((child) => {
+            const childPath = EP.appendToPath(path, child.uid)
+            const dataRefEntry = dataReferenceNavigatorEntry(childPath, child)
+            addNavigatorTargetsUnlessCollapsed(dataRefEntry)
+          })
         }
       } else {
         const notRenderPropChildren = Object.values(subTree.children).filter(

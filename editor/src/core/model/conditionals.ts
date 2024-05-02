@@ -20,6 +20,7 @@ import { findUtopiaCommentFlag, isUtopiaCommentFlagConditional } from '../shared
 import { isLeft, isRight } from '../shared/either'
 import { MetadataUtils } from './element-metadata-utils'
 import { forceNotNull } from '../shared/optional-utils'
+import { Substores, useEditorState } from '../../components/editor/store/store-hook'
 
 export type ConditionalCase = 'true-case' | 'false-case'
 
@@ -361,4 +362,14 @@ export function isTextEditableConditional(
   // because the earlier checks already prove this is a leaf element.
   const activeConditionalBranch = maybeConditionalActiveBranch(path, metadata)
   return activeConditionalBranch != null && isJSExpression(activeConditionalBranch)
+}
+
+export function useConditionalCaseCorrespondingToBranchPath(
+  elementPath: ElementPath,
+): ConditionalCase | null {
+  return useEditorState(
+    Substores.metadata,
+    (store) => getConditionalCaseCorrespondingToBranchPath(elementPath, store.editor.jsxMetadata),
+    'useConditionalCaseCorrespondingToBranchPath conditionalCase',
+  )
 }

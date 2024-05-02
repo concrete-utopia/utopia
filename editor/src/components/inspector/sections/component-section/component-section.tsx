@@ -43,6 +43,7 @@ import {
   UtopiaStyles,
   color,
   OnClickOutsideHOC,
+  iconForControlType,
 } from '../../../../uuiui'
 import type { CSSCursor } from '../../../../uuiui-deps'
 import { getControlStyles } from '../../../../uuiui-deps'
@@ -77,7 +78,6 @@ import {
   VectorPropertyControl,
   HtmlInputPropertyControl,
   JSXPropertyControl,
-  IdentifierExpressionCartoucheControl,
 } from './property-control-controls'
 import { ExpandableIndicator } from '../../../navigator/navigator-item/expandable-indicator'
 import { unless, when } from '../../../../utils/react-conditionals'
@@ -110,6 +110,7 @@ import { foldEither } from '../../../../core/shared/either'
 import { stopPropagation } from '../../common/inspector-utils'
 import { NO_OP } from '../../../../core/shared/utils'
 import { useMetaobjectEditPopup } from './metaobject-edit-popup'
+import { IdentifierExpressionCartoucheControl } from './cartouche-control'
 
 export const VariableFromScopeOptionTestId = (idx: string) => `variable-from-scope-${idx}`
 export const DataPickerPopupButtonTestId = `data-picker-popup-button-test-id`
@@ -165,7 +166,7 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
       return (
         <IdentifierExpressionCartoucheControl
           contents={jsxElementChildToText(attributeExpression, null, null, 'jsx', 'inner')}
-          dataType={props.controlDescription.control}
+          icon={React.createElement(iconForControlType(props.controlDescription.control))}
           matchType='full'
           onOpenDataPicker={props.onOpenDataPicker}
           onDeleteCartouche={onDeleteCartouche}
@@ -184,7 +185,7 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
         return (
           <IdentifierExpressionCartoucheControl
             contents={'Expression'}
-            dataType='none'
+            icon={React.createElement(iconForControlType('none'))}
             matchType='partial'
             onOpenDataPicker={props.onOpenDataPicker}
             onDeleteCartouche={onDeleteCartouche}
@@ -282,7 +283,7 @@ function getLabelControlStyle(
 
 const isBaseIndentationLevel = (props: AbstractRowForControlProps) => props.indentationLevel === 1
 
-function useDataPickerButton(
+export function useDataPickerButton(
   selectedElements: Array<ElementPath>,
   propPath: PropertyPath,
   isScene: boolean,
@@ -348,9 +349,17 @@ function useDataPickerButton(
         ref={setPopperElement}
         propPath={propPath}
         propExpressionPath={propExpressionPath}
+        targetPath={selectedElement}
       />
     ),
-    [closePopup, popper.attributes.popper, popper.styles.popper, propExpressionPath, propPath],
+    [
+      closePopup,
+      popper.attributes.popper,
+      popper.styles.popper,
+      propExpressionPath,
+      propPath,
+      selectedElement,
+    ],
   )
 
   const DataPickerOpener = React.useMemo(

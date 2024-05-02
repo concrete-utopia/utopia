@@ -57,6 +57,7 @@ import type {
   JSOpaqueArbitraryStatement,
   JSAssignment,
   JSAssignmentStatement,
+  JSExpressionOtherJavaScript,
 } from '../../shared/element-template'
 import {
   arbitraryJSBlock,
@@ -112,6 +113,7 @@ import {
   clearIdentifierUniqueIDsAndSourceMaps,
   jsAssignmentStatement,
   clearAssignmentUniqueIDsAndSourceMaps,
+  clearJSExpressionOtherJavaScriptUniqueIDs,
 } from '../../shared/element-template'
 import { maybeToArray, forceNotNull } from '../../shared/optional-utils'
 import type {
@@ -793,63 +795,6 @@ function addBindingNames(
   }
 }
 
-interface DefaultOtherJavaScript {
-  type: 'DEFAULT_OTHER_JAVASCRIPT'
-}
-
-const defaultOtherJavaScript: DefaultOtherJavaScript = {
-  type: 'DEFAULT_OTHER_JAVASCRIPT',
-}
-
-interface MapOtherJavaScript {
-  type: 'MAP_OTHER_JAVASCRIPT'
-  valuesInScopeFromParameters: JSXMapExpression['valuesInScopeFromParameters']
-}
-
-function mapOtherJavaScript(
-  valuesInScopeFromParameters: MapOtherJavaScript['valuesInScopeFromParameters'],
-): MapOtherJavaScript {
-  return {
-    type: 'MAP_OTHER_JAVASCRIPT',
-    valuesInScopeFromParameters: valuesInScopeFromParameters,
-  }
-}
-
-type OtherJavaScriptType = DefaultOtherJavaScript | MapOtherJavaScript
-
-function getOtherJavaScriptTypeFromExpression(
-  sourceFile: TS.SourceFile,
-  expr: TS.Node,
-): OtherJavaScriptType {
-  if (TS.isCallExpression(expr) && TS.isPropertyAccessExpression(expr.expression)) {
-    const propertyAccessExpression: TS.PropertyAccessExpression = expr.expression
-    if (propertyAccessExpression.name.getText(sourceFile) === 'map') {
-      const firstArgument = expr.arguments[0]
-      if (TS.isArrowFunction(firstArgument)) {
-        let valuesInScopeFromParameters: MapOtherJavaScript['valuesInScopeFromParameters'] = []
-        for (const parameter of firstArgument.parameters) {
-          addBindingNames(sourceFile, parameter.name, valuesInScopeFromParameters)
-        }
-        return mapOtherJavaScript(valuesInScopeFromParameters)
-      }
-    }
-  }
-  return defaultOtherJavaScript
-}
-
-function getOtherJavaScriptType(
-  sourceFile: TS.SourceFile,
-  expressionsAndTexts: Array<ExpressionAndText<TS.Node>>,
-): OtherJavaScriptType {
-  if (expressionsAndTexts.length === 1) {
-    const expr = expressionsAndTexts[0]?.expression
-    if (expr != null) {
-      return getOtherJavaScriptTypeFromExpression(sourceFile, expr)
-    }
-  }
-  return defaultOtherJavaScript
-}
-
 function failOnNullResult<T>(result: Either<string, T | null>): Either<string, T> {
   return flatMapEither((r) => {
     if (r == null) {
@@ -1058,7 +1003,6 @@ function parseOtherJavaScript<T extends { uid: string }>(
     definedElsewhere: Array<string>,
     fileNode: typeof SourceNode,
     parsedElementsWithin: ElementsWithinInPosition,
-    otherJavaScriptType: OtherJavaScriptType,
     params: Array<Param>,
     statements: Array<JSArbitraryStatement>,
   ) => Either<string, T | null>,
@@ -1066,8 +1010,6 @@ function parseOtherJavaScript<T extends { uid: string }>(
   if (expressionsAndTexts.length === 0) {
     throw new Error('Unable to deal with a collection of zero expressions.')
   } else {
-    const otherJavaScriptType = getOtherJavaScriptType(sourceFile, expressionsAndTexts)
-
     let startLineShift: number = 0
     let startColumnShift: number = 0
     let lastBlockEndLine: number = 1
@@ -1573,7 +1515,7 @@ function parseOtherJavaScript<T extends { uid: string }>(
         buildHighlightBoundsForExpressionsAndText(sourceFile, expressionsAndTexts, created.uid),
       )
       return withParserMetadata(created, highlightBounds, propsUsed, definedElsewhere)
-    }, failOnNullResult(create(code, definedWithin, definedElsewhere, fileNode, parsedElementsWithin, otherJavaScriptType, paramsToUse, statements)))
+    }, failOnNullResult(create(code, definedWithin, definedElsewhere, fileNode, parsedElementsWithin, paramsToUse, statements)))
   }
 }
 
@@ -1585,6 +1527,97 @@ function getCommentsOnExpression(sourceText: string, expression: TS.Node): Parse
   } else {
     return getComments(sourceText, expression)
   }
+}
+
+interface MapExpressionParts {
+  valueToMap: JSExpression
+  mapFunction: JSExpression
+  valuesInScopeFromParameters: JSXMapExpression['valuesInScopeFromParameters']
+}
+
+function parseOutMapExpressionParts(
+  sourceFile: TS.SourceFile,
+  sourceText: string,
+  filename: string,
+  imports: Imports,
+  topLevelNames: Array<string>,
+  propsObjectName: string | null,
+  expression: TS.Node,
+  existingHighlightBounds: Readonly<HighlightBoundsForUids>,
+  alreadyExistingUIDs: Set<string>,
+  applySteganography: SteganographyMode,
+): Either<string, WithParserMetadata<MapExpressionParts>> {
+  const jsxExpressionStripped =
+    TS.isJsxExpression(expression) && expression.expression != null
+      ? expression.expression
+      : expression
+  if (
+    TS.isCallExpression(jsxExpressionStripped) &&
+    TS.isPropertyAccessExpression(jsxExpressionStripped.expression)
+  ) {
+    const propertyAccessExpression: TS.PropertyAccessExpression = jsxExpressionStripped.expression
+    if (propertyAccessExpression.name.getText(sourceFile) === 'map') {
+      const firstArgument = jsxExpressionStripped.arguments[0]
+      if (TS.isArrowFunction(firstArgument)) {
+        let valuesInScopeFromParameters: JSXMapExpression['valuesInScopeFromParameters'] = []
+        for (const parameter of firstArgument.parameters) {
+          addBindingNames(sourceFile, parameter.name, valuesInScopeFromParameters)
+        }
+
+        const possibleValueToMap = parseAttributeExpression(
+          sourceFile,
+          sourceText,
+          filename,
+          imports,
+          topLevelNames,
+          propsObjectName,
+          propertyAccessExpression.expression,
+          existingHighlightBounds,
+          alreadyExistingUIDs,
+          [],
+          applySteganography,
+          'part-of-expression',
+        )
+        const possibleMapFunction = parseAttributeExpression(
+          sourceFile,
+          sourceText,
+          filename,
+          imports,
+          topLevelNames,
+          propsObjectName,
+          firstArgument,
+          existingHighlightBounds,
+          alreadyExistingUIDs,
+          [],
+          applySteganography,
+          'part-of-expression',
+        )
+        return applicative2Either(
+          (valueToMapWithMetadata, mapFunctionWithMetadata) => {
+            return merge2WithParserMetadata(
+              valueToMapWithMetadata,
+              mapFunctionWithMetadata,
+              (valueToMap, mapFunction) => {
+                return withParserMetadata(
+                  {
+                    valueToMap: valueToMap,
+                    mapFunction: mapFunction,
+                    valuesInScopeFromParameters: valuesInScopeFromParameters,
+                  },
+                  {},
+                  [],
+                  [],
+                )
+              },
+            )
+          },
+          possibleValueToMap,
+          possibleMapFunction,
+        )
+      }
+    }
+  }
+  return left('Not a map expression.')
 }
 
 export function parseJSExpressionMapOrOtherJavascript(
@@ -1619,8 +1652,48 @@ export function parseJSExpressionMapOrOtherJavascript(
     [...commentsOnExpression.trailingComments, ...commentsOnLastToken],
   )
 
+  const alreadyExistingUIDsSnapshot: Set<string> = new Set(alreadyExistingUIDs)
+  const possibleMapExpressionParts = parseOutMapExpressionParts(
+    sourceFile,
+    sourceText,
+    filename,
+    imports,
+    topLevelNames,
+    propsObjectName,
+    jsxExpression,
+    existingHighlightBounds,
+    alreadyExistingUIDs,
+    applySteganography,
+  )
+  const possibleMapExpressionResult = mapEither((rightValue) => {
+    const mapWithMetadata = mapParserMetadata((value) => {
+      return createMapExpression(
+        sourceFile,
+        value.valueToMap,
+        value.mapFunction,
+        value.valuesInScopeFromParameters,
+        comments,
+        alreadyExistingUIDs,
+      )
+    }, rightValue)
+    return {
+      ...mapWithMetadata,
+      highlightBounds: {
+        ...mapWithMetadata.highlightBounds,
+        ...buildHighlightBoundsForUids(sourceFile, jsxExpression, mapWithMetadata.value.uid),
+      },
+    }
+  }, possibleMapExpressionParts)
+
+  if (isRight(possibleMapExpressionResult)) {
+    return possibleMapExpressionResult
+  } else {
+    alreadyExistingUIDs.clear()
+    alreadyExistingUIDsSnapshot.forEach((uid) => alreadyExistingUIDs.add(uid))
+  }
+
   return failOnNullResult(
-    parseOtherJavaScript(
+    parseOtherJavaScript<JSExpressionMapOrOtherJavascript>(
       sourceFile,
       sourceText,
       filename,
@@ -1639,7 +1712,6 @@ export function parseJSExpressionMapOrOtherJavascript(
         definedElsewhere,
         fileSourceNode,
         parsedElementsWithin,
-        isList,
         params,
         statements,
       ) => {
@@ -1655,7 +1727,6 @@ export function parseJSExpressionMapOrOtherJavascript(
               definedElsewhere,
               null,
               inPositionToElementsWithin(parsedElementsWithin),
-              isList,
               comments,
               alreadyExistingUIDs,
               existingHighlightBounds,
@@ -1710,7 +1781,6 @@ export function parseJSExpressionMapOrOtherJavascript(
                 innerDefinedElsewhere,
                 returnPrepended.sourceMap,
                 inPositionToElementsWithin(parsedElementsWithin),
-                isList,
                 comments,
                 alreadyExistingUIDs,
                 existingHighlightBounds,
@@ -1764,6 +1834,25 @@ function createExpressionValue(
   )
 }
 
+function createMapExpression(
+  sourceFile: TS.SourceFile,
+  valueToMap: JSExpression,
+  mapFunction: JSExpression,
+  valuesInScopeFromParameters: Array<string>,
+  comments: ParsedComments,
+  alreadyExistingUIDs: Set<string>,
+): JSXMapExpression {
+  const withoutUID = jsxMapExpression(
+    clearExpressionUniqueIDs(valueToMap),
+    clearExpressionUniqueIDs(mapFunction),
+    comments,
+    valuesInScopeFromParameters,
+    '',
+  )
+  const uid = getUIDFromCommentsOrValue(comments, sourceFile, withoutUID, alreadyExistingUIDs)
+  return jsxMapExpression(valueToMap, mapFunction, comments, valuesInScopeFromParameters, uid)
+}
+
 function createExpressionOtherJavaScript(
   sourceFile: TS.SourceFile,
   node: TS.Node,
@@ -1774,71 +1863,44 @@ function createExpressionOtherJavaScript(
   definedElsewhere: Array<string>,
   sourceMap: RawSourceMap | null,
   elementsWithin: ElementsWithin,
-  otherJavaScriptType: OtherJavaScriptType,
   comments: ParsedComments,
   alreadyExistingUIDs: Set<string>,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   imports: Imports,
-): JSExpressionMapOrOtherJavascript {
+): JSExpressionOtherJavaScript {
   // Ideally the value we hash is stable regardless of location, so exclude the SourceMap value from here and provide an empty UID.
-  const value =
-    otherJavaScriptType.type === 'MAP_OTHER_JAVASCRIPT'
-      ? jsxMapExpression(
-          originalJavascript,
-          javascriptWithUIDs,
-          transpiledJavascript,
-          definedElsewhere,
-          null,
-          elementsWithin,
-          comments,
-          otherJavaScriptType.valuesInScopeFromParameters,
-          '',
-        )
-      : jsExpressionOtherJavaScript(
-          params,
-          originalJavascript,
-          javascriptWithUIDs,
-          transpiledJavascript,
-          definedElsewhere,
-          null,
-          elementsWithin,
-          comments,
-          '',
-        )
-
+  const withoutUID = jsExpressionOtherJavaScript(
+    params,
+    originalJavascript,
+    javascriptWithUIDs,
+    transpiledJavascript,
+    definedElsewhere,
+    null,
+    elementsWithin,
+    comments,
+    '',
+  )
   const { uid } = makeNewUIDFromOriginatingElement(
     sourceFile,
     node,
     null,
-    [jsxAttributesEntry('expression', value, emptyComments)],
+    [jsxAttributesEntry('expression', withoutUID, emptyComments)],
     existingHighlightBounds,
     alreadyExistingUIDs,
     comments,
     imports,
   )
-  return otherJavaScriptType.type === 'MAP_OTHER_JAVASCRIPT'
-    ? jsxMapExpression(
-        originalJavascript,
-        javascriptWithUIDs,
-        transpiledJavascript,
-        definedElsewhere,
-        sourceMap,
-        elementsWithin,
-        comments,
-        otherJavaScriptType.valuesInScopeFromParameters,
-        uid,
-      )
-    : jsExpressionOtherJavaScript(
-        params,
-        originalJavascript,
-        javascriptWithUIDs,
-        transpiledJavascript,
-        definedElsewhere,
-        sourceMap,
-        elementsWithin,
-        comments,
-        uid,
-      )
+  return jsExpressionOtherJavaScript(
+    params,
+    originalJavascript,
+    javascriptWithUIDs,
+    transpiledJavascript,
+    definedElsewhere,
+    sourceMap,
+    elementsWithin,
+    comments,
+    uid,
+  )
 }
 
 function createExpressionNestedArray(
@@ -2493,7 +2555,6 @@ function getAttributeExpression(
 
     // Handle the expression itself.
     if (initializer.expression == null) {
-      const otherJavaScriptType = getOtherJavaScriptTypeFromExpression(sourceFile, initializer)
       const comments = getComments(sourceText, initializer)
 
       const withoutParserMetadata = createExpressionOtherJavaScript(
@@ -2506,7 +2567,6 @@ function getAttributeExpression(
         [],
         null,
         {},
-        otherJavaScriptType,
         comments,
         alreadyExistingUIDs,
         existingHighlightBounds,
@@ -2738,6 +2798,16 @@ export interface WithParserMetadata<T> {
   highlightBounds: Readonly<HighlightBoundsForUids>
   propsUsed: Array<string>
   definedElsewhere: Array<string>
+}
+
+export function mapParserMetadata<T, U>(
+  transform: (value: T) => U,
+  toTransform: WithParserMetadata<T>,
+): WithParserMetadata<U> {
+  return {
+    ...toTransform,
+    value: transform(toTransform.value),
+  }
 }
 
 interface SuccessfullyParsedElement {
@@ -3859,7 +3929,6 @@ export function parseArbitraryNodes(
       definedElsewhere,
       fileSourceNode,
       parsedElementsWithin,
-      _,
       params,
       statements,
     ) => {
