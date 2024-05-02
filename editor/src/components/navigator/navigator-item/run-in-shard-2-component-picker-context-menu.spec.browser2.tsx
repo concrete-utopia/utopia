@@ -1341,7 +1341,7 @@ export const Column = () => (
       const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
       await selectComponentsForTest(editor, [target])
       const replaceButton = editor.renderedDOM.getByTestId(
-        ReplaceElementButtonTestId(EP.parentPath(target), 'title'),
+        ReplaceElementButtonTestId(target, 'title'),
       )
       await mouseClickAtPoint(replaceButton, { x: 2, y: 2 })
 
