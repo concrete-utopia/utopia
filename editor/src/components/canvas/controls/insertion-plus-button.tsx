@@ -5,7 +5,7 @@ import { isInfinityRectangle } from '../../../core/shared/math-utils'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { IndexPosition } from '../../../utils/utils'
 import { useColorTheme } from '../../../uuiui/styles/theme'
-import { openFloatingInsertMenu } from '../../editor/actions/action-creators'
+import { insertAsChildTarget, openFloatingInsertMenu } from '../../editor/actions/action-creators'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import type { SiblingPosition } from '../canvas-strategies/strategies/reparent-helpers/reparent-strategy-sibling-position-helpers'
@@ -14,6 +14,7 @@ import {
   siblingAndPseudoPositions,
 } from '../canvas-strategies/strategies/reparent-helpers/reparent-strategy-sibling-position-helpers'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
+import { useCreateCallbackToShowComponentPicker } from '../../navigator/navigator-item/component-picker-context-menu'
 
 export const InsertionButtonOffset = 10
 
@@ -239,25 +240,15 @@ const BlueDot = React.memo((props: ButtonControlProps) => {
 })
 
 const PlusButton = React.memo((props: ButtonControlProps) => {
-  const dispatch = useDispatch()
   const colorTheme = useColorTheme()
   const { parentPath, indexPosition } = props
-  const insertElement: React.MouseEventHandler<HTMLDivElement> = React.useCallback(
-    (event) => {
-      event.stopPropagation()
-      event.preventDefault()
-      dispatch(
-        [
-          openFloatingInsertMenu({
-            insertMenuMode: 'insert',
-            parentPath: parentPath,
-            indexPosition: indexPosition,
-          }),
-        ],
-        'canvas',
-      )
-    },
-    [dispatch, parentPath, indexPosition],
+  const onMouseUpDown: React.MouseEventHandler<HTMLDivElement> = React.useCallback((event) => {
+    event.stopPropagation()
+    event.preventDefault()
+  }, [])
+  const onClick = useCreateCallbackToShowComponentPicker()(
+    parentPath,
+    insertAsChildTarget(indexPosition),
   )
 
   const ButtonSize = 12
@@ -278,7 +269,9 @@ const PlusButton = React.memo((props: ButtonControlProps) => {
         transform: `scale(${1 / props.scale})`,
       }}
       data-testid={`insertion-plus-button-${props.identifier}`}
-      onMouseDown={insertElement}
+      onClick={onClick}
+      onMouseDown={onMouseUpDown}
+      onMouseUp={onMouseUpDown}
     >
       <div
         style={{

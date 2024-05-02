@@ -232,6 +232,9 @@ import type {
   AddCollapsedViews,
   ReplaceMappedElement,
   UpdateMapExpression,
+  InsertionBehaviour,
+  ReplaceTarget,
+  InsertAsChildTarget,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -268,11 +271,16 @@ export function clearSelection(): EditorAction {
   }
 }
 
+export const replaceTarget: ReplaceTarget = { type: 'replace-target' }
+export function insertAsChildTarget(indexPosition?: IndexPosition): InsertAsChildTarget {
+  return { type: 'insert-as-child', indexPosition: indexPosition }
+}
+
 export function insertJSXElement(
   element: JSXElement,
   target: ElementPath | null,
   importsToAdd: Imports,
-  insertionBehaviour: 'insert-as-child' | 'replace-target',
+  insertionBehaviour: InsertionBehaviour,
 ): InsertJSXElement {
   return {
     action: 'INSERT_JSX_ELEMENT',

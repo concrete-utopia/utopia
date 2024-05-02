@@ -54,6 +54,7 @@ import {
   addToast,
   removeToast,
   deleteSelected,
+  insertAsChildTarget,
 } from '../actions/action-creators'
 import * as History from '../history'
 import type { EditorState } from './editor-state'
@@ -642,7 +643,7 @@ describe('INSERT_JSX_ELEMENT', () => {
       {
         'utopia-api': importDetails(null, [importAlias('View')], null),
       },
-      'insert-as-child',
+      insertAsChildTarget(),
     )
     const updatedEditor = runLocalEditorAction(
       editor,
@@ -728,7 +729,7 @@ describe('INSERT_JSX_ELEMENT', () => {
       {
         'utopia-api': importDetails(null, [importAlias('View')], null),
       },
-      'insert-as-child',
+      insertAsChildTarget(),
     )
     const updatedEditor = runLocalEditorAction(
       editorWithNoHighlighted,

@@ -486,6 +486,7 @@ import {
   clearImageFileBlob,
   enableInsertModeForJSXElement,
   finishCheckpointTimer,
+  insertAsChildTarget,
   insertJSXElement,
   openCodeEditorFile,
   scrollToPosition,
@@ -2291,6 +2292,7 @@ export const UPDATE_FNS = {
   },
   INSERT_JSX_ELEMENT: (action: InsertJSXElement, editor: EditorModel): EditorModel => {
     let newSelectedViews: ElementPath[] = []
+    const { insertionBehaviour } = action
     const parentPath =
       action.target == null
         ? // action.target == null means Canvas, which means storyboard root element
@@ -2298,7 +2300,7 @@ export const UPDATE_FNS = {
             'found no element path for the storyboard root',
             getStoryboardElementPath(editor.projectContents, editor.canvas.openFile?.filename),
           )
-        : action.insertionBehaviour === 'insert-as-child'
+        : insertionBehaviour.type === 'insert-as-child'
         ? action.target
         : EP.parentPath(action.target)
 
@@ -2310,11 +2312,17 @@ export const UPDATE_FNS = {
         const startingComponents = getUtopiaJSXComponentsFromSuccess(success)
 
         const removeElementAndReturnIndex = () => {
-          if (action.insertionBehaviour === 'insert-as-child' || action.target == null) {
+          if (action.target == null) {
             return {
               components: startingComponents,
               imports: success.imports,
               insertionIndex: null,
+            }
+          } else if (insertionBehaviour.type === 'insert-as-child') {
+            return {
+              components: startingComponents,
+              imports: success.imports,
+              insertionIndex: insertionBehaviour.indexPosition ?? null,
             }
           } else {
             const indexInParent = getIndexInParent(
@@ -3523,7 +3531,7 @@ export const UPDATE_FNS = {
             imageElement,
             parent,
             {},
-            'insert-as-child',
+            insertAsChildTarget(),
           )
 
           const withComponentCreated = UPDATE_FNS.INSERT_JSX_ELEMENT(insertJSXElementAction, {
@@ -4563,7 +4571,7 @@ export const UPDATE_FNS = {
       [],
     )
 
-    const insertJSXElementAction = insertJSXElement(imageElement, parent, {}, 'insert-as-child')
+    const insertJSXElementAction = insertJSXElement(imageElement, parent, {}, insertAsChildTarget())
     return UPDATE_FNS.INSERT_JSX_ELEMENT(insertJSXElementAction, editor)
   },
   REMOVE_FROM_NODE_MODULES_CONTENTS: (
