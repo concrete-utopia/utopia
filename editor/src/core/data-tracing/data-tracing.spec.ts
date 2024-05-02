@@ -759,7 +759,7 @@ describe('Data Tracing', () => {
 
       expect(traceResult).toEqual(
         dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('titles'), [
-          '2',
+          '1',
         ]),
       )
     })

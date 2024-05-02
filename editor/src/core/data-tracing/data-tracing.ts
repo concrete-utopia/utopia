@@ -21,7 +21,7 @@ import {
   jsIdentifier,
   type ElementInstanceMetadataMap,
 } from '../shared/element-template'
-import { forceNotNull } from '../shared/optional-utils'
+import { forceNotNull, optionalMap } from '../shared/optional-utils'
 import type {
   ElementPath,
   ElementPropertyPath,
@@ -410,8 +410,9 @@ function walkUpInnerScopesUntilReachingComponent(
                 const dataPath = processJSPropertyAccessors(mapOver)
 
                 if (isRight(dataPath)) {
-                  const mapIndexHack = EP.extractIndexFromIndexedUid(
-                    EP.toUid(currentElementPathOfWalk),
+                  const mapIndexHack = optionalMap(
+                    (i) => substractFromStringNumber(i, 1),
+                    EP.extractIndexFromIndexedUid(EP.toUid(currentElementPathOfWalk)),
                   )
                   if (mapIndexHack == null) {
                     return dataTracingFailed(
@@ -618,4 +619,8 @@ function lookupInComponentScope(
   // end of temporary stopgap
 
   return dataTracingFailed('Could not find a hook call')
+}
+
+function substractFromStringNumber(n: string, minus: number): string {
+  return `${parseInt(n) - minus}`
 }
