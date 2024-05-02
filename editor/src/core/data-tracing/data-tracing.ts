@@ -496,7 +496,7 @@ function lookupInComponentScope(
     }
   }
 
-  // let's try to find "const { <identifier> } = <expression>" shaped statements
+  // let's try to find "const { <identifier>, ...somethingElse } = <expression>" shaped statements
   {
     // TODO we must support the object binding pattern in the parser
     // until we do proper support, this is a temporary stopgap
