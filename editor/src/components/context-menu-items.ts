@@ -366,6 +366,19 @@ export function showReplaceComponentPicker(
   return showComponentPicker(target, insertionTarget)
 }
 
+export function showSwapComponentPicker(
+  targetElement: ElementPath,
+  jsxMetadata: ElementInstanceMetadataMap,
+  showComponentPicker: ShowComponentPickerContextMenuCallback,
+): ShowComponentPickerContextMenu {
+  const element = MetadataUtils.findElementByElementPath(jsxMetadata, targetElement)
+  const prop = element?.assignedToProp
+  const target = prop == null ? targetElement : EP.parentPath(targetElement)
+  const insertionTarget: InsertionTarget =
+    prop == null ? EditorActions.replaceKeepChildrenAndStyleTarget : renderPropTarget(prop)
+  return showComponentPicker(target, insertionTarget)
+}
+
 export const convert: ContextMenuItem<CanvasData> = {
   name: 'Swap Element With…',
   shortcut: '',
@@ -381,8 +394,11 @@ export const convert: ContextMenuItem<CanvasData> = {
     )
   },
   action: (data, _dispatch, _coord, event) => {
-    // FIXME Render prop support
-    data.showComponentPicker(data.selectedViews[0], 'replace-target-keep-children-and-style')(event)
+    showSwapComponentPicker(
+      data.selectedViews[0],
+      data.jsxMetadata,
+      data.showComponentPicker,
+    )(event)
   },
 }
 

@@ -601,6 +601,7 @@ import type { FixUIDsState } from '../../../core/workers/parser-printer/uid-fix'
 import { fixTopLevelElementsUIDs } from '../../../core/workers/parser-printer/uid-fix'
 import { nextSelectedTab } from '../../navigator/left-pane/left-pane-utils'
 import { getRemixRootDir } from '../store/remix-derived-data'
+import { isReplaceKeepChildrenAndStyleTarget } from '../../navigator/navigator-item/component-picker-context-menu'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -2366,7 +2367,7 @@ export const UPDATE_FNS = {
           const renamedJsxElement = renameJsxElementChild(action.jsxElement, duplicateNameMapping)
           if (
             originalElement == null ||
-            action.insertionBehaviour !== 'replace-target-keep-children-and-style'
+            !isReplaceKeepChildrenAndStyleTarget(action.insertionBehaviour)
           ) {
             return renamedJsxElement
           }
