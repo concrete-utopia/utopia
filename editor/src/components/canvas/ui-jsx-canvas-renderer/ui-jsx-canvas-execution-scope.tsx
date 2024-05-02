@@ -151,6 +151,7 @@ export function createExecutionScope(
       },
       null,
       propertiesFromParams,
+      null,
     )
 
     executionScope[JSX_CANVAS_LOOKUP_FUNCTION_NAME] = utopiaCanvasJSXLookup(

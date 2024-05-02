@@ -147,7 +147,11 @@ import { wrapInDivStrategy } from './wrap-in-callbacks'
 import { type ProjectServerState } from './store/project-server-state'
 import { allowedToEditProject } from './store/collaborative-editing'
 import { hasCommentPermission } from './store/permissions'
-import { type ShowComponentPickerContextMenuCallback } from '../navigator/navigator-item/component-picker-context-menu'
+import {
+  InsertionTarget,
+  type ShowComponentPickerContextMenuCallback,
+} from '../navigator/navigator-item/component-picker-context-menu'
+import { showReplaceComponentPicker } from '../context-menu-items'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,

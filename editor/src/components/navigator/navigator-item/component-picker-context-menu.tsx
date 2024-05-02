@@ -201,7 +201,7 @@ export type ShowComponentPickerContextMenuCallback = (
   pickerType?: 'preferred' | 'full',
 ) => ShowComponentPickerContextMenu
 
-type ShowComponentPickerContextMenu = (
+export type ShowComponentPickerContextMenu = (
   event: TriggerEvent,
   params?: Pick<ContextMenuParams, 'id' | 'props' | 'position'> | undefined,
 ) => void
