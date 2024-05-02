@@ -109,6 +109,7 @@ import {
 import { foldEither } from '../../../../core/shared/either'
 import { stopPropagation } from '../../common/inspector-utils'
 import { NO_OP } from '../../../../core/shared/utils'
+import { useMetaobjectEditPopup } from './metaobject-edit-popup'
 
 export const VariableFromScopeOptionTestId = (idx: string) => `variable-from-scope-${idx}`
 export const DataPickerPopupButtonTestId = `data-picker-popup-button-test-id`
@@ -164,7 +165,6 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
       return (
         <IdentifierExpressionCartoucheControl
           contents={jsxElementChildToText(attributeExpression, null, null, 'jsx', 'inner')}
-          dataPath={jsxElementToDataPath(attributeExpression)}
           dataType={props.controlDescription.control}
           matchType='full'
           onOpenDataPicker={props.onOpenDataPicker}
@@ -184,7 +184,6 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
         return (
           <IdentifierExpressionCartoucheControl
             contents={'Expression'}
-            dataPath={null}
             dataType='none'
             matchType='partial'
             onOpenDataPicker={props.onOpenDataPicker}
@@ -442,6 +441,15 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
     props.controlDescription,
   )
 
+  const maybeDataPath =
+    propMetadata.attributeExpression?.type === 'JS_IDENTIFIER' ||
+    propMetadata.attributeExpression?.type === 'JS_ELEMENT_ACCESS' ||
+    propMetadata.attributeExpression?.type === 'JS_PROPERTY_ACCESS'
+      ? jsxElementToDataPath(propMetadata.attributeExpression)
+      : null
+
+  const metaobjectPickerData = useMetaobjectEditPopup(maybeDataPath, 'metaobject-edit-popup')
+
   if (controlDescription.control === 'none') {
     // do not list anything for `none` controls
     return null
@@ -458,27 +466,33 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
       <UIGridRow
         padded={false}
         style={{ paddingLeft: 0, paddingRight: 8, paddingTop: 3, paddingBottom: 3 }}
-        variant='<--1fr--><--1fr-->|-18px-|'
+        variant='<----------1fr---------><-auto->'
       >
-        {propertyLabel}
-        <div
-          style={{
-            minWidth: 0, // this ensures that the div can never expand the allocated grid space
-          }}
-          ref={dataPickerButtonData.setReferenceElement}
-        >
-          <ControlForProp
-            propPath={propPath}
-            propName={propName}
-            controlDescription={controlDescription}
-            propMetadata={propMetadata}
-            setGlobalCursor={props.setGlobalCursor}
-            focusOnMount={props.focusOnMount}
-            onOpenDataPicker={dataPickerButtonData.openPopup}
-            showHiddenControl={props.showHiddenControl}
-          />
-        </div>
-        {when(isBaseIndentationLevel(props), dataPickerButtonData.DataPickerOpener)}
+        <UIGridRow padded={false} variant='<--1fr--><--1fr-->|-18px-|'>
+          {propertyLabel}
+          <div
+            style={{
+              minWidth: 0, // this ensures that the div can never expand the allocated grid space
+            }}
+            ref={dataPickerButtonData.setReferenceElement}
+          >
+            <ControlForProp
+              propPath={propPath}
+              propName={propName}
+              controlDescription={controlDescription}
+              propMetadata={propMetadata}
+              setGlobalCursor={props.setGlobalCursor}
+              focusOnMount={props.focusOnMount}
+              onOpenDataPicker={dataPickerButtonData.openPopup}
+              showHiddenControl={props.showHiddenControl}
+            />
+          </div>
+          {when(isBaseIndentationLevel(props), dataPickerButtonData.DataPickerOpener)}
+        </UIGridRow>
+        <FlexRow>
+          {metaobjectPickerData?.editPopupVisible ? metaobjectPickerData.Popup : null}
+          {metaobjectPickerData == null ? null : metaobjectPickerData.Opener}
+        </FlexRow>
       </UIGridRow>
     </InspectorContextMenuWrapper>
   )
