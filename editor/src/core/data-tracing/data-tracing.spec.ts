@@ -342,7 +342,9 @@ describe('Data Tracing', () => {
 
       function MyComponent(props) {
         const data = useLoaderData()
-        return <div data-uid='component-root' title={data.title} />
+        return <div data-uid='component-root'>
+          <div data-uid='inner-child' title={data.title}>{data.title}</div>
+        </div>
       }
 
       function App() {
@@ -355,7 +357,10 @@ describe('Data Tracing', () => {
       await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component'))
 
       const traceResult = traceDataFromProp(
-        EPP.create(EP.fromString('sb/app:my-component:component-root'), PP.create('title')),
+        EPP.create(
+          EP.fromString('sb/app:my-component:component-root/inner-child'),
+          PP.create('title'),
+        ),
         editor.getEditorState().editor.jsxMetadata,
         editor.getEditorState().editor.projectContents,
         [],
