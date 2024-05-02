@@ -11,6 +11,9 @@ import { InspectorModal } from '../../widgets/inspector-modal'
 import urljoin from 'url-join'
 import { usePopper } from 'react-popper'
 import { stopPropagation } from '../../common/inspector-utils'
+import { useVariableValue } from './variables-in-scope-utils'
+import { optionalMap } from '../../../../core/shared/optional-utils'
+import type { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
 
 export type MetaObjectDataPath = (string | number)[]
 
@@ -21,16 +24,11 @@ interface MetaobjectEditPopupProps {
   currentValue: string
 }
 
-/**
- * TODO
- * - pass the current value to the cartouche
- */
-
 export const MetaObjectUpdatePopup = React.forwardRef<HTMLDivElement, MetaobjectEditPopupProps>(
   (props, forwardedRef) => {
     const dispatch = useDispatch()
 
-    const [currentValue, setCurrentValue] = React.useState<string>('')
+    const [currentValue, setCurrentValue] = React.useState<string>(props.currentValue)
 
     const updateCurrentValue = React.useCallback(
       (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -172,7 +170,12 @@ export const MetaObjectUpdatePopup = React.forwardRef<HTMLDivElement, Metaobject
   },
 )
 
-export function useMetaobjectEditPopup(dataPath: MetaObjectDataPath | null, testId: string) {
+export function useMetaobjectEditPopup(
+  elementPath: ElementPath,
+  propertyPath: PropertyPath,
+  dataPath: MetaObjectDataPath | null,
+  testId: string,
+) {
   const [referenceElement, setReferenceElement] = React.useState<HTMLDivElement | null>(null)
   const [popperElement, setPopperElement] = React.useState<HTMLDivElement | null>(null)
   const popper = usePopper(referenceElement, popperElement, {
@@ -197,9 +200,13 @@ export function useMetaobjectEditPopup(dataPath: MetaObjectDataPath | null, test
     setEditPopupVisible(true)
   }, [])
 
+  const currentValue = useVariableValue(elementPath, propertyPath, dataPath ?? [])
+
   if (dataPath == null) {
     return null
   }
+
+  const currentValueString = optionalMap((v) => `${v}`, currentValue)
 
   const Opener = (
     <div style={{ cursor: 'pointer' }} ref={setReferenceElement}>
@@ -222,7 +229,7 @@ export function useMetaobjectEditPopup(dataPath: MetaObjectDataPath | null, test
       ref={setPopperElement}
       close={closeMetaObjectEditPopup}
       dataPath={dataPath}
-      currentValue='' // TODO
+      currentValue={currentValueString ?? ''}
     />
   )
 

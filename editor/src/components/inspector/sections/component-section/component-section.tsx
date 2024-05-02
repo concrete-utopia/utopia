@@ -448,7 +448,12 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
       ? jsxElementToDataPath(propMetadata.attributeExpression)
       : null
 
-  const metaobjectPickerData = useMetaobjectEditPopup(maybeDataPath, 'metaobject-edit-popup')
+  const metaobjectPickerData = useMetaobjectEditPopup(
+    selectedViews.at(0) ?? EP.emptyElementPath,
+    propPath,
+    maybeDataPath,
+    'metaobject-edit-popup',
+  )
 
   if (controlDescription.control === 'none') {
     // do not list anything for `none` controls

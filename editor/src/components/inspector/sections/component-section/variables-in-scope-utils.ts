@@ -12,8 +12,9 @@ import * as PP from '../../../../core/shared/property-path'
 import React from 'react'
 import { useGetPropertyControlsForSelectedComponents } from '../../common/property-controls-hooks'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
-import { assertNever, identity } from '../../../../core/shared/utils'
+import { arrayEqualsByValue, assertNever, identity } from '../../../../core/shared/utils'
 import { isValidReactNode } from '../../../../utils/react-utils'
+import { is } from '../../../../core/shared/equality-utils'
 
 function valuesFromObject(
   variable: ArrayInfo | ObjectInfo,
@@ -534,4 +535,30 @@ function usePropertyValue(selectedView: ElementPath, propertyPath: PropertyPath)
   }
 
   return { type: 'existing', value: prop }
+}
+
+function unrollVariableOption(option: VariableOption): VariableOption[] {
+  switch (option.type) {
+    case 'array':
+    case 'object':
+      return [option, ...option.children.flatMap(unrollVariableOption)]
+    case 'jsx':
+    case 'primitive':
+      return [option]
+    default:
+      assertNever(option)
+  }
+}
+
+export function useVariableValue(
+  elementPath: ElementPath,
+  propertyPath: PropertyPath,
+  dataPath: (string | number)[],
+) {
+  const variables = useVariablesInScopeForSelectedElement(elementPath, propertyPath, 'all')
+  const allVars = variables.flatMap(unrollVariableOption)
+  const found = allVars.find((v) => {
+    return arrayEqualsByValue(v.valuePath, dataPath, is)
+  })
+  return found?.variableInfo?.value ?? null
 }
