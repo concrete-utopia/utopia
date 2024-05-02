@@ -64,13 +64,6 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
   const [filter, setFilter] = React.useState<string>('')
   const menuRef = React.useRef<HTMLDivElement | null>(null)
 
-  const changeFilter = useCallback(
-    (newFilter: string) => {
-      setFilter(newFilter)
-    },
-    [setFilter],
-  )
-
   const componentsToShow = useMemo(() => {
     const allComponentsToShow: InsertMenuItemGroup[] = []
     props.allComponents.forEach((c) => {
@@ -167,7 +160,7 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
       onKeyDown={onKeyDown}
       ref={menuRef}
     >
-      <ComponentPickerTopSection onFilterChange={changeFilter} onKeyDown={onKeyDown} />
+      <ComponentPickerTopSection onFilterChange={setFilter} onKeyDown={onKeyDown} />
       <ComponentPickerComponentSection
         components={componentsToShow}
         onItemClick={props.onItemClick}
