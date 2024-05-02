@@ -553,7 +553,7 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
     const metadataRef = useRefEditorState((state) => state.editor.jsxMetadata)
 
     const onItemClick = React.useCallback(
-      (preferredChildToInsert: InsertableComponent) => (e: React.MouseEvent) => {
+      (preferredChildToInsert: InsertableComponent) => (e: React.UIEvent) => {
         e.stopPropagation()
         e.preventDefault()
 
@@ -571,7 +571,7 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
       [target, projectContentsRef, metadataRef, dispatch, insertionTarget],
     )
 
-    const squashEvents = React.useCallback((e: React.MouseEvent<unknown>) => {
+    const squashEvents = React.useCallback((e: React.UIEvent<unknown>) => {
       e.stopPropagation()
     }, [])
 
