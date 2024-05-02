@@ -128,7 +128,7 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
             type='warningtriangle'
             tooltipText={navigatorEntry.message}
             testId={iconTestId}
-            color={'main'}
+            color={color}
             width={12}
             height={12}
           />
@@ -192,7 +192,7 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
             type='warningtriangle'
             tooltipText={warningText}
             testId={iconTestId}
-            color={'main'}
+            color={color}
             width={12}
             height={12}
           />
