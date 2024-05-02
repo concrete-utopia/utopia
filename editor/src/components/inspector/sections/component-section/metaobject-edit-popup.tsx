@@ -10,6 +10,7 @@ import { REQUEST_UPDATE_CONTEXT_GLOABAL_HACKED } from '../../../editor/store/rem
 import { InspectorModal } from '../../widgets/inspector-modal'
 import urljoin from 'url-join'
 import { usePopper } from 'react-popper'
+import { stopPropagation } from '../../common/inspector-utils'
 
 export type MetaObjectDataPath = (string | number)[]
 
@@ -22,7 +23,6 @@ interface MetaobjectEditPopupProps {
 
 /**
  * TODO
- * - cannot focus stringinput with mouse
  * - pass the current value to the cartouche
  */
 
@@ -154,6 +154,7 @@ export const MetaObjectUpdatePopup = React.forwardRef<HTMLDivElement, Metaobject
             }}
           >
             <StringInput
+              onClick={stopPropagation}
               placeholder='Type new value here'
               focusOnMount
               value={currentValue}
