@@ -261,6 +261,10 @@ import type { SetHuggingParentToFixed } from '../../canvas/canvas-strategies/str
 import type { CommentFilterMode } from '../../inspector/sections/comment-section'
 import type { Collaborator } from '../../../core/shared/multiplayer'
 import type { PageTemplate } from '../../canvas/remix/remix-utils'
+import type {
+  ChildInsertionTarget,
+  ReplaceInsertionTarget,
+} from '../../navigator/navigator-item/component-picker-context-menu'
 
 export function clearSelection(): EditorAction {
   return {
@@ -272,7 +276,7 @@ export function insertJSXElement(
   element: JSXElement,
   target: ElementPath | null,
   importsToAdd: Imports,
-  insertionBehaviour: 'insert-as-child' | 'replace-target',
+  insertionBehaviour: ChildInsertionTarget | ReplaceInsertionTarget,
 ): InsertJSXElement {
   return {
     action: 'INSERT_JSX_ELEMENT',

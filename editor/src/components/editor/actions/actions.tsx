@@ -4,6 +4,8 @@ import localforage from 'localforage'
 import { imagePathURL } from '../../../common/server'
 import { roundAttributeLayoutValues } from '../../../core/layout/layout-utils'
 import {
+  findElementAtPath,
+  findJSXElementAtPath,
   getZIndexOrderedViewsWithoutDirectChildren,
   MetadataUtils,
 } from '../../../core/model/element-metadata-utils'
@@ -81,6 +83,7 @@ import {
   isJSXFragment,
   jsxConditionalExpressionConditionOptic,
   isJSExpressionOtherJavaScript,
+  setJSXAttributesAttribute,
 } from '../../../core/shared/element-template'
 import type { ValueAtPath } from '../../../core/shared/jsx-attributes'
 import {
@@ -2313,6 +2316,7 @@ export const UPDATE_FNS = {
           if (action.insertionBehaviour === 'insert-as-child' || action.target == null) {
             return {
               components: startingComponents,
+              originalElement: null,
               imports: success.imports,
               insertionIndex: null,
             }
@@ -2322,6 +2326,8 @@ export const UPDATE_FNS = {
               EP.dynamicPathToStaticPath(action.target),
             )
 
+            const originalElement = findJSXElementAtPath(action.target, startingComponents)
+
             const withTargetDeleted = removeElementAtPath(
               action.target,
               startingComponents,
@@ -2330,6 +2336,7 @@ export const UPDATE_FNS = {
 
             return {
               components: withTargetDeleted.components,
+              originalElement: originalElement,
               imports: withTargetDeleted.imports,
               insertionIndex: indexInParent >= 0 ? absolute(indexInParent) : null,
             }
@@ -2338,6 +2345,7 @@ export const UPDATE_FNS = {
 
         const {
           insertionIndex,
+          originalElement,
           components,
           imports: workingImports,
         } = removeElementAndReturnIndex()
@@ -2346,16 +2354,43 @@ export const UPDATE_FNS = {
 
         const { imports, duplicateNameMapping } = updatedImports
 
-        const renamedJsxElement = renameJsxElementChild(action.jsxElement, duplicateNameMapping)
+        const fixedElement = (() => {
+          const renamedJsxElement = renameJsxElementChild(action.jsxElement, duplicateNameMapping)
+          if (
+            originalElement == null ||
+            action.insertionBehaviour !== 'replace-target-keep-children-and-style'
+          ) {
+            return renamedJsxElement
+          }
+
+          // apply the style of original element on the new element
+          const renamedJsxElementWithOriginalStyle = applyUpdateToJSXElement(
+            renamedJsxElement,
+            (props) => {
+              const styleProps = getJSXAttribute(originalElement.props, 'style')
+              if (styleProps == null) {
+                return right(deleteJSXAttribute(props, 'style'))
+              } else {
+                return right(setJSXAttributesAttribute(props, 'style', styleProps))
+              }
+            },
+          )
+
+          // apply the children of original element on the new element
+          return {
+            ...renamedJsxElementWithOriginalStyle,
+            children: originalElement.children,
+          }
+        })()
 
         const withInsertedElement = insertJSXElementChildren(
           childInsertionPath(parentPath),
-          [renamedJsxElement],
+          [fixedElement],
           components,
           insertionIndex,
         )
 
-        const uid = getUtopiaID(renamedJsxElement)
+        const uid = getUtopiaID(fixedElement)
         const newPath = EP.appendToPath(parentPath, uid)
         newSelectedViews.push(newPath)
 
@@ -2371,6 +2406,7 @@ export const UPDATE_FNS = {
         }
       },
     )
+
     return {
       ...withNewElement,
       leftMenu: { visible: editor.leftMenu.visible, selectedTab: LeftMenuTab.Navigator },

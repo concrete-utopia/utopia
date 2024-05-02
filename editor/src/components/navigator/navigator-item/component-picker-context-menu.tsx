@@ -55,22 +55,39 @@ import {
 import type { InsertableComponent } from '../../shared/project-components'
 import type { ConditionalCase } from '../../../core/model/conditionals'
 
-type RenderPropInsertionTarget = { prop: string }
+export type RenderPropInsertionTarget = { prop: string }
+export type ReplaceInsertionTarget = 'replace-target' | 'replace-target-keep-children-and-style'
+export type ChildInsertionTarget = 'insert-as-child'
 
 export type InsertionTarget =
   | RenderPropInsertionTarget
-  | 'replace-target'
-  | 'insert-as-child'
+  | ReplaceInsertionTarget
+  | ChildInsertionTarget
   | ConditionalCase
 
 export function isRenderPropInsertionTarget(
   insertionTarget: InsertionTarget,
 ): insertionTarget is RenderPropInsertionTarget {
   return (
-    insertionTarget !== 'insert-as-child' &&
-    insertionTarget !== 'replace-target' &&
+    !isChildInsertionTarget(insertionTarget) &&
+    !isReplaceInsertionTarget(insertionTarget) &&
     !isConditionalCaseInsertionTarget(insertionTarget)
   )
+}
+
+export function isReplaceInsertionTarget(
+  insertionTarget: InsertionTarget,
+): insertionTarget is ReplaceInsertionTarget {
+  return (
+    insertionTarget === 'replace-target' ||
+    insertionTarget === 'replace-target-keep-children-and-style'
+  )
+}
+
+export function isChildInsertionTarget(
+  insertionTarget: InsertionTarget,
+): insertionTarget is ChildInsertionTarget {
+  return insertionTarget === 'insert-as-child'
 }
 
 export function isConditionalCaseInsertionTarget(
@@ -127,12 +144,12 @@ export function preferredChildrenForTarget(
 
   // TODO: we don't deal with components registered with the same name in multiple files
   if (registeredComponent != null) {
-    if (insertionTarget === 'insert-as-child' || insertionTarget === 'replace-target') {
+    if (isChildInsertionTarget(insertionTarget) || isReplaceInsertionTarget('replace-target')) {
       return registeredComponent.preferredChildComponents.map((v) => ({
         ...v,
         icon: getIconForComponent(v.name, v.moduleName, propertyControlsInfo),
       }))
-    } else if (insertionTarget !== 'true-case' && insertionTarget !== 'false-case') {
+    } else if (isRenderPropInsertionTarget(insertionTarget)) {
       for (const [registeredPropName, registeredPropValue] of Object.entries(
         registeredComponent.properties,
       )) {
@@ -157,7 +174,7 @@ const usePreferredChildrenForTarget = (
   target: ElementPath,
   insertionTarget: InsertionTarget,
 ): Array<PreferredChildComponentDescriptorWithIcon> => {
-  const targetParent = insertionTarget === 'replace-target' ? EP.parentPath(target) : target
+  const targetParent = isReplaceInsertionTarget(insertionTarget) ? EP.parentPath(target) : target
 
   const targetElement = useEditorState(
     Substores.metadata,
@@ -215,8 +232,9 @@ export const useCreateCallbackToShowComponentPicker =
           let pickerType: 'preferred' | 'full'
 
           if (overridePickerType == null) {
-            const targetParent =
-              insertionTarget === 'replace-target' ? EP.parentPath(target) : target
+            const targetParent = isReplaceInsertionTarget(insertionTarget)
+              ? EP.parentPath(target)
+              : target
             const targetElement = MetadataUtils.findElementByElementPath(
               editorRef.current.jsxMetadata,
               targetParent,
@@ -390,6 +408,7 @@ function insertComponentPickerItem(
       ]
     }
 
+    // TODO: proper error message
     console.warn(
       insertionTarget === 'replace-target'
         ? `Component picker error: can not replace to "${toInsert.name}"`

@@ -81,6 +81,10 @@ import type { MapLike } from 'typescript'
 import type { CommentFilterMode } from '../inspector/sections/comment-section'
 import type { Collaborator } from '../../core/shared/multiplayer'
 import type { PageTemplate } from '../canvas/remix/remix-utils'
+import type {
+  ChildInsertionTarget,
+  ReplaceInsertionTarget,
+} from '../navigator/navigator-item/component-picker-context-menu'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -147,7 +151,7 @@ export interface InsertJSXElement {
   jsxElement: JSXElement
   target: ElementPath | null
   importsToAdd: Imports
-  insertionBehaviour: 'insert-as-child' | 'replace-target'
+  insertionBehaviour: ChildInsertionTarget | ReplaceInsertionTarget
 }
 
 export interface ReplaceMappedElement {
