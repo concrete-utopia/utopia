@@ -62,42 +62,6 @@ import {
 import type { InsertableComponent } from '../../shared/project-components'
 import type { ConditionalCase } from '../../../core/model/conditionals'
 
-// export type RenderPropInsertionTarget = { prop: string }
-// export type ReplaceInsertionTarget = 'replace-target' | 'replace-target-keep-children-and-style'
-// export type ChildInsertionTarget = 'insert-as-child'
-
-// export type InsertionTarget =
-//   | RenderPropInsertionTarget
-//   | ReplaceInsertionTarget
-//   | ChildInsertionTarget
-//   | ConditionalCase
-
-// export function isRenderPropInsertionTarget(
-//   insertionTarget: InsertionTarget,
-// ): insertionTarget is RenderPropInsertionTarget {
-//   return (
-//     !isChildInsertionTarget(insertionTarget) &&
-//     !isReplaceInsertionTarget(insertionTarget) &&
-//     !isConditionalCaseInsertionTarget(insertionTarget)
-//   )
-// }
-
-// export function isReplaceInsertionTarget(
-//   insertionTarget: InsertionTarget,
-// ): insertionTarget is ReplaceInsertionTarget {
-//   return (
-//     insertionTarget === 'replace-target' ||
-//     insertionTarget === 'replace-target-keep-children-and-style'
-//   )
-// }
-
-// export function isChildInsertionTarget(
-//   insertionTarget: InsertionTarget,
-// ): insertionTarget is ChildInsertionTarget {
-//   return insertionTarget === 'insert-as-child'
-// }
-
-// export function isConditionalCaseInsertionTarget(
 type RenderPropTarget = { type: 'render-prop'; prop: string }
 type ConditionalTarget = { type: 'conditional'; conditionalCase: ConditionalCase }
 
