@@ -284,9 +284,10 @@ export function traceDataFromProp(
     const identifier = dataPath.value.originalIdentifier
 
     if (componentHoldingElement != null) {
+      const componentRootPath = EP.getPathOfComponentRoot(startFrom.elementPath)
       const resultInComponentScope: DataTracingResult = lookupInComponentScope(
         startFrom.elementPath,
-        startFrom.elementPath, // TODO change this to the containing component path!
+        componentRootPath,
         componentHoldingElement,
         identifier,
         [...dataPath.value.path, ...pathDrillSoFar],

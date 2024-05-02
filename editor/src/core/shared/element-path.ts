@@ -16,6 +16,7 @@ import { replaceAll } from './string-utils'
 import type { NonEmptyArray } from './array-utils'
 import { last, dropLastN, drop, dropLast } from './array-utils'
 import { forceNotNull } from './optional-utils'
+import invariant from '../../third-party/remix/invariant'
 
 // KILLME, except in 28 places
 export const toComponentId = toString
@@ -1148,6 +1149,18 @@ export function emptyStaticElementPathPart(): StaticElementPathPart {
 
 export function getContainingComponent(path: ElementPath): ElementPath {
   return dropLastPathPart(path)
+}
+
+export function getPathOfComponentRoot(path: ElementPath): ElementPath {
+  if (isRootElementOfInstance(path)) {
+    return path
+  }
+  const lastPart = last(path.parts)
+  invariant(
+    lastPart != null,
+    'internal error: Last part cannot be null because of the assertion isRootElementOfInstance',
+  )
+  return elementPath([...dropLast(path.parts), [lastPart[0]]])
 }
 
 export function uniqueElementPaths(paths: Array<ElementPath>): Array<ElementPath> {
