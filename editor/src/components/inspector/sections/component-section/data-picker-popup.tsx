@@ -208,7 +208,8 @@ export const DataPickerPopup = React.memo(
             tabIndex={0}
             style={{
               ...props.style,
-              left: -5, // to make it align with the inspector
+              left: 11, // to make it align with the cartouche control
+              top: -5,
               backgroundColor: colorTheme.neutralBackground.value,
               padding: '8px 4px',
               boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,

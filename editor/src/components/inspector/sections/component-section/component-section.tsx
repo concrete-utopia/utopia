@@ -360,6 +360,7 @@ export function useDataPickerButton(
 
   const DataPickerOpener = React.useMemo(
     () => (
+      // <div />
       <Button
         onClick={onClick}
         data-testid={DataPickerPopupButtonTestId}
