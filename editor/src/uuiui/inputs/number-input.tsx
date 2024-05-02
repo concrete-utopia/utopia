@@ -136,6 +136,7 @@ export interface NumberInputOptions {
   roundCorners?: BoxCorners
   numberType: CSSNumberType
   defaultUnitToHide: CSSNumberUnit | null
+  pasteHandler?: boolean
 }
 
 export interface AbstractNumberInputProps<T extends CSSNumber | number>
@@ -186,6 +187,7 @@ export const NumberInput = React.memo<NumberInputProps>(
     onMouseEnter,
     onMouseLeave,
     invalid,
+    pasteHandler,
   }) => {
     const ref = React.useRef<HTMLInputElement>(null)
     const colorTheme = useColorTheme()
@@ -834,6 +836,7 @@ export const NumberInput = React.memo<NumberInputProps>(
             controlStyles={controlStyles}
             controlStatus={controlStatus}
             testId={testId}
+            pasteHandler={pasteHandler}
             disabled={disabled}
             focused={isFocused}
             hasLabel={labelInner != null}
