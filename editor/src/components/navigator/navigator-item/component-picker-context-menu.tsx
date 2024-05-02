@@ -408,16 +408,27 @@ function insertComponentPickerItem(
       ]
     }
 
-    // TODO: proper error message
-    console.warn(
-      insertionTarget === 'replace-target'
-        ? `Component picker error: can not replace to "${toInsert.name}"`
-        : `Component picker error: can not insert "${toInsert.name}"`,
-    )
+    console.warn(errorMessage(insertionTarget, toInsert))
     return []
   })()
 
   dispatch(actions)
+}
+
+function errorMessage(insertionTarget: InsertionTarget, toInsert: InsertableComponent) {
+  switch (insertionTarget) {
+    case 'replace-target':
+      return `Component picker error: can not swap to "${toInsert.name}"`
+    case 'replace-target-keep-children-and-style':
+      return `Component picker error: can not replace to "${toInsert.name}"`
+    case 'insert-as-child':
+      return `Component picker error: can not insert "${toInsert.name}" as child`
+    case 'false-case':
+    case 'true-case':
+      return `Component picker error: can not insert "${toInsert.name}" into conditional`
+    default:
+      return `Component picker error: can not insert "${toInsert.name}" into render prop "${insertionTarget.prop}"`
+  }
 }
 
 function insertPreferredChild(
