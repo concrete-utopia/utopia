@@ -80,6 +80,8 @@ import { getProjectID } from '../../common/env-vars'
 import { REQUEST_UPDATE_CONTEXT_GLOABAL_HACKED } from './store/remix-derived-data'
 import { isLeft } from '../../core/shared/either'
 import { notice } from '../common/notice'
+import { useAtom } from 'jotai'
+import { RemixNavigationAtom } from '../canvas/remix/utopia-remix-root-component'
 
 export const InsertMenuButtonTestId = 'insert-menu-button'
 export const PlayModeButtonTestId = 'canvas-toolbar-play-mode'
@@ -435,6 +437,13 @@ export const CanvasToolbar = React.memo(() => {
 
   const isMyProject = useIsMyProject()
 
+  const [remix] = useAtom(RemixNavigationAtom)
+
+  const revalidateAllLoaders = React.useCallback(() => {
+    // TODO: only revalidate the router that points to the route being edited
+    Object.values(remix).forEach((router) => router?.revalidate())
+  }, [remix])
+
   return (
     <FlexColumn
       style={{ alignItems: 'start', justifySelf: 'center' }}
@@ -548,6 +557,16 @@ export const CanvasToolbar = React.memo(() => {
             iconType='refresh'
             iconCategory='semantic'
             onClick={resetCanvasCallback}
+            keepActiveInLiveMode
+            size={16}
+          />
+        </Tooltip>
+        <Separator />
+        <Tooltip title='Revalidate all loaders' placement='bottom'>
+          <InsertModeButton
+            iconType='refresh'
+            iconCategory='semantic'
+            onClick={revalidateAllLoaders}
             keepActiveInLiveMode
             size={16}
           />

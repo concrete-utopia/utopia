@@ -41,6 +41,7 @@ interface RemixNavigationContext {
   navigate: (loc: string) => Promise<void>
   location: Location
   entries: Array<Location>
+  revalidate: () => void
 }
 
 export interface RemixNavigationAtomData {
@@ -217,8 +218,7 @@ function useGetRoutes(
             ).scope
 
           for (const routeExport of RouteExportsForRouteObject) {
-            route[routeExport] = (args: any) =>
-              createExecutionScope().scope[routeExport]?.(args) ?? null
+            route[routeExport] = (args: any) => createExecutionScope()[routeExport]?.(args) ?? null
           }
 
           const requestUpdate =
@@ -379,6 +379,7 @@ export const UtopiaRemixRootComponent = (props: UtopiaRemixRootComponentProps) =
             navigate: (loc: string) => innerRouter.navigate(loc),
             location: location,
             entries: updatedEntries,
+            revalidate: () => innerRouter.revalidate(),
           },
         }
       })
