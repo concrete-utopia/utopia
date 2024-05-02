@@ -21,7 +21,7 @@ import {
   jsIdentifier,
   type ElementInstanceMetadataMap,
 } from '../shared/element-template'
-import { forceNotNull } from '../shared/optional-utils'
+import { forceNotNull, optionalMap } from '../shared/optional-utils'
 import type {
   ElementPath,
   ElementPropertyPath,
@@ -227,6 +227,48 @@ function propUsedByIdentifierOrAccess(
   }
 }
 
+function paramUsedByIdentifierOrAccess(
+  param: Param,
+  originalIdentifier: JSIdentifier,
+  pathDrillSoFar: DataPath,
+): Either<string, { modifiedPathDrillSoFar: DataPath }> {
+  switch (param.boundParam.type) {
+    case 'REGULAR_PARAM': {
+      // in case of a regular prop param, first we want to match the param name to the original identifier
+      if (param.boundParam.paramName !== originalIdentifier.name) {
+        return left('identifier does not match the prop name')
+      }
+
+      return right({
+        modifiedPathDrillSoFar: pathDrillSoFar,
+      })
+    }
+    case 'DESTRUCTURED_OBJECT': {
+      for (const paramPart of param.boundParam.parts) {
+        if (paramPart.param.boundParam.type === 'REGULAR_PARAM') {
+          if (paramPart.param.boundParam.paramName === originalIdentifier.name) {
+            if (paramPart.param.dotDotDotToken) {
+              return right({
+                modifiedPathDrillSoFar: pathDrillSoFar,
+              })
+            } else {
+              return right({
+                modifiedPathDrillSoFar: [paramPart.param.boundParam.paramName, ...pathDrillSoFar],
+              })
+            }
+          }
+        }
+      }
+      return left('identifier does not match any of the destructured object properties')
+    }
+    case 'DESTRUCTURED_ARRAY': {
+      return left('Destructured array properties are not yet supported')
+    }
+    default:
+      assertNever(param.boundParam)
+  }
+}
+
 export function traceDataFromProp(
   startFrom: ElementPropertyPath,
   metadata: ElementInstanceMetadataMap,
@@ -349,9 +391,10 @@ function walkUpInnerScopesUntilReachingComponent(
       if (mapFunction.type === 'ATTRIBUTE_OTHER_JAVASCRIPT') {
         // let's see if the identifier points to a component prop
         {
-          for (const param of mapFunction.params) {
+          const param = mapFunction.params[0] // the map function's first param is the mapped value
+          if (param != null) {
             // let's try to match the name to the containing component's props!
-            const foundPropSameName = propUsedByIdentifierOrAccess(param, identifier, [
+            const foundPropSameName = paramUsedByIdentifierOrAccess(param, identifier, [
               ...pathDrillSoFar,
             ])
 
@@ -367,8 +410,9 @@ function walkUpInnerScopesUntilReachingComponent(
                 const dataPath = processJSPropertyAccessors(mapOver)
 
                 if (isRight(dataPath)) {
-                  const mapIndexHack = EP.extractIndexFromIndexedUid(
-                    EP.toUid(currentElementPathOfWalk),
+                  const mapIndexHack = optionalMap(
+                    (i) => substractFromStringNumber(i, 1),
+                    EP.extractIndexFromIndexedUid(EP.toUid(currentElementPathOfWalk)),
                   )
                   if (mapIndexHack == null) {
                     return dataTracingFailed(
@@ -388,7 +432,6 @@ function walkUpInnerScopesUntilReachingComponent(
                       ...dataPath.value.path,
                       mapIndexHack,
                       ...foundPropSameName.value.modifiedPathDrillSoFar,
-                      ...pathDrillSoFar,
                     ],
                   )
                 }
@@ -576,4 +619,8 @@ function lookupInComponentScope(
   // end of temporary stopgap
 
   return dataTracingFailed('Could not find a hook call')
+}
+
+function substractFromStringNumber(n: string, minus: number): string {
+  return `${parseInt(n) - minus}`
 }

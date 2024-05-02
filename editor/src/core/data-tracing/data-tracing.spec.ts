@@ -197,8 +197,8 @@ describe('Data Tracing', () => {
     it('Traces back an evil undrilled prop use to a string literal jsx attribute', async () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCodeWithStoryboard(`
-      function MyInnerComponent(props) {
-        return <div data-uid='component-inner-root' title={props.allProps.title} />
+      function MyInnerComponent({ allProps }) {
+        return <div data-uid='component-inner-root' title={allProps.title} />
       }
 
       function MyComponent(props) {
@@ -759,8 +759,106 @@ describe('Data Tracing', () => {
 
       expect(traceResult).toEqual(
         dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('titles'), [
-          '2',
+          '1',
         ]),
+      )
+    })
+
+    it('Works with a simple hook case', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithStoryboard(`
+        function useLoaderData() {
+          return { reviews: [{ title: 'Good' }, { title: 'Bad' }] }
+        }
+
+      function MyComponent(props) {
+        const { reviews } = useLoaderData()
+        return <div data-uid='component-root'>
+          {
+            // @utopia/uid=map
+            reviews.map((review) => 
+              (<div data-uid='mapped' key={review.title}>
+                <div data-uid='mapped-child' title={review.title}>{review.title}</div>
+              </div>)
+            )
+          }
+        </div>
+      }
+
+      function App() {
+        return <MyComponent data-uid='my-component' />
+      }
+      `),
+        'await-first-dom-report',
+      )
+
+      await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component:component-root'))
+
+      const traceResult = traceDataFromProp(
+        EPP.create(
+          EP.fromString('sb/app:my-component:component-root/map/mapped~~~2/mapped-child'),
+          PP.create('title'),
+        ),
+        editor.getEditorState().editor.jsxMetadata,
+        editor.getEditorState().editor.projectContents,
+        [],
+      )
+
+      expect(traceResult).toEqual(
+        dataTracingToAHookCall(
+          EP.fromString('sb/app:my-component:component-root'),
+          'useLoaderData',
+          ['reviews', '2', 'title'],
+        ),
+      )
+    })
+
+    it('Works with a destructure in the map function', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithStoryboard(`
+        function useLoaderData() {
+          return { reviews: [{ title: 'Good' }, { title: 'Bad' }] }
+        }
+
+      function MyComponent(props) {
+        const { reviews } = useLoaderData()
+        return <div data-uid='component-root'>
+          {
+            // @utopia/uid=map
+            reviews.map(({ title }) => 
+              (<div data-uid='mapped' key={title}>
+                <div data-uid='mapped-child' title={title}>{title}</div>
+              </div>)
+            )
+          }
+        </div>
+      }
+
+      function App() {
+        return <MyComponent data-uid='my-component' />
+      }
+      `),
+        'await-first-dom-report',
+      )
+
+      await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component:component-root'))
+
+      const traceResult = traceDataFromProp(
+        EPP.create(
+          EP.fromString('sb/app:my-component:component-root/map/mapped~~~2/mapped-child'),
+          PP.create('title'),
+        ),
+        editor.getEditorState().editor.jsxMetadata,
+        editor.getEditorState().editor.projectContents,
+        [],
+      )
+
+      expect(traceResult).toEqual(
+        dataTracingToAHookCall(
+          EP.fromString('sb/app:my-component:component-root'),
+          'useLoaderData',
+          ['reviews', '2', 'title'],
+        ),
       )
     })
   })
