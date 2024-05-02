@@ -381,7 +381,7 @@ describe('Data Tracing', () => {
         }
 
       function MyComponent(props) {
-        const { reviews } = useLoaderData()
+        const { reviews, otherStuff } = useLoaderData()
         const review = reviews[0]
 
         return <div data-uid='component-root' title={review['hello']} />
@@ -721,7 +721,7 @@ describe('Data Tracing', () => {
     })
   })
 
-  xdescribe('Tracing through a map function', () => {
+  describe('Tracing through a map function', () => {
     it('Traces back a prop to a string literal jsx attribute via a map function', async () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCodeWithStoryboard(`
@@ -730,7 +730,9 @@ describe('Data Tracing', () => {
           {
             // @utopia/uid=map
             props.titles.map((title) => 
-              (<div data-uid='mapped' key={title} title={title}>{title}</div>)
+              (<div data-uid='mapped' key={title}>
+                <div data-uid='mapped-child' title={title}>{title}</div>
+              </div>)
             )
           }
         </div>
@@ -747,7 +749,7 @@ describe('Data Tracing', () => {
 
       const traceResult = traceDataFromProp(
         EPP.create(
-          EP.fromString('sb/app:my-component:component-root/map/mapped~~~2'),
+          EP.fromString('sb/app:my-component:component-root/map/mapped~~~2/mapped-child'),
           PP.create('title'),
         ),
         editor.getEditorState().editor.jsxMetadata,
@@ -756,11 +758,9 @@ describe('Data Tracing', () => {
       )
 
       expect(traceResult).toEqual(
-        dataTracingToLiteralAttribute(
-          EP.fromString('sb/app:my-component'),
-          PP.create('titles'),
-          [],
-        ),
+        dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('titles'), [
+          '2',
+        ]),
       )
     })
   })
