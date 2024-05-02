@@ -991,7 +991,7 @@ export const RawSourceMapKeepDeepEquality: KeepDeepEqualityCall<RawSourceMap> =
 export function JSAssignmentKeepDeepEqualityCall(): KeepDeepEqualityCall<JSAssignment> {
   return combine2EqualityCalls(
     (assignment) => assignment.leftHandSide,
-    JSIdentifierKeepDeepEquality(),
+    BoundParamKeepDeepEquality(),
     (assignment) => assignment.rightHandSide,
     JSExpressionKeepDeepEqualityCall,
     jsAssignment,
@@ -1629,7 +1629,7 @@ export const RegularParamKeepDeepEquality: KeepDeepEqualityCall<RegularParam> =
     (param) => param.paramName,
     createCallWithTripleEquals(),
     (param) => param.defaultExpression,
-    nullableDeepEquality(JSExpressionOtherJavaScriptOrJSXMapExpressionKeepDeepEqualityCall),
+    nullableDeepEquality(JSExpressionKeepDeepEqualityCall),
     regularParam,
   )
 
@@ -1640,7 +1640,7 @@ export const DestructuredParamPartKeepDeepEquality: KeepDeepEqualityCall<Destruc
     (paramPart) => paramPart.param,
     ParamKeepDeepEquality(),
     (paramPart) => paramPart.defaultExpression,
-    nullableDeepEquality(JSExpressionOtherJavaScriptOrJSXMapExpressionKeepDeepEqualityCall),
+    nullableDeepEquality(JSExpressionKeepDeepEqualityCall),
     destructuredParamPart,
   )
 

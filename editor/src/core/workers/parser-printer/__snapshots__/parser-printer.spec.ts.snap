@@ -1377,39 +1377,17 @@ export var App = (props) => <View data-uid='bbb'>
         "assignments": Array [
           Object {
             "leftHandSide": Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
+              "defaultExpression": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "uid": "",
+                "value": "cake",
               },
-              "name": "a",
-              "sourceMap": Object {
-                "mappings": "CAWO",
-                "names": Array [],
-                "sources": Array [
-                  "code.tsx",
-                ],
-                "sourcesContent": Array [
-                  "import * as React from \\"react\\";
-import {
-  UtopiaUtils,
-  Ellipse,
-  Image,
-  Rectangle,
-  Storyboard,
-  Text,
-  View,
-  Scene
-} from \\"utopia-api\\";
-const a = \\"cake\\"
-export var App = (props) => <View data-uid='bbb'>
-  {{a: a}}
-</View>
-",
-                ],
-                "version": 3,
-              },
-              "type": "JS_IDENTIFIER",
-              "uid": "",
+              "paramName": "a",
+              "type": "REGULAR_PARAM",
             },
             "rightHandSide": Object {
               "comments": Object {
@@ -1458,19 +1436,19 @@ export var App = (props) => <View data-uid='bbb'>
       "startLine": 12,
       "uid": "854",
     },
+    "8d0": Object {
+      "endCol": 16,
+      "endLine": 11,
+      "startCol": 0,
+      "startLine": 11,
+      "uid": "8d0",
+    },
     "bbb": Object {
       "endCol": 7,
       "endLine": 14,
       "startCol": 28,
       "startLine": 12,
       "uid": "bbb",
-    },
-    "d0b": Object {
-      "endCol": 16,
-      "endLine": 11,
-      "startCol": 0,
-      "startLine": 11,
-      "uid": "d0b",
     },
   },
   "highlightBounds": Object {
@@ -1631,39 +1609,17 @@ export var App = (props) => <View data-uid='bbb'>
           "assignments": Array [
             Object {
               "leftHandSide": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
+                "defaultExpression": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "uid": "",
+                  "value": "cake",
                 },
-                "name": "a",
-                "sourceMap": Object {
-                  "mappings": "CAWO",
-                  "names": Array [],
-                  "sources": Array [
-                    "code.tsx",
-                  ],
-                  "sourcesContent": Array [
-                    "import * as React from \\"react\\";
-import {
-  UtopiaUtils,
-  Ellipse,
-  Image,
-  Rectangle,
-  Storyboard,
-  Text,
-  View,
-  Scene
-} from \\"utopia-api\\";
-const a = \\"cake\\"
-export var App = (props) => <View data-uid='bbb'>
-  {{a: a}}
-</View>
-",
-                  ],
-                  "version": 3,
-                },
-                "type": "JS_IDENTIFIER",
-                "uid": "",
+                "paramName": "a",
+                "type": "REGULAR_PARAM",
               },
               "rightHandSide": Object {
                 "comments": Object {

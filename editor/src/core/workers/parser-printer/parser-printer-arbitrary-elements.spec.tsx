@@ -464,6 +464,25 @@ export var whatever = (props) => {
     arr: arr
   });
 })();`
+    const arrValue = jsExpressionNestedArray(
+      [
+        jsxArrayValue(
+          jsExpressionNestedObject(
+            [
+              jsxPropertyAssignment(
+                'n',
+                jsExpressionValue(1, emptyComments, ''),
+                emptyComments,
+                emptyComments,
+              ),
+            ],
+            emptyComments,
+          ),
+          emptyComments,
+        ),
+      ],
+      emptyComments,
+    )
     const arbitraryBlock = arbitraryJSBlock(
       [],
       jsCode,
@@ -481,36 +500,7 @@ export var whatever = (props) => {
         file: 'code.tsx',
       }),
       {},
-      [
-        jsAssignmentStatement(
-          'const',
-          [
-            jsAssignment(
-              jsIdentifier('arr', '', expect.objectContaining({}), emptyComments),
-              jsExpressionNestedArray(
-                [
-                  jsxArrayValue(
-                    jsExpressionNestedObject(
-                      [
-                        jsxPropertyAssignment(
-                          'n',
-                          jsExpressionValue(1, emptyComments, ''),
-                          emptyComments,
-                          emptyComments,
-                        ),
-                      ],
-                      emptyComments,
-                    ),
-                    emptyComments,
-                  ),
-                ],
-                emptyComments,
-              ),
-            ),
-          ],
-          '',
-        ),
-      ],
+      [jsAssignmentStatement('const', [jsAssignment(regularParam('arr', arrValue), arrValue)], '')],
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -627,6 +617,35 @@ export var whatever = (props) => {
     arr: arr
   });
 })();`
+    const arrValue = jsExpressionNestedArray(
+      [
+        jsxArrayValue(
+          jsExpressionNestedObject(
+            [
+              jsxPropertyAssignment(
+                'a',
+                jsExpressionNestedObject(
+                  [
+                    jsxPropertyAssignment(
+                      'n',
+                      jsExpressionValue(1, emptyComments, ''),
+                      emptyComments,
+                      emptyComments,
+                    ),
+                  ],
+                  emptyComments,
+                ),
+                emptyComments,
+                emptyComments,
+              ),
+            ],
+            emptyComments,
+          ),
+          emptyComments,
+        ),
+      ],
+      emptyComments,
+    )
     const arbitraryBlock = arbitraryJSBlock(
       [],
       jsCode,
@@ -644,46 +663,7 @@ export var whatever = (props) => {
         file: 'code.tsx',
       }),
       {},
-      [
-        jsAssignmentStatement(
-          'const',
-          [
-            jsAssignment(
-              jsIdentifier('arr', '', expect.objectContaining({}), emptyComments),
-              jsExpressionNestedArray(
-                [
-                  jsxArrayValue(
-                    jsExpressionNestedObject(
-                      [
-                        jsxPropertyAssignment(
-                          'a',
-                          jsExpressionNestedObject(
-                            [
-                              jsxPropertyAssignment(
-                                'n',
-                                jsExpressionValue(1, emptyComments, ''),
-                                emptyComments,
-                                emptyComments,
-                              ),
-                            ],
-                            emptyComments,
-                          ),
-                          emptyComments,
-                          emptyComments,
-                        ),
-                      ],
-                      emptyComments,
-                    ),
-                    emptyComments,
-                  ),
-                ],
-                emptyComments,
-              ),
-            ),
-          ],
-          '',
-        ),
-      ],
+      [jsAssignmentStatement('const', [jsAssignment(regularParam('arr', arrValue), arrValue)], '')],
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -799,7 +779,21 @@ export var whatever = (props) => {
           'const',
           [
             jsAssignment(
-              jsIdentifier('arr', '', expect.objectContaining({}), emptyComments),
+              regularParam(
+                'arr',
+                jsExpressionNestedArray(
+                  [
+                    jsxArrayValue(
+                      jsExpressionNestedArray(
+                        [jsxArrayValue(jsExpressionValue(1, emptyComments), emptyComments)],
+                        emptyComments,
+                      ),
+                      emptyComments,
+                    ),
+                  ],
+                  emptyComments,
+                ),
+              ),
               jsExpressionNestedArray(
                 [
                   jsxArrayValue(
