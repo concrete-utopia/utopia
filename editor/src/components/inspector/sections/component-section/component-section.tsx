@@ -102,15 +102,13 @@ import type { VariableData } from '../../../canvas/ui-jsx-canvas'
 import { array } from 'prop-types'
 import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'
 import { DataPickerPopup } from './data-picker-popup'
-import {
-  jsxElementChildToText,
-  jsxElementToDataPath,
-} from '../../../canvas/ui-jsx-canvas-renderer/jsx-element-child-to-text'
+import { jsxElementChildToText } from '../../../canvas/ui-jsx-canvas-renderer/jsx-element-child-to-text'
 import { foldEither } from '../../../../core/shared/either'
 import { stopPropagation } from '../../common/inspector-utils'
-import { NO_OP } from '../../../../core/shared/utils'
 import { useMetaobjectEditPopup } from './metaobject-edit-popup'
 import { IdentifierExpressionCartoucheControl } from './cartouche-control'
+import { traceDataFromProp } from '../../../../core/data-tracing/data-tracing'
+import * as EPP from '../../../template-property-path'
 
 export const VariableFromScopeOptionTestId = (idx: string) => `variable-from-scope-${idx}`
 export const DataPickerPopupButtonTestId = `data-picker-popup-button-test-id`
@@ -407,6 +405,18 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
     'RowForBaseControl selectedViews',
   )
 
+  const metadata = useEditorState(
+    Substores.metadata,
+    (store) => store.editor.jsxMetadata,
+    'RowForBaseControl metadata',
+  )
+
+  const projectContents = useEditorState(
+    Substores.projectContents,
+    (store) => store.editor.projectContents,
+    'RowForBaseControl projectContents',
+  )
+
   const propMetadata = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
   const contextMenuItems = Utils.stripNulls([
     addOnUnsetValues([propName], propMetadata.onUnsetValues),
@@ -450,12 +460,11 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
     props.controlDescription,
   )
 
-  const maybeDataPath =
-    propMetadata.attributeExpression?.type === 'JS_IDENTIFIER' ||
-    propMetadata.attributeExpression?.type === 'JS_ELEMENT_ACCESS' ||
-    propMetadata.attributeExpression?.type === 'JS_PROPERTY_ACCESS'
-      ? jsxElementToDataPath(propMetadata.attributeExpression)
-      : null
+  // TODO: make it work for multiple selected views
+  const selectedView = selectedViews.at(0) ?? EP.emptyElementPath
+
+  const trace = traceDataFromProp(EPP.create(selectedView, propPath), metadata, projectContents, [])
+  const maybeDataPath = trace.type !== 'hook-result' ? null : trace.dataPathIntoAttribute
 
   const metaobjectPickerData = useMetaobjectEditPopup(
     selectedViews.at(0) ?? EP.emptyElementPath,

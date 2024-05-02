@@ -571,7 +571,13 @@ export function useVariableValue(
   const variables = useVariablesInScopeForSelectedElement(elementPath, propertyPath, 'all')
   const allVars = variables.flatMap(unrollVariableOption)
   const found = allVars.find((v) => {
-    return arrayEqualsByValue(v.valuePath, dataPath, is)
+    const stringifiedValuePath = v.valuePath.map((part) => `${part}`)
+    const eq = arrayEqualsByValue(stringifiedValuePath, dataPath, is)
+    if (eq) {
+      // console.log(stringifiedValuePath, dataPath)
+      return true
+    }
+    return false
   })
   return found?.variableInfo?.value ?? null
 }
