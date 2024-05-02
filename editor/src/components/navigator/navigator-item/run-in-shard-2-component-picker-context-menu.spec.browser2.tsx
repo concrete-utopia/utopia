@@ -20,9 +20,11 @@ import {
   componentPickerOptionTestId,
   componentPickerTestIdForProp,
 } from './component-picker'
-import { waitFor } from '@testing-library/react'
+import { fireEvent, waitFor } from '@testing-library/react'
 import { labelTestIdForComponentIcon } from './component-picker-context-menu'
-import { addChildButtonTestId } from './navigator-item-components'
+import { ReplaceElementButtonTestId, addChildButtonTestId } from './navigator-item-components'
+import { NavigatorContainerId } from '../navigator'
+import { act } from 'react-dom/test-utils'
 
 describe('The navigator component picker context menu', () => {
   const PreferredChildComponents = [
@@ -85,6 +87,18 @@ describe('The navigator component picker context menu', () => {
             height: 87,
           }}
           data-uid='card'
+        />
+        <Card
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 800,
+            top: 111,
+            width: 139,
+            height: 87,
+          }}
+          data-uid='card-with-title'
+          title={<div data-uid='card-title-div'/>}
         />
       </Storyboard>
     )
@@ -486,6 +500,17 @@ describe('The navigator component picker context menu', () => {
             <FlexRow>three totally real placeholders</FlexRow>
           }
         />
+        <Card
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 800,
+            top: 111,
+            width: 139,
+            height: 87,
+          }}
+          title={<div />}
+        />
       </Storyboard>
     )
     `),
@@ -582,6 +607,17 @@ describe('The navigator component picker context menu', () => {
           title={
             <FlexCol />
           }
+        />
+        <Card
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 800,
+            top: 111,
+            width: 139,
+            height: 87,
+          }}
+          title={<div />}
         />
       </Storyboard>
     )
@@ -683,6 +719,17 @@ describe('The navigator component picker context menu', () => {
         >
           <FlexCol />
         </Card>
+        <Card
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 800,
+            top: 111,
+            width: 139,
+            height: 87,
+          }}
+          title={<div />}
+        />
       </Storyboard>
     )
     `),
@@ -736,6 +783,17 @@ describe('The navigator component picker context menu', () => {
             <FlexRow>three totally real placeholders</FlexRow>
           }
         />
+        <Card
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 800,
+            top: 111,
+            width: 139,
+            height: 87,
+          }}
+          title={<div />}
+        />
       </Storyboard>
     )
     `),
@@ -788,6 +846,17 @@ describe('The navigator component picker context menu', () => {
         >
           <FlexRow>three totally real placeholders</FlexRow>
         </Card>
+        <Card
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 800,
+            top: 111,
+            width: 139,
+            height: 87,
+          }}
+          title={<div />}
+        />
       </Storyboard>
     )
     `),
@@ -1121,5 +1190,219 @@ export const Column = () => (
   />
 )
 `)
+  })
+
+  describe('Replacing a regular element', () => {
+    const target = EP.fromString('sb/card-with-title')
+
+    const expectedOutput = formatTestProjectCode(`
+      import * as React from 'react'
+      import { Storyboard } from 'utopia-api'
+      import { FlexCol } from '/src/utils'
+
+      export const Card = (props) => {
+        return (
+          <div style={props.style}>
+            {props.title}
+            {props.children}
+          </div>
+        )
+      }
+
+      export var storyboard = (
+        <Storyboard>
+          <Card
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 945,
+              top: 111,
+              width: 139,
+              height: 87,
+            }}
+          />
+          <FlexCol />
+        </Storyboard>
+      )
+    `)
+
+    it('Works when clicking the navigator button', async () => {
+      const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
+      await selectComponentsForTest(editor, [target])
+      const replaceButton = editor.renderedDOM.getByTestId(ReplaceElementButtonTestId(target, null))
+      await mouseClickAtPoint(replaceButton, { x: 2, y: 2 })
+
+      const menuButton = await waitFor(() => editor.renderedDOM.getAllByText('FlexCol')[1]) // The first result is from other-utils
+      await mouseClickAtPoint(menuButton, { x: 3, y: 3 })
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState(), StoryboardFilePath)).toEqual(
+        expectedOutput,
+      )
+    })
+
+    it('Works when using the S shortcut the navigator button', async () => {
+      const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
+      await selectComponentsForTest(editor, [target])
+      await pressKey('s')
+
+      const menuButton = await waitFor(() => editor.renderedDOM.getAllByText('FlexCol')[1])
+      await mouseClickAtPoint(menuButton, { x: 3, y: 3 })
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState(), StoryboardFilePath)).toEqual(
+        expectedOutput,
+      )
+    })
+
+    it('Works when using the context menu', async () => {
+      const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
+      await selectComponentsForTest(editor, [target])
+
+      const navigatorRow = editor.renderedDOM.getByTestId(NavigatorContainerId)
+
+      await act(async () => {
+        fireEvent(
+          navigatorRow,
+          new MouseEvent('contextmenu', {
+            bubbles: true,
+            cancelable: true,
+            clientX: 3,
+            clientY: 3,
+            buttons: 0,
+            button: 2,
+          }),
+        )
+      })
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      const swapButton = await waitFor(() => editor.renderedDOM.getByText('Swap Element With…'))
+      await mouseClickAtPoint(swapButton, { x: 3, y: 3 })
+
+      const menuButton = await waitFor(() => editor.renderedDOM.getAllByText('FlexCol')[1])
+      await mouseClickAtPoint(menuButton, { x: 3, y: 3 })
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState(), StoryboardFilePath)).toEqual(
+        expectedOutput,
+      )
+    })
+  })
+
+  describe('Replacing a render prop', () => {
+    const target = EP.fromString('sb/card-with-title/card-title-div')
+
+    const expectedOutput = formatTestProjectCode(`
+      import * as React from 'react'
+      import { Storyboard } from 'utopia-api'
+      import { FlexCol } from '/src/utils'
+
+      export const Card = (props) => {
+        return (
+          <div style={props.style}>
+            {props.title}
+            {props.children}
+          </div>
+        )
+      }
+
+      export var storyboard = (
+        <Storyboard>
+          <Card
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 945,
+              top: 111,
+              width: 139,
+              height: 87,
+            }}
+          />
+          <Card
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 800,
+              top: 111,
+              width: 139,
+              height: 87,
+            }}
+            title={<FlexCol />}
+          />
+        </Storyboard>
+      )
+    `)
+
+    it('Works when clicking the navigator button', async () => {
+      const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
+      await selectComponentsForTest(editor, [target])
+      const replaceButton = editor.renderedDOM.getByTestId(
+        ReplaceElementButtonTestId(target, 'title'),
+      )
+      await mouseClickAtPoint(replaceButton, { x: 2, y: 2 })
+
+      const menuButton = await waitFor(() => editor.renderedDOM.getByText('FlexCol'))
+      await mouseClickAtPoint(menuButton, { x: 3, y: 3 })
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState(), StoryboardFilePath)).toEqual(
+        expectedOutput,
+      )
+    })
+
+    it('Works when using the S shortcut the navigator button', async () => {
+      const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
+      await selectComponentsForTest(editor, [target])
+      await pressKey('s')
+
+      const menuButton = await waitFor(() => editor.renderedDOM.getByText('FlexCol'))
+      await mouseClickAtPoint(menuButton, { x: 3, y: 3 })
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState(), StoryboardFilePath)).toEqual(
+        expectedOutput,
+      )
+    })
+
+    it('Works when using the context menu', async () => {
+      const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
+      await selectComponentsForTest(editor, [target])
+
+      const navigatorRow = editor.renderedDOM.getByTestId(NavigatorContainerId)
+
+      await act(async () => {
+        fireEvent(
+          navigatorRow,
+          new MouseEvent('contextmenu', {
+            bubbles: true,
+            cancelable: true,
+            clientX: 3,
+            clientY: 3,
+            buttons: 0,
+            button: 2,
+          }),
+        )
+      })
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      const swapButton = await waitFor(() => editor.renderedDOM.getByText('Swap Element With…'))
+      await mouseClickAtPoint(swapButton, { x: 3, y: 3 })
+
+      const menuButton = await waitFor(() => editor.renderedDOM.getByText('FlexCol'))
+      await mouseClickAtPoint(menuButton, { x: 3, y: 3 })
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState(), StoryboardFilePath)).toEqual(
+        expectedOutput,
+      )
+    })
   })
 })

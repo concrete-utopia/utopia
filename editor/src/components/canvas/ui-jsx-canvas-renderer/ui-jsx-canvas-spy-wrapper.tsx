@@ -64,6 +64,7 @@ export function addFakeSpyEntry(
   conditionValue: ConditionValue,
   earlyReturn: EarlyReturn | null,
   variablesInScope: VariableData,
+  prop: string | null,
 ): void {
   // Ensure that entries are not created which aren't included in `validPaths`,
   // so that ghost like entries are not created.
@@ -97,6 +98,7 @@ export function addFakeSpyEntry(
       conditionValue: conditionValue,
       textContent: null,
       earlyReturn: earlyReturn,
+      assignedToProp: prop,
     }
     const elementPathString = EP.toComponentId(elementPath)
     metadataContext.current.spyValues.metadata[elementPathString] = instanceMetadata
@@ -119,6 +121,7 @@ export function buildSpyWrappedElement(
   filePath: string,
   variablesInScope: VariableData,
   isTextEditor: 'text-editor' | 'real-element' = 'real-element',
+  assignedToProp: string | null,
 ): React.ReactElement {
   const props = {
     ...finalProps,
@@ -154,6 +157,7 @@ export function buildSpyWrappedElement(
       conditionValue: 'not-a-conditional',
       textContent: null,
       earlyReturn: null,
+      assignedToProp: assignedToProp,
     }
     if (!EP.isStoryboardPath(elementPath) || shouldIncludeCanvasRootInTheSpy) {
       const elementPathString = EP.toComponentId(elementPath)

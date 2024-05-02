@@ -14,6 +14,7 @@ import { assertNever } from '../../../core/shared/utils'
 import { insertableComponent } from '../../shared/project-components'
 import type { StylePropOption, InsertableComponent } from '../../shared/project-components'
 import type { Size } from '../../../core/shared/math-utils'
+import { dataPasteHandler } from '../../../utils/paste-handler'
 
 export interface ComponentPickerProps {
   allComponents: Array<InsertMenuItemGroup>
@@ -84,6 +85,7 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
         height: '100%',
         padding: 0,
         color: dark.fg3.value,
+        colorScheme: 'dark',
         borderRadius: 10,
       }}
     >
@@ -176,6 +178,7 @@ const FilterBar = React.memo((props: FilterBarProps) => {
       onChange={handleFilterChange}
       value={filter}
       data-testId={componentPickerFilterInputTestId}
+      {...dataPasteHandler(true)}
     />
   )
 })
@@ -189,7 +192,7 @@ const ComponentPickerComponentSection = React.memo(
   (props: ComponentPickerComponentSectionProps) => {
     const { components, onItemClick } = props
     return (
-      <div style={{ maxHeight: 250, overflowY: 'scroll' }}>
+      <div style={{ maxHeight: 250, overflowY: 'scroll', scrollbarWidth: 'auto' }}>
         {components.map((comp) => {
           return (
             <ComponentPickerOption
