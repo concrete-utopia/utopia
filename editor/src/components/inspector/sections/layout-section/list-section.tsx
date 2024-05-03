@@ -60,7 +60,10 @@ import {
   labelSelector,
 } from '../../../navigator/navigator-item/navigator-item-wrapper'
 import { getNavigatorTargets } from '../../../navigator/navigator-utils'
-import type { ControlStatus } from '../../common/control-status'
+import {
+  calculatePropertyStatusForSelection,
+  type ControlStatus,
+} from '../../common/control-status'
 import { getControlStyles } from '../../common/control-styles'
 import { usePropControlledStateV2 } from '../../common/inspector-utils'
 import { ConditionalOverrideControl } from '../../controls/conditional-override-control'
@@ -79,6 +82,7 @@ import { jsxElementChildToText } from '../../../canvas/ui-jsx-canvas-renderer/js
 import { NO_OP } from '../../../../core/shared/utils'
 import { IdentifierExpressionCartoucheControl } from '../component-section/cartouche-control'
 import { getTextContentOfElement } from '../component-section/data-reference-cartouche'
+import { JSXPropertyControl } from '../component-section/property-control-controls'
 
 type MapExpression = JSXMapExpression | 'multiselect' | 'not-a-mapexpression'
 
@@ -276,40 +280,54 @@ export const ListSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
           <span>List</span>
         </FlexRow>
       </FlexRow>
-      <FlexRow
-        css={{
-          height: UtopiaTheme.layout.rowHeight.large,
-          padding: `0 ${UtopiaTheme.layout.inspectorXPadding}px`,
-        }}
+      {popupIsOpen ? DataPickerComponent : null}
+      <UIGridRow
+        padded={false}
+        style={{ paddingLeft: 8, paddingRight: 8, paddingTop: 3, paddingBottom: 3 }}
+        variant='<--1fr--><--1fr-->|-18px-|'
       >
-        {popupIsOpen ? DataPickerComponent : null}
-        <UIGridRow
-          padded={false}
-          style={{ paddingLeft: 0, paddingRight: 8, paddingTop: 3, paddingBottom: 3 }}
-          variant='<--1fr--><--1fr-->|-18px-|'
+        List Source
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            minWidth: 0,
+          }}
+          ref={setReferenceElement}
         >
-          Value To Map
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              minWidth: 0,
-            }}
-            ref={setReferenceElement}
-          >
-            <IdentifierExpressionCartoucheControl
-              contents={contentsToDisplay.label ?? ''}
-              icon={React.createElement(iconForControlType(controlDescription.control))}
-              matchType={contentsToDisplay.type === 'literal' ? 'none' : 'full'}
-              onOpenDataPicker={openPopup}
-              onDeleteCartouche={NO_OP}
-              testId={`cartouche-map-expression-value-to-map`}
-              safeToDelete={false}
-            />
-            {DataPickerOpener}
-          </div>
-        </UIGridRow>
-      </FlexRow>
+          <IdentifierExpressionCartoucheControl
+            contents={contentsToDisplay.label ?? ''}
+            icon={React.createElement(iconForControlType(controlDescription.control))}
+            matchType={contentsToDisplay.type === 'literal' ? 'none' : 'full'}
+            onOpenDataPicker={openPopup}
+            onDeleteCartouche={NO_OP}
+            testId={`cartouche-map-expression-value-to-map`}
+            safeToDelete={false}
+          />
+        </div>
+        {DataPickerOpener}
+      </UIGridRow>
+      <UIGridRow
+        padded={false}
+        style={{ paddingLeft: 8, paddingRight: 8, paddingTop: 3, paddingBottom: 3 }}
+        variant='<--1fr--><--1fr-->|-18px-|'
+      >
+        Contents
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            minWidth: 0,
+          }}
+          ref={setReferenceElement}
+        >
+          <JSXPropertyControl
+            controlStatus='controlled'
+            propertyStatus={calculatePropertyStatusForSelection([], [])}
+            value={{ type: 'unknown', value: 'whap' }}
+          />
+        </div>
+      </UIGridRow>
     </div>
   )
 })
