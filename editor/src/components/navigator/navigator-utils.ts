@@ -22,6 +22,7 @@ import type { ConditionalClauseNavigatorEntry, NavigatorEntry } from '../editor/
 import {
   conditionalClauseNavigatorEntry,
   dataReferenceNavigatorEntry,
+  getElementFromProjectContents,
   invalidOverrideNavigatorEntry,
   isConditionalClauseNavigatorEntry,
   regularNavigatorEntry,
@@ -108,7 +109,10 @@ export function getNavigatorTargets(
       const isHiddenInNavigator = EP.containsPath(path, hiddenInNavigator)
       const isConditional = MetadataUtils.isElementPathConditionalFromMetadata(metadata, path)
       const isMap = MetadataUtils.isJSXMapExpression(path, metadata)
-      const isDataReference = MetadataUtils.isElementDataReference(path, metadata)
+      const elementFromProjectContents = getElementFromProjectContents(path, projectContents)
+      const elementIsDataReferenceFromProjectContents = MetadataUtils.isElementDataReference(
+        elementFromProjectContents,
+      )
 
       const isCollapsed = EP.containsPath(path, collapsedViews)
       const newCollapsedAncestor = collapsedAncestor || isCollapsed || isHiddenInNavigator
@@ -121,12 +125,13 @@ export function getNavigatorTargets(
         visibleNavigatorTargets.push(...entries)
       }
 
-      if (isDataReference && isFeatureEnabled('Data Entries in the Navigator')) {
-        const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
-        if (elementMetadata != null && isRight(elementMetadata.element)) {
+      if (
+        elementIsDataReferenceFromProjectContents &&
+        isFeatureEnabled('Data Entries in the Navigator')
+      ) {
+        if (elementFromProjectContents != null) {
           // add synthetic entry
-          const element = elementMetadata.element.value
-          const dataRefEntry = dataReferenceNavigatorEntry(path, element)
+          const dataRefEntry = dataReferenceNavigatorEntry(path, elementFromProjectContents)
           addNavigatorTargetsUnlessCollapsed(dataRefEntry)
         } else {
           throw new Error(`internal error: Unexpected non-element found at ${EP.toString(path)}`)
