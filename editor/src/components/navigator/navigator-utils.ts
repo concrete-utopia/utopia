@@ -182,7 +182,7 @@ export function getNavigatorTargets(
 
           if (propValue == null || (isJSExpressionValue(propValue) && propValue.value == null)) {
             const entries = [
-              renderPropNavigatorEntry(fakeRenderPropPath, prop),
+              renderPropNavigatorEntry(fakeRenderPropPath, prop, null),
               slotNavigatorEntry(fakeRenderPropPath, prop),
             ]
             addNavigatorTargetsUnlessCollapsed(...entries)
@@ -190,7 +190,7 @@ export function getNavigatorTargets(
           }
 
           const childPath = EP.appendToPath(path, propValue.uid)
-          const entry = renderPropNavigatorEntry(fakeRenderPropPath, prop)
+          const entry = renderPropNavigatorEntry(fakeRenderPropPath, prop, childPath)
           addNavigatorTargetsUnlessCollapsed(entry)
 
           const subTreeChild = subTree?.children.find((child) =>
@@ -349,6 +349,7 @@ export function getNavigatorTargets(
           const entry = renderPropNavigatorEntry(
             EP.appendToPath(path, renderPropId('children')),
             'children',
+            null,
           )
           addNavigatorTargetsUnlessCollapsed(entry)
         }

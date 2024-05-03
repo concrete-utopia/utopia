@@ -70,7 +70,6 @@ import {
   renderPropTarget,
   useCreateCallbackToShowComponentPicker,
 } from './component-picker-context-menu'
-import type { InsertionTarget } from './component-picker-context-menu'
 import { getHighlightBoundsForProject } from '../../../core/model/project-file-utils'
 import {
   selectedElementChangedMessageFromHighlightBounds,
@@ -170,9 +169,17 @@ function selectItem(
     isSlotNavigatorEntry(navigatorEntry)
   )
 
-  const selectionActions = shouldSelect
-    ? getSelectionActions(getSelectedViewsInRange, index, elementPath, selected, event)
-    : []
+  let selectionActions: EditorAction[] = []
+  if (shouldSelect) {
+    selectionActions.push(
+      ...getSelectionActions(getSelectedViewsInRange, index, elementPath, selected, event),
+    )
+  } else if (isRenderPropNavigatorEntry(navigatorEntry)) {
+    event.stopPropagation()
+    if (navigatorEntry.childPath != null) {
+      selectionActions.push(...MetaActions.selectComponents([navigatorEntry.childPath], false))
+    }
+  }
 
   // when we click on an already selected item we should force vscode to navigate there
   if (selected && shouldSelect && highlightBounds != null) {
@@ -924,6 +931,7 @@ export const NavigatorItem: React.FunctionComponent<
         onMouseMove={highlight}
         onDoubleClick={focusComponent}
       >
+        {/* {EP.toString(navigatorEntry.elementPath)} */}
         {isPlaceholder ? (
           navigatorEntry.type === 'SLOT' ? (
             <RenderPropSlot
