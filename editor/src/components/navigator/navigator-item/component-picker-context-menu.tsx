@@ -61,6 +61,7 @@ import {
 } from '../../editor/store/insertion-path'
 import type { InsertableComponent } from '../../shared/project-components'
 import type { ConditionalCase } from '../../../core/model/conditionals'
+import { sortBy } from '../../../core/shared/array-utils'
 
 type RenderPropTarget = { type: 'render-prop'; prop: string }
 type ConditionalTarget = { type: 'conditional'; conditionalCase: ConditionalCase }

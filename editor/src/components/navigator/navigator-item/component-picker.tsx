@@ -7,7 +7,11 @@ import { dark } from '../../../uuiui/styles/theme/dark'
 import type { JSXElementChild } from '../../../core/shared/element-template'
 import type { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { type ComponentElementToInsert } from '../../custom-code/code-file'
-import type { InsertMenuItemGroup, InsertMenuItemValue } from '../../canvas/ui/floating-insert-menu'
+import type {
+  InsertMenuItem,
+  InsertMenuItemGroup,
+  InsertMenuItemValue,
+} from '../../canvas/ui/floating-insert-menu'
 import { UIGridRow } from '../../../components/inspector/widgets/ui-grid-row'
 import { FlexRow, type Icon } from 'utopia-api'
 import { assertNever } from '../../../core/shared/utils'
@@ -15,6 +19,7 @@ import { insertableComponent } from '../../shared/project-components'
 import type { StylePropOption, InsertableComponent } from '../../shared/project-components'
 import type { Size } from '../../../core/shared/math-utils'
 import { dataPasteHandler } from '../../../utils/paste-handler'
+import { sortBy } from '../../../core/shared/array-utils'
 
 export interface ComponentPickerProps {
   allComponents: Array<InsertMenuItemGroup>
@@ -65,22 +70,19 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
   const [filter, setFilter] = React.useState<string>('')
   const menuRef = React.useRef<HTMLDivElement | null>(null)
 
-  const componentsToShow = useMemo(() => {
-    const allComponentsToShow: InsertMenuItemGroup[] = []
-    props.allComponents.forEach((c) => {
-      allComponentsToShow.push({
-        ...c,
-        options: c.options.filter((o) =>
-          o.label.toLocaleLowerCase().includes(filter.toLocaleLowerCase().trim()),
-        ),
-      })
-    })
-    return allComponentsToShow
+  const flatComponentsToShowUnsorted = useMemo(() => {
+    return props.allComponents
+      .flatMap((c) => c.options)
+      .filter((v) => v.label.toLocaleLowerCase().includes(filter.toLocaleLowerCase().trim()))
   }, [props.allComponents, filter])
 
-  const flatComponentsToShow = useMemo(() => {
-    return componentsToShow.flatMap((c) => c.options)
-  }, [componentsToShow])
+  const flatComponentsToShow = useMemo(
+    () =>
+      sortBy(flatComponentsToShowUnsorted, (a, b) =>
+        a.label.toLocaleLowerCase().trim().localeCompare(b.label.toLocaleLowerCase().trim()),
+      ),
+    [flatComponentsToShowUnsorted],
+  )
 
   const highlightedComponentKey = useMemo(() => {
     const firstOptionKey =
@@ -163,7 +165,7 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
     >
       <ComponentPickerTopSection onFilterChange={setFilter} onKeyDown={onKeyDown} />
       <ComponentPickerComponentSection
-        components={componentsToShow}
+        components={flatComponentsToShow}
         onItemClick={props.onItemClick}
         onItemHover={onItemHover}
         currentlySelectedKey={highlightedComponentKey}
@@ -263,7 +265,7 @@ const FilterBar = React.memo((props: FilterBarProps) => {
 })
 
 interface ComponentPickerComponentSectionProps {
-  components: Array<InsertMenuItemGroup>
+  components: Array<InsertMenuItem>
   onItemClick: (elementToInsert: InsertableComponent) => React.MouseEventHandler
   onItemHover: (elementToInsert: InsertMenuItemValue) => React.MouseEventHandler
   currentlySelectedKey: string | null
@@ -274,16 +276,60 @@ const ComponentPickerComponentSection = React.memo(
     const { components, onItemClick, onItemHover, currentlySelectedKey } = props
     return (
       <div style={{ maxHeight: 250, overflowY: 'scroll', scrollbarWidth: 'auto' }}>
-        {components.map((comp) => {
+        {components.map((component) => {
+          const selectedStyle =
+            component.value.key === currentlySelectedKey
+              ? {
+                  background: '#007aff',
+                  color: 'white',
+                }
+              : {}
+
           return (
-            <ComponentPickerOption
-              key={`${comp.label}-label`}
-              component={comp}
-              onItemClick={onItemClick}
-              onItemHover={onItemHover}
-              currentlySelectedKey={currentlySelectedKey}
-            />
+            <FlexRow
+              css={{}}
+              key={component.value.key}
+              style={{
+                marginLeft: 8,
+                marginRight: 8,
+                borderRadius: 4,
+                // indentation!
+                paddingLeft: 8,
+                color: '#EEE',
+                ...selectedStyle,
+              }}
+              onClick={onItemClick(component.value)}
+              onMouseOver={onItemHover(component.value)}
+              data-key={component.value.key}
+            >
+              <UIGridRow
+                variant='|--32px--|<--------auto-------->'
+                padded={false}
+                // required to overwrite minHeight on the bloody thing
+                style={{ minHeight: 29 }}
+                css={{
+                  height: 27,
+                }}
+              >
+                <Icn
+                  {...iconPropsForIcon(component.value.icon ?? 'regular')}
+                  width={12}
+                  height={12}
+                />
+                <label>{component.label}</label>
+              </UIGridRow>
+            </FlexRow>
           )
+
+          // return (
+          //   <ComponentPickerOption
+          //     key={`${comp.label}-label`}
+          //     component={comp}
+          //     onItemClick={onItemClick}
+          //     onItemHover={onItemHover}
+          //     currentlySelectedKey={currentlySelectedKey}
+          //   />
+          // )
         })}
       </div>
     )
@@ -317,7 +363,7 @@ function iconPropsForIcon(icon: Icon): IcnProps {
 }
 
 interface ComponentPickerOptionProps {
-  component: InsertMenuItemGroup
+  component: InsertMenuItem
   onItemClick: (elementToInsert: InsertableComponent) => React.MouseEventHandler
   onItemHover: (elementToInsert: InsertMenuItemValue) => React.MouseEventHandler
   currentlySelectedKey: string | null
@@ -326,52 +372,42 @@ interface ComponentPickerOptionProps {
 const ComponentPickerOption = React.memo((props: ComponentPickerOptionProps) => {
   const { component, onItemClick, onItemHover, currentlySelectedKey } = props
 
-  const variants = component.options
-
-  const name = component.label
+  const selectedStyle =
+    component.value.key === currentlySelectedKey
+      ? {
+          background: '#007aff',
+          color: 'white',
+        }
+      : {}
 
   return (
-    <div>
-      {variants.map((v) => {
-        const selectedStyle =
-          v.value.key === currentlySelectedKey
-            ? {
-                background: '#007aff',
-                color: 'white',
-              }
-            : {}
-        return (
-          <FlexRow
-            css={{}}
-            key={`${name}-${v.label}`}
-            style={{
-              marginLeft: 8,
-              marginRight: 8,
-              borderRadius: 4,
-              // indentation!
-              paddingLeft: 8,
-              color: '#EEE',
-              ...selectedStyle,
-            }}
-            onClick={onItemClick(v.value)}
-            onMouseOver={onItemHover(v.value)}
-            data-key={v.value.key}
-          >
-            <UIGridRow
-              variant='|--32px--|<--------auto-------->'
-              padded={false}
-              // required to overwrite minHeight on the bloody thing
-              style={{ minHeight: 29 }}
-              css={{
-                height: 27,
-              }}
-            >
-              <Icn {...iconPropsForIcon(v.value.icon ?? 'regular')} width={12} height={12} />
-              <label>{v.label}</label>
-            </UIGridRow>
-          </FlexRow>
-        )
-      })}
-    </div>
+    <FlexRow
+      css={{}}
+      style={{
+        marginLeft: 8,
+        marginRight: 8,
+        borderRadius: 4,
+        // indentation!
+        paddingLeft: 8,
+        color: '#EEE',
+        ...selectedStyle,
+      }}
+      onClick={onItemClick(component.value)}
+      onMouseOver={onItemHover(component.value)}
+      data-key={component.value.key}
+    >
+      <UIGridRow
+        variant='|--32px--|<--------auto-------->'
+        padded={false}
+        // required to overwrite minHeight on the bloody thing
+        style={{ minHeight: 29 }}
+        css={{
+          height: 27,
+        }}
+      >
+        <Icn {...iconPropsForIcon(component.value.icon ?? 'regular')} width={12} height={12} />
+        <label>{component.label}</label>
+      </UIGridRow>
+    </FlexRow>
   )
 })
