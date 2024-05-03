@@ -201,11 +201,14 @@ export const ListSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
   const mappedRootElementToDisplay = useEditorState(
     Substores.metadata,
     (store) => {
-      const elementMetadata = MetadataUtils.getChildrenOrdered(
-        store.editor.jsxMetadata,
-        store.editor.elementPathTree,
-        paths[0],
-      )[0]
+      const elementMetadata: ElementInstanceMetadata | null =
+        paths.length === 0
+          ? null
+          : MetadataUtils.getChildrenOrdered(
+              store.editor.jsxMetadata,
+              store.editor.elementPathTree,
+              paths[0],
+            )[0]
 
       return elementMetadata == null || isLeft(elementMetadata.element)
         ? null
