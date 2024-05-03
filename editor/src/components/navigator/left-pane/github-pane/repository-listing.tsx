@@ -306,15 +306,24 @@ export const RepositoryListing = React.memo(
       () => githubOperations.some((op) => op.name === 'loadRepositories'),
       [githubOperations],
     )
+
+    const currentRepo = useEditorState(
+      Substores.github,
+      (store) => store.editor.githubSettings.targetRepository,
+      'Github targetRepository',
+    )
+
     const dispatch = useDispatch()
 
     const refreshReposOnClick = React.useCallback(() => {
-      void GithubOperations.getUsersPublicGithubRepositories(dispatch, 'user-initiated').then(
-        (actions) => {
-          dispatch(actions, 'everyone')
-        },
-      )
-    }, [dispatch])
+      void GithubOperations.getUsersPublicGithubRepositories(
+        dispatch,
+        'user-initiated',
+        currentRepo,
+      ).then((actions) => {
+        dispatch(actions, 'everyone')
+      })
+    }, [dispatch, currentRepo])
 
     const clearRepository = React.useCallback(() => {
       dispatch([updateGithubSettings(emptyGithubSettings())], 'everyone')

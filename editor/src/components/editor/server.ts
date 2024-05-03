@@ -41,6 +41,8 @@ import type { LiveObject } from '@liveblocks/client'
 import { projectIdToRoomId } from '../../utils/room-id'
 import { assertNever } from '../../core/shared/utils'
 import { checkOnlineState } from './online-status'
+import type { GithubOperationContext } from '../../core/shared/github/operations/github-operation-context'
+import { GithubEndpoints } from '../../core/shared/github/endpoints'
 
 export { fetchProjectList, fetchShowcaseProjects, getLoginState } from '../../common/server'
 
@@ -672,4 +674,23 @@ export async function updateGithubRepository(
   if (!response.ok) {
     throw new Error(`Update Github repository failed (${response.status}): ${response.statusText}`)
   }
+}
+
+export async function requestSearchPublicGithubRepository(
+  operationContext: GithubOperationContext,
+  params: {
+    owner: string
+    repo: string
+  },
+): Promise<Response> {
+  const url = GithubEndpoints.searchRepository()
+
+  const response = await operationContext.fetch(url, {
+    method: 'POST',
+    credentials: 'include',
+    headers: HEADERS,
+    mode: MODE,
+    body: JSON.stringify({ owner: params.owner, repo: params.repo }),
+  })
+  return response
 }
