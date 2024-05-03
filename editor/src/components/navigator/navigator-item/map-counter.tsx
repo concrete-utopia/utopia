@@ -106,6 +106,7 @@ export const MapSourceAndCounter = React.memo((props: MapCounterProps) => {
       css={{
         padding: '0px 0px 0px 3px',
         // TODO this should pick up color from context (selected / not)
+        // Right now only shows up if row is selected or descends-from (but that's ok)
         border: '1px solid white',
         alignItems: 'center',
         borderRadius: 2,
