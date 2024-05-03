@@ -182,7 +182,7 @@ export const DataPickerPopup = React.memo(
 
     return (
       <InspectorModal
-        offsetX={0}
+        offsetX={10}
         offsetY={0}
         closePopup={props.closePopup}
         style={{
@@ -208,12 +208,12 @@ export const DataPickerPopup = React.memo(
             tabIndex={0}
             style={{
               ...props.style,
-              left: 11, // to make it align with the cartouche control
-              top: -5,
-              backgroundColor: colorTheme.neutralBackground.value,
+              left: -16, // to make it align with the cartouche control
+              backgroundColor: colorTheme.bg1.value,
+              color: colorTheme.fg1.value,
               padding: 4,
               boxShadow: UtopiaStyles.shadowStyles.low.boxShadow,
-              // border: '1px solid lightgrey',
+              border: `.2px solid ${colorTheme.bg4.value}`,
               borderRadius: 10,
               alignItems: 'flex-start',
               width: '96%',
@@ -226,7 +226,7 @@ export const DataPickerPopup = React.memo(
               variant='<-------1fr------>|----80px----|'
               css={{ marginBottom: 4, alignSelf: 'stretch' }}
             >
-              <div style={{ fontWeight: 600, flexGrow: 1 }}>Data</div>
+              <div style={{ fontWeight: 600, flexGrow: 1, color: colorTheme.fg1.value }}>Data</div>
               <PopupList
                 containerMode='showBorderOnHover'
                 options={filterOptions}

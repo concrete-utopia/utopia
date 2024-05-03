@@ -85,11 +85,7 @@ import { unless, when } from '../../../../utils/react-conditionals'
 import { PropertyControlsSection } from './property-controls-section'
 import type { ReactEventHandlers } from 'react-use-gesture/dist/types'
 import { normalisePathToUnderlyingTarget } from '../../../custom-code/code-file'
-import {
-  openCodeEditorFile,
-  openPopup,
-  setProp_UNSAFE,
-} from '../../../editor/actions/action-creators'
+import { openCodeEditorFile, setProp_UNSAFE } from '../../../editor/actions/action-creators'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { getFilePathForImportedComponent } from '../../../../core/model/project-file-utils'
@@ -305,6 +301,7 @@ export function useDataPickerButton(
   })
 
   const [popupIsOpen, setPopupIsOpen] = React.useState(false)
+  const openPopup = React.useCallback(() => setPopupIsOpen(true), [])
   const closePopup = React.useCallback(() => setPopupIsOpen(false), [])
 
   const selectedElement = selectedElements.at(0) ?? EP.emptyElementPath
@@ -356,6 +353,7 @@ export function useDataPickerButton(
     popupIsOpen,
     DataPickerComponent,
     setReferenceElement,
+    openPopup,
   }
 }
 
