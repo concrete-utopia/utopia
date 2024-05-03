@@ -2210,16 +2210,19 @@ export interface RenderPropNavigatorEntry {
   type: 'RENDER_PROP'
   elementPath: ElementPath // path of the element containing this render prop
   propName: string
+  childPath: ElementPath | null
 }
 
 export function renderPropNavigatorEntry(
   elementPath: ElementPath,
   propName: string,
+  childPath: ElementPath | null,
 ): RenderPropNavigatorEntry {
   return {
     type: 'RENDER_PROP',
     elementPath: elementPath,
     propName: propName,
+    childPath: childPath,
   }
 }
 

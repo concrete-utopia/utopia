@@ -136,6 +136,7 @@ export interface RenderPropNavigatorItemContainerProps
   isOutletOrDescendantOfOutlet: boolean
   elementPath: ElementPath
   propName: string
+  childPath: ElementPath | null
 }
 
 export interface SlotNavigatorItemContainerProps extends NavigatorItemDragAndDropWrapperPropsBase {
@@ -1044,8 +1045,8 @@ export const SyntheticNavigatorItemContainer = React.memo(
 export const RenderPropNavigatorItemContainer = React.memo(
   (props: RenderPropNavigatorItemContainerProps) => {
     const navigatorEntry = React.useMemo(
-      () => renderPropNavigatorEntry(props.elementPath, props.propName),
-      [props.propName, props.elementPath],
+      () => renderPropNavigatorEntry(props.elementPath, props.propName, props.childPath),
+      [props.propName, props.elementPath, props.childPath],
     )
 
     const safeComponentId = varSafeNavigatorEntryToKey(navigatorEntry)
