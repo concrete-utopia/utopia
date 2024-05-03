@@ -2814,6 +2814,11 @@ export function walkElement(
         const path = EP.appendToElementPath(parentPath, uidAttr.value)
         forEach(element, path, depth)
         fastForEach(element.children, (child) => walkElement(child, path, depth + 1, forEach))
+        element.props.forEach((prop) => {
+          if (prop.type === 'JSX_ATTRIBUTES_ENTRY') {
+            walkElement(prop.value, path, depth + 1, forEach)
+          }
+        })
       }
       break
     case 'JSX_FRAGMENT':
