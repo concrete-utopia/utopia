@@ -2424,14 +2424,10 @@ export const MetadataUtils = {
     }
     return element.element.value
   },
-  isElementDataReference(target: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
-    const foundMetadata = MetadataUtils.findElementByElementPath(metadata, target)
-    const element: JSXElementChild | null = maybeEitherToMaybe(foundMetadata?.element)
-
+  isElementDataReference(element: JSXElementChild | null): boolean {
     if (element == null) {
       return false
     }
-
     switch (element.type) {
       case 'ATTRIBUTE_FUNCTION_CALL':
       case 'ATTRIBUTE_NESTED_ARRAY': // TODO: reconsider nested array and nested object
@@ -2442,9 +2438,8 @@ export const MetadataUtils = {
       case 'JSX_CONDITIONAL_EXPRESSION':
         return false
       case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
-        const children = MetadataUtils.getChildrenUnordered(metadata, target)
         // Attribute other javascript is only true if it does not have children entries in the metadata
-        return children.length === 0
+        return Object.keys(element.elementsWithin).length === 0
       }
       case 'ATTRIBUTE_VALUE':
       case 'JSX_TEXT_BLOCK':

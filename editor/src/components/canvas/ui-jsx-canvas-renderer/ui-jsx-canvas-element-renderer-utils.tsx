@@ -479,21 +479,6 @@ export function renderCoreElement(
         return <></>
       }
 
-      if (elementPath != null && isFeatureEnabled('Data Entries in the Navigator')) {
-        addFakeSpyEntry(
-          validPaths,
-          metadataContext,
-          elementPath,
-          element,
-          filePath,
-          imports,
-          'not-a-conditional',
-          null,
-          variablesInScope,
-          assignedToProp,
-        )
-      }
-
       const lines = element.text.split('<br />').map((line) => unescapeHTML(line))
       return (
         <>

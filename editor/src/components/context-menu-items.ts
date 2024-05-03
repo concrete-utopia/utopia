@@ -49,6 +49,7 @@ import {
   type ShowComponentPickerContextMenu,
   type InsertionTarget,
   type ShowComponentPickerContextMenuCallback,
+  renderPropTarget,
 } from './navigator/navigator-item/component-picker-context-menu'
 
 export interface ContextMenuItem<T> {
@@ -348,7 +349,7 @@ export const insert: ContextMenuItem<CanvasData> = {
   shortcut: 'A',
   enabled: true,
   action: (data, _dispatch, _coord, event) => {
-    data.showComponentPicker(data.selectedViews[0], 'insert-as-child')(event)
+    data.showComponentPicker(data.selectedViews[0], EditorActions.insertAsChildTarget())(event)
   },
 }
 
@@ -360,13 +361,50 @@ export function showReplaceComponentPicker(
   const element = MetadataUtils.findElementByElementPath(jsxMetadata, targetElement)
   const prop = element?.assignedToProp
   const target = prop == null ? targetElement : EP.parentPath(targetElement)
-  const insertionTarget: InsertionTarget = prop == null ? 'replace-target' : { prop: prop }
+  const insertionTarget: InsertionTarget =
+    prop == null ? EditorActions.replaceTarget : renderPropTarget(prop)
+  return showComponentPicker(target, insertionTarget)
+}
+
+export function showSwapComponentPicker(
+  targetElement: ElementPath,
+  jsxMetadata: ElementInstanceMetadataMap,
+  showComponentPicker: ShowComponentPickerContextMenuCallback,
+): ShowComponentPickerContextMenu {
+  const element = MetadataUtils.findElementByElementPath(jsxMetadata, targetElement)
+  const prop = element?.assignedToProp
+  const target = prop == null ? targetElement : EP.parentPath(targetElement)
+  const insertionTarget: InsertionTarget =
+    prop == null ? EditorActions.replaceKeepChildrenAndStyleTarget : renderPropTarget(prop)
   return showComponentPicker(target, insertionTarget)
 }
 
 export const convert: ContextMenuItem<CanvasData> = {
   name: 'Swap Element With…',
-  shortcut: 'S',
+  shortcut: '',
+  enabled: (data) => {
+    return (
+      data.selectedViews.length > 0 &&
+      data.selectedViews.every((path) => {
+        const element = MetadataUtils.findElementByElementPath(data.jsxMetadata, path)
+        return (
+          element != null && isRight(element.element) && isJSXElementLike(element.element.value)
+        )
+      })
+    )
+  },
+  action: (data, _dispatch, _coord, event) => {
+    showSwapComponentPicker(
+      data.selectedViews[0],
+      data.jsxMetadata,
+      data.showComponentPicker,
+    )(event)
+  },
+}
+
+export const replace: ContextMenuItem<CanvasData> = {
+  name: 'Replace Element With…',
+  shortcut: '',
   enabled: (data) => {
     return (
       data.selectedViews.length > 0 &&

@@ -18,7 +18,11 @@ import {
 } from '../../editor/store/editor-state'
 import type { SelectionLocked } from '../../canvas/canvas-types'
 import type { InsertionTarget } from './component-picker-context-menu'
-import { useCreateCallbackToShowComponentPicker } from './component-picker-context-menu'
+import {
+  conditionalTarget,
+  renderPropTarget,
+  useCreateCallbackToShowComponentPicker,
+} from './component-picker-context-menu'
 import type { ConditionalCase } from '../../../core/model/conditionals'
 import { useConditionalCaseCorrespondingToBranchPath } from '../../../core/model/conditionals'
 
@@ -205,7 +209,10 @@ export function addChildButtonTestId(target: ElementPath): string {
 
 const AddChildButton = React.memo((props: AddChildButtonProps) => {
   const { target, iconColor } = props
-  const onClick = useCreateCallbackToShowComponentPicker()(target, 'insert-as-child')
+  const onClick = useCreateCallbackToShowComponentPicker()(
+    target,
+    EditorActions.insertAsChildTarget(),
+  )
 
   return (
     <Button
@@ -247,18 +254,18 @@ const ReplaceElementButton = React.memo((props: ReplaceElementButtonProps) => {
     if (prop != null) {
       return {
         target: EP.parentPath(target),
-        insertionTarget: { prop: prop },
+        insertionTarget: renderPropTarget(prop),
       }
     }
     if (conditionalCase != null) {
       return {
         target: EP.parentPath(target),
-        insertionTarget: conditionalCase,
+        insertionTarget: conditionalTarget(conditionalCase),
       }
     }
     return {
       target: target,
-      insertionTarget: 'replace-target',
+      insertionTarget: EditorActions.replaceTarget,
     }
   })()
 
