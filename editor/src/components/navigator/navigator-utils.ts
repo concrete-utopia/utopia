@@ -3,6 +3,7 @@ import * as EP from '../../core/shared/element-path'
 import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
+  JSExpression,
   JSXConditionalExpression,
 } from '../../core/shared/element-template'
 import {
@@ -160,6 +161,10 @@ export function getNavigatorTargets(
       const processedPathsAsRenderProp = new Set<string>()
       let renderPropFound: boolean = false
 
+      function getPropValueChildPath(propValue: JSExpression) {
+        return EP.appendToPath(path, propValue.uid)
+      }
+
       function walkPropertyControls(propControls: PropertyControls): void {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
         if (
@@ -181,15 +186,16 @@ export function getNavigatorTargets(
           const fakeRenderPropPath = EP.appendToPath(path, renderPropId(prop))
 
           if (propValue == null || (isJSExpressionValue(propValue) && propValue.value == null)) {
+            const maybeChildPath = propValue != null ? getPropValueChildPath(propValue) : null
             const entries = [
-              renderPropNavigatorEntry(fakeRenderPropPath, prop, null),
+              renderPropNavigatorEntry(fakeRenderPropPath, prop, maybeChildPath),
               slotNavigatorEntry(fakeRenderPropPath, prop),
             ]
             addNavigatorTargetsUnlessCollapsed(...entries)
             return
           }
 
-          const childPath = EP.appendToPath(path, propValue.uid)
+          const childPath = getPropValueChildPath(propValue)
           const entry = renderPropNavigatorEntry(fakeRenderPropPath, prop, childPath)
           addNavigatorTargetsUnlessCollapsed(entry)
 
@@ -349,7 +355,7 @@ export function getNavigatorTargets(
           const entry = renderPropNavigatorEntry(
             EP.appendToPath(path, renderPropId('children')),
             'children',
-            null,
+            notRenderPropChildren[0].path, // pick the first element path
           )
           addNavigatorTargetsUnlessCollapsed(entry)
         }
