@@ -57,6 +57,7 @@ export const DataReferenceCartoucheControl = React.memo(
       <>
         {dataPickerButtonData.popupIsOpen ? dataPickerButtonData.DataPickerComponent : null}
         <DataCartoucheInner
+          ref={dataPickerButtonData.setReferenceElement}
           onClick={onClick}
           onDoubleClick={dataPickerButtonData.openPopup}
           contentsToDisplay={contentsToDisplay}
