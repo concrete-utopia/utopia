@@ -854,16 +854,18 @@ export function mergeProjectContentsTree(
   }
 }
 
-const GITHUB_REFRESH_INTERVAL_MILLISECONDS = 15_000
+// TODO reenable this!
+// const GITHUB_REFRESH_INTERVAL_MILLISECONDS = 15_000
 
 type GithubAuthState = 'not-authenticated' | 'missing-user-details' | 'ready'
 
 export function useGithubPolling() {
   const dispatch = useDispatch()
 
-  const [tick, setTick] = React.useState(0)
-  const [lastTick, setLastTick] = React.useState<number | null>(null)
-  const [timeoutId, setTimeoutId] = React.useState<number | null>(null)
+  // TODO reenable this!
+  //   const [tick, setTick] = React.useState(0)
+  //   const [lastTick, setLastTick] = React.useState<number | null>(null)
+  //   const [timeoutId, setTimeoutId] = React.useState<number | null>(null)
 
   const githubAuthenticated = useEditorState(
     Substores.userState,
@@ -899,12 +901,13 @@ export function useGithubPolling() {
       'polling',
     )
 
-    // schedule a new tick for the next Xms
-    setTimeoutId(
-      window.setTimeout(() => {
-        setTick((t) => t + 1)
-      }, GITHUB_REFRESH_INTERVAL_MILLISECONDS),
-    )
+    // TODO reenable this!
+    // // schedule a new tick for the next Xms
+    // setTimeoutId(
+    //   window.setTimeout(() => {
+    //     setTick((t) => t + 1)
+    //   }, GITHUB_REFRESH_INTERVAL_MILLISECONDS),
+    // )
   }, [dispatch, branchOriginContentsChecksums, githubData])
 
   const authState = React.useMemo((): GithubAuthState => {
@@ -940,10 +943,11 @@ export function useGithubPolling() {
         assertNever(authState)
     }
 
-    if (timeoutId != null) {
-      window.clearTimeout(timeoutId)
-    }
-  }, [authState, dispatch, timeoutId])
+    // TODO fix this!
+    // if (timeoutId != null) {
+    //   window.clearTimeout(timeoutId)
+    // }
+  }, [authState, dispatch])
 
   // react to ready auth state and tick changes
   React.useEffect(() => {
@@ -951,13 +955,16 @@ export function useGithubPolling() {
       return
     }
 
-    if (lastTick == null || lastTick < tick) {
-      setLastTick(() => {
-        void refreshAndScheduleGithubData()
-        return tick
-      })
-    }
-  }, [authState, refreshAndScheduleGithubData, tick, lastTick])
+    // TODO reenable/fix this!
+    // if (lastTick == null || lastTick < tick) {
+    //   setLastTick(() => {
+    //     void refreshAndScheduleGithubData()
+    //     return tick
+    //   })
+    // }
+
+    void refreshAndScheduleGithubData()
+  }, [authState, refreshAndScheduleGithubData])
 }
 
 export async function getRefreshGithubActions(
