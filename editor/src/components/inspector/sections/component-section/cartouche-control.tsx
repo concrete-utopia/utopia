@@ -1,7 +1,4 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
 import React from 'react'
-import { css, jsx } from '@emotion/react'
 import { when } from '../../../../utils/react-conditionals'
 import { FlexRow, Icn, Tooltip, colorTheme } from '../../../../uuiui'
 import { stopPropagation } from '../../common/inspector-utils'
@@ -50,13 +47,6 @@ export const IdentifierExpressionCartoucheControl = React.memo(
           flex: 1,
           gap: 2,
         }}
-        // css={{
-        //   border: '1px solid transparent',
-        //   '&:hover ': {
-        //     backgroundColor: colorTheme.componentPurple.value,
-        //     border: `1px solid ${colorTheme.primary.value}`,
-        //   },
-        // }}
         onClick={props.onOpenDataPicker}
       >
         {props.icon}

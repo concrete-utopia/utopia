@@ -44,6 +44,7 @@ import {
   color,
   OnClickOutsideHOC,
   iconForControlType,
+  colorTheme,
 } from '../../../../uuiui'
 import type { CSSCursor } from '../../../../uuiui-deps'
 import { getControlStyles } from '../../../../uuiui-deps'
@@ -84,7 +85,11 @@ import { unless, when } from '../../../../utils/react-conditionals'
 import { PropertyControlsSection } from './property-controls-section'
 import type { ReactEventHandlers } from 'react-use-gesture/dist/types'
 import { normalisePathToUnderlyingTarget } from '../../../custom-code/code-file'
-import { openCodeEditorFile, setProp_UNSAFE } from '../../../editor/actions/action-creators'
+import {
+  openCodeEditorFile,
+  openPopup,
+  setProp_UNSAFE,
+} from '../../../editor/actions/action-creators'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { getFilePathForImportedComponent } from '../../../../core/model/project-file-utils'
@@ -107,6 +112,7 @@ import { foldEither } from '../../../../core/shared/either'
 import { stopPropagation } from '../../common/inspector-utils'
 import { NO_OP } from '../../../../core/shared/utils'
 import { IdentifierExpressionCartoucheControl } from './cartouche-control'
+import { scale } from 'chroma-js'
 
 export const VariableFromScopeOptionTestId = (idx: string) => `variable-from-scope-${idx}`
 export const DataPickerPopupButtonTestId = `data-picker-popup-button-test-id`
@@ -299,19 +305,7 @@ export function useDataPickerButton(
   })
 
   const [popupIsOpen, setPopupIsOpen] = React.useState(false)
-  const togglePopup = React.useCallback(() => setPopupIsOpen((v) => !v), [])
-  const openPopup = React.useCallback(() => setPopupIsOpen(true), [])
   const closePopup = React.useCallback(() => setPopupIsOpen(false), [])
-
-  const onClick = React.useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation()
-      e.preventDefault()
-
-      togglePopup()
-    },
-    [togglePopup],
-  )
 
   const selectedElement = selectedElements.at(0) ?? EP.emptyElementPath
 
@@ -358,32 +352,10 @@ export function useDataPickerButton(
     ],
   )
 
-  const DataPickerOpener = React.useMemo(
-    () => (
-      // <div />
-      <Button
-        onClick={onClick}
-        data-testid={DataPickerPopupButtonTestId}
-        disabled={!variablePickerButtonAvailable}
-      >
-        <Icn
-          type='pipette'
-          color='secondary'
-          tooltipText={variablePickerButtonTooltipText}
-          width={18}
-          height={18}
-        />
-      </Button>
-    ),
-    [onClick, variablePickerButtonAvailable, variablePickerButtonTooltipText],
-  )
-
   return {
     popupIsOpen,
-    DataPickerOpener,
     DataPickerComponent,
     setReferenceElement,
-    openPopup,
   }
 }
 
@@ -397,6 +369,8 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
   const title = labelForControl(propPath, controlDescription)
   const propName = `${PP.lastPart(propPath)}`
   const indentation = props.indentationLevel * 8
+
+  const [isHovered, setIsHovered] = React.useState(false)
 
   const selectedViews = useEditorState(
     Substores.selectedViews,
@@ -414,6 +388,21 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
     [controlDescription, propMetadata],
   )
 
+  const dataPickerButtonData = useDataPickerButton(
+    selectedViews,
+    props.propPath,
+    props.isScene,
+    props.controlDescription,
+  )
+
+  const handleMouseEnter = () => {
+    setIsHovered(true)
+  }
+
+  const handleMouseLeave = () => {
+    setIsHovered(false)
+  }
+
   const propertyLabel =
     props.label == null ? (
       <PropertyLabel
@@ -421,31 +410,46 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
         target={[propPath]}
         style={{
           textTransform: 'capitalize',
-          paddingLeft: indentation,
+          paddingLeft: indentation - 8,
           alignSelf: 'flex-start',
         }}
       >
         <Tooltip title={title}>
-          <span
+          <div
+            onClick={dataPickerButtonData.openPopup}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
             style={{
-              marginTop: 3,
               lineHeight: `${UtopiaTheme.layout.inputHeight.default}px`,
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 4,
+            }}
+            css={{
+              color: dataPickerButtonData.popupIsOpen ? colorTheme.dynamicBlue.value : undefined,
+              '&:hover': {
+                color: colorTheme.dynamicBlue.value,
+              },
             }}
           >
             {title}
-          </span>
+            {isHovered || dataPickerButtonData.popupIsOpen ? (
+              <Icn
+                category='element'
+                type='flip'
+                color='dynamic'
+                width={18}
+                height={18}
+                style={{ transform: 'scale(.7)' }}
+              />
+            ) : null}
+          </div>
         </Tooltip>
       </PropertyLabel>
     ) : (
       <props.label />
     )
-
-  const dataPickerButtonData = useDataPickerButton(
-    selectedViews,
-    props.propPath,
-    props.isScene,
-    props.controlDescription,
-  )
 
   if (controlDescription.control === 'none') {
     // do not list anything for `none` controls
@@ -460,11 +464,7 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
       data={null}
     >
       {dataPickerButtonData.popupIsOpen ? dataPickerButtonData.DataPickerComponent : null}
-      <UIGridRow
-        padded={false}
-        style={{ paddingLeft: 0, paddingRight: 8, paddingTop: 3, paddingBottom: 3 }}
-        variant='<--1fr--><--1fr-->|-18px-|'
-      >
+      <UIGridRow padded={false} style={{ padding: '3px 0px 3px 8px' }} variant='<--1fr--><--1fr-->'>
         {propertyLabel}
         <div
           style={{
@@ -483,7 +483,7 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
             showHiddenControl={props.showHiddenControl}
           />
         </div>
-        {when(isBaseIndentationLevel(props), dataPickerButtonData.DataPickerOpener)}
+        {/* {when(isBaseIndentationLevel(props), dataPickerButtonData.DataPickerOpener)} */}
       </UIGridRow>
     </InspectorContextMenuWrapper>
   )
@@ -619,7 +619,7 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
               showHiddenControl={props.showHiddenControl}
             />
           </FlexRow>
-          {when(isBaseIndentationLevel(props), dataPickerButtonData.DataPickerOpener)}
+          {/* {when(isBaseIndentationLevel(props), dataPickerButtonData.DataPickerOpener)} */}
         </SimpleFlexRow>
         <div
           style={{
@@ -658,7 +658,6 @@ interface ArrayControlItemProps {
 }
 
 const ArrayControlItem = React.memo((props: ArrayControlItemProps) => {
-  const colorTheme = useColorTheme()
   const { bind, propPath, index, isScene, springStyle, controlDescription } = props
   const propPathWithIndex = PP.appendPropertyPathElems(propPath, [index])
   const propMetadata = useComponentPropsInspectorInfo(
@@ -825,7 +824,6 @@ interface ObjectIndicatorProps {
 }
 
 const ObjectIndicator = (props: ObjectIndicatorProps) => {
-  const colorTheme = useColorTheme()
   return (
     <div
       style={{
@@ -925,7 +923,7 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
                 />
               </div>
             </SimpleFlexRow>
-            {when(isBaseIndentationLevel(props), dataPickerButtonData.DataPickerOpener)}
+            {/* {when(isBaseIndentationLevel(props), dataPickerButtonData.DataPickerOpener)} */}
           </FlexRow>
         </InspectorContextMenuWrapper>
       </div>
@@ -1063,8 +1061,6 @@ export interface ComponentSectionProps {
 }
 
 export const ComponentSectionInner = React.memo((props: ComponentSectionProps) => {
-  const colorTheme = useColorTheme()
-
   const propertyControlsAndTargets = useKeepReferenceEqualityIfPossible(
     useGetPropertyControlsForSelectedComponents(),
   )
