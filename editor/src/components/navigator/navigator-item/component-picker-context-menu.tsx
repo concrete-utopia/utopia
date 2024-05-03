@@ -24,6 +24,7 @@ import {
   insertJSXElement,
   replaceMappedElement,
   setProp_UNSAFE,
+  wrapInElement,
 } from '../../editor/actions/action-creators'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
@@ -62,6 +63,7 @@ import {
 import type { InsertableComponent } from '../../shared/project-components'
 import type { ConditionalCase } from '../../../core/model/conditionals'
 
+type WrapTarget = { type: 'wrap' }
 type RenderPropTarget = { type: 'render-prop'; prop: string }
 type ConditionalTarget = { type: 'conditional'; conditionalCase: ConditionalCase }
 
@@ -71,6 +73,7 @@ export type InsertionTarget =
   | ReplaceKeepChildrenAndStyleTarget
   | InsertAsChildTarget
   | ConditionalTarget
+  | WrapTarget
 
 export function renderPropTarget(prop: string): RenderPropTarget {
   return {
@@ -81,6 +84,8 @@ export function renderPropTarget(prop: string): RenderPropTarget {
 export function conditionalTarget(conditionalCase: ConditionalCase): ConditionalTarget {
   return { type: 'conditional', conditionalCase: conditionalCase }
 }
+
+export const wrapTarget: WrapTarget = { type: 'wrap' }
 
 export function isReplaceTarget(
   insertionTarget: InsertionTarget,
@@ -112,13 +117,17 @@ export function isConditionalTarget(
   return insertionTarget.type === 'conditional'
 }
 
+export function isWrapTarget(insertionTarget: InsertionTarget): insertionTarget is WrapTarget {
+  return insertionTarget.type === 'wrap'
+}
+
 interface ComponentPickerContextMenuAtomData {
-  target: ElementPath
+  targets: ElementPath[]
   insertionTarget: InsertionTarget
 }
 
 const ComponentPickerContextMenuAtom = atom<ComponentPickerContextMenuAtomData>({
-  target: EP.emptyElementPath,
+  targets: [EP.emptyElementPath],
   insertionTarget: insertAsChildTarget(),
 })
 
@@ -163,7 +172,8 @@ export function preferredChildrenForTarget(
     if (
       isInsertAsChildTarget(insertionTarget) ||
       isReplaceTarget(insertionTarget) ||
-      isReplaceKeepChildrenAndStyleTarget(insertionTarget)
+      isReplaceKeepChildrenAndStyleTarget(insertionTarget) ||
+      isWrapTarget(insertionTarget)
     ) {
       return registeredComponent.preferredChildComponents.map((v) => ({
         ...v,
@@ -190,14 +200,25 @@ export function preferredChildrenForTarget(
   return []
 }
 
+function targetParentForInsertionTarget(
+  targets: ElementPath[],
+  insertionTarget: InsertionTarget,
+): ElementPath {
+  // TODO better multiselect
+  const target = targets[0]
+
+  return isReplaceTarget(insertionTarget) ||
+    isReplaceKeepChildrenAndStyleTarget(insertionTarget) ||
+    isWrapTarget(insertionTarget)
+    ? EP.parentPath(target)
+    : target
+}
+
 const usePreferredChildrenForTarget = (
-  target: ElementPath,
+  targets: ElementPath[],
   insertionTarget: InsertionTarget,
 ): Array<PreferredChildComponentDescriptorWithIcon> => {
-  const targetParent =
-    isReplaceTarget(insertionTarget) || isReplaceKeepChildrenAndStyleTarget(insertionTarget)
-      ? EP.parentPath(target)
-      : target
+  const targetParent = targetParentForInsertionTarget(targets, insertionTarget)
 
   const targetElement = useEditorState(
     Substores.metadata,
@@ -219,7 +240,7 @@ const usePreferredChildrenForTarget = (
 }
 
 export type ShowComponentPickerContextMenuCallback = (
-  target: ElementPath,
+  targets: ElementPath[],
   insertionTarget: InsertionTarget,
   pickerType?: 'preferred' | 'full',
 ) => ShowComponentPickerContextMenu
@@ -244,7 +265,7 @@ export const useCreateCallbackToShowComponentPicker =
 
     return React.useCallback(
       (
-          target: ElementPath,
+          targets: ElementPath[],
           insertionTarget: InsertionTarget,
           overridePickerType?: 'preferred' | 'full',
         ) =>
@@ -258,11 +279,7 @@ export const useCreateCallbackToShowComponentPicker =
           let pickerType: 'preferred' | 'full'
 
           if (overridePickerType == null) {
-            const targetParent =
-              isReplaceTarget(insertionTarget) ||
-              isReplaceKeepChildrenAndStyleTarget(insertionTarget)
-                ? EP.parentPath(target)
-                : target
+            const targetParent = targetParentForInsertionTarget(targets, insertionTarget)
             const targetElement = MetadataUtils.findElementByElementPath(
               editorRef.current.jsxMetadata,
               targetParent,
@@ -278,7 +295,7 @@ export const useCreateCallbackToShowComponentPicker =
             pickerType = overridePickerType
           }
 
-          setContextMenuProps({ target: target, insertionTarget: insertionTarget })
+          setContextMenuProps({ targets: targets, insertionTarget: insertionTarget })
           const show = pickerType === 'preferred' ? showPreferred : showFull
           show(event, params)
         },
@@ -372,7 +389,7 @@ function moreItem(
 
 function insertComponentPickerItem(
   toInsert: InsertableComponent,
-  target: ElementPath,
+  targets: ElementPath[],
   projectContents: ProjectContentTreeRoot,
   metadata: ElementInstanceMetadataMap,
   dispatch: EditorDispatch,
@@ -395,7 +412,7 @@ function insertComponentPickerItem(
       if (isRenderPropTarget(insertionTarget)) {
         return [
           setProp_UNSAFE(
-            target,
+            targets[0], // FIXME Multiselect
             PP.create(insertionTarget.prop),
             fixedElement,
             toInsert.importsToAdd ?? undefined,
@@ -404,15 +421,25 @@ function insertComponentPickerItem(
       }
 
       // if we are inserting into a map expression then we replace the mapped element
-      if (MetadataUtils.isJSXMapExpression(EP.parentPath(target), metadata)) {
-        return [replaceMappedElement(fixedElement, target, toInsert.importsToAdd)]
+      // FIXME Multiselect
+      if (MetadataUtils.isJSXMapExpression(EP.parentPath(targets[0]), metadata)) {
+        return [replaceMappedElement(fixedElement, targets[0], toInsert.importsToAdd)]
+      }
+
+      if (isWrapTarget(insertionTarget)) {
+        return [
+          wrapInElement(targets, {
+            element: fixedElement,
+            importsToAdd: toInsert.importsToAdd,
+          }),
+        ]
       }
 
       if (!isConditionalTarget(insertionTarget)) {
         return [
           insertJSXElement(
             fixedElement,
-            target,
+            targets[0], // FIXME Multiselect
             toInsert.importsToAdd ?? undefined,
             insertionTarget,
           ),
@@ -421,15 +448,17 @@ function insertComponentPickerItem(
     }
 
     // TODO: for non-jsx-elements we only support insertion as a child today, this should be extended
+    // FIXME wrap in map and conditional
     if (isInsertAsChildTarget(insertionTarget)) {
-      return [insertInsertable(childInsertionPath(target), toInsert, 'do-not-add', null)]
+      // FIXME Multiselect
+      return [insertInsertable(childInsertionPath(targets[0]), toInsert, 'do-not-add', null)]
     }
 
     if (isConditionalTarget(insertionTarget)) {
       return [
         insertInsertable(
           conditionalClauseInsertionPath(
-            target,
+            targets[0], // FIXME Multiselect
             insertionTarget.conditionalCase,
             replaceWithSingleElement(),
           ),
@@ -459,6 +488,8 @@ function errorMessage(insertionTarget: InsertionTarget, toInsert: InsertableComp
       return `Component picker error: can not insert "${toInsert.name}" into conditional "${insertionTarget.type}`
     case 'render-prop':
       return `Component picker error: can not insert "${toInsert.name}" into render prop "${insertionTarget.prop}"`
+    case 'wrap':
+      return `Component picker error: can not wrap "${toInsert.name}"`
     default:
       assertNever(insertionTarget)
   }
@@ -466,7 +497,7 @@ function errorMessage(insertionTarget: InsertionTarget, toInsert: InsertableComp
 
 function insertPreferredChild(
   preferredChildToInsert: ElementToInsert,
-  target: ElementPath,
+  targets: ElementPath[],
   projectContents: ProjectContentTreeRoot,
   metadata: ElementInstanceMetadataMap,
   dispatch: EditorDispatch,
@@ -483,11 +514,11 @@ function insertPreferredChild(
     null,
   )
 
-  insertComponentPickerItem(toInsert, target, projectContents, metadata, dispatch, insertionTarget)
+  insertComponentPickerItem(toInsert, targets, projectContents, metadata, dispatch, insertionTarget)
 }
 
 interface ComponentPickerContextMenuProps {
-  target: ElementPath
+  targets: ElementPath[]
   insertionTarget: InsertionTarget
 }
 
@@ -525,10 +556,10 @@ export function labelTestIdForComponentIcon(
 }
 
 const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuProps>(
-  ({ target, insertionTarget }) => {
-    const showFullMenu = useCreateCallbackToShowComponentPicker()(target, insertionTarget, 'full')
+  ({ targets, insertionTarget }) => {
+    const showFullMenu = useCreateCallbackToShowComponentPicker()(targets, insertionTarget, 'full')
 
-    const preferredChildren = usePreferredChildrenForTarget(target, insertionTarget)
+    const preferredChildren = usePreferredChildrenForTarget(targets, insertionTarget)
 
     const dispatch = useDispatch()
 
@@ -539,13 +570,13 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
       (preferredChildToInsert: ElementToInsert) =>
         insertPreferredChild(
           preferredChildToInsert,
-          target,
+          targets,
           projectContentsRef.current,
           metadataRef.current,
           dispatch,
           insertionTarget,
         ),
-      [target, projectContentsRef, metadataRef, dispatch, insertionTarget],
+      [targets, projectContentsRef, metadataRef, dispatch, insertionTarget],
     )
     const wrapperRef = React.useRef<HTMLDivElement>(null)
 
@@ -595,11 +626,15 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
 )
 
 const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProps>(
-  ({ target, insertionTarget }) => {
+  ({ targets, insertionTarget }) => {
     const allInsertableComponents = useGetInsertableComponents('insert').flatMap((g) => ({
       label: g.label,
       options: g.options.filter((o) => {
-        if (isInsertAsChildTarget(insertionTarget) || isConditionalTarget(insertionTarget)) {
+        if (
+          isInsertAsChildTarget(insertionTarget) ||
+          isConditionalTarget(insertionTarget) ||
+          isWrapTarget(insertionTarget)
+        ) {
           return true
         }
         // Right now we only support inserting JSX elements when we insert into a render prop or when replacing elements
@@ -619,7 +654,7 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
 
         insertComponentPickerItem(
           preferredChildToInsert,
-          target,
+          targets,
           projectContentsRef.current,
           metadataRef.current,
           dispatch,
@@ -628,7 +663,7 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
 
         contextMenu.hideAll()
       },
-      [target, projectContentsRef, metadataRef, dispatch, insertionTarget],
+      [targets, projectContentsRef, metadataRef, dispatch, insertionTarget],
     )
 
     const squashEvents = React.useCallback((e: React.UIEvent<unknown>) => {
@@ -644,12 +679,12 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
 )
 
 export const ComponentPickerContextMenu = React.memo(() => {
-  const [{ target, insertionTarget }] = useAtom(ComponentPickerContextMenuAtom)
+  const [{ targets, insertionTarget }] = useAtom(ComponentPickerContextMenuAtom)
 
   return (
     <React.Fragment>
-      <ComponentPickerContextMenuSimple target={target} insertionTarget={insertionTarget} />
-      <ComponentPickerContextMenuFull target={target} insertionTarget={insertionTarget} />
+      <ComponentPickerContextMenuSimple targets={targets} insertionTarget={insertionTarget} />
+      <ComponentPickerContextMenuFull targets={targets} insertionTarget={insertionTarget} />
     </React.Fragment>
   )
 })

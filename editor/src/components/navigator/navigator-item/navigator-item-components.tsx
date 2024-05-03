@@ -210,7 +210,7 @@ export function addChildButtonTestId(target: ElementPath): string {
 const AddChildButton = React.memo((props: AddChildButtonProps) => {
   const { target, iconColor } = props
   const onClick = useCreateCallbackToShowComponentPicker()(
-    target,
+    [target],
     EditorActions.insertAsChildTarget(),
   )
 
@@ -269,7 +269,7 @@ const ReplaceElementButton = React.memo((props: ReplaceElementButtonProps) => {
     }
   })()
 
-  const onClick = useCreateCallbackToShowComponentPicker()(realTarget, insertionTarget)
+  const onClick = useCreateCallbackToShowComponentPicker()([realTarget], insertionTarget)
 
   return (
     <Button

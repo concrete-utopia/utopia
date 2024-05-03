@@ -50,6 +50,7 @@ import {
   type InsertionTarget,
   type ShowComponentPickerContextMenuCallback,
   renderPropTarget,
+  wrapTarget,
 } from './navigator/navigator-item/component-picker-context-menu'
 
 export interface ContextMenuItem<T> {
@@ -349,7 +350,7 @@ export const insert: ContextMenuItem<CanvasData> = {
   shortcut: 'A',
   enabled: true,
   action: (data, _dispatch, _coord, event) => {
-    data.showComponentPicker(data.selectedViews[0], EditorActions.insertAsChildTarget())(event)
+    data.showComponentPicker(data.selectedViews, EditorActions.insertAsChildTarget())(event)
   },
 }
 
@@ -358,12 +359,26 @@ export function showReplaceComponentPicker(
   jsxMetadata: ElementInstanceMetadataMap,
   showComponentPicker: ShowComponentPickerContextMenuCallback,
 ): ShowComponentPickerContextMenu {
+  // FIXME Multiselect
   const element = MetadataUtils.findElementByElementPath(jsxMetadata, targetElement)
   const prop = element?.assignedToProp
   const target = prop == null ? targetElement : EP.parentPath(targetElement)
   const insertionTarget: InsertionTarget =
     prop == null ? EditorActions.replaceTarget : renderPropTarget(prop)
-  return showComponentPicker(target, insertionTarget)
+  return showComponentPicker([target], insertionTarget)
+}
+
+export function showWrapComponentPicker(
+  targetElements: ElementPath[],
+  jsxMetadata: ElementInstanceMetadataMap,
+  showComponentPicker: ShowComponentPickerContextMenuCallback,
+): ShowComponentPickerContextMenu {
+  // FIXME Render prop support
+  const firstElement = MetadataUtils.findElementByElementPath(jsxMetadata, targetElements[0])
+  const prop = firstElement?.assignedToProp
+  const targets = prop == null ? targetElements : [EP.parentPath(targetElements[0])]
+  const insertionTarget: InsertionTarget = prop == null ? wrapTarget : renderPropTarget(prop)
+  return showComponentPicker(targets, insertionTarget)
 }
 
 export function showSwapComponentPicker(
@@ -470,11 +485,8 @@ export const wrapInPicker: ContextMenuItem<CanvasData> = {
   name: 'Wrap in…',
   shortcut: 'W',
   enabled: true,
-  action: (data, dispatch?: EditorDispatch) => {
-    requireDispatch(dispatch)(
-      [setFocus('canvas'), EditorActions.openFloatingInsertMenu({ insertMenuMode: 'wrap' })],
-      'everyone',
-    )
+  action: (data, _dispatch, _coord, event) => {
+    showWrapComponentPicker(data.selectedViews, data.jsxMetadata, data.showComponentPicker)(event)
   },
 }
 

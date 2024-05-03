@@ -246,7 +246,7 @@ const PlusButton = React.memo((props: ButtonControlProps) => {
     event.preventDefault()
   }, [])
   const onClick = useCreateCallbackToShowComponentPicker()(
-    parentPath,
+    [parentPath],
     insertAsChildTarget(indexPosition),
   )
 

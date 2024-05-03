@@ -2345,6 +2345,7 @@ export const UPDATE_FNS = {
 
             const originalElement = findJSXElementAtPath(action.target, startingComponents)
 
+            // FIXME Wrap
             const withTargetDeleted = removeElementAtPath(
               action.target,
               startingComponents,

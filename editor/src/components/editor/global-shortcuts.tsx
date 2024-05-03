@@ -148,7 +148,7 @@ import { type ProjectServerState } from './store/project-server-state'
 import { allowedToEditProject } from './store/collaborative-editing'
 import { hasCommentPermission } from './store/permissions'
 import { type ShowComponentPickerContextMenuCallback } from '../navigator/navigator-item/component-picker-context-menu'
-import { showReplaceComponentPicker } from '../context-menu-items'
+import { showReplaceComponentPicker, showWrapComponentPicker } from '../context-menu-items'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -589,9 +589,19 @@ export function handleKeyDown(
         return isSelectMode(editor.mode) ? [EditorActions.unwrapElements(editor.selectedViews)] : []
       },
       [WRAP_ELEMENT_PICKER_SHORTCUT]: () => {
-        return isSelectMode(editor.mode)
-          ? [EditorActions.openFloatingInsertMenu({ insertMenuMode: 'wrap' })]
-          : []
+        if (isSelectMode(editor.mode)) {
+          const mousePoint = WindowMousePositionRaw ?? zeroCanvasPoint
+          showWrapComponentPicker(
+            editor.selectedViews,
+            editor.jsxMetadata,
+            showComponentPicker,
+          )(event, {
+            position: mousePoint,
+          })
+          return []
+        } else {
+          return []
+        }
       },
       // For now, the "Group / G" shortcuts do the same as the Wrap Element shortcuts – until we have Grouping working again
       [GROUP_ELEMENT_DEFAULT_SHORTCUT]: () => {
@@ -749,12 +759,9 @@ export function handleKeyDown(
         if (allowedToEdit) {
           if (isSelectMode(editor.mode)) {
             const mousePoint = WindowMousePositionRaw ?? zeroCanvasPoint
-            showComponentPicker(editor.selectedViews[0], EditorActions.insertAsChildTarget())(
-              event,
-              {
-                position: mousePoint,
-              },
-            )
+            showComponentPicker(editor.selectedViews, EditorActions.insertAsChildTarget())(event, {
+              position: mousePoint,
+            })
             return []
           }
         }
