@@ -398,7 +398,11 @@ export function useVariablesInScopeForSelectedElement(
       // if the selected element doesn't have an associacted variablesInScope, we assume it's safe to walk up the path within the same component
       let path = selectedViewPath
       while (
-        EP.pathsEqual(EP.getContainingComponent(path), EP.getContainingComponent(selectedViewPath))
+        EP.pathsEqual(
+          EP.getContainingComponent(path),
+          EP.getContainingComponent(selectedViewPath),
+        ) &&
+        !EP.isEmptyPath(path)
       ) {
         const pathAsString = EP.toString(path)
         if (pathAsString in variablesInScope) {
