@@ -44,6 +44,7 @@ import type {
   EditorAction,
   EditorDispatch,
   InsertAsChildTarget,
+  ReplaceKeepChildrenAndStyleTarget,
   ReplaceTarget,
 } from '../../editor/action-types'
 import { type ProjectContentTreeRoot } from '../../assets'
@@ -60,6 +61,7 @@ import {
 } from '../../editor/store/insertion-path'
 import type { InsertableComponent } from '../../shared/project-components'
 import type { ConditionalCase } from '../../../core/model/conditionals'
+import { sortBy } from '../../../core/shared/array-utils'
 
 type RenderPropTarget = { type: 'render-prop'; prop: string }
 type ConditionalTarget = { type: 'conditional'; conditionalCase: ConditionalCase }
@@ -67,6 +69,7 @@ type ConditionalTarget = { type: 'conditional'; conditionalCase: ConditionalCase
 export type InsertionTarget =
   | RenderPropTarget
   | ReplaceTarget
+  | ReplaceKeepChildrenAndStyleTarget
   | InsertAsChildTarget
   | ConditionalTarget
 
@@ -84,6 +87,12 @@ export function isReplaceTarget(
   insertionTarget: InsertionTarget,
 ): insertionTarget is ReplaceTarget {
   return insertionTarget.type === 'replace-target'
+}
+
+export function isReplaceKeepChildrenAndStyleTarget(
+  insertionTarget: InsertionTarget,
+): insertionTarget is ReplaceKeepChildrenAndStyleTarget {
+  return insertionTarget.type === 'replace-target-keep-children-and-style'
 }
 
 export function isInsertAsChildTarget(
@@ -152,7 +161,11 @@ export function preferredChildrenForTarget(
 
   // TODO: we don't deal with components registered with the same name in multiple files
   if (registeredComponent != null) {
-    if (isInsertAsChildTarget(insertionTarget) || isReplaceTarget(insertionTarget)) {
+    if (
+      isInsertAsChildTarget(insertionTarget) ||
+      isReplaceTarget(insertionTarget) ||
+      isReplaceKeepChildrenAndStyleTarget(insertionTarget)
+    ) {
       return registeredComponent.preferredChildComponents.map((v) => ({
         ...v,
         icon: getIconForComponent(v.name, v.moduleName, propertyControlsInfo),
@@ -182,7 +195,10 @@ const usePreferredChildrenForTarget = (
   target: ElementPath,
   insertionTarget: InsertionTarget,
 ): Array<PreferredChildComponentDescriptorWithIcon> => {
-  const targetParent = isReplaceTarget(insertionTarget) ? EP.parentPath(target) : target
+  const targetParent =
+    isReplaceTarget(insertionTarget) || isReplaceKeepChildrenAndStyleTarget(insertionTarget)
+      ? EP.parentPath(target)
+      : target
 
   const targetElement = useEditorState(
     Substores.metadata,
@@ -243,7 +259,11 @@ export const useCreateCallbackToShowComponentPicker =
           let pickerType: 'preferred' | 'full'
 
           if (overridePickerType == null) {
-            const targetParent = isReplaceTarget(insertionTarget) ? EP.parentPath(target) : target
+            const targetParent =
+              isReplaceTarget(insertionTarget) ||
+              isReplaceKeepChildrenAndStyleTarget(insertionTarget)
+                ? EP.parentPath(target)
+                : target
             const targetElement = MetadataUtils.findElementByElementPath(
               editorRef.current.jsxMetadata,
               targetParent,
@@ -421,15 +441,28 @@ function insertComponentPickerItem(
       ]
     }
 
-    console.warn(
-      isReplaceTarget(insertionTarget)
-        ? `Component picker error: can not replace to "${toInsert.name}"`
-        : `Component picker error: can not insert "${toInsert.name}"`,
-    )
+    console.warn(errorMessage(insertionTarget, toInsert))
     return []
   })()
 
   dispatch(actions)
+}
+
+function errorMessage(insertionTarget: InsertionTarget, toInsert: InsertableComponent) {
+  switch (insertionTarget.type) {
+    case 'replace-target':
+      return `Component picker error: can not swap to "${toInsert.name}"`
+    case 'replace-target-keep-children-and-style':
+      return `Component picker error: can not replace to "${toInsert.name}"`
+    case 'insert-as-child':
+      return `Component picker error: can not insert "${toInsert.name}" as child`
+    case 'conditional':
+      return `Component picker error: can not insert "${toInsert.name}" into conditional "${insertionTarget.type}`
+    case 'render-prop':
+      return `Component picker error: can not insert "${toInsert.name}" into render prop "${insertionTarget.prop}"`
+    default:
+      assertNever(insertionTarget)
+  }
 }
 
 function insertPreferredChild(
@@ -581,7 +614,7 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
     const metadataRef = useRefEditorState((state) => state.editor.jsxMetadata)
 
     const onItemClick = React.useCallback(
-      (preferredChildToInsert: InsertableComponent) => (e: React.MouseEvent) => {
+      (preferredChildToInsert: InsertableComponent) => (e: React.UIEvent) => {
         e.stopPropagation()
         e.preventDefault()
 
@@ -599,7 +632,7 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
       [target, projectContentsRef, metadataRef, dispatch, insertionTarget],
     )
 
-    const squashEvents = React.useCallback((e: React.MouseEvent<unknown>) => {
+    const squashEvents = React.useCallback((e: React.UIEvent<unknown>) => {
       e.stopPropagation()
     }, [])
 

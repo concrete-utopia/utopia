@@ -5,8 +5,12 @@ import {
   updateGithubData,
   updateGithubSettings,
 } from '../../../../components/editor/actions/action-creators'
-import type { GithubOperation } from '../../../../components/editor/store/editor-state'
-import { emptyGithubSettings } from '../../../../components/editor/store/editor-state'
+import { requestSearchPublicGithubRepository } from '../../../../components/editor/server'
+import type { GithubOperation, GithubRepo } from '../../../../components/editor/store/editor-state'
+import {
+  emptyGithubSettings,
+  githubRepoFullName,
+} from '../../../../components/editor/store/editor-state'
 import { assertNever } from '../../utils'
 import { GithubEndpoints } from '../endpoints'
 import type { GithubFailure, GithubOperationSource, RepositoryEntry } from '../helpers'
@@ -25,6 +29,7 @@ export const getUsersPublicGithubRepositories =
   async (
     dispatch: EditorDispatch,
     initiator: GithubOperationSource,
+    githubRepo: GithubRepo | null,
   ): Promise<Array<EditorAction>> => {
     return runGithubOperation(
       { name: 'loadRepositories' },
@@ -57,9 +62,19 @@ export const getUsersPublicGithubRepositories =
             }
             throw githubAPIError(operation, responseBody.failureReason)
           case 'SUCCESS':
+            const userRepos = responseBody.repositories.filter((repo) => !repo.isPrivate)
+
+            // if the github repository is defined and is not found in the user-owner repos, grab its details too
+            const publicRepo = await searchPublicRepoIfMissingFromUserRepos(
+              operationContext,
+              githubRepo,
+              userRepos,
+            )
+
             return [
               updateGithubData({
-                userRepositories: responseBody.repositories.filter((repo) => !repo.isPrivate),
+                userRepositories: userRepos,
+                publicRepositories: publicRepo != null ? [publicRepo] : [],
               }),
             ]
           default:
@@ -72,6 +87,23 @@ export const getUsersPublicGithubRepositories =
       },
     )
   }
+
+async function searchPublicRepoIfMissingFromUserRepos(
+  operationContext: GithubOperationContext,
+  githubRepo: GithubRepo | null,
+  userRepos: RepositoryEntry[],
+): Promise<RepositoryEntry | null> {
+  if (
+    githubRepo == null ||
+    userRepos.some((repo) => repo.fullName === githubRepoFullName(githubRepo))
+  ) {
+    return null
+  }
+  return getPublicRepositoryEntryOrNull(operationContext, {
+    owner: githubRepo.owner,
+    repo: githubRepo.repository,
+  })
+}
 
 export interface SearchPublicRepositorySuccess {
   type: 'SUCCESS'
@@ -95,15 +127,7 @@ export const searchPublicGithubRepository =
       dispatch,
       initiator,
       async (operation: GithubOperation) => {
-        const url = GithubEndpoints.searchRepository()
-
-        const response = await operationContext.fetch(url, {
-          method: 'POST',
-          credentials: 'include',
-          headers: HEADERS,
-          mode: MODE,
-          body: JSON.stringify({ owner: params.owner, repo: params.repo }),
-        })
+        const response = await requestSearchPublicGithubRepository(operationContext, params)
         if (!response.ok) {
           throw await githubAPIErrorFromResponse(operation, response)
         }
@@ -133,3 +157,32 @@ export const searchPublicGithubRepository =
       },
     )
   }
+
+export async function getPublicRepositoryEntryOrNull(
+  operationContext: GithubOperationContext,
+  params: {
+    owner: string
+    repo: string
+  },
+): Promise<RepositoryEntry | null> {
+  const response = await requestSearchPublicGithubRepository(operationContext, params)
+  if (!response.ok) {
+    console.error(`Cannot get repository data: ${response.status}`)
+    return null
+  }
+  try {
+    const responseBody: SearchPublicRepositoryResponse = await response.json()
+    switch (responseBody.type) {
+      case 'FAILURE':
+        console.error(`Cannot get repository data: ${responseBody.failureReason}`)
+        return null
+      case 'SUCCESS':
+        return responseBody.repository
+      default:
+        assertNever(responseBody)
+    }
+  } catch (err) {
+    console.error(`Cannot get repository data: ${err}`)
+    return null
+  }
+}

@@ -71,7 +71,6 @@ export const TOGGLE_INSPECTOR = 'toggle-inspector'
 export const TOGGLE_DESIGNER_ADDITIONAL_CONTROLS_SHORTCUT = 'toggle-designer-additional-controls'
 export const TOGGLE_CODE_EDITOR_SHORTCUT = 'toggle-code-editor'
 export const TOGGLE_INSPECTOR_AND_NAVIGATOR_SHORTCUT = 'toggle-inspector-and-navigator'
-export const CONVERT_ELEMENT_SHORTCUT = 'convert-element'
 export const TEXT_EDIT_MODE = 'text-edit-mode'
 export const TOGGLE_TEXT_BOLD = 'toggle-text-bold'
 export const TOGGLE_TEXT_ITALIC = 'toggle-text-italic'
@@ -216,7 +215,6 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
     'Toggle the inspector and the navigator.',
     key('backslash', 'cmd'),
   ),
-  [CONVERT_ELEMENT_SHORTCUT]: shortcut('Convert selected element to...', key('s', [])),
   [ADD_ELEMENT_SHORTCUT]: shortcut('Add element...', key('a', [])),
   [OPEN_EYEDROPPER]: shortcut('Open the eyedropper', key('c', 'ctrl')),
   [TEXT_EDIT_MODE]: shortcut('Activate text edit mode', key('t', [])),

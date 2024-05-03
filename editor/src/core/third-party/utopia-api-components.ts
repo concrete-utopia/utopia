@@ -52,6 +52,7 @@ const BasicUtopiaComponentDescriptor = (
     ],
     source: defaultComponentDescriptor(),
     ...ComponentDescriptorDefaults,
+    inspector: 'all',
   }
 }
 
@@ -100,6 +101,7 @@ const BasicUtopiaSceneDescriptor = (
     ],
     source: defaultComponentDescriptor(),
     ...ComponentDescriptorDefaults,
+    inspector: 'all',
   }
 }
 
