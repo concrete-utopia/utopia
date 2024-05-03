@@ -572,6 +572,37 @@ export const JSXPropertyControl = React.memo(
   },
 )
 
+export const JSXPropertyControlForListSection = React.memo((props: { value: JSXParsedValue }) => {
+  const { value } = props
+
+  const theme = useColorTheme()
+  const controlStyles = getControlStyles('simple')
+  const valueToShow = value
+
+  const safeValue: JSXParsedValue = valueToShow ?? { type: 'unknown', name: 'JSX' }
+
+  // TODO: this is copy paste from conditional section
+  return (
+    <div
+      style={{
+        borderRadius: 2,
+        background: theme.bg2.value,
+        display: 'flex',
+        justifyContent: 'flex-start',
+        alignItems: 'center',
+        gap: 2,
+        overflowX: 'scroll',
+        whiteSpace: 'nowrap',
+        padding: '2px 4px',
+        color: controlStyles.mainColor,
+      }}
+    >
+      <JSXPropIcon jsxType={safeValue.type} />
+      <span style={{ overflow: 'hidden' }}>{safeValue.name}</span>
+    </div>
+  )
+})
+
 // TODO: this is just a dummy component we need more and better icons
 const JSXPropIcon = React.memo((props: { jsxType: JSXParsedType }) => {
   switch (props.jsxType) {

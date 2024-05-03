@@ -2,87 +2,40 @@
 /** @jsx jsx */ import { jsx } from '@emotion/react'
 import createCachedSelector from 're-reselect'
 import React from 'react'
-import type { ConditionalCase } from '../../../../core/model/conditionals'
-import { getConditionalClausePath } from '../../../../core/model/conditionals'
+import { usePopper } from 'react-popper'
+import type { ArrayControlDescription } from 'utopia-api/core'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
-import {
-  findUtopiaCommentFlag,
-  isUtopiaCommentFlagConditional,
-} from '../../../../core/shared/comment-flags'
-import { foldEither, isLeft } from '../../../../core/shared/either'
+import { isLeft } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
 import type {
-  ConditionValue,
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
-  JSXConditionalExpression,
-  JSXElementChild,
   JSXMapExpression,
 } from '../../../../core/shared/element-template'
-import {
-  isJSXConditionalExpression,
-  isJSXMapExpression,
-  modifiableAttributeToValuePath,
-} from '../../../../core/shared/element-template'
-import { optionalMap } from '../../../../core/shared/optional-utils'
+import { isJSXMapExpression } from '../../../../core/shared/element-template'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
-import { unless } from '../../../../utils/react-conditionals'
+import { NO_OP } from '../../../../core/shared/utils'
+import type { JSXParsedValue } from '../../../../utils/value-parser-utils'
 import {
   Button,
-  FlexColumn,
   FlexRow,
   Icn,
-  iconForControlType,
-  Icons,
   InspectorSectionIcons,
-  SquareButton,
-  StringInput,
-  Tooltip,
-  useColorTheme,
-  UtopiaStyles,
   UtopiaTheme,
+  useColorTheme,
 } from '../../../../uuiui'
-import { isEntryAConditionalSlot } from '../../../canvas/canvas-utils'
-import type { EditorAction } from '../../../editor/action-types'
-import {
-  setConditionalOverriddenCondition,
-  switchConditionalBranches,
-  updateConditionalExpression,
-} from '../../../editor/actions/action-creators'
-import { useDispatch } from '../../../editor/store/dispatch-context'
-import type { NavigatorEntry } from '../../../editor/store/editor-state'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import type { MetadataSubstate } from '../../../editor/store/store-hook-substore-types'
-import { LayoutIcon } from '../../../navigator/navigator-item/layout-icon'
-import {
-  getNavigatorEntryLabel,
-  labelSelector,
-} from '../../../navigator/navigator-item/navigator-item-wrapper'
-import { getNavigatorTargets } from '../../../navigator/navigator-utils'
-import {
-  calculatePropertyStatusForSelection,
-  type ControlStatus,
-} from '../../common/control-status'
-import { getControlStyles } from '../../common/control-styles'
-import { usePropControlledStateV2 } from '../../common/inspector-utils'
-import { ConditionalOverrideControl } from '../../controls/conditional-override-control'
 import { UIGridRow } from '../../widgets/ui-grid-row'
-import { usePopper } from 'react-popper'
-import type { ArrayControlDescription, RegularControlDescription } from 'utopia-api/core'
-import { useVariablesInScopeForSelectedElement } from '../component-section/variables-in-scope-utils'
 import { DataPickerPopupButtonTestId } from '../component-section/component-section'
+import { DataPickerPopup, dataPickerForAnElement } from '../component-section/data-picker-popup'
 import {
-  dataPickerForAnElement,
-  dataPickerForAProperty,
-  DataPickerPopup,
-} from '../component-section/data-picker-popup'
-import { ConditionalsControlSectionExpressionTestId } from './conditional-section'
-import { jsxElementChildToText } from '../../../canvas/ui-jsx-canvas-renderer/jsx-element-child-to-text'
-import { NO_OP } from '../../../../core/shared/utils'
-import { IdentifierExpressionCartoucheControl } from '../component-section/cartouche-control'
-import { getTextContentOfElement } from '../component-section/data-reference-cartouche'
-import { JSXPropertyControl } from '../component-section/property-control-controls'
+  DataCartoucheInner,
+  getTextContentOfElement,
+} from '../component-section/data-reference-cartouche'
+import { JSXPropertyControlForListSection } from '../component-section/property-control-controls'
+import { useVariablesInScopeForSelectedElement } from '../component-section/variables-in-scope-utils'
 
 type MapExpression = JSXMapExpression | 'multiselect' | 'not-a-mapexpression'
 
@@ -243,6 +196,24 @@ export const ListSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
   const { popupIsOpen, DataPickerOpener, DataPickerComponent, setReferenceElement, openPopup } =
     useDataPickerButton(paths)
 
+  // early return, no hooks below this point!
+
+  const mappedRootElementToDisplay = useEditorState(
+    Substores.metadata,
+    (store) => {
+      const elementMetadata = MetadataUtils.getChildrenOrdered(
+        store.editor.jsxMetadata,
+        store.editor.elementPathTree,
+        paths[0],
+      )[0]
+
+      return elementMetadata == null || isLeft(elementMetadata.element)
+        ? null
+        : getTextContentOfElement(elementMetadata.element.value, elementMetadata)
+    },
+    'ConditionalSection mappedRootElement',
+  )
+
   if (originalMapExpression === 'multiselect' || originalMapExpression === 'not-a-mapexpression') {
     return null
   }
@@ -295,14 +266,11 @@ export const ListSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
           }}
           ref={setReferenceElement}
         >
-          <IdentifierExpressionCartoucheControl
-            contents={contentsToDisplay.label ?? ''}
-            icon={React.createElement(iconForControlType(controlDescription.control))}
-            matchType={contentsToDisplay.type === 'literal' ? 'none' : 'full'}
-            onOpenDataPicker={openPopup}
-            onDeleteCartouche={NO_OP}
-            testId={`cartouche-map-expression-value-to-map`}
-            safeToDelete={false}
+          <DataCartoucheInner
+            contentsToDisplay={contentsToDisplay}
+            onClick={openPopup}
+            onDoubleClick={NO_OP}
+            selected={false}
           />
         </div>
         {DataPickerOpener}
@@ -321,10 +289,13 @@ export const ListSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
           }}
           ref={setReferenceElement}
         >
-          <JSXPropertyControl
-            controlStatus='controlled'
-            propertyStatus={calculatePropertyStatusForSelection([], [])}
-            value={{ type: 'unknown', value: 'whap' }}
+          <JSXPropertyControlForListSection
+            value={
+              {
+                type: 'internal-component',
+                name: mappedRootElementToDisplay?.label,
+              } as JSXParsedValue
+            }
           />
         </div>
       </UIGridRow>
