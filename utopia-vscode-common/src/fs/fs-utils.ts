@@ -475,28 +475,29 @@ async function onPolledWatch(path: string, config: WatchConfig): Promise<FileMod
       const wasModified = modifiedTS > (lastModifiedTSs.get(path) ?? 0)
       const modifiedBySelf = stats.sourceOfLastChange === fsUser
 
-      if (wasModified) {
-        if (isDirectory(node)) {
-          if (recursive) {
-            const children = await childPaths(path)
-            const unsupervisedChildren = children.filter((p) => !watchedPaths.has(p))
-            unsupervisedChildren.forEach((childPath) => {
-              watchPath(childPath, config)
-              onCreated(childPath)
-            })
-            if (unsupervisedChildren.length > 0) {
-              onModified(path, modifiedBySelf)
-            }
+      if (isDirectory(node)) {
+        if (recursive) {
+          const children = await childPaths(path)
+          const unsupervisedChildren = children.filter((p) => !watchedPaths.has(p))
+          unsupervisedChildren.forEach((childPath) => {
+            watchPath(childPath, config)
+            onCreated(childPath)
+          })
+          if (unsupervisedChildren.length > 0) {
+            onModified(path, modifiedBySelf)
+            lastModifiedTSs.set(path, modifiedTS)
+            return 'modified'
           }
-        } else {
-          onModified(path, modifiedBySelf)
         }
-
-        lastModifiedTSs.set(path, modifiedTS)
-        return 'modified'
       } else {
-        return 'not-modified'
+        if (wasModified) {
+          onModified(path, modifiedBySelf)
+          lastModifiedTSs.set(path, modifiedTS)
+          return 'modified'
+        }
       }
+
+      return 'not-modified'
     }
   } catch (e) {
     if (isFSUnavailableError(e)) {

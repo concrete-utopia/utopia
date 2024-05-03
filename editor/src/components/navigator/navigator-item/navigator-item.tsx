@@ -243,7 +243,7 @@ const styleTypeColors: Record<StyleType, { color: keyof ThemeObject; iconColor: 
   component: { color: 'componentPurple', iconColor: 'component' },
   componentInstance: { color: 'fg0', iconColor: 'main' },
   erroredGroup: { color: 'error', iconColor: 'error' },
-  lowEmphasis: { color: 'fg5', iconColor: 'darkgray' },
+  lowEmphasis: { color: 'fg5', iconColor: 'subdued' },
   selected: { color: 'white', iconColor: 'white' },
 }
 
@@ -1191,10 +1191,8 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
               ? 'white'
               : props.insideFocusedComponent
               ? 'component'
-              : props.emphasis === 'emphasized'
-              ? 'dynamic'
-              : isCodeItem || props.codeItemType === 'map'
-              ? props.iconColor
+              : props.emphasis === 'subdued'
+              ? 'subdued'
               : props.iconColor
           }
           elementWarnings={props.elementWarnings}

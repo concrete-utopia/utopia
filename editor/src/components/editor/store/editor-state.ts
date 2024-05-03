@@ -2598,7 +2598,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       visible: true,
     },
     interfaceDesigner: {
-      codePaneVisible: true,
+      codePaneVisible: false,
       additionalControls: true,
     },
     canvas: {
@@ -2995,7 +2995,7 @@ export function editorModelFromPersistentModel(
       visible: true,
     },
     interfaceDesigner: {
-      codePaneVisible: true,
+      codePaneVisible: false,
       additionalControls: true,
     },
     canvas: {
