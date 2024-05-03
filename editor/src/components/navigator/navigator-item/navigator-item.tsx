@@ -174,11 +174,8 @@ function selectItem(
     selectionActions.push(
       ...getSelectionActions(getSelectedViewsInRange, index, elementPath, selected, event),
     )
-  } else if (isRenderPropNavigatorEntry(navigatorEntry)) {
-    event.stopPropagation()
-    if (navigatorEntry.childPath != null) {
-      selectionActions.push(...MetaActions.selectComponents([navigatorEntry.childPath], false))
-    }
+  } else if (isRenderPropNavigatorEntry(navigatorEntry) && navigatorEntry.childPath != null) {
+    selectionActions.push(...MetaActions.selectComponents([navigatorEntry.childPath], false))
   }
 
   // when we click on an already selected item we should force vscode to navigate there
@@ -909,11 +906,21 @@ export const NavigatorItem: React.FunctionComponent<
   const iconColor = resultingStyle.iconColor
 
   const currentlyRenaming = EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath)
-  const hideContextMenu = React.useCallback(() => contextMenu.hideAll(), [])
+
+  const onClick = React.useCallback(
+    (e: React.MouseEvent) => {
+      if (isRenderPropNavigatorEntry(navigatorEntry)) {
+        e.stopPropagation()
+      }
+
+      contextMenu.hideAll()
+    },
+    [navigatorEntry],
+  )
 
   return (
     <div
-      onClick={hideContextMenu}
+      onClick={onClick}
       style={{
         borderRadius: 5,
         outline: `1px solid ${

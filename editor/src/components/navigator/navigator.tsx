@@ -252,7 +252,7 @@ export const NavigatorComponent = React.memo(() => {
     }
   }
 
-  const containerMouseDown = React.useCallback(
+  const containerClick = React.useCallback(
     (mouseEvent: React.MouseEvent<HTMLElement>) => {
       // Ensure this is a left click.
       if (mouseEvent.button === 0) {
@@ -285,7 +285,7 @@ export const NavigatorComponent = React.memo(() => {
         padding: 5,
         height: 0,
       }}
-      onMouseDown={containerMouseDown}
+      onClick={containerClick}
     >
       <SectionBodyArea
         minimised={minimised}
