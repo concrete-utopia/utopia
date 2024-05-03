@@ -84,7 +84,7 @@ function getMapExpressionMetadata(
     return 'multiselect'
   }
 
-  return elementMetadatas[0]
+  return elementMetadatas.at(0) ?? 'not-a-mapexpression'
 }
 
 export const ListSectionTestId = 'list-section'
@@ -182,7 +182,7 @@ export const ListSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
 
   const metadataForElement = useEditorState(
     Substores.metadata,
-    (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, paths[0]),
+    (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, paths.at(0)),
     'ConditionalSection metadata',
   )
 
@@ -201,14 +201,15 @@ export const ListSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
   const mappedRootElementToDisplay = useEditorState(
     Substores.metadata,
     (store) => {
-      const elementMetadata: ElementInstanceMetadata | null =
-        paths.length === 0
+      const path = paths.at(0)
+      const elementMetadata: ElementInstanceMetadata | null | undefined =
+        path == null
           ? null
           : MetadataUtils.getChildrenOrdered(
               store.editor.jsxMetadata,
               store.editor.elementPathTree,
-              paths[0],
-            )[0]
+              path,
+            ).at(0)
 
       return elementMetadata == null || isLeft(elementMetadata.element)
         ? null
