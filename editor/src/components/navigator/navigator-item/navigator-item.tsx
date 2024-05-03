@@ -1236,10 +1236,12 @@ function elementContainsExpressions(
 }
 
 function getSelectionTargetForNavigatorEntry(navigatorEntry: NavigatorEntry): ElementPath {
-  const shouldSelectParentInstead = isDataReferenceNavigatorEntry(navigatorEntry)
-  const elementPath = shouldSelectParentInstead
-    ? EP.parentPath(navigatorEntry.elementPath)
-    : navigatorEntry.elementPath
+  if (isDataReferenceNavigatorEntry(navigatorEntry)) {
+    return EP.parentPath(navigatorEntry.elementPath)
+  }
+  if (isRenderPropNavigatorEntry(navigatorEntry) && navigatorEntry.childPath != null) {
+    return navigatorEntry.childPath
+  }
 
-  return elementPath
+  return navigatorEntry.elementPath
 }
