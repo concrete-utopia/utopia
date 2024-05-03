@@ -209,11 +209,11 @@ export const DataPickerPopup = React.memo(
             style={{
               ...props.style,
               left: -16, // to make it align with the cartouche control
-              backgroundColor: colorTheme.bg1.value,
+              backgroundColor: colorTheme.bg0.value,
               color: colorTheme.fg1.value,
               padding: 4,
               boxShadow: UtopiaStyles.shadowStyles.low.boxShadow,
-              border: `.2px solid ${colorTheme.bg4.value}`,
+              border: `.2px solid ${colorTheme.popupBorder.value}`,
               borderRadius: 10,
               alignItems: 'flex-start',
               width: '96%',
