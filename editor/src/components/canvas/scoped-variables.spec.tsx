@@ -255,79 +255,7 @@ describe('scoped variables', () => {
             },
           },
         },
-        "storyboard-entity/scene-1-entity/app-entity:cb0/fakeawaitelement/166": Object {
-          "props": Object {
-            "insertionCeiling": Object {
-              "parts": Array [
-                Array [
-                  "storyboard-entity",
-                  "scene-1-entity",
-                  "app-entity",
-                ],
-              ],
-              "type": "elementpath",
-            },
-            "spiedValue": Object {
-              "data-uid": "app-entity",
-            },
-          },
-        },
         "storyboard-entity/scene-1-entity/app-entity:cb0/fakeawaitelement/166/something-div~~~1": Object {
-          "first": Object {
-            "insertionCeiling": Object {
-              "parts": Array [
-                Array [
-                  "storyboard-entity",
-                  "scene-1-entity",
-                  "app-entity",
-                ],
-                Array [
-                  "cb0",
-                  "fakeawaitelement",
-                  "166",
-                  "something-div~~~1",
-                ],
-              ],
-              "type": "elementpath",
-            },
-            "spiedValue": 1,
-          },
-          "props": Object {
-            "insertionCeiling": Object {
-              "parts": Array [
-                Array [
-                  "storyboard-entity",
-                  "scene-1-entity",
-                  "app-entity",
-                ],
-              ],
-              "type": "elementpath",
-            },
-            "spiedValue": Object {
-              "data-uid": "app-entity",
-            },
-          },
-          "thing": Object {
-            "insertionCeiling": Object {
-              "parts": Array [
-                Array [
-                  "storyboard-entity",
-                  "scene-1-entity",
-                  "app-entity",
-                ],
-                Array [
-                  "cb0",
-                  "fakeawaitelement",
-                  "166",
-                  "something-div~~~1",
-                ],
-              ],
-              "type": "elementpath",
-            },
-            "spiedValue": "a string",
-          },
-        },
-        "storyboard-entity/scene-1-entity/app-entity:cb0/fakeawaitelement/166/something-div~~~1/8e2": Object {
           "first": Object {
             "insertionCeiling": Object {
               "parts": Array [
@@ -431,70 +359,7 @@ describe('scoped variables', () => {
             },
           },
         },
-        "storyboard-entity/scene-1-entity/app-entity:cb0/fakeawaitelement/fa1": Object {
-          "props": Object {
-            "insertionCeiling": Object {
-              "parts": Array [
-                Array [
-                  "storyboard-entity",
-                  "scene-1-entity",
-                  "app-entity",
-                ],
-              ],
-              "type": "elementpath",
-            },
-            "spiedValue": Object {
-              "data-uid": "app-entity",
-            },
-          },
-        },
         "storyboard-entity/scene-1-entity/app-entity:cb0/fakeawaitelement/fa1/something-div~~~1": Object {
-          "props": Object {
-            "insertionCeiling": Object {
-              "parts": Array [
-                Array [
-                  "storyboard-entity",
-                  "scene-1-entity",
-                  "app-entity",
-                ],
-              ],
-              "type": "elementpath",
-            },
-            "spiedValue": Object {
-              "data-uid": "app-entity",
-            },
-          },
-          "something": Object {
-            "insertionCeiling": Object {
-              "parts": Array [
-                Array [
-                  "storyboard-entity",
-                  "scene-1-entity",
-                  "app-entity",
-                ],
-                Array [
-                  "cb0",
-                  "fakeawaitelement",
-                  "fa1",
-                  "something-div~~~1",
-                ],
-              ],
-              "type": "elementpath",
-            },
-            "spiedValue": <div
-              data-path="storyboard-entity/scene-1-entity/app-entity:cb0/fakeawaitelement:fakeawait/elephant~~~1"
-              data-uid="elephant~~~1"
-            >
-              <UtopiaSpiedExoticType(Symbol(react.fragment))>
-                <UtopiaSpiedExoticType(Symbol(react.fragment))>
-                  Elephant
-
-                </UtopiaSpiedExoticType(Symbol(react.fragment))>
-              </UtopiaSpiedExoticType(Symbol(react.fragment))>
-            </div>,
-          },
-        },
-        "storyboard-entity/scene-1-entity/app-entity:cb0/fakeawaitelement/fa1/something-div~~~1/4fe": Object {
           "props": Object {
             "insertionCeiling": Object {
               "parts": Array [

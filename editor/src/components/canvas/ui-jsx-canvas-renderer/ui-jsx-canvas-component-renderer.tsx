@@ -325,7 +325,6 @@ export function createComponentRendererComponent(params: {
           imports,
           'not-a-conditional',
           earlyReturn,
-          spiedVariablesInScope,
           null,
         )
       }

@@ -258,7 +258,6 @@ export function renderCoreElement(
           imports,
           'not-a-conditional',
           null,
-          variablesInScope,
           null,
         )
       }
@@ -365,7 +364,6 @@ export function renderCoreElement(
           imports,
           'not-a-conditional',
           null,
-          variablesInScope,
           assignedToProp,
         )
       }
@@ -529,7 +527,6 @@ export function renderCoreElement(
             default: defaultConditionValue,
           },
           null,
-          variablesInScope,
           assignedToProp,
         )
       }
@@ -615,7 +612,6 @@ export function renderCoreElement(
           imports,
           'not-a-conditional',
           null,
-          variablesInScope,
           assignedToProp,
         )
       }
