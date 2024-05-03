@@ -116,14 +116,6 @@ const RepositoryRow = (props: RepositoryRowProps) => {
     [dispatch, githubUserDetails, props],
   )
 
-  const [panelState] = useGridPanelState()
-  const panelWidth = React.useMemo(() => {
-    return (
-      panelState.find((panel) => panel.panels.some(({ name }) => name === 'navigator'))
-        ?.menuWidth ?? GridMenuMinWidth
-    )
-  }, [panelState])
-
   return (
     <UIGridRow
       padded
@@ -144,14 +136,12 @@ const RepositoryRow = (props: RepositoryRowProps) => {
             color: colorTheme.fg0.value,
           },
         },
-        maxWidth: panelWidth,
       }}
       onClick={importRepository}
     >
-      <div>
-        <Ellipsis style={{ maxWidth: panelWidth - 150 }} title={props.fullName}>
-          {props.fullName}
-        </Ellipsis>
+      {/* this helps text not get truncated */}
+      <div style={{ display: 'grid' }}>
+        <Ellipsis title={props.fullName}>{props.fullName}</Ellipsis>
         <span style={{ fontSize: 10, opacity: 0.5 }}>
           {unless(
             props.searchable,
