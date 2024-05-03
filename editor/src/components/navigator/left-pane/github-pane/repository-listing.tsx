@@ -300,7 +300,7 @@ export const RepositoryListing = React.memo(
     const currentRepo = useEditorState(
       Substores.github,
       (store) => store.editor.githubSettings.targetRepository,
-      'Github targetRepository',
+      'Github currentRepo',
     )
 
     const dispatch = useDispatch()

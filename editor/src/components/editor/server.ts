@@ -685,12 +685,11 @@ export async function requestSearchPublicGithubRepository(
 ): Promise<Response> {
   const url = GithubEndpoints.searchRepository()
 
-  const response = await operationContext.fetch(url, {
+  return operationContext.fetch(url, {
     method: 'POST',
     credentials: 'include',
     headers: HEADERS,
     mode: MODE,
     body: JSON.stringify({ owner: params.owner, repo: params.repo }),
   })
-  return response
 }
