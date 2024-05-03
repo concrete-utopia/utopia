@@ -1,6 +1,6 @@
 import fastDeepEquals from 'fast-deep-equal'
 import React from 'react'
-import type { CSSCursor } from '../../../../uuiui-deps'
+import type { CSSCursor, ControlStatus, PropertyStatus } from '../../../../uuiui-deps'
 import { SliderControl, getControlStyles } from '../../../../uuiui-deps'
 import type {
   AllowedEnumType,
@@ -539,15 +539,14 @@ export const HtmlInputPropertyControl = React.memo(
 )
 
 export const JSXPropertyControl = React.memo(
-  (props: ControlForPropProps<JSXControlDescription>) => {
-    const { propMetadata } = props
+  (props: { propertyStatus: PropertyStatus; controlStatus: ControlStatus; value: any }) => {
+    const { propertyStatus, controlStatus, value } = props
 
     const theme = useColorTheme()
-    const controlStatus = propMetadata.controlStatus
     const controlStyles = getControlStyles(controlStatus)
-    const value = propMetadata.propertyStatus.set ? propMetadata.value : undefined
+    const valueToShow = propertyStatus.set ? value : undefined
 
-    const safeValue: JSXParsedValue = value ?? { type: 'unknown', name: 'JSX' }
+    const safeValue: JSXParsedValue = valueToShow ?? { type: 'unknown', name: 'JSX' }
 
     // TODO: this is copy paste from conditional section
     return (

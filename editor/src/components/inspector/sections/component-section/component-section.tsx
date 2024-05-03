@@ -229,7 +229,13 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
     case 'vector4':
       return <VectorPropertyControl {...props} controlDescription={controlDescription} />
     case 'jsx':
-      return <JSXPropertyControl {...props} controlDescription={controlDescription} />
+      return (
+        <JSXPropertyControl
+          controlStatus={props.propMetadata.controlStatus}
+          propertyStatus={props.propMetadata.propertyStatus}
+          value={props.propMetadata.value}
+        />
+      )
     default:
       return null
   }
