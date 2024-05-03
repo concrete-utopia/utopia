@@ -24,7 +24,7 @@ const darkBase = {
   secondaryOrange: createUtopiColor('oklch(81.8% 0.141 47)'),
   denimBlue: createUtopiColor('oklch(33.65% 0.09 255)'),
   lightDenimBlue: createUtopiColor('oklch(25% 0.07 255)'),
-  selectionBlue: createUtopiColor('oklch(66.9% 0.198 248.8)'),
+  selectionBlue: createUtopiColor('oklch(66.9% 0.18 248.8)'),
   childSelectionBlue: createUtopiColor('oklch(35.15% 0.11 243)'),
   selectionPurple: createUtopiColor('oklch(53.22% 0.28 289.7)'),
   childSelectionPurple: createUtopiColor('oklch(32.25% 0.13 293.16)'),

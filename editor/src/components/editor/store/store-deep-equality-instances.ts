@@ -699,11 +699,13 @@ export const DataReferenceNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<D
   )
 
 export const RenderPropNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<RenderPropNavigatorEntry> =
-  combine2EqualityCalls(
+  combine3EqualityCalls(
     (entry) => entry.elementPath,
     ElementPathKeepDeepEquality,
     (entry) => entry.propName,
     StringKeepDeepEquality,
+    (entry) => entry.childPath,
+    nullableDeepEquality(ElementPathKeepDeepEquality),
     renderPropNavigatorEntry,
   )
 

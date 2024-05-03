@@ -138,7 +138,7 @@ describe('registered property controls', () => {
             "sourceDescriptorFile": "/utopia/components.utopia.js",
             "type": "DESCRIPTOR_FILE",
           },
-          "supportsChildren": false,
+          "supportsChildren": true,
           "variants": Array [
             Object {
               "elementToInsert": [Function],
@@ -237,7 +237,7 @@ describe('registered property controls', () => {
             "sourceDescriptorFile": "/utopia/components.utopia.js",
             "type": "DESCRIPTOR_FILE",
           },
-          "supportsChildren": false,
+          "supportsChildren": true,
           "variants": Array [
             Object {
               "elementToInsert": [Function],
@@ -838,7 +838,7 @@ describe('registered property controls', () => {
           "emphasis": "regular",
           "focus": "default",
           "icon": "regular",
-          "inspector": "all",
+          "inspector": Array [],
           "preferredChildComponents": Array [],
           "properties": Object {
             "background": Object {
@@ -856,7 +856,7 @@ describe('registered property controls', () => {
             "sourceDescriptorFile": "/utopia/components.utopia.js",
             "type": "DESCRIPTOR_FILE",
           },
-          "supportsChildren": false,
+          "supportsChildren": true,
           "variants": Array [
             Object {
               "elementToInsert": [Function],
@@ -1238,7 +1238,7 @@ describe('registered property controls', () => {
       expect(propsToCheck).toMatchInlineSnapshot(`
         Object {
           "preferredChildComponents": Array [],
-          "supportsChildren": false,
+          "supportsChildren": true,
         }
       `)
     })
@@ -1662,7 +1662,7 @@ describe('registered property controls', () => {
             "emphasis": "regular",
             "focus": "default",
             "icon": "regular",
-            "inspector": "all",
+            "inspector": Array [],
             "preferredChildComponents": Array [],
             "properties": Object {
               "label": Object {
@@ -1759,7 +1759,7 @@ describe('registered property controls', () => {
               "sourceDescriptorFile": "/utopia/components.utopia.js",
               "type": "DESCRIPTOR_FILE",
             },
-            "supportsChildren": false,
+            "supportsChildren": true,
             "variants": Array [
               Object {
                 "elementToInsert": [Function],

@@ -522,10 +522,10 @@ export const mapComponentInfo: ComponentInfo = {
     type: 'JSX_MAP_EXPRESSION',
     valueToMap: jsExpressionValue([1, 2, 3], emptyComments),
     mapFunction: jsExpressionOtherJavaScript(
-      [functionParam(false, regularParam('v', null))],
-      `(v) => (\n            <Placeholder />\n          )`,
-      `(v) => <\nPlaceholder data-uid="placeholder-id" />);`,
-      `return (v) => utopiaCanvasJSXLookup("placeholder-id", {\n  callerThis: this\n})`,
+      [functionParam(false, regularParam('listItem', null))],
+      `(listItem) => (\n            <Placeholder />\n          )`,
+      `(listItem) => <\nPlaceholder data-uid="placeholder-id" />);`,
+      `return (listItem) => utopiaCanvasJSXLookup("placeholder-id", {\n  callerThis: this\n})`,
       ['React', 'Placeholder', 'utopiaCanvasJSXLookup'],
       null,
       {
@@ -534,7 +534,7 @@ export const mapComponentInfo: ComponentInfo = {
       emptyComments,
       '',
     ),
-    valuesInScopeFromParameters: ['v'],
+    valuesInScopeFromParameters: ['listItem'],
     comments: emptyComments,
   }),
   importsToAdd: {

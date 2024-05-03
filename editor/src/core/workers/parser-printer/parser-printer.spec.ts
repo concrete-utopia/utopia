@@ -6186,7 +6186,9 @@ export var App = props => {
                 JS_IDENTIFIER - 09c
           UNPARSED_CODE
           UTOPIA_JSX_COMPONENT - App
-            JSX_ELEMENT - MyComp - e13"
+            JSX_ELEMENT - MyComp - e13
+              JSX_ELEMENT - h1 - dff
+                JSX_TEXT_BLOCK - 9e1"
         `)
 
         const appComponent = success.topLevelElements.find(
@@ -6247,7 +6249,8 @@ export var App = props => {
                 JS_IDENTIFIER - 09c
           UNPARSED_CODE
           UTOPIA_JSX_COMPONENT - App
-            JSX_ELEMENT - MyComp - 26c"
+            JSX_ELEMENT - MyComp - 26c
+              JSX_ELEMENT - div - 4cf"
         `)
 
         const appComponent = success.topLevelElements.find(

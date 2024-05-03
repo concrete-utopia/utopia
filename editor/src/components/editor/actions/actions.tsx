@@ -1765,6 +1765,7 @@ export const UPDATE_FNS = {
   },
   SET_PROP: (action: SetProp, editor: EditorModel): EditorModel => {
     let setPropFailedMessage: string | null = null
+    let newSelectedViews: Array<ElementPath> = editor.selectedViews
     let updatedEditor = modifyUnderlyingTargetElement(
       action.target,
       editor,
@@ -1773,6 +1774,10 @@ export const UPDATE_FNS = {
           return element
         }
         const updatedProps = setJSXValueAtPath(element.props, action.propertyPath, action.value)
+        // when this is a render prop we should select it
+        if (isJSXElement(action.value)) {
+          newSelectedViews = [EP.appendToPath(action.target, action.value.uid)]
+        }
         if (
           isRight(updatedProps) &&
           PP.contains(
@@ -1837,7 +1842,10 @@ export const UPDATE_FNS = {
       updatedEditor = UPDATE_FNS.ADD_TOAST(toastAction, editor)
     }
 
-    return updatedEditor
+    return {
+      ...updatedEditor,
+      selectedViews: newSelectedViews,
+    }
   },
   SET_CANVAS_FRAMES: (action: SetCanvasFrames, editor: EditorModel): EditorModel => {
     return setCanvasFramesInnerNew(editor, action.framesAndTargets, null)
@@ -2385,11 +2393,14 @@ export const UPDATE_FNS = {
             },
           )
 
-          // apply the children of original element on the new element
-          return {
-            ...renamedJsxElementWithOriginalStyle,
-            children: originalElement.children,
+          if (originalElement.children.length > 0) {
+            // apply the children of original element on the new element
+            return {
+              ...renamedJsxElementWithOriginalStyle,
+              children: originalElement.children,
+            }
           }
+          return renamedJsxElementWithOriginalStyle
         })()
 
         const withInsertedElement = insertJSXElementChildren(

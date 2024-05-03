@@ -61,6 +61,7 @@ import {
 } from '../../editor/store/insertion-path'
 import type { InsertableComponent } from '../../shared/project-components'
 import type { ConditionalCase } from '../../../core/model/conditionals'
+import { sortBy } from '../../../core/shared/array-utils'
 
 type RenderPropTarget = { type: 'render-prop'; prop: string }
 type ConditionalTarget = { type: 'conditional'; conditionalCase: ConditionalCase }
@@ -613,7 +614,7 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
     const metadataRef = useRefEditorState((state) => state.editor.jsxMetadata)
 
     const onItemClick = React.useCallback(
-      (preferredChildToInsert: InsertableComponent) => (e: React.MouseEvent) => {
+      (preferredChildToInsert: InsertableComponent) => (e: React.UIEvent) => {
         e.stopPropagation()
         e.preventDefault()
 
@@ -631,7 +632,7 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
       [target, projectContentsRef, metadataRef, dispatch, insertionTarget],
     )
 
-    const squashEvents = React.useCallback((e: React.MouseEvent<unknown>) => {
+    const squashEvents = React.useCallback((e: React.UIEvent<unknown>) => {
       e.stopPropagation()
     }, [])
 

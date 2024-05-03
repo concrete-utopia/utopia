@@ -56,7 +56,9 @@ export var App = props => {
                 JSX_ELEMENT - div - bbb
                   JS_IDENTIFIER - 833
                   JSX_TEXT_BLOCK - d01
-                  JS_IDENTIFIER - b90"
+                  JS_IDENTIFIER - b90
+              ATTRIBUTE_VALUE - 74a
+              ATTRIBUTE_VALUE - 207"
       `)
 
       const aaaElement = findJSXElementAtStaticPath(
@@ -190,7 +192,14 @@ export var App = props => {
             JS_PROPERTY_ACCESS - 4f7
               JS_IDENTIFIER - 09c
             ATTRIBUTE_OTHER_JAVASCRIPT - f44
-              JSX_ELEMENT - Card - card"
+              JSX_ELEMENT - Card - card
+                  ATTRIBUTE_VALUE - da1
+                JS_PROPERTY_ACCESS - 711
+                  JS_IDENTIFIER - fc3
+                JS_PROPERTY_ACCESS - 18e
+                  JS_IDENTIFIER - 913
+                JS_PROPERTY_ACCESS - 2a0
+                  JS_IDENTIFIER - fd6"
     `)
     expect(elementsStructure((testParseCode(spreadCode) as any).topLevelElements))
       .toMatchInlineSnapshot(`
@@ -205,7 +214,8 @@ export var App = props => {
             JS_PROPERTY_ACCESS - 4f7
               JS_IDENTIFIER - 09c
             ATTRIBUTE_OTHER_JAVASCRIPT - 8a6
-              JSX_ELEMENT - Card - card"
+              JSX_ELEMENT - Card - card
+                  ATTRIBUTE_VALUE - da1"
     `)
   })
 })

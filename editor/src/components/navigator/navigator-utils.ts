@@ -3,6 +3,7 @@ import * as EP from '../../core/shared/element-path'
 import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
+  JSExpression,
   JSXConditionalExpression,
 } from '../../core/shared/element-template'
 import {
@@ -22,6 +23,7 @@ import type { ConditionalClauseNavigatorEntry, NavigatorEntry } from '../editor/
 import {
   conditionalClauseNavigatorEntry,
   dataReferenceNavigatorEntry,
+  getElementFromProjectContents,
   invalidOverrideNavigatorEntry,
   isConditionalClauseNavigatorEntry,
   regularNavigatorEntry,
@@ -108,7 +110,10 @@ export function getNavigatorTargets(
       const isHiddenInNavigator = EP.containsPath(path, hiddenInNavigator)
       const isConditional = MetadataUtils.isElementPathConditionalFromMetadata(metadata, path)
       const isMap = MetadataUtils.isJSXMapExpression(path, metadata)
-      const isDataReference = MetadataUtils.isElementDataReference(path, metadata)
+      const elementFromProjectContents = getElementFromProjectContents(path, projectContents)
+      const elementIsDataReferenceFromProjectContents = MetadataUtils.isElementDataReference(
+        elementFromProjectContents,
+      )
 
       const isCollapsed = EP.containsPath(path, collapsedViews)
       const newCollapsedAncestor = collapsedAncestor || isCollapsed || isHiddenInNavigator
@@ -121,12 +126,13 @@ export function getNavigatorTargets(
         visibleNavigatorTargets.push(...entries)
       }
 
-      if (isDataReference && isFeatureEnabled('Data Entries in the Navigator')) {
-        const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
-        if (elementMetadata != null && isRight(elementMetadata.element)) {
+      if (
+        elementIsDataReferenceFromProjectContents &&
+        isFeatureEnabled('Data Entries in the Navigator')
+      ) {
+        if (elementFromProjectContents != null) {
           // add synthetic entry
-          const element = elementMetadata.element.value
-          const dataRefEntry = dataReferenceNavigatorEntry(path, element)
+          const dataRefEntry = dataReferenceNavigatorEntry(path, elementFromProjectContents)
           addNavigatorTargetsUnlessCollapsed(dataRefEntry)
         } else {
           throw new Error(`internal error: Unexpected non-element found at ${EP.toString(path)}`)
@@ -155,6 +161,10 @@ export function getNavigatorTargets(
       const processedPathsAsRenderProp = new Set<string>()
       let renderPropFound: boolean = false
 
+      function getPropValueChildPath(propValue: JSExpression) {
+        return EP.appendToPath(path, propValue.uid)
+      }
+
       function walkPropertyControls(propControls: PropertyControls): void {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
         if (
@@ -176,16 +186,17 @@ export function getNavigatorTargets(
           const fakeRenderPropPath = EP.appendToPath(path, renderPropId(prop))
 
           if (propValue == null || (isJSExpressionValue(propValue) && propValue.value == null)) {
+            const maybeChildPath = propValue != null ? getPropValueChildPath(propValue) : null
             const entries = [
-              renderPropNavigatorEntry(fakeRenderPropPath, prop),
+              renderPropNavigatorEntry(fakeRenderPropPath, prop, maybeChildPath),
               slotNavigatorEntry(fakeRenderPropPath, prop),
             ]
             addNavigatorTargetsUnlessCollapsed(...entries)
             return
           }
 
-          const childPath = EP.appendToPath(path, propValue.uid)
-          const entry = renderPropNavigatorEntry(fakeRenderPropPath, prop)
+          const childPath = getPropValueChildPath(propValue)
+          const entry = renderPropNavigatorEntry(fakeRenderPropPath, prop, childPath)
           addNavigatorTargetsUnlessCollapsed(entry)
 
           const subTreeChild = subTree?.children.find((child) =>
@@ -344,6 +355,7 @@ export function getNavigatorTargets(
           const entry = renderPropNavigatorEntry(
             EP.appendToPath(path, renderPropId('children')),
             'children',
+            notRenderPropChildren[0].path, // pick the first element path
           )
           addNavigatorTargetsUnlessCollapsed(entry)
         }
