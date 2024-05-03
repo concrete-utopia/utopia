@@ -18,7 +18,7 @@ export const GithubEndpoints = {
       githubRepo.owner,
       githubRepo.repository,
       'branch',
-      branchName,
+      encodeURIComponent(branchName),
     ),
   defaultBranchContents: (githubRepo: GithubRepo) =>
     urljoin(
@@ -47,7 +47,7 @@ export const GithubEndpoints = {
       githubRepo.owner,
       githubRepo.repository,
       'branch',
-      branchName,
+      encodeURIComponent(branchName),
       'pullrequest',
     ),
   authenticationStatus: () => urljoin(UTOPIA_BACKEND, 'github', 'authentication', 'status'),
