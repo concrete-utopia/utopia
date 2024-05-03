@@ -931,7 +931,6 @@ export const NavigatorItem: React.FunctionComponent<
         onMouseMove={highlight}
         onDoubleClick={focusComponent}
       >
-        {/* {EP.toString(navigatorEntry.elementPath)} */}
         {isPlaceholder ? (
           navigatorEntry.type === 'SLOT' ? (
             <RenderPropSlot
