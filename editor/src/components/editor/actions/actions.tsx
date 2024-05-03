@@ -4,6 +4,8 @@ import localforage from 'localforage'
 import { imagePathURL } from '../../../common/server'
 import { roundAttributeLayoutValues } from '../../../core/layout/layout-utils'
 import {
+  findElementAtPath,
+  findJSXElementAtPath,
   getZIndexOrderedViewsWithoutDirectChildren,
   MetadataUtils,
 } from '../../../core/model/element-metadata-utils'
@@ -81,6 +83,7 @@ import {
   isJSXFragment,
   jsxConditionalExpressionConditionOptic,
   isJSExpressionOtherJavaScript,
+  setJSXAttributesAttribute,
 } from '../../../core/shared/element-template'
 import type { ValueAtPath } from '../../../core/shared/jsx-attributes'
 import {
@@ -486,6 +489,7 @@ import {
   clearImageFileBlob,
   enableInsertModeForJSXElement,
   finishCheckpointTimer,
+  insertAsChildTarget,
   insertJSXElement,
   openCodeEditorFile,
   scrollToPosition,
@@ -597,6 +601,7 @@ import type { FixUIDsState } from '../../../core/workers/parser-printer/uid-fix'
 import { fixTopLevelElementsUIDs } from '../../../core/workers/parser-printer/uid-fix'
 import { nextSelectedTab } from '../../navigator/left-pane/left-pane-utils'
 import { getRemixRootDir } from '../store/remix-derived-data'
+import { isReplaceKeepChildrenAndStyleTarget } from '../../navigator/navigator-item/component-picker-context-menu'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -1760,6 +1765,7 @@ export const UPDATE_FNS = {
   },
   SET_PROP: (action: SetProp, editor: EditorModel): EditorModel => {
     let setPropFailedMessage: string | null = null
+    let newSelectedViews: Array<ElementPath> = editor.selectedViews
     let updatedEditor = modifyUnderlyingTargetElement(
       action.target,
       editor,
@@ -1768,6 +1774,10 @@ export const UPDATE_FNS = {
           return element
         }
         const updatedProps = setJSXValueAtPath(element.props, action.propertyPath, action.value)
+        // when this is a render prop we should select it
+        if (isJSXElement(action.value)) {
+          newSelectedViews = [EP.appendToPath(action.target, action.value.uid)]
+        }
         if (
           isRight(updatedProps) &&
           PP.contains(
@@ -1832,7 +1842,10 @@ export const UPDATE_FNS = {
       updatedEditor = UPDATE_FNS.ADD_TOAST(toastAction, editor)
     }
 
-    return updatedEditor
+    return {
+      ...updatedEditor,
+      selectedViews: newSelectedViews,
+    }
   },
   SET_CANVAS_FRAMES: (action: SetCanvasFrames, editor: EditorModel): EditorModel => {
     return setCanvasFramesInnerNew(editor, action.framesAndTargets, null)
@@ -2291,6 +2304,7 @@ export const UPDATE_FNS = {
   },
   INSERT_JSX_ELEMENT: (action: InsertJSXElement, editor: EditorModel): EditorModel => {
     let newSelectedViews: ElementPath[] = []
+    const { insertionBehaviour } = action
     const parentPath =
       action.target == null
         ? // action.target == null means Canvas, which means storyboard root element
@@ -2298,7 +2312,7 @@ export const UPDATE_FNS = {
             'found no element path for the storyboard root',
             getStoryboardElementPath(editor.projectContents, editor.canvas.openFile?.filename),
           )
-        : action.insertionBehaviour === 'insert-as-child'
+        : insertionBehaviour.type === 'insert-as-child'
         ? action.target
         : EP.parentPath(action.target)
 
@@ -2310,17 +2324,26 @@ export const UPDATE_FNS = {
         const startingComponents = getUtopiaJSXComponentsFromSuccess(success)
 
         const removeElementAndReturnIndex = () => {
-          if (action.insertionBehaviour === 'insert-as-child' || action.target == null) {
+          if (action.target == null) {
+            return {
+              components: startingComponents,
+              originalElement: null,
+              imports: success.imports,
+              insertionIndex: null,
+            }
+          } else if (insertionBehaviour.type === 'insert-as-child') {
             return {
               components: startingComponents,
               imports: success.imports,
-              insertionIndex: null,
+              insertionIndex: insertionBehaviour.indexPosition ?? null,
             }
           } else {
             const indexInParent = getIndexInParent(
               success.topLevelElements,
               EP.dynamicPathToStaticPath(action.target),
             )
+
+            const originalElement = findJSXElementAtPath(action.target, startingComponents)
 
             const withTargetDeleted = removeElementAtPath(
               action.target,
@@ -2330,6 +2353,7 @@ export const UPDATE_FNS = {
 
             return {
               components: withTargetDeleted.components,
+              originalElement: originalElement,
               imports: withTargetDeleted.imports,
               insertionIndex: indexInParent >= 0 ? absolute(indexInParent) : null,
             }
@@ -2338,6 +2362,7 @@ export const UPDATE_FNS = {
 
         const {
           insertionIndex,
+          originalElement,
           components,
           imports: workingImports,
         } = removeElementAndReturnIndex()
@@ -2346,16 +2371,46 @@ export const UPDATE_FNS = {
 
         const { imports, duplicateNameMapping } = updatedImports
 
-        const renamedJsxElement = renameJsxElementChild(action.jsxElement, duplicateNameMapping)
+        const fixedElement = (() => {
+          const renamedJsxElement = renameJsxElementChild(action.jsxElement, duplicateNameMapping)
+          if (
+            originalElement == null ||
+            !isReplaceKeepChildrenAndStyleTarget(action.insertionBehaviour)
+          ) {
+            return renamedJsxElement
+          }
+
+          // apply the style of original element on the new element
+          const renamedJsxElementWithOriginalStyle = applyUpdateToJSXElement(
+            renamedJsxElement,
+            (props) => {
+              const styleProps = getJSXAttribute(originalElement.props, 'style')
+              if (styleProps == null) {
+                return right(deleteJSXAttribute(props, 'style'))
+              } else {
+                return right(setJSXAttributesAttribute(props, 'style', styleProps))
+              }
+            },
+          )
+
+          if (originalElement.children.length > 0) {
+            // apply the children of original element on the new element
+            return {
+              ...renamedJsxElementWithOriginalStyle,
+              children: originalElement.children,
+            }
+          }
+          return renamedJsxElementWithOriginalStyle
+        })()
 
         const withInsertedElement = insertJSXElementChildren(
           childInsertionPath(parentPath),
-          [renamedJsxElement],
+          [fixedElement],
           components,
           insertionIndex,
         )
 
-        const uid = getUtopiaID(renamedJsxElement)
+        const uid = getUtopiaID(fixedElement)
         const newPath = EP.appendToPath(parentPath, uid)
         newSelectedViews.push(newPath)
 
@@ -2371,6 +2426,7 @@ export const UPDATE_FNS = {
         }
       },
     )
+
     return {
       ...withNewElement,
       leftMenu: { visible: editor.leftMenu.visible, selectedTab: LeftMenuTab.Navigator },
@@ -3523,7 +3579,7 @@ export const UPDATE_FNS = {
             imageElement,
             parent,
             {},
-            'insert-as-child',
+            insertAsChildTarget(),
           )
 
           const withComponentCreated = UPDATE_FNS.INSERT_JSX_ELEMENT(insertJSXElementAction, {
@@ -4563,7 +4619,7 @@ export const UPDATE_FNS = {
       [],
     )
 
-    const insertJSXElementAction = insertJSXElement(imageElement, parent, {}, 'insert-as-child')
+    const insertJSXElementAction = insertJSXElement(imageElement, parent, {}, insertAsChildTarget())
     return UPDATE_FNS.INSERT_JSX_ELEMENT(insertJSXElementAction, editor)
   },
   REMOVE_FROM_NODE_MODULES_CONTENTS: (

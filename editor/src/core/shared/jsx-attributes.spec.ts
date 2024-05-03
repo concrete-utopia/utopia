@@ -430,6 +430,7 @@ describe('jsxAttributeToValue', () => {
             testRenderContext,
             undefined,
             null,
+            null,
           )
         }
         function getActualResult() {
@@ -439,6 +440,7 @@ describe('jsxAttributeToValue', () => {
             null,
             testRenderContext,
             undefined,
+            null,
             null,
           )
         }

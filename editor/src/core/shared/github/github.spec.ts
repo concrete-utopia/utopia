@@ -102,6 +102,7 @@ describe('github helpers', () => {
 
         expect(got).toEqual([
           updateGithubData({
+            publicRepositories: [],
             userRepositories: [
               { name: 'foo' } as RepositoryEntry,
               { name: 'bar' } as RepositoryEntry,
@@ -118,6 +119,16 @@ describe('github helpers', () => {
             JSON.stringify({
               type: 'SUCCESS',
               repositories: [{ name: 'foo' }, { name: 'bar' }],
+            }),
+            { status: 200 },
+          ),
+        )
+
+        mockFetch.mockResolvedValueOnce(
+          new Response(
+            JSON.stringify({
+              type: 'SUCCESS',
+              repository: null,
             }),
             { status: 200 },
           ),
@@ -147,10 +158,63 @@ describe('github helpers', () => {
 
         expect(got).toEqual([
           updateGithubData({
+            publicRepositories: [],
             userRepositories: [
               { name: 'foo' } as RepositoryEntry,
               { name: 'bar' } as RepositoryEntry,
             ],
+          }),
+          updateGithubData({ branches: [{ name: 'one' }, { name: 'two' }] }),
+          updateGithubData({ upstreamChanges: null }),
+        ])
+      })
+      it('includes the public repo if missing from user repos', async () => {
+        mockFetch.mockResolvedValueOnce(
+          new Response(
+            JSON.stringify({
+              type: 'SUCCESS',
+              repositories: [],
+            }),
+            { status: 200 },
+          ),
+        )
+
+        mockFetch.mockResolvedValueOnce(
+          new Response(
+            JSON.stringify({
+              type: 'SUCCESS',
+              repository: { fullName: 'foo/bar' },
+            }),
+            { status: 200 },
+          ),
+        )
+
+        mockFetch.mockResolvedValueOnce(
+          new Response(
+            JSON.stringify({
+              type: 'SUCCESS',
+              branches: [{ name: 'one' }, { name: 'two' }],
+            }),
+            { status: 200 },
+          ),
+        )
+
+        const got = await getRefreshGithubActions(
+          mockDispatch,
+          { owner: 'foo', repository: 'bar' },
+          null,
+          null,
+          null,
+          null,
+          makeMockContext(),
+          'user-initiated',
+        )
+        expect(got.length).toBe(3)
+
+        expect(got).toEqual([
+          updateGithubData({
+            publicRepositories: [{ fullName: 'foo/bar' } as RepositoryEntry],
+            userRepositories: [],
           }),
           updateGithubData({ branches: [{ name: 'one' }, { name: 'two' }] }),
           updateGithubData({ upstreamChanges: null }),

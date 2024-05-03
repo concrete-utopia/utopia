@@ -549,6 +549,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
     conditionValue: 'not-a-conditional',
     textContent: null,
     earlyReturn: null,
+    assignedToProp: null,
   }
   const newDifferentValue: ElementInstanceMetadata = {
     elementPath: EP.elementPath([['scene'], ['aaa', 'bbb']]),
@@ -676,6 +677,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
     conditionValue: 'not-a-conditional',
     textContent: null,
     earlyReturn: null,
+    assignedToProp: null,
   }
 
   it('same reference returns the same reference', () => {
@@ -829,6 +831,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
       conditionValue: 'not-a-conditional',
       textContent: null,
       earlyReturn: null,
+      assignedToProp: null,
     },
   }
   const newSameValue: ElementInstanceMetadataMap = {
@@ -958,6 +961,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
       conditionValue: 'not-a-conditional',
       textContent: null,
       earlyReturn: null,
+      assignedToProp: null,
     },
   }
   const newDifferentValue: ElementInstanceMetadataMap = {
@@ -1087,6 +1091,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
       conditionValue: 'not-a-conditional',
       textContent: 'hello',
       earlyReturn: null,
+      assignedToProp: null,
     },
   }
 

@@ -11,6 +11,7 @@ import {
   dispatchPromiseActions,
   getGithubFileChangesCount,
   githubFileChangesToList,
+  refreshGithubData,
   useGithubFileChanges,
 } from '../../../../core/shared/github/helpers'
 import { unless, when } from '../../../../utils/react-conditionals'
@@ -51,6 +52,7 @@ import { RepositoryListing } from './repository-listing'
 import { GithubOperations } from '../../../../core/shared/github/operations'
 import { useOnClickAuthenticateWithGithub } from '../../../../utils/github-auth-hooks'
 import { setFocus } from '../../../common/actions'
+import { OperationContext } from '../../../../core/shared/github/operations/github-operation-context'
 
 const compactTimeagoFormatter = (value: number, unit: string) => {
   return `${value}${unit.charAt(0)}`
@@ -1180,23 +1182,76 @@ export const GithubPane = React.memo(() => {
       window.open(githubUser.htmlURL, '_blank')
     }
   }, [githubUser])
+
+  const githubData = useEditorState(
+    Substores.github,
+    (store) => ({
+      githubUserDetails: store.editor.githubData.githubUserDetails,
+      lastRefreshedCommit: store.editor.githubData.lastRefreshedCommit,
+      targetRepository: store.editor.githubSettings.targetRepository,
+      branchName: store.editor.githubSettings.branchName,
+      originCommit: store.editor.githubSettings.originCommit,
+    }),
+    'GithubPane githubData',
+  )
+  const branchOriginContentsChecksums = useEditorState(
+    Substores.derived,
+    (store) => store.derived.branchOriginContentsChecksums,
+    'GithubPane branchOriginContentsChecksums',
+  )
+
+  const [refreshingGithubData, setRefreshingGithubData] = React.useState(false)
+
+  const onClickRefresh = React.useCallback(() => {
+    setRefreshingGithubData(true)
+    void refreshGithubData(
+      dispatch,
+      githubData.targetRepository,
+      githubData.branchName,
+      branchOriginContentsChecksums,
+      githubData.lastRefreshedCommit,
+      githubData.originCommit,
+      OperationContext,
+      'user-initiated',
+    ).finally(() => {
+      setRefreshingGithubData(false)
+    })
+  }, [dispatch, githubData, branchOriginContentsChecksums])
+
   return (
     <div style={{ height: '100%', overflowY: 'scroll' }} onFocus={onFocus}>
       <Section>
         <SectionTitleRow minimised={false} hideButton>
-          <FlexRow style={{ alignItems: 'flex-start' }}>
+          <FlexRow style={{ alignItems: 'flex-start', width: '100%' }}>
             {githubUser != null ? (
-              <Button
-                style={{ gap: 4, padding: '0 6px' }}
-                onClick={openGithubProfile}
-                css={{
-                  '&:hover': {
-                    opacity: 0.6,
-                  },
-                }}
-              >
-                @{githubUser?.login}
-              </Button>
+              <FlexRow style={{ justifyContent: 'space-between', width: '100%' }}>
+                <Button
+                  style={{ gap: 4, padding: '0 6px' }}
+                  onClick={openGithubProfile}
+                  css={{
+                    '&:hover': {
+                      opacity: 0.6,
+                    },
+                  }}
+                >
+                  @{githubUser?.login}
+                </Button>
+                <Button
+                  highlight
+                  spotlight
+                  style={{ padding: '0 6px' }}
+                  onClick={onClickRefresh}
+                  disabled={refreshingGithubData}
+                >
+                  {refreshingGithubData ? (
+                    <GithubSpinner />
+                  ) : (
+                    <FlexRow style={{ gap: 4 }}>
+                      <RefreshIcon /> Refresh
+                    </FlexRow>
+                  )}
+                </Button>
+              </FlexRow>
             ) : (
               <UIGridRow
                 variant='<-auto-><----------1fr--------->'

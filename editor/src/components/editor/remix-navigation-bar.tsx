@@ -194,6 +194,7 @@ export const RemixNavigationBar = React.memo(() => {
           includeBoxShadow={false}
           onSubmitValue={changeRemixURLInEditor}
           onEscape={resetURL}
+          pasteHandler={true}
         />
         <StarUnstarIcon
           url={currentURL ?? ''}

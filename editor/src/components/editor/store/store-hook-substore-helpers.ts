@@ -51,7 +51,7 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
     visible: true,
   },
   interfaceDesigner: {
-    codePaneVisible: true,
+    codePaneVisible: false,
     additionalControls: true,
   },
   canvas: {

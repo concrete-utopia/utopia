@@ -56,6 +56,7 @@ function createBasicComponent(
     ],
     source: defaultComponentDescriptor(),
     ...ComponentDescriptorDefaults,
+    inspector: 'all',
   }
 }
 
