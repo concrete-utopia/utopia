@@ -380,7 +380,7 @@ export function showSwapComponentPicker(
 }
 
 export const convert: ContextMenuItem<CanvasData> = {
-  name: 'Swap Element With…',
+  name: 'Replace This…',
   shortcut: '',
   enabled: (data) => {
     return (
@@ -403,7 +403,7 @@ export const convert: ContextMenuItem<CanvasData> = {
 }
 
 export const replace: ContextMenuItem<CanvasData> = {
-  name: 'Replace Element With…',
+  name: 'Replace Everything…',
   shortcut: '',
   enabled: (data) => {
     return (

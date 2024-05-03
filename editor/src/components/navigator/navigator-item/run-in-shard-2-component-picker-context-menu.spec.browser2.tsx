@@ -1264,9 +1264,7 @@ export const Column = () => (
 
       await editor.getDispatchFollowUpActionsFinished()
 
-      const replaceButton = await waitFor(() =>
-        editor.renderedDOM.getByText('Replace Element With…'),
-      )
+      const replaceButton = await waitFor(() => editor.renderedDOM.getByText('Replace Everything…'))
       await mouseClickAtPoint(replaceButton, { x: 3, y: 3 })
 
       const menuButton = await waitFor(() => editor.renderedDOM.getAllByText('FlexCol')[1])
@@ -1364,9 +1362,7 @@ export const Column = () => (
 
       await editor.getDispatchFollowUpActionsFinished()
 
-      const replaceButton = await waitFor(() =>
-        editor.renderedDOM.getByText('Replace Element With…'),
-      )
+      const replaceButton = await waitFor(() => editor.renderedDOM.getByText('Replace Everything…'))
       await mouseClickAtPoint(replaceButton, { x: 3, y: 3 })
 
       const menuButton = await waitFor(() => editor.renderedDOM.getByText('FlexCol'))
