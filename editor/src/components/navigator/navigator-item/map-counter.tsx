@@ -105,6 +105,7 @@ export const MapSourceAndCounter = React.memo((props: MapCounterProps) => {
       data-label='MapSourceAndCounter'
       css={{
         padding: '0px 0px 0px 3px',
+        // TODO this should pick up color from context (selected / not)
         border: '1px solid white',
         alignItems: 'center',
         borderRadius: 2,
@@ -113,6 +114,7 @@ export const MapSourceAndCounter = React.memo((props: MapCounterProps) => {
         fontSize: 9,
       }}
     >
+      {/* TODO FIXME show source here */}
       <span style={{ fontFamily: 'monospace' }}>reviews</span>
       <div
         data-testid={getMapCounterTestId(elementPath)}
@@ -142,7 +144,7 @@ function getMapCounterStyleProps(overrideStatus: OverrideStatus): CSSProperties 
       return {
         ...stylePropsBase,
         color: colorTheme.brandNeonPink.value,
-        background: '#FFFFFFbb',
+        background: '#FFFFFFBB',
         opacity: 1,
       }
     case 'override-failed':
