@@ -422,26 +422,27 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
               display: 'flex',
               flexDirection: 'row',
               alignItems: 'center',
-              gap: 4,
-            }}
-            css={{
-              color: dataPickerButtonData.popupIsOpen ? colorTheme.dynamicBlue.value : undefined,
-              '&:hover': {
-                color: colorTheme.dynamicBlue.value,
-              },
+              gap: 6,
+              color:
+                dataPickerButtonData.popupIsOpen || isHovered
+                  ? colorTheme.dynamicBlue.value
+                  : undefined,
             }}
           >
             {title}
-            {isHovered || dataPickerButtonData.popupIsOpen ? (
+            <div
+              style={{
+                opacity: isHovered || dataPickerButtonData.popupIsOpen ? 1 : 0,
+              }}
+            >
               <Icn
-                category='element'
-                type='flip'
-                color='dynamic'
-                width={18}
-                height={18}
-                style={{ transform: 'scale(.7)' }}
+                category='semantic'
+                type='plus-in-white-translucent-circle'
+                color={dataPickerButtonData.popupIsOpen || isHovered ? 'dynamic' : 'main'}
+                width={12}
+                height={12}
               />
-            ) : null}
+            </div>
           </div>
         </Tooltip>
       </PropertyLabel>
