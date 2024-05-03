@@ -78,6 +78,7 @@ import { ConditionalsControlSectionExpressionTestId } from './conditional-sectio
 import { jsxElementChildToText } from '../../../canvas/ui-jsx-canvas-renderer/jsx-element-child-to-text'
 import { NO_OP } from '../../../../core/shared/utils'
 import { IdentifierExpressionCartoucheControl } from '../component-section/cartouche-control'
+import { getTextContentOfElement } from '../component-section/data-reference-cartouche'
 
 type MapExpression = JSXMapExpression | 'multiselect' | 'not-a-mapexpression'
 
@@ -222,6 +223,12 @@ export const ListSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
     'ConditionalSection condition expression',
   )
 
+  const metadataForElement = useEditorState(
+    Substores.metadata,
+    (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, paths[0]),
+    'ConditionalSection metadata',
+  )
+
   const controlDescription: ArrayControlDescription = {
     control: 'array',
     propertyControl: {
@@ -231,6 +238,15 @@ export const ListSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
 
   const { popupIsOpen, DataPickerOpener, DataPickerComponent, setReferenceElement, openPopup } =
     useDataPickerButton(paths)
+
+  if (originalMapExpression === 'multiselect' || originalMapExpression === 'not-a-mapexpression') {
+    return null
+  }
+
+  const contentsToDisplay = getTextContentOfElement(
+    originalMapExpression.valueToMap,
+    metadataForElement,
+  )
 
   return (
     <div style={{ paddingBottom: 8 }} data-testid={ListSectionTestId}>
@@ -260,49 +276,40 @@ export const ListSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
           <span>List</span>
         </FlexRow>
       </FlexRow>
-      {originalMapExpression !== 'multiselect' &&
-      originalMapExpression !== 'not-a-mapexpression' ? (
-        <FlexRow
-          css={{
-            height: UtopiaTheme.layout.rowHeight.large,
-            padding: `0 ${UtopiaTheme.layout.inspectorXPadding}px`,
-          }}
+      <FlexRow
+        css={{
+          height: UtopiaTheme.layout.rowHeight.large,
+          padding: `0 ${UtopiaTheme.layout.inspectorXPadding}px`,
+        }}
+      >
+        {popupIsOpen ? DataPickerComponent : null}
+        <UIGridRow
+          padded={false}
+          style={{ paddingLeft: 0, paddingRight: 8, paddingTop: 3, paddingBottom: 3 }}
+          variant='<--1fr--><--1fr-->|-18px-|'
         >
-          {popupIsOpen ? DataPickerComponent : null}
-          <UIGridRow
-            padded={false}
-            style={{ paddingLeft: 0, paddingRight: 8, paddingTop: 3, paddingBottom: 3 }}
-            variant='<--1fr--><--1fr-->|-18px-|'
+          Value To Map
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              minWidth: 0,
+            }}
+            ref={setReferenceElement}
           >
-            Value To Map
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'row',
-                minWidth: 0,
-              }}
-              ref={setReferenceElement}
-            >
-              <IdentifierExpressionCartoucheControl
-                contents={jsxElementChildToText(
-                  originalMapExpression.valueToMap,
-                  null,
-                  null,
-                  'jsx',
-                  'inner',
-                )}
-                icon={React.createElement(iconForControlType(controlDescription.control))}
-                matchType='full'
-                onOpenDataPicker={openPopup}
-                onDeleteCartouche={NO_OP}
-                testId={`cartouche-map-expression-value-to-map`}
-                safeToDelete={false}
-              />
-              {DataPickerOpener}
-            </div>
-          </UIGridRow>
-        </FlexRow>
-      ) : null}
+            <IdentifierExpressionCartoucheControl
+              contents={contentsToDisplay.label ?? ''}
+              icon={React.createElement(iconForControlType(controlDescription.control))}
+              matchType={contentsToDisplay.type === 'literal' ? 'none' : 'full'}
+              onOpenDataPicker={openPopup}
+              onDeleteCartouche={NO_OP}
+              testId={`cartouche-map-expression-value-to-map`}
+              safeToDelete={false}
+            />
+            {DataPickerOpener}
+          </div>
+        </UIGridRow>
+      </FlexRow>
     </div>
   )
 })

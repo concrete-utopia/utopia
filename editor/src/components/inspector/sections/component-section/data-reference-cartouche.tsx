@@ -122,7 +122,7 @@ export const DataReferenceCartoucheControl = React.memo(
   },
 )
 
-function getTextContentOfElement(
+export function getTextContentOfElement(
   element: JSXElementChild,
   metadata: ElementInstanceMetadata | null,
 ): { type: 'literal' | 'reference'; label: string | null } {
