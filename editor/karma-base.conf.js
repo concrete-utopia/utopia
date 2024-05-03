@@ -44,6 +44,10 @@ module.exports = function (config) {
     basePath: '',
 
     browserNoActivityTimeout: 1000000,
+    pingTimeout: 15000,
+    browserDisconnectTimeout: 15000,
+    processKillTimeout: 15000,
+    browserSocketTimeout: 15000,
 
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
