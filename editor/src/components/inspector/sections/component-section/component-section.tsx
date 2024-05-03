@@ -14,7 +14,7 @@ import type {
   UnionControlDescription,
 } from '../../../custom-code/internal-property-controls'
 import { isBaseControlDescription } from '../../../custom-code/internal-property-controls'
-import { PathForSceneProps } from '../../../../core/model/scene-utils'
+import { PathForSceneProps, sceneMetadata } from '../../../../core/model/scene-utils'
 import { mapToArray } from '../../../../core/shared/object-utils'
 import type { PropertyPath } from '../../../../core/shared/project-file-types'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
@@ -27,21 +27,14 @@ import { getParseErrorDetails, ParseResult } from '../../../../utils/value-parse
 import {
   Tooltip,
   //TODO: switch last component to functional component and make use of 'useColorTheme':
-  colorTheme as colorThemeConst,
-  useColorTheme,
   UtopiaTheme,
   InspectorSectionHeader,
   SimpleFlexRow,
   SquareButton,
   PopupList,
   Icons,
-  VerySubdued,
   FlexRow,
-  Button,
   Icn,
-  FlexColumn,
-  UtopiaStyles,
-  color,
   OnClickOutsideHOC,
   iconForControlType,
   colorTheme,
@@ -482,7 +475,6 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
             showHiddenControl={props.showHiddenControl}
           />
         </div>
-        {/* {when(isBaseIndentationLevel(props), dataPickerButtonData.DataPickerOpener)} */}
       </UIGridRow>
     </InspectorContextMenuWrapper>
   )
@@ -618,7 +610,6 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
               showHiddenControl={props.showHiddenControl}
             />
           </FlexRow>
-          {/* {when(isBaseIndentationLevel(props), dataPickerButtonData.DataPickerOpener)} */}
         </SimpleFlexRow>
         <div
           style={{
@@ -922,7 +913,6 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
                 />
               </div>
             </SimpleFlexRow>
-            {/* {when(isBaseIndentationLevel(props), dataPickerButtonData.DataPickerOpener)} */}
           </FlexRow>
         </InspectorContextMenuWrapper>
       </div>
@@ -1194,7 +1184,7 @@ export class ComponentSection extends React.Component<
               height: UtopiaTheme.layout.rowHeight.normal,
               position: 'sticky',
               top: 0,
-              background: colorThemeConst.inspectorBackground.value,
+              background: colorTheme.inspectorBackground.value,
               zIndex: 1,
             }}
           >
@@ -1206,7 +1196,7 @@ export class ComponentSection extends React.Component<
               gridTemplateColumns: '2fr 4fr',
             }}
           >
-            <span style={{ paddingTop: 4, color: colorThemeConst.errorForeground.value }}>
+            <span style={{ paddingTop: 4, color: colorTheme.errorForeground.value }}>
               Invalid propertyControls value
             </span>
           </PropertyRow>
