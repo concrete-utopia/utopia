@@ -16,6 +16,7 @@ import { isJSXMapExpression } from '../../../core/shared/element-template'
 import { assertNever } from '../../../core/shared/utils'
 import type { EditorDispatch } from '../../editor/action-types'
 import { setMapCountOverride } from '../../editor/actions/action-creators'
+import { FlexRow } from 'utopia-api'
 
 export const MapCounterTestIdPrefix = 'map-counter-'
 
@@ -30,7 +31,7 @@ interface MapCounterProps {
   dispatch: EditorDispatch
 }
 
-export const MapCounter = React.memo((props: MapCounterProps) => {
+export const MapSourceAndCounter = React.memo((props: MapCounterProps) => {
   const { navigatorEntry, dispatch } = props
   const { elementPath } = navigatorEntry
 
@@ -100,39 +101,49 @@ export const MapCounter = React.memo((props: MapCounterProps) => {
   }
 
   return (
-    <div
-      data-testid={getMapCounterTestId(elementPath)}
-      style={getMapCounterStyleProps(overrideStatus)}
-      onClick={onClick}
+    <FlexRow
+      data-label='MapSourceAndCounter'
+      css={{
+        padding: '0px 0px 0px 3px',
+        border: '1px solid white',
+        alignItems: 'center',
+        borderRadius: 2,
+        gap: 5,
+        lineHeight: '14px',
+        fontSize: 9,
+      }}
     >
-      {shownCounterValue}
-    </div>
+      <span style={{ fontFamily: 'monospace' }}>reviews</span>
+      <div
+        data-testid={getMapCounterTestId(elementPath)}
+        style={getMapCounterStyleProps(overrideStatus)}
+        onClick={onClick}
+      >
+        {shownCounterValue}
+      </div>
+    </FlexRow>
   )
 })
 
 function getMapCounterStyleProps(overrideStatus: OverrideStatus): CSSProperties {
   const stylePropsBase: CSSProperties = {
-    display: 'flex',
-    justifyContent: 'center',
-    height: 22,
-    minWidth: 22,
-    width: 'max-content',
-    padding: 5,
-    alignItems: 'center',
-    borderRadius: 11,
+    paddingLeft: 2,
+    paddingRight: 2,
+    opacity: 0.8,
+    cursor: 'pointer',
   }
 
   switch (overrideStatus) {
     case 'no-override':
       return {
         ...stylePropsBase,
-        backgroundColor: colorTheme.dynamicBlue10.value,
       }
     case 'overridden':
       return {
         ...stylePropsBase,
         color: colorTheme.brandNeonPink.value,
-        backgroundColor: colorTheme.pinkSubdued.value,
+        background: '#FFFFFFbb',
+        opacity: 1,
       }
     case 'override-failed':
       return {
@@ -141,6 +152,7 @@ function getMapCounterStyleProps(overrideStatus: OverrideStatus): CSSProperties 
         background: `linear-gradient(to left bottom, ${colorTheme.pinkSubdued.value} 47%, ${colorTheme.brandNeonPink.value} 48%, ${colorTheme.brandNeonPink.value} 52%, ${colorTheme.pinkSubdued.value} 53%)`,
         boxSizing: 'border-box',
         border: `1px solid ${colorTheme.brandNeonPink.value}`,
+        opacity: 1,
       }
     default:
       assertNever(overrideStatus)

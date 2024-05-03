@@ -64,7 +64,7 @@ import { LayoutIcon } from './layout-icon'
 import { NavigatorItemActionSheet } from './navigator-item-components'
 import { assertNever } from '../../../core/shared/utils'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
-import { MapCounter } from './map-counter'
+import { MapSourceAndCounter } from './map-counter'
 import {
   conditionalTarget,
   renderPropTarget,
@@ -1205,7 +1205,9 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         inputVisible={EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath)}
         remixItemType={props.remixItemType}
       />
-      <MapCounter navigatorEntry={props.navigatorEntry} dispatch={props.dispatch} />
+      <FlexRow>
+        <MapSourceAndCounter navigatorEntry={props.navigatorEntry} dispatch={props.dispatch} />
+      </FlexRow>
       <ComponentPreview
         key={`preview-${props.label}`}
         navigatorEntry={props.navigatorEntry}
