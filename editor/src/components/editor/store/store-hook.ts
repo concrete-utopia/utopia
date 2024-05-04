@@ -20,6 +20,7 @@ import {
 import type {
   BuiltInDependenciesSubstate,
   CanvasAndMetadataSubstate,
+  CanvasControlsSubstate,
   CanvasOffsetSubstate,
   CanvasSubstate,
   FocusedElementPathSubstate,
@@ -43,6 +44,9 @@ import type {
   VariablesInScopeSubstate,
 } from './store-hook-substore-types'
 import {
+  canvasControlsCanvasSubstateKeys,
+  canvasControlsDerivedSubstateKeys,
+  canvasControlsEditorSubstateKeys,
   canvasOffsetSubstateKeys,
   canvasSubstateKeys,
   focusedElementPathSubstateKeys,
@@ -315,6 +319,13 @@ export const Substores = {
   },
   variablesInScope: (a: VariablesInScopeSubstate, b: VariablesInScopeSubstate) => {
     return keysEquality(variablesInScopeSubstateKeys, a.editor, b.editor)
+  },
+  canvasControlsSubstate: (a: CanvasControlsSubstate, b: CanvasControlsSubstate) => {
+    return (
+      keysEquality(canvasControlsEditorSubstateKeys, a.editor, b.editor) &&
+      keysEquality(canvasControlsCanvasSubstateKeys, a.editor.canvas, b.editor.canvas) &&
+      keysEquality(canvasControlsDerivedSubstateKeys, a.derived, b.derived)
+    )
   },
   multiplayer: (a: MultiplayerSubstate, b: MultiplayerSubstate) => {
     return MultiplayerSubstateKeepDeepEquality(a, b).areEqual

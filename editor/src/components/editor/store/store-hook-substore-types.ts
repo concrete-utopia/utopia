@@ -1,3 +1,4 @@
+import type { HigherOrderControl } from '../../../components/canvas/canvas-types'
 import { uniq } from '../../../core/shared/array-utils'
 import { omit, pick } from '../../../core/shared/object-utils'
 import type { EditorDispatch } from '../action-types'
@@ -30,6 +31,7 @@ export type Substates = {
   projectServerState: ProjectServerStateSubstate
   variablesInScope: VariablesInScopeSubstate
   propertyControlsInfo: PropertyControlsInfoSubstate
+  canvasControlsSubstate: CanvasControlsSubstate
 }
 
 export type StoreKey = keyof Substates
@@ -124,6 +126,24 @@ const emptyVariablesInScopeSubstate = {
   editor: pick(variablesInScopeSubstateKeys, EmptyEditorStateForKeysOnly),
 } as const
 export type VariablesInScopeSubstate = typeof emptyVariablesInScopeSubstate
+
+export const canvasControlsEditorSubstateKeys = [
+  'keysPressed',
+  'mode',
+  'focusedPanel',
+  'selectedViews',
+  'highlightedViews',
+] as const
+export const canvasControlsCanvasSubstateKeys = ['scale', 'scrollAnimation'] as const
+export const canvasControlsDerivedSubstateKeys = ['controls'] as const
+const emptyCanvasControlsSubstate = {
+  editor: {
+    ...pick(canvasControlsEditorSubstateKeys, EmptyEditorStateForKeysOnly),
+    canvas: pick(canvasControlsCanvasSubstateKeys, EmptyEditorStateForKeysOnly.canvas),
+  },
+  derived: { controls: [] } as { controls: Array<HigherOrderControl> },
+} as const
+export type CanvasControlsSubstate = typeof emptyCanvasControlsSubstate
 
 // MultiplayerSubstate
 export const multiplayerSubstateKeys = ['collaborators'] as const
