@@ -123,6 +123,7 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
             width={12}
             height={12}
             testId={iconTestId}
+            color={props.color}
           />
         )
       }
@@ -226,6 +227,7 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
       iconTestId,
       addAbsoluteMarkerToIcon,
       props.override,
+      props.color,
     ])
 
     const marker = React.useMemo(() => {

@@ -1214,6 +1214,8 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
               ? 'component'
               : props.emphasis === 'subdued'
               ? 'subdued'
+              : props.emphasis === 'emphasized'
+              ? 'primary'
               : props.iconColor
           }
           elementWarnings={props.elementWarnings}
