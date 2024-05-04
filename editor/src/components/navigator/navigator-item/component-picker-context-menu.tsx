@@ -637,12 +637,7 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
     }, [])
 
     return (
-      <Menu
-        id={FullMenuId}
-        animation={false}
-        style={{ width: 260, borderRadius: 10, padding: 0 }}
-        onClick={squashEvents}
-      >
+      <Menu id={FullMenuId} animation={false} style={{ width: 260 }} onClick={squashEvents}>
         <ComponentPicker allComponents={allInsertableComponents} onItemClick={onItemClick} />
       </Menu>
     )

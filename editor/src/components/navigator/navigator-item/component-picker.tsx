@@ -2,7 +2,7 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React, { useCallback, useMemo } from 'react'
-import { color, colorTheme, Icn, StringInput, type IcnProps } from '../../../uuiui'
+import { colorTheme, Icn, type IcnProps } from '../../../uuiui'
 import { dark } from '../../../uuiui/styles/theme/dark'
 import type { JSXElementChild } from '../../../core/shared/element-template'
 import type { ElementPath, Imports } from '../../../core/shared/project-file-types'
@@ -22,10 +22,10 @@ import { sortBy } from '../../../core/shared/array-utils'
 
 const FILTER_CATEGORIES = [
   'Layout',
+  'Forms',
   'HTML',
   'Shopify',
   'Advanced',
-  'Forms',
   'Fragment',
   'Miscellaneous',
 ]
@@ -196,9 +196,8 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
         width: '100%',
         height: '100%',
         padding: 0,
-        color: dark.fg1.value,
-        background: colorTheme.bg0.value,
-        // colorScheme: 'dark',
+        color: dark.fg3.value,
+        colorScheme: 'dark',
         borderRadius: 10,
       }}
       onKeyDown={onKeyDown}
@@ -234,6 +233,7 @@ const ComponentPickerTopSection = React.memo((props: ComponentPickerTopSectionPr
   return (
     <div
       style={{
+        padding: '8px 8px',
         display: 'flex',
         flexDirection: 'column',
       }}
@@ -285,22 +285,32 @@ const FilterBar = React.memo((props: FilterBarProps) => {
   )
 
   return (
-    <div style={{ margin: 8 }}>
-      <StringInput
-        placeholder='Filter...'
-        testId={componentPickerFilterInputTestId}
-        value={filter}
-        onKeyDown={handleFilterKeydown}
-        onChange={handleFilterChange}
-        pasteHandler={true}
-        css={{
-          color: colorTheme.fg1.value,
-          boxShadow: `inset 0px 0px 0px 1px ${colorTheme.dynamicBlue.value}`,
-          borderRadius: 2,
-        }}
-        autoFocus={true}
-      />
-    </div>
+    <input
+      css={{
+        height: 25,
+        paddingLeft: 8,
+        paddingRight: 8,
+        background: 'transparent',
+        // border: `1px solid ${dark.fg3.value}`, --> doesn't work because uses the css var
+        border: `1px solid #888`,
+        color: `#888`,
+        borderRadius: 4,
+        width: '100%',
+        '&:focus': {
+          color: '#ccc',
+          borderColor: '#ccc',
+        },
+      }}
+      placeholder='Filter...'
+      autoComplete='off'
+      autoFocus={true}
+      spellCheck={false}
+      onKeyDown={handleFilterKeydown}
+      onChange={handleFilterChange}
+      value={filter}
+      data-testId={componentPickerFilterInputTestId}
+      {...dataPasteHandler(true)}
+    />
   )
 })
 
@@ -324,6 +334,10 @@ const FilterButtons = React.memo((props: FilterButtonsProps) => {
       aria-describedby='Component categories'
       css={{
         display: 'flex',
+        height: 30,
+        '&:not(:focus) button': {
+          backgroundColor: 'transparent',
+        },
       }}
       onKeyDown={(event) => {
         if (event.key === 'ArrowRight') {
@@ -341,32 +355,33 @@ const FilterButtons = React.memo((props: FilterButtonsProps) => {
         event.preventDefault()
       }}
     >
-      <div
-        css={{
-          overflowX: 'scroll',
-          whiteSpace: 'nowrap',
-          display: 'flex',
-          flexDirection: 'row',
-          gap: 6,
-          padding: '10px 8px',
-        }}
-      >
+      <div css={{ display: 'inline-block', marginRight: 8 }}>
         <FilterButton
           highlighted={focusedIndex === 0}
           index={-1}
           label='All'
           setActiveFocus={setActiveIndexAll}
         />
-        {components.map(({ label }, index) => (
-          <FilterButton
-            key={label}
-            highlighted={focusedIndex === index + 1}
-            index={index}
-            label={label}
-            setActiveFocus={setFocusedIndex}
-          />
-        ))}
       </div>
+      <ul
+        css={{
+          margin: '0 0 8px 0',
+          padding: 0,
+          overflowX: 'scroll',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {components.map(({ label }, index) => (
+          <li key={label} css={{ display: 'inline-block' }}>
+            <FilterButton
+              highlighted={focusedIndex === index + 1}
+              index={index}
+              label={label}
+              setActiveFocus={setFocusedIndex}
+            />
+          </li>
+        ))}
+      </ul>
     </div>
   )
 })
@@ -398,15 +413,20 @@ const FilterButton = React.memo((props: FilterButtonProps) => {
       id={`button-${label}`}
       aria-selected={highlighted}
       css={{
-        backgroundColor: highlighted ? colorTheme.dynamicBlue.value : 'transparent',
-        border: `1px solid ${colorTheme.dynamicBlue.value}`,
-        color: highlighted ? colorTheme.bg0.value : colorTheme.dynamicBlue.value,
+        backgroundColor: highlighted ? colorTheme.primary.value : 'transparent',
+        border: 'none',
+        color: highlighted ? 'white' : '#ddd',
         cursor: 'pointer',
-        fontSize: 11,
+        fontSize: 12,
         padding: '4px 8px',
-        borderRadius: 10,
+        borderRadius: 4,
+        outlineOffset: -1,
         '&:hover': {
-          opacity: 0.8,
+          color: 'white',
+        },
+        '&:focus': {
+          backgroundColor: highlighted ? colorTheme.primary.value : 'transparent',
+          color: highlighted ? 'white' : undefined,
         },
       }}
       onClick={() => {
@@ -443,7 +463,7 @@ const ComponentPickerComponentSection = React.memo(
     const { components, onItemClick, onItemHover, currentlySelectedKey } = props
     return (
       <div
-        style={{ maxHeight: 250, overflowY: 'scroll', scrollbarWidth: 'auto', paddingTop: 4 }}
+        style={{ maxHeight: 250, overflowY: 'scroll', scrollbarWidth: 'auto' }}
         id='filter-container'
       >
         {components.reduce((acc, category) => {
@@ -451,15 +471,17 @@ const ComponentPickerComponentSection = React.memo(
             const isSelected = component.value.key === currentlySelectedKey
             return (
               <FlexRow
+                css={{}}
                 key={component.value.key}
                 id={index === 0 ? category.label : undefined}
-                css={{
+                style={{
                   cursor: 'pointer',
-                  margin: '0 8px',
-                  color: isSelected ? colorTheme.primary.value : colorTheme.fg1.value,
-                  '&:hover': {
-                    opacity: 0.8,
-                  },
+                  marginLeft: 8,
+                  marginRight: 8,
+                  borderRadius: 4,
+                  // indentation!
+                  paddingLeft: 8,
+                  color: isSelected ? colorTheme.primary.value : '#EEE',
                 }}
                 onClick={onItemClick(component.value)}
                 onMouseOver={onItemHover(component.value)}
@@ -468,8 +490,9 @@ const ComponentPickerComponentSection = React.memo(
                 <UIGridRow
                   variant='|--32px--|<--------auto-------->'
                   padded={false}
-                  style={{ minHeight: 28 }}
-                  css={{ height: 28 }}
+                  // required to overwrite minHeight on the bloody thing
+                  style={{ minHeight: 29 }}
+                  css={{ height: 27 }}
                 >
                   <div css={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <Icn
@@ -484,7 +507,6 @@ const ComponentPickerComponentSection = React.memo(
                       {...iconPropsForIcon(component.value.icon ?? 'regular', isSelected)}
                       width={12}
                       height={12}
-                      color={isSelected ? 'dynamic' : 'main'}
                     />
                   </div>
                   <span

@@ -115,7 +115,7 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
             category='navigator-element'
             type='zerosized-div'
             testId={iconTestId}
-            color={color === 'subdued' ? 'subdued' : color}
+            color={color === 'subdued' ? 'subdued' : 'main'}
             width={12}
             height={12}
           />
