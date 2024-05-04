@@ -2058,6 +2058,30 @@ export const MetadataUtils = {
       return false
     }
   },
+  maybeSampleProjectElement(element: ElementInstanceMetadata | null): SampleProjectElement | null {
+    if (element != null && isRight(element.element) && isJSXElement(element.element.value)) {
+      switch (element.importInfo?.filePath) {
+        case '/app/components/Components':
+          switch (element.element.value.name.baseVariable) {
+            case 'Spacer':
+              return 'spacer'
+            case 'PageTitle':
+            case 'SectionTitle':
+            case 'SectionSubtitle':
+            case 'SubsectionTitle':
+              return 'title'
+          }
+          break
+        case '/app/routes/_index.jsx':
+          switch (element.element.value.name.baseVariable) {
+            case 'WomanSeeking':
+              return 'woman-seeking'
+          }
+          break
+      }
+    }
+    return null
+  },
   getEmphasisOfComponent(
     path: ElementPath,
     metadata: ElementInstanceMetadataMap,
@@ -2078,7 +2102,8 @@ export const MetadataUtils = {
     // Element with flex or grid get high emphasis.
     if (
       MetadataUtils.isFlexLayoutedContainer(element) ||
-      MetadataUtils.isGridLayoutedContainer(element)
+      MetadataUtils.isGridLayoutedContainer(element) ||
+      MetadataUtils.maybeSampleProjectElement(element) === 'woman-seeking'
     ) {
       return 'emphasized'
     }
@@ -3041,3 +3066,5 @@ export function getZIndexOrderedViewsWithoutDirectChildren(
   })
   return filteredTargets
 }
+
+type SampleProjectElement = 'spacer' | 'title' | 'woman-seeking'

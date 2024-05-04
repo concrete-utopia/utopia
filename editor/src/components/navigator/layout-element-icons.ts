@@ -519,6 +519,41 @@ export function createElementIconPropsFromMetadata(
     }
   }
 
+  // sample project-specific icons
+  const maybeSampleProjectElement = MetadataUtils.maybeSampleProjectElement(element)
+  switch (maybeSampleProjectElement) {
+    case 'spacer':
+      return {
+        iconProps: {
+          category: 'element',
+          type: 'dashedframe',
+          width: 18,
+          height: 18,
+        },
+        isPositionAbsolute: isPositionAbsolute,
+      }
+    case 'title':
+      return {
+        iconProps: {
+          category: 'element',
+          type: 'headline',
+          width: 18,
+          height: 18,
+        },
+        isPositionAbsolute: isPositionAbsolute,
+      }
+    case 'woman-seeking':
+      return {
+        iconProps: {
+          category: 'element',
+          type: 'component',
+          width: 18,
+          height: 18,
+        },
+        isPositionAbsolute: isPositionAbsolute,
+      }
+  }
+
   return {
     iconProps: {
       category: 'element',
