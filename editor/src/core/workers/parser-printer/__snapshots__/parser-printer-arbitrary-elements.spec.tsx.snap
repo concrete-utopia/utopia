@@ -231,12 +231,12 @@ function b(n) {
       "startLine": 37,
       "uid": "4bd",
     },
-    "53f": Object {
+    "4db": Object {
       "endCol": 10,
       "endLine": 21,
       "startCol": 6,
       "startLine": 21,
-      "uid": "53f",
+      "uid": "4db",
     },
     "5e7": Object {
       "endCol": 79,
@@ -244,6 +244,13 @@ function b(n) {
       "startCol": 13,
       "startLine": 37,
       "uid": "5e7",
+    },
+    "6c3": Object {
+      "endCol": 19,
+      "endLine": 21,
+      "startCol": 15,
+      "startLine": 21,
+      "uid": "6c3",
     },
     "6e3": Object {
       "endCol": 20,
@@ -357,21 +364,21 @@ function b(n) {
       "startLine": 20,
       "uid": "d4f",
     },
-    "e36": Object {
-      "endCol": 19,
-      "endLine": 21,
-      "startCol": 15,
-      "startLine": 21,
-      "uid": "e36",
-    },
   },
   "highlightBounds": Object {
-    "53f": Object {
+    "4db": Object {
       "endCol": 10,
       "endLine": 21,
       "startCol": 6,
       "startLine": 21,
-      "uid": "53f",
+      "uid": "4db",
+    },
+    "6c3": Object {
+      "endCol": 19,
+      "endLine": 21,
+      "startCol": 15,
+      "startLine": 21,
+      "uid": "6c3",
     },
     "aaa": Object {
       "endCol": 26,
@@ -400,13 +407,6 @@ function b(n) {
       "startCol": 4,
       "startLine": 35,
       "uid": "ccc",
-    },
-    "e36": Object {
-      "endCol": 19,
-      "endLine": 21,
-      "startCol": 15,
-      "startLine": 21,
-      "uid": "e36",
     },
   },
   "imports": Object {
