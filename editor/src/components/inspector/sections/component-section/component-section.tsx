@@ -14,7 +14,7 @@ import type {
   UnionControlDescription,
 } from '../../../custom-code/internal-property-controls'
 import { isBaseControlDescription } from '../../../custom-code/internal-property-controls'
-import { PathForSceneProps } from '../../../../core/model/scene-utils'
+import { PathForSceneProps, sceneMetadata } from '../../../../core/model/scene-utils'
 import { mapToArray } from '../../../../core/shared/object-utils'
 import type { PropertyPath } from '../../../../core/shared/project-file-types'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
@@ -27,23 +27,17 @@ import { getParseErrorDetails, ParseResult } from '../../../../utils/value-parse
 import {
   Tooltip,
   //TODO: switch last component to functional component and make use of 'useColorTheme':
-  colorTheme as colorThemeConst,
-  useColorTheme,
   UtopiaTheme,
   InspectorSectionHeader,
   SimpleFlexRow,
   SquareButton,
   PopupList,
   Icons,
-  VerySubdued,
   FlexRow,
-  Button,
   Icn,
-  FlexColumn,
-  UtopiaStyles,
-  color,
   OnClickOutsideHOC,
   iconForControlType,
+  colorTheme,
 } from '../../../../uuiui'
 import type { CSSCursor } from '../../../../uuiui-deps'
 import { getControlStyles } from '../../../../uuiui-deps'
@@ -299,19 +293,8 @@ export function useDataPickerButton(
   })
 
   const [popupIsOpen, setPopupIsOpen] = React.useState(false)
-  const togglePopup = React.useCallback(() => setPopupIsOpen((v) => !v), [])
   const openPopup = React.useCallback(() => setPopupIsOpen(true), [])
   const closePopup = React.useCallback(() => setPopupIsOpen(false), [])
-
-  const onClick = React.useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation()
-      e.preventDefault()
-
-      togglePopup()
-    },
-    [togglePopup],
-  )
 
   const selectedElement = selectedElements.at(0) ?? EP.emptyElementPath
 
@@ -353,28 +336,8 @@ export function useDataPickerButton(
     [closePopup, pickerType, popper.attributes.popper, popper.styles.popper],
   )
 
-  const DataPickerOpener = React.useMemo(
-    () => (
-      <Button
-        onClick={onClick}
-        data-testid={DataPickerPopupButtonTestId}
-        disabled={!variablePickerButtonAvailable}
-      >
-        <Icn
-          type='pipette'
-          color='secondary'
-          tooltipText={variablePickerButtonTooltipText}
-          width={18}
-          height={18}
-        />
-      </Button>
-    ),
-    [onClick, variablePickerButtonAvailable, variablePickerButtonTooltipText],
-  )
-
   return {
     popupIsOpen,
-    DataPickerOpener,
     DataPickerComponent,
     setReferenceElement,
     openPopup,
@@ -392,6 +355,8 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
   const propName = `${PP.lastPart(propPath)}`
   const indentation = props.indentationLevel * 8
 
+  const [isHovered, setIsHovered] = React.useState(false)
+
   const selectedViews = useEditorState(
     Substores.selectedViews,
     (store) => store.editor.selectedViews,
@@ -408,6 +373,25 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
     [controlDescription, propMetadata],
   )
 
+  const dataPickerButtonData = useDataPickerButton(
+    selectedViews,
+    props.propPath,
+    props.isScene,
+    props.controlDescription,
+  )
+
+  const handleMouseEnter = () => {
+    setIsHovered(true)
+  }
+
+  const handleMouseLeave = () => {
+    setIsHovered(false)
+  }
+
+  const isValueSet = React.useMemo(() => {
+    return propMetadata.propertyStatus.set
+  }, [propMetadata])
+
   const propertyLabel =
     props.label == null ? (
       <PropertyLabel
@@ -415,31 +399,49 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
         target={[propPath]}
         style={{
           textTransform: 'capitalize',
-          paddingLeft: indentation,
+          paddingLeft: indentation - 8,
           alignSelf: 'flex-start',
         }}
       >
         <Tooltip title={title}>
-          <span
+          <div
+            onClick={dataPickerButtonData.openPopup}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
             style={{
-              marginTop: 3,
               lineHeight: `${UtopiaTheme.layout.inputHeight.default}px`,
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 6,
+              color:
+                dataPickerButtonData.popupIsOpen || isHovered || !isValueSet
+                  ? colorTheme.dynamicBlue.value
+                  : undefined,
             }}
           >
             {title}
-          </span>
+            <div
+              style={{
+                opacity: isHovered || dataPickerButtonData.popupIsOpen || !isValueSet ? 1 : 0,
+              }}
+            >
+              <Icn
+                category='semantic'
+                type='plus-in-white-translucent-circle'
+                color={
+                  dataPickerButtonData.popupIsOpen || isHovered || !isValueSet ? 'dynamic' : 'main'
+                }
+                width={12}
+                height={12}
+              />
+            </div>
+          </div>
         </Tooltip>
       </PropertyLabel>
     ) : (
       <props.label />
     )
-
-  const dataPickerButtonData = useDataPickerButton(
-    selectedViews,
-    props.propPath,
-    props.isScene,
-    props.controlDescription,
-  )
 
   if (controlDescription.control === 'none') {
     // do not list anything for `none` controls
@@ -454,11 +456,7 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
       data={null}
     >
       {dataPickerButtonData.popupIsOpen ? dataPickerButtonData.DataPickerComponent : null}
-      <UIGridRow
-        padded={false}
-        style={{ paddingLeft: 0, paddingRight: 8, paddingTop: 3, paddingBottom: 3 }}
-        variant='<--1fr--><--1fr-->|-18px-|'
-      >
+      <UIGridRow padded={false} style={{ padding: '3px 0px 3px 8px' }} variant='<--1fr--><--1fr-->'>
         {propertyLabel}
         <div
           style={{
@@ -477,7 +475,6 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
             showHiddenControl={props.showHiddenControl}
           />
         </div>
-        {when(isBaseIndentationLevel(props), dataPickerButtonData.DataPickerOpener)}
       </UIGridRow>
     </InspectorContextMenuWrapper>
   )
@@ -613,7 +610,6 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
               showHiddenControl={props.showHiddenControl}
             />
           </FlexRow>
-          {when(isBaseIndentationLevel(props), dataPickerButtonData.DataPickerOpener)}
         </SimpleFlexRow>
         <div
           style={{
@@ -652,7 +648,6 @@ interface ArrayControlItemProps {
 }
 
 const ArrayControlItem = React.memo((props: ArrayControlItemProps) => {
-  const colorTheme = useColorTheme()
   const { bind, propPath, index, isScene, springStyle, controlDescription } = props
   const propPathWithIndex = PP.appendPropertyPathElems(propPath, [index])
   const propMetadata = useComponentPropsInspectorInfo(
@@ -819,7 +814,6 @@ interface ObjectIndicatorProps {
 }
 
 const ObjectIndicator = (props: ObjectIndicatorProps) => {
-  const colorTheme = useColorTheme()
   return (
     <div
       style={{
@@ -919,7 +913,6 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
                 />
               </div>
             </SimpleFlexRow>
-            {when(isBaseIndentationLevel(props), dataPickerButtonData.DataPickerOpener)}
           </FlexRow>
         </InspectorContextMenuWrapper>
       </div>
@@ -1057,8 +1050,6 @@ export interface ComponentSectionProps {
 }
 
 export const ComponentSectionInner = React.memo((props: ComponentSectionProps) => {
-  const colorTheme = useColorTheme()
-
   const propertyControlsAndTargets = useKeepReferenceEqualityIfPossible(
     useGetPropertyControlsForSelectedComponents(),
   )
@@ -1193,7 +1184,7 @@ export class ComponentSection extends React.Component<
               height: UtopiaTheme.layout.rowHeight.normal,
               position: 'sticky',
               top: 0,
-              background: colorThemeConst.inspectorBackground.value,
+              background: colorTheme.inspectorBackground.value,
               zIndex: 1,
             }}
           >
@@ -1205,7 +1196,7 @@ export class ComponentSection extends React.Component<
               gridTemplateColumns: '2fr 4fr',
             }}
           >
-            <span style={{ paddingTop: 4, color: colorThemeConst.errorForeground.value }}>
+            <span style={{ paddingTop: 4, color: colorTheme.errorForeground.value }}>
               Invalid propertyControls value
             </span>
           </PropertyRow>

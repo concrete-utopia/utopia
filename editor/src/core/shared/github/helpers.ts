@@ -982,7 +982,11 @@ export async function getRefreshGithubActions(
   let actions: EditorAction[] = []
 
   // 1. list the repos
-  const userRepos = await getUsersPublicGithubRepositories(operationContext)(dispatch, initiator)
+  const userRepos = await getUsersPublicGithubRepositories(operationContext)(
+    dispatch,
+    initiator,
+    githubRepo,
+  )
   actions.push(...userRepos)
 
   if (githubRepo != null) {

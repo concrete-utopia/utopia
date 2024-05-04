@@ -942,8 +942,7 @@ export async function componentDescriptorForComponentToRegister(
     return properties
   }
 
-  const supportsChildren =
-    componentToRegister.children != null && componentToRegister.children !== 'not-supported'
+  const supportsChildren = componentToRegister.children !== 'not-supported'
 
   return right({
     componentName: componentName,

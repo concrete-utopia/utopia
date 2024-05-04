@@ -7,13 +7,16 @@ import invariant from '../../third-party/remix/invariant'
 import { useOnClickAuthenticateWithGithub } from '../../utils/github-auth-hooks'
 import { Dialog, FormButton } from '../../uuiui'
 import { isLoggedIn, type EditorDispatch } from '../editor/action-types'
-import { setGithubState } from '../editor/actions/action-creators'
+import { setGithubState, showToast, updateGithubData } from '../editor/actions/action-creators'
 import { useDispatch } from '../editor/store/dispatch-context'
 import type { GithubUser } from '../editor/store/editor-state'
 import { type EditorStorePatched, type GithubRepoWithBranch } from '../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { onClickSignIn } from '../titlebar/title-bar'
 import { CloneParamKey } from '../editor/persistence/persistence-backend'
+import { getPublicRepositoryEntryOrNull } from '../../core/shared/github/operations/load-repositories'
+import { OperationContext } from '../../core/shared/github/operations/github-operation-context'
+import { notice } from '../common/notice'
 
 export const LoadActionsDispatched = 'loadActionDispatched'
 
@@ -100,12 +103,22 @@ async function cloneGithubRepo(
   didWeInitiateGitRepoDownloadSinceTheEditorLoaded = true
   const projectName = `${githubRepo.owner}-${githubRepo.repository}`
 
-  const githubBranch = githubRepo.branch
   // Obtain a projectID from the server, and save an empty initial project
   storeRef.current.persistence.createNew(projectName, totallyEmptyDefaultProject())
   const loadActionDispatchedByPersistenceMachine =
     await awaitLoadActionDispatchedByPersistenceMachine()
   const createdProjectID = loadActionDispatchedByPersistenceMachine.projectId
+
+  const repositoryEntry = await getPublicRepositoryEntryOrNull(OperationContext, {
+    owner: githubRepo.owner,
+    repo: githubRepo.repository,
+  })
+  if (repositoryEntry == null) {
+    dispatch([showToast(notice('Cannot find repository', 'ERROR'))])
+    return
+  }
+  const githubBranch = githubRepo.branch ?? repositoryEntry.defaultBranch
+
   await GithubOperations.updateProjectWithBranchContent(
     storeRef.current.workers,
     dispatch,
@@ -121,12 +134,9 @@ async function cloneGithubRepo(
 
   // at this point we can assume the repo is loaded and we can finally hide the overlay
   dispatch([
-    setGithubState({
-      gitRepoToLoad: null,
-    }),
+    setGithubState({ gitRepoToLoad: null }),
+    updateGithubData({ publicRepositories: [repositoryEntry] }),
   ])
-
-  // TODO make sure the EditorState knows we have a github repo connected!!!
 }
 
 type GitClonePseudeElementProps = {

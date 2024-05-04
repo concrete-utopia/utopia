@@ -24,7 +24,7 @@ const lightBase = {
   secondaryOrange: createUtopiColor('oklch(78.97% 0.192 70)'),
   denimBlue: createUtopiColor('oklch(91.3% 0.04 252)'),
   lightDenimBlue: createUtopiColor('oklch(97% 0.02 254)'),
-  selectionBlue: createUtopiColor('oklch(66.9% 0.198 248.8)'),
+  selectionBlue: createUtopiColor('oklch(66.9% 0.18 248.8)'),
   childSelectionBlue: createUtopiColor('oklch(92.39% 0.05 236.2)'),
   selectionPurple: createUtopiColor('oklch(53.22% 0.28 289.7)'),
   childSelectionPurple: createUtopiColor('oklch(89.45% 0.06 302.7)'),
@@ -79,6 +79,7 @@ const lightPrimitives = {
   neutralInvertedBackground: lightBase.fg1,
   dialogBackground: lightBase.bg1,
   dialogBackground2: lightBase.bg4,
+  popupBorder: lightBase.bg5,
 
   emphasizedForeground: lightBase.fg0,
   neutralForeground: lightBase.fg1,

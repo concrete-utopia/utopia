@@ -2393,11 +2393,14 @@ export const UPDATE_FNS = {
             },
           )
 
-          // apply the children of original element on the new element
-          return {
-            ...renamedJsxElementWithOriginalStyle,
-            children: originalElement.children,
+          if (originalElement.children.length > 0) {
+            // apply the children of original element on the new element
+            return {
+              ...renamedJsxElementWithOriginalStyle,
+              children: originalElement.children,
+            }
           }
+          return renamedJsxElementWithOriginalStyle
         })()
 
         const withInsertedElement = insertJSXElementChildren(
