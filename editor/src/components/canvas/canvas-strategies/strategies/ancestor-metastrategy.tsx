@@ -11,7 +11,7 @@ import { highlightElementsCommand } from '../../commands/highlight-element-comma
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { appendElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
-import type { MetaCanvasStrategy } from '../canvas-strategies'
+import { onlyFitWhenDraggingThisControl, type MetaCanvasStrategy } from '../canvas-strategies'
 import type {
   CanvasStrategy,
   InteractionCanvasState,
@@ -116,6 +116,7 @@ export function ancestorMetaStrategy(
       // A length of > 0 means that we should be bubbling up to the next ancestor
       return nextAncestorResult.map((s) => ({
         ...s,
+        fitness: onlyFitWhenDraggingThisControl(interactionSession, 'BOUNDING_AREA', s.fitness),
         apply: appendCommandsToApplyResult(
           s.apply,
           [appendElementsToRerenderCommand([target])],
@@ -129,7 +130,11 @@ export function ancestorMetaStrategy(
           ...s,
           id: `${s.id}_ANCESTOR_${level}`,
           name: applyLevelSuffix(s.name, level),
-          fitness: s.fitness > 0 ? s.fitness + 10 : s.fitness, // Ancestor strategies should always take priority
+          fitness: onlyFitWhenDraggingThisControl(
+            interactionSession,
+            'BOUNDING_AREA',
+            s.fitness > 0 ? s.fitness + 10 : s.fitness, // Ancestor strategies should always take priority
+          ),
           apply: appendCommandsToApplyResult(
             s.apply,
             [
