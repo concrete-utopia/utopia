@@ -198,6 +198,8 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
         padding: 0,
         color: dark.fg1.value,
         background: colorTheme.bg0.value,
+        // colorScheme: 'dark',
+        borderRadius: 10,
       }}
       onKeyDown={onKeyDown}
       ref={menuRef}
@@ -283,7 +285,7 @@ const FilterBar = React.memo((props: FilterBarProps) => {
   )
 
   return (
-    <div style={{ margin: '4px 8px' }}>
+    <div style={{ margin: 8 }}>
       <StringInput
         placeholder='Filter...'
         testId={componentPickerFilterInputTestId}
@@ -374,10 +376,9 @@ interface FilterButtonProps {
   index: number
   label: string
   setActiveFocus: (index: number) => void
-  onClick?: (e: React.MouseEvent) => void
 }
 
-export const FilterButton = React.memo((props: FilterButtonProps) => {
+const FilterButton = React.memo((props: FilterButtonProps) => {
   const { highlighted, index, label, setActiveFocus } = props
 
   const ref = React.useRef<HTMLButtonElement>(null)
@@ -405,7 +406,7 @@ export const FilterButton = React.memo((props: FilterButtonProps) => {
         padding: '4px 8px',
         borderRadius: 10,
         '&:hover': {
-          opacity: highlighted ? 1 : 0.8,
+          opacity: 0.8,
         },
       }}
       onClick={() => {

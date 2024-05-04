@@ -39,7 +39,7 @@ import { elementFromInsertMenuItem } from '../../editor/insert-callbacks'
 import { MomentumContextMenu } from '../../context-menu-wrapper'
 import { NO_OP, assertNever } from '../../../core/shared/utils'
 import { type ContextMenuItem } from '../../context-menu-items'
-import { FlexRow, Icn, UtopiaStyles, colorTheme, type IcnProps } from '../../../uuiui'
+import { FlexRow, Icn, type IcnProps } from '../../../uuiui'
 import type {
   EditorAction,
   EditorDispatch,
@@ -640,14 +640,7 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
       <Menu
         id={FullMenuId}
         animation={false}
-        style={{
-          width: 260,
-          padding: 0,
-          boxShadow: UtopiaStyles.shadowStyles.low.boxShadow,
-          border: `.2px solid ${colorTheme.popupBorder.value}`,
-          borderRadius: 10,
-          overflow: 'hidden',
-        }}
+        style={{ width: 260, borderRadius: 10, padding: 0 }}
         onClick={squashEvents}
       >
         <ComponentPicker allComponents={allInsertableComponents} onItemClick={onItemClick} />

@@ -38,7 +38,7 @@ export const IdentifierExpressionCartoucheControl = React.memo(
             props.matchType === 'full'
               ? colorTheme.primary.value
               : props.matchType === 'partial'
-              ? colorTheme.primary30.value
+              ? colorTheme.primary10.value
               : colorTheme.bg4.value,
           padding: '0px 4px',
           borderRadius: 4,
@@ -62,7 +62,6 @@ export const IdentifierExpressionCartoucheControl = React.memo(
               /* Beginning of string */
               direction: 'rtl', // TODO we need a better way to ellipsize the beginnign because rtl eats ' " marks
               textAlign: 'left',
-              color: props.matchType === 'partial' ? colorTheme.white.value : 'inherit',
             }}
           >
             {props.contents}
