@@ -926,6 +926,31 @@ export const MetadataUtils = {
   isBody(instance: ElementInstanceMetadata): boolean {
     return this.isElementOfType(instance, 'body')
   },
+  isHead(instance: ElementInstanceMetadata): boolean {
+    return this.isElementOfType(instance, 'head')
+  },
+  isHeading(instance: ElementInstanceMetadata): boolean {
+    return (
+      this.isElementOfType(instance, 'h1') ||
+      this.isElementOfType(instance, 'h2') ||
+      this.isElementOfType(instance, 'h3') ||
+      this.isElementOfType(instance, 'h4') ||
+      this.isElementOfType(instance, 'h5') ||
+      this.isElementOfType(instance, 'h6')
+    )
+  },
+  isInput(instance: ElementInstanceMetadata): boolean {
+    return this.isElementOfType(instance, 'input')
+  },
+  isAnchorLink(instance: ElementInstanceMetadata): boolean {
+    return this.isElementOfType(instance, 'a')
+  },
+  isParagraph(instance: ElementInstanceMetadata): boolean {
+    return this.isElementOfType(instance, 'p')
+  },
+  isForm(instance: ElementInstanceMetadata): boolean {
+    return this.isElementOfType(instance, 'form')
+  },
   isReactSuspense(instance: ElementInstanceMetadata | null): boolean {
     return MetadataUtils.isImportedComponentFromMetadata(instance, 'react', 'Suspense')
   },
