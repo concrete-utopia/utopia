@@ -196,8 +196,6 @@ export const ListSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
   const { popupIsOpen, DataPickerOpener, DataPickerComponent, setReferenceElement, openPopup } =
     useDataPickerButton(paths)
 
-  // early return, no hooks below this point!
-
   const mappedRootElementToDisplay = useEditorState(
     Substores.metadata,
     (store) => {
