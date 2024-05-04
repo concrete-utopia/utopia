@@ -27,19 +27,19 @@ import type { ElementPath, ElementPropertyPath, PropertyPath } from '../shared/p
 import * as PP from '../shared/property-path'
 import { assertNever } from '../shared/utils'
 
-export type DataPath = Array<string>
+export type ObjectPath = Array<string>
 
 export type DataTracingToLiteralAttribute = {
   type: 'literal-attribute'
   elementPath: ElementPath
   property: PropertyPath
-  dataPathIntoAttribute: DataPath
+  dataPathIntoAttribute: ObjectPath
 }
 
 export function dataTracingToLiteralAttribute(
   elementPath: ElementPath,
   property: PropertyPath,
-  dataPathIntoAttribute: DataPath,
+  dataPathIntoAttribute: ObjectPath,
 ): DataTracingToLiteralAttribute {
   return {
     type: 'literal-attribute',
@@ -53,13 +53,13 @@ export type DataTracingToAHookCall = {
   type: 'hook-result'
   hookName: string
   elementPath: ElementPath
-  dataPathIntoAttribute: DataPath
+  dataPathIntoAttribute: ObjectPath
 }
 
 export function dataTracingToAHookCall(
   elementPath: ElementPath,
   hookName: string,
-  dataPathIntoAttribute: DataPath,
+  dataPathIntoAttribute: ObjectPath,
 ): DataTracingToAHookCall {
   return {
     type: 'hook-result',
@@ -73,13 +73,13 @@ export type DataTracingToAComponentProp = {
   type: 'component-prop'
   elementPath: ElementPath
   propertyPath: PropertyPath
-  dataPathIntoAttribute: DataPath
+  dataPathIntoAttribute: ObjectPath
 }
 
 export function dataTracingToAComponentProp(
   elementPath: ElementPath,
   propertyPath: PropertyPath,
-  dataPathIntoAttribute: DataPath,
+  dataPathIntoAttribute: ObjectPath,
 ): DataTracingToAComponentProp {
   return {
     type: 'component-prop',
@@ -116,7 +116,7 @@ function findContainingComponentForElementPath(
 
 function processJSPropertyAccessors(
   expression: JSExpression,
-): Either<string, { originalIdentifier: JSIdentifier; path: DataPath }> {
+): Either<string, { originalIdentifier: JSIdentifier; path: ObjectPath }> {
   switch (expression.type) {
     case 'ATTRIBUTE_FUNCTION_CALL':
     case 'ATTRIBUTE_NESTED_ARRAY':
@@ -167,8 +167,8 @@ function processJSPropertyAccessors(
 function propUsedByIdentifierOrAccess(
   param: Param,
   originalIdentifier: JSIdentifier,
-  pathDrillSoFar: DataPath,
-): Either<string, { propertyName: string; modifiedPathDrillSoFar: DataPath }> {
+  pathDrillSoFar: ObjectPath,
+): Either<string, { propertyName: string; modifiedPathDrillSoFar: ObjectPath }> {
   switch (param.boundParam.type) {
     case 'REGULAR_PARAM': {
       // in case of a regular prop param, first we want to match the param name to the original identifier
@@ -212,8 +212,8 @@ function propUsedByIdentifierOrAccess(
 function paramUsedByIdentifierOrAccess(
   param: Param,
   originalIdentifier: JSIdentifier,
-  pathDrillSoFar: DataPath,
-): Either<string, { modifiedPathDrillSoFar: DataPath }> {
+  pathDrillSoFar: ObjectPath,
+): Either<string, { modifiedPathDrillSoFar: ObjectPath }> {
   switch (param.boundParam.type) {
     case 'REGULAR_PARAM': {
       // in case of a regular prop param, first we want to match the param name to the original identifier
@@ -345,7 +345,7 @@ function walkUpInnerScopesUntilReachingComponent(
   containingComponentRootPath: ElementPath,
   componentHoldingElement: UtopiaJSXComponent,
   identifier: JSIdentifier,
-  pathDrillSoFar: DataPath,
+  pathDrillSoFar: ObjectPath,
 ): DataTracingResult {
   if (EP.pathsEqual(currentElementPathOfWalk, containingComponentRootPath)) {
     return lookupInComponentScope(
@@ -441,7 +441,7 @@ function lookupInComponentScope(
   componentPath: ElementPath,
   componentHoldingElement: UtopiaJSXComponent,
   originalIdentifier: JSIdentifier,
-  pathDrillSoFar: DataPath,
+  pathDrillSoFar: ObjectPath,
 ): DataTracingResult {
   const identifier = originalIdentifier
 
@@ -527,7 +527,7 @@ function lookupInComponentScope(
     // until we do proper support, this is a temporary stopgap
     const foundOpaqueStatementProbablyMatchingIdentifier: {
       assignedTo: string
-      pathSoFar: DataPath
+      pathSoFar: ObjectPath
     } | null = mapFirstApplicable(
       componentHoldingElement.arbitraryJSBlock?.statements ?? [],
       (statement) => {
