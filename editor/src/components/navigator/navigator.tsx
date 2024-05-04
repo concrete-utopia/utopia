@@ -184,7 +184,7 @@ export const NavigatorComponent = React.memo(() => {
 
   React.useEffect(() => {
     if (selectionIndex >= 0) {
-      itemListRef.current?.scrollToItem(selectionIndex, 'center')
+      itemListRef.current?.scrollToItem(selectionIndex, 'smart')
     }
   }, [selectionIndex, itemListRef])
 
