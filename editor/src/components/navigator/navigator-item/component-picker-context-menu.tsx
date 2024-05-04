@@ -25,6 +25,7 @@ import {
   insertJSXElement,
   replaceMappedElement,
   setProp_UNSAFE,
+  showToast,
 } from '../../editor/actions/action-creators'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
@@ -65,6 +66,7 @@ import type { ConditionalCase } from '../../../core/model/conditionals'
 import { sortBy } from '../../../core/shared/array-utils'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { absolute } from '../../../utils/utils'
+import { notice } from '../../common/notice'
 
 type RenderPropTarget = { type: 'render-prop'; prop: string }
 type ConditionalTarget = { type: 'conditional'; conditionalCase: ConditionalCase }
@@ -445,6 +447,21 @@ function insertComponentPickerItem(
     }
 
     if (isReplaceTarget(insertionTarget)) {
+      if (
+        MetadataUtils.isJSXMapExpression(EP.parentPath(target), metadata) &&
+        elementWithoutUID.type === 'JSX_MAP_EXPRESSION'
+      ) {
+        return [
+          showToast(
+            notice(
+              'Nested Lists are not supported yet',
+              'INFO',
+              false,
+              'insert-component-picker-item-nested-map',
+            ),
+          ),
+        ]
+      }
       const index = MetadataUtils.getIndexInParent(metadata, pathTrees, target)
       return [
         deleteView(target),
