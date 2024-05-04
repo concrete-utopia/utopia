@@ -454,7 +454,7 @@ function insertComponentPickerItem(
         return [
           showToast(
             notice(
-              'Only JSX elements are supported inside Lists',
+              'We are working on support to insert Lists, Conditionals and Fragments into Lists',
               'INFO',
               false,
               'insert-component-picker-item-nested-map',
