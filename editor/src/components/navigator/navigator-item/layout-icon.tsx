@@ -5,9 +5,7 @@ import {
   navigatorEntryToKey,
 } from '../../../components/editor/store/editor-state'
 import type { IcnProps } from '../../../uuiui'
-import { colorTheme } from '../../../uuiui'
 import { Icn, Icons } from '../../../uuiui'
-import { WarningIcon } from '../../../uuiui/warning-icon'
 import { invalidGroupStateToString } from '../../canvas/canvas-strategies/strategies/group-helpers'
 import { ChildWithPercentageSize } from '../../common/size-warnings'
 import { useLayoutOrElementIcon } from '../layout-element-icons'
@@ -22,9 +20,11 @@ import { metadataSelector } from '../../inspector/inpector-selectors'
 import type { MetadataSubstate } from '../../editor/store/store-hook-substore-types'
 import * as EP from '../../../core/shared/element-path'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
+import type { Icon } from 'utopia-api'
 
 interface LayoutIconProps {
   navigatorEntry: NavigatorEntry
+  override?: Icon | null
   color: IcnProps['color']
   warningText?: string | null
   elementWarnings?: ElementWarnings | null
@@ -108,6 +108,17 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
         ...iconProps,
         color: color,
         style: { opacity: 'var(--iconOpacity)' },
+      }
+      if (props.override != null && props.override !== 'regular') {
+        return (
+          <Icn
+            category='navigator-element'
+            type={props.override}
+            width={12}
+            height={12}
+            testId={iconTestId}
+          />
+        )
       }
       if (isZeroSized) {
         return (
@@ -208,6 +219,7 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
       isErroredGroupChild,
       iconTestId,
       addAbsoluteMarkerToIcon,
+      props.override,
     ])
 
     const marker = React.useMemo(() => {
