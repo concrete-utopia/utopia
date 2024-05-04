@@ -365,6 +365,17 @@ describe('fixParseSuccessUIDs', () => {
     `)
   })
 
+  it('avoids uid shifting caused by first element being updated', () => {
+    const newFile = lintAndParseAndValidateResult(
+      'test.js',
+      fileWithFistDuplicatedViewUpdate,
+      asParseSuccessOrNull(baseFileWithDuplicateViews),
+      emptySet(),
+      'trim-bounds',
+    )
+    expect(getUidTree(baseFileWithDuplicateViews)).toEqual(getUidTree(newFile))
+  })
+
   it('double duplication', () => {
     const newFile = lintAndParseAndValidateResult(
       'test.js',
@@ -746,6 +757,27 @@ export var SameFileApp = (props) => {
     <div
       style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
     >
+      <View
+        style={{
+          width: 191,
+        }}
+      />
+    </div>
+  )
+}
+`)
+
+const baseFileWithDuplicatedViewsContents = createFileText(`
+export var SameFileApp = (props) => {
+  return (
+    <div
+      style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+    >
+      <View
+        style={{
+          width: 191,
+        }}
+      />
       <View
         style={{
           width: 191,
@@ -1158,6 +1190,28 @@ export var SameFileApp = (props) => {
 }
 `)
 
+const fileWithFistDuplicatedViewUpdate = createFileText(`
+export var SameFileApp = (props) => {
+  return (
+    <div
+      style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+    >
+      <View
+        style={{
+          width: 191,
+          height: 200
+        }}
+      />
+      <View
+        style={{
+          width: 191,
+        }}
+      />
+    </div>
+  )
+}
+`)
+
 const baseFileWithTopLevelFragmentComponent = createFileText(`
 export var SameFileApp = (props) => {
   return (
@@ -1342,6 +1396,14 @@ function createFileText(codeSnippet: string): string {
 const baseFile = lintAndParseAndValidateResult(
   'test.js',
   baseFileContents,
+  null,
+  emptySet(),
+  'trim-bounds',
+)
+
+const baseFileWithDuplicateViews = lintAndParseAndValidateResult(
+  'test.js',
+  baseFileWithDuplicatedViewsContents,
   null,
   emptySet(),
   'trim-bounds',
