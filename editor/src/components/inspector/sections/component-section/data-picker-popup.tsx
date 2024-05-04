@@ -38,6 +38,7 @@ import { is } from '../../../../core/shared/equality-utils'
 import { atom, useAtom } from 'jotai'
 import type { SelectOption } from '../../controls/select-control'
 import { InspectorModal } from '../../widgets/inspector-modal'
+import { FilterButton } from '../../../../../src/components/navigator/navigator-item/component-picker'
 
 export interface PrimitiveOption {
   type: 'primitive'
@@ -211,7 +212,7 @@ export const DataPickerPopup = React.memo(
               left: -16, // to make it align with the cartouche control
               backgroundColor: colorTheme.bg0.value,
               color: colorTheme.fg1.value,
-              padding: 4,
+              padding: 8,
               boxShadow: UtopiaStyles.shadowStyles.low.boxShadow,
               border: `.2px solid ${colorTheme.popupBorder.value}`,
               borderRadius: 10,
@@ -221,22 +222,27 @@ export const DataPickerPopup = React.memo(
             }}
             data-testid={DataPickerPopupTestId}
           >
-            <UIGridRow
-              padded
-              variant='<-------1fr------>|----80px----|'
-              css={{ marginBottom: 4, alignSelf: 'stretch' }}
+            <div
+              css={{
+                overflowX: 'scroll',
+                whiteSpace: 'nowrap',
+                display: 'flex',
+                flexDirection: 'row',
+                gap: 6,
+                padding: '2px',
+              }}
             >
-              <div style={{ fontWeight: 600, flexGrow: 1, color: colorTheme.fg1.value }}>Data</div>
-              <PopupList
-                containerMode='showBorderOnHover'
-                options={filterOptions}
-                value={{
-                  value: preferredAllState,
-                  label: dataPickerFilterOptionToString(preferredAllState),
-                }}
-                onSubmitValue={setMode}
-              />
-            </UIGridRow>
+              {filterOptions.map((option, index) => (
+                <FilterButton
+                  key={index}
+                  highlighted={preferredAllState === option.value}
+                  index={index}
+                  label={dataPickerFilterOptionToString(option.value)}
+                  /* eslint-disable-next-line react/jsx-no-bind */
+                  setActiveFocus={() => setMode(option)}
+                />
+              ))}
+            </div>
             {variableNamesInScope.map((variableOption, idx) => {
               return (
                 <ValueRow
@@ -333,7 +339,7 @@ function ValueRow({
         }}
       >
         <UIGridRow
-          padded
+          padded={false}
           variant='<--1fr--><--1fr-->'
           style={{
             justifyContent: 'space-between',
