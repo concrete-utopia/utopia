@@ -808,7 +808,7 @@ describe('Data Tracing', () => {
         dataTracingToAHookCall(
           EP.fromString('sb/app:my-component:component-root'),
           'useLoaderData',
-          ['reviews', '2', 'title'],
+          ['reviews', '1', 'title'],
         ),
       )
     })
@@ -857,7 +857,7 @@ describe('Data Tracing', () => {
         dataTracingToAHookCall(
           EP.fromString('sb/app:my-component:component-root'),
           'useLoaderData',
-          ['reviews', '2', 'title'],
+          ['reviews', '1', 'title'],
         ),
       )
     })
