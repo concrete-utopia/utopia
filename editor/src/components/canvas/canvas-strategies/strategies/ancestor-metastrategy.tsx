@@ -11,7 +11,7 @@ import { highlightElementsCommand } from '../../commands/highlight-element-comma
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { appendElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
-import type { MetaCanvasStrategy } from '../canvas-strategies'
+import { onlyFitWhenThisControlIsActive, type MetaCanvasStrategy } from '../canvas-strategies'
 import type {
   CanvasStrategy,
   InteractionCanvasState,
@@ -113,9 +113,15 @@ export function ancestorMetaStrategy(
     )
 
     if (nextAncestorResult.length > 0) {
+      const fitness = (s: CanvasStrategy) =>
+        Math.max(
+          onlyFitWhenThisControlIsActive(interactionSession, 'BOUNDING_AREA', s.fitness),
+          onlyFitWhenThisControlIsActive(interactionSession, 'KEYBOARD_CATCHER_CONTROL', s.fitness),
+        )
       // A length of > 0 means that we should be bubbling up to the next ancestor
       return nextAncestorResult.map((s) => ({
         ...s,
+        fitness: fitness(s),
         apply: appendCommandsToApplyResult(
           s.apply,
           [appendElementsToRerenderCommand([target])],
@@ -124,12 +130,19 @@ export function ancestorMetaStrategy(
       }))
     } else {
       // Otherwise we should stop at this ancestor and return the strategies for this ancestor
+      const fitness = (s: CanvasStrategy) => {
+        const value = s.fitness > 0 ? s.fitness + 10 : s.fitness
+        return Math.max(
+          onlyFitWhenThisControlIsActive(interactionSession, 'BOUNDING_AREA', value),
+          onlyFitWhenThisControlIsActive(interactionSession, 'KEYBOARD_CATCHER_CONTROL', value),
+        )
+      }
       return allOtherStrategies.flatMap((metaStrategy) =>
         metaStrategy(adjustedCanvasState, interactionSession, customStrategyState).map((s) => ({
           ...s,
           id: `${s.id}_ANCESTOR_${level}`,
           name: applyLevelSuffix(s.name, level),
-          fitness: s.fitness > 0 ? s.fitness + 10 : s.fitness, // Ancestor strategies should always take priority
+          fitness: fitness(s),
           apply: appendCommandsToApplyResult(
             s.apply,
             [

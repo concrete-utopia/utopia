@@ -325,12 +325,90 @@ export function createElementIconPropsFromMetadata(
     }
   }
 
+  const isHead = element != null && MetadataUtils.isHead(element)
+  if (isHead) {
+    return {
+      iconProps: {
+        category: 'element',
+        type: 'folder',
+        width: 12,
+        height: 12,
+      },
+      isPositionAbsolute: isPositionAbsolute,
+    }
+  }
+
+  const isHeading = element != null && MetadataUtils.isHeading(element)
+  if (isHeading) {
+    return {
+      iconProps: {
+        category: 'element',
+        type: 'headline',
+        width: 12,
+        height: 12,
+      },
+      isPositionAbsolute: isPositionAbsolute,
+    }
+  }
+
   const isButton = MetadataUtils.isButtonFromMetadata(element)
   if (isButton) {
     return {
       iconProps: {
         category: 'element',
         type: 'clickable',
+        width: 18,
+        height: 18,
+      },
+      isPositionAbsolute: isPositionAbsolute,
+    }
+  }
+
+  const isInput = element != null && MetadataUtils.isInput(element)
+  if (isInput) {
+    return {
+      iconProps: {
+        category: 'element',
+        type: 'input',
+        width: 18,
+        height: 18,
+      },
+      isPositionAbsolute: isPositionAbsolute,
+    }
+  }
+
+  const isAnchorLink = element != null && MetadataUtils.isAnchorLink(element)
+  if (isAnchorLink) {
+    return {
+      iconProps: {
+        category: 'element',
+        type: 'link',
+        width: 18,
+        height: 18,
+      },
+      isPositionAbsolute: isPositionAbsolute,
+    }
+  }
+
+  const isParagraph = element != null && MetadataUtils.isParagraph(element)
+  if (isParagraph) {
+    return {
+      iconProps: {
+        category: 'element',
+        type: 'paragraph',
+        width: 18,
+        height: 18,
+      },
+      isPositionAbsolute: isPositionAbsolute,
+    }
+  }
+
+  const isForm = element != null && MetadataUtils.isForm(element)
+  if (isForm) {
+    return {
+      iconProps: {
+        category: 'element',
+        type: 'form',
         width: 18,
         height: 18,
       },

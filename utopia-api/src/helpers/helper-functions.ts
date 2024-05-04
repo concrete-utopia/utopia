@@ -50,7 +50,14 @@ export type InspectorSpec = 'all' | Styling[]
 export const EmphasisOptions = ['subdued', 'regular', 'emphasized'] as const
 export type Emphasis = (typeof EmphasisOptions)[number]
 
-export const IconOptions = ['column', 'row', 'regular'] as const // and others
+export const IconOptions = [
+  'column',
+  'row',
+  'regular',
+  'headline',
+  'dashedframe',
+  'component',
+] as const // and others
 export type Icon = (typeof IconOptions)[number]
 
 export interface ComponentToRegister {

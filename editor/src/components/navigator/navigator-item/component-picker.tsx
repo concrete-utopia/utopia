@@ -2,6 +2,7 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React, { useCallback, useMemo } from 'react'
+import debounce from 'lodash.debounce'
 import { Icn, type IcnProps } from '../../../uuiui'
 import { dark } from '../../../uuiui/styles/theme/dark'
 import type { JSXElementChild } from '../../../core/shared/element-template'
@@ -104,6 +105,19 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
     [setSelectedComponentKey],
   )
 
+  const selectIndex = useCallback(
+    (index: number) => {
+      const newKey = flatComponentsToShow[index].value.key
+      setSelectedComponentKey(newKey)
+      const selectedComponent = menuRef.current?.querySelector(`[data-key="${newKey}"]`)
+      if (selectedComponent != null) {
+        // scroll into view
+        selectedComponent.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+      }
+    },
+    [flatComponentsToShow],
+  )
+
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === 'ArrowDown') {
@@ -111,24 +125,14 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
           (c) => c.value.key === highlightedComponentKey,
         )
         if (currentIndex >= 0 && currentIndex < flatComponentsToShow.length - 1) {
-          const newKey = flatComponentsToShow[currentIndex + 1].value.key
-          setSelectedComponentKey(newKey)
-          const selectedComponent = menuRef.current?.querySelector(`[data-key="${newKey}"]`)
-          if (selectedComponent != null) {
-            selectedComponent.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
-          }
+          selectIndex(currentIndex + 1)
         }
       } else if (e.key === 'ArrowUp') {
         const currentIndex = flatComponentsToShow.findIndex(
           (c) => c.value.key === highlightedComponentKey,
         )
         if (currentIndex > 0) {
-          const newKey = flatComponentsToShow[currentIndex - 1].value.key
-          setSelectedComponentKey(newKey)
-          const selectedComponent = menuRef.current?.querySelector(`[data-key="${newKey}"]`)
-          if (selectedComponent != null) {
-            selectedComponent.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
-          }
+          selectIndex(currentIndex - 1)
         }
       } else if (e.key === 'Enter') {
         const selectedComponent = flatComponentsToShow.find(
@@ -144,7 +148,7 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
       e.preventDefault()
       e.stopPropagation()
     },
-    [flatComponentsToShow, highlightedComponentKey, onItemClick],
+    [flatComponentsToShow, highlightedComponentKey, onItemClick, selectIndex],
   )
 
   return (
@@ -274,8 +278,18 @@ interface ComponentPickerComponentSectionProps {
 const ComponentPickerComponentSection = React.memo(
   (props: ComponentPickerComponentSectionProps) => {
     const { components, onItemClick, onItemHover, currentlySelectedKey } = props
+    const [isScrolling, setIsScrolling] = React.useState<boolean>(false)
+    const debouncedSetIsScrolling = React.useRef(debounce(() => setIsScrolling(false), 100))
+    const onScroll = React.useCallback(() => {
+      setIsScrolling(true)
+      debouncedSetIsScrolling.current()
+    }, [])
     return (
-      <div style={{ maxHeight: 250, overflowY: 'scroll', scrollbarWidth: 'auto' }}>
+      <div
+        data-role='component-scroll'
+        style={{ maxHeight: 250, overflowY: 'scroll', scrollbarWidth: 'auto' }}
+        onScroll={onScroll}
+      >
         {components.map((component) => {
           const selectedStyle =
             component.value.key === currentlySelectedKey
@@ -295,6 +309,7 @@ const ComponentPickerComponentSection = React.memo(
                 borderRadius: 4,
                 // indentation!
                 paddingLeft: 8,
+                pointerEvents: isScrolling ? 'none' : 'auto',
                 color: '#EEE',
                 ...selectedStyle,
               }}
@@ -352,6 +367,24 @@ function iconPropsForIcon(icon: Icon): IcnProps {
         color: 'white',
       }
     case 'regular':
+      return {
+        category: 'navigator-element',
+        type: 'component',
+        color: 'white',
+      }
+    case 'headline':
+      return {
+        category: 'navigator-element',
+        type: 'headline',
+        color: 'white',
+      }
+    case 'dashedframe':
+      return {
+        category: 'navigator-element',
+        type: 'dashedframe',
+        color: 'white',
+      }
+    case 'component':
       return {
         category: 'navigator-element',
         type: 'component',

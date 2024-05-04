@@ -117,18 +117,12 @@ describe('The Inspector code element section', () => {
     expect(inspectorSectionsContainer.children.length).toEqual(1)
   })
 
-  it('Is the only section displayed when a map is selected', async () => {
+  it('Is not displayed when a map is selected', async () => {
     const editor = await renderTestEditorWithCode(testProjectCode, 'await-first-dom-report')
     await clickElementWithTestId(editor, 'ddd')
 
     // Check that the code element section is displayed
-    const codeElementSection = editor.renderedDOM.getByTestId(CodeElementSectionTestId)
-    expect(codeElementSection).toBeDefined()
-
-    // Check that the inspector only has one section
-    const inspectorSectionsContainer = editor.renderedDOM.getByTestId(
-      InspectorSectionsContainerTestID,
-    )
-    expect(inspectorSectionsContainer.children.length).toEqual(1)
+    const codeElementSections = editor.renderedDOM.queryAllByTestId(CodeElementSectionTestId)
+    expect(codeElementSections).toHaveLength(0)
   })
 })
