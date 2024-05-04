@@ -342,7 +342,13 @@ export function createComponentRendererComponent(params: {
 }
 
 function isRenderProp(prop: any): prop is { [UTOPIA_PATH_KEY]: string; props: MapLike<any> } {
-  return ((prop as any)?.props as any)?.[UTOPIA_PATH_KEY] != null
+  return (
+    prop != null &&
+    typeof prop === 'object' &&
+    prop.props != null &&
+    typeof prop.props === 'object' &&
+    typeof prop.props[UTOPIA_PATH_KEY] === 'string'
+  )
 }
 
 // Checks if the element with the given elementPath is rendered in the props.children subtree
