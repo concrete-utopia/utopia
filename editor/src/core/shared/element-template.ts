@@ -197,10 +197,13 @@ export function jsOpaqueArbitraryStatement(
   }
 }
 
-export interface JSAssignment {
+export interface JSAssignment<
+  L extends JSIdentifier = JSIdentifier,
+  R extends JSExpression = JSExpression,
+> {
   type: 'JS_ASSIGNMENT'
-  leftHandSide: JSIdentifier
-  rightHandSide: JSExpression
+  leftHandSide: L
+  rightHandSide: R
 }
 
 export function jsAssignment(
@@ -607,6 +610,16 @@ export function jsElementAccess(
 
 export function isJSElementAccess(expression: JSXElementChild): expression is JSElementAccess {
   return expression.type === 'JS_ELEMENT_ACCESS'
+}
+
+export type IdentifierOrAccess = JSIdentifier | JSPropertyAccess | JSElementAccess
+
+export function isIdentifierOrAccess(
+  expression: JSXElementChild,
+): expression is IdentifierOrAccess {
+  return (
+    isJSIdentifier(expression) || isJSPropertyAccess(expression) || isJSElementAccess(expression)
+  )
 }
 
 export type JSExpression =

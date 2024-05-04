@@ -76,7 +76,7 @@ import {
   sendMessage,
 } from '../../../core/vscode/vscode-bridge'
 import { toVSCodeExtensionMessage } from 'utopia-vscode-common'
-import type { Emphasis } from 'utopia-api'
+import type { Emphasis, Icon } from 'utopia-api'
 import { contextMenu } from 'react-contexify'
 import { DataReferenceCartoucheControl } from '../../inspector/sections/component-section/data-reference-cartouche'
 
@@ -758,6 +758,17 @@ export const NavigatorItem: React.FunctionComponent<
     'NavigatorItem emphasis',
   )
 
+  const iconOverride = useEditorState(
+    Substores.propertyControlsInfo,
+    (store) =>
+      MetadataUtils.getIconOfComponent(
+        navigatorEntry.elementPath,
+        store.editor.propertyControlsInfo,
+        store.editor.projectContents,
+      ),
+    'NavigatorItem iconOverride',
+  )
+
   const isInsideComponent = isInFocusedComponentSubtree
   const fullyVisible = useStyleFullyVisible(navigatorEntry, autoFocusedPaths)
   const isProbablyScene = useIsProbablyScene(navigatorEntry)
@@ -1026,6 +1037,7 @@ export const NavigatorItem: React.FunctionComponent<
                 dispatch={props.dispatch}
                 isDynamic={isDynamic}
                 iconColor={iconColor}
+                iconOverride={iconOverride}
                 elementWarnings={!isConditional ? elementWarnings : null}
                 childComponentCount={childComponentCount}
                 insideFocusedComponent={isInsideComponent && isDescendantOfSelected}
@@ -1155,6 +1167,7 @@ const PlaceholderSlot = React.memo((props: PlaceholderSlotProps) => {
 interface NavigatorRowLabelProps {
   navigatorEntry: NavigatorEntry
   iconColor: IcnProps['color']
+  iconOverride: Icon | null
   elementWarnings: ElementWarnings | null
   label: string
   isDynamic: boolean
@@ -1193,6 +1206,7 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         <LayoutIcon
           key={`layout-type-${props.label}`}
           navigatorEntry={props.navigatorEntry}
+          override={props.iconOverride}
           color={
             props.selected
               ? 'white'
@@ -1200,6 +1214,8 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
               ? 'component'
               : props.emphasis === 'subdued'
               ? 'subdued'
+              : props.emphasis === 'emphasized'
+              ? 'primary'
               : props.iconColor
           }
           elementWarnings={props.elementWarnings}

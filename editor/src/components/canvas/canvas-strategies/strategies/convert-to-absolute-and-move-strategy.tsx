@@ -84,6 +84,7 @@ import {
   sizeToVisualDimensions,
 } from '../../../inspector/inspector-common'
 import { getDescriptiveStrategyLabelWithRetargetedPaths } from '../canvas-strategies'
+import { isZeroSizedElement } from '../../controls/outline-utils'
 
 export type SetHuggingParentToFixed =
   | 'set-hugging-parent-to-fixed'
@@ -339,7 +340,10 @@ function getAutoLayoutSiblingsBoundsInner(
   targets: Array<ElementPath>,
 ): CanvasRectangle | null {
   const autoLayoutSiblings = getAutoLayoutSiblings(jsxMetadata, pathTrees, targets)
-  const autoLayoutSiblingsFrames = autoLayoutSiblings.map((e) => nullIfInfinity(e.globalFrame))
+  const autoLayoutSiblingsFrames = autoLayoutSiblings.flatMap((e) => {
+    const frame = nullIfInfinity(e.globalFrame)
+    return frame == null || isZeroSizedElement(frame) ? [] : [frame]
+  })
   return boundingRectangleArray(autoLayoutSiblingsFrames)
 }
 

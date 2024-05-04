@@ -590,6 +590,18 @@ export function isStrategyActive(strategyState: StrategyState): boolean {
   return strategyState.currentStrategyCommands.length > 0
 }
 
+export function onlyFitWhenThisControlIsActive(
+  interactionSession: InteractionSession | null,
+  controlType: CanvasControlType['type'],
+  fitnessWhenFit: number,
+): number {
+  if (interactionSession != null && interactionSession.activeControl.type === controlType) {
+    return fitnessWhenFit
+  } else {
+    return 0
+  }
+}
+
 export function onlyFitWhenDraggingThisControl(
   interactionSession: InteractionSession | null,
   controlType: CanvasControlType['type'],

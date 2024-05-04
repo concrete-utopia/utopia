@@ -7,7 +7,7 @@ import {
   type TriggerEvent,
 } from 'react-contexify'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import type { ElementInstanceMetadataMap, JSXElement } from '../../../core/shared/element-template'
+import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import {
   type ElementInstanceMetadata,
   getJSXElementNameAsString,
@@ -63,7 +63,6 @@ import {
 } from '../../editor/store/insertion-path'
 import type { InsertableComponent } from '../../shared/project-components'
 import type { ConditionalCase } from '../../../core/model/conditionals'
-import { sortBy } from '../../../core/shared/array-utils'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { absolute } from '../../../utils/utils'
 import { notice } from '../../common/notice'
@@ -557,6 +556,24 @@ function iconPropsForIcon(icon: Icon): IcnProps {
         color: 'white',
       }
     case 'regular':
+      return {
+        category: 'navigator-element',
+        type: 'component',
+        color: 'white',
+      }
+    case 'headline':
+      return {
+        category: 'navigator-element',
+        type: 'headline',
+        color: 'white',
+      }
+    case 'dashedframe':
+      return {
+        category: 'navigator-element',
+        type: 'dashedframe',
+        color: 'white',
+      }
+    case 'component':
       return {
         category: 'navigator-element',
         type: 'component',

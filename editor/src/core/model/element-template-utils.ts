@@ -1198,6 +1198,8 @@ function propertyAccessLookupForPropsProperty(
   toCheck: JSPropertyAccess,
   propName: string,
 ): boolean {
+  // TODO make this not be special cased to the style prop!
+
   // This checks for `something1.something2.something3`:
   if (toCheck.onValue.type === 'JS_IDENTIFIER' && propsParam.boundParam.type === 'REGULAR_PARAM') {
     // Constrain the above check to `<props>.style.<propName>`
@@ -1214,7 +1216,7 @@ function propertyAccessLookupForPropsProperty(
   return false
 }
 
-function identifierUsesProperty(
+export function identifierUsesProperty(
   element: JSIdentifier,
   propsParam: Param,
   property: string,
@@ -1299,7 +1301,7 @@ export function elementUsesProperty(
     case 'JS_ELEMENT_ACCESS':
       return (
         elementUsesProperty(element.onValue, propsParam, property) ||
-        elementUsesProperty(element.element, propsParam, property)
+        elementUsesProperty(element.element, propsParam, property) // TODO I think this is wrong, as it checks if the element part references the prop, but not that the entire expression itself actually points at a prop
       )
     case 'JS_IDENTIFIER':
       return identifierUsesProperty(element, propsParam, property)
@@ -1587,14 +1589,39 @@ export function renameJsxElementChild<T extends JSXElementChild>(
   return element
 }
 
+/**
+ * @deprecated you probably want to use findContainingComponentForPath instead. Reason: this finds the element _instance_ of the containing component, not the component itself.
+ */
 export function findContainingComponent(
   topLevelElements: Array<TopLevelElement>,
   target: ElementPath,
 ): UtopiaJSXComponent | null {
   // Identify the UID of the containing component.
-  const containingElementPath = EP.getContainingComponent(target)
+  const containingElementPath = EP.getContainingComponent(target) // TODO this looks wrong to me
   if (!EP.isEmptyPath(containingElementPath)) {
     const componentUID = EP.toUid(containingElementPath)
+
+    // Find the component in the top level elements that we're looking for.
+    for (const topLevelElement of topLevelElements) {
+      if (isUtopiaJSXComponent(topLevelElement)) {
+        if (topLevelElement.rootElement.uid === componentUID) {
+          return topLevelElement
+        }
+      }
+    }
+  }
+
+  return null
+}
+
+export function findContainingComponentForPath(
+  topLevelElements: Array<TopLevelElement>,
+  target: ElementPath,
+): UtopiaJSXComponent | null {
+  // Identify the UID of the containing component.
+  const containingComponentPath = EP.getPathOfComponentRoot(target)
+  if (containingComponentPath != null) {
+    const componentUID = EP.toUid(containingComponentPath)
 
     // Find the component in the top level elements that we're looking for.
     for (const topLevelElement of topLevelElements) {
