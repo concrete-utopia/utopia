@@ -351,10 +351,6 @@ function isRenderProp(prop: any): prop is { [UTOPIA_PATH_KEY]: string; props: Ma
   )
 }
 
-// Checks if the element with the given elementPath is rendered in the props.children subtree
-// LIMITATION: this function only checks props.children, so if the given element is rendered, but from a
-// different prop, isElementInChildrenPropTree will return false
-// If we will support renderProps, this should be updated to check other props which receive react elements
 function isElementInChildrenOrPropsTree(elementPath: string, props: any): boolean {
   const childrenArr = React.Children.toArray(props.children).filter(React.isValidElement)
   const elementIsChild = childrenArr.some((c) => (c.props as any)[UTOPIA_PATH_KEY] === elementPath)
