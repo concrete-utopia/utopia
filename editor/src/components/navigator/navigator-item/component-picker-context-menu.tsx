@@ -449,12 +449,12 @@ function insertComponentPickerItem(
     if (isReplaceTarget(insertionTarget)) {
       if (
         MetadataUtils.isJSXMapExpression(EP.parentPath(target), metadata) &&
-        elementWithoutUID.type === 'JSX_MAP_EXPRESSION'
+        elementWithoutUID.type !== 'JSX_ELEMENT'
       ) {
         return [
           showToast(
             notice(
-              'Nested Lists are not supported yet',
+              'Only JSX elements are supported inside Lists',
               'INFO',
               false,
               'insert-component-picker-item-nested-map',
@@ -474,25 +474,33 @@ function insertComponentPickerItem(
       ]
     }
 
-    console.warn(errorMessage(insertionTarget, toInsert))
-    return []
+    return [
+      showToast(
+        notice(
+          toastMessage(insertionTarget, toInsert),
+          'INFO',
+          false,
+          'insert-component-picker-item-nested-map',
+        ),
+      ),
+    ]
   })()
 
   dispatch(actions)
 }
 
-function errorMessage(insertionTarget: InsertionTarget, toInsert: InsertableComponent) {
+function toastMessage(insertionTarget: InsertionTarget, toInsert: InsertableComponent) {
   switch (insertionTarget.type) {
     case 'replace-target':
-      return `Component picker error: can not swap to "${toInsert.name}"`
+      return `Swapping to ${toInsert.name} isn't supported yet`
     case 'replace-target-keep-children-and-style':
-      return `Component picker error: can not replace to "${toInsert.name}"`
+      return `Replacing with ${toInsert.name} isn't supported yet`
     case 'insert-as-child':
-      return `Component picker error: can not insert "${toInsert.name}" as child`
+      return `Inserting ${toInsert.name} as child isn't supported yet`
     case 'conditional':
-      return `Component picker error: can not insert "${toInsert.name}" into conditional "${insertionTarget.type}`
+      return `Inserting ${toInsert.name} into conditional ${insertionTarget.type} isn't supported yet`
     case 'render-prop':
-      return `Component picker error: can not insert "${toInsert.name}" into render prop "${insertionTarget.prop}"`
+      return `Inserting ${toInsert.name} into render prop ${insertionTarget.prop} isn't supported yet`
     default:
       assertNever(insertionTarget)
   }
