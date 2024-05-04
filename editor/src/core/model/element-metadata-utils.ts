@@ -1,5 +1,5 @@
 import * as OPI from 'object-path-immutable'
-import type { Emphasis, FlexLength, Sides } from 'utopia-api/core'
+import type { Emphasis, FlexLength, Icon, Sides } from 'utopia-api/core'
 import { sides } from 'utopia-api/core'
 import { getReorderDirection } from '../../components/canvas/controls/select-mode/yoga-utils'
 import { getImageSize, scaleImageDimensions } from '../../components/images'
@@ -2114,6 +2114,18 @@ export const MetadataUtils = {
 
     // Default to regular.
     return 'regular'
+  },
+  getIconOfComponent(
+    path: ElementPath,
+    propertyControlsInfo: PropertyControlsInfo,
+    projectContents: ProjectContentTreeRoot,
+  ): Icon | null {
+    const componentDescriptor = getComponentDescriptorForTarget(
+      path,
+      propertyControlsInfo,
+      projectContents,
+    )
+    return componentDescriptor?.icon ?? null
   },
   isEmotionOrStyledComponent(path: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
     const element = MetadataUtils.findElementByElementPath(metadata, path)
