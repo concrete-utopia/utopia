@@ -5105,11 +5105,11 @@ export var App = props => {
                   ['React', 'View', JSX_CANVAS_LOOKUP_FUNCTION_NAME],
                   expect.objectContaining({}),
                   {
-                    cb4: jsxElement(
+                    '62c': jsxElement(
                       'View',
                       '',
                       jsxAttributesFromMap({
-                        'data-uid': jsExpressionValue('cb4', emptyComments, ''),
+                        'data-uid': jsExpressionValue('62c', emptyComments, ''),
                       }),
                       [
                         jsPropertyAccess(
