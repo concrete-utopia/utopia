@@ -672,7 +672,7 @@ export const CanvasToolbar = React.memo(() => {
         : null}
       {/* Live Mode */}
       {(canvasToolbarMode.primary === 'edit' &&
-        canvasToolbarMode.secondary === 'selected' &&
+        canvasToolbarMode.secondary !== 'strategy-active' &&
         insertMenuMode === 'closed') ||
       canvasToolbarMode.primary === 'play'
         ? wrapInSubmenu(<RemixNavigationBar />)
