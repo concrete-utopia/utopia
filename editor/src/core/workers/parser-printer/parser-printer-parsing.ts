@@ -3049,6 +3049,7 @@ interface UpdateUIDResult {
 
 function getUIDBasedOnElement(
   sourceFile: TS.SourceFile,
+  originatingElement: TS.Node,
   elementName: JSXElementName | string | null,
   props: JSXAttributes | JSExpression | null,
   alreadyExistingUIDs: Set<string>,
@@ -3063,6 +3064,7 @@ function getUIDBasedOnElement(
   }
   const hash = Hash({
     fileName: sourceFile.fileName,
+    bounds: getBoundsOfNodes(sourceFile, originatingElement),
     name: elementName,
     props: cleansedProps,
   })
@@ -3080,7 +3082,13 @@ function forciblyUpdateDataUID(
   alreadyExistingUIDs: Set<string>,
   isFragment: boolean,
 ): UpdateUIDResult {
-  const uid = getUIDBasedOnElement(sourceFile, elementName, props, alreadyExistingUIDs)
+  const uid = getUIDBasedOnElement(
+    sourceFile,
+    originatingElement,
+    elementName,
+    props,
+    alreadyExistingUIDs,
+  )
   const uidExpression = createRawExpressionValue(
     sourceFile,
     uid,
