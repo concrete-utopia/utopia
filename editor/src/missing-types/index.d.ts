@@ -20,6 +20,17 @@ declare module 'lodash.clamp' {
   export default clamp = (number: number, lower: number, upper: number) => number
 }
 
+declare module 'lodash.debounce' {
+  export default debounce =
+    (
+      func: (...args: any[]) => any,
+      wait: number,
+      options?: { leading?: boolean; maxWait?: number },
+    ) =>
+    (...args: any[]) =>
+      any
+}
+
 declare module 'resize-observer-polyfill'
 
 declare module 'jest-matcher-deep-close-to'
