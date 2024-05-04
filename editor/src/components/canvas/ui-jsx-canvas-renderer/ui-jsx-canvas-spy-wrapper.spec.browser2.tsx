@@ -834,13 +834,13 @@ describe('Spy Wrapper Template Path Tests', () => {
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-expr/other-hi-element~~~2": Object {
           "name": "HiElement",
         },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-expr/other-hi-element~~~2:dbc": Object {
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-expr/other-hi-element~~~2:c0a": Object {
           "name": "not-jsx-element",
         },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-expr/other-hi-element~~~2:dbc/hi-element-fragment-child-1": Object {
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-expr/other-hi-element~~~2:c0a/hi-element-fragment-child-1": Object {
           "name": "div",
         },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-expr/other-hi-element~~~2:dbc/hi-element-fragment-child-2": Object {
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-expr/other-hi-element~~~2:c0a/hi-element-fragment-child-2": Object {
           "name": "div",
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-expr/other-hi-element~~~3": Object {
@@ -887,10 +887,10 @@ describe('Spy Wrapper Template Path Tests', () => {
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance": Object {
           "name": "div",
         },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-expr/other-hi-element~~~2:dbc/hi-element-fragment-child-1": Object {
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-expr/other-hi-element~~~2:c0a/hi-element-fragment-child-1": Object {
           "name": "div",
         },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-expr/other-hi-element~~~2:dbc/hi-element-fragment-child-2": Object {
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-expr/other-hi-element~~~2:c0a/hi-element-fragment-child-2": Object {
           "name": "div",
         },
         "storyboard/scene-2": Object {
@@ -943,13 +943,13 @@ describe('Spy Wrapper Template Path Tests', () => {
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-expr/other-hi-element~~~2": Object {
           "name": "HiElement",
         },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-expr/other-hi-element~~~2:dbc": Object {
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-expr/other-hi-element~~~2:c0a": Object {
           "name": "not-jsx-element",
         },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-expr/other-hi-element~~~2:dbc/hi-element-fragment-child-1": Object {
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-expr/other-hi-element~~~2:c0a/hi-element-fragment-child-1": Object {
           "name": "div",
         },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-expr/other-hi-element~~~2:dbc/hi-element-fragment-child-2": Object {
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-expr/other-hi-element~~~2:c0a/hi-element-fragment-child-2": Object {
           "name": "div",
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-expr/other-hi-element~~~3": Object {

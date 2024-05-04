@@ -5105,11 +5105,11 @@ export var App = props => {
                   ['React', 'View', JSX_CANVAS_LOOKUP_FUNCTION_NAME],
                   expect.objectContaining({}),
                   {
-                    cb4: jsxElement(
+                    '62c': jsxElement(
                       'View',
                       '',
                       jsxAttributesFromMap({
-                        'data-uid': jsExpressionValue('cb4', emptyComments, ''),
+                        'data-uid': jsExpressionValue('62c', emptyComments, ''),
                       }),
                       [
                         jsPropertyAccess(
@@ -6108,8 +6108,8 @@ export var App = props => {
                 JS_IDENTIFIER - 09c
           UNPARSED_CODE
           UTOPIA_JSX_COMPONENT - App
-            JSX_ELEMENT - MyComp - e13
-              JSX_ELEMENT - h1 - dff
+            JSX_ELEMENT - MyComp - bb3
+              JSX_ELEMENT - h1 - cc5
                 JSX_TEXT_BLOCK - 9e1"
         `)
 
@@ -6171,8 +6171,8 @@ export var App = props => {
                 JS_IDENTIFIER - 09c
           UNPARSED_CODE
           UTOPIA_JSX_COMPONENT - App
-            JSX_ELEMENT - MyComp - 26c
-              JSX_ELEMENT - div - 4cf"
+            JSX_ELEMENT - MyComp - 0b3
+              JSX_ELEMENT - div - b4c"
         `)
 
         const appComponent = success.topLevelElements.find(

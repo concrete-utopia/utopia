@@ -1594,6 +1594,7 @@ describe('Smart convert to flex centered layout', () => {
             width: 50,
             height: 50,
           }}
+          data-uid='9bd'
         />
         <div
           style={{
@@ -1604,6 +1605,7 @@ describe('Smart convert to flex centered layout', () => {
             width: 50,
             height: 50,
           }}
+          data-uid='1ff'
         />
         <div
           style={{
@@ -1614,6 +1616,7 @@ describe('Smart convert to flex centered layout', () => {
             width: 50,
             height: 50,
           }}
+          data-uid='0f3'
         />
       </div>
     </div>`),

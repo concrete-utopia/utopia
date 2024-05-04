@@ -19,7 +19,7 @@ describe('JSX parser', () => {
             JSX_FRAGMENT - ggg
               JSX_ELEMENT - div - bbb
                 JSX_TEXT_BLOCK - 3ed
-                JSX_FRAGMENT - 7fd
+                JSX_FRAGMENT - 670
                   JSX_ELEMENT - div - ccc
                       ATTRIBUTE_VALUE - 842
                       ATTRIBUTE_VALUE - 2a9

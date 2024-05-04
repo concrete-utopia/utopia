@@ -645,7 +645,7 @@ describe('The navigator component picker context menu', () => {
       'await-first-dom-report',
     )
     const emptySlot = editor.renderedDOM.getByTestId(
-      'toggle-render-prop-NavigatorItemTestId-synthetic_sb/5af/129_attribute',
+      'toggle-render-prop-NavigatorItemTestId-synthetic_sb/ebc/129_attribute',
     )
     await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
 
@@ -1156,11 +1156,12 @@ export var storyboard = (
     await mouseClickAtPoint(editor.renderedDOM.getByText('Column'), { x: 2, y: 2 })
 
     // the element inside the map has been changed to a `div`
-    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+    expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState()))
+      .toEqual(`import * as React from 'react'
 import { Scene, Storyboard, FlexRow } from 'utopia-api'
 
 export var storyboard = (
-  <Storyboard data-uid='sb'>
+  <Storyboard>
     <Scene
       id='playground-scene'
       commentId='playground-scene'
@@ -1172,12 +1173,11 @@ export var storyboard = (
         top: 128,
       }}
       data-label='Playground'
-      data-uid='scene'
     >
-      <FlexRow data-uid='flexrow'>
+      <FlexRow>
         {
           // @utopia/uid=conditional
-          true ? <Column data-uid='new' /> : null
+          true ? <Column /> : null
         }
       </FlexRow>
     </Scene>
@@ -1186,7 +1186,6 @@ export var storyboard = (
 export const Column = () => (
   <div
     style={{ display: 'flex', flexDirection: 'column' }}
-    data-uid='45a'
   />
 )
 `)

@@ -180,9 +180,9 @@ describe('Parsing and printing code with comments', () => {
               /* Comment at start of JSX expression */
               [].length ===
               0 /* Comment inside JSX expression */ ? (
-                <div data-uid='4cf' />
+                <div data-uid='c10' />
               ) : (
-                <div data-uid='b93' />
+                <div data-uid='b59' />
               ) /* Comment at end of JSX expression */
             }
             {/* Comment inside an empty JSX expression */}
