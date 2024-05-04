@@ -315,6 +315,9 @@ function allElementPathsForPart(path: ElementPathPart): Array<ElementPathPart> {
   return paths
 }
 
+/**
+ * @deprecated use EP.allPathsInsideComponent instead! Reason: this includes the ElementPath of the containing components instance, which is probably not what you want
+ */
 export function allPathsForLastPart(path: ElementPath | null): Array<ElementPath> {
   if (path == null || isEmptyPath(path)) {
     return []
@@ -324,6 +327,18 @@ export function allPathsForLastPart(path: ElementPath | null): Array<ElementPath
     const toElementPath = (elementPathPart: ElementPathPart) =>
       elementPath([...prefix, elementPathPart])
     return [elementPath(prefix), ...allElementPathsForPart(lastPart).map(toElementPath)]
+  }
+}
+
+export function allPathsInsideComponent(path: ElementPath | null): Array<ElementPath> {
+  if (path == null || isEmptyPath(path)) {
+    return []
+  } else {
+    const prefix = dropLast(path.parts)
+    const lastPart = last(path.parts)!
+    const toElementPath = (elementPathPart: ElementPathPart) =>
+      elementPath([...prefix, elementPathPart])
+    return allElementPathsForPart(lastPart).map(toElementPath).reverse()
   }
 }
 

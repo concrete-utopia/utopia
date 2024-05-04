@@ -24,10 +24,7 @@ export const CodeElementSection = React.memo(({ paths }: { paths: ElementPath[] 
     Substores.metadata,
     (store) => {
       return paths.every((path) => {
-        return (
-          MetadataUtils.isExpressionOtherJavascript(path, store.editor.jsxMetadata) ||
-          MetadataUtils.isJSXMapExpression(path, store.editor.jsxMetadata)
-        )
+        return MetadataUtils.isExpressionOtherJavascript(path, store.editor.jsxMetadata)
       })
     },
     'CodeElementSection isCodeElement',

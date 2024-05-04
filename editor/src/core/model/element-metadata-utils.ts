@@ -194,7 +194,7 @@ export const MetadataUtils = {
   },
   findElementByElementPath(
     elementMap: ElementInstanceMetadataMap,
-    path: ElementPath | null,
+    path: ElementPath | null | undefined,
   ): ElementInstanceMetadata | null {
     if (path == null) {
       return null
