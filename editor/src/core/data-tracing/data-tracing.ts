@@ -1,17 +1,17 @@
 import type { ProjectContentTreeRoot } from '../../components/assets'
+import { withUnderlyingTarget } from '../../components/editor/store/editor-state'
+import * as TPP from '../../components/template-property-path'
+import invariant from '../../third-party/remix/invariant'
 import { MetadataUtils } from '../model/element-metadata-utils'
+import { findContainingComponentForPath } from '../model/element-template-utils'
+import { mapFirstApplicable } from '../shared/array-utils'
+import type { Either } from '../shared/either'
+import { isLeft, isRight, left, mapEither, maybeEitherToMaybe, right } from '../shared/either'
+import * as EP from '../shared/element-path'
 import type {
-  IdentifierOrAccess,
-  JSArbitraryStatement,
   JSAssignment,
-  JSAssignmentStatement,
-  JSElementAccess,
   JSExpression,
-  JSExpressionFunctionCall,
-  JSExpressionOtherJavaScript,
   JSIdentifier,
-  JSOpaqueArbitraryStatement,
-  JSPropertyAccess,
   Param,
   UtopiaJSXComponent,
 } from '../shared/element-template'
@@ -21,29 +21,11 @@ import {
   jsIdentifier,
   type ElementInstanceMetadataMap,
 } from '../shared/element-template'
+import { getJSXAttributesAtPath, jsxSimpleAttributeToValue } from '../shared/jsx-attribute-utils'
 import { forceNotNull, optionalMap } from '../shared/optional-utils'
-import type {
-  ElementPath,
-  ElementPropertyPath,
-  PropertyPath,
-  PropertyPathPart,
-} from '../shared/project-file-types'
-import type { Either } from '../shared/either'
-import { isLeft, isRight, left, mapEither, maybeEitherToMaybe, right } from '../shared/either'
-import * as EP from '../shared/element-path'
+import type { ElementPath, ElementPropertyPath, PropertyPath } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
-import invariant from '../../third-party/remix/invariant'
-import {
-  getJSExpressionAtPathParts,
-  getJSXAttributesAtPath,
-  jsxSimpleAttributeToValue,
-  setJSXValueInAttributeAtPathParts,
-} from '../shared/jsx-attribute-utils'
-import { withUnderlyingTarget } from '../../components/editor/store/editor-state'
-import { findContainingComponentForPath } from '../model/element-template-utils'
-import * as TPP from '../../components/template-property-path'
 import { assertNever } from '../shared/utils'
-import { mapFirstApplicable } from '../shared/array-utils'
 
 export type DataPath = Array<string>
 
