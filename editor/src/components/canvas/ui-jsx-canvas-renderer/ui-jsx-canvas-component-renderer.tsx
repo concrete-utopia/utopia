@@ -86,7 +86,7 @@ export function createComponentRendererComponent(params: {
           return (
             (instancePath != null &&
               (EP.pathsEqual(er, instancePath) || EP.isParentComponentOf(instancePath, er))) ||
-            isElementInChildrenPropTree(EP.toString(er), realPassedProps)
+            isElementInChildrenOrPropsTree(EP.toString(er), realPassedProps)
           )
         })
       )
@@ -349,7 +349,7 @@ function isRenderProp(prop: any): prop is { [UTOPIA_PATH_KEY]: string; props: Ma
 // LIMITATION: this function only checks props.children, so if the given element is rendered, but from a
 // different prop, isElementInChildrenPropTree will return false
 // If we will support renderProps, this should be updated to check other props which receive react elements
-function isElementInChildrenPropTree(elementPath: string, props: any): boolean {
+function isElementInChildrenOrPropsTree(elementPath: string, props: any): boolean {
   const childrenArr = React.Children.toArray(props.children).filter(React.isValidElement)
   const elementIsChild = childrenArr.some((c) => (c.props as any)[UTOPIA_PATH_KEY] === elementPath)
   if (elementIsChild) {
@@ -363,7 +363,7 @@ function isElementInChildrenPropTree(elementPath: string, props: any): boolean {
   }
 
   return (
-    childrenArr.some((c) => isElementInChildrenPropTree(elementPath, c.props)) ||
-    elementsInProps.some((p) => isElementInChildrenPropTree(elementPath, p.props))
+    childrenArr.some((c) => isElementInChildrenOrPropsTree(elementPath, c.props)) ||
+    elementsInProps.some((p) => isElementInChildrenOrPropsTree(elementPath, p.props))
   )
 }
