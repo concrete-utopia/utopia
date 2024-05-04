@@ -45,7 +45,12 @@ import {
   toggleStylePropPath,
   toggleStylePropPaths,
 } from './inspector/common/css-utils'
-import { type ShowComponentPickerContextMenuCallback } from './navigator/navigator-item/component-picker-context-menu'
+import {
+  type ShowComponentPickerContextMenu,
+  type InsertionTarget,
+  type ShowComponentPickerContextMenuCallback,
+  renderPropTarget,
+} from './navigator/navigator-item/component-picker-context-menu'
 
 export interface ContextMenuItem<T> {
   name: string | React.ReactNode
@@ -344,14 +349,39 @@ export const insert: ContextMenuItem<CanvasData> = {
   shortcut: 'A',
   enabled: true,
   action: (data, _dispatch, _coord, event) => {
-    // FIXME Render prop support
-    data.showComponentPicker(data.selectedViews[0], 'insert-as-child')(event)
+    data.showComponentPicker(data.selectedViews[0], EditorActions.insertAsChildTarget())(event)
   },
 }
 
+export function showReplaceComponentPicker(
+  targetElement: ElementPath,
+  jsxMetadata: ElementInstanceMetadataMap,
+  showComponentPicker: ShowComponentPickerContextMenuCallback,
+): ShowComponentPickerContextMenu {
+  const element = MetadataUtils.findElementByElementPath(jsxMetadata, targetElement)
+  const prop = element?.assignedToProp
+  const target = prop == null ? targetElement : EP.parentPath(targetElement)
+  const insertionTarget: InsertionTarget =
+    prop == null ? EditorActions.replaceTarget : renderPropTarget(prop)
+  return showComponentPicker(target, insertionTarget)
+}
+
+export function showSwapComponentPicker(
+  targetElement: ElementPath,
+  jsxMetadata: ElementInstanceMetadataMap,
+  showComponentPicker: ShowComponentPickerContextMenuCallback,
+): ShowComponentPickerContextMenu {
+  const element = MetadataUtils.findElementByElementPath(jsxMetadata, targetElement)
+  const prop = element?.assignedToProp
+  const target = prop == null ? targetElement : EP.parentPath(targetElement)
+  const insertionTarget: InsertionTarget =
+    prop == null ? EditorActions.replaceKeepChildrenAndStyleTarget : renderPropTarget(prop)
+  return showComponentPicker(target, insertionTarget)
+}
+
 export const convert: ContextMenuItem<CanvasData> = {
-  name: 'Swap Element With…',
-  shortcut: 'S',
+  name: 'Replace This…',
+  shortcut: '',
   enabled: (data) => {
     return (
       data.selectedViews.length > 0 &&
@@ -364,8 +394,34 @@ export const convert: ContextMenuItem<CanvasData> = {
     )
   },
   action: (data, _dispatch, _coord, event) => {
-    // FIXME Render prop support
-    data.showComponentPicker(data.selectedViews[0], 'replace-target')(event)
+    showSwapComponentPicker(
+      data.selectedViews[0],
+      data.jsxMetadata,
+      data.showComponentPicker,
+    )(event)
+  },
+}
+
+export const replace: ContextMenuItem<CanvasData> = {
+  name: 'Replace Everything…',
+  shortcut: '',
+  enabled: (data) => {
+    return (
+      data.selectedViews.length > 0 &&
+      data.selectedViews.every((path) => {
+        const element = MetadataUtils.findElementByElementPath(data.jsxMetadata, path)
+        return (
+          element != null && isRight(element.element) && isJSXElementLike(element.element.value)
+        )
+      })
+    )
+  },
+  action: (data, _dispatch, _coord, event) => {
+    showReplaceComponentPicker(
+      data.selectedViews[0],
+      data.jsxMetadata,
+      data.showComponentPicker,
+    )(event)
   },
 }
 

@@ -45,6 +45,7 @@ exports[`UiJsxCanvas #747 - DOM object constructor cannot be called as a functio
 exports[`UiJsxCanvas #747 - DOM object constructor cannot be called as a function 2`] = `
 Object {
   "sb/scene": Object {
+    "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -217,6 +218,7 @@ Object {
     "textContent": null,
   },
   "sb/scene/app": Object {
+    "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},

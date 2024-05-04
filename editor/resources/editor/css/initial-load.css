@@ -37,8 +37,8 @@
   font-style: italic;
 }
 
-::-webkit-scrollbar {
-  display: none;
+* {
+  scrollbar-width: none;
 }
 
 body {

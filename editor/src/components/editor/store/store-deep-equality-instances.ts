@@ -258,6 +258,7 @@ import {
   combine14EqualityCalls,
   combine11EqualityCalls,
   combine15EqualityCalls,
+  combine16EqualityCalls,
 } from '../../../utils/deep-equality'
 import {
   ElementPathArrayKeepDeepEquality,
@@ -698,11 +699,13 @@ export const DataReferenceNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<D
   )
 
 export const RenderPropNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<RenderPropNavigatorEntry> =
-  combine2EqualityCalls(
+  combine3EqualityCalls(
     (entry) => entry.elementPath,
     ElementPathKeepDeepEquality,
     (entry) => entry.propName,
     StringKeepDeepEquality,
+    (entry) => entry.childPath,
+    nullableDeepEquality(ElementPathKeepDeepEquality),
     renderPropNavigatorEntry,
   )
 
@@ -2056,7 +2059,7 @@ export const EarlyReturnKeepDeepEquality: KeepDeepEqualityCall<
 }
 
 export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<ElementInstanceMetadata> =
-  combine15EqualityCalls(
+  combine16EqualityCalls(
     (metadata) => metadata.elementPath,
     ElementPathKeepDeepEquality,
     (metadata) => metadata.element,
@@ -2087,6 +2090,8 @@ export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<Eleme
     nullableDeepEquality(StringKeepDeepEquality),
     (metadata) => metadata.earlyReturn,
     nullableDeepEquality(EarlyReturnKeepDeepEquality),
+    (metadata) => metadata.assignedToProp,
+    nullableDeepEquality(StringKeepDeepEquality),
     elementInstanceMetadata,
   )
 

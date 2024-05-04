@@ -2580,6 +2580,7 @@ export interface ElementInstanceMetadata {
   conditionValue: ConditionValue
   textContent: string | null
   earlyReturn: EarlyReturn | null
+  assignedToProp: string | null
 }
 
 export function elementInstanceMetadata(
@@ -2598,6 +2599,7 @@ export function elementInstanceMetadata(
   conditionValue: ConditionValue,
   textContent: string | null,
   earlyReturn: EarlyReturnResult | EarlyReturnVoid | null,
+  assignedToProp: string | null,
 ): ElementInstanceMetadata {
   return {
     elementPath: elementPath,
@@ -2615,6 +2617,7 @@ export function elementInstanceMetadata(
     conditionValue: conditionValue,
     textContent: textContent,
     earlyReturn: earlyReturn,
+    assignedToProp: assignedToProp,
   }
 }
 
@@ -2824,6 +2827,11 @@ export function walkElement(
         const path = EP.appendToElementPath(parentPath, uidAttr.value)
         forEach(element, path, depth)
         fastForEach(element.children, (child) => walkElement(child, path, depth + 1, forEach))
+        element.props.forEach((prop) => {
+          if (prop.type === 'JSX_ATTRIBUTES_ENTRY') {
+            walkElement(prop.value, path, depth + 1, forEach)
+          }
+        })
       }
       break
     case 'JSX_FRAGMENT':

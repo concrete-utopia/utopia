@@ -83,6 +83,7 @@ import { ConstraintsSection } from './constraints-section'
 import { usePermissions } from '../editor/store/permissions'
 import { DisableControlsInSubtree } from '../../uuiui/utilities/disable-subtree'
 import { getInspectorPreferencesForTargets } from '../../core/property-controls/property-controls-utils'
+import { ListSection } from './sections/layout-section/list-section'
 
 export interface ElementPathElement {
   name?: string
@@ -405,6 +406,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
               )}
               <CodeElementSection paths={selectedViews} />
               <ConditionalSection paths={selectedViews} />
+              <ListSection paths={selectedViews} />
               {unless(
                 hideAllSections,
                 <>

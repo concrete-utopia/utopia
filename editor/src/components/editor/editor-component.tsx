@@ -437,8 +437,6 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
             EditorActions.setRightMenuTab(RightMenuTab.Comments),
             EditorActions.setCodeEditorVisibility(false),
           )
-        } else {
-          actions.push(EditorActions.setCodeEditorVisibility(true))
         }
         dispatch(actions)
       })

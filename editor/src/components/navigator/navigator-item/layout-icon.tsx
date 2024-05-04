@@ -128,7 +128,7 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
             type='warningtriangle'
             tooltipText={navigatorEntry.message}
             testId={iconTestId}
-            color={'main'}
+            color={color}
             width={12}
             height={12}
           />
@@ -144,6 +144,17 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
           >
             <Icn
               {...defaults}
+              color={
+                defaults.color == 'white'
+                  ? 'white'
+                  : defaults.color == 'component'
+                  ? 'component'
+                  : defaults.type === 'flex-row' ||
+                    defaults.type === 'flex-column' ||
+                    defaults.type === 'grid'
+                  ? 'primary'
+                  : defaults.color
+              }
               category='navigator-element'
               width={12}
               height={12}
@@ -181,7 +192,7 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
             type='warningtriangle'
             tooltipText={warningText}
             testId={iconTestId}
-            color={'main'}
+            color={color}
             width={12}
             height={12}
           />

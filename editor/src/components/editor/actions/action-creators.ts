@@ -232,6 +232,10 @@ import type {
   AddCollapsedViews,
   ReplaceMappedElement,
   UpdateMapExpression,
+  InsertionBehaviour,
+  ReplaceTarget,
+  InsertAsChildTarget,
+  ReplaceKeepChildrenAndStyleTarget,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -268,11 +272,19 @@ export function clearSelection(): EditorAction {
   }
 }
 
+export const replaceTarget: ReplaceTarget = { type: 'replace-target' }
+export const replaceKeepChildrenAndStyleTarget: ReplaceKeepChildrenAndStyleTarget = {
+  type: 'replace-target-keep-children-and-style',
+}
+export function insertAsChildTarget(indexPosition?: IndexPosition): InsertAsChildTarget {
+  return { type: 'insert-as-child', indexPosition: indexPosition }
+}
+
 export function insertJSXElement(
   element: JSXElement,
   target: ElementPath | null,
   importsToAdd: Imports,
-  insertionBehaviour: 'insert-as-child' | 'replace-target',
+  insertionBehaviour: InsertionBehaviour,
 ): InsertJSXElement {
   return {
     action: 'INSERT_JSX_ELEMENT',
@@ -1729,7 +1741,10 @@ export function updateConditionalExpression(
   }
 }
 
-export function updateMapExpression(target: ElementPath, expression: string): UpdateMapExpression {
+export function updateMapExpression(
+  target: ElementPath,
+  expression: JSExpression,
+): UpdateMapExpression {
   return {
     action: 'UPDATE_MAP_EXPRESSION',
     target: target,

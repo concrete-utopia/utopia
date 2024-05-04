@@ -1,23 +1,29 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
-import React from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { Icn, type IcnProps } from '../../../uuiui'
 import { dark } from '../../../uuiui/styles/theme/dark'
 import type { JSXElementChild } from '../../../core/shared/element-template'
 import type { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { type ComponentElementToInsert } from '../../custom-code/code-file'
-import type { InsertMenuItemGroup } from '../../canvas/ui/floating-insert-menu'
+import type {
+  InsertMenuItem,
+  InsertMenuItemGroup,
+  InsertMenuItemValue,
+} from '../../canvas/ui/floating-insert-menu'
 import { UIGridRow } from '../../../components/inspector/widgets/ui-grid-row'
 import { FlexRow, type Icon } from 'utopia-api'
 import { assertNever } from '../../../core/shared/utils'
 import { insertableComponent } from '../../shared/project-components'
 import type { StylePropOption, InsertableComponent } from '../../shared/project-components'
 import type { Size } from '../../../core/shared/math-utils'
+import { dataPasteHandler } from '../../../utils/paste-handler'
+import { sortBy } from '../../../core/shared/array-utils'
 
 export interface ComponentPickerProps {
   allComponents: Array<InsertMenuItemGroup>
-  onItemClick: (elementToInsert: InsertableComponent) => React.MouseEventHandler
+  onItemClick: (elementToInsert: InsertableComponent) => React.UIEventHandler
 }
 
 export interface ElementToInsert {
@@ -59,20 +65,87 @@ export function componentPickerOptionTestId(componentName: string, variant?: str
 }
 
 export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
+  const { onItemClick } = props
+  const [selectedComponentKey, setSelectedComponentKey] = React.useState<string | null>(null)
   const [filter, setFilter] = React.useState<string>('')
+  const menuRef = React.useRef<HTMLDivElement | null>(null)
 
-  const allComponentsToShow: InsertMenuItemGroup[] = []
+  const flatComponentsToShowUnsorted = useMemo(() => {
+    return props.allComponents
+      .flatMap((c) => c.options)
+      .filter((v) => v.label.toLocaleLowerCase().includes(filter.toLocaleLowerCase().trim()))
+  }, [props.allComponents, filter])
 
-  props.allComponents.forEach((c) => {
-    allComponentsToShow.push({
-      ...c,
-      options: c.options.filter((o) =>
-        o.label.toLocaleLowerCase().includes(filter.toLocaleLowerCase().trim()),
+  const flatComponentsToShow = useMemo(
+    () =>
+      sortBy(flatComponentsToShowUnsorted, (a, b) =>
+        a.label.toLocaleLowerCase().trim().localeCompare(b.label.toLocaleLowerCase().trim()),
       ),
-    })
-  })
+    [flatComponentsToShowUnsorted],
+  )
 
-  const componentsToShow = allComponentsToShow
+  const highlightedComponentKey = useMemo(() => {
+    const firstOptionKey =
+      flatComponentsToShow.length > 0 ? flatComponentsToShow[0].value.key : null
+    if (selectedComponentKey == null) {
+      return firstOptionKey
+    }
+    // check if selectedComponentKey is still in the list
+    const found = flatComponentsToShow.some((c) => c.value.key === selectedComponentKey)
+    return found ? selectedComponentKey : firstOptionKey
+  }, [flatComponentsToShow, selectedComponentKey])
+
+  const onItemHover = useCallback(
+    (elementToInsert: InsertMenuItemValue) => {
+      return () => {
+        setSelectedComponentKey(elementToInsert.key)
+      }
+    },
+    [setSelectedComponentKey],
+  )
+
+  const onKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'ArrowDown') {
+        const currentIndex = flatComponentsToShow.findIndex(
+          (c) => c.value.key === highlightedComponentKey,
+        )
+        if (currentIndex >= 0 && currentIndex < flatComponentsToShow.length - 1) {
+          const newKey = flatComponentsToShow[currentIndex + 1].value.key
+          setSelectedComponentKey(newKey)
+          const selectedComponent = menuRef.current?.querySelector(`[data-key="${newKey}"]`)
+          if (selectedComponent != null) {
+            selectedComponent.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+          }
+        }
+      } else if (e.key === 'ArrowUp') {
+        const currentIndex = flatComponentsToShow.findIndex(
+          (c) => c.value.key === highlightedComponentKey,
+        )
+        if (currentIndex > 0) {
+          const newKey = flatComponentsToShow[currentIndex - 1].value.key
+          setSelectedComponentKey(newKey)
+          const selectedComponent = menuRef.current?.querySelector(`[data-key="${newKey}"]`)
+          if (selectedComponent != null) {
+            selectedComponent.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+          }
+        }
+      } else if (e.key === 'Enter') {
+        const selectedComponent = flatComponentsToShow.find(
+          (c) => c.value.key === highlightedComponentKey,
+        )
+        if (selectedComponent != null) {
+          onItemClick(selectedComponent.value)(e)
+        }
+      } else {
+        // we don't want to prevent default for other keys
+        return
+      }
+      e.preventDefault()
+      e.stopPropagation()
+    },
+    [flatComponentsToShow, highlightedComponentKey, onItemClick],
+  )
 
   return (
     <div
@@ -84,13 +157,18 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
         height: '100%',
         padding: 0,
         color: dark.fg3.value,
+        colorScheme: 'dark',
         borderRadius: 10,
       }}
+      onKeyDown={onKeyDown}
+      ref={menuRef}
     >
-      <ComponentPickerTopSection onFilterChange={setFilter} />
+      <ComponentPickerTopSection onFilterChange={setFilter} onKeyDown={onKeyDown} />
       <ComponentPickerComponentSection
-        components={componentsToShow}
+        components={flatComponentsToShow}
         onItemClick={props.onItemClick}
+        onItemHover={onItemHover}
+        currentlySelectedKey={highlightedComponentKey}
       />
     </div>
   )
@@ -98,10 +176,11 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
 
 interface ComponentPickerTopSectionProps {
   onFilterChange: (filter: string) => void
+  onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void
 }
 
 const ComponentPickerTopSection = React.memo((props: ComponentPickerTopSectionProps) => {
-  const { onFilterChange } = props
+  const { onFilterChange, onKeyDown } = props
 
   return (
     <div
@@ -111,17 +190,18 @@ const ComponentPickerTopSection = React.memo((props: ComponentPickerTopSectionPr
         flexDirection: 'column',
       }}
     >
-      <FilterBar onFilterChange={onFilterChange} />
+      <FilterBar onFilterChange={onFilterChange} onKeyDown={onKeyDown} />
     </div>
   )
 })
 
 interface FilterBarProps {
   onFilterChange: (filter: string) => void
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void
 }
 
 const FilterBar = React.memo((props: FilterBarProps) => {
-  const { onFilterChange } = props
+  const { onFilterChange, onKeyDown } = props
 
   const [filter, setFilterState] = React.useState<string>('')
   const setFilter = React.useCallback(
@@ -135,14 +215,17 @@ const FilterBar = React.memo((props: FilterBarProps) => {
   const handleFilterKeydown = React.useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === 'Enter') {
-        ;(e.target as HTMLInputElement).blur() // Not sure why I need the cast here
+        if (onKeyDown != null) {
+          onKeyDown(e)
+        }
       } else if (e.key === 'Escape') {
         setFilter('')
-        ;(e.target as HTMLInputElement).blur()
+      } else if (onKeyDown != null) {
+        onKeyDown(e)
       }
       e.stopPropagation()
     },
-    [setFilter],
+    [setFilter, onKeyDown],
   )
   const handleFilterChange = React.useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -176,28 +259,77 @@ const FilterBar = React.memo((props: FilterBarProps) => {
       onChange={handleFilterChange}
       value={filter}
       data-testId={componentPickerFilterInputTestId}
+      {...dataPasteHandler(true)}
     />
   )
 })
 
 interface ComponentPickerComponentSectionProps {
-  components: Array<InsertMenuItemGroup>
+  components: Array<InsertMenuItem>
   onItemClick: (elementToInsert: InsertableComponent) => React.MouseEventHandler
+  onItemHover: (elementToInsert: InsertMenuItemValue) => React.MouseEventHandler
+  currentlySelectedKey: string | null
 }
 
 const ComponentPickerComponentSection = React.memo(
   (props: ComponentPickerComponentSectionProps) => {
-    const { components, onItemClick } = props
+    const { components, onItemClick, onItemHover, currentlySelectedKey } = props
     return (
-      <div style={{ maxHeight: 250, overflowY: 'scroll' }}>
-        {components.map((comp) => {
+      <div style={{ maxHeight: 250, overflowY: 'scroll', scrollbarWidth: 'auto' }}>
+        {components.map((component) => {
+          const selectedStyle =
+            component.value.key === currentlySelectedKey
+              ? {
+                  background: '#007aff',
+                  color: 'white',
+                }
+              : {}
+
           return (
-            <ComponentPickerOption
-              key={`${comp.label}-label`}
-              component={comp}
-              onItemClick={onItemClick}
-            />
+            <FlexRow
+              css={{}}
+              key={component.value.key}
+              style={{
+                marginLeft: 8,
+                marginRight: 8,
+                borderRadius: 4,
+                // indentation!
+                paddingLeft: 8,
+                color: '#EEE',
+                ...selectedStyle,
+              }}
+              onClick={onItemClick(component.value)}
+              onMouseOver={onItemHover(component.value)}
+              data-key={component.value.key}
+            >
+              <UIGridRow
+                variant='|--32px--|<--------auto-------->'
+                padded={false}
+                // required to overwrite minHeight on the bloody thing
+                style={{ minHeight: 29 }}
+                css={{
+                  height: 27,
+                }}
+              >
+                <Icn
+                  {...iconPropsForIcon(component.value.icon ?? 'regular')}
+                  width={12}
+                  height={12}
+                />
+                <label>{component.label}</label>
+              </UIGridRow>
+            </FlexRow>
           )
+
+          // return (
+          //   <ComponentPickerOption
+          //     key={`${comp.label}-label`}
+          //     component={comp}
+          //     onItemClick={onItemClick}
+          //     onItemHover={onItemHover}
+          //     currentlySelectedKey={currentlySelectedKey}
+          //   />
+          // )
         })}
       </div>
     )
@@ -231,50 +363,51 @@ function iconPropsForIcon(icon: Icon): IcnProps {
 }
 
 interface ComponentPickerOptionProps {
-  component: InsertMenuItemGroup
+  component: InsertMenuItem
   onItemClick: (elementToInsert: InsertableComponent) => React.MouseEventHandler
+  onItemHover: (elementToInsert: InsertMenuItemValue) => React.MouseEventHandler
+  currentlySelectedKey: string | null
 }
 
 const ComponentPickerOption = React.memo((props: ComponentPickerOptionProps) => {
-  const { component, onItemClick } = props
+  const { component, onItemClick, onItemHover, currentlySelectedKey } = props
 
-  const variants = component.options
-
-  const name = component.label
+  const selectedStyle =
+    component.value.key === currentlySelectedKey
+      ? {
+          background: '#007aff',
+          color: 'white',
+        }
+      : {}
 
   return (
-    <div>
-      {variants.map((v) => (
-        <FlexRow
-          key={`${name}-${v.label}`}
-          css={{
-            marginLeft: 8,
-            marginRight: 8,
-            borderRadius: 4,
-            // indentation!
-            paddingLeft: 8,
-            color: '#EEE',
-            '&:hover': {
-              background: '#007aff',
-              color: 'white',
-            },
-          }}
-          onClick={onItemClick(v.value)}
-        >
-          <UIGridRow
-            variant='|--32px--|<--------auto-------->'
-            padded={false}
-            // required to overwrite minHeight on the bloody thing
-            style={{ minHeight: 29 }}
-            css={{
-              height: 27,
-            }}
-          >
-            <Icn {...iconPropsForIcon(v.value.icon ?? 'regular')} width={12} height={12} />
-            <label>{v.label}</label>
-          </UIGridRow>
-        </FlexRow>
-      ))}
-    </div>
+    <FlexRow
+      css={{}}
+      style={{
+        marginLeft: 8,
+        marginRight: 8,
+        borderRadius: 4,
+        // indentation!
+        paddingLeft: 8,
+        color: '#EEE',
+        ...selectedStyle,
+      }}
+      onClick={onItemClick(component.value)}
+      onMouseOver={onItemHover(component.value)}
+      data-key={component.value.key}
+    >
+      <UIGridRow
+        variant='|--32px--|<--------auto-------->'
+        padded={false}
+        // required to overwrite minHeight on the bloody thing
+        style={{ minHeight: 29 }}
+        css={{
+          height: 27,
+        }}
+      >
+        <Icn {...iconPropsForIcon(component.value.icon ?? 'regular')} width={12} height={12} />
+        <label>{component.label}</label>
+      </UIGridRow>
+    </FlexRow>
   )
 })

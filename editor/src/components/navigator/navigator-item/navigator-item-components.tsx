@@ -18,9 +18,20 @@ import {
 } from '../../editor/store/editor-state'
 import type { SelectionLocked } from '../../canvas/canvas-types'
 import type { InsertionTarget } from './component-picker-context-menu'
-import { useCreateCallbackToShowComponentPicker } from './component-picker-context-menu'
+import {
+  conditionalTarget,
+  renderPropTarget,
+  useCreateCallbackToShowComponentPicker,
+} from './component-picker-context-menu'
 import type { ConditionalCase } from '../../../core/model/conditionals'
 import { useConditionalCaseCorrespondingToBranchPath } from '../../../core/model/conditionals'
+import {
+  getJSXElementNameAsString,
+  isIntrinsicElement,
+  isIntrinsicHTMLElement,
+} from '../../../core/shared/element-template'
+import { getRegisteredComponent } from '../../../core/property-controls/property-controls-utils'
+import { intrinsicHTMLElementNamesThatSupportChildren } from '../../../core/shared/dom-utils'
 
 export const NavigatorHintCircleDiameter = 8
 
@@ -194,6 +205,51 @@ export const VisibilityIndicator: React.FunctionComponent<
   )
 })
 
+const useSupportsChildren = (target: ElementPath): boolean => {
+  const targetElement = useEditorState(
+    Substores.metadata,
+    (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, target),
+    'useSupportsChildren targetElement',
+  )
+
+  return useEditorState(
+    Substores.restOfEditor,
+    (store) => {
+      const targetJSXElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(targetElement)
+      if (targetJSXElement == null) {
+        // this should not happen, erring on the side of true
+        return true
+      }
+      if (isIntrinsicHTMLElement(targetJSXElement.name)) {
+        // when it is an intrinsic html element, we check if it supports children from our list
+        return intrinsicHTMLElementNamesThatSupportChildren.includes(
+          targetJSXElement.name.baseVariable,
+        )
+      }
+
+      const elementImportInfo = targetElement?.importInfo
+      if (elementImportInfo == null) {
+        // erring on the side of true
+        return true
+      }
+
+      const targetName = getJSXElementNameAsString(targetJSXElement.name)
+      const registeredComponent = getRegisteredComponent(
+        targetName,
+        elementImportInfo.filePath,
+        store.editor.propertyControlsInfo,
+      )
+      if (registeredComponent == null) {
+        // when there is no component annotation default is supporting children
+        return true
+      }
+
+      return registeredComponent.supportsChildren
+    },
+    'useSupportsChildren supportsChildren',
+  )
+}
+
 interface AddChildButtonProps {
   target: ElementPath
   iconColor: IcnProps['color']
@@ -205,7 +261,15 @@ export function addChildButtonTestId(target: ElementPath): string {
 
 const AddChildButton = React.memo((props: AddChildButtonProps) => {
   const { target, iconColor } = props
-  const onClick = useCreateCallbackToShowComponentPicker()(target, 'insert-as-child')
+  const supportsChildren = useSupportsChildren(target)
+  const onClick = useCreateCallbackToShowComponentPicker()(
+    target,
+    EditorActions.insertAsChildTarget(),
+  )
+
+  if (!supportsChildren) {
+    return null
+  }
 
   return (
     <Button
@@ -227,8 +291,8 @@ const AddChildButton = React.memo((props: AddChildButtonProps) => {
   )
 })
 
-export const ReplaceElementButtonTestId = (path: ElementPath) =>
-  `replace-element-button-${EP.toString(path)}`
+export const ReplaceElementButtonTestId = (path: ElementPath, prop: string | null) =>
+  `replace-element-button-${EP.toString(path)}${prop == null ? '' : `-${prop}`}`
 
 interface ReplaceElementButtonProps {
   target: ElementPath
@@ -247,18 +311,18 @@ const ReplaceElementButton = React.memo((props: ReplaceElementButtonProps) => {
     if (prop != null) {
       return {
         target: EP.parentPath(target),
-        insertionTarget: { prop: prop },
+        insertionTarget: renderPropTarget(prop),
       }
     }
     if (conditionalCase != null) {
       return {
         target: EP.parentPath(target),
-        insertionTarget: conditionalCase,
+        insertionTarget: conditionalTarget(conditionalCase),
       }
     }
     return {
       target: target,
-      insertionTarget: 'replace-target',
+      insertionTarget: EditorActions.replaceTarget,
     }
   })()
 
@@ -266,7 +330,7 @@ const ReplaceElementButton = React.memo((props: ReplaceElementButtonProps) => {
 
   return (
     <Button
-      data-testid={ReplaceElementButtonTestId(props.target)}
+      data-testid={ReplaceElementButtonTestId(target, prop)}
       onClick={onClick}
       style={{
         height: 12,
