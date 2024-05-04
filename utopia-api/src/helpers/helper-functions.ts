@@ -51,8 +51,8 @@ export const EmphasisOptions = ['subdued', 'regular', 'emphasized'] as const
 export type Emphasis = (typeof EmphasisOptions)[number]
 
 export const IconOptions = [
-  'flex-column',
-  'flex-row',
+  'column',
+  'row',
   'regular',
   'headline',
   'dashedframe',

@@ -110,10 +110,16 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
         style: { opacity: 'var(--iconOpacity)' },
       }
       if (props.override != null && props.override !== 'regular') {
+        const type =
+          props.override === 'column'
+            ? 'flex-column'
+            : props.override === 'row'
+            ? 'flex-row'
+            : props.override
         return (
           <Icn
             category='navigator-element'
-            type={props.override}
+            type={type}
             width={12}
             height={12}
             testId={iconTestId}
