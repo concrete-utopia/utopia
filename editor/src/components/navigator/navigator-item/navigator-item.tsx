@@ -79,6 +79,7 @@ import { toVSCodeExtensionMessage } from 'utopia-vscode-common'
 import type { Emphasis, Icon } from 'utopia-api'
 import { contextMenu } from 'react-contexify'
 import { DataReferenceCartoucheControl } from '../../inspector/sections/component-section/data-reference-cartouche'
+import { MapListSourceCartouche } from '../../inspector/sections/layout-section/list-source-cartouche'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -1233,6 +1234,7 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         inputVisible={EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath)}
         remixItemType={props.remixItemType}
       />
+      <MapListSourceCartouche target={props.navigatorEntry.elementPath} openOn='double-click' />
       <MapCounter navigatorEntry={props.navigatorEntry} dispatch={props.dispatch} />
       <ComponentPreview
         key={`preview-${props.label}`}
