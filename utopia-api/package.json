@@ -1,6 +1,6 @@
 {
   "name": "utopia-api",
-  "version": "0.4.4",
+  "version": "0.5.0",
   "description": "Utopia API",
   "main": "src/index.ts",
   "module": "dist/index.js",
@@ -21,8 +21,7 @@
     "test": "jest",
     "test-watch": "jest --watch",
     "build": "tsc",
-    "watch": "tsc --watch",
-    "preinstall": "npx only-allow pnpm"
+    "watch": "tsc --watch"
   },
   "repository": {
     "type": "git",
