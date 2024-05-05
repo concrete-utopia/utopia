@@ -9,6 +9,7 @@ import {
   StringInput,
   Icn,
   useColorTheme,
+  FlexColumn,
 } from '../../../../uuiui'
 import { notice } from '../../../common/notice'
 import { showToast } from '../../../editor/actions/action-creators'
@@ -155,7 +156,6 @@ export const MetaObjectUpdatePopup = React.forwardRef<HTMLDivElement, Metaobject
               ...props.style,
               left: -5, // to make it align with the inspector
               backgroundColor: colorTheme.neutralBackground.value,
-              padding: '8px 4px',
               boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
               border: '1px solid lightgrey',
               borderRadius: 4,
@@ -163,19 +163,47 @@ export const MetaObjectUpdatePopup = React.forwardRef<HTMLDivElement, Metaobject
               maxWidth: '260px',
             }}
           >
-            <StringInput
-              onClick={stopPropagation}
-              placeholder='Type new value here'
-              focusOnMount
-              value={currentValue}
-              onChange={updateCurrentValue}
-              growInputAutomatically={true}
-              includeBoxShadow={false}
-              onSubmitValue={onSubmitValue}
-              onEscape={props.close}
-              testId={`metaobject-update-${props.dataPath.join('-')}`}
-            />
-            <Button onClick={onSubmitClick} text='Save' />
+            <FlexColumn style={{ padding: '8px 4px', gap: 8 }}>
+              <FlexRow>
+                <a
+                  href='https://admin.shopify.com/store/praiseful-pear/content/metaobjects/entries/product_ratings/8960933910'
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  style={{ padding: '2px 6px', textDecoration: 'underline' }}
+                >
+                  View in Shopify Admin
+                </a>
+                <Icn
+                  category='semantic'
+                  type='externallink'
+                  color='dynamic'
+                  width={16}
+                  height={16}
+                />
+              </FlexRow>
+              <FlexRow style={{ alignItems: 'center', gap: 8 }}>
+                <div
+                  style={{
+                    borderRadius: 4,
+                    border: `1px solid ${colorTheme.subduedBorder.value}`,
+                  }}
+                >
+                  <StringInput
+                    onClick={stopPropagation}
+                    placeholder='Type new value here'
+                    focusOnMount
+                    value={currentValue}
+                    onChange={updateCurrentValue}
+                    growInputAutomatically={true}
+                    includeBoxShadow={false}
+                    onSubmitValue={onSubmitValue}
+                    onEscape={props.close}
+                    testId={`metaobject-update-${props.dataPath.join('-')}`}
+                  />
+                </div>
+                <Button onClick={onSubmitClick} text='Save' />
+              </FlexRow>
+            </FlexColumn>
           </FlexRow>
         </div>
       </InspectorModal>

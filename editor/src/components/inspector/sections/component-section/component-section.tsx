@@ -431,52 +431,54 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
             alignSelf: 'flex-start',
           }}
         >
-          <Tooltip title={title}>
-            <div
-              onClick={dataPickerButtonData.openPopup}
-              style={{
-                lineHeight: `${UtopiaTheme.layout.inputHeight.default}px`,
-                display: 'flex',
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 6,
-                color:
-                  dataPickerButtonData.popupIsOpen || isHovered || !isValueSet
-                    ? colorTheme.dynamicBlue.value
-                    : undefined,
-              }}
-            >
-              {title}
+          <FlexRow style={{ gap: 6 }}>
+            <Tooltip title={title}>
               <div
+                onClick={dataPickerButtonData.openPopup}
                 style={{
-                  opacity: isHovered || dataPickerButtonData.popupIsOpen || !isValueSet ? 1 : 0,
+                  lineHeight: `${UtopiaTheme.layout.inputHeight.default}px`,
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 6,
+                  color:
+                    dataPickerButtonData.popupIsOpen || isHovered || !isValueSet
+                      ? colorTheme.dynamicBlue.value
+                      : undefined,
                 }}
               >
-                <Icn
-                  category='semantic'
-                  type='plus-in-white-translucent-circle'
-                  color={
-                    dataPickerButtonData.popupIsOpen || isHovered || !isValueSet
-                      ? 'dynamic'
-                      : 'main'
-                  }
-                  width={12}
-                  height={12}
-                />
+                {title}
+                <div
+                  style={{
+                    opacity: isHovered || dataPickerButtonData.popupIsOpen || !isValueSet ? 1 : 0,
+                  }}
+                >
+                  <Icn
+                    category='semantic'
+                    type='plus-in-white-translucent-circle'
+                    color={
+                      dataPickerButtonData.popupIsOpen || isHovered || !isValueSet
+                        ? 'dynamic'
+                        : 'main'
+                    }
+                    width={12}
+                    height={12}
+                  />
+                </div>
               </div>
-            </div>
-          </Tooltip>
-          <FlexRow
-            style={{
-              opacity: isHovered || dataPickerButtonData.popupIsOpen || !isValueSet ? 1 : 0,
-            }}
-          >
-            <Tooltip title={'Edit metafield'}>
-              <div>{metaobjectPickerData == null ? null : metaobjectPickerData.Opener}</div>
             </Tooltip>
-            {metaobjectPickerData == null || !metaobjectPickerData.editPopupVisible
-              ? null
-              : metaobjectPickerData.Popup}
+            <FlexRow
+              style={{
+                opacity: isHovered || dataPickerButtonData.popupIsOpen || !isValueSet ? 1 : 0,
+              }}
+            >
+              <Tooltip title={'Edit metafield'}>
+                <div>{metaobjectPickerData == null ? null : metaobjectPickerData.Opener}</div>
+              </Tooltip>
+              {metaobjectPickerData == null || !metaobjectPickerData.editPopupVisible
+                ? null
+                : metaobjectPickerData.Popup}
+            </FlexRow>
           </FlexRow>
         </PropertyLabel>
       </div>
