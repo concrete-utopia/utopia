@@ -31,8 +31,6 @@ export const IdentifierExpressionCartoucheControl = React.memo(
           color:
             props.matchType === 'full'
               ? colorTheme.white.value
-              : props.matchType === 'partial'
-              ? colorTheme.primary.value
               : colorTheme.neutralForeground.value,
           backgroundColor:
             props.matchType === 'full'
