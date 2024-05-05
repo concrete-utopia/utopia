@@ -64,6 +64,7 @@ export const DataReferenceCartoucheControl = React.memo(
           contentsToDisplay={contentsToDisplay}
           selected={selected}
           safeToDelete={false}
+          inverted={false}
           onDelete={NO_OP}
           testId={`data-reference-cartouche-${EP.toString(elementPath)}`}
         />
@@ -76,6 +77,7 @@ interface DataCartoucheInnerProps {
   onClick: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
   onDoubleClick: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
   selected: boolean
+  inverted: boolean
   contentsToDisplay: { type: 'literal' | 'reference'; label: string | null }
   safeToDelete: boolean
   onDelete: () => void
@@ -84,7 +86,15 @@ interface DataCartoucheInnerProps {
 
 export const DataCartoucheInner = React.forwardRef(
   (props: DataCartoucheInnerProps, ref: React.Ref<HTMLDivElement>) => {
-    const { onClick, onDoubleClick, safeToDelete, onDelete, selected, contentsToDisplay } = props
+    const {
+      onClick,
+      onDoubleClick,
+      safeToDelete,
+      onDelete,
+      selected,
+      inverted,
+      contentsToDisplay,
+    } = props
 
     const onDeleteInner = React.useCallback(
       (e: React.MouseEvent) => {
@@ -94,11 +104,16 @@ export const DataCartoucheInner = React.forwardRef(
       [onDelete],
     )
 
-    const cartoucheIconColor = contentsToDisplay.type === 'reference' ? 'primary' : 'secondary'
-    const foregroundColor =
-      contentsToDisplay.type === 'reference'
-        ? colorTheme.primary.value
-        : colorTheme.neutralForeground.value
+    const cartoucheIconColor = inverted
+      ? 'on-highlight-main'
+      : contentsToDisplay.type === 'reference'
+      ? 'primary'
+      : 'secondary'
+    const foregroundColor = inverted
+      ? colorTheme.neutralInvertedForeground.value
+      : contentsToDisplay.type === 'reference'
+      ? colorTheme.primary.value
+      : colorTheme.neutralForeground.value
     const backgroundColor =
       contentsToDisplay.type === 'reference' ? colorTheme.primary10.value : colorTheme.bg4.value
 
@@ -119,7 +134,7 @@ export const DataCartoucheInner = React.forwardRef(
             fontSize: 10,
             color: foregroundColor,
             backgroundColor: backgroundColor,
-            border: selected ? '1px solid ' + colorTheme.primary.value : '1px solid transparent',
+            border: selected ? '1px solid ' + foregroundColor : '1px solid transparent',
             padding: '0px 4px',
             borderRadius: 4,
             height: 22,

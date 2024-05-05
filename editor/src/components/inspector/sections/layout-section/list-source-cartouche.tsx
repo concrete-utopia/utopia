@@ -41,6 +41,8 @@ import { NavigatorEntry } from '../../../editor/store/editor-state'
 
 interface MapListSourceCartoucheProps {
   target: ElementPath
+  inverted: boolean
+  selected: boolean
   openOn: 'single-click' | 'double-click'
 }
 
@@ -98,7 +100,8 @@ export const MapListSourceCartouche = React.memo((props: MapListSourceCartoucheP
         onClick={onClick}
         onDoubleClick={onDoubleClick}
         onDelete={NO_OP}
-        selected={false}
+        selected={props.selected}
+        inverted={props.inverted}
         safeToDelete={false}
         testId='list-source-cartouche'
       />

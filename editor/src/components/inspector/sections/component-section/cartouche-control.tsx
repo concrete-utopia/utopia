@@ -27,6 +27,7 @@ export const IdentifierExpressionCartoucheControl = React.memo(
         safeToDelete={safeToDelete}
         onDelete={onDeleteCartouche}
         testId={testId}
+        inverted={false}
       />
     )
   },
