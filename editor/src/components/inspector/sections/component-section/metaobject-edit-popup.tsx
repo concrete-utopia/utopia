@@ -2,7 +2,14 @@ import React from 'react'
 import { getProjectID } from '../../../../common/env-vars'
 import { HEADERS, MODE } from '../../../../common/server'
 import { isLeft } from '../../../../core/shared/either'
-import { FlexColumn, colorTheme, UtopiaStyles, StringInput, Icn } from '../../../../uuiui'
+import {
+  FlexRow,
+  colorTheme,
+  UtopiaStyles,
+  StringInput,
+  Icn,
+  useColorTheme,
+} from '../../../../uuiui'
 import { notice } from '../../../common/notice'
 import { showToast } from '../../../editor/actions/action-creators'
 import { useDispatch } from '../../../editor/store/dispatch-context'
@@ -114,6 +121,10 @@ export const MetaObjectUpdatePopup = React.forwardRef<HTMLDivElement, Metaobject
       [callUpdateMetaobjectApi, props],
     )
 
+    const onSubmitClick = React.useCallback(() => {
+      onSubmitValue(currentValue)
+    }, [currentValue, onSubmitValue])
+
     return (
       <InspectorModal
         offsetX={0}
@@ -137,7 +148,7 @@ export const MetaObjectUpdatePopup = React.forwardRef<HTMLDivElement, Metaobject
           }}
           onClick={props.close}
         >
-          <FlexColumn
+          <FlexRow
             ref={forwardedRef}
             tabIndex={0}
             style={{
@@ -148,8 +159,7 @@ export const MetaObjectUpdatePopup = React.forwardRef<HTMLDivElement, Metaobject
               boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
               border: '1px solid lightgrey',
               borderRadius: 4,
-              alignItems: 'flex-start',
-              width: '96%',
+              alignItems: 'center',
               maxWidth: '260px',
             }}
           >
@@ -165,7 +175,8 @@ export const MetaObjectUpdatePopup = React.forwardRef<HTMLDivElement, Metaobject
               onEscape={props.close}
               testId={`metaobject-update-${props.dataPath.join('-')}`}
             />
-          </FlexColumn>
+            <Button onClick={onSubmitClick} text='Save' />
+          </FlexRow>
         </div>
       </InspectorModal>
     )
@@ -245,4 +256,22 @@ export function useMetaobjectEditPopup(
     Popup: Popup,
     editPopupVisible: editPopupVisible,
   }
+}
+
+function Button({ onClick, text }: { onClick: () => void; text: string }) {
+  const theme = useColorTheme()
+  return (
+    <div
+      onClick={onClick}
+      style={{
+        cursor: 'pointer',
+        borderRadius: 4,
+        padding: '4px 8px',
+        color: theme.white.value,
+        backgroundColor: theme.primary.value,
+      }}
+    >
+      {text}
+    </div>
+  )
 }
