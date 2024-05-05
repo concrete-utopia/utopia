@@ -36,10 +36,11 @@ import {
 } from '../component-section/data-reference-cartouche'
 import { JSXPropertyControlForListSection } from '../component-section/property-control-controls'
 import { useVariablesInScopeForSelectedElement } from '../component-section/variables-in-scope-utils'
+import { MapListSourceCartouche } from './list-source-cartouche'
 
 type MapExpression = JSXMapExpression | 'multiselect' | 'not-a-mapexpression'
 
-const mapExpressionValueToMapSelector = createCachedSelector(
+export const mapExpressionValueToMapSelector = createCachedSelector(
   (store: MetadataSubstate) => store.editor.jsxMetadata,
   (_store: MetadataSubstate, paths: ElementPath[]) => paths,
   (jsxMetadata: ElementInstanceMetadataMap, paths: ElementPath[]): MapExpression => {
@@ -89,7 +90,7 @@ function getMapExpressionMetadata(
 
 export const ListSectionTestId = 'list-section'
 
-function useDataPickerButton(selectedElements: Array<ElementPath>) {
+export function useDataPickerButtonListSource(selectedElements: Array<ElementPath>) {
   const [referenceElement, setReferenceElement] = React.useState<HTMLDivElement | null>(null)
   const [popperElement, setPopperElement] = React.useState<HTMLDivElement | null>(null)
   const popper = usePopper(referenceElement, popperElement, {
@@ -172,6 +173,7 @@ function useDataPickerButton(selectedElements: Array<ElementPath>) {
 }
 
 export const ListSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
+  const target = paths.at(0)
   const colorTheme = useColorTheme()
 
   const originalMapExpression = useEditorState(
@@ -180,26 +182,10 @@ export const ListSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
     'ConditionalSection condition expression',
   )
 
-  const metadataForElement = useEditorState(
-    Substores.metadata,
-    (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, paths.at(0)),
-    'ConditionalSection metadata',
-  )
-
-  const controlDescription: ArrayControlDescription = {
-    control: 'array',
-    propertyControl: {
-      control: 'none',
-    },
-  }
-
-  const { popupIsOpen, DataPickerOpener, DataPickerComponent, setReferenceElement, openPopup } =
-    useDataPickerButton(paths)
-
   const mappedRootElementToDisplay = useEditorState(
     Substores.metadata,
     (store) => {
-      const path = paths.at(0)
+      const path = target
       const elementMetadata: ElementInstanceMetadata | null | undefined =
         path == null
           ? null
@@ -216,14 +202,13 @@ export const ListSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
     'ConditionalSection mappedRootElement',
   )
 
-  if (originalMapExpression === 'multiselect' || originalMapExpression === 'not-a-mapexpression') {
+  if (
+    originalMapExpression === 'multiselect' ||
+    originalMapExpression === 'not-a-mapexpression' ||
+    target == null
+  ) {
     return null
   }
-
-  const contentsToDisplay = getTextContentOfElement(
-    originalMapExpression.valueToMap,
-    metadataForElement,
-  )
 
   return (
     <div style={{ paddingBottom: 8 }} data-testid={ListSectionTestId}>
@@ -253,32 +238,13 @@ export const ListSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
           <span>List</span>
         </FlexRow>
       </FlexRow>
-      {popupIsOpen ? DataPickerComponent : null}
       <UIGridRow
         padded={false}
         style={{ paddingLeft: 8, paddingRight: 8, paddingTop: 3, paddingBottom: 3 }}
         variant='<--1fr--><--1fr-->|-18px-|'
       >
         List Source
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            minWidth: 0,
-          }}
-          ref={setReferenceElement}
-        >
-          <DataCartoucheInner
-            contentsToDisplay={contentsToDisplay}
-            onClick={openPopup}
-            onDoubleClick={NO_OP}
-            onDelete={NO_OP}
-            selected={false}
-            safeToDelete={false}
-            testId='list-source-cartouche'
-          />
-        </div>
-        {DataPickerOpener}
+        <MapListSourceCartouche target={target} openOn='single-click' />
       </UIGridRow>
       <UIGridRow
         padded={false}
@@ -292,7 +258,6 @@ export const ListSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
             flexDirection: 'row',
             minWidth: 0,
           }}
-          ref={setReferenceElement}
         >
           <JSXPropertyControlForListSection
             value={
