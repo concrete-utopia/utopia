@@ -164,7 +164,7 @@ export const DataCartoucheInner = React.forwardRef(
               width={16}
               height={16}
               data-testid={`delete-${props.testId}`}
-              onClick={onDelete}
+              onClick={onDeleteInner}
             />,
           )}
         </FlexRow>
