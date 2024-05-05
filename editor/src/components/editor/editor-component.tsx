@@ -81,13 +81,17 @@ import {
   CloneParamKey,
   GithubBranchParamKey,
 } from './persistence/persistence-backend'
-import { useUpdateActiveRemixSceneOnSelectionChange } from '../canvas/remix/utopia-remix-root-component'
+import {
+  RemixNavigationAtom,
+  useUpdateActiveRemixSceneOnSelectionChange,
+} from '../canvas/remix/utopia-remix-root-component'
 import { useDefaultCollapsedViews } from './use-default-collapsed-views'
 import {
   ComponentPickerContextMenu,
   useCreateCallbackToShowComponentPicker,
 } from '../navigator/navigator-item/component-picker-context-menu'
 import { useGithubPolling } from '../../core/shared/github/helpers'
+import { useAtom } from 'jotai'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -558,6 +562,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
         keyUp={onWindowKeyUp}
       />
       <CommentMaintainer />
+      <ClearSelectionOnNavigation />
     </>
   )
 })
@@ -792,3 +797,17 @@ const LockedOverlay = React.memo(() => {
     </div>
   )
 })
+
+const ClearSelectionOnNavigation = () => {
+  const dispatch = useDispatch()
+  const [remixNavigation] = useAtom(RemixNavigationAtom)
+  const paths = Object.values(remixNavigation)
+    .map((n) => n?.location.pathname ?? '')
+    .join('-')
+
+  React.useEffect(() => {
+    dispatch([EditorActions.clearSelection()])
+  }, [dispatch, paths])
+
+  return <></>
+}
