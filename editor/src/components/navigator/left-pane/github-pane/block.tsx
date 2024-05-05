@@ -113,12 +113,12 @@ export const Block = React.memo((props: BlockProps) => {
               alignItems: 'baseline',
               justifyContent: 'space-between',
               padding: '8px 0',
+              gap: 12,
             }}
           >
             <div style={{ fontWeight: 700, color: colorTheme.fg0.value }}>{props.title}</div>
             <div
               style={{
-                maxWidth: 120,
                 textAlign: 'right',
                 overflowWrap: 'break-word',
                 whiteSpace: 'pre-wrap',
