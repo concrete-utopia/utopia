@@ -137,7 +137,7 @@ export const DataCartoucheInner = React.forwardRef(
             border: selected ? '1px solid ' + foregroundColor : '1px solid transparent',
             padding: '0px 4px',
             borderRadius: 4,
-            height: 22,
+            height: 20,
             display: 'flex',
             flex: 1,
             gap: 4,
