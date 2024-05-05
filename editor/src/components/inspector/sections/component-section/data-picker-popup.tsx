@@ -306,7 +306,7 @@ export const DataPickerPopup = React.memo(
                 height: 28,
               }}
             >
-              <div style={{ fontWeight: 600, flexGrow: 1 }}>Data</div>
+              <div style={{ fontWeight: 600 }}>Data</div>
               <PopupList
                 containerMode='showBorderOnHover'
                 options={filterOptions}
