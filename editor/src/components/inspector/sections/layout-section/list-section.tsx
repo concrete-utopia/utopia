@@ -272,7 +272,10 @@ export const ListSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
             contentsToDisplay={contentsToDisplay}
             onClick={openPopup}
             onDoubleClick={NO_OP}
+            onDelete={NO_OP}
             selected={false}
+            safeToDelete={false}
+            testId='list-source-cartouche'
           />
         </div>
         {DataPickerOpener}
