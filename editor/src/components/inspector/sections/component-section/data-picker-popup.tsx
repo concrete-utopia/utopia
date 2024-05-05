@@ -299,24 +299,34 @@ export const DataPickerPopup = React.memo(
             }}
             data-testid={DataPickerPopupTestId}
           >
-            <FlexRow
+            <div
               css={{
-                gap: 10,
-                alignItems: 'center',
-                height: 28,
+                overflowX: 'scroll',
+                whiteSpace: 'nowrap',
+                display: 'flex',
+                flexDirection: 'row',
+                gap: 12,
+                padding: '2px',
               }}
             >
-              <div style={{ fontWeight: 600 }}>Data</div>
-              <PopupList
-                containerMode='showBorderOnHover'
-                options={filterOptions}
-                value={{
-                  value: preferredAllState,
-                  label: dataPickerFilterOptionToString(preferredAllState),
-                }}
-                onSubmitValue={setMode}
-              />
-            </FlexRow>
+              {filterOptions.map((option, index) => (
+                <div
+                  key={index}
+                  css={{
+                    color: colorTheme.white.value,
+                    fontWeight: 500,
+                    opacity: preferredAllState === option.value ? 1 : 0.4,
+                    '&:hover': {
+                      opacity: 1,
+                    },
+                  }}
+                  /* eslint-disable-next-line react/jsx-no-bind */
+                  onClick={() => setMode(option)}
+                >
+                  {option.label + ' ' + 'Data'}
+                </div>
+              ))}
+            </div>
             <DataPickerPopupSubvariables
               preferredAllState={preferredAllState}
               pickerType={pickerType}
