@@ -4470,16 +4470,7 @@ export const UPDATE_FNS = {
         if (isJSXMapExpression(element)) {
           return {
             ...element,
-            valueToMap: jsExpressionOtherJavaScript(
-              [],
-              action.expression,
-              action.expression,
-              action.expression,
-              [],
-              null,
-              {},
-              emptyComments,
-            ),
+            valueToMap: action.expression,
           }
         } else {
           return element

@@ -53,6 +53,33 @@ export const DataReferenceCartoucheControl = React.memo(
       dispatch(selectComponents([elementPath], false))
     }, [dispatch, elementPath])
 
+    return (
+      <>
+        {dataPickerButtonData.popupIsOpen ? dataPickerButtonData.DataPickerComponent : null}
+        <DataCartoucheInner
+          ref={dataPickerButtonData.setReferenceElement}
+          onClick={onClick}
+          onDoubleClick={dataPickerButtonData.openPopup}
+          contentsToDisplay={contentsToDisplay}
+          selected={selected}
+        />
+      </>
+    )
+  },
+)
+
+export const DataCartoucheInner = React.forwardRef(
+  (
+    props: {
+      onClick: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
+      onDoubleClick: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
+      selected: boolean
+      contentsToDisplay: { type: 'literal' | 'reference'; label: string | null }
+    },
+    ref: React.Ref<HTMLDivElement>,
+  ) => {
+    const { onClick, onDoubleClick, selected, contentsToDisplay } = props
+
     const cartoucheIconColor = contentsToDisplay.type === 'reference' ? 'primary' : 'secondary'
     const foregroundColor =
       contentsToDisplay.type === 'reference'
@@ -64,65 +91,62 @@ export const DataReferenceCartoucheControl = React.memo(
     const label = contentsToDisplay.label ?? 'DATA'
 
     return (
-      <>
-        {dataPickerButtonData.popupIsOpen ? dataPickerButtonData.DataPickerComponent : null}
-        <div
-          onClick={onClick}
-          onDoubleClick={dataPickerButtonData.openPopup}
+      <div
+        onClick={onClick}
+        onDoubleClick={onDoubleClick}
+        style={{
+          minWidth: 0, // this ensures that the div can never expand the allocated grid space
+        }}
+        ref={ref}
+      >
+        <FlexRow
           style={{
-            minWidth: 0, // this ensures that the div can never expand the allocated grid space
+            cursor: 'pointer',
+            fontSize: 10,
+            color: foregroundColor,
+            backgroundColor: backgroundColor,
+            border: selected ? '1px solid ' + colorTheme.primary.value : '1px solid transparent',
+            padding: '0px 4px',
+            borderRadius: 4,
+            height: 22,
+            display: 'flex',
+            flex: 1,
+            gap: 4,
           }}
-          ref={dataPickerButtonData.setReferenceElement}
         >
-          <FlexRow
-            style={{
-              cursor: 'pointer',
-              fontSize: 10,
-              color: foregroundColor,
-              backgroundColor: backgroundColor,
-              border: selected ? '1px solid ' + colorTheme.primary.value : '1px solid transparent',
-              padding: '0px 4px',
-              borderRadius: 4,
-              height: 22,
-              display: 'flex',
-              flex: 1,
-              gap: 4,
-            }}
-          >
-            {contentsToDisplay.type === 'reference' ? (
-              <Icons.NavigatorData color={cartoucheIconColor} />
-            ) : (
-              <Icons.NavigatorText color={cartoucheIconColor} />
-            )}
-            <Tooltip title={label}>
-              <div
-                style={{
-                  flex: 1,
-                  paddingTop: 1,
-                  /* Standard CSS ellipsis */
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
+          {contentsToDisplay.type === 'reference' ? (
+            <Icons.NavigatorData color={cartoucheIconColor} />
+          ) : (
+            <Icons.NavigatorText color={cartoucheIconColor} />
+          )}
+          <Tooltip title={label}>
+            <div
+              style={{
+                flex: 1,
+                paddingTop: 1,
+                /* Standard CSS ellipsis */
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
 
-                  /* Beginning of string */
-                  direction: contentsToDisplay.type === 'reference' ? 'rtl' : 'ltr', // TODO we need a better way to ellipsize the beginnign because rtl eats ' " marks
-                  textAlign: 'left',
-                  ...UtopiaStyles.fontStyles.monospaced,
-                }}
-              >
-                {label}
-                &lrm;
-                {/* the &lrm; non-printing character is added to fix the punctuation marks disappearing because of direction: rtl */}
-              </div>
-            </Tooltip>
-          </FlexRow>
-        </div>
-      </>
+                /* Beginning of string */
+                direction: contentsToDisplay.type === 'reference' ? 'rtl' : 'ltr', // TODO we need a better way to ellipsize the beginnign because rtl eats ' " marks
+                textAlign: 'left',
+                ...UtopiaStyles.fontStyles.monospaced,
+              }}
+            >
+              {label}
+              &lrm;
+              {/* the &lrm; non-printing character is added to fix the punctuation marks disappearing because of direction: rtl */}
+            </div>
+          </Tooltip>
+        </FlexRow>
+      </div>
     )
   },
 )
 
-function getTextContentOfElement(
+export function getTextContentOfElement(
   element: JSXElementChild,
   metadata: ElementInstanceMetadata | null,
 ): { type: 'literal' | 'reference'; label: string | null } {
@@ -150,7 +174,7 @@ function getTextContentOfElement(
     case 'JSX_ELEMENT':
       return {
         type: 'literal',
-        label: metadata?.textContent ?? `<${getJSXElementNameLastPart(element.name)}>`,
+        label: metadata?.textContent ?? `${getJSXElementNameLastPart(element.name)}`,
       }
     case 'ATTRIBUTE_NESTED_ARRAY':
       return { type: 'literal', label: '[...]' }

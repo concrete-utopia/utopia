@@ -1,5 +1,5 @@
 import * as OPI from 'object-path-immutable'
-import type { Emphasis, FlexLength, Sides } from 'utopia-api/core'
+import type { Emphasis, FlexLength, Icon, Sides } from 'utopia-api/core'
 import { sides } from 'utopia-api/core'
 import { getReorderDirection } from '../../components/canvas/controls/select-mode/yoga-utils'
 import { getImageSize, scaleImageDimensions } from '../../components/images'
@@ -194,7 +194,7 @@ export const MetadataUtils = {
   },
   findElementByElementPath(
     elementMap: ElementInstanceMetadataMap,
-    path: ElementPath | null,
+    path: ElementPath | null | undefined,
   ): ElementInstanceMetadata | null {
     if (path == null) {
       return null
@@ -925,6 +925,31 @@ export const MetadataUtils = {
   },
   isBody(instance: ElementInstanceMetadata): boolean {
     return this.isElementOfType(instance, 'body')
+  },
+  isHead(instance: ElementInstanceMetadata): boolean {
+    return this.isElementOfType(instance, 'head')
+  },
+  isHeading(instance: ElementInstanceMetadata): boolean {
+    return (
+      this.isElementOfType(instance, 'h1') ||
+      this.isElementOfType(instance, 'h2') ||
+      this.isElementOfType(instance, 'h3') ||
+      this.isElementOfType(instance, 'h4') ||
+      this.isElementOfType(instance, 'h5') ||
+      this.isElementOfType(instance, 'h6')
+    )
+  },
+  isInput(instance: ElementInstanceMetadata): boolean {
+    return this.isElementOfType(instance, 'input')
+  },
+  isAnchorLink(instance: ElementInstanceMetadata): boolean {
+    return this.isElementOfType(instance, 'a')
+  },
+  isParagraph(instance: ElementInstanceMetadata): boolean {
+    return this.isElementOfType(instance, 'p')
+  },
+  isForm(instance: ElementInstanceMetadata): boolean {
+    return this.isElementOfType(instance, 'form')
   },
   isReactSuspense(instance: ElementInstanceMetadata | null): boolean {
     return MetadataUtils.isImportedComponentFromMetadata(instance, 'react', 'Suspense')
@@ -2089,6 +2114,18 @@ export const MetadataUtils = {
 
     // Default to regular.
     return 'regular'
+  },
+  getIconOfComponent(
+    path: ElementPath,
+    propertyControlsInfo: PropertyControlsInfo,
+    projectContents: ProjectContentTreeRoot,
+  ): Icon | null {
+    const componentDescriptor = getComponentDescriptorForTarget(
+      path,
+      propertyControlsInfo,
+      projectContents,
+    )
+    return componentDescriptor?.icon ?? null
   },
   isEmotionOrStyledComponent(path: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
     const element = MetadataUtils.findElementByElementPath(metadata, path)

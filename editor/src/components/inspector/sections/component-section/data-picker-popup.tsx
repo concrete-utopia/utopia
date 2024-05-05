@@ -15,7 +15,11 @@ import {
   SquareButton,
   PopupList,
 } from '../../../../uuiui'
-import { setProp_UNSAFE } from '../../../editor/actions/action-creators'
+import {
+  insertJSXElement,
+  setProp_UNSAFE,
+  updateMapExpression,
+} from '../../../editor/actions/action-creators'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { useRefEditorState } from '../../../editor/store/store-hook'
 import { UIGridRow } from '../../widgets/ui-grid-row'
@@ -38,6 +42,7 @@ import { is } from '../../../../core/shared/equality-utils'
 import { atom, useAtom } from 'jotai'
 import type { SelectOption } from '../../controls/select-control'
 import { InspectorModal } from '../../widgets/inspector-modal'
+import { emptyImports } from '../../../../core/workers/common/project-file-utils'
 
 export interface PrimitiveOption {
   type: 'primitive'
@@ -116,20 +121,99 @@ function isChildrenProp(path: PropertyPath): boolean {
 export interface DataPickerPopupProps {
   closePopup: () => void
   style: React.CSSProperties
-  targetPath: ElementPath | null // TODO make it not nullable
+  pickerType: DataPickerType
+}
+
+export interface DataPickerForAProperty {
+  type: 'FOR_A_PROPERTY'
+  elementPath: ElementPath
   propPath: PropertyPath
   propExpressionPath: Array<string | number> | null
 }
 
+export function dataPickerForAProperty(
+  elementPath: ElementPath,
+  propPath: PropertyPath,
+  propExpressionPath: Array<string | number> | null,
+): DataPickerForAProperty {
+  return {
+    type: 'FOR_A_PROPERTY',
+    elementPath: elementPath,
+    propPath: propPath,
+    propExpressionPath: propExpressionPath,
+  }
+}
+
+export interface DataPickerForAMapExpressionValue {
+  type: 'FOR_A_MAP_EXPRESSION_VALUE'
+  elementPath: ElementPath
+}
+
+export function dataPickerForAnElement(elementPath: ElementPath): DataPickerForAMapExpressionValue {
+  return {
+    type: 'FOR_A_MAP_EXPRESSION_VALUE',
+    elementPath: elementPath,
+  }
+}
+
+export type DataPickerType = DataPickerForAProperty | DataPickerForAMapExpressionValue
+
+export function dataPickerIgnoreClass(pickerType: DataPickerType): string {
+  switch (pickerType.type) {
+    case 'FOR_A_PROPERTY':
+      return `ignore-react-onclickoutside-data-picker-${PP.toString(pickerType.propPath)}`
+    case 'FOR_A_MAP_EXPRESSION_VALUE':
+      return `ignore-react-onclickoutside-data-picker-${EP.toString(pickerType.elementPath)}`
+    default:
+      assertNever(pickerType)
+  }
+}
+
+export interface DataPickerPopupSubvariablesProps {
+  preferredAllState: DataPickerFilterOption
+  pickerType: DataPickerType
+  onTweakProperty: (name: string, definedElsewhere: string | null) => (e: React.MouseEvent) => void
+}
+
+export const DataPickerPopupSubvariables = React.memo((props: DataPickerPopupSubvariablesProps) => {
+  const { pickerType, preferredAllState, onTweakProperty } = props
+  const variableNamesInScope = useVariablesInScopeForSelectedElement(
+    props.pickerType.elementPath,
+    props.pickerType.type === 'FOR_A_PROPERTY' ? props.pickerType.propPath : null,
+    preferredAllState,
+  )
+
+  return (
+    <>
+      {variableNamesInScope.map((variableOption, idx) => {
+        return (
+          <ValueRow
+            key={variableOption.valuePath.toString()}
+            variableOption={variableOption}
+            idx={`${idx}`}
+            onTweakProperty={onTweakProperty}
+            pickerType={pickerType}
+          />
+        )
+      })}
+    </>
+  )
+})
+
+export interface DataPickerPopupProps {
+  closePopup: () => void
+  style: React.CSSProperties
+  pickerType: DataPickerType
+}
+
 export const DataPickerPopup = React.memo(
   React.forwardRef<HTMLDivElement, DataPickerPopupProps>((props, forwardedRef) => {
-    const { closePopup, propPath, propExpressionPath, targetPath } = props
+    const { closePopup, pickerType } = props
 
     const [preferredAllState, setPreferredAllState] = useAtom(DataPickerPreferredAllAtom)
 
     const colorTheme = useColorTheme()
     const dispatch = useDispatch()
-    const isTargetingChildrenProp = isChildrenProp(propPath)
 
     const setMode = React.useCallback(
       (option: SelectOption<DataPickerFilterOption>) => {
@@ -140,35 +224,38 @@ export const DataPickerPopup = React.memo(
 
     const onTweakProperty = React.useCallback(
       (name: string, definedElsewhere: string | null) => (e: React.MouseEvent) => {
-        if (targetPath == null) {
-          return
-        }
-
         e.stopPropagation()
         e.preventDefault()
 
         const definedElseWhereArray = optionalMap((d) => [d], definedElsewhere) ?? []
         const expression = jsExpressionOtherJavaScriptSimple(name, definedElseWhereArray)
 
-        if (isTargetingChildrenProp) {
-          dispatch([
-            {
-              action: 'INSERT_ATTRIBUTE_OTHER_JAVASCRIPT_INTO_ELEMENT',
-              expression: expression,
-              parent: targetPath,
-            },
-          ])
-          return
-        }
-        dispatch([setProp_UNSAFE(targetPath, propPath, expression)])
-      },
-      [dispatch, isTargetingChildrenProp, propPath, targetPath],
-    )
+        switch (pickerType.type) {
+          case 'FOR_A_PROPERTY':
+            const isTargetingChildrenProp = isChildrenProp(pickerType.propPath)
+            if (isTargetingChildrenProp) {
+              dispatch([
+                {
+                  action: 'INSERT_ATTRIBUTE_OTHER_JAVASCRIPT_INTO_ELEMENT',
+                  expression: expression,
+                  parent: props.pickerType.elementPath,
+                },
+              ])
+              return
+            }
 
-    const variableNamesInScope = useVariablesInScopeForSelectedElement(
-      targetPath ?? EP.emptyElementPath,
-      props.propPath,
-      preferredAllState,
+            dispatch([
+              setProp_UNSAFE(props.pickerType.elementPath, pickerType.propPath, expression),
+            ])
+            break
+          case 'FOR_A_MAP_EXPRESSION_VALUE':
+            dispatch([updateMapExpression(props.pickerType.elementPath, expression)])
+            break
+          default:
+            assertNever(pickerType)
+        }
+      },
+      [dispatch, pickerType, props.pickerType.elementPath],
     )
 
     const filterOptions = React.useMemo(
@@ -182,14 +269,14 @@ export const DataPickerPopup = React.memo(
 
     return (
       <InspectorModal
-        offsetX={0}
+        offsetX={10}
         offsetY={0}
         closePopup={props.closePopup}
         style={{
           zIndex: 1,
         }}
         closePopupOnUnmount={false}
-        outsideClickIgnoreClass={`ignore-react-onclickoutside-data-picker-${PP.toString(propPath)}`}
+        outsideClickIgnoreClass={dataPickerIgnoreClass(pickerType)}
       >
         <div // this entire wrapper div was made before using the InspectorModal, so it should be re-done
           style={{
@@ -208,12 +295,13 @@ export const DataPickerPopup = React.memo(
             tabIndex={0}
             style={{
               ...props.style,
-              left: -5, // to make it align with the inspector
-              backgroundColor: colorTheme.neutralBackground.value,
-              padding: '8px 4px',
-              boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
-              border: '1px solid lightgrey',
-              borderRadius: 4,
+              left: -16, // to make it align with the cartouche control
+              backgroundColor: colorTheme.bg0.value,
+              color: colorTheme.fg1.value,
+              padding: 4,
+              boxShadow: UtopiaStyles.shadowStyles.low.boxShadow,
+              border: `.2px solid ${colorTheme.popupBorder.value}`,
+              borderRadius: 10,
               alignItems: 'flex-start',
               width: '96%',
               maxWidth: '260px',
@@ -225,7 +313,7 @@ export const DataPickerPopup = React.memo(
               variant='<-------1fr------>|----80px----|'
               css={{ marginBottom: 4, alignSelf: 'stretch' }}
             >
-              <div style={{ fontWeight: 600, flexGrow: 1 }}>Data</div>
+              <div style={{ fontWeight: 600, flexGrow: 1, color: colorTheme.fg1.value }}>Data</div>
               <PopupList
                 containerMode='showBorderOnHover'
                 options={filterOptions}
@@ -236,17 +324,11 @@ export const DataPickerPopup = React.memo(
                 onSubmitValue={setMode}
               />
             </UIGridRow>
-            {variableNamesInScope.map((variableOption, idx) => {
-              return (
-                <ValueRow
-                  key={variableOption.valuePath.toString()}
-                  variableOption={variableOption}
-                  idx={`${idx}`}
-                  onTweakProperty={onTweakProperty}
-                  currentPropExpressionPath={propExpressionPath}
-                />
-              )
-            })}
+            <DataPickerPopupSubvariables
+              preferredAllState={preferredAllState}
+              pickerType={pickerType}
+              onTweakProperty={onTweakProperty}
+            />
           </FlexColumn>
         </div>
       </InspectorModal>
@@ -258,7 +340,7 @@ interface ValueRowProps {
   variableOption: VariableOption
   idx: string
   onTweakProperty: (name: string, definedElsewhere: string | null) => (e: React.MouseEvent) => void
-  currentPropExpressionPath: Array<string | number> | null
+  pickerType: DataPickerType
   overriddenTitle?: string
 }
 
@@ -269,7 +351,7 @@ function ValueRow({
   variableOption,
   idx,
   onTweakProperty,
-  currentPropExpressionPath,
+  pickerType,
   overriddenTitle,
 }: ValueRowProps) {
   const colorTheme = useColorTheme()
@@ -305,8 +387,9 @@ function ValueRow({
   const hasObjectChildren = variableOption.type === 'object' && variableOption.children.length > 0
 
   const currentExpressionExactMatch =
-    currentPropExpressionPath != null &&
-    arrayEqualsByValue(variableOption.valuePath, currentPropExpressionPath, is)
+    pickerType.type === 'FOR_A_PROPERTY' &&
+    pickerType.propExpressionPath != null &&
+    arrayEqualsByValue(variableOption.valuePath, pickerType.propExpressionPath, is)
 
   return (
     <>
@@ -406,7 +489,7 @@ function ValueRow({
             variableOption={variableChildren[selectedIndex]}
             idx={`${idx}-${selectedIndex}`}
             onTweakProperty={onTweakProperty}
-            currentPropExpressionPath={currentPropExpressionPath}
+            pickerType={pickerType}
             overriddenTitle={`${variableOption.variableInfo.expressionPathPart}[${selectedIndex}]`}
           />
         ) : childrenOpen ? (
@@ -417,7 +500,7 @@ function ValueRow({
                 variableOption={child}
                 idx={`${idx}-${index}`}
                 onTweakProperty={onTweakProperty}
-                currentPropExpressionPath={currentPropExpressionPath}
+                pickerType={pickerType}
               />
             )
           })

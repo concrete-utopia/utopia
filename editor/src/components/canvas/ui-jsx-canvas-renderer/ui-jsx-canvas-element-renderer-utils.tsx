@@ -755,7 +755,7 @@ function renderJSXElement(
   const FinalElement = elementIsIntrinsic ? jsx.name.baseVariable : element
   const FinalElementOrFragment = elementIsFragment ? React.Fragment : FinalElement
 
-  let elementProps = { key: key, ...passthroughProps }
+  let elementProps: MapLike<any> = { key: key, ...passthroughProps }
   if (!elementIsFragment) {
     if (isHidden(hiddenInstances, elementPath)) {
       elementProps = hideElement(elementProps)
@@ -764,6 +764,24 @@ function renderJSXElement(
       elementProps = displayNoneElement(elementProps)
     }
     elementProps = streamlineInFileBlobs(elementProps, fileBlobs)
+    for (const prop of jsx.props) {
+      if (prop.type === 'JSX_ATTRIBUTES_ENTRY' && prop.value.type === 'JSX_ELEMENT') {
+        const pathForElementInRenderProp = optionalMap(
+          (p) => EP.appendToPath(p, prop.value.uid),
+          elementPath,
+        )
+        const renderedElement = renderCoreElement(
+          prop.value,
+          pathForElementInRenderProp,
+          inScope,
+          renderContext,
+          prop.value.uid,
+          codeError,
+          `${prop.key}`,
+        )
+        elementProps[prop.key] = renderedElement
+      }
+    }
   }
 
   const elementPropsWithScenePath = isComponentRendererComponent(FinalElement)
@@ -771,7 +789,7 @@ function renderJSXElement(
     : elementProps
 
   const elementPropsWithSceneID =
-    elementIsScene && elementPath != null
+    (elementIsScene || elementIsRemixScene) && elementPath != null
       ? { ...elementPropsWithScenePath, [UTOPIA_SCENE_ID_KEY]: EP.toString(elementPath) }
       : elementPropsWithScenePath
 

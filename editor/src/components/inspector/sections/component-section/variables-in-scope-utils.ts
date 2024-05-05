@@ -100,9 +100,12 @@ function valuesFromVariable(
   }
 }
 
-function usePropertyControlDescriptions(selectedProperty: PropertyPath): ControlDescription | null {
+function usePropertyControlDescriptions(
+  selectedProperty: PropertyPath | null,
+): ControlDescription | null {
   const controls = useGetPropertyControlsForSelectedComponents()
   if (
+    selectedProperty == null ||
     selectedProperty.propertyElements.length === 0 ||
     typeof selectedProperty.propertyElements[0] !== 'string'
   ) {
@@ -369,7 +372,7 @@ const keepLocalestScope =
 
 export function useVariablesInScopeForSelectedElement(
   selectedView: ElementPath,
-  propertyPath: PropertyPath,
+  propertyPath: PropertyPath | null,
   mode: DataPickerFilterOption,
 ): Array<VariableOption> {
   const selectedViewPath = useEditorState(
@@ -394,15 +397,12 @@ export function useVariablesInScopeForSelectedElement(
 
     let variablesInScopeForSelectedPath: VariableData | null = (() => {
       // if the selected element doesn't have an associacted variablesInScope, we assume it's safe to walk up the path within the same component
-      let path = selectedViewPath
-      while (
-        EP.pathsEqual(EP.getContainingComponent(path), EP.getContainingComponent(selectedViewPath))
-      ) {
+      const allPathsInsideScope = EP.allPathsInsideComponent(selectedViewPath)
+      for (const path of allPathsInsideScope) {
         const pathAsString = EP.toString(path)
         if (pathAsString in variablesInScope) {
           return variablesInScope[pathAsString]
         }
-        path = EP.parentPath(path)
       }
       return null
     })()
@@ -429,7 +429,7 @@ export function useVariablesInScopeForSelectedElement(
       variableInfo,
       controlDescriptions,
       currentPropertyValue,
-      '' + PP.lastPart(propertyPath),
+      propertyPath == null ? '' : '' + PP.lastPart(propertyPath),
       mode,
     )
 
@@ -531,7 +531,10 @@ function variableMatchesControlDescription(
 
 type PropertyValue = { type: 'existing'; value: unknown } | { type: 'not-found' }
 
-function usePropertyValue(selectedView: ElementPath, propertyPath: PropertyPath): PropertyValue {
+function usePropertyValue(
+  selectedView: ElementPath,
+  propertyPath: PropertyPath | null,
+): PropertyValue {
   const allElementProps = useEditorState(
     Substores.metadata,
     (store) => store.editor.allElementProps,
@@ -539,6 +542,10 @@ function usePropertyValue(selectedView: ElementPath, propertyPath: PropertyPath)
   )
   const propsForThisElement = allElementProps[EP.toString(selectedView)] ?? null
   if (propsForThisElement == null) {
+    return { type: 'not-found' }
+  }
+
+  if (propertyPath == null) {
     return { type: 'not-found' }
   }
 

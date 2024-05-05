@@ -52,7 +52,7 @@ export var App = props => {
                 ATTRIBUTE_VALUE - 625
                 ATTRIBUTE_VALUE - 294
                 ATTRIBUTE_VALUE - 3e9
-              ATTRIBUTE_OTHER_JAVASCRIPT - eb1
+              ATTRIBUTE_OTHER_JAVASCRIPT - 92b
                 JSX_ELEMENT - div - bbb
                   JS_IDENTIFIER - 833
                   JSX_TEXT_BLOCK - d01
@@ -191,7 +191,7 @@ export var App = props => {
           JSX_MAP_EXPRESSION - 589
             JS_PROPERTY_ACCESS - 4f7
               JS_IDENTIFIER - 09c
-            ATTRIBUTE_OTHER_JAVASCRIPT - f44
+            ATTRIBUTE_OTHER_JAVASCRIPT - 53e
               JSX_ELEMENT - Card - card
                   ATTRIBUTE_VALUE - da1
                 JS_PROPERTY_ACCESS - 711
@@ -213,7 +213,7 @@ export var App = props => {
           JSX_MAP_EXPRESSION - 0af
             JS_PROPERTY_ACCESS - 4f7
               JS_IDENTIFIER - 09c
-            ATTRIBUTE_OTHER_JAVASCRIPT - 8a6
+            ATTRIBUTE_OTHER_JAVASCRIPT - dc3
               JSX_ELEMENT - Card - card
                   ATTRIBUTE_VALUE - da1"
     `)

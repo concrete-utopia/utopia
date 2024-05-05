@@ -1589,6 +1589,9 @@ export function renameJsxElementChild<T extends JSXElementChild>(
   return element
 }
 
+/**
+ * @deprecated you probably want to use findContainingComponentForPath instead. Reason: this finds the element _instance_ of the containing component, not the component itself.
+ */
 export function findContainingComponent(
   topLevelElements: Array<TopLevelElement>,
   target: ElementPath,

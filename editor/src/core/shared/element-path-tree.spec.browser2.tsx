@@ -142,8 +142,8 @@ describe('Building and ordering the element path tree for a real project', () =>
             sb/sc/app:app-root/frag/cond-1/cond-1-true
               sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-1-true-child
               sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2
-                sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2/268
-                  sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2/268/cond-2-child~~~1
+                sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2/c87
+                  sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2/c87/cond-2-child~~~1
       sb/sc/app/app-child
 `,
     )
@@ -163,7 +163,7 @@ describe('getChildrenOrdered', () => {
     )
 
     expect(childrenOfCond2.map((c) => EP.toString(c.elementPath))).toEqual([
-      'sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2/268',
+      'sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2/c87',
     ])
   })
 })

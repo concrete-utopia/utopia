@@ -7,7 +7,7 @@ import {
   type TriggerEvent,
 } from 'react-contexify'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import type { ElementInstanceMetadataMap, JSXElement } from '../../../core/shared/element-template'
+import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import {
   type ElementInstanceMetadata,
   getJSXElementNameAsString,
@@ -19,11 +19,13 @@ import type { ElementPath, Imports } from '../../../core/shared/project-file-typ
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import {
+  deleteView,
   insertAsChildTarget,
   insertInsertable,
   insertJSXElement,
   replaceMappedElement,
   setProp_UNSAFE,
+  showToast,
 } from '../../editor/actions/action-creators'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
@@ -61,7 +63,9 @@ import {
 } from '../../editor/store/insertion-path'
 import type { InsertableComponent } from '../../shared/project-components'
 import type { ConditionalCase } from '../../../core/model/conditionals'
-import { sortBy } from '../../../core/shared/array-utils'
+import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import { absolute } from '../../../utils/utils'
+import { notice } from '../../common/notice'
 
 type RenderPropTarget = { type: 'render-prop'; prop: string }
 type ConditionalTarget = { type: 'conditional'; conditionalCase: ConditionalCase }
@@ -376,6 +380,7 @@ function insertComponentPickerItem(
   target: ElementPath,
   projectContents: ProjectContentTreeRoot,
   metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
   dispatch: EditorDispatch,
   insertionTarget: InsertionTarget,
 ) {
@@ -421,7 +426,6 @@ function insertComponentPickerItem(
       }
     }
 
-    // TODO: for non-jsx-elements we only support insertion as a child today, this should be extended
     if (isInsertAsChildTarget(insertionTarget)) {
       return [insertInsertable(childInsertionPath(target), toInsert, 'do-not-add', null)]
     }
@@ -441,25 +445,61 @@ function insertComponentPickerItem(
       ]
     }
 
-    console.warn(errorMessage(insertionTarget, toInsert))
-    return []
+    if (isReplaceTarget(insertionTarget)) {
+      if (
+        MetadataUtils.isJSXMapExpression(EP.parentPath(target), metadata) &&
+        elementWithoutUID.type !== 'JSX_ELEMENT'
+      ) {
+        return [
+          showToast(
+            notice(
+              'We are working on support to insert Lists, Conditionals and Fragments into Lists',
+              'INFO',
+              false,
+              'insert-component-picker-item-nested-map',
+            ),
+          ),
+        ]
+      }
+      const index = MetadataUtils.getIndexInParent(metadata, pathTrees, target)
+      return [
+        deleteView(target),
+        insertInsertable(
+          childInsertionPath(EP.parentPath(target)),
+          toInsert,
+          'do-not-add',
+          absolute(index),
+        ),
+      ]
+    }
+
+    return [
+      showToast(
+        notice(
+          toastMessage(insertionTarget, toInsert),
+          'INFO',
+          false,
+          'insert-component-picker-item-nested-map',
+        ),
+      ),
+    ]
   })()
 
   dispatch(actions)
 }
 
-function errorMessage(insertionTarget: InsertionTarget, toInsert: InsertableComponent) {
+function toastMessage(insertionTarget: InsertionTarget, toInsert: InsertableComponent) {
   switch (insertionTarget.type) {
     case 'replace-target':
-      return `Component picker error: can not swap to "${toInsert.name}"`
+      return `Swapping to ${toInsert.name} isn't supported yet`
     case 'replace-target-keep-children-and-style':
-      return `Component picker error: can not replace to "${toInsert.name}"`
+      return `Replacing with ${toInsert.name} isn't supported yet`
     case 'insert-as-child':
-      return `Component picker error: can not insert "${toInsert.name}" as child`
+      return `Inserting ${toInsert.name} as child isn't supported yet`
     case 'conditional':
-      return `Component picker error: can not insert "${toInsert.name}" into conditional "${insertionTarget.type}`
+      return `Inserting ${toInsert.name} into conditional ${insertionTarget.type} isn't supported yet`
     case 'render-prop':
-      return `Component picker error: can not insert "${toInsert.name}" into render prop "${insertionTarget.prop}"`
+      return `Inserting ${toInsert.name} into render prop ${insertionTarget.prop} isn't supported yet`
     default:
       assertNever(insertionTarget)
   }
@@ -470,6 +510,7 @@ function insertPreferredChild(
   target: ElementPath,
   projectContents: ProjectContentTreeRoot,
   metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
   dispatch: EditorDispatch,
   insertionTarget: InsertionTarget,
 ) {
@@ -484,7 +525,15 @@ function insertPreferredChild(
     null,
   )
 
-  insertComponentPickerItem(toInsert, target, projectContents, metadata, dispatch, insertionTarget)
+  insertComponentPickerItem(
+    toInsert,
+    target,
+    projectContents,
+    metadata,
+    pathTrees,
+    dispatch,
+    insertionTarget,
+  )
 }
 
 interface ComponentPickerContextMenuProps {
@@ -507,6 +556,24 @@ function iconPropsForIcon(icon: Icon): IcnProps {
         color: 'white',
       }
     case 'regular':
+      return {
+        category: 'navigator-element',
+        type: 'component',
+        color: 'white',
+      }
+    case 'headline':
+      return {
+        category: 'navigator-element',
+        type: 'headline',
+        color: 'white',
+      }
+    case 'dashedframe':
+      return {
+        category: 'navigator-element',
+        type: 'dashedframe',
+        color: 'white',
+      }
+    case 'component':
       return {
         category: 'navigator-element',
         type: 'component',
@@ -535,6 +602,7 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
 
     const projectContentsRef = useRefEditorState((state) => state.editor.projectContents)
     const metadataRef = useRefEditorState((state) => state.editor.jsxMetadata)
+    const elementPathTreesRef = useRefEditorState((state) => state.editor.elementPathTree)
 
     const onItemClick = React.useCallback(
       (preferredChildToInsert: ElementToInsert) =>
@@ -543,10 +611,11 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
           target,
           projectContentsRef.current,
           metadataRef.current,
+          elementPathTreesRef.current,
           dispatch,
           insertionTarget,
         ),
-      [target, projectContentsRef, metadataRef, dispatch, insertionTarget],
+      [target, projectContentsRef, metadataRef, elementPathTreesRef, dispatch, insertionTarget],
     )
     const wrapperRef = React.useRef<HTMLDivElement>(null)
 
@@ -600,7 +669,11 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
     const allInsertableComponents = useGetInsertableComponents('insert').flatMap((g) => ({
       label: g.label,
       options: g.options.filter((o) => {
-        if (isInsertAsChildTarget(insertionTarget) || isConditionalTarget(insertionTarget)) {
+        if (
+          isInsertAsChildTarget(insertionTarget) ||
+          isConditionalTarget(insertionTarget) ||
+          isReplaceTarget(insertionTarget)
+        ) {
           return true
         }
         // Right now we only support inserting JSX elements when we insert into a render prop or when replacing elements
@@ -612,6 +685,7 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
 
     const projectContentsRef = useRefEditorState((state) => state.editor.projectContents)
     const metadataRef = useRefEditorState((state) => state.editor.jsxMetadata)
+    const elementPathTreesRef = useRefEditorState((state) => state.editor.elementPathTree)
 
     const onItemClick = React.useCallback(
       (preferredChildToInsert: InsertableComponent) => (e: React.UIEvent) => {
@@ -623,13 +697,14 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
           target,
           projectContentsRef.current,
           metadataRef.current,
+          elementPathTreesRef.current,
           dispatch,
           insertionTarget,
         )
 
         contextMenu.hideAll()
       },
-      [target, projectContentsRef, metadataRef, dispatch, insertionTarget],
+      [target, projectContentsRef, metadataRef, elementPathTreesRef, dispatch, insertionTarget],
     )
 
     const squashEvents = React.useCallback((e: React.UIEvent<unknown>) => {
