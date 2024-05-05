@@ -142,9 +142,9 @@ const RepositoryBlock = () => {
       title={hasRepo ? 'Repository' : 'Select Repository'}
       subtitle={
         <span>
-          repoOwner
+          {repoOwner}
           <br />
-          repositoryName
+          {repositoryName}
         </span>
       }
       status={hasRepo ? 'successful' : 'pending'}
