@@ -789,7 +789,7 @@ function renderJSXElement(
     : elementProps
 
   const elementPropsWithSceneID =
-    elementIsScene && elementPath != null
+    (elementIsScene || elementIsRemixScene) && elementPath != null
       ? { ...elementPropsWithScenePath, [UTOPIA_SCENE_ID_KEY]: EP.toString(elementPath) }
       : elementPropsWithScenePath
 
