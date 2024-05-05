@@ -418,7 +418,7 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
                 dataPickerButtonData.popupIsOpen || isHovered || isConnectedToData
                   ? colorTheme.dynamicBlue.value
                   : undefined,
-              cursor: isHovered ? 'pointer' : 'default',
+              cursor: 'pointer',
             }}
           >
             {title}
