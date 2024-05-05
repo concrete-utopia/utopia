@@ -1234,7 +1234,13 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         inputVisible={EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath)}
         remixItemType={props.remixItemType}
       />
-      <MapListSourceCartouche target={props.navigatorEntry.elementPath} openOn='double-click' />
+      <div
+        style={{
+          textTransform: 'initial',
+        }}
+      >
+        <MapListSourceCartouche target={props.navigatorEntry.elementPath} openOn='double-click' />
+      </div>
       <MapCounter navigatorEntry={props.navigatorEntry} dispatch={props.dispatch} />
       <ComponentPreview
         key={`preview-${props.label}`}
