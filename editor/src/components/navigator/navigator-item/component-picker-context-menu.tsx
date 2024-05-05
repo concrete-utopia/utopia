@@ -342,21 +342,7 @@ function moreItem(
   showComponentPickerContextMenu: ShowComponentPickerContextMenu,
 ): ContextMenuItem<unknown> {
   return {
-    name: (
-      <FlexRow>
-        <div
-          style={{
-            width: 18,
-            height: 18,
-            display: 'flex',
-            justifyItems: 'center',
-            alignItems: 'center',
-            position: 'relative',
-          }}
-        ></div>{' '}
-        More...
-      </FlexRow>
-    ),
+    name: <FlexRow style={{ paddingLeft: 22 }}>More…</FlexRow>,
     enabled: true,
     action: (_data, _dispatch, _rightClickCoordinate, e) => {
       const currentMenu = (menuWrapperRef.current?.childNodes[0] as HTMLDivElement) ?? null
@@ -625,7 +611,7 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
 
         const submenuLabel = (
           <FlexRow
-            style={{ gap: 5 }}
+            style={{ gap: 10 }}
             data-testId={labelTestIdForComponentIcon(data.name, data.moduleName ?? '', data.icon)}
           >
             <Icn {...iconProps} width={12} height={12} />

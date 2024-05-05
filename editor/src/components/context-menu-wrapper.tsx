@@ -121,7 +121,12 @@ export class MomentumContextMenu<T> extends ReactComponent<ContextMenuProps<T>> 
           contextMenu.hideAll()
         }}
         hidden={this.isHidden(item)}
-        style={{ height: item.isSeparator ? 9 : 24, display: 'flex', alignItems: 'center' }}
+        style={{
+          height: item.isSeparator ? 9 : 28,
+          display: 'flex',
+          alignItems: 'center',
+          borderRadius: 4,
+        }}
       >
         <span style={{ flexGrow: 1, flexShrink: 0 }} className='react-contexify-span'>
           {item.name}
@@ -144,7 +149,7 @@ export class MomentumContextMenu<T> extends ReactComponent<ContextMenuProps<T>> 
               <SubmenuComponent
                 key={`context-menu-${index}`}
                 label={
-                  <span style={{ height: 24, display: 'flex', alignItems: 'center' }}>
+                  <span style={{ height: 28, display: 'flex', alignItems: 'center' }}>
                     {item.label}
                   </span>
                 }

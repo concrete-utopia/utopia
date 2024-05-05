@@ -6,15 +6,7 @@ import React, { useCallback } from 'react'
 import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import type { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
-import {
-  useColorTheme,
-  Button,
-  FlexColumn,
-  UtopiaStyles,
-  UtopiaTheme,
-  SquareButton,
-  PopupList,
-} from '../../../../uuiui'
+import { useColorTheme, Button, FlexColumn, UtopiaStyles } from '../../../../uuiui'
 import {
   insertJSXElement,
   setProp_UNSAFE,
@@ -85,7 +77,7 @@ export type DataPickerFilterOption = (typeof DataPickerFilterOptions)[number]
 export function dataPickerFilterOptionToString(mode: DataPickerFilterOption): string {
   switch (mode) {
     case 'all':
-      return 'All'
+      return 'All Data'
     case 'preferred':
       return 'Preferred'
     default:
@@ -267,6 +259,14 @@ export const DataPickerPopup = React.memo(
       [],
     )
 
+    const handleFilterOptionClick = useCallback(
+      (option: { value: any }) => (e: React.MouseEvent) => {
+        e.stopPropagation()
+        setMode({ value: option.value })
+      },
+      [setMode],
+    )
+
     return (
       <InspectorModal
         offsetX={10}
@@ -296,11 +296,10 @@ export const DataPickerPopup = React.memo(
             style={{
               ...props.style,
               left: -16, // to make it align with the cartouche control
-              backgroundColor: colorTheme.bg0.value,
-              color: colorTheme.fg1.value,
-              padding: 4,
+              backgroundColor: colorTheme.contextMenuBackground.value,
+              color: colorTheme.contextMenuForeground.value,
+              padding: 8,
               boxShadow: UtopiaStyles.shadowStyles.low.boxShadow,
-              border: `.2px solid ${colorTheme.popupBorder.value}`,
               borderRadius: 10,
               alignItems: 'flex-start',
               width: '96%',
@@ -308,22 +307,33 @@ export const DataPickerPopup = React.memo(
             }}
             data-testid={DataPickerPopupTestId}
           >
-            <UIGridRow
-              padded
-              variant='<-------1fr------>|----80px----|'
-              css={{ marginBottom: 4, alignSelf: 'stretch' }}
+            <div
+              css={{
+                overflowX: 'scroll',
+                whiteSpace: 'nowrap',
+                display: 'flex',
+                flexDirection: 'row',
+                gap: 16,
+                padding: '2px',
+              }}
             >
-              <div style={{ fontWeight: 600, flexGrow: 1, color: colorTheme.fg1.value }}>Data</div>
-              <PopupList
-                containerMode='showBorderOnHover'
-                options={filterOptions}
-                value={{
-                  value: preferredAllState,
-                  label: dataPickerFilterOptionToString(preferredAllState),
-                }}
-                onSubmitValue={setMode}
-              />
-            </UIGridRow>
+              {filterOptions.map((option, index) => (
+                <div
+                  key={index}
+                  css={{
+                    color: colorTheme.white.value,
+                    fontWeight: 500,
+                    opacity: preferredAllState === option.value ? 1 : 0.4,
+                    '&:hover': {
+                      opacity: 1,
+                    },
+                  }}
+                  onClick={handleFilterOptionClick(option)}
+                >
+                  {option.label}
+                </div>
+              ))}
+            </div>
             <DataPickerPopupSubvariables
               preferredAllState={preferredAllState}
               pickerType={pickerType}
@@ -396,21 +406,18 @@ function ValueRow({
       <Button
         data-testid={VariableFromScopeOptionTestId(idx)}
         style={{
-          borderRadius: 8,
+          borderRadius: 4,
           width: '100%',
-          height: 29,
-          marginTop: variableChildren != null && variableOption.depth === 0 ? 12 : 0, // add some space between top-level variables
+          height: 28,
+          marginTop: variableChildren != null && variableOption.depth === 0 ? 6 : 0, // add some space between top-level variables
           cursor: variableOption.variableInfo.matches ? 'pointer' : 'default',
-          background: currentExpressionExactMatch
-            ? colorTheme.secondaryBackground.value
-            : undefined,
+          background: currentExpressionExactMatch ? colorTheme.primary.value : undefined,
+          color: currentExpressionExactMatch ? colorTheme.white.value : undefined,
         }}
         onClick={isArray ? stopPropagation : tweakProperty}
         css={{
           '&:hover': {
-            backgroundColor: variableOption.variableInfo.matches
-              ? colorTheme.secondaryBackground.value
-              : 'inherit',
+            backgroundColor: colorTheme.primary30.value,
           },
         }}
       >
@@ -420,7 +427,7 @@ function ValueRow({
           style={{
             justifyContent: 'space-between',
             alignItems: 'flex-start',
-            gap: 8,
+            gap: 10,
             width: '100%',
             minHeight: 'auto',
             gridTemplateColumns: '48% 48%',
@@ -461,7 +468,6 @@ function ValueRow({
             <span
               style={{
                 fontWeight: 400,
-                color: colorTheme.neutralForeground.value,
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
                 maxWidth: 130,
@@ -543,7 +549,7 @@ function PrefixIcon({
       onClick={onClick}
     >
       {hasObjectChildren ? (
-        <ExpandableIndicator visible collapsed={!open} selected={false} />
+        <ExpandableIndicator visible collapsed={!open} selected={false} iconColor='white' />
       ) : null}
     </span>
   )
@@ -558,7 +564,6 @@ function ArrayPaginator({
   totalChildCount: number
   setSelectedIndex: (index: number) => void
 }) {
-  const colorTheme = useColorTheme()
   const increaseIndex = useCallback(() => {
     setSelectedIndex(Math.min(totalChildCount - 1, selectedIndex + 1))
   }, [selectedIndex, setSelectedIndex, totalChildCount])
@@ -570,7 +575,6 @@ function ArrayPaginator({
       css={{
         alignItems: 'center',
         fontSize: 10,
-        color: colorTheme.neutralForeground.value,
       }}
     >
       <div onClick={decreaseIndex} style={{ cursor: 'pointer', paddingLeft: 4, paddingRight: 4 }}>
