@@ -218,7 +218,7 @@ const darkTheme: typeof light = {
   navigatorComponentSelected: darkBase.componentChild20,
   navigatorComponentIconBorder: darkBase.componentChild,
 
-  contextMenuBackground: darkBase.bg1,
+  contextMenuBackground: darkBase.bg0,
   contextMenuForeground: darkBase.white,
   contextMenuHighlightForeground: darkBase.white,
   contextMenuHighlightBackground: darkBase.primary,
