@@ -1198,7 +1198,6 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         height: 22,
         paddingLeft: 5,
         paddingRight: props.codeItemType === 'map' ? 0 : 5,
-        textTransform: isCodeItem ? 'uppercase' : undefined,
       }}
     >
       {unless(
@@ -1223,24 +1222,20 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         />,
       )}
 
-      <ItemLabel
-        key={`label-${props.label}`}
-        testId={`navigator-item-label-${props.label}`}
-        name={props.label}
-        isDynamic={props.isDynamic}
-        target={props.navigatorEntry}
-        selected={props.selected}
-        dispatch={props.dispatch}
-        inputVisible={EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath)}
-        remixItemType={props.remixItemType}
-      />
-      <div
-        style={{
-          textTransform: 'initial',
-        }}
-      >
-        <MapListSourceCartouche target={props.navigatorEntry.elementPath} openOn='double-click' />
+      <div style={{ textTransform: isCodeItem ? 'uppercase' : undefined }}>
+        <ItemLabel
+          key={`label-${props.label}`}
+          testId={`navigator-item-label-${props.label}`}
+          name={props.label}
+          isDynamic={props.isDynamic}
+          target={props.navigatorEntry}
+          selected={props.selected}
+          dispatch={props.dispatch}
+          inputVisible={EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath)}
+          remixItemType={props.remixItemType}
+        />
       </div>
+      <MapListSourceCartouche target={props.navigatorEntry.elementPath} openOn='double-click' />
       <MapCounter navigatorEntry={props.navigatorEntry} dispatch={props.dispatch} />
       <ComponentPreview
         key={`preview-${props.label}`}
