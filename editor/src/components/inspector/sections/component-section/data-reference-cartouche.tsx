@@ -72,19 +72,18 @@ export const DataReferenceCartoucheControl = React.memo(
   },
 )
 
+interface DataCartoucheInnerProps {
+  onClick: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
+  onDoubleClick: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
+  selected: boolean
+  contentsToDisplay: { type: 'literal' | 'reference'; label: string | null }
+  safeToDelete: boolean
+  onDelete: () => void
+  testId: string
+}
+
 export const DataCartoucheInner = React.forwardRef(
-  (
-    props: {
-      onClick: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
-      onDoubleClick: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
-      selected: boolean
-      contentsToDisplay: { type: 'literal' | 'reference'; label: string | null }
-      safeToDelete: boolean
-      onDelete: () => void
-      testId: string
-    },
-    ref: React.Ref<HTMLDivElement>,
-  ) => {
+  (props: DataCartoucheInnerProps, ref: React.Ref<HTMLDivElement>) => {
     const { onClick, onDoubleClick, safeToDelete, onDelete, selected, contentsToDisplay } = props
 
     const onDeleteInner = React.useCallback(
