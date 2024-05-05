@@ -220,8 +220,8 @@ const darkTheme: typeof light = {
 
   contextMenuBackground: darkBase.bg1,
   contextMenuForeground: darkBase.white,
-  contextMenuHighlightForeground: darkBase.bg1,
-  contextMenuHighlightBackground: darkBase.dynamicBlue,
+  contextMenuHighlightForeground: darkBase.white,
+  contextMenuHighlightBackground: darkBase.primary,
   contextMenuSeparator: createUtopiColor('rgba(255,255,255,0.35)'),
 
   inspectorHoverColor: darkBase.fg8,
