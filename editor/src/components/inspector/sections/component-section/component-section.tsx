@@ -90,7 +90,6 @@ import {
   modifiableAttributeToValuePath,
   jsExpressionOtherJavaScriptSimple,
   jsIdentifier,
-  isJSXParsedValue,
 } from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import type { VariableData } from '../../../canvas/ui-jsx-canvas'
@@ -390,11 +389,7 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
   }
 
   const isConnectedToData = React.useMemo(() => {
-    return (
-      propMetadata.propertyStatus.set &&
-      propMetadata.value != null &&
-      isInternalOrExternalComponent(propMetadata.value)
-    )
+    return propMetadata.propertyStatus.controlled
   }, [propMetadata])
 
   const propertyLabel =
@@ -1225,10 +1220,3 @@ const objectPropertyLabelStyle = {
   fontWeight: 500,
   gap: 4,
 } as const
-
-function isInternalOrExternalComponent(value: unknown): boolean {
-  return (
-    isJSXParsedValue(value) &&
-    (value.type === 'external-component' || value.type === 'internal-component')
-  )
-}
