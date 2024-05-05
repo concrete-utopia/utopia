@@ -33,6 +33,7 @@ import { allComments } from './comment-flags'
 import type { Optic } from './optics/optics'
 import { fromField } from './optics/optic-creators'
 import { jsxSimpleAttributeToValue } from './jsx-attribute-utils'
+import type { JSXParsedType, JSXParsedValue } from '../../utils/value-parser-utils'
 
 export interface ParsedComments {
   leadingComments: Array<Comment>
@@ -2950,4 +2951,30 @@ export function clearJSArbitraryStatementUniqueIDs(
     default:
       assertNever(statement)
   }
+}
+
+export function isJSXParsedType(value: unknown): value is JSXParsedType {
+  const maybe = value as JSXParsedType
+  if (value == null || typeof value !== 'string') {
+    return false
+  }
+  switch (maybe) {
+    case 'null':
+    case 'string':
+    case 'number':
+    case 'html':
+    case 'internal-component':
+    case 'external-component':
+    case 'unknown':
+      return true
+    default:
+      assertNever(maybe)
+  }
+}
+
+export function isJSXParsedValue(value: unknown): value is JSXParsedValue {
+  const maybe = value as JSXParsedValue
+  return (
+    value != null && typeof value === 'object' && maybe.name != null && isJSXParsedType(maybe.type)
+  )
 }

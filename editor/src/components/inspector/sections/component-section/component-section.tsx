@@ -90,6 +90,7 @@ import {
   modifiableAttributeToValuePath,
   jsExpressionOtherJavaScriptSimple,
   jsIdentifier,
+  isJSXParsedValue,
 } from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import type { VariableData } from '../../../canvas/ui-jsx-canvas'
@@ -388,11 +389,11 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
     setIsHovered(false)
   }
 
-  const isValueSet = React.useMemo(() => {
+  const isConnectedToData = React.useMemo(() => {
     return (
       propMetadata.propertyStatus.set &&
       propMetadata.value != null &&
-      !isPossiblyDefaultForPropValue(propMetadata.value)
+      isInternalOrExternalComponent(propMetadata.value)
     )
   }, [propMetadata])
 
@@ -419,7 +420,7 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
               alignItems: 'center',
               gap: 6,
               color:
-                dataPickerButtonData.popupIsOpen || isHovered || isValueSet
+                dataPickerButtonData.popupIsOpen || isHovered || isConnectedToData
                   ? colorTheme.dynamicBlue.value
                   : undefined,
               cursor: isHovered ? 'pointer' : 'default',
@@ -435,7 +436,9 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
                 category='semantic'
                 type='plus-in-white-translucent-circle'
                 color={
-                  dataPickerButtonData.popupIsOpen || isHovered || !isValueSet ? 'dynamic' : 'main'
+                  dataPickerButtonData.popupIsOpen || isHovered || !isConnectedToData
+                    ? 'dynamic'
+                    : 'main'
                 }
                 width={12}
                 height={12}
@@ -1223,15 +1226,9 @@ const objectPropertyLabelStyle = {
   gap: 4,
 } as const
 
-function isPossiblyDefaultForPropValue(value: unknown) {
-  switch (typeof value) {
-    case 'boolean':
-      return value === false
-    case 'number':
-      return value === 0
-    case 'string':
-      return value === ''
-    default:
-      return false
-  }
+function isInternalOrExternalComponent(value: unknown): boolean {
+  return (
+    isJSXParsedValue(value) &&
+    (value.type === 'external-component' || value.type === 'internal-component')
+  )
 }
