@@ -159,9 +159,6 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
         gap: 0,
         width: '100%',
         height: '100%',
-        padding: 0,
-        color: dark.fg3.value,
-        colorScheme: 'dark',
         borderRadius: 10,
       }}
       onKeyDown={onKeyDown}
@@ -189,7 +186,7 @@ const ComponentPickerTopSection = React.memo((props: ComponentPickerTopSectionPr
   return (
     <div
       style={{
-        padding: '8px 8px',
+        padding: '0px 8px 8px 8px',
         display: 'flex',
         flexDirection: 'column',
       }}
@@ -241,7 +238,7 @@ const FilterBar = React.memo((props: FilterBarProps) => {
   return (
     <input
       css={{
-        height: 25,
+        height: 28,
         paddingLeft: 8,
         paddingRight: 8,
         background: 'transparent',
@@ -317,22 +314,14 @@ const ComponentPickerComponentSection = React.memo(
               onMouseOver={onItemHover(component.value)}
               data-key={component.value.key}
             >
-              <UIGridRow
-                variant='|--32px--|<--------auto-------->'
-                padded={false}
-                // required to overwrite minHeight on the bloody thing
-                style={{ minHeight: 29 }}
-                css={{
-                  height: 27,
-                }}
-              >
+              <FlexRow css={{ gap: 10, height: 28, alignItems: 'center' }}>
                 <Icn
                   {...iconPropsForIcon(component.value.icon ?? 'regular')}
                   width={12}
                   height={12}
                 />
                 <label>{component.label}</label>
-              </UIGridRow>
+              </FlexRow>
             </FlexRow>
           )
 
