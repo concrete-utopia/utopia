@@ -389,7 +389,11 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
   }
 
   const isValueSet = React.useMemo(() => {
-    return propMetadata.propertyStatus.set
+    return (
+      propMetadata.propertyStatus.set &&
+      propMetadata.value != null &&
+      !isPossiblyDefaultForPropValue(propMetadata.value)
+    )
   }, [propMetadata])
 
   const propertyLabel =
@@ -415,15 +419,16 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
               alignItems: 'center',
               gap: 6,
               color:
-                dataPickerButtonData.popupIsOpen || isHovered || !isValueSet
+                dataPickerButtonData.popupIsOpen || isHovered || isValueSet
                   ? colorTheme.dynamicBlue.value
                   : undefined,
+              cursor: isHovered ? 'pointer' : 'default',
             }}
           >
             {title}
             <div
               style={{
-                opacity: isHovered || dataPickerButtonData.popupIsOpen || !isValueSet ? 1 : 0,
+                opacity: isHovered || dataPickerButtonData.popupIsOpen ? 1 : 0,
               }}
             >
               <Icn
@@ -1217,3 +1222,16 @@ const objectPropertyLabelStyle = {
   fontWeight: 500,
   gap: 4,
 } as const
+
+function isPossiblyDefaultForPropValue(value: unknown) {
+  switch (typeof value) {
+    case 'boolean':
+      return value === false
+    case 'number':
+      return value === 0
+    case 'string':
+      return value === ''
+    default:
+      return false
+  }
+}
