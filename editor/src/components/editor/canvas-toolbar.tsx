@@ -24,7 +24,6 @@ import {
   openFloatingInsertMenu,
   resetCanvas,
   setRightMenuTab,
-  showToast,
   switchEditorMode,
   wrapInElement,
 } from './actions/action-creators'
@@ -74,12 +73,6 @@ import { useAllowedToEditProject, useIsMyProject } from './store/collaborative-e
 import { useCanComment, useReadThreads } from '../../core/commenting/comment-hooks'
 import { pluck } from '../../core/shared/array-utils'
 import { MultiplayerWrapper } from '../../utils/multiplayer-wrapper'
-import { HEADERS, MODE } from '../../common/server'
-import urljoin from 'url-join'
-import { getProjectID } from '../../common/env-vars'
-import { REQUEST_UPDATE_CONTEXT_GLOABAL_HACKED } from './store/remix-derived-data'
-import { isLeft } from '../../core/shared/either'
-import { notice } from '../common/notice'
 import { useAtom } from 'jotai'
 import { RemixNavigationAtom } from '../canvas/remix/utopia-remix-root-component'
 

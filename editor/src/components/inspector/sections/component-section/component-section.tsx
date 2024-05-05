@@ -406,57 +406,6 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
     return propMetadata.propertyStatus.set
   }, [propMetadata])
 
-  const propertyLabel =
-    props.label == null ? (
-      <PropertyLabel
-        controlStyles={labelControlStyle}
-        target={[propPath]}
-        style={{
-          textTransform: 'capitalize',
-          paddingLeft: indentation - 8,
-          alignSelf: 'flex-start',
-        }}
-      >
-        <Tooltip title={title}>
-          <div
-            onClick={dataPickerButtonData.openPopup}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-            style={{
-              lineHeight: `${UtopiaTheme.layout.inputHeight.default}px`,
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 6,
-              color:
-                dataPickerButtonData.popupIsOpen || isHovered || !isValueSet
-                  ? colorTheme.dynamicBlue.value
-                  : undefined,
-            }}
-          >
-            {title}
-            <div
-              style={{
-                opacity: isHovered || dataPickerButtonData.popupIsOpen || !isValueSet ? 1 : 0,
-              }}
-            >
-              <Icn
-                category='semantic'
-                type='plus-in-white-translucent-circle'
-                color={
-                  dataPickerButtonData.popupIsOpen || isHovered || !isValueSet ? 'dynamic' : 'main'
-                }
-                width={12}
-                height={12}
-              />
-            </div>
-          </div>
-        </Tooltip>
-      </PropertyLabel>
-    ) : (
-      <props.label />
-    )
-
   // TODO: make it work for multiple selected views
   const selectedView = selectedViews.at(0) ?? EP.emptyElementPath
 
@@ -469,6 +418,71 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
     maybeDataPath,
     'metaobject-edit-popup',
   )
+
+  const propertyLabel =
+    props.label == null ? (
+      <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+        <PropertyLabel
+          controlStyles={labelControlStyle}
+          target={[propPath]}
+          style={{
+            textTransform: 'capitalize',
+            paddingLeft: indentation - 8,
+            alignSelf: 'flex-start',
+          }}
+        >
+          <Tooltip title={title}>
+            <div
+              onClick={dataPickerButtonData.openPopup}
+              style={{
+                lineHeight: `${UtopiaTheme.layout.inputHeight.default}px`,
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 6,
+                color:
+                  dataPickerButtonData.popupIsOpen || isHovered || !isValueSet
+                    ? colorTheme.dynamicBlue.value
+                    : undefined,
+              }}
+            >
+              {title}
+              <div
+                style={{
+                  opacity: isHovered || dataPickerButtonData.popupIsOpen || !isValueSet ? 1 : 0,
+                }}
+              >
+                <Icn
+                  category='semantic'
+                  type='plus-in-white-translucent-circle'
+                  color={
+                    dataPickerButtonData.popupIsOpen || isHovered || !isValueSet
+                      ? 'dynamic'
+                      : 'main'
+                  }
+                  width={12}
+                  height={12}
+                />
+              </div>
+            </div>
+          </Tooltip>
+          <FlexRow
+            style={{
+              opacity: isHovered || dataPickerButtonData.popupIsOpen || !isValueSet ? 1 : 0,
+            }}
+          >
+            <Tooltip title={'Edit metafield'}>
+              <div>{metaobjectPickerData == null ? null : metaobjectPickerData.Opener}</div>
+            </Tooltip>
+            {metaobjectPickerData == null || !metaobjectPickerData.editPopupVisible
+              ? null
+              : metaobjectPickerData.Popup}
+          </FlexRow>
+        </PropertyLabel>
+      </div>
+    ) : (
+      <props.label />
+    )
 
   if (controlDescription.control === 'none') {
     // do not list anything for `none` controls
@@ -483,35 +497,25 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
       data={null}
     >
       {dataPickerButtonData.popupIsOpen ? dataPickerButtonData.DataPickerComponent : null}
-      <UIGridRow
-        padded={false}
-        style={{ paddingLeft: 0, paddingRight: 8, paddingTop: 3, paddingBottom: 3 }}
-        variant='<----------1fr---------><-auto->'
-      >
-        <UIGridRow padded={false} variant='<--1fr--><--1fr-->|-18px-|'>
-          {propertyLabel}
-          <div
-            style={{
-              minWidth: 0, // this ensures that the div can never expand the allocated grid space
-            }}
-            ref={dataPickerButtonData.setReferenceElement}
-          >
-            <ControlForProp
-              propPath={propPath}
-              propName={propName}
-              controlDescription={controlDescription}
-              propMetadata={propMetadata}
-              setGlobalCursor={props.setGlobalCursor}
-              focusOnMount={props.focusOnMount}
-              onOpenDataPicker={dataPickerButtonData.openPopup}
-              showHiddenControl={props.showHiddenControl}
-            />
-          </div>
-        </UIGridRow>
-        <FlexRow>
-          {metaobjectPickerData?.editPopupVisible ? metaobjectPickerData.Popup : null}
-          {metaobjectPickerData == null ? null : metaobjectPickerData.Opener}
-        </FlexRow>
+      <UIGridRow padded={false} style={{ padding: '3px 0px 3px 8px' }} variant='<--1fr--><--1fr-->'>
+        {propertyLabel}
+        <div
+          style={{
+            minWidth: 0, // this ensures that the div can never expand the allocated grid space
+          }}
+          ref={dataPickerButtonData.setReferenceElement}
+        >
+          <ControlForProp
+            propPath={propPath}
+            propName={propName}
+            controlDescription={controlDescription}
+            propMetadata={propMetadata}
+            setGlobalCursor={props.setGlobalCursor}
+            focusOnMount={props.focusOnMount}
+            onOpenDataPicker={dataPickerButtonData.openPopup}
+            showHiddenControl={props.showHiddenControl}
+          />
+        </div>
       </UIGridRow>
     </InspectorContextMenuWrapper>
   )
