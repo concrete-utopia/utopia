@@ -454,6 +454,8 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
 
   useGithubPolling()
 
+  useClearSelectionOnNavigation()
+
   const portalTarget = document.getElementById(CanvasContextMenuPortalTargetID)
 
   return (
@@ -562,7 +564,6 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
         keyUp={onWindowKeyUp}
       />
       <CommentMaintainer />
-      <ClearSelectionOnNavigation />
     </>
   )
 })
@@ -798,7 +799,7 @@ const LockedOverlay = React.memo(() => {
   )
 })
 
-const ClearSelectionOnNavigation = () => {
+const useClearSelectionOnNavigation = () => {
   const dispatch = useDispatch()
   const [remixNavigation] = useAtom(RemixNavigationAtom)
   const paths = Object.values(remixNavigation)
@@ -808,6 +809,4 @@ const ClearSelectionOnNavigation = () => {
   React.useEffect(() => {
     dispatch([EditorActions.clearSelection()])
   }, [dispatch, paths])
-
-  return <></>
 }
