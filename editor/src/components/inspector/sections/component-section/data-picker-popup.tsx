@@ -6,7 +6,7 @@ import React, { useCallback } from 'react'
 import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import type { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
-import { useColorTheme, Button, FlexColumn, UtopiaStyles, PopupList } from '../../../../uuiui'
+import { useColorTheme, Button, FlexColumn, UtopiaStyles } from '../../../../uuiui'
 import {
   insertJSXElement,
   setProp_UNSAFE,
