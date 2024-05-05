@@ -50,7 +50,7 @@ export type InspectorSpec = 'all' | Styling[]
 export const EmphasisOptions = ['subdued', 'regular', 'emphasized'] as const
 export type Emphasis = (typeof EmphasisOptions)[number]
 
-export declare const IconOptions: readonly [
+export const IconOptions: readonly [
   'body',
   'clickable',
   'code',
