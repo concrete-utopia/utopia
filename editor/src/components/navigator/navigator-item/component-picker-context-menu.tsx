@@ -342,7 +342,7 @@ function moreItem(
   showComponentPickerContextMenu: ShowComponentPickerContextMenu,
 ): ContextMenuItem<unknown> {
   return {
-    name: <FlexRow style={{ paddingLeft: 22 }}>More...</FlexRow>,
+    name: <FlexRow style={{ paddingLeft: 22 }}>More…</FlexRow>,
     enabled: true,
     action: (_data, _dispatch, _rightClickCoordinate, e) => {
       const currentMenu = (menuWrapperRef.current?.childNodes[0] as HTMLDivElement) ?? null
