@@ -77,7 +77,7 @@ export type DataPickerFilterOption = (typeof DataPickerFilterOptions)[number]
 export function dataPickerFilterOptionToString(mode: DataPickerFilterOption): string {
   switch (mode) {
     case 'all':
-      return 'All'
+      return 'All Data'
     case 'preferred':
       return 'Preferred'
     default:
@@ -259,6 +259,14 @@ export const DataPickerPopup = React.memo(
       [],
     )
 
+    const handleFilterOptionClick = useCallback(
+      (option: { value: any }) => (e: React.MouseEvent) => {
+        e.stopPropagation()
+        setMode({ value: option.value })
+      },
+      [setMode],
+    )
+
     return (
       <InspectorModal
         offsetX={10}
@@ -305,7 +313,7 @@ export const DataPickerPopup = React.memo(
                 whiteSpace: 'nowrap',
                 display: 'flex',
                 flexDirection: 'row',
-                gap: 12,
+                gap: 16,
                 padding: '2px',
               }}
             >
@@ -320,10 +328,9 @@ export const DataPickerPopup = React.memo(
                       opacity: 1,
                     },
                   }}
-                  /* eslint-disable-next-line react/jsx-no-bind */
-                  onClick={() => setMode(option)}
+                  onClick={handleFilterOptionClick(option)}
                 >
-                  {option.label + ' ' + 'Data'}
+                  {option.label}
                 </div>
               ))}
             </div>
