@@ -393,7 +393,6 @@ import {
   modifyUnderlyingTarget,
 } from '../store/editor-state'
 import {
-  areGeneratedElementsTargeted,
   BaseCanvasOffset,
   BaseCanvasOffsetLeftPane,
   editorModelFromPersistentModel,
