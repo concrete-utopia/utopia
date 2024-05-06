@@ -285,7 +285,12 @@ const ComponentPickerComponentSection = React.memo(
     return (
       <div
         data-role='component-scroll'
-        style={{ maxHeight: 250, overflowY: 'scroll', scrollbarWidth: 'auto' }}
+        style={{
+          maxHeight: 250,
+          overflowY: 'scroll',
+          scrollbarWidth: 'auto',
+          scrollbarColor: 'gray transparent',
+        }}
         onScroll={onScroll}
       >
         {components.map((component) => {
