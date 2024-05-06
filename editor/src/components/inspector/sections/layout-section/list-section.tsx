@@ -101,6 +101,7 @@ function filterVariableOption(option: VariableOption): VariableOption | null {
     case 'object':
       const chilren = filterKeepArraysOnly(option.children)
       if (chilren.length === 0) {
+        // no array-valued children found
         return null
       }
       return {
