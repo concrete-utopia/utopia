@@ -1,6 +1,7 @@
 import React from 'react'
 import type { EditorAction, EditorDispatch } from './action-types'
 import { useDispatch } from './store/dispatch-context'
+import { CanvasContextMenuPortalTargetID } from '../../core/shared/utils'
 
 type EventHandler<K extends keyof WindowEventMap, R> = (this: Window, event: WindowEventMap[K]) => R
 
@@ -52,8 +53,10 @@ function createHandler<K extends keyof WindowEventMap>(
     const windowEventHandler = (event: WindowEventMap[K]) => {
       // check if it's a keyboard event and if .react-contexify exists in the body
       if (
-        ['keydown', 'keyup', 'keypress'].includes(event.type) &&
-        document.body.querySelector('.react-contexify') != null
+        ['keydown', 'keyup'].includes(event.type) &&
+        document
+          .getElementById(CanvasContextMenuPortalTargetID)
+          ?.querySelector('.react-contexify') != null
       ) {
         return
       }
