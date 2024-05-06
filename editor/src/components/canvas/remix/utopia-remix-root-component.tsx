@@ -20,11 +20,18 @@ import { UiJsxCanvasCtxAtom } from '../ui-jsx-canvas'
 import type { UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { AlwaysFalse, usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
-import { CreateRemixDerivedDataRefsGLOBAL } from '../../editor/store/remix-derived-data'
+import {
+  CreateRemixDerivedDataRefsGLOBAL,
+  REQUEST_UPDATE_CONTEXT_GLOABAL_HACKED,
+  initRequestUpdateContextGlobalHacked,
+} from '../../editor/store/remix-derived-data'
 import { patchRoutesWithContext } from '../../../third-party/remix/create-remix-stub'
 import type { AppLoadContext } from '@remix-run/server-runtime'
+import type { Either } from '../../../core/shared/either'
+import { right } from '../../../core/shared/either'
 
 type RouteModule = RouteModules[keyof RouteModules]
+
 type RouterType = ReturnType<typeof createMemoryRouter>
 
 interface RemixNavigationContext {
@@ -34,6 +41,7 @@ interface RemixNavigationContext {
   navigate: (loc: string) => Promise<void>
   location: Location
   entries: Array<Location>
+  revalidate: () => void
 }
 
 export interface RemixNavigationAtomData {
@@ -163,7 +171,6 @@ function useGetRouteModules(basePath: ElementPath) {
 
 export const RouteExportsForRouteObject: Array<keyof RouteObject> = [
   'action',
-  'loader',
   'handle',
   'shouldRevalidate',
 ]
@@ -201,17 +208,48 @@ function useGetRoutes(
         // we only ever pass in an empty object for the `routeModules` and never mutate it
         const creatorForRoute = creators[route.id] ?? null
         if (creatorForRoute != null) {
+          const createExecutionScope = () =>
+            creatorForRoute.executionScopeCreator(
+              projectContentsRef.current,
+              fileBlobsRef.current,
+              hiddenInstancesRef.current,
+              displayNoneInstancesRef.current,
+              metadataContext,
+            ).scope
+
           for (const routeExport of RouteExportsForRouteObject) {
-            route[routeExport] = (args: any) =>
-              creatorForRoute
-                .executionScopeCreator(
-                  projectContentsRef.current,
-                  fileBlobsRef.current,
-                  hiddenInstancesRef.current,
-                  displayNoneInstancesRef.current,
-                  metadataContext,
-                )
-                .scope[routeExport]?.(args) ?? null
+            route[routeExport] = (args: any) => createExecutionScope()[routeExport]?.(args) ?? null
+          }
+
+          const connectToMetaObjectsFn =
+            createExecutionScope()['connectToMetaObjects'] == null
+              ? createExecutionScope()['connectToMetaObjects']
+              : (...args: any[]): Either<string, any> => {
+                  const requestUpdateFn = createExecutionScope()['connectToMetaObjects']
+                  return right(requestUpdateFn(...args))
+                }
+
+          const loader =
+            createExecutionScope()['loader'] == null
+              ? createExecutionScope()['loader']
+              : (...args: any) => {
+                  initRequestUpdateContextGlobalHacked(route.id)
+                  const result = createExecutionScope()['loader'](...args)
+
+                  result.then((data: any) => {
+                    REQUEST_UPDATE_CONTEXT_GLOABAL_HACKED[route.id].lastLoaderResult = data.data
+                  })
+                  return result
+                }
+
+          route['loader'] = loader
+          if (connectToMetaObjectsFn != null) {
+            initRequestUpdateContextGlobalHacked(route.id)
+            REQUEST_UPDATE_CONTEXT_GLOABAL_HACKED[route.id].requestUpdateCallback = (
+              dataPath,
+              context,
+              valueToSet,
+            ) => connectToMetaObjectsFn(dataPath, context, valueToSet)
           }
         }
 
@@ -341,6 +379,7 @@ export const UtopiaRemixRootComponent = (props: UtopiaRemixRootComponentProps) =
             navigate: (loc: string) => innerRouter.navigate(loc),
             location: location,
             entries: updatedEntries,
+            revalidate: () => innerRouter.revalidate(),
           },
         }
       })

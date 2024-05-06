@@ -101,8 +101,11 @@ import { DataPickerPopup, dataPickerForAProperty } from './data-picker-popup'
 import { jsxElementChildToText } from '../../../canvas/ui-jsx-canvas-renderer/jsx-element-child-to-text'
 import { foldEither } from '../../../../core/shared/either'
 import { stopPropagation } from '../../common/inspector-utils'
+import { useMetaobjectEditPopup } from './metaobject-edit-popup'
 import { NO_OP, identity } from '../../../../core/shared/utils'
 import { IdentifierExpressionCartoucheControl } from './cartouche-control'
+import { traceDataFromProp } from '../../../../core/data-tracing/data-tracing'
+import * as EPP from '../../../template-property-path'
 import { getRegisteredComponent } from '../../../../core/property-controls/property-controls-utils'
 
 export const VariableFromScopeOptionTestId = (idx: string) => `variable-from-scope-${idx}`
@@ -362,6 +365,18 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
     'RowForBaseControl selectedViews',
   )
 
+  const metadata = useEditorState(
+    Substores.metadata,
+    (store) => store.editor.jsxMetadata,
+    'RowForBaseControl metadata',
+  )
+
+  const projectContents = useEditorState(
+    Substores.projectContents,
+    (store) => store.editor.projectContents,
+    'RowForBaseControl projectContents',
+  )
+
   const propMetadata = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
   const contextMenuItems = Utils.stripNulls([
     addOnUnsetValues([propName], propMetadata.onUnsetValues),
@@ -394,56 +409,84 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
     )
   }, [propMetadata])
 
+  // TODO: make it work for multiple selected views
+  const selectedView = selectedViews.at(0) ?? EP.emptyElementPath
+
+  const trace = traceDataFromProp(EPP.create(selectedView, propPath), metadata, projectContents, [])
+  const maybeDataPath = trace.type !== 'hook-result' ? null : trace.dataPathIntoAttribute
+
+  const metaobjectPickerData = useMetaobjectEditPopup(
+    selectedViews.at(0) ?? EP.emptyElementPath,
+    propPath,
+    maybeDataPath,
+    'metaobject-edit-popup',
+  )
+
   const propertyLabel =
     props.label == null ? (
-      <PropertyLabel
-        controlStyles={labelControlStyle}
-        target={[propPath]}
-        style={{
-          textTransform: 'capitalize',
-          paddingLeft: indentation - 8,
-          alignSelf: 'flex-start',
-        }}
-      >
-        <Tooltip title={title}>
-          <div
-            onClick={dataPickerButtonData.openPopup}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-            style={{
-              lineHeight: `${UtopiaTheme.layout.inputHeight.default}px`,
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 6,
-              color:
-                dataPickerButtonData.popupIsOpen || isHovered || isConnectedToData
-                  ? colorTheme.dynamicBlue.value
-                  : undefined,
-              cursor: 'pointer',
-            }}
-          >
-            {title}
-            <div
+      <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+        <PropertyLabel
+          controlStyles={labelControlStyle}
+          target={[propPath]}
+          style={{
+            textTransform: 'capitalize',
+            paddingLeft: indentation - 8,
+            alignSelf: 'flex-start',
+          }}
+        >
+          <FlexRow style={{ gap: 6 }}>
+            <Tooltip title={title}>
+              <div
+                onClick={dataPickerButtonData.openPopup}
+                style={{
+                  lineHeight: `${UtopiaTheme.layout.inputHeight.default}px`,
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 6,
+                  color:
+                    dataPickerButtonData.popupIsOpen || isHovered || isConnectedToData
+                      ? colorTheme.dynamicBlue.value
+                      : undefined,
+                  cursor: 'pointer',
+                }}
+              >
+                {title}
+                <div
+                  style={{
+                    opacity: isHovered || dataPickerButtonData.popupIsOpen ? 1 : 0,
+                  }}
+                >
+                  <Icn
+                    category='semantic'
+                    type='plus-in-white-translucent-circle'
+                    color={
+                      dataPickerButtonData.popupIsOpen || isHovered || !isConnectedToData
+                        ? 'dynamic'
+                        : 'main'
+                    }
+                    width={12}
+                    height={12}
+                  />
+                </div>
+              </div>
+            </Tooltip>
+            <FlexRow
               style={{
-                opacity: isHovered || dataPickerButtonData.popupIsOpen ? 1 : 0,
+                opacity:
+                  isHovered || dataPickerButtonData.popupIsOpen || !isConnectedToData ? 1 : 0,
               }}
             >
-              <Icn
-                category='semantic'
-                type='plus-in-white-translucent-circle'
-                color={
-                  dataPickerButtonData.popupIsOpen || isHovered || !isConnectedToData
-                    ? 'dynamic'
-                    : 'main'
-                }
-                width={12}
-                height={12}
-              />
-            </div>
-          </div>
-        </Tooltip>
-      </PropertyLabel>
+              <Tooltip title={'Edit metafield'}>
+                <div>{metaobjectPickerData == null ? null : metaobjectPickerData.Opener}</div>
+              </Tooltip>
+              {metaobjectPickerData == null || !metaobjectPickerData.editPopupVisible
+                ? null
+                : metaobjectPickerData.Popup}
+            </FlexRow>
+          </FlexRow>
+        </PropertyLabel>
+      </div>
     ) : (
       <props.label />
     )

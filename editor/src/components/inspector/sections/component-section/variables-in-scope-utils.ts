@@ -12,8 +12,9 @@ import * as PP from '../../../../core/shared/property-path'
 import React from 'react'
 import { useGetPropertyControlsForSelectedComponents } from '../../common/property-controls-hooks'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
-import { assertNever, identity } from '../../../../core/shared/utils'
+import { arrayEqualsByValue, assertNever, identity } from '../../../../core/shared/utils'
 import { isValidReactNode } from '../../../../utils/react-utils'
+import { is } from '../../../../core/shared/equality-utils'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 
 function valuesFromObject(
