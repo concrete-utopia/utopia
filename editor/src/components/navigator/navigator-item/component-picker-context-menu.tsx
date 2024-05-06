@@ -345,7 +345,8 @@ function moreItem(
     name: <FlexRow style={{ paddingLeft: 22 }}>More…</FlexRow>,
     enabled: true,
     action: (_data, _dispatch, _rightClickCoordinate, e) => {
-      const currentMenu = (menuWrapperRef.current?.childNodes[0] as HTMLDivElement) ?? null
+      // FIXME Yeah this is horrific
+      const currentMenu = (menuWrapperRef.current?.childNodes[1] as HTMLDivElement) ?? null
       const position =
         currentMenu == null
           ? undefined
@@ -611,9 +612,7 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
       .concat([separatorItem, moreItem(wrapperRef, showFullMenu)])
 
     return (
-      <div ref={wrapperRef}>
-        <ContextMenuWrapper items={items} data={{}} id={PreferredMenuId} />
-      </div>
+      <ContextMenuWrapper items={items} data={{}} id={PreferredMenuId} forwardRef={wrapperRef} />
     )
   },
 )
