@@ -139,7 +139,7 @@ export function runSimpleLocalEditorAction(
     case 'LOAD':
       return UPDATE_FNS.LOAD(action, state, dispatch, collaborativeEditingSupport)
     case 'DUPLICATE_SELECTED':
-      return UPDATE_FNS.DUPLICATE_SELECTED(state, dispatch)
+      return UPDATE_FNS.DUPLICATE_SELECTED(state)
     case 'UPDATE_DUPLICATION_STATE':
       return UPDATE_FNS.UPDATE_DUPLICATION_STATE(action, state)
     case 'MOVE_SELECTED_TO_BACK':
@@ -335,15 +335,15 @@ export function runSimpleLocalEditorAction(
     case 'SAVE_CURRENT_FILE':
       return UPDATE_FNS.SAVE_CURRENT_FILE(action, state)
     case 'DELETE_VIEW':
-      return UPDATE_FNS.DELETE_VIEW(action, state, dispatch)
+      return UPDATE_FNS.DELETE_VIEW(action, state)
     case 'DELETE_SELECTED':
       return UPDATE_FNS.DELETE_SELECTED(state, dispatch)
     case 'WRAP_IN_ELEMENT':
-      return UPDATE_FNS.WRAP_IN_ELEMENT(action, state, derivedState, dispatch)
+      return UPDATE_FNS.WRAP_IN_ELEMENT(action, state, derivedState)
     case 'OPEN_FLOATING_INSERT_MENU':
       return UPDATE_FNS.OPEN_FLOATING_INSERT_MENU(action, state)
     case 'UNWRAP_ELEMENTS':
-      return UPDATE_FNS.UNWRAP_ELEMENTS(action, state, dispatch, builtInDependencies)
+      return UPDATE_FNS.UNWRAP_ELEMENTS(action, state, builtInDependencies)
     case 'INSERT_IMAGE_INTO_UI':
       return UPDATE_FNS.INSERT_IMAGE_INTO_UI(action, state, userState)
     case 'UPDATE_JSX_ELEMENT_NAME':

@@ -81,7 +81,7 @@ export function isAllowedToReparent(
   elementToReparent: ElementPath,
   targetParentPath: ElementPath,
 ): boolean {
-  if (MetadataUtils.isElementGenerated(elementToReparent)) {
+  if (MetadataUtils.isElementDirectlyGenerated(elementToReparent)) {
     return false
   }
 
@@ -124,7 +124,7 @@ export function isAllowedToNavigatorReparent(
   startingMetadata: ElementInstanceMetadataMap,
   target: ElementPath,
 ): boolean {
-  if (MetadataUtils.isElementGenerated(target)) {
+  if (MetadataUtils.isElementDirectlyGenerated(target)) {
     return false
   } else {
     const metadata = MetadataUtils.findElementByElementPath(startingMetadata, target)
@@ -151,9 +151,6 @@ export function canCopyElement(
   target: ElementPath,
 ): Either<string, ElementPath> {
   const metadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
-  if (MetadataUtils.isElementGenerated(target)) {
-    return left('Cannot copy generated element')
-  }
 
   if (metadata == null) {
     const parentPath = EP.parentPath(target)
