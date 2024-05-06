@@ -251,6 +251,7 @@ export class InspectorContextMenuWrapper<T> extends ReactComponent<
               width: '100%',
               height: '100%',
             }}
+            localXHack_KILLME='local-x-coord-KILLME'
           >
             {this.props.children}
           </MenuProvider>
@@ -270,6 +271,7 @@ interface MenuProviderProps {
   id: string
   itemsLength: number
   style?: React.CSSProperties
+  localXHack_KILLME?: 'local-x-coord-KILLME' | 'default' // FIXME: remove this, this is just here because react-contexify positions the context menu to the global position of the mouse, so MomentumContextMenu should in the root
 }
 
 export const MenuProvider: React.FunctionComponent<React.PropsWithChildren<MenuProviderProps>> = (
@@ -279,10 +281,14 @@ export const MenuProvider: React.FunctionComponent<React.PropsWithChildren<MenuP
   const onContextMenu = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
       if (props.itemsLength > 0) {
-        show(event, { position: { x: event.nativeEvent.offsetX, y: event.nativeEvent.pageY } })
+        if (props.localXHack_KILLME === 'local-x-coord-KILLME') {
+          show(event, { position: { x: event.nativeEvent.offsetX, y: event.nativeEvent.pageY } })
+        } else {
+          show(event)
+        }
       }
     },
-    [props.itemsLength, show],
+    [props.itemsLength, props.localXHack_KILLME, show],
   )
 
   return (
