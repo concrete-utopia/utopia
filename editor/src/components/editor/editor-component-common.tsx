@@ -51,7 +51,7 @@ function createHandler<K extends keyof WindowEventMap>(
     return null
   } else {
     const windowEventHandler = (event: WindowEventMap[K]) => {
-      // check if it's a keyboard event and if .react-contexify exists in the body
+      // check if it's a keyboard event and if react-contexify is open
       if (
         ['keydown', 'keyup'].includes(event.type) &&
         document.body.classList.contains(BodyMenuOpenClass)
