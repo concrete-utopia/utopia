@@ -449,6 +449,7 @@ function ValueRow({
           cursor: variableOption.variableInfo.matches ? 'pointer' : 'default',
           background: currentExpressionExactMatch ? colorTheme.primary.value : undefined,
           color: currentExpressionExactMatch ? colorTheme.white.value : undefined,
+          paddingLeft: variableOption.depth * 8,
         }}
         onClick={onClickTopLevelButton}
         css={{
