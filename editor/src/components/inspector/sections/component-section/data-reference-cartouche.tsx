@@ -117,7 +117,7 @@ export const DataCartoucheInner = React.forwardRef(
       : 'secondary'
 
     const borderColor = inverted
-      ? colorTheme.neutralInvertedBackground.value
+      ? colorTheme.neutralInvertedForeground.value
       : colorTheme.primary.value
 
     const foregroundColor = inverted
@@ -125,8 +125,11 @@ export const DataCartoucheInner = React.forwardRef(
       : contentsToDisplay.type === 'reference'
       ? colorTheme.primary.value
       : colorTheme.neutralForeground.value
+
     const backgroundColor =
-      contentsToDisplay.type === 'reference' ? primaryColorToUse : colorTheme.bg4.value
+      contentsToDisplay.type === 'reference'
+        ? colorTheme.primary10.value
+        : colorTheme.fg0Opacity10.value
 
     const label = contentsToDisplay.label ?? 'DATA'
 
