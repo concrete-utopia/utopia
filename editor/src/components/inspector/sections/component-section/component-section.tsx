@@ -389,7 +389,10 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
   }
 
   const isConnectedToData = React.useMemo(() => {
-    return propMetadata.propertyStatus.controlled
+    return (
+      propMetadata.propertyStatus.controlled &&
+      propMetadata.attributeExpression?.type !== 'JSX_ELEMENT'
+    )
   }, [propMetadata])
 
   const propertyLabel =
