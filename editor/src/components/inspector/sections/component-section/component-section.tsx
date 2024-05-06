@@ -91,6 +91,7 @@ import {
   jsExpressionOtherJavaScriptSimple,
   jsIdentifier,
   getJSXElementNameAsString,
+  isImportedOrigin,
 } from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import type { VariableData } from '../../../canvas/ui-jsx-canvas'
@@ -102,6 +103,7 @@ import { foldEither } from '../../../../core/shared/either'
 import { stopPropagation } from '../../common/inspector-utils'
 import { NO_OP } from '../../../../core/shared/utils'
 import { IdentifierExpressionCartoucheControl } from './cartouche-control'
+import { getRegisteredComponent } from '../../../../core/property-controls/property-controls-utils'
 
 export const VariableFromScopeOptionTestId = (idx: string) => `variable-from-scope-${idx}`
 export const DataPickerPopupButtonTestId = `data-picker-popup-button-test-id`
@@ -1096,7 +1098,13 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
     }
   }, [dispatch, locationOfComponentInstance])
 
-  const componentName = useEditorState(
+  const propertyControlsInfo = useEditorState(
+    Substores.propertyControlsInfo,
+    (store) => store.editor.propertyControlsInfo,
+    'ComponentsectionInner propertyControlsInfo',
+  )
+
+  const componentData = useEditorState(
     Substores.metadata,
     (store) => {
       if (
@@ -1117,7 +1125,22 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
         return null
       }
 
-      return getJSXElementNameAsString(targetJSXElement.name)
+      const elementName = getJSXElementNameAsString(targetJSXElement.name)
+
+      const exportedName = isImportedOrigin(elementImportInfo)
+        ? elementImportInfo.exportedName ?? elementName
+        : elementName
+
+      const registeredComponent = getRegisteredComponent(
+        exportedName,
+        elementImportInfo.filePath,
+        propertyControlsInfo,
+      )
+
+      return {
+        name: elementName,
+        isRegisteredComponent: registeredComponent != null,
+      }
     },
     'ComponentSectionInner componentName',
   )
@@ -1146,10 +1169,10 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
               gap: 8,
             }}
           >
-            {componentName != null ? (
+            {componentData != null ? (
               <React.Fragment>
-                <span>{componentName}</span>
-                <span style={{ fontSize: 6 }}>◇</span>
+                <span>{componentData.name}</span>
+                {when(componentData.isRegisteredComponent, <span style={{ fontSize: 6 }}>◇</span>)}
               </React.Fragment>
             ) : (
               <span>Component</span>
