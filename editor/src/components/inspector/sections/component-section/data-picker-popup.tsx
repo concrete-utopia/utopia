@@ -42,6 +42,7 @@ export interface PrimitiveOption {
   definedElsewhere: string
   depth: number
   valuePath: Array<string | number>
+  disabled: boolean
 }
 
 export interface ArrayOption {
@@ -51,6 +52,7 @@ export interface ArrayOption {
   definedElsewhere: string
   children: Array<VariableOption>
   valuePath: Array<string | number>
+  disabled: boolean
 }
 
 export interface ObjectOption {
@@ -60,6 +62,7 @@ export interface ObjectOption {
   definedElsewhere: string
   children: Array<VariableOption>
   valuePath: Array<string | number>
+  disabled: boolean
 }
 
 export interface JSXOption {
@@ -68,6 +71,7 @@ export interface JSXOption {
   definedElsewhere: string
   depth: number
   valuePath: Array<string | number>
+  disabled: boolean
 }
 
 export type VariableOption = PrimitiveOption | ArrayOption | ObjectOption | JSXOption
@@ -165,6 +169,7 @@ export interface DataPickerPopupSubvariablesProps {
   preferredAllState: DataPickerFilterOption
   pickerType: DataPickerType
   onTweakProperty: (name: string, definedElsewhere: string | null) => (e: React.MouseEvent) => void
+  customizeOptions: (_: VariableOption[]) => VariableOption[]
 }
 
 export const DataPickerPopupSubvariables = React.memo((props: DataPickerPopupSubvariablesProps) => {
@@ -175,9 +180,14 @@ export const DataPickerPopupSubvariables = React.memo((props: DataPickerPopupSub
     preferredAllState,
   )
 
+  const filteredVariableNamesInScope = React.useMemo(
+    () => props.customizeOptions(variableNamesInScope),
+    [props, variableNamesInScope],
+  )
+
   return (
     <>
-      {variableNamesInScope.map((variableOption, idx) => {
+      {filteredVariableNamesInScope.map((variableOption, idx) => {
         return (
           <ValueRow
             key={variableOption.valuePath.toString()}
@@ -194,6 +204,7 @@ export const DataPickerPopupSubvariables = React.memo((props: DataPickerPopupSub
 
 export interface DataPickerPopupProps {
   closePopup: () => void
+  customizeOptions: (_: VariableOption[]) => VariableOption[]
   style: React.CSSProperties
   pickerType: DataPickerType
 }
@@ -338,6 +349,7 @@ export const DataPickerPopup = React.memo(
               preferredAllState={preferredAllState}
               pickerType={pickerType}
               onTweakProperty={onTweakProperty}
+              customizeOptions={props.customizeOptions}
             />
           </FlexColumn>
         </div>
@@ -401,6 +413,30 @@ function ValueRow({
     pickerType.propExpressionPath != null &&
     arrayEqualsByValue(variableOption.valuePath, pickerType.propExpressionPath, is)
 
+  const onClickTopLevelButton = React.useCallback(
+    (e: React.MouseEvent) => {
+      if (variableOption.disabled) {
+        return
+      }
+      if (isArray) {
+        return stopPropagation(e)
+      }
+      return tweakProperty(e)
+    },
+    [isArray, stopPropagation, tweakProperty, variableOption.disabled],
+  )
+
+  const onClickVariable = React.useCallback(
+    (e: React.MouseEvent) => {
+      if (variableOption.disabled) {
+        return
+      }
+
+      return tweakProperty(e)
+    },
+    [tweakProperty, variableOption.disabled],
+  )
+
   return (
     <>
       <Button
@@ -414,7 +450,7 @@ function ValueRow({
           background: currentExpressionExactMatch ? colorTheme.primary.value : undefined,
           color: currentExpressionExactMatch ? colorTheme.white.value : undefined,
         }}
-        onClick={isArray ? stopPropagation : tweakProperty}
+        onClick={onClickTopLevelButton}
         css={{
           '&:hover': {
             backgroundColor: colorTheme.primary30.value,
@@ -433,7 +469,7 @@ function ValueRow({
             gridTemplateColumns: '48% 48%',
           }}
         >
-          <div onClick={tweakProperty} data-label='left column cell'>
+          <div onClick={onClickVariable} data-label='left column cell'>
             <div
               data-testid={`variable-from-scope-span-${variableOption.valuePath}`}
               style={{ display: 'grid', gridTemplateColumns: '16px 1fr' }}
@@ -449,7 +485,8 @@ function ValueRow({
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
-                  opacity: variableOption.variableInfo.matches ? 1 : 0.5,
+                  opacity:
+                    variableOption.variableInfo.matches && !variableOption.disabled ? 1 : 0.5,
                 }}
               >
                 {overriddenTitle ?? variableOption.variableInfo.expressionPathPart}
@@ -457,41 +494,42 @@ function ValueRow({
             </div>
           </div>
 
-          <div
-            data-label='right-column cell'
-            style={{
-              display: 'flex',
-              width: '94%',
-            }}
-            onClick={isArray ? stopPropagation : tweakProperty}
-          >
-            <span
+          {variableChildren == null || variableChildren.length === 0 ? null : (
+            <div
+              data-label='right-column cell'
               style={{
-                fontWeight: 400,
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                maxWidth: 130,
-                overflow: 'hidden',
-                opacity: variableOption.variableInfo.matches ? 1 : 0.5,
+                display: 'flex',
+                width: '94%',
               }}
+              onClick={isArray ? stopPropagation : tweakProperty}
             >
-              {isArray ? (
-                <ArrayPaginator
-                  selectedIndex={selectedIndex}
-                  totalChildCount={childrenLength}
-                  setSelectedIndex={setSelectedIndex}
-                />
-              ) : (
-                <div style={{ opacity: 0.3 }}>{valueToDisplay(variableOption)}</div>
-              )}
-            </span>
-          </div>
+              <span
+                style={{
+                  fontWeight: 400,
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  maxWidth: 130,
+                  overflow: 'hidden',
+                  opacity: variableOption.variableInfo.matches ? 1 : 0.5,
+                }}
+              >
+                {isArray ? (
+                  <ArrayPaginator
+                    selectedIndex={selectedIndex}
+                    totalChildCount={childrenLength}
+                    setSelectedIndex={setSelectedIndex}
+                  />
+                ) : (
+                  <div style={{ opacity: 0.3 }}>{valueToDisplay(variableOption)}</div>
+                )}
+              </span>
+            </div>
+          )}
         </UIGridRow>
       </Button>
-      {variableChildren != null ? (
+      {variableChildren != null && variableChildren.at(selectedIndex) != null ? (
         isArray ? (
           <ValueRow
-            key={variableChildren[selectedIndex].valuePath.toString()}
             variableOption={variableChildren[selectedIndex]}
             idx={`${idx}-${selectedIndex}`}
             onTweakProperty={onTweakProperty}
