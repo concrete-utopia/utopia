@@ -90,39 +90,34 @@ function getMapExpressionMetadata(
 
 export const ListSectionTestId = 'list-section'
 
-const isArrayOption = (o: VariableOption) => {
-  switch (o.type) {
-    case 'array':
-      return true
-    case 'object':
-      return o.children.some(isArrayOption)
-    case 'jsx':
-    case 'primitive':
-      return false
-    default:
-      assertNever(o)
-  }
-}
-
-function filterVariableOption(option: VariableOption): VariableOption {
+function filterVariableOption(option: VariableOption): VariableOption | null {
   switch (option.type) {
     case 'array':
-    case 'object':
       return {
         ...option,
         children: filterKeepArraysOnly(option.children),
+        disabled: false,
+      }
+    case 'object':
+      const chilren = filterKeepArraysOnly(option.children)
+      if (chilren.length === 0) {
+        return null
+      }
+      return {
+        ...option,
+        children: chilren,
         disabled: true,
       }
     case 'jsx':
     case 'primitive':
-      return { ...option, disabled: true }
+      return null
     default:
       assertNever(option)
   }
 }
 
 function filterKeepArraysOnly(options: VariableOption[]): VariableOption[] {
-  return options.map((o) => filterVariableOption(o)).filter((o) => isArrayOption(o))
+  return mapDropNulls((o) => filterVariableOption(o), options)
 }
 
 function useDataPickerButton(selectedElements: Array<ElementPath>) {
