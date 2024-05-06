@@ -38,7 +38,7 @@ import type { PreferredChildComponentDescriptor } from '../../custom-code/intern
 import { fixUtopiaElement, generateConsistentUID } from '../../../core/shared/uid-utils'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { elementFromInsertMenuItem } from '../../editor/insert-callbacks'
-import { MomentumContextMenu } from '../../context-menu-wrapper'
+import { ContextMenuWrapper, MomentumContextMenu } from '../../context-menu-wrapper'
 import { NO_OP, assertNever } from '../../../core/shared/utils'
 import { type ContextMenuItem } from '../../context-menu-items'
 import { FlexRow, Icn, type IcnProps } from '../../../uuiui'
@@ -609,7 +609,7 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
 
     return (
       <div ref={wrapperRef}>
-        <MomentumContextMenu id={PreferredMenuId} items={items} getData={NO_OP} />
+        <ContextMenuWrapper items={items} data={{}} id={PreferredMenuId} />
       </div>
     )
   },

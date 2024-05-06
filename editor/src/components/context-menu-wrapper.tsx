@@ -170,7 +170,7 @@ export class MomentumContextMenu<T> extends ReactComponent<ContextMenuProps<T>> 
 }
 
 export class ContextMenuWrapper<T> extends ReactComponent<
-  ContextMenuWrapperProps<T> & { dispatch: EditorDispatch; children?: React.ReactNode }
+  ContextMenuWrapperProps<T> & { dispatch?: EditorDispatch; children?: React.ReactNode }
 > {
   getData = () => this.props.data
   wrapperStopPropagation = (event: React.MouseEvent<HTMLElement>) => {

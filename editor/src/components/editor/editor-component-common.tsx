@@ -50,6 +50,13 @@ function createHandler<K extends keyof WindowEventMap>(
     return null
   } else {
     const windowEventHandler = (event: WindowEventMap[K]) => {
+      // check if it's a keyboard event and if .react-contexify exists in the body
+      if (
+        ['keydown', 'keyup', 'keypress'].includes(event.type) &&
+        document.body.querySelector('.react-contexify') != null
+      ) {
+        return
+      }
       const collatedActions = handlers.flatMap((handler) => {
         return handler.bind(window)(event)
       })
