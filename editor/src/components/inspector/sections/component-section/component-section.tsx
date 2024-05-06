@@ -90,6 +90,8 @@ import {
   modifiableAttributeToValuePath,
   jsExpressionOtherJavaScriptSimple,
   jsIdentifier,
+  getJSXElementNameAsString,
+  isImportedOrigin,
 } from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import type { VariableData } from '../../../canvas/ui-jsx-canvas'
@@ -101,6 +103,7 @@ import { foldEither } from '../../../../core/shared/either'
 import { stopPropagation } from '../../common/inspector-utils'
 import { NO_OP } from '../../../../core/shared/utils'
 import { IdentifierExpressionCartoucheControl } from './cartouche-control'
+import { getRegisteredComponent } from '../../../../core/property-controls/property-controls-utils'
 
 export const VariableFromScopeOptionTestId = (idx: string) => `variable-from-scope-${idx}`
 export const DataPickerPopupButtonTestId = `data-picker-popup-button-test-id`
@@ -1101,6 +1104,53 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
     }
   }, [dispatch, locationOfComponentInstance])
 
+  const propertyControlsInfo = useEditorState(
+    Substores.propertyControlsInfo,
+    (store) => store.editor.propertyControlsInfo,
+    'ComponentsectionInner propertyControlsInfo',
+  )
+
+  const componentData = useEditorState(
+    Substores.metadata,
+    (store) => {
+      if (
+        propertyControlsAndTargets.length === 0 ||
+        propertyControlsAndTargets[0].targets.length !== 1
+      ) {
+        return null
+      }
+
+      const element = MetadataUtils.findElementByElementPath(
+        store.editor.jsxMetadata,
+        propertyControlsAndTargets[0].targets[0],
+      )
+
+      const targetJSXElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(element)
+      const elementImportInfo = element?.importInfo
+      if (elementImportInfo == null || targetJSXElement == null) {
+        return null
+      }
+
+      const elementName = getJSXElementNameAsString(targetJSXElement.name)
+
+      const exportedName = isImportedOrigin(elementImportInfo)
+        ? elementImportInfo.exportedName ?? elementName
+        : elementName
+
+      const registeredComponent = getRegisteredComponent(
+        exportedName,
+        elementImportInfo.filePath,
+        propertyControlsInfo,
+      )
+
+      return {
+        name: elementName,
+        isRegisteredComponent: registeredComponent != null,
+      }
+    },
+    'ComponentSectionInner componentName',
+  )
+
   return (
     <React.Fragment>
       <FlexRow
@@ -1118,12 +1168,21 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
           <div
             onClick={OpenFile}
             style={{
-              color: colorTheme.componentPurple.value,
               fontWeight: 600,
               cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
             }}
           >
-            Component
+            {componentData != null ? (
+              <React.Fragment>
+                <span>{componentData.name}</span>
+                {when(componentData.isRegisteredComponent, <span style={{ fontSize: 6 }}>◇</span>)}
+              </React.Fragment>
+            ) : (
+              <span>Component</span>
+            )}
           </div>
         </FlexRow>
         <SquareButton highlight onClick={toggleSection}>
