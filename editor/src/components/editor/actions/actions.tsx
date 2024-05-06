@@ -3869,10 +3869,10 @@ export const UPDATE_FNS = {
     })
   },
   UPDATE_GITHUB_DATA: (action: UpdateGithubData, editor: EditorModel): EditorModel => {
-    const newPublicRepos = [
-      ...editor.githubData.publicRepositories,
-      ...(action.data.publicRepositories ?? []),
-    ]
+    const newPublicRepos = uniqBy(
+      [...editor.githubData.publicRepositories, ...(action.data.publicRepositories ?? [])],
+      (a, b) => a.fullName === b.fullName,
+    )
     return {
       ...editor,
       githubData: {
