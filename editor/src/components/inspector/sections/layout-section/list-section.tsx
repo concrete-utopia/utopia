@@ -100,14 +100,14 @@ function filterVariableOption(option: VariableOption): VariableOption | null {
         disabled: false,
       }
     case 'object':
-      const chilren = filterKeepArraysOnly(option.children)
-      if (chilren.length === 0) {
+      const children = filterKeepArraysOnly(option.children)
+      if (children.length === 0) {
         // no array-valued children found
         return null
       }
       return {
         ...option,
-        children: chilren,
+        children: children,
         disabled: true,
       }
     case 'jsx':
