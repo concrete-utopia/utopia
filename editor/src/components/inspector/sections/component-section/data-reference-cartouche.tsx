@@ -95,6 +95,7 @@ export const DataCartoucheInner = React.forwardRef(
       selected,
       inverted,
       contentsToDisplay,
+      contentIsComingFromServer,
     } = props
 
     const onDeleteInner = React.useCallback(
@@ -104,6 +105,10 @@ export const DataCartoucheInner = React.forwardRef(
       },
       [onDelete],
     )
+
+    const primaryColorToUse = contentIsComingFromServer
+      ? colorTheme.brandNeonGreen.value
+      : colorTheme.primary10.value
 
     const cartoucheIconColor = inverted
       ? 'on-highlight-main'
@@ -121,7 +126,7 @@ export const DataCartoucheInner = React.forwardRef(
       ? colorTheme.primary.value
       : colorTheme.neutralForeground.value
     const backgroundColor =
-      contentsToDisplay.type === 'reference' ? colorTheme.primary10.value : colorTheme.bg4.value
+      contentsToDisplay.type === 'reference' ? primaryColorToUse : colorTheme.bg4.value
 
     const label = contentsToDisplay.label ?? 'DATA'
 

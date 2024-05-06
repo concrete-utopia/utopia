@@ -166,7 +166,7 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
           testId={`cartouche-${PP.toString(props.propPath)}`}
           safeToDelete={safeToDelete}
           propertyPath={props.propPath}
-          elementPath={props}
+          elementPath={props.elementPath}
         />
       )
     }
@@ -187,6 +187,7 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
             testId={`cartouche-${PP.toString(props.propPath)}`}
             propertyPath={props.propPath}
             safeToDelete={safeToDelete}
+            elementPath={props.elementPath}
           />
         )
       }
@@ -481,6 +482,7 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
             focusOnMount={props.focusOnMount}
             onOpenDataPicker={dataPickerButtonData.openPopup}
             showHiddenControl={props.showHiddenControl}
+            elementPath={selectedViews.at(0) ?? EP.emptyElementPath}
           />
         </div>
       </UIGridRow>
@@ -616,6 +618,7 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
               focusOnMount={props.focusOnMount}
               onOpenDataPicker={dataPickerButtonData.openPopup}
               showHiddenControl={props.showHiddenControl}
+              elementPath={selectedViews.at(0) ?? EP.emptyElementPath}
             />
           </FlexRow>
         </SimpleFlexRow>
@@ -918,6 +921,7 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
                   focusOnMount={props.focusOnMount}
                   onOpenDataPicker={dataPickerButtonData.openPopup}
                   showHiddenControl={props.showHiddenControl}
+                  elementPath={selectedViews.at(0) ?? EP.emptyElementPath}
                 />
               </div>
             </SimpleFlexRow>
