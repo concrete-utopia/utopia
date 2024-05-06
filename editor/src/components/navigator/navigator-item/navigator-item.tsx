@@ -640,7 +640,7 @@ export const NavigatorItem: React.FunctionComponent<
 
   const childComponentCount = props.noOfChildren
 
-  const isGenerated = MetadataUtils.isElementGenerated(navigatorEntry.elementPath)
+  const isGenerated = MetadataUtils.isElementOrAncestorGenerated(navigatorEntry.elementPath)
   const isDynamic = isGenerated || containsExpressions || isConditionalDynamicBranch
 
   const codeItemType: CodeItemType = useEditorState(

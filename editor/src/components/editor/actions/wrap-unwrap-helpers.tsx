@@ -145,7 +145,6 @@ export function unwrapConditionalClause(
 export function unwrapTextContainingConditional(
   editor: EditorState,
   target: ElementPath,
-  dispatch: EditorDispatch,
 ): EditorState {
   const conditional = findMaybeConditionalExpression(target, editor.jsxMetadata)
   if (conditional == null) {
@@ -205,7 +204,7 @@ export function unwrapTextContainingConditional(
     },
   )
 
-  return UPDATE_FNS.DELETE_VIEW(deleteView(target), withParentUpdated, dispatch)
+  return UPDATE_FNS.DELETE_VIEW(deleteView(target), withParentUpdated)
 }
 
 export function isTextContainingConditional(

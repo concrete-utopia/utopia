@@ -3332,12 +3332,6 @@ export function updateMainUIInEditorState(editor: EditorState, mainUI: string): 
   return updatePackageJsonInEditorState(editor, transformPackageJson)
 }
 
-export function areGeneratedElementsTargeted(targets: Array<ElementPath>): boolean {
-  return targets.some((target) => {
-    return MetadataUtils.isElementGenerated(target)
-  })
-}
-
 export function getAllCodeEditorErrors(
   codeEditorErrors: EditorStateCodeEditorErrors,
   minimumSeverity: ErrorMessageSeverity,

@@ -261,7 +261,7 @@ Array [
       Object {
         "defaultSize": null,
         "element": [Function],
-        "icon": "component",
+        "icon": "lists",
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -580,7 +580,7 @@ Array [
       Object {
         "defaultSize": null,
         "element": [Function],
-        "icon": "component",
+        "icon": "lists",
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
