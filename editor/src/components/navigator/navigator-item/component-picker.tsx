@@ -317,7 +317,7 @@ const ComponentPickerComponentSection = React.memo(
             >
               <FlexRow css={{ gap: 10, height: 28, alignItems: 'center' }}>
                 <Icn
-                  {...iconPropsForIcon(component.value.icon ?? 'regular')}
+                  {...iconPropsForIcon(component.value.icon ?? 'component')}
                   width={12}
                   height={12}
                 />
