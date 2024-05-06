@@ -279,7 +279,7 @@ export const MenuProvider: React.FunctionComponent<React.PropsWithChildren<MenuP
   const onContextMenu = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
       if (props.itemsLength > 0) {
-        show(event)
+        show(event, { position: { x: event.nativeEvent.offsetX, y: event.nativeEvent.pageY } })
       }
     },
     [props.itemsLength, show],
