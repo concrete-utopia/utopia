@@ -29,6 +29,7 @@ export interface ContextMenuWrapperProps<T> {
   style?: React.CSSProperties
   providerStyle?: React.CSSProperties
   testId?: string
+  forwardRef?: React.RefObject<HTMLDivElement>
 }
 
 export interface ContextMenuProps<T> {
@@ -178,7 +179,10 @@ export class MomentumContextMenu<T> extends ReactComponent<ContextMenuProps<T>> 
 }
 
 export class ContextMenuWrapper<T> extends ReactComponent<
-  ContextMenuWrapperProps<T> & { dispatch?: EditorDispatch; children?: React.ReactNode }
+  ContextMenuWrapperProps<T> & {
+    dispatch?: EditorDispatch
+    children?: React.ReactNode
+  }
 > {
   getData = () => this.props.data
   wrapperStopPropagation = (event: React.MouseEvent<HTMLElement>) => {
@@ -194,6 +198,7 @@ export class ContextMenuWrapper<T> extends ReactComponent<
         onMouseDown={this.wrapperStopPropagation}
         onMouseUp={this.wrapperStopPropagation}
         onClick={this.wrapperStopPropagation}
+        ref={this.props.forwardRef}
       >
         <MenuProvider
           key={`${this.props.id}-provider`}
