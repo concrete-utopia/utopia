@@ -16,6 +16,7 @@ import type { ContextMenuItem } from './context-menu-items'
 import type { EditorDispatch } from './editor/action-types'
 import type { WindowPoint } from '../core/shared/math-utils'
 import { windowPoint } from '../core/shared/math-utils'
+import { BodyMenuOpenClass } from '../core/shared/utils'
 
 export interface ContextMenuWrapperProps<T> {
   id: string
@@ -138,11 +139,18 @@ export class MomentumContextMenu<T> extends ReactComponent<ContextMenuProps<T>> 
     )
   }
 
+  onShown = () => {
+    document.body.classList.add(BodyMenuOpenClass)
+  }
+  onHidden = () => {
+    document.body.classList.remove(BodyMenuOpenClass)
+  }
+
   render() {
     const { id } = this.props
     const items = this.splitItemsForSubmenu(this.props.items)
     return (
-      <Menu key={id} id={id} animation={false}>
+      <Menu key={id} id={id} animation={false} onShown={this.onShown} onHidden={this.onHidden}>
         {items.map((item: Submenu<T> | SimpleItem<T>, index: number) => {
           if (item.type === 'submenu') {
             return (
