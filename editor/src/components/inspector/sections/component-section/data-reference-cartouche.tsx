@@ -11,7 +11,6 @@ import * as PP from '../../../../core/shared/property-path'
 import { NO_OP, assertNever } from '../../../../core/shared/utils'
 import { FlexRow, Icn, Icons, Tooltip, UtopiaStyles, colorTheme } from '../../../../uuiui'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
-import { IdentifierExpressionCartoucheControl } from './cartouche-control'
 import { useDataPickerButton } from './component-section'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { selectComponents } from '../../../editor/actions/meta-actions'
@@ -109,6 +108,11 @@ export const DataCartoucheInner = React.forwardRef(
       : contentsToDisplay.type === 'reference'
       ? 'primary'
       : 'secondary'
+
+    const borderColor = inverted
+      ? colorTheme.neutralInvertedBackground.value
+      : colorTheme.primary.value
+
     const foregroundColor = inverted
       ? colorTheme.neutralInvertedForeground.value
       : contentsToDisplay.type === 'reference'
@@ -134,7 +138,7 @@ export const DataCartoucheInner = React.forwardRef(
             fontSize: 10,
             color: foregroundColor,
             backgroundColor: backgroundColor,
-            border: selected ? '1px solid ' + foregroundColor : '1px solid transparent',
+            border: selected ? '1px solid ' + borderColor : '1px solid transparent',
             padding: '0px 4px',
             borderRadius: 4,
             height: 20,
