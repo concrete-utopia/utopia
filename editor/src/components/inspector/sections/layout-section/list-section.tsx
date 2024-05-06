@@ -15,7 +15,7 @@ import type {
 } from '../../../../core/shared/element-template'
 import { isJSXMapExpression } from '../../../../core/shared/element-template'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
-import { NO_OP } from '../../../../core/shared/utils'
+import { NO_OP, assertNever } from '../../../../core/shared/utils'
 import type { JSXParsedValue } from '../../../../utils/value-parser-utils'
 import {
   Button,
@@ -29,6 +29,7 @@ import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import type { MetadataSubstate } from '../../../editor/store/store-hook-substore-types'
 import { UIGridRow } from '../../widgets/ui-grid-row'
 import { DataPickerPopupButtonTestId } from '../component-section/component-section'
+import type { VariableOption } from '../component-section/data-picker-popup'
 import { DataPickerPopup, dataPickerForAnElement } from '../component-section/data-picker-popup'
 import { getTextContentOfElement } from '../component-section/data-reference-cartouche'
 import { JSXPropertyControlForListSection } from '../component-section/property-control-controls'
@@ -87,6 +88,37 @@ function getMapExpressionMetadata(
 
 export const ListSectionTestId = 'list-section'
 
+function filterVariableOption(option: VariableOption): VariableOption | null {
+  switch (option.type) {
+    case 'array':
+      return {
+        ...option,
+        children: filterKeepArraysOnly(option.children),
+        disabled: false,
+      }
+    case 'object':
+      const children = filterKeepArraysOnly(option.children)
+      if (children.length === 0) {
+        // no array-valued children found
+        return null
+      }
+      return {
+        ...option,
+        children: children,
+        disabled: true,
+      }
+    case 'jsx':
+    case 'primitive':
+      return null
+    default:
+      assertNever(option)
+  }
+}
+
+function filterKeepArraysOnly(options: VariableOption[]): VariableOption[] {
+  return mapDropNulls((o) => filterVariableOption(o), options)
+}
+
 export function useDataPickerButtonListSource(selectedElements: Array<ElementPath>) {
   const [referenceElement, setReferenceElement] = React.useState<HTMLDivElement | null>(null)
   const [popperElement, setPopperElement] = React.useState<HTMLDivElement | null>(null)
@@ -136,6 +168,7 @@ export function useDataPickerButtonListSource(selectedElements: Array<ElementPat
         closePopup={closePopup}
         ref={setPopperElement}
         pickerType={pickerType}
+        customizeOptions={filterKeepArraysOnly}
       />
     ),
     [closePopup, pickerType, popper.attributes.popper, popper.styles.popper],

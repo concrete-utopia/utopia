@@ -14,6 +14,7 @@ import { useGetPropertyControlsForSelectedComponents } from '../../common/proper
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { assertNever, identity } from '../../../../core/shared/utils'
 import { isValidReactNode } from '../../../../utils/react-utils'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 
 function valuesFromObject(
   variable: ArrayInfo | ObjectInfo,
@@ -39,6 +40,7 @@ function valuesFromObject(
           )
           .map(patchDefinedElsewhereInfo),
         valuePath: valuePath,
+        disabled: false,
       },
     ]
   } else if (variable.type === 'object') {
@@ -57,6 +59,7 @@ function valuesFromObject(
           )
           .map(patchDefinedElsewhereInfo),
         valuePath: valuePath,
+        disabled: false,
       },
     ]
   } else {
@@ -79,6 +82,7 @@ function valuesFromVariable(
           definedElsewhere: originalObjectName,
           depth: depth,
           valuePath: valuePath,
+          disabled: false,
         },
       ]
     case 'array':
@@ -92,6 +96,7 @@ function valuesFromVariable(
           definedElsewhere: originalObjectName,
           depth: depth,
           valuePath: valuePath,
+          disabled: false,
         },
       ]
     default:
@@ -276,6 +281,9 @@ function orderVariablesForRelevance(
 
     const valueExactlyMatchesPropertyName = variable.expressionPathPart === targetPropertyName
 
+    const variableCanBeMappedOver =
+      variable.type === 'array' && currentPropertyValue.type === 'mapped-value'
+
     const valueExactlyMatchesControlDescription =
       controlDescription?.control === 'jsx' && React.isValidElement(variable.value)
 
@@ -291,7 +299,7 @@ function orderVariablesForRelevance(
       (variable.type === 'array' && variable.elements.some((e) => e.matches)) ||
       (variable.type === 'object' && variable.props.some((e) => e.matches))
 
-    if (valueExactlyMatchesPropertyName) {
+    if (valueExactlyMatchesPropertyName || variableCanBeMappedOver) {
       valuesExactlyMatchingPropertyName.push({ ...variable, matches: true })
     } else if (valueExactlyMatchesControlDescription) {
       valuesExactlyMatchingPropertyDescription.push({ ...variable, matches: true })
@@ -528,7 +536,10 @@ function variableMatchesControlDescription(
   return matches
 }
 
-type PropertyValue = { type: 'existing'; value: unknown } | { type: 'not-found' }
+type PropertyValue =
+  | { type: 'existing'; value: unknown }
+  | { type: 'mapped-value' }
+  | { type: 'not-found' }
 
 function usePropertyValue(
   selectedView: ElementPath,
@@ -539,6 +550,17 @@ function usePropertyValue(
     (store) => store.editor.allElementProps,
     'usePropertyValue allElementProps',
   )
+
+  const metadata = useEditorState(
+    Substores.metadata,
+    (store) => store.editor.jsxMetadata,
+    'usePropertyValue metadata',
+  )
+
+  if (MetadataUtils.isJSXMapExpression(selectedView, metadata)) {
+    return { type: 'mapped-value' }
+  }
+
   const propsForThisElement = allElementProps[EP.toString(selectedView)] ?? null
   if (propsForThisElement == null) {
     return { type: 'not-found' }
