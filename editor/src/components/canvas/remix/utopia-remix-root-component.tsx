@@ -28,7 +28,7 @@ import {
 import { patchRoutesWithContext } from '../../../third-party/remix/create-remix-stub'
 import type { AppLoadContext } from '@remix-run/server-runtime'
 import type { Either } from '../../../core/shared/either'
-import { left, right } from '../../../core/shared/either'
+import { right } from '../../../core/shared/either'
 
 type RouteModule = RouteModules[keyof RouteModules]
 
@@ -221,11 +221,11 @@ function useGetRoutes(
             route[routeExport] = (args: any) => createExecutionScope()[routeExport]?.(args) ?? null
           }
 
-          const requestUpdate =
-            createExecutionScope()['requestUpdate'] == null
-              ? createExecutionScope()['requestUpdate']
+          const connectToMetaObjectsFn =
+            createExecutionScope()['connectToMetaObjects'] == null
+              ? createExecutionScope()['connectToMetaObjects']
               : (...args: any[]): Either<string, any> => {
-                  const requestUpdateFn = createExecutionScope()['requestUpdate']
+                  const requestUpdateFn = createExecutionScope()['connectToMetaObjects']
                   return right(requestUpdateFn(...args))
                 }
 
@@ -243,13 +243,13 @@ function useGetRoutes(
                 }
 
           route['loader'] = loader
-          if (requestUpdate != null) {
+          if (connectToMetaObjectsFn != null) {
             initRequestUpdateContextGlobalHacked(route.id)
             REQUEST_UPDATE_CONTEXT_GLOABAL_HACKED[route.id].requestUpdateCallback = (
               dataPath,
               context,
               valueToSet,
-            ) => requestUpdate(dataPath, context, valueToSet)
+            ) => connectToMetaObjectsFn(dataPath, context, valueToSet)
           }
         }
 
