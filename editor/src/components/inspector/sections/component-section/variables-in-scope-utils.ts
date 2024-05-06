@@ -39,6 +39,7 @@ function valuesFromObject(
           )
           .map(patchDefinedElsewhereInfo),
         valuePath: valuePath,
+        disabled: false,
       },
     ]
   } else if (variable.type === 'object') {
@@ -57,6 +58,7 @@ function valuesFromObject(
           )
           .map(patchDefinedElsewhereInfo),
         valuePath: valuePath,
+        disabled: false,
       },
     ]
   } else {
@@ -79,6 +81,7 @@ function valuesFromVariable(
           definedElsewhere: originalObjectName,
           depth: depth,
           valuePath: valuePath,
+          disabled: false,
         },
       ]
     case 'array':
@@ -92,6 +95,7 @@ function valuesFromVariable(
           definedElsewhere: originalObjectName,
           depth: depth,
           valuePath: valuePath,
+          disabled: false,
         },
       ]
     default:

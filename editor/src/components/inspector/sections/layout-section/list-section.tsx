@@ -15,7 +15,7 @@ import type {
 } from '../../../../core/shared/element-template'
 import { isJSXMapExpression } from '../../../../core/shared/element-template'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
-import { NO_OP } from '../../../../core/shared/utils'
+import { NO_OP, assertNever } from '../../../../core/shared/utils'
 import type { JSXParsedValue } from '../../../../utils/value-parser-utils'
 import {
   Button,
@@ -29,6 +29,7 @@ import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import type { MetadataSubstate } from '../../../editor/store/store-hook-substore-types'
 import { UIGridRow } from '../../widgets/ui-grid-row'
 import { DataPickerPopupButtonTestId } from '../component-section/component-section'
+import type { VariableOption } from '../component-section/data-picker-popup'
 import { DataPickerPopup, dataPickerForAnElement } from '../component-section/data-picker-popup'
 import {
   DataCartoucheInner,
@@ -89,6 +90,41 @@ function getMapExpressionMetadata(
 
 export const ListSectionTestId = 'list-section'
 
+const isArrayOption = (o: VariableOption) => {
+  switch (o.type) {
+    case 'array':
+      return true
+    case 'object':
+      return o.children.some(isArrayOption)
+    case 'jsx':
+    case 'primitive':
+      return false
+    default:
+      assertNever(o)
+  }
+}
+
+function filterVariableOption(option: VariableOption): VariableOption {
+  switch (option.type) {
+    case 'array':
+    case 'object':
+      return {
+        ...option,
+        children: filterKeepArraysOnly(option.children),
+        disabled: true,
+      }
+    case 'jsx':
+    case 'primitive':
+      return { ...option, disabled: true }
+    default:
+      assertNever(option)
+  }
+}
+
+function filterKeepArraysOnly(options: VariableOption[]): VariableOption[] {
+  return options.map((o) => filterVariableOption(o)).filter((o) => isArrayOption(o))
+}
+
 function useDataPickerButton(selectedElements: Array<ElementPath>) {
   const [referenceElement, setReferenceElement] = React.useState<HTMLDivElement | null>(null)
   const [popperElement, setPopperElement] = React.useState<HTMLDivElement | null>(null)
@@ -138,6 +174,7 @@ function useDataPickerButton(selectedElements: Array<ElementPath>) {
         closePopup={closePopup}
         ref={setPopperElement}
         pickerType={pickerType}
+        customizeOptions={filterKeepArraysOnly}
       />
     ),
     [closePopup, pickerType, popper.attributes.popper, popper.styles.popper],
@@ -185,13 +222,6 @@ export const ListSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
     (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, paths.at(0)),
     'ConditionalSection metadata',
   )
-
-  const controlDescription: ArrayControlDescription = {
-    control: 'array',
-    propertyControl: {
-      control: 'none',
-    },
-  }
 
   const { popupIsOpen, DataPickerOpener, DataPickerComponent, setReferenceElement, openPopup } =
     useDataPickerButton(paths)

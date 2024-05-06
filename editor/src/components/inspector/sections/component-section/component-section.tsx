@@ -99,7 +99,7 @@ import { DataPickerPopup, dataPickerForAProperty } from './data-picker-popup'
 import { jsxElementChildToText } from '../../../canvas/ui-jsx-canvas-renderer/jsx-element-child-to-text'
 import { foldEither } from '../../../../core/shared/either'
 import { stopPropagation } from '../../common/inspector-utils'
-import { NO_OP } from '../../../../core/shared/utils'
+import { NO_OP, identity } from '../../../../core/shared/utils'
 import { IdentifierExpressionCartoucheControl } from './cartouche-control'
 
 export const VariableFromScopeOptionTestId = (idx: string) => `variable-from-scope-${idx}`
@@ -298,11 +298,6 @@ export function useDataPickerButton(
 
   const selectedElement = selectedElements.at(0) ?? EP.emptyElementPath
 
-  const variablePickerButtonAvailable =
-    useVariablesInScopeForSelectedElement(selectedElement, propPath, 'all').length > 0
-  const variablePickerButtonTooltipText = variablePickerButtonAvailable
-    ? 'Pick data source'
-    : 'No data sources available'
   const propMetadata = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
 
   const propExpressionPath: Array<string | number> | null = React.useMemo(() => {
@@ -331,6 +326,7 @@ export function useDataPickerButton(
         closePopup={closePopup}
         ref={setPopperElement}
         pickerType={pickerType}
+        customizeOptions={identity}
       />
     ),
     [closePopup, pickerType, popper.attributes.popper, popper.styles.popper],
