@@ -73,15 +73,16 @@ export const IconOptions = [
   'link',
   'page',
   'paragraph',
-  'regular',
   'row',
   'section',
   'sfx',
   'solidframe',
   'star',
   'starfilled',
+  'text',
+  'title',
   'xframe',
-]
+] as const
 export type Icon = (typeof IconOptions)[number]
 
 export interface ComponentToRegister {

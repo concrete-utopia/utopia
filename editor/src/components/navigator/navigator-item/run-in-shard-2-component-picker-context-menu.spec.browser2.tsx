@@ -120,7 +120,7 @@ describe('The navigator component picker context menu', () => {
         },
         FlexCol: {
           component: FlexCol,
-          icon: 'regular',
+          icon: 'component',
           properties: {},
         },
         RandomComponent: {
@@ -536,7 +536,7 @@ describe('The navigator component picker context menu', () => {
     expect(flexColRow).not.toBeNull()
 
     const randomComponentRow = editor.renderedDOM.queryByTestId(
-      labelTestIdForComponentIcon('RandomComponent', '/src/utils', 'regular'),
+      labelTestIdForComponentIcon('RandomComponent', '/src/utils', 'component'),
     )
     expect(randomComponentRow).not.toBeNull()
   })
@@ -560,7 +560,7 @@ describe('The navigator component picker context menu', () => {
     expect(flexColRow).not.toBeNull()
 
     const randomComponentRow = editor.renderedDOM.queryByTestId(
-      labelTestIdForComponentIcon('RandomComponent', '/src/utils', 'regular'),
+      labelTestIdForComponentIcon('RandomComponent', '/src/utils', 'component'),
     )
     expect(randomComponentRow).not.toBeNull()
   })

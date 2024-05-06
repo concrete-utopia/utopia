@@ -133,12 +133,12 @@ function getIconForComponent(
   propertyControlsInfo: PropertyControlsInfo,
 ): Icon {
   if (moduleName == null) {
-    return 'regular'
+    return 'component'
   }
 
   const registeredComponent = getRegisteredComponent(targetName, moduleName, propertyControlsInfo)
 
-  return registeredComponent?.icon ?? 'regular'
+  return registeredComponent?.icon ?? 'component'
 }
 
 interface PreferredChildComponentDescriptorWithIcon extends PreferredChildComponentDescriptor {
