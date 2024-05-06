@@ -75,6 +75,7 @@ export const IconOptions = [
   'paragraph',
   'row',
   'section',
+  'scene',
   'sfx',
   'solidframe',
   'star',
