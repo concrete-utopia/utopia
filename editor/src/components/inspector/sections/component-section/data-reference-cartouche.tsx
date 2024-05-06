@@ -66,6 +66,7 @@ export const DataReferenceCartoucheControl = React.memo(
           inverted={false}
           onDelete={NO_OP}
           testId={`data-reference-cartouche-${EP.toString(elementPath)}`}
+          contentIsComingFromServer={false}
         />
       </>
     )
@@ -81,6 +82,7 @@ interface DataCartoucheInnerProps {
   safeToDelete: boolean
   onDelete: () => void
   testId: string
+  contentIsComingFromServer: boolean
 }
 
 export const DataCartoucheInner = React.forwardRef(

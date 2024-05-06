@@ -165,6 +165,8 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
           onDeleteCartouche={onDeleteCartouche}
           testId={`cartouche-${PP.toString(props.propPath)}`}
           safeToDelete={safeToDelete}
+          propertyPath={props.propPath}
+          elementPath={props}
         />
       )
     }
@@ -183,6 +185,7 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
             onOpenDataPicker={props.onOpenDataPicker}
             onDeleteCartouche={onDeleteCartouche}
             testId={`cartouche-${PP.toString(props.propPath)}`}
+            propertyPath={props.propPath}
             safeToDelete={safeToDelete}
           />
         )

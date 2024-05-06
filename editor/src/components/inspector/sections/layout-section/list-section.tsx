@@ -30,10 +30,7 @@ import type { MetadataSubstate } from '../../../editor/store/store-hook-substore
 import { UIGridRow } from '../../widgets/ui-grid-row'
 import { DataPickerPopupButtonTestId } from '../component-section/component-section'
 import { DataPickerPopup, dataPickerForAnElement } from '../component-section/data-picker-popup'
-import {
-  DataCartoucheInner,
-  getTextContentOfElement,
-} from '../component-section/data-reference-cartouche'
+import { getTextContentOfElement } from '../component-section/data-reference-cartouche'
 import { JSXPropertyControlForListSection } from '../component-section/property-control-controls'
 import { useVariablesInScopeForSelectedElement } from '../component-section/variables-in-scope-utils'
 import { MapListSourceCartouche } from './list-source-cartouche'
