@@ -163,8 +163,8 @@ export const MetaObjectUpdatePopup = React.forwardRef<HTMLDivElement, Metaobject
               maxWidth: '260px',
             }}
           >
-            <FlexColumn style={{ padding: '8px 4px', gap: 8 }}>
-              <FlexRow>
+            <FlexColumn style={{ padding: '8px 4px', gap: 8, maxWidth: '260px' }}>
+              {/* <FlexRow>
                 <a
                   href='https://admin.shopify.com/store/praiseful-pear/content/metaobjects/entries/product_ratings/8960933910'
                   target='_blank'
@@ -180,12 +180,13 @@ export const MetaObjectUpdatePopup = React.forwardRef<HTMLDivElement, Metaobject
                   width={16}
                   height={16}
                 />
-              </FlexRow>
+              </FlexRow> */}
               <FlexRow style={{ alignItems: 'center', gap: 8 }}>
                 <div
                   style={{
                     borderRadius: 4,
                     border: `1px solid ${colorTheme.subduedBorder.value}`,
+                    overflow: 'hidden',
                   }}
                 >
                   <StringInput
