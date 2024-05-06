@@ -355,6 +355,7 @@ export const DataPickerPopup = React.memo(
                 width: '100%',
                 scrollbarWidth: 'auto',
                 colorScheme: 'dark',
+                scrollbarColor: 'gray transparent',
               }}
             >
               <DataPickerPopupSubvariables

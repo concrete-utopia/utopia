@@ -58,6 +58,7 @@
 }
 .react-contexify__item__content {
   min-width: 190px;
+  width: 100%;
   padding-left: 8px;
   padding-right: 8px;
   display: flex;

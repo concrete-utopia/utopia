@@ -580,7 +580,7 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
 
         const submenuLabel = (
           <FlexRow
-            style={{ gap: 10 }}
+            style={{ gap: 10, width: 228 }}
             data-testId={labelTestIdForComponentIcon(data.name, data.moduleName ?? '', data.icon)}
           >
             <Icn {...iconProps} width={12} height={12} />
