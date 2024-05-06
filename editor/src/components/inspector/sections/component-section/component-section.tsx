@@ -90,6 +90,7 @@ import {
   modifiableAttributeToValuePath,
   jsExpressionOtherJavaScriptSimple,
   jsIdentifier,
+  getJSXElementNameAsString,
 } from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import type { VariableData } from '../../../canvas/ui-jsx-canvas'
@@ -1095,6 +1096,32 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
     }
   }, [dispatch, locationOfComponentInstance])
 
+  const componentName = useEditorState(
+    Substores.metadata,
+    (store) => {
+      if (
+        propertyControlsAndTargets.length === 0 ||
+        propertyControlsAndTargets[0].targets.length !== 1
+      ) {
+        return null
+      }
+
+      const element = MetadataUtils.findElementByElementPath(
+        store.editor.jsxMetadata,
+        propertyControlsAndTargets[0].targets[0],
+      )
+
+      const targetJSXElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(element)
+      const elementImportInfo = element?.importInfo
+      if (elementImportInfo == null || targetJSXElement == null) {
+        return null
+      }
+
+      return getJSXElementNameAsString(targetJSXElement.name)
+    },
+    'ComponentSectionInner componentName',
+  )
+
   return (
     <React.Fragment>
       <FlexRow
@@ -1112,12 +1139,21 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
           <div
             onClick={OpenFile}
             style={{
-              color: colorTheme.componentPurple.value,
               fontWeight: 600,
               cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
             }}
           >
-            Component
+            {componentName != null ? (
+              <React.Fragment>
+                <span>{componentName}</span>
+                <span style={{ fontSize: 6 }}>◇</span>
+              </React.Fragment>
+            ) : (
+              <span>Component</span>
+            )}
           </div>
         </FlexRow>
         <SquareButton highlight onClick={toggleSection}>
