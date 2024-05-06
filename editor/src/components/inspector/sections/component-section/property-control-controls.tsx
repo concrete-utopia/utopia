@@ -50,6 +50,7 @@ import * as PP from '../../../../core/shared/property-path'
 import { ColorControl } from '../../controls/color-control'
 import { StringControl } from '../../controls/string-control'
 import type { SelectOption } from '../../controls/select-control'
+import type { OptionChainOption } from '../../controls/option-chain-control'
 import { OptionChainControl } from '../../controls/option-chain-control'
 import { useKeepReferenceEqualityIfPossible } from '../../../../utils/react-performance'
 import { UIGridRow } from '../../widgets/ui-grid-row'
@@ -393,7 +394,7 @@ export const RadioPropertyControl = React.memo(
     // TS baulks at the map below for some reason if we don't first do this
     const controlOptions: Array<IndividualOption> = controlDescription.options
 
-    const options: Array<SelectOption> = useKeepReferenceEqualityIfPossible(
+    const options: Array<OptionChainOption<unknown>> = useKeepReferenceEqualityIfPossible(
       controlOptions.map((option) => {
         return {
           value: valueForIndividualOption(option),
@@ -401,12 +402,8 @@ export const RadioPropertyControl = React.memo(
         }
       }),
     )
-    const currentValue = options.find((option) => {
-      return fastDeepEquals(option.value, value)
-    })
-
-    function submitValue(option: SelectOption): void {
-      propMetadata.onSubmitValue(option.value)
+    function submitValue(valueToSubmit: unknown): void {
+      propMetadata.onSubmitValue(valueToSubmit)
     }
 
     return (
@@ -414,7 +411,7 @@ export const RadioPropertyControl = React.memo(
         key={controlId}
         id={controlId}
         testId={controlId}
-        value={currentValue}
+        value={value}
         controlStatus={propMetadata.controlStatus}
         controlStyles={propMetadata.controlStyles}
         // eslint-disable-next-line react/jsx-no-bind

@@ -1192,6 +1192,20 @@ export function githubRepoFullName(repo: GithubRepo | null): string | null {
   return `${repo.owner}/${repo.repository}`
 }
 
+export function githubRepoOwnerName(repo: GithubRepo | null): string | null {
+  if (repo == null) {
+    return null
+  }
+  return repo.owner
+}
+
+export function githubRepositoryName(repo: GithubRepo | null): string | null {
+  if (repo == null) {
+    return null
+  }
+  return repo.repository
+}
+
 export function githubRepo(owner: string, repository: string): GithubRepo {
   return {
     owner: owner,

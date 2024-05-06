@@ -21,6 +21,7 @@ import type { StylePropOption, InsertableComponent } from '../../shared/project-
 import type { Size } from '../../../core/shared/math-utils'
 import { dataPasteHandler } from '../../../utils/paste-handler'
 import { sortBy } from '../../../core/shared/array-utils'
+import { iconPropsForIcon } from './component-picker-context-menu'
 
 export interface ComponentPickerProps {
   allComponents: Array<InsertMenuItemGroup>
@@ -159,9 +160,6 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
         gap: 0,
         width: '100%',
         height: '100%',
-        padding: 0,
-        color: dark.fg3.value,
-        colorScheme: 'dark',
         borderRadius: 10,
       }}
       onKeyDown={onKeyDown}
@@ -189,7 +187,7 @@ const ComponentPickerTopSection = React.memo((props: ComponentPickerTopSectionPr
   return (
     <div
       style={{
-        padding: '8px 8px',
+        padding: '0px 8px 8px 8px',
         display: 'flex',
         flexDirection: 'column',
       }}
@@ -241,7 +239,7 @@ const FilterBar = React.memo((props: FilterBarProps) => {
   return (
     <input
       css={{
-        height: 25,
+        height: 28,
         paddingLeft: 8,
         paddingRight: 8,
         background: 'transparent',
@@ -317,22 +315,14 @@ const ComponentPickerComponentSection = React.memo(
               onMouseOver={onItemHover(component.value)}
               data-key={component.value.key}
             >
-              <UIGridRow
-                variant='|--32px--|<--------auto-------->'
-                padded={false}
-                // required to overwrite minHeight on the bloody thing
-                style={{ minHeight: 29 }}
-                css={{
-                  height: 27,
-                }}
-              >
+              <FlexRow css={{ gap: 10, height: 28, alignItems: 'center' }}>
                 <Icn
-                  {...iconPropsForIcon(component.value.icon ?? 'regular')}
+                  {...iconPropsForIcon(component.value.icon ?? 'component')}
                   width={12}
                   height={12}
                 />
                 <label>{component.label}</label>
-              </UIGridRow>
+              </FlexRow>
             </FlexRow>
           )
 
@@ -351,96 +341,9 @@ const ComponentPickerComponentSection = React.memo(
   },
 )
 
-// FIXME Copy pasted from component-picker-context-menu.tsx
-function iconPropsForIcon(icon: Icon): IcnProps {
-  switch (icon) {
-    case 'column':
-      return {
-        category: 'navigator-element',
-        type: 'flex-column',
-        color: 'white',
-      }
-    case 'row':
-      return {
-        category: 'navigator-element',
-        type: 'flex-row',
-        color: 'white',
-      }
-    case 'regular':
-      return {
-        category: 'navigator-element',
-        type: 'component',
-        color: 'white',
-      }
-    case 'headline':
-      return {
-        category: 'navigator-element',
-        type: 'headline',
-        color: 'white',
-      }
-    case 'dashedframe':
-      return {
-        category: 'navigator-element',
-        type: 'dashedframe',
-        color: 'white',
-      }
-    case 'component':
-      return {
-        category: 'navigator-element',
-        type: 'component',
-        color: 'white',
-      }
-    default:
-      assertNever(icon)
-  }
-}
-
 interface ComponentPickerOptionProps {
   component: InsertMenuItem
   onItemClick: (elementToInsert: InsertableComponent) => React.MouseEventHandler
   onItemHover: (elementToInsert: InsertMenuItemValue) => React.MouseEventHandler
   currentlySelectedKey: string | null
 }
-
-const ComponentPickerOption = React.memo((props: ComponentPickerOptionProps) => {
-  const { component, onItemClick, onItemHover, currentlySelectedKey } = props
-
-  const selectedStyle =
-    component.value.key === currentlySelectedKey
-      ? {
-          background: '#007aff',
-          color: 'white',
-        }
-      : {}
-
-  return (
-    <FlexRow
-      css={{}}
-      style={{
-        marginLeft: 8,
-        marginRight: 8,
-        borderRadius: 4,
-        // indentation!
-        paddingLeft: 8,
-        color: '#EEE',
-        ...selectedStyle,
-      }}
-      onClick={onItemClick(component.value)}
-      onMouseOver={onItemHover(component.value)}
-      data-key={component.value.key}
-    >
-      <UIGridRow
-        variant='|--32px--|<--------auto-------->'
-        padded={false}
-        // required to overwrite minHeight on the bloody thing
-        style={{ minHeight: 29 }}
-        css={{
-          height: 27,
-        }}
-      >
-        <Icn {...iconPropsForIcon(component.value.icon ?? 'regular')} width={12} height={12} />
-        <label>{component.label}</label>
-      </UIGridRow>
-    </FlexRow>
-  )
-})

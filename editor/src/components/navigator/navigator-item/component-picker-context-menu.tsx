@@ -38,8 +38,8 @@ import type { PreferredChildComponentDescriptor } from '../../custom-code/intern
 import { fixUtopiaElement, generateConsistentUID } from '../../../core/shared/uid-utils'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { elementFromInsertMenuItem } from '../../editor/insert-callbacks'
-import { MomentumContextMenu } from '../../context-menu-wrapper'
-import { NO_OP, assertNever } from '../../../core/shared/utils'
+import { ContextMenuWrapper, MomentumContextMenu } from '../../context-menu-wrapper'
+import { BodyMenuOpenClass, NO_OP, assertNever } from '../../../core/shared/utils'
 import { type ContextMenuItem } from '../../context-menu-items'
 import { FlexRow, Icn, type IcnProps } from '../../../uuiui'
 import type {
@@ -133,12 +133,12 @@ function getIconForComponent(
   propertyControlsInfo: PropertyControlsInfo,
 ): Icon {
   if (moduleName == null) {
-    return 'regular'
+    return 'component'
   }
 
   const registeredComponent = getRegisteredComponent(targetName, moduleName, propertyControlsInfo)
 
-  return registeredComponent?.icon ?? 'regular'
+  return registeredComponent?.icon ?? 'component'
 }
 
 interface PreferredChildComponentDescriptorWithIcon extends PreferredChildComponentDescriptor {
@@ -342,21 +342,7 @@ function moreItem(
   showComponentPickerContextMenu: ShowComponentPickerContextMenu,
 ): ContextMenuItem<unknown> {
   return {
-    name: (
-      <FlexRow>
-        <div
-          style={{
-            width: 18,
-            height: 18,
-            display: 'flex',
-            justifyItems: 'center',
-            alignItems: 'center',
-            position: 'relative',
-          }}
-        ></div>{' '}
-        More...
-      </FlexRow>
-    ),
+    name: <FlexRow style={{ paddingLeft: 22 }}>More…</FlexRow>,
     enabled: true,
     action: (_data, _dispatch, _rightClickCoordinate, e) => {
       const currentMenu = (menuWrapperRef.current?.childNodes[0] as HTMLDivElement) ?? null
@@ -541,46 +527,11 @@ interface ComponentPickerContextMenuProps {
   insertionTarget: InsertionTarget
 }
 
-function iconPropsForIcon(icon: Icon): IcnProps {
-  switch (icon) {
-    case 'column':
-      return {
-        category: 'navigator-element',
-        type: 'flex-column',
-        color: 'white',
-      }
-    case 'row':
-      return {
-        category: 'navigator-element',
-        type: 'flex-row',
-        color: 'white',
-      }
-    case 'regular':
-      return {
-        category: 'navigator-element',
-        type: 'component',
-        color: 'white',
-      }
-    case 'headline':
-      return {
-        category: 'navigator-element',
-        type: 'headline',
-        color: 'white',
-      }
-    case 'dashedframe':
-      return {
-        category: 'navigator-element',
-        type: 'dashedframe',
-        color: 'white',
-      }
-    case 'component':
-      return {
-        category: 'navigator-element',
-        type: 'component',
-        color: 'white',
-      }
-    default:
-      assertNever(icon)
+export function iconPropsForIcon(icon: Icon): IcnProps {
+  return {
+    category: 'navigator-element',
+    type: icon,
+    color: 'white',
   }
 }
 
@@ -625,7 +576,7 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
 
         const submenuLabel = (
           <FlexRow
-            style={{ gap: 5 }}
+            style={{ gap: 10 }}
             data-testId={labelTestIdForComponentIcon(data.name, data.moduleName ?? '', data.icon)}
           >
             <Icn {...iconProps} width={12} height={12} />
@@ -658,7 +609,7 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
 
     return (
       <div ref={wrapperRef}>
-        <MomentumContextMenu id={PreferredMenuId} items={items} getData={NO_OP} />
+        <ContextMenuWrapper items={items} data={{}} id={PreferredMenuId} />
       </div>
     )
   },
@@ -711,8 +662,23 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
       e.stopPropagation()
     }, [])
 
+    const onShown = React.useCallback(() => {
+      document.body.classList.add(BodyMenuOpenClass)
+    }, [])
+
+    const onHidden = React.useCallback(() => {
+      document.body.classList.remove(BodyMenuOpenClass)
+    }, [])
+
     return (
-      <Menu id={FullMenuId} animation={false} style={{ width: 260 }} onClick={squashEvents}>
+      <Menu
+        id={FullMenuId}
+        animation={false}
+        style={{ width: 260 }}
+        onClick={squashEvents}
+        onShown={onShown}
+        onHidden={onHidden}
+      >
         <ComponentPicker allComponents={allInsertableComponents} onItemClick={onItemClick} />
       </Menu>
     )

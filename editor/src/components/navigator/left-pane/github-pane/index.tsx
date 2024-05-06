@@ -33,6 +33,8 @@ import { useDispatch } from '../../../editor/store/dispatch-context'
 import {
   fileChecksumsWithFileToFileChecksums,
   githubRepoFullName,
+  githubRepoOwnerName,
+  githubRepositoryName,
   isGithubCommitting,
   isGithubListingBranches,
   isGithubLoadingAnyBranch,
@@ -115,6 +117,9 @@ const RepositoryBlock = () => {
     'RepositoryBlock authenticated',
   )
   const repoName = React.useMemo(() => githubRepoFullName(repo) ?? undefined, [repo])
+  const repoOwner = React.useMemo(() => githubRepoOwnerName(repo), [repo])
+  const repositoryName = React.useMemo(() => githubRepositoryName(repo), [repo])
+
   const hasRepo = React.useMemo(() => repo != null, [repo])
   const [expanded, setExpanded] = React.useState(false)
   React.useEffect(() => {
@@ -135,7 +140,13 @@ const RepositoryBlock = () => {
   return (
     <Block
       title={hasRepo ? 'Repository' : 'Select Repository'}
-      subtitle={repoName}
+      subtitle={
+        <span>
+          {repoOwner}
+          <br />
+          {repositoryName}
+        </span>
+      }
       status={hasRepo ? 'successful' : 'pending'}
       first={true}
       last={!hasRepo}

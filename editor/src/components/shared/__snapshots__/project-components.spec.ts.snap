@@ -43,7 +43,7 @@ Array [
           "width": 100,
         },
         "element": [Function],
-        "icon": "regular",
+        "icon": "component",
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -68,7 +68,7 @@ Array [
       Object {
         "defaultSize": null,
         "element": [Function],
-        "icon": "regular",
+        "icon": "component",
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -86,7 +86,7 @@ Array [
       Object {
         "defaultSize": null,
         "element": [Function],
-        "icon": "regular",
+        "icon": "component",
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -104,7 +104,7 @@ Array [
       Object {
         "defaultSize": null,
         "element": [Function],
-        "icon": "regular",
+        "icon": "component",
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -122,7 +122,7 @@ Array [
       Object {
         "defaultSize": null,
         "element": [Function],
-        "icon": "regular",
+        "icon": "component",
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -140,7 +140,7 @@ Array [
       Object {
         "defaultSize": null,
         "element": [Function],
-        "icon": "regular",
+        "icon": "component",
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -158,7 +158,7 @@ Array [
       Object {
         "defaultSize": null,
         "element": [Function],
-        "icon": "regular",
+        "icon": "component",
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -176,7 +176,7 @@ Array [
       Object {
         "defaultSize": null,
         "element": [Function],
-        "icon": "regular",
+        "icon": "component",
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -194,7 +194,7 @@ Array [
       Object {
         "defaultSize": null,
         "element": [Function],
-        "icon": "regular",
+        "icon": "component",
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -219,7 +219,7 @@ Array [
       Object {
         "defaultSize": null,
         "element": [Function],
-        "icon": "regular",
+        "icon": "component",
         "importsToAdd": Object {},
         "insertionCeiling": null,
         "name": "Conditional",
@@ -237,7 +237,7 @@ Array [
       Object {
         "defaultSize": null,
         "element": [Function],
-        "icon": "regular",
+        "icon": "component",
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -261,7 +261,7 @@ Array [
       Object {
         "defaultSize": null,
         "element": [Function],
-        "icon": "regular",
+        "icon": "component",
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -295,7 +295,7 @@ Array [
       Object {
         "defaultSize": null,
         "element": [Function],
-        "icon": "regular",
+        "icon": "component",
         "importsToAdd": Object {},
         "insertionCeiling": null,
         "name": "Sample text",
@@ -362,7 +362,7 @@ Array [
           "width": 100,
         },
         "element": [Function],
-        "icon": "regular",
+        "icon": "component",
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -387,7 +387,7 @@ Array [
       Object {
         "defaultSize": null,
         "element": [Function],
-        "icon": "regular",
+        "icon": "component",
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -405,7 +405,7 @@ Array [
       Object {
         "defaultSize": null,
         "element": [Function],
-        "icon": "regular",
+        "icon": "component",
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -423,7 +423,7 @@ Array [
       Object {
         "defaultSize": null,
         "element": [Function],
-        "icon": "regular",
+        "icon": "component",
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -441,7 +441,7 @@ Array [
       Object {
         "defaultSize": null,
         "element": [Function],
-        "icon": "regular",
+        "icon": "component",
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -459,7 +459,7 @@ Array [
       Object {
         "defaultSize": null,
         "element": [Function],
-        "icon": "regular",
+        "icon": "component",
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -477,7 +477,7 @@ Array [
       Object {
         "defaultSize": null,
         "element": [Function],
-        "icon": "regular",
+        "icon": "component",
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -495,7 +495,7 @@ Array [
       Object {
         "defaultSize": null,
         "element": [Function],
-        "icon": "regular",
+        "icon": "component",
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -513,7 +513,7 @@ Array [
       Object {
         "defaultSize": null,
         "element": [Function],
-        "icon": "regular",
+        "icon": "component",
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -538,7 +538,7 @@ Array [
       Object {
         "defaultSize": null,
         "element": [Function],
-        "icon": "regular",
+        "icon": "component",
         "importsToAdd": Object {},
         "insertionCeiling": null,
         "name": "Conditional",
@@ -556,7 +556,7 @@ Array [
       Object {
         "defaultSize": null,
         "element": [Function],
-        "icon": "regular",
+        "icon": "component",
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -580,7 +580,7 @@ Array [
       Object {
         "defaultSize": null,
         "element": [Function],
-        "icon": "regular",
+        "icon": "component",
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -614,7 +614,7 @@ Array [
       Object {
         "defaultSize": null,
         "element": [Function],
-        "icon": "regular",
+        "icon": "component",
         "importsToAdd": Object {},
         "insertionCeiling": null,
         "name": "Sample text",
@@ -632,7 +632,7 @@ Array [
       Object {
         "defaultSize": null,
         "element": [Function],
-        "icon": "regular",
+        "icon": "component",
         "importsToAdd": Object {
           "antd": Object {
             "importedAs": null,
@@ -660,7 +660,7 @@ Array [
       Object {
         "defaultSize": null,
         "element": [Function],
-        "icon": "regular",
+        "icon": "component",
         "importsToAdd": Object {
           "antd": Object {
             "importedAs": null,
@@ -688,7 +688,7 @@ Array [
       Object {
         "defaultSize": null,
         "element": [Function],
-        "icon": "regular",
+        "icon": "component",
         "importsToAdd": Object {
           "antd": Object {
             "importedAs": null,
@@ -716,7 +716,7 @@ Array [
       Object {
         "defaultSize": null,
         "element": [Function],
-        "icon": "regular",
+        "icon": "component",
         "importsToAdd": Object {
           "antd": Object {
             "importedAs": null,
@@ -744,7 +744,7 @@ Array [
       Object {
         "defaultSize": null,
         "element": [Function],
-        "icon": "regular",
+        "icon": "component",
         "importsToAdd": Object {
           "antd": Object {
             "importedAs": null,
@@ -772,7 +772,7 @@ Array [
       Object {
         "defaultSize": null,
         "element": [Function],
-        "icon": "regular",
+        "icon": "component",
         "importsToAdd": Object {
           "antd": Object {
             "importedAs": null,
@@ -800,7 +800,7 @@ Array [
       Object {
         "defaultSize": null,
         "element": [Function],
-        "icon": "regular",
+        "icon": "component",
         "importsToAdd": Object {
           "antd": Object {
             "importedAs": null,
@@ -828,7 +828,7 @@ Array [
       Object {
         "defaultSize": null,
         "element": [Function],
-        "icon": "regular",
+        "icon": "component",
         "importsToAdd": Object {
           "antd": Object {
             "importedAs": null,
@@ -856,7 +856,7 @@ Array [
       Object {
         "defaultSize": null,
         "element": [Function],
-        "icon": "regular",
+        "icon": "component",
         "importsToAdd": Object {
           "antd": Object {
             "importedAs": null,
@@ -884,7 +884,7 @@ Array [
       Object {
         "defaultSize": null,
         "element": [Function],
-        "icon": "regular",
+        "icon": "component",
         "importsToAdd": Object {
           "antd": Object {
             "importedAs": null,
@@ -912,7 +912,7 @@ Array [
       Object {
         "defaultSize": null,
         "element": [Function],
-        "icon": "regular",
+        "icon": "component",
         "importsToAdd": Object {
           "antd": Object {
             "importedAs": null,
