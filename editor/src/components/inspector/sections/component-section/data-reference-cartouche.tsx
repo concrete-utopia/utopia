@@ -8,13 +8,13 @@ import type {
 import { getJSXElementNameLastPart } from '../../../../core/shared/element-template'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
-import { assertNever } from '../../../../core/shared/utils'
+import { NO_OP, assertNever } from '../../../../core/shared/utils'
 import { FlexRow, Icn, Icons, Tooltip, UtopiaStyles, colorTheme } from '../../../../uuiui'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
-import { IdentifierExpressionCartoucheControl } from './cartouche-control'
 import { useDataPickerButton } from './component-section'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { selectComponents } from '../../../editor/actions/meta-actions'
+import { when } from '../../../../utils/react-conditionals'
 
 interface DataReferenceCartoucheControlProps {
   elementPath: ElementPath
@@ -62,29 +62,62 @@ export const DataReferenceCartoucheControl = React.memo(
           onDoubleClick={dataPickerButtonData.openPopup}
           contentsToDisplay={contentsToDisplay}
           selected={selected}
+          safeToDelete={false}
+          inverted={false}
+          onDelete={NO_OP}
+          testId={`data-reference-cartouche-${EP.toString(elementPath)}`}
         />
       </>
     )
   },
 )
 
-export const DataCartoucheInner = React.forwardRef(
-  (
-    props: {
-      onClick: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
-      onDoubleClick: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
-      selected: boolean
-      contentsToDisplay: { type: 'literal' | 'reference'; label: string | null }
-    },
-    ref: React.Ref<HTMLDivElement>,
-  ) => {
-    const { onClick, onDoubleClick, selected, contentsToDisplay } = props
+interface DataCartoucheInnerProps {
+  onClick: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
+  onDoubleClick: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
+  selected: boolean
+  inverted: boolean
+  contentsToDisplay: { type: 'literal' | 'reference'; label: string | null }
+  safeToDelete: boolean
+  onDelete: () => void
+  testId: string
+}
 
-    const cartoucheIconColor = contentsToDisplay.type === 'reference' ? 'primary' : 'secondary'
-    const foregroundColor =
-      contentsToDisplay.type === 'reference'
-        ? colorTheme.primary.value
-        : colorTheme.neutralForeground.value
+export const DataCartoucheInner = React.forwardRef(
+  (props: DataCartoucheInnerProps, ref: React.Ref<HTMLDivElement>) => {
+    const {
+      onClick,
+      onDoubleClick,
+      safeToDelete,
+      onDelete,
+      selected,
+      inverted,
+      contentsToDisplay,
+    } = props
+
+    const onDeleteInner = React.useCallback(
+      (e: React.MouseEvent) => {
+        e.stopPropagation()
+        onDelete()
+      },
+      [onDelete],
+    )
+
+    const cartoucheIconColor = inverted
+      ? 'on-highlight-main'
+      : contentsToDisplay.type === 'reference'
+      ? 'primary'
+      : 'secondary'
+
+    const borderColor = inverted
+      ? colorTheme.neutralInvertedBackground.value
+      : colorTheme.primary.value
+
+    const foregroundColor = inverted
+      ? colorTheme.neutralInvertedForeground.value
+      : contentsToDisplay.type === 'reference'
+      ? colorTheme.primary.value
+      : colorTheme.neutralForeground.value
     const backgroundColor =
       contentsToDisplay.type === 'reference' ? colorTheme.primary10.value : colorTheme.bg4.value
 
@@ -105,10 +138,10 @@ export const DataCartoucheInner = React.forwardRef(
             fontSize: 10,
             color: foregroundColor,
             backgroundColor: backgroundColor,
-            border: selected ? '1px solid ' + colorTheme.primary.value : '1px solid transparent',
+            border: selected ? '1px solid ' + borderColor : '1px solid transparent',
             padding: '0px 4px',
             borderRadius: 4,
-            height: 22,
+            height: 20,
             display: 'flex',
             flex: 1,
             gap: 4,
@@ -140,6 +173,18 @@ export const DataCartoucheInner = React.forwardRef(
               {/* the &lrm; non-printing character is added to fix the punctuation marks disappearing because of direction: rtl */}
             </div>
           </Tooltip>
+          {when(
+            safeToDelete,
+            <Icn
+              category='semantic'
+              type='cross-medium'
+              color={cartoucheIconColor}
+              width={16}
+              height={16}
+              data-testid={`delete-${props.testId}`}
+              onClick={onDeleteInner}
+            />,
+          )}
         </FlexRow>
       </div>
     )
