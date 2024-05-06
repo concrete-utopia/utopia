@@ -51,13 +51,38 @@ export const EmphasisOptions = ['subdued', 'regular', 'emphasized'] as const
 export type Emphasis = (typeof EmphasisOptions)[number]
 
 export const IconOptions = [
+  'body',
+  'clickable',
+  'code',
   'column',
-  'row',
-  'regular',
-  'headline',
-  'dashedframe',
   'component',
-] as const // and others
+  'conditional',
+  'dashedframe',
+  'data',
+  'div',
+  'folder',
+  'form',
+  'grid',
+  'headline',
+  'home',
+  'image',
+  'video',
+  'input',
+  'irregular-layout',
+  'layout',
+  'link',
+  'page',
+  'paragraph',
+  'row',
+  'section',
+  'sfx',
+  'solidframe',
+  'star',
+  'starfilled',
+  'text',
+  'title',
+  'xframe',
+] as const
 export type Icon = (typeof IconOptions)[number]
 
 export interface ComponentToRegister {
