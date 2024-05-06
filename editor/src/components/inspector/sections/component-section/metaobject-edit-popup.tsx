@@ -1,6 +1,7 @@
 import React from 'react'
 import { getProjectID } from '../../../../common/env-vars'
 import { HEADERS, MODE } from '../../../../common/server'
+import type { Either } from '../../../../core/shared/either'
 import { isLeft } from '../../../../core/shared/either'
 import {
   FlexRow,
@@ -29,10 +30,17 @@ export type MetaObjectDataPath = (string | number)[]
 
 interface MetaobjectEditPopupProps {
   close: () => void
+  requestUpdateCallback: (
+    dataPath: MetaObjectDataPath,
+    lastLoaderResult: any,
+    newValue: any,
+  ) => Either<string, any>
   dataPath: MetaObjectDataPath
   style: React.CSSProperties
   currentValue: string
 }
+
+const ROUTE_ID_HARDCODED = 'routes/_index'
 
 export const MetaObjectUpdatePopup = React.forwardRef<HTMLDivElement, MetaobjectEditPopupProps>(
   (props, forwardedRef) => {
@@ -54,17 +62,14 @@ export const MetaObjectUpdatePopup = React.forwardRef<HTMLDivElement, Metaobject
           throw new Error('projectId == null')
         }
 
-        const routeId_HARDCODED = 'routes/_index'
-
-        const requestUpdateData = REQUEST_UPDATE_CONTEXT_GLOABAL_HACKED[routeId_HARDCODED]
         const lastLoaderResult =
-          REQUEST_UPDATE_CONTEXT_GLOABAL_HACKED[routeId_HARDCODED].lastLoaderResult
+          REQUEST_UPDATE_CONTEXT_GLOABAL_HACKED[ROUTE_ID_HARDCODED].lastLoaderResult
         if (lastLoaderResult == null) {
           console.error('lastLoaderResult is null')
           return
         }
 
-        const requestUpdateResult = requestUpdateData.requestUpdateCallback?.(
+        const requestUpdateResult = props.requestUpdateCallback?.(
           props.dataPath,
           lastLoaderResult,
           newValue,
@@ -111,7 +116,7 @@ export const MetaObjectUpdatePopup = React.forwardRef<HTMLDivElement, Metaobject
             }
           })
       },
-      [dispatch, props.dataPath],
+      [props, dispatch],
     )
 
     const onSubmitValue = React.useCallback(
@@ -249,7 +254,10 @@ export function useMetaobjectEditPopup(
     'useMetaobjectEditPopup currentValue',
   )
 
-  if (dataPath == null) {
+  const requestUpdateCallback =
+    REQUEST_UPDATE_CONTEXT_GLOABAL_HACKED[ROUTE_ID_HARDCODED].requestUpdateCallback
+
+  if (dataPath == null || requestUpdateCallback == null) {
     return null
   }
 
@@ -277,6 +285,7 @@ export function useMetaobjectEditPopup(
       close={closeMetaObjectEditPopup}
       dataPath={dataPath}
       currentValue={currentValueString ?? ''}
+      requestUpdateCallback={requestUpdateCallback}
     />
   )
 
