@@ -3869,17 +3869,33 @@ export const UPDATE_FNS = {
     })
   },
   UPDATE_GITHUB_DATA: (action: UpdateGithubData, editor: EditorModel): EditorModel => {
-    const newPublicRepos = uniqBy(
-      [...editor.githubData.publicRepositories, ...(action.data.publicRepositories ?? [])],
-      (a, b) => a.fullName === b.fullName,
-    )
+    // merge the existing and the new public repos
+    const combinedPublicRepos = [
+      ...editor.githubData.publicRepositories,
+      ...(action.data.publicRepositories ?? []),
+    ]
+
+    // sort public repos by descending updatedAt
+    const sortedCombinedPublicRepos = combinedPublicRepos.sort((a, b) => {
+      if (a.updatedAt == null) {
+        return 1
+      } else if (b.updatedAt == null) {
+        return -1
+      } else {
+        return b.updatedAt.localeCompare(a.updatedAt)
+      }
+    })
+
+    // remove duplicate entries
+    const uniquePublicRepos = uniqBy(sortedCombinedPublicRepos, (a, b) => a.fullName === b.fullName)
+
     return {
       ...editor,
       githubData: {
         ...editor.githubData,
         ...action.data,
         lastUpdatedAt: Date.now(),
-        publicRepositories: newPublicRepos,
+        publicRepositories: uniquePublicRepos,
       },
     }
   },
