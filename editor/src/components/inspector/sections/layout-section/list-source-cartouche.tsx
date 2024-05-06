@@ -76,7 +76,7 @@ export const MapListSourceCartouche = React.memo((props: MapListSourceCartoucheP
         inverted={props.inverted}
         safeToDelete={false}
         testId='list-source-cartouche'
-        contentIsComingFromServer={false} // TODO for the list case, consult Balazs
+        contentIsComingFromServer={false}
       />
     </div>
   )

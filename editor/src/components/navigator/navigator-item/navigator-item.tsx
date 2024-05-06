@@ -999,6 +999,7 @@ export const NavigatorItem: React.FunctionComponent<
               elementPath={navigatorEntry.elementPath}
               childOrAttribute={navigatorEntry.childOrAttribute}
               selected={selected}
+              propertyPath={navigatorEntry.propertyPath}
             />
           </div>
         ) : (

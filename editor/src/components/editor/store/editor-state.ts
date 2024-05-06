@@ -60,6 +60,7 @@ import type {
   NodeModules,
   ParseSuccess,
   ProjectFile,
+  PropertyPath,
   StaticElementPath,
   TextFile,
 } from '../../../core/shared/project-file-types'
@@ -2180,16 +2181,19 @@ export interface DataReferenceNavigatorEntry {
   type: 'DATA_REFERENCE'
   elementPath: ElementPath
   childOrAttribute: JSXElementChild
+  propertyPath: PropertyPath
 }
 
 export function dataReferenceNavigatorEntry(
   elementPath: ElementPath,
   childOrAttribute: JSXElementChild,
+  propertyPath: PropertyPath,
 ): DataReferenceNavigatorEntry {
   return {
     type: 'DATA_REFERENCE',
     elementPath: elementPath,
     childOrAttribute: childOrAttribute,
+    propertyPath: propertyPath,
   }
 }
 

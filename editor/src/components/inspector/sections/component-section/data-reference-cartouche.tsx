@@ -6,7 +6,7 @@ import type {
   JSXElementChild,
 } from '../../../../core/shared/element-template'
 import { getJSXElementNameLastPart } from '../../../../core/shared/element-template'
-import type { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
 import { NO_OP, assertNever } from '../../../../core/shared/utils'
 import { FlexRow, Icn, Icons, Tooltip, UtopiaStyles, colorTheme } from '../../../../uuiui'
@@ -15,11 +15,14 @@ import { useDataPickerButton } from './component-section'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { selectComponents } from '../../../editor/actions/meta-actions'
 import { when } from '../../../../utils/react-conditionals'
+import { traceDataFromProp } from '../../../../core/data-tracing/data-tracing'
+import * as EPP from '../../../template-property-path'
 
 interface DataReferenceCartoucheControlProps {
   elementPath: ElementPath
   childOrAttribute: JSXElementChild
   selected: boolean
+  propertyPath: PropertyPath
 }
 
 export const DataReferenceCartoucheControl = React.memo(
@@ -49,6 +52,18 @@ export const DataReferenceCartoucheControl = React.memo(
       },
     )
 
+    const isDataComingFromHookResult = useEditorState(
+      Substores.projectContentsAndMetadata,
+      (store) =>
+        traceDataFromProp(
+          EPP.create(props.elementPath, props.propertyPath),
+          store.editor.jsxMetadata,
+          store.editor.projectContents,
+          [],
+        ).type === 'hook-result',
+      'IdentifierExpressionCartoucheControl trace',
+    )
+
     const onClick = React.useCallback(() => {
       dispatch(selectComponents([elementPath], false))
     }, [dispatch, elementPath])
@@ -66,7 +81,7 @@ export const DataReferenceCartoucheControl = React.memo(
           inverted={false}
           onDelete={NO_OP}
           testId={`data-reference-cartouche-${EP.toString(elementPath)}`}
-          contentIsComingFromServer={false}
+          contentIsComingFromServer={isDataComingFromHookResult}
         />
       </>
     )
