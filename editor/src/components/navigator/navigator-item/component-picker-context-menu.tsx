@@ -38,8 +38,8 @@ import type { PreferredChildComponentDescriptor } from '../../custom-code/intern
 import { fixUtopiaElement, generateConsistentUID } from '../../../core/shared/uid-utils'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { elementFromInsertMenuItem } from '../../editor/insert-callbacks'
-import { MomentumContextMenu } from '../../context-menu-wrapper'
-import { NO_OP, assertNever } from '../../../core/shared/utils'
+import { ContextMenuWrapper, MomentumContextMenu } from '../../context-menu-wrapper'
+import { BodyMenuOpenClass, NO_OP, assertNever } from '../../../core/shared/utils'
 import { type ContextMenuItem } from '../../context-menu-items'
 import { FlexRow, Icn, type IcnProps } from '../../../uuiui'
 import type {
@@ -609,7 +609,7 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
 
     return (
       <div ref={wrapperRef}>
-        <MomentumContextMenu id={PreferredMenuId} items={items} getData={NO_OP} />
+        <ContextMenuWrapper items={items} data={{}} id={PreferredMenuId} />
       </div>
     )
   },
@@ -662,8 +662,23 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
       e.stopPropagation()
     }, [])
 
+    const onShown = React.useCallback(() => {
+      document.body.classList.add(BodyMenuOpenClass)
+    }, [])
+
+    const onHidden = React.useCallback(() => {
+      document.body.classList.remove(BodyMenuOpenClass)
+    }, [])
+
     return (
-      <Menu id={FullMenuId} animation={false} style={{ width: 260 }} onClick={squashEvents}>
+      <Menu
+        id={FullMenuId}
+        animation={false}
+        style={{ width: 260 }}
+        onClick={squashEvents}
+        onShown={onShown}
+        onHidden={onHidden}
+      >
         <ComponentPicker allComponents={allInsertableComponents} onItemClick={onItemClick} />
       </Menu>
     )
