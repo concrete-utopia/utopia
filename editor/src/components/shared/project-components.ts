@@ -570,6 +570,7 @@ export const mapElementDescriptors: ComponentDescriptorsForFile = {
     preferredChildComponents: [],
     source: defaultComponentDescriptor(),
     ...ComponentDescriptorDefaults,
+    icon: 'lists',
   },
 }
 

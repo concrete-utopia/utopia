@@ -71,6 +71,7 @@ export const IconOptions = [
   'irregular-layout',
   'layout',
   'link',
+  'lists',
   'page',
   'paragraph',
   'row',
