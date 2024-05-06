@@ -527,46 +527,11 @@ interface ComponentPickerContextMenuProps {
   insertionTarget: InsertionTarget
 }
 
-function iconPropsForIcon(icon: Icon): IcnProps {
-  switch (icon) {
-    case 'column':
-      return {
-        category: 'navigator-element',
-        type: 'flex-column',
-        color: 'white',
-      }
-    case 'row':
-      return {
-        category: 'navigator-element',
-        type: 'flex-row',
-        color: 'white',
-      }
-    case 'regular':
-      return {
-        category: 'navigator-element',
-        type: 'component',
-        color: 'white',
-      }
-    case 'headline':
-      return {
-        category: 'navigator-element',
-        type: 'headline',
-        color: 'white',
-      }
-    case 'dashedframe':
-      return {
-        category: 'navigator-element',
-        type: 'dashedframe',
-        color: 'white',
-      }
-    case 'component':
-      return {
-        category: 'navigator-element',
-        type: 'component',
-        color: 'white',
-      }
-    default:
-      assertNever(icon)
+export function iconPropsForIcon(icon: Icon): IcnProps {
+  return {
+    category: 'navigator-element',
+    type: icon,
+    color: 'white',
   }
 }
 

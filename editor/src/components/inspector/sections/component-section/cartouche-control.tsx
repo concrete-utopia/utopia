@@ -2,11 +2,13 @@ import React from 'react'
 import { when } from '../../../../utils/react-conditionals'
 import { FlexRow, Icn, Tooltip, colorTheme } from '../../../../uuiui'
 import { stopPropagation } from '../../common/inspector-utils'
+import { DataCartoucheInner } from './data-reference-cartouche'
+import { NO_OP } from '../../../../core/shared/utils'
 
 interface IdentifierExpressionCartoucheControlProps {
   contents: string
   icon: React.ReactChild
-  matchType: 'full' | 'partial' | 'none'
+  matchType: 'full' | 'partial'
   onOpenDataPicker: () => void
   onDeleteCartouche: () => void
   safeToDelete: boolean
@@ -14,72 +16,19 @@ interface IdentifierExpressionCartoucheControlProps {
 }
 export const IdentifierExpressionCartoucheControl = React.memo(
   (props: IdentifierExpressionCartoucheControlProps) => {
-    const { onDeleteCartouche, testId, safeToDelete } = props
-    const onDelete = React.useCallback<React.MouseEventHandler<HTMLDivElement>>(
-      (e) => {
-        stopPropagation(e)
-        onDeleteCartouche()
-      },
-      [onDeleteCartouche],
-    )
+    const { onOpenDataPicker, onDeleteCartouche, testId, safeToDelete } = props
 
     return (
-      <FlexRow
-        style={{
-          cursor: 'pointer',
-          fontSize: 10,
-          color:
-            props.matchType === 'full'
-              ? colorTheme.white.value
-              : colorTheme.neutralForeground.value,
-          backgroundColor:
-            props.matchType === 'full'
-              ? colorTheme.primary.value
-              : props.matchType === 'partial'
-              ? colorTheme.primary10.value
-              : colorTheme.bg4.value,
-          padding: '0px 4px',
-          borderRadius: 4,
-          height: 22,
-          display: 'flex',
-          flex: 1,
-          gap: 2,
-        }}
-        onClick={props.onOpenDataPicker}
-      >
-        {props.icon}
-        <Tooltip title={props.contents}>
-          <div
-            style={{
-              flex: 1,
-              /* Standard CSS ellipsis */
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-
-              /* Beginning of string */
-              direction: 'rtl', // TODO we need a better way to ellipsize the beginnign because rtl eats ' " marks
-              textAlign: 'left',
-            }}
-          >
-            {props.contents}
-            &lrm;
-            {/* the &lrm; non-printing character is added to fix the punctuation marks disappearing because of direction: rtl */}
-          </div>
-        </Tooltip>
-        {when(
-          safeToDelete,
-          <Icn
-            category='semantic'
-            type='cross-medium'
-            color='on-highlight-main'
-            width={16}
-            height={16}
-            data-testid={`delete-${testId}`}
-            onClick={onDelete}
-          />,
-        )}
-      </FlexRow>
+      <DataCartoucheInner
+        contentsToDisplay={{ label: props.contents, type: 'reference' }}
+        onClick={onOpenDataPicker}
+        selected={false}
+        onDoubleClick={NO_OP}
+        safeToDelete={safeToDelete}
+        onDelete={onDeleteCartouche}
+        testId={testId}
+        inverted={false}
+      />
     )
   },
 )

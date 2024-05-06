@@ -391,8 +391,11 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
     setIsHovered(false)
   }
 
-  const isValueSet = React.useMemo(() => {
-    return propMetadata.propertyStatus.set
+  const isConnectedToData = React.useMemo(() => {
+    return (
+      propMetadata.propertyStatus.controlled &&
+      propMetadata.attributeExpression?.type !== 'JSX_ELEMENT'
+    )
   }, [propMetadata])
 
   const propertyLabel =
@@ -418,22 +421,25 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
               alignItems: 'center',
               gap: 6,
               color:
-                dataPickerButtonData.popupIsOpen || isHovered || !isValueSet
+                dataPickerButtonData.popupIsOpen || isHovered || isConnectedToData
                   ? colorTheme.dynamicBlue.value
                   : undefined,
+              cursor: 'pointer',
             }}
           >
             {title}
             <div
               style={{
-                opacity: isHovered || dataPickerButtonData.popupIsOpen || !isValueSet ? 1 : 0,
+                opacity: isHovered || dataPickerButtonData.popupIsOpen ? 1 : 0,
               }}
             >
               <Icn
                 category='semantic'
                 type='plus-in-white-translucent-circle'
                 color={
-                  dataPickerButtonData.popupIsOpen || isHovered || !isValueSet ? 'dynamic' : 'main'
+                  dataPickerButtonData.popupIsOpen || isHovered || !isConnectedToData
+                    ? 'dynamic'
+                    : 'main'
                 }
                 width={12}
                 height={12}
