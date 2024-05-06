@@ -1203,10 +1203,7 @@ export const MetadataUtils = {
       )
       .some((e) => e !== 'br')
 
-    return (
-      !MetadataUtils.isElementGenerated(target) &&
-      (children.length === 0 || !hasNonEditableChildren)
-    )
+    return children.length === 0 || !hasNonEditableChildren
   },
   targetTextEditableAndHasText(
     metadata: ElementInstanceMetadataMap,
