@@ -315,6 +315,7 @@ export const DataPickerPopup = React.memo(
               alignItems: 'flex-start',
               width: '96%',
               maxWidth: '260px',
+              maxHeight: '260px',
             }}
             data-testid={DataPickerPopupTestId}
           >
@@ -326,6 +327,8 @@ export const DataPickerPopup = React.memo(
                 flexDirection: 'row',
                 gap: 16,
                 padding: '2px',
+                flex: 'none',
+                paddingBottom: '6px',
               }}
             >
               {filterOptions.map((option, index) => (
@@ -345,12 +348,23 @@ export const DataPickerPopup = React.memo(
                 </div>
               ))}
             </div>
-            <DataPickerPopupSubvariables
-              preferredAllState={preferredAllState}
-              pickerType={pickerType}
-              onTweakProperty={onTweakProperty}
-              customizeOptions={props.customizeOptions}
-            />
+            <div
+              style={{
+                overflowY: 'auto',
+                height: '100%',
+                width: '100%',
+                scrollbarWidth: 'auto',
+                colorScheme: 'dark',
+                scrollbarColor: 'gray transparent',
+              }}
+            >
+              <DataPickerPopupSubvariables
+                preferredAllState={preferredAllState}
+                pickerType={pickerType}
+                onTweakProperty={onTweakProperty}
+                customizeOptions={props.customizeOptions}
+              />
+            </div>
           </FlexColumn>
         </div>
       </InspectorModal>
@@ -449,6 +463,7 @@ function ValueRow({
           cursor: variableOption.variableInfo.matches ? 'pointer' : 'default',
           background: currentExpressionExactMatch ? colorTheme.primary.value : undefined,
           color: currentExpressionExactMatch ? colorTheme.white.value : undefined,
+          paddingLeft: variableOption.depth * 8,
         }}
         onClick={onClickTopLevelButton}
         css={{

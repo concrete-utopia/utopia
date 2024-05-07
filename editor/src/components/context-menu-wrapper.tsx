@@ -16,6 +16,7 @@ import type { ContextMenuItem } from './context-menu-items'
 import type { EditorDispatch } from './editor/action-types'
 import type { WindowPoint } from '../core/shared/math-utils'
 import { windowPoint } from '../core/shared/math-utils'
+import { BodyMenuOpenClass } from '../core/shared/utils'
 
 export interface ContextMenuWrapperProps<T> {
   id: string
@@ -28,6 +29,7 @@ export interface ContextMenuWrapperProps<T> {
   style?: React.CSSProperties
   providerStyle?: React.CSSProperties
   testId?: string
+  forwardRef?: React.RefObject<HTMLDivElement>
 }
 
 export interface ContextMenuProps<T> {
@@ -138,11 +140,18 @@ export class MomentumContextMenu<T> extends ReactComponent<ContextMenuProps<T>> 
     )
   }
 
+  onShown = () => {
+    document.body.classList.add(BodyMenuOpenClass)
+  }
+  onHidden = () => {
+    document.body.classList.remove(BodyMenuOpenClass)
+  }
+
   render() {
     const { id } = this.props
     const items = this.splitItemsForSubmenu(this.props.items)
     return (
-      <Menu key={id} id={id} animation={false}>
+      <Menu key={id} id={id} animation={false} onShown={this.onShown} onHidden={this.onHidden}>
         {items.map((item: Submenu<T> | SimpleItem<T>, index: number) => {
           if (item.type === 'submenu') {
             return (
@@ -170,7 +179,10 @@ export class MomentumContextMenu<T> extends ReactComponent<ContextMenuProps<T>> 
 }
 
 export class ContextMenuWrapper<T> extends ReactComponent<
-  ContextMenuWrapperProps<T> & { dispatch: EditorDispatch; children?: React.ReactNode }
+  ContextMenuWrapperProps<T> & {
+    dispatch?: EditorDispatch
+    children?: React.ReactNode
+  }
 > {
   getData = () => this.props.data
   wrapperStopPropagation = (event: React.MouseEvent<HTMLElement>) => {
@@ -186,6 +198,7 @@ export class ContextMenuWrapper<T> extends ReactComponent<
         onMouseDown={this.wrapperStopPropagation}
         onMouseUp={this.wrapperStopPropagation}
         onClick={this.wrapperStopPropagation}
+        ref={this.props.forwardRef}
       >
         <MenuProvider
           key={`${this.props.id}-provider`}
@@ -251,6 +264,7 @@ export class InspectorContextMenuWrapper<T> extends ReactComponent<
               width: '100%',
               height: '100%',
             }}
+            localXHack_KILLME='local-x-coord-KILLME'
           >
             {this.props.children}
           </MenuProvider>
@@ -270,6 +284,7 @@ interface MenuProviderProps {
   id: string
   itemsLength: number
   style?: React.CSSProperties
+  localXHack_KILLME?: 'local-x-coord-KILLME' | 'default' // FIXME: remove this, this is just here because react-contexify positions the context menu to the global position of the mouse, so MomentumContextMenu should in the root
 }
 
 export const MenuProvider: React.FunctionComponent<React.PropsWithChildren<MenuProviderProps>> = (
@@ -279,10 +294,14 @@ export const MenuProvider: React.FunctionComponent<React.PropsWithChildren<MenuP
   const onContextMenu = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
       if (props.itemsLength > 0) {
-        show(event)
+        if (props.localXHack_KILLME === 'local-x-coord-KILLME') {
+          show(event, { position: { x: event.nativeEvent.offsetX, y: event.nativeEvent.pageY } })
+        } else {
+          show(event)
+        }
       }
     },
-    [props.itemsLength, show],
+    [props.itemsLength, props.localXHack_KILLME, show],
   )
 
   return (

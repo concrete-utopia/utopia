@@ -38,8 +38,8 @@ import type { PreferredChildComponentDescriptor } from '../../custom-code/intern
 import { fixUtopiaElement, generateConsistentUID } from '../../../core/shared/uid-utils'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { elementFromInsertMenuItem } from '../../editor/insert-callbacks'
-import { MomentumContextMenu } from '../../context-menu-wrapper'
-import { NO_OP, assertNever } from '../../../core/shared/utils'
+import { ContextMenuWrapper, MomentumContextMenu } from '../../context-menu-wrapper'
+import { BodyMenuOpenClass, NO_OP, assertNever } from '../../../core/shared/utils'
 import { type ContextMenuItem } from '../../context-menu-items'
 import { FlexRow, Icn, type IcnProps } from '../../../uuiui'
 import type {
@@ -345,7 +345,8 @@ function moreItem(
     name: <FlexRow style={{ paddingLeft: 22 }}>More…</FlexRow>,
     enabled: true,
     action: (_data, _dispatch, _rightClickCoordinate, e) => {
-      const currentMenu = (menuWrapperRef.current?.childNodes[0] as HTMLDivElement) ?? null
+      // FIXME Yeah this is horrific
+      const currentMenu = (menuWrapperRef.current?.childNodes[1] as HTMLDivElement) ?? null
       const position =
         currentMenu == null
           ? undefined
@@ -395,8 +396,11 @@ function insertComponentPickerItem(
         ]
       }
 
-      // if we are inserting into a map expression then we replace the mapped element
-      if (MetadataUtils.isJSXMapExpression(EP.parentPath(target), metadata)) {
+      // Replacing a mapped element requires a different function
+      if (
+        isReplaceTarget(insertionTarget) &&
+        MetadataUtils.isJSXMapExpression(EP.parentPath(target), metadata)
+      ) {
         return [replaceMappedElement(fixedElement, target, toInsert.importsToAdd)]
       }
 
@@ -576,7 +580,7 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
 
         const submenuLabel = (
           <FlexRow
-            style={{ gap: 10 }}
+            style={{ gap: 10, width: 228 }}
             data-testId={labelTestIdForComponentIcon(data.name, data.moduleName ?? '', data.icon)}
           >
             <Icn {...iconProps} width={12} height={12} />
@@ -608,9 +612,7 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
       .concat([separatorItem, moreItem(wrapperRef, showFullMenu)])
 
     return (
-      <div ref={wrapperRef}>
-        <MomentumContextMenu id={PreferredMenuId} items={items} getData={NO_OP} />
-      </div>
+      <ContextMenuWrapper items={items} data={{}} id={PreferredMenuId} forwardRef={wrapperRef} />
     )
   },
 )
@@ -662,8 +664,23 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
       e.stopPropagation()
     }, [])
 
+    const onShown = React.useCallback(() => {
+      document.body.classList.add(BodyMenuOpenClass)
+    }, [])
+
+    const onHidden = React.useCallback(() => {
+      document.body.classList.remove(BodyMenuOpenClass)
+    }, [])
+
     return (
-      <Menu id={FullMenuId} animation={false} style={{ width: 260 }} onClick={squashEvents}>
+      <Menu
+        id={FullMenuId}
+        animation={false}
+        style={{ width: 260 }}
+        onClick={squashEvents}
+        onShown={onShown}
+        onHidden={onHidden}
+      >
         <ComponentPicker allComponents={allInsertableComponents} onItemClick={onItemClick} />
       </Menu>
     )
