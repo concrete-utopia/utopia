@@ -109,6 +109,68 @@ export const VariableFromScopeOptionTestId = (idx: string) => `variable-from-sco
 export const DataPickerPopupButtonTestId = `data-picker-popup-button-test-id`
 export const DataPickerPopupTestId = `data-picker-popup-test-id`
 
+export interface PropertyLabelAndPlusButtonProps {
+  title: string
+  openPopup: () => void
+  handleMouseEnter: () => void
+  handleMouseLeave: () => void
+  popupIsOpen: boolean
+  isHovered: boolean
+  isConnectedToData: boolean
+}
+
+export function PropertyLabelAndPlusButton(
+  props: React.PropsWithChildren<PropertyLabelAndPlusButtonProps>,
+) {
+  const {
+    title,
+    openPopup,
+    popupIsOpen,
+    isHovered,
+    isConnectedToData,
+    handleMouseEnter,
+    handleMouseLeave,
+    children,
+  } = props
+  return (
+    <Tooltip title={title}>
+      <div
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        style={{
+          lineHeight: `${UtopiaTheme.layout.inputHeight.default}px`,
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 6,
+          color:
+            popupIsOpen || isHovered || isConnectedToData
+              ? colorTheme.dynamicBlue.value
+              : undefined,
+          cursor: 'pointer',
+        }}
+      >
+        <span onClick={openPopup}>{title}</span>
+        {children}
+        <div
+          onClick={openPopup}
+          style={{
+            opacity: isHovered || popupIsOpen ? 1 : 0,
+          }}
+        >
+          <Icn
+            category='semantic'
+            type='plus-in-white-translucent-circle'
+            color={popupIsOpen || isHovered || !isConnectedToData ? 'dynamic' : 'main'}
+            width={12}
+            height={12}
+          />
+        </div>
+      </div>
+    </Tooltip>
+  )
+}
+
 function useComponentPropsInspectorInfo(
   partialPath: PropertyPath,
   addPropsToPath: boolean,
@@ -379,13 +441,13 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
     props.controlDescription,
   )
 
-  const handleMouseEnter = () => {
+  const handleMouseEnter = React.useCallback(() => {
     setIsHovered(true)
-  }
+  }, [])
 
-  const handleMouseLeave = () => {
+  const handleMouseLeave = React.useCallback(() => {
     setIsHovered(false)
-  }
+  }, [])
 
   const isConnectedToData = React.useMemo(() => {
     return (
@@ -405,44 +467,15 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
           alignSelf: 'flex-start',
         }}
       >
-        <Tooltip title={title}>
-          <div
-            onClick={dataPickerButtonData.openPopup}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-            style={{
-              lineHeight: `${UtopiaTheme.layout.inputHeight.default}px`,
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 6,
-              color:
-                dataPickerButtonData.popupIsOpen || isHovered || isConnectedToData
-                  ? colorTheme.dynamicBlue.value
-                  : undefined,
-              cursor: 'pointer',
-            }}
-          >
-            {title}
-            <div
-              style={{
-                opacity: isHovered || dataPickerButtonData.popupIsOpen ? 1 : 0,
-              }}
-            >
-              <Icn
-                category='semantic'
-                type='plus-in-white-translucent-circle'
-                color={
-                  dataPickerButtonData.popupIsOpen || isHovered || !isConnectedToData
-                    ? 'dynamic'
-                    : 'main'
-                }
-                width={12}
-                height={12}
-              />
-            </div>
-          </div>
-        </Tooltip>
+        <PropertyLabelAndPlusButton
+          title={title}
+          openPopup={dataPickerButtonData.openPopup}
+          handleMouseEnter={handleMouseEnter}
+          handleMouseLeave={handleMouseLeave}
+          popupIsOpen={dataPickerButtonData.popupIsOpen}
+          isHovered={isHovered}
+          isConnectedToData={isConnectedToData}
+        />
       </PropertyLabel>
     ) : (
       <props.label />
@@ -872,6 +905,23 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
     props.controlDescription,
   )
 
+  const [isHovered, setIsHovered] = React.useState(false)
+
+  const handleMouseEnter = React.useCallback(() => {
+    setIsHovered(true)
+  }, [])
+
+  const handleMouseLeave = React.useCallback(() => {
+    setIsHovered(false)
+  }, [])
+
+  const isConnectedToData = React.useMemo(() => {
+    return (
+      propMetadata.propertyStatus.controlled &&
+      propMetadata.attributeExpression?.type !== 'JSX_ELEMENT'
+    )
+  }, [propMetadata])
+
   return (
     <div>
       <div>
@@ -902,8 +952,17 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
                   cursor: props.disableToggling ? 'default' : 'pointer',
                 }}
               >
-                {title}
-                {unless(props.disableToggling, <ObjectIndicator open={open} />)}
+                <PropertyLabelAndPlusButton
+                  title={title}
+                  openPopup={dataPickerButtonData.openPopup}
+                  handleMouseEnter={handleMouseEnter}
+                  handleMouseLeave={handleMouseLeave}
+                  popupIsOpen={dataPickerButtonData.popupIsOpen}
+                  isHovered={isHovered}
+                  isConnectedToData={isConnectedToData}
+                >
+                  {unless(props.disableToggling, <ObjectIndicator open={open} />)}
+                </PropertyLabelAndPlusButton>
               </PropertyLabel>
               <div style={{ minWidth: 0 }} onClick={stopPropagation}>
                 <ControlForProp
