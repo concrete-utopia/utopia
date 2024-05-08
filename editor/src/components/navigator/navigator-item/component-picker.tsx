@@ -22,15 +22,12 @@ import { dataPasteHandler } from '../../../utils/paste-handler'
 import { sortBy } from '../../../core/shared/array-utils'
 import { iconPropsForIcon } from './component-picker-context-menu'
 
-const FILTER_CATEGORIES = [
-  'Layout',
-  'Forms',
-  'HTML',
-  'Shopify',
-  'Advanced',
-  'Fragment',
-  'Miscellaneous',
-]
+const FILTER_CATEGORIES: Array<string> = ['Everything']
+
+interface Category {
+  label: string
+  items: Array<InsertMenuItem>
+}
 
 export interface ComponentPickerProps {
   allComponents: Array<InsertMenuItemGroup>
@@ -161,34 +158,10 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
     [flatComponentsToShow, highlightedComponentKey, onItemClick, selectIndex],
   )
 
-  const fakeCategorizedComponents = [
+  const categorizedComponents = [
     {
-      label: FILTER_CATEGORIES[0],
-      items: flatComponentsToShow.slice(0, 1),
-    },
-    {
-      label: FILTER_CATEGORIES[1],
-      items: flatComponentsToShow.slice(1, 5),
-    },
-    {
-      label: FILTER_CATEGORIES[2],
-      items: flatComponentsToShow.slice(5, 7),
-    },
-    {
-      label: FILTER_CATEGORIES[3],
-      items: flatComponentsToShow.slice(7, 8),
-    },
-    {
-      label: FILTER_CATEGORIES[4],
-      items: flatComponentsToShow.slice(8, 9),
-    },
-    {
-      label: FILTER_CATEGORIES[5],
-      items: flatComponentsToShow.slice(9, 10),
-    },
-    {
-      label: FILTER_CATEGORIES[6],
-      items: flatComponentsToShow.slice(10),
+      label: 'Everything',
+      items: flatComponentsToShow,
     },
   ]
 
@@ -206,12 +179,12 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
       ref={menuRef}
     >
       <ComponentPickerTopSection
-        components={fakeCategorizedComponents}
+        components={categorizedComponents}
         onFilterChange={setFilter}
         onKeyDown={onKeyDown}
       />
       <ComponentPickerComponentSection
-        components={fakeCategorizedComponents}
+        components={categorizedComponents}
         onItemClick={props.onItemClick}
         onItemHover={onItemHover}
         currentlySelectedKey={highlightedComponentKey}
@@ -221,10 +194,7 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
 })
 
 interface ComponentPickerTopSectionProps {
-  components: Array<{
-    label: string
-    items: Array<InsertMenuItem>
-  }>
+  components: Array<Category>
   onFilterChange: (filter: string) => void
   onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void
 }
@@ -241,7 +211,7 @@ const ComponentPickerTopSection = React.memo((props: ComponentPickerTopSectionPr
       }}
       tabIndex={0}
     >
-      <FilterButtons components={components} />
+      {components.length > 1 && <FilterButtons components={components} />}
       <FilterBar onFilterChange={onFilterChange} onKeyDown={onKeyDown} />
     </div>
   )
@@ -317,10 +287,7 @@ const FilterBar = React.memo((props: FilterBarProps) => {
 })
 
 interface FilterButtonsProps {
-  components: Array<{
-    label: string
-    items: Array<InsertMenuItem>
-  }>
+  components: Array<Category>
 }
 
 const FilterButtons = React.memo((props: FilterButtonsProps) => {
@@ -448,10 +415,7 @@ const FilterButton = React.memo((props: FilterButtonProps) => {
 })
 
 interface ComponentPickerComponentSectionProps {
-  components: Array<{
-    label: string
-    items: Array<InsertMenuItem>
-  }>
+  components: Array<Category>
   onItemClick: (elementToInsert: InsertableComponent) => React.MouseEventHandler
   onItemHover: (elementToInsert: InsertMenuItemValue) => React.MouseEventHandler
   currentlySelectedKey: string | null
