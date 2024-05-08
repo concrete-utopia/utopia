@@ -66,7 +66,9 @@ export function simpleDefaultProject(): PersistentModel {
   return persistentModel
 }
 
-export function createComplexDefaultProjectContents(): ProjectContents {
+export function createComplexDefaultProjectContents(
+  dummyComponent: string = 'Spring',
+): ProjectContents {
   function createCodeFile(path: string, contents: string): TextFile {
     return textFile(textFileContents(contents, unparsed, RevisionsState.CodeAhead), null, null, 0)
   }
@@ -137,19 +139,19 @@ export var App = (props) => {
     '/src/card.js': createCodeFile(
       '/src/card.js',
       `import * as React from 'react'
-import { Spring } from 'non-existant-dummy-library'
+import { ${dummyComponent} } from 'non-existant-dummy-library'
 export var Card = (props) => {
   return <div data-uid='card-outer-div' style={{...props.style}}>
     <div data-uid='card-inner-div' data-testid='card-inner-div' style={{ position: 'absolute', left: 0, top: 0, width: 50, height: 50, backgroundColor: 'red' }} />
-    <Spring data-uid='card-inner-spring' data-testid='spring' style={{ position: 'absolute', left: 100, top: 200, width: 50, height: 50, backgroundColor: 'blue' }} />
+    <${dummyComponent} data-uid='card-inner-spring' data-testid='spring' style={{ position: 'absolute', left: 100, top: 200, width: 50, height: 50, backgroundColor: 'blue' }} />
   </div>
 }`,
     ),
   }
 }
 
-export function complexDefaultProject(): PersistentModel {
-  const projectContents: ProjectContents = createComplexDefaultProjectContents()
+export function complexDefaultProject(dummyComponent: string = 'Spring'): PersistentModel {
+  const projectContents: ProjectContents = createComplexDefaultProjectContents(dummyComponent)
   const persistentModel = persistentModelForProjectContents(contentsToTree(projectContents))
   return persistentModel
 }

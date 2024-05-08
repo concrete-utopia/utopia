@@ -31,8 +31,8 @@ export function simpleDefaultProjectPreParsed(): PersistentModel {
   }
 }
 
-export function complexDefaultProjectPreParsed(): PersistentModel {
-  const project = complexDefaultProject()
+export function complexDefaultProjectPreParsed(dummyComponent: string = 'Spring'): PersistentModel {
+  const project = complexDefaultProject(dummyComponent)
   const updatedProjectContents = parseProjectContents(project.projectContents)
 
   return {

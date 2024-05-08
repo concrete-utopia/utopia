@@ -158,7 +158,7 @@ export interface JSXInfo {
 
 export type VariableInfo = PrimitiveInfo | ArrayInfo | ObjectInfo | JSXInfo
 
-function variableInfoFromValue(
+export function variableInfoFromValue(
   expression: string,
   expressionPathPart: string | number,
   value: unknown,
@@ -233,24 +233,27 @@ function variableInfoFromVariableData(variableNamesInScope: VariableData): Array
   return info
 }
 
-function keepOnlyFirstMatch(variables: Array<VariableInfo>): Array<VariableInfo> {
-  let foundFirstMatch: boolean = false
-  let result: Array<VariableInfo> = []
-  for (const variable of variables) {
-    const matches = foundFirstMatch ? false : variable.matches
-    result.push({ ...variable, matches })
-    if (variable.matches) {
-      foundFirstMatch = true
+function getTargetPropertyFromControlDescription(
+  controlDescription: ControlDescription | null,
+  targetPropertyName: string | null,
+): ControlDescription | null {
+  if (targetPropertyName == null || controlDescription == null) {
+    return controlDescription
+  } else {
+    switch (controlDescription.control) {
+      case 'object':
+        return controlDescription.object[targetPropertyName] ?? null
+      default:
+        return controlDescription
     }
   }
-  return result
 }
 
-function orderVariablesForRelevance(
+export function orderVariablesForRelevance(
   variableNamesInScope_MUTABLE: Array<VariableInfo>,
   controlDescription: ControlDescription | null,
   currentPropertyValue: PropertyValue,
-  targetPropertyName: string,
+  targetPropertyName: string | null,
   mode: DataPickerFilterOption,
 ): Array<VariableInfo> {
   let valuesExactlyMatchingPropertyName: Array<VariableInfo> = []
@@ -287,9 +290,13 @@ function orderVariablesForRelevance(
     const valueExactlyMatchesControlDescription =
       controlDescription?.control === 'jsx' && React.isValidElement(variable.value)
 
+    const targetControlDescription = getTargetPropertyFromControlDescription(
+      controlDescription,
+      targetPropertyName,
+    )
     const valueMatchesControlDescription =
-      controlDescription != null &&
-      variableMatchesControlDescription(variable.value, controlDescription)
+      targetControlDescription != null &&
+      variableMatchesControlDescription(variable.value, targetControlDescription)
 
     const valueMatchesCurrentPropValue =
       currentPropertyValue.type === 'existing' &&
@@ -314,14 +321,14 @@ function orderVariablesForRelevance(
     }
   }
 
-  return keepOnlyFirstMatch([
+  return [
     ...valuesExactlyMatchingPropertyName,
     ...valuesExactlyMatchingPropertyDescription,
     ...valuesMatchingPropertyDescription,
     ...valuesMatchingPropertyShape,
     ...valueElementMatches,
     ...restOfValues,
-  ])
+  ]
 }
 
 const filterKeyFromObject =
@@ -436,7 +443,7 @@ export function useVariablesInScopeForSelectedElement(
       variableInfo,
       controlDescriptions,
       currentPropertyValue,
-      propertyPath == null ? '' : '' + PP.lastPart(propertyPath),
+      propertyPath == null ? null : '' + PP.lastPart(propertyPath),
       mode,
     )
 
@@ -536,7 +543,7 @@ function variableMatchesControlDescription(
   return matches
 }
 
-type PropertyValue =
+export type PropertyValue =
   | { type: 'existing'; value: unknown }
   | { type: 'mapped-value' }
   | { type: 'not-found' }
