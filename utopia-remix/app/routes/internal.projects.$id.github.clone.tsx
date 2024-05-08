@@ -61,13 +61,14 @@ async function handler(req: Request, params: Params<string>) {
 
   const client = newOctokitClient(githubAuth.access_token)
 
-  return await wrapGithubAPIRequest(client, async (github) => {
-    return getBranchProjectContents(github, {
+  return wrapGithubAPIRequest(
+    client,
+    getBranchProjectContents({
       projectId: projectId,
       owner: body.owner,
       repo: body.repo,
       branch: body.branch,
       existingAssets: body.existingAssets,
-    })
-  })
+    }),
+  )
 }
