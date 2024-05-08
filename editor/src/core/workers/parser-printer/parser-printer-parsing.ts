@@ -1535,6 +1535,44 @@ interface MapExpressionParts {
   valuesInScopeFromParameters: JSXMapExpression['valuesInScopeFromParameters']
 }
 
+interface MapExpressionData {
+  propertyAccessExpression: TS.PropertyAccessExpression
+  firstArgument: TS.Expression
+}
+
+function findMapExpression(
+  sourceFile: TS.SourceFile,
+  expression: TS.Node,
+): MapExpressionData | null {
+  const jsxExpressionStripped =
+    TS.isJsxExpression(expression) && expression.expression != null
+      ? expression.expression
+      : expression
+
+  if (
+    TS.isCallExpression(jsxExpressionStripped) &&
+    TS.isPropertyAccessExpression(jsxExpressionStripped.expression)
+  ) {
+    const propertyAccessExpression: TS.PropertyAccessExpression = jsxExpressionStripped.expression
+    if (propertyAccessExpression.name.getText(sourceFile) === 'map') {
+      return {
+        propertyAccessExpression: propertyAccessExpression,
+        firstArgument: jsxExpressionStripped.arguments[0],
+      }
+    }
+  }
+
+  if (TS.isReturnStatement(expression) && expression.expression != null) {
+    return findMapExpression(sourceFile, expression.expression)
+  }
+
+  if (TS.isParenthesizedExpression(expression)) {
+    return findMapExpression(sourceFile, expression.expression)
+  }
+
+  return null
+}
+
 function parseOutMapExpressionParts(
   sourceFile: TS.SourceFile,
   sourceText: string,
@@ -1547,75 +1585,67 @@ function parseOutMapExpressionParts(
   alreadyExistingUIDs: Set<string>,
   applySteganography: SteganographyMode,
 ): Either<string, WithParserMetadata<MapExpressionParts>> {
-  const jsxExpressionStripped =
-    TS.isJsxExpression(expression) && expression.expression != null
-      ? expression.expression
-      : expression
-  if (
-    TS.isCallExpression(jsxExpressionStripped) &&
-    TS.isPropertyAccessExpression(jsxExpressionStripped.expression)
-  ) {
-    const propertyAccessExpression: TS.PropertyAccessExpression = jsxExpressionStripped.expression
-    if (propertyAccessExpression.name.getText(sourceFile) === 'map') {
-      const firstArgument = jsxExpressionStripped.arguments[0]
-      if (TS.isArrowFunction(firstArgument)) {
-        let valuesInScopeFromParameters: JSXMapExpression['valuesInScopeFromParameters'] = []
-        for (const parameter of firstArgument.parameters) {
-          addBindingNames(sourceFile, parameter.name, valuesInScopeFromParameters)
-        }
+  const maybeMapData = findMapExpression(sourceFile, expression)
+  if (maybeMapData == null) {
+    return left('Not a map expression.')
+  }
+  const { firstArgument, propertyAccessExpression } = maybeMapData
+  if (TS.isArrowFunction(firstArgument)) {
+    let valuesInScopeFromParameters: JSXMapExpression['valuesInScopeFromParameters'] = []
+    for (const parameter of firstArgument.parameters) {
+      addBindingNames(sourceFile, parameter.name, valuesInScopeFromParameters)
+    }
 
-        const possibleValueToMap = parseAttributeExpression(
-          sourceFile,
-          sourceText,
-          filename,
-          imports,
-          topLevelNames,
-          propsObjectName,
-          propertyAccessExpression.expression,
-          existingHighlightBounds,
-          alreadyExistingUIDs,
-          [],
-          applySteganography,
-          'part-of-expression',
-        )
-        const possibleMapFunction = parseAttributeExpression(
-          sourceFile,
-          sourceText,
-          filename,
-          imports,
-          topLevelNames,
-          propsObjectName,
-          firstArgument,
-          existingHighlightBounds,
-          alreadyExistingUIDs,
-          [],
-          applySteganography,
-          'part-of-expression',
-        )
-        return applicative2Either(
-          (valueToMapWithMetadata, mapFunctionWithMetadata) => {
-            return merge2WithParserMetadata(
-              valueToMapWithMetadata,
-              mapFunctionWithMetadata,
-              (valueToMap, mapFunction) => {
-                return withParserMetadata(
-                  {
-                    valueToMap: valueToMap,
-                    mapFunction: mapFunction,
-                    valuesInScopeFromParameters: valuesInScopeFromParameters,
-                  },
-                  {},
-                  [],
-                  [],
-                )
+    const possibleValueToMap = parseAttributeExpression(
+      sourceFile,
+      sourceText,
+      filename,
+      imports,
+      topLevelNames,
+      propsObjectName,
+      propertyAccessExpression.expression,
+      existingHighlightBounds,
+      alreadyExistingUIDs,
+      [],
+      applySteganography,
+      'part-of-expression',
+    )
+    const possibleMapFunction = parseAttributeExpression(
+      sourceFile,
+      sourceText,
+      filename,
+      imports,
+      topLevelNames,
+      propsObjectName,
+      firstArgument,
+      existingHighlightBounds,
+      alreadyExistingUIDs,
+      [],
+      applySteganography,
+      'part-of-expression',
+    )
+    return applicative2Either(
+      (valueToMapWithMetadata, mapFunctionWithMetadata) => {
+        return merge2WithParserMetadata(
+          valueToMapWithMetadata,
+          mapFunctionWithMetadata,
+          (valueToMap, mapFunction) => {
+            return withParserMetadata(
+              {
+                valueToMap: valueToMap,
+                mapFunction: mapFunction,
+                valuesInScopeFromParameters: valuesInScopeFromParameters,
               },
+              {},
+              [],
+              [],
             )
           },
-          possibleValueToMap,
-          possibleMapFunction,
         )
-      }
-    }
+      },
+      possibleValueToMap,
+      possibleMapFunction,
+    )
   }
   return left('Not a map expression.')
 }
