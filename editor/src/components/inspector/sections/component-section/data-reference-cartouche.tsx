@@ -20,6 +20,7 @@ import * as EPP from '../../../template-property-path'
 
 interface DataReferenceCartoucheControlProps {
   elementPath: ElementPath
+  renderedByElementPath: ElementPath
   childOrAttribute: JSXElementChild
   selected: boolean
   propertyPath: PropertyPath
@@ -45,7 +46,7 @@ export const DataReferenceCartoucheControl = React.memo(
 
     const dataPickerButtonData = useDataPickerButton(
       [EP.parentPath(elementPath)],
-      PP.fromString('children'), // TODO
+      props.propertyPath,
       false, // TODO
       {
         control: 'none',
@@ -54,13 +55,14 @@ export const DataReferenceCartoucheControl = React.memo(
 
     const isDataComingFromHookResult = useEditorState(
       Substores.projectContentsAndMetadata,
-      (store) =>
-        traceDataFromProp(
-          EPP.create(props.elementPath, props.propertyPath),
+      (store) => {
+        return traceDataFromProp(
+          EPP.create(props.renderedByElementPath, props.propertyPath),
           store.editor.jsxMetadata,
           store.editor.projectContents,
           [],
-        ).type === 'hook-result',
+        )
+      },
       'IdentifierExpressionCartoucheControl trace',
     )
 
@@ -81,7 +83,7 @@ export const DataReferenceCartoucheControl = React.memo(
           inverted={false}
           onDelete={NO_OP}
           testId={`data-reference-cartouche-${EP.toString(elementPath)}`}
-          contentIsComingFromServer={isDataComingFromHookResult}
+          contentIsComingFromServer={isDataComingFromHookResult.type === 'hook-result'}
         />
       </>
     )

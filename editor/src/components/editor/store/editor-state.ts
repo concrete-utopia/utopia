@@ -2180,18 +2180,21 @@ export function syntheticNavigatorEntry(
 export interface DataReferenceNavigatorEntry {
   type: 'DATA_REFERENCE'
   elementPath: ElementPath
+  renderedByElementPath: ElementPath
   childOrAttribute: JSXElementChild
   propertyPath: PropertyPath
 }
 
 export function dataReferenceNavigatorEntry(
   elementPath: ElementPath,
+  renderedByParentElementPath: ElementPath,
   childOrAttribute: JSXElementChild,
   propertyPath: PropertyPath,
 ): DataReferenceNavigatorEntry {
   return {
     type: 'DATA_REFERENCE',
     elementPath: elementPath,
+    renderedByElementPath: renderedByParentElementPath,
     childOrAttribute: childOrAttribute,
     propertyPath: propertyPath,
   }

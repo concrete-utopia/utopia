@@ -690,8 +690,10 @@ export const SyntheticNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<Synth
   )
 
 export const DataReferenceNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<DataReferenceNavigatorEntry> =
-  combine3EqualityCalls(
+  combine4EqualityCalls(
     (entry) => entry.elementPath,
+    ElementPathKeepDeepEquality,
+    (entry) => entry.renderedByElementPath,
     ElementPathKeepDeepEquality,
     (entry) => entry.childOrAttribute,
     JSXElementChildKeepDeepEquality(),

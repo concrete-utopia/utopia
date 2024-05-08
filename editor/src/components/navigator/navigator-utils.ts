@@ -135,6 +135,7 @@ export function getNavigatorTargets(
           // add synthetic entry
           const dataRefEntry = dataReferenceNavigatorEntry(
             path,
+            EP.parentPath(path),
             elementFromProjectContents,
             PP.create('children'),
           )
@@ -212,7 +213,7 @@ export function getNavigatorTargets(
             walkAndAddKeys(subTreeChild, collapsedAncestor, prop)
           } else {
             const synthEntry = isFeatureEnabled('Data Entries in the Navigator')
-              ? dataReferenceNavigatorEntry(childPath, propValue, PP.create('children'))
+              ? dataReferenceNavigatorEntry(childPath, path, propValue, PP.create(prop))
               : syntheticNavigatorEntry(childPath, propValue)
             addNavigatorTargetsUnlessCollapsed(synthEntry)
           }
@@ -347,6 +348,7 @@ export function getNavigatorTargets(
             const childPath = EP.appendToPath(path, child.uid)
             const dataRefEntry = dataReferenceNavigatorEntry(
               childPath,
+              path,
               child,
               PP.create('children'),
             )
