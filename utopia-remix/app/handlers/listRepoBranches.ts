@@ -2,7 +2,7 @@ import { type Params } from '@remix-run/react'
 import { getGithubAuthentication } from '../models/githubAuthentication.server'
 import { ensure, requireUser } from '../util/api.server'
 import { ApiError } from '../util/errors'
-import { newOctokitClient, wrapGithubAPIRequest } from '../util/github'
+import { newOctokitClient, wrapGithubAPIRequest } from '../util/github.server'
 import { Status } from '../util/statusCodes'
 
 export async function handleListRepoBranches(req: Request, params: Params<string>) {
