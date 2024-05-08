@@ -7,7 +7,7 @@ import {
   truncateTables,
 } from '../test-util'
 import { handleListRepoBranches } from './listRepoBranches'
-import * as githubUtil from '../util/github'
+import * as githubUtil from '../util/github.server'
 import { toApiFailure, toApiSuccess } from '../types'
 
 describe('handleListRepoBranches', () => {

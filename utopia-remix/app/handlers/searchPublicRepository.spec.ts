@@ -6,7 +6,7 @@ import {
   newTestRequest,
   truncateTables,
 } from '../test-util'
-import * as githubUtil from '../util/github'
+import * as githubUtil from '../util/github.server'
 import { toApiFailure, toApiSuccess } from '../types'
 import { handleSearchPublicRepository } from './searchPublicRepository'
 

@@ -3,6 +3,7 @@ import { Prisma } from 'prisma-client'
 import { ensure } from './util/api.server'
 import { assertNever } from './util/assertNever'
 import { Status } from './util/statusCodes'
+import type { FileType } from './util/files'
 
 const fullProjectFromDB = Prisma.validator<Prisma.ProjectDefaultArgs>()({
   include: {
@@ -483,5 +484,5 @@ export function assetFile(params: { gitBlobSha: string }): AssetFile {
 export type ExistingAsset = {
   gitBlobSha?: string
   path: string
-  type: string
+  type: FileType
 }

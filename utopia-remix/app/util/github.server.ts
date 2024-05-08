@@ -58,7 +58,7 @@ export async function wrapGithubAPIRequest(
   }
 }
 
-type AssetToUpload = {
+export type AssetToUpload = {
   path: string
   data: Buffer
 }
@@ -68,7 +68,7 @@ type UnzipResult = {
   assetsToUpload: AssetToUpload[]
 }
 
-type UnzipEntry = unzipper.Entry & {
+export type UnzipEntry = unzipper.Entry & {
   vars: {
     uncompressedSize: number // for some reason this field is not available in the type defs, but it's there
   }
@@ -193,7 +193,7 @@ function unzipArchive(params: {
   )
 }
 
-function processEntry(
+export function processEntry(
   archiveName: string,
   root: ProjectContentDirectory,
   existingAssets: ExistingAsset[],
@@ -209,15 +209,15 @@ function processEntry(
       const target = populateDirectories(root, filePath)
 
       // Get the file contents and store them in the tree.
-      await populateFileContents(filePath, entry, target, existingAssets, assetsToUpload)
+      await populateEntryContents(filePath, entry, target, existingAssets, assetsToUpload)
     }
 
     entry.autodrain()
   }
 }
 
-function populateDirectories(root: ProjectContentDirectory, filePath: string) {
-  const dirname = path.dirname(filePath)
+export function populateDirectories(root: ProjectContentDirectory, relativeFilePath: string) {
+  const dirname = path.dirname(relativeFilePath)
   const folders = dirname.split('/').filter((folder) => folder !== '.')
 
   let target: ProjectContentDirectory = root
@@ -233,7 +233,7 @@ function populateDirectories(root: ProjectContentDirectory, filePath: string) {
   return target
 }
 
-async function populateFileContents(
+export async function populateEntryContents(
   filePath: string,
   entry: UnzipEntry,
   target: ProjectContentDirectory,
@@ -267,7 +267,7 @@ async function populateFileContents(
   }
 }
 
-function shouldUploadAsset(
+export function shouldUploadAsset(
   existingAssets: ExistingAsset[],
   fileType: FileType | null,
   gitBlobSha: string,
