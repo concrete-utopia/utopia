@@ -155,7 +155,7 @@
     "@remix-run/server-runtime": "2.3.1",
     "@root/encoding": "1.0.1",
     "@seznam/compose-react-refs": "1.0.6",
-    "@shopify/hydrogen": "2023.10.2",
+    "@shopify/hydrogen": "2024.4.1",
     "@stitches/react": "1.2.8",
     "@svgr/plugin-jsx": "5.5.0",
     "@tippyjs/react": "4.1.0",
