@@ -10,6 +10,8 @@ export const GithubEndpoints = {
   save: (projectID: string) => urljoin(UTOPIA_BACKEND, 'github', 'save', projectID),
   getBranches: ({ owner, repository }: GithubRepo) =>
     urljoin(UTOPIA_BACKEND_BASE_URL, 'internal', 'github', 'branches', owner, repository),
+  cloneBranch: (projectID: string) =>
+    urljoin(UTOPIA_BACKEND_BASE_URL, 'internal', 'projects', projectID, 'github', 'clone'),
   branchContents: (githubRepo: GithubRepo, branchName: string) =>
     urljoin(
       UTOPIA_BACKEND,

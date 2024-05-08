@@ -693,3 +693,35 @@ export async function requestSearchPublicGithubRepository(
     body: JSON.stringify({ owner: params.owner, repo: params.repo }),
   })
 }
+
+export type ExistingAsset = {
+  gitBlobSha?: string
+  path: string
+  type: string
+}
+
+export async function requestProjectCloneGithubBranch(
+  operationContext: GithubOperationContext,
+  params: {
+    projectId: string
+    owner: string
+    repo: string
+    branch: string
+    existingAssets: ExistingAsset[]
+  },
+): Promise<Response> {
+  const url = GithubEndpoints.cloneBranch(params.projectId)
+
+  return operationContext.fetch(url, {
+    method: 'POST',
+    credentials: 'include',
+    headers: HEADERS,
+    mode: MODE,
+    body: JSON.stringify({
+      owner: params.owner,
+      repo: params.repo,
+      branch: params.branch,
+      existingAssets: params.existingAssets,
+    }),
+  })
+}
