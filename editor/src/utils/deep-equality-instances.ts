@@ -21,6 +21,7 @@ import type { HigherOrderControl } from '../components/canvas/canvas-types'
 import type { JSXElementName } from '../core/shared/element-template'
 import type {
   ElementPath,
+  ElementPropertyPath,
   PropertyPath,
   StaticElementPath,
 } from '../core/shared/project-file-types'
@@ -40,6 +41,7 @@ import {
 import type { LayoutTargetableProp } from '../core/layout/layout-helpers-new'
 import type { CanvasPoint, WindowPoint } from '../core/shared/math-utils'
 import { canvasPoint, windowPoint } from '../core/shared/math-utils'
+import * as EPP from '../components/template-property-path'
 
 export const ElementPathKeepDeepEquality: KeepDeepEqualityCall<ElementPath> =
   createCallFromEqualsFunction((oldPath: ElementPath, newPath: ElementPath) => {
@@ -58,6 +60,16 @@ export function PropertyPathKeepDeepEquality(): KeepDeepEqualityCall<PropertyPat
   return createCallFromEqualsFunction((oldPath: PropertyPath, newPath: PropertyPath) => {
     return PP.pathsEqual(oldPath, newPath)
   })
+}
+
+export function ElementPropertyPathKeepDeepEquality(): KeepDeepEqualityCall<ElementPropertyPath> {
+  return combine2EqualityCalls(
+    (e) => e.elementPath,
+    ElementPathKeepDeepEquality,
+    (e) => e.propertyPath,
+    PropertyPathKeepDeepEquality(),
+    (e, p) => EPP.create(e, p),
+  )
 }
 
 export function HigherOrderControlKeepDeepEquality(

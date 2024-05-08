@@ -272,6 +272,7 @@ import {
   StaticElementPathKeepDeepEquality,
   ElementsToRerenderKeepDeepEquality,
   PropertyPathKeepDeepEquality,
+  ElementPropertyPathKeepDeepEquality,
 } from '../../../utils/deep-equality-instances'
 import {
   createCallFromIntrospectiveKeepDeep,
@@ -690,15 +691,13 @@ export const SyntheticNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<Synth
   )
 
 export const DataReferenceNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<DataReferenceNavigatorEntry> =
-  combine4EqualityCalls(
+  combine3EqualityCalls(
     (entry) => entry.elementPath,
     ElementPathKeepDeepEquality,
-    (entry) => entry.renderedByElementPath,
-    ElementPathKeepDeepEquality,
+    (entry) => entry.renderedAt,
+    nullableDeepEquality(ElementPropertyPathKeepDeepEquality()),
     (entry) => entry.childOrAttribute,
     JSXElementChildKeepDeepEquality(),
-    (entry) => entry.propertyPath,
-    PropertyPathKeepDeepEquality(),
     dataReferenceNavigatorEntry,
   )
 

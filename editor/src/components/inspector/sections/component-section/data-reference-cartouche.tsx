@@ -6,7 +6,7 @@ import type {
   JSXElementChild,
 } from '../../../../core/shared/element-template'
 import { getJSXElementNameLastPart } from '../../../../core/shared/element-template'
-import type { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
+import type { ElementPath, ElementPropertyPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
 import { NO_OP, assertNever } from '../../../../core/shared/utils'
 import { FlexRow, Icn, Icons, Tooltip, UtopiaStyles, colorTheme } from '../../../../uuiui'
@@ -16,14 +16,12 @@ import { useDispatch } from '../../../editor/store/dispatch-context'
 import { selectComponents } from '../../../editor/actions/meta-actions'
 import { when } from '../../../../utils/react-conditionals'
 import { traceDataFromProp } from '../../../../core/data-tracing/data-tracing'
-import * as EPP from '../../../template-property-path'
 
 interface DataReferenceCartoucheControlProps {
   elementPath: ElementPath
-  renderedByElementPath: ElementPath
   childOrAttribute: JSXElementChild
   selected: boolean
-  propertyPath: PropertyPath
+  renderedAt: ElementPropertyPath | null
 }
 
 export const DataReferenceCartoucheControl = React.memo(
@@ -46,7 +44,7 @@ export const DataReferenceCartoucheControl = React.memo(
 
     const dataPickerButtonData = useDataPickerButton(
       [EP.parentPath(elementPath)],
-      props.propertyPath,
+      props.renderedAt == null ? PP.create('children') : props.renderedAt.propertyPath, // TODO
       false, // TODO
       {
         control: 'none',
@@ -56,11 +54,16 @@ export const DataReferenceCartoucheControl = React.memo(
     const isDataComingFromHookResult = useEditorState(
       Substores.projectContentsAndMetadata,
       (store) => {
-        return traceDataFromProp(
-          EPP.create(props.renderedByElementPath, props.propertyPath),
-          store.editor.jsxMetadata,
-          store.editor.projectContents,
-          [],
+        if (props.renderedAt == null) {
+          return false
+        }
+        return (
+          traceDataFromProp(
+            props.renderedAt,
+            store.editor.jsxMetadata,
+            store.editor.projectContents,
+            [],
+          ).type === 'hook-result'
         )
       },
       'IdentifierExpressionCartoucheControl trace',
@@ -83,7 +86,7 @@ export const DataReferenceCartoucheControl = React.memo(
           inverted={false}
           onDelete={NO_OP}
           testId={`data-reference-cartouche-${EP.toString(elementPath)}`}
-          contentIsComingFromServer={isDataComingFromHookResult.type === 'hook-result'}
+          contentIsComingFromServer={isDataComingFromHookResult}
         />
       </>
     )
