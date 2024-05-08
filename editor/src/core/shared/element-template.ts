@@ -1814,7 +1814,12 @@ export type JSXElementChildWithoutUID =
   | JSXMapExpressionWithoutUID
 
 export function canBeRootElementOfComponent(element: JSXElementChild): boolean {
-  if (isJSXElement(element) || isJSXFragment(element) || isJSXConditionalExpression(element)) {
+  if (
+    isJSXElement(element) ||
+    isJSXFragment(element) ||
+    isJSXConditionalExpression(element) ||
+    isJSXMapExpression(element)
+  ) {
     return true
   }
 
