@@ -33,6 +33,11 @@ export const ServerEnvironment = {
   // Github OAuth credentials
   GITHUB_OAUTH_CLIENT_ID: mustEnvOrLocalFallback('GITHUB_OAUTH_CLIENT_ID', ''),
   GITHUB_OAUTH_REDIRECT_URL: mustEnvOrLocalFallback('GITHUB_OAUTH_REDIRECT_URL', ''),
+  // S3 Configuration
+  AWS_S3_BUCKET: mustEnvOrLocalFallback('AWS_S3_BUCKET', ''),
+  AWS_ACCESS_KEY_ID: mustEnvOrLocalFallback('AWS_ACCESS_KEY_ID', ''),
+  AWS_SECRET_ACCESS_KEY: mustEnvOrLocalFallback('AWS_SECRET_ACCESS_KEY', ''),
+  AWS_REGION: mustEnvOrLocalFallback('AWS_REGION', ''),
 }
 
 export type BrowserEnvironmentType = {
