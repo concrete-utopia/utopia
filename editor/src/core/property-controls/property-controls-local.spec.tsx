@@ -1856,6 +1856,59 @@ describe('Lifecycle management of registering components', () => {
           `)
     })
   })
+  it('Deleting a component descriptor file removes the error messages of that file', async () => {
+    const renderResult = await renderTestEditorWithModel(
+      project({
+        ['/utopia/components.utopia.js']: `import { Cart } from '../src/card'
+        
+        const Components = {
+      '/src/card': {
+        Card: {
+          component: Cart,
+          properties: { },
+          variants: [ ],
+        },
+      },
+    }
+    
+    export default Components
+  `,
+      }),
+      'await-first-dom-report',
+    )
+
+    // Error messages from the descriptor file
+    expect(
+      renderResult.getEditorState().editor.codeEditorErrors.componentDescriptorErrors[
+        '/utopia/components.utopia.js'
+      ],
+    ).toEqual([
+      {
+        codeSnippet: '',
+        endColumn: null,
+        endLine: null,
+        errorCode: '',
+        fileName: '/utopia/components.utopia.js',
+        message: "Validation failed: Component registered for key 'Card' is undefined",
+        passTime: null,
+        severity: 'fatal',
+        source: 'component-descriptor',
+        startColumn: null,
+        startLine: null,
+        type: '',
+      },
+    ])
+
+    // delete the descriptor file
+    await renderResult.dispatch([deleteFile('/utopia/components.utopia.js')], true)
+
+    // error messages are removed
+    expect(
+      renderResult.getEditorState().editor.codeEditorErrors.componentDescriptorErrors[
+        '/utopia/components.utopia.js'
+      ] ?? [],
+    ).toHaveLength(0)
+  })
   describe('Updating a component descriptor file', () => {
     const descriptorFileContent2 = `import { Card2 } from '../src/card2'
     
