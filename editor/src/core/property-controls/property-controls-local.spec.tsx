@@ -780,8 +780,6 @@ describe('registered property controls', () => {
     })
 
     expect(Object.keys(renderResult.getEditorState().editor.propertyControlsInfo)).toEqual([
-      '@react-three/fiber',
-      'antd',
       'utopia-api',
       '@remix-run/react',
       '/src/card',
