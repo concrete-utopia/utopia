@@ -319,7 +319,7 @@ function getGitBlobSha(size: number, data: Buffer): string {
 function saveFileToDisk(projectId: string, file: AssetToUpload) {
   const dir = path.dirname(file.path)
   const base = path.basename(file.path)
-  const diskPath = urlJoin(`../server/utopia-local/projects/${projectId}`, dir)
+  const diskPath = urlJoin(ServerEnvironment.LOCAL_ASSETS_FOLDER, `/projects/${projectId}`, dir)
   fs.mkdirSync(diskPath, { recursive: true })
   const filePath = urlJoin(diskPath, base)
   fs.writeFileSync(filePath, file.data)

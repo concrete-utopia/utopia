@@ -38,6 +38,8 @@ export const ServerEnvironment = {
   AWS_ACCESS_KEY_ID: mustEnvOrLocalFallback('AWS_ACCESS_KEY_ID', ''),
   AWS_SECRET_ACCESS_KEY: mustEnvOrLocalFallback('AWS_SECRET_ACCESS_KEY', ''),
   AWS_REGION: mustEnvOrLocalFallback('AWS_REGION', ''),
+  // Local assets
+  LOCAL_ASSETS_FOLDER: mustEnvOrLocalFallback('LOCAL_ASSETS_FOLDER', '../server/utopia-local'),
 }
 
 export type BrowserEnvironmentType = {
