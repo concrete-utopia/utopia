@@ -74,7 +74,7 @@ export const OptionChainControl: React.FunctionComponent<
         )}`}
         onContextMenu={props.onContextMenu}
       >
-        <FlexRow style={{ gap: 8, width: '100%' }}>
+        <FlexRow style={{ gap: 1, width: '100%' }}>
           {options.map((option: OptionChainOption<number | string>, index) => (
             <OptionControl
               {...props}

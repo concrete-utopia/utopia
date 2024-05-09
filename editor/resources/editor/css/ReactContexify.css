@@ -3,13 +3,13 @@
   position: fixed;
   opacity: 0;
   user-select: none;
-  border-radius: 7px;
+  border-radius: 10px;
   background-color: var(--utopitheme-contextMenuBackground);
   box-sizing: border-box;
   /* the same as boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow */
   box-shadow: 0px 3px 6px -2px var(--utopitheme-shadow80),
     0px 4px 8px -2px var(--utopitheme-shadow40);
-  padding: 4px 0px;
+  padding: 8px 0px;
   font-family: 'utopian-inter';
 }
 .react-contexify .react-contexify__submenu {
@@ -58,6 +58,7 @@
 }
 .react-contexify__item__content {
   min-width: 190px;
+  width: 100%;
   padding-left: 8px;
   padding-right: 8px;
   display: flex;

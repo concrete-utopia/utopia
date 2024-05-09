@@ -89,7 +89,7 @@ describe('Github integration', () => {
                   focus: 'default',
                   inspector: ['visual', 'typography'],
                   emphasis: 'regular',
-                  icon: 'regular',
+                  icon: 'component',
                   variants: [
                     {
                       code: '<Card />',

@@ -726,10 +726,10 @@ describe('actions', () => {
                 <div data-uid='bbb' style={{ height: 10 }}>foo</div>
                 <div data-uid='ccc' style={{ height: 10 }}>bar</div>
             </div>
-            <>
+            <React.Fragment data-uid='dbc'>
                 <div data-uid='ddd' style={{ height: 10 }}>hello</div>
                 <div data-uid='eee' style={{ height: 10 }}>there</div>
-            </>
+            </React.Fragment>
         </div>
 		`,
         elements: (renderResult) => {
@@ -752,7 +752,7 @@ describe('actions', () => {
             <div data-uid='ccc' style={{ height: 10 }}>
               bar
             </div>
-            <>
+            <React.Fragment>
               <div
                 data-uid='aaf'
                 style={{
@@ -775,12 +775,12 @@ describe('actions', () => {
               >
                 there
               </div>
-            </>
+            </React.Fragment>
             </div>
-            <>
+            <React.Fragment>
                 <div data-uid='ddd' style={{ height: 10 }}>hello</div>
                 <div data-uid='eee' style={{ height: 10 }}>there</div>
-            </>
+            </React.Fragment>
         </div>
 		`,
       },
@@ -792,7 +792,7 @@ describe('actions', () => {
                 <div data-uid='bbb'>foo</div>
                 <div data-uid='ccc'>bar</div>
             </div>
-            <></>
+            <React.Fragment data-uid='dbc'></React.Fragment>
         </div>
 		`,
         elements: (renderResult) => {
@@ -811,9 +811,9 @@ describe('actions', () => {
             <div data-uid='aaa'>
                 <div data-uid='bbb'>foo</div>
                 <div data-uid='ccc'>bar</div>
-                <></>
+                <React.Fragment />
             </div>
-            <></>
+            <React.Fragment />
         </div>
 		`,
       },
@@ -885,9 +885,9 @@ describe('actions', () => {
         name: 'an element inside a fragment',
         startingCode: `
         <div data-uid='root'>
-            <>
+            <React.Fragment data-uid='dbc'>
                 <div data-uid='aaa' style={{ height: 10 }}>foo</div>
-            </>
+            </React.Fragment>
             <div data-uid='bbb' style={{ height: 10 }}>bar</div>
         </div>
 		`,
@@ -904,7 +904,7 @@ describe('actions', () => {
         pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['root', 'dbc'])),
         want: `
         <div data-uid='root'>
-              <>
+              <React.Fragment>
                 <div data-uid='aaa' style={{ height: 10 }}>
                   foo
                 </div>
@@ -919,7 +919,7 @@ describe('actions', () => {
                 >
                   bar
                 </div>
-              </>
+              </React.Fragment>
               <div data-uid='bbb' style={{ height: 10 }}>
                 bar
               </div>
@@ -930,9 +930,9 @@ describe('actions', () => {
         name: 'multiple elements inside a fragment',
         startingCode: `
         <div data-uid='root' style={{ height: 50 }}>
-            <>
+            <React.Fragment data-uid='dbc'>
                 <div data-uid='aaa' style={{ height: 10 }}>foo</div>
-            </>
+            </React.Fragment>
             <div data-uid='bbb' style={{ height: 10 }}>bar</div>
             <div data-uid='ccc' style={{ height: 10 }}>baz</div>
         </div>
@@ -956,7 +956,7 @@ describe('actions', () => {
         pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['root', 'dbc'])),
         want: `
         <div data-uid='root' style={{ height: 50 }}>
-        <>
+        <React.Fragment>
           <div data-uid='aaa' style={{ height: 10 }}>foo</div>
           <div
           data-uid='aaf'
@@ -980,7 +980,7 @@ describe('actions', () => {
           >
             baz
           </div>
-        </>
+        </React.Fragment>
         <div data-uid='bbb' style={{ height: 10 }}>
           bar
         </div>
@@ -1256,10 +1256,10 @@ describe('actions', () => {
                 // @utopia/uid=conditional
                 true ? null : <div data-uid='aaa'>foo</div>
             }
-            <>
+            <React.Fragment data-uid='dbc'>
             	<div data-uid='bbb'>bar</div>
                 <div data-uid='ccc'>baz</div>
-            </>
+            </React.Fragment>
         </div>
 		`,
         elements: (renderResult) => {
@@ -1282,7 +1282,7 @@ describe('actions', () => {
             {
                 // @utopia/uid=conditional
                 true ? (
-                    <>
+                    <React.Fragment>
                     	<div
                         data-uid='aad'
                         style={{
@@ -1303,13 +1303,13 @@ describe('actions', () => {
                       >
                         baz
                       </div>
-                    </>
+                    </React.Fragment>
                 ) : <div data-uid='aaa'>foo</div>
             }
-            <>
+            <React.Fragment>
                 <div data-uid='bbb'>bar</div>
                 <div data-uid='ccc'>baz</div>
-            </>
+            </React.Fragment>
         </div>
 		`,
       },
@@ -1321,14 +1321,14 @@ describe('actions', () => {
                 // @utopia/uid=conditional
                 true ? null : <div data-uid='aaa'>foo</div>
             }
-            <>
+            <React.Fragment data-uid='dbc'>
             	<div data-uid='bbb'>bar</div>
                 <div data-uid='ccc'>baz</div>
-            </>
-            <>
+            </React.Fragment>
+            <React.Fragment data-uid='c69'>
                 <div data-uid='ddd'>qux</div>
                 <div data-uid='eee'>waldo</div>
-            </>
+            </React.Fragment>
         </div>
 		`,
         elements: (renderResult) => {
@@ -1358,7 +1358,7 @@ describe('actions', () => {
         // @utopia/uid=conditional
         true ? (
           <React.Fragment>
-            <>
+            <React.Fragment>
               <div
               data-uid='aad'
               style={{
@@ -1379,8 +1379,8 @@ describe('actions', () => {
             >
               baz
             </div>
-          </>
-          <>
+          </React.Fragment>
+          <React.Fragment>
             <div
               data-uid='aam'
               style={{
@@ -1401,18 +1401,18 @@ describe('actions', () => {
             >
               waldo
             </div>
-          </>
+          </React.Fragment>
           </React.Fragment>
         ) : <div data-uid='aaa'>foo</div>
       }
-      <>
+      <React.Fragment>
         <div data-uid='bbb'>bar</div>
         <div data-uid='ccc'>baz</div>
-      </>
-      <>
+      </React.Fragment>
+      <React.Fragment>
         <div data-uid='ddd'>qux</div>
         <div data-uid='eee'>waldo</div>
-      </>
+      </React.Fragment>
     </div>
 		`,
       },

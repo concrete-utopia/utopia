@@ -6,15 +6,7 @@ import React, { useCallback } from 'react'
 import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import type { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
-import {
-  useColorTheme,
-  Button,
-  FlexColumn,
-  UtopiaStyles,
-  UtopiaTheme,
-  SquareButton,
-  PopupList,
-} from '../../../../uuiui'
+import { useColorTheme, Button, FlexColumn, UtopiaStyles } from '../../../../uuiui'
 import {
   insertJSXElement,
   setProp_UNSAFE,
@@ -50,6 +42,7 @@ export interface PrimitiveOption {
   definedElsewhere: string
   depth: number
   valuePath: Array<string | number>
+  disabled: boolean
 }
 
 export interface ArrayOption {
@@ -59,6 +52,7 @@ export interface ArrayOption {
   definedElsewhere: string
   children: Array<VariableOption>
   valuePath: Array<string | number>
+  disabled: boolean
 }
 
 export interface ObjectOption {
@@ -68,6 +62,7 @@ export interface ObjectOption {
   definedElsewhere: string
   children: Array<VariableOption>
   valuePath: Array<string | number>
+  disabled: boolean
 }
 
 export interface JSXOption {
@@ -76,6 +71,7 @@ export interface JSXOption {
   definedElsewhere: string
   depth: number
   valuePath: Array<string | number>
+  disabled: boolean
 }
 
 export type VariableOption = PrimitiveOption | ArrayOption | ObjectOption | JSXOption
@@ -85,7 +81,7 @@ export type DataPickerFilterOption = (typeof DataPickerFilterOptions)[number]
 export function dataPickerFilterOptionToString(mode: DataPickerFilterOption): string {
   switch (mode) {
     case 'all':
-      return 'All'
+      return 'All Data'
     case 'preferred':
       return 'Preferred'
     default:
@@ -173,6 +169,7 @@ export interface DataPickerPopupSubvariablesProps {
   preferredAllState: DataPickerFilterOption
   pickerType: DataPickerType
   onTweakProperty: (name: string, definedElsewhere: string | null) => (e: React.MouseEvent) => void
+  customizeOptions: (_: VariableOption[]) => VariableOption[]
 }
 
 export const DataPickerPopupSubvariables = React.memo((props: DataPickerPopupSubvariablesProps) => {
@@ -183,9 +180,14 @@ export const DataPickerPopupSubvariables = React.memo((props: DataPickerPopupSub
     preferredAllState,
   )
 
+  const filteredVariableNamesInScope = React.useMemo(
+    () => props.customizeOptions(variableNamesInScope),
+    [props, variableNamesInScope],
+  )
+
   return (
     <>
-      {variableNamesInScope.map((variableOption, idx) => {
+      {filteredVariableNamesInScope.map((variableOption, idx) => {
         return (
           <ValueRow
             key={variableOption.valuePath.toString()}
@@ -202,6 +204,7 @@ export const DataPickerPopupSubvariables = React.memo((props: DataPickerPopupSub
 
 export interface DataPickerPopupProps {
   closePopup: () => void
+  customizeOptions: (_: VariableOption[]) => VariableOption[]
   style: React.CSSProperties
   pickerType: DataPickerType
 }
@@ -267,6 +270,14 @@ export const DataPickerPopup = React.memo(
       [],
     )
 
+    const handleFilterOptionClick = useCallback(
+      (option: { value: any }) => (e: React.MouseEvent) => {
+        e.stopPropagation()
+        setMode({ value: option.value })
+      },
+      [setMode],
+    )
+
     return (
       <InspectorModal
         offsetX={10}
@@ -296,39 +307,64 @@ export const DataPickerPopup = React.memo(
             style={{
               ...props.style,
               left: -16, // to make it align with the cartouche control
-              backgroundColor: colorTheme.bg0.value,
-              color: colorTheme.fg1.value,
-              padding: 4,
+              backgroundColor: colorTheme.contextMenuBackground.value,
+              color: colorTheme.contextMenuForeground.value,
+              padding: 8,
               boxShadow: UtopiaStyles.shadowStyles.low.boxShadow,
-              border: `.2px solid ${colorTheme.popupBorder.value}`,
               borderRadius: 10,
               alignItems: 'flex-start',
               width: '96%',
               maxWidth: '260px',
+              maxHeight: '260px',
             }}
             data-testid={DataPickerPopupTestId}
           >
-            <UIGridRow
-              padded
-              variant='<-------1fr------>|----80px----|'
-              css={{ marginBottom: 4, alignSelf: 'stretch' }}
+            <div
+              css={{
+                overflowX: 'scroll',
+                whiteSpace: 'nowrap',
+                display: 'flex',
+                flexDirection: 'row',
+                gap: 16,
+                padding: '2px',
+                flex: 'none',
+                paddingBottom: '6px',
+              }}
             >
-              <div style={{ fontWeight: 600, flexGrow: 1, color: colorTheme.fg1.value }}>Data</div>
-              <PopupList
-                containerMode='showBorderOnHover'
-                options={filterOptions}
-                value={{
-                  value: preferredAllState,
-                  label: dataPickerFilterOptionToString(preferredAllState),
-                }}
-                onSubmitValue={setMode}
+              {filterOptions.map((option, index) => (
+                <div
+                  key={index}
+                  css={{
+                    color: colorTheme.white.value,
+                    fontWeight: 500,
+                    opacity: preferredAllState === option.value ? 1 : 0.4,
+                    '&:hover': {
+                      opacity: 1,
+                    },
+                  }}
+                  onClick={handleFilterOptionClick(option)}
+                >
+                  {option.label}
+                </div>
+              ))}
+            </div>
+            <div
+              style={{
+                overflowY: 'auto',
+                height: '100%',
+                width: '100%',
+                scrollbarWidth: 'auto',
+                colorScheme: 'dark',
+                scrollbarColor: 'gray transparent',
+              }}
+            >
+              <DataPickerPopupSubvariables
+                preferredAllState={preferredAllState}
+                pickerType={pickerType}
+                onTweakProperty={onTweakProperty}
+                customizeOptions={props.customizeOptions}
               />
-            </UIGridRow>
-            <DataPickerPopupSubvariables
-              preferredAllState={preferredAllState}
-              pickerType={pickerType}
-              onTweakProperty={onTweakProperty}
-            />
+            </div>
           </FlexColumn>
         </div>
       </InspectorModal>
@@ -391,26 +427,48 @@ function ValueRow({
     pickerType.propExpressionPath != null &&
     arrayEqualsByValue(variableOption.valuePath, pickerType.propExpressionPath, is)
 
+  const onClickTopLevelButton = React.useCallback(
+    (e: React.MouseEvent) => {
+      if (variableOption.disabled) {
+        return
+      }
+      if (isArray) {
+        return stopPropagation(e)
+      }
+      return tweakProperty(e)
+    },
+    [isArray, stopPropagation, tweakProperty, variableOption.disabled],
+  )
+
+  const onClickVariable = React.useCallback(
+    (e: React.MouseEvent) => {
+      if (variableOption.disabled) {
+        return
+      }
+
+      return tweakProperty(e)
+    },
+    [tweakProperty, variableOption.disabled],
+  )
+
   return (
     <>
       <Button
         data-testid={VariableFromScopeOptionTestId(idx)}
         style={{
-          borderRadius: 8,
+          borderRadius: 4,
           width: '100%',
-          height: 29,
-          marginTop: variableChildren != null && variableOption.depth === 0 ? 12 : 0, // add some space between top-level variables
+          height: 28,
+          marginTop: variableChildren != null && variableOption.depth === 0 ? 6 : 0, // add some space between top-level variables
           cursor: variableOption.variableInfo.matches ? 'pointer' : 'default',
-          background: currentExpressionExactMatch
-            ? colorTheme.secondaryBackground.value
-            : undefined,
+          background: currentExpressionExactMatch ? colorTheme.primary.value : undefined,
+          color: currentExpressionExactMatch ? colorTheme.white.value : undefined,
+          paddingLeft: variableOption.depth * 8,
         }}
-        onClick={isArray ? stopPropagation : tweakProperty}
+        onClick={onClickTopLevelButton}
         css={{
           '&:hover': {
-            backgroundColor: variableOption.variableInfo.matches
-              ? colorTheme.secondaryBackground.value
-              : 'inherit',
+            backgroundColor: colorTheme.primary30.value,
           },
         }}
       >
@@ -420,13 +478,13 @@ function ValueRow({
           style={{
             justifyContent: 'space-between',
             alignItems: 'flex-start',
-            gap: 8,
+            gap: 10,
             width: '100%',
             minHeight: 'auto',
             gridTemplateColumns: '48% 48%',
           }}
         >
-          <div onClick={tweakProperty} data-label='left column cell'>
+          <div onClick={onClickVariable} data-label='left column cell'>
             <div
               data-testid={`variable-from-scope-span-${variableOption.valuePath}`}
               style={{ display: 'grid', gridTemplateColumns: '16px 1fr' }}
@@ -442,7 +500,8 @@ function ValueRow({
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
-                  opacity: variableOption.variableInfo.matches ? 1 : 0.5,
+                  opacity:
+                    variableOption.variableInfo.matches && !variableOption.disabled ? 1 : 0.5,
                 }}
               >
                 {overriddenTitle ?? variableOption.variableInfo.expressionPathPart}
@@ -450,42 +509,42 @@ function ValueRow({
             </div>
           </div>
 
-          <div
-            data-label='right-column cell'
-            style={{
-              display: 'flex',
-              width: '94%',
-            }}
-            onClick={isArray ? stopPropagation : tweakProperty}
-          >
-            <span
+          {variableChildren == null || variableChildren.length === 0 ? null : (
+            <div
+              data-label='right-column cell'
               style={{
-                fontWeight: 400,
-                color: colorTheme.neutralForeground.value,
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                maxWidth: 130,
-                overflow: 'hidden',
-                opacity: variableOption.variableInfo.matches ? 1 : 0.5,
+                display: 'flex',
+                width: '94%',
               }}
+              onClick={isArray ? stopPropagation : tweakProperty}
             >
-              {isArray ? (
-                <ArrayPaginator
-                  selectedIndex={selectedIndex}
-                  totalChildCount={childrenLength}
-                  setSelectedIndex={setSelectedIndex}
-                />
-              ) : (
-                <div style={{ opacity: 0.3 }}>{valueToDisplay(variableOption)}</div>
-              )}
-            </span>
-          </div>
+              <span
+                style={{
+                  fontWeight: 400,
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  maxWidth: 130,
+                  overflow: 'hidden',
+                  opacity: variableOption.variableInfo.matches ? 1 : 0.5,
+                }}
+              >
+                {isArray ? (
+                  <ArrayPaginator
+                    selectedIndex={selectedIndex}
+                    totalChildCount={childrenLength}
+                    setSelectedIndex={setSelectedIndex}
+                  />
+                ) : (
+                  <div style={{ opacity: 0.3 }}>{valueToDisplay(variableOption)}</div>
+                )}
+              </span>
+            </div>
+          )}
         </UIGridRow>
       </Button>
-      {variableChildren != null ? (
+      {variableChildren != null && variableChildren.at(selectedIndex) != null ? (
         isArray ? (
           <ValueRow
-            key={variableChildren[selectedIndex].valuePath.toString()}
             variableOption={variableChildren[selectedIndex]}
             idx={`${idx}-${selectedIndex}`}
             onTweakProperty={onTweakProperty}
@@ -543,7 +602,7 @@ function PrefixIcon({
       onClick={onClick}
     >
       {hasObjectChildren ? (
-        <ExpandableIndicator visible collapsed={!open} selected={false} />
+        <ExpandableIndicator visible collapsed={!open} selected={false} iconColor='white' />
       ) : null}
     </span>
   )
@@ -558,7 +617,6 @@ function ArrayPaginator({
   totalChildCount: number
   setSelectedIndex: (index: number) => void
 }) {
-  const colorTheme = useColorTheme()
   const increaseIndex = useCallback(() => {
     setSelectedIndex(Math.min(totalChildCount - 1, selectedIndex + 1))
   }, [selectedIndex, setSelectedIndex, totalChildCount])
@@ -570,7 +628,6 @@ function ArrayPaginator({
       css={{
         alignItems: 'center',
         fontSize: 10,
-        color: colorTheme.neutralForeground.value,
       }}
     >
       <div onClick={decreaseIndex} style={{ cursor: 'pointer', paddingLeft: 4, paddingRight: 4 }}>

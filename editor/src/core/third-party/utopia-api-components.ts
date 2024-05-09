@@ -101,6 +101,7 @@ const BasicUtopiaSceneDescriptor = (
     ],
     source: defaultComponentDescriptor(),
     ...ComponentDescriptorDefaults,
+    icon: 'scene',
     inspector: 'all',
   }
 }

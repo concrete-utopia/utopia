@@ -90,6 +90,8 @@ import {
   modifiableAttributeToValuePath,
   jsExpressionOtherJavaScriptSimple,
   jsIdentifier,
+  getJSXElementNameAsString,
+  isImportedOrigin,
 } from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import type { VariableData } from '../../../canvas/ui-jsx-canvas'
@@ -99,12 +101,75 @@ import { DataPickerPopup, dataPickerForAProperty } from './data-picker-popup'
 import { jsxElementChildToText } from '../../../canvas/ui-jsx-canvas-renderer/jsx-element-child-to-text'
 import { foldEither } from '../../../../core/shared/either'
 import { stopPropagation } from '../../common/inspector-utils'
-import { NO_OP } from '../../../../core/shared/utils'
+import { NO_OP, identity } from '../../../../core/shared/utils'
 import { IdentifierExpressionCartoucheControl } from './cartouche-control'
+import { getRegisteredComponent } from '../../../../core/property-controls/property-controls-utils'
 
 export const VariableFromScopeOptionTestId = (idx: string) => `variable-from-scope-${idx}`
 export const DataPickerPopupButtonTestId = `data-picker-popup-button-test-id`
 export const DataPickerPopupTestId = `data-picker-popup-test-id`
+
+export interface PropertyLabelAndPlusButtonProps {
+  title: string
+  openPopup: () => void
+  handleMouseEnter: () => void
+  handleMouseLeave: () => void
+  popupIsOpen: boolean
+  isHovered: boolean
+  isConnectedToData: boolean
+}
+
+export function PropertyLabelAndPlusButton(
+  props: React.PropsWithChildren<PropertyLabelAndPlusButtonProps>,
+) {
+  const {
+    title,
+    openPopup,
+    popupIsOpen,
+    isHovered,
+    isConnectedToData,
+    handleMouseEnter,
+    handleMouseLeave,
+    children,
+  } = props
+  return (
+    <Tooltip title={title}>
+      <div
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        style={{
+          lineHeight: `${UtopiaTheme.layout.inputHeight.default}px`,
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 6,
+          color:
+            popupIsOpen || isHovered || isConnectedToData
+              ? colorTheme.dynamicBlue.value
+              : undefined,
+          cursor: 'pointer',
+        }}
+      >
+        <span onClick={openPopup}>{title}</span>
+        {children}
+        <div
+          onClick={openPopup}
+          style={{
+            opacity: isHovered || popupIsOpen ? 1 : 0,
+          }}
+        >
+          <Icn
+            category='semantic'
+            type='plus-in-white-translucent-circle'
+            color={popupIsOpen || isHovered || !isConnectedToData ? 'dynamic' : 'main'}
+            width={12}
+            height={12}
+          />
+        </div>
+      </div>
+    </Tooltip>
+  )
+}
 
 function useComponentPropsInspectorInfo(
   partialPath: PropertyPath,
@@ -298,11 +363,6 @@ export function useDataPickerButton(
 
   const selectedElement = selectedElements.at(0) ?? EP.emptyElementPath
 
-  const variablePickerButtonAvailable =
-    useVariablesInScopeForSelectedElement(selectedElement, propPath, 'all').length > 0
-  const variablePickerButtonTooltipText = variablePickerButtonAvailable
-    ? 'Pick data source'
-    : 'No data sources available'
   const propMetadata = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
 
   const propExpressionPath: Array<string | number> | null = React.useMemo(() => {
@@ -331,6 +391,7 @@ export function useDataPickerButton(
         closePopup={closePopup}
         ref={setPopperElement}
         pickerType={pickerType}
+        customizeOptions={identity}
       />
     ),
     [closePopup, pickerType, popper.attributes.popper, popper.styles.popper],
@@ -380,16 +441,19 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
     props.controlDescription,
   )
 
-  const handleMouseEnter = () => {
+  const handleMouseEnter = React.useCallback(() => {
     setIsHovered(true)
-  }
+  }, [])
 
-  const handleMouseLeave = () => {
+  const handleMouseLeave = React.useCallback(() => {
     setIsHovered(false)
-  }
+  }, [])
 
-  const isValueSet = React.useMemo(() => {
-    return propMetadata.propertyStatus.set
+  const isConnectedToData = React.useMemo(() => {
+    return (
+      propMetadata.propertyStatus.controlled &&
+      propMetadata.attributeExpression?.type !== 'JSX_ELEMENT'
+    )
   }, [propMetadata])
 
   const propertyLabel =
@@ -403,41 +467,15 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
           alignSelf: 'flex-start',
         }}
       >
-        <Tooltip title={title}>
-          <div
-            onClick={dataPickerButtonData.openPopup}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-            style={{
-              lineHeight: `${UtopiaTheme.layout.inputHeight.default}px`,
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 6,
-              color:
-                dataPickerButtonData.popupIsOpen || isHovered || !isValueSet
-                  ? colorTheme.dynamicBlue.value
-                  : undefined,
-            }}
-          >
-            {title}
-            <div
-              style={{
-                opacity: isHovered || dataPickerButtonData.popupIsOpen || !isValueSet ? 1 : 0,
-              }}
-            >
-              <Icn
-                category='semantic'
-                type='plus-in-white-translucent-circle'
-                color={
-                  dataPickerButtonData.popupIsOpen || isHovered || !isValueSet ? 'dynamic' : 'main'
-                }
-                width={12}
-                height={12}
-              />
-            </div>
-          </div>
-        </Tooltip>
+        <PropertyLabelAndPlusButton
+          title={title}
+          openPopup={dataPickerButtonData.openPopup}
+          handleMouseEnter={handleMouseEnter}
+          handleMouseLeave={handleMouseLeave}
+          popupIsOpen={dataPickerButtonData.popupIsOpen}
+          isHovered={isHovered}
+          isConnectedToData={isConnectedToData}
+        />
       </PropertyLabel>
     ) : (
       <props.label />
@@ -867,6 +905,23 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
     props.controlDescription,
   )
 
+  const [isHovered, setIsHovered] = React.useState(false)
+
+  const handleMouseEnter = React.useCallback(() => {
+    setIsHovered(true)
+  }, [])
+
+  const handleMouseLeave = React.useCallback(() => {
+    setIsHovered(false)
+  }, [])
+
+  const isConnectedToData = React.useMemo(() => {
+    return (
+      propMetadata.propertyStatus.controlled &&
+      propMetadata.attributeExpression?.type !== 'JSX_ELEMENT'
+    )
+  }, [propMetadata])
+
   return (
     <div>
       <div>
@@ -897,8 +952,17 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
                   cursor: props.disableToggling ? 'default' : 'pointer',
                 }}
               >
-                {title}
-                {unless(props.disableToggling, <ObjectIndicator open={open} />)}
+                <PropertyLabelAndPlusButton
+                  title={title}
+                  openPopup={dataPickerButtonData.openPopup}
+                  handleMouseEnter={handleMouseEnter}
+                  handleMouseLeave={handleMouseLeave}
+                  popupIsOpen={dataPickerButtonData.popupIsOpen}
+                  isHovered={isHovered}
+                  isConnectedToData={isConnectedToData}
+                >
+                  {unless(props.disableToggling, <ObjectIndicator open={open} />)}
+                </PropertyLabelAndPlusButton>
               </PropertyLabel>
               <div style={{ minWidth: 0 }} onClick={stopPropagation}>
                 <ControlForProp
@@ -1095,6 +1159,53 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
     }
   }, [dispatch, locationOfComponentInstance])
 
+  const propertyControlsInfo = useEditorState(
+    Substores.propertyControlsInfo,
+    (store) => store.editor.propertyControlsInfo,
+    'ComponentsectionInner propertyControlsInfo',
+  )
+
+  const componentData = useEditorState(
+    Substores.metadata,
+    (store) => {
+      if (
+        propertyControlsAndTargets.length === 0 ||
+        propertyControlsAndTargets[0].targets.length !== 1
+      ) {
+        return null
+      }
+
+      const element = MetadataUtils.findElementByElementPath(
+        store.editor.jsxMetadata,
+        propertyControlsAndTargets[0].targets[0],
+      )
+
+      const targetJSXElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(element)
+      const elementImportInfo = element?.importInfo
+      if (elementImportInfo == null || targetJSXElement == null) {
+        return null
+      }
+
+      const elementName = getJSXElementNameAsString(targetJSXElement.name)
+
+      const exportedName = isImportedOrigin(elementImportInfo)
+        ? elementImportInfo.exportedName ?? elementName
+        : elementName
+
+      const registeredComponent = getRegisteredComponent(
+        exportedName,
+        elementImportInfo.filePath,
+        propertyControlsInfo,
+      )
+
+      return {
+        name: elementName,
+        isRegisteredComponent: registeredComponent != null,
+      }
+    },
+    'ComponentSectionInner componentName',
+  )
+
   return (
     <React.Fragment>
       <FlexRow
@@ -1112,12 +1223,21 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
           <div
             onClick={OpenFile}
             style={{
-              color: colorTheme.componentPurple.value,
               fontWeight: 600,
               cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
             }}
           >
-            Component
+            {componentData != null ? (
+              <React.Fragment>
+                <span>{componentData.name}</span>
+                {when(componentData.isRegisteredComponent, <span style={{ fontSize: 6 }}>◇</span>)}
+              </React.Fragment>
+            ) : (
+              <span>Component</span>
+            )}
           </div>
         </FlexRow>
         <SquareButton highlight onClick={toggleSection}>

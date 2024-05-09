@@ -200,12 +200,12 @@ function otherFn(n) {
       "startLine": 20,
       "uid": "6e3",
     },
-    "8f7": Object {
+    "95f": Object {
       "endCol": 38,
       "endLine": 23,
       "startCol": 14,
       "startLine": 23,
-      "uid": "8f7",
+      "uid": "95f",
     },
     "aaa": Object {
       "endCol": 11,
@@ -237,12 +237,12 @@ function otherFn(n) {
     },
   },
   "highlightBounds": Object {
-    "8f7": Object {
+    "95f": Object {
       "endCol": 38,
       "endLine": 23,
       "startCol": 14,
       "startLine": 23,
-      "uid": "8f7",
+      "uid": "95f",
     },
     "aaa": Object {
       "endCol": 11,
@@ -735,19 +735,12 @@ Object {
     },
   ],
   "fullHighlightBounds": Object {
-    "13e": Object {
-      "endCol": 22,
-      "endLine": 6,
-      "startCol": 17,
-      "startLine": 6,
-      "uid": "13e",
-    },
-    "1e3": Object {
-      "endCol": 37,
-      "endLine": 6,
-      "startCol": 25,
-      "startLine": 6,
-      "uid": "1e3",
+    "31a": Object {
+      "endCol": 45,
+      "endLine": 4,
+      "startCol": 40,
+      "startLine": 4,
+      "uid": "31a",
     },
     "34a": Object {
       "endCol": 31,
@@ -756,33 +749,19 @@ Object {
       "startLine": 6,
       "uid": "34a",
     },
-    "4cf": Object {
-      "endCol": 37,
-      "endLine": 4,
-      "startCol": 25,
-      "startLine": 4,
-      "uid": "4cf",
-    },
-    "58b": Object {
-      "endCol": 45,
-      "endLine": 4,
-      "startCol": 40,
-      "startLine": 4,
-      "uid": "58b",
-    },
-    "67f": Object {
-      "endCol": 45,
-      "endLine": 4,
-      "startCol": 17,
-      "startLine": 4,
-      "uid": "67f",
-    },
-    "6c7": Object {
+    "60c": Object {
       "endCol": 45,
       "endLine": 6,
       "startCol": 17,
       "startLine": 6,
-      "uid": "6c7",
+      "uid": "60c",
+    },
+    "6ac": Object {
+      "endCol": 37,
+      "endLine": 6,
+      "startCol": 25,
+      "startLine": 6,
+      "uid": "6ac",
     },
     "6e3": Object {
       "endCol": 53,
@@ -791,19 +770,19 @@ Object {
       "startLine": 5,
       "uid": "6e3",
     },
-    "7cb": Object {
+    "6ed": Object {
+      "endCol": 37,
+      "endLine": 6,
+      "startCol": 25,
+      "startLine": 6,
+      "uid": "6ed",
+    },
+    "a35": Object {
       "endCol": 22,
       "endLine": 4,
       "startCol": 17,
       "startLine": 4,
-      "uid": "7cb",
-    },
-    "7df": Object {
-      "endCol": 45,
-      "endLine": 6,
-      "startCol": 40,
-      "startLine": 6,
-      "uid": "7df",
+      "uid": "a35",
     },
     "aaa": Object {
       "endCol": 56,
@@ -812,19 +791,40 @@ Object {
       "startLine": 5,
       "uid": "aaa",
     },
-    "b93": Object {
-      "endCol": 37,
-      "endLine": 6,
-      "startCol": 25,
-      "startLine": 6,
-      "uid": "b93",
-    },
-    "fa9": Object {
+    "af5": Object {
       "endCol": 37,
       "endLine": 4,
       "startCol": 25,
       "startLine": 4,
-      "uid": "fa9",
+      "uid": "af5",
+    },
+    "afc": Object {
+      "endCol": 22,
+      "endLine": 6,
+      "startCol": 17,
+      "startLine": 6,
+      "uid": "afc",
+    },
+    "ca3": Object {
+      "endCol": 37,
+      "endLine": 4,
+      "startCol": 25,
+      "startLine": 4,
+      "uid": "ca3",
+    },
+    "cf8": Object {
+      "endCol": 45,
+      "endLine": 6,
+      "startCol": 40,
+      "startLine": 6,
+      "uid": "cf8",
+    },
+    "d73": Object {
+      "endCol": 45,
+      "endLine": 4,
+      "startCol": 17,
+      "startLine": 4,
+      "uid": "d73",
     },
     "fbe": Object {
       "endCol": 31,
@@ -835,54 +835,33 @@ Object {
     },
   },
   "highlightBounds": Object {
-    "13e": Object {
-      "endCol": 22,
+    "31a": Object {
+      "endCol": 45,
+      "endLine": 4,
+      "startCol": 40,
+      "startLine": 4,
+      "uid": "31a",
+    },
+    "60c": Object {
+      "endCol": 45,
       "endLine": 6,
       "startCol": 17,
       "startLine": 6,
-      "uid": "13e",
+      "uid": "60c",
     },
-    "4cf": Object {
+    "6ed": Object {
       "endCol": 37,
-      "endLine": 4,
-      "startCol": 25,
-      "startLine": 4,
-      "uid": "4cf",
-    },
-    "58b": Object {
-      "endCol": 45,
-      "endLine": 4,
-      "startCol": 40,
-      "startLine": 4,
-      "uid": "58b",
-    },
-    "67f": Object {
-      "endCol": 45,
-      "endLine": 4,
-      "startCol": 17,
-      "startLine": 4,
-      "uid": "67f",
-    },
-    "6c7": Object {
-      "endCol": 45,
       "endLine": 6,
-      "startCol": 17,
+      "startCol": 25,
       "startLine": 6,
-      "uid": "6c7",
+      "uid": "6ed",
     },
-    "7cb": Object {
+    "a35": Object {
       "endCol": 22,
       "endLine": 4,
       "startCol": 17,
       "startLine": 4,
-      "uid": "7cb",
-    },
-    "7df": Object {
-      "endCol": 45,
-      "endLine": 6,
-      "startCol": 40,
-      "startLine": 6,
-      "uid": "7df",
+      "uid": "a35",
     },
     "aaa": Object {
       "endCol": 56,
@@ -891,12 +870,33 @@ Object {
       "startLine": 5,
       "uid": "aaa",
     },
-    "b93": Object {
+    "af5": Object {
       "endCol": 37,
-      "endLine": 6,
+      "endLine": 4,
       "startCol": 25,
+      "startLine": 4,
+      "uid": "af5",
+    },
+    "afc": Object {
+      "endCol": 22,
+      "endLine": 6,
+      "startCol": 17,
       "startLine": 6,
-      "uid": "b93",
+      "uid": "afc",
+    },
+    "cf8": Object {
+      "endCol": 45,
+      "endLine": 6,
+      "startCol": 40,
+      "startLine": 6,
+      "uid": "cf8",
+    },
+    "d73": Object {
+      "endCol": 45,
+      "endLine": 4,
+      "startCol": 17,
+      "startLine": 4,
+      "uid": "d73",
     },
   },
   "imports": Object {
@@ -1088,7 +1088,7 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
                 },
                 "type": "ATTRIBUTE_VALUE",
                 "uid": "",
-                "value": "4cf",
+                "value": "af5",
               },
             },
           ],
@@ -1302,7 +1302,7 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
                 },
                 "type": "ATTRIBUTE_VALUE",
                 "uid": "",
-                "value": "b93",
+                "value": "6ed",
               },
             },
           ],
@@ -1422,13 +1422,6 @@ export var App = (props) => <View data-uid='bbb'>
     },
   ],
   "fullHighlightBounds": Object {
-    "5b5": Object {
-      "endCol": 9,
-      "endLine": 13,
-      "startCol": 3,
-      "startLine": 13,
-      "uid": "5b5",
-    },
     "854": Object {
       "endCol": 48,
       "endLine": 12,
@@ -1452,19 +1445,19 @@ export var App = (props) => <View data-uid='bbb'>
     },
   },
   "highlightBounds": Object {
-    "5b5": Object {
-      "endCol": 9,
-      "endLine": 13,
-      "startCol": 3,
-      "startLine": 13,
-      "uid": "5b5",
-    },
     "bbb": Object {
       "endCol": 7,
       "endLine": 14,
       "startCol": 28,
       "startLine": 12,
       "uid": "bbb",
+    },
+    "f9c": Object {
+      "endCol": 9,
+      "endLine": 13,
+      "startCol": 3,
+      "startLine": 13,
+      "uid": "f9c",
     },
   },
   "imports": Object {

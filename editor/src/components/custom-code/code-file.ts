@@ -148,7 +148,7 @@ export const ComponentDescriptorDefaults: Pick<
   focus: 'default',
   inspector: [],
   emphasis: 'regular',
-  icon: 'regular',
+  icon: 'component',
 }
 
 export function componentDescriptor(

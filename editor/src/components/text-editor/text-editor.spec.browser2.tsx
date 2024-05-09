@@ -1312,7 +1312,7 @@ describe('Use the text editor', () => {
           true ? (
             // @utopia/uid=6b9
             [0,1,2].map(() => <div>hello</div>)
-          ) : <div data-uid='33d' />
+          ) : <div data-uid='416' />
         }`),
         'await-first-dom-report',
       )
@@ -1323,7 +1323,7 @@ describe('Use the text editor', () => {
       expect(editor.getEditorState().editor.mode.type).toEqual('select')
       expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
       expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual(
-        'sb/39e/cond/6b9/33d~~~1',
+        'sb/39e/cond/6b9/416~~~1',
       )
     })
     it('editing expression in the active true clause from the selected conditional', async () => {
