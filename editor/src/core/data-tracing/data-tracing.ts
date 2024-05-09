@@ -484,6 +484,12 @@ function findPathToIdentifier(param: BoundParam, identifier: string): DataPath |
         for (const part of workingParam.parts) {
           if (part.propertyName == identifier) {
             return [...currentPath, part.propertyName]
+          } else if (
+            part.propertyName != null &&
+            isRegularParam(part.param.boundParam) &&
+            part.param.boundParam.paramName === identifier
+          ) {
+            return [...currentPath, part.propertyName]
           } else {
             const possibleResult = innerFindPath(part.param.boundParam, currentPath)
             if (possibleResult != null) {
