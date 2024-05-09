@@ -2,7 +2,7 @@ import { getGithubAuthentication } from '../models/githubAuthentication.server'
 import { isSearchPublicRepositoriesRequest } from '../types'
 import { ensure, requireUser } from '../util/api.server'
 import { ApiError } from '../util/errors'
-import { newOctokitClient, wrapGithubAPIRequest } from '../util/github.server'
+import { newOctokitClient, wrapGithubAPIRequest } from '../util/github'
 import { Status } from '../util/statusCodes'
 
 export async function handleSearchPublicRepository(req: Request) {

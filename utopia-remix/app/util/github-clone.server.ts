@@ -1,5 +1,3 @@
-import { Octokit } from '@octokit/rest'
-import type { RequestInterface } from '@octokit/types'
 import type {
   ProjectContentTreeRoot,
   ProjectContentDirectory,
@@ -9,16 +7,12 @@ import type {
 } from '../types'
 import {
   toApiSuccess,
-  isResponseWithMessageData,
-  toApiFailure,
   projectContentDirectory,
   assetFile,
   imageFile,
   textFile,
   projectContentFile,
 } from '../types'
-import { Status } from './statusCodes'
-import { json } from '@remix-run/node'
 import * as fs from 'fs'
 import urlJoin from 'url-join'
 import * as unzipper from 'unzipper'
@@ -30,34 +24,7 @@ import type { FileType } from './files'
 import { fileTypeFromFileName } from './files'
 import { assertNever } from './assertNever'
 import AWS from 'aws-sdk'
-
-export interface OctokitClient {
-  request: RequestInterface
-}
-
-export function newOctokitClient(auth: string): OctokitClient {
-  return new Octokit({ auth: auth })
-}
-
-export async function wrapGithubAPIRequest(
-  client: OctokitClient,
-  fn: (client: OctokitClient) => Promise<unknown>,
-) {
-  try {
-    const result = await fn(client)
-    return toApiSuccess(result)
-  } catch (err) {
-    return isResponseWithMessageData(err)
-      ? json(toApiFailure(err.response.data.message), {
-          status: err.status,
-          headers: { 'cache-control': 'no-cache' },
-        })
-      : json(toApiFailure(`${err}`), {
-          status: Status.INTERNAL_ERROR,
-          headers: { 'cache-control': 'no-cache' },
-        })
-  }
-}
+import type { OctokitClient } from './github'
 
 export type AssetToUpload = {
   path: string

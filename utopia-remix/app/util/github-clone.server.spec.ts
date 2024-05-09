@@ -1,19 +1,19 @@
 import urlJoin from 'url-join'
 import type { ProjectContentDirectory } from '../types'
 import { projectContentDirectory, type ExistingAsset } from '../types'
-import type { AssetToUpload, UnzipEntry } from './github.server'
+import type { AssetToUpload, UnzipEntry } from './github-clone.server'
 import {
   populateDirectories,
   populateEntryContents,
   processEntry,
   shouldUploadAsset,
   unzipGithubArchive,
-} from './github.server'
+} from './github-clone.server'
 import * as fs from 'fs'
 import * as os from 'os'
 import path from 'path'
 
-describe('Github', () => {
+describe('Github clone', () => {
   describe('shouldUploadAsset', () => {
     const existingAssets: ExistingAsset[] = [
       { gitBlobSha: 'foo', path: 'foo.bin', type: 'ASSET_FILE' },

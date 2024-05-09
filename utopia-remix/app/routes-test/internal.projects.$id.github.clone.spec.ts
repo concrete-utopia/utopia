@@ -11,11 +11,12 @@ import {
 import { action } from '../routes/internal.projects.$id.github.clone'
 import type { ApiResponse } from '../util/api.server'
 import { Status } from '../util/statusCodes'
-import * as githubUtil from '../util/github.server'
+import * as githubUtil from '../util/github'
 import path from 'path'
 import urlJoin from 'url-join'
 import * as fs from 'fs'
 import type { ApiSuccess } from '../types'
+import type { BranchResponse } from '../util/github-clone.server'
 
 describe('handleCloneGithubBranch', () => {
   let mockOctokit: jest.SpyInstance
@@ -153,7 +154,7 @@ describe('handleCloneGithubBranch', () => {
       },
     )
 
-    const response = got as unknown as ApiSuccess<githubUtil.BranchResponse>
+    const response = got as unknown as ApiSuccess<BranchResponse>
     expect(response.branch.branchName).toBe('main')
     expect(response.branch.originCommit).toBe(commit)
 

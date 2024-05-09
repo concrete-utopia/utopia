@@ -6,11 +6,8 @@ import type { ExistingAsset } from '../types'
 import { UserProjectPermission } from '../types'
 import { Status } from '../util/statusCodes'
 import { getGithubAuthentication } from '../models/githubAuthentication.server'
-import {
-  getBranchProjectContents,
-  newOctokitClient,
-  wrapGithubAPIRequest,
-} from '../util/github.server'
+import { getBranchProjectContents } from '../util/github-clone.server'
+import { newOctokitClient, wrapGithubAPIRequest } from '../util/github'
 
 export function loader(args: LoaderFunctionArgs) {
   return handle(args, {
