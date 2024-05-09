@@ -25,7 +25,6 @@ import { fileTypeFromFileName } from './files'
 import { assertNever } from './assertNever'
 import AWS from 'aws-sdk'
 import type { OctokitClient } from './github'
-import type { GetBranchProjectContentsRequest } from '../routes/internal.projects.$id.github.branches.$owner.$repo.branch.$branch'
 
 export type AssetToUpload = {
   path: string
@@ -76,7 +75,7 @@ export function getBranchProjectContents(params: {
     })
 
     // 3. write the zipball to disk in a temporary folder
-    const { archiveName, zipFilePath } = writeZipballToTempFile({
+    const { archiveName, zipFilePath } = await writeZipballToTempFile({
       commit: commit,
       owner: params.owner,
       repo: params.repo,
@@ -108,24 +107,31 @@ export function getBranchProjectContents(params: {
   }
 }
 
-function writeZipballToTempFile(params: {
+async function writeZipballToTempFile(params: {
   commit: string
   owner: string
   repo: string
   data: ArrayBuffer
-}): { archiveName: string; zipFilePath: string } {
+}): Promise<{ archiveName: string; zipFilePath: string }> {
   const tempDir = os.tmpdir()
 
   const shortSha = params.commit.slice(0, 7)
   const archiveName = `${params.owner}-${params.repo}-${shortSha}`
 
   const zipFilePath = urlJoin(tempDir, archiveName + '.zip')
-  fs.writeFileSync(zipFilePath, Buffer.from(params.data as ArrayBuffer))
 
-  return {
-    archiveName: archiveName,
-    zipFilePath: zipFilePath,
-  }
+  return new Promise((resolve, reject) => {
+    fs.writeFile(zipFilePath, Buffer.from(params.data as ArrayBuffer), (err) => {
+      if (err != null) {
+        reject(err)
+      } else {
+        resolve({
+          archiveName: archiveName,
+          zipFilePath: zipFilePath,
+        })
+      }
+    })
+  })
 }
 
 async function uploadAssets(params: { assets: AssetToUpload[]; projectId: string }): Promise<void> {
@@ -135,11 +141,11 @@ async function uploadAssets(params: { assets: AssetToUpload[]; projectId: string
     switch (ServerEnvironment.environment) {
       case 'local':
       case 'test':
-        saveFileToDisk(params.projectId, asset)
+        await saveFileToDisk(params.projectId, asset)
         break
       case 'prod':
       case 'stage':
-        saveFileToS3(params.projectId, asset)
+        await saveFileToS3(params.projectId, asset)
         break
       default:
         assertNever(ServerEnvironment.environment)
@@ -296,13 +302,21 @@ function getGitBlobSha(size: number, data: Buffer): string {
   return sha1.digest('hex')
 }
 
-function saveFileToDisk(projectId: string, file: AssetToUpload) {
+async function saveFileToDisk(projectId: string, file: AssetToUpload) {
   const dir = path.dirname(file.path)
   const base = path.basename(file.path)
   const diskPath = urlJoin(ServerEnvironment.LOCAL_ASSETS_FOLDER, `/projects/${projectId}`, dir)
   fs.mkdirSync(diskPath, { recursive: true })
   const filePath = urlJoin(diskPath, base)
-  fs.writeFileSync(filePath, file.data)
+  return new Promise((resolve, reject) =>
+    fs.writeFile(filePath, file.data, (err) => {
+      if (err != null) {
+        reject(err)
+      } else {
+        resolve(filePath)
+      }
+    }),
+  )
 }
 
 function projectFileS3Key(projectId: string, filePath: string): string {
