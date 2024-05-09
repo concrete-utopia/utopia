@@ -61,7 +61,8 @@ export async function handleMessage(
 }
 
 function getCacheKey(filename: string, content: string, versionNumber: number): string {
-  return `${filename}::${content}::${versionNumber}`
+  const devVer = 1 // TEMP - use it for hard cache invalidation if needed now as we're developing this feature
+  return `${filename}::${content}::${versionNumber}::${devVer}`
 }
 
 async function getParseFileResultWithCache(
@@ -78,9 +79,11 @@ async function getParseFileResultWithCache(
     //check localforage for cache
     const cachedResult = await localforage.getItem<ParseFileResult>(cacheKey)
     if (cachedResult?.parseResult?.type === 'PARSE_SUCCESS') {
+      console.info('Cache hit for', filename)
       return cachedResult
     }
   }
+  console.info('Cache miss for', filename)
 
   const parseResult = getParseFileResult(
     filename,
@@ -114,6 +117,7 @@ function getParseFileResult(
   if (result.parseResult.type === 'PARSE_SUCCESS') {
     // non blocking cache write
     const cacheKey = getCacheKey(filename, content, versionNumber)
+    console.info('Caching', filename)
     void localforage.setItem(cacheKey, result)
   }
 
