@@ -40,7 +40,7 @@ async function getParseResultForUserStrings(
 
   function Utopia$$$Component(props) {
      return (
-       <container>${toInsert}</container>
+      ${toInsert}
      )
     }`
   const parseResult = await getParseResult(
