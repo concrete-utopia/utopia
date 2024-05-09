@@ -1,4 +1,4 @@
-import type { ParseSuccess, ParsedTextFile } from '../../shared/project-file-types'
+import type { ParseSuccess } from '../../shared/project-file-types'
 import type { SteganographyMode } from './parser-printer'
 import { printCodeOptions, printCode, lintAndParse } from './parser-printer'
 import type {
