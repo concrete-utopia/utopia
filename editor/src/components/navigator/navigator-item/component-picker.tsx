@@ -26,6 +26,7 @@ import { iconPropsForIcon } from './component-picker-context-menu'
 export interface ComponentPickerProps {
   allComponents: Array<InsertMenuItemGroup>
   onItemClick: (elementToInsert: InsertableComponent) => React.UIEventHandler
+  closePicker: () => void
 }
 
 export interface ElementToInsert {
@@ -67,7 +68,7 @@ export function componentPickerOptionTestId(componentName: string, variant?: str
 }
 
 export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
-  const { onItemClick } = props
+  const { onItemClick, closePicker } = props
   const [selectedComponentKey, setSelectedComponentKey] = React.useState<string | null>(null)
   const [filter, setFilter] = React.useState<string>('')
   const menuRef = React.useRef<HTMLDivElement | null>(null)
@@ -142,6 +143,8 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
         if (selectedComponent != null) {
           onItemClick(selectedComponent.value)(e)
         }
+      } else if (e.key === 'Escape') {
+        closePicker()
       } else {
         // we don't want to prevent default for other keys
         return
@@ -149,7 +152,7 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
       e.preventDefault()
       e.stopPropagation()
     },
-    [flatComponentsToShow, highlightedComponentKey, onItemClick, selectIndex],
+    [flatComponentsToShow, highlightedComponentKey, onItemClick, selectIndex, closePicker],
   )
 
   return (
@@ -220,14 +223,16 @@ const FilterBar = React.memo((props: FilterBarProps) => {
         if (onKeyDown != null) {
           onKeyDown(e)
         }
-      } else if (e.key === 'Escape') {
+      } else if (e.key === 'Escape' && filter !== '') {
+        // clear filter only if there is text,
+        // otherwise it will close the picker
         setFilter('')
       } else if (onKeyDown != null) {
         onKeyDown(e)
       }
       e.stopPropagation()
     },
-    [setFilter, onKeyDown],
+    [setFilter, onKeyDown, filter],
   )
   const handleFilterChange = React.useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
