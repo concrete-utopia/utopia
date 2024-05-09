@@ -116,7 +116,6 @@ export const OptionControl: React.FunctionComponent<
                 : colorTheme.fg1.value,
             // If just an option control:
             borderRadius: rc != null ? 0 : UtopiaTheme.inputBorderRadius,
-            border: rc != null ? 'undefined' : `1px solid ${colorTheme.bg2.value}`,
             // If part of a option chain control:
             '.option-chain-control-container &': {
               borderRadius: 0,

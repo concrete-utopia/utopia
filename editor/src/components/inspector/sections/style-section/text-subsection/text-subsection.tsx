@@ -18,6 +18,7 @@ import {
   NumberInput,
   SquareButton,
   Icn,
+  colorTheme,
 } from '../../../../../uuiui'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { EditorAction } from '../../../../editor/action-types'
@@ -351,6 +352,7 @@ export const TextSubsection = React.memo(() => {
                   height: 16,
                 },
               }}
+              style={{ border: `1px solid ${colorTheme.bg2.value}`, borderRadius: 3 }}
             />
           </InspectorContextMenuWrapper>
           <InspectorContextMenuWrapper
@@ -366,7 +368,11 @@ export const TextSubsection = React.memo(() => {
               onSubmitValue={onUnderlinedSubmitValue}
               controlStatus={textDecorationLineMetadata.controlStatus}
               controlStyles={textDecorationLineMetadata.controlStyles}
-              style={{ gridColumn: '2 / span 1' }}
+              style={{
+                gridColumn: '2 / span 1',
+                border: `1px solid ${colorTheme.bg2.value}`,
+                borderRadius: 3,
+              }}
               DEPRECATED_controlOptions={{
                 tooltip: 'Underline',
                 icon: {
