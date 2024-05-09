@@ -15,7 +15,7 @@ import * as githubUtil from '../util/github'
 import path from 'path'
 import urlJoin from 'url-join'
 import * as fs from 'fs'
-import type { ApiSuccess } from '../types'
+import { getBranchProjectContentsRequest, type ApiSuccess } from '../types'
 import type { BranchResponse } from '../util/github-branch-contents.server'
 
 describe('get branch project contents', () => {
@@ -106,10 +106,12 @@ describe('get branch project contents', () => {
       newTestRequest({
         method: 'POST',
         authCookie: 'bob-key',
-        body: JSON.stringify({
-          existingAssets: [],
-          uploadAssets: true,
-        }),
+        body: JSON.stringify(
+          getBranchProjectContentsRequest({
+            existingAssets: [],
+            uploadAssets: true,
+          }),
+        ),
       }),
       {
         id: 'one',
@@ -156,10 +158,12 @@ describe('get branch project contents', () => {
       newTestRequest({
         method: 'POST',
         authCookie: 'alice-key',
-        body: JSON.stringify({
-          existingAssets: [],
-          uploadAssets: true,
-        }),
+        body: JSON.stringify(
+          getBranchProjectContentsRequest({
+            existingAssets: [],
+            uploadAssets: true,
+          }),
+        ),
       }),
       {
         id: 'two',

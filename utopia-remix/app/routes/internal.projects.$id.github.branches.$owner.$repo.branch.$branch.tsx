@@ -2,7 +2,7 @@ import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node'
 import { ensure, handle, handleOptions, requireUser } from '../util/api.server'
 import { validateProjectAccess } from '../handlers/validators'
 import type { Params } from '@remix-run/react'
-import type { ExistingAsset } from '../types'
+import type { GetBranchProjectContentsRequest } from '../types'
 import { UserProjectPermission } from '../types'
 import { Status } from '../util/statusCodes'
 import { getGithubAuthentication } from '../models/githubAuthentication.server'
@@ -26,19 +26,9 @@ export function action(args: ActionFunctionArgs) {
   })
 }
 
-export type GetBranchProjectContentsRequest = {
-  existingAssets: ExistingAsset[] | null
-  uploadAssets: boolean
-}
-
 function isBranchContentsRequest(u: unknown): u is GetBranchProjectContentsRequest {
   const maybe = u as GetBranchProjectContentsRequest
-  return (
-    u != null &&
-    typeof u === 'object' &&
-    maybe.existingAssets != null &&
-    (maybe.uploadAssets == null || Array.isArray(maybe.existingAssets))
-  )
+  return u != null && typeof u === 'object' && maybe.type === 'GET_BRANCH_PROJECT_CONTENTS_REQUEST'
 }
 
 async function handler(req: Request, params: Params<string>) {

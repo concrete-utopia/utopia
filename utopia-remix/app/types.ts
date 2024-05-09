@@ -398,6 +398,21 @@ export function isResponseWithMessageData(u: unknown): u is WithMessageData {
   )
 }
 
+export type GetBranchProjectContentsRequest = {
+  type: 'GET_BRANCH_PROJECT_CONTENTS_REQUEST'
+  existingAssets: ExistingAsset[] | null
+  uploadAssets: boolean
+}
+
+export function getBranchProjectContentsRequest(
+  params: Omit<GetBranchProjectContentsRequest, 'type'>,
+): GetBranchProjectContentsRequest {
+  return {
+    type: 'GET_BRANCH_PROJECT_CONTENTS_REQUEST',
+    ...params,
+  }
+}
+
 // The following types are copied from editor/src/core/shared/project-file-types.ts,
 // with some defaults for convenience since they are not used here.
 export type ProjectContentTreeRoot = { [key: string]: ProjectContentsTree }

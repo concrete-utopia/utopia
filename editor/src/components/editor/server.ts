@@ -704,6 +704,21 @@ export type ExistingAsset = {
   type: string
 }
 
+type GetBranchProjectContentsRequest = {
+  type: 'GET_BRANCH_PROJECT_CONTENTS_REQUEST'
+  existingAssets: ExistingAsset[] | null
+  uploadAssets: boolean
+}
+
+function getBranchProjectContentsRequest(
+  params: Omit<GetBranchProjectContentsRequest, 'type'>,
+): GetBranchProjectContentsRequest {
+  return {
+    type: 'GET_BRANCH_PROJECT_CONTENTS_REQUEST',
+    ...params,
+  }
+}
+
 export function getBranchProjectContents(operationContext: GithubOperationContext) {
   return async function (params: {
     projectId: string
@@ -723,10 +738,12 @@ export function getBranchProjectContents(operationContext: GithubOperationContex
       credentials: 'include',
       headers: HEADERS,
       mode: MODE,
-      body: JSON.stringify({
-        existingAssets: params.existingAssets,
-        uploadAssets: true,
-      }),
+      body: JSON.stringify(
+        getBranchProjectContentsRequest({
+          existingAssets: params.existingAssets,
+          uploadAssets: true,
+        }),
+      ),
     })
     if (!response.ok) {
       const reason = await githubAPIErrorDataFromResponse(response)
