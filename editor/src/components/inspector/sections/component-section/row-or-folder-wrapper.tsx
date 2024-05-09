@@ -20,39 +20,40 @@ type RowOrFolderWrapperProps = {
 }
 
 export const RowOrFolderWrapper = React.memo((props: RowOrFolderWrapperProps) => {
-  switch (props.controlDescription.control) {
-    case 'folder':
-      return (
-        <FolderSection
-          isRoot={false}
-          indentationLevel={props.indentationLevel}
-          propertyControls={props.controlDescription.controls}
-          setGlobalCursor={props.setGlobalCursor}
-          title={props.controlDescription.label ?? PP.toString(props.propPath)}
-          visibleEmptyControls={props.visibleEmptyControls}
-          unsetPropNames={props.unsetPropNames}
-          showHiddenControl={props.showHiddenControl}
-          detectedPropsAndValuesWithoutControls={{}}
-        />
-      )
-    default:
-      return (
-        <UIGridRow
-          padded
-          tall={false}
-          style={{ paddingLeft: 0 }}
-          variant='<-------------1fr------------->'
-        >
-          <RowForControl
-            propPath={props.propPath}
-            controlDescription={props.controlDescription}
-            isScene={props.isScene}
-            setGlobalCursor={props.setGlobalCursor}
-            indentationLevel={props.indentationLevel}
-            focusOnMount={props.focusOnMount ?? false}
-            showHiddenControl={props.showHiddenControl}
-          />
-        </UIGridRow>
-      )
-  }
+  return (
+    <UIGridRow
+      padded
+      tall={false}
+      style={{ paddingLeft: 0 }}
+      variant='<-------------1fr------------->'
+    >
+      <RowForControl
+        propPath={props.propPath}
+        controlDescription={props.controlDescription}
+        isScene={props.isScene}
+        setGlobalCursor={props.setGlobalCursor}
+        indentationLevel={props.indentationLevel}
+        focusOnMount={props.focusOnMount ?? false}
+        showHiddenControl={props.showHiddenControl}
+      />
+    </UIGridRow>
+  )
+
+  // switch (props.controlDescription.control) {
+  //   case 'folder':
+  //     return (
+  //       <FolderSection
+  //         isRoot={false}
+  //         indentationLevel={props.indentationLevel}
+  //         propertyControls={props.controlDescription.controls}
+  //         setGlobalCursor={props.setGlobalCursor}
+  //         title={props.controlDescription.label ?? PP.toString(props.propPath)}
+  //         visibleEmptyControls={props.visibleEmptyControls}
+  //         unsetPropNames={props.unsetPropNames}
+  //         showHiddenControl={props.showHiddenControl}
+  //         detectedPropsAndValuesWithoutControls={{}}
+  //       />
+  //     )
+  //   default:
+  // }
 })

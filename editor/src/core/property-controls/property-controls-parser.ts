@@ -15,7 +15,6 @@ import type {
   Vector3ControlDescription,
   ExpressionPopUpListControlDescription,
   ImportType,
-  FolderControlDescription,
   PropertyControls,
   RegularControlDescription,
   ExpressionInputControlDescription,
@@ -796,48 +795,6 @@ export function parseMatrix4ControlDescription(
   )
 }
 
-export function parseFolderControlDescription(
-  value: unknown,
-): ParseResult<FolderControlDescription> {
-  // Results in parse errors within individual property names.
-  const propertiesResult = objectKeyParser((v) => parsePropertyControls(v), 'controls')(value)
-  // Flatten out the errors within each property.
-  const parsedControlDescriptions: ParseResult<PropertyControls> = flatMapEither(
-    (parsedControlResults) => {
-      let workingResult: PropertyControls = {}
-      for (const propertyName of Object.keys(parsedControlResults)) {
-        const propertyResult = parsedControlResults[propertyName]
-        if (isLeft(propertyResult)) {
-          return left(
-            objectFieldParseError(
-              'controls',
-              objectFieldParseError(propertyName, propertyResult.value),
-            ),
-          )
-        } else {
-          workingResult[propertyName] = propertyResult.value
-        }
-      }
-      return right(workingResult)
-    },
-    propertiesResult,
-  )
-  // Create the result on a success.
-  return applicative3Either(
-    (label, control, properties) => {
-      let controlDescription: FolderControlDescription = {
-        control: control,
-        controls: properties,
-      }
-      setOptionalProp(controlDescription, 'label', label)
-      return controlDescription
-    },
-    optionalObjectKeyParser(parseString, 'label')(value),
-    objectKeyParser(parseConstant<'folder'>('folder'), 'control')(value),
-    parsedControlDescriptions,
-  )
-}
-
 export function parseJSXControlDescription(value: unknown): ParseResult<JSXControlDescription> {
   return applicative6Either(
     (label, control, visibleByDefault, preferredContents, required, defaultValue) => {
@@ -933,12 +890,7 @@ function parseRegularControlDescription(value: unknown): ParseResult<RegularCont
 
 export function parseControlDescription(value: unknown): ParseResult<ControlDescription> {
   if (typeof value === 'object' && !Array.isArray(value) && value != null) {
-    switch ((value as any)['control']) {
-      case 'folder':
-        return parseFolderControlDescription(value)
-      default:
-        return parseRegularControlDescription(value)
-    }
+    return parseRegularControlDescription(value)
   } else {
     return left(descriptionParseError('Not an object.'))
   }

@@ -299,12 +299,6 @@ export interface TupleControlDescription {
   defaultValue?: unknown
 }
 
-export interface FolderControlDescription {
-  control: 'folder'
-  label?: string
-  controls: PropertyControls
-}
-
 export type HigherLevelControlDescription =
   | ArrayControlDescription
   | ObjectControlDescription
@@ -315,7 +309,7 @@ export type RegularControlDescription = BaseControlDescription | HigherLevelCont
 
 // Please ensure that `property-controls-utils.ts` is kept up to date
 // with any changes to this or the component types.
-export type ControlDescription = RegularControlDescription | FolderControlDescription
+export type ControlDescription = RegularControlDescription
 
 export function isBaseControlDescription(
   control: ControlDescription,
@@ -344,7 +338,6 @@ export function isBaseControlDescription(
     case 'object':
     case 'tuple':
     case 'union':
-    case 'folder':
       return false
     default:
       const _exhaustiveCheck: never = control
