@@ -1,3 +1,4 @@
+import { getBranchProjectContents } from '../../../../components/editor/server'
 import { resolveConflict } from '../helpers'
 import { saveProjectToGithub } from './commit-and-push'
 import { getBranchChecksums } from './get-branch-checksums'
@@ -19,4 +20,5 @@ export const GithubOperations = {
   updateProjectAgainstGithub: updateProjectAgainstGithub(OperationContext),
   resolveConflict: resolveConflict(OperationContext),
   updateProjectWithBranchContent: updateProjectWithBranchContent(OperationContext),
+  getBranchProjectContents: getBranchProjectContents(OperationContext),
 } as const

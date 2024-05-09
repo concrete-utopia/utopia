@@ -32,7 +32,11 @@ import {
   setUserConfiguration,
   setGithubState,
 } from './actions/action-creators'
-import { updateUserDetailsWhenAuthenticated } from '../../core/shared/github/helpers'
+import type { GetBranchContentResponse } from '../../core/shared/github/helpers'
+import {
+  githubAPIErrorDataFromResponse,
+  updateUserDetailsWhenAuthenticated,
+} from '../../core/shared/github/helpers'
 import { GithubAuth } from '../../utils/github-auth'
 import type { User } from '../../../liveblocks.config'
 import { liveblocksClient } from '../../../liveblocks.config'
@@ -700,31 +704,37 @@ export type ExistingAsset = {
   type: string
 }
 
-export async function requestProjectCloneGithubBranch(
-  operationContext: GithubOperationContext,
-  params: {
+export function getBranchProjectContents(operationContext: GithubOperationContext) {
+  return async function (params: {
     projectId: string
     owner: string
     repo: string
     branch: string
     existingAssets: ExistingAsset[]
-  },
-): Promise<Response> {
-  const url = GithubEndpoints.getBranchProjectContents(
-    params.projectId,
-    params.owner,
-    params.repo,
-    params.branch,
-  )
-
-  return operationContext.fetch(url, {
-    method: 'POST',
-    credentials: 'include',
-    headers: HEADERS,
-    mode: MODE,
-    body: JSON.stringify({
-      existingAssets: params.existingAssets,
-      uploadAssets: true,
-    }),
-  })
+  }): Promise<GetBranchContentResponse> {
+    const url = GithubEndpoints.getBranchProjectContents({
+      projectId: params.projectId,
+      owner: params.owner,
+      repo: params.repo,
+      branch: params.branch,
+    })
+    const response = await operationContext.fetch(url, {
+      method: 'POST',
+      credentials: 'include',
+      headers: HEADERS,
+      mode: MODE,
+      body: JSON.stringify({
+        existingAssets: params.existingAssets,
+        uploadAssets: true,
+      }),
+    })
+    if (!response.ok) {
+      const reason = await githubAPIErrorDataFromResponse(response)
+      return {
+        type: 'FAILURE',
+        failureReason: reason ?? `Github operation failed: ${response.status}`,
+      }
+    }
+    return response.json()
+  }
 }

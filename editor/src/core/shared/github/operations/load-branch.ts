@@ -24,19 +24,15 @@ import { refreshDependencies } from '../../dependencies'
 import type { RequestedNpmDependency } from '../../npm-dependency-types'
 import { forceNotNull } from '../../optional-utils'
 import { isTextFile } from '../../project-file-types'
-import type { BranchContent, GetBranchContentResponse, GithubOperationSource } from '../helpers'
-import {
-  connectRepo,
-  githubAPIError,
-  githubAPIErrorFromResponse,
-  runGithubOperation,
-  saveGithubAsset,
-} from '../helpers'
+import type { BranchContent, GithubOperationSource } from '../helpers'
+import { connectRepo, githubAPIError, runGithubOperation, saveGithubAsset } from '../helpers'
 import type { GithubOperationContext } from './github-operation-context'
 import { createStoryboardFileIfNecessary } from '../../../../components/editor/actions/actions'
 import { getAllComponentDescriptorFilePaths } from '../../../property-controls/property-controls-local'
 import type { ExistingAsset } from '../../../../components/editor/server'
-import { requestProjectCloneGithubBranch } from '../../../../components/editor/server'
+import { GithubOperations } from '.'
+import { assertNever } from '../../utils'
+import { updateProjectContentsWithParseResults } from '../../parser-projectcontents-utils'
 
 export const saveAssetsToProject =
   (operationContext: GithubOperationContext) =>
@@ -129,18 +125,14 @@ export const updateProjectWithBranchContent =
           }
         })
 
-        const response = await requestProjectCloneGithubBranch(operationContext, {
+        const responseBody = await GithubOperations.getBranchProjectContents({
           projectId: projectID,
           owner: githubRepo.owner,
           repo: githubRepo.repository,
           branch: branchName,
           existingAssets: existingAssets,
         })
-        if (!response.ok) {
-          throw githubAPIErrorFromResponse(operation, response)
-        }
 
-        const responseBody: GetBranchContentResponse = await response.json()
         switch (responseBody.type) {
           case 'FAILURE':
             throw githubAPIError(operation, responseBody.failureReason)
@@ -158,10 +150,7 @@ export const updateProjectWithBranchContent =
             // Push any code through the parser so that the representations we end up with are in a state of `BOTH_MATCH`.
             // So that it will override any existing files that might already exist in the project when sending them to VS Code.
             const parsedProjectContents = createStoryboardFileIfNecessary(
-              await operationContext.updateProjectContentsWithParseResults(
-                workers,
-                responseBody.branch.content,
-              ),
+              await updateProjectContentsWithParseResults(workers, responseBody.branch.content),
               'create-placeholder',
             )
 
@@ -231,11 +220,7 @@ export const updateProjectWithBranchContent =
 
             break
           default:
-            const _exhaustiveCheck: never = responseBody
-            throw githubAPIError(
-              operation,
-              `Unhandled response body ${JSON.stringify(responseBody)}`,
-            )
+            assertNever(responseBody)
         }
         return []
       },
