@@ -13,7 +13,7 @@ import * as fs from 'fs'
 import * as os from 'os'
 import path from 'path'
 
-describe('Github clone', () => {
+describe('Github get branch contents', () => {
   describe('shouldUploadAsset', () => {
     const existingAssets: ExistingAsset[] = [
       { gitBlobSha: 'foo', path: 'foo.bin', type: 'ASSET_FILE' },
