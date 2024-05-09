@@ -333,6 +333,24 @@ function defaultVariantItem(
   }
 }
 
+function singletonItem(
+  label: string | React.ReactNode,
+  variant: ComponentInfo,
+  onItemClick: (preferredChildToInsert: ElementToInsert) => void,
+): ContextMenuItem<unknown> {
+  return {
+    name: label,
+    submenuName: null,
+    enabled: true,
+    action: () =>
+      onItemClick({
+        name: variant.insertMenuLabel,
+        elementToInsert: (uid: string) => elementFromInsertMenuItem(variant.elementToInsert(), uid),
+        additionalImports: variant.importsToAdd,
+      }),
+  }
+}
+
 function variantItem(
   variant: ComponentInfo,
   submenuName: string | React.ReactNode | null,
@@ -594,15 +612,7 @@ function contextMenuItemsFromVariants(
   }
 
   if (preferredChildComponentDescriptor.variants.length === 1) {
-    return [
-      defaultVariantItem(
-        preferredChildComponentDescriptor.variants[0].insertMenuLabel,
-        submenuLabel,
-        preferredChildComponentDescriptor.variants[0].importsToAdd,
-        null,
-        onItemClick,
-      ),
-    ]
+    return [singletonItem(submenuLabel, preferredChildComponentDescriptor.variants[0], onItemClick)]
   }
 
   return preferredChildComponentDescriptor.variants.map((variant) => {
