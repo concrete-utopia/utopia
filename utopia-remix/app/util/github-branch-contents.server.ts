@@ -25,6 +25,7 @@ import { fileTypeFromFileName } from './files'
 import { assertNever } from './assertNever'
 import AWS from 'aws-sdk'
 import type { OctokitClient } from './github'
+import * as uuid from 'uuid'
 
 export type AssetToUpload = {
   path: string
@@ -118,7 +119,8 @@ async function writeZipballToTempFile(params: {
   const shortSha = params.commit.slice(0, 7)
   const archiveName = `${params.owner}-${params.repo}-${shortSha}`
 
-  const zipFilePath = urlJoin(tempDir, archiveName + '.zip')
+  const zipFileName = `${archiveName}-${uuid.v4()}.zip`
+  const zipFilePath = urlJoin(tempDir, zipFileName)
 
   return new Promise((resolve, reject) => {
     fs.writeFile(zipFilePath, Buffer.from(params.data as ArrayBuffer), (err) => {
