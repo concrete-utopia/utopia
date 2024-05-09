@@ -1,14 +1,14 @@
 import urlJoin from 'url-join'
 import type { ProjectContentDirectory } from '../types'
 import { projectContentDirectory, type ExistingAsset } from '../types'
-import type { AssetToUpload, UnzipEntry } from './github-branch-contents'
+import type { AssetToUpload, UnzipEntry } from './github-branch-contents.server'
 import {
   populateDirectories,
   populateEntryContents,
   processEntry,
   shouldUploadAsset,
   unzipGithubArchive,
-} from './github-branch-contents'
+} from './github-branch-contents.server'
 import * as fs from 'fs'
 import * as os from 'os'
 import path from 'path'

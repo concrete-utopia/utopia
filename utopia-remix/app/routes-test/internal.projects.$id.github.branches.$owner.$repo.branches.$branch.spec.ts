@@ -16,7 +16,7 @@ import path from 'path'
 import urlJoin from 'url-join'
 import * as fs from 'fs'
 import type { ApiSuccess } from '../types'
-import type { BranchResponse } from '../util/github-branch-contents'
+import type { BranchResponse } from '../util/github-branch-contents.server'
 
 describe('get branch project contents', () => {
   let mockOctokit: jest.SpyInstance
