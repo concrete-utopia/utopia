@@ -710,7 +710,12 @@ export async function requestProjectCloneGithubBranch(
     existingAssets: ExistingAsset[]
   },
 ): Promise<Response> {
-  const url = GithubEndpoints.cloneBranch(params.projectId)
+  const url = GithubEndpoints.getBranchProjectContents(
+    params.projectId,
+    params.owner,
+    params.repo,
+    params.branch,
+  )
 
   return operationContext.fetch(url, {
     method: 'POST',
@@ -718,10 +723,8 @@ export async function requestProjectCloneGithubBranch(
     headers: HEADERS,
     mode: MODE,
     body: JSON.stringify({
-      owner: params.owner,
-      repo: params.repo,
-      branch: params.branch,
       existingAssets: params.existingAssets,
+      uploadAssets: true,
     }),
   })
 }

@@ -8,7 +8,7 @@ import {
   newTestRequest,
   truncateTables,
 } from '../test-util'
-import { action } from '../routes/internal.projects.$id.github.clone'
+import { action } from '../routes/internal.projects.$id.github.branches.$owner.$repo.branch.$branch'
 import type { ApiResponse } from '../util/api.server'
 import { Status } from '../util/statusCodes'
 import * as githubUtil from '../util/github'
@@ -16,9 +16,9 @@ import path from 'path'
 import urlJoin from 'url-join'
 import * as fs from 'fs'
 import type { ApiSuccess } from '../types'
-import type { BranchResponse } from '../util/github-clone.server'
+import type { BranchResponse } from '../util/github-branch-contents'
 
-describe('handleCloneGithubBranch', () => {
+describe('get branch project contents', () => {
   let mockOctokit: jest.SpyInstance
 
   afterEach(async () => {
@@ -89,6 +89,9 @@ describe('handleCloneGithubBranch', () => {
       }),
       {
         id: 'one',
+        owner: 'foo',
+        repo: 'bar',
+        branch: 'baz',
       },
     )
     expect(got).toEqual({
@@ -103,10 +106,16 @@ describe('handleCloneGithubBranch', () => {
       newTestRequest({
         method: 'POST',
         authCookie: 'bob-key',
-        body: JSON.stringify({ owner: 'foo', repo: 'bar', branch: 'main' }),
+        body: JSON.stringify({
+          existingAssets: [],
+          uploadAssets: true,
+        }),
       }),
       {
         id: 'one',
+        owner: 'foo',
+        repo: 'bar',
+        branch: 'baz',
       },
     )
     expect(got).toEqual({
@@ -147,15 +156,21 @@ describe('handleCloneGithubBranch', () => {
       newTestRequest({
         method: 'POST',
         authCookie: 'alice-key',
-        body: JSON.stringify({ owner: 'foo', repo: 'bar', branch: 'main' }),
+        body: JSON.stringify({
+          existingAssets: [],
+          uploadAssets: true,
+        }),
       }),
       {
         id: 'two',
+        owner: 'foo',
+        repo: 'bar',
+        branch: 'baz',
       },
     )
 
     const response = got as unknown as ApiSuccess<BranchResponse>
-    expect(response.branch.branchName).toBe('main')
+    expect(response.branch.branchName).toBe('baz')
     expect(response.branch.originCommit).toBe(commit)
 
     const expected = JSON.parse(

@@ -6,7 +6,7 @@ import type { ExistingAsset } from '../types'
 import { UserProjectPermission } from '../types'
 import { Status } from '../util/statusCodes'
 import { getGithubAuthentication } from '../models/githubAuthentication.server'
-import { getBranchProjectContents } from '../util/github-clone.server'
+import { getBranchProjectContents } from '../util/github-branch-contents'
 import { newOctokitClient, wrapGithubAPIRequest } from '../util/github'
 
 export function loader(args: LoaderFunctionArgs) {
@@ -26,21 +26,18 @@ export function action(args: ActionFunctionArgs) {
   })
 }
 
-type CloneRequest = {
-  owner: string
-  repo: string
-  branch: string
-  existingAssets: ExistingAsset[]
+export type GetBranchProjectContentsRequest = {
+  existingAssets: ExistingAsset[] | null
+  uploadAssets: boolean
 }
 
-function isCloneRequest(u: unknown): u is CloneRequest {
-  const maybe = u as CloneRequest
+function isBranchContentsRequest(u: unknown): u is GetBranchProjectContentsRequest {
+  const maybe = u as GetBranchProjectContentsRequest
   return (
     u != null &&
     typeof u === 'object' &&
-    maybe.owner != null &&
-    maybe.repo != null &&
-    maybe.branch != null
+    maybe.existingAssets != null &&
+    (maybe.uploadAssets == null || Array.isArray(maybe.existingAssets))
   )
 }
 
@@ -50,8 +47,15 @@ async function handler(req: Request, params: Params<string>) {
 
   const user = await requireUser(req)
 
+  const owner = params.owner
+  ensure(owner != null, 'missing owner', Status.BAD_REQUEST)
+  const repo = params.repo
+  ensure(repo != null, 'missing repo', Status.BAD_REQUEST)
+  const branch = params.branch
+  ensure(branch != null, 'missing branch', Status.BAD_REQUEST)
+
   const body = await req.json()
-  ensure(isCloneRequest(body), 'invalid request', Status.BAD_REQUEST)
+  ensure(isBranchContentsRequest(body), 'invalid request', Status.BAD_REQUEST)
 
   const githubAuth = await getGithubAuthentication({ userId: user.user_id })
   ensure(githubAuth != null, 'unauthorized', Status.UNAUTHORIZED)
@@ -62,10 +66,11 @@ async function handler(req: Request, params: Params<string>) {
     client,
     getBranchProjectContents({
       projectId: projectId,
-      owner: body.owner,
-      repo: body.repo,
-      branch: body.branch,
-      existingAssets: body.existingAssets,
+      owner: owner,
+      repo: repo,
+      branch: branch,
+      uploadAssets: body.uploadAssets,
+      existingAssets: body.existingAssets ?? [],
     }),
   )
 }

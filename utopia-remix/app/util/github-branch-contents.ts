@@ -25,6 +25,7 @@ import { fileTypeFromFileName } from './files'
 import { assertNever } from './assertNever'
 import AWS from 'aws-sdk'
 import type { OctokitClient } from './github'
+import type { GetBranchProjectContentsRequest } from '../routes/internal.projects.$id.github.branches.$owner.$repo.branch.$branch'
 
 export type AssetToUpload = {
   path: string
@@ -51,10 +52,11 @@ export type BranchResponse = {
 }
 
 export function getBranchProjectContents(params: {
+  projectId: string
   owner: string
   repo: string
   branch: string
-  projectId: string
+  uploadAssets: boolean
   existingAssets: ExistingAsset[]
 }) {
   return async function (client: OctokitClient): Promise<ApiSuccess<BranchResponse>> {
@@ -89,10 +91,12 @@ export function getBranchProjectContents(params: {
     })
 
     // 6. if there are any assets to upload, upload them
-    await uploadAssets({
-      assets: assetsToUpload,
-      projectId: params.projectId,
-    })
+    if (params.uploadAssets) {
+      await uploadAssets({
+        assets: assetsToUpload,
+        projectId: params.projectId,
+      })
+    }
 
     return toApiSuccess({
       branch: {
