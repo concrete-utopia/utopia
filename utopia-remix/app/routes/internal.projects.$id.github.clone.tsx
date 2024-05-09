@@ -54,10 +54,10 @@ async function handler(req: Request, params: Params<string>) {
   const user = await requireUser(req)
 
   const body = await req.json()
-  ensure(isCloneRequest(body), 'invalid body', Status.BAD_REQUEST)
+  ensure(isCloneRequest(body), 'invalid request', Status.BAD_REQUEST)
 
   const githubAuth = await getGithubAuthentication({ userId: user.user_id })
-  ensure(githubAuth != null, 'no auth', Status.UNAUTHORIZED)
+  ensure(githubAuth != null, 'unauthorized', Status.UNAUTHORIZED)
 
   const client = newOctokitClient(githubAuth.access_token)
 

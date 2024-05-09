@@ -5,6 +5,7 @@ import type {
   ProjectContentDirectory,
   ExistingAsset,
   Content,
+  ApiSuccess,
 } from '../types'
 import {
   toApiSuccess,
@@ -74,6 +75,14 @@ export type UnzipEntry = unzipper.Entry & {
   }
 }
 
+export type BranchResponse = {
+  branch: {
+    branchName: string
+    originCommit: string
+    content: ProjectContentTreeRoot
+  }
+}
+
 export function getBranchProjectContents(params: {
   owner: string
   repo: string
@@ -81,9 +90,9 @@ export function getBranchProjectContents(params: {
   projectId: string
   existingAssets: ExistingAsset[]
 }) {
-  return async function (client: OctokitClient) {
+  return async function (client: OctokitClient): Promise<ApiSuccess<BranchResponse>> {
     // 1. get the branch details
-    const response = await client.request(`GET /repos/{owner}/{repo}/branches/{branch}`, {
+    const response = await client.request('GET /repos/{owner}/{repo}/branches/{branch}', {
       owner: params.owner,
       repo: params.repo,
       branch: params.branch,
@@ -91,7 +100,7 @@ export function getBranchProjectContents(params: {
     const commit = response.data.commit.sha
 
     // 2. get the zipball
-    const tarball = await client.request(`GET /repos/{owner}/{repo}/zipball/{ref}`, {
+    const tarball = await client.request('GET /repos/{owner}/{repo}/zipball/{ref}', {
       owner: params.owner,
       repo: params.repo,
       ref: commit,
@@ -106,7 +115,7 @@ export function getBranchProjectContents(params: {
     })
 
     // 4. unzip the archive and process its entries
-    const { assetsToUpload, projectContents } = await unzipArchive({
+    const { assetsToUpload, projectContents } = await unzipGithubArchive({
       archiveName: archiveName,
       zipFilePath: zipFilePath,
       existingAssets: params.existingAssets,
@@ -168,7 +177,7 @@ async function uploadAssets(params: { assets: AssetToUpload[]; projectId: string
   await Promise.all(uploads)
 }
 
-function unzipArchive(params: {
+export function unzipGithubArchive(params: {
   archiveName: string
   zipFilePath: string
   existingAssets: ExistingAsset[]

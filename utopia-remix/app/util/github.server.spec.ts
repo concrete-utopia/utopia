@@ -1,3 +1,4 @@
+import urlJoin from 'url-join'
 import type { ProjectContentDirectory } from '../types'
 import { projectContentDirectory, type ExistingAsset } from '../types'
 import type { AssetToUpload, UnzipEntry } from './github.server'
@@ -6,7 +7,11 @@ import {
   populateEntryContents,
   processEntry,
   shouldUploadAsset,
+  unzipGithubArchive,
 } from './github.server'
+import * as fs from 'fs'
+import * as os from 'os'
+import path from 'path'
 
 describe('Github', () => {
   describe('shouldUploadAsset', () => {
@@ -240,6 +245,36 @@ describe('Github', () => {
           type: 'PROJECT_CONTENT_DIRECTORY',
         },
       })
+    })
+  })
+
+  describe('unzipGithubArchive', () => {
+    it('unzips the archive', async () => {
+      const dirname = path.dirname(__filename)
+
+      const archiveName = `test-utopia-github-main`
+
+      const testFilePath = urlJoin(os.tmpdir(), `${archiveName}-${Date.now()}.zip`)
+      fs.copyFileSync(urlJoin(dirname, `../test-assets/${archiveName}.zip`), testFilePath)
+
+      const expected = JSON.parse(
+        fs.readFileSync(urlJoin(dirname, `../test-assets/${archiveName}.json`)).toString(),
+      )
+
+      const got = await unzipGithubArchive({
+        archiveName: archiveName,
+        zipFilePath: testFilePath,
+        existingAssets: [],
+      })
+
+      expect(got.projectContents).toEqual(expected)
+      expect(got.assetsToUpload).toHaveLength(4)
+      expect(got.assetsToUpload.map((a) => a.path)).toEqual([
+        'assets/Curaçao.png',
+        'assets/deer.JPG',
+        'assets/lanterns.png',
+        'assets/pyramids.png',
+      ])
     })
   })
 })

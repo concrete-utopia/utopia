@@ -358,7 +358,7 @@ export function isSearchPublicRepositoriesRequest(
   return u != null && typeof u === 'object' && maybe.owner != null && maybe.repo != null
 }
 
-type ApiSuccess<T> = T & { type: 'SUCCESS' }
+export type ApiSuccess<T> = T & { type: 'SUCCESS' }
 
 export function toApiSuccess<T>(data: T): ApiSuccess<T> {
   return {
