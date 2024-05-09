@@ -9,6 +9,7 @@ import type { Either } from '../shared/either'
 import { isLeft, isRight, left, mapEither, maybeEitherToMaybe, right } from '../shared/either'
 import * as EP from '../shared/element-path'
 import type {
+  BoundParam,
   JSAssignment,
   JSExpression,
   JSIdentifier,
@@ -21,6 +22,8 @@ import {
   jsIdentifier,
   type ElementInstanceMetadataMap,
   isRegularParam,
+  isJSAssignmentStatement,
+  isJSIdentifier,
 } from '../shared/element-template'
 import { getJSXAttributesAtPath, jsxSimpleAttributeToValue } from '../shared/jsx-attribute-utils'
 import { forceNotNull, optionalMap } from '../shared/optional-utils'
@@ -437,6 +440,87 @@ function walkUpInnerScopesUntilReachingComponent(
   )
 }
 
+const hookCallRegex = /^(use[A-Za-z]+)\(/
+
+function getPossibleHookCall(expression: JSExpression): string | null {
+  switch (expression.type) {
+    case 'JS_IDENTIFIER':
+    case 'JS_PROPERTY_ACCESS':
+    case 'JS_ELEMENT_ACCESS':
+    case 'JSX_ELEMENT':
+    case 'JSX_MAP_EXPRESSION':
+    case 'ATTRIBUTE_VALUE':
+    case 'ATTRIBUTE_NESTED_ARRAY':
+    case 'ATTRIBUTE_NESTED_OBJECT':
+      return null
+    case 'ATTRIBUTE_FUNCTION_CALL':
+      if (expression.functionName.startsWith('use')) {
+        return expression.functionName
+      } else {
+        return null
+      }
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+      const matchingPart = expression.originalJavascript.match(hookCallRegex)
+      if (matchingPart == null || matchingPart.length === 0) {
+        return null
+      } else {
+        return matchingPart[1]
+      }
+    default:
+      assertNever(expression)
+  }
+}
+
+function findPathToIdentifier(param: BoundParam, identifier: string): DataPath | null {
+  function innerFindPath(workingParam: BoundParam, currentPath: DataPath): DataPath | null {
+    switch (workingParam.type) {
+      case 'REGULAR_PARAM':
+        if (workingParam.paramName === identifier) {
+          return [...currentPath, workingParam.paramName]
+        } else {
+          return null
+        }
+      case 'DESTRUCTURED_OBJECT':
+        for (const part of workingParam.parts) {
+          if (part.propertyName == identifier) {
+            return [...currentPath, part.propertyName]
+          } else {
+            const possibleResult = innerFindPath(part.param.boundParam, currentPath)
+            if (possibleResult != null) {
+              return possibleResult
+            }
+          }
+        }
+        break
+      case 'DESTRUCTURED_ARRAY':
+        let arrayIndex: number = 0
+        for (const part of workingParam.parts) {
+          switch (part.type) {
+            case 'PARAM':
+              const possibleResult = innerFindPath(part.boundParam, [
+                ...currentPath,
+                `${arrayIndex}`,
+              ])
+              if (possibleResult != null) {
+                return possibleResult
+              }
+              break
+            case 'OMITTED_PARAM':
+              return null
+            default:
+              assertNever(part)
+          }
+          arrayIndex++
+        }
+        return null
+      default:
+        assertNever(workingParam)
+    }
+    return null
+  }
+  return innerFindPath(param, [])
+}
+
 function lookupInComponentScope(
   elementPathInsideComponent: ElementPath,
   componentPath: ElementPath,
@@ -526,42 +610,33 @@ function lookupInComponentScope(
 
   // let's try to find "const { <identifier>, ...somethingElse } = <expression>" shaped statements
   {
-    // TODO we must support the object binding pattern in the parser
-    // until we do proper support, this is a temporary stopgap
-    const foundOpaqueStatementProbablyMatchingIdentifier: {
-      assignedTo: string
-      pathSoFar: DataPath
-    } | null = mapFirstApplicable(
+    const foundResultFromStatements: DataTracingResult | null = mapFirstApplicable(
       componentHoldingElement.arbitraryJSBlock?.statements ?? [],
       (statement) => {
-        // check that the originalJavascript matches the shape "const { <identifier> } = <expression>"
-        // copilot:
-        if (
-          statement.type === 'JS_OPAQUE_ARBITRARY_STATEMENT' &&
-          statement.originalJavascript.includes('const {') &&
-          statement.originalJavascript.includes(identifier.name)
-        ) {
-          const splitStatement = statement.originalJavascript.split('=')
-          if (splitStatement.length !== 2) {
-            return null
-          }
-          const leftHandSide = splitStatement[0]
-          const rightHandSide = splitStatement[1]
-
-          if (leftHandSide.includes('{') && leftHandSide.includes('}')) {
-            const leftHandSideSplit = leftHandSide.split('{')
-            if (leftHandSideSplit.length !== 2) {
+        if (isJSAssignmentStatement(statement)) {
+          for (const assignment of statement.assignments) {
+            const possiblePathToIdentifier = findPathToIdentifier(
+              assignment.leftHandSide,
+              identifier.name,
+            )
+            const originExpression = assignment.rightHandSide
+            if (possiblePathToIdentifier == null) {
               return null
-            }
-            const leftHandSideIdentifier = leftHandSideSplit[1].split('}')[0].trim()
-            if (
-              leftHandSideIdentifier === identifier.name ||
-              leftHandSideIdentifier.includes(`${identifier.name}, `) ||
-              leftHandSideIdentifier.includes(`, ${identifier.name}`)
-            ) {
-              return {
-                assignedTo: rightHandSide.trim(),
-                pathSoFar: [identifier.name, ...pathDrillSoFar],
+            } else {
+              const possibleHookCall = getPossibleHookCall(assignment.rightHandSide)
+              if (possibleHookCall == null && isJSIdentifier(originExpression)) {
+                return lookupInComponentScope(
+                  elementPathInsideComponent,
+                  componentPath,
+                  componentHoldingElement,
+                  originExpression,
+                  [...possiblePathToIdentifier, ...pathDrillSoFar],
+                )
+              } else if (possibleHookCall != null) {
+                return dataTracingToAHookCall(componentPath, possibleHookCall, [
+                  ...possiblePathToIdentifier,
+                  ...pathDrillSoFar,
+                ])
               }
             }
           }
@@ -570,34 +645,8 @@ function lookupInComponentScope(
       },
     )
 
-    if (foundOpaqueStatementProbablyMatchingIdentifier != null) {
-      if (
-        foundOpaqueStatementProbablyMatchingIdentifier.assignedTo.startsWith('use') &&
-        foundOpaqueStatementProbablyMatchingIdentifier.assignedTo.endsWith('()') &&
-        foundOpaqueStatementProbablyMatchingIdentifier.assignedTo.match(/^use[A-Za-z]+\(\)$/) !=
-          null
-      ) {
-        return dataTracingToAHookCall(
-          componentPath,
-          foundOpaqueStatementProbablyMatchingIdentifier.assignedTo.split('(')[0],
-          foundOpaqueStatementProbablyMatchingIdentifier.pathSoFar,
-        )
-      }
-      // check if assignedTo is a simple identifier
-      if (foundOpaqueStatementProbablyMatchingIdentifier.assignedTo.match(/^[A-Za-z]+$/) != null) {
-        return lookupInComponentScope(
-          elementPathInsideComponent,
-          componentPath,
-          componentHoldingElement,
-          jsIdentifier(
-            foundOpaqueStatementProbablyMatchingIdentifier.assignedTo,
-            '', // warning this is a fake uid here
-            null,
-            emptyComments,
-          ),
-          foundOpaqueStatementProbablyMatchingIdentifier.pathSoFar,
-        )
-      }
+    if (foundResultFromStatements != null) {
+      return foundResultFromStatements
     }
   }
 

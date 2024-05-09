@@ -250,6 +250,18 @@ export function simpleJSAssignmentStatement(
 
 export type JSArbitraryStatement = JSOpaqueArbitraryStatement | JSAssignmentStatement
 
+export function isJSAssignmentStatement(
+  statement: JSArbitraryStatement,
+): statement is JSAssignmentStatement {
+  return statement.type === 'JS_ASSIGNMENT_STATEMENT'
+}
+
+export function isJSOpaqueArbitraryStatement(
+  statement: JSArbitraryStatement,
+): statement is JSOpaqueArbitraryStatement {
+  return statement.type === 'JS_OPAQUE_ARBITRARY_STATEMENT'
+}
+
 export interface JSExpressionOtherJavaScript extends WithComments, WithElementsWithin {
   type: 'ATTRIBUTE_OTHER_JAVASCRIPT'
   params: Array<Param>
@@ -2187,13 +2199,17 @@ export function omittedParam(): OmittedParam {
 
 export type DestructuredArrayPart = Param | OmittedParam
 
-export function isOmittedParam(param: DestructuredArrayPart): param is OmittedParam {
-  return (param as any).type === 'OMITTED_PARAM'
-}
-
 export interface DestructuredArray {
   type: 'DESTRUCTURED_ARRAY'
   parts: Array<DestructuredArrayPart>
+}
+
+export function isOmittedParam(param: DestructuredArrayPart): param is OmittedParam {
+  return param.type === 'OMITTED_PARAM'
+}
+
+export function isParam(param: DestructuredArrayPart): param is Param {
+  return param.type === 'PARAM'
 }
 
 export function destructuredArray(parts: Array<DestructuredArrayPart>): DestructuredArray {
@@ -2221,15 +2237,6 @@ export type Param = {
   type: 'PARAM'
   dotDotDotToken: boolean
   boundParam: BoundParam
-}
-
-export function isParam(maybeParam: unknown): maybeParam is Param {
-  return (
-    typeof maybeParam === 'object' &&
-    maybeParam != null &&
-    'type' in maybeParam &&
-    (maybeParam as any)['type'] === 'PARAM'
-  )
 }
 
 export function functionParam(dotDotDotToken: boolean, boundParam: BoundParam): Param {

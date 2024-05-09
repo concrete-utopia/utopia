@@ -1443,6 +1443,13 @@ export var App = (props) => <View data-uid='bbb'>
       "startLine": 12,
       "uid": "bbb",
     },
+    "f9c": Object {
+      "endCol": 9,
+      "endLine": 13,
+      "startCol": 3,
+      "startLine": 13,
+      "uid": "f9c",
+    },
   },
   "highlightBounds": Object {
     "bbb": Object {
