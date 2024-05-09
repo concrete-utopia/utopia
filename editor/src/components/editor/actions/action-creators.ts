@@ -236,6 +236,7 @@ import type {
   ReplaceTarget,
   InsertAsChildTarget,
   ReplaceKeepChildrenAndStyleTarget,
+  WrapTarget,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -273,6 +274,7 @@ export function clearSelection(): EditorAction {
 }
 
 export const replaceTarget: ReplaceTarget = { type: 'replace-target' }
+export const wrapTarget: WrapTarget = { type: 'wrap-target' }
 export const replaceKeepChildrenAndStyleTarget: ReplaceKeepChildrenAndStyleTarget = {
   type: 'replace-target-keep-children-and-style',
 }

@@ -48,6 +48,7 @@ import type {
   InsertAsChildTarget,
   ReplaceKeepChildrenAndStyleTarget,
   ReplaceTarget,
+  WrapTarget,
 } from '../../editor/action-types'
 import { type ProjectContentTreeRoot } from '../../assets'
 import type { PropertyControlsInfo, ComponentInfo } from '../../custom-code/code-file'
@@ -76,6 +77,7 @@ export type InsertionTarget =
   | ReplaceKeepChildrenAndStyleTarget
   | InsertAsChildTarget
   | ConditionalTarget
+  | WrapTarget
 
 export function renderPropTarget(prop: string): RenderPropTarget {
   return {
@@ -91,6 +93,10 @@ export function isReplaceTarget(
   insertionTarget: InsertionTarget,
 ): insertionTarget is ReplaceTarget {
   return insertionTarget.type === 'replace-target'
+}
+
+export function isWrapTarget(insertionTarget: InsertionTarget): insertionTarget is WrapTarget {
+  return insertionTarget.type === 'wrap-target'
 }
 
 export function isReplaceKeepChildrenAndStyleTarget(
@@ -490,6 +496,8 @@ function toastMessage(insertionTarget: InsertionTarget, toInsert: InsertableComp
       return `Inserting ${toInsert.name} into conditional ${insertionTarget.type} isn't supported yet`
     case 'render-prop':
       return `Inserting ${toInsert.name} into render prop ${insertionTarget.prop} isn't supported yet`
+    case 'wrap-target':
+      return `Wrapping with ${toInsert.name} isn't supported yet`
     default:
       assertNever(insertionTarget)
   }

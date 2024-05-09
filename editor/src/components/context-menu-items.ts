@@ -353,6 +353,19 @@ export const insert: ContextMenuItem<CanvasData> = {
   },
 }
 
+export function showWrapComponentPicker(
+  targetElement: ElementPath,
+  jsxMetadata: ElementInstanceMetadataMap,
+  showComponentPicker: ShowComponentPickerContextMenuCallback,
+): ShowComponentPickerContextMenu {
+  const element = MetadataUtils.findElementByElementPath(jsxMetadata, targetElement)
+  const prop = element?.assignedToProp
+  const target = prop == null ? targetElement : EP.parentPath(targetElement)
+  const insertionTarget: InsertionTarget =
+    prop == null ? EditorActions.wrapTarget : renderPropTarget(prop)
+  return showComponentPicker(target, insertionTarget)
+}
+
 export function showReplaceComponentPicker(
   targetElement: ElementPath,
   jsxMetadata: ElementInstanceMetadataMap,
@@ -470,11 +483,21 @@ export const wrapInPicker: ContextMenuItem<CanvasData> = {
   name: 'Wrap in…',
   shortcut: 'W',
   enabled: true,
-  action: (data, dispatch?: EditorDispatch) => {
-    requireDispatch(dispatch)(
-      [setFocus('canvas'), EditorActions.openFloatingInsertMenu({ insertMenuMode: 'wrap' })],
-      'everyone',
-    )
+  action: (data, dispatch, _coord, event) => {
+    // eslint-disable-next-line
+    // @ts-ignore
+    if (window.openOldWrap === true) {
+      requireDispatch(dispatch)(
+        [setFocus('canvas'), EditorActions.openFloatingInsertMenu({ insertMenuMode: 'wrap' })],
+        'everyone',
+      )
+    } else {
+      showWrapComponentPicker(
+        data.selectedViews[0],
+        data.jsxMetadata,
+        data.showComponentPicker,
+      )(event)
+    }
   },
 }
 
