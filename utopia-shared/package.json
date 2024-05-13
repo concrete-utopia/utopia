@@ -1,0 +1,14 @@
+{
+  "name": "utopia-shared",
+  "version": "1.0.0",
+  "description": "A shared module between the editor and Remix",
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}

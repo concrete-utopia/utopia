@@ -7,6 +7,11 @@ import type {
 } from './element-template'
 import type { ErrorMessage } from './error-messages'
 import { arrayEqualsByValue, objectEquals } from './utils'
+import type { ImageFile } from 'utopia-shared/src/types-project-contents'
+import { imageFile } from 'utopia-shared/src/types-project-contents'
+
+export type { ImageFile }
+export { imageFile }
 
 export type id = string
 enum StaticModifier {}
@@ -711,36 +716,6 @@ export function isEsRemoteDependencyPlaceholder(
   projectFile: any,
 ): projectFile is ESRemoteDependencyPlaceholder {
   return projectFile != null && projectFile.type === 'ES_REMOTE_DEPENDENCY_PLACEHOLDER'
-}
-
-// Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
-export interface ImageFile {
-  type: 'IMAGE_FILE'
-  imageType?: string
-  base64?: string
-  width?: number
-  height?: number
-  hash: number
-  gitBlobSha?: string
-}
-
-export function imageFile(
-  imageType: string | undefined,
-  base64: string | undefined,
-  width: number | undefined,
-  height: number | undefined,
-  hash: number,
-  gitBlobSha: string | undefined,
-): ImageFile {
-  return {
-    type: 'IMAGE_FILE',
-    imageType: imageType,
-    base64: base64,
-    width: width,
-    height: height,
-    hash: hash,
-    gitBlobSha: gitBlobSha,
-  }
 }
 
 export function isImageFile(projectFile: ProjectFile): projectFile is ImageFile {
