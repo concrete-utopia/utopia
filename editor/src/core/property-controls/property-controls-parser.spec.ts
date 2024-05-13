@@ -364,6 +364,7 @@ const validStringInputControlDescriptionValue: StringInputControlDescription = {
   placeholder: 'Enter text',
   obscured: true,
   visibleByDefault: true,
+  folder: 'String Input',
 }
 
 describe('parseStringInputControlDescription', () => {
@@ -503,6 +504,7 @@ const validArrayControlDescriptionValue: ArrayControlDescription = {
   propertyControl: {
     control: 'string-input',
   },
+  folder: 'Array Control',
 }
 
 describe('parseArrayControlDescription', () => {
@@ -527,6 +529,7 @@ const validObjectControlDescriptionValue: ObjectControlDescription = {
       control: 'string-input',
     },
   },
+  folder: 'Object Control',
 }
 
 describe('parseObjectControlDescription', () => {

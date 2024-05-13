@@ -136,23 +136,15 @@ export interface StringInputControlDescription extends GenericControlProps<unkno
   obscured?: boolean
 }
 
-export interface HtmlInputControlDescription {
+export interface HtmlInputControlDescription extends GenericControlProps<unknown> {
   control: 'html-input'
-  label?: string
-  visibleByDefault?: boolean
   placeholder?: string
   obscured?: boolean
-  required?: boolean
-  defaultValue?: unknown
 }
 
-export interface StyleControlsControlDescription {
+export interface StyleControlsControlDescription extends GenericControlProps<unknown> {
   control: 'style-controls'
-  label?: string
-  visibleByDefault?: boolean
   placeholder?: CSSProperties
-  required?: boolean
-  defaultValue?: unknown
 }
 
 export type Vector2 = [number, number]
