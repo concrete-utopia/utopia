@@ -5,20 +5,20 @@ type ParseSuccess = null
 type ParsedTextFile = { type: 'UNPARSED' } // see editor/src/core/shared/project-file-types.ts
 
 // Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
-export type ProjectContentTreeRoot = { [key: string]: ProjectContentsTree }
+type ProjectContentTreeRoot = { [key: string]: ProjectContentsTree }
 
 // Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
-export type ProjectContentsTree = ProjectContentDirectory | ProjectContentFile
+type ProjectContentsTree = ProjectContentDirectory | ProjectContentFile
 
 // Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs
-export interface ProjectContentDirectory {
+interface ProjectContentDirectory {
   type: 'PROJECT_CONTENT_DIRECTORY'
   fullPath: string
   directory: Directory
   children: ProjectContentTreeRoot
 }
 
-export function projectContentDirectory(
+function projectContentDirectory(
   fullPath: string,
   dir: Directory,
   children: ProjectContentTreeRoot,
@@ -32,13 +32,13 @@ export function projectContentDirectory(
 }
 
 // Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
-export interface ProjectContentFile {
+interface ProjectContentFile {
   type: 'PROJECT_CONTENT_FILE'
   fullPath: string
   content: Content
 }
 
-export function projectContentFile(fullPath: string, content: Content): ProjectContentFile {
+function projectContentFile(fullPath: string, content: Content): ProjectContentFile {
   return {
     type: 'PROJECT_CONTENT_FILE',
     fullPath: fullPath,
@@ -56,7 +56,7 @@ export function directory(): Directory {
   }
 }
 
-export type Content = ImageFile | AssetFile | TextFile
+type Content = ImageFile | AssetFile | TextFile
 
 // Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
 export interface ImageFile {
@@ -104,7 +104,7 @@ export function assetFile(base64: string | undefined, gitBlobSha: string | undef
 }
 
 // Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
-export interface TextFile {
+interface TextFile {
   type: 'TEXT_FILE'
   fileContents: TextFileContents
   lastSavedContents: TextFileContents | null // it is null when the file is saved
@@ -112,7 +112,7 @@ export interface TextFile {
   versionNumber: number
 }
 
-export function textFile(
+function textFile(
   fileContents: TextFileContents,
   lastSavedContents: TextFileContents | null,
   lastParseSuccess: ParseSuccess | null,
@@ -128,13 +128,13 @@ export function textFile(
 }
 
 // Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
-export interface TextFileContents {
+interface TextFileContents {
   code: string
   parsed: ParsedTextFile
   revisionsState: RevisionsStateType
 }
 
-export function textFileContents(
+function textFileContents(
   code: string,
   parsed: ParsedTextFile,
   revisionsState: RevisionsStateType,
