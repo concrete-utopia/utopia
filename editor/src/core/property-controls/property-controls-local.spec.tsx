@@ -259,6 +259,7 @@ describe('registered property controls', () => {
           "focus": "default",
           "icon": "component",
           "inspector": Array [],
+          "label": null,
           "preferredChildComponents": Array [],
           "properties": Object {
             "background": Object {
