@@ -298,6 +298,7 @@ function isComponentRegistrationValid(
   }
 
   // check validity of external component
+  // TODO this doesn't work yet for components which are not directly imported, e.g. Typography.Text (where Typography is the imported object)
   const { name, moduleName } = getRequireInfoFromComponent(component)
   if (name != null && name !== registrationKey) {
     return {
