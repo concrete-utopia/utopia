@@ -440,7 +440,7 @@ function walkUpInnerScopesUntilReachingComponent(
   )
 }
 
-const hookCallRegex = /^(use[A-Za-z]+)\(/
+const hookCallRegex = /^(use[A-Za-z0-9_]+)\(/
 
 function getPossibleHookCall(expression: JSExpression): string | null {
   switch (expression.type) {
@@ -482,7 +482,10 @@ function findPathToIdentifier(param: BoundParam, identifier: string): DataPath |
         }
       case 'DESTRUCTURED_OBJECT':
         for (const part of workingParam.parts) {
-          if (part.propertyName == identifier) {
+          // Prevent drilling down through spread values.
+          if (part.param.dotDotDotToken) {
+            return null
+          } else if (part.propertyName == identifier) {
             return [...currentPath, part.propertyName]
           } else if (
             part.propertyName != null &&
@@ -503,6 +506,10 @@ function findPathToIdentifier(param: BoundParam, identifier: string): DataPath |
         for (const part of workingParam.parts) {
           switch (part.type) {
             case 'PARAM':
+              // Prevent drilling down through spread values.
+              if (part.dotDotDotToken) {
+                return null
+              }
               const possibleResult = innerFindPath(part.boundParam, [
                 ...currentPath,
                 `${arrayIndex}`,

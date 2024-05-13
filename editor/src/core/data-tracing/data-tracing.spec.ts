@@ -12,6 +12,7 @@ import { jsIdentifier } from '../shared/element-template'
 import type { ElementPath } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
 import {
+  dataTracingFailed,
   dataTracingToAHookCall,
   dataTracingToLiteralAttribute,
   traceDataFromProp,
@@ -493,7 +494,7 @@ describe('Data Tracing', () => {
       )
     })
 
-    it('Traces back a prop to a array destructured hook', async () => {
+    it('Does not trace back a prop through an array destructured hook', async () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCodeWithStoryboard(`
         function useArray() {
@@ -521,12 +522,7 @@ describe('Data Tracing', () => {
         [],
       )
 
-      expect(traceResult).toEqual(
-        dataTracingToAHookCall(EP.fromString('sb/app:my-component:component-root'), 'useArray', [
-          '2',
-          'rest',
-        ]),
-      )
+      expect(traceResult).toEqual(dataTracingFailed('Could not find a hook call'))
     })
 
     it('Traces back a prop to a useLoaderData() hook through assignment indirections', async () => {
