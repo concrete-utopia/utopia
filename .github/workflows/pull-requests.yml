@@ -462,7 +462,7 @@ jobs:
         ports:
           - 54322:5432
       minio:
-        image: quay.io/minio/minio:RELEASE.2024-05-10T01-41-38Z
+        image: bitnami/minio:2024.5.10
         ports:
           - 9000:9000
         env:
