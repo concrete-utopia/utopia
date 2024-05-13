@@ -1577,6 +1577,11 @@ export function jsxElementName(
   }
 }
 
+export function jsxElementNameFromString(name: string): JSXElementName {
+  const [baseVariable, ...properties] = name.split('.')
+  return jsxElementName(baseVariable, properties)
+}
+
 export function jsxElementNameEquals(first: JSXElementName, second: JSXElementName): boolean {
   return (
     first.baseVariable === second.baseVariable &&
