@@ -38,6 +38,7 @@ import type {
   TextFile,
   TextFileContents,
   Unparsed,
+  ElementPropertyPath,
 } from '../../../core/shared/project-file-types'
 import { directory } from '../../../core/shared/project-file-types'
 import {
@@ -272,7 +273,6 @@ import {
   StaticElementPathKeepDeepEquality,
   ElementsToRerenderKeepDeepEquality,
   PropertyPathKeepDeepEquality,
-  ElementPropertyPathKeepDeepEquality,
 } from '../../../utils/deep-equality-instances'
 import {
   createCallFromIntrospectiveKeepDeep,
@@ -605,6 +605,16 @@ import type {
 } from '../../custom-code/internal-property-controls'
 import type { OnlineState } from '../online-status'
 import { onlineState } from '../online-status'
+
+export function ElementPropertyPathKeepDeepEquality(): KeepDeepEqualityCall<ElementPropertyPath> {
+  return combine2EqualityCalls(
+    (e) => e.elementPath,
+    ElementPathKeepDeepEquality,
+    (e) => e.propertyPath,
+    PropertyPathKeepDeepEquality(),
+    (elementPath, propertyPath) => ({ elementPath, propertyPath }),
+  )
+}
 
 export const ProjectMetadataFromServerKeepDeepEquality: KeepDeepEqualityCall<ProjectMetadataFromServer> =
   combine4EqualityCalls(
