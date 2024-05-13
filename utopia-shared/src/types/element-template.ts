@@ -1,5 +1,4 @@
 import type { PropertyPath } from './project-file-types'
-import type { MapLike } from 'typescript'
 
 export interface ParsedComments {
   leadingComments: Array<Comment>
@@ -415,14 +414,7 @@ export interface EarlyReturnResult {
   result: unknown
 }
 
-export interface ArbitraryBlockRanToEnd {
-  type: 'ARBITRARY_BLOCK_RAN_TO_END'
-  scope: MapLike<unknown>
-}
-
 export type EarlyReturn = EarlyReturnVoid | EarlyReturnResult
-
-export type ArbitraryBlockResult = EarlyReturn | ArbitraryBlockRanToEnd
 
 export type DetectedLayoutSystem = 'flex' | 'grid' | 'flow' | 'none'
 export type TextDirection = 'ltr' | 'rtl'

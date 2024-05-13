@@ -7,12 +7,8 @@ import type {
 } from './element-template'
 import type { ErrorMessage } from './error-messages'
 import { arrayEqualsByValue, objectEquals } from './utils'
-import type {
-  ImageFile,
-  AssetFile,
-  RevisionsStateType,
-} from 'utopia-shared/src/types/project-file-types'
-import { imageFile, assetFile, RevisionsState } from 'utopia-shared/src/types/project-file-types'
+import type { ImageFile, AssetFile, RevisionsStateType } from 'utopia-shared/src/types'
+import { imageFile, assetFile, RevisionsState } from 'utopia-shared/src/types'
 
 export type { ImageFile, AssetFile, RevisionsStateType }
 export { imageFile, assetFile, RevisionsState }
