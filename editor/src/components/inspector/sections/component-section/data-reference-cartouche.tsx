@@ -126,24 +126,16 @@ export const DataCartoucheInner = React.forwardRef(
       [onDelete],
     )
 
-    const cartoucheIconColorToUse = contentIsComingFromServer ? 'component' : 'primary'
-
     const cartoucheIconColor = inverted
       ? 'on-highlight-main'
       : contentsToDisplay.type === 'reference'
       ? 'white'
       : 'secondary'
 
-    const borderColor = inverted
-      ? colorTheme.neutralInvertedForeground.value
-      : colorTheme.primary.value
-
-    const primaryForegoundColorToUse = contentIsComingFromServer
-      ? colorTheme.component.value
-      : colorTheme.primary10.value
+    const borderColor = inverted ? colorTheme.white.value : colorTheme.primary.value
 
     const foregroundColor = inverted
-      ? colorTheme.neutralInvertedForeground.value
+      ? colorTheme.white.value
       : contentsToDisplay.type === 'reference'
       ? colorTheme.white.value
       : colorTheme.neutralForeground.value
