@@ -16,7 +16,10 @@ import { RowOrFolderWrapper } from './row-or-folder-wrapper'
 import { RowForControl } from './component-section'
 import { InspectorWidthAtom } from '../../common/inspector-atoms'
 import { useAtom } from 'jotai'
-import { specialPropertiesToIgnore } from '../../../../core/property-controls/property-controls-utils'
+import {
+  isAdvancedFolderLabel,
+  specialPropertiesToIgnore,
+} from '../../../../core/property-controls/property-controls-utils'
 
 interface FolderSectionProps {
   isRoot: boolean
@@ -32,7 +35,7 @@ interface FolderSectionProps {
 
 export const FolderSection = React.memo((props: FolderSectionProps) => {
   const showIndentation = useAtom(InspectorWidthAtom)[0] === 'wide'
-  const [open, setOpen] = React.useState(true)
+  const [open, setOpen] = React.useState(!isAdvancedFolderLabel(props.title))
   const colorTheme = useColorTheme()
   const hiddenPropsList = React.useMemo(
     () =>

@@ -9,7 +9,11 @@ import { FolderSection } from './folder-section'
 import type { CSSCursor } from '../../../canvas/canvas-types'
 import { UIGridRow } from '../../widgets/ui-grid-row'
 import { VerySubdued } from '../../../../uuiui'
-import { specialPropertiesToIgnore } from '../../../../core/property-controls/property-controls-utils'
+import {
+  AdvancedFolderLabel,
+  isAdvancedFolderLabel,
+  specialPropertiesToIgnore,
+} from '../../../../core/property-controls/property-controls-utils'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 
 interface PropertyControlsSectionProps {
@@ -46,22 +50,47 @@ export const PropertyControlsSection = React.memo((props: PropertyControlsSectio
 
   const [visibleEmptyControls, showHiddenControl] = useHiddenElements()
 
-  const rootFolder = (
-    <FolderSection
-      isRoot={true}
-      indentationLevel={0}
-      propertyControls={propertyControls}
-      setGlobalCursor={setGlobalCursor}
-      visibleEmptyControls={visibleEmptyControls}
-      unsetPropNames={propsWithControlsButNoValue}
-      showHiddenControl={showHiddenControl}
-      detectedPropsAndValuesWithoutControls={detectedPropsAndValuesWithoutControls}
-    />
-  )
+  const propertiesWithFolders = synthesiseFolders(propertyControls)
 
   return (
     <>
-      {rootFolder}
+      <FolderSection
+        isRoot={true}
+        indentationLevel={0}
+        propertyControls={propertiesWithFolders.uncategorized}
+        setGlobalCursor={setGlobalCursor}
+        visibleEmptyControls={visibleEmptyControls}
+        unsetPropNames={propsWithControlsButNoValue}
+        showHiddenControl={showHiddenControl}
+        detectedPropsAndValuesWithoutControls={detectedPropsAndValuesWithoutControls}
+      />
+      {propertiesWithFolders.folders.map(({ name, controls }) => (
+        <FolderSection
+          key={name}
+          isRoot={false}
+          indentationLevel={0}
+          propertyControls={controls}
+          setGlobalCursor={setGlobalCursor}
+          visibleEmptyControls={visibleEmptyControls}
+          unsetPropNames={propsWithControlsButNoValue}
+          showHiddenControl={showHiddenControl}
+          detectedPropsAndValuesWithoutControls={detectedPropsAndValuesWithoutControls}
+          title={name}
+        />
+      ))}
+      {Object.keys(propertiesWithFolders.advanced).length === 0 ? null : (
+        <FolderSection
+          isRoot={false}
+          indentationLevel={0}
+          propertyControls={propertiesWithFolders.advanced}
+          setGlobalCursor={setGlobalCursor}
+          visibleEmptyControls={visibleEmptyControls}
+          unsetPropNames={propsWithControlsButNoValue}
+          showHiddenControl={showHiddenControl}
+          detectedPropsAndValuesWithoutControls={detectedPropsAndValuesWithoutControls}
+          title={AdvancedFolderLabel}
+        />
+      )}
       {/** props set on the component instance and props used inside the component code */}
       {filteredDetectedPropsWithNoValue.length > 0 ? (
         <UIGridRow padded tall={false} variant={'<-------------1fr------------->'}>
@@ -75,3 +104,38 @@ export const PropertyControlsSection = React.memo((props: PropertyControlsSectio
     </>
   )
 })
+
+interface SyntheticFoldersResult {
+  uncategorized: PropertyControls
+  advanced: PropertyControls
+  folders: Array<{ name: string; controls: PropertyControls }>
+}
+
+function synthesiseFolders(controls: PropertyControls): SyntheticFoldersResult {
+  const uncategorized: PropertyControls = {}
+  const advanced: PropertyControls = {}
+  const folders: Array<{ name: string; controls: PropertyControls }> = []
+
+  Object.entries(controls).forEach(([prop, control]) => {
+    if (control.folder == null) {
+      uncategorized[prop] = control
+      return
+    }
+
+    if (isAdvancedFolderLabel(control.folder)) {
+      advanced[prop] = control
+      return
+    }
+
+    const maybeExistingFolder = folders.find((f) => f.name === control.folder)
+
+    if (maybeExistingFolder == null) {
+      folders.push({ name: control.folder, controls: { [prop]: control } })
+      return
+    }
+
+    maybeExistingFolder.controls[prop] = control
+  })
+
+  return { advanced, uncategorized, folders }
+}
