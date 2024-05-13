@@ -9,9 +9,11 @@ import { isLeft, isRight, left, mapEither, maybeEitherToMaybe, right } from '../
 import * as EP from '../shared/element-path'
 import type {
   BoundParam,
+  IdentifierOrAccess,
   JSAssignment,
   JSExpression,
   JSIdentifier,
+  JSXElementChild,
   Param,
   UtopiaJSXComponent,
 } from '../shared/element-template'
@@ -48,6 +50,26 @@ export function dataTracingToLiteralAttribute(
     type: 'literal-attribute',
     elementPath: elementPath,
     property: property,
+    dataPathIntoAttribute: dataPathIntoAttribute,
+  }
+}
+
+export type DataTracingToElementAtScope = {
+  type: 'element-at-scope'
+  scope: ElementPath
+  element: JSXElementChild
+  dataPathIntoAttribute: DataPath
+}
+
+export function dataTracingToElementAtScope(
+  scope: ElementPath,
+  element: JSXElementChild,
+  dataPathIntoAttribute: DataPath,
+): DataTracingToElementAtScope {
+  return {
+    type: 'element-at-scope',
+    scope: scope,
+    element: element,
     dataPathIntoAttribute: dataPathIntoAttribute,
   }
 }
@@ -102,6 +124,7 @@ export type DataTracingResult =
   | DataTracingToLiteralAttribute
   | DataTracingToAHookCall
   | DataTracingToAComponentProp
+  | DataTracingToElementAtScope
   | DataTracingFailed
 
 function findContainingComponentForElementPath(
@@ -254,6 +277,77 @@ function paramUsedByIdentifierOrAccess(
   }
 }
 
+export function traceDataFromElement(
+  startFromElement: JSXElementChild,
+  enclosingScope: ElementPath, // <- the closest "parent" element path which points to the narrowest scope around the JSXElementChild. this is where we will start our upward scope walk
+  metadata: ElementInstanceMetadataMap,
+  projectContents: ProjectContentTreeRoot,
+  pathDrillSoFar: Array<string>,
+): DataTracingResult {
+  switch (startFromElement.type) {
+    case 'JSX_ELEMENT':
+    case 'JSX_TEXT_BLOCK':
+    case 'JSX_FRAGMENT':
+    case 'JSX_CONDITIONAL_EXPRESSION':
+    case 'JSX_MAP_EXPRESSION':
+    case 'ATTRIBUTE_VALUE':
+      return dataTracingToElementAtScope(enclosingScope, startFromElement, [])
+    case 'JS_IDENTIFIER':
+    case 'JS_ELEMENT_ACCESS':
+    case 'JS_PROPERTY_ACCESS':
+      return traceDataFromIdentifierOrAccess(
+        startFromElement,
+        enclosingScope,
+        metadata,
+        projectContents,
+        pathDrillSoFar,
+      )
+    case 'ATTRIBUTE_FUNCTION_CALL': // TODO we should support this
+    case 'ATTRIBUTE_NESTED_ARRAY': // TODO we should support this
+    case 'ATTRIBUTE_NESTED_OBJECT': // TODO we should support this
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT': // by definition we can't support this, as this is the catch-all for unsupported expressions
+      return dataTracingFailed(`Unsupported element type ${startFromElement.type}`)
+    default:
+      assertNever(startFromElement)
+  }
+}
+
+function traceDataFromIdentifierOrAccess(
+  startFromElement: IdentifierOrAccess,
+  enclosingScope: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+  projectContents: ProjectContentTreeRoot,
+  pathDrillSoFar: Array<string>,
+): DataTracingResult {
+  const componentHoldingElement: UtopiaJSXComponent | null = findContainingComponentForElementPath(
+    enclosingScope,
+    projectContents,
+  )
+
+  if (componentHoldingElement == null) {
+    return dataTracingFailed('Could not find containing component')
+  }
+
+  const dataPath = processJSPropertyAccessors(startFromElement)
+
+  if (isLeft(dataPath)) {
+    return dataTracingFailed(dataPath.value)
+  }
+
+  const identifier = dataPath.value.originalIdentifier
+
+  return walkUpInnerScopesUntilReachingComponent(
+    metadata,
+    projectContents,
+    enclosingScope,
+    enclosingScope,
+    EP.getPathOfComponentRoot(enclosingScope),
+    componentHoldingElement,
+    identifier,
+    [...dataPath.value.path, ...pathDrillSoFar],
+  )
+}
+
 export function traceDataFromProp(
   startFrom: ElementPropertyPath,
   metadata: ElementInstanceMetadataMap,
@@ -315,8 +409,9 @@ export function traceDataFromProp(
     if (componentHoldingElement != null) {
       const componentRootPath = EP.getPathOfComponentRoot(startFrom.elementPath)
 
-      const resultInComponentScope: DataTracingResult = walkUpInnerScopesUntilReachingComponent(
+      return walkUpInnerScopesUntilReachingComponent(
         metadata,
+        projectContents,
         startFrom.elementPath,
         startFrom.elementPath,
         componentRootPath,
@@ -324,16 +419,6 @@ export function traceDataFromProp(
         identifier,
         [...dataPath.value.path, ...pathDrillSoFar],
       )
-
-      if (resultInComponentScope.type === 'component-prop') {
-        return traceDataFromProp(
-          TPP.create(resultInComponentScope.elementPath, resultInComponentScope.propertyPath),
-          metadata,
-          projectContents,
-          resultInComponentScope.dataPathIntoAttribute,
-        )
-      }
-      return resultInComponentScope
     }
   }
   return dataTracingFailed(
@@ -345,6 +430,7 @@ export function traceDataFromProp(
 
 function walkUpInnerScopesUntilReachingComponent(
   metadata: ElementInstanceMetadataMap,
+  projectContents: ProjectContentTreeRoot,
   originalElementPath: ElementPath,
   currentElementPathOfWalk: ElementPath,
   containingComponentRootPath: ElementPath,
@@ -353,13 +439,23 @@ function walkUpInnerScopesUntilReachingComponent(
   pathDrillSoFar: DataPath,
 ): DataTracingResult {
   if (EP.pathsEqual(currentElementPathOfWalk, containingComponentRootPath)) {
-    return lookupInComponentScope(
+    const resultInComponentScope: DataTracingResult = lookupInComponentScope(
       originalElementPath,
       containingComponentRootPath,
       componentHoldingElement,
       identifier,
       pathDrillSoFar,
     )
+
+    if (resultInComponentScope.type === 'component-prop') {
+      return traceDataFromProp(
+        TPP.create(resultInComponentScope.elementPath, resultInComponentScope.propertyPath),
+        metadata,
+        projectContents,
+        resultInComponentScope.dataPathIntoAttribute,
+      )
+    }
+    return resultInComponentScope
   }
   if (!EP.isDescendantOf(currentElementPathOfWalk, containingComponentRootPath)) {
     return dataTracingFailed('somehow walked beyond parent component')
@@ -410,6 +506,7 @@ function walkUpInnerScopesUntilReachingComponent(
                   }
                   return walkUpInnerScopesUntilReachingComponent(
                     metadata,
+                    projectContents,
                     originalElementPath,
                     EP.parentPath(currentElementPathOfWalk),
                     containingComponentRootPath,
@@ -432,6 +529,7 @@ function walkUpInnerScopesUntilReachingComponent(
 
   return walkUpInnerScopesUntilReachingComponent(
     metadata,
+    projectContents,
     originalElementPath,
     EP.parentPath(currentElementPathOfWalk),
     containingComponentRootPath,
