@@ -14,6 +14,8 @@ import {
   jsxAttributesFromMap,
   jsxElement,
   jsxElementFromJSXElementWithoutUID,
+  jsxElementNameFromString,
+  getJSXElementNameLastPart,
 } from '../../../core/shared/element-template'
 import type { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { useDispatch } from '../../editor/store/dispatch-context'
@@ -590,19 +592,13 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
 
         const defaultVariantImports = defaultImportsForComponentModule(data.name, data.moduleName)
 
+        const jsxName = jsxElementNameFromString(data.name)
+        const name = getJSXElementNameLastPart(jsxName)
         if (data.variants == null || data.variants.length === 0) {
-          return [
-            defaultVariantItem(data.name, submenuLabel, defaultVariantImports, null, onItemClick),
-          ]
+          return [defaultVariantItem(name, submenuLabel, defaultVariantImports, null, onItemClick)]
         } else {
           return [
-            defaultVariantItem(
-              data.name,
-              '(empty)',
-              defaultVariantImports,
-              submenuLabel,
-              onItemClick,
-            ),
+            defaultVariantItem(name, '(empty)', defaultVariantImports, submenuLabel, onItemClick),
             ...data.variants.map((variant) => {
               return variantItem(variant, submenuLabel, onItemClick)
             }),

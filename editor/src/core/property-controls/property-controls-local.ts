@@ -94,7 +94,12 @@ import {
 } from '../../components/editor/actions/action-creators'
 import type { ProjectContentTreeRoot } from '../../components/assets'
 import type { JSXElementChildWithoutUID } from '../shared/element-template'
-import { jsxAttributesFromMap, jsxElement, jsxTextBlock } from '../shared/element-template'
+import {
+  jsxAttributesFromMap,
+  jsxElement,
+  jsxElementNameFromString,
+  jsxTextBlock,
+} from '../shared/element-template'
 import type { ErrorMessage } from '../shared/error-messages'
 import { errorMessage } from '../shared/error-messages'
 import { dropFileExtension } from '../shared/file-utils'
@@ -615,9 +620,10 @@ function componentInsertOptionFromExample(
           code: `<${typed.name} />`,
         }
       }
+      const jsxName = jsxElementNameFromString(typed.name)
       return {
         label: typed.name,
-        imports: `import {${typed.name}} from '${moduleName}'`,
+        imports: `import {${jsxName.baseVariable}} from '${moduleName}'`,
         code: `<${typed.name} />`,
       }
     case 'component-reference':
@@ -839,10 +845,11 @@ export function defaultImportsForComponentModule(
   componentName: string,
   moduleName: string | null,
 ): Imports {
+  const jsxName = jsxElementNameFromString(componentName)
   return moduleName == null
     ? {}
     : {
-        [moduleName]: importDetails(null, [importAlias(componentName)], null),
+        [moduleName]: importDetails(null, [importAlias(jsxName.baseVariable)], null),
       }
 }
 
@@ -880,10 +887,11 @@ async function parseComponentVariants(
     componentToRegister.variants == null ||
     (Array.isArray(componentToRegister.variants) && componentToRegister.variants.length === 0)
   ) {
+    const jsxName = jsxElementNameFromString(componentName)
     const parsed = await parseCodeFromInsertOption(
       {
         label: componentName,
-        imports: `import { ${componentName} } from '${moduleName}'`,
+        imports: `import { ${jsxName.baseVariable} } from '${moduleName}'`,
         code: `<${componentName} />`,
       },
       workers,
