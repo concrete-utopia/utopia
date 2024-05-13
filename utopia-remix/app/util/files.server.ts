@@ -1,4 +1,4 @@
-import AWS, { Endpoint } from 'aws-sdk'
+import AWS from 'aws-sdk'
 import * as path from 'path'
 import * as fs from 'fs'
 import urlJoin from 'url-join'
@@ -33,7 +33,7 @@ export function newS3Client(): AWS.S3 {
     region: ServerEnvironment.AWS_REGION,
   }
   if (ServerEnvironment.environment === 'test') {
-    config.endpoint = new Endpoint('http://localhost:9000')
+    config.endpoint = new AWS.Endpoint('http://localhost:9000')
     config.s3ForcePathStyle = true
   }
   return new AWS.S3(config)
