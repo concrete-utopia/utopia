@@ -84,10 +84,11 @@ export function getBranchProjectContents(params: {
     })
 
     // 4. unzip the archive and process its entries
+    const existingAssets_MUTABLE = [...params.existingAssets]
     const { assetsToUpload, projectContents } = await unzipGithubArchive({
       archiveName: archiveName,
       zipFilePath: zipFilePath,
-      existingAssets: params.existingAssets,
+      existingAssets_MUTABLE: existingAssets_MUTABLE,
     })
 
     // 6. if there are any assets to upload, upload them
@@ -159,19 +160,30 @@ async function uploadAssets(params: { assets: AssetToUpload[]; projectId: string
 export function unzipGithubArchive(params: {
   archiveName: string
   zipFilePath: string
-  existingAssets: ExistingAsset[]
+  existingAssets_MUTABLE: ExistingAsset[]
 }): Promise<UnzipResult> {
   return (
     new Promise<UnzipResult>((resolve) => {
-      let assetsToUpload: AssetToUpload[] = []
-      let root: ProjectContentDirectory = projectContentDirectory('')
+      let assetsToUpload_MUTABLE: AssetToUpload[] = []
+      let root_MUTABLE: ProjectContentDirectory = projectContentDirectory('')
       fs.createReadStream(params.zipFilePath)
         // NOTE: this is parsed in-memory (instead of unzipper.Extract), but if memory becomes a problem, we can easily convert this to be disk-backed
         .pipe(unzipper.Parse())
         // for each entry, process it and update the project contents, as well as adding assets to upload later
-        .on('entry', processEntry(params.archiveName, root, params.existingAssets, assetsToUpload))
+        .on(
+          'entry',
+          processEntry(
+            params.archiveName,
+            root_MUTABLE,
+            params.existingAssets_MUTABLE,
+            assetsToUpload_MUTABLE,
+          ),
+        )
         .on('finish', () => {
-          resolve({ projectContents: root.children, assetsToUpload: assetsToUpload })
+          resolve({
+            projectContents: root_MUTABLE.children,
+            assetsToUpload: assetsToUpload_MUTABLE,
+          })
         })
     })
       // 5. dispose of the zip file
@@ -183,9 +195,9 @@ export function unzipGithubArchive(params: {
 
 export function processEntry(
   archiveName: string,
-  root: ProjectContentDirectory,
-  existingAssets: ExistingAsset[],
-  assetsToUpload: AssetToUpload[],
+  root_MUTABLE: ProjectContentDirectory,
+  existingAssets_MUTABLE: ExistingAsset[],
+  assetsToUpload_MUTABLE: AssetToUpload[],
 ) {
   return async function (entry: UnzipEntry): Promise<void> {
     // The entry path starts with the archive name, so get rid of it since we won't need it.
@@ -194,21 +206,30 @@ export function processEntry(
     if (filePath.length > 0) {
       // Go through the folders that lead to this path and create their
       // representation in the tree, if missing.
-      const target = populateDirectories(root, filePath)
+      const target = populateDirectories({ root_MUTABLE: root_MUTABLE, relativeFilePath: filePath })
 
       // Get the file contents and store them in the tree.
-      await populateEntryContents(filePath, entry, target, existingAssets, assetsToUpload)
+      await populateEntryContents({
+        filePath: filePath,
+        entry: entry,
+        target_MUTABLE: target,
+        existingAssets_MUTABLE: existingAssets_MUTABLE,
+        assetsToUpload_MUTABLE: assetsToUpload_MUTABLE,
+      })
     }
 
     entry.autodrain()
   }
 }
 
-export function populateDirectories(root: ProjectContentDirectory, relativeFilePath: string) {
-  const dirname = path.dirname(relativeFilePath)
+export function populateDirectories(params: {
+  root_MUTABLE: ProjectContentDirectory
+  relativeFilePath: string
+}): ProjectContentDirectory {
+  const dirname = path.dirname(params.relativeFilePath)
   const folders = dirname.split('/').filter((folder) => folder !== '.')
 
-  let target: ProjectContentDirectory = root
+  let target: ProjectContentDirectory = params.root_MUTABLE
   for (let i = 0; i < folders.length; i++) {
     const folder = folders[i]
     if (target.children[folder] == null) {
@@ -221,37 +242,37 @@ export function populateDirectories(root: ProjectContentDirectory, relativeFileP
   return target
 }
 
-export async function populateEntryContents(
-  filePath: string,
-  entry: UnzipEntry,
-  target: ProjectContentDirectory,
-  existingAssets: ExistingAsset[],
-  assetsToUpload: AssetToUpload[],
-) {
-  const base = path.basename(filePath)
-  const filePathWithLeadingSlash = '/' + filePath.replace(/\/+$/, '')
+export async function populateEntryContents(params: {
+  filePath: string
+  entry: UnzipEntry
+  target_MUTABLE: ProjectContentDirectory
+  existingAssets_MUTABLE: ExistingAsset[]
+  assetsToUpload_MUTABLE: AssetToUpload[]
+}) {
+  const base = path.basename(params.filePath)
+  const filePathWithLeadingSlash = '/' + params.filePath.replace(/\/+$/, '')
 
-  switch (entry.type) {
+  switch (params.entry.type) {
     case 'File':
-      const buffer = await entry.buffer()
-      const gitBlobSha = getGitBlobSha(entry.vars.uncompressedSize, buffer)
-      const fileType = fileTypeFromFileName(filePath)
+      const buffer = await params.entry.buffer()
+      const gitBlobSha = getGitBlobSha(params.entry.vars.uncompressedSize, buffer)
+      const fileType = fileTypeFromFileName(params.filePath)
 
       // if the file needs to be uploaded later, add it to the list
-      if (shouldUploadAsset(existingAssets, fileType, gitBlobSha, filePath)) {
-        assetsToUpload.push({ path: filePath, data: buffer })
+      if (shouldUploadAsset(params.existingAssets_MUTABLE, fileType, gitBlobSha, params.filePath)) {
+        params.assetsToUpload_MUTABLE.push({ path: params.filePath, data: buffer })
       }
 
-      target.children[base] = projectContentFile(
+      params.target_MUTABLE.children[base] = projectContentFile(
         filePathWithLeadingSlash,
         fileContentFromEntry(buffer, gitBlobSha, fileType),
       )
       break
     case 'Directory':
-      target.children[base] = projectContentDirectory(filePathWithLeadingSlash)
+      params.target_MUTABLE.children[base] = projectContentDirectory(filePathWithLeadingSlash)
       break
     default:
-      console.error(`unexpected entry type "${entry.type}"`)
+      console.error(`unexpected entry type "${params.entry.type}"`)
   }
 }
 

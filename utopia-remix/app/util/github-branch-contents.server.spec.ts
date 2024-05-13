@@ -45,7 +45,10 @@ describe('Github get branch contents', () => {
     it('populates the directories for an entry', async () => {
       let root = projectContentDirectory('root')
 
-      const target = populateDirectories(root, 'some/file/here.png')
+      const target = populateDirectories({
+        root_MUTABLE: root,
+        relativeFilePath: 'some/file/here.png',
+      })
 
       expect(root.children).toEqual({
         some: {
@@ -69,14 +72,14 @@ describe('Github get branch contents', () => {
   describe('populateEntryContents', () => {
     it('populates the leaf for a directory entry', async () => {
       let root = projectContentDirectory('root')
-      const target = populateDirectories(root, 'some/dir/here')
-      await populateEntryContents(
-        'some/dir/here',
-        { type: 'Directory' } as UnzipEntry,
-        target,
-        [],
-        [],
-      )
+      const target = populateDirectories({ root_MUTABLE: root, relativeFilePath: 'some/dir/here' })
+      await populateEntryContents({
+        filePath: 'some/dir/here',
+        entry: { type: 'Directory' } as UnzipEntry,
+        target_MUTABLE: target,
+        existingAssets_MUTABLE: [],
+        assetsToUpload_MUTABLE: [],
+      })
       expect(root.children).toEqual({
         some: {
           children: {
@@ -102,18 +105,21 @@ describe('Github get branch contents', () => {
     })
     it('populates the leaf for a file entry', async () => {
       let root = projectContentDirectory('root')
-      const target = populateDirectories(root, 'some/file/here.json')
-      await populateEntryContents(
-        'some/file/here.json',
-        {
+      const target = populateDirectories({
+        root_MUTABLE: root,
+        relativeFilePath: 'some/file/here.json',
+      })
+      await populateEntryContents({
+        filePath: 'some/file/here.json',
+        entry: {
           type: 'File',
           vars: { uncompressedSize: 123 },
           buffer: async () => Buffer.from(`"hello there"`),
         } as UnzipEntry,
-        target,
-        [],
-        [],
-      )
+        target_MUTABLE: target,
+        existingAssets_MUTABLE: [],
+        assetsToUpload_MUTABLE: [],
+      })
       expect(root.children).toEqual({
         some: {
           children: {
@@ -148,21 +154,24 @@ describe('Github get branch contents', () => {
     })
     it('adds a new file to upload if there is a need', async () => {
       let root = projectContentDirectory('root')
-      const target = populateDirectories(root, 'some/file/here.png')
+      const target = populateDirectories({
+        root_MUTABLE: root,
+        relativeFilePath: 'some/file/here.png',
+      })
 
       const toUpload: AssetToUpload[] = []
 
-      await populateEntryContents(
-        'some/file/here.png',
-        {
+      await populateEntryContents({
+        filePath: 'some/file/here.png',
+        entry: {
           type: 'File',
           vars: { uncompressedSize: 123 },
           buffer: async () => Buffer.from(`"hello there"`),
         } as UnzipEntry,
-        target,
-        [],
-        toUpload,
-      )
+        target_MUTABLE: target,
+        existingAssets_MUTABLE: [],
+        assetsToUpload_MUTABLE: toUpload,
+      })
 
       expect(root.children).toEqual({
         some: {
@@ -264,7 +273,7 @@ describe('Github get branch contents', () => {
       const got = await unzipGithubArchive({
         archiveName: archiveName,
         zipFilePath: testFilePath,
-        existingAssets: [],
+        existingAssets_MUTABLE: [],
       })
 
       expect(got.projectContents).toEqual(expected)
