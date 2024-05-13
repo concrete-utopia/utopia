@@ -144,12 +144,13 @@ export interface ComponentDescriptor {
 
 export const ComponentDescriptorDefaults: Pick<
   ComponentDescriptor,
-  'focus' | 'inspector' | 'emphasis' | 'icon'
+  'focus' | 'inspector' | 'emphasis' | 'icon' | 'label'
 > = {
   focus: 'default',
   inspector: [],
   emphasis: 'regular',
   icon: 'component',
+  label: null,
 }
 
 export function componentDescriptor(
