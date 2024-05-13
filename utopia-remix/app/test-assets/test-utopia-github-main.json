@@ -11,8 +11,6 @@
         "fullPath": "/assets/Curaçao.png",
         "content": {
           "type": "IMAGE_FILE",
-          "imageType": null,
-          "base64": null,
           "hash": 0,
           "gitBlobSha": "1fd337ce073c90c8d3c351b79bc99b6c1c8dd9de"
         }
@@ -22,8 +20,6 @@
         "fullPath": "/assets/deer.JPG",
         "content": {
           "type": "IMAGE_FILE",
-          "imageType": null,
-          "base64": null,
           "hash": 0,
           "gitBlobSha": "bdc443699f698d8f2cbd8b9b5e56b2e9be12331f"
         }
@@ -33,8 +29,6 @@
         "fullPath": "/assets/lanterns.png",
         "content": {
           "type": "IMAGE_FILE",
-          "imageType": null,
-          "base64": null,
           "hash": 0,
           "gitBlobSha": "20d240eb3a6b4511f75d8c3c7bbff8efb452128b"
         }
@@ -44,8 +38,6 @@
         "fullPath": "/assets/pyramids.png",
         "content": {
           "type": "IMAGE_FILE",
-          "imageType": null,
-          "base64": null,
           "hash": 0,
           "gitBlobSha": "cee88af40faedf8384e2a5e3eb6b75ba39d8b4ff"
         }

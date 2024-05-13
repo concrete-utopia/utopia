@@ -83,6 +83,7 @@ specifiers:
   typescript: 5.1.6
   unzipper: 0.11.5
   url-join: 5.0.0
+  utopia-shared: link:../utopia-shared
   uuid: 9.0.1
   zustand: 4.5.0
 
@@ -129,6 +130,7 @@ dependencies:
   tiny-invariant: 1.3.1
   unzipper: 0.11.5
   url-join: 5.0.0
+  utopia-shared: link:../utopia-shared
   zustand: 4.5.0_j3ahe22lw6ac2w6qvqp4kjqnqy
 
 devDependencies:

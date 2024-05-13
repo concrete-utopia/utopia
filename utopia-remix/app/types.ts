@@ -4,6 +4,13 @@ import { ensure } from './util/api.server'
 import { assertNever } from './util/assertNever'
 import { Status } from './util/statusCodes'
 import type { FileType } from './util/files'
+import type {
+  AssetFile,
+  ImageFile,
+  ProjectContentDirectory,
+  ProjectContentFile,
+  TextFile,
+} from 'utopia-shared/src/types'
 
 const fullProjectFromDB = Prisma.validator<Prisma.ProjectDefaultArgs>()({
   include: {
@@ -417,4 +424,49 @@ export type ExistingAsset = {
   gitBlobSha?: string
   path: string
   type: FileType
+}
+
+export function projectContentDirectory(fullPath: string): ProjectContentDirectory {
+  return {
+    type: 'PROJECT_CONTENT_DIRECTORY',
+    fullPath: fullPath,
+    directory: { type: 'DIRECTORY' },
+    children: {},
+  }
+}
+
+export function projectContentFile(
+  fullPath: string,
+  content: TextFile | ImageFile | AssetFile,
+): ProjectContentFile {
+  return {
+    type: 'PROJECT_CONTENT_FILE',
+    fullPath: fullPath,
+    content: content,
+  }
+}
+
+export function textFile(code: string): TextFile {
+  return {
+    type: 'TEXT_FILE',
+    fileContents: { code: code, parsed: { type: 'UNPARSED' }, revisionsState: 'CODE_AHEAD' },
+    lastParseSuccess: null,
+    lastSavedContents: null,
+    versionNumber: 0,
+  }
+}
+
+export function imageFile(params: { hash: number; gitBlobSha: string }): ImageFile {
+  return {
+    type: 'IMAGE_FILE',
+    hash: params.hash,
+    gitBlobSha: params.gitBlobSha,
+  }
+}
+
+export function assetFile(params: { gitBlobSha: string }): AssetFile {
+  return {
+    type: 'ASSET_FILE',
+    gitBlobSha: params.gitBlobSha,
+  }
 }

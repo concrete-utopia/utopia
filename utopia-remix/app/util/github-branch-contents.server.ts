@@ -1,5 +1,12 @@
 import type { ExistingAsset, ApiSuccess } from '../types'
-import { toApiSuccess } from '../types'
+import {
+  assetFile,
+  imageFile,
+  projectContentDirectory,
+  projectContentFile,
+  textFile,
+  toApiSuccess,
+} from '../types'
 import * as fs from 'fs'
 import urlJoin from 'url-join'
 import * as unzipper from 'unzipper'
@@ -12,19 +19,14 @@ import { fileTypeFromFileName } from './files'
 import { assertNever } from './assertNever'
 import type { OctokitClient } from './github'
 import * as uuid from 'uuid'
-import type {
-  ProjectContentTreeRoot,
-  ProjectContentDirectory,
-  Content,
-} from '../types-project-contents'
-import {
-  projectContentDirectory,
-  projectContentFile,
-  assetFile,
-  imageFile,
-  textFile,
-} from '../types-project-contents'
 import { newS3Client, saveFileToDisk, saveFileToS3 } from './files.server'
+import type {
+  AssetFile,
+  ImageFile,
+  ProjectContentDirectory,
+  ProjectContentTreeRoot,
+  TextFile,
+} from 'utopia-shared/src/types'
 
 export type AssetToUpload = {
   path: string
@@ -301,7 +303,7 @@ function fileContentFromEntry(
   buffer: Buffer,
   gitBlobSha: string,
   fileType: FileType | null,
-): Content {
+): ImageFile | TextFile | AssetFile {
   switch (fileType) {
     case 'ASSET_FILE':
       return assetFile({ gitBlobSha: gitBlobSha })

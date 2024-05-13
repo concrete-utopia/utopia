@@ -10,9 +10,8 @@ import {
 import * as fs from 'fs'
 import * as os from 'os'
 import path from 'path'
-import type { ExistingAsset } from '../types'
-import type { ProjectContentDirectory } from '../types-project-contents'
-import { projectContentDirectory } from '../types-project-contents'
+import { projectContentDirectory, type ExistingAsset } from '../types'
+import type { ProjectContentDirectory } from 'utopia-shared/src/types'
 
 describe('Github get branch contents', () => {
   describe('shouldUploadAsset', () => {
@@ -181,10 +180,8 @@ describe('Github get branch contents', () => {
               children: {
                 'here.png': {
                   content: {
-                    base64: null,
                     gitBlobSha: '6ed5c1e4f0c1dc6bd7f3e6a0a52c20585f5420be', // <- this!
                     hash: 0,
-                    imageType: null,
                     type: 'IMAGE_FILE', // <- this!
                   },
                   fullPath: '/some/file/here.png',
