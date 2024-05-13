@@ -192,11 +192,13 @@ describe('registered property controls', () => {
       createModifiedProject({
         ['/src/card.js']: `import React from 'react'
 
+        const Card = ({ label }) => {
+          return <div>{label}</div>
+        }
+        
         export const ExportedObj = {
-          Card: ({ label }) => {
-            return <div>{label}</div>
-          },
-        }        
+          Card: Card,
+        }
         `,
         [StoryboardFilePath]: `import * as React from 'react'
       import { Scene, Storyboard, View } from 'utopia-api'

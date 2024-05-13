@@ -95,6 +95,7 @@ import {
 import type { ProjectContentTreeRoot } from '../../components/assets'
 import type { JSXElementChildWithoutUID } from '../shared/element-template'
 import {
+  getJSXElementNameLastPart,
   jsxAttributesFromMap,
   jsxElement,
   jsxElementNameFromString,
@@ -107,6 +108,7 @@ import type { FancyError } from '../shared/code-exec-utils'
 import type { ScriptLine } from '../../third-party/react-error-overlay/utils/stack-frame'
 import { intrinsicHTMLElementNamesAsStrings } from '../shared/dom-utils'
 import { valueOrArrayToArray } from '../shared/array-utils'
+import { optionalMap } from '../shared/optional-utils'
 
 const exportedNameSymbol = Symbol('__utopia__exportedName')
 const moduleNameSymbol = Symbol('__utopia__moduleName')
@@ -279,7 +281,15 @@ function isComponentRegistrationValid(
 
   // check validity of internal component
   if (isComponentRendererComponent(component)) {
-    if (component.originalName !== registrationKey) {
+    // TODO: we only validate the last part of the name
+    const nameLastPart = optionalMap(
+      (name) => getJSXElementNameLastPart(jsxElementNameFromString(name)),
+      component.originalName,
+    )
+    const registrationKeyLastPart = getJSXElementNameLastPart(
+      jsxElementNameFromString(registrationKey),
+    )
+    if (nameLastPart !== registrationKeyLastPart) {
       return {
         type: 'component-name-does-not-match',
         registrationKey: registrationKey,
@@ -298,13 +308,20 @@ function isComponentRegistrationValid(
   }
 
   // check validity of external component
-  // TODO this doesn't work yet for components which are not directly imported, e.g. Typography.Text (where Typography is the imported object)
   const { name, moduleName } = getRequireInfoFromComponent(component)
-  if (name != null && name !== registrationKey) {
-    return {
-      type: 'component-name-does-not-match',
-      registrationKey: registrationKey,
-      componentName: name,
+  if (name != null) {
+    // TODO: this doesn't work yet for components which are not directly imported, e.g. Typography.Text (where Typography is the imported object)
+    // The code is here to check the last part of the name, but since we don't require the component itself, the data will not be available.
+    const nameLastPart = getJSXElementNameLastPart(jsxElementNameFromString(name))
+    const registrationKeyLastPart = getJSXElementNameLastPart(
+      jsxElementNameFromString(registrationKey),
+    )
+    if (nameLastPart !== registrationKeyLastPart) {
+      return {
+        type: 'component-name-does-not-match',
+        registrationKey: registrationKey,
+        componentName: name,
+      }
     }
   }
   if (moduleName != null && moduleName !== moduleKey) {
