@@ -1,18 +1,5 @@
-import type {
-  ProjectContentTreeRoot,
-  ProjectContentDirectory,
-  ExistingAsset,
-  Content,
-  ApiSuccess,
-} from '../types'
-import {
-  toApiSuccess,
-  projectContentDirectory,
-  assetFile,
-  imageFile,
-  textFile,
-  projectContentFile,
-} from '../types'
+import type { ExistingAsset, ApiSuccess } from '../types'
+import { toApiSuccess } from '../types'
 import * as fs from 'fs'
 import urlJoin from 'url-join'
 import * as unzipper from 'unzipper'
@@ -26,6 +13,18 @@ import { assertNever } from './assertNever'
 import AWS from 'aws-sdk'
 import type { OctokitClient } from './github'
 import * as uuid from 'uuid'
+import type {
+  ProjectContentTreeRoot,
+  ProjectContentDirectory,
+  Content,
+} from '../types-project-contents'
+import {
+  projectContentDirectory,
+  projectContentFile,
+  assetFile,
+  imageFile,
+  textFile,
+} from '../types-project-contents'
 
 export type AssetToUpload = {
   path: string
