@@ -1782,7 +1782,7 @@ describe('registered property controls', () => {
     })
   })
 
-  describe('folderes', () => {
+  describe('folders', () => {
     it('can specify a folder prop', async () => {
       const renderResult = await renderTestEditorWithModel(
         project({
