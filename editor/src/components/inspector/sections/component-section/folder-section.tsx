@@ -1,7 +1,7 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import React from 'react'
-import { css, jsx } from '@emotion/react'
+import { jsx } from '@emotion/react'
 import { unless, when } from '../../../../utils/react-conditionals'
 import type { CSSCursor } from '../../../canvas/canvas-types'
 import type {
@@ -14,8 +14,6 @@ import * as PP from '../../../../core/shared/property-path'
 import { useColorTheme } from '../../../../uuiui'
 import { RowOrFolderWrapper } from './row-or-folder-wrapper'
 import { RowForControl } from './component-section'
-import { InspectorWidthAtom } from '../../common/inspector-atoms'
-import { useAtom } from 'jotai'
 import {
   isAdvancedFolderLabel,
   specialPropertiesToIgnore,
@@ -34,7 +32,6 @@ interface FolderSectionProps {
 }
 
 export const FolderSection = React.memo((props: FolderSectionProps) => {
-  const showIndentation = useAtom(InspectorWidthAtom)[0] === 'wide'
   const [open, setOpen] = React.useState(!isAdvancedFolderLabel(props.title))
   const colorTheme = useColorTheme()
   const hiddenPropsList = React.useMemo(
@@ -110,8 +107,8 @@ export const FolderSection = React.memo((props: FolderSectionProps) => {
       {unless(
         props.isRoot,
         <FolderLabel
-          indentationLevel={props.indentationLevel}
-          showIndentation={showIndentation}
+          indentationLevel={1}
+          showIndentation={true}
           open={open}
           toggleOpen={toggleOpen}
           title={props.title ?? ''}

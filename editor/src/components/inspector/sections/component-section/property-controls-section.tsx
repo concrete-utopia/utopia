@@ -68,7 +68,7 @@ export const PropertyControlsSection = React.memo((props: PropertyControlsSectio
         <FolderSection
           key={name}
           isRoot={false}
-          indentationLevel={0}
+          indentationLevel={2}
           propertyControls={controls}
           setGlobalCursor={setGlobalCursor}
           visibleEmptyControls={visibleEmptyControls}
@@ -81,7 +81,7 @@ export const PropertyControlsSection = React.memo((props: PropertyControlsSectio
       {Object.keys(propertiesWithFolders.advanced).length === 0 ? null : (
         <FolderSection
           isRoot={false}
-          indentationLevel={0}
+          indentationLevel={2}
           propertyControls={propertiesWithFolders.advanced}
           setGlobalCursor={setGlobalCursor}
           visibleEmptyControls={visibleEmptyControls}
