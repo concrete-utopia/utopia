@@ -11,8 +11,8 @@ import type {
   ImageFile,
   AssetFile,
   RevisionsStateType,
-} from 'utopia-shared/src/types-project-contents'
-import { imageFile, assetFile, RevisionsState } from 'utopia-shared/src/types-project-contents'
+} from 'utopia-shared/src/types/project-file-types'
+import { imageFile, assetFile, RevisionsState } from 'utopia-shared/src/types/project-file-types'
 
 export type { ImageFile, AssetFile, RevisionsStateType }
 export { imageFile, assetFile, RevisionsState }
