@@ -60,10 +60,12 @@ export async function handleMessage(
   }
 }
 
-function getCacheKey(filename: string, content: string, versionNumber: number): string {
+function getCacheKey(filename: string, versionNumber: number): string {
   const devVer = 1 // TEMP - use it for hard cache invalidation if needed now as we're developing this feature
-  return `${filename}::${content}::${versionNumber}::${devVer}`
+  return `${filename}::${versionNumber}::${devVer}`
 }
+
+type CachedParseResult = { [fileContent: string]: ParseFileResult }
 
 async function getParseFileResultWithCache(
   filename: string,
@@ -74,11 +76,10 @@ async function getParseFileResultWithCache(
   applySteganography: SteganographyMode,
   checkCacheFirst: boolean = true,
 ): Promise<ParseFileResult> {
-  const cacheKey = getCacheKey(filename, content, versionNumber)
   if (checkCacheFirst) {
     //check localforage for cache
-    const cachedResult = await localforage.getItem<ParseFileResult>(cacheKey)
-    if (cachedResult?.parseResult?.type === 'PARSE_SUCCESS') {
+    const cachedResult = await getParseResultFromCache(filename, content, versionNumber)
+    if (cachedResult != null) {
       console.info('Cache hit for', filename)
       return cachedResult
     }
@@ -116,12 +117,38 @@ function getParseFileResult(
   const result = createParseFileResult(filename, parseResult, versionNumber)
   if (result.parseResult.type === 'PARSE_SUCCESS') {
     // non blocking cache write
-    const cacheKey = getCacheKey(filename, content, versionNumber)
-    console.info('Caching', filename)
-    void localforage.setItem(cacheKey, result)
+    storeParseResultInCache(filename, content, versionNumber, result)
   }
 
   return result
+}
+
+async function getParseResultFromCache(
+  filename: string,
+  content: string,
+  versionNumber: number,
+): Promise<ParseFileResult | null> {
+  const cacheKey = getCacheKey(filename, versionNumber)
+  //check localforage for cache
+  const cachedResult = await localforage.getItem<CachedParseResult>(cacheKey)
+  const cachedResultForContent = cachedResult?.[content]
+  if (cachedResultForContent?.parseResult?.type === 'PARSE_SUCCESS') {
+    return cachedResultForContent
+  }
+  return null
+}
+
+function storeParseResultInCache(
+  filename: string,
+  content: string,
+  versionNumber: number,
+  result: ParseFileResult,
+) {
+  const cacheKey = getCacheKey(filename, versionNumber)
+  console.info('Caching', filename)
+  void localforage.setItem<CachedParseResult>(cacheKey, {
+    [content]: result,
+  })
 }
 
 export function getPrintAndReparseCodeResult(
