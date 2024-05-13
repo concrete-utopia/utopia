@@ -63,7 +63,7 @@ import {
   conditionalClauseInsertionPath,
   replaceWithSingleElement,
 } from '../../editor/store/insertion-path'
-import type { InsertableComponent } from '../../shared/project-components'
+import { mapComponentInfo, type InsertableComponent } from '../../shared/project-components'
 import type { ConditionalCase } from '../../../core/model/conditionals'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { absolute } from '../../../utils/utils'
@@ -197,6 +197,25 @@ export function preferredChildrenForTarget(
   return []
 }
 
+function augmentPreferredChildren(
+  preferredChildren: PreferredChildComponentDescriptorWithIcon[],
+  insertionTarget: InsertionTarget,
+): PreferredChildComponentDescriptorWithIcon[] {
+  if (insertionTarget.type === 'insert-as-child') {
+    return [
+      ...preferredChildren,
+      {
+        name: 'List',
+        moduleName: null,
+        variants: [mapComponentInfo],
+        icon: 'code',
+      },
+    ]
+  }
+
+  return preferredChildren
+}
+
 const usePreferredChildrenForTarget = (
   target: ElementPath,
   insertionTarget: InsertionTarget,
@@ -212,7 +231,7 @@ const usePreferredChildrenForTarget = (
     'usePreferredChildrenForTarget targetElement',
   )
 
-  return useEditorState(
+  const preferredChildren = useEditorState(
     Substores.restOfEditor,
     (store) => {
       return preferredChildrenForTarget(
@@ -223,6 +242,8 @@ const usePreferredChildrenForTarget = (
     },
     'usePreferredChildrenForSelectedElement propertyControlsInfo',
   )
+
+  return augmentPreferredChildren(preferredChildren, insertionTarget)
 }
 
 export type ShowComponentPickerContextMenuCallback = (
@@ -310,6 +331,24 @@ function defaultVariantItem(
         elementToInsert: (uid: string) =>
           jsxElement(elementName, uid, jsxAttributesFromMap({}), []),
         additionalImports: imports,
+      }),
+  }
+}
+
+function singletonItem(
+  label: string | React.ReactNode,
+  variant: ComponentInfo,
+  onItemClick: (preferredChildToInsert: ElementToInsert) => void,
+): ContextMenuItem<unknown> {
+  return {
+    name: label,
+    submenuName: null,
+    enabled: true,
+    action: () =>
+      onItemClick({
+        name: variant.insertMenuLabel,
+        elementToInsert: (uid: string) => elementFromInsertMenuItem(variant.elementToInsert(), uid),
+        additionalImports: variant.importsToAdd,
       }),
   }
 }
@@ -549,6 +588,40 @@ export function labelTestIdForComponentIcon(
   return `variant-label-${componentName}-${moduleName}-${icon}`
 }
 
+function contextMenuItemsFromVariants(
+  preferredChildComponentDescriptor: PreferredChildComponentDescriptorWithIcon,
+  submenuLabel: React.ReactElement,
+  defaultVariantImports: Imports,
+  onItemClick: (_: ElementToInsert) => void,
+): ContextMenuItem<unknown>[] {
+  const allJSXElements = preferredChildComponentDescriptor.variants.every(
+    (v) => v.elementToInsert().type === 'JSX_ELEMENT',
+  )
+
+  if (allJSXElements) {
+    return [
+      defaultVariantItem(
+        preferredChildComponentDescriptor.name,
+        '(empty)',
+        defaultVariantImports,
+        submenuLabel,
+        onItemClick,
+      ),
+      ...preferredChildComponentDescriptor.variants.map((variant) => {
+        return variantItem(variant, submenuLabel, onItemClick)
+      }),
+    ]
+  }
+
+  if (preferredChildComponentDescriptor.variants.length === 1) {
+    return [singletonItem(submenuLabel, preferredChildComponentDescriptor.variants[0], onItemClick)]
+  }
+
+  return preferredChildComponentDescriptor.variants.map((variant) => {
+    return variantItem(variant, submenuLabel, onItemClick)
+  })
+}
+
 const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuProps>(
   ({ target, insertionTarget }) => {
     const showFullMenu = useCreateCallbackToShowComponentPicker()(target, insertionTarget, 'full')
@@ -596,14 +669,9 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
         const name = getJSXElementNameLastPart(jsxName)
         if (data.variants == null || data.variants.length === 0) {
           return [defaultVariantItem(name, submenuLabel, defaultVariantImports, null, onItemClick)]
-        } else {
-          return [
-            defaultVariantItem(name, '(empty)', defaultVariantImports, submenuLabel, onItemClick),
-            ...data.variants.map((variant) => {
-              return variantItem(variant, submenuLabel, onItemClick)
-            }),
-          ]
         }
+
+        return contextMenuItemsFromVariants(data, submenuLabel, defaultVariantImports, onItemClick)
       })
       .concat([separatorItem, moreItem(wrapperRef, showFullMenu)])
 

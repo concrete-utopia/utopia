@@ -38,8 +38,7 @@ export const FolderSection = React.memo((props: FolderSectionProps) => {
     () =>
       Object.keys(props.propertyControls).filter((prop) => {
         const control = props.propertyControls[prop]
-        const isVisibleByDefault =
-          control.control === 'folder' || (control.visibleByDefault ?? true)
+        const isVisibleByDefault = control.visibleByDefault ?? true
         return (
           !isVisibleByDefault &&
           props.unsetPropNames.includes(prop) &&

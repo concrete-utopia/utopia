@@ -1891,6 +1891,68 @@ describe('registered property controls', () => {
       `)
     })
   })
+
+  describe('folders', () => {
+    it('can specify a folder prop', async () => {
+      const renderResult = await renderTestEditorWithModel(
+        project({
+          ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
+          
+          const Components = {
+        '/src/card': {
+          Card: {
+            component: Card,
+            properties: {
+              label: {
+                control: 'jsx',
+              },
+              header: {
+                control: 'jsx',
+                folder: 'Header',
+              },
+              footer: {
+                control: 'jsx',
+                folder: 'Footer',
+              }
+            }
+          },
+        },
+      }
+      
+      export default Components
+    `,
+        }),
+        'await-first-dom-report',
+      )
+      const editorState = renderResult.getEditorState().editor
+
+      const cardRegistration = editorState.propertyControlsInfo['/src/card']['Card']
+      expect(cardRegistration).not.toBeUndefined()
+
+      const propsToCheck = pick(['properties'], cardRegistration)
+
+      expect(propsToCheck).toMatchInlineSnapshot(`
+        Object {
+          "properties": Object {
+            "footer": Object {
+              "control": "jsx",
+              "folder": "Footer",
+              "preferredChildComponents": Array [],
+            },
+            "header": Object {
+              "control": "jsx",
+              "folder": "Header",
+              "preferredChildComponents": Array [],
+            },
+            "label": Object {
+              "control": "jsx",
+              "preferredChildComponents": Array [],
+            },
+          },
+        }
+      `)
+    })
+  })
 })
 
 describe('Lifecycle management of registering components', () => {
