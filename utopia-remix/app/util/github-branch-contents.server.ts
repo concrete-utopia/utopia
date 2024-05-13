@@ -10,7 +10,6 @@ import * as os from 'os'
 import type { FileType } from './files'
 import { fileTypeFromFileName } from './files'
 import { assertNever } from './assertNever'
-import AWS from 'aws-sdk'
 import type { OctokitClient } from './github'
 import * as uuid from 'uuid'
 import type {
@@ -25,6 +24,7 @@ import {
   imageFile,
   textFile,
 } from '../types-project-contents'
+import { newS3Client, saveFileToDisk, saveFileToS3 } from './files.server'
 
 export type AssetToUpload = {
   path: string
@@ -147,7 +147,7 @@ async function uploadAssets(params: { assets: AssetToUpload[]; projectId: string
         break
       case 'prod':
       case 'stage':
-        await saveFileToS3(params.projectId, asset)
+        await saveFileToS3(newS3Client(), params.projectId, asset)
         break
       default:
         assertNever(ServerEnvironment.environment)
@@ -322,44 +322,4 @@ function getGitBlobSha(size: number, data: Buffer): string {
   const sha1 = createHash('sha1')
   sha1.update(blob)
   return sha1.digest('hex')
-}
-
-async function saveFileToDisk(projectId: string, file: AssetToUpload) {
-  const dir = path.dirname(file.path)
-  const base = path.basename(file.path)
-  const diskPath = urlJoin(ServerEnvironment.LOCAL_ASSETS_FOLDER, `/projects/${projectId}`, dir)
-  fs.mkdirSync(diskPath, { recursive: true })
-  const filePath = urlJoin(diskPath, base)
-  return new Promise((resolve, reject) =>
-    fs.writeFile(filePath, file.data, (err) => {
-      if (err != null) {
-        reject(err)
-      } else {
-        resolve(filePath)
-      }
-    }),
-  )
-}
-
-function projectFileS3Key(projectId: string, filePath: string): string {
-  return `projects/${projectId}/${filePath}`
-}
-
-async function saveFileToS3(
-  projectId: string,
-  file: AssetToUpload,
-): Promise<AWS.S3.ManagedUpload.SendData> {
-  const s3 = new AWS.S3({
-    accessKeyId: ServerEnvironment.AWS_ACCESS_KEY_ID,
-    secretAccessKey: ServerEnvironment.AWS_SECRET_ACCESS_KEY,
-    region: ServerEnvironment.AWS_REGION,
-  })
-
-  const params = {
-    Bucket: ServerEnvironment.AWS_S3_BUCKET,
-    Key: projectFileS3Key(projectId, file.path),
-    Body: file.data,
-  }
-
-  return s3.upload(params).promise()
 }
