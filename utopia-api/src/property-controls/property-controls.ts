@@ -1,18 +1,15 @@
 import type { CSSProperties } from 'react'
 import type { PreferredContents } from '../core'
 
-interface GenericControlProps<T> {
-  label?: string
-  folder?: string
-  visibleByDefault?: boolean
-  required?: boolean
-  defaultValue?: T
-}
-
 // these fields are shared among all RegularControlDescription. the helper function getControlSharedFields makes sure the types line up
 // Ensure that the fields are also added to the object within `getControlSharedFields` for that typechecking.
-interface ControlBaseFields extends GenericControlProps<unknown> {
+interface ControlBaseFields {
   control: RegularControlType
+  label?: string
+  visibleByDefault?: boolean
+  required?: boolean
+  defaultValue?: unknown
+  folder?: string
 }
 
 // Base Level Controls
@@ -37,14 +34,24 @@ export type BaseControlType =
   | 'vector4'
   | 'jsx'
 
-export interface CheckboxControlDescription extends GenericControlProps<unknown> {
+export interface CheckboxControlDescription {
   control: 'checkbox'
+  label?: string
+  visibleByDefault?: boolean
   disabledTitle?: string
   enabledTitle?: string
+  required?: boolean
+  defaultValue?: unknown
+  folder?: string
 }
 
-export interface ColorControlDescription extends GenericControlProps<unknown> {
+export interface ColorControlDescription {
   control: 'color'
+  label?: string
+  visibleByDefault?: boolean
+  required?: boolean
+  defaultValue?: unknown
+  folder?: string
 }
 
 export type AllowedEnumType = string | boolean | number | undefined | null
@@ -55,10 +62,14 @@ export interface BasicControlOption<T> {
 
 export type BasicControlOptions<T> = AllowedEnumType[] | BasicControlOption<T>[]
 
-export interface PopUpListControlDescription
-  extends GenericControlProps<AllowedEnumType | BasicControlOption<unknown>> {
+export interface PopUpListControlDescription {
   control: 'popuplist'
+  label?: string
+  visibleByDefault?: boolean
   options: BasicControlOptions<unknown>
+  required?: boolean
+  defaultValue?: AllowedEnumType | BasicControlOption<unknown>
+  folder?: string
 }
 
 export interface ImportType {
@@ -74,18 +85,32 @@ export interface ExpressionControlOption<T> {
   requiredImport?: ImportType
 }
 
-export interface ExpressionPopUpListControlDescription extends GenericControlProps<unknown> {
+export interface ExpressionPopUpListControlDescription {
   control: 'expression-popuplist'
+  label?: string
+  visibleByDefault?: boolean
   options: ExpressionControlOption<unknown>[]
+  required?: boolean
+  defaultValue?: unknown
+  folder?: string
 }
 
-export interface EulerControlDescription
-  extends GenericControlProps<[number, number, number, string]> {
+export interface EulerControlDescription {
   control: 'euler'
+  label?: string
+  visibleByDefault?: boolean
+  required?: boolean
+  defaultValue?: [number, number, number, string]
+  folder?: string
 }
 
-export interface NoneControlDescription extends GenericControlProps<unknown> {
+export interface NoneControlDescription {
   control: 'none'
+  label?: string
+  visibleByDefault?: boolean
+  required?: boolean
+  defaultValue?: unknown
+  folder?: string
 }
 
 // prettier-ignore
@@ -95,8 +120,13 @@ export type Matrix3 = [
   number, number, number,
 ]
 
-export interface Matrix3ControlDescription extends GenericControlProps<Matrix3> {
+export interface Matrix3ControlDescription {
   control: 'matrix3'
+  label?: string
+  visibleByDefault?: boolean
+  required?: boolean
+  defaultValue?: Matrix3
+  folder?: string
 }
 
 // prettier-ignore
@@ -107,67 +137,120 @@ export type Matrix4 = [
   number, number, number, number,
 ]
 
-export interface Matrix4ControlDescription extends GenericControlProps<Matrix4> {
+export interface Matrix4ControlDescription {
   control: 'matrix4'
+  label?: string
+  visibleByDefault?: boolean
+  required?: boolean
+  defaultValue?: Matrix4
 }
 
-export interface NumberInputControlDescription extends GenericControlProps<unknown> {
+export interface NumberInputControlDescription {
   control: 'number-input'
+  label?: string
+  visibleByDefault?: boolean
   max?: number
   min?: number
   unit?: string
   step?: number
   displayStepper?: boolean
+  required?: boolean
+  defaultValue?: unknown
+  folder?: string
 }
 
-export interface RadioControlDescription
-  extends GenericControlProps<AllowedEnumType | BasicControlOption<unknown>> {
+export interface RadioControlDescription {
   control: 'radio'
+  label?: string
+  visibleByDefault?: boolean
   options: BasicControlOptions<unknown>
+  required?: boolean
+  defaultValue?: AllowedEnumType | BasicControlOption<unknown>
+  folder?: string
 }
 
-export interface ExpressionInputControlDescription extends GenericControlProps<unknown> {
+export interface ExpressionInputControlDescription {
   control: 'expression-input'
+  label?: string
+  visibleByDefault?: boolean
+  required?: boolean
+  defaultValue?: unknown
+  folder?: string
 }
 
-export interface StringInputControlDescription extends GenericControlProps<unknown> {
+export interface StringInputControlDescription {
   control: 'string-input'
+  label?: string
+  visibleByDefault?: boolean
   placeholder?: string
   obscured?: boolean
+  required?: boolean
+  defaultValue?: unknown
+  folder?: string
 }
 
-export interface HtmlInputControlDescription extends GenericControlProps<unknown> {
+export interface HtmlInputControlDescription {
   control: 'html-input'
+  label?: string
+  visibleByDefault?: boolean
   placeholder?: string
   obscured?: boolean
+  required?: boolean
+  defaultValue?: unknown
+  folder?: string
 }
 
-export interface StyleControlsControlDescription extends GenericControlProps<unknown> {
+export interface StyleControlsControlDescription {
   control: 'style-controls'
+  label?: string
+  visibleByDefault?: boolean
   placeholder?: CSSProperties
+  required?: boolean
+  defaultValue?: unknown
+  folder?: string
 }
 
 export type Vector2 = [number, number]
 
-export interface Vector2ControlDescription extends GenericControlProps<Vector2> {
+export interface Vector2ControlDescription {
   control: 'vector2'
+  label?: string
+  visibleByDefault?: boolean
+  required?: boolean
+  defaultValue?: Vector2
+  folder?: string
 }
 
 export type Vector3 = [number, number, number]
 
-export interface Vector3ControlDescription extends GenericControlProps<Vector3> {
+export interface Vector3ControlDescription {
   control: 'vector3'
+  label?: string
+  visibleByDefault?: boolean
+  required?: boolean
+  defaultValue?: Vector3
+  folder?: string
 }
 
 export type Vector4 = [number, number, number, number]
 
-export interface Vector4ControlDescription extends GenericControlProps<Vector4> {
+export interface Vector4ControlDescription {
   control: 'vector4'
+  label?: string
+  visibleByDefault?: boolean
+  required?: boolean
+  defaultValue?: Vector4
+  folder?: string
 }
 
-export interface JSXControlDescription extends GenericControlProps<unknown> {
+export interface JSXControlDescription {
   control: 'jsx'
+  label?: string
+  visibleByDefault?: boolean
   preferredContents?: PreferredContents | PreferredContents[]
+  required?: boolean
+  defaultValue?: unknown
+  folder?: string
 }
 
 export type BaseControlDescription =
@@ -198,24 +281,44 @@ export type HigherLevelControlType = 'array' | 'tuple' | 'object' | 'union'
 export type RegularControlType = BaseControlType | HigherLevelControlType
 export type ControlType = RegularControlType | 'folder'
 
-export interface ArrayControlDescription extends GenericControlProps<unknown> {
+export interface ArrayControlDescription {
   control: 'array'
+  label?: string
+  visibleByDefault?: boolean
   propertyControl: RegularControlDescription
   maxCount?: number
+  required?: boolean
+  defaultValue?: unknown
+  folder?: string
 }
 
-export interface ObjectControlDescription extends GenericControlProps<unknown> {
+export interface ObjectControlDescription {
   control: 'object'
+  label?: string
+  visibleByDefault?: boolean
   object: { [prop: string]: RegularControlDescription }
+  required?: boolean
+  defaultValue?: unknown
+  folder?: string
 }
 
-export interface UnionControlDescription extends GenericControlProps<unknown> {
+export interface UnionControlDescription {
   control: 'union'
+  label?: string
+  visibleByDefault?: boolean
   controls: Array<RegularControlDescription>
+  required?: boolean
+  defaultValue?: unknown
+  folder?: string
 }
-export interface TupleControlDescription extends GenericControlProps<unknown> {
+export interface TupleControlDescription {
   control: 'tuple'
+  label?: string
+  visibleByDefault?: boolean
   propertyControls: RegularControlDescription[]
+  required?: boolean
+  defaultValue?: unknown
+  folder?: string
 }
 
 export type HigherLevelControlDescription =
