@@ -197,19 +197,13 @@ export function jsOpaqueArbitraryStatement(
   }
 }
 
-export interface JSAssignment<
-  L extends JSIdentifier = JSIdentifier,
-  R extends JSExpression = JSExpression,
-> {
+export interface JSAssignment<R extends JSExpression = JSExpression> {
   type: 'JS_ASSIGNMENT'
-  leftHandSide: L
+  leftHandSide: BoundParam
   rightHandSide: R
 }
 
-export function jsAssignment(
-  leftHandSide: JSIdentifier,
-  rightHandSide: JSExpression,
-): JSAssignment {
+export function jsAssignment(leftHandSide: BoundParam, rightHandSide: JSExpression): JSAssignment {
   return {
     type: 'JS_ASSIGNMENT',
     leftHandSide: leftHandSide,
@@ -241,13 +235,12 @@ export function simpleJSAssignmentStatement(
   declarationKeyword: JSAssignmentStatement['declarationKeyword'],
   name: string,
   value: unknown,
-  identifierSourceMap: RawSourceMap | null,
 ): JSAssignmentStatement {
   return jsAssignmentStatement(
     declarationKeyword,
     [
       jsAssignment(
-        jsIdentifier(name, '', identifierSourceMap, emptyComments),
+        regularParam(name, jsExpressionValue(value, emptyComments)),
         jsExpressionValue(value, emptyComments),
       ),
     ],
@@ -256,6 +249,18 @@ export function simpleJSAssignmentStatement(
 }
 
 export type JSArbitraryStatement = JSOpaqueArbitraryStatement | JSAssignmentStatement
+
+export function isJSAssignmentStatement(
+  statement: JSArbitraryStatement,
+): statement is JSAssignmentStatement {
+  return statement.type === 'JS_ASSIGNMENT_STATEMENT'
+}
+
+export function isJSOpaqueArbitraryStatement(
+  statement: JSArbitraryStatement,
+): statement is JSOpaqueArbitraryStatement {
+  return statement.type === 'JS_OPAQUE_ARBITRARY_STATEMENT'
+}
 
 export interface JSExpressionOtherJavaScript extends WithComments, WithElementsWithin {
   type: 'ATTRIBUTE_OTHER_JAVASCRIPT'
@@ -1017,7 +1022,7 @@ export function clearIdentifierUniqueIDsAndSourceMaps(identifier: JSIdentifier):
 export function clearAssignmentUniqueIDsAndSourceMaps(assignment: JSAssignment): JSAssignment {
   return {
     type: 'JS_ASSIGNMENT',
-    leftHandSide: clearIdentifierUniqueIDsAndSourceMaps(assignment.leftHandSide),
+    leftHandSide: clearBoundParamUniqueIDsAndSourceMaps(assignment.leftHandSide),
     rightHandSide: clearExpressionUniqueIDsAndSourceMaps(assignment.rightHandSide),
   }
 }
@@ -2138,12 +2143,12 @@ export function unparsedCode(rawCode: string): UnparsedCode {
 export interface RegularParam {
   type: 'REGULAR_PARAM'
   paramName: string
-  defaultExpression: JSExpressionMapOrOtherJavascript | null
+  defaultExpression: JSExpression | null
 }
 
 export function regularParam(
   paramName: string,
-  defaultExpression: JSExpressionMapOrOtherJavascript | null,
+  defaultExpression: JSExpression | null,
 ): RegularParam {
   return {
     type: 'REGULAR_PARAM',
@@ -2155,13 +2160,13 @@ export function regularParam(
 export interface DestructuredParamPart {
   propertyName: string | undefined
   param: Param
-  defaultExpression: JSExpressionMapOrOtherJavascript | null
+  defaultExpression: JSExpression | null
 }
 
 export function destructuredParamPart(
   propertyName: string | undefined,
   param: Param,
-  defaultExpression: JSExpressionMapOrOtherJavascript | null,
+  defaultExpression: JSExpression | null,
 ): DestructuredParamPart {
   return {
     propertyName: propertyName,
@@ -2194,13 +2199,17 @@ export function omittedParam(): OmittedParam {
 
 export type DestructuredArrayPart = Param | OmittedParam
 
-export function isOmittedParam(param: DestructuredArrayPart): param is OmittedParam {
-  return (param as any).type === 'OMITTED_PARAM'
-}
-
 export interface DestructuredArray {
   type: 'DESTRUCTURED_ARRAY'
   parts: Array<DestructuredArrayPart>
+}
+
+export function isOmittedParam(param: DestructuredArrayPart): param is OmittedParam {
+  return param.type === 'OMITTED_PARAM'
+}
+
+export function isParam(param: DestructuredArrayPart): param is Param {
+  return param.type === 'PARAM'
 }
 
 export function destructuredArray(parts: Array<DestructuredArrayPart>): DestructuredArray {
@@ -2228,15 +2237,6 @@ export type Param = {
   type: 'PARAM'
   dotDotDotToken: boolean
   boundParam: BoundParam
-}
-
-export function isParam(maybeParam: unknown): maybeParam is Param {
-  return (
-    typeof maybeParam === 'object' &&
-    maybeParam != null &&
-    'type' in maybeParam &&
-    (maybeParam as any)['type'] === 'PARAM'
-  )
 }
 
 export function functionParam(dotDotDotToken: boolean, boundParam: BoundParam): Param {
@@ -2358,6 +2358,13 @@ export function clearArbitraryJSBlockUniqueIDs(block: ArbitraryJSBlock): Arbitra
   }
 }
 
+export function clearArbitraryJSBlockSourceMaps(block: ArbitraryJSBlock): ArbitraryJSBlock {
+  return {
+    ...block,
+    statements: block.statements.map(clearJSArbitraryStatementSourceMaps),
+  }
+}
+
 export function clearDestructuredArrayPartUniqueIDs(
   arrayPart: DestructuredArrayPart,
 ): DestructuredArrayPart {
@@ -2380,7 +2387,7 @@ export function clearDestructuredParamPartUniqueIDs(
     clearParamUniqueIDs(paramPart.param),
     paramPart.defaultExpression == null
       ? null
-      : clearJSExpressionOtherJavaScriptOrMapExpressionUniqueIDs(paramPart.defaultExpression),
+      : clearExpressionUniqueIDs(paramPart.defaultExpression),
   )
 }
 
@@ -2395,12 +2402,69 @@ export function clearBoundParamUniqueIDs(boundParam: BoundParam): BoundParam {
         boundParam.paramName,
         boundParam.defaultExpression == null
           ? null
-          : clearJSExpressionOtherJavaScriptOrMapExpressionUniqueIDs(boundParam.defaultExpression),
+          : clearExpressionUniqueIDs(boundParam.defaultExpression),
       )
     default:
       const _exhaustiveCheck: never = boundParam
       throw new Error(`Unhandled element ${JSON.stringify(boundParam)}`)
   }
+}
+
+export function clearDestructuredArrayPartSourceMaps(
+  arrayPart: DestructuredArrayPart,
+): DestructuredArrayPart {
+  switch (arrayPart.type) {
+    case 'OMITTED_PARAM':
+      return arrayPart
+    case 'PARAM':
+      return clearParamSourceMaps(arrayPart)
+    default:
+      const _exhaustiveCheck: never = arrayPart
+      throw new Error(`Unhandled array part ${JSON.stringify(arrayPart)}`)
+  }
+}
+
+export function clearDestructuredParamPartSourceMaps(
+  paramPart: DestructuredParamPart,
+): DestructuredParamPart {
+  return {
+    propertyName: paramPart.propertyName,
+    param: clearParamSourceMaps(paramPart.param),
+    defaultExpression:
+      paramPart.defaultExpression == null
+        ? null
+        : clearExpressionSourceMaps(paramPart.defaultExpression),
+  }
+}
+
+export function clearParamSourceMaps(param: Param): Param {
+  return {
+    ...param,
+    boundParam: clearBoundParamSourceMaps(param.boundParam),
+  }
+}
+
+export function clearBoundParamSourceMaps(boundParam: BoundParam): BoundParam {
+  switch (boundParam.type) {
+    case 'DESTRUCTURED_ARRAY':
+      return destructuredArray(boundParam.parts.map(clearDestructuredArrayPartSourceMaps))
+    case 'DESTRUCTURED_OBJECT':
+      return destructuredObject(boundParam.parts.map(clearDestructuredParamPartSourceMaps))
+    case 'REGULAR_PARAM':
+      return regularParam(
+        boundParam.paramName,
+        boundParam.defaultExpression == null
+          ? null
+          : clearExpressionSourceMaps(boundParam.defaultExpression),
+      )
+    default:
+      const _exhaustiveCheck: never = boundParam
+      throw new Error(`Unhandled element ${JSON.stringify(boundParam)}`)
+  }
+}
+
+export function clearBoundParamUniqueIDsAndSourceMaps(boundParam: BoundParam): BoundParam {
+  return clearBoundParamSourceMaps(clearBoundParamUniqueIDs(boundParam))
 }
 
 export function clearParamUniqueIDs(param: Param): Param {
@@ -2429,6 +2493,36 @@ export function clearTopLevelElementUniqueIDs(element: TopLevelElement): TopLeve
       return updatedComponent
     case 'ARBITRARY_JS_BLOCK':
       return clearArbitraryJSBlockUniqueIDs(element)
+    case 'IMPORT_STATEMENT':
+    case 'UNPARSED_CODE':
+      return element
+    default:
+      const _exhaustiveCheck: never = element
+      throw new Error(`Unhandled element ${JSON.stringify(element)}`)
+  }
+}
+
+export function clearTopLevelElementSourceMaps(element: UtopiaJSXComponent): UtopiaJSXComponent
+export function clearTopLevelElementSourceMaps(element: ArbitraryJSBlock): ArbitraryJSBlock
+export function clearTopLevelElementSourceMaps(element: TopLevelElement): TopLevelElement
+export function clearTopLevelElementSourceMaps(element: TopLevelElement): TopLevelElement {
+  switch (element.type) {
+    case 'UTOPIA_JSX_COMPONENT':
+      let updatedComponent: UtopiaJSXComponent = {
+        ...element,
+        rootElement: clearJSXElementChildSourceMaps(element.rootElement),
+      }
+      if (updatedComponent.arbitraryJSBlock != null) {
+        updatedComponent.arbitraryJSBlock = clearArbitraryJSBlockSourceMaps(
+          updatedComponent.arbitraryJSBlock,
+        )
+      }
+      if (updatedComponent.param != null) {
+        updatedComponent.param = clearParamSourceMaps(updatedComponent.param)
+      }
+      return updatedComponent
+    case 'ARBITRARY_JS_BLOCK':
+      return clearArbitraryJSBlockSourceMaps(element)
     case 'IMPORT_STATEMENT':
     case 'UNPARSED_CODE':
       return element
@@ -2927,8 +3021,16 @@ export function getElementsByUIDFromTopLevelElements(
 export function clearJSAssignmentUniqueIDs(assignment: JSAssignment): JSAssignment {
   return {
     ...assignment,
-    leftHandSide: clearIdentifierUniqueIDs(assignment.leftHandSide),
+    leftHandSide: clearBoundParamUniqueIDs(assignment.leftHandSide),
     rightHandSide: clearExpressionUniqueIDs(assignment.rightHandSide),
+  }
+}
+
+export function clearJSAssignmentSourceMaps(assignment: JSAssignment): JSAssignment {
+  return {
+    ...assignment,
+    leftHandSide: clearBoundParamSourceMaps(assignment.leftHandSide),
+    rightHandSide: clearExpressionSourceMaps(assignment.rightHandSide),
   }
 }
 
@@ -2947,6 +3049,22 @@ export function clearJSArbitraryStatementUniqueIDs(
         ...statement,
         uid: '',
       }
+    default:
+      assertNever(statement)
+  }
+}
+
+export function clearJSArbitraryStatementSourceMaps(
+  statement: JSArbitraryStatement,
+): JSArbitraryStatement {
+  switch (statement.type) {
+    case 'JS_ASSIGNMENT_STATEMENT':
+      return {
+        ...statement,
+        assignments: statement.assignments.map(clearJSAssignmentSourceMaps),
+      }
+    case 'JS_OPAQUE_ARBITRARY_STATEMENT':
+      return statement
     default:
       assertNever(statement)
   }

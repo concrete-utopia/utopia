@@ -845,7 +845,7 @@ function printParam(param: Param, imports: Imports, stripUIDs: boolean): TS.Para
 }
 
 function printBindingExpression(
-  defaultExpression: JSExpressionMapOrOtherJavascript | null,
+  defaultExpression: JSExpression | null,
   imports: Imports,
   stripUIDs: boolean,
 ): TS.Expression | undefined {
