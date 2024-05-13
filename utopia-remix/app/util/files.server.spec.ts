@@ -1,3 +1,4 @@
+import { GetObjectCommand } from '@aws-sdk/client-s3'
 import { ServerEnvironment } from '../env.server'
 import { newS3Client, projectFileS3Key, saveFileToS3 } from './files.server'
 
@@ -12,14 +13,15 @@ describe('files', () => {
         data: Buffer.from(data),
       })
 
-      const got = await client
-        .getObject({
+      const object = await client.send(
+        new GetObjectCommand({
           Bucket: ServerEnvironment.AWS_S3_BUCKET,
           Key: projectFileS3Key('the-project', '/some/path/foo.txt'),
-        })
-        .promise()
+        }),
+      )
 
-      expect(got.Body?.toString()).toBe(data)
+      const got = await object.Body?.transformToString()
+      expect(got).toBe(data)
     })
   })
 })

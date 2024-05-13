@@ -1,4 +1,5 @@
-import AWS from 'aws-sdk'
+import type { S3Client } from '@aws-sdk/client-s3'
+import { PutObjectCommand, S3 } from '@aws-sdk/client-s3'
 import * as path from 'path'
 import * as fs from 'fs'
 import urlJoin from 'url-join'
@@ -26,29 +27,25 @@ export function projectFileS3Key(projectId: string, filePath: string): string {
   return urlJoin('projects', projectId, filePath)
 }
 
-export function newS3Client(): AWS.S3 {
-  let config: AWS.S3.Types.ClientConfiguration = {
-    accessKeyId: ServerEnvironment.AWS_ACCESS_KEY_ID,
-    secretAccessKey: ServerEnvironment.AWS_SECRET_ACCESS_KEY,
+export function newS3Client(): S3Client {
+  const isTestEnv = ServerEnvironment.environment === 'test'
+  return new S3({
+    credentials: {
+      accessKeyId: ServerEnvironment.AWS_ACCESS_KEY_ID,
+      secretAccessKey: ServerEnvironment.AWS_SECRET_ACCESS_KEY,
+    },
     region: ServerEnvironment.AWS_REGION,
-  }
-  if (ServerEnvironment.environment === 'test') {
-    config.endpoint = new AWS.Endpoint('http://localhost:9000')
-    config.s3ForcePathStyle = true
-  }
-  return new AWS.S3(config)
+    endpoint: isTestEnv ? 'http://localhost:9000' : undefined,
+    forcePathStyle: isTestEnv,
+  })
 }
 
-export async function saveFileToS3(
-  client: AWS.S3,
-  projectId: string,
-  file: AssetToUpload,
-): Promise<AWS.S3.ManagedUpload.SendData> {
-  return client
-    .upload({
+export async function saveFileToS3(client: S3Client, projectId: string, file: AssetToUpload) {
+  return client.send(
+    new PutObjectCommand({
       Bucket: ServerEnvironment.AWS_S3_BUCKET,
       Key: projectFileS3Key(projectId, file.path),
       Body: file.data,
-    })
-    .promise()
+    }),
+  )
 }
