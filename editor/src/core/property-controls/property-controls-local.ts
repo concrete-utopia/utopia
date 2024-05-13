@@ -311,7 +311,7 @@ function isComponentRegistrationValid(
   const { name, moduleName } = getRequireInfoFromComponent(component)
   if (name != null) {
     // TODO: this doesn't work yet for components which are not directly imported, e.g. Typography.Text (where Typography is the imported object)
-    // The code is here to check the last part of the name, but since we don't require the component itself, the data will not be available.
+    // The code is here to check the last part of the name, but since we don't require the component itself in these cases, the name and the moduleName will not be available.
     const nameLastPart = getJSXElementNameLastPart(jsxElementNameFromString(name))
     const registrationKeyLastPart = getJSXElementNameLastPart(
       jsxElementNameFromString(registrationKey),
