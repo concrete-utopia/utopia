@@ -65,6 +65,7 @@ import { applyPrettier } from 'utopia-vscode-common'
 import { transpileJavascriptFromCode } from './parser-printer-transpiling'
 import {
   clearParseResultPassTimes,
+  clearParseResultSourceMapsUniqueIDsAndEmptyBlocks,
   clearParseResultUniqueIDsAndEmptyBlocks,
   clearTopLevelElementUniqueIDsAndEmptyBlocks,
   elementsStructure,
@@ -91,6 +92,14 @@ import {
 import { assertNever } from '../../../core/shared/utils'
 import { contentsToTree } from '../../../components/assets'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
+import {
+  filtered,
+  fromField,
+  fromTypeGuard,
+  notNull,
+  traverseArray,
+} from '../../shared/optics/optic-creators'
+import { toFirst } from '../../shared/optics/optic-utilities'
 
 describe('JSX parser', () => {
   it('parses the code when it is a var', () => {
@@ -1237,7 +1246,7 @@ function getSizing(n) {
         file: 'code.tsx',
       }),
       {},
-      [simpleJSAssignmentStatement('var', 'spacing', 20, expect.objectContaining({}))],
+      [simpleJSAssignmentStatement('var', 'spacing', 20)],
     )
     const combinedJsCode = `function getSizing(n) {
   return 100 + n
@@ -1273,7 +1282,7 @@ var spacing = 20`
       {},
       [
         jsOpaqueArbitraryStatement(jsCode1, ['getSizing'], [], ''),
-        simpleJSAssignmentStatement('var', 'spacing', 20, expect.objectContaining({})),
+        simpleJSAssignmentStatement('var', 'spacing', 20),
       ],
     )
     const topLevelElements = [arbitraryBlock1, arbitraryBlock2, exported].map(
@@ -1795,7 +1804,7 @@ export var whatever = (props) => <View data-uid='aaa'>
         file: 'code.tsx',
       }),
       {},
-      [simpleJSAssignmentStatement('var', 'spacing', 20, expect.objectContaining({}))],
+      [simpleJSAssignmentStatement('var', 'spacing', 20)],
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const { imports } = addImport(
@@ -1883,7 +1892,17 @@ export var whatever = (props) => {
           'const',
           [
             jsAssignment(
-              jsIdentifier('bgs', '', expect.objectContaining({}), emptyComments),
+              regularParam(
+                'bgs',
+                jsExpressionNestedArray(
+                  [
+                    jsxArrayValue(jsExpressionValue('black', emptyComments, ''), emptyComments),
+                    jsxArrayValue(jsExpressionValue('grey', emptyComments, ''), emptyComments),
+                  ],
+                  emptyComments,
+                  '',
+                ),
+              ),
               jsExpressionNestedArray(
                 [
                   jsxArrayValue(jsExpressionValue('black', emptyComments, ''), emptyComments),
@@ -1900,7 +1919,18 @@ export var whatever = (props) => {
           'const',
           [
             jsAssignment(
-              jsIdentifier('bg', '', expect.objectContaining({}), emptyComments),
+              regularParam(
+                'bg',
+                jsElementAccess(
+                  jsIdentifier('bgs', '', expect.objectContaining({}), emptyComments),
+                  jsExpressionValue(0, emptyComments, ''),
+                  '',
+                  expect.objectContaining({}),
+                  emptyComments,
+                  'bgs[0]',
+                  'not-optionally-chained',
+                ),
+              ),
               jsElementAccess(
                 jsIdentifier('bgs', '', expect.objectContaining({}), emptyComments),
                 jsExpressionValue(0, emptyComments, ''),
@@ -1998,7 +2028,17 @@ export var whatever = (props) => {
           'const',
           [
             jsAssignment(
-              jsIdentifier('greys', '', expect.objectContaining({}), emptyComments),
+              regularParam(
+                'greys',
+                jsExpressionNestedArray(
+                  [
+                    jsxArrayValue(jsExpressionValue('lightGrey', emptyComments, ''), emptyComments),
+                    jsxArrayValue(jsExpressionValue('grey', emptyComments, ''), emptyComments),
+                  ],
+                  emptyComments,
+                  '',
+                ),
+              ),
               jsExpressionNestedArray(
                 [
                   jsxArrayValue(jsExpressionValue('lightGrey', emptyComments, ''), emptyComments),
@@ -2099,8 +2139,8 @@ export var whatever = (props) => {
       }),
       {},
       [
-        simpleJSAssignmentStatement('const', 'a', 10, expect.objectContaining({})),
-        simpleJSAssignmentStatement('const', 'b', 20, expect.objectContaining({})),
+        simpleJSAssignmentStatement('const', 'a', 10),
+        simpleJSAssignmentStatement('const', 'b', 20),
       ],
     )
     const exported = utopiaJSXComponent(
@@ -2193,9 +2233,9 @@ export var whatever = (props) => {
       }),
       {},
       [
-        simpleJSAssignmentStatement('const', 'a', true, expect.objectContaining({})),
-        simpleJSAssignmentStatement('const', 'b', 10, expect.objectContaining({})),
-        simpleJSAssignmentStatement('const', 'c', 20, expect.objectContaining({})),
+        simpleJSAssignmentStatement('const', 'a', true),
+        simpleJSAssignmentStatement('const', 'b', 10),
+        simpleJSAssignmentStatement('const', 'c', 20),
       ],
     )
     const exported = utopiaJSXComponent(
@@ -2293,7 +2333,7 @@ export var whatever = (props) => {
         file: 'code.tsx',
       }),
       {},
-      [simpleJSAssignmentStatement('let', 'a', 10, expect.objectContaining({}))],
+      [simpleJSAssignmentStatement('let', 'a', 10)],
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -2378,12 +2418,26 @@ export var whatever = (props) => {
       }),
       {},
       [
-        simpleJSAssignmentStatement('const', 'a', 10, expect.objectContaining({})),
+        simpleJSAssignmentStatement('const', 'a', 10),
         jsAssignmentStatement(
           'const',
           [
             jsAssignment(
-              jsIdentifier('b', '', expect.objectContaining({}), emptyComments),
+              regularParam(
+                'b',
+                jsExpressionNestedObject(
+                  [
+                    jsxPropertyAssignment(
+                      'a',
+                      jsIdentifier('a', '', expect.objectContaining({}), emptyComments),
+                      emptyComments,
+                      emptyComments,
+                    ),
+                  ],
+                  emptyComments,
+                  '',
+                ),
+              ),
               jsExpressionNestedObject(
                 [
                   jsxPropertyAssignment(
@@ -2545,7 +2599,21 @@ export var whatever = (props) => {
           'const',
           [
             jsAssignment(
-              jsIdentifier('bg', '', expect.objectContaining({}), emptyComments),
+              regularParam(
+                'bg',
+                jsExpressionNestedObject(
+                  [
+                    jsxPropertyAssignment(
+                      'backgroundColor',
+                      jsExpressionValue('grey', emptyComments, ''),
+                      emptyComments,
+                      emptyComments,
+                    ),
+                  ],
+                  emptyComments,
+                  '',
+                ),
+              ),
               jsExpressionNestedObject(
                 [
                   jsxPropertyAssignment(
@@ -2671,7 +2739,7 @@ export var whatever = (props) => <View data-uid='aaa'>
         file: 'code.tsx',
       }),
       {},
-      [simpleJSAssignmentStatement('var', 'count', 10, expect.objectContaining({}))],
+      [simpleJSAssignmentStatement('var', 'count', 10)],
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const { imports } = addImport(
@@ -2777,7 +2845,7 @@ export var whatever = (props) => <View data-uid='aaa'>
         file: 'code.tsx',
       }),
       {},
-      [simpleJSAssignmentStatement('var', 'use20', true, expect.objectContaining({}))],
+      [simpleJSAssignmentStatement('var', 'use20', true)],
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const { imports } = addImport(
@@ -2866,7 +2934,19 @@ export var whatever = (props) => <View data-uid='aaa'>
           'var',
           [
             jsAssignment(
-              jsIdentifier('mySet', '', expect.objectContaining({}), emptyComments),
+              regularParam(
+                'mySet',
+                jsExpressionOtherJavaScript(
+                  [],
+                  expect.stringContaining(''),
+                  expect.stringContaining(''),
+                  expect.stringContaining(''),
+                  ['Set'],
+                  expect.objectContaining({}),
+                  {},
+                  emptyComments,
+                ),
+              ),
               jsExpressionOtherJavaScript(
                 [],
                 expect.stringContaining(''),
@@ -2984,7 +3064,7 @@ export var whatever = (props) => <View data-uid='aaa'>
           'var',
           [
             jsAssignment(
-              jsIdentifier('spacing', '', expect.objectContaining({}), emptyComments),
+              regularParam('spacing', jsExpressionValue(20, emptyComments)),
               jsExpressionValue(20, emptyComments),
             ),
           ],
@@ -3080,6 +3160,18 @@ export var whatever = (props) => <View data-uid='aaa'>
       EARLY_RETURN_RESULT_FUNCTION_NAME,
       EARLY_RETURN_VOID_FUNCTION_NAME,
     ]
+    const myCompContent = jsExpressionOtherJavaScript(
+      [functionParam(false, regularParam('props', null))],
+      expect.stringContaining(''),
+      expect.stringContaining(''),
+      expect.stringContaining(''),
+      ['React'],
+      expect.objectContaining({}),
+      {},
+      emptyComments,
+      '',
+    )
+
     const MyComp = arbitraryJSBlock(
       [],
       jsCode,
@@ -3095,22 +3187,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       [
         jsAssignmentStatement(
           'var',
-          [
-            jsAssignment(
-              jsIdentifier('MyComp', '', expect.objectContaining({}), emptyComments),
-              jsExpressionOtherJavaScript(
-                [functionParam(false, regularParam('props', null))],
-                expect.stringContaining(''),
-                expect.stringContaining(''),
-                expect.stringContaining(''),
-                ['React'],
-                expect.objectContaining({}),
-                {},
-                emptyComments,
-                '',
-              ),
-            ),
-          ],
+          [jsAssignment(regularParam('MyComp', myCompContent), myCompContent)],
           '',
         ),
       ],
@@ -3777,7 +3854,7 @@ function getSizing(n) {
           'var',
           [
             jsAssignment(
-              jsIdentifier('spacing', '', expect.objectContaining({}), emptyComments),
+              regularParam('spacing', jsExpressionValue(20, emptyComments)),
               jsExpressionValue(20, emptyComments),
             ),
           ],
@@ -3823,7 +3900,7 @@ var spacing = 20`
           'var',
           [
             jsAssignment(
-              jsIdentifier('spacing', '', expect.objectContaining({}), emptyComments),
+              regularParam('spacing', jsExpressionValue(20, emptyComments)),
               jsExpressionValue(20, emptyComments),
             ),
           ],
@@ -4942,6 +5019,36 @@ export var App = props => {
         [],
       ),
     )
+    const assignmentComponent = jsExpressionOtherJavaScript(
+      [functionParam(false, regularParam('props', null))],
+      'props => <View data-uid="abc">{props.children}</View>',
+      '(props) => <View data-uid="abc">{props.children}</View>;',
+      `return props => React.createElement(View, {\n  \"data-uid\": \"abc\"\n}, props.children);`,
+      ['React', 'View', JSX_CANVAS_LOOKUP_FUNCTION_NAME],
+      expect.objectContaining({}),
+      {
+        '62c': jsxElement(
+          'View',
+          '',
+          jsxAttributesFromMap({
+            'data-uid': jsExpressionValue('62c', emptyComments, ''),
+          }),
+          [
+            jsPropertyAccess(
+              jsIdentifier('props', '', expect.objectContaining({}), emptyComments),
+              'children',
+              '',
+              expect.objectContaining({}),
+              emptyComments,
+              'props.children',
+              'not-optionally-chained',
+            ),
+          ],
+        ),
+      },
+      emptyComments,
+      '',
+    )
     const component = utopiaJSXComponent(
       'App',
       true,
@@ -5076,7 +5183,7 @@ export var App = props => {
             'const',
             [
               jsAssignment(
-                jsIdentifier('a', '', expect.objectContaining({}), emptyComments),
+                regularParam('a', jsExpressionValue(20, emptyComments, '')),
                 jsExpressionValue(20, emptyComments, ''),
               ),
             ],
@@ -5086,7 +5193,7 @@ export var App = props => {
             'const',
             [
               jsAssignment(
-                jsIdentifier('b', '', expect.objectContaining({}), emptyComments),
+                regularParam('b', jsExpressionValue(40, emptyComments, '')),
                 jsExpressionValue(40, emptyComments, ''),
               ),
             ],
@@ -5096,37 +5203,8 @@ export var App = props => {
             'const',
             [
               jsAssignment(
-                jsIdentifier('MyCustomComponent', '', expect.objectContaining({}), emptyComments),
-                jsExpressionOtherJavaScript(
-                  [functionParam(false, regularParam('props', null))],
-                  'props => <View data-uid="abc">{props.children}</View>',
-                  '(props) => <View data-uid="abc">{props.children}</View>;',
-                  `return props => React.createElement(View, {\n  \"data-uid\": \"abc\"\n}, props.children);`,
-                  ['React', 'View', JSX_CANVAS_LOOKUP_FUNCTION_NAME],
-                  expect.objectContaining({}),
-                  {
-                    '62c': jsxElement(
-                      'View',
-                      '',
-                      jsxAttributesFromMap({
-                        'data-uid': jsExpressionValue('62c', emptyComments, ''),
-                      }),
-                      [
-                        jsPropertyAccess(
-                          jsIdentifier('props', '', expect.objectContaining({}), emptyComments),
-                          'children',
-                          '',
-                          expect.objectContaining({}),
-                          emptyComments,
-                          'props.children',
-                          'not-optionally-chained',
-                        ),
-                      ],
-                    ),
-                  },
-                  emptyComments,
-                  '',
-                ),
+                regularParam('MyCustomComponent', assignmentComponent),
+                assignmentComponent,
               ),
             ],
             '',
@@ -5477,7 +5555,7 @@ export var whatever = props => {
           'let',
           [
             jsAssignment(
-              jsIdentifier('result', '', expect.objectContaining({}), emptyComments),
+              regularParam('result', jsxAttributeNestedArraySimple([])),
               jsExpressionNestedArray([], emptyComments, ''),
             ),
           ],
@@ -5779,7 +5857,7 @@ export var whatever = props => {
           'const',
           [
             jsAssignment(
-              jsIdentifier('a', '', expect.objectContaining({}), emptyComments),
+              regularParam('a', jsExpressionValue(30, emptyComments, '')),
               jsExpressionValue(30, emptyComments, ''),
             ),
           ],
@@ -6203,6 +6281,212 @@ export var App = props => {
       },
       actualResult,
     )
+  })
+  it('parses destructure assignments', () => {
+    const code = `import * as React from "react";
+import {
+  UtopiaUtils,
+  Ellipse,
+  Image,
+  Rectangle,
+  Storyboard,
+  Text,
+  Scene
+} from "utopia-api";
+import { cake } from 'cake'
+export var whatever = (props) => {
+  const propsNewName = props
+  const { a, b } = props
+  const [ c, d ] = props
+  const { e: f } = props
+  return <div data-uid='root' />
+}
+`
+    const actualResult = simplifyParsedTextFileAttributes(
+      clearParseResultSourceMapsUniqueIDsAndEmptyBlocks(testParseCode(code)),
+    )
+    const toAssignmentsOptic = fromTypeGuard(isParseSuccess)
+      .compose(fromField('topLevelElements'))
+      .compose(traverseArray())
+      .compose(filtered(isUtopiaJSXComponent))
+      .compose(fromTypeGuard(isUtopiaJSXComponent))
+      .compose(fromField('arbitraryJSBlock'))
+      .compose(notNull())
+      .compose(fromField('statements'))
+    const possibleAssignments = toFirst(toAssignmentsOptic, actualResult)
+    expect(possibleAssignments).toMatchInlineSnapshot(`
+      Object {
+        "type": "RIGHT",
+        "value": Array [
+          Object {
+            "assignments": Array [
+              Object {
+                "leftHandSide": Object {
+                  "defaultExpression": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
+                    "name": "props",
+                    "sourceMap": null,
+                    "type": "JS_IDENTIFIER",
+                    "uid": "",
+                  },
+                  "paramName": "propsNewName",
+                  "type": "REGULAR_PARAM",
+                },
+                "rightHandSide": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "name": "props",
+                  "sourceMap": null,
+                  "type": "JS_IDENTIFIER",
+                  "uid": "",
+                },
+                "type": "JS_ASSIGNMENT",
+              },
+            ],
+            "declarationKeyword": "const",
+            "type": "JS_ASSIGNMENT_STATEMENT",
+            "uid": "",
+          },
+          Object {
+            "assignments": Array [
+              Object {
+                "leftHandSide": Object {
+                  "parts": Array [
+                    Object {
+                      "defaultExpression": null,
+                      "param": Object {
+                        "boundParam": Object {
+                          "defaultExpression": null,
+                          "paramName": "a",
+                          "type": "REGULAR_PARAM",
+                        },
+                        "dotDotDotToken": false,
+                        "type": "PARAM",
+                      },
+                      "propertyName": undefined,
+                    },
+                    Object {
+                      "defaultExpression": null,
+                      "param": Object {
+                        "boundParam": Object {
+                          "defaultExpression": null,
+                          "paramName": "b",
+                          "type": "REGULAR_PARAM",
+                        },
+                        "dotDotDotToken": false,
+                        "type": "PARAM",
+                      },
+                      "propertyName": undefined,
+                    },
+                  ],
+                  "type": "DESTRUCTURED_OBJECT",
+                },
+                "rightHandSide": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "name": "props",
+                  "sourceMap": null,
+                  "type": "JS_IDENTIFIER",
+                  "uid": "",
+                },
+                "type": "JS_ASSIGNMENT",
+              },
+            ],
+            "declarationKeyword": "const",
+            "type": "JS_ASSIGNMENT_STATEMENT",
+            "uid": "",
+          },
+          Object {
+            "assignments": Array [
+              Object {
+                "leftHandSide": Object {
+                  "parts": Array [
+                    Object {
+                      "boundParam": Object {
+                        "defaultExpression": null,
+                        "paramName": "c",
+                        "type": "REGULAR_PARAM",
+                      },
+                      "dotDotDotToken": false,
+                      "type": "PARAM",
+                    },
+                    Object {
+                      "boundParam": Object {
+                        "defaultExpression": null,
+                        "paramName": "d",
+                        "type": "REGULAR_PARAM",
+                      },
+                      "dotDotDotToken": false,
+                      "type": "PARAM",
+                    },
+                  ],
+                  "type": "DESTRUCTURED_ARRAY",
+                },
+                "rightHandSide": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "name": "props",
+                  "sourceMap": null,
+                  "type": "JS_IDENTIFIER",
+                  "uid": "",
+                },
+                "type": "JS_ASSIGNMENT",
+              },
+            ],
+            "declarationKeyword": "const",
+            "type": "JS_ASSIGNMENT_STATEMENT",
+            "uid": "",
+          },
+          Object {
+            "assignments": Array [
+              Object {
+                "leftHandSide": Object {
+                  "parts": Array [
+                    Object {
+                      "defaultExpression": null,
+                      "param": Object {
+                        "boundParam": Object {
+                          "defaultExpression": null,
+                          "paramName": "f",
+                          "type": "REGULAR_PARAM",
+                        },
+                        "dotDotDotToken": false,
+                        "type": "PARAM",
+                      },
+                      "propertyName": "e",
+                    },
+                  ],
+                  "type": "DESTRUCTURED_OBJECT",
+                },
+                "rightHandSide": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "name": "props",
+                  "sourceMap": null,
+                  "type": "JS_IDENTIFIER",
+                  "uid": "",
+                },
+                "type": "JS_ASSIGNMENT",
+              },
+            ],
+            "declarationKeyword": "const",
+            "type": "JS_ASSIGNMENT_STATEMENT",
+            "uid": "",
+          },
+        ],
+      }
+    `)
   })
 })
 

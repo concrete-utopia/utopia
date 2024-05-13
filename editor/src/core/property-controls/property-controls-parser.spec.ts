@@ -7,7 +7,6 @@ import type {
   ColorControlDescription,
   NoneControlDescription,
   StyleControlsControlDescription,
-  FolderControlDescription,
   ExpressionInputControlDescription,
   Vector2ControlDescription,
   Vector3ControlDescription,
@@ -31,7 +30,6 @@ import {
   parsePropertyControls,
   parseNoneControlDescription,
   parseStyleControlsControlDescription,
-  parseFolderControlDescription,
   parseControlDescription,
   parseExpressionInputControlDescription,
   parseVector2ControlDescription,
@@ -366,6 +364,7 @@ const validStringInputControlDescriptionValue: StringInputControlDescription = {
   placeholder: 'Enter text',
   obscured: true,
   visibleByDefault: true,
+  folder: 'String Input',
 }
 
 describe('parseStringInputControlDescription', () => {
@@ -505,6 +504,7 @@ const validArrayControlDescriptionValue: ArrayControlDescription = {
   propertyControl: {
     control: 'string-input',
   },
+  folder: 'Array Control',
 }
 
 describe('parseArrayControlDescription', () => {
@@ -529,6 +529,7 @@ const validObjectControlDescriptionValue: ObjectControlDescription = {
       control: 'string-input',
     },
   },
+  folder: 'Object Control',
 }
 
 describe('parseObjectControlDescription', () => {
@@ -562,25 +563,6 @@ describe('parseTupleControlDescription', () => {
       ['a', 'b', 'c'],
       [1, 2, 3],
     ],
-  )
-})
-
-const validFolderControlDescriptionValue: FolderControlDescription = {
-  control: 'folder',
-  controls: {
-    style: validStyleControlsControlDescriptionValue,
-    someSlider: validNumberInputControlDescriptionValue,
-  },
-}
-
-describe('parseFolderControlDescription', () => {
-  runBaseTestSuite(
-    validFolderControlDescriptionValue,
-    ['control', 'controls'],
-    parseFolderControlDescription,
-    'Value was not folder.',
-    'does-not-support-required',
-    [],
   )
 })
 
@@ -643,11 +625,6 @@ describe('parseControlDescription', () => {
   it('parses a tuple description correctly', () => {
     expect(parseControlDescription(validTupleControlDescriptionValue)).toEqual(
       right(validTupleControlDescriptionValue),
-    )
-  })
-  it('parses a folder instance description correctly', () => {
-    expect(parseControlDescription(validFolderControlDescriptionValue)).toEqual(
-      right(validFolderControlDescriptionValue),
     )
   })
   it('parses a vector2 description correctly', () => {

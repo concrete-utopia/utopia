@@ -493,6 +493,9 @@ import {
   openCodeEditorFile,
   scrollToPosition,
   selectComponents,
+  setCodeEditorBuildErrors,
+  setCodeEditorComponentDescriptorErrors,
+  setCodeEditorLintErrors,
   setFocusedElement,
   setPackageStatus,
   setScrollAnimation,
@@ -4037,15 +4040,15 @@ export const UPDATE_FNS = {
           projectContents: updatedProjectContents,
         }
         if (isComponentDescriptorFile(action.filename)) {
-          return {
+          const withUpdatedPropertyControls = {
             ...nextEditor,
             propertyControlsInfo: updatePropertyControlsOnDescriptorFileDelete(
               editor.propertyControlsInfo,
               action.filename,
             ),
           }
+          return removeErrorMessagesForFile(withUpdatedPropertyControls, action.filename)
         }
-
         return nextEditor
       }
       case 'ASSET_FILE':
@@ -6382,4 +6385,19 @@ function updateFilePath(
         )
       : withUpdatedPropertyControls
   }
+}
+
+function removeErrorMessagesForFile(editor: EditorState, filename: string): EditorState {
+  const noErrors = { [filename]: [] }
+
+  return UPDATE_FNS.SET_CODE_EDITOR_BUILD_ERRORS(
+    setCodeEditorBuildErrors(noErrors),
+    UPDATE_FNS.SET_CODE_EDITOR_LINT_ERRORS(
+      setCodeEditorLintErrors(noErrors),
+      UPDATE_FNS.SET_CODE_EDITOR_COMPONENT_DESCRIPTOR_ERRORS(
+        setCodeEditorComponentDescriptorErrors(noErrors),
+        editor,
+      ),
+    ),
+  )
 }

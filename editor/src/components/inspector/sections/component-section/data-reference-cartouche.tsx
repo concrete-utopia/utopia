@@ -6,7 +6,7 @@ import type {
   JSXElementChild,
 } from '../../../../core/shared/element-template'
 import { getJSXElementNameLastPart } from '../../../../core/shared/element-template'
-import type { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ElementPath, ElementPropertyPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
 import { NO_OP, assertNever } from '../../../../core/shared/utils'
 import { FlexRow, Icn, Icons, Tooltip, UtopiaStyles, colorTheme } from '../../../../uuiui'
@@ -15,11 +15,13 @@ import { useDataPickerButton } from './component-section'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { selectComponents } from '../../../editor/actions/meta-actions'
 import { when } from '../../../../utils/react-conditionals'
+import { traceDataFromProp } from '../../../../core/data-tracing/data-tracing'
 
 interface DataReferenceCartoucheControlProps {
   elementPath: ElementPath
   childOrAttribute: JSXElementChild
   selected: boolean
+  renderedAt: ElementPropertyPath | null
 }
 
 export const DataReferenceCartoucheControl = React.memo(
@@ -42,11 +44,29 @@ export const DataReferenceCartoucheControl = React.memo(
 
     const dataPickerButtonData = useDataPickerButton(
       [EP.parentPath(elementPath)],
-      PP.fromString('children'), // TODO
+      props.renderedAt == null ? PP.create('children') : props.renderedAt.propertyPath, // TODO
       false, // TODO
       {
         control: 'none',
       },
+    )
+
+    const isDataComingFromHookResult = useEditorState(
+      Substores.projectContentsAndMetadata,
+      (store) => {
+        if (props.renderedAt == null) {
+          return false
+        }
+        return (
+          traceDataFromProp(
+            props.renderedAt,
+            store.editor.jsxMetadata,
+            store.editor.projectContents,
+            [],
+          ).type === 'hook-result'
+        )
+      },
+      'IdentifierExpressionCartoucheControl trace',
     )
 
     const onClick = React.useCallback(() => {
@@ -66,6 +86,7 @@ export const DataReferenceCartoucheControl = React.memo(
           inverted={false}
           onDelete={NO_OP}
           testId={`data-reference-cartouche-${EP.toString(elementPath)}`}
+          contentIsComingFromServer={isDataComingFromHookResult}
         />
       </>
     )
@@ -81,6 +102,7 @@ interface DataCartoucheInnerProps {
   safeToDelete: boolean
   onDelete: () => void
   testId: string
+  contentIsComingFromServer: boolean
 }
 
 export const DataCartoucheInner = React.forwardRef(
@@ -93,6 +115,7 @@ export const DataCartoucheInner = React.forwardRef(
       selected,
       inverted,
       contentsToDisplay,
+      contentIsComingFromServer,
     } = props
 
     const onDeleteInner = React.useCallback(
@@ -103,25 +126,35 @@ export const DataCartoucheInner = React.forwardRef(
       [onDelete],
     )
 
+    const cartoucheIconColorToUse = contentIsComingFromServer ? 'component' : 'primary'
+
     const cartoucheIconColor = inverted
       ? 'on-highlight-main'
       : contentsToDisplay.type === 'reference'
-      ? 'primary'
+      ? cartoucheIconColorToUse
       : 'secondary'
 
     const borderColor = inverted
       ? colorTheme.neutralInvertedForeground.value
       : colorTheme.primary.value
 
+    const primaryForegoundColorToUse = contentIsComingFromServer
+      ? colorTheme.component.value
+      : colorTheme.primary10.value
+
     const foregroundColor = inverted
       ? colorTheme.neutralInvertedForeground.value
       : contentsToDisplay.type === 'reference'
-      ? colorTheme.primary.value
+      ? primaryForegoundColorToUse
       : colorTheme.neutralForeground.value
+
+    const primaryBackgroundColorToUse = contentIsComingFromServer
+      ? colorTheme.componentPurple05solid.value
+      : colorTheme.primary10.value
 
     const backgroundColor =
       contentsToDisplay.type === 'reference'
-        ? colorTheme.primary10.value
+        ? primaryBackgroundColorToUse
         : colorTheme.fg0Opacity10.value
 
     const label = contentsToDisplay.label ?? 'DATA'

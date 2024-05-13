@@ -50,7 +50,6 @@ import {
   parseArray,
   parseConstant,
   parseEnum,
-  parseNumber,
   parseObject,
   parseString,
 } from '../../utils/value-parser-utils'
@@ -67,7 +66,6 @@ import {
   right,
   sequenceEither,
 } from '../shared/either'
-import { setOptionalProp } from '../shared/object-utils'
 import { assertNever } from '../shared/utils'
 import type { Imports, ParsedTextFile } from '../shared/project-file-types'
 import {
@@ -770,19 +768,11 @@ async function makePropertyDescriptors(
   let result: PropertyControls = {}
 
   for await (const [propertyName, descriptor] of Object.entries(properties)) {
-    if (descriptor.control === 'folder') {
-      const parsedControlsInFolder = await makePropertyDescriptors(descriptor.controls, context)
-      if (isLeft(parsedControlsInFolder)) {
-        return parsedControlsInFolder
-      }
-      result['propertyName'] = { ...descriptor, controls: parsedControlsInFolder.value }
-    } else {
-      const parsedRegularControl = await makeRegularControlDescription(descriptor, context)
-      if (isLeft(parsedRegularControl)) {
-        return parsedRegularControl
-      }
-      result[propertyName] = parsedRegularControl.value
+    const parsedRegularControl = await makeRegularControlDescription(descriptor, context)
+    if (isLeft(parsedRegularControl)) {
+      return parsedRegularControl
     }
+    result[propertyName] = parsedRegularControl.value
   }
 
   return right(result)

@@ -38,6 +38,7 @@ import type {
   TextFile,
   TextFileContents,
   Unparsed,
+  ElementPropertyPath,
 } from '../../../core/shared/project-file-types'
 import { directory } from '../../../core/shared/project-file-types'
 import {
@@ -605,6 +606,16 @@ import type {
 import type { OnlineState } from '../online-status'
 import { onlineState } from '../online-status'
 
+export function ElementPropertyPathKeepDeepEquality(): KeepDeepEqualityCall<ElementPropertyPath> {
+  return combine2EqualityCalls(
+    (e) => e.elementPath,
+    ElementPathKeepDeepEquality,
+    (e) => e.propertyPath,
+    PropertyPathKeepDeepEquality(),
+    (elementPath, propertyPath) => ({ elementPath, propertyPath }),
+  )
+}
+
 export const ProjectMetadataFromServerKeepDeepEquality: KeepDeepEqualityCall<ProjectMetadataFromServer> =
   combine4EqualityCalls(
     (entry) => entry.title,
@@ -690,9 +701,11 @@ export const SyntheticNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<Synth
   )
 
 export const DataReferenceNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<DataReferenceNavigatorEntry> =
-  combine2EqualityCalls(
+  combine3EqualityCalls(
     (entry) => entry.elementPath,
     ElementPathKeepDeepEquality,
+    (entry) => entry.renderedAt,
+    nullableDeepEquality(ElementPropertyPathKeepDeepEquality()),
     (entry) => entry.childOrAttribute,
     JSXElementChildKeepDeepEquality(),
     dataReferenceNavigatorEntry,
@@ -993,7 +1006,7 @@ export const RawSourceMapKeepDeepEquality: KeepDeepEqualityCall<RawSourceMap> =
 export function JSAssignmentKeepDeepEqualityCall(): KeepDeepEqualityCall<JSAssignment> {
   return combine2EqualityCalls(
     (assignment) => assignment.leftHandSide,
-    JSIdentifierKeepDeepEquality(),
+    BoundParamKeepDeepEquality(),
     (assignment) => assignment.rightHandSide,
     JSExpressionKeepDeepEqualityCall,
     jsAssignment,
@@ -1631,7 +1644,7 @@ export const RegularParamKeepDeepEquality: KeepDeepEqualityCall<RegularParam> =
     (param) => param.paramName,
     createCallWithTripleEquals(),
     (param) => param.defaultExpression,
-    nullableDeepEquality(JSExpressionOtherJavaScriptOrJSXMapExpressionKeepDeepEqualityCall),
+    nullableDeepEquality(JSExpressionKeepDeepEqualityCall),
     regularParam,
   )
 
@@ -1642,7 +1655,7 @@ export const DestructuredParamPartKeepDeepEquality: KeepDeepEqualityCall<Destruc
     (paramPart) => paramPart.param,
     ParamKeepDeepEquality(),
     (paramPart) => paramPart.defaultExpression,
-    nullableDeepEquality(JSExpressionOtherJavaScriptOrJSXMapExpressionKeepDeepEqualityCall),
+    nullableDeepEquality(JSExpressionKeepDeepEqualityCall),
     destructuredParamPart,
   )
 
