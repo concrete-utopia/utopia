@@ -143,6 +143,7 @@ export interface Matrix4ControlDescription {
   visibleByDefault?: boolean
   required?: boolean
   defaultValue?: Matrix4
+  folder?: string
 }
 
 export interface NumberInputControlDescription {
