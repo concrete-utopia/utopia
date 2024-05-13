@@ -95,6 +95,7 @@ export interface ComponentToRegister {
   inspector?: InspectorSpec
   emphasis?: Emphasis
   icon?: Icon
+  label?: string
   variants?: ComponentExample | Array<ComponentExample>
 }
 

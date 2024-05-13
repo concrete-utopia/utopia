@@ -139,6 +139,7 @@ export interface ComponentDescriptor {
   inspector: InspectorSpec
   emphasis: Emphasis
   icon: Icon
+  label: string | null
 }
 
 export const ComponentDescriptorDefaults: Pick<
@@ -161,6 +162,7 @@ export function componentDescriptor(
   inspector: InspectorSpec,
   emphasis: Emphasis,
   icon: Icon,
+  label: string | null,
 ): ComponentDescriptor {
   return {
     properties: properties,
@@ -172,6 +174,7 @@ export function componentDescriptor(
     inspector: inspector,
     emphasis: emphasis,
     icon: icon,
+    label: label,
   }
 }
 

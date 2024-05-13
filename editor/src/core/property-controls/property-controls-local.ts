@@ -559,6 +559,7 @@ export function updatePropertyControlsOnDescriptorFileUpdate(
         inspector: descriptor.inspector,
         emphasis: descriptor.emphasis,
         icon: descriptor.icon,
+        label: descriptor.label,
       }
     })
   })
@@ -946,6 +947,7 @@ export async function componentDescriptorForComponentToRegister(
     inspector: componentToRegister.inspector ?? ComponentDescriptorDefaults.inspector,
     emphasis: componentToRegister.emphasis ?? ComponentDescriptorDefaults.emphasis,
     icon: componentToRegister.icon ?? ComponentDescriptorDefaults.icon,
+    label: componentToRegister.label ?? null,
   })
 }
 
@@ -1009,6 +1011,7 @@ export const parseChildrenSpec = (value: unknown): ParseResult<ChildrenSpec> => 
 
 const parseComponentToRegister = objectParser<ComponentToRegister>({
   component: parseAny,
+  label: optionalProp(parseString),
   properties: fullyParsePropertyControls,
   variants: optionalProp(
     parseAlternative<ComponentExample | Array<ComponentExample>>(
