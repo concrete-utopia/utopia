@@ -51,6 +51,7 @@ import { isFiniteRectangle, size } from '../../../core/shared/math-utils'
 import type { PackageStatus, PackageStatusMap } from '../../../core/shared/npm-dependency-types'
 import type {
   ElementPath,
+  ElementPropertyPath,
   ExportDetail,
   HighlightBoundsForUids,
   HighlightBoundsWithFile,
@@ -60,6 +61,7 @@ import type {
   NodeModules,
   ParseSuccess,
   ProjectFile,
+  PropertyPath,
   StaticElementPath,
   TextFile,
 } from '../../../core/shared/project-file-types'
@@ -2179,17 +2181,20 @@ export function syntheticNavigatorEntry(
 export interface DataReferenceNavigatorEntry {
   type: 'DATA_REFERENCE'
   elementPath: ElementPath
+  renderedAt: ElementPropertyPath | null
   childOrAttribute: JSXElementChild
 }
 
 export function dataReferenceNavigatorEntry(
   elementPath: ElementPath,
+  renderedAt: ElementPropertyPath | null,
   childOrAttribute: JSXElementChild,
 ): DataReferenceNavigatorEntry {
   return {
     type: 'DATA_REFERENCE',
     elementPath: elementPath,
     childOrAttribute: childOrAttribute,
+    renderedAt: renderedAt,
   }
 }
 

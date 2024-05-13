@@ -1,7 +1,6 @@
 import type { ProjectContentTreeRoot } from '../../components/assets'
 import { withUnderlyingTarget } from '../../components/editor/store/editor-state'
 import * as TPP from '../../components/template-property-path'
-import invariant from '../../third-party/remix/invariant'
 import { MetadataUtils } from '../model/element-metadata-utils'
 import { findContainingComponentForPath } from '../model/element-template-utils'
 import { mapFirstApplicable } from '../shared/array-utils'
@@ -261,20 +260,22 @@ export function traceDataFromProp(
   projectContents: ProjectContentTreeRoot,
   pathDrillSoFar: Array<string>,
 ): DataTracingResult {
-  const elementHoldingProp = forceNotNull(
-    'traceDataFromProp did not find element at path',
-    MetadataUtils.findElementByElementPath(metadata, startFrom.elementPath),
-  )
+  const elementHoldingProp = MetadataUtils.findElementByElementPath(metadata, startFrom.elementPath)
+  if (elementHoldingProp == null) {
+    return dataTracingFailed('traceDataFromProp did not find element at path')
+  }
   const componentHoldingElement: UtopiaJSXComponent | null = findContainingComponentForElementPath(
     startFrom.elementPath,
     projectContents,
   )
 
-  invariant(isRight(elementHoldingProp.element), 'element must be a parsed element')
-  invariant(
-    isJSXElement(elementHoldingProp.element.value),
-    'element must be a JSXElement because it must have props',
-  )
+  if (!isRight(elementHoldingProp.element)) {
+    return dataTracingFailed('element must be a parsed element')
+  }
+
+  if (!isJSXElement(elementHoldingProp.element.value)) {
+    return dataTracingFailed('element must be a JSXElement because it must have props')
+  }
 
   const propDeclaration = getJSXAttributesAtPath(
     elementHoldingProp.element.value.props,

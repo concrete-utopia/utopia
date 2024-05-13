@@ -95,6 +95,7 @@ export interface ControlForPropProps<T extends RegularControlDescription> {
   focusOnMount: boolean
   onOpenDataPicker: () => void
   showHiddenControl: (path: string) => void
+  elementPath: ElementPath
 }
 
 export const CheckboxPropertyControl = React.memo(

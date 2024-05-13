@@ -43,6 +43,8 @@ import type { PropertyControlsInfo } from '../custom-code/code-file'
 import type { ProjectContentTreeRoot } from '../assets'
 import type { PropertyControls } from '../custom-code/internal-property-controls'
 import { isFeatureEnabled } from '../../utils/feature-switches'
+import * as PP from '../../core/shared/property-path'
+import * as EPP from '../template-property-path'
 
 export function baseNavigatorDepth(path: ElementPath): number {
   // The storyboard means that this starts at -1,
@@ -132,7 +134,7 @@ export function getNavigatorTargets(
       ) {
         if (elementFromProjectContents != null) {
           // add synthetic entry
-          const dataRefEntry = dataReferenceNavigatorEntry(path, elementFromProjectContents)
+          const dataRefEntry = dataReferenceNavigatorEntry(path, null, elementFromProjectContents)
           addNavigatorTargetsUnlessCollapsed(dataRefEntry)
         } else {
           throw new Error(`internal error: Unexpected non-element found at ${EP.toString(path)}`)
@@ -207,7 +209,7 @@ export function getNavigatorTargets(
             walkAndAddKeys(subTreeChild, collapsedAncestor, prop)
           } else {
             const synthEntry = isFeatureEnabled('Data Entries in the Navigator')
-              ? dataReferenceNavigatorEntry(childPath, propValue)
+              ? dataReferenceNavigatorEntry(childPath, EPP.create(path, PP.create(prop)), propValue)
               : syntheticNavigatorEntry(childPath, propValue)
             addNavigatorTargetsUnlessCollapsed(synthEntry)
           }
@@ -340,7 +342,7 @@ export function getNavigatorTargets(
           const children = jsxElement.children
           children.forEach((child) => {
             const childPath = EP.appendToPath(path, child.uid)
-            const dataRefEntry = dataReferenceNavigatorEntry(childPath, child)
+            const dataRefEntry = dataReferenceNavigatorEntry(childPath, null, child)
             addNavigatorTargetsUnlessCollapsed(dataRefEntry)
           })
         }
