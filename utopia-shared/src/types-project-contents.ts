@@ -152,3 +152,10 @@ export type RevisionsStateType =
   | 'CODE_AHEAD'
   | 'BOTH_MATCH'
   | 'CODE_AHEAD_BUT_PLEASE_TELL_VSCODE_ABOUT_IT'
+
+export const RevisionsState = {
+  ParsedAhead: 'PARSED_AHEAD',
+  CodeAhead: 'CODE_AHEAD',
+  BothMatch: 'BOTH_MATCH',
+  CodeAheadButPleaseTellVSCodeAboutIt: 'CODE_AHEAD_BUT_PLEASE_TELL_VSCODE_ABOUT_IT',
+} as const

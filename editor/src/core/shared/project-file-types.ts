@@ -7,11 +7,15 @@ import type {
 } from './element-template'
 import type { ErrorMessage } from './error-messages'
 import { arrayEqualsByValue, objectEquals } from './utils'
-import type { ImageFile } from 'utopia-shared/src/types-project-contents'
-import { imageFile } from 'utopia-shared/src/types-project-contents'
+import type {
+  ImageFile,
+  AssetFile,
+  RevisionsStateType,
+} from 'utopia-shared/src/types-project-contents'
+import { imageFile, assetFile, RevisionsState } from 'utopia-shared/src/types-project-contents'
 
-export type { ImageFile }
-export { imageFile }
+export type { ImageFile, AssetFile, RevisionsStateType }
+export { imageFile, assetFile, RevisionsState }
 
 export type id = string
 enum StaticModifier {}
@@ -569,20 +573,6 @@ export function isParsedJSONFailure(result: ParsedJSONResult): result is ParsedJ
 export type ParsedJSONResult = ParsedJSONSuccess | ParsedJSONFailure
 
 // Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
-export type RevisionsStateType =
-  | 'PARSED_AHEAD'
-  | 'CODE_AHEAD'
-  | 'BOTH_MATCH'
-  | 'CODE_AHEAD_BUT_PLEASE_TELL_VSCODE_ABOUT_IT'
-
-export const RevisionsState = {
-  ParsedAhead: 'PARSED_AHEAD',
-  CodeAhead: 'CODE_AHEAD',
-  BothMatch: 'BOTH_MATCH',
-  CodeAheadButPleaseTellVSCodeAboutIt: 'CODE_AHEAD_BUT_PLEASE_TELL_VSCODE_ABOUT_IT',
-} as const
-
-// Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
 export interface TextFileContents {
   code: string
   parsed: ParsedTextFile
@@ -720,21 +710,6 @@ export function isEsRemoteDependencyPlaceholder(
 
 export function isImageFile(projectFile: ProjectFile): projectFile is ImageFile {
   return projectFile.type === 'IMAGE_FILE'
-}
-
-// Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
-export interface AssetFile {
-  type: 'ASSET_FILE'
-  base64?: string
-  gitBlobSha?: string
-}
-
-export function assetFile(base64: string | undefined, gitBlobSha: string | undefined): AssetFile {
-  return {
-    type: 'ASSET_FILE',
-    base64: base64,
-    gitBlobSha: gitBlobSha,
-  }
 }
 
 export function isAssetFile(projectFile: ProjectFile | null): projectFile is AssetFile {
