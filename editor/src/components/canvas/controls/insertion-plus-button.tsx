@@ -67,9 +67,12 @@ export const InsertionControls: React.FunctionComponent = React.memo(
     }
     const selectedView = selectedViews[0]
 
-    const controlPropsFinished: ButtonControlProps[] | null =
-      collectInsertionControlsForElement(jsxMetadata, pathTrees, scale, selectedView) ??
-      collectInsertionControlsForElement(jsxMetadata, pathTrees, scale, EP.parentPath(selectedView))
+    const controlPropsFinished: ButtonControlProps[] | null = collectInsertionControlsForElement(
+      jsxMetadata,
+      pathTrees,
+      scale,
+      EP.parentPath(selectedView),
+    )
 
     if (controlPropsFinished == null) {
       return null
