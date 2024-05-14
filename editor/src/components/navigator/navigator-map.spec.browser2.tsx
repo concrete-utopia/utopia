@@ -75,7 +75,7 @@ export var ${BakedInStoryboardVariableName} = (
 
 function expectRegularCounterWithCount(domElement: HTMLElement, count: number) {
   expect(domElement.textContent).toEqual(count.toString())
-  expect(domElement.style.backgroundColor).toEqual('var(--utopitheme-dynamicBlue10)')
+  expect(domElement.style.backgroundColor).toEqual('var(--utopitheme-selectionBlue)')
   expect(domElement.style.color).toEqual('')
 }
 
@@ -85,10 +85,9 @@ function expectOverriddenCounterWithCount(
   overrideSuccess: boolean,
 ) {
   expect(domElement.textContent).toEqual(count.toString())
-  expect(domElement.style.color).toEqual('var(--utopitheme-brandNeonPink)')
   if (overrideSuccess) {
     // successful override background color
-    expect(domElement.style.backgroundColor).toEqual('var(--utopitheme-pinkSubdued)')
+    expect(domElement.style.backgroundColor).toEqual('var(--utopitheme-brandNeonPink60)')
   } else {
     // failed override shows a diagonal strikethrough implemented with linear-gradient
     expect(domElement.style.background.slice(0, 15)).toEqual('linear-gradient')
