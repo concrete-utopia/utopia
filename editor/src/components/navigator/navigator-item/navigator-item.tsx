@@ -998,6 +998,7 @@ export const NavigatorItem: React.FunctionComponent<
             <DataReferenceCartoucheControl
               elementPath={navigatorEntry.elementPath}
               renderedAt={navigatorEntry.renderedAt}
+              surroundingScope={navigatorEntry.surroundingScope}
               childOrAttribute={navigatorEntry.childOrAttribute}
               selected={selected}
             />

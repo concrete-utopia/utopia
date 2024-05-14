@@ -8,6 +8,7 @@ import type {
 import { getJSXElementNameLastPart } from '../../../../core/shared/element-template'
 import type { ElementPath, ElementPropertyPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
+import * as EPP from '../../../template-property-path'
 import { NO_OP, assertNever } from '../../../../core/shared/utils'
 import { FlexRow, Icn, Icons, Tooltip, UtopiaStyles, colorTheme } from '../../../../uuiui'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
@@ -15,13 +16,14 @@ import { useDataPickerButton } from './component-section'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { selectComponents } from '../../../editor/actions/meta-actions'
 import { when } from '../../../../utils/react-conditionals'
-import { traceDataFromProp } from '../../../../core/data-tracing/data-tracing'
+import { traceDataFromElement, traceDataFromProp } from '../../../../core/data-tracing/data-tracing'
 
 interface DataReferenceCartoucheControlProps {
   elementPath: ElementPath
   childOrAttribute: JSXElementChild
   selected: boolean
   renderedAt: ElementPropertyPath | null
+  surroundingScope: ElementPath
 }
 
 export const DataReferenceCartoucheControl = React.memo(
@@ -60,12 +62,10 @@ export const DataReferenceCartoucheControl = React.memo(
     const isDataComingFromHookResult = useEditorState(
       Substores.projectContentsAndMetadata,
       (store) => {
-        if (props.renderedAt == null) {
-          return false
-        }
         return (
-          traceDataFromProp(
-            props.renderedAt,
+          traceDataFromElement(
+            props.childOrAttribute,
+            props.surroundingScope,
             store.editor.jsxMetadata,
             store.editor.projectContents,
             [],
