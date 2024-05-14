@@ -40,12 +40,18 @@ export const DataReferenceCartoucheControl = React.memo(
       'DataReferenceCartoucheControl contentsToDisplay',
     )
 
-    // TODO get the actual data _value_ to display in the cartouche, and only show the data reference in the tooltip
+    const renderedAt =
+      props.renderedAt ??
+      // if the renderedAt is not provided, we assume that the element is rendered at the parent's children
+      EPP.create(
+        EP.parentPath(elementPath),
+        PP.create('children'), // FIXME this will replace _all_ of the children of the parent element instead of just selectively updating the data reference!!! – providing ['children', index] is not enough here, we need a deeper fix
+      )
 
     const dataPickerButtonData = useDataPickerButton(
-      [EP.parentPath(elementPath)],
-      props.renderedAt == null ? PP.create('children') : props.renderedAt.propertyPath, // TODO
-      false, // TODO
+      [renderedAt.elementPath],
+      renderedAt.propertyPath,
+      false, // TODO we need to kill this parameter
       {
         control: 'none',
       },
