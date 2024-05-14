@@ -1,3 +1,4 @@
+import { Readable } from 'stream'
 import type { UtopiaPrismaClient } from './db.server'
 import type { AccessLevel } from './types'
 import { SESSION_COOKIE_NAME } from './util/api.server'
@@ -177,4 +178,11 @@ export async function createTestGithubAuth(
       user_id: params.userId,
     },
   })
+}
+
+export function readableStream(data: string) {
+  const stream = new Readable()
+  stream.push(data)
+  stream.push(null)
+  return stream
 }
