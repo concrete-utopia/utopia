@@ -105,9 +105,6 @@ const gridTemplates = {
     gridColumnGap: 0,
     gridTemplateColumns: '1fr 145px 22px',
   },
-  '<--------auto--------><--------auto-------->': {
-    gridTemplateColumns: 'auto auto',
-  },
 } as const
 
 export type GridRowVariant = keyof typeof gridTemplates

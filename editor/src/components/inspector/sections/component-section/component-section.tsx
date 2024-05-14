@@ -1225,46 +1225,40 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
     <React.Fragment>
       <UIGridRow
         padded={false}
-        variant='<--------auto--------><--------auto-------->'
+        variant='<----------1fr---------><-auto->'
         style={{
           borderTop: `1px solid ${colorTheme.seperator.value}`,
           padding: `0 ${UtopiaTheme.layout.inspectorXPadding}px`,
           alignItems: 'center',
           gap: 8,
-          minHeight: 32,
         }}
       >
         <FlexRow
+          onClick={OpenFile}
           style={{
             flexGrow: 1,
             height: UtopiaTheme.layout.rowHeight.large,
+            fontWeight: 600,
+            cursor: 'pointer',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
             overflow: 'hidden',
+            gap: 8,
           }}
         >
-          <div
-            onClick={OpenFile}
-            style={{
-              fontWeight: 600,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-            }}
-          >
-            {componentData != null ? (
-              <React.Fragment>
-                <span>{componentData.displayName}</span>
-                {when(componentData.isRegisteredComponent, <span style={{ fontSize: 6 }}>◇</span>)}
-                {componentData.secondaryName == null ? null : (
-                  <span style={{ opacity: 0.5, fontWeight: 'initial' }}>
-                    {componentData.secondaryName}
-                  </span>
-                )}
-              </React.Fragment>
-            ) : (
-              <span>Component</span>
-            )}
-          </div>
+          {componentData != null ? (
+            <React.Fragment>
+              <span>{componentData.displayName}</span>
+              {when(componentData.isRegisteredComponent, <span style={{ fontSize: 6 }}>◇</span>)}
+              {componentData.secondaryName == null ? null : (
+                <span style={{ opacity: 0.5, fontWeight: 'initial' }}>
+                  {componentData.secondaryName}
+                </span>
+              )}
+            </React.Fragment>
+          ) : (
+            <span>Component</span>
+          )}
         </FlexRow>
         <SquareButton highlight onClick={toggleSection}>
           <ExpandableIndicator
