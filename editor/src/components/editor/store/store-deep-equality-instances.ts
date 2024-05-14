@@ -3430,7 +3430,7 @@ const InspectorSpecKeepDeepEquality: KeepDeepEqualityCall<InspectorSpec> = (oldV
 }
 
 export const ComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<ComponentDescriptor> =
-  combine9EqualityCalls(
+  combine10EqualityCalls(
     (descriptor) => descriptor.properties,
     PropertyControlsKeepDeepEquality,
     (descriptor) => descriptor.supportsChildren,
@@ -3449,6 +3449,8 @@ export const ComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<Component
     createCallWithTripleEquals<Emphasis>(),
     (descriptor) => descriptor.icon,
     createCallWithTripleEquals<Icon>(),
+    (descriptor) => descriptor.label,
+    nullableDeepEquality(StringKeepDeepEquality),
     componentDescriptor,
   )
 

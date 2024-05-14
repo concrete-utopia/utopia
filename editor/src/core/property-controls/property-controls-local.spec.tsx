@@ -69,6 +69,7 @@ describe('registered property controls', () => {
       '/src/card': {
         Card: {
           component: Card,
+          label: "Labeled Card",
           properties: {
             label: {
               control: 'string-input',
@@ -121,6 +122,7 @@ describe('registered property controls', () => {
             "visual",
             "typography",
           ],
+          "label": "Labeled Card",
           "preferredChildComponents": Array [],
           "properties": Object {
             "background": Object {
@@ -257,6 +259,7 @@ describe('registered property controls', () => {
           "focus": "default",
           "icon": "component",
           "inspector": Array [],
+          "label": null,
           "preferredChildComponents": Array [],
           "properties": Object {
             "background": Object {
@@ -334,6 +337,7 @@ describe('registered property controls', () => {
           "focus": "default",
           "icon": "component",
           "inspector": "all",
+          "label": null,
           "preferredChildComponents": Array [],
           "properties": Object {
             "label": Object {
@@ -947,6 +951,7 @@ describe('registered property controls', () => {
           "focus": "default",
           "icon": "component",
           "inspector": Array [],
+          "label": null,
           "preferredChildComponents": Array [],
           "properties": Object {
             "background": Object {
@@ -1771,6 +1776,7 @@ describe('registered property controls', () => {
             "focus": "default",
             "icon": "component",
             "inspector": Array [],
+            "label": null,
             "preferredChildComponents": Array [],
             "properties": Object {
               "label": Object {
