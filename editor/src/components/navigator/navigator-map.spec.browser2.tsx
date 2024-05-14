@@ -75,7 +75,7 @@ export var ${BakedInStoryboardVariableName} = (
 
 function expectRegularCounterWithCount(domElement: HTMLElement, count: number) {
   expect(domElement.textContent).toEqual(count.toString())
-  expect(domElement.style.color).toEqual('unset')
+  expect(domElement.style.color).toEqual('var(--utopitheme-white)')
 }
 
 function expectOverriddenCounterWithCount(
