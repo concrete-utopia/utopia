@@ -1,5 +1,4 @@
 import React from 'react'
-import type { ConsoleLog } from '../../components/editor/store/editor-state'
 import {
   getAllCodeEditorErrors,
   getOpenUIJSFile,
@@ -22,9 +21,6 @@ import { useEditorState, Substores } from '../../components/editor/store/store-h
 import type { ErrorMessage } from './error-messages'
 
 const EmptyArray: Array<RuntimeErrorInfo> = []
-
-const ConsoleLogSizeLimit = 100
-const EmptyConsoleLogs: Array<ConsoleLog> = []
 
 const runtimeErrorsAtom = atomWithPubSub<Array<RuntimeErrorInfo>>({
   key: 'runtimeErrors',
@@ -83,11 +79,6 @@ export function useWriteOnlyRuntimeErrors(): {
   }
 }
 
-const consoleLogsAtom = atomWithPubSub<Array<ConsoleLog>>({
-  key: 'canvasConsoleLogs',
-  defaultValue: [],
-})
-
 let reactRouterErrorLogged: boolean = false
 
 export function hasReactRouterErrorBeenLogged(): boolean {
@@ -96,68 +87,6 @@ export function hasReactRouterErrorBeenLogged(): boolean {
 
 export function setReactRouterErrorHasBeenLogged(value: boolean): void {
   reactRouterErrorLogged = value
-}
-
-const ReactRouterErrorPrefix = `React Router caught the following error during render`
-const ReactRouterAwaitErrorPrefix = `<Await> caught the following error during render`
-
-export function useUpdateOnConsoleLogs(
-  referentiallyStableCallback: (newConsoleLogs: Array<ConsoleLog>) => void,
-): void {
-  useSubscribeToPubSubAtom(consoleLogsAtom, referentiallyStableCallback)
-}
-
-export function useReadOnlyConsoleLogs(): Array<ConsoleLog> {
-  return usePubSubAtomReadOnly(consoleLogsAtom, AlwaysTrue)
-}
-
-export function useWriteOnlyConsoleLogs(): {
-  addToConsoleLogs: (log: ConsoleLog) => void
-  clearConsoleLogs: () => void
-} {
-  const modifyLogs = usePubSubAtomWriteOnly(consoleLogsAtom)
-
-  const clearConsoleLogs = React.useCallback(() => {
-    modifyLogs(EmptyConsoleLogs)
-  }, [modifyLogs])
-
-  const addToConsoleLogs = React.useCallback(
-    (log: ConsoleLog) => {
-      modifyLogs((logs) => {
-        let result = [...logs, log]
-        while (result.length > ConsoleLogSizeLimit) {
-          result.shift()
-        }
-        return result
-      })
-      // For an error...
-      if (log.method === 'error') {
-        // ...where the first value...
-        const firstLine = log.data[0]
-        // ...is a string...
-        if (typeof firstLine === 'string') {
-          // ...and it starts with these prefixes...
-          if (
-            firstLine.startsWith(ReactRouterErrorPrefix) ||
-            firstLine.startsWith(ReactRouterAwaitErrorPrefix)
-          ) {
-            // ...Mark these as having been seen.
-            setReactRouterErrorHasBeenLogged(true)
-          }
-        }
-      }
-    },
-    [modifyLogs],
-  )
-
-  return {
-    addToConsoleLogs: addToConsoleLogs,
-    clearConsoleLogs: clearConsoleLogs,
-  }
-}
-
-export function getConsoleLogsForTests(): Array<ConsoleLog> {
-  return consoleLogsAtom.currentValue
 }
 
 export interface OverlayError {
