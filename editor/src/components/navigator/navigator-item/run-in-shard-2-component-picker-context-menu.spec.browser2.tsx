@@ -563,6 +563,11 @@ describe('The navigator component picker context menu', () => {
       labelTestIdForComponentIcon('RandomComponent', '/src/utils', 'component'),
     )
     expect(randomComponentRow).not.toBeNull()
+
+    const listRow = editor.renderedDOM.queryByTestId(
+      labelTestIdForComponentIcon('List', '', 'code'),
+    )
+    expect(listRow).not.toBeNull()
   })
 
   it('Selecting a component with no variants from the simple picker for a render prop should insert that component into the render prop', async () => {
@@ -845,6 +850,67 @@ describe('The navigator component picker context menu', () => {
           }}
         >
           <FlexRow>three totally real placeholders</FlexRow>
+        </Card>
+        <Card
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 800,
+            top: 111,
+            width: 139,
+            height: 87,
+          }}
+          title={<div />}
+        />
+      </Storyboard>
+    )
+    `),
+    )
+  })
+
+  it('Selecting a List from the simple picker for adding a child should insert the code for the List', async () => {
+    const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
+    await selectComponentsForTest(editor, [EP.fromString('sb/card')])
+    const addChildButton = editor.renderedDOM.getByTestId(
+      addChildButtonTestId(EP.fromString('sb/card')),
+    )
+    await mouseClickAtPoint(addChildButton, { x: 2, y: 2 })
+
+    const submenuButton = await waitFor(() => editor.renderedDOM.getByText('List'))
+    await mouseClickAtPoint(submenuButton, { x: 2, y: 2 })
+
+    await editor.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState(), StoryboardFilePath)).toEqual(
+      formatTestProjectCode(`
+    import * as React from 'react'
+    import { Storyboard } from 'utopia-api'
+    import { Placeholder } from 'utopia-api'
+
+    export const Card = (props) => {
+      return (
+        <div style={props.style}>
+          {props.title}
+          {props.children}
+        </div>
+      )
+    }
+
+    export var storyboard = (
+      <Storyboard>
+        <Card
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 945,
+            top: 111,
+            width: 139,
+            height: 87,
+          }}
+        >
+          {[1, 2, 3].map((listItem) => (
+            <Placeholder />
+          ))}
         </Card>
         <Card
           style={{

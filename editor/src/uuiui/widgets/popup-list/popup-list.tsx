@@ -106,8 +106,7 @@ const Option = (props: OptionProps<SelectOption>) => {
         {props.data.icon == null ? null : (
           <Icn
             {...props.data.icon}
-            // We override the color prop here so it can switch between dark and light depending on whether its highlighted (to always contrast the background)
-            color={props.isFocused ? 'on-highlight-main' : 'main'}
+            color={'white'}
             width={16}
             height={16}
             style={{ marginLeft: 4 }}
