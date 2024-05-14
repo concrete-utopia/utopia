@@ -1,9 +1,9 @@
 import urlJoin from 'url-join'
-import type { AssetToUpload, UnzipEntry } from './github-branch-contents.server'
+import type { AssetToUpload } from './github-branch-contents.server'
 import {
   populateDirectories,
-  populateEntryContents,
-  processEntry,
+  populateArchiveFileContents,
+  processArchiveFile,
   shouldUploadAsset,
   unzipGithubArchive,
 } from './github-branch-contents.server'
@@ -12,6 +12,8 @@ import * as os from 'os'
 import path from 'path'
 import { projectContentDirectory, type ExistingAsset } from '../types'
 import type { ProjectContentDirectory } from 'utopia-shared/src/types'
+import type * as unzipper from 'unzipper'
+import { readableStream } from '../test-util'
 
 describe('Github get branch contents', () => {
   describe('shouldUploadAsset', () => {
@@ -69,13 +71,13 @@ describe('Github get branch contents', () => {
     })
   })
 
-  describe('populateEntryContents', () => {
+  describe('populateArchiveFileContents', () => {
     it('populates the leaf for a directory entry', async () => {
       let root = projectContentDirectory('root')
       const target = populateDirectories({ root_MUTABLE: root, relativeFilePath: 'some/dir/here' })
-      await populateEntryContents({
+      await populateArchiveFileContents({
         filePath: 'some/dir/here',
-        entry: { type: 'Directory' } as UnzipEntry,
+        file: { type: 'Directory' } as unzipper.File,
         target_MUTABLE: target,
         existingAssets_MUTABLE: [],
         assetsToUpload_MUTABLE: [],
@@ -109,13 +111,15 @@ describe('Github get branch contents', () => {
         root_MUTABLE: root,
         relativeFilePath: 'some/file/here.json',
       })
-      await populateEntryContents({
+      const data = `"hello there"`
+      await populateArchiveFileContents({
         filePath: 'some/file/here.json',
-        entry: {
+        file: {
           type: 'File',
-          vars: { uncompressedSize: 123 },
-          buffer: async () => Buffer.from(`"hello there"`),
-        } as UnzipEntry,
+          uncompressedSize: data.length,
+          stream: () => readableStream(data),
+          buffer: async () => Buffer.from(data),
+        } as unzipper.File,
         target_MUTABLE: target,
         existingAssets_MUTABLE: [],
         assetsToUpload_MUTABLE: [],
@@ -161,13 +165,14 @@ describe('Github get branch contents', () => {
 
       const toUpload: AssetToUpload[] = []
 
-      await populateEntryContents({
+      const data = `"hello there"`
+      await populateArchiveFileContents({
         filePath: 'some/file/here.png',
-        entry: {
+        file: {
           type: 'File',
-          vars: { uncompressedSize: 123 },
-          buffer: async () => Buffer.from(`"hello there"`),
-        } as UnzipEntry,
+          uncompressedSize: data.length,
+          stream: () => readableStream(data),
+        } as unzipper.File,
         target_MUTABLE: target,
         existingAssets_MUTABLE: [],
         assetsToUpload_MUTABLE: toUpload,
@@ -180,7 +185,7 @@ describe('Github get branch contents', () => {
               children: {
                 'here.png': {
                   content: {
-                    gitBlobSha: '6ed5c1e4f0c1dc6bd7f3e6a0a52c20585f5420be', // <- this!
+                    gitBlobSha: 'eb08f32ed19b72662acd4c30e361e38ca7d54daf', // <- this!
                     hash: 0,
                     type: 'IMAGE_FILE', // <- this!
                   },
@@ -200,26 +205,27 @@ describe('Github get branch contents', () => {
       })
       expect(toUpload.length).toEqual(1)
       expect(toUpload[0].path).toEqual('some/file/here.png')
-      expect(toUpload[0].data.length).toEqual(13) // length in bytes of "hello there"
     })
   })
 
-  describe('processEntry', () => {
-    it('processes the entry', async () => {
+  describe('processArchiveFile', () => {
+    it('processes the file', async () => {
       let root = projectContentDirectory('root')
 
-      await processEntry(
+      const data = `"hello there"`
+      await processArchiveFile(
+        {
+          path: 'the-archive/some/file/here.json',
+          type: 'File',
+          uncompressedSize: data.length,
+          stream: () => readableStream(data),
+          buffer: async () => Buffer.from(data),
+        } as unzipper.File,
         'the-archive',
         root,
         [],
         [],
-      )({
-        path: 'the-archive/some/file/here.json',
-        type: 'File',
-        vars: { uncompressedSize: 123 },
-        buffer: async () => Buffer.from(`"hello there"`),
-        autodrain: () => {},
-      } as UnzipEntry)
+      )
 
       expect(root.children).toEqual({
         some: {

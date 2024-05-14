@@ -27,21 +27,17 @@ import type {
   ProjectContentTreeRoot,
   TextFile,
 } from 'utopia-shared/src/types'
+import type { Readable } from 'stream'
 
 export type AssetToUpload = {
   path: string
-  data: Buffer
+  stream: () => Readable
+  size: number
 }
 
 type UnzipResult = {
   projectContents: ProjectContentTreeRoot
   assetsToUpload: AssetToUpload[]
-}
-
-export type UnzipEntry = unzipper.Entry & {
-  vars: {
-    uncompressedSize: number // for some reason this field is not available in the type defs, but it's there
-  }
 }
 
 export type BranchResponse = {
@@ -84,29 +80,34 @@ export function getBranchProjectContents(params: {
       data: tarball.data as ArrayBuffer,
     })
 
-    // 4. unzip the archive and process its entries
-    const existingAssets_MUTABLE = [...params.existingAssets]
-    const { assetsToUpload, projectContents } = await unzipGithubArchive({
-      archiveName: archiveName,
-      zipFilePath: zipFilePath,
-      existingAssets_MUTABLE: existingAssets_MUTABLE,
-    })
-
-    // 6. if there are any assets to upload, upload them
-    if (params.uploadAssets) {
-      await uploadAssets({
-        assets: assetsToUpload,
-        projectId: params.projectId,
+    try {
+      // 4. unzip the archive and process its entries
+      const existingAssets_MUTABLE = [...params.existingAssets]
+      const { assetsToUpload, projectContents } = await unzipGithubArchive({
+        archiveName: archiveName,
+        zipFilePath: zipFilePath,
+        existingAssets_MUTABLE: existingAssets_MUTABLE,
       })
-    }
 
-    return toApiSuccess({
-      branch: {
-        branchName: params.branch,
-        originCommit: commit,
-        content: projectContents,
-      },
-    })
+      // 5. if there are any assets to upload, upload them
+      if (params.uploadAssets) {
+        await uploadAssets({
+          assets: assetsToUpload,
+          projectId: params.projectId,
+        })
+      }
+
+      return toApiSuccess({
+        branch: {
+          branchName: params.branch,
+          originCommit: commit,
+          content: projectContents,
+        },
+      })
+    } finally {
+      // 6. dispose of the zip file
+      fs.rmSync(zipFilePath)
+    }
   }
 }
 
@@ -158,69 +159,54 @@ async function uploadAssets(params: { assets: AssetToUpload[]; projectId: string
   await Promise.all(uploads)
 }
 
-export function unzipGithubArchive(params: {
+export async function unzipGithubArchive(params: {
   archiveName: string
   zipFilePath: string
   existingAssets_MUTABLE: ExistingAsset[]
 }): Promise<UnzipResult> {
-  return (
-    new Promise<UnzipResult>((resolve) => {
-      let assetsToUpload_MUTABLE: AssetToUpload[] = []
-      let root_MUTABLE: ProjectContentDirectory = projectContentDirectory('')
-      fs.createReadStream(params.zipFilePath)
-        // NOTE: this is parsed in-memory (instead of unzipper.Extract), but if memory becomes a problem, we can easily convert this to be disk-backed
-        .pipe(unzipper.Parse())
-        // for each entry, process it and update the project contents, as well as adding assets to upload later
-        .on(
-          'entry',
-          processEntry(
-            params.archiveName,
-            root_MUTABLE,
-            params.existingAssets_MUTABLE,
-            assetsToUpload_MUTABLE,
-          ),
-        )
-        .on('finish', () => {
-          resolve({
-            projectContents: root_MUTABLE.children,
-            assetsToUpload: assetsToUpload_MUTABLE,
-          })
-        })
-    })
-      // 5. dispose of the zip file
-      .finally(() => {
-        fs.rmSync(params.zipFilePath)
-      })
-  )
+  let assetsToUpload_MUTABLE: AssetToUpload[] = []
+  let root_MUTABLE: ProjectContentDirectory = projectContentDirectory('')
+  const archive = await unzipper.Open.file(params.zipFilePath)
+  for await (const file of archive.files) {
+    await processArchiveFile(
+      file,
+      params.archiveName,
+      root_MUTABLE,
+      params.existingAssets_MUTABLE,
+      assetsToUpload_MUTABLE,
+    )
+  }
+  return {
+    projectContents: root_MUTABLE.children,
+    assetsToUpload: assetsToUpload_MUTABLE,
+  }
 }
 
-export function processEntry(
+export async function processArchiveFile(
+  file: unzipper.File,
   archiveName: string,
   root_MUTABLE: ProjectContentDirectory,
   existingAssets_MUTABLE: ExistingAsset[],
   assetsToUpload_MUTABLE: AssetToUpload[],
-) {
-  return async function (entry: UnzipEntry): Promise<void> {
-    // The entry path starts with the archive name, so get rid of it since we won't need it.
-    const filePath = entry.path.replace(`${archiveName}/`, '')
-
-    if (filePath.length > 0) {
-      // Go through the folders that lead to this path and create their
-      // representation in the tree, if missing.
-      const target = populateDirectories({ root_MUTABLE: root_MUTABLE, relativeFilePath: filePath })
-
-      // Get the file contents and store them in the tree.
-      await populateEntryContents({
-        filePath: filePath,
-        entry: entry,
-        target_MUTABLE: target,
-        existingAssets_MUTABLE: existingAssets_MUTABLE,
-        assetsToUpload_MUTABLE: assetsToUpload_MUTABLE,
-      })
-    }
-
-    entry.autodrain()
+): Promise<void> {
+  // The archive path starts with the archive name, so get rid of it since we won't need it.
+  const filePath = file.path.replace(`${archiveName}/`, '')
+  if (filePath.length === 0) {
+    return
   }
+
+  // Go through the folders that lead to this path and create their
+  // representation in the tree, if missing.
+  const target = populateDirectories({ root_MUTABLE: root_MUTABLE, relativeFilePath: filePath })
+
+  // Get the file contents and store them in the tree.
+  await populateArchiveFileContents({
+    file: file,
+    filePath: filePath,
+    target_MUTABLE: target,
+    existingAssets_MUTABLE: existingAssets_MUTABLE,
+    assetsToUpload_MUTABLE: assetsToUpload_MUTABLE,
+  })
 }
 
 export function populateDirectories(params: {
@@ -243,9 +229,9 @@ export function populateDirectories(params: {
   return target
 }
 
-export async function populateEntryContents(params: {
+export async function populateArchiveFileContents(params: {
+  file: unzipper.File
   filePath: string
-  entry: UnzipEntry
   target_MUTABLE: ProjectContentDirectory
   existingAssets_MUTABLE: ExistingAsset[]
   assetsToUpload_MUTABLE: AssetToUpload[]
@@ -253,27 +239,30 @@ export async function populateEntryContents(params: {
   const base = path.basename(params.filePath)
   const filePathWithLeadingSlash = '/' + params.filePath.replace(/\/+$/, '')
 
-  switch (params.entry.type) {
+  switch (params.file.type) {
     case 'File':
-      const buffer = await params.entry.buffer()
-      const gitBlobSha = getGitBlobSha(params.entry.vars.uncompressedSize, buffer)
+      const gitBlobSha = await getGitBlobSha(params.file)
       const fileType = fileTypeFromFileName(params.filePath)
 
       // if the file needs to be uploaded later, add it to the list
       if (shouldUploadAsset(params.existingAssets_MUTABLE, fileType, gitBlobSha, params.filePath)) {
-        params.assetsToUpload_MUTABLE.push({ path: params.filePath, data: buffer })
+        params.assetsToUpload_MUTABLE.push({
+          path: params.filePath,
+          stream: params.file.stream,
+          size: params.file.uncompressedSize,
+        })
       }
 
       params.target_MUTABLE.children[base] = projectContentFile(
         filePathWithLeadingSlash,
-        fileContentFromEntry(buffer, gitBlobSha, fileType),
+        await projectFileContentFromArchiveFile(params.file, gitBlobSha, fileType),
       )
       break
     case 'Directory':
       params.target_MUTABLE.children[base] = projectContentDirectory(filePathWithLeadingSlash)
       break
     default:
-      console.error(`unexpected entry type "${params.entry.type}"`)
+      console.error(`unexpected file type "${params.file.type}"`)
   }
 }
 
@@ -299,11 +288,11 @@ export function shouldUploadAsset(
   )
 }
 
-function fileContentFromEntry(
-  buffer: Buffer,
+async function projectFileContentFromArchiveFile(
+  file: unzipper.File,
   gitBlobSha: string,
   fileType: FileType | null,
-): ImageFile | TextFile | AssetFile {
+): Promise<ImageFile | TextFile | AssetFile> {
   switch (fileType) {
     case 'ASSET_FILE':
       return assetFile({ gitBlobSha: gitBlobSha })
@@ -314,14 +303,22 @@ function fileContentFromEntry(
       })
     case 'TEXT_FILE':
     case null:
+      const buffer = await file.buffer()
       return textFile(buffer.toString())
   }
 }
 
-function getGitBlobSha(size: number, data: Buffer): string {
-  const header = `blob ${size}\0`
-  const blob = Buffer.concat([Buffer.from(header), data])
+async function getGitBlobSha(file: unzipper.File): Promise<string> {
   const sha1 = createHash('sha1')
-  sha1.update(blob)
-  return sha1.digest('hex')
+
+  const header = `blob ${file.uncompressedSize}\0`
+  sha1.update(header)
+
+  const stream = file.stream()
+
+  return new Promise((resolve, reject) => {
+    stream.on('data', (data) => sha1.update(Buffer.from(data)))
+    stream.on('error', reject)
+    stream.on('end', () => resolve(sha1.digest('hex')))
+  })
 }

@@ -5,19 +5,25 @@ import * as fs from 'fs'
 import urlJoin from 'url-join'
 import { ServerEnvironment } from '../env.server'
 import type { AssetToUpload } from './github-branch-contents.server'
+import * as stream from 'stream'
 
 export async function saveFileToDisk(projectId: string, file: AssetToUpload) {
+  // create destination directory
   const dir = path.dirname(file.path)
-  const base = path.basename(file.path)
   const diskPath = urlJoin(ServerEnvironment.LOCAL_ASSETS_FOLDER, `/projects/${projectId}`, dir)
   fs.mkdirSync(diskPath, { recursive: true })
+
+  // derive destination file base name
+  const base = path.basename(file.path)
   const filePath = urlJoin(diskPath, base)
-  return new Promise((resolve, reject) =>
-    fs.writeFile(filePath, file.data, (err) => {
+
+  // write the file stream into the file path
+  return new Promise<void>((resolve, reject) =>
+    stream.pipeline(file.stream(), fs.createWriteStream(filePath), (err) => {
       if (err != null) {
         reject(err)
       } else {
-        resolve(filePath)
+        resolve()
       }
     }),
   )
@@ -40,12 +46,13 @@ export function newS3Client(): S3Client {
   })
 }
 
-export async function saveFileToS3(client: S3Client, projectId: string, file: AssetToUpload) {
+export async function saveFileToS3(client: S3Client, projectId: string, asset: AssetToUpload) {
   return client.send(
     new PutObjectCommand({
       Bucket: ServerEnvironment.AWS_S3_BUCKET,
-      Key: projectFileS3Key(projectId, file.path),
-      Body: file.data,
+      Key: projectFileS3Key(projectId, asset.path),
+      Body: asset.stream(),
+      ContentLength: asset.size,
     }),
   )
 }
