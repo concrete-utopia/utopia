@@ -250,3 +250,9 @@ export function getInspectorPreferencesForTargets(
 
   return [...sectionsToShow]
 }
+
+export const AdvancedFolderLabel = 'Advanced'
+
+const advancedFolderLabel = AdvancedFolderLabel.toLowerCase()
+export const isAdvancedFolderLabel = (title: string | undefined) =>
+  title != null && title.toLowerCase() === advancedFolderLabel
