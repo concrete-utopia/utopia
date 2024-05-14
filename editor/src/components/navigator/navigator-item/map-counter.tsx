@@ -122,23 +122,23 @@ function getMapCounterStyleProps(
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    height: 20,
+    height: 15,
     width: 'max-content',
-    minWidth: 20,
-    borderRadius: 20,
-    padding: 5,
+    minWidth: 15,
+    borderRadius: 15,
+    padding: 4,
     fontWeight: 400,
+    marginRight: 2,
   }
 
   switch (overrideStatus) {
     case 'no-override':
       return {
         ...stylePropsBase,
-        backgroundColor: colorTheme.selectionBlue.value,
-        border: selectedStatus
-          ? `1px solid ${colorTheme.white.value}`
-          : `1px solid ${colorTheme.transparent.value}`,
-        color: colorTheme.white.value,
+        backgroundColor: selectedStatus
+          ? colorTheme.whiteOpacity30.value
+          : colorTheme.fg0Opacity20.value,
+        color: selectedStatus ? colorTheme.white.value : 'unset',
       }
     case 'overridden':
       return {
