@@ -32,6 +32,7 @@ import { flattenSelection } from './shared-move-strategies-helpers'
 import type { InsertionPath } from '../../../editor/store/insertion-path'
 import { childInsertionPath } from '../../../editor/store/insertion-path'
 import { treatElementAsGroupLike } from './group-helpers'
+import { PropertyControlsInfo } from '../../../custom-code/code-file'
 
 interface ReparentFactoryAndDetails {
   targetParent: InsertionPath
@@ -158,6 +159,7 @@ function getStartingTargetParentsToFilterOutInner(
     canvasState.startingAllElementProps,
     allowSmallerParent,
     elementSupportsChildren,
+    canvasState.propertyControlsInfo,
   )
   if (regularReparentTarget != null) {
     result.push(regularReparentTarget)

@@ -187,6 +187,7 @@ export function pickCanvasStateFromEditorState(
     startingMetadata: editorState.jsxMetadata,
     startingElementPathTree: editorState.elementPathTree,
     startingAllElementProps: editorState.allElementProps,
+    propertyControlsInfo: editorState.propertyControlsInfo,
   }
 }
 
@@ -207,6 +208,7 @@ export function pickCanvasStateFromEditorStateWithMetadata(
     startingMetadata: metadata,
     startingElementPathTree: editorState.elementPathTree, // IMPORTANT! This isn't based on the passed in metadata
     startingAllElementProps: allElementProps ?? editorState.allElementProps,
+    propertyControlsInfo: editorState.propertyControlsInfo,
   }
 }
 

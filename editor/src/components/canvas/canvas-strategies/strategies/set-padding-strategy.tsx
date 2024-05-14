@@ -106,6 +106,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
     canvasState.scale,
     canvasState.startingMetadata,
     canvasState.startingElementPathTree,
+    canvasState.propertyControlsInfo,
   ).has('padding')
   if (!canShowPadding) {
     return null

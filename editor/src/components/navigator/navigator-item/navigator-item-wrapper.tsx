@@ -32,6 +32,7 @@ import type {
   DerivedSubstate,
   MetadataSubstate,
   ProjectContentAndMetadataSubstate,
+  PropertyControlsInfoSubstate,
 } from '../../editor/store/store-hook-substore-types'
 import type {
   ConditionalClauseNavigatorItemContainerProps,
@@ -88,7 +89,15 @@ const elementSupportsChildrenSelector = createCachedSelector(
   targetElementMetadataSelector,
   (store: MetadataSubstate) => store.editor.elementPathTree,
   targetInNavigatorItemsSelector,
-  (projectContents, metadata, elementMetadata, pathTrees, elementInNavigatorTargets) => {
+  (store: PropertyControlsInfoSubstate) => store.editor.propertyControlsInfo,
+  (
+    projectContents,
+    metadata,
+    elementMetadata,
+    pathTrees,
+    elementInNavigatorTargets,
+    propertyControlsInfo,
+  ) => {
     if (!elementInNavigatorTargets || elementMetadata == null) {
       return false
     }
@@ -97,6 +106,7 @@ const elementSupportsChildrenSelector = createCachedSelector(
       elementMetadata.elementPath,
       metadata,
       pathTrees,
+      propertyControlsInfo,
     )
   },
 )((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))

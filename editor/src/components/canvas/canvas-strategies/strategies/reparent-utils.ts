@@ -5,7 +5,6 @@ import {
   withUnderlyingTarget,
 } from '../../../editor/store/editor-state'
 import {
-  StaticElementPath,
   type ElementPath,
   type Imports,
   type NodeModules,
@@ -45,7 +44,7 @@ import { addElements } from '../../commands/add-elements-command'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import { getRequiredGroupTrueUps } from '../../commands/queue-true-up-command'
 import type { Either } from '../../../../core/shared/either'
-import { flatMapEither, foldEither, left, right } from '../../../../core/shared/either'
+import { flatMapEither, left, right } from '../../../../core/shared/either'
 import { maybeBranchConditionalCase } from '../../../../core/model/conditionals'
 import type { NonEmptyArray } from '../../../../core/shared/array-utils'
 import {
@@ -59,9 +58,9 @@ import { isElementRenderedBySameComponent } from './reparent-helpers/reparent-he
 import type { ParsedCopyData } from '../../../../utils/clipboard'
 import { getParseSuccessForFilePath } from '../../canvas-utils'
 import { renameDuplicateImports } from '../../../../core/shared/import-shared-utils'
-import { modify, set } from '../../../../core/shared/optics/optic-utilities'
+import { set } from '../../../../core/shared/optics/optic-utilities'
 import { fromField, fromTypeGuard } from '../../../../core/shared/optics/optic-creators'
-import { Optic } from '../../../../core/shared/optics/optics'
+import type { PropertyControlsInfo } from '../../../custom-code/code-file'
 
 interface GetReparentOutcomeResult {
   commands: Array<CanvasCommand>
@@ -424,6 +423,7 @@ function insertIntoSlot(
   projectContents: ProjectContentTreeRoot,
   elementPathTrees: ElementPathTrees,
   numberOfElementsToInsert: number,
+  propertyControlsInfo: PropertyControlsInfo,
 ): ReparentTargetForPaste | null {
   const targetPath = selectedViews[0]
   const parentPath = EP.parentPath(targetPath)
@@ -448,6 +448,7 @@ function insertIntoSlot(
     elementPathTrees,
     wrapperFragmentUID,
     numberOfElementsToInsert,
+    propertyControlsInfo,
   )
 
   if (parentInsertionPath == null) {
@@ -540,6 +541,7 @@ function canInsertIntoTarget(
   elementPathTree: ElementPathTrees,
   parentTarget: ElementPath,
   elementsToInsert: JSXElementChild[],
+  propertyControlsInfo: PropertyControlsInfo,
 ): boolean {
   const pastedElementNames = mapDropNulls(
     (element) => (element.type === 'JSX_ELEMENT' ? element.name : null),
@@ -557,6 +559,7 @@ function canInsertIntoTarget(
     metadata,
     parentTarget,
     elementPathTree,
+    propertyControlsInfo,
   )
 
   return targetElementSupportsInsertedElement && supportsChildren
@@ -568,11 +571,19 @@ function pasteIntoParentOrGrandparent(
   selectedViews: NonEmptyArray<ElementPath>,
   metadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
+  propertyControlsInfo: PropertyControlsInfo,
 ): ReparentTargetForPaste | null {
   const parentTarget = EP.getCommonParentOfNonemptyPathArray(selectedViews, true)
 
   if (
-    canInsertIntoTarget(projectContents, metadata, elementPathTree, parentTarget, elementsToInsert)
+    canInsertIntoTarget(
+      projectContents,
+      metadata,
+      elementPathTree,
+      parentTarget,
+      elementsToInsert,
+      propertyControlsInfo,
+    )
   ) {
     return { type: 'parent', parentPath: childInsertionPath(parentTarget) }
   }
@@ -585,6 +596,7 @@ function pasteIntoParentOrGrandparent(
       metadata,
       parentOfSelected,
       elementPathTree,
+      propertyControlsInfo,
     )
   ) {
     return { type: 'parent', parentPath: childInsertionPath(parentOfSelected) }
@@ -603,6 +615,7 @@ export function applyElementCeilingToReparentTarget(
   elementPathTree: ElementPathTrees,
   reparentTarget: Either<PasteParentNotFoundError, ReparentTargetForPaste>,
   elementCeiling: ElementPath | null,
+  propertyControlsInfo: PropertyControlsInfo,
 ): Either<PasteParentNotFoundError, ReparentTargetForPaste> {
   if (elementCeiling == null) {
     return reparentTarget
@@ -627,6 +640,7 @@ export function applyElementCeilingToReparentTarget(
                     elementPathTree,
                     ceilingStaticPath,
                     elementsToInsert,
+                    propertyControlsInfo,
                   )
                 ) {
                   return right(set(intendedPathOptic, ceilingStaticPath, targetForPaste))
@@ -656,6 +670,7 @@ export function getTargetParentForOneShotInsertion(
   elementsToInsert: JSXElementChild[],
   elementPathTree: ElementPathTrees,
   insertionCeiling: ElementPath | null,
+  propertyControlsInfo: PropertyControlsInfo,
 ): Either<PasteParentNotFoundError, ReparentTargetForPaste> {
   if (!isNonEmptyArray(selectedViews)) {
     return right({ type: 'parent', parentPath: childInsertionPath(storyboardPath) })
@@ -671,6 +686,7 @@ export function getTargetParentForOneShotInsertion(
     projectContents,
     elementPathTree,
     elementsToInsert.length,
+    propertyControlsInfo,
   )
   if (insertIntoSlotResult != null) {
     return right(insertIntoSlotResult)
@@ -682,6 +698,7 @@ export function getTargetParentForOneShotInsertion(
     selectedViews,
     metadata,
     elementPathTree,
+    propertyControlsInfo,
   )
   if (pasteIntoParentOrGrandparentResult != null) {
     return applyElementCeilingToReparentTarget(
@@ -691,6 +708,7 @@ export function getTargetParentForOneShotInsertion(
       elementPathTree,
       right(pasteIntoParentOrGrandparentResult),
       insertionCeiling,
+      propertyControlsInfo,
     )
   }
   return left('Cannot find a suitable parent')
@@ -703,6 +721,7 @@ export function getTargetParentForPaste(
   metadata: ElementInstanceMetadataMap,
   copyData: ParsedCopyData,
   elementPathTree: ElementPathTrees,
+  propertyControlsInfo: PropertyControlsInfo,
 ): Either<PasteParentNotFoundError, ReparentTargetForPaste> {
   if (!isNonEmptyArray(selectedViews)) {
     return right({ type: 'parent', parentPath: childInsertionPath(storyboardPath) })
@@ -725,6 +744,7 @@ export function getTargetParentForPaste(
     projectContents,
     elementPathTree,
     copyData.elementPaste.length,
+    propertyControlsInfo,
   )
   if (insertIntoSlotResult != null) {
     return right(insertIntoSlotResult)
@@ -745,6 +765,7 @@ export function getTargetParentForPaste(
     selectedViews,
     metadata,
     elementPathTree,
+    propertyControlsInfo,
   )
   if (pasteIntoParentOrGrandparentResult != null) {
     return right(pasteIntoParentOrGrandparentResult)
