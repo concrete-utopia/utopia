@@ -462,17 +462,14 @@ jobs:
         ports:
           - 54322:5432
       minio:
-        image: bitnami/minio:2024.5.10
+        image: quay.io/minio/minio:latest
         ports:
           - 9000:9000
         env:
           MINIO_ROOT_USER: minioadmin
           MINIO_ROOT_PASSWORD: minioadmin
         options: >-
-          --health-cmd 'curl -I http://localhost:9000/minio/health/live'
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          --entrypoint sh -c "mkdir -p /data && /usr/bin/docker-entrypoint.sh server /data"
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
