@@ -16,7 +16,8 @@ services:
       - POSTGRES_PASSWORD=password
   s3-test:
     container_name: utopia-remix-s3-test
-    image: bitnami/minio:2024.5.10
+    image: quay.io/minio/minio:RELEASE.2024-05-10T01-41-38Z
+    command: server /data
     ports:
       - 9000:9000
     environment:
@@ -28,7 +29,7 @@ services:
       timeout: 5s
       retries: 5
     volumes:
-      - minio-data:/bitnami/minio/data
+      - minio-data:/data
   minio-init:
     image: minio/mc
     container_name: utopia-remix-minio-init
