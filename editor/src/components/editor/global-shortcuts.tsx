@@ -977,6 +977,7 @@ export function handleKeyDown(
             editor.elementPathTree,
             editor.allElementProps,
             editor.projectContents,
+            editor.propertyControlsInfo,
           ),
         ])
         if (commands == null) {

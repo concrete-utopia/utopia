@@ -16,6 +16,7 @@ import type { AllElementProps } from '../../../../editor/store/editor-state'
 import type { InsertionPath } from '../../../../editor/store/insertion-path'
 import type { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
 import { assertNever } from '../../../../../core/shared/utils'
+import { PropertyControlsInfo } from '../../../../custom-code/code-file'
 
 export type ReparentAsAbsolute = 'REPARENT_AS_ABSOLUTE'
 export type ReparentAsStatic = 'REPARENT_AS_STATIC'
@@ -68,6 +69,7 @@ export function findReparentStrategies(
     canvasState.startingAllElementProps,
     allowSmallerParent,
     elementSupportsChildren,
+    canvasState.propertyControlsInfo,
   )
 
   if (targetParent == null) {

@@ -16,11 +16,9 @@ import type {
   JSXArrayElement,
   JSXProperty,
   ElementInstanceMetadataMap,
-  JSExpressionMapOrOtherJavascript,
   JSXElementChildWithoutUID,
   JSIdentifier,
   JSPropertyAccess,
-  JSElementAccess,
   JSExpressionOtherJavaScript,
 } from '../shared/element-template'
 import {
@@ -42,7 +40,6 @@ import {
   hasElementsWithin,
   isUtopiaJSXComponent,
   isJSPropertyAccessForProperty,
-  isJSIdentifier,
   isJSIdentifierForName,
   isJSExpressionOtherJavaScript,
   isJSXMapExpression,
@@ -86,6 +83,8 @@ import { getAllUniqueUids } from './get-unique-ids'
 import type { ElementPathTrees } from '../shared/element-path-tree'
 import { MetadataUtils } from './element-metadata-utils'
 import { mapValues } from '../shared/object-utils'
+import type { PropertyControlsInfo } from '../../components/custom-code/code-file'
+import { getComponentDescriptorForTarget } from '../property-controls/property-controls-utils'
 
 export function generateUidWithExistingComponents(projectContents: ProjectContentTreeRoot): string {
   const mockUID = generateMockNextGeneratedUID()
@@ -1410,7 +1409,18 @@ export function elementChildSupportsChildrenAlsoText(
   path: ElementPath,
   metadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
+  projectContents: ProjectContentTreeRoot,
+  propertyControlsInfo: PropertyControlsInfo,
 ): ElementSupportsChildren | null {
+  const componentDescriptor = getComponentDescriptorForTarget(
+    path,
+    propertyControlsInfo,
+    projectContents,
+  )
+  if (componentDescriptor != null && !componentDescriptor.supportsChildren) {
+    return 'doesNotSupportChildren'
+  }
+
   if (isJSXConditionalExpression(element)) {
     if (isTextEditableConditional(path, metadata, elementPathTree)) {
       return 'conditionalWithText'

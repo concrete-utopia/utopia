@@ -180,6 +180,7 @@ export function unwrapTextContainingConditional(
         editor.elementPathTree,
         wrapperUID,
         1,
+        editor.propertyControlsInfo,
       )
       if (insertionPath == null) {
         throw new Error('Invalid unwrap insertion path')

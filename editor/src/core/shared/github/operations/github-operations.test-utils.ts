@@ -19,6 +19,7 @@ import { getUsersPublicGithubRepositories } from './load-repositories'
 import { updateProjectAgainstGithub } from './update-against-branch'
 import { GithubHelpers, resolveConflict } from '../helpers'
 import type { AsyncEditorDispatch } from '../../../../components/canvas/ui-jsx.test-utils'
+import { getBranchProjectContents } from '../../../../components/editor/server'
 
 export async function loginUserToGithubForTests(dispatch: AsyncEditorDispatch) {
   await dispatch(
@@ -79,6 +80,7 @@ export class MockGithubOperations {
   getUsersPublicGithubRepositories: Defer<void> = defer()
   getBranchesForGithubRepository: Defer<void> = defer()
   updateProjectWithBranchContent: Defer<void> = defer()
+  getBranchProjectContents: Defer<void> = defer()
 
   mock(options: MockOperationContextOptions): MockGithubOperations {
     beforeEach(() => {
@@ -156,6 +158,18 @@ export class MockGithubOperations {
 
       const resolveConflictStub = this.sandbox.stub(GithubOperations, 'resolveConflict')
       resolveConflictStub.callsFake(resolveConflict(operationContext))
+
+      const getBranchProjectContentsStub = this.sandbox.stub(
+        GithubOperations,
+        'getBranchProjectContents',
+      )
+      getBranchProjectContentsStub.callsFake(
+        wrapWithDeferResolve(
+          { current: this.getBranchProjectContents },
+          'getBranchProjectContents',
+          getBranchProjectContents(operationContext),
+        ),
+      )
 
       const updateProjectWithBranchContentStub = this.sandbox.stub(
         GithubOperations,
