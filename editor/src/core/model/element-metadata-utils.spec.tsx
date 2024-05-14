@@ -751,7 +751,7 @@ export var storyboard = (
     const storyboardJS = parseResultFromCode(StoryboardFilePath, storyboardCode)
     const appCode = `import React from 'react'
 export const App = (props) => {
-  return <div>
+  return <div />
 }
 `
     const appJS = parseResultFromCode('/src/app.js', appCode)
@@ -793,6 +793,66 @@ export const App = (props) => {
       },
     )
     expect(actualResult).toEqual(false)
+  })
+  it('returns true for a component used from a different file that uses props.children (and explicit supportsChildren=true component annotation)', () => {
+    const storyboardCode = `import React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+export var storyboard = (
+  <Storyboard data-uid='${BakedInStoryboardUID}'>
+    <Scene
+      data-uid='${TestSceneUID}'
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+    >
+      <App data-uid='${TestAppUID}' />
+    </Scene>
+  </Storyboard>
+`
+    const storyboardJS = parseResultFromCode(StoryboardFilePath, storyboardCode)
+    const appCode = `import React from 'react'
+export const App = (props) => {
+  return <div>{props.children}</div>
+}
+`
+    const appJS = parseResultFromCode('/src/app.js', appCode)
+    const projectContents = contentsToTree({
+      [StoryboardFilePath]: textFile(
+        textFileContents(storyboardCode, storyboardJS, RevisionsState.BothMatch),
+        null,
+        null,
+        0,
+      ),
+      ['/src/app.js']: textFile(
+        textFileContents(appCode, appJS, RevisionsState.BothMatch),
+        null,
+        null,
+        0,
+      ),
+    })
+    const path = EP.elementPath([[BakedInStoryboardUID, TestScenePath, TestAppUID]])
+    const element = dummyInstanceDataForElementType(jsxElementName('App', []), path)
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      projectContents,
+      path,
+      { [EP.toString(path)]: element },
+      {},
+      {
+        '/src/app': {
+          App: {
+            ...ComponentDescriptorDefaults,
+            supportsChildren: true,
+            properties: {},
+            inspector: 'all',
+            emphasis: 'regular',
+            focus: 'default',
+            preferredChildComponents: [],
+            variants: [],
+            source: defaultComponentDescriptor(),
+          },
+        },
+      },
+    )
+    expect(actualResult).toEqual(true)
   })
   it('returns false for a component used from a different file that uses props.children but has only text children', () => {
     const storyboardCode = `import React from 'react'
