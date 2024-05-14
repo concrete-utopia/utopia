@@ -62,6 +62,7 @@ export const MapListSourceCartouche = React.memo((props: MapListSourceCartoucheP
       style={{
         display: 'flex',
         flexDirection: 'row',
+        justifyContent: 'flex-end',
         minWidth: 0,
       }}
     >

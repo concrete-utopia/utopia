@@ -24,10 +24,12 @@ export function getMapCounterTestId(path: ElementPath): string {
 }
 
 type OverrideStatus = 'no-override' | 'overridden' | 'override-failed'
+type SelectedStatus = true | false
 
 interface MapCounterProps {
   navigatorEntry: NavigatorEntry
   dispatch: EditorDispatch
+  selected: boolean
 }
 
 export const MapCounter = React.memo((props: MapCounterProps) => {
@@ -99,10 +101,12 @@ export const MapCounter = React.memo((props: MapCounterProps) => {
     return null
   }
 
+  const selectedStatus = props.selected
+
   return (
     <div
       data-testid={getMapCounterTestId(elementPath)}
-      style={getMapCounterStyleProps(overrideStatus)}
+      style={getMapCounterStyleProps(overrideStatus, selectedStatus)}
       onClick={onClick}
     >
       {shownCounterValue}
@@ -110,37 +114,42 @@ export const MapCounter = React.memo((props: MapCounterProps) => {
   )
 })
 
-function getMapCounterStyleProps(overrideStatus: OverrideStatus): CSSProperties {
+function getMapCounterStyleProps(
+  overrideStatus: OverrideStatus,
+  selectedStatus: SelectedStatus,
+): CSSProperties {
   const stylePropsBase: CSSProperties = {
     display: 'flex',
     justifyContent: 'center',
-    height: 22,
-    minWidth: 22,
-    width: 'max-content',
-    padding: 5,
     alignItems: 'center',
-    borderRadius: 11,
+    height: 20,
+    width: 'max-content',
+    minWidth: 20,
+    borderRadius: 20,
+    padding: 5,
   }
 
   switch (overrideStatus) {
     case 'no-override':
       return {
         ...stylePropsBase,
-        backgroundColor: colorTheme.dynamicBlue10.value,
+        backgroundColor: colorTheme.selectionBlue.value,
+        border: selectedStatus
+          ? `1px solid ${colorTheme.white.value}`
+          : `1px solid ${colorTheme.transparent.value}`,
+        color: colorTheme.white.value,
       }
     case 'overridden':
       return {
         ...stylePropsBase,
-        color: colorTheme.brandNeonPink.value,
-        backgroundColor: colorTheme.pinkSubdued.value,
+        backgroundColor: colorTheme.brandNeonPink60.value,
       }
     case 'override-failed':
       return {
         ...stylePropsBase,
-        color: colorTheme.brandNeonPink.value,
-        background: `linear-gradient(to left bottom, ${colorTheme.pinkSubdued.value} 47%, ${colorTheme.brandNeonPink.value} 48%, ${colorTheme.brandNeonPink.value} 52%, ${colorTheme.pinkSubdued.value} 53%)`,
+        background: `linear-gradient(to left bottom, ${colorTheme.brandNeonPink60.value} 47%, ${colorTheme.brandNeonPink.value} 48%, ${colorTheme.brandNeonPink.value} 52%, ${colorTheme.brandNeonPink60.value} 53%)`,
         boxSizing: 'border-box',
-        border: `1px solid ${colorTheme.brandNeonPink.value}`,
+        border: `1px solid ${colorTheme.brandNeonPink60.value}`,
       }
     default:
       assertNever(overrideStatus)

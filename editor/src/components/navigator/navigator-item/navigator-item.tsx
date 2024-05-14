@@ -1240,7 +1240,11 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         selected={props.selected}
         openOn='double-click'
       />
-      <MapCounter navigatorEntry={props.navigatorEntry} dispatch={props.dispatch} />
+      <MapCounter
+        navigatorEntry={props.navigatorEntry}
+        dispatch={props.dispatch}
+        selected={props.selected}
+      />
       <ComponentPreview
         key={`preview-${props.label}`}
         navigatorEntry={props.navigatorEntry}
