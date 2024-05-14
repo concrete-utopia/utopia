@@ -1,20 +1,24 @@
+import type { JSIdentifier, JSXTextBlock } from 'utopia-shared/src/types'
 import type { EditorRenderResult } from '../../components/canvas/ui-jsx.test-utils'
 import {
   formatTestProjectCode,
   renderTestEditorWithCode,
 } from '../../components/canvas/ui-jsx.test-utils'
 import { resetCanvas, setFocusedElement } from '../../components/editor/actions/action-creators'
+import { getElementFromProjectContents } from '../../components/editor/store/editor-state'
 import * as EPP from '../../components/template-property-path'
 import { BakedInStoryboardVariableName } from '../model/scene-utils'
 import { right } from '../shared/either'
 import * as EP from '../shared/element-path'
-import { jsIdentifier } from '../shared/element-template'
+import type { JSExpression } from '../shared/element-template'
 import type { ElementPath } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
 import {
   dataTracingFailed,
   dataTracingToAHookCall,
+  dataTracingToElementAtScope,
   dataTracingToLiteralAttribute,
+  traceDataFromElement,
   traceDataFromProp,
 } from './data-tracing'
 
@@ -919,6 +923,172 @@ describe('Data Tracing', () => {
           EP.fromString('sb/app:my-component:component-root'),
           'useLoaderData',
           ['reviews', '1', 'title'],
+        ),
+      )
+    })
+  })
+
+  describe('Tracing data from an element', () => {
+    it('Traces back to a hook call from an element in scope', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithStoryboard(`
+        function MyInnerComponent({title}) {
+          return <div data-uid='inner-component-root'>{
+            // @utopia/uid=map
+            title.value.map((el) => <div key={el}>{el}</div>)
+          }</div>
+        }
+        
+        function MyComponent({doc}) {
+          return <MyInnerComponent data-uid='component-root' title={doc.title} />
+        }
+  
+        function useLoaderData() {
+          return {very: { deep: { title: {value: ['hello', 'world']} } } }
+        }
+  
+        function App() {
+          const { very } = useLoaderData()
+          const { deep } = very
+          return <MyComponent data-uid='my-component' doc={deep} />
+        }
+        `),
+        'await-first-dom-report',
+      )
+
+      await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component:component-root'))
+
+      const mappedElement: JSExpression = (() => {
+        const mapElement = getElementFromProjectContents(
+          EP.fromString('sb/app:my-component:component-root:inner-component-root/map'),
+          editor.getEditorState().editor.projectContents,
+        )
+        if (mapElement == null || mapElement.type !== 'JSX_MAP_EXPRESSION') {
+          throw new Error('Could not find map element')
+        }
+        return mapElement.valueToMap
+      })()
+
+      const traceResult = traceDataFromElement(
+        mappedElement,
+        EP.fromString('sb/app:my-component:component-root:inner-component-root'),
+        editor.getEditorState().editor.jsxMetadata,
+        editor.getEditorState().editor.projectContents,
+        [],
+      )
+
+      expect(traceResult).toEqual(
+        dataTracingToAHookCall(EP.fromString('sb/app:my-component'), 'useLoaderData', [
+          'very',
+          'deep',
+          'title',
+          'value',
+        ]),
+      )
+    })
+
+    it('The element in scope is a child prop', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithStoryboard(`
+        function MyInnerComponent({name}) {
+          return <div data-uid='inner-component-root'>
+            Hello, {name}!
+          </div>
+        }
+        
+        function MyComponent({doc}) {
+          return <MyInnerComponent data-uid='component-root' name={doc.name} />
+        }
+  
+        function useLoaderData() {
+          return {very: { deep: { name: "world" } } }
+        }
+  
+        function App() {
+          const { very } = useLoaderData()
+          const { deep } = very
+          return <MyComponent data-uid='my-component' doc={deep} />
+        }
+        `),
+        'await-first-dom-report',
+      )
+
+      await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component:component-root'))
+
+      const mappedElement: JSIdentifier = (() => {
+        const rootElement = getElementFromProjectContents(
+          EP.fromString('sb/app:my-component:component-root:inner-component-root'),
+          editor.getEditorState().editor.projectContents,
+        )
+        if (rootElement == null || rootElement.type !== 'JSX_ELEMENT') {
+          throw new Error('Could not find map element')
+        }
+        const target = rootElement.children[1]
+        if (target == null || target.type !== 'JS_IDENTIFIER') {
+          throw new Error('Could not find target identifier')
+        }
+        return target
+      })()
+
+      const traceResult = traceDataFromElement(
+        mappedElement,
+        EP.fromString('sb/app:my-component:component-root:inner-component-root'),
+        editor.getEditorState().editor.jsxMetadata,
+        editor.getEditorState().editor.projectContents,
+        [],
+      )
+
+      expect(traceResult).toEqual(
+        dataTracingToAHookCall(EP.fromString('sb/app:my-component'), 'useLoaderData', [
+          'very',
+          'deep',
+          'name',
+        ]),
+      )
+    })
+
+    it('The element in scope is a text literal child', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithStoryboard(`
+        function App() {
+          return <div data-uid='app-root'>
+            Hello, {"world"}!
+          </div>
+        }
+        `),
+        'await-first-dom-report',
+      )
+
+      await focusOnComponentForTest(editor, EP.fromString('sb/app:app-root'))
+
+      const mappedElement: JSXTextBlock = (() => {
+        const rootElement = getElementFromProjectContents(
+          EP.fromString('sb/app:app-root'),
+          editor.getEditorState().editor.projectContents,
+        )
+        if (rootElement == null || rootElement.type !== 'JSX_ELEMENT') {
+          throw new Error('Could not find map element')
+        }
+        const target = rootElement.children[0]
+        if (target == null || target.type !== 'JSX_TEXT_BLOCK') {
+          throw new Error('Could not find target identifier')
+        }
+        return target
+      })()
+
+      const traceResult = traceDataFromElement(
+        mappedElement,
+        EP.fromString('sb/app:my-component:app-root'),
+        editor.getEditorState().editor.jsxMetadata,
+        editor.getEditorState().editor.projectContents,
+        [],
+      )
+
+      expect(traceResult).toEqual(
+        dataTracingToElementAtScope(
+          EP.fromString('sb/app:my-component:app-root'),
+          mappedElement,
+          [],
         ),
       )
     })
