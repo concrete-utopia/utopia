@@ -461,15 +461,6 @@ jobs:
           --health-retries 5
         ports:
           - 54322:5432
-      minio:
-        image: quay.io/minio/minio:latest
-        ports:
-          - 9000:9000
-        env:
-          MINIO_ROOT_USER: minioadmin
-          MINIO_ROOT_PASSWORD: minioadmin
-        options: >-
-          --entrypoint sh -c "mkdir -p /data && /usr/bin/docker-entrypoint.sh server /data"
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
@@ -486,6 +477,14 @@ jobs:
         with:
           path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location
+      - name: Setup minIO
+        run: |
+          docker run -d -p 9000:9000 --name minio \
+                     -e "MINIO_ROOT_USER=minioadmin" \
+                     -e "MINIO_ROOT_PASSWORD=minioadmin" \
+                     -v /tmp/data:/data \
+                     -v /tmp/config:/root/.minio \
+                     minio/minio server /data
       - name: Get minIO client
         run: |
           wget https://dl.min.io/client/mc/release/linux-amd64/mc
