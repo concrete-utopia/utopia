@@ -465,6 +465,7 @@ const ComponentPickerComponentSection = React.memo(
                 onClick={onItemClick(component.value)}
                 onMouseOver={onItemHover(component.value)}
                 data-key={component.value.key}
+                data-testid={component.value.key}
               >
                 <FlexRow css={{ gap: 10, height: 28, alignItems: 'center' }}>
                   <Icn

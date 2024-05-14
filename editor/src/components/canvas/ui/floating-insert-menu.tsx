@@ -52,7 +52,7 @@ export type InsertableComponentFlatList = Array<InsertMenuItemGroup>
 function convertInsertableComponentsToFlatList(
   insertableComponents: InsertableComponentGroup[],
 ): InsertableComponentFlatList {
-  return insertableComponents.flatMap((componentGroup) => {
+  return insertableComponents.map((componentGroup) => {
     return {
       label: getInsertableGroupLabel(componentGroup.source),
       options: componentGroup.insertableComponents.map(
