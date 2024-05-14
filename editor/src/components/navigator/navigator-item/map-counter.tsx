@@ -127,6 +127,7 @@ function getMapCounterStyleProps(
     minWidth: 20,
     borderRadius: 20,
     padding: 5,
+    fontWeight: 400,
   }
 
   switch (overrideStatus) {

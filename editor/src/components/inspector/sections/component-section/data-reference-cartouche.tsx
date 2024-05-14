@@ -164,6 +164,7 @@ export const DataCartoucheInner = React.forwardRef(
           style={{
             cursor: 'pointer',
             fontSize: 10,
+            fontWeight: 400,
             color: foregroundColor,
             backgroundColor: backgroundColor,
             border: selected ? '1px solid ' + borderColor : '1px solid transparent',
