@@ -155,7 +155,7 @@ jobs:
         id: fc-initial
         with:
           issue-number: ${{ github.event.pull_request.number }}
-          comment-author: "github-actions[bot]"
+          comment-author: 'github-actions[bot]'
           body-includes: Try me
       - name: Create or update comment
         uses: peter-evans/create-or-update-comment@v1
@@ -189,7 +189,7 @@ jobs:
       - name: Build Editor
         if: steps.cache-editor-tests.outputs.cache-hit != 'true'
         env:
-          USE_BFF: "true"
+          USE_BFF: 'true'
         run: |
           nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run build-editor-branches-ci
       - name: Send webpack stats to RelativeCI
@@ -221,7 +221,7 @@ jobs:
         id: fc
         with:
           issue-number: ${{ github.event.pull_request.number }}
-          comment-author: "github-actions[bot]"
+          comment-author: 'github-actions[bot]'
           body-includes: Try me
       - name: Create or update comment
         uses: peter-evans/create-or-update-comment@v1
@@ -302,7 +302,7 @@ jobs:
         id: fc
         with:
           issue-number: ${{ github.event.pull_request.number }}
-          comment-author: "github-actions[bot]"
+          comment-author: 'github-actions[bot]'
           body-includes: Performance test results
       - name: Create or update comment
         uses: peter-evans/create-or-update-comment@v1
@@ -343,7 +343,7 @@ jobs:
                 }
               }
             ]
-          TITLE: "Performance Results for #${{ github.event.pull_request.number }} ${{ github.event.pull_request.title }}"
+          TITLE: 'Performance Results for #${{ github.event.pull_request.number }} ${{ github.event.pull_request.title }}'
           HTML_URL: ${{ github.event.pull_request.html_url }}
           DESCRIPTION: 'Link to test editor: https://${{ secrets.STAGING_SERVER }}/p/?branch_name=${{ steps.extract_branch.outputs.branch }} \n \n Results: \n ${{ steps.run-performance-test.outputs.perf-discord-message }}'
           REPO_FULL_NAME: ${{ github.event.repository.full_name }}
@@ -356,9 +356,9 @@ jobs:
         if: ${{ steps.run-performance-test.outputs.perf-serious-regression-found == 'true' }}
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_PRS_WEBHOOK }}
-          DISCORD_USERNAME: "Puppeteer"
+          DISCORD_USERNAME: 'Puppeteer'
           DISCORD_AVATAR: https://octodex.github.com/images/puppeteer.png
-          MESSAGE: "Performance results for #${{ github.event.pull_request.number }}"
+          MESSAGE: 'Performance results for #${{ github.event.pull_request.number }}'
         with:
           args: ${{ env.MESSAGE }}
 
@@ -397,7 +397,7 @@ jobs:
         id: run-system-test
         env:
           BRANCH_NAME: ${{ steps.extract_branch.outputs.branch }}
-          HEADLESS: "true"
+          HEADLESS: 'true'
         run: |
           nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "cd puppeteer-tests; pnpm install --unsafe-perm; pnpm run system-test"
 
@@ -437,7 +437,7 @@ jobs:
         id: run-comments-test
         env:
           BRANCH_NAME: ${{ steps.extract_branch.outputs.branch }}
-          BASE_URL: "https://utopia.fish"
+          BASE_URL: 'https://utopia.fish'
         run: |
           nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "xvfb-run --server-args='-screen 0 1920x1080x24 -ac -nolisten tcp -dpi 96 +extension RANDR' run-collaboration-test"
 
@@ -469,7 +469,7 @@ jobs:
           MINIO_ROOT_USER: minioadmin
           MINIO_ROOT_PASSWORD: minioadmin
         options: >-
-          --health-cmd "curl --fail http://localhost:9000/minio/health/live || exit 1"
+          --health-cmd 'curl --fail http://localhost:9000/minio/health/live || exit 1'
           --health-interval 10s
           --health-timeout 5s
           --health-retries 3
@@ -507,15 +507,15 @@ jobs:
       - name: Test
         env:
           DATABASE_URL: postgres://postgres:password@localhost:54322/utopia-test?sslmode=disable
-          APP_ENV: "test"
-          CORS_ORIGIN: "http://localhost:8000"
-          BACKEND_URL: ""
-          REACT_APP_EDITOR_URL: ""
-          LIVEBLOCKS_SECRET_KEY: "secret"
-          AWS_S3_BUCKET: "utopia"
-          AWS_ACCESS_KEY_ID: "minioadmin"
-          AWS_SECRET_ACCESS_KEY: "minioadmin"
-          AWS_REGION: "minio"
+          APP_ENV: 'test'
+          CORS_ORIGIN: 'http://localhost:8000'
+          BACKEND_URL: ''
+          REACT_APP_EDITOR_URL: ''
+          LIVEBLOCKS_SECRET_KEY: 'secret'
+          AWS_S3_BUCKET: 'utopia'
+          AWS_ACCESS_KEY_ID: 'minioadmin'
+          AWS_SECRET_ACCESS_KEY: 'minioadmin'
+          AWS_REGION: 'minio'
         run: |
           cd utopia-remix && ./run-integration-tests-ci.sh
 
