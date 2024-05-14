@@ -472,7 +472,7 @@ jobs:
           --health-cmd 'curl --fail http://localhost:9000/minio/health/live || exit 1'
           --health-interval 10s
           --health-timeout 5s
-          --health-retries 3
+          --health-retries 5
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
