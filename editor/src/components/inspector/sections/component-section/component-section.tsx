@@ -1223,16 +1223,22 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
 
   return (
     <React.Fragment>
-      <FlexRow
+      <UIGridRow
+        padded={false}
+        variant='<--------auto--------><--------auto-------->'
         style={{
           borderTop: `1px solid ${colorTheme.seperator.value}`,
           padding: `0 ${UtopiaTheme.layout.inspectorXPadding}px`,
+          alignItems: 'center',
+          gap: 8,
+          minHeight: 32,
         }}
       >
         <FlexRow
           style={{
             flexGrow: 1,
             height: UtopiaTheme.layout.rowHeight.large,
+            overflow: 'hidden',
           }}
         >
           <div
@@ -1268,7 +1274,7 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
             selected={false}
           />
         </SquareButton>
-      </FlexRow>
+      </UIGridRow>
       {when(
         sectionExpanded,
         <React.Fragment>
