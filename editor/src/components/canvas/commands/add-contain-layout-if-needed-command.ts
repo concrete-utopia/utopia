@@ -40,6 +40,7 @@ export const runAddContainLayoutIfNeeded: CommandFunction<AddContainLayoutIfNeed
       command.element,
       editorState.jsxMetadata,
       editorState.elementPathTree,
+      editorState.propertyControlsInfo,
     ) !== 'supportsChildren'
 
   if (isNotNeeded) {

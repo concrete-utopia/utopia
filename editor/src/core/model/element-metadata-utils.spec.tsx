@@ -426,6 +426,7 @@ describe('targetElementSupportsChildren', () => {
       path,
       { [EP.toString(path)]: element },
       {},
+      {},
     )
     expect(actualResult).toEqual(true)
   })
@@ -439,6 +440,7 @@ describe('targetElementSupportsChildren', () => {
       {},
       path,
       { [EP.toString(path)]: element },
+      {},
       {},
     )
     expect(actualResult).toEqual(true)
@@ -454,6 +456,7 @@ describe('targetElementSupportsChildren', () => {
       path,
       { [EP.toString(path)]: element },
       {},
+      {},
     )
     expect(actualResult).toEqual(true)
   })
@@ -468,6 +471,7 @@ describe('targetElementSupportsChildren', () => {
       path,
       { [EP.toString(path)]: element },
       {},
+      {},
     )
     expect(actualResult).toEqual(true)
   })
@@ -481,6 +485,7 @@ describe('targetElementSupportsChildren', () => {
       {},
       path,
       { [EP.toString(path)]: element },
+      {},
       {},
     )
     expect(actualResult).toEqual(true)
@@ -511,6 +516,7 @@ describe('targetElementSupportsChildren', () => {
       path,
       { [EP.toString(path)]: element },
       {},
+      {},
     )
     expect(actualResult).toEqual(true)
   })
@@ -526,6 +532,7 @@ describe('targetElementSupportsChildren', () => {
       {},
       path,
       { [EP.toString(path)]: element },
+      {},
       {},
     )
     expect(actualResult).toEqual(true)
@@ -543,6 +550,7 @@ describe('targetElementSupportsChildren', () => {
       path,
       { [EP.toString(path)]: element },
       {},
+      {},
     )
     expect(actualResult).toEqual(true)
   })
@@ -558,6 +566,7 @@ describe('targetElementSupportsChildren', () => {
       {},
       path,
       { [EP.toString(path)]: element },
+      {},
       {},
     )
     expect(actualResult).toEqual(true)
@@ -596,6 +605,7 @@ describe('targetElementSupportsChildren', () => {
       path,
       { [EP.toString(path)]: element },
       {},
+      {},
     )
     expect(actualResult).toEqual(true)
   })
@@ -609,6 +619,7 @@ describe('targetElementSupportsChildren', () => {
       {},
       path,
       { [EP.toString(path)]: element },
+      {},
       {},
     )
     expect(actualResult).toEqual(true)
@@ -624,6 +635,7 @@ describe('targetElementSupportsChildren', () => {
       path,
       { [EP.toString(path)]: element },
       {},
+      {},
     )
     expect(actualResult).toEqual(true)
   })
@@ -637,6 +649,7 @@ describe('targetElementSupportsChildren', () => {
       {},
       path,
       { [EP.toString(path)]: element },
+      {},
       {},
     )
     expect(actualResult).toEqual(true)
@@ -652,6 +665,7 @@ describe('targetElementSupportsChildren', () => {
       path,
       { [EP.toString(path)]: element },
       {},
+      {},
     )
     expect(actualResult).toEqual(false)
   })
@@ -665,6 +679,7 @@ describe('targetElementSupportsChildren', () => {
       {},
       path,
       { [EP.toString(path)]: element },
+      {},
       {},
     )
     expect(actualResult).toEqual(false)
@@ -710,6 +725,7 @@ export const App = (props) => {
       projectContents,
       path,
       { [EP.toString(path)]: element },
+      {},
       {},
     )
     expect(actualResult).toEqual(true)
@@ -772,6 +788,7 @@ export const App = (props) => {
         [EP.toString(path)]: element,
       },
       {},
+      {},
     )
     expect(actualResult).toEqual(false)
   })
@@ -824,6 +841,7 @@ export const App = (props) => {
       {
         [EP.toString(path)]: element,
       },
+      {},
       {},
     )
     expect(actualResult).toEqual(false)

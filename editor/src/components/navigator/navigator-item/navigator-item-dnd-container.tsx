@@ -273,6 +273,7 @@ function canDropInto(editorState: EditorState, moveToEntry: ElementPath): boolea
     editorState.jsxMetadata,
     moveToEntry,
     editorState.elementPathTree,
+    editorState.propertyControlsInfo,
   )
 
   return (

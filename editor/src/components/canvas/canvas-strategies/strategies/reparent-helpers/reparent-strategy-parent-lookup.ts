@@ -35,6 +35,7 @@ import type { ElementPathTrees } from '../../../../../core/shared/element-path-t
 import { isConditionalWithEmptyOrTextEditableActiveBranch } from '../../../../../core/model/conditionals'
 import { getInsertionPathForReparentTarget } from './reparent-helpers'
 import { treatElementAsGroupLike } from '../group-helpers'
+import type { PropertyControlsInfo } from '../../../../custom-code/code-file'
 
 export type FindReparentStrategyResult = {
   strategy: ReparentStrategy
@@ -52,6 +53,7 @@ export function getReparentTargetUnified(
   allElementProps: AllElementProps,
   allowSmallerParent: AllowSmallerParent,
   elementSupportsChildren: Array<ElementSupportsChildren> = ['supportsChildren'],
+  propertyControlsInfo: PropertyControlsInfo,
 ): ReparentTarget | null {
   const canvasScale = canvasState.scale
 
@@ -65,6 +67,7 @@ export function getReparentTargetUnified(
     allElementProps,
     allowSmallerParent,
     elementSupportsChildren,
+    propertyControlsInfo,
   )
 
   // For Flex parents, we want to be able to insert between two children that don't have a gap between them.
@@ -151,6 +154,7 @@ function findValidTargetsUnderPoint(
   allElementProps: AllElementProps,
   allowSmallerParent: AllowSmallerParent,
   elementSupportsChildren: Array<ElementSupportsChildren> = ['supportsChildren'],
+  propertyControlsInfo: PropertyControlsInfo,
 ): Array<ElementPath> {
   const projectContents = canvasState.projectContents
   const openFile = canvasState.openFile ?? null
@@ -222,6 +226,7 @@ function findValidTargetsUnderPoint(
           metadata,
           target,
           elementPathTree,
+          propertyControlsInfo,
         ),
       )
     ) {

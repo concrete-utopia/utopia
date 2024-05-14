@@ -489,6 +489,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
               EP.fromString(p),
               componentMetadata,
               pathTrees,
+              propertyControlsInfo,
             ),
           )
         )

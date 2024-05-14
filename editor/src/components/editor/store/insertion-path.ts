@@ -14,6 +14,7 @@ import { isJSXConditionalExpression } from '../../../core/shared/element-templat
 import { isRight } from '../../../core/shared/either'
 import type { ProjectContentTreeRoot } from '../../assets'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import type { PropertyControlsInfo } from '../../custom-code/code-file'
 
 export type InsertionPath = ChildInsertionPath | ConditionalClauseInsertionPath
 
@@ -211,12 +212,14 @@ export function getInsertionPath(
   elementPathTree: ElementPathTrees,
   fragmentWrapperUID: string,
   numberOfElementsToInsert: number,
+  propertyControlsInfo: PropertyControlsInfo,
 ): InsertionPath | null {
   const targetSupportsChildren = MetadataUtils.targetSupportsChildren(
     projectContents,
     metadata,
     target,
     elementPathTree,
+    propertyControlsInfo,
   )
 
   if (targetSupportsChildren) {

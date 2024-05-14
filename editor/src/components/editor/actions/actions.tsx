@@ -2591,6 +2591,7 @@ export const UPDATE_FNS = {
         workingEditor.jsxMetadata,
         target,
         workingEditor.elementPathTree,
+        workingEditor.propertyControlsInfo,
       )
 
       const elementIsFragmentLike = treatElementAsFragmentLike(

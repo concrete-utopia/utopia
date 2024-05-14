@@ -43,6 +43,7 @@ import { absolute } from '../../utils/utils'
 import { setProperty } from '../canvas/commands/set-property-command'
 import * as PP from '../../core/shared/property-path'
 import type { InspectorStrategy } from '../inspector/inspector-strategies/inspector-strategy'
+import type { PropertyControlsInfo } from '../custom-code/code-file'
 
 type WrapInDivError =
   | 'No elements selected'
@@ -55,6 +56,7 @@ export const wrapInDivStrategy = (
   elementPathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
   projectContents: ProjectContentTreeRoot,
+  propertyControlsInfo: PropertyControlsInfo,
 ): InspectorStrategy => ({
   name: 'Wrap in div',
   strategy: () => {
@@ -64,6 +66,7 @@ export const wrapInDivStrategy = (
       allElementProps,
       projectContents,
       selectedViews,
+      propertyControlsInfo,
     )
     if (isLeft(result)) {
       return null
@@ -78,6 +81,7 @@ function wrapInDivCommands(
   allElementProps: AllElementProps,
   projectContents: ProjectContentTreeRoot,
   selectedViews: ElementPath[],
+  propertyControlsInfo: PropertyControlsInfo,
 ): Either<WrapInDivError, CanvasCommand[]> {
   if (!isNonEmptyArray(selectedViews)) {
     return left('No elements selected')
@@ -108,6 +112,7 @@ function wrapInDivCommands(
     elementPathTrees,
     fragmentWrapperUid,
     1,
+    propertyControlsInfo,
   )
   if (insertionPath == null) {
     return left('Cannot insert into parent of selected elements')
@@ -238,6 +243,7 @@ export function useWrapInDiv(): () => void {
       editorRef.current.allElementProps,
       editorRef.current.projectContents,
       editorRef.current.selectedViews,
+      editorRef.current.propertyControlsInfo,
     )
 
     if (isLeft(result)) {
