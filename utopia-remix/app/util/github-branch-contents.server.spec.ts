@@ -14,6 +14,7 @@ import { projectContentDirectory, type ExistingAsset } from '../types'
 import type { ProjectContentDirectory } from 'utopia-shared/src/types'
 import type * as unzipper from 'unzipper'
 import { readableStream } from '../test-util'
+import { TestProjectUtopiaGithubMain } from '../test-assets/test-utopia-github-main'
 
 describe('Github get branch contents', () => {
   describe('shouldUploadAsset', () => {
@@ -270,17 +271,13 @@ describe('Github get branch contents', () => {
       const testFilePath = urlJoin(os.tmpdir(), `${archiveName}-${Date.now()}.zip`)
       fs.copyFileSync(urlJoin(dirname, `../test-assets/${archiveName}.zip`), testFilePath)
 
-      const expected = JSON.parse(
-        fs.readFileSync(urlJoin(dirname, `../test-assets/${archiveName}.json`)).toString(),
-      )
-
       const got = await unzipGithubArchive({
         archiveName: archiveName,
         zipFilePath: testFilePath,
         existingAssets_MUTABLE: [],
       })
 
-      expect(got.projectContents).toEqual(expected)
+      expect(got.projectContents).toEqual(TestProjectUtopiaGithubMain)
       expect(got.assetsToUpload).toHaveLength(4)
       expect(got.assetsToUpload.map((a) => a.path)).toEqual([
         'assets/Curaçao.png',

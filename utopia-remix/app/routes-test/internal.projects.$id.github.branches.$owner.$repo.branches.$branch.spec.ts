@@ -17,6 +17,7 @@ import urlJoin from 'url-join'
 import * as fs from 'fs'
 import { getBranchProjectContentsRequest, type ApiSuccess } from '../types'
 import type { BranchResponse } from '../util/github-branch-contents.server'
+import { TestProjectUtopiaDefaultProjectMain } from '../test-assets/utopia-default-project-main'
 
 describe('get branch project contents', () => {
   let mockOctokit: jest.SpyInstance
@@ -177,10 +178,7 @@ describe('get branch project contents', () => {
     expect(response.branch.branchName).toBe('baz')
     expect(response.branch.originCommit).toBe(commit)
 
-    const expected = JSON.parse(
-      fs.readFileSync(urlJoin(dirname, `../test-assets/${archiveName}.json`)).toString(),
-    )
-    expect(response.branch.content).toEqual(expected)
+    expect(response.branch.content).toEqual(TestProjectUtopiaDefaultProjectMain)
   })
 })
 
