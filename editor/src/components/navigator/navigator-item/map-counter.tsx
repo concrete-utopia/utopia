@@ -137,7 +137,7 @@ function getMapCounterStyleProps(
         ...stylePropsBase,
         backgroundColor: selectedStatus
           ? colorTheme.whiteOpacity30.value
-          : colorTheme.fg0Opacity20.value,
+          : colorTheme.fg0Opacity10.value,
         color: selectedStatus ? colorTheme.white.value : 'unset',
       }
     case 'overridden':
