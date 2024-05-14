@@ -1205,9 +1205,17 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
         propertyControlsInfo,
       )
 
+      if (registeredComponent?.label == null) {
+        return {
+          displayName: elementName,
+          isRegisteredComponent: registeredComponent != null,
+        }
+      }
+
       return {
-        name: elementName,
+        displayName: registeredComponent.label,
         isRegisteredComponent: registeredComponent != null,
+        secondaryName: elementName,
       }
     },
     'ComponentSectionInner componentName',
@@ -1239,8 +1247,13 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
           >
             {componentData != null ? (
               <React.Fragment>
-                <span>{componentData.name}</span>
+                <span>{componentData.displayName}</span>
                 {when(componentData.isRegisteredComponent, <span style={{ fontSize: 6 }}>◇</span>)}
+                {componentData.secondaryName == null ? null : (
+                  <span style={{ opacity: 0.5, fontWeight: 'initial' }}>
+                    {componentData.secondaryName}
+                  </span>
+                )}
               </React.Fragment>
             ) : (
               <span>Component</span>
