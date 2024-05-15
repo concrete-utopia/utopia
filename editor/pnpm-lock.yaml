@@ -111,7 +111,7 @@ specifiers:
   '@types/mime-types': 2.1.0
   '@types/minimatch': 3.0.4
   '@types/mocha': ^9.0.0
-  '@types/murmurhash-js': 1.0.6
+  '@types/murmurhash3js': 3.0.7
   '@types/node-fetch': 2.5.11
   '@types/object-path': 0.9.29
   '@types/path-browserify': 1.0.0
@@ -244,7 +244,7 @@ specifiers:
   minimist: 1.2.0
   mocha: 8.4.0
   moize: 6.1.4
-  murmurhash-js: 1.0.0
+  murmurhash3js: 3.0.1
   node-diff3: 3.1.2
   node-fetch: 2.6.1
   node-html-parser: 1.2.20
@@ -425,7 +425,7 @@ dependencies:
   mime-types: 2.1.24
   minimatch: 3.0.4
   moize: 6.1.4
-  murmurhash-js: 1.0.0
+  murmurhash3js: 3.0.1
   node-diff3: 3.1.2
   node-html-parser: 1.2.20
   npm-package-arg: 8.1.5
@@ -537,7 +537,7 @@ devDependencies:
   '@types/mime-types': 2.1.0
   '@types/minimatch': 3.0.4
   '@types/mocha': 9.0.0
-  '@types/murmurhash-js': 1.0.6
+  '@types/murmurhash3js': 3.0.7
   '@types/node-fetch': 2.5.11
   '@types/object-path': 0.9.29
   '@types/path-browserify': 1.0.0
@@ -4893,8 +4893,8 @@ packages:
     resolution: {integrity: sha512-scN0hAWyLVAvLR9AyW7HoFF5sJZglyBsbPuHO4fv7JRvfmPBMfp1ozWqOf/e4wwPNxezBZXRfWzMb6iFLgEVRA==}
     dev: true
 
-  /@types/murmurhash-js/1.0.6:
-    resolution: {integrity: sha512-P2RRwRpevEKO0FrK5xNjxBywg0Br24tEv8K2+iWg56PtcCUNGAkaaOWKBQiUpofA8H/gmgdHXrcvSgp2uXCVAQ==}
+  /@types/murmurhash3js/3.0.7:
+    resolution: {integrity: sha512-jN3Z37nILIW1DZyP6N/NK+aw/zjFHPVb7hjrmdw7jx7FayrhKgkNpo6ZDwAsH8HSANjebBOxoXXtA39gKwyeGw==}
     dev: true
 
   /@types/node-fetch/2.5.11:
@@ -13754,8 +13754,9 @@ packages:
       thunky: 1.1.0
     dev: true
 
-  /murmurhash-js/1.0.0:
-    resolution: {integrity: sha512-TvmkNhkv8yct0SVBSy+o8wYzXjE4Zz3PCesbfs8HiCXXdcTuocApFv11UWlNFWKYsP2okqrhb7JNlSm9InBhIw==}
+  /murmurhash3js/3.0.1:
+    resolution: {integrity: sha512-KL8QYUaxq7kUbcl0Yto51rMcYt7E/4N4BG3/c96Iqw1PQrTRspu8Cpx4TZ4Nunib1d4bEkIH3gjCYlP2RLBdow==}
+    engines: {node: '>=0.10.0'}
     dev: false
 
   /nanoid/3.1.20:
