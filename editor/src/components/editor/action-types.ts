@@ -8,6 +8,7 @@ import type {
   JSXFragment,
   TopLevelElement,
   JSExpressionOtherJavaScript,
+  JSXMapExpression,
 } from '../../core/shared/element-template'
 import type { KeysPressed, Key } from '../../utils/keyboard'
 import type { IndexPosition } from '../../utils/utils'
@@ -1171,6 +1172,12 @@ export interface IncreaseOnlineStateFailureCount {
   action: 'INCREASE_ONLINE_STATE_FAILURE_COUNT'
 }
 
+export interface WrapElementInMap {
+  action: 'WRAP_ELEMENT_IN_MAP'
+  map: JSXMapExpression
+  target: ElementPath
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertJSXElement
@@ -1235,6 +1242,7 @@ export type EditorAction =
   | SaveAsset
   | ResetPins
   | WrapInElement
+  | WrapElementInMap
   | OpenFloatingInsertMenu
   | CloseFloatingInsertMenu
   | UnwrapElements

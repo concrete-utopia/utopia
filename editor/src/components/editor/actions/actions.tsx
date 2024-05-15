@@ -84,6 +84,7 @@ import {
   jsxConditionalExpressionConditionOptic,
   isJSExpressionOtherJavaScript,
   setJSXAttributesAttribute,
+  jsxMapExpression,
 } from '../../../core/shared/element-template'
 import type { ValueAtPath } from '../../../core/shared/jsx-attributes'
 import {
@@ -343,6 +344,7 @@ import type {
   AddCollapsedViews,
   ReplaceMappedElement,
   UpdateMapExpression,
+  WrapElementInMap,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -5937,6 +5939,15 @@ export const UPDATE_FNS = {
       sharingDialogOpen: action.open,
     }
   },
+  WRAP_ELEMENT_IN_MAP: (action: WrapElementInMap, editor: EditorState): EditorState =>
+    modifyUnderlyingTarget(action.target, editor, (e) =>
+      jsxMapExpression(
+        action.map.valueToMap,
+        { ...action.map.mapFunction, elementsWithin: { [e.uid]: e } },
+        emptyComments,
+        [],
+      ),
+    ),
 }
 
 function copySelectionToClipboardMutating(

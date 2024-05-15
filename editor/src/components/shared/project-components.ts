@@ -5,6 +5,7 @@ import {
   propertyControlsForComponentInFile,
 } from '../../core/property-controls/property-controls-utils'
 import type {
+  JSExpressionOtherJavaScript,
   JSXAttributes,
   JSXElementChild,
   JSXMapExpressionWithoutUID,
@@ -516,27 +517,31 @@ export const fragmentComponentInfo: ComponentInfo = {
   },
 }
 
+export const SampleMapElement = (): Omit<JSXMapExpressionWithoutUID, 'mapFunction'> & {
+  mapFunction: JSExpressionOtherJavaScript
+} => ({
+  type: 'JSX_MAP_EXPRESSION',
+  valueToMap: jsExpressionValue([1, 2, 3], emptyComments),
+  mapFunction: jsExpressionOtherJavaScript(
+    [functionParam(false, regularParam('listItem', null))],
+    `(listItem) => (\n            <Placeholder />\n          )`,
+    `(listItem) => <\nPlaceholder data-uid="placeholder-id" />);`,
+    `return (listItem) => utopiaCanvasJSXLookup("placeholder-id", {\n  callerThis: this\n})`,
+    ['React', 'Placeholder', 'utopiaCanvasJSXLookup'],
+    null,
+    {
+      'placeholder-id': jsxElement('Placeholder', 'placeholder-id', jsxAttributesFromMap({}), []),
+    },
+    emptyComments,
+    '',
+  ),
+  valuesInScopeFromParameters: ['listItem'],
+  comments: emptyComments,
+})
+
 export const mapComponentInfo: ComponentInfo = {
   insertMenuLabel: 'List',
-  elementToInsert: (): JSXMapExpressionWithoutUID => ({
-    type: 'JSX_MAP_EXPRESSION',
-    valueToMap: jsExpressionValue([1, 2, 3], emptyComments),
-    mapFunction: jsExpressionOtherJavaScript(
-      [functionParam(false, regularParam('listItem', null))],
-      `(listItem) => (\n            <Placeholder />\n          )`,
-      `(listItem) => <\nPlaceholder data-uid="placeholder-id" />);`,
-      `return (listItem) => utopiaCanvasJSXLookup("placeholder-id", {\n  callerThis: this\n})`,
-      ['React', 'Placeholder', 'utopiaCanvasJSXLookup'],
-      null,
-      {
-        'placeholder-id': jsxElement('Placeholder', 'placeholder-id', jsxAttributesFromMap({}), []),
-      },
-      emptyComments,
-      '',
-    ),
-    valuesInScopeFromParameters: ['listItem'],
-    comments: emptyComments,
-  }),
+  elementToInsert: (): JSXMapExpressionWithoutUID => SampleMapElement(),
   importsToAdd: {
     react: {
       importedAs: 'React',
