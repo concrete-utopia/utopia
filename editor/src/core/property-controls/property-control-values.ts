@@ -17,7 +17,6 @@ import type {
   BaseControlDescription,
   ControlDescription,
   UnionControlDescription,
-  FolderControlDescription,
   PropertyControls,
   RegularControlDescription,
 } from '../../components/custom-code/internal-property-controls'
@@ -384,30 +383,10 @@ export function walkRegularControlDescriptions(
   propertyControls: PropertyControls,
   walkWith: (propertyName: string, propertyControl: RegularControlDescription) => void,
 ): void {
-  function addPropertyControl(
-    propertyName: number | string,
-    propertyControl: ControlDescription,
-  ): void {
-    switch (propertyControl.control) {
-      case 'folder':
-        addFolder(propertyControl)
-        break
-      default:
-        if (typeof propertyName === 'string') {
-          walkWith(propertyName, propertyControl)
-        }
-        break
-    }
-  }
-
-  function addFolder(folder: FolderControlDescription): void {
-    forEachValue((propertyControl, propertyName) => {
-      addPropertyControl(propertyName, propertyControl)
-    }, folder.controls)
-  }
-
   forEachValue((propertyControl, propertyName) => {
-    addPropertyControl(propertyName, propertyControl)
+    if (typeof propertyName === 'string') {
+      walkWith(propertyName, propertyControl)
+    }
   }, propertyControls)
 }
 

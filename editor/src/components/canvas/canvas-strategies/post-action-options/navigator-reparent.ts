@@ -58,6 +58,7 @@ function getNavigatorReparentCommands(
     editor.elementPathTree,
     wrapperUID,
     data.dragSources.length,
+    editor.propertyControlsInfo,
   )
 
   if (newParentPath == null) {

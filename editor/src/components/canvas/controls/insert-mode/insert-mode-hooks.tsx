@@ -6,6 +6,7 @@ import { isInsertMode } from '../../../editor/editor-modes'
 import { useRefEditorState } from '../../../editor/store/store-hook'
 import type { MouseCallbacks } from '../select-mode/select-mode-hooks'
 import { useHighlightCallbacks } from '../select-mode/select-mode-hooks'
+import { property } from 'css-tree'
 
 function useGetHighlightableViewsForInsertMode() {
   const storeRef = useRefEditorState((store) => {
@@ -19,10 +20,12 @@ function useGetHighlightableViewsForInsertMode() {
       nodeModules: store.editor.nodeModules.files,
       remixRoutingTable: store.derived.remixData?.routingTable ?? null,
       resolve: resolveFn,
+      propertyControlsInfo: store.editor.propertyControlsInfo,
     }
   })
   return React.useCallback(() => {
-    const { componentMetadata, elementPathTree, mode, projectContents } = storeRef.current
+    const { componentMetadata, elementPathTree, mode, projectContents, propertyControlsInfo } =
+      storeRef.current
     if (isInsertMode(mode)) {
       const allPaths = MetadataUtils.getAllPaths(componentMetadata, elementPathTree)
       const insertTargets = allPaths.filter((path) => {
@@ -31,6 +34,7 @@ function useGetHighlightableViewsForInsertMode() {
           componentMetadata,
           path,
           elementPathTree,
+          propertyControlsInfo,
         )
       })
       return insertTargets

@@ -32,7 +32,11 @@ import {
   setUserConfiguration,
   setGithubState,
 } from './actions/action-creators'
-import { updateUserDetailsWhenAuthenticated } from '../../core/shared/github/helpers'
+import type { GetBranchContentResponse } from '../../core/shared/github/helpers'
+import {
+  githubAPIErrorDataFromResponse,
+  updateUserDetailsWhenAuthenticated,
+} from '../../core/shared/github/helpers'
 import { GithubAuth } from '../../utils/github-auth'
 import type { User } from '../../../liveblocks.config'
 import { liveblocksClient } from '../../../liveblocks.config'
@@ -692,4 +696,62 @@ export async function requestSearchPublicGithubRepository(
     mode: MODE,
     body: JSON.stringify({ owner: params.owner, repo: params.repo }),
   })
+}
+
+export type ExistingAsset = {
+  gitBlobSha?: string
+  path: string
+  type: string
+}
+
+type GetBranchProjectContentsRequest = {
+  type: 'GET_BRANCH_PROJECT_CONTENTS_REQUEST'
+  existingAssets: ExistingAsset[] | null
+  uploadAssets: boolean
+}
+
+function getBranchProjectContentsRequest(
+  params: Omit<GetBranchProjectContentsRequest, 'type'>,
+): GetBranchProjectContentsRequest {
+  return {
+    type: 'GET_BRANCH_PROJECT_CONTENTS_REQUEST',
+    ...params,
+  }
+}
+
+export function getBranchProjectContents(operationContext: GithubOperationContext) {
+  return async function (params: {
+    projectId: string
+    owner: string
+    repo: string
+    branch: string
+    existingAssets: ExistingAsset[]
+  }): Promise<GetBranchContentResponse> {
+    const url = GithubEndpoints.getBranchProjectContents({
+      projectId: params.projectId,
+      owner: params.owner,
+      repo: params.repo,
+      branch: params.branch,
+    })
+    const response = await operationContext.fetch(url, {
+      method: 'POST',
+      credentials: 'include',
+      headers: HEADERS,
+      mode: MODE,
+      body: JSON.stringify(
+        getBranchProjectContentsRequest({
+          existingAssets: params.existingAssets,
+          uploadAssets: true,
+        }),
+      ),
+    })
+    if (!response.ok) {
+      const reason = await githubAPIErrorDataFromResponse(response)
+      return {
+        type: 'FAILURE',
+        failureReason: reason ?? `Github operation failed: ${response.status}`,
+      }
+    }
+    return response.json()
+  }
 }

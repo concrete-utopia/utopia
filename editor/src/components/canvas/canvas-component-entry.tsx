@@ -1,41 +1,28 @@
 import React from 'react'
+import { ResolvingRemoteDependencyErrorName } from '../../core/es-modules/package-manager/package-manager'
+import type { FancyError } from '../../core/shared/code-exec-utils'
+import { processErrorWithSourceMap } from '../../core/shared/code-exec-utils'
+import { useWriteOnlyRuntimeErrors } from '../../core/shared/runtime-report-logs'
+import { isHooksErrorMessage } from '../../utils/canvas-react-utils'
+import { when } from '../../utils/react-conditionals'
+import type { ProjectContentTreeRoot } from '../assets'
+import type { CurriedUtopiaRequireFn } from '../custom-code/code-file'
+import { resetCanvas } from '../editor/actions/action-creators'
+import { useDispatch } from '../editor/store/dispatch-context'
 import {
   CanvasStateContext,
   EditorStateContext,
   Substores,
   useEditorState,
 } from '../editor/store/store-hook'
+import { CanvasLoadingScreen } from './canvas-loading-screen'
+import { useApplyCanvasOffsetToStyle } from './controls/canvas-offset-wrapper'
+import { useDomWalkerInvalidateCallbacks } from './dom-walker'
 import type {
   CanvasReactReportErrorCallback,
   UiJsxCanvasPropsWithErrorCallback,
 } from './ui-jsx-canvas'
-import {
-  UiJsxCanvas,
-  pickUiJsxCanvasProps,
-  CanvasReactErrorCallback,
-  DomWalkerInvalidatePathsCtxAtom,
-  UiJsxCanvasProps,
-} from './ui-jsx-canvas'
-import { resetCanvas, saveDOMReport } from '../editor/actions/action-creators'
-import { ElementInstanceMetadata } from '../../core/shared/element-template'
-import { ConsoleLog } from '../editor/store/editor-state'
-import type { CurriedUtopiaRequireFn } from '../custom-code/code-file'
-import { UtopiaRequireFn } from '../custom-code/code-file'
-import { ElementPath } from '../../core/shared/project-file-types'
-import {
-  useWriteOnlyConsoleLogs,
-  useWriteOnlyRuntimeErrors,
-} from '../../core/shared/runtime-report-logs'
-import type { ProjectContentTreeRoot } from '../assets'
-import type { FancyError } from '../../core/shared/code-exec-utils'
-import { processErrorWithSourceMap } from '../../core/shared/code-exec-utils'
-import { DomWalkerProps, useDomWalkerInvalidateCallbacks } from './dom-walker'
-import { ResolvingRemoteDependencyErrorName } from '../../core/es-modules/package-manager/package-manager'
-import { CanvasLoadingScreen } from './canvas-loading-screen'
-import { isHooksErrorMessage } from '../../utils/canvas-react-utils'
-import { useApplyCanvasOffsetToStyle } from './controls/canvas-offset-wrapper'
-import { when } from '../../utils/react-conditionals'
-import { useDispatch } from '../editor/store/dispatch-context'
+import { DomWalkerInvalidatePathsCtxAtom, UiJsxCanvas, pickUiJsxCanvasProps } from './ui-jsx-canvas'
 
 interface CanvasComponentEntryProps {}
 
@@ -58,18 +45,11 @@ const CanvasComponentEntryInner = React.memo((props: CanvasComponentEntryProps) 
     'CanvasComponentEntry scrollAnimation',
   )
   const { addToRuntimeErrors, clearRuntimeErrors } = useWriteOnlyRuntimeErrors()
-  const { addToConsoleLogs, clearConsoleLogs } = useWriteOnlyConsoleLogs()
 
   const canvasProps = useEditorState(
     Substores.fullStore,
     (store) => {
-      return pickUiJsxCanvasProps(
-        store.editor,
-        store.derived,
-        dispatch,
-        clearConsoleLogs,
-        addToConsoleLogs,
-      )
+      return pickUiJsxCanvasProps(store.editor, store.derived)
     },
     'CanvasComponentEntry canvasProps',
   )

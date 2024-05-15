@@ -227,6 +227,8 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
           onDeleteCartouche={onDeleteCartouche}
           testId={`cartouche-${PP.toString(props.propPath)}`}
           safeToDelete={safeToDelete}
+          propertyPath={props.propPath}
+          elementPath={props.elementPath}
         />
       )
     }
@@ -245,7 +247,9 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
             onOpenDataPicker={props.onOpenDataPicker}
             onDeleteCartouche={onDeleteCartouche}
             testId={`cartouche-${PP.toString(props.propPath)}`}
+            propertyPath={props.propPath}
             safeToDelete={safeToDelete}
+            elementPath={props.elementPath}
           />
         )
       }
@@ -511,6 +515,7 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
             focusOnMount={props.focusOnMount}
             onOpenDataPicker={dataPickerButtonData.openPopup}
             showHiddenControl={props.showHiddenControl}
+            elementPath={selectedViews.at(0) ?? EP.emptyElementPath}
           />
         </div>
       </UIGridRow>
@@ -646,6 +651,7 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
               focusOnMount={props.focusOnMount}
               onOpenDataPicker={dataPickerButtonData.openPopup}
               showHiddenControl={props.showHiddenControl}
+              elementPath={selectedViews.at(0) ?? EP.emptyElementPath}
             />
           </FlexRow>
         </SimpleFlexRow>
@@ -974,6 +980,7 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
                   focusOnMount={props.focusOnMount}
                   onOpenDataPicker={dataPickerButtonData.openPopup}
                   showHiddenControl={props.showHiddenControl}
+                  elementPath={selectedViews.at(0) ?? EP.emptyElementPath}
                 />
               </div>
             </SimpleFlexRow>
@@ -1198,9 +1205,17 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
         propertyControlsInfo,
       )
 
+      if (registeredComponent?.label == null) {
+        return {
+          displayName: elementName,
+          isRegisteredComponent: registeredComponent != null,
+        }
+      }
+
       return {
-        name: elementName,
+        displayName: registeredComponent.label,
         isRegisteredComponent: registeredComponent != null,
+        secondaryName: elementName,
       }
     },
     'ComponentSectionInner componentName',
@@ -1208,37 +1223,42 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
 
   return (
     <React.Fragment>
-      <FlexRow
+      <UIGridRow
+        padded={false}
+        variant='<----------1fr---------><-auto->'
         style={{
           borderTop: `1px solid ${colorTheme.seperator.value}`,
           padding: `0 ${UtopiaTheme.layout.inspectorXPadding}px`,
+          alignItems: 'center',
+          gap: 8,
         }}
       >
         <FlexRow
+          onClick={OpenFile}
           style={{
             flexGrow: 1,
             height: UtopiaTheme.layout.rowHeight.large,
+            fontWeight: 600,
+            cursor: 'pointer',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            gap: 8,
           }}
         >
-          <div
-            onClick={OpenFile}
-            style={{
-              fontWeight: 600,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-            }}
-          >
-            {componentData != null ? (
-              <React.Fragment>
-                <span>{componentData.name}</span>
-                {when(componentData.isRegisteredComponent, <span style={{ fontSize: 6 }}>◇</span>)}
-              </React.Fragment>
-            ) : (
-              <span>Component</span>
-            )}
-          </div>
+          {componentData != null ? (
+            <React.Fragment>
+              <span>{componentData.displayName}</span>
+              {when(componentData.isRegisteredComponent, <span style={{ fontSize: 6 }}>◇</span>)}
+              {componentData.secondaryName == null ? null : (
+                <span style={{ opacity: 0.5, fontWeight: 'initial' }}>
+                  {componentData.secondaryName}
+                </span>
+              )}
+            </React.Fragment>
+          ) : (
+            <span>Component</span>
+          )}
         </FlexRow>
         <SquareButton highlight onClick={toggleSection}>
           <ExpandableIndicator
@@ -1248,7 +1268,7 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
             selected={false}
           />
         </SquareButton>
-      </FlexRow>
+      </UIGridRow>
       {when(
         sectionExpanded,
         <React.Fragment>

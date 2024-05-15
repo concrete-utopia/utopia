@@ -1,18 +1,16 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
-import { Console } from 'console-feed'
 import type { ResizeCallback } from 're-resizable'
 import { Resizable } from 're-resizable'
 import React from 'react'
 import type { ErrorMessage, ErrorMessageSeverity } from '../../core/shared/error-messages'
 import { messageIsFatalOrError, messageIsWarning } from '../../core/shared/error-messages'
-import type { ConsoleLog } from '../editor/store/editor-state'
 import type { CursorPosition } from './code-editor-utils'
 import { clampValue } from '../../core/shared/math-utils'
 import { WarningIcon } from '../../uuiui/warning-icon'
 import { VariableSizeList as List } from 'react-window'
-import { useColorTheme, UtopiaTheme } from '../../uuiui/styles/theme'
+import { useColorTheme } from '../../uuiui/styles/theme'
 import { FlexRow } from '../../uuiui/widgets/layout/flex-row'
 import { NO_OP } from '../../core/shared/utils'
 import { TabComponent } from '../../uuiui/tab'
@@ -113,46 +111,21 @@ function getTabStyleForErrors(
   return defaultStyle
 }
 
-function getTabStyleForLogs(
-  canvasConsoleLogs: Array<ConsoleLog>,
-  colorTheme: any,
-): { backgroundColor: string } {
-  const errorStyle = { backgroundColor: colorTheme.error.value }
-  const warningStyle = { backgroundColor: colorTheme.warningBgSolid.value }
-  const defaultStyle = { backgroundColor: 'grey' }
-
-  const isError = canvasConsoleLogs.some((log) => {
-    return log.method === 'error'
-  })
-  const isWarning = canvasConsoleLogs.some((log) => {
-    return log.method === 'warn'
-  })
-
-  if (isError) {
-    return errorStyle
-  } else if (isWarning) {
-    return warningStyle
-  }
-  return defaultStyle
-}
-
 interface CodeEditorTabPaneProps {
   errorMessages: Array<ErrorMessage>
   onOpenFile: (path: string, cursorPosition: CursorPosition | null) => void
-  canvasConsoleLogs: Array<ConsoleLog>
 }
 
 const ProblemRowHeight = 29
 const ProblemTabBarHeight = 32
 
-type OpenCodeEditorTab = 'problems' | 'console'
+type OpenCodeEditorTab = 'problems'
 
 export const CodeEditorTabPane = React.memo<CodeEditorTabPaneProps>(
-  ({ errorMessages, onOpenFile, canvasConsoleLogs }) => {
+  ({ errorMessages, onOpenFile }) => {
     const colorTheme = useColorTheme()
     const defaultHeightWhenOpen =
-      ProblemTabBarHeight +
-      ProblemRowHeight * clampValue(Math.max(errorMessages.length, canvasConsoleLogs.length), 3, 10)
+      ProblemTabBarHeight + ProblemRowHeight * clampValue(errorMessages.length, 3, 10)
     const [userDefinedHeightWhenOpen, setHeightWhenOpen] = React.useState<number | null>(null)
     const [isOpen, setIsOpen] = React.useState(false)
     const resizableRef = React.useRef<Resizable>(null)
@@ -189,13 +162,6 @@ export const CodeEditorTabPane = React.memo<CodeEditorTabPaneProps>(
       setSelectedTab('problems')
     }, [setSelectedTab, isOpen, toggleIsOpen])
 
-    const selectConsoleTab = React.useCallback(() => {
-      if (!isOpen) {
-        toggleIsOpen()
-      }
-      setSelectedTab('console')
-    }, [setSelectedTab, isOpen, toggleIsOpen])
-
     const problemsTabBackgroundColor = getTabStyleForErrors(
       errorMessages,
       colorTheme,
@@ -221,31 +187,6 @@ export const CodeEditorTabPane = React.memo<CodeEditorTabPaneProps>(
       )
     }, [colorTheme, problemsTabBackgroundColor, errorMessages.length])
 
-    const consoleTabBackgroundColor = getTabStyleForLogs(
-      canvasConsoleLogs,
-      colorTheme,
-    ).backgroundColor
-    const ConsoleTabLabel = React.useMemo(() => {
-      return (
-        <span>
-          Console
-          <span
-            style={{
-              marginLeft: 8,
-              fontSize: 10,
-              padding: '1px 5px',
-              borderRadius: 2,
-              fontWeight: 500,
-              color: colorTheme.neutralInvertedForeground.value,
-              backgroundColor: consoleTabBackgroundColor,
-            }}
-          >
-            {canvasConsoleLogs.length}
-          </span>
-        </span>
-      )
-    }, [colorTheme, consoleTabBackgroundColor, canvasConsoleLogs.length])
-
     function getTabContents() {
       switch (selectedTab) {
         case 'problems':
@@ -255,51 +196,6 @@ export const CodeEditorTabPane = React.memo<CodeEditorTabPaneProps>(
               height={heightWhenOpen}
               onOpenFile={onOpenFile}
             />
-          )
-        case 'console':
-          return (
-            <div
-              className='label-consolewrapper'
-              // we need increased specificity because of our global settings for user-selection,
-              // and console-feed 2.8x doesn't allow for style injection, despite the docs.
-              css={{
-                '& *': {
-                  userSelect: 'text',
-                  WebkitUserSelect: 'text',
-                  cursor: 'text',
-                },
-              }}
-              style={{
-                backgroundColor: colorTheme.neutralInvertedBackground.value,
-                color: 'white',
-                height: '100%',
-                // There probably is a better fix but I've run out of goats to sacrifice
-                paddingBottom: ProblemTabBarHeight,
-                overflowY: 'scroll',
-                overscrollBehavior: 'contain',
-                scrollSnapType: 'y proximity',
-              }}
-            >
-              <Console
-                logs={canvasConsoleLogs}
-                variant={'dark'}
-                styles={{
-                  BASE_FONT_FAMILY: 'mono',
-                }}
-              />
-              {/* since we can't know the last console item as logged in console,
-                we attach a cheat anchor here
-              */}
-              <span
-                style={{
-                  width: 0,
-                  height: 0,
-                  display: 'block',
-                  scrollSnapAlign: 'end',
-                  scrollMarginBlockEnd: '50px',
-                }}
-              />
-            </div>
           )
         default:
           return null
@@ -333,14 +229,6 @@ export const CodeEditorTabPane = React.memo<CodeEditorTabPaneProps>(
             showCloseIndicator={false}
             showModifiedIndicator={false}
             label={ProblemsTabLabel}
-          />
-          <TabComponent
-            onClick={selectConsoleTab}
-            onDoubleClick={toggleIsOpen}
-            selected={selectedTab == 'console'}
-            showCloseIndicator={false}
-            showModifiedIndicator={false}
-            label={ConsoleTabLabel}
           />
         </UIRow>
         {isOpen ? getTabContents() : null}

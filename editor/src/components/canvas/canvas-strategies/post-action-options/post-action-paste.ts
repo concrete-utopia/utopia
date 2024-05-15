@@ -601,6 +601,7 @@ function getTargetParentForPasteHere(
       originalContextElementPathTrees: originalPathTree,
     },
     editor.elementPathTree,
+    editor.propertyControlsInfo,
   )
 
   if (isLeft(target)) {

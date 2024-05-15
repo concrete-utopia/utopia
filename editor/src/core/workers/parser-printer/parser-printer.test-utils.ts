@@ -71,6 +71,8 @@ import {
   simplifyAttributesIfPossible,
   isJSXFragment,
   jsxAttributesEntry,
+  clearTopLevelElementSourceMaps,
+  clearArbitraryJSBlockSourceMaps,
 } from '../../shared/element-template'
 import { addImport } from '../common/project-file-utils'
 import type { ErrorMessage } from '../../shared/error-messages'
@@ -296,6 +298,25 @@ export function clearParseResultUniqueIDsAndEmptyBlocks(
       ArbitraryJSBlock,
       ArbitraryJSBlock
     >(clearTopLevelElementUniqueIDsAndEmptyBlocks, success.combinedTopLevelArbitraryBlock)
+    return {
+      ...success,
+      topLevelElements: updatedTopLevelElements,
+      combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
+    }
+  }, parseResult)
+}
+
+export function clearParseResultSourceMapsUniqueIDsAndEmptyBlocks(
+  parseResult: ParsedTextFile,
+): ParsedTextFile {
+  return mapParsedTextFile((success) => {
+    const updatedTopLevelElements = success.topLevelElements.map(
+      clearTopLevelElementSourceMapsUniqueIDsAndEmptyBlocks,
+    )
+    const combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null = optionalMap<
+      ArbitraryJSBlock,
+      ArbitraryJSBlock
+    >(clearTopLevelElementSourceMapsUniqueIDsAndEmptyBlocks, success.combinedTopLevelArbitraryBlock)
     return {
       ...success,
       topLevelElements: updatedTopLevelElements,
@@ -1413,6 +1434,50 @@ export function clearTopLevelElementUniqueIDsAndEmptyBlocks(
         ...withoutUID,
         javascript: blockCode,
       }
+    }
+    case 'IMPORT_STATEMENT':
+    case 'UNPARSED_CODE':
+      return withoutUID
+    default:
+      const _exhaustiveCheck: never = withoutUID
+      throw new Error(`Unhandled element ${JSON.stringify(withoutUID)}`)
+  }
+}
+
+export function clearTopLevelElementSourceMapsUniqueIDsAndEmptyBlocks(
+  element: UtopiaJSXComponent,
+): UtopiaJSXComponent
+export function clearTopLevelElementSourceMapsUniqueIDsAndEmptyBlocks(
+  element: ArbitraryJSBlock,
+): ArbitraryJSBlock
+export function clearTopLevelElementSourceMapsUniqueIDsAndEmptyBlocks(
+  element: TopLevelElement,
+): TopLevelElement
+export function clearTopLevelElementSourceMapsUniqueIDsAndEmptyBlocks(
+  element: TopLevelElement,
+): TopLevelElement {
+  const withoutUID = clearTopLevelElementSourceMaps(clearTopLevelElementUniqueIDs(element))
+  switch (withoutUID.type) {
+    case 'UTOPIA_JSX_COMPONENT': {
+      const blockCode = (withoutUID.arbitraryJSBlock?.javascript ?? '').trim()
+      const blockIsEmpty = blockCode.length === 0
+      return {
+        ...withoutUID,
+        arbitraryJSBlock:
+          blockIsEmpty || withoutUID.arbitraryJSBlock == null
+            ? null
+            : clearArbitraryJSBlockSourceMaps({
+                ...withoutUID.arbitraryJSBlock,
+                javascript: blockCode,
+              }),
+      }
+    }
+    case 'ARBITRARY_JS_BLOCK': {
+      const blockCode = (withoutUID.javascript ?? '').trim()
+      return clearArbitraryJSBlockSourceMaps({
+        ...withoutUID,
+        javascript: blockCode,
+      })
     }
     case 'IMPORT_STATEMENT':
     case 'UNPARSED_CODE':

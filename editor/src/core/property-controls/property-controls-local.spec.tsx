@@ -69,6 +69,7 @@ describe('registered property controls', () => {
       '/src/card': {
         Card: {
           component: Card,
+          label: "Labeled Card",
           properties: {
             label: {
               control: 'string-input',
@@ -121,6 +122,7 @@ describe('registered property controls', () => {
             "visual",
             "typography",
           ],
+          "label": "Labeled Card",
           "preferredChildComponents": Array [],
           "properties": Object {
             "background": Object {
@@ -187,6 +189,117 @@ describe('registered property controls', () => {
       }
     `)
   })
+  it('can register controls for components with property path in their names', async () => {
+    const renderResult = await renderTestEditorWithModel(
+      createModifiedProject({
+        ['/src/card.js']: `import React from 'react'
+
+        const Card = ({ label }) => {
+          return <div>{label}</div>
+        }
+        
+        export const ExportedObj = {
+          Card: Card,
+        }
+        `,
+        [StoryboardFilePath]: `import * as React from 'react'
+      import { Scene, Storyboard, View } from 'utopia-api'
+    
+      export var App = (props) => {
+        return (
+          <div>hello</div>
+        )
+      }
+    
+      export var storyboard = (props) => {
+        return (
+          <Storyboard data-uid='${BakedInStoryboardUID}'>
+            <Scene
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
+              data-uid='${TestScene0UID}'
+            >
+              <App data-uid='${TestAppUID}' />
+            </Scene>
+          </Storyboard>
+        )
+      }`,
+        ['/utopia/components.utopia.js']: `import { ExportedObj } from '../src/card'
+        
+        const Components = {
+      '/src/card': {
+        'ExportedObj.Card': {
+          component: ExportedObj.Card,
+          properties: {
+            label: {
+              control: 'string-input',
+            },
+            background: {
+              control: 'color',
+            },
+            visible: {
+              control: 'checkbox',
+              defaultValue: true,
+            },
+          },
+        },
+      },
+    }
+    
+    export default Components
+  `,
+      }),
+      'await-first-dom-report',
+    )
+    const editorState = renderResult.getEditorState().editor
+
+    expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
+      Object {
+        "ExportedObj.Card": Object {
+          "emphasis": "regular",
+          "focus": "default",
+          "icon": "component",
+          "inspector": Array [],
+          "label": null,
+          "preferredChildComponents": Array [],
+          "properties": Object {
+            "background": Object {
+              "control": "color",
+            },
+            "label": Object {
+              "control": "string-input",
+            },
+            "visible": Object {
+              "control": "checkbox",
+              "defaultValue": true,
+            },
+          },
+          "source": Object {
+            "sourceDescriptorFile": "/utopia/components.utopia.js",
+            "type": "DESCRIPTOR_FILE",
+          },
+          "supportsChildren": true,
+          "variants": Array [
+            Object {
+              "elementToInsert": [Function],
+              "importsToAdd": Object {
+                "/src/card": Object {
+                  "importedAs": null,
+                  "importedFromWithin": Array [
+                    Object {
+                      "alias": "ExportedObj",
+                      "name": "ExportedObj",
+                    },
+                  ],
+                  "importedWithName": null,
+                },
+              },
+              "insertMenuLabel": "ExportedObj.Card",
+            },
+          ],
+        },
+      }
+    `)
+  })
   it('Can set property control options using the control factory functions', async () => {
     const renderResult = await renderTestEditorWithModel(
       project({
@@ -224,6 +337,7 @@ describe('registered property controls', () => {
           "focus": "default",
           "icon": "component",
           "inspector": "all",
+          "label": null,
           "preferredChildComponents": Array [],
           "properties": Object {
             "label": Object {
@@ -837,6 +951,7 @@ describe('registered property controls', () => {
           "focus": "default",
           "icon": "component",
           "inspector": Array [],
+          "label": null,
           "preferredChildComponents": Array [],
           "properties": Object {
             "background": Object {
@@ -1661,6 +1776,7 @@ describe('registered property controls', () => {
             "focus": "default",
             "icon": "component",
             "inspector": Array [],
+            "label": null,
             "preferredChildComponents": Array [],
             "properties": Object {
               "label": Object {
@@ -1776,6 +1892,68 @@ describe('registered property controls', () => {
                 "insertMenuLabel": "Card",
               },
             ],
+          },
+        }
+      `)
+    })
+  })
+
+  describe('folders', () => {
+    it('can specify a folder prop', async () => {
+      const renderResult = await renderTestEditorWithModel(
+        project({
+          ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
+          
+          const Components = {
+        '/src/card': {
+          Card: {
+            component: Card,
+            properties: {
+              label: {
+                control: 'jsx',
+              },
+              header: {
+                control: 'jsx',
+                folder: 'Header',
+              },
+              footer: {
+                control: 'jsx',
+                folder: 'Footer',
+              }
+            }
+          },
+        },
+      }
+      
+      export default Components
+    `,
+        }),
+        'await-first-dom-report',
+      )
+      const editorState = renderResult.getEditorState().editor
+
+      const cardRegistration = editorState.propertyControlsInfo['/src/card']['Card']
+      expect(cardRegistration).not.toBeUndefined()
+
+      const propsToCheck = pick(['properties'], cardRegistration)
+
+      expect(propsToCheck).toMatchInlineSnapshot(`
+        Object {
+          "properties": Object {
+            "footer": Object {
+              "control": "jsx",
+              "folder": "Footer",
+              "preferredChildComponents": Array [],
+            },
+            "header": Object {
+              "control": "jsx",
+              "folder": "Header",
+              "preferredChildComponents": Array [],
+            },
+            "label": Object {
+              "control": "jsx",
+              "preferredChildComponents": Array [],
+            },
           },
         }
       `)

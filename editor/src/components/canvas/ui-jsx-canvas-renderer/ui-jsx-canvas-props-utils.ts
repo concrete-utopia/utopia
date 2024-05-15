@@ -3,6 +3,7 @@ import type {
   Param,
   BoundParam,
   JSExpressionMapOrOtherJavascript,
+  JSExpression,
 } from '../../../core/shared/element-template'
 import {
   isRegularParam,
@@ -27,7 +28,7 @@ export function applyPropsParamToPassedProps(
   function getParamValue(
     paramName: string,
     value: unknown,
-    defaultExpression: JSExpressionMapOrOtherJavascript | null,
+    defaultExpression: JSExpression | null,
   ): unknown {
     if (value === undefined && defaultExpression != null) {
       return jsxAttributeToValue(

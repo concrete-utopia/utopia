@@ -50,7 +50,6 @@ import {
   parseArray,
   parseConstant,
   parseEnum,
-  parseNumber,
   parseObject,
   parseString,
 } from '../../utils/value-parser-utils'
@@ -67,7 +66,6 @@ import {
   right,
   sequenceEither,
 } from '../shared/either'
-import { setOptionalProp } from '../shared/object-utils'
 import { assertNever } from '../shared/utils'
 import type { Imports, ParsedTextFile } from '../shared/project-file-types'
 import {
@@ -94,7 +92,13 @@ import {
 } from '../../components/editor/actions/action-creators'
 import type { ProjectContentTreeRoot } from '../../components/assets'
 import type { JSXElementChildWithoutUID } from '../shared/element-template'
-import { jsxAttributesFromMap, jsxElement, jsxTextBlock } from '../shared/element-template'
+import {
+  getJSXElementNameLastPart,
+  jsxAttributesFromMap,
+  jsxElement,
+  jsxElementNameFromString,
+  jsxTextBlock,
+} from '../shared/element-template'
 import type { ErrorMessage } from '../shared/error-messages'
 import { errorMessage } from '../shared/error-messages'
 import { dropFileExtension } from '../shared/file-utils'
@@ -102,6 +106,7 @@ import type { FancyError } from '../shared/code-exec-utils'
 import type { ScriptLine } from '../../third-party/react-error-overlay/utils/stack-frame'
 import { intrinsicHTMLElementNamesAsStrings } from '../shared/dom-utils'
 import { valueOrArrayToArray } from '../shared/array-utils'
+import { optionalMap } from '../shared/optional-utils'
 
 const exportedNameSymbol = Symbol('__utopia__exportedName')
 const moduleNameSymbol = Symbol('__utopia__moduleName')
@@ -274,7 +279,15 @@ function isComponentRegistrationValid(
 
   // check validity of internal component
   if (isComponentRendererComponent(component)) {
-    if (component.originalName !== registrationKey) {
+    // TODO: we only validate the last part of the name
+    const nameLastPart = optionalMap(
+      (name) => getJSXElementNameLastPart(jsxElementNameFromString(name)),
+      component.originalName,
+    )
+    const registrationKeyLastPart = getJSXElementNameLastPart(
+      jsxElementNameFromString(registrationKey),
+    )
+    if (nameLastPart !== registrationKeyLastPart) {
       return {
         type: 'component-name-does-not-match',
         registrationKey: registrationKey,
@@ -294,11 +307,19 @@ function isComponentRegistrationValid(
 
   // check validity of external component
   const { name, moduleName } = getRequireInfoFromComponent(component)
-  if (name != null && name !== registrationKey) {
-    return {
-      type: 'component-name-does-not-match',
-      registrationKey: registrationKey,
-      componentName: name,
+  if (name != null) {
+    // TODO: this doesn't work yet for components which are not directly imported, e.g. Typography.Text (where Typography is the imported object)
+    // The code is here to check the last part of the name, but since we don't require the component itself in these cases, the name and the moduleName will not be available.
+    const nameLastPart = getJSXElementNameLastPart(jsxElementNameFromString(name))
+    const registrationKeyLastPart = getJSXElementNameLastPart(
+      jsxElementNameFromString(registrationKey),
+    )
+    if (nameLastPart !== registrationKeyLastPart) {
+      return {
+        type: 'component-name-does-not-match',
+        registrationKey: registrationKey,
+        componentName: name,
+      }
     }
   }
   if (moduleName != null && moduleName !== moduleKey) {
@@ -561,6 +582,7 @@ export function updatePropertyControlsOnDescriptorFileUpdate(
         inspector: descriptor.inspector,
         emphasis: descriptor.emphasis,
         icon: descriptor.icon,
+        label: descriptor.label,
       }
     })
   })
@@ -615,9 +637,10 @@ function componentInsertOptionFromExample(
           code: `<${typed.name} />`,
         }
       }
+      const jsxName = jsxElementNameFromString(typed.name)
       return {
         label: typed.name,
-        imports: `import {${typed.name}} from '${moduleName}'`,
+        imports: `import {${jsxName.baseVariable}} from '${moduleName}'`,
         code: `<${typed.name} />`,
       }
     case 'component-reference':
@@ -770,19 +793,11 @@ async function makePropertyDescriptors(
   let result: PropertyControls = {}
 
   for await (const [propertyName, descriptor] of Object.entries(properties)) {
-    if (descriptor.control === 'folder') {
-      const parsedControlsInFolder = await makePropertyDescriptors(descriptor.controls, context)
-      if (isLeft(parsedControlsInFolder)) {
-        return parsedControlsInFolder
-      }
-      result['propertyName'] = { ...descriptor, controls: parsedControlsInFolder.value }
-    } else {
-      const parsedRegularControl = await makeRegularControlDescription(descriptor, context)
-      if (isLeft(parsedRegularControl)) {
-        return parsedRegularControl
-      }
-      result[propertyName] = parsedRegularControl.value
+    const parsedRegularControl = await makeRegularControlDescription(descriptor, context)
+    if (isLeft(parsedRegularControl)) {
+      return parsedRegularControl
     }
+    result[propertyName] = parsedRegularControl.value
   }
 
   return right(result)
@@ -839,10 +854,11 @@ export function defaultImportsForComponentModule(
   componentName: string,
   moduleName: string | null,
 ): Imports {
+  const jsxName = jsxElementNameFromString(componentName)
   return moduleName == null
     ? {}
     : {
-        [moduleName]: importDetails(null, [importAlias(componentName)], null),
+        [moduleName]: importDetails(null, [importAlias(jsxName.baseVariable)], null),
       }
 }
 
@@ -880,10 +896,11 @@ async function parseComponentVariants(
     componentToRegister.variants == null ||
     (Array.isArray(componentToRegister.variants) && componentToRegister.variants.length === 0)
   ) {
+    const jsxName = jsxElementNameFromString(componentName)
     const parsed = await parseCodeFromInsertOption(
       {
         label: componentName,
-        imports: `import { ${componentName} } from '${moduleName}'`,
+        imports: `import { ${jsxName.baseVariable} } from '${moduleName}'`,
         code: `<${componentName} />`,
       },
       workers,
@@ -956,6 +973,7 @@ export async function componentDescriptorForComponentToRegister(
     inspector: componentToRegister.inspector ?? ComponentDescriptorDefaults.inspector,
     emphasis: componentToRegister.emphasis ?? ComponentDescriptorDefaults.emphasis,
     icon: componentToRegister.icon ?? ComponentDescriptorDefaults.icon,
+    label: componentToRegister.label ?? null,
   })
 }
 
@@ -1019,6 +1037,7 @@ export const parseChildrenSpec = (value: unknown): ParseResult<ChildrenSpec> => 
 
 const parseComponentToRegister = objectParser<ComponentToRegister>({
   component: parseAny,
+  label: optionalProp(parseString),
   properties: fullyParsePropertyControls,
   variants: optionalProp(
     parseAlternative<ComponentExample | Array<ComponentExample>>(

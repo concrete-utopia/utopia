@@ -285,13 +285,13 @@ describe('Insertion Plus Button', () => {
     expect(canvasBounds.y + BlueDotSize / 2).toEqual(expectedTop)
   }
 
-  it(`shows the buttons in the correct places for a flex container with a direction of 'row' that already has children`, async () => {
+  it(`shows the buttons in the correct places for a child of a flex container with a direction of 'row'`, async () => {
     const renderResult = await renderTestEditorWithCode(
       getProjectCode('row'),
       'await-first-dom-report',
     )
 
-    const targetPath = EP.fromString('storyboard/scene/parentsibling')
+    const targetPath = EP.fromString('storyboard/scene/parentsibling/firstdiv')
     await act(() => renderResult.dispatch([selectComponents([targetPath], false)], false))
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -315,13 +315,13 @@ describe('Insertion Plus Button', () => {
     )
   })
 
-  it(`shows the buttons in the correct places for a flex container with a direction of 'row-reverse' that already has children`, async () => {
+  it(`shows the buttons in the correct places for a child of a flex container with a direction of 'row-reverse'`, async () => {
     const renderResult = await renderTestEditorWithCode(
       getProjectCode('row-reverse'),
       'await-first-dom-report',
     )
 
-    const targetPath = EP.fromString('storyboard/scene/parentsibling')
+    const targetPath = EP.fromString('storyboard/scene/parentsibling/firstdiv')
     await act(() => renderResult.dispatch([selectComponents([targetPath], false)], false))
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -345,13 +345,13 @@ describe('Insertion Plus Button', () => {
     )
   })
 
-  it(`shows the buttons in the correct places for a flex container with a direction of 'column' that already has children`, async () => {
+  it(`shows the buttons in the correct places for a child of a flex container with a direction of 'column'`, async () => {
     const renderResult = await renderTestEditorWithCode(
       getProjectCode('column'),
       'await-first-dom-report',
     )
 
-    const targetPath = EP.fromString('storyboard/scene/parentsibling')
+    const targetPath = EP.fromString('storyboard/scene/parentsibling/firstdiv')
     await act(() => renderResult.dispatch([selectComponents([targetPath], false)], false))
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -375,13 +375,13 @@ describe('Insertion Plus Button', () => {
     )
   })
 
-  it(`shows the buttons in the correct places for a flex container with a direction of 'column-reverse' that already has children`, async () => {
+  it(`shows the buttons in the correct places for a child of a flex container with a direction of 'column-reverse'`, async () => {
     const renderResult = await renderTestEditorWithCode(
       getProjectCode('column-reverse'),
       'await-first-dom-report',
     )
 
-    const targetPath = EP.fromString('storyboard/scene/parentsibling')
+    const targetPath = EP.fromString('storyboard/scene/parentsibling/firstdiv')
     await act(() => renderResult.dispatch([selectComponents([targetPath], false)], false))
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -402,24 +402,6 @@ describe('Insertion Plus Button', () => {
       'blue-dot-control-2',
       0 - InsertionButtonOffset,
       500,
-    )
-  })
-
-  it('shows the buttons in the correct places for a flex container that has no children', async () => {
-    const renderResult = await renderTestEditorWithCode(
-      getProjectCodeForEmptyFlexContainer(),
-      'await-first-dom-report',
-    )
-
-    const targetPath = EP.fromString('storyboard/scene/parentsibling')
-    await act(() => renderResult.dispatch([selectComponents([targetPath], false)], false))
-    await renderResult.getDispatchFollowUpActionsFinished()
-
-    await checkInsertButtonPosition(
-      renderResult,
-      'blue-dot-control-0',
-      0,
-      500 - InsertionButtonOffset,
     )
   })
 })

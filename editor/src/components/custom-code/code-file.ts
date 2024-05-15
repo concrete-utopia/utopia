@@ -111,6 +111,20 @@ export function clearComponentElementToInsertUniqueIDs(
   }
 }
 
+export function componentElementToInsertHasChildren(toInsert: ComponentElementToInsert): boolean {
+  switch (toInsert.type) {
+    case 'JSX_ELEMENT':
+    case 'JSX_FRAGMENT':
+      return toInsert.children.length > 0
+    case 'JSX_MAP_EXPRESSION':
+    case 'JSX_CONDITIONAL_EXPRESSION':
+      // More in the conceptual sense than actual sense of having a field containing children.
+      return true
+    default:
+      assertNever(toInsert)
+  }
+}
+
 export interface ComponentInfo {
   insertMenuLabel: string
   elementToInsert: () => ComponentElementToInsert
@@ -139,16 +153,18 @@ export interface ComponentDescriptor {
   inspector: InspectorSpec
   emphasis: Emphasis
   icon: Icon
+  label: string | null
 }
 
 export const ComponentDescriptorDefaults: Pick<
   ComponentDescriptor,
-  'focus' | 'inspector' | 'emphasis' | 'icon'
+  'focus' | 'inspector' | 'emphasis' | 'icon' | 'label'
 > = {
   focus: 'default',
   inspector: [],
   emphasis: 'regular',
   icon: 'component',
+  label: null,
 }
 
 export function componentDescriptor(
@@ -161,6 +177,7 @@ export function componentDescriptor(
   inspector: InspectorSpec,
   emphasis: Emphasis,
   icon: Icon,
+  label: string | null,
 ): ComponentDescriptor {
   return {
     properties: properties,
@@ -172,6 +189,7 @@ export function componentDescriptor(
     inspector: inspector,
     emphasis: emphasis,
     icon: icon,
+    label: label,
   }
 }
 

@@ -106,7 +106,7 @@ jobs:
     timeout-minutes: 5
     runs-on: ubuntu-latest
     if: failure()
-    needs: [take-screenshot, comments-test, collaboration-test]
+    needs: [take-screenshot, collaboration-test]
     steps:
       - name: Discord Notification
         uses: Ilshidur/action-discord@0.3.2

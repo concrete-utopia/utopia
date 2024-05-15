@@ -8,6 +8,7 @@ import {
   isIntrinsicHTMLElement,
   isIntrinsicElement,
   isJSXElement,
+  jsxElementName,
 } from '../shared/element-template'
 import type { ParseSuccess, StaticElementPath, ElementPath } from '../shared/project-file-types'
 import type { EditorState } from '../../components/editor/store/editor-state'
@@ -94,7 +95,11 @@ export function getPropertyControlsForTarget(
         } else {
           const originalName =
             importedFrom?.type === 'IMPORTED_ORIGIN' ? importedFrom.exportedName : null
-          const nameAsString = originalName ?? getJSXElementNameAsString(element.name)
+          const jsxName =
+            originalName != null
+              ? jsxElementName(originalName, element.name.propertyPath.propertyElements)
+              : element.name
+          const nameAsString = getJSXElementNameAsString(jsxName)
 
           const props = propertyControlsInfo[filenameForLookup]?.[nameAsString]?.properties
 
@@ -163,7 +168,11 @@ export function getComponentDescriptorForTarget(
         } else {
           const originalName =
             importedFrom?.type === 'IMPORTED_ORIGIN' ? importedFrom.exportedName : null
-          const nameAsString = originalName ?? getJSXElementNameAsString(element.name)
+          const jsxName =
+            originalName != null
+              ? jsxElementName(originalName, element.name.propertyPath.propertyElements)
+              : element.name
+          const nameAsString = getJSXElementNameAsString(jsxName)
 
           const componentDescriptor = propertyControlsInfo[filenameForLookup]?.[nameAsString]
 
@@ -241,3 +250,9 @@ export function getInspectorPreferencesForTargets(
 
   return [...sectionsToShow]
 }
+
+export const AdvancedFolderLabel = 'Advanced'
+
+const advancedFolderLabel = AdvancedFolderLabel.toLowerCase()
+export const isAdvancedFolderLabel = (title: string | undefined) =>
+  title != null && title.toLowerCase() === advancedFolderLabel

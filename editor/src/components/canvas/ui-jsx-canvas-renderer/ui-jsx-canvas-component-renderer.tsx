@@ -341,7 +341,7 @@ export function createComponentRendererComponent(params: {
   return Component
 }
 
-function isRenderProp(prop: any): prop is { [UTOPIA_PATH_KEY]: string; props: MapLike<any> } {
+function isRenderProp(prop: any): prop is { props: { [UTOPIA_PATH_KEY]: string } } {
   return (
     prop != null &&
     typeof prop === 'object' &&
@@ -359,7 +359,7 @@ function isElementInChildrenOrPropsTree(elementPath: string, props: any): boolea
   }
 
   const elementsInProps = Object.values(props).filter(isRenderProp)
-  const isElementInProps = elementsInProps.some((p) => p[UTOPIA_PATH_KEY] === elementPath)
+  const isElementInProps = elementsInProps.some((p) => p.props[UTOPIA_PATH_KEY] === elementPath)
   if (isElementInProps) {
     return true
   }
