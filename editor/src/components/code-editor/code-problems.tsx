@@ -14,12 +14,13 @@ import { WarningIcon } from '../../uuiui/warning-icon'
 import { VariableSizeList as List } from 'react-window'
 import { useColorTheme, UtopiaTheme } from '../../uuiui/styles/theme'
 import { FlexRow } from '../../uuiui/widgets/layout/flex-row'
-import { NO_OP } from '../../core/shared/utils'
+import { NO_OP, assertNever } from '../../core/shared/utils'
 import { TabComponent } from '../../uuiui/tab'
 import { Icons } from '../../uuiui/icons'
 import { SimpleFlexColumn } from '../../uuiui/widgets/layout/flex-column'
 import { UIRow } from '../../uuiui'
 import { groupBy } from '../../core/shared/array-utils'
+import { ChatTab } from './code-chat'
 
 interface ErrorMessageRowProps {
   errorMessage: ErrorMessage
@@ -145,7 +146,7 @@ interface CodeEditorTabPaneProps {
 const ProblemRowHeight = 29
 const ProblemTabBarHeight = 32
 
-type OpenCodeEditorTab = 'problems' | 'console'
+type OpenCodeEditorTab = 'problems' | 'console' | 'chat'
 
 export const CodeEditorTabPane = React.memo<CodeEditorTabPaneProps>(
   ({ errorMessages, onOpenFile, canvasConsoleLogs }) => {
@@ -180,7 +181,7 @@ export const CodeEditorTabPane = React.memo<CodeEditorTabPaneProps>(
       }
     }, [])
 
-    const [selectedTab, setSelectedTab] = React.useState<OpenCodeEditorTab>('problems')
+    const [selectedTab, setSelectedTab] = React.useState<OpenCodeEditorTab>('chat')
 
     const selectProblemsTab = React.useCallback(() => {
       if (!isOpen) {
@@ -194,6 +195,13 @@ export const CodeEditorTabPane = React.memo<CodeEditorTabPaneProps>(
         toggleIsOpen()
       }
       setSelectedTab('console')
+    }, [setSelectedTab, isOpen, toggleIsOpen])
+
+    const selectChatTap = React.useCallback(() => {
+      if (!isOpen) {
+        toggleIsOpen()
+      }
+      setSelectedTab('chat')
     }, [setSelectedTab, isOpen, toggleIsOpen])
 
     const problemsTabBackgroundColor = getTabStyleForErrors(
@@ -246,6 +254,10 @@ export const CodeEditorTabPane = React.memo<CodeEditorTabPaneProps>(
       )
     }, [colorTheme, consoleTabBackgroundColor, canvasConsoleLogs.length])
 
+    const ChatTabLabel = React.useMemo(() => {
+      return <span>UtopiAI</span>
+    }, [])
+
     function getTabContents() {
       switch (selectedTab) {
         case 'problems':
@@ -256,6 +268,8 @@ export const CodeEditorTabPane = React.memo<CodeEditorTabPaneProps>(
               onOpenFile={onOpenFile}
             />
           )
+        case 'chat':
+          return <ChatTab height={heightWhenOpen} />
         case 'console':
           return (
             <div
@@ -302,7 +316,7 @@ export const CodeEditorTabPane = React.memo<CodeEditorTabPaneProps>(
             </div>
           )
         default:
-          return null
+          assertNever(selectedTab)
       }
     }
 
@@ -341,6 +355,14 @@ export const CodeEditorTabPane = React.memo<CodeEditorTabPaneProps>(
             showCloseIndicator={false}
             showModifiedIndicator={false}
             label={ConsoleTabLabel}
+          />
+          <TabComponent
+            onClick={selectChatTap}
+            onDoubleClick={toggleIsOpen}
+            selected={selectedTab == 'chat'}
+            showCloseIndicator={false}
+            showModifiedIndicator={false}
+            label={ChatTabLabel}
           />
         </UIRow>
         {isOpen ? getTabContents() : null}
