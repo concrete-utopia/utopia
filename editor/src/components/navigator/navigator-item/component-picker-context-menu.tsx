@@ -16,6 +16,8 @@ import {
   jsxElementFromJSXElementWithoutUID,
   jsxElementNameFromString,
   getJSXElementNameLastPart,
+  setJSXAttributesAttribute,
+  jsExpressionValue,
 } from '../../../core/shared/element-template'
 import type { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { useDispatch } from '../../editor/store/dispatch-context'
@@ -28,6 +30,7 @@ import {
   replaceMappedElement,
   setProp_UNSAFE,
   showToast,
+  wrapInElement,
 } from '../../editor/actions/action-creators'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
@@ -73,6 +76,8 @@ import type { ConditionalCase } from '../../../core/model/conditionals'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { absolute } from '../../../utils/utils'
 import { notice } from '../../common/notice'
+import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
+import { emptyComments } from 'utopia-shared/src/types'
 
 type RenderPropTarget = { type: 'render-prop'; prop: string }
 type ConditionalTarget = { type: 'conditional'; conditionalCase: ConditionalCase }
@@ -287,7 +292,7 @@ const usePreferredChildrenForTarget = (
 }
 
 export type ShowComponentPickerContextMenuCallback = (
-  target: ElementPath,
+  selectedViews: ElementPath[],
   insertionTarget: InsertionTarget,
   pickerType?: 'preferred' | 'full',
 ) => ShowComponentPickerContextMenu
@@ -312,7 +317,7 @@ export const useCreateCallbackToShowComponentPicker =
 
     return React.useCallback(
       (
-          target: ElementPath,
+          selectedViews: ElementPath[],
           insertionTarget: InsertionTarget,
           overridePickerType?: 'preferred' | 'full',
         ) =>
@@ -324,6 +329,8 @@ export const useCreateCallbackToShowComponentPicker =
           event.preventDefault()
 
           let pickerType: 'preferred' | 'full'
+
+          const target = selectedViews[0]
 
           if (overridePickerType == null) {
             const targetParent =
@@ -490,6 +497,27 @@ function insertComponentPickerItem(
         return [replaceMappedElement(fixedElement, target, toInsert.importsToAdd)]
       }
 
+      if (isWrapTarget(insertionTarget)) {
+        const newUID = generateUidWithExistingComponents(projectContents)
+
+        const newElement = jsxElement(
+          element.name,
+          newUID,
+          setJSXAttributesAttribute(
+            element.props,
+            'data-uid',
+            jsExpressionValue(newUID, emptyComments),
+          ),
+          element.children,
+        )
+        return [
+          wrapInElement([target], {
+            element: newElement,
+            importsToAdd: toInsert.importsToAdd,
+          }),
+        ]
+      }
+
       if (!isConditionalTarget(insertionTarget)) {
         return [
           insertJSXElement(
@@ -520,6 +548,19 @@ function insertComponentPickerItem(
         ),
       ]
     }
+
+    // if (isWrapTarget(insertionTarget)) {
+    //   const index = MetadataUtils.getIndexInParent(metadata, pathTrees, target)
+    //   return [
+    //     deleteView(target),
+    //     insertInsertable(
+    //       childInsertionPath(EP.parentPath(target)),
+    //       toInsert,
+    //       'do-not-add',
+    //       absolute(index),
+    //     ),
+    //   ]
+    // }
 
     if (isReplaceTarget(insertionTarget)) {
       if (
@@ -671,7 +712,7 @@ function contextMenuItemsFromVariants(
 
 const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuProps>(
   ({ target, insertionTarget }) => {
-    const showFullMenu = useCreateCallbackToShowComponentPicker()(target, insertionTarget, 'full')
+    const showFullMenu = useCreateCallbackToShowComponentPicker()([target], insertionTarget, 'full')
 
     const preferredChildren = usePreferredChildrenForTarget(target, insertionTarget)
 

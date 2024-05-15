@@ -349,21 +349,21 @@ export const insert: ContextMenuItem<CanvasData> = {
   shortcut: 'A',
   enabled: true,
   action: (data, _dispatch, _coord, event) => {
-    data.showComponentPicker(data.selectedViews[0], EditorActions.insertAsChildTarget())(event)
+    data.showComponentPicker(data.selectedViews, EditorActions.insertAsChildTarget())(event)
   },
 }
 
 export function showWrapComponentPicker(
-  targetElement: ElementPath,
+  selectedViews: ElementPath[],
   jsxMetadata: ElementInstanceMetadataMap,
   showComponentPicker: ShowComponentPickerContextMenuCallback,
 ): ShowComponentPickerContextMenu {
-  const element = MetadataUtils.findElementByElementPath(jsxMetadata, targetElement)
-  const prop = element?.assignedToProp
-  const target = prop == null ? targetElement : EP.parentPath(targetElement)
-  const insertionTarget: InsertionTarget =
-    prop == null ? EditorActions.wrapTarget : renderPropTarget(prop)
-  return showComponentPicker(target, insertionTarget)
+  // const element = MetadataUtils.findElementByElementPath(jsxMetadata, targetElement)
+  // const prop = element?.assignedToProp
+  // const target = prop == null ? targetElement : EP.parentPath(targetElement)
+  // const insertionTarget: InsertionTarget =
+  //   prop == null ? EditorActions.wrapTarget : renderPropTarget(prop)
+  return showComponentPicker(selectedViews, EditorActions.wrapTarget)
 }
 
 export function showReplaceComponentPicker(
@@ -376,7 +376,7 @@ export function showReplaceComponentPicker(
   const target = prop == null ? targetElement : EP.parentPath(targetElement)
   const insertionTarget: InsertionTarget =
     prop == null ? EditorActions.replaceTarget : renderPropTarget(prop)
-  return showComponentPicker(target, insertionTarget)
+  return showComponentPicker([target], insertionTarget)
 }
 
 export function showSwapComponentPicker(
@@ -389,7 +389,7 @@ export function showSwapComponentPicker(
   const target = prop == null ? targetElement : EP.parentPath(targetElement)
   const insertionTarget: InsertionTarget =
     prop == null ? EditorActions.replaceKeepChildrenAndStyleTarget : renderPropTarget(prop)
-  return showComponentPicker(target, insertionTarget)
+  return showComponentPicker([target], insertionTarget)
 }
 
 export const convert: ContextMenuItem<CanvasData> = {
@@ -493,11 +493,7 @@ export const wrapInPicker: ContextMenuItem<CanvasData> = {
         'everyone',
       )
     } else {
-      showWrapComponentPicker(
-        data.selectedViews[0],
-        data.jsxMetadata,
-        data.showComponentPicker,
-      )(event)
+      showWrapComponentPicker(data.selectedViews, data.jsxMetadata, data.showComponentPicker)(event)
     }
   },
 }
