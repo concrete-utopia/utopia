@@ -154,3 +154,39 @@ export function useErrorOverlayRecords(): ErrorOverlayRecords {
 
   return { errorRecords, overlayErrors }
 }
+
+const ReactRouterErrorPrefix = `React Router caught the following error during render`
+const ReactRouterAwaitErrorPrefix = `<Await> caught the following error during render`
+
+export function listenForReactRouterErrors(targetConsole: Console): void {
+  const targetConsoleAny = targetConsole as any
+
+  // Remove any existing proxy first.
+  if (targetConsoleAny.originalErrorMethod != null) {
+    // Restore the original method.
+    targetConsoleAny.error = targetConsoleAny.originalErrorMethod
+    // Remove this field, thereby restoring this console to its original state.
+    delete targetConsoleAny['originalErrorMethod']
+  }
+
+  // Squirrel away the original method for unpacking later.
+  const originalMethod = targetConsoleAny.error
+  targetConsoleAny.originalErrorMethod = originalMethod
+  targetConsoleAny.error = function (...args: Array<any>) {
+    // Call the original method first.
+    originalMethod(...args)
+
+    // If the first part of the log line is a string
+    const firstLine = args[0]
+    if (typeof firstLine === 'string') {
+      // ...and it starts with these prefixes...
+      if (
+        firstLine.startsWith(ReactRouterErrorPrefix) ||
+        firstLine.startsWith(ReactRouterAwaitErrorPrefix)
+      ) {
+        // ...Mark these as having been seen.
+        setReactRouterErrorHasBeenLogged(true)
+      }
+    }
+  }
+}
