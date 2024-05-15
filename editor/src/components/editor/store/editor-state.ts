@@ -641,11 +641,6 @@ export type CanvasBase64Blobs = { [key: string]: UIFileBase64Blobs }
 
 export type ErrorMessages = { [filename: string]: Array<ErrorMessage> }
 
-export interface ConsoleLog {
-  method: string
-  data: Array<any>
-}
-
 export interface DesignerFile {
   filename: string
 }

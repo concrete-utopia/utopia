@@ -167,6 +167,7 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
   const openFileRef = useRefEditorState((store) => store.editor.canvas.openFile?.filename ?? null)
   const nodeModulesRef = useRefEditorState((store) => store.editor.nodeModules)
+  const propertyControlsInfoRef = useRefEditorState((store) => store.editor.propertyControlsInfo)
 
   return React.useCallback(
     (elementToInsert: InsertMenuItem | null) => {
@@ -211,6 +212,7 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
         [element.element],
         elementPathTreeRef.current,
         elementToInsert.value.insertionCeiling,
+        propertyControlsInfoRef.current,
       )
 
       if (isLeft(targetParent)) {
@@ -255,6 +257,7 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
       openFileRef,
       projectContentsRef,
       selectedViewsRef,
+      propertyControlsInfoRef,
     ],
   )
 }

@@ -52,6 +52,10 @@ import { findJSXElementAtStaticPath } from './element-template-utils'
 import { getUtopiaJSXComponentsFromSuccess } from './project-file-utils'
 import type { ElementPathTrees } from '../shared/element-path-tree'
 import { elementPathTree } from '../shared/element-path-tree'
+import {
+  ComponentDescriptorDefaults,
+  defaultComponentDescriptor,
+} from '../../components/custom-code/code-file'
 
 const TestScenePath = 'scene-aaa'
 
@@ -426,6 +430,7 @@ describe('targetElementSupportsChildren', () => {
       path,
       { [EP.toString(path)]: element },
       {},
+      {},
     )
     expect(actualResult).toEqual(true)
   })
@@ -439,6 +444,7 @@ describe('targetElementSupportsChildren', () => {
       {},
       path,
       { [EP.toString(path)]: element },
+      {},
       {},
     )
     expect(actualResult).toEqual(true)
@@ -454,6 +460,7 @@ describe('targetElementSupportsChildren', () => {
       path,
       { [EP.toString(path)]: element },
       {},
+      {},
     )
     expect(actualResult).toEqual(true)
   })
@@ -468,6 +475,7 @@ describe('targetElementSupportsChildren', () => {
       path,
       { [EP.toString(path)]: element },
       {},
+      {},
     )
     expect(actualResult).toEqual(true)
   })
@@ -481,6 +489,7 @@ describe('targetElementSupportsChildren', () => {
       {},
       path,
       { [EP.toString(path)]: element },
+      {},
       {},
     )
     expect(actualResult).toEqual(true)
@@ -511,6 +520,7 @@ describe('targetElementSupportsChildren', () => {
       path,
       { [EP.toString(path)]: element },
       {},
+      {},
     )
     expect(actualResult).toEqual(true)
   })
@@ -526,6 +536,7 @@ describe('targetElementSupportsChildren', () => {
       {},
       path,
       { [EP.toString(path)]: element },
+      {},
       {},
     )
     expect(actualResult).toEqual(true)
@@ -543,6 +554,7 @@ describe('targetElementSupportsChildren', () => {
       path,
       { [EP.toString(path)]: element },
       {},
+      {},
     )
     expect(actualResult).toEqual(true)
   })
@@ -558,6 +570,7 @@ describe('targetElementSupportsChildren', () => {
       {},
       path,
       { [EP.toString(path)]: element },
+      {},
       {},
     )
     expect(actualResult).toEqual(true)
@@ -596,6 +609,7 @@ describe('targetElementSupportsChildren', () => {
       path,
       { [EP.toString(path)]: element },
       {},
+      {},
     )
     expect(actualResult).toEqual(true)
   })
@@ -609,6 +623,7 @@ describe('targetElementSupportsChildren', () => {
       {},
       path,
       { [EP.toString(path)]: element },
+      {},
       {},
     )
     expect(actualResult).toEqual(true)
@@ -624,6 +639,7 @@ describe('targetElementSupportsChildren', () => {
       path,
       { [EP.toString(path)]: element },
       {},
+      {},
     )
     expect(actualResult).toEqual(true)
   })
@@ -637,6 +653,7 @@ describe('targetElementSupportsChildren', () => {
       {},
       path,
       { [EP.toString(path)]: element },
+      {},
       {},
     )
     expect(actualResult).toEqual(true)
@@ -652,6 +669,7 @@ describe('targetElementSupportsChildren', () => {
       path,
       { [EP.toString(path)]: element },
       {},
+      {},
     )
     expect(actualResult).toEqual(false)
   })
@@ -665,6 +683,7 @@ describe('targetElementSupportsChildren', () => {
       {},
       path,
       { [EP.toString(path)]: element },
+      {},
       {},
     )
     expect(actualResult).toEqual(false)
@@ -711,6 +730,127 @@ export const App = (props) => {
       path,
       { [EP.toString(path)]: element },
       {},
+      {},
+    )
+    expect(actualResult).toEqual(true)
+  })
+  it('returns false for a component with property controls info including supportsChildren false', () => {
+    const storyboardCode = `import React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+export var storyboard = (
+  <Storyboard data-uid='${BakedInStoryboardUID}'>
+    <Scene
+      data-uid='${TestSceneUID}'
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+    >
+      <App data-uid='${TestAppUID}' />
+    </Scene>
+  </Storyboard>
+`
+    const storyboardJS = parseResultFromCode(StoryboardFilePath, storyboardCode)
+    const appCode = `import React from 'react'
+export const App = (props) => {
+  return <div />
+}
+`
+    const appJS = parseResultFromCode('/src/app.js', appCode)
+    const projectContents = contentsToTree({
+      [StoryboardFilePath]: textFile(
+        textFileContents(storyboardCode, storyboardJS, RevisionsState.BothMatch),
+        null,
+        null,
+        0,
+      ),
+      ['/src/app.js']: textFile(
+        textFileContents(appCode, appJS, RevisionsState.BothMatch),
+        null,
+        null,
+        0,
+      ),
+    })
+    const path = EP.elementPath([[BakedInStoryboardUID, TestScenePath, TestAppUID]])
+    const element = dummyInstanceDataForElementType(jsxElementName('App', []), path)
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      projectContents,
+      path,
+      { [EP.toString(path)]: element },
+      {},
+      {
+        '/src/app': {
+          App: {
+            ...ComponentDescriptorDefaults,
+            supportsChildren: false,
+            properties: {},
+            inspector: 'all',
+            emphasis: 'regular',
+            focus: 'default',
+            preferredChildComponents: [],
+            variants: [],
+            source: defaultComponentDescriptor(),
+          },
+        },
+      },
+    )
+    expect(actualResult).toEqual(false)
+  })
+  it('returns true for a component used from a different file that uses props.children (and explicit supportsChildren=true component annotation)', () => {
+    const storyboardCode = `import React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+export var storyboard = (
+  <Storyboard data-uid='${BakedInStoryboardUID}'>
+    <Scene
+      data-uid='${TestSceneUID}'
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+    >
+      <App data-uid='${TestAppUID}' />
+    </Scene>
+  </Storyboard>
+`
+    const storyboardJS = parseResultFromCode(StoryboardFilePath, storyboardCode)
+    const appCode = `import React from 'react'
+export const App = (props) => {
+  return <div>{props.children}</div>
+}
+`
+    const appJS = parseResultFromCode('/src/app.js', appCode)
+    const projectContents = contentsToTree({
+      [StoryboardFilePath]: textFile(
+        textFileContents(storyboardCode, storyboardJS, RevisionsState.BothMatch),
+        null,
+        null,
+        0,
+      ),
+      ['/src/app.js']: textFile(
+        textFileContents(appCode, appJS, RevisionsState.BothMatch),
+        null,
+        null,
+        0,
+      ),
+    })
+    const path = EP.elementPath([[BakedInStoryboardUID, TestScenePath, TestAppUID]])
+    const element = dummyInstanceDataForElementType(jsxElementName('App', []), path)
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      projectContents,
+      path,
+      { [EP.toString(path)]: element },
+      {},
+      {
+        '/src/app': {
+          App: {
+            ...ComponentDescriptorDefaults,
+            supportsChildren: true,
+            properties: {},
+            inspector: 'all',
+            emphasis: 'regular',
+            focus: 'default',
+            preferredChildComponents: [],
+            variants: [],
+            source: defaultComponentDescriptor(),
+          },
+        },
+      },
     )
     expect(actualResult).toEqual(true)
   })
@@ -772,6 +912,7 @@ export const App = (props) => {
         [EP.toString(path)]: element,
       },
       {},
+      {},
     )
     expect(actualResult).toEqual(false)
   })
@@ -824,6 +965,7 @@ export const App = (props) => {
       {
         [EP.toString(path)]: element,
       },
+      {},
       {},
     )
     expect(actualResult).toEqual(false)

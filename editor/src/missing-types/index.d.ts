@@ -54,9 +54,6 @@ declare module 'eslint4b'
 declare module 'babel-eslint'
 declare module 'strip-ansi'
 
-declare module 'console-feed'
-declare module 'console-feed/lib/Hook/parse'
-
 declare module 'react-merge-refs'
 
 declare module 'platform-detect'

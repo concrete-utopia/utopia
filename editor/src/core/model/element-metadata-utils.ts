@@ -989,10 +989,16 @@ export const MetadataUtils = {
     path: ElementPath,
     metadata: ElementInstanceMetadataMap,
     pathTree: ElementPathTrees,
+    propertyControlsInfo: PropertyControlsInfo,
   ): boolean {
     return (
-      this.targetElementSupportsChildrenAlsoText(projectContents, path, metadata, pathTree) ===
-      'supportsChildren'
+      this.targetElementSupportsChildrenAlsoText(
+        projectContents,
+        path,
+        metadata,
+        pathTree,
+        propertyControlsInfo,
+      ) === 'supportsChildren'
     )
   },
   targetElementSupportsChildrenAlsoText(
@@ -1000,6 +1006,7 @@ export const MetadataUtils = {
     path: ElementPath,
     metadata: ElementInstanceMetadataMap,
     pathTree: ElementPathTrees,
+    propertyControlsInfo: PropertyControlsInfo,
   ): ElementSupportsChildren {
     const instance = MetadataUtils.findElementByElementPath(metadata, path)
     if (instance == null) {
@@ -1017,6 +1024,8 @@ export const MetadataUtils = {
           path,
           metadata,
           pathTree,
+          projectContents,
+          propertyControlsInfo,
         )
         if (elementResult != null) {
           return elementResult
@@ -1041,12 +1050,14 @@ export const MetadataUtils = {
     metadata: ElementInstanceMetadataMap,
     target: ElementPath | null,
     pathTree: ElementPathTrees,
+    propertyControlsInfo: PropertyControlsInfo,
   ): boolean {
     const targetSupportsChildrenValue = this.targetSupportsChildrenAlsoText(
       projectContents,
       metadata,
       target,
       pathTree,
+      propertyControlsInfo,
     )
     return (
       targetSupportsChildrenValue !== 'doesNotSupportChildren' &&
@@ -1058,33 +1069,47 @@ export const MetadataUtils = {
     metadata: ElementInstanceMetadataMap,
     target: ElementPath | null,
     pathTree: ElementPathTrees,
+    propertyControlsInfo: PropertyControlsInfo,
   ): ElementSupportsChildren {
     if (target == null) {
       // Assumed to be reparenting to the canvas root.
       return 'supportsChildren'
-    } else {
-      const instance = MetadataUtils.findElementByElementPath(metadata, target)
-      if (instance == null) {
-        return withUnderlyingTarget(
-          target,
-          projectContents,
-          'doesNotSupportChildren',
-          (_, element) => {
-            return (
-              elementChildSupportsChildrenAlsoText(element, target, metadata, pathTree) ??
-              'doesNotSupportChildren'
-            )
-          },
-        )
-      } else {
-        return MetadataUtils.targetElementSupportsChildrenAlsoText(
-          projectContents,
-          target,
-          metadata,
-          pathTree,
-        )
-      }
     }
+    const componentDescriptor = getComponentDescriptorForTarget(
+      target,
+      propertyControlsInfo,
+      projectContents,
+    )
+    if (componentDescriptor != null && !componentDescriptor.supportsChildren) {
+      return 'doesNotSupportChildren'
+    }
+    const instance = MetadataUtils.findElementByElementPath(metadata, target)
+    if (instance == null) {
+      return withUnderlyingTarget(
+        target,
+        projectContents,
+        'doesNotSupportChildren',
+        (_, element) => {
+          return (
+            elementChildSupportsChildrenAlsoText(
+              element,
+              target,
+              metadata,
+              pathTree,
+              projectContents,
+              propertyControlsInfo,
+            ) ?? 'doesNotSupportChildren'
+          )
+        },
+      )
+    }
+    return MetadataUtils.targetElementSupportsChildrenAlsoText(
+      projectContents,
+      target,
+      metadata,
+      pathTree,
+      propertyControlsInfo,
+    )
   },
   targetUsesProperty(
     projectContents: ProjectContentTreeRoot,

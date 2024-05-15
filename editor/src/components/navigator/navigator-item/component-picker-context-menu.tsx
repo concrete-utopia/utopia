@@ -53,7 +53,11 @@ import type {
   ReplaceTarget,
 } from '../../editor/action-types'
 import { type ProjectContentTreeRoot } from '../../assets'
-import type { PropertyControlsInfo, ComponentInfo } from '../../custom-code/code-file'
+import {
+  type PropertyControlsInfo,
+  type ComponentInfo,
+  componentElementToInsertHasChildren,
+} from '../../custom-code/code-file'
 import { type Icon } from 'utopia-api'
 import { getRegisteredComponent } from '../../../core/property-controls/property-controls-utils'
 import { defaultImportsForComponentModule } from '../../../core/property-controls/property-controls-local'
@@ -153,6 +157,7 @@ export function preferredChildrenForTarget(
   targetElement: ElementInstanceMetadata | null,
   insertionTarget: InsertionTarget,
   propertyControlsInfo: PropertyControlsInfo,
+  elementChildren: Array<ElementInstanceMetadata>,
 ): Array<PreferredChildComponentDescriptorWithIcon> {
   const targetJSXElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(targetElement)
   const elementImportInfo = targetElement?.importInfo
@@ -174,10 +179,27 @@ export function preferredChildrenForTarget(
       isReplaceTarget(insertionTarget) ||
       isReplaceKeepChildrenAndStyleTarget(insertionTarget)
     ) {
-      return registeredComponent.preferredChildComponents.map((v) => ({
-        ...v,
-        icon: getIconForComponent(v.name, v.moduleName, propertyControlsInfo),
-      }))
+      // If we want to keep the children of this element when it has some, don't include replacements that have children.
+      const includeComponentsWithChildren =
+        !isReplaceKeepChildrenAndStyleTarget(insertionTarget) || elementChildren.length === 0
+
+      return registeredComponent.preferredChildComponents.map((childComponent) => {
+        return {
+          ...childComponent,
+          variants: childComponent.variants.filter((variant) => {
+            // Includes everything if components with children are permitted, otherwise only includes components without children.
+            return (
+              includeComponentsWithChildren ||
+              !componentElementToInsertHasChildren(variant.elementToInsert())
+            )
+          }),
+          icon: getIconForComponent(
+            childComponent.name,
+            childComponent.moduleName,
+            propertyControlsInfo,
+          ),
+        }
+      })
     } else if (isRenderPropTarget(insertionTarget)) {
       for (const [registeredPropName, registeredPropValue] of Object.entries(
         registeredComponent.properties,
@@ -218,19 +240,30 @@ function augmentPreferredChildren(
   return preferredChildren
 }
 
+function getTargetParentFromInsertionTarget(
+  target: ElementPath,
+  insertionTarget: InsertionTarget,
+): ElementPath {
+  return isReplaceTarget(insertionTarget) || isReplaceKeepChildrenAndStyleTarget(insertionTarget)
+    ? EP.parentPath(target)
+    : target
+}
+
 const usePreferredChildrenForTarget = (
   target: ElementPath,
   insertionTarget: InsertionTarget,
 ): Array<PreferredChildComponentDescriptorWithIcon> => {
-  const targetParent =
-    isReplaceTarget(insertionTarget) || isReplaceKeepChildrenAndStyleTarget(insertionTarget)
-      ? EP.parentPath(target)
-      : target
+  const targetParent = getTargetParentFromInsertionTarget(target, insertionTarget)
 
   const targetElement = useEditorState(
     Substores.metadata,
     (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, targetParent),
     'usePreferredChildrenForTarget targetElement',
+  )
+  const targetChildren = useEditorState(
+    Substores.metadata,
+    (store) => MetadataUtils.getChildrenUnordered(store.editor.jsxMetadata, target),
+    'usePreferredChildrenForTarget targetChildren',
   )
 
   const preferredChildren = useEditorState(
@@ -240,6 +273,7 @@ const usePreferredChildrenForTarget = (
         targetElement,
         insertionTarget,
         store.editor.propertyControlsInfo,
+        targetChildren,
       )
     },
     'usePreferredChildrenForSelectedElement propertyControlsInfo',
@@ -297,10 +331,15 @@ export const useCreateCallbackToShowComponentPicker =
               editorRef.current.jsxMetadata,
               targetParent,
             )
+            const targetChildren = MetadataUtils.getChildrenUnordered(
+              editorRef.current.jsxMetadata,
+              targetParent,
+            )
             const preferredChildren = preferredChildrenForTarget(
               targetElement,
               insertionTarget,
               editorRef.current.propertyControlsInfo,
+              targetChildren,
             )
 
             pickerType = preferredChildren.length > 0 ? 'preferred' : 'full'
@@ -685,20 +724,34 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
 
 const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProps>(
   ({ target, insertionTarget }) => {
-    const allInsertableComponents = useGetInsertableComponents('insert').flatMap((g) => ({
-      label: g.label,
-      options: g.options.filter((o) => {
-        if (
-          isInsertAsChildTarget(insertionTarget) ||
-          isConditionalTarget(insertionTarget) ||
-          isReplaceTarget(insertionTarget)
-        ) {
-          return true
-        }
-        // Right now we only support inserting JSX elements when we insert into a render prop or when replacing elements
-        return o.value.element().type === 'JSX_ELEMENT'
-      }),
-    }))
+    const targetChildren = useEditorState(
+      Substores.metadata,
+      (store) => MetadataUtils.getChildrenUnordered(store.editor.jsxMetadata, target),
+      'usePreferredChildrenForTarget targetChildren',
+    )
+    const allInsertableComponents = useGetInsertableComponents('insert').flatMap((group) => {
+      return {
+        label: group.label,
+        options: group.options.filter((option) => {
+          if (
+            isInsertAsChildTarget(insertionTarget) ||
+            isConditionalTarget(insertionTarget) ||
+            isReplaceTarget(insertionTarget)
+          ) {
+            return true
+          }
+          if (isReplaceKeepChildrenAndStyleTarget(insertionTarget)) {
+            // If we want to keep the children of this element when it has some, don't include replacements that have children.
+            return (
+              targetChildren.length === 0 ||
+              !componentElementToInsertHasChildren(option.value.element())
+            )
+          }
+          // Right now we only support inserting JSX elements when we insert into a render prop or when replacing elements
+          return option.value.element().type === 'JSX_ELEMENT'
+        }),
+      }
+    })
 
     const dispatch = useDispatch()
 

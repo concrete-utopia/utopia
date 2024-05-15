@@ -176,7 +176,6 @@
     "chroma-js": "2.1.0",
     "classnames": "2.2.6",
     "clipboard-polyfill": "2.4.6",
-    "console-feed": "2.8.11",
     "create-react-class": "15.6.3",
     "css-tree": "2.3.1",
     "eslint-config-utopia": "link:../eslint-config-utopia",

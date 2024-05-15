@@ -9,8 +9,8 @@ import type { InsertionSubject } from '../../editor/editor-modes'
 import type { CanvasCommand } from '../commands/commands'
 import type { StrategyApplicationStatus } from './interaction-state'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
-import type { RemixRoutingTable } from '../../editor/store/remix-derived-data'
 import type { ActiveFrameAction } from '../commands/set-active-frames-command'
+import type { PropertyControlsInfo } from '../../custom-code/code-file'
 
 // TODO: fill this in, maybe make it an ADT for different strategies
 export interface CustomStrategyState {
@@ -100,6 +100,7 @@ export interface InteractionCanvasState {
   startingMetadata: ElementInstanceMetadataMap
   startingElementPathTree: ElementPathTrees
   startingAllElementProps: AllElementProps
+  propertyControlsInfo: PropertyControlsInfo
 }
 
 export type InteractionTarget = TargetPaths | InsertionSubjects
