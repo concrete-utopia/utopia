@@ -155,7 +155,7 @@ export function useErrorOverlayRecords(): ErrorOverlayRecords {
   return { errorRecords, overlayErrors }
 }
 
-export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
+function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
   let passTimes: { [key: string]: number } = {}
   fastForEach(errorMessages, (errorMessage) => {
     if (errorMessage.passTime != null) {
