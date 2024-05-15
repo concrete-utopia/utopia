@@ -343,6 +343,7 @@ import type {
   AddCollapsedViews,
   ReplaceMappedElement,
   UpdateMapExpression,
+  ReplaceJSXElement,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -2219,7 +2220,6 @@ export const UPDATE_FNS = {
   },
   INSERT_JSX_ELEMENT: (action: InsertJSXElement, editor: EditorModel): EditorModel => {
     let newSelectedViews: ElementPath[] = []
-    const { insertionBehaviour } = action
     const parentPath =
       action.target == null
         ? // action.target == null means Canvas, which means storyboard root element
@@ -2227,9 +2227,7 @@ export const UPDATE_FNS = {
             'found no element path for the storyboard root',
             getStoryboardElementPath(editor.projectContents, editor.canvas.openFile?.filename),
           )
-        : insertionBehaviour.type === 'insert-as-child'
-        ? action.target
-        : EP.parentPath(action.target)
+        : action.target
 
     const withNewElement = modifyUnderlyingTargetElement(
       parentPath,
@@ -2347,6 +2345,9 @@ export const UPDATE_FNS = {
       leftMenu: { visible: editor.leftMenu.visible, selectedTab: LeftMenuTab.Navigator },
       selectedViews: newSelectedViews,
     }
+  },
+  REPLACE_JSX_ELEMENT: (action: ReplaceJSXElement, editor: EditorModel): EditorModel => {
+    return editor
   },
   REPLACE_MAPPED_ELEMENT: (action: ReplaceMappedElement, editor: EditorModel): EditorModel => {
     let newSelectedViews: ElementPath[] = []
