@@ -48,17 +48,17 @@ export var App = props => {
         UNPARSED_CODE
         UTOPIA_JSX_COMPONENT - App
           JSX_ELEMENT - div - aaa
-            JSX_MAP_EXPRESSION - 91d
-                ATTRIBUTE_VALUE - 64c
-                ATTRIBUTE_VALUE - ffc
-                ATTRIBUTE_VALUE - a09
-              ATTRIBUTE_OTHER_JAVASCRIPT - f9c
+            JSX_MAP_EXPRESSION - 1cc
+                ATTRIBUTE_VALUE - 8f7
+                ATTRIBUTE_VALUE - 5cd
+                ATTRIBUTE_VALUE - 7a4
+              ATTRIBUTE_OTHER_JAVASCRIPT - 831
                 JSX_ELEMENT - div - bbb
-                  JS_IDENTIFIER - c7b
-                  JSX_TEXT_BLOCK - 213
-                  JS_IDENTIFIER - d59
-              ATTRIBUTE_VALUE - 6c7
-              ATTRIBUTE_VALUE - 8bc"
+                  JS_IDENTIFIER - aae
+                  JSX_TEXT_BLOCK - 3bd
+                  JS_IDENTIFIER - 804
+              ATTRIBUTE_VALUE - 9e4
+              ATTRIBUTE_VALUE - 753"
       `)
 
       const aaaElement = findJSXElementAtStaticPath(
@@ -188,18 +188,18 @@ export var App = props => {
       UNPARSED_CODE
       UTOPIA_JSX_COMPONENT - Test
         JSX_ELEMENT - div - mapper-parent
-          JSX_MAP_EXPRESSION - 25c
-            JS_PROPERTY_ACCESS - 81c
-              JS_IDENTIFIER - 4cd
-            ATTRIBUTE_OTHER_JAVASCRIPT - 281
+          JSX_MAP_EXPRESSION - 3d5
+            JS_PROPERTY_ACCESS - 741
+              JS_IDENTIFIER - f38
+            ATTRIBUTE_OTHER_JAVASCRIPT - 2d7
               JSX_ELEMENT - Card - card
-                  ATTRIBUTE_VALUE - 436
-                JS_PROPERTY_ACCESS - e3f
-                  JS_IDENTIFIER - 82c
-                JS_PROPERTY_ACCESS - 394
-                  JS_IDENTIFIER - 8ca
-                JS_PROPERTY_ACCESS - c19
-                  JS_IDENTIFIER - aaa"
+                  ATTRIBUTE_VALUE - d53
+                JS_PROPERTY_ACCESS - 160
+                  JS_IDENTIFIER - ec0
+                JS_PROPERTY_ACCESS - 109
+                  JS_IDENTIFIER - f0f
+                JS_PROPERTY_ACCESS - 032
+                  JS_IDENTIFIER - 805"
     `)
     expect(elementsStructure((testParseCode(spreadCode) as any).topLevelElements))
       .toMatchInlineSnapshot(`
@@ -210,12 +210,12 @@ export var App = props => {
       UNPARSED_CODE
       UTOPIA_JSX_COMPONENT - Test
         JSX_ELEMENT - div - mapper-parent
-          JSX_MAP_EXPRESSION - 27d
-            JS_PROPERTY_ACCESS - 81c
-              JS_IDENTIFIER - 4cd
-            ATTRIBUTE_OTHER_JAVASCRIPT - 5d2
+          JSX_MAP_EXPRESSION - 84e
+            JS_PROPERTY_ACCESS - 741
+              JS_IDENTIFIER - f38
+            ATTRIBUTE_OTHER_JAVASCRIPT - f54
               JSX_ELEMENT - Card - card
-                  ATTRIBUTE_VALUE - 436"
+                  ATTRIBUTE_VALUE - d53"
     `)
   })
 })

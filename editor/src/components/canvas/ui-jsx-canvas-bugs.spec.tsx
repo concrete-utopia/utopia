@@ -431,7 +431,7 @@ export default function () {
           id=\\"canvas-container\\"
           data-testid=\\"canvas-container\\"
           style=\\"position: absolute\\"
-          data-utopia-valid-paths=\\"storyboard-entity storyboard-entity/scene-1-entity storyboard-entity/scene-1-entity/app-entity storyboard-entity/scene-1-entity/app-entity:app-outer-div storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance storyboard-entity/scene-1-entity/app-entity:app-outer-div/252 storyboard-entity/scene-1-entity/app-entity:app-outer-div/bd4\\"
+          data-utopia-valid-paths=\\"storyboard-entity storyboard-entity/scene-1-entity storyboard-entity/scene-1-entity/app-entity storyboard-entity/scene-1-entity/app-entity:app-outer-div storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance storyboard-entity/scene-1-entity/app-entity:app-outer-div/ff8 storyboard-entity/scene-1-entity/app-entity:app-outer-div/070\\"
           data-utopia-root-element-path=\\"storyboard-entity\\"
         >
           <div
@@ -507,8 +507,8 @@ export default function () {
               </div>
               hello
               <div
-                data-uid=\\"e9f\\"
-                data-path=\\"storyboard-entity/scene-1-entity/app-entity:app-outer-div/bd4:e9f\\"
+                data-uid=\\"01b\\"
+                data-path=\\"storyboard-entity/scene-1-entity/app-entity:app-outer-div/070:01b\\"
               >
                 Default Function Time
               </div>

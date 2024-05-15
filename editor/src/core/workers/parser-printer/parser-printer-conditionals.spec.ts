@@ -28,24 +28,24 @@ describe('Conditonals JSX parser', () => {
           JSX_ELEMENT - div - div
             JSX_CONDITIONAL_EXPRESSION - conditional
               JSX_ELEMENT - div - hello
-                JSX_TEXT_BLOCK - f2c
+                JSX_TEXT_BLOCK - c58
               JSX_ELEMENT - div - world
-                JSX_TEXT_BLOCK - 673
+                JSX_TEXT_BLOCK - 935
         UNPARSED_CODE
         UTOPIA_JSX_COMPONENT - storyboard
           JSX_ELEMENT - Storyboard - eee
             JSX_ELEMENT - Scene - fff
               JSX_ELEMENT - App - app
-                  ATTRIBUTE_VALUE - 8bc
-                  ATTRIBUTE_VALUE - 4cb
-                  ATTRIBUTE_VALUE - 4a1
-                  ATTRIBUTE_VALUE - aaa
-                  ATTRIBUTE_VALUE - aab
-                ATTRIBUTE_VALUE - da8
-                ATTRIBUTE_VALUE - bf0
-                ATTRIBUTE_VALUE - aad
-                ATTRIBUTE_VALUE - 5bd
-                ATTRIBUTE_VALUE - aae
+                  ATTRIBUTE_VALUE - 753
+                  ATTRIBUTE_VALUE - 2c3
+                  ATTRIBUTE_VALUE - 417
+                  ATTRIBUTE_VALUE - 266
+                  ATTRIBUTE_VALUE - 498
+                ATTRIBUTE_VALUE - 7c2
+                ATTRIBUTE_VALUE - d23
+                ATTRIBUTE_VALUE - 14f
+                ATTRIBUTE_VALUE - c79
+                ATTRIBUTE_VALUE - 0c4
         UNPARSED_CODE"
       `)
 
@@ -81,16 +81,16 @@ describe('Conditonals JSX parser', () => {
           JSX_ELEMENT - Storyboard - eee
             JSX_ELEMENT - Scene - fff
               JSX_ELEMENT - App - app
-                  ATTRIBUTE_VALUE - 8bc
-                  ATTRIBUTE_VALUE - 4cb
-                  ATTRIBUTE_VALUE - 4a1
-                  ATTRIBUTE_VALUE - aab
-                  ATTRIBUTE_VALUE - aac
-                ATTRIBUTE_VALUE - da8
-                ATTRIBUTE_VALUE - bf0
-                ATTRIBUTE_VALUE - aae
-                ATTRIBUTE_VALUE - 5bd
-                ATTRIBUTE_VALUE - aaf
+                  ATTRIBUTE_VALUE - 753
+                  ATTRIBUTE_VALUE - 2c3
+                  ATTRIBUTE_VALUE - 417
+                  ATTRIBUTE_VALUE - 266
+                  ATTRIBUTE_VALUE - 498
+                ATTRIBUTE_VALUE - 7c2
+                ATTRIBUTE_VALUE - d23
+                ATTRIBUTE_VALUE - 14f
+                ATTRIBUTE_VALUE - c79
+                ATTRIBUTE_VALUE - 0c4
         UNPARSED_CODE"
       `)
 
@@ -128,16 +128,16 @@ describe('Conditonals JSX printer', () => {
           JSX_ELEMENT - Storyboard - eee
             JSX_ELEMENT - Scene - fff
               JSX_ELEMENT - App - app
-                  ATTRIBUTE_VALUE - 8bc
-                  ATTRIBUTE_VALUE - 4cb
-                  ATTRIBUTE_VALUE - 4a1
-                  ATTRIBUTE_VALUE - aab
-                  ATTRIBUTE_VALUE - aac
-                ATTRIBUTE_VALUE - da8
-                ATTRIBUTE_VALUE - bf0
-                ATTRIBUTE_VALUE - aae
-                ATTRIBUTE_VALUE - 5bd
-                ATTRIBUTE_VALUE - aaf
+                  ATTRIBUTE_VALUE - 753
+                  ATTRIBUTE_VALUE - 2c3
+                  ATTRIBUTE_VALUE - 417
+                  ATTRIBUTE_VALUE - 266
+                  ATTRIBUTE_VALUE - 498
+                ATTRIBUTE_VALUE - 7c2
+                ATTRIBUTE_VALUE - d23
+                ATTRIBUTE_VALUE - 14f
+                ATTRIBUTE_VALUE - c79
+                ATTRIBUTE_VALUE - 0c4
         UNPARSED_CODE"
       `)
 
