@@ -2287,11 +2287,6 @@ export const UPDATE_FNS = {
         const startingComponents = getUtopiaJSXComponentsFromSuccess(success)
 
         const removeElementAndReturnIndex = () => {
-          const indexInParent = getIndexInParent(
-            success.topLevelElements,
-            EP.dynamicPathToStaticPath(action.target),
-          )
-
           const originalElement = findJSXElementAtPath(action.target, startingComponents)
 
           const withTargetDeleted = removeElementAtPath(
@@ -2304,12 +2299,10 @@ export const UPDATE_FNS = {
             components: withTargetDeleted.components,
             originalElement: originalElement,
             imports: withTargetDeleted.imports,
-            insertionIndex: indexInParent >= 0 ? absolute(indexInParent) : null,
           }
         }
 
         const {
-          insertionIndex,
           originalElement,
           components,
           imports: workingImports,
@@ -2347,6 +2340,23 @@ export const UPDATE_FNS = {
           }
           return renamedJsxElementWithOriginalStyle
         })()
+
+        const updatedComponents = transformJSXComponentAtPath(
+          components,
+          EP.dynamicPathToStaticPath(action.target),
+          () => fixedElement,
+        )
+
+        const updatedTopLevelElements = applyUtopiaJSXComponentsChanges(
+          success.topLevelElements,
+          updatedComponents,
+        )
+
+        return {
+          ...success,
+          topLevelElements: updatedTopLevelElements,
+          imports: imports,
+        }
       },
     )
 
@@ -3468,12 +3478,7 @@ export const UPDATE_FNS = {
             [],
           )
 
-          const insertJSXElementAction = insertJSXElement(
-            imageElement,
-            parent,
-            {},
-            insertAsChildTarget(),
-          )
+          const insertJSXElementAction = insertJSXElement(imageElement, parent, {})
 
           const withComponentCreated = UPDATE_FNS.INSERT_JSX_ELEMENT(insertJSXElementAction, {
             ...editorWithToast,
@@ -4519,7 +4524,7 @@ export const UPDATE_FNS = {
       [],
     )
 
-    const insertJSXElementAction = insertJSXElement(imageElement, parent, {}, insertAsChildTarget())
+    const insertJSXElementAction = insertJSXElement(imageElement, parent, {})
     return UPDATE_FNS.INSERT_JSX_ELEMENT(insertJSXElementAction, editor)
   },
   REMOVE_FROM_NODE_MODULES_CONTENTS: (

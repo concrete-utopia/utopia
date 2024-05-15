@@ -299,12 +299,14 @@ export function replaceJSXElement(
   element: JSXElement,
   target: ElementPath,
   importsToAdd: Imports,
+  behaviour: ReplaceKeepChildrenAndStyleTarget | ReplaceTarget,
 ): ReplaceJSXElement {
   return {
     action: 'REPLACE_JSX_ELEMENT',
     jsxElement: element,
     target: target,
     importsToAdd: importsToAdd,
+    behaviour: behaviour,
   }
 }
 
