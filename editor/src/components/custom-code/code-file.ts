@@ -111,6 +111,20 @@ export function clearComponentElementToInsertUniqueIDs(
   }
 }
 
+export function componentElementToInsertHasChildren(toInsert: ComponentElementToInsert): boolean {
+  switch (toInsert.type) {
+    case 'JSX_ELEMENT':
+    case 'JSX_FRAGMENT':
+      return toInsert.children.length > 0
+    case 'JSX_MAP_EXPRESSION':
+    case 'JSX_CONDITIONAL_EXPRESSION':
+      // More in the conceptual sense than actual sense of having a field containing children.
+      return true
+    default:
+      assertNever(toInsert)
+  }
+}
+
 export interface ComponentInfo {
   insertMenuLabel: string
   elementToInsert: () => ComponentElementToInsert
