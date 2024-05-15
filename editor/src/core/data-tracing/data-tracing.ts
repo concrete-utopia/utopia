@@ -291,6 +291,8 @@ export function traceDataFromElement(
     case 'JSX_CONDITIONAL_EXPRESSION':
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_VALUE':
+    case 'ATTRIBUTE_NESTED_ARRAY':
+    case 'ATTRIBUTE_NESTED_OBJECT':
       return dataTracingToElementAtScope(enclosingScope, startFromElement, [])
     case 'JS_IDENTIFIER':
     case 'JS_ELEMENT_ACCESS':
@@ -303,8 +305,6 @@ export function traceDataFromElement(
         pathDrillSoFar,
       )
     case 'ATTRIBUTE_FUNCTION_CALL': // TODO we should support this
-    case 'ATTRIBUTE_NESTED_ARRAY': // TODO we should support this
-    case 'ATTRIBUTE_NESTED_OBJECT': // TODO we should support this
     case 'ATTRIBUTE_OTHER_JAVASCRIPT': // by definition we can't support this, as this is the catch-all for unsupported expressions
       return dataTracingFailed(`Unsupported element type ${startFromElement.type}`)
     default:
@@ -358,10 +358,6 @@ export function traceDataFromProp(
   if (elementHoldingProp == null) {
     return dataTracingFailed('traceDataFromProp did not find element at path')
   }
-  const componentHoldingElement: UtopiaJSXComponent | null = findContainingComponentForElementPath(
-    startFrom.elementPath,
-    projectContents,
-  )
 
   if (!isRight(elementHoldingProp.element)) {
     return dataTracingFailed('element must be a parsed element')
@@ -377,9 +373,16 @@ export function traceDataFromProp(
   )
 
   // for now we only support a simple JSIdentifier, and only if it was a full match
-  if (propDeclaration.remainingPath != null) {
+  if (
+    propDeclaration.remainingPath != null ||
+    propDeclaration.attribute.type === 'PART_OF_ATTRIBUTE_VALUE'
+  ) {
     return dataTracingFailed("We don't yet support propertyPaths pointing deeper into attributes")
   }
+  if (propDeclaration.attribute.type === 'ATTRIBUTE_NOT_FOUND') {
+    return dataTracingFailed('Could not find attribute at path')
+  }
+
   if (
     propDeclaration.attribute.type === 'ATTRIBUTE_VALUE' ||
     propDeclaration.attribute.type === 'ATTRIBUTE_NESTED_OBJECT' ||
@@ -392,39 +395,13 @@ export function traceDataFromProp(
       pathDrillSoFar,
     )
   }
-  if (
-    propDeclaration.attribute.type === 'JS_IDENTIFIER' ||
-    propDeclaration.attribute.type === 'JS_ELEMENT_ACCESS' ||
-    propDeclaration.attribute.type === 'JS_PROPERTY_ACCESS'
-  ) {
-    // first, let's try to find the jsIdentifier at the root
-    const dataPath = processJSPropertyAccessors(propDeclaration.attribute)
 
-    if (isLeft(dataPath)) {
-      return dataTracingFailed(dataPath.value)
-    }
-
-    const identifier = dataPath.value.originalIdentifier
-
-    if (componentHoldingElement != null) {
-      const componentRootPath = EP.getPathOfComponentRoot(startFrom.elementPath)
-
-      return walkUpInnerScopesUntilReachingComponent(
-        metadata,
-        projectContents,
-        startFrom.elementPath,
-        startFrom.elementPath,
-        componentRootPath,
-        componentHoldingElement,
-        identifier,
-        [...dataPath.value.path, ...pathDrillSoFar],
-      )
-    }
-  }
-  return dataTracingFailed(
-    `We couldn\'t walk past ${EP.toString(startFrom.elementPath)} @ ${PP.toString(
-      startFrom.propertyPath,
-    )}`,
+  return traceDataFromElement(
+    propDeclaration.attribute,
+    startFrom.elementPath,
+    metadata,
+    projectContents,
+    pathDrillSoFar,
   )
 }
 

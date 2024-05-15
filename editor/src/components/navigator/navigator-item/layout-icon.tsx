@@ -161,8 +161,10 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
                   ? 'white'
                   : defaults.color == 'component'
                   ? 'component'
-                  : defaults.type === 'flex-row' ||
+                  : defaults.type === 'row' ||
+                    defaults.type === 'column' ||
                     defaults.type === 'flex-column' ||
+                    defaults.type === 'flex-row' ||
                     defaults.type === 'grid'
                   ? 'primary'
                   : defaults.color

@@ -2177,12 +2177,14 @@ export interface DataReferenceNavigatorEntry {
   type: 'DATA_REFERENCE'
   elementPath: ElementPath
   renderedAt: ElementPropertyPath | null
+  surroundingScope: ElementPath
   childOrAttribute: JSXElementChild
 }
 
 export function dataReferenceNavigatorEntry(
   elementPath: ElementPath,
   renderedAt: ElementPropertyPath | null,
+  surroundingScope: ElementPath,
   childOrAttribute: JSXElementChild,
 ): DataReferenceNavigatorEntry {
   return {
@@ -2190,6 +2192,7 @@ export function dataReferenceNavigatorEntry(
     elementPath: elementPath,
     childOrAttribute: childOrAttribute,
     renderedAt: renderedAt,
+    surroundingScope: surroundingScope,
   }
 }
 
