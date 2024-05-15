@@ -134,7 +134,12 @@ export function getNavigatorTargets(
       ) {
         if (elementFromProjectContents != null) {
           // add synthetic entry
-          const dataRefEntry = dataReferenceNavigatorEntry(path, null, elementFromProjectContents)
+          const dataRefEntry = dataReferenceNavigatorEntry(
+            path,
+            null,
+            path, // TODO this should be pointing at the enclosing scope, but EP.parentPath(path) breaks if `path` is the root of a component
+            elementFromProjectContents,
+          )
           addNavigatorTargetsUnlessCollapsed(dataRefEntry)
         } else {
           throw new Error(`internal error: Unexpected non-element found at ${EP.toString(path)}`)
@@ -209,7 +214,12 @@ export function getNavigatorTargets(
             walkAndAddKeys(subTreeChild, collapsedAncestor, prop)
           } else {
             const synthEntry = isFeatureEnabled('Data Entries in the Navigator')
-              ? dataReferenceNavigatorEntry(childPath, EPP.create(path, PP.create(prop)), propValue)
+              ? dataReferenceNavigatorEntry(
+                  childPath,
+                  EPP.create(path, PP.create(prop)),
+                  path,
+                  propValue,
+                )
               : syntheticNavigatorEntry(childPath, propValue)
             addNavigatorTargetsUnlessCollapsed(synthEntry)
           }
@@ -342,7 +352,7 @@ export function getNavigatorTargets(
           const children = jsxElement.children
           children.forEach((child) => {
             const childPath = EP.appendToPath(path, child.uid)
-            const dataRefEntry = dataReferenceNavigatorEntry(childPath, null, child)
+            const dataRefEntry = dataReferenceNavigatorEntry(childPath, null, path, child)
             addNavigatorTargetsUnlessCollapsed(dataRefEntry)
           })
         }

@@ -8,6 +8,7 @@ import type {
 import { getJSXElementNameLastPart } from '../../../../core/shared/element-template'
 import type { ElementPath, ElementPropertyPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
+import * as EPP from '../../../template-property-path'
 import { NO_OP, assertNever } from '../../../../core/shared/utils'
 import { FlexRow, Icn, Icons, Tooltip, UtopiaStyles, colorTheme } from '../../../../uuiui'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
@@ -15,13 +16,14 @@ import { useDataPickerButton } from './component-section'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { selectComponents } from '../../../editor/actions/meta-actions'
 import { when } from '../../../../utils/react-conditionals'
-import { traceDataFromProp } from '../../../../core/data-tracing/data-tracing'
+import { traceDataFromElement, traceDataFromProp } from '../../../../core/data-tracing/data-tracing'
 
 interface DataReferenceCartoucheControlProps {
   elementPath: ElementPath
   childOrAttribute: JSXElementChild
   selected: boolean
   renderedAt: ElementPropertyPath | null
+  surroundingScope: ElementPath
 }
 
 export const DataReferenceCartoucheControl = React.memo(
@@ -40,12 +42,19 @@ export const DataReferenceCartoucheControl = React.memo(
       'DataReferenceCartoucheControl contentsToDisplay',
     )
 
-    // TODO get the actual data _value_ to display in the cartouche, and only show the data reference in the tooltip
+    const renderedAt =
+      props.renderedAt ??
+      // if the renderedAt is not provided, we assume that the element is rendered at the parent's children
+      // TODO this fallback should be removed in a follow-up PR
+      EPP.create(
+        EP.parentPath(elementPath),
+        PP.create('children'), // FIXME this will replace _all_ of the children of the parent element instead of just selectively updating the data reference!!! – providing ['children', index] is not enough here, we need a deeper fix
+      )
 
     const dataPickerButtonData = useDataPickerButton(
-      [EP.parentPath(elementPath)],
-      props.renderedAt == null ? PP.create('children') : props.renderedAt.propertyPath, // TODO
-      false, // TODO
+      [renderedAt.elementPath],
+      renderedAt.propertyPath,
+      false, // TODO we need to kill this parameter
       {
         control: 'none',
       },
@@ -54,12 +63,10 @@ export const DataReferenceCartoucheControl = React.memo(
     const isDataComingFromHookResult = useEditorState(
       Substores.projectContentsAndMetadata,
       (store) => {
-        if (props.renderedAt == null) {
-          return false
-        }
         return (
-          traceDataFromProp(
-            props.renderedAt,
+          traceDataFromElement(
+            props.childOrAttribute,
+            props.surroundingScope,
             store.editor.jsxMetadata,
             store.editor.projectContents,
             [],
