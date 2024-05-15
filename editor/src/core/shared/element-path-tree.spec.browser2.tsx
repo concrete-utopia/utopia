@@ -163,7 +163,7 @@ describe('getChildrenOrdered', () => {
     )
 
     expect(childrenOfCond2.map((c) => EP.toString(c.elementPath))).toEqual([
-      'sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2/c87',
+      'sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2/e26',
     ])
   })
 })
