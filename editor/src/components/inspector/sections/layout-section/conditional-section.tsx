@@ -362,11 +362,10 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
           style={{
             flexGrow: 1,
             gap: 8,
-            color: colorTheme.dynamicBlue.value,
             textTransform: 'uppercase',
           }}
         >
-          <InspectorSectionIcons.Conditionals style={{ width: 16, height: 16 }} color='dynamic' />
+          <InspectorSectionIcons.Conditionals style={{ width: 16, height: 16 }} color='main' />
           <span>Conditional</span>
         </FlexRow>
       </FlexRow>

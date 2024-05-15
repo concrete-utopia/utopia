@@ -260,19 +260,14 @@ export const ListSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
           style={{
             flexGrow: 1,
             gap: 8,
-            color: colorTheme.dynamicBlue.value,
             textTransform: 'uppercase',
           }}
         >
-          <InspectorSectionIcons.Code style={{ width: 16, height: 16 }} color='dynamic' />
+          <InspectorSectionIcons.Code style={{ width: 16, height: 16 }} color='main' />
           <span>List</span>
         </FlexRow>
       </FlexRow>
-      <UIGridRow
-        padded={false}
-        style={{ paddingLeft: 8, paddingRight: 8, paddingTop: 3, paddingBottom: 3 }}
-        variant='<--1fr--><--1fr-->|-18px-|'
-      >
+      <UIGridRow padded variant='<--1fr--><--1fr-->'>
         List Source
         <MapListSourceCartouche
           target={target}
@@ -281,16 +276,13 @@ export const ListSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
           selected={false}
         />
       </UIGridRow>
-      <UIGridRow
-        padded={false}
-        style={{ paddingLeft: 8, paddingRight: 8, paddingTop: 3, paddingBottom: 3 }}
-        variant='<--1fr--><--1fr-->|-18px-|'
-      >
+      <UIGridRow padded variant='<--1fr--><--1fr-->'>
         Contents
         <div
           style={{
             display: 'flex',
             flexDirection: 'row',
+            justifyContent: 'flex-end',
             minWidth: 0,
           }}
         >

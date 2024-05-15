@@ -1216,8 +1216,6 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
               ? 'component'
               : props.emphasis === 'subdued'
               ? 'subdued'
-              : props.emphasis === 'emphasized'
-              ? 'primary'
               : props.iconColor
           }
           elementWarnings={props.elementWarnings}
@@ -1237,13 +1235,17 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
           remixItemType={props.remixItemType}
         />
       </div>
+      <MapCounter
+        navigatorEntry={props.navigatorEntry}
+        dispatch={props.dispatch}
+        selected={props.selected}
+      />
       <MapListSourceCartouche
         target={props.navigatorEntry.elementPath}
         inverted={props.selected}
         selected={props.selected}
         openOn='double-click'
       />
-      <MapCounter navigatorEntry={props.navigatorEntry} dispatch={props.dispatch} />
       <ComponentPreview
         key={`preview-${props.label}`}
         navigatorEntry={props.navigatorEntry}

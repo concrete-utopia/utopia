@@ -547,21 +547,22 @@ export const JSXPropertyControl = React.memo(
 
     const safeValue: JSXParsedValue = value ?? { type: 'unknown', name: 'JSX' }
 
-    // TODO: this is copy paste from conditional section
     return (
       <div
         style={{
-          borderRadius: 2,
+          borderRadius: 4,
           background: theme.bg2.value,
-          fontWeight: 600,
+          fontSize: 10,
           display: 'flex',
           justifyContent: 'flex-start',
           alignItems: 'center',
-          gap: 6,
+          gap: 4,
           overflowX: 'scroll',
           whiteSpace: 'nowrap',
-          padding: '2px 6px',
-          color: controlStyles.mainColor,
+          padding: '0px 4px',
+          height: 20,
+          // to match cartouche control
+          border: '1px solid transparent',
         }}
       >
         <JSXPropIcon jsxType={safeValue.type} />
@@ -580,20 +581,22 @@ export const JSXPropertyControlForListSection = React.memo((props: { value: JSXP
 
   const safeValue: JSXParsedValue = valueToShow ?? { type: 'unknown', name: 'JSX' }
 
-  // TODO: this is copy paste from conditional section
   return (
     <div
       style={{
-        borderRadius: 2,
+        borderRadius: 4,
         background: theme.bg2.value,
+        fontSize: 10,
         display: 'flex',
         justifyContent: 'flex-start',
         alignItems: 'center',
-        gap: 2,
+        gap: 4,
         overflowX: 'scroll',
         whiteSpace: 'nowrap',
-        padding: '2px 4px',
-        color: controlStyles.mainColor,
+        padding: '0px 4px',
+        height: 20,
+        // to match cartouche control
+        border: '1px solid transparent',
       }}
     >
       <JSXPropIcon jsxType={safeValue.type} />
@@ -606,14 +609,17 @@ export const JSXPropertyControlForListSection = React.memo((props: { value: JSXP
 const JSXPropIcon = React.memo((props: { jsxType: JSXParsedType }) => {
   switch (props.jsxType) {
     case 'external-component':
-      return <Icn category={'component'} type={'npm'} width={18} height={18} />
+      return <Icn category={'navigator-element'} type={'component'} width={12} height={12} />
     case 'internal-component':
-      return <Icn category={'component'} type={'default'} width={18} height={18} />
+      return <Icn category={'navigator-element'} type={'component'} width={12} height={12} />
     case 'html':
-      return <Icn category={'element'} type={'div'} width={18} height={18} />
+      return <Icn category={'navigator-element'} type={'div'} width={12} height={12} />
     case 'unknown':
+      return <Icn category={'navigator-element'} type={'none'} width={12} height={12} />
     case 'string':
+      return <Icn category={'navigator-element'} type={'string'} width={12} height={12} />
     case 'number':
+      return <Icn category={'navigator-element'} type={'number'} width={12} height={12} />
     case 'null':
       return null
     default:

@@ -133,7 +133,7 @@ export const DataCartoucheInner = React.forwardRef(
       [onDelete],
     )
 
-    const cartoucheIconColorToUse = contentIsComingFromServer ? 'component' : 'primary'
+    const cartoucheIconColorToUse = contentIsComingFromServer ? 'green' : 'dynamic'
 
     const cartoucheIconColor = inverted
       ? 'on-highlight-main'
@@ -141,28 +141,26 @@ export const DataCartoucheInner = React.forwardRef(
       ? cartoucheIconColorToUse
       : 'secondary'
 
-    const borderColor = inverted
-      ? colorTheme.neutralInvertedForeground.value
-      : colorTheme.primary.value
+    const borderColor = inverted ? colorTheme.white.value : colorTheme.primary.value
 
     const primaryForegoundColorToUse = contentIsComingFromServer
-      ? colorTheme.component.value
-      : colorTheme.primary10.value
+      ? colorTheme.green.value
+      : colorTheme.dynamicBlue.value
+
+    const primaryBackgroundColorToUse = contentIsComingFromServer
+      ? colorTheme.green10.value
+      : colorTheme.selectionBlue10.value
 
     const foregroundColor = inverted
-      ? colorTheme.neutralInvertedForeground.value
+      ? colorTheme.white.value
       : contentsToDisplay.type === 'reference'
       ? primaryForegoundColorToUse
       : colorTheme.neutralForeground.value
 
-    const primaryBackgroundColorToUse = contentIsComingFromServer
-      ? colorTheme.componentPurple05solid.value
-      : colorTheme.primary10.value
-
     const backgroundColor =
       contentsToDisplay.type === 'reference'
         ? primaryBackgroundColorToUse
-        : colorTheme.fg0Opacity10.value
+        : colorTheme.fg0Opacity20.value
 
     const label = contentsToDisplay.label ?? 'DATA'
 
@@ -179,10 +177,11 @@ export const DataCartoucheInner = React.forwardRef(
           style={{
             cursor: 'pointer',
             fontSize: 10,
+            fontWeight: 400,
             color: foregroundColor,
             backgroundColor: backgroundColor,
             border: selected ? '1px solid ' + borderColor : '1px solid transparent',
-            padding: '0px 4px',
+            padding: '0px 6px 0 4px',
             borderRadius: 4,
             height: 20,
             display: 'flex',
@@ -220,10 +219,10 @@ export const DataCartoucheInner = React.forwardRef(
             safeToDelete,
             <Icn
               category='semantic'
-              type='cross-medium'
+              type='cross'
               color={cartoucheIconColor}
-              width={16}
-              height={16}
+              width={12}
+              height={12}
               data-testid={`delete-${props.testId}`}
               onClick={onDeleteInner}
             />,
