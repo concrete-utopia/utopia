@@ -2284,7 +2284,7 @@ export const UPDATE_FNS = {
     const withNewElement = modifyUnderlyingParseSuccessOnly(
       action.target,
       editor,
-      (success, _, underlyingFilePath) => {
+      (success, underlyingFilePath) => {
         const startingComponents = getUtopiaJSXComponentsFromSuccess(success)
 
         const originalElement = findJSXElementChildAtPath(

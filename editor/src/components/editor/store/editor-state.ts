@@ -3658,7 +3658,6 @@ export function modifyUnderlyingParseSuccessOnly(
   editor: EditorState,
   modifyParseSuccess: (
     parseSuccess: ParseSuccess,
-    underlying: StaticElementPath | null,
     underlyingFilePath: string,
   ) => ParseSuccess = defaultModifyParseSuccess,
 ): EditorState {
@@ -3667,7 +3666,7 @@ export function modifyUnderlyingParseSuccessOnly(
 
   function innerModifyParseSuccess(oldParseSuccess: ParseSuccess): ParseSuccess {
     // Apply the ParseSuccess level changes.
-    return modifyParseSuccess(oldParseSuccess, targetSuccess.normalisedPath, targetSuccess.filePath)
+    return modifyParseSuccess(oldParseSuccess, targetSuccess.filePath)
   }
 
   return modifyParseSuccessAtPath(targetSuccess.filePath, editor, innerModifyParseSuccess)
