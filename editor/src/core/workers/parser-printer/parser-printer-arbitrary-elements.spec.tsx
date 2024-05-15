@@ -1355,8 +1355,8 @@ export var storyboard = (
       expect(results.alone).toMatchInlineSnapshot(`
         Object {
           "elements": Array [
-            "f68",
-            "cc0",
+            "a16",
+            "f06",
           ],
           "js": "return (() => {
           function getPicker() {
@@ -1389,8 +1389,8 @@ export var storyboard = (
       expect(results.combined).toMatchInlineSnapshot(`
         Object {
           "elements": Array [
-            "176",
-            "f6c",
+            "580",
+            "d07",
           ],
           "js": "return (() => {
           class RenderPropsFunctionChild extends React.Component {

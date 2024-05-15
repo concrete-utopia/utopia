@@ -15,36 +15,36 @@ describe('JSX parser', () => {
         IMPORT_STATEMENT
         UNPARSED_CODE
         UTOPIA_JSX_COMPONENT - App
-          JSX_ELEMENT - View - aaa
+          JSX_ELEMENT - View - 34a
             JSX_FRAGMENT - ggg
               JSX_ELEMENT - div - bbb
-                JSX_TEXT_BLOCK - 3ed
-                JSX_FRAGMENT - 670
+                JSX_TEXT_BLOCK - 6f8
+                JSX_FRAGMENT - cc9
                   JSX_ELEMENT - div - ccc
-                      ATTRIBUTE_VALUE - 842
-                      ATTRIBUTE_VALUE - 2a9
-                  ATTRIBUTE_VALUE - c56
-                  ATTRIBUTE_VALUE - f10
+                      ATTRIBUTE_VALUE - 9b3
+                      ATTRIBUTE_VALUE - b93
+                  ATTRIBUTE_VALUE - aaa
+                  ATTRIBUTE_VALUE - aab
             JSX_ELEMENT - div - ddd
-              JSX_TEXT_BLOCK - 3d0
-              JS_PROPERTY_ACCESS - 296
-              ATTRIBUTE_VALUE - 683
-              ATTRIBUTE_VALUE - ab2
+              JSX_TEXT_BLOCK - 673
+              JS_PROPERTY_ACCESS - a4b
+              ATTRIBUTE_VALUE - 3fb
+              ATTRIBUTE_VALUE - 22a
         UNPARSED_CODE
         UTOPIA_JSX_COMPONENT - storyboard
           JSX_ELEMENT - Storyboard - eee
             JSX_ELEMENT - Scene - fff
               JSX_ELEMENT - App - app
-                  ATTRIBUTE_VALUE - 207
-                  ATTRIBUTE_VALUE - 791
-                  ATTRIBUTE_VALUE - bd1
-                  ATTRIBUTE_VALUE - a4b
-                  ATTRIBUTE_VALUE - da5
-                ATTRIBUTE_VALUE - 09a
-                ATTRIBUTE_VALUE - 78a
-                ATTRIBUTE_VALUE - d89
-                ATTRIBUTE_VALUE - 4bd
-                ATTRIBUTE_VALUE - e9e
+                  ATTRIBUTE_VALUE - 8bc
+                  ATTRIBUTE_VALUE - 4cb
+                  ATTRIBUTE_VALUE - 4a1
+                  ATTRIBUTE_VALUE - aae
+                  ATTRIBUTE_VALUE - aaf
+                ATTRIBUTE_VALUE - da8
+                ATTRIBUTE_VALUE - bf0
+                ATTRIBUTE_VALUE - aah
+                ATTRIBUTE_VALUE - 5bd
+                ATTRIBUTE_VALUE - aai
         UNPARSED_CODE"
       `)
 
@@ -68,7 +68,7 @@ describe('JSX parser', () => {
                 position: 'relative',
                 backgroundColor: '#FFFFFF',
               }}
-              data-uid='aaa'
+              data-uid='34a'
             >
               <React.Fragment>
                 <div
