@@ -45,6 +45,7 @@ export const DataReferenceCartoucheControl = React.memo(
     const renderedAt =
       props.renderedAt ??
       // if the renderedAt is not provided, we assume that the element is rendered at the parent's children
+      // TODO this fallback should be removed in a follow-up PR
       EPP.create(
         EP.parentPath(elementPath),
         PP.create('children'), // FIXME this will replace _all_ of the children of the parent element instead of just selectively updating the data reference!!! – providing ['children', index] is not enough here, we need a deeper fix
