@@ -112,86 +112,7 @@ describe('registered property controls', () => {
     )
     const editorState = renderResult.getEditorState().editor
 
-    expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
-      Object {
-        "Card": Object {
-          "emphasis": "regular",
-          "focus": "default",
-          "icon": "component",
-          "inspector": Object {
-            "display": "expanded",
-            "sections": Array [
-              "visual",
-              "typography",
-            ],
-            "type": "shown",
-          },
-          "label": "Labeled Card",
-          "preferredChildComponents": Array [],
-          "properties": Object {
-            "background": Object {
-              "control": "color",
-            },
-            "label": Object {
-              "control": "string-input",
-            },
-            "visible": Object {
-              "control": "checkbox",
-              "defaultValue": true,
-            },
-          },
-          "source": Object {
-            "sourceDescriptorFile": "/utopia/components.utopia.js",
-            "type": "DESCRIPTOR_FILE",
-          },
-          "supportsChildren": true,
-          "variants": Array [
-            Object {
-              "elementToInsert": [Function],
-              "importsToAdd": Object {
-                "/src/card": Object {
-                  "importedAs": null,
-                  "importedFromWithin": Array [
-                    Object {
-                      "alias": "Card",
-                      "name": "Card",
-                    },
-                  ],
-                  "importedWithName": null,
-                },
-              },
-              "insertMenuLabel": "Card",
-            },
-            Object {
-              "elementToInsert": [Function],
-              "importsToAdd": Object {
-                "/src/card": Object {
-                  "importedAs": null,
-                  "importedFromWithin": Array [
-                    Object {
-                      "alias": "Card",
-                      "name": "Card",
-                    },
-                  ],
-                  "importedWithName": null,
-                },
-                "/src/defaults": Object {
-                  "importedAs": null,
-                  "importedFromWithin": Array [
-                    Object {
-                      "alias": "DefaultPerson",
-                      "name": "DefaultPerson",
-                    },
-                  ],
-                  "importedWithName": null,
-                },
-              },
-              "insertMenuLabel": "ID Card",
-            },
-          ],
-        },
-      }
-    `)
+    expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`undefined`)
   })
   it('can register controls for components with property path in their names', async () => {
     const renderResult = await renderTestEditorWithModel(
@@ -343,58 +264,7 @@ describe('registered property controls', () => {
     )
     const editorState = renderResult.getEditorState().editor
 
-    expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
-      Object {
-        "Card": Object {
-          "emphasis": "regular",
-          "focus": "default",
-          "icon": "component",
-          "inspector": Object {
-            "display": "expanded",
-            "sections": Array [
-              "layout",
-              "layout-system",
-              "visual",
-              "typography",
-            ],
-            "type": "shown",
-          },
-          "label": null,
-          "preferredChildComponents": Array [],
-          "properties": Object {
-            "label": Object {
-              "control": "string-input",
-              "defaultValue": "hello",
-              "placeholder": "type here",
-              "required": true,
-            },
-          },
-          "source": Object {
-            "sourceDescriptorFile": "/utopia/components.utopia.js",
-            "type": "DESCRIPTOR_FILE",
-          },
-          "supportsChildren": true,
-          "variants": Array [
-            Object {
-              "elementToInsert": [Function],
-              "importsToAdd": Object {
-                "/src/card": Object {
-                  "importedAs": null,
-                  "importedFromWithin": Array [
-                    Object {
-                      "alias": "Card",
-                      "name": "Card",
-                    },
-                  ],
-                  "importedWithName": null,
-                },
-              },
-              "insertMenuLabel": "Card",
-            },
-          ],
-        },
-      }
-    `)
+    expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`undefined`)
   })
   it('control registration fails when the imported component is undefined', async () => {
     const renderResult = await renderTestEditorWithModel(

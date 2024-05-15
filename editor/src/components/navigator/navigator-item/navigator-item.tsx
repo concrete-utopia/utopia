@@ -1085,7 +1085,7 @@ const RenderPropSlot = React.memo((props: RenderPropSlotProps) => {
   const showComponentPickerContextMenu = useCreateCallbackToShowComponentPicker()(
     [target],
     insertionTarget,
-  )
+  ) as React.MouseEventHandler<Element>
 
   return (
     <PlaceholderSlot
@@ -1114,7 +1114,7 @@ const ConditionalBranchSlot = React.memo((props: ConditionalBranchSlotProps) => 
   const showComponentPickerContextMenu = useCreateCallbackToShowComponentPicker()(
     [target],
     conditionalTarget(conditionalCase),
-  )
+  ) as React.MouseEventHandler<Element>
 
   return (
     <PlaceholderSlot

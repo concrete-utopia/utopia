@@ -56,8 +56,10 @@ export interface ContextMenuProps<T> {
   items: ContextMenuItem<T>[]
 }
 
-const onShown = () => document.body.classList.add(BodyMenuOpenClass)
-const onHidden = () => document.body.classList.remove(BodyMenuOpenClass)
+const onVisibilityChange = (isVisible: boolean) => {
+  if (isVisible) document.body.classList.add(BodyMenuOpenClass)
+  else document.body.classList.remove(BodyMenuOpenClass)
+}
 
 export const ContextMenu = <T,>({ dispatch, getData, id, items }: ContextMenuProps<T>) => {
   const splitItems = React.useMemo(() => {
@@ -129,7 +131,7 @@ export const ContextMenu = <T,>({ dispatch, getData, id, items }: ContextMenuPro
           hidden={isHidden(item)}
           style={{
             ...UtopiaStyles.flexRow,
-            height: item?.isSeparator ? 9 : 28,
+            height: item?.isSeparator ? 9 : undefined,
             borderRadius: UtopiaStyles.popup.borderRadius,
           }}
         >
@@ -146,17 +148,13 @@ export const ContextMenu = <T,>({ dispatch, getData, id, items }: ContextMenuPro
   )
 
   return (
-    <Menu key={id} id={id} animation={false} onShown={onShown} onHidden={onHidden}>
+    <Menu key={id} id={id} animation={false} onVisibilityChange={onVisibilityChange}>
       {splitItems.map((item, index) => {
         if (item?.type === 'submenu') {
           return (
             <SubmenuComponent
               key={`context-menu-${index}`}
-              label={
-                <span style={{ height: 28, display: 'flex', alignItems: 'center' }}>
-                  {item.label}
-                </span>
-              }
+              label={<span style={{ display: 'flex', alignItems: 'center' }}>{item.label}</span>}
               arrow={<Icons.ExpansionArrowRightWhite style={{ marginLeft: 8 }} />}
             >
               {item.items.map(renderItem)}
@@ -291,12 +289,13 @@ export const MenuProvider = ({
         return
       }
 
-      show(
-        event,
-        localXHack_KILLME === 'local-x-coord-KILLME'
-          ? { position: { x: event.nativeEvent.offsetX, y: event.nativeEvent.pageY } }
-          : undefined,
-      )
+      show({
+        event: event,
+        position:
+          localXHack_KILLME === 'local-x-coord-KILLME'
+            ? { x: event.nativeEvent.offsetX, y: event.nativeEvent.pageY }
+            : undefined,
+      })
     },
     [itemsLength, localXHack_KILLME, show],
   )
