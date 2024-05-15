@@ -140,7 +140,6 @@ import {
 import * as PP from '../../shared/property-path'
 import type { ElementsWithinInPosition } from './parser-printer-utils'
 import { prependToSourceString, getBoundsOfNodes } from './parser-printer-utils'
-import Hash from 'object-hash'
 import { getComments, getLeadingComments, getTrailingComments } from './parser-printer-comments'
 import {
   BLOCK_RAN_TO_END_FUNCTION_NAME,
@@ -153,6 +152,7 @@ import type { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
 import { emptySet } from '../../../core/shared/set-utils'
 import { getAllUniqueUidsFromAttributes } from '../../../core/model/get-unique-ids'
 import type { SteganographyMode } from './parser-printer'
+import { hashObject } from '../../shared/hash'
 
 export function parseParams(
   params: TS.NodeArray<TS.ParameterDeclaration>,
@@ -1801,7 +1801,7 @@ function generateUIDAndAddToExistingUIDs(
   value: any,
   alreadyExistingUIDs: Set<string>,
 ): string {
-  const hash = Hash({
+  const hash = hashObject({
     fileName: sourceFile.fileName,
     value: value,
   })
@@ -3064,7 +3064,7 @@ function getUIDBasedOnElement(
   } else {
     cleansedProps = clearExpressionSourceMaps(clearExpressionUniqueIDs(props))
   }
-  const hash = Hash({
+  const hash = hashObject({
     fileName: sourceFile.fileName,
     bounds: getBoundsOfNodes(sourceFile, originatingElement),
     name: elementName,
