@@ -12,6 +12,7 @@ import {
 import type { InsertChildAndDetails } from '../../../core/model/element-template-utils'
 import {
   elementPathFromInsertionPath,
+  findJSXElementChildAtPath,
   generateUidWithExistingComponents,
   getIndexInParent,
   insertJSXElementChildren,
@@ -392,6 +393,7 @@ import {
   getAllComponentDescriptorErrors,
   updatePackageJsonInEditorState,
   modifyUnderlyingTarget,
+  modifyUnderlyingParseSuccessOnly,
 } from '../store/editor-state'
 import {
   BaseCanvasOffset,
@@ -2279,42 +2281,33 @@ export const UPDATE_FNS = {
   REPLACE_JSX_ELEMENT: (action: ReplaceJSXElement, editor: EditorModel): EditorModel => {
     let newSelectedViews: ElementPath[] = []
 
-    const withNewElement = modifyUnderlyingTargetElement(
-      EP.parentPath(action.target),
+    const withNewElement = modifyUnderlyingParseSuccessOnly(
+      action.target,
       editor,
-      (element) => element,
       (success, _, underlyingFilePath) => {
         const startingComponents = getUtopiaJSXComponentsFromSuccess(success)
 
-        const removeElementAndReturnIndex = () => {
-          const originalElement = findJSXElementAtPath(action.target, startingComponents)
+        const originalElement = findJSXElementChildAtPath(
+          startingComponents,
+          EP.dynamicPathToStaticPath(action.target),
+        )
 
-          const withTargetDeleted = removeElementAtPath(
-            action.target,
-            startingComponents,
-            success.imports,
-          )
-
-          return {
-            components: withTargetDeleted.components,
-            originalElement: originalElement,
-            imports: withTargetDeleted.imports,
-          }
+        if (originalElement == null) {
+          return success
         }
 
-        const {
-          originalElement,
-          components,
-          imports: workingImports,
-        } = removeElementAndReturnIndex()
-
-        const updatedImports = mergeImports(underlyingFilePath, workingImports, action.importsToAdd)
-
-        const { imports, duplicateNameMapping } = updatedImports
+        const { imports, duplicateNameMapping } = mergeImports(
+          underlyingFilePath,
+          success.imports,
+          action.importsToAdd,
+        )
 
         const fixedElement = (() => {
           const renamedJsxElement = renameJsxElementChild(action.jsxElement, duplicateNameMapping)
-          if (originalElement == null || !isReplaceKeepChildrenAndStyleTarget(action.behaviour)) {
+          if (
+            !isReplaceKeepChildrenAndStyleTarget(action.behaviour) ||
+            originalElement.type !== 'JSX_ELEMENT'
+          ) {
             return renamedJsxElement
           }
 
@@ -2342,7 +2335,7 @@ export const UPDATE_FNS = {
         })()
 
         const updatedComponents = transformJSXComponentAtPath(
-          components,
+          startingComponents,
           EP.dynamicPathToStaticPath(action.target),
           () => fixedElement,
         )
