@@ -159,6 +159,7 @@ export interface ReplaceJSXElement {
   jsxElement: JSXElement
   target: ElementPath
   importsToAdd: Imports
+  behaviour: ReplaceKeepChildrenAndStyleTarget | ReplaceTarget
 }
 
 export interface ReplaceMappedElement {

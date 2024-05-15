@@ -2234,93 +2234,23 @@ export const UPDATE_FNS = {
       editor,
       (element) => element,
       (success, _, underlyingFilePath) => {
-        const startingComponents = getUtopiaJSXComponentsFromSuccess(success)
+        const components = getUtopiaJSXComponentsFromSuccess(success)
 
-        const removeElementAndReturnIndex = () => {
-          if (action.target == null) {
-            return {
-              components: startingComponents,
-              originalElement: null,
-              imports: success.imports,
-              insertionIndex: null,
-            }
-          } else if (insertionBehaviour.type === 'insert-as-child') {
-            return {
-              components: startingComponents,
-              imports: success.imports,
-              insertionIndex: insertionBehaviour.indexPosition ?? null,
-            }
-          } else {
-            const indexInParent = getIndexInParent(
-              success.topLevelElements,
-              EP.dynamicPathToStaticPath(action.target),
-            )
-
-            const originalElement = findJSXElementAtPath(action.target, startingComponents)
-
-            const withTargetDeleted = removeElementAtPath(
-              action.target,
-              startingComponents,
-              success.imports,
-            )
-
-            return {
-              components: withTargetDeleted.components,
-              originalElement: originalElement,
-              imports: withTargetDeleted.imports,
-              insertionIndex: indexInParent >= 0 ? absolute(indexInParent) : null,
-            }
-          }
-        }
-
-        const {
-          insertionIndex,
-          originalElement,
-          components,
-          imports: workingImports,
-        } = removeElementAndReturnIndex()
-
-        const updatedImports = mergeImports(underlyingFilePath, workingImports, action.importsToAdd)
+        const updatedImports = mergeImports(
+          underlyingFilePath,
+          success.imports,
+          action.importsToAdd,
+        )
 
         const { imports, duplicateNameMapping } = updatedImports
 
-        const fixedElement = (() => {
-          const renamedJsxElement = renameJsxElementChild(action.jsxElement, duplicateNameMapping)
-          if (
-            originalElement == null ||
-            !isReplaceKeepChildrenAndStyleTarget(action.insertionBehaviour)
-          ) {
-            return renamedJsxElement
-          }
-
-          // apply the style of original element on the new element
-          const renamedJsxElementWithOriginalStyle = applyUpdateToJSXElement(
-            renamedJsxElement,
-            (props) => {
-              const styleProps = getJSXAttribute(originalElement.props, 'style')
-              if (styleProps == null) {
-                return right(deleteJSXAttribute(props, 'style'))
-              } else {
-                return right(setJSXAttributesAttribute(props, 'style', styleProps))
-              }
-            },
-          )
-
-          if (originalElement.children.length > 0) {
-            // apply the children of original element on the new element
-            return {
-              ...renamedJsxElementWithOriginalStyle,
-              children: originalElement.children,
-            }
-          }
-          return renamedJsxElementWithOriginalStyle
-        })()
+        const fixedElement = renameJsxElementChild(action.jsxElement, duplicateNameMapping)
 
         const withInsertedElement = insertJSXElementChildren(
           childInsertionPath(parentPath),
           [fixedElement],
           components,
-          insertionIndex,
+          action.indexPosition,
         )
 
         const uid = getUtopiaID(fixedElement)
@@ -2347,7 +2277,84 @@ export const UPDATE_FNS = {
     }
   },
   REPLACE_JSX_ELEMENT: (action: ReplaceJSXElement, editor: EditorModel): EditorModel => {
-    return editor
+    let newSelectedViews: ElementPath[] = []
+
+    const withNewElement = modifyUnderlyingTargetElement(
+      EP.parentPath(action.target),
+      editor,
+      (element) => element,
+      (success, _, underlyingFilePath) => {
+        const startingComponents = getUtopiaJSXComponentsFromSuccess(success)
+
+        const removeElementAndReturnIndex = () => {
+          const indexInParent = getIndexInParent(
+            success.topLevelElements,
+            EP.dynamicPathToStaticPath(action.target),
+          )
+
+          const originalElement = findJSXElementAtPath(action.target, startingComponents)
+
+          const withTargetDeleted = removeElementAtPath(
+            action.target,
+            startingComponents,
+            success.imports,
+          )
+
+          return {
+            components: withTargetDeleted.components,
+            originalElement: originalElement,
+            imports: withTargetDeleted.imports,
+            insertionIndex: indexInParent >= 0 ? absolute(indexInParent) : null,
+          }
+        }
+
+        const {
+          insertionIndex,
+          originalElement,
+          components,
+          imports: workingImports,
+        } = removeElementAndReturnIndex()
+
+        const updatedImports = mergeImports(underlyingFilePath, workingImports, action.importsToAdd)
+
+        const { imports, duplicateNameMapping } = updatedImports
+
+        const fixedElement = (() => {
+          const renamedJsxElement = renameJsxElementChild(action.jsxElement, duplicateNameMapping)
+          if (originalElement == null || !isReplaceKeepChildrenAndStyleTarget(action.behaviour)) {
+            return renamedJsxElement
+          }
+
+          // apply the style of original element on the new element
+          const renamedJsxElementWithOriginalStyle = applyUpdateToJSXElement(
+            renamedJsxElement,
+            (props) => {
+              const styleProps = getJSXAttribute(originalElement.props, 'style')
+              if (styleProps == null) {
+                return right(deleteJSXAttribute(props, 'style'))
+              } else {
+                return right(setJSXAttributesAttribute(props, 'style', styleProps))
+              }
+            },
+          )
+
+          if (originalElement.children.length > 0) {
+            // apply the children of original element on the new element
+            return {
+              ...renamedJsxElementWithOriginalStyle,
+              children: originalElement.children,
+            }
+          }
+          return renamedJsxElementWithOriginalStyle
+        })()
+      },
+    )
+
+    return {
+      ...withNewElement,
+      leftMenu: { visible: editor.leftMenu.visible, selectedTab: LeftMenuTab.Navigator },
+      selectedViews: newSelectedViews,
+    }
   },
   REPLACE_MAPPED_ELEMENT: (action: ReplaceMappedElement, editor: EditorModel): EditorModel => {
     let newSelectedViews: ElementPath[] = []
