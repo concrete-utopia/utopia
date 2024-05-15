@@ -1,4 +1,3 @@
-import { strToBase64, base64ToStr } from '@root/encoding/base64'
 import StackFrame, { ScriptLine } from '../../third-party/react-error-overlay/utils/stack-frame'
 import { getSourceMapConsumer } from '../../third-party/react-error-overlay/utils/getSourceMap'
 import {
@@ -7,7 +6,7 @@ import {
 } from '../../third-party/react-error-overlay/utils/mapper'
 import type { RawSourceMap } from '../workers/ts/ts-typings/RawSourceMap'
 import { NO_OP } from './utils'
-import { findLastIndex, last, take } from './array-utils'
+import { findLastIndex, take } from './array-utils'
 import parseError from '../../third-party/react-error-overlay/utils/parser'
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -146,9 +145,11 @@ function maybeEnhanceStackFrame(
   }
 }
 
+export const SourceMapCache: { current: { [key: string]: RawSourceMap } } = { current: {} }
+
 function extractRawSourceMap(stackFrame: StackFrame): RawSourceMap | null {
-  const possibleSourceMapSegment = stackFrame.fileName?.split(SOURCE_MAP_PREFIX)[1] ?? null
-  return possibleSourceMapSegment == null ? null : JSON.parse(base64ToStr(possibleSourceMapSegment))
+  const possibleSourceMapKey = stackFrame.fileName?.split(SOURCE_MAP_PREFIX)[1]
+  return possibleSourceMapKey == null ? null : SourceMapCache.current[possibleSourceMapKey]
 }
 
 function parseSourceCodeFromRawSourceMap(rawSourceMap: RawSourceMap | null): ScriptLine[] | null {
@@ -194,14 +195,16 @@ export const SafeFunctionCurriedErrorHandler = {
         ? { ...sourceMapWithoutTranspiledCode, transpiledContentUtopia: code }
         : null
 
-    let sourceMapBase64 = strToBase64(JSON.stringify(sourceMap))
-
     const sourceFile = sourceMap?.sources?.[0]
     const fileName = `${UTOPIA_FUNCTION_ROOT_NAME}(${sourceFile})`
 
+    if (sourceMap != null) {
+      SourceMapCache.current[sourceMap.file] = sourceMap
+    }
+
     const codeWithSourceMapAttached = `${code}
 
-    //# sourceURL=${fileName}${SOURCE_MAP_PREFIX}${sourceMapBase64}
+    //# sourceURL=${fileName}${SOURCE_MAP_PREFIX}${sourceMap?.file}
     `
 
     const FunctionOrAsyncFunction = async ? AsyncFunction : Function
