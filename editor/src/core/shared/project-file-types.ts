@@ -7,10 +7,70 @@ import type {
 } from './element-template'
 import type { ErrorMessage } from './error-messages'
 import { arrayEqualsByValue, objectEquals } from './utils'
-import type { ImageFile, AssetFile, RevisionsStateType } from 'utopia-shared/src/types'
+import type {
+  ImageFile,
+  AssetFile,
+  RevisionsStateType,
+  StaticElementPath,
+  ElementPath,
+  ImportAlias,
+  ImportDetails,
+  ExportVariablesWithModifier,
+  ExportFunction,
+  ExportClass,
+  ExportVariable,
+  ExportVariables,
+  ExportDestructuredAssignment,
+  ExportDefaultFunctionOrClass,
+  ExportDefaultIdentifier,
+  ReexportWildcard,
+  ReexportVariables,
+  HighlightBounds,
+  HighlightBoundsWithFile,
+  ParseSuccess,
+  ParseFailure,
+  Unparsed,
+  ParsedJSONSuccess,
+  ParsedJSONFailure,
+  TextFileContents,
+  TextFile,
+  ESCodeFile,
+  ESRemoteDependencyPlaceholder,
+  Directory,
+} from 'utopia-shared/src/types'
 import { imageFile, assetFile, RevisionsState } from 'utopia-shared/src/types'
 
-export type { ImageFile, AssetFile, RevisionsStateType }
+export type {
+  ImageFile,
+  AssetFile,
+  RevisionsStateType,
+  StaticElementPath,
+  ElementPath,
+  ImportAlias,
+  ImportDetails,
+  ExportVariablesWithModifier,
+  ExportFunction,
+  ExportClass,
+  ExportVariable,
+  ExportVariables,
+  ExportDestructuredAssignment,
+  ExportDefaultFunctionOrClass,
+  ExportDefaultIdentifier,
+  ReexportWildcard,
+  ReexportVariables,
+  HighlightBounds,
+  HighlightBoundsWithFile,
+  ParseSuccess,
+  ParseFailure,
+  Unparsed,
+  ParsedJSONSuccess,
+  ParsedJSONFailure,
+  TextFileContents,
+  TextFile,
+  ESCodeFile,
+  ESRemoteDependencyPlaceholder,
+  Directory,
+}
 export { imageFile, assetFile, RevisionsState }
 
 export type id = string
@@ -18,16 +78,6 @@ enum StaticModifier {}
 
 export type StaticElementPathPart = StaticModifier & Array<id>
 export type ElementPathPart = Array<id> | StaticElementPathPart
-
-export interface StaticElementPath {
-  type: 'elementpath'
-  parts: Array<StaticElementPathPart>
-}
-
-export interface ElementPath {
-  type: 'elementpath'
-  parts: Array<ElementPathPart>
-}
 
 export type PropertyPathPart = string | number
 
@@ -61,19 +111,6 @@ export enum PinType {
   Relative = 'relative',
 }
 
-export interface SceneMetadata {
-  uid: string
-  component: string | null
-  props: { [key: string]: any }
-  frame: NormalisedFrame
-  label?: string
-}
-
-export interface ImportAlias {
-  name: string
-  alias: string
-}
-
 export function importAlias(name: string, alias?: string): ImportAlias {
   return {
     name: name,
@@ -83,12 +120,6 @@ export function importAlias(name: string, alias?: string): ImportAlias {
 
 export function importAliasEquals(first: ImportAlias, second: ImportAlias): boolean {
   return first.name === second.name && first.alias === second.alias
-}
-
-export interface ImportDetails {
-  importedWithName: string | null // import name from './place'
-  importedFromWithin: Array<ImportAlias> // import { name as alias } from './place'
-  importedAs: string | null // import * as name from './place'
 }
 
 export function importDetails(
@@ -192,10 +223,6 @@ export function importDetailsFromImportOption(importOption: ImportType): ImportD
 
 // export let name1, name2, …, nameN; // also var, const
 // export let name1 = …, name2 = …, …, nameN; // also var, const
-export interface ExportVariablesWithModifier {
-  type: 'EXPORT_VARIABLES_WITH_MODIFIER'
-  variables: Array<string>
-}
 
 export function exportVariablesWithModifier(variables: Array<string>): ExportVariablesWithModifier {
   return {
@@ -205,10 +232,6 @@ export function exportVariablesWithModifier(variables: Array<string>): ExportVar
 }
 
 // export function functionName(){...}
-export interface ExportFunction {
-  type: 'EXPORT_FUNCTION'
-  functionName: string
-}
 
 export function exportFunction(functionName: string): ExportFunction {
   return {
@@ -222,10 +245,6 @@ export function isExportFunction(e: ExportDetail): e is ExportFunction {
 }
 
 // export class ClassName {...}
-export interface ExportClass {
-  type: 'EXPORT_CLASS'
-  className: string
-}
 
 export function exportClass(className: string): ExportClass {
   return {
@@ -237,21 +256,12 @@ export function exportClass(className: string): ExportClass {
 // export { name1, name2, …, nameN };
 // export { variable1 as name1, variable2 as name2, …, nameN };
 // export { name1 as default, … };
-export interface ExportVariable {
-  variableName: string
-  variableAlias: string | null
-}
 
 export function exportVariable(variableName: string, variableAlias: string | null): ExportVariable {
   return {
     variableName: variableName,
     variableAlias: variableAlias,
   }
-}
-
-export interface ExportVariables {
-  type: 'EXPORT_VARIABLES'
-  variables: Array<ExportVariable>
 }
 
 export function exportVariables(variables: Array<ExportVariable>): ExportVariables {
@@ -262,10 +272,6 @@ export function exportVariables(variables: Array<ExportVariable>): ExportVariabl
 }
 
 // export const { name1, name2: bar } = o;
-export interface ExportDestructuredAssignment {
-  type: 'EXPORT_DESTRUCTURED_ASSIGNMENT'
-  variables: Array<ExportVariable>
-}
 
 export function exportDestructuredAssignment(
   variables: Array<ExportVariable>,
@@ -278,10 +284,6 @@ export function exportDestructuredAssignment(
 
 // export default function (…) { … } // also class, function*
 // export default function name1(…) { … } // also class, function*
-export interface ExportDefaultFunctionOrClass {
-  type: 'EXPORT_DEFAULT_FUNCTION_OR_CLASS'
-  name: string | null
-}
 
 export function exportDefaultFunctionOrClass(name: string | null): ExportDefaultFunctionOrClass {
   return {
@@ -296,10 +298,6 @@ export function isExportDefaultFunctionOrClass(e: ExportDetail): e is ExportDefa
 
 // const App = (…) { … }
 // export default App;
-export interface ExportDefaultIdentifier {
-  type: 'EXPORT_DEFAULT_IDENTIFIER'
-  name: string
-}
 
 export function exportDefaultIdentifier(name: string): ExportDefaultIdentifier {
   return {
@@ -320,11 +318,6 @@ export function isExportDefault(
 
 // export * from …; // does not set the default export
 // export * as name1 from …; // Draft ECMAScript® 2O21
-export interface ReexportWildcard {
-  type: 'REEXPORT_WILDCARD'
-  reexportedModule: string
-  namespacedVariable: string | null
-}
 
 export function reexportWildcard(
   reexportedModule: string,
@@ -340,11 +333,6 @@ export function reexportWildcard(
 //export { name1, name2, …, nameN } from …;
 //export { import1 as name1, import2 as name2, …, nameN } from …;
 //export { default, … } from …;
-export interface ReexportVariables {
-  type: 'REEXPORT_VARIABLES'
-  reexportedModule: string
-  variables: Array<ExportVariable>
-}
 
 export function reexportVariables(
   reexportedModule: string,
@@ -388,14 +376,6 @@ export function isReexportExportDetail(
   return exportDetail.type === 'REEXPORT_WILDCARD' || exportDetail.type === 'REEXPORT_VARIABLES'
 }
 
-export interface HighlightBounds {
-  startLine: number
-  startCol: number
-  endLine: number
-  endCol: number
-  uid: string
-}
-
 export function highlightBounds(
   startLine: number,
   startCol: number,
@@ -414,23 +394,9 @@ export function highlightBounds(
 
 export type HighlightBoundsForUids = { [uid: string]: HighlightBounds }
 
-export interface HighlightBoundsWithFile extends HighlightBounds {
-  filePath: string
-}
-
 export type HighlightBoundsWithFileForUids = { [uid: string]: HighlightBoundsWithFile }
 
 // Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
-export interface ParseSuccess {
-  type: 'PARSE_SUCCESS'
-  imports: Imports
-  topLevelElements: Array<TopLevelElement>
-  highlightBounds: HighlightBoundsForUids
-  fullHighlightBounds: HighlightBoundsForUids
-  jsxFactoryFunction: string | null
-  combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null
-  exportsDetail: ExportsDetail
-}
 
 export function parseSuccess(
   imports: Imports,
@@ -458,13 +424,6 @@ export function isParseSuccess(parsed: ParsedTextFile): parsed is ParseSuccess {
 }
 
 // Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
-export interface ParseFailure {
-  type: 'PARSE_FAILURE'
-  diagnostics: Array<ErrorMessage> | null
-  parsedJSONFailure: ParsedJSONFailure | null
-  errorMessage: string | null
-  errorMessages: Array<ErrorMessage>
-}
 
 export function parseFailure(
   diagnostics: Array<ErrorMessage> | null,
@@ -486,9 +445,6 @@ export function isParseFailure(parsed: ParsedTextFile): parsed is ParseFailure {
 }
 
 // Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
-export interface Unparsed {
-  type: 'UNPARSED'
-}
 
 export const unparsed: Unparsed = {
   type: 'UNPARSED',
@@ -541,25 +497,12 @@ export function forEachParseSuccess(
 }
 
 // Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
-export interface ParsedJSONSuccess {
-  type: 'SUCCESS'
-  value: any
-}
 
 export function isParsedJSONSuccess(result: ParsedJSONResult): result is ParsedJSONSuccess {
   return result.type === 'SUCCESS'
 }
 
 // Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
-export interface ParsedJSONFailure {
-  type: 'FAILURE'
-  codeSnippet: string
-  reason: string
-  startLine: number
-  startCol: number
-  endLine: number
-  endCol: number
-}
 
 export function isParsedJSONFailure(result: ParsedJSONResult): result is ParsedJSONFailure {
   return result.type === 'FAILURE'
@@ -569,11 +512,6 @@ export function isParsedJSONFailure(result: ParsedJSONResult): result is ParsedJ
 export type ParsedJSONResult = ParsedJSONSuccess | ParsedJSONFailure
 
 // Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
-export interface TextFileContents {
-  code: string
-  parsed: ParsedTextFile
-  revisionsState: RevisionsStateType
-}
 
 export function textFileContents(
   code: string,
@@ -588,13 +526,6 @@ export function textFileContents(
 }
 
 // Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
-export interface TextFile {
-  type: 'TEXT_FILE'
-  fileContents: TextFileContents
-  lastSavedContents: TextFileContents | null // it is null when the file is saved
-  lastParseSuccess: ParseSuccess | null
-  versionNumber: number
-}
 
 export function textFile(
   fileContents: TextFileContents,
@@ -657,13 +588,6 @@ interface EvalResult {
 
 export type ESCodeFileOrigin = 'PROJECT_CONTENTS' | 'NODE_MODULES'
 
-export interface ESCodeFile {
-  type: 'ES_CODE_FILE'
-  fileContents: string
-  origin: ESCodeFileOrigin
-  fullPath: string
-}
-
 export function esCodeFile(
   fileContents: string,
   origin: ESCodeFileOrigin,
@@ -679,12 +603,6 @@ export function esCodeFile(
 
 export function isEsCodeFile(projectFile: any): projectFile is ESCodeFile {
   return projectFile != null && projectFile.type === 'ES_CODE_FILE'
-}
-
-export interface ESRemoteDependencyPlaceholder {
-  type: 'ES_REMOTE_DEPENDENCY_PLACEHOLDER'
-  url: string
-  downloadStarted: boolean
 }
 
 export function esRemoteDependencyPlaceholder(
@@ -710,10 +628,6 @@ export function isImageFile(projectFile: ProjectFile): projectFile is ImageFile 
 
 export function isAssetFile(projectFile: ProjectFile | null): projectFile is AssetFile {
   return projectFile != null && projectFile.type === 'ASSET_FILE'
-}
-
-export interface Directory {
-  type: 'DIRECTORY'
 }
 
 export function directory(): Directory {
