@@ -16,9 +16,9 @@ import type { FancyError, RuntimeErrorInfo } from './code-exec-utils'
 import { defaultIfNull } from './optional-utils'
 import { reduxDevtoolsLogError } from './redux-devtools'
 import StackFrame from '../../third-party/react-error-overlay/utils/stack-frame'
-import { filterOldPasses } from '../../components/canvas/canvas-wrapper-component'
 import { useEditorState, Substores } from '../../components/editor/store/store-hook'
 import type { ErrorMessage } from './error-messages'
+import { fastForEach } from './utils'
 
 const EmptyArray: Array<RuntimeErrorInfo> = []
 
@@ -153,6 +153,29 @@ export function useErrorOverlayRecords(): ErrorOverlayRecords {
   ])
 
   return { errorRecords, overlayErrors }
+}
+
+export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
+  let passTimes: { [key: string]: number } = {}
+  fastForEach(errorMessages, (errorMessage) => {
+    if (errorMessage.passTime != null) {
+      if (errorMessage.source in passTimes) {
+        const existingPassCount = passTimes[errorMessage.source]
+        if (errorMessage.passTime > existingPassCount) {
+          passTimes[errorMessage.source] = errorMessage.passTime
+        }
+      } else {
+        passTimes[errorMessage.source] = errorMessage.passTime
+      }
+    }
+  })
+  return errorMessages.filter((errorMessage) => {
+    if (errorMessage.passTime == null) {
+      return true
+    } else {
+      return passTimes[errorMessage.source] === errorMessage.passTime
+    }
+  })
 }
 
 const ReactRouterErrorPrefix = `React Router caught the following error during render`
