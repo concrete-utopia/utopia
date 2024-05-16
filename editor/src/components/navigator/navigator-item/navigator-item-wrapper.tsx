@@ -55,11 +55,12 @@ import {
 import { navigatorDepth } from '../navigator-utils'
 import { maybeConditionalExpression } from '../../../core/model/conditionals'
 import { getRouteComponentNameForOutlet } from '../../canvas/remix/remix-utils'
+import { isRegulaNavigatorrRow, type NavigatorRow } from '../navigator-row'
 
 interface NavigatorItemWrapperProps {
   index: number
   targetComponentKey: string
-  navigatorEntry: NavigatorEntry
+  navigatorRow: NavigatorRow
   getCurrentlySelectedEntries: () => Array<NavigatorEntry>
   getSelectedViewsInRange: (index: number) => Array<ElementPath>
   windowStyle: React.CSSProperties
@@ -218,8 +219,32 @@ export function getNavigatorEntryLabel(
   }
 }
 
-export const NavigatorItemWrapper: React.FunctionComponent<
-  React.PropsWithChildren<NavigatorItemWrapperProps>
+export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperProps> = React.memo(
+  (props) => {
+    if (isRegulaNavigatorrRow(props.navigatorRow)) {
+      const navigatorEntry = props.navigatorRow.entry
+      return (
+        <SingleEntryNavigatorItemWrapper
+          index={props.index}
+          targetComponentKey={props.targetComponentKey}
+          navigatorRow={props.navigatorRow}
+          getCurrentlySelectedEntries={props.getCurrentlySelectedEntries}
+          getSelectedViewsInRange={props.getSelectedViewsInRange}
+          windowStyle={props.windowStyle}
+          navigatorEntry={navigatorEntry}
+        />
+      )
+    }
+    return <div>Condensed row placeholder</div>
+  },
+)
+
+type SingleEntryNavigatorItemWrapperProps = NavigatorItemWrapperProps & {
+  navigatorEntry: NavigatorEntry
+}
+
+const SingleEntryNavigatorItemWrapper: React.FunctionComponent<
+  React.PropsWithChildren<SingleEntryNavigatorItemWrapperProps>
 > = React.memo((props) => {
   const isSelected = useEditorState(
     Substores.selectedViews,

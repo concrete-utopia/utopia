@@ -191,6 +191,7 @@ import { emptyImports } from '../../../core/workers/common/project-file-utils'
 import type { CommentFilterMode } from '../../inspector/sections/comment-section'
 import type { Collaborator } from '../../../core/shared/multiplayer'
 import type { OnlineState } from '../online-status'
+import type { NavigatorRow } from '../../navigator/navigator-row'
 
 const ObjectPathImmutable: any = OPI
 
@@ -2339,6 +2340,16 @@ export function navigatorEntriesEqual(
   } else {
     return false
   }
+}
+
+export function navigatorRowToKey(row: NavigatorRow): string {
+  if (row.type === 'regular-row') {
+    return navigatorEntryToKey(row.entry)
+  }
+  if (row.type === 'condensed-row') {
+    return `condensed-${row.entries.map(navigatorEntryToKey).join('-')}`
+  }
+  assertNever(row)
 }
 
 export function navigatorEntryToKey(entry: NavigatorEntry): string {

@@ -25,24 +25,23 @@ import {
   isRegularNavigatorEntry,
   navigatorEntryToKey,
   navigatorEntriesEqual,
+  navigatorRowToKey,
 } from '../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { ElementContextMenu } from '../element-context-menu'
 import { getItemHeight } from './navigator-item/navigator-item'
 import { NavigatorDragLayer } from './navigator-drag-layer'
 import { NavigatorItemWrapper } from './navigator-item/navigator-item-wrapper'
+import type { NavigatorRow } from './navigator-row'
+import { getEntriesForRow } from './navigator-row'
 
 interface ItemProps extends ListChildComponentProps {}
-
-function navigatorEntriesContainTarget(entries: NavigatorEntry[], target: NavigatorEntry): boolean {
-  return !entries.some((t) => t.elementPath === target.elementPath && t.type === target.type)
-}
 
 const Item = React.memo(({ index, style }: ItemProps) => {
   const visibleNavigatorTargets = useEditorState(
     Substores.derived,
     (store) => {
-      return store.derived.visibleNavigatorTargets
+      return getMappedNavigatorEntries(store.derived.visibleNavigatorTargets)
     },
     'Item visibleNavigatorTargets',
   )
@@ -134,19 +133,15 @@ const Item = React.memo(({ index, style }: ItemProps) => {
   )
 
   const targetEntry = visibleNavigatorTargets[index]
-  const componentKey = navigatorEntryToKey(targetEntry)
+  const componentKey = navigatorRowToKey(targetEntry)
   const deepKeptStyle = useKeepReferenceEqualityIfPossible(style)
-
-  if (navigatorEntriesContainTarget(visibleNavigatorTargets, targetEntry)) {
-    return null
-  }
 
   return (
     <NavigatorItemWrapper
       key={componentKey}
       index={index}
       targetComponentKey={componentKey}
-      navigatorEntry={targetEntry}
+      navigatorRow={targetEntry}
       getCurrentlySelectedEntries={getCurrentlySelectedNavigatorEntries}
       getSelectedViewsInRange={getSelectedViewsInRange}
       windowStyle={deepKeptStyle}
@@ -156,19 +151,28 @@ const Item = React.memo(({ index, style }: ItemProps) => {
 
 export const NavigatorContainerId = 'navigator'
 
+// turn me into a selector
+function getMappedNavigatorEntries(
+  visibleNavigatorTargets: Array<NavigatorEntry>,
+): Array<NavigatorRow> {
+  return visibleNavigatorTargets.map((entry) => ({ type: 'regular-row', entry: entry }))
+}
+
 export const NavigatorComponent = React.memo(() => {
   const dispatch = useDispatch()
   const { minimised, visibleNavigatorTargets, selectionIndex } = useEditorState(
     Substores.fullStore,
     (store) => {
       const selectedViews = store.editor.selectedViews
-      const innerVisibleNavigatorTargets = store.derived.visibleNavigatorTargets
+      const innerVisibleNavigatorTargets = getMappedNavigatorEntries(
+        store.derived.visibleNavigatorTargets,
+      )
       const innerSelectionIndex =
         selectedViews == null
           ? -1
           : innerVisibleNavigatorTargets.findIndex((entry) => {
-              return (
-                isRegularNavigatorEntry(entry) && EP.pathsEqual(entry.elementPath, selectedViews[0])
+              return getEntriesForRow(entry).some(
+                (e) => isRegularNavigatorEntry(e) && EP.pathsEqual(e.elementPath, selectedViews[0]),
               )
             })
       return {
@@ -222,11 +226,16 @@ export const NavigatorComponent = React.memo(() => {
 
   const getItemSize = React.useCallback(
     (entryIndex: number) => {
-      const navigatorTarget = safeIndex(visibleNavigatorTargets, entryIndex)
-      if (navigatorTarget == null) {
+      const navigatorRow = safeIndex(visibleNavigatorTargets, entryIndex)
+      if (navigatorRow == null) {
         throw new Error(`Could not find navigator entry at index ${entryIndex}`)
       } else {
-        return getItemHeight(navigatorTarget)
+        return getEntriesForRow(navigatorRow).reduce(
+          (accumulatedHeight: number, navigatorTarget) => {
+            return accumulatedHeight + getItemHeight(navigatorTarget)
+          },
+          0,
+        )
       }
     },
     [visibleNavigatorTargets],
