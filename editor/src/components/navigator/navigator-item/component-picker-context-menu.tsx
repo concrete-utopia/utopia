@@ -18,6 +18,7 @@ import {
   getJSXElementNameLastPart,
   setJSXAttributesAttribute,
   jsExpressionValue,
+  isIntrinsicHTMLElement,
 } from '../../../core/shared/element-template'
 import type { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { useDispatch } from '../../editor/store/dispatch-context'
@@ -79,7 +80,7 @@ import { absolute } from '../../../utils/utils'
 import { notice } from '../../common/notice'
 import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
 import { emptyComments } from 'utopia-shared/src/types'
-import { JSXElementChild } from 'utopia-shared/src/types'
+import { intrinsicHTMLElementNamesThatSupportChildren } from '../../../core/shared/dom-utils'
 
 type RenderPropTarget = { type: 'render-prop'; prop: string }
 type ConditionalTarget = { type: 'conditional'; conditionalCase: ConditionalCase }
@@ -765,10 +766,12 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
       (store) => MetadataUtils.getChildrenUnordered(store.editor.jsxMetadata, target),
       'usePreferredChildrenForTarget targetChildren',
     )
+
     const allInsertableComponents = useGetInsertableComponents('insert').flatMap((group) => {
       return {
         label: group.label,
         options: group.options.filter((option) => {
+          const element = option.value.element()
           if (
             isInsertAsChildTarget(insertionTarget) ||
             isConditionalTarget(insertionTarget) ||
@@ -778,13 +781,18 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
           }
           if (isReplaceKeepChildrenAndStyleTarget(insertionTarget)) {
             // If we want to keep the children of this element when it has some, don't include replacements that have children.
-            return (
-              targetChildren.length === 0 ||
-              !componentElementToInsertHasChildren(option.value.element())
-            )
+            return targetChildren.length === 0 || !componentElementToInsertHasChildren(element)
+          }
+          if (isWrapTarget(insertionTarget) && element.type === 'JSX_ELEMENT') {
+            if (isIntrinsicHTMLElement(element.name)) {
+              // when it is an intrinsic html element, we check if it supports children from our list
+              return intrinsicHTMLElementNamesThatSupportChildren.includes(
+                element.name.baseVariable,
+              )
+            }
           }
           // Right now we only support inserting JSX elements when we insert into a render prop or when replacing elements
-          return option.value.element().type === 'JSX_ELEMENT'
+          return element.type === 'JSX_ELEMENT'
         }),
       }
     })
