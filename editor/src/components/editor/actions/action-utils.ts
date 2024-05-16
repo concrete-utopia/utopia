@@ -215,6 +215,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_IMPORTS_FROM_COLLABORATION_UPDATE':
     case 'UPDATE_CODE_FROM_COLLABORATION_UPDATE':
     case 'REPLACE_MAPPED_ELEMENT':
+    case 'REPLACE_ELEMENT_IN_SCOPE':
       return false
     case 'SAVE_ASSET':
       return (
