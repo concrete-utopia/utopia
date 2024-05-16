@@ -605,6 +605,11 @@ import type {
 } from '../../custom-code/internal-property-controls'
 import type { OnlineState } from '../online-status'
 import { onlineState } from '../online-status'
+import type { RenderedAt } from '../../inspector/sections/component-section/data-reference-cartouche'
+import {
+  renderedAtChildNode,
+  renderedAtPropertyPath,
+} from '../../inspector/sections/component-section/data-reference-cartouche'
 
 export function ElementPropertyPathKeepDeepEquality(): KeepDeepEqualityCall<ElementPropertyPath> {
   return combine2EqualityCalls(
@@ -705,7 +710,7 @@ export const DataReferenceNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<D
     (entry) => entry.elementPath,
     ElementPathKeepDeepEquality,
     (entry) => entry.renderedAt,
-    nullableDeepEquality(ElementPropertyPathKeepDeepEquality()),
+    createCallWithTripleEquals(), // TODO
     (entry) => entry.surroundingScope,
     ElementPathKeepDeepEquality,
     (entry) => entry.childOrAttribute,
@@ -750,6 +755,37 @@ export const SlotNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<SlotNaviga
     StringKeepDeepEquality,
     (elementPath, prop) => ({ type: 'SLOT', elementPath: elementPath, prop: prop }),
   )
+
+export const RenderedAtKeepDeepEquality: KeepDeepEqualityCall<RenderedAt> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'element-property-path':
+      if (oldValue.type === newValue.type) {
+        return combine1EqualityCall(
+          (r) => r.elementPropertyPath,
+          ElementPropertyPathKeepDeepEquality(),
+          renderedAtPropertyPath,
+        )(oldValue, newValue)
+      }
+      break
+    case 'child-node':
+      if (oldValue.type === newValue.type) {
+        return combine2EqualityCalls(
+          (r) => r.parentPath,
+          ElementPathKeepDeepEquality,
+          (r) => r.nodeUid,
+          StringKeepDeepEquality,
+          renderedAtChildNode,
+        )(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
 
 export const NavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<NavigatorEntry> = (
   oldValue,

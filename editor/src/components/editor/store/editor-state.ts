@@ -191,6 +191,7 @@ import { emptyImports } from '../../../core/workers/common/project-file-utils'
 import type { CommentFilterMode } from '../../inspector/sections/comment-section'
 import type { Collaborator } from '../../../core/shared/multiplayer'
 import type { OnlineState } from '../online-status'
+import type { RenderedAt } from '../../inspector/sections/component-section/data-reference-cartouche'
 
 const ObjectPathImmutable: any = OPI
 
@@ -2176,14 +2177,14 @@ export function syntheticNavigatorEntry(
 export interface DataReferenceNavigatorEntry {
   type: 'DATA_REFERENCE'
   elementPath: ElementPath
-  renderedAt: ElementPropertyPath | null
+  renderedAt: RenderedAt
   surroundingScope: ElementPath
   childOrAttribute: JSXElementChild
 }
 
 export function dataReferenceNavigatorEntry(
   elementPath: ElementPath,
-  renderedAt: ElementPropertyPath | null,
+  renderedAt: RenderedAt,
   surroundingScope: ElementPath,
   childOrAttribute: JSXElementChild,
 ): DataReferenceNavigatorEntry {

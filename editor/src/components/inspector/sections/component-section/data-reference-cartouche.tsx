@@ -16,13 +16,37 @@ import { useDataPickerButton } from './component-section'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { selectComponents } from '../../../editor/actions/meta-actions'
 import { when } from '../../../../utils/react-conditionals'
-import { traceDataFromElement, traceDataFromProp } from '../../../../core/data-tracing/data-tracing'
+import { traceDataFromElement } from '../../../../core/data-tracing/data-tracing'
+import type { DataPickerType } from './data-picker-popup'
+
+interface RenderedAtPropertyPath {
+  type: 'element-property-path'
+  elementPropertyPath: ElementPropertyPath
+}
+
+interface RenderedAtChildNode {
+  type: 'child-node'
+  parentPath: ElementPath
+  nodeUid: string
+}
+
+export type RenderedAt = RenderedAtPropertyPath | RenderedAtChildNode
+
+export function renderedAtPropertyPath(
+  elementPropertyPath: ElementPropertyPath,
+): RenderedAtPropertyPath {
+  return { type: 'element-property-path', elementPropertyPath: elementPropertyPath }
+}
+
+export function renderedAtChildNode(parentPath: ElementPath, nodeUid: string): RenderedAtChildNode {
+  return { type: 'child-node', parentPath: parentPath, nodeUid: nodeUid }
+}
 
 interface DataReferenceCartoucheControlProps {
   elementPath: ElementPath
   childOrAttribute: JSXElementChild
   selected: boolean
-  renderedAt: ElementPropertyPath | null
+  renderedAt: RenderedAt
   surroundingScope: ElementPath
 }
 
@@ -42,14 +66,35 @@ export const DataReferenceCartoucheControl = React.memo(
       'DataReferenceCartoucheControl contentsToDisplay',
     )
 
+    const dataTraceResult = useEditorState(
+      Substores.projectContentsAndMetadata,
+      (store) => {
+        return traceDataFromElement(
+          props.childOrAttribute,
+          props.surroundingScope,
+          store.editor.jsxMetadata,
+          store.editor.projectContents,
+          [],
+        )
+      },
+      'IdentifierExpressionCartoucheControl trace',
+    )
+
     const renderedAt =
-      props.renderedAt ??
-      // if the renderedAt is not provided, we assume that the element is rendered at the parent's children
-      // TODO this fallback should be removed in a follow-up PR
-      EPP.create(
-        EP.parentPath(elementPath),
-        PP.create('children'), // FIXME this will replace _all_ of the children of the parent element instead of just selectively updating the data reference!!! – providing ['children', index] is not enough here, we need a deeper fix
-      )
+      props.renderedAt.type === 'element-property-path'
+        ? props.renderedAt.elementPropertyPath
+        : props.renderedAt.type === 'child-node'
+        ? EPP.create(EP.parentPath(elementPath), PP.create('children'))
+        : assertNever(props.renderedAt)
+
+    const pickerType: DataPickerType | undefined =
+      props.renderedAt.type !== 'child-node'
+        ? undefined
+        : {
+            type: 'FOR_CHILD_NODE',
+            childNodeUid: props.renderedAt.nodeUid,
+            elementPath: props.renderedAt.parentPath,
+          }
 
     const dataPickerButtonData = useDataPickerButton(
       [renderedAt.elementPath],
@@ -58,23 +103,10 @@ export const DataReferenceCartoucheControl = React.memo(
       {
         control: 'none',
       },
+      pickerType,
     )
 
-    const isDataComingFromHookResult = useEditorState(
-      Substores.projectContentsAndMetadata,
-      (store) => {
-        return (
-          traceDataFromElement(
-            props.childOrAttribute,
-            props.surroundingScope,
-            store.editor.jsxMetadata,
-            store.editor.projectContents,
-            [],
-          ).type === 'hook-result'
-        )
-      },
-      'IdentifierExpressionCartoucheControl trace',
-    )
+    const isDataComingFromHookResult = dataTraceResult.type === 'hook-result'
 
     const onClick = React.useCallback(() => {
       dispatch(selectComponents([elementPath], false))

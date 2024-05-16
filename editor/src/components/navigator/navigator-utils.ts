@@ -45,6 +45,10 @@ import type { PropertyControls } from '../custom-code/internal-property-controls
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import * as PP from '../../core/shared/property-path'
 import * as EPP from '../template-property-path'
+import {
+  renderedAtChildNode,
+  renderedAtPropertyPath,
+} from '../inspector/sections/component-section/data-reference-cartouche'
 
 export function baseNavigatorDepth(path: ElementPath): number {
   // The storyboard means that this starts at -1,
@@ -136,8 +140,8 @@ export function getNavigatorTargets(
           // add synthetic entry
           const dataRefEntry = dataReferenceNavigatorEntry(
             path,
-            null,
-            path, // TODO this should be pointing at the enclosing scope, but EP.parentPath(path) breaks if `path` is the root of a component
+            renderedAtChildNode(EP.parentPath(path), EP.toUid(path)),
+            EP.parentPath(path),
             elementFromProjectContents,
           )
           addNavigatorTargetsUnlessCollapsed(dataRefEntry)
@@ -216,7 +220,7 @@ export function getNavigatorTargets(
             const synthEntry = isFeatureEnabled('Data Entries in the Navigator')
               ? dataReferenceNavigatorEntry(
                   childPath,
-                  EPP.create(path, PP.create(prop)),
+                  renderedAtPropertyPath(EPP.create(path, PP.create(prop))),
                   path,
                   propValue,
                 )
@@ -352,7 +356,12 @@ export function getNavigatorTargets(
           const children = jsxElement.children
           children.forEach((child) => {
             const childPath = EP.appendToPath(path, child.uid)
-            const dataRefEntry = dataReferenceNavigatorEntry(childPath, null, path, child)
+            const dataRefEntry = dataReferenceNavigatorEntry(
+              childPath,
+              renderedAtChildNode(path, child.uid),
+              path,
+              child,
+            )
             addNavigatorTargetsUnlessCollapsed(dataRefEntry)
           })
         }
