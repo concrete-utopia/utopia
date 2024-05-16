@@ -18,29 +18,7 @@ import { selectComponents } from '../../../editor/actions/meta-actions'
 import { when } from '../../../../utils/react-conditionals'
 import { traceDataFromElement } from '../../../../core/data-tracing/data-tracing'
 import type { DataPickerType } from './data-picker-popup'
-
-interface RenderedAtPropertyPath {
-  type: 'element-property-path'
-  elementPropertyPath: ElementPropertyPath
-}
-
-interface RenderedAtChildNode {
-  type: 'child-node'
-  parentPath: ElementPath
-  nodeUid: string
-}
-
-export type RenderedAt = RenderedAtPropertyPath | RenderedAtChildNode
-
-export function renderedAtPropertyPath(
-  elementPropertyPath: ElementPropertyPath,
-): RenderedAtPropertyPath {
-  return { type: 'element-property-path', elementPropertyPath: elementPropertyPath }
-}
-
-export function renderedAtChildNode(parentPath: ElementPath, nodeUid: string): RenderedAtChildNode {
-  return { type: 'child-node', parentPath: parentPath, nodeUid: nodeUid }
-}
+import type { RenderedAt } from '../../../editor/store/editor-state'
 
 interface DataReferenceCartoucheControlProps {
   elementPath: ElementPath

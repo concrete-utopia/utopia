@@ -7,15 +7,12 @@ import type {
   JSXConditionalExpression,
 } from '../../core/shared/element-template'
 import {
-  emptyComments,
   getJSXAttribute,
   hasElementsWithin,
   isJSExpressionValue,
   isJSXConditionalExpression,
   isJSXElement,
   isJSXMapExpression,
-  jsExpressionOtherJavaScriptSimple,
-  jsExpressionValue,
 } from '../../core/shared/element-template'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { foldEither, isLeft, isRight } from '../../core/shared/either'
@@ -29,6 +26,8 @@ import {
   regularNavigatorEntry,
   renderPropNavigatorEntry,
   renderPropValueNavigatorEntry,
+  renderedAtChildNode,
+  renderedAtPropertyPath,
   slotNavigatorEntry,
   syntheticNavigatorEntry,
 } from '../editor/store/editor-state'
@@ -45,10 +44,6 @@ import type { PropertyControls } from '../custom-code/internal-property-controls
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import * as PP from '../../core/shared/property-path'
 import * as EPP from '../template-property-path'
-import {
-  renderedAtChildNode,
-  renderedAtPropertyPath,
-} from '../inspector/sections/component-section/data-reference-cartouche'
 
 export function baseNavigatorDepth(path: ElementPath): number {
   // The storyboard means that this starts at -1,
