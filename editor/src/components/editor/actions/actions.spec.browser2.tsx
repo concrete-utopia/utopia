@@ -269,7 +269,7 @@ describe('actions', () => {
       {
         name: 'delete empty fragments (multiple targets)',
         input: `
-    <View data-uid='aaa'>
+    <View data-uid='xxx'>
       <View
         style={{ background: '#09f', width: 50, height: 50 }}
         data-uid='bbb'
@@ -307,12 +307,12 @@ describe('actions', () => {
     </View>
     `,
         targets: [
-          makeTargetPath('aaa/000/eee'),
-          makeTargetPath('aaa/001/fff'),
-          makeTargetPath('aaa/001/ggg'),
+          makeTargetPath('xxx/000/eee'),
+          makeTargetPath('xxx/001/fff'),
+          makeTargetPath('xxx/001/ggg'),
         ],
         wantCode: `
-    <View data-uid='aaa'>
+    <View data-uid='xxx'>
       <View
         style={{ background: '#09f', width: 50, height: 50 }}
         data-uid='bbb'
@@ -332,7 +332,7 @@ describe('actions', () => {
       />
     </View>
     `,
-        wantSelection: [makeTargetPath('aaa/000/ccc'), makeTargetPath('aaa')],
+        wantSelection: [makeTargetPath('xxx/000/ccc'), makeTargetPath('xxx')],
       },
       {
         name: 'delete map expression',
@@ -3398,7 +3398,7 @@ export var storyboard = (props) => {
           await selectComponentsForTest(renderResult, [makeTargetPath('root/bbb')])
           await pressKey('c', { modifiers: cmdModifier })
 
-          await selectComponentsForTest(renderResult, [makeTargetPath('root/conditional/a25')])
+          await selectComponentsForTest(renderResult, [makeTargetPath('root/conditional/d84')])
 
           const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
 
@@ -3472,7 +3472,7 @@ export var storyboard = (props) => {
           await selectComponentsForTest(renderResult, [makeTargetPath('root/bbb')])
           await pressKey('x', { modifiers: cmdModifier })
 
-          await selectComponentsForTest(renderResult, [makeTargetPath('root/conditional/a25')])
+          await selectComponentsForTest(renderResult, [makeTargetPath('root/conditional/d84')])
 
           const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
 

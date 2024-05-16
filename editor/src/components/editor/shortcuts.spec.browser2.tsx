@@ -438,7 +438,7 @@ describe('shortcuts', () => {
       await mouseClickAtPoint(slot, { x: 5, y: 5 })
 
       expect(editor.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/conditional/a25',
+        'utopia-storyboard-uid/scene-aaa/app-entity:container/conditional/d84',
       ])
 
       await expectNoAction(editor, () => pressKey('d', { modifiers: cmdModifier }))

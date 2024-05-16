@@ -1075,7 +1075,7 @@ describe('findJSXElementChildAtPath', () => {
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1',
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/409',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/03d',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/false',
     ])
   })
@@ -1137,7 +1137,7 @@ describe('findJSXElementChildAtPath', () => {
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1',
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/409',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/03d',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/ternary-false-root',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/ternary-false-root/ternary-false-child',
     ])
@@ -1507,7 +1507,7 @@ describe('insertJSXElementChildren', () => {
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-b',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/wrapper-fragment/', // <- the new fragment!
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/wrapper-fragment/409', // <- the original hello!
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/wrapper-fragment/03d', // <- the original hello!
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/wrapper-fragment/hello2', // <- the inserted hello!
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-d',
     ])
@@ -1868,7 +1868,7 @@ describe('transformJSXComponentAtPath', () => {
     </div>
     `)
 
-    const pathToModify = 'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/cond/409'
+    const pathToModify = 'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/cond/03d'
 
     const updatedComponents = transformJSXComponentAtPath(
       components,
