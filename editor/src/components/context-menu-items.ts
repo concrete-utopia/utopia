@@ -480,7 +480,15 @@ export const wrapInPicker: ContextMenuItem<CanvasData> = {
   shortcut: 'W',
   enabled: true,
   action: (data, dispatch, _coord, event) => {
-    showWrapComponentPicker(data.selectedViews, data.jsxMetadata, data.showComponentPicker)(event)
+    // for multiple selection, we open the old picker
+    if (data.selectedViews.length > 1) {
+      requireDispatch(dispatch)(
+        [setFocus('canvas'), EditorActions.openFloatingInsertMenu({ insertMenuMode: 'wrap' })],
+        'everyone',
+      )
+    } else {
+      showWrapComponentPicker(data.selectedViews, data.jsxMetadata, data.showComponentPicker)(event)
+    }
   },
 }
 
