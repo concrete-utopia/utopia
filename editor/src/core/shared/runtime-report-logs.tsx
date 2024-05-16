@@ -16,9 +16,9 @@ import type { FancyError, RuntimeErrorInfo } from './code-exec-utils'
 import { defaultIfNull } from './optional-utils'
 import { reduxDevtoolsLogError } from './redux-devtools'
 import StackFrame from '../../third-party/react-error-overlay/utils/stack-frame'
-import { filterOldPasses } from '../../components/canvas/canvas-wrapper-component'
 import { useEditorState, Substores } from '../../components/editor/store/store-hook'
 import type { ErrorMessage } from './error-messages'
+import { fastForEach } from './utils'
 
 const EmptyArray: Array<RuntimeErrorInfo> = []
 
@@ -153,4 +153,63 @@ export function useErrorOverlayRecords(): ErrorOverlayRecords {
   ])
 
   return { errorRecords, overlayErrors }
+}
+
+function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
+  let passTimes: { [key: string]: number } = {}
+  fastForEach(errorMessages, (errorMessage) => {
+    if (errorMessage.passTime != null) {
+      if (errorMessage.source in passTimes) {
+        const existingPassCount = passTimes[errorMessage.source]
+        if (errorMessage.passTime > existingPassCount) {
+          passTimes[errorMessage.source] = errorMessage.passTime
+        }
+      } else {
+        passTimes[errorMessage.source] = errorMessage.passTime
+      }
+    }
+  })
+  return errorMessages.filter((errorMessage) => {
+    if (errorMessage.passTime == null) {
+      return true
+    } else {
+      return passTimes[errorMessage.source] === errorMessage.passTime
+    }
+  })
+}
+
+const ReactRouterErrorPrefix = `React Router caught the following error during render`
+const ReactRouterAwaitErrorPrefix = `<Await> caught the following error during render`
+
+export function listenForReactRouterErrors(targetConsole: Console): void {
+  const targetConsoleAny = targetConsole as any
+
+  // Remove any existing proxy first.
+  if (targetConsoleAny.originalErrorMethod != null) {
+    // Restore the original method.
+    targetConsoleAny.error = targetConsoleAny.originalErrorMethod
+    // Remove this field, thereby restoring this console to its original state.
+    delete targetConsoleAny['originalErrorMethod']
+  }
+
+  // Squirrel away the original method for unpacking later.
+  const originalMethod = targetConsoleAny.error
+  targetConsoleAny.originalErrorMethod = originalMethod
+  targetConsoleAny.error = function (...args: Array<any>) {
+    // Call the original method first.
+    originalMethod(...args)
+
+    // If the first part of the log line is a string
+    const firstLine = args[0]
+    if (typeof firstLine === 'string') {
+      // ...and it starts with these prefixes...
+      if (
+        firstLine.startsWith(ReactRouterErrorPrefix) ||
+        firstLine.startsWith(ReactRouterAwaitErrorPrefix)
+      ) {
+        // ...Mark these as having been seen.
+        setReactRouterErrorHasBeenLogged(true)
+      }
+    }
+  }
 }
