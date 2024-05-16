@@ -3656,6 +3656,25 @@ export function modifyUnderlyingTarget(
   return modifyParseSuccessAtPath(targetSuccess.filePath, editor, innerModifyParseSuccess)
 }
 
+export function modifyUnderlyingParseSuccessOnly(
+  target: ElementPath | null,
+  editor: EditorState,
+  modifyParseSuccess: (
+    parseSuccess: ParseSuccess,
+    underlyingFilePath: string,
+  ) => ParseSuccess = defaultModifyParseSuccess,
+): EditorState {
+  const underlyingTarget = normalisePathToUnderlyingTarget(editor.projectContents, target)
+  const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
+
+  function innerModifyParseSuccess(oldParseSuccess: ParseSuccess): ParseSuccess {
+    // Apply the ParseSuccess level changes.
+    return modifyParseSuccess(oldParseSuccess, targetSuccess.filePath)
+  }
+
+  return modifyParseSuccessAtPath(targetSuccess.filePath, editor, innerModifyParseSuccess)
+}
+
 export function modifyUnderlyingForOpenFile(
   target: ElementPath | null,
   editor: EditorState,
