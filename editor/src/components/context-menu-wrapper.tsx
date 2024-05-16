@@ -69,119 +69,116 @@ export interface ContextMenuProps<T> {
 const onShown = () => document.body.classList.add(BodyMenuOpenClass)
 const onHidden = () => document.body.classList.remove(BodyMenuOpenClass)
 
-export const MomentumContextMenu = memo(
-  <T,>({ dispatch, getData, id, items }: ContextMenuProps<T>) => {
-    const splitItems = useMemo(() => {
-      const tempItems: MenuItem<T>[] = []
+export const MomentumContextMenu = <T,>({ dispatch, getData, id, items }: ContextMenuProps<T>) => {
+  const splitItems = useMemo(() => {
+    const tempItems: MenuItem<T>[] = []
 
-      for (const item of items) {
-        if (item?.submenuName != null) {
-          const alreadyAdded = tempItems.find(
-            (alreadySplit) =>
-              alreadySplit?.type === 'submenu' && alreadySplit.label === item.submenuName,
-          )
-          if (alreadyAdded != null && alreadyAdded.type === 'submenu') {
-            alreadyAdded.items.push(item)
-          } else {
-            tempItems.push({
-              type: 'submenu',
-              label: item.submenuName,
-              items: [item],
-            })
-          }
+    for (const item of items) {
+      if (item?.submenuName != null) {
+        const alreadyAdded = tempItems.find(
+          (alreadySplit) =>
+            alreadySplit?.type === 'submenu' && alreadySplit.label === item.submenuName,
+        )
+        if (alreadyAdded != null && alreadyAdded.type === 'submenu') {
+          alreadyAdded.items.push(item)
         } else {
           tempItems.push({
-            type: 'simple',
-            item: item,
+            type: 'submenu',
+            label: item.submenuName,
+            items: [item],
           })
         }
+      } else {
+        tempItems.push({
+          type: 'simple',
+          item: item,
+        })
       }
-      return tempItems
-    }, [items])
+    }
+    return tempItems
+  }, [items])
 
-    const isHidden = useCallback(
-      (item: Item<T>): (() => boolean) => {
-        return () => {
-          if (typeof item?.isHidden === 'function') {
-            return item.isHidden(getData())
-          }
-          return item?.isHidden ?? false
+  const isHidden = useCallback(
+    (item: Item<T>): (() => boolean) => {
+      return () => {
+        if (typeof item?.isHidden === 'function') {
+          return item.isHidden(getData())
         }
+        return item?.isHidden ?? false
+      }
+    },
+    [getData],
+  )
+
+  const isDisabled = useCallback(
+    (item: Item<T>): (() => boolean) =>
+      () => {
+        return typeof item?.enabled === 'function' ? !item.enabled(getData?.()) : !item?.enabled
       },
-      [getData],
-    )
+    [getData],
+  )
 
-    const isDisabled = useCallback(
-      (item: Item<T>): (() => boolean) =>
-        () => {
-          return typeof item?.enabled === 'function' ? !item.enabled(getData?.()) : !item?.enabled
-        },
-      [getData],
-    )
+  const renderItem = useCallback(
+    (item: Item<T>, index: number) => {
+      return (
+        <Item
+          key={`context-menu-${index}-item`}
+          disabled={isDisabled(item)}
+          // eslint-disable-next-line react/jsx-no-bind
+          onClick={({ event, triggerEvent }) => {
+            event.stopPropagation()
+            const rightClickCoordinate: WindowPoint | null = (() => {
+              if (!(triggerEvent instanceof MouseEvent)) return null
+              return windowPoint({ x: triggerEvent.clientX, y: triggerEvent.clientY })
+            })()
+            item?.action(getData(), dispatch, rightClickCoordinate, event)
+            contextMenu.hideAll()
+          }}
+          hidden={isHidden(item)}
+          style={{
+            height: item?.isSeparator ? 9 : 28,
+            display: 'flex',
+            alignItems: 'center',
+            borderRadius: 4,
+          }}
+        >
+          <span style={{ flexGrow: 1, flexShrink: 0 }} className='react-contexify-span'>
+            {item?.name}
+          </span>
+          <span style={{ flexGrow: 0, flexShrink: 0, opacity: 0.6 }} className='shortcut'>
+            {item?.shortcut}
+          </span>
+        </Item>
+      )
+    },
+    [getData, dispatch, isDisabled, isHidden],
+  )
 
-    const renderItem = useCallback(
-      (item: Item<T>, index: number) => {
-        return (
-          <Item
-            key={`context-menu-${index}-item`}
-            disabled={isDisabled(item)}
-            // eslint-disable-next-line react/jsx-no-bind
-            onClick={({ event, triggerEvent }) => {
-              event.stopPropagation()
-              const rightClickCoordinate: WindowPoint | null = (() => {
-                if (!(triggerEvent instanceof MouseEvent)) return null
-                return windowPoint({ x: triggerEvent.clientX, y: triggerEvent.clientY })
-              })()
-              item?.action(getData(), dispatch, rightClickCoordinate, event)
-              contextMenu.hideAll()
-            }}
-            hidden={isHidden(item)}
-            style={{
-              height: item?.isSeparator ? 9 : 28,
-              display: 'flex',
-              alignItems: 'center',
-              borderRadius: 4,
-            }}
-          >
-            <span style={{ flexGrow: 1, flexShrink: 0 }} className='react-contexify-span'>
-              {item?.name}
-            </span>
-            <span style={{ flexGrow: 0, flexShrink: 0, opacity: 0.6 }} className='shortcut'>
-              {item?.shortcut}
-            </span>
-          </Item>
-        )
-      },
-      [getData, dispatch, isDisabled, isHidden],
-    )
-
-    return (
-      <Menu key={id} id={id} animation={false} onShown={onShown} onHidden={onHidden}>
-        {splitItems.map((item, index) => {
-          if (item?.type === 'submenu') {
-            return (
-              <SubmenuComponent
-                key={`context-menu-${index}`}
-                label={
-                  <span style={{ height: 28, display: 'flex', alignItems: 'center' }}>
-                    {item.label}
-                  </span>
-                }
-                arrow={<Icons.ExpansionArrowRightWhite style={{ marginLeft: 8 }} />}
-              >
-                {item.items.map(renderItem)}
-              </SubmenuComponent>
-            )
-          } else {
-            if (item === null) return null
-            return renderItem(item.item, index)
-          }
-        })}
-      </Menu>
-    )
-  },
-  (props, nextProps) => fastDeepEquals(props.items, nextProps.items),
-)
+  return (
+    <Menu key={id} id={id} animation={false} onShown={onShown} onHidden={onHidden}>
+      {splitItems.map((item, index) => {
+        if (item?.type === 'submenu') {
+          return (
+            <SubmenuComponent
+              key={`context-menu-${index}`}
+              label={
+                <span style={{ height: 28, display: 'flex', alignItems: 'center' }}>
+                  {item.label}
+                </span>
+              }
+              arrow={<Icons.ExpansionArrowRightWhite style={{ marginLeft: 8 }} />}
+            >
+              {item.items.map(renderItem)}
+            </SubmenuComponent>
+          )
+        } else {
+          if (item === null) return null
+          return renderItem(item.item, index)
+        }
+      })}
+    </Menu>
+  )
+}
 
 export const ContextMenuWrapper = <T,>({
   children,
@@ -216,13 +213,7 @@ export const ContextMenuWrapper = <T,>({
       <MenuProvider id={id} itemsLength={items.length} key={`${id}-provider`} style={providerStyle}>
         {children}
       </MenuProvider>
-      <MomentumContextMenu
-        dispatch={dispatch}
-        getData={getData}
-        id={id}
-        items={items as ContextMenuItem<unknown>[]}
-        key={id}
-      />
+      <MomentumContextMenu dispatch={dispatch} getData={getData} id={id} items={items} key={id} />
     </div>
   )
 }
@@ -279,12 +270,7 @@ export const InspectorContextMenuWrapper = <T,>({
       >
         {children}
       </MenuProvider>
-      <MomentumContextMenu
-        getData={getData}
-        id={id}
-        items={items as ContextMenuItem<unknown>[]}
-        key={id}
-      />
+      <MomentumContextMenu getData={getData} id={id} items={items} key={id} />
     </div>
   )
 }
