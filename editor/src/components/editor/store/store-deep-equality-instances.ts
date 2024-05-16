@@ -358,6 +358,7 @@ import type {
   DataReferenceNavigatorEntry,
   GithubUser,
   PullRequest,
+  RenderedAt,
 } from './editor-state'
 import {
   trueUpGroupElementChanged,
@@ -368,6 +369,8 @@ import {
   renderPropValueNavigatorEntry,
   dataReferenceNavigatorEntry,
   newGithubData,
+  renderedAtPropertyPath,
+  renderedAtChildNode,
 } from './editor-state'
 import {
   editorStateNodeModules,
@@ -700,12 +703,43 @@ export const SyntheticNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<Synth
     syntheticNavigatorEntry,
   )
 
+export const RenderedAtKeepDeepEquality: KeepDeepEqualityCall<RenderedAt> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'element-property-path':
+      if (oldValue.type === newValue.type) {
+        return combine1EqualityCall(
+          (r) => r.elementPropertyPath,
+          ElementPropertyPathKeepDeepEquality(),
+          renderedAtPropertyPath,
+        )(oldValue, newValue)
+      }
+      break
+    case 'child-node':
+      if (oldValue.type === newValue.type) {
+        return combine2EqualityCalls(
+          (r) => r.parentPath,
+          ElementPathKeepDeepEquality,
+          (r) => r.nodeUid,
+          StringKeepDeepEquality,
+          renderedAtChildNode,
+        )(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
 export const DataReferenceNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<DataReferenceNavigatorEntry> =
   combine4EqualityCalls(
     (entry) => entry.elementPath,
     ElementPathKeepDeepEquality,
     (entry) => entry.renderedAt,
-    nullableDeepEquality(ElementPropertyPathKeepDeepEquality()),
+    RenderedAtKeepDeepEquality,
     (entry) => entry.surroundingScope,
     ElementPathKeepDeepEquality,
     (entry) => entry.childOrAttribute,

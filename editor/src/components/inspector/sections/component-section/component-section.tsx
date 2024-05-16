@@ -97,6 +97,7 @@ import { optionalMap } from '../../../../core/shared/optional-utils'
 import type { VariableData } from '../../../canvas/ui-jsx-canvas'
 import { array } from 'prop-types'
 import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'
+import type { DataPickerType } from './data-picker-popup'
 import { DataPickerPopup, dataPickerForAProperty } from './data-picker-popup'
 import { jsxElementChildToText } from '../../../canvas/ui-jsx-canvas-renderer/jsx-element-child-to-text'
 import { foldEither } from '../../../../core/shared/either'
@@ -347,6 +348,7 @@ export function useDataPickerButton(
   propPath: PropertyPath,
   isScene: boolean,
   controlDescription: RegularControlDescription,
+  dataPickerType?: DataPickerType,
 ) {
   const [referenceElement, setReferenceElement] = React.useState<HTMLDivElement | null>(null)
   const [popperElement, setPopperElement] = React.useState<HTMLDivElement | null>(null)
@@ -384,8 +386,8 @@ export function useDataPickerButton(
   }, [propMetadata.attributeExpression])
 
   const pickerType = React.useMemo(() => {
-    return dataPickerForAProperty(selectedElement, propPath, propExpressionPath)
-  }, [propExpressionPath, propPath, selectedElement])
+    return dataPickerType ?? dataPickerForAProperty(selectedElement, propPath, propExpressionPath)
+  }, [dataPickerType, propExpressionPath, propPath, selectedElement])
 
   const DataPickerComponent = React.useMemo(
     () => (
