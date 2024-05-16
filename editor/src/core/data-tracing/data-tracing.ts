@@ -264,18 +264,21 @@ function propUsedByIdentifierOrAccess(
     string,
     { propertyName: string; modifiedPathDrillSoFar: DataPathPositiveResult }
   > {
-    if (dataPathResultIsSuccess(pathDrillSoFar)) {
-      const propertyName = pathDrillSoFar.dataPath.at(0)
-      if (propertyName == null) {
-        return left('Path so far is empty.')
-      } else {
-        return right({
-          propertyName: propertyName,
-          modifiedPathDrillSoFar: dataPathSuccess(pathDrillSoFar.dataPath.slice(1)),
-        })
-      }
-    } else {
-      return left('Path is not available.')
+    switch (pathDrillSoFar.type) {
+      case 'DATA_PATH_SUCCESS':
+        const propertyName = pathDrillSoFar.dataPath.at(0)
+        if (propertyName == null) {
+          return left('Path so far is empty.')
+        } else {
+          return right({
+            propertyName: propertyName,
+            modifiedPathDrillSoFar: dataPathSuccess(pathDrillSoFar.dataPath.slice(1)),
+          })
+        }
+      case 'DATA_PATH_NOT_POSSIBLE':
+        return left('Path is not available.')
+      default:
+        assertNever(pathDrillSoFar)
     }
   }
   switch (param.boundParam.type) {
