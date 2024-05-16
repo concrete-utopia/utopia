@@ -358,11 +358,6 @@ export function showWrapComponentPicker(
   jsxMetadata: ElementInstanceMetadataMap,
   showComponentPicker: ShowComponentPickerContextMenuCallback,
 ): ShowComponentPickerContextMenu {
-  // const element = MetadataUtils.findElementByElementPath(jsxMetadata, targetElement)
-  // const prop = element?.assignedToProp
-  // const target = prop == null ? targetElement : EP.parentPath(targetElement)
-  // const insertionTarget: InsertionTarget =
-  //   prop == null ? EditorActions.wrapTarget : renderPropTarget(prop)
   return showComponentPicker(selectedViews, EditorActions.wrapTarget)
 }
 
