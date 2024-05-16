@@ -661,7 +661,8 @@ function findPathToIdentifier(param: BoundParam, identifier: string): DataPathRe
         for (const part of workingParam.parts) {
           switch (part.type) {
             case 'PARAM':
-              // Prevent drilling down through spread values.
+              // For a spread we can still locate the origin, but the path is
+              // potentially gibberish.
               if (part.dotDotDotToken) {
                 return dataPathNotPossible
               }
