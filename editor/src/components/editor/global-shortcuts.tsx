@@ -589,9 +589,16 @@ export function handleKeyDown(
         return isSelectMode(editor.mode) ? [EditorActions.unwrapElements(editor.selectedViews)] : []
       },
       [WRAP_ELEMENT_PICKER_SHORTCUT]: () => {
-        return isSelectMode(editor.mode)
-          ? [EditorActions.openFloatingInsertMenu({ insertMenuMode: 'wrap' })]
-          : []
+        if (allowedToEdit) {
+          if (isSelectMode(editor.mode)) {
+            const mousePoint = WindowMousePositionRaw ?? zeroCanvasPoint
+            showComponentPicker(editor.selectedViews, EditorActions.wrapTarget)(event, {
+              position: mousePoint,
+            })
+            return []
+          }
+        }
+        return []
       },
       // For now, the "Group / G" shortcuts do the same as the Wrap Element shortcuts – until we have Grouping working again
       [GROUP_ELEMENT_DEFAULT_SHORTCUT]: () => {
