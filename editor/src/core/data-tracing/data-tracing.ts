@@ -34,17 +34,82 @@ import { assertNever } from '../shared/utils'
 
 export type DataPath = Array<string>
 
+export interface DataPathSuccess {
+  type: 'DATA_PATH_SUCCESS'
+  dataPath: DataPath
+}
+
+export function dataPathSuccess(dataPath: DataPath): DataPathSuccess {
+  return {
+    type: 'DATA_PATH_SUCCESS',
+    dataPath: dataPath,
+  }
+}
+
+export interface DataPathNotPossible {
+  type: 'DATA_PATH_NOT_POSSIBLE'
+}
+
+export const dataPathNotPossible: DataPathNotPossible = {
+  type: 'DATA_PATH_NOT_POSSIBLE',
+}
+
+export interface DataPathUnavailable {
+  type: 'DATA_PATH_UNAVAILABLE'
+}
+
+export const dataPathUnavailable: DataPathUnavailable = {
+  type: 'DATA_PATH_UNAVAILABLE',
+}
+
+export type DataPathPositiveResult = DataPathSuccess | DataPathNotPossible
+
+export function combinePositiveResults(
+  first: DataPathPositiveResult | DataPath,
+  second: DataPathPositiveResult | DataPath,
+): DataPathPositiveResult {
+  if (Array.isArray(first)) {
+    if (Array.isArray(second)) {
+      return dataPathSuccess([...first, ...second])
+    } else if (dataPathResultIsSuccess(second)) {
+      return dataPathSuccess([...first, ...second.dataPath])
+    }
+  } else if (dataPathResultIsSuccess(first)) {
+    if (Array.isArray(second)) {
+      return dataPathSuccess([...first.dataPath, ...second])
+    } else if (dataPathResultIsSuccess(second)) {
+      return dataPathSuccess([...first.dataPath, ...second.dataPath])
+    }
+  }
+
+  return dataPathNotPossible
+}
+
+export type DataPathResult = DataPathPositiveResult | DataPathUnavailable
+
+export function dataPathResultIsSuccess(result: DataPathResult): result is DataPathSuccess {
+  return result.type === 'DATA_PATH_SUCCESS'
+}
+
+export function dataPathResultIsNotPossible(result: DataPathResult): result is DataPathNotPossible {
+  return result.type === 'DATA_PATH_NOT_POSSIBLE'
+}
+
+export function dataPathResultIsUnavailable(result: DataPathResult): result is DataPathUnavailable {
+  return result.type === 'DATA_PATH_UNAVAILABLE'
+}
+
 export type DataTracingToLiteralAttribute = {
   type: 'literal-attribute'
   elementPath: ElementPath
   property: PropertyPath
-  dataPathIntoAttribute: DataPath
+  dataPathIntoAttribute: DataPathPositiveResult
 }
 
 export function dataTracingToLiteralAttribute(
   elementPath: ElementPath,
   property: PropertyPath,
-  dataPathIntoAttribute: DataPath,
+  dataPathIntoAttribute: DataPathPositiveResult,
 ): DataTracingToLiteralAttribute {
   return {
     type: 'literal-attribute',
@@ -58,13 +123,13 @@ export type DataTracingToElementAtScope = {
   type: 'element-at-scope'
   scope: ElementPath
   element: JSXElementChild
-  dataPathIntoAttribute: DataPath
+  dataPathIntoAttribute: DataPathPositiveResult
 }
 
 export function dataTracingToElementAtScope(
   scope: ElementPath,
   element: JSXElementChild,
-  dataPathIntoAttribute: DataPath,
+  dataPathIntoAttribute: DataPathPositiveResult,
 ): DataTracingToElementAtScope {
   return {
     type: 'element-at-scope',
@@ -78,13 +143,13 @@ export type DataTracingToAHookCall = {
   type: 'hook-result'
   hookName: string
   elementPath: ElementPath
-  dataPathIntoAttribute: DataPath
+  dataPathIntoAttribute: DataPathPositiveResult
 }
 
 export function dataTracingToAHookCall(
   elementPath: ElementPath,
   hookName: string,
-  dataPathIntoAttribute: DataPath,
+  dataPathIntoAttribute: DataPathPositiveResult,
 ): DataTracingToAHookCall {
   return {
     type: 'hook-result',
@@ -98,13 +163,13 @@ export type DataTracingToAComponentProp = {
   type: 'component-prop'
   elementPath: ElementPath
   propertyPath: PropertyPath
-  dataPathIntoAttribute: DataPath
+  dataPathIntoAttribute: DataPathPositiveResult
 }
 
 export function dataTracingToAComponentProp(
   elementPath: ElementPath,
   propertyPath: PropertyPath,
-  dataPathIntoAttribute: DataPath,
+  dataPathIntoAttribute: DataPathPositiveResult,
 ): DataTracingToAComponentProp {
   return {
     type: 'component-prop',
@@ -193,8 +258,26 @@ function processJSPropertyAccessors(
 function propUsedByIdentifierOrAccess(
   param: Param,
   originalIdentifier: JSIdentifier,
-  pathDrillSoFar: DataPath,
-): Either<string, { propertyName: string; modifiedPathDrillSoFar: DataPath }> {
+  pathDrillSoFar: DataPathPositiveResult,
+): Either<string, { propertyName: string; modifiedPathDrillSoFar: DataPathPositiveResult }> {
+  function getPropertyNameFromPathSoFar(): Either<
+    string,
+    { propertyName: string; modifiedPathDrillSoFar: DataPathPositiveResult }
+  > {
+    if (dataPathResultIsSuccess(pathDrillSoFar)) {
+      const propertyName = pathDrillSoFar.dataPath.at(0)
+      if (propertyName == null) {
+        return left('Path so far is empty.')
+      } else {
+        return right({
+          propertyName: propertyName,
+          modifiedPathDrillSoFar: dataPathSuccess(pathDrillSoFar.dataPath.slice(1)),
+        })
+      }
+    } else {
+      return left('Path is not available.')
+    }
+  }
   switch (param.boundParam.type) {
     case 'REGULAR_PARAM': {
       // in case of a regular prop param, first we want to match the param name to the original identifier
@@ -202,20 +285,14 @@ function propUsedByIdentifierOrAccess(
         return left('identifier does not match the prop name')
       }
 
-      return right({
-        propertyName: pathDrillSoFar[0],
-        modifiedPathDrillSoFar: pathDrillSoFar.slice(1),
-      })
+      return getPropertyNameFromPathSoFar()
     }
     case 'DESTRUCTURED_OBJECT': {
       for (const paramPart of param.boundParam.parts) {
         if (paramPart.param.boundParam.type === 'REGULAR_PARAM') {
           if (paramPart.param.boundParam.paramName === originalIdentifier.name) {
             if (paramPart.param.dotDotDotToken) {
-              return right({
-                propertyName: pathDrillSoFar[0],
-                modifiedPathDrillSoFar: pathDrillSoFar.slice(1),
-              })
+              return getPropertyNameFromPathSoFar()
             } else {
               return right({
                 propertyName: paramPart.param.boundParam.paramName,
@@ -238,8 +315,8 @@ function propUsedByIdentifierOrAccess(
 function paramUsedByIdentifierOrAccess(
   param: Param,
   originalIdentifier: JSIdentifier,
-  pathDrillSoFar: DataPath,
-): Either<string, { modifiedPathDrillSoFar: DataPath }> {
+  pathDrillSoFar: DataPathPositiveResult,
+): Either<string, { modifiedPathDrillSoFar: DataPathPositiveResult }> {
   switch (param.boundParam.type) {
     case 'REGULAR_PARAM': {
       // in case of a regular prop param, first we want to match the param name to the original identifier
@@ -261,7 +338,10 @@ function paramUsedByIdentifierOrAccess(
               })
             } else {
               return right({
-                modifiedPathDrillSoFar: [paramPart.param.boundParam.paramName, ...pathDrillSoFar],
+                modifiedPathDrillSoFar: combinePositiveResults(
+                  [paramPart.param.boundParam.paramName],
+                  pathDrillSoFar,
+                ),
               })
             }
           }
@@ -282,7 +362,7 @@ export function traceDataFromElement(
   enclosingScope: ElementPath, // <- the closest "parent" element path which points to the narrowest scope around the JSXElementChild. this is where we will start our upward scope walk
   metadata: ElementInstanceMetadataMap,
   projectContents: ProjectContentTreeRoot,
-  pathDrillSoFar: Array<string>,
+  pathDrillSoFar: DataPathPositiveResult,
 ): DataTracingResult {
   switch (startFromElement.type) {
     case 'JSX_ELEMENT':
@@ -293,7 +373,7 @@ export function traceDataFromElement(
     case 'ATTRIBUTE_VALUE':
     case 'ATTRIBUTE_NESTED_ARRAY':
     case 'ATTRIBUTE_NESTED_OBJECT':
-      return dataTracingToElementAtScope(enclosingScope, startFromElement, [])
+      return dataTracingToElementAtScope(enclosingScope, startFromElement, dataPathSuccess([]))
     case 'JS_IDENTIFIER':
     case 'JS_ELEMENT_ACCESS':
     case 'JS_PROPERTY_ACCESS':
@@ -317,7 +397,7 @@ function traceDataFromIdentifierOrAccess(
   enclosingScope: ElementPath,
   metadata: ElementInstanceMetadataMap,
   projectContents: ProjectContentTreeRoot,
-  pathDrillSoFar: Array<string>,
+  pathDrillSoFar: DataPathPositiveResult,
 ): DataTracingResult {
   const componentHoldingElement: UtopiaJSXComponent | null = findContainingComponentForElementPath(
     enclosingScope,
@@ -344,7 +424,7 @@ function traceDataFromIdentifierOrAccess(
     EP.getPathOfComponentRoot(enclosingScope),
     componentHoldingElement,
     identifier,
-    [...dataPath.value.path, ...pathDrillSoFar],
+    combinePositiveResults(dataPath.value.path, pathDrillSoFar),
   )
 }
 
@@ -352,7 +432,7 @@ export function traceDataFromProp(
   startFrom: ElementPropertyPath,
   metadata: ElementInstanceMetadataMap,
   projectContents: ProjectContentTreeRoot,
-  pathDrillSoFar: Array<string>,
+  pathDrillSoFar: DataPathPositiveResult,
 ): DataTracingResult {
   const elementHoldingProp = MetadataUtils.findElementByElementPath(metadata, startFrom.elementPath)
   if (elementHoldingProp == null) {
@@ -413,7 +493,7 @@ function walkUpInnerScopesUntilReachingComponent(
   containingComponentRootPath: ElementPath,
   componentHoldingElement: UtopiaJSXComponent,
   identifier: JSIdentifier,
-  pathDrillSoFar: DataPath,
+  pathDrillSoFar: DataPathPositiveResult,
 ): DataTracingResult {
   if (EP.pathsEqual(currentElementPathOfWalk, containingComponentRootPath)) {
     const resultInComponentScope: DataTracingResult = lookupInComponentScope(
@@ -454,9 +534,11 @@ function walkUpInnerScopesUntilReachingComponent(
           const param = mapFunction.params[0] // the map function's first param is the mapped value
           if (param != null) {
             // let's try to match the name to the containing component's props!
-            const foundPropSameName = paramUsedByIdentifierOrAccess(param, identifier, [
-              ...pathDrillSoFar,
-            ])
+            const foundPropSameName = paramUsedByIdentifierOrAccess(
+              param,
+              identifier,
+              pathDrillSoFar,
+            )
 
             if (isRight(foundPropSameName)) {
               // ok, so now we need to figure out what the map is mapping over
@@ -489,11 +571,10 @@ function walkUpInnerScopesUntilReachingComponent(
                     containingComponentRootPath,
                     componentHoldingElement,
                     dataPath.value.originalIdentifier,
-                    [
-                      ...dataPath.value.path,
-                      mapIndexHack,
-                      ...foundPropSameName.value.modifiedPathDrillSoFar,
-                    ],
+                    combinePositiveResults(
+                      combinePositiveResults(dataPath.value.path, [mapIndexHack]),
+                      foundPropSameName.value.modifiedPathDrillSoFar,
+                    ),
                   )
                 }
               }
@@ -547,36 +628,34 @@ function getPossibleHookCall(expression: JSExpression): string | null {
   }
 }
 
-function findPathToIdentifier(param: BoundParam, identifier: string): DataPath | null {
-  function innerFindPath(workingParam: BoundParam, currentPath: DataPath): DataPath | null {
+function findPathToIdentifier(param: BoundParam, identifier: string): DataPathResult {
+  function innerFindPath(workingParam: BoundParam, currentPath: DataPath): DataPathResult {
     switch (workingParam.type) {
       case 'REGULAR_PARAM':
         if (workingParam.paramName === identifier) {
-          return [...currentPath, workingParam.paramName]
+          return dataPathSuccess([...currentPath, workingParam.paramName])
         } else {
-          return null
+          return dataPathUnavailable
         }
       case 'DESTRUCTURED_OBJECT':
         for (const part of workingParam.parts) {
-          // Prevent drilling down through spread values.
-          if (part.param.dotDotDotToken) {
-            return null
-          } else if (part.propertyName == identifier) {
-            return [...currentPath, part.propertyName]
+          if (part.propertyName == identifier) {
+            return dataPathSuccess([...currentPath, part.propertyName])
           } else if (
-            part.propertyName != null &&
+            isRegularParam(part.param.boundParam) &&
+            part.param.boundParam.paramName === identifier &&
+            part.param.dotDotDotToken
+          ) {
+            // Object spread here, we're jumping over the field name of the destructured object.
+            return dataPathSuccess(currentPath)
+          } else if (
             isRegularParam(part.param.boundParam) &&
             part.param.boundParam.paramName === identifier
           ) {
-            return [...currentPath, part.propertyName]
-          } else {
-            const possibleResult = innerFindPath(part.param.boundParam, currentPath)
-            if (possibleResult != null) {
-              return possibleResult
-            }
+            return dataPathSuccess([...currentPath, part.propertyName ?? identifier])
           }
         }
-        break
+        return dataPathUnavailable
       case 'DESTRUCTURED_ARRAY':
         let arrayIndex: number = 0
         for (const part of workingParam.parts) {
@@ -584,28 +663,28 @@ function findPathToIdentifier(param: BoundParam, identifier: string): DataPath |
             case 'PARAM':
               // Prevent drilling down through spread values.
               if (part.dotDotDotToken) {
-                return null
+                return dataPathNotPossible
               }
               const possibleResult = innerFindPath(part.boundParam, [
                 ...currentPath,
                 `${arrayIndex}`,
               ])
-              if (possibleResult != null) {
+              if (dataPathResultIsSuccess(possibleResult)) {
                 return possibleResult
               }
               break
             case 'OMITTED_PARAM':
-              return null
+              return dataPathUnavailable
             default:
               assertNever(part)
           }
           arrayIndex++
         }
-        return null
+        return dataPathUnavailable
       default:
         assertNever(workingParam)
     }
-    return null
+    return dataPathUnavailable
   }
   return innerFindPath(param, [])
 }
@@ -615,7 +694,7 @@ function lookupInComponentScope(
   componentPath: ElementPath,
   componentHoldingElement: UtopiaJSXComponent,
   originalIdentifier: JSIdentifier,
-  pathDrillSoFar: DataPath,
+  pathDrillSoFar: DataPathPositiveResult,
 ): DataTracingResult {
   const identifier = originalIdentifier
 
@@ -626,7 +705,7 @@ function lookupInComponentScope(
       const foundPropSameName = propUsedByIdentifierOrAccess(
         componentHoldingElement.param,
         identifier,
-        [...pathDrillSoFar],
+        pathDrillSoFar,
       )
 
       if (isRight(foundPropSameName)) {
@@ -676,7 +755,7 @@ function lookupInComponentScope(
             componentPath,
             componentHoldingElement,
             dataPath.value.originalIdentifier,
-            [...dataPath.value.path, ...pathDrillSoFar],
+            combinePositiveResults(dataPath.value.path, pathDrillSoFar),
           )
         }
       }
@@ -691,7 +770,7 @@ function lookupInComponentScope(
         return dataTracingToAHookCall(
           componentPath,
           foundAssignmentOfIdentifier.rightHandSide.originalJavascript.split('()')[0],
-          [...pathDrillSoFar],
+          pathDrillSoFar,
         )
       }
     }
@@ -709,7 +788,7 @@ function lookupInComponentScope(
               identifier.name,
             )
             const originExpression = assignment.rightHandSide
-            if (possiblePathToIdentifier == null) {
+            if (dataPathResultIsUnavailable(possiblePathToIdentifier)) {
               return null
             } else {
               const possibleHookCall = getPossibleHookCall(assignment.rightHandSide)
@@ -719,13 +798,14 @@ function lookupInComponentScope(
                   componentPath,
                   componentHoldingElement,
                   originExpression,
-                  [...possiblePathToIdentifier, ...pathDrillSoFar],
+                  combinePositiveResults(possiblePathToIdentifier, pathDrillSoFar),
                 )
               } else if (possibleHookCall != null) {
-                return dataTracingToAHookCall(componentPath, possibleHookCall, [
-                  ...possiblePathToIdentifier,
-                  ...pathDrillSoFar,
-                ])
+                return dataTracingToAHookCall(
+                  componentPath,
+                  possibleHookCall,
+                  combinePositiveResults(possiblePathToIdentifier, pathDrillSoFar),
+                )
               }
             }
           }

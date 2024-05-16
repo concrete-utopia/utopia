@@ -16,7 +16,7 @@ import { useDataPickerButton } from './component-section'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { selectComponents } from '../../../editor/actions/meta-actions'
 import { when } from '../../../../utils/react-conditionals'
-import { traceDataFromElement, traceDataFromProp } from '../../../../core/data-tracing/data-tracing'
+import { traceDataFromElement, dataPathSuccess } from '../../../../core/data-tracing/data-tracing'
 
 interface DataReferenceCartoucheControlProps {
   elementPath: ElementPath
@@ -69,7 +69,7 @@ export const DataReferenceCartoucheControl = React.memo(
             props.surroundingScope,
             store.editor.jsxMetadata,
             store.editor.projectContents,
-            [],
+            dataPathSuccess([]),
           ).type === 'hook-result'
         )
       },
