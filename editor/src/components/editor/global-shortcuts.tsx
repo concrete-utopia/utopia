@@ -749,12 +749,9 @@ export function handleKeyDown(
         if (allowedToEdit) {
           if (isSelectMode(editor.mode)) {
             const mousePoint = WindowMousePositionRaw ?? zeroCanvasPoint
-            showComponentPicker(editor.selectedViews[0], EditorActions.insertAsChildTarget())(
-              event,
-              {
-                position: mousePoint,
-              },
-            )
+            showComponentPicker(editor.selectedViews, EditorActions.insertAsChildTarget())(event, {
+              position: mousePoint,
+            })
             return []
           }
         }
