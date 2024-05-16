@@ -73,7 +73,7 @@ describe('The navigator component picker context menu', () => {
 
     export const Card = (props) => {
       return (
-        <div style={props.style}>
+        <div style={props.style} data-uid='card-root'>
           {props.title}
           {props.children}
         </div>
@@ -1602,5 +1602,221 @@ export const Column = () => (
         expectedOutput,
       )
     })
+
+    it('Works when replacing the root element of a component', async () => {
+      const editor = await renderTestEditorWithCode(
+        TestProjectWithRootElement,
+        'await-first-dom-report',
+      )
+      const targetPath = EP.fromString('sb/scene/pg:pg-root')
+      await selectComponentsForTest(editor, [targetPath])
+
+      const replaceButton = editor.renderedDOM.getByTestId(
+        ReplaceElementButtonTestId(targetPath, null),
+      )
+      await mouseClickAtPoint(replaceButton, { x: 2, y: 2 })
+
+      const menuButton = await waitFor(() => editor.renderedDOM.getByText('FlexCol'))
+      await mouseClickAtPoint(menuButton, { x: 3, y: 3 })
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState(), StoryboardFilePath))
+        .toEqual(`import * as React from 'react'
+import { Scene, Storyboard, Ellipse } from 'utopia-api'
+import { FlexCol } from 'utopia-api'
+
+const Playground = ({ children, style }) => (
+  <FlexCol style={{ position: 'absolute' }} />
+)
+
+export var storyboard = (
+  <Storyboard>
+    <Scene
+      id='playground-scene'
+      commentId='playground-scene'
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+    >
+      <Playground style={{}}>
+        <Ellipse
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 100,
+            height: 100,
+          }}
+        />
+        <Ellipse
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 100,
+            height: 100,
+          }}
+        />
+        <Ellipse
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 100,
+            height: 100,
+          }}
+        />
+      </Playground>
+    </Scene>
+  </Storyboard>
+)
+`)
+    })
+
+    it('Works when swapping the root element of a component', async () => {
+      const editor = await renderTestEditorWithCode(
+        TestProjectWithRootElement,
+        'await-first-dom-report',
+      )
+      const targetPath = EP.fromString('sb/scene/pg:pg-root')
+      await selectComponentsForTest(editor, [targetPath])
+
+      const navigatorRow = editor.renderedDOM.getByTestId(NavigatorContainerId)
+
+      await act(async () => {
+        fireEvent(
+          navigatorRow,
+          new MouseEvent('contextmenu', {
+            bubbles: true,
+            cancelable: true,
+            clientX: 3,
+            clientY: 3,
+            buttons: 0,
+            button: 2,
+          }),
+        )
+      })
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      const replaceButton = await waitFor(() => editor.renderedDOM.getByText('Replace This…'))
+      await mouseClickAtPoint(replaceButton, { x: 3, y: 3 })
+
+      const flexRowButton = await waitFor(() => editor.renderedDOM.getByText('FlexRow'))
+      await mouseClickAtPoint(flexRowButton, { x: 3, y: 3 })
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      // in the code below, FlexRow wraps {children}, preserving them in the rendered content
+      expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState(), StoryboardFilePath))
+        .toEqual(`import * as React from 'react'
+import { Scene, Storyboard, Ellipse } from 'utopia-api'
+import { FlexRow } from 'utopia-api'
+
+const Playground = ({ children, style }) => (
+  <FlexRow style={style}>{children}</FlexRow>
+)
+
+export var storyboard = (
+  <Storyboard>
+    <Scene
+      id='playground-scene'
+      commentId='playground-scene'
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+    >
+      <Playground style={{}}>
+        <Ellipse
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 100,
+            height: 100,
+          }}
+        />
+        <Ellipse
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 100,
+            height: 100,
+          }}
+        />
+        <Ellipse
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 100,
+            height: 100,
+          }}
+        />
+      </Playground>
+    </Scene>
+  </Storyboard>
+)
+`)
+    })
   })
 })
+
+const TestProjectWithRootElement = `import * as React from 'react'
+import {
+  Scene,
+  Storyboard,
+  Ellipse,
+} from 'utopia-api'
+
+const Playground = ({ children, style }) => (
+  <div data-uid='pg-root' style={style}>
+    {children}
+  </div>
+)
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      id='playground-scene'
+      commentId='playground-scene'
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <Playground style={{}} data-uid='pg'>
+        <Ellipse
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 100,
+            height: 100,
+          }}
+          data-uid='aaa'
+        />
+        <Ellipse
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 100,
+            height: 100,
+          }}
+          data-uid='aag'
+        />
+        <Ellipse
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 100,
+            height: 100,
+          }}
+          data-uid='aai'
+        />
+      </Playground>
+    </Scene>
+  </Storyboard>
+)
+`
