@@ -480,16 +480,7 @@ export const wrapInPicker: ContextMenuItem<CanvasData> = {
   shortcut: 'W',
   enabled: true,
   action: (data, dispatch, _coord, event) => {
-    // eslint-disable-next-line
-    // @ts-ignore
-    if (window.openOldWrap === true) {
-      requireDispatch(dispatch)(
-        [setFocus('canvas'), EditorActions.openFloatingInsertMenu({ insertMenuMode: 'wrap' })],
-        'everyone',
-      )
-    } else {
-      showWrapComponentPicker(data.selectedViews, data.jsxMetadata, data.showComponentPicker)(event)
-    }
+    showWrapComponentPicker(data.selectedViews, data.jsxMetadata, data.showComponentPicker)(event)
   },
 }
 
