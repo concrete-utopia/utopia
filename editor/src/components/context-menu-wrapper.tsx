@@ -100,18 +100,22 @@ export const MomentumContextMenu = memo(
     }, [items])
 
     const isHidden = useCallback(
-      (item: Item<T>): boolean => {
-        if (typeof item?.isHidden === 'function') {
-          return item.isHidden(getData())
+      (item: Item<T>): (() => boolean) => {
+        return () => {
+          if (typeof item?.isHidden === 'function') {
+            return item.isHidden(getData())
+          }
+          return item?.isHidden ?? false
         }
-        return item?.isHidden ?? false
       },
       [getData],
     )
 
     const isDisabled = useCallback(
-      (item: Item<T>): boolean =>
-        typeof item?.enabled === 'function' ? !item.enabled(getData?.()) : !item?.enabled,
+      (item: Item<T>): (() => boolean) =>
+        () => {
+          return typeof item?.enabled === 'function' ? !item.enabled(getData?.()) : !item?.enabled
+        },
       [getData],
     )
 
