@@ -27,6 +27,7 @@ import {
   insertAsChildTarget,
   insertInsertable,
   insertJSXElement,
+  replaceJSXElement,
   replaceMappedElement,
   setProp_UNSAFE,
   showToast,
@@ -78,6 +79,7 @@ import { absolute } from '../../../utils/utils'
 import { notice } from '../../common/notice'
 import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
 import { emptyComments } from 'utopia-shared/src/types'
+import { JSXElementChild } from 'utopia-shared/src/types'
 
 type RenderPropTarget = { type: 'render-prop'; prop: string }
 type ConditionalTarget = { type: 'conditional'; conditionalCase: ConditionalCase }
@@ -518,15 +520,15 @@ function insertComponentPickerItem(
         ]
       }
 
+      if (
+        isReplaceTarget(insertionTarget) ||
+        isReplaceKeepChildrenAndStyleTarget(insertionTarget)
+      ) {
+        return [replaceJSXElement(fixedElement, target, toInsert.importsToAdd, insertionTarget)]
+      }
+
       if (!isConditionalTarget(insertionTarget)) {
-        return [
-          insertJSXElement(
-            fixedElement,
-            target,
-            toInsert.importsToAdd ?? undefined,
-            insertionTarget,
-          ),
-        ]
+        return [insertJSXElement(fixedElement, target, toInsert.importsToAdd ?? undefined)]
       }
     }
 
@@ -548,19 +550,6 @@ function insertComponentPickerItem(
         ),
       ]
     }
-
-    // if (isWrapTarget(insertionTarget)) {
-    //   const index = MetadataUtils.getIndexInParent(metadata, pathTrees, target)
-    //   return [
-    //     deleteView(target),
-    //     insertInsertable(
-    //       childInsertionPath(EP.parentPath(target)),
-    //       toInsert,
-    //       'do-not-add',
-    //       absolute(index),
-    //     ),
-    //   ]
-    // }
 
     if (isReplaceTarget(insertionTarget)) {
       if (
