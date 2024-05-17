@@ -150,6 +150,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'DELETE_VIEW':
     case 'UNSET_PROPERTY':
     case 'INSERT_JSX_ELEMENT':
+    case 'REPLACE_JSX_ELEMENT':
     case 'INSERT_ATTRIBUTE_OTHER_JAVASCRIPT_INTO_ELEMENT':
     case 'MOVE_SELECTED_TO_BACK':
     case 'MOVE_SELECTED_TO_FRONT':
@@ -215,6 +216,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_IMPORTS_FROM_COLLABORATION_UPDATE':
     case 'UPDATE_CODE_FROM_COLLABORATION_UPDATE':
     case 'REPLACE_MAPPED_ELEMENT':
+    case 'REPLACE_ELEMENT_IN_SCOPE':
       return false
     case 'SAVE_ASSET':
       return (

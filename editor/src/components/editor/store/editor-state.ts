@@ -2173,17 +2173,40 @@ export function syntheticNavigatorEntry(
   }
 }
 
+interface RenderedAtPropertyPath {
+  type: 'element-property-path'
+  elementPropertyPath: ElementPropertyPath
+}
+
+interface RenderedAtChildNode {
+  type: 'child-node'
+  parentPath: ElementPath
+  nodeUid: string
+}
+
+export type RenderedAt = RenderedAtPropertyPath | RenderedAtChildNode
+
+export function renderedAtPropertyPath(
+  elementPropertyPath: ElementPropertyPath,
+): RenderedAtPropertyPath {
+  return { type: 'element-property-path', elementPropertyPath: elementPropertyPath }
+}
+
+export function renderedAtChildNode(parentPath: ElementPath, nodeUid: string): RenderedAtChildNode {
+  return { type: 'child-node', parentPath: parentPath, nodeUid: nodeUid }
+}
+
 export interface DataReferenceNavigatorEntry {
   type: 'DATA_REFERENCE'
   elementPath: ElementPath
-  renderedAt: ElementPropertyPath | null
+  renderedAt: RenderedAt
   surroundingScope: ElementPath
   childOrAttribute: JSXElementChild
 }
 
 export function dataReferenceNavigatorEntry(
   elementPath: ElementPath,
-  renderedAt: ElementPropertyPath | null,
+  renderedAt: RenderedAt,
   surroundingScope: ElementPath,
   childOrAttribute: JSXElementChild,
 ): DataReferenceNavigatorEntry {
@@ -3651,6 +3674,25 @@ export function modifyUnderlyingTarget(
     } else {
       return updatedParseSuccess
     }
+  }
+
+  return modifyParseSuccessAtPath(targetSuccess.filePath, editor, innerModifyParseSuccess)
+}
+
+export function modifyUnderlyingParseSuccessOnly(
+  target: ElementPath | null,
+  editor: EditorState,
+  modifyParseSuccess: (
+    parseSuccess: ParseSuccess,
+    underlyingFilePath: string,
+  ) => ParseSuccess = defaultModifyParseSuccess,
+): EditorState {
+  const underlyingTarget = normalisePathToUnderlyingTarget(editor.projectContents, target)
+  const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
+
+  function innerModifyParseSuccess(oldParseSuccess: ParseSuccess): ParseSuccess {
+    // Apply the ParseSuccess level changes.
+    return modifyParseSuccess(oldParseSuccess, targetSuccess.filePath)
   }
 
   return modifyParseSuccessAtPath(targetSuccess.filePath, editor, innerModifyParseSuccess)

@@ -172,6 +172,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.RENAME_COMPONENT(action, state)
     case 'INSERT_JSX_ELEMENT':
       return UPDATE_FNS.INSERT_JSX_ELEMENT(action, state)
+    case 'REPLACE_JSX_ELEMENT':
+      return UPDATE_FNS.REPLACE_JSX_ELEMENT(action, state)
     case 'INSERT_ATTRIBUTE_OTHER_JAVASCRIPT_INTO_ELEMENT':
       return UPDATE_FNS.INSERT_ATTRIBUTE_OTHER_JAVASCRIPT_INTO_ELEMENT(action, state)
     case 'SET_PANEL_VISIBILITY':
@@ -491,6 +493,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_SHARING_DIALOG_OPEN(action, state)
     case 'REPLACE_MAPPED_ELEMENT':
       return UPDATE_FNS.REPLACE_MAPPED_ELEMENT(action, state)
+    case 'REPLACE_ELEMENT_IN_SCOPE':
+      return UPDATE_FNS.REPLACE_ELEMENT_IN_SCOPE(action, state)
     default:
       return state
   }

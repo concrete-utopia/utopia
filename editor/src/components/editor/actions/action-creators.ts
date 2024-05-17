@@ -232,10 +232,12 @@ import type {
   AddCollapsedViews,
   ReplaceMappedElement,
   UpdateMapExpression,
-  InsertionBehaviour,
   ReplaceTarget,
   InsertAsChildTarget,
   ReplaceKeepChildrenAndStyleTarget,
+  ReplaceElementInScope,
+  ElementReplacementPath,
+  ReplaceJSXElement,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -284,14 +286,29 @@ export function insertJSXElement(
   element: JSXElement,
   target: ElementPath | null,
   importsToAdd: Imports,
-  insertionBehaviour: InsertionBehaviour,
+  indexPosition?: IndexPosition,
 ): InsertJSXElement {
   return {
     action: 'INSERT_JSX_ELEMENT',
     jsxElement: element,
     target: target,
     importsToAdd: importsToAdd,
-    insertionBehaviour: insertionBehaviour,
+    indexPosition: indexPosition ?? null,
+  }
+}
+
+export function replaceJSXElement(
+  element: JSXElement,
+  target: ElementPath,
+  importsToAdd: Imports,
+  behaviour: ReplaceKeepChildrenAndStyleTarget | ReplaceTarget,
+): ReplaceJSXElement {
+  return {
+    action: 'REPLACE_JSX_ELEMENT',
+    jsxElement: element,
+    target: target,
+    importsToAdd: importsToAdd,
+    behaviour: behaviour,
   }
 }
 
@@ -305,6 +322,17 @@ export function replaceMappedElement(
     jsxElement: element,
     target: target,
     importsToAdd: importsToAdd,
+  }
+}
+
+export function replaceElementInScope(
+  target: ElementPath,
+  replacementPath: ElementReplacementPath,
+): ReplaceElementInScope {
+  return {
+    action: 'REPLACE_ELEMENT_IN_SCOPE',
+    target: target,
+    replacementPath: replacementPath,
   }
 }
 

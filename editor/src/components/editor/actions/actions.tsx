@@ -12,6 +12,7 @@ import {
 import type { InsertChildAndDetails } from '../../../core/model/element-template-utils'
 import {
   elementPathFromInsertionPath,
+  findJSXElementChildAtPath,
   generateUidWithExistingComponents,
   getIndexInParent,
   insertJSXElementChildren,
@@ -343,6 +344,8 @@ import type {
   AddCollapsedViews,
   ReplaceMappedElement,
   UpdateMapExpression,
+  ReplaceElementInScope,
+  ReplaceJSXElement,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -391,6 +394,7 @@ import {
   getAllComponentDescriptorErrors,
   updatePackageJsonInEditorState,
   modifyUnderlyingTarget,
+  modifyUnderlyingParseSuccessOnly,
 } from '../store/editor-state'
 import {
   BaseCanvasOffset,
@@ -2219,7 +2223,6 @@ export const UPDATE_FNS = {
   },
   INSERT_JSX_ELEMENT: (action: InsertJSXElement, editor: EditorModel): EditorModel => {
     let newSelectedViews: ElementPath[] = []
-    const { insertionBehaviour } = action
     const parentPath =
       action.target == null
         ? // action.target == null means Canvas, which means storyboard root element
@@ -2227,70 +2230,84 @@ export const UPDATE_FNS = {
             'found no element path for the storyboard root',
             getStoryboardElementPath(editor.projectContents, editor.canvas.openFile?.filename),
           )
-        : insertionBehaviour.type === 'insert-as-child'
-        ? action.target
-        : EP.parentPath(action.target)
+        : action.target
 
     const withNewElement = modifyUnderlyingTargetElement(
       parentPath,
       editor,
       (element) => element,
       (success, _, underlyingFilePath) => {
-        const startingComponents = getUtopiaJSXComponentsFromSuccess(success)
+        const components = getUtopiaJSXComponentsFromSuccess(success)
 
-        const removeElementAndReturnIndex = () => {
-          if (action.target == null) {
-            return {
-              components: startingComponents,
-              originalElement: null,
-              imports: success.imports,
-              insertionIndex: null,
-            }
-          } else if (insertionBehaviour.type === 'insert-as-child') {
-            return {
-              components: startingComponents,
-              imports: success.imports,
-              insertionIndex: insertionBehaviour.indexPosition ?? null,
-            }
-          } else {
-            const indexInParent = getIndexInParent(
-              success.topLevelElements,
-              EP.dynamicPathToStaticPath(action.target),
-            )
-
-            const originalElement = findJSXElementAtPath(action.target, startingComponents)
-
-            const withTargetDeleted = removeElementAtPath(
-              action.target,
-              startingComponents,
-              success.imports,
-            )
-
-            return {
-              components: withTargetDeleted.components,
-              originalElement: originalElement,
-              imports: withTargetDeleted.imports,
-              insertionIndex: indexInParent >= 0 ? absolute(indexInParent) : null,
-            }
-          }
-        }
-
-        const {
-          insertionIndex,
-          originalElement,
-          components,
-          imports: workingImports,
-        } = removeElementAndReturnIndex()
-
-        const updatedImports = mergeImports(underlyingFilePath, workingImports, action.importsToAdd)
+        const updatedImports = mergeImports(
+          underlyingFilePath,
+          success.imports,
+          action.importsToAdd,
+        )
 
         const { imports, duplicateNameMapping } = updatedImports
+
+        const fixedElement = renameJsxElementChild(action.jsxElement, duplicateNameMapping)
+
+        const withInsertedElement = insertJSXElementChildren(
+          childInsertionPath(parentPath),
+          [fixedElement],
+          components,
+          action.indexPosition,
+        )
+
+        const uid = getUtopiaID(fixedElement)
+        const newPath = EP.appendToPath(parentPath, uid)
+        newSelectedViews.push(newPath)
+
+        const updatedTopLevelElements = applyUtopiaJSXComponentsChanges(
+          success.topLevelElements,
+          withInsertedElement.components,
+        )
+
+        return {
+          ...success,
+          topLevelElements: updatedTopLevelElements,
+          imports: imports,
+        }
+      },
+    )
+
+    return {
+      ...withNewElement,
+      leftMenu: { visible: editor.leftMenu.visible, selectedTab: LeftMenuTab.Navigator },
+      selectedViews: newSelectedViews,
+    }
+  },
+  REPLACE_JSX_ELEMENT: (action: ReplaceJSXElement, editor: EditorModel): EditorModel => {
+    let newSelectedViews: ElementPath[] = []
+
+    const withNewElement = modifyUnderlyingParseSuccessOnly(
+      action.target,
+      editor,
+      (success, underlyingFilePath) => {
+        const startingComponents = getUtopiaJSXComponentsFromSuccess(success)
+
+        const originalElement = findJSXElementChildAtPath(
+          startingComponents,
+          EP.dynamicPathToStaticPath(action.target),
+        )
+
+        if (originalElement == null) {
+          return success
+        }
+
+        const { imports, duplicateNameMapping } = mergeImports(
+          underlyingFilePath,
+          success.imports,
+          action.importsToAdd,
+        )
 
         const fixedElement = (() => {
           const renamedJsxElement = renameJsxElementChild(action.jsxElement, duplicateNameMapping)
           if (
-            originalElement == null ||
-            !isReplaceKeepChildrenAndStyleTarget(action.insertionBehaviour)
+            !isReplaceKeepChildrenAndStyleTarget(action.behaviour) ||
+            originalElement.type !== 'JSX_ELEMENT'
           ) {
             return renamedJsxElement
           }
@@ -2318,20 +2335,15 @@ export const UPDATE_FNS = {
           return renamedJsxElementWithOriginalStyle
         })()
 
-        const withInsertedElement = insertJSXElementChildren(
-          childInsertionPath(parentPath),
-          [fixedElement],
-          components,
-          insertionIndex,
+        const updatedComponents = transformJSXComponentAtPath(
+          startingComponents,
+          EP.dynamicPathToStaticPath(action.target),
+          () => fixedElement,
         )
-
-        const uid = getUtopiaID(fixedElement)
-        const newPath = EP.appendToPath(parentPath, uid)
-        newSelectedViews.push(newPath)
 
         const updatedTopLevelElements = applyUtopiaJSXComponentsChanges(
           success.topLevelElements,
-          withInsertedElement.components,
+          updatedComponents,
         )
 
         return {
@@ -2416,6 +2428,20 @@ export const UPDATE_FNS = {
       leftMenu: { visible: editor.leftMenu.visible, selectedTab: LeftMenuTab.Navigator },
       selectedViews: newSelectedViews,
     }
+  },
+  REPLACE_ELEMENT_IN_SCOPE: (action: ReplaceElementInScope, editor: EditorModel): EditorModel => {
+    return modifyUnderlyingTarget(action.target, editor, (element) => {
+      if (element.type !== 'JSX_ELEMENT' && element.type !== 'JSX_FRAGMENT') {
+        return element
+      }
+
+      return {
+        ...element,
+        children: element.children.map((c) =>
+          c.uid !== action.replacementPath.uid ? c : action.replacementPath.replaceWith,
+        ),
+      }
+    })
   },
   INSERT_ATTRIBUTE_OTHER_JAVASCRIPT_INTO_ELEMENT: (
     action: InsertAttributeOtherJavascriptIntoElement,
@@ -3461,12 +3487,7 @@ export const UPDATE_FNS = {
             [],
           )
 
-          const insertJSXElementAction = insertJSXElement(
-            imageElement,
-            parent,
-            {},
-            insertAsChildTarget(),
-          )
+          const insertJSXElementAction = insertJSXElement(imageElement, parent, {})
 
           const withComponentCreated = UPDATE_FNS.INSERT_JSX_ELEMENT(insertJSXElementAction, {
             ...editorWithToast,
@@ -4512,7 +4533,7 @@ export const UPDATE_FNS = {
       [],
     )
 
-    const insertJSXElementAction = insertJSXElement(imageElement, parent, {}, insertAsChildTarget())
+    const insertJSXElementAction = insertJSXElement(imageElement, parent, {})
     return UPDATE_FNS.INSERT_JSX_ELEMENT(insertJSXElementAction, editor)
   },
   REMOVE_FROM_NODE_MODULES_CONTENTS: (

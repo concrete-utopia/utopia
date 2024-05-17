@@ -25,6 +25,7 @@ import {
   insertAsChildTarget,
   insertInsertable,
   insertJSXElement,
+  replaceJSXElement,
   replaceMappedElement,
   setProp_UNSAFE,
   showToast,
@@ -72,6 +73,7 @@ import type { ConditionalCase } from '../../../core/model/conditionals'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { absolute } from '../../../utils/utils'
 import { notice } from '../../common/notice'
+import { JSXElementChild } from 'utopia-shared/src/types'
 
 type RenderPropTarget = { type: 'render-prop'; prop: string }
 type ConditionalTarget = { type: 'conditional'; conditionalCase: ConditionalCase }
@@ -484,15 +486,15 @@ function insertComponentPickerItem(
         return [replaceMappedElement(fixedElement, target, toInsert.importsToAdd)]
       }
 
+      if (
+        isReplaceTarget(insertionTarget) ||
+        isReplaceKeepChildrenAndStyleTarget(insertionTarget)
+      ) {
+        return [replaceJSXElement(fixedElement, target, toInsert.importsToAdd, insertionTarget)]
+      }
+
       if (!isConditionalTarget(insertionTarget)) {
-        return [
-          insertJSXElement(
-            fixedElement,
-            target,
-            toInsert.importsToAdd ?? undefined,
-            insertionTarget,
-          ),
-        ]
+        return [insertJSXElement(fixedElement, target, toInsert.importsToAdd ?? undefined)]
       }
     }
 
@@ -757,6 +759,10 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
     const metadataRef = useRefEditorState((state) => state.editor.jsxMetadata)
     const elementPathTreesRef = useRefEditorState((state) => state.editor.elementPathTree)
 
+    const hideAllContextMenus = React.useCallback(() => {
+      contextMenu.hideAll()
+    }, [])
+
     const onItemClick = React.useCallback(
       (preferredChildToInsert: InsertableComponent) => (e: React.UIEvent) => {
         e.stopPropagation()
@@ -772,9 +778,17 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
           insertionTarget,
         )
 
-        contextMenu.hideAll()
+        hideAllContextMenus()
       },
-      [target, projectContentsRef, metadataRef, elementPathTreesRef, dispatch, insertionTarget],
+      [
+        target,
+        projectContentsRef,
+        metadataRef,
+        elementPathTreesRef,
+        dispatch,
+        insertionTarget,
+        hideAllContextMenus,
+      ],
     )
 
     const squashEvents = React.useCallback((e: React.UIEvent<unknown>) => {
@@ -798,7 +812,11 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
         onShown={onShown}
         onHidden={onHidden}
       >
-        <ComponentPicker allComponents={allInsertableComponents} onItemClick={onItemClick} />
+        <ComponentPicker
+          allComponents={allInsertableComponents}
+          onItemClick={onItemClick}
+          closePicker={hideAllContextMenus}
+        />
       </Menu>
     )
   },

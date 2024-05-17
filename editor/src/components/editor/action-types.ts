@@ -145,17 +145,21 @@ export type ClearSelection = {
 export type ReplaceTarget = { type: 'replace-target' }
 export type ReplaceKeepChildrenAndStyleTarget = { type: 'replace-target-keep-children-and-style' }
 export type InsertAsChildTarget = { type: 'insert-as-child'; indexPosition?: IndexPosition }
-export type InsertionBehaviour =
-  | InsertAsChildTarget
-  | ReplaceTarget
-  | ReplaceKeepChildrenAndStyleTarget
 
 export interface InsertJSXElement {
   action: 'INSERT_JSX_ELEMENT'
   jsxElement: JSXElement
   target: ElementPath | null
   importsToAdd: Imports
-  insertionBehaviour: InsertionBehaviour
+  indexPosition: IndexPosition | null
+}
+
+export interface ReplaceJSXElement {
+  action: 'REPLACE_JSX_ELEMENT'
+  jsxElement: JSXElement
+  target: ElementPath
+  importsToAdd: Imports
+  behaviour: ReplaceKeepChildrenAndStyleTarget | ReplaceTarget
 }
 
 export interface ReplaceMappedElement {
@@ -163,6 +167,18 @@ export interface ReplaceMappedElement {
   jsxElement: JSXElement
   target: ElementPath
   importsToAdd: Imports
+}
+
+export type ElementReplacementPath = {
+  type: 'replace-child-with-uid'
+  uid: string
+  replaceWith: JSXElementChild
+}
+
+export interface ReplaceElementInScope {
+  action: 'REPLACE_ELEMENT_IN_SCOPE'
+  target: ElementPath
+  replacementPath: ElementReplacementPath
 }
 
 export interface InsertAttributeOtherJavascriptIntoElement {
@@ -1174,7 +1190,9 @@ export interface IncreaseOnlineStateFailureCount {
 export type EditorAction =
   | ClearSelection
   | InsertJSXElement
+  | ReplaceJSXElement
   | ReplaceMappedElement
+  | ReplaceElementInScope
   | InsertAttributeOtherJavascriptIntoElement
   | DeleteSelected
   | DeleteView

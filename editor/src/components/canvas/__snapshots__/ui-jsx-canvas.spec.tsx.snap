@@ -6,7 +6,7 @@ exports[`UiJsxCanvas render Label carried through for generated elements 1`] = `
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/839 utopia-storyboard-uid/scene-aaa/app-entity:aaa/839/bbb\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/22b utopia-storyboard-uid/scene-aaa/app-entity:aaa/22b/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -41,17 +41,17 @@ exports[`UiJsxCanvas render Label carried through for generated elements 1`] = `
         <div
           data-uid=\\"bbb~~~1\\"
           data-label=\\"Plane\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/839/bbb~~~1\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/22b/bbb~~~1\\"
         ></div>
         <div
           data-uid=\\"bbb~~~2\\"
           data-label=\\"Plane\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/839/bbb~~~2\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/22b/bbb~~~2\\"
         ></div>
         <div
           data-uid=\\"bbb~~~3\\"
           data-label=\\"Plane\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/839/bbb~~~3\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/22b/bbb~~~3\\"
         ></div>
       </div>
     </div>
@@ -837,7 +837,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/839": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/22b": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -1053,7 +1053,7 @@ Object {
         ],
         Array [
           "aaa",
-          "839",
+          "22b",
         ],
       ],
       "type": "elementpath",
@@ -1123,7 +1123,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/839/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/22b/bbb~~~1": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -1189,7 +1189,7 @@ Object {
         ],
         Array [
           "aaa",
-          "839",
+          "22b",
           "bbb~~~1",
         ],
       ],
@@ -1264,7 +1264,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/839/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/22b/bbb~~~2": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -1330,7 +1330,7 @@ Object {
         ],
         Array [
           "aaa",
-          "839",
+          "22b",
           "bbb~~~2",
         ],
       ],
@@ -1405,7 +1405,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/839/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/22b/bbb~~~3": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -1471,7 +1471,7 @@ Object {
         ],
         Array [
           "aaa",
-          "839",
+          "22b",
           "bbb~~~3",
         ],
       ],
@@ -2219,9 +2219,9 @@ exports[`UiJsxCanvas render Renders input tag without errors 1`] = `
       data-uid=\\"scene-aaa\\"
     >
       <input
-        data-uid=\\"057\\"
+        data-uid=\\"e30\\"
         style=\\"top: 10px\\"
-        data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:567:057\\"
+        data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:567:e30\\"
       />
     </div>
   </div>
@@ -2700,7 +2700,7 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/9d2 utopia-storyboard-uid/scene-aaa/app-entity:zzz/9d2/aaa utopia-storyboard-uid/scene-aaa/app-entity:zzz/9d2/aaa/833\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/7ec utopia-storyboard-uid/scene-aaa/app-entity:zzz/7ec/aaa utopia-storyboard-uid/scene-aaa/app-entity:zzz/7ec/aaa/aae\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -2733,19 +2733,19 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
       >
         <div
           data-uid=\\"aaa~~~1\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/9d2/aaa~~~1\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/7ec/aaa~~~1\\"
         >
           1
         </div>
         <div
           data-uid=\\"aaa~~~2\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/9d2/aaa~~~2\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/7ec/aaa~~~2\\"
         >
           2
         </div>
         <div
           data-uid=\\"aaa~~~3\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/9d2/aaa~~~3\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/7ec/aaa~~~3\\"
         >
           3
         </div>
@@ -3445,7 +3445,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/9d2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/7ec": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -3690,7 +3690,7 @@ Object {
         ],
         Array [
           "zzz",
-          "9d2",
+          "7ec",
         ],
       ],
       "type": "elementpath",
@@ -3760,7 +3760,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/9d2/aaa~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/7ec/aaa~~~1": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -3855,7 +3855,7 @@ Object {
         ],
         Array [
           "zzz",
-          "9d2",
+          "7ec",
           "aaa~~~1",
         ],
       ],
@@ -3930,7 +3930,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/9d2/aaa~~~1/833": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/7ec/aaa~~~1/aae": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -3994,9 +3994,9 @@ Object {
         ],
         Array [
           "zzz",
-          "9d2",
+          "7ec",
           "aaa~~~1",
-          "833",
+          "aae",
         ],
       ],
       "type": "elementpath",
@@ -4066,7 +4066,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/9d2/aaa~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/7ec/aaa~~~2": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -4161,7 +4161,7 @@ Object {
         ],
         Array [
           "zzz",
-          "9d2",
+          "7ec",
           "aaa~~~2",
         ],
       ],
@@ -4236,7 +4236,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/9d2/aaa~~~2/833": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/7ec/aaa~~~2/aae": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -4300,9 +4300,9 @@ Object {
         ],
         Array [
           "zzz",
-          "9d2",
+          "7ec",
           "aaa~~~2",
-          "833",
+          "aae",
         ],
       ],
       "type": "elementpath",
@@ -4372,7 +4372,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/9d2/aaa~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/7ec/aaa~~~3": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -4467,7 +4467,7 @@ Object {
         ],
         Array [
           "zzz",
-          "9d2",
+          "7ec",
           "aaa~~~3",
         ],
       ],
@@ -4542,7 +4542,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/9d2/aaa~~~3/833": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/7ec/aaa~~~3/aae": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -4606,9 +4606,9 @@ Object {
         ],
         Array [
           "zzz",
-          "9d2",
+          "7ec",
           "aaa~~~3",
-          "833",
+          "aae",
         ],
       ],
       "type": "elementpath",
@@ -4687,7 +4687,7 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f/aaa utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f/aaa/9d2 utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f/aaa/9d2/bbb utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f/aaa/9d2/bbb/196\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73 utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa/b39 utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa/b39/bbb utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa/b39/bbb/208\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -4720,69 +4720,69 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
       >
         <div
           data-uid=\\"aaa~~~1\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f/aaa~~~1\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~1\\"
         >
           <div
             data-uid=\\"bbb~~~1\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f/aaa~~~1/9d2/bbb~~~1\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~1/b39/bbb~~~1\\"
           >
             4
           </div>
           <div
             data-uid=\\"bbb~~~2\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f/aaa~~~1/9d2/bbb~~~2\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~1/b39/bbb~~~2\\"
           >
             5
           </div>
           <div
             data-uid=\\"bbb~~~3\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f/aaa~~~1/9d2/bbb~~~3\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~1/b39/bbb~~~3\\"
           >
             6
           </div>
         </div>
         <div
           data-uid=\\"aaa~~~2\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f/aaa~~~2\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~2\\"
         >
           <div
             data-uid=\\"bbb~~~1\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f/aaa~~~2/9d2/bbb~~~1\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~2/b39/bbb~~~1\\"
           >
             8
           </div>
           <div
             data-uid=\\"bbb~~~2\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f/aaa~~~2/9d2/bbb~~~2\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~2/b39/bbb~~~2\\"
           >
             10
           </div>
           <div
             data-uid=\\"bbb~~~3\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f/aaa~~~2/9d2/bbb~~~3\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~2/b39/bbb~~~3\\"
           >
             12
           </div>
         </div>
         <div
           data-uid=\\"aaa~~~3\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f/aaa~~~3\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~3\\"
         >
           <div
             data-uid=\\"bbb~~~1\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f/aaa~~~3/9d2/bbb~~~1\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~3/b39/bbb~~~1\\"
           >
             12
           </div>
           <div
             data-uid=\\"bbb~~~2\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f/aaa~~~3/9d2/bbb~~~2\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~3/b39/bbb~~~2\\"
           >
             15
           </div>
           <div
             data-uid=\\"bbb~~~3\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f/aaa~~~3/9d2/bbb~~~3\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~3/b39/bbb~~~3\\"
           >
             18
           </div>
@@ -5704,7 +5704,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -6170,7 +6170,7 @@ Object {
         ],
         Array [
           "zzz",
-          "67f",
+          "c73",
         ],
       ],
       "type": "elementpath",
@@ -6240,7 +6240,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f/aaa~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~1": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -6541,7 +6541,7 @@ Object {
         ],
         Array [
           "zzz",
-          "67f",
+          "c73",
           "aaa~~~1",
         ],
       ],
@@ -6616,7 +6616,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f/aaa~~~1/9d2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~1/b39": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -6886,9 +6886,9 @@ Object {
         ],
         Array [
           "zzz",
-          "67f",
+          "c73",
           "aaa~~~1",
-          "9d2",
+          "b39",
         ],
       ],
       "type": "elementpath",
@@ -6958,7 +6958,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f/aaa~~~1/9d2/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~1/b39/bbb~~~1": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -7071,9 +7071,9 @@ Object {
         ],
         Array [
           "zzz",
-          "67f",
+          "c73",
           "aaa~~~1",
-          "9d2",
+          "b39",
           "bbb~~~1",
         ],
       ],
@@ -7148,7 +7148,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f/aaa~~~1/9d2/bbb~~~1/196": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~1/b39/bbb~~~1/208": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -7230,11 +7230,11 @@ Object {
         ],
         Array [
           "zzz",
-          "67f",
+          "c73",
           "aaa~~~1",
-          "9d2",
+          "b39",
           "bbb~~~1",
-          "196",
+          "208",
         ],
       ],
       "type": "elementpath",
@@ -7304,7 +7304,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f/aaa~~~1/9d2/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~1/b39/bbb~~~2": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -7417,9 +7417,9 @@ Object {
         ],
         Array [
           "zzz",
-          "67f",
+          "c73",
           "aaa~~~1",
-          "9d2",
+          "b39",
           "bbb~~~2",
         ],
       ],
@@ -7494,7 +7494,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f/aaa~~~1/9d2/bbb~~~2/196": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~1/b39/bbb~~~2/208": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -7576,11 +7576,11 @@ Object {
         ],
         Array [
           "zzz",
-          "67f",
+          "c73",
           "aaa~~~1",
-          "9d2",
+          "b39",
           "bbb~~~2",
-          "196",
+          "208",
         ],
       ],
       "type": "elementpath",
@@ -7650,7 +7650,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f/aaa~~~1/9d2/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~1/b39/bbb~~~3": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -7763,9 +7763,9 @@ Object {
         ],
         Array [
           "zzz",
-          "67f",
+          "c73",
           "aaa~~~1",
-          "9d2",
+          "b39",
           "bbb~~~3",
         ],
       ],
@@ -7840,7 +7840,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f/aaa~~~1/9d2/bbb~~~3/196": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~1/b39/bbb~~~3/208": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -7922,11 +7922,11 @@ Object {
         ],
         Array [
           "zzz",
-          "67f",
+          "c73",
           "aaa~~~1",
-          "9d2",
+          "b39",
           "bbb~~~3",
-          "196",
+          "208",
         ],
       ],
       "type": "elementpath",
@@ -7996,7 +7996,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f/aaa~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~2": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -8297,7 +8297,7 @@ Object {
         ],
         Array [
           "zzz",
-          "67f",
+          "c73",
           "aaa~~~2",
         ],
       ],
@@ -8372,7 +8372,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f/aaa~~~2/9d2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~2/b39": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -8642,9 +8642,9 @@ Object {
         ],
         Array [
           "zzz",
-          "67f",
+          "c73",
           "aaa~~~2",
-          "9d2",
+          "b39",
         ],
       ],
       "type": "elementpath",
@@ -8714,7 +8714,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f/aaa~~~2/9d2/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~2/b39/bbb~~~1": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -8827,9 +8827,9 @@ Object {
         ],
         Array [
           "zzz",
-          "67f",
+          "c73",
           "aaa~~~2",
-          "9d2",
+          "b39",
           "bbb~~~1",
         ],
       ],
@@ -8904,7 +8904,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f/aaa~~~2/9d2/bbb~~~1/196": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~2/b39/bbb~~~1/208": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -8986,11 +8986,11 @@ Object {
         ],
         Array [
           "zzz",
-          "67f",
+          "c73",
           "aaa~~~2",
-          "9d2",
+          "b39",
           "bbb~~~1",
-          "196",
+          "208",
         ],
       ],
       "type": "elementpath",
@@ -9060,7 +9060,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f/aaa~~~2/9d2/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~2/b39/bbb~~~2": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -9173,9 +9173,9 @@ Object {
         ],
         Array [
           "zzz",
-          "67f",
+          "c73",
           "aaa~~~2",
-          "9d2",
+          "b39",
           "bbb~~~2",
         ],
       ],
@@ -9250,7 +9250,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f/aaa~~~2/9d2/bbb~~~2/196": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~2/b39/bbb~~~2/208": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -9332,11 +9332,11 @@ Object {
         ],
         Array [
           "zzz",
-          "67f",
+          "c73",
           "aaa~~~2",
-          "9d2",
+          "b39",
           "bbb~~~2",
-          "196",
+          "208",
         ],
       ],
       "type": "elementpath",
@@ -9406,7 +9406,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f/aaa~~~2/9d2/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~2/b39/bbb~~~3": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -9519,9 +9519,9 @@ Object {
         ],
         Array [
           "zzz",
-          "67f",
+          "c73",
           "aaa~~~2",
-          "9d2",
+          "b39",
           "bbb~~~3",
         ],
       ],
@@ -9596,7 +9596,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f/aaa~~~2/9d2/bbb~~~3/196": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~2/b39/bbb~~~3/208": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -9678,11 +9678,11 @@ Object {
         ],
         Array [
           "zzz",
-          "67f",
+          "c73",
           "aaa~~~2",
-          "9d2",
+          "b39",
           "bbb~~~3",
-          "196",
+          "208",
         ],
       ],
       "type": "elementpath",
@@ -9752,7 +9752,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f/aaa~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~3": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -10053,7 +10053,7 @@ Object {
         ],
         Array [
           "zzz",
-          "67f",
+          "c73",
           "aaa~~~3",
         ],
       ],
@@ -10128,7 +10128,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f/aaa~~~3/9d2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~3/b39": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -10398,9 +10398,9 @@ Object {
         ],
         Array [
           "zzz",
-          "67f",
+          "c73",
           "aaa~~~3",
-          "9d2",
+          "b39",
         ],
       ],
       "type": "elementpath",
@@ -10470,7 +10470,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f/aaa~~~3/9d2/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~3/b39/bbb~~~1": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -10583,9 +10583,9 @@ Object {
         ],
         Array [
           "zzz",
-          "67f",
+          "c73",
           "aaa~~~3",
-          "9d2",
+          "b39",
           "bbb~~~1",
         ],
       ],
@@ -10660,7 +10660,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f/aaa~~~3/9d2/bbb~~~1/196": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~3/b39/bbb~~~1/208": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -10742,11 +10742,11 @@ Object {
         ],
         Array [
           "zzz",
-          "67f",
+          "c73",
           "aaa~~~3",
-          "9d2",
+          "b39",
           "bbb~~~1",
-          "196",
+          "208",
         ],
       ],
       "type": "elementpath",
@@ -10816,7 +10816,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f/aaa~~~3/9d2/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~3/b39/bbb~~~2": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -10929,9 +10929,9 @@ Object {
         ],
         Array [
           "zzz",
-          "67f",
+          "c73",
           "aaa~~~3",
-          "9d2",
+          "b39",
           "bbb~~~2",
         ],
       ],
@@ -11006,7 +11006,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f/aaa~~~3/9d2/bbb~~~2/196": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~3/b39/bbb~~~2/208": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -11088,11 +11088,11 @@ Object {
         ],
         Array [
           "zzz",
-          "67f",
+          "c73",
           "aaa~~~3",
-          "9d2",
+          "b39",
           "bbb~~~2",
-          "196",
+          "208",
         ],
       ],
       "type": "elementpath",
@@ -11162,7 +11162,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f/aaa~~~3/9d2/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~3/b39/bbb~~~3": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -11275,9 +11275,9 @@ Object {
         ],
         Array [
           "zzz",
-          "67f",
+          "c73",
           "aaa~~~3",
-          "9d2",
+          "b39",
           "bbb~~~3",
         ],
       ],
@@ -11352,7 +11352,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/67f/aaa~~~3/9d2/bbb~~~3/196": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~3/b39/bbb~~~3/208": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -11434,11 +11434,11 @@ Object {
         ],
         Array [
           "zzz",
-          "67f",
+          "c73",
           "aaa~~~3",
-          "9d2",
+          "b39",
           "bbb~~~3",
-          "196",
+          "208",
         ],
       ],
       "type": "elementpath",
@@ -12967,7 +12967,7 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are not the ap
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/689 utopia-storyboard-uid/scene-aaa/app-entity:aaa/689/bbb\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/9f4 utopia-storyboard-uid/scene-aaa/app-entity:aaa/9f4/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -13000,19 +13000,19 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are not the ap
       >
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/689/bbb~~~1:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/9f4/bbb~~~1:xxx\\"
         >
           n1
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/689/bbb~~~2:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/9f4/bbb~~~2:xxx\\"
         >
           n2
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/689/bbb~~~3:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/9f4/bbb~~~3:xxx\\"
         >
           n3
         </div>
@@ -13729,7 +13729,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/689": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/9f4": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -13990,7 +13990,7 @@ Object {
         ],
         Array [
           "aaa",
-          "689",
+          "9f4",
         ],
       ],
       "type": "elementpath",
@@ -14060,7 +14060,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/689/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/9f4/bbb~~~1": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -14175,7 +14175,7 @@ Object {
         ],
         Array [
           "aaa",
-          "689",
+          "9f4",
           "bbb~~~1",
         ],
       ],
@@ -14250,7 +14250,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/689/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/9f4/bbb~~~2": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -14365,7 +14365,7 @@ Object {
         ],
         Array [
           "aaa",
-          "689",
+          "9f4",
           "bbb~~~2",
         ],
       ],
@@ -14440,7 +14440,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/689/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/9f4/bbb~~~3": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -14555,7 +14555,7 @@ Object {
         ],
         Array [
           "aaa",
-          "689",
+          "9f4",
           "bbb~~~3",
         ],
       ],
@@ -14639,7 +14639,7 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are undefined 
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/ed5 utopia-storyboard-uid/scene-aaa/app-entity:aaa/ed5/bbb\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/174 utopia-storyboard-uid/scene-aaa/app-entity:aaa/174/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -14672,19 +14672,19 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are undefined 
       >
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/ed5/bbb~~~1:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/174/bbb~~~1:xxx\\"
         >
           n1
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/ed5/bbb~~~2:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/174/bbb~~~2:xxx\\"
         >
           n2
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/ed5/bbb~~~3:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/174/bbb~~~3:xxx\\"
         >
           n3
         </div>
@@ -15401,7 +15401,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/ed5": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/174": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -15662,7 +15662,7 @@ Object {
         ],
         Array [
           "aaa",
-          "ed5",
+          "174",
         ],
       ],
       "type": "elementpath",
@@ -15732,7 +15732,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/ed5/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/174/bbb~~~1": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -15847,7 +15847,7 @@ Object {
         ],
         Array [
           "aaa",
-          "ed5",
+          "174",
           "bbb~~~1",
         ],
       ],
@@ -15922,7 +15922,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/ed5/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/174/bbb~~~2": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -16037,7 +16037,7 @@ Object {
         ],
         Array [
           "aaa",
-          "ed5",
+          "174",
           "bbb~~~2",
         ],
       ],
@@ -16112,7 +16112,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/ed5/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/174/bbb~~~3": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -16227,7 +16227,7 @@ Object {
         ],
         Array [
           "aaa",
-          "ed5",
+          "174",
           "bbb~~~3",
         ],
       ],
@@ -17139,7 +17139,7 @@ exports[`UiJsxCanvas render function component works inside a map 1`] = `
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/003 utopia-storyboard-uid/scene-aaa/app-entity:zzz/003/aaa\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/0f5 utopia-storyboard-uid/scene-aaa/app-entity:zzz/0f5/aaa\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -17172,13 +17172,13 @@ exports[`UiJsxCanvas render function component works inside a map 1`] = `
       >
         <div
           data-uid=\\"ccc\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/003/aaa~~~1:ccc\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/0f5/aaa~~~1:ccc\\"
         >
           Thing
         </div>
         <div
           data-uid=\\"ccc\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/003/aaa~~~2:ccc\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/0f5/aaa~~~2:ccc\\"
         >
           Thing
         </div>
@@ -17817,7 +17817,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/003": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/0f5": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -18001,7 +18001,7 @@ Object {
         ],
         Array [
           "zzz",
-          "003",
+          "0f5",
         ],
       ],
       "type": "elementpath",
@@ -18071,7 +18071,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/003/aaa~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/0f5/aaa~~~1": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -18120,7 +18120,7 @@ Object {
         ],
         Array [
           "zzz",
-          "003",
+          "0f5",
           "aaa~~~1",
         ],
       ],
@@ -18195,7 +18195,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/003/aaa~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/0f5/aaa~~~2": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -18244,7 +18244,7 @@ Object {
         ],
         Array [
           "zzz",
-          "003",
+          "0f5",
           "aaa~~~2",
         ],
       ],
@@ -23523,7 +23523,7 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/2cc utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/2cc/834 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/2cc/834/20b utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/2cc/999 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/2cc/999/000\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/834 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/834/3d0 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999/000\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -23579,32 +23579,32 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
           <div
             data-uid=\\"834~~~1\\"
             data-label=\\"Copy\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/2cc/834~~~1\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/834~~~1\\"
           >
             Copy
           </div>
           <div
             data-uid=\\"999~~~2\\"
             data-label=\\"⌘,⎇,C\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/2cc/999~~~2\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~2\\"
           >
             <span
               data-uid=\\"6a8\\"
-              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/2cc/999~~~2/000:6a8\\"
+              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~2/000:6a8\\"
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~1\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/2cc/999~~~2/000:6a8/e42/726~~~1\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~2/000:6a8/205/726~~~1\\"
                 >⌘</span
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~2\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/2cc/999~~~2/000:6a8/e42/726~~~2\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~2/000:6a8/205/726~~~2\\"
                 >⎇</span
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~3\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/2cc/999~~~2/000:6a8/e42/726~~~3\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~2/000:6a8/205/726~~~3\\"
                 >C</span
               ></span
             >
@@ -23612,32 +23612,32 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
           <div
             data-uid=\\"834~~~3\\"
             data-label=\\"Paste\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/2cc/834~~~3\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/834~~~3\\"
           >
             Paste
           </div>
           <div
             data-uid=\\"999~~~4\\"
             data-label=\\"⌘⎇V\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/2cc/999~~~4\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~4\\"
           >
             <span
               data-uid=\\"6a8\\"
-              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/2cc/999~~~4/000:6a8\\"
+              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~4/000:6a8\\"
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~1\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/2cc/999~~~4/000:6a8/e42/726~~~1\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~4/000:6a8/205/726~~~1\\"
                 >⌘</span
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~2\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/2cc/999~~~4/000:6a8/e42/726~~~2\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~4/000:6a8/205/726~~~2\\"
                 >⎇</span
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~3\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/2cc/999~~~4/000:6a8/e42/726~~~3\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~4/000:6a8/205/726~~~3\\"
                 >V</span
               ></span
             >
@@ -23645,32 +23645,32 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
           <div
             data-uid=\\"834~~~5\\"
             data-label=\\"Cut\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/2cc/834~~~5\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/834~~~5\\"
           >
             Cut
           </div>
           <div
             data-uid=\\"999~~~6\\"
             data-label=\\"⌘⎇C\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/2cc/999~~~6\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~6\\"
           >
             <span
               data-uid=\\"6a8\\"
-              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/2cc/999~~~6/000:6a8\\"
+              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~6/000:6a8\\"
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~1\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/2cc/999~~~6/000:6a8/e42/726~~~1\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~6/000:6a8/205/726~~~1\\"
                 >⌘</span
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~2\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/2cc/999~~~6/000:6a8/e42/726~~~2\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~6/000:6a8/205/726~~~2\\"
                 >⎇</span
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~3\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/2cc/999~~~6/000:6a8/e42/726~~~3\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~6/000:6a8/205/726~~~3\\"
                 >C</span
               ></span
             >
@@ -27369,7 +27369,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/2cc": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -28711,7 +28711,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "2cc",
+          "6c9",
         ],
       ],
       "type": "elementpath",
@@ -28781,7 +28781,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/2cc/834~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/834~~~1": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -29300,7 +29300,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "2cc",
+          "6c9",
           "834~~~1",
         ],
       ],
@@ -29375,7 +29375,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/2cc/834~~~1/20b": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/834~~~1/3d0": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -29625,9 +29625,9 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "2cc",
+          "6c9",
           "834~~~1",
-          "20b",
+          "3d0",
         ],
       ],
       "type": "elementpath",
@@ -29697,7 +29697,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/2cc/834~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/834~~~3": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -30216,7 +30216,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "2cc",
+          "6c9",
           "834~~~3",
         ],
       ],
@@ -30291,7 +30291,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/2cc/834~~~3/20b": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/834~~~3/3d0": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -30541,9 +30541,9 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "2cc",
+          "6c9",
           "834~~~3",
-          "20b",
+          "3d0",
         ],
       ],
       "type": "elementpath",
@@ -30613,7 +30613,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/2cc/834~~~5": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/834~~~5": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -31132,7 +31132,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "2cc",
+          "6c9",
           "834~~~5",
         ],
       ],
@@ -31207,7 +31207,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/2cc/834~~~5/20b": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/834~~~5/3d0": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -31457,9 +31457,9 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "2cc",
+          "6c9",
           "834~~~5",
-          "20b",
+          "3d0",
         ],
       ],
       "type": "elementpath",
@@ -31529,7 +31529,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/2cc/999~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~2": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -32086,7 +32086,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "2cc",
+          "6c9",
           "999~~~2",
         ],
       ],
@@ -32161,7 +32161,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/2cc/999~~~2/000": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~2/000": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -32449,7 +32449,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "2cc",
+          "6c9",
           "999~~~2",
           "000",
         ],
@@ -32525,7 +32525,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/2cc/999~~~4": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~4": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -33082,7 +33082,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "2cc",
+          "6c9",
           "999~~~4",
         ],
       ],
@@ -33157,7 +33157,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/2cc/999~~~4/000": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~4/000": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -33445,7 +33445,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "2cc",
+          "6c9",
           "999~~~4",
           "000",
         ],
@@ -33521,7 +33521,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/2cc/999~~~6": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~6": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -34078,7 +34078,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "2cc",
+          "6c9",
           "999~~~6",
         ],
       ],
@@ -34153,7 +34153,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/2cc/999~~~6/000": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~6/000": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -34441,7 +34441,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "2cc",
+          "6c9",
           "999~~~6",
           "000",
         ],
@@ -39686,7 +39686,7 @@ exports[`UiJsxCanvas render renders a canvas testing a multitude of export style
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:73a utopia-storyboard-uid/scene-aaa/app-entity:73a/bad utopia-storyboard-uid/scene-aaa/app-entity:73a/42d utopia-storyboard-uid/scene-aaa/app-entity:73a/4c2 utopia-storyboard-uid/scene-aaa/app-entity:73a/def utopia-storyboard-uid/scene-aaa/app-entity:73a/755 utopia-storyboard-uid/scene-aaa/app-entity:73a/d5a utopia-storyboard-uid/scene-aaa/app-entity:73a/53f utopia-storyboard-uid/scene-aaa/app-entity:73a/86e utopia-storyboard-uid/scene-aaa/app-entity:73a/199 utopia-storyboard-uid/scene-aaa/app-entity:73a/199/86b utopia-storyboard-uid/scene-aaa/app-entity:73a/455 utopia-storyboard-uid/scene-aaa/app-entity:73a/3d8 utopia-storyboard-uid/scene-aaa/app-entity:73a/54d utopia-storyboard-uid/scene-aaa/app-entity:73a/059 utopia-storyboard-uid/scene-aaa/app-entity:73a/d9d utopia-storyboard-uid/scene-aaa/app-entity:73a/c60 utopia-storyboard-uid/scene-aaa/app-entity:73a/d9b utopia-storyboard-uid/scene-aaa/app-entity:73a/16b utopia-storyboard-uid/scene-aaa/app-entity:73a/eac utopia-storyboard-uid/scene-aaa/app-entity:73a/038\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:74b utopia-storyboard-uid/scene-aaa/app-entity:74b/0dc utopia-storyboard-uid/scene-aaa/app-entity:74b/ec8 utopia-storyboard-uid/scene-aaa/app-entity:74b/a35 utopia-storyboard-uid/scene-aaa/app-entity:74b/61e utopia-storyboard-uid/scene-aaa/app-entity:74b/4b6 utopia-storyboard-uid/scene-aaa/app-entity:74b/540 utopia-storyboard-uid/scene-aaa/app-entity:74b/bb2 utopia-storyboard-uid/scene-aaa/app-entity:74b/002 utopia-storyboard-uid/scene-aaa/app-entity:74b/3e0 utopia-storyboard-uid/scene-aaa/app-entity:74b/3e0/44c utopia-storyboard-uid/scene-aaa/app-entity:74b/2e4 utopia-storyboard-uid/scene-aaa/app-entity:74b/843 utopia-storyboard-uid/scene-aaa/app-entity:74b/3bc utopia-storyboard-uid/scene-aaa/app-entity:74b/5f7 utopia-storyboard-uid/scene-aaa/app-entity:74b/c19 utopia-storyboard-uid/scene-aaa/app-entity:74b/447 utopia-storyboard-uid/scene-aaa/app-entity:74b/1a2 utopia-storyboard-uid/scene-aaa/app-entity:74b/aeb utopia-storyboard-uid/scene-aaa/app-entity:74b/24d utopia-storyboard-uid/scene-aaa/app-entity:74b/0f9\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -39714,120 +39714,120 @@ exports[`UiJsxCanvas render renders a canvas testing a multitude of export style
       data-uid=\\"scene-aaa\\"
     >
       <div
-        data-uid=\\"73a\\"
-        data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:73a\\"
+        data-uid=\\"74b\\"
+        data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b\\"
       >
         <div
-          data-uid=\\"bad\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:73a/bad\\"
+          data-uid=\\"0dc\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/0dc\\"
         >
           Originally Unassigned
         </div>
         <div
-          data-uid=\\"34b\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:73a/42d:34b\\"
+          data-uid=\\"e07\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/ec8:e07\\"
         >
           Originally Assigned
         </div>
         <div
-          data-uid=\\"b93\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:73a/4c2:b93\\"
+          data-uid=\\"e0c\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/a35:e0c\\"
         >
           Named Function
         </div>
         <div
-          data-uid=\\"def\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:73a/def\\"
+          data-uid=\\"61e\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/61e\\"
         >
           Named Class
         </div>
         <div
-          data-uid=\\"7fe\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:73a/755:7fe\\"
+          data-uid=\\"d51\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/4b6:d51\\"
         >
           Named Export
         </div>
         <div
-          data-uid=\\"6d4\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:73a/d5a:6d4\\"
+          data-uid=\\"cf1\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/540:cf1\\"
         >
           Renamed Export
         </div>
         <div
-          data-uid=\\"53f\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:73a/53f\\"
+          data-uid=\\"bb2\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/bb2\\"
         >
           First In Structure
         </div>
         <div
-          data-uid=\\"86e\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:73a/86e\\"
+          data-uid=\\"002\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/002\\"
         >
           Second In Structure
         </div>
         <div
-          data-uid=\\"199\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:73a/199\\"
+          data-uid=\\"3e0\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/3e0\\"
         >
           The Number Is 4
         </div>
         <div
-          data-uid=\\"b73\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:73a/455:b73\\"
+          data-uid=\\"db3\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/2e4:db3\\"
         >
           Default Function
         </div>
         <div
-          data-uid=\\"3d8\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:73a/3d8\\"
+          data-uid=\\"843\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/843\\"
         >
           Export Default Class
         </div>
         <div
-          data-uid=\\"7f7\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:73a/54d:7f7\\"
+          data-uid=\\"a35\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/3bc:a35\\"
         >
           Default Named Function
         </div>
         <div
-          data-uid=\\"35a\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:73a/059:35a\\"
+          data-uid=\\"22d\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/5f7:22d\\"
         >
           Defined Then Default Exported
         </div>
         <div
-          data-uid=\\"f46\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:73a/d9d:f46\\"
+          data-uid=\\"6a0\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/c19:6a0\\"
         >
           Named As Default
         </div>
         <div
-          data-uid=\\"34b\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:73a/c60:34b\\"
+          data-uid=\\"e07\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/447:e07\\"
         >
           Originally Assigned
         </div>
         <div
-          data-uid=\\"34b\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:73a/d9b:34b\\"
+          data-uid=\\"e07\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/1a2:e07\\"
         >
           Originally Assigned
         </div>
         <div
-          data-uid=\\"34b\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:73a/16b:34b\\"
+          data-uid=\\"e07\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/aeb:e07\\"
         >
           Originally Assigned
         </div>
         <div
-          data-uid=\\"34b\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:73a/eac:34b\\"
+          data-uid=\\"e07\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/24d:e07\\"
         >
           Originally Assigned
         </div>
         <div
-          data-uid=\\"b73\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:73a/038:b73\\"
+          data-uid=\\"db3\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/0f9:db3\\"
         >
           Default Function
         </div>
@@ -40175,7 +40175,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:73a": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:74b": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -40209,7 +40209,7 @@ Object {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "bad",
+                  "value": "0dc",
                 },
               },
             ],
@@ -40239,7 +40239,7 @@ Object {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "42d",
+                  "value": "ec8",
                 },
               },
             ],
@@ -40269,7 +40269,7 @@ Object {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "4c2",
+                  "value": "a35",
                 },
               },
             ],
@@ -40299,7 +40299,7 @@ Object {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "def",
+                  "value": "61e",
                 },
               },
             ],
@@ -40329,7 +40329,7 @@ Object {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "755",
+                  "value": "4b6",
                 },
               },
             ],
@@ -40359,7 +40359,7 @@ Object {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "d5a",
+                  "value": "540",
                 },
               },
             ],
@@ -40389,7 +40389,7 @@ Object {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "53f",
+                  "value": "bb2",
                 },
               },
             ],
@@ -40419,7 +40419,7 @@ Object {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "86e",
+                  "value": "002",
                 },
               },
             ],
@@ -40518,7 +40518,7 @@ export var App = (props) => {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "199",
+                  "value": "3e0",
                 },
               },
             ],
@@ -40548,7 +40548,7 @@ export var App = (props) => {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "455",
+                  "value": "2e4",
                 },
               },
             ],
@@ -40578,7 +40578,7 @@ export var App = (props) => {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "3d8",
+                  "value": "843",
                 },
               },
             ],
@@ -40608,7 +40608,7 @@ export var App = (props) => {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "54d",
+                  "value": "3bc",
                 },
               },
             ],
@@ -40638,7 +40638,7 @@ export var App = (props) => {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "059",
+                  "value": "5f7",
                 },
               },
             ],
@@ -40668,7 +40668,7 @@ export var App = (props) => {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "d9d",
+                  "value": "c19",
                 },
               },
             ],
@@ -40700,7 +40700,7 @@ export var App = (props) => {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "c60",
+                  "value": "447",
                 },
               },
             ],
@@ -40732,7 +40732,7 @@ export var App = (props) => {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "d9b",
+                  "value": "1a2",
                 },
               },
             ],
@@ -40762,7 +40762,7 @@ export var App = (props) => {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "16b",
+                  "value": "aeb",
                 },
               },
             ],
@@ -40792,7 +40792,7 @@ export var App = (props) => {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "eac",
+                  "value": "24d",
                 },
               },
             ],
@@ -40822,7 +40822,7 @@ export var App = (props) => {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "038",
+                  "value": "0f9",
                 },
               },
             ],
@@ -40851,7 +40851,7 @@ export var App = (props) => {
               },
               "type": "ATTRIBUTE_VALUE",
               "uid": "",
-              "value": "73a",
+              "value": "74b",
             },
           },
         ],
@@ -40867,7 +40867,7 @@ export var App = (props) => {
           "app-entity",
         ],
         Array [
-          "73a",
+          "74b",
         ],
       ],
       "type": "elementpath",
@@ -40941,7 +40941,255 @@ export var App = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:73a/038": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:74b/002": Object {
+    "assignedToProp": null,
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "conditionValue": "not-a-conditional",
+    "earlyReturn": null,
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "name": Object {
+          "baseVariable": "SecondInStructure",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "uid": "",
+              "value": "002",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+        Array [
+          "74b",
+          "002",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "exportedName": "SecondInStructure",
+      "filePath": "/destructuredassignment",
+      "type": "IMPORTED_ORIGIN",
+      "variableName": "SecondInStructure",
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "nonRoundedGlobalFrame": null,
+    "specialSizeMeasurements": Object {
+      "alignItems": null,
+      "borderRadius": null,
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
+      "coordinateSystemBounds": null,
+      "display": "initial",
+      "flexDirection": null,
+      "float": "none",
+      "fontSize": null,
+      "fontStyle": null,
+      "fontWeight": null,
+      "gap": null,
+      "globalContentBoxForChildren": null,
+      "globalFrameWithTextContent": null,
+      "hasPositionOffset": false,
+      "hasTransform": false,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "justifyContent": null,
+      "layoutSystemForChildren": null,
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentFlexGap": 0,
+      "parentHugsOnMainAxis": false,
+      "parentJustifyContent": null,
+      "parentLayoutSystem": "flow",
+      "parentPadding": Object {},
+      "parentTextDirection": "ltr",
+      "position": "static",
+      "providesBoundsForAbsoluteChildren": false,
+      "renderedChildrenCount": 0,
+      "textBounds": null,
+      "textDecorationLine": null,
+      "usesParentBounds": false,
+    },
+    "textContent": null,
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity:74b/0dc": Object {
+    "assignedToProp": null,
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "conditionValue": "not-a-conditional",
+    "earlyReturn": null,
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "name": Object {
+          "baseVariable": "OriginallyUnassigned1",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "uid": "",
+              "value": "0dc",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+        Array [
+          "74b",
+          "0dc",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "exportedName": "OriginallyUnassigned1",
+      "filePath": "/originallyunassigned",
+      "type": "IMPORTED_ORIGIN",
+      "variableName": "OriginallyUnassigned1",
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "nonRoundedGlobalFrame": null,
+    "specialSizeMeasurements": Object {
+      "alignItems": null,
+      "borderRadius": null,
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
+      "coordinateSystemBounds": null,
+      "display": "initial",
+      "flexDirection": null,
+      "float": "none",
+      "fontSize": null,
+      "fontStyle": null,
+      "fontWeight": null,
+      "gap": null,
+      "globalContentBoxForChildren": null,
+      "globalFrameWithTextContent": null,
+      "hasPositionOffset": false,
+      "hasTransform": false,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "justifyContent": null,
+      "layoutSystemForChildren": null,
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentFlexGap": 0,
+      "parentHugsOnMainAxis": false,
+      "parentJustifyContent": null,
+      "parentLayoutSystem": "flow",
+      "parentPadding": Object {},
+      "parentTextDirection": "ltr",
+      "position": "static",
+      "providesBoundsForAbsoluteChildren": false,
+      "renderedChildrenCount": 0,
+      "textBounds": null,
+      "textDecorationLine": null,
+      "usesParentBounds": false,
+    },
+    "textContent": null,
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity:74b/0f9": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -40973,7 +41221,7 @@ export var App = (props) => {
               },
               "type": "ATTRIBUTE_VALUE",
               "uid": "",
-              "value": "038",
+              "value": "0f9",
             },
           },
         ],
@@ -40989,8 +41237,8 @@ export var App = (props) => {
           "app-entity",
         ],
         Array [
-          "73a",
-          "038",
+          "74b",
+          "0f9",
         ],
       ],
       "type": "elementpath",
@@ -41065,7 +41313,7 @@ export var App = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:73a/059": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:74b/1a2": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -41077,7 +41325,133 @@ export var App = (props) => {
       "value": Object {
         "children": Array [],
         "name": Object {
-          "baseVariable": "DefinedThenDefaultExported",
+          "baseVariable": "assigned",
+          "propertyPath": Object {
+            "propertyElements": Array [
+              "OriginallyAssigned1",
+            ],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "uid": "",
+              "value": "1a2",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+        Array [
+          "74b",
+          "1a2",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "exportedName": "assigned",
+      "filePath": "/reexportmoduleintonamedexport",
+      "type": "IMPORTED_ORIGIN",
+      "variableName": "assigned",
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "nonRoundedGlobalFrame": null,
+    "specialSizeMeasurements": Object {
+      "alignItems": null,
+      "borderRadius": null,
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
+      "coordinateSystemBounds": null,
+      "display": "initial",
+      "flexDirection": null,
+      "float": "none",
+      "fontSize": null,
+      "fontStyle": null,
+      "fontWeight": null,
+      "gap": null,
+      "globalContentBoxForChildren": null,
+      "globalFrameWithTextContent": null,
+      "hasPositionOffset": false,
+      "hasTransform": false,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "justifyContent": null,
+      "layoutSystemForChildren": null,
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentFlexGap": 0,
+      "parentHugsOnMainAxis": false,
+      "parentJustifyContent": null,
+      "parentLayoutSystem": "flow",
+      "parentPadding": Object {},
+      "parentTextDirection": "ltr",
+      "position": "static",
+      "providesBoundsForAbsoluteChildren": false,
+      "renderedChildrenCount": 0,
+      "textBounds": null,
+      "textDecorationLine": null,
+      "usesParentBounds": false,
+    },
+    "textContent": null,
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity:74b/24d": Object {
+    "assignedToProp": null,
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "conditionValue": "not-a-conditional",
+    "earlyReturn": null,
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "name": Object {
+          "baseVariable": "NewlyAssigned",
           "propertyPath": Object {
             "propertyElements": Array [],
           },
@@ -41097,7 +41471,7 @@ export var App = (props) => {
               },
               "type": "ATTRIBUTE_VALUE",
               "uid": "",
-              "value": "059",
+              "value": "24d",
             },
           },
         ],
@@ -41113,8 +41487,132 @@ export var App = (props) => {
           "app-entity",
         ],
         Array [
-          "73a",
-          "059",
+          "74b",
+          "24d",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "exportedName": "NewlyAssigned",
+      "filePath": "/reexportspecificrenamed",
+      "type": "IMPORTED_ORIGIN",
+      "variableName": "NewlyAssigned",
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "nonRoundedGlobalFrame": null,
+    "specialSizeMeasurements": Object {
+      "alignItems": null,
+      "borderRadius": null,
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
+      "coordinateSystemBounds": null,
+      "display": "initial",
+      "flexDirection": null,
+      "float": "none",
+      "fontSize": null,
+      "fontStyle": null,
+      "fontWeight": null,
+      "gap": null,
+      "globalContentBoxForChildren": null,
+      "globalFrameWithTextContent": null,
+      "hasPositionOffset": false,
+      "hasTransform": false,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "justifyContent": null,
+      "layoutSystemForChildren": null,
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentFlexGap": 0,
+      "parentHugsOnMainAxis": false,
+      "parentJustifyContent": null,
+      "parentLayoutSystem": "flow",
+      "parentPadding": Object {},
+      "parentTextDirection": "ltr",
+      "position": "static",
+      "providesBoundsForAbsoluteChildren": false,
+      "renderedChildrenCount": 0,
+      "textBounds": null,
+      "textDecorationLine": null,
+      "usesParentBounds": false,
+    },
+    "textContent": null,
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity:74b/2e4": Object {
+    "assignedToProp": null,
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "conditionValue": "not-a-conditional",
+    "earlyReturn": null,
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "name": Object {
+          "baseVariable": "DefaultFunction",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "uid": "",
+              "value": "2e4",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+        Array [
+          "74b",
+          "2e4",
         ],
       ],
       "type": "elementpath",
@@ -41122,9 +41620,9 @@ export var App = (props) => {
     "globalFrame": null,
     "importInfo": Object {
       "exportedName": null,
-      "filePath": "/definedthendefaultexported",
+      "filePath": "/defaultfunction",
       "type": "IMPORTED_ORIGIN",
-      "variableName": "DefinedThenDefaultExported",
+      "variableName": "DefaultFunction",
     },
     "isEmotionOrStyledComponent": false,
     "label": null,
@@ -41189,7 +41687,7 @@ export var App = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:73a/16b": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:74b/3bc": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -41201,7 +41699,7 @@ export var App = (props) => {
       "value": Object {
         "children": Array [],
         "name": Object {
-          "baseVariable": "OriginallyAssigned2",
+          "baseVariable": "DefaultNamedFunction",
           "propertyPath": Object {
             "propertyElements": Array [],
           },
@@ -41221,7 +41719,7 @@ export var App = (props) => {
               },
               "type": "ATTRIBUTE_VALUE",
               "uid": "",
-              "value": "16b",
+              "value": "3bc",
             },
           },
         ],
@@ -41237,18 +41735,18 @@ export var App = (props) => {
           "app-entity",
         ],
         Array [
-          "73a",
-          "16b",
+          "74b",
+          "3bc",
         ],
       ],
       "type": "elementpath",
     },
     "globalFrame": null,
     "importInfo": Object {
-      "exportedName": "OriginallyAssigned1",
-      "filePath": "/reexportspecificnamed",
+      "exportedName": null,
+      "filePath": "/defaultnamedfunction",
       "type": "IMPORTED_ORIGIN",
-      "variableName": "OriginallyAssigned2",
+      "variableName": "DefaultNamedFunction",
     },
     "isEmotionOrStyledComponent": false,
     "label": null,
@@ -41313,7 +41811,7 @@ export var App = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:73a/199": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:74b/3e0": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -41414,7 +41912,7 @@ export var App = (props) => {
               },
               "type": "ATTRIBUTE_VALUE",
               "uid": "",
-              "value": "199",
+              "value": "3e0",
             },
           },
         ],
@@ -41430,8 +41928,8 @@ export var App = (props) => {
           "app-entity",
         ],
         Array [
-          "73a",
-          "199",
+          "74b",
+          "3e0",
         ],
       ],
       "type": "elementpath",
@@ -41505,7 +42003,7 @@ export var App = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:73a/199/86b": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:74b/3e0/44c": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -41586,9 +42084,9 @@ export var App = (props) => {
           "app-entity",
         ],
         Array [
-          "73a",
-          "199",
-          "86b",
+          "74b",
+          "3e0",
+          "44c",
         ],
       ],
       "type": "elementpath",
@@ -41658,1123 +42156,7 @@ export var App = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:73a/3d8": Object {
-    "assignedToProp": null,
-    "attributeMetadatada": Object {},
-    "componentInstance": false,
-    "computedStyle": Object {},
-    "conditionValue": "not-a-conditional",
-    "earlyReturn": null,
-    "element": Object {
-      "type": "RIGHT",
-      "value": Object {
-        "children": Array [],
-        "name": Object {
-          "baseVariable": "DefaultClass",
-          "propertyPath": Object {
-            "propertyElements": Array [],
-          },
-        },
-        "props": Array [
-          Object {
-            "comments": Object {
-              "leadingComments": Array [],
-              "trailingComments": Array [],
-            },
-            "key": "data-uid",
-            "type": "JSX_ATTRIBUTES_ENTRY",
-            "value": Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "type": "ATTRIBUTE_VALUE",
-              "uid": "",
-              "value": "3d8",
-            },
-          },
-        ],
-        "type": "JSX_ELEMENT",
-        "uid": "",
-      },
-    },
-    "elementPath": Object {
-      "parts": Array [
-        Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
-          "app-entity",
-        ],
-        Array [
-          "73a",
-          "3d8",
-        ],
-      ],
-      "type": "elementpath",
-    },
-    "globalFrame": null,
-    "importInfo": Object {
-      "exportedName": null,
-      "filePath": "/defaultclass",
-      "type": "IMPORTED_ORIGIN",
-      "variableName": "DefaultClass",
-    },
-    "isEmotionOrStyledComponent": false,
-    "label": null,
-    "localFrame": null,
-    "nonRoundedGlobalFrame": null,
-    "specialSizeMeasurements": Object {
-      "alignItems": null,
-      "borderRadius": null,
-      "clientHeight": 0,
-      "clientWidth": 0,
-      "closestOffsetParentPath": Object {
-        "parts": Array [],
-        "type": "elementpath",
-      },
-      "computedHugProperty": Object {
-        "height": null,
-        "width": null,
-      },
-      "coordinateSystemBounds": null,
-      "display": "initial",
-      "flexDirection": null,
-      "float": "none",
-      "fontSize": null,
-      "fontStyle": null,
-      "fontWeight": null,
-      "gap": null,
-      "globalContentBoxForChildren": null,
-      "globalFrameWithTextContent": null,
-      "hasPositionOffset": false,
-      "hasTransform": false,
-      "htmlElementName": "div",
-      "immediateParentBounds": Object {
-        "height": 0,
-        "width": 0,
-        "x": 0,
-        "y": 0,
-      },
-      "immediateParentProvidesLayout": true,
-      "justifyContent": null,
-      "layoutSystemForChildren": null,
-      "margin": Object {},
-      "naturalHeight": null,
-      "naturalWidth": null,
-      "offset": Object {
-        "x": 0,
-        "y": 0,
-      },
-      "padding": Object {},
-      "parentFlexDirection": null,
-      "parentFlexGap": 0,
-      "parentHugsOnMainAxis": false,
-      "parentJustifyContent": null,
-      "parentLayoutSystem": "flow",
-      "parentPadding": Object {},
-      "parentTextDirection": "ltr",
-      "position": "static",
-      "providesBoundsForAbsoluteChildren": false,
-      "renderedChildrenCount": 0,
-      "textBounds": null,
-      "textDecorationLine": null,
-      "usesParentBounds": false,
-    },
-    "textContent": null,
-  },
-  "utopia-storyboard-uid/scene-aaa/app-entity:73a/42d": Object {
-    "assignedToProp": null,
-    "attributeMetadatada": Object {},
-    "componentInstance": false,
-    "computedStyle": Object {},
-    "conditionValue": "not-a-conditional",
-    "earlyReturn": null,
-    "element": Object {
-      "type": "RIGHT",
-      "value": Object {
-        "children": Array [],
-        "name": Object {
-          "baseVariable": "OriginallyAssigned1",
-          "propertyPath": Object {
-            "propertyElements": Array [],
-          },
-        },
-        "props": Array [
-          Object {
-            "comments": Object {
-              "leadingComments": Array [],
-              "trailingComments": Array [],
-            },
-            "key": "data-uid",
-            "type": "JSX_ATTRIBUTES_ENTRY",
-            "value": Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "type": "ATTRIBUTE_VALUE",
-              "uid": "",
-              "value": "42d",
-            },
-          },
-        ],
-        "type": "JSX_ELEMENT",
-        "uid": "",
-      },
-    },
-    "elementPath": Object {
-      "parts": Array [
-        Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
-          "app-entity",
-        ],
-        Array [
-          "73a",
-          "42d",
-        ],
-      ],
-      "type": "elementpath",
-    },
-    "globalFrame": null,
-    "importInfo": Object {
-      "exportedName": "OriginallyAssigned1",
-      "filePath": "/originallyassigned",
-      "type": "IMPORTED_ORIGIN",
-      "variableName": "OriginallyAssigned1",
-    },
-    "isEmotionOrStyledComponent": false,
-    "label": null,
-    "localFrame": null,
-    "nonRoundedGlobalFrame": null,
-    "specialSizeMeasurements": Object {
-      "alignItems": null,
-      "borderRadius": null,
-      "clientHeight": 0,
-      "clientWidth": 0,
-      "closestOffsetParentPath": Object {
-        "parts": Array [],
-        "type": "elementpath",
-      },
-      "computedHugProperty": Object {
-        "height": null,
-        "width": null,
-      },
-      "coordinateSystemBounds": null,
-      "display": "initial",
-      "flexDirection": null,
-      "float": "none",
-      "fontSize": null,
-      "fontStyle": null,
-      "fontWeight": null,
-      "gap": null,
-      "globalContentBoxForChildren": null,
-      "globalFrameWithTextContent": null,
-      "hasPositionOffset": false,
-      "hasTransform": false,
-      "htmlElementName": "div",
-      "immediateParentBounds": Object {
-        "height": 0,
-        "width": 0,
-        "x": 0,
-        "y": 0,
-      },
-      "immediateParentProvidesLayout": true,
-      "justifyContent": null,
-      "layoutSystemForChildren": null,
-      "margin": Object {},
-      "naturalHeight": null,
-      "naturalWidth": null,
-      "offset": Object {
-        "x": 0,
-        "y": 0,
-      },
-      "padding": Object {},
-      "parentFlexDirection": null,
-      "parentFlexGap": 0,
-      "parentHugsOnMainAxis": false,
-      "parentJustifyContent": null,
-      "parentLayoutSystem": "flow",
-      "parentPadding": Object {},
-      "parentTextDirection": "ltr",
-      "position": "static",
-      "providesBoundsForAbsoluteChildren": false,
-      "renderedChildrenCount": 0,
-      "textBounds": null,
-      "textDecorationLine": null,
-      "usesParentBounds": false,
-    },
-    "textContent": null,
-  },
-  "utopia-storyboard-uid/scene-aaa/app-entity:73a/455": Object {
-    "assignedToProp": null,
-    "attributeMetadatada": Object {},
-    "componentInstance": false,
-    "computedStyle": Object {},
-    "conditionValue": "not-a-conditional",
-    "earlyReturn": null,
-    "element": Object {
-      "type": "RIGHT",
-      "value": Object {
-        "children": Array [],
-        "name": Object {
-          "baseVariable": "DefaultFunction",
-          "propertyPath": Object {
-            "propertyElements": Array [],
-          },
-        },
-        "props": Array [
-          Object {
-            "comments": Object {
-              "leadingComments": Array [],
-              "trailingComments": Array [],
-            },
-            "key": "data-uid",
-            "type": "JSX_ATTRIBUTES_ENTRY",
-            "value": Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "type": "ATTRIBUTE_VALUE",
-              "uid": "",
-              "value": "455",
-            },
-          },
-        ],
-        "type": "JSX_ELEMENT",
-        "uid": "",
-      },
-    },
-    "elementPath": Object {
-      "parts": Array [
-        Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
-          "app-entity",
-        ],
-        Array [
-          "73a",
-          "455",
-        ],
-      ],
-      "type": "elementpath",
-    },
-    "globalFrame": null,
-    "importInfo": Object {
-      "exportedName": null,
-      "filePath": "/defaultfunction",
-      "type": "IMPORTED_ORIGIN",
-      "variableName": "DefaultFunction",
-    },
-    "isEmotionOrStyledComponent": false,
-    "label": null,
-    "localFrame": null,
-    "nonRoundedGlobalFrame": null,
-    "specialSizeMeasurements": Object {
-      "alignItems": null,
-      "borderRadius": null,
-      "clientHeight": 0,
-      "clientWidth": 0,
-      "closestOffsetParentPath": Object {
-        "parts": Array [],
-        "type": "elementpath",
-      },
-      "computedHugProperty": Object {
-        "height": null,
-        "width": null,
-      },
-      "coordinateSystemBounds": null,
-      "display": "initial",
-      "flexDirection": null,
-      "float": "none",
-      "fontSize": null,
-      "fontStyle": null,
-      "fontWeight": null,
-      "gap": null,
-      "globalContentBoxForChildren": null,
-      "globalFrameWithTextContent": null,
-      "hasPositionOffset": false,
-      "hasTransform": false,
-      "htmlElementName": "div",
-      "immediateParentBounds": Object {
-        "height": 0,
-        "width": 0,
-        "x": 0,
-        "y": 0,
-      },
-      "immediateParentProvidesLayout": true,
-      "justifyContent": null,
-      "layoutSystemForChildren": null,
-      "margin": Object {},
-      "naturalHeight": null,
-      "naturalWidth": null,
-      "offset": Object {
-        "x": 0,
-        "y": 0,
-      },
-      "padding": Object {},
-      "parentFlexDirection": null,
-      "parentFlexGap": 0,
-      "parentHugsOnMainAxis": false,
-      "parentJustifyContent": null,
-      "parentLayoutSystem": "flow",
-      "parentPadding": Object {},
-      "parentTextDirection": "ltr",
-      "position": "static",
-      "providesBoundsForAbsoluteChildren": false,
-      "renderedChildrenCount": 0,
-      "textBounds": null,
-      "textDecorationLine": null,
-      "usesParentBounds": false,
-    },
-    "textContent": null,
-  },
-  "utopia-storyboard-uid/scene-aaa/app-entity:73a/4c2": Object {
-    "assignedToProp": null,
-    "attributeMetadatada": Object {},
-    "componentInstance": false,
-    "computedStyle": Object {},
-    "conditionValue": "not-a-conditional",
-    "earlyReturn": null,
-    "element": Object {
-      "type": "RIGHT",
-      "value": Object {
-        "children": Array [],
-        "name": Object {
-          "baseVariable": "NamedFunction",
-          "propertyPath": Object {
-            "propertyElements": Array [],
-          },
-        },
-        "props": Array [
-          Object {
-            "comments": Object {
-              "leadingComments": Array [],
-              "trailingComments": Array [],
-            },
-            "key": "data-uid",
-            "type": "JSX_ATTRIBUTES_ENTRY",
-            "value": Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "type": "ATTRIBUTE_VALUE",
-              "uid": "",
-              "value": "4c2",
-            },
-          },
-        ],
-        "type": "JSX_ELEMENT",
-        "uid": "",
-      },
-    },
-    "elementPath": Object {
-      "parts": Array [
-        Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
-          "app-entity",
-        ],
-        Array [
-          "73a",
-          "4c2",
-        ],
-      ],
-      "type": "elementpath",
-    },
-    "globalFrame": null,
-    "importInfo": Object {
-      "exportedName": "NamedFunction",
-      "filePath": "/namedfunction",
-      "type": "IMPORTED_ORIGIN",
-      "variableName": "NamedFunction",
-    },
-    "isEmotionOrStyledComponent": false,
-    "label": null,
-    "localFrame": null,
-    "nonRoundedGlobalFrame": null,
-    "specialSizeMeasurements": Object {
-      "alignItems": null,
-      "borderRadius": null,
-      "clientHeight": 0,
-      "clientWidth": 0,
-      "closestOffsetParentPath": Object {
-        "parts": Array [],
-        "type": "elementpath",
-      },
-      "computedHugProperty": Object {
-        "height": null,
-        "width": null,
-      },
-      "coordinateSystemBounds": null,
-      "display": "initial",
-      "flexDirection": null,
-      "float": "none",
-      "fontSize": null,
-      "fontStyle": null,
-      "fontWeight": null,
-      "gap": null,
-      "globalContentBoxForChildren": null,
-      "globalFrameWithTextContent": null,
-      "hasPositionOffset": false,
-      "hasTransform": false,
-      "htmlElementName": "div",
-      "immediateParentBounds": Object {
-        "height": 0,
-        "width": 0,
-        "x": 0,
-        "y": 0,
-      },
-      "immediateParentProvidesLayout": true,
-      "justifyContent": null,
-      "layoutSystemForChildren": null,
-      "margin": Object {},
-      "naturalHeight": null,
-      "naturalWidth": null,
-      "offset": Object {
-        "x": 0,
-        "y": 0,
-      },
-      "padding": Object {},
-      "parentFlexDirection": null,
-      "parentFlexGap": 0,
-      "parentHugsOnMainAxis": false,
-      "parentJustifyContent": null,
-      "parentLayoutSystem": "flow",
-      "parentPadding": Object {},
-      "parentTextDirection": "ltr",
-      "position": "static",
-      "providesBoundsForAbsoluteChildren": false,
-      "renderedChildrenCount": 0,
-      "textBounds": null,
-      "textDecorationLine": null,
-      "usesParentBounds": false,
-    },
-    "textContent": null,
-  },
-  "utopia-storyboard-uid/scene-aaa/app-entity:73a/53f": Object {
-    "assignedToProp": null,
-    "attributeMetadatada": Object {},
-    "componentInstance": false,
-    "computedStyle": Object {},
-    "conditionValue": "not-a-conditional",
-    "earlyReturn": null,
-    "element": Object {
-      "type": "RIGHT",
-      "value": Object {
-        "children": Array [],
-        "name": Object {
-          "baseVariable": "FirstInStructure",
-          "propertyPath": Object {
-            "propertyElements": Array [],
-          },
-        },
-        "props": Array [
-          Object {
-            "comments": Object {
-              "leadingComments": Array [],
-              "trailingComments": Array [],
-            },
-            "key": "data-uid",
-            "type": "JSX_ATTRIBUTES_ENTRY",
-            "value": Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "type": "ATTRIBUTE_VALUE",
-              "uid": "",
-              "value": "53f",
-            },
-          },
-        ],
-        "type": "JSX_ELEMENT",
-        "uid": "",
-      },
-    },
-    "elementPath": Object {
-      "parts": Array [
-        Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
-          "app-entity",
-        ],
-        Array [
-          "73a",
-          "53f",
-        ],
-      ],
-      "type": "elementpath",
-    },
-    "globalFrame": null,
-    "importInfo": Object {
-      "exportedName": "FirstInStructure",
-      "filePath": "/destructuredassignment",
-      "type": "IMPORTED_ORIGIN",
-      "variableName": "FirstInStructure",
-    },
-    "isEmotionOrStyledComponent": false,
-    "label": null,
-    "localFrame": null,
-    "nonRoundedGlobalFrame": null,
-    "specialSizeMeasurements": Object {
-      "alignItems": null,
-      "borderRadius": null,
-      "clientHeight": 0,
-      "clientWidth": 0,
-      "closestOffsetParentPath": Object {
-        "parts": Array [],
-        "type": "elementpath",
-      },
-      "computedHugProperty": Object {
-        "height": null,
-        "width": null,
-      },
-      "coordinateSystemBounds": null,
-      "display": "initial",
-      "flexDirection": null,
-      "float": "none",
-      "fontSize": null,
-      "fontStyle": null,
-      "fontWeight": null,
-      "gap": null,
-      "globalContentBoxForChildren": null,
-      "globalFrameWithTextContent": null,
-      "hasPositionOffset": false,
-      "hasTransform": false,
-      "htmlElementName": "div",
-      "immediateParentBounds": Object {
-        "height": 0,
-        "width": 0,
-        "x": 0,
-        "y": 0,
-      },
-      "immediateParentProvidesLayout": true,
-      "justifyContent": null,
-      "layoutSystemForChildren": null,
-      "margin": Object {},
-      "naturalHeight": null,
-      "naturalWidth": null,
-      "offset": Object {
-        "x": 0,
-        "y": 0,
-      },
-      "padding": Object {},
-      "parentFlexDirection": null,
-      "parentFlexGap": 0,
-      "parentHugsOnMainAxis": false,
-      "parentJustifyContent": null,
-      "parentLayoutSystem": "flow",
-      "parentPadding": Object {},
-      "parentTextDirection": "ltr",
-      "position": "static",
-      "providesBoundsForAbsoluteChildren": false,
-      "renderedChildrenCount": 0,
-      "textBounds": null,
-      "textDecorationLine": null,
-      "usesParentBounds": false,
-    },
-    "textContent": null,
-  },
-  "utopia-storyboard-uid/scene-aaa/app-entity:73a/54d": Object {
-    "assignedToProp": null,
-    "attributeMetadatada": Object {},
-    "componentInstance": false,
-    "computedStyle": Object {},
-    "conditionValue": "not-a-conditional",
-    "earlyReturn": null,
-    "element": Object {
-      "type": "RIGHT",
-      "value": Object {
-        "children": Array [],
-        "name": Object {
-          "baseVariable": "DefaultNamedFunction",
-          "propertyPath": Object {
-            "propertyElements": Array [],
-          },
-        },
-        "props": Array [
-          Object {
-            "comments": Object {
-              "leadingComments": Array [],
-              "trailingComments": Array [],
-            },
-            "key": "data-uid",
-            "type": "JSX_ATTRIBUTES_ENTRY",
-            "value": Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "type": "ATTRIBUTE_VALUE",
-              "uid": "",
-              "value": "54d",
-            },
-          },
-        ],
-        "type": "JSX_ELEMENT",
-        "uid": "",
-      },
-    },
-    "elementPath": Object {
-      "parts": Array [
-        Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
-          "app-entity",
-        ],
-        Array [
-          "73a",
-          "54d",
-        ],
-      ],
-      "type": "elementpath",
-    },
-    "globalFrame": null,
-    "importInfo": Object {
-      "exportedName": null,
-      "filePath": "/defaultnamedfunction",
-      "type": "IMPORTED_ORIGIN",
-      "variableName": "DefaultNamedFunction",
-    },
-    "isEmotionOrStyledComponent": false,
-    "label": null,
-    "localFrame": null,
-    "nonRoundedGlobalFrame": null,
-    "specialSizeMeasurements": Object {
-      "alignItems": null,
-      "borderRadius": null,
-      "clientHeight": 0,
-      "clientWidth": 0,
-      "closestOffsetParentPath": Object {
-        "parts": Array [],
-        "type": "elementpath",
-      },
-      "computedHugProperty": Object {
-        "height": null,
-        "width": null,
-      },
-      "coordinateSystemBounds": null,
-      "display": "initial",
-      "flexDirection": null,
-      "float": "none",
-      "fontSize": null,
-      "fontStyle": null,
-      "fontWeight": null,
-      "gap": null,
-      "globalContentBoxForChildren": null,
-      "globalFrameWithTextContent": null,
-      "hasPositionOffset": false,
-      "hasTransform": false,
-      "htmlElementName": "div",
-      "immediateParentBounds": Object {
-        "height": 0,
-        "width": 0,
-        "x": 0,
-        "y": 0,
-      },
-      "immediateParentProvidesLayout": true,
-      "justifyContent": null,
-      "layoutSystemForChildren": null,
-      "margin": Object {},
-      "naturalHeight": null,
-      "naturalWidth": null,
-      "offset": Object {
-        "x": 0,
-        "y": 0,
-      },
-      "padding": Object {},
-      "parentFlexDirection": null,
-      "parentFlexGap": 0,
-      "parentHugsOnMainAxis": false,
-      "parentJustifyContent": null,
-      "parentLayoutSystem": "flow",
-      "parentPadding": Object {},
-      "parentTextDirection": "ltr",
-      "position": "static",
-      "providesBoundsForAbsoluteChildren": false,
-      "renderedChildrenCount": 0,
-      "textBounds": null,
-      "textDecorationLine": null,
-      "usesParentBounds": false,
-    },
-    "textContent": null,
-  },
-  "utopia-storyboard-uid/scene-aaa/app-entity:73a/755": Object {
-    "assignedToProp": null,
-    "attributeMetadatada": Object {},
-    "componentInstance": false,
-    "computedStyle": Object {},
-    "conditionValue": "not-a-conditional",
-    "earlyReturn": null,
-    "element": Object {
-      "type": "RIGHT",
-      "value": Object {
-        "children": Array [],
-        "name": Object {
-          "baseVariable": "NamedExport",
-          "propertyPath": Object {
-            "propertyElements": Array [],
-          },
-        },
-        "props": Array [
-          Object {
-            "comments": Object {
-              "leadingComments": Array [],
-              "trailingComments": Array [],
-            },
-            "key": "data-uid",
-            "type": "JSX_ATTRIBUTES_ENTRY",
-            "value": Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "type": "ATTRIBUTE_VALUE",
-              "uid": "",
-              "value": "755",
-            },
-          },
-        ],
-        "type": "JSX_ELEMENT",
-        "uid": "",
-      },
-    },
-    "elementPath": Object {
-      "parts": Array [
-        Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
-          "app-entity",
-        ],
-        Array [
-          "73a",
-          "755",
-        ],
-      ],
-      "type": "elementpath",
-    },
-    "globalFrame": null,
-    "importInfo": Object {
-      "exportedName": "NamedExport",
-      "filePath": "/namedexport",
-      "type": "IMPORTED_ORIGIN",
-      "variableName": "NamedExport",
-    },
-    "isEmotionOrStyledComponent": false,
-    "label": null,
-    "localFrame": null,
-    "nonRoundedGlobalFrame": null,
-    "specialSizeMeasurements": Object {
-      "alignItems": null,
-      "borderRadius": null,
-      "clientHeight": 0,
-      "clientWidth": 0,
-      "closestOffsetParentPath": Object {
-        "parts": Array [],
-        "type": "elementpath",
-      },
-      "computedHugProperty": Object {
-        "height": null,
-        "width": null,
-      },
-      "coordinateSystemBounds": null,
-      "display": "initial",
-      "flexDirection": null,
-      "float": "none",
-      "fontSize": null,
-      "fontStyle": null,
-      "fontWeight": null,
-      "gap": null,
-      "globalContentBoxForChildren": null,
-      "globalFrameWithTextContent": null,
-      "hasPositionOffset": false,
-      "hasTransform": false,
-      "htmlElementName": "div",
-      "immediateParentBounds": Object {
-        "height": 0,
-        "width": 0,
-        "x": 0,
-        "y": 0,
-      },
-      "immediateParentProvidesLayout": true,
-      "justifyContent": null,
-      "layoutSystemForChildren": null,
-      "margin": Object {},
-      "naturalHeight": null,
-      "naturalWidth": null,
-      "offset": Object {
-        "x": 0,
-        "y": 0,
-      },
-      "padding": Object {},
-      "parentFlexDirection": null,
-      "parentFlexGap": 0,
-      "parentHugsOnMainAxis": false,
-      "parentJustifyContent": null,
-      "parentLayoutSystem": "flow",
-      "parentPadding": Object {},
-      "parentTextDirection": "ltr",
-      "position": "static",
-      "providesBoundsForAbsoluteChildren": false,
-      "renderedChildrenCount": 0,
-      "textBounds": null,
-      "textDecorationLine": null,
-      "usesParentBounds": false,
-    },
-    "textContent": null,
-  },
-  "utopia-storyboard-uid/scene-aaa/app-entity:73a/86e": Object {
-    "assignedToProp": null,
-    "attributeMetadatada": Object {},
-    "componentInstance": false,
-    "computedStyle": Object {},
-    "conditionValue": "not-a-conditional",
-    "earlyReturn": null,
-    "element": Object {
-      "type": "RIGHT",
-      "value": Object {
-        "children": Array [],
-        "name": Object {
-          "baseVariable": "SecondInStructure",
-          "propertyPath": Object {
-            "propertyElements": Array [],
-          },
-        },
-        "props": Array [
-          Object {
-            "comments": Object {
-              "leadingComments": Array [],
-              "trailingComments": Array [],
-            },
-            "key": "data-uid",
-            "type": "JSX_ATTRIBUTES_ENTRY",
-            "value": Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "type": "ATTRIBUTE_VALUE",
-              "uid": "",
-              "value": "86e",
-            },
-          },
-        ],
-        "type": "JSX_ELEMENT",
-        "uid": "",
-      },
-    },
-    "elementPath": Object {
-      "parts": Array [
-        Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
-          "app-entity",
-        ],
-        Array [
-          "73a",
-          "86e",
-        ],
-      ],
-      "type": "elementpath",
-    },
-    "globalFrame": null,
-    "importInfo": Object {
-      "exportedName": "SecondInStructure",
-      "filePath": "/destructuredassignment",
-      "type": "IMPORTED_ORIGIN",
-      "variableName": "SecondInStructure",
-    },
-    "isEmotionOrStyledComponent": false,
-    "label": null,
-    "localFrame": null,
-    "nonRoundedGlobalFrame": null,
-    "specialSizeMeasurements": Object {
-      "alignItems": null,
-      "borderRadius": null,
-      "clientHeight": 0,
-      "clientWidth": 0,
-      "closestOffsetParentPath": Object {
-        "parts": Array [],
-        "type": "elementpath",
-      },
-      "computedHugProperty": Object {
-        "height": null,
-        "width": null,
-      },
-      "coordinateSystemBounds": null,
-      "display": "initial",
-      "flexDirection": null,
-      "float": "none",
-      "fontSize": null,
-      "fontStyle": null,
-      "fontWeight": null,
-      "gap": null,
-      "globalContentBoxForChildren": null,
-      "globalFrameWithTextContent": null,
-      "hasPositionOffset": false,
-      "hasTransform": false,
-      "htmlElementName": "div",
-      "immediateParentBounds": Object {
-        "height": 0,
-        "width": 0,
-        "x": 0,
-        "y": 0,
-      },
-      "immediateParentProvidesLayout": true,
-      "justifyContent": null,
-      "layoutSystemForChildren": null,
-      "margin": Object {},
-      "naturalHeight": null,
-      "naturalWidth": null,
-      "offset": Object {
-        "x": 0,
-        "y": 0,
-      },
-      "padding": Object {},
-      "parentFlexDirection": null,
-      "parentFlexGap": 0,
-      "parentHugsOnMainAxis": false,
-      "parentJustifyContent": null,
-      "parentLayoutSystem": "flow",
-      "parentPadding": Object {},
-      "parentTextDirection": "ltr",
-      "position": "static",
-      "providesBoundsForAbsoluteChildren": false,
-      "renderedChildrenCount": 0,
-      "textBounds": null,
-      "textDecorationLine": null,
-      "usesParentBounds": false,
-    },
-    "textContent": null,
-  },
-  "utopia-storyboard-uid/scene-aaa/app-entity:73a/bad": Object {
-    "assignedToProp": null,
-    "attributeMetadatada": Object {},
-    "componentInstance": false,
-    "computedStyle": Object {},
-    "conditionValue": "not-a-conditional",
-    "earlyReturn": null,
-    "element": Object {
-      "type": "RIGHT",
-      "value": Object {
-        "children": Array [],
-        "name": Object {
-          "baseVariable": "OriginallyUnassigned1",
-          "propertyPath": Object {
-            "propertyElements": Array [],
-          },
-        },
-        "props": Array [
-          Object {
-            "comments": Object {
-              "leadingComments": Array [],
-              "trailingComments": Array [],
-            },
-            "key": "data-uid",
-            "type": "JSX_ATTRIBUTES_ENTRY",
-            "value": Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "type": "ATTRIBUTE_VALUE",
-              "uid": "",
-              "value": "bad",
-            },
-          },
-        ],
-        "type": "JSX_ELEMENT",
-        "uid": "",
-      },
-    },
-    "elementPath": Object {
-      "parts": Array [
-        Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
-          "app-entity",
-        ],
-        Array [
-          "73a",
-          "bad",
-        ],
-      ],
-      "type": "elementpath",
-    },
-    "globalFrame": null,
-    "importInfo": Object {
-      "exportedName": "OriginallyUnassigned1",
-      "filePath": "/originallyunassigned",
-      "type": "IMPORTED_ORIGIN",
-      "variableName": "OriginallyUnassigned1",
-    },
-    "isEmotionOrStyledComponent": false,
-    "label": null,
-    "localFrame": null,
-    "nonRoundedGlobalFrame": null,
-    "specialSizeMeasurements": Object {
-      "alignItems": null,
-      "borderRadius": null,
-      "clientHeight": 0,
-      "clientWidth": 0,
-      "closestOffsetParentPath": Object {
-        "parts": Array [],
-        "type": "elementpath",
-      },
-      "computedHugProperty": Object {
-        "height": null,
-        "width": null,
-      },
-      "coordinateSystemBounds": null,
-      "display": "initial",
-      "flexDirection": null,
-      "float": "none",
-      "fontSize": null,
-      "fontStyle": null,
-      "fontWeight": null,
-      "gap": null,
-      "globalContentBoxForChildren": null,
-      "globalFrameWithTextContent": null,
-      "hasPositionOffset": false,
-      "hasTransform": false,
-      "htmlElementName": "div",
-      "immediateParentBounds": Object {
-        "height": 0,
-        "width": 0,
-        "x": 0,
-        "y": 0,
-      },
-      "immediateParentProvidesLayout": true,
-      "justifyContent": null,
-      "layoutSystemForChildren": null,
-      "margin": Object {},
-      "naturalHeight": null,
-      "naturalWidth": null,
-      "offset": Object {
-        "x": 0,
-        "y": 0,
-      },
-      "padding": Object {},
-      "parentFlexDirection": null,
-      "parentFlexGap": 0,
-      "parentHugsOnMainAxis": false,
-      "parentJustifyContent": null,
-      "parentLayoutSystem": "flow",
-      "parentPadding": Object {},
-      "parentTextDirection": "ltr",
-      "position": "static",
-      "providesBoundsForAbsoluteChildren": false,
-      "renderedChildrenCount": 0,
-      "textBounds": null,
-      "textDecorationLine": null,
-      "usesParentBounds": false,
-    },
-    "textContent": null,
-  },
-  "utopia-storyboard-uid/scene-aaa/app-entity:73a/c60": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:74b/447": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -42808,7 +42190,7 @@ export var App = (props) => {
               },
               "type": "ATTRIBUTE_VALUE",
               "uid": "",
-              "value": "c60",
+              "value": "447",
             },
           },
         ],
@@ -42824,8 +42206,8 @@ export var App = (props) => {
           "app-entity",
         ],
         Array [
-          "73a",
-          "c60",
+          "74b",
+          "447",
         ],
       ],
       "type": "elementpath",
@@ -42900,7 +42282,131 @@ export var App = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:73a/d5a": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:74b/4b6": Object {
+    "assignedToProp": null,
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "conditionValue": "not-a-conditional",
+    "earlyReturn": null,
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "name": Object {
+          "baseVariable": "NamedExport",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "uid": "",
+              "value": "4b6",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+        Array [
+          "74b",
+          "4b6",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "exportedName": "NamedExport",
+      "filePath": "/namedexport",
+      "type": "IMPORTED_ORIGIN",
+      "variableName": "NamedExport",
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "nonRoundedGlobalFrame": null,
+    "specialSizeMeasurements": Object {
+      "alignItems": null,
+      "borderRadius": null,
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
+      "coordinateSystemBounds": null,
+      "display": "initial",
+      "flexDirection": null,
+      "float": "none",
+      "fontSize": null,
+      "fontStyle": null,
+      "fontWeight": null,
+      "gap": null,
+      "globalContentBoxForChildren": null,
+      "globalFrameWithTextContent": null,
+      "hasPositionOffset": false,
+      "hasTransform": false,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "justifyContent": null,
+      "layoutSystemForChildren": null,
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentFlexGap": 0,
+      "parentHugsOnMainAxis": false,
+      "parentJustifyContent": null,
+      "parentLayoutSystem": "flow",
+      "parentPadding": Object {},
+      "parentTextDirection": "ltr",
+      "position": "static",
+      "providesBoundsForAbsoluteChildren": false,
+      "renderedChildrenCount": 0,
+      "textBounds": null,
+      "textDecorationLine": null,
+      "usesParentBounds": false,
+    },
+    "textContent": null,
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity:74b/540": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -42932,7 +42438,7 @@ export var App = (props) => {
               },
               "type": "ATTRIBUTE_VALUE",
               "uid": "",
-              "value": "d5a",
+              "value": "540",
             },
           },
         ],
@@ -42948,8 +42454,8 @@ export var App = (props) => {
           "app-entity",
         ],
         Array [
-          "73a",
-          "d5a",
+          "74b",
+          "540",
         ],
       ],
       "type": "elementpath",
@@ -43024,7 +42530,7 @@ export var App = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:73a/d9b": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:74b/5f7": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -43036,133 +42542,7 @@ export var App = (props) => {
       "value": Object {
         "children": Array [],
         "name": Object {
-          "baseVariable": "assigned",
-          "propertyPath": Object {
-            "propertyElements": Array [
-              "OriginallyAssigned1",
-            ],
-          },
-        },
-        "props": Array [
-          Object {
-            "comments": Object {
-              "leadingComments": Array [],
-              "trailingComments": Array [],
-            },
-            "key": "data-uid",
-            "type": "JSX_ATTRIBUTES_ENTRY",
-            "value": Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "type": "ATTRIBUTE_VALUE",
-              "uid": "",
-              "value": "d9b",
-            },
-          },
-        ],
-        "type": "JSX_ELEMENT",
-        "uid": "",
-      },
-    },
-    "elementPath": Object {
-      "parts": Array [
-        Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
-          "app-entity",
-        ],
-        Array [
-          "73a",
-          "d9b",
-        ],
-      ],
-      "type": "elementpath",
-    },
-    "globalFrame": null,
-    "importInfo": Object {
-      "exportedName": "assigned",
-      "filePath": "/reexportmoduleintonamedexport",
-      "type": "IMPORTED_ORIGIN",
-      "variableName": "assigned",
-    },
-    "isEmotionOrStyledComponent": false,
-    "label": null,
-    "localFrame": null,
-    "nonRoundedGlobalFrame": null,
-    "specialSizeMeasurements": Object {
-      "alignItems": null,
-      "borderRadius": null,
-      "clientHeight": 0,
-      "clientWidth": 0,
-      "closestOffsetParentPath": Object {
-        "parts": Array [],
-        "type": "elementpath",
-      },
-      "computedHugProperty": Object {
-        "height": null,
-        "width": null,
-      },
-      "coordinateSystemBounds": null,
-      "display": "initial",
-      "flexDirection": null,
-      "float": "none",
-      "fontSize": null,
-      "fontStyle": null,
-      "fontWeight": null,
-      "gap": null,
-      "globalContentBoxForChildren": null,
-      "globalFrameWithTextContent": null,
-      "hasPositionOffset": false,
-      "hasTransform": false,
-      "htmlElementName": "div",
-      "immediateParentBounds": Object {
-        "height": 0,
-        "width": 0,
-        "x": 0,
-        "y": 0,
-      },
-      "immediateParentProvidesLayout": true,
-      "justifyContent": null,
-      "layoutSystemForChildren": null,
-      "margin": Object {},
-      "naturalHeight": null,
-      "naturalWidth": null,
-      "offset": Object {
-        "x": 0,
-        "y": 0,
-      },
-      "padding": Object {},
-      "parentFlexDirection": null,
-      "parentFlexGap": 0,
-      "parentHugsOnMainAxis": false,
-      "parentJustifyContent": null,
-      "parentLayoutSystem": "flow",
-      "parentPadding": Object {},
-      "parentTextDirection": "ltr",
-      "position": "static",
-      "providesBoundsForAbsoluteChildren": false,
-      "renderedChildrenCount": 0,
-      "textBounds": null,
-      "textDecorationLine": null,
-      "usesParentBounds": false,
-    },
-    "textContent": null,
-  },
-  "utopia-storyboard-uid/scene-aaa/app-entity:73a/d9d": Object {
-    "assignedToProp": null,
-    "attributeMetadatada": Object {},
-    "componentInstance": false,
-    "computedStyle": Object {},
-    "conditionValue": "not-a-conditional",
-    "earlyReturn": null,
-    "element": Object {
-      "type": "RIGHT",
-      "value": Object {
-        "children": Array [],
-        "name": Object {
-          "baseVariable": "NamedAsDefault",
+          "baseVariable": "DefinedThenDefaultExported",
           "propertyPath": Object {
             "propertyElements": Array [],
           },
@@ -43182,7 +42562,7 @@ export var App = (props) => {
               },
               "type": "ATTRIBUTE_VALUE",
               "uid": "",
-              "value": "d9d",
+              "value": "5f7",
             },
           },
         ],
@@ -43198,8 +42578,8 @@ export var App = (props) => {
           "app-entity",
         ],
         Array [
-          "73a",
-          "d9d",
+          "74b",
+          "5f7",
         ],
       ],
       "type": "elementpath",
@@ -43207,9 +42587,9 @@ export var App = (props) => {
     "globalFrame": null,
     "importInfo": Object {
       "exportedName": null,
-      "filePath": "/namedasdefault",
+      "filePath": "/definedthendefaultexported",
       "type": "IMPORTED_ORIGIN",
-      "variableName": "NamedAsDefault",
+      "variableName": "DefinedThenDefaultExported",
     },
     "isEmotionOrStyledComponent": false,
     "label": null,
@@ -43274,7 +42654,7 @@ export var App = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:73a/def": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:74b/61e": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -43306,7 +42686,7 @@ export var App = (props) => {
               },
               "type": "ATTRIBUTE_VALUE",
               "uid": "",
-              "value": "def",
+              "value": "61e",
             },
           },
         ],
@@ -43322,8 +42702,8 @@ export var App = (props) => {
           "app-entity",
         ],
         Array [
-          "73a",
-          "def",
+          "74b",
+          "61e",
         ],
       ],
       "type": "elementpath",
@@ -43398,7 +42778,7 @@ export var App = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:73a/eac": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:74b/843": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -43410,7 +42790,7 @@ export var App = (props) => {
       "value": Object {
         "children": Array [],
         "name": Object {
-          "baseVariable": "NewlyAssigned",
+          "baseVariable": "DefaultClass",
           "propertyPath": Object {
             "propertyElements": Array [],
           },
@@ -43430,7 +42810,7 @@ export var App = (props) => {
               },
               "type": "ATTRIBUTE_VALUE",
               "uid": "",
-              "value": "eac",
+              "value": "843",
             },
           },
         ],
@@ -43446,18 +42826,638 @@ export var App = (props) => {
           "app-entity",
         ],
         Array [
-          "73a",
-          "eac",
+          "74b",
+          "843",
         ],
       ],
       "type": "elementpath",
     },
     "globalFrame": null,
     "importInfo": Object {
-      "exportedName": "NewlyAssigned",
-      "filePath": "/reexportspecificrenamed",
+      "exportedName": null,
+      "filePath": "/defaultclass",
       "type": "IMPORTED_ORIGIN",
-      "variableName": "NewlyAssigned",
+      "variableName": "DefaultClass",
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "nonRoundedGlobalFrame": null,
+    "specialSizeMeasurements": Object {
+      "alignItems": null,
+      "borderRadius": null,
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
+      "coordinateSystemBounds": null,
+      "display": "initial",
+      "flexDirection": null,
+      "float": "none",
+      "fontSize": null,
+      "fontStyle": null,
+      "fontWeight": null,
+      "gap": null,
+      "globalContentBoxForChildren": null,
+      "globalFrameWithTextContent": null,
+      "hasPositionOffset": false,
+      "hasTransform": false,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "justifyContent": null,
+      "layoutSystemForChildren": null,
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentFlexGap": 0,
+      "parentHugsOnMainAxis": false,
+      "parentJustifyContent": null,
+      "parentLayoutSystem": "flow",
+      "parentPadding": Object {},
+      "parentTextDirection": "ltr",
+      "position": "static",
+      "providesBoundsForAbsoluteChildren": false,
+      "renderedChildrenCount": 0,
+      "textBounds": null,
+      "textDecorationLine": null,
+      "usesParentBounds": false,
+    },
+    "textContent": null,
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity:74b/a35": Object {
+    "assignedToProp": null,
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "conditionValue": "not-a-conditional",
+    "earlyReturn": null,
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "name": Object {
+          "baseVariable": "NamedFunction",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "uid": "",
+              "value": "a35",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+        Array [
+          "74b",
+          "a35",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "exportedName": "NamedFunction",
+      "filePath": "/namedfunction",
+      "type": "IMPORTED_ORIGIN",
+      "variableName": "NamedFunction",
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "nonRoundedGlobalFrame": null,
+    "specialSizeMeasurements": Object {
+      "alignItems": null,
+      "borderRadius": null,
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
+      "coordinateSystemBounds": null,
+      "display": "initial",
+      "flexDirection": null,
+      "float": "none",
+      "fontSize": null,
+      "fontStyle": null,
+      "fontWeight": null,
+      "gap": null,
+      "globalContentBoxForChildren": null,
+      "globalFrameWithTextContent": null,
+      "hasPositionOffset": false,
+      "hasTransform": false,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "justifyContent": null,
+      "layoutSystemForChildren": null,
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentFlexGap": 0,
+      "parentHugsOnMainAxis": false,
+      "parentJustifyContent": null,
+      "parentLayoutSystem": "flow",
+      "parentPadding": Object {},
+      "parentTextDirection": "ltr",
+      "position": "static",
+      "providesBoundsForAbsoluteChildren": false,
+      "renderedChildrenCount": 0,
+      "textBounds": null,
+      "textDecorationLine": null,
+      "usesParentBounds": false,
+    },
+    "textContent": null,
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity:74b/aeb": Object {
+    "assignedToProp": null,
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "conditionValue": "not-a-conditional",
+    "earlyReturn": null,
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "name": Object {
+          "baseVariable": "OriginallyAssigned2",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "uid": "",
+              "value": "aeb",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+        Array [
+          "74b",
+          "aeb",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "exportedName": "OriginallyAssigned1",
+      "filePath": "/reexportspecificnamed",
+      "type": "IMPORTED_ORIGIN",
+      "variableName": "OriginallyAssigned2",
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "nonRoundedGlobalFrame": null,
+    "specialSizeMeasurements": Object {
+      "alignItems": null,
+      "borderRadius": null,
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
+      "coordinateSystemBounds": null,
+      "display": "initial",
+      "flexDirection": null,
+      "float": "none",
+      "fontSize": null,
+      "fontStyle": null,
+      "fontWeight": null,
+      "gap": null,
+      "globalContentBoxForChildren": null,
+      "globalFrameWithTextContent": null,
+      "hasPositionOffset": false,
+      "hasTransform": false,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "justifyContent": null,
+      "layoutSystemForChildren": null,
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentFlexGap": 0,
+      "parentHugsOnMainAxis": false,
+      "parentJustifyContent": null,
+      "parentLayoutSystem": "flow",
+      "parentPadding": Object {},
+      "parentTextDirection": "ltr",
+      "position": "static",
+      "providesBoundsForAbsoluteChildren": false,
+      "renderedChildrenCount": 0,
+      "textBounds": null,
+      "textDecorationLine": null,
+      "usesParentBounds": false,
+    },
+    "textContent": null,
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity:74b/bb2": Object {
+    "assignedToProp": null,
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "conditionValue": "not-a-conditional",
+    "earlyReturn": null,
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "name": Object {
+          "baseVariable": "FirstInStructure",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "uid": "",
+              "value": "bb2",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+        Array [
+          "74b",
+          "bb2",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "exportedName": "FirstInStructure",
+      "filePath": "/destructuredassignment",
+      "type": "IMPORTED_ORIGIN",
+      "variableName": "FirstInStructure",
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "nonRoundedGlobalFrame": null,
+    "specialSizeMeasurements": Object {
+      "alignItems": null,
+      "borderRadius": null,
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
+      "coordinateSystemBounds": null,
+      "display": "initial",
+      "flexDirection": null,
+      "float": "none",
+      "fontSize": null,
+      "fontStyle": null,
+      "fontWeight": null,
+      "gap": null,
+      "globalContentBoxForChildren": null,
+      "globalFrameWithTextContent": null,
+      "hasPositionOffset": false,
+      "hasTransform": false,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "justifyContent": null,
+      "layoutSystemForChildren": null,
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentFlexGap": 0,
+      "parentHugsOnMainAxis": false,
+      "parentJustifyContent": null,
+      "parentLayoutSystem": "flow",
+      "parentPadding": Object {},
+      "parentTextDirection": "ltr",
+      "position": "static",
+      "providesBoundsForAbsoluteChildren": false,
+      "renderedChildrenCount": 0,
+      "textBounds": null,
+      "textDecorationLine": null,
+      "usesParentBounds": false,
+    },
+    "textContent": null,
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity:74b/c19": Object {
+    "assignedToProp": null,
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "conditionValue": "not-a-conditional",
+    "earlyReturn": null,
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "name": Object {
+          "baseVariable": "NamedAsDefault",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "uid": "",
+              "value": "c19",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+        Array [
+          "74b",
+          "c19",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "exportedName": null,
+      "filePath": "/namedasdefault",
+      "type": "IMPORTED_ORIGIN",
+      "variableName": "NamedAsDefault",
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "nonRoundedGlobalFrame": null,
+    "specialSizeMeasurements": Object {
+      "alignItems": null,
+      "borderRadius": null,
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
+      "coordinateSystemBounds": null,
+      "display": "initial",
+      "flexDirection": null,
+      "float": "none",
+      "fontSize": null,
+      "fontStyle": null,
+      "fontWeight": null,
+      "gap": null,
+      "globalContentBoxForChildren": null,
+      "globalFrameWithTextContent": null,
+      "hasPositionOffset": false,
+      "hasTransform": false,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "justifyContent": null,
+      "layoutSystemForChildren": null,
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentFlexGap": 0,
+      "parentHugsOnMainAxis": false,
+      "parentJustifyContent": null,
+      "parentLayoutSystem": "flow",
+      "parentPadding": Object {},
+      "parentTextDirection": "ltr",
+      "position": "static",
+      "providesBoundsForAbsoluteChildren": false,
+      "renderedChildrenCount": 0,
+      "textBounds": null,
+      "textDecorationLine": null,
+      "usesParentBounds": false,
+    },
+    "textContent": null,
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity:74b/ec8": Object {
+    "assignedToProp": null,
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "conditionValue": "not-a-conditional",
+    "earlyReturn": null,
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "name": Object {
+          "baseVariable": "OriginallyAssigned1",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "uid": "",
+              "value": "ec8",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+        Array [
+          "74b",
+          "ec8",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "exportedName": "OriginallyAssigned1",
+      "filePath": "/originallyassigned",
+      "type": "IMPORTED_ORIGIN",
+      "variableName": "OriginallyAssigned1",
     },
     "isEmotionOrStyledComponent": false,
     "label": null,
@@ -43531,7 +43531,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/001 utopia-storyboard-uid/scene-aaa/app-entity:aaa/001/bbb\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/df8 utopia-storyboard-uid/scene-aaa/app-entity:aaa/df8/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -43564,19 +43564,19 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
       >
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/001/bbb~~~1:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/df8/bbb~~~1:xxx\\"
         >
           n1
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/001/bbb~~~2:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/df8/bbb~~~2:xxx\\"
         >
           n2
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/001/bbb~~~3:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/df8/bbb~~~3:xxx\\"
         >
           n3
         </div>
@@ -44293,7 +44293,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/001": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/df8": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -44554,7 +44554,7 @@ Object {
         ],
         Array [
           "aaa",
-          "001",
+          "df8",
         ],
       ],
       "type": "elementpath",
@@ -44624,7 +44624,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/001/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/df8/bbb~~~1": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -44739,7 +44739,7 @@ Object {
         ],
         Array [
           "aaa",
-          "001",
+          "df8",
           "bbb~~~1",
         ],
       ],
@@ -44814,7 +44814,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/001/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/df8/bbb~~~2": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -44929,7 +44929,7 @@ Object {
         ],
         Array [
           "aaa",
-          "001",
+          "df8",
           "bbb~~~2",
         ],
       ],
@@ -45004,7 +45004,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/001/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/df8/bbb~~~3": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -45119,7 +45119,7 @@ Object {
         ],
         Array [
           "aaa",
-          "001",
+          "df8",
           "bbb~~~3",
         ],
       ],
@@ -45203,7 +45203,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/14c utopia-storyboard-uid/scene-aaa/app-entity:aaa/14c/bbb\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/fc8 utopia-storyboard-uid/scene-aaa/app-entity:aaa/fc8/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -45236,19 +45236,19 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
       >
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/14c/bbb~~~1:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/fc8/bbb~~~1:xxx\\"
         >
           n1
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/14c/bbb~~~2:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/fc8/bbb~~~2:xxx\\"
         >
           n2
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/14c/bbb~~~3:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/fc8/bbb~~~3:xxx\\"
         >
           n3
         </div>
@@ -45964,7 +45964,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/14c": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/fc8": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -46224,7 +46224,7 @@ Object {
         ],
         Array [
           "aaa",
-          "14c",
+          "fc8",
         ],
       ],
       "type": "elementpath",
@@ -46294,7 +46294,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/14c/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/fc8/bbb~~~1": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -46409,7 +46409,7 @@ Object {
         ],
         Array [
           "aaa",
-          "14c",
+          "fc8",
           "bbb~~~1",
         ],
       ],
@@ -46484,7 +46484,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/14c/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/fc8/bbb~~~2": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -46599,7 +46599,7 @@ Object {
         ],
         Array [
           "aaa",
-          "14c",
+          "fc8",
           "bbb~~~2",
         ],
       ],
@@ -46674,7 +46674,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/14c/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/fc8/bbb~~~3": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -46789,7 +46789,7 @@ Object {
         ],
         Array [
           "aaa",
-          "14c",
+          "fc8",
           "bbb~~~3",
         ],
       ],
@@ -46873,7 +46873,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block with 
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/330 utopia-storyboard-uid/scene-aaa/app-entity:aaa/330/bbb\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/032 utopia-storyboard-uid/scene-aaa/app-entity:aaa/032/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -46906,19 +46906,19 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block with 
       >
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/330/bbb~~~1:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/032/bbb~~~1:xxx\\"
         >
           n1
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/330/bbb~~~2:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/032/bbb~~~2:xxx\\"
         >
           n2
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/330/bbb~~~3:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/032/bbb~~~3:xxx\\"
         >
           n3
         </div>
@@ -47678,7 +47678,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/330": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/032": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -47982,7 +47982,7 @@ Object {
         ],
         Array [
           "aaa",
-          "330",
+          "032",
         ],
       ],
       "type": "elementpath",
@@ -48052,7 +48052,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/330/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/032/bbb~~~1": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -48167,7 +48167,7 @@ Object {
         ],
         Array [
           "aaa",
-          "330",
+          "032",
           "bbb~~~1",
         ],
       ],
@@ -48242,7 +48242,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/330/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/032/bbb~~~2": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -48357,7 +48357,7 @@ Object {
         ],
         Array [
           "aaa",
-          "330",
+          "032",
           "bbb~~~2",
         ],
       ],
@@ -48432,7 +48432,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/330/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/032/bbb~~~3": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -48547,7 +48547,7 @@ Object {
         ],
         Array [
           "aaa",
-          "330",
+          "032",
           "bbb~~~3",
         ],
       ],
@@ -50633,7 +50633,7 @@ Object {
                     Object {
                       "text": "test",
                       "type": "JSX_TEXT_BLOCK",
-                      "uid": "c74",
+                      "uid": "b0b",
                     },
                   ],
                   "name": Object {
@@ -50656,7 +50656,7 @@ Object {
                           "trailingComments": Array [],
                         },
                         "type": "ATTRIBUTE_VALUE",
-                        "uid": "77c",
+                        "uid": "67a",
                         "value": "ccc",
                       },
                     },
@@ -50849,7 +50849,7 @@ Object {
                 Object {
                   "text": "test",
                   "type": "JSX_TEXT_BLOCK",
-                  "uid": "c74",
+                  "uid": "b0b",
                 },
               ],
               "name": Object {
@@ -50872,7 +50872,7 @@ Object {
                       "trailingComments": Array [],
                     },
                     "type": "ATTRIBUTE_VALUE",
-                    "uid": "77c",
+                    "uid": "67a",
                     "value": "ccc",
                   },
                 },
@@ -52989,7 +52989,7 @@ exports[`UiJsxCanvas render renders fine with two circularly referencing arbitra
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene utopia-storyboard-uid/scene/app-entity utopia-storyboard-uid/scene/app-entity:aaa utopia-storyboard-uid/scene/app-entity:aaa/f24 utopia-storyboard-uid/scene/app-entity:aaa/dde\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene utopia-storyboard-uid/scene/app-entity utopia-storyboard-uid/scene/app-entity:aaa utopia-storyboard-uid/scene/app-entity:aaa/c28 utopia-storyboard-uid/scene/app-entity:aaa/bb9\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -53620,7 +53620,7 @@ export var storyboard = (
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene/app-entity:aaa/dde": Object {
+  "utopia-storyboard-uid/scene/app-entity:aaa/bb9": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -53713,7 +53713,7 @@ export var storyboard = (
         ],
         Array [
           "aaa",
-          "dde",
+          "bb9",
         ],
       ],
       "type": "elementpath",
@@ -53783,7 +53783,7 @@ export var storyboard = (
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene/app-entity:aaa/f24": Object {
+  "utopia-storyboard-uid/scene/app-entity:aaa/c28": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -53876,7 +53876,7 @@ export var storyboard = (
         ],
         Array [
           "aaa",
-          "f24",
+          "c28",
         ],
       ],
       "type": "elementpath",
@@ -54436,7 +54436,7 @@ exports[`UiJsxCanvas render renders fragments correctly 1`] = `
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"eee eee/fff eee/fff/app eee/fff/app:aaa eee/fff/app:aaa/ggg eee/fff/app:aaa/ggg/bbb eee/fff/app:aaa/ggg/bbb/262 eee/fff/app:aaa/ggg/bbb/262/ccc eee/fff/app:aaa/ddd\\"
+    data-utopia-valid-paths=\\"eee eee/fff eee/fff/app eee/fff/app:aaa eee/fff/app:aaa/ggg eee/fff/app:aaa/ggg/bbb eee/fff/app:aaa/ggg/bbb/01c eee/fff/app:aaa/ggg/bbb/01c/ccc eee/fff/app:aaa/ddd\\"
     data-utopia-root-element-path=\\"eee\\"
   >
     <div
@@ -54486,7 +54486,7 @@ exports[`UiJsxCanvas render renders fragments correctly 1`] = `
             data-label=\\"some-other-div\\"
             style=\\"width: 100px; height: 100px\\"
             data-uid=\\"ccc\\"
-            data-path=\\"eee/fff/app:aaa/ggg/bbb/262/ccc\\"
+            data-path=\\"eee/fff/app:aaa/ggg/bbb/01c/ccc\\"
           ></div>
         </div>
         <div data-uid=\\"ddd\\" data-path=\\"eee/fff/app:aaa/ddd\\">World</div>
@@ -55929,7 +55929,7 @@ export var storyboard = (
     },
     "textContent": null,
   },
-  "eee/fff/app:aaa/ggg/bbb/262": Object {
+  "eee/fff/app:aaa/ggg/bbb/01c": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -56024,7 +56024,7 @@ export var storyboard = (
           "aaa",
           "ggg",
           "bbb",
-          "262",
+          "01c",
         ],
       ],
       "type": "elementpath",
@@ -56094,7 +56094,7 @@ export var storyboard = (
     },
     "textContent": null,
   },
-  "eee/fff/app:aaa/ggg/bbb/262/ccc": Object {
+  "eee/fff/app:aaa/ggg/bbb/01c/ccc": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -56182,7 +56182,7 @@ export var storyboard = (
           "aaa",
           "ggg",
           "bbb",
-          "262",
+          "01c",
           "ccc",
         ],
       ],
@@ -56998,8 +56998,8 @@ exports[`UiJsxCanvas render respects a jsx pragma 1`] = `
       data-uid=\\"scene-aaa\\"
     >
       <div
-        data-uid=\\"bbc\\"
-        data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:bbc\\"
+        data-uid=\\"651\\"
+        data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:651\\"
         data-factory-function-works=\\"true\\"
       >
         Utopia
@@ -57481,7 +57481,7 @@ exports[`UiJsxCanvas render supports passing down the scope to children of compo
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/13c utopia-storyboard-uid/scene-aaa/app-entity:aaa/13c/bbb utopia-storyboard-uid/scene-aaa/app-entity:aaa/13c/bbb/ccc utopia-storyboard-uid/scene-aaa/app-entity:aaa/13c/bbb/ccc/833\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb/ccc utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb/ccc/aae\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -57514,33 +57514,33 @@ exports[`UiJsxCanvas render supports passing down the scope to children of compo
       >
         <div
           data-uid=\\"bbb~~~1\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/13c/bbb~~~1\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~1\\"
         >
           <div
             data-uid=\\"ccc\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/13c/bbb~~~1/ccc\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~1/ccc\\"
           >
             1
           </div>
         </div>
         <div
           data-uid=\\"bbb~~~2\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/13c/bbb~~~2\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~2\\"
         >
           <div
             data-uid=\\"ccc\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/13c/bbb~~~2/ccc\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~2/ccc\\"
           >
             2
           </div>
         </div>
         <div
           data-uid=\\"bbb~~~3\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/13c/bbb~~~3\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~3\\"
         >
           <div
             data-uid=\\"ccc\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/13c/bbb~~~3/ccc\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~3/ccc\\"
           >
             3
           </div>
@@ -58283,7 +58283,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/13c": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -58569,7 +58569,7 @@ Object {
         ],
         Array [
           "aaa",
-          "13c",
+          "b0d",
         ],
       ],
       "type": "elementpath",
@@ -58639,7 +58639,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/13c/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~1": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -58768,7 +58768,7 @@ Object {
         ],
         Array [
           "aaa",
-          "13c",
+          "b0d",
           "bbb~~~1",
         ],
       ],
@@ -58843,7 +58843,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/13c/bbb~~~1/ccc": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~1/ccc": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -58941,7 +58941,7 @@ Object {
         ],
         Array [
           "aaa",
-          "13c",
+          "b0d",
           "bbb~~~1",
           "ccc",
         ],
@@ -59017,7 +59017,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/13c/bbb~~~1/ccc/833": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~1/ccc/aae": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -59084,10 +59084,10 @@ Object {
         ],
         Array [
           "aaa",
-          "13c",
+          "b0d",
           "bbb~~~1",
           "ccc",
-          "833",
+          "aae",
         ],
       ],
       "type": "elementpath",
@@ -59157,7 +59157,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/13c/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~2": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -59286,7 +59286,7 @@ Object {
         ],
         Array [
           "aaa",
-          "13c",
+          "b0d",
           "bbb~~~2",
         ],
       ],
@@ -59361,7 +59361,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/13c/bbb~~~2/ccc": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~2/ccc": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -59459,7 +59459,7 @@ Object {
         ],
         Array [
           "aaa",
-          "13c",
+          "b0d",
           "bbb~~~2",
           "ccc",
         ],
@@ -59535,7 +59535,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/13c/bbb~~~2/ccc/833": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~2/ccc/aae": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -59602,10 +59602,10 @@ Object {
         ],
         Array [
           "aaa",
-          "13c",
+          "b0d",
           "bbb~~~2",
           "ccc",
-          "833",
+          "aae",
         ],
       ],
       "type": "elementpath",
@@ -59675,7 +59675,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/13c/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~3": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -59804,7 +59804,7 @@ Object {
         ],
         Array [
           "aaa",
-          "13c",
+          "b0d",
           "bbb~~~3",
         ],
       ],
@@ -59879,7 +59879,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/13c/bbb~~~3/ccc": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~3/ccc": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -59977,7 +59977,7 @@ Object {
         ],
         Array [
           "aaa",
-          "13c",
+          "b0d",
           "bbb~~~3",
           "ccc",
         ],
@@ -60053,7 +60053,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/13c/bbb~~~3/ccc/833": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~3/ccc/aae": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -60120,10 +60120,10 @@ Object {
         ],
         Array [
           "aaa",
-          "13c",
+          "b0d",
           "bbb~~~3",
           "ccc",
-          "833",
+          "aae",
         ],
       ],
       "type": "elementpath",
@@ -60230,8 +60230,8 @@ exports[`UiJsxCanvas render the canvas supports emotion CSS prop 1`] = `
       data-uid=\\"scene-aaa\\"
     >
       <div
-        data-uid=\\"f25\\"
-        data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:f25\\"
+        data-uid=\\"d33\\"
+        data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:d33\\"
         class=\\"css-16au7uv\\"
       >
         Utopia
