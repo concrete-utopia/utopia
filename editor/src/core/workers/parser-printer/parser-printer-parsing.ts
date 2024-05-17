@@ -6,12 +6,10 @@ import {
   flatMapArray,
   mapDropNulls,
   stripNulls,
-  traverseArray,
 } from '../../shared/array-utils'
 import { difference } from '../../shared/set-utils'
 import type { Either } from '../../shared/either'
 import {
-  alternativeEither,
   applicative2Either,
   applicative3Either,
   bimapEither,
@@ -81,8 +79,6 @@ import {
   isIntrinsicElement,
   clearAttributesUniqueIDs,
   clearAttributesSourceMaps,
-  WithComments,
-  simplifyAttributeIfPossible,
   jsxAttributesEntry,
   setJSXAttributesAttribute,
   jsxAttributesSpread,
@@ -94,8 +90,6 @@ import {
   isJSXConditionalExpression,
   clearExpressionSourceMaps,
   clearExpressionUniqueIDs,
-  isJSXElementLike,
-  isJSXAttributeValue,
   jsxMapExpression,
   destructuredArray,
   destructuredObject,
@@ -110,12 +104,10 @@ import {
   clearExpressionUniqueIDsAndSourceMaps,
   jsOpaqueArbitraryStatement,
   jsAssignment,
-  clearIdentifierUniqueIDsAndSourceMaps,
   jsAssignmentStatement,
   clearAssignmentUniqueIDsAndSourceMaps,
-  clearJSExpressionOtherJavaScriptUniqueIDs,
 } from '../../shared/element-template'
-import { maybeToArray, forceNotNull } from '../../shared/optional-utils'
+import { maybeToArray } from '../../shared/optional-utils'
 import type {
   HighlightBounds,
   Imports,
@@ -125,14 +117,12 @@ import type {
 } from '../../shared/project-file-types'
 import {
   generateConsistentUID,
-  generateUID,
   getUtopiaIDFromJSXElement,
   parseUID,
   parseUIDFromComments,
 } from '../../shared/uid-utils'
 import { fastForEach, RETURN_TO_PREPEND } from '../../shared/utils'
 import {
-  transpileJavascriptFromCode,
   transpileJavascript,
   insertDataUIDsIntoCode,
   wrapAndTranspileJavascript,
@@ -819,7 +809,12 @@ function createOpaqueArbitraryStatement(
     expressionDefinedElsewhere,
     '',
   )
-  const uid = generateUIDAndAddToExistingUIDs(sourceFile, withoutUID, alreadyExistingUIDs)
+  const uid = generateUIDAndAddToExistingUIDs(
+    sourceFile,
+    withoutUID,
+    alreadyExistingUIDs,
+    expression,
+  )
   return jsOpaqueArbitraryStatement(
     originalJavaScript,
     expressionDefinedWithin,
@@ -833,13 +828,19 @@ function createAssignmentStatement(
   alreadyExistingUIDs: Set<string>,
   declarationKeyword: 'let' | 'const' | 'var',
   assignments: Array<JSAssignment>,
+  nodeOrNodes: TS.Node | Array<TS.Node>,
 ): JSAssignmentStatement {
   const withoutUID = jsAssignmentStatement(
     declarationKeyword,
     assignments.map(clearAssignmentUniqueIDsAndSourceMaps),
     '',
   )
-  const uid = generateUIDAndAddToExistingUIDs(sourceFile, withoutUID, alreadyExistingUIDs)
+  const uid = generateUIDAndAddToExistingUIDs(
+    sourceFile,
+    withoutUID,
+    alreadyExistingUIDs,
+    nodeOrNodes,
+  )
   return jsAssignmentStatement(declarationKeyword, assignments, uid)
 }
 
@@ -963,6 +964,7 @@ function parseJSArbitraryStatement(
               alreadyExistingUIDs,
               getDeclarationKind(variableStatement),
               declarationsAndMetadata.map((d) => d.value),
+              variableStatement,
             )
           }, possibleDeclarations)
 
@@ -1007,6 +1009,7 @@ function parseOtherJavaScript<T extends { uid: string }>(
     parsedElementsWithin: ElementsWithinInPosition,
     params: Array<Param>,
     statements: Array<JSArbitraryStatement>,
+    nodes: Array<TS.Node>,
   ) => Either<string, T | null>,
 ): Either<string, WithParserMetadata<T> | null> {
   if (expressionsAndTexts.length === 0) {
@@ -1474,6 +1477,13 @@ function parseOtherJavaScript<T extends { uid: string }>(
       }
     }
 
+    let nodes: Array<TS.Node> = []
+    for (const { expression } of expressionsAndTexts) {
+      if (expression != null) {
+        nodes.push(expression)
+      }
+    }
+
     // Helpfully it appears that in JSX elements the start and end are
     // offset by 1, meaning that if we use them to get the text
     // the string is total nonsense.
@@ -1517,7 +1527,7 @@ function parseOtherJavaScript<T extends { uid: string }>(
         buildHighlightBoundsForExpressionsAndText(sourceFile, expressionsAndTexts, created.uid),
       )
       return withParserMetadata(created, highlightBounds, propsUsed, definedElsewhere)
-    }, failOnNullResult(create(code, definedWithin, definedElsewhere, fileNode, parsedElementsWithin, paramsToUse, statements)))
+    }, failOnNullResult(create(code, definedWithin, definedElsewhere, fileNode, parsedElementsWithin, paramsToUse, statements, nodes)))
   }
 }
 
@@ -1676,6 +1686,7 @@ export function parseJSExpressionMapOrOtherJavascript(
         value.valuesInScopeFromParameters,
         comments,
         alreadyExistingUIDs,
+        jsxExpression,
       )
     }, rightValue)
     return {
@@ -1800,10 +1811,12 @@ function generateUIDAndAddToExistingUIDs(
   sourceFile: TS.SourceFile,
   value: any,
   alreadyExistingUIDs: Set<string>,
+  nodeOrNodes: TS.Node | Array<TS.Node>,
 ): string {
   const hash = hashObject({
     fileName: sourceFile.fileName,
     value: value,
+    bounds: getBoundsOfNodes(sourceFile, nodeOrNodes),
   })
   const uid = generateConsistentUID(hash, alreadyExistingUIDs)
   alreadyExistingUIDs.add(uid)
@@ -1815,8 +1828,9 @@ function createRawExpressionValue(
   value: any,
   comments: ParsedComments,
   alreadyExistingUIDs: Set<string>,
+  nodeOrNodes: TS.Node | Array<TS.Node>,
 ): JSExpressionValue<any> {
-  const uid = generateUIDAndAddToExistingUIDs(sourceFile, value, alreadyExistingUIDs)
+  const uid = generateUIDAndAddToExistingUIDs(sourceFile, value, alreadyExistingUIDs, nodeOrNodes)
   return jsExpressionValue(value, comments, uid)
 }
 
@@ -1827,7 +1841,13 @@ function createExpressionValue(
   comments: ParsedComments,
   alreadyExistingUIDs: Set<string>,
 ): WithParserMetadata<JSExpressionValue<any>> {
-  const expression = createRawExpressionValue(sourceFile, value, comments, alreadyExistingUIDs)
+  const expression = createRawExpressionValue(
+    sourceFile,
+    value,
+    comments,
+    alreadyExistingUIDs,
+    node,
+  )
   return withParserMetadata(
     expression,
     buildHighlightBoundsForUids(sourceFile, node, expression.uid),
@@ -1843,6 +1863,7 @@ function createMapExpression(
   valuesInScopeFromParameters: Array<string>,
   comments: ParsedComments,
   alreadyExistingUIDs: Set<string>,
+  nodeOrNodes: TS.Node | Array<TS.Node>,
 ): JSXMapExpression {
   const withoutUID = jsxMapExpression(
     clearExpressionUniqueIDs(valueToMap),
@@ -1851,7 +1872,13 @@ function createMapExpression(
     valuesInScopeFromParameters,
     '',
   )
-  const uid = getUIDFromCommentsOrValue(comments, sourceFile, withoutUID, alreadyExistingUIDs)
+  const uid = getUIDFromCommentsOrValue(
+    comments,
+    sourceFile,
+    withoutUID,
+    alreadyExistingUIDs,
+    nodeOrNodes,
+  )
   return jsxMapExpression(valueToMap, mapFunction, comments, valuesInScopeFromParameters, uid)
 }
 
@@ -1915,7 +1942,7 @@ function createExpressionNestedArray(
   definedElsewhere: Array<string>,
 ): WithParserMetadata<JSExpressionNestedArray> {
   const value = jsExpressionNestedArray(arrayContents, comments, '')
-  const uid = generateUIDAndAddToExistingUIDs(sourceFile, value, alreadyExistingUIDs)
+  const uid = generateUIDAndAddToExistingUIDs(sourceFile, value, alreadyExistingUIDs, node)
   const expression = jsExpressionNestedArray(arrayContents, comments, uid)
   return withParserMetadata(
     expression,
@@ -1935,7 +1962,7 @@ function createExpressionNestedObject(
   definedElsewhere: Array<string>,
 ): WithParserMetadata<JSExpressionNestedObject> {
   const value = jsExpressionNestedObject(objectContents, comments, '')
-  const uid = generateUIDAndAddToExistingUIDs(sourceFile, value, alreadyExistingUIDs)
+  const uid = generateUIDAndAddToExistingUIDs(sourceFile, value, alreadyExistingUIDs, node)
   const expression = jsExpressionNestedObject(objectContents, comments, uid)
   return withParserMetadata(
     expression,
@@ -1955,7 +1982,7 @@ function createExpressionFunctionCall(
   definedElsewhere: Array<string>,
 ): WithParserMetadata<JSExpressionFunctionCall> {
   const value = jsExpressionFunctionCall(functionName, parameters, '')
-  const uid = generateUIDAndAddToExistingUIDs(sourceFile, value, alreadyExistingUIDs)
+  const uid = generateUIDAndAddToExistingUIDs(sourceFile, value, alreadyExistingUIDs, node)
   const expression = jsExpressionFunctionCall(functionName, parameters, uid)
   return withParserMetadata(
     expression,
@@ -1970,18 +1997,15 @@ function getUIDFromCommentsOrValue(
   sourceFile: TS.SourceFile,
   value: JSExpression,
   alreadyExistingUIDs: Set<string>,
+  nodeOrNodes: TS.Node | Array<TS.Node>,
 ): string {
   const parsedUID = parseUIDFromComments(comments)
   return foldEither(
     () => {
-      return generateUIDAndAddToExistingUIDs(sourceFile, value, alreadyExistingUIDs)
+      return generateUIDAndAddToExistingUIDs(sourceFile, value, alreadyExistingUIDs, nodeOrNodes)
     },
     (uidFromComments) => {
-      if (alreadyExistingUIDs.has(uidFromComments)) {
-        return generateUIDAndAddToExistingUIDs(sourceFile, value, alreadyExistingUIDs)
-      } else {
-        return uidFromComments
-      }
+      return uidFromComments
     },
     parsedUID,
   )
@@ -2034,7 +2058,7 @@ function createJSElementAccess(
     originalJavascript,
     optionallyChained,
   )
-  const uid = getUIDFromCommentsOrValue(comments, sourceFile, value, alreadyExistingUIDs)
+  const uid = getUIDFromCommentsOrValue(comments, sourceFile, value, alreadyExistingUIDs, node)
   const valueWithUID = jsElementAccess(
     onValue,
     element,
@@ -2071,7 +2095,7 @@ function createJSPropertyAccess(
     originalJavascript,
     optionallyChained,
   )
-  const uid = getUIDFromCommentsOrValue(comments, sourceFile, value, alreadyExistingUIDs)
+  const uid = getUIDFromCommentsOrValue(comments, sourceFile, value, alreadyExistingUIDs, node)
   const valueWithUID = jsPropertyAccess(
     onValue,
     property,
@@ -2097,7 +2121,7 @@ function createJSIdentifier(
   alreadyExistingUIDs: Set<string>,
 ): WithParserMetadata<JSIdentifier> {
   const value = jsIdentifier(identifierName, '', null, comments)
-  const uid = getUIDFromCommentsOrValue(comments, sourceFile, value, alreadyExistingUIDs)
+  const uid = getUIDFromCommentsOrValue(comments, sourceFile, value, alreadyExistingUIDs, node)
   const valueWithUID = jsIdentifier(
     identifierName,
     uid,
@@ -2123,6 +2147,7 @@ function createArbitraryJSBlock(
   elementsWithin: ElementsWithin,
   alreadyExistingUIDs: Set<string>,
   statements: Array<JSArbitraryStatement>,
+  nodeOrNodes: TS.Node | Array<TS.Node>,
 ): ArbitraryJSBlock {
   const value = arbitraryJSBlock(
     params,
@@ -2135,7 +2160,7 @@ function createArbitraryJSBlock(
     statements,
     '',
   )
-  const uid = generateUIDAndAddToExistingUIDs(sourceFile, value, alreadyExistingUIDs)
+  const uid = generateUIDAndAddToExistingUIDs(sourceFile, value, alreadyExistingUIDs, nodeOrNodes)
   return arbitraryJSBlock(
     params,
     javascript,
@@ -2155,7 +2180,7 @@ function createJSXTextBlock(
   text: string,
   alreadyExistingUIDs: Set<string>,
 ): WithParserMetadata<JSXTextBlock> {
-  const uid = generateUIDAndAddToExistingUIDs(sourceFile, text, alreadyExistingUIDs)
+  const uid = generateUIDAndAddToExistingUIDs(sourceFile, text, alreadyExistingUIDs, node)
   const block = jsxTextBlock(text, uid)
   return withParserMetadata(block, buildHighlightBoundsForUids(sourceFile, node, uid), [], [])
 }
@@ -3096,6 +3121,7 @@ function forciblyUpdateDataUID(
     uid,
     emptyComments,
     alreadyExistingUIDs,
+    originatingElement,
   )
   const updatedProps =
     props == null ? null : setJSXAttributesAttribute(props, 'data-uid', uidExpression)
@@ -3941,6 +3967,7 @@ export function parseArbitraryNodes(
       parsedElementsWithin,
       params,
       statements,
+      nodes,
     ) => {
       // No need to create an arbitrary block that basically contains no code.
       if (code.trim() === '') {
@@ -3991,6 +4018,7 @@ export function parseArbitraryNodes(
             inPositionToElementsWithin(parsedElementsWithin),
             alreadyExistingUIDs,
             statements,
+            nodes,
           )
         },
         transpileEither,
