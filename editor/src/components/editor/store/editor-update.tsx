@@ -493,6 +493,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_SHARING_DIALOG_OPEN(action, state)
     case 'REPLACE_MAPPED_ELEMENT':
       return UPDATE_FNS.REPLACE_MAPPED_ELEMENT(action, state)
+    case 'REPLACE_ELEMENT_IN_SCOPE':
+      return UPDATE_FNS.REPLACE_ELEMENT_IN_SCOPE(action, state)
     default:
       return state
   }

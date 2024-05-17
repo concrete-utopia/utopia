@@ -2174,17 +2174,40 @@ export function syntheticNavigatorEntry(
   }
 }
 
+interface RenderedAtPropertyPath {
+  type: 'element-property-path'
+  elementPropertyPath: ElementPropertyPath
+}
+
+interface RenderedAtChildNode {
+  type: 'child-node'
+  parentPath: ElementPath
+  nodeUid: string
+}
+
+export type RenderedAt = RenderedAtPropertyPath | RenderedAtChildNode
+
+export function renderedAtPropertyPath(
+  elementPropertyPath: ElementPropertyPath,
+): RenderedAtPropertyPath {
+  return { type: 'element-property-path', elementPropertyPath: elementPropertyPath }
+}
+
+export function renderedAtChildNode(parentPath: ElementPath, nodeUid: string): RenderedAtChildNode {
+  return { type: 'child-node', parentPath: parentPath, nodeUid: nodeUid }
+}
+
 export interface DataReferenceNavigatorEntry {
   type: 'DATA_REFERENCE'
   elementPath: ElementPath
-  renderedAt: ElementPropertyPath | null
+  renderedAt: RenderedAt
   surroundingScope: ElementPath
   childOrAttribute: JSXElementChild
 }
 
 export function dataReferenceNavigatorEntry(
   elementPath: ElementPath,
-  renderedAt: ElementPropertyPath | null,
+  renderedAt: RenderedAt,
   surroundingScope: ElementPath,
   childOrAttribute: JSXElementChild,
 ): DataReferenceNavigatorEntry {

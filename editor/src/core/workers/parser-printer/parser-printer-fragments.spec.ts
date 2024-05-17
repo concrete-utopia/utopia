@@ -18,33 +18,33 @@ describe('JSX parser', () => {
           JSX_ELEMENT - View - aaa
             JSX_FRAGMENT - ggg
               JSX_ELEMENT - div - bbb
-                JSX_TEXT_BLOCK - 3ed
-                JSX_FRAGMENT - 670
+                JSX_TEXT_BLOCK - 481
+                JSX_FRAGMENT - 630
                   JSX_ELEMENT - div - ccc
-                      ATTRIBUTE_VALUE - 842
-                      ATTRIBUTE_VALUE - 2a9
-                  ATTRIBUTE_VALUE - c56
-                  ATTRIBUTE_VALUE - f10
+                      ATTRIBUTE_VALUE - 193
+                      ATTRIBUTE_VALUE - eb5
+                  ATTRIBUTE_VALUE - d11
+                  ATTRIBUTE_VALUE - 9ec
             JSX_ELEMENT - div - ddd
-              JSX_TEXT_BLOCK - 3d0
-              JS_PROPERTY_ACCESS - 296
-              ATTRIBUTE_VALUE - 683
-              ATTRIBUTE_VALUE - ab2
+              JSX_TEXT_BLOCK - 935
+              JS_PROPERTY_ACCESS - 622
+              ATTRIBUTE_VALUE - b79
+              ATTRIBUTE_VALUE - 4f5
         UNPARSED_CODE
         UTOPIA_JSX_COMPONENT - storyboard
           JSX_ELEMENT - Storyboard - eee
             JSX_ELEMENT - Scene - fff
               JSX_ELEMENT - App - app
-                  ATTRIBUTE_VALUE - 207
-                  ATTRIBUTE_VALUE - 791
-                  ATTRIBUTE_VALUE - bd1
-                  ATTRIBUTE_VALUE - a4b
-                  ATTRIBUTE_VALUE - da5
-                ATTRIBUTE_VALUE - 09a
-                ATTRIBUTE_VALUE - 78a
-                ATTRIBUTE_VALUE - d89
-                ATTRIBUTE_VALUE - 4bd
-                ATTRIBUTE_VALUE - e9e
+                  ATTRIBUTE_VALUE - 753
+                  ATTRIBUTE_VALUE - 2c3
+                  ATTRIBUTE_VALUE - 417
+                  ATTRIBUTE_VALUE - 266
+                  ATTRIBUTE_VALUE - 498
+                ATTRIBUTE_VALUE - 7c2
+                ATTRIBUTE_VALUE - d23
+                ATTRIBUTE_VALUE - 14f
+                ATTRIBUTE_VALUE - c79
+                ATTRIBUTE_VALUE - 0c4
         UNPARSED_CODE"
       `)
 

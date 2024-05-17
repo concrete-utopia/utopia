@@ -890,11 +890,11 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       'regular-sb/scene1',
       'regular-sb/scene1/container1',
       'regular-sb/scene1/container1:container-root-div',
-      'regular-sb/scene1/container1:container-root-div/afd',
+      'regular-sb/scene1/container1:container-root-div/135',
       'regular-sb/scene1/container1/hello',
       'regular-sb/container2',
       'regular-sb/container2:container-root-div',
-      'regular-sb/container2:container-root-div/afd',
+      'regular-sb/container2:container-root-div/135',
       'regular-sb/container2/hi',
     ])
 
