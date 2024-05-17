@@ -1,17 +1,7 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
-import fastDeepEquals from 'fast-deep-equal'
-import React, {
-  type CSSProperties,
-  Fragment,
-  type MouseEvent,
-  type RefObject,
-  type ReactNode,
-  memo,
-  useCallback,
-  useMemo,
-} from 'react'
+import React from 'react'
 import {
   contextMenu,
   Item,
@@ -29,7 +19,7 @@ import { BodyMenuOpenClass } from '../core/shared/utils'
 
 interface Submenu<T> {
   items: Item<T>[]
-  label: string | ReactNode
+  label: string | React.ReactNode
   type: 'submenu'
 }
 
@@ -45,17 +35,17 @@ export type Item<T> = ContextMenuItem<T> | null
 export type ContextMenuData<T> = Item<T>[] | null
 
 export interface ContextMenuWrapperProps<T> {
-  children?: ReactNode
+  children?: React.ReactNode
   className?: string
   data: T
   dispatch?: EditorDispatch
-  forwardRef?: RefObject<HTMLDivElement>
+  forwardRef?: React.RefObject<HTMLDivElement>
   id: string
   innerClassName?: string
   items: ContextMenuItem<T>[]
-  providerStyle?: CSSProperties
+  providerStyle?: React.CSSProperties
   renderTag?: string
-  style?: CSSProperties
+  style?: React.CSSProperties
   testId?: string
 }
 
@@ -70,7 +60,7 @@ const onShown = () => document.body.classList.add(BodyMenuOpenClass)
 const onHidden = () => document.body.classList.remove(BodyMenuOpenClass)
 
 export const MomentumContextMenu = <T,>({ dispatch, getData, id, items }: ContextMenuProps<T>) => {
-  const splitItems = useMemo(() => {
+  const splitItems = React.useMemo(() => {
     const tempItems: MenuItem<T>[] = []
 
     for (const item of items) {
@@ -98,7 +88,7 @@ export const MomentumContextMenu = <T,>({ dispatch, getData, id, items }: Contex
     return tempItems
   }, [items])
 
-  const isHidden = useCallback(
+  const isHidden = React.useCallback(
     (item: Item<T>): (() => boolean) => {
       return () => {
         if (typeof item?.isHidden === 'function') {
@@ -110,7 +100,7 @@ export const MomentumContextMenu = <T,>({ dispatch, getData, id, items }: Contex
     [getData],
   )
 
-  const isDisabled = useCallback(
+  const isDisabled = React.useCallback(
     (item: Item<T>): (() => boolean) =>
       () => {
         return typeof item?.enabled === 'function' ? !item.enabled(getData?.()) : !item?.enabled
@@ -118,7 +108,7 @@ export const MomentumContextMenu = <T,>({ dispatch, getData, id, items }: Contex
     [getData],
   )
 
-  const renderItem = useCallback(
+  const renderItem = React.useCallback(
     (item: Item<T>, index: number) => {
       return (
         <Item
@@ -128,7 +118,9 @@ export const MomentumContextMenu = <T,>({ dispatch, getData, id, items }: Contex
           onClick={({ event, triggerEvent }) => {
             event.stopPropagation()
             const rightClickCoordinate: WindowPoint | null = (() => {
-              if (!(triggerEvent instanceof MouseEvent)) return null
+              if (!(triggerEvent instanceof MouseEvent)) {
+                return null
+              }
               return windowPoint({ x: triggerEvent.clientX, y: triggerEvent.clientY })
             })()
             item?.action(getData(), dispatch, rightClickCoordinate, event)
@@ -172,7 +164,9 @@ export const MomentumContextMenu = <T,>({ dispatch, getData, id, items }: Contex
             </SubmenuComponent>
           )
         } else {
-          if (item === null) return null
+          if (item === null) {
+            return null
+          }
           return renderItem(item.item, index)
         }
       })}
@@ -193,12 +187,12 @@ export const ContextMenuWrapper = <T,>({
 }: ContextMenuWrapperProps<T>) => {
   const name = `${id}-context-menu-wrapper`
 
-  const stopPropagation = useCallback(
-    (event: MouseEvent<HTMLElement>) => event.stopPropagation(),
+  const stopPropagation = React.useCallback(
+    (event: React.MouseEvent<HTMLElement>) => event.stopPropagation(),
     [],
   )
 
-  const getData = useCallback(() => data, [data])
+  const getData = React.useCallback(() => data, [data])
 
   return (
     <div
@@ -248,7 +242,7 @@ export const InspectorContextMenuWrapper = <T,>({
 }: ContextMenuWrapperProps<T>) => {
   const name = `${id}-context-menu-wrapper`
 
-  const getData = useCallback(() => data, [data])
+  const getData = React.useCallback(() => data, [data])
 
   return (
     <div
@@ -276,10 +270,10 @@ export const InspectorContextMenuWrapper = <T,>({
 }
 
 interface MenuProviderProps {
-  children: ReactNode
+  children: React.ReactNode
   id: string
   itemsLength: number
-  style?: CSSProperties
+  style?: React.CSSProperties
   localXHack_KILLME?: 'local-x-coord-KILLME' | 'default' // FIXME: remove this, this is just here because react-contexify positions the context menu to the global position of the mouse, so MomentumContextMenu should in the root
 }
 
@@ -292,9 +286,11 @@ export const MenuProvider = ({
 }: MenuProviderProps) => {
   const { show } = useContextMenu({ id })
 
-  const onContextMenu = useCallback(
-    (event: MouseEvent<HTMLDivElement>) => {
-      if (itemsLength <= 0) return
+  const onContextMenu = React.useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      if (itemsLength <= 0) {
+        return
+      }
 
       show(
         event,
