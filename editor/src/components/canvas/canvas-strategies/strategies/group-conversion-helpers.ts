@@ -7,7 +7,6 @@ import {
   MetadataUtils,
   getZIndexOrderedViewsWithoutDirectChildren,
 } from '../../../../core/model/element-metadata-utils'
-import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
 import {
   removeBackgroundProperties,
   removeMarginProperties,
@@ -127,6 +126,7 @@ import type { Optic } from '../../../../core/shared/optics/optics'
 import type { EditorContract } from './contracts/contract-helpers'
 import { useRefEditorState } from '../../../editor/store/store-hook'
 import { useDispatch } from '../../../editor/store/dispatch-context'
+import { generateUID } from '../../../../core/shared/uid-utils'
 
 const GroupImport: Imports = {
   'utopia-api': {
@@ -1014,7 +1014,7 @@ export function createWrapInGroupActions(
   // create a group with all elements as children
   const group = jsxElement(
     'Group',
-    generateUidWithExistingComponents(projectContents),
+    generateUID(),
     jsxAttributesFromMap({
       style: jsExpressionValue(
         // set group size here so we don't have to true it up

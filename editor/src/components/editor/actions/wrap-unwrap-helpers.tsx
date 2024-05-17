@@ -10,7 +10,6 @@ import {
   propertyHasSimpleValue,
 } from '../../../core/model/element-metadata-utils'
 import {
-  generateUidWithExistingComponents,
   insertJSXElementChildren,
   renameJsxElementChild,
   transformJSXComponentAtPath,
@@ -62,7 +61,7 @@ import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
 import { addElement } from '../../canvas/commands/add-element-command'
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
-import { fixUtopiaElementGeneric } from '../../../core/shared/uid-utils'
+import { fixUtopiaElementGeneric, generateUID } from '../../../core/shared/uid-utils'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { foldEither, right } from '../../../core/shared/either'
 import { editorStateToElementChildOptic } from '../../../core/model/common-optics'
@@ -102,7 +101,7 @@ export function unwrapConditionalClause(
                     )
                     return childElement
                   } else {
-                    const newUID = generateUidWithExistingComponents(editor.projectContents)
+                    const newUID = generateUID()
                     newSelection.push(EP.appendToPath(parentPath.intendedParentPath, newUID))
                     return jsxFragment(newUID, clauseElement.children, false)
                   }
@@ -172,7 +171,7 @@ export function unwrapTextContainingConditional(
     (success) => {
       const components = getUtopiaJSXComponentsFromSuccess(success)
 
-      const wrapperUID = generateUidWithExistingComponents(editor.projectContents)
+      const wrapperUID = generateUID()
       const insertionPath = getInsertionPath(
         targetParent,
         editor.projectContents,

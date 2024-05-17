@@ -4,7 +4,6 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { elementPathFromInsertionPath } from '../../../../core/model/element-template-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { foldEither, isRight } from '../../../../core/shared/either'
-import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
 import * as EP from '../../../../core/shared/element-path'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import type {
@@ -43,13 +42,14 @@ import {
   emptyImports,
   emptyImportsMergeResolution,
 } from '../../../../core/workers/common/project-file-utils'
+import { generateUID } from '../../../../core/shared/uid-utils'
 
 function getNavigatorReparentCommands(
   data: NavigatorReparentPostActionMenuData,
   editor: EditorState,
   builtInDependencies: BuiltInDependencies,
 ): Array<CanvasCommand> | null {
-  const wrapperUID = generateUidWithExistingComponents(editor.projectContents)
+  const wrapperUID = generateUID()
 
   const newParentPath = getInsertionPath(
     data.targetParent,

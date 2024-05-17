@@ -25,7 +25,6 @@ import { mergeImports } from '../../../core/workers/common/project-file-utils'
 import { absolute } from '../../../utils/utils'
 import type { ProjectContentTreeRoot } from '../../assets'
 import {
-  generateUidWithExistingComponents,
   getIndexInParent,
   insertJSXElementChildren,
 } from '../../../core/model/element-template-utils'
@@ -33,7 +32,7 @@ import { getInsertionPath } from '../../editor/store/insertion-path'
 import { jsxTextBlock } from '../../../core/shared/element-template'
 import type { CSSProperties } from 'react'
 import type { Property } from 'csstype'
-import { generateConsistentUID } from '../../../core/shared/uid-utils'
+import { generateConsistentUID, generateUID } from '../../../core/shared/uid-utils'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { getSimpleAttributeAtPath } from '../../../core/model/element-metadata-utils'
 import { forEachRight, right } from '../../../core/shared/either'
@@ -85,13 +84,12 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
         command.wrapper,
         command.wrapperUID,
         elementToWrap,
-        editor.projectContents,
       )
 
       // Insert the wrapper at the initial index
       const targetParent = EP.parentPath(command.target)
 
-      const wrapperUID = generateUidWithExistingComponents(editor.projectContents)
+      const wrapperUID = generateUID()
       const insertionPath = getInsertionPath(
         targetParent,
         editor.projectContents,
@@ -141,7 +139,6 @@ const getInsertionSubjectWrapper = (
   insertionSubjectWrapper: InsertionSubjectWrapper,
   wrapperUID: string,
   elementToWrap: JSXElementChild,
-  projectContents: ProjectContentTreeRoot,
 ): {
   wrapper: JSXElementChild
   imports: Imports
@@ -154,7 +151,7 @@ const getInsertionSubjectWrapper = (
           jsExpressionValue(true, emptyComments),
           'true',
           elementToWrap,
-          getInsertionSubjectWrapperConditionalFalseBranch(projectContents, elementToWrap),
+          getInsertionSubjectWrapperConditionalFalseBranch(elementToWrap),
           emptyComments,
         ),
         imports: {},
@@ -241,13 +238,9 @@ function getInsertionSubjectStyleFromConditionalTrueBranch(
 }
 
 function getInsertionSubjectWrapperConditionalFalseBranch(
-  projectContents: ProjectContentTreeRoot,
   trueBranch: JSXElementChild,
 ): JSXElementChild {
-  const uid = generateConsistentUID(
-    'false-branch',
-    new Set(getAllUniqueUids(projectContents).uniqueIDs),
-  )
+  const uid = generateConsistentUID('false-branch')
 
   const style = getInsertionSubjectStyleFromConditionalTrueBranch(trueBranch)
 

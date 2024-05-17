@@ -454,7 +454,7 @@ function insertComponentPickerItem(
   insertionTarget: InsertionTarget,
 ) {
   const uniqueIds = new Set(getAllUniqueUids(projectContents).uniqueIDs)
-  const uid = generateConsistentUID('prop', uniqueIds)
+  const uid = generateConsistentUID('prop')
   const elementWithoutUID = toInsert.element()
 
   const actions = ((): Array<EditorAction> => {
@@ -586,8 +586,7 @@ function insertPreferredChild(
   dispatch: EditorDispatch,
   insertionTarget: InsertionTarget,
 ) {
-  const uniqueIds = new Set(getAllUniqueUids(projectContents).uniqueIDs)
-  const uid = generateConsistentUID('prop', uniqueIds)
+  const uid = generateConsistentUID('prop')
   const toInsert = elementToInsertToInsertableComponent(
     preferredChildToInsert,
     uid,

@@ -14,7 +14,6 @@ import { createDirectInsertImageActions, Clipboard } from '../utils/clipboard'
 import { imagePathURL } from '../common/server'
 import type { ProjectContentTreeRoot } from '../components/assets'
 import { createJsxImage, getFrameAndMultiplier } from '../components/images'
-import { generateUidWithExistingComponentsAndExtraUids } from '../core/model/element-template-utils'
 import type React from 'react'
 import type { CanvasPositions } from '../components/canvas/canvas-types'
 import type { AllElementProps, EditorState } from '../components/editor/store/editor-state'
@@ -27,6 +26,7 @@ import { optionalMap } from '../core/shared/optional-utils'
 import { emptyComments, jsExpressionValue } from '../core/shared/element-template'
 import { fromString } from '../core/shared/element-path'
 import { childInsertionPath } from '../components/editor/store/insertion-path'
+import { generateUID } from '../core/shared/uid-utils'
 
 export async function getPastedImages(dataTransfer: DataTransfer): Promise<ImageResult[]> {
   const result = await Clipboard.parseClipboardData(dataTransfer)
@@ -285,8 +285,7 @@ function actionsForDroppedImages(
         filename: filename,
       },
       {
-        generateUid: () =>
-          generateUidWithExistingComponentsAndExtraUids(context.projectContents, uidsSoFar),
+        generateUid: () => generateUID(),
         scale: context.scale,
         mousePosition: context.mousePosition,
         isUserLoggedIn: isLoggedIn(context.loginState),

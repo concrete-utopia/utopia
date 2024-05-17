@@ -61,7 +61,6 @@ import {
 } from '../components/mouse-move'
 import type { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
 import { MetadataUtils } from '../core/model/element-metadata-utils'
-import { generateUidWithExistingComponents } from '../core/model/element-template-utils'
 import { last, reverse } from '../core/shared/array-utils'
 import * as EP from '../core/shared/element-path'
 import type { ElementInstanceMetadataMap } from '../core/shared/element-template'
@@ -106,6 +105,7 @@ import { isFeatureEnabled } from '../utils/feature-switches'
 import { getCanvasViewportCenter } from './paste-helpers'
 import { InsertMenuId } from '../components/editor/insertmenu'
 import { DataPasteHandler, isPasteHandler } from '../utils/paste-handler'
+import { generateUID } from '../core/shared/uid-utils'
 const ResizeObserver = ResizeObserverSyntheticDefault.default ?? ResizeObserverSyntheticDefault
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
@@ -920,7 +920,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             ),
           )
 
-          const newUID = generateUidWithExistingComponents(this.props.editor.projectContents)
+          const newUID = generateUID()
           const newElementProps: Pick<JSXImageOptions, 'width' | 'height'> = {
             width: 1,
             height: 1,
@@ -990,7 +990,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
 
             const imageParams: Partial<JSXImageOptions> = { width: width, height: height, src: src }
             const elementSize: Size = { width: width, height: height }
-            const uid = generateUidWithExistingComponents(this.props.editor.projectContents)
+            const uid = generateUID()
 
             const newElement = createJsxImage(uid, imageParams)
 

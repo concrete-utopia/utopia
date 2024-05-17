@@ -28,7 +28,6 @@ import {
 import { unless } from '../../utils/react-conditionals'
 import type { AddingFile } from './filepath-utils'
 import { applyAddingFile } from './filepath-utils'
-import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import type {
   Conflict,
   GithubFileChanges,
@@ -37,6 +36,7 @@ import type {
 } from '../../core/shared/github/helpers'
 import { useGithubFileChanges } from '../../core/shared/github/helpers'
 import { useDispatch } from '../editor/store/dispatch-context'
+import { generateUID } from '../../core/shared/uid-utils'
 
 export type FileBrowserItemType = 'file' | 'export'
 
@@ -357,11 +357,6 @@ const FileBrowserItems = React.memo(() => {
     githubUserDetails,
   ])
 
-  const generateNewUid = React.useCallback(
-    () => generateUidWithExistingComponents(projectContents),
-    [projectContents],
-  )
-
   return (
     <React.Fragment>
       {fileBrowserItems.map((element: FileBrowserItemInfo, index: number) => (
@@ -384,7 +379,7 @@ const FileBrowserItems = React.memo(() => {
             errorMessages={filterErrorMessages(element.path, errorMessages)}
             dropTarget={dropTarget}
             imageFile={element.imageFile}
-            generateNewUid={generateNewUid}
+            generateNewUid={generateUID}
           />
         </div>
       ))}

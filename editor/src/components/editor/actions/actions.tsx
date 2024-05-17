@@ -13,7 +13,6 @@ import type { InsertChildAndDetails } from '../../../core/model/element-template
 import {
   elementPathFromInsertionPath,
   findJSXElementChildAtPath,
-  generateUidWithExistingComponents,
   getIndexInParent,
   insertJSXElementChildren,
   renameJsxElementChild,
@@ -440,6 +439,7 @@ import { emptySet } from '../../../core/shared/set-utils'
 import {
   fixUtopiaElement,
   generateConsistentUID,
+  generateUID,
   getUtopiaID,
 } from '../../../core/shared/uid-utils'
 import {
@@ -2531,7 +2531,7 @@ export const UPDATE_FNS = {
       ),
     }
 
-    const wrapperUID = generateUidWithExistingComponents(editor.projectContents)
+    const wrapperUID = generateUID()
 
     const insertionPath = () => {
       if (isJSXConditionalExpression(action.whatToWrapWith.element)) {
@@ -3289,7 +3289,7 @@ export const UPDATE_FNS = {
     const imageURL = imagePathURL(assetFilename)
     const imageAttribute = jsExpressionValue(imageURL, emptyComments)
 
-    const newUID = generateUidWithExistingComponents(editor.projectContents)
+    const newUID = generateUID()
     const openUIJSFile = getOpenUIJSFileKey(editor)
 
     let actionsToRunAfterSave: Array<EditorAction> = []
@@ -3501,7 +3501,7 @@ export const UPDATE_FNS = {
   ): EditorModel => {
     const possiblyAnImage = getProjectFileByFilePath(editor.projectContents, action.imagePath)
     if (possiblyAnImage != null && isImageFile(possiblyAnImage)) {
-      const newUID = generateUidWithExistingComponents(editor.projectContents)
+      const newUID = generateUID()
       const imageURL = imagePathURL(action.imagePath)
       const imageSrcAttribute = jsExpressionValue(imageURL, emptyComments)
       const width = Utils.optionalMap((w) => w / 2, possiblyAnImage.width)
@@ -4480,7 +4480,7 @@ export const UPDATE_FNS = {
   INSERT_DROPPED_IMAGE: (action: InsertDroppedImage, editor: EditorModel): EditorModel => {
     const projectContent = action.image
     const parent = arrayToMaybe(editor.highlightedViews)
-    const newUID = generateUidWithExistingComponents(editor.projectContents)
+    const newUID = generateUID()
     const imageAttribute = jsExpressionValue(imagePathURL(action.path), emptyComments)
     const size: Size = {
       width: projectContent.width ?? 100,
@@ -5216,7 +5216,7 @@ export const UPDATE_FNS = {
 
       const existingUids = new Set(getAllUniqueUids(editor.projectContents).uniqueIDs)
 
-      const newUID = generateConsistentUID('new', existingUids)
+      const newUID = generateConsistentUID('new')
 
       const newPath = EP.appendToPath(action.insertionPath.intendedParentPath, newUID)
 

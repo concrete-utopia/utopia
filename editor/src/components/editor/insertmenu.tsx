@@ -12,7 +12,6 @@ import type {
 } from 'react-windowed-select'
 import WindowedSelect, { components, createFilter } from 'react-windowed-select'
 import { RightMenuTab } from '../../components/editor/store/editor-state'
-import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import { isLeft } from '../../core/shared/either'
 import type { JSXAttributes, JSXElementName } from '../../core/shared/element-template'
 import {
@@ -64,6 +63,7 @@ import type { InsertionSubject, Mode } from './editor-modes'
 import { usePossiblyResolvedPackageDependencies } from './npm-dependency/npm-dependency'
 import { useDispatch } from './store/dispatch-context'
 import { Substores, useEditorState } from './store/store-hook'
+import { generateUID } from '../../core/shared/uid-utils'
 
 export const InsertMenuId = 'insert-menu-inspector-tab'
 
@@ -279,12 +279,6 @@ const Option = React.memo((props: OptionProps<ComponentOptionItem, false>) => {
   const { isFocused } = props
   const isActive: boolean = (props.selectProps as any).isActive
 
-  const projectContents = useEditorState(
-    Substores.projectContents,
-    (store) => store.editor.projectContents,
-    'CustomOption project contents',
-  )
-
   const { canvasScale, canvasOffset } = useEditorState(
     Substores.canvasOffset,
     (store) => ({
@@ -319,7 +313,7 @@ const Option = React.memo((props: OptionProps<ComponentOptionItem, false>) => {
       ).canvasPositionRounded
       enableInsertMode(
         component,
-        generateUidWithExistingComponents(projectContents),
+        generateUID(),
         CanvasActions.createInteractionSession(
           createInteractionViaMouse(
             mousePoint,
@@ -331,7 +325,7 @@ const Option = React.memo((props: OptionProps<ComponentOptionItem, false>) => {
         dispatch,
       )
     },
-    [dispatch, canvasOffset, canvasScale, projectContents, component],
+    [dispatch, canvasOffset, canvasScale, component],
   )
 
   const insertItemOnMouseUp = React.useCallback(
@@ -583,7 +577,7 @@ const InsertMenuInner = React.memo((props: InsertMenuProps) => {
       if (e.key === 'Enter' && focusedOption != null) {
         enableInsertMode(
           focusedOption.value,
-          generateUidWithExistingComponents(props.projectContents),
+          generateUID(),
           CanvasActions.createInteractionSession(
             createInteractionViaMouse(
               canvasPoint({ x: 0, y: 0 }),
@@ -596,7 +590,7 @@ const InsertMenuInner = React.memo((props: InsertMenuProps) => {
         )
       }
     },
-    [dispatch, props.projectContents, focusedOption],
+    [dispatch, focusedOption],
   )
 
   const onChange = React.useCallback(

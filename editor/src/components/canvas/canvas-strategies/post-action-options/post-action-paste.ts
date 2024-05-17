@@ -2,7 +2,6 @@ import type { BuiltInDependencies } from '../../../../core/es-modules/package-ma
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import {
   elementPathFromInsertionPath,
-  generateUidWithExistingComponents,
   pathPartsFromJSXElementChild,
 } from '../../../../core/model/element-template-utils'
 import { getAllUniqueUids } from '../../../../core/model/get-unique-ids'
@@ -26,7 +25,7 @@ import type {
   ElementPathPart,
   NodeModules,
 } from '../../../../core/shared/project-file-types'
-import { fixUtopiaElement } from '../../../../core/shared/uid-utils'
+import { fixUtopiaElement, generateUID } from '../../../../core/shared/uid-utils'
 import type { ElementPasteWithMetadata } from '../../../../utils/clipboard'
 import type { IndexPosition } from '../../../../utils/utils'
 import { absolute, front } from '../../../../utils/utils'
@@ -731,7 +730,7 @@ function pasteToReplaceCommands(
           elementsToPaste.length > 1
         ) {
           parentInsertionPath.insertBehavior = replaceWithElementsWrappedInFragmentBehaviour(
-            generateUidWithExistingComponents(updatedEditor.projectContents),
+            generateUID(),
           )
         }
 

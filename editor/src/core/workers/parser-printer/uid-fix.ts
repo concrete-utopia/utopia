@@ -161,11 +161,7 @@ function updateUID<T>(
           // The UID is unchanged, but the UID is already used elsewhere in the new structure:
           // - Generate a new consistent UID.
           // - Add a mapping for this change.
-          uidToUse = generateConsistentUID(
-            oldUID,
-            fixUIDsState.mutableAllNewUIDs,
-            fixUIDsState.uidsExpectedToBeSeen,
-          )
+          uidToUse = generateConsistentUID(oldUID)
           addMapping(newUID, uidToUse)
         } else if (oldUID === newUID) {
           // Old one is the same as the new one, so everything is great.
@@ -708,11 +704,7 @@ export function fixJSXElementUIDs(
   let dataUIDPropUID: string
   if (newDataUIDProp == null) {
     // Backup case for where there is no `data-uid` prop.
-    dataUIDPropUID = generateConsistentUID(
-      elementWithUpdatedUID.uid,
-      fixUIDsState.mutableAllNewUIDs,
-      fixUIDsState.uidsExpectedToBeSeen,
-    )
+    dataUIDPropUID = generateConsistentUID(elementWithUpdatedUID.uid)
     fixUIDsState.mutableAllNewUIDs.add(dataUIDPropUID)
   } else {
     if (oldDataUIDPropUIDInUseElsewhere) {

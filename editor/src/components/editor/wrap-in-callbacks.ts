@@ -99,10 +99,10 @@ function wrapInDivCommands(
 
   const allIds = new Set(getAllUniqueUids(projectContents).allIDs)
 
-  const wrapperUid = generateConsistentUID('wrapper', allIds)
+  const wrapperUid = generateConsistentUID('wrapper')
   allIds.add(wrapperUid)
 
-  const fragmentWrapperUid = generateConsistentUID('fragment-wrapper', allIds)
+  const fragmentWrapperUid = generateConsistentUID('fragment-wrapper')
 
   const parentPath = EP.getCommonParentOfNonemptyPathArray(selectedViews)
   const insertionPath = getInsertionPath(

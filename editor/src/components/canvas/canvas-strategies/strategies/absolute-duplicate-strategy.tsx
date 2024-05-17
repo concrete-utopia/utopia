@@ -1,4 +1,3 @@
-import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
 import * as EP from '../../../../core/shared/element-path'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import type {
@@ -38,6 +37,7 @@ import * as PP from '../../../../core/shared/property-path'
 import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import { strictEvery } from '../../../../core/shared/array-utils'
+import { generateUID } from '../../../../core/shared/uid-utils'
 
 export function absoluteDuplicateStrategy(
   canvasState: InteractionCanvasState,
@@ -99,9 +99,7 @@ export function absoluteDuplicateStrategy(
 
         flattenedSelectionForMultiSelect.forEach((selectedElement) => {
           const selectedElementString = EP.toString(selectedElement)
-          const newUid =
-            duplicatedElementNewUids[selectedElementString] ??
-            generateUidWithExistingComponents(canvasState.projectContents)
+          const newUid = duplicatedElementNewUids[selectedElementString] ?? generateUID()
           duplicatedElementNewUids[selectedElementString] = newUid
 
           const newPath = EP.appendToPath(EP.parentPath(selectedElement), newUid)

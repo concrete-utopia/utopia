@@ -1,5 +1,4 @@
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import type { ElementPath } from '../../core/shared/project-file-types'
 import { importAlias, importDetails } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
@@ -149,6 +148,7 @@ import { allowedToEditProject } from './store/collaborative-editing'
 import { hasCommentPermission } from './store/permissions'
 import { type ShowComponentPickerContextMenuCallback } from '../navigator/navigator-item/component-picker-context-menu'
 import { showReplaceComponentPicker } from '../context-menu-items'
+import { generateUID } from '../../core/shared/uid-utils'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -646,7 +646,7 @@ export function handleKeyDown(
       },
       [INSERT_RECTANGLE_SHORTCUT]: () => {
         if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
-          const newUID = generateUidWithExistingComponents(editor.projectContents)
+          const newUID = generateUID()
           return addCreateHoverInteractionActionToSwitchModeAction(
             EditorActions.enableInsertModeForJSXElement(
               defaultRectangleElement(newUID),
@@ -664,7 +664,7 @@ export function handleKeyDown(
       },
       [INSERT_ELLIPSE_SHORTCUT]: () => {
         if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
-          const newUID = generateUidWithExistingComponents(editor.projectContents)
+          const newUID = generateUID()
           return addCreateHoverInteractionActionToSwitchModeAction(
             EditorActions.enableInsertModeForJSXElement(
               defaultEllipseElement(newUID),
@@ -697,7 +697,7 @@ export function handleKeyDown(
           return []
         }
 
-        const newUID = generateUidWithExistingComponents(editor.projectContents)
+        const newUID = generateUID()
         return addCreateHoverInteractionActionToSwitchModeAction(
           EditorActions.enableInsertModeForJSXElement(defaultDivElement(newUID), newUID, {}, null),
           modifiers,
@@ -782,7 +782,7 @@ export function handleKeyDown(
       },
       [TEXT_EDIT_MODE]: () => {
         if (allowedToEdit) {
-          const newUID = generateUidWithExistingComponents(editor.projectContents)
+          const newUID = generateUID()
 
           actions.push(
             EditorActions.enableInsertModeForJSXElement(

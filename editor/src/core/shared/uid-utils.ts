@@ -117,10 +117,7 @@ export const atoz = [
 ]
 
 // Assumes possibleStartingValue consists only of characters that are valid to begin with.
-export function generateConsistentUID(
-  possibleStartingValue: string,
-  ...existingIDSets: Array<Set<string>>
-): string {
+export function generateConsistentUID(possibleStartingValue: string): string {
   const mockUID = generateMockNextGeneratedUID()
   if (mockUID == null) {
     return possibleStartingValue
@@ -158,25 +155,12 @@ export function updateHighlightBounds(
   return result
 }
 
-export function generateUID(existingIDs: Array<string> | Set<string>): string {
+export const UID_LENGTH = 32
+
+export function generateUID(): string {
   const mockUID = generateMockNextGeneratedUID()
   if (mockUID == null) {
-    const fullUid = UUID().replace(/\-/g, '')
-    // trying to find a new 3 character substring from the full uid
-    for (let i = 0; i < fullUid.length - 3; i++) {
-      const id = fullUid.substring(i, i + 3)
-      if (Array.isArray(existingIDs)) {
-        if (!existingIDs.includes(id)) {
-          return id
-        }
-      } else {
-        if (!existingIDs.has(id)) {
-          return id
-        }
-      }
-    }
-    // if all the substrings are already used as ids, let's try again with a new full uid
-    return generateUID(existingIDs)
+    return UUID().replace(/\-/g, '').substring(0, UID_LENGTH)
   } else {
     return mockUID
   }
@@ -291,15 +275,13 @@ export function fixUtopiaElement(
 
     const uid = element.uid
     const uidProp = getJSXAttribute(fixedProps, 'data-uid')
-    if (uidProp == null || !isJSXAttributeValue(uidProp) || uniqueIDsMutable.has(uid)) {
-      const newUID = generateConsistentUID(uid, uniqueIDsMutable)
+    if (uidProp == null || !isJSXAttributeValue(uidProp)) {
+      const newUID = generateConsistentUID(uid)
       mappings.push({ originalUID: uid, newUID: newUID })
-      uniqueIDsMutable.add(newUID)
-      const newUIDForProp = generateConsistentUID(uid, uniqueIDsMutable)
+      const newUIDForProp = generateConsistentUID(uid)
       if (uidProp != null) {
         mappings.push({ originalUID: uidProp.uid, newUID: newUIDForProp })
       }
-      uniqueIDsMutable.add(newUIDForProp)
       const elementPropsWithNewUID = setJSXValueAtPath(
         fixedProps,
         UtopiaIDPropertyPath,
@@ -328,23 +310,11 @@ export function fixUtopiaElement(
     }
   }
 
-  function addAndMaybeUpdateUID(currentUID: string): string {
-    const fixedUID = uniqueIDsMutable.has(currentUID)
-      ? generateConsistentUID(currentUID, uniqueIDsMutable)
-      : currentUID
-    if (fixedUID !== currentUID) {
-      mappings.push({ originalUID: currentUID, newUID: fixedUID })
-    }
-    uniqueIDsMutable.add(fixedUID)
-    return fixedUID
-  }
-
   function fixJSXFragment(fragment: JSXFragment): JSXFragment {
     const fixedChildren = fragment.children.map((child) => fixUtopiaElementInner(child))
-    const fixedUID = addAndMaybeUpdateUID(fragment.uid)
     return {
       ...fragment,
-      uid: fixedUID,
+      uid: fragment.uid,
       children: fixedChildren,
     }
   }
@@ -352,7 +322,7 @@ export function fixUtopiaElement(
   function fixJSXConditionalExpression(
     conditional: JSXConditionalExpression,
   ): JSXConditionalExpression {
-    const fixedUID = addAndMaybeUpdateUID(conditional.uid)
+    const fixedUID = conditional.uid
     return {
       ...conditional,
       uid: fixedUID,
@@ -363,7 +333,7 @@ export function fixUtopiaElement(
   }
 
   function fixJSXTextBlock(textBlock: JSXTextBlock): JSXTextBlock {
-    const fixedUID = addAndMaybeUpdateUID(textBlock.uid)
+    const fixedUID = textBlock.uid
     return {
       ...textBlock,
       uid: fixedUID,
@@ -371,7 +341,7 @@ export function fixUtopiaElement(
   }
 
   function fixJSFunctionCall(call: JSExpressionFunctionCall): JSExpressionFunctionCall {
-    const fixedUID = addAndMaybeUpdateUID(call.uid)
+    const fixedUID = call.uid
     return {
       ...call,
       uid: fixedUID,
@@ -380,7 +350,7 @@ export function fixUtopiaElement(
   }
 
   function fixJSMapExpression(mapExpression: JSXMapExpression): JSXMapExpression {
-    const fixedUID = addAndMaybeUpdateUID(mapExpression.uid)
+    const fixedUID = mapExpression.uid
     return {
       ...mapExpression,
       uid: fixedUID,
@@ -392,7 +362,7 @@ export function fixUtopiaElement(
   function fixJSOtherJavaScript(
     otherJavaScript: JSExpressionOtherJavaScript,
   ): JSExpressionOtherJavaScript {
-    const fixedUID = addAndMaybeUpdateUID(otherJavaScript.uid)
+    const fixedUID = otherJavaScript.uid
     return {
       ...otherJavaScript,
       uid: fixedUID,
@@ -435,7 +405,7 @@ export function fixUtopiaElement(
   }
 
   function fixJSIdentifier(element: JSIdentifier): JSIdentifier {
-    const fixedUID = addAndMaybeUpdateUID(element.uid)
+    const fixedUID = element.uid
     return {
       ...element,
       uid: fixedUID,
@@ -443,7 +413,7 @@ export function fixUtopiaElement(
   }
 
   function fixJSPropertyAccess(element: JSPropertyAccess): JSPropertyAccess {
-    const fixedUID = addAndMaybeUpdateUID(element.uid)
+    const fixedUID = element.uid
     const fixedOnValue = fixJSExpression(element.onValue)
     return {
       ...element,
@@ -453,7 +423,7 @@ export function fixUtopiaElement(
   }
 
   function fixJSElementAccess(element: JSElementAccess): JSElementAccess {
-    const fixedUID = addAndMaybeUpdateUID(element.uid)
+    const fixedUID = element.uid
     const fixedOnValue = fixJSExpression(element.onValue)
     const fixedElement = fixJSExpression(element.element)
     return {
@@ -492,7 +462,7 @@ export function fixUtopiaElement(
   }
 
   function fixJSExpressionValue(value: JSExpressionValue<any>): JSExpressionValue<any> {
-    const fixedUID = addAndMaybeUpdateUID(value.uid)
+    const fixedUID = value.uid
     return {
       ...value,
       uid: fixedUID,
@@ -500,7 +470,7 @@ export function fixUtopiaElement(
   }
 
   function fixJSNestedArray(value: JSExpressionNestedArray): JSExpressionNestedArray {
-    const fixedUID = addAndMaybeUpdateUID(value.uid)
+    const fixedUID = value.uid
     return {
       ...value,
       content: value.content.map(fixJSXArrayElement),
@@ -509,7 +479,7 @@ export function fixUtopiaElement(
   }
 
   function fixJSNestedObject(value: JSExpressionNestedObject): JSExpressionNestedObject {
-    const fixedUID = addAndMaybeUpdateUID(value.uid)
+    const fixedUID = value.uid
     return {
       ...value,
       content: value.content.map(fixJSXProperty),

@@ -24,7 +24,6 @@ import type { BuiltInDependencies } from '../../../../core/es-modules/package-ma
 import { CSSCursor } from '../../canvas-types'
 import { addToReparentedToPaths } from '../../commands/add-to-reparented-to-paths-command'
 import { getStoryboardElementPath } from '../../../../core/model/scene-utils'
-import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
 import { addElement } from '../../commands/add-element-command'
 import type { CustomStrategyState, InteractionCanvasState } from '../canvas-strategy-types'
 import { duplicateElement } from '../../commands/duplicate-element-command'
@@ -37,7 +36,7 @@ import {
   getElementPathFromInsertionPath,
   getInsertionPath,
 } from '../../../editor/store/insertion-path'
-import { getUtopiaID } from '../../../../core/shared/uid-utils'
+import { generateUID, getUtopiaID } from '../../../../core/shared/uid-utils'
 import type { IndexPosition } from '../../../../utils/utils'
 import { assertNever, fastForEach } from '../../../../core/shared/utils'
 import { addElements } from '../../commands/add-elements-command'
@@ -349,8 +348,7 @@ export function placeholderCloneCommands(
     if (hasCommonAncestor) {
       const selectedElementString = EP.toString(elementPath)
       const newUid =
-        customStrategyState.duplicatedElementNewUids[selectedElementString] ??
-        generateUidWithExistingComponents(canvasState.projectContents)
+        customStrategyState.duplicatedElementNewUids[selectedElementString] ?? generateUID()
       duplicatedElementNewUids[selectedElementString] = newUid
 
       const newPath = EP.appendToPath(EP.parentPath(elementPath), newUid)
@@ -435,7 +433,7 @@ function insertIntoSlot(
     return null
   }
 
-  const wrapperFragmentUID = generateUidWithExistingComponents(projectContents)
+  const wrapperFragmentUID = generateUID()
   const conditionalCase = maybeBranchConditionalCase(parentPath, parentElement, targetPath)
   if (conditionalCase == null) {
     return null

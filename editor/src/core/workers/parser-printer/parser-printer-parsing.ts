@@ -1818,9 +1818,7 @@ function generateUIDAndAddToExistingUIDs(
     value: value,
     bounds: getBoundsOfNodes(sourceFile, nodeOrNodes),
   })
-  const uid = generateConsistentUID(hash, alreadyExistingUIDs)
-  alreadyExistingUIDs.add(uid)
-  return uid
+  return generateConsistentUID(hash)
 }
 
 function createRawExpressionValue(
@@ -3095,9 +3093,7 @@ function getUIDBasedOnElement(
     name: elementName,
     props: cleansedProps,
   })
-  const uid = generateConsistentUID(hash, alreadyExistingUIDs)
-  alreadyExistingUIDs.add(uid)
-  return uid
+  return generateConsistentUID(hash)
 }
 
 function forciblyUpdateDataUID(

@@ -60,9 +60,9 @@ import { drawToInsertTextStrategy } from './strategies/draw-to-insert-text-strat
 import { flexResizeStrategy } from './strategies/flex-resize-strategy'
 import { basicResizeStrategy } from './strategies/basic-resize-strategy'
 import type { InsertionSubject, InsertionSubjectWrapper } from '../../editor/editor-modes'
-import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
 import { retargetStrategyToChildrenOfFragmentLikeElements } from './strategies/fragment-like-helpers'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { generateUID } from '../../../core/shared/uid-utils'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -630,9 +630,7 @@ export function getWrapperWithGeneratedUid(
     return null
   }
 
-  const uid =
-    customStrategyState.strategyGeneratedUidsCache[subjects[0].uid] ??
-    generateUidWithExistingComponents(canvasState.projectContents)
+  const uid = customStrategyState.strategyGeneratedUidsCache[subjects[0].uid] ?? generateUID()
 
   return { wrapper: insertionSubjectWrapper, uid: uid }
 }

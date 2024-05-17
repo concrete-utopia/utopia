@@ -1,5 +1,4 @@
 import * as React from 'react'
-import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import { safeIndex } from '../..//core/shared/array-utils'
 import { emptyElementPath } from '../..//core/shared/element-path'
 import type {
@@ -37,6 +36,7 @@ import type { InsertMenuItem, InsertMenuItemValue } from '../canvas/ui/floating-
 import { wrapInDivStrategy } from './wrap-in-callbacks'
 import { commandsForFirstApplicableStrategy } from '../inspector/inspector-strategies/inspector-strategy'
 import type { PropertyControlsInfo } from '../custom-code/code-file'
+import { generateUID } from '../../core/shared/uid-utils'
 
 export function changeConditionalOrFragment(
   projectContents: ProjectContentTreeRoot,
@@ -66,7 +66,7 @@ export function changeConditionalOrFragment(
         wrapInElement(selectedViews, {
           element: {
             ...element,
-            uid: generateUidWithExistingComponents(projectContents),
+            uid: generateUID(),
           },
           importsToAdd: importsToAdd,
         }),
@@ -75,7 +75,7 @@ export function changeConditionalOrFragment(
     case 'insert':
       const targetParent = safeIndex(selectedViews, 0) ?? emptyElementPath
 
-      const wrapperUID = generateUidWithExistingComponents(projectContents)
+      const wrapperUID = generateUID()
 
       const insertionPath = getInsertionPath(
         targetParent,
@@ -150,7 +150,7 @@ export function changeElement(
         break
       }
 
-      const newUID = generateUidWithExistingComponents(projectContents)
+      const newUID = generateUID()
 
       const newElement = jsxElement(
         element.name,
@@ -185,7 +185,7 @@ export function changeElement(
       const targetParent: ElementPath | null =
         floatingMenuState.parentPath ?? safeIndex(selectedViews, 0) ?? null
       if (targetParent != null) {
-        const wrapperUID = generateUidWithExistingComponents(projectContents)
+        const wrapperUID = generateUID()
 
         const insertionPath = getInsertionPath(
           targetParent,

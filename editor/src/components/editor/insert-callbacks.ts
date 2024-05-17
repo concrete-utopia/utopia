@@ -1,5 +1,4 @@
 import React from 'react'
-import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import {
   jsxConditionalExpression,
   jsxElement,
@@ -34,7 +33,7 @@ import {
   elementToReparent,
   getTargetParentForOneShotInsertion,
 } from '../canvas/canvas-strategies/strategies/reparent-utils'
-import { fixUtopiaElement, generateConsistentUID } from '../../core/shared/uid-utils'
+import { fixUtopiaElement, generateConsistentUID, generateUID } from '../../core/shared/uid-utils'
 import { getAllUniqueUids } from '../../core/model/get-unique-ids'
 import { assertNever } from '../../core/shared/utils'
 import type { ComponentElementToInsert } from '../custom-code/code-file'
@@ -125,7 +124,6 @@ function useEnterDrawToInsertForElement(elementFactory: (newUID: string) => JSXE
   },
 ) => void {
   const dispatch = useDispatch()
-  const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
 
   return React.useCallback(
     (
@@ -136,7 +134,7 @@ function useEnterDrawToInsertForElement(elementFactory: (newUID: string) => JSXE
       } = {},
     ): void => {
       const modifiers = Modifier.modifiersForEvent(event)
-      const newUID = generateUidWithExistingComponents(projectContentsRef.current)
+      const newUID = generateUID()
 
       dispatch([
         enableInsertModeForJSXElement(elementFactory(newUID), newUID, {}, null, {
@@ -153,7 +151,7 @@ function useEnterDrawToInsertForElement(elementFactory: (newUID: string) => JSXE
         ),
       ])
     },
-    [dispatch, projectContentsRef, elementFactory],
+    [dispatch, elementFactory],
   )
 }
 
@@ -186,11 +184,11 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
 
       const allElementUids = new Set(getAllUniqueUids(projectContentsRef.current).uniqueIDs)
 
-      const wrappedUid = generateConsistentUID('wrapper', allElementUids)
+      const wrappedUid = generateConsistentUID('wrapper')
 
       allElementUids.add(wrappedUid)
 
-      const elementUid = generateConsistentUID('element', allElementUids)
+      const elementUid = generateConsistentUID('element')
 
       const element = elementToReparent(
         fixUtopiaElement(

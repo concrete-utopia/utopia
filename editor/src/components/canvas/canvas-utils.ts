@@ -48,10 +48,9 @@ import {
   guaranteeUniqueUids,
   isSceneElement,
   getIndexInParent,
-  generateUidWithExistingComponents,
   insertJSXElementChildren,
 } from '../../core/model/element-template-utils'
-import { getUtopiaID, setUtopiaID } from '../../core/shared/uid-utils'
+import { generateUID, getUtopiaID, setUtopiaID } from '../../core/shared/uid-utils'
 import type { ValueAtPath } from '../../core/shared/jsx-attributes'
 import {
   setJSXValuesAtPaths,
@@ -1544,7 +1543,7 @@ export function duplicate(
               return success
             }
 
-            const wrapperUID = generateUidWithExistingComponents(workingEditorState.projectContents)
+            const wrapperUID = generateUID()
 
             const insertionPath =
               conditionalCase != null
