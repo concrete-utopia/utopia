@@ -7,15 +7,12 @@ import type {
   JSXConditionalExpression,
 } from '../../core/shared/element-template'
 import {
-  emptyComments,
   getJSXAttribute,
   hasElementsWithin,
   isJSExpressionValue,
   isJSXConditionalExpression,
   isJSXElement,
   isJSXMapExpression,
-  jsExpressionOtherJavaScriptSimple,
-  jsExpressionValue,
 } from '../../core/shared/element-template'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { foldEither, isLeft, isRight } from '../../core/shared/either'
@@ -29,6 +26,8 @@ import {
   regularNavigatorEntry,
   renderPropNavigatorEntry,
   renderPropValueNavigatorEntry,
+  renderedAtChildNode,
+  renderedAtPropertyPath,
   slotNavigatorEntry,
   syntheticNavigatorEntry,
 } from '../editor/store/editor-state'
@@ -136,8 +135,8 @@ export function getNavigatorTargets(
           // add synthetic entry
           const dataRefEntry = dataReferenceNavigatorEntry(
             path,
-            null,
-            path, // TODO this should be pointing at the enclosing scope, but EP.parentPath(path) breaks if `path` is the root of a component
+            renderedAtChildNode(EP.parentPath(path), EP.toUid(path)),
+            EP.parentPath(path),
             elementFromProjectContents,
           )
           addNavigatorTargetsUnlessCollapsed(dataRefEntry)
@@ -216,7 +215,7 @@ export function getNavigatorTargets(
             const synthEntry = isFeatureEnabled('Data Entries in the Navigator')
               ? dataReferenceNavigatorEntry(
                   childPath,
-                  EPP.create(path, PP.create(prop)),
+                  renderedAtPropertyPath(EPP.create(path, PP.create(prop))),
                   path,
                   propValue,
                 )
@@ -352,7 +351,12 @@ export function getNavigatorTargets(
           const children = jsxElement.children
           children.forEach((child) => {
             const childPath = EP.appendToPath(path, child.uid)
-            const dataRefEntry = dataReferenceNavigatorEntry(childPath, null, path, child)
+            const dataRefEntry = dataReferenceNavigatorEntry(
+              childPath,
+              renderedAtChildNode(path, child.uid),
+              path,
+              child,
+            )
             addNavigatorTargetsUnlessCollapsed(dataRefEntry)
           })
         }

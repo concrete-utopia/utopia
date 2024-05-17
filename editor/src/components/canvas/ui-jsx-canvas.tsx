@@ -90,6 +90,7 @@ import { matchRoutes } from 'react-router'
 import { useAtom } from 'jotai'
 import { RemixNavigationAtom } from './remix/utopia-remix-root-component'
 import { IS_TEST_ENVIRONMENT } from '../../common/env-vars'
+import { listenForReactRouterErrors } from '../../core/shared/runtime-report-logs'
 
 applyUIDMonkeyPatch()
 
@@ -290,6 +291,10 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
   resolvedFileNames.current = [uiFilePath]
   let evaluatedFileNames = React.useRef<Array<string>>([]) // evaluated (i.e. not using a cached evaluation) this render
   evaluatedFileNames.current = [uiFilePath]
+
+  if (!IS_TEST_ENVIRONMENT) {
+    listenForReactRouterErrors(console)
+  }
 
   React.useEffect(() => {
     if (clearErrors != null) {

@@ -1061,7 +1061,7 @@ describe('Use the text editor', () => {
         'await-first-dom-report',
       )
 
-      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond/409')], false)], true)
+      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond/03d')], false)], true)
       await pressKey('enter')
       await editor.getDispatchFollowUpActionsFinished()
 
@@ -1208,7 +1208,7 @@ describe('Use the text editor', () => {
         'await-first-dom-report',
       )
 
-      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond/409')], false)], true)
+      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond/03d')], false)], true)
       await pressKey('enter')
       await editor.getDispatchFollowUpActionsFinished()
 
@@ -1312,7 +1312,7 @@ describe('Use the text editor', () => {
           true ? (
             // @utopia/uid=6b9
             [0,1,2].map(() => <div>hello</div>)
-          ) : <div data-uid='416' />
+          ) : <div data-uid='xxx' />
         }`),
         'await-first-dom-report',
       )
@@ -1323,7 +1323,7 @@ describe('Use the text editor', () => {
       expect(editor.getEditorState().editor.mode.type).toEqual('select')
       expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
       expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual(
-        'sb/39e/cond/6b9/416~~~1',
+        'sb/39e/cond/6b9/2c7~~~1',
       )
     })
     it('editing expression in the active true clause from the selected conditional', async () => {

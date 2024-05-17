@@ -170,6 +170,18 @@ export interface ReplaceMappedElement {
   importsToAdd: Imports
 }
 
+export type ElementReplacementPath = {
+  type: 'replace-child-with-uid'
+  uid: string
+  replaceWith: JSXElementChild
+}
+
+export interface ReplaceElementInScope {
+  action: 'REPLACE_ELEMENT_IN_SCOPE'
+  target: ElementPath
+  replacementPath: ElementReplacementPath
+}
+
 export interface InsertAttributeOtherJavascriptIntoElement {
   action: 'INSERT_ATTRIBUTE_OTHER_JAVASCRIPT_INTO_ELEMENT'
   expression: JSExpressionOtherJavaScript
@@ -1181,6 +1193,7 @@ export type EditorAction =
   | InsertJSXElement
   | ReplaceJSXElement
   | ReplaceMappedElement
+  | ReplaceElementInScope
   | InsertAttributeOtherJavascriptIntoElement
   | DeleteSelected
   | DeleteView

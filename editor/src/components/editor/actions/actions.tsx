@@ -344,6 +344,7 @@ import type {
   AddCollapsedViews,
   ReplaceMappedElement,
   UpdateMapExpression,
+  ReplaceElementInScope,
   ReplaceJSXElement,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
@@ -2427,6 +2428,20 @@ export const UPDATE_FNS = {
       leftMenu: { visible: editor.leftMenu.visible, selectedTab: LeftMenuTab.Navigator },
       selectedViews: newSelectedViews,
     }
+  },
+  REPLACE_ELEMENT_IN_SCOPE: (action: ReplaceElementInScope, editor: EditorModel): EditorModel => {
+    return modifyUnderlyingTarget(action.target, editor, (element) => {
+      if (element.type !== 'JSX_ELEMENT' && element.type !== 'JSX_FRAGMENT') {
+        return element
+      }
+
+      return {
+        ...element,
+        children: element.children.map((c) =>
+          c.uid !== action.replacementPath.uid ? c : action.replacementPath.replaceWith,
+        ),
+      }
+    })
   },
   INSERT_ATTRIBUTE_OTHER_JAVASCRIPT_INTO_ELEMENT: (
     action: InsertAttributeOtherJavascriptIntoElement,
