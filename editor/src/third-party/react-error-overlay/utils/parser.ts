@@ -41,12 +41,18 @@ function replaceBase64SourceMapWithCacheKey(
   return `${splitStackLine[0]}${SOURCE_MAP_SEPARATOR}${key}${splitStackLine[2]}`
 }
 
+const maxParseableErrorLength = 10000
+
 export function parseStack(stack: string[], sourceMapCache: SourceMapCache): StackFrame[] {
   const frames = stack
     // Replace the full source maps in the lines (encoded with base64) with a unique identifier and put the sourcemap into a cache.
     // This is needed because the regular expression operations later are too slow for really long lines.
     .map((e) => replaceBase64SourceMapWithCacheKey(e, sourceMapCache))
-    .filter((e) => regexValidFrame_Chrome.test(e) || regexValidFrame_FireFox.test(e))
+    .filter(
+      (e) =>
+        e.length < maxParseableErrorLength &&
+        (regexValidFrame_Chrome.test(e) || regexValidFrame_FireFox.test(e)),
+    )
     .map((e) => {
       if (regexValidFrame_FireFox.test(e)) {
         // Strip eval, we don't care about it
