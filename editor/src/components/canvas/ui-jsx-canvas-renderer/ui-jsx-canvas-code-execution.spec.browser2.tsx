@@ -97,7 +97,6 @@ describe('Updating a transitive dependency', () => {
       indirectFilePath,
       updatedIndirectFileContent,
       null,
-      emptySet(),
       'trim-bounds',
       'do-not-apply-steganography',
     ) as ParsedTextFile

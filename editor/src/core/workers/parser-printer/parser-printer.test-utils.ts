@@ -202,17 +202,10 @@ const JavaScriptReservedKeywords: Array<string> = [
 
 export function testParseCode(
   contents: string,
-  alreadyExistingUIDs: Set<string> = emptySet(),
+  _alreadyExistingUIDs_REMOVE_ME: Set<string> = emptySet(),
 ): ParsedTextFile {
   const filename = 'code.tsx'
-  const result = lintAndParse(
-    filename,
-    contents,
-    null,
-    alreadyExistingUIDs,
-    'trim-bounds',
-    'do-not-apply-steganography',
-  )
+  const result = lintAndParse(filename, contents, null, 'trim-bounds', 'do-not-apply-steganography')
   // Ensure that elements have valid unique IDs if the parse is successful.
   forEachParseSuccess((success) => {
     let uids: Array<string> = []

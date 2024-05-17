@@ -4827,7 +4827,6 @@ export const UPDATE_FNS = {
           fileToUpdate.parseSuccess,
           fileToUpdate.stripUIDs,
           fileToUpdate.versionNumber,
-          filesToUpdateResult.existingUIDs,
           isSteganographyEnabled(),
         )
         const updateAction = workerCodeAndParsedUpdate(
@@ -5743,11 +5742,7 @@ export const UPDATE_FNS = {
           if (newTopLevelElementsDeepEquals.areEqual) {
             return parsed
           } else {
-            const alreadyExistingUIDs = getAllUniqueUids(
-              removeFromProjectContents(editor.projectContents, action.fullPath),
-            ).uniqueIDs
             const fixUIDsState: FixUIDsState = {
-              mutableAllNewUIDs: new Set(alreadyExistingUIDs),
               uidsExpectedToBeSeen: new Set(),
               mappings: [],
               uidUpdateMethod: 'copy-uids-fix-duplicates',

@@ -7,7 +7,6 @@ import { applyPrettier } from 'utopia-vscode-common'
 import { parseCode } from '../core/workers/parser-printer/parser-printer'
 import { foldParsedTextFile } from '../core/shared/project-file-types'
 import { elementsStructure } from '../core/workers/parser-printer/parser-printer.test-utils'
-import { emptySet } from '../core/shared/set-utils'
 
 async function printOutParseResult(
   command: string,
@@ -27,7 +26,6 @@ async function printOutParseResult(
         javascriptFilePath,
         initialPrettifiedContents,
         null,
-        emptySet(),
         'do-not-apply-steganography',
       )
       switch (command) {

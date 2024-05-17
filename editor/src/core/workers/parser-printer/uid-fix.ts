@@ -80,7 +80,6 @@ const jsExpressionUIDOptic: Optic<JSExpression, string> = fromField('uid')
 const arbitraryJSBlockUIDOptic: Optic<ArbitraryJSBlock, string> = fromField('uid')
 
 export interface FixUIDsState {
-  mutableAllNewUIDs: Set<string>
   uidsExpectedToBeSeen: Set<string>
   mappings: UIDMappings
   uidUpdateMethod: 'copy-uids-fix-duplicates' | 'use-mappings' | 'forced-update'
@@ -89,7 +88,6 @@ export interface FixUIDsState {
 export function fixParseSuccessUIDs(
   oldParsed: ParseSuccess | null,
   newParsed: ParsedTextFile,
-  alreadyExistingUIDs: Set<string>,
   uidsExpectedToBeSeen: Set<string>,
 ): ParsedTextFile {
   if (!isParseSuccess(newParsed)) {
@@ -100,7 +98,6 @@ export function fixParseSuccessUIDs(
   // This gets passed through all the fixing functions, so
   // that the changes can be recorded.
   const fixUIDsState: FixUIDsState = {
-    mutableAllNewUIDs: alreadyExistingUIDs,
     uidsExpectedToBeSeen: uidsExpectedToBeSeen,
     mappings: [],
     uidUpdateMethod: 'copy-uids-fix-duplicates',
@@ -157,13 +154,7 @@ function updateUID<T>(
     // Attempt to copy the UID from the previous value and deduplicate it if necessary.
     case 'copy-uids-fix-duplicates':
       {
-        if (fixUIDsState.mutableAllNewUIDs.has(oldUID)) {
-          // The UID is unchanged, but the UID is already used elsewhere in the new structure:
-          // - Generate a new consistent UID.
-          // - Add a mapping for this change.
-          uidToUse = generateConsistentUID(oldUID)
-          addMapping(newUID, uidToUse)
-        } else if (oldUID === newUID) {
+        if (oldUID === newUID) {
           // Old one is the same as the new one, so everything is great.
           uidToUse = newUID
         } else {
@@ -171,7 +162,6 @@ function updateUID<T>(
           uidToUse = oldUID
           addMapping(newUID, uidToUse)
         }
-        fixUIDsState.mutableAllNewUIDs.add(uidToUse)
       }
       break
     // Use the mappings to update UIDs where copying and deduplication was previously.
@@ -705,7 +695,6 @@ export function fixJSXElementUIDs(
   if (newDataUIDProp == null) {
     // Backup case for where there is no `data-uid` prop.
     dataUIDPropUID = generateConsistentUID(elementWithUpdatedUID.uid)
-    fixUIDsState.mutableAllNewUIDs.add(dataUIDPropUID)
   } else {
     if (oldDataUIDPropUIDInUseElsewhere) {
       // In this case, ensure that some consistency is maintained and avoid duplicates.

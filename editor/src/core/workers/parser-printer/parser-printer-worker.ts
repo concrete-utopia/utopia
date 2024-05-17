@@ -21,7 +21,6 @@ export function handleMessage(
   switch (workerMessage.type) {
     case 'parseprintfiles': {
       try {
-        const alreadyExistingUIDs_MUTABLE: Set<string> = new Set(workerMessage.alreadyExistingUIDs)
         const results = workerMessage.files.map((file) => {
           switch (file.type) {
             case 'parsefile':
@@ -30,7 +29,6 @@ export function handleMessage(
                 file.content,
                 file.previousParsed,
                 file.versionNumber,
-                alreadyExistingUIDs_MUTABLE,
                 workerMessage.applySteganography,
               )
             case 'printandreparsefile':
@@ -39,7 +37,6 @@ export function handleMessage(
                 file.parseSuccess,
                 file.stripUIDs,
                 file.versionNumber,
-                alreadyExistingUIDs_MUTABLE,
                 workerMessage.applySteganography,
               )
             default:
@@ -62,14 +59,12 @@ function getParseFileResult(
   content: string,
   oldParseResultForUIDComparison: ParseSuccess | null,
   versionNumber: number,
-  alreadyExistingUIDs_MUTABLE: Set<string>,
   applySteganography: SteganographyMode,
 ): ParseFileResult {
   const parseResult = lintAndParse(
     filename,
     content,
     oldParseResultForUIDComparison,
-    alreadyExistingUIDs_MUTABLE,
     'trim-bounds',
     applySteganography,
   )
@@ -81,7 +76,6 @@ export function getPrintAndReparseCodeResult(
   parseSuccess: ParseSuccess,
   stripUIDs: boolean,
   versionNumber: number,
-  alreadyExistingUIDs: Set<string>,
   applySteganography: SteganographyMode,
 ): PrintAndReparseResult {
   const printedCode = printCode(
@@ -98,7 +92,6 @@ export function getPrintAndReparseCodeResult(
     printedCode,
     parseSuccess,
     versionNumber,
-    alreadyExistingUIDs,
     applySteganography,
   )
   return createPrintAndReparseResult(filename, parseResult.parseResult, versionNumber, printedCode)

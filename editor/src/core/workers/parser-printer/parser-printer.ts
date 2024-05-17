@@ -1350,10 +1350,8 @@ export function parseCode(
   filePath: string,
   sourceText: string,
   oldParseResultForUIDComparison: ParseSuccess | null,
-  alreadyExistingUIDs_MUTABLE: Set<string>,
   applySteganography: SteganographyMode,
 ): ParsedTextFile {
-  const originalAlreadyExistingUIDs_MUTABLE: Set<string> = new Set(alreadyExistingUIDs_MUTABLE)
   const sourceFile = TS.createSourceFile(filePath, sourceText, TS.ScriptTarget.ES3)
 
   const topLevelNodes = flatMapArray(
@@ -1374,7 +1372,6 @@ export function parseCode(
 
     interface NodeAndUIDs {
       node: TS.Node
-      uidsBeforeParse: Set<string>
     }
     let allArbitraryNodes: Array<NodeAndUIDs> = []
 
@@ -1383,7 +1380,6 @@ export function parseCode(
 
     function pushArbitraryNode(node: TS.Node): void {
       if (node.kind !== TS.SyntaxKind.EndOfFileToken) {
-        const uidsBeforeParse: Set<string> = new Set(alreadyExistingUIDs_MUTABLE)
         const nodeParseResult = parseArbitraryNodes(
           sourceFile,
           sourceText,
@@ -1393,7 +1389,6 @@ export function parseCode(
           topLevelNames,
           null,
           highlightBounds,
-          alreadyExistingUIDs_MUTABLE,
           true,
           '',
           false,
@@ -1412,7 +1407,6 @@ export function parseCode(
           ...allArbitraryNodes,
           {
             node: node,
-            uidsBeforeParse: uidsBeforeParse,
           },
         ]
       }
@@ -1558,7 +1552,6 @@ export function parseCode(
               imports,
               topLevelNames,
               highlightBounds,
-              alreadyExistingUIDs_MUTABLE,
               applySteganography,
             )
             parsedFunctionParam = flatMapEither((parsedParams) => {
@@ -1595,7 +1588,6 @@ export function parseCode(
                 propsObjectName,
                 body,
                 param?.highlightBounds ?? {},
-                alreadyExistingUIDs_MUTABLE,
                 applySteganography,
               )
             })
@@ -1612,7 +1604,6 @@ export function parseCode(
                 topLevelNames,
                 null,
                 highlightBounds,
-                alreadyExistingUIDs_MUTABLE,
                 applySteganography,
               ),
             )
@@ -1773,7 +1764,6 @@ export function parseCode(
         // FIXME: This is using the first `uidsBeforeParse` value so that
         // this parse should not find duplicate UIDs which will potentially
         // attempt to pull mocked UIDs to replace those fake duplicates.
-        new Set(allArbitraryNodes[0].uidsBeforeParse),
         true,
         '',
         true,
@@ -1813,7 +1803,7 @@ export function parseCode(
     }
 
     // Create the basic success result from the values we have so far.
-    const unfixedParseSuccess = parseSuccess(
+    const result = parseSuccess(
       imports,
       realTopLevelElements,
       highlightBounds,
@@ -1823,31 +1813,8 @@ export function parseCode(
       highlightBounds,
     )
 
-    // Determine what new UIDs were generated during this parse.
-    const fixParseSuccessExistingUIDs = new Set(originalAlreadyExistingUIDs_MUTABLE)
-    const newlyCreatedUIDs = difference(alreadyExistingUIDs_MUTABLE, fixParseSuccessExistingUIDs)
-
-    // Fix the `ParseSuccess` instance by copying over UIDs where possible from the previous
-    // parse result while also deduplicating UIDs found in the result.
-    const fixedParseSuccess = fixParseSuccessUIDs(
-      oldParseResultForUIDComparison,
-      unfixedParseSuccess,
-      fixParseSuccessExistingUIDs,
-      newlyCreatedUIDs,
-    )
-
-    // Find the UIDs created from the above `fixParseSuccessUIDs` invocation and include them
-    // in the mutable already existing UIDs as that is used outside this function.
-    const newlyCreatedUIDsFromFix = difference(
-      fixParseSuccessExistingUIDs,
-      originalAlreadyExistingUIDs_MUTABLE,
-    )
-    newlyCreatedUIDsFromFix.forEach((newlyCreatedUID) =>
-      alreadyExistingUIDs_MUTABLE.add(newlyCreatedUID),
-    )
-
     // Return the corrected result.
-    return fixedParseSuccess
+    return result
   }
 }
 
@@ -1959,7 +1926,6 @@ export function lintAndParse(
   filename: string,
   content: string,
   oldParseResultForUIDComparison: ParseSuccess | null,
-  alreadyExistingUIDs_MUTABLE: Set<string>,
   shouldTrimBounds: 'trim-bounds' | 'do-not-trim-bounds',
   applySteganography: SteganographyMode,
 ): ParsedTextFile {
@@ -1970,13 +1936,7 @@ export function lintAndParse(
   const lintResult = lintCode(filename, content)
   // Only fatal or error messages should bounce the parse.
   if (lintResult.filter(messageisFatal).length === 0) {
-    const result = parseCode(
-      filename,
-      content,
-      oldParseResultForUIDComparison,
-      alreadyExistingUIDs_MUTABLE,
-      applySteganography,
-    )
+    const result = parseCode(filename, content, oldParseResultForUIDComparison, applySteganography)
     if (isParseSuccess(result) && shouldTrimBounds === 'trim-bounds') {
       return trimHighlightBounds(result)
     } else {

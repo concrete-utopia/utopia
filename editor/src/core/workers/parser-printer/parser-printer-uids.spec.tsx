@@ -42,13 +42,11 @@ function addCodeFileToProjectContents(
   projectContents: ProjectContentTreeRoot,
   path: string,
   contents: string,
-  alreadyExistingUIDs_MUTABLE: Set<string>,
 ): ProjectContentTreeRoot {
   const parseResult = lintAndParse(
     path,
     contents,
     null,
-    alreadyExistingUIDs_MUTABLE,
     'trim-bounds',
     'do-not-apply-steganography',
   )
@@ -109,7 +107,6 @@ describe('parseCode', () => {
           )
         }
       `,
-      alreadyExistingUIDs_MUTABLE,
     )
 
     const result = getAllUniqueUids(projectContents)
@@ -136,7 +133,6 @@ describe('parseCode', () => {
           )
         }
         `,
-      alreadyExistingUIDs_MUTABLE,
     )
 
     projectContents = addCodeFileToProjectContents(
@@ -152,7 +148,6 @@ describe('parseCode', () => {
             </div>
           )
         } `,
-      alreadyExistingUIDs_MUTABLE,
     )
 
     const result = getAllUniqueUids(projectContents)
@@ -350,13 +345,7 @@ export var app = (props) => {
   )
 }
     `
-    const parsedCode = parseCode(
-      'test.js',
-      startingCode,
-      null,
-      emptySet(),
-      'do-not-apply-steganography',
-    )
+    const parsedCode = parseCode('test.js', startingCode, null, 'do-not-apply-steganography')
     const actualResult = foldParsedTextFile(
       (_) => 'FAILURE',
       (success) => {

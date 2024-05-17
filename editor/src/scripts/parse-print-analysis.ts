@@ -16,7 +16,6 @@ import {
   githubProjectsFileFilters,
 } from './github-projects'
 import minimatch from 'minimatch'
-import { emptySet } from '../core/shared/set-utils'
 
 const javascriptFileEndings = ['.js', '.ts', '.jsx', '.tsx']
 
@@ -31,7 +30,6 @@ async function processFile(
     javascriptFilePath,
     initialPrettifiedContents,
     null,
-    emptySet(),
     'do-not-apply-steganography',
   )
   const printedContents = foldParsedTextFile(

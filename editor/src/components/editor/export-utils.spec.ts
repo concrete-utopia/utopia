@@ -23,13 +23,7 @@ export var Whatever = (props) => {
     <div />
   )
 }`
-    const parseResult = parseCode(
-      '/src/index.js',
-      codeForFile,
-      null,
-      emptySet(),
-      'do-not-apply-steganography',
-    )
+    const parseResult = parseCode('/src/index.js', codeForFile, null, 'do-not-apply-steganography')
     expect(isParseSuccess(parseResult)).toEqual(true)
 
     const actualResult = getExportedComponentImports('/src/app.js', '/src/index.js', parseResult)

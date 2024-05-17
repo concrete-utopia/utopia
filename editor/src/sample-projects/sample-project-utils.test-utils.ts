@@ -44,7 +44,6 @@ export function complexDefaultProjectPreParsed(dummyComponent: string = 'Spring'
 export function parseProjectContents(
   projectContents: ProjectContentTreeRoot,
 ): ProjectContentTreeRoot {
-  let alreadyExistingUIDs: Set<string> = emptySet()
   return transformContentsTree(projectContents, (tree: ProjectContentsTree) => {
     if (tree.type === 'PROJECT_CONTENT_FILE') {
       const file = tree.content
@@ -53,7 +52,6 @@ export function parseProjectContents(
           tree.fullPath,
           file.fileContents.code,
           null,
-          alreadyExistingUIDs,
           'trim-bounds',
           'do-not-apply-steganography',
         )
@@ -81,7 +79,6 @@ export function getParseSuccessForStoryboardCode(
     StoryboardFilePath,
     appUiJsFile,
     null,
-    emptySet(),
     'trim-bounds',
     applySteganography,
   )
@@ -152,7 +149,6 @@ export function createModifiedProject(
           modifiedFilename,
           modifiedFiles[modifiedFilename],
           null,
-          emptySet(),
           'trim-bounds',
           'do-not-apply-steganography',
         ) as ParsedTextFile)
