@@ -1092,8 +1092,8 @@ function fancyErrorToErrorMessage(error: FancyError): ErrorMessage | null {
     const code = printScriptLines(frames[0]._originalScriptCode ?? [], frames[0].columnNumber)
     return errorMessage(
       frames[0]._originalFileName ?? '',
-      frames[0].lineNumber,
-      frames[0].columnNumber,
+      frames[0]._originalLineNumber,
+      frames[0]._originalColumnNumber,
       null,
       null,
       code,
