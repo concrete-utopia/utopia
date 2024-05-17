@@ -4,7 +4,6 @@ import {
   elementPathFromInsertionPath,
   pathPartsFromJSXElementChild,
 } from '../../../../core/model/element-template-utils'
-import { getAllUniqueUids } from '../../../../core/model/get-unique-ids'
 import { getStoryboardElementPath } from '../../../../core/model/scene-utils'
 import { stripNulls, zip } from '../../../../core/shared/array-utils'
 import type { Either } from '../../../../core/shared/either'
@@ -19,13 +18,12 @@ import {
   offsetPoint,
 } from '../../../../core/shared/math-utils'
 import type { CanvasPoint } from '../../../../core/shared/math-utils'
-import { optionalMap } from '../../../../core/shared/optional-utils'
 import type {
   ElementPath,
   ElementPathPart,
   NodeModules,
 } from '../../../../core/shared/project-file-types'
-import { fixUtopiaElement, generateUID } from '../../../../core/shared/uid-utils'
+import { generateUID } from '../../../../core/shared/uid-utils'
 import type { ElementPasteWithMetadata } from '../../../../utils/clipboard'
 import type { IndexPosition } from '../../../../utils/utils'
 import { absolute, front } from '../../../../utils/utils'
@@ -42,7 +40,6 @@ import type {
 import { trueUpGroupElementChanged } from '../../../editor/store/editor-state'
 import {
   childInsertionPath,
-  getFragmentUidFromInsertionPath,
   replaceWithElementsWrappedInFragmentBehaviour,
 } from '../../../editor/store/insertion-path'
 import type { CanvasCommand } from '../../commands/commands'
@@ -167,19 +164,10 @@ function pasteChoiceCommon(
         )
       : front()
 
-  let fixedUIDMappingNewUIDS: Array<string> =
-    optionalMap((wrapperUid) => [wrapperUid], getFragmentUidFromInsertionPath(target.parentPath)) ??
-    []
-
   let oldPathToNewPathMapping: OldPathToNewPathMapping = {}
   const elementsToInsert: Array<ElementOrPathToInsert> =
     pasteContext.elementPasteWithMetadata.elements.map((elementPaste) => {
-      const existingIDs = [
-        ...getAllUniqueUids(editorStateContext.projectContents).allIDs,
-        ...fixedUIDMappingNewUIDS,
-      ]
-      const elementWithUID = fixUtopiaElement(elementPaste.element, new Set(existingIDs))
-      fixedUIDMappingNewUIDS.push(...elementWithUID.mappings.map((value) => value.newUID))
+      const elementWithUID = elementPaste.element
 
       const intendedCoordinates = findIntendedCoordinates(
         target,
@@ -188,16 +176,13 @@ function pasteChoiceCommon(
         elementPaste,
       )
 
-      const pathAfterReparent = elementPathFromInsertionPath(
-        target.parentPath,
-        elementWithUID.value.uid,
-      )
+      const pathAfterReparent = elementPathFromInsertionPath(target.parentPath, elementWithUID.uid)
 
       const originalPaths = pathPartsFromJSXElementChild(elementPaste.element, []).map((part) =>
         appendPathPart(elementPaste.originalElementPath, part),
       )
 
-      const pathsAfterUIDFix = pathPartsFromJSXElementChild(elementWithUID.value, []).map((part) =>
+      const pathsAfterUIDFix = pathPartsFromJSXElementChild(elementWithUID, []).map((part) =>
         appendPathPart(pathAfterReparent, part),
       )
 
@@ -212,7 +197,7 @@ function pasteChoiceCommon(
 
       return {
         elementPath: elementPaste.originalElementPath,
-        pathToReparent: elementToReparent(elementWithUID.value, elementPaste.importsToAdd),
+        pathToReparent: elementToReparent(elementWithUID, elementPaste.importsToAdd),
         intendedCoordinates: adjustIntendedCoordinatesForGroups(
           editorStateContext.startingMetadata,
           target.parentPath.intendedParentPath,
@@ -222,7 +207,7 @@ function pasteChoiceCommon(
             elementPaste.originalElementPath,
           ),
         ),
-        newUID: elementWithUID.value.uid,
+        newUID: elementWithUID.uid,
       }
     })
 

@@ -38,8 +38,7 @@ import {
   type ElementToInsert,
 } from './component-picker'
 import type { PreferredChildComponentDescriptor } from '../../custom-code/internal-property-controls'
-import { fixUtopiaElement, generateUID } from '../../../core/shared/uid-utils'
-import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
+import { generateUID } from '../../../core/shared/uid-utils'
 import { elementFromInsertMenuItem } from '../../editor/insert-callbacks'
 import { ContextMenuWrapper } from '../../context-menu-wrapper'
 import { BodyMenuOpenClass, assertNever } from '../../../core/shared/utils'
@@ -452,16 +451,14 @@ function insertComponentPickerItem(
   dispatch: EditorDispatch,
   insertionTarget: InsertionTarget,
 ) {
-  const uniqueIds = new Set(getAllUniqueUids(projectContents).uniqueIDs)
   const uid = generateUID()
   const elementWithoutUID = toInsert.element()
 
   const actions = ((): Array<EditorAction> => {
     if (elementWithoutUID.type === 'JSX_ELEMENT') {
       const element = jsxElementFromJSXElementWithoutUID(elementWithoutUID, uid)
-      const fixedElement = fixUtopiaElement(element, uniqueIds).value
 
-      if (fixedElement.type !== 'JSX_ELEMENT') {
+      if (element.type !== 'JSX_ELEMENT') {
         throw new Error('JSXElementWithoutUid is not converted to JSXElement')
       }
 
@@ -471,7 +468,7 @@ function insertComponentPickerItem(
           setProp_UNSAFE(
             target,
             PP.create(insertionTarget.prop),
-            fixedElement,
+            element,
             toInsert.importsToAdd ?? undefined,
           ),
         ]
@@ -482,18 +479,18 @@ function insertComponentPickerItem(
         isReplaceTarget(insertionTarget) &&
         MetadataUtils.isJSXMapExpression(EP.parentPath(target), metadata)
       ) {
-        return [replaceMappedElement(fixedElement, target, toInsert.importsToAdd)]
+        return [replaceMappedElement(element, target, toInsert.importsToAdd)]
       }
 
       if (
         isReplaceTarget(insertionTarget) ||
         isReplaceKeepChildrenAndStyleTarget(insertionTarget)
       ) {
-        return [replaceJSXElement(fixedElement, target, toInsert.importsToAdd, insertionTarget)]
+        return [replaceJSXElement(element, target, toInsert.importsToAdd, insertionTarget)]
       }
 
       if (!isConditionalTarget(insertionTarget)) {
-        return [insertJSXElement(fixedElement, target, toInsert.importsToAdd ?? undefined)]
+        return [insertJSXElement(element, target, toInsert.importsToAdd ?? undefined)]
       }
     }
 

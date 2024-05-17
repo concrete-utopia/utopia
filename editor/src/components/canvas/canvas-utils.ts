@@ -28,7 +28,6 @@ import {
   isJSXElement,
   jsExpressionValue,
   getJSXElementNameAsString,
-  isJSExpressionMapOrOtherJavaScript,
   isUtopiaJSXComponent,
   emptyComments,
   jsxElementName,
@@ -39,13 +38,11 @@ import {
   isJSIdentifier,
   isJSPropertyAccess,
   isJSElementAccess,
-  isJSExpression,
   isJSExpressionOtherJavaScript,
   isJSXMapExpression,
   isJSXTextBlock,
 } from '../../core/shared/element-template'
 import {
-  guaranteeUniqueUids,
   isSceneElement,
   getIndexInParent,
   insertJSXElementChildren,
@@ -144,7 +141,6 @@ import { includeToast, uniqToasts } from '../editor/actions/toast-helpers'
 import { stylePropPathMappingFn } from '../inspector/common/property-path-hooks'
 import { styleStringInArray } from '../../utils/common-constants'
 import { treatElementAsFragmentLike } from './canvas-strategies/strategies/fragment-like-helpers'
-import { mergeImports } from '../../core/workers/common/project-file-utils'
 import {
   childInsertionPath,
   conditionalClauseInsertionPath,
@@ -158,8 +154,6 @@ import type { ErrorMessage } from '../../core/shared/error-messages'
 import type { OverlayError } from '../../core/shared/runtime-report-logs'
 import type { RouteModulesWithRelativePaths } from './remix/remix-utils'
 import type { IsCenterBased } from './canvas-strategies/strategies/resize-helpers'
-import { getComponentDescriptorForTarget } from '../../core/property-controls/property-controls-utils'
-import type { PropertyControlsInfo } from '../custom-code/code-file'
 import { mapDropNulls } from '../../core/shared/array-utils'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 
@@ -1482,13 +1476,12 @@ export function duplicate(
             EP.pathsEqual(entry.originalPath, path),
           )
           if (duplicateNewUID === undefined) {
-            newElement = guaranteeUniqueUids([jsxElement], existingIDsMutable).value[0]
+            newElement = jsxElement
             uid = getUtopiaID(newElement)
           } else {
             // Helps to keep the model consistent because otherwise the dom walker
             // goes into a frenzy.
             newElement = setUtopiaID(jsxElement, duplicateNewUID.newUID)
-            newElement = guaranteeUniqueUids([newElement], existingIDsMutable).value[0]
             uid = duplicateNewUID.newUID
           }
           let newPath: ElementPath

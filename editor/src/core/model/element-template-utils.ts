@@ -53,13 +53,7 @@ import type {
 import { isParseSuccess, isTextFile } from '../shared/project-file-types'
 import * as EP from '../shared/element-path'
 import * as PP from '../shared/property-path'
-import type { UIDMappings, WithUIDMappings } from '../shared/uid-utils'
-import {
-  fixUtopiaElement,
-  generateMockNextGeneratedUID,
-  generateUID,
-  getUtopiaID,
-} from '../shared/uid-utils'
+import { getUtopiaID } from '../shared/uid-utils'
 import { assertNever } from '../shared/utils'
 import { getComponentsFromTopLevelElements, isSceneAgainstImports } from './project-file-utils'
 import type { GetJSXAttributeResult } from '../shared/jsx-attribute-utils'
@@ -84,23 +78,6 @@ import { MetadataUtils } from './element-metadata-utils'
 import { mapValues } from '../shared/object-utils'
 import type { PropertyControlsInfo } from '../../components/custom-code/code-file'
 import { getComponentDescriptorForTarget } from '../property-controls/property-controls-utils'
-
-export function guaranteeUniqueUids(
-  elements: Array<JSXElementChild>,
-  existingIDsMutable: Set<string>,
-): WithUIDMappings<Array<JSXElementChild>> {
-  let mappings: UIDMappings = []
-  let value: Array<JSXElementChild> = []
-  for (const element of elements) {
-    const fixElementWithMappings = fixUtopiaElement(element, existingIDsMutable)
-    mappings.push(...fixElementWithMappings.mappings)
-    value.push(fixElementWithMappings.value)
-  }
-  return {
-    mappings: mappings,
-    value: value,
-  }
-}
 
 export function isSceneElement(
   element: JSXElementChild,

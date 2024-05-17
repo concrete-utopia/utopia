@@ -89,7 +89,6 @@ describe('parseCode', () => {
   })
 
   it('fixes duplicated UIDs for single file projects', () => {
-    const alreadyExistingUIDs_MUTABLE: Set<string> = emptySet()
     let projectContents: ProjectContentTreeRoot = {}
 
     projectContents = addCodeFileToProjectContents(
@@ -115,7 +114,6 @@ describe('parseCode', () => {
   })
 
   it('fixes duplicated UIDs for multifile projects', () => {
-    const alreadyExistingUIDs_MUTABLE: Set<string> = emptySet()
     let projectContents = {}
 
     projectContents = addCodeFileToProjectContents(

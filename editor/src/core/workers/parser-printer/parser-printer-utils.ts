@@ -1,7 +1,5 @@
 import * as TS from 'typescript-for-the-editor'
 import type { JSXElement } from '../../shared/element-template'
-import { TopLevelElement, UtopiaJSXComponent } from '../../shared/element-template'
-import { fixUtopiaElement, UIDMappings, WithUIDMappings } from '../../shared/uid-utils'
 import { fastForEach } from '../../shared/utils'
 import type { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
 import { SourceMapConsumer, SourceNode } from 'source-map'

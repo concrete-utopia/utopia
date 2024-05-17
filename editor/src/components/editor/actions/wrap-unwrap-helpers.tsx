@@ -4,11 +4,7 @@ import {
   getConditionalActiveCase,
   getConditionalBranch,
 } from '../../../core/model/conditionals'
-import {
-  MetadataUtils,
-  getSimpleAttributeAtPath,
-  propertyHasSimpleValue,
-} from '../../../core/model/element-metadata-utils'
+import { MetadataUtils, propertyHasSimpleValue } from '../../../core/model/element-metadata-utils'
 import {
   insertJSXElementChildren,
   renameJsxElementChild,
@@ -27,7 +23,6 @@ import type {
   JSXFragment,
 } from '../../../core/shared/element-template'
 import {
-  JSXElementChild,
   emptyComments,
   isJSXAttributeValue,
   isJSXConditionalExpression,
@@ -38,16 +33,12 @@ import {
   jsxTextBlock,
 } from '../../../core/shared/element-template'
 import { modify, toFirst } from '../../../core/shared/optics/optic-utilities'
-import { forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
+import { optionalMap } from '../../../core/shared/optional-utils'
 import type { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import type { IndexPosition } from '../../../utils/utils'
 import { absolute } from '../../../utils/utils'
-import type { EditorDispatch } from '../action-types'
-import type { DerivedState, EditorState } from '../store/editor-state'
-import {
-  modifyUnderlyingTargetElement,
-  withUnderlyingTargetFromEditorState,
-} from '../store/editor-state'
+import type { EditorState } from '../store/editor-state'
+import { modifyUnderlyingTargetElement } from '../store/editor-state'
 import type { ConditionalClauseInsertionPath, InsertionPath } from '../store/insertion-path'
 import {
   childInsertionPath,
@@ -61,8 +52,7 @@ import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
 import { addElement } from '../../canvas/commands/add-element-command'
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
-import { fixUtopiaElementGeneric, generateUID } from '../../../core/shared/uid-utils'
-import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
+import { generateUID } from '../../../core/shared/uid-utils'
 import { foldEither, right } from '../../../core/shared/either'
 import { editorStateToElementChildOptic } from '../../../core/model/common-optics'
 import { fromField, fromTypeGuard } from '../../../core/shared/optics/optic-creators'
@@ -333,7 +323,7 @@ export function wrapElementInsertions(
   editor: EditorState,
   targets: Array<ElementPath>,
   parentPath: InsertionPath,
-  rawElementToInsert: JSXElement | JSXFragment | JSXConditionalExpression,
+  elementToInsert: JSXElement | JSXFragment | JSXConditionalExpression,
   importsToAdd: Imports,
   anyTargetIsARootElement: boolean,
   targetThatIsRootElementOfCommonParent: ElementPath | undefined,
@@ -341,12 +331,6 @@ export function wrapElementInsertions(
   // TODO this entire targetThatIsRootElementOfCommonParent could be simplified by introducing a "rootElementInsertionPath" to InsertionPath
   const staticTarget =
     optionalMap(childInsertionPath, targetThatIsRootElementOfCommonParent) ?? parentPath
-
-  const existingIDsMutable = new Set(getAllUniqueUids(editor.projectContents).allIDs)
-  const elementToInsert = fixUtopiaElementGeneric<typeof rawElementToInsert>(
-    rawElementToInsert,
-    existingIDsMutable,
-  ).value
 
   const newPath = anyTargetIsARootElement
     ? EP.appendNewElementPath(getElementPathFromInsertionPath(parentPath), elementToInsert.uid)
