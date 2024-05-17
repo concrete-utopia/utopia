@@ -792,7 +792,7 @@ function createOpaqueArbitraryStatement(
     expressionDefinedElsewhere,
     '',
   )
-  const uid = generateUIDAndAddToExistingUIDs(sourceFile, withoutUID, expression)
+  const uid = generateNodeUID(sourceFile, withoutUID, expression)
   return jsOpaqueArbitraryStatement(
     originalJavaScript,
     expressionDefinedWithin,
@@ -812,7 +812,7 @@ function createAssignmentStatement(
     assignments.map(clearAssignmentUniqueIDsAndSourceMaps),
     '',
   )
-  const uid = generateUIDAndAddToExistingUIDs(sourceFile, withoutUID, nodeOrNodes)
+  const uid = generateNodeUID(sourceFile, withoutUID, nodeOrNodes)
   return jsAssignmentStatement(declarationKeyword, assignments, uid)
 }
 
@@ -1750,7 +1750,7 @@ export function parseJSExpressionMapOrOtherJavascript(
   )
 }
 
-function generateUIDAndAddToExistingUIDs(
+function generateNodeUID(
   sourceFile: TS.SourceFile,
   value: any,
   nodeOrNodes: TS.Node | Array<TS.Node>,
@@ -1768,7 +1768,7 @@ function createRawExpressionValue(
   comments: ParsedComments,
   nodeOrNodes: TS.Node | Array<TS.Node>,
 ): JSExpressionValue<any> {
-  const uid = generateUIDAndAddToExistingUIDs(sourceFile, value, nodeOrNodes)
+  const uid = generateNodeUID(sourceFile, value, nodeOrNodes)
   return jsExpressionValue(value, comments, uid)
 }
 
@@ -1863,7 +1863,7 @@ function createExpressionNestedArray(
   definedElsewhere: Array<string>,
 ): WithParserMetadata<JSExpressionNestedArray> {
   const value = jsExpressionNestedArray(arrayContents, comments, '')
-  const uid = generateUIDAndAddToExistingUIDs(sourceFile, value, node)
+  const uid = generateNodeUID(sourceFile, value, node)
   const expression = jsExpressionNestedArray(arrayContents, comments, uid)
   return withParserMetadata(
     expression,
@@ -1882,7 +1882,7 @@ function createExpressionNestedObject(
   definedElsewhere: Array<string>,
 ): WithParserMetadata<JSExpressionNestedObject> {
   const value = jsExpressionNestedObject(objectContents, comments, '')
-  const uid = generateUIDAndAddToExistingUIDs(sourceFile, value, node)
+  const uid = generateNodeUID(sourceFile, value, node)
   const expression = jsExpressionNestedObject(objectContents, comments, uid)
   return withParserMetadata(
     expression,
@@ -1901,7 +1901,7 @@ function createExpressionFunctionCall(
   definedElsewhere: Array<string>,
 ): WithParserMetadata<JSExpressionFunctionCall> {
   const value = jsExpressionFunctionCall(functionName, parameters, '')
-  const uid = generateUIDAndAddToExistingUIDs(sourceFile, value, node)
+  const uid = generateNodeUID(sourceFile, value, node)
   const expression = jsExpressionFunctionCall(functionName, parameters, uid)
   return withParserMetadata(
     expression,
@@ -1920,7 +1920,7 @@ function getUIDFromCommentsOrValue(
   const parsedUID = parseUIDFromComments(comments)
   return foldEither(
     () => {
-      return generateUIDAndAddToExistingUIDs(sourceFile, value, nodeOrNodes)
+      return generateNodeUID(sourceFile, value, nodeOrNodes)
     },
     (uidFromComments) => {
       return uidFromComments
@@ -2074,7 +2074,7 @@ function createArbitraryJSBlock(
     statements,
     '',
   )
-  const uid = generateUIDAndAddToExistingUIDs(sourceFile, value, nodeOrNodes)
+  const uid = generateNodeUID(sourceFile, value, nodeOrNodes)
   return arbitraryJSBlock(
     params,
     javascript,
@@ -2093,7 +2093,7 @@ function createJSXTextBlock(
   node: TS.Node,
   text: string,
 ): WithParserMetadata<JSXTextBlock> {
-  const uid = generateUIDAndAddToExistingUIDs(sourceFile, text, node)
+  const uid = generateNodeUID(sourceFile, text, node)
   const block = jsxTextBlock(text, uid)
   return withParserMetadata(block, buildHighlightBoundsForUids(sourceFile, node, uid), [], [])
 }
