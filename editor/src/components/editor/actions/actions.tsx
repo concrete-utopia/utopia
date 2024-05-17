@@ -4,8 +4,6 @@ import localforage from 'localforage'
 import { imagePathURL } from '../../../common/server'
 import { roundAttributeLayoutValues } from '../../../core/layout/layout-utils'
 import {
-  findElementAtPath,
-  findJSXElementAtPath,
   getZIndexOrderedViewsWithoutDirectChildren,
   MetadataUtils,
 } from '../../../core/model/element-metadata-utils'
@@ -55,7 +53,6 @@ import type {
   JSXElementChild,
   JSXConditionalExpression,
   JSXFragment,
-  JSXMapExpression,
 } from '../../../core/shared/element-template'
 import {
   deleteJSXAttribute,
@@ -153,7 +150,7 @@ import { assertNever, fastForEach, getProjectLockedKey, identity } from '../../.
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
 import type { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import type { IndexPosition } from '../../../utils/utils'
-import Utils, { absolute } from '../../../utils/utils'
+import Utils from '../../../utils/utils'
 import type { ProjectContentTreeRoot } from '../../assets'
 import {
   isProjectContentFile,
@@ -436,12 +433,7 @@ import { mapDropNulls, uniqBy } from '../../../core/shared/array-utils'
 import type { TreeConflicts } from '../../../core/shared/github/helpers'
 import { mergeProjectContents } from '../../../core/shared/github/helpers'
 import { emptySet } from '../../../core/shared/set-utils'
-import {
-  fixUtopiaElement,
-  generateHashUID,
-  generateUID,
-  getUtopiaID,
-} from '../../../core/shared/uid-utils'
+import { fixUtopiaElement, generateUID, getUtopiaID } from '../../../core/shared/uid-utils'
 import {
   DefaultPostCSSConfig,
   DefaultTailwindConfig,
@@ -491,7 +483,6 @@ import {
   clearImageFileBlob,
   enableInsertModeForJSXElement,
   finishCheckpointTimer,
-  insertAsChildTarget,
   insertJSXElement,
   openCodeEditorFile,
   scrollToPosition,
@@ -5215,7 +5206,7 @@ export const UPDATE_FNS = {
 
       const existingUids = new Set(getAllUniqueUids(editor.projectContents).uniqueIDs)
 
-      const newUID = generateHashUID('new')
+      const newUID = generateUID()
 
       const newPath = EP.appendToPath(action.insertionPath.intendedParentPath, newUID)
 

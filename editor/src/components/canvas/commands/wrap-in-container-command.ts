@@ -31,7 +31,7 @@ import { getInsertionPath } from '../../editor/store/insertion-path'
 import { jsxTextBlock } from '../../../core/shared/element-template'
 import type { CSSProperties } from 'react'
 import type { Property } from 'csstype'
-import { generateHashUID, generateUID } from '../../../core/shared/uid-utils'
+import { generateUID } from '../../../core/shared/uid-utils'
 import { getSimpleAttributeAtPath } from '../../../core/model/element-metadata-utils'
 import { forEachRight, right } from '../../../core/shared/either'
 
@@ -238,7 +238,7 @@ function getInsertionSubjectStyleFromConditionalTrueBranch(
 function getInsertionSubjectWrapperConditionalFalseBranch(
   trueBranch: JSXElementChild,
 ): JSXElementChild {
-  const uid = generateHashUID('false-branch')
+  const uid = generateUID()
 
   const style = getInsertionSubjectStyleFromConditionalTrueBranch(trueBranch)
 

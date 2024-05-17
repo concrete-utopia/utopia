@@ -33,7 +33,7 @@ import {
   elementToReparent,
   getTargetParentForOneShotInsertion,
 } from '../canvas/canvas-strategies/strategies/reparent-utils'
-import { fixUtopiaElement, generateHashUID, generateUID } from '../../core/shared/uid-utils'
+import { fixUtopiaElement, generateUID } from '../../core/shared/uid-utils'
 import { getAllUniqueUids } from '../../core/model/get-unique-ids'
 import { assertNever } from '../../core/shared/utils'
 import type { ComponentElementToInsert } from '../custom-code/code-file'
@@ -184,11 +184,11 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
 
       const allElementUids = new Set(getAllUniqueUids(projectContentsRef.current).uniqueIDs)
 
-      const wrappedUid = generateHashUID('wrapper')
+      const wrappedUid = generateUID()
 
       allElementUids.add(wrappedUid)
 
-      const elementUid = generateHashUID('element')
+      const elementUid = generateUID()
 
       const element = elementToReparent(
         fixUtopiaElement(

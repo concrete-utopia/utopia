@@ -4,7 +4,6 @@ import type {
   JSElementAccess,
   JSExpression,
   JSExpressionFunctionCall,
-  JSExpressionMapOrOtherJavascript,
   JSExpressionNestedArray,
   JSExpressionNestedObject,
   JSExpressionOtherJavaScript,
@@ -44,7 +43,7 @@ import { fromField, identityOptic } from '../../../core/shared/optics/optic-crea
 import { assertNever, fastForEach } from '../../../core/shared/utils'
 import { emptySet } from '../../../core/shared/set-utils'
 import type { UIDMappings } from '../../../core/shared/uid-utils'
-import { generateHashUID, updateHighlightBounds } from '../../../core/shared/uid-utils'
+import { generateUID, updateHighlightBounds } from '../../../core/shared/uid-utils'
 
 const jsxElementChildUIDOptic: Optic<JSXElementChild, string> = fromField('uid')
 
@@ -693,8 +692,7 @@ export function fixJSXElementUIDs(
   // Carry the UID of the prop that maybe set over as well.
   let dataUIDPropUID: string
   if (newDataUIDProp == null) {
-    // Backup case for where there is no `data-uid` prop.
-    dataUIDPropUID = generateHashUID(elementWithUpdatedUID.uid)
+    dataUIDPropUID = generateUID()
   } else {
     if (oldDataUIDPropUIDInUseElsewhere) {
       // In this case, ensure that some consistency is maintained and avoid duplicates.

@@ -38,11 +38,11 @@ import {
   type ElementToInsert,
 } from './component-picker'
 import type { PreferredChildComponentDescriptor } from '../../custom-code/internal-property-controls'
-import { fixUtopiaElement, generateHashUID } from '../../../core/shared/uid-utils'
+import { fixUtopiaElement, generateUID } from '../../../core/shared/uid-utils'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { elementFromInsertMenuItem } from '../../editor/insert-callbacks'
-import { ContextMenuWrapper, MomentumContextMenu } from '../../context-menu-wrapper'
-import { BodyMenuOpenClass, NO_OP, assertNever } from '../../../core/shared/utils'
+import { ContextMenuWrapper } from '../../context-menu-wrapper'
+import { BodyMenuOpenClass, assertNever } from '../../../core/shared/utils'
 import { type ContextMenuItem } from '../../context-menu-items'
 import { FlexRow, Icn, type IcnProps } from '../../../uuiui'
 import type {
@@ -73,7 +73,6 @@ import type { ConditionalCase } from '../../../core/model/conditionals'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { absolute } from '../../../utils/utils'
 import { notice } from '../../common/notice'
-import { JSXElementChild } from 'utopia-shared/src/types'
 
 type RenderPropTarget = { type: 'render-prop'; prop: string }
 type ConditionalTarget = { type: 'conditional'; conditionalCase: ConditionalCase }
@@ -454,7 +453,7 @@ function insertComponentPickerItem(
   insertionTarget: InsertionTarget,
 ) {
   const uniqueIds = new Set(getAllUniqueUids(projectContents).uniqueIDs)
-  const uid = generateHashUID('prop')
+  const uid = generateUID()
   const elementWithoutUID = toInsert.element()
 
   const actions = ((): Array<EditorAction> => {
@@ -586,7 +585,7 @@ function insertPreferredChild(
   dispatch: EditorDispatch,
   insertionTarget: InsertionTarget,
 ) {
-  const uid = generateHashUID('prop')
+  const uid = generateUID()
   const toInsert = elementToInsertToInsertableComponent(
     preferredChildToInsert,
     uid,
