@@ -1,7 +1,7 @@
 name: Screenshot Production
 on:
-  repository_dispatch:
-    types: [trigger-production-screenshot]
+  # repository_dispatch:
+  #   types: [trigger-production-screenshot]
   workflow_dispatch:
 
 jobs:
