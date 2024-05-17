@@ -6,8 +6,10 @@
  */
 
 /* @flow */
+import { v4 as UUID } from 'uuid'
+import { SOURCE_MAP_SEPARATOR, SourceMapCache } from '../../../core/shared/code-exec-utils'
 import StackFrame from './stack-frame'
-
+import { base64ToStr } from '@root/encoding/base64'
 const regexExtractLocation = /\(?(.+?)(?::(\d+))?(?::(\d+))?\)?$/
 
 function extractLocation(token: string): [string, number, number] {
@@ -26,10 +28,26 @@ function extractLocation(token: string): [string, number, number] {
 const regexValidFrame_Chrome = /^\s*(at|in)\s.+(:\d+)/
 const regexValidFrame_FireFox = /(^|@)\S+:\d+|.+line\s+\d+\s+>\s+(eval|Function).+/
 
+function replaceBase64SourceMapWithCacheKey(
+  stackLine: string,
+  sourceMapCache: SourceMapCache,
+): string {
+  const splitStackLine = stackLine.split(SOURCE_MAP_SEPARATOR)
+  if (splitStackLine.length < 3) {
+    return stackLine
+  }
+  const key = UUID()
+  sourceMapCache[key] = JSON.parse(base64ToStr(splitStackLine[1]))
+  return `${splitStackLine[0]}${SOURCE_MAP_SEPARATOR}${key}${splitStackLine[2]}`
+}
+
 const maxParseableErrorLength = 10000
 
-export function parseStack(stack: string[]): StackFrame[] {
+export function parseStack(stack: string[], sourceMapCache: SourceMapCache): StackFrame[] {
   const frames = stack
+    // Replace the full source maps in the lines (encoded with base64) with a unique identifier and put the sourcemap into a cache.
+    // This is needed because the regular expression operations later are too slow for really long lines.
+    .map((e) => replaceBase64SourceMapWithCacheKey(e, sourceMapCache))
     .filter(
       (e) =>
         e.length < maxParseableErrorLength &&
@@ -68,18 +86,21 @@ export function parseStack(stack: string[]): StackFrame[] {
  * Turns an <code>Error</code>, or similar object, into a set of <code>StackFrame</code>s.
  * @alias parse
  */
-function parseError(error: Error | string | string[] | { stack: string }): StackFrame[] {
+function parseError(
+  error: Error | string | string[] | { stack: string },
+  sourceMapCache: SourceMapCache,
+): StackFrame[] {
   if (error == null) {
     throw new Error('You cannot pass a null object.')
   }
   if (typeof error === 'string') {
-    return parseStack(error.split('\n'))
+    return parseStack(error.split('\n'), sourceMapCache)
   }
   if (Array.isArray(error)) {
-    return parseStack(error)
+    return parseStack(error, sourceMapCache)
   }
   if (typeof error.stack === 'string') {
-    return parseStack(error.stack.split('\n'))
+    return parseStack(error.stack.split('\n'), sourceMapCache)
   }
   throw new Error('The error you provided does not contain a stack trace.')
 }
