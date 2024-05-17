@@ -59,7 +59,7 @@ export interface ContextMenuProps<T> {
 const onShown = () => document.body.classList.add(BodyMenuOpenClass)
 const onHidden = () => document.body.classList.remove(BodyMenuOpenClass)
 
-export const MomentumContextMenu = <T,>({ dispatch, getData, id, items }: ContextMenuProps<T>) => {
+export const ContextMenu = <T,>({ dispatch, getData, id, items }: ContextMenuProps<T>) => {
   const splitItems = React.useMemo(() => {
     const tempItems: MenuItem<T>[] = []
 
@@ -207,7 +207,7 @@ export const ContextMenuWrapper = <T,>({
       <MenuProvider id={id} itemsLength={items.length} key={`${id}-provider`} style={providerStyle}>
         {children}
       </MenuProvider>
-      <MomentumContextMenu dispatch={dispatch} getData={getData} id={id} items={items} key={id} />
+      <ContextMenu dispatch={dispatch} getData={getData} id={id} items={items} key={id} />
     </div>
   )
 }
@@ -264,7 +264,7 @@ export const InspectorContextMenuWrapper = <T,>({
       >
         {children}
       </MenuProvider>
-      <MomentumContextMenu getData={getData} id={id} items={items} key={id} />
+      <ContextMenu getData={getData} id={id} items={items} key={id} />
     </div>
   )
 }
@@ -274,7 +274,7 @@ interface MenuProviderProps {
   id: string
   itemsLength: number
   style?: React.CSSProperties
-  localXHack_KILLME?: 'local-x-coord-KILLME' | 'default' // FIXME: remove this, this is just here because react-contexify positions the context menu to the global position of the mouse, so MomentumContextMenu should in the root
+  localXHack_KILLME?: 'local-x-coord-KILLME' | 'default' // FIXME: remove this, this is just here because react-contexify positions the context menu to the global position of the mouse, so ContextMenu should in the root
 }
 
 export const MenuProvider = ({

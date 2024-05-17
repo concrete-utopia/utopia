@@ -45,7 +45,7 @@ import type { PreferredChildComponentDescriptor } from '../../custom-code/intern
 import { fixUtopiaElement, generateConsistentUID } from '../../../core/shared/uid-utils'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { elementFromInsertMenuItem } from '../../editor/insert-callbacks'
-import { ContextMenuWrapper, MomentumContextMenu } from '../../context-menu-wrapper'
+import { ContextMenuWrapper, ContextMenu } from '../../context-menu-wrapper'
 import { BodyMenuOpenClass, NO_OP, assertNever } from '../../../core/shared/utils'
 import { type ContextMenuItem } from '../../context-menu-items'
 import { FlexRow, Icn, type IcnProps } from '../../../uuiui'

@@ -18,7 +18,7 @@ import * as EditorActions from '../../../editor/actions/action-creators'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { GithubFileStatusLetter } from '../../../filebrowser/fileitem'
 import { when } from '../../../../utils/react-conditionals'
-import { MenuProvider, MomentumContextMenu } from '../../../../components/context-menu-wrapper'
+import { MenuProvider, ContextMenu } from '../../../../components/context-menu-wrapper'
 import { NO_OP } from '../../../../core/shared/utils'
 import { useContextMenu } from 'react-contexify'
 import { getConflictMenuItems } from '../../../../core/shared/github-ui'
@@ -148,7 +148,7 @@ const ConflictButton = React.memo((props: ConflictButtonProps) => {
       >
         Action...
       </Button>
-      <MomentumContextMenu id={menuId} items={menuItems} getData={NO_OP} />
+      <ContextMenu id={menuId} items={menuItems} getData={NO_OP} />
     </MenuProvider>
   )
 })
