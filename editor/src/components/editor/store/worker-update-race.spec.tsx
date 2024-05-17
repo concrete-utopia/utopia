@@ -22,13 +22,12 @@ jest.mock('../../../core/workers/common/worker-types', () => ({
   async getParseResult(
     workers: any,
     files: Array<ParseOrPrint>,
-    alreadyExistingUIDs: Set<string>,
     applySteganography: SteganographyMode,
   ): Promise<Array<ParseOrPrintResult>> {
     mockParseStartedCount++
     const result = await jest
       .requireActual('../../../core/workers/common/worker-types')
-      .getParseResult(workers, files, alreadyExistingUIDs, applySteganography)
+      .getParseResult(workers, files, applySteganography)
     mockLock2.resolve()
     await mockLock1
     mockLock1 = mockDefer()

@@ -6013,7 +6013,6 @@ export var whatever2 = (props) => <View data-uid='aaa'>
         printedArbitraryProjects: [ArbitraryProject, ArbitraryProject],
       ): boolean {
         const [firstPrintedProjectContent, secondPrintedProjectContent] = printedArbitraryProjects
-        const alreadyExistingUIDs: Set<string> = emptySet()
 
         let fileCounter: number = 100
         let projectContents: ProjectContents = {}
@@ -6022,7 +6021,7 @@ export var whatever2 = (props) => <View data-uid='aaa'>
           firstPrintedProjectContent,
           secondPrintedProjectContent,
         ]) {
-          const parseResult = testParseCode(printedCode, alreadyExistingUIDs)
+          const parseResult = testParseCode(printedCode)
           foldParsedTextFile(
             (failure) => {
               throw new Error(`${JSON.stringify(failure)}`)

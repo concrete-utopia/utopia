@@ -193,15 +193,10 @@ export async function updateProjectContentsWithParseResults(
   projectContents: ProjectContentTreeRoot,
 ): Promise<ProjectContentTreeRoot> {
   // Determine what files need updating.
-  const { filesToUpdate, existingUIDs } = getFilesToUpdate(projectContents, [])
+  const { filesToUpdate } = getFilesToUpdate(projectContents, [])
 
   // Get the result of parsing or printing the files.
-  const parseResult = await getParseResult(
-    workers,
-    filesToUpdate,
-    existingUIDs,
-    isSteganographyEnabled(),
-  )
+  const parseResult = await getParseResult(workers, filesToUpdate, isSteganographyEnabled())
 
   // Convert those results into updates.
   const workerUpdates = parseResult.map(parseResultToWorkerUpdates)

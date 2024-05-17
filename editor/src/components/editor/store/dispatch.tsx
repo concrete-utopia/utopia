@@ -335,19 +335,11 @@ function maybeRequestModelUpdate(
   forciblyParsedFiles: Array<string>
 } {
   // Get the files to update that need sending over to the worker.
-  const { filesToUpdate, forciblyParsedFiles, existingUIDs } = getFilesToUpdate(
-    projectContents,
-    forceParseFiles,
-  )
+  const { filesToUpdate, forciblyParsedFiles } = getFilesToUpdate(projectContents, forceParseFiles)
 
   // Should anything need to be sent across, do so here.
   if (filesToUpdate.length > 0) {
-    const parseFinished = getParseResult(
-      workers,
-      filesToUpdate,
-      existingUIDs,
-      isSteganographyEnabled(),
-    )
+    const parseFinished = getParseResult(workers, filesToUpdate, isSteganographyEnabled())
       .then((parseResult) => {
         const updates = parseResult.map((fileResult) => {
           return parseResultToWorkerUpdates(fileResult)
