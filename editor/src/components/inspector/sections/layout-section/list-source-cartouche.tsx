@@ -10,7 +10,7 @@ import {
   getTextContentOfElement,
 } from '../component-section/data-reference-cartouche'
 import { mapExpressionValueToMapSelector, useDataPickerButtonListSource } from './list-section'
-import { traceDataFromElement } from '../../../../core/data-tracing/data-tracing'
+import { traceDataFromElement, dataPathSuccess } from '../../../../core/data-tracing/data-tracing'
 
 interface MapListSourceCartoucheProps {
   target: ElementPath
@@ -63,7 +63,7 @@ export const MapListSourceCartouche = React.memo((props: MapListSourceCartoucheP
           target,
           store.editor.jsxMetadata,
           store.editor.projectContents,
-          [],
+          dataPathSuccess([]),
         )
         return traceDataResult.type === 'hook-result'
       }
