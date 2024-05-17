@@ -6,12 +6,10 @@
  */
 
 /* @flow */
+import { v4 as UUID } from 'uuid'
 import { SOURCE_MAP_SEPARATOR, SourceMapCache } from '../../../core/shared/code-exec-utils'
-import { RawSourceMap } from '../../../core/workers/ts/ts-typings/RawSourceMap'
-import { generateUUID } from '../../../utils/utils'
-import { extractSourceMapUrl } from './getSourceMap'
 import StackFrame from './stack-frame'
-import { strToBase64, base64ToStr } from '@root/encoding/base64'
+import { base64ToStr } from '@root/encoding/base64'
 const regexExtractLocation = /\(?(.+?)(?::(\d+))?(?::(\d+))?\)?$/
 
 function extractLocation(token: string): [string, number, number] {
@@ -38,9 +36,9 @@ function replaceBase64SourceMapWithCacheKey(
   if (splitStackLine.length < 3) {
     return stackLine
   }
-  const uid = generateUUID()
-  sourceMapCache[uid] = JSON.parse(base64ToStr(splitStackLine[1]))
-  return `${splitStackLine[0]}${SOURCE_MAP_SEPARATOR}${uid}${splitStackLine[2]}`
+  const key = UUID()
+  sourceMapCache[key] = JSON.parse(base64ToStr(splitStackLine[1]))
+  return `${splitStackLine[0]}${SOURCE_MAP_SEPARATOR}${key}${splitStackLine[2]}`
 }
 
 export function parseStack(stack: string[], sourceMapCache: SourceMapCache): StackFrame[] {
