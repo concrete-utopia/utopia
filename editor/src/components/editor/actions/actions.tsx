@@ -438,7 +438,7 @@ import { mergeProjectContents } from '../../../core/shared/github/helpers'
 import { emptySet } from '../../../core/shared/set-utils'
 import {
   fixUtopiaElement,
-  generateConsistentUID,
+  generateHashUID,
   generateUID,
   getUtopiaID,
 } from '../../../core/shared/uid-utils'
@@ -5215,7 +5215,7 @@ export const UPDATE_FNS = {
 
       const existingUids = new Set(getAllUniqueUids(editor.projectContents).uniqueIDs)
 
-      const newUID = generateConsistentUID('new')
+      const newUID = generateHashUID('new')
 
       const newPath = EP.appendToPath(action.insertionPath.intendedParentPath, newUID)
 

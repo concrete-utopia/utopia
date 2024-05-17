@@ -116,7 +116,7 @@ import type {
   HighlightBoundsForUids,
 } from '../../shared/project-file-types'
 import {
-  generateConsistentUID,
+  generateHashUID,
   getUtopiaIDFromJSXElement,
   parseUID,
   parseUIDFromComments,
@@ -1755,12 +1755,11 @@ function generateUIDAndAddToExistingUIDs(
   value: any,
   nodeOrNodes: TS.Node | Array<TS.Node>,
 ): string {
-  const hash = hashObject({
+  return generateHashUID({
     fileName: sourceFile.fileName,
     value: value,
     bounds: getBoundsOfNodes(sourceFile, nodeOrNodes),
   })
-  return generateConsistentUID(hash)
 }
 
 function createRawExpressionValue(
@@ -2950,13 +2949,12 @@ function getUIDBasedOnElement(
   } else {
     cleansedProps = clearExpressionSourceMaps(clearExpressionUniqueIDs(props))
   }
-  const hash = hashObject({
+  return generateHashUID({
     fileName: sourceFile.fileName,
     bounds: getBoundsOfNodes(sourceFile, originatingElement),
     name: elementName,
     props: cleansedProps,
   })
-  return generateConsistentUID(hash)
 }
 
 function forciblyUpdateDataUID(

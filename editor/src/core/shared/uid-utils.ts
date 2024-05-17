@@ -4,7 +4,7 @@ import { mapDropNulls } from './array-utils'
 import { deepFindUtopiaCommentFlag, isUtopiaCommentFlagUid } from './comment-flags'
 import { getDOMAttribute } from './dom-utils'
 import type { Either } from './either'
-import { flatMapEither, foldEither, isLeft, isRight, left, right } from './either'
+import { flatMapEither, foldEither, isRight, left, right } from './either'
 import * as EP from './element-path'
 import type {
   ElementInstanceMetadata,
@@ -24,7 +24,6 @@ import type {
   JSExpressionFunctionCall,
   JSXArrayElement,
   JSXProperty,
-  JSExpressionMapOrOtherJavascript,
   JSXMapExpression,
   JSIdentifier,
   JSPropertyAccess,
@@ -33,7 +32,6 @@ import type {
 import {
   emptyComments,
   getJSXAttribute,
-  isJSExpressionMapOrOtherJavaScript,
   isJSXAttributeValue,
   isJSXConditionalExpression,
   isJSXElement,
@@ -68,6 +66,7 @@ import {
   jsxSimpleAttributeToValue,
   setJSXValueAtPath,
 } from './jsx-attribute-utils'
+import { hashObject } from './hash'
 
 export const MOCK_NEXT_GENERATED_UIDS: { current: Array<string> } = { current: [] }
 export const MOCK_NEXT_GENERATED_UIDS_IDX = { current: 0 }
@@ -116,11 +115,11 @@ export const atoz = [
   'z',
 ]
 
-// Assumes possibleStartingValue consists only of characters that are valid to begin with.
-export function generateConsistentUID(possibleStartingValue: string): string {
+export function generateHashUID(data: any): string {
+  const hash = hashObject(data)
   const mockUID = generateMockNextGeneratedUID()
   if (mockUID == null) {
-    return possibleStartingValue
+    return hash.substring(0, UID_LENGTH)
   } else {
     return mockUID
   }
@@ -276,9 +275,9 @@ export function fixUtopiaElement(
     const uid = element.uid
     const uidProp = getJSXAttribute(fixedProps, 'data-uid')
     if (uidProp == null || !isJSXAttributeValue(uidProp)) {
-      const newUID = generateConsistentUID(uid)
+      const newUID = generateHashUID(uid)
       mappings.push({ originalUID: uid, newUID: newUID })
-      const newUIDForProp = generateConsistentUID(uid)
+      const newUIDForProp = generateHashUID(uid)
       if (uidProp != null) {
         mappings.push({ originalUID: uidProp.uid, newUID: newUIDForProp })
       }

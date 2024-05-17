@@ -44,7 +44,7 @@ import { fromField, identityOptic } from '../../../core/shared/optics/optic-crea
 import { assertNever, fastForEach } from '../../../core/shared/utils'
 import { emptySet } from '../../../core/shared/set-utils'
 import type { UIDMappings } from '../../../core/shared/uid-utils'
-import { generateConsistentUID, updateHighlightBounds } from '../../../core/shared/uid-utils'
+import { generateHashUID, updateHighlightBounds } from '../../../core/shared/uid-utils'
 
 const jsxElementChildUIDOptic: Optic<JSXElementChild, string> = fromField('uid')
 
@@ -694,7 +694,7 @@ export function fixJSXElementUIDs(
   let dataUIDPropUID: string
   if (newDataUIDProp == null) {
     // Backup case for where there is no `data-uid` prop.
-    dataUIDPropUID = generateConsistentUID(elementWithUpdatedUID.uid)
+    dataUIDPropUID = generateHashUID(elementWithUpdatedUID.uid)
   } else {
     if (oldDataUIDPropUIDInUseElsewhere) {
       // In this case, ensure that some consistency is maintained and avoid duplicates.

@@ -32,7 +32,7 @@ import { UTOPIA_UID_KEY } from './utopia-constants'
 import type { ProjectContentTreeRoot } from '../../components/assets'
 import { getProjectFileByFilePath } from '../../components/assets'
 import { getUtopiaJSXComponentsFromSuccess } from './project-file-utils'
-import { generateConsistentUID, getUtopiaID } from '../shared/uid-utils'
+import { generateHashUID, getUtopiaID } from '../shared/uid-utils'
 import { hashObject } from '../shared/hash'
 
 export const PathForSceneComponent = PP.create('component')
@@ -148,12 +148,11 @@ export function createSceneFromComponent(
       emptyComments,
     ),
   })
-  const hash = hashObject({
+  const componentUID = generateHashUID({
     fileName: filePath,
     name: componentImportedAs,
     props: jsxAttributesFromMap({}),
   })
-  const componentUID = generateConsistentUID(hash)
   return jsxElement('Scene', uid, sceneProps, [
     jsxElement(
       componentImportedAs,

@@ -38,7 +38,7 @@ import {
   type ElementToInsert,
 } from './component-picker'
 import type { PreferredChildComponentDescriptor } from '../../custom-code/internal-property-controls'
-import { fixUtopiaElement, generateConsistentUID } from '../../../core/shared/uid-utils'
+import { fixUtopiaElement, generateHashUID } from '../../../core/shared/uid-utils'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { elementFromInsertMenuItem } from '../../editor/insert-callbacks'
 import { ContextMenuWrapper, MomentumContextMenu } from '../../context-menu-wrapper'
@@ -454,7 +454,7 @@ function insertComponentPickerItem(
   insertionTarget: InsertionTarget,
 ) {
   const uniqueIds = new Set(getAllUniqueUids(projectContents).uniqueIDs)
-  const uid = generateConsistentUID('prop')
+  const uid = generateHashUID('prop')
   const elementWithoutUID = toInsert.element()
 
   const actions = ((): Array<EditorAction> => {
@@ -586,7 +586,7 @@ function insertPreferredChild(
   dispatch: EditorDispatch,
   insertionTarget: InsertionTarget,
 ) {
-  const uid = generateConsistentUID('prop')
+  const uid = generateHashUID('prop')
   const toInsert = elementToInsertToInsertableComponent(
     preferredChildToInsert,
     uid,

@@ -35,7 +35,7 @@ import { reparentElement } from '../canvas/commands/reparent-element-command'
 import { useRefEditorState } from './store/store-hook'
 import { useDispatch } from './store/dispatch-context'
 import { applyCommandsAction } from './actions/action-creators'
-import { generateConsistentUID } from '../../core/shared/uid-utils'
+import { generateHashUID } from '../../core/shared/uid-utils'
 import { getAllUniqueUids } from '../../core/model/get-unique-ids'
 import { updateSelectedViews } from '../canvas/commands/update-selected-views-command'
 import type { IndexPosition } from '../../utils/utils'
@@ -99,10 +99,10 @@ function wrapInDivCommands(
 
   const allIds = new Set(getAllUniqueUids(projectContents).allIDs)
 
-  const wrapperUid = generateConsistentUID('wrapper')
+  const wrapperUid = generateHashUID('wrapper')
   allIds.add(wrapperUid)
 
-  const fragmentWrapperUid = generateConsistentUID('fragment-wrapper')
+  const fragmentWrapperUid = generateHashUID('fragment-wrapper')
 
   const parentPath = EP.getCommonParentOfNonemptyPathArray(selectedViews)
   const insertionPath = getInsertionPath(

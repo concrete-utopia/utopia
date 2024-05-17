@@ -23,7 +23,6 @@ import type { InsertionSubjectWrapper } from '../../editor/editor-modes'
 import { assertNever } from '../../../core/shared/utils'
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
 import { absolute } from '../../../utils/utils'
-import type { ProjectContentTreeRoot } from '../../assets'
 import {
   getIndexInParent,
   insertJSXElementChildren,
@@ -32,8 +31,7 @@ import { getInsertionPath } from '../../editor/store/insertion-path'
 import { jsxTextBlock } from '../../../core/shared/element-template'
 import type { CSSProperties } from 'react'
 import type { Property } from 'csstype'
-import { generateConsistentUID, generateUID } from '../../../core/shared/uid-utils'
-import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
+import { generateHashUID, generateUID } from '../../../core/shared/uid-utils'
 import { getSimpleAttributeAtPath } from '../../../core/model/element-metadata-utils'
 import { forEachRight, right } from '../../../core/shared/either'
 
@@ -240,7 +238,7 @@ function getInsertionSubjectStyleFromConditionalTrueBranch(
 function getInsertionSubjectWrapperConditionalFalseBranch(
   trueBranch: JSXElementChild,
 ): JSXElementChild {
-  const uid = generateConsistentUID('false-branch')
+  const uid = generateHashUID('false-branch')
 
   const style = getInsertionSubjectStyleFromConditionalTrueBranch(trueBranch)
 
