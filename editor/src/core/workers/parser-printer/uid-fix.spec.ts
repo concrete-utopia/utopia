@@ -178,10 +178,10 @@ describe('fixParseSuccessUIDs', () => {
     )
     expect(getUidTree(parsedFile)).toEqual(getUidTree(modifiedBaseFile))
     expect(getUidTree(parsedFile)).toMatchInlineSnapshot(`
-      "108suffix
-        61a
-      0basuffix
-        7bd
+      "d3fsuffix
+        f9a
+      81dsuffix
+        62e
       storyboardsuffix
         scene
           component"
@@ -196,11 +196,11 @@ describe('fixParseSuccessUIDs', () => {
       'trim-bounds',
     )
     expect(getUidTree(initialParse)).toMatchInlineSnapshot(`
-      "a62
-        799
-          708
-        407
-          031"
+      "f81
+        666
+          1f5
+        a3c
+          00b"
     `)
     if (isParseSuccess(initialParse)) {
       const secondParse = lintAndParseAndValidateResult(
@@ -211,13 +211,13 @@ describe('fixParseSuccessUIDs', () => {
         'trim-bounds',
       )
       expect(getUidTree(secondParse)).toMatchInlineSnapshot(`
-        "a62
-          799
-        cc2
-          ba7
-            8e4
-          13a
-            4dd"
+        "f81
+          666
+        638
+          acd
+            59b
+          110
+            7b1"
       `)
     } else {
       throw new Error(`First parse did not succeed.`)
@@ -233,10 +233,10 @@ describe('fixParseSuccessUIDs', () => {
     )
     expect(getUidTree(newFile)).toEqual(getUidTree(baseFile))
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
-      "108
-        61a
-      0ba
-        7bd
+      "d3f
+        f9a
+      81d
+        62e
       storyboard
         scene
           component"
@@ -260,12 +260,12 @@ describe('fixParseSuccessUIDs', () => {
     )
     expect(getUidTree(newFileFixed)).toEqual(getUidTree(newFile))
     expect(getUidTree(newFileFixed)).toMatchInlineSnapshot(`
-      "108
-        61a
-      7bd
-        e65
-      681
-        463
+      "d3f
+        f9a
+      468
+        f8f
+      475
+        bbc
       storyboard
         scene
           component"
@@ -289,11 +289,11 @@ describe('fixParseSuccessUIDs', () => {
     )
     expect(getUidTree(fileWithFragmentUpdated)).toEqual(getUidTree(fileWithFragment))
     expect(getUidTree(fileWithFragmentUpdated)).toMatchInlineSnapshot(`
-      "108
-        61a
-      4ba
-        87d
-        dfc
+      "d3f
+        f9a
+      d25
+        83b
+        39d
       storyboard
         scene
           component"
@@ -310,10 +310,10 @@ describe('fixParseSuccessUIDs', () => {
     )
     expect(getUidTree(newFile)).toEqual(getUidTree(baseFile))
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
-      "108
-        61a
-      0ba
-        7bd
+      "d3f
+        f9a
+      81d
+        62e
       storyboard
         scene
           component"
@@ -354,11 +354,11 @@ describe('fixParseSuccessUIDs', () => {
       'trim-bounds',
     )
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
-      "108
-        61a
-      0ba
-        7bd
-        a7e
+      "d3f
+        f9a
+      81d
+        62e
+        916
       storyboard
         scene
           component"
@@ -385,12 +385,12 @@ describe('fixParseSuccessUIDs', () => {
       'trim-bounds',
     )
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
-      "108
-        61a
-      0ba
-        7bd
-        a7e
-        b48
+      "d3f
+        f9a
+      81d
+        62e
+        916
+        c7e
       storyboard
         scene
           component"
@@ -413,13 +413,13 @@ describe('fixParseSuccessUIDs', () => {
       'trim-bounds',
     )
     expect(getUidTree(fourViews)).toMatchInlineSnapshot(`
-      "108
-        61a
-      561
-        7bd
-        a7e
-        b48
-        7f1
+      "d3f
+        f9a
+      d99
+        62e
+        916
+        c7e
+        147
       storyboard
         scene
           component"
@@ -496,21 +496,21 @@ describe('fixParseSuccessUIDs', () => {
       'trim-bounds',
     )
     expect(getUidTree(beforeReOrder)).toMatchInlineSnapshot(`
-      "108
-        61a
-      c20
-        e65
-        a7e
+      "d3f
+        f9a
+      245
+        f8f
+        916
       storyboard
         scene
           component"
     `)
     expect(getUidTree(afterReOrder)).toMatchInlineSnapshot(`
-      "108
-        61a
-      c20
-        e65
-        a7e
+      "d3f
+        f9a
+      245
+        f8f
+        916
       storyboard
         scene
           component"
@@ -562,11 +562,11 @@ describe('fixParseSuccessUIDs', () => {
       'trim-bounds',
     )
     expect(getUidTree(firstResult)).toMatchInlineSnapshot(`
-      "108
-        61a
-      0f7
-        a4d
-          f9b
+      "d3f
+        f9a
+      8a8
+        f98
+          3cc
       storyboard
         scene
           component"
@@ -579,12 +579,12 @@ describe('fixParseSuccessUIDs', () => {
       'trim-bounds',
     )
     expect(getUidTree(secondResult)).toMatchInlineSnapshot(`
-      "108
-        61a
-      0f7
-        a4d
+      "d3f
+        f9a
+      8a8
+        f98
           aaa
-            f9b
+            3cc
       storyboard
         scene
           component"
@@ -599,10 +599,10 @@ describe('fixParseSuccessUIDs', () => {
       'trim-bounds',
     )
     expect(getUidTree(firstResult)).toMatchInlineSnapshot(`
-      "1fa
-        0c3
-          22f
-          3dd"
+      "d0f
+        b01
+          364
+          c85"
     `)
     const secondResult = lintAndParseAndValidateResult(
       'test.js',
@@ -612,9 +612,9 @@ describe('fixParseSuccessUIDs', () => {
       'trim-bounds',
     )
     expect(getUidTree(secondResult)).toMatchInlineSnapshot(`
-      "1fa
-        0c3
-          22f"
+      "d0f
+        b01
+          364"
     `)
   })
   it(`handles arbitrary JS blocks and their UIDs`, () => {

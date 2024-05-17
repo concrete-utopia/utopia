@@ -235,6 +235,8 @@ import type {
   ReplaceTarget,
   InsertAsChildTarget,
   ReplaceKeepChildrenAndStyleTarget,
+  ReplaceElementInScope,
+  ElementReplacementPath,
   ReplaceJSXElement,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
@@ -320,6 +322,17 @@ export function replaceMappedElement(
     jsxElement: element,
     target: target,
     importsToAdd: importsToAdd,
+  }
+}
+
+export function replaceElementInScope(
+  target: ElementPath,
+  replacementPath: ElementReplacementPath,
+): ReplaceElementInScope {
+  return {
+    action: 'REPLACE_ELEMENT_IN_SCOPE',
+    target: target,
+    replacementPath: replacementPath,
   }
 }
 

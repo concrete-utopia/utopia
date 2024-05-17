@@ -9,6 +9,7 @@ import type { ElementPath, PropertyPath } from '../../../../core/shared/project-
 import { useColorTheme, Button, FlexColumn, UtopiaStyles } from '../../../../uuiui'
 import {
   insertJSXElement,
+  replaceElementInScope,
   setProp_UNSAFE,
   updateMapExpression,
 } from '../../../editor/actions/action-creators'
@@ -152,13 +153,23 @@ export function dataPickerForAnElement(elementPath: ElementPath): DataPickerForA
   }
 }
 
-export type DataPickerType = DataPickerForAProperty | DataPickerForAMapExpressionValue
+export interface DataPickerForChildNode {
+  type: 'FOR_CHILD_NODE'
+  elementPath: ElementPath
+  childNodeUid: string
+}
+
+export type DataPickerType =
+  | DataPickerForAProperty
+  | DataPickerForAMapExpressionValue
+  | DataPickerForChildNode
 
 export function dataPickerIgnoreClass(pickerType: DataPickerType): string {
   switch (pickerType.type) {
     case 'FOR_A_PROPERTY':
       return `ignore-react-onclickoutside-data-picker-${PP.toString(pickerType.propPath)}`
     case 'FOR_A_MAP_EXPRESSION_VALUE':
+    case 'FOR_CHILD_NODE':
       return `ignore-react-onclickoutside-data-picker-${EP.toString(pickerType.elementPath)}`
     default:
       assertNever(pickerType)
@@ -253,6 +264,15 @@ export const DataPickerPopup = React.memo(
             break
           case 'FOR_A_MAP_EXPRESSION_VALUE':
             dispatch([updateMapExpression(props.pickerType.elementPath, expression)])
+            break
+          case 'FOR_CHILD_NODE':
+            dispatch([
+              replaceElementInScope(pickerType.elementPath, {
+                type: 'replace-child-with-uid',
+                uid: pickerType.childNodeUid,
+                replaceWith: expression,
+              }),
+            ])
             break
           default:
             assertNever(pickerType)
