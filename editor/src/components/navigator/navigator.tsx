@@ -12,7 +12,7 @@ import type { ElementPath } from '../../core/shared/project-file-types'
 import { getSelectedNavigatorEntries } from '../../templates/editor-navigator'
 import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 import Utils from '../../utils/utils'
-import { FlexColumn, Section, SectionBodyArea } from '../../uuiui'
+import { FlexColumn, Section, SectionBodyArea, UtopiaTheme } from '../../uuiui'
 import { setFocus } from '../common/actions'
 import {
   clearHighlightedViews,
@@ -32,8 +32,9 @@ import { ElementContextMenu } from '../element-context-menu'
 import { getItemHeight } from './navigator-item/navigator-item'
 import { NavigatorDragLayer } from './navigator-drag-layer'
 import { NavigatorItemWrapper } from './navigator-item/navigator-item-wrapper'
-import type { NavigatorRow } from './navigator-row'
+import type { CondensedNavigatorRow, NavigatorRow, RegularNavigatorRow } from './navigator-row'
 import { getEntriesForRow } from './navigator-row'
+import { assertNever } from '../../core/shared/utils'
 
 interface ItemProps extends ListChildComponentProps {}
 
@@ -155,7 +156,27 @@ export const NavigatorContainerId = 'navigator'
 function getMappedNavigatorEntries(
   visibleNavigatorTargets: Array<NavigatorEntry>,
 ): Array<NavigatorRow> {
-  return visibleNavigatorTargets.map((entry) => ({ type: 'regular-row', entry: entry }))
+  let toCondense: Array<NavigatorEntry> = []
+  let regularRows: Array<RegularNavigatorRow> = []
+  // put the first 6 items in condensed rows, the rest as regular rows
+  for (let i = 0; i < visibleNavigatorTargets.length; i++) {
+    if (i < 6) {
+      toCondense.push(visibleNavigatorTargets[i])
+    } else {
+      regularRows.push({
+        type: 'regular-row',
+        entry: visibleNavigatorTargets[i],
+      })
+    }
+  }
+  const condensedRow: Array<CondensedNavigatorRow> = [
+    {
+      type: 'condensed-row',
+      entries: toCondense,
+    },
+  ]
+
+  return [...condensedRow, ...regularRows]
 }
 
 export const NavigatorComponent = React.memo(() => {
@@ -229,14 +250,14 @@ export const NavigatorComponent = React.memo(() => {
       const navigatorRow = safeIndex(visibleNavigatorTargets, entryIndex)
       if (navigatorRow == null) {
         throw new Error(`Could not find navigator entry at index ${entryIndex}`)
-      } else {
-        return getEntriesForRow(navigatorRow).reduce(
-          (accumulatedHeight: number, navigatorTarget) => {
-            return accumulatedHeight + getItemHeight(navigatorTarget)
-          },
-          0,
-        )
       }
+      if (navigatorRow.type === 'condensed-row') {
+        return UtopiaTheme.layout.rowHeight.smaller
+      }
+      if (navigatorRow.type === 'regular-row') {
+        return getItemHeight(navigatorRow.entry)
+      }
+      assertNever(navigatorRow)
     },
     [visibleNavigatorTargets],
   )
