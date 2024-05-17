@@ -186,33 +186,33 @@ function otherFn(n) {
     },
   ],
   "fullHighlightBounds": Object {
-    "05f": Object {
-      "endCol": 24,
-      "endLine": 20,
-      "startCol": 19,
-      "startLine": 20,
-      "uid": "05f",
-    },
-    "60d": Object {
-      "endCol": 22,
-      "endLine": 22,
-      "startCol": 17,
-      "startLine": 22,
-      "uid": "60d",
-    },
-    "8e2": Object {
+    "2655c9f7d0454de7967e97e324c97000": Object {
       "endCol": 1,
       "endLine": 17,
       "startCol": 0,
       "startLine": 15,
-      "uid": "8e2",
+      "uid": "2655c9f7d0454de7967e97e324c97000",
     },
-    "960": Object {
+    "3a876e7ef040fcf9a55f8fc8d047c8b1": Object {
+      "endCol": 22,
+      "endLine": 22,
+      "startCol": 17,
+      "startLine": 22,
+      "uid": "3a876e7ef040fcf9a55f8fc8d047c8b1",
+    },
+    "48fd2fe4236b633b8753d674afd2ca8d": Object {
       "endCol": 1,
       "endLine": 14,
       "startCol": 0,
       "startLine": 12,
-      "uid": "960",
+      "uid": "48fd2fe4236b633b8753d674afd2ca8d",
+    },
+    "518a59f8c9bf25406b43d4bdd3843a13": Object {
+      "endCol": 24,
+      "endLine": 20,
+      "startCol": 19,
+      "startLine": 20,
+      "uid": "518a59f8c9bf25406b43d4bdd3843a13",
     },
     "aaa": Object {
       "endCol": 11,
@@ -228,12 +228,12 @@ function otherFn(n) {
       "startLine": 21,
       "uid": "aab",
     },
-    "bb8": Object {
+    "bb8283f87b824e7ea330eabc18874c2f": Object {
       "endCol": 38,
       "endLine": 23,
       "startCol": 14,
       "startLine": 23,
-      "uid": "bb8",
+      "uid": "bb8283f87b824e7ea330eabc18874c2f",
     },
   },
   "highlightBounds": Object {
@@ -251,12 +251,12 @@ function otherFn(n) {
       "startLine": 21,
       "uid": "aab",
     },
-    "bb8": Object {
+    "bb8283f87b824e7ea330eabc18874c2f": Object {
       "endCol": 38,
       "endLine": 23,
       "startCol": 14,
       "startLine": 23,
-      "uid": "bb8",
+      "uid": "bb8283f87b824e7ea330eabc18874c2f",
     },
   },
   "imports": Object {
@@ -735,61 +735,68 @@ Object {
     },
   ],
   "fullHighlightBounds": Object {
-    "057": Object {
+    "0571a421fdda23911d98b6ce5aacaa7b": Object {
       "endCol": 22,
       "endLine": 6,
       "startCol": 17,
       "startLine": 6,
-      "uid": "057",
+      "uid": "0571a421fdda23911d98b6ce5aacaa7b",
     },
-    "05f": Object {
+    "136e4fe34747b89e02161f49d482f5eb": Object {
       "endCol": 53,
       "endLine": 5,
       "startCol": 48,
       "startLine": 5,
-      "uid": "05f",
+      "uid": "136e4fe34747b89e02161f49d482f5eb",
     },
-    "083": Object {
-      "endCol": 31,
-      "endLine": 6,
-      "startCol": 30,
-      "startLine": 6,
-      "uid": "083",
-    },
-    "262": Object {
+    "2862d76e1e0d5f9dbc143a44ca136bf1": Object {
       "endCol": 37,
-      "endLine": 4,
+      "endLine": 6,
       "startCol": 25,
-      "startLine": 4,
-      "uid": "262",
+      "startLine": 6,
+      "uid": "2862d76e1e0d5f9dbc143a44ca136bf1",
     },
-    "2ec": Object {
+    "2ecf5b2d1dff59903670977ee9b13127": Object {
       "endCol": 45,
       "endLine": 6,
       "startCol": 17,
       "startLine": 6,
-      "uid": "2ec",
+      "uid": "2ecf5b2d1dff59903670977ee9b13127",
     },
-    "389": Object {
+    "38967a40c9ff67ccfd810fbb7d2d8874": Object {
       "endCol": 45,
       "endLine": 4,
       "startCol": 17,
       "startLine": 4,
-      "uid": "389",
+      "uid": "38967a40c9ff67ccfd810fbb7d2d8874",
     },
-    "7a0": Object {
+    "7a004480b9d5717a4291a21990baa551": Object {
       "endCol": 22,
       "endLine": 4,
       "startCol": 17,
       "startLine": 4,
-      "uid": "7a0",
+      "uid": "7a004480b9d5717a4291a21990baa551",
     },
-    "908": Object {
+    "805ea8ea772ffbfb96caf74e2d266821": Object {
+      "endCol": 31,
+      "endLine": 4,
+      "startCol": 30,
+      "startLine": 4,
+      "uid": "805ea8ea772ffbfb96caf74e2d266821",
+    },
+    "8c5d02842e8dde3cf74bd1b8e422fb6e": Object {
+      "endCol": 31,
+      "endLine": 6,
+      "startCol": 30,
+      "startLine": 6,
+      "uid": "8c5d02842e8dde3cf74bd1b8e422fb6e",
+    },
+    "9082191545a3dbee5d5b7397dcc6a2b4": Object {
       "endCol": 37,
       "endLine": 6,
       "startCol": 25,
       "startLine": 6,
-      "uid": "908",
+      "uid": "9082191545a3dbee5d5b7397dcc6a2b4",
     },
     "aaa": Object {
       "endCol": 56,
@@ -798,77 +805,70 @@ Object {
       "startLine": 5,
       "uid": "aaa",
     },
-    "acb": Object {
+    "acb84710536510b727d20bbed9d28260": Object {
       "endCol": 45,
       "endLine": 4,
       "startCol": 40,
       "startLine": 4,
-      "uid": "acb",
+      "uid": "acb84710536510b727d20bbed9d28260",
     },
-    "b06": Object {
+    "b0654c73b373d37e310c9ae5009e3e62": Object {
       "endCol": 45,
       "endLine": 6,
       "startCol": 40,
       "startLine": 6,
-      "uid": "b06",
+      "uid": "b0654c73b373d37e310c9ae5009e3e62",
     },
-    "c7e": Object {
-      "endCol": 31,
-      "endLine": 4,
-      "startCol": 30,
-      "startLine": 4,
-      "uid": "c7e",
-    },
-    "c95": Object {
-      "endCol": 37,
-      "endLine": 6,
-      "startCol": 25,
-      "startLine": 6,
-      "uid": "c95",
-    },
-    "e70": Object {
+    "b82a127cad4c875e3732fb5ead46661a": Object {
       "endCol": 37,
       "endLine": 4,
       "startCol": 25,
       "startLine": 4,
-      "uid": "e70",
+      "uid": "b82a127cad4c875e3732fb5ead46661a",
+    },
+    "e7047b3c58e9d42a23f52c8d25835af2": Object {
+      "endCol": 37,
+      "endLine": 4,
+      "startCol": 25,
+      "startLine": 4,
+      "uid": "e7047b3c58e9d42a23f52c8d25835af2",
     },
   },
   "highlightBounds": Object {
-    "057": Object {
+    "0571a421fdda23911d98b6ce5aacaa7b": Object {
       "endCol": 22,
       "endLine": 6,
       "startCol": 17,
       "startLine": 6,
-      "uid": "057",
+      "uid": "0571a421fdda23911d98b6ce5aacaa7b",
     },
-    "2ec": Object {
+    "2ecf5b2d1dff59903670977ee9b13127": Object {
       "endCol": 45,
       "endLine": 6,
       "startCol": 17,
       "startLine": 6,
-      "uid": "2ec",
+      "uid": "2ecf5b2d1dff59903670977ee9b13127",
     },
-    "389": Object {
+    "38967a40c9ff67ccfd810fbb7d2d8874": Object {
       "endCol": 45,
       "endLine": 4,
       "startCol": 17,
       "startLine": 4,
-      "uid": "389",
+      "uid": "38967a40c9ff67ccfd810fbb7d2d8874",
     },
-    "7a0": Object {
+    "7a004480b9d5717a4291a21990baa551": Object {
       "endCol": 22,
       "endLine": 4,
       "startCol": 17,
       "startLine": 4,
-      "uid": "7a0",
+      "uid": "7a004480b9d5717a4291a21990baa551",
     },
-    "908": Object {
+    "9082191545a3dbee5d5b7397dcc6a2b4": Object {
       "endCol": 37,
       "endLine": 6,
       "startCol": 25,
       "startLine": 6,
-      "uid": "908",
+      "uid": "9082191545a3dbee5d5b7397dcc6a2b4",
     },
     "aaa": Object {
       "endCol": 56,
@@ -877,26 +877,26 @@ Object {
       "startLine": 5,
       "uid": "aaa",
     },
-    "acb": Object {
+    "acb84710536510b727d20bbed9d28260": Object {
       "endCol": 45,
       "endLine": 4,
       "startCol": 40,
       "startLine": 4,
-      "uid": "acb",
+      "uid": "acb84710536510b727d20bbed9d28260",
     },
-    "b06": Object {
+    "b0654c73b373d37e310c9ae5009e3e62": Object {
       "endCol": 45,
       "endLine": 6,
       "startCol": 40,
       "startLine": 6,
-      "uid": "b06",
+      "uid": "b0654c73b373d37e310c9ae5009e3e62",
     },
-    "e70": Object {
+    "e7047b3c58e9d42a23f52c8d25835af2": Object {
       "endCol": 37,
       "endLine": 4,
       "startCol": 25,
       "startLine": 4,
-      "uid": "e70",
+      "uid": "e7047b3c58e9d42a23f52c8d25835af2",
     },
   },
   "imports": Object {
@@ -1088,7 +1088,7 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
                 },
                 "type": "ATTRIBUTE_VALUE",
                 "uid": "",
-                "value": "e70",
+                "value": "e7047b3c58e9d42a23f52c8d25835af2",
               },
             },
           ],
@@ -1302,7 +1302,7 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
                 },
                 "type": "ATTRIBUTE_VALUE",
                 "uid": "",
-                "value": "908",
+                "value": "9082191545a3dbee5d5b7397dcc6a2b4",
               },
             },
           ],
@@ -1422,19 +1422,19 @@ export var App = (props) => <View data-uid='bbb'>
     },
   ],
   "fullHighlightBounds": Object {
-    "190": Object {
+    "0ff0e42d7a75d05f76d59316662094d9": Object {
       "endCol": 48,
       "endLine": 12,
       "startCol": 43,
       "startLine": 12,
-      "uid": "190",
+      "uid": "0ff0e42d7a75d05f76d59316662094d9",
     },
-    "522": Object {
+    "ace9aafb0d49fed9b78bbe6a8d70f217": Object {
       "endCol": 16,
       "endLine": 11,
       "startCol": 0,
       "startLine": 11,
-      "uid": "522",
+      "uid": "ace9aafb0d49fed9b78bbe6a8d70f217",
     },
     "bbb": Object {
       "endCol": 7,
@@ -1443,12 +1443,12 @@ export var App = (props) => <View data-uid='bbb'>
       "startLine": 12,
       "uid": "bbb",
     },
-    "fae": Object {
+    "faee23265552c4fe268d2c2878dc8562": Object {
       "endCol": 9,
       "endLine": 13,
       "startCol": 3,
       "startLine": 13,
-      "uid": "fae",
+      "uid": "faee23265552c4fe268d2c2878dc8562",
     },
   },
   "highlightBounds": Object {
@@ -1459,12 +1459,12 @@ export var App = (props) => <View data-uid='bbb'>
       "startLine": 12,
       "uid": "bbb",
     },
-    "fae": Object {
+    "faee23265552c4fe268d2c2878dc8562": Object {
       "endCol": 9,
       "endLine": 13,
       "startCol": 3,
       "startLine": 13,
-      "uid": "fae",
+      "uid": "faee23265552c4fe268d2c2878dc8562",
     },
   },
   "imports": Object {

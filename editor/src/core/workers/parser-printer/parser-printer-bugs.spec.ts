@@ -48,17 +48,17 @@ export var App = props => {
         UNPARSED_CODE
         UTOPIA_JSX_COMPONENT - App
           JSX_ELEMENT - div - aaa
-            JSX_MAP_EXPRESSION - 1cc
-                ATTRIBUTE_VALUE - 8f7
-                ATTRIBUTE_VALUE - 5cd
-                ATTRIBUTE_VALUE - 7a4
-              ATTRIBUTE_OTHER_JAVASCRIPT - 831
+            JSX_MAP_EXPRESSION - 16c3d4759604aa746568f67367262605
+                ATTRIBUTE_VALUE - e0d3bb6fb9a1d4f5a56d76f72112daa5
+                ATTRIBUTE_VALUE - dd00bf551c48aa6b325c309b6c5a2430
+                ATTRIBUTE_VALUE - eb4a9dcca51da14e190a1c149d2e0b82
+              ATTRIBUTE_OTHER_JAVASCRIPT - 83160e700c2c1248251c587751cd5bbe
                 JSX_ELEMENT - div - bbb
-                  JS_IDENTIFIER - aae
-                  JSX_TEXT_BLOCK - 3bd
-                  JS_IDENTIFIER - 804
-              ATTRIBUTE_VALUE - 9e4
-              ATTRIBUTE_VALUE - 753"
+                  JS_IDENTIFIER - f2f219fe2a421a49ea5ad67fb087f175
+                  JSX_TEXT_BLOCK - b6f647609b7e3c9b68f55a18ca1b3dca
+                  JS_IDENTIFIER - f56b89a2e7dd50854343c420319659a2
+              ATTRIBUTE_VALUE - 0c5bb3f0faaefe6375f1ec8f6fe66984
+              ATTRIBUTE_VALUE - 474a7c77fe1bb091ea931baefdb6c85d"
       `)
 
       const aaaElement = findJSXElementAtStaticPath(
@@ -188,18 +188,18 @@ export var App = props => {
       UNPARSED_CODE
       UTOPIA_JSX_COMPONENT - Test
         JSX_ELEMENT - div - mapper-parent
-          JSX_MAP_EXPRESSION - 3d5
-            JS_PROPERTY_ACCESS - 741
-              JS_IDENTIFIER - f38
-            ATTRIBUTE_OTHER_JAVASCRIPT - 2d7
+          JSX_MAP_EXPRESSION - 10f8481b24d8415bcef90504209f7888
+            JS_PROPERTY_ACCESS - 2f0a2b029743d9f9f62384c498d2d5d5
+              JS_IDENTIFIER - e1bc922c4e4015ff66443180841a788c
+            ATTRIBUTE_OTHER_JAVASCRIPT - 2d73a750d1471dc4189d8a04bafb7c88
               JSX_ELEMENT - Card - card
-                  ATTRIBUTE_VALUE - d53
-                JS_PROPERTY_ACCESS - 160
-                  JS_IDENTIFIER - ec0
-                JS_PROPERTY_ACCESS - 109
-                  JS_IDENTIFIER - f0f
-                JS_PROPERTY_ACCESS - 032
-                  JS_IDENTIFIER - 805"
+                  ATTRIBUTE_VALUE - 8971078115e762d1ef6c2b6965b61b25
+                JS_PROPERTY_ACCESS - c2c903ebfbf2085d15f39ab05a59b49b
+                  JS_IDENTIFIER - d8e303aa43a859d01aa6f5c0c272bbc9
+                JS_PROPERTY_ACCESS - 30d8fcf4dcd58d96283e415b6a8946d2
+                  JS_IDENTIFIER - 846d1a646703c704e0437f24ed7b52eb
+                JS_PROPERTY_ACCESS - 26e6b1dc52f06d84e9ad8f0eee421bf9
+                  JS_IDENTIFIER - 944bcba7f90cf73635ead84eff167884"
     `)
     expect(elementsStructure((testParseCode(spreadCode) as any).topLevelElements))
       .toMatchInlineSnapshot(`
@@ -210,12 +210,12 @@ export var App = props => {
       UNPARSED_CODE
       UTOPIA_JSX_COMPONENT - Test
         JSX_ELEMENT - div - mapper-parent
-          JSX_MAP_EXPRESSION - 84e
-            JS_PROPERTY_ACCESS - 741
-              JS_IDENTIFIER - f38
-            ATTRIBUTE_OTHER_JAVASCRIPT - f54
+          JSX_MAP_EXPRESSION - 7fb8daf000c351dd789d9f55a3395d5c
+            JS_PROPERTY_ACCESS - 2f0a2b029743d9f9f62384c498d2d5d5
+              JS_IDENTIFIER - e1bc922c4e4015ff66443180841a788c
+            ATTRIBUTE_OTHER_JAVASCRIPT - f544b1d8a7dfe7f2a7995229f88db586
               JSX_ELEMENT - Card - card
-                  ATTRIBUTE_VALUE - d53"
+                  ATTRIBUTE_VALUE - a9e817a9b2d30f5e6c88376d6ce9a54e"
     `)
   })
 })

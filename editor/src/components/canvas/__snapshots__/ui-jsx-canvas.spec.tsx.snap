@@ -6,7 +6,7 @@ exports[`UiJsxCanvas render Label carried through for generated elements 1`] = `
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/22b utopia-storyboard-uid/scene-aaa/app-entity:aaa/22b/bbb\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/c27a2550425eb3f814246ca694bc936d utopia-storyboard-uid/scene-aaa/app-entity:aaa/c27a2550425eb3f814246ca694bc936d/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -41,17 +41,17 @@ exports[`UiJsxCanvas render Label carried through for generated elements 1`] = `
         <div
           data-uid=\\"bbb~~~1\\"
           data-label=\\"Plane\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/22b/bbb~~~1\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/c27a2550425eb3f814246ca694bc936d/bbb~~~1\\"
         ></div>
         <div
           data-uid=\\"bbb~~~2\\"
           data-label=\\"Plane\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/22b/bbb~~~2\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/c27a2550425eb3f814246ca694bc936d/bbb~~~2\\"
         ></div>
         <div
           data-uid=\\"bbb~~~3\\"
           data-label=\\"Plane\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/22b/bbb~~~3\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/c27a2550425eb3f814246ca694bc936d/bbb~~~3\\"
         ></div>
       </div>
     </div>
@@ -837,7 +837,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/22b": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/c27a2550425eb3f814246ca694bc936d": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -1053,7 +1053,7 @@ Object {
         ],
         Array [
           "aaa",
-          "22b",
+          "c27a2550425eb3f814246ca694bc936d",
         ],
       ],
       "type": "elementpath",
@@ -1123,7 +1123,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/22b/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/c27a2550425eb3f814246ca694bc936d/bbb~~~1": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -1189,7 +1189,7 @@ Object {
         ],
         Array [
           "aaa",
-          "22b",
+          "c27a2550425eb3f814246ca694bc936d",
           "bbb~~~1",
         ],
       ],
@@ -1264,7 +1264,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/22b/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/c27a2550425eb3f814246ca694bc936d/bbb~~~2": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -1330,7 +1330,7 @@ Object {
         ],
         Array [
           "aaa",
-          "22b",
+          "c27a2550425eb3f814246ca694bc936d",
           "bbb~~~2",
         ],
       ],
@@ -1405,7 +1405,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/22b/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/c27a2550425eb3f814246ca694bc936d/bbb~~~3": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -1471,7 +1471,7 @@ Object {
         ],
         Array [
           "aaa",
-          "22b",
+          "c27a2550425eb3f814246ca694bc936d",
           "bbb~~~3",
         ],
       ],
@@ -2219,9 +2219,9 @@ exports[`UiJsxCanvas render Renders input tag without errors 1`] = `
       data-uid=\\"scene-aaa\\"
     >
       <input
-        data-uid=\\"e30\\"
+        data-uid=\\"e30fa6fbfa88ceb6ae240b4621a8e4ff\\"
         style=\\"top: 10px\\"
-        data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:567:e30\\"
+        data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:567:e30fa6fbfa88ceb6ae240b4621a8e4ff\\"
       />
     </div>
   </div>
@@ -2700,7 +2700,7 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/7ec utopia-storyboard-uid/scene-aaa/app-entity:zzz/7ec/aaa utopia-storyboard-uid/scene-aaa/app-entity:zzz/7ec/aaa/aae\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/5b837d7a1c56bcfa9fbbf9c88698f12d utopia-storyboard-uid/scene-aaa/app-entity:zzz/5b837d7a1c56bcfa9fbbf9c88698f12d/aaa utopia-storyboard-uid/scene-aaa/app-entity:zzz/5b837d7a1c56bcfa9fbbf9c88698f12d/aaa/74939d139e9607117eb3d75625ae9267\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -2733,19 +2733,19 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
       >
         <div
           data-uid=\\"aaa~~~1\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/7ec/aaa~~~1\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/5b837d7a1c56bcfa9fbbf9c88698f12d/aaa~~~1\\"
         >
           1
         </div>
         <div
           data-uid=\\"aaa~~~2\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/7ec/aaa~~~2\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/5b837d7a1c56bcfa9fbbf9c88698f12d/aaa~~~2\\"
         >
           2
         </div>
         <div
           data-uid=\\"aaa~~~3\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/7ec/aaa~~~3\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/5b837d7a1c56bcfa9fbbf9c88698f12d/aaa~~~3\\"
         >
           3
         </div>
@@ -3445,7 +3445,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/7ec": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/5b837d7a1c56bcfa9fbbf9c88698f12d": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -3690,7 +3690,7 @@ Object {
         ],
         Array [
           "zzz",
-          "7ec",
+          "5b837d7a1c56bcfa9fbbf9c88698f12d",
         ],
       ],
       "type": "elementpath",
@@ -3760,7 +3760,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/7ec/aaa~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/5b837d7a1c56bcfa9fbbf9c88698f12d/aaa~~~1": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -3855,7 +3855,7 @@ Object {
         ],
         Array [
           "zzz",
-          "7ec",
+          "5b837d7a1c56bcfa9fbbf9c88698f12d",
           "aaa~~~1",
         ],
       ],
@@ -3930,7 +3930,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/7ec/aaa~~~1/aae": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/5b837d7a1c56bcfa9fbbf9c88698f12d/aaa~~~1/74939d139e9607117eb3d75625ae9267": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -3994,9 +3994,9 @@ Object {
         ],
         Array [
           "zzz",
-          "7ec",
+          "5b837d7a1c56bcfa9fbbf9c88698f12d",
           "aaa~~~1",
-          "aae",
+          "74939d139e9607117eb3d75625ae9267",
         ],
       ],
       "type": "elementpath",
@@ -4066,7 +4066,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/7ec/aaa~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/5b837d7a1c56bcfa9fbbf9c88698f12d/aaa~~~2": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -4161,7 +4161,7 @@ Object {
         ],
         Array [
           "zzz",
-          "7ec",
+          "5b837d7a1c56bcfa9fbbf9c88698f12d",
           "aaa~~~2",
         ],
       ],
@@ -4236,7 +4236,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/7ec/aaa~~~2/aae": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/5b837d7a1c56bcfa9fbbf9c88698f12d/aaa~~~2/74939d139e9607117eb3d75625ae9267": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -4300,9 +4300,9 @@ Object {
         ],
         Array [
           "zzz",
-          "7ec",
+          "5b837d7a1c56bcfa9fbbf9c88698f12d",
           "aaa~~~2",
-          "aae",
+          "74939d139e9607117eb3d75625ae9267",
         ],
       ],
       "type": "elementpath",
@@ -4372,7 +4372,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/7ec/aaa~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/5b837d7a1c56bcfa9fbbf9c88698f12d/aaa~~~3": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -4467,7 +4467,7 @@ Object {
         ],
         Array [
           "zzz",
-          "7ec",
+          "5b837d7a1c56bcfa9fbbf9c88698f12d",
           "aaa~~~3",
         ],
       ],
@@ -4542,7 +4542,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/7ec/aaa~~~3/aae": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/5b837d7a1c56bcfa9fbbf9c88698f12d/aaa~~~3/74939d139e9607117eb3d75625ae9267": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -4606,9 +4606,9 @@ Object {
         ],
         Array [
           "zzz",
-          "7ec",
+          "5b837d7a1c56bcfa9fbbf9c88698f12d",
           "aaa~~~3",
-          "aae",
+          "74939d139e9607117eb3d75625ae9267",
         ],
       ],
       "type": "elementpath",
@@ -4687,7 +4687,7 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73 utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa/b39 utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa/b39/bbb utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa/b39/bbb/208\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db/aaa utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db/aaa/ffed086795e93b3c327c7e933c84739c utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db/aaa/ffed086795e93b3c327c7e933c84739c/bbb utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db/aaa/ffed086795e93b3c327c7e933c84739c/bbb/20890d9be9651ab8f62f358b68c83ea9\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -4720,69 +4720,69 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
       >
         <div
           data-uid=\\"aaa~~~1\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~1\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db/aaa~~~1\\"
         >
           <div
             data-uid=\\"bbb~~~1\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~1/b39/bbb~~~1\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db/aaa~~~1/ffed086795e93b3c327c7e933c84739c/bbb~~~1\\"
           >
             4
           </div>
           <div
             data-uid=\\"bbb~~~2\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~1/b39/bbb~~~2\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db/aaa~~~1/ffed086795e93b3c327c7e933c84739c/bbb~~~2\\"
           >
             5
           </div>
           <div
             data-uid=\\"bbb~~~3\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~1/b39/bbb~~~3\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db/aaa~~~1/ffed086795e93b3c327c7e933c84739c/bbb~~~3\\"
           >
             6
           </div>
         </div>
         <div
           data-uid=\\"aaa~~~2\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~2\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db/aaa~~~2\\"
         >
           <div
             data-uid=\\"bbb~~~1\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~2/b39/bbb~~~1\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db/aaa~~~2/ffed086795e93b3c327c7e933c84739c/bbb~~~1\\"
           >
             8
           </div>
           <div
             data-uid=\\"bbb~~~2\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~2/b39/bbb~~~2\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db/aaa~~~2/ffed086795e93b3c327c7e933c84739c/bbb~~~2\\"
           >
             10
           </div>
           <div
             data-uid=\\"bbb~~~3\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~2/b39/bbb~~~3\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db/aaa~~~2/ffed086795e93b3c327c7e933c84739c/bbb~~~3\\"
           >
             12
           </div>
         </div>
         <div
           data-uid=\\"aaa~~~3\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~3\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db/aaa~~~3\\"
         >
           <div
             data-uid=\\"bbb~~~1\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~3/b39/bbb~~~1\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db/aaa~~~3/ffed086795e93b3c327c7e933c84739c/bbb~~~1\\"
           >
             12
           </div>
           <div
             data-uid=\\"bbb~~~2\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~3/b39/bbb~~~2\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db/aaa~~~3/ffed086795e93b3c327c7e933c84739c/bbb~~~2\\"
           >
             15
           </div>
           <div
             data-uid=\\"bbb~~~3\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~3/b39/bbb~~~3\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db/aaa~~~3/ffed086795e93b3c327c7e933c84739c/bbb~~~3\\"
           >
             18
           </div>
@@ -5704,7 +5704,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -6170,7 +6170,7 @@ Object {
         ],
         Array [
           "zzz",
-          "c73",
+          "10b9edac71c7be4def8591c7c80f29db",
         ],
       ],
       "type": "elementpath",
@@ -6240,7 +6240,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db/aaa~~~1": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -6541,7 +6541,7 @@ Object {
         ],
         Array [
           "zzz",
-          "c73",
+          "10b9edac71c7be4def8591c7c80f29db",
           "aaa~~~1",
         ],
       ],
@@ -6616,7 +6616,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~1/b39": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db/aaa~~~1/ffed086795e93b3c327c7e933c84739c": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -6886,9 +6886,9 @@ Object {
         ],
         Array [
           "zzz",
-          "c73",
+          "10b9edac71c7be4def8591c7c80f29db",
           "aaa~~~1",
-          "b39",
+          "ffed086795e93b3c327c7e933c84739c",
         ],
       ],
       "type": "elementpath",
@@ -6958,7 +6958,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~1/b39/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db/aaa~~~1/ffed086795e93b3c327c7e933c84739c/bbb~~~1": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -7071,9 +7071,9 @@ Object {
         ],
         Array [
           "zzz",
-          "c73",
+          "10b9edac71c7be4def8591c7c80f29db",
           "aaa~~~1",
-          "b39",
+          "ffed086795e93b3c327c7e933c84739c",
           "bbb~~~1",
         ],
       ],
@@ -7148,7 +7148,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~1/b39/bbb~~~1/208": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db/aaa~~~1/ffed086795e93b3c327c7e933c84739c/bbb~~~1/20890d9be9651ab8f62f358b68c83ea9": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -7230,11 +7230,11 @@ Object {
         ],
         Array [
           "zzz",
-          "c73",
+          "10b9edac71c7be4def8591c7c80f29db",
           "aaa~~~1",
-          "b39",
+          "ffed086795e93b3c327c7e933c84739c",
           "bbb~~~1",
-          "208",
+          "20890d9be9651ab8f62f358b68c83ea9",
         ],
       ],
       "type": "elementpath",
@@ -7304,7 +7304,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~1/b39/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db/aaa~~~1/ffed086795e93b3c327c7e933c84739c/bbb~~~2": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -7417,9 +7417,9 @@ Object {
         ],
         Array [
           "zzz",
-          "c73",
+          "10b9edac71c7be4def8591c7c80f29db",
           "aaa~~~1",
-          "b39",
+          "ffed086795e93b3c327c7e933c84739c",
           "bbb~~~2",
         ],
       ],
@@ -7494,7 +7494,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~1/b39/bbb~~~2/208": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db/aaa~~~1/ffed086795e93b3c327c7e933c84739c/bbb~~~2/20890d9be9651ab8f62f358b68c83ea9": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -7576,11 +7576,11 @@ Object {
         ],
         Array [
           "zzz",
-          "c73",
+          "10b9edac71c7be4def8591c7c80f29db",
           "aaa~~~1",
-          "b39",
+          "ffed086795e93b3c327c7e933c84739c",
           "bbb~~~2",
-          "208",
+          "20890d9be9651ab8f62f358b68c83ea9",
         ],
       ],
       "type": "elementpath",
@@ -7650,7 +7650,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~1/b39/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db/aaa~~~1/ffed086795e93b3c327c7e933c84739c/bbb~~~3": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -7763,9 +7763,9 @@ Object {
         ],
         Array [
           "zzz",
-          "c73",
+          "10b9edac71c7be4def8591c7c80f29db",
           "aaa~~~1",
-          "b39",
+          "ffed086795e93b3c327c7e933c84739c",
           "bbb~~~3",
         ],
       ],
@@ -7840,7 +7840,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~1/b39/bbb~~~3/208": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db/aaa~~~1/ffed086795e93b3c327c7e933c84739c/bbb~~~3/20890d9be9651ab8f62f358b68c83ea9": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -7922,11 +7922,11 @@ Object {
         ],
         Array [
           "zzz",
-          "c73",
+          "10b9edac71c7be4def8591c7c80f29db",
           "aaa~~~1",
-          "b39",
+          "ffed086795e93b3c327c7e933c84739c",
           "bbb~~~3",
-          "208",
+          "20890d9be9651ab8f62f358b68c83ea9",
         ],
       ],
       "type": "elementpath",
@@ -7996,7 +7996,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db/aaa~~~2": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -8297,7 +8297,7 @@ Object {
         ],
         Array [
           "zzz",
-          "c73",
+          "10b9edac71c7be4def8591c7c80f29db",
           "aaa~~~2",
         ],
       ],
@@ -8372,7 +8372,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~2/b39": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db/aaa~~~2/ffed086795e93b3c327c7e933c84739c": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -8642,9 +8642,9 @@ Object {
         ],
         Array [
           "zzz",
-          "c73",
+          "10b9edac71c7be4def8591c7c80f29db",
           "aaa~~~2",
-          "b39",
+          "ffed086795e93b3c327c7e933c84739c",
         ],
       ],
       "type": "elementpath",
@@ -8714,7 +8714,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~2/b39/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db/aaa~~~2/ffed086795e93b3c327c7e933c84739c/bbb~~~1": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -8827,9 +8827,9 @@ Object {
         ],
         Array [
           "zzz",
-          "c73",
+          "10b9edac71c7be4def8591c7c80f29db",
           "aaa~~~2",
-          "b39",
+          "ffed086795e93b3c327c7e933c84739c",
           "bbb~~~1",
         ],
       ],
@@ -8904,7 +8904,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~2/b39/bbb~~~1/208": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db/aaa~~~2/ffed086795e93b3c327c7e933c84739c/bbb~~~1/20890d9be9651ab8f62f358b68c83ea9": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -8986,11 +8986,11 @@ Object {
         ],
         Array [
           "zzz",
-          "c73",
+          "10b9edac71c7be4def8591c7c80f29db",
           "aaa~~~2",
-          "b39",
+          "ffed086795e93b3c327c7e933c84739c",
           "bbb~~~1",
-          "208",
+          "20890d9be9651ab8f62f358b68c83ea9",
         ],
       ],
       "type": "elementpath",
@@ -9060,7 +9060,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~2/b39/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db/aaa~~~2/ffed086795e93b3c327c7e933c84739c/bbb~~~2": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -9173,9 +9173,9 @@ Object {
         ],
         Array [
           "zzz",
-          "c73",
+          "10b9edac71c7be4def8591c7c80f29db",
           "aaa~~~2",
-          "b39",
+          "ffed086795e93b3c327c7e933c84739c",
           "bbb~~~2",
         ],
       ],
@@ -9250,7 +9250,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~2/b39/bbb~~~2/208": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db/aaa~~~2/ffed086795e93b3c327c7e933c84739c/bbb~~~2/20890d9be9651ab8f62f358b68c83ea9": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -9332,11 +9332,11 @@ Object {
         ],
         Array [
           "zzz",
-          "c73",
+          "10b9edac71c7be4def8591c7c80f29db",
           "aaa~~~2",
-          "b39",
+          "ffed086795e93b3c327c7e933c84739c",
           "bbb~~~2",
-          "208",
+          "20890d9be9651ab8f62f358b68c83ea9",
         ],
       ],
       "type": "elementpath",
@@ -9406,7 +9406,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~2/b39/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db/aaa~~~2/ffed086795e93b3c327c7e933c84739c/bbb~~~3": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -9519,9 +9519,9 @@ Object {
         ],
         Array [
           "zzz",
-          "c73",
+          "10b9edac71c7be4def8591c7c80f29db",
           "aaa~~~2",
-          "b39",
+          "ffed086795e93b3c327c7e933c84739c",
           "bbb~~~3",
         ],
       ],
@@ -9596,7 +9596,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~2/b39/bbb~~~3/208": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db/aaa~~~2/ffed086795e93b3c327c7e933c84739c/bbb~~~3/20890d9be9651ab8f62f358b68c83ea9": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -9678,11 +9678,11 @@ Object {
         ],
         Array [
           "zzz",
-          "c73",
+          "10b9edac71c7be4def8591c7c80f29db",
           "aaa~~~2",
-          "b39",
+          "ffed086795e93b3c327c7e933c84739c",
           "bbb~~~3",
-          "208",
+          "20890d9be9651ab8f62f358b68c83ea9",
         ],
       ],
       "type": "elementpath",
@@ -9752,7 +9752,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db/aaa~~~3": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -10053,7 +10053,7 @@ Object {
         ],
         Array [
           "zzz",
-          "c73",
+          "10b9edac71c7be4def8591c7c80f29db",
           "aaa~~~3",
         ],
       ],
@@ -10128,7 +10128,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~3/b39": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db/aaa~~~3/ffed086795e93b3c327c7e933c84739c": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -10398,9 +10398,9 @@ Object {
         ],
         Array [
           "zzz",
-          "c73",
+          "10b9edac71c7be4def8591c7c80f29db",
           "aaa~~~3",
-          "b39",
+          "ffed086795e93b3c327c7e933c84739c",
         ],
       ],
       "type": "elementpath",
@@ -10470,7 +10470,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~3/b39/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db/aaa~~~3/ffed086795e93b3c327c7e933c84739c/bbb~~~1": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -10583,9 +10583,9 @@ Object {
         ],
         Array [
           "zzz",
-          "c73",
+          "10b9edac71c7be4def8591c7c80f29db",
           "aaa~~~3",
-          "b39",
+          "ffed086795e93b3c327c7e933c84739c",
           "bbb~~~1",
         ],
       ],
@@ -10660,7 +10660,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~3/b39/bbb~~~1/208": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db/aaa~~~3/ffed086795e93b3c327c7e933c84739c/bbb~~~1/20890d9be9651ab8f62f358b68c83ea9": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -10742,11 +10742,11 @@ Object {
         ],
         Array [
           "zzz",
-          "c73",
+          "10b9edac71c7be4def8591c7c80f29db",
           "aaa~~~3",
-          "b39",
+          "ffed086795e93b3c327c7e933c84739c",
           "bbb~~~1",
-          "208",
+          "20890d9be9651ab8f62f358b68c83ea9",
         ],
       ],
       "type": "elementpath",
@@ -10816,7 +10816,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~3/b39/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db/aaa~~~3/ffed086795e93b3c327c7e933c84739c/bbb~~~2": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -10929,9 +10929,9 @@ Object {
         ],
         Array [
           "zzz",
-          "c73",
+          "10b9edac71c7be4def8591c7c80f29db",
           "aaa~~~3",
-          "b39",
+          "ffed086795e93b3c327c7e933c84739c",
           "bbb~~~2",
         ],
       ],
@@ -11006,7 +11006,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~3/b39/bbb~~~2/208": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db/aaa~~~3/ffed086795e93b3c327c7e933c84739c/bbb~~~2/20890d9be9651ab8f62f358b68c83ea9": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -11088,11 +11088,11 @@ Object {
         ],
         Array [
           "zzz",
-          "c73",
+          "10b9edac71c7be4def8591c7c80f29db",
           "aaa~~~3",
-          "b39",
+          "ffed086795e93b3c327c7e933c84739c",
           "bbb~~~2",
-          "208",
+          "20890d9be9651ab8f62f358b68c83ea9",
         ],
       ],
       "type": "elementpath",
@@ -11162,7 +11162,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~3/b39/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db/aaa~~~3/ffed086795e93b3c327c7e933c84739c/bbb~~~3": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -11275,9 +11275,9 @@ Object {
         ],
         Array [
           "zzz",
-          "c73",
+          "10b9edac71c7be4def8591c7c80f29db",
           "aaa~~~3",
-          "b39",
+          "ffed086795e93b3c327c7e933c84739c",
           "bbb~~~3",
         ],
       ],
@@ -11352,7 +11352,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~3/b39/bbb~~~3/208": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/10b9edac71c7be4def8591c7c80f29db/aaa~~~3/ffed086795e93b3c327c7e933c84739c/bbb~~~3/20890d9be9651ab8f62f358b68c83ea9": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -11434,11 +11434,11 @@ Object {
         ],
         Array [
           "zzz",
-          "c73",
+          "10b9edac71c7be4def8591c7c80f29db",
           "aaa~~~3",
-          "b39",
+          "ffed086795e93b3c327c7e933c84739c",
           "bbb~~~3",
-          "208",
+          "20890d9be9651ab8f62f358b68c83ea9",
         ],
       ],
       "type": "elementpath",
@@ -12967,7 +12967,7 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are not the ap
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/9f4 utopia-storyboard-uid/scene-aaa/app-entity:aaa/9f4/bbb\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/8caaf1f45598d2b646fe8c68562e0adc utopia-storyboard-uid/scene-aaa/app-entity:aaa/8caaf1f45598d2b646fe8c68562e0adc/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -13000,19 +13000,19 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are not the ap
       >
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/9f4/bbb~~~1:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/8caaf1f45598d2b646fe8c68562e0adc/bbb~~~1:xxx\\"
         >
           n1
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/9f4/bbb~~~2:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/8caaf1f45598d2b646fe8c68562e0adc/bbb~~~2:xxx\\"
         >
           n2
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/9f4/bbb~~~3:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/8caaf1f45598d2b646fe8c68562e0adc/bbb~~~3:xxx\\"
         >
           n3
         </div>
@@ -13729,7 +13729,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/9f4": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/8caaf1f45598d2b646fe8c68562e0adc": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -13990,7 +13990,7 @@ Object {
         ],
         Array [
           "aaa",
-          "9f4",
+          "8caaf1f45598d2b646fe8c68562e0adc",
         ],
       ],
       "type": "elementpath",
@@ -14060,7 +14060,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/9f4/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/8caaf1f45598d2b646fe8c68562e0adc/bbb~~~1": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -14175,7 +14175,7 @@ Object {
         ],
         Array [
           "aaa",
-          "9f4",
+          "8caaf1f45598d2b646fe8c68562e0adc",
           "bbb~~~1",
         ],
       ],
@@ -14250,7 +14250,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/9f4/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/8caaf1f45598d2b646fe8c68562e0adc/bbb~~~2": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -14365,7 +14365,7 @@ Object {
         ],
         Array [
           "aaa",
-          "9f4",
+          "8caaf1f45598d2b646fe8c68562e0adc",
           "bbb~~~2",
         ],
       ],
@@ -14440,7 +14440,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/9f4/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/8caaf1f45598d2b646fe8c68562e0adc/bbb~~~3": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -14555,7 +14555,7 @@ Object {
         ],
         Array [
           "aaa",
-          "9f4",
+          "8caaf1f45598d2b646fe8c68562e0adc",
           "bbb~~~3",
         ],
       ],
@@ -14639,7 +14639,7 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are undefined 
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/174 utopia-storyboard-uid/scene-aaa/app-entity:aaa/174/bbb\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/513f3b386fe82b512cc2ec956fa9ce36 utopia-storyboard-uid/scene-aaa/app-entity:aaa/513f3b386fe82b512cc2ec956fa9ce36/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -14672,19 +14672,19 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are undefined 
       >
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/174/bbb~~~1:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/513f3b386fe82b512cc2ec956fa9ce36/bbb~~~1:xxx\\"
         >
           n1
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/174/bbb~~~2:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/513f3b386fe82b512cc2ec956fa9ce36/bbb~~~2:xxx\\"
         >
           n2
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/174/bbb~~~3:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/513f3b386fe82b512cc2ec956fa9ce36/bbb~~~3:xxx\\"
         >
           n3
         </div>
@@ -15401,7 +15401,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/174": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/513f3b386fe82b512cc2ec956fa9ce36": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -15662,7 +15662,7 @@ Object {
         ],
         Array [
           "aaa",
-          "174",
+          "513f3b386fe82b512cc2ec956fa9ce36",
         ],
       ],
       "type": "elementpath",
@@ -15732,7 +15732,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/174/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/513f3b386fe82b512cc2ec956fa9ce36/bbb~~~1": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -15847,7 +15847,7 @@ Object {
         ],
         Array [
           "aaa",
-          "174",
+          "513f3b386fe82b512cc2ec956fa9ce36",
           "bbb~~~1",
         ],
       ],
@@ -15922,7 +15922,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/174/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/513f3b386fe82b512cc2ec956fa9ce36/bbb~~~2": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -16037,7 +16037,7 @@ Object {
         ],
         Array [
           "aaa",
-          "174",
+          "513f3b386fe82b512cc2ec956fa9ce36",
           "bbb~~~2",
         ],
       ],
@@ -16112,7 +16112,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/174/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/513f3b386fe82b512cc2ec956fa9ce36/bbb~~~3": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -16227,7 +16227,7 @@ Object {
         ],
         Array [
           "aaa",
-          "174",
+          "513f3b386fe82b512cc2ec956fa9ce36",
           "bbb~~~3",
         ],
       ],
@@ -17139,7 +17139,7 @@ exports[`UiJsxCanvas render function component works inside a map 1`] = `
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/0f5 utopia-storyboard-uid/scene-aaa/app-entity:zzz/0f5/aaa\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/365ed4daa4846dff209a4a9b5c6e5456 utopia-storyboard-uid/scene-aaa/app-entity:zzz/365ed4daa4846dff209a4a9b5c6e5456/aaa\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -17172,13 +17172,13 @@ exports[`UiJsxCanvas render function component works inside a map 1`] = `
       >
         <div
           data-uid=\\"ccc\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/0f5/aaa~~~1:ccc\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/365ed4daa4846dff209a4a9b5c6e5456/aaa~~~1:ccc\\"
         >
           Thing
         </div>
         <div
           data-uid=\\"ccc\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/0f5/aaa~~~2:ccc\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/365ed4daa4846dff209a4a9b5c6e5456/aaa~~~2:ccc\\"
         >
           Thing
         </div>
@@ -17817,7 +17817,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/0f5": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/365ed4daa4846dff209a4a9b5c6e5456": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -18001,7 +18001,7 @@ Object {
         ],
         Array [
           "zzz",
-          "0f5",
+          "365ed4daa4846dff209a4a9b5c6e5456",
         ],
       ],
       "type": "elementpath",
@@ -18071,7 +18071,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/0f5/aaa~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/365ed4daa4846dff209a4a9b5c6e5456/aaa~~~1": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -18120,7 +18120,7 @@ Object {
         ],
         Array [
           "zzz",
-          "0f5",
+          "365ed4daa4846dff209a4a9b5c6e5456",
           "aaa~~~1",
         ],
       ],
@@ -18195,7 +18195,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/0f5/aaa~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/365ed4daa4846dff209a4a9b5c6e5456/aaa~~~2": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -18244,7 +18244,7 @@ Object {
         ],
         Array [
           "zzz",
-          "0f5",
+          "365ed4daa4846dff209a4a9b5c6e5456",
           "aaa~~~2",
         ],
       ],
@@ -23523,7 +23523,7 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/834 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/834/3d0 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999/000\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c01c8a6fe3eeac2e0361e6746f69d021 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c01c8a6fe3eeac2e0361e6746f69d021/834 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c01c8a6fe3eeac2e0361e6746f69d021/834/f18767f7fa593bff9ff9724a3e1a5cc4 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c01c8a6fe3eeac2e0361e6746f69d021/999 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c01c8a6fe3eeac2e0361e6746f69d021/999/000\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -23579,32 +23579,32 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
           <div
             data-uid=\\"834~~~1\\"
             data-label=\\"Copy\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/834~~~1\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c01c8a6fe3eeac2e0361e6746f69d021/834~~~1\\"
           >
             Copy
           </div>
           <div
             data-uid=\\"999~~~2\\"
             data-label=\\"⌘,⎇,C\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~2\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c01c8a6fe3eeac2e0361e6746f69d021/999~~~2\\"
           >
             <span
               data-uid=\\"6a8\\"
-              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~2/000:6a8\\"
+              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c01c8a6fe3eeac2e0361e6746f69d021/999~~~2/000:6a8\\"
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~1\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~2/000:6a8/205/726~~~1\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c01c8a6fe3eeac2e0361e6746f69d021/999~~~2/000:6a8/def111a2a484e1123c155b8375a102a1/726~~~1\\"
                 >⌘</span
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~2\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~2/000:6a8/205/726~~~2\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c01c8a6fe3eeac2e0361e6746f69d021/999~~~2/000:6a8/def111a2a484e1123c155b8375a102a1/726~~~2\\"
                 >⎇</span
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~3\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~2/000:6a8/205/726~~~3\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c01c8a6fe3eeac2e0361e6746f69d021/999~~~2/000:6a8/def111a2a484e1123c155b8375a102a1/726~~~3\\"
                 >C</span
               ></span
             >
@@ -23612,32 +23612,32 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
           <div
             data-uid=\\"834~~~3\\"
             data-label=\\"Paste\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/834~~~3\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c01c8a6fe3eeac2e0361e6746f69d021/834~~~3\\"
           >
             Paste
           </div>
           <div
             data-uid=\\"999~~~4\\"
             data-label=\\"⌘⎇V\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~4\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c01c8a6fe3eeac2e0361e6746f69d021/999~~~4\\"
           >
             <span
               data-uid=\\"6a8\\"
-              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~4/000:6a8\\"
+              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c01c8a6fe3eeac2e0361e6746f69d021/999~~~4/000:6a8\\"
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~1\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~4/000:6a8/205/726~~~1\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c01c8a6fe3eeac2e0361e6746f69d021/999~~~4/000:6a8/def111a2a484e1123c155b8375a102a1/726~~~1\\"
                 >⌘</span
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~2\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~4/000:6a8/205/726~~~2\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c01c8a6fe3eeac2e0361e6746f69d021/999~~~4/000:6a8/def111a2a484e1123c155b8375a102a1/726~~~2\\"
                 >⎇</span
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~3\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~4/000:6a8/205/726~~~3\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c01c8a6fe3eeac2e0361e6746f69d021/999~~~4/000:6a8/def111a2a484e1123c155b8375a102a1/726~~~3\\"
                 >V</span
               ></span
             >
@@ -23645,32 +23645,32 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
           <div
             data-uid=\\"834~~~5\\"
             data-label=\\"Cut\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/834~~~5\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c01c8a6fe3eeac2e0361e6746f69d021/834~~~5\\"
           >
             Cut
           </div>
           <div
             data-uid=\\"999~~~6\\"
             data-label=\\"⌘⎇C\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~6\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c01c8a6fe3eeac2e0361e6746f69d021/999~~~6\\"
           >
             <span
               data-uid=\\"6a8\\"
-              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~6/000:6a8\\"
+              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c01c8a6fe3eeac2e0361e6746f69d021/999~~~6/000:6a8\\"
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~1\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~6/000:6a8/205/726~~~1\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c01c8a6fe3eeac2e0361e6746f69d021/999~~~6/000:6a8/def111a2a484e1123c155b8375a102a1/726~~~1\\"
                 >⌘</span
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~2\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~6/000:6a8/205/726~~~2\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c01c8a6fe3eeac2e0361e6746f69d021/999~~~6/000:6a8/def111a2a484e1123c155b8375a102a1/726~~~2\\"
                 >⎇</span
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~3\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~6/000:6a8/205/726~~~3\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c01c8a6fe3eeac2e0361e6746f69d021/999~~~6/000:6a8/def111a2a484e1123c155b8375a102a1/726~~~3\\"
                 >C</span
               ></span
             >
@@ -27369,7 +27369,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c01c8a6fe3eeac2e0361e6746f69d021": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -28711,7 +28711,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "6c9",
+          "c01c8a6fe3eeac2e0361e6746f69d021",
         ],
       ],
       "type": "elementpath",
@@ -28781,7 +28781,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/834~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c01c8a6fe3eeac2e0361e6746f69d021/834~~~1": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -29300,7 +29300,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "6c9",
+          "c01c8a6fe3eeac2e0361e6746f69d021",
           "834~~~1",
         ],
       ],
@@ -29375,7 +29375,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/834~~~1/3d0": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c01c8a6fe3eeac2e0361e6746f69d021/834~~~1/f18767f7fa593bff9ff9724a3e1a5cc4": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -29625,9 +29625,9 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "6c9",
+          "c01c8a6fe3eeac2e0361e6746f69d021",
           "834~~~1",
-          "3d0",
+          "f18767f7fa593bff9ff9724a3e1a5cc4",
         ],
       ],
       "type": "elementpath",
@@ -29697,7 +29697,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/834~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c01c8a6fe3eeac2e0361e6746f69d021/834~~~3": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -30216,7 +30216,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "6c9",
+          "c01c8a6fe3eeac2e0361e6746f69d021",
           "834~~~3",
         ],
       ],
@@ -30291,7 +30291,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/834~~~3/3d0": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c01c8a6fe3eeac2e0361e6746f69d021/834~~~3/f18767f7fa593bff9ff9724a3e1a5cc4": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -30541,9 +30541,9 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "6c9",
+          "c01c8a6fe3eeac2e0361e6746f69d021",
           "834~~~3",
-          "3d0",
+          "f18767f7fa593bff9ff9724a3e1a5cc4",
         ],
       ],
       "type": "elementpath",
@@ -30613,7 +30613,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/834~~~5": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c01c8a6fe3eeac2e0361e6746f69d021/834~~~5": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -31132,7 +31132,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "6c9",
+          "c01c8a6fe3eeac2e0361e6746f69d021",
           "834~~~5",
         ],
       ],
@@ -31207,7 +31207,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/834~~~5/3d0": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c01c8a6fe3eeac2e0361e6746f69d021/834~~~5/f18767f7fa593bff9ff9724a3e1a5cc4": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -31457,9 +31457,9 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "6c9",
+          "c01c8a6fe3eeac2e0361e6746f69d021",
           "834~~~5",
-          "3d0",
+          "f18767f7fa593bff9ff9724a3e1a5cc4",
         ],
       ],
       "type": "elementpath",
@@ -31529,7 +31529,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c01c8a6fe3eeac2e0361e6746f69d021/999~~~2": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -32086,7 +32086,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "6c9",
+          "c01c8a6fe3eeac2e0361e6746f69d021",
           "999~~~2",
         ],
       ],
@@ -32161,7 +32161,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~2/000": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c01c8a6fe3eeac2e0361e6746f69d021/999~~~2/000": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -32449,7 +32449,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "6c9",
+          "c01c8a6fe3eeac2e0361e6746f69d021",
           "999~~~2",
           "000",
         ],
@@ -32525,7 +32525,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~4": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c01c8a6fe3eeac2e0361e6746f69d021/999~~~4": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -33082,7 +33082,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "6c9",
+          "c01c8a6fe3eeac2e0361e6746f69d021",
           "999~~~4",
         ],
       ],
@@ -33157,7 +33157,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~4/000": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c01c8a6fe3eeac2e0361e6746f69d021/999~~~4/000": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -33445,7 +33445,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "6c9",
+          "c01c8a6fe3eeac2e0361e6746f69d021",
           "999~~~4",
           "000",
         ],
@@ -33521,7 +33521,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~6": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c01c8a6fe3eeac2e0361e6746f69d021/999~~~6": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -34078,7 +34078,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "6c9",
+          "c01c8a6fe3eeac2e0361e6746f69d021",
           "999~~~6",
         ],
       ],
@@ -34153,7 +34153,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~6/000": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c01c8a6fe3eeac2e0361e6746f69d021/999~~~6/000": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -34441,7 +34441,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "6c9",
+          "c01c8a6fe3eeac2e0361e6746f69d021",
           "999~~~6",
           "000",
         ],
@@ -39686,7 +39686,7 @@ exports[`UiJsxCanvas render renders a canvas testing a multitude of export style
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:74b utopia-storyboard-uid/scene-aaa/app-entity:74b/0dc utopia-storyboard-uid/scene-aaa/app-entity:74b/ec8 utopia-storyboard-uid/scene-aaa/app-entity:74b/a35 utopia-storyboard-uid/scene-aaa/app-entity:74b/61e utopia-storyboard-uid/scene-aaa/app-entity:74b/4b6 utopia-storyboard-uid/scene-aaa/app-entity:74b/540 utopia-storyboard-uid/scene-aaa/app-entity:74b/bb2 utopia-storyboard-uid/scene-aaa/app-entity:74b/002 utopia-storyboard-uid/scene-aaa/app-entity:74b/3e0 utopia-storyboard-uid/scene-aaa/app-entity:74b/3e0/44c utopia-storyboard-uid/scene-aaa/app-entity:74b/2e4 utopia-storyboard-uid/scene-aaa/app-entity:74b/843 utopia-storyboard-uid/scene-aaa/app-entity:74b/3bc utopia-storyboard-uid/scene-aaa/app-entity:74b/5f7 utopia-storyboard-uid/scene-aaa/app-entity:74b/c19 utopia-storyboard-uid/scene-aaa/app-entity:74b/447 utopia-storyboard-uid/scene-aaa/app-entity:74b/1a2 utopia-storyboard-uid/scene-aaa/app-entity:74b/aeb utopia-storyboard-uid/scene-aaa/app-entity:74b/24d utopia-storyboard-uid/scene-aaa/app-entity:74b/0f9\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97 utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/0dcb988833d4568d26ade002534757ee utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/ec875be88ad9bf36337aa3451eade397 utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/a35bab1b5aea60ec50746b4edf365a9b utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/61e18abea142da11d965af95d0fde3b3 utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/4b66abde0092c50a74e08eaeac109afa utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/5404a2996ac89d161ccec8769deb8020 utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/bb2d1eefd3d8381a2d8e032d29df15aa utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/002915933722269bb9ee112123bf0ab1 utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/3e07289b90b944f88f6b70ea7b4c0200 utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/3e07289b90b944f88f6b70ea7b4c0200/bf34fca2409b0e4c61904243f3458011 utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/2e43ec86d9e6f97c471f541c16c8718e utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/843c39f9f1aa266142456e8c4313bcc1 utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/3bc92430fc14385f4dde6fa952548cc0 utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/5f74757878e4dda270975959201bb82b utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/c19d2326d5ec7aacce5db245f7b047e2 utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/8e3447d8fac971b1af283672f862f967 utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/1a20194d066c6184e5b79e6bc43778ce utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/aeb6890c32d119d2fdd3e05adbf43e27 utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/24d26f4b0e191ea2e688785334c37909 utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/0f98ebe06694348e82a2d33227db380a\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -39714,120 +39714,120 @@ exports[`UiJsxCanvas render renders a canvas testing a multitude of export style
       data-uid=\\"scene-aaa\\"
     >
       <div
-        data-uid=\\"74b\\"
-        data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b\\"
+        data-uid=\\"74be781b8d9c9b9661606f757e5b3d97\\"
+        data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97\\"
       >
         <div
-          data-uid=\\"0dc\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/0dc\\"
+          data-uid=\\"0dcb988833d4568d26ade002534757ee\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/0dcb988833d4568d26ade002534757ee\\"
         >
           Originally Unassigned
         </div>
         <div
-          data-uid=\\"e07\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/ec8:e07\\"
+          data-uid=\\"e0737b98d94d8ab37369197ff65d693a\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/ec875be88ad9bf36337aa3451eade397:e0737b98d94d8ab37369197ff65d693a\\"
         >
           Originally Assigned
         </div>
         <div
-          data-uid=\\"e0c\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/a35:e0c\\"
+          data-uid=\\"e0c6f115e8a00619a0d3ace46f96dbbb\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/a35bab1b5aea60ec50746b4edf365a9b:e0c6f115e8a00619a0d3ace46f96dbbb\\"
         >
           Named Function
         </div>
         <div
-          data-uid=\\"61e\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/61e\\"
+          data-uid=\\"61e18abea142da11d965af95d0fde3b3\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/61e18abea142da11d965af95d0fde3b3\\"
         >
           Named Class
         </div>
         <div
-          data-uid=\\"d51\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/4b6:d51\\"
+          data-uid=\\"d513f9d8a0c41a250a1eb859a651f467\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/4b66abde0092c50a74e08eaeac109afa:d513f9d8a0c41a250a1eb859a651f467\\"
         >
           Named Export
         </div>
         <div
-          data-uid=\\"cf1\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/540:cf1\\"
+          data-uid=\\"cf1be6dcf558a23c6f1ef9322fdecfe5\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/5404a2996ac89d161ccec8769deb8020:cf1be6dcf558a23c6f1ef9322fdecfe5\\"
         >
           Renamed Export
         </div>
         <div
-          data-uid=\\"bb2\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/bb2\\"
+          data-uid=\\"bb2d1eefd3d8381a2d8e032d29df15aa\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/bb2d1eefd3d8381a2d8e032d29df15aa\\"
         >
           First In Structure
         </div>
         <div
-          data-uid=\\"002\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/002\\"
+          data-uid=\\"002915933722269bb9ee112123bf0ab1\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/002915933722269bb9ee112123bf0ab1\\"
         >
           Second In Structure
         </div>
         <div
-          data-uid=\\"3e0\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/3e0\\"
+          data-uid=\\"3e07289b90b944f88f6b70ea7b4c0200\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/3e07289b90b944f88f6b70ea7b4c0200\\"
         >
           The Number Is 4
         </div>
         <div
-          data-uid=\\"db3\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/2e4:db3\\"
+          data-uid=\\"db38a7a5241a6edaa768295596f05fcf\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/2e43ec86d9e6f97c471f541c16c8718e:db38a7a5241a6edaa768295596f05fcf\\"
         >
           Default Function
         </div>
         <div
-          data-uid=\\"843\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/843\\"
+          data-uid=\\"843c39f9f1aa266142456e8c4313bcc1\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/843c39f9f1aa266142456e8c4313bcc1\\"
         >
           Export Default Class
         </div>
         <div
-          data-uid=\\"a35\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/3bc:a35\\"
+          data-uid=\\"a35c2f2dbeaecd499ed4ec20917073f1\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/3bc92430fc14385f4dde6fa952548cc0:a35c2f2dbeaecd499ed4ec20917073f1\\"
         >
           Default Named Function
         </div>
         <div
-          data-uid=\\"22d\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/5f7:22d\\"
+          data-uid=\\"22d28a2a52f7893c47f79b9610adc62b\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/5f74757878e4dda270975959201bb82b:22d28a2a52f7893c47f79b9610adc62b\\"
         >
           Defined Then Default Exported
         </div>
         <div
-          data-uid=\\"6a0\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/c19:6a0\\"
+          data-uid=\\"6a0b03791c0be9e6c25aff6e6431d879\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/c19d2326d5ec7aacce5db245f7b047e2:6a0b03791c0be9e6c25aff6e6431d879\\"
         >
           Named As Default
         </div>
         <div
-          data-uid=\\"e07\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/447:e07\\"
+          data-uid=\\"e0737b98d94d8ab37369197ff65d693a\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/8e3447d8fac971b1af283672f862f967:e0737b98d94d8ab37369197ff65d693a\\"
         >
           Originally Assigned
         </div>
         <div
-          data-uid=\\"e07\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/1a2:e07\\"
+          data-uid=\\"e0737b98d94d8ab37369197ff65d693a\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/1a20194d066c6184e5b79e6bc43778ce:e0737b98d94d8ab37369197ff65d693a\\"
         >
           Originally Assigned
         </div>
         <div
-          data-uid=\\"e07\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/aeb:e07\\"
+          data-uid=\\"e0737b98d94d8ab37369197ff65d693a\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/aeb6890c32d119d2fdd3e05adbf43e27:e0737b98d94d8ab37369197ff65d693a\\"
         >
           Originally Assigned
         </div>
         <div
-          data-uid=\\"e07\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/24d:e07\\"
+          data-uid=\\"e0737b98d94d8ab37369197ff65d693a\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/24d26f4b0e191ea2e688785334c37909:e0737b98d94d8ab37369197ff65d693a\\"
         >
           Originally Assigned
         </div>
         <div
-          data-uid=\\"db3\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/0f9:db3\\"
+          data-uid=\\"db38a7a5241a6edaa768295596f05fcf\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/0f98ebe06694348e82a2d33227db380a:db38a7a5241a6edaa768295596f05fcf\\"
         >
           Default Function
         </div>
@@ -40175,7 +40175,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:74b": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -40209,7 +40209,7 @@ Object {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "0dc",
+                  "value": "0dcb988833d4568d26ade002534757ee",
                 },
               },
             ],
@@ -40239,7 +40239,7 @@ Object {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "ec8",
+                  "value": "ec875be88ad9bf36337aa3451eade397",
                 },
               },
             ],
@@ -40269,7 +40269,7 @@ Object {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "a35",
+                  "value": "a35bab1b5aea60ec50746b4edf365a9b",
                 },
               },
             ],
@@ -40299,7 +40299,7 @@ Object {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "61e",
+                  "value": "61e18abea142da11d965af95d0fde3b3",
                 },
               },
             ],
@@ -40329,7 +40329,7 @@ Object {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "4b6",
+                  "value": "4b66abde0092c50a74e08eaeac109afa",
                 },
               },
             ],
@@ -40359,7 +40359,7 @@ Object {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "540",
+                  "value": "5404a2996ac89d161ccec8769deb8020",
                 },
               },
             ],
@@ -40389,7 +40389,7 @@ Object {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "bb2",
+                  "value": "bb2d1eefd3d8381a2d8e032d29df15aa",
                 },
               },
             ],
@@ -40419,7 +40419,7 @@ Object {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "002",
+                  "value": "002915933722269bb9ee112123bf0ab1",
                 },
               },
             ],
@@ -40518,7 +40518,7 @@ export var App = (props) => {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "3e0",
+                  "value": "3e07289b90b944f88f6b70ea7b4c0200",
                 },
               },
             ],
@@ -40548,7 +40548,7 @@ export var App = (props) => {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "2e4",
+                  "value": "2e43ec86d9e6f97c471f541c16c8718e",
                 },
               },
             ],
@@ -40578,7 +40578,7 @@ export var App = (props) => {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "843",
+                  "value": "843c39f9f1aa266142456e8c4313bcc1",
                 },
               },
             ],
@@ -40608,7 +40608,7 @@ export var App = (props) => {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "3bc",
+                  "value": "3bc92430fc14385f4dde6fa952548cc0",
                 },
               },
             ],
@@ -40638,7 +40638,7 @@ export var App = (props) => {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "5f7",
+                  "value": "5f74757878e4dda270975959201bb82b",
                 },
               },
             ],
@@ -40668,7 +40668,7 @@ export var App = (props) => {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "c19",
+                  "value": "c19d2326d5ec7aacce5db245f7b047e2",
                 },
               },
             ],
@@ -40700,7 +40700,7 @@ export var App = (props) => {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "447",
+                  "value": "8e3447d8fac971b1af283672f862f967",
                 },
               },
             ],
@@ -40732,7 +40732,7 @@ export var App = (props) => {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "1a2",
+                  "value": "1a20194d066c6184e5b79e6bc43778ce",
                 },
               },
             ],
@@ -40762,7 +40762,7 @@ export var App = (props) => {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "aeb",
+                  "value": "aeb6890c32d119d2fdd3e05adbf43e27",
                 },
               },
             ],
@@ -40792,7 +40792,7 @@ export var App = (props) => {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "24d",
+                  "value": "24d26f4b0e191ea2e688785334c37909",
                 },
               },
             ],
@@ -40822,7 +40822,7 @@ export var App = (props) => {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "0f9",
+                  "value": "0f98ebe06694348e82a2d33227db380a",
                 },
               },
             ],
@@ -40851,7 +40851,7 @@ export var App = (props) => {
               },
               "type": "ATTRIBUTE_VALUE",
               "uid": "",
-              "value": "74b",
+              "value": "74be781b8d9c9b9661606f757e5b3d97",
             },
           },
         ],
@@ -40867,7 +40867,7 @@ export var App = (props) => {
           "app-entity",
         ],
         Array [
-          "74b",
+          "74be781b8d9c9b9661606f757e5b3d97",
         ],
       ],
       "type": "elementpath",
@@ -40941,7 +40941,7 @@ export var App = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:74b/002": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/002915933722269bb9ee112123bf0ab1": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -40973,7 +40973,7 @@ export var App = (props) => {
               },
               "type": "ATTRIBUTE_VALUE",
               "uid": "",
-              "value": "002",
+              "value": "002915933722269bb9ee112123bf0ab1",
             },
           },
         ],
@@ -40989,8 +40989,8 @@ export var App = (props) => {
           "app-entity",
         ],
         Array [
-          "74b",
-          "002",
+          "74be781b8d9c9b9661606f757e5b3d97",
+          "002915933722269bb9ee112123bf0ab1",
         ],
       ],
       "type": "elementpath",
@@ -41065,7 +41065,7 @@ export var App = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:74b/0dc": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/0dcb988833d4568d26ade002534757ee": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -41097,7 +41097,7 @@ export var App = (props) => {
               },
               "type": "ATTRIBUTE_VALUE",
               "uid": "",
-              "value": "0dc",
+              "value": "0dcb988833d4568d26ade002534757ee",
             },
           },
         ],
@@ -41113,8 +41113,8 @@ export var App = (props) => {
           "app-entity",
         ],
         Array [
-          "74b",
-          "0dc",
+          "74be781b8d9c9b9661606f757e5b3d97",
+          "0dcb988833d4568d26ade002534757ee",
         ],
       ],
       "type": "elementpath",
@@ -41189,7 +41189,7 @@ export var App = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:74b/0f9": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/0f98ebe06694348e82a2d33227db380a": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -41221,7 +41221,7 @@ export var App = (props) => {
               },
               "type": "ATTRIBUTE_VALUE",
               "uid": "",
-              "value": "0f9",
+              "value": "0f98ebe06694348e82a2d33227db380a",
             },
           },
         ],
@@ -41237,8 +41237,8 @@ export var App = (props) => {
           "app-entity",
         ],
         Array [
-          "74b",
-          "0f9",
+          "74be781b8d9c9b9661606f757e5b3d97",
+          "0f98ebe06694348e82a2d33227db380a",
         ],
       ],
       "type": "elementpath",
@@ -41313,7 +41313,7 @@ export var App = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:74b/1a2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/1a20194d066c6184e5b79e6bc43778ce": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -41347,7 +41347,7 @@ export var App = (props) => {
               },
               "type": "ATTRIBUTE_VALUE",
               "uid": "",
-              "value": "1a2",
+              "value": "1a20194d066c6184e5b79e6bc43778ce",
             },
           },
         ],
@@ -41363,8 +41363,8 @@ export var App = (props) => {
           "app-entity",
         ],
         Array [
-          "74b",
-          "1a2",
+          "74be781b8d9c9b9661606f757e5b3d97",
+          "1a20194d066c6184e5b79e6bc43778ce",
         ],
       ],
       "type": "elementpath",
@@ -41439,7 +41439,7 @@ export var App = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:74b/24d": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/24d26f4b0e191ea2e688785334c37909": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -41471,7 +41471,7 @@ export var App = (props) => {
               },
               "type": "ATTRIBUTE_VALUE",
               "uid": "",
-              "value": "24d",
+              "value": "24d26f4b0e191ea2e688785334c37909",
             },
           },
         ],
@@ -41487,8 +41487,8 @@ export var App = (props) => {
           "app-entity",
         ],
         Array [
-          "74b",
-          "24d",
+          "74be781b8d9c9b9661606f757e5b3d97",
+          "24d26f4b0e191ea2e688785334c37909",
         ],
       ],
       "type": "elementpath",
@@ -41563,7 +41563,7 @@ export var App = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:74b/2e4": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/2e43ec86d9e6f97c471f541c16c8718e": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -41595,7 +41595,7 @@ export var App = (props) => {
               },
               "type": "ATTRIBUTE_VALUE",
               "uid": "",
-              "value": "2e4",
+              "value": "2e43ec86d9e6f97c471f541c16c8718e",
             },
           },
         ],
@@ -41611,8 +41611,8 @@ export var App = (props) => {
           "app-entity",
         ],
         Array [
-          "74b",
-          "2e4",
+          "74be781b8d9c9b9661606f757e5b3d97",
+          "2e43ec86d9e6f97c471f541c16c8718e",
         ],
       ],
       "type": "elementpath",
@@ -41687,7 +41687,7 @@ export var App = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:74b/3bc": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/3bc92430fc14385f4dde6fa952548cc0": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -41719,7 +41719,7 @@ export var App = (props) => {
               },
               "type": "ATTRIBUTE_VALUE",
               "uid": "",
-              "value": "3bc",
+              "value": "3bc92430fc14385f4dde6fa952548cc0",
             },
           },
         ],
@@ -41735,8 +41735,8 @@ export var App = (props) => {
           "app-entity",
         ],
         Array [
-          "74b",
-          "3bc",
+          "74be781b8d9c9b9661606f757e5b3d97",
+          "3bc92430fc14385f4dde6fa952548cc0",
         ],
       ],
       "type": "elementpath",
@@ -41811,7 +41811,7 @@ export var App = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:74b/3e0": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/3e07289b90b944f88f6b70ea7b4c0200": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -41912,7 +41912,7 @@ export var App = (props) => {
               },
               "type": "ATTRIBUTE_VALUE",
               "uid": "",
-              "value": "3e0",
+              "value": "3e07289b90b944f88f6b70ea7b4c0200",
             },
           },
         ],
@@ -41928,8 +41928,8 @@ export var App = (props) => {
           "app-entity",
         ],
         Array [
-          "74b",
-          "3e0",
+          "74be781b8d9c9b9661606f757e5b3d97",
+          "3e07289b90b944f88f6b70ea7b4c0200",
         ],
       ],
       "type": "elementpath",
@@ -42003,7 +42003,7 @@ export var App = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:74b/3e0/44c": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/3e07289b90b944f88f6b70ea7b4c0200/bf34fca2409b0e4c61904243f3458011": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -42084,9 +42084,9 @@ export var App = (props) => {
           "app-entity",
         ],
         Array [
-          "74b",
-          "3e0",
-          "44c",
+          "74be781b8d9c9b9661606f757e5b3d97",
+          "3e07289b90b944f88f6b70ea7b4c0200",
+          "bf34fca2409b0e4c61904243f3458011",
         ],
       ],
       "type": "elementpath",
@@ -42156,133 +42156,7 @@ export var App = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:74b/447": Object {
-    "assignedToProp": null,
-    "attributeMetadatada": Object {},
-    "componentInstance": false,
-    "computedStyle": Object {},
-    "conditionValue": "not-a-conditional",
-    "earlyReturn": null,
-    "element": Object {
-      "type": "RIGHT",
-      "value": Object {
-        "children": Array [],
-        "name": Object {
-          "baseVariable": "ReexportWildcard",
-          "propertyPath": Object {
-            "propertyElements": Array [
-              "OriginallyAssigned1",
-            ],
-          },
-        },
-        "props": Array [
-          Object {
-            "comments": Object {
-              "leadingComments": Array [],
-              "trailingComments": Array [],
-            },
-            "key": "data-uid",
-            "type": "JSX_ATTRIBUTES_ENTRY",
-            "value": Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "type": "ATTRIBUTE_VALUE",
-              "uid": "",
-              "value": "447",
-            },
-          },
-        ],
-        "type": "JSX_ELEMENT",
-        "uid": "",
-      },
-    },
-    "elementPath": Object {
-      "parts": Array [
-        Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
-          "app-entity",
-        ],
-        Array [
-          "74b",
-          "447",
-        ],
-      ],
-      "type": "elementpath",
-    },
-    "globalFrame": null,
-    "importInfo": Object {
-      "exportedName": null,
-      "filePath": "/reexportwildcard",
-      "type": "IMPORTED_ORIGIN",
-      "variableName": "ReexportWildcard",
-    },
-    "isEmotionOrStyledComponent": false,
-    "label": null,
-    "localFrame": null,
-    "nonRoundedGlobalFrame": null,
-    "specialSizeMeasurements": Object {
-      "alignItems": null,
-      "borderRadius": null,
-      "clientHeight": 0,
-      "clientWidth": 0,
-      "closestOffsetParentPath": Object {
-        "parts": Array [],
-        "type": "elementpath",
-      },
-      "computedHugProperty": Object {
-        "height": null,
-        "width": null,
-      },
-      "coordinateSystemBounds": null,
-      "display": "initial",
-      "flexDirection": null,
-      "float": "none",
-      "fontSize": null,
-      "fontStyle": null,
-      "fontWeight": null,
-      "gap": null,
-      "globalContentBoxForChildren": null,
-      "globalFrameWithTextContent": null,
-      "hasPositionOffset": false,
-      "hasTransform": false,
-      "htmlElementName": "div",
-      "immediateParentBounds": Object {
-        "height": 0,
-        "width": 0,
-        "x": 0,
-        "y": 0,
-      },
-      "immediateParentProvidesLayout": true,
-      "justifyContent": null,
-      "layoutSystemForChildren": null,
-      "margin": Object {},
-      "naturalHeight": null,
-      "naturalWidth": null,
-      "offset": Object {
-        "x": 0,
-        "y": 0,
-      },
-      "padding": Object {},
-      "parentFlexDirection": null,
-      "parentFlexGap": 0,
-      "parentHugsOnMainAxis": false,
-      "parentJustifyContent": null,
-      "parentLayoutSystem": "flow",
-      "parentPadding": Object {},
-      "parentTextDirection": "ltr",
-      "position": "static",
-      "providesBoundsForAbsoluteChildren": false,
-      "renderedChildrenCount": 0,
-      "textBounds": null,
-      "textDecorationLine": null,
-      "usesParentBounds": false,
-    },
-    "textContent": null,
-  },
-  "utopia-storyboard-uid/scene-aaa/app-entity:74b/4b6": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/4b66abde0092c50a74e08eaeac109afa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -42314,7 +42188,7 @@ export var App = (props) => {
               },
               "type": "ATTRIBUTE_VALUE",
               "uid": "",
-              "value": "4b6",
+              "value": "4b66abde0092c50a74e08eaeac109afa",
             },
           },
         ],
@@ -42330,8 +42204,8 @@ export var App = (props) => {
           "app-entity",
         ],
         Array [
-          "74b",
-          "4b6",
+          "74be781b8d9c9b9661606f757e5b3d97",
+          "4b66abde0092c50a74e08eaeac109afa",
         ],
       ],
       "type": "elementpath",
@@ -42406,7 +42280,7 @@ export var App = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:74b/540": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/5404a2996ac89d161ccec8769deb8020": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -42438,7 +42312,7 @@ export var App = (props) => {
               },
               "type": "ATTRIBUTE_VALUE",
               "uid": "",
-              "value": "540",
+              "value": "5404a2996ac89d161ccec8769deb8020",
             },
           },
         ],
@@ -42454,8 +42328,8 @@ export var App = (props) => {
           "app-entity",
         ],
         Array [
-          "74b",
-          "540",
+          "74be781b8d9c9b9661606f757e5b3d97",
+          "5404a2996ac89d161ccec8769deb8020",
         ],
       ],
       "type": "elementpath",
@@ -42530,7 +42404,7 @@ export var App = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:74b/5f7": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/5f74757878e4dda270975959201bb82b": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -42562,7 +42436,7 @@ export var App = (props) => {
               },
               "type": "ATTRIBUTE_VALUE",
               "uid": "",
-              "value": "5f7",
+              "value": "5f74757878e4dda270975959201bb82b",
             },
           },
         ],
@@ -42578,8 +42452,8 @@ export var App = (props) => {
           "app-entity",
         ],
         Array [
-          "74b",
-          "5f7",
+          "74be781b8d9c9b9661606f757e5b3d97",
+          "5f74757878e4dda270975959201bb82b",
         ],
       ],
       "type": "elementpath",
@@ -42654,7 +42528,7 @@ export var App = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:74b/61e": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/61e18abea142da11d965af95d0fde3b3": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -42686,7 +42560,7 @@ export var App = (props) => {
               },
               "type": "ATTRIBUTE_VALUE",
               "uid": "",
-              "value": "61e",
+              "value": "61e18abea142da11d965af95d0fde3b3",
             },
           },
         ],
@@ -42702,8 +42576,8 @@ export var App = (props) => {
           "app-entity",
         ],
         Array [
-          "74b",
-          "61e",
+          "74be781b8d9c9b9661606f757e5b3d97",
+          "61e18abea142da11d965af95d0fde3b3",
         ],
       ],
       "type": "elementpath",
@@ -42778,7 +42652,7 @@ export var App = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:74b/843": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/843c39f9f1aa266142456e8c4313bcc1": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -42810,7 +42684,7 @@ export var App = (props) => {
               },
               "type": "ATTRIBUTE_VALUE",
               "uid": "",
-              "value": "843",
+              "value": "843c39f9f1aa266142456e8c4313bcc1",
             },
           },
         ],
@@ -42826,8 +42700,8 @@ export var App = (props) => {
           "app-entity",
         ],
         Array [
-          "74b",
-          "843",
+          "74be781b8d9c9b9661606f757e5b3d97",
+          "843c39f9f1aa266142456e8c4313bcc1",
         ],
       ],
       "type": "elementpath",
@@ -42902,7 +42776,133 @@ export var App = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:74b/a35": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/8e3447d8fac971b1af283672f862f967": Object {
+    "assignedToProp": null,
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "conditionValue": "not-a-conditional",
+    "earlyReturn": null,
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "name": Object {
+          "baseVariable": "ReexportWildcard",
+          "propertyPath": Object {
+            "propertyElements": Array [
+              "OriginallyAssigned1",
+            ],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "uid": "",
+              "value": "8e3447d8fac971b1af283672f862f967",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+        Array [
+          "74be781b8d9c9b9661606f757e5b3d97",
+          "8e3447d8fac971b1af283672f862f967",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "exportedName": null,
+      "filePath": "/reexportwildcard",
+      "type": "IMPORTED_ORIGIN",
+      "variableName": "ReexportWildcard",
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "nonRoundedGlobalFrame": null,
+    "specialSizeMeasurements": Object {
+      "alignItems": null,
+      "borderRadius": null,
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
+      "coordinateSystemBounds": null,
+      "display": "initial",
+      "flexDirection": null,
+      "float": "none",
+      "fontSize": null,
+      "fontStyle": null,
+      "fontWeight": null,
+      "gap": null,
+      "globalContentBoxForChildren": null,
+      "globalFrameWithTextContent": null,
+      "hasPositionOffset": false,
+      "hasTransform": false,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "justifyContent": null,
+      "layoutSystemForChildren": null,
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentFlexGap": 0,
+      "parentHugsOnMainAxis": false,
+      "parentJustifyContent": null,
+      "parentLayoutSystem": "flow",
+      "parentPadding": Object {},
+      "parentTextDirection": "ltr",
+      "position": "static",
+      "providesBoundsForAbsoluteChildren": false,
+      "renderedChildrenCount": 0,
+      "textBounds": null,
+      "textDecorationLine": null,
+      "usesParentBounds": false,
+    },
+    "textContent": null,
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/a35bab1b5aea60ec50746b4edf365a9b": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -42934,7 +42934,7 @@ export var App = (props) => {
               },
               "type": "ATTRIBUTE_VALUE",
               "uid": "",
-              "value": "a35",
+              "value": "a35bab1b5aea60ec50746b4edf365a9b",
             },
           },
         ],
@@ -42950,8 +42950,8 @@ export var App = (props) => {
           "app-entity",
         ],
         Array [
-          "74b",
-          "a35",
+          "74be781b8d9c9b9661606f757e5b3d97",
+          "a35bab1b5aea60ec50746b4edf365a9b",
         ],
       ],
       "type": "elementpath",
@@ -43026,7 +43026,7 @@ export var App = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:74b/aeb": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/aeb6890c32d119d2fdd3e05adbf43e27": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -43058,7 +43058,7 @@ export var App = (props) => {
               },
               "type": "ATTRIBUTE_VALUE",
               "uid": "",
-              "value": "aeb",
+              "value": "aeb6890c32d119d2fdd3e05adbf43e27",
             },
           },
         ],
@@ -43074,8 +43074,8 @@ export var App = (props) => {
           "app-entity",
         ],
         Array [
-          "74b",
-          "aeb",
+          "74be781b8d9c9b9661606f757e5b3d97",
+          "aeb6890c32d119d2fdd3e05adbf43e27",
         ],
       ],
       "type": "elementpath",
@@ -43150,7 +43150,7 @@ export var App = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:74b/bb2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/bb2d1eefd3d8381a2d8e032d29df15aa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -43182,7 +43182,7 @@ export var App = (props) => {
               },
               "type": "ATTRIBUTE_VALUE",
               "uid": "",
-              "value": "bb2",
+              "value": "bb2d1eefd3d8381a2d8e032d29df15aa",
             },
           },
         ],
@@ -43198,8 +43198,8 @@ export var App = (props) => {
           "app-entity",
         ],
         Array [
-          "74b",
-          "bb2",
+          "74be781b8d9c9b9661606f757e5b3d97",
+          "bb2d1eefd3d8381a2d8e032d29df15aa",
         ],
       ],
       "type": "elementpath",
@@ -43274,7 +43274,7 @@ export var App = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:74b/c19": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/c19d2326d5ec7aacce5db245f7b047e2": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -43306,7 +43306,7 @@ export var App = (props) => {
               },
               "type": "ATTRIBUTE_VALUE",
               "uid": "",
-              "value": "c19",
+              "value": "c19d2326d5ec7aacce5db245f7b047e2",
             },
           },
         ],
@@ -43322,8 +43322,8 @@ export var App = (props) => {
           "app-entity",
         ],
         Array [
-          "74b",
-          "c19",
+          "74be781b8d9c9b9661606f757e5b3d97",
+          "c19d2326d5ec7aacce5db245f7b047e2",
         ],
       ],
       "type": "elementpath",
@@ -43398,7 +43398,7 @@ export var App = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:74b/ec8": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:74be781b8d9c9b9661606f757e5b3d97/ec875be88ad9bf36337aa3451eade397": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -43430,7 +43430,7 @@ export var App = (props) => {
               },
               "type": "ATTRIBUTE_VALUE",
               "uid": "",
-              "value": "ec8",
+              "value": "ec875be88ad9bf36337aa3451eade397",
             },
           },
         ],
@@ -43446,8 +43446,8 @@ export var App = (props) => {
           "app-entity",
         ],
         Array [
-          "74b",
-          "ec8",
+          "74be781b8d9c9b9661606f757e5b3d97",
+          "ec875be88ad9bf36337aa3451eade397",
         ],
       ],
       "type": "elementpath",
@@ -43531,7 +43531,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/df8 utopia-storyboard-uid/scene-aaa/app-entity:aaa/df8/bbb\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/38167e85d124ae725950654363e17e8f utopia-storyboard-uid/scene-aaa/app-entity:aaa/38167e85d124ae725950654363e17e8f/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -43564,19 +43564,19 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
       >
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/df8/bbb~~~1:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/38167e85d124ae725950654363e17e8f/bbb~~~1:xxx\\"
         >
           n1
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/df8/bbb~~~2:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/38167e85d124ae725950654363e17e8f/bbb~~~2:xxx\\"
         >
           n2
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/df8/bbb~~~3:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/38167e85d124ae725950654363e17e8f/bbb~~~3:xxx\\"
         >
           n3
         </div>
@@ -44293,7 +44293,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/df8": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/38167e85d124ae725950654363e17e8f": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -44554,7 +44554,7 @@ Object {
         ],
         Array [
           "aaa",
-          "df8",
+          "38167e85d124ae725950654363e17e8f",
         ],
       ],
       "type": "elementpath",
@@ -44624,7 +44624,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/df8/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/38167e85d124ae725950654363e17e8f/bbb~~~1": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -44739,7 +44739,7 @@ Object {
         ],
         Array [
           "aaa",
-          "df8",
+          "38167e85d124ae725950654363e17e8f",
           "bbb~~~1",
         ],
       ],
@@ -44814,7 +44814,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/df8/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/38167e85d124ae725950654363e17e8f/bbb~~~2": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -44929,7 +44929,7 @@ Object {
         ],
         Array [
           "aaa",
-          "df8",
+          "38167e85d124ae725950654363e17e8f",
           "bbb~~~2",
         ],
       ],
@@ -45004,7 +45004,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/df8/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/38167e85d124ae725950654363e17e8f/bbb~~~3": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -45119,7 +45119,7 @@ Object {
         ],
         Array [
           "aaa",
-          "df8",
+          "38167e85d124ae725950654363e17e8f",
           "bbb~~~3",
         ],
       ],
@@ -45203,7 +45203,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/fc8 utopia-storyboard-uid/scene-aaa/app-entity:aaa/fc8/bbb\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/b9379f12273f5a0b4386833bf461a2a0 utopia-storyboard-uid/scene-aaa/app-entity:aaa/b9379f12273f5a0b4386833bf461a2a0/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -45236,19 +45236,19 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
       >
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/fc8/bbb~~~1:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/b9379f12273f5a0b4386833bf461a2a0/bbb~~~1:xxx\\"
         >
           n1
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/fc8/bbb~~~2:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/b9379f12273f5a0b4386833bf461a2a0/bbb~~~2:xxx\\"
         >
           n2
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/fc8/bbb~~~3:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/b9379f12273f5a0b4386833bf461a2a0/bbb~~~3:xxx\\"
         >
           n3
         </div>
@@ -45964,7 +45964,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/fc8": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b9379f12273f5a0b4386833bf461a2a0": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -46224,7 +46224,7 @@ Object {
         ],
         Array [
           "aaa",
-          "fc8",
+          "b9379f12273f5a0b4386833bf461a2a0",
         ],
       ],
       "type": "elementpath",
@@ -46294,7 +46294,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/fc8/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b9379f12273f5a0b4386833bf461a2a0/bbb~~~1": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -46409,7 +46409,7 @@ Object {
         ],
         Array [
           "aaa",
-          "fc8",
+          "b9379f12273f5a0b4386833bf461a2a0",
           "bbb~~~1",
         ],
       ],
@@ -46484,7 +46484,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/fc8/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b9379f12273f5a0b4386833bf461a2a0/bbb~~~2": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -46599,7 +46599,7 @@ Object {
         ],
         Array [
           "aaa",
-          "fc8",
+          "b9379f12273f5a0b4386833bf461a2a0",
           "bbb~~~2",
         ],
       ],
@@ -46674,7 +46674,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/fc8/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b9379f12273f5a0b4386833bf461a2a0/bbb~~~3": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -46789,7 +46789,7 @@ Object {
         ],
         Array [
           "aaa",
-          "fc8",
+          "b9379f12273f5a0b4386833bf461a2a0",
           "bbb~~~3",
         ],
       ],
@@ -46873,7 +46873,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block with 
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/032 utopia-storyboard-uid/scene-aaa/app-entity:aaa/032/bbb\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/a7711852708071fa944dbfcca6061ceb utopia-storyboard-uid/scene-aaa/app-entity:aaa/a7711852708071fa944dbfcca6061ceb/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -46906,19 +46906,19 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block with 
       >
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/032/bbb~~~1:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/a7711852708071fa944dbfcca6061ceb/bbb~~~1:xxx\\"
         >
           n1
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/032/bbb~~~2:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/a7711852708071fa944dbfcca6061ceb/bbb~~~2:xxx\\"
         >
           n2
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/032/bbb~~~3:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/a7711852708071fa944dbfcca6061ceb/bbb~~~3:xxx\\"
         >
           n3
         </div>
@@ -47678,7 +47678,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/032": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/a7711852708071fa944dbfcca6061ceb": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -47982,7 +47982,7 @@ Object {
         ],
         Array [
           "aaa",
-          "032",
+          "a7711852708071fa944dbfcca6061ceb",
         ],
       ],
       "type": "elementpath",
@@ -48052,7 +48052,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/032/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/a7711852708071fa944dbfcca6061ceb/bbb~~~1": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -48167,7 +48167,7 @@ Object {
         ],
         Array [
           "aaa",
-          "032",
+          "a7711852708071fa944dbfcca6061ceb",
           "bbb~~~1",
         ],
       ],
@@ -48242,7 +48242,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/032/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/a7711852708071fa944dbfcca6061ceb/bbb~~~2": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -48357,7 +48357,7 @@ Object {
         ],
         Array [
           "aaa",
-          "032",
+          "a7711852708071fa944dbfcca6061ceb",
           "bbb~~~2",
         ],
       ],
@@ -48432,7 +48432,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/032/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/a7711852708071fa944dbfcca6061ceb/bbb~~~3": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -48547,7 +48547,7 @@ Object {
         ],
         Array [
           "aaa",
-          "032",
+          "a7711852708071fa944dbfcca6061ceb",
           "bbb~~~3",
         ],
       ],
@@ -50633,7 +50633,7 @@ Object {
                     Object {
                       "text": "test",
                       "type": "JSX_TEXT_BLOCK",
-                      "uid": "b0b",
+                      "uid": "0f55b31755244f7198d2391d1bdf2ac5",
                     },
                   ],
                   "name": Object {
@@ -50656,7 +50656,7 @@ Object {
                           "trailingComments": Array [],
                         },
                         "type": "ATTRIBUTE_VALUE",
-                        "uid": "67a",
+                        "uid": "4f2e29429a27d6e8697ed5c0562d1290",
                         "value": "ccc",
                       },
                     },
@@ -50849,7 +50849,7 @@ Object {
                 Object {
                   "text": "test",
                   "type": "JSX_TEXT_BLOCK",
-                  "uid": "b0b",
+                  "uid": "0f55b31755244f7198d2391d1bdf2ac5",
                 },
               ],
               "name": Object {
@@ -50872,7 +50872,7 @@ Object {
                       "trailingComments": Array [],
                     },
                     "type": "ATTRIBUTE_VALUE",
-                    "uid": "67a",
+                    "uid": "4f2e29429a27d6e8697ed5c0562d1290",
                     "value": "ccc",
                   },
                 },
@@ -52989,7 +52989,7 @@ exports[`UiJsxCanvas render renders fine with two circularly referencing arbitra
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene utopia-storyboard-uid/scene/app-entity utopia-storyboard-uid/scene/app-entity:aaa utopia-storyboard-uid/scene/app-entity:aaa/c28 utopia-storyboard-uid/scene/app-entity:aaa/bb9\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene utopia-storyboard-uid/scene/app-entity utopia-storyboard-uid/scene/app-entity:aaa utopia-storyboard-uid/scene/app-entity:aaa/c2876f158b1db35e4a33279f6e877be3 utopia-storyboard-uid/scene/app-entity:aaa/bb9e067f219d122fc94828ff709fe71e\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -53620,7 +53620,7 @@ export var storyboard = (
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene/app-entity:aaa/bb9": Object {
+  "utopia-storyboard-uid/scene/app-entity:aaa/bb9e067f219d122fc94828ff709fe71e": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -53713,7 +53713,7 @@ export var storyboard = (
         ],
         Array [
           "aaa",
-          "bb9",
+          "bb9e067f219d122fc94828ff709fe71e",
         ],
       ],
       "type": "elementpath",
@@ -53783,7 +53783,7 @@ export var storyboard = (
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene/app-entity:aaa/c28": Object {
+  "utopia-storyboard-uid/scene/app-entity:aaa/c2876f158b1db35e4a33279f6e877be3": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -53876,7 +53876,7 @@ export var storyboard = (
         ],
         Array [
           "aaa",
-          "c28",
+          "c2876f158b1db35e4a33279f6e877be3",
         ],
       ],
       "type": "elementpath",
@@ -54436,7 +54436,7 @@ exports[`UiJsxCanvas render renders fragments correctly 1`] = `
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"eee eee/fff eee/fff/app eee/fff/app:aaa eee/fff/app:aaa/ggg eee/fff/app:aaa/ggg/bbb eee/fff/app:aaa/ggg/bbb/01c eee/fff/app:aaa/ggg/bbb/01c/ccc eee/fff/app:aaa/ddd\\"
+    data-utopia-valid-paths=\\"eee eee/fff eee/fff/app eee/fff/app:aaa eee/fff/app:aaa/ggg eee/fff/app:aaa/ggg/bbb eee/fff/app:aaa/ggg/bbb/01cc39b98fc521a0d80dfe7874114e5f eee/fff/app:aaa/ggg/bbb/01cc39b98fc521a0d80dfe7874114e5f/ccc eee/fff/app:aaa/ddd\\"
     data-utopia-root-element-path=\\"eee\\"
   >
     <div
@@ -54486,7 +54486,7 @@ exports[`UiJsxCanvas render renders fragments correctly 1`] = `
             data-label=\\"some-other-div\\"
             style=\\"width: 100px; height: 100px\\"
             data-uid=\\"ccc\\"
-            data-path=\\"eee/fff/app:aaa/ggg/bbb/01c/ccc\\"
+            data-path=\\"eee/fff/app:aaa/ggg/bbb/01cc39b98fc521a0d80dfe7874114e5f/ccc\\"
           ></div>
         </div>
         <div data-uid=\\"ddd\\" data-path=\\"eee/fff/app:aaa/ddd\\">World</div>
@@ -55929,7 +55929,7 @@ export var storyboard = (
     },
     "textContent": null,
   },
-  "eee/fff/app:aaa/ggg/bbb/01c": Object {
+  "eee/fff/app:aaa/ggg/bbb/01cc39b98fc521a0d80dfe7874114e5f": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -56024,7 +56024,7 @@ export var storyboard = (
           "aaa",
           "ggg",
           "bbb",
-          "01c",
+          "01cc39b98fc521a0d80dfe7874114e5f",
         ],
       ],
       "type": "elementpath",
@@ -56094,7 +56094,7 @@ export var storyboard = (
     },
     "textContent": null,
   },
-  "eee/fff/app:aaa/ggg/bbb/01c/ccc": Object {
+  "eee/fff/app:aaa/ggg/bbb/01cc39b98fc521a0d80dfe7874114e5f/ccc": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -56182,7 +56182,7 @@ export var storyboard = (
           "aaa",
           "ggg",
           "bbb",
-          "01c",
+          "01cc39b98fc521a0d80dfe7874114e5f",
           "ccc",
         ],
       ],
@@ -56998,8 +56998,8 @@ exports[`UiJsxCanvas render respects a jsx pragma 1`] = `
       data-uid=\\"scene-aaa\\"
     >
       <div
-        data-uid=\\"651\\"
-        data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:651\\"
+        data-uid=\\"651ec01d19c3f9d8b2930ef7f2377505\\"
+        data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:651ec01d19c3f9d8b2930ef7f2377505\\"
         data-factory-function-works=\\"true\\"
       >
         Utopia
@@ -57481,7 +57481,7 @@ exports[`UiJsxCanvas render supports passing down the scope to children of compo
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb/ccc utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb/ccc/aae\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/be31bfbc2d6db0ba7f2e4b6177319b4e utopia-storyboard-uid/scene-aaa/app-entity:aaa/be31bfbc2d6db0ba7f2e4b6177319b4e/bbb utopia-storyboard-uid/scene-aaa/app-entity:aaa/be31bfbc2d6db0ba7f2e4b6177319b4e/bbb/ccc utopia-storyboard-uid/scene-aaa/app-entity:aaa/be31bfbc2d6db0ba7f2e4b6177319b4e/bbb/ccc/9bd804b41f14d1030522c80a7df64c0d\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -57514,33 +57514,33 @@ exports[`UiJsxCanvas render supports passing down the scope to children of compo
       >
         <div
           data-uid=\\"bbb~~~1\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~1\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/be31bfbc2d6db0ba7f2e4b6177319b4e/bbb~~~1\\"
         >
           <div
             data-uid=\\"ccc\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~1/ccc\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/be31bfbc2d6db0ba7f2e4b6177319b4e/bbb~~~1/ccc\\"
           >
             1
           </div>
         </div>
         <div
           data-uid=\\"bbb~~~2\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~2\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/be31bfbc2d6db0ba7f2e4b6177319b4e/bbb~~~2\\"
         >
           <div
             data-uid=\\"ccc\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~2/ccc\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/be31bfbc2d6db0ba7f2e4b6177319b4e/bbb~~~2/ccc\\"
           >
             2
           </div>
         </div>
         <div
           data-uid=\\"bbb~~~3\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~3\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/be31bfbc2d6db0ba7f2e4b6177319b4e/bbb~~~3\\"
         >
           <div
             data-uid=\\"ccc\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~3/ccc\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/be31bfbc2d6db0ba7f2e4b6177319b4e/bbb~~~3/ccc\\"
           >
             3
           </div>
@@ -58283,7 +58283,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/be31bfbc2d6db0ba7f2e4b6177319b4e": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -58569,7 +58569,7 @@ Object {
         ],
         Array [
           "aaa",
-          "b0d",
+          "be31bfbc2d6db0ba7f2e4b6177319b4e",
         ],
       ],
       "type": "elementpath",
@@ -58639,7 +58639,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/be31bfbc2d6db0ba7f2e4b6177319b4e/bbb~~~1": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -58768,7 +58768,7 @@ Object {
         ],
         Array [
           "aaa",
-          "b0d",
+          "be31bfbc2d6db0ba7f2e4b6177319b4e",
           "bbb~~~1",
         ],
       ],
@@ -58843,7 +58843,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~1/ccc": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/be31bfbc2d6db0ba7f2e4b6177319b4e/bbb~~~1/ccc": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -58941,7 +58941,7 @@ Object {
         ],
         Array [
           "aaa",
-          "b0d",
+          "be31bfbc2d6db0ba7f2e4b6177319b4e",
           "bbb~~~1",
           "ccc",
         ],
@@ -59017,7 +59017,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~1/ccc/aae": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/be31bfbc2d6db0ba7f2e4b6177319b4e/bbb~~~1/ccc/9bd804b41f14d1030522c80a7df64c0d": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -59084,10 +59084,10 @@ Object {
         ],
         Array [
           "aaa",
-          "b0d",
+          "be31bfbc2d6db0ba7f2e4b6177319b4e",
           "bbb~~~1",
           "ccc",
-          "aae",
+          "9bd804b41f14d1030522c80a7df64c0d",
         ],
       ],
       "type": "elementpath",
@@ -59157,7 +59157,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/be31bfbc2d6db0ba7f2e4b6177319b4e/bbb~~~2": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -59286,7 +59286,7 @@ Object {
         ],
         Array [
           "aaa",
-          "b0d",
+          "be31bfbc2d6db0ba7f2e4b6177319b4e",
           "bbb~~~2",
         ],
       ],
@@ -59361,7 +59361,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~2/ccc": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/be31bfbc2d6db0ba7f2e4b6177319b4e/bbb~~~2/ccc": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -59459,7 +59459,7 @@ Object {
         ],
         Array [
           "aaa",
-          "b0d",
+          "be31bfbc2d6db0ba7f2e4b6177319b4e",
           "bbb~~~2",
           "ccc",
         ],
@@ -59535,7 +59535,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~2/ccc/aae": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/be31bfbc2d6db0ba7f2e4b6177319b4e/bbb~~~2/ccc/9bd804b41f14d1030522c80a7df64c0d": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -59602,10 +59602,10 @@ Object {
         ],
         Array [
           "aaa",
-          "b0d",
+          "be31bfbc2d6db0ba7f2e4b6177319b4e",
           "bbb~~~2",
           "ccc",
-          "aae",
+          "9bd804b41f14d1030522c80a7df64c0d",
         ],
       ],
       "type": "elementpath",
@@ -59675,7 +59675,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/be31bfbc2d6db0ba7f2e4b6177319b4e/bbb~~~3": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -59804,7 +59804,7 @@ Object {
         ],
         Array [
           "aaa",
-          "b0d",
+          "be31bfbc2d6db0ba7f2e4b6177319b4e",
           "bbb~~~3",
         ],
       ],
@@ -59879,7 +59879,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~3/ccc": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/be31bfbc2d6db0ba7f2e4b6177319b4e/bbb~~~3/ccc": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -59977,7 +59977,7 @@ Object {
         ],
         Array [
           "aaa",
-          "b0d",
+          "be31bfbc2d6db0ba7f2e4b6177319b4e",
           "bbb~~~3",
           "ccc",
         ],
@@ -60053,7 +60053,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~3/ccc/aae": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/be31bfbc2d6db0ba7f2e4b6177319b4e/bbb~~~3/ccc/9bd804b41f14d1030522c80a7df64c0d": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -60120,10 +60120,10 @@ Object {
         ],
         Array [
           "aaa",
-          "b0d",
+          "be31bfbc2d6db0ba7f2e4b6177319b4e",
           "bbb~~~3",
           "ccc",
-          "aae",
+          "9bd804b41f14d1030522c80a7df64c0d",
         ],
       ],
       "type": "elementpath",
@@ -60230,8 +60230,8 @@ exports[`UiJsxCanvas render the canvas supports emotion CSS prop 1`] = `
       data-uid=\\"scene-aaa\\"
     >
       <div
-        data-uid=\\"d33\\"
-        data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:d33\\"
+        data-uid=\\"d337d6603a48334ee2d8af293b7a1249\\"
+        data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:d337d6603a48334ee2d8af293b7a1249\\"
         class=\\"css-16au7uv\\"
       >
         Utopia

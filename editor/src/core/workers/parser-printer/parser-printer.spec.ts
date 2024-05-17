@@ -6182,13 +6182,13 @@ export var App = props => {
           UNPARSED_CODE
           UTOPIA_JSX_COMPONENT - MyComp
             JSX_ELEMENT - View - aaa
-              JS_PROPERTY_ACCESS - 271
-                JS_IDENTIFIER - f38
+              JS_PROPERTY_ACCESS - 3d903b2f87d5ad4bfa44722028b42e37
+                JS_IDENTIFIER - 49e817354232ce966ca45bcc972f1c9b
           UNPARSED_CODE
           UTOPIA_JSX_COMPONENT - App
-            JSX_ELEMENT - MyComp - cc3
-              JSX_ELEMENT - h1 - 1ee
-                JSX_TEXT_BLOCK - c58"
+            JSX_ELEMENT - MyComp - a468a3f22903bffc91d1fa2235e65601
+              JSX_ELEMENT - h1 - 1ee6755021bc066eab328e7631b11f4a
+                JSX_TEXT_BLOCK - 643bcf8c098d598375f00b56f3c79533"
         `)
 
         const appComponent = success.topLevelElements.find(
@@ -6245,12 +6245,12 @@ export var App = props => {
           UNPARSED_CODE
           UTOPIA_JSX_COMPONENT - MyComp
             JSX_ELEMENT - View - aaa
-              JS_PROPERTY_ACCESS - 271
-                JS_IDENTIFIER - f38
+              JS_PROPERTY_ACCESS - 3d903b2f87d5ad4bfa44722028b42e37
+                JS_IDENTIFIER - 49e817354232ce966ca45bcc972f1c9b
           UNPARSED_CODE
           UTOPIA_JSX_COMPONENT - App
-            JSX_ELEMENT - MyComp - e4f
-              JSX_ELEMENT - div - 776"
+            JSX_ELEMENT - MyComp - ea63915052ad530068337f5455bc69e1
+              JSX_ELEMENT - div - 776106f49221107e1465f93dea8b2a32"
         `)
 
         const appComponent = success.topLevelElements.find(
