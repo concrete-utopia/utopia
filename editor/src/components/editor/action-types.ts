@@ -169,11 +169,14 @@ export interface ReplaceMappedElement {
   importsToAdd: Imports
 }
 
-export type ElementReplacementPath = {
-  type: 'replace-child-with-uid'
-  uid: string
-  replaceWith: JSXElementChild
-}
+export type ElementReplacementPath =
+  | {
+      type: 'replace-child-with-uid'
+      uid: string
+      replaceWith: JSXElementChild
+    }
+  | { type: 'update-map-expression'; valueToMap: JSExpression }
+  | { type: 'replace-property-value'; propertyPath: PropertyPath; replaceWith: JSExpression }
 
 export interface ReplaceElementInScope {
   action: 'REPLACE_ELEMENT_IN_SCOPE'
@@ -849,12 +852,6 @@ export interface UpdateConditionalExpression {
   expression: string
 }
 
-export interface UpdateMapExpression {
-  action: 'UPDATE_MAP_EXPRESSION'
-  target: ElementPath
-  expression: JSExpression
-}
-
 export interface AddImports {
   action: 'ADD_IMPORTS'
   target: ElementPath
@@ -1360,7 +1357,6 @@ export type EditorAction =
   | SetMapCountOverride
   | SwitchConditionalBranches
   | UpdateConditionalExpression
-  | UpdateMapExpression
   | ExecutePostActionMenuChoice
   | ClearPostActionSession
   | StartPostActionSession

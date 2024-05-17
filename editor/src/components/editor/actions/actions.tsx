@@ -343,7 +343,6 @@ import type {
   RemoveFeaturedRoute,
   AddCollapsedViews,
   ReplaceMappedElement,
-  UpdateMapExpression,
   ReplaceElementInScope,
   ReplaceJSXElement,
 } from '../action-types'
@@ -2431,16 +2430,43 @@ export const UPDATE_FNS = {
   },
   REPLACE_ELEMENT_IN_SCOPE: (action: ReplaceElementInScope, editor: EditorModel): EditorModel => {
     return modifyUnderlyingTarget(action.target, editor, (element) => {
-      if (element.type !== 'JSX_ELEMENT' && element.type !== 'JSX_FRAGMENT') {
-        return element
-      }
+      const replacementPath = action.replacementPath
+      if (replacementPath.type === 'replace-child-with-uid') {
+        if (element.type !== 'JSX_ELEMENT' && element.type !== 'JSX_FRAGMENT') {
+          return element
+        }
 
-      return {
-        ...element,
-        children: element.children.map((c) =>
-          c.uid !== action.replacementPath.uid ? c : action.replacementPath.replaceWith,
-        ),
+        return {
+          ...element,
+          children: element.children.map((c) =>
+            c.uid !== replacementPath.uid ? c : replacementPath.replaceWith,
+          ),
+        }
+      } else if (replacementPath.type === 'update-map-expression') {
+        if (element.type !== 'JSX_MAP_EXPRESSION') {
+          return element
+        }
+        return {
+          ...element,
+          valueToMap: replacementPath.valueToMap,
+        }
+      } else if (replacementPath.type === 'replace-property-value') {
+        if (element.type !== 'JSX_ELEMENT') {
+          return element
+        }
+        return {
+          ...element,
+          props: defaultEither(
+            element.props,
+            setJSXValueAtPath(
+              element.props,
+              replacementPath.propertyPath,
+              replacementPath.replaceWith,
+            ),
+          ),
+        }
       }
+      assertNever(replacementPath)
     })
   },
   INSERT_ATTRIBUTE_OTHER_JAVASCRIPT_INTO_ELEMENT: (
@@ -4381,22 +4407,6 @@ export const UPDATE_FNS = {
             trailingComments: element.comments.trailingComments.filter(isNotMapCountFlag),
             questionTokenComments: element.comments.questionTokenComments,
           },
-        }
-      },
-      editor,
-    )
-  },
-  UPDATE_MAP_EXPRESSION: (action: UpdateMapExpression, editor: EditorModel): EditorModel => {
-    return modifyOpenJsxChildAtPath(
-      action.target,
-      (element): JSXElementChild => {
-        if (isJSXMapExpression(element)) {
-          return {
-            ...element,
-            valueToMap: action.expression,
-          }
-        } else {
-          return element
         }
       },
       editor,

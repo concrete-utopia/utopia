@@ -3,13 +3,53 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
-import { NO_OP } from '../../../../core/shared/utils'
+import { NO_OP, assertNever } from '../../../../core/shared/utils'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import {
   DataCartoucheInner,
   getTextContentOfElement,
 } from '../component-section/data-reference-cartouche'
-import { mapExpressionValueToMapSelector, useDataPickerButtonListSource } from './list-section'
+import { mapExpressionValueToMapSelector } from './list-section'
+import { useDataPickerButton } from '../component-section/component-section'
+import { useDispatch } from '../../../editor/store/dispatch-context'
+import type { JSExpressionOtherJavaScript } from '../../../../core/shared/element-template'
+import { replaceElementInScope } from '../../../editor/actions/action-creators'
+import { useAtom } from 'jotai'
+import type { VariableOption } from '../component-section/data-picker-popup'
+import { DataPickerPreferredAllAtom } from '../component-section/data-picker-popup'
+import { useVariablesInScopeForSelectedElement } from '../component-section/variables-in-scope-utils'
+import { mapDropNulls } from '../../../../core/shared/array-utils'
+
+function filterVariableOption(option: VariableOption): VariableOption | null {
+  switch (option.type) {
+    case 'array':
+      return {
+        ...option,
+        children: filterKeepArraysOnly(option.children),
+        disabled: false,
+      }
+    case 'object':
+      const children = filterKeepArraysOnly(option.children)
+      if (children.length === 0) {
+        // no array-valued children found
+        return null
+      }
+      return {
+        ...option,
+        children: children,
+        disabled: true,
+      }
+    case 'jsx':
+    case 'primitive':
+      return null
+    default:
+      assertNever(option)
+  }
+}
+
+function filterKeepArraysOnly(options: VariableOption[]): VariableOption[] {
+  return mapDropNulls((o) => filterVariableOption(o), options)
+}
 
 interface MapListSourceCartoucheProps {
   target: ElementPath
@@ -33,8 +73,37 @@ export const MapListSourceCartouche = React.memo((props: MapListSourceCartoucheP
     'ConditionalSection metadata',
   )
 
-  const { popupIsOpen, DataPickerComponent, setReferenceElement, openPopup } =
-    useDataPickerButtonListSource([target])
+  const dispatch = useDispatch()
+
+  const onPickMappedElement = React.useCallback(
+    (expression: JSExpressionOtherJavaScript) => {
+      dispatch([
+        replaceElementInScope(target, {
+          type: 'update-map-expression',
+          valueToMap: expression,
+        }),
+      ])
+    },
+    [dispatch, target],
+  )
+
+  const [preferredAllState] = useAtom(DataPickerPreferredAllAtom)
+
+  const variableNamesInScope = useVariablesInScopeForSelectedElement(
+    target,
+    null,
+    preferredAllState,
+  )
+
+  const filteredVariableNamesInScope = React.useMemo(
+    () => filterKeepArraysOnly(variableNamesInScope),
+    [variableNamesInScope],
+  )
+
+  const { popupIsOpen, DataPickerComponent, setReferenceElement, openPopup } = useDataPickerButton(
+    filteredVariableNamesInScope,
+    onPickMappedElement,
+  )
 
   const onClick = React.useCallback(() => {
     if (openOn === 'single-click') {

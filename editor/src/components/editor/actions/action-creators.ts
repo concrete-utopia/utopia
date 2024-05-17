@@ -231,7 +231,6 @@ import type {
   IncreaseOnlineStateFailureCount,
   AddCollapsedViews,
   ReplaceMappedElement,
-  UpdateMapExpression,
   ReplaceTarget,
   InsertAsChildTarget,
   ReplaceKeepChildrenAndStyleTarget,
@@ -1764,17 +1763,6 @@ export function updateConditionalExpression(
 ): UpdateConditionalExpression {
   return {
     action: 'UPDATE_CONIDTIONAL_EXPRESSION',
-    target: target,
-    expression: expression,
-  }
-}
-
-export function updateMapExpression(
-  target: ElementPath,
-  expression: JSExpression,
-): UpdateMapExpression {
-  return {
-    action: 'UPDATE_MAP_EXPRESSION',
     target: target,
     expression: expression,
   }

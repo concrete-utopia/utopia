@@ -3,6 +3,7 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import type {
   ElementInstanceMetadata,
+  JSExpressionOtherJavaScript,
   JSXElementChild,
 } from '../../../../core/shared/element-template'
 import { getJSXElementNameLastPart } from '../../../../core/shared/element-template'
@@ -17,8 +18,11 @@ import { useDispatch } from '../../../editor/store/dispatch-context'
 import { selectComponents } from '../../../editor/actions/meta-actions'
 import { when } from '../../../../utils/react-conditionals'
 import { traceDataFromElement } from '../../../../core/data-tracing/data-tracing'
-import type { DataPickerType } from './data-picker-popup'
 import type { RenderedAt } from '../../../editor/store/editor-state'
+import { replaceElementInScope } from '../../../editor/actions/action-creators'
+import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'
+import { DataPickerPreferredAllAtom } from './data-picker-popup'
+import { useAtom } from 'jotai'
 
 interface DataReferenceCartoucheControlProps {
   elementPath: ElementPath
@@ -58,31 +62,48 @@ export const DataReferenceCartoucheControl = React.memo(
       'IdentifierExpressionCartoucheControl trace',
     )
 
-    const renderedAt =
+    const updateDataWithDataPicker = React.useCallback(
+      (expression: JSExpressionOtherJavaScript) => {
+        switch (props.renderedAt.type) {
+          case 'element-property-path':
+            return dispatch([
+              replaceElementInScope(props.renderedAt.elementPropertyPath.elementPath, {
+                type: 'replace-property-value',
+                propertyPath: props.renderedAt.elementPropertyPath.propertyPath,
+                replaceWith: expression,
+              }),
+            ])
+          case 'child-node':
+            return dispatch([
+              replaceElementInScope(props.renderedAt.parentPath, {
+                type: 'replace-child-with-uid',
+                uid: props.renderedAt.nodeUid,
+                replaceWith: expression,
+              }),
+            ])
+          default:
+            assertNever(props.renderedAt)
+        }
+      },
+      [dispatch, props.renderedAt],
+    )
+
+    const propertyPath =
       props.renderedAt.type === 'element-property-path'
-        ? props.renderedAt.elementPropertyPath
+        ? props.renderedAt.elementPropertyPath.propertyPath
         : props.renderedAt.type === 'child-node'
-        ? EPP.create(EP.parentPath(elementPath), PP.create('children'))
+        ? null
         : assertNever(props.renderedAt)
 
-    const pickerType: DataPickerType | undefined =
-      props.renderedAt.type !== 'child-node'
-        ? undefined
-        : {
-            type: 'FOR_CHILD_NODE',
-            childNodeUid: props.renderedAt.nodeUid,
-            elementPath: props.renderedAt.parentPath,
-          }
+    const [preferredAllState] = useAtom(DataPickerPreferredAllAtom)
 
-    const dataPickerButtonData = useDataPickerButton(
-      [renderedAt.elementPath],
-      renderedAt.propertyPath,
-      false, // TODO we need to kill this parameter
-      {
-        control: 'none',
-      },
-      pickerType,
+    const variableNamesInScope = useVariablesInScopeForSelectedElement(
+      elementPath,
+      propertyPath,
+      preferredAllState,
     )
+
+    const dataPickerButtonData = useDataPickerButton(variableNamesInScope, updateDataWithDataPicker)
 
     const isDataComingFromHookResult = dataTraceResult.type === 'hook-result'
 
