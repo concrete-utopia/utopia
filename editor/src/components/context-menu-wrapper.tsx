@@ -9,7 +9,7 @@ import {
   Submenu as SubmenuComponent,
   useContextMenu,
 } from 'react-contexify'
-import { colorTheme, Icons } from '../uuiui'
+import { colorTheme, Icons, UtopiaStyles } from '../uuiui'
 import { getControlStyles } from '../uuiui-deps'
 import type { ContextMenuItem } from './context-menu-items'
 import type { EditorDispatch } from './editor/action-types'
@@ -128,10 +128,9 @@ export const ContextMenu = <T,>({ dispatch, getData, id, items }: ContextMenuPro
           }}
           hidden={isHidden(item)}
           style={{
+            ...UtopiaStyles.flexRow,
             height: item?.isSeparator ? 9 : 28,
-            display: 'flex',
-            alignItems: 'center',
-            borderRadius: 4,
+            borderRadius: UtopiaStyles.popup.borderRadius,
           }}
         >
           <span style={{ flexGrow: 1, flexShrink: 0 }} className='react-contexify-span'>
