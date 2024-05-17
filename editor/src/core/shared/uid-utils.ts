@@ -115,16 +115,6 @@ export const atoz = [
   'z',
 ]
 
-export function generateHashUID(data: any): string {
-  const hash = hashObject(data)
-  const mockUID = generateMockNextGeneratedUID()
-  if (mockUID == null) {
-    return hash.substring(0, UID_LENGTH)
-  } else {
-    return mockUID
-  }
-}
-
 export function updateHighlightBounds(
   highlightBounds: HighlightBoundsForUids,
   mappings: UIDMappings,
@@ -154,12 +144,20 @@ export function updateHighlightBounds(
   return result
 }
 
-export const UID_LENGTH = 32
+export function generateHashUID(data: any): string {
+  const hash = hashObject(data)
+  return uidOrMockUid(hash)
+}
 
 export function generateUID(): string {
+  const uid = UUID().replace(/\-/g, '')
+  return uidOrMockUid(uid)
+}
+
+function uidOrMockUid(uid: string): string {
   const mockUID = generateMockNextGeneratedUID()
   if (mockUID == null) {
-    return UUID().replace(/\-/g, '').substring(0, UID_LENGTH)
+    return uid
   } else {
     return mockUID
   }
