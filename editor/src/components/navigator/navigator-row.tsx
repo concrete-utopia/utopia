@@ -23,5 +23,3 @@ export function getEntriesForRow(row: NavigatorRow): Array<NavigatorEntry> {
     return row.entries
   }
 }
-
-type RowWithIndentation<R extends NavigatorRow> = R & { indentation: number }
