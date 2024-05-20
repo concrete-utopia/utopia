@@ -1,5 +1,7 @@
 import { safeFunction } from '../../shared/code-exec-utils'
 import * as Babel from '@babel/standalone'
+import * as BabelParser from '@babel/parser'
+import traverse from '@babel/traverse'
 import * as BabelTransformCommonJS from '@babel/plugin-transform-modules-commonjs'
 import * as BabelExportNamespaceFrom from '@babel/plugin-proposal-export-namespace-from'
 import * as BabelClassProperties from '@babel/plugin-proposal-class-properties'
@@ -10,6 +12,11 @@ import type { RawSourceMap } from '../../workers/ts/ts-typings/RawSourceMap'
 function getFileExtension(filepath: string) {
   const lastDot = filepath.lastIndexOf('.')
   return filepath.slice(lastDot + 1)
+}
+
+function isJSXLikeFilePath(filepath: string): boolean {
+  const fileExtension = getFileExtension(filepath)
+  return fileExtension === 'jsx' || fileExtension === 'tsx'
 }
 
 function isEsModuleError(error: Error) {
@@ -47,13 +54,38 @@ function transformToCommonJS(
   }
 }
 
+function includesReactImport(moduleCode: string): boolean {
+  const ast = BabelParser.parse(moduleCode, { sourceType: 'module', plugins: ['jsx'] })
+  let reactImportFound: boolean = false
+  traverse(ast, {
+    ImportDeclaration: (path) => {
+      if (path.node.specifiers.some((specifier) => specifier.local.name === 'React')) {
+        reactImportFound = true
+        path.stop()
+      }
+    },
+  })
+  return reactImportFound
+}
+
+const reactImportText = `import * as React from 'react'`
+
+function addReactImport(filePath: string, moduleCode: string): string {
+  if (isJSXLikeFilePath(filePath) && !includesReactImport(moduleCode)) {
+    return `${reactImportText}\n${moduleCode}`
+  } else {
+    return moduleCode
+  }
+}
+
 function evaluateJs(
   filePath: string,
-  moduleCode: string,
+  moduleCodeBefore: string,
   fileEvaluationCache: FileEvaluationCache,
   requireFn: (toImport: string) => unknown,
 ): any {
   let module = fileEvaluationCache
+  const moduleCode = addReactImport(filePath, moduleCodeBefore)
 
   function firstErrorHandler(error: Error): void {
     if (isEsModuleError(error)) {
