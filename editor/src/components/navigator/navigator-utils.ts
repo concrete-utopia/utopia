@@ -453,7 +453,13 @@ function createNavigatorSubtree(
   // first, only be able to create regular entries
   const elementPath = subTree.path
   const elementMetadata = MetadataUtils.findElementByElementPath(metadata, elementPath)
-  invariant(elementMetadata != null, 'Element metadata should not be null')
+  if (elementMetadata == null) {
+    console.error(`Element metadata should not be null: ${subTree.pathString}`)
+    return {
+      type: 'data-entry',
+      navigatorEntry: invalidOverrideNavigatorEntry(subTree.path, 'Metadata was null'),
+    }
+  }
   const element = elementMetadata.element
   invariant(
     isRight(element),
@@ -503,6 +509,14 @@ function createNavigatorSubtree(
 
   if (isJSXMapExpression(jsxElementChild)) {
     return walkMapExpression(metadata, elementPathTrees, subTree, jsxElementChild)
+  }
+
+  if (!isFeatureEnabled('Data Entries in the Navigator')) {
+    // fallback case for the FS off
+    return {
+      type: 'data-entry',
+      navigatorEntry: syntheticNavigatorEntry(elementPath, jsxElementChild),
+    }
   }
 
   throw new Error(`Unexpected element encountered in the Navigator: ${subTree.pathString}`)
@@ -693,10 +707,6 @@ function walkMapExpression(
 
 // TODO!! be able to filter to only visible
 export function getMappedNavigatorRows(navigatorTree: Array<NavigatorTree>): Array<NavigatorRow> {
-  let toCondense: Array<NavigatorEntry> = []
-  let regularRows: Array<RegularNavigatorRow> = []
-  // put the first 6 items in condensed rows, the rest as regular rows
-
   function getNavigatorEntriesForMapEntry(entry: NavigatorTree): Array<NavigatorEntry> {
     switch (entry.type) {
       case 'regular-entry':
@@ -721,24 +731,14 @@ export function getMappedNavigatorRows(navigatorTree: Array<NavigatorTree>): Arr
     getNavigatorEntriesForMapEntry,
   )
 
-  for (let i = 0; i < visibleNavigatorTargets.length; i++) {
-    if (i < 6) {
-      toCondense.push(visibleNavigatorTargets[i])
-    } else {
-      regularRows.push({
-        type: 'regular-row',
-        entry: visibleNavigatorTargets[i],
-      })
-    }
-  }
-  const condensedRow: Array<CondensedNavigatorRow> = [
-    {
-      type: 'condensed-row',
-      entries: toCondense,
-    },
-  ]
+  const regularRows = visibleNavigatorTargets.map(
+    (target): NavigatorRow => ({
+      type: 'regular-row',
+      entry: target,
+    }),
+  )
 
-  return [...condensedRow, ...regularRows]
+  return regularRows
 }
 
 export function getNavigatorTargets(
