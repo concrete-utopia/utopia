@@ -231,10 +231,10 @@ import type {
   IncreaseOnlineStateFailureCount,
   AddCollapsedViews,
   ReplaceMappedElement,
-  UpdateMapExpression,
   ReplaceTarget,
   InsertAsChildTarget,
   ReplaceKeepChildrenAndStyleTarget,
+  WrapTarget,
   ReplaceElementInScope,
   ElementReplacementPath,
   ReplaceJSXElement,
@@ -275,6 +275,7 @@ export function clearSelection(): EditorAction {
 }
 
 export const replaceTarget: ReplaceTarget = { type: 'replace-target' }
+export const wrapTarget: WrapTarget = { type: 'wrap-target' }
 export const replaceKeepChildrenAndStyleTarget: ReplaceKeepChildrenAndStyleTarget = {
   type: 'replace-target-keep-children-and-style',
 }
@@ -1764,17 +1765,6 @@ export function updateConditionalExpression(
 ): UpdateConditionalExpression {
   return {
     action: 'UPDATE_CONIDTIONAL_EXPRESSION',
-    target: target,
-    expression: expression,
-  }
-}
-
-export function updateMapExpression(
-  target: ElementPath,
-  expression: JSExpression,
-): UpdateMapExpression {
-  return {
-    action: 'UPDATE_MAP_EXPRESSION',
     target: target,
     expression: expression,
   }

@@ -56,7 +56,7 @@ import type {
   JSXElementChild,
   JSXConditionalExpression,
   JSXFragment,
-  JSXMapExpression,
+  JSExpression,
 } from '../../../core/shared/element-template'
 import {
   deleteJSXAttribute,
@@ -127,6 +127,7 @@ import type {
   ParseSuccess,
   ProjectContents,
   ProjectFile,
+  PropertyPath,
   StaticElementPath,
   TextFile,
 } from '../../../core/shared/project-file-types'
@@ -343,7 +344,6 @@ import type {
   RemoveFeaturedRoute,
   AddCollapsedViews,
   ReplaceMappedElement,
-  UpdateMapExpression,
   ReplaceElementInScope,
   ReplaceJSXElement,
 } from '../action-types'
@@ -2431,16 +2431,66 @@ export const UPDATE_FNS = {
     }
   },
   REPLACE_ELEMENT_IN_SCOPE: (action: ReplaceElementInScope, editor: EditorModel): EditorModel => {
-    return modifyUnderlyingTarget(action.target, editor, (element) => {
+    const replaceChildWithUid = (
+      element: JSXElementChild,
+      uid: string,
+      replaceWith: JSXElementChild,
+    ): JSXElementChild => {
       if (element.type !== 'JSX_ELEMENT' && element.type !== 'JSX_FRAGMENT') {
         return element
       }
 
       return {
         ...element,
-        children: element.children.map((c) =>
-          c.uid !== action.replacementPath.uid ? c : action.replacementPath.replaceWith,
+        children: element.children.map((c) => (c.uid !== uid ? c : replaceWith)),
+      }
+    }
+
+    const updateMapExpression = (
+      element: JSXElementChild,
+      valueToMap: JSExpression,
+    ): JSXElementChild => {
+      if (element.type !== 'JSX_MAP_EXPRESSION') {
+        return element
+      }
+      return {
+        ...element,
+        valueToMap: valueToMap,
+      }
+    }
+
+    const replacePropertyValue = (
+      element: JSXElementChild,
+      propertyPath: PropertyPath,
+      replaceWith: JSExpression,
+    ): JSXElementChild => {
+      if (element.type !== 'JSX_ELEMENT') {
+        return element
+      }
+      return {
+        ...element,
+        props: defaultEither(
+          element.props,
+          setJSXValueAtPath(element.props, propertyPath, replaceWith),
         ),
+      }
+    }
+
+    return modifyUnderlyingTarget(action.target, editor, (element) => {
+      const replacementPath = action.replacementPath
+      switch (replacementPath.type) {
+        case 'replace-child-with-uid':
+          return replaceChildWithUid(element, replacementPath.uid, replacementPath.replaceWith)
+        case 'replace-property-value':
+          return replacePropertyValue(
+            element,
+            replacementPath.propertyPath,
+            replacementPath.replaceWith,
+          )
+        case 'update-map-expression':
+          return updateMapExpression(element, replacementPath.valueToMap)
+        default:
+          assertNever(replacementPath)
       }
     })
   },
@@ -4382,22 +4432,6 @@ export const UPDATE_FNS = {
             trailingComments: element.comments.trailingComments.filter(isNotMapCountFlag),
             questionTokenComments: element.comments.questionTokenComments,
           },
-        }
-      },
-      editor,
-    )
-  },
-  UPDATE_MAP_EXPRESSION: (action: UpdateMapExpression, editor: EditorModel): EditorModel => {
-    return modifyOpenJsxChildAtPath(
-      action.target,
-      (element): JSXElementChild => {
-        if (isJSXMapExpression(element)) {
-          return {
-            ...element,
-            valueToMap: action.expression,
-          }
-        } else {
-          return element
         }
       },
       editor,
