@@ -17,7 +17,7 @@ import { useDataPickerButton } from './component-section'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { selectComponents } from '../../../editor/actions/meta-actions'
 import { when } from '../../../../utils/react-conditionals'
-import { traceDataFromElement } from '../../../../core/data-tracing/data-tracing'
+import { dataPathSuccess, traceDataFromElement } from '../../../../core/data-tracing/data-tracing'
 import type { RenderedAt } from '../../../editor/store/editor-state'
 import { replaceElementInScope } from '../../../editor/actions/action-creators'
 import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'
@@ -56,7 +56,7 @@ export const DataReferenceCartoucheControl = React.memo(
           props.surroundingScope,
           store.editor.jsxMetadata,
           store.editor.projectContents,
-          [],
+          dataPathSuccess([]),
         )
       },
       'IdentifierExpressionCartoucheControl trace',

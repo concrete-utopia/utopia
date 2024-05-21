@@ -19,6 +19,7 @@ import type { VariableOption } from '../component-section/data-picker-popup'
 import { DataPickerPreferredAllAtom } from '../component-section/data-picker-popup'
 import { useVariablesInScopeForSelectedElement } from '../component-section/variables-in-scope-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
+import { traceDataFromElement, dataPathSuccess } from '../../../../core/data-tracing/data-tracing'
 
 function filterVariableOption(option: VariableOption): VariableOption | null {
   switch (option.type) {
@@ -117,6 +118,28 @@ export const MapListSourceCartouche = React.memo((props: MapListSourceCartoucheP
     }
   }, [openOn, openPopup])
 
+  const isDataComingFromHookResult = useEditorState(
+    Substores.projectContentsAndMetadata,
+    (store) => {
+      if (
+        originalMapExpression === 'multiselect' ||
+        originalMapExpression === 'not-a-mapexpression'
+      ) {
+        return false
+      } else {
+        const traceDataResult = traceDataFromElement(
+          originalMapExpression.valueToMap,
+          target,
+          store.editor.jsxMetadata,
+          store.editor.projectContents,
+          dataPathSuccess([]),
+        )
+        return traceDataResult.type === 'hook-result'
+      }
+    },
+    'ListSection isDataComingFromHookResult',
+  )
+
   if (originalMapExpression === 'multiselect' || originalMapExpression === 'not-a-mapexpression') {
     return null
   }
@@ -146,7 +169,7 @@ export const MapListSourceCartouche = React.memo((props: MapListSourceCartoucheP
         inverted={props.inverted}
         safeToDelete={false}
         testId='list-source-cartouche'
-        contentIsComingFromServer={false}
+        contentIsComingFromServer={isDataComingFromHookResult}
       />
     </div>
   )

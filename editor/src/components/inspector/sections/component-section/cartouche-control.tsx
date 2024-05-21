@@ -6,7 +6,7 @@ import { DataCartoucheInner } from './data-reference-cartouche'
 import { NO_OP } from '../../../../core/shared/utils'
 import type { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
 import * as EPP from '../../../template-property-path'
-import { traceDataFromProp } from '../../../../core/data-tracing/data-tracing'
+import { dataPathSuccess, traceDataFromProp } from '../../../../core/data-tracing/data-tracing'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 
 interface IdentifierExpressionCartoucheControlProps {
@@ -31,7 +31,7 @@ export const IdentifierExpressionCartoucheControl = React.memo(
           EPP.create(props.elementPath, props.propertyPath),
           store.editor.jsxMetadata,
           store.editor.projectContents,
-          [],
+          dataPathSuccess([]),
         ).type === 'hook-result',
       'IdentifierExpressionCartoucheControl trace',
     )
