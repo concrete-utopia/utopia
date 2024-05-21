@@ -235,7 +235,13 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
         />
       )
     }
-    return <div>Condensed row placeholder</div>
+    return (
+      <div>
+        {props.navigatorRow.entries.map((entry) => (
+          <span key={EP.toString(entry.elementPath)}>{EP.toUid(entry.elementPath)} / </span>
+        ))}
+      </div>
+    )
   },
 )
 
