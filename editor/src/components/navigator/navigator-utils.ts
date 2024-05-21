@@ -6,6 +6,7 @@ import type {
   JSExpression,
   JSXConditionalExpression,
   JSXElement,
+  JSXMapExpression,
 } from '../../core/shared/element-template'
 import {
   getJSXAttribute,
@@ -20,6 +21,7 @@ import { foldEither, isLeft, isRight } from '../../core/shared/either'
 import type {
   ConditionalClauseNavigatorEntry,
   DataReferenceNavigatorEntry,
+  InvalidOverrideNavigatorEntry,
   NavigatorEntry,
   SlotNavigatorEntry,
   SyntheticNavigatorEntry,
@@ -107,7 +109,10 @@ export type NavigatorTree =
     }
   | {
       type: 'data-entry'
-      navigatorEntry: DataReferenceNavigatorEntry | SyntheticNavigatorEntry // TODO remove SyntheticNavigatorEntry as an option from here
+      navigatorEntry:
+        | DataReferenceNavigatorEntry
+        | SyntheticNavigatorEntry // TODO remove SyntheticNavigatorEntry as an option from here
+        | InvalidOverrideNavigatorEntry // TODO remove InvalidOverrideNavigatorEntry as an option from here
     }
   | {
       type: 'map-entry'
@@ -116,8 +121,8 @@ export type NavigatorTree =
   | {
       type: 'conditional-entry'
       target: NavigatorEntry
-      trueCase: NavigatorTree
-      falseCase: NavigatorTree
+      trueCase: Array<NavigatorTree>
+      falseCase: Array<NavigatorTree>
     }
   | {
       type: 'slot-entry'
@@ -281,7 +286,7 @@ export function getNavigatorTrees(
         walkPropertyControls(propertyControls)
       }
 
-      function walkConditionalClause(
+      function walkConditionalClause_(
         conditionalSubTree: ElementPathTree,
         conditional: JSXConditionalExpression,
         conditionalCase: ConditionalCase,
@@ -349,8 +354,8 @@ export function getNavigatorTrees(
         ) {
           const jsxConditionalElement: JSXConditionalExpression = elementMetadata.element.value
 
-          walkConditionalClause(subTree, jsxConditionalElement, 'true-case')
-          walkConditionalClause(subTree, jsxConditionalElement, 'false-case')
+          walkConditionalClause_(subTree, jsxConditionalElement, 'true-case')
+          walkConditionalClause_(subTree, jsxConditionalElement, 'false-case')
         } else {
           throw new Error(`Unexpected non-conditional expression retrieved at ${EP.toString(path)}`)
         }
@@ -485,6 +490,22 @@ function createNavigatorSubtree(
       MetadataUtils.isElementTypeHiddenInNavigator(elementPath, metadata, elementPathTrees),
     )
   }
+
+  if (isJSXConditionalExpression(jsxElementChild)) {
+    return walkConditionalNavigatorEntry(
+      metadata,
+      elementPathTrees,
+      subTree,
+      jsxElementChild,
+      elementPath,
+    )
+  }
+
+  if (isJSXMapExpression(jsxElementChild)) {
+    return walkMapExpression(metadata, elementPathTrees, subTree, jsxElementChild)
+  }
+
+  throw new Error(`Unexpected element encountered in the Navigator: ${subTree.pathString}`)
 }
 
 function walkRegularNavigatorEntry(
@@ -558,6 +579,118 @@ function walkRegularNavigatorEntry(
   }
 }
 
+function walkConditionalNavigatorEntry(
+  metadata: ElementInstanceMetadataMap,
+  elementPathTrees: ElementPathTrees,
+  subTree: ElementPathTree,
+  jsxElement: JSXConditionalExpression,
+  elementPath: ElementPath,
+): NavigatorTree {
+  const trueCase = walkConditionalClause(
+    metadata,
+    elementPathTrees,
+    subTree,
+    jsxElement,
+    'true-case',
+  )
+  const falseCase = walkConditionalClause(
+    metadata,
+    elementPathTrees,
+    subTree,
+    jsxElement,
+    'false-case',
+  )
+
+  return {
+    type: 'conditional-entry',
+    target: regularNavigatorEntry(elementPath),
+    trueCase: trueCase,
+    falseCase: falseCase,
+  }
+}
+
+function walkConditionalClause(
+  metadata: ElementInstanceMetadataMap,
+  elementPathTrees: ElementPathTrees,
+  conditionalSubTree: ElementPathTree,
+  conditional: JSXConditionalExpression,
+  conditionalCase: ConditionalCase,
+): Array<NavigatorTree> {
+  const isDynamic = (elementPath: ElementPath) => {
+    return (
+      MetadataUtils.isElementOrAncestorGenerated(elementPath) ||
+      MetadataUtils.isGeneratedTextFromMetadata(elementPath, elementPathTrees, metadata)
+    )
+  }
+
+  const path = conditionalSubTree.path
+  const clauseValue = conditionalCase === 'true-case' ? conditional.whenTrue : conditional.whenFalse
+
+  // Get the clause path.
+  const clausePath = getConditionalClausePath(path, clauseValue)
+
+  const branch = conditionalCase === 'true-case' ? conditional.whenTrue : conditional.whenFalse
+
+  // Walk the clause of the conditional.
+  const clausePathTrees = Object.values(conditionalSubTree.children).filter((childPath) => {
+    if (isDynamic(childPath.path) && hasElementsWithin(branch)) {
+      for (const element of Object.values(branch.elementsWithin)) {
+        const firstChildPath = EP.appendToPath(EP.parentPath(clausePath), element.uid)
+        const containedElement = Object.values(metadata).find(({ elementPath }) => {
+          return EP.pathsEqual(EP.dynamicPathToStaticPath(elementPath), firstChildPath)
+        })
+        if (containedElement != null) {
+          return true
+        }
+      }
+    }
+    return EP.pathsEqual(childPath.path, clausePath)
+  })
+
+  // if we find regular tree entries for the clause, it means the branch has proper JSXElements, so we recurse into the tree building
+  if (clausePathTrees.length > 0) {
+    const children = clausePathTrees.map((child) =>
+      createNavigatorSubtree(metadata, elementPathTrees, child),
+    )
+    return children
+  }
+
+  // No children were found in the ElementPathTrees, so we create a synthetic entry for the value of the clause.
+  return [{ type: 'data-entry', navigatorEntry: syntheticNavigatorEntry(clausePath, clauseValue) }]
+}
+
+function walkMapExpression(
+  metadata: ElementInstanceMetadataMap,
+  elementPathTrees: ElementPathTrees,
+  subTree: ElementPathTree,
+  element: JSXMapExpression,
+): NavigatorTree {
+  const commentFlag = findUtopiaCommentFlag(element.comments, 'map-count')
+
+  const mapCountOverride = isUtopiaCommentFlagMapCount(commentFlag) ? commentFlag.value : null
+  const mappedChildren = Object.values(subTree.children).map((child) =>
+    createNavigatorSubtree(metadata, elementPathTrees, child),
+  )
+
+  const invaldiOverrideEntries = (() => {
+    if (mapCountOverride == null) {
+      return []
+    }
+
+    let invalidEntries: Array<NavigatorTree> = []
+    for (let i = Object.values(subTree.children).length; i < mapCountOverride; i++) {
+      const entry = invalidOverrideNavigatorEntry(
+        EP.appendToPath(subTree.path, `invalid-override-${i + 1}`),
+        'data source not found',
+      )
+      invalidEntries.push({ type: 'data-entry', navigatorEntry: entry })
+    }
+    return invalidEntries
+  })()
+
+  return { type: 'map-entry', mappedEntries: [...mappedChildren, ...invaldiOverrideEntries] }
+}
+
 // TODO!! be able to filter to only visible
 export function getMappedNavigatorRows(navigatorTree: Array<NavigatorTree>): Array<NavigatorRow> {
   let toCondense: Array<NavigatorEntry> = []
@@ -575,8 +708,8 @@ export function getMappedNavigatorRows(navigatorTree: Array<NavigatorTree>): Arr
       case 'conditional-entry':
         return [
           entry.target,
-          ...getNavigatorEntriesForMapEntry(entry.trueCase),
-          ...getNavigatorEntriesForMapEntry(entry.falseCase),
+          ...entry.trueCase.flatMap(getNavigatorEntriesForMapEntry),
+          ...entry.falseCase.flatMap(getNavigatorEntriesForMapEntry),
         ]
       case 'slot-entry':
         return [entry.target]
