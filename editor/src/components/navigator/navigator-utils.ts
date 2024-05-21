@@ -439,7 +439,7 @@ export function getNavigatorTrees(
     if (subTree == null) {
       return null
     }
-    return createNavigatorSubtree(metadata, projectTree, subTree)
+    return createNavigatorSubtree(metadata, projectTree, projectContents, subTree)
   }, canvasRoots)
 
   return navigatorTrees
@@ -448,24 +448,23 @@ export function getNavigatorTrees(
 function createNavigatorSubtree(
   metadata: ElementInstanceMetadataMap,
   elementPathTrees: ElementPathTrees,
+  projectContents: ProjectContentTreeRoot,
   subTree: ElementPathTree,
 ): NavigatorTree {
   // first, only be able to create regular entries
   const elementPath = subTree.path
-  const elementMetadata = MetadataUtils.findElementByElementPath(metadata, elementPath)
-  if (elementMetadata == null) {
-    console.error(`Element metadata should not be null: ${subTree.pathString}`)
-    return {
-      type: 'data-entry',
-      navigatorEntry: invalidOverrideNavigatorEntry(subTree.path, 'Metadata was null'),
-    }
+  // const elementMetadata = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  // if (elementMetadata == null) {
+  //   console.error(`Element metadata should not be null: ${subTree.pathString}`)
+  //   return {
+  //     type: 'data-entry',
+  //     navigatorEntry: invalidOverrideNavigatorEntry(subTree.path, 'Metadata was null'),
+  //   }
+  // }
+  const jsxElementChild = getElementFromProjectContents(elementPath, projectContents)
+  if (jsxElementChild == null) {
+    throw new Error(`Element was not found in project contents: ${subTree.pathString}`)
   }
-  const element = elementMetadata.element
-  invariant(
-    isRight(element),
-    'Found an outdated string element in the metadata, we should remove those',
-  )
-  const jsxElementChild = element.value
 
   const elementIsDataReferenceFromProjectContents =
     MetadataUtils.isElementDataReference(jsxElementChild)
@@ -489,6 +488,7 @@ function createNavigatorSubtree(
     return walkRegularNavigatorEntry(
       metadata,
       elementPathTrees,
+      projectContents,
       subTree,
       jsxElementChild,
       getPropertyControlsForTarget(elementPath, {}, {}),
@@ -501,6 +501,7 @@ function createNavigatorSubtree(
     return walkConditionalNavigatorEntry(
       metadata,
       elementPathTrees,
+      projectContents,
       subTree,
       jsxElementChild,
       elementPath,
@@ -508,7 +509,7 @@ function createNavigatorSubtree(
   }
 
   if (isJSXMapExpression(jsxElementChild)) {
-    return walkMapExpression(metadata, elementPathTrees, subTree, jsxElementChild)
+    return walkMapExpression(metadata, elementPathTrees, projectContents, subTree, jsxElementChild)
   }
 
   if (!isFeatureEnabled('Data Entries in the Navigator')) {
@@ -525,6 +526,7 @@ function createNavigatorSubtree(
 function walkRegularNavigatorEntry(
   metadata: ElementInstanceMetadataMap,
   elementPathTrees: ElementPathTrees,
+  projectContents: ProjectContentTreeRoot,
   subTree: ElementPathTree,
   jsxElement: JSXElement,
   propControls: PropertyControls | null,
@@ -556,7 +558,12 @@ function walkRegularNavigatorEntry(
 
     const subTreeChild = subTree?.children.find((child) => EP.pathsEqual(child.path, childPath))
     if (subTreeChild != null) {
-      const childTree = createNavigatorSubtree(metadata, elementPathTrees, subTreeChild)
+      const childTree = createNavigatorSubtree(
+        metadata,
+        elementPathTrees,
+        projectContents,
+        subTreeChild,
+      )
       processedAccumulator.add(EP.toString(subTreeChild.path))
       renderPropChildrenAccumulator[prop] = childTree
     } else {
@@ -581,7 +588,7 @@ function walkRegularNavigatorEntry(
     (child) => !processedAccumulator.has(EP.toString(child.path)),
   )
   const children: Array<NavigatorTree> = childrenPaths.map((child) =>
-    createNavigatorSubtree(metadata, elementPathTrees, child),
+    createNavigatorSubtree(metadata, elementPathTrees, projectContents, child),
   )
 
   return {
@@ -596,6 +603,7 @@ function walkRegularNavigatorEntry(
 function walkConditionalNavigatorEntry(
   metadata: ElementInstanceMetadataMap,
   elementPathTrees: ElementPathTrees,
+  projectContents: ProjectContentTreeRoot,
   subTree: ElementPathTree,
   jsxElement: JSXConditionalExpression,
   elementPath: ElementPath,
@@ -603,6 +611,7 @@ function walkConditionalNavigatorEntry(
   const trueCase = walkConditionalClause(
     metadata,
     elementPathTrees,
+    projectContents,
     subTree,
     jsxElement,
     'true-case',
@@ -610,6 +619,7 @@ function walkConditionalNavigatorEntry(
   const falseCase = walkConditionalClause(
     metadata,
     elementPathTrees,
+    projectContents,
     subTree,
     jsxElement,
     'false-case',
@@ -626,6 +636,7 @@ function walkConditionalNavigatorEntry(
 function walkConditionalClause(
   metadata: ElementInstanceMetadataMap,
   elementPathTrees: ElementPathTrees,
+  projectContents: ProjectContentTreeRoot,
   conditionalSubTree: ElementPathTree,
   conditional: JSXConditionalExpression,
   conditionalCase: ConditionalCase,
@@ -664,7 +675,7 @@ function walkConditionalClause(
   // if we find regular tree entries for the clause, it means the branch has proper JSXElements, so we recurse into the tree building
   if (clausePathTrees.length > 0) {
     const children = clausePathTrees.map((child) =>
-      createNavigatorSubtree(metadata, elementPathTrees, child),
+      createNavigatorSubtree(metadata, elementPathTrees, projectContents, child),
     )
     return children
   }
@@ -676,6 +687,7 @@ function walkConditionalClause(
 function walkMapExpression(
   metadata: ElementInstanceMetadataMap,
   elementPathTrees: ElementPathTrees,
+  projectContents: ProjectContentTreeRoot,
   subTree: ElementPathTree,
   element: JSXMapExpression,
 ): NavigatorTree {
@@ -683,7 +695,7 @@ function walkMapExpression(
 
   const mapCountOverride = isUtopiaCommentFlagMapCount(commentFlag) ? commentFlag.value : null
   const mappedChildren = Object.values(subTree.children).map((child) =>
-    createNavigatorSubtree(metadata, elementPathTrees, child),
+    createNavigatorSubtree(metadata, elementPathTrees, projectContents, child),
   )
 
   const invaldiOverrideEntries = (() => {
