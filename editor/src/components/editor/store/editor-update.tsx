@@ -459,8 +459,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_MAP_COUNT_OVERRIDE(action, state)
     case 'UPDATE_CONIDTIONAL_EXPRESSION':
       return UPDATE_FNS.UPDATE_CONDITIONAL_EXPRESSION(action, state)
-    case 'UPDATE_MAP_EXPRESSION':
-      return UPDATE_FNS.UPDATE_MAP_EXPRESSION(action, state)
     case 'SWITCH_CONDITIONAL_BRANCHES':
       return UPDATE_FNS.SWITCH_CONDITIONAL_BRANCHES(action, state)
     case 'UPDATE_TOP_LEVEL_ELEMENTS_FROM_COLLABORATION_UPDATE':

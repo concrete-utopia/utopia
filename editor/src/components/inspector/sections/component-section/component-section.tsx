@@ -1,7 +1,7 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import React from 'react'
-import { css, jsx } from '@emotion/react'
+import { jsx } from '@emotion/react'
 import type { OptionsType } from 'react-select'
 import { animated } from 'react-spring'
 import type {
@@ -14,7 +14,7 @@ import type {
   UnionControlDescription,
 } from '../../../custom-code/internal-property-controls'
 import { isBaseControlDescription } from '../../../custom-code/internal-property-controls'
-import { PathForSceneProps, sceneMetadata } from '../../../../core/model/scene-utils'
+import { PathForSceneProps } from '../../../../core/model/scene-utils'
 import { mapToArray } from '../../../../core/shared/object-utils'
 import type { PropertyPath } from '../../../../core/shared/project-file-types'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
@@ -23,7 +23,7 @@ import * as EP from '../../../../core/shared/element-path'
 import { useKeepReferenceEqualityIfPossible } from '../../../../utils/react-performance'
 import Utils from '../../../../utils/utils'
 import type { ParseError } from '../../../../utils/value-parser-utils'
-import { getParseErrorDetails, ParseResult } from '../../../../utils/value-parser-utils'
+import { getParseErrorDetails } from '../../../../utils/value-parser-utils'
 import {
   Tooltip,
   //TODO: switch last component to functional component and make use of 'useColorTheme':
@@ -35,7 +35,6 @@ import {
   Icons,
   FlexRow,
   Icn,
-  OnClickOutsideHOC,
   iconForControlType,
   colorTheme,
 } from '../../../../uuiui'
@@ -49,7 +48,6 @@ import {
   useInspectorInfoForPropertyControl,
 } from '../../common/property-controls-hooks'
 import type { ControlStyles } from '../../common/control-styles'
-import { ControlStatus } from '../../common/control-status'
 import type { InspectorInfo } from '../../common/property-path-hooks'
 import { useArraySuperControl } from '../../controls/array-supercontrol'
 import type { SelectOption } from '../../controls/select-control'
@@ -78,33 +76,28 @@ import { unless, when } from '../../../../utils/react-conditionals'
 import { PropertyControlsSection } from './property-controls-section'
 import type { ReactEventHandlers } from 'react-use-gesture/dist/types'
 import { normalisePathToUnderlyingTarget } from '../../../custom-code/code-file'
-import { openCodeEditorFile, setProp_UNSAFE } from '../../../editor/actions/action-creators'
-import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
+import { openCodeEditorFile, replaceElementInScope } from '../../../editor/actions/action-creators'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { getFilePathForImportedComponent } from '../../../../core/model/project-file-utils'
 import { safeIndex } from '../../../../core/shared/array-utils'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { usePopper } from 'react-popper'
+import type { JSExpressionOtherJavaScript } from '../../../../core/shared/element-template'
 import {
-  emptyComments,
-  modifiableAttributeToValuePath,
-  jsExpressionOtherJavaScriptSimple,
-  jsIdentifier,
   getJSXElementNameAsString,
   isImportedOrigin,
 } from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
-import type { VariableData } from '../../../canvas/ui-jsx-canvas'
-import { array } from 'prop-types'
-import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'
-import type { DataPickerType } from './data-picker-popup'
-import { DataPickerPopup, dataPickerForAProperty } from './data-picker-popup'
+import type { DataPickerCallback, VariableOption } from './data-picker-popup'
+import { DataPickerPopup, DataPickerPreferredAllAtom } from './data-picker-popup'
 import { jsxElementChildToText } from '../../../canvas/ui-jsx-canvas-renderer/jsx-element-child-to-text'
-import { foldEither } from '../../../../core/shared/either'
 import { stopPropagation } from '../../common/inspector-utils'
-import { NO_OP, identity } from '../../../../core/shared/utils'
 import { IdentifierExpressionCartoucheControl } from './cartouche-control'
 import { getRegisteredComponent } from '../../../../core/property-controls/property-controls-utils'
+import type { EditorAction } from '../../../editor/action-types'
+import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'
+import { useAtom } from 'jotai'
 
 export const VariableFromScopeOptionTestId = (idx: string) => `variable-from-scope-${idx}`
 export const DataPickerPopupButtonTestId = `data-picker-popup-button-test-id`
@@ -344,11 +337,8 @@ function getLabelControlStyle(
 const isBaseIndentationLevel = (props: AbstractRowForControlProps) => props.indentationLevel === 1
 
 export function useDataPickerButton(
-  selectedElements: Array<ElementPath>,
-  propPath: PropertyPath,
-  isScene: boolean,
-  controlDescription: RegularControlDescription,
-  dataPickerType?: DataPickerType,
+  variablesInScope: VariableOption[],
+  onPropertyPicked: DataPickerCallback,
 ) {
   const [referenceElement, setReferenceElement] = React.useState<HTMLDivElement | null>(null)
   const [popperElement, setPopperElement] = React.useState<HTMLDivElement | null>(null)
@@ -367,28 +357,6 @@ export function useDataPickerButton(
   const openPopup = React.useCallback(() => setPopupIsOpen(true), [])
   const closePopup = React.useCallback(() => setPopupIsOpen(false), [])
 
-  const selectedElement = selectedElements.at(0) ?? EP.emptyElementPath
-
-  const propMetadata = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
-
-  const propExpressionPath: Array<string | number> | null = React.useMemo(() => {
-    return propMetadata.attributeExpression == null
-      ? null
-      : foldEither(
-          () => {
-            return null
-          },
-          (path) => {
-            return path
-          },
-          modifiableAttributeToValuePath(propMetadata.attributeExpression),
-        )
-  }, [propMetadata.attributeExpression])
-
-  const pickerType = React.useMemo(() => {
-    return dataPickerType ?? dataPickerForAProperty(selectedElement, propPath, propExpressionPath)
-  }, [dataPickerType, propExpressionPath, propPath, selectedElement])
-
   const DataPickerComponent = React.useMemo(
     () => (
       <DataPickerPopup
@@ -396,11 +364,17 @@ export function useDataPickerButton(
         style={popper.styles.popper}
         closePopup={closePopup}
         ref={setPopperElement}
-        pickerType={pickerType}
-        customizeOptions={identity}
+        onTweakProperty={onPropertyPicked}
+        variablesInScope={variablesInScope}
       />
     ),
-    [closePopup, pickerType, popper.attributes.popper, popper.styles.popper],
+    [
+      closePopup,
+      onPropertyPicked,
+      popper.attributes.popper,
+      popper.styles.popper,
+      variablesInScope,
+    ],
   )
 
   return {
@@ -414,6 +388,45 @@ export function useDataPickerButton(
 interface RowForBaseControlProps extends AbstractRowForControlProps {
   label?: React.ComponentType<React.PropsWithChildren<any>> // TODO Before Merge this probably should not be a component
   controlDescription: BaseControlDescription
+}
+
+function setPropertyFromDataPickerActions(
+  selectedViews: Array<ElementPath>,
+  propertyPath: PropertyPath,
+  expression: JSExpressionOtherJavaScript,
+): Array<EditorAction> | null {
+  const target = selectedViews.at(0)
+  if (target == null) {
+    return null
+  }
+
+  return [
+    replaceElementInScope(target, {
+      type: 'replace-property-value',
+      propertyPath: propertyPath,
+      replaceWith: expression,
+    }),
+  ]
+}
+
+function useDataPickerButtonInComponentSection(
+  selectedViews: Array<ElementPath>,
+  propertyPath: PropertyPath,
+) {
+  const dispatch = useDispatch()
+
+  const [preferredAllState] = useAtom(DataPickerPreferredAllAtom)
+  const variableNamesInScope = useVariablesInScopeForSelectedElement(
+    selectedViews.at(0) ?? EP.emptyElementPath,
+    propertyPath,
+    preferredAllState,
+  )
+
+  const dataPickerButtonData = useDataPickerButton(variableNamesInScope, (e) =>
+    optionalMap(dispatch, setPropertyFromDataPickerActions(selectedViews, propertyPath, e)),
+  )
+
+  return dataPickerButtonData
 }
 
 const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
@@ -440,12 +453,7 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
     [controlDescription, propMetadata],
   )
 
-  const dataPickerButtonData = useDataPickerButton(
-    selectedViews,
-    props.propPath,
-    props.isScene,
-    props.controlDescription,
-  )
+  const dataPickerButtonData = useDataPickerButtonInComponentSection(selectedViews, props.propPath)
 
   const handleMouseEnter = React.useCallback(() => {
     setIsHovered(true)
@@ -607,12 +615,7 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
     'RowForArrayControl selectedViews',
   )
 
-  const dataPickerButtonData = useDataPickerButton(
-    selectedViews,
-    props.propPath,
-    props.isScene,
-    props.controlDescription,
-  )
+  const dataPickerButtonData = useDataPickerButtonInComponentSection(selectedViews, props.propPath)
 
   return (
     <React.Fragment>
@@ -777,11 +780,7 @@ interface RowForTupleControlProps extends AbstractRowForControlProps {
 const RowForTupleControl = React.memo((props: RowForTupleControlProps) => {
   const { propPath, controlDescription, isScene } = props
   const title = labelForControl(propPath, controlDescription)
-  const { value, onSubmitValue, propertyStatus } = useComponentPropsInspectorInfo(
-    propPath,
-    isScene,
-    controlDescription,
-  )
+  const { value } = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
 
   const rowHeight = UtopiaTheme.layout.rowHeight.normal
   const transformedValue = Array.isArray(value) ? value : [value]
@@ -911,12 +910,8 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
     (store) => store.editor.selectedViews,
     'RowForObjectControl selectedViews',
   )
-  const dataPickerButtonData = useDataPickerButton(
-    selectedViews,
-    props.propPath,
-    props.isScene,
-    props.controlDescription,
-  )
+
+  const dataPickerButtonData = useDataPickerButtonInComponentSection(selectedViews, props.propPath)
 
   const [isHovered, setIsHovered] = React.useState(false)
 
