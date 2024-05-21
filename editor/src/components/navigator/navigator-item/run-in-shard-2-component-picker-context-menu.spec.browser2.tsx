@@ -788,8 +788,9 @@ describe('The navigator component picker context menu', () => {
     `,
       'await-first-dom-report',
     )
+
     const emptySlot = editor.renderedDOM.getByTestId(
-      'toggle-render-prop-NavigatorItemTestId-synthetic_sb/232/019_attribute',
+      'toggle-render-prop-NavigatorItemTestId-synthetic_sb/2325b527f5ef5d7394aea9b593596a96/d8401989bd0073a339250358a6ae16a1.1_attribute',
     )
     await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
 
@@ -1202,7 +1203,7 @@ describe('The navigator component picker context menu', () => {
       'regular-sb/scene/pg:pg-root',
       'regular-sb/scene/pg:pg-root/card',
       'render-prop-sb/scene/pg:pg-root/card/prop-label-title-title',
-      'synthetic-sb/scene/pg:pg-root/card/pro-element-pro',
+      'synthetic-sb/scene/pg:pg-root/card/prop-element-prop',
       'render-prop-sb/scene/pg:pg-root/card/prop-label-children-children',
       'regular-sb/scene/pg:pg-root/card/contents',
     ])
@@ -1214,7 +1215,7 @@ describe('The navigator component picker context menu', () => {
       'regular-sb/scene/pg:pg-root',
       'regular-sb/scene/pg:pg-root/card',
       'render-prop-sb/scene/pg:pg-root/card/prop-label-title-title',
-      'synthetic-sb/scene/pg:pg-root/card/pro-element-pro',
+      'synthetic-sb/scene/pg:pg-root/card/prop-element-prop',
       'render-prop-sb/scene/pg:pg-root/card/prop-label-children-children',
       'regular-sb/scene/pg:pg-root/card/contents',
     ])
@@ -1303,7 +1304,7 @@ export var storyboard = (
                 backgroundColor: '#aaaaaa33',
                 position: 'absolute',
               }}
-              data-uid='pro'
+              data-uid='prop'
             />
           ))
         }

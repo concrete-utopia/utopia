@@ -3240,7 +3240,7 @@ describe('Navigator', () => {
         'regular-utopia-storyboard-uid/scene-aaa',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62', // <- moved to before `firstdiv`
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62/7b7~~~1',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62/7b72584cec572dc4d901214d018a57ea~~~1',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
@@ -3316,7 +3316,7 @@ describe('Navigator', () => {
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62', // <- moved to after `firstdiv`
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62/7b7~~~1',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62/7b72584cec572dc4d901214d018a57ea~~~1',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
@@ -3396,7 +3396,7 @@ describe('Navigator', () => {
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62', // <- moved to after the last sibling `notdrag` under its parent
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62/7b7~~~1',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62/7b72584cec572dc4d901214d018a57ea~~~1',
         'regular-utopia-storyboard-uid/scene-aaa/parentsibling',
       ])
     })
@@ -3477,7 +3477,7 @@ describe('Navigator', () => {
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv/b62', // <- moved to under the first sibling
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv/b62/7b7~~~1',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv/b62/7b72584cec572dc4d901214d018a57ea~~~1',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
@@ -3541,7 +3541,7 @@ describe('Navigator', () => {
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62',
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62/7b7~~~1',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62/7b72584cec572dc4d901214d018a57ea~~~1',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
         'regular-utopia-storyboard-uid/scene-aaa/parentsibling',
       ])
@@ -3559,7 +3559,7 @@ describe('Navigator', () => {
       const dragMeElementRect = dragMeElement.getBoundingClientRect()
       const dragMeElementCenter = getDomRectCenter(dragMeElementRect)
       const notDraggableDivElement = await renderResult.renderedDOM.findByTestId(
-        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/b62/7b7~~~1`,
+        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/b62/7b72584cec572dc4d901214d018a57ea~~~1`,
       )
       const notDraggableDivElementRect = notDraggableDivElement.getBoundingClientRect()
       const notDraggableDivElementCenter = getDomRectCenter(notDraggableDivElementRect)
@@ -3586,7 +3586,7 @@ describe('Navigator', () => {
         dragElementWithDNDEvents(
           renderResult,
           `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
-          `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/b62/7b7~~~1`,
+          `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/b62/7b72584cec572dc4d901214d018a57ea~~~1`,
           windowPoint(dragMeElementCenter),
           dragDelta,
         ),
@@ -3603,7 +3603,7 @@ describe('Navigator', () => {
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62',
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62/7b7~~~1',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62/7b72584cec572dc4d901214d018a57ea~~~1',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
         'regular-utopia-storyboard-uid/scene-aaa/parentsibling',
       ])
@@ -5046,9 +5046,9 @@ describe('Navigator', () => {
         'regular-sb/scene/pg:dbc',
         'regular-sb/scene/pg:dbc/78c',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-        'render-prop-value-sb/scene/pg:dbc/78c/pro-header', // <- the inserted render prop
+        'render-prop-value-sb/scene/pg:dbc/78c/prop-header', // <- the inserted render prop
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-        'regular-sb/scene/pg:dbc/78c/d93',
+        'regular-sb/scene/pg:dbc/78c/d931fcbc34b146bae16e98e0bf8dd03f',
       ])
       expect(
         renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
@@ -5058,9 +5058,9 @@ describe('Navigator', () => {
         'regular-sb/scene/pg:dbc',
         'regular-sb/scene/pg:dbc/78c',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-        'render-prop-value-sb/scene/pg:dbc/78c/pro-header', // <- the inserted render prop
+        'render-prop-value-sb/scene/pg:dbc/78c/prop-header', // <- the inserted render prop
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-        'regular-sb/scene/pg:dbc/78c/d93',
+        'regular-sb/scene/pg:dbc/78c/d931fcbc34b146bae16e98e0bf8dd03f',
       ])
     })
     it('can insert an intrinsic element into render prop', async () => {
@@ -5088,9 +5088,9 @@ describe('Navigator', () => {
         'regular-sb/scene/pg:dbc',
         'regular-sb/scene/pg:dbc/78c',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-        'render-prop-value-sb/scene/pg:dbc/78c/pro-header', // <- the inserted render prop
+        'render-prop-value-sb/scene/pg:dbc/78c/prop-header', // <- the inserted render prop
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-        'regular-sb/scene/pg:dbc/78c/d93',
+        'regular-sb/scene/pg:dbc/78c/d931fcbc34b146bae16e98e0bf8dd03f',
       ])
       expect(
         renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
@@ -5100,9 +5100,9 @@ describe('Navigator', () => {
         'regular-sb/scene/pg:dbc',
         'regular-sb/scene/pg:dbc/78c',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-        'render-prop-value-sb/scene/pg:dbc/78c/pro-header', // <- the inserted render prop
+        'render-prop-value-sb/scene/pg:dbc/78c/prop-header', // <- the inserted render prop
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-        'regular-sb/scene/pg:dbc/78c/d93',
+        'regular-sb/scene/pg:dbc/78c/d931fcbc34b146bae16e98e0bf8dd03f',
       ])
     })
     it('can insert an third-party component into render prop', async () => {
@@ -5130,9 +5130,9 @@ describe('Navigator', () => {
         'regular-sb/scene/pg:dbc',
         'regular-sb/scene/pg:dbc/78c',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-        'render-prop-value-sb/scene/pg:dbc/78c/pro-header', // <- the inserted render prop
+        'render-prop-value-sb/scene/pg:dbc/78c/prop-header', // <- the inserted render prop
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-        'regular-sb/scene/pg:dbc/78c/891',
+        'regular-sb/scene/pg:dbc/78c/891cd0f5dda919f6456bba7aa54cd6a7',
       ])
       expect(
         renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
@@ -5142,9 +5142,9 @@ describe('Navigator', () => {
         'regular-sb/scene/pg:dbc',
         'regular-sb/scene/pg:dbc/78c',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-        'render-prop-value-sb/scene/pg:dbc/78c/pro-header', // <- the inserted render prop
+        'render-prop-value-sb/scene/pg:dbc/78c/prop-header', // <- the inserted render prop
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-        'regular-sb/scene/pg:dbc/78c/891',
+        'regular-sb/scene/pg:dbc/78c/891cd0f5dda919f6456bba7aa54cd6a7',
       ])
     })
 
@@ -5166,7 +5166,7 @@ describe('Navigator', () => {
         'render-prop-value-sb/scene/pg:dbc/78c/render-prop-parent-header',
         'regular-sb/scene/pg:dbc/78c/render-prop-parent/render-prop-child',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-        'regular-sb/scene/pg:dbc/78c/f59',
+        'regular-sb/scene/pg:dbc/78c/f59e2b39a90a765e5b6ce030716ce031',
       ])
 
       await selectComponentsForTest(editor, [
@@ -5183,7 +5183,7 @@ describe('Navigator', () => {
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
         'render-prop-value-sb/scene/pg:dbc/78c/render-prop-parent-header',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-        'regular-sb/scene/pg:dbc/78c/f59',
+        'regular-sb/scene/pg:dbc/78c/f59e2b39a90a765e5b6ce030716ce031',
       ])
 
       expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
@@ -5194,7 +5194,7 @@ describe('Navigator', () => {
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
         'render-prop-value-sb/scene/pg:dbc/78c/render-prop-parent-header',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-        'regular-sb/scene/pg:dbc/78c/f59',
+        'regular-sb/scene/pg:dbc/78c/f59e2b39a90a765e5b6ce030716ce031',
       ])
     })
 
@@ -5216,7 +5216,7 @@ describe('Navigator', () => {
         'render-prop-value-sb/scene/pg:dbc/78c/render-prop-parent-header',
         'regular-sb/scene/pg:dbc/78c/render-prop-parent/render-prop-child',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-        'regular-sb/scene/pg:dbc/78c/f59',
+        'regular-sb/scene/pg:dbc/78c/f59e2b39a90a765e5b6ce030716ce031',
       ])
 
       await selectComponentsForTest(editor, [
@@ -5233,7 +5233,7 @@ describe('Navigator', () => {
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
         'slot_sb/scene/pg:dbc/78c/prop-label-header',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-        'regular-sb/scene/pg:dbc/78c/f59',
+        'regular-sb/scene/pg:dbc/78c/f59e2b39a90a765e5b6ce030716ce031',
       ])
 
       expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
@@ -5244,7 +5244,7 @@ describe('Navigator', () => {
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
         'slot_sb/scene/pg:dbc/78c/prop-label-header',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-        'regular-sb/scene/pg:dbc/78c/f59',
+        'regular-sb/scene/pg:dbc/78c/f59e2b39a90a765e5b6ce030716ce031',
       ])
     })
   })
@@ -5409,50 +5409,50 @@ describe('Navigator row order', () => {
         'regular-sb/group',
         'regular-sb/group/70f',
         'regular-sb/group/70f/33d~~~1',
-        'regular-sb/group/70f/33d~~~1/b1f',
+        'regular-sb/group/70f/33d~~~1/b1f255d5bc6b7a731133935506a34658',
         'regular-sb/group/70f/33d~~~2',
-        'regular-sb/group/70f/33d~~~2/b1f',
+        'regular-sb/group/70f/33d~~~2/b1f255d5bc6b7a731133935506a34658',
         'regular-sb/group/70f/33d~~~3',
-        'regular-sb/group/70f/33d~~~3/b1f',
+        'regular-sb/group/70f/33d~~~3/b1f255d5bc6b7a731133935506a34658',
         'regular-sb/group/foo',
         'regular-sb/group/b68',
         'regular-sb/group/b68/46a~~~1',
-        'regular-sb/group/b68/46a~~~1/255',
+        'regular-sb/group/b68/46a~~~1/b1f255d5bc6b7a731133935506a34658.1',
         'regular-sb/group/b68/46a~~~2',
-        'regular-sb/group/b68/46a~~~2/255',
+        'regular-sb/group/b68/46a~~~2/b1f255d5bc6b7a731133935506a34658.1',
         'regular-sb/group/b68/46a~~~3',
-        'regular-sb/group/b68/46a~~~3/255',
+        'regular-sb/group/b68/46a~~~3/b1f255d5bc6b7a731133935506a34658.1',
         'regular-sb/group/b68/46a~~~4',
-        'regular-sb/group/b68/46a~~~4/255',
+        'regular-sb/group/b68/46a~~~4/b1f255d5bc6b7a731133935506a34658.1',
         'regular-sb/group/b68/46a~~~5',
-        'regular-sb/group/b68/46a~~~5/255',
+        'regular-sb/group/b68/46a~~~5/b1f255d5bc6b7a731133935506a34658.1',
         'regular-sb/group/b68/46a~~~6',
-        'regular-sb/group/b68/46a~~~6/255',
+        'regular-sb/group/b68/46a~~~6/b1f255d5bc6b7a731133935506a34658.1',
         'regular-sb/group/cond',
         'conditional-clause-sb/group/cond-true-case',
         'regular-sb/group/cond/929',
         'regular-sb/group/cond/929/f23~~~1',
-        'regular-sb/group/cond/929/f23~~~1/c6b',
+        'regular-sb/group/cond/929/f23~~~1/b1f255d5bc6b7a731133935506a34658.3',
         'regular-sb/group/cond/929/f23~~~2',
-        'regular-sb/group/cond/929/f23~~~2/c6b',
+        'regular-sb/group/cond/929/f23~~~2/b1f255d5bc6b7a731133935506a34658.3',
         'regular-sb/group/cond/929/f23~~~3',
-        'regular-sb/group/cond/929/f23~~~3/c6b',
+        'regular-sb/group/cond/929/f23~~~3/b1f255d5bc6b7a731133935506a34658.3',
         'conditional-clause-sb/group/cond-false-case',
-        'synthetic-sb/group/cond/235-element-235',
+        'synthetic-sb/group/cond/235e80c1e46a3c9ef94e0a33ade5917b-element-235e80c1e46a3c9ef94e0a33ade5917b',
         'regular-sb/group/bar',
         'regular-sb/group/651',
         'regular-sb/group/651/3bc~~~1',
-        'regular-sb/group/651/3bc~~~1/7a7',
+        'regular-sb/group/651/3bc~~~1/b1f255d5bc6b7a731133935506a34658.4',
         'regular-sb/group/651/3bc~~~2',
-        'regular-sb/group/651/3bc~~~2/7a7',
+        'regular-sb/group/651/3bc~~~2/b1f255d5bc6b7a731133935506a34658.4',
         'regular-sb/group/text-expr-cond-wrapper',
         'regular-sb/group/text-expr-cond-wrapper/text-expr-cond',
         'conditional-clause-sb/group/text-expr-cond-wrapper/text-expr-cond-true-case',
         'regular-sb/group/text-expr-cond-wrapper/text-expr-cond/619',
         'conditional-clause-sb/group/text-expr-cond-wrapper/text-expr-cond-false-case',
-        'synthetic-sb/group/text-expr-cond-wrapper/text-expr-cond/e4a-element-e4a',
+        'synthetic-sb/group/text-expr-cond-wrapper/text-expr-cond/e4a8619968a12ca4d39028aff6210bd3-element-e4a8619968a12ca4d39028aff6210bd3',
         'regular-sb/group/zero-length-map-wrapper',
-        'regular-sb/group/zero-length-map-wrapper/e23',
+        'regular-sb/group/zero-length-map-wrapper/2cb9a655c3aa3f27bf5a1ec7d28a2332',
       ],
     )
     expect(
@@ -5506,17 +5506,17 @@ describe('Navigator row order', () => {
       [
         'regular-sb/group',
         'regular-sb/group/0b5',
-        'regular-sb/group/0b5/995~~~1',
+        'regular-sb/group/0b5/9951a55fcc991af7d3ebec4e8f731448~~~1',
         'regular-sb/group/foo',
         'regular-sb/group/809',
-        'regular-sb/group/809/ea0~~~1',
-        'regular-sb/group/809/ea0~~~2',
+        'regular-sb/group/809/ea0996bccec6366104f733a0706be86c~~~1',
+        'regular-sb/group/809/ea0996bccec6366104f733a0706be86c~~~2',
         'regular-sb/group/cond',
         'conditional-clause-sb/group/cond-true-case',
         'regular-sb/group/cond/4ce',
-        'regular-sb/group/cond/4ce/27d~~~1',
+        'regular-sb/group/cond/4ce/27d61bcd43dec0dd22915a9a16ce3229~~~1',
         'conditional-clause-sb/group/cond-false-case',
-        'synthetic-sb/group/cond/75a-element-75a',
+        'synthetic-sb/group/cond/75a9f0068e61185357ea4ff5a146d077-element-75a9f0068e61185357ea4ff5a146d077',
         'regular-sb/group/bar',
         'regular-sb/group/bf0',
         'regular-sb/group/bf0/b78~~~1',
@@ -5527,17 +5527,17 @@ describe('Navigator row order', () => {
     ).toEqual([
       'regular-sb/group',
       'regular-sb/group/0b5',
-      'regular-sb/group/0b5/995~~~1',
+      'regular-sb/group/0b5/9951a55fcc991af7d3ebec4e8f731448~~~1',
       'regular-sb/group/foo',
       'regular-sb/group/809',
-      'regular-sb/group/809/ea0~~~1',
-      'regular-sb/group/809/ea0~~~2',
+      'regular-sb/group/809/ea0996bccec6366104f733a0706be86c~~~1',
+      'regular-sb/group/809/ea0996bccec6366104f733a0706be86c~~~2',
       'regular-sb/group/cond',
       'conditional-clause-sb/group/cond-true-case',
       'regular-sb/group/cond/4ce',
-      'regular-sb/group/cond/4ce/27d~~~1',
+      'regular-sb/group/cond/4ce/27d61bcd43dec0dd22915a9a16ce3229~~~1',
       'conditional-clause-sb/group/cond-false-case',
-      'synthetic-sb/group/cond/75a-element-75a',
+      'synthetic-sb/group/cond/75a9f0068e61185357ea4ff5a146d077-element-75a9f0068e61185357ea4ff5a146d077',
       'regular-sb/group/bar',
       'regular-sb/group/bf0',
       'regular-sb/group/bf0/b78~~~1',
@@ -5559,9 +5559,9 @@ describe('Navigator row order', () => {
         'regular-sb/scene/pg:dbc',
         'regular-sb/scene/pg:dbc/78c',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-        'render-prop-value-sb/scene/pg:dbc/78c/298-header',
+        'render-prop-value-sb/scene/pg:dbc/78c/298d02545432a912a9c7a1b4bfeca8fd-header',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-        'regular-sb/scene/pg:dbc/78c/d93',
+        'regular-sb/scene/pg:dbc/78c/d931fcbc34b146bae16e98e0bf8dd03f',
       ],
     )
     expect(
@@ -5572,9 +5572,9 @@ describe('Navigator row order', () => {
       'regular-sb/scene/pg:dbc',
       'regular-sb/scene/pg:dbc/78c',
       'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-      'render-prop-value-sb/scene/pg:dbc/78c/298-header',
+      'render-prop-value-sb/scene/pg:dbc/78c/298d02545432a912a9c7a1b4bfeca8fd-header',
       'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-      'regular-sb/scene/pg:dbc/78c/d93',
+      'regular-sb/scene/pg:dbc/78c/d931fcbc34b146bae16e98e0bf8dd03f',
     ])
   })
   it('is correct for a project with elements with string render prop', async () => {
@@ -5592,9 +5592,9 @@ describe('Navigator row order', () => {
         'regular-sb/scene/pg:dbc',
         'regular-sb/scene/pg:dbc/78c',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-        'synthetic-sb/scene/pg:dbc/78c/ee8-attribute',
+        'synthetic-sb/scene/pg:dbc/78c/ee8fd35e2bb18d14c46d3635155a1746-attribute',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-        'regular-sb/scene/pg:dbc/78c/d93',
+        'regular-sb/scene/pg:dbc/78c/d931fcbc34b146bae16e98e0bf8dd03f',
       ],
     )
     expect(
@@ -5605,9 +5605,9 @@ describe('Navigator row order', () => {
       'regular-sb/scene/pg:dbc',
       'regular-sb/scene/pg:dbc/78c',
       'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-      'synthetic-sb/scene/pg:dbc/78c/ee8-attribute',
+      'synthetic-sb/scene/pg:dbc/78c/ee8fd35e2bb18d14c46d3635155a1746-attribute',
       'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-      'regular-sb/scene/pg:dbc/78c/d93',
+      'regular-sb/scene/pg:dbc/78c/d931fcbc34b146bae16e98e0bf8dd03f',
     ])
   })
   it('is correct for a project with elements with missing render prop', async () => {
@@ -5626,7 +5626,7 @@ describe('Navigator row order', () => {
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
         'slot_sb/scene/pg:dbc/78c/prop-label-header', // <- the slot is shown
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-        'regular-sb/scene/pg:dbc/78c/d93',
+        'regular-sb/scene/pg:dbc/78c/d931fcbc34b146bae16e98e0bf8dd03f',
       ],
     )
     expect(
@@ -5639,7 +5639,7 @@ describe('Navigator row order', () => {
       'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
       'slot_sb/scene/pg:dbc/78c/prop-label-header', // <- the slot is shown
       'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-      'regular-sb/scene/pg:dbc/78c/d93',
+      'regular-sb/scene/pg:dbc/78c/d931fcbc34b146bae16e98e0bf8dd03f',
     ])
   })
   it('is correct for a project with elements with render prop set to `null`', async () => {
@@ -5659,7 +5659,7 @@ describe('Navigator row order', () => {
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
         'slot_sb/scene/pg:dbc/78c/prop-label-header', // <- the slot is shown
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-        'regular-sb/scene/pg:dbc/78c/d93',
+        'regular-sb/scene/pg:dbc/78c/d931fcbc34b146bae16e98e0bf8dd03f',
       ],
     )
     expect(
@@ -5672,7 +5672,7 @@ describe('Navigator row order', () => {
       'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
       'slot_sb/scene/pg:dbc/78c/prop-label-header', // <- the slot is shown
       'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-      'regular-sb/scene/pg:dbc/78c/d93',
+      'regular-sb/scene/pg:dbc/78c/d931fcbc34b146bae16e98e0bf8dd03f',
     ])
   })
 
@@ -5693,7 +5693,7 @@ describe('Navigator row order', () => {
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header', // <- the name of this is coming from an import
         'slot_sb/scene/pg:dbc/78c/prop-label-header',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-        'regular-sb/scene/pg:dbc/78c/891',
+        'regular-sb/scene/pg:dbc/78c/891cd0f5dda919f6456bba7aa54cd6a7',
       ],
     )
     expect(
@@ -5706,7 +5706,7 @@ describe('Navigator row order', () => {
       'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header', // <- the name of this is coming from an import
       'slot_sb/scene/pg:dbc/78c/prop-label-header',
       'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-      'regular-sb/scene/pg:dbc/78c/891',
+      'regular-sb/scene/pg:dbc/78c/891cd0f5dda919f6456bba7aa54cd6a7',
     ])
   })
 })

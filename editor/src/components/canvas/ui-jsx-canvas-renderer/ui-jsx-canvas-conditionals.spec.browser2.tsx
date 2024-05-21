@@ -76,9 +76,9 @@ describe('a project with conditionals', () => {
       'conditional-clause-storyboard/scene/app:app-root/conditional1/conditional2-true-case',
       'regular-storyboard/scene/app:app-root/conditional1/conditional2/div-inside-conditionals',
       'conditional-clause-storyboard/scene/app:app-root/conditional1/conditional2-false-case',
-      'synthetic-storyboard/scene/app:app-root/conditional1/conditional2/eff-attribute',
+      'synthetic-storyboard/scene/app:app-root/conditional1/conditional2/effd4091d44ade5045b5e3031bbaf02d-attribute',
       'conditional-clause-storyboard/scene/app:app-root/conditional1-false-case',
-      'synthetic-storyboard/scene/app:app-root/conditional1/d50-attribute',
+      'synthetic-storyboard/scene/app:app-root/conditional1/d50aa0bd6931a3e44c18eca1d77ec28c-attribute',
     ])
   })
 })

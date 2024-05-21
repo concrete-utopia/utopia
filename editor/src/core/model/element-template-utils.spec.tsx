@@ -108,7 +108,7 @@ describe('guaranteeUniqueUids', () => {
       .compose(fromField('props'))
     const child0Props = unsafeGet(child0PropsOptic, fixedElements.value)
     const child0UID = getJSXAttribute(child0Props, 'data-uid')
-    expect(child0UID).toEqual(jsExpressionValue('aab', emptyComments, 'aac'))
+    expect(child0UID).toEqual(jsExpressionValue('aaa.1', emptyComments, 'aaa.2'))
     const child1PropsOptic = fromArrayIndex<JSXElementChild>(1)
       .compose(fromTypeGuard(isJSXElement))
       .compose(fromField('props'))
@@ -146,7 +146,7 @@ describe('guaranteeUniqueUids', () => {
     const child1Props = unsafeGet(child1PropsOptic, fixedElements.value)
     const child1UID = getJSXAttribute(child1Props, 'data-uid')
     expect(child0UID).toEqual(jsExpressionValue('aaa', emptyComments, 'axa'))
-    expect(child1UID).toEqual(jsExpressionValue('aac', emptyComments, 'aad'))
+    expect(child1UID).toEqual(jsExpressionValue('aab.1', emptyComments, 'aab.2'))
   })
 
   it('if the uid prop is not a simple value, replace it with a simple value', () => {
@@ -1075,7 +1075,7 @@ describe('findJSXElementChildAtPath', () => {
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1',
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/03d',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/03d0498839c0fb8a34086cd891c8cee7',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/false',
     ])
   })
@@ -1137,7 +1137,7 @@ describe('findJSXElementChildAtPath', () => {
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1',
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/03d',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/03d0498839c0fb8a34086cd891c8cee7',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/ternary-false-root',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/ternary-false-root/ternary-false-child',
     ])
@@ -1507,7 +1507,7 @@ describe('insertJSXElementChildren', () => {
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-b',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/wrapper-fragment/', // <- the new fragment!
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/wrapper-fragment/03d', // <- the original hello!
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/wrapper-fragment/03d0498839c0fb8a34086cd891c8cee7', // <- the original hello!
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/wrapper-fragment/hello2', // <- the inserted hello!
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-d',
     ])
@@ -1868,7 +1868,8 @@ describe('transformJSXComponentAtPath', () => {
     </div>
     `)
 
-    const pathToModify = 'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/cond/03d'
+    const pathToModify =
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/cond/03d0498839c0fb8a34086cd891c8cee7'
 
     const updatedComponents = transformJSXComponentAtPath(
       components,

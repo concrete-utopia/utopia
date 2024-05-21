@@ -1061,7 +1061,10 @@ describe('Use the text editor', () => {
         'await-first-dom-report',
       )
 
-      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond/03d')], false)], true)
+      await editor.dispatch(
+        [selectComponents([EP.fromString('sb/39e/cond/03d0498839c0fb8a34086cd891c8cee7')], false)],
+        true,
+      )
       await pressKey('enter')
       await editor.getDispatchFollowUpActionsFinished()
 
@@ -1208,7 +1211,10 @@ describe('Use the text editor', () => {
         'await-first-dom-report',
       )
 
-      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond/03d')], false)], true)
+      await editor.dispatch(
+        [selectComponents([EP.fromString('sb/39e/cond/03d0498839c0fb8a34086cd891c8cee7')], false)],
+        true,
+      )
       await pressKey('enter')
       await editor.getDispatchFollowUpActionsFinished()
 
@@ -1323,7 +1329,7 @@ describe('Use the text editor', () => {
       expect(editor.getEditorState().editor.mode.type).toEqual('select')
       expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
       expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual(
-        'sb/39e/cond/6b9/2c7~~~1',
+        'sb/39e/cond/6b9/2c740ad7844a4f358d8d8cf6508add56~~~1',
       )
     })
     it('editing expression in the active true clause from the selected conditional', async () => {

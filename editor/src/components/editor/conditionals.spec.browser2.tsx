@@ -212,7 +212,7 @@ describe('conditionals', () => {
             <div data-uid='aaa'>
               {
                 // @utopia/uid=conditional
-                true ? null : <div data-uid='a2e'>'there'</div>
+                true ? null : <div data-uid='a2efc73d5693613a3828970627de5027'>'there'</div>
               }
             </div>
          `),
@@ -772,7 +772,7 @@ describe('conditionals', () => {
                   // @utopia/uid=cond
                   true ? (
                     <div
-                      data-uid='aad'
+                      data-uid='bbb.1'
                       style={{
                         top: 0,
                         left: 0,
@@ -823,7 +823,7 @@ describe('conditionals', () => {
               true ? (
                 <React.Fragment>
                   <div
-                   data-uid='aaf'
+                   data-uid='bbb.1'
                     style={{
                       height: 20,
                       top: 0,
@@ -834,7 +834,7 @@ describe('conditionals', () => {
                     copy me
                   </div>
                   <div
-               data-uid='aal'
+               data-uid='ccc.1'
                     style={{
                  height: 20,
                  top: 20,
@@ -889,7 +889,7 @@ describe('conditionals', () => {
                   true ? (
                     <div data-uid='eee'>
                       insert into this
-                      <div data-uid='aad' style={{top: 20, left: 0, position: 'absolute'}}>copy me</div>
+                      <div data-uid='bbb.1' style={{top: 20, left: 0, position: 'absolute'}}>copy me</div>
                     </div>
                   ) : null
                 }
@@ -931,7 +931,7 @@ describe('conditionals', () => {
                   // @utopia/uid=cond
                   true ? null : (
                     <div
-                      data-uid='aad'
+                      data-uid='bbb.1'
                       style={{
                         top: 0,
                         left: 0,
@@ -982,7 +982,7 @@ describe('conditionals', () => {
               true ? null : (
                 <React.Fragment>
                   <div
-                    data-uid='aaf'
+                    data-uid='bbb.1'
                     style={{
                       height: 10,
                       top: 0,
@@ -993,7 +993,7 @@ describe('conditionals', () => {
                     copy me
                   </div>
                   <div
-                    data-uid='aal'
+                    data-uid='ccc.1'
                     style={{
                       height: 10,
                       top: 10,
@@ -1048,7 +1048,7 @@ describe('conditionals', () => {
                   true ? null : (
                     <div data-uid='eee'>
                       insert into this
-                      <div data-uid='aad' style={{top: 0, left: 0, position: 'absolute'}} >copy me</div>
+                      <div data-uid='bbb.1' style={{top: 0, left: 0, position: 'absolute'}} >copy me</div>
                     </div>
                   )
                 }

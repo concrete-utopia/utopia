@@ -332,7 +332,7 @@ describe('shortcuts', () => {
         makeTestProjectCodeWithSnippet(`
       <div data-uid='container'>
         <span data-uid='text'>Hello there</span>
-        <span data-uid='tex'>Hello there</span>
+        <span data-uid='text.1'>Hello there</span>
       </div>`),
       )
     })
@@ -367,7 +367,7 @@ describe('shortcuts', () => {
                // @utopia/uid=conditional
                [].length === 0 ? (
                 <React.Fragment>
-                  <span data-uid='tex'>Hello there</span>
+                  <span data-uid='text.1'>Hello there</span>
                   <span data-uid='text'>Hello there</span>
                 </React.Fragment>
                ) : 'Test' 
@@ -408,7 +408,7 @@ describe('shortcuts', () => {
                [].length === 0 ? (
                 'Test'
                ) : <React.Fragment>
-               <span data-uid='tex'>Hello there</span>
+               <span data-uid='text.1'>Hello there</span>
                <span data-uid='text'>Hello there</span>
              </React.Fragment>
              }
@@ -438,7 +438,7 @@ describe('shortcuts', () => {
       await mouseClickAtPoint(slot, { x: 5, y: 5 })
 
       expect(editor.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/conditional/d84',
+        'utopia-storyboard-uid/scene-aaa/app-entity:container/conditional/d8401989bd0073a339250358a6ae16a1',
       ])
 
       await expectNoAction(editor, () => pressKey('d', { modifiers: cmdModifier }))
