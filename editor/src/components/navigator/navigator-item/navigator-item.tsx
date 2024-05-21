@@ -282,6 +282,7 @@ const computeResultingStyle = (
   isDescendantOfSelected: boolean,
   isErroredGroup: boolean,
   colorTheme: ThemeObject,
+  isSingleItem: boolean,
 ) => {
   let styleType: StyleType = 'default'
   let selectedType: SelectedType = 'unselected'
@@ -323,11 +324,15 @@ const computeResultingStyle = (
 
   let result = getColors(styleType, selectedType, colorTheme)
 
+  const borderRadiusTop = selected ? '5px 5px' : '0 0'
+  // TODO: add the case of a last descendant of a selected component
+  const borderRadiusBottom = selected && isSingleItem ? '5px 5px' : '0 0'
+  const borderRadius = `${borderRadiusTop} ${borderRadiusBottom}`
+
   result.style = {
     ...result.style,
     fontWeight: isProbablyParentOfSelected || isProbablyScene ? 600 : 'inherit',
-    // TODO compute bottom borderRadius style by if it has children or siblings
-    borderRadius: selected ? '5px 5px 0 0' : undefined,
+    borderRadius: borderRadius,
   }
 
   return result
@@ -802,22 +807,6 @@ export const NavigatorItem: React.FunctionComponent<
     return elementWarnings.invalidGroup != null || elementWarnings.invalidGroupChild != null
   }, [elementWarnings])
 
-  const resultingStyle = computeResultingStyle(
-    elementIsData ? false : selected,
-    emphasis,
-    isInsideComponent,
-    isDynamic,
-    isProbablyScene,
-    fullyVisible,
-    isFocusedComponent,
-    isInFocusedComponentSubtree,
-    isManuallyFocusableComponent,
-    isHighlightedForInteraction,
-    elementIsData && selected ? false : isDescendantOfSelected,
-    isErroredGroup,
-    colorTheme,
-  )
-
   const collapse = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
       collapseItem(dispatch, navigatorEntry.elementPath, event)
@@ -900,20 +889,39 @@ export const NavigatorItem: React.FunctionComponent<
 
   const cursorStyle = isConditionalClauseNavigatorEntry(navigatorEntry) ? { cursor: 'pointer' } : {}
 
-  const rowStyle = useKeepReferenceEqualityIfPossible({
-    paddingLeft: getElementPadding(entryNavigatorDepth),
-    height: getItemHeight(navigatorEntry),
-    ...resultingStyle.style,
-    ...cursorStyle,
-  })
-
-  const showExpandableIndicator = React.useMemo(() => {
+  const canBeExpanded = React.useMemo(() => {
     return (
       isConditional || // if it is a conditional, so it could have no children if both branches are null
       childComponentCount > 0 ||
       isFocusedComponent
     )
   }, [childComponentCount, isFocusedComponent, isConditional])
+
+  const isSingleItem = (canBeExpanded && collapsed) || childComponentCount === 0
+
+  const resultingStyle = computeResultingStyle(
+    elementIsData ? false : selected,
+    emphasis,
+    isInsideComponent,
+    isDynamic,
+    isProbablyScene,
+    fullyVisible,
+    isFocusedComponent,
+    isInFocusedComponentSubtree,
+    isManuallyFocusableComponent,
+    isHighlightedForInteraction,
+    elementIsData && selected ? false : isDescendantOfSelected,
+    isErroredGroup,
+    colorTheme,
+    isSingleItem,
+  )
+
+  const rowStyle = useKeepReferenceEqualityIfPossible({
+    paddingLeft: getElementPadding(entryNavigatorDepth),
+    height: getItemHeight(navigatorEntry),
+    ...resultingStyle.style,
+    ...cursorStyle,
+  })
 
   const iconColor = resultingStyle.iconColor
 
@@ -1017,7 +1025,7 @@ export const NavigatorItem: React.FunctionComponent<
                 props.navigatorEntry.type === 'CONDITIONAL_CLAUSE',
                 <ExpandableIndicator
                   key='expandable-indicator'
-                  visible={showExpandableIndicator}
+                  visible={canBeExpanded}
                   collapsed={collapsed}
                   selected={selected && !isInsideComponent}
                   onMouseDown={collapse}
