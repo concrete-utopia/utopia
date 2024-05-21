@@ -82,7 +82,6 @@ import { assertNever } from '../../../../core/shared/utils'
 import { preventDefault, stopPropagation } from '../../common/inspector-utils'
 import { unless, when } from '../../../../utils/react-conditionals'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { useDataPickerButton } from './component-section'
 import { parseNoneControlDescription } from '../../../../core/property-controls/property-controls-parser'
 import * as EP from '../../../../core/shared/element-path'
 

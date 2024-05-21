@@ -3,22 +3,13 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React, { useCallback } from 'react'
+import type { JSExpressionOtherJavaScript } from '../../../../core/shared/element-template'
 import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
-import type { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
+import type { PropertyPath } from '../../../../core/shared/project-file-types'
 import { useColorTheme, Button, FlexColumn, UtopiaStyles } from '../../../../uuiui'
-import {
-  insertJSXElement,
-  replaceElementInScope,
-  setProp_UNSAFE,
-  updateMapExpression,
-} from '../../../editor/actions/action-creators'
-import { useDispatch } from '../../../editor/store/dispatch-context'
-import { useRefEditorState } from '../../../editor/store/store-hook'
 import { UIGridRow } from '../../widgets/ui-grid-row'
 import { DataPickerPopupTestId, VariableFromScopeOptionTestId } from './component-section'
-import * as EP from '../../../../core/shared/element-path'
-import * as PP from '../../../../core/shared/property-path'
 import type {
   ArrayInfo,
   JSXInfo,
@@ -26,16 +17,12 @@ import type {
   PrimitiveInfo,
   VariableInfo,
 } from './variables-in-scope-utils'
-import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'
-import { NO_OP, arrayEqualsByValue, assertNever } from '../../../../core/shared/utils'
-import { isPrefixOf } from '../../../../core/shared/array-utils'
+import { assertNever } from '../../../../core/shared/utils'
 import { ExpandableIndicator } from '../../../navigator/navigator-item/expandable-indicator'
 import { FlexRow } from 'utopia-api'
-import { is } from '../../../../core/shared/equality-utils'
 import { atom, useAtom } from 'jotai'
 import type { SelectOption } from '../../controls/select-control'
 import { InspectorModal } from '../../widgets/inspector-modal'
-import { emptyImports } from '../../../../core/workers/common/project-file-utils'
 
 export interface PrimitiveOption {
   type: 'primitive'
@@ -107,127 +94,28 @@ function valueToDisplay(option: VariableOption): string {
   }
 }
 
-function isChildrenProp(path: PropertyPath): boolean {
-  return (
-    path.propertyElements.length > 0 &&
-    typeof path.propertyElements[0] === 'string' &&
-    path.propertyElements[0] === 'children'
-  )
-}
-
-export interface DataPickerPopupProps {
-  closePopup: () => void
-  style: React.CSSProperties
-  pickerType: DataPickerType
-}
-
-export interface DataPickerForAProperty {
-  type: 'FOR_A_PROPERTY'
-  elementPath: ElementPath
-  propPath: PropertyPath
-  propExpressionPath: Array<string | number> | null
-}
-
-export function dataPickerForAProperty(
-  elementPath: ElementPath,
-  propPath: PropertyPath,
-  propExpressionPath: Array<string | number> | null,
-): DataPickerForAProperty {
-  return {
-    type: 'FOR_A_PROPERTY',
-    elementPath: elementPath,
-    propPath: propPath,
-    propExpressionPath: propExpressionPath,
-  }
-}
-
-export interface DataPickerForAMapExpressionValue {
-  type: 'FOR_A_MAP_EXPRESSION_VALUE'
-  elementPath: ElementPath
-}
-
-export function dataPickerForAnElement(elementPath: ElementPath): DataPickerForAMapExpressionValue {
-  return {
-    type: 'FOR_A_MAP_EXPRESSION_VALUE',
-    elementPath: elementPath,
-  }
-}
-
-export interface DataPickerForChildNode {
-  type: 'FOR_CHILD_NODE'
-  elementPath: ElementPath
-  childNodeUid: string
-}
-
-export type DataPickerType =
-  | DataPickerForAProperty
-  | DataPickerForAMapExpressionValue
-  | DataPickerForChildNode
-
-export function dataPickerIgnoreClass(pickerType: DataPickerType): string {
-  switch (pickerType.type) {
-    case 'FOR_A_PROPERTY':
-      return `ignore-react-onclickoutside-data-picker-${PP.toString(pickerType.propPath)}`
-    case 'FOR_A_MAP_EXPRESSION_VALUE':
-    case 'FOR_CHILD_NODE':
-      return `ignore-react-onclickoutside-data-picker-${EP.toString(pickerType.elementPath)}`
-    default:
-      assertNever(pickerType)
-  }
-}
-
 export interface DataPickerPopupSubvariablesProps {
   preferredAllState: DataPickerFilterOption
-  pickerType: DataPickerType
   onTweakProperty: (name: string, definedElsewhere: string | null) => (e: React.MouseEvent) => void
   customizeOptions: (_: VariableOption[]) => VariableOption[]
 }
 
-export const DataPickerPopupSubvariables = React.memo((props: DataPickerPopupSubvariablesProps) => {
-  const { pickerType, preferredAllState, onTweakProperty } = props
-  const variableNamesInScope = useVariablesInScopeForSelectedElement(
-    props.pickerType.elementPath,
-    props.pickerType.type === 'FOR_A_PROPERTY' ? props.pickerType.propPath : null,
-    preferredAllState,
-  )
-
-  const filteredVariableNamesInScope = React.useMemo(
-    () => props.customizeOptions(variableNamesInScope),
-    [props, variableNamesInScope],
-  )
-
-  return (
-    <>
-      {filteredVariableNamesInScope.map((variableOption, idx) => {
-        return (
-          <ValueRow
-            key={variableOption.valuePath.toString()}
-            variableOption={variableOption}
-            idx={`${idx}`}
-            onTweakProperty={onTweakProperty}
-            pickerType={pickerType}
-          />
-        )
-      })}
-    </>
-  )
-})
+export type DataPickerCallback = (e: JSExpressionOtherJavaScript) => void
 
 export interface DataPickerPopupProps {
   closePopup: () => void
-  customizeOptions: (_: VariableOption[]) => VariableOption[]
   style: React.CSSProperties
-  pickerType: DataPickerType
+  onTweakProperty: DataPickerCallback
+  variablesInScope: VariableOption[]
 }
 
 export const DataPickerPopup = React.memo(
   React.forwardRef<HTMLDivElement, DataPickerPopupProps>((props, forwardedRef) => {
-    const { closePopup, pickerType } = props
+    const { closePopup, onTweakProperty, variablesInScope } = props
 
     const [preferredAllState, setPreferredAllState] = useAtom(DataPickerPreferredAllAtom)
 
     const colorTheme = useColorTheme()
-    const dispatch = useDispatch()
 
     const setMode = React.useCallback(
       (option: SelectOption<DataPickerFilterOption>) => {
@@ -236,7 +124,7 @@ export const DataPickerPopup = React.memo(
       [setPreferredAllState],
     )
 
-    const onTweakProperty = React.useCallback(
+    const onTweakPropertyInner = React.useCallback(
       (name: string, definedElsewhere: string | null) => (e: React.MouseEvent) => {
         e.stopPropagation()
         e.preventDefault()
@@ -244,41 +132,9 @@ export const DataPickerPopup = React.memo(
         const definedElseWhereArray = optionalMap((d) => [d], definedElsewhere) ?? []
         const expression = jsExpressionOtherJavaScriptSimple(name, definedElseWhereArray)
 
-        switch (pickerType.type) {
-          case 'FOR_A_PROPERTY':
-            const isTargetingChildrenProp = isChildrenProp(pickerType.propPath)
-            if (isTargetingChildrenProp) {
-              dispatch([
-                {
-                  action: 'INSERT_ATTRIBUTE_OTHER_JAVASCRIPT_INTO_ELEMENT',
-                  expression: expression,
-                  parent: props.pickerType.elementPath,
-                },
-              ])
-              return
-            }
-
-            dispatch([
-              setProp_UNSAFE(props.pickerType.elementPath, pickerType.propPath, expression),
-            ])
-            break
-          case 'FOR_A_MAP_EXPRESSION_VALUE':
-            dispatch([updateMapExpression(props.pickerType.elementPath, expression)])
-            break
-          case 'FOR_CHILD_NODE':
-            dispatch([
-              replaceElementInScope(pickerType.elementPath, {
-                type: 'replace-child-with-uid',
-                uid: pickerType.childNodeUid,
-                replaceWith: expression,
-              }),
-            ])
-            break
-          default:
-            assertNever(pickerType)
-        }
+        onTweakProperty(expression)
       },
-      [dispatch, pickerType, props.pickerType.elementPath],
+      [onTweakProperty],
     )
 
     const filterOptions = React.useMemo(
@@ -307,7 +163,7 @@ export const DataPickerPopup = React.memo(
           zIndex: 1,
         }}
         closePopupOnUnmount={false}
-        outsideClickIgnoreClass={dataPickerIgnoreClass(pickerType)}
+        outsideClickIgnoreClass={'ignore-react-onclickoutside-data-picker'}
       >
         <div // this entire wrapper div was made before using the InspectorModal, so it should be re-done
           style={{
@@ -378,12 +234,16 @@ export const DataPickerPopup = React.memo(
                 scrollbarColor: 'gray transparent',
               }}
             >
-              <DataPickerPopupSubvariables
-                preferredAllState={preferredAllState}
-                pickerType={pickerType}
-                onTweakProperty={onTweakProperty}
-                customizeOptions={props.customizeOptions}
-              />
+              {variablesInScope.map((variableOption, idx) => {
+                return (
+                  <ValueRow
+                    key={variableOption.valuePath.toString()}
+                    variableOption={variableOption}
+                    idx={`${idx}`}
+                    onTweakProperty={onTweakPropertyInner}
+                  />
+                )
+              })}
             </div>
           </FlexColumn>
         </div>
@@ -396,20 +256,13 @@ interface ValueRowProps {
   variableOption: VariableOption
   idx: string
   onTweakProperty: (name: string, definedElsewhere: string | null) => (e: React.MouseEvent) => void
-  pickerType: DataPickerType
   overriddenTitle?: string
 }
 
 const anyObjectChildMatches = (info: VariableInfo): boolean =>
   info.type === 'object' && info.props.some((c) => c.matches || anyObjectChildMatches(c))
 
-function ValueRow({
-  variableOption,
-  idx,
-  onTweakProperty,
-  pickerType,
-  overriddenTitle,
-}: ValueRowProps) {
+function ValueRow({ variableOption, idx, onTweakProperty, overriddenTitle }: ValueRowProps) {
   const colorTheme = useColorTheme()
   const [selectedIndex, setSelectedIndex] = React.useState<number>(0)
 
@@ -441,11 +294,6 @@ function ValueRow({
       : null
 
   const hasObjectChildren = variableOption.type === 'object' && variableOption.children.length > 0
-
-  const currentExpressionExactMatch =
-    pickerType.type === 'FOR_A_PROPERTY' &&
-    pickerType.propExpressionPath != null &&
-    arrayEqualsByValue(variableOption.valuePath, pickerType.propExpressionPath, is)
 
   const onClickTopLevelButton = React.useCallback(
     (e: React.MouseEvent) => {
@@ -481,8 +329,6 @@ function ValueRow({
           height: 28,
           marginTop: variableChildren != null && variableOption.depth === 0 ? 6 : 0, // add some space between top-level variables
           cursor: variableOption.variableInfo.matches ? 'pointer' : 'default',
-          background: currentExpressionExactMatch ? colorTheme.primary.value : undefined,
-          color: currentExpressionExactMatch ? colorTheme.white.value : undefined,
           paddingLeft: variableOption.depth * 8,
         }}
         onClick={onClickTopLevelButton}
@@ -568,7 +414,6 @@ function ValueRow({
             variableOption={variableChildren[selectedIndex]}
             idx={`${idx}-${selectedIndex}`}
             onTweakProperty={onTweakProperty}
-            pickerType={pickerType}
             overriddenTitle={`${variableOption.variableInfo.expressionPathPart}[${selectedIndex}]`}
           />
         ) : childrenOpen ? (
@@ -579,7 +424,6 @@ function ValueRow({
                 variableOption={child}
                 idx={`${idx}-${index}`}
                 onTweakProperty={onTweakProperty}
-                pickerType={pickerType}
               />
             )
           })
