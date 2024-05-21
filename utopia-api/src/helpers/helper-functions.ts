@@ -42,10 +42,7 @@ export type Children = 'supported' | 'not-supported' | ChildrenSpec
 export const FocusOptions = ['default', 'always', 'never'] as const
 export type Focus = (typeof FocusOptions)[number]
 
-export const StylingOptions = ['layout', 'layout-system', 'visual', 'typography'] as const
-export type Styling = (typeof StylingOptions)[number]
-
-export type InspectorSpec = 'all' | Styling[]
+export type InspectorSpec = 'this will be removed'
 
 export const EmphasisOptions = ['subdued', 'regular', 'emphasized'] as const
 export type Emphasis = (typeof EmphasisOptions)[number]

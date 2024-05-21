@@ -82,7 +82,6 @@ import { SimplifiedLayoutSubsection } from './sections/layout-section/self-layou
 import { ConstraintsSection } from './constraints-section'
 import { usePermissions } from '../editor/store/permissions'
 import { DisableControlsInSubtree } from '../../uuiui/utilities/disable-subtree'
-import { getInspectorPreferencesForTargets } from '../../core/property-controls/property-controls-utils'
 import { ListSection } from './sections/layout-section/list-section'
 
 export interface ElementPathElement {
@@ -341,24 +340,12 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
 
   const canEdit = usePermissions().edit
 
-  const inspectorPreferences = useEditorState(
-    Substores.propertyControlsInfo,
-    (store) =>
-      getInspectorPreferencesForTargets(
-        store.editor.selectedViews,
-        store.editor.propertyControlsInfo,
-        store.editor.projectContents,
-      ),
-    'Inspector inspectorPreferences',
-  )
+  const shouldShowAlignmentButtons = !hideAllSections
+  const shouldShowClassNameSubsection = isTwindEnabled()
+  const shouldShowTargetSelectorSection = canEdit
+  const shouldShowFlexSection = multiselectedContract === 'frame'
 
-  const shouldShowAlignmentButtons = !hideAllSections && inspectorPreferences.includes('layout')
-  const shouldShowClassNameSubsection = isTwindEnabled() && inspectorPreferences.includes('visual')
-  const shouldShowTargetSelectorSection = canEdit && inspectorPreferences.includes('visual')
-  const shouldShowFlexSection =
-    multiselectedContract === 'frame' && inspectorPreferences.includes('layout-system')
-
-  const shouldShowSimplifiedLayoutSection = inspectorPreferences.includes('layout')
+  const shouldShowSimplifiedLayoutSection = true
 
   function renderInspectorContents() {
     return (

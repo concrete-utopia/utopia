@@ -79,7 +79,7 @@ import {
   exportType,
   singleFileBuildResult,
 } from '../../../core/workers/common/worker-types'
-import type { Sides, Focus, Styling, Emphasis, Icon, InspectorSpec } from 'utopia-api/core'
+import type { Sides, Focus, Emphasis, Icon } from 'utopia-api/core'
 import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
@@ -3453,18 +3453,6 @@ export function ComponentDescriptorSourceKeepDeepEquality(): KeepDeepEqualityCal
   }
 }
 
-const InspectorSpecKeepDeepEquality: KeepDeepEqualityCall<InspectorSpec> = (oldValue, newValue) => {
-  if (typeof oldValue === 'string' && typeof newValue === 'string') {
-    return StringKeepDeepEquality(oldValue, newValue) as KeepDeepEqualityResult<InspectorSpec>
-  }
-
-  if (Array.isArray(oldValue) && Array.isArray(newValue)) {
-    return arrayDeepEquality(createCallWithTripleEquals<Styling>())(oldValue, newValue)
-  }
-
-  return { value: newValue, areEqual: false }
-}
-
 export const ComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<ComponentDescriptor> =
   combine10EqualityCalls(
     (descriptor) => descriptor.properties,
@@ -3480,7 +3468,7 @@ export const ComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<Component
     (descriptor) => descriptor.focus,
     createCallWithTripleEquals<Focus>(),
     (descriptor) => descriptor.inspector,
-    InspectorSpecKeepDeepEquality,
+    createCallWithTripleEquals(),
     (descriptor) => descriptor.emphasis,
     createCallWithTripleEquals<Emphasis>(),
     (descriptor) => descriptor.icon,

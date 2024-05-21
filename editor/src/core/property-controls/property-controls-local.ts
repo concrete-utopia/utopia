@@ -3,7 +3,6 @@ import type {
   JSXControlDescription as JSXControlDescriptionFromUtopia,
   PropertyControls as PropertyControlsFromUtopiaAPI,
   ComponentToRegister,
-  Styling,
   ComponentInsertOption,
   ComponentExample,
   ChildrenSpec,
@@ -14,7 +13,6 @@ import {
   EmphasisOptions,
   FocusOptions,
   IconOptions,
-  StylingOptions,
   isBaseControlDescription,
 } from 'utopia-api/core'
 import type {
@@ -1052,12 +1050,7 @@ const parseComponentToRegister = objectParser<ComponentToRegister>({
     ),
   ),
   focus: optionalProp(parseEnum(FocusOptions)),
-  inspector: optionalProp(
-    parseAlternative<'all' | Styling[]>(
-      [parseConstant('all'), parseArray(parseEnum(StylingOptions))],
-      'inspector value invalid',
-    ),
-  ),
+  inspector: optionalProp(parseConstant('this will be removed')),
   emphasis: optionalProp(parseEnum(EmphasisOptions)),
   icon: optionalProp(parseEnum(IconOptions)),
 })

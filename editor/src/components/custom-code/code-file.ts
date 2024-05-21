@@ -161,7 +161,7 @@ export const ComponentDescriptorDefaults: Pick<
   'focus' | 'inspector' | 'emphasis' | 'icon' | 'label'
 > = {
   focus: 'default',
-  inspector: [],
+  inspector: 'this will be removed',
   emphasis: 'regular',
   icon: 'component',
   label: null,

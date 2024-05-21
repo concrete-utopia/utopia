@@ -20,8 +20,6 @@ import { absolutePathFromRelativePath } from '../../utils/path-utils'
 import { getThirdPartyControlsIntrinsic } from './property-controls-local'
 import type { PropertyControls } from '../../components/custom-code/internal-property-controls'
 import { dropFileExtension } from '../shared/file-utils'
-import type { Styling } from 'utopia-api'
-import { StylingOptions } from 'utopia-api'
 import { intersection } from '../shared/set-utils'
 
 export function propertyControlsForComponentInFile(
@@ -217,39 +215,6 @@ export function hasStyleControls(propertyControls: PropertyControls): boolean {
 }
 
 export const specialPropertiesToIgnore: Array<string> = ['style', 'children']
-
-export type InspectorSectionPreference = 'layout' | 'layout-system' | 'visual' | 'typography'
-
-export type TypedInspectorSpec = { type: 'all' } | { type: 'sections'; sections: Styling[] }
-
-export function getInspectorPreferencesForTargets(
-  targets: ElementPath[],
-  propertyControlsInfo: PropertyControlsInfo,
-  projectContents: ProjectContentTreeRoot,
-): InspectorSectionPreference[] {
-  const inspectorPreferences = targets.map((target) => {
-    const controls = getComponentDescriptorForTarget(target, propertyControlsInfo, projectContents)
-    if (controls == null || controls.inspector == null || controls.inspector === 'all') {
-      return { type: 'all' }
-    }
-
-    return { type: 'sections', sections: controls.inspector }
-  })
-
-  let sectionsToShow: Set<Styling> = new Set(StylingOptions)
-  inspectorPreferences.forEach((preference) => {
-    if (preference.type === 'all') {
-      return
-    }
-
-    // only returning the sections that are supported by all the elements, so
-    // that the editing UI we expose only makes valid edits to all the
-    // components
-    sectionsToShow = intersection([sectionsToShow, new Set(preference.sections)])
-  })
-
-  return [...sectionsToShow]
-}
 
 export const AdvancedFolderLabel = 'Advanced'
 

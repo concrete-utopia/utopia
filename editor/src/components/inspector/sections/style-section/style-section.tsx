@@ -8,7 +8,6 @@ import { TextShadowSubsection } from './text-subsection/text-shadow-subsection'
 import { TextSubsection } from './text-subsection/text-subsection'
 import { TransformSubsection } from './transform-subsection/transform-subsection'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
-import { getInspectorPreferencesForTargets } from '../../../../core/property-controls/property-controls-utils'
 import { when } from '../../../../utils/react-conditionals'
 
 export enum StyleSubsection {
@@ -26,20 +25,9 @@ export enum StyleSubsection {
 export interface StyleSectionProps extends InspectorPartProps<React.CSSProperties> {}
 
 export const StyleSection = React.memo(() => {
-  const inspectorPreferences = useEditorState(
-    Substores.propertyControlsInfo,
-    (store) =>
-      getInspectorPreferencesForTargets(
-        store.editor.selectedViews,
-        store.editor.propertyControlsInfo,
-        store.editor.projectContents,
-      ),
-    'Inspector inspectorPreferences',
-  )
-
-  const shouldShowContainerSection = inspectorPreferences.includes('layout')
-  const shouldTextContainerSection = inspectorPreferences.includes('typography')
-  const shouldShowVisualSections = inspectorPreferences.includes('visual')
+  const shouldShowContainerSection = true
+  const shouldTextContainerSection = true
+  const shouldShowVisualSections = true
 
   return (
     <React.Fragment>
