@@ -68,6 +68,7 @@ import invariant from '../../third-party/remix/invariant'
 import { getUtopiaID } from '../../core/shared/uid-utils'
 import { create } from 'tar'
 import { emptySet } from '../../core/shared/set-utils'
+import { objectMap } from '../../core/shared/object-utils'
 
 export function baseNavigatorDepth(path: ElementPath): number {
   // The storyboard means that this starts at -1,
@@ -135,11 +136,25 @@ type ConditionalNavigatorTree = {
   falseCase: Array<NavigatorTree>
 }
 
+type CondensedTrunkNavigatorTree = {
+  type: 'condensed-trunk'
+  navigatorEntry: NavigatorEntry
+  child: NavigatorTree
+}
+
+type CondensedLeafNavigatorTree = {
+  type: 'condensed-leaf'
+  navigatorEntry: NavigatorEntry
+  children: Array<NavigatorEntry>
+}
+
 export type NavigatorTree =
   | RegularNavigatorTree
   | LeafNavigatorTree
   | MapNavigatorTree
   | ConditionalNavigatorTree
+  | CondensedTrunkNavigatorTree
+  | CondensedLeafNavigatorTree
 
 interface GetNavigatorTargetsResults {
   navigatorRows: Array<NavigatorRow>
@@ -819,31 +834,12 @@ function walkMapExpression(
   }
 }
 
-type CondensedTrunkNavigatorTree = {
-  type: 'condensed-trunk'
-  navigatorEntry: NavigatorEntry
-  child: MaybeCondensedNavigatorTree
-}
-
-type CondensedLeafNavigatorTree = {
-  type: 'condensed-leaf'
-  navigatorEntry: NavigatorEntry
-  children: Array<LeafNavigatorTree>
-}
-
-type MaybeCondensedNavigatorTree =
-  | NavigatorTree
-  | CondensedTrunkNavigatorTree
-  | CondensedLeafNavigatorTree
-
-function condendenseNavigatorTree(
-  navigatorTree: Array<NavigatorTree>,
-): Array<MaybeCondensedNavigatorTree> {
+function condendenseNavigatorTree(navigatorTree: Array<NavigatorTree>): Array<NavigatorTree> {
   if (!isFeatureEnabled('Condensed Navigator Entries')) {
     return navigatorTree
   }
 
-  function walkSubtreeMaybeCondense(entry: NavigatorTree): MaybeCondensedNavigatorTree {
+  function walkSubtreeMaybeCondense(entry: NavigatorTree): NavigatorTree {
     // if the entry only has a single child, we can condense it
     if (entry.type === 'regular-entry' && entry.children.length === 1) {
       return {
@@ -853,10 +849,14 @@ function condendenseNavigatorTree(
       }
     }
 
-    function allChildrenAreLeafEntries(
-      children: Array<NavigatorTree>,
-    ): children is Array<LeafNavigatorTree> {
-      return children.every((child) => child.type === 'leaf-entry')
+    function allChildrenAreLeafEntries(children: Array<NavigatorTree>) {
+      return children.every(
+        (child) =>
+          child.type === 'leaf-entry' ||
+          (child.type === 'regular-entry' &&
+            child.children.length === 0 &&
+            Object.values(child.renderProps).length === 0),
+      )
     }
 
     // if all the entry's children are leaf entries, we can condense them
@@ -868,12 +868,55 @@ function condendenseNavigatorTree(
       return {
         type: 'condensed-leaf',
         navigatorEntry: entry.navigatorEntry,
-        children: entry.children,
+        children: entry.children.map((c) => c.navigatorEntry),
       }
     }
 
-    // fallback case, we can't condense this entry
-    return entry
+    //  we need to recurse into the subtrees here!
+    switch (entry.type) {
+      case 'regular-entry': {
+        return {
+          type: 'regular-entry',
+          navigatorEntry: entry.navigatorEntry,
+          renderProps: objectMap(
+            (renderPropChild) => walkSubtreeMaybeCondense(renderPropChild),
+            entry.renderProps,
+          ),
+          children: entry.children.map(walkSubtreeMaybeCondense),
+          subtreeHidden: entry.subtreeHidden,
+        }
+      }
+      case 'leaf-entry':
+        return entry
+      case 'map-entry': {
+        return {
+          type: 'map-entry',
+          navigatorEntry: entry.navigatorEntry,
+          mappedEntries: entry.mappedEntries.map(walkSubtreeMaybeCondense),
+          subtreeHidden: entry.subtreeHidden,
+        }
+      }
+      case 'conditional-entry': {
+        return {
+          type: 'conditional-entry',
+          navigatorEntry: entry.navigatorEntry,
+          trueCase: entry.trueCase.map(walkSubtreeMaybeCondense),
+          falseCase: entry.falseCase.map(walkSubtreeMaybeCondense),
+          subtreeHidden: entry.subtreeHidden,
+        }
+      }
+      case 'condensed-trunk': {
+        return {
+          type: 'condensed-trunk',
+          navigatorEntry: entry.navigatorEntry,
+          child: walkSubtreeMaybeCondense(entry.child),
+        }
+      }
+      case 'condensed-leaf':
+        return entry
+      default:
+        assertNever(entry)
+    }
   }
 
   return navigatorTree.map(walkSubtreeMaybeCondense)
@@ -881,7 +924,7 @@ function condendenseNavigatorTree(
 
 function flattenCondensedTrunk(entry: CondensedTrunkNavigatorTree): {
   singleRow: Array<NavigatorEntry>
-  child: MaybeCondensedNavigatorTree
+  child: NavigatorTree
 } {
   // if the child is a condensed trunk, we need to flatten it
   if (entry.child.type === 'condensed-trunk') {
@@ -904,7 +947,7 @@ function getNavigatorRowsForTree(
 ): Array<NavigatorRow> {
   const condensedTree = condendenseNavigatorTree(navigatorTree)
 
-  function getNavigatorRowForTree(entry: MaybeCondensedNavigatorTree): Array<NavigatorRow> {
+  function getNavigatorRowForTree(entry: NavigatorTree): Array<NavigatorRow> {
     if (
       filterVisible === 'visible-navigator-targets' &&
       'subtreeHidden' in entry &&
@@ -916,14 +959,20 @@ function getNavigatorRowsForTree(
     switch (entry.type) {
       case 'condensed-trunk': {
         const { singleRow, child } = flattenCondensedTrunk(entry)
-        return [condensedNavigatorRow(singleRow), ...getNavigatorRowForTree(child)]
+        if (singleRow.length === 1) {
+          return [regularNavigatorRow(singleRow[0]), ...getNavigatorRowForTree(child)]
+        }
+        return [condensedNavigatorRow(singleRow, 'trunk'), ...getNavigatorRowForTree(child)]
       }
       case 'condensed-leaf':
         return [
-          condensedNavigatorRow([
-            entry.navigatorEntry, // maybe we want to separate this to two rows, one for the label and one for the children
-            ...entry.children.map((c) => c.navigatorEntry),
-          ]),
+          condensedNavigatorRow(
+            [
+              entry.navigatorEntry, // maybe we want to separate this to two rows, one for the label and one for the children
+              ...entry.children,
+            ],
+            'leaf',
+          ),
         ]
       case 'regular-entry': {
         const path = entry.navigatorEntry.elementPath

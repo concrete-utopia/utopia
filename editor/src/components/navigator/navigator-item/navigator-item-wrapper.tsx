@@ -55,7 +55,7 @@ import {
 import { navigatorDepth } from '../navigator-utils'
 import { maybeConditionalExpression } from '../../../core/model/conditionals'
 import { getRouteComponentNameForOutlet } from '../../canvas/remix/remix-utils'
-import { isRegulaNavigatorrRow, type NavigatorRow } from '../navigator-row'
+import { CondensedNavigatorRow, isRegulaNavigatorrRow, type NavigatorRow } from '../navigator-row'
 
 interface NavigatorItemWrapperProps {
   index: number
@@ -236,10 +236,22 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
       )
     }
     return (
-      <div>
-        {props.navigatorRow.entries.map((entry) => (
-          <span key={EP.toString(entry.elementPath)}>{EP.toUid(entry.elementPath)} / </span>
-        ))}
+      <div style={{ ...props.windowStyle, left: 8 * 1 }}>
+        {props.navigatorRow.variant === 'trunk' ? (
+          <React.Fragment>
+            {props.navigatorRow.entries.map((entry) => (
+              <span key={EP.toString(entry.elementPath)}>{EP.toUid(entry.elementPath)} / </span>
+            ))}
+          </React.Fragment>
+        ) : (
+          <React.Fragment>
+            [
+            {props.navigatorRow.entries.map((entry) => (
+              <span key={EP.toString(entry.elementPath)}>{EP.toUid(entry.elementPath)}, </span>
+            ))}
+            ]
+          </React.Fragment>
+        )}
       </div>
     )
   },

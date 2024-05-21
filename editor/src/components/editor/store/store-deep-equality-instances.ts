@@ -803,9 +803,11 @@ export const NavigatorRowKeepDeepEquality: KeepDeepEqualityCall<NavigatorRow> = 
       break
     case 'condensed-row':
       if (oldValue.type === newValue.type) {
-        return combine1EqualityCall(
+        return combine2EqualityCalls(
           (row) => row.entries,
           arrayDeepEquality(NavigatorEntryKeepDeepEquality),
+          (row) => row.variant,
+          createCallWithTripleEquals<'trunk' | 'leaf'>(),
           condensedNavigatorRow,
         )(oldValue, newValue)
       }

@@ -20,12 +20,17 @@ export function isRegulaNavigatorrRow(row: NavigatorRow): row is RegularNavigato
 
 export interface CondensedNavigatorRow {
   type: 'condensed-row'
+  variant: 'trunk' | 'leaf'
   entries: Array<NavigatorEntry>
 }
 
-export function condensedNavigatorRow(entries: Array<NavigatorEntry>): CondensedNavigatorRow {
+export function condensedNavigatorRow(
+  entries: Array<NavigatorEntry>,
+  variant: 'trunk' | 'leaf',
+): CondensedNavigatorRow {
   return {
     type: 'condensed-row',
+    variant: variant,
     entries: entries,
   }
 }
