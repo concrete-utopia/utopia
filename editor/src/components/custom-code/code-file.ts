@@ -51,7 +51,7 @@ import type {
 import type { ProjectContentTreeRoot } from '../assets'
 import { getProjectFileByFilePath } from '../assets'
 import type { EditorDispatch } from '../editor/action-types'
-import type { Emphasis, Focus, Icon, InspectorSpec } from 'utopia-api'
+import type { Emphasis, Focus, Icon, InspectorSpec, StyleSectionState } from 'utopia-api'
 
 type ModuleExportTypes = { [name: string]: ExportType }
 
@@ -154,17 +154,19 @@ export interface ComponentDescriptor {
   emphasis: Emphasis
   icon: Icon
   label: string | null
+  future_styleSection: StyleSectionState | null
 }
 
 export const ComponentDescriptorDefaults: Pick<
   ComponentDescriptor,
-  'focus' | 'inspector' | 'emphasis' | 'icon' | 'label'
+  'focus' | 'inspector' | 'emphasis' | 'icon' | 'label' | 'future_styleSection'
 > = {
   focus: 'default',
   inspector: [],
   emphasis: 'regular',
   icon: 'component',
   label: null,
+  future_styleSection: null,
 }
 
 export function componentDescriptor(
@@ -178,6 +180,7 @@ export function componentDescriptor(
   emphasis: Emphasis,
   icon: Icon,
   label: string | null,
+  styleSectioState: StyleSectionState | null,
 ): ComponentDescriptor {
   return {
     properties: properties,
@@ -190,6 +193,7 @@ export function componentDescriptor(
     emphasis: emphasis,
     icon: icon,
     label: label,
+    future_styleSection: styleSectioState,
   }
 }
 

@@ -79,7 +79,15 @@ import {
   exportType,
   singleFileBuildResult,
 } from '../../../core/workers/common/worker-types'
-import type { Sides, Focus, Styling, Emphasis, Icon, InspectorSpec } from 'utopia-api/core'
+import type {
+  Sides,
+  Focus,
+  Styling,
+  Emphasis,
+  Icon,
+  InspectorSpec,
+  StyleSectionState,
+} from 'utopia-api/core'
 import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
@@ -3466,7 +3474,7 @@ const InspectorSpecKeepDeepEquality: KeepDeepEqualityCall<InspectorSpec> = (oldV
 }
 
 export const ComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<ComponentDescriptor> =
-  combine10EqualityCalls(
+  combine11EqualityCalls(
     (descriptor) => descriptor.properties,
     PropertyControlsKeepDeepEquality,
     (descriptor) => descriptor.supportsChildren,
@@ -3487,6 +3495,8 @@ export const ComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<Component
     createCallWithTripleEquals<Icon>(),
     (descriptor) => descriptor.label,
     nullableDeepEquality(StringKeepDeepEquality),
+    (descriptor) => descriptor.future_styleSection,
+    nullableDeepEquality(createCallWithTripleEquals<StyleSectionState>()),
     componentDescriptor,
   )
 

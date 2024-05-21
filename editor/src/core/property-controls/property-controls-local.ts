@@ -583,6 +583,7 @@ export function updatePropertyControlsOnDescriptorFileUpdate(
         emphasis: descriptor.emphasis,
         icon: descriptor.icon,
         label: descriptor.label,
+        future_styleSection: descriptor.future_styleSection,
       }
     })
   })
@@ -974,6 +975,7 @@ export async function componentDescriptorForComponentToRegister(
     emphasis: componentToRegister.emphasis ?? ComponentDescriptorDefaults.emphasis,
     icon: componentToRegister.icon ?? ComponentDescriptorDefaults.icon,
     label: componentToRegister.label ?? null,
+    future_styleSection: componentToRegister.future_styleSection ?? null,
   })
 }
 

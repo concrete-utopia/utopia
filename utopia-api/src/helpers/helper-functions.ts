@@ -87,6 +87,9 @@ export const IconOptions = [
 ] as const
 export type Icon = (typeof IconOptions)[number]
 
+export const StyleSectionStates = ['expanded', 'collapsed', 'hidden'] as const
+export type StyleSectionState = (typeof StyleSectionStates)[number]
+
 export interface ComponentToRegister {
   component: any
   properties: PropertyControls
@@ -97,6 +100,7 @@ export interface ComponentToRegister {
   icon?: Icon
   label?: string
   variants?: ComponentExample | Array<ComponentExample>
+  future_styleSection?: StyleSectionState
 }
 
 export type RawSingleBorderWidth = number | string
