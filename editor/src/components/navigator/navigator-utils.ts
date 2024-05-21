@@ -102,10 +102,10 @@ export function navigatorDepth(
 export type NavigatorTree =
   | {
       type: 'regular-entry'
+      subtreeHidden: boolean
       navigatorEntry: NavigatorEntry
       renderProps: { [propName: string]: NavigatorTree }
       children: Array<NavigatorTree>
-      subtreeHidden: boolean
     }
   | {
       // TODO not sure if leaf has to be a separate type, it could be a regular entry with no children, but it feels like it'll be useful
@@ -118,11 +118,14 @@ export type NavigatorTree =
     }
   | {
       type: 'map-entry'
+      subtreeHidden: boolean
+      navigatorEntry: NavigatorEntry
       mappedEntries: Array<NavigatorTree>
     }
   | {
       type: 'conditional-entry'
-      target: NavigatorEntry
+      subtreeHidden: boolean
+      navigatorEntry: NavigatorEntry
       trueCase: Array<NavigatorTree>
       falseCase: Array<NavigatorTree>
     }
@@ -437,7 +440,14 @@ export function getNavigatorTrees(
     if (subTree == null) {
       return null
     }
-    return createNavigatorSubtree(metadata, projectTree, projectContents, subTree)
+    return createNavigatorSubtree(
+      metadata,
+      projectTree,
+      projectContents,
+      collapsedViews,
+      hiddenInNavigator,
+      subTree,
+    )
   }, canvasRoots)
 
   return navigatorTrees
@@ -447,6 +457,8 @@ function createNavigatorSubtree(
   metadata: ElementInstanceMetadataMap,
   elementPathTrees: ElementPathTrees,
   projectContents: ProjectContentTreeRoot,
+  collapsedViews: Array<ElementPath>, // TODO turn this into a single array!!
+  hiddenInNavigator: Array<ElementPath>,
   subTree: ElementPathTree,
 ): NavigatorTree {
   const elementPath = subTree.path
@@ -463,6 +475,17 @@ function createNavigatorSubtree(
 
   const elementIsDataReferenceFromProjectContents =
     MetadataUtils.isElementDataReference(jsxElementChild)
+
+  const isCollapsed = EP.containsPath(elementPath, collapsedViews)
+  const isHiddenInNavigator = EP.containsPath(elementPath, hiddenInNavigator)
+
+  const elementTypeHidden = MetadataUtils.isElementTypeHiddenInNavigator(
+    elementPath,
+    metadata,
+    elementPathTrees,
+  )
+
+  const hidden = isCollapsed || isHiddenInNavigator || elementTypeHidden
 
   if (
     elementIsDataReferenceFromProjectContents &&
@@ -483,11 +506,13 @@ function createNavigatorSubtree(
       metadata,
       elementPathTrees,
       projectContents,
+      collapsedViews,
+      hiddenInNavigator,
       subTree,
       jsxElementChild,
       getPropertyControlsForTarget(elementPath, {}, {}),
       elementPath,
-      MetadataUtils.isElementTypeHiddenInNavigator(elementPath, metadata, elementPathTrees),
+      hidden,
     )
   }
 
@@ -496,14 +521,26 @@ function createNavigatorSubtree(
       metadata,
       elementPathTrees,
       projectContents,
+      collapsedViews,
+      hiddenInNavigator,
       subTree,
       jsxElementChild,
       elementPath,
+      hidden,
     )
   }
 
   if (isJSXMapExpression(jsxElementChild)) {
-    return walkMapExpression(metadata, elementPathTrees, projectContents, subTree, jsxElementChild)
+    return walkMapExpression(
+      metadata,
+      elementPathTrees,
+      projectContents,
+      collapsedViews,
+      hiddenInNavigator,
+      subTree,
+      jsxElementChild,
+      hidden,
+    )
   }
 
   if (!isFeatureEnabled('Data Entries in the Navigator')) {
@@ -521,11 +558,13 @@ function walkRegularNavigatorEntry(
   metadata: ElementInstanceMetadataMap,
   elementPathTrees: ElementPathTrees,
   projectContents: ProjectContentTreeRoot,
+  collapsedViews: Array<ElementPath>,
+  hiddenInNavigator: Array<ElementPath>,
   subTree: ElementPathTree,
   jsxElement: JSXElement,
   propControls: PropertyControls | null,
   elementPath: ElementPath,
-  hidden: boolean, // maybe figure it out internally?
+  hidden: boolean,
 ): NavigatorTree {
   let renderPropChildrenAccumulator: { [propName: string]: NavigatorTree } = {}
   let processedAccumulator: Set<string> = emptySet()
@@ -556,6 +595,8 @@ function walkRegularNavigatorEntry(
         metadata,
         elementPathTrees,
         projectContents,
+        collapsedViews,
+        hiddenInNavigator,
         subTreeChild,
       )
       processedAccumulator.add(EP.toString(subTreeChild.path))
@@ -582,7 +623,14 @@ function walkRegularNavigatorEntry(
     (child) => !processedAccumulator.has(EP.toString(child.path)),
   )
   const children: Array<NavigatorTree> = childrenPaths.map((child) =>
-    createNavigatorSubtree(metadata, elementPathTrees, projectContents, child),
+    createNavigatorSubtree(
+      metadata,
+      elementPathTrees,
+      projectContents,
+      collapsedViews,
+      hiddenInNavigator,
+      child,
+    ),
   )
 
   return {
@@ -598,14 +646,19 @@ function walkConditionalNavigatorEntry(
   metadata: ElementInstanceMetadataMap,
   elementPathTrees: ElementPathTrees,
   projectContents: ProjectContentTreeRoot,
+  collapsedViews: Array<ElementPath>,
+  hiddenInNavigator: Array<ElementPath>,
   subTree: ElementPathTree,
   jsxElement: JSXConditionalExpression,
   elementPath: ElementPath,
+  hidden: boolean,
 ): NavigatorTree {
   const trueCase = walkConditionalClause(
     metadata,
     elementPathTrees,
     projectContents,
+    collapsedViews,
+    hiddenInNavigator,
     subTree,
     jsxElement,
     'true-case',
@@ -614,6 +667,8 @@ function walkConditionalNavigatorEntry(
     metadata,
     elementPathTrees,
     projectContents,
+    collapsedViews,
+    hiddenInNavigator,
     subTree,
     jsxElement,
     'false-case',
@@ -621,9 +676,10 @@ function walkConditionalNavigatorEntry(
 
   return {
     type: 'conditional-entry',
-    target: regularNavigatorEntry(elementPath),
+    navigatorEntry: regularNavigatorEntry(elementPath),
     trueCase: trueCase,
     falseCase: falseCase,
+    subtreeHidden: hidden,
   }
 }
 
@@ -631,6 +687,8 @@ function walkConditionalClause(
   metadata: ElementInstanceMetadataMap,
   elementPathTrees: ElementPathTrees,
   projectContents: ProjectContentTreeRoot,
+  collapsedViews: Array<ElementPath>,
+  hiddenInNavigator: Array<ElementPath>,
   conditionalSubTree: ElementPathTree,
   conditional: JSXConditionalExpression,
   conditionalCase: ConditionalCase,
@@ -669,7 +727,14 @@ function walkConditionalClause(
   // if we find regular tree entries for the clause, it means the branch has proper JSXElements, so we recurse into the tree building
   if (clausePathTrees.length > 0) {
     const children = clausePathTrees.map((child) =>
-      createNavigatorSubtree(metadata, elementPathTrees, projectContents, child),
+      createNavigatorSubtree(
+        metadata,
+        elementPathTrees,
+        projectContents,
+        collapsedViews,
+        hiddenInNavigator,
+        child,
+      ),
     )
     return children
   }
@@ -682,14 +747,24 @@ function walkMapExpression(
   metadata: ElementInstanceMetadataMap,
   elementPathTrees: ElementPathTrees,
   projectContents: ProjectContentTreeRoot,
+  collapsedViews: Array<ElementPath>,
+  hiddenInNavigator: Array<ElementPath>,
   subTree: ElementPathTree,
   element: JSXMapExpression,
+  hidden: boolean,
 ): NavigatorTree {
   const commentFlag = findUtopiaCommentFlag(element.comments, 'map-count')
 
   const mapCountOverride = isUtopiaCommentFlagMapCount(commentFlag) ? commentFlag.value : null
   const mappedChildren = Object.values(subTree.children).map((child) =>
-    createNavigatorSubtree(metadata, elementPathTrees, projectContents, child),
+    createNavigatorSubtree(
+      metadata,
+      elementPathTrees,
+      projectContents,
+      collapsedViews,
+      hiddenInNavigator,
+      child,
+    ),
   )
 
   const invaldiOverrideEntries = (() => {
@@ -708,22 +783,41 @@ function walkMapExpression(
     return invalidEntries
   })()
 
-  return { type: 'map-entry', mappedEntries: [...mappedChildren, ...invaldiOverrideEntries] }
+  return {
+    type: 'map-entry',
+    navigatorEntry: regularNavigatorEntry(subTree.path),
+    mappedEntries: [...mappedChildren, ...invaldiOverrideEntries],
+    subtreeHidden: hidden,
+  }
 }
 
 // TODO!! be able to filter to only visible
-export function getMappedNavigatorRows(navigatorTree: Array<NavigatorTree>): Array<NavigatorRow> {
+export function getMappedNavigatorRows(
+  navigatorTree: Array<NavigatorTree>,
+  filterVisible: 'all-navigator-targets' | 'visible-navigator-targets',
+): Array<NavigatorRow> {
   function getNavigatorEntriesForMapEntry(entry: NavigatorTree): Array<NavigatorEntry> {
+    if (
+      filterVisible === 'visible-navigator-targets' &&
+      'subtreeHidden' in entry &&
+      entry.subtreeHidden
+    ) {
+      return [entry.navigatorEntry]
+    }
+
     switch (entry.type) {
       case 'regular-entry':
         return [entry.navigatorEntry, ...entry.children.flatMap(getNavigatorEntriesForMapEntry)]
       case 'leaf-entry':
         return [entry.navigatorEntry]
       case 'map-entry':
-        return entry.mappedEntries.flatMap(getNavigatorEntriesForMapEntry)
+        return [
+          entry.navigatorEntry,
+          ...entry.mappedEntries.flatMap(getNavigatorEntriesForMapEntry),
+        ]
       case 'conditional-entry':
         return [
-          entry.target,
+          entry.navigatorEntry,
           ...entry.trueCase.flatMap(getNavigatorEntriesForMapEntry),
           ...entry.falseCase.flatMap(getNavigatorEntriesForMapEntry),
         ]
@@ -762,15 +856,19 @@ export function getNavigatorTargets(
     projectContents,
   )
 
-  const navigatorRows = getMappedNavigatorRows(navigatorTrees)
+  const navigatorRows = getMappedNavigatorRows(navigatorTrees, 'all-navigator-targets')
+  const visibleNavigatorRows = getMappedNavigatorRows(navigatorTrees, 'visible-navigator-targets')
   const navigatorTargets = navigatorRows.flatMap((row) => {
+    return getEntriesForRow(row)
+  })
+  const visibleNavigatorTargets = visibleNavigatorRows.flatMap((row) => {
     return getEntriesForRow(row)
   })
 
   return {
-    navigatorRows: navigatorRows,
+    navigatorRows: visibleNavigatorRows,
     navigatorTargets: navigatorTargets,
-    visibleNavigatorTargets: navigatorTargets, // TODO: filter out hidden
+    visibleNavigatorTargets: visibleNavigatorTargets,
   }
 }
 
