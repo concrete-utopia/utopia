@@ -842,7 +842,13 @@ export function getMappedNavigatorRows(
           }),
           ...(Object.values(entry.renderProps).length > 0 && entry.children.length > 0
             ? // we only show the children label if there are render props
-              [slotNavigatorEntry(EP.appendToPath(path, renderPropId('children')), 'children')]
+              [
+                renderPropNavigatorEntry(
+                  EP.appendToPath(path, renderPropId('children')),
+                  'children',
+                  entry.children[0].navigatorEntry.elementPath, // pick the first child path
+                ),
+              ]
             : []),
           ...entry.children.flatMap(getNavigatorEntriesForMapEntry),
         ]
