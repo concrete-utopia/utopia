@@ -831,11 +831,11 @@ export function getMappedNavigatorRows(
         assertNever(entry)
     }
   }
-  const visibleNavigatorTargets: Array<NavigatorEntry> = navigatorTree.flatMap(
+  const navigatorTargets: Array<NavigatorEntry> = navigatorTree.flatMap(
     getNavigatorEntriesForMapEntry,
   )
 
-  const regularRows = visibleNavigatorTargets.map(
+  const regularRows = navigatorTargets.map(
     (target): NavigatorRow => ({
       type: 'regular-row',
       entry: target,
