@@ -961,7 +961,7 @@ function getNavigatorRowsForTree(
         }
         return [
           condensedNavigatorRow(singleRow, 'trunk', indentation),
-          ...walkTree(child, indentation),
+          ...walkTree(child, indentation + 1),
         ]
       }
       case 'condensed-leaf':

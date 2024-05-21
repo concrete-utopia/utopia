@@ -238,7 +238,12 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
       )
     }
     return (
-      <div style={{ ...props.windowStyle, left: BasePaddingUnit * props.navigatorRow.indentation }}>
+      <div
+        style={{
+          ...props.windowStyle,
+          left: 5 + 12 + 6 + BasePaddingUnit * props.navigatorRow.indentation,
+        }}
+      >
         {props.navigatorRow.variant === 'trunk' ? (
           <React.Fragment>
             {props.navigatorRow.entries.map((entry) => (
