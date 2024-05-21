@@ -329,9 +329,6 @@ function ValueRow({ variableOption, idx, onTweakProperty, overriddenTitle }: Val
           height: 28,
           marginTop: variableChildren != null && variableOption.depth === 0 ? 6 : 0, // add some space between top-level variables
           cursor: variableOption.variableInfo.matches ? 'pointer' : 'default',
-          // TODO
-          // background: currentExpressionExactMatch ? colorTheme.primary.value : undefined,
-          // color: currentExpressionExactMatch ? colorTheme.white.value : undefined,
           paddingLeft: variableOption.depth * 8,
         }}
         onClick={onClickTopLevelButton}
