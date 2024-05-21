@@ -5,6 +5,7 @@ import type {
   ElementInstanceMetadataMap,
   JSExpression,
   JSXConditionalExpression,
+  JSXElement,
 } from '../../core/shared/element-template'
 import {
   getJSXAttribute,
@@ -16,7 +17,13 @@ import {
 } from '../../core/shared/element-template'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { foldEither, isLeft, isRight } from '../../core/shared/either'
-import type { ConditionalClauseNavigatorEntry, NavigatorEntry } from '../editor/store/editor-state'
+import type {
+  ConditionalClauseNavigatorEntry,
+  DataReferenceNavigatorEntry,
+  NavigatorEntry,
+  SlotNavigatorEntry,
+  SyntheticNavigatorEntry,
+} from '../editor/store/editor-state'
 import {
   conditionalClauseNavigatorEntry,
   dataReferenceNavigatorEntry,
@@ -33,7 +40,7 @@ import {
 } from '../editor/store/editor-state'
 import type { ElementPathTree, ElementPathTrees } from '../../core/shared/element-path-tree'
 import { getCanvasRoots, getSubTree } from '../../core/shared/element-path-tree'
-import { fastForEach } from '../../core/shared/utils'
+import { assertNever, fastForEach } from '../../core/shared/utils'
 import type { ConditionalCase } from '../../core/model/conditionals'
 import { getConditionalClausePath } from '../../core/model/conditionals'
 import { findUtopiaCommentFlag, isUtopiaCommentFlagMapCount } from '../../core/shared/comment-flags'
@@ -50,6 +57,11 @@ import {
   type NavigatorRow,
   type RegularNavigatorRow,
 } from './navigator-row'
+import { mapDropNulls } from '../../core/shared/array-utils'
+import invariant from '../../third-party/remix/invariant'
+import { getUtopiaID } from '../../core/shared/uid-utils'
+import { create } from 'tar'
+import { emptySet } from '../../core/shared/set-utils'
 
 export function baseNavigatorDepth(path: ElementPath): number {
   // The storyboard means that this starts at -1,
@@ -89,17 +101,27 @@ export type NavigatorTree =
   | {
       type: 'regular-entry'
       navigatorEntry: NavigatorEntry
+      renderProps: { [propName: string]: NavigatorTree }
       children: Array<NavigatorTree>
       subtreeHidden: boolean
     }
   | {
-      type: 'condensed-entry'
-      navigatorEntry: NavigatorEntry
-      condensedSubtree: NavigatorTree
+      type: 'data-entry'
+      navigatorEntry: DataReferenceNavigatorEntry | SyntheticNavigatorEntry // TODO remove SyntheticNavigatorEntry as an option from here
     }
   | {
-      type: 'condensed-leaf'
-      navigatorEntry: NavigatorEntry
+      type: 'map-entry'
+      mappedEntries: Array<NavigatorTree>
+    }
+  | {
+      type: 'conditional-entry'
+      target: NavigatorEntry
+      trueCase: NavigatorTree
+      falseCase: NavigatorTree
+    }
+  | {
+      type: 'slot-entry'
+      target: SlotNavigatorEntry
     }
 
 interface GetNavigatorTargetsResults {
@@ -407,33 +429,164 @@ export function getNavigatorTrees(
   }
 
   const canvasRoots = getCanvasRoots(projectTree)
-  fastForEach(canvasRoots, (childElement) => {
-    const subTree = getSubTree(projectTree, childElement.path)
+  const navigatorTrees: Array<NavigatorTree> = mapDropNulls((canvasRoot) => {
+    const subTree = getSubTree(projectTree, canvasRoot.path)
+    if (subTree == null) {
+      return null
+    }
+    return createNavigatorSubtree(metadata, projectTree, subTree)
+  }, canvasRoots)
 
-    walkAndAddKeys(subTree, false, null)
-  })
-
-  return []
+  return navigatorTrees
 }
 
-// turn me into a selector
+function createNavigatorSubtree(
+  metadata: ElementInstanceMetadataMap,
+  elementPathTrees: ElementPathTrees,
+  subTree: ElementPathTree,
+): NavigatorTree {
+  // first, only be able to create regular entries
+  const elementPath = subTree.path
+  const elementMetadata = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  invariant(elementMetadata != null, 'Element metadata should not be null')
+  const element = elementMetadata.element
+  invariant(
+    isRight(element),
+    'Found an outdated string element in the metadata, we should remove those',
+  )
+  const jsxElementChild = element.value
+
+  const elementIsDataReferenceFromProjectContents =
+    MetadataUtils.isElementDataReference(jsxElementChild)
+
+  // if element is data reference, return leaf
+  if (
+    elementIsDataReferenceFromProjectContents &&
+    isFeatureEnabled('Data Entries in the Navigator')
+  ) {
+    // add synthetic entry
+    const dataRefEntry = dataReferenceNavigatorEntry(
+      elementPath,
+      renderedAtChildNode(EP.parentPath(elementPath), EP.toUid(elementPath)),
+      EP.parentPath(elementPath),
+      jsxElementChild,
+    )
+    return { type: 'data-entry', navigatorEntry: dataRefEntry }
+  }
+
+  if (isJSXElement(jsxElementChild)) {
+    return walkRegularNavigatorEntry(
+      metadata,
+      elementPathTrees,
+      subTree,
+      jsxElementChild,
+      getPropertyControlsForTarget(elementPath, {}, {}),
+      elementPath,
+      MetadataUtils.isElementTypeHiddenInNavigator(elementPath, metadata, elementPathTrees),
+    )
+  }
+}
+
+function walkRegularNavigatorEntry(
+  metadata: ElementInstanceMetadataMap,
+  elementPathTrees: ElementPathTrees,
+  subTree: ElementPathTree,
+  jsxElement: JSXElement,
+  propControls: PropertyControls | null,
+  elementPath: ElementPath,
+  hidden: boolean, // maybe figure it out internally?
+): NavigatorTree {
+  let renderPropChildrenAccumulator: { [propName: string]: NavigatorTree } = {}
+  let processedAccumulator: Set<string> = emptySet()
+
+  Object.entries(propControls ?? {}).forEach(([prop, control]) => {
+    if (control.control !== 'jsx' || prop === 'children') {
+      return
+    }
+    const propValue = getJSXAttribute(jsxElement.props, prop)
+    const fakeRenderPropPath = EP.appendToPath(elementPath, renderPropId(prop))
+
+    if (propValue == null || (isJSExpressionValue(propValue) && propValue.value == null)) {
+      renderPropChildrenAccumulator[prop] = {
+        type: 'slot-entry',
+        target: slotNavigatorEntry(
+          fakeRenderPropPath, // TODO fakeRenderPropPath must be deleted
+          prop,
+        ),
+      }
+      return
+    }
+
+    const childPath = EP.appendToPath(elementPath, getUtopiaID(propValue))
+
+    const subTreeChild = subTree?.children.find((child) => EP.pathsEqual(child.path, childPath))
+    if (subTreeChild != null) {
+      const childTree = createNavigatorSubtree(metadata, elementPathTrees, subTreeChild)
+      processedAccumulator.add(EP.toString(subTreeChild.path))
+      renderPropChildrenAccumulator[prop] = childTree
+    } else {
+      const synthEntry = isFeatureEnabled('Data Entries in the Navigator')
+        ? dataReferenceNavigatorEntry(
+            childPath,
+            renderedAtPropertyPath(EPP.create(elementPath, PP.create(prop))),
+            elementPath,
+            propValue,
+          )
+        : syntheticNavigatorEntry(childPath, propValue)
+
+      processedAccumulator.add(EP.toString(childPath))
+      renderPropChildrenAccumulator[prop] = {
+        type: 'data-entry',
+        navigatorEntry: synthEntry,
+      }
+    }
+  })
+
+  const childrenPaths = subTree.children.filter(
+    (child) => !processedAccumulator.has(EP.toString(child.path)),
+  )
+  const children: Array<NavigatorTree> = childrenPaths.map((child) =>
+    createNavigatorSubtree(metadata, elementPathTrees, child),
+  )
+
+  return {
+    type: 'regular-entry',
+    navigatorEntry: regularNavigatorEntry(elementPath),
+    renderProps: renderPropChildrenAccumulator,
+    children: children,
+    subtreeHidden: hidden,
+  }
+}
+
 // TODO!! be able to filter to only visible
 export function getMappedNavigatorRows(navigatorTree: Array<NavigatorTree>): Array<NavigatorRow> {
   let toCondense: Array<NavigatorEntry> = []
   let regularRows: Array<RegularNavigatorRow> = []
   // put the first 6 items in condensed rows, the rest as regular rows
 
-  // TODO make it respect the entry type
-  const visibleNavigatorTargets = navigatorTree.map((entry) => {
+  function getNavigatorEntriesForMapEntry(entry: NavigatorTree): Array<NavigatorEntry> {
     switch (entry.type) {
       case 'regular-entry':
-        return entry.navigatorEntry
-      case 'condensed-entry':
-        return entry.navigatorEntry
-      case 'condensed-leaf':
-        return entry.navigatorEntry
+        return [entry.navigatorEntry, ...entry.children.flatMap(getNavigatorEntriesForMapEntry)]
+      case 'data-entry':
+        return [entry.navigatorEntry]
+      case 'map-entry':
+        return entry.mappedEntries.flatMap(getNavigatorEntriesForMapEntry)
+      case 'conditional-entry':
+        return [
+          entry.target,
+          ...getNavigatorEntriesForMapEntry(entry.trueCase),
+          ...getNavigatorEntriesForMapEntry(entry.falseCase),
+        ]
+      case 'slot-entry':
+        return [entry.target]
+      default:
+        assertNever(entry)
     }
-  })
+  }
+  const visibleNavigatorTargets: Array<NavigatorEntry> = navigatorTree.flatMap(
+    getNavigatorEntriesForMapEntry,
+  )
 
   for (let i = 0; i < visibleNavigatorTargets.length; i++) {
     if (i < 6) {
