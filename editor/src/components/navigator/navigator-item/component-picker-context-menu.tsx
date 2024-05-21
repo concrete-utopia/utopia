@@ -16,6 +16,9 @@ import {
   jsxElementFromJSXElementWithoutUID,
   jsxElementNameFromString,
   getJSXElementNameLastPart,
+  setJSXAttributesAttribute,
+  jsExpressionValue,
+  isIntrinsicHTMLElement,
 } from '../../../core/shared/element-template'
 import type { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { useDispatch } from '../../editor/store/dispatch-context'
@@ -29,6 +32,7 @@ import {
   replaceMappedElement,
   setProp_UNSAFE,
   showToast,
+  wrapInElement,
 } from '../../editor/actions/action-creators'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
@@ -51,6 +55,7 @@ import type {
   InsertAsChildTarget,
   ReplaceKeepChildrenAndStyleTarget,
   ReplaceTarget,
+  WrapTarget,
 } from '../../editor/action-types'
 import { type ProjectContentTreeRoot } from '../../assets'
 import {
@@ -73,7 +78,9 @@ import type { ConditionalCase } from '../../../core/model/conditionals'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { absolute } from '../../../utils/utils'
 import { notice } from '../../common/notice'
-import { JSXElementChild } from 'utopia-shared/src/types'
+import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
+import { emptyComments } from 'utopia-shared/src/types'
+import { intrinsicHTMLElementNamesThatSupportChildren } from '../../../core/shared/dom-utils'
 
 type RenderPropTarget = { type: 'render-prop'; prop: string }
 type ConditionalTarget = { type: 'conditional'; conditionalCase: ConditionalCase }
@@ -84,6 +91,7 @@ export type InsertionTarget =
   | ReplaceKeepChildrenAndStyleTarget
   | InsertAsChildTarget
   | ConditionalTarget
+  | WrapTarget
 
 export function renderPropTarget(prop: string): RenderPropTarget {
   return {
@@ -99,6 +107,10 @@ export function isReplaceTarget(
   insertionTarget: InsertionTarget,
 ): insertionTarget is ReplaceTarget {
   return insertionTarget.type === 'replace-target'
+}
+
+export function isWrapTarget(insertionTarget: InsertionTarget): insertionTarget is WrapTarget {
+  return insertionTarget.type === 'wrap-target'
 }
 
 export function isReplaceKeepChildrenAndStyleTarget(
@@ -283,7 +295,7 @@ const usePreferredChildrenForTarget = (
 }
 
 export type ShowComponentPickerContextMenuCallback = (
-  target: ElementPath,
+  selectedViews: ElementPath[],
   insertionTarget: InsertionTarget,
   pickerType?: 'preferred' | 'full',
 ) => ShowComponentPickerContextMenu
@@ -308,7 +320,7 @@ export const useCreateCallbackToShowComponentPicker =
 
     return React.useCallback(
       (
-          target: ElementPath,
+          selectedViews: ElementPath[],
           insertionTarget: InsertionTarget,
           overridePickerType?: 'preferred' | 'full',
         ) =>
@@ -320,6 +332,8 @@ export const useCreateCallbackToShowComponentPicker =
           event.preventDefault()
 
           let pickerType: 'preferred' | 'full'
+
+          const target = selectedViews[0]
 
           if (overridePickerType == null) {
             const targetParent =
@@ -486,6 +500,27 @@ function insertComponentPickerItem(
         return [replaceMappedElement(fixedElement, target, toInsert.importsToAdd)]
       }
 
+      if (isWrapTarget(insertionTarget)) {
+        const newUID = generateUidWithExistingComponents(projectContents)
+
+        const newElement = jsxElement(
+          element.name,
+          newUID,
+          setJSXAttributesAttribute(
+            element.props,
+            'data-uid',
+            jsExpressionValue(newUID, emptyComments),
+          ),
+          element.children,
+        )
+        return [
+          wrapInElement([target], {
+            element: newElement,
+            importsToAdd: toInsert.importsToAdd,
+          }),
+        ]
+      }
+
       if (
         isReplaceTarget(insertionTarget) ||
         isReplaceKeepChildrenAndStyleTarget(insertionTarget)
@@ -572,6 +607,8 @@ function toastMessage(insertionTarget: InsertionTarget, toInsert: InsertableComp
       return `Inserting ${toInsert.name} into conditional ${insertionTarget.type} isn't supported yet`
     case 'render-prop':
       return `Inserting ${toInsert.name} into render prop ${insertionTarget.prop} isn't supported yet`
+    case 'wrap-target':
+      return `Wrapping with ${toInsert.name} isn't supported yet`
     default:
       assertNever(insertionTarget)
   }
@@ -665,7 +702,7 @@ function contextMenuItemsFromVariants(
 
 const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuProps>(
   ({ target, insertionTarget }) => {
-    const showFullMenu = useCreateCallbackToShowComponentPicker()(target, insertionTarget, 'full')
+    const showFullMenu = useCreateCallbackToShowComponentPicker()([target], insertionTarget, 'full')
 
     const preferredChildren = usePreferredChildrenForTarget(target, insertionTarget)
 
@@ -729,10 +766,12 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
       (store) => MetadataUtils.getChildrenUnordered(store.editor.jsxMetadata, target),
       'usePreferredChildrenForTarget targetChildren',
     )
+
     const allInsertableComponents = useGetInsertableComponents('insert').flatMap((group) => {
       return {
         label: group.label,
         options: group.options.filter((option) => {
+          const element = option.value.element()
           if (
             isInsertAsChildTarget(insertionTarget) ||
             isConditionalTarget(insertionTarget) ||
@@ -742,13 +781,18 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
           }
           if (isReplaceKeepChildrenAndStyleTarget(insertionTarget)) {
             // If we want to keep the children of this element when it has some, don't include replacements that have children.
-            return (
-              targetChildren.length === 0 ||
-              !componentElementToInsertHasChildren(option.value.element())
-            )
+            return targetChildren.length === 0 || !componentElementToInsertHasChildren(element)
+          }
+          if (isWrapTarget(insertionTarget) && element.type === 'JSX_ELEMENT') {
+            if (isIntrinsicHTMLElement(element.name)) {
+              // when it is an intrinsic html element, we check if it supports children from our list
+              return intrinsicHTMLElementNamesThatSupportChildren.includes(
+                element.name.baseVariable,
+              )
+            }
           }
           // Right now we only support inserting JSX elements when we insert into a render prop or when replacing elements
-          return option.value.element().type === 'JSX_ELEMENT'
+          return element.type === 'JSX_ELEMENT'
         }),
       }
     })
