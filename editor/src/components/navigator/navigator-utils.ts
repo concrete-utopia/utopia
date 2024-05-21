@@ -926,19 +926,13 @@ function flattenCondensedTrunk(entry: CondensedTrunkNavigatorTree): {
   singleRow: Array<NavigatorEntry>
   child: NavigatorTree
 } {
-  // if the child is a condensed trunk, we need to flatten it
-  if (entry.child.type === 'condensed-trunk') {
-    const { singleRow, child } = flattenCondensedTrunk(entry.child)
-    return {
-      singleRow: [entry.navigatorEntry, ...singleRow],
-      child: child,
-    }
+  const singleRow = [entry.navigatorEntry]
+  let currentChild: NavigatorTree = entry.child
+  while (currentChild.type === 'condensed-trunk') {
+    singleRow.push(currentChild.navigatorEntry)
+    currentChild = currentChild.child
   }
-
-  return {
-    singleRow: [entry.navigatorEntry],
-    child: entry.child,
-  }
+  return { singleRow: singleRow, child: currentChild }
 }
 
 function getNavigatorRowsForTree(
@@ -967,7 +961,7 @@ function getNavigatorRowsForTree(
         }
         return [
           condensedNavigatorRow(singleRow, 'trunk', indentation),
-          ...walkTree(child, indentation + 1),
+          ...walkTree(child, indentation),
         ]
       }
       case 'condensed-leaf':
