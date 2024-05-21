@@ -7218,7 +7218,7 @@ export var storyboard = (
     })
   })
 
-  describe.skip('WRAP_IN_ELEMENT', () => {
+  describe('WRAP_IN_ELEMENT', () => {
     it(`Wraps 2 elements`, async () => {
       const testUID = 'bbb'
       const testCode = `
