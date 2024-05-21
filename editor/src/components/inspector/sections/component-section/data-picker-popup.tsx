@@ -94,10 +94,6 @@ function valueToDisplay(option: VariableOption): string {
   }
 }
 
-export function dataPickerIgnoreClass(): string {
-  return 'ignore-react-onclickoutside-data-picker'
-}
-
 export interface DataPickerPopupSubvariablesProps {
   preferredAllState: DataPickerFilterOption
   onTweakProperty: (name: string, definedElsewhere: string | null) => (e: React.MouseEvent) => void
@@ -167,7 +163,7 @@ export const DataPickerPopup = React.memo(
           zIndex: 1,
         }}
         closePopupOnUnmount={false}
-        outsideClickIgnoreClass={dataPickerIgnoreClass()}
+        outsideClickIgnoreClass={'ignore-react-onclickoutside-data-picker'}
       >
         <div // this entire wrapper div was made before using the InspectorModal, so it should be re-done
           style={{
