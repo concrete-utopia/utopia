@@ -25,6 +25,7 @@ import type {
   DataReferenceNavigatorEntry,
   InvalidOverrideNavigatorEntry,
   NavigatorEntry,
+  RegularNavigatorEntry,
   SlotNavigatorEntry,
   SyntheticNavigatorEntry,
 } from '../editor/store/editor-state'
@@ -115,6 +116,7 @@ type RegularNavigatorTree = {
 type LeafNavigatorTree = {
   type: 'leaf-entry'
   navigatorEntry:
+    | RegularNavigatorEntry
     | DataReferenceNavigatorEntry
     | SyntheticNavigatorEntry
     | InvalidOverrideNavigatorEntry
@@ -578,7 +580,7 @@ function createNavigatorSubtree(
     // fallback case for the FS off
     return {
       type: 'leaf-entry',
-      navigatorEntry: syntheticNavigatorEntry(elementPath, jsxElementChild),
+      navigatorEntry: regularNavigatorEntry(elementPath),
     }
   }
 
