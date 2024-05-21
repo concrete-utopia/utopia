@@ -10,6 +10,7 @@ import {
   getTextContentOfElement,
 } from '../component-section/data-reference-cartouche'
 import { mapExpressionValueToMapSelector, useDataPickerButtonListSource } from './list-section'
+import { traceDataFromElement, dataPathSuccess } from '../../../../core/data-tracing/data-tracing'
 
 interface MapListSourceCartoucheProps {
   target: ElementPath
@@ -48,6 +49,28 @@ export const MapListSourceCartouche = React.memo((props: MapListSourceCartoucheP
     }
   }, [openOn, openPopup])
 
+  const isDataComingFromHookResult = useEditorState(
+    Substores.projectContentsAndMetadata,
+    (store) => {
+      if (
+        originalMapExpression === 'multiselect' ||
+        originalMapExpression === 'not-a-mapexpression'
+      ) {
+        return false
+      } else {
+        const traceDataResult = traceDataFromElement(
+          originalMapExpression.valueToMap,
+          target,
+          store.editor.jsxMetadata,
+          store.editor.projectContents,
+          dataPathSuccess([]),
+        )
+        return traceDataResult.type === 'hook-result'
+      }
+    },
+    'ListSection isDataComingFromHookResult',
+  )
+
   if (originalMapExpression === 'multiselect' || originalMapExpression === 'not-a-mapexpression') {
     return null
   }
@@ -77,7 +100,7 @@ export const MapListSourceCartouche = React.memo((props: MapListSourceCartoucheP
         inverted={props.inverted}
         safeToDelete={false}
         testId='list-source-cartouche'
-        contentIsComingFromServer={false}
+        contentIsComingFromServer={isDataComingFromHookResult}
       />
     </div>
   )

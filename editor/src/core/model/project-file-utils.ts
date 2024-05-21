@@ -78,6 +78,7 @@ import { filenameFromParts, getFilenameParts } from '../../components/images'
 import globToRegexp from 'glob-to-regexp'
 import { is } from '../shared/equality-utils'
 import { absolutePathFromRelativePath } from '../../utils/path-utils'
+import json5 from 'json5'
 
 export const sceneMetadata = _sceneMetadata // This is a hotfix for a circular dependency AND a leaking of utopia-api into the workers
 
@@ -952,6 +953,10 @@ function getFilePathMappingsImpl(projectContents: ProjectContentTreeRoot): FileP
   if (jsConfigFile != null && isTextFile(jsConfigFile)) {
     return getFilePathMappingsFromConfigFile(jsConfigFile)
   }
+  const tsConfigFile = getProjectFileByFilePath(projectContents, 'tsconfig.json')
+  if (tsConfigFile != null && isTextFile(tsConfigFile)) {
+    return getFilePathMappingsFromConfigFile(tsConfigFile)
+  }
 
   return []
 }
@@ -963,7 +968,7 @@ const getFilePathMappingsFromConfigFile = memoize(getFilePathMappingsFromConfigF
 
 function getFilePathMappingsFromConfigFileImpl(configFile: TextFile): FilePathMappings {
   try {
-    const parsedJSON = JSON.parse(configFile.fileContents.code)
+    const parsedJSON = json5.parse(configFile.fileContents.code)
     if (typeof parsedJSON === 'object') {
       const compilerOptions = propOrNull('compilerOptions', parsedJSON)
       const paths = propOrNull('paths', compilerOptions)
@@ -996,7 +1001,7 @@ function getFilePathMappingsFromConfigFileImpl(configFile: TextFile): FilePathMa
       }
     }
   } catch (e) {
-    // Do nothing
+    console.error('Error parsing file path mappings.', e)
   }
 
   return []
