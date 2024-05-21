@@ -28,24 +28,24 @@ describe('Conditonals JSX parser', () => {
           JSX_ELEMENT - div - div
             JSX_CONDITIONAL_EXPRESSION - conditional
               JSX_ELEMENT - div - hello
-                JSX_TEXT_BLOCK - c58
+                JSX_TEXT_BLOCK - c584fc720cfb7097601090c3d175c55d
               JSX_ELEMENT - div - world
-                JSX_TEXT_BLOCK - 935
+                JSX_TEXT_BLOCK - 935a10fa8e883ee481eebed750b0a602
         UNPARSED_CODE
         UTOPIA_JSX_COMPONENT - storyboard
           JSX_ELEMENT - Storyboard - eee
             JSX_ELEMENT - Scene - fff
               JSX_ELEMENT - App - app
-                  ATTRIBUTE_VALUE - 753
-                  ATTRIBUTE_VALUE - 2c3
-                  ATTRIBUTE_VALUE - 417
-                  ATTRIBUTE_VALUE - 266
-                  ATTRIBUTE_VALUE - 498
-                ATTRIBUTE_VALUE - 7c2
-                ATTRIBUTE_VALUE - d23
-                ATTRIBUTE_VALUE - 14f
-                ATTRIBUTE_VALUE - c79
-                ATTRIBUTE_VALUE - 0c4
+                  ATTRIBUTE_VALUE - 7537c2399208a65294ab51886a38a78b
+                  ATTRIBUTE_VALUE - 2c341726649814f0c48fee9bf65abc34
+                  ATTRIBUTE_VALUE - aed5a7c02cb1497d883b448f697e827d
+                  ATTRIBUTE_VALUE - 9d8a0903b7074b4fb689d79dbc698c75
+                  ATTRIBUTE_VALUE - af72ad53df56464dafac5199524b6291
+                ATTRIBUTE_VALUE - b5b4e03ebfd34f5f82253dccfcf789de
+                ATTRIBUTE_VALUE - d2376ebbafdaf55fec07c9dd0e7b8726
+                ATTRIBUTE_VALUE - c3094ac1d1a749279016806b29a27a7a
+                ATTRIBUTE_VALUE - c794958898be6b77e66d4b1c53f086e6
+                ATTRIBUTE_VALUE - 903a51e9e17d4d7492fe2aa266a3950d
         UNPARSED_CODE"
       `)
 
@@ -81,16 +81,16 @@ describe('Conditonals JSX parser', () => {
           JSX_ELEMENT - Storyboard - eee
             JSX_ELEMENT - Scene - fff
               JSX_ELEMENT - App - app
-                  ATTRIBUTE_VALUE - 753
-                  ATTRIBUTE_VALUE - 2c3
-                  ATTRIBUTE_VALUE - 417
-                  ATTRIBUTE_VALUE - 266
-                  ATTRIBUTE_VALUE - 498
-                ATTRIBUTE_VALUE - 7c2
-                ATTRIBUTE_VALUE - d23
-                ATTRIBUTE_VALUE - 14f
-                ATTRIBUTE_VALUE - c79
-                ATTRIBUTE_VALUE - 0c4
+                  ATTRIBUTE_VALUE - 7537c2399208a65294ab51886a38a78b
+                  ATTRIBUTE_VALUE - 2c341726649814f0c48fee9bf65abc34
+                  ATTRIBUTE_VALUE - 90da531a0ac84be8a5861b94266345b1
+                  ATTRIBUTE_VALUE - 800c3f6ab9bf4278aea0d88e084ab26f
+                  ATTRIBUTE_VALUE - 697d38843ac44f24ad4f9f9b59f77589
+                ATTRIBUTE_VALUE - 746ca80b23574484914c24b3f933e908
+                ATTRIBUTE_VALUE - d2376ebbafdaf55fec07c9dd0e7b8726
+                ATTRIBUTE_VALUE - 0025b64ac5914cf689c374e2cb356275
+                ATTRIBUTE_VALUE - c794958898be6b77e66d4b1c53f086e6
+                ATTRIBUTE_VALUE - 0b6dc9338a664b4cbf9c63f18feab9a8
         UNPARSED_CODE"
       `)
 
@@ -128,16 +128,16 @@ describe('Conditonals JSX printer', () => {
           JSX_ELEMENT - Storyboard - eee
             JSX_ELEMENT - Scene - fff
               JSX_ELEMENT - App - app
-                  ATTRIBUTE_VALUE - 753
-                  ATTRIBUTE_VALUE - 2c3
-                  ATTRIBUTE_VALUE - 417
-                  ATTRIBUTE_VALUE - 266
-                  ATTRIBUTE_VALUE - 498
-                ATTRIBUTE_VALUE - 7c2
-                ATTRIBUTE_VALUE - d23
-                ATTRIBUTE_VALUE - 14f
-                ATTRIBUTE_VALUE - c79
-                ATTRIBUTE_VALUE - 0c4
+                  ATTRIBUTE_VALUE - 7537c2399208a65294ab51886a38a78b
+                  ATTRIBUTE_VALUE - 2c341726649814f0c48fee9bf65abc34
+                  ATTRIBUTE_VALUE - f306ad6921c84c7aa3d43322bfd92c55
+                  ATTRIBUTE_VALUE - 2cecd14d7a9d4dc99302519be6dbfe02
+                  ATTRIBUTE_VALUE - 9cd4db93053f478d84e5c6b6ce84241c
+                ATTRIBUTE_VALUE - 5bb40670a0d24f3791f1446d19189c8f
+                ATTRIBUTE_VALUE - d2376ebbafdaf55fec07c9dd0e7b8726
+                ATTRIBUTE_VALUE - 77488245c48d4d91b7f26a4bbbc9d7a7
+                ATTRIBUTE_VALUE - c794958898be6b77e66d4b1c53f086e6
+                ATTRIBUTE_VALUE - 28dda83049a64ec5b80581e04aa930fb
         UNPARSED_CODE"
       `)
 

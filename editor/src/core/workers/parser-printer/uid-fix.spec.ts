@@ -178,10 +178,10 @@ describe('fixParseSuccessUIDs', () => {
     )
     expect(getUidTree(parsedFile)).toEqual(getUidTree(modifiedBaseFile))
     expect(getUidTree(parsedFile)).toMatchInlineSnapshot(`
-      "d3fsuffix
-        f9a
-      81dsuffix
-        62e
+      "d3f6697961d39c36f550b6db4bf831a0suffix
+        e6979c4f851f9bb73f3d18f23bd744df
+      81db842c7281e3f3e188e9932513466bsuffix
+        62ebfdd49503b752ffda2bf06ca75a82
       storyboardsuffix
         scene
           component"
@@ -196,11 +196,11 @@ describe('fixParseSuccessUIDs', () => {
       'trim-bounds',
     )
     expect(getUidTree(initialParse)).toMatchInlineSnapshot(`
-      "f81
-        666
-          1f5
-        a3c
-          00b"
+      "f818c1747811f04164db770536eadb13
+        666b46bd6a197a3c8dde290c1f81a0d5
+          1f5d9db64d29025d6f586c44baf43361
+        a3c2e3b0fe3cd535c92ab32d9d260f98
+          00bc6a1106aa8c2f6b90ca156135858c"
     `)
     if (isParseSuccess(initialParse)) {
       const secondParse = lintAndParseAndValidateResult(
@@ -211,13 +211,13 @@ describe('fixParseSuccessUIDs', () => {
         'trim-bounds',
       )
       expect(getUidTree(secondParse)).toMatchInlineSnapshot(`
-        "f81
-          666
-        638
-          acd
-            59b
-          110
-            7b1"
+        "f818c1747811f04164db770536eadb13
+          666b46bd6a197a3c8dde290c1f81a0d5
+        63856ee4499cc5352a7e50832e6ac613
+          acdc3f52cb06acdfc50dddc5ce79a13a
+            59b7172983602914220c3a60fce5d43b
+          110836f7f1d3e94d6aa748544f370d49
+            7b10c81701a735c6840abda77635c91f"
       `)
     } else {
       throw new Error(`First parse did not succeed.`)
@@ -233,10 +233,10 @@ describe('fixParseSuccessUIDs', () => {
     )
     expect(getUidTree(newFile)).toEqual(getUidTree(baseFile))
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
-      "d3f
-        f9a
-      81d
-        62e
+      "d3f6697961d39c36f550b6db4bf831a0
+        e6979c4f851f9bb73f3d18f23bd744df
+      81db842c7281e3f3e188e9932513466b
+        62ebfdd49503b752ffda2bf06ca75a82
       storyboard
         scene
           component"
@@ -260,12 +260,12 @@ describe('fixParseSuccessUIDs', () => {
     )
     expect(getUidTree(newFileFixed)).toEqual(getUidTree(newFile))
     expect(getUidTree(newFileFixed)).toMatchInlineSnapshot(`
-      "d3f
-        f9a
-      468
-        f8f
-      475
-        bbc
+      "d3f6697961d39c36f550b6db4bf831a0
+        e6979c4f851f9bb73f3d18f23bd744df
+      468bcbc17539c83e7998a6b21d872331
+        f8f3c2f7a28e391a504ff3625a26f020
+      475b52680d145d4be86757a83df30241
+        bbcce6a80e4b72d35cfb7512b8506313
       storyboard
         scene
           component"
@@ -289,11 +289,11 @@ describe('fixParseSuccessUIDs', () => {
     )
     expect(getUidTree(fileWithFragmentUpdated)).toEqual(getUidTree(fileWithFragment))
     expect(getUidTree(fileWithFragmentUpdated)).toMatchInlineSnapshot(`
-      "d3f
-        f9a
-      d25
-        83b
-        39d
+      "d3f6697961d39c36f550b6db4bf831a0
+        e6979c4f851f9bb73f3d18f23bd744df
+      d258f0b19cf540814032a7403dde560e
+        83b204229466bfab7be7223c1a3ebc2c
+        39d7d284fc21653cd98d957c0c848840
       storyboard
         scene
           component"
@@ -310,10 +310,10 @@ describe('fixParseSuccessUIDs', () => {
     )
     expect(getUidTree(newFile)).toEqual(getUidTree(baseFile))
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
-      "d3f
-        f9a
-      81d
-        62e
+      "d3f6697961d39c36f550b6db4bf831a0
+        e6979c4f851f9bb73f3d18f23bd744df
+      81db842c7281e3f3e188e9932513466b
+        62ebfdd49503b752ffda2bf06ca75a82
       storyboard
         scene
           component"
@@ -354,11 +354,11 @@ describe('fixParseSuccessUIDs', () => {
       'trim-bounds',
     )
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
-      "d3f
-        f9a
-      81d
-        62e
-        916
+      "d3f6697961d39c36f550b6db4bf831a0
+        e6979c4f851f9bb73f3d18f23bd744df
+      81db842c7281e3f3e188e9932513466b
+        62ebfdd49503b752ffda2bf06ca75a82
+        916ff4f1ff9c661f48487151d49ad27d
       storyboard
         scene
           component"
@@ -385,12 +385,12 @@ describe('fixParseSuccessUIDs', () => {
       'trim-bounds',
     )
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
-      "d3f
-        f9a
-      81d
-        62e
-        916
-        c7e
+      "d3f6697961d39c36f550b6db4bf831a0
+        e6979c4f851f9bb73f3d18f23bd744df
+      81db842c7281e3f3e188e9932513466b
+        62ebfdd49503b752ffda2bf06ca75a82
+        916ff4f1ff9c661f48487151d49ad27d
+        c7ed5d4d4ba469fef1c97504b3b4892c
       storyboard
         scene
           component"
@@ -413,13 +413,13 @@ describe('fixParseSuccessUIDs', () => {
       'trim-bounds',
     )
     expect(getUidTree(fourViews)).toMatchInlineSnapshot(`
-      "d3f
-        f9a
-      d99
-        62e
-        916
-        c7e
-        147
+      "d3f6697961d39c36f550b6db4bf831a0
+        e6979c4f851f9bb73f3d18f23bd744df
+      d999cb792d68571ad924f6be3070c835
+        62ebfdd49503b752ffda2bf06ca75a82
+        916ff4f1ff9c661f48487151d49ad27d
+        c7ed5d4d4ba469fef1c97504b3b4892c
+        1476324b20317e4b2e8a4f9c6f324f0b
       storyboard
         scene
           component"
@@ -496,21 +496,21 @@ describe('fixParseSuccessUIDs', () => {
       'trim-bounds',
     )
     expect(getUidTree(beforeReOrder)).toMatchInlineSnapshot(`
-      "d3f
-        f9a
-      245
-        f8f
-        916
+      "d3f6697961d39c36f550b6db4bf831a0
+        e6979c4f851f9bb73f3d18f23bd744df
+      245874f6b6a7e43a0a1341b02080c965
+        f8f3c2f7a28e391a504ff3625a26f020
+        916ff4f1ff9c661f48487151d49ad27d
       storyboard
         scene
           component"
     `)
     expect(getUidTree(afterReOrder)).toMatchInlineSnapshot(`
-      "d3f
-        f9a
-      245
-        f8f
-        916
+      "d3f6697961d39c36f550b6db4bf831a0
+        e6979c4f851f9bb73f3d18f23bd744df
+      245874f6b6a7e43a0a1341b02080c965
+        f8f3c2f7a28e391a504ff3625a26f020
+        916ff4f1ff9c661f48487151d49ad27d
       storyboard
         scene
           component"
@@ -562,11 +562,11 @@ describe('fixParseSuccessUIDs', () => {
       'trim-bounds',
     )
     expect(getUidTree(firstResult)).toMatchInlineSnapshot(`
-      "d3f
-        f9a
-      8a8
-        f98
-          3cc
+      "d3f6697961d39c36f550b6db4bf831a0
+        e6979c4f851f9bb73f3d18f23bd744df
+      8a8b1b1214c62918cea2e3255bebf817
+        f98f0baa974e60085117f5dd4fe2ebb5
+          3ccfd50fc53f5e5c6bdc8cf1e52580a0
       storyboard
         scene
           component"
@@ -579,12 +579,12 @@ describe('fixParseSuccessUIDs', () => {
       'trim-bounds',
     )
     expect(getUidTree(secondResult)).toMatchInlineSnapshot(`
-      "d3f
-        f9a
-      8a8
-        f98
-          aaa
-            3cc
+      "d3f6697961d39c36f550b6db4bf831a0
+        e6979c4f851f9bb73f3d18f23bd744df
+      8a8b1b1214c62918cea2e3255bebf817
+        f98f0baa974e60085117f5dd4fe2ebb5
+          fa995d8b2dde459e8095a60751ef3b30
+            3ccfd50fc53f5e5c6bdc8cf1e52580a0
       storyboard
         scene
           component"
@@ -599,10 +599,10 @@ describe('fixParseSuccessUIDs', () => {
       'trim-bounds',
     )
     expect(getUidTree(firstResult)).toMatchInlineSnapshot(`
-      "d0f
-        b01
-          364
-          c85"
+      "d0fe908deffd8963ade2563a5228c782
+        b0124c71ae85fc9ed37d761091c42d14
+          3647ad2e40dab7862fbb7b363df4813e
+          c8540c083c7f9a7a2fdac69c67441b16"
     `)
     const secondResult = lintAndParseAndValidateResult(
       'test.js',
@@ -612,9 +612,9 @@ describe('fixParseSuccessUIDs', () => {
       'trim-bounds',
     )
     expect(getUidTree(secondResult)).toMatchInlineSnapshot(`
-      "d0f
-        b01
-          364"
+      "d0fe908deffd8963ade2563a5228c782
+        b0124c71ae85fc9ed37d761091c42d14
+          3647ad2e40dab7862fbb7b363df4813e"
     `)
   })
   it(`handles arbitrary JS blocks and their UIDs`, () => {

@@ -431,7 +431,7 @@ export default function () {
           id=\\"canvas-container\\"
           data-testid=\\"canvas-container\\"
           style=\\"position: absolute\\"
-          data-utopia-valid-paths=\\"storyboard-entity storyboard-entity/scene-1-entity storyboard-entity/scene-1-entity/app-entity storyboard-entity/scene-1-entity/app-entity:app-outer-div storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance storyboard-entity/scene-1-entity/app-entity:app-outer-div/ff8 storyboard-entity/scene-1-entity/app-entity:app-outer-div/070\\"
+          data-utopia-valid-paths=\\"storyboard-entity storyboard-entity/scene-1-entity storyboard-entity/scene-1-entity/app-entity storyboard-entity/scene-1-entity/app-entity:app-outer-div storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance storyboard-entity/scene-1-entity/app-entity:app-outer-div/ff8c8055c29e83663bdf72461600ed10 storyboard-entity/scene-1-entity/app-entity:app-outer-div/0706cd09b8007cdf1ef0ab8a352d3f79\\"
           data-utopia-root-element-path=\\"storyboard-entity\\"
         >
           <div
@@ -507,8 +507,8 @@ export default function () {
               </div>
               hello
               <div
-                data-uid=\\"01b\\"
-                data-path=\\"storyboard-entity/scene-1-entity/app-entity:app-outer-div/070:01b\\"
+                data-uid=\\"01bdb6a70c20d17c7fe5761fd29d469c\\"
+                data-path=\\"storyboard-entity/scene-1-entity/app-entity:app-outer-div/0706cd09b8007cdf1ef0ab8a352d3f79:01bdb6a70c20d17c7fe5761fd29d469c\\"
               >
                 Default Function Time
               </div>
