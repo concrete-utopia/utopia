@@ -446,6 +446,7 @@ export function getNavigatorTrees(
       metadata,
       projectTree,
       projectContents,
+      propertyControlsInfo,
       collapsedViews,
       hiddenInNavigator,
       subTree,
@@ -459,6 +460,7 @@ function createNavigatorSubtree(
   metadata: ElementInstanceMetadataMap,
   elementPathTrees: ElementPathTrees,
   projectContents: ProjectContentTreeRoot,
+  propertyControlsInfo: PropertyControlsInfo,
   collapsedViews: Array<ElementPath>, // TODO turn this into a single array!!
   hiddenInNavigator: Array<ElementPath>,
   subTree: ElementPathTree,
@@ -508,11 +510,12 @@ function createNavigatorSubtree(
       metadata,
       elementPathTrees,
       projectContents,
+      propertyControlsInfo,
       collapsedViews,
       hiddenInNavigator,
       subTree,
       jsxElementChild,
-      getPropertyControlsForTarget(elementPath, {}, {}),
+      getPropertyControlsForTarget(elementPath, propertyControlsInfo, projectContents),
       elementPath,
       hidden,
     )
@@ -523,6 +526,7 @@ function createNavigatorSubtree(
       metadata,
       elementPathTrees,
       projectContents,
+      propertyControlsInfo,
       collapsedViews,
       hiddenInNavigator,
       subTree,
@@ -537,6 +541,7 @@ function createNavigatorSubtree(
       metadata,
       elementPathTrees,
       projectContents,
+      propertyControlsInfo,
       collapsedViews,
       hiddenInNavigator,
       subTree,
@@ -560,11 +565,12 @@ function walkRegularNavigatorEntry(
   metadata: ElementInstanceMetadataMap,
   elementPathTrees: ElementPathTrees,
   projectContents: ProjectContentTreeRoot,
+  propertyControlsInfo: PropertyControlsInfo,
   collapsedViews: Array<ElementPath>,
   hiddenInNavigator: Array<ElementPath>,
   subTree: ElementPathTree,
   jsxElement: JSXElement | JSXFragment,
-  propControls: PropertyControls | null,
+  propControls: PropertyControls | null, // TODO this is redundant, we should be able to get this from propertyControlsInfo: PropertyControlsInfo,
   elementPath: ElementPath,
   hidden: boolean,
 ): NavigatorTree {
@@ -598,6 +604,7 @@ function walkRegularNavigatorEntry(
           metadata,
           elementPathTrees,
           projectContents,
+          propertyControlsInfo,
           collapsedViews,
           hiddenInNavigator,
           subTreeChild,
@@ -631,6 +638,7 @@ function walkRegularNavigatorEntry(
       metadata,
       elementPathTrees,
       projectContents,
+      propertyControlsInfo,
       collapsedViews,
       hiddenInNavigator,
       child,
@@ -650,6 +658,7 @@ function walkConditionalNavigatorEntry(
   metadata: ElementInstanceMetadataMap,
   elementPathTrees: ElementPathTrees,
   projectContents: ProjectContentTreeRoot,
+  propertyControlsInfo: PropertyControlsInfo,
   collapsedViews: Array<ElementPath>,
   hiddenInNavigator: Array<ElementPath>,
   subTree: ElementPathTree,
@@ -661,6 +670,7 @@ function walkConditionalNavigatorEntry(
     metadata,
     elementPathTrees,
     projectContents,
+    propertyControlsInfo,
     collapsedViews,
     hiddenInNavigator,
     subTree,
@@ -671,6 +681,7 @@ function walkConditionalNavigatorEntry(
     metadata,
     elementPathTrees,
     projectContents,
+    propertyControlsInfo,
     collapsedViews,
     hiddenInNavigator,
     subTree,
@@ -691,6 +702,7 @@ function walkConditionalClause(
   metadata: ElementInstanceMetadataMap,
   elementPathTrees: ElementPathTrees,
   projectContents: ProjectContentTreeRoot,
+  propertyControlsInfo: PropertyControlsInfo,
   collapsedViews: Array<ElementPath>,
   hiddenInNavigator: Array<ElementPath>,
   conditionalSubTree: ElementPathTree,
@@ -735,6 +747,7 @@ function walkConditionalClause(
         metadata,
         elementPathTrees,
         projectContents,
+        propertyControlsInfo,
         collapsedViews,
         hiddenInNavigator,
         child,
@@ -751,6 +764,7 @@ function walkMapExpression(
   metadata: ElementInstanceMetadataMap,
   elementPathTrees: ElementPathTrees,
   projectContents: ProjectContentTreeRoot,
+  propertyControlsInfo: PropertyControlsInfo,
   collapsedViews: Array<ElementPath>,
   hiddenInNavigator: Array<ElementPath>,
   subTree: ElementPathTree,
@@ -765,6 +779,7 @@ function walkMapExpression(
       metadata,
       elementPathTrees,
       projectContents,
+      propertyControlsInfo,
       collapsedViews,
       hiddenInNavigator,
       child,
@@ -810,8 +825,28 @@ export function getMappedNavigatorRows(
     }
 
     switch (entry.type) {
-      case 'regular-entry':
-        return [entry.navigatorEntry, ...entry.children.flatMap(getNavigatorEntriesForMapEntry)]
+      case 'regular-entry': {
+        const path = entry.navigatorEntry.elementPath
+        return [
+          entry.navigatorEntry,
+          ...Object.entries(entry.renderProps).flatMap(([propName, renderPropChild]) => {
+            const fakeRenderPropPath = EP.appendToPath(path, renderPropId(propName))
+            return [
+              renderPropNavigatorEntry(
+                fakeRenderPropPath,
+                propName,
+                renderPropChild.navigatorEntry.elementPath,
+              ),
+              ...getNavigatorEntriesForMapEntry(renderPropChild),
+            ]
+          }),
+          ...(Object.values(entry.renderProps).length > 0 && entry.children.length > 0
+            ? // we only show the children label if there are render props
+              [slotNavigatorEntry(EP.appendToPath(path, renderPropId('children')), 'children')]
+            : []),
+          ...entry.children.flatMap(getNavigatorEntriesForMapEntry),
+        ]
+      }
       case 'leaf-entry':
         return [entry.navigatorEntry]
       case 'map-entry':
