@@ -6,6 +6,7 @@ import type {
   JSExpression,
   JSXConditionalExpression,
   JSXElement,
+  JSXFragment,
   JSXMapExpression,
 } from '../../core/shared/element-template'
 import {
@@ -14,6 +15,7 @@ import {
   isJSExpressionValue,
   isJSXConditionalExpression,
   isJSXElement,
+  isJSXElementLike,
   isJSXMapExpression,
 } from '../../core/shared/element-template'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
@@ -501,7 +503,7 @@ function createNavigatorSubtree(
     return { type: 'leaf-entry', navigatorEntry: dataRefEntry }
   }
 
-  if (isJSXElement(jsxElementChild)) {
+  if (isJSXElementLike(jsxElementChild)) {
     return walkRegularNavigatorEntry(
       metadata,
       elementPathTrees,
@@ -561,7 +563,7 @@ function walkRegularNavigatorEntry(
   collapsedViews: Array<ElementPath>,
   hiddenInNavigator: Array<ElementPath>,
   subTree: ElementPathTree,
-  jsxElement: JSXElement,
+  jsxElement: JSXElement | JSXFragment,
   propControls: PropertyControls | null,
   elementPath: ElementPath,
   hidden: boolean,
@@ -569,55 +571,57 @@ function walkRegularNavigatorEntry(
   let renderPropChildrenAccumulator: { [propName: string]: NavigatorTree } = {}
   let processedAccumulator: Set<string> = emptySet()
 
-  Object.entries(propControls ?? {}).forEach(([prop, control]) => {
-    if (control.control !== 'jsx' || prop === 'children') {
-      return
-    }
-    const propValue = getJSXAttribute(jsxElement.props, prop)
-    const fakeRenderPropPath = EP.appendToPath(elementPath, renderPropId(prop))
-
-    if (propValue == null || (isJSExpressionValue(propValue) && propValue.value == null)) {
-      renderPropChildrenAccumulator[prop] = {
-        type: 'leaf-entry',
-        navigatorEntry: slotNavigatorEntry(
-          fakeRenderPropPath, // TODO fakeRenderPropPath must be deleted
-          prop,
-        ),
+  if (isJSXElement(jsxElement)) {
+    Object.entries(propControls ?? {}).forEach(([prop, control]) => {
+      if (control.control !== 'jsx' || prop === 'children') {
+        return
       }
-      return
-    }
+      const propValue = getJSXAttribute(jsxElement.props, prop)
+      const fakeRenderPropPath = EP.appendToPath(elementPath, renderPropId(prop))
 
-    const childPath = EP.appendToPath(elementPath, getUtopiaID(propValue))
-
-    const subTreeChild = subTree?.children.find((child) => EP.pathsEqual(child.path, childPath))
-    if (subTreeChild != null) {
-      const childTree = createNavigatorSubtree(
-        metadata,
-        elementPathTrees,
-        projectContents,
-        collapsedViews,
-        hiddenInNavigator,
-        subTreeChild,
-      )
-      processedAccumulator.add(EP.toString(subTreeChild.path))
-      renderPropChildrenAccumulator[prop] = childTree
-    } else {
-      const synthEntry = isFeatureEnabled('Data Entries in the Navigator')
-        ? dataReferenceNavigatorEntry(
-            childPath,
-            renderedAtPropertyPath(EPP.create(elementPath, PP.create(prop))),
-            elementPath,
-            propValue,
-          )
-        : syntheticNavigatorEntry(childPath, propValue)
-
-      processedAccumulator.add(EP.toString(childPath))
-      renderPropChildrenAccumulator[prop] = {
-        type: 'leaf-entry',
-        navigatorEntry: synthEntry,
+      if (propValue == null || (isJSExpressionValue(propValue) && propValue.value == null)) {
+        renderPropChildrenAccumulator[prop] = {
+          type: 'leaf-entry',
+          navigatorEntry: slotNavigatorEntry(
+            fakeRenderPropPath, // TODO fakeRenderPropPath must be deleted
+            prop,
+          ),
+        }
+        return
       }
-    }
-  })
+
+      const childPath = EP.appendToPath(elementPath, getUtopiaID(propValue))
+
+      const subTreeChild = subTree?.children.find((child) => EP.pathsEqual(child.path, childPath))
+      if (subTreeChild != null) {
+        const childTree = createNavigatorSubtree(
+          metadata,
+          elementPathTrees,
+          projectContents,
+          collapsedViews,
+          hiddenInNavigator,
+          subTreeChild,
+        )
+        processedAccumulator.add(EP.toString(subTreeChild.path))
+        renderPropChildrenAccumulator[prop] = childTree
+      } else {
+        const synthEntry = isFeatureEnabled('Data Entries in the Navigator')
+          ? dataReferenceNavigatorEntry(
+              childPath,
+              renderedAtPropertyPath(EPP.create(elementPath, PP.create(prop))),
+              elementPath,
+              propValue,
+            )
+          : syntheticNavigatorEntry(childPath, propValue)
+
+        processedAccumulator.add(EP.toString(childPath))
+        renderPropChildrenAccumulator[prop] = {
+          type: 'leaf-entry',
+          navigatorEntry: synthEntry,
+        }
+      }
+    })
+  }
 
   const childrenPaths = subTree.children.filter(
     (child) => !processedAccumulator.has(EP.toString(child.path)),
