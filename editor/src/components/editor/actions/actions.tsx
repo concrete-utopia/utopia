@@ -56,7 +56,6 @@ import type {
   JSXElementChild,
   JSXConditionalExpression,
   JSXFragment,
-  JSXMapExpression,
   JSExpression,
 } from '../../../core/shared/element-template'
 import {
