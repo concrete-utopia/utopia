@@ -34,7 +34,6 @@ import {
   getTargetParentForOneShotInsertion,
 } from '../canvas/canvas-strategies/strategies/reparent-utils'
 import { generateUID } from '../../core/shared/uid-utils'
-import { getAllUniqueUids } from '../../core/model/get-unique-ids'
 import { assertNever } from '../../core/shared/utils'
 import type { ComponentElementToInsert } from '../custom-code/code-file'
 import { notice } from '../common/notice'
@@ -181,12 +180,6 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
         // if there's no storyboard, there's not much you can do
         return
       }
-
-      const allElementUids = new Set(getAllUniqueUids(projectContentsRef.current).uniqueIDs)
-
-      const wrappedUid = generateUID()
-
-      allElementUids.add(wrappedUid)
 
       const elementUid = generateUID()
 

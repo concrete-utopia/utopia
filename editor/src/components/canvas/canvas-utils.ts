@@ -149,7 +149,6 @@ import {
 import { getConditionalCaseCorrespondingToBranchPath } from '../../core/model/conditionals'
 import { isEmptyConditionalBranch } from '../../core/model/conditionals'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
-import { getAllUniqueUids } from '../../core/model/get-unique-ids'
 import type { ErrorMessage } from '../../core/shared/error-messages'
 import type { OverlayError } from '../../core/shared/runtime-report-logs'
 import type { RouteModulesWithRelativePaths } from './remix/remix-utils'
@@ -1446,7 +1445,6 @@ export function duplicate(
   let newSelectedViews: Array<ElementPath> = []
   let workingEditorState: EditorState = editor
 
-  const existingIDsMutable = new Set(getAllUniqueUids(workingEditorState.projectContents).allIDs)
   for (const path of paths) {
     let metadataUpdate: (metadata: ElementInstanceMetadataMap) => ElementInstanceMetadataMap = (
       metadata,
