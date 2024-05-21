@@ -56,6 +56,7 @@ import { navigatorDepth } from '../navigator-utils'
 import { maybeConditionalExpression } from '../../../core/model/conditionals'
 import { getRouteComponentNameForOutlet } from '../../canvas/remix/remix-utils'
 import { CondensedNavigatorRow, isRegulaNavigatorrRow, type NavigatorRow } from '../navigator-row'
+import { BasePaddingUnit } from './navigator-item'
 
 interface NavigatorItemWrapperProps {
   index: number
@@ -226,6 +227,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
       return (
         <SingleEntryNavigatorItemWrapper
           index={props.index}
+          indentation={props.navigatorRow.indentation}
           targetComponentKey={props.targetComponentKey}
           navigatorRow={props.navigatorRow}
           getCurrentlySelectedEntries={props.getCurrentlySelectedEntries}
@@ -236,7 +238,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
       )
     }
     return (
-      <div style={{ ...props.windowStyle, left: 8 * 1 }}>
+      <div style={{ ...props.windowStyle, left: BasePaddingUnit * props.navigatorRow.indentation }}>
         {props.navigatorRow.variant === 'trunk' ? (
           <React.Fragment>
             {props.navigatorRow.entries.map((entry) => (
@@ -258,6 +260,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
 )
 
 type SingleEntryNavigatorItemWrapperProps = NavigatorItemWrapperProps & {
+  indentation: number
   navigatorEntry: NavigatorEntry
 }
 
@@ -388,6 +391,7 @@ const SingleEntryNavigatorItemWrapper: React.FunctionComponent<
   const navigatorItemProps: NavigatorItemDragAndDropWrapperPropsBase = {
     type: NavigatorItemDragType,
     index: props.index,
+    indentation: props.indentation,
     editorDispatch: dispatch,
     entryDepth: entryDepth,
     selected: isSelected,

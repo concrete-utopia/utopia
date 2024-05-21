@@ -67,7 +67,7 @@ import { regularNavigatorRow } from '../../navigator/navigator-row'
 describe('DerivedStateKeepDeepEquality', () => {
   const oldValue: DerivedState = {
     navigatorRows: [
-      regularNavigatorRow(regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']]))),
+      regularNavigatorRow(regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])), 1),
     ],
     navigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']]))],
     visibleNavigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']]))],
@@ -103,7 +103,7 @@ describe('DerivedStateKeepDeepEquality', () => {
   }
   const newSameValue: DerivedState = {
     navigatorRows: [
-      regularNavigatorRow(regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']]))),
+      regularNavigatorRow(regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])), 1),
     ],
     navigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']]))],
     visibleNavigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']]))],
@@ -139,7 +139,7 @@ describe('DerivedStateKeepDeepEquality', () => {
   }
   const newDifferentValue: DerivedState = {
     navigatorRows: [
-      regularNavigatorRow(regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'ddd']]))),
+      regularNavigatorRow(regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'ddd']])), 2),
     ],
     navigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'ddd']]))],
     visibleNavigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']]))],

@@ -947,22 +947,28 @@ function getNavigatorRowsForTree(
 ): Array<NavigatorRow> {
   const condensedTree = condendenseNavigatorTree(navigatorTree)
 
-  function getNavigatorRowForTree(entry: NavigatorTree): Array<NavigatorRow> {
+  function walkTree(entry: NavigatorTree, indentation: number): Array<NavigatorRow> {
     if (
       filterVisible === 'visible-navigator-targets' &&
       'subtreeHidden' in entry &&
       entry.subtreeHidden
     ) {
-      return [regularNavigatorRow(entry.navigatorEntry)]
+      return [regularNavigatorRow(entry.navigatorEntry, indentation)]
     }
 
     switch (entry.type) {
       case 'condensed-trunk': {
         const { singleRow, child } = flattenCondensedTrunk(entry)
         if (singleRow.length === 1) {
-          return [regularNavigatorRow(singleRow[0]), ...getNavigatorRowForTree(child)]
+          return [
+            regularNavigatorRow(singleRow[0], indentation),
+            ...walkTree(child, indentation + 1),
+          ]
         }
-        return [condensedNavigatorRow(singleRow, 'trunk'), ...getNavigatorRowForTree(child)]
+        return [
+          condensedNavigatorRow(singleRow, 'trunk', indentation),
+          ...walkTree(child, indentation + 1),
+        ]
       }
       case 'condensed-leaf':
         return [
@@ -972,12 +978,15 @@ function getNavigatorRowsForTree(
               ...entry.children,
             ],
             'leaf',
+            indentation,
           ),
         ]
       case 'regular-entry': {
         const path = entry.navigatorEntry.elementPath
+        const showChildrenLabel =
+          Object.values(entry.renderProps).length > 0 && entry.children.length > 0
         return [
-          regularNavigatorRow(entry.navigatorEntry),
+          regularNavigatorRow(entry.navigatorEntry, indentation),
           ...Object.entries(entry.renderProps).flatMap(([propName, renderPropChild]) => {
             const fakeRenderPropPath = EP.appendToPath(path, renderPropId(propName))
             return [
@@ -987,11 +996,12 @@ function getNavigatorRowsForTree(
                   propName,
                   renderPropChild.navigatorEntry.elementPath,
                 ),
+                indentation + 1,
               ),
-              ...getNavigatorRowForTree(renderPropChild),
+              ...walkTree(renderPropChild, indentation + 2),
             ]
           }),
-          ...(Object.values(entry.renderProps).length > 0 && entry.children.length > 0
+          ...(showChildrenLabel
             ? // we only show the children label if there are render props
               [
                 regularNavigatorRow(
@@ -1000,37 +1010,42 @@ function getNavigatorRowsForTree(
                     'children',
                     entry.children[0].navigatorEntry.elementPath, // pick the first child path
                   ),
+                  indentation + 1,
                 ),
               ]
             : []),
-          ...entry.children.flatMap(getNavigatorRowForTree),
+          ...entry.children.flatMap((t) =>
+            walkTree(t, showChildrenLabel ? indentation + 2 : indentation + 1),
+          ),
         ]
       }
       case 'leaf-entry':
-        return [regularNavigatorRow(entry.navigatorEntry)]
+        return [regularNavigatorRow(entry.navigatorEntry, indentation)]
       case 'map-entry':
         return [
-          regularNavigatorRow(entry.navigatorEntry),
-          ...entry.mappedEntries.flatMap(getNavigatorRowForTree),
+          regularNavigatorRow(entry.navigatorEntry, indentation),
+          ...entry.mappedEntries.flatMap((t) => walkTree(t, indentation + 1)),
         ]
       case 'conditional-entry':
         return [
-          regularNavigatorRow(entry.navigatorEntry),
+          regularNavigatorRow(entry.navigatorEntry, indentation),
           regularNavigatorRow(
             conditionalClauseNavigatorEntry(entry.navigatorEntry.elementPath, 'true-case'),
+            indentation + 1,
           ),
-          ...entry.trueCase.flatMap(getNavigatorRowForTree),
+          ...entry.trueCase.flatMap((t) => walkTree(t, indentation + 2)),
           regularNavigatorRow(
             conditionalClauseNavigatorEntry(entry.navigatorEntry.elementPath, 'false-case'),
+            indentation + 1,
           ),
-          ...entry.falseCase.flatMap(getNavigatorRowForTree),
+          ...entry.falseCase.flatMap((t) => walkTree(t, indentation + 2)),
         ]
       default:
         assertNever(entry)
     }
   }
 
-  return condensedTree.flatMap(getNavigatorRowForTree)
+  return condensedTree.flatMap((t) => walkTree(t, 0))
 }
 
 export function getNavigatorTargets(
