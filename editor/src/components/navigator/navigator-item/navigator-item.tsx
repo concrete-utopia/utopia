@@ -1080,7 +1080,7 @@ const RenderPropSlot = React.memo((props: RenderPropSlotProps) => {
   const insertionTarget = renderPropTarget(navigatorEntry.prop)
 
   const showComponentPickerContextMenu = useCreateCallbackToShowComponentPicker()(
-    target,
+    [target],
     insertionTarget,
   )
 
@@ -1109,7 +1109,7 @@ const ConditionalBranchSlot = React.memo((props: ConditionalBranchSlotProps) => 
   const target = EP.parentPath(navigatorEntry.elementPath)
 
   const showComponentPickerContextMenu = useCreateCallbackToShowComponentPicker()(
-    target,
+    [target],
     conditionalTarget(conditionalCase),
   )
 

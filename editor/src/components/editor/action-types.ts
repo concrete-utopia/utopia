@@ -143,6 +143,7 @@ export type ClearSelection = {
 }
 
 export type ReplaceTarget = { type: 'replace-target' }
+export type WrapTarget = { type: 'wrap-target' }
 export type ReplaceKeepChildrenAndStyleTarget = { type: 'replace-target-keep-children-and-style' }
 export type InsertAsChildTarget = { type: 'insert-as-child'; indexPosition?: IndexPosition }
 

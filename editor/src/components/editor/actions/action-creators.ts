@@ -234,6 +234,7 @@ import type {
   ReplaceTarget,
   InsertAsChildTarget,
   ReplaceKeepChildrenAndStyleTarget,
+  WrapTarget,
   ReplaceElementInScope,
   ElementReplacementPath,
   ReplaceJSXElement,
@@ -274,6 +275,7 @@ export function clearSelection(): EditorAction {
 }
 
 export const replaceTarget: ReplaceTarget = { type: 'replace-target' }
+export const wrapTarget: WrapTarget = { type: 'wrap-target' }
 export const replaceKeepChildrenAndStyleTarget: ReplaceKeepChildrenAndStyleTarget = {
   type: 'replace-target-keep-children-and-style',
 }

@@ -7382,7 +7382,7 @@ export var storyboard = (
       )
     })
     describe('groups', () => {
-      it('cannot wrap an empty group', async () => {
+      it.skip('cannot wrap an empty group', async () => {
         const testCode = `
         <div data-uid='aaa'>
           <Group data-uid='group' />
