@@ -57,6 +57,7 @@ import type {
   JSXConditionalExpression,
   JSXFragment,
   JSXMapExpression,
+  JSExpression,
 } from '../../../core/shared/element-template'
 import {
   deleteJSXAttribute,
@@ -127,6 +128,7 @@ import type {
   ParseSuccess,
   ProjectContents,
   ProjectFile,
+  PropertyPath,
   StaticElementPath,
   TextFile,
 } from '../../../core/shared/project-file-types'
@@ -2429,44 +2431,67 @@ export const UPDATE_FNS = {
     }
   },
   REPLACE_ELEMENT_IN_SCOPE: (action: ReplaceElementInScope, editor: EditorModel): EditorModel => {
+    const replaceChildWithUid = (
+      element: JSXElementChild,
+      uid: string,
+      replaceWith: JSXElementChild,
+    ): JSXElementChild => {
+      if (element.type !== 'JSX_ELEMENT' && element.type !== 'JSX_FRAGMENT') {
+        return element
+      }
+
+      return {
+        ...element,
+        children: element.children.map((c) => (c.uid !== uid ? c : replaceWith)),
+      }
+    }
+
+    const updateMapExpression = (
+      element: JSXElementChild,
+      valueToMap: JSExpression,
+    ): JSXElementChild => {
+      if (element.type !== 'JSX_MAP_EXPRESSION') {
+        return element
+      }
+      return {
+        ...element,
+        valueToMap: valueToMap,
+      }
+    }
+
+    const replacePropertyValue = (
+      element: JSXElementChild,
+      propertyPath: PropertyPath,
+      replaceWith: JSExpression,
+    ): JSXElementChild => {
+      if (element.type !== 'JSX_ELEMENT') {
+        return element
+      }
+      return {
+        ...element,
+        props: defaultEither(
+          element.props,
+          setJSXValueAtPath(element.props, propertyPath, replaceWith),
+        ),
+      }
+    }
+
     return modifyUnderlyingTarget(action.target, editor, (element) => {
       const replacementPath = action.replacementPath
-      if (replacementPath.type === 'replace-child-with-uid') {
-        if (element.type !== 'JSX_ELEMENT' && element.type !== 'JSX_FRAGMENT') {
-          return element
-        }
-
-        return {
-          ...element,
-          children: element.children.map((c) =>
-            c.uid !== replacementPath.uid ? c : replacementPath.replaceWith,
-          ),
-        }
-      } else if (replacementPath.type === 'update-map-expression') {
-        if (element.type !== 'JSX_MAP_EXPRESSION') {
-          return element
-        }
-        return {
-          ...element,
-          valueToMap: replacementPath.valueToMap,
-        }
-      } else if (replacementPath.type === 'replace-property-value') {
-        if (element.type !== 'JSX_ELEMENT') {
-          return element
-        }
-        return {
-          ...element,
-          props: defaultEither(
-            element.props,
-            setJSXValueAtPath(
-              element.props,
-              replacementPath.propertyPath,
-              replacementPath.replaceWith,
-            ),
-          ),
-        }
+      switch (replacementPath.type) {
+        case 'replace-child-with-uid':
+          return replaceChildWithUid(element, replacementPath.uid, replacementPath.replaceWith)
+        case 'replace-property-value':
+          return replacePropertyValue(
+            element,
+            replacementPath.propertyPath,
+            replacementPath.replaceWith,
+          )
+        case 'update-map-expression':
+          return updateMapExpression(element, replacementPath.valueToMap)
+        default:
+          assertNever(replacementPath)
       }
-      assertNever(replacementPath)
     })
   },
   INSERT_ATTRIBUTE_OTHER_JAVASCRIPT_INTO_ELEMENT: (
