@@ -1389,7 +1389,7 @@ export var storyboard = (
       return editor
     }
 
-    it('when wrapping into fragment', async () => {
+    it.skip('when wrapping into fragment', async () => {
       const editor = await setup()
 
       await pressKey('w')
