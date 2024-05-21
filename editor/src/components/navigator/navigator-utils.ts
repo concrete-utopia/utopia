@@ -108,11 +108,13 @@ export type NavigatorTree =
       subtreeHidden: boolean
     }
   | {
-      type: 'data-entry'
+      // TODO not sure if leaf has to be a separate type, it could be a regular entry with no children, but it feels like it'll be useful
+      type: 'leaf-entry'
       navigatorEntry:
         | DataReferenceNavigatorEntry
-        | SyntheticNavigatorEntry // TODO remove SyntheticNavigatorEntry as an option from here
-        | InvalidOverrideNavigatorEntry // TODO remove InvalidOverrideNavigatorEntry as an option from here
+        | SyntheticNavigatorEntry
+        | InvalidOverrideNavigatorEntry
+        | SlotNavigatorEntry
     }
   | {
       type: 'map-entry'
@@ -123,10 +125,6 @@ export type NavigatorTree =
       target: NavigatorEntry
       trueCase: Array<NavigatorTree>
       falseCase: Array<NavigatorTree>
-    }
-  | {
-      type: 'slot-entry'
-      target: SlotNavigatorEntry
     }
 
 interface GetNavigatorTargetsResults {
@@ -451,25 +449,21 @@ function createNavigatorSubtree(
   projectContents: ProjectContentTreeRoot,
   subTree: ElementPathTree,
 ): NavigatorTree {
-  // first, only be able to create regular entries
   const elementPath = subTree.path
-  // const elementMetadata = MetadataUtils.findElementByElementPath(metadata, elementPath)
-  // if (elementMetadata == null) {
-  //   console.error(`Element metadata should not be null: ${subTree.pathString}`)
-  //   return {
-  //     type: 'data-entry',
-  //     navigatorEntry: invalidOverrideNavigatorEntry(subTree.path, 'Metadata was null'),
-  //   }
-  // }
   const jsxElementChild = getElementFromProjectContents(elementPath, projectContents)
   if (jsxElementChild == null) {
-    throw new Error(`Element was not found in project contents: ${subTree.pathString}`)
+    return {
+      type: 'leaf-entry',
+      navigatorEntry: invalidOverrideNavigatorEntry(
+        subTree.path,
+        'Element was not found in project contents.',
+      ),
+    }
   }
 
   const elementIsDataReferenceFromProjectContents =
     MetadataUtils.isElementDataReference(jsxElementChild)
 
-  // if element is data reference, return leaf
   if (
     elementIsDataReferenceFromProjectContents &&
     isFeatureEnabled('Data Entries in the Navigator')
@@ -481,7 +475,7 @@ function createNavigatorSubtree(
       EP.parentPath(elementPath),
       jsxElementChild,
     )
-    return { type: 'data-entry', navigatorEntry: dataRefEntry }
+    return { type: 'leaf-entry', navigatorEntry: dataRefEntry }
   }
 
   if (isJSXElement(jsxElementChild)) {
@@ -515,7 +509,7 @@ function createNavigatorSubtree(
   if (!isFeatureEnabled('Data Entries in the Navigator')) {
     // fallback case for the FS off
     return {
-      type: 'data-entry',
+      type: 'leaf-entry',
       navigatorEntry: syntheticNavigatorEntry(elementPath, jsxElementChild),
     }
   }
@@ -545,8 +539,8 @@ function walkRegularNavigatorEntry(
 
     if (propValue == null || (isJSExpressionValue(propValue) && propValue.value == null)) {
       renderPropChildrenAccumulator[prop] = {
-        type: 'slot-entry',
-        target: slotNavigatorEntry(
+        type: 'leaf-entry',
+        navigatorEntry: slotNavigatorEntry(
           fakeRenderPropPath, // TODO fakeRenderPropPath must be deleted
           prop,
         ),
@@ -578,7 +572,7 @@ function walkRegularNavigatorEntry(
 
       processedAccumulator.add(EP.toString(childPath))
       renderPropChildrenAccumulator[prop] = {
-        type: 'data-entry',
+        type: 'leaf-entry',
         navigatorEntry: synthEntry,
       }
     }
@@ -681,7 +675,7 @@ function walkConditionalClause(
   }
 
   // No children were found in the ElementPathTrees, so we create a synthetic entry for the value of the clause.
-  return [{ type: 'data-entry', navigatorEntry: syntheticNavigatorEntry(clausePath, clauseValue) }]
+  return [{ type: 'leaf-entry', navigatorEntry: syntheticNavigatorEntry(clausePath, clauseValue) }]
 }
 
 function walkMapExpression(
@@ -709,7 +703,7 @@ function walkMapExpression(
         EP.appendToPath(subTree.path, `invalid-override-${i + 1}`),
         'data source not found',
       )
-      invalidEntries.push({ type: 'data-entry', navigatorEntry: entry })
+      invalidEntries.push({ type: 'leaf-entry', navigatorEntry: entry })
     }
     return invalidEntries
   })()
@@ -723,7 +717,7 @@ export function getMappedNavigatorRows(navigatorTree: Array<NavigatorTree>): Arr
     switch (entry.type) {
       case 'regular-entry':
         return [entry.navigatorEntry, ...entry.children.flatMap(getNavigatorEntriesForMapEntry)]
-      case 'data-entry':
+      case 'leaf-entry':
         return [entry.navigatorEntry]
       case 'map-entry':
         return entry.mappedEntries.flatMap(getNavigatorEntriesForMapEntry)
@@ -733,8 +727,6 @@ export function getMappedNavigatorRows(navigatorTree: Array<NavigatorTree>): Arr
           ...entry.trueCase.flatMap(getNavigatorEntriesForMapEntry),
           ...entry.falseCase.flatMap(getNavigatorEntriesForMapEntry),
         ]
-      case 'slot-entry':
-        return [entry.target]
       default:
         assertNever(entry)
     }
