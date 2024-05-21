@@ -16,7 +16,6 @@ import {
   jsExpressionOtherJavaScript,
   jsxAttributesFromMap,
   emptyComments,
-  jsOpaqueArbitraryStatement,
 } from '../shared/element-template'
 import * as EP from '../shared/element-path'
 import * as PP from '../shared/property-path'
@@ -33,7 +32,6 @@ import type { ProjectContentTreeRoot } from '../../components/assets'
 import { getProjectFileByFilePath } from '../../components/assets'
 import { getUtopiaJSXComponentsFromSuccess } from './project-file-utils'
 import { generateHashUID, getUtopiaID } from '../shared/uid-utils'
-import { hashObject } from '../shared/hash'
 
 export const PathForSceneComponent = PP.create('component')
 export const PathForSceneDataUid = PP.create('data-uid')
@@ -150,8 +148,11 @@ export function createSceneFromComponent(
   })
   const componentUID = generateHashUID({
     fileName: filePath,
-    name: componentImportedAs,
-    props: jsxAttributesFromMap({}),
+    value: {
+      name: componentImportedAs,
+      props: jsxAttributesFromMap({}),
+    },
+    bounds: null, // TODO should we have bounds here?
   })
   return jsxElement('Scene', uid, sceneProps, [
     jsxElement(

@@ -142,7 +142,6 @@ import type { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
 import { emptySet } from '../../../core/shared/set-utils'
 import { getAllUniqueUidsFromAttributes } from '../../../core/model/get-unique-ids'
 import type { SteganographyMode } from './parser-printer'
-import { hashObject } from '../../shared/hash'
 
 export function parseParams(
   params: TS.NodeArray<TS.ParameterDeclaration>,
@@ -805,14 +804,14 @@ function createAssignmentStatement(
   sourceFile: TS.SourceFile,
   declarationKeyword: 'let' | 'const' | 'var',
   assignments: Array<JSAssignment>,
-  nodeOrNodes: TS.Node | Array<TS.Node>,
+  node: TS.Node,
 ): JSAssignmentStatement {
   const withoutUID = jsAssignmentStatement(
     declarationKeyword,
     assignments.map(clearAssignmentUniqueIDsAndSourceMaps),
     '',
   )
-  const uid = generateNodeUID(sourceFile, withoutUID, nodeOrNodes)
+  const uid = generateNodeUID(sourceFile, withoutUID, node)
   return jsAssignmentStatement(declarationKeyword, assignments, uid)
 }
 
@@ -1753,12 +1752,14 @@ export function parseJSExpressionMapOrOtherJavascript(
 function generateNodeUID(
   sourceFile: TS.SourceFile,
   value: any,
-  nodeOrNodes: TS.Node | Array<TS.Node>,
+  nodeOrNodes: TS.Node | TS.Node[],
 ): string {
+  const bounds = getBoundsOfNodes(sourceFile, nodeOrNodes)
+
   return generateHashUID({
     fileName: sourceFile.fileName,
     value: value,
-    bounds: getBoundsOfNodes(sourceFile, nodeOrNodes),
+    bounds: bounds,
   })
 }
 
@@ -1766,9 +1767,9 @@ function createRawExpressionValue(
   sourceFile: TS.SourceFile,
   value: any,
   comments: ParsedComments,
-  nodeOrNodes: TS.Node | Array<TS.Node>,
+  node: TS.Node,
 ): JSExpressionValue<any> {
-  const uid = generateNodeUID(sourceFile, value, nodeOrNodes)
+  const uid = generateNodeUID(sourceFile, value, node)
   return jsExpressionValue(value, comments, uid)
 }
 
@@ -1793,7 +1794,7 @@ function createMapExpression(
   mapFunction: JSExpression,
   valuesInScopeFromParameters: Array<string>,
   comments: ParsedComments,
-  nodeOrNodes: TS.Node | Array<TS.Node>,
+  node: TS.Node,
 ): JSXMapExpression {
   const withoutUID = jsxMapExpression(
     clearExpressionUniqueIDs(valueToMap),
@@ -1802,7 +1803,7 @@ function createMapExpression(
     valuesInScopeFromParameters,
     '',
   )
-  const uid = getUIDFromCommentsOrValue(comments, sourceFile, withoutUID, nodeOrNodes)
+  const uid = getUIDFromCommentsOrValue(comments, sourceFile, withoutUID, node)
   return jsxMapExpression(valueToMap, mapFunction, comments, valuesInScopeFromParameters, uid)
 }
 
@@ -1915,12 +1916,12 @@ function getUIDFromCommentsOrValue(
   comments: ParsedComments,
   sourceFile: TS.SourceFile,
   value: JSExpression,
-  nodeOrNodes: TS.Node | Array<TS.Node>,
+  node: TS.Node,
 ): string {
   const parsedUID = parseUIDFromComments(comments)
   return foldEither(
     () => {
-      return generateNodeUID(sourceFile, value, nodeOrNodes)
+      return generateNodeUID(sourceFile, value, node)
     },
     (uidFromComments) => {
       return uidFromComments
@@ -2952,8 +2953,10 @@ function getUIDBasedOnElement(
   return generateHashUID({
     fileName: sourceFile.fileName,
     bounds: getBoundsOfNodes(sourceFile, originatingElement),
-    name: elementName,
-    props: cleansedProps,
+    value: {
+      name: elementName,
+      props: cleansedProps,
+    },
   })
 }
 

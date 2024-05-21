@@ -1,10 +1,10 @@
+import { v4 } from 'uuid'
 import type { ComponentElementToInsert } from '../../components/custom-code/code-file'
 import type { Either } from '../shared/either'
 import { left, right } from '../shared/either'
 import type { ArbitraryJSBlock, UtopiaJSXComponent } from '../shared/element-template'
 import type { Imports } from '../shared/project-file-types'
 import { isParseFailure, isParseSuccess } from '../shared/project-file-types'
-import { emptySet } from '../shared/set-utils'
 import { isSteganographyEnabled } from '../shared/stegano-text'
 import type { UtopiaTsWorkers } from '../workers/common/worker-types'
 import { createParseFile, getParseResult } from '../workers/common/worker-types'
@@ -45,7 +45,7 @@ async function getParseResultForUserStrings(
     }`
   const parseResult = await getParseResult(
     workers,
-    [createParseFile('code.tsx', codeToParse, null, Date.now())],
+    [createParseFile(`code-${v4()}.tsx`, codeToParse, null, Date.now())],
     isSteganographyEnabled(),
   )
 

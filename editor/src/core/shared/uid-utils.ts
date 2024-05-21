@@ -4,13 +4,11 @@ import { mapDropNulls } from './array-utils'
 import { deepFindUtopiaCommentFlag, isUtopiaCommentFlagUid } from './comment-flags'
 import { getDOMAttribute } from './dom-utils'
 import type { Either } from './either'
-import { flatMapEither, foldEither, isRight, left, right } from './either'
+import { flatMapEither, isRight, left, right } from './either'
 import * as EP from './element-path'
 import type {
   ElementInstanceMetadata,
-  JSExpression,
   JSXAttributes,
-  JSXConditionalExpression,
   JSXElement,
   JSXElementChild,
   JSXFragment,
@@ -22,16 +20,10 @@ import type {
   JSExpressionNestedArray,
   JSExpressionNestedObject,
   JSExpressionFunctionCall,
-  JSXArrayElement,
-  JSXProperty,
   JSXMapExpression,
-  JSIdentifier,
-  JSPropertyAccess,
-  JSElementAccess,
 } from './element-template'
 import {
   emptyComments,
-  getJSXAttribute,
   isJSXAttributeValue,
   isJSXConditionalExpression,
   isJSXElement,
@@ -49,24 +41,16 @@ import {
   jsExpressionNestedObject,
   jsExpressionFunctionCall,
   jsExpressionOtherJavaScript,
-  isJSExpression,
   isJSExpressionOtherJavaScript,
   isJSXMapExpression,
   jsxMapExpression,
 } from './element-template'
-import { shallowEqual } from './equality-utils'
-import { objectMap } from './object-utils'
 import type { ElementPath, HighlightBoundsForUids } from './project-file-types'
 import * as PP from './property-path'
-import { assertNever } from './utils'
-import fastDeepEquals from 'fast-deep-equal'
 import { emptySet } from './set-utils'
-import {
-  getModifiableJSXAttributeAtPath,
-  jsxSimpleAttributeToValue,
-  setJSXValueAtPath,
-} from './jsx-attribute-utils'
+import { getModifiableJSXAttributeAtPath, jsxSimpleAttributeToValue } from './jsx-attribute-utils'
 import { hashObject } from './hash'
+import type { LineAndCharacter } from 'typescript'
 
 export const MOCK_NEXT_GENERATED_UIDS: { current: Array<string> } = { current: [] }
 export const MOCK_NEXT_GENERATED_UIDS_IDX = { current: 0 }
@@ -144,7 +128,16 @@ export function updateHighlightBounds(
   return result
 }
 
-export function generateHashUID(data: any): string {
+interface Bounds {
+  start: LineAndCharacter
+  end: LineAndCharacter
+}
+
+export function generateHashUID(data: {
+  fileName: string
+  bounds: Bounds | null
+  value: any
+}): string {
   const hash = hashObject(data)
   return uidOrMockUid(hash)
 }
