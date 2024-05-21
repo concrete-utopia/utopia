@@ -860,17 +860,17 @@ function condendenseNavigatorTree(navigatorTree: Array<NavigatorTree>): Array<Na
     }
 
     // if all the entry's children are leaf entries, we can condense them
-    if (
-      entry.type === 'regular-entry' &&
-      Object.values(entry.renderProps).length === 0 &&
-      allChildrenAreLeafEntries(entry.children)
-    ) {
-      return {
-        type: 'condensed-leaf',
-        navigatorEntry: entry.navigatorEntry,
-        children: entry.children.map((c) => c.navigatorEntry),
-      }
-    }
+    // if (
+    //   entry.type === 'regular-entry' &&
+    //   Object.values(entry.renderProps).length === 0 &&
+    //   allChildrenAreLeafEntries(entry.children)
+    // ) {
+    //   return {
+    //     type: 'condensed-leaf',
+    //     navigatorEntry: entry.navigatorEntry,
+    //     children: entry.children.map((c) => c.navigatorEntry),
+    //   }
+    // }
 
     //  we need to recurse into the subtrees here!
     switch (entry.type) {
