@@ -822,7 +822,9 @@ export function getMappedNavigatorRows(
       case 'conditional-entry':
         return [
           entry.navigatorEntry,
+          conditionalClauseNavigatorEntry(entry.navigatorEntry.elementPath, 'true-case'),
           ...entry.trueCase.flatMap(getNavigatorEntriesForMapEntry),
+          conditionalClauseNavigatorEntry(entry.navigatorEntry.elementPath, 'false-case'),
           ...entry.falseCase.flatMap(getNavigatorEntriesForMapEntry),
         ]
       default:
