@@ -44,6 +44,12 @@ import type { PropertyControls } from '../custom-code/internal-property-controls
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import * as PP from '../../core/shared/property-path'
 import * as EPP from '../template-property-path'
+import {
+  getEntriesForRow,
+  type CondensedNavigatorRow,
+  type NavigatorRow,
+  type RegularNavigatorRow,
+} from './navigator-row'
 
 export function baseNavigatorDepth(path: ElementPath): number {
   // The storyboard means that this starts at -1,
@@ -79,19 +85,37 @@ export function navigatorDepth(
   return result
 }
 
+export type NavigatorTree =
+  | {
+      type: 'regular-entry'
+      navigatorEntry: NavigatorEntry
+      children: Array<NavigatorTree>
+      subtreeHidden: boolean
+    }
+  | {
+      type: 'condensed-entry'
+      navigatorEntry: NavigatorEntry
+      condensedSubtree: NavigatorTree
+    }
+  | {
+      type: 'condensed-leaf'
+      navigatorEntry: NavigatorEntry
+    }
+
 interface GetNavigatorTargetsResults {
+  navigatorRows: Array<NavigatorRow>
   navigatorTargets: Array<NavigatorEntry>
   visibleNavigatorTargets: Array<NavigatorEntry>
 }
 
-export function getNavigatorTargets(
+export function getNavigatorTrees(
   metadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
   collapsedViews: Array<ElementPath>,
   hiddenInNavigator: Array<ElementPath>,
   propertyControlsInfo: PropertyControlsInfo,
   projectContents: ProjectContentTreeRoot,
-): GetNavigatorTargetsResults {
+): Array<NavigatorTree> {
   // Note: This value will not necessarily be representative of the structured ordering in
   // the code that produced these elements, between siblings, as a result of it
   // relying on `metadata`, which has insertion ordering.
@@ -389,9 +413,74 @@ export function getNavigatorTargets(
     walkAndAddKeys(subTree, false, null)
   })
 
+  return []
+}
+
+// turn me into a selector
+// TODO!! be able to filter to only visible
+export function getMappedNavigatorRows(navigatorTree: Array<NavigatorTree>): Array<NavigatorRow> {
+  let toCondense: Array<NavigatorEntry> = []
+  let regularRows: Array<RegularNavigatorRow> = []
+  // put the first 6 items in condensed rows, the rest as regular rows
+
+  // TODO make it respect the entry type
+  const visibleNavigatorTargets = navigatorTree.map((entry) => {
+    switch (entry.type) {
+      case 'regular-entry':
+        return entry.navigatorEntry
+      case 'condensed-entry':
+        return entry.navigatorEntry
+      case 'condensed-leaf':
+        return entry.navigatorEntry
+    }
+  })
+
+  for (let i = 0; i < visibleNavigatorTargets.length; i++) {
+    if (i < 6) {
+      toCondense.push(visibleNavigatorTargets[i])
+    } else {
+      regularRows.push({
+        type: 'regular-row',
+        entry: visibleNavigatorTargets[i],
+      })
+    }
+  }
+  const condensedRow: Array<CondensedNavigatorRow> = [
+    {
+      type: 'condensed-row',
+      entries: toCondense,
+    },
+  ]
+
+  return [...condensedRow, ...regularRows]
+}
+
+export function getNavigatorTargets(
+  metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTrees,
+  collapsedViews: Array<ElementPath>,
+  hiddenInNavigator: Array<ElementPath>,
+  propertyControlsInfo: PropertyControlsInfo,
+  projectContents: ProjectContentTreeRoot,
+): GetNavigatorTargetsResults {
+  const navigatorTrees = getNavigatorTrees(
+    metadata,
+    elementPathTree,
+    collapsedViews,
+    hiddenInNavigator,
+    propertyControlsInfo,
+    projectContents,
+  )
+
+  const navigatorRows = getMappedNavigatorRows(navigatorTrees)
+  const navigatorTargets = navigatorRows.flatMap((row) => {
+    return getEntriesForRow(row)
+  })
+
   return {
+    navigatorRows: navigatorRows,
     navigatorTargets: navigatorTargets,
-    visibleNavigatorTargets: visibleNavigatorTargets,
+    visibleNavigatorTargets: navigatorTargets, // TODO: filter out hidden
   }
 }
 

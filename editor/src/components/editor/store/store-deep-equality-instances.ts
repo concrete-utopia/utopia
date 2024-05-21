@@ -608,6 +608,8 @@ import type {
 } from '../../custom-code/internal-property-controls'
 import type { OnlineState } from '../online-status'
 import { onlineState } from '../online-status'
+import type { NavigatorRow } from '../../navigator/navigator-row'
+import { condensedNavigatorRow, regularNavigatorRow } from '../../navigator/navigator-row'
 
 export function ElementPropertyPathKeepDeepEquality(): KeepDeepEqualityCall<ElementPropertyPath> {
   return combine2EqualityCalls(
@@ -785,6 +787,35 @@ export const SlotNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<SlotNaviga
     (elementPath, prop) => ({ type: 'SLOT', elementPath: elementPath, prop: prop }),
   )
 
+export const NavigatorRowKeepDeepEquality: KeepDeepEqualityCall<NavigatorRow> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'regular-row':
+      if (oldValue.type === newValue.type) {
+        return combine1EqualityCall(
+          (row) => row.entry,
+          NavigatorEntryKeepDeepEquality,
+          regularNavigatorRow,
+        )(oldValue, newValue)
+      }
+      break
+    case 'condensed-row':
+      if (oldValue.type === newValue.type) {
+        return combine1EqualityCall(
+          (row) => row.entries,
+          arrayDeepEquality(NavigatorEntryKeepDeepEquality),
+          condensedNavigatorRow,
+        )(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
 export const NavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<NavigatorEntry> = (
   oldValue,
   newValue,
@@ -890,7 +921,9 @@ export const NavigatorStateKeepDeepEquality: KeepDeepEqualityCall<NavigatorState
   )
 
 export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedState> {
-  return combine9EqualityCalls(
+  return combine10EqualityCalls(
+    (state) => state.navigatorRows,
+    arrayDeepEquality(NavigatorRowKeepDeepEquality),
     (state) => state.navigatorTargets,
     arrayDeepEquality(NavigatorEntryKeepDeepEquality),
     (state) => state.visibleNavigatorTargets,
@@ -910,6 +943,7 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
     (state) => state.filePathMappings,
     createCallWithShallowEquals(),
     (
+      navigatorRows,
       navigatorTargets,
       visibleNavigatorTargets,
       autoFocusedPaths,
@@ -921,6 +955,7 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
       filePathMappings,
     ) => {
       return {
+        navigatorRows: navigatorRows,
         navigatorTargets: navigatorTargets,
         visibleNavigatorTargets: visibleNavigatorTargets,
         autoFocusedPaths: autoFocusedPaths,

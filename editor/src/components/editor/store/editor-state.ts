@@ -2477,6 +2477,7 @@ export function isSlotNavigatorEntry(entry: NavigatorEntry): entry is SlotNaviga
 }
 
 export interface DerivedState {
+  navigatorRows: Array<NavigatorRow>
   navigatorTargets: Array<NavigatorEntry>
   visibleNavigatorTargets: Array<NavigatorEntry>
   autoFocusedPaths: Array<ElementPath>
@@ -2490,6 +2491,7 @@ export interface DerivedState {
 
 function emptyDerivedState(editor: EditorState): DerivedState {
   return {
+    navigatorRows: [],
     navigatorTargets: [],
     visibleNavigatorTargets: [],
     autoFocusedPaths: [],
@@ -2851,6 +2853,7 @@ function getElementWarningsInner(
 const getElementWarnings = memoize(getElementWarningsInner, { maxSize: 1 })
 
 type CacheableDerivedState = {
+  navigatorRows: Array<NavigatorRow>
   navigatorTargets: Array<NavigatorEntry>
   visibleNavigatorTargets: Array<NavigatorEntry>
   elementWarnings: { [key: string]: ElementWarnings }
@@ -2866,7 +2869,7 @@ function deriveCacheableStateInner(
   hiddenInNavigator: ElementPath[],
   propertyControlsInfo: PropertyControlsInfo,
 ): CacheableDerivedState {
-  const { navigatorTargets, visibleNavigatorTargets } = getNavigatorTargets(
+  const { navigatorRows, navigatorTargets, visibleNavigatorTargets } = getNavigatorTargets(
     jsxMetadata,
     elementPathTree,
     collapsedViews,
@@ -2895,6 +2898,7 @@ function deriveCacheableStateInner(
   )
 
   return {
+    navigatorRows: navigatorRows,
     navigatorTargets: navigatorTargets,
     visibleNavigatorTargets: visibleNavigatorTargets,
     elementWarnings: warnings,
@@ -2917,6 +2921,7 @@ export function deriveState(
     cacheKey === 'patched' ? patchedDeriveCacheableState : unpatchedDeriveCacheableState
 
   const {
+    navigatorRows,
     navigatorTargets,
     visibleNavigatorTargets,
     elementWarnings: warnings,
@@ -2940,6 +2945,7 @@ export function deriveState(
   const filePathMappings = getFilePathMappings(editor.projectContents)
 
   const derived: DerivedState = {
+    navigatorRows: navigatorRows,
     navigatorTargets: navigatorTargets,
     visibleNavigatorTargets: visibleNavigatorTargets,
     autoFocusedPaths: autoFocusedPaths,

@@ -41,9 +41,7 @@ interface ItemProps extends ListChildComponentProps {}
 const Item = React.memo(({ index, style }: ItemProps) => {
   const visibleNavigatorTargets = useEditorState(
     Substores.derived,
-    (store) => {
-      return getMappedNavigatorEntries(store.derived.visibleNavigatorTargets)
-    },
+    (store) => store.derived.navigatorRows,
     'Item visibleNavigatorTargets',
   )
   const editorSliceRef = useRefEditorState((store) => {
@@ -152,42 +150,13 @@ const Item = React.memo(({ index, style }: ItemProps) => {
 
 export const NavigatorContainerId = 'navigator'
 
-// turn me into a selector
-function getMappedNavigatorEntries(
-  visibleNavigatorTargets: Array<NavigatorEntry>,
-): Array<NavigatorRow> {
-  let toCondense: Array<NavigatorEntry> = []
-  let regularRows: Array<RegularNavigatorRow> = []
-  // put the first 6 items in condensed rows, the rest as regular rows
-  for (let i = 0; i < visibleNavigatorTargets.length; i++) {
-    if (i < 6) {
-      toCondense.push(visibleNavigatorTargets[i])
-    } else {
-      regularRows.push({
-        type: 'regular-row',
-        entry: visibleNavigatorTargets[i],
-      })
-    }
-  }
-  const condensedRow: Array<CondensedNavigatorRow> = [
-    {
-      type: 'condensed-row',
-      entries: toCondense,
-    },
-  ]
-
-  return [...condensedRow, ...regularRows]
-}
-
 export const NavigatorComponent = React.memo(() => {
   const dispatch = useDispatch()
   const { minimised, visibleNavigatorTargets, selectionIndex } = useEditorState(
     Substores.fullStore,
     (store) => {
       const selectedViews = store.editor.selectedViews
-      const innerVisibleNavigatorTargets = getMappedNavigatorEntries(
-        store.derived.visibleNavigatorTargets,
-      )
+      const innerVisibleNavigatorTargets = store.derived.navigatorRows
       const innerSelectionIndex =
         selectedViews == null
           ? -1

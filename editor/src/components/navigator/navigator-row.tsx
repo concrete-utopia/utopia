@@ -7,13 +7,31 @@ export interface RegularNavigatorRow {
   entry: NavigatorEntry
 }
 
+export function regularNavigatorRow(entry: NavigatorEntry): RegularNavigatorRow {
+  return {
+    type: 'regular-row',
+    entry: entry,
+  }
+}
+
+export function isRegulaNavigatorrRow(row: NavigatorRow): row is RegularNavigatorRow {
+  return row.type === 'regular-row'
+}
+
 export interface CondensedNavigatorRow {
   type: 'condensed-row'
   entries: Array<NavigatorEntry>
 }
 
-export function isRegulaNavigatorrRow(row: NavigatorRow): row is RegularNavigatorRow {
-  return row.type === 'regular-row'
+export function condensedNavigatorRow(entries: Array<NavigatorEntry>): CondensedNavigatorRow {
+  return {
+    type: 'condensed-row',
+    entries: entries,
+  }
+}
+
+export function isCondensedNavigatorRow(row: NavigatorRow): row is CondensedNavigatorRow {
+  return row.type === 'condensed-row'
 }
 
 export function getEntriesForRow(row: NavigatorRow): Array<NavigatorEntry> {
