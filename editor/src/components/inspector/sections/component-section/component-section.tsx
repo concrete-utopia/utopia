@@ -118,7 +118,6 @@ export interface PropertyLabelAndPlusButtonProps {
   popupIsOpen: boolean
   isHovered: boolean
   isConnectedToData: boolean
-  isValueSet: boolean
 }
 
 export function PropertyLabelAndPlusButton(
@@ -133,7 +132,6 @@ export function PropertyLabelAndPlusButton(
     handleMouseEnter,
     handleMouseLeave,
     children,
-    isValueSet,
   } = props
 
   return (
@@ -147,7 +145,10 @@ export function PropertyLabelAndPlusButton(
           flexDirection: 'row',
           alignItems: 'center',
           gap: 6,
-          color: popupIsOpen || isHovered || !isValueSet ? colorTheme.dynamicBlue.value : undefined,
+          color:
+            popupIsOpen || isHovered || isConnectedToData
+              ? colorTheme.dynamicBlue.value
+              : undefined,
           cursor: 'pointer',
         }}
       >
@@ -156,13 +157,13 @@ export function PropertyLabelAndPlusButton(
         <div
           onClick={openPopup}
           style={{
-            opacity: isHovered || popupIsOpen || !isValueSet ? 1 : 0,
+            opacity: isHovered || popupIsOpen ? 1 : 0,
           }}
         >
           <Icn
             category='semantic'
             type='plus-in-white-translucent-circle'
-            color={popupIsOpen || isHovered || !isConnectedToData ? 'dynamic' : 'main'}
+            color={'dynamic'}
             width={12}
             height={12}
           />
@@ -462,10 +463,6 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
     )
   }, [propMetadata])
 
-  const isValueSet = React.useMemo(() => {
-    return propMetadata.propertyStatus.set
-  }, [propMetadata])
-
   const propertyLabel =
     props.label == null ? (
       <PropertyLabel
@@ -485,7 +482,6 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
           popupIsOpen={dataPickerButtonData.popupIsOpen}
           isHovered={isHovered}
           isConnectedToData={isConnectedToData}
-          isValueSet={isValueSet}
         />
       </PropertyLabel>
     ) : (
@@ -935,10 +931,6 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
     )
   }, [propMetadata])
 
-  const isValueSet = React.useMemo(() => {
-    return propMetadata.propertyStatus.set
-  }, [propMetadata])
-
   return (
     <div>
       <div>
@@ -977,7 +969,6 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
                   popupIsOpen={dataPickerButtonData.popupIsOpen}
                   isHovered={isHovered}
                   isConnectedToData={isConnectedToData}
-                  isValueSet={isValueSet}
                 >
                   {unless(props.disableToggling, <ObjectIndicator open={open} />)}
                 </PropertyLabelAndPlusButton>
