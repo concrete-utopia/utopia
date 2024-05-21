@@ -819,74 +819,6 @@ function walkMapExpression(
   }
 }
 
-function getNavigatorEntriesForTree(
-  navigatorTree: Array<NavigatorTree>,
-  filterVisible: 'all-navigator-targets' | 'visible-navigator-targets',
-): Array<NavigatorEntry> {
-  function getNavigatorEntriesForMapEntry(entry: NavigatorTree): Array<NavigatorEntry> {
-    if (
-      filterVisible === 'visible-navigator-targets' &&
-      'subtreeHidden' in entry &&
-      entry.subtreeHidden
-    ) {
-      return [entry.navigatorEntry]
-    }
-
-    switch (entry.type) {
-      case 'regular-entry': {
-        const path = entry.navigatorEntry.elementPath
-        return [
-          entry.navigatorEntry,
-          ...Object.entries(entry.renderProps).flatMap(([propName, renderPropChild]) => {
-            const fakeRenderPropPath = EP.appendToPath(path, renderPropId(propName))
-            return [
-              renderPropNavigatorEntry(
-                fakeRenderPropPath,
-                propName,
-                renderPropChild.navigatorEntry.elementPath,
-              ),
-              ...getNavigatorEntriesForMapEntry(renderPropChild),
-            ]
-          }),
-          ...(Object.values(entry.renderProps).length > 0 && entry.children.length > 0
-            ? // we only show the children label if there are render props
-              [
-                renderPropNavigatorEntry(
-                  EP.appendToPath(path, renderPropId('children')),
-                  'children',
-                  entry.children[0].navigatorEntry.elementPath, // pick the first child path
-                ),
-              ]
-            : []),
-          ...entry.children.flatMap(getNavigatorEntriesForMapEntry),
-        ]
-      }
-      case 'leaf-entry':
-        return [entry.navigatorEntry]
-      case 'map-entry':
-        return [
-          entry.navigatorEntry,
-          ...entry.mappedEntries.flatMap(getNavigatorEntriesForMapEntry),
-        ]
-      case 'conditional-entry':
-        return [
-          entry.navigatorEntry,
-          conditionalClauseNavigatorEntry(entry.navigatorEntry.elementPath, 'true-case'),
-          ...entry.trueCase.flatMap(getNavigatorEntriesForMapEntry),
-          conditionalClauseNavigatorEntry(entry.navigatorEntry.elementPath, 'false-case'),
-          ...entry.falseCase.flatMap(getNavigatorEntriesForMapEntry),
-        ]
-      default:
-        assertNever(entry)
-    }
-  }
-  const navigatorTargets: Array<NavigatorEntry> = navigatorTree.flatMap(
-    getNavigatorEntriesForMapEntry,
-  )
-
-  return navigatorTargets
-}
-
 type CondensedTrunkNavigatorTree = {
   type: 'condensed-trunk'
   navigatorEntry: NavigatorEntry
@@ -1069,11 +1001,10 @@ export function getNavigatorTargets(
     projectContents,
   )
 
-  const navigatorTargets = getNavigatorEntriesForTree(navigatorTrees, 'all-navigator-targets')
-  const visibleNavigatorTargets = getNavigatorEntriesForTree(
-    navigatorTrees,
-    'visible-navigator-targets',
-  )
+  const navigatorRows = getNavigatorRowsForTree(navigatorTrees, 'all-navigator-targets')
+  const navigatorTargets = navigatorRows.flatMap(getEntriesForRow)
+  const visibleNavigatorRows = getNavigatorRowsForTree(navigatorTrees, 'visible-navigator-targets')
+  const visibleNavigatorTargets = visibleNavigatorRows.flatMap(getEntriesForRow)
 
   return {
     navigatorRows: getNavigatorRowsForTree(navigatorTrees, 'visible-navigator-targets'),
