@@ -45,7 +45,10 @@ import {
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import type { NavigatorEntry } from '../../../editor/store/editor-state'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
-import type { MetadataSubstate } from '../../../editor/store/store-hook-substore-types'
+import type {
+  MetadataSubstate,
+  ProjectContentAndMetadataSubstate,
+} from '../../../editor/store/store-hook-substore-types'
 import { LayoutIcon } from '../../../navigator/navigator-item/layout-icon'
 import {
   getNavigatorEntryLabel,
@@ -74,10 +77,11 @@ type BranchNavigatorEntries = {
 }
 
 const branchNavigatorEntriesSelector = createCachedSelector(
-  (store: MetadataSubstate) => store.editor.jsxMetadata,
-  (store: MetadataSubstate) => store.editor.elementPathTree,
-  (_store: MetadataSubstate, paths: ElementPath[]) => paths,
-  (jsxMetadata, elementPathTree, paths): BranchNavigatorEntries | null => {
+  (store: ProjectContentAndMetadataSubstate) => store.editor.jsxMetadata,
+  (store: ProjectContentAndMetadataSubstate) => store.editor.elementPathTree,
+  (store: ProjectContentAndMetadataSubstate) => store.editor.projectContents,
+  (_store: ProjectContentAndMetadataSubstate, paths: ElementPath[]) => paths,
+  (jsxMetadata, elementPathTree, projectContents, paths): BranchNavigatorEntries | null => {
     if (paths.length !== 1) {
       return null
     }
@@ -98,7 +102,7 @@ const branchNavigatorEntriesSelector = createCachedSelector(
       [],
       [],
       {},
-      {},
+      projectContents,
     ).navigatorTargets
 
     function getNavigatorEntry(clause: JSXElementChild): NavigatorEntry | null {
@@ -290,7 +294,7 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
   }, [paths, conditionExpression, setConditionExpression, originalConditionExpression, dispatch])
 
   const branchNavigatorEntries = useEditorState(
-    Substores.metadata,
+    Substores.projectContentsAndMetadata,
     (store) => branchNavigatorEntriesSelector(store, paths),
     'ConditionalSection branches',
   )
