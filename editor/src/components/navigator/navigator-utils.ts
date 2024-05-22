@@ -558,7 +558,7 @@ function walkMapExpression(
   }
 }
 
-function condendenseNavigatorTree(navigatorTree: Array<NavigatorTree>): Array<NavigatorTree> {
+function condenseNavigatorTree(navigatorTree: Array<NavigatorTree>): Array<NavigatorTree> {
   if (!isFeatureEnabled('Condensed Navigator Entries')) {
     return navigatorTree
   }
@@ -572,29 +572,6 @@ function condendenseNavigatorTree(navigatorTree: Array<NavigatorTree>): Array<Na
         child: walkSubtreeMaybeCondense(entry.children[0]),
       }
     }
-
-    function allChildrenAreLeafEntries(children: Array<NavigatorTree>) {
-      return children.every(
-        (child) =>
-          child.type === 'leaf-entry' ||
-          (child.type === 'regular-entry' &&
-            child.children.length === 0 &&
-            Object.values(child.renderProps).length === 0),
-      )
-    }
-
-    // if all the entry's children are leaf entries, we can condense them
-    // if (
-    //   entry.type === 'regular-entry' &&
-    //   Object.values(entry.renderProps).length === 0 &&
-    //   allChildrenAreLeafEntries(entry.children)
-    // ) {
-    //   return {
-    //     type: 'condensed-leaf',
-    //     navigatorEntry: entry.navigatorEntry,
-    //     children: entry.children.map((c) => c.navigatorEntry),
-    //   }
-    // }
 
     //  we need to recurse into the subtrees here!
     switch (entry.type) {
@@ -666,7 +643,7 @@ function getNavigatorRowsForTree(
   navigatorTree: Array<NavigatorTree>,
   filterVisible: 'all-navigator-targets' | 'visible-navigator-targets',
 ): Array<NavigatorRow> {
-  const condensedTree = condendenseNavigatorTree(navigatorTree)
+  const condensedTree = condenseNavigatorTree(navigatorTree)
 
   function walkTree(entry: NavigatorTree, indentation: number): Array<NavigatorRow> {
     if (
