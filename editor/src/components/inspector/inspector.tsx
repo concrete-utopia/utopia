@@ -51,7 +51,16 @@ import {
   useKeepReferenceEqualityIfPossible,
   useKeepShallowReferenceEquality,
 } from '../../utils/react-performance'
-import { Icn, useColorTheme, UtopiaTheme, FlexRow, Button } from '../../uuiui'
+import {
+  Icn,
+  useColorTheme,
+  UtopiaTheme,
+  FlexRow,
+  Button,
+  H1,
+  SectionActionSheet,
+  SquareButton,
+} from '../../uuiui'
 import { getElementsToTarget } from './common/inspector-utils'
 import type { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
 import { unless, when } from '../../utils/react-conditionals'
@@ -84,6 +93,7 @@ import { usePermissions } from '../editor/store/permissions'
 import { DisableControlsInSubtree } from '../../uuiui/utilities/disable-subtree'
 import { getInspectorPreferencesForTargets } from '../../core/property-controls/property-controls-utils'
 import { ListSection } from './sections/layout-section/list-section'
+import { ExpandableIndicator } from '../navigator/navigator-item/expandable-indicator'
 
 export interface ElementPathElement {
   name?: string
@@ -245,7 +255,7 @@ export const InspectorSectionsContainerTestID = 'inspector-sections-container'
 export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
   const { selectedViews, setSelectedTarget, targets } = props
 
-  const hideAllSections = useEditorState(
+  const isCodeElement = useEditorState(
     Substores.metadata,
     (store) =>
       store.editor.selectedViews.length > 0 &&
@@ -269,7 +279,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
   }, [selectedViews, targets, setSelectedTarget])
 
   const dispatch = useDispatch()
-  const { focusedPanel, anyComponents, hasNonDefaultPositionAttributes } = useEditorState(
+  const { focusedPanel, anyComponents } = useEditorState(
     Substores.fullStore,
     (store) => {
       const rootMetadata = store.editor.jsxMetadata
@@ -352,7 +362,10 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     'Inspector inspectorPreferences',
   )
 
-  const shouldShowAlignmentButtons = !hideAllSections && inspectorPreferences.includes('layout')
+  const { value: styleSectionOpen, toggle: toggleStyleSection } = useBoolean(true)
+  const { value: advancedSectionOpen, toggle: toggleAdvancedSection } = useBoolean(false)
+
+  const shouldShowAlignmentButtons = !isCodeElement && inspectorPreferences.includes('layout')
   const shouldShowClassNameSubsection = isTwindEnabled() && inspectorPreferences.includes('visual')
   const shouldShowTargetSelectorSection = canEdit && inspectorPreferences.includes('visual')
   const shouldShowFlexSection =
@@ -378,72 +391,88 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           data-testid={InspectorSectionsContainerTestID}
         >
           <DisableControlsInSubtree disable={!canEdit}>
-            <FlexCol
-              css={{
-                overflowY: 'scroll',
-                width: '100%',
-                height: '100%',
-                position: 'relative',
-                paddingBottom: 50,
-              }}
-            >
-              {rootElementIsSelected ? (
-                <RootElementIndicator />
-              ) : (
-                when(
-                  shouldShowAlignmentButtons,
-                  <AlignmentButtons numberOfTargets={selectedViews.length} />,
-                )
-              )}
-              {unless(
-                hideAllSections,
-                <>
-                  {when(shouldShowClassNameSubsection, <ClassNameSubsection />)}
-                  {anyComponents || multiselectedContract === 'fragment' ? (
-                    <ComponentSection isScene={false} />
-                  ) : null}
-                </>,
-              )}
-              <CodeElementSection paths={selectedViews} />
-              <ConditionalSection paths={selectedViews} />
-              <ListSection paths={selectedViews} />
-              {unless(
-                hideAllSections,
-                <>
-                  {when(
-                    shouldShowTargetSelectorSection,
-                    <TargetSelectorSection
-                      targets={props.targets}
-                      selectedTargetPath={props.selectedTargetPath}
-                      onSelectTarget={props.onSelectTarget}
-                      onStyleSelectorRename={props.onStyleSelectorRename}
-                      onStyleSelectorDelete={props.onStyleSelectorDelete}
-                      onStyleSelectorInsert={props.onStyleSelectorInsert}
-                    />,
-                  )}
-                  {when(multiselectedContract === 'fragment', <FragmentSection />)}
-                  {when(
-                    multiselectedContract !== 'fragment' && shouldShowSimplifiedLayoutSection,
-                    // Position and Sizing sections are shown if Frame or Group is selected
-                    <>
-                      <SimplifiedLayoutSubsection />
-                      <ConstraintsSection />
-                    </>,
-                  )}
-                  {when(shouldShowFlexSection, <FlexSection />)}
-                  {when(
-                    multiselectedContract === 'frame' || multiselectedContract === 'wrapper-div',
-                    // All the regular inspector sections are only visible if frames are selected
-                    <>
-                      <StyleSection />
-                      <WarningSubsection />
-                      <ImgSection />
-                      <EventHandlersSection />
-                    </>,
-                  )}
-                </>,
-              )}
-            </FlexCol>
+            {isCodeElement ? (
+              <>
+                {rootElementIsSelected ? (
+                  <RootElementIndicator />
+                ) : (
+                  when(
+                    shouldShowAlignmentButtons,
+                    <AlignmentButtons numberOfTargets={selectedViews.length} />,
+                  )
+                )}
+                <CodeElementSection paths={selectedViews} />
+                <ConditionalSection paths={selectedViews} />
+                <ListSection paths={selectedViews} />
+              </>
+            ) : (
+              <FlexCol
+                css={{
+                  overflowY: 'scroll',
+                  width: '100%',
+                  height: '100%',
+                  position: 'relative',
+                  paddingBottom: 50,
+                }}
+              >
+                <InspectorSection
+                  title='Styles'
+                  toggle={toggleStyleSection}
+                  open={styleSectionOpen}
+                />
+                {when(
+                  styleSectionOpen,
+                  <>
+                    {anyComponents || multiselectedContract === 'fragment' ? (
+                      <ComponentSection isScene={false} />
+                    ) : null}
+                    {when(multiselectedContract === 'fragment', <FragmentSection />)}
+                    {when(
+                      multiselectedContract !== 'fragment' && shouldShowSimplifiedLayoutSection,
+                      // Position and Sizing sections are shown if Frame or Group is selected
+                      <>
+                        <SimplifiedLayoutSubsection />
+                        <ConstraintsSection />
+                      </>,
+                    )}
+                    {when(shouldShowFlexSection, <FlexSection />)}
+                    {when(
+                      multiselectedContract === 'frame' || multiselectedContract === 'wrapper-div',
+                      // All the regular inspector sections are only visible if frames are selected
+                      <>
+                        <StyleSection />
+                        <WarningSubsection />
+                        <ImgSection />
+                        <EventHandlersSection />
+                      </>,
+                    )}
+                  </>,
+                )}
+
+                <InspectorSection
+                  title='Advanced'
+                  toggle={toggleAdvancedSection}
+                  open={advancedSectionOpen}
+                />
+                {when(
+                  advancedSectionOpen,
+                  <>
+                    {when(shouldShowClassNameSubsection, <ClassNameSubsection />)}
+                    {when(
+                      shouldShowTargetSelectorSection,
+                      <TargetSelectorSection
+                        targets={props.targets}
+                        selectedTargetPath={props.selectedTargetPath}
+                        onSelectTarget={props.onSelectTarget}
+                        onStyleSelectorRename={props.onStyleSelectorRename}
+                        onStyleSelectorDelete={props.onStyleSelectorDelete}
+                        onStyleSelectorInsert={props.onStyleSelectorInsert}
+                      />,
+                    )}
+                  </>,
+                )}
+              </FlexCol>
+            )}
           </DisableControlsInSubtree>
         </div>
       </React.Fragment>
@@ -828,3 +857,57 @@ export const InspectorContextProvider = React.memo<{
     </InspectorCallbackContext.Provider>
   )
 })
+
+function InspectorSection({
+  title,
+  open,
+  toggle,
+}: {
+  title: string
+  open: boolean
+  toggle: () => void
+}) {
+  return (
+    <>
+      <FlexRow
+        style={{
+          paddingLeft: 8,
+          paddingRight: 8,
+          cursor: 'pointer',
+          height: 42,
+        }}
+      >
+        <H1
+          data-testid={`section-header-${title}`}
+          style={{
+            flexGrow: 1,
+            display: 'inline',
+            overflow: 'hidden',
+          }}
+        >
+          {title}
+        </H1>
+        <SectionActionSheet className='actionsheet' style={{ gap: 4 }}>
+          <SquareButton highlight onClick={toggle} style={{ width: 12 }}>
+            <ExpandableIndicator
+              testId='target-selector'
+              visible
+              collapsed={!open}
+              selected={false}
+            />
+          </SquareButton>
+        </SectionActionSheet>
+      </FlexRow>
+    </>
+  )
+}
+
+function useBoolean(starting: boolean): {
+  value: boolean
+  set: (_: boolean) => void
+  toggle: () => void
+} {
+  const [value, set] = React.useState(starting)
+  const toggle = React.useCallback(() => set((v) => !v), [])
+  return { value, set, toggle }
+}
