@@ -1458,6 +1458,11 @@ describe('inspector tests with real metadata', () => {
     )
 
     await act(async () => {
+      await screen.findByTestId('section-header-Advanced')
+      fireEvent.click(screen.getByTestId('section-header-Advanced'))
+    })
+
+    await act(async () => {
       await screen.findByTestId('target-selector-style')
       fireEvent.click(screen.getByTestId('target-selector'))
     })
@@ -1557,6 +1562,11 @@ describe('inspector tests with real metadata', () => {
         false,
       )
       await dispatchDone
+    })
+
+    await act(async () => {
+      await screen.findByTestId('section-header-Advanced')
+      fireEvent.click(screen.getByTestId('section-header-Advanced'))
     })
 
     await act(async () => {
