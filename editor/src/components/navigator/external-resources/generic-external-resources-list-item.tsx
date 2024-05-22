@@ -4,7 +4,7 @@ import type {
   ExternalResources,
 } from '../../../printer-parsers/html/external-resources-parser'
 import { useExternalResources } from '../../../printer-parsers/html/external-resources-parser'
-import { MenuProvider, MomentumContextMenu } from '../../../uuiui-deps'
+import { MenuProvider, ContextMenu } from '../../../uuiui-deps'
 import { UIGridRow } from '../../inspector/widgets/ui-grid-row'
 import { ResourcesListGridRowConfig } from './generic-external-resources-list'
 import type { ContextMenuItem } from '../../context-menu-items'
@@ -83,7 +83,7 @@ export const GenericExternalResourcesListItem = React.memo<GenericExternalResour
           >
             {value.rel}
           </div>
-          <MomentumContextMenu id={menuId} items={menuItems} getData={NO_OP} />
+          <ContextMenu id={menuId} items={menuItems} getData={NO_OP} />
         </UIGridRow>
       </MenuProvider>
     )

@@ -31,7 +31,7 @@ import {
   pasteHere,
   replace,
 } from './context-menu-items'
-import { MomentumContextMenu } from './context-menu-wrapper'
+import { ContextMenu } from './context-menu-wrapper'
 import { useRefEditorState, useEditorState, Substores } from './editor/store/store-hook'
 import { CanvasContextMenuPortalTargetID } from '../core/shared/utils'
 import type { EditorDispatch } from './editor/action-types'
@@ -241,7 +241,7 @@ export const ElementContextMenu = React.memo(({ contextMenuInstance }: ElementCo
     return null
   } else {
     return ReactDOM.createPortal(
-      <MomentumContextMenu
+      <ContextMenu
         id={contextMenuInstance}
         key='element-context-menu'
         items={contextMenuItems}
