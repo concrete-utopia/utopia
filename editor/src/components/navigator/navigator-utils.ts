@@ -113,14 +113,10 @@ type RegularNavigatorTree = {
   children: Array<NavigatorTree>
 }
 
+// maybe the leaf is not actually useful and we can remove it
 type LeafNavigatorTree = {
   type: 'leaf-entry'
-  navigatorEntry:
-    | RegularNavigatorEntry
-    | DataReferenceNavigatorEntry
-    | SyntheticNavigatorEntry
-    | InvalidOverrideNavigatorEntry
-    | SlotNavigatorEntry
+  navigatorEntry: NavigatorEntry
 }
 
 type MapNavigatorTree = {
@@ -626,7 +622,7 @@ function walkRegularNavigatorEntry(
 
       const subTreeChild = subTree?.children.find((child) => EP.pathsEqual(child.path, childPath))
       if (subTreeChild != null) {
-        const childTree = createNavigatorSubtree(
+        const childTreeEntry = createNavigatorSubtree(
           metadata,
           elementPathTrees,
           projectContents,
@@ -635,6 +631,10 @@ function walkRegularNavigatorEntry(
           hiddenInNavigator,
           subTreeChild,
         )
+        const childTree: NavigatorTree = {
+          ...childTreeEntry,
+          navigatorEntry: renderPropValueNavigatorEntry(childPath, prop),
+        }
         processedAccumulator.add(EP.toString(subTreeChild.path))
         renderPropChildrenAccumulator[prop] = childTree
       } else {
