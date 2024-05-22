@@ -216,6 +216,7 @@ export const Icons = {
   ExpansionArrowRight: makeIcon({ type: 'expansionarrow-right', color: 'main' }),
   ExpansionArrowRightWhite: makeIcon({ type: 'expansionarrow-right', color: 'white' }),
   NarrowExpansionArrowRight: makeIcon({
+    category: 'navigator-element',
     type: 'right-facing-caret',
     color: 'main',
     width: 12,
