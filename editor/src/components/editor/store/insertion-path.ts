@@ -16,7 +16,7 @@ import type { ProjectContentTreeRoot } from '../../assets'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import type { PropertyControlsInfo } from '../../custom-code/code-file'
 
-export type InsertionPath = ChildInsertionPath | ConditionalClauseInsertionPath | MapInsertionPath
+export type InsertionPath = ChildInsertionPath | ConditionalClauseInsertionPath
 
 interface ReplaceWithSingleElementBehaviour {
   type: 'replace-with-single-element'

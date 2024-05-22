@@ -72,7 +72,7 @@ import {
   isTextEditableConditional,
 } from './conditionals'
 import { modify } from '../shared/optics/optic-utilities'
-import type { InsertionPath } from '../../components/editor/store/insertion-path'
+import type { InsertionPath, MapInsertionPath } from '../../components/editor/store/insertion-path'
 import {
   isChildInsertionPath,
   isConditionalClauseInsertionPath,
@@ -677,12 +677,15 @@ export function insertJSXElementChildren(
 }
 
 export function elementPathFromInsertionPath(
-  insertionPath: InsertionPath,
+  insertionPath: InsertionPath | MapInsertionPath,
   elementUID: string,
 ): ElementPath {
   if (insertionPath.type === 'CHILD_INSERTION') {
     return EP.appendToPath(insertionPath.intendedParentPath, elementUID)
-  } else if (insertionPath.type === 'CONDITIONAL_CLAUSE_INSERTION') {
+  } else if (
+    insertionPath.type === 'CONDITIONAL_CLAUSE_INSERTION' ||
+    insertionPath.type === 'MAP_INSERTION'
+  ) {
     switch (insertionPath.insertBehavior.type) {
       case 'replace-with-single-element':
         return EP.appendToPath(insertionPath.intendedParentPath, elementUID)

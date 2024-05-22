@@ -152,7 +152,7 @@ import {
 } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { assertNever, fastForEach, getProjectLockedKey, identity } from '../../../core/shared/utils'
-import { mergeImports } from '../../../core/workers/common/project-file-utils'
+import { emptyImports, mergeImports } from '../../../core/workers/common/project-file-utils'
 import type { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import type { IndexPosition } from '../../../utils/utils'
 import Utils, { absolute } from '../../../utils/utils'
@@ -495,6 +495,7 @@ import {
   insertAsChildTarget,
   insertJSXElement,
   openCodeEditorFile,
+  replaceMappedElement,
   scrollToPosition,
   selectComponents,
   setCodeEditorBuildErrors,
@@ -522,7 +523,11 @@ import { LayoutPropertyList, StyleProperties } from '../../inspector/common/css-
 import { isUtopiaCommentFlag, makeUtopiaFlagComment } from '../../../core/shared/comment-flags'
 import { modify, toArrayOf } from '../../../core/shared/optics/optic-utilities'
 import { fromField, traverseArray } from '../../../core/shared/optics/optic-creators'
-import type { InsertionPath } from '../store/insertion-path'
+import type {
+  ConditionalClauseInsertionPath,
+  InsertionPath,
+  MapInsertionPath,
+} from '../store/insertion-path'
 import {
   commonInsertionPathFromArray,
   getElementPathFromInsertionPath,
@@ -749,6 +754,48 @@ export function editorMoveMultiSelectedTemplates(
       return withCommandsApplied
     }
   }, editor)
+  return {
+    editor: updatedEditor,
+    newPaths: newPaths,
+  }
+}
+
+export function replaceInsideMap(
+  targets: ElementPath[],
+  newParent: MapInsertionPath,
+  editor: EditorModel,
+): {
+  editor: EditorModel
+  newPaths: Array<ElementPath>
+} {
+  const elements: Array<JSXElementChild> = mapDropNulls((path) => {
+    const instance = MetadataUtils.findElementByElementPath(editor.jsxMetadata, path)
+    if (instance == null || isLeft(instance.element)) {
+      return null
+    }
+
+    return instance.element.value
+  }, targets)
+
+  let newPaths: Array<ElementPath> = targets.map((target) =>
+    elementPathFromInsertionPath(newParent, EP.toUid(target)),
+  )
+
+  // TODO: handle multiple elements
+  const elementToReplace: JSXElement | undefined = elements.find((element) => isJSXElement(element))
+
+  const editorAfterReplace =
+    elementToReplace != null
+      ? UPDATE_FNS.REPLACE_MAPPED_ELEMENT(
+          replaceMappedElement(elementToReplace, newParent.intendedParentPath, emptyImports()),
+          editor,
+        )
+      : editor
+
+  const updatedEditor = foldAndApplyCommandsSimple(editorAfterReplace, [
+    ...targets.map((path) => deleteElement('always', path)),
+  ])
+
   return {
     editor: updatedEditor,
     newPaths: newPaths,
@@ -2621,11 +2668,25 @@ export const UPDATE_FNS = {
 
     const actualInsertionPath = insertionPath()
 
-    const { editor: editorWithElementsInserted, newPaths } = insertIntoWrapper(
-      orderedActionTargets,
-      actualInsertionPath,
-      includeToast(detailsOfUpdate, withWrapperViewAdded),
-    )
+    let editorWithElementsInserted, newPaths
+
+    if (actualInsertionPath.type === 'MAP_INSERTION') {
+      const result = replaceInsideMap(
+        orderedActionTargets,
+        actualInsertionPath,
+        includeToast(detailsOfUpdate, withWrapperViewAdded),
+      )
+      editorWithElementsInserted = result.editor
+      newPaths = result.newPaths
+    } else {
+      const result = insertIntoWrapper(
+        orderedActionTargets,
+        actualInsertionPath,
+        includeToast(detailsOfUpdate, withWrapperViewAdded),
+      )
+      editorWithElementsInserted = result.editor
+      newPaths = result.newPaths
+    }
 
     return {
       ...editorWithElementsInserted,
