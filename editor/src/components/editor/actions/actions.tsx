@@ -2668,31 +2668,30 @@ export const UPDATE_FNS = {
       return childInsertionPath(newPath)
     }
 
-    const actualInsertionPath = insertionPath()
+    const wrapperInsertionPath = insertionPath()
 
     let editorWithElementsInserted, newPaths
 
-    if (actualInsertionPath.type === 'MAP_INSERTION') {
-      const result = replaceInsideMap(
-        orderedActionTargets,
-        actualInsertionPath,
-        includeToast(detailsOfUpdate, withWrapperViewAdded),
-      )
-      editorWithElementsInserted = result.editor
-      newPaths = result.newPaths
-    } else {
-      const result = insertIntoWrapper(
-        orderedActionTargets,
-        actualInsertionPath,
-        includeToast(detailsOfUpdate, withWrapperViewAdded),
-      )
-      editorWithElementsInserted = result.editor
-      newPaths = result.newPaths
-    }
+    // in maps we do not insert directly, but replace contents
+    const result =
+      wrapperInsertionPath.type === 'MAP_INSERTION'
+        ? replaceInsideMap(
+            orderedActionTargets,
+            wrapperInsertionPath,
+            includeToast(detailsOfUpdate, withWrapperViewAdded),
+          )
+        : insertIntoWrapper(
+            orderedActionTargets,
+            wrapperInsertionPath,
+            includeToast(detailsOfUpdate, withWrapperViewAdded),
+          )
+
+    editorWithElementsInserted = result.editor
+    newPaths = result.newPaths
 
     return {
       ...editorWithElementsInserted,
-      selectedViews: [actualInsertionPath.intendedParentPath],
+      selectedViews: [wrapperInsertionPath.intendedParentPath],
       leftMenu: { visible: editor.leftMenu.visible, selectedTab: LeftMenuTab.Navigator },
       highlightedViews: [],
       trueUpElementsAfterDomWalkerRuns: [
