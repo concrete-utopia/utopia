@@ -874,9 +874,9 @@ function InspectorSectionHeader({
         cursor: 'pointer',
       }}
       onClick={toggle}
+      data-testid={`section-header-${title}`}
     >
       <H1
-        data-testid={`section-header-${title}`}
         style={{
           flexGrow: 1,
           display: 'inline',
@@ -888,12 +888,7 @@ function InspectorSectionHeader({
       </H1>
       <SectionActionSheet className='actionsheet' style={{ gap: 4 }}>
         <SquareButton highlight style={{ width: 12 }}>
-          <ExpandableIndicator
-            testId='target-selector'
-            visible
-            collapsed={!open}
-            selected={false}
-          />
+          <ExpandableIndicator visible collapsed={!open} selected={false} />
         </SquareButton>
       </SectionActionSheet>
     </FlexRow>
