@@ -393,14 +393,6 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           <DisableControlsInSubtree disable={!canEdit}>
             {isCodeElement ? (
               <>
-                {rootElementIsSelected ? (
-                  <RootElementIndicator />
-                ) : (
-                  when(
-                    shouldShowAlignmentButtons,
-                    <AlignmentButtons numberOfTargets={selectedViews.length} />,
-                  )
-                )}
                 <CodeElementSection paths={selectedViews} />
                 <ConditionalSection paths={selectedViews} />
                 <ListSection paths={selectedViews} />
@@ -415,6 +407,9 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
                   paddingBottom: 50,
                 }}
               >
+                {anyComponents || multiselectedContract === 'fragment' ? (
+                  <ComponentSection isScene={false} />
+                ) : null}
                 <InspectorSectionHeader
                   title='Styles'
                   toggle={toggleStyleSection}
@@ -423,9 +418,14 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
                 {when(
                   styleSectionOpen,
                   <>
-                    {anyComponents || multiselectedContract === 'fragment' ? (
-                      <ComponentSection isScene={false} />
-                    ) : null}
+                    {rootElementIsSelected ? (
+                      <RootElementIndicator />
+                    ) : (
+                      when(
+                        shouldShowAlignmentButtons,
+                        <AlignmentButtons numberOfTargets={selectedViews.length} />,
+                      )
+                    )}
                     {when(multiselectedContract === 'fragment', <FragmentSection />)}
                     {when(
                       multiselectedContract !== 'fragment' && shouldShowSimplifiedLayoutSection,
