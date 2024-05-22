@@ -6,6 +6,7 @@ import type {
   JSExpression,
   JSXConditionalExpression,
   JSXElement,
+  JSXElementChild,
   JSXFragment,
   JSXMapExpression,
 } from '../../core/shared/element-template'
@@ -527,22 +528,6 @@ function createNavigatorSubtree(
     return { type: 'leaf-entry', navigatorEntry: dataRefEntry }
   }
 
-  if (isJSXElementLike(jsxElementChild)) {
-    return walkRegularNavigatorEntry(
-      metadata,
-      elementPathTrees,
-      projectContents,
-      propertyControlsInfo,
-      collapsedViews,
-      hiddenInNavigator,
-      subTree,
-      jsxElementChild,
-      getPropertyControlsForTarget(elementPath, propertyControlsInfo, projectContents),
-      elementPath,
-      hidden,
-    )
-  }
-
   if (isJSXConditionalExpression(jsxElementChild)) {
     return walkConditionalNavigatorEntry(
       metadata,
@@ -572,15 +557,19 @@ function createNavigatorSubtree(
     )
   }
 
-  if (!isFeatureEnabled('Data Entries in the Navigator')) {
-    // fallback case for the FS off
-    return {
-      type: 'leaf-entry',
-      navigatorEntry: regularNavigatorEntry(elementPath),
-    }
-  }
-
-  throw new Error(`Unexpected element encountered in the Navigator: ${subTree.pathString}`)
+  return walkRegularNavigatorEntry(
+    metadata,
+    elementPathTrees,
+    projectContents,
+    propertyControlsInfo,
+    collapsedViews,
+    hiddenInNavigator,
+    subTree,
+    jsxElementChild,
+    getPropertyControlsForTarget(elementPath, propertyControlsInfo, projectContents),
+    elementPath,
+    hidden,
+  )
 }
 
 function walkRegularNavigatorEntry(
@@ -591,7 +580,7 @@ function walkRegularNavigatorEntry(
   collapsedViews: Array<ElementPath>,
   hiddenInNavigator: Array<ElementPath>,
   subTree: ElementPathTree,
-  jsxElement: JSXElement | JSXFragment,
+  jsxElement: JSXElementChild,
   propControls: PropertyControls | null, // TODO this is redundant, we should be able to get this from propertyControlsInfo: PropertyControlsInfo,
   elementPath: ElementPath,
   hidden: boolean,
