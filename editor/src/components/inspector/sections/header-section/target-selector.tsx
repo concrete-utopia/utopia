@@ -407,7 +407,7 @@ const TargetListHeader = React.memo((props: TargetListHeaderProps) => {
           overflow: 'hidden',
         }}
       >
-        {selectedTargetPath}
+        Target
       </H1>
       <SectionActionSheet className='actionsheet' style={{ gap: 4 }}>
         <SquareButton highlight disabled={isAdding} onClick={startAdding} style={{ width: 12 }}>

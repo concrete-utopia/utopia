@@ -41,7 +41,7 @@ import {
 } from '../../../printer-parsers/html/external-resources-parser'
 import { defaultEither } from '../../../core/shared/either'
 import { unless, when } from '../../../utils/react-conditionals'
-import { MomentumContextMenu } from '../../context-menu-wrapper'
+import { ContextMenu } from '../../context-menu-wrapper'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import {
   addNewPage,
@@ -533,7 +533,7 @@ export const AddPageContextMenu = React.memo(
     }
 
     return ReactDOM.createPortal(
-      <MomentumContextMenu
+      <ContextMenu
         id={contextMenuInstance}
         key='add-page-context-menu'
         items={pageTemplates.map((t) => ({
