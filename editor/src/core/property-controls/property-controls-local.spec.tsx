@@ -117,6 +117,7 @@ describe('registered property controls', () => {
         "Card": Object {
           "emphasis": "regular",
           "focus": "default",
+          "future_styleSection": null,
           "icon": "component",
           "inspector": Array [
             "visual",
@@ -257,6 +258,7 @@ describe('registered property controls', () => {
         "ExportedObj.Card": Object {
           "emphasis": "regular",
           "focus": "default",
+          "future_styleSection": null,
           "icon": "component",
           "inspector": Array [],
           "label": null,
@@ -335,6 +337,7 @@ describe('registered property controls', () => {
         "Card": Object {
           "emphasis": "regular",
           "focus": "default",
+          "future_styleSection": null,
           "icon": "component",
           "inspector": "all",
           "label": null,
@@ -949,6 +952,7 @@ describe('registered property controls', () => {
         "Card": Object {
           "emphasis": "regular",
           "focus": "default",
+          "future_styleSection": null,
           "icon": "component",
           "inspector": Array [],
           "label": null,
@@ -1774,6 +1778,7 @@ describe('registered property controls', () => {
           "Card": Object {
             "emphasis": "regular",
             "focus": "default",
+            "future_styleSection": null,
             "icon": "component",
             "inspector": Array [],
             "label": null,
