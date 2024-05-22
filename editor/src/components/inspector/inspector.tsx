@@ -415,7 +415,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
                   paddingBottom: 50,
                 }}
               >
-                <InspectorSection
+                <InspectorSectionHeader
                   title='Styles'
                   toggle={toggleStyleSection}
                   open={styleSectionOpen}
@@ -449,7 +449,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
                   </>,
                 )}
 
-                <InspectorSection
+                <InspectorSectionHeader
                   title='Advanced'
                   toggle={toggleAdvancedSection}
                   open={advancedSectionOpen}
@@ -858,7 +858,7 @@ export const InspectorContextProvider = React.memo<{
   )
 })
 
-function InspectorSection({
+function InspectorSectionHeader({
   title,
   open,
   toggle,
@@ -868,37 +868,35 @@ function InspectorSection({
   toggle: () => void
 }) {
   return (
-    <>
-      <FlexRow
+    <FlexRow
+      style={{
+        padding: 8,
+        cursor: 'pointer',
+      }}
+      onClick={toggle}
+    >
+      <H1
+        data-testid={`section-header-${title}`}
         style={{
-          paddingLeft: 8,
-          paddingRight: 8,
-          cursor: 'pointer',
-          height: 42,
+          flexGrow: 1,
+          display: 'inline',
+          overflow: 'hidden',
+          fontSize: '12px',
         }}
       >
-        <H1
-          data-testid={`section-header-${title}`}
-          style={{
-            flexGrow: 1,
-            display: 'inline',
-            overflow: 'hidden',
-          }}
-        >
-          {title}
-        </H1>
-        <SectionActionSheet className='actionsheet' style={{ gap: 4 }}>
-          <SquareButton highlight onClick={toggle} style={{ width: 12 }}>
-            <ExpandableIndicator
-              testId='target-selector'
-              visible
-              collapsed={!open}
-              selected={false}
-            />
-          </SquareButton>
-        </SectionActionSheet>
-      </FlexRow>
-    </>
+        {title}
+      </H1>
+      <SectionActionSheet className='actionsheet' style={{ gap: 4 }}>
+        <SquareButton highlight style={{ width: 12 }}>
+          <ExpandableIndicator
+            testId='target-selector'
+            visible
+            collapsed={!open}
+            selected={false}
+          />
+        </SquareButton>
+      </SectionActionSheet>
+    </FlexRow>
   )
 }
 
