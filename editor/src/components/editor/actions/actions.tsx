@@ -781,23 +781,26 @@ export function replaceInsideMap(
     elementPathFromInsertionPath(newParent, EP.toUid(target)),
   )
 
-  // TODO: handle multiple elements
+  // TODO: handle multiple elements - currently we're taking the first one
   const elementToReplace = elements.find((element) => isJSXElement(element))
 
-  const editorAfterReplace =
-    elementToReplace != null && isJSXElement(elementToReplace)
-      ? UPDATE_FNS.REPLACE_MAPPED_ELEMENT(
-          replaceMappedElement(elementToReplace, newParent.intendedParentPath, emptyImports()),
-          editor,
-        )
-      : editor
+  if (elementToReplace != null && isJSXElement(elementToReplace)) {
+    const editorAfterReplace = UPDATE_FNS.REPLACE_MAPPED_ELEMENT(
+      replaceMappedElement(elementToReplace, newParent.intendedParentPath, emptyImports()),
+      editor,
+    )
+    const updatedEditor = foldAndApplyCommandsSimple(editorAfterReplace, [
+      ...targets.map((path) => deleteElement('always', path)),
+    ])
+    return {
+      editor: updatedEditor,
+      newPaths: newPaths,
+    }
+  }
 
-  const updatedEditor = foldAndApplyCommandsSimple(editorAfterReplace, [
-    ...targets.map((path) => deleteElement('always', path)),
-  ])
-
+  // if we couldn't find the JSXElement to replace, we just return the editor as is
   return {
-    editor: updatedEditor,
+    editor: editor,
     newPaths: newPaths,
   }
 }
