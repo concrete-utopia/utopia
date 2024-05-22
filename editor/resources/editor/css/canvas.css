@@ -1,26 +1,28 @@
-.canvas-text.canvas-text-editable,
-.canvas-text.canvas-text-editable * {
-  user-select: text;
-  -webkit-user-select: text !important;
-  cursor: text;
-}
+@scope (:root) to (#canvas-container) {
+  .canvas-text.canvas-text-editable,
+  .canvas-text.canvas-text-editable * {
+    user-select: text;
+    -webkit-user-select: text !important;
+    cursor: text;
+  }
 
-.scene {
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2);
-  /* please leave this in */
-}
+  .scene {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2);
+    /* please leave this in */
+  }
 
-svg {
-  overflow: visible;
-}
+  svg {
+    overflow: visible;
+  }
 
-/* this is the control outline for ALL selection */
-.highlight-outline {
-  fill: none;
-  stroke: var(--emphasis-color-luminous);
-}
+  /* this is the control outline for ALL selection */
+  .highlight-outline {
+    fill: none;
+    stroke: var(--emphasis-color-luminous);
+  }
 
-.highlight-outline-link {
-  fill: none;
-  stroke: #574be2;
+  .highlight-outline-link {
+    fill: none;
+    stroke: #574be2;
+  }
 }
