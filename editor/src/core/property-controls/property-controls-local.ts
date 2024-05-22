@@ -3,14 +3,17 @@ import type {
   JSXControlDescription as JSXControlDescriptionFromUtopia,
   PropertyControls as PropertyControlsFromUtopiaAPI,
   ComponentToRegister,
-  Styling,
   ComponentInsertOption,
   ComponentExample,
   ChildrenSpec,
   Children,
   PreferredContents,
+  SectionSpec,
+  Display,
+  InspectorSpec,
 } from 'utopia-api/core'
 import {
+  DisplayOptions,
   EmphasisOptions,
   FocusOptions,
   IconOptions,
@@ -35,6 +38,7 @@ import type {
   ComponentDescriptorWithName,
   ComponentInfo,
   PropertyControlsInfo,
+  TypedInpsectorSpec,
 } from '../../components/custom-code/code-file'
 import { dependenciesFromPackageJson } from '../../components/editor/npm-dependency/npm-dependency'
 import { parseControlDescription } from './property-controls-parser'
@@ -923,6 +927,21 @@ async function parseComponentVariants(
   return parsedVariants
 }
 
+function parseInspectorSpec(inspector: InspectorSpec | undefined): TypedInpsectorSpec {
+  if (inspector == null) {
+    return ComponentDescriptorDefaults.inspector
+  }
+  if (inspector === 'hidden') {
+    return { type: 'hidden' }
+  }
+
+  return {
+    type: 'shown',
+    display: inspector.display ?? 'expanded',
+    sections: inspector.sections ?? [...StylingOptions],
+  }
+}
+
 export async function componentDescriptorForComponentToRegister(
   componentToRegister: ComponentToRegister,
   componentName: string,
@@ -970,7 +989,7 @@ export async function componentDescriptorForComponentToRegister(
     supportsChildren: supportsChildren,
     preferredChildComponents: childrenPropSpec.value,
     focus: componentToRegister.focus ?? ComponentDescriptorDefaults.focus,
-    inspector: componentToRegister.inspector ?? ComponentDescriptorDefaults.inspector,
+    inspector: parseInspectorSpec(componentToRegister.inspector),
     emphasis: componentToRegister.emphasis ?? ComponentDescriptorDefaults.emphasis,
     icon: componentToRegister.icon ?? ComponentDescriptorDefaults.icon,
     label: componentToRegister.label ?? null,
@@ -1035,6 +1054,11 @@ export const parseChildrenSpec = (value: unknown): ParseResult<ChildrenSpec> => 
   )
 }
 
+const parseSectionSpec = objectParser<SectionSpec>({
+  display: optionalProp(parseEnum<Display>(DisplayOptions)),
+  sections: optionalProp(parseArray(parseEnum(StylingOptions))),
+})
+
 const parseComponentToRegister = objectParser<ComponentToRegister>({
   component: parseAny,
   label: optionalProp(parseString),
@@ -1053,8 +1077,8 @@ const parseComponentToRegister = objectParser<ComponentToRegister>({
   ),
   focus: optionalProp(parseEnum(FocusOptions)),
   inspector: optionalProp(
-    parseAlternative<'all' | Styling[]>(
-      [parseConstant('all'), parseArray(parseEnum(StylingOptions))],
+    parseAlternative<'hidden' | SectionSpec>(
+      [parseConstant('hidden'), parseSectionSpec],
       'inspector value invalid',
     ),
   ),

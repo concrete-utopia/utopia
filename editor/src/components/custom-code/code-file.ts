@@ -51,7 +51,8 @@ import type {
 import type { ProjectContentTreeRoot } from '../assets'
 import { getProjectFileByFilePath } from '../assets'
 import type { EditorDispatch } from '../editor/action-types'
-import type { Emphasis, Focus, Icon, InspectorSpec } from 'utopia-api'
+import { StylingOptions } from 'utopia-api'
+import type { Emphasis, Focus, Icon, Styling } from 'utopia-api'
 
 type ModuleExportTypes = { [name: string]: ExportType }
 
@@ -143,6 +144,10 @@ export function componentInfo(
   }
 }
 
+export type TypedInpsectorSpec =
+  | { type: 'hidden' }
+  | { type: 'shown'; display: 'collapsed' | 'expanded' | null; sections: Styling[] }
+
 export interface ComponentDescriptor {
   properties: PropertyControls
   supportsChildren: boolean
@@ -150,7 +155,7 @@ export interface ComponentDescriptor {
   variants: ComponentInfo[]
   source: ComponentDescriptorSource
   focus: Focus
-  inspector: InspectorSpec
+  inspector: TypedInpsectorSpec
   emphasis: Emphasis
   icon: Icon
   label: string | null
@@ -161,7 +166,7 @@ export const ComponentDescriptorDefaults: Pick<
   'focus' | 'inspector' | 'emphasis' | 'icon' | 'label'
 > = {
   focus: 'default',
-  inspector: [],
+  inspector: { type: 'shown', display: 'expanded', sections: [...StylingOptions] },
   emphasis: 'regular',
   icon: 'component',
   label: null,
@@ -174,7 +179,7 @@ export function componentDescriptor(
   preferredChildComponents: Array<PreferredChildComponentDescriptor>,
   source: ComponentDescriptorSource,
   focus: Focus,
-  inspector: InspectorSpec,
+  inspector: TypedInpsectorSpec,
   emphasis: Emphasis,
   icon: Icon,
   label: string | null,
