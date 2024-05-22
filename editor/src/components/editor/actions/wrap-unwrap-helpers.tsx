@@ -457,14 +457,14 @@ export function wrapElementInsertions(
             ]),
             newPath: newPath,
           }
-        // case 'CONDITIONAL_CLAUSE_INSERTION':
-        //   const withTargetAdded = insertElementIntoJSXConditional(
-        //     editor,
-        //     staticTarget,
-        //     elementToInsert,
-        //     importsToAdd,
-        //   )
-        //   return { updatedEditor: withTargetAdded, newPath: newPath }
+        case 'CONDITIONAL_CLAUSE_INSERTION':
+          const withTargetAdded = insertElementIntoJSXConditional(
+            editor,
+            staticTarget,
+            jsxFragment(elementToInsert.uid, [elementToInsert], false),
+            importsToAdd,
+          )
+          return { updatedEditor: withTargetAdded, newPath: newPath }
         default:
           // const _exhaustiveCheck: never = staticTarget
           return { updatedEditor: editor, newPath: null }
