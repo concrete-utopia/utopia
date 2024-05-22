@@ -26,6 +26,7 @@ import type {
   JSXConditionalExpression,
   JSXElement,
   JSXFragment,
+  JSXMapExpression,
 } from '../../../core/shared/element-template'
 import {
   JSXElementChild,
@@ -334,7 +335,7 @@ export function wrapElementInsertions(
   editor: EditorState,
   targets: Array<ElementPath>,
   parentPath: InsertionPath,
-  rawElementToInsert: JSXElement | JSXFragment | JSXConditionalExpression,
+  rawElementToInsert: JSXElement | JSXFragment | JSXConditionalExpression | JSXMapExpression,
   importsToAdd: Imports,
   anyTargetIsARootElement: boolean,
   targetThatIsRootElementOfCommonParent: ElementPath | undefined,
@@ -444,6 +445,28 @@ export function wrapElementInsertions(
           return { updatedEditor: withTargetAdded, newPath: newPath }
         default:
           const _exhaustiveCheck: never = staticTarget
+          return { updatedEditor: editor, newPath: null }
+      }
+    }
+    case 'JSX_MAP_EXPRESSION': {
+      switch (staticTarget.type) {
+        case 'CHILD_INSERTION':
+          return {
+            updatedEditor: foldAndApplyCommandsSimple(editor, [
+              addElement('always', staticTarget, elementToInsert, { importsToAdd, indexPosition }),
+            ]),
+            newPath: newPath,
+          }
+        // case 'CONDITIONAL_CLAUSE_INSERTION':
+        //   const withTargetAdded = insertElementIntoJSXConditional(
+        //     editor,
+        //     staticTarget,
+        //     elementToInsert,
+        //     importsToAdd,
+        //   )
+        //   return { updatedEditor: withTargetAdded, newPath: newPath }
+        default:
+          // const _exhaustiveCheck: never = staticTarget
           return { updatedEditor: editor, newPath: null }
       }
     }

@@ -531,6 +531,7 @@ import {
   conditionalClauseInsertionPath,
   replaceWithSingleElement,
   replaceWithElementsWrappedInFragmentBehaviour,
+  mapInsertionPath,
 } from '../store/insertion-path'
 import { getConditionalCaseCorrespondingToBranchPath } from '../../../core/model/conditionals'
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
@@ -2606,6 +2607,14 @@ export const UPDATE_FNS = {
             : replaceWithElementsWrappedInFragmentBehaviour(wrapperUID)
 
         return conditionalClauseInsertionPath(newPath, 'true-case', behaviour)
+      }
+      if (isJSXMapExpression(action.whatToWrapWith.element)) {
+        const behaviour =
+          action.targets.length === 1
+            ? replaceWithSingleElement()
+            : replaceWithElementsWrappedInFragmentBehaviour(wrapperUID)
+
+        return mapInsertionPath(newPath, behaviour)
       }
       return childInsertionPath(newPath)
     }

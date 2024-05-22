@@ -844,7 +844,13 @@ function editorDispatchInner(
   spyCollector: UiJsxCanvasContextData,
   strategiesToUse: Array<MetaCanvasStrategy>,
 ): DispatchResult {
-  // console.log('DISPATCH', simpleStringifyActions(dispatchedActions), dispatchedActions)
+  const logDispatch: string = window.logDispatch ?? 'none'
+  if (logDispatch != 'none') {
+    const stringifiedActions = simpleStringifyActions(dispatchedActions)
+    if (logDispatch === 'all' || stringifiedActions.includes(logDispatch)) {
+      console.info('DISPATCH', stringifiedActions, dispatchedActions)
+    }
+  }
 
   const MeasureDispatchTime =
     (isFeatureEnabled('Debug – Performance Marks (Fast)') ||

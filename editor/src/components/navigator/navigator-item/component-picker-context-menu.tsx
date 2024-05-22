@@ -81,6 +81,7 @@ import { notice } from '../../common/notice'
 import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
 import { emptyComments } from 'utopia-shared/src/types'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../../../core/shared/dom-utils'
+import { emptyImports } from '../../../core/workers/common/project-file-utils'
 
 type RenderPropTarget = { type: 'render-prop'; prop: string }
 type ConditionalTarget = { type: 'conditional'; conditionalCase: ConditionalCase }
@@ -552,6 +553,19 @@ function insertComponentPickerItem(
       ]
     }
 
+    if (isWrapTarget(insertionTarget)) {
+      const elementToInsert = toInsert.element()
+      return [
+        wrapInElement([target], {
+          element: {
+            ...elementToInsert,
+            uid: generateUidWithExistingComponents(projectContents),
+          },
+          importsToAdd: emptyImports(),
+        }),
+      ]
+    }
+
     if (isReplaceTarget(insertionTarget)) {
       if (
         MetadataUtils.isJSXMapExpression(EP.parentPath(target), metadata) &&
@@ -783,13 +797,14 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
             // If we want to keep the children of this element when it has some, don't include replacements that have children.
             return targetChildren.length === 0 || !componentElementToInsertHasChildren(element)
           }
-          if (isWrapTarget(insertionTarget) && element.type === 'JSX_ELEMENT') {
-            if (isIntrinsicHTMLElement(element.name)) {
+          if (isWrapTarget(insertionTarget)) {
+            if (element.type === 'JSX_ELEMENT' && isIntrinsicHTMLElement(element.name)) {
               // when it is an intrinsic html element, we check if it supports children from our list
               return intrinsicHTMLElementNamesThatSupportChildren.includes(
                 element.name.baseVariable,
               )
             }
+            return true
           }
           // Right now we only support inserting JSX elements when we insert into a render prop or when replacing elements
           return element.type === 'JSX_ELEMENT'

@@ -16,7 +16,7 @@ import type { ProjectContentTreeRoot } from '../../assets'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import type { PropertyControlsInfo } from '../../custom-code/code-file'
 
-export type InsertionPath = ChildInsertionPath | ConditionalClauseInsertionPath
+export type InsertionPath = ChildInsertionPath | ConditionalClauseInsertionPath | MapInsertionPath
 
 interface ReplaceWithSingleElementBehaviour {
   type: 'replace-with-single-element'
@@ -68,6 +68,23 @@ export function childInsertionPath(
   }
 }
 
+export interface MapInsertionPath {
+  type: 'MAP_INSERTION'
+  intendedParentPath: StaticElementPath
+  insertBehavior: ConditionalClauseInsertBehavior
+}
+
+// Insert element into the intended parent's map expression
+export function mapInsertionPath(
+  elementPath: ElementPath,
+  insertBehavior: ConditionalClauseInsertBehavior,
+): MapInsertionPath {
+  return {
+    type: 'MAP_INSERTION',
+    intendedParentPath: EP.dynamicPathToStaticPath(elementPath),
+    insertBehavior: insertBehavior,
+  }
+}
 export interface ConditionalClauseInsertionPath {
   type: 'CONDITIONAL_CLAUSE_INSERTION'
   intendedParentPath: StaticElementPath
