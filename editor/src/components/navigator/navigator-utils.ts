@@ -799,7 +799,7 @@ export function getNavigatorTargets(
   const visibleNavigatorTargets = visibleNavigatorRows.flatMap(getEntriesForRow)
 
   return {
-    navigatorRows: getNavigatorRowsForTree(navigatorTrees, 'visible-navigator-targets'),
+    navigatorRows: visibleNavigatorRows,
     navigatorTargets: navigatorTargets,
     visibleNavigatorTargets: visibleNavigatorTargets,
   }
