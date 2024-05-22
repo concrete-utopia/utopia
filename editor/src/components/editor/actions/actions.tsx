@@ -782,7 +782,9 @@ export function replaceInsideMap(
   )
 
   // TODO: handle multiple elements
-  const elementToReplace: JSXElement | undefined = elements.find((element) => isJSXElement(element))
+  const elementToReplace: JSXElement | undefined = elements.find((element) =>
+    isJSXElement(element),
+  ) as JSXElement | undefined
 
   const editorAfterReplace =
     elementToReplace != null
