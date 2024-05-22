@@ -782,12 +782,12 @@ export function replaceInsideMap(
   )
 
   // TODO: handle multiple elements
-  const elementToReplace: JSXElement | undefined = elements.find((element) =>
+  const elementToReplace: JSXElementChild | undefined = elements.find((element) =>
     isJSXElement(element),
-  ) as JSXElement | undefined
+  )
 
   const editorAfterReplace =
-    elementToReplace != null
+    elementToReplace != null && isJSXElement(elementToReplace)
       ? UPDATE_FNS.REPLACE_MAPPED_ELEMENT(
           replaceMappedElement(elementToReplace, newParent.intendedParentPath, emptyImports()),
           editor,
