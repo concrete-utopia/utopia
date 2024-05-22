@@ -55,7 +55,7 @@ import {
 import { navigatorDepth } from '../navigator-utils'
 import { maybeConditionalExpression } from '../../../core/model/conditionals'
 import { getRouteComponentNameForOutlet } from '../../canvas/remix/remix-utils'
-import { CondensedNavigatorRow, isRegulaNavigatorrRow, type NavigatorRow } from '../navigator-row'
+import { CondensedNavigatorRow, isRegulaNavigatorRow, type NavigatorRow } from '../navigator-row'
 import { BasePaddingUnit } from './navigator-item'
 
 interface NavigatorItemWrapperProps {
@@ -222,7 +222,7 @@ export function getNavigatorEntryLabel(
 
 export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperProps> = React.memo(
   (props) => {
-    if (isRegulaNavigatorrRow(props.navigatorRow)) {
+    if (isRegulaNavigatorRow(props.navigatorRow)) {
       const navigatorEntry = props.navigatorRow.entry
       return (
         <SingleEntryNavigatorItemWrapper

@@ -19,7 +19,7 @@ export function regularNavigatorRow(
   }
 }
 
-export function isRegulaNavigatorrRow(row: NavigatorRow): row is RegularNavigatorRow {
+export function isRegulaNavigatorRow(row: NavigatorRow): row is RegularNavigatorRow {
   return row.type === 'regular-row'
 }
 
@@ -48,7 +48,7 @@ export function isCondensedNavigatorRow(row: NavigatorRow): row is CondensedNavi
 }
 
 export function getEntriesForRow(row: NavigatorRow): Array<NavigatorEntry> {
-  if (isRegulaNavigatorrRow(row)) {
+  if (isRegulaNavigatorRow(row)) {
     return [row.entry]
   } else {
     return row.entries
