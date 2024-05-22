@@ -2417,7 +2417,9 @@ export const UPDATE_FNS = {
             'found no element path for the storyboard root',
             getStoryboardElementPath(editor.projectContents, editor.canvas.openFile?.filename),
           )
-        : EP.parentPath(action.target)
+        : EP.isIndexedElement(action.target)
+        ? EP.parentPath(action.target)
+        : action.target
 
     const withNewElement = modifyUnderlyingTarget(
       parentPath,
