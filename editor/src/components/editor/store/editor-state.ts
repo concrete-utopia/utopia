@@ -2366,13 +2366,14 @@ export function navigatorEntriesEqual(
 }
 
 export function navigatorRowToKey(row: NavigatorRow): string {
-  if (row.type === 'regular-row') {
-    return navigatorEntryToKey(row.entry)
+  switch (row.type) {
+    case 'regular-row':
+      return navigatorEntryToKey(row.entry)
+    case 'condensed-row':
+      return `condensed-${row.entries.map(navigatorEntryToKey).join('-')}`
+    default:
+      assertNever(row)
   }
-  if (row.type === 'condensed-row') {
-    return `condensed-${row.entries.map(navigatorEntryToKey).join('-')}`
-  }
-  assertNever(row)
 }
 
 export function navigatorEntryToKey(entry: NavigatorEntry): string {
