@@ -21,6 +21,7 @@ import type { MetadataSubstate } from '../../editor/store/store-hook-substore-ty
 import * as EP from '../../../core/shared/element-path'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import type { Icon } from 'utopia-api'
+import { when } from '../../../utils/react-conditionals'
 
 interface LayoutIconProps {
   navigatorEntry: NavigatorEntry
@@ -265,19 +266,22 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
           position: 'relative',
         }}
       >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            position: 'absolute',
-            left: -9,
-            height: 18,
-            width: 8,
-          }}
-        >
-          {marker}
-        </div>
+        {when(
+          marker != null,
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'absolute',
+              left: -9,
+              height: 18,
+              width: 8,
+            }}
+          >
+            {marker}
+          </div>,
+        )}
         {icon}
       </div>
     )

@@ -26,9 +26,11 @@ export function isRegulaNavigatorRow(row: NavigatorRow): row is RegularNavigator
 export interface CondensedNavigatorRow {
   type: 'condensed-row'
   indentation: number
-  variant: 'trunk' | 'leaf'
+  variant: CondensedNavigatorRowVariant
   entries: Array<NavigatorEntry>
 }
+
+export type CondensedNavigatorRowVariant = 'trunk' | 'leaf'
 
 export function condensedNavigatorRow(
   entries: Array<NavigatorEntry>,
