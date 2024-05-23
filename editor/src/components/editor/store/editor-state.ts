@@ -191,6 +191,7 @@ import { emptyImports } from '../../../core/workers/common/project-file-utils'
 import type { CommentFilterMode } from '../../inspector/sections/comment-section'
 import type { Collaborator } from '../../../core/shared/multiplayer'
 import type { OnlineState } from '../online-status'
+import type { NavigatorRow } from '../../navigator/navigator-row'
 
 const ObjectPathImmutable: any = OPI
 
@@ -2364,6 +2365,17 @@ export function navigatorEntriesEqual(
   }
 }
 
+export function navigatorRowToKey(row: NavigatorRow): string {
+  switch (row.type) {
+    case 'regular-row':
+      return navigatorEntryToKey(row.entry)
+    case 'condensed-row':
+      return `condensed-${row.entries.map(navigatorEntryToKey).join('-')}`
+    default:
+      assertNever(row)
+  }
+}
+
 export function navigatorEntryToKey(entry: NavigatorEntry): string {
   switch (entry.type) {
     case 'REGULAR':
@@ -2466,6 +2478,7 @@ export function isSlotNavigatorEntry(entry: NavigatorEntry): entry is SlotNaviga
 }
 
 export interface DerivedState {
+  navigatorRows: Array<NavigatorRow>
   navigatorTargets: Array<NavigatorEntry>
   visibleNavigatorTargets: Array<NavigatorEntry>
   autoFocusedPaths: Array<ElementPath>
@@ -2479,6 +2492,7 @@ export interface DerivedState {
 
 function emptyDerivedState(editor: EditorState): DerivedState {
   return {
+    navigatorRows: [],
     navigatorTargets: [],
     visibleNavigatorTargets: [],
     autoFocusedPaths: [],
@@ -2840,6 +2854,7 @@ function getElementWarningsInner(
 const getElementWarnings = memoize(getElementWarningsInner, { maxSize: 1 })
 
 type CacheableDerivedState = {
+  navigatorRows: Array<NavigatorRow>
   navigatorTargets: Array<NavigatorEntry>
   visibleNavigatorTargets: Array<NavigatorEntry>
   elementWarnings: { [key: string]: ElementWarnings }
@@ -2855,7 +2870,7 @@ function deriveCacheableStateInner(
   hiddenInNavigator: ElementPath[],
   propertyControlsInfo: PropertyControlsInfo,
 ): CacheableDerivedState {
-  const { navigatorTargets, visibleNavigatorTargets } = getNavigatorTargets(
+  const { navigatorRows, navigatorTargets, visibleNavigatorTargets } = getNavigatorTargets(
     jsxMetadata,
     elementPathTree,
     collapsedViews,
@@ -2884,6 +2899,7 @@ function deriveCacheableStateInner(
   )
 
   return {
+    navigatorRows: navigatorRows,
     navigatorTargets: navigatorTargets,
     visibleNavigatorTargets: visibleNavigatorTargets,
     elementWarnings: warnings,
@@ -2906,6 +2922,7 @@ export function deriveState(
     cacheKey === 'patched' ? patchedDeriveCacheableState : unpatchedDeriveCacheableState
 
   const {
+    navigatorRows,
     navigatorTargets,
     visibleNavigatorTargets,
     elementWarnings: warnings,
@@ -2929,6 +2946,7 @@ export function deriveState(
   const filePathMappings = getFilePathMappings(editor.projectContents)
 
   const derived: DerivedState = {
+    navigatorRows: navigatorRows,
     navigatorTargets: navigatorTargets,
     visibleNavigatorTargets: visibleNavigatorTargets,
     autoFocusedPaths: autoFocusedPaths,

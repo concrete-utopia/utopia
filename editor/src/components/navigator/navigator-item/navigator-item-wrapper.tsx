@@ -55,11 +55,13 @@ import {
 import { navigatorDepth } from '../navigator-utils'
 import { maybeConditionalExpression } from '../../../core/model/conditionals'
 import { getRouteComponentNameForOutlet } from '../../canvas/remix/remix-utils'
+import { CondensedNavigatorRow, isRegulaNavigatorRow, type NavigatorRow } from '../navigator-row'
+import { BasePaddingUnit } from './navigator-item'
 
 interface NavigatorItemWrapperProps {
   index: number
   targetComponentKey: string
-  navigatorEntry: NavigatorEntry
+  navigatorRow: NavigatorRow
   getCurrentlySelectedEntries: () => Array<NavigatorEntry>
   getSelectedViewsInRange: (index: number) => Array<ElementPath>
   windowStyle: React.CSSProperties
@@ -218,8 +220,57 @@ export function getNavigatorEntryLabel(
   }
 }
 
-export const NavigatorItemWrapper: React.FunctionComponent<
-  React.PropsWithChildren<NavigatorItemWrapperProps>
+export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperProps> = React.memo(
+  (props) => {
+    if (isRegulaNavigatorRow(props.navigatorRow)) {
+      const navigatorEntry = props.navigatorRow.entry
+      return (
+        <SingleEntryNavigatorItemWrapper
+          index={props.index}
+          indentation={props.navigatorRow.indentation}
+          targetComponentKey={props.targetComponentKey}
+          navigatorRow={props.navigatorRow}
+          getCurrentlySelectedEntries={props.getCurrentlySelectedEntries}
+          getSelectedViewsInRange={props.getSelectedViewsInRange}
+          windowStyle={props.windowStyle}
+          navigatorEntry={navigatorEntry}
+        />
+      )
+    }
+    return (
+      <div
+        style={{
+          ...props.windowStyle,
+          left: 5 + 12 + 6 + BasePaddingUnit * props.navigatorRow.indentation,
+        }}
+      >
+        {props.navigatorRow.variant === 'trunk' ? (
+          <React.Fragment>
+            {props.navigatorRow.entries.map((entry) => (
+              <span key={EP.toString(entry.elementPath)}>{EP.toUid(entry.elementPath)} / </span>
+            ))}
+          </React.Fragment>
+        ) : (
+          <React.Fragment>
+            [
+            {props.navigatorRow.entries.map((entry) => (
+              <span key={EP.toString(entry.elementPath)}>{EP.toUid(entry.elementPath)}, </span>
+            ))}
+            ]
+          </React.Fragment>
+        )}
+      </div>
+    )
+  },
+)
+
+type SingleEntryNavigatorItemWrapperProps = NavigatorItemWrapperProps & {
+  indentation: number
+  navigatorEntry: NavigatorEntry
+}
+
+const SingleEntryNavigatorItemWrapper: React.FunctionComponent<
+  React.PropsWithChildren<SingleEntryNavigatorItemWrapperProps>
 > = React.memo((props) => {
   const isSelected = useEditorState(
     Substores.selectedViews,
@@ -345,6 +396,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<
   const navigatorItemProps: NavigatorItemDragAndDropWrapperPropsBase = {
     type: NavigatorItemDragType,
     index: props.index,
+    indentation: props.indentation,
     editorDispatch: dispatch,
     entryDepth: entryDepth,
     selected: isSelected,
