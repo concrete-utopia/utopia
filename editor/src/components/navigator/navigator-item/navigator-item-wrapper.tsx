@@ -371,6 +371,34 @@ const CondensedEntryItem = React.memo(
       'CondensedEntry elementWarningsSelector',
     )
 
+    const isCollapsed = useEditorState(
+      Substores.navigator,
+      (store) =>
+        store.editor.navigator.collapsedViews.some((path) =>
+          EP.pathsEqual(path, props.entry.elementPath),
+        ),
+      'CondensedEntryItemWrapper isCollapsed',
+    )
+
+    const showLabel = useEditorState(
+      Substores.metadata,
+      (store) => {
+        return (
+          MetadataUtils.isProbablyScene(store.editor.jsxMetadata, props.entry.elementPath) ||
+          MetadataUtils.isProbablyRemixScene(store.editor.jsxMetadata, props.entry.elementPath)
+        )
+      },
+      'CondensedEntryItemWrapper isScene',
+    )
+
+    const isChildOfSelected = React.useMemo(() => {
+      return selectedViews.some(
+        (path) =>
+          EP.isDescendantOf(props.entry.elementPath, path) &&
+          !EP.pathsEqual(path, props.entry.elementPath),
+      )
+    }, [props.entry, selectedViews])
+
     const isSelected = React.useMemo(() => {
       return selectedViews.some((path) => EP.pathsEqual(path, props.entry.elementPath))
     }, [selectedViews, props.entry])
@@ -396,40 +424,12 @@ const CondensedEntryItem = React.memo(
       ])
     }, [props.entry, dispatch, highlightedViews])
 
-    const isChildOfSelected = React.useMemo(() => {
-      return selectedViews.some(
-        (path) =>
-          EP.isDescendantOf(props.entry.elementPath, path) &&
-          !EP.pathsEqual(path, props.entry.elementPath),
-      )
-    }, [props.entry, selectedViews])
-
     const collapse = React.useCallback(
       (elementPath: ElementPath) => (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         e.stopPropagation()
         dispatch([toggleCollapse(elementPath)], 'leftpane')
       },
       [dispatch],
-    )
-
-    const isCollapsed = useEditorState(
-      Substores.navigator,
-      (store) =>
-        store.editor.navigator.collapsedViews.some((path) =>
-          EP.pathsEqual(path, props.entry.elementPath),
-        ),
-      'CondensedEntryItemWrapper isCollapsed',
-    )
-
-    const showLabel = useEditorState(
-      Substores.metadata,
-      (store) => {
-        return (
-          MetadataUtils.isProbablyScene(store.editor.jsxMetadata, props.entry.elementPath) ||
-          MetadataUtils.isProbablyRemixScene(store.editor.jsxMetadata, props.entry.elementPath)
-        )
-      },
-      'CondensedEntryItemWrapper isScene',
     )
 
     return (
