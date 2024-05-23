@@ -99,7 +99,7 @@ import {
   jsxElementNameFromString,
   jsxTextBlock,
 } from '../shared/element-template'
-import type { ErrorMessage } from '../shared/error-messages'
+import type { ErrorMessage, ErrorMessageSeverity } from '../shared/error-messages'
 import { errorMessage } from '../shared/error-messages'
 import { dropFileExtension } from '../shared/file-utils'
 import type { FancyError } from '../shared/code-exec-utils'
@@ -418,7 +418,11 @@ async function getComponentDescriptorPromisesFromParseResult(
   }
 }
 
-function simpleErrorMessage(fileName: string, error: string): ErrorMessage {
+function simpleErrorMessage(
+  fileName: string,
+  error: string,
+  severity: ErrorMessageSeverity = 'fatal',
+): ErrorMessage {
   return errorMessage(
     fileName,
     null,
@@ -426,7 +430,7 @@ function simpleErrorMessage(fileName: string, error: string): ErrorMessage {
     null,
     null,
     '',
-    'fatal',
+    severity,
     '',
     error,
     '',
@@ -490,6 +494,7 @@ function errorsFromComponentRegistration(
             `Validation failed: ${messageForComponentRegistrationValidationError(
               error.validationError,
             )}`,
+            'warning',
           ),
         ]
       default:
