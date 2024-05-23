@@ -191,7 +191,7 @@ export const DataCartoucheInner = React.forwardRef(
     const backgroundColor =
       contentsToDisplay.type === 'reference'
         ? primaryBackgroundColorToUse
-        : colorTheme.fg0Opacity20.value
+        : colorTheme.fg0Opacity10.value
 
     const label = contentsToDisplay.label ?? 'DATA'
 

@@ -484,7 +484,7 @@ const CondensedEntryItem = React.memo(
               justifyContent: 'center',
               backgroundColor:
                 !props.wholeRowInsideSelection && !isChildOfSelected
-                  ? colorTheme.bg0.value
+                  ? colorTheme.bg1.value
                   : undefined,
               borderTopRightRadius: isSelected ? 5 : 0,
               borderBottomRightRadius: isSelected ? 5 : 0,
@@ -501,7 +501,7 @@ const CondensedEntryItem = React.memo(
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: 3,
+                gap: showLabel ? 5 : 3,
                 borderRadius: 5,
                 backgroundColor:
                   isSelected && !isDataReference ? colorTheme.selectionBlue.value : undefined,
@@ -542,7 +542,9 @@ const CondensedEntryItem = React.memo(
               )}
               {when(
                 showLabel,
-                <span style={{ color: isSelected ? 'white' : undefined }}>{entryLabel}</span>,
+                <span style={{ color: isSelected ? 'white' : undefined, padding: '0 4px' }}>
+                  {entryLabel}
+                </span>,
               )}
               {when(
                 isDataReference,
@@ -559,7 +561,7 @@ const CondensedEntryItem = React.memo(
               ? 'transparent'
               : !selectionIsDataReference && (isSelected || isChildOfSelected)
               ? colorTheme.childSelectionBlue.value
-              : colorTheme.bg0.value,
+              : colorTheme.bg1.value,
             height: '100%',
             display: 'flex',
             alignItems: 'center',
