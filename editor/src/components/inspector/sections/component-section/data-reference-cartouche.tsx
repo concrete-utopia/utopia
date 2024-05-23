@@ -112,8 +112,7 @@ export const DataReferenceCartoucheControl = React.memo(
     }, [dispatch, elementPath])
 
     return (
-      <>
-        {dataPickerButtonData.popupIsOpen ? dataPickerButtonData.DataPickerComponent : null}
+      <div>
         <DataCartoucheInner
           ref={dataPickerButtonData.setReferenceElement}
           onClick={onClick}
@@ -126,7 +125,8 @@ export const DataReferenceCartoucheControl = React.memo(
           testId={`data-reference-cartouche-${EP.toString(elementPath)}`}
           contentIsComingFromServer={isDataComingFromHookResult}
         />
-      </>
+        {dataPickerButtonData.popupIsOpen ? dataPickerButtonData.DataPickerComponent : null}
+      </div>
     )
   },
 )
@@ -172,7 +172,11 @@ export const DataCartoucheInner = React.forwardRef(
       ? cartoucheIconColorToUse
       : 'secondary'
 
-    const borderColor = inverted ? colorTheme.white.value : colorTheme.primary.value
+    const borderColor = inverted
+      ? colorTheme.white.value
+      : contentIsComingFromServer
+      ? colorTheme.green.value
+      : colorTheme.primary.value
 
     const primaryForegoundColorToUse = contentIsComingFromServer
       ? colorTheme.green.value

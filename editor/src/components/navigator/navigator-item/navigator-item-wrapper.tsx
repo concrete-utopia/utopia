@@ -68,6 +68,11 @@ import {
 import { ExpandableIndicator } from './expandable-indicator'
 import { unless, when } from '../../../utils/react-conditionals'
 import { DataReferenceCartoucheControl } from '../../inspector/sections/component-section/data-reference-cartouche'
+import {
+  DataPickerPopupButtonTestId,
+  useDataPickerButton,
+} from 'src/components/inspector/sections/component-section/component-section'
+import { DataPickerPopup } from 'src/components/inspector/sections/component-section/data-picker-popup'
 
 interface NavigatorItemWrapperProps {
   index: number
@@ -292,7 +297,7 @@ const CondensedEntryItemWrapper = React.memo(
               ? colorTheme.childSelectionBlue.value
               : 'transparent',
           borderTopLeftRadius: wholeRowInsideSelection ? 0 : 5,
-          // borderTopRightRadius: 5,
+          borderTopRightRadius: 5,
           overflowX: 'auto',
         }}
       >
@@ -567,7 +572,7 @@ const CondensedEntryItem = React.memo(
               ? 'transparent'
               : !selectionIsDataReference && (isSelected || isChildOfSelected)
               ? colorTheme.childSelectionBlue.value
-              : undefined,
+              : colorTheme.bg1.value,
             height: '100%',
             display: 'flex',
             alignItems: 'center',
