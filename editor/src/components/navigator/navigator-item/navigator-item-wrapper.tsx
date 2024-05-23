@@ -291,7 +291,7 @@ const CondensedEntryItemWrapper = React.memo(
             hasSelection || wholeRowInsideSelection
               ? colorTheme.childSelectionBlue.value
               : 'transparent',
-          borderTopLeftRadius: 5,
+          borderTopLeftRadius: wholeRowInsideSelection ? 0 : 5,
           borderTopRightRadius: 5,
           overflowX: 'auto',
         }}
