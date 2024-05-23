@@ -232,7 +232,7 @@ function createNavigatorSubtree(
 
   if (
     elementIsDataReferenceFromProjectContents &&
-    isFeatureEnabled('Data Entries in the Navigator')
+    isFeatureEnabled('Condensed Navigator Entries')
   ) {
     // add synthetic entry
     const dataRefEntry = dataReferenceNavigatorEntry(
@@ -348,7 +348,7 @@ function walkRegularNavigatorEntry(
         processedAccumulator.add(EP.toString(subTreeChild.path))
         renderPropChildrenAccumulator[prop] = childTree
       } else {
-        const synthEntry = isFeatureEnabled('Data Entries in the Navigator')
+        const synthEntry = isFeatureEnabled('Condensed Navigator Entries')
           ? dataReferenceNavigatorEntry(
               childPath,
               renderedAtPropertyPath(EPP.create(elementPath, PP.create(prop))),
@@ -558,12 +558,38 @@ function walkMapExpression(
   }
 }
 
+function isCondensableLeafEntry(entry: NavigatorTree): boolean {
+  // for now filter only for Data Entries
+  return (
+    entry.navigatorEntry.type === 'DATA_REFERENCE' &&
+    // the entry is either a dedicated leaf entry
+    (entry.type === 'leaf-entry' ||
+      // or regular entry but has no children and no render props
+      (entry.type === 'regular-entry' &&
+        entry.children.length === 0 &&
+        Object.values(entry.renderProps).length === 0))
+  )
+}
+
 function condenseNavigatorTree(navigatorTree: Array<NavigatorTree>): Array<NavigatorTree> {
   if (!isFeatureEnabled('Condensed Navigator Entries')) {
     return navigatorTree
   }
 
   function walkSubtreeMaybeCondense(entry: NavigatorTree): NavigatorTree {
+    // if the entry only has leaf children, we can turn it into a condensed leaf
+    if (
+      entry.type === 'regular-entry' &&
+      entry.children.length > 0 &&
+      entry.children.every(isCondensableLeafEntry)
+    ) {
+      return {
+        type: 'condensed-leaf',
+        navigatorEntry: entry.navigatorEntry,
+        children: entry.children.map((c) => c.navigatorEntry),
+      }
+    }
+
     // if the entry only has a single child, we can condense it
     if (entry.type === 'regular-entry' && entry.children.length === 1) {
       return {

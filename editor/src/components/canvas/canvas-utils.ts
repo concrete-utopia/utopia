@@ -1908,7 +1908,7 @@ function getValidElementPathsFromElement(
 
     return paths
   } else if (
-    (isJSXTextBlock(element) && isFeatureEnabled('Data Entries in the Navigator')) ||
+    (isJSXTextBlock(element) && isFeatureEnabled('Condensed Navigator Entries')) ||
     isJSIdentifier(element) ||
     isJSPropertyAccess(element) ||
     isJSElementAccess(element)

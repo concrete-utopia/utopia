@@ -66,7 +66,8 @@ import {
   SyntheticNavigatorItemContainer,
 } from './navigator-item-dnd-container'
 import { ExpandableIndicator } from './expandable-indicator'
-import { when } from '../../../utils/react-conditionals'
+import { unless, when } from '../../../utils/react-conditionals'
+import { DataReferenceCartoucheControl } from '../../inspector/sections/component-section/data-reference-cartouche'
 
 interface NavigatorItemWrapperProps {
   index: number
@@ -268,7 +269,15 @@ const CondensedEntryItemWrapper = React.memo(
 
     const hasSelection = React.useMemo(() => {
       return selectedViews.some((path) =>
-        props.navigatorRow.entries.some((entry) => EP.pathsEqual(path, entry.elementPath)),
+        props.navigatorRow.entries.some(
+          (entry) => entry.type !== 'DATA_REFERENCE' && EP.pathsEqual(path, entry.elementPath),
+        ),
+      )
+    }, [selectedViews, props.navigatorRow])
+
+    const wholeRowInsideSelection = React.useMemo(() => {
+      return selectedViews.some((path) =>
+        props.navigatorRow.entries.every((entry) => EP.isDescendantOf(entry.elementPath, path)),
       )
     }, [selectedViews, props.navigatorRow])
 
@@ -276,11 +285,13 @@ const CondensedEntryItemWrapper = React.memo(
       <div
         style={{
           ...props.windowStyle,
-          paddingLeft: BasePaddingUnit * props.navigatorRow.indentation,
           display: 'flex',
           alignItems: 'center',
-          backgroundColor: hasSelection ? colorTheme.childSelectionBlue.value : 'transparent',
-          borderTopLeftRadius: 5,
+          backgroundColor:
+            hasSelection || wholeRowInsideSelection
+              ? colorTheme.childSelectionBlue.value
+              : 'transparent',
+          borderTopLeftRadius: wholeRowInsideSelection ? 0 : 5,
           borderTopRightRadius: 5,
           overflowX: 'auto',
         }}
@@ -293,10 +304,12 @@ const CondensedEntryItemWrapper = React.memo(
 
           return (
             <CondensedEntryItem
+              navigatorRow={props.navigatorRow}
               showExpandableIndicator={idx === 0}
               key={EP.toString(entry.elementPath)}
               entry={entry}
               separator={separator}
+              wholeRowInsideSelection={wholeRowInsideSelection}
             />
           )
         })}
@@ -320,7 +333,7 @@ const CondensedEntryItemSeparator = React.memo(
           color: colorTheme.fg6.value,
         }}
       >
-        {props.variant === 'leaf' ? <span>,</span> : <Icons.NarrowExpansionArrowRight />}
+        {props.variant === 'leaf' ? null : <Icons.NarrowExpansionArrowRight />}
       </div>
     )
   },
@@ -330,6 +343,8 @@ CondensedEntryItemSeparator.displayName = 'CondensedEntryItemSeparator'
 const CondensedEntryItem = React.memo(
   (props: {
     entry: NavigatorEntry
+    navigatorRow: CondensedNavigatorRow
+    wholeRowInsideSelection: boolean
     separator: React.ReactNode
     showExpandableIndicator: boolean
   }) => {
@@ -380,6 +395,10 @@ const CondensedEntryItem = React.memo(
       'CondensedEntryItemWrapper isCollapsed',
     )
 
+    const isDataReference = React.useMemo(() => {
+      return props.entry.type === 'DATA_REFERENCE'
+    }, [props.entry])
+
     const showLabel = useEditorState(
       Substores.metadata,
       (store) => {
@@ -391,13 +410,29 @@ const CondensedEntryItem = React.memo(
       'CondensedEntryItemWrapper isScene',
     )
 
+    const entriesBeforeMe = React.useMemo(() => {
+      let entries: NavigatorEntry[] = []
+      for (const entry of props.navigatorRow.entries) {
+        if (EP.pathsEqual(entry.elementPath, props.entry.elementPath)) {
+          break
+        }
+        entries.push(entry)
+      }
+      return entries
+    }, [props.entry, props.navigatorRow])
+
     const isChildOfSelected = React.useMemo(() => {
-      return selectedViews.some(
-        (path) =>
-          EP.isDescendantOf(props.entry.elementPath, path) &&
-          !EP.pathsEqual(path, props.entry.elementPath),
+      return selectedViews.some((path) =>
+        entriesBeforeMe.some((other) => EP.pathsEqual(other.elementPath, path)),
       )
-    }, [props.entry, selectedViews])
+    }, [selectedViews, entriesBeforeMe])
+
+    const selectionIsDataReference = React.useMemo(() => {
+      const entries = props.navigatorRow.entries.filter((entry) =>
+        selectedViews.some((path) => EP.pathsEqual(path, entry.elementPath)),
+      )
+      return entries.some((entry) => entry.type === 'DATA_REFERENCE')
+    }, [props.navigatorRow, selectedViews])
 
     const isSelected = React.useMemo(() => {
       return selectedViews.some((path) => EP.pathsEqual(path, props.entry.elementPath))
@@ -432,9 +467,13 @@ const CondensedEntryItem = React.memo(
       [dispatch],
     )
 
+    const entryLabel = React.useMemo(() => {
+      return getNavigatorEntryLabel(props.entry, labelForTheElement)
+    }, [props.entry, labelForTheElement])
+
     return (
       <React.Fragment>
-        <Tooltip title={getNavigatorEntryLabel(props.entry, labelForTheElement)}>
+        <Tooltip title={entryLabel} disabled={isDataReference}>
           <div
             style={{
               minWidth: 29,
@@ -443,9 +482,15 @@ const CondensedEntryItem = React.memo(
               flexShrink: 0,
               alignItems: 'center',
               justifyContent: 'center',
-              backgroundColor: !isChildOfSelected ? colorTheme.bg0.value : undefined,
+              backgroundColor:
+                !props.wholeRowInsideSelection && !isChildOfSelected
+                  ? colorTheme.bg0.value
+                  : undefined,
               borderTopRightRadius: isSelected ? 5 : 0,
               borderBottomRightRadius: isSelected ? 5 : 0,
+              paddingLeft: props.showExpandableIndicator
+                ? BasePaddingUnit * props.navigatorRow.indentation
+                : 0,
             }}
             onClick={onClick}
             onMouseOver={onMouseOver}
@@ -458,7 +503,8 @@ const CondensedEntryItem = React.memo(
                 justifyContent: 'center',
                 gap: 3,
                 borderRadius: 5,
-                backgroundColor: isSelected ? colorTheme.selectionBlue.value : undefined,
+                backgroundColor:
+                  isSelected && !isDataReference ? colorTheme.selectionBlue.value : undefined,
                 width: '100%',
                 height: '100%',
                 padding: props.showExpandableIndicator ? '0px 6px 0px 4px' : 0,
@@ -485,27 +531,35 @@ const CondensedEntryItem = React.memo(
                   />
                 </div>,
               )}
-              <LayoutIcon
-                navigatorEntry={props.entry}
-                override={iconOverride}
-                color={isSelected ? 'white' : 'main'}
-                elementWarnings={elementWarnings}
-              />
+              {unless(
+                isDataReference,
+                <LayoutIcon
+                  navigatorEntry={props.entry}
+                  override={iconOverride}
+                  color={isSelected ? 'white' : 'main'}
+                  elementWarnings={elementWarnings}
+                />,
+              )}
               {when(
                 showLabel,
-                <span style={{ color: isSelected ? 'white' : undefined }}>
-                  {labelForTheElement}
-                </span>,
+                <span style={{ color: isSelected ? 'white' : undefined }}>{entryLabel}</span>,
+              )}
+              {when(
+                isDataReference,
+                props.entry.type === 'DATA_REFERENCE' && (
+                  <DataReferenceCartoucheControl selected={isSelected} {...props.entry} />
+                ),
               )}
             </div>
           </div>
         </Tooltip>
         <div
           style={{
-            backgroundColor:
-              isSelected || isChildOfSelected
-                ? colorTheme.childSelectionBlue.value
-                : colorTheme.bg0.value,
+            backgroundColor: props.wholeRowInsideSelection
+              ? 'transparent'
+              : !selectionIsDataReference && (isSelected || isChildOfSelected)
+              ? colorTheme.childSelectionBlue.value
+              : colorTheme.bg0.value,
             height: '100%',
             display: 'flex',
             alignItems: 'center',

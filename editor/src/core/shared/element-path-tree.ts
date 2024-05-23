@@ -98,7 +98,7 @@ function getChildrenPaths(
   ) {
     childrenFromElement = element.element.value.children
       .filter((child) => {
-        if (isFeatureEnabled('Data Entries in the Navigator')) {
+        if (isFeatureEnabled('Condensed Navigator Entries')) {
           // if Data Entries are enabled, we should always show them in the Navigator
           return true
         } else {
