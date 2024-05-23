@@ -405,8 +405,8 @@ const CondensedEntryItem = React.memo(
     }, [props.entry, selectedViews])
 
     const collapse = React.useCallback(
-      (elementPath: ElementPath) => (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        event.stopPropagation()
+      (elementPath: ElementPath) => (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        e.stopPropagation()
         dispatch([toggleCollapse(elementPath)], 'leftpane')
       },
       [dispatch],
@@ -466,13 +466,24 @@ const CondensedEntryItem = React.memo(
             >
               {when(
                 props.showExpandableIndicator,
-                <ExpandableIndicator
+                <div
+                  style={{
+                    width: 12,
+                    height: 29,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                  }}
                   onClick={collapse(props.entry.elementPath)}
-                  visible={true}
-                  collapsed={isCollapsed}
-                  selected={false}
-                  iconColor={isSelected ? 'white' : 'main'}
-                />,
+                >
+                  <ExpandableIndicator
+                    visible={true}
+                    collapsed={isCollapsed}
+                    selected={false}
+                    iconColor={isSelected ? 'white' : 'main'}
+                  />
+                </div>,
               )}
               <LayoutIcon
                 navigatorEntry={props.entry}
