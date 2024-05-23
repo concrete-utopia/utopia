@@ -772,11 +772,16 @@ export function getNavigatorTargets(
 
   const navigatorRows = getNavigatorRowsForTree(navigatorTrees, 'all-navigator-targets')
   const navigatorTargets = navigatorRows.flatMap(getEntriesForRow)
+
   const visibleNavigatorRows = getNavigatorRowsForTree(navigatorTrees, 'visible-navigator-targets')
-  const visibleNavigatorTargets = visibleNavigatorRows.flatMap(getEntriesForRow)
+  const filteredVisibleNavigatorRows = filterCollapsedNavigatorRows(
+    visibleNavigatorRows,
+    collapsedViews,
+  )
+  const visibleNavigatorTargets = filteredVisibleNavigatorRows.flatMap(getEntriesForRow)
 
   return {
-    navigatorRows: visibleNavigatorRows,
+    navigatorRows: filteredVisibleNavigatorRows,
     navigatorTargets: navigatorTargets,
     visibleNavigatorTargets: visibleNavigatorTargets,
   }
@@ -804,4 +809,39 @@ export function getConditionalClausePathForNavigatorEntry(
 
 function renderPropId(propName: string): string {
   return `prop-label-${propName}`
+}
+
+function filterCollapsedNavigatorRows(
+  visibleNavigatorRows: NavigatorRow[],
+  collapsedViews: ElementPath[],
+) {
+  // 1. grab the condensed rows
+  const condensedRows = visibleNavigatorRows.filter(
+    (row) => row.type === 'condensed-row',
+  ) as CondensedNavigatorRow[]
+  // 2. get the EPs of collapsed condensed rows
+  const collapsedCondensedRows = condensedRows
+    .map((row) => {
+      return row.entries[0].elementPath
+    })
+    .filter((row) => {
+      return collapsedViews.some((path) => EP.pathsEqual(path, row))
+    })
+  // 3. filter out the rows which are descendants of collapsed condensed rows
+  const filteredVisibleNavigatorRows = visibleNavigatorRows.filter((row) => {
+    const isChildOfCollapsedCondensedRow = collapsedCondensedRows.some((collapsed) => {
+      switch (row.type) {
+        case 'condensed-row':
+          return EP.isDescendantOf(row.entries[0].elementPath, collapsed)
+        case 'regular-row':
+          return EP.isDescendantOf(row.entry.elementPath, collapsed)
+        default:
+          assertNever(row)
+          return false // lint
+      }
+    })
+    return !isChildOfCollapsedCondensedRow
+  })
+
+  return filteredVisibleNavigatorRows
 }
