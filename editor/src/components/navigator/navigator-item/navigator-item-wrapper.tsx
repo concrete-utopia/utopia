@@ -275,13 +275,22 @@ const CondensedEntryItemWrapper = React.memo(
       )
     }, [selectedViews, props.navigatorRow])
 
+    const wholeRowInsideSelection = React.useMemo(() => {
+      return selectedViews.some((path) =>
+        props.navigatorRow.entries.every((entry) => EP.isDescendantOf(entry.elementPath, path)),
+      )
+    }, [selectedViews, props.navigatorRow])
+
     return (
       <div
         style={{
           ...props.windowStyle,
           display: 'flex',
           alignItems: 'center',
-          backgroundColor: hasSelection ? colorTheme.childSelectionBlue.value : 'transparent',
+          backgroundColor:
+            hasSelection || wholeRowInsideSelection
+              ? colorTheme.childSelectionBlue.value
+              : 'transparent',
           borderTopLeftRadius: 5,
           borderTopRightRadius: 5,
           overflowX: 'auto',
@@ -300,6 +309,7 @@ const CondensedEntryItemWrapper = React.memo(
               key={EP.toString(entry.elementPath)}
               entry={entry}
               separator={separator}
+              wholeRowInsideSelection={wholeRowInsideSelection}
             />
           )
         })}
@@ -334,6 +344,7 @@ const CondensedEntryItem = React.memo(
   (props: {
     entry: NavigatorEntry
     navigatorRow: CondensedNavigatorRow
+    wholeRowInsideSelection: boolean
     separator: React.ReactNode
     showExpandableIndicator: boolean
   }) => {
@@ -471,7 +482,10 @@ const CondensedEntryItem = React.memo(
               flexShrink: 0,
               alignItems: 'center',
               justifyContent: 'center',
-              backgroundColor: !isChildOfSelected ? colorTheme.bg0.value : undefined,
+              backgroundColor:
+                !props.wholeRowInsideSelection && !isChildOfSelected
+                  ? colorTheme.bg0.value
+                  : undefined,
               borderTopRightRadius: isSelected ? 5 : 0,
               borderBottomRightRadius: isSelected ? 5 : 0,
               paddingLeft: props.showExpandableIndicator
@@ -541,10 +555,11 @@ const CondensedEntryItem = React.memo(
         </Tooltip>
         <div
           style={{
-            backgroundColor:
-              !selectionIsDataReference && (isSelected || isChildOfSelected)
-                ? colorTheme.childSelectionBlue.value
-                : colorTheme.bg0.value,
+            backgroundColor: props.wholeRowInsideSelection
+              ? 'transparent'
+              : !selectionIsDataReference && (isSelected || isChildOfSelected)
+              ? colorTheme.childSelectionBlue.value
+              : colorTheme.bg0.value,
             height: '100%',
             display: 'flex',
             alignItems: 'center',
