@@ -416,23 +416,6 @@ export function createElementIconPropsFromMetadata(
     }
   }
 
-  const isGeneratedText = MetadataUtils.isGeneratedTextFromMetadata(
-    elementPath,
-    pathTrees,
-    metadata,
-  )
-  if (isGeneratedText) {
-    return {
-      iconProps: {
-        category: 'element',
-        type: 'text-generated',
-        width: 18,
-        height: 18,
-      },
-      isPositionAbsolute: isPositionAbsolute,
-    }
-  }
-
   const isText =
     MetadataUtils.isTextFromMetadata(element) || isConditionalBranchText(navigatorEntry, metadata)
   if (isText) {

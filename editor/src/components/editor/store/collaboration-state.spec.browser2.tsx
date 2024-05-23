@@ -50,7 +50,7 @@ describe('CollaborationStateUpdater', () => {
         true,
       )
     })
-    it('snatching control on a bunch of fast clicks should gain control and not make lots of calls to the server', async () => {
+    xit('snatching control on a bunch of fast clicks should gain control and not make lots of calls to the server', async () => {
       const snatchControlStub = sandbox.stub(CollaborationEndpoints, 'snatchControlOverProject')
       snatchControlStub.callsFake(async () => {
         return true

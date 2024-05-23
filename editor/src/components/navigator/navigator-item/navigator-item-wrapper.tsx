@@ -1,9 +1,9 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
-import React from 'react'
-import { assertNever } from '../../../core/shared/utils'
 import { createCachedSelector } from 're-reselect'
+import React from 'react'
+import { maybeConditionalExpression } from '../../../core/model/conditionals'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import type {
@@ -15,6 +15,14 @@ import {
   isNullJSXAttributeValue,
 } from '../../../core/shared/element-template'
 import type { ElementPath } from '../../../core/shared/project-file-types'
+import { assertNever } from '../../../core/shared/utils'
+import { Icons, Tooltip, useColorTheme } from '../../../uuiui'
+import { getRouteComponentNameForOutlet } from '../../canvas/remix/remix-utils'
+import {
+  selectComponents,
+  setHighlightedViews,
+  toggleCollapse,
+} from '../../editor/actions/action-creators'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import type {
   DropTargetHint,
@@ -34,6 +42,11 @@ import type {
   ProjectContentAndMetadataSubstate,
   PropertyControlsInfoSubstate,
 } from '../../editor/store/store-hook-substore-types'
+import type { CondensedNavigatorRow, CondensedNavigatorRowVariant } from '../navigator-row'
+import { isRegulaNavigatorRow, type NavigatorRow } from '../navigator-row'
+import { navigatorDepth } from '../navigator-utils'
+import { LayoutIcon } from './layout-icon'
+import { BasePaddingUnit, elementWarningsSelector } from './navigator-item'
 import type {
   ConditionalClauseNavigatorItemContainerProps,
   ErrorNavigatorItemContainerProps,
@@ -52,14 +65,14 @@ import {
   SlotNavigatorItemContainer,
   SyntheticNavigatorItemContainer,
 } from './navigator-item-dnd-container'
-import { navigatorDepth } from '../navigator-utils'
-import { maybeConditionalExpression } from '../../../core/model/conditionals'
-import { getRouteComponentNameForOutlet } from '../../canvas/remix/remix-utils'
+import { ExpandableIndicator } from './expandable-indicator'
+import { unless, when } from '../../../utils/react-conditionals'
+import { DataReferenceCartoucheControl } from '../../inspector/sections/component-section/data-reference-cartouche'
 
 interface NavigatorItemWrapperProps {
   index: number
   targetComponentKey: string
-  navigatorEntry: NavigatorEntry
+  navigatorRow: NavigatorRow
   getCurrentlySelectedEntries: () => Array<NavigatorEntry>
   getSelectedViewsInRange: (index: number) => Array<ElementPath>
   windowStyle: React.CSSProperties
@@ -218,8 +231,356 @@ export function getNavigatorEntryLabel(
   }
 }
 
-export const NavigatorItemWrapper: React.FunctionComponent<
-  React.PropsWithChildren<NavigatorItemWrapperProps>
+export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperProps> = React.memo(
+  (props) => {
+    if (isRegulaNavigatorRow(props.navigatorRow)) {
+      const navigatorEntry = props.navigatorRow.entry
+      return (
+        <SingleEntryNavigatorItemWrapper
+          index={props.index}
+          indentation={props.navigatorRow.indentation}
+          targetComponentKey={props.targetComponentKey}
+          navigatorRow={props.navigatorRow}
+          getCurrentlySelectedEntries={props.getCurrentlySelectedEntries}
+          getSelectedViewsInRange={props.getSelectedViewsInRange}
+          windowStyle={props.windowStyle}
+          navigatorEntry={navigatorEntry}
+        />
+      )
+    }
+    return (
+      <CondensedEntryItemWrapper
+        windowStyle={props.windowStyle}
+        navigatorRow={props.navigatorRow}
+      />
+    )
+  },
+)
+
+const CondensedEntryItemWrapper = React.memo(
+  (props: { windowStyle: React.CSSProperties; navigatorRow: CondensedNavigatorRow }) => {
+    const colorTheme = useColorTheme()
+
+    const selectedViews = useEditorState(
+      Substores.selectedViews,
+      (store) => store.editor.selectedViews,
+      'CondensedEntryItemWrapper selectedViews',
+    )
+
+    const hasSelection = React.useMemo(() => {
+      return selectedViews.some((path) =>
+        props.navigatorRow.entries.some(
+          (entry) => entry.type !== 'DATA_REFERENCE' && EP.pathsEqual(path, entry.elementPath),
+        ),
+      )
+    }, [selectedViews, props.navigatorRow])
+
+    const wholeRowInsideSelection = React.useMemo(() => {
+      return selectedViews.some((path) =>
+        props.navigatorRow.entries.every((entry) => EP.isDescendantOf(entry.elementPath, path)),
+      )
+    }, [selectedViews, props.navigatorRow])
+
+    return (
+      <div
+        style={{
+          ...props.windowStyle,
+          display: 'flex',
+          alignItems: 'center',
+          backgroundColor:
+            hasSelection || wholeRowInsideSelection
+              ? colorTheme.childSelectionBlue.value
+              : 'transparent',
+          borderTopLeftRadius: wholeRowInsideSelection ? 0 : 5,
+          borderTopRightRadius: 5,
+          overflowX: 'auto',
+        }}
+      >
+        {props.navigatorRow.entries.map((entry, idx) => {
+          const showSeparator = idx < props.navigatorRow.entries.length - 1
+          const separator = showSeparator ? (
+            <CondensedEntryItemSeparator variant={props.navigatorRow.variant} />
+          ) : null
+
+          return (
+            <CondensedEntryItem
+              navigatorRow={props.navigatorRow}
+              showExpandableIndicator={idx === 0}
+              key={EP.toString(entry.elementPath)}
+              entry={entry}
+              separator={separator}
+              wholeRowInsideSelection={wholeRowInsideSelection}
+            />
+          )
+        })}
+      </div>
+    )
+  },
+)
+CondensedEntryItemWrapper.displayName = 'CondensedEntryItemWrapper'
+
+const CondensedEntryItemSeparator = React.memo(
+  (props: { variant: CondensedNavigatorRowVariant }) => {
+    const colorTheme = useColorTheme()
+    return (
+      <div
+        style={{
+          width: 12,
+          height: 12,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: colorTheme.fg6.value,
+        }}
+      >
+        {props.variant === 'leaf' ? null : <Icons.NarrowExpansionArrowRight />}
+      </div>
+    )
+  },
+)
+CondensedEntryItemSeparator.displayName = 'CondensedEntryItemSeparator'
+
+const CondensedEntryItem = React.memo(
+  (props: {
+    entry: NavigatorEntry
+    navigatorRow: CondensedNavigatorRow
+    wholeRowInsideSelection: boolean
+    separator: React.ReactNode
+    showExpandableIndicator: boolean
+  }) => {
+    const colorTheme = useColorTheme()
+    const dispatch = useDispatch()
+
+    const selectedViews = useEditorState(
+      Substores.selectedViews,
+      (store) => store.editor.selectedViews,
+      'CondensedEntry selectedViews',
+    )
+
+    const highlightedViews = useEditorState(
+      Substores.highlightedHoveredViews,
+      (store) => store.editor.highlightedViews,
+      'CondensedEntry highlightedViews',
+    )
+
+    const iconOverride = useEditorState(
+      Substores.propertyControlsInfo,
+      (store) =>
+        MetadataUtils.getIconOfComponent(
+          props.entry.elementPath,
+          store.editor.propertyControlsInfo,
+          store.editor.projectContents,
+        ),
+      'CondensedEntry iconOverride',
+    )
+
+    const labelForTheElement = useEditorState(
+      Substores.projectContentsAndMetadata,
+      (store) => labelSelector(store, props.entry),
+      'CondensedEntry labelSelector',
+    )
+
+    const elementWarnings = useEditorState(
+      Substores.derived,
+      (store) => elementWarningsSelector(store, props.entry),
+      'CondensedEntry elementWarningsSelector',
+    )
+
+    const isCollapsed = useEditorState(
+      Substores.navigator,
+      (store) =>
+        store.editor.navigator.collapsedViews.some((path) =>
+          EP.pathsEqual(path, props.entry.elementPath),
+        ),
+      'CondensedEntryItemWrapper isCollapsed',
+    )
+
+    const isDataReference = React.useMemo(() => {
+      return props.entry.type === 'DATA_REFERENCE'
+    }, [props.entry])
+
+    const showLabel = useEditorState(
+      Substores.metadata,
+      (store) => {
+        return (
+          MetadataUtils.isProbablyScene(store.editor.jsxMetadata, props.entry.elementPath) ||
+          MetadataUtils.isProbablyRemixScene(store.editor.jsxMetadata, props.entry.elementPath)
+        )
+      },
+      'CondensedEntryItemWrapper isScene',
+    )
+
+    const entriesBeforeMe = React.useMemo(() => {
+      let entries: NavigatorEntry[] = []
+      for (const entry of props.navigatorRow.entries) {
+        if (EP.pathsEqual(entry.elementPath, props.entry.elementPath)) {
+          break
+        }
+        entries.push(entry)
+      }
+      return entries
+    }, [props.entry, props.navigatorRow])
+
+    const isChildOfSelected = React.useMemo(() => {
+      return selectedViews.some((path) =>
+        entriesBeforeMe.some((other) => EP.pathsEqual(other.elementPath, path)),
+      )
+    }, [selectedViews, entriesBeforeMe])
+
+    const selectionIsDataReference = React.useMemo(() => {
+      const entries = props.navigatorRow.entries.filter((entry) =>
+        selectedViews.some((path) => EP.pathsEqual(path, entry.elementPath)),
+      )
+      return entries.some((entry) => entry.type === 'DATA_REFERENCE')
+    }, [props.navigatorRow, selectedViews])
+
+    const isSelected = React.useMemo(() => {
+      return selectedViews.some((path) => EP.pathsEqual(path, props.entry.elementPath))
+    }, [selectedViews, props.entry])
+
+    const onClick = React.useCallback(
+      (e: React.MouseEvent) => {
+        e.preventDefault()
+        e.stopPropagation()
+        dispatch([selectComponents([props.entry.elementPath], false)])
+      },
+      [dispatch, props.entry],
+    )
+
+    const onMouseOver = React.useCallback(() => {
+      dispatch([setHighlightedViews([props.entry.elementPath])])
+    }, [props.entry, dispatch])
+
+    const onMouseOut = React.useCallback(() => {
+      dispatch([
+        setHighlightedViews(
+          highlightedViews.filter((path) => !EP.pathsEqual(path, props.entry.elementPath)),
+        ),
+      ])
+    }, [props.entry, dispatch, highlightedViews])
+
+    const collapse = React.useCallback(
+      (elementPath: ElementPath) => (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        e.stopPropagation()
+        dispatch([toggleCollapse(elementPath)], 'leftpane')
+      },
+      [dispatch],
+    )
+
+    const entryLabel = React.useMemo(() => {
+      return getNavigatorEntryLabel(props.entry, labelForTheElement)
+    }, [props.entry, labelForTheElement])
+
+    return (
+      <React.Fragment>
+        <Tooltip title={entryLabel} disabled={isDataReference}>
+          <div
+            style={{
+              minWidth: 29,
+              height: 29,
+              display: 'flex',
+              flexShrink: 0,
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor:
+                !props.wholeRowInsideSelection && !isChildOfSelected
+                  ? colorTheme.bg0.value
+                  : undefined,
+              borderTopRightRadius: isSelected ? 5 : 0,
+              borderBottomRightRadius: isSelected ? 5 : 0,
+              paddingLeft: props.showExpandableIndicator
+                ? BasePaddingUnit * props.navigatorRow.indentation
+                : 0,
+            }}
+            onClick={onClick}
+            onMouseOver={onMouseOver}
+            onMouseOut={onMouseOut}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 3,
+                borderRadius: 5,
+                backgroundColor:
+                  isSelected && !isDataReference ? colorTheme.selectionBlue.value : undefined,
+                width: '100%',
+                height: '100%',
+                padding: props.showExpandableIndicator ? '0px 6px 0px 4px' : 0,
+              }}
+            >
+              {when(
+                props.showExpandableIndicator,
+                <div
+                  style={{
+                    width: 12,
+                    height: 29,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                  }}
+                  onClick={collapse(props.entry.elementPath)}
+                >
+                  <ExpandableIndicator
+                    visible={true}
+                    collapsed={isCollapsed}
+                    selected={false}
+                    iconColor={isSelected ? 'white' : 'main'}
+                  />
+                </div>,
+              )}
+              {unless(
+                isDataReference,
+                <LayoutIcon
+                  navigatorEntry={props.entry}
+                  override={iconOverride}
+                  color={isSelected ? 'white' : 'main'}
+                  elementWarnings={elementWarnings}
+                />,
+              )}
+              {when(
+                showLabel,
+                <span style={{ color: isSelected ? 'white' : undefined }}>{entryLabel}</span>,
+              )}
+              {when(
+                isDataReference,
+                props.entry.type === 'DATA_REFERENCE' && (
+                  <DataReferenceCartoucheControl selected={isSelected} {...props.entry} />
+                ),
+              )}
+            </div>
+          </div>
+        </Tooltip>
+        <div
+          style={{
+            backgroundColor: props.wholeRowInsideSelection
+              ? 'transparent'
+              : !selectionIsDataReference && (isSelected || isChildOfSelected)
+              ? colorTheme.childSelectionBlue.value
+              : colorTheme.bg0.value,
+            height: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          {props.separator}
+        </div>
+      </React.Fragment>
+    )
+  },
+)
+CondensedEntryItem.displayName = 'CondensedEntryItem'
+
+type SingleEntryNavigatorItemWrapperProps = NavigatorItemWrapperProps & {
+  indentation: number
+  navigatorEntry: NavigatorEntry
+}
+
+const SingleEntryNavigatorItemWrapper: React.FunctionComponent<
+  React.PropsWithChildren<SingleEntryNavigatorItemWrapperProps>
 > = React.memo((props) => {
   const isSelected = useEditorState(
     Substores.selectedViews,
@@ -345,6 +706,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<
   const navigatorItemProps: NavigatorItemDragAndDropWrapperPropsBase = {
     type: NavigatorItemDragType,
     index: props.index,
+    indentation: props.indentation,
     editorDispatch: dispatch,
     entryDepth: entryDepth,
     selected: isSelected,

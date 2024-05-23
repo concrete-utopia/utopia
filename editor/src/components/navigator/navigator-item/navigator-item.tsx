@@ -101,7 +101,7 @@ interface ComputedLook {
 export const BasePaddingUnit = 17
 
 export function getElementPadding(withNavigatorDepth: number): number {
-  const paddingOffset = withNavigatorDepth - 1
+  const paddingOffset = withNavigatorDepth
   return paddingOffset * BasePaddingUnit
 }
 
@@ -466,7 +466,7 @@ const isHiddenConditionalBranchSelector = createCachedSelector(
   },
 )((_, elementPath, parentPath) => `${EP.toString(elementPath)}_${EP.toString(parentPath)}`)
 
-const elementWarningsSelector = createCachedSelector(
+export const elementWarningsSelector = createCachedSelector(
   (store: DerivedSubstate) => store.derived.elementWarnings,
   (_: DerivedSubstate, navigatorEntry: NavigatorEntry) => navigatorEntry,
   (elementWarnings, navigatorEntry) => {
@@ -484,6 +484,7 @@ export type RemixItemType = 'scene' | 'outlet' | 'link' | 'none'
 export interface NavigatorItemInnerProps {
   navigatorEntry: NavigatorEntry
   index: number
+  indentation: number
   getSelectedViewsInRange: (i: number) => Array<ElementPath> // TODO KILLME
   noOfChildren: number
   label: string
@@ -592,13 +593,7 @@ export const NavigatorItem: React.FunctionComponent<
     'NavigatorItem isManuallyFocusableComponent',
   )
 
-  const entryNavigatorDepth = useEditorState(
-    Substores.metadata,
-    (store) => {
-      return navigatorDepth(navigatorEntry, store.editor.jsxMetadata)
-    },
-    'NavigatorItem entryNavigatorDepth',
-  )
+  const entryNavigatorDepth = props.indentation
 
   const containsExpressions: boolean = useEditorState(
     Substores.metadata,
@@ -609,7 +604,7 @@ export const NavigatorItem: React.FunctionComponent<
         store.editor.elementPathTree,
       )
     },
-    'NavigatorItem entryNavigatorDepth',
+    'NavigatorItem containsExpressions',
   )
 
   const isConditionalDynamicBranch = useEditorState(

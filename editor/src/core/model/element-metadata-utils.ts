@@ -1404,7 +1404,7 @@ export const MetadataUtils = {
           }
           if (
             // when Data Entries are enabled, we want to show all expressions in the navigator
-            !isFeatureEnabled('Data Entries in the Navigator')
+            !isFeatureEnabled('Condensed Navigator Entries')
           ) {
             if (isJSIdentifier(r) || isJSPropertyAccess(r) || isJSElementAccess(r)) {
               return true
@@ -1616,7 +1616,7 @@ export const MetadataUtils = {
               ).length
               if (
                 // When Data Entries are enabled, we don't want to rename the parent elements based on their text / expression content
-                !isFeatureEnabled('Data Entries in the Navigator')
+                !isFeatureEnabled('Condensed Navigator Entries')
               ) {
                 if (numberOfChildrenElements === 0) {
                   if (PossibleTextElements.includes(lastNamePart)) {

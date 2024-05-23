@@ -14,7 +14,7 @@ export type FeatureName =
   | 'Project Thumbnail Generation'
   | 'Debug - Print UIDs'
   | 'Debug – Connections'
-  | 'Data Entries in the Navigator'
+  | 'Condensed Navigator Entries'
 
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -29,7 +29,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Project Thumbnail Generation',
   'Debug - Print UIDs',
   'Debug – Connections',
-  'Data Entries in the Navigator',
+  'Condensed Navigator Entries',
 ]
 
 let FeatureSwitches: { [feature in FeatureName]: boolean } = {
@@ -44,7 +44,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Project Thumbnail Generation': false,
   'Debug - Print UIDs': false,
   'Debug – Connections': false,
-  'Data Entries in the Navigator': false, // !IS_TEST_ENVIRONMENT,
+  'Condensed Navigator Entries': !IS_TEST_ENVIRONMENT,
 }
 
 export const STEGANOGRAPHY_ENABLED = false

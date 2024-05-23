@@ -1047,6 +1047,7 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
   const poppedDerived = history.current.derived
 
   return {
+    navigatorRows: poppedDerived.navigatorRows,
     navigatorTargets: poppedDerived.navigatorTargets,
     visibleNavigatorTargets: poppedDerived.visibleNavigatorTargets,
     autoFocusedPaths: poppedDerived.autoFocusedPaths,
