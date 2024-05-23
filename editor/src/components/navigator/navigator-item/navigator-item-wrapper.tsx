@@ -501,13 +501,13 @@ const CondensedEntryItem = React.memo(
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: showLabel ? 5 : 3,
+                gap: 5,
                 borderRadius: 5,
                 backgroundColor:
                   isSelected && !isDataReference ? colorTheme.selectionBlue.value : undefined,
                 width: '100%',
                 height: '100%',
-                padding: props.showExpandableIndicator ? '0px 6px 0px 4px' : 0,
+                padding: props.showExpandableIndicator ? '0px 5px' : 0,
               }}
             >
               {when(
