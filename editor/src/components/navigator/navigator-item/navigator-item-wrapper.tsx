@@ -18,7 +18,11 @@ import type { ElementPath } from '../../../core/shared/project-file-types'
 import { assertNever } from '../../../core/shared/utils'
 import { Icons, Tooltip, useColorTheme } from '../../../uuiui'
 import { getRouteComponentNameForOutlet } from '../../canvas/remix/remix-utils'
-import { selectComponents, setHighlightedViews } from '../../editor/actions/action-creators'
+import {
+  selectComponents,
+  setHighlightedViews,
+  toggleCollapse,
+} from '../../editor/actions/action-creators'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import type {
   DropTargetHint,
@@ -61,6 +65,7 @@ import {
   SlotNavigatorItemContainer,
   SyntheticNavigatorItemContainer,
 } from './navigator-item-dnd-container'
+import { ExpandableIndicator } from './expandable-indicator'
 
 interface NavigatorItemWrapperProps {
   index: number
@@ -252,30 +257,53 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
 
 const CondensedEntryItemWrapper = React.memo(
   (props: { windowStyle: React.CSSProperties; navigatorRow: CondensedNavigatorRow }) => {
+    const dispatch = useDispatch()
+    const collapse = React.useCallback(
+      (elementPath: ElementPath) => (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        event.stopPropagation()
+        dispatch([toggleCollapse(elementPath)], 'leftpane')
+      },
+      [dispatch],
+    )
+
+    const isCollapsed = useEditorState(
+      Substores.navigator,
+      (store) =>
+        store.editor.navigator.collapsedViews.some((path) =>
+          EP.pathsEqual(path, props.navigatorRow.entries[0].elementPath),
+        ),
+      'CondensedEntryItemWrapper isCollapsed',
+    )
+
     return (
       <div
         style={{
           ...props.windowStyle,
-          left: 5 + 6 + BasePaddingUnit * props.navigatorRow.indentation,
+          paddingLeft: 5 + BasePaddingUnit * props.navigatorRow.indentation,
           display: 'flex',
+          alignItems: 'center',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          {props.navigatorRow.entries.map((entry, idx) => {
-            const showSeparator = idx < props.navigatorRow.entries.length - 1
-            const separator = showSeparator ? (
-              <CondensedEntryItemSeparator variant={props.navigatorRow.variant} />
-            ) : null
+        <ExpandableIndicator
+          onClick={collapse(props.navigatorRow.entries[0].elementPath)}
+          visible={true}
+          collapsed={isCollapsed}
+          selected={false}
+        />
+        {props.navigatorRow.entries.map((entry, idx) => {
+          const showSeparator = idx < props.navigatorRow.entries.length - 1
+          const separator = showSeparator ? (
+            <CondensedEntryItemSeparator variant={props.navigatorRow.variant} />
+          ) : null
 
-            return (
-              <CondensedEntryItem
-                key={EP.toString(entry.elementPath)}
-                entry={entry}
-                separator={separator}
-              />
-            )
-          })}
-        </div>
+          return (
+            <CondensedEntryItem
+              key={EP.toString(entry.elementPath)}
+              entry={entry}
+              separator={separator}
+            />
+          )
+        })}
       </div>
     )
   },
@@ -368,22 +396,37 @@ const CondensedEntryItem = React.memo(
       ])
     }, [props.entry, dispatch, highlightedViews])
 
+    const isChildOfSelected = React.useMemo(() => {
+      return selectedViews.some(
+        (path) =>
+          EP.isDescendantOf(props.entry.elementPath, path) &&
+          !EP.pathsEqual(path, props.entry.elementPath),
+      )
+    }, [props.entry, selectedViews])
+
     return (
       <React.Fragment>
         <Tooltip title={getNavigatorEntryLabel(props.entry, labelForTheElement)}>
           <div
             style={{
               padding: 4,
-              borderRadius: 2,
-              cursor: 'pointer',
+              borderBottomLeftRadius: isSelected ? 2 : 0,
+              borderTopLeftRadius: isSelected ? 2 : 0,
+              borderBottomRightRadius: isSelected && props.separator == null ? 2 : 0,
+              borderTopRightRadius:
+                (isSelected || isChildOfSelected) && props.separator == null ? 2 : 0,
+              width: 29,
+              height: 29,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
             css={{
-              backgroundColor: isSelected ? colorTheme.selectionBlue.value : 'transparent',
-              ':hover': {
-                backgroundColor: !isSelected
-                  ? colorTheme.selectionBlue10.value
-                  : colorTheme.selectionBlue.value,
-              },
+              backgroundColor: isSelected
+                ? colorTheme.selectionBlue.value
+                : isChildOfSelected
+                ? colorTheme.childSelectionBlue.value
+                : 'transparent',
             }}
             onClick={onClick}
             onMouseOver={onMouseOver}
@@ -397,7 +440,18 @@ const CondensedEntryItem = React.memo(
             />
           </div>
         </Tooltip>
-        {props.separator}
+        <div
+          style={{
+            backgroundColor:
+              isSelected || isChildOfSelected ? colorTheme.childSelectionBlue.value : 'transparent',
+            height: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          {props.separator}
+        </div>
       </React.Fragment>
     )
   },
