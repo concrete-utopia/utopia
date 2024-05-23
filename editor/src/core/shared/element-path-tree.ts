@@ -101,7 +101,7 @@ function getChildrenPaths(
         return (
           (!isJSXTextBlock(child) ||
             // if Data Entries are enabled, we don't want to filter out the text blocks
-            isFeatureEnabled('Data Entries in the Navigator')) &&
+            isFeatureEnabled('Condensed Navigator Entries')) &&
           !isJSExpressionMapOrOtherJavaScript(child) &&
           !isJSIdentifier(child) &&
           !isJSPropertyAccess(child) &&

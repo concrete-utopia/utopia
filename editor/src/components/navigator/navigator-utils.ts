@@ -232,7 +232,7 @@ function createNavigatorSubtree(
 
   if (
     elementIsDataReferenceFromProjectContents &&
-    isFeatureEnabled('Data Entries in the Navigator')
+    isFeatureEnabled('Condensed Navigator Entries')
   ) {
     // add synthetic entry
     const dataRefEntry = dataReferenceNavigatorEntry(
@@ -348,7 +348,7 @@ function walkRegularNavigatorEntry(
         processedAccumulator.add(EP.toString(subTreeChild.path))
         renderPropChildrenAccumulator[prop] = childTree
       } else {
-        const synthEntry = isFeatureEnabled('Data Entries in the Navigator')
+        const synthEntry = isFeatureEnabled('Condensed Navigator Entries')
           ? dataReferenceNavigatorEntry(
               childPath,
               renderedAtPropertyPath(EPP.create(elementPath, PP.create(prop))),
