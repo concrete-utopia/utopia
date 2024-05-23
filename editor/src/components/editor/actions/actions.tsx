@@ -11,6 +11,7 @@ import {
 } from '../../../core/model/element-metadata-utils'
 import type { InsertChildAndDetails } from '../../../core/model/element-template-utils'
 import {
+  elementPathForNonChildInsertions,
   elementPathFromInsertionPath,
   findJSXElementChildAtPath,
   generateUidWithExistingComponents,
@@ -152,7 +153,7 @@ import {
 } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { assertNever, fastForEach, getProjectLockedKey, identity } from '../../../core/shared/utils'
-import { mergeImports } from '../../../core/workers/common/project-file-utils'
+import { emptyImports, mergeImports } from '../../../core/workers/common/project-file-utils'
 import type { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import type { IndexPosition } from '../../../utils/utils'
 import Utils, { absolute } from '../../../utils/utils'
@@ -495,6 +496,7 @@ import {
   insertAsChildTarget,
   insertJSXElement,
   openCodeEditorFile,
+  replaceMappedElement,
   scrollToPosition,
   selectComponents,
   setCodeEditorBuildErrors,
@@ -522,7 +524,7 @@ import { LayoutPropertyList, StyleProperties } from '../../inspector/common/css-
 import { isUtopiaCommentFlag, makeUtopiaFlagComment } from '../../../core/shared/comment-flags'
 import { modify, toArrayOf } from '../../../core/shared/optics/optic-utilities'
 import { fromField, traverseArray } from '../../../core/shared/optics/optic-creators'
-import type { InsertionPath } from '../store/insertion-path'
+import type { ConditionalClauseInsertBehavior, InsertionPath } from '../store/insertion-path'
 import {
   commonInsertionPathFromArray,
   getElementPathFromInsertionPath,
@@ -750,6 +752,52 @@ export function editorMoveMultiSelectedTemplates(
   }, editor)
   return {
     editor: updatedEditor,
+    newPaths: newPaths,
+  }
+}
+
+export function replaceInsideMap(
+  targets: ElementPath[],
+  intendedParentPath: StaticElementPath,
+  insertBehavior: ConditionalClauseInsertBehavior,
+  editor: EditorModel,
+): {
+  editor: EditorModel
+  newPaths: Array<ElementPath>
+} {
+  const elements: Array<JSXElementChild> = mapDropNulls((path) => {
+    const instance = MetadataUtils.findElementByElementPath(editor.jsxMetadata, path)
+    if (instance == null || isLeft(instance.element)) {
+      return null
+    }
+
+    return instance.element.value
+  }, targets)
+
+  let newPaths: Array<ElementPath> = targets.map((target) =>
+    elementPathForNonChildInsertions(insertBehavior, intendedParentPath, EP.toUid(target)),
+  )
+
+  // TODO: handle multiple elements - currently we're taking the first one
+  const elementToReplace = elements.find((element) => isJSXElement(element))
+
+  if (elementToReplace != null && isJSXElement(elementToReplace)) {
+    const editorAfterReplace = UPDATE_FNS.REPLACE_MAPPED_ELEMENT(
+      replaceMappedElement(elementToReplace, intendedParentPath, emptyImports()),
+      editor,
+    )
+    const updatedEditor = foldAndApplyCommandsSimple(editorAfterReplace, [
+      ...targets.map((path) => deleteElement('always', path)),
+    ])
+    return {
+      editor: updatedEditor,
+      newPaths: newPaths,
+    }
+  }
+
+  // if we couldn't find the JSXElement to replace, we just return the editor as is
+  return {
+    editor: editor,
     newPaths: newPaths,
   }
 }
@@ -2370,7 +2418,9 @@ export const UPDATE_FNS = {
             'found no element path for the storyboard root',
             getStoryboardElementPath(editor.projectContents, editor.canvas.openFile?.filename),
           )
-        : EP.parentPath(action.target)
+        : EP.isIndexedElement(action.target)
+        ? EP.parentPath(action.target)
+        : action.target
 
     const withNewElement = modifyUnderlyingTarget(
       parentPath,
@@ -2598,30 +2648,47 @@ export const UPDATE_FNS = {
     }
 
     const wrapperUID = generateUidWithExistingComponents(editor.projectContents)
+    const intendedParentPath = EP.dynamicPathToStaticPath(newPath)
+    const insertionBehavior =
+      action.targets.length === 1
+        ? replaceWithSingleElement()
+        : replaceWithElementsWrappedInFragmentBehaviour(wrapperUID)
 
-    const insertionPath = () => {
-      if (isJSXConditionalExpression(action.whatToWrapWith.element)) {
-        const behaviour =
-          action.targets.length === 1
-            ? replaceWithSingleElement()
-            : replaceWithElementsWrappedInFragmentBehaviour(wrapperUID)
-
-        return conditionalClauseInsertionPath(newPath, 'true-case', behaviour)
-      }
-      return childInsertionPath(newPath)
+    let insertionResult: {
+      editor: EditorModel
+      newPaths: Array<ElementPath>
     }
 
-    const actualInsertionPath = insertionPath()
+    if (isJSXMapExpression(action.whatToWrapWith.element)) {
+      // in maps we do not insert directly, but replace contents
+      insertionResult = replaceInsideMap(
+        orderedActionTargets,
+        intendedParentPath,
+        insertionBehavior,
+        includeToast(detailsOfUpdate, withWrapperViewAdded),
+      )
+    } else if (isJSXConditionalExpression(action.whatToWrapWith.element)) {
+      // for conditionals we're inserting into the true-case according to behavior
+      insertionResult = insertIntoWrapper(
+        orderedActionTargets,
+        conditionalClauseInsertionPath(intendedParentPath, 'true-case', insertionBehavior),
+        includeToast(detailsOfUpdate, withWrapperViewAdded),
+      )
+    } else {
+      // otherwise we fall back to standard child insertion
+      insertionResult = insertIntoWrapper(
+        orderedActionTargets,
+        childInsertionPath(intendedParentPath),
+        includeToast(detailsOfUpdate, withWrapperViewAdded),
+      )
+    }
 
-    const { editor: editorWithElementsInserted, newPaths } = insertIntoWrapper(
-      orderedActionTargets,
-      actualInsertionPath,
-      includeToast(detailsOfUpdate, withWrapperViewAdded),
-    )
+    const editorWithElementsInserted = insertionResult.editor
+    const newPaths = insertionResult.newPaths
 
     return {
       ...editorWithElementsInserted,
-      selectedViews: [actualInsertionPath.intendedParentPath],
+      selectedViews: [intendedParentPath],
       leftMenu: { visible: editor.leftMenu.visible, selectedTab: LeftMenuTab.Navigator },
       highlightedViews: [],
       trueUpElementsAfterDomWalkerRuns: [

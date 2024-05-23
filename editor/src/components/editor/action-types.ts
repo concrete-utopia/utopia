@@ -8,6 +8,7 @@ import type {
   JSXFragment,
   TopLevelElement,
   JSExpressionOtherJavaScript,
+  JSXMapExpression,
 } from '../../core/shared/element-template'
 import type { KeysPressed, Key } from '../../utils/keyboard'
 import type { IndexPosition } from '../../utils/utils'
@@ -526,7 +527,7 @@ export type ResetPins = {
 }
 
 export interface WrapInElementWith {
-  element: JSXElement | JSXConditionalExpression | JSXFragment
+  element: JSXElement | JSXConditionalExpression | JSXFragment | JSXMapExpression
   importsToAdd: Imports
 }
 
