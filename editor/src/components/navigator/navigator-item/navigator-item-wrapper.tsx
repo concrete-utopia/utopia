@@ -66,6 +66,7 @@ import {
   SyntheticNavigatorItemContainer,
 } from './navigator-item-dnd-container'
 import { ExpandableIndicator } from './expandable-indicator'
+import { when } from '../../../utils/react-conditionals'
 
 interface NavigatorItemWrapperProps {
   index: number
@@ -257,39 +258,33 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
 
 const CondensedEntryItemWrapper = React.memo(
   (props: { windowStyle: React.CSSProperties; navigatorRow: CondensedNavigatorRow }) => {
-    const dispatch = useDispatch()
-    const collapse = React.useCallback(
-      (elementPath: ElementPath) => (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        event.stopPropagation()
-        dispatch([toggleCollapse(elementPath)], 'leftpane')
-      },
-      [dispatch],
+    const colorTheme = useColorTheme()
+
+    const selectedViews = useEditorState(
+      Substores.selectedViews,
+      (store) => store.editor.selectedViews,
+      'CondensedEntryItemWrapper selectedViews',
     )
 
-    const isCollapsed = useEditorState(
-      Substores.navigator,
-      (store) =>
-        store.editor.navigator.collapsedViews.some((path) =>
-          EP.pathsEqual(path, props.navigatorRow.entries[0].elementPath),
-        ),
-      'CondensedEntryItemWrapper isCollapsed',
-    )
+    const hasSelection = React.useMemo(() => {
+      return selectedViews.some((path) =>
+        props.navigatorRow.entries.some((entry) => EP.pathsEqual(path, entry.elementPath)),
+      )
+    }, [selectedViews, props.navigatorRow])
 
     return (
       <div
         style={{
           ...props.windowStyle,
-          paddingLeft: 5 + BasePaddingUnit * props.navigatorRow.indentation,
+          paddingLeft: BasePaddingUnit * props.navigatorRow.indentation,
           display: 'flex',
           alignItems: 'center',
+          backgroundColor: hasSelection ? colorTheme.childSelectionBlue.value : 'transparent',
+          borderTopLeftRadius: 5,
+          borderTopRightRadius: 5,
+          overflowX: 'auto',
         }}
       >
-        <ExpandableIndicator
-          onClick={collapse(props.navigatorRow.entries[0].elementPath)}
-          visible={true}
-          collapsed={isCollapsed}
-          selected={false}
-        />
         {props.navigatorRow.entries.map((entry, idx) => {
           const showSeparator = idx < props.navigatorRow.entries.length - 1
           const separator = showSeparator ? (
@@ -298,6 +293,7 @@ const CondensedEntryItemWrapper = React.memo(
 
           return (
             <CondensedEntryItem
+              showExpandableIndicator={idx === 0}
               key={EP.toString(entry.elementPath)}
               entry={entry}
               separator={separator}
@@ -332,7 +328,11 @@ const CondensedEntryItemSeparator = React.memo(
 CondensedEntryItemSeparator.displayName = 'CondensedEntryItemSeparator'
 
 const CondensedEntryItem = React.memo(
-  (props: { entry: NavigatorEntry; separator: React.ReactNode }) => {
+  (props: {
+    entry: NavigatorEntry
+    separator: React.ReactNode
+    showExpandableIndicator: boolean
+  }) => {
     const colorTheme = useColorTheme()
     const dispatch = useDispatch()
 
@@ -404,46 +404,97 @@ const CondensedEntryItem = React.memo(
       )
     }, [props.entry, selectedViews])
 
+    const collapse = React.useCallback(
+      (elementPath: ElementPath) => (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        event.stopPropagation()
+        dispatch([toggleCollapse(elementPath)], 'leftpane')
+      },
+      [dispatch],
+    )
+
+    const isCollapsed = useEditorState(
+      Substores.navigator,
+      (store) =>
+        store.editor.navigator.collapsedViews.some((path) =>
+          EP.pathsEqual(path, props.entry.elementPath),
+        ),
+      'CondensedEntryItemWrapper isCollapsed',
+    )
+
+    const showLabel = useEditorState(
+      Substores.metadata,
+      (store) => {
+        return (
+          MetadataUtils.isProbablyScene(store.editor.jsxMetadata, props.entry.elementPath) ||
+          MetadataUtils.isProbablyRemixScene(store.editor.jsxMetadata, props.entry.elementPath)
+        )
+      },
+      'CondensedEntryItemWrapper isScene',
+    )
+
     return (
       <React.Fragment>
         <Tooltip title={getNavigatorEntryLabel(props.entry, labelForTheElement)}>
           <div
             style={{
-              padding: 4,
-              borderBottomLeftRadius: isSelected ? 2 : 0,
-              borderTopLeftRadius: isSelected ? 2 : 0,
-              borderBottomRightRadius: isSelected && props.separator == null ? 2 : 0,
-              borderTopRightRadius:
-                (isSelected || isChildOfSelected) && props.separator == null ? 2 : 0,
-              width: 29,
+              minWidth: 29,
               height: 29,
               display: 'flex',
+              flexShrink: 0,
               alignItems: 'center',
               justifyContent: 'center',
-            }}
-            css={{
-              backgroundColor: isSelected
-                ? colorTheme.selectionBlue.value
-                : isChildOfSelected
-                ? colorTheme.childSelectionBlue.value
-                : 'transparent',
+              backgroundColor: !isChildOfSelected ? colorTheme.bg0.value : undefined,
+              borderTopRightRadius: isSelected ? 5 : 0,
+              borderBottomRightRadius: isSelected ? 5 : 0,
             }}
             onClick={onClick}
             onMouseOver={onMouseOver}
             onMouseOut={onMouseOut}
           >
-            <LayoutIcon
-              navigatorEntry={props.entry}
-              override={iconOverride}
-              color={isSelected ? 'white' : 'main'}
-              elementWarnings={elementWarnings}
-            />
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 3,
+                borderRadius: 5,
+                backgroundColor: isSelected ? colorTheme.selectionBlue.value : undefined,
+                width: '100%',
+                height: '100%',
+                padding: props.showExpandableIndicator ? '0px 6px 0px 4px' : 0,
+              }}
+            >
+              {when(
+                props.showExpandableIndicator,
+                <ExpandableIndicator
+                  onClick={collapse(props.entry.elementPath)}
+                  visible={true}
+                  collapsed={isCollapsed}
+                  selected={false}
+                  iconColor={isSelected ? 'white' : 'main'}
+                />,
+              )}
+              <LayoutIcon
+                navigatorEntry={props.entry}
+                override={iconOverride}
+                color={isSelected ? 'white' : 'main'}
+                elementWarnings={elementWarnings}
+              />
+              {when(
+                showLabel,
+                <span style={{ color: isSelected ? 'white' : undefined }}>
+                  {labelForTheElement}
+                </span>,
+              )}
+            </div>
           </div>
         </Tooltip>
         <div
           style={{
             backgroundColor:
-              isSelected || isChildOfSelected ? colorTheme.childSelectionBlue.value : 'transparent',
+              isSelected || isChildOfSelected
+                ? colorTheme.childSelectionBlue.value
+                : colorTheme.bg0.value,
             height: '100%',
             display: 'flex',
             alignItems: 'center',
