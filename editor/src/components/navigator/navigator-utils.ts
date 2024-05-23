@@ -577,15 +577,6 @@ function condenseNavigatorTree(navigatorTree: Array<NavigatorTree>): Array<Navig
   }
 
   function walkSubtreeMaybeCondense(entry: NavigatorTree): NavigatorTree {
-    // if the entry only has a single child, we can condense it
-    if (entry.type === 'regular-entry' && entry.children.length === 1) {
-      return {
-        type: 'condensed-trunk',
-        navigatorEntry: entry.navigatorEntry,
-        child: walkSubtreeMaybeCondense(entry.children[0]),
-      }
-    }
-
     // if the entry only has leaf children, we can turn it into a condensed leaf
     if (
       entry.type === 'regular-entry' &&
@@ -596,6 +587,15 @@ function condenseNavigatorTree(navigatorTree: Array<NavigatorTree>): Array<Navig
         type: 'condensed-leaf',
         navigatorEntry: entry.navigatorEntry,
         children: entry.children.map((c) => c.navigatorEntry),
+      }
+    }
+
+    // if the entry only has a single child, we can condense it
+    if (entry.type === 'regular-entry' && entry.children.length === 1) {
+      return {
+        type: 'condensed-trunk',
+        navigatorEntry: entry.navigatorEntry,
+        child: walkSubtreeMaybeCondense(entry.children[0]),
       }
     }
 
