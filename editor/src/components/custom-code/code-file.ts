@@ -146,7 +146,7 @@ export function componentInfo(
 
 export type TypedInpsectorSpec =
   | { type: 'hidden' }
-  | { type: 'shown'; display: 'collapsed' | 'expanded' | null; sections: Styling[] }
+  | { type: 'shown'; display: 'collapsed' | 'expanded'; sections: Styling[] }
 
 export interface ComponentDescriptor {
   properties: PropertyControls

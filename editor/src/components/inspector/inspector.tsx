@@ -8,12 +8,7 @@ import type {
   ComputedStyle,
   StyleAttributeMetadata,
 } from '../../core/shared/element-template'
-import {
-  isJSXElement,
-  jsExpressionValue,
-  emptyComments,
-  isIntrinsicElement,
-} from '../../core/shared/element-template'
+import { isJSXElement, jsExpressionValue, emptyComments } from '../../core/shared/element-template'
 import { getJSXAttributesAtPath } from '../../core/shared/jsx-attribute-utils'
 import * as PP from '../../core/shared/property-path'
 import * as EP from '../../core/shared/element-path'
@@ -103,6 +98,7 @@ import {
 import { ListSection } from './sections/layout-section/list-section'
 import { ExpandableIndicator } from '../navigator/navigator-item/expandable-indicator'
 import { isIntrinsicElementMetadata } from '../../core/model/project-file-utils'
+import { assertNever } from '../../core/shared/utils'
 
 export interface ElementPathElement {
   name?: string
@@ -943,7 +939,7 @@ function useShouldExpandStyleSection(): boolean {
         if (instance == null) {
           return true
         }
-        return !isIntrinsicElementMetadata(instance)
+        return isIntrinsicElementMetadata(instance)
       }),
     'useShouldExpandStyleSection shouldExpandFromElementOrComponent',
   )
@@ -962,8 +958,17 @@ function useShouldExpandStyleSection(): boolean {
           return shouldExpandFromElementOrComponent
         }
 
-        if (descriptor.inspector.type === 'shown' && descriptor.inspector.display === 'collapsed') {
+        if (descriptor.inspector.type === 'hidden') {
           return false
+        }
+
+        switch (descriptor.inspector.display) {
+          case 'collapsed':
+            return false
+          case 'expanded':
+            return true
+          default:
+            assertNever(descriptor.inspector.display)
         }
       }
       return true
@@ -983,7 +988,11 @@ function useShouldHideInspectorSections(): boolean {
           store.editor.projectContents,
         )
 
-        return descriptor?.inspector?.type === 'hidden'
+        if (descriptor?.inspector == null) {
+          return false
+        }
+
+        return descriptor.inspector.type === 'hidden'
       }),
 
     'Inspector inspectorPreferences',

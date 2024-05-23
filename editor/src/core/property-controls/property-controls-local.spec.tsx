@@ -83,7 +83,7 @@ describe('registered property controls', () => {
             },
           },
           focus: 'default',
-          inspector: ['visual', 'typography'],
+          inspector: { display: 'expanded', sections: ['visual', 'typography'] },
           emphasis: 'regular',
           icon: 'component',
           variants: [
@@ -118,10 +118,14 @@ describe('registered property controls', () => {
           "emphasis": "regular",
           "focus": "default",
           "icon": "component",
-          "inspector": Array [
-            "visual",
-            "typography",
-          ],
+          "inspector": Object {
+            "display": "expanded",
+            "sections": Array [
+              "visual",
+              "typography",
+            ],
+            "type": "shown",
+          },
           "label": "Labeled Card",
           "preferredChildComponents": Array [],
           "properties": Object {
@@ -258,7 +262,16 @@ describe('registered property controls', () => {
           "emphasis": "regular",
           "focus": "default",
           "icon": "component",
-          "inspector": Array [],
+          "inspector": Object {
+            "display": "expanded",
+            "sections": Array [
+              "layout",
+              "layout-system",
+              "visual",
+              "typography",
+            ],
+            "type": "shown",
+          },
           "label": null,
           "preferredChildComponents": Array [],
           "properties": Object {
@@ -317,7 +330,7 @@ describe('registered property controls', () => {
                 }),
               },
               variants: [],
-              inspector: 'all',
+              inspector: { display: 'expanded' }
             },
           },
         }
@@ -336,7 +349,16 @@ describe('registered property controls', () => {
           "emphasis": "regular",
           "focus": "default",
           "icon": "component",
-          "inspector": "all",
+          "inspector": Object {
+            "display": "expanded",
+            "sections": Array [
+              "layout",
+              "layout-system",
+              "visual",
+              "typography",
+            ],
+            "type": "shown",
+          },
           "label": null,
           "preferredChildComponents": Array [],
           "properties": Object {
@@ -950,7 +972,16 @@ describe('registered property controls', () => {
           "emphasis": "regular",
           "focus": "default",
           "icon": "component",
-          "inspector": Array [],
+          "inspector": Object {
+            "display": "expanded",
+            "sections": Array [
+              "layout",
+              "layout-system",
+              "visual",
+              "typography",
+            ],
+            "type": "shown",
+          },
           "label": null,
           "preferredChildComponents": Array [],
           "properties": Object {
@@ -1775,7 +1806,16 @@ describe('registered property controls', () => {
             "emphasis": "regular",
             "focus": "default",
             "icon": "component",
-            "inspector": Array [],
+            "inspector": Object {
+              "display": "expanded",
+              "sections": Array [
+                "layout",
+                "layout-system",
+                "visual",
+                "typography",
+              ],
+              "type": "shown",
+            },
             "label": null,
             "preferredChildComponents": Array [],
             "properties": Object {
