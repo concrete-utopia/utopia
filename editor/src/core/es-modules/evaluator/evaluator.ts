@@ -85,6 +85,9 @@ function evaluateJs(
   requireFn: (toImport: string) => unknown,
 ): any {
   let module = fileEvaluationCache
+  // With a lot of configurations of how to handle JSX, a React import is implicitly added to the code.
+  // As this is a fallback case for code in the project and the code hasn't been transpiled yet, it may not have a React import.
+  // This streamlines in a React import if it's missing, so that the transpiled code can refer to `React.createElement`.
   const moduleCode = addReactImport(filePath, moduleCodeBefore)
 
   function firstErrorHandler(error: Error): void {
