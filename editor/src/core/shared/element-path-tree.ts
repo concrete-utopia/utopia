@@ -98,15 +98,18 @@ function getChildrenPaths(
   ) {
     childrenFromElement = element.element.value.children
       .filter((child) => {
-        return (
-          (!isJSXTextBlock(child) ||
-            // if Data Entries are enabled, we don't want to filter out the text blocks
-            isFeatureEnabled('Data Entries in the Navigator')) &&
-          !isJSExpressionMapOrOtherJavaScript(child) &&
-          !isJSIdentifier(child) &&
-          !isJSPropertyAccess(child) &&
-          !isJSElementAccess(child)
-        )
+        if (isFeatureEnabled('Data Entries in the Navigator')) {
+          // if Data Entries are enabled, we should always show them in the Navigator
+          return true
+        } else {
+          return (
+            !isJSXTextBlock(child) &&
+            !isJSExpressionMapOrOtherJavaScript(child) &&
+            !isJSIdentifier(child) &&
+            !isJSPropertyAccess(child) &&
+            !isJSElementAccess(child)
+          )
+        }
       })
       .map((child) => EP.appendToPath(rootPath, child.uid))
   }
