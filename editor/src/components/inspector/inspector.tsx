@@ -939,7 +939,11 @@ function useShouldExpandStyleSection(): boolean {
         if (instance == null) {
           return true
         }
-        return isIntrinsicElementMetadata(instance)
+        return (
+          MetadataUtils.isFragmentFromMetadata(instance) ||
+          MetadataUtils.isGroupAgainstImports(instance) ||
+          isIntrinsicElementMetadata(instance)
+        )
       }),
     'useShouldExpandStyleSection shouldExpandFromElementOrComponent',
   )
