@@ -72,7 +72,10 @@ import {
   isTextEditableConditional,
 } from './conditionals'
 import { modify } from '../shared/optics/optic-utilities'
-import type { InsertionPath, MapInsertionPath } from '../../components/editor/store/insertion-path'
+import type {
+  ConditionalClauseInsertBehavior,
+  InsertionPath,
+} from '../../components/editor/store/insertion-path'
 import {
   isChildInsertionPath,
   isConditionalClauseInsertionPath,
@@ -677,32 +680,38 @@ export function insertJSXElementChildren(
 }
 
 export function elementPathFromInsertionPath(
-  insertionPath: InsertionPath | MapInsertionPath,
+  insertionPath: InsertionPath,
   elementUID: string,
 ): ElementPath {
   if (insertionPath.type === 'CHILD_INSERTION') {
     return EP.appendToPath(insertionPath.intendedParentPath, elementUID)
-  } else if (
-    insertionPath.type === 'CONDITIONAL_CLAUSE_INSERTION' ||
-    insertionPath.type === 'MAP_INSERTION'
-  ) {
-    switch (insertionPath.insertBehavior.type) {
-      case 'replace-with-single-element':
-        return EP.appendToPath(insertionPath.intendedParentPath, elementUID)
-      case 'replace-with-elements-wrapped-in-fragment':
-      case 'wrap-in-fragment-and-append-elements':
-        return EP.appendToPath(
-          EP.appendToPath(
-            insertionPath.intendedParentPath,
-            insertionPath.insertBehavior.fragmentUID,
-          ),
-          elementUID,
-        )
-      default:
-        assertNever(insertionPath.insertBehavior)
-    }
+  } else if (insertionPath.type === 'CONDITIONAL_CLAUSE_INSERTION') {
+    return elementPathForNonChildInsertions(
+      insertionPath.insertBehavior,
+      insertionPath.intendedParentPath,
+      elementUID,
+    )
   } else {
     assertNever(insertionPath)
+  }
+}
+
+export function elementPathForNonChildInsertions(
+  insertBehavior: ConditionalClauseInsertBehavior,
+  intendedParentPath: StaticElementPath,
+  elementUID: string,
+): ElementPath {
+  switch (insertBehavior.type) {
+    case 'replace-with-single-element':
+      return EP.appendToPath(intendedParentPath, elementUID)
+    case 'replace-with-elements-wrapped-in-fragment':
+    case 'wrap-in-fragment-and-append-elements':
+      return EP.appendToPath(
+        EP.appendToPath(intendedParentPath, insertBehavior.fragmentUID),
+        elementUID,
+      )
+    default:
+      assertNever(insertBehavior)
   }
 }
 

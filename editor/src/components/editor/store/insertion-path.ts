@@ -68,23 +68,6 @@ export function childInsertionPath(
   }
 }
 
-export interface MapInsertionPath {
-  type: 'MAP_INSERTION'
-  intendedParentPath: StaticElementPath
-  insertBehavior: ConditionalClauseInsertBehavior
-}
-
-// Insert element into the intended parent's map expression
-export function mapInsertionPath(
-  elementPath: ElementPath,
-  insertBehavior: ConditionalClauseInsertBehavior,
-): MapInsertionPath {
-  return {
-    type: 'MAP_INSERTION',
-    intendedParentPath: EP.dynamicPathToStaticPath(elementPath),
-    insertBehavior: insertBehavior,
-  }
-}
 export interface ConditionalClauseInsertionPath {
   type: 'CONDITIONAL_CLAUSE_INSERTION'
   intendedParentPath: StaticElementPath

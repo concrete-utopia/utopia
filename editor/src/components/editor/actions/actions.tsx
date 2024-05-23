@@ -11,6 +11,7 @@ import {
 } from '../../../core/model/element-metadata-utils'
 import type { InsertChildAndDetails } from '../../../core/model/element-template-utils'
 import {
+  elementPathForNonChildInsertions,
   elementPathFromInsertionPath,
   findJSXElementChildAtPath,
   generateUidWithExistingComponents,
@@ -523,11 +524,7 @@ import { LayoutPropertyList, StyleProperties } from '../../inspector/common/css-
 import { isUtopiaCommentFlag, makeUtopiaFlagComment } from '../../../core/shared/comment-flags'
 import { modify, toArrayOf } from '../../../core/shared/optics/optic-utilities'
 import { fromField, traverseArray } from '../../../core/shared/optics/optic-creators'
-import type {
-  ConditionalClauseInsertionPath,
-  InsertionPath,
-  MapInsertionPath,
-} from '../store/insertion-path'
+import type { ConditionalClauseInsertBehavior, InsertionPath } from '../store/insertion-path'
 import {
   commonInsertionPathFromArray,
   getElementPathFromInsertionPath,
@@ -536,7 +533,6 @@ import {
   conditionalClauseInsertionPath,
   replaceWithSingleElement,
   replaceWithElementsWrappedInFragmentBehaviour,
-  mapInsertionPath,
 } from '../store/insertion-path'
 import { getConditionalCaseCorrespondingToBranchPath } from '../../../core/model/conditionals'
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
@@ -762,7 +758,8 @@ export function editorMoveMultiSelectedTemplates(
 
 export function replaceInsideMap(
   targets: ElementPath[],
-  newParent: MapInsertionPath,
+  intendedParentPath: StaticElementPath,
+  insertBehavior: ConditionalClauseInsertBehavior,
   editor: EditorModel,
 ): {
   editor: EditorModel
@@ -778,7 +775,7 @@ export function replaceInsideMap(
   }, targets)
 
   let newPaths: Array<ElementPath> = targets.map((target) =>
-    elementPathFromInsertionPath(newParent, EP.toUid(target)),
+    elementPathForNonChildInsertions(insertBehavior, intendedParentPath, EP.toUid(target)),
   )
 
   // TODO: handle multiple elements - currently we're taking the first one
@@ -786,7 +783,7 @@ export function replaceInsideMap(
 
   if (elementToReplace != null && isJSXElement(elementToReplace)) {
     const editorAfterReplace = UPDATE_FNS.REPLACE_MAPPED_ELEMENT(
-      replaceMappedElement(elementToReplace, newParent.intendedParentPath, emptyImports()),
+      replaceMappedElement(elementToReplace, intendedParentPath, emptyImports()),
       editor,
     )
     const updatedEditor = foldAndApplyCommandsSimple(editorAfterReplace, [
@@ -2651,51 +2648,47 @@ export const UPDATE_FNS = {
     }
 
     const wrapperUID = generateUidWithExistingComponents(editor.projectContents)
+    const intendedParentPath = EP.dynamicPathToStaticPath(newPath)
+    const insertionBehavior =
+      action.targets.length === 1
+        ? replaceWithSingleElement()
+        : replaceWithElementsWrappedInFragmentBehaviour(wrapperUID)
 
-    const insertionPath = () => {
-      if (isJSXConditionalExpression(action.whatToWrapWith.element)) {
-        const behaviour =
-          action.targets.length === 1
-            ? replaceWithSingleElement()
-            : replaceWithElementsWrappedInFragmentBehaviour(wrapperUID)
-
-        return conditionalClauseInsertionPath(newPath, 'true-case', behaviour)
-      }
-      if (isJSXMapExpression(action.whatToWrapWith.element)) {
-        const behaviour =
-          action.targets.length === 1
-            ? replaceWithSingleElement()
-            : replaceWithElementsWrappedInFragmentBehaviour(wrapperUID)
-
-        return mapInsertionPath(newPath, behaviour)
-      }
-      return childInsertionPath(newPath)
+    let insertionResult: {
+      editor: EditorModel
+      newPaths: Array<ElementPath>
     }
 
-    const wrapperInsertionPath = insertionPath()
+    if (isJSXMapExpression(action.whatToWrapWith.element)) {
+      // in maps we do not insert directly, but replace contents
+      insertionResult = replaceInsideMap(
+        orderedActionTargets,
+        intendedParentPath,
+        insertionBehavior,
+        includeToast(detailsOfUpdate, withWrapperViewAdded),
+      )
+    } else if (isJSXConditionalExpression(action.whatToWrapWith.element)) {
+      // for conditionals we're inserting into the true-case according to behavior
+      insertionResult = insertIntoWrapper(
+        orderedActionTargets,
+        conditionalClauseInsertionPath(intendedParentPath, 'true-case', insertionBehavior),
+        includeToast(detailsOfUpdate, withWrapperViewAdded),
+      )
+    } else {
+      // otherwise we fall back to standard child insertion
+      insertionResult = insertIntoWrapper(
+        orderedActionTargets,
+        childInsertionPath(intendedParentPath),
+        includeToast(detailsOfUpdate, withWrapperViewAdded),
+      )
+    }
 
-    let editorWithElementsInserted, newPaths
-
-    // in maps we do not insert directly, but replace contents
-    const result =
-      wrapperInsertionPath.type === 'MAP_INSERTION'
-        ? replaceInsideMap(
-            orderedActionTargets,
-            wrapperInsertionPath,
-            includeToast(detailsOfUpdate, withWrapperViewAdded),
-          )
-        : insertIntoWrapper(
-            orderedActionTargets,
-            wrapperInsertionPath,
-            includeToast(detailsOfUpdate, withWrapperViewAdded),
-          )
-
-    editorWithElementsInserted = result.editor
-    newPaths = result.newPaths
+    const editorWithElementsInserted = insertionResult.editor
+    const newPaths = insertionResult.newPaths
 
     return {
       ...editorWithElementsInserted,
-      selectedViews: [wrapperInsertionPath.intendedParentPath],
+      selectedViews: [intendedParentPath],
       leftMenu: { visible: editor.leftMenu.visible, selectedTab: LeftMenuTab.Navigator },
       highlightedViews: [],
       trueUpElementsAfterDomWalkerRuns: [
