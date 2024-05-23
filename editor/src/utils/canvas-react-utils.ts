@@ -47,13 +47,12 @@ export function getDisplayName(type: any): string {
   }
 }
 
+function isFragment(type: any): boolean {
+  return type === React.Fragment || type.$$typeof === fragmentSymbol
+}
+
 function fragmentOrProviderOrContext(type: any): boolean {
-  return (
-    type == React.Fragment ||
-    type?.$$typeof == fragmentSymbol ||
-    type?.$$typeof == providerSymbol ||
-    type?.$$typeof == contextSymbol
-  )
+  return isFragment(type) || type?.$$typeof == providerSymbol || type?.$$typeof == contextSymbol
 }
 
 function keyShouldBeExcluded(key: string): boolean {
@@ -204,6 +203,7 @@ const mangleExoticType = memoize(
       child: React.ReactElement | null,
       dataUid: string | null,
       path: string | null,
+      fragmentParentProps: any,
     ) {
       if (child == null || !shouldIncludeDataUID(child.type)) {
         return child
@@ -218,6 +218,18 @@ const mangleExoticType = memoize(
         // Setup the result.
         let additionalProps: any = {}
         let shouldClone: boolean = false
+        // For any properties that are not `key` or `children`, push those onto the children of the fragment.
+        // This has been done to handle some naughty behaviour seen where a library (in this case headlessui)
+        // sees our wrapper component and doesn't think it's a fragment (even though it's a wrapper around one) and
+        // then passes properties to the fragment instead of the children which is what it intends to do.
+        if (isFragment(type)) {
+          for (const parentPropsKey in fragmentParentProps) {
+            if (parentPropsKey !== 'key' && parentPropsKey !== 'children') {
+              additionalProps[parentPropsKey] = fragmentParentProps[parentPropsKey]
+              shouldClone = true
+            }
+          }
+        }
 
         if (childUID != null) {
           additionalProps[UTOPIA_UID_KEY] = childUID
@@ -242,9 +254,19 @@ const mangleExoticType = memoize(
      * Instead of that we render these fragment-like components, and mangle with their children
      */
     const wrapperComponent = (p: any, context?: any) => {
+      // Capture this early so that it's possible to prevent an early return.
+      let isFragmentWithNonFragmentProps: boolean = false
+      if (isFragment(type)) {
+        for (const parentPropsKey in p) {
+          if (parentPropsKey !== 'key' && parentPropsKey !== 'children') {
+            isFragmentWithNonFragmentProps = true
+            break
+          }
+        }
+      }
       const uid = p?.[UTOPIA_UID_KEY]
       const path = p?.[UTOPIA_PATH_KEY]
-      if (uid == null) {
+      if (uid == null && !isFragmentWithNonFragmentProps) {
         // early return for the cases where there's no data-uid
         return realCreateElement(type, p)
       } else if (p?.children == null || typeof p.children === 'string') {
@@ -264,10 +286,10 @@ const mangleExoticType = memoize(
 
           if (Array.isArray(p?.children)) {
             children = React.Children.map(p?.children, (child) =>
-              updateChild(child, uidToPass, pathToPass),
+              updateChild(child, uidToPass, pathToPass, p),
             )
           } else {
-            children = updateChild(p.children, uidToPass, pathToPass)
+            children = updateChild(p.children, uidToPass, pathToPass, p)
           }
         }
         let mangledProps = {
@@ -275,8 +297,21 @@ const mangleExoticType = memoize(
           children: children,
         }
 
-        delete mangledProps[UTOPIA_UID_KEY]
-        delete mangledProps[UTOPIA_PATH_KEY]
+        if (isFragment(type)) {
+          // Fragments cannot take any properties other than `key` or `children`,
+          // so we create a props object that only has those two properties.
+          let newMangledProps: any = {}
+          if (mangledProps.key !== undefined) {
+            newMangledProps.key = mangledProps.key
+          }
+          if (mangledProps.children !== undefined) {
+            newMangledProps.children = mangledProps.children
+          }
+          mangledProps = newMangledProps
+        } else {
+          delete mangledProps[UTOPIA_UID_KEY]
+          delete mangledProps[UTOPIA_PATH_KEY]
+        }
         return realCreateElement(type as any, mangledProps)
       }
     }
