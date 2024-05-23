@@ -466,7 +466,7 @@ const isHiddenConditionalBranchSelector = createCachedSelector(
   },
 )((_, elementPath, parentPath) => `${EP.toString(elementPath)}_${EP.toString(parentPath)}`)
 
-const elementWarningsSelector = createCachedSelector(
+export const elementWarningsSelector = createCachedSelector(
   (store: DerivedSubstate) => store.derived.elementWarnings,
   (_: DerivedSubstate, navigatorEntry: NavigatorEntry) => navigatorEntry,
   (elementWarnings, navigatorEntry) => {
