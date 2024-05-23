@@ -409,7 +409,7 @@ describe('registered property controls', () => {
             fileName: '/utopia/components.utopia.js',
             message: "Validation failed: Component registered for key 'Card' is undefined",
             passTime: null,
-            severity: 'warning',
+            severity: 'fatal',
             source: 'component-descriptor',
             startColumn: null,
             startLine: null,
@@ -589,7 +589,7 @@ describe('registered property controls', () => {
 
     expect(srcCardKey).toBeUndefined()
   })
-  it('control registration fails when the imported internal component does not match the name of registration key', async () => {
+  it('control registration happens when the imported internal component does not match the name of registration key (with a warning)', async () => {
     const renderResult = await renderTestEditorWithModel(
       project({
         ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
@@ -639,9 +639,9 @@ describe('registered property controls', () => {
       (key) => key === '/src/card',
     )
 
-    expect(srcCardKey).toBeUndefined()
+    expect(srcCardKey).not.toBeUndefined()
   })
-  it('control registration fails when the module name of an imported internal component does not match the name of the registration key', async () => {
+  it('control registration happens when the module name of an imported internal component does not match the name of the registration key (with a warning)', async () => {
     const renderResult = await renderTestEditorWithModel(
       project({
         ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
@@ -688,12 +688,12 @@ describe('registered property controls', () => {
     })
 
     const srcCardKey = Object.keys(renderResult.getEditorState().editor.propertyControlsInfo).find(
-      (key) => key === '/src/card',
+      (key) => key === '/src/cardd',
     )
 
-    expect(srcCardKey).toBeUndefined()
+    expect(srcCardKey).not.toBeUndefined()
   })
-  it('control registration fails when the imported external component does not match the name of registration key', async () => {
+  it('control registration happens when the imported external component does not match the name of registration key (with a warning)', async () => {
     const renderResult = await renderTestEditorWithModel(
       project({
         ['/utopia/components.utopia.js']: `import { View } from 'utopia-api'
@@ -739,13 +739,13 @@ describe('registered property controls', () => {
       },
     })
 
-    const srcCardKey = Object.keys(renderResult.getEditorState().editor.propertyControlsInfo).find(
-      (key) => key === '/src/card',
-    )
+    const utopiaApiKey = Object.keys(
+      renderResult.getEditorState().editor.propertyControlsInfo,
+    ).find((key) => key === 'utopia-api')
 
-    expect(srcCardKey).toBeUndefined()
+    expect(utopiaApiKey).not.toBeUndefined()
   })
-  it('control registration fails when the module name of an imported external component does not match the name of registration key', async () => {
+  it('control registration happens when the module name of an imported external component does not match the name of registration key (with a warning)', async () => {
     const renderResult = await renderTestEditorWithModel(
       project({
         ['/utopia/components.utopia.js']: `import { View } from 'utopia-api'
@@ -791,11 +791,11 @@ describe('registered property controls', () => {
       },
     })
 
-    const srcCardKey = Object.keys(renderResult.getEditorState().editor.propertyControlsInfo).find(
-      (key) => key === '/src/card',
-    )
+    const utopiaApiiKey = Object.keys(
+      renderResult.getEditorState().editor.propertyControlsInfo,
+    ).find((key) => key === 'utopia-apii')
 
-    expect(srcCardKey).toBeUndefined()
+    expect(utopiaApiiKey).not.toBeUndefined()
   })
   it('updating the control registration removes the build errors', async () => {
     const renderResult = await renderTestEditorWithModel(
@@ -846,7 +846,7 @@ describe('registered property controls', () => {
       (key) => key === '/src/card',
     )
 
-    expect(srcCardKey).toBeUndefined()
+    expect(srcCardKey).not.toBeUndefined()
 
     await renderResult.dispatch(
       [
@@ -1092,6 +1092,7 @@ describe('registered property controls', () => {
     expect(Object.keys(editorState.propertyControlsInfo['/src/card'])).toMatchInlineSnapshot(`
       Array [
         "Card",
+        "Card2",
       ]
     `)
   })
@@ -2069,7 +2070,7 @@ describe('Lifecycle management of registering components', () => {
         fileName: '/utopia/components.utopia.js',
         message: "Validation failed: Component registered for key 'Card' is undefined",
         passTime: null,
-        severity: 'warning',
+        severity: 'fatal',
         source: 'component-descriptor',
         startColumn: null,
         startLine: null,
