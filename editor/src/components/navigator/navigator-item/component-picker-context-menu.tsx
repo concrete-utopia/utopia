@@ -80,12 +80,11 @@ import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { absolute } from '../../../utils/utils'
 import { notice } from '../../common/notice'
 import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
-import { emptyComments } from 'utopia-shared/src/types'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../../../core/shared/dom-utils'
-import { emptyImports } from '../../../core/workers/common/project-file-utils'
 import { commandsForFirstApplicableStrategy } from '../../../components/inspector/inspector-strategies/inspector-strategy'
 import { wrapInDivStrategy } from '../../../components/editor/wrap-in-callbacks'
 import type { AllElementProps } from '../../../components/editor/store/editor-state'
+import { useContextMenuState } from '../../canvas/context-menu-state'
 
 type RenderPropTarget = { type: 'render-prop'; prop: string }
 type ConditionalTarget = { type: 'conditional'; conditionalCase: ConditionalCase }
@@ -325,10 +324,10 @@ export const useCreateCallbackToShowComponentPicker =
 
     return React.useCallback(
       (
-          selectedViews: ElementPath[],
-          insertionTarget: InsertionTarget,
-          overridePickerType?: 'preferred' | 'full',
-        ) =>
+        selectedViews: ElementPath[],
+        insertionTarget: InsertionTarget,
+        overridePickerType?: 'preferred' | 'full',
+      ) =>
         (
           event: TriggerEvent,
           params?: Pick<ShowContextMenuParams, 'props' | 'position'> | undefined,
@@ -457,9 +456,9 @@ function moreItem(
         currentMenu == null
           ? undefined
           : {
-              x: currentMenu.offsetLeft,
-              y: currentMenu.offsetTop,
-            }
+            x: currentMenu.offsetLeft,
+            y: currentMenu.offsetTop,
+          }
 
       showComponentPickerContextMenu(e as React.MouseEvent<any>, {
         position: position,
@@ -927,13 +926,17 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
       e.stopPropagation()
     }, [])
 
-    const onVisibilityChange = React.useCallback((isVisible: boolean) => {
-      if (isVisible) {
-        document.body.classList.add(BodyMenuOpenClass)
-      } else {
-        document.body.classList.remove(BodyMenuOpenClass)
-      }
-    }, [])
+    const { add, remove } = useContextMenuState()
+    const onVisibilityChange = React.useCallback(
+      (isVisible: boolean) => {
+        if (isVisible) {
+          add(FullMenuId)
+        } else {
+          remove(FullMenuId)
+        }
+      },
+      [add, remove],
+    )
 
     return (
       <Menu

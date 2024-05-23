@@ -16,6 +16,7 @@ import type { EditorDispatch } from './editor/action-types'
 import type { WindowPoint } from '../core/shared/math-utils'
 import { windowPoint } from '../core/shared/math-utils'
 import { BodyMenuOpenClass } from '../core/shared/utils'
+import { useContextMenuState } from './canvas/context-menu-state'
 
 interface Submenu<T> {
   items: Item<T>[]
@@ -54,11 +55,6 @@ export interface ContextMenuProps<T> {
   getData: () => T
   id: string
   items: ContextMenuItem<T>[]
-}
-
-const onVisibilityChange = (isVisible: boolean) => {
-  if (isVisible) document.body.classList.add(BodyMenuOpenClass)
-  else document.body.classList.remove(BodyMenuOpenClass)
 }
 
 export const ContextMenu = <T,>({ dispatch, getData, id, items }: ContextMenuProps<T>) => {
@@ -144,6 +140,15 @@ export const ContextMenu = <T,>({ dispatch, getData, id, items }: ContextMenuPro
       )
     },
     [getData, dispatch, isDisabled, isHidden],
+  )
+
+  const { add, remove } = useContextMenuState()
+  const onVisibilityChange = React.useCallback(
+    (isVisible: boolean) => {
+      if (isVisible) add(id)
+      else remove(id)
+    },
+    [add, id, remove],
   )
 
   return (
