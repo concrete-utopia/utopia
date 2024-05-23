@@ -259,6 +259,7 @@ type ComponentDescriptorRegistrationError =
   | {
       type: 'registration-validation-failed'
       validationError: ComponentRegistrationValidationError
+      severity: ErrorMessageSeverity
     }
 
 interface ComponentDescriptorRegistrationResult {
@@ -385,8 +386,15 @@ async function getComponentDescriptorPromisesFromParseResult(
           componentToRegister,
         )
         if (validationResult.type !== 'valid') {
-          errors.push({ type: 'registration-validation-failed', validationError: validationResult })
-          continue
+          const severity = validationResult.type === 'component-undefined' ? 'fatal' : 'warning'
+          errors.push({
+            type: 'registration-validation-failed',
+            validationError: validationResult,
+            severity: severity,
+          })
+          if (severity === 'fatal') {
+            continue
+          }
         }
         const componentDescriptor = await componentDescriptorForComponentToRegister(
           componentToRegister,
@@ -494,7 +502,7 @@ function errorsFromComponentRegistration(
             `Validation failed: ${messageForComponentRegistrationValidationError(
               error.validationError,
             )}`,
-            'warning',
+            error.severity,
           ),
         ]
       default:
