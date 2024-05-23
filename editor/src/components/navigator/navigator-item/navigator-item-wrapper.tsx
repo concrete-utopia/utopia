@@ -292,7 +292,7 @@ const CondensedEntryItemWrapper = React.memo(
               ? colorTheme.childSelectionBlue.value
               : 'transparent',
           borderTopLeftRadius: wholeRowInsideSelection ? 0 : 5,
-          borderTopRightRadius: 5,
+          // borderTopRightRadius: 5,
           overflowX: 'auto',
         }}
       >
@@ -322,6 +322,11 @@ CondensedEntryItemWrapper.displayName = 'CondensedEntryItemWrapper'
 const CondensedEntryItemSeparator = React.memo(
   (props: { variant: CondensedNavigatorRowVariant }) => {
     const colorTheme = useColorTheme()
+
+    if (props.variant === 'leaf') {
+      return <div style={{ width: 5 }} />
+    }
+
     return (
       <div
         style={{
@@ -333,11 +338,12 @@ const CondensedEntryItemSeparator = React.memo(
           color: colorTheme.fg6.value,
         }}
       >
-        {props.variant === 'leaf' ? null : <Icons.NarrowExpansionArrowRight />}
+        <Icons.NarrowExpansionArrowRight />
       </div>
     )
   },
 )
+
 CondensedEntryItemSeparator.displayName = 'CondensedEntryItemSeparator'
 
 const CondensedEntryItem = React.memo(
@@ -561,7 +567,7 @@ const CondensedEntryItem = React.memo(
               ? 'transparent'
               : !selectionIsDataReference && (isSelected || isChildOfSelected)
               ? colorTheme.childSelectionBlue.value
-              : colorTheme.bg1.value,
+              : undefined,
             height: '100%',
             display: 'flex',
             alignItems: 'center',

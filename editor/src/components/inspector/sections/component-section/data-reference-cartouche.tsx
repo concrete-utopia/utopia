@@ -222,9 +222,7 @@ export const DataCartoucheInner = React.forwardRef(
         >
           {contentsToDisplay.type === 'reference' ? (
             <Icons.NavigatorData color={cartoucheIconColor} />
-          ) : (
-            <Icons.NavigatorText color={cartoucheIconColor} />
-          )}
+          ) : null}
           <Tooltip title={label}>
             <div
               style={{
