@@ -707,6 +707,7 @@ export function getComponentGroups(
         originatingPath,
         fullPath,
         file.fileContents.parsed,
+        propertyControlsInfo,
       )
       let insertableComponents: Array<InsertableComponent> = []
       fastForEach(possibleExportedComponents, (exportedComponent) => {
@@ -718,7 +719,7 @@ export function getComponentGroups(
         )
 
         // Drill down into the property controls to see if this has an appropriate style object entry.
-        const stylePropOptions = hasStyleControls(propertyControls)
+        const stylePropOptions = hasStyleControls(propertyControls ?? {})
           ? addSizeAndNotStyleProp
           : doNotAddStyleProp
 
