@@ -179,7 +179,7 @@ export const DataCartoucheInner = React.forwardRef(
       ? colorTheme.white.value
       : contentIsComingFromServer
       ? colorTheme.green.value
-      : colorTheme.primary.value
+      : colorTheme.selectionBlue.value
 
     const primaryForegoundColorToUse = contentIsComingFromServer
       ? colorTheme.green.value
