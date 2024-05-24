@@ -144,9 +144,15 @@ export function componentInfo(
   }
 }
 
-export type TypedInpsectorSpec =
-  | { type: 'hidden' }
-  | { type: 'shown'; display: 'collapsed' | 'expanded'; sections: Styling[] }
+export type StyleSectionState = 'collapsed' | 'expanded'
+
+export interface ShownInspectorSpec {
+  type: 'shown'
+  display: StyleSectionState
+  sections: Styling[]
+}
+
+export type TypedInpsectorSpec = { type: 'hidden' } | ShownInspectorSpec
 
 export interface ComponentDescriptor {
   properties: PropertyControls

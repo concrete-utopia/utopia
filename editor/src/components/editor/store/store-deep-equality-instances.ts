@@ -485,6 +485,9 @@ import type {
   CurriedUtopiaRequireFn,
   PropertyControlsInfo,
   ComponentDescriptorFromDescriptorFile,
+  TypedInpsectorSpec,
+  ShownInspectorSpec,
+  StyleSectionState,
 } from '../../custom-code/code-file'
 import {
   codeResult,
@@ -3453,6 +3456,33 @@ export function ComponentDescriptorSourceKeepDeepEquality(): KeepDeepEqualityCal
   }
 }
 
+const InspectorSpecKeepDeepEquality: KeepDeepEqualityCall<TypedInpsectorSpec> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'hidden':
+      if (oldValue.type === newValue.type) {
+        return keepDeepEqualityResult(oldValue, true)
+      }
+      break
+    case 'shown':
+      if (oldValue.type === newValue.type) {
+        return combine2EqualityCalls<StyleSectionState, Styling[], ShownInspectorSpec>(
+          (i) => i.display,
+          createCallWithTripleEquals(),
+          (i) => i.sections,
+          arrayDeepEquality(createCallWithTripleEquals()),
+          (display, sections) => ({ type: 'shown', display: display, sections: sections }),
+        )(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
 export const ComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<ComponentDescriptor> =
   combine10EqualityCalls(
     (descriptor) => descriptor.properties,
@@ -3468,7 +3498,7 @@ export const ComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<Component
     (descriptor) => descriptor.focus,
     createCallWithTripleEquals<Focus>(),
     (descriptor) => descriptor.inspector,
-    createCallFromIntrospectiveKeepDeep(),
+    InspectorSpecKeepDeepEquality,
     (descriptor) => descriptor.emphasis,
     createCallWithTripleEquals<Emphasis>(),
     (descriptor) => descriptor.icon,
