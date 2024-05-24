@@ -5,7 +5,7 @@ import { getExportedComponentImports } from './export-utils'
 
 describe('getExportedComponentImports', () => {
   it('returns null for an unparsed value', () => {
-    const actualResult = getExportedComponentImports('/src/app.js', '/src/index.js', unparsed)
+    const actualResult = getExportedComponentImports('/src/app.js', '/src/index.js', unparsed, {})
     expect(actualResult).toMatchInlineSnapshot(`null`)
   })
   it('returns null for a parse failure', () => {
@@ -13,6 +13,7 @@ describe('getExportedComponentImports', () => {
       '/src/app.js',
       '/src/index.js',
       parseFailure(null, null, 'Parse test failure.', []),
+      {},
     )
     expect(actualResult).toMatchInlineSnapshot(`null`)
   })
@@ -32,7 +33,12 @@ export var Whatever = (props) => {
     )
     expect(isParseSuccess(parseResult)).toEqual(true)
 
-    const actualResult = getExportedComponentImports('/src/app.js', '/src/index.js', parseResult)
+    const actualResult = getExportedComponentImports(
+      '/src/app.js',
+      '/src/index.js',
+      parseResult,
+      {},
+    )
     expect(actualResult).toMatchInlineSnapshot(`
       Array [
         Object {

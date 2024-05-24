@@ -707,6 +707,7 @@ export function getComponentGroups(
         originatingPath,
         fullPath,
         file.fileContents.parsed,
+        propertyControlsInfo,
       )
       let insertableComponents: Array<InsertableComponent> = []
       fastForEach(possibleExportedComponents, (exportedComponent) => {

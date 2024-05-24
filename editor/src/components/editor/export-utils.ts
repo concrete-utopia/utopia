@@ -1,7 +1,9 @@
 import { elementUsesProperty } from '../../core/model/element-template-utils'
 import { BakedInStoryboardVariableName } from '../../core/model/scene-utils'
+import { propertyControlsForComponentInFile } from '../../core/property-controls/property-controls-utils'
 import type { UtopiaJSXComponent } from '../../core/shared/element-template'
 import { isUtopiaJSXComponent } from '../../core/shared/element-template'
+import { dropFileExtension } from '../../core/shared/file-utils'
 import type {
   ImportDetails,
   Imports,
@@ -14,6 +16,7 @@ import {
   importDetails,
 } from '../../core/shared/project-file-types'
 import { emptyImports } from '../../core/workers/common/project-file-utils'
+import type { PropertyControlsInfo } from '../custom-code/code-file'
 import { StoryboardFilePath } from './store/editor-state'
 
 interface ExportedComponentDetail {
@@ -44,6 +47,7 @@ export function getExportedComponentImportsFromParseSuccess(
   originatingPath: string,
   fullPath: string,
   success: ParseSuccess,
+  propertyControlsInfo: PropertyControlsInfo,
 ): ExportedComponentImports {
   const pathLastPart = pathLastPartWithoutExtension(fullPath)
   let result: ExportedComponentImports = []
@@ -58,17 +62,27 @@ export function getExportedComponentImportsFromParseSuccess(
     listingName: string,
     importDetailsToAdd: ImportDetails,
   ): void {
-    for (const topLevelElement of success.topLevelElements) {
-      if (
+    const isExportedComponent = success.topLevelElements.some(
+      (topLevelElement) =>
         isUtopiaJSXComponent(topLevelElement) &&
         topLevelElement.name === elementMatchesName &&
-        !isStoryboard(topLevelElement)
-      ) {
-        // Don't add an import if this is from the same file.
-        const importsToAdd =
-          originatingPath === fullPath ? emptyImports() : { [fullPath]: importDetailsToAdd }
-        result.push(exportedComponentDetail(importsToAdd, listingName))
-      }
+        !isStoryboard(topLevelElement),
+    )
+
+    const pathWithoutExtension = dropFileExtension(fullPath)
+    const propertyControls = propertyControlsForComponentInFile(
+      listingName,
+      pathWithoutExtension,
+      propertyControlsInfo,
+    )
+
+    const hasPropertyControl = Object.keys(propertyControls).length > 0
+
+    if (isExportedComponent || hasPropertyControl) {
+      // Don't add an import if this is from the same file.
+      const importsToAdd =
+        originatingPath === fullPath ? emptyImports() : { [fullPath]: importDetailsToAdd }
+      result.push(exportedComponentDetail(importsToAdd, listingName))
     }
   }
 
@@ -142,13 +156,19 @@ export function getExportedComponentImports(
   originatingPath: string,
   fullPath: string,
   textFile: ParsedTextFile,
+  propertyControlsInfo: PropertyControlsInfo,
 ): ExportedComponentImports | null {
   return foldParsedTextFile(
     () => {
       return null
     },
     (success: ParseSuccess) =>
-      getExportedComponentImportsFromParseSuccess(originatingPath, fullPath, success),
+      getExportedComponentImportsFromParseSuccess(
+        originatingPath,
+        fullPath,
+        success,
+        propertyControlsInfo,
+      ),
     () => {
       return null
     },
