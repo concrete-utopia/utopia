@@ -322,6 +322,11 @@ CondensedEntryItemWrapper.displayName = 'CondensedEntryItemWrapper'
 const CondensedEntryItemSeparator = React.memo(
   (props: { variant: CondensedNavigatorRowVariant }) => {
     const colorTheme = useColorTheme()
+
+    if (props.variant === 'leaf') {
+      return <div style={{ width: 5 }} />
+    }
+
     return (
       <div
         style={{
@@ -333,11 +338,12 @@ const CondensedEntryItemSeparator = React.memo(
           color: colorTheme.fg6.value,
         }}
       >
-        {props.variant === 'leaf' ? null : <Icons.NarrowExpansionArrowRight />}
+        <Icons.NarrowExpansionArrowRight />
       </div>
     )
   },
 )
+
 CondensedEntryItemSeparator.displayName = 'CondensedEntryItemSeparator'
 
 const CondensedEntryItem = React.memo(
@@ -484,7 +490,7 @@ const CondensedEntryItem = React.memo(
               justifyContent: 'center',
               backgroundColor:
                 !props.wholeRowInsideSelection && !isChildOfSelected
-                  ? colorTheme.bg0.value
+                  ? colorTheme.bg1.value
                   : undefined,
               borderTopRightRadius: isSelected ? 5 : 0,
               borderBottomRightRadius: isSelected ? 5 : 0,
@@ -501,13 +507,13 @@ const CondensedEntryItem = React.memo(
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: 3,
+                gap: 5,
                 borderRadius: 5,
                 backgroundColor:
                   isSelected && !isDataReference ? colorTheme.selectionBlue.value : undefined,
                 width: '100%',
                 height: '100%',
-                padding: props.showExpandableIndicator ? '0px 6px 0px 4px' : 0,
+                padding: props.showExpandableIndicator ? '0px 5px' : 0,
               }}
             >
               {when(
@@ -542,7 +548,9 @@ const CondensedEntryItem = React.memo(
               )}
               {when(
                 showLabel,
-                <span style={{ color: isSelected ? 'white' : undefined }}>{entryLabel}</span>,
+                <span style={{ color: isSelected ? 'white' : undefined, padding: '0 4px' }}>
+                  {entryLabel}
+                </span>,
               )}
               {when(
                 isDataReference,
@@ -559,7 +567,7 @@ const CondensedEntryItem = React.memo(
               ? 'transparent'
               : !selectionIsDataReference && (isSelected || isChildOfSelected)
               ? colorTheme.childSelectionBlue.value
-              : colorTheme.bg0.value,
+              : colorTheme.bg1.value,
             height: '100%',
             display: 'flex',
             alignItems: 'center',

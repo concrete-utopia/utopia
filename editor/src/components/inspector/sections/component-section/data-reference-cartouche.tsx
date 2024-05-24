@@ -113,7 +113,6 @@ export const DataReferenceCartoucheControl = React.memo(
 
     return (
       <>
-        {dataPickerButtonData.popupIsOpen ? dataPickerButtonData.DataPickerComponent : null}
         <DataCartoucheInner
           ref={dataPickerButtonData.setReferenceElement}
           onClick={onClick}
@@ -126,6 +125,10 @@ export const DataReferenceCartoucheControl = React.memo(
           testId={`data-reference-cartouche-${EP.toString(elementPath)}`}
           contentIsComingFromServer={isDataComingFromHookResult}
         />
+        {/* this div prevents the popup form putting padding into the condensed rows */}
+        <div style={{ width: 0 }}>
+          {dataPickerButtonData.popupIsOpen ? dataPickerButtonData.DataPickerComponent : null}
+        </div>
       </>
     )
   },
@@ -172,7 +175,11 @@ export const DataCartoucheInner = React.forwardRef(
       ? cartoucheIconColorToUse
       : 'secondary'
 
-    const borderColor = inverted ? colorTheme.white.value : colorTheme.primary.value
+    const borderColor = inverted
+      ? colorTheme.white.value
+      : contentIsComingFromServer
+      ? colorTheme.green.value
+      : colorTheme.selectionBlue.value
 
     const primaryForegoundColorToUse = contentIsComingFromServer
       ? colorTheme.green.value
@@ -191,7 +198,7 @@ export const DataCartoucheInner = React.forwardRef(
     const backgroundColor =
       contentsToDisplay.type === 'reference'
         ? primaryBackgroundColorToUse
-        : colorTheme.fg0Opacity20.value
+        : colorTheme.fg0Opacity10.value
 
     const label = contentsToDisplay.label ?? 'DATA'
 
@@ -222,9 +229,7 @@ export const DataCartoucheInner = React.forwardRef(
         >
           {contentsToDisplay.type === 'reference' ? (
             <Icons.NavigatorData color={cartoucheIconColor} />
-          ) : (
-            <Icons.NavigatorText color={cartoucheIconColor} />
-          )}
+          ) : null}
           <Tooltip title={label}>
             <div
               style={{
