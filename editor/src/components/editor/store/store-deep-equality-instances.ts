@@ -485,6 +485,9 @@ import type {
   CurriedUtopiaRequireFn,
   PropertyControlsInfo,
   ComponentDescriptorFromDescriptorFile,
+  TypedInpsectorSpec,
+  ShownInspectorSpec,
+  StyleSectionState,
 } from '../../custom-code/code-file'
 import {
   codeResult,
@@ -3494,16 +3497,31 @@ export function ComponentDescriptorSourceKeepDeepEquality(): KeepDeepEqualityCal
   }
 }
 
-const InspectorSpecKeepDeepEquality: KeepDeepEqualityCall<InspectorSpec> = (oldValue, newValue) => {
-  if (typeof oldValue === 'string' && typeof newValue === 'string') {
-    return StringKeepDeepEquality(oldValue, newValue) as KeepDeepEqualityResult<InspectorSpec>
+const InspectorSpecKeepDeepEquality: KeepDeepEqualityCall<TypedInpsectorSpec> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'hidden':
+      if (oldValue.type === newValue.type) {
+        return keepDeepEqualityResult(oldValue, true)
+      }
+      break
+    case 'shown':
+      if (oldValue.type === newValue.type) {
+        return combine2EqualityCalls<StyleSectionState, Styling[], ShownInspectorSpec>(
+          (i) => i.display,
+          createCallWithTripleEquals(),
+          (i) => i.sections,
+          arrayDeepEquality(createCallWithTripleEquals()),
+          (display, sections) => ({ type: 'shown', display: display, sections: sections }),
+        )(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
   }
-
-  if (Array.isArray(oldValue) && Array.isArray(newValue)) {
-    return arrayDeepEquality(createCallWithTripleEquals<Styling>())(oldValue, newValue)
-  }
-
-  return { value: newValue, areEqual: false }
+  return keepDeepEqualityResult(newValue, false)
 }
 
 export const ComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<ComponentDescriptor> =
