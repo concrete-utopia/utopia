@@ -1412,6 +1412,91 @@ export const Column = () => (
 `)
   })
 
+  describe('Wrapping in a List', () => {
+    const target = EP.fromString('sb/card-with-title')
+
+    const expectedOutput = formatTestProjectCode(`
+      import * as React from 'react'
+      import { Storyboard } from 'utopia-api'
+
+      export const Card = (props) => {
+        return (
+          <div style={props.style}>
+            {props.title}
+            {props.children}
+          </div>
+        )
+      }
+
+      export var storyboard = (
+        <Storyboard>
+          <Card
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 945,
+              top: 111,
+              width: 139,
+              height: 87,
+            }}
+          />
+          {[1, 2, 3].map((listItem) => (
+              <Card
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 800,
+                  top: 111,
+                  width: 139,
+                  height: 87,
+                }}
+                title={<div />}
+              />
+            ))}
+          <div/>
+          <div>
+            <span>Something</span>
+          </div>
+        </Storyboard>
+      )
+    `)
+
+    it('Works when using the context menu', async () => {
+      const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
+      await selectComponentsForTest(editor, [target])
+
+      const navigatorRow = editor.renderedDOM.getByTestId(NavigatorContainerId)
+
+      await act(async () => {
+        fireEvent(
+          navigatorRow,
+          new MouseEvent('contextmenu', {
+            bubbles: true,
+            cancelable: true,
+            clientX: 3,
+            clientY: 3,
+            buttons: 0,
+            button: 2,
+          }),
+        )
+      })
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      const replaceButton = await waitFor(() => editor.renderedDOM.getByText('Wrap in…'))
+      await mouseClickAtPoint(replaceButton, { x: 3, y: 3 })
+
+      const menuButton = await waitFor(() => editor.renderedDOM.getByText('List'))
+      await mouseClickAtPoint(menuButton, { x: 3, y: 3 })
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState(), StoryboardFilePath)).toEqual(
+        expectedOutput,
+      )
+    })
+  })
+
   describe('Replacing a regular element', () => {
     const target = EP.fromString('sb/card-with-title')
 

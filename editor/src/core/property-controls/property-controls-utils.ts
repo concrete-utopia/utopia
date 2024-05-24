@@ -28,10 +28,13 @@ export function propertyControlsForComponentInFile(
   componentName: string,
   filePathNoExtension: string,
   propertyControlsInfo: PropertyControlsInfo,
-): PropertyControls {
+): PropertyControls | null {
   const propertyControlsForFile = propertyControlsInfo[filePathNoExtension] ?? {}
-  const propertyControlsForComponent = propertyControlsForFile[componentName]?.properties
-  return propertyControlsForComponent ?? {}
+  const propertyControlsForComponent = propertyControlsForFile[componentName]
+  if (propertyControlsForComponent == null) {
+    return null
+  }
+  return propertyControlsForComponent.properties
 }
 
 export function getPropertyControlsForTargetFromEditor(
@@ -229,11 +232,15 @@ export function getInspectorPreferencesForTargets(
 ): InspectorSectionPreference[] {
   const inspectorPreferences = targets.map((target) => {
     const controls = getComponentDescriptorForTarget(target, propertyControlsInfo, projectContents)
-    if (controls == null || controls.inspector == null || controls.inspector === 'all') {
+    if (controls == null || controls.inspector == null) {
       return { type: 'all' }
     }
 
-    return { type: 'sections', sections: controls.inspector }
+    if (controls.inspector.type === 'shown') {
+      return { type: 'sections', sections: controls.inspector.sections }
+    }
+
+    return { type: 'sections', sections: [] }
   })
 
   let sectionsToShow: Set<Styling> = new Set(StylingOptions)

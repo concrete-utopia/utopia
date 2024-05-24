@@ -2318,6 +2318,15 @@ export const MetadataUtils = {
     const element = MetadataUtils.findElementByElementPath(metadata, target)
     return MetadataUtils.isJSXMapExpressionFromMetadata(element)
   },
+  isJSXElementFromMetadata(element: ElementInstanceMetadata | null): boolean {
+    return (
+      element?.element != null && isRight(element.element) && isJSXElement(element.element.value)
+    )
+  },
+  isJSXElement(target: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
+    const element = MetadataUtils.findElementByElementPath(metadata, target)
+    return MetadataUtils.isJSXElementFromMetadata(element)
+  },
   resolveReparentTargetParentToPath(
     metadata: ElementInstanceMetadataMap,
     reparentTargetParent: InsertionPath,

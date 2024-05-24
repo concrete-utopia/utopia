@@ -43,7 +43,6 @@ export const RemixRunReactComponents: ComponentDescriptorsForFile = {
     ],
     source: defaultComponentDescriptor(),
     ...ComponentDescriptorDefaults,
-    inspector: 'all',
   },
   Outlet: {
     properties: {},

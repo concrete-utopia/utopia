@@ -45,8 +45,8 @@ import type { PreferredChildComponentDescriptor } from '../../custom-code/intern
 import { fixUtopiaElement, generateConsistentUID } from '../../../core/shared/uid-utils'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { elementFromInsertMenuItem } from '../../editor/insert-callbacks'
-import { ContextMenuWrapper, ContextMenu } from '../../context-menu-wrapper'
-import { BodyMenuOpenClass, NO_OP, assertNever } from '../../../core/shared/utils'
+import { ContextMenuWrapper } from '../../context-menu-wrapper'
+import { BodyMenuOpenClass, assertNever } from '../../../core/shared/utils'
 import { type ContextMenuItem } from '../../context-menu-items'
 import { FlexRow, Icn, type IcnProps } from '../../../uuiui'
 import type {
@@ -81,6 +81,7 @@ import { notice } from '../../common/notice'
 import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
 import { emptyComments } from 'utopia-shared/src/types'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../../../core/shared/dom-utils'
+import { emptyImports } from '../../../core/workers/common/project-file-utils'
 
 type RenderPropTarget = { type: 'render-prop'; prop: string }
 type ConditionalTarget = { type: 'conditional'; conditionalCase: ConditionalCase }
@@ -552,6 +553,34 @@ export function insertComponentPickerItem(
       ]
     }
 
+    if (isWrapTarget(insertionTarget)) {
+      const elementToInsert = toInsert.element()
+      if (
+        elementToInsert.type === 'JSX_MAP_EXPRESSION' &&
+        !MetadataUtils.isJSXElement(target, metadata)
+      ) {
+        return [
+          showToast(
+            notice(
+              'We are working on support to insert Lists, Conditionals and Fragments into Lists',
+              'INFO',
+              false,
+              'wrap-component-picker-item-nested-map',
+            ),
+          ),
+        ]
+      }
+      return [
+        wrapInElement([target], {
+          element: {
+            ...elementToInsert,
+            uid: generateUidWithExistingComponents(projectContents),
+          },
+          importsToAdd: emptyImports(),
+        }),
+      ]
+    }
+
     if (isReplaceTarget(insertionTarget)) {
       if (
         MetadataUtils.isJSXMapExpression(EP.parentPath(target), metadata) &&
@@ -767,6 +796,12 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
       'usePreferredChildrenForTarget targetChildren',
     )
 
+    const isJsxElement = useEditorState(
+      Substores.metadata,
+      (store) => MetadataUtils.isJSXElement(target, store.editor.jsxMetadata),
+      'isJsxElement targetElement',
+    )
+
     const allInsertableComponents = useGetInsertableComponents('insert').flatMap((group) => {
       return {
         label: group.label,
@@ -783,13 +818,18 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
             // If we want to keep the children of this element when it has some, don't include replacements that have children.
             return targetChildren.length === 0 || !componentElementToInsertHasChildren(element)
           }
-          if (isWrapTarget(insertionTarget) && element.type === 'JSX_ELEMENT') {
-            if (isIntrinsicHTMLElement(element.name)) {
+          if (isWrapTarget(insertionTarget)) {
+            if (element.type === 'JSX_ELEMENT' && isIntrinsicHTMLElement(element.name)) {
               // when it is an intrinsic html element, we check if it supports children from our list
               return intrinsicHTMLElementNamesThatSupportChildren.includes(
                 element.name.baseVariable,
               )
             }
+            if (element.type === 'JSX_MAP_EXPRESSION') {
+              // we cannot currently wrap in List a conditional, fragment or map expression
+              return isJsxElement
+            }
+            return true
           }
           // Right now we only support inserting JSX elements when we insert into a render prop or when replacing elements
           return element.type === 'JSX_ELEMENT'
