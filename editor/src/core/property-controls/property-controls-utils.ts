@@ -28,10 +28,13 @@ export function propertyControlsForComponentInFile(
   componentName: string,
   filePathNoExtension: string,
   propertyControlsInfo: PropertyControlsInfo,
-): PropertyControls {
+): PropertyControls | null {
   const propertyControlsForFile = propertyControlsInfo[filePathNoExtension] ?? {}
-  const propertyControlsForComponent = propertyControlsForFile[componentName]?.properties
-  return propertyControlsForComponent ?? {}
+  const propertyControlsForComponent = propertyControlsForFile[componentName]
+  if (propertyControlsForComponent == null) {
+    return null
+  }
+  return propertyControlsForComponent.properties
 }
 
 export function getPropertyControlsForTargetFromEditor(

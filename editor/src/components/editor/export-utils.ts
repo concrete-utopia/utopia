@@ -76,7 +76,7 @@ export function getExportedComponentImportsFromParseSuccess(
       propertyControlsInfo,
     )
 
-    const hasPropertyControl = Object.keys(propertyControls).length > 0
+    const hasPropertyControl = propertyControls != null
 
     if (isExportedComponent || hasPropertyControl) {
       // Don't add an import if this is from the same file.
