@@ -62,7 +62,7 @@ export function getExportedComponentImportsFromParseSuccess(
     listingName: string,
     importDetailsToAdd: ImportDetails,
   ): void {
-    const isExportedComponent = success.topLevelElements.some(
+    const isParsedComponent = success.topLevelElements.some(
       (topLevelElement) =>
         isUtopiaJSXComponent(topLevelElement) &&
         topLevelElement.name === elementMatchesName &&
@@ -78,7 +78,7 @@ export function getExportedComponentImportsFromParseSuccess(
 
     const hasPropertyControl = propertyControls != null
 
-    if (isExportedComponent || hasPropertyControl) {
+    if (isParsedComponent || hasPropertyControl) {
       // Don't add an import if this is from the same file.
       const importsToAdd =
         originatingPath === fullPath ? emptyImports() : { [fullPath]: importDetailsToAdd }
