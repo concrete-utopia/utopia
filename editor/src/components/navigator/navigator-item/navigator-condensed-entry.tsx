@@ -291,9 +291,7 @@ const CondensedEntryItemContent = React.memo(
               elementPath={props.entry.elementPath}
               selected={props.selected}
               collapsed={isCollapsed}
-              style={{
-                opacity: props.isDataReferenceRow ? 0 : 'var(--paneHoverOpacity)',
-              }}
+              disabled={props.isDataReferenceRow}
             />,
           )}
           {unless(
@@ -355,7 +353,7 @@ const WrappedExpandableIndicator = React.memo(
     elementPath: ElementPath
     selected: boolean
     collapsed: boolean
-    style: CSSProperties
+    disabled: boolean
   }) => {
     const dispatch = useDispatch()
 
@@ -375,17 +373,21 @@ const WrappedExpandableIndicator = React.memo(
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          cursor: 'pointer',
         }}
         onClick={onClickCollapse(props.elementPath)}
       >
-        <ExpandableIndicator
-          visible={true}
-          collapsed={props.collapsed}
-          selected={false}
-          iconColor={props.selected ? 'white' : 'main'}
-          style={{ ...props.style }}
-        />
+        {unless(
+          props.disabled,
+          <ExpandableIndicator
+            visible={true}
+            collapsed={props.collapsed}
+            selected={false}
+            iconColor={props.selected ? 'white' : 'main'}
+            style={{
+              opacity: 'var(--paneHoverOpacity)',
+            }}
+          />,
+        )}
       </div>
     )
   },
