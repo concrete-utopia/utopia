@@ -458,7 +458,7 @@ function moreItem(
   }
 }
 
-function insertComponentPickerItem(
+export function insertComponentPickerItem(
   toInsert: InsertableComponent,
   target: ElementPath,
   projectContents: ProjectContentTreeRoot,
@@ -860,6 +860,7 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
           allComponents={allInsertableComponents}
           onItemClick={onItemClick}
           closePicker={hideAllContextMenus}
+          shownInToolbar={false}
         />
       </Menu>
     )

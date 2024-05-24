@@ -47,7 +47,6 @@ import type {
   EditorState,
   ElementsToRerender,
   ErrorMessages,
-  FloatingInsertMenuState,
   GithubState,
   LeftMenuTab,
   ModalDialog,
@@ -534,15 +533,6 @@ export interface WrapInElement {
   action: 'WRAP_IN_ELEMENT'
   targets: ElementPath[]
   whatToWrapWith: WrapInElementWith
-}
-
-export interface OpenFloatingInsertMenu {
-  action: 'OPEN_FLOATING_INSERT_MENU'
-  mode: FloatingInsertMenuState
-}
-
-export interface CloseFloatingInsertMenu {
-  action: 'CLOSE_FLOATING_INSERT_MENU'
 }
 
 export interface UnwrapElements {
@@ -1251,8 +1241,6 @@ export type EditorAction =
   | SaveAsset
   | ResetPins
   | WrapInElement
-  | OpenFloatingInsertMenu
-  | CloseFloatingInsertMenu
   | UnwrapElements
   | SetNavigatorRenamingTarget
   | RedrawOldCanvasControls

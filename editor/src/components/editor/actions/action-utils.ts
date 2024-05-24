@@ -107,8 +107,6 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'FOCUS_CLASS_NAME_INPUT':
     case 'FOCUS_FORMULA_BAR':
     case 'UPDATE_FORMULA_BAR_MODE':
-    case 'OPEN_FLOATING_INSERT_MENU':
-    case 'CLOSE_FLOATING_INSERT_MENU':
     case 'SET_PROP_TRANSIENT':
     case 'CLEAR_TRANSIENT_PROPS':
     case 'DECREMENT_RESIZE_OPTIONS_SELECTED_INDEX':

@@ -33,6 +33,7 @@ export interface ComponentPickerProps {
   allComponents: Array<InsertMenuItemGroup>
   onItemClick: (elementToInsert: InsertableComponent) => React.UIEventHandler
   closePicker: () => void
+  shownInToolbar: boolean
 }
 
 export interface ElementToInsert {
@@ -74,7 +75,7 @@ export function componentPickerOptionTestId(componentName: string, variant?: str
 }
 
 export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
-  const { onItemClick, closePicker } = props
+  const { onItemClick, closePicker, shownInToolbar } = props
   const [selectedComponentKey, setSelectedComponentKey] = React.useState<string | null>(null)
   const [filter, setFilter] = React.useState<string>('')
   const menuRef = React.useRef<HTMLDivElement | null>(null)
@@ -185,12 +186,14 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
         components={categorizedComponents}
         onFilterChange={setFilter}
         onKeyDown={onKeyDown}
+        shownInToolbar={shownInToolbar}
       />
       <ComponentPickerComponentSection
         components={categorizedComponents}
         onItemClick={props.onItemClick}
         onItemHover={onItemHover}
         currentlySelectedKey={highlightedComponentKey}
+        shownInToolbar={shownInToolbar}
       />
     </div>
   )
@@ -200,15 +203,16 @@ interface ComponentPickerTopSectionProps {
   components: Array<Category>
   onFilterChange: (filter: string) => void
   onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void
+  shownInToolbar: boolean
 }
 
 const ComponentPickerTopSection = React.memo((props: ComponentPickerTopSectionProps) => {
-  const { components, onFilterChange, onKeyDown } = props
+  const { components, shownInToolbar, onFilterChange, onKeyDown } = props
 
   return (
     <div
       style={{
-        padding: '0px 8px 8px 8px',
+        padding: shownInToolbar ? '0px 8px 2px' : '0px 8px 8px 8px',
         display: 'flex',
         flexDirection: 'column',
       }}
@@ -424,17 +428,29 @@ interface ComponentPickerComponentSectionProps {
   onItemClick: (elementToInsert: InsertableComponent) => React.MouseEventHandler
   onItemHover: (elementToInsert: InsertMenuItemValue) => React.MouseEventHandler
   currentlySelectedKey: string | null
+  shownInToolbar: boolean
 }
 
 const ComponentPickerComponentSection = React.memo(
   (props: ComponentPickerComponentSectionProps) => {
-    const { components, onItemClick, onItemHover, currentlySelectedKey } = props
+    const { components, onItemClick, onItemHover, currentlySelectedKey, shownInToolbar } = props
     const [isScrolling, setIsScrolling] = React.useState<boolean>(false)
     const debouncedSetIsScrolling = React.useRef(debounce(() => setIsScrolling(false), 100))
     const onScroll = React.useCallback(() => {
       setIsScrolling(true)
       debouncedSetIsScrolling.current()
     }, [])
+
+    const extraStyle = shownInToolbar
+      ? {
+          borderRadius: 10,
+          backgroundColor: colorTheme.contextMenuBackground.value,
+          boxShadow:
+            '0px 3px 6px -2px var(--utopitheme-shadow80), 0px 4px 8px -2px var(--utopitheme-shadow40)',
+          padding: '8px 0px',
+        }
+      : {}
+
     return (
       <div
         data-role='component-scroll'
@@ -444,6 +460,7 @@ const ComponentPickerComponentSection = React.memo(
           overflowY: 'scroll',
           scrollbarWidth: 'auto',
           scrollbarColor: 'gray transparent',
+          ...extraStyle,
         }}
         onScroll={onScroll}
       >

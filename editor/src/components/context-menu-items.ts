@@ -31,7 +31,6 @@ import {
   toggleHidden,
 } from './editor/actions/action-creators'
 import {
-  floatingInsertMenuStateSwap,
   type AllElementProps,
   type InternalClipboard,
   type NavigatorEntry,
@@ -479,14 +478,8 @@ export const wrapInPicker: ContextMenuItem<CanvasData> = {
   name: 'Wrap in…',
   shortcut: 'W',
   enabled: true,
-  action: (data, dispatch, _coord, event) => {
-    // for multiple selection, we open the old picker
-    if (data.selectedViews.length > 1) {
-      requireDispatch(dispatch)(
-        [setFocus('canvas'), EditorActions.openFloatingInsertMenu({ insertMenuMode: 'wrap' })],
-        'everyone',
-      )
-    } else {
+  action: (data, _dispatch, _coord, event) => {
+    if (data.selectedViews.length === 1) {
       showWrapComponentPicker(data.selectedViews, data.jsxMetadata, data.showComponentPicker)(event)
     }
   },
