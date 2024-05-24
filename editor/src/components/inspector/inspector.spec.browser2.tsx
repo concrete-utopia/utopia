@@ -465,6 +465,11 @@ export var storyboard = (
       `,
       })
 
+    const VisualSections = ['Transforms', 'Background', 'Border', 'Shadow', 'Text Shadow']
+    const LayoutSections = ['Frame', 'Container']
+    const LayoutSystemSections = ['Layout System']
+    const TypographySections = ['Type']
+
     it('shows style, transforms, background, border, shadow, text shadow when `visual` is set', async () => {
       const editor = await renderTestEditorWithModel(
         project(JSON.stringify({ display: 'expanded', sections: ['visual'] })),
@@ -473,8 +478,11 @@ export var storyboard = (
 
       await selectComponentsForTest(editor, [fromString('sb/scene/card')])
 
-      for (const section of ['Transforms', 'Background', 'Border', 'Shadow', 'Text Shadow']) {
+      for (const section of VisualSections) {
         expect(editor.renderedDOM.queryByText(section)?.innerText).toEqual(section)
+      }
+      for (const section of [...LayoutSections, ...LayoutSystemSections, ...TypographySections]) {
+        expect(editor.renderedDOM.queryByText(section)).toBeNull()
       }
     })
 
@@ -486,8 +494,11 @@ export var storyboard = (
 
       await selectComponentsForTest(editor, [fromString('sb/scene/card')])
 
-      for (const section of ['Container']) {
+      for (const section of LayoutSections) {
         expect(editor.renderedDOM.queryByText(section)?.innerText).toEqual(section)
+      }
+      for (const section of [...VisualSections, ...LayoutSystemSections, ...TypographySections]) {
+        expect(editor.renderedDOM.queryByText(section)).toBeNull()
       }
     })
 
@@ -499,8 +510,11 @@ export var storyboard = (
 
       await selectComponentsForTest(editor, [fromString('sb/scene/card')])
 
-      for (const section of ['Layout System']) {
+      for (const section of LayoutSystemSections) {
         expect(editor.renderedDOM.queryByText(section)?.innerText).toEqual(section)
+      }
+      for (const section of [...VisualSections, ...LayoutSections, ...TypographySections]) {
+        expect(editor.renderedDOM.queryByText(section)).toBeNull()
       }
     })
 
@@ -512,8 +526,11 @@ export var storyboard = (
 
       await selectComponentsForTest(editor, [fromString('sb/scene/card')])
 
-      for (const section of ['Type']) {
+      for (const section of TypographySections) {
         expect(editor.renderedDOM.queryByText(section)?.innerText).toEqual(section)
+      }
+      for (const section of [...VisualSections, ...LayoutSections, ...LayoutSystemSections]) {
+        expect(editor.renderedDOM.queryByText(section)).toBeNull()
       }
     })
 
@@ -526,15 +543,10 @@ export var storyboard = (
       await selectComponentsForTest(editor, [fromString('sb/scene/card')])
 
       for (const section of [
-        'Frame',
-        'Layout System',
-        'Container',
-        'Transforms',
-        'Background',
-        'Border',
-        'Shadow',
-        'Text Shadow',
-        'Type',
+        ...VisualSections,
+        ...LayoutSections,
+        ...LayoutSystemSections,
+        ...TypographySections,
       ]) {
         expect(editor.renderedDOM.queryByText(section)?.innerText).toEqual(section)
       }
@@ -546,15 +558,10 @@ export var storyboard = (
       await selectComponentsForTest(editor, [fromString('sb/scene/card')])
 
       for (const section of [
-        'Frame',
-        'Layout System',
-        'Container',
-        'Transforms',
-        'Background',
-        'Border',
-        'Shadow',
-        'Text Shadow',
-        'Type',
+        ...VisualSections,
+        ...LayoutSections,
+        ...LayoutSystemSections,
+        ...TypographySections,
       ]) {
         expect(editor.renderedDOM.queryByText(section)?.innerText).toEqual(section)
       }
