@@ -99,7 +99,6 @@ export function createRemixDerivedData(
   const assetsManifest = createAssetsManifest(routeManifest)
 
   const routesAndModulesFromManifestResult = getRoutesAndModulesFromManifest(
-    rootJsFile.file,
     routeManifest,
     DefaultFutureConfig,
     curriedRequireFn,

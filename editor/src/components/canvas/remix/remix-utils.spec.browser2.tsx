@@ -329,7 +329,6 @@ describe('Routes', () => {
 
     let routeModuleCache = { current: {} }
     const remixRoutes = getRoutesAndModulesFromManifest(
-      getRemixRootFile(rootDir, renderResult.getEditorState().editor.projectContents)!.file,
       remixManifest!,
       DefaultFutureConfig,
       renderResult.getEditorState().editor.codeResultCache.curriedRequireFn,
@@ -451,7 +450,6 @@ describe('Routes', () => {
     let routeModuleCache = { current: {} }
     expect(remixManifest).not.toBeNull()
     const remixRoutes = getRoutesAndModulesFromManifest(
-      getRemixRootFile(rootDir, renderResult.getEditorState().editor.projectContents)!.file,
       remixManifest!,
       DefaultFutureConfig,
       renderResult.getEditorState().editor.codeResultCache.curriedRequireFn,

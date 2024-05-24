@@ -364,7 +364,6 @@ export function getRemixRootFile(
 }
 
 export function getRoutesAndModulesFromManifest(
-  rootJsFile: TextFile,
   routeManifest: RouteManifestWithContents,
   futureConfig: FutureConfig,
   curriedRequireFn: CurriedUtopiaRequireFn,
@@ -374,11 +373,6 @@ export function getRoutesAndModulesFromManifest(
 ): GetRoutesAndModulesFromManifestResult | null {
   const routeModuleCreators: RouteIdsToModuleCreators = {}
   const routingTable: RemixRoutingTable = {}
-
-  const rootJSRootElement = getDefaultExportedTopLevelElement(rootJsFile)
-  if (rootJSRootElement == null) {
-    return null
-  }
 
   const routes = safeGetClientRoutes(routeManifest, routeModulesCache, futureConfig)
   if (routes == null) {
