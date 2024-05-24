@@ -631,6 +631,7 @@ Array [
   "/EventHandlersSection/UtopiaSpiedExoticType(Symbol(react.fragment))/Symbol(react.forward_ref)(Styled(div))/div",
   "//UtopiaSpiedExoticType(Symbol(react.fragment))/PropertyLabel/Symbol(react.forward_ref)(EmotionCssPropInternal)",
   "/UtopiaSpiedExoticType(Symbol(react.fragment))/PropertyLabel/Symbol(react.forward_ref)(EmotionCssPropInternal)/div",
+  "/null/UtopiaSpiedFunctionComponent(Utopia Editor Root)/UtopiaSpiedFunctionComponent(AtomsDevtools)/UtopiaSpiedExoticType(Symbol(react.fragment))",
   "/Symbol(react.provider)///Symbol(react.memo)(Inspector)",
   "/Symbol(react.provider)///Symbol(react.memo)()",
   "/null///Symbol(react.memo)(Symbol(react.forward_ref)())",
@@ -640,6 +641,10 @@ Array [
   "/null///div",
   "/null///UtopiaSpiedFunctionComponent(UIGridRow)",
   "/null///UtopiaSpiedFunctionComponent(InspectorContextMenuWrapper)",
+  "/Symbol(react.forward_ref)(EmotionCssPropInternal)/div/UtopiaSpiedFunctionComponent(ContextMenu)/span",
+  "/Symbol(react.forward_ref)(EmotionCssPropInternal)/div/UtopiaSpiedFunctionComponent(ContextMenu)/span",
+  "/Symbol(react.forward_ref)(EmotionCssPropInternal)/div/UtopiaSpiedFunctionComponent(ContextMenu)/UtopiaSpiedFunctionComponent(pt)",
+  "/Symbol(react.forward_ref)(EmotionCssPropInternal)/div/UtopiaSpiedFunctionComponent(ContextMenu)/UtopiaSpiedFunctionComponent(it)",
   "/Symbol(react.forward_ref)(Styled(div))/div/IndicatorArrow/div:data-testid='indicator-elements-outside-visible-area'",
 ]
 `;
