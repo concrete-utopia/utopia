@@ -4112,12 +4112,7 @@ export const UPDATE_FNS = {
       withPackageJson,
       action.parentPath,
       newFileName,
-      codeFile(
-        templateFile.fileContents.code,
-        templateFile.fileContents.code,
-        1,
-        RevisionsState.CodeAhead,
-      ),
+      codeFile(templateFile.fileContents.code, null, 1, RevisionsState.CodeAhead),
     )
 
     // 3. open the text file
