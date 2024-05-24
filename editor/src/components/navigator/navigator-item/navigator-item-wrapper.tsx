@@ -68,11 +68,6 @@ import {
 import { ExpandableIndicator } from './expandable-indicator'
 import { unless, when } from '../../../utils/react-conditionals'
 import { DataReferenceCartoucheControl } from '../../inspector/sections/component-section/data-reference-cartouche'
-import {
-  DataPickerPopupButtonTestId,
-  useDataPickerButton,
-} from 'src/components/inspector/sections/component-section/component-section'
-import { DataPickerPopup } from 'src/components/inspector/sections/component-section/data-picker-popup'
 
 interface NavigatorItemWrapperProps {
   index: number

@@ -112,7 +112,7 @@ export const DataReferenceCartoucheControl = React.memo(
     }, [dispatch, elementPath])
 
     return (
-      <div>
+      <>
         <DataCartoucheInner
           ref={dataPickerButtonData.setReferenceElement}
           onClick={onClick}
@@ -125,8 +125,11 @@ export const DataReferenceCartoucheControl = React.memo(
           testId={`data-reference-cartouche-${EP.toString(elementPath)}`}
           contentIsComingFromServer={isDataComingFromHookResult}
         />
-        {dataPickerButtonData.popupIsOpen ? dataPickerButtonData.DataPickerComponent : null}
-      </div>
+        {/* this div prevents the popup form putting padding into the condensed rows */}
+        <div style={{ width: 0 }}>
+          {dataPickerButtonData.popupIsOpen ? dataPickerButtonData.DataPickerComponent : null}
+        </div>
+      </>
     )
   },
 )

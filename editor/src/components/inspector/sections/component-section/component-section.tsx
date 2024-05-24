@@ -508,6 +508,7 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
       items={contextMenuItems}
       data={null}
     >
+      {dataPickerButtonData.popupIsOpen ? dataPickerButtonData.DataPickerComponent : null}
       <UIGridRow padded={false} style={{ padding: '3px 8px' }} variant='<--1fr--><--1fr-->'>
         {propertyLabel}
         <div
@@ -529,7 +530,6 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
           />
         </div>
       </UIGridRow>
-      {dataPickerButtonData.popupIsOpen ? dataPickerButtonData.DataPickerComponent : null}
     </InspectorContextMenuWrapper>
   )
 })
