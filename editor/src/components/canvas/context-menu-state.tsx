@@ -11,24 +11,30 @@ export const ContextMenuOpen = atom((get) => {
 
 export const useContextMenuState = () => {
   const [values, setValues] = useAtom(ContextMenuStateAtom)
-  const [isContextMenuOpen] = useAtom(ContextMenuOpen)
 
   React.useEffect(() => {
-    if (isContextMenuOpen) {
+    if (values.length > 0) {
       document.body.classList.add(BodyMenuOpenClass)
     } else {
       document.body.classList.remove(BodyMenuOpenClass)
     }
-  }, [isContextMenuOpen])
+  }, [values])
 
   const add = (id: string) => {
-    if (values.includes(id)) return
-    setValues((prev) => [...prev, id])
+    setValues((prev) => {
+      if (prev.includes(id)) {
+        return prev
+      }
+      return [...prev, id]
+    })
   }
 
   const remove = (id: string) => {
-    if (!values.includes(id)) return
     setValues((prev) => {
+      if (!prev.includes(id)) {
+        return prev
+      }
+
       const index = prev.findIndex((curId) => curId === id)
       return prev.slice(index, index)
     })
