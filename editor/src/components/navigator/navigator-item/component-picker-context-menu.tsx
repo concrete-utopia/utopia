@@ -324,10 +324,10 @@ export const useCreateCallbackToShowComponentPicker =
 
     return React.useCallback(
       (
-        selectedViews: ElementPath[],
-        insertionTarget: InsertionTarget,
-        overridePickerType?: 'preferred' | 'full',
-      ) =>
+          selectedViews: ElementPath[],
+          insertionTarget: InsertionTarget,
+          overridePickerType?: 'preferred' | 'full',
+        ) =>
         (
           event: TriggerEvent,
           params?: Pick<ShowContextMenuParams, 'props' | 'position'> | undefined,
@@ -456,9 +456,9 @@ function moreItem(
         currentMenu == null
           ? undefined
           : {
-            x: currentMenu.offsetLeft,
-            y: currentMenu.offsetTop,
-          }
+              x: currentMenu.offsetLeft,
+              y: currentMenu.offsetTop,
+            }
 
       showComponentPickerContextMenu(e as React.MouseEvent<any>, {
         position: position,

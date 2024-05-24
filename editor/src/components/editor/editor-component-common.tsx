@@ -3,6 +3,9 @@ import type { EditorAction, EditorDispatch } from './action-types'
 import { useDispatch } from './store/dispatch-context'
 import { BodyMenuOpenClass } from '../../core/shared/utils'
 
+import { jotaiStore } from '../../templates/editor'
+import { ContextMenuOpen } from '../canvas/context-menu-state'
+
 type EventHandler<K extends keyof WindowEventMap, R> = (this: Window, event: WindowEventMap[K]) => R
 
 type MouseHandler<R> = EventHandler<'mousedown' | 'mouseup', R>
@@ -52,11 +55,11 @@ function createHandler<K extends keyof WindowEventMap>(
   } else {
     const windowEventHandler = (event: WindowEventMap[K]) => {
       // check if it's a keyboard event and if react-contexify is open
-      if (
-        ['keydown', 'keyup'].includes(event.type) &&
-        document.body.classList.contains(BodyMenuOpenClass)
-      ) {
-        return
+      if (['keydown', 'keyup'].includes(event.type)) {
+        const isContextMenuOpen = jotaiStore.get(ContextMenuOpen)
+        if (isContextMenuOpen) {
+          return
+        }
       }
       const collatedActions = handlers.flatMap((handler) => {
         return handler.bind(window)(event)

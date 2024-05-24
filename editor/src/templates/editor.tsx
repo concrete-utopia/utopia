@@ -118,13 +118,15 @@ import { simpleStringifyActions } from '../components/editor/actions/action-util
 import { unpatchedCreateRemixDerivedDataMemo } from '../components/editor/store/remix-derived-data'
 import { emptyProjectServerState } from '../components/editor/store/project-server-state'
 import { GithubAuth } from '../utils/github-auth'
-import { Provider as JotaiProvider } from 'jotai'
+import { getDefaultStore, Provider as JotaiProvider } from 'jotai'
 import {
   getGithubRepoToLoad,
   LoadActionsDispatched,
 } from '../components/github/github-repository-clone-flow'
 import { hasReactRouterErrorBeenLogged } from '../core/shared/runtime-report-logs'
 import { InitialOnlineState, startOnlineStatusPolling } from '../components/editor/online-status'
+
+export const jotaiStore = getDefaultStore()
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -693,7 +695,7 @@ export const EditorRoot: React.FunctionComponent<{
 }) => {
   return (
     <AtomsDevtools>
-      <JotaiProvider>
+      <JotaiProvider store={jotaiStore}>
         <DispatchContext.Provider value={dispatch}>
           <OriginalMainEditorStateContext.Provider value={mainStore}>
             <EditorStateContext.Provider value={mainStore}>
