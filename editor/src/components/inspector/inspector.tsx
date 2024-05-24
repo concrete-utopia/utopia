@@ -951,7 +951,7 @@ function useShouldExpandStyleSection(): boolean {
   return useEditorState(
     Substores.propertyControlsInfo,
     (store) => {
-      for (const target of store.editor.selectedViews) {
+      return store.editor.selectedViews.every((target) => {
         const descriptor = getComponentDescriptorForTarget(
           target,
           store.editor.propertyControlsInfo,
@@ -974,8 +974,7 @@ function useShouldExpandStyleSection(): boolean {
           default:
             assertNever(descriptor.inspector.display)
         }
-      }
-      return true
+      })
     },
     'useShouldExpandStyleSection shouldExpandFromComponentDescription',
   )
