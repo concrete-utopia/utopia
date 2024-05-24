@@ -232,11 +232,15 @@ export function getInspectorPreferencesForTargets(
 ): InspectorSectionPreference[] {
   const inspectorPreferences = targets.map((target) => {
     const controls = getComponentDescriptorForTarget(target, propertyControlsInfo, projectContents)
-    if (controls == null || controls.inspector == null || controls.inspector === 'all') {
+    if (controls == null || controls.inspector == null) {
       return { type: 'all' }
     }
 
-    return { type: 'sections', sections: controls.inspector }
+    if (controls.inspector.type === 'shown') {
+      return { type: 'sections', sections: controls.inspector.sections }
+    }
+
+    return { type: 'sections', sections: [] }
   })
 
   let sectionsToShow: Set<Styling> = new Set(StylingOptions)

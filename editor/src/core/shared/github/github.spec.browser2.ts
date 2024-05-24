@@ -91,7 +91,7 @@ describe('Github integration', () => {
                     },
                   },
                   focus: 'default',
-                  inspector: ['visual', 'typography'],
+                  inspector: { display: 'expanded', sections: ['visual', 'typography'] },
                   emphasis: 'regular',
                   icon: 'component',
                   variants: [
@@ -152,7 +152,7 @@ describe('Github integration', () => {
                     },
                   },
                   focus: 'default',
-                  inspector: ['visual', 'typography'],
+                  inspector: { display: 'expanded', sections: ['visual', 'typography'] },
                   emphasis: 'regular',
                   icon: 'component',
                   variants: [

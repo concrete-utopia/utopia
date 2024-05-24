@@ -91,9 +91,14 @@ import { SimplifiedLayoutSubsection } from './sections/layout-section/self-layou
 import { ConstraintsSection } from './constraints-section'
 import { usePermissions } from '../editor/store/permissions'
 import { DisableControlsInSubtree } from '../../uuiui/utilities/disable-subtree'
-import { getInspectorPreferencesForTargets } from '../../core/property-controls/property-controls-utils'
+import {
+  getComponentDescriptorForTarget,
+  getInspectorPreferencesForTargets,
+} from '../../core/property-controls/property-controls-utils'
 import { ListSection } from './sections/layout-section/list-section'
 import { ExpandableIndicator } from '../navigator/navigator-item/expandable-indicator'
+import { isIntrinsicElementMetadata } from '../../core/model/project-file-utils'
+import { assertNever } from '../../core/shared/utils'
 
 export interface ElementPathElement {
   name?: string
@@ -362,8 +367,23 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     'Inspector inspectorPreferences',
   )
 
-  const { value: styleSectionOpen, toggle: toggleStyleSection } = useBoolean(true)
+  const {
+    value: styleSectionOpen,
+    toggle: toggleStyleSection,
+    set: setStyleSectionOpen,
+  } = useBoolean(true)
   const { value: advancedSectionOpen, toggle: toggleAdvancedSection } = useBoolean(false)
+
+  const shouldExpandStyleSection = useShouldExpandStyleSection()
+
+  React.useEffect(() => {
+    setStyleSectionOpen(shouldExpandStyleSection)
+  }, [setStyleSectionOpen, shouldExpandStyleSection])
+
+  const shouldHideInspectorSections = useShouldHideInspectorSections()
+
+  const shouldShowStyleSectionContents = styleSectionOpen && !shouldHideInspectorSections
+  const shouldShowAdvancedSectionContents = advancedSectionOpen && !shouldHideInspectorSections
 
   const shouldShowAlignmentButtons = !isCodeElement && inspectorPreferences.includes('layout')
   const shouldShowClassNameSubsection = isTwindEnabled() && inspectorPreferences.includes('visual')
@@ -410,13 +430,16 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
                 {anyComponents || multiselectedContract === 'fragment' ? (
                   <ComponentSection isScene={false} />
                 ) : null}
-                <InspectorSectionHeader
-                  title='Styles'
-                  toggle={toggleStyleSection}
-                  open={styleSectionOpen}
-                />
+                {unless(
+                  shouldHideInspectorSections,
+                  <InspectorSectionHeader
+                    title='Styles'
+                    toggle={toggleStyleSection}
+                    open={styleSectionOpen}
+                  />,
+                )}
                 {when(
-                  styleSectionOpen,
+                  shouldShowStyleSectionContents,
                   <>
                     {rootElementIsSelected ? (
                       <RootElementIndicator />
@@ -448,14 +471,16 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
                     )}
                   </>,
                 )}
-
-                <InspectorSectionHeader
-                  title='Advanced'
-                  toggle={toggleAdvancedSection}
-                  open={advancedSectionOpen}
-                />
+                {unless(
+                  shouldHideInspectorSections,
+                  <InspectorSectionHeader
+                    title='Advanced'
+                    toggle={toggleAdvancedSection}
+                    open={advancedSectionOpen}
+                  />,
+                )}
                 {when(
-                  advancedSectionOpen,
+                  shouldShowAdvancedSectionContents,
                   <>
                     {when(shouldShowClassNameSubsection, <ClassNameSubsection />)}
                     {when(
@@ -903,4 +928,76 @@ function useBoolean(starting: boolean): {
   const [value, set] = React.useState(starting)
   const toggle = React.useCallback(() => set((v) => !v), [])
   return { value, set, toggle }
+}
+
+function useShouldExpandStyleSection(): boolean {
+  const shouldExpandFromElementOrComponent = useEditorState(
+    Substores.metadata,
+    (store) =>
+      store.editor.selectedViews.every((target) => {
+        const instance = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, target)
+        if (instance == null) {
+          return true
+        }
+        return (
+          MetadataUtils.isFragmentFromMetadata(instance) ||
+          MetadataUtils.isGroupAgainstImports(instance) ||
+          isIntrinsicElementMetadata(instance)
+        )
+      }),
+    'useShouldExpandStyleSection shouldExpandFromElementOrComponent',
+  )
+
+  return useEditorState(
+    Substores.propertyControlsInfo,
+    (store) => {
+      return store.editor.selectedViews.every((target) => {
+        const descriptor = getComponentDescriptorForTarget(
+          target,
+          store.editor.propertyControlsInfo,
+          store.editor.projectContents,
+        )
+
+        if (descriptor == null || descriptor.inspector == null) {
+          return shouldExpandFromElementOrComponent
+        }
+
+        if (descriptor.inspector.type === 'hidden') {
+          return false
+        }
+
+        switch (descriptor.inspector.display) {
+          case 'collapsed':
+            return false
+          case 'expanded':
+            return true
+          default:
+            assertNever(descriptor.inspector.display)
+        }
+      })
+    },
+    'useShouldExpandStyleSection shouldExpandFromComponentDescription',
+  )
+}
+
+function useShouldHideInspectorSections(): boolean {
+  return useEditorState(
+    Substores.propertyControlsInfo,
+    (store) =>
+      store.editor.selectedViews.some((target) => {
+        const descriptor = getComponentDescriptorForTarget(
+          target,
+          store.editor.propertyControlsInfo,
+          store.editor.projectContents,
+        )
+
+        if (descriptor?.inspector == null) {
+          return false
+        }
+
+        return descriptor.inspector.type === 'hidden'
+      }),
+
+    'Inspector inspectorPreferences',
+  )
 }
