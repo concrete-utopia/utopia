@@ -98,6 +98,7 @@ import { getRegisteredComponent } from '../../../../core/property-controls/prope
 import type { EditorAction } from '../../../editor/action-types'
 import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'
 import { useAtom } from 'jotai'
+import { DataSelectorModal } from './data-selector-modal'
 
 export const VariableFromScopeOptionTestId = (idx: string) => `variable-from-scope-${idx}`
 export const DataPickerPopupButtonTestId = `data-picker-popup-button-test-id`
@@ -348,7 +349,14 @@ export function useDataPickerButton(
       {
         name: 'offset',
         options: {
-          offset: [0, 8],
+          offset: [8, 8],
+        },
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          altAxis: true,
+          padding: 20,
         },
       },
     ],
@@ -360,22 +368,15 @@ export function useDataPickerButton(
 
   const DataPickerComponent = React.useMemo(
     () => (
-      <DataPickerPopup
+      <DataSelectorModal
         {...popper.attributes.popper}
         style={popper.styles.popper}
         closePopup={closePopup}
         ref={setPopperElement}
-        onTweakProperty={onPropertyPicked}
         variablesInScope={variablesInScope}
       />
     ),
-    [
-      closePopup,
-      onPropertyPicked,
-      popper.attributes.popper,
-      popper.styles.popper,
-      variablesInScope,
-    ],
+    [closePopup, popper.attributes.popper, popper.styles.popper, variablesInScope],
   )
 
   return {
