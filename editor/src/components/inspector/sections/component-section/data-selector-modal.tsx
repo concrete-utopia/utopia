@@ -11,8 +11,9 @@ import {
 import type { VariableOption } from './data-picker-popup'
 import { InspectorModal } from '../../widgets/inspector-modal'
 import type { SelectOption } from '../../controls/select-control'
-import { NO_OP } from '../../../../core/shared/utils'
+import { NO_OP, assertNever } from '../../../../core/shared/utils'
 import { getControlStyles } from '../../common/control-styles'
+import { last } from '../../../../core/shared/array-utils'
 
 export interface DataSelectorModalProps {
   closePopup: () => void
@@ -51,6 +52,7 @@ function DataLabel({
   icon,
   borderColor,
   borderRadius,
+  onClick,
 }: {
   text: string
   color?: string
@@ -58,9 +60,11 @@ function DataLabel({
   borderRadius?: number
   borderColor?: string
   icon?: React.ReactElement
+  onClick: ((e: React.MouseEvent) => void) | null
 }) {
   return (
     <FlexRow
+      onClick={onClick ?? NO_OP}
       style={{
         padding: '4px 8px',
         color: color,
@@ -72,7 +76,7 @@ function DataLabel({
         backgroundColor: bgColor == null ? undefined : bgColor,
         width: 'max-content',
         height: 'max-content',
-        cursor: 'pointer',
+        cursor: onClick == null ? undefined : 'pointer',
       }}
     >
       {icon}
@@ -110,7 +114,12 @@ function ElementSelector({
   )
 }
 
-const DEFAULT_SIZE: React.CSSProperties = { minWidth: 600, minHeight: 50, maxWidth: 700 }
+const DEFAULT_SIZE: React.CSSProperties = {
+  minWidth: 600,
+  minHeight: 50,
+  maxWidth: 700,
+  maxHeight: 300,
+}
 const BRACES = '{}'
 const CIRCLE = '◯'
 
@@ -119,15 +128,53 @@ export const DataSelectorModal = React.memo(
     ({ style, closePopup, variablesInScope }, forwardedRef) => {
       const colorTheme = useColorTheme()
 
-      //   {variablesInScope.map((v) => (
-      //     <DataLabel
-      //       key={v.valuePath.toString()}
-      //       text={v.variableInfo.expression}
-      //       bgColor={colorTheme.primary50.value}
-      //       color={colorTheme.primary.value}
-      //       borderRadius={4}
-      //     />
-      //   ))}
+      const [currentValuePathString, setCurrentValuePathString] = React.useState<string | null>(
+        null,
+      )
+
+      const optionLookup = useVariableOptionLookup(variablesInScope)
+
+      const focusedVariableChildren = React.useMemo(() => {
+        if (currentValuePathString == null || optionLookup[currentValuePathString] == null) {
+          return variablesInScope
+        }
+        const current = optionLookup[currentValuePathString]
+        if (current == null || current.type === 'jsx' || current.type === 'primitive') {
+          return variablesInScope
+        }
+
+        return current.children
+      }, [currentValuePathString, optionLookup, variablesInScope])
+
+      const currentValuePath = React.useMemo(() => {
+        if (currentValuePathString == null || optionLookup[currentValuePathString] == null) {
+          return null
+        }
+        const current = optionLookup[currentValuePathString]
+        return current?.valuePath ?? null
+      }, [currentValuePathString, optionLookup])
+
+      const setCurrentValuePathStringCurried = React.useCallback(
+        (dataPath: string) => (e: React.MouseEvent) => {
+          e.stopPropagation()
+          e.preventDefault()
+          setCurrentValuePathString(dataPath)
+        },
+        [],
+      )
+
+      const onBackClick = React.useCallback(
+        (e: React.MouseEvent) => {
+          e.stopPropagation()
+          e.preventDefault()
+          if (currentValuePath == null) {
+            return
+          }
+          const path = currentValuePath.slice(0, -1).toString()
+          setCurrentValuePathString(path)
+        },
+        [currentValuePath],
+      )
 
       return (
         <InspectorModal
@@ -157,7 +204,9 @@ export const DataSelectorModal = React.memo(
               style={{
                 ...style,
                 ...DEFAULT_SIZE,
-                padding: 16,
+                paddingTop: 16,
+                paddingLeft: 16,
+                paddingRight: 16,
                 backgroundColor: colorTheme.inspectorBackground.value,
                 color: colorTheme.fg1.value,
                 overflow: 'hidden',
@@ -167,50 +216,90 @@ export const DataSelectorModal = React.memo(
               }}
             >
               {/* top bar */}
-              <FlexRow style={{ gap: 8 }}>
-                <Icn
-                  category='semantic'
-                  type='icon-semantic-back'
-                  width={18}
-                  height={18}
-                  style={{ cursor: 'pointer' }}
-                />
-                <DataLabel
-                  text='sample_data'
-                  borderRadius={4}
-                  borderColor={colorTheme.fg0Opacity20.value}
-                  icon={
-                    <span
-                      style={{
-                        color: colorTheme.brandNeonGreen.value,
-                        fontWeight: 700,
-                        fontSize: 14,
-                      }}
-                    >
-                      {BRACES}
-                    </span>
-                  }
-                />
+              <FlexRow style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+                <FlexRow style={{ gap: 8 }}>
+                  <Icn
+                    category='semantic'
+                    type='icon-semantic-back'
+                    width={18}
+                    height={18}
+                    style={{ cursor: 'pointer' }}
+                    onClick={onBackClick}
+                  />
+                  {currentValuePath == null
+                    ? null
+                    : nonEmptyPrefixes(currentValuePath).map(({ segment, path }) => (
+                        <DataLabel
+                          key={segment}
+                          text={segment.toString()}
+                          borderRadius={4}
+                          borderColor={colorTheme.fg0Opacity20.value}
+                          onClick={setCurrentValuePathStringCurried(path.toString())}
+                          // icon={
+                          //   <span
+                          //     style={{
+                          //       color: colorTheme.brandNeonGreen.value,
+                          //       fontWeight: 700,
+                          //       fontSize: 14,
+                          //     }}
+                          //   >
+                          //     {BRACES}
+                          //   </span>
+                          // }
+                        />
+                      ))}
+                </FlexRow>
+                <div
+                  style={{
+                    borderRadius: 4,
+                    backgroundColor: colorTheme.primary.value,
+                    color: 'white',
+                    padding: '8px 12px',
+                    fontSize: 14,
+                    fontWeight: 500,
+                  }}
+                >
+                  Apply
+                </div>
               </FlexRow>
               <Separator color={colorTheme.seperator.value} margin={12} />
               {/* detail view */}
-              <FlexColumn>
-                <div style={{ display: 'grid', gridTemplateColumns: 'auto 40px 1fr', gap: 8 }}>
-                  <DataLabel
-                    text='testimonials'
-                    bgColor={colorTheme.primary50.value}
-                    color={colorTheme.primary.value}
-                    borderRadius={4}
-                  />
-                  <ElementSelector total={4} selected={1} onSelect={NO_OP} />
-                  {/* properties in scope */}
-                  <FlexRow style={{ flexWrap: 'wrap', height: 'max-content' }}>
-                    {Array(12)
-                      .fill(0)
-                      .map((_, i) => (
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'auto 40px 1fr',
+                  gap: 8,
+                  overflowY: 'scroll',
+                  overflowX: 'hidden',
+                  paddingBottom: 16,
+                }}
+              >
+                {focusedVariableChildren.map((variable, idx) => (
+                  <React.Fragment key={variable.valuePath.toString()}>
+                    <DataLabel
+                      text={
+                        last(variable.valuePath)?.toString() ??
+                        variable.variableInfo.expression.toString()
+                      }
+                      bgColor={colorTheme.primary50.value}
+                      color={colorTheme.primary.value}
+                      borderRadius={4}
+                      onClick={setCurrentValuePathStringCurried(variable.valuePath.toString())}
+                    />
+                    {variable.type === 'array' ? (
+                      <ElementSelector total={4} selected={1} onSelect={NO_OP} />
+                    ) : (
+                      <div />
+                    )}
+                    {/* properties in scope */}
+                    <FlexRow style={{ flexWrap: 'wrap', height: 'max-content' }}>
+                      {childVars(variable, {}).map((child) => (
                         <DataLabel
-                          key={i}
-                          text='username'
+                          key={child.valuePath.toString()}
+                          text={
+                            last(child.valuePath)?.toString() ??
+                            child.variableInfo.expression.toString()
+                          }
                           icon={
                             <span
                               style={{
@@ -222,66 +311,20 @@ export const DataSelectorModal = React.memo(
                               {CIRCLE}
                             </span>
                           }
+                          onClick={setCurrentValuePathStringCurried(child.valuePath.toString())}
                         />
                       ))}
-                  </FlexRow>
-                  <Separator color={colorTheme.seperator.value} spanGridColumns={3} margin={4} />
-                  <DataLabel
-                    text='productFeatures'
-                    bgColor={colorTheme.brandNeonPink60.value}
-                    color={colorTheme.brandNeonPink.value}
-                    borderRadius={4}
-                  />
-                  <div />
-                  {/* properties in scope */}
-                  <FlexRow style={{ flexWrap: 'wrap', height: 'max-content' }}>
-                    {Array(8)
-                      .fill(0)
-                      .map((_, i) => (
-                        <DataLabel
-                          key={i}
-                          text='username'
-                          icon={
-                            <span
-                              style={{
-                                color: colorTheme.brandNeonGreen.value,
-                                fontWeight: 700,
-                                fontSize: 10,
-                              }}
-                            >
-                              {CIRCLE}
-                            </span>
-                          }
-                        />
-                      ))}
-                  </FlexRow>
-                  <Separator color={colorTheme.seperator.value} spanGridColumns={3} margin={4} />
-                  <DataLabel text='productFeatures' />
-                  <div />
-                  {/* properties in scope */}
-                  <FlexRow style={{ flexWrap: 'wrap', height: 'max-content' }}>
-                    {Array(2)
-                      .fill(0)
-                      .map((_, i) => (
-                        <DataLabel
-                          key={i}
-                          text='username'
-                          icon={
-                            <span
-                              style={{
-                                color: colorTheme.brandNeonGreen.value,
-                                fontWeight: 700,
-                                fontSize: 10,
-                              }}
-                            >
-                              {CIRCLE}
-                            </span>
-                          }
-                        />
-                      ))}
-                  </FlexRow>
-                </div>
-              </FlexColumn>
+                    </FlexRow>
+                    {idx < focusedVariableChildren.length - 1 ? (
+                      <Separator
+                        color={colorTheme.seperator.value}
+                        spanGridColumns={3}
+                        margin={4}
+                      />
+                    ) : null}
+                  </React.Fragment>
+                ))}
+              </div>
             </FlexColumn>
           </div>
         </InspectorModal>
@@ -289,3 +332,55 @@ export const DataSelectorModal = React.memo(
     },
   ),
 )
+
+interface ValuePathLookup<T> {
+  [valuePath: string]: T
+}
+
+function useVariableOptionLookup(options: VariableOption[]): ValuePathLookup<VariableOption> {
+  return React.useMemo(() => {
+    let lookup: ValuePathLookup<VariableOption> = {}
+    function walk(option: VariableOption) {
+      lookup[option.valuePath.toString()] = option
+      switch (option.type) {
+        case 'array':
+        case 'object':
+          option.children.forEach((c) => walk(c))
+          return
+        case 'jsx':
+        case 'primitive':
+          return
+        default:
+          assertNever(option)
+      }
+    }
+    options.forEach((o) => walk(o))
+    return lookup
+  }, [options])
+}
+
+function childVars(option: VariableOption, indices: ValuePathLookup<number>): VariableOption[] {
+  switch (option.type) {
+    case 'object':
+      return option.children
+    case 'array':
+      return childVars(option.children[1], indices)
+    case 'jsx':
+    case 'primitive':
+      return []
+    default:
+      assertNever(option)
+  }
+}
+
+export function nonEmptyPrefixes(
+  ts: (string | number)[],
+): Array<{ segment: string | number; path: (string | number)[] }> {
+  let accumulator: Array<{ segment: string | number; path: (string | number)[] }> = []
+  let current: (string | number)[] = []
+  for (const t of ts) {
+    current.push(t)
+    accumulator.push({ segment: t, path: [...current] })
+  }
+  return accumulator
+}
