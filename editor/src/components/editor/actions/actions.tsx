@@ -347,6 +347,7 @@ import type {
   ReplaceMappedElement,
   ReplaceElementInScope,
   ReplaceJSXElement,
+  ToggleDataCanCondense,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -610,6 +611,11 @@ import { fixTopLevelElementsUIDs } from '../../../core/workers/parser-printer/ui
 import { nextSelectedTab } from '../../navigator/left-pane/left-pane-utils'
 import { getRemixRootDir } from '../store/remix-derived-data'
 import { isReplaceKeepChildrenAndStyleTarget } from '../../navigator/navigator-item/component-picker-context-menu'
+import {
+  canCondenseJSXElementChild,
+  dataCanCondenseProp,
+  isDataCanCondenseProp,
+} from '../../../utils/can-condense'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -2241,6 +2247,29 @@ export const UPDATE_FNS = {
         })
       }
     }, editor)
+  },
+  TOGGLE_DATA_CAN_CONDENSE: (action: ToggleDataCanCondense, editor: EditorModel): EditorModel => {
+    let working = { ...editor }
+    for (const path of action.targets) {
+      working = modifyOpenJsxElementAtPath(
+        path,
+        (element) => {
+          const canCondense = canCondenseJSXElementChild(element)
+          // remove any data-can-condense props
+          const props = element.props.filter((prop) => !isDataCanCondenseProp(prop))
+          // if it needs to switch to true, append the new prop
+          if (!canCondense) {
+            props.push(dataCanCondenseProp(true))
+          }
+          return {
+            ...element,
+            props: props,
+          }
+        },
+        working,
+      )
+    }
+    return working
   },
   RENAME_COMPONENT: (action: RenameComponent, editor: EditorModel): EditorModel => {
     const { name } = action

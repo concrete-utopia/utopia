@@ -71,6 +71,7 @@ import { getUtopiaID } from '../../core/shared/uid-utils'
 import { create } from 'tar'
 import { emptySet } from '../../core/shared/set-utils'
 import { objectMap } from '../../core/shared/object-utils'
+import { dataCanCondenseFromMetadata } from '../../utils/can-condense'
 
 export function baseNavigatorDepth(path: ElementPath): number {
   // The storyboard means that this starts at -1,
@@ -571,7 +572,10 @@ function isCondensableLeafEntry(entry: NavigatorTree): boolean {
   )
 }
 
-function condenseNavigatorTree(navigatorTree: Array<NavigatorTree>): Array<NavigatorTree> {
+function condenseNavigatorTree(
+  metadata: ElementInstanceMetadataMap,
+  navigatorTree: Array<NavigatorTree>,
+): Array<NavigatorTree> {
   if (!isFeatureEnabled('Condensed Navigator Entries')) {
     return navigatorTree
   }
@@ -591,7 +595,11 @@ function condenseNavigatorTree(navigatorTree: Array<NavigatorTree>): Array<Navig
     }
 
     // if the entry only has a single child, we can condense it
-    if (entry.type === 'regular-entry' && entry.children.length === 1) {
+    if (
+      entry.type === 'regular-entry' &&
+      entry.children.length === 1 &&
+      dataCanCondenseFromMetadata(metadata, entry.navigatorEntry.elementPath)
+    ) {
       return {
         type: 'condensed-trunk',
         navigatorEntry: entry.navigatorEntry,
@@ -666,10 +674,11 @@ function flattenCondensedTrunk(entry: CondensedTrunkNavigatorTree): {
 }
 
 function getNavigatorRowsForTree(
+  metadata: ElementInstanceMetadataMap,
   navigatorTree: Array<NavigatorTree>,
   filterVisible: 'all-navigator-targets' | 'visible-navigator-targets',
 ): Array<NavigatorRow> {
-  const condensedTree = condenseNavigatorTree(navigatorTree)
+  const condensedTree = condenseNavigatorTree(metadata, navigatorTree)
 
   function walkTree(entry: NavigatorTree, indentation: number): Array<NavigatorRow> {
     if (
@@ -796,10 +805,14 @@ export function getNavigatorTargets(
     projectContents,
   )
 
-  const navigatorRows = getNavigatorRowsForTree(navigatorTrees, 'all-navigator-targets')
+  const navigatorRows = getNavigatorRowsForTree(metadata, navigatorTrees, 'all-navigator-targets')
   const navigatorTargets = navigatorRows.flatMap(getEntriesForRow)
 
-  const visibleNavigatorRows = getNavigatorRowsForTree(navigatorTrees, 'visible-navigator-targets')
+  const visibleNavigatorRows = getNavigatorRowsForTree(
+    metadata,
+    navigatorTrees,
+    'visible-navigator-targets',
+  )
   const filteredVisibleNavigatorRows = filterCollapsedNavigatorRows(
     visibleNavigatorRows,
     collapsedViews,
