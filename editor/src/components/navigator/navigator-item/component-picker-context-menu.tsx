@@ -139,12 +139,12 @@ export function isConditionalTarget(
 }
 
 interface ComponentPickerContextMenuAtomData {
-  target: ElementPath
+  targets: ElementPath[]
   insertionTarget: InsertionTarget
 }
 
 const ComponentPickerContextMenuAtom = atom<ComponentPickerContextMenuAtomData>({
-  target: EP.emptyElementPath,
+  targets: [EP.emptyElementPath],
   insertionTarget: insertAsChildTarget(),
 })
 
@@ -333,15 +333,21 @@ export const useCreateCallbackToShowComponentPicker =
           event.preventDefault()
 
           let pickerType: 'preferred' | 'full'
+          let targets = selectedViews
 
-          const target = selectedViews[0]
-
-          if (overridePickerType == null) {
+          if (overridePickerType != null) {
+            pickerType = overridePickerType
+          } else if (isWrapTarget(insertionTarget)) {
+            pickerType = 'full'
+          } else {
+            // for insertion and replacement we still don't support multiple selection
+            // so we pick the first one
+            targets = selectedViews.slice(0, 1)
             const targetParent =
               isReplaceTarget(insertionTarget) ||
               isReplaceKeepChildrenAndStyleTarget(insertionTarget)
-                ? EP.parentPath(target)
-                : target
+                ? EP.parentPath(targets[0])
+                : targets[0]
             const targetElement = MetadataUtils.findElementByElementPath(
               editorRef.current.jsxMetadata,
               targetParent,
@@ -358,11 +364,9 @@ export const useCreateCallbackToShowComponentPicker =
             )
 
             pickerType = preferredChildren.length > 0 ? 'preferred' : 'full'
-          } else {
-            pickerType = overridePickerType
           }
 
-          setContextMenuProps({ target: target, insertionTarget: insertionTarget })
+          setContextMenuProps({ targets: selectedViews, insertionTarget: insertionTarget })
           const show = pickerType === 'preferred' ? showPreferred : showFull
           show(event, params)
         },
@@ -461,7 +465,7 @@ function moreItem(
 
 function insertComponentPickerItem(
   toInsert: InsertableComponent,
-  target: ElementPath,
+  targets: ElementPath[],
   projectContents: ProjectContentTreeRoot,
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
@@ -485,7 +489,7 @@ function insertComponentPickerItem(
       if (isRenderPropTarget(insertionTarget)) {
         return [
           setProp_UNSAFE(
-            target,
+            targets[0],
             PP.create(insertionTarget.prop),
             fixedElement,
             toInsert.importsToAdd ?? undefined,
@@ -496,9 +500,9 @@ function insertComponentPickerItem(
       // Replacing a mapped element requires a different function
       if (
         isReplaceTarget(insertionTarget) &&
-        MetadataUtils.isJSXMapExpression(EP.parentPath(target), metadata)
+        MetadataUtils.isJSXMapExpression(EP.parentPath(targets[0]), metadata)
       ) {
-        return [replaceMappedElement(fixedElement, target, toInsert.importsToAdd)]
+        return [replaceMappedElement(fixedElement, targets[0], toInsert.importsToAdd)]
       }
 
       if (isWrapTarget(insertionTarget)) {
@@ -515,7 +519,7 @@ function insertComponentPickerItem(
           element.children,
         )
         return [
-          wrapInElement([target], {
+          wrapInElement(targets, {
             element: newElement,
             importsToAdd: toInsert.importsToAdd,
           }),
@@ -526,23 +530,23 @@ function insertComponentPickerItem(
         isReplaceTarget(insertionTarget) ||
         isReplaceKeepChildrenAndStyleTarget(insertionTarget)
       ) {
-        return [replaceJSXElement(fixedElement, target, toInsert.importsToAdd, insertionTarget)]
+        return [replaceJSXElement(fixedElement, targets[0], toInsert.importsToAdd, insertionTarget)]
       }
 
       if (!isConditionalTarget(insertionTarget)) {
-        return [insertJSXElement(fixedElement, target, toInsert.importsToAdd ?? undefined)]
+        return [insertJSXElement(fixedElement, targets[0], toInsert.importsToAdd ?? undefined)]
       }
     }
 
     if (isInsertAsChildTarget(insertionTarget)) {
-      return [insertInsertable(childInsertionPath(target), toInsert, 'do-not-add', null)]
+      return [insertInsertable(childInsertionPath(targets[0]), toInsert, 'do-not-add', null)]
     }
 
     if (isConditionalTarget(insertionTarget)) {
       return [
         insertInsertable(
           conditionalClauseInsertionPath(
-            target,
+            targets[0],
             insertionTarget.conditionalCase,
             replaceWithSingleElement(),
           ),
@@ -557,7 +561,7 @@ function insertComponentPickerItem(
       const elementToInsert = toInsert.element()
       if (
         elementToInsert.type === 'JSX_MAP_EXPRESSION' &&
-        !MetadataUtils.isJSXElement(target, metadata)
+        !targets.every((target) => MetadataUtils.isJSXElement(target, metadata))
       ) {
         return [
           showToast(
@@ -571,7 +575,7 @@ function insertComponentPickerItem(
         ]
       }
       return [
-        wrapInElement([target], {
+        wrapInElement(targets, {
           element: {
             ...elementToInsert,
             uid: generateUidWithExistingComponents(projectContents),
@@ -583,7 +587,7 @@ function insertComponentPickerItem(
 
     if (isReplaceTarget(insertionTarget)) {
       if (
-        MetadataUtils.isJSXMapExpression(EP.parentPath(target), metadata) &&
+        MetadataUtils.isJSXMapExpression(EP.parentPath(targets[0]), metadata) &&
         elementWithoutUID.type !== 'JSX_ELEMENT'
       ) {
         return [
@@ -597,11 +601,11 @@ function insertComponentPickerItem(
           ),
         ]
       }
-      const index = MetadataUtils.getIndexInParent(metadata, pathTrees, target)
+      const index = MetadataUtils.getIndexInParent(metadata, pathTrees, targets[0])
       return [
-        deleteView(target),
+        deleteView(targets[0]),
         insertInsertable(
-          childInsertionPath(EP.parentPath(target)),
+          childInsertionPath(EP.parentPath(targets[0])),
           toInsert,
           'do-not-add',
           absolute(index),
@@ -645,7 +649,7 @@ function toastMessage(insertionTarget: InsertionTarget, toInsert: InsertableComp
 
 function insertPreferredChild(
   preferredChildToInsert: ElementToInsert,
-  target: ElementPath,
+  targets: ElementPath[],
   projectContents: ProjectContentTreeRoot,
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
@@ -665,7 +669,7 @@ function insertPreferredChild(
 
   insertComponentPickerItem(
     toInsert,
-    target,
+    targets,
     projectContents,
     metadata,
     pathTrees,
@@ -675,7 +679,7 @@ function insertPreferredChild(
 }
 
 interface ComponentPickerContextMenuProps {
-  target: ElementPath
+  targets: ElementPath[]
   insertionTarget: InsertionTarget
 }
 
@@ -730,10 +734,10 @@ function contextMenuItemsFromVariants(
 }
 
 const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuProps>(
-  ({ target, insertionTarget }) => {
-    const showFullMenu = useCreateCallbackToShowComponentPicker()([target], insertionTarget, 'full')
+  ({ targets, insertionTarget }) => {
+    const showFullMenu = useCreateCallbackToShowComponentPicker()(targets, insertionTarget, 'full')
 
-    const preferredChildren = usePreferredChildrenForTarget(target, insertionTarget)
+    const preferredChildren = usePreferredChildrenForTarget(targets[0], insertionTarget)
 
     const dispatch = useDispatch()
 
@@ -745,14 +749,14 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
       (preferredChildToInsert: ElementToInsert) =>
         insertPreferredChild(
           preferredChildToInsert,
-          target,
+          targets,
           projectContentsRef.current,
           metadataRef.current,
           elementPathTreesRef.current,
           dispatch,
           insertionTarget,
         ),
-      [target, projectContentsRef, metadataRef, elementPathTreesRef, dispatch, insertionTarget],
+      [targets, projectContentsRef, metadataRef, elementPathTreesRef, dispatch, insertionTarget],
     )
     const wrapperRef = React.useRef<HTMLDivElement>(null)
 
@@ -789,17 +793,18 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
 )
 
 const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProps>(
-  ({ target, insertionTarget }) => {
+  ({ targets, insertionTarget }) => {
     const targetChildren = useEditorState(
       Substores.metadata,
-      (store) => MetadataUtils.getChildrenUnordered(store.editor.jsxMetadata, target),
+      (store) => MetadataUtils.getChildrenUnordered(store.editor.jsxMetadata, targets[0]),
       'usePreferredChildrenForTarget targetChildren',
     )
 
-    const isJsxElement = useEditorState(
+    const areAllJsxElements = useEditorState(
       Substores.metadata,
-      (store) => MetadataUtils.isJSXElement(target, store.editor.jsxMetadata),
-      'isJsxElement targetElement',
+      (store) =>
+        targets.every((target) => MetadataUtils.isJSXElement(target, store.editor.jsxMetadata)),
+      'areAllJsxElements targetElement',
     )
 
     const allInsertableComponents = useGetInsertableComponents('insert').flatMap((group) => {
@@ -827,7 +832,7 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
             }
             if (element.type === 'JSX_MAP_EXPRESSION') {
               // we cannot currently wrap in List a conditional, fragment or map expression
-              return isJsxElement
+              return areAllJsxElements
             }
             return true
           }
@@ -854,7 +859,7 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
 
         insertComponentPickerItem(
           preferredChildToInsert,
-          target,
+          targets,
           projectContentsRef.current,
           metadataRef.current,
           elementPathTreesRef.current,
@@ -865,7 +870,7 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
         hideAllContextMenus()
       },
       [
-        target,
+        targets,
         projectContentsRef,
         metadataRef,
         elementPathTreesRef,
@@ -907,12 +912,12 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
 )
 
 export const ComponentPickerContextMenu = React.memo(() => {
-  const [{ target, insertionTarget }] = useAtom(ComponentPickerContextMenuAtom)
+  const [{ targets, insertionTarget }] = useAtom(ComponentPickerContextMenuAtom)
 
   return (
     <React.Fragment>
-      <ComponentPickerContextMenuSimple target={target} insertionTarget={insertionTarget} />
-      <ComponentPickerContextMenuFull target={target} insertionTarget={insertionTarget} />
+      <ComponentPickerContextMenuSimple targets={targets} insertionTarget={insertionTarget} />
+      <ComponentPickerContextMenuFull targets={targets} insertionTarget={insertionTarget} />
     </React.Fragment>
   )
 })
