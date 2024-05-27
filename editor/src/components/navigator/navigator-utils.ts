@@ -65,7 +65,7 @@ import {
   type NavigatorRow,
   type RegularNavigatorRow,
 } from './navigator-row'
-import { mapDropNulls } from '../../core/shared/array-utils'
+import { dropNulls, mapDropNulls } from '../../core/shared/array-utils'
 import invariant from '../../third-party/remix/invariant'
 import { getUtopiaID } from '../../core/shared/uid-utils'
 import { create } from 'tar'
@@ -768,19 +768,23 @@ function getNavigatorRowsForTree(
           ...entry.mappedEntries.flatMap((t) => walkIfSubtreeVisible(t, indentation + 1)),
         ]
       case 'conditional-entry':
-        return [
+        return dropNulls([
           regularNavigatorRow(entry.navigatorEntry, indentation),
-          regularNavigatorRow(
-            conditionalClauseNavigatorEntry(entry.navigatorEntry.elementPath, 'true-case'),
-            indentation + 1,
-          ),
+          entry.subtreeHidden
+            ? null
+            : regularNavigatorRow(
+                conditionalClauseNavigatorEntry(entry.navigatorEntry.elementPath, 'true-case'),
+                indentation + 1,
+              ),
           ...entry.trueCase.flatMap((t) => walkIfSubtreeVisible(t, indentation + 2)),
-          regularNavigatorRow(
-            conditionalClauseNavigatorEntry(entry.navigatorEntry.elementPath, 'false-case'),
-            indentation + 1,
-          ),
+          entry.subtreeHidden
+            ? null
+            : regularNavigatorRow(
+                conditionalClauseNavigatorEntry(entry.navigatorEntry.elementPath, 'false-case'),
+                indentation + 1,
+              ),
           ...entry.falseCase.flatMap((t) => walkIfSubtreeVisible(t, indentation + 2)),
-        ]
+        ])
       default:
         assertNever(entry)
     }
