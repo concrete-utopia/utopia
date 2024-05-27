@@ -21,7 +21,11 @@ import {
   fallbackOnEmptyInputValueToCSSDefaultEmptyValue,
 } from '../../../common/css-utils'
 import { useInspectorStyleInfo, useIsSubSectionVisible } from '../../../common/property-path-hooks'
-import { stopPropagation, useGetSubsectionHeaderStyle } from '../../../common/inspector-utils'
+import {
+  RemovePropertyButton,
+  stopPropagation,
+  useGetSubsectionHeaderStyle,
+} from '../../../common/inspector-utils'
 import { FakeUnknownArrayItem } from '../../../controls/unknown-array-item'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { addOnUnsetValues } from '../../../common/context-menu-items'
@@ -303,14 +307,11 @@ export const TextShadowSubsection = React.memo(() => {
           </FlexRow>
           {propertyStatus.overwritable ? (
             <FlexRow style={{ gap: 4 }}>
-              <SquareButton
-                highlight
-                onMouseDown={onUnsetValues}
-                data-testid={'inspector-text-shadow-remove-all'}
-                style={{ width: 12 }}
-              >
-                <Icn category='semantic' type='cross' width={12} height={12} />
-              </SquareButton>
+              <RemovePropertyButton
+                testId='inspector-text-shadow-remove-all'
+                onUnsetValues={onUnsetValues}
+                propertySet={propertyStatus.set}
+              />
               <SquareButton highlight onMouseDown={insertShadow} style={{ width: 12 }}>
                 <Icn category='semantic' type='plus' width={12} height={12} />
               </SquareButton>

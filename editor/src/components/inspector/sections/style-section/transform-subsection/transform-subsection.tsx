@@ -56,6 +56,7 @@ import {
   isCSSTransformSingleItem,
 } from '../../../common/css-utils'
 import {
+  RemovePropertyButton,
   getIndexedSpliceArrayItem,
   stopPropagation,
   useGetSubsectionHeaderStyle,
@@ -570,14 +571,11 @@ export const TransformSubsection = React.memo(() => {
           </FlexRow>
           {propertyStatus.overwritable ? (
             <FlexRow style={{ gap: 4 }}>
-              <SquareButton
-                highlight
-                onMouseDown={removeAllTransformProperties}
-                data-testid={'inspector-transform-remove-all'}
-                style={{ width: 12 }}
-              >
-                <Icn category='semantic' type='cross' width={12} height={12} />
-              </SquareButton>
+              <RemovePropertyButton
+                testId='inspector-transform-remove-all'
+                onUnsetValues={removeAllTransformProperties}
+                propertySet={propertyStatus.set}
+              />
               <SquareButton
                 highlight
                 onMouseDown={insertCSSTransformMouseDown}
