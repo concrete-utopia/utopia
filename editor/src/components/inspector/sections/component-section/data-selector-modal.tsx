@@ -20,18 +20,29 @@ export interface DataSelectorModalProps {
   variablesInScope: VariableOption[]
 }
 
-const Separator = React.memo(({ color }: { color: string }) => {
-  return (
-    <div
-      style={{
-        width: '100%',
-        height: 1,
-        margin: '8px 0px',
-        backgroundColor: color,
-      }}
-    ></div>
-  )
-})
+const Separator = React.memo(
+  ({
+    color,
+    spanGridColumns,
+    margin,
+  }: {
+    color: string
+    spanGridColumns?: number
+    margin: number
+  }) => {
+    return (
+      <div
+        style={{
+          width: '100%',
+          height: 1,
+          margin: `${margin}px 0px`,
+          backgroundColor: color,
+          gridColumn: spanGridColumns == null ? undefined : '1 / span 3',
+        }}
+      ></div>
+    )
+  },
+)
 
 function DataLabel({
   text,
@@ -60,6 +71,8 @@ function DataLabel({
         border: borderColor == null ? undefined : `1px solid ${borderColor}`,
         backgroundColor: bgColor == null ? undefined : bgColor,
         width: 'max-content',
+        height: 'max-content',
+        cursor: 'pointer',
       }}
     >
       {icon}
@@ -103,12 +116,22 @@ const CIRCLE = '◯'
 
 export const DataSelectorModal = React.memo(
   React.forwardRef<HTMLDivElement, DataSelectorModalProps>(
-    ({ style, closePopup }, forwardedRef) => {
+    ({ style, closePopup, variablesInScope }, forwardedRef) => {
       const colorTheme = useColorTheme()
+
+      //   {variablesInScope.map((v) => (
+      //     <DataLabel
+      //       key={v.valuePath.toString()}
+      //       text={v.variableInfo.expression}
+      //       bgColor={colorTheme.primary50.value}
+      //       color={colorTheme.primary.value}
+      //       borderRadius={4}
+      //     />
+      //   ))}
 
       return (
         <InspectorModal
-          offsetX={-20}
+          offsetX={20}
           offsetY={0}
           closePopup={closePopup}
           style={{
@@ -145,7 +168,13 @@ export const DataSelectorModal = React.memo(
             >
               {/* top bar */}
               <FlexRow style={{ gap: 8 }}>
-                <Icn category='semantic' type='icon-semantic-back' width={18} height={18} />
+                <Icn
+                  category='semantic'
+                  type='icon-semantic-back'
+                  width={18}
+                  height={18}
+                  style={{ cursor: 'pointer' }}
+                />
                 <DataLabel
                   text='sample_data'
                   borderRadius={4}
@@ -163,142 +192,96 @@ export const DataSelectorModal = React.memo(
                   }
                 />
               </FlexRow>
-              <Separator color={colorTheme.seperator.value} />
+              <Separator color={colorTheme.seperator.value} margin={12} />
               {/* detail view */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'auto 40px 1fr', gap: 8 }}>
-                {/* arrays/objects in scope */}
-                <FlexColumn style={{ padding: 8, gap: 8 }}>
+              <FlexColumn>
+                <div style={{ display: 'grid', gridTemplateColumns: 'auto 40px 1fr', gap: 8 }}>
                   <DataLabel
                     text='testimonials'
                     bgColor={colorTheme.primary50.value}
                     color={colorTheme.primary.value}
                     borderRadius={4}
                   />
+                  <ElementSelector total={4} selected={1} onSelect={NO_OP} />
+                  {/* properties in scope */}
+                  <FlexRow style={{ flexWrap: 'wrap', height: 'max-content' }}>
+                    {Array(12)
+                      .fill(0)
+                      .map((_, i) => (
+                        <DataLabel
+                          key={i}
+                          text='username'
+                          icon={
+                            <span
+                              style={{
+                                color: colorTheme.brandNeonGreen.value,
+                                fontWeight: 700,
+                                fontSize: 10,
+                              }}
+                            >
+                              {CIRCLE}
+                            </span>
+                          }
+                        />
+                      ))}
+                  </FlexRow>
+                  <Separator color={colorTheme.seperator.value} spanGridColumns={3} margin={4} />
                   <DataLabel
                     text='productFeatures'
                     bgColor={colorTheme.brandNeonPink60.value}
                     color={colorTheme.brandNeonPink.value}
                     borderRadius={4}
                   />
+                  <div />
+                  {/* properties in scope */}
+                  <FlexRow style={{ flexWrap: 'wrap', height: 'max-content' }}>
+                    {Array(8)
+                      .fill(0)
+                      .map((_, i) => (
+                        <DataLabel
+                          key={i}
+                          text='username'
+                          icon={
+                            <span
+                              style={{
+                                color: colorTheme.brandNeonGreen.value,
+                                fontWeight: 700,
+                                fontSize: 10,
+                              }}
+                            >
+                              {CIRCLE}
+                            </span>
+                          }
+                        />
+                      ))}
+                  </FlexRow>
+                  <Separator color={colorTheme.seperator.value} spanGridColumns={3} margin={4} />
                   <DataLabel text='productFeatures' />
-                </FlexColumn>
-                <ElementSelector total={4} selected={1} onSelect={NO_OP} />
-                {/* properties in scope */}
-                <FlexRow style={{ flexWrap: 'wrap', height: 'max-content' }}>
-                  <DataLabel
-                    text='username'
-                    icon={
-                      <span
-                        style={{
-                          color: colorTheme.brandNeonGreen.value,
-                          fontWeight: 700,
-                          fontSize: 10,
-                        }}
-                      >
-                        {CIRCLE}
-                      </span>
-                    }
-                  />
-                  <DataLabel
-                    text='username'
-                    icon={
-                      <span
-                        style={{
-                          color: colorTheme.brandNeonGreen.value,
-                          fontWeight: 900,
-                          fontSize: 10,
-                        }}
-                      >
-                        {CIRCLE}
-                      </span>
-                    }
-                  />
-                  <DataLabel
-                    text='username'
-                    icon={
-                      <span
-                        style={{
-                          color: colorTheme.brandNeonGreen.value,
-                          fontWeight: 900,
-                          fontSize: 10,
-                        }}
-                      >
-                        {CIRCLE}
-                      </span>
-                    }
-                  />
-                  <DataLabel
-                    text='username'
-                    icon={
-                      <span
-                        style={{
-                          color: colorTheme.brandNeonGreen.value,
-                          fontWeight: 900,
-                          fontSize: 10,
-                        }}
-                      >
-                        {CIRCLE}
-                      </span>
-                    }
-                  />
-                  <DataLabel
-                    text='username'
-                    icon={
-                      <span
-                        style={{
-                          color: colorTheme.brandNeonGreen.value,
-                          fontWeight: 900,
-                          fontSize: 10,
-                        }}
-                      >
-                        {CIRCLE}
-                      </span>
-                    }
-                  />
-                  <DataLabel
-                    text='username'
-                    icon={
-                      <span
-                        style={{
-                          color: colorTheme.brandNeonGreen.value,
-                          fontWeight: 900,
-                          fontSize: 10,
-                        }}
-                      >
-                        {CIRCLE}
-                      </span>
-                    }
-                  />
-                  <DataLabel
-                    text='username'
-                    icon={
-                      <span
-                        style={{
-                          color: colorTheme.brandNeonGreen.value,
-                          fontWeight: 900,
-                          fontSize: 10,
-                        }}
-                      >
-                        {CIRCLE}
-                      </span>
-                    }
-                  />
-                  <DataLabel
-                    text='username'
-                    icon={
-                      <span
-                        style={{
-                          color: colorTheme.brandNeonGreen.value,
-                          fontWeight: 900,
-                          fontSize: 10,
-                        }}
-                      >
-                        {CIRCLE}
-                      </span>
-                    }
-                  />
-                </FlexRow>
-              </div>
+                  <div />
+                  {/* properties in scope */}
+                  <FlexRow style={{ flexWrap: 'wrap', height: 'max-content' }}>
+                    {Array(2)
+                      .fill(0)
+                      .map((_, i) => (
+                        <DataLabel
+                          key={i}
+                          text='username'
+                          icon={
+                            <span
+                              style={{
+                                color: colorTheme.brandNeonGreen.value,
+                                fontWeight: 700,
+                                fontSize: 10,
+                              }}
+                            >
+                              {CIRCLE}
+                            </span>
+                          }
+                        />
+                      ))}
+                  </FlexRow>
+                </div>
+              </FlexColumn>
             </FlexColumn>
           </div>
         </InspectorModal>
