@@ -8,17 +8,19 @@ import {
   UtopiaTheme,
   useColorTheme,
 } from '../../../../uuiui'
-import type { VariableOption } from './data-picker-popup'
+import type { DataPickerCallback, VariableOption } from './data-picker-popup'
 import { InspectorModal } from '../../widgets/inspector-modal'
 import type { SelectOption } from '../../controls/select-control'
 import { NO_OP, assertNever } from '../../../../core/shared/utils'
 import { getControlStyles } from '../../common/control-styles'
 import { last } from '../../../../core/shared/array-utils'
+import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
 
 export interface DataSelectorModalProps {
   closePopup: () => void
   style: React.CSSProperties
   variablesInScope: VariableOption[]
+  onPropertyPicked: DataPickerCallback
 }
 
 const Separator = React.memo(
@@ -127,7 +129,7 @@ const CIRCLE = '◯'
 
 export const DataSelectorModal = React.memo(
   React.forwardRef<HTMLDivElement, DataSelectorModalProps>(
-    ({ style, closePopup, variablesInScope }, forwardedRef) => {
+    ({ style, closePopup, variablesInScope, onPropertyPicked }, forwardedRef) => {
       const colorTheme = useColorTheme()
 
       const [indexLookup, setIndexLookup] = React.useState<ValuePathLookup<number>>({})
@@ -182,15 +184,20 @@ export const DataSelectorModal = React.memo(
 
       const onApplyClick = React.useCallback(() => {
         if (currentValuePath == null) {
-          return null
+          return
         }
         const variable = optionLookup[currentValuePath.toString()]
         if (variable == null) {
           return
         }
 
-        // console.log('you have chosen', variable.variableInfo.expression)
-      }, [currentValuePath, optionLookup])
+        onPropertyPicked(
+          jsExpressionOtherJavaScriptSimple(variable.variableInfo.expression, [
+            variable.definedElsewhere,
+          ]),
+        )
+        closePopup()
+      }, [closePopup, currentValuePath, onPropertyPicked, optionLookup])
 
       const catchClick = React.useCallback((e: React.MouseEvent) => {
         e.stopPropagation()
@@ -279,6 +286,7 @@ export const DataSelectorModal = React.memo(
                     padding: '8px 12px',
                     fontSize: 14,
                     fontWeight: 500,
+                    cursor: 'pointer',
                   }}
                   onClick={onApplyClick}
                 >

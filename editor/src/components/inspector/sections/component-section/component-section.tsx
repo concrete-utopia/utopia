@@ -373,10 +373,17 @@ export function useDataPickerButton(
         style={popper.styles.popper}
         closePopup={closePopup}
         ref={setPopperElement}
+        onPropertyPicked={onPropertyPicked}
         variablesInScope={variablesInScope}
       />
     ),
-    [closePopup, popper.attributes.popper, popper.styles.popper, variablesInScope],
+    [
+      closePopup,
+      onPropertyPicked,
+      popper.attributes.popper,
+      popper.styles.popper,
+      variablesInScope,
+    ],
   )
 
   return {
