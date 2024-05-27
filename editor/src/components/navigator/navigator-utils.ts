@@ -161,6 +161,14 @@ export type NavigatorTree =
   | CondensedTrunkNavigatorTree
   | CondensedLeafNavigatorTree
 
+function isSubtreeHidden(navigatorTree: NavigatorTree): boolean {
+  return 'subtreeHidden' in navigatorTree && navigatorTree.subtreeHidden
+}
+
+function isElementHidden(navigatorTree: NavigatorTree): boolean {
+  return 'elementHidden' in navigatorTree && navigatorTree.elementHidden
+}
+
 interface GetNavigatorTargetsResults {
   navigatorRows: Array<NavigatorRow>
   navigatorTargets: Array<NavigatorEntry>
@@ -679,21 +687,13 @@ function getNavigatorRowsForTree(
 
   function walkTree(entry: NavigatorTree, indentation: number): Array<NavigatorRow> {
     function walkIfSubtreeVisible(e: NavigatorTree, i: number): Array<NavigatorRow> {
-      if (
-        filterVisible === 'visible-navigator-targets' &&
-        'subtreeHidden' in entry &&
-        entry.subtreeHidden
-      ) {
+      if (isSubtreeHidden(entry) && filterVisible === 'visible-navigator-targets') {
         return []
       }
       return walkTree(e, i)
     }
 
-    if (
-      filterVisible === 'visible-navigator-targets' &&
-      'elementHidden' in entry &&
-      entry.elementHidden
-    ) {
+    if (isElementHidden(entry) && filterVisible === 'visible-navigator-targets') {
       return []
     }
 
