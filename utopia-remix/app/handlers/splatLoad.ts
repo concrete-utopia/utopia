@@ -3,7 +3,7 @@ import { ensure } from '../util/api.server'
 import { proxy } from '../util/proxy.server'
 import { Status } from '../util/statusCodes'
 
-const allowedExtensions = [
+export const allowedAssetExtensions = [
   // images
   '.bmp',
   '.gif',
@@ -30,7 +30,7 @@ export async function handleSplatLoad(req: Request) {
   const url = new URL(req.url)
 
   const extension = path.extname(url.pathname).toLowerCase()
-  ensure(allowedExtensions.includes(extension), 'invalid extension', Status.BAD_REQUEST)
+  ensure(allowedAssetExtensions.includes(extension), 'invalid extension', Status.BAD_REQUEST)
 
   return proxy(req, { rawOutput: true })
 }
