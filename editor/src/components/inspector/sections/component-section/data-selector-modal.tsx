@@ -89,25 +89,27 @@ const SIMPLE_CONTROL_STYLES = getControlStyles('simple')
 
 function ElementSelector({
   total,
+  selected,
+  onSelect,
 }: {
   total: number
   selected: number
-  onSelect: (_: number) => void
+  onSelect: (_: SelectOption) => void
 }) {
   const options: SelectOption[] = React.useMemo(
     () =>
       Array(total)
         .fill(0)
-        .map((_, i) => ({ value: i + 1, label: `${i + 1}` })),
+        .map((_, i) => ({ value: i, label: `${i + 1}` })),
     [total],
   )
 
   return (
     <PopupList
       id={'data-selector-index-select'}
-      value={{ label: '1', value: 1 }}
+      value={{ label: `${selected + 1}`, value: selected }}
       options={options}
-      onSubmitValue={NO_OP}
+      onSubmitValue={onSelect}
       controlStyles={SIMPLE_CONTROL_STYLES}
       style={{ background: 'transparent' }}
     />
@@ -128,39 +130,41 @@ export const DataSelectorModal = React.memo(
     ({ style, closePopup, variablesInScope }, forwardedRef) => {
       const colorTheme = useColorTheme()
 
-      const [currentValuePathString, setCurrentValuePathString] = React.useState<string | null>(
-        null,
+      const [indexLookup, setIndexLookup] = React.useState<ValuePathLookup<number>>({})
+      const updateIndexInLookup = React.useCallback(
+        (valuePathString: string) => (option: SelectOption) =>
+          setIndexLookup((lookup) => ({ ...lookup, [valuePathString]: option.value })),
+        [],
       )
+
+      const [focusedVariableChildren, setFocusedVariableChildren] =
+        React.useState<VariableOption[]>(variablesInScope)
+      const [currentValuePath, setCurrentValuePath] = React.useState<Array<string | number>>([])
 
       const optionLookup = useVariableOptionLookup(variablesInScope)
 
-      const focusedVariableChildren = React.useMemo(() => {
-        if (currentValuePathString == null || optionLookup[currentValuePathString] == null) {
-          return variablesInScope
-        }
-        const current = optionLookup[currentValuePathString]
-        if (current == null || current.type === 'jsx' || current.type === 'primitive') {
-          return variablesInScope
-        }
-
-        return current.children
-      }, [currentValuePathString, optionLookup, variablesInScope])
-
-      const currentValuePath = React.useMemo(() => {
-        if (currentValuePathString == null || optionLookup[currentValuePathString] == null) {
-          return null
-        }
-        const current = optionLookup[currentValuePathString]
-        return current?.valuePath ?? null
-      }, [currentValuePathString, optionLookup])
-
       const setCurrentValuePathStringCurried = React.useCallback(
-        (dataPath: string) => (e: React.MouseEvent) => {
+        (path: VariableOption['valuePath']) => (e: React.MouseEvent) => {
           e.stopPropagation()
           e.preventDefault()
-          setCurrentValuePathString(dataPath)
+
+          setCurrentValuePath(path)
+
+          if (path.length === 0) {
+            setFocusedVariableChildren(variablesInScope)
+            return
+          }
+
+          const pathStringToSet = path.toString()
+          const elementToSet = optionLookup[pathStringToSet]
+          if (
+            elementToSet != null &&
+            (elementToSet.type === 'array' || elementToSet.type === 'object')
+          ) {
+            setFocusedVariableChildren(elementToSet.children)
+          }
         },
-        [],
+        [optionLookup, variablesInScope],
       )
 
       const onBackClick = React.useCallback(
@@ -170,11 +174,28 @@ export const DataSelectorModal = React.memo(
           if (currentValuePath == null) {
             return
           }
-          const path = currentValuePath.slice(0, -1).toString()
-          setCurrentValuePathString(path)
+          const path = currentValuePath.slice(0, -1)
+          setCurrentValuePathStringCurried(path)(e)
         },
-        [currentValuePath],
+        [currentValuePath, setCurrentValuePathStringCurried],
       )
+
+      const onApplyClick = React.useCallback(() => {
+        if (currentValuePath == null) {
+          return null
+        }
+        const variable = optionLookup[currentValuePath.toString()]
+        if (variable == null) {
+          return
+        }
+
+        // console.log('you have chosen', variable.variableInfo.expression)
+      }, [currentValuePath, optionLookup])
+
+      const catchClick = React.useCallback((e: React.MouseEvent) => {
+        e.stopPropagation()
+        e.preventDefault()
+      }, [])
 
       return (
         <InspectorModal
@@ -200,6 +221,7 @@ export const DataSelectorModal = React.memo(
             onClick={closePopup}
           >
             <FlexColumn
+              onClick={catchClick}
               ref={forwardedRef}
               style={{
                 ...style,
@@ -234,7 +256,7 @@ export const DataSelectorModal = React.memo(
                           text={segment.toString()}
                           borderRadius={4}
                           borderColor={colorTheme.fg0Opacity20.value}
-                          onClick={setCurrentValuePathStringCurried(path.toString())}
+                          onClick={setCurrentValuePathStringCurried(path)}
                           // icon={
                           //   <span
                           //     style={{
@@ -258,6 +280,7 @@ export const DataSelectorModal = React.memo(
                     fontSize: 14,
                     fontWeight: 500,
                   }}
+                  onClick={onApplyClick}
                 >
                   Apply
                 </div>
@@ -284,10 +307,14 @@ export const DataSelectorModal = React.memo(
                       bgColor={colorTheme.primary50.value}
                       color={colorTheme.primary.value}
                       borderRadius={4}
-                      onClick={setCurrentValuePathStringCurried(variable.valuePath.toString())}
+                      onClick={setCurrentValuePathStringCurried(variable.valuePath)}
                     />
                     {variable.type === 'array' ? (
-                      <ElementSelector total={4} selected={1} onSelect={NO_OP} />
+                      <ElementSelector
+                        total={variable.children.length}
+                        selected={indexLookup[variable.valuePath.toString()] ?? 1}
+                        onSelect={updateIndexInLookup(variable.valuePath.toString())}
+                      />
                     ) : (
                       <div />
                     )}
@@ -311,7 +338,7 @@ export const DataSelectorModal = React.memo(
                               {CIRCLE}
                             </span>
                           }
-                          onClick={setCurrentValuePathStringCurried(child.valuePath.toString())}
+                          onClick={setCurrentValuePathStringCurried(child.valuePath)}
                         />
                       ))}
                     </FlexRow>
@@ -364,7 +391,7 @@ function childVars(option: VariableOption, indices: ValuePathLookup<number>): Va
     case 'object':
       return option.children
     case 'array':
-      return childVars(option.children[1], indices)
+      return childVars(option.children[indices[option.valuePath.toString()] ?? 0], indices)
     case 'jsx':
     case 'primitive':
       return []
