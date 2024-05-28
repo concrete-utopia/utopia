@@ -112,7 +112,15 @@ export const CartoucheUI = React.forwardRef(
               opacity: preview ? 0.5 : 1,
             }}
           >
-            {source === 'literal' ? null : dataTypeToIcon(datatype, cartoucheIconColor)}
+            {source === 'literal' ? null : (
+              <Icn
+                category='navigator-element'
+                type={dataTypeToIconType(datatype)}
+                color={cartoucheIconColor}
+                width={12}
+                height={12}
+              />
+            )}
             <div
               style={{
                 flex: 1,
@@ -151,27 +159,16 @@ export const CartoucheUI = React.forwardRef(
   },
 )
 
-function dataTypeToIcon(
-  dataType: CartoucheUIProps['datatype'],
-  cartoucheIconColor: IcnColor,
-): React.ReactElement | string {
+function dataTypeToIconType(dataType: CartoucheUIProps['datatype']): string {
   switch (dataType) {
     case 'renderable':
-      return (
-        <Icn
-          category='navigator-element'
-          type='data'
-          color={cartoucheIconColor}
-          width={12}
-          height={12}
-        />
-      )
+      return 'data'
     case 'boolean':
       return '👻'
     case 'array':
-      return '[ ]'
+      return 'array'
     case 'object':
-      return '{ }'
+      return 'object'
   }
 }
 
