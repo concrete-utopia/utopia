@@ -217,6 +217,15 @@ export const DataSelectorModal = React.memo(
         setCurrentSelectedPath(null)
       }, [])
 
+      const valuePreviewText = (() => {
+        const variable = optionLookup[pathInTopBar.toString()]
+        if (variable == null) {
+          return null
+        }
+
+        return JSON.stringify(variable.variableInfo.value, undefined, 2)
+      })()
+
       return (
         <InspectorModal
           offsetX={20}
@@ -259,7 +268,7 @@ export const DataSelectorModal = React.memo(
             >
               {/* top bar */}
               <FlexRow style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-                <FlexRow style={{ gap: 8 }}>
+                <FlexRow style={{ gap: 8, flexWrap: 'wrap' }}>
                   <div
                     style={{
                       ...disabledButtonStyles(pathInTopBar.length === 0),
@@ -304,6 +313,20 @@ export const DataSelectorModal = React.memo(
                   Apply
                 </div>
               </FlexRow>
+              <FlexRow
+                style={{
+                  gridColumn: '3',
+                  flexWrap: 'wrap',
+                  height: 'max-content',
+                  gap: 4,
+                  overflowX: 'scroll',
+                  opacity: 0.8,
+                  fontSize: 10,
+                  ...UtopiaStyles.fontStyles.monospaced,
+                }}
+              >
+                {valuePreviewText}
+              </FlexRow>
               <Separator color={colorTheme.seperator.value} margin={12} />
               {/* detail view */}
               <div
@@ -321,7 +344,6 @@ export const DataSelectorModal = React.memo(
                   <>
                     <FlexRow
                       style={{
-                        gridColumn: '3',
                         flexWrap: 'wrap',
                         height: 'max-content',
                         gap: 4,
