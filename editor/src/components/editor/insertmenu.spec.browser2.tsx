@@ -9,6 +9,8 @@ import {
 } from '../canvas/event-helpers.test-utils'
 import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
 import {
+  TestAppUID,
+  TestSceneUID,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
@@ -16,6 +18,10 @@ import {
 import { setPanelVisibility, setRightMenuTab } from './actions/action-creators'
 import { InsertMenuFilterTestId } from './insertmenu'
 import { RightMenuTab } from './store/editor-state'
+import { ComponentPickerTestId } from '../navigator/navigator-item/component-picker'
+import * as EP from '../../core/shared/element-path'
+import { BakedInStoryboardUID } from '../../core/model/scene-utils'
+import { selectComponentsForTest } from '../../utils/utils.test-utils'
 
 function getInsertItems() {
   return screen.queryAllByTestId(/^insert-item-/gi)
@@ -115,34 +121,22 @@ describe('insert menu', () => {
       'await-first-dom-report',
     )
 
+    await selectComponentsForTest(renderResult, [
+      EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root`),
+    ])
+
     await openInsertMenu(renderResult)
 
-    FOR_TESTS_setNextGeneratedUid('the-div')
+    FOR_TESTS_setNextGeneratedUid('div')
 
     expect(getInsertItems().length).toEqual(allInsertItemsCount)
 
     document.execCommand('insertText', false, 'div')
 
-    const filterBox = await screen.findByTestId(InsertMenuFilterTestId)
-    forceNotNull('the filter box must not be null', filterBox)
+    const picker = await screen.findByTestId(ComponentPickerTestId)
+    forceNotNull('the component picker must not be null', picker)
 
-    await pressKey('Enter', { targetElement: filterBox })
-
-    const targetElement = renderResult.renderedDOM.getByTestId('root')
-    const targetElementBounds = targetElement.getBoundingClientRect()
-    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-
-    const startPoint = {
-      x: targetElementBounds.x + 5,
-      y: targetElementBounds.y + 5,
-    }
-    const endPoint = {
-      x: targetElementBounds.x + 100,
-      y: targetElementBounds.y + 150,
-    }
-
-    await mouseMoveToPoint(canvasControlsLayer, startPoint)
-    await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+    await pressKey('Enter', { targetElement: picker })
     await renderResult.getDispatchFollowUpActionsFinished()
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -161,12 +155,8 @@ describe('insert menu', () => {
             style={{
                 backgroundColor: '#aaaaaa33',
                 position: 'absolute',
-                left: 6,
-                top: 6,
-                width: 95,
-                height: 145,
             }}
-            data-uid='the-div'
+            data-uid='div'
         />
         </div>
       `),

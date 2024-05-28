@@ -62,6 +62,8 @@ export function elementToInsertToInsertableComponent(
   )
 }
 
+export const ComponentPickerTestId = 'component-picker-full'
+
 export function componentPickerTestIdForProp(prop: string): string {
   return `component-picker-${prop}`
 }
@@ -181,6 +183,7 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
       }}
       onKeyDown={onKeyDown}
       ref={menuRef}
+      data-testid={ComponentPickerTestId}
     >
       <ComponentPickerTopSection
         components={categorizedComponents}
