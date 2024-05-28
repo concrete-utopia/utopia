@@ -277,9 +277,10 @@ export const DataSelectorModal = React.memo(
                     {SLASH}
                   </div>
                   {nonEmptyPathPrefixes(currentSelectedPath ?? navigatedToPath, optionLookup).map(
-                    ({ segment, path, role }) => (
+                    ({ segment, path, role, type }) => (
                       <CartoucheUI
                         key={segment}
+                        datatype={type}
                         onClick={setNavigatedToPathCurried(path)}
                         tooltip={segment.toString()}
                         source={'internal'}
@@ -336,6 +337,7 @@ export const DataSelectorModal = React.memo(
                           key={variable.valuePath.toString()}
                           tooltip={variableNameFromPath(variable)}
                           source={'internal'}
+                          datatype={childTypeToCartoucheDataType(variable.type)}
                           inverted={false}
                           selected={
                             currentSelectedPath == null
@@ -359,6 +361,7 @@ export const DataSelectorModal = React.memo(
                   <React.Fragment key={variable.valuePath.toString()}>
                     <CartoucheUI
                       tooltip={variableNameFromPath(variable)}
+                      datatype={childTypeToCartoucheDataType(variable.type)}
                       source={'internal'}
                       inverted={false}
                       selected={
@@ -389,6 +392,7 @@ export const DataSelectorModal = React.memo(
                           tooltip={variableNameFromPath(child)}
                           source={'internal'}
                           inverted={false}
+                          datatype={childTypeToCartoucheDataType(child.type)}
                           selected={
                             currentSelectedPath == null
                               ? false
@@ -420,6 +424,22 @@ export const DataSelectorModal = React.memo(
     },
   ),
 )
+
+function childTypeToCartoucheDataType(
+  childType: VariableOption['type'],
+): CartoucheUIProps['datatype'] {
+  switch (childType) {
+    case 'array':
+      return 'array'
+    case 'object':
+      return 'object'
+    case 'jsx':
+    case 'primitive':
+      return 'renderable'
+    default:
+      assertNever(childType)
+  }
+}
 
 interface ValuePathLookup<T> {
   [valuePath: string]: T
@@ -464,7 +484,12 @@ function childVars(option: VariableOption, indices: ValuePathLookup<number>): Va
 export function nonEmptyPathPrefixes(
   valuePath: VariableOption['valuePath'],
   lookup: ValuePathLookup<VariableOption>,
-): Array<{ segment: string | number; path: (string | number)[]; role: CartoucheUIProps['role'] }> {
+): Array<{
+  segment: string | number
+  path: (string | number)[]
+  role: CartoucheUIProps['role']
+  type: CartoucheUIProps['datatype']
+}> {
   let accumulator = []
   let current: (string | number)[] = []
   for (const segment of valuePath) {
@@ -475,6 +500,7 @@ export function nonEmptyPathPrefixes(
       segment: segment,
       path: [...current],
       role: cartoucheFolderOrInfo(optionFromLookup),
+      type: childTypeToCartoucheDataType(optionFromLookup.type),
     })
   }
   return accumulator

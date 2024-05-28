@@ -180,6 +180,7 @@ export const DataCartoucheInner = React.forwardRef(
         onDelete={onDelete}
         onClick={onClick}
         onDoubleClick={onDoubleClick}
+        datatype='renderable' // TODO actually feed the real value here
         selected={selected}
         inverted={inverted}
         testId={testId}

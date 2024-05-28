@@ -1,11 +1,13 @@
 import React from 'react'
-import { FlexRow, Icn, Icons, Tooltip, UtopiaStyles, useColorTheme } from '../../../../uuiui'
+import type { IcnColor } from '../../../../uuiui'
+import { FlexRow, Icn, Tooltip, UtopiaStyles, useColorTheme } from '../../../../uuiui'
 import { when } from '../../../../utils/react-conditionals'
 
 export type CartoucheUIProps = React.PropsWithChildren<{
   tooltip: string
   source: 'internal' | 'external' | 'literal'
   role: 'selection' | 'information' | 'folder'
+  datatype: 'renderable' | 'boolean' | 'array' | 'object'
   inverted: boolean
   selected: boolean
   testId: string
@@ -26,6 +28,7 @@ export const CartoucheUI = React.forwardRef(
       inverted,
       selected,
       role,
+      datatype,
     } = props
 
     const colorTheme = useColorTheme()
@@ -97,7 +100,7 @@ export const CartoucheUI = React.forwardRef(
               gap: 4,
             }}
           >
-            {source === 'literal' ? null : <Icons.NavigatorData color={cartoucheIconColor} />}
+            {source === 'literal' ? null : dataTypeToIcon(datatype, cartoucheIconColor)}
             <div
               style={{
                 flex: 1,
@@ -135,6 +138,30 @@ export const CartoucheUI = React.forwardRef(
     )
   },
 )
+
+function dataTypeToIcon(
+  dataType: CartoucheUIProps['datatype'],
+  cartoucheIconColor: IcnColor,
+): React.ReactElement | string {
+  switch (dataType) {
+    case 'renderable':
+      return (
+        <Icn
+          category='navigator-element'
+          type='data'
+          color={cartoucheIconColor}
+          width={12}
+          height={12}
+        />
+      )
+    case 'boolean':
+      return '👻'
+    case 'array':
+      return '[ ]'
+    case 'object':
+      return '{ }'
+  }
+}
 
 function useStopPropagation(callback: ((e: React.MouseEvent) => void) | undefined) {
   return React.useCallback(
