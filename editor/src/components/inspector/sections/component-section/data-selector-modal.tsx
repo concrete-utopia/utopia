@@ -186,6 +186,7 @@ export const DataSelectorModal = React.memo(
           e.preventDefault()
 
           setNavigatedToPath(path)
+          setCurrentSelectedPath([])
         },
         [],
       )
