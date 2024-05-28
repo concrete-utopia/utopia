@@ -196,6 +196,7 @@ export const DataSelectorModal = React.memo(
       )
 
       const pathInTopBar = currentSelectedPath ?? navigatedToPath
+      const pathInTopBarIncludingHover = hoveredPath ?? pathInTopBar
 
       const onApplyClick = React.useCallback(() => {
         const variable = optionLookup[pathInTopBar.toString()]
@@ -219,7 +220,7 @@ export const DataSelectorModal = React.memo(
       }, [])
 
       const valuePreviewText = (() => {
-        const variable = optionLookup[pathInTopBar.toString()]
+        const variable = optionLookup[pathInTopBarIncludingHover.toString()]
         if (variable == null) {
           return null
         }
@@ -284,7 +285,7 @@ export const DataSelectorModal = React.memo(
                     }}
                   >
                     <FlexRow style={{ flexWrap: 'wrap', flexGrow: 1 }}>
-                      {nonEmptyPathPrefixes(hoveredPath ?? pathInTopBar, optionLookup).map(
+                      {nonEmptyPathPrefixes(pathInTopBarIncludingHover, optionLookup).map(
                         ({ segment, path }, idx) => (
                           <span key={path.toString()}>
                             {idx === 0 ? segment : pathSegmentToString(segment)}
@@ -323,11 +324,11 @@ export const DataSelectorModal = React.memo(
                 style={{
                   gridColumn: '3',
                   flexWrap: 'wrap',
-                  height: 'max-content',
                   gap: 4,
                   overflowX: 'scroll',
                   opacity: 0.8,
                   fontSize: 10,
+                  height: 20,
                 }}
               >
                 {valuePreviewText}
