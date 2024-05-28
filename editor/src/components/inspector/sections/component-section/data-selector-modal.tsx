@@ -253,6 +253,7 @@ export const DataSelectorModal = React.memo(
                     width={18}
                     height={18}
                     style={{ cursor: 'pointer' }}
+                    isDisabled={currentValuePath?.length === 0}
                     onClick={onBackClick}
                   />
                   {currentValuePath == null
