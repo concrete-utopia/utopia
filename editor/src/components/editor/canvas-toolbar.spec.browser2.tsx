@@ -4,7 +4,7 @@ import { createTestProjectWithMultipleFiles } from '../../sample-projects/sample
 import {
   selectComponentsForTest,
   expectSingleUndo2Saves,
-  searchInFloatingMenu,
+  searchInComponentPicker,
 } from '../../utils/utils.test-utils'
 import {
   FOR_TESTS_setNextGeneratedUid,
@@ -870,7 +870,7 @@ export var storyboard = (props) => {
     await selectComponentsForTest(editor, [EP.fromString('sb/scene-1/insert-target')])
 
     await pressKey('a')
-    await searchInFloatingMenu(editor, 'DefaultExportedComp')
+    await searchInComponentPicker(editor, 'DefaultExportedComp')
 
     expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState()))
       .toEqual(`import * as React from 'react'
@@ -1393,7 +1393,7 @@ export var storyboard = (
       const editor = await setup()
 
       await pressKey('w')
-      await searchInFloatingMenu(editor, 'fragm')
+      await searchInComponentPicker(editor, 'fragm')
 
       expect(getPrintedUiJsCode(editor.getEditorState(), PlaygroundFilePath))
         .toEqual(`import * as React from 'react'
@@ -1430,7 +1430,7 @@ export var Playground = () => {
       const editor = await setup()
 
       await pressKey('a')
-      await searchInFloatingMenu(editor, 'fragm')
+      await searchInComponentPicker(editor, 'fragm')
 
       expect(getPrintedUiJsCode(editor.getEditorState(), PlaygroundFilePath))
         .toEqual(`import * as React from 'react'
@@ -1467,7 +1467,7 @@ export var Playground = () => {
       const editor = await setup()
 
       await pressKey('s')
-      await searchInFloatingMenu(editor, 'fragm')
+      await searchInComponentPicker(editor, 'fragm')
 
       expect(getPrintedUiJsCode(editor.getEditorState(), PlaygroundFilePath))
         .toEqual(`import * as React from 'react'
@@ -1595,15 +1595,15 @@ async function clickEmptySlot(editor: EditorRenderResult) {
 
 async function insertViaAddElementPopup(editor: EditorRenderResult, query: string) {
   await pressKey('a')
-  await searchInFloatingMenu(editor, query)
+  await searchInComponentPicker(editor, query)
 }
 
 async function wrapViaAddElementPopup(editor: EditorRenderResult, query: string) {
   await pressKey('g')
-  await searchInFloatingMenu(editor, query)
+  await searchInComponentPicker(editor, query)
 }
 
 async function convertViaAddElementPopup(editor: EditorRenderResult, query: string) {
   await pressKey('s')
-  await searchInFloatingMenu(editor, query)
+  await searchInComponentPicker(editor, query)
 }

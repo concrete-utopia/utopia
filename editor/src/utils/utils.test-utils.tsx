@@ -86,6 +86,9 @@ import { editorStateToElementChildOptic } from '../core/model/common-optics'
 import { toFirst } from '../core/shared/optics/optic-utilities'
 import { emptyUiJsxCanvasContextData } from '../components/canvas/ui-jsx-canvas'
 import type { RenderContext } from '../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-element-renderer-utils'
+import { ComponentPickerTestId } from '../components/navigator/navigator-item/component-picker'
+import { forceNotNull } from '../core/shared/optional-utils'
+import { pressKey } from '../components/canvas/event-helpers.test-utils'
 
 export const testRenderContext: RenderContext = {
   rootScope: {},
@@ -628,14 +631,11 @@ export function boundingClientRectToCanvasRectangle(
   return canvasBounds
 }
 
-export async function searchInFloatingMenu(editor: EditorRenderResult, query: string) {
-  const floatingMenu = editor.renderedDOM.getByTestId(CanvasToolbarSearchTestID)
-  const searchBox = queryByAttribute('type', floatingMenu, 'text')!
+export async function searchInComponentPicker(editor: EditorRenderResult, query: string) {
+  document.execCommand('insertText', false, 'div')
 
-  await act(() => {
-    fireEvent.focus(searchBox)
-    fireEvent.change(searchBox, { target: { value: query } })
-    fireEvent.blur(searchBox)
-    fireEvent.keyDown(searchBox, { key: 'Enter', keyCode: 13, metaKey: true })
-  })
+  const picker = await editor.renderedDOM.findByTestId(ComponentPickerTestId)
+  forceNotNull('the component picker must not be null', picker)
+
+  await pressKey('Enter', { targetElement: picker })
 }
