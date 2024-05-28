@@ -344,7 +344,7 @@ export const useCreateCallbackToShowComponentPicker =
             // for insertion and replacement we still don't support multiple selection
             // so we pick the first one
             targets = selectedViews.slice(0, 1)
-            const firstTarget = EP.getFirstPath(targets)
+            const firstTarget = targets[0]
             const targetParent =
               isReplaceTarget(insertionTarget) ||
               isReplaceKeepChildrenAndStyleTarget(insertionTarget)
@@ -478,7 +478,7 @@ export function insertComponentPickerItem(
   const uid = generateConsistentUID('prop', uniqueIds)
   const elementWithoutUID = toInsert.element()
   // TODO: for most of the operations we still only support one target
-  const firstTarget = EP.getFirstPath(targets)
+  const firstTarget = targets[0]
 
   const actions = ((): Array<EditorAction> => {
     if (elementWithoutUID.type === 'JSX_ELEMENT') {
@@ -744,7 +744,7 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
     const showFullMenu = useCreateCallbackToShowComponentPicker()(targets, insertionTarget, 'full')
 
     // for insertion we currently only support one target
-    const firstTarget = EP.getFirstPath(targets)
+    const firstTarget = targets[0]
     const preferredChildren = usePreferredChildrenForTarget(firstTarget, insertionTarget)
 
     const dispatch = useDispatch()
@@ -803,7 +803,7 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
 const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProps>(
   ({ targets, insertionTarget }) => {
     // for insertion we currently only support one target
-    const firstTarget = EP.getFirstPath(targets)
+    const firstTarget = targets[0]
     const targetChildren = useEditorState(
       Substores.metadata,
       (store) => MetadataUtils.getChildrenUnordered(store.editor.jsxMetadata, firstTarget),
