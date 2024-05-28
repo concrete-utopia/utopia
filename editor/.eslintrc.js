@@ -1,4 +1,3 @@
-const noDispatchUseEffectPlugin = require('./.eslint-plugin-local')
 module.exports = {
   extends: ['eslint-config-utopia'],
   parserOptions: {
