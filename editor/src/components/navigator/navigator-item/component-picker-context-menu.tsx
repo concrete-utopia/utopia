@@ -82,6 +82,7 @@ import { generateUidWithExistingComponents } from '../../../core/model/element-t
 import { emptyComments } from 'utopia-shared/src/types'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../../../core/shared/dom-utils'
 import { emptyImports } from '../../../core/workers/common/project-file-utils'
+import { forceNotNull } from '../../../core/shared/optional-utils'
 
 type RenderPropTarget = { type: 'render-prop'; prop: string }
 type ConditionalTarget = { type: 'conditional'; conditionalCase: ConditionalCase }
@@ -343,11 +344,12 @@ export const useCreateCallbackToShowComponentPicker =
             // for insertion and replacement we still don't support multiple selection
             // so we pick the first one
             targets = selectedViews.slice(0, 1)
+            const firstTarget = EP.getFirstPath(targets)
             const targetParent =
               isReplaceTarget(insertionTarget) ||
               isReplaceKeepChildrenAndStyleTarget(insertionTarget)
-                ? EP.parentPath(targets[0])
-                : targets[0]
+                ? EP.parentPath(firstTarget)
+                : firstTarget
             const targetElement = MetadataUtils.findElementByElementPath(
               editorRef.current.jsxMetadata,
               targetParent,
@@ -475,6 +477,8 @@ function insertComponentPickerItem(
   const uniqueIds = new Set(getAllUniqueUids(projectContents).uniqueIDs)
   const uid = generateConsistentUID('prop', uniqueIds)
   const elementWithoutUID = toInsert.element()
+  // TODO: for most of the operations we still only support one target
+  const firstTarget = EP.getFirstPath(targets)
 
   const actions = ((): Array<EditorAction> => {
     if (elementWithoutUID.type === 'JSX_ELEMENT') {
@@ -489,7 +493,7 @@ function insertComponentPickerItem(
       if (isRenderPropTarget(insertionTarget)) {
         return [
           setProp_UNSAFE(
-            targets[0],
+            firstTarget,
             PP.create(insertionTarget.prop),
             fixedElement,
             toInsert.importsToAdd ?? undefined,
@@ -500,9 +504,9 @@ function insertComponentPickerItem(
       // Replacing a mapped element requires a different function
       if (
         isReplaceTarget(insertionTarget) &&
-        MetadataUtils.isJSXMapExpression(EP.parentPath(targets[0]), metadata)
+        MetadataUtils.isJSXMapExpression(EP.parentPath(firstTarget), metadata)
       ) {
-        return [replaceMappedElement(fixedElement, targets[0], toInsert.importsToAdd)]
+        return [replaceMappedElement(fixedElement, firstTarget, toInsert.importsToAdd)]
       }
 
       if (isWrapTarget(insertionTarget)) {
@@ -530,23 +534,25 @@ function insertComponentPickerItem(
         isReplaceTarget(insertionTarget) ||
         isReplaceKeepChildrenAndStyleTarget(insertionTarget)
       ) {
-        return [replaceJSXElement(fixedElement, targets[0], toInsert.importsToAdd, insertionTarget)]
+        return [
+          replaceJSXElement(fixedElement, firstTarget, toInsert.importsToAdd, insertionTarget),
+        ]
       }
 
       if (!isConditionalTarget(insertionTarget)) {
-        return [insertJSXElement(fixedElement, targets[0], toInsert.importsToAdd ?? undefined)]
+        return [insertJSXElement(fixedElement, firstTarget, toInsert.importsToAdd ?? undefined)]
       }
     }
 
     if (isInsertAsChildTarget(insertionTarget)) {
-      return [insertInsertable(childInsertionPath(targets[0]), toInsert, 'do-not-add', null)]
+      return [insertInsertable(childInsertionPath(firstTarget), toInsert, 'do-not-add', null)]
     }
 
     if (isConditionalTarget(insertionTarget)) {
       return [
         insertInsertable(
           conditionalClauseInsertionPath(
-            targets[0],
+            firstTarget,
             insertionTarget.conditionalCase,
             replaceWithSingleElement(),
           ),
@@ -587,7 +593,7 @@ function insertComponentPickerItem(
 
     if (isReplaceTarget(insertionTarget)) {
       if (
-        MetadataUtils.isJSXMapExpression(EP.parentPath(targets[0]), metadata) &&
+        MetadataUtils.isJSXMapExpression(EP.parentPath(firstTarget), metadata) &&
         elementWithoutUID.type !== 'JSX_ELEMENT'
       ) {
         return [
@@ -601,11 +607,11 @@ function insertComponentPickerItem(
           ),
         ]
       }
-      const index = MetadataUtils.getIndexInParent(metadata, pathTrees, targets[0])
+      const index = MetadataUtils.getIndexInParent(metadata, pathTrees, firstTarget)
       return [
-        deleteView(targets[0]),
+        deleteView(firstTarget),
         insertInsertable(
-          childInsertionPath(EP.parentPath(targets[0])),
+          childInsertionPath(EP.parentPath(firstTarget)),
           toInsert,
           'do-not-add',
           absolute(index),
@@ -737,7 +743,9 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
   ({ targets, insertionTarget }) => {
     const showFullMenu = useCreateCallbackToShowComponentPicker()(targets, insertionTarget, 'full')
 
-    const preferredChildren = usePreferredChildrenForTarget(targets[0], insertionTarget)
+    // for insertion we currently only support one target
+    const firstTarget = EP.getFirstPath(targets)
+    const preferredChildren = usePreferredChildrenForTarget(firstTarget, insertionTarget)
 
     const dispatch = useDispatch()
 
@@ -794,9 +802,11 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
 
 const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProps>(
   ({ targets, insertionTarget }) => {
+    // for insertion we currently only support one target
+    const firstTarget = EP.getFirstPath(targets)
     const targetChildren = useEditorState(
       Substores.metadata,
-      (store) => MetadataUtils.getChildrenUnordered(store.editor.jsxMetadata, targets[0]),
+      (store) => MetadataUtils.getChildrenUnordered(store.editor.jsxMetadata, firstTarget),
       'usePreferredChildrenForTarget targetChildren',
     )
 
