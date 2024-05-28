@@ -8,7 +8,14 @@ import {
   UtopiaTheme,
   useColorTheme,
 } from '../../../../uuiui'
-import type { DataPickerCallback, VariableOption } from './data-picker-popup'
+import type {
+  ArrayOption,
+  DataPickerCallback,
+  JSXOption,
+  ObjectOption,
+  PrimitiveOption,
+  VariableOption,
+} from './data-picker-popup'
 import { InspectorModal } from '../../widgets/inspector-modal'
 import type { SelectOption } from '../../controls/select-control'
 import {
@@ -21,6 +28,7 @@ import { isPrefixOf, last } from '../../../../core/shared/array-utils'
 import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
 import type { CartoucheUIProps } from './cartouche-ui'
 import { CartoucheUI } from './cartouche-ui'
+import { when } from '../../../../utils/react-conditionals'
 
 export interface DataSelectorModalProps {
   closePopup: () => void
@@ -46,7 +54,7 @@ const Separator = React.memo(
           height: 1,
           margin: `${margin}px 0px`,
           backgroundColor: color,
-          gridColumn: spanGridColumns == null ? undefined : '1 / span 3',
+          gridColumn: spanGridColumns == null ? undefined : `1 / span ${spanGridColumns}`,
         }}
       ></div>
     )
@@ -131,6 +139,28 @@ export const DataSelectorModal = React.memo(
         }
         return elementToSet.children
       }, [navigatedToPath, optionLookup, variablesInScope])
+
+      const { primitiveVars, folderVars } = React.useMemo(() => {
+        let primitives: Array<PrimitiveOption | JSXOption> = []
+        let folders: Array<ArrayOption | ObjectOption> = []
+
+        for (const option of focusedVariableChildren) {
+          switch (option.type) {
+            case 'array':
+            case 'object':
+              folders.push(option)
+              break
+            case 'jsx':
+            case 'primitive':
+              primitives.push(option)
+              break
+            default:
+              assertNever(option)
+          }
+        }
+
+        return { primitiveVars: primitives, folderVars: folders }
+      }, [focusedVariableChildren])
 
       const setCurrentSelectedPathCurried = React.useCallback(
         (path: VariableOption['valuePath']) => () => {
@@ -287,7 +317,38 @@ export const DataSelectorModal = React.memo(
                   paddingBottom: 16,
                 }}
               >
-                {focusedVariableChildren.map((variable, idx) => (
+                {when(
+                  primitiveVars.length > 0,
+                  <>
+                    <FlexRow
+                      style={{
+                        gridColumn: '1 / span 3',
+                        flexWrap: 'wrap',
+                        height: 'max-content',
+                        gap: 4,
+                      }}
+                    >
+                      {primitiveVars.map((variable) => (
+                        <CartoucheUI
+                          key={variable.valuePath.toString()}
+                          tooltip={variableNameFromPath(variable)}
+                          source={'internal'}
+                          inverted={false}
+                          selected={false}
+                          role={cartoucheFolderOrInfo(variable)}
+                          testId={`data-selector-primitive-values-${variableNameFromPath(
+                            variable,
+                          )}`}
+                          onClick={setCurrentSelectedPathCurried(variable.valuePath)}
+                        >
+                          {variableNameFromPath(variable)}
+                        </CartoucheUI>
+                      ))}
+                    </FlexRow>
+                    <Separator color={colorTheme.seperator.value} spanGridColumns={3} margin={4} />
+                  </>,
+                )}
+                {folderVars.map((variable, idx) => (
                   <React.Fragment key={variable.valuePath.toString()}>
                     <CartoucheUI
                       tooltip={variableNameFromPath(variable)}
