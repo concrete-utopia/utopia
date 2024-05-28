@@ -270,25 +270,37 @@ export const DataSelectorModal = React.memo(
               {/* top bar */}
               <FlexRow style={{ justifyContent: 'space-between', alignItems: 'center' }}>
                 <FlexRow style={{ gap: 8, flexWrap: 'wrap' }}>
-                  <FlexRow style={{ flexWrap: 'wrap' }}>
-                    {nonEmptyPathPrefixes(hoveredPath ?? pathInTopBar, optionLookup).map(
-                      ({ segment, path }, idx) => (
-                        <span key={path.toString()} style={{ fontSize: 12 }}>
-                          {idx === 0 ? segment : pathSegmentToString(segment)}
-                        </span>
-                      ),
-                    )}
-                  </FlexRow>
-                  <div
+                  <FlexRow
                     style={{
-                      ...disabledButtonStyles(pathInTopBar.length === 0),
+                      minWidth: 200,
+                      borderStyle: 'solid',
+                      borderWidth: 1,
+                      borderColor: colorTheme.fg7.value,
+                      borderRadius: 2,
+                      fontSize: 11,
                       fontWeight: 400,
-                      fontSize: 12,
                     }}
-                    onClick={onHomeClick}
                   >
-                    <Icons.Cross />
-                  </div>
+                    <FlexRow style={{ flexWrap: 'wrap', flexGrow: 1 }}>
+                      {nonEmptyPathPrefixes(hoveredPath ?? pathInTopBar, optionLookup).map(
+                        ({ segment, path }, idx) => (
+                          <span key={path.toString()}>
+                            {idx === 0 ? segment : pathSegmentToString(segment)}
+                          </span>
+                        ),
+                      )}
+                    </FlexRow>
+                    <div
+                      style={{
+                        ...disabledButtonStyles(pathInTopBar.length === 0),
+                        fontWeight: 400,
+                        fontSize: 12,
+                      }}
+                      onClick={onHomeClick}
+                    >
+                      <Icons.Cross />
+                    </div>
+                  </FlexRow>
                 </FlexRow>
                 <div
                   style={{
