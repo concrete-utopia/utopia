@@ -807,6 +807,8 @@ const useClearSelectionOnNavigation = () => {
     .join('-')
 
   React.useEffect(() => {
-    dispatch([EditorActions.clearSelection()])
+    queueMicrotask(() => {
+      dispatch([EditorActions.clearSelection()])
+    })
   }, [dispatch, paths])
 }
