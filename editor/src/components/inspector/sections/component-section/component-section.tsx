@@ -96,7 +96,10 @@ import { stopPropagation } from '../../common/inspector-utils'
 import { IdentifierExpressionCartoucheControl } from './cartouche-control'
 import { getRegisteredComponent } from '../../../../core/property-controls/property-controls-utils'
 import type { EditorAction } from '../../../editor/action-types'
-import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'
+import {
+  controlDescriptionToVariableType,
+  useVariablesInScopeForSelectedElement,
+} from './variables-in-scope-utils'
 import { useAtom } from 'jotai'
 import { DataSelectorModal } from './data-selector-modal'
 
@@ -341,6 +344,7 @@ const isBaseIndentationLevel = (props: AbstractRowForControlProps) => props.inde
 export function useDataPickerButton(
   variablesInScope: VariableOption[],
   onPropertyPicked: DataPickerCallback,
+  pickTargetType: 'renderable' | 'boolean' | 'array' | 'object',
 ) {
   const [referenceElement, setReferenceElement] = React.useState<HTMLDivElement | null>(null)
   const [popperElement, setPopperElement] = React.useState<HTMLDivElement | null>(null)
@@ -375,6 +379,7 @@ export function useDataPickerButton(
         ref={setPopperElement}
         onPropertyPicked={onPropertyPicked}
         variablesInScope={variablesInScope}
+        pickTargetType={pickTargetType}
       />
     ),
     [
@@ -383,6 +388,7 @@ export function useDataPickerButton(
       popper.attributes.popper,
       popper.styles.popper,
       variablesInScope,
+      pickTargetType,
     ],
   )
 
@@ -421,6 +427,7 @@ function setPropertyFromDataPickerActions(
 function useDataPickerButtonInComponentSection(
   selectedViews: Array<ElementPath>,
   propertyPath: PropertyPath,
+  pickTargetType: 'renderable' | 'boolean' | 'array' | 'object',
 ) {
   const dispatch = useDispatch()
 
@@ -431,8 +438,10 @@ function useDataPickerButtonInComponentSection(
     preferredAllState,
   )
 
-  const dataPickerButtonData = useDataPickerButton(variableNamesInScope, (e) =>
-    optionalMap(dispatch, setPropertyFromDataPickerActions(selectedViews, propertyPath, e)),
+  const dataPickerButtonData = useDataPickerButton(
+    variableNamesInScope,
+    (e) => optionalMap(dispatch, setPropertyFromDataPickerActions(selectedViews, propertyPath, e)),
+    pickTargetType,
   )
 
   return dataPickerButtonData
@@ -462,7 +471,11 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
     [controlDescription, propMetadata],
   )
 
-  const dataPickerButtonData = useDataPickerButtonInComponentSection(selectedViews, props.propPath)
+  const dataPickerButtonData = useDataPickerButtonInComponentSection(
+    selectedViews,
+    props.propPath,
+    controlDescriptionToVariableType(controlDescription.control),
+  )
 
   const handleMouseEnter = React.useCallback(() => {
     setIsHovered(true)
@@ -619,7 +632,11 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
     'RowForArrayControl selectedViews',
   )
 
-  const dataPickerButtonData = useDataPickerButtonInComponentSection(selectedViews, props.propPath)
+  const dataPickerButtonData = useDataPickerButtonInComponentSection(
+    selectedViews,
+    props.propPath,
+    controlDescriptionToVariableType(controlDescription.control),
+  )
 
   return (
     <React.Fragment>
@@ -915,7 +932,11 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
     'RowForObjectControl selectedViews',
   )
 
-  const dataPickerButtonData = useDataPickerButtonInComponentSection(selectedViews, props.propPath)
+  const dataPickerButtonData = useDataPickerButtonInComponentSection(
+    selectedViews,
+    props.propPath,
+    controlDescriptionToVariableType(controlDescription.control),
+  )
 
   const [isHovered, setIsHovered] = React.useState(false)
 

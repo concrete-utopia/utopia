@@ -104,6 +104,7 @@ export const MapListSourceCartouche = React.memo((props: MapListSourceCartoucheP
   const { popupIsOpen, DataPickerComponent, setReferenceElement, openPopup } = useDataPickerButton(
     filteredVariableNamesInScope,
     onPickMappedElement,
+    'array',
   )
 
   const onClick = React.useCallback(() => {

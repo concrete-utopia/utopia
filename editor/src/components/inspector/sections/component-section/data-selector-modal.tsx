@@ -30,6 +30,7 @@ export interface DataSelectorModalProps {
   style: React.CSSProperties
   variablesInScope: VariableOption[]
   onPropertyPicked: DataPickerCallback
+  pickTargetType: 'renderable' | 'boolean' | 'array' | 'object'
 }
 
 const Separator = React.memo(

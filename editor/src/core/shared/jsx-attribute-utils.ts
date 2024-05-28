@@ -7,6 +7,7 @@ import type {
   JSXArrayElement,
   JSXAttributeNotFound,
   JSXProperty,
+  JSXTextBlock,
 } from './element-template'
 import {
   getJSXAttribute,
