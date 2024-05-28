@@ -339,7 +339,7 @@ export const DataSelectorModal = React.memo(
                               ? false
                               : arrayEqualsByReference(currentSelectedPath, variable.valuePath)
                           }
-                          role={cartoucheFolderOrInfo(variable)}
+                          role={cartoucheFolderOrInfo(variable, 'no-folder')}
                           testId={`data-selector-primitive-values-${variableNameFromPath(
                             variable,
                           )}`}
@@ -365,7 +365,7 @@ export const DataSelectorModal = React.memo(
                           ? false
                           : arrayEqualsByReference(currentSelectedPath, variable.valuePath)
                       }
-                      role='selection'
+                      role={cartoucheFolderOrInfo(variable, 'no-folder')}
                       testId={`data-selector-left-section-${variableNameFromPath(variable)}`}
                       onClick={setCurrentSelectedPathCurried(variable.valuePath)}
                       onHover={onHover(variable.valuePath)}
@@ -395,7 +395,7 @@ export const DataSelectorModal = React.memo(
                               ? false
                               : arrayEqualsByReference(currentSelectedPath, child.valuePath)
                           }
-                          role={cartoucheFolderOrInfo(child)}
+                          role={cartoucheFolderOrInfo(child, 'can-be-folder')}
                           testId={`data-selector-right-section-${variableNameFromPath(child)}`}
                           onClick={setCurrentSelectedPathCurried(child.valuePath)}
                           onDoubleClick={setNavigatedToPathCurried(child.valuePath)}
@@ -497,7 +497,7 @@ export function nonEmptyPathPrefixes(
     accumulator.push({
       segment: segment,
       path: [...current],
-      role: cartoucheFolderOrInfo(optionFromLookup),
+      role: cartoucheFolderOrInfo(optionFromLookup, 'can-be-folder'),
       type: childTypeToCartoucheDataType(optionFromLookup.type),
     })
   }
@@ -508,11 +508,17 @@ function variableNameFromPath(variable: VariableOption): string {
   return last(variable.valuePath)?.toString() ?? variable.variableInfo.expression.toString()
 }
 
-function cartoucheFolderOrInfo(option: VariableOption): CartoucheUIProps['role'] {
+function cartoucheFolderOrInfo(
+  option: VariableOption,
+  canBeFolder: 'no-folder' | 'can-be-folder',
+): CartoucheUIProps['role'] {
+  if (option.variableInfo.matches) {
+    return 'selection'
+  }
   switch (option.type) {
-    case 'array':
     case 'object':
-      return 'folder'
+      return canBeFolder === 'can-be-folder' ? 'folder' : 'information'
+    case 'array':
     case 'jsx':
     case 'primitive':
       return 'information'
