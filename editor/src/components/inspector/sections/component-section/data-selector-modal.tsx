@@ -322,7 +322,7 @@ export const DataSelectorModal = React.memo(
                   <>
                     <FlexRow
                       style={{
-                        gridColumn: '1 / span 3',
+                        gridColumn: '3',
                         flexWrap: 'wrap',
                         height: 'max-content',
                         gap: 4,
