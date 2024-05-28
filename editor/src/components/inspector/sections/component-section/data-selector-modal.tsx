@@ -2,6 +2,7 @@ import React from 'react'
 import {
   FlexColumn,
   FlexRow,
+  Icons,
   PopupList,
   UtopiaStyles,
   UtopiaTheme,
@@ -269,16 +270,6 @@ export const DataSelectorModal = React.memo(
               {/* top bar */}
               <FlexRow style={{ justifyContent: 'space-between', alignItems: 'center' }}>
                 <FlexRow style={{ gap: 8, flexWrap: 'wrap' }}>
-                  <div
-                    style={{
-                      ...disabledButtonStyles(pathInTopBar.length === 0),
-                      fontWeight: 600,
-                      fontSize: 14,
-                    }}
-                    onClick={onHomeClick}
-                  >
-                    {SLASH}
-                  </div>
                   <FlexRow style={{ flexWrap: 'wrap' }}>
                     {nonEmptyPathPrefixes(hoveredPath ?? pathInTopBar, optionLookup).map(
                       ({ segment, path }, idx) => (
@@ -288,6 +279,16 @@ export const DataSelectorModal = React.memo(
                       ),
                     )}
                   </FlexRow>
+                  <div
+                    style={{
+                      ...disabledButtonStyles(pathInTopBar.length === 0),
+                      fontWeight: 400,
+                      fontSize: 12,
+                    }}
+                    onClick={onHomeClick}
+                  >
+                    <Icons.Cross />
+                  </div>
                 </FlexRow>
                 <div
                   style={{
