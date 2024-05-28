@@ -285,7 +285,7 @@ const FilterBar = React.memo((props: FilterBarProps) => {
       onKeyDown={handleFilterKeydown}
       onChange={handleFilterChange}
       value={filter}
-      data-testId={componentPickerFilterInputTestId}
+      data-testid={componentPickerFilterInputTestId}
       {...dataPasteHandler(true)}
     />
   )

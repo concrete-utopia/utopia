@@ -133,7 +133,7 @@ const ConflictButton = React.memo((props: ConflictButtonProps) => {
   const openContextMenu = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
       event.preventDefault()
-      show(event)
+      show({ event })
     },
     [show],
   )
