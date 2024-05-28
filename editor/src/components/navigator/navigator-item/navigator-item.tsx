@@ -933,6 +933,14 @@ export const NavigatorItem: React.FunctionComponent<
     [navigatorEntry],
   )
 
+  const hideExpandableIndicator = React.useMemo(() => {
+    return (
+      props.navigatorEntry.type === 'CONDITIONAL_CLAUSE' ||
+      MetadataUtils.isProbablyScene(metadata, props.navigatorEntry.elementPath) ||
+      MetadataUtils.isProbablyRemixScene(metadata, props.navigatorEntry.elementPath)
+    )
+  }, [props.navigatorEntry, metadata])
+
   return (
     <div
       onClick={onClick}
@@ -1017,7 +1025,7 @@ export const NavigatorItem: React.FunctionComponent<
           >
             <FlexRow style={{ width: '100%' }}>
               {unless(
-                props.navigatorEntry.type === 'CONDITIONAL_CLAUSE',
+                hideExpandableIndicator,
                 <ExpandableIndicator
                   key='expandable-indicator'
                   visible={canBeExpanded}
