@@ -1,7 +1,6 @@
 import React from 'react'
 import type { EditorAction, EditorDispatch } from './action-types'
 import { useDispatch } from './store/dispatch-context'
-import { BodyMenuOpenClass } from '../../core/shared/utils'
 
 import { jotaiStore } from '../../templates/editor'
 import { ContextMenuOpen } from '../canvas/context-menu-state'

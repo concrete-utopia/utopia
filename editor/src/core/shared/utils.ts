@@ -9,7 +9,6 @@ import { flatMapEither, left, mapEither, right } from './either'
 export const EditorID = 'utopia-editor-root'
 export const PortalTargetID = 'portal-target'
 export const CanvasContextMenuPortalTargetID = 'canvas-contextmenu-portal-target'
-export const BodyMenuOpenClass = 'context-menu-open'
 
 export const RETURN_TO_PREPEND = 'return '
 

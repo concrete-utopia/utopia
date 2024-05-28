@@ -47,7 +47,7 @@ import { fixUtopiaElement, generateConsistentUID } from '../../../core/shared/ui
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { elementFromInsertMenuItem } from '../../editor/insert-callbacks'
 import { ContextMenuWrapper } from '../../context-menu-wrapper'
-import { BodyMenuOpenClass, assertNever } from '../../../core/shared/utils'
+import { assertNever } from '../../../core/shared/utils'
 import { type ContextMenuItem } from '../../context-menu-items'
 import { FlexRow, Icn, type IcnProps } from '../../../uuiui'
 import type {

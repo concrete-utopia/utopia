@@ -15,7 +15,6 @@ import type { ContextMenuItem } from './context-menu-items'
 import type { EditorDispatch } from './editor/action-types'
 import type { WindowPoint } from '../core/shared/math-utils'
 import { windowPoint } from '../core/shared/math-utils'
-import { BodyMenuOpenClass } from '../core/shared/utils'
 import { useContextMenuState } from './canvas/context-menu-state'
 
 interface Submenu<T> {
