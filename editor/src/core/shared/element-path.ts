@@ -1236,3 +1236,7 @@ export function multiplePathsAllWithTheSameUID(paths: Array<ElementPath>): boole
 export function isIndexedElement(path: ElementPath): boolean {
   return isIndexedUid(toUid(path))
 }
+
+export function getFirstPath(pathArray: Array<ElementPath>): ElementPath {
+  return forceNotNull('Element path array is empty.', pathArray.at(0))
+}

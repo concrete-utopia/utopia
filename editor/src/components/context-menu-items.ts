@@ -489,10 +489,8 @@ export const wrapInPicker: ContextMenuItem<CanvasData> = {
   name: 'Wrap in…',
   shortcut: 'W',
   enabled: true,
-  action: (data, _dispatch, _coord, event) => {
-    if (data.selectedViews.length === 1) {
-      showWrapComponentPicker(data.selectedViews, data.jsxMetadata, data.showComponentPicker)(event)
-    }
+  action: (data, dispatch, _coord, event) => {
+    showWrapComponentPicker(data.selectedViews, data.jsxMetadata, data.showComponentPicker)(event)
   },
 }
 

@@ -590,13 +590,11 @@ export function handleKeyDown(
       [WRAP_ELEMENT_PICKER_SHORTCUT]: () => {
         if (allowedToEdit) {
           if (isSelectMode(editor.mode)) {
-            if (editor.selectedViews.length === 1) {
-              const mousePoint = WindowMousePositionRaw ?? zeroCanvasPoint
-              showComponentPicker(editor.selectedViews, EditorActions.wrapTarget)(event, {
-                position: mousePoint,
-              })
-              return []
-            }
+            const mousePoint = WindowMousePositionRaw ?? zeroCanvasPoint
+            showComponentPicker(editor.selectedViews, EditorActions.wrapTarget)(event, {
+              position: mousePoint,
+            })
+            return []
           }
         }
         return []
