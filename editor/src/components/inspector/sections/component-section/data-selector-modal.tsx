@@ -98,6 +98,7 @@ const DEFAULT_SIZE: React.CSSProperties = {
   maxWidth: 700,
   maxHeight: 300,
 }
+const SLASH = '/'
 const BRACES = '{}'
 const CIRCLE = '◯'
 
@@ -184,7 +185,7 @@ export const DataSelectorModal = React.memo(
         [],
       )
 
-      const onBackClick = React.useCallback(
+      const onHomeClick = React.useCallback(
         (e: React.MouseEvent) => {
           e.stopPropagation()
           e.preventDefault()
@@ -261,7 +262,20 @@ export const DataSelectorModal = React.memo(
               {/* top bar */}
               <FlexRow style={{ justifyContent: 'space-between', alignItems: 'center' }}>
                 <FlexRow style={{ gap: 8 }}>
-                  <div onClick={onBackClick}>/</div>
+                  <div
+                    style={{
+                      cursor:
+                        (currentSelectedPath ?? navigatedToPath).length === 0
+                          ? undefined
+                          : 'pointer',
+                      opacity: (currentSelectedPath ?? navigatedToPath).length === 0 ? 0.5 : 1,
+                      fontWeight: 600,
+                      fontSize: 14,
+                    }}
+                    onClick={onHomeClick}
+                  >
+                    {SLASH}
+                  </div>
                   {nonEmptyPathPrefixes(currentSelectedPath ?? navigatedToPath, optionLookup).map(
                     ({ segment, path, role }) => (
                       <CartoucheUI
