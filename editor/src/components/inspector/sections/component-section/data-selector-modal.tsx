@@ -11,7 +11,11 @@ import {
 import type { DataPickerCallback, VariableOption } from './data-picker-popup'
 import { InspectorModal } from '../../widgets/inspector-modal'
 import type { SelectOption } from '../../controls/select-control'
-import { assertNever } from '../../../../core/shared/utils'
+import {
+  arrayEqualsByReference,
+  arrayEqualsByValue,
+  assertNever,
+} from '../../../../core/shared/utils'
 import { getControlStyles } from '../../common/control-styles'
 import { isPrefixOf, last } from '../../../../core/shared/array-utils'
 import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
@@ -312,7 +316,7 @@ export const DataSelectorModal = React.memo(
                           tooltip={variableNameFromPath(child)}
                           source={'internal'}
                           inverted={false}
-                          selected={false}
+                          selected={arrayEqualsByReference(currentSelectedPath, child.valuePath)}
                           role={cartoucheFolderOrInfo(child)}
                           testId={`data-selector-right-section-${variableNameFromPath(child)}`}
                           onClick={setCurrentSelectedPathCurried(child.valuePath)}
