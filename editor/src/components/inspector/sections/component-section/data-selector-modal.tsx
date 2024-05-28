@@ -337,7 +337,11 @@ export const DataSelectorModal = React.memo(
                           tooltip={variableNameFromPath(variable)}
                           source={'internal'}
                           inverted={false}
-                          selected={false}
+                          selected={
+                            currentSelectedPath == null
+                              ? false
+                              : arrayEqualsByReference(currentSelectedPath, variable.valuePath)
+                          }
                           role={cartoucheFolderOrInfo(variable)}
                           testId={`data-selector-primitive-values-${variableNameFromPath(
                             variable,
@@ -357,9 +361,14 @@ export const DataSelectorModal = React.memo(
                       tooltip={variableNameFromPath(variable)}
                       source={'internal'}
                       inverted={false}
-                      selected={false}
+                      selected={
+                        currentSelectedPath == null
+                          ? false
+                          : arrayEqualsByReference(currentSelectedPath, variable.valuePath)
+                      }
                       role='selection'
                       testId={`data-selector-left-section-${variableNameFromPath(variable)}`}
+                      onClick={setCurrentSelectedPathCurried(variable.valuePath)}
                     >
                       {variableNameFromPath(variable)}
                     </CartoucheUI>
