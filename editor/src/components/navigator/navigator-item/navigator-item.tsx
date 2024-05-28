@@ -1039,6 +1039,7 @@ export const NavigatorItem: React.FunctionComponent<
                 />,
               )}
               <NavigatorRowLabel
+                hideExpandableIndicator={hideExpandableIndicator}
                 shouldShowParentOutline={props.parentOutline === 'child'}
                 navigatorEntry={navigatorEntry}
                 label={props.label}
@@ -1193,6 +1194,7 @@ interface NavigatorRowLabelProps {
   childComponentCount: number
   dispatch: EditorDispatch
   insideFocusedComponent: boolean
+  hideExpandableIndicator: boolean
 }
 
 export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
@@ -1208,6 +1210,7 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         gap: 5,
         borderRadius: 20,
         height: 22,
+        paddingLeft: props.hideExpandableIndicator ? 0 : 5,
         paddingRight: props.codeItemType === 'map' ? 0 : 5,
       }}
     >
