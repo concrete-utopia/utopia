@@ -262,7 +262,7 @@ export const DataSelectorModal = React.memo(
               {/* top bar */}
               <FlexRow style={{ justifyContent: 'space-between', alignItems: 'center' }}>
                 <FlexRow style={{ gap: 8 }}>
-                  <Icn
+                  {/* <Icn
                     category='semantic'
                     type='icon-semantic-back'
                     width={18}
@@ -270,7 +270,7 @@ export const DataSelectorModal = React.memo(
                     style={{ cursor: 'pointer' }}
                     isDisabled={navigatedToPath?.length === 0}
                     onClick={onBackClick}
-                  />
+                  /> */}
                   {currentSelectedPath == null
                     ? null
                     : nonEmptyPathPrefixes(currentSelectedPath, optionLookup).map(
