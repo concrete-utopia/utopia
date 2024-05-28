@@ -277,9 +277,9 @@ export const DataSelectorModal = React.memo(
                     isDisabled={navigatedToPath?.length === 0}
                     onClick={onBackClick}
                   />
-                  {navigatedToPath == null
+                  {currentSelectedPath == null
                     ? null
-                    : nonEmptyPrefixes(navigatedToPath).map(({ segment, path }) => (
+                    : nonEmptyPrefixes(currentSelectedPath).map(({ segment, path }) => (
                         <DataLabel
                           key={segment}
                           text={segment.toString()}
