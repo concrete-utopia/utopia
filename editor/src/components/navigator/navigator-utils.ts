@@ -708,18 +708,24 @@ function getNavigatorRowsForTree(
       return []
     }
 
+    const nextIndentation =
+      MetadataUtils.isProbablyScene(metadata, entry.navigatorEntry.elementPath) ||
+      MetadataUtils.isProbablyRemixScene(metadata, entry.navigatorEntry.elementPath)
+        ? indentation // scenes live on a dedicated row, on the same indent as their children
+        : indentation + 1 // for everything else, go one level deeper
+
     switch (entry.type) {
       case 'condensed-trunk': {
         const { singleRow, child } = flattenCondensedTrunk(entry)
         if (singleRow.length === 1) {
           return [
             regularNavigatorRow(singleRow[0], indentation),
-            ...walkIfSubtreeVisible(child, indentation + 1),
+            ...walkIfSubtreeVisible(child, nextIndentation),
           ]
         }
         return [
           condensedNavigatorRow(singleRow, 'trunk', indentation),
-          ...walkIfSubtreeVisible(child, indentation + 1),
+          ...walkIfSubtreeVisible(child, nextIndentation),
         ]
       }
       case 'condensed-leaf':
@@ -748,9 +754,9 @@ function getNavigatorRowsForTree(
                   propName,
                   renderPropChild.navigatorEntry.elementPath,
                 ),
-                indentation + 1,
+                nextIndentation,
               ),
-              ...walkIfSubtreeVisible(renderPropChild, indentation + 2),
+              ...walkIfSubtreeVisible(renderPropChild, nextIndentation + 1),
             ]
           }),
           ...(showChildrenLabel
@@ -762,12 +768,12 @@ function getNavigatorRowsForTree(
                     'children',
                     entry.children[0].navigatorEntry.elementPath, // pick the first child path
                   ),
-                  indentation + 1,
+                  nextIndentation,
                 ),
               ]
             : []),
           ...entry.children.flatMap((t) =>
-            walkIfSubtreeVisible(t, showChildrenLabel ? indentation + 2 : indentation + 1),
+            walkIfSubtreeVisible(t, showChildrenLabel ? nextIndentation + 1 : nextIndentation),
           ),
         ]
       }
@@ -776,7 +782,7 @@ function getNavigatorRowsForTree(
       case 'map-entry':
         return [
           regularNavigatorRow(entry.navigatorEntry, indentation),
-          ...entry.mappedEntries.flatMap((t) => walkIfSubtreeVisible(t, indentation + 1)),
+          ...entry.mappedEntries.flatMap((t) => walkIfSubtreeVisible(t, nextIndentation)),
         ]
       case 'conditional-entry':
         return dropNulls([
@@ -785,16 +791,16 @@ function getNavigatorRowsForTree(
             ? null
             : regularNavigatorRow(
                 conditionalClauseNavigatorEntry(entry.navigatorEntry.elementPath, 'true-case'),
-                indentation + 1,
+                nextIndentation,
               ),
-          ...entry.trueCase.flatMap((t) => walkIfSubtreeVisible(t, indentation + 2)),
+          ...entry.trueCase.flatMap((t) => walkIfSubtreeVisible(t, nextIndentation + 1)),
           entry.subtreeHidden
             ? null
             : regularNavigatorRow(
                 conditionalClauseNavigatorEntry(entry.navigatorEntry.elementPath, 'false-case'),
-                indentation + 1,
+                nextIndentation,
               ),
-          ...entry.falseCase.flatMap((t) => walkIfSubtreeVisible(t, indentation + 2)),
+          ...entry.falseCase.flatMap((t) => walkIfSubtreeVisible(t, nextIndentation + 1)),
         ])
       default:
         assertNever(entry)

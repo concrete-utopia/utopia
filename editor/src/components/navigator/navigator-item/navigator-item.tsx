@@ -56,7 +56,6 @@ import type {
   DerivedSubstate,
   MetadataSubstate,
 } from '../../editor/store/store-hook-substore-types'
-import { navigatorDepth } from '../navigator-utils'
 import { ComponentPreview } from './component-preview'
 import { ExpandableIndicator } from './expandable-indicator'
 import { ItemLabel } from './item-label'
@@ -1209,7 +1208,6 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         gap: 5,
         borderRadius: 20,
         height: 22,
-        paddingLeft: 5,
         paddingRight: props.codeItemType === 'map' ? 0 : 5,
       }}
     >
