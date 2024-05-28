@@ -99,7 +99,7 @@ export const CanvasToolbarSearch = React.memo(() => {
 
       insertComponentPickerItem(
         preferredChildToInsert,
-        target,
+        [target],
         projectContentsRef.current,
         metadataRef.current,
         elementPathTreesRef.current,
