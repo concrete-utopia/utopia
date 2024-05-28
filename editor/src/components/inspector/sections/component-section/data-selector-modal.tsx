@@ -2,7 +2,6 @@ import React from 'react'
 import {
   FlexColumn,
   FlexRow,
-  Icn,
   PopupList,
   UtopiaStyles,
   UtopiaTheme,
@@ -95,8 +94,6 @@ const DEFAULT_SIZE: React.CSSProperties = {
   maxHeight: 300,
 }
 const SLASH = '/'
-const BRACES = '{}'
-const CIRCLE = '◯'
 
 export const DataSelectorModal = React.memo(
   React.forwardRef<HTMLDivElement, DataSelectorModalProps>(
@@ -197,11 +194,10 @@ export const DataSelectorModal = React.memo(
         [setNavigatedToPathCurried],
       )
 
+      const pathInTopBar = currentSelectedPath ?? navigatedToPath
+
       const onApplyClick = React.useCallback(() => {
-        if (navigatedToPath == null) {
-          return
-        }
-        const variable = optionLookup[navigatedToPath.toString()]
+        const variable = optionLookup[pathInTopBar.toString()]
         if (variable == null) {
           return
         }
@@ -212,7 +208,7 @@ export const DataSelectorModal = React.memo(
           ]),
         )
         closePopup()
-      }, [closePopup, navigatedToPath, onPropertyPicked, optionLookup])
+      }, [closePopup, onPropertyPicked, optionLookup, pathInTopBar])
 
       const catchClick = React.useCallback((e: React.MouseEvent) => {
         e.stopPropagation()
@@ -220,8 +216,6 @@ export const DataSelectorModal = React.memo(
 
         setCurrentSelectedPath(null)
       }, [])
-
-      const pathInTopBar = currentSelectedPath ?? navigatedToPath
 
       return (
         <InspectorModal
@@ -268,8 +262,7 @@ export const DataSelectorModal = React.memo(
                 <FlexRow style={{ gap: 8 }}>
                   <div
                     style={{
-                      cursor: pathInTopBar.length === 0 ? undefined : 'pointer',
-                      opacity: pathInTopBar.length === 0 ? 0.5 : 1,
+                      ...disabledButtonStyles(pathInTopBar.length === 0),
                       fontWeight: 600,
                       fontSize: 14,
                     }}
@@ -304,7 +297,7 @@ export const DataSelectorModal = React.memo(
                     padding: '8px 12px',
                     fontSize: 14,
                     fontWeight: 500,
-                    cursor: 'pointer',
+                    ...disabledButtonStyles(pathInTopBar.length === 0),
                   }}
                   onClick={onApplyClick}
                 >
@@ -533,4 +526,11 @@ function isPreviewSegment(
   pathUpToSegment: VariableOption['valuePath'],
 ) {
   return !isPrefixOf(pathUpToSegment, pathInTopBar)
+}
+
+function disabledButtonStyles(disabled: boolean): React.CSSProperties {
+  return {
+    opacity: disabled ? 0.5 : 1,
+    cursor: disabled ? undefined : 'pointer',
+  }
 }
