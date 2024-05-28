@@ -49,10 +49,14 @@ export const CartoucheUI = React.forwardRef(
     const backgroundColor =
       source === 'literal' ? colorTheme.fg0Opacity10.value : primaryBackgroundColorToUse
 
+    const wrappedOnClick = useStopPropagation(onClick)
+    const wrappedOnDoubleClick = useStopPropagation(onDoubleClick)
+    const wrappedOnDelete = useStopPropagation(onDelete)
+
     return (
       <div
-        onClick={onClick}
-        onDoubleClick={onDoubleClick}
+        onClick={wrappedOnClick}
+        onDoubleClick={wrappedOnDoubleClick}
         style={{
           minWidth: 0, // this ensures that the div can never expand the allocated grid space
         }}
@@ -105,7 +109,7 @@ export const CartoucheUI = React.forwardRef(
               width={12}
               height={12}
               data-testid={`delete-${props.testId}`}
-              onClick={onDelete}
+              onClick={wrappedOnDelete}
             />,
           )}
         </FlexRow>
@@ -113,3 +117,16 @@ export const CartoucheUI = React.forwardRef(
     )
   },
 )
+
+function useStopPropagation(callback: ((e: React.MouseEvent) => void) | undefined) {
+  return React.useCallback(
+    (e: React.MouseEvent) => {
+      if (callback == null) {
+        return
+      }
+      e.stopPropagation()
+      callback(e)
+    },
+    [callback],
+  )
+}

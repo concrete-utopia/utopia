@@ -19,8 +19,8 @@ import { replaceElementInScope } from '../../../editor/actions/action-creators'
 import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'
 import { DataPickerPreferredAllAtom } from './data-picker-popup'
 import { useAtom } from 'jotai'
-import type { CartoucheUIProps } from './cartouch-ui'
-import { CartoucheUI } from './cartouch-ui'
+import type { CartoucheUIProps } from './cartouche-ui'
+import { CartoucheUI } from './cartouche-ui'
 
 interface DataReferenceCartoucheControlProps {
   elementPath: ElementPath
