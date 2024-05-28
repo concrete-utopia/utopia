@@ -312,8 +312,8 @@ export const DataSelectorModal = React.memo(
                         last(variable.valuePath)?.toString() ??
                         variable.variableInfo.expression.toString()
                       }
-                      bgColor={colorTheme.primary50.value}
-                      color={colorTheme.primary.value}
+                      bgColor={colorTheme.selectionBlue10.value}
+                      color={colorTheme.dynamicBlue.value}
                       borderRadius={4}
                       onClick={setCurrentValuePathStringCurried(variable.valuePath)}
                     />
@@ -328,7 +328,7 @@ export const DataSelectorModal = React.memo(
                     )}
                     {/* properties in scope */}
                     <FlexRow style={{ flexWrap: 'wrap', height: 'max-content' }}>
-                      {childVars(variable, {}).map((child) => (
+                      {childVars(variable, indexLookup).map((child) => (
                         <DataLabel
                           key={child.valuePath.toString()}
                           text={
