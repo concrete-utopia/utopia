@@ -109,9 +109,9 @@ export const DataSelectorModal = React.memo(
       const [navigatedToPath, setNavigatedToPath] = React.useState<Array<string | number>>([])
 
       // TODO invariant: currentValuePath should be a prefix of currentSelectedPath, we should enforce this
-      const [currentSelectedPath, setCurrentSelectedPath] = React.useState<Array<string | number>>(
-        [],
-      )
+      const [currentSelectedPath, setCurrentSelectedPath] = React.useState<Array<
+        string | number
+      > | null>(null)
 
       // TODO invariant: currentValuePath should be a prefix of currentHoveredPath, we should enforce this
       const [currentHoveredPath, setCurrentHoveredPath] = React.useState<Array<string | number>>([])
@@ -179,7 +179,7 @@ export const DataSelectorModal = React.memo(
           e.preventDefault()
 
           setNavigatedToPath(path)
-          setCurrentSelectedPath([])
+          setCurrentSelectedPath(null)
         },
         [],
       )
@@ -188,13 +188,10 @@ export const DataSelectorModal = React.memo(
         (e: React.MouseEvent) => {
           e.stopPropagation()
           e.preventDefault()
-          if (navigatedToPath == null) {
-            return
-          }
-          const path = navigatedToPath.slice(0, -1)
-          setNavigatedToPathCurried(path)(e)
+
+          setNavigatedToPathCurried([])(e)
         },
-        [navigatedToPath, setNavigatedToPathCurried],
+        [setNavigatedToPathCurried],
       )
 
       const onApplyClick = React.useCallback(() => {
@@ -217,6 +214,8 @@ export const DataSelectorModal = React.memo(
       const catchClick = React.useCallback((e: React.MouseEvent) => {
         e.stopPropagation()
         e.preventDefault()
+
+        setCurrentSelectedPath(null)
       }, [])
 
       return (
@@ -262,33 +261,23 @@ export const DataSelectorModal = React.memo(
               {/* top bar */}
               <FlexRow style={{ justifyContent: 'space-between', alignItems: 'center' }}>
                 <FlexRow style={{ gap: 8 }}>
-                  {/* <Icn
-                    category='semantic'
-                    type='icon-semantic-back'
-                    width={18}
-                    height={18}
-                    style={{ cursor: 'pointer' }}
-                    isDisabled={navigatedToPath?.length === 0}
-                    onClick={onBackClick}
-                  /> */}
-                  {currentSelectedPath == null
-                    ? null
-                    : nonEmptyPathPrefixes(currentSelectedPath, optionLookup).map(
-                        ({ segment, path, role }) => (
-                          <CartoucheUI
-                            key={segment}
-                            onClick={setNavigatedToPathCurried(path)}
-                            tooltip={segment.toString()}
-                            source={'internal'}
-                            inverted={false}
-                            selected={false}
-                            role={role}
-                            testId={`data-selector-top-bar-segment-${segment}`}
-                          >
-                            {segment.toString()}
-                          </CartoucheUI>
-                        ),
-                      )}
+                  <div onClick={onBackClick}>/</div>
+                  {nonEmptyPathPrefixes(currentSelectedPath ?? navigatedToPath, optionLookup).map(
+                    ({ segment, path, role }) => (
+                      <CartoucheUI
+                        key={segment}
+                        onClick={setNavigatedToPathCurried(path)}
+                        tooltip={segment.toString()}
+                        source={'internal'}
+                        inverted={false}
+                        selected={false}
+                        role={role}
+                        testId={`data-selector-top-bar-segment-${segment}`}
+                      >
+                        {segment.toString()}
+                      </CartoucheUI>
+                    ),
+                  )}
                 </FlexRow>
                 <div
                   style={{
@@ -377,7 +366,11 @@ export const DataSelectorModal = React.memo(
                           tooltip={variableNameFromPath(child)}
                           source={'internal'}
                           inverted={false}
-                          selected={arrayEqualsByReference(currentSelectedPath, child.valuePath)}
+                          selected={
+                            currentSelectedPath == null
+                              ? false
+                              : arrayEqualsByReference(currentSelectedPath, child.valuePath)
+                          }
                           role={cartoucheFolderOrInfo(child)}
                           testId={`data-selector-right-section-${variableNameFromPath(child)}`}
                           onClick={setCurrentSelectedPathCurried(child.valuePath)}
