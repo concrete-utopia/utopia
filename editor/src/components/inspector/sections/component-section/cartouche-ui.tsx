@@ -44,7 +44,7 @@ export const CartoucheUI = React.forwardRef(
     const borderColor = inverted
       ? colorTheme.white.value
       : role === 'folder' && !selected
-      ? colorTheme.neutralForeground.value
+      ? colorTheme.verySubduedForeground.value
       : source === 'external'
       ? colorTheme.green.value
       : colorTheme.selectionBlue.value
