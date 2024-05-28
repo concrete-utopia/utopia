@@ -135,6 +135,16 @@ export const DataSelectorModal = React.memo(
     ({ style, closePopup, variablesInScope, onPropertyPicked }, forwardedRef) => {
       const colorTheme = useColorTheme()
 
+      const [currentValuePath, setCurrentValuePath] = React.useState<Array<string | number>>([])
+
+      // TODO invariant: currentValuePath should be a prefix of currentSelectedPath, we should enforce this
+      const [currentSelectedPath, setCurrentSelectedPath] = React.useState<Array<string | number>>(
+        [],
+      )
+
+      // TODO invariant: currentValuePath should be a prefix of currentHoveredPath, we should enforce this
+      const [currentHoveredPath, setCurrentHoveredPath] = React.useState<Array<string | number>>([])
+
       const [indexLookup, setIndexLookup] = React.useState<ValuePathLookup<number>>({})
       const updateIndexInLookup = React.useCallback(
         (valuePathString: string) => (option: SelectOption) =>
@@ -142,11 +152,22 @@ export const DataSelectorModal = React.memo(
         [],
       )
 
-      const [focusedVariableChildren, setFocusedVariableChildren] =
-        React.useState<VariableOption[]>(variablesInScope)
-      const [currentValuePath, setCurrentValuePath] = React.useState<Array<string | number>>([])
-
       const optionLookup = useVariableOptionLookup(variablesInScope)
+
+      const focusedVariableChildren = React.useMemo(() => {
+        if (currentValuePath.length === 0) {
+          return variablesInScope
+        }
+
+        const elementToSet = optionLookup[currentValuePath.toString()]
+        if (
+          elementToSet == null ||
+          (elementToSet.type !== 'array' && elementToSet.type !== 'object')
+        ) {
+          return [] // TODO this should never happen!
+        }
+        return elementToSet.children
+      }, [currentValuePath, optionLookup, variablesInScope])
 
       const setCurrentValuePathCurried = React.useCallback(
         (path: VariableOption['valuePath']) => () => setCurrentValuePath(path),
@@ -159,22 +180,8 @@ export const DataSelectorModal = React.memo(
           e.preventDefault()
 
           setCurrentValuePath(path)
-
-          if (path.length === 0) {
-            setFocusedVariableChildren(variablesInScope)
-            return
-          }
-
-          const pathStringToSet = path.toString()
-          const elementToSet = optionLookup[pathStringToSet]
-          if (
-            elementToSet != null &&
-            (elementToSet.type === 'array' || elementToSet.type === 'object')
-          ) {
-            setFocusedVariableChildren(elementToSet.children)
-          }
         },
-        [optionLookup, variablesInScope],
+        [],
       )
 
       const onBackClick = React.useCallback(
