@@ -55,6 +55,7 @@ function DataLabel({
   borderColor,
   borderRadius,
   onClick,
+  onDoubleClick,
 }: {
   text: string
   color?: string
@@ -63,10 +64,12 @@ function DataLabel({
   borderColor?: string
   icon?: React.ReactElement
   onClick: ((e: React.MouseEvent) => void) | null
+  onDoubleClick?: (e: React.MouseEvent) => void
 }) {
   return (
     <FlexRow
       onClick={onClick ?? NO_OP}
+      onDoubleClick={onDoubleClick}
       style={{
         padding: '4px 8px',
         color: color,
@@ -145,7 +148,12 @@ export const DataSelectorModal = React.memo(
 
       const optionLookup = useVariableOptionLookup(variablesInScope)
 
-      const setCurrentValuePathStringCurried = React.useCallback(
+      const setCurrentValuePathCurried = React.useCallback(
+        (path: VariableOption['valuePath']) => () => setCurrentValuePath(path),
+        [],
+      )
+
+      const updateDisplayedValuesCurried = React.useCallback(
         (path: VariableOption['valuePath']) => (e: React.MouseEvent) => {
           e.stopPropagation()
           e.preventDefault()
@@ -177,9 +185,9 @@ export const DataSelectorModal = React.memo(
             return
           }
           const path = currentValuePath.slice(0, -1)
-          setCurrentValuePathStringCurried(path)(e)
+          updateDisplayedValuesCurried(path)(e)
         },
-        [currentValuePath, setCurrentValuePathStringCurried],
+        [currentValuePath, updateDisplayedValuesCurried],
       )
 
       const onApplyClick = React.useCallback(() => {
@@ -264,7 +272,7 @@ export const DataSelectorModal = React.memo(
                           text={segment.toString()}
                           borderRadius={4}
                           borderColor={colorTheme.fg0Opacity20.value}
-                          onClick={setCurrentValuePathStringCurried(path)}
+                          onClick={updateDisplayedValuesCurried(path)}
                           // icon={
                           //   <span
                           //     style={{
@@ -347,7 +355,8 @@ export const DataSelectorModal = React.memo(
                               {CIRCLE}
                             </span>
                           }
-                          onClick={setCurrentValuePathStringCurried(child.valuePath)}
+                          onClick={setCurrentValuePathCurried(child.valuePath)}
+                          onDoubleClick={updateDisplayedValuesCurried(child.valuePath)}
                         />
                       ))}
                     </FlexRow>
