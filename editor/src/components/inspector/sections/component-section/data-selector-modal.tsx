@@ -13,7 +13,7 @@ import { InspectorModal } from '../../widgets/inspector-modal'
 import type { SelectOption } from '../../controls/select-control'
 import { NO_OP, assertNever } from '../../../../core/shared/utils'
 import { getControlStyles } from '../../common/control-styles'
-import { last } from '../../../../core/shared/array-utils'
+import { isPrefixOf, last } from '../../../../core/shared/array-utils'
 import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
 
 export interface DataSelectorModalProps {
@@ -135,7 +135,7 @@ export const DataSelectorModal = React.memo(
     ({ style, closePopup, variablesInScope, onPropertyPicked }, forwardedRef) => {
       const colorTheme = useColorTheme()
 
-      const [currentValuePath, setCurrentValuePath] = React.useState<Array<string | number>>([])
+      const [navigatedToPath, setNavigatedToPath] = React.useState<Array<string | number>>([])
 
       // TODO invariant: currentValuePath should be a prefix of currentSelectedPath, we should enforce this
       const [currentSelectedPath, setCurrentSelectedPath] = React.useState<Array<string | number>>(
@@ -155,11 +155,11 @@ export const DataSelectorModal = React.memo(
       const optionLookup = useVariableOptionLookup(variablesInScope)
 
       const focusedVariableChildren = React.useMemo(() => {
-        if (currentValuePath.length === 0) {
+        if (navigatedToPath.length === 0) {
           return variablesInScope
         }
 
-        const elementToSet = optionLookup[currentValuePath.toString()]
+        const elementToSet = optionLookup[navigatedToPath.toString()]
         if (
           elementToSet == null ||
           (elementToSet.type !== 'array' && elementToSet.type !== 'object')
@@ -167,19 +167,25 @@ export const DataSelectorModal = React.memo(
           return [] // TODO this should never happen!
         }
         return elementToSet.children
-      }, [currentValuePath, optionLookup, variablesInScope])
+      }, [navigatedToPath, optionLookup, variablesInScope])
 
-      const setCurrentValuePathCurried = React.useCallback(
-        (path: VariableOption['valuePath']) => () => setCurrentValuePath(path),
-        [],
+      const setCurrentSelectedPathCurried = React.useCallback(
+        (path: VariableOption['valuePath']) => () => {
+          if (!isPrefixOf(navigatedToPath, path)) {
+            // if navigatedToPath is not a prefix of path, we don't update the selection
+            return
+          }
+          setCurrentSelectedPath(path)
+        },
+        [navigatedToPath],
       )
 
-      const updateDisplayedValuesCurried = React.useCallback(
+      const setNavigatedToPathCurried = React.useCallback(
         (path: VariableOption['valuePath']) => (e: React.MouseEvent) => {
           e.stopPropagation()
           e.preventDefault()
 
-          setCurrentValuePath(path)
+          setNavigatedToPath(path)
         },
         [],
       )
@@ -188,20 +194,20 @@ export const DataSelectorModal = React.memo(
         (e: React.MouseEvent) => {
           e.stopPropagation()
           e.preventDefault()
-          if (currentValuePath == null) {
+          if (navigatedToPath == null) {
             return
           }
-          const path = currentValuePath.slice(0, -1)
-          updateDisplayedValuesCurried(path)(e)
+          const path = navigatedToPath.slice(0, -1)
+          setNavigatedToPathCurried(path)(e)
         },
-        [currentValuePath, updateDisplayedValuesCurried],
+        [navigatedToPath, setNavigatedToPathCurried],
       )
 
       const onApplyClick = React.useCallback(() => {
-        if (currentValuePath == null) {
+        if (navigatedToPath == null) {
           return
         }
-        const variable = optionLookup[currentValuePath.toString()]
+        const variable = optionLookup[navigatedToPath.toString()]
         if (variable == null) {
           return
         }
@@ -212,7 +218,7 @@ export const DataSelectorModal = React.memo(
           ]),
         )
         closePopup()
-      }, [closePopup, currentValuePath, onPropertyPicked, optionLookup])
+      }, [closePopup, navigatedToPath, onPropertyPicked, optionLookup])
 
       const catchClick = React.useCallback((e: React.MouseEvent) => {
         e.stopPropagation()
@@ -268,18 +274,18 @@ export const DataSelectorModal = React.memo(
                     width={18}
                     height={18}
                     style={{ cursor: 'pointer' }}
-                    isDisabled={currentValuePath?.length === 0}
+                    isDisabled={navigatedToPath?.length === 0}
                     onClick={onBackClick}
                   />
-                  {currentValuePath == null
+                  {navigatedToPath == null
                     ? null
-                    : nonEmptyPrefixes(currentValuePath).map(({ segment, path }) => (
+                    : nonEmptyPrefixes(navigatedToPath).map(({ segment, path }) => (
                         <DataLabel
                           key={segment}
                           text={segment.toString()}
                           borderRadius={4}
                           borderColor={colorTheme.fg0Opacity20.value}
-                          onClick={updateDisplayedValuesCurried(path)}
+                          onClick={setNavigatedToPathCurried(path)}
                           // icon={
                           //   <span
                           //     style={{
@@ -362,8 +368,8 @@ export const DataSelectorModal = React.memo(
                               {CIRCLE}
                             </span>
                           }
-                          onClick={setCurrentValuePathCurried(child.valuePath)}
-                          onDoubleClick={updateDisplayedValuesCurried(child.valuePath)}
+                          onClick={setCurrentSelectedPathCurried(child.valuePath)}
+                          onDoubleClick={setNavigatedToPathCurried(child.valuePath)}
                         />
                       ))}
                     </FlexRow>
