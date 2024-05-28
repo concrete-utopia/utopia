@@ -119,9 +119,6 @@ export const DataSelectorModal = React.memo(
         string | number
       > | null>(null)
 
-      // TODO invariant: currentValuePath should be a prefix of currentHoveredPath, we should enforce this
-      const [currentHoveredPath, setCurrentHoveredPath] = React.useState<Array<string | number>>([])
-
       const [indexLookup, setIndexLookup] = React.useState<ValuePathLookup<number>>({})
       const updateIndexInLookup = React.useCallback(
         (valuePathString: string) => (option: SelectOption) =>
