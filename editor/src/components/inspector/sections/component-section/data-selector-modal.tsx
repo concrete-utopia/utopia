@@ -268,17 +268,19 @@ export const DataSelectorModal = React.memo(
               }}
             >
               {/* top bar */}
-              <FlexRow style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-                <FlexRow style={{ gap: 8, flexWrap: 'wrap' }}>
+              <FlexRow style={{ justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+                <FlexRow style={{ gap: 8, flexWrap: 'wrap', flexGrow: 1 }}>
                   <FlexRow
                     style={{
-                      minWidth: 200,
+                      flexGrow: 1,
                       borderStyle: 'solid',
                       borderWidth: 1,
                       borderColor: colorTheme.fg7.value,
-                      borderRadius: 2,
+                      borderRadius: 4,
                       fontSize: 11,
                       fontWeight: 400,
+                      height: 33,
+                      padding: '0px 6px',
                     }}
                   >
                     <FlexRow style={{ flexWrap: 'wrap', flexGrow: 1 }}>
