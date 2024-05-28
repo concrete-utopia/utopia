@@ -11,10 +11,12 @@ import {
 import type { DataPickerCallback, VariableOption } from './data-picker-popup'
 import { InspectorModal } from '../../widgets/inspector-modal'
 import type { SelectOption } from '../../controls/select-control'
-import { NO_OP, assertNever } from '../../../../core/shared/utils'
+import { assertNever } from '../../../../core/shared/utils'
 import { getControlStyles } from '../../common/control-styles'
 import { isPrefixOf, last } from '../../../../core/shared/array-utils'
 import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
+import type { CartoucheUIProps } from './cartouche-ui'
+import { CartoucheUI } from './cartouche-ui'
 
 export interface DataSelectorModalProps {
   closePopup: () => void
@@ -46,49 +48,6 @@ const Separator = React.memo(
     )
   },
 )
-
-function DataLabel({
-  text,
-  color,
-  bgColor,
-  icon,
-  borderColor,
-  borderRadius,
-  onClick,
-  onDoubleClick,
-}: {
-  text: string
-  color?: string
-  bgColor?: string
-  borderRadius?: number
-  borderColor?: string
-  icon?: React.ReactElement
-  onClick: ((e: React.MouseEvent) => void) | null
-  onDoubleClick?: (e: React.MouseEvent) => void
-}) {
-  return (
-    <FlexRow
-      onClick={onClick ?? NO_OP}
-      onDoubleClick={onDoubleClick}
-      style={{
-        padding: '4px 8px',
-        color: color,
-        gap: 4,
-        fontWeight: 600,
-        alignItems: 'baseline',
-        borderRadius: borderRadius,
-        border: borderColor == null ? undefined : `1px solid ${borderColor}`,
-        backgroundColor: bgColor == null ? undefined : bgColor,
-        width: 'max-content',
-        height: 'max-content',
-        cursor: onClick == null ? undefined : 'pointer',
-      }}
-    >
-      {icon}
-      <span>{text}</span>
-    </FlexRow>
-  )
-}
 
 const SIMPLE_CONTROL_STYLES = getControlStyles('simple')
 
@@ -280,26 +239,22 @@ export const DataSelectorModal = React.memo(
                   />
                   {currentSelectedPath == null
                     ? null
-                    : nonEmptyPrefixes(currentSelectedPath).map(({ segment, path }) => (
-                        <DataLabel
-                          key={segment}
-                          text={segment.toString()}
-                          borderRadius={4}
-                          borderColor={colorTheme.fg0Opacity20.value}
-                          onClick={setNavigatedToPathCurried(path)}
-                          // icon={
-                          //   <span
-                          //     style={{
-                          //       color: colorTheme.brandNeonGreen.value,
-                          //       fontWeight: 700,
-                          //       fontSize: 14,
-                          //     }}
-                          //   >
-                          //     {BRACES}
-                          //   </span>
-                          // }
-                        />
-                      ))}
+                    : nonEmptyPathPrefixes(currentSelectedPath, optionLookup).map(
+                        ({ segment, path, role }) => (
+                          <CartoucheUI
+                            key={segment}
+                            onClick={setNavigatedToPathCurried(path)}
+                            tooltip={segment.toString()}
+                            source={'internal'}
+                            inverted={false}
+                            selected={false}
+                            role={role}
+                            testId={`data-selector-top-bar-segment-${segment}`}
+                          >
+                            {segment.toString()}
+                          </CartoucheUI>
+                        ),
+                      )}
                 </FlexRow>
                 <div
                   style={{
@@ -330,16 +285,16 @@ export const DataSelectorModal = React.memo(
               >
                 {focusedVariableChildren.map((variable, idx) => (
                   <React.Fragment key={variable.valuePath.toString()}>
-                    <DataLabel
-                      text={
-                        last(variable.valuePath)?.toString() ??
-                        variable.variableInfo.expression.toString()
-                      }
-                      bgColor={colorTheme.selectionBlue10.value}
-                      color={colorTheme.dynamicBlue.value}
-                      borderRadius={4}
-                      onClick={null}
-                    />
+                    <CartoucheUI
+                      tooltip={variableNameFromPath(variable)}
+                      source={'internal'}
+                      inverted={false}
+                      selected={false}
+                      role='selection'
+                      testId={`data-selector-left-section-${variableNameFromPath(variable)}`}
+                    >
+                      {variableNameFromPath(variable)}
+                    </CartoucheUI>
                     {variable.type === 'array' ? (
                       <ElementSelector
                         total={variable.children.length}
@@ -350,28 +305,21 @@ export const DataSelectorModal = React.memo(
                       <div />
                     )}
                     {/* properties in scope */}
-                    <FlexRow style={{ flexWrap: 'wrap', height: 'max-content' }}>
+                    <FlexRow style={{ flexWrap: 'wrap', height: 'max-content', gap: 4 }}>
                       {childVars(variable, indexLookup).map((child) => (
-                        <DataLabel
+                        <CartoucheUI
                           key={child.valuePath.toString()}
-                          text={
-                            last(child.valuePath)?.toString() ??
-                            child.variableInfo.expression.toString()
-                          }
-                          icon={
-                            <span
-                              style={{
-                                color: colorTheme.brandNeonGreen.value,
-                                fontWeight: 700,
-                                fontSize: 10,
-                              }}
-                            >
-                              {CIRCLE}
-                            </span>
-                          }
+                          tooltip={variableNameFromPath(child)}
+                          source={'internal'}
+                          inverted={false}
+                          selected={false}
+                          role={cartoucheFolderOrInfo(child)}
+                          testId={`data-selector-right-section-${variableNameFromPath(child)}`}
                           onClick={setCurrentSelectedPathCurried(child.valuePath)}
                           onDoubleClick={setNavigatedToPathCurried(child.valuePath)}
-                        />
+                        >
+                          {variableNameFromPath(child)}
+                        </CartoucheUI>
                       ))}
                     </FlexRow>
                     {idx < focusedVariableChildren.length - 1 ? (
@@ -432,14 +380,38 @@ function childVars(option: VariableOption, indices: ValuePathLookup<number>): Va
   }
 }
 
-export function nonEmptyPrefixes(
-  ts: (string | number)[],
-): Array<{ segment: string | number; path: (string | number)[] }> {
-  let accumulator: Array<{ segment: string | number; path: (string | number)[] }> = []
+export function nonEmptyPathPrefixes(
+  valuePath: VariableOption['valuePath'],
+  lookup: ValuePathLookup<VariableOption>,
+): Array<{ segment: string | number; path: (string | number)[]; role: CartoucheUIProps['role'] }> {
+  let accumulator = []
   let current: (string | number)[] = []
-  for (const t of ts) {
-    current.push(t)
-    accumulator.push({ segment: t, path: [...current] })
+  for (const segment of valuePath) {
+    current.push(segment)
+    const optionFromLookup = lookup[current.toString()]
+
+    accumulator.push({
+      segment: segment,
+      path: [...current],
+      role: cartoucheFolderOrInfo(optionFromLookup),
+    })
   }
   return accumulator
+}
+
+function variableNameFromPath(variable: VariableOption): string {
+  return last(variable.valuePath)?.toString() ?? variable.variableInfo.expression.toString()
+}
+
+function cartoucheFolderOrInfo(option: VariableOption): CartoucheUIProps['role'] {
+  switch (option.type) {
+    case 'array':
+    case 'object':
+      return 'folder'
+    case 'jsx':
+    case 'primitive':
+      return 'information'
+    default:
+      assertNever(option)
+  }
 }
