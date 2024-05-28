@@ -144,8 +144,11 @@ export const ContextMenu = <T,>({ dispatch, getData, id, items }: ContextMenuPro
   const { add, remove } = useContextMenuState()
   const onVisibilityChange = React.useCallback(
     (isVisible: boolean) => {
-      if (isVisible) add(id)
-      else remove(id)
+      if (isVisible) {
+        add(id)
+      } else {
+        remove(id)
+      }
     },
     [add, id, remove],
   )
