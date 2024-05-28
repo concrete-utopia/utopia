@@ -93,7 +93,7 @@ const DEFAULT_SIZE: React.CSSProperties = {
   maxWidth: 700,
   maxHeight: 300,
 }
-const SLASH = '/'
+const SLASH = 'X'
 
 export const DataSelectorModal = React.memo(
   React.forwardRef<HTMLDivElement, DataSelectorModalProps>(
@@ -279,24 +279,15 @@ export const DataSelectorModal = React.memo(
                   >
                     {SLASH}
                   </div>
-                  {nonEmptyPathPrefixes(hoveredPath ?? pathInTopBar, optionLookup).map(
-                    ({ segment, path, role, type }) => (
-                      <CartoucheUI
-                        key={segment}
-                        datatype={type}
-                        onClick={setNavigatedToPathCurried(path)}
-                        tooltip={segment.toString()}
-                        source={'internal'}
-                        inverted={false}
-                        selected={false}
-                        role={role}
-                        preview={hoveredPath != null && isPreviewSegment(pathInTopBar, path)}
-                        testId={`data-selector-top-bar-segment-${segment}`}
-                      >
-                        {segment.toString()}
-                      </CartoucheUI>
-                    ),
-                  )}
+                  <FlexRow style={{ flexWrap: 'wrap' }}>
+                    {nonEmptyPathPrefixes(hoveredPath ?? pathInTopBar, optionLookup).map(
+                      ({ segment, path }, idx) => (
+                        <span key={path.toString()} style={{ fontSize: 12 }}>
+                          {idx === 0 ? segment : pathSegmentToString(segment)}
+                        </span>
+                      ),
+                    )}
+                  </FlexRow>
                 </FlexRow>
                 <div
                   style={{
@@ -322,7 +313,6 @@ export const DataSelectorModal = React.memo(
                   overflowX: 'scroll',
                   opacity: 0.8,
                   fontSize: 10,
-                  ...UtopiaStyles.fontStyles.monospaced,
                 }}
               >
                 {valuePreviewText}
@@ -561,4 +551,11 @@ function disabledButtonStyles(disabled: boolean): React.CSSProperties {
     opacity: disabled ? 0.5 : 1,
     cursor: disabled ? undefined : 'pointer',
   }
+}
+
+function pathSegmentToString(segment: string | number) {
+  if (typeof segment === 'string') {
+    return `.${segment}`
+  }
+  return `[${segment}]`
 }
