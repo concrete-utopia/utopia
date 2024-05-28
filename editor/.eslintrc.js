@@ -1,10 +1,13 @@
+const noDispatchUseEffectPlugin = require('./.eslint-plugin-local')
 module.exports = {
   extends: ['eslint-config-utopia'],
   parserOptions: {
     tsconfigRootDir: __dirname,
     project: ['./tsconfig.json'],
   },
+  plugins: ['eslint-plugin-local'],
   rules: {
+    'local/no-dispatch-use-effect': 'error',
     '@typescript-eslint/no-floating-promises': 'error',
     '@typescript-eslint/strict-boolean-expressions': [
       'error',

@@ -370,6 +370,7 @@
     "eslint": "7.32.0",
     "eslint-config-prettier": "6.9.0",
     "eslint-plugin-jest": "^25.3.0",
+    "eslint-plugin-local": "^4.2.2",
     "eslint-plugin-prettier": "3.1.2",
     "expect": "26.1.0",
     "fast-check": "1.15.0",

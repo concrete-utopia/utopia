@@ -180,6 +180,7 @@ specifiers:
   eslint-plugin-import: 2.25.3
   eslint-plugin-jest: ^25.3.0
   eslint-plugin-jsx-a11y: 6.5.1
+  eslint-plugin-local: ^4.2.2
   eslint-plugin-prettier: 3.1.2
   eslint-plugin-react: 7.23.2
   eslint-plugin-react-hooks: 4.2.0
@@ -587,6 +588,7 @@ devDependencies:
   eslint: 7.32.0
   eslint-config-prettier: 6.9.0_eslint@7.32.0
   eslint-plugin-jest: 25.3.0_qopkyehznc3hanpl3gqceqvzdu
+  eslint-plugin-local: 4.2.2_eslint@7.32.0
   eslint-plugin-prettier: 3.1.2_5tpslmch32lidtsjs5w6ze4pka
   expect: 26.1.0
   fast-check: 1.15.0
@@ -4493,6 +4495,13 @@ packages:
       react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
     dev: true
 
+  /@thisismanta/pessimist/1.2.0:
+    resolution: {integrity: sha512-rm8/zjNMuO9hPYhEMavVIIxmvawJJB8mthvbVXd74XUW7V/SbgmtDBQjICbCWKjluvA+gh+cqi7dv85/jexknA==}
+    engines: {node: '>=16.0.0'}
+    dependencies:
+      lodash: 4.17.21
+    dev: true
+
   /@tippyjs/react/4.1.0_ef5jwxihqo6n7gxfmzogljlgcm:
     resolution: {integrity: sha512-g6Dpm46edr9T9z+BYxd/eJZa6QMFc4T4z5xrztxVlkti7AhNYf7OaE6b3Nh+boUZZ9wn8xkNq9VrQM5K4huwnQ==}
     peerDependencies:
@@ -7553,7 +7562,7 @@ packages:
     dev: true
 
   /component-indexof/0.0.3:
-    resolution: {integrity: sha1-EdCRMSI5648yyPJa6csAL/6NPCQ=}
+    resolution: {integrity: sha512-puDQKvx/64HZXb4hBwIcvQLaLgux8o1CbWl39s41hrIIZDl1lJiD5jc22gj3RBeGK0ovxALDYpIbyjqDUUl0rw==}
     dev: false
 
   /compressible/2.0.18:
@@ -9351,6 +9360,17 @@ packages:
       minimatch: 3.0.4
     dev: false
     patched: true
+
+  /eslint-plugin-local/4.2.2_eslint@7.32.0:
+    resolution: {integrity: sha512-9yNacxuEAVw2nYGCAj+ofx74cWODq7N7jcajlq1tzz6xuJS0WFhp72s/WSvIyJG6b/75+n63SKxUFVrt1UHmfQ==}
+    hasBin: true
+    peerDependencies:
+      eslint: '>=6.0.0'
+    dependencies:
+      '@thisismanta/pessimist': 1.2.0
+      chalk: 4.1.2
+      eslint: 7.32.0
+    dev: true
 
   /eslint-plugin-prettier/3.1.2_5tpslmch32lidtsjs5w6ze4pka:
     resolution: {integrity: sha512-GlolCC9y3XZfv3RQfwGew7NnuFDKsfI4lbvRK+PIIo23SFH+LemGs4cKwzAaRa+Mdb+lQO/STaIayno8T5sJJA==}
