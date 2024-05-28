@@ -133,7 +133,7 @@ export const CartoucheUI = React.forwardRef(
                 /* Beginning of string */
                 direction: source === 'literal' ? 'ltr' : 'rtl', // TODO we need a better way to ellipsize the beginnign because rtl eats ' " marks
                 textAlign: 'left',
-                ...UtopiaStyles.fontStyles.monospaced,
+                ...(role !== 'information' ? UtopiaStyles.fontStyles.monospaced : {}),
               }}
             >
               {children}
