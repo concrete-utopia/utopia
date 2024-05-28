@@ -315,7 +315,7 @@ export const DataSelectorModal = React.memo(
                       bgColor={colorTheme.selectionBlue10.value}
                       color={colorTheme.dynamicBlue.value}
                       borderRadius={4}
-                      onClick={setCurrentValuePathStringCurried(variable.valuePath)}
+                      onClick={null}
                     />
                     {variable.type === 'array' ? (
                       <ElementSelector
