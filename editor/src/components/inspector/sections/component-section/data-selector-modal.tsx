@@ -342,7 +342,7 @@ export const DataSelectorModal = React.memo(
                     {variable.type === 'array' ? (
                       <ElementSelector
                         total={variable.children.length}
-                        selected={indexLookup[variable.valuePath.toString()] ?? 1}
+                        selected={indexLookup[variable.valuePath.toString()] ?? 0}
                         onSelect={updateIndexInLookup(variable.valuePath.toString())}
                       />
                     ) : (
