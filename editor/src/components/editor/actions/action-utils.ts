@@ -170,6 +170,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'ALIGN_SELECTED_VIEWS':
     case 'DISTRIBUTE_SELECTED_VIEWS':
     case 'TOGGLE_HIDDEN':
+    case 'TOGGLE_DATA_CAN_CONDENSE':
     case 'UPDATE_FILE_PATH':
     case 'UPDATE_REMIX_ROUTE':
     case 'ADD_FOLDER':

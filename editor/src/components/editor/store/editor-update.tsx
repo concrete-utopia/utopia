@@ -168,6 +168,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SWITCH_EDITOR_MODE(action, state, userState)
     case 'TOGGLE_HIDDEN':
       return UPDATE_FNS.TOGGLE_HIDDEN(action, state)
+    case 'TOGGLE_DATA_CAN_CONDENSE':
+      return UPDATE_FNS.TOGGLE_DATA_CAN_CONDENSE(action, state)
     case 'RENAME_COMPONENT':
       return UPDATE_FNS.RENAME_COMPONENT(action, state)
     case 'INSERT_JSX_ELEMENT':

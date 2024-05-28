@@ -236,6 +236,7 @@ import type {
   ReplaceElementInScope,
   ElementReplacementPath,
   ReplaceJSXElement,
+  ToggleDataCanCondense,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -358,6 +359,13 @@ export function unsetProperty(element: ElementPath, property: PropertyPath): Uns
 export function toggleHidden(targets: Array<ElementPath> = []): ToggleHidden {
   return {
     action: 'TOGGLE_HIDDEN',
+    targets: targets,
+  }
+}
+
+export function toggleDataCanCondense(targets: Array<ElementPath>): ToggleDataCanCondense {
+  return {
+    action: 'TOGGLE_DATA_CAN_CONDENSE',
     targets: targets,
   }
 }
