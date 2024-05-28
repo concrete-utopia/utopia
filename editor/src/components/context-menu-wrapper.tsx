@@ -126,7 +126,6 @@ export const ContextMenu = <T,>({ dispatch, getData, id, items }: ContextMenuPro
               return windowPoint({ x: triggerEvent.clientX, y: triggerEvent.clientY })
             })()
             item?.action(getData(), dispatch, rightClickCoordinate, event)
-            contextMenu.hideAll()
           }}
           hidden={isHidden(item)}
           style={{
