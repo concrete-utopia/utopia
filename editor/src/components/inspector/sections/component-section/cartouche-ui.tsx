@@ -5,6 +5,7 @@ import { when } from '../../../../utils/react-conditionals'
 export type CartoucheUIProps = React.PropsWithChildren<{
   tooltip: string
   source: 'internal' | 'external' | 'literal'
+  role: 'selection' | 'information' | 'folder'
   inverted: boolean
   selected: boolean
   testId: string
@@ -15,8 +16,17 @@ export type CartoucheUIProps = React.PropsWithChildren<{
 
 export const CartoucheUI = React.forwardRef(
   (props: CartoucheUIProps, ref: React.Ref<HTMLDivElement>) => {
-    const { tooltip, onClick, onDoubleClick, onDelete, children, source, inverted, selected } =
-      props
+    const {
+      tooltip,
+      onClick,
+      onDoubleClick,
+      onDelete,
+      children,
+      source,
+      inverted,
+      selected,
+      role,
+    } = props
 
     const colorTheme = useColorTheme()
 
@@ -30,6 +40,8 @@ export const CartoucheUI = React.forwardRef(
 
     const borderColor = inverted
       ? colorTheme.white.value
+      : role === 'folder'
+      ? colorTheme.neutralForeground.value
       : source === 'external'
       ? colorTheme.green.value
       : colorTheme.selectionBlue.value
@@ -42,16 +54,22 @@ export const CartoucheUI = React.forwardRef(
 
     const foregroundColor = inverted
       ? colorTheme.white.value
-      : source === 'literal'
+      : source === 'literal' || role === 'information' || role === 'folder'
       ? colorTheme.neutralForeground.value
       : primaryForegoundColorToUse
 
     const backgroundColor =
-      source === 'literal' ? colorTheme.fg0Opacity10.value : primaryBackgroundColorToUse
+      role === 'information' || role === 'folder'
+        ? colorTheme.neutralBackground.value
+        : source === 'literal'
+        ? colorTheme.fg0Opacity10.value
+        : primaryBackgroundColorToUse
 
     const wrappedOnClick = useStopPropagation(onClick)
     const wrappedOnDoubleClick = useStopPropagation(onDoubleClick)
     const wrappedOnDelete = useStopPropagation(onDelete)
+
+    const shouldShowBorder = selected || role === 'folder'
 
     return (
       <div
@@ -69,7 +87,7 @@ export const CartoucheUI = React.forwardRef(
             fontWeight: 400,
             color: foregroundColor,
             backgroundColor: backgroundColor,
-            border: selected ? '1px solid ' + borderColor : '1px solid transparent',
+            border: shouldShowBorder ? '1px solid ' + borderColor : '1px solid transparent',
             padding: '0px 6px 0 4px',
             borderRadius: 4,
             height: 20,

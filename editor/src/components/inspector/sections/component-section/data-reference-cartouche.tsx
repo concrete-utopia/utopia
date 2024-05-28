@@ -184,6 +184,7 @@ export const DataCartoucheInner = React.forwardRef(
         inverted={inverted}
         testId={testId}
         tooltip={contentsToDisplay.label ?? 'DATA'}
+        role='selection'
         source={source}
         ref={ref}
       >
