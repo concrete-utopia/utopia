@@ -901,16 +901,17 @@ function InspectorSectionHeader({
       onClick={toggle}
       data-testid={`section-header-${title}`}
     >
-      <H1
+      <div
         style={{
           flexGrow: 1,
           display: 'inline',
           overflow: 'hidden',
-          fontSize: '12px',
+          fontSize: '11px',
+          fontWeight: 600,
         }}
       >
         {title}
-      </H1>
+      </div>
       <SectionActionSheet className='actionsheet' style={{ gap: 4 }}>
         <SquareButton highlight style={{ width: 12 }}>
           <ExpandableIndicator visible collapsed={!open} selected={false} />

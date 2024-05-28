@@ -65,12 +65,13 @@ import {
   type NavigatorRow,
   type RegularNavigatorRow,
 } from './navigator-row'
-import { mapDropNulls } from '../../core/shared/array-utils'
+import { dropNulls, mapDropNulls } from '../../core/shared/array-utils'
 import invariant from '../../third-party/remix/invariant'
 import { getUtopiaID } from '../../core/shared/uid-utils'
 import { create } from 'tar'
 import { emptySet } from '../../core/shared/set-utils'
 import { objectMap } from '../../core/shared/object-utils'
+import { dataCanCondenseFromMetadata } from '../../utils/can-condense'
 
 export function baseNavigatorDepth(path: ElementPath): number {
   // The storyboard means that this starts at -1,
@@ -141,6 +142,8 @@ type ConditionalNavigatorTree = {
 
 type CondensedTrunkNavigatorTree = {
   type: 'condensed-trunk'
+  elementHidden: boolean
+  subtreeHidden: boolean
   navigatorEntry: NavigatorEntry
   child: NavigatorTree
 }
@@ -158,6 +161,14 @@ export type NavigatorTree =
   | ConditionalNavigatorTree
   | CondensedTrunkNavigatorTree
   | CondensedLeafNavigatorTree
+
+function isSubtreeHidden(navigatorTree: NavigatorTree): boolean {
+  return 'subtreeHidden' in navigatorTree && navigatorTree.subtreeHidden
+}
+
+function isElementHidden(navigatorTree: NavigatorTree): boolean {
+  return 'elementHidden' in navigatorTree && navigatorTree.elementHidden
+}
 
 interface GetNavigatorTargetsResults {
   navigatorRows: Array<NavigatorRow>
@@ -571,7 +582,10 @@ function isCondensableLeafEntry(entry: NavigatorTree): boolean {
   )
 }
 
-function condenseNavigatorTree(navigatorTree: Array<NavigatorTree>): Array<NavigatorTree> {
+function condenseNavigatorTree(
+  metadata: ElementInstanceMetadataMap,
+  navigatorTree: Array<NavigatorTree>,
+): Array<NavigatorTree> {
   if (!isFeatureEnabled('Condensed Navigator Entries')) {
     return navigatorTree
   }
@@ -591,10 +605,16 @@ function condenseNavigatorTree(navigatorTree: Array<NavigatorTree>): Array<Navig
     }
 
     // if the entry only has a single child, we can condense it
-    if (entry.type === 'regular-entry' && entry.children.length === 1) {
+    if (
+      entry.type === 'regular-entry' &&
+      entry.children.length === 1 &&
+      dataCanCondenseFromMetadata(metadata, entry.navigatorEntry.elementPath)
+    ) {
       return {
         type: 'condensed-trunk',
         navigatorEntry: entry.navigatorEntry,
+        elementHidden: entry.elementHidden,
+        subtreeHidden: entry.subtreeHidden,
         child: walkSubtreeMaybeCondense(entry.children[0]),
       }
     }
@@ -638,6 +658,8 @@ function condenseNavigatorTree(navigatorTree: Array<NavigatorTree>): Array<Navig
       case 'condensed-trunk': {
         return {
           type: 'condensed-trunk',
+          elementHidden: entry.elementHidden,
+          subtreeHidden: entry.subtreeHidden,
           navigatorEntry: entry.navigatorEntry,
           child: walkSubtreeMaybeCondense(entry.child),
         }
@@ -666,25 +688,22 @@ function flattenCondensedTrunk(entry: CondensedTrunkNavigatorTree): {
 }
 
 function getNavigatorRowsForTree(
+  metadata: ElementInstanceMetadataMap,
   navigatorTree: Array<NavigatorTree>,
   filterVisible: 'all-navigator-targets' | 'visible-navigator-targets',
 ): Array<NavigatorRow> {
-  const condensedTree = condenseNavigatorTree(navigatorTree)
+  const condensedTree = condenseNavigatorTree(metadata, navigatorTree)
 
   function walkTree(entry: NavigatorTree, indentation: number): Array<NavigatorRow> {
-    if (
-      filterVisible === 'visible-navigator-targets' &&
-      'elementHidden' in entry &&
-      entry.elementHidden
-    ) {
-      return []
+    function walkIfSubtreeVisible(e: NavigatorTree, i: number): Array<NavigatorRow> {
+      if (isSubtreeHidden(entry) && filterVisible === 'visible-navigator-targets') {
+        return []
+      }
+      return walkTree(e, i)
     }
-    if (
-      filterVisible === 'visible-navigator-targets' &&
-      'subtreeHidden' in entry &&
-      entry.subtreeHidden
-    ) {
-      return [regularNavigatorRow(entry.navigatorEntry, indentation)]
+
+    if (isElementHidden(entry) && filterVisible === 'visible-navigator-targets') {
+      return []
     }
 
     switch (entry.type) {
@@ -693,12 +712,12 @@ function getNavigatorRowsForTree(
         if (singleRow.length === 1) {
           return [
             regularNavigatorRow(singleRow[0], indentation),
-            ...walkTree(child, indentation + 1),
+            ...walkIfSubtreeVisible(child, indentation + 1),
           ]
         }
         return [
           condensedNavigatorRow(singleRow, 'trunk', indentation),
-          ...walkTree(child, indentation + 1),
+          ...walkIfSubtreeVisible(child, indentation + 1),
         ]
       }
       case 'condensed-leaf':
@@ -729,7 +748,7 @@ function getNavigatorRowsForTree(
                 ),
                 indentation + 1,
               ),
-              ...walkTree(renderPropChild, indentation + 2),
+              ...walkIfSubtreeVisible(renderPropChild, indentation + 2),
             ]
           }),
           ...(showChildrenLabel
@@ -746,7 +765,7 @@ function getNavigatorRowsForTree(
               ]
             : []),
           ...entry.children.flatMap((t) =>
-            walkTree(t, showChildrenLabel ? indentation + 2 : indentation + 1),
+            walkIfSubtreeVisible(t, showChildrenLabel ? indentation + 2 : indentation + 1),
           ),
         ]
       }
@@ -755,22 +774,26 @@ function getNavigatorRowsForTree(
       case 'map-entry':
         return [
           regularNavigatorRow(entry.navigatorEntry, indentation),
-          ...entry.mappedEntries.flatMap((t) => walkTree(t, indentation + 1)),
+          ...entry.mappedEntries.flatMap((t) => walkIfSubtreeVisible(t, indentation + 1)),
         ]
       case 'conditional-entry':
-        return [
+        return dropNulls([
           regularNavigatorRow(entry.navigatorEntry, indentation),
-          regularNavigatorRow(
-            conditionalClauseNavigatorEntry(entry.navigatorEntry.elementPath, 'true-case'),
-            indentation + 1,
-          ),
-          ...entry.trueCase.flatMap((t) => walkTree(t, indentation + 2)),
-          regularNavigatorRow(
-            conditionalClauseNavigatorEntry(entry.navigatorEntry.elementPath, 'false-case'),
-            indentation + 1,
-          ),
-          ...entry.falseCase.flatMap((t) => walkTree(t, indentation + 2)),
-        ]
+          entry.subtreeHidden
+            ? null
+            : regularNavigatorRow(
+                conditionalClauseNavigatorEntry(entry.navigatorEntry.elementPath, 'true-case'),
+                indentation + 1,
+              ),
+          ...entry.trueCase.flatMap((t) => walkIfSubtreeVisible(t, indentation + 2)),
+          entry.subtreeHidden
+            ? null
+            : regularNavigatorRow(
+                conditionalClauseNavigatorEntry(entry.navigatorEntry.elementPath, 'false-case'),
+                indentation + 1,
+              ),
+          ...entry.falseCase.flatMap((t) => walkIfSubtreeVisible(t, indentation + 2)),
+        ])
       default:
         assertNever(entry)
     }
@@ -796,14 +819,15 @@ export function getNavigatorTargets(
     projectContents,
   )
 
-  const navigatorRows = getNavigatorRowsForTree(navigatorTrees, 'all-navigator-targets')
+  const navigatorRows = getNavigatorRowsForTree(metadata, navigatorTrees, 'all-navigator-targets')
   const navigatorTargets = navigatorRows.flatMap(getEntriesForRow)
 
-  const visibleNavigatorRows = getNavigatorRowsForTree(navigatorTrees, 'visible-navigator-targets')
-  const filteredVisibleNavigatorRows = filterCollapsedNavigatorRows(
-    visibleNavigatorRows,
-    collapsedViews,
+  const visibleNavigatorRows = getNavigatorRowsForTree(
+    metadata,
+    navigatorTrees,
+    'visible-navigator-targets',
   )
+  const filteredVisibleNavigatorRows = visibleNavigatorRows
   const visibleNavigatorTargets = filteredVisibleNavigatorRows.flatMap(getEntriesForRow)
 
   return {
@@ -835,39 +859,4 @@ export function getConditionalClausePathForNavigatorEntry(
 
 function renderPropId(propName: string): string {
   return `prop-label-${propName}`
-}
-
-function filterCollapsedNavigatorRows(
-  visibleNavigatorRows: NavigatorRow[],
-  collapsedViews: ElementPath[],
-) {
-  // 1. grab the condensed rows
-  const condensedRows = visibleNavigatorRows.filter(
-    (row) => row.type === 'condensed-row',
-  ) as CondensedNavigatorRow[]
-  // 2. get the EPs of collapsed condensed rows
-  const collapsedCondensedRows = condensedRows
-    .map((row) => {
-      return row.entries[0].elementPath
-    })
-    .filter((row) => {
-      return collapsedViews.some((path) => EP.pathsEqual(path, row))
-    })
-  // 3. filter out the rows which are descendants of collapsed condensed rows
-  const filteredVisibleNavigatorRows = visibleNavigatorRows.filter((row) => {
-    const isChildOfCollapsedCondensedRow = collapsedCondensedRows.some((collapsed) => {
-      switch (row.type) {
-        case 'condensed-row':
-          return EP.isDescendantOf(row.entries[0].elementPath, collapsed)
-        case 'regular-row':
-          return EP.isDescendantOf(row.entry.elementPath, collapsed)
-        default:
-          assertNever(row)
-          return false // lint
-      }
-    })
-    return !isChildOfCollapsedCondensedRow
-  })
-
-  return filteredVisibleNavigatorRows
 }

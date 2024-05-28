@@ -25,7 +25,7 @@ import {
   parseColor,
   toggleBorderEnabled,
 } from '../../../common/css-utils'
-import { useGetSubsectionHeaderStyle } from '../../../common/inspector-utils'
+import { RemovePropertyButton, useGetSubsectionHeaderStyle } from '../../../common/inspector-utils'
 import { useInspectorStyleInfo, useIsSubSectionVisible } from '../../../common/property-path-hooks'
 import { ColorControl, StringColorControl } from '../../../controls/color-control'
 import { FakeUnknownArrayItem } from '../../../controls/unknown-array-item'
@@ -174,14 +174,11 @@ export const BorderSubsection: React.FunctionComponent<React.PropsWithChildren<u
           </FlexRow>
           {propertyStatus.overwritable ? (
             <FlexRow style={{ gap: 4 }}>
-              <SquareButton
-                highlight
-                onMouseDown={onUnsetValues}
-                data-testid={'inspector-border-remove-all'}
-                style={{ width: 12 }}
-              >
-                <Icn category='semantic' type='cross' width={12} height={12} />
-              </SquareButton>
+              <RemovePropertyButton
+                testId='inspector-border-remove-all'
+                onUnsetValues={onUnsetValues}
+                propertySet={propertyStatus.set}
+              />
               <SquareButton
                 highlight
                 onMouseDown={onInsertMouseDown}

@@ -1237,6 +1237,8 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
           padding: `0 ${UtopiaTheme.layout.inspectorXPadding}px`,
           alignItems: 'center',
           gap: 8,
+          height: 38,
+          flexShrink: 0,
         }}
       >
         <FlexRow
@@ -1266,7 +1268,7 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
             <span>Component</span>
           )}
         </FlexRow>
-        <SquareButton highlight onClick={toggleSection}>
+        <SquareButton highlight style={{ width: 12 }} onClick={toggleSection}>
           <ExpandableIndicator
             testId='component-section-expand'
             visible

@@ -227,6 +227,11 @@ export type ToggleHidden = {
   targets: Array<ElementPath>
 }
 
+export type ToggleDataCanCondense = {
+  action: 'TOGGLE_DATA_CAN_CONDENSE'
+  targets: Array<ElementPath>
+}
+
 export type UnsetProperty = {
   action: 'UNSET_PROPERTY'
   element: ElementPath
@@ -1217,6 +1222,7 @@ export type EditorAction =
   | Undo
   | Redo
   | ToggleHidden
+  | ToggleDataCanCondense
   | RenameComponent
   | SetPanelVisibility
   | ToggleFocusedOmniboxTab

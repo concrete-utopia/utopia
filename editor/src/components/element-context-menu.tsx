@@ -30,6 +30,7 @@ import {
   pasteToReplace,
   pasteHere,
   replace,
+  toggleCanCondense,
 } from './context-menu-items'
 import { ContextMenu } from './context-menu-wrapper'
 import { useRefEditorState, useEditorState, Substores } from './editor/store/store-hook'
@@ -90,6 +91,7 @@ const ElementContextMenuItems: Array<ContextMenuItem<CanvasData>> = [
   sendToBack,
   lineSeparator,
   toggleVisibility,
+  toggleCanCondense,
   lineSeparator,
   toggleBackgroundLayersItem,
   toggleBorderItem,

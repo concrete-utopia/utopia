@@ -28,6 +28,7 @@ import * as EditorActions from './editor/actions/action-creators'
 import {
   copySelectionToClipboard,
   duplicateSelected,
+  toggleDataCanCondense,
   toggleHidden,
 } from './editor/actions/action-creators'
 import {
@@ -326,6 +327,16 @@ export const toggleVisibility: ContextMenuItem<CanvasData> = {
   shortcut: '⇧⌘H',
   action: (_, dispatch?: EditorDispatch) => {
     requireDispatch(dispatch)([toggleHidden()], 'everyone')
+  },
+}
+
+export const toggleCanCondense: ContextMenuItem<CanvasData> = {
+  name: 'Toggle Can Condense',
+  enabled: (data) => {
+    return data.selectedViews.length > 0
+  },
+  action: (data, dispatch?: EditorDispatch) => {
+    requireDispatch(dispatch)([toggleDataCanCondense(data.selectedViews)], 'everyone')
   },
 }
 
