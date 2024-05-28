@@ -18,15 +18,11 @@ import type {
 } from './data-picker-popup'
 import { InspectorModal } from '../../widgets/inspector-modal'
 import type { SelectOption } from '../../controls/select-control'
-import {
-  arrayEqualsByReference,
-  arrayEqualsByValue,
-  assertNever,
-} from '../../../../core/shared/utils'
+import { arrayEqualsByReference, assertNever } from '../../../../core/shared/utils'
 import { getControlStyles } from '../../common/control-styles'
 import { isPrefixOf, last } from '../../../../core/shared/array-utils'
 import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
-import type { CartoucheUIProps } from './cartouche-ui'
+import type { CartoucheUIProps, HoverHandlers } from './cartouche-ui'
 import { CartoucheUI } from './cartouche-ui'
 import { when } from '../../../../utils/react-conditionals'
 
@@ -108,6 +104,15 @@ export const DataSelectorModal = React.memo(
       const colorTheme = useColorTheme()
 
       const [navigatedToPath, setNavigatedToPath] = React.useState<Array<string | number>>([])
+      const [hoveredPath, setHoveredPath] = React.useState<VariableOption['valuePath'] | null>(null)
+
+      const onHover = React.useCallback(
+        (path: VariableOption['valuePath']): HoverHandlers => ({
+          onMouseEnter: () => setHoveredPath(path),
+          onMouseLeave: () => setHoveredPath(null),
+        }),
+        [],
+      )
 
       // TODO invariant: currentValuePath should be a prefix of currentSelectedPath, we should enforce this
       const [currentSelectedPath, setCurrentSelectedPath] = React.useState<Array<
@@ -219,6 +224,8 @@ export const DataSelectorModal = React.memo(
         setCurrentSelectedPath(null)
       }, [])
 
+      const pathInTopBar = currentSelectedPath ?? navigatedToPath
+
       return (
         <InspectorModal
           offsetX={20}
@@ -264,11 +271,8 @@ export const DataSelectorModal = React.memo(
                 <FlexRow style={{ gap: 8 }}>
                   <div
                     style={{
-                      cursor:
-                        (currentSelectedPath ?? navigatedToPath).length === 0
-                          ? undefined
-                          : 'pointer',
-                      opacity: (currentSelectedPath ?? navigatedToPath).length === 0 ? 0.5 : 1,
+                      cursor: pathInTopBar.length === 0 ? undefined : 'pointer',
+                      opacity: pathInTopBar.length === 0 ? 0.5 : 1,
                       fontWeight: 600,
                       fontSize: 14,
                     }}
@@ -276,7 +280,7 @@ export const DataSelectorModal = React.memo(
                   >
                     {SLASH}
                   </div>
-                  {nonEmptyPathPrefixes(currentSelectedPath ?? navigatedToPath, optionLookup).map(
+                  {nonEmptyPathPrefixes(hoveredPath ?? pathInTopBar, optionLookup).map(
                     ({ segment, path, role, type }) => (
                       <CartoucheUI
                         key={segment}
@@ -287,6 +291,7 @@ export const DataSelectorModal = React.memo(
                         inverted={false}
                         selected={false}
                         role={role}
+                        preview={hoveredPath != null && isPreviewSegment(pathInTopBar, path)}
                         testId={`data-selector-top-bar-segment-${segment}`}
                       >
                         {segment.toString()}
@@ -348,6 +353,7 @@ export const DataSelectorModal = React.memo(
                           testId={`data-selector-primitive-values-${variableNameFromPath(
                             variable,
                           )}`}
+                          onHover={onHover(variable.valuePath)}
                           onClick={setCurrentSelectedPathCurried(variable.valuePath)}
                         >
                           {variableNameFromPath(variable)}
@@ -372,6 +378,7 @@ export const DataSelectorModal = React.memo(
                       role='selection'
                       testId={`data-selector-left-section-${variableNameFromPath(variable)}`}
                       onClick={setCurrentSelectedPathCurried(variable.valuePath)}
+                      onHover={onHover(variable.valuePath)}
                     >
                       {variableNameFromPath(variable)}
                     </CartoucheUI>
@@ -402,6 +409,7 @@ export const DataSelectorModal = React.memo(
                           testId={`data-selector-right-section-${variableNameFromPath(child)}`}
                           onClick={setCurrentSelectedPathCurried(child.valuePath)}
                           onDoubleClick={setNavigatedToPathCurried(child.valuePath)}
+                          onHover={onHover(child.valuePath)}
                         >
                           {variableNameFromPath(child)}
                         </CartoucheUI>
@@ -521,4 +529,11 @@ function cartoucheFolderOrInfo(option: VariableOption): CartoucheUIProps['role']
     default:
       assertNever(option)
   }
+}
+
+function isPreviewSegment(
+  pathInTopBar: VariableOption['valuePath'],
+  pathUpToSegment: VariableOption['valuePath'],
+) {
+  return !isPrefixOf(pathUpToSegment, pathInTopBar)
 }

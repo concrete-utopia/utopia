@@ -3,6 +3,11 @@ import type { IcnColor } from '../../../../uuiui'
 import { FlexRow, Icn, Tooltip, UtopiaStyles, useColorTheme } from '../../../../uuiui'
 import { when } from '../../../../utils/react-conditionals'
 
+export interface HoverHandlers {
+  onMouseEnter: (e: React.MouseEvent) => void
+  onMouseLeave: (e: React.MouseEvent) => void
+}
+
 export type CartoucheUIProps = React.PropsWithChildren<{
   tooltip: string
   source: 'internal' | 'external' | 'literal'
@@ -11,9 +16,11 @@ export type CartoucheUIProps = React.PropsWithChildren<{
   inverted: boolean
   selected: boolean
   testId: string
+  preview?: boolean
   onDelete?: (e: React.MouseEvent) => void
   onClick?: (e: React.MouseEvent) => void
   onDoubleClick?: (e: React.MouseEvent) => void
+  onHover?: HoverHandlers
 }>
 
 export const CartoucheUI = React.forwardRef(
@@ -29,6 +36,8 @@ export const CartoucheUI = React.forwardRef(
       selected,
       role,
       datatype,
+      onHover,
+      preview = false,
     } = props
 
     const colorTheme = useColorTheme()
@@ -78,6 +87,8 @@ export const CartoucheUI = React.forwardRef(
       <div
         onClick={wrappedOnClick}
         onDoubleClick={wrappedOnDoubleClick}
+        onMouseEnter={onHover?.onMouseEnter}
+        onMouseLeave={onHover?.onMouseLeave}
         style={{
           minWidth: 0, // this ensures that the div can never expand the allocated grid space
         }}
@@ -98,6 +109,7 @@ export const CartoucheUI = React.forwardRef(
               display: 'flex',
               flex: 1,
               gap: 4,
+              opacity: preview ? 0.5 : 1,
             }}
           >
             {source === 'literal' ? null : dataTypeToIcon(datatype, cartoucheIconColor)}
