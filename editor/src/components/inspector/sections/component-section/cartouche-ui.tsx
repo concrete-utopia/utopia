@@ -80,24 +80,24 @@ export const CartoucheUI = React.forwardRef(
         }}
         ref={ref}
       >
-        <FlexRow
-          style={{
-            cursor: 'pointer',
-            fontSize: 10,
-            fontWeight: 400,
-            color: foregroundColor,
-            backgroundColor: backgroundColor,
-            border: shouldShowBorder ? '1px solid ' + borderColor : '1px solid transparent',
-            padding: '0px 6px 0 4px',
-            borderRadius: 4,
-            height: 20,
-            display: 'flex',
-            flex: 1,
-            gap: 4,
-          }}
-        >
-          {source === 'literal' ? null : <Icons.NavigatorData color={cartoucheIconColor} />}
-          <Tooltip title={tooltip}>
+        <Tooltip title={tooltip}>
+          <FlexRow
+            style={{
+              cursor: 'pointer',
+              fontSize: 10,
+              fontWeight: 400,
+              color: foregroundColor,
+              backgroundColor: backgroundColor,
+              border: shouldShowBorder ? '1px solid ' + borderColor : '1px solid transparent',
+              padding: '0px 6px 0 4px',
+              borderRadius: 4,
+              height: 20,
+              display: 'flex',
+              flex: 1,
+              gap: 4,
+            }}
+          >
+            {source === 'literal' ? null : <Icons.NavigatorData color={cartoucheIconColor} />}
             <div
               style={{
                 flex: 1,
@@ -117,20 +117,20 @@ export const CartoucheUI = React.forwardRef(
               &lrm;
               {/* the &lrm; non-printing character is added to fix the punctuation marks disappearing because of direction: rtl */}
             </div>
-          </Tooltip>
-          {when(
-            onDelete != null,
-            <Icn
-              category='semantic'
-              type='cross'
-              color={cartoucheIconColor}
-              width={12}
-              height={12}
-              data-testid={`delete-${props.testId}`}
-              onClick={wrappedOnDelete}
-            />,
-          )}
-        </FlexRow>
+            {when(
+              onDelete != null,
+              <Icn
+                category='semantic'
+                type='cross'
+                color={cartoucheIconColor}
+                width={12}
+                height={12}
+                data-testid={`delete-${props.testId}`}
+                onClick={wrappedOnDelete}
+              />,
+            )}
+          </FlexRow>
+        </Tooltip>
       </div>
     )
   },
