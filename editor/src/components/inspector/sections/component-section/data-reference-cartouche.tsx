@@ -6,7 +6,7 @@ import type {
   JSExpressionOtherJavaScript,
   JSXElementChild,
 } from '../../../../core/shared/element-template'
-import { getJSXElementNameLastPart, isJSExpression } from '../../../../core/shared/element-template'
+import { getJSXElementNameLastPart } from '../../../../core/shared/element-template'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { NO_OP, assertNever } from '../../../../core/shared/utils'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
@@ -21,8 +21,6 @@ import { DataPickerPreferredAllAtom } from './data-picker-popup'
 import { useAtom } from 'jotai'
 import type { CartoucheUIProps } from './cartouche-ui'
 import { CartoucheUI } from './cartouche-ui'
-import { jsxSimpleAttributeToValue } from '../../../../core/shared/jsx-attribute-utils'
-import { isLeft } from '../../../../core/shared/either'
 
 interface DataReferenceCartoucheControlProps {
   elementPath: ElementPath
@@ -103,11 +101,7 @@ export const DataReferenceCartoucheControl = React.memo(
       preferredAllState,
     )
 
-    const dataPickerButtonData = useDataPickerButton(
-      variableNamesInScope,
-      updateDataWithDataPicker,
-      getTypeOfElement(childOrAttribute),
-    )
+    const dataPickerButtonData = useDataPickerButton(variableNamesInScope, updateDataWithDataPicker)
 
     const isDataComingFromHookResult = dataTraceResult.type === 'hook-result'
 
@@ -246,24 +240,4 @@ export function getTextContentOfElement(
     default:
       assertNever(element)
   }
-}
-
-function getTypeOfElement(element: JSXElementChild): 'renderable' | 'boolean' | 'array' | 'object' {
-  if (!isJSExpression(element)) {
-    return 'renderable'
-  }
-  const simpleValue = jsxSimpleAttributeToValue(element)
-  if (isLeft(simpleValue)) {
-    return 'renderable'
-  }
-  if (Array.isArray(simpleValue.value)) {
-    return 'array'
-  }
-  if (typeof simpleValue.value === 'object') {
-    return 'object'
-  }
-  if (typeof simpleValue.value === 'boolean') {
-    return 'boolean'
-  }
-  return 'renderable'
 }

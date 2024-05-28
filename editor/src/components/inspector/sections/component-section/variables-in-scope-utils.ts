@@ -543,52 +543,6 @@ function variableMatchesControlDescription(
   return matches
 }
 
-export function controlDescriptionToVariableType(
-  controlType: ControlDescription['control'],
-): 'renderable' | 'boolean' | 'array' | 'object' {
-  switch (controlType) {
-    case 'jsx':
-    case 'color':
-    case 'string-input':
-    case 'number-input':
-    case 'euler':
-    case 'expression-input':
-    case 'expression-popuplist':
-    case 'html-input':
-    case 'matrix3':
-    case 'matrix4':
-    case 'none':
-    case 'popuplist':
-    case 'radio':
-    case 'vector2':
-    case 'vector3':
-    case 'vector4':
-    case 'tuple': // hmm
-    case 'union': // hmm
-      return 'renderable'
-    case 'checkbox':
-      return 'boolean'
-    case 'array':
-      return 'array'
-    case 'style-controls':
-    case 'object':
-      return 'object'
-    default:
-      return assertNever(controlType)
-  }
-
-  // (isValidReactNode(variable) && controlDescription.control === 'jsx') ||
-  // (typeof variable === 'string' && controlDescription.control === 'string-input') ||
-  // (typeof variable === 'number' && controlDescription.control === 'number-input') ||
-  // (Array.isArray(variable) &&
-  //   controlDescription.control === 'array' &&
-  //   variableMatchesArrayControlDescription(variable, controlDescription)) ||
-  // (typeof variable === 'object' &&
-  //   variable != null &&
-  //   controlDescription.control === 'object' &&
-  //   variableMatchesObjectControlDescription(variable, controlDescription))
-}
-
 export type PropertyValue =
   | { type: 'existing'; value: unknown }
   | { type: 'mapped-value' }
