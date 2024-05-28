@@ -608,7 +608,9 @@ function condenseNavigatorTree(
     if (
       entry.type === 'regular-entry' &&
       entry.children.length === 1 &&
-      dataCanCondenseFromMetadata(metadata, entry.navigatorEntry.elementPath)
+      dataCanCondenseFromMetadata(metadata, entry.navigatorEntry.elementPath) &&
+      !MetadataUtils.isProbablyScene(metadata, entry.navigatorEntry.elementPath) &&
+      !MetadataUtils.isProbablyRemixScene(metadata, entry.navigatorEntry.elementPath)
     ) {
       return {
         type: 'condensed-trunk',
