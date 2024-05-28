@@ -7,22 +7,20 @@ import type {
   JSXElementChild,
 } from '../../../../core/shared/element-template'
 import { getJSXElementNameLastPart } from '../../../../core/shared/element-template'
-import type { ElementPath, ElementPropertyPath } from '../../../../core/shared/project-file-types'
-import * as PP from '../../../../core/shared/property-path'
-import * as EPP from '../../../template-property-path'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { NO_OP, assertNever } from '../../../../core/shared/utils'
-import { FlexRow, Icn, Icons, Tooltip, UtopiaStyles, colorTheme } from '../../../../uuiui'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { useDataPickerButton } from './component-section'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { selectComponents } from '../../../editor/actions/meta-actions'
-import { when } from '../../../../utils/react-conditionals'
 import { dataPathSuccess, traceDataFromElement } from '../../../../core/data-tracing/data-tracing'
 import type { RenderedAt } from '../../../editor/store/editor-state'
 import { replaceElementInScope } from '../../../editor/actions/action-creators'
 import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'
 import { DataPickerPreferredAllAtom } from './data-picker-popup'
 import { useAtom } from 'jotai'
+import type { CartoucheUIProps } from './cartouche-ui'
+import { CartoucheUI } from './cartouche-ui'
 
 interface DataReferenceCartoucheControlProps {
   elementPath: ElementPath
@@ -135,8 +133,8 @@ export const DataReferenceCartoucheControl = React.memo(
 )
 
 interface DataCartoucheInnerProps {
-  onClick: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
-  onDoubleClick: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
+  onClick: (e: React.MouseEvent) => void
+  onDoubleClick: (e: React.MouseEvent) => void
   selected: boolean
   inverted: boolean
   contentsToDisplay: { type: 'literal' | 'reference'; label: string | null }
@@ -152,9 +150,10 @@ export const DataCartoucheInner = React.forwardRef(
       onClick,
       onDoubleClick,
       safeToDelete,
-      onDelete,
+      onDelete: onDeleteCallback,
       selected,
       inverted,
+      testId,
       contentsToDisplay,
       contentIsComingFromServer,
     } = props
@@ -162,109 +161,34 @@ export const DataCartoucheInner = React.forwardRef(
     const onDeleteInner = React.useCallback(
       (e: React.MouseEvent) => {
         e.stopPropagation()
-        onDelete()
+        onDeleteCallback()
       },
-      [onDelete],
+      [onDeleteCallback],
     )
 
-    const cartoucheIconColorToUse = contentIsComingFromServer ? 'green' : 'dynamic'
+    const onDelete = safeToDelete ? onDeleteInner : undefined
 
-    const cartoucheIconColor = inverted
-      ? 'on-highlight-main'
-      : contentsToDisplay.type === 'reference'
-      ? cartoucheIconColorToUse
-      : 'secondary'
-
-    const borderColor = inverted
-      ? colorTheme.white.value
-      : contentIsComingFromServer
-      ? colorTheme.green.value
-      : colorTheme.selectionBlue.value
-
-    const primaryForegoundColorToUse = contentIsComingFromServer
-      ? colorTheme.green.value
-      : colorTheme.dynamicBlue.value
-
-    const primaryBackgroundColorToUse = contentIsComingFromServer
-      ? colorTheme.green10.value
-      : colorTheme.selectionBlue10.value
-
-    const foregroundColor = inverted
-      ? colorTheme.white.value
-      : contentsToDisplay.type === 'reference'
-      ? primaryForegoundColorToUse
-      : colorTheme.neutralForeground.value
-
-    const backgroundColor =
-      contentsToDisplay.type === 'reference'
-        ? primaryBackgroundColorToUse
-        : colorTheme.fg0Opacity10.value
-
-    const label = contentsToDisplay.label ?? 'DATA'
+    const source: CartoucheUIProps['source'] =
+      contentsToDisplay.type === 'literal'
+        ? 'literal'
+        : contentIsComingFromServer
+        ? 'external'
+        : 'internal'
 
     return (
-      <div
+      <CartoucheUI
+        onDelete={onDelete}
         onClick={onClick}
         onDoubleClick={onDoubleClick}
-        style={{
-          minWidth: 0, // this ensures that the div can never expand the allocated grid space
-        }}
+        selected={selected}
+        inverted={inverted}
+        testId={testId}
+        tooltip={contentsToDisplay.label ?? 'DATA'}
+        source={source}
         ref={ref}
       >
-        <FlexRow
-          style={{
-            cursor: 'pointer',
-            fontSize: 10,
-            fontWeight: 400,
-            color: foregroundColor,
-            backgroundColor: backgroundColor,
-            border: selected ? '1px solid ' + borderColor : '1px solid transparent',
-            padding: '0px 6px 0 4px',
-            borderRadius: 4,
-            height: 20,
-            display: 'flex',
-            flex: 1,
-            gap: 4,
-          }}
-        >
-          {contentsToDisplay.type === 'reference' ? (
-            <Icons.NavigatorData color={cartoucheIconColor} />
-          ) : null}
-          <Tooltip title={label}>
-            <div
-              style={{
-                flex: 1,
-                paddingTop: 1,
-                /* Standard CSS ellipsis */
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-
-                /* Beginning of string */
-                direction: contentsToDisplay.type === 'reference' ? 'rtl' : 'ltr', // TODO we need a better way to ellipsize the beginnign because rtl eats ' " marks
-                textAlign: 'left',
-                ...UtopiaStyles.fontStyles.monospaced,
-              }}
-            >
-              {label}
-              &lrm;
-              {/* the &lrm; non-printing character is added to fix the punctuation marks disappearing because of direction: rtl */}
-            </div>
-          </Tooltip>
-          {when(
-            safeToDelete,
-            <Icn
-              category='semantic'
-              type='cross'
-              color={cartoucheIconColor}
-              width={12}
-              height={12}
-              data-testid={`delete-${props.testId}`}
-              onClick={onDeleteInner}
-            />,
-          )}
-        </FlexRow>
-      </div>
+        {contentsToDisplay.label ?? 'DATA'}
+      </CartoucheUI>
     )
   },
 )

@@ -936,7 +936,9 @@ export function useGithubPolling() {
 
     switch (authState) {
       case 'not-authenticated':
-        dispatch([updateGithubData(emptyGithubData())])
+        queueMicrotask(() => {
+          dispatch([updateGithubData(emptyGithubData())])
+        })
         break
       case 'missing-user-details':
         void GithubHelpers.getUserDetailsFromServer().then((userDetails) => {
@@ -971,7 +973,9 @@ export function useGithubPolling() {
     //   })
     // }
 
-    void refreshAndScheduleGithubData()
+    queueMicrotask(() => {
+      void refreshAndScheduleGithubData()
+    })
   }, [authState, refreshAndScheduleGithubData])
 }
 
