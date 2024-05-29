@@ -59,7 +59,7 @@ const Separator = React.memo(
 
 const SIMPLE_CONTROL_STYLES = getControlStyles('simple')
 
-function ElementSelector({
+function ArrayIndexSelector({
   total,
   selected,
   onSelect,
@@ -399,7 +399,7 @@ export const DataSelectorModal = React.memo(
                       {variableNameFromPath(variable)}
                     </CartoucheUI>
                     {variable.type === 'array' ? (
-                      <ElementSelector
+                      <ArrayIndexSelector
                         total={variable.children.length}
                         selected={indexLookup[variable.valuePath.toString()] ?? 0}
                         onSelect={updateIndexInLookup(variable.valuePath.toString())}
