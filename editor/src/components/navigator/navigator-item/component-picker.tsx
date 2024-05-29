@@ -34,6 +34,7 @@ export interface ComponentPickerProps {
   onItemClick: (elementToInsert: InsertableComponent) => React.UIEventHandler
   closePicker: () => void
   shownInToolbar: boolean
+  insertionActive: boolean
 }
 
 export interface ElementToInsert {
@@ -77,7 +78,7 @@ export function componentPickerOptionTestId(componentName: string, variant?: str
 }
 
 export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
-  const { onItemClick, closePicker, shownInToolbar } = props
+  const { onItemClick, closePicker, shownInToolbar, insertionActive } = props
   const [selectedComponentKey, setSelectedComponentKey] = React.useState<string | null>(null)
   const [filter, setFilter] = React.useState<string>('')
   const menuRef = React.useRef<HTMLDivElement | null>(null)
@@ -192,13 +193,15 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
         onKeyDown={onKeyDown}
         shownInToolbar={shownInToolbar}
       />
-      <ComponentPickerComponentSection
-        components={categorizedComponents}
-        onItemClick={props.onItemClick}
-        onItemHover={onItemHover}
-        currentlySelectedKey={highlightedComponentKey}
-        shownInToolbar={shownInToolbar}
-      />
+      {filter.length > 0 || !insertionActive ? (
+        <ComponentPickerComponentSection
+          components={categorizedComponents}
+          onItemClick={props.onItemClick}
+          onItemHover={onItemHover}
+          currentlySelectedKey={highlightedComponentKey}
+          shownInToolbar={shownInToolbar}
+        />
+      ) : null}
     </div>
   )
 })

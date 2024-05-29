@@ -71,6 +71,12 @@ export const CanvasToolbarSearchPortalId = 'canvas-toolbar-search-portal'
 export const CanvasToolbarSearchTestID = 'canvas-toolbar-search'
 
 export const CanvasToolbarSearch = React.memo(() => {
+  const insertionActive = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.mode.type === 'insert' && store.editor.mode.subjects.length > 0,
+    'TopMenu editorMode',
+  )
+
   const dispatch = useDispatch()
 
   const target = useEditorState(
@@ -98,6 +104,8 @@ export const CanvasToolbarSearch = React.memo(() => {
     (preferredChildToInsert: InsertableComponent) => (e: React.UIEvent) => {
       e.stopPropagation()
       e.preventDefault()
+
+      // FIXME this also needs to switch to select mode
 
       insertComponentPickerItem(
         preferredChildToInsert,
@@ -140,6 +148,7 @@ export const CanvasToolbarSearch = React.memo(() => {
         onItemClick={onItemClick}
         closePicker={closePicker}
         shownInToolbar={true}
+        insertionActive={insertionActive}
       />
     </div>
   )

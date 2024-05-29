@@ -948,6 +948,7 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
           onItemClick={onItemClick}
           closePicker={hideAllContextMenus}
           shownInToolbar={false}
+          insertionActive={false}
         />
       </Menu>
     )
