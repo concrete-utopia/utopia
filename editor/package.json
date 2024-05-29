@@ -55,7 +55,7 @@
     "vite-build": "node --max_old_space_size=16384 ./node_modules/vite/bin/vite build -- -DEBUG",
     "watch-tsc": "tsc --watch --noEmit && NODE_OPTIONS=\"--max_old_space_size=4096 $NODE_OPENSSL_OPTION\"",
     "unused-exports": "ts-unused-exports ./tsconfig.json --ignoreLocallyUsed",
-    "eslint-plugin-local-test": "eslint-plugin-local test"
+    "eslint-custom-rules-test": "eslint-plugin-local test"
   },
   "lint-staged": {
     "*.{js,ts,tsx}": [
