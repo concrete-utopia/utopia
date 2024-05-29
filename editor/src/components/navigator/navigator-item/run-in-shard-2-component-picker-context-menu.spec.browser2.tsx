@@ -1,11 +1,14 @@
 import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
 import { selectComponentsForTest, wait } from '../../../utils/utils.test-utils'
+import type { EditorRenderResult } from '../../canvas/ui-jsx.test-utils'
 import {
   formatTestProjectCode,
   getPrintedUiJsCode,
   getPrintedUiJsCodeWithoutUIDs,
+  makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
   renderTestEditorWithModel,
+  TestScenePath,
 } from '../../canvas/ui-jsx.test-utils'
 import {
   StoryboardFilePath,
@@ -30,6 +33,7 @@ import { labelTestIdForComponentIcon } from './component-picker-context-menu'
 import { ReplaceElementButtonTestId, addChildButtonTestId } from './navigator-item-components'
 import { NavigatorContainerId } from '../navigator'
 import { act } from 'react-dom/test-utils'
+import { cmdModifier } from '../../../utils/modifiers'
 
 describe('The navigator component picker context menu', () => {
   const PreferredChildComponents = [
@@ -1418,6 +1422,7 @@ export const Column = () => (
     const expectedOutput = formatTestProjectCode(`
       import * as React from 'react'
       import { Storyboard } from 'utopia-api'
+      import { Placeholder } from 'utopia-api'
 
       export const Card = (props) => {
         return (
@@ -1464,36 +1469,270 @@ export const Column = () => (
     it('Works when using the context menu', async () => {
       const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
       await selectComponentsForTest(editor, [target])
-
-      const navigatorRow = editor.renderedDOM.getByTestId(NavigatorContainerId)
-
-      await act(async () => {
-        fireEvent(
-          navigatorRow,
-          new MouseEvent('contextmenu', {
-            bubbles: true,
-            cancelable: true,
-            clientX: 3,
-            clientY: 3,
-            buttons: 0,
-            button: 2,
-          }),
-        )
-      })
-
-      await editor.getDispatchFollowUpActionsFinished()
-
-      const replaceButton = await waitFor(() => editor.renderedDOM.getByText('Wrap in…'))
-      await mouseClickAtPoint(replaceButton, { x: 3, y: 3 })
-
-      const menuButton = await waitFor(() => editor.renderedDOM.getByText('List'))
-      await mouseClickAtPoint(menuButton, { x: 3, y: 3 })
-
-      await editor.getDispatchFollowUpActionsFinished()
-
+      await openContextMenuAndClick(editor, [{ text: 'Wrap in…' }, { text: 'List' }])
       expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState(), StoryboardFilePath)).toEqual(
         expectedOutput,
       )
+    })
+  })
+
+  describe('wrap in div', () => {
+    const entryPoints = {
+      'choose div from dropdown': async (renderResult: EditorRenderResult): Promise<void> => {
+        await openContextMenuAndClick(renderResult, [
+          { text: 'Wrap in…' },
+          { text: 'div', testId: 'Div-div' },
+        ])
+      },
+      'cmd + enter': (): Promise<void> => pressKey('Enter', { modifiers: cmdModifier }),
+    }
+
+    Object.entries(entryPoints).forEach(([entrypoint, trigger]) => {
+      describe(`${entrypoint}`, () => {
+        it('wrap absolute elements', async () => {
+          const renderResult = await renderTestEditorWithCode(
+            makeTestProjectCodeWithSnippet(` <div
+            style={{
+              height: '100%',
+              width: '100%',
+              contain: 'layout',
+            }}
+            data-uid='root'
+          >
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 20,
+                top: 22,
+                width: 48,
+                height: 41,
+              }}
+              data-uid='one'
+            />
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 82,
+                top: 28,
+                width: 38,
+                height: 29,
+              }}
+              data-uid='two'
+            />
+          </div>`),
+            'await-first-dom-report',
+          )
+          await selectComponentsForTest(renderResult, [
+            EP.appendNewElementPath(TestScenePath, ['root', 'one']),
+            EP.appendNewElementPath(TestScenePath, ['root', 'two']),
+          ])
+          await trigger(renderResult)
+
+          expect(
+            renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+          ).toEqual([
+            'regular-utopia-storyboard-uid/scene-aaa',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/wra',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/wra/one',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/wra/two',
+          ])
+
+          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+            makeTestProjectCodeWithSnippet(` <div
+          style={{
+            height: '100%',
+            width: '100%',
+            contain: 'layout',
+          }}
+          data-uid='root'
+        >
+          <div
+            style={{
+              contain: 'layout',
+              width: 100,
+              height: 41,
+              position: 'absolute',
+              top: 22,
+              left: 20,
+            }}
+          >
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 48,
+                height: 41,
+              }}
+              data-uid='one'
+            />
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 62,
+                top: 6,
+                width: 38,
+                height: 29,
+              }}
+              data-uid='two'
+            />
+          </div>
+        </div>`),
+          )
+        })
+        it('wrap flex elements', async () => {
+          const renderResult = await renderTestEditorWithCode(
+            makeTestProjectCodeWithSnippet(` <div
+            style={{
+              height: '100%',
+              width: '100%',
+              contain: 'layout',
+            }}
+            data-uid='root'
+          >
+            <div
+              style={{
+                contain: 'layout',
+                width: 'max-content',
+                height: 'max-content',
+                position: 'absolute',
+                top: 22,
+                left: 20,
+                display: 'flex',
+                flexDirection: 'row',
+                gap: 12,
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+              }}
+              data-uid='container'
+            >
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  width: 48,
+                  height: 41,
+                  contain: 'layout',
+                }}
+                data-uid='one'
+              />
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  width: 38,
+                  height: 29,
+                  contain: 'layout',
+                }}
+                data-uid='two'
+              />
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  width: 38,
+                  height: 29,
+                  contain: 'layout',
+                }}
+                data-uid='three'
+              />
+            </div>
+          </div>`),
+            'await-first-dom-report',
+          )
+          await selectComponentsForTest(renderResult, [
+            EP.appendNewElementPath(TestScenePath, ['root', 'container', 'one']),
+            EP.appendNewElementPath(TestScenePath, ['root', 'container', 'two']),
+          ])
+          await trigger(renderResult)
+
+          expect(
+            renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+          ).toEqual([
+            'regular-utopia-storyboard-uid/scene-aaa',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/wra',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/wra/one',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/wra/two',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/three',
+          ])
+
+          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+            makeTestProjectCodeWithSnippet(`<div
+          style={{
+            height: '100%',
+            width: '100%',
+            contain: 'layout',
+          }}
+          data-uid='root'
+        >
+          <div
+            style={{
+              contain: 'layout',
+              width: 'max-content',
+              height: 'max-content',
+              position: 'absolute',
+              top: 22,
+              left: 20,
+              display: 'flex',
+              flexDirection: 'row',
+              gap: 12,
+              alignItems: 'center',
+              justifyContent: 'flex-start',
+            }}
+            data-uid='container'
+          >
+            <div
+              style={{
+                contain: 'layout',
+                width: 98,
+                height: 41,
+              }}
+            >
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  width: 48,
+                  height: 41,
+                  contain: 'layout',
+                  top: 0,
+                  left: 0,
+                  position: 'absolute',
+                }}
+                data-uid='one'
+              />
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  width: 38,
+                  height: 29,
+                  contain: 'layout',
+                  top: 6,
+                  left: 60,
+                  position: 'absolute',
+                }}
+                data-uid='two'
+              />
+            </div>
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                width: 38,
+                height: 29,
+                contain: 'layout',
+              }}
+              data-uid='three'
+            />
+          </div>
+        </div>`),
+          )
+        })
+      })
     })
   })
 
@@ -1905,3 +2144,41 @@ export var storyboard = (
   </Storyboard>
 )
 `
+
+type Selector = {
+  text: string
+  testId?: string
+}
+async function openContextMenuAndClick(editor: EditorRenderResult, selectors: Selector[]) {
+  const navigatorRow = editor.renderedDOM.getByTestId(NavigatorContainerId)
+
+  await act(async () => {
+    fireEvent(
+      navigatorRow,
+      new MouseEvent('contextmenu', {
+        bubbles: true,
+        cancelable: true,
+        clientX: 3,
+        clientY: 3,
+        buttons: 0,
+        button: 2,
+      }),
+    )
+  })
+
+  await editor.getDispatchFollowUpActionsFinished()
+
+  for (const selector of selectors) {
+    // we actually need the await here: https://eslint.org/docs/latest/rules/no-await-in-loop#when-not-to-use-it
+    // eslint-disable-next-line no-await-in-loop
+    const button = await waitFor(() =>
+      selector.testId != null
+        ? editor.renderedDOM.getByTestId(selector.testId)
+        : editor.renderedDOM.getByText(selector.text),
+    )
+    // eslint-disable-next-line no-await-in-loop
+    await mouseClickAtPoint(button, { x: 3, y: 3 })
+  }
+
+  await editor.getDispatchFollowUpActionsFinished()
+}

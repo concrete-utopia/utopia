@@ -10,7 +10,11 @@ import { unsafeGet } from '../../core/shared/optics/optic-utilities'
 import type { Optic } from '../../core/shared/optics/optics'
 import { forceNotNull } from '../../core/shared/optional-utils'
 import type { ElementPath } from '../../core/shared/project-file-types'
-import { searchInFloatingMenu, selectComponentsForTest } from '../../utils/utils.test-utils'
+import {
+  searchInComponentPicker,
+  searchInFloatingMenu,
+  selectComponentsForTest,
+} from '../../utils/utils.test-utils'
 import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
 import {
   TestScenePath,
@@ -385,7 +389,7 @@ describe('conditionals', () => {
     })
   })
   describe('wrap', () => {
-    it.skip('can wrap a single element in a conditional', async () => {
+    it('can wrap a single element in a conditional', async () => {
       const startSnippet = `
         <div data-uid='aaa'>
           <div data-uid='bbb'>hello there</div>
@@ -448,7 +452,7 @@ describe('conditionals', () => {
          `),
       )
     })
-    it.skip('can wrap a conditional clause element in a conditional', async () => {
+    it('can wrap a conditional clause element in a conditional', async () => {
       const targetUID = 'bbb'
       const startSnippet = `
         <div data-uid='aaa'>
@@ -1114,5 +1118,5 @@ describe('conditionals', () => {
 
 async function wrapInConditional(renderResult: EditorRenderResult) {
   await pressKey('w') // open the wrap menu
-  await searchInFloatingMenu(renderResult, 'Condition')
+  await searchInComponentPicker(renderResult, 'Condition')
 }
