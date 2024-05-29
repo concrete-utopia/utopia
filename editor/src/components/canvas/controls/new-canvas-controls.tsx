@@ -45,7 +45,10 @@ import type { ProjectContentTreeRoot } from '../../assets'
 import { LayoutParentControl } from './layout-parent-control'
 import { unless, when } from '../../../utils/react-conditionals'
 import { useGetApplicableStrategyControls } from '../canvas-strategies/canvas-strategies'
-import { MultiSelectOutlineControl } from './select-mode/simple-outline-control'
+import {
+  DataReferenceParentOutline,
+  MultiSelectOutlineControl,
+} from './select-mode/simple-outline-control'
 import { GuidelineControls } from './guideline-controls'
 import { showContextMenu } from '../../editor/actions/action-creators'
 import { InsertionControls } from './insertion-plus-button'
@@ -535,10 +538,15 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       >
         {when(
           isSelectMode(editorMode) || isCommentMode(editorMode),
-          <SceneLabelControl
-            maybeHighlightOnHover={maybeHighlightOnHover}
-            maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
-          />,
+          <>
+            <SceneLabelControl
+              maybeHighlightOnHover={maybeHighlightOnHover}
+              maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
+            />
+            <DataReferenceParentOutline
+              targetViews={[...localSelectedViews, ...localHighlightedViews]}
+            />
+          </>,
         )}
         {when(
           resizeStatus !== 'disabled',
