@@ -19,9 +19,6 @@ patchedDependencies:
   keycode@2.2.1:
     hash: ijco5rdhqzhtzo47bw5o33xhhu
     path: patches/keycode@2.2.1.patch
-  react-contexify@5.0.0:
-    hash: 32bg6f6k4pz5sbtodfdfpncmtu
-    path: patches/react-contexify@5.0.0.patch
   react-dom@18.1.0:
     hash: abari7w75zfr6mrhvamxwmfpxm
     path: patches/react-dom@18.1.0.patch
@@ -270,7 +267,7 @@ specifiers:
   re-reselect: 4.0.1
   re-resizable: 6.9.1
   react: 18.1.0
-  react-contexify: 5.0.0
+  react-contexify: 6.0.0
   react-dnd: 16.0.0
   react-dnd-html5-backend: 16.0.0
   react-dom: 18.1.0
@@ -447,7 +444,7 @@ dependencies:
   re-reselect: 4.0.1_reselect@4.1.7
   re-resizable: 6.9.1_ef5jwxihqo6n7gxfmzogljlgcm
   react: 18.1.0_47cciibm4ysmleigs33s763fqu
-  react-contexify: 5.0.0_32bg6f6k4pz5sbtodfdfpncmtu_ef5jwxihqo6n7gxfmzogljlgcm
+  react-contexify: 6.0.0_ef5jwxihqo6n7gxfmzogljlgcm
   react-dnd: 16.0.0_7cpxmzzodpxnolj5zcc5cr63ji
   react-dnd-html5-backend: 16.0.0
   react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
@@ -7381,6 +7378,11 @@ packages:
 
   /clsx/1.1.1:
     resolution: {integrity: sha512-6/bPho624p3S2pMyvP5kKBPXnI3ufHLObBFCfgx+LkeR5lg2XYy2hqZqUf45ypD8COn2bhgGJSUE+l5dhNBieA==}
+    engines: {node: '>=6'}
+    dev: false
+
+  /clsx/1.2.1:
+    resolution: {integrity: sha512-EcR6r5a8bj6pu3ycsa/E/cKVGuTgZJZdsyUYHOksG/UHIiKfjxzRxYJpyVBwYaQeOvghal9fcc4PidlgzugAQg==}
     engines: {node: '>=6'}
     dev: false
 
@@ -15858,18 +15860,16 @@ packages:
       lodash.curry: 4.1.1
     dev: false
 
-  /react-contexify/5.0.0_32bg6f6k4pz5sbtodfdfpncmtu_ef5jwxihqo6n7gxfmzogljlgcm:
-    resolution: {integrity: sha512-2FIp7lxJ6dtfGr8EZ4uVV5p5TQjd0n2h/JU7PrejNIMiCeZWvSVPFh4lj1ZvjXosglBvP7q5JQQ8yUCdSaMSaw==}
-    engines: {node: '>=10'}
+  /react-contexify/6.0.0_ef5jwxihqo6n7gxfmzogljlgcm:
+    resolution: {integrity: sha512-jMhz6yZI81Jv3UDj7TXqCkhdkCFEEmvwGCPXsQuA2ZUC8EbCuVQ6Cy8FzKMXa0y454XTDClBN2YFvvmoFlrFkg==}
     peerDependencies:
       react: '>=16'
       react-dom: '>=16'
     dependencies:
-      clsx: 1.1.1
+      clsx: 1.2.1
       react: 18.1.0_47cciibm4ysmleigs33s763fqu
       react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
     dev: false
-    patched: true
 
   /react-dnd-html5-backend/16.0.0:
     resolution: {integrity: sha512-be3lKEbbT8FQcoTjFlQ4ZXG/NVrFNJu9W0INc5rm/5EFQpHCkz+xpbB2U8j9uh5Bvk7AsJyQrZznEut0hrNPIA==}
