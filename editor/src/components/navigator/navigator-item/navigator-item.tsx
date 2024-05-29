@@ -2,6 +2,7 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import createCachedSelector from 're-reselect'
+import type { CSSProperties } from 'react'
 import React from 'react'
 import type { ConditionalCase } from '../../../core/model/conditionals'
 import {
@@ -56,7 +57,6 @@ import type {
   DerivedSubstate,
   MetadataSubstate,
 } from '../../editor/store/store-hook-substore-types'
-import { navigatorDepth } from '../navigator-utils'
 import { ComponentPreview } from './component-preview'
 import { ExpandableIndicator } from './expandable-indicator'
 import { ItemLabel } from './item-label'
@@ -933,6 +933,17 @@ export const NavigatorItem: React.FunctionComponent<
     [navigatorEntry],
   )
 
+  const isScene = React.useMemo(() => {
+    return (
+      MetadataUtils.isProbablyScene(metadata, props.navigatorEntry.elementPath) ||
+      MetadataUtils.isProbablyRemixScene(metadata, props.navigatorEntry.elementPath)
+    )
+  }, [props.navigatorEntry, metadata])
+
+  const hideExpandableIndicator = React.useMemo(() => {
+    return props.navigatorEntry.type === 'CONDITIONAL_CLAUSE' || isScene
+  }, [props.navigatorEntry, isScene])
+
   return (
     <div
       onClick={onClick}
@@ -1017,7 +1028,7 @@ export const NavigatorItem: React.FunctionComponent<
           >
             <FlexRow style={{ width: '100%' }}>
               {unless(
-                props.navigatorEntry.type === 'CONDITIONAL_CLAUSE',
+                hideExpandableIndicator,
                 <ExpandableIndicator
                   key='expandable-indicator'
                   visible={canBeExpanded}
@@ -1047,6 +1058,10 @@ export const NavigatorItem: React.FunctionComponent<
                 elementWarnings={!isConditional ? elementWarnings : null}
                 childComponentCount={childComponentCount}
                 insideFocusedComponent={isInsideComponent && isDescendantOfSelected}
+                style={{
+                  paddingLeft: isScene ? 0 : 5,
+                  paddingRight: codeItemType === 'map' ? 0 : 5,
+                }}
               />
             </FlexRow>
             {unless(
@@ -1186,6 +1201,7 @@ interface NavigatorRowLabelProps {
   childComponentCount: number
   dispatch: EditorDispatch
   insideFocusedComponent: boolean
+  style?: CSSProperties
 }
 
 export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
@@ -1194,6 +1210,7 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
   return (
     <div
       style={{
+        ...props.style,
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
@@ -1201,8 +1218,6 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         gap: 5,
         borderRadius: 20,
         height: 22,
-        paddingLeft: 5,
-        paddingRight: props.codeItemType === 'map' ? 0 : 5,
       }}
     >
       {unless(
