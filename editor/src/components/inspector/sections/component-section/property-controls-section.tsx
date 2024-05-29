@@ -93,7 +93,12 @@ export const PropertyControlsSection = React.memo((props: PropertyControlsSectio
       )}
       {/** props set on the component instance and props used inside the component code */}
       {filteredDetectedPropsWithNoValue.length > 0 ? (
-        <UIGridRow padded tall={false} variant={'<-------------1fr------------->'}>
+        <UIGridRow
+          padded
+          tall={false}
+          variant={'<-------------1fr------------->'}
+          className='controls-section-container'
+        >
           <div>
             <VerySubdued>{`Unused props: ${filteredDetectedPropsWithNoValue.join(
               ', ',

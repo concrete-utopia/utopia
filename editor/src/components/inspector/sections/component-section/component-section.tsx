@@ -1234,6 +1234,26 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
 
   return (
     <React.Fragment>
+      <style>
+        {`
+          .component-expand-button {
+            visibility: hidden;
+          }
+          :is(
+              .component-section-header:has(
+                  + .expandable-collapsed:has(
+                      > :is(.folder-section, .controls-section-container)
+                    )
+                ),
+              .component-section-header:has(
+                  + :is(.folder-section, .controls-section-container)
+                )
+            )
+            .component-expand-button {
+            visibility: visible;
+          }
+        `}
+      </style>
       <UIGridRow
         padded={false}
         variant='<----------1fr---------><-auto->'
@@ -1245,6 +1265,7 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
           height: 38,
           flexShrink: 0,
         }}
+        className='component-section-header'
       >
         <FlexRow
           onClick={OpenFile}
@@ -1273,7 +1294,12 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
             <span>Component</span>
           )}
         </FlexRow>
-        <SquareButton highlight style={{ width: 12 }} onClick={toggleSection}>
+        <SquareButton
+          highlight
+          style={{ width: 12 }}
+          onClick={toggleSection}
+          className='component-expand-button'
+        >
           <ExpandableIndicator
             testId='component-section-expand'
             visible
@@ -1282,27 +1308,36 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
           />
         </SquareButton>
       </UIGridRow>
-      {when(
-        sectionExpanded,
-        <React.Fragment>
-          {propertyControlsAndTargets.map((controlsAndTargets) => (
-            <PropertyControlsSection
-              key={EP.toString(controlsAndTargets.targets[0])}
-              propertyControls={controlsAndTargets.controls}
-              targets={controlsAndTargets.targets}
-              isScene={props.isScene}
-              detectedPropsAndValuesWithoutControls={
-                controlsAndTargets.detectedPropsAndValuesWithoutControls
-              }
-              detectedPropsWithNoValue={controlsAndTargets.detectedPropsWithNoValue}
-              propsWithControlsButNoValue={controlsAndTargets.propsWithControlsButNoValue}
-            />
-          ))}
-        </React.Fragment>,
-      )}
+      <ExpandableWrapper expanded={sectionExpanded}>
+        {propertyControlsAndTargets.map((controlsAndTargets) => (
+          <PropertyControlsSection
+            key={EP.toString(controlsAndTargets.targets[0])}
+            propertyControls={controlsAndTargets.controls}
+            targets={controlsAndTargets.targets}
+            isScene={props.isScene}
+            detectedPropsAndValuesWithoutControls={
+              controlsAndTargets.detectedPropsAndValuesWithoutControls
+            }
+            detectedPropsWithNoValue={controlsAndTargets.detectedPropsWithNoValue}
+            propsWithControlsButNoValue={controlsAndTargets.propsWithControlsButNoValue}
+          />
+        ))}
+      </ExpandableWrapper>
     </React.Fragment>
   )
 })
+
+function ExpandableWrapper(props: { children: React.ReactNode; expanded: boolean }) {
+  if (props.expanded) {
+    return <React.Fragment>{props.children}</React.Fragment>
+  } else {
+    return (
+      <div className='expandable-collapsed' style={{ display: 'none' }}>
+        {props.children}
+      </div>
+    )
+  }
+}
 
 export interface ComponentSectionState {
   errorOccurred: boolean
