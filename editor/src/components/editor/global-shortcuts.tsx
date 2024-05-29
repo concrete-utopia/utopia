@@ -591,16 +591,11 @@ export function handleKeyDown(
       [WRAP_ELEMENT_PICKER_SHORTCUT]: () => {
         if (allowedToEdit) {
           if (isSelectMode(editor.mode)) {
-            // for multiple selection, we show the old picker
-            if (editor.selectedViews.length > 1) {
-              return [EditorActions.openFloatingInsertMenu({ insertMenuMode: 'wrap' })]
-            } else {
-              const mousePoint = WindowMousePositionRaw ?? zeroCanvasPoint
-              showComponentPicker(editor.selectedViews, EditorActions.wrapTarget)(event, {
-                position: mousePoint,
-              })
-              return []
-            }
+            const mousePoint = WindowMousePositionRaw ?? zeroCanvasPoint
+            showComponentPicker(editor.selectedViews, EditorActions.wrapTarget)(event, {
+              position: mousePoint,
+            })
+            return []
           }
         }
         return []

@@ -2,7 +2,7 @@ import React from 'react'
 import {
   useContextMenu,
   Menu,
-  type ContextMenuParams,
+  type ShowContextMenuParams,
   contextMenu,
   type TriggerEvent,
 } from 'react-contexify'
@@ -24,6 +24,7 @@ import type { ElementPath, Imports } from '../../../core/shared/project-file-typ
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import {
+  applyCommandsAction,
   deleteView,
   insertAsChildTarget,
   insertInsertable,
@@ -82,7 +83,9 @@ import { generateUidWithExistingComponents } from '../../../core/model/element-t
 import { emptyComments } from 'utopia-shared/src/types'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../../../core/shared/dom-utils'
 import { emptyImports } from '../../../core/workers/common/project-file-utils'
-import { forceNotNull } from '../../../core/shared/optional-utils'
+import { commandsForFirstApplicableStrategy } from '../../../components/inspector/inspector-strategies/inspector-strategy'
+import { wrapInDivStrategy } from '../../../components/editor/wrap-in-callbacks'
+import type { AllElementProps } from '../../../components/editor/store/editor-state'
 
 type RenderPropTarget = { type: 'render-prop'; prop: string }
 type ConditionalTarget = { type: 'conditional'; conditionalCase: ConditionalCase }
@@ -304,7 +307,7 @@ export type ShowComponentPickerContextMenuCallback = (
 
 export type ShowComponentPickerContextMenu = (
   event: TriggerEvent,
-  params?: Pick<ContextMenuParams, 'id' | 'props' | 'position'> | undefined,
+  params?: Pick<ShowContextMenuParams, 'props' | 'position'> | undefined,
 ) => void
 
 const PreferredMenuId = 'component-picker-context-menu'
@@ -328,7 +331,7 @@ export const useCreateCallbackToShowComponentPicker =
         ) =>
         (
           event: TriggerEvent,
-          params?: Pick<ContextMenuParams, 'id' | 'props' | 'position'> | undefined,
+          params?: Pick<ShowContextMenuParams, 'props' | 'position'> | undefined,
         ) => {
           event.stopPropagation()
           event.preventDefault()
@@ -344,7 +347,7 @@ export const useCreateCallbackToShowComponentPicker =
             // for insertion and replacement we still don't support multiple selection
             // so we pick the first one
             targets = selectedViews.slice(0, 1)
-            const firstTarget = EP.getFirstPath(targets)
+            const firstTarget = targets[0]
             const targetParent =
               isReplaceTarget(insertionTarget) ||
               isReplaceKeepChildrenAndStyleTarget(insertionTarget)
@@ -370,7 +373,7 @@ export const useCreateCallbackToShowComponentPicker =
 
           setContextMenuProps({ targets: selectedViews, insertionTarget: insertionTarget })
           const show = pickerType === 'preferred' ? showPreferred : showFull
-          show(event, params)
+          show({ ...params, event })
         },
       [editorRef, showPreferred, showFull, setContextMenuProps],
     )
@@ -434,7 +437,7 @@ function variantItem(
 }
 
 const separatorItem: ContextMenuItem<unknown> = {
-  name: <div key='separator' className='react-contexify__separator' />,
+  name: <div key='separator' className='contexify_separator' />,
   enabled: false,
   isSeparator: true,
   action: () => null,
@@ -469,19 +472,38 @@ function insertComponentPickerItem(
   toInsert: InsertableComponent,
   targets: ElementPath[],
   projectContents: ProjectContentTreeRoot,
+  allElementProps: AllElementProps,
+  propertyControlsInfo: PropertyControlsInfo,
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   dispatch: EditorDispatch,
   insertionTarget: InsertionTarget,
 ) {
   const uniqueIds = new Set(getAllUniqueUids(projectContents).uniqueIDs)
-  const uid = generateConsistentUID('prop', uniqueIds)
   const elementWithoutUID = toInsert.element()
   // TODO: for most of the operations we still only support one target
-  const firstTarget = EP.getFirstPath(targets)
+  const firstTarget = targets[0]
 
   const actions = ((): Array<EditorAction> => {
     if (elementWithoutUID.type === 'JSX_ELEMENT') {
+      if (isWrapTarget(insertionTarget) && elementWithoutUID?.name?.baseVariable === 'div') {
+        const commands = commandsForFirstApplicableStrategy([
+          wrapInDivStrategy(
+            metadata,
+            targets,
+            pathTrees,
+            allElementProps,
+            projectContents,
+            propertyControlsInfo,
+          ),
+        ])
+
+        if (commands != null) {
+          return [applyCommandsAction(commands)]
+        }
+      }
+
+      const uid = generateConsistentUID('prop', uniqueIds)
       const element = jsxElementFromJSXElementWithoutUID(elementWithoutUID, uid)
       const fixedElement = fixUtopiaElement(element, uniqueIds).value
 
@@ -509,33 +531,21 @@ function insertComponentPickerItem(
         return [replaceMappedElement(fixedElement, firstTarget, toInsert.importsToAdd)]
       }
 
-      if (isWrapTarget(insertionTarget)) {
-        const newUID = generateUidWithExistingComponents(projectContents)
-
-        const newElement = jsxElement(
-          element.name,
-          newUID,
-          setJSXAttributesAttribute(
-            element.props,
-            'data-uid',
-            jsExpressionValue(newUID, emptyComments),
-          ),
-          element.children,
-        )
-        return [
-          wrapInElement(targets, {
-            element: newElement,
-            importsToAdd: toInsert.importsToAdd,
-          }),
-        ]
-      }
-
       if (
         isReplaceTarget(insertionTarget) ||
         isReplaceKeepChildrenAndStyleTarget(insertionTarget)
       ) {
         return [
           replaceJSXElement(fixedElement, firstTarget, toInsert.importsToAdd, insertionTarget),
+        ]
+      }
+
+      if (isWrapTarget(insertionTarget)) {
+        return [
+          wrapInElement(targets, {
+            element: fixedElement,
+            importsToAdd: toInsert.importsToAdd,
+          }),
         ]
       }
 
@@ -586,7 +596,7 @@ function insertComponentPickerItem(
             ...elementToInsert,
             uid: generateUidWithExistingComponents(projectContents),
           },
-          importsToAdd: emptyImports(),
+          importsToAdd: toInsert.importsToAdd,
         }),
       ]
     }
@@ -657,6 +667,8 @@ function insertPreferredChild(
   preferredChildToInsert: ElementToInsert,
   targets: ElementPath[],
   projectContents: ProjectContentTreeRoot,
+  allElementProps: AllElementProps,
+  propertyControlsInfo: PropertyControlsInfo,
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   dispatch: EditorDispatch,
@@ -677,6 +689,8 @@ function insertPreferredChild(
     toInsert,
     targets,
     projectContents,
+    allElementProps,
+    propertyControlsInfo,
     metadata,
     pathTrees,
     dispatch,
@@ -744,12 +758,14 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
     const showFullMenu = useCreateCallbackToShowComponentPicker()(targets, insertionTarget, 'full')
 
     // for insertion we currently only support one target
-    const firstTarget = EP.getFirstPath(targets)
+    const firstTarget = targets[0]
     const preferredChildren = usePreferredChildrenForTarget(firstTarget, insertionTarget)
 
     const dispatch = useDispatch()
 
     const projectContentsRef = useRefEditorState((state) => state.editor.projectContents)
+    const allElementPropsRef = useRefEditorState((state) => state.editor.allElementProps)
+    const propertyControlsInfoRef = useRefEditorState((state) => state.editor.propertyControlsInfo)
     const metadataRef = useRefEditorState((state) => state.editor.jsxMetadata)
     const elementPathTreesRef = useRefEditorState((state) => state.editor.elementPathTree)
 
@@ -759,12 +775,23 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
           preferredChildToInsert,
           targets,
           projectContentsRef.current,
+          allElementPropsRef.current,
+          propertyControlsInfoRef.current,
           metadataRef.current,
           elementPathTreesRef.current,
           dispatch,
           insertionTarget,
         ),
-      [targets, projectContentsRef, metadataRef, elementPathTreesRef, dispatch, insertionTarget],
+      [
+        targets,
+        projectContentsRef,
+        allElementPropsRef,
+        propertyControlsInfoRef,
+        metadataRef,
+        elementPathTreesRef,
+        dispatch,
+        insertionTarget,
+      ],
     )
     const wrapperRef = React.useRef<HTMLDivElement>(null)
 
@@ -803,7 +830,7 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
 const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProps>(
   ({ targets, insertionTarget }) => {
     // for insertion we currently only support one target
-    const firstTarget = EP.getFirstPath(targets)
+    const firstTarget = targets[0]
     const targetChildren = useEditorState(
       Substores.metadata,
       (store) => MetadataUtils.getChildrenUnordered(store.editor.jsxMetadata, firstTarget),
@@ -855,6 +882,8 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
     const dispatch = useDispatch()
 
     const projectContentsRef = useRefEditorState((state) => state.editor.projectContents)
+    const allElementPropsRef = useRefEditorState((state) => state.editor.allElementProps)
+    const propertyControlsInfoRef = useRefEditorState((state) => state.editor.propertyControlsInfo)
     const metadataRef = useRefEditorState((state) => state.editor.jsxMetadata)
     const elementPathTreesRef = useRefEditorState((state) => state.editor.elementPathTree)
 
@@ -871,6 +900,8 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
           preferredChildToInsert,
           targets,
           projectContentsRef.current,
+          allElementPropsRef.current,
+          propertyControlsInfoRef.current,
           metadataRef.current,
           elementPathTreesRef.current,
           dispatch,
@@ -882,6 +913,8 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
       [
         targets,
         projectContentsRef,
+        allElementPropsRef,
+        propertyControlsInfoRef,
         metadataRef,
         elementPathTreesRef,
         dispatch,
@@ -894,12 +927,12 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
       e.stopPropagation()
     }, [])
 
-    const onShown = React.useCallback(() => {
-      document.body.classList.add(BodyMenuOpenClass)
-    }, [])
-
-    const onHidden = React.useCallback(() => {
-      document.body.classList.remove(BodyMenuOpenClass)
+    const onVisibilityChange = React.useCallback((isVisible: boolean) => {
+      if (isVisible) {
+        document.body.classList.add(BodyMenuOpenClass)
+      } else {
+        document.body.classList.remove(BodyMenuOpenClass)
+      }
     }, [])
 
     return (
@@ -908,8 +941,7 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
         animation={false}
         style={{ width: 260 }}
         onClick={squashEvents}
-        onShown={onShown}
-        onHidden={onHidden}
+        onVisibilityChange={onVisibilityChange}
       >
         <ComponentPicker
           allComponents={allInsertableComponents}
