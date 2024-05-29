@@ -283,7 +283,7 @@ export const DataSelectorModal = React.memo(
                     }}
                   >
                     <FlexRow style={{ flexWrap: 'wrap', flexGrow: 1 }}>
-                      {nonEmptyPathPrefixes(pathInTopBarIncludingHover, optionLookup).map(
+                      {pathBreadcrumbs(pathInTopBarIncludingHover, optionLookup).map(
                         ({ segment, path }, idx) => (
                           <span key={path.toString()}>
                             {idx === 0 ? segment : pathSegmentToString(segment)}
@@ -318,6 +318,7 @@ export const DataSelectorModal = React.memo(
                   Apply
                 </div>
               </FlexRow>
+              {/* Value preview */}
               <FlexRow
                 style={{
                   gridColumn: '3',
@@ -505,7 +506,7 @@ function childVars(option: VariableOption, indices: ValuePathLookup<number>): Va
   }
 }
 
-export function nonEmptyPathPrefixes(
+export function pathBreadcrumbs(
   valuePath: VariableOption['valuePath'],
   lookup: ValuePathLookup<VariableOption>,
 ): Array<{
