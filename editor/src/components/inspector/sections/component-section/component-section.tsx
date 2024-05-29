@@ -98,6 +98,7 @@ import { getRegisteredComponent } from '../../../../core/property-controls/prope
 import type { EditorAction } from '../../../editor/action-types'
 import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'
 import { useAtom } from 'jotai'
+import { DataSelectorModal } from './data-selector-modal'
 
 export const VariableFromScopeOptionTestId = (idx: string) => `variable-from-scope-${idx}`
 export const DataPickerPopupButtonTestId = `data-picker-popup-button-test-id`
@@ -111,6 +112,7 @@ export interface PropertyLabelAndPlusButtonProps {
   popupIsOpen: boolean
   isHovered: boolean
   isConnectedToData: boolean
+  testId: string
 }
 
 export function PropertyLabelAndPlusButton(
@@ -125,6 +127,7 @@ export function PropertyLabelAndPlusButton(
     handleMouseEnter,
     handleMouseLeave,
     children,
+    testId,
   } = props
 
   return (
@@ -148,6 +151,7 @@ export function PropertyLabelAndPlusButton(
         <span onClick={openPopup}>{title}</span>
         {children}
         <div
+          data-testid={testId}
           onClick={openPopup}
           style={{
             opacity: isHovered || popupIsOpen ? 1 : 0,
@@ -348,7 +352,14 @@ export function useDataPickerButton(
       {
         name: 'offset',
         options: {
-          offset: [0, 8],
+          offset: [8, 8],
+        },
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          altAxis: true,
+          padding: 20,
         },
       },
     ],
@@ -360,12 +371,12 @@ export function useDataPickerButton(
 
   const DataPickerComponent = React.useMemo(
     () => (
-      <DataPickerPopup
+      <DataSelectorModal
         {...popper.attributes.popper}
         style={popper.styles.popper}
         closePopup={closePopup}
         ref={setPopperElement}
-        onTweakProperty={onPropertyPicked}
+        onPropertyPicked={onPropertyPicked}
         variablesInScope={variablesInScope}
       />
     ),
@@ -490,6 +501,7 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
           popupIsOpen={dataPickerButtonData.popupIsOpen}
           isHovered={isHovered}
           isConnectedToData={isConnectedToData}
+          testId={`plus-button-${title}`}
         />
       </PropertyLabel>
     ) : (
@@ -964,6 +976,7 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
                   popupIsOpen={dataPickerButtonData.popupIsOpen}
                   isHovered={isHovered}
                   isConnectedToData={isConnectedToData}
+                  testId={`plus-button-${title}`}
                 >
                   {unless(props.disableToggling, <ObjectIndicator open={open} />)}
                 </PropertyLabelAndPlusButton>
