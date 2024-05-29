@@ -24,6 +24,7 @@ import type { ElementPath, Imports } from '../../../core/shared/project-file-typ
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import {
+  applyCommandsAction,
   deleteView,
   insertAsChildTarget,
   insertInsertable,
@@ -82,7 +83,9 @@ import { generateUidWithExistingComponents } from '../../../core/model/element-t
 import { emptyComments } from 'utopia-shared/src/types'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../../../core/shared/dom-utils'
 import { emptyImports } from '../../../core/workers/common/project-file-utils'
-import { forceNotNull } from '../../../core/shared/optional-utils'
+import { commandsForFirstApplicableStrategy } from '../../../components/inspector/inspector-strategies/inspector-strategy'
+import { wrapInDivStrategy } from '../../../components/editor/wrap-in-callbacks'
+import type { AllElementProps } from '../../../components/editor/store/editor-state'
 
 type RenderPropTarget = { type: 'render-prop'; prop: string }
 type ConditionalTarget = { type: 'conditional'; conditionalCase: ConditionalCase }
@@ -469,6 +472,8 @@ function insertComponentPickerItem(
   toInsert: InsertableComponent,
   targets: ElementPath[],
   projectContents: ProjectContentTreeRoot,
+  allElementProps: AllElementProps,
+  propertyControlsInfo: PropertyControlsInfo,
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   dispatch: EditorDispatch,
@@ -510,6 +515,23 @@ function insertComponentPickerItem(
       }
 
       if (isWrapTarget(insertionTarget)) {
+        if (elementWithoutUID?.name?.baseVariable === 'div') {
+          const commands = commandsForFirstApplicableStrategy([
+            wrapInDivStrategy(
+              metadata,
+              targets,
+              pathTrees,
+              allElementProps,
+              projectContents,
+              propertyControlsInfo,
+            ),
+          ])
+
+          if (commands != null) {
+            return [applyCommandsAction(commands)]
+          }
+        }
+
         const newUID = generateUidWithExistingComponents(projectContents)
 
         const newElement = jsxElement(
@@ -657,6 +679,8 @@ function insertPreferredChild(
   preferredChildToInsert: ElementToInsert,
   targets: ElementPath[],
   projectContents: ProjectContentTreeRoot,
+  allElementProps: AllElementProps,
+  propertyControlsInfo: PropertyControlsInfo,
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   dispatch: EditorDispatch,
@@ -677,6 +701,8 @@ function insertPreferredChild(
     toInsert,
     targets,
     projectContents,
+    allElementProps,
+    propertyControlsInfo,
     metadata,
     pathTrees,
     dispatch,
@@ -750,6 +776,8 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
     const dispatch = useDispatch()
 
     const projectContentsRef = useRefEditorState((state) => state.editor.projectContents)
+    const allElementPropsRef = useRefEditorState((state) => state.editor.allElementProps)
+    const propertyControlsInfoRef = useRefEditorState((state) => state.editor.propertyControlsInfo)
     const metadataRef = useRefEditorState((state) => state.editor.jsxMetadata)
     const elementPathTreesRef = useRefEditorState((state) => state.editor.elementPathTree)
 
@@ -759,12 +787,23 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
           preferredChildToInsert,
           targets,
           projectContentsRef.current,
+          allElementPropsRef.current,
+          propertyControlsInfoRef.current,
           metadataRef.current,
           elementPathTreesRef.current,
           dispatch,
           insertionTarget,
         ),
-      [targets, projectContentsRef, metadataRef, elementPathTreesRef, dispatch, insertionTarget],
+      [
+        targets,
+        projectContentsRef,
+        allElementPropsRef,
+        propertyControlsInfoRef,
+        metadataRef,
+        elementPathTreesRef,
+        dispatch,
+        insertionTarget,
+      ],
     )
     const wrapperRef = React.useRef<HTMLDivElement>(null)
 
@@ -855,6 +894,8 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
     const dispatch = useDispatch()
 
     const projectContentsRef = useRefEditorState((state) => state.editor.projectContents)
+    const allElementPropsRef = useRefEditorState((state) => state.editor.allElementProps)
+    const propertyControlsInfoRef = useRefEditorState((state) => state.editor.propertyControlsInfo)
     const metadataRef = useRefEditorState((state) => state.editor.jsxMetadata)
     const elementPathTreesRef = useRefEditorState((state) => state.editor.elementPathTree)
 
@@ -871,6 +912,8 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
           preferredChildToInsert,
           targets,
           projectContentsRef.current,
+          allElementPropsRef.current,
+          propertyControlsInfoRef.current,
           metadataRef.current,
           elementPathTreesRef.current,
           dispatch,
@@ -882,6 +925,8 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
       [
         targets,
         projectContentsRef,
+        allElementPropsRef,
+        propertyControlsInfoRef,
         metadataRef,
         elementPathTreesRef,
         dispatch,
