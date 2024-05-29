@@ -1,5 +1,5 @@
 import urlJoin from 'url-join'
-import { ServerEnvironment } from '../env.server'
+import { BrowserEnvironment } from '../env.server'
 import { allowedAssetExtensions } from '../handlers/splatLoad'
 import { canAccessProject } from '../handlers/validators'
 import { UserProjectPermission } from '../types'
@@ -39,7 +39,7 @@ export function getProjectIdFromReferer(req: Request): string | null {
 
   const refererURL = new URL(referer)
   const isMaybeProjectReferer =
-    refererURL.origin === ServerEnvironment.CORS_ORIGIN &&
+    refererURL.origin === BrowserEnvironment.EDITOR_URL &&
     (refererURL.pathname.startsWith('/p/') || refererURL.pathname.startsWith('/project/'))
   if (!isMaybeProjectReferer) {
     return null
