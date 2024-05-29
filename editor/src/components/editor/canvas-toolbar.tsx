@@ -91,6 +91,8 @@ export const CanvasToolbarSearch = React.memo(() => {
   const projectContentsRef = useRefEditorState((state) => state.editor.projectContents)
   const metadataRef = useRefEditorState((state) => state.editor.jsxMetadata)
   const elementPathTreesRef = useRefEditorState((state) => state.editor.elementPathTree)
+  const allElementPropsRef = useRefEditorState((state) => state.editor.allElementProps)
+  const propertyControlsInfoRef = useRefEditorState((state) => state.editor.propertyControlsInfo)
 
   const onItemClick = React.useCallback(
     (preferredChildToInsert: InsertableComponent) => (e: React.UIEvent) => {
@@ -101,13 +103,24 @@ export const CanvasToolbarSearch = React.memo(() => {
         preferredChildToInsert,
         [target],
         projectContentsRef.current,
+        allElementPropsRef.current,
+        propertyControlsInfoRef.current,
         metadataRef.current,
         elementPathTreesRef.current,
         dispatch,
         insertionTarget,
       )
     },
-    [target, projectContentsRef, metadataRef, elementPathTreesRef, dispatch, insertionTarget],
+    [
+      target,
+      projectContentsRef,
+      allElementPropsRef,
+      propertyControlsInfoRef,
+      metadataRef,
+      elementPathTreesRef,
+      dispatch,
+      insertionTarget,
+    ],
   )
 
   const closePicker = React.useCallback(
