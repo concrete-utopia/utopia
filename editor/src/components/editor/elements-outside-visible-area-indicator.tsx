@@ -44,9 +44,7 @@ export const ElementsOutsideVisibleAreaIndicator = React.memo(() => {
         style={{
           textAlign: 'center',
           width: 'min-content',
-          minWidth: 32,
-          height: 32,
-          padding: '0 8px',
+          padding: '0 8px 0px 2px',
           position: 'relative',
           color: colorTheme.dynamicBlue.value,
         }}
