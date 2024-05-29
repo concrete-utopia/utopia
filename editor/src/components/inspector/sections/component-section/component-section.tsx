@@ -89,7 +89,7 @@ import {
   isImportedOrigin,
 } from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
-import type { DataPickerCallback, VariableOption } from './data-picker-utils'
+import type { DataPickerCallback, DataPickerOption } from './data-picker-utils'
 import { DataPickerPreferredAllAtom } from './data-picker-utils'
 import { jsxElementChildToText } from '../../../canvas/ui-jsx-canvas-renderer/jsx-element-child-to-text'
 import { stopPropagation } from '../../common/inspector-utils'
@@ -338,7 +338,7 @@ function getLabelControlStyle(
 const isBaseIndentationLevel = (props: AbstractRowForControlProps) => props.indentationLevel === 1
 
 export function useDataPickerButton(
-  variablesInScope: VariableOption[],
+  variablesInScope: DataPickerOption[],
   onPropertyPicked: DataPickerCallback,
 ) {
   const [referenceElement, setReferenceElement] = React.useState<HTMLDivElement | null>(null)
