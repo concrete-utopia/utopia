@@ -28,7 +28,7 @@ import type {
   ObjectOption,
   PrimitiveOption,
   VariableOption,
-} from './data-picker-popup'
+} from './data-picker-utils'
 
 export interface DataSelectorModalProps {
   closePopup: () => void
