@@ -101,15 +101,53 @@ const DEFAULT_SIZE: React.CSSProperties = {
 
 type ObjectPath = Array<string | number>
 
+interface ProcessedVariablesInScope {
+  [valuePath: string]: VariableOption
+}
+
+interface ArrayIndexLookup {
+  [valuePath: string]: number
+}
+
 export const DataSelectorModal = React.memo(
   React.forwardRef<HTMLDivElement, DataSelectorModalProps>(
     ({ style, closePopup, variablesInScope, onPropertyPicked }, forwardedRef) => {
       const colorTheme = useColorTheme()
 
       const [navigatedToPath, setNavigatedToPath] = React.useState<ObjectPath>([])
+
       // TODO invariant: currentValuePath should be a prefix of currentSelectedPath, we should enforce this
       const [selectedPath, setSelectedPath] = React.useState<ObjectPath | null>(null)
       const [hoveredPath, setHoveredPath] = React.useState<ObjectPath | null>(null)
+
+      const setNavigatedToPathCurried = React.useCallback(
+        (path: VariableOption['valuePath']) => (e: React.MouseEvent) => {
+          e.stopPropagation()
+          e.preventDefault()
+
+          setNavigatedToPath(path)
+          setSelectedPath(null)
+          setHoveredPath(null)
+        },
+        [],
+      )
+
+      const onHomeClick = React.useCallback(
+        (e: React.MouseEvent) => {
+          e.stopPropagation()
+          e.preventDefault()
+
+          setNavigatedToPathCurried([])(e)
+        },
+        [setNavigatedToPathCurried],
+      )
+
+      const catchClick = React.useCallback((e: React.MouseEvent) => {
+        e.stopPropagation()
+        e.preventDefault()
+
+        setSelectedPath(null)
+      }, [])
 
       const onHover = React.useCallback(
         (path: VariableOption['valuePath']): HoverHandlers => ({
@@ -119,21 +157,21 @@ export const DataSelectorModal = React.memo(
         [],
       )
 
-      const [indexLookup, setIndexLookup] = React.useState<ValuePathLookup<number>>({})
+      const [indexLookup, setIndexLookup] = React.useState<ArrayIndexLookup>({})
       const updateIndexInLookup = React.useCallback(
         (valuePathString: string) => (option: SelectOption) =>
           setIndexLookup((lookup) => ({ ...lookup, [valuePathString]: option.value })),
         [],
       )
 
-      const optionLookup = useVariableOptionLookup(variablesInScope)
+      const processedVariablesInScope = useProcessVariablesInScope(variablesInScope)
 
       const focusedVariableChildren = React.useMemo(() => {
         if (navigatedToPath.length === 0) {
           return variablesInScope
         }
 
-        const scopeToShow = optionLookup[navigatedToPath.toString()]
+        const scopeToShow = processedVariablesInScope[navigatedToPath.toString()]
         if (
           scopeToShow == null ||
           (scopeToShow.type !== 'array' && scopeToShow.type !== 'object')
@@ -141,7 +179,7 @@ export const DataSelectorModal = React.memo(
           return [] // TODO this should never happen!
         }
         return scopeToShow.children
-      }, [navigatedToPath, optionLookup, variablesInScope])
+      }, [navigatedToPath, processedVariablesInScope, variablesInScope])
 
       const { primitiveVars, folderVars } = React.useMemo(() => {
         let primitives: Array<PrimitiveOption | JSXOption> = []
@@ -176,32 +214,11 @@ export const DataSelectorModal = React.memo(
         [navigatedToPath],
       )
 
-      const setNavigatedToPathCurried = React.useCallback(
-        (path: VariableOption['valuePath']) => (e: React.MouseEvent) => {
-          e.stopPropagation()
-          e.preventDefault()
-
-          setNavigatedToPath(path)
-          setSelectedPath(null)
-        },
-        [],
-      )
-
-      const onHomeClick = React.useCallback(
-        (e: React.MouseEvent) => {
-          e.stopPropagation()
-          e.preventDefault()
-
-          setNavigatedToPathCurried([])(e)
-        },
-        [setNavigatedToPathCurried],
-      )
-
       const pathInTopBar = selectedPath ?? navigatedToPath
       const pathInTopBarIncludingHover = hoveredPath ?? pathInTopBar
 
       const onApplyClick = React.useCallback(() => {
-        const variable = optionLookup[pathInTopBar.toString()]
+        const variable = processedVariablesInScope[pathInTopBar.toString()]
         if (variable == null) {
           return
         }
@@ -212,17 +229,10 @@ export const DataSelectorModal = React.memo(
           ]),
         )
         closePopup()
-      }, [closePopup, onPropertyPicked, optionLookup, pathInTopBar])
-
-      const catchClick = React.useCallback((e: React.MouseEvent) => {
-        e.stopPropagation()
-        e.preventDefault()
-
-        setSelectedPath(null)
-      }, [])
+      }, [closePopup, onPropertyPicked, processedVariablesInScope, pathInTopBar])
 
       const valuePreviewText = (() => {
-        const variable = optionLookup[pathInTopBarIncludingHover.toString()]
+        const variable = processedVariablesInScope[pathInTopBarIncludingHover.toString()]
         if (variable == null) {
           return null
         }
@@ -288,7 +298,7 @@ export const DataSelectorModal = React.memo(
                     }}
                   >
                     <FlexRow style={{ flexWrap: 'wrap', flexGrow: 1 }}>
-                      {pathBreadcrumbs(pathInTopBarIncludingHover, optionLookup).map(
+                      {pathBreadcrumbs(pathInTopBarIncludingHover, processedVariablesInScope).map(
                         ({ segment, path }, idx) => (
                           <span key={path.toString()}>
                             {idx === 0 ? segment : pathSegmentToString(segment)}
@@ -471,13 +481,9 @@ function childTypeToCartoucheDataType(
   }
 }
 
-interface ValuePathLookup<T> {
-  [valuePath: string]: T
-}
-
-function useVariableOptionLookup(options: VariableOption[]): ValuePathLookup<VariableOption> {
+function useProcessVariablesInScope(options: VariableOption[]): ProcessedVariablesInScope {
   return React.useMemo(() => {
-    let lookup: ValuePathLookup<VariableOption> = {}
+    let lookup: ProcessedVariablesInScope = {}
     function walk(option: VariableOption) {
       lookup[option.valuePath.toString()] = option
       switch (option.type) {
@@ -497,7 +503,7 @@ function useVariableOptionLookup(options: VariableOption[]): ValuePathLookup<Var
   }, [options])
 }
 
-function childVars(option: VariableOption, indices: ValuePathLookup<number>): VariableOption[] {
+function childVars(option: VariableOption, indices: ArrayIndexLookup): VariableOption[] {
   switch (option.type) {
     case 'object':
       return option.children
@@ -513,7 +519,7 @@ function childVars(option: VariableOption, indices: ValuePathLookup<number>): Va
 
 export function pathBreadcrumbs(
   valuePath: VariableOption['valuePath'],
-  lookup: ValuePathLookup<VariableOption>,
+  processedVariablesInScope: ProcessedVariablesInScope,
 ): Array<{
   segment: string | number
   path: (string | number)[]
@@ -524,7 +530,7 @@ export function pathBreadcrumbs(
   let current: (string | number)[] = []
   for (const segment of valuePath) {
     current.push(segment)
-    const optionFromLookup = lookup[current.toString()]
+    const optionFromLookup = processedVariablesInScope[current.toString()]
 
     accumulator.push({
       segment: segment,
