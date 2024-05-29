@@ -1,3 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
+import React from 'react'
 import { MetadataUtils } from '../core/model/element-metadata-utils'
 import type { FilePathMappings } from '../core/model/project-file-utils'
 import type { Either } from '../core/shared/either'
@@ -64,7 +66,7 @@ export interface ContextMenuItem<T> {
     data: T,
     dispatch: EditorDispatch | undefined,
     rightClickCoordinate: WindowPoint | null,
-    event: React.MouseEvent | React.TouchEvent | React.KeyboardEvent,
+    event: React.MouseEvent | React.TouchEvent | React.KeyboardEvent | KeyboardEvent,
   ) => void
 }
 
@@ -341,7 +343,7 @@ export const toggleCanCondense: ContextMenuItem<CanvasData> = {
 }
 
 export const lineSeparator: ContextMenuItem<unknown> = {
-  name: RU.create('div', { key: 'separator', className: 'react-contexify__separator' }, ''),
+  name: RU.create('div', { key: 'separator', className: 'contexify_separator' }, ''),
   enabled: false,
   isSeparator: true,
   action: () => null,

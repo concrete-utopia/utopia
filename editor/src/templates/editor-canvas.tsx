@@ -1391,7 +1391,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
 function isTargetContextMenu(target: HTMLElement): boolean {
   const className = target.className ?? ''
   return (
-    (typeof className === 'string' && className.includes('react-contexify')) ||
+    (typeof className === 'string' && className.includes('contexify')) ||
     (target.parentElement != null && isTargetContextMenu(target.parentElement))
   )
 }

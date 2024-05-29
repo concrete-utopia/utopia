@@ -2,7 +2,7 @@ import React from 'react'
 import {
   useContextMenu,
   Menu,
-  type ContextMenuParams,
+  type ShowContextMenuParams,
   contextMenu,
   type TriggerEvent,
 } from 'react-contexify'
@@ -307,7 +307,7 @@ export type ShowComponentPickerContextMenuCallback = (
 
 export type ShowComponentPickerContextMenu = (
   event: TriggerEvent,
-  params?: Pick<ContextMenuParams, 'id' | 'props' | 'position'> | undefined,
+  params?: Pick<ShowContextMenuParams, 'props' | 'position'> | undefined,
 ) => void
 
 const PreferredMenuId = 'component-picker-context-menu'
@@ -331,7 +331,7 @@ export const useCreateCallbackToShowComponentPicker =
         ) =>
         (
           event: TriggerEvent,
-          params?: Pick<ContextMenuParams, 'id' | 'props' | 'position'> | undefined,
+          params?: Pick<ShowContextMenuParams, 'props' | 'position'> | undefined,
         ) => {
           event.stopPropagation()
           event.preventDefault()
@@ -347,7 +347,7 @@ export const useCreateCallbackToShowComponentPicker =
             // for insertion and replacement we still don't support multiple selection
             // so we pick the first one
             targets = selectedViews.slice(0, 1)
-            const firstTarget = EP.getFirstPath(targets)
+            const firstTarget = targets[0]
             const targetParent =
               isReplaceTarget(insertionTarget) ||
               isReplaceKeepChildrenAndStyleTarget(insertionTarget)
@@ -373,7 +373,7 @@ export const useCreateCallbackToShowComponentPicker =
 
           setContextMenuProps({ targets: selectedViews, insertionTarget: insertionTarget })
           const show = pickerType === 'preferred' ? showPreferred : showFull
-          show(event, params)
+          show({ ...params, event })
         },
       [editorRef, showPreferred, showFull, setContextMenuProps],
     )
@@ -437,7 +437,7 @@ function variantItem(
 }
 
 const separatorItem: ContextMenuItem<unknown> = {
-  name: <div key='separator' className='react-contexify__separator' />,
+  name: <div key='separator' className='contexify_separator' />,
   enabled: false,
   isSeparator: true,
   action: () => null,
@@ -483,7 +483,7 @@ function insertComponentPickerItem(
   const uid = generateConsistentUID('prop', uniqueIds)
   const elementWithoutUID = toInsert.element()
   // TODO: for most of the operations we still only support one target
-  const firstTarget = EP.getFirstPath(targets)
+  const firstTarget = targets[0]
 
   const actions = ((): Array<EditorAction> => {
     if (elementWithoutUID.type === 'JSX_ELEMENT') {
@@ -770,7 +770,7 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
     const showFullMenu = useCreateCallbackToShowComponentPicker()(targets, insertionTarget, 'full')
 
     // for insertion we currently only support one target
-    const firstTarget = EP.getFirstPath(targets)
+    const firstTarget = targets[0]
     const preferredChildren = usePreferredChildrenForTarget(firstTarget, insertionTarget)
 
     const dispatch = useDispatch()
@@ -842,7 +842,7 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
 const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProps>(
   ({ targets, insertionTarget }) => {
     // for insertion we currently only support one target
-    const firstTarget = EP.getFirstPath(targets)
+    const firstTarget = targets[0]
     const targetChildren = useEditorState(
       Substores.metadata,
       (store) => MetadataUtils.getChildrenUnordered(store.editor.jsxMetadata, firstTarget),
@@ -939,12 +939,12 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
       e.stopPropagation()
     }, [])
 
-    const onShown = React.useCallback(() => {
-      document.body.classList.add(BodyMenuOpenClass)
-    }, [])
-
-    const onHidden = React.useCallback(() => {
-      document.body.classList.remove(BodyMenuOpenClass)
+    const onVisibilityChange = React.useCallback((isVisible: boolean) => {
+      if (isVisible) {
+        document.body.classList.add(BodyMenuOpenClass)
+      } else {
+        document.body.classList.remove(BodyMenuOpenClass)
+      }
     }, [])
 
     return (
@@ -953,8 +953,7 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
         animation={false}
         style={{ width: 260 }}
         onClick={squashEvents}
-        onShown={onShown}
-        onHidden={onHidden}
+        onVisibilityChange={onVisibilityChange}
       >
         <ComponentPicker
           allComponents={allInsertableComponents}
