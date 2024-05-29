@@ -28,12 +28,16 @@ export async function getProxyAssetPath(req: Request): Promise<string | null> {
     return null
   }
 
-  return '/' + urlJoin('p', maybeProjectId, url.pathname)
+  const proxyURL = '/' + urlJoin('p', maybeProjectId, url.pathname)
+  console.warn(`asset proxy url: "${proxyURL}"`)
+
+  return proxyURL
 }
 
 export function getProjectIdFromReferer(req: Request): string | null {
   const referer = req.headers.get('referer')
   if (referer == null) {
+    console.warn(`referer: no referer in the request headers`)
     return null
   }
 
@@ -42,6 +46,7 @@ export function getProjectIdFromReferer(req: Request): string | null {
     refererURL.origin === BrowserEnvironment.EDITOR_URL &&
     (refererURL.pathname.startsWith('/p/') || refererURL.pathname.startsWith('/project/'))
   if (!isMaybeProjectReferer) {
+    console.warn(`referer: invalid project referer "${referer}"`)
     return null
   }
 
@@ -50,6 +55,7 @@ export function getProjectIdFromReferer(req: Request): string | null {
     .split('/')[0]
     .split('-')[0]
   if (maybeProjectId.length === 0) {
+    console.warn(`referer: no project id "${refererURL.pathname}"`)
     return null
   }
 
