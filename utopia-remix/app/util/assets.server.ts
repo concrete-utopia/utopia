@@ -35,9 +35,11 @@ export async function getProxyAssetPath(req: Request): Promise<string | null> {
 }
 
 export function getProjectIdFromReferer(req: Request): string | null {
-  const referer = req.headers.get('referer')
+  const referer = req.headers.get('Referer')
+  console.warn(
+    `referer: no referer in the request headers for ${req.url} ${Array.from(req.headers.keys())}`,
+  )
   if (referer == null) {
-    console.warn(`referer: no referer in the request headers`)
     return null
   }
 
