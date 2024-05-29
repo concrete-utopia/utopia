@@ -1,13 +1,7 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */ import { jsx } from '@emotion/react'
 import React from 'react'
-import {
-  FlexRow,
-  InspectorSectionHeader,
-  InspectorSectionIcons,
-  UtopiaTheme,
-  useColorTheme,
-} from '../../../uuiui'
+import { FlexRow, UtopiaTheme, useColorTheme } from '../../../uuiui'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import type { ElementPath } from '../../../core/shared/project-file-types'
@@ -57,6 +51,17 @@ export const DataReferenceSection = React.memo(({ paths }: { paths: ElementPath[
     }, elements)
   }, [isDataReference, elements, jsxMetadata])
 
+  const isText = React.useMemo(() => {
+    if (!isDataReference) {
+      return null
+    }
+    return elements.every((element) => element.element?.type === 'JSX_TEXT_BLOCK')
+  }, [elements, isDataReference])
+
+  const openPicker = React.useCallback(() => {
+    // TODO
+  }, [])
+
   if (!isDataReference) {
     return null
   }
@@ -84,8 +89,7 @@ export const DataReferenceSection = React.memo(({ paths }: { paths: ElementPath[
             textTransform: 'uppercase',
           }}
         >
-          <InspectorSectionIcons.Code style={{ width: 16, height: 16 }} color='main' />
-          <span>Data Reference</span>
+          <span>{isText ? 'Text' : 'Data'}</span>
         </FlexRow>
       </FlexRow>
       {labels.map((label, idx) => {
@@ -103,7 +107,9 @@ export const DataReferenceSection = React.memo(({ paths }: { paths: ElementPath[
                 padding: 3,
                 borderRadius: 2,
                 textAlign: 'center',
+                cursor: 'pointer',
               }}
+              onClick={openPicker}
             >
               {label.label}
             </div>
