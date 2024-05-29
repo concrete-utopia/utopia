@@ -1,4 +1,8 @@
 import React from 'react'
+import { isPrefixOf, last } from '../../../../core/shared/array-utils'
+import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
+import { arrayEqualsByReference, assertNever } from '../../../../core/shared/utils'
+import { when } from '../../../../utils/react-conditionals'
 import {
   FlexColumn,
   FlexRow,
@@ -8,6 +12,11 @@ import {
   UtopiaTheme,
   useColorTheme,
 } from '../../../../uuiui'
+import { getControlStyles } from '../../common/control-styles'
+import type { SelectOption } from '../../controls/select-control'
+import { InspectorModal } from '../../widgets/inspector-modal'
+import type { CartoucheUIProps, HoverHandlers } from './cartouche-ui'
+import { CartoucheUI } from './cartouche-ui'
 import type {
   ArrayOption,
   DataPickerCallback,
@@ -16,15 +25,6 @@ import type {
   PrimitiveOption,
   VariableOption,
 } from './data-picker-popup'
-import { InspectorModal } from '../../widgets/inspector-modal'
-import type { SelectOption } from '../../controls/select-control'
-import { arrayEqualsByReference, assertNever } from '../../../../core/shared/utils'
-import { getControlStyles } from '../../common/control-styles'
-import { isPrefixOf, last } from '../../../../core/shared/array-utils'
-import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
-import type { CartoucheUIProps, HoverHandlers } from './cartouche-ui'
-import { CartoucheUI } from './cartouche-ui'
-import { when } from '../../../../utils/react-conditionals'
 
 export interface DataSelectorModalProps {
   closePopup: () => void
@@ -94,7 +94,6 @@ const DEFAULT_SIZE: React.CSSProperties = {
   maxWidth: 700,
   maxHeight: 300,
 }
-const SLASH = 'X'
 
 export const DataSelectorModal = React.memo(
   React.forwardRef<HTMLDivElement, DataSelectorModalProps>(
@@ -553,13 +552,6 @@ function cartoucheFolderOrInfo(
     default:
       assertNever(option)
   }
-}
-
-function isPreviewSegment(
-  pathInTopBar: VariableOption['valuePath'],
-  pathUpToSegment: VariableOption['valuePath'],
-) {
-  return !isPrefixOf(pathUpToSegment, pathInTopBar)
 }
 
 function disabledButtonStyles(disabled: boolean): React.CSSProperties {
