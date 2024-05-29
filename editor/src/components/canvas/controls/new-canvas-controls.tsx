@@ -544,7 +544,8 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
               maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
             />
             <DataReferenceParentOutline
-              targetViews={[...localSelectedViews, ...localHighlightedViews]}
+              selectedViews={localSelectedViews}
+              highlightedViews={localHighlightedViews}
             />
           </>,
         )}

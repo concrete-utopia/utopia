@@ -117,34 +117,40 @@ export const OutlineControl = React.memo<OutlineControlProps>((props) => {
   return null
 })
 
-export const DataReferenceParentOutline = React.memo((props: { targetViews: ElementPath[] }) => {
-  const dataReferenceParentPaths = useEditorState(
-    Substores.projectContentsAndMetadata,
-    (store) => {
-      return uniqBy(
-        mapDropNulls((path) => {
-          const element = getElementFromProjectContents(path, store.editor.projectContents)
-          const isDataReference = element != null && MetadataUtils.isElementDataReference(element)
-          return isDataReference ? EP.parentPath(path) : null
-        }, props.targetViews),
-        EP.pathsEqual,
-      )
-    },
-    'DataReferenceParentOutline dataReferenceParentPaths',
-  )
+export const DataReferenceParentOutline = React.memo(
+  (props: { selectedViews: ElementPath[]; highlightedViews: ElementPath[] }) => {
+    const dataReferenceParentPaths = useEditorState(
+      Substores.projectContentsAndMetadata,
+      (store) => {
+        return uniqBy(
+          mapDropNulls(
+            (path) => {
+              const element = getElementFromProjectContents(path, store.editor.projectContents)
+              const isDataReference =
+                element != null && MetadataUtils.isElementDataReference(element)
+              return isDataReference ? EP.parentPath(path) : null
+            },
+            [...props.highlightedViews, ...props.selectedViews],
+          ),
+          EP.pathsEqual,
+        )
+      },
+      'DataReferenceParentOutline dataReferenceParentPaths',
+    )
 
-  return (
-    <CanvasOffsetWrapper>
-      {dataReferenceParentPaths.map((path) => (
-        <OutlineControl
-          testId='data-reference-parents-outline'
-          key={`data-reference-parents-outline-${EP.toString(path)}`}
-          targets={[path]}
-          color='primary'
-          outlineStyle='dotted'
-        />
-      ))}
-    </CanvasOffsetWrapper>
-  )
-})
+    return (
+      <CanvasOffsetWrapper>
+        {dataReferenceParentPaths.map((path) => (
+          <OutlineControl
+            testId='data-reference-parents-outline'
+            key={`data-reference-parents-outline-${EP.toString(path)}`}
+            targets={[path]}
+            color='primary'
+            outlineStyle='dotted'
+          />
+        ))}
+      </CanvasOffsetWrapper>
+    )
+  },
+)
 DataReferenceParentOutline.displayName = 'DataReferenceParentOutline'
