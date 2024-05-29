@@ -107,6 +107,7 @@ export const testRenderContext: RenderContext = {
   highlightBounds: null,
   editedText: null,
   variablesInScope: {},
+  filePathMappings: [],
 }
 
 export function delay(time: number): Promise<void> {
