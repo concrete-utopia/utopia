@@ -180,6 +180,7 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
         width: '100%',
         height: '100%',
         borderRadius: 10,
+        paddingBottom: shownInToolbar ? '8px' : undefined,
       }}
       onKeyDown={onKeyDown}
       ref={menuRef}
@@ -215,25 +216,30 @@ const ComponentPickerTopSection = React.memo((props: ComponentPickerTopSectionPr
   return (
     <div
       style={{
-        padding: shownInToolbar ? '0px 8px 2px' : '0px 8px 8px 8px',
+        padding: shownInToolbar ? undefined : '0px 8px 8px 8px',
         display: 'flex',
         flexDirection: 'column',
       }}
       tabIndex={0}
     >
       {components.length > 1 && <FilterButtons components={components} />}
-      <FilterBar onFilterChange={onFilterChange} onKeyDown={onKeyDown} />
+      <FilterBar
+        onFilterChange={onFilterChange}
+        onKeyDown={onKeyDown}
+        shownInToolbar={shownInToolbar}
+      />
     </div>
   )
 })
 
 interface FilterBarProps {
+  shownInToolbar: boolean
   onFilterChange: (filter: string) => void
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void
 }
 
 const FilterBar = React.memo((props: FilterBarProps) => {
-  const { onFilterChange, onKeyDown } = props
+  const { shownInToolbar, onFilterChange, onKeyDown } = props
 
   const [filter, setFilterState] = React.useState<string>('')
   const setFilter = React.useCallback(
@@ -277,11 +283,11 @@ const FilterBar = React.memo((props: FilterBarProps) => {
         background: 'transparent',
         // border: `1px solid ${dark.fg3.value}`, --> doesn't work because uses the css var
         border: `1px solid #888`,
-        color: `#888`,
+        color: shownInToolbar ? undefined : `#888`,
         borderRadius: 4,
         width: '100%',
         '&:focus': {
-          color: '#ccc',
+          color: shownInToolbar ? undefined : '#ccc',
           borderColor: '#ccc',
         },
       }}
@@ -444,16 +450,6 @@ const ComponentPickerComponentSection = React.memo(
       debouncedSetIsScrolling.current()
     }, [])
 
-    const extraStyle = shownInToolbar
-      ? {
-          borderRadius: 10,
-          backgroundColor: colorTheme.contextMenuBackground.value,
-          boxShadow:
-            '0px 3px 6px -2px var(--utopitheme-shadow80), 0px 4px 8px -2px var(--utopitheme-shadow40)',
-          padding: '8px 0px',
-        }
-      : {}
-
     return (
       <div
         data-role='component-scroll'
@@ -463,7 +459,6 @@ const ComponentPickerComponentSection = React.memo(
           overflowY: 'scroll',
           scrollbarWidth: 'auto',
           scrollbarColor: 'gray transparent',
-          ...extraStyle,
         }}
         onScroll={onScroll}
       >
@@ -478,13 +473,12 @@ const ComponentPickerComponentSection = React.memo(
                 style={{
                   alignItems: 'center',
                   cursor: 'pointer',
-                  marginLeft: 8,
-                  marginRight: 8,
+                  margin: shownInToolbar ? undefined : '0 8px',
                   borderRadius: 4,
                   // indentation!
                   paddingLeft: 8,
                   pointerEvents: isScrolling ? 'none' : 'auto',
-                  color: isSelected ? 'white' : '#EEE',
+                  color: isSelected ? 'white' : shownInToolbar ? undefined : '#EEE',
                   backgroundColor: isSelected ? colorTheme.primary.value : undefined,
                 }}
                 onClick={onItemClick(component.value)}
@@ -494,7 +488,10 @@ const ComponentPickerComponentSection = React.memo(
               >
                 <FlexRow css={{ gap: 10, height: 28, alignItems: 'center' }}>
                   <Icn
-                    {...iconPropsForIcon(component.value.icon ?? 'component')}
+                    {...iconPropsForIcon(
+                      component.value.icon ?? 'component',
+                      shownInToolbar && !isSelected,
+                    )}
                     width={12}
                     height={12}
                   />

@@ -689,11 +689,11 @@ interface ComponentPickerContextMenuProps {
   insertionTarget: InsertionTarget
 }
 
-export function iconPropsForIcon(icon: Icon): IcnProps {
+export function iconPropsForIcon(icon: Icon, inverted: boolean = false): IcnProps {
   return {
     category: 'navigator-element',
     type: icon,
-    color: 'white',
+    color: inverted ? 'black' : 'white',
   }
 }
 

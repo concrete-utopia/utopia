@@ -119,8 +119,7 @@ export const CanvasToolbarSearch = React.memo(() => {
     <div
       data-testid={CanvasToolbarSearchTestID}
       style={{
-        alignSelf: 'end',
-        width: 260,
+        width: '100%',
       }}
     >
       <ComponentPicker
@@ -260,11 +259,11 @@ export const CanvasToolbar = React.memo(() => {
       <FlexRow
         data-testid='canvas-toolbar-submenu'
         style={{
-          marginLeft: 8,
-          height: 32,
-          // overflow: 'hidden',
+          width: '100%',
+          marginTop: -10,
+          paddingTop: 10,
           backgroundColor: colorTheme.bg1subdued.value,
-          borderRadius: '0px 10px 10px 10px',
+          borderRadius: '0px 0px 10px 10px',
           boxShadow: UtopiaStyles.shadowStyles.low.boxShadow,
           pointerEvents: 'initial',
           zIndex: -1, // it sits below the main menu row, but we want the main menu's shadow to cast over this one
@@ -435,48 +434,52 @@ export const CanvasToolbar = React.memo(() => {
       {/* Insert Mode */}
       {canvasToolbarMode.primary === 'insert'
         ? wrapInSubmenu(
-            <FlexRow style={{ padding: '0 0 0 8px' }}>
-              <Tooltip title='Back' placement='bottom'>
-                <InsertModeButton
-                  iconCategory='semantic'
-                  iconType='icon-semantic-back'
-                  onClick={dispatchSwitchToSelectModeCloseMenus}
-                  style={{ width: undefined }}
-                />
-              </Tooltip>
-              <Tooltip title='Insert div' placement='bottom'>
-                <InsertModeButton
-                  iconType='view'
-                  secondary={canvasToolbarMode.secondary.divInsertionActive}
-                  onClick={insertDivCallback}
-                />
-              </Tooltip>
-              <Tooltip title='Insert image' placement='bottom'>
-                <InsertModeButton
-                  iconType='image'
-                  secondary={canvasToolbarMode.secondary.imageInsertionActive}
-                  onClick={insertImgCallback}
-                />
-              </Tooltip>
-              <Tooltip title='Insert button' placement='bottom'>
-                <InsertModeButton
-                  iconType='clickable'
-                  secondary={canvasToolbarMode.secondary.buttonInsertionActive}
-                  onClick={insertButtonCallback}
-                />
-              </Tooltip>
-              <Tooltip title='Insert conditional' placement='bottom'>
-                <InsertModeButton
-                  testid={InsertConditionalButtonTestId}
-                  iconType='conditional'
-                  secondary={canvasToolbarMode.secondary.conditionalInsertionActive}
-                  onClick={insertConditionalCallback}
-                />
-              </Tooltip>
-              <Tile style={{ height: 32, justifyContent: 'flex-start', padding: '2px 0' }}>
-                <CanvasToolbarSearch />
-              </Tile>
-            </FlexRow>,
+            <FlexColumn style={{ padding: '0 8px 0 8px', flexGrow: 1 }}>
+              <FlexRow>
+                <Tooltip title='Back' placement='bottom'>
+                  <InsertModeButton
+                    iconCategory='semantic'
+                    iconType='icon-semantic-back'
+                    onClick={dispatchSwitchToSelectModeCloseMenus}
+                    style={{ width: undefined }}
+                  />
+                </Tooltip>
+                <Tooltip title='Insert div' placement='bottom'>
+                  <InsertModeButton
+                    iconType='view'
+                    secondary={canvasToolbarMode.secondary.divInsertionActive}
+                    onClick={insertDivCallback}
+                  />
+                </Tooltip>
+                <Tooltip title='Insert image' placement='bottom'>
+                  <InsertModeButton
+                    iconType='image'
+                    secondary={canvasToolbarMode.secondary.imageInsertionActive}
+                    onClick={insertImgCallback}
+                  />
+                </Tooltip>
+                <Tooltip title='Insert button' placement='bottom'>
+                  <InsertModeButton
+                    iconType='clickable'
+                    secondary={canvasToolbarMode.secondary.buttonInsertionActive}
+                    onClick={insertButtonCallback}
+                  />
+                </Tooltip>
+                <Tooltip title='Insert conditional' placement='bottom'>
+                  <InsertModeButton
+                    testid={InsertConditionalButtonTestId}
+                    iconType='conditional'
+                    secondary={canvasToolbarMode.secondary.conditionalInsertionActive}
+                    onClick={insertConditionalCallback}
+                  />
+                </Tooltip>
+              </FlexRow>
+              <FlexRow>
+                <Tile style={{ flexGrow: 1 }}>
+                  <CanvasToolbarSearch />
+                </Tile>
+              </FlexRow>
+            </FlexColumn>,
           )
         : null}
       {/* Live Mode */}
