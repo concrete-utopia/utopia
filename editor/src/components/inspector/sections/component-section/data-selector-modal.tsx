@@ -130,14 +130,14 @@ export const DataSelectorModal = React.memo(
           return variablesInScope
         }
 
-        const elementToSet = optionLookup[navigatedToPath.toString()]
+        const scopeToShow = optionLookup[navigatedToPath.toString()]
         if (
-          elementToSet == null ||
-          (elementToSet.type !== 'array' && elementToSet.type !== 'object')
+          scopeToShow == null ||
+          (scopeToShow.type !== 'array' && scopeToShow.type !== 'object')
         ) {
           return [] // TODO this should never happen!
         }
-        return elementToSet.children
+        return scopeToShow.children
       }, [navigatedToPath, optionLookup, variablesInScope])
 
       const { primitiveVars, folderVars } = React.useMemo(() => {
