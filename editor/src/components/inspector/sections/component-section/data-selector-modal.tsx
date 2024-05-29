@@ -508,7 +508,9 @@ function childVars(option: VariableOption, indices: ArrayIndexLookup): VariableO
     case 'object':
       return option.children
     case 'array':
-      return childVars(option.children[indices[option.valuePath.toString()] ?? 0], indices)
+      return option.children.length === 0
+        ? []
+        : childVars(option.children[indices[option.valuePath.toString()] ?? 0], indices)
     case 'jsx':
     case 'primitive':
       return []
