@@ -31,6 +31,14 @@ module.exports = {
                   // we can strengthen this by only allowing async functions like setTimeout, setInterval, queueMicrotask, then, etc.
                   break
                 }
+                if (
+                  parent.type === 'FunctionDeclaration' &&
+                  parent.parent?.type === 'BlockStatement'
+                ) {
+                  // we assume that if it's inside a function declaration,
+                  // it will be used in an async manner as a callback
+                  break
+                }
                 parent = parent.parent
               }
             }
@@ -57,10 +65,38 @@ module.exports = {
               })
             }, [])`,
           },
+          {
+            code: `React.useEffect(() => {
+              function handleKeyDown(event) {
+                if (isDismissKey) {
+                  dispatch([clearPostActionData()])
+                }
+              }
+        
+              if (isPostActionMenuActive(postActionSessionChoices)) {
+                window.addEventListener('keydown', handleKeyDown, true)
+              }
+        
+              return function cleanup() {
+                window.removeEventListener('keydown', handleKeyDown, true)
+              }
+            }, [dispatch, postActionSessionChoices, open])`,
+          },
         ],
         invalid: [
           {
             code: `useEffect(() => {
+              dispatch({ type: 'INCREMENT' })
+            }, [])`,
+            errors: [
+              {
+                message:
+                  'Do not use dispatch directly inside useEffect, please wrap in an async function like `queueMicrotask`, `.then()`, etc.',
+              },
+            ],
+          },
+          {
+            code: `React.useEffect(function() {
               dispatch({ type: 'INCREMENT' })
             }, [])`,
             errors: [
