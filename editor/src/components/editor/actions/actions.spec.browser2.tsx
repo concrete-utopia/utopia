@@ -38,6 +38,7 @@ import { getElementFromRenderResult } from './actions.test-utils'
 import {
   expectNoAction,
   expectSingleUndoNSaves,
+  searchInComponentPicker,
   searchInFloatingMenu,
   selectComponentsForTest,
   setFeatureForBrowserTestsUseInDescribeBlockOnly,
@@ -7841,5 +7842,5 @@ async function wrapInElement(
   await selectComponentsForTest(renderResult, pathsToWrap)
   await pressKey('w') // open the wrap menu
   FOR_TESTS_setNextGeneratedUid(uid)
-  await searchInFloatingMenu(renderResult, query)
+  await searchInComponentPicker(renderResult, query)
 }

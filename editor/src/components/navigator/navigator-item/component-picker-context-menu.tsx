@@ -608,7 +608,7 @@ function insertComponentPickerItem(
             ...elementToInsert,
             uid: generateUidWithExistingComponents(projectContents),
           },
-          importsToAdd: emptyImports(),
+          importsToAdd: toInsert.importsToAdd,
         }),
       ]
     }
