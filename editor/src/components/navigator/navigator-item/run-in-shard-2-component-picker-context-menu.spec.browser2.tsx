@@ -1422,6 +1422,7 @@ export const Column = () => (
     const expectedOutput = formatTestProjectCode(`
       import * as React from 'react'
       import { Storyboard } from 'utopia-api'
+      import { Placeholder } from 'utopia-api'
 
       export const Card = (props) => {
         return (

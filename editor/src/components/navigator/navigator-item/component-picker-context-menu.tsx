@@ -480,13 +480,30 @@ function insertComponentPickerItem(
   insertionTarget: InsertionTarget,
 ) {
   const uniqueIds = new Set(getAllUniqueUids(projectContents).uniqueIDs)
-  const uid = generateConsistentUID('prop', uniqueIds)
   const elementWithoutUID = toInsert.element()
   // TODO: for most of the operations we still only support one target
   const firstTarget = targets[0]
 
   const actions = ((): Array<EditorAction> => {
     if (elementWithoutUID.type === 'JSX_ELEMENT') {
+      if (isWrapTarget(insertionTarget) && elementWithoutUID?.name?.baseVariable === 'div') {
+        const commands = commandsForFirstApplicableStrategy([
+          wrapInDivStrategy(
+            metadata,
+            targets,
+            pathTrees,
+            allElementProps,
+            projectContents,
+            propertyControlsInfo,
+          ),
+        ])
+
+        if (commands != null) {
+          return [applyCommandsAction(commands)]
+        }
+      }
+
+      const uid = generateConsistentUID('prop', uniqueIds)
       const element = jsxElementFromJSXElementWithoutUID(elementWithoutUID, uid)
       const fixedElement = fixUtopiaElement(element, uniqueIds).value
 
@@ -514,50 +531,21 @@ function insertComponentPickerItem(
         return [replaceMappedElement(fixedElement, firstTarget, toInsert.importsToAdd)]
       }
 
-      if (isWrapTarget(insertionTarget)) {
-        if (elementWithoutUID?.name?.baseVariable === 'div') {
-          const commands = commandsForFirstApplicableStrategy([
-            wrapInDivStrategy(
-              metadata,
-              targets,
-              pathTrees,
-              allElementProps,
-              projectContents,
-              propertyControlsInfo,
-            ),
-          ])
-
-          if (commands != null) {
-            return [applyCommandsAction(commands)]
-          }
-        }
-
-        const newUID = generateUidWithExistingComponents(projectContents)
-
-        const newElement = jsxElement(
-          element.name,
-          newUID,
-          setJSXAttributesAttribute(
-            element.props,
-            'data-uid',
-            jsExpressionValue(newUID, emptyComments),
-          ),
-          element.children,
-        )
-        return [
-          wrapInElement(targets, {
-            element: newElement,
-            importsToAdd: toInsert.importsToAdd,
-          }),
-        ]
-      }
-
       if (
         isReplaceTarget(insertionTarget) ||
         isReplaceKeepChildrenAndStyleTarget(insertionTarget)
       ) {
         return [
           replaceJSXElement(fixedElement, firstTarget, toInsert.importsToAdd, insertionTarget),
+        ]
+      }
+
+      if (isWrapTarget(insertionTarget)) {
+        return [
+          wrapInElement(targets, {
+            element: fixedElement,
+            importsToAdd: toInsert.importsToAdd,
+          }),
         ]
       }
 
