@@ -214,11 +214,11 @@ export const DataSelectorModal = React.memo(
         [navigatedToPath],
       )
 
-      const pathInTopBar = selectedPath ?? navigatedToPath
-      const pathInTopBarIncludingHover = hoveredPath ?? pathInTopBar
+      const activeTargetPath = selectedPath ?? navigatedToPath
+      const pathInTopBarIncludingHover = hoveredPath ?? activeTargetPath
 
       const onApplyClick = React.useCallback(() => {
-        const variable = processedVariablesInScope[pathInTopBar.toString()]
+        const variable = processedVariablesInScope[activeTargetPath.toString()]
         if (variable == null) {
           return
         }
@@ -229,7 +229,7 @@ export const DataSelectorModal = React.memo(
           ]),
         )
         closePopup()
-      }, [closePopup, onPropertyPicked, processedVariablesInScope, pathInTopBar])
+      }, [closePopup, onPropertyPicked, processedVariablesInScope, activeTargetPath])
 
       const valuePreviewText = (() => {
         const variable = processedVariablesInScope[pathInTopBarIncludingHover.toString()]
@@ -308,7 +308,7 @@ export const DataSelectorModal = React.memo(
                     </FlexRow>
                     <div
                       style={{
-                        ...disabledButtonStyles(pathInTopBar.length === 0),
+                        ...disabledButtonStyles(activeTargetPath.length === 0),
                         fontWeight: 400,
                         fontSize: 12,
                       }}
@@ -326,7 +326,7 @@ export const DataSelectorModal = React.memo(
                     padding: '8px 12px',
                     fontSize: 14,
                     fontWeight: 500,
-                    ...disabledButtonStyles(pathInTopBar.length === 0),
+                    ...disabledButtonStyles(activeTargetPath.length === 0),
                   }}
                   onClick={onApplyClick}
                 >
