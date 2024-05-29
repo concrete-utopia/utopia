@@ -95,13 +95,17 @@ const DEFAULT_SIZE: React.CSSProperties = {
   maxHeight: 300,
 }
 
+type ObjectPath = Array<string | number>
+
 export const DataSelectorModal = React.memo(
   React.forwardRef<HTMLDivElement, DataSelectorModalProps>(
     ({ style, closePopup, variablesInScope, onPropertyPicked }, forwardedRef) => {
       const colorTheme = useColorTheme()
 
-      const [navigatedToPath, setNavigatedToPath] = React.useState<Array<string | number>>([])
-      const [hoveredPath, setHoveredPath] = React.useState<VariableOption['valuePath'] | null>(null)
+      const [navigatedToPath, setNavigatedToPath] = React.useState<ObjectPath>([])
+      // TODO invariant: currentValuePath should be a prefix of currentSelectedPath, we should enforce this
+      const [selectedPath, setSelectedPath] = React.useState<ObjectPath | null>(null)
+      const [hoveredPath, setHoveredPath] = React.useState<ObjectPath | null>(null)
 
       const onHover = React.useCallback(
         (path: VariableOption['valuePath']): HoverHandlers => ({
@@ -110,11 +114,6 @@ export const DataSelectorModal = React.memo(
         }),
         [],
       )
-
-      // TODO invariant: currentValuePath should be a prefix of currentSelectedPath, we should enforce this
-      const [currentSelectedPath, setCurrentSelectedPath] = React.useState<Array<
-        string | number
-      > | null>(null)
 
       const [indexLookup, setIndexLookup] = React.useState<ValuePathLookup<number>>({})
       const updateIndexInLookup = React.useCallback(
@@ -168,7 +167,7 @@ export const DataSelectorModal = React.memo(
             // if navigatedToPath is not a prefix of path, we don't update the selection
             return
           }
-          setCurrentSelectedPath(path)
+          setSelectedPath(path)
         },
         [navigatedToPath],
       )
@@ -179,7 +178,7 @@ export const DataSelectorModal = React.memo(
           e.preventDefault()
 
           setNavigatedToPath(path)
-          setCurrentSelectedPath(null)
+          setSelectedPath(null)
         },
         [],
       )
@@ -194,7 +193,7 @@ export const DataSelectorModal = React.memo(
         [setNavigatedToPathCurried],
       )
 
-      const pathInTopBar = currentSelectedPath ?? navigatedToPath
+      const pathInTopBar = selectedPath ?? navigatedToPath
       const pathInTopBarIncludingHover = hoveredPath ?? pathInTopBar
 
       const onApplyClick = React.useCallback(() => {
@@ -215,7 +214,7 @@ export const DataSelectorModal = React.memo(
         e.stopPropagation()
         e.preventDefault()
 
-        setCurrentSelectedPath(null)
+        setSelectedPath(null)
       }, [])
 
       const valuePreviewText = (() => {
@@ -362,9 +361,9 @@ export const DataSelectorModal = React.memo(
                           datatype={childTypeToCartoucheDataType(variable.type)}
                           inverted={false}
                           selected={
-                            currentSelectedPath == null
+                            selectedPath == null
                               ? false
-                              : arrayEqualsByReference(currentSelectedPath, variable.valuePath)
+                              : arrayEqualsByReference(selectedPath, variable.valuePath)
                           }
                           role={cartoucheFolderOrInfo(variable, 'no-folder')}
                           testId={`data-selector-primitive-values-${variableNameFromPath(
@@ -388,9 +387,9 @@ export const DataSelectorModal = React.memo(
                       source={'internal'}
                       inverted={false}
                       selected={
-                        currentSelectedPath == null
+                        selectedPath == null
                           ? false
-                          : arrayEqualsByReference(currentSelectedPath, variable.valuePath)
+                          : arrayEqualsByReference(selectedPath, variable.valuePath)
                       }
                       role={cartoucheFolderOrInfo(variable, 'no-folder')}
                       testId={`data-selector-left-section-${variableNameFromPath(variable)}`}
@@ -418,9 +417,9 @@ export const DataSelectorModal = React.memo(
                           inverted={false}
                           datatype={childTypeToCartoucheDataType(child.type)}
                           selected={
-                            currentSelectedPath == null
+                            selectedPath == null
                               ? false
-                              : arrayEqualsByReference(currentSelectedPath, child.valuePath)
+                              : arrayEqualsByReference(selectedPath, child.valuePath)
                           }
                           role={cartoucheFolderOrInfo(child, 'can-be-folder')}
                           testId={`data-selector-right-section-${variableNameFromPath(child)}`}
