@@ -112,6 +112,7 @@ export interface PropertyLabelAndPlusButtonProps {
   popupIsOpen: boolean
   isHovered: boolean
   isConnectedToData: boolean
+  testId: string
 }
 
 export function PropertyLabelAndPlusButton(
@@ -126,6 +127,7 @@ export function PropertyLabelAndPlusButton(
     handleMouseEnter,
     handleMouseLeave,
     children,
+    testId,
   } = props
 
   return (
@@ -149,6 +151,7 @@ export function PropertyLabelAndPlusButton(
         <span onClick={openPopup}>{title}</span>
         {children}
         <div
+          data-testid={testId}
           onClick={openPopup}
           style={{
             opacity: isHovered || popupIsOpen ? 1 : 0,
@@ -498,6 +501,7 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
           popupIsOpen={dataPickerButtonData.popupIsOpen}
           isHovered={isHovered}
           isConnectedToData={isConnectedToData}
+          testId={`plus-button-${title}`}
         />
       </PropertyLabel>
     ) : (
@@ -972,6 +976,7 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
                   popupIsOpen={dataPickerButtonData.popupIsOpen}
                   isHovered={isHovered}
                   isConnectedToData={isConnectedToData}
+                  testId={`plus-button-${title}`}
                 >
                   {unless(props.disableToggling, <ObjectIndicator open={open} />)}
                 </PropertyLabelAndPlusButton>

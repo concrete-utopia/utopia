@@ -1,7 +1,11 @@
 import React from 'react'
 import { isPrefixOf, last } from '../../../../core/shared/array-utils'
 import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
-import { arrayEqualsByReference, assertNever } from '../../../../core/shared/utils'
+import {
+  CanvasContextMenuPortalTargetID,
+  arrayEqualsByReference,
+  assertNever,
+} from '../../../../core/shared/utils'
 import { when } from '../../../../utils/react-conditionals'
 import {
   FlexColumn,
@@ -235,6 +239,7 @@ export const DataSelectorModal = React.memo(
             zIndex: 1,
           }}
           closePopupOnUnmount={false}
+          portalTarget={document.getElementById(CanvasContextMenuPortalTargetID) as HTMLElement}
           outsideClickIgnoreClass={'ignore-react-onclickoutside-data-picker'}
         >
           <div // this entire wrapper div was made before using the InspectorModal, so it should be re-done
