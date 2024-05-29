@@ -632,7 +632,7 @@ export function boundingClientRectToCanvasRectangle(
 }
 
 export async function searchInComponentPicker(editor: EditorRenderResult, query: string) {
-  document.execCommand('insertText', false, 'div')
+  document.execCommand('insertText', false, query)
 
   const picker = await editor.renderedDOM.findByTestId(ComponentPickerTestId)
   forceNotNull('the component picker must not be null', picker)

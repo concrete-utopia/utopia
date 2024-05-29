@@ -385,7 +385,7 @@ describe('conditionals', () => {
     })
   })
   describe('wrap', () => {
-    it.skip('can wrap a single element in a conditional', async () => {
+    it('can wrap a single element in a conditional', async () => {
       const startSnippet = `
         <div data-uid='aaa'>
           <div data-uid='bbb'>hello there</div>
@@ -448,7 +448,7 @@ describe('conditionals', () => {
          `),
       )
     })
-    it.skip('can wrap a conditional clause element in a conditional', async () => {
+    it('can wrap a conditional clause element in a conditional', async () => {
       const targetUID = 'bbb'
       const startSnippet = `
         <div data-uid='aaa'>
