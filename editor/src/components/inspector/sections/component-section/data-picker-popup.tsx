@@ -77,7 +77,7 @@ export function dataPickerFilterOptionToString(mode: DataPickerFilterOption): st
   }
 }
 
-export const DataPickerPreferredAllAtom = atom<DataPickerFilterOption>('preferred')
+export const DataPickerPreferredAllAtom = atom<DataPickerFilterOption>('all')
 
 function valueToDisplay(option: VariableOption): string {
   switch (option.variableInfo.type) {
