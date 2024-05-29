@@ -5,6 +5,7 @@ import {
   selectComponentsForTest,
   expectSingleUndo2Saves,
   searchInFloatingMenu,
+  searchInComponentPicker,
 } from '../../utils/utils.test-utils'
 import {
   FOR_TESTS_setNextGeneratedUid,
@@ -1389,11 +1390,11 @@ export var storyboard = (
       return editor
     }
 
-    it.skip('when wrapping into fragment', async () => {
+    it('when wrapping into fragment', async () => {
       const editor = await setup()
 
       await pressKey('w')
-      await searchInFloatingMenu(editor, 'fragm')
+      await searchInComponentPicker(editor, 'fragm')
 
       expect(getPrintedUiJsCode(editor.getEditorState(), PlaygroundFilePath))
         .toEqual(`import * as React from 'react'
