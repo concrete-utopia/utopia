@@ -391,8 +391,8 @@ export const CanvasToolbar = React.memo(() => {
           boxShadow: UtopiaStyles.shadowStyles.low.boxShadow,
           pointerEvents: 'initial',
           zIndex: -1, // it sits below the main menu row, but we want the main menu's shadow to cast over this one
-          position: 'relative',
-          top: -6, //to make the submenu appear visually underneath the corners of the main menu
+          //to make the submenu appear visually underneath the corners of the main menu
+          marginTop: -6,
         }}
       >
         <FlexRow style={{ height: 32 }}>{wrapped}</FlexRow>
@@ -521,7 +521,7 @@ export const CanvasToolbar = React.memo(() => {
           <SquareButton
             style={{
               width: 'min-content',
-              padding: '0 8px',
+              padding: '0 4px',
             }}
             css={{
               '&:hover': {
