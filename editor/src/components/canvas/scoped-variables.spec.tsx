@@ -354,6 +354,12 @@ describe('scoped variables', () => {
           "insertionCeiling": "storyboard-entity/scene-1-entity/app-entity:app-root/globalvarmap/div1~~~1",
           "spiedValue": "\\"alap\\"",
         },
+        "globalVar": Object {
+          "insertionCeiling": null,
+          "spiedValue": "[
+        \\"alap\\"
+      ]",
+        },
         "local": Object {
           "insertionCeiling": "storyboard-entity/scene-1-entity/app-entity:app-root/globalvarmap/div1~~~1/localvarmap/div2~~~1",
           "spiedValue": "\\"local\\"",

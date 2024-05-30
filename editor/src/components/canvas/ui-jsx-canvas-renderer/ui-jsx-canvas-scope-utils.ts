@@ -5,8 +5,11 @@ import {
   type ArbitraryJSBlock,
 } from '../../../core/shared/element-template'
 import { resolveParamsAndRunJsCode } from '../../../core/shared/javascript-cache'
+import type { ElementPath } from '../../../core/shared/project-file-types'
+import type { VariableData } from '../ui-jsx-canvas'
 
 export function runBlockUpdatingScope(
+  elementPath: ElementPath | null,
   filePath: string,
   requireResult: MapLike<any>,
   block: ArbitraryJSBlock,
@@ -20,11 +23,16 @@ export function runBlockUpdatingScope(
   )
   if (result.type === 'ARBITRARY_BLOCK_RAN_TO_END') {
     const definedWithinWithValues: MapLike<any> = {}
+    const definedWithinVariableData: VariableData = {}
     for (const within of block.definedWithin) {
       currentScope[within] = result.scope[within]
       definedWithinWithValues[within] = result.scope[within]
+      definedWithinVariableData[within] = {
+        spiedValue: result.scope[within],
+        insertionCeiling: elementPath,
+      }
     }
-    return arbitraryBlockRanToEnd(definedWithinWithValues)
+    return arbitraryBlockRanToEnd(definedWithinWithValues, definedWithinVariableData)
   } else {
     return result
   }

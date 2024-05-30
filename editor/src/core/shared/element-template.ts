@@ -33,6 +33,7 @@ import { allComments } from './comment-flags'
 import type { Optic } from './optics/optics'
 import { fromField } from './optics/optic-creators'
 import { jsxSimpleAttributeToValue } from './jsx-attribute-utils'
+import type { VariableData } from '../../components/canvas/ui-jsx-canvas'
 
 export interface ParsedComments {
   leadingComments: Array<Comment>
@@ -2627,35 +2628,44 @@ export type ConditionValue = ActiveAndDefaultConditionValues | 'not-a-conditiona
 
 export interface EarlyReturnVoid {
   type: 'EARLY_RETURN_VOID'
+  spiedVariablesDeclaredWithinBlock: VariableData
 }
 
 export function earlyReturnVoid(): EarlyReturnVoid {
   return {
     type: 'EARLY_RETURN_VOID',
+    spiedVariablesDeclaredWithinBlock: {},
   }
 }
 
 export interface EarlyReturnResult {
   type: 'EARLY_RETURN_RESULT'
   result: unknown
+  spiedVariablesDeclaredWithinBlock: VariableData
 }
 
 export function earlyReturnResult(result: unknown): EarlyReturnResult {
   return {
     type: 'EARLY_RETURN_RESULT',
     result: result,
+    spiedVariablesDeclaredWithinBlock: {},
   }
 }
 
 export interface ArbitraryBlockRanToEnd {
   type: 'ARBITRARY_BLOCK_RAN_TO_END'
   scope: MapLike<unknown>
+  spiedVariablesDeclaredWithinBlock: VariableData
 }
 
-export function arbitraryBlockRanToEnd(scope: MapLike<unknown>): ArbitraryBlockRanToEnd {
+export function arbitraryBlockRanToEnd(
+  scope: MapLike<unknown>,
+  spiedVariablesDeclaredWithinBlock: VariableData,
+): ArbitraryBlockRanToEnd {
   return {
     type: 'ARBITRARY_BLOCK_RAN_TO_END',
     scope: scope,
+    spiedVariablesDeclaredWithinBlock: spiedVariablesDeclaredWithinBlock,
   }
 }
 

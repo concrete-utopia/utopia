@@ -157,7 +157,7 @@ export function createComponentRendererComponent(params: {
             code: code,
             highlightBounds: highlightBounds,
             editedText: rerenderUtopiaContext.editedText,
-            variablesInScope: {},
+            variablesInScope: mutableContext.spiedVariablesDeclaredInRootScope,
           },
           undefined,
           codeError,
@@ -170,20 +170,16 @@ export function createComponentRendererComponent(params: {
       ...appliedProps,
     }
 
-    let spiedVariablesInScope: VariableData = {}
+    let spiedVariablesInScope: VariableData = {
+      ...mutableContext.spiedVariablesDeclaredInRootScope,
+    }
     if (utopiaJsxComponent.param != null) {
-      spiedVariablesInScope = mapArrayToDictionary(
-        propertiesExposedByParam(utopiaJsxComponent.param),
-        (paramName) => {
-          return paramName
-        },
-        (paramName) => {
-          return {
-            spiedValue: scope[paramName],
-            insertionCeiling: instancePath,
-          }
-        },
-      )
+      propertiesExposedByParam(utopiaJsxComponent.param).forEach((paramName) => {
+        spiedVariablesInScope[paramName] = {
+          spiedValue: scope[paramName],
+          insertionCeiling: instancePath,
+        }
+      })
     }
 
     // Protect against infinite recursion by taking the view that anything
@@ -256,6 +252,7 @@ export function createComponentRendererComponent(params: {
       applyBlockReturnFunctions(scope)
 
       const arbitraryBlockResult = runBlockUpdatingScope(
+        instancePath, // maybe this should be rootElementPath, but using instancePath to keep the code consistent with https://github.com/concrete-utopia/utopia/blob/fd43386ca0/editor/src/components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer.tsx#L272
         params.filePath,
         mutableContext.requireResult,
         utopiaJsxComponent.arbitraryJSBlock,
@@ -266,13 +263,7 @@ export function createComponentRendererComponent(params: {
         case 'ARBITRARY_BLOCK_RAN_TO_END':
           spiedVariablesInScope = {
             ...spiedVariablesInScope,
-            ...objectMap(
-              (spiedValue) => ({
-                spiedValue: spiedValue,
-                insertionCeiling: instancePath,
-              }),
-              arbitraryBlockResult.scope,
-            ),
+            ...arbitraryBlockResult.spiedVariablesDeclaredWithinBlock,
           }
           break
         case 'EARLY_RETURN_VOID':
