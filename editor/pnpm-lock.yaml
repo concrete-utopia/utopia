@@ -68,6 +68,7 @@ specifiers:
   '@originjs/vite-plugin-commonjs': 1.0.3
   '@peculiar/webcrypto': 1.4.3
   '@popperjs/core': 2.4.4
+  '@radix-ui/react-popover': ^1.0.7
   '@react-three/fiber': 8.0.14
   '@relative-ci/agent': ^2.1.0
   '@remix-run/react': 2.0.1
@@ -366,6 +367,7 @@ dependencies:
   '@liveblocks/react-comments': 1.10.0_wgqxz3kjpz4ixw4iz4mbg2tk4i
   '@liveblocks/yjs': 1.10.0_yjs@13.6.8
   '@popperjs/core': 2.4.4
+  '@radix-ui/react-popover': 1.0.7_wgqxz3kjpz4ixw4iz4mbg2tk4i
   '@remix-run/react': 2.0.1_4uzd4uhfxjy6hfd2xmixhrzbqy_njludxb6fcqnim6moy22jieofi
   '@remix-run/server-runtime': 2.3.1_typescript@5.2.2
   '@root/encoding': 1.0.1

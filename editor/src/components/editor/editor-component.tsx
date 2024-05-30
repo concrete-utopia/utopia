@@ -559,9 +559,9 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
         <LockedOverlay />
         <SharingDialog />
       </SimpleFlexRow>
-      {portalTarget != null
+      {/* {portalTarget != null
         ? ReactDOM.createPortal(<ComponentPickerContextMenu />, portalTarget)
-        : null}
+        : null} */}
       <EditorCommon
         mouseDown={onWindowMouseDown}
         mouseUp={onWindowMouseUp}

@@ -33,6 +33,7 @@ import { getRegisteredComponent } from '../../../core/property-controls/property
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../../../core/shared/dom-utils'
 import { ExpandableIndicator } from './expandable-indicator'
 import { elementSupportsChildrenFromPropertyControls } from '../../editor/element-children'
+import { Popover } from '../popover/popover'
 
 export const NavigatorHintCircleDiameter = 8
 
@@ -238,14 +239,7 @@ const AddChildButton = React.memo((props: AddChildButtonProps) => {
   }
 
   return (
-    <Button
-      onClick={onClick}
-      style={{
-        height: 12,
-        width: 12,
-      }}
-      data-testid={addChildButtonTestId(target)}
-    >
+    <Popover activator={
       <Icn
         category='semantic'
         type='plus-in-white-translucent-circle'
@@ -253,9 +247,15 @@ const AddChildButton = React.memo((props: AddChildButtonProps) => {
         width={12}
         height={12}
       />
-    </Button>
+      }
+    >
+      This is some content
+    </Popover>
   )
 })
+
+
+
 
 export const ReplaceElementButtonTestId = (path: ElementPath, prop: string | null) =>
   `replace-element-button-${EP.toString(path)}${prop == null ? '' : `-${prop}`}`
