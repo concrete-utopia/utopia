@@ -338,13 +338,13 @@ describe('scoped variables', () => {
       'dont-await-first-dom-report',
     )
 
-    expect(
-      prettyPrintVariableData(
-        renderResult.getEditorState().editor.variablesInScope[
-          'storyboard-entity/scene-1-entity/app-entity:app-root/globalvarmap/div1~~~1/localvarmap/div2~~~1/firstmap/div3~~~1/secondmap/div4~~~1/5d9/div5~~~1'
-        ],
-      ),
-    ).toMatchInlineSnapshot(`
+    const spiedVarsInScopeForInnermostElement = prettyPrintVariableData(
+      renderResult.getEditorState().editor.variablesInScope[
+        'storyboard-entity/scene-1-entity/app-entity:app-root/globalvarmap/div1~~~1/localvarmap/div2~~~1/firstmap/div3~~~1/secondmap/div4~~~1/5d9/div5~~~1'
+      ],
+    )
+
+    expect(spiedVarsInScopeForInnermostElement).toMatchInlineSnapshot(`
       Object {
         "first": Object {
           "insertionCeiling": "storyboard-entity/scene-1-entity/app-entity:app-root/globalvarmap/div1~~~1/localvarmap/div2~~~1/firstmap/div3~~~1",
@@ -380,6 +380,10 @@ describe('scoped variables', () => {
         },
       }
     `)
+
+    // TODO: these should not be undefined, to be fixed in a follow up PR:
+    expect(spiedVarsInScopeForInnermostElement['innerVar']).toMatchInlineSnapshot(`undefined`)
+    expect(spiedVarsInScopeForInnermostElement['inner']).toMatchInlineSnapshot(`undefined`)
   })
 
   it('includes scoped variables for an inline component destructuring the parameter', async () => {
