@@ -28,6 +28,7 @@ import type {
   ObjectOption,
   PrimitiveOption,
   DataPickerOption,
+  ObjectPath,
 } from './data-picker-utils'
 
 export interface DataSelectorModalProps {
@@ -35,6 +36,7 @@ export interface DataSelectorModalProps {
   style: React.CSSProperties
   variablesInScope: DataPickerOption[]
   onPropertyPicked: DataPickerCallback
+  startingSelectedValuePath: ObjectPath | null
 }
 
 const Separator = React.memo(
@@ -99,8 +101,6 @@ const DEFAULT_SIZE: React.CSSProperties = {
   maxHeight: 300,
 }
 
-type ObjectPath = Array<string | number>
-
 interface ProcessedVariablesInScope {
   [valuePath: string]: DataPickerOption
 }
@@ -111,13 +111,18 @@ interface ArrayIndexLookup {
 
 export const DataSelectorModal = React.memo(
   React.forwardRef<HTMLDivElement, DataSelectorModalProps>(
-    ({ style, closePopup, variablesInScope, onPropertyPicked }, forwardedRef) => {
+    (
+      { style, closePopup, variablesInScope, onPropertyPicked, startingSelectedValuePath },
+      forwardedRef,
+    ) => {
       const colorTheme = useColorTheme()
 
       const [navigatedToPath, setNavigatedToPath] = React.useState<ObjectPath>([])
 
       // TODO invariant: currentValuePath should be a prefix of currentSelectedPath, we should enforce this
-      const [selectedPath, setSelectedPath] = React.useState<ObjectPath | null>(null)
+      const [selectedPath, setSelectedPath] = React.useState<ObjectPath | null>(
+        startingSelectedValuePath,
+      )
       const [hoveredPath, setHoveredPath] = React.useState<ObjectPath | null>(null)
 
       const setNavigatedToPathCurried = React.useCallback(
