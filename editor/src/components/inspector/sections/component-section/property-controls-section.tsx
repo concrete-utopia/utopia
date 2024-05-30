@@ -55,7 +55,7 @@ export const PropertyControlsSection = React.memo((props: PropertyControlsSectio
   const hasContent = React.useMemo(
     () =>
       (Object.keys(detectedPropsAndValuesWithoutControls).length > 0 &&
-        Object.keys(detectedPropsAndValuesWithoutControls).every(
+        Object.keys(detectedPropsAndValuesWithoutControls).some(
           (prop) => !specialPropertiesToIgnore.includes(prop),
         )) ||
       propertiesWithFolders.folders.length > 0 ||
