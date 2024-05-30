@@ -105,8 +105,6 @@ export const CanvasToolbarSearch = React.memo(() => {
       e.stopPropagation()
       e.preventDefault()
 
-      // FIXME this also needs to switch to select mode
-
       insertComponentPickerItem(
         preferredChildToInsert,
         [target],

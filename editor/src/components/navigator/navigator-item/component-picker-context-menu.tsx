@@ -33,6 +33,7 @@ import {
   replaceMappedElement,
   setProp_UNSAFE,
   showToast,
+  switchEditorMode,
   wrapInElement,
 } from '../../editor/actions/action-creators'
 import * as EP from '../../../core/shared/element-path'
@@ -86,6 +87,7 @@ import { emptyImports } from '../../../core/workers/common/project-file-utils'
 import { commandsForFirstApplicableStrategy } from '../../../components/inspector/inspector-strategies/inspector-strategy'
 import { wrapInDivStrategy } from '../../../components/editor/wrap-in-callbacks'
 import type { AllElementProps } from '../../../components/editor/store/editor-state'
+import { EditorModes } from '../../editor/editor-modes'
 
 type RenderPropTarget = { type: 'render-prop'; prop: string }
 type ConditionalTarget = { type: 'conditional'; conditionalCase: ConditionalCase }
@@ -641,7 +643,7 @@ export function insertComponentPickerItem(
     ]
   })()
 
-  dispatch(actions)
+  dispatch(actions.concat(switchEditorMode(EditorModes.selectMode(null, false, 'none'))))
 }
 
 function toastMessage(insertionTarget: InsertionTarget, toInsert: InsertableComponent) {
