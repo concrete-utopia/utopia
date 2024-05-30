@@ -180,10 +180,11 @@ export const RemixNavigationBar = React.memo(() => {
         style={{
           backgroundColor: colorTheme.bg3.value,
           borderRadius: 20,
-          padding: '2px 10px',
+          padding: '2px 2px 2px 6px',
           fontSize: 11,
           minWidth: 150,
-          height: '30px',
+          height: 20,
+          alignItems: 'center',
         }}
       >
         <StringInput
