@@ -154,6 +154,7 @@ function storyboardComponent(numberOfScenes: number): UtopiaJSXComponent {
     false,
     'var',
     'block',
+    [],
     null,
     [],
     jsxElement(
@@ -186,6 +187,7 @@ const originalModel = deepFreeze(
         true,
         'var',
         'block',
+        [],
         defaultPropsParam,
         [],
         jsxElement(

@@ -2073,6 +2073,7 @@ export function utopiaJSXComponent(
   isFunction: boolean,
   declarationSyntax: FunctionDeclarationSyntax,
   blockOrExpression: BlockOrExpression,
+  functionWrapping: Array<FunctionWrap>,
   param: Param | null,
   propsUsed: Array<string>,
   rootElement: JSXElementChild,
@@ -2086,6 +2087,7 @@ export function utopiaJSXComponent(
     isFunction: isFunction,
     declarationSyntax: declarationSyntax,
     blockOrExpression: blockOrExpression,
+    functionWrapping: functionWrapping,
     param: param,
     propsUsed: propsUsed,
     rootElement: rootElement,
@@ -2307,6 +2309,24 @@ export type VarLetOrConst = 'var' | 'let' | 'const'
 export type FunctionDeclarationSyntax = 'function' | VarLetOrConst
 export type BlockOrExpression = 'block' | 'parenthesized-expression' | 'expression'
 
+export interface SimpleFunctionWrap {
+  type: 'SIMPLE_FUNCTION_WRAP'
+  functionExpression: JSExpression
+}
+
+export function simpleFunctionWrap(functionExpression: JSExpression): SimpleFunctionWrap {
+  return {
+    type: 'SIMPLE_FUNCTION_WRAP',
+    functionExpression: functionExpression,
+  }
+}
+
+export type FunctionWrap = SimpleFunctionWrap
+
+export function isSimpleFunctionWrap(wrap: FunctionWrap): wrap is SimpleFunctionWrap {
+  return wrap.type === 'SIMPLE_FUNCTION_WRAP'
+}
+
 export interface UtopiaJSXComponent {
   type: 'UTOPIA_JSX_COMPONENT'
   name: string | null
@@ -2318,6 +2338,7 @@ export interface UtopiaJSXComponent {
   isFunction: boolean
   declarationSyntax: FunctionDeclarationSyntax
   blockOrExpression: BlockOrExpression
+  functionWrapping: Array<FunctionWrap>
   param: Param | null
   propsUsed: Array<string>
   rootElement: JSXElementChild
@@ -2476,6 +2497,24 @@ export function clearParamUniqueIDs(param: Param): Param {
   return functionParam(param.dotDotDotToken, clearBoundParamUniqueIDs(param.boundParam))
 }
 
+export function clearFunctionWrapUniqueIDs(wrap: FunctionWrap): FunctionWrap {
+  switch (wrap.type) {
+    case 'SIMPLE_FUNCTION_WRAP':
+      return simpleFunctionWrap(clearExpressionUniqueIDs(wrap.functionExpression))
+  }
+}
+
+export function clearFunctionWrapSourceMaps(wrap: FunctionWrap): FunctionWrap {
+  switch (wrap.type) {
+    case 'SIMPLE_FUNCTION_WRAP':
+      return simpleFunctionWrap(clearExpressionSourceMaps(wrap.functionExpression))
+  }
+}
+
+export function clearFunctionWrapUniqueIDsAndSourceMaps(wrap: FunctionWrap): FunctionWrap {
+  return clearFunctionWrapSourceMaps(clearFunctionWrapUniqueIDs(wrap))
+}
+
 // FIXME: Should only really be in test code.
 export function clearTopLevelElementUniqueIDs(element: UtopiaJSXComponent): UtopiaJSXComponent
 export function clearTopLevelElementUniqueIDs(element: ArbitraryJSBlock): ArbitraryJSBlock
@@ -2486,6 +2525,7 @@ export function clearTopLevelElementUniqueIDs(element: TopLevelElement): TopLeve
       let updatedComponent: UtopiaJSXComponent = {
         ...element,
         rootElement: clearJSXElementChildUniqueIDs(element.rootElement),
+        functionWrapping: element.functionWrapping.map(clearFunctionWrapUniqueIDsAndSourceMaps),
       }
       if (updatedComponent.arbitraryJSBlock != null) {
         updatedComponent.arbitraryJSBlock = clearArbitraryJSBlockUniqueIDs(

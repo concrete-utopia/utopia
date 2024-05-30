@@ -61,6 +61,7 @@ const mainComponentForTests = utopiaJSXComponent(
   true,
   'var',
   'block',
+  [],
   defaultPropsParam,
   [],
   jsxElement(
@@ -332,6 +333,7 @@ const scene = utopiaJSXComponent(
   true,
   'var',
   'block',
+  [],
   defaultPropsParam,
   [],
   jsxElement(
@@ -398,6 +400,7 @@ const TestStoryboard = utopiaJSXComponent(
   false,
   'var',
   'block',
+  [],
   null,
   [],
   jsxElement(

@@ -33,6 +33,7 @@ import type {
   JSExpressionMapOrOtherJavascript,
   JSExpressionOtherJavaScript,
   JSXElement,
+  FunctionWrap,
 } from '../../shared/element-template'
 import {
   destructuredArray,
@@ -54,6 +55,7 @@ import {
   unparsedCode,
   emptyComments,
   canBeRootElementOfComponent,
+  simpleFunctionWrap,
 } from '../../shared/element-template'
 import { messageisFatal } from '../../shared/error-messages'
 import { memoize } from '../../shared/memoize'
@@ -109,6 +111,7 @@ import {
   markedAsExported,
   markedAsDefault,
   parseParams,
+  parseAttributeExpression,
 } from './parser-printer-parsing'
 import { jsonToExpression } from './json-to-expression'
 import { difference } from '../../shared/set-utils'
@@ -1092,18 +1095,21 @@ interface PossibleCanvasContentsExpression {
   name: string
   initializer: TS.Expression
   declarationSyntax: FunctionDeclarationSyntax
+  functionWrapping: Array<FunctionWrap>
 }
 
 function possibleCanvasContentsExpression(
   name: string,
   initializer: TS.Expression,
   declarationSyntax: FunctionDeclarationSyntax,
+  functionWrapping: Array<FunctionWrap>,
 ): PossibleCanvasContentsExpression {
   return {
     type: 'POSSIBLE_CANVAS_CONTENTS_EXPRESSION',
     name: name,
     initializer: initializer,
     declarationSyntax: declarationSyntax,
+    functionWrapping: functionWrapping,
   }
 }
 
@@ -1113,6 +1119,7 @@ interface PossibleCanvasContentsFunction {
   parameters: TS.NodeArray<TS.ParameterDeclaration>
   body: TS.ConciseBody
   declarationSyntax: FunctionDeclarationSyntax
+  functionWrapping: Array<FunctionWrap>
 }
 
 function possibleCanvasContentsFunction(
@@ -1120,6 +1127,7 @@ function possibleCanvasContentsFunction(
   parameters: TS.NodeArray<TS.ParameterDeclaration>,
   body: TS.ConciseBody,
   declarationSyntax: FunctionDeclarationSyntax,
+  functionWrapping: Array<FunctionWrap>,
 ): PossibleCanvasContentsFunction {
   return {
     type: 'POSSIBLE_CANVAS_CONTENTS_FUNCTION',
@@ -1127,6 +1135,7 @@ function possibleCanvasContentsFunction(
     parameters: parameters,
     body: body,
     declarationSyntax: declarationSyntax,
+    functionWrapping: functionWrapping,
   }
 }
 
@@ -1165,37 +1174,77 @@ function nodeFlagsForVarLetOrConst(varLetOrConst: VarLetOrConst): TS.NodeFlags {
 export function looksLikeCanvasElements(
   sourceFile: TS.SourceFile,
   node: TS.Node,
+  sourceText: string,
+  filename: string,
+  imports: Imports,
+  topLevelNames: Array<string>,
+  propsObjectName: string | null,
+  existingHighlightBounds: Readonly<HighlightBoundsForUids>,
+  alreadyExistingUIDs: Set<string>,
+  applySteganography: SteganographyMode,
 ): Either<TS.Node, PossibleCanvasContents> {
   if (TS.isVariableStatement(node)) {
     const variableDeclaration = node.declarationList.declarations[0]
     if (variableDeclaration != null) {
       if (variableDeclaration.initializer != null) {
         const name = variableDeclaration.name.getText(sourceFile)
-        const initializer = variableDeclaration.initializer
         const varLetOrConst = getVarLetOrConst(node.declarationList)
-        if (TS.isArrowFunction(initializer)) {
-          return right(
-            possibleCanvasContentsFunction(
-              name,
-              initializer.parameters,
-              initializer.body,
-              varLetOrConst,
-            ),
-          )
-        } else if (name === BakedInStoryboardVariableName) {
-          // FIXME The below case should result in a parsed top level *element*, but instead it is treated
-          // as a *component*. Unfortunately our use of the storyboard incorrectly relies on it being treated
-          // as a component. See https://github.com/concrete-utopia/utopia/issues/1718 for more info
-          return right(
-            possibleCanvasContentsExpression(name, variableDeclaration.initializer, varLetOrConst),
-          )
+        const initializer = variableDeclaration.initializer
+
+        function processVariable(
+          currentNode: TS.Node,
+          functionWrapping: Array<FunctionWrap>,
+        ): Either<TS.Node, PossibleCanvasContents> {
+          if (TS.isCallExpression(currentNode)) {
+            const expressionFromCall = parseAttributeExpression(
+              sourceFile,
+              sourceText,
+              filename,
+              imports,
+              topLevelNames,
+              propsObjectName,
+              currentNode.expression,
+              existingHighlightBounds,
+              alreadyExistingUIDs,
+              [],
+              applySteganography,
+              'outermost-expression',
+            )
+            if (isRight(expressionFromCall) && currentNode.arguments.length === 1) {
+              const newFunctionWrapping = [
+                ...functionWrapping,
+                simpleFunctionWrap(expressionFromCall.value.value),
+              ]
+              return processVariable(currentNode.arguments[0], newFunctionWrapping)
+            }
+          } else if (TS.isArrowFunction(currentNode)) {
+            return right(
+              possibleCanvasContentsFunction(
+                name,
+                currentNode.parameters,
+                currentNode.body,
+                varLetOrConst,
+                functionWrapping,
+              ),
+            )
+          } else if (name === BakedInStoryboardVariableName) {
+            // FIXME The below case should result in a parsed top level *element*, but instead it is treated
+            // as a *component*. Unfortunately our use of the storyboard incorrectly relies on it being treated
+            // as a component. See https://github.com/concrete-utopia/utopia/issues/1718 for more info
+            return right(
+              possibleCanvasContentsExpression(name, initializer, varLetOrConst, functionWrapping),
+            )
+          }
+          return left(node)
         }
+
+        return processVariable(initializer, [])
       }
     }
   } else if (TS.isFunctionDeclaration(node)) {
     if (node.body != null) {
       const name = node.name == null ? null : node.name.getText(sourceFile)
-      return right(possibleCanvasContentsFunction(name, node.parameters, node.body, 'function'))
+      return right(possibleCanvasContentsFunction(name, node.parameters, node.body, 'function', []))
     }
   }
 
@@ -1537,7 +1586,18 @@ export function parseCode(
           pushImportStatement(rawImportStatement)
         }
       } else {
-        const possibleDeclaration = looksLikeCanvasElements(sourceFile, topLevelElement)
+        const possibleDeclaration = looksLikeCanvasElements(
+          sourceFile,
+          topLevelElement,
+          sourceText,
+          filePath,
+          imports,
+          topLevelNames,
+          null,
+          highlightBounds,
+          alreadyExistingUIDs_MUTABLE,
+          applySteganography,
+        )
         if (isRight(possibleDeclaration)) {
           const canvasContents = possibleDeclaration.value
           const { name } = canvasContents
@@ -1658,6 +1718,7 @@ export function parseCode(
                 isFunction,
                 canvasContents.declarationSyntax,
                 contents.blockOrExpression,
+                canvasContents.functionWrapping,
                 foldEither(
                   (_) => null,
                   (param) => param?.value ?? null,
@@ -1799,6 +1860,7 @@ export function parseCode(
             topLevelElement.isFunction,
             topLevelElement.declarationSyntax,
             topLevelElement.blockOrExpression,
+            topLevelElement.functionWrapping,
             topLevelElement.param,
             topLevelElement.propsUsed,
             topLevelElement.rootElement,

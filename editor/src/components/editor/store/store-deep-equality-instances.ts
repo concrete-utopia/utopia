@@ -143,6 +143,8 @@ import type {
   JSOpaqueArbitraryStatement,
   JSAssignmentStatement,
   JSAssignment,
+  FunctionWrap,
+  SimpleFunctionWrap,
 } from '../../../core/shared/element-template'
 import {
   elementInstanceMetadata,
@@ -214,6 +216,8 @@ import {
   jsAssignmentStatement,
   jsAssignment,
   jsxMapExpression,
+  isSimpleFunctionWrap,
+  simpleFunctionWrap,
 } from '../../../core/shared/element-template'
 import type {
   CanvasRectangle,
@@ -1579,8 +1583,29 @@ export function JSXElementChildKeepDeepEquality(): KeepDeepEqualityCall<JSXEleme
   }
 }
 
+export const SimpleFunctionWrapKeepDeepEquality: KeepDeepEqualityCall<SimpleFunctionWrap> =
+  combine1EqualityCall(
+    (wrap) => wrap.functionExpression,
+    JSExpressionKeepDeepEqualityCall,
+    simpleFunctionWrap,
+  )
+
+export const FunctionWrapKeepDeepEquality: KeepDeepEqualityCall<FunctionWrap> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'SIMPLE_FUNCTION_WRAP':
+      if (isSimpleFunctionWrap(newValue)) {
+        return SimpleFunctionWrapKeepDeepEquality(oldValue, newValue)
+      }
+      break
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
 export const UtopiaJSXComponentKeepDeepEquality: KeepDeepEqualityCall<UtopiaJSXComponent> =
-  combine10EqualityCalls(
+  combine11EqualityCalls(
     (component) => component.name,
     createCallWithTripleEquals(),
     (component) => component.isFunction,
@@ -1589,6 +1614,8 @@ export const UtopiaJSXComponentKeepDeepEquality: KeepDeepEqualityCall<UtopiaJSXC
     createCallWithTripleEquals(),
     (component) => component.blockOrExpression,
     createCallWithTripleEquals(),
+    (component) => component.functionWrapping,
+    arrayDeepEquality(FunctionWrapKeepDeepEquality),
     (component) => component.param,
     nullableDeepEquality(ParamKeepDeepEquality()),
     (component) => component.propsUsed,
