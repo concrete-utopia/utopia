@@ -15,13 +15,13 @@ import { useDispatch } from '../../../editor/store/dispatch-context'
 import type { JSExpressionOtherJavaScript } from '../../../../core/shared/element-template'
 import { replaceElementInScope } from '../../../editor/actions/action-creators'
 import { useAtom } from 'jotai'
-import type { VariableOption } from '../component-section/data-picker-popup'
-import { DataPickerPreferredAllAtom } from '../component-section/data-picker-popup'
+import type { DataPickerOption } from '../component-section/data-picker-utils'
+import { DataPickerPreferredAllAtom } from '../component-section/data-picker-utils'
 import { useVariablesInScopeForSelectedElement } from '../component-section/variables-in-scope-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { traceDataFromElement, dataPathSuccess } from '../../../../core/data-tracing/data-tracing'
 
-function filterVariableOption(option: VariableOption): VariableOption | null {
+function filterVariableOption(option: DataPickerOption): DataPickerOption | null {
   switch (option.type) {
     case 'array':
       return {
@@ -48,7 +48,7 @@ function filterVariableOption(option: VariableOption): VariableOption | null {
   }
 }
 
-function filterKeepArraysOnly(options: VariableOption[]): VariableOption[] {
+function filterKeepArraysOnly(options: DataPickerOption[]): DataPickerOption[] {
   return mapDropNulls((o) => filterVariableOption(o), options)
 }
 

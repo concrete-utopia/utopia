@@ -17,7 +17,7 @@ import { dataPathSuccess, traceDataFromElement } from '../../../../core/data-tra
 import type { RenderedAt } from '../../../editor/store/editor-state'
 import { replaceElementInScope } from '../../../editor/actions/action-creators'
 import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'
-import { DataPickerPreferredAllAtom } from './data-picker-popup'
+import { DataPickerPreferredAllAtom } from './data-picker-utils'
 import { useAtom } from 'jotai'
 import type { CartoucheUIProps } from './cartouche-ui'
 import { CartoucheUI } from './cartouche-ui'
