@@ -358,10 +358,15 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
   )
 
   const anyKnownElements = useEditorState(
-    Substores.metadata,
+    Substores.projectContentsAndMetadata,
     (store) => {
       return strictEvery(store.editor.selectedViews, (view) => {
-        return true //MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, view) != null
+        return (
+          MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, view) != null ||
+          MetadataUtils.isElementDataReference(
+            getElementFromProjectContents(view, store.editor.projectContents),
+          )
+        )
       })
     },
     'Inspector anyKnownElements',
