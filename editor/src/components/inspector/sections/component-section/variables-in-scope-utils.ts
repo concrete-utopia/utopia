@@ -385,22 +385,7 @@ const keepLocalestScope =
   }
 
 export function useVariablesInScopeForSelectedElement(
-  elementPath: ElementPath,
-  propertyPath: PropertyPath | null,
-  mode: DataPickerFilterOption,
-): Array<VariableOption> {
-  const selectedViewPath = useEditorState(
-    Substores.selectedViews,
-    (store) => store.editor.selectedViews.at(0) ?? null,
-    'useVariablesInScopeForSelectedElement selectedViewPath',
-  )
-
-  return useVariablesInScopeForElementPath(elementPath, selectedViewPath, propertyPath, mode)
-}
-
-export function useVariablesInScopeForElementPath(
   elementPath: ElementPath | null,
-  selectedViewPath: ElementPath | null,
   propertyPath: PropertyPath | null,
   mode: DataPickerFilterOption,
 ): Array<VariableOption> {
@@ -414,13 +399,13 @@ export function useVariablesInScopeForElementPath(
   const currentPropertyValue = usePropertyValue(elementPath, propertyPath)
 
   const variableNamesInScope = React.useMemo((): Array<VariableOption> => {
-    if (selectedViewPath == null) {
+    if (elementPath == null) {
       return []
     }
 
     let variablesInScopeForSelectedPath: VariableData | null = (() => {
       // if the selected element doesn't have an associacted variablesInScope, we assume it's safe to walk up the path within the same component
-      const allPathsInsideScope = EP.allPathsInsideComponent(selectedViewPath)
+      const allPathsInsideScope = EP.allPathsInsideComponent(elementPath)
       for (const path of allPathsInsideScope) {
         const pathAsString = EP.toString(path)
         if (pathAsString in variablesInScope) {
@@ -459,14 +444,7 @@ export function useVariablesInScopeForElementPath(
     return orderedVariablesInScope.flatMap((variable) =>
       valuesFromVariable(variable, 0, variable.expression, [variable.expressionPathPart]),
     )
-  }, [
-    controlDescriptions,
-    currentPropertyValue,
-    mode,
-    selectedViewPath,
-    variablesInScope,
-    propertyPath,
-  ])
+  }, [controlDescriptions, currentPropertyValue, mode, elementPath, variablesInScope, propertyPath])
 
   return variableNamesInScope
 }

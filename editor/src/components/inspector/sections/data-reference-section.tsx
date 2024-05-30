@@ -14,13 +14,13 @@ import {
 } from './component-section/data-reference-cartouche'
 import { useDataPickerButton } from './component-section/component-section'
 import { DataPickerPreferredAllAtom } from './component-section/data-picker-popup'
-import { useVariablesInScopeForElementPath } from './component-section/variables-in-scope-utils'
 import { useAtom } from 'jotai'
 import * as EP from '../../../core/shared/element-path'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { replaceElementInScope } from '../../editor/actions/action-creators'
 import { NO_OP } from '../../../core/shared/utils'
 import { dataPathSuccess, traceDataFromElement } from '../../../core/data-tracing/data-tracing'
+import { useVariablesInScopeForSelectedElement } from './component-section/variables-in-scope-utils'
 
 export const DataReferenceSectionId = 'code-element-section-test-id'
 
@@ -76,8 +76,7 @@ export const DataReferenceSection = React.memo(({ paths }: { paths: ElementPath[
     return elements.every((element) => element.element?.type === 'JSX_TEXT_BLOCK')
   }, [elements])
 
-  const varsInScope = useVariablesInScopeForElementPath(
-    elementPathForDataPicker,
+  const varsInScope = useVariablesInScopeForSelectedElement(
     elementPathForDataPicker,
     null,
     preferredAllState,
