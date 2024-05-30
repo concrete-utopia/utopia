@@ -21,6 +21,7 @@ import { replaceElementInScope } from '../../editor/actions/action-creators'
 import { NO_OP } from '../../../core/shared/utils'
 import { dataPathSuccess, traceDataFromElement } from '../../../core/data-tracing/data-tracing'
 import { useVariablesInScopeForSelectedElement } from './component-section/variables-in-scope-utils'
+import { jsxElementChildToValuePath } from './component-section/data-picker-utils'
 
 export const DataReferenceSectionId = 'code-element-section-test-id'
 
@@ -82,18 +83,27 @@ export const DataReferenceSection = React.memo(({ paths }: { paths: ElementPath[
     preferredAllState,
   )
 
-  const dataPickerButtonData = useDataPickerButton(varsInScope, (expression) => {
-    if (elementPathForDataPicker == null) {
-      return
-    }
-    dispatch([
-      replaceElementInScope(EP.parentPath(elementPathForDataPicker), {
-        type: 'replace-child-with-uid',
-        uid: EP.toUid(elementPathForDataPicker),
-        replaceWith: expression,
-      }),
-    ])
-  })
+  const pathToCurrenlySelectedValue = React.useMemo(() => {
+    const element = elements.find((e) => EP.pathsEqual(e.path, elementPathForDataPicker))
+    return jsxElementChildToValuePath(element?.element ?? null)
+  }, [elements, elementPathForDataPicker])
+
+  const dataPickerButtonData = useDataPickerButton(
+    varsInScope,
+    (expression) => {
+      if (elementPathForDataPicker == null) {
+        return
+      }
+      dispatch([
+        replaceElementInScope(EP.parentPath(elementPathForDataPicker), {
+          type: 'replace-child-with-uid',
+          uid: EP.toUid(elementPathForDataPicker),
+          replaceWith: expression,
+        }),
+      ])
+    },
+    pathToCurrenlySelectedValue,
+  )
 
   const openPicker = React.useCallback(
     (path: ElementPath | null) => () => {
