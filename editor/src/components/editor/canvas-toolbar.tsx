@@ -59,6 +59,9 @@ import { pluck } from '../../core/shared/array-utils'
 import { MultiplayerWrapper } from '../../utils/multiplayer-wrapper'
 import { ComponentPicker } from '../navigator/navigator-item/component-picker'
 import { insertComponentPickerItem } from '../navigator/navigator-item/component-picker-context-menu'
+import { useAtom } from 'jotai'
+import { ActiveRemixSceneAtom } from '../canvas/remix/utopia-remix-root-component'
+import * as EP from '../../core/shared/element-path'
 
 export const InsertMenuButtonTestId = 'insert-menu-button'
 export const PlayModeButtonTestId = 'canvas-toolbar-play-mode'
@@ -276,21 +279,24 @@ export const CanvasToolbar = React.memo(() => {
 
   const wrapInSubmenu = React.useCallback((wrapped: React.ReactNode) => {
     return (
-      <FlexRow
+      <FlexColumn
         data-testid='canvas-toolbar-submenu'
         style={{
           width: '100%',
-          marginTop: -10,
-          paddingTop: 10,
+          overflow: 'hidden',
+          justifyContent: 'flex-end',
           backgroundColor: colorTheme.bg1subdued.value,
-          borderRadius: '0px 0px 10px 10px',
+          borderRadius: '0 0 6px 6px',
           boxShadow: UtopiaStyles.shadowStyles.low.boxShadow,
           pointerEvents: 'initial',
           zIndex: -1, // it sits below the main menu row, but we want the main menu's shadow to cast over this one
+          // to make the submenu appear visually underneath the corners of the main menu
+          marginTop: -6,
+          paddingTop: 6,
         }}
       >
-        {wrapped}
-      </FlexRow>
+        <FlexRow>{wrapped}</FlexRow>
+      </FlexColumn>
     )
   }, [])
 
@@ -324,6 +330,13 @@ export const CanvasToolbar = React.memo(() => {
 
   const isMyProject = useIsMyProject()
 
+  const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
+  const remixSceneIsActive = !EP.isEmptyPath(activeRemixScene)
+  const showRemixNavBar =
+    remixSceneIsActive &&
+    ((canvasToolbarMode.primary === 'edit' && canvasToolbarMode.secondary !== 'strategy-active') ||
+      canvasToolbarMode.primary === 'play')
+
   return (
     <FlexColumn
       style={{ alignItems: 'start', justifySelf: 'center' }}
@@ -336,14 +349,15 @@ export const CanvasToolbar = React.memo(() => {
         id={CanvasToolbarId}
         style={{
           backgroundColor: theme.inspectorBackground.value,
-          borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
+          borderRadius: 6,
           overflow: 'hidden',
           boxShadow: UtopiaStyles.shadowStyles.low.boxShadow,
           pointerEvents: 'initial',
           display: 'flex',
           flexDirection: 'row',
           alignItems: 'center',
-          padding: '0 6px 0 8px',
+          padding: 3,
+          gap: 8,
         }}
       >
         <Tooltip title='Edit' placement='bottom'>
@@ -354,7 +368,6 @@ export const CanvasToolbar = React.memo(() => {
             onClick={dispatchSwitchToSelectModeCloseMenus}
             keepActiveInLiveMode
             testid={CanvasToolbarEditButtonID}
-            style={{ width: 36 }}
           />
         </Tooltip>
         {when(
@@ -367,7 +380,6 @@ export const CanvasToolbar = React.memo(() => {
                 primary={canvasToolbarMode.primary === 'text'}
                 onClick={insertTextCallback}
                 keepActiveInLiveMode
-                style={{ width: 36 }}
               />
             </Tooltip>
             <Tooltip title='Insert' placement='bottom'>
@@ -378,7 +390,6 @@ export const CanvasToolbar = React.memo(() => {
                 primary={canvasToolbarMode.primary === 'insert'}
                 onClick={toggleInsertButtonClicked}
                 keepActiveInLiveMode
-                style={{ width: 36 }}
               />
             </Tooltip>
           </>,
@@ -391,12 +402,11 @@ export const CanvasToolbar = React.memo(() => {
             primary={canvasToolbarMode.primary === 'play'}
             onClick={toggleLiveMode}
             keepActiveInLiveMode
-            style={{ width: 36 }}
           />
         </Tooltip>
         {when(
           canComment,
-          <div style={{ display: 'flex', width: 36 }}>
+          <div style={{ display: 'flex', width: 26 }}>
             <Tooltip title={commentButtonTooltip} placement='bottom'>
               <InsertModeButton
                 testid={commentButtonTestId}
@@ -405,7 +415,6 @@ export const CanvasToolbar = React.memo(() => {
                 primary={canvasToolbarMode.primary === 'comment'}
                 onClick={toggleCommentMode}
                 keepActiveInLiveMode
-                style={{ width: 36 }}
                 disabled={commentButtonDisabled}
               />
             </Tooltip>
@@ -418,9 +427,8 @@ export const CanvasToolbar = React.memo(() => {
         <Tooltip title='Zoom to 100%' placement='bottom'>
           <SquareButton
             style={{
-              height: 32,
               width: 'min-content',
-              padding: '0 8px',
+              padding: '0 4px',
             }}
             css={{
               '&:hover': {
@@ -454,7 +462,7 @@ export const CanvasToolbar = React.memo(() => {
       {/* Insert Mode */}
       {canvasToolbarMode.primary === 'insert'
         ? wrapInSubmenu(
-            <FlexColumn style={{ padding: '0 8px 0 8px', flexGrow: 1 }}>
+            <FlexColumn style={{ padding: '3px 8px 0 8px', flexGrow: 1 }}>
               <FlexRow>
                 <Tooltip title='Back' placement='bottom'>
                   <InsertModeButton
@@ -503,11 +511,7 @@ export const CanvasToolbar = React.memo(() => {
           )
         : null}
       {/* Live Mode */}
-      {(canvasToolbarMode.primary === 'edit' &&
-        canvasToolbarMode.secondary !== 'strategy-active') ||
-      canvasToolbarMode.primary === 'play'
-        ? wrapInSubmenu(<RemixNavigationBar />)
-        : null}
+      {showRemixNavBar ? wrapInSubmenu(<RemixNavigationBar />) : null}
     </FlexColumn>
   )
 })
@@ -554,7 +558,7 @@ const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
   return (
     <SquareButton
       data-testid={props.testid}
-      style={{ height: 32, width: 32, ...props.style }}
+      style={{ height: 26, width: 26, borderRadius: 3, ...props.style }}
       primary={primary}
       spotlight={secondary}
       highlight
@@ -598,7 +602,7 @@ const Separator = React.memo((props) => {
         width: 1,
         height: 16,
         alignSelf: 'center',
-        margin: '0 8px',
+        margin: '0 4px',
         backgroundColor: colorTheme.seperator.value,
       }}
     ></div>

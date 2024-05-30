@@ -150,7 +150,7 @@ export const BorderSubsection: React.FunctionComponent<React.PropsWithChildren<u
       </UIGridRow>
     )
 
-    const borderSet: boolean = controlStatus !== 'unset'
+    const borderSet: boolean = controlStatus !== 'unset' && controlStatus !== 'trivial-default'
 
     const contextMenuItems = [addOnUnsetValues(['border parameters'], onUnsetValues)]
 

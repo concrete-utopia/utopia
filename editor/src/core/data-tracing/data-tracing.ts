@@ -205,17 +205,17 @@ function findContainingComponentForElementPath(
   })
 }
 
-function processJSPropertyAccessors(
+export function processJSPropertyAccessors(
   expression: JSExpression,
-): Either<string, { originalIdentifier: JSIdentifier; path: DataPath }> {
+): Either<string, { originalIdentifier: JSIdentifier; path: Array<string | number> }> {
   switch (expression.type) {
     case 'ATTRIBUTE_FUNCTION_CALL':
     case 'ATTRIBUTE_NESTED_ARRAY':
     case 'ATTRIBUTE_NESTED_OBJECT':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-    case 'ATTRIBUTE_VALUE':
     case 'JSX_ELEMENT':
     case 'JSX_MAP_EXPRESSION':
+    case 'ATTRIBUTE_VALUE':
       return left(`encountered unsupported expression type ${expression.type}`)
     case 'JS_IDENTIFIER': {
       return right({ path: [], originalIdentifier: expression })
@@ -240,7 +240,7 @@ function processJSPropertyAccessors(
           path: [...resultSoFar.path, `${elementValue}`],
           originalIdentifier: resultSoFar.originalIdentifier,
         }
-      }, processJSPropertyAccessors(expression.onValue))
+      }, processJSPropertyAccessorsIntoDataTracingPath(expression.onValue))
     }
     case 'JS_PROPERTY_ACCESS':
       return mapEither((resultSoFar) => {
@@ -248,11 +248,22 @@ function processJSPropertyAccessors(
           path: [...resultSoFar.path, expression.property],
           originalIdentifier: resultSoFar.originalIdentifier,
         }
-      }, processJSPropertyAccessors(expression.onValue))
+      }, processJSPropertyAccessorsIntoDataTracingPath(expression.onValue))
 
     default:
       assertNever(expression)
   }
+}
+
+function processJSPropertyAccessorsIntoDataTracingPath(
+  expression: JSExpression,
+): Either<string, { originalIdentifier: JSIdentifier; path: Array<string> }> {
+  return mapEither((result) => {
+    return {
+      originalIdentifier: result.originalIdentifier,
+      path: result.path.map((part) => `${part}`),
+    }
+  }, processJSPropertyAccessors(expression))
 }
 
 function propUsedByIdentifierOrAccess(
@@ -411,7 +422,7 @@ function traceDataFromIdentifierOrAccess(
     return dataTracingFailed('Could not find containing component')
   }
 
-  const dataPath = processJSPropertyAccessors(startFromElement)
+  const dataPath = processJSPropertyAccessorsIntoDataTracingPath(startFromElement)
 
   if (isLeft(dataPath)) {
     return dataTracingFailed(dataPath.value)
@@ -552,7 +563,7 @@ function walkUpInnerScopesUntilReachingComponent(
                 mapOver.type === 'JS_ELEMENT_ACCESS' ||
                 mapOver.type === 'JS_PROPERTY_ACCESS'
               ) {
-                const dataPath = processJSPropertyAccessors(mapOver)
+                const dataPath = processJSPropertyAccessorsIntoDataTracingPath(mapOver)
 
                 if (isRight(dataPath)) {
                   const mapIndexHack = optionalMap(
@@ -751,7 +762,9 @@ function lookupInComponentScope(
         foundAssignmentOfIdentifier.rightHandSide.type === 'JS_ELEMENT_ACCESS' ||
         foundAssignmentOfIdentifier.rightHandSide.type === 'JS_PROPERTY_ACCESS'
       ) {
-        const dataPath = processJSPropertyAccessors(foundAssignmentOfIdentifier.rightHandSide)
+        const dataPath = processJSPropertyAccessorsIntoDataTracingPath(
+          foundAssignmentOfIdentifier.rightHandSide,
+        )
 
         if (isRight(dataPath)) {
           return lookupInComponentScope(

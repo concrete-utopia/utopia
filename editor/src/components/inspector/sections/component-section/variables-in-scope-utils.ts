@@ -6,7 +6,7 @@ import type {
 import type { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
 import type { VariableData } from '../../../canvas/ui-jsx-canvas'
 import { useEditorState, Substores } from '../../../editor/store/store-hook'
-import type { DataPickerFilterOption, VariableOption } from './data-picker-popup'
+import type { DataPickerFilterOption, DataPickerOption } from './data-picker-utils'
 import * as EP from '../../../../core/shared/element-path'
 import * as PP from '../../../../core/shared/property-path'
 import React from 'react'
@@ -21,8 +21,8 @@ function valuesFromObject(
   depth: number,
   originalObjectName: string,
   valuePath: Array<string | number>,
-): Array<VariableOption> {
-  const patchDefinedElsewhereInfo = (option: VariableOption): VariableOption => ({
+): Array<DataPickerOption> {
+  const patchDefinedElsewhereInfo = (option: DataPickerOption): DataPickerOption => ({
     ...option,
     definedElsewhere: originalObjectName,
   })
@@ -72,7 +72,7 @@ function valuesFromVariable(
   depth: number,
   originalObjectName: string,
   valuePath: Array<string | number>,
-): Array<VariableOption> {
+): Array<DataPickerOption> {
   switch (variable.type) {
     case 'primitive':
       return [
@@ -388,7 +388,7 @@ export function useVariablesInScopeForSelectedElement(
   selectedView: ElementPath,
   propertyPath: PropertyPath | null,
   mode: DataPickerFilterOption,
-): Array<VariableOption> {
+): Array<DataPickerOption> {
   const selectedViewPath = useEditorState(
     Substores.selectedViews,
     (store) => store.editor.selectedViews.at(0) ?? null,
@@ -404,7 +404,7 @@ export function useVariablesInScopeForSelectedElement(
   const controlDescriptions = usePropertyControlDescriptions(propertyPath)
   const currentPropertyValue = usePropertyValue(selectedView, propertyPath)
 
-  const variableNamesInScope = React.useMemo((): Array<VariableOption> => {
+  const variableNamesInScope = React.useMemo((): Array<DataPickerOption> => {
     if (selectedViewPath == null) {
       return []
     }

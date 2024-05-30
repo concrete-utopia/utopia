@@ -27,14 +27,18 @@ import type {
   JSXOption,
   ObjectOption,
   PrimitiveOption,
-  VariableOption,
-} from './data-picker-popup'
+  DataPickerOption,
+  ObjectPath,
+} from './data-picker-utils'
+
+export const DataSelectorPopupBreadCrumbsTestId = 'data-selector-modal-top-bar'
 
 export interface DataSelectorModalProps {
   closePopup: () => void
   style: React.CSSProperties
-  variablesInScope: VariableOption[]
+  variablesInScope: DataPickerOption[]
   onPropertyPicked: DataPickerCallback
+  startingSelectedValuePath: ObjectPath | null
 }
 
 const Separator = React.memo(
@@ -99,10 +103,8 @@ const DEFAULT_SIZE: React.CSSProperties = {
   maxHeight: 300,
 }
 
-type ObjectPath = Array<string | number>
-
 interface ProcessedVariablesInScope {
-  [valuePath: string]: VariableOption
+  [valuePath: string]: DataPickerOption
 }
 
 interface ArrayIndexLookup {
@@ -111,17 +113,21 @@ interface ArrayIndexLookup {
 
 export const DataSelectorModal = React.memo(
   React.forwardRef<HTMLDivElement, DataSelectorModalProps>(
-    ({ style, closePopup, variablesInScope, onPropertyPicked }, forwardedRef) => {
+    (
+      { style, closePopup, variablesInScope, onPropertyPicked, startingSelectedValuePath },
+      forwardedRef,
+    ) => {
       const colorTheme = useColorTheme()
 
       const [navigatedToPath, setNavigatedToPath] = React.useState<ObjectPath>([])
 
-      // TODO invariant: currentValuePath should be a prefix of currentSelectedPath, we should enforce this
-      const [selectedPath, setSelectedPath] = React.useState<ObjectPath | null>(null)
+      const [selectedPath, setSelectedPath] = React.useState<ObjectPath | null>(
+        startingSelectedValuePath,
+      )
       const [hoveredPath, setHoveredPath] = React.useState<ObjectPath | null>(null)
 
       const setNavigatedToPathCurried = React.useCallback(
-        (path: VariableOption['valuePath']) => (e: React.MouseEvent) => {
+        (path: DataPickerOption['valuePath']) => (e: React.MouseEvent) => {
           e.stopPropagation()
           e.preventDefault()
 
@@ -150,7 +156,7 @@ export const DataSelectorModal = React.memo(
       }, [])
 
       const onHover = React.useCallback(
-        (path: VariableOption['valuePath']): HoverHandlers => ({
+        (path: DataPickerOption['valuePath']): HoverHandlers => ({
           onMouseEnter: () => setHoveredPath(path),
           onMouseLeave: () => setHoveredPath(null),
         }),
@@ -204,7 +210,7 @@ export const DataSelectorModal = React.memo(
       }, [focusedVariableChildren])
 
       const setCurrentSelectedPathCurried = React.useCallback(
-        (path: VariableOption['valuePath']) => () => {
+        (path: DataPickerOption['valuePath']) => () => {
           if (!isPrefixOf(navigatedToPath, path)) {
             // if navigatedToPath is not a prefix of path, we don't update the selection
             return
@@ -297,7 +303,10 @@ export const DataSelectorModal = React.memo(
                       padding: '0px 6px',
                     }}
                   >
-                    <FlexRow style={{ flexWrap: 'wrap', flexGrow: 1 }}>
+                    <FlexRow
+                      data-testid={DataSelectorPopupBreadCrumbsTestId}
+                      style={{ flexWrap: 'wrap', flexGrow: 1 }}
+                    >
                       {pathBreadcrumbs(pathInTopBarIncludingHover, processedVariablesInScope).map(
                         ({ segment, path }, idx) => (
                           <span key={path.toString()}>
@@ -466,7 +475,7 @@ export const DataSelectorModal = React.memo(
 )
 
 function childTypeToCartoucheDataType(
-  childType: VariableOption['type'],
+  childType: DataPickerOption['type'],
 ): CartoucheUIProps['datatype'] {
   switch (childType) {
     case 'array':
@@ -481,10 +490,10 @@ function childTypeToCartoucheDataType(
   }
 }
 
-function useProcessVariablesInScope(options: VariableOption[]): ProcessedVariablesInScope {
+function useProcessVariablesInScope(options: DataPickerOption[]): ProcessedVariablesInScope {
   return React.useMemo(() => {
     let lookup: ProcessedVariablesInScope = {}
-    function walk(option: VariableOption) {
+    function walk(option: DataPickerOption) {
       lookup[option.valuePath.toString()] = option
       switch (option.type) {
         case 'array':
@@ -503,7 +512,7 @@ function useProcessVariablesInScope(options: VariableOption[]): ProcessedVariabl
   }, [options])
 }
 
-function childVars(option: VariableOption, indices: ArrayIndexLookup): VariableOption[] {
+function childVars(option: DataPickerOption, indices: ArrayIndexLookup): DataPickerOption[] {
   switch (option.type) {
     case 'object':
       return option.children
@@ -520,7 +529,7 @@ function childVars(option: VariableOption, indices: ArrayIndexLookup): VariableO
 }
 
 export function pathBreadcrumbs(
-  valuePath: VariableOption['valuePath'],
+  valuePath: DataPickerOption['valuePath'],
   processedVariablesInScope: ProcessedVariablesInScope,
 ): Array<{
   segment: string | number
@@ -544,12 +553,12 @@ export function pathBreadcrumbs(
   return accumulator
 }
 
-function variableNameFromPath(variable: VariableOption): string {
+function variableNameFromPath(variable: DataPickerOption): string {
   return last(variable.valuePath)?.toString() ?? variable.variableInfo.expression.toString()
 }
 
 function cartoucheFolderOrInfo(
-  option: VariableOption,
+  option: DataPickerOption,
   canBeFolder: 'no-folder' | 'can-be-folder',
 ): CartoucheUIProps['role'] {
   if (option.variableInfo.matches) {
