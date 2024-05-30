@@ -21,10 +21,10 @@ import { RightMenuTab } from './store/editor-state'
 import { ComponentPickerTestId } from '../navigator/navigator-item/component-picker'
 import * as EP from '../../core/shared/element-path'
 import { BakedInStoryboardUID } from '../../core/model/scene-utils'
-import { selectComponentsForTest } from '../../utils/utils.test-utils'
+import { searchInComponentPicker, selectComponentsForTest } from '../../utils/utils.test-utils'
 
 function getInsertItems() {
-  return screen.queryAllByTestId(/^insert-item-/gi)
+  return screen.queryAllByTestId(/^component-picker-item-/gi)
 }
 
 const allInsertItemsCount = 23
@@ -48,38 +48,13 @@ describe('insert menu', () => {
 
       expect(getInsertItems().length).toEqual(allInsertItemsCount)
 
-      document.execCommand('insertText', false, 'span')
+      await searchInComponentPicker(renderResult, 'span')
 
       expect(getInsertItems().length).toEqual(1)
       expect(getInsertItems()[0].innerText).toEqual('span')
     })
-    it('can filter by group name', async () => {
-      const renderResult = await renderTestEditorWithCode(
-        makeTestProjectCodeWithSnippet(`<div />`),
-        'await-first-dom-report',
-      )
-
-      await openInsertMenu(renderResult)
-
-      document.execCommand('insertText', false, 'elem')
-
-      expect(getInsertItems().length).toEqual(9)
-      expect(getInsertItems().map((s) => s.innerText)).toEqual([
-        // html elements group
-        'span',
-        'h1',
-        'h2',
-        'p',
-        'button',
-        'input',
-        'video',
-        'img',
-        // sample group
-        'Sample text',
-      ])
-    })
     describe('no match', () => {
-      it('shows all elements', async () => {
+      it('shows no elements', async () => {
         const renderResult = await renderTestEditorWithCode(
           makeTestProjectCodeWithSnippet(`<div />`),
           'await-first-dom-report',
@@ -87,20 +62,9 @@ describe('insert menu', () => {
 
         await openInsertMenu(renderResult)
 
-        document.execCommand('insertText', false, 'wr0ng')
-        expect(getInsertItems().length).toEqual(allInsertItemsCount)
+        await searchInComponentPicker(renderResult, 'wr0ng')
+        expect(getInsertItems().length).toEqual(0)
       })
-    })
-    it('does not show insertables that cannot be inserted', async () => {
-      const renderResult = await renderTestEditorWithCode(
-        makeTestProjectCodeWithSnippet(`<div />`),
-        'await-first-dom-report',
-      )
-
-      await openInsertMenu(renderResult)
-
-      document.execCommand('insertText', false, 'group')
-      expect(getInsertItems().length).toEqual(allInsertItemsCount)
     })
   })
 
@@ -129,14 +93,7 @@ describe('insert menu', () => {
 
     FOR_TESTS_setNextGeneratedUid('div')
 
-    expect(getInsertItems().length).toEqual(allInsertItemsCount)
-
-    document.execCommand('insertText', false, 'div')
-
-    const picker = await screen.findByTestId(ComponentPickerTestId)
-    forceNotNull('the component picker must not be null', picker)
-
-    await pressKey('Enter', { targetElement: picker })
+    await searchInComponentPicker(renderResult, 'div')
     await renderResult.getDispatchFollowUpActionsFinished()
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(

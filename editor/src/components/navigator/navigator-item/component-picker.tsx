@@ -443,6 +443,10 @@ interface ComponentPickerComponentSectionProps {
   shownInToolbar: boolean
 }
 
+export function componentPickerComponentTestId(key: string): string {
+  return `component-picker-item-${key}`
+}
+
 const ComponentPickerComponentSection = React.memo(
   (props: ComponentPickerComponentSectionProps) => {
     const { components, onItemClick, onItemHover, currentlySelectedKey, shownInToolbar } = props
@@ -487,7 +491,7 @@ const ComponentPickerComponentSection = React.memo(
                 onClick={onItemClick(component.value)}
                 onMouseOver={onItemHover(component.value)}
                 data-key={component.value.key}
-                data-testid={component.value.key}
+                data-testid={componentPickerComponentTestId(component.value.key)}
               >
                 <FlexRow css={{ gap: 10, height: 28, alignItems: 'center' }}>
                   <Icn
