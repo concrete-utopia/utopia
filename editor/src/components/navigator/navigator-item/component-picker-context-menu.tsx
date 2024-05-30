@@ -844,7 +844,9 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
       'areAllJsxElements targetElement',
     )
 
-    const allInsertableComponents = useGetInsertableComponents('insert').flatMap((group) => {
+    const mode = insertionTarget.type === 'wrap-target' ? 'wrap' : 'insert'
+
+    const allInsertableComponents = useGetInsertableComponents(mode).flatMap((group) => {
       return {
         label: group.label,
         options: group.options.filter((option) => {
