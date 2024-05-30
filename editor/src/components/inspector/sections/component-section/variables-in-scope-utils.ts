@@ -392,7 +392,7 @@ export function useVariablesInScopeForSelectedElement(
   const variablesInScope = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.variablesInScope,
-    'useVariablesInScopeForElementPath variablesInScope',
+    'useVariablesInScopeForSelectedElement variablesInScope',
   )
 
   const controlDescriptions = usePropertyControlDescriptions(propertyPath)
