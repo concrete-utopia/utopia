@@ -8,22 +8,62 @@ import type { ElementPath } from '../../../core/shared/project-file-types'
 import { UIGridRow } from '../widgets/ui-grid-row'
 import { getElementFromProjectContents } from '../../editor/store/editor-state'
 import { mapDropNulls } from '../../../core/shared/array-utils'
-import { getTextContentOfElement } from './component-section/data-reference-cartouche'
+import {
+  DataCartoucheInner,
+  getTextContentOfElement,
+} from './component-section/data-reference-cartouche'
+import { useDataPickerButton } from './component-section/component-section'
+import { DataPickerPreferredAllAtom } from './component-section/data-picker-popup'
+import { useVariablesInScopeForElementPath } from './component-section/variables-in-scope-utils'
+import { useAtom } from 'jotai'
+import * as EP from '../../../core/shared/element-path'
+import { useDispatch } from '../../editor/store/dispatch-context'
+import { replaceElementInScope } from '../../editor/actions/action-creators'
+import { NO_OP } from '../../../core/shared/utils'
+import { dataPathSuccess, traceDataFromElement } from '../../../core/data-tracing/data-tracing'
 
 export const DataReferenceSectionId = 'code-element-section-test-id'
 
 export const DataReferenceSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
   const colorTheme = useColorTheme()
+  const dispatch = useDispatch()
+
+  const dataPickerWrapperRef = React.useRef<HTMLDivElement | null>(null)
+
+  const [preferredAllState] = useAtom(DataPickerPreferredAllAtom)
+
+  const [elementPathForDataPicker, setElementPathForDataPicker] =
+    React.useState<ElementPath | null>(null)
 
   const elements = useEditorState(
-    Substores.projectContents,
+    Substores.projectContentsAndMetadata,
     (store) => {
-      return paths.map((path) => {
-        return {
-          path: path,
-          element: getElementFromProjectContents(path, store.editor.projectContents),
+      return mapDropNulls((path) => {
+        const element = getElementFromProjectContents(path, store.editor.projectContents)
+        if (element == null) {
+          return null
         }
-      })
+
+        const elementMetadata = MetadataUtils.findElementByElementPath(
+          store.editor.jsxMetadata,
+          path,
+        )
+
+        const isDataComingFromServer = traceDataFromElement(
+          element,
+          EP.parentPath(path),
+          store.editor.jsxMetadata,
+          store.editor.projectContents,
+          dataPathSuccess([]),
+        )
+
+        return {
+          element: element,
+          textContent: getTextContentOfElement(element, elementMetadata),
+          path: path,
+          contentIsComingFromServer: isDataComingFromServer.type === 'hook-result',
+        }
+      }, paths)
     },
     'DataReferenceSection elements',
   )
@@ -32,35 +72,41 @@ export const DataReferenceSection = React.memo(({ paths }: { paths: ElementPath[
     return elements.every((element) => MetadataUtils.isElementDataReference(element.element))
   }, [elements])
 
-  const jsxMetadata = useEditorState(
-    Substores.metadata,
-    (store) => store.editor.jsxMetadata,
-    'DataReferenceSection metadata',
+  const isText = React.useMemo(() => {
+    return elements.every((element) => element.element?.type === 'JSX_TEXT_BLOCK')
+  }, [elements])
+
+  const varsInScope = useVariablesInScopeForElementPath(
+    elementPathForDataPicker,
+    elementPathForDataPicker,
+    null,
+    preferredAllState,
   )
 
-  const labels = React.useMemo(() => {
-    if (!isDataReference) {
-      return []
+  const dataPickerButtonData = useDataPickerButton(varsInScope, (expression) => {
+    if (elementPathForDataPicker == null) {
+      return
     }
-    return mapDropNulls((element) => {
-      if (element.element == null) {
-        return null
+    dispatch([
+      replaceElementInScope(EP.parentPath(elementPathForDataPicker), {
+        type: 'replace-child-with-uid',
+        uid: EP.toUid(elementPathForDataPicker),
+        replaceWith: expression,
+      }),
+    ])
+  })
+
+  const openPicker = React.useCallback(
+    (path: ElementPath | null) => () => {
+      if (path == null) {
+        return
       }
-      const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, element.path)
-      return getTextContentOfElement(element.element, elementMetadata)
-    }, elements)
-  }, [isDataReference, elements, jsxMetadata])
-
-  const isText = React.useMemo(() => {
-    if (!isDataReference) {
-      return null
-    }
-    return elements.every((element) => element.element?.type === 'JSX_TEXT_BLOCK')
-  }, [elements, isDataReference])
-
-  const openPicker = React.useCallback(() => {
-    // TODO
-  }, [])
+      dataPickerButtonData.setReferenceElement(dataPickerWrapperRef.current)
+      dataPickerButtonData.openPopup()
+      setElementPathForDataPicker(path)
+    },
+    [dataPickerButtonData],
+  )
 
   if (!isDataReference) {
     return null
@@ -68,6 +114,10 @@ export const DataReferenceSection = React.memo(({ paths }: { paths: ElementPath[
 
   return (
     <div data-testid={DataReferenceSectionId}>
+      <div ref={dataPickerWrapperRef} style={{ width: 0 }}>
+        {dataPickerButtonData.popupIsOpen ? dataPickerButtonData.DataPickerComponent : null}
+      </div>
+
       <FlexRow
         css={{
           height: UtopiaTheme.layout.rowHeight.large,
@@ -92,27 +142,27 @@ export const DataReferenceSection = React.memo(({ paths }: { paths: ElementPath[
           <span>{isText ? 'Text' : 'Data'}</span>
         </FlexRow>
       </FlexRow>
-      {labels.map((label, idx) => {
+
+      {elements.map((element) => {
         return (
           <UIGridRow
             padded={true}
             variant='<--------auto-------->|167px|'
-            key={`label-${label.type}-${idx}`}
+            key={`inspector-data-reference-row-${EP.toString(element.path)}`}
           >
-            Value
-            <div
-              style={{
-                backgroundColor: colorTheme.bg3.value,
-                fontFamily: 'monospace',
-                padding: 3,
-                borderRadius: 2,
-                textAlign: 'center',
-                cursor: 'pointer',
-              }}
-              onClick={openPicker}
-            >
-              {label.label}
-            </div>
+            <span>Value</span>
+
+            <DataCartoucheInner
+              onClick={openPicker(element.path)}
+              onDoubleClick={NO_OP}
+              selected={false}
+              inverted={false}
+              contentsToDisplay={element.textContent}
+              safeToDelete={false}
+              onDelete={NO_OP}
+              testId={`inspector-data-cartouche-${EP.toString(element.path)}`}
+              contentIsComingFromServer={element.contentIsComingFromServer}
+            />
           </UIGridRow>
         )
       })}
