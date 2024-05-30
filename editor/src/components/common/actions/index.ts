@@ -6,7 +6,6 @@ export type LeftMenuPanel =
   | 'genericExternalResources'
   | 'googleFontsResources'
   | 'insertmenu'
-  | 'variablesmenu'
   | 'projectsettings'
   | 'githuboptions'
 
@@ -43,8 +42,6 @@ export function paneForPanel(panel: EditorPanel | null): EditorPane | null {
     case 'githuboptions':
       return 'leftmenu'
     case 'insertmenu':
-      return 'rightmenu'
-    case 'variablesmenu':
       return 'rightmenu'
     case 'projectsettings':
       return 'leftmenu'
