@@ -16,7 +16,10 @@ import type { JSExpressionOtherJavaScript } from '../../../../core/shared/elemen
 import { replaceElementInScope } from '../../../editor/actions/action-creators'
 import { useAtom } from 'jotai'
 import type { DataPickerOption } from '../component-section/data-picker-utils'
-import { DataPickerPreferredAllAtom } from '../component-section/data-picker-utils'
+import {
+  DataPickerPreferredAllAtom,
+  jsxElementChildToValuePath,
+} from '../component-section/data-picker-utils'
 import { useVariablesInScopeForSelectedElement } from '../component-section/variables-in-scope-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { traceDataFromElement, dataPathSuccess } from '../../../../core/data-tracing/data-tracing'
@@ -101,9 +104,18 @@ export const MapListSourceCartouche = React.memo((props: MapListSourceCartoucheP
     [variableNamesInScope],
   )
 
+  const pathToMappedExpression = React.useMemo(
+    () =>
+      originalMapExpression === 'multiselect' || originalMapExpression === 'not-a-mapexpression'
+        ? null
+        : jsxElementChildToValuePath(originalMapExpression.valueToMap),
+    [originalMapExpression],
+  )
+
   const { popupIsOpen, DataPickerComponent, setReferenceElement, openPopup } = useDataPickerButton(
     filteredVariableNamesInScope,
     onPickMappedElement,
+    pathToMappedExpression,
   )
 
   const onClick = React.useCallback(() => {

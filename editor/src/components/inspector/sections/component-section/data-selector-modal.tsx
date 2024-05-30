@@ -28,13 +28,17 @@ import type {
   ObjectOption,
   PrimitiveOption,
   DataPickerOption,
+  ObjectPath,
 } from './data-picker-utils'
+
+export const DataSelectorPopupBreadCrumbsTestId = 'data-selector-modal-top-bar'
 
 export interface DataSelectorModalProps {
   closePopup: () => void
   style: React.CSSProperties
   variablesInScope: DataPickerOption[]
   onPropertyPicked: DataPickerCallback
+  startingSelectedValuePath: ObjectPath | null
 }
 
 const Separator = React.memo(
@@ -99,8 +103,6 @@ const DEFAULT_SIZE: React.CSSProperties = {
   maxHeight: 300,
 }
 
-type ObjectPath = Array<string | number>
-
 interface ProcessedVariablesInScope {
   [valuePath: string]: DataPickerOption
 }
@@ -111,13 +113,17 @@ interface ArrayIndexLookup {
 
 export const DataSelectorModal = React.memo(
   React.forwardRef<HTMLDivElement, DataSelectorModalProps>(
-    ({ style, closePopup, variablesInScope, onPropertyPicked }, forwardedRef) => {
+    (
+      { style, closePopup, variablesInScope, onPropertyPicked, startingSelectedValuePath },
+      forwardedRef,
+    ) => {
       const colorTheme = useColorTheme()
 
       const [navigatedToPath, setNavigatedToPath] = React.useState<ObjectPath>([])
 
-      // TODO invariant: currentValuePath should be a prefix of currentSelectedPath, we should enforce this
-      const [selectedPath, setSelectedPath] = React.useState<ObjectPath | null>(null)
+      const [selectedPath, setSelectedPath] = React.useState<ObjectPath | null>(
+        startingSelectedValuePath,
+      )
       const [hoveredPath, setHoveredPath] = React.useState<ObjectPath | null>(null)
 
       const setNavigatedToPathCurried = React.useCallback(
@@ -297,7 +303,10 @@ export const DataSelectorModal = React.memo(
                       padding: '0px 6px',
                     }}
                   >
-                    <FlexRow style={{ flexWrap: 'wrap', flexGrow: 1 }}>
+                    <FlexRow
+                      data-testid={DataSelectorPopupBreadCrumbsTestId}
+                      style={{ flexWrap: 'wrap', flexGrow: 1 }}
+                    >
                       {pathBreadcrumbs(pathInTopBarIncludingHover, processedVariablesInScope).map(
                         ({ segment, path }, idx) => (
                           <span key={path.toString()}>
