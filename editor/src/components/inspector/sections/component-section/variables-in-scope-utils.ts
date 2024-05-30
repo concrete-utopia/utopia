@@ -385,16 +385,10 @@ const keepLocalestScope =
   }
 
 export function useVariablesInScopeForSelectedElement(
-  selectedView: ElementPath,
+  elementPath: ElementPath | null,
   propertyPath: PropertyPath | null,
   mode: DataPickerFilterOption,
 ): Array<DataPickerOption> {
-  const selectedViewPath = useEditorState(
-    Substores.selectedViews,
-    (store) => store.editor.selectedViews.at(0) ?? null,
-    'useVariablesInScopeForSelectedElement selectedViewPath',
-  )
-
   const variablesInScope = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.variablesInScope,
@@ -402,16 +396,16 @@ export function useVariablesInScopeForSelectedElement(
   )
 
   const controlDescriptions = usePropertyControlDescriptions(propertyPath)
-  const currentPropertyValue = usePropertyValue(selectedView, propertyPath)
+  const currentPropertyValue = usePropertyValue(elementPath, propertyPath)
 
   const variableNamesInScope = React.useMemo((): Array<DataPickerOption> => {
-    if (selectedViewPath == null) {
+    if (elementPath == null) {
       return []
     }
 
     let variablesInScopeForSelectedPath: VariableData | null = (() => {
       // if the selected element doesn't have an associacted variablesInScope, we assume it's safe to walk up the path within the same component
-      const allPathsInsideScope = EP.allPathsInsideComponent(selectedViewPath)
+      const allPathsInsideScope = EP.allPathsInsideComponent(elementPath)
       for (const path of allPathsInsideScope) {
         const pathAsString = EP.toString(path)
         if (pathAsString in variablesInScope) {
@@ -450,14 +444,7 @@ export function useVariablesInScopeForSelectedElement(
     return orderedVariablesInScope.flatMap((variable) =>
       valuesFromVariable(variable, 0, variable.expression, [variable.expressionPathPart]),
     )
-  }, [
-    controlDescriptions,
-    currentPropertyValue,
-    mode,
-    selectedViewPath,
-    variablesInScope,
-    propertyPath,
-  ])
+  }, [controlDescriptions, currentPropertyValue, mode, elementPath, variablesInScope, propertyPath])
 
   return variableNamesInScope
 }
@@ -549,7 +536,7 @@ export type PropertyValue =
   | { type: 'not-found' }
 
 function usePropertyValue(
-  selectedView: ElementPath,
+  selectedView: ElementPath | null,
   propertyPath: PropertyPath | null,
 ): PropertyValue {
   const allElementProps = useEditorState(
@@ -563,6 +550,10 @@ function usePropertyValue(
     (store) => store.editor.jsxMetadata,
     'usePropertyValue metadata',
   )
+
+  if (selectedView == null) {
+    return { type: 'not-found' }
+  }
 
   if (MetadataUtils.isJSXMapExpression(selectedView, metadata)) {
     return { type: 'mapped-value' }

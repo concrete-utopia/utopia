@@ -99,6 +99,7 @@ import { ListSection } from './sections/layout-section/list-section'
 import { ExpandableIndicator } from '../navigator/navigator-item/expandable-indicator'
 import { isIntrinsicElementMetadata } from '../../core/model/project-file-utils'
 import { assertNever } from '../../core/shared/utils'
+import { DataReferenceSection } from './sections/data-reference-section'
 
 export interface ElementPathElement {
   name?: string
@@ -270,7 +271,19 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           MetadataUtils.isExpressionOtherJavascript(path, store.editor.jsxMetadata) ||
           MetadataUtils.isJSXMapExpression(path, store.editor.jsxMetadata),
       ),
-    'Inspector hideAllSections',
+    'Inspector isCodeElement',
+  )
+
+  const isDataReference = useEditorState(
+    Substores.projectContentsAndMetadata,
+    (store) =>
+      store.editor.selectedViews.length > 0 &&
+      store.editor.selectedViews.every((path) =>
+        MetadataUtils.isElementDataReference(
+          getElementFromProjectContents(path, store.editor.projectContents),
+        ),
+      ),
+    'Inspector isDataReference',
   )
 
   const multiselectedContract = useEditorState(
@@ -345,10 +358,15 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
   )
 
   const anyKnownElements = useEditorState(
-    Substores.metadata,
+    Substores.projectContentsAndMetadata,
     (store) => {
       return strictEvery(store.editor.selectedViews, (view) => {
-        return MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, view) != null
+        return (
+          MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, view) != null ||
+          MetadataUtils.isElementDataReference(
+            getElementFromProjectContents(view, store.editor.projectContents),
+          )
+        )
       })
     },
     'Inspector anyKnownElements',
@@ -411,13 +429,17 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           data-testid={InspectorSectionsContainerTestID}
         >
           <DisableControlsInSubtree disable={!canEdit}>
-            {isCodeElement ? (
+            {when(isDataReference, <DataReferenceSection paths={selectedViews} />)}
+            {when(
+              isCodeElement,
               <>
                 <CodeElementSection paths={selectedViews} />
                 <ConditionalSection paths={selectedViews} />
                 <ListSection paths={selectedViews} />
-              </>
-            ) : (
+              </>,
+            )}
+            {unless(
+              isCodeElement || isDataReference,
               <FlexCol
                 css={{
                   overflowY: 'scroll',
@@ -496,7 +518,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
                     )}
                   </>,
                 )}
-              </FlexCol>
+              </FlexCol>,
             )}
           </DisableControlsInSubtree>
         </div>
