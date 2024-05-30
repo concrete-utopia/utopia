@@ -1,10 +1,13 @@
 import { atom } from 'jotai'
-import type {
-  JSExpressionOtherJavaScript,
-  JSXElementChild,
+import {
+  isJSExpression,
+  type JSExpressionOtherJavaScript,
+  type JSXElementChild,
 } from '../../../../core/shared/element-template'
 import { assertNever } from '../../../../core/shared/utils'
 import type { ArrayInfo, JSXInfo, ObjectInfo, PrimitiveInfo } from './variables-in-scope-utils'
+import { processJSPropertyAccessors } from '../../../../core/data-tracing/data-tracing'
+import { foldEither } from '../../../../core/shared/either'
 
 export interface PrimitiveOption {
   type: 'primitive'
@@ -66,36 +69,12 @@ export type DataPickerCallback = (e: JSExpressionOtherJavaScript) => void
 export type ObjectPath = Array<string | number>
 
 export function jsxElementChildToValuePath(child: JSXElementChild): ObjectPath | null {
-  return jsxElementChildToValuePathInner(child, false)
-}
-
-function jsxElementChildToValuePathInner(
-  child: JSXElementChild,
-  insideExpression: boolean,
-): ObjectPath | null {
-  switch (child.type) {
-    case 'ATTRIBUTE_FUNCTION_CALL':
-    case 'ATTRIBUTE_NESTED_ARRAY':
-    case 'ATTRIBUTE_NESTED_OBJECT':
-    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-    case 'JSX_CONDITIONAL_EXPRESSION':
-    case 'JSX_ELEMENT':
-    case 'JSX_FRAGMENT':
-    case 'JSX_MAP_EXPRESSION':
-    case 'JSX_TEXT_BLOCK':
-      return null
-    case 'ATTRIBUTE_VALUE':
-      return insideExpression ? [child.value] : null
-    case 'JS_IDENTIFIER':
-      return [child.name]
-    case 'JS_ELEMENT_ACCESS':
-      return [
-        ...(jsxElementChildToValuePathInner(child.onValue, true) ?? []),
-        ...(jsxElementChildToValuePathInner(child.element, true) ?? []),
-      ]
-    case 'JS_PROPERTY_ACCESS':
-      return [...(jsxElementChildToValuePathInner(child.onValue, true) ?? []), child.property]
-    default:
-      assertNever(child)
+  if (!isJSExpression(child)) {
+    return null
   }
+  return foldEither(
+    () => null,
+    (result) => [result.originalIdentifier.name, ...result.path],
+    processJSPropertyAccessors(child),
+  )
 }
