@@ -565,7 +565,7 @@ export const fragmentElementsDescriptors: ComponentDescriptorsForFile = {
 export const mapElementDescriptors: ComponentDescriptorsForFile = {
   map: {
     properties: {},
-    supportsChildren: false,
+    supportsChildren: true,
     variants: [mapComponentInfo],
     preferredChildComponents: [],
     source: defaultComponentDescriptor(),
