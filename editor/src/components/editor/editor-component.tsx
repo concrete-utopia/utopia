@@ -4,10 +4,15 @@
 import { css, jsx, keyframes } from '@emotion/react'
 import { chrome as isChrome } from 'platform-detect'
 import React from 'react'
+import ReactDOM from 'react-dom'
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { IS_TEST_ENVIRONMENT } from '../../common/env-vars'
-import { assertNever, projectURLForProject } from '../../core/shared/utils'
+import {
+  CanvasContextMenuPortalTargetID,
+  assertNever,
+  projectURLForProject,
+} from '../../core/shared/utils'
 import Keyboard from '../../utils/keyboard'
 import { Modifier } from '../../utils/modifiers'
 import {
@@ -71,9 +76,22 @@ import { useIsLoggedIn, useLiveblocksConnectionListener } from '../../core/share
 import { ForkSearchParamKey, ProjectForkFlow } from './project-fork-flow'
 import { isRoomId, projectIdToRoomId } from '../../utils/room-id'
 import { SharingDialog } from './sharing-dialog'
-import { AccessLevelParamKey, CloneParamKey } from './persistence/persistence-backend'
-import { useUpdateActiveRemixSceneOnSelectionChange } from '../canvas/remix/utopia-remix-root-component'
+import {
+  AccessLevelParamKey,
+  CloneParamKey,
+  GithubBranchParamKey,
+} from './persistence/persistence-backend'
+import {
+  RemixNavigationAtom,
+  useUpdateActiveRemixSceneOnSelectionChange,
+} from '../canvas/remix/utopia-remix-root-component'
 import { useDefaultCollapsedViews } from './use-default-collapsed-views'
+import {
+  ComponentPickerContextMenu,
+  useCreateCallbackToShowComponentPicker,
+} from '../navigator/navigator-item/component-picker-context-menu'
+import { useGithubPolling } from '../../core/shared/github/helpers'
+import { useAtom } from 'jotai'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -91,6 +109,7 @@ function pushProjectURLToBrowserHistory(
   // remove one-time creation params
   queryParams.delete(AccessLevelParamKey)
   queryParams.delete(CloneParamKey)
+  queryParams.delete(GithubBranchParamKey)
 
   const queryParamsStr = queryParams.size > 0 ? `?${queryParams.toString()}` : ''
 
@@ -116,6 +135,8 @@ function githubOperationPrettyNameForOverlay(op: GithubOperation): string {
       return 'Listing GitHub pull requests'
     case 'saveAsset':
       return 'Saving asset to GitHub'
+    case 'searchRepository':
+      return 'Searching public repository'
     default:
       assertNever(op)
   }
@@ -210,6 +231,8 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     [mode.type],
   )
 
+  const showComponentPicker = useCreateCallbackToShowComponentPicker()
+
   const onWindowKeyDown = React.useCallback(
     (event: KeyboardEvent) => {
       let actions: Array<EditorAction> = []
@@ -274,6 +297,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
           navigatorTargetsRef,
           namesByKey,
           dispatch,
+          showComponentPicker,
         ),
       )
       return actions
@@ -285,6 +309,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
       navigatorTargetsRef,
       namesByKey,
       setClearKeyboardInteraction,
+      showComponentPicker,
     ],
   )
 
@@ -407,18 +432,18 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     Substores.userStateAndProjectServerState,
     (store) => ({ projectServerState: store.projectServerState, userState: store.userState }),
     (state) => {
-      let actions: EditorAction[] = []
-      const permissions = getPermissions(state)
-      if (!permissions.edit && permissions.comment) {
-        actions.push(
-          EditorActions.switchEditorMode(EditorModes.commentMode(null, 'not-dragging')),
-          EditorActions.setRightMenuTab(RightMenuTab.Comments),
-          EditorActions.setCodeEditorVisibility(false),
-        )
-      } else {
-        actions.push(EditorActions.setCodeEditorVisibility(true))
-      }
-      dispatch(actions)
+      queueMicrotask(() => {
+        let actions: EditorAction[] = []
+        const permissions = getPermissions(state)
+        if (!permissions.edit && permissions.comment) {
+          actions.push(
+            EditorActions.switchEditorMode(EditorModes.commentMode(null, 'not-dragging')),
+            EditorActions.setRightMenuTab(RightMenuTab.Comments),
+            EditorActions.setCodeEditorVisibility(false),
+          )
+        }
+        dispatch(actions)
+      })
     },
     'EditorComponentInner viewer mode',
   )
@@ -426,6 +451,12 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
   useLiveblocksConnectionListener()
 
   useDefaultCollapsedViews()
+
+  useGithubPolling()
+
+  useClearSelectionOnNavigation()
+
+  const portalTarget = document.getElementById(CanvasContextMenuPortalTargetID)
 
   return (
     <>
@@ -523,6 +554,9 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
         <LockedOverlay />
         <SharingDialog />
       </SimpleFlexRow>
+      {portalTarget != null
+        ? ReactDOM.createPortal(<ComponentPickerContextMenu />, portalTarget)
+        : null}
       <EditorCommon
         mouseDown={onWindowMouseDown}
         mouseUp={onWindowMouseUp}
@@ -751,7 +785,7 @@ const LockedOverlay = React.memo(() => {
             opacity: 1,
             fontSize: 12,
             fontWeight: 500,
-            background: colorTheme.contextMenuBackground.value,
+            backgroundColor: colorTheme.bg2.value,
             border: `1px solid ${colorTheme.neutralBorder.value}`,
             padding: 30,
             borderRadius: 2,
@@ -764,3 +798,17 @@ const LockedOverlay = React.memo(() => {
     </div>
   )
 })
+
+const useClearSelectionOnNavigation = () => {
+  const dispatch = useDispatch()
+  const [remixNavigation] = useAtom(RemixNavigationAtom)
+  const paths = Object.values(remixNavigation)
+    .map((n) => n?.location.pathname ?? '')
+    .join('-')
+
+  React.useEffect(() => {
+    queueMicrotask(() => {
+      dispatch([EditorActions.clearSelection()])
+    })
+  }, [dispatch, paths])
+}

@@ -25,6 +25,7 @@ import type {
   FocusedElementPathSubstate,
   GithubSubstate,
   HighlightedHoveredViewsSubstate,
+  MetadataAndPropertyControlsInfoSubstate,
   MetadataSubstate,
   MultiplayerSubstate,
   NavigatorSubstate,
@@ -33,6 +34,7 @@ import type {
   ProjectContentAndMetadataSubstate,
   ProjectContentSubstate,
   ProjectServerStateSubstate,
+  PropertyControlsInfoSubstate,
   RestOfEditorState,
   SelectedViewsSubstate,
   StoreKey,
@@ -49,12 +51,14 @@ import {
   highlightedHoveredViewsSubstateKeys,
   metadataSubstateKeys,
   projectContentsKeys,
+  propertyControlsInfoSubstateKeys,
   restOfEditorStateKeys,
   restOfStoreKeys,
   selectedViewsSubstateKeys,
   variablesInScopeSubstateKeys,
 } from './store-hook-substore-types'
 import { Getter } from '../hook-utils'
+import { uniq } from '../../../core/shared/array-utils'
 
 // This is how to officially type the store with a subscribeWithSelector middleware as of Zustand 4.1.5 https://github.com/pmndrs/zustand#using-subscribe-with-selector
 type Store<S> = UseBoundStore<Mutate<StoreApi<S>, [['zustand/subscribeWithSelector', never]]>>
@@ -319,6 +323,19 @@ export const Substores = {
   },
   onlineState: (a: OnlineStateSubstate, b: OnlineStateSubstate): boolean => {
     return OnlineStateKeepDeepEquality(a.onlineState, b.onlineState).areEqual
+  },
+  propertyControlsInfo: (a: PropertyControlsInfoSubstate, b: PropertyControlsInfoSubstate) => {
+    return keysEquality(propertyControlsInfoSubstateKeys, a.editor, b.editor)
+  },
+  metadataAndPropertyControlsInfo: (
+    a: MetadataAndPropertyControlsInfoSubstate,
+    b: MetadataAndPropertyControlsInfoSubstate,
+  ) => {
+    return keysEquality(
+      uniq([...propertyControlsInfoSubstateKeys, ...metadataSubstateKeys]),
+      a.editor,
+      b.editor,
+    )
   },
 } as const
 

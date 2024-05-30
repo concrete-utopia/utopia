@@ -1,3 +1,4 @@
+import { isFeatureEnabled } from '../../utils/feature-switches'
 import { MetadataUtils } from '../model/element-metadata-utils'
 import { isLeft, isRight } from './either'
 import * as EP from './element-path'
@@ -97,13 +98,18 @@ function getChildrenPaths(
   ) {
     childrenFromElement = element.element.value.children
       .filter((child) => {
-        return (
-          !isJSXTextBlock(child) &&
-          !isJSExpressionMapOrOtherJavaScript(child) &&
-          !isJSIdentifier(child) &&
-          !isJSPropertyAccess(child) &&
-          !isJSElementAccess(child)
-        )
+        if (isFeatureEnabled('Condensed Navigator Entries')) {
+          // if Data Entries are enabled, we should always show them in the Navigator
+          return true
+        } else {
+          return (
+            !isJSXTextBlock(child) &&
+            !isJSExpressionMapOrOtherJavaScript(child) &&
+            !isJSIdentifier(child) &&
+            !isJSPropertyAccess(child) &&
+            !isJSElementAccess(child)
+          )
+        }
       })
       .map((child) => EP.appendToPath(rootPath, child.uid))
   }

@@ -32,7 +32,7 @@ import {
   pressKey,
 } from '../canvas/event-helpers.test-utils'
 import { NavigatorItemTestId } from './navigator-item/navigator-item'
-import { expectNoAction, selectComponentsForTest, wait } from '../../utils/utils.test-utils'
+import { expectNoAction, selectComponentsForTest } from '../../utils/utils.test-utils'
 import {
   DefaultNavigatorWidth,
   navigatorEntryToKey,
@@ -2955,7 +2955,7 @@ describe('Navigator', () => {
       ])
     })
 
-    it('reparentsa map expression under the first sibling', async () => {
+    it('reparents a map expression under the first sibling', async () => {
       const renderResult = await renderTestEditorWithCode(
         getProjectCodeWithMapExpression(),
         'await-first-dom-report',
@@ -3240,7 +3240,7 @@ describe('Navigator', () => {
         'regular-utopia-storyboard-uid/scene-aaa',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62', // <- moved to before `firstdiv`
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62/c68~~~1',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62/7b7~~~1',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
@@ -3316,7 +3316,7 @@ describe('Navigator', () => {
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62', // <- moved to after `firstdiv`
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62/c68~~~1',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62/7b7~~~1',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
@@ -3396,7 +3396,7 @@ describe('Navigator', () => {
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62', // <- moved to after the last sibling `notdrag` under its parent
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62/c68~~~1',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62/7b7~~~1',
         'regular-utopia-storyboard-uid/scene-aaa/parentsibling',
       ])
     })
@@ -3477,7 +3477,7 @@ describe('Navigator', () => {
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv/b62', // <- moved to under the first sibling
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv/b62/c68~~~1',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv/b62/7b7~~~1',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
@@ -3541,7 +3541,7 @@ describe('Navigator', () => {
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62',
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62/c68~~~1',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62/7b7~~~1',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
         'regular-utopia-storyboard-uid/scene-aaa/parentsibling',
       ])
@@ -3559,7 +3559,7 @@ describe('Navigator', () => {
       const dragMeElementRect = dragMeElement.getBoundingClientRect()
       const dragMeElementCenter = getDomRectCenter(dragMeElementRect)
       const notDraggableDivElement = await renderResult.renderedDOM.findByTestId(
-        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/b62/c68~~~1`,
+        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/b62/7b7~~~1`,
       )
       const notDraggableDivElementRect = notDraggableDivElement.getBoundingClientRect()
       const notDraggableDivElementCenter = getDomRectCenter(notDraggableDivElementRect)
@@ -3586,7 +3586,7 @@ describe('Navigator', () => {
         dragElementWithDNDEvents(
           renderResult,
           `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
-          `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/b62/c68~~~1`,
+          `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/b62/7b7~~~1`,
           windowPoint(dragMeElementCenter),
           dragDelta,
         ),
@@ -3603,7 +3603,7 @@ describe('Navigator', () => {
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62',
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62/c68~~~1',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62/7b7~~~1',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
         'regular-utopia-storyboard-uid/scene-aaa/parentsibling',
       ])
@@ -4757,8 +4757,8 @@ describe('Navigator', () => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/old-container',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/old-container/wrapper',
-          'regular-utopia-storyboard-uid/dragme1',
           'regular-utopia-storyboard-uid/dragme2',
+          'regular-utopia-storyboard-uid/dragme1',
         ])
         expect(
           MetadataUtils.getFrameOrZeroRectInCanvasCoords(
@@ -5033,9 +5033,6 @@ describe('Navigator', () => {
 
       await mouseClickAtPoint(slotElement, { x: 3, y: 3 })
 
-      const moreButton = await waitFor(() => renderResult.renderedDOM.getByText('More...'))
-      await mouseClickAtPoint(moreButton, { x: 3, y: 3 })
-
       const renderPropOptionElement = await waitFor(() =>
         renderResult.renderedDOM.getByText('(empty)'),
       )
@@ -5049,9 +5046,9 @@ describe('Navigator', () => {
         'regular-sb/scene/pg:dbc',
         'regular-sb/scene/pg:dbc/78c',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-        'regular-sb/scene/pg:dbc/78c/pro', // <- the inserted render prop
+        'render-prop-value-sb/scene/pg:dbc/78c/pro-header', // <- the inserted render prop
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-        'regular-sb/scene/pg:dbc/78c/88b',
+        'regular-sb/scene/pg:dbc/78c/d93',
       ])
       expect(
         renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
@@ -5061,9 +5058,9 @@ describe('Navigator', () => {
         'regular-sb/scene/pg:dbc',
         'regular-sb/scene/pg:dbc/78c',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-        'regular-sb/scene/pg:dbc/78c/pro', // <- the inserted render prop
+        'render-prop-value-sb/scene/pg:dbc/78c/pro-header', // <- the inserted render prop
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-        'regular-sb/scene/pg:dbc/78c/88b',
+        'regular-sb/scene/pg:dbc/78c/d93',
       ])
     })
     it('can insert an intrinsic element into render prop', async () => {
@@ -5078,9 +5075,6 @@ describe('Navigator', () => {
 
       await mouseClickAtPoint(slotElement, { x: 3, y: 3 })
 
-      const moreButton = await waitFor(() => renderResult.renderedDOM.getByText('More...'))
-      await mouseClickAtPoint(moreButton, { x: 3, y: 3 })
-
       const renderPropOptionElement = await waitFor(() =>
         renderResult.renderedDOM.getByText('Span with Title'),
       )
@@ -5094,9 +5088,9 @@ describe('Navigator', () => {
         'regular-sb/scene/pg:dbc',
         'regular-sb/scene/pg:dbc/78c',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-        'regular-sb/scene/pg:dbc/78c/pro', // <- the inserted render prop
+        'render-prop-value-sb/scene/pg:dbc/78c/pro-header', // <- the inserted render prop
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-        'regular-sb/scene/pg:dbc/78c/88b',
+        'regular-sb/scene/pg:dbc/78c/d93',
       ])
       expect(
         renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
@@ -5106,9 +5100,9 @@ describe('Navigator', () => {
         'regular-sb/scene/pg:dbc',
         'regular-sb/scene/pg:dbc/78c',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-        'regular-sb/scene/pg:dbc/78c/pro', // <- the inserted render prop
+        'render-prop-value-sb/scene/pg:dbc/78c/pro-header', // <- the inserted render prop
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-        'regular-sb/scene/pg:dbc/78c/88b',
+        'regular-sb/scene/pg:dbc/78c/d93',
       ])
     })
     it('can insert an third-party component into render prop', async () => {
@@ -5123,9 +5117,6 @@ describe('Navigator', () => {
 
       await mouseClickAtPoint(slotElement, { x: 3, y: 3 })
 
-      const moreButton = await waitFor(() => renderResult.renderedDOM.getByText('More...'))
-      await mouseClickAtPoint(moreButton, { x: 3, y: 3 })
-
       const renderPropOptionElement = await waitFor(() =>
         renderResult.renderedDOM.getByText('Heading with Title'),
       )
@@ -5139,9 +5130,9 @@ describe('Navigator', () => {
         'regular-sb/scene/pg:dbc',
         'regular-sb/scene/pg:dbc/78c',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-        'regular-sb/scene/pg:dbc/78c/pro', // <- the inserted render prop
+        'render-prop-value-sb/scene/pg:dbc/78c/pro-header', // <- the inserted render prop
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-        'regular-sb/scene/pg:dbc/78c/88b',
+        'regular-sb/scene/pg:dbc/78c/891',
       ])
       expect(
         renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
@@ -5151,9 +5142,9 @@ describe('Navigator', () => {
         'regular-sb/scene/pg:dbc',
         'regular-sb/scene/pg:dbc/78c',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-        'regular-sb/scene/pg:dbc/78c/pro', // <- the inserted render prop
+        'render-prop-value-sb/scene/pg:dbc/78c/pro-header', // <- the inserted render prop
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-        'regular-sb/scene/pg:dbc/78c/88b',
+        'regular-sb/scene/pg:dbc/78c/891',
       ])
     })
 
@@ -5172,10 +5163,10 @@ describe('Navigator', () => {
         'regular-sb/scene/pg:dbc',
         'regular-sb/scene/pg:dbc/78c',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-        'regular-sb/scene/pg:dbc/78c/render-prop-parent',
+        'render-prop-value-sb/scene/pg:dbc/78c/render-prop-parent-header',
         'regular-sb/scene/pg:dbc/78c/render-prop-parent/render-prop-child',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-        'regular-sb/scene/pg:dbc/78c/88b',
+        'regular-sb/scene/pg:dbc/78c/f59',
       ])
 
       await selectComponentsForTest(editor, [
@@ -5190,9 +5181,9 @@ describe('Navigator', () => {
         'regular-sb/scene/pg:dbc',
         'regular-sb/scene/pg:dbc/78c',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-        'regular-sb/scene/pg:dbc/78c/render-prop-parent',
+        'render-prop-value-sb/scene/pg:dbc/78c/render-prop-parent-header',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-        'regular-sb/scene/pg:dbc/78c/88b',
+        'regular-sb/scene/pg:dbc/78c/f59',
       ])
 
       expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
@@ -5201,9 +5192,9 @@ describe('Navigator', () => {
         'regular-sb/scene/pg:dbc',
         'regular-sb/scene/pg:dbc/78c',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-        'regular-sb/scene/pg:dbc/78c/render-prop-parent',
+        'render-prop-value-sb/scene/pg:dbc/78c/render-prop-parent-header',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-        'regular-sb/scene/pg:dbc/78c/88b',
+        'regular-sb/scene/pg:dbc/78c/f59',
       ])
     })
 
@@ -5222,10 +5213,10 @@ describe('Navigator', () => {
         'regular-sb/scene/pg:dbc',
         'regular-sb/scene/pg:dbc/78c',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-        'regular-sb/scene/pg:dbc/78c/render-prop-parent',
+        'render-prop-value-sb/scene/pg:dbc/78c/render-prop-parent-header',
         'regular-sb/scene/pg:dbc/78c/render-prop-parent/render-prop-child',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-        'regular-sb/scene/pg:dbc/78c/88b',
+        'regular-sb/scene/pg:dbc/78c/f59',
       ])
 
       await selectComponentsForTest(editor, [
@@ -5242,7 +5233,7 @@ describe('Navigator', () => {
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
         'slot_sb/scene/pg:dbc/78c/prop-label-header',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-        'regular-sb/scene/pg:dbc/78c/88b',
+        'regular-sb/scene/pg:dbc/78c/f59',
       ])
 
       expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
@@ -5253,7 +5244,7 @@ describe('Navigator', () => {
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
         'slot_sb/scene/pg:dbc/78c/prop-label-header',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-        'regular-sb/scene/pg:dbc/78c/88b',
+        'regular-sb/scene/pg:dbc/78c/f59',
       ])
     })
   })
@@ -5397,9 +5388,9 @@ describe('Navigator row order', () => {
         'conditional-clause-sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2-true-case',
         'regular-sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2/cond-2-child',
         'conditional-clause-sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2-false-case',
-        'synthetic-sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2/a25-attribute',
+        'synthetic-sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2/d84-attribute',
         'conditional-clause-sb/sc/app:app-root/frag/cond-1-false-case',
-        'synthetic-sb/sc/app:app-root/frag/cond-1/129-attribute',
+        'synthetic-sb/sc/app:app-root/frag/cond-1/019-attribute',
         'regular-sb/sc/app/app-child',
       ],
     )
@@ -5418,50 +5409,50 @@ describe('Navigator row order', () => {
         'regular-sb/group',
         'regular-sb/group/70f',
         'regular-sb/group/70f/33d~~~1',
-        'regular-sb/group/70f/33d~~~1/843',
+        'regular-sb/group/70f/33d~~~1/b1f',
         'regular-sb/group/70f/33d~~~2',
-        'regular-sb/group/70f/33d~~~2/843',
+        'regular-sb/group/70f/33d~~~2/b1f',
         'regular-sb/group/70f/33d~~~3',
-        'regular-sb/group/70f/33d~~~3/843',
+        'regular-sb/group/70f/33d~~~3/b1f',
         'regular-sb/group/foo',
         'regular-sb/group/b68',
         'regular-sb/group/b68/46a~~~1',
-        'regular-sb/group/b68/46a~~~1/433',
+        'regular-sb/group/b68/46a~~~1/255',
         'regular-sb/group/b68/46a~~~2',
-        'regular-sb/group/b68/46a~~~2/433',
+        'regular-sb/group/b68/46a~~~2/255',
         'regular-sb/group/b68/46a~~~3',
-        'regular-sb/group/b68/46a~~~3/433',
+        'regular-sb/group/b68/46a~~~3/255',
         'regular-sb/group/b68/46a~~~4',
-        'regular-sb/group/b68/46a~~~4/433',
+        'regular-sb/group/b68/46a~~~4/255',
         'regular-sb/group/b68/46a~~~5',
-        'regular-sb/group/b68/46a~~~5/433',
+        'regular-sb/group/b68/46a~~~5/255',
         'regular-sb/group/b68/46a~~~6',
-        'regular-sb/group/b68/46a~~~6/433',
+        'regular-sb/group/b68/46a~~~6/255',
         'regular-sb/group/cond',
         'conditional-clause-sb/group/cond-true-case',
         'regular-sb/group/cond/929',
         'regular-sb/group/cond/929/f23~~~1',
-        'regular-sb/group/cond/929/f23~~~1/441',
+        'regular-sb/group/cond/929/f23~~~1/c6b',
         'regular-sb/group/cond/929/f23~~~2',
-        'regular-sb/group/cond/929/f23~~~2/441',
+        'regular-sb/group/cond/929/f23~~~2/c6b',
         'regular-sb/group/cond/929/f23~~~3',
-        'regular-sb/group/cond/929/f23~~~3/441',
+        'regular-sb/group/cond/929/f23~~~3/c6b',
         'conditional-clause-sb/group/cond-false-case',
-        'synthetic-sb/group/cond/a59-element-a59',
+        'synthetic-sb/group/cond/235-element-235',
         'regular-sb/group/bar',
         'regular-sb/group/651',
         'regular-sb/group/651/3bc~~~1',
-        'regular-sb/group/651/3bc~~~1/50a',
+        'regular-sb/group/651/3bc~~~1/7a7',
         'regular-sb/group/651/3bc~~~2',
-        'regular-sb/group/651/3bc~~~2/50a',
+        'regular-sb/group/651/3bc~~~2/7a7',
         'regular-sb/group/text-expr-cond-wrapper',
         'regular-sb/group/text-expr-cond-wrapper/text-expr-cond',
         'conditional-clause-sb/group/text-expr-cond-wrapper/text-expr-cond-true-case',
         'regular-sb/group/text-expr-cond-wrapper/text-expr-cond/619',
         'conditional-clause-sb/group/text-expr-cond-wrapper/text-expr-cond-false-case',
-        'synthetic-sb/group/text-expr-cond-wrapper/text-expr-cond/15e-element-15e',
+        'synthetic-sb/group/text-expr-cond-wrapper/text-expr-cond/e4a-element-e4a',
         'regular-sb/group/zero-length-map-wrapper',
-        'regular-sb/group/zero-length-map-wrapper/6ec',
+        'regular-sb/group/zero-length-map-wrapper/e23',
       ],
     )
     expect(
@@ -5487,7 +5478,7 @@ describe('Navigator row order', () => {
       'regular-sb/group/cond/929/f23~~~2',
       'regular-sb/group/cond/929/f23~~~3',
       'conditional-clause-sb/group/cond-false-case',
-      'synthetic-sb/group/cond/a59-element-a59',
+      'synthetic-sb/group/cond/235-element-235',
       'regular-sb/group/bar',
       'regular-sb/group/651',
       'regular-sb/group/651/3bc~~~1',
@@ -5497,9 +5488,9 @@ describe('Navigator row order', () => {
       'conditional-clause-sb/group/text-expr-cond-wrapper/text-expr-cond-true-case',
       'regular-sb/group/text-expr-cond-wrapper/text-expr-cond/619',
       'conditional-clause-sb/group/text-expr-cond-wrapper/text-expr-cond-false-case',
-      'synthetic-sb/group/text-expr-cond-wrapper/text-expr-cond/15e-element-15e',
+      'synthetic-sb/group/text-expr-cond-wrapper/text-expr-cond/e4a-element-e4a',
       'regular-sb/group/zero-length-map-wrapper',
-      'regular-sb/group/zero-length-map-wrapper/6ec',
+      'regular-sb/group/zero-length-map-wrapper/e23',
     ])
   })
 
@@ -5515,20 +5506,20 @@ describe('Navigator row order', () => {
       [
         'regular-sb/group',
         'regular-sb/group/0b5',
-        'regular-sb/group/0b5/33d~~~1',
+        'regular-sb/group/0b5/995~~~1',
         'regular-sb/group/foo',
         'regular-sb/group/809',
-        'regular-sb/group/809/46a~~~1',
-        'regular-sb/group/809/46a~~~2',
+        'regular-sb/group/809/ea0~~~1',
+        'regular-sb/group/809/ea0~~~2',
         'regular-sb/group/cond',
         'conditional-clause-sb/group/cond-true-case',
         'regular-sb/group/cond/4ce',
-        'regular-sb/group/cond/4ce/f23~~~1',
+        'regular-sb/group/cond/4ce/27d~~~1',
         'conditional-clause-sb/group/cond-false-case',
-        'synthetic-sb/group/cond/15e-element-15e',
+        'synthetic-sb/group/cond/75a-element-75a',
         'regular-sb/group/bar',
         'regular-sb/group/bf0',
-        'regular-sb/group/bf0/3bc~~~1',
+        'regular-sb/group/bf0/b78~~~1',
       ],
     )
     expect(
@@ -5536,20 +5527,20 @@ describe('Navigator row order', () => {
     ).toEqual([
       'regular-sb/group',
       'regular-sb/group/0b5',
-      'regular-sb/group/0b5/33d~~~1',
+      'regular-sb/group/0b5/995~~~1',
       'regular-sb/group/foo',
       'regular-sb/group/809',
-      'regular-sb/group/809/46a~~~1',
-      'regular-sb/group/809/46a~~~2',
+      'regular-sb/group/809/ea0~~~1',
+      'regular-sb/group/809/ea0~~~2',
       'regular-sb/group/cond',
       'conditional-clause-sb/group/cond-true-case',
       'regular-sb/group/cond/4ce',
-      'regular-sb/group/cond/4ce/f23~~~1',
+      'regular-sb/group/cond/4ce/27d~~~1',
       'conditional-clause-sb/group/cond-false-case',
-      'synthetic-sb/group/cond/15e-element-15e',
+      'synthetic-sb/group/cond/75a-element-75a',
       'regular-sb/group/bar',
       'regular-sb/group/bf0',
-      'regular-sb/group/bf0/3bc~~~1',
+      'regular-sb/group/bf0/b78~~~1',
     ])
   })
 
@@ -5568,9 +5559,9 @@ describe('Navigator row order', () => {
         'regular-sb/scene/pg:dbc',
         'regular-sb/scene/pg:dbc/78c',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-        'regular-sb/scene/pg:dbc/78c/a6e',
+        'render-prop-value-sb/scene/pg:dbc/78c/298-header',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-        'regular-sb/scene/pg:dbc/78c/88b',
+        'regular-sb/scene/pg:dbc/78c/d93',
       ],
     )
     expect(
@@ -5581,9 +5572,9 @@ describe('Navigator row order', () => {
       'regular-sb/scene/pg:dbc',
       'regular-sb/scene/pg:dbc/78c',
       'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-      'regular-sb/scene/pg:dbc/78c/a6e',
+      'render-prop-value-sb/scene/pg:dbc/78c/298-header',
       'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-      'regular-sb/scene/pg:dbc/78c/88b',
+      'regular-sb/scene/pg:dbc/78c/d93',
     ])
   })
   it('is correct for a project with elements with string render prop', async () => {
@@ -5601,9 +5592,9 @@ describe('Navigator row order', () => {
         'regular-sb/scene/pg:dbc',
         'regular-sb/scene/pg:dbc/78c',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-        'synthetic-sb/scene/pg:dbc/78c/d4a-attribute',
+        'synthetic-sb/scene/pg:dbc/78c/ee8-attribute',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-        'regular-sb/scene/pg:dbc/78c/88b',
+        'regular-sb/scene/pg:dbc/78c/d93',
       ],
     )
     expect(
@@ -5614,9 +5605,9 @@ describe('Navigator row order', () => {
       'regular-sb/scene/pg:dbc',
       'regular-sb/scene/pg:dbc/78c',
       'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-      'synthetic-sb/scene/pg:dbc/78c/d4a-attribute',
+      'synthetic-sb/scene/pg:dbc/78c/ee8-attribute',
       'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-      'regular-sb/scene/pg:dbc/78c/88b',
+      'regular-sb/scene/pg:dbc/78c/d93',
     ])
   })
   it('is correct for a project with elements with missing render prop', async () => {
@@ -5635,7 +5626,7 @@ describe('Navigator row order', () => {
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
         'slot_sb/scene/pg:dbc/78c/prop-label-header', // <- the slot is shown
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-        'regular-sb/scene/pg:dbc/78c/88b',
+        'regular-sb/scene/pg:dbc/78c/d93',
       ],
     )
     expect(
@@ -5648,7 +5639,7 @@ describe('Navigator row order', () => {
       'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
       'slot_sb/scene/pg:dbc/78c/prop-label-header', // <- the slot is shown
       'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-      'regular-sb/scene/pg:dbc/78c/88b',
+      'regular-sb/scene/pg:dbc/78c/d93',
     ])
   })
   it('is correct for a project with elements with render prop set to `null`', async () => {
@@ -5668,7 +5659,7 @@ describe('Navigator row order', () => {
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
         'slot_sb/scene/pg:dbc/78c/prop-label-header', // <- the slot is shown
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-        'regular-sb/scene/pg:dbc/78c/88b',
+        'regular-sb/scene/pg:dbc/78c/d93',
       ],
     )
     expect(
@@ -5681,7 +5672,7 @@ describe('Navigator row order', () => {
       'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
       'slot_sb/scene/pg:dbc/78c/prop-label-header', // <- the slot is shown
       'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-      'regular-sb/scene/pg:dbc/78c/88b',
+      'regular-sb/scene/pg:dbc/78c/d93',
     ])
   })
 
@@ -5702,7 +5693,7 @@ describe('Navigator row order', () => {
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header', // <- the name of this is coming from an import
         'slot_sb/scene/pg:dbc/78c/prop-label-header',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-        'regular-sb/scene/pg:dbc/78c/88b',
+        'regular-sb/scene/pg:dbc/78c/891',
       ],
     )
     expect(
@@ -5715,7 +5706,7 @@ describe('Navigator row order', () => {
       'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header', // <- the name of this is coming from an import
       'slot_sb/scene/pg:dbc/78c/prop-label-header',
       'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
-      'regular-sb/scene/pg:dbc/78c/88b',
+      'regular-sb/scene/pg:dbc/78c/891',
     ])
   })
 })

@@ -33,7 +33,7 @@ import {
   cssDefault,
   toggleShadowEnabled,
 } from '../../../common/css-utils'
-import { useGetSubsectionHeaderStyle } from '../../../common/inspector-utils'
+import { RemovePropertyButton, useGetSubsectionHeaderStyle } from '../../../common/inspector-utils'
 import type { UseSubmitValueFactory } from '../../../common/property-path-hooks'
 import { useInspectorStyleInfo, useIsSubSectionVisible } from '../../../common/property-path-hooks'
 import { useArraySuperControl } from '../../../controls/array-supercontrol'
@@ -308,26 +308,22 @@ export const ShadowSubsection = React.memo(() => {
           <span>Shadow</span>
         </FlexRow>
         {propertyStatus.overwritable ? (
-          <>
-            <SquareButton
-              highlight
-              onMouseDown={onUnsetValues}
-              data-testid={'inspector-shadow-remove-all'}
-            >
-              <Icons.Cross color={propertyStatus.controlled ? 'primary' : 'secondary'} />
-            </SquareButton>
-            <SquareButton highlight onMouseDown={insertShadowValue}>
+          <FlexRow style={{ gap: 4 }}>
+            <RemovePropertyButton
+              testId='inspector-shadow-remove-all'
+              onUnsetValues={onUnsetValues}
+              propertySet={propertyStatus.set}
+            />
+            <SquareButton highlight onMouseDown={insertShadowValue} style={{ width: 12 }}>
               <Icn
                 onMouseDown={insertShadowValue}
-                style={{ paddingTop: 1 }}
                 category='semantic'
                 type='plus'
-                color={propertyStatus.controlled ? 'primary' : 'secondary'}
-                width={16}
-                height={16}
+                width={12}
+                height={12}
               />
             </SquareButton>
-          </>
+          </FlexRow>
         ) : null}
       </InspectorSubsectionHeader>
       <div

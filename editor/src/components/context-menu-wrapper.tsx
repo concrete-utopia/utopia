@@ -1,8 +1,7 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
-import fastDeepEquals from 'fast-deep-equal'
-import React, { Component as ReactComponent } from 'react'
+import React from 'react'
 import {
   contextMenu,
   Item,
@@ -10,196 +9,203 @@ import {
   Submenu as SubmenuComponent,
   useContextMenu,
 } from 'react-contexify'
-import { colorTheme, Icons } from '../uuiui'
+import { colorTheme, Icons, UtopiaStyles } from '../uuiui'
 import { getControlStyles } from '../uuiui-deps'
 import type { ContextMenuItem } from './context-menu-items'
 import type { EditorDispatch } from './editor/action-types'
 import type { WindowPoint } from '../core/shared/math-utils'
 import { windowPoint } from '../core/shared/math-utils'
+import { BodyMenuOpenClass } from '../core/shared/utils'
+
+interface Submenu<T> {
+  items: Item<T>[]
+  label: string | React.ReactNode
+  type: 'submenu'
+}
+
+interface SimpleItem<T> {
+  item: Item<T>
+  type: 'simple'
+}
+
+type MenuItem<T> = Submenu<T> | SimpleItem<T> | null
+
+export type Item<T> = ContextMenuItem<T> | null
+
+export type ContextMenuData<T> = Item<T>[] | null
 
 export interface ContextMenuWrapperProps<T> {
-  id: string
-  items: Array<ContextMenuItem<T>>
-  dispatch?: EditorDispatch
-  data: T
-  renderTag?: string
+  children?: React.ReactNode
   className?: string
+  data: T
+  dispatch?: EditorDispatch
+  forwardRef?: React.RefObject<HTMLDivElement>
+  id: string
   innerClassName?: string
-  style?: React.CSSProperties
+  items: ContextMenuItem<T>[]
   providerStyle?: React.CSSProperties
+  renderTag?: string
+  style?: React.CSSProperties
   testId?: string
 }
 
 export interface ContextMenuProps<T> {
-  id: string
-  items: Array<ContextMenuItem<T>>
   dispatch?: EditorDispatch
   getData: () => T
+  id: string
+  items: ContextMenuItem<T>[]
 }
 
-interface Submenu<T> {
-  type: 'submenu'
-  label: string | React.ReactNode
-  items: Array<ContextMenuItem<T>>
+const onVisibilityChange = (isVisible: boolean) => {
+  if (isVisible) document.body.classList.add(BodyMenuOpenClass)
+  else document.body.classList.remove(BodyMenuOpenClass)
 }
 
-interface SimpleItem<T> {
-  type: 'simple'
-  item: ContextMenuItem<T>
-}
+export const ContextMenu = <T,>({ dispatch, getData, id, items }: ContextMenuProps<T>) => {
+  const splitItems = React.useMemo(() => {
+    const tempItems: MenuItem<T>[] = []
 
-export class MomentumContextMenu<T> extends ReactComponent<ContextMenuProps<T>> {
-  shouldComponentUpdate(nextProps: ContextMenuProps<T>) {
-    const result = !fastDeepEquals(this.props.items, nextProps.items)
-    return result
-  }
-
-  splitItemsForSubmenu(items: Array<ContextMenuItem<T>>): Array<Submenu<T> | SimpleItem<T>> {
-    let splitItems: Array<Submenu<T> | SimpleItem<T>> = []
     for (const item of items) {
-      if (item.submenuName != null) {
-        const alreadyAdded = splitItems.find(
-          (alreadySplit: any) =>
-            alreadySplit.type === 'submenu' && alreadySplit.label === item.submenuName,
+      if (item?.submenuName != null) {
+        const alreadyAdded = tempItems.find(
+          (alreadySplit) =>
+            alreadySplit?.type === 'submenu' && alreadySplit.label === item.submenuName,
         )
         if (alreadyAdded != null && alreadyAdded.type === 'submenu') {
           alreadyAdded.items.push(item)
         } else {
-          splitItems.push({
+          tempItems.push({
             type: 'submenu',
-            label: item.submenuName!,
+            label: item.submenuName,
             items: [item],
           })
         }
       } else {
-        splitItems.push({
+        tempItems.push({
           type: 'simple',
           item: item,
         })
       }
     }
-    return splitItems
-  }
+    return tempItems
+  }, [items])
 
-  isHidden = (item: ContextMenuItem<T>): (() => boolean) => {
-    return () => {
-      if (item.isHidden == null) {
-        return false
-      } else if (typeof item.isHidden === 'function') {
-        return item.isHidden(this.props.getData())
-      } else {
-        return item.isHidden
+  const isHidden = React.useCallback(
+    (item: Item<T>): (() => boolean) => {
+      return () => {
+        if (typeof item?.isHidden === 'function') {
+          return item.isHidden(getData())
+        }
+        return item?.isHidden ?? false
       }
-    }
-  }
+    },
+    [getData],
+  )
 
-  isDisabled = (item: ContextMenuItem<T>): (() => boolean) => {
-    return () => {
-      if (typeof item.enabled === 'function') {
-        return !item.enabled(this.props.getData())
-      } else {
-        return !item.enabled
-      }
-    }
-  }
+  const isDisabled = React.useCallback(
+    (item: Item<T>): (() => boolean) =>
+      () => {
+        return typeof item?.enabled === 'function' ? !item.enabled(getData?.()) : !item?.enabled
+      },
+    [getData],
+  )
 
-  renderItem(item: ContextMenuItem<T>, index: number) {
-    return (
-      <Item
-        key={`context-menu-${index}-item`}
-        disabled={this.isDisabled(item)}
-        // eslint-disable-next-line react/jsx-no-bind
-        onClick={({ event, triggerEvent }) => {
-          event.stopPropagation()
-          const rightClickCoordinate: WindowPoint | null = (() => {
-            if (!(triggerEvent instanceof MouseEvent)) {
-              return null
-            }
-            return windowPoint({ x: triggerEvent.clientX, y: triggerEvent.clientY })
-          })()
-          item.action(this.props.getData(), this.props.dispatch, rightClickCoordinate, event)
-          contextMenu.hideAll()
-        }}
-        hidden={this.isHidden(item)}
-        style={{ height: item.isSeparator ? 9 : 24, display: 'flex', alignItems: 'center' }}
-      >
-        <span style={{ flexGrow: 1, flexShrink: 0 }} className='react-contexify-span'>
-          {item.name}
-        </span>
-        <span style={{ flexGrow: 0, flexShrink: 0, opacity: 0.6 }} className='shortcut'>
-          {item.shortcut}
-        </span>
-      </Item>
-    )
-  }
+  const renderItem = React.useCallback(
+    (item: Item<T>, index: number) => {
+      return (
+        <Item
+          key={`context-menu-${index}-item`}
+          disabled={isDisabled(item)}
+          // eslint-disable-next-line react/jsx-no-bind
+          onClick={({ event, triggerEvent }) => {
+            event.stopPropagation()
+            const rightClickCoordinate: WindowPoint | null = (() => {
+              if (!(triggerEvent instanceof MouseEvent)) {
+                return null
+              }
+              return windowPoint({ x: triggerEvent.clientX, y: triggerEvent.clientY })
+            })()
+            item?.action(getData(), dispatch, rightClickCoordinate, event)
+          }}
+          hidden={isHidden(item)}
+          style={{
+            ...UtopiaStyles.flexRow,
+            height: item?.isSeparator ? 9 : undefined,
+            borderRadius: UtopiaStyles.popup.borderRadius,
+          }}
+        >
+          <span style={{ flexGrow: 1, flexShrink: 0 }} className='react-contexify-span'>
+            {item?.name}
+          </span>
+          <span style={{ flexGrow: 0, flexShrink: 0, opacity: 0.6 }} className='shortcut'>
+            {item?.shortcut}
+          </span>
+        </Item>
+      )
+    },
+    [getData, dispatch, isDisabled, isHidden],
+  )
 
-  render() {
-    const { id } = this.props
-    const items = this.splitItemsForSubmenu(this.props.items)
-    return (
-      <Menu key={id} id={id} animation={false}>
-        {items.map((item: Submenu<T> | SimpleItem<T>, index: number) => {
-          if (item.type === 'submenu') {
-            return (
-              <SubmenuComponent
-                key={`context-menu-${index}`}
-                label={
-                  <span style={{ height: 24, display: 'flex', alignItems: 'center' }}>
-                    {item.label}
-                  </span>
-                }
-                arrow={<Icons.ExpansionArrowRightWhite style={{ marginLeft: 8 }} />}
-              >
-                {item.items.map((submenuItem, submenuIndex) =>
-                  this.renderItem(submenuItem, submenuIndex),
-                )}
-              </SubmenuComponent>
-            )
-          } else {
-            return this.renderItem(item.item, index)
+  return (
+    <Menu key={id} id={id} animation={false} onVisibilityChange={onVisibilityChange}>
+      {splitItems.map((item, index) => {
+        if (item?.type === 'submenu') {
+          return (
+            <SubmenuComponent
+              key={`context-menu-${index}`}
+              label={<span style={{ display: 'flex', alignItems: 'center' }}>{item.label}</span>}
+              arrow={<Icons.ExpansionArrowRightWhite style={{ marginLeft: 8 }} />}
+            >
+              {item.items.map(renderItem)}
+            </SubmenuComponent>
+          )
+        } else {
+          if (item === null) {
+            return null
           }
-        })}
-      </Menu>
-    )
-  }
+          return renderItem(item.item, index)
+        }
+      })}
+    </Menu>
+  )
 }
 
-export class ContextMenuWrapper<T> extends ReactComponent<
-  ContextMenuWrapperProps<T> & { dispatch: EditorDispatch; children?: React.ReactNode }
-> {
-  getData = () => this.props.data
-  wrapperStopPropagation = (event: React.MouseEvent<HTMLElement>) => {
-    event.stopPropagation()
-  }
-  render() {
-    const name = `${this.props.id}-context-menu-wrapper`
-    return (
-      <div
-        key={name}
-        className={name + ' ' + (this.props.className ?? '')}
-        style={this.props.style}
-        onMouseDown={this.wrapperStopPropagation}
-        onMouseUp={this.wrapperStopPropagation}
-        onClick={this.wrapperStopPropagation}
-      >
-        <MenuProvider
-          key={`${this.props.id}-provider`}
-          id={this.props.id}
-          style={this.props.providerStyle}
-          itemsLength={this.props.items.length}
-        >
-          {this.props.children}
-        </MenuProvider>
-        <MomentumContextMenu
-          key={`${this.props.id}`}
-          id={this.props.id}
-          items={this.props.items}
-          dispatch={this.props.dispatch}
-          getData={this.getData}
-        />
-      </div>
-    )
-  }
+export const ContextMenuWrapper = <T,>({
+  children,
+  className = '',
+  data,
+  dispatch,
+  forwardRef,
+  id,
+  items,
+  providerStyle,
+  style,
+}: ContextMenuWrapperProps<T>) => {
+  const name = `${id}-context-menu-wrapper`
+
+  const stopPropagation = React.useCallback(
+    (event: React.MouseEvent<HTMLElement>) => event.stopPropagation(),
+    [],
+  )
+
+  const getData = React.useCallback(() => data, [data])
+
+  return (
+    <div
+      key={name}
+      className={[name, className].join(' ')}
+      style={style}
+      onMouseDown={stopPropagation}
+      onMouseUp={stopPropagation}
+      onClick={stopPropagation}
+      ref={forwardRef}
+    >
+      <MenuProvider id={id} itemsLength={items.length} key={`${id}-provider`} style={providerStyle}>
+        {children}
+      </MenuProvider>
+      <ContextMenu dispatch={dispatch} getData={getData} id={id} items={items} key={id} />
+    </div>
+  )
 }
 
 export const InspectorRowHoverCSS = {
@@ -220,69 +226,82 @@ export const InspectorRowHoverCSS = {
     '--control-styles-interactive-unset-rail-color': getControlStyles('simple').railColor,
   },
 }
-export class InspectorContextMenuWrapper<T> extends ReactComponent<
-  React.PropsWithChildren<ContextMenuWrapperProps<T>>
-> {
-  getData = () => this.props.data
-  render() {
-    const name = `${this.props.id}-context-menu-wrapper`
-    return (
-      <div
-        key={name}
-        data-testid={this.props.testId}
-        className={name + ' ' + (this.props.className ?? '')}
-        css={{
-          width: '100%',
-          ...(this.props.style as any), // TODO Emotion and React 18 types don't like each other
-          ...InspectorRowHoverCSS,
-        }}
+
+export const InspectorContextMenuWrapper = <T,>({
+  children,
+  className = '',
+  data,
+  id,
+  items,
+  style,
+  testId,
+}: ContextMenuWrapperProps<T>) => {
+  const name = `${id}-context-menu-wrapper`
+
+  const getData = React.useCallback(() => data, [data])
+
+  return (
+    <div
+      key={name}
+      data-testid={testId}
+      className={[name, className].join(' ')}
+      css={{
+        width: '100%',
+        ...(style as Record<string, string>),
+        ...InspectorRowHoverCSS,
+      }}
+    >
+      <MenuProvider
+        key={`${id}-provider`}
+        id={id}
+        itemsLength={items.length}
+        style={{ width: '100%', height: '100%' }}
+        localXHack_KILLME='local-x-coord-KILLME'
       >
-        <React.Fragment>
-          <MenuProvider
-            key={`${this.props.id}-provider`}
-            id={this.props.id}
-            itemsLength={this.props.items.length}
-            style={{
-              width: '100%',
-              height: '100%',
-            }}
-          >
-            {this.props.children}
-          </MenuProvider>
-          <MomentumContextMenu
-            key={`${this.props.id}`}
-            id={this.props.id}
-            items={this.props.items}
-            getData={this.getData}
-          />
-        </React.Fragment>
-      </div>
-    )
-  }
+        {children}
+      </MenuProvider>
+      <ContextMenu getData={getData} id={id} items={items} key={id} />
+    </div>
+  )
 }
 
 interface MenuProviderProps {
+  children: React.ReactNode
   id: string
   itemsLength: number
   style?: React.CSSProperties
+  localXHack_KILLME?: 'local-x-coord-KILLME' | 'default' // FIXME: remove this, this is just here because react-contexify positions the context menu to the global position of the mouse, so ContextMenu should in the root
 }
 
-export const MenuProvider: React.FunctionComponent<React.PropsWithChildren<MenuProviderProps>> = (
-  props,
-) => {
-  const { show } = useContextMenu({ id: props.id })
+export const MenuProvider = ({
+  children,
+  id,
+  itemsLength,
+  localXHack_KILLME,
+  style,
+}: MenuProviderProps) => {
+  const { show } = useContextMenu({ id })
+
   const onContextMenu = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
-      if (props.itemsLength > 0) {
-        show(event)
+      if (itemsLength <= 0) {
+        return
       }
+
+      show({
+        event: event,
+        position:
+          localXHack_KILLME === 'local-x-coord-KILLME'
+            ? { x: event.nativeEvent.offsetX, y: event.nativeEvent.pageY }
+            : undefined,
+      })
     },
-    [props.itemsLength, show],
+    [itemsLength, localXHack_KILLME, show],
   )
 
   return (
-    <div style={props.style} onContextMenu={onContextMenu}>
-      {props.children}
+    <div style={style} onContextMenu={onContextMenu}>
+      {children}
     </div>
   )
 }

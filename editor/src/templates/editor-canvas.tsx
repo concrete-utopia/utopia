@@ -105,6 +105,7 @@ import * as ResizeObserverSyntheticDefault from 'resize-observer-polyfill'
 import { isFeatureEnabled } from '../utils/feature-switches'
 import { getCanvasViewportCenter } from './paste-helpers'
 import { InsertMenuId } from '../components/editor/insertmenu'
+import { DataPasteHandler, isPasteHandler } from '../utils/paste-handler'
 const ResizeObserver = ResizeObserverSyntheticDefault.default ?? ResizeObserverSyntheticDefault
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
@@ -1073,7 +1074,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
       React.createElement(CanvasComponentEntry, {}),
       canvasControls,
       React.createElement(CursorComponent, {}),
-      <EditorCommon mouseDown={this.handleMouseDown} mouseUp={this.handleMouseUp} />,
+      <EditorCommon mouseDown={this.handleMouseDown} />,
     )
   }
 
@@ -1315,6 +1316,11 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
     const editor = this.props.editor
     const selectedViews = editor.selectedViews
 
+    if (isPasteHandler(event.target)) {
+      // components with data-pastehandler='true' have precedence
+      return
+    }
+
     // Utopia handles all paste events for these panes first
     const paneFocusedWhereUtopiaHandlesPasteEvents =
       this.props.model.focusedPanel === 'canvas' ||
@@ -1385,7 +1391,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
 function isTargetContextMenu(target: HTMLElement): boolean {
   const className = target.className ?? ''
   return (
-    (typeof className === 'string' && className.includes('react-contexify')) ||
+    (typeof className === 'string' && className.includes('contexify')) ||
     (target.parentElement != null && isTargetContextMenu(target.parentElement))
   )
 }

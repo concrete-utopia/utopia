@@ -3,6 +3,7 @@ import type { MapLike } from 'typescript'
 import type { Either } from '../core/shared/either'
 import {
   flatMapEither,
+  isLeft,
   isRight,
   left,
   leftMapEither,
@@ -12,6 +13,7 @@ import {
   traverseEither,
 } from '../core/shared/either'
 import type { ComponentRendererComponent } from '../components/canvas/ui-jsx-canvas-renderer/component-renderer-component'
+import { difference } from '../core/shared/set-utils'
 
 export interface ArrayIndexNotPresentParseError {
   type: 'ARRAY_INDEX_NOT_PRESENT_PARSE_ERROR'
@@ -160,6 +162,65 @@ export function objectValueParserWithError<V>(
     return leftMapEither((err) => {
       return objectFieldParseError(key, err)
     }, parsed)
+  }
+}
+
+type PropertyParserFn<T> = (v: unknown, key: string) => ParseResult<T>
+type PropertyParser<T> = PropertyParserFn<T> | { optional: PropertyParserFn<T> }
+type ObjectParserSpec<Type> = {
+  [Key in keyof Type]: PropertyParser<Type[Key]>
+}
+
+export const optionalProp = <T>(
+  parser: PropertyParserFn<T>,
+): { optional: PropertyParserFn<T> } => ({ optional: parser })
+
+export function objectParser<Type>(
+  spec: ObjectParserSpec<Type>,
+): (v: unknown) => ParseResult<Type> {
+  return (value: unknown) => {
+    if (typeof value !== 'object') {
+      return left(descriptionParseError('Not an object'))
+    }
+    if (Array.isArray(value)) {
+      return left(descriptionParseError('Object is an array'))
+    }
+    if (value == null) {
+      return left(descriptionParseError('Object is `null`'))
+    }
+
+    const allProps: Set<string> = new Set(Object.keys(value))
+    const checkedProps: Set<string> = new Set()
+
+    const partialResult: Partial<Type> = {}
+
+    for (const [key, parser] of Object.entries<PropertyParser<unknown>>(spec)) {
+      const optional = typeof parser !== 'function'
+      if (!(key in value)) {
+        if (optional) {
+          continue
+        }
+        return left(objectFieldNotPresentParseError(key))
+      }
+
+      const parserFn = typeof parser === 'function' ? parser : parser.optional
+      const withErrorParser = objectValueParserWithError(parserFn as any)
+      const parsed = withErrorParser((value as any)[key], key)
+      if (isLeft(parsed)) {
+        return parsed
+      }
+
+      ;(partialResult as any)[key] = parsed.value
+      checkedProps.add(key)
+    }
+
+    const unknownProps = [...difference(allProps, checkedProps)]
+
+    if (unknownProps.length > 0) {
+      return left(descriptionParseError(`Found unknown props: ${unknownProps.join(', ')}`))
+    }
+
+    return right(partialResult as Type)
   }
 }
 
@@ -338,7 +399,7 @@ export function parseJsx(_: unknown, value: unknown): ParseResult<JSXParsedValue
       if (props.hasOwnProperty('elementToRender') === true) {
         return right({
           type: 'internal-component',
-          name: (props as any).elementToRender,
+          name: typeof props.elementToRender === 'string' ? props.elementToRender : 'JSX',
         })
       }
     }

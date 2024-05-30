@@ -1,6 +1,5 @@
 import type { CSSProperties } from 'react'
-import { fastForEach } from '../utils'
-import type { PlaceholderSpec, PreferredContents } from '../core'
+import type { PreferredContents } from '../core'
 
 // these fields are shared among all RegularControlDescription. the helper function getControlSharedFields makes sure the types line up
 // Ensure that the fields are also added to the object within `getControlSharedFields` for that typechecking.
@@ -10,15 +9,7 @@ interface ControlBaseFields {
   visibleByDefault?: boolean
   required?: boolean
   defaultValue?: unknown
-}
-function getControlSharedFields(control: RegularControlDescription): ControlBaseFields {
-  return {
-    control: control.control,
-    label: control.label,
-    visibleByDefault: control.visibleByDefault,
-    required: control.required,
-    defaultValue: control.defaultValue,
-  }
+  folder?: string
 }
 
 // Base Level Controls
@@ -51,6 +42,7 @@ export interface CheckboxControlDescription {
   enabledTitle?: string
   required?: boolean
   defaultValue?: unknown
+  folder?: string
 }
 
 export interface ColorControlDescription {
@@ -59,6 +51,7 @@ export interface ColorControlDescription {
   visibleByDefault?: boolean
   required?: boolean
   defaultValue?: unknown
+  folder?: string
 }
 
 export type AllowedEnumType = string | boolean | number | undefined | null
@@ -76,6 +69,7 @@ export interface PopUpListControlDescription {
   options: BasicControlOptions<unknown>
   required?: boolean
   defaultValue?: AllowedEnumType | BasicControlOption<unknown>
+  folder?: string
 }
 
 export interface ImportType {
@@ -98,6 +92,7 @@ export interface ExpressionPopUpListControlDescription {
   options: ExpressionControlOption<unknown>[]
   required?: boolean
   defaultValue?: unknown
+  folder?: string
 }
 
 export interface EulerControlDescription {
@@ -106,6 +101,7 @@ export interface EulerControlDescription {
   visibleByDefault?: boolean
   required?: boolean
   defaultValue?: [number, number, number, string]
+  folder?: string
 }
 
 export interface NoneControlDescription {
@@ -114,6 +110,7 @@ export interface NoneControlDescription {
   visibleByDefault?: boolean
   required?: boolean
   defaultValue?: unknown
+  folder?: string
 }
 
 // prettier-ignore
@@ -129,6 +126,7 @@ export interface Matrix3ControlDescription {
   visibleByDefault?: boolean
   required?: boolean
   defaultValue?: Matrix3
+  folder?: string
 }
 
 // prettier-ignore
@@ -145,6 +143,7 @@ export interface Matrix4ControlDescription {
   visibleByDefault?: boolean
   required?: boolean
   defaultValue?: Matrix4
+  folder?: string
 }
 
 export interface NumberInputControlDescription {
@@ -158,6 +157,7 @@ export interface NumberInputControlDescription {
   displayStepper?: boolean
   required?: boolean
   defaultValue?: unknown
+  folder?: string
 }
 
 export interface RadioControlDescription {
@@ -167,6 +167,7 @@ export interface RadioControlDescription {
   options: BasicControlOptions<unknown>
   required?: boolean
   defaultValue?: AllowedEnumType | BasicControlOption<unknown>
+  folder?: string
 }
 
 export interface ExpressionInputControlDescription {
@@ -175,6 +176,7 @@ export interface ExpressionInputControlDescription {
   visibleByDefault?: boolean
   required?: boolean
   defaultValue?: unknown
+  folder?: string
 }
 
 export interface StringInputControlDescription {
@@ -185,6 +187,7 @@ export interface StringInputControlDescription {
   obscured?: boolean
   required?: boolean
   defaultValue?: unknown
+  folder?: string
 }
 
 export interface HtmlInputControlDescription {
@@ -195,6 +198,7 @@ export interface HtmlInputControlDescription {
   obscured?: boolean
   required?: boolean
   defaultValue?: unknown
+  folder?: string
 }
 
 export interface StyleControlsControlDescription {
@@ -204,6 +208,7 @@ export interface StyleControlsControlDescription {
   placeholder?: CSSProperties
   required?: boolean
   defaultValue?: unknown
+  folder?: string
 }
 
 export type Vector2 = [number, number]
@@ -214,6 +219,7 @@ export interface Vector2ControlDescription {
   visibleByDefault?: boolean
   required?: boolean
   defaultValue?: Vector2
+  folder?: string
 }
 
 export type Vector3 = [number, number, number]
@@ -224,6 +230,7 @@ export interface Vector3ControlDescription {
   visibleByDefault?: boolean
   required?: boolean
   defaultValue?: Vector3
+  folder?: string
 }
 
 export type Vector4 = [number, number, number, number]
@@ -234,6 +241,7 @@ export interface Vector4ControlDescription {
   visibleByDefault?: boolean
   required?: boolean
   defaultValue?: Vector4
+  folder?: string
 }
 
 export interface JSXControlDescription {
@@ -241,9 +249,9 @@ export interface JSXControlDescription {
   label?: string
   visibleByDefault?: boolean
   preferredContents?: PreferredContents | PreferredContents[]
-  placeholder?: PlaceholderSpec
   required?: boolean
   defaultValue?: unknown
+  folder?: string
 }
 
 export type BaseControlDescription =
@@ -282,6 +290,7 @@ export interface ArrayControlDescription {
   maxCount?: number
   required?: boolean
   defaultValue?: unknown
+  folder?: string
 }
 
 export interface ObjectControlDescription {
@@ -291,6 +300,7 @@ export interface ObjectControlDescription {
   object: { [prop: string]: RegularControlDescription }
   required?: boolean
   defaultValue?: unknown
+  folder?: string
 }
 
 export interface UnionControlDescription {
@@ -300,6 +310,7 @@ export interface UnionControlDescription {
   controls: Array<RegularControlDescription>
   required?: boolean
   defaultValue?: unknown
+  folder?: string
 }
 export interface TupleControlDescription {
   control: 'tuple'
@@ -308,12 +319,7 @@ export interface TupleControlDescription {
   propertyControls: RegularControlDescription[]
   required?: boolean
   defaultValue?: unknown
-}
-
-export interface FolderControlDescription {
-  control: 'folder'
-  label?: string
-  controls: PropertyControls
+  folder?: string
 }
 
 export type HigherLevelControlDescription =
@@ -326,7 +332,7 @@ export type RegularControlDescription = BaseControlDescription | HigherLevelCont
 
 // Please ensure that `property-controls-utils.ts` is kept up to date
 // with any changes to this or the component types.
-export type ControlDescription = RegularControlDescription | FolderControlDescription
+export type ControlDescription = RegularControlDescription
 
 export function isBaseControlDescription(
   control: ControlDescription,
@@ -355,7 +361,6 @@ export function isBaseControlDescription(
     case 'object':
     case 'tuple':
     case 'union':
-    case 'folder':
       return false
     default:
       const _exhaustiveCheck: never = control

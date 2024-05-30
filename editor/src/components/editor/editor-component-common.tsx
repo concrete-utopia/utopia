@@ -1,6 +1,7 @@
 import React from 'react'
 import type { EditorAction, EditorDispatch } from './action-types'
 import { useDispatch } from './store/dispatch-context'
+import { BodyMenuOpenClass } from '../../core/shared/utils'
 
 type EventHandler<K extends keyof WindowEventMap, R> = (this: Window, event: WindowEventMap[K]) => R
 
@@ -50,6 +51,13 @@ function createHandler<K extends keyof WindowEventMap>(
     return null
   } else {
     const windowEventHandler = (event: WindowEventMap[K]) => {
+      // check if it's a keyboard event and if react-contexify is open
+      if (
+        ['keydown', 'keyup'].includes(event.type) &&
+        document.body.classList.contains(BodyMenuOpenClass)
+      ) {
+        return
+      }
       const collatedActions = handlers.flatMap((handler) => {
         return handler.bind(window)(event)
       })
@@ -77,7 +85,7 @@ function recreateEventHandlers(dispatch: EditorDispatch): void {
 
 export interface EditorCommonProps {
   mouseDown: MouseHandlerActions
-  mouseUp: MouseHandlerActions
+  mouseUp?: MouseHandlerActions
   keyDown?: KeyboardHandlerActions
   keyUp?: KeyboardHandlerActions
 }
@@ -88,7 +96,9 @@ export function EditorCommon(props: EditorCommonProps): React.ReactElement | nul
   const dispatch = useDispatch()
   React.useEffect(() => {
     mouseDownHandlers = [...mouseDownHandlers, props.mouseDown]
-    mouseUpHandlers = [...mouseUpHandlers, props.mouseUp]
+    if (props.mouseUp != null) {
+      mouseUpHandlers = [...mouseUpHandlers, props.mouseUp]
+    }
     if (props.keyDown != null) {
       keyDownHandlers = [...keyDownHandlers, props.keyDown]
     }

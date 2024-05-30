@@ -12,7 +12,7 @@ import type { ElementPath } from '../../core/shared/project-file-types'
 import { getSelectedNavigatorEntries } from '../../templates/editor-navigator'
 import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 import Utils from '../../utils/utils'
-import { FlexColumn, Section, SectionBodyArea } from '../../uuiui'
+import { FlexColumn, Section, SectionBodyArea, UtopiaTheme } from '../../uuiui'
 import { setFocus } from '../common/actions'
 import {
   clearHighlightedViews,
@@ -25,30 +25,29 @@ import {
   isRegularNavigatorEntry,
   navigatorEntryToKey,
   navigatorEntriesEqual,
+  navigatorRowToKey,
 } from '../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { ElementContextMenu } from '../element-context-menu'
 import { getItemHeight } from './navigator-item/navigator-item'
 import { NavigatorDragLayer } from './navigator-drag-layer'
 import { NavigatorItemWrapper } from './navigator-item/navigator-item-wrapper'
+import type { CondensedNavigatorRow, NavigatorRow, RegularNavigatorRow } from './navigator-row'
+import { getEntriesForRow } from './navigator-row'
+import { assertNever } from '../../core/shared/utils'
 
 interface ItemProps extends ListChildComponentProps {}
-
-function navigatorEntriesContainTarget(entries: NavigatorEntry[], target: NavigatorEntry): boolean {
-  return !entries.some((t) => t.elementPath === target.elementPath && t.type === target.type)
-}
 
 const Item = React.memo(({ index, style }: ItemProps) => {
   const visibleNavigatorTargets = useEditorState(
     Substores.derived,
-    (store) => {
-      return store.derived.visibleNavigatorTargets
-    },
+    (store) => store.derived.navigatorRows,
     'Item visibleNavigatorTargets',
   )
   const editorSliceRef = useRefEditorState((store) => {
     const currentlySelectedNavigatorEntries = getSelectedNavigatorEntries(
       store.editor.selectedViews,
+      store.derived.navigatorTargets,
     )
     return {
       selectedViews: store.editor.selectedViews,
@@ -133,19 +132,15 @@ const Item = React.memo(({ index, style }: ItemProps) => {
   )
 
   const targetEntry = visibleNavigatorTargets[index]
-  const componentKey = navigatorEntryToKey(targetEntry)
+  const componentKey = navigatorRowToKey(targetEntry)
   const deepKeptStyle = useKeepReferenceEqualityIfPossible(style)
-
-  if (navigatorEntriesContainTarget(visibleNavigatorTargets, targetEntry)) {
-    return null
-  }
 
   return (
     <NavigatorItemWrapper
       key={componentKey}
       index={index}
       targetComponentKey={componentKey}
-      navigatorEntry={targetEntry}
+      navigatorRow={targetEntry}
       getCurrentlySelectedEntries={getCurrentlySelectedNavigatorEntries}
       getSelectedViewsInRange={getSelectedViewsInRange}
       windowStyle={deepKeptStyle}
@@ -161,13 +156,13 @@ export const NavigatorComponent = React.memo(() => {
     Substores.fullStore,
     (store) => {
       const selectedViews = store.editor.selectedViews
-      const innerVisibleNavigatorTargets = store.derived.visibleNavigatorTargets
+      const innerVisibleNavigatorTargets = store.derived.navigatorRows
       const innerSelectionIndex =
         selectedViews == null
           ? -1
           : innerVisibleNavigatorTargets.findIndex((entry) => {
-              return (
-                isRegularNavigatorEntry(entry) && EP.pathsEqual(entry.elementPath, selectedViews[0])
+              return getEntriesForRow(entry).some(
+                (e) => isRegularNavigatorEntry(e) && EP.pathsEqual(e.elementPath, selectedViews[0]),
               )
             })
       return {
@@ -183,7 +178,7 @@ export const NavigatorComponent = React.memo(() => {
 
   React.useEffect(() => {
     if (selectionIndex >= 0) {
-      itemListRef.current?.scrollToItem(selectionIndex)
+      itemListRef.current?.scrollToItem(selectionIndex, 'smart')
     }
   }, [selectionIndex, itemListRef])
 
@@ -221,12 +216,17 @@ export const NavigatorComponent = React.memo(() => {
 
   const getItemSize = React.useCallback(
     (entryIndex: number) => {
-      const navigatorTarget = safeIndex(visibleNavigatorTargets, entryIndex)
-      if (navigatorTarget == null) {
+      const navigatorRow = safeIndex(visibleNavigatorTargets, entryIndex)
+      if (navigatorRow == null) {
         throw new Error(`Could not find navigator entry at index ${entryIndex}`)
-      } else {
-        return getItemHeight(navigatorTarget)
       }
+      if (navigatorRow.type === 'condensed-row') {
+        return UtopiaTheme.layout.rowHeight.smaller
+      }
+      if (navigatorRow.type === 'regular-row') {
+        return getItemHeight(navigatorRow.entry)
+      }
+      assertNever(navigatorRow)
     },
     [visibleNavigatorTargets],
   )
@@ -272,7 +272,6 @@ export const NavigatorComponent = React.memo(() => {
       tabIndex={-1}
       css={{
         flexGrow: 1,
-        height: '100%',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'stretch',
@@ -283,6 +282,7 @@ export const NavigatorComponent = React.memo(() => {
           '--paneHoverOpacity': 1,
         },
         padding: 5,
+        height: 0,
       }}
       onClick={containerClick}
     >

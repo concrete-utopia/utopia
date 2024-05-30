@@ -136,6 +136,7 @@ export interface NumberInputOptions {
   roundCorners?: BoxCorners
   numberType: CSSNumberType
   defaultUnitToHide: CSSNumberUnit | null
+  pasteHandler?: boolean
 }
 
 export interface AbstractNumberInputProps<T extends CSSNumber | number>
@@ -186,6 +187,7 @@ export const NumberInput = React.memo<NumberInputProps>(
     onMouseEnter,
     onMouseLeave,
     invalid,
+    pasteHandler,
   }) => {
     const ref = React.useRef<HTMLInputElement>(null)
     const colorTheme = useColorTheme()
@@ -663,15 +665,18 @@ export const NumberInput = React.memo<NumberInputProps>(
         : undefined
 
     return (
-      <div style={style} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
+      <div onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} style={style}>
         <div
           className='number-input-container'
           css={{
             color: controlStyles.mainColor,
-            background: colorTheme.bg2.value,
             zIndex: isFocused ? 3 : undefined,
             position: 'relative',
             borderRadius: 2,
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            boxShadow: 'inset 0px 0px 0px 1px transparent',
             ...chainedStyles,
             '&:hover': {
               boxShadow: `inset 0px 0px 0px 1px ${colorTheme.fg7.value}`,
@@ -687,36 +692,6 @@ export const NumberInput = React.memo<NumberInputProps>(
             },
           }}
         >
-          <InspectorInput
-            {...inputProps}
-            chained={chained}
-            controlStyles={controlStyles}
-            controlStatus={controlStatus}
-            testId={testId}
-            disabled={disabled}
-            focused={isFocused}
-            hasLabel={labelInner != null}
-            roundCorners={roundCorners}
-            mixed={mixed}
-            value={displayValue}
-            ref={ref}
-            style={{
-              color: controlStyles.mainColor,
-            }}
-            css={{
-              '::placeholder': { color: invalid ? colorTheme.error.value : undefined },
-            }}
-            className='number-input'
-            height={height}
-            id={id}
-            placeholder={placeholder}
-            onFocus={onFocus}
-            onKeyDown={onKeyDown}
-            onKeyUp={onKeyUp}
-            onBlur={onBlur}
-            onChange={onChange}
-            autoComplete='off'
-          />
           {labelInner != null ? (
             <div
               className='number-input-innerLabel'
@@ -764,7 +739,6 @@ export const NumberInput = React.memo<NumberInputProps>(
                 alignItems: 'stretch',
                 width: 11,
                 height: UtopiaTheme.layout.inputHeight.default,
-
                 boxShadow: `1px 0 ${controlStyles.borderColor} inset`,
                 display: 'none',
                 '.number-input-container:hover &': {
@@ -831,37 +805,63 @@ export const NumberInput = React.memo<NumberInputProps>(
               </div>
             </div>
           ) : null}
-        </div>
-        {DEPRECATED_labelBelow == null && controlStatus != 'off' ? null : (
-          <React.Fragment>
-            {isFauxcused ? (
+          {DEPRECATED_labelBelow == null && controlStatus != 'off' ? null : (
+            <React.Fragment>
+              {isFauxcused ? (
+                <div
+                  style={{
+                    background: 'transparent',
+                    zIndex: 1,
+                  }}
+                ></div>
+              ) : null}
               <div
+                onMouseDown={onLabelMouseDown}
                 style={{
-                  position: 'fixed',
-                  left: 0,
-                  top: 0,
-                  bottom: 0,
-                  right: 0,
-                  background: 'transparent',
-                  zIndex: 1,
+                  paddingLeft: 4,
+                  cursor: CSSCursor.ResizeEW,
+                  fontSize: 9,
+                  textAlign: 'center',
+                  display: 'block',
+                  color: controlStyles.secondaryColor,
                 }}
-              ></div>
-            ) : null}
-            <div
-              onMouseDown={onLabelMouseDown}
-              style={{
-                cursor: CSSCursor.ResizeEW,
-                fontSize: 9,
-                textAlign: 'center',
-                display: 'block',
-                color: controlStyles.secondaryColor,
-                paddingTop: 2,
-              }}
-            >
-              {DEPRECATED_labelBelow}
-            </div>
-          </React.Fragment>
-        )}
+              >
+                {DEPRECATED_labelBelow}
+              </div>
+            </React.Fragment>
+          )}
+          <InspectorInput
+            {...inputProps}
+            chained={chained}
+            controlStyles={controlStyles}
+            controlStatus={controlStatus}
+            testId={testId}
+            pasteHandler={pasteHandler}
+            disabled={disabled}
+            focused={isFocused}
+            hasLabel={labelInner != null}
+            roundCorners={roundCorners}
+            mixed={mixed}
+            value={displayValue}
+            ref={ref}
+            style={{
+              color: colorTheme.fg1.value,
+            }}
+            css={{
+              '::placeholder': { color: invalid ? colorTheme.error.value : undefined },
+            }}
+            className='number-input'
+            height={height}
+            id={id}
+            placeholder={placeholder}
+            onFocus={onFocus}
+            onKeyDown={onKeyDown}
+            onKeyUp={onKeyUp}
+            onBlur={onBlur}
+            onChange={onChange}
+            autoComplete='off'
+          />
+        </div>
       </div>
     )
   },
@@ -992,6 +992,7 @@ export const ChainedNumberInput: React.FunctionComponent<
                 chained='first'
                 roundCorners='left'
                 setGlobalCursor={setGlobalCursor}
+                incrementControls={false}
               />
             )
           }
@@ -1004,6 +1005,7 @@ export const ChainedNumberInput: React.FunctionComponent<
                 chained='last'
                 roundCorners='right'
                 setGlobalCursor={setGlobalCursor}
+                incrementControls={false}
               />
             )
           }
@@ -1016,6 +1018,7 @@ export const ChainedNumberInput: React.FunctionComponent<
                 chained='middle'
                 roundCorners='none'
                 setGlobalCursor={setGlobalCursor}
+                incrementControls={false}
               />
             )
           }

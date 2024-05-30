@@ -54,6 +54,7 @@ import { ElementsOutsideVisibleAreaIndicator } from './elements-outside-visible-
 import { RemixNavigationBar } from './remix-navigation-bar'
 import {
   fragmentComponentInfo,
+  fragmentElementsDescriptors,
   insertableComponentGroupFragment,
 } from '../shared/project-components'
 import { setFocus } from '../common/actions'
@@ -250,10 +251,6 @@ export const CanvasToolbar = React.memo(() => {
 
   const canvasToolbarMode = useToolbarMode()
 
-  const editorStateRef = useRefEditorState((store) => store.editor)
-  const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
-  const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
-
   const insertDivCallback = useEnterDrawToInsertForDiv()
   const insertImgCallback = useEnterDrawToInsertForImage()
   const insertTextCallback = useEnterTextEditMode()
@@ -269,43 +266,6 @@ export const CanvasToolbar = React.memo(() => {
 
   const convertToCallback = useConvertTo()
   const toInsertCallback = useToInsert()
-
-  const openFloatingConvertMenuCallback = React.useCallback(() => {
-    dispatch([openFloatingInsertMenu(floatingInsertMenuStateSwap())])
-  }, [dispatch])
-
-  const openFloatingWrapInMenuCallback = React.useCallback(() => {
-    dispatch([
-      openFloatingInsertMenu({
-        insertMenuMode: 'wrap',
-      }),
-    ])
-  }, [dispatch])
-
-  const wrapInGroupCallback = React.useCallback(() => {
-    dispatch([
-      wrapInElement(selectedViewsRef.current, {
-        element: defaultTransparentViewElement(
-          generateUidWithExistingComponents(projectContentsRef.current),
-        ),
-        importsToAdd: {},
-      }),
-    ])
-  }, [dispatch, selectedViewsRef, projectContentsRef])
-
-  const toggleAbsolutePositioningCallback = React.useCallback(() => {
-    const editorState = editorStateRef.current
-    const commands = toggleAbsolutePositioningCommands(
-      editorState.jsxMetadata,
-      editorState.allElementProps,
-      editorState.elementPathTree,
-      editorState.selectedViews,
-    )
-    if (commands.length === 0) {
-      return
-    }
-    dispatch([applyCommandsAction(commands)])
-  }, [dispatch, editorStateRef])
 
   // Back to select mode, close the "floating" menu and turn off the forced insert mode.
   const dispatchSwitchToSelectModeCloseMenus = React.useCallback(() => {
@@ -336,6 +296,7 @@ export const CanvasToolbar = React.memo(() => {
         source: insertableComponentGroupFragment(),
         key: fragmentComponentInfo.insertMenuLabel,
         insertionCeiling: null,
+        icon: fragmentElementsDescriptors.fragment.icon,
       },
     }
     convertToAndClose(convertToFragmentMenuItem)
@@ -419,21 +380,23 @@ export const CanvasToolbar = React.memo(() => {
 
   const wrapInSubmenu = React.useCallback((wrapped: React.ReactNode) => {
     return (
-      <FlexRow
+      <FlexColumn
         data-testid='canvas-toolbar-submenu'
         style={{
-          marginLeft: 8,
-          height: 32,
+          height: 38,
           overflow: 'hidden',
+          justifyContent: 'flex-end',
           backgroundColor: colorTheme.bg1subdued.value,
-          borderRadius: '0px 10px 10px 10px',
+          borderRadius: '0 0 6px 6px',
           boxShadow: UtopiaStyles.shadowStyles.low.boxShadow,
           pointerEvents: 'initial',
           zIndex: -1, // it sits below the main menu row, but we want the main menu's shadow to cast over this one
+          //to make the submenu appear visually underneath the corners of the main menu
+          marginTop: -6,
         }}
       >
-        {wrapped}
-      </FlexRow>
+        <FlexRow style={{ height: 32 }}>{wrapped}</FlexRow>
+      </FlexColumn>
     )
   }, [])
 
@@ -479,14 +442,15 @@ export const CanvasToolbar = React.memo(() => {
         id={CanvasToolbarId}
         style={{
           backgroundColor: theme.inspectorBackground.value,
-          borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
+          borderRadius: 6,
           overflow: 'hidden',
           boxShadow: UtopiaStyles.shadowStyles.low.boxShadow,
           pointerEvents: 'initial',
           display: 'flex',
           flexDirection: 'row',
           alignItems: 'center',
-          padding: '0 6px 0 8px',
+          padding: 3,
+          gap: 8,
         }}
       >
         <Tooltip title='Edit' placement='bottom'>
@@ -497,7 +461,6 @@ export const CanvasToolbar = React.memo(() => {
             onClick={dispatchSwitchToSelectModeCloseMenus}
             keepActiveInLiveMode
             testid={CanvasToolbarEditButtonID}
-            style={{ width: 36 }}
           />
         </Tooltip>
         {when(
@@ -510,7 +473,6 @@ export const CanvasToolbar = React.memo(() => {
                 primary={canvasToolbarMode.primary === 'text'}
                 onClick={insertTextCallback}
                 keepActiveInLiveMode
-                style={{ width: 36 }}
               />
             </Tooltip>
             <Tooltip title='Insert' placement='bottom'>
@@ -521,7 +483,6 @@ export const CanvasToolbar = React.memo(() => {
                 primary={canvasToolbarMode.primary === 'insert'}
                 onClick={toggleInsertButtonClicked}
                 keepActiveInLiveMode
-                style={{ width: 36 }}
               />
             </Tooltip>
           </>,
@@ -534,12 +495,11 @@ export const CanvasToolbar = React.memo(() => {
             primary={canvasToolbarMode.primary === 'play'}
             onClick={toggleLiveMode}
             keepActiveInLiveMode
-            style={{ width: 36 }}
           />
         </Tooltip>
         {when(
           canComment,
-          <div style={{ display: 'flex', width: 36 }}>
+          <div style={{ display: 'flex', width: 26 }}>
             <Tooltip title={commentButtonTooltip} placement='bottom'>
               <InsertModeButton
                 testid={commentButtonTestId}
@@ -548,7 +508,6 @@ export const CanvasToolbar = React.memo(() => {
                 primary={canvasToolbarMode.primary === 'comment'}
                 onClick={toggleCommentMode}
                 keepActiveInLiveMode
-                style={{ width: 36 }}
                 disabled={commentButtonDisabled}
               />
             </Tooltip>
@@ -561,9 +520,8 @@ export const CanvasToolbar = React.memo(() => {
         <Tooltip title='Zoom to 100%' placement='bottom'>
           <SquareButton
             style={{
-              height: 32,
               width: 'min-content',
-              padding: '0 8px',
+              padding: '0 4px',
             }}
             css={{
               '&:hover': {
@@ -710,7 +668,9 @@ export const CanvasToolbar = React.memo(() => {
           )
         : null}
       {/* Live Mode */}
-      {(canvasToolbarMode.primary === 'edit' && insertMenuMode === 'closed') ||
+      {(canvasToolbarMode.primary === 'edit' &&
+        canvasToolbarMode.secondary !== 'strategy-active' &&
+        insertMenuMode === 'closed') ||
       canvasToolbarMode.primary === 'play'
         ? wrapInSubmenu(<RemixNavigationBar />)
         : null}
@@ -761,7 +721,7 @@ const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
   return (
     <SquareButton
       data-testid={props.testid}
-      style={{ height: 32, width: 32, ...props.style }}
+      style={{ height: 26, width: 26, borderRadius: 3, ...props.style }}
       primary={primary}
       spotlight={secondary}
       highlight
@@ -805,7 +765,7 @@ const Separator = React.memo((props) => {
         width: 1,
         height: 16,
         alignSelf: 'center',
-        margin: '0 8px',
+        margin: '0 4px',
         backgroundColor: colorTheme.seperator.value,
       }}
     ></div>

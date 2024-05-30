@@ -187,6 +187,7 @@ export function pickCanvasStateFromEditorState(
     startingMetadata: editorState.jsxMetadata,
     startingElementPathTree: editorState.elementPathTree,
     startingAllElementProps: editorState.allElementProps,
+    propertyControlsInfo: editorState.propertyControlsInfo,
   }
 }
 
@@ -207,6 +208,7 @@ export function pickCanvasStateFromEditorStateWithMetadata(
     startingMetadata: metadata,
     startingElementPathTree: editorState.elementPathTree, // IMPORTANT! This isn't based on the passed in metadata
     startingAllElementProps: allElementProps ?? editorState.allElementProps,
+    propertyControlsInfo: editorState.propertyControlsInfo,
   }
 }
 
@@ -588,6 +590,18 @@ export function useGetApplicableStrategyControls(): Array<ControlWithProps<unkno
 
 export function isStrategyActive(strategyState: StrategyState): boolean {
   return strategyState.currentStrategyCommands.length > 0
+}
+
+export function onlyFitWhenThisControlIsActive(
+  interactionSession: InteractionSession | null,
+  controlType: CanvasControlType['type'],
+  fitnessWhenFit: number,
+): number {
+  if (interactionSession != null && interactionSession.activeControl.type === controlType) {
+    return fitnessWhenFit
+  } else {
+    return 0
+  }
 }
 
 export function onlyFitWhenDraggingThisControl(

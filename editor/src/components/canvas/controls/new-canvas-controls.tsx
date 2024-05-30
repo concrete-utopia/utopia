@@ -45,7 +45,10 @@ import type { ProjectContentTreeRoot } from '../../assets'
 import { LayoutParentControl } from './layout-parent-control'
 import { unless, when } from '../../../utils/react-conditionals'
 import { useGetApplicableStrategyControls } from '../canvas-strategies/canvas-strategies'
-import { MultiSelectOutlineControl } from './select-mode/simple-outline-control'
+import {
+  DataReferenceParentOutline,
+  MultiSelectOutlineControl,
+} from './select-mode/simple-outline-control'
 import { GuidelineControls } from './guideline-controls'
 import { showContextMenu } from '../../editor/actions/action-creators'
 import { InsertionControls } from './insertion-plus-button'
@@ -301,6 +304,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     pathTrees,
     autoFocusedPaths,
     filePathMappings,
+    propertyControlsInfo,
   } = useEditorState(
     Substores.fullStore,
     (store) => {
@@ -319,6 +323,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         pathTrees: store.editor.elementPathTree,
         autoFocusedPaths: store.derived.autoFocusedPaths,
         filePathMappings: store.derived.filePathMappings,
+        propertyControlsInfo: store.editor.propertyControlsInfo,
       }
     },
     'NewCanvasControlsInner',
@@ -447,6 +452,8 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
               componentMetadata,
               autoFocusedPaths,
               filePathMappings,
+              propertyControlsInfo,
+              projectContents,
             )
           const isFocusedComponent = EP.isFocused(focusedElementPath, path)
           const color =
@@ -485,6 +492,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
               EP.fromString(p),
               componentMetadata,
               pathTrees,
+              propertyControlsInfo,
             ),
           )
         )
@@ -530,10 +538,16 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       >
         {when(
           isSelectMode(editorMode) || isCommentMode(editorMode),
-          <SceneLabelControl
-            maybeHighlightOnHover={maybeHighlightOnHover}
-            maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
-          />,
+          <>
+            <SceneLabelControl
+              maybeHighlightOnHover={maybeHighlightOnHover}
+              maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
+            />
+            <DataReferenceParentOutline
+              selectedViews={localSelectedViews}
+              highlightedViews={localHighlightedViews}
+            />
+          </>,
         )}
         {when(
           resizeStatus !== 'disabled',

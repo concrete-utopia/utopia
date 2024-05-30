@@ -118,8 +118,8 @@ async function loadProject(projectId: string): Promise<ProjectLoadResult<Persist
 }
 
 export const AccessLevelParamKey = 'accessLevel'
-
 export const CloneParamKey = 'clone'
+export const GithubBranchParamKey = 'github_branch'
 
 async function createNewProjectInServer(
   projectModel: ProjectModel<PersistentModel>,

@@ -179,7 +179,7 @@ describe('Navigator item row icons', () => {
 
     async function checkNavigatorIcon(
       description: string,
-      expectedIcnProps: { category: string; type: string } | 'no-icon',
+      expectedIcnProps: { category: string; type: string; color: string } | 'no-icon',
       navigatorEntry: NavigatorEntry,
       expectWarningIcon: 'expect-warning-icon' | 'expect-normal-icon' = 'expect-normal-icon',
     ) {
@@ -195,14 +195,17 @@ describe('Navigator item row icons', () => {
           expectWarningIcon === 'expect-warning-icon' ? undefined : expectedIcnProps.category
         const expectedType =
           expectWarningIcon === 'expect-warning-icon' ? 'warningtriangle' : expectedIcnProps.type
+        const expectedColor = expectedIcnProps.color
         expect({
           description: description,
           category: imgData['category'],
           type: imgData['type'],
+          color: imgData['color'],
         }).toEqual({
           description: description,
           category: expectedCategory,
           type: expectedType,
+          color: expectedColor,
         })
       }
     }
@@ -211,49 +214,49 @@ describe('Navigator item row icons', () => {
 
     await checkNavigatorIcon(
       'Regular div',
-      { category: 'navigator-element', type: 'div' },
+      { category: 'navigator-element', type: 'div', color: 'black' },
       visibleNavigatorTargets[0],
     )
     await checkNavigatorIcon(
       'Div with text',
-      { category: 'navigator-element', type: 'div' },
+      { category: 'navigator-element', type: 'div', color: 'black' },
       visibleNavigatorTargets[1],
     )
     await checkNavigatorIcon(
       'Display Inline',
-      { category: 'navigator-element', type: 'pure-text' },
+      { category: 'navigator-element', type: 'pure-text', color: 'black' },
       visibleNavigatorTargets[2],
     )
     await checkNavigatorIcon(
       'Span',
-      { category: 'navigator-element', type: 'pure-text' },
+      { category: 'navigator-element', type: 'pure-text', color: 'black' },
       visibleNavigatorTargets[3],
     )
     await checkNavigatorIcon(
       'Group',
-      { category: 'navigator-element', type: 'group-closed' },
+      { category: 'navigator-element', type: 'group-closed', color: 'black' },
       visibleNavigatorTargets[4],
     )
     await checkNavigatorIcon(
       'Component',
-      { category: 'navigator-element', type: 'div' },
+      { category: 'navigator-element', type: 'div', color: 'black' },
       visibleNavigatorTargets[5],
     )
     await checkNavigatorIcon(
       'Button',
-      { category: 'navigator-element', type: 'clickable' },
+      { category: 'navigator-element', type: 'clickable', color: 'black' },
       visibleNavigatorTargets[6],
     )
     await checkNavigatorIcon(
       'Conditional',
-      { category: 'navigator-element', type: 'conditional' },
+      { category: 'navigator-element', type: 'conditional', color: 'black' },
       visibleNavigatorTargets[7],
     )
     // No icon for conditional labels
     await checkNavigatorIcon('Conditional label: True', 'no-icon', visibleNavigatorTargets[8])
     await checkNavigatorIcon(
       'Grid layout',
-      { category: 'navigator-element', type: 'grid' },
+      { category: 'navigator-element', type: 'grid', color: 'blue' },
       visibleNavigatorTargets[9],
     )
     // No icon for conditional labels
@@ -261,47 +264,47 @@ describe('Navigator item row icons', () => {
     await checkNavigatorIcon('Empty Slot', 'no-icon', visibleNavigatorTargets[11])
     await checkNavigatorIcon(
       'Code element',
-      { category: 'navigator-element', type: 'genericcode' },
+      { category: 'navigator-element', type: 'genericcode', color: 'black' },
       visibleNavigatorTargets[12],
     )
     await checkNavigatorIcon(
       'Flex row',
-      { category: 'navigator-element', type: 'flex-row' },
+      { category: 'navigator-element', type: 'flex-row', color: 'blue' },
       visibleNavigatorTargets[13],
     )
     await checkNavigatorIcon(
       'Map',
-      { category: 'navigator-element', type: 'lists' },
+      { category: 'navigator-element', type: 'lists', color: 'black' },
       visibleNavigatorTargets[14],
     )
     await checkNavigatorIcon(
       'Flex column',
-      { category: 'navigator-element', type: 'flex-column' },
+      { category: 'navigator-element', type: 'flex-column', color: 'blue' },
       visibleNavigatorTargets[15],
     )
     await checkNavigatorIcon(
       'Fragment',
-      { category: 'navigator-element', type: 'fragment' },
+      { category: 'navigator-element', type: 'fragment', color: 'black' },
       visibleNavigatorTargets[16],
     )
     await checkNavigatorIcon(
       'Sizeless div',
-      { category: 'navigator-element', type: 'zerosized-div' },
+      { category: 'navigator-element', type: 'zerosized-div', color: 'lightgray' },
       visibleNavigatorTargets[17],
     )
     await checkNavigatorIcon(
       'Generated text',
-      { category: 'navigator-element', type: 'text-generated' },
+      { category: 'navigator-element', type: 'div', color: 'black' },
       visibleNavigatorTargets[18],
     )
     await checkNavigatorIcon(
       'Scene',
-      { category: 'navigator-element', type: 'scene' },
+      { category: 'navigator-element', type: 'scene', color: 'black' },
       visibleNavigatorTargets[19],
     )
     await checkNavigatorIcon(
       'Img',
-      { category: 'navigator-element', type: 'image' },
+      { category: 'navigator-element', type: 'image', color: 'black' },
       visibleNavigatorTargets[20],
     )
   })
@@ -342,7 +345,7 @@ describe('Navigator item row icons', () => {
     await checkNavigatorLabel(visibleNavigatorTargets[11], null)
     await checkNavigatorLabel(visibleNavigatorTargets[12], 'CODE')
     await checkNavigatorLabel(visibleNavigatorTargets[13], 'div')
-    await checkNavigatorLabel(visibleNavigatorTargets[14], 'MAP')
+    await checkNavigatorLabel(visibleNavigatorTargets[14], 'LIST')
     await checkNavigatorLabel(visibleNavigatorTargets[15], 'div')
     await checkNavigatorLabel(visibleNavigatorTargets[16], 'Fragment')
     await checkNavigatorLabel(visibleNavigatorTargets[17], 'div')

@@ -13,7 +13,7 @@ import {
   Icons,
   AlternateColorThemeComponent,
 } from '../../uuiui'
-import { MenuProvider, MomentumContextMenu } from '../../uuiui-deps'
+import { MenuProvider, ContextMenu } from '../../uuiui-deps'
 import type { DependencyPackageDetails } from '../editor/store/editor-state'
 import { unless } from '../../utils/react-conditionals'
 
@@ -243,7 +243,7 @@ export const DependencyListItem: React.FunctionComponent<
           {versionFieldNode}
         </FlexRow>
       </FlexRow>
-      <MomentumContextMenu id={menuId} items={menuItems} getData={NO_OP} />
+      <ContextMenu id={menuId} items={menuItems} getData={NO_OP} />
     </MenuProvider>
   )
 }

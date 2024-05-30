@@ -13,17 +13,22 @@ import { GithubAuth } from '../../../../utils/github-auth'
 import {
   setGithubState,
   setLoginState,
+  updateGithubData,
 } from '../../../../components/editor/actions/action-creators'
 import { getUsersPublicGithubRepositories } from './load-repositories'
 import { updateProjectAgainstGithub } from './update-against-branch'
-import { GithubHelpers, resolveConflict, startGithubPolling } from '../helpers'
+import { GithubHelpers, resolveConflict } from '../helpers'
 import type { AsyncEditorDispatch } from '../../../../components/canvas/ui-jsx.test-utils'
+import { getBranchProjectContents } from '../../../../components/editor/server'
 
 export async function loginUserToGithubForTests(dispatch: AsyncEditorDispatch) {
   await dispatch(
     [
       setLoginState({ type: 'LOGGED_IN', user: { userId: 'user' } }),
       setGithubState({ authenticated: true }),
+      updateGithubData({
+        githubUserDetails: { login: 'stub', avatarURL: 'stub', htmlURL: 'stub', name: null },
+      }),
     ],
     true,
   )
@@ -75,6 +80,7 @@ export class MockGithubOperations {
   getUsersPublicGithubRepositories: Defer<void> = defer()
   getBranchesForGithubRepository: Defer<void> = defer()
   updateProjectWithBranchContent: Defer<void> = defer()
+  getBranchProjectContents: Defer<void> = defer()
 
   mock(options: MockOperationContextOptions): MockGithubOperations {
     beforeEach(() => {
@@ -150,11 +156,20 @@ export class MockGithubOperations {
       )
       updateProjectAgainstGithubStub.callsFake(updateProjectAgainstGithub(operationContext))
 
-      const startGithubPollingStub = this.sandbox.stub(GithubOperations, 'startGithubPolling')
-      startGithubPollingStub.callsFake(startGithubPolling(operationContext))
-
       const resolveConflictStub = this.sandbox.stub(GithubOperations, 'resolveConflict')
       resolveConflictStub.callsFake(resolveConflict(operationContext))
+
+      const getBranchProjectContentsStub = this.sandbox.stub(
+        GithubOperations,
+        'getBranchProjectContents',
+      )
+      getBranchProjectContentsStub.callsFake(
+        wrapWithDeferResolve(
+          { current: this.getBranchProjectContents },
+          'getBranchProjectContents',
+          getBranchProjectContents(operationContext),
+        ),
+      )
 
       const updateProjectWithBranchContentStub = this.sandbox.stub(
         GithubOperations,

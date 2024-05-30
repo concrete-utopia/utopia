@@ -54,6 +54,7 @@ import {
   addToast,
   removeToast,
   deleteSelected,
+  insertAsChildTarget,
 } from '../actions/action-creators'
 import * as History from '../history'
 import type { EditorState } from './editor-state'

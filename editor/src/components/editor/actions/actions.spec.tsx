@@ -1,7 +1,7 @@
 import * as Chai from 'chai'
 import type { FramePin } from 'utopia-api/core'
 import { LayoutSystem } from 'utopia-api/core'
-import { contentsTreeOptic } from '../../../components/assets'
+import { contentsTreeOptic, walkContentsTree } from '../../../components/assets'
 import { getLayoutPropertyOr } from '../../../core/layout/getLayoutProperty'
 import { sampleCode } from '../../../core/model/new-project-files'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
@@ -51,6 +51,7 @@ import type { Optic } from '../../../core/shared/optics/optics'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import type {
   ParseSuccess,
+  RevisionsStateType,
   TextFile,
   TextFileContents,
 } from '../../../core/shared/project-file-types'
@@ -109,7 +110,7 @@ import {
   updateTopLevelElementsFromCollaborationUpdate,
   workerCodeAndParsedUpdate,
 } from './action-creators'
-import { UPDATE_FNS } from './actions'
+import { UPDATE_FNS, replaceFilePath } from './actions'
 import { CURRENT_PROJECT_VERSION } from './migrations/migrations'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 
@@ -447,24 +448,25 @@ describe('INSERT_INSERTABLE', () => {
 
     const insertableGroups = getComponentGroups(
       'insert',
-      { antd: { status: 'loaded' } },
-      { antd: DefaultThirdPartyControlDefinitions.antd },
+      { ['utopia-api']: { status: 'loaded' } },
+      { ['utopia-api']: DefaultThirdPartyControlDefinitions['utopia-api'] },
       editorState.projectContents,
-      [resolvedNpmDependency('antd', '4.0.0')],
+      [resolvedNpmDependency('utopia-api', '0.5.1')],
       StoryboardFilePath,
     )
-    const antdGroup = forceNotNull(
+    const utopiaApiGroup = forceNotNull(
       'Group should exist.',
       insertableGroups.find((group) => {
         return (
-          group.source.type === 'PROJECT_DEPENDENCY_GROUP' && group.source.dependencyName === 'antd'
+          group.source.type === 'PROJECT_DEPENDENCY_GROUP' &&
+          group.source.dependencyName === 'utopia-api'
         )
       }),
     )
     const menuInsertable = forceNotNull(
       'Component should exist.',
-      antdGroup.insertableComponents.find((insertable) => {
-        return insertable.name === 'Menu'
+      utopiaApiGroup.insertableComponents.find((insertable) => {
+        return insertable.name === 'View'
       }),
     )
 
@@ -497,8 +499,7 @@ describe('INSERT_INSERTABLE', () => {
         expect(printedCode).toMatchInlineSnapshot(`
           "import * as React from 'react'
           import { Spring } from 'non-existant-dummy-library'
-          import { Menu } from 'antd'
-          import 'antd/dist/antd.css'
+          import { View } from 'utopia-api'
           export var Card = (props) => {
             return (
               <div style={{ ...props.style }}>
@@ -524,16 +525,11 @@ describe('INSERT_INSERTABLE', () => {
                     backgroundColor: 'blue',
                   }}
                 />
-                <Menu
-                  forceSubMenuRender={false}
-                  inlineCollapsed={false}
-                  inlineIndent={24}
-                  mode='inline'
-                  multiple={false}
-                  selectable
-                  subMenuCloseDelay={0.1}
-                  subMenuOpenDelay={0}
-                  theme='light'
+                <View
+                  style={{
+                    backgroundColor: '#aaaaaa33',
+                    position: 'absolute',
+                  }}
                 />
               </div>
             )
@@ -560,24 +556,25 @@ describe('INSERT_INSERTABLE', () => {
 
     const insertableGroups = getComponentGroups(
       'insert',
-      { antd: { status: 'loaded' } },
-      { antd: DefaultThirdPartyControlDefinitions.antd },
+      { ['utopia-api']: { status: 'loaded' } },
+      { ['utopia-api']: DefaultThirdPartyControlDefinitions['utopia-api'] },
       editorState.projectContents,
-      [resolvedNpmDependency('antd', '4.0.0')],
+      [resolvedNpmDependency('utopia-api', '0.5.1')],
       StoryboardFilePath,
     )
-    const antdGroup = forceNotNull(
+    const utopiaApiGroup = forceNotNull(
       'Group should exist.',
       insertableGroups.find((group) => {
         return (
-          group.source.type === 'PROJECT_DEPENDENCY_GROUP' && group.source.dependencyName === 'antd'
+          group.source.type === 'PROJECT_DEPENDENCY_GROUP' &&
+          group.source.dependencyName === 'utopia-api'
         )
       }),
     )
     const menuInsertable = forceNotNull(
       'Component should exist.',
-      antdGroup.insertableComponents.find((insertable) => {
-        return insertable.name === 'Menu'
+      utopiaApiGroup.insertableComponents.find((insertable) => {
+        return insertable.name === 'View'
       }),
     )
 
@@ -610,8 +607,7 @@ describe('INSERT_INSERTABLE', () => {
         expect(printedCode).toMatchInlineSnapshot(`
           "import * as React from 'react'
           import { Spring } from 'non-existant-dummy-library'
-          import { Menu } from 'antd'
-          import 'antd/dist/antd.css'
+          import { View } from 'utopia-api'
           export var Card = (props) => {
             return (
               <div style={{ ...props.style }}>
@@ -637,17 +633,13 @@ describe('INSERT_INSERTABLE', () => {
                     backgroundColor: 'blue',
                   }}
                 />
-                <Menu
-                  forceSubMenuRender={false}
-                  inlineCollapsed={false}
-                  inlineIndent={24}
-                  mode='inline'
-                  multiple={false}
-                  selectable
-                  subMenuCloseDelay={0.1}
-                  subMenuOpenDelay={0}
-                  theme='light'
-                  style={{ width: 100, height: 100 }}
+                <View
+                  style={{
+                    backgroundColor: '#aaaaaa33',
+                    position: 'absolute',
+                    width: 100,
+                    height: 100,
+                  }}
                 />
               </div>
             )
@@ -663,32 +655,34 @@ describe('INSERT_INSERTABLE', () => {
   })
 
   it('inserts an element into the project with the given values, and duplicate name, also adding style props', () => {
-    const project = complexDefaultProjectPreParsed()
+    const project = complexDefaultProjectPreParsed('View')
     const editorState = editorModelFromPersistentModel(project, NO_OP)
 
     const insertableGroups = getComponentGroups(
       'insert',
-      { antd: { status: 'loaded' } },
-      { antd: DefaultThirdPartyControlDefinitions.antd },
+      { ['utopia-api']: { status: 'loaded' } },
+      { ['utopia-api']: DefaultThirdPartyControlDefinitions['utopia-api'] },
       editorState.projectContents,
-      [resolvedNpmDependency('antd', '4.0.0')],
+      [resolvedNpmDependency('utopia-api', '0.5.1')],
       StoryboardFilePath,
     )
-    const antdGroup = forceNotNull(
+    const utopiaApiGroup = forceNotNull(
       'Group should exist.',
       insertableGroups.find((group) => {
         return (
-          group.source.type === 'PROJECT_DEPENDENCY_GROUP' && group.source.dependencyName === 'antd'
+          group.source.type === 'PROJECT_DEPENDENCY_GROUP' &&
+          group.source.dependencyName === 'utopia-api'
         )
       }),
     )
-    const springInsertable = insertableComponent(
+    const viewInsertable = insertableComponent(
       {
-        './test.js': importDetails(null, [importAlias('Spring')], null),
+        './test.js': importDetails(null, [importAlias('View')], null),
       },
-      () => jsxElement('Spring', 'spring', jsxAttributesFromMap({}), []),
-      'Spring',
+      () => jsxElement('View', 'view', jsxAttributesFromMap({}), []),
+      'View',
       [],
+      null,
       null,
       null,
     )
@@ -701,7 +695,7 @@ describe('INSERT_INSERTABLE', () => {
 
     const action = insertInsertable(
       childInsertionPath(targetPath),
-      springInsertable,
+      viewInsertable,
       'add-size',
       null,
     )
@@ -721,8 +715,8 @@ describe('INSERT_INSERTABLE', () => {
         )
         expect(printedCode).toMatchInlineSnapshot(`
           "import * as React from 'react'
-          import { Spring } from 'non-existant-dummy-library'
-          import { Spring as Spring_2 } from './test.js'
+          import { View } from 'non-existant-dummy-library'
+          import { View as View_2 } from './test.js'
           export var Card = (props) => {
             return (
               <div style={{ ...props.style }}>
@@ -737,7 +731,7 @@ describe('INSERT_INSERTABLE', () => {
                     backgroundColor: 'red',
                   }}
                 />
-                <Spring
+                <View
                   data-testid='spring'
                   style={{
                     position: 'absolute',
@@ -748,7 +742,7 @@ describe('INSERT_INSERTABLE', () => {
                     backgroundColor: 'blue',
                   }}
                 />
-                <Spring_2 style={{ width: 100, height: 100 }} />
+                <View_2 style={{ width: 100, height: 100 }} />
               </div>
             )
           }
@@ -993,6 +987,7 @@ describe('SET_FOCUSED_ELEMENT', () => {
       'not-a-conditional',
       null,
       null,
+      null,
     )
     const fakeMetadata: ElementInstanceMetadataMap = {
       [EP.toString(pathToFocus)]: divElementMetadata,
@@ -1029,6 +1024,7 @@ describe('SET_FOCUSED_ELEMENT', () => {
       null,
       null,
       'not-a-conditional',
+      null,
       null,
       null,
     )
@@ -1201,5 +1197,45 @@ describe('UPDATE_TOP_LEVEL_ELEMENTS_FROM_COLLABORATION', () => {
     )
     const uniqueUIDsResult = getAllUniqueUids(updatedEditorState.projectContents)
     expect(uniqueUIDsResult.duplicateIDs).toEqual({})
+  })
+})
+
+describe('replaceFilePath', () => {
+  it('only marks the relevant files as parsed ahead', () => {
+    const project = complexDefaultProjectPreParsed()
+    const editorState = editorModelFromPersistentModel(project, NO_OP)
+    const replaceResults = replaceFilePath(
+      '/src/app.js',
+      '/src/app2.js',
+      editorState.projectContents,
+    )
+    if (replaceResults.type === 'SUCCESS') {
+      expect(replaceResults.updatedFiles).toMatchInlineSnapshot(`
+        Array [
+          Object {
+            "newPath": "/src/app2.js",
+            "oldPath": "/src/app.js",
+          },
+        ]
+      `)
+      let textFilesAndRevisionStates: { [filename: string]: RevisionsStateType } = {}
+      walkContentsTree(replaceResults.projectContents, (fullPath, file) => {
+        if (isTextFile(file)) {
+          textFilesAndRevisionStates[fullPath] = file.fileContents.revisionsState
+        }
+      })
+      expect(textFilesAndRevisionStates).toMatchInlineSnapshot(`
+        Object {
+          "/package.json": "BOTH_MATCH",
+          "/public/index.html": "BOTH_MATCH",
+          "/src/app2.js": "PARSED_AHEAD",
+          "/src/card.js": "BOTH_MATCH",
+          "/src/index.js": "PARSED_AHEAD",
+          "/utopia/storyboard.js": "PARSED_AHEAD",
+        }
+      `)
+    } else {
+      throw new Error('Should have returned a success.')
+    }
   })
 })

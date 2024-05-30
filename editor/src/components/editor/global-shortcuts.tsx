@@ -84,7 +84,6 @@ import {
   ZOOM_CANVAS_OUT_SHORTCUT,
   ZOOM_UI_IN_SHORTCUT,
   ZOOM_UI_OUT_SHORTCUT,
-  CONVERT_ELEMENT_SHORTCUT,
   ADD_ELEMENT_SHORTCUT,
   GROUP_ELEMENT_PICKER_SHORTCUT,
   GROUP_ELEMENT_DEFAULT_SHORTCUT,
@@ -148,6 +147,8 @@ import { wrapInDivStrategy } from './wrap-in-callbacks'
 import { type ProjectServerState } from './store/project-server-state'
 import { allowedToEditProject } from './store/collaborative-editing'
 import { hasCommentPermission } from './store/permissions'
+import { type ShowComponentPickerContextMenuCallback } from '../navigator/navigator-item/component-picker-context-menu'
+import { showReplaceComponentPicker } from '../context-menu-items'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -362,6 +363,7 @@ export function handleKeyDown(
   navigatorTargetsRef: { current: Array<NavigatorEntry> },
   namesByKey: ShortcutNamesByKey,
   dispatch: EditorDispatch,
+  showComponentPicker: ShowComponentPickerContextMenuCallback,
 ): Array<EditorAction> {
   // Stop the browser from firing things like save dialogs.
   preventBrowserShortcuts(editor, event)
@@ -587,9 +589,16 @@ export function handleKeyDown(
         return isSelectMode(editor.mode) ? [EditorActions.unwrapElements(editor.selectedViews)] : []
       },
       [WRAP_ELEMENT_PICKER_SHORTCUT]: () => {
-        return isSelectMode(editor.mode)
-          ? [EditorActions.openFloatingInsertMenu({ insertMenuMode: 'wrap' })]
-          : []
+        if (allowedToEdit) {
+          if (isSelectMode(editor.mode)) {
+            const mousePoint = WindowMousePositionRaw ?? zeroCanvasPoint
+            showComponentPicker(editor.selectedViews, EditorActions.wrapTarget)(event, {
+              position: mousePoint,
+            })
+            return []
+          }
+        }
+        return []
       },
       // For now, the "Group / G" shortcuts do the same as the Wrap Element shortcuts – until we have Grouping working again
       [GROUP_ELEMENT_DEFAULT_SHORTCUT]: () => {
@@ -743,29 +752,14 @@ export function handleKeyDown(
       [TOGGLE_INSPECTOR_AND_NAVIGATOR_SHORTCUT]: () => {
         return [EditorActions.togglePanel('rightmenu'), EditorActions.togglePanel('leftmenu')]
       },
-      [CONVERT_ELEMENT_SHORTCUT]: () => {
-        const possibleToConvert = editor.selectedViews.every((path) => {
-          const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, path)
-          return (
-            element != null && isRight(element.element) && isJSXElementLike(element.element.value)
-          )
-        })
-        if (isSelectMode(editor.mode) && possibleToConvert) {
-          return [EditorActions.openFloatingInsertMenu(floatingInsertMenuStateSwap())]
-        } else {
-          return []
-        }
-      },
       [ADD_ELEMENT_SHORTCUT]: () => {
         if (allowedToEdit) {
           if (isSelectMode(editor.mode)) {
-            return [
-              EditorActions.openFloatingInsertMenu({
-                insertMenuMode: 'insert',
-                parentPath: null,
-                indexPosition: null,
-              }),
-            ]
+            const mousePoint = WindowMousePositionRaw ?? zeroCanvasPoint
+            showComponentPicker(editor.selectedViews, EditorActions.insertAsChildTarget())(event, {
+              position: mousePoint,
+            })
+            return []
           }
         }
         return []
@@ -987,6 +981,7 @@ export function handleKeyDown(
             editor.elementPathTree,
             editor.allElementProps,
             editor.projectContents,
+            editor.propertyControlsInfo,
           ),
         ])
         if (commands == null) {

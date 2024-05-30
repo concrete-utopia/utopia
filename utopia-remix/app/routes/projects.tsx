@@ -32,7 +32,7 @@ import {
 } from '../models/project.server'
 import { getCollaborators } from '../models/projectCollaborators.server'
 import { button } from '../styles/button.css'
-import { projectCards, projectRows } from '../styles/projects.css'
+import { projectCards, projectRows, projectTemplate } from '../styles/projects.css'
 import { projectCategoryButton, userName } from '../styles/sidebarComponents.css'
 import { sprinkles } from '../styles/sprinkles.css'
 import type { Collaborator, CollaboratorsByProject, Operation, ProjectListing } from '../types'
@@ -159,7 +159,7 @@ const ProjectsPageInner = React.memo(() => {
   useCleanupOperations()
 
   const data = useLoaderData() as unknown as LoaderData
-
+  const searchQuery = useProjectsStore((store) => store.searchQuery)
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
 
   const activeProjects = React.useMemo(() => {
@@ -188,6 +188,8 @@ const ProjectsPageInner = React.memo(() => {
   const sortCompareProject = useSortCompareProject()
   const projectMatchesQuery = useProjectMatchesQuery()
   const projectIsOnActiveOperation = useProjectIsOnActiveOperation()
+
+  const isAllProjects = selectedCategory === 'allProjects'
 
   const filteredProjects = React.useMemo(
     () =>
@@ -244,15 +246,19 @@ const ProjectsPageInner = React.memo(() => {
     >
       <Sidebar user={data.user} />
       <div
+        className='projects-container'
         style={{
           display: 'flex',
           flexGrow: 1,
           flexDirection: 'column',
           gap: 30,
           margin: '30px 30px 0px 0',
+          overflowY: isAllProjects ? 'auto' : 'hidden',
+          scrollbarColor: '#a1a1a130 transparent',
         }}
       >
         <TopActionBar />
+        {when(isAllProjects && searchQuery == '', <ProjectTemplates />)}
         <ProjectsHeader projects={filteredProjects} />
         <Projects projects={filteredProjects} collaborators={data.collaborators} />
         <ActiveOperations projects={activeProjects} />
@@ -625,11 +631,16 @@ const Projects = React.memo(
       [setSelectedProjectId],
     )
 
+    const selectedCategory = useProjectsStore((store) => store.selectedCategory)
+
+    const isAllProjects = selectedCategory === 'allProjects'
+    const scrollStyle = isAllProjects ? { overflow: 'initial' } : {}
+
     return (
       <>
         {when(
           projects.length > 0 && !gridView,
-          <div className={projectRows()}>
+          <div className={projectRows()} style={{ ...scrollStyle }}>
             {projects.map((project) => (
               <ProjectRow
                 key={project.proj_id}
@@ -645,7 +656,7 @@ const Projects = React.memo(
         )}
         {when(
           projects.length > 0 && gridView,
-          <div className={projectCards()}>
+          <div className={projectCards()} style={{ ...scrollStyle }}>
             {projects.map((project) => (
               <ProjectCard
                 key={project.proj_id}
@@ -1275,4 +1286,137 @@ ActiveOperationToast.displayName = 'ActiveOperation'
 function getOwnerName(ownerId: string, collaborators: Collaborator[]) {
   const collaborator = collaborators.find((c) => c.id === ownerId)
   return collaborator?.name ?? 'Utopia user' // This is a fallback required in case we have misconfigured user details
+}
+
+function createCloneLink(
+  accessLevel: AccessLevel,
+  { cloneRepo, cloneBranch }: { cloneBranch?: string; cloneRepo?: string } = {},
+): string {
+  let accessLevelParam
+  switch (accessLevel) {
+    case AccessLevel.PUBLIC:
+      accessLevelParam = 'public'
+      break
+    case AccessLevel.WITH_LINK:
+      accessLevelParam = 'withLink'
+      break
+    case AccessLevel.COLLABORATIVE:
+      accessLevelParam = 'collaborative'
+      break
+    case AccessLevel.PRIVATE:
+      accessLevelParam = 'private'
+      break
+    default:
+      assertNever(accessLevel)
+  }
+  const cloneRepoParam = cloneRepo != null ? `&clone=${cloneRepo}` : ''
+  const cloneBranchParam = cloneBranch != null ? `&github_branch=${cloneBranch}` : ''
+  return `/p?accessLevel=${accessLevelParam}${cloneRepoParam}${cloneBranchParam}`
+}
+
+const projectTemplates = [
+  {
+    title: 'Public Project',
+    onClick: () => window.open(createCloneLink(AccessLevel.PUBLIC), '_blank'),
+    thumbnail: '/assets/thumbnail-new.png',
+  },
+  {
+    title: 'Remix Project',
+    onClick: () =>
+      window.open(
+        createCloneLink(AccessLevel.PUBLIC, {
+          cloneRepo: 'concrete-utopia/utopia-remix-starter',
+        }),
+        '_blank',
+      ),
+    thumbnail: '/assets/thumbnail-remix.png',
+  },
+  {
+    title: 'Hydrogen Project',
+    onClick: () =>
+      window.open(
+        createCloneLink(AccessLevel.PUBLIC, { cloneRepo: 'concrete-utopia/hydrogen-november' }),
+        '_blank',
+      ),
+    thumbnail: '/assets/thumbnail-hydrogen.png',
+  },
+]
+function ProjectTemplates() {
+  const isDarkMode = useIsDarkMode()
+  return (
+    <Flex
+      direction='column'
+      gap='5'
+      style={{
+        padding: '10px 20px',
+        backgroundColor: isDarkMode ? '#232323' : 'rgba(0,0,0,0.05)',
+        borderRadius: '10px',
+        gap: 10,
+      }}
+    >
+      <Text
+        style={{
+          fontSize: '16px',
+          fontWeight: 600,
+          display: 'flex',
+          flex: 'none',
+          alignItems: 'center',
+          height: '32px',
+        }}
+      >
+        Create From Template
+      </Text>
+      <Flex gap='4'>
+        {projectTemplates.map((template) => (
+          <Flex
+            key={template.title}
+            gap='5'
+            direction='column'
+            align='center'
+            style={{
+              flex: 1,
+              width: '100%',
+              maxWidth: '200px',
+              height: 'min-content',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 5,
+              cursor: 'pointer',
+            }}
+            onClick={template.onClick}
+          >
+            <div
+              className={projectTemplate()}
+              style={{
+                backgroundImage: `url(${template.thumbnail})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+              }}
+            ></div>
+            <Flex
+              direction='column'
+              gap='5'
+              align='start'
+              style={{
+                width: '100%',
+                padding: '10px',
+              }}
+            >
+              <Text
+                size='1'
+                align='left'
+                style={{
+                  fontWeight: 500,
+                  alignSelf: 'flex-start',
+                }}
+              >
+                {template.title}
+              </Text>
+            </Flex>
+          </Flex>
+        ))}
+      </Flex>
+    </Flex>
+  )
 }

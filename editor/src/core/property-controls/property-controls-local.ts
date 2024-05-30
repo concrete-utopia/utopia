@@ -3,15 +3,17 @@ import type {
   JSXControlDescription as JSXControlDescriptionFromUtopia,
   PropertyControls as PropertyControlsFromUtopiaAPI,
   ComponentToRegister,
-  Styling,
   ComponentInsertOption,
   ComponentExample,
   ChildrenSpec,
-  PlaceholderSpec as PlaceholderSpecFromUtopia,
   Children,
   PreferredContents,
+  SectionSpec,
+  Display,
+  InspectorSpec,
 } from 'utopia-api/core'
 import {
+  DisplayOptions,
   EmphasisOptions,
   FocusOptions,
   IconOptions,
@@ -35,8 +37,8 @@ import type {
   ComponentDescriptorSource,
   ComponentDescriptorWithName,
   ComponentInfo,
-  PlaceholderSpec,
   PropertyControlsInfo,
+  TypedInpsectorSpec,
 } from '../../components/custom-code/code-file'
 import { dependenciesFromPackageJson } from '../../components/editor/npm-dependency/npm-dependency'
 import { parseControlDescription } from './property-controls-parser'
@@ -44,13 +46,14 @@ import type { ParseError, ParseResult } from '../../utils/value-parser-utils'
 import {
   getParseErrorDetails,
   objectKeyParser,
+  objectParser,
   optionalObjectKeyParser,
+  optionalProp,
   parseAlternative,
   parseAny,
   parseArray,
   parseConstant,
   parseEnum,
-  parseNumber,
   parseObject,
   parseString,
 } from '../../utils/value-parser-utils'
@@ -58,9 +61,6 @@ import type { UtopiaTsWorkers } from '../workers/common/worker-types'
 import { getCachedParseResultForUserStrings } from './property-controls-local-parser-bridge'
 import type { Either } from '../shared/either'
 import {
-  applicative2Either,
-  applicative3Either,
-  applicative8Either,
   defaultEither,
   foldEither,
   forEachRight,
@@ -70,7 +70,6 @@ import {
   right,
   sequenceEither,
 } from '../shared/either'
-import { setOptionalProp } from '../shared/object-utils'
 import { assertNever } from '../shared/utils'
 import type { Imports, ParsedTextFile } from '../shared/project-file-types'
 import {
@@ -97,14 +96,21 @@ import {
 } from '../../components/editor/actions/action-creators'
 import type { ProjectContentTreeRoot } from '../../components/assets'
 import type { JSXElementChildWithoutUID } from '../shared/element-template'
-import { jsxAttributesFromMap, jsxElement, jsxTextBlock } from '../shared/element-template'
-import type { ErrorMessage } from '../shared/error-messages'
+import {
+  getJSXElementNameLastPart,
+  jsxAttributesFromMap,
+  jsxElement,
+  jsxElementNameFromString,
+  jsxTextBlock,
+} from '../shared/element-template'
+import type { ErrorMessage, ErrorMessageSeverity } from '../shared/error-messages'
 import { errorMessage } from '../shared/error-messages'
 import { dropFileExtension } from '../shared/file-utils'
 import type { FancyError } from '../shared/code-exec-utils'
 import type { ScriptLine } from '../../third-party/react-error-overlay/utils/stack-frame'
 import { intrinsicHTMLElementNamesAsStrings } from '../shared/dom-utils'
 import { valueOrArrayToArray } from '../shared/array-utils'
+import { optionalMap } from '../shared/optional-utils'
 
 const exportedNameSymbol = Symbol('__utopia__exportedName')
 const moduleNameSymbol = Symbol('__utopia__moduleName')
@@ -257,6 +263,7 @@ type ComponentDescriptorRegistrationError =
   | {
       type: 'registration-validation-failed'
       validationError: ComponentRegistrationValidationError
+      severity: ErrorMessageSeverity
     }
 
 interface ComponentDescriptorRegistrationResult {
@@ -277,7 +284,15 @@ function isComponentRegistrationValid(
 
   // check validity of internal component
   if (isComponentRendererComponent(component)) {
-    if (component.originalName !== registrationKey) {
+    // TODO: we only validate the last part of the name
+    const nameLastPart = optionalMap(
+      (name) => getJSXElementNameLastPart(jsxElementNameFromString(name)),
+      component.originalName,
+    )
+    const registrationKeyLastPart = getJSXElementNameLastPart(
+      jsxElementNameFromString(registrationKey),
+    )
+    if (nameLastPart !== registrationKeyLastPart) {
       return {
         type: 'component-name-does-not-match',
         registrationKey: registrationKey,
@@ -297,11 +312,19 @@ function isComponentRegistrationValid(
 
   // check validity of external component
   const { name, moduleName } = getRequireInfoFromComponent(component)
-  if (name != null && name !== registrationKey) {
-    return {
-      type: 'component-name-does-not-match',
-      registrationKey: registrationKey,
-      componentName: name,
+  if (name != null) {
+    // TODO: this doesn't work yet for components which are not directly imported, e.g. Typography.Text (where Typography is the imported object)
+    // The code is here to check the last part of the name, but since we don't require the component itself in these cases, the name and the moduleName will not be available.
+    const nameLastPart = getJSXElementNameLastPart(jsxElementNameFromString(name))
+    const registrationKeyLastPart = getJSXElementNameLastPart(
+      jsxElementNameFromString(registrationKey),
+    )
+    if (nameLastPart !== registrationKeyLastPart) {
+      return {
+        type: 'component-name-does-not-match',
+        registrationKey: registrationKey,
+        componentName: name,
+      }
     }
   }
   if (moduleName != null && moduleName !== moduleKey) {
@@ -367,8 +390,15 @@ async function getComponentDescriptorPromisesFromParseResult(
           componentToRegister,
         )
         if (validationResult.type !== 'valid') {
-          errors.push({ type: 'registration-validation-failed', validationError: validationResult })
-          continue
+          const severity = validationResult.type === 'component-undefined' ? 'fatal' : 'warning'
+          errors.push({
+            type: 'registration-validation-failed',
+            validationError: validationResult,
+            severity: severity,
+          })
+          if (severity === 'fatal') {
+            continue
+          }
         }
         const componentDescriptor = await componentDescriptorForComponentToRegister(
           componentToRegister,
@@ -400,7 +430,11 @@ async function getComponentDescriptorPromisesFromParseResult(
   }
 }
 
-function simpleErrorMessage(fileName: string, error: string): ErrorMessage {
+function simpleErrorMessage(
+  fileName: string,
+  error: string,
+  severity: ErrorMessageSeverity = 'fatal',
+): ErrorMessage {
   return errorMessage(
     fileName,
     null,
@@ -408,7 +442,7 @@ function simpleErrorMessage(fileName: string, error: string): ErrorMessage {
     null,
     null,
     '',
-    'fatal',
+    severity,
     '',
     error,
     '',
@@ -472,6 +506,7 @@ function errorsFromComponentRegistration(
             `Validation failed: ${messageForComponentRegistrationValidationError(
               error.validationError,
             )}`,
+            error.severity,
           ),
         ]
       default:
@@ -559,12 +594,12 @@ export function updatePropertyControlsOnDescriptorFileUpdate(
         supportsChildren: descriptor.supportsChildren,
         preferredChildComponents: descriptor.preferredChildComponents,
         variants: descriptor.variants,
-        childrenPropPlaceholder: descriptor.childrenPropPlaceholder,
         source: descriptor.source,
         focus: descriptor.focus,
         inspector: descriptor.inspector,
         emphasis: descriptor.emphasis,
         icon: descriptor.icon,
+        label: descriptor.label,
       }
     })
   })
@@ -619,9 +654,10 @@ function componentInsertOptionFromExample(
           code: `<${typed.name} />`,
         }
       }
+      const jsxName = jsxElementNameFromString(typed.name)
       return {
         label: typed.name,
-        imports: `import {${typed.name}} from '${moduleName}'`,
+        imports: `import {${jsxName.baseVariable}} from '${moduleName}'`,
         code: `<${typed.name} />`,
       }
     case 'component-reference':
@@ -683,14 +719,10 @@ async function parseJSXControlDescription(
   descriptor: JSXControlDescriptionFromUtopia,
   context: { moduleName: string; workers: UtopiaTsWorkers },
 ): Promise<PropertyDescriptorResult<JSXControlDescription>> {
-  const placeholder =
-    descriptor.placeholder == null ? null : placeholderFromJSPlaceholder(descriptor.placeholder)
-
   if (descriptor.preferredContents == null) {
     return right({
       ...descriptor,
       preferredChildComponents: [],
-      placeholder: placeholder,
     })
   }
 
@@ -707,7 +739,6 @@ async function parseJSXControlDescription(
 
   return right({
     ...descriptor,
-    placeholder: placeholder,
     preferredChildComponents: preferredChildComponents.value,
   })
 }
@@ -779,32 +810,14 @@ async function makePropertyDescriptors(
   let result: PropertyControls = {}
 
   for await (const [propertyName, descriptor] of Object.entries(properties)) {
-    if (descriptor.control === 'folder') {
-      const parsedControlsInFolder = await makePropertyDescriptors(descriptor.controls, context)
-      if (isLeft(parsedControlsInFolder)) {
-        return parsedControlsInFolder
-      }
-      result['propertyName'] = { ...descriptor, controls: parsedControlsInFolder.value }
-    } else {
-      const parsedRegularControl = await makeRegularControlDescription(descriptor, context)
-      if (isLeft(parsedRegularControl)) {
-        return parsedRegularControl
-      }
-      result[propertyName] = parsedRegularControl.value
+    const parsedRegularControl = await makeRegularControlDescription(descriptor, context)
+    if (isLeft(parsedRegularControl)) {
+      return parsedRegularControl
     }
+    result[propertyName] = parsedRegularControl.value
   }
 
   return right(result)
-}
-
-function placeholderFromJSPlaceholder(placeholder: PlaceholderSpecFromUtopia): PlaceholderSpec {
-  if (typeof placeholder === 'string') {
-    return { type: 'fill' }
-  }
-  if ('text' in placeholder) {
-    return { type: 'text', contents: placeholder.text }
-  }
-  return { type: 'spacer', width: placeholder.width, height: placeholder.height }
 }
 
 async function parsePreferredChildren(
@@ -823,7 +836,8 @@ async function parsePreferredChildren(
         variants: [
           {
             insertMenuLabel: 'text',
-            elementToInsert: () => jsxElement('span', '', jsxAttributesFromMap({}), []),
+            elementToInsert: () =>
+              jsxElement('span', '', jsxAttributesFromMap({}), [jsxTextBlock('Sample text')]),
             importsToAdd: {},
           },
         ],
@@ -857,10 +871,11 @@ export function defaultImportsForComponentModule(
   componentName: string,
   moduleName: string | null,
 ): Imports {
+  const jsxName = jsxElementNameFromString(componentName)
   return moduleName == null
     ? {}
     : {
-        [moduleName]: importDetails(null, [importAlias(componentName)], null),
+        [moduleName]: importDetails(null, [importAlias(jsxName.baseVariable)], null),
       }
 }
 
@@ -888,20 +903,6 @@ export async function parsePreferredChildrenExamples(
   return descriptors
 }
 
-function parseChildrenPlaceholder(
-  componentToRegister: ComponentToRegister,
-): PlaceholderSpec | null {
-  if (
-    componentToRegister.children == null ||
-    typeof componentToRegister.children === 'string' ||
-    componentToRegister.children.placeholder == null
-  ) {
-    return null
-  }
-
-  return placeholderFromJSPlaceholder(componentToRegister.children.placeholder)
-}
-
 async function parseComponentVariants(
   componentToRegister: ComponentToRegister,
   componentName: string,
@@ -912,10 +913,11 @@ async function parseComponentVariants(
     componentToRegister.variants == null ||
     (Array.isArray(componentToRegister.variants) && componentToRegister.variants.length === 0)
   ) {
+    const jsxName = jsxElementNameFromString(componentName)
     const parsed = await parseCodeFromInsertOption(
       {
         label: componentName,
-        imports: `import { ${componentName} } from '${moduleName}'`,
+        imports: `import { ${jsxName.baseVariable} } from '${moduleName}'`,
         code: `<${componentName} />`,
       },
       workers,
@@ -936,6 +938,21 @@ async function parseComponentVariants(
   )
 
   return parsedVariants
+}
+
+function parseInspectorSpec(inspector: InspectorSpec | undefined): TypedInpsectorSpec {
+  if (inspector == null) {
+    return ComponentDescriptorDefaults.inspector
+  }
+  if (inspector === 'hidden') {
+    return { type: 'hidden' }
+  }
+
+  return {
+    type: 'shown',
+    display: inspector.display ?? 'expanded',
+    sections: inspector.sections ?? [...StylingOptions],
+  }
 }
 
 export async function componentDescriptorForComponentToRegister(
@@ -974,10 +991,7 @@ export async function componentDescriptorForComponentToRegister(
     return properties
   }
 
-  const placeholder = parseChildrenPlaceholder(componentToRegister)
-
-  const supportsChildren =
-    componentToRegister.children != null && componentToRegister.children !== 'not-supported'
+  const supportsChildren = componentToRegister.children !== 'not-supported'
 
   return right({
     componentName: componentName,
@@ -987,11 +1001,11 @@ export async function componentDescriptorForComponentToRegister(
     source: source,
     supportsChildren: supportsChildren,
     preferredChildComponents: childrenPropSpec.value,
-    childrenPropPlaceholder: placeholder,
     focus: componentToRegister.focus ?? ComponentDescriptorDefaults.focus,
-    inspector: componentToRegister.inspector ?? ComponentDescriptorDefaults.inspector,
+    inspector: parseInspectorSpec(componentToRegister.inspector),
     emphasis: componentToRegister.emphasis ?? ComponentDescriptorDefaults.emphasis,
     icon: componentToRegister.icon ?? ComponentDescriptorDefaults.icon,
+    label: componentToRegister.label ?? null,
   })
 }
 
@@ -999,29 +1013,16 @@ function fullyParsePropertyControls(value: unknown): ParseResult<PropertyControl
   return parseObject(parseControlDescription)(value)
 }
 
-export function parseComponentInsertOption(value: unknown): ParseResult<ComponentInsertOption> {
-  return applicative3Either(
-    (code, imports, label) => {
-      let insertOption: ComponentInsertOption = {
-        code: code,
-        label: label,
-      }
-
-      setOptionalProp(insertOption, 'imports', imports)
-
-      return insertOption
-    },
-    objectKeyParser(parseString, 'code')(value),
-    optionalObjectKeyParser(
-      parseAlternative<string | string[]>(
-        [parseString, parseArray(parseString)],
-        'Invalid imports prop',
-      ),
-      'imports',
-    )(value),
-    objectKeyParser(parseString, 'label')(value),
-  )
-}
+export const parseComponentInsertOption = objectParser<ComponentInsertOption>({
+  code: parseString,
+  label: parseString,
+  imports: optionalProp(
+    parseAlternative<string | string[]>(
+      [parseString, parseArray(parseString)],
+      'Invalid imports prop',
+    ),
+  ),
+})
 
 const parseComponentName = (value: unknown) =>
   mapEither((name) => ({ name }), objectKeyParser(parseString, 'name')(value))
@@ -1034,23 +1035,18 @@ export const parseComponentExample = parseAlternative<ComponentExample>(
 )
 
 export function parsePreferredContents(value: unknown): ParseResult<PreferredContents> {
-  const parsePreferredComponentObject = (v: unknown) =>
-    applicative3Either(
-      (component, moduleName, variants) => {
-        const preferredContents: PreferredContents = { component, variants }
-        setOptionalProp(preferredContents, 'moduleName', moduleName)
-        return preferredContents
-      },
-      objectKeyParser(parseString, 'component')(v),
-      optionalObjectKeyParser(parseString, 'moduleName')(v),
-      objectKeyParser(
-        parseAlternative<ComponentExample | ComponentExample[]>(
-          [parseComponentExample, parseArray(parseComponentExample)],
-          'Invalid preferred content',
-        ),
-        'variants',
-      )(v),
-    )
+  const parsePreferredComponentObject = objectParser<{
+    component: string
+    moduleName?: string
+    variants: ComponentExample | ComponentExample[]
+  }>({
+    component: parseString,
+    moduleName: optionalProp(parseString),
+    variants: parseAlternative<ComponentExample | ComponentExample[]>(
+      [parseComponentExample, parseArray(parseComponentExample)],
+      'Invalid preferred content',
+    ),
+  })
 
   return parseAlternative<PreferredContents>(
     [parseConstant('text'), parsePreferredComponentObject],
@@ -1058,26 +1054,9 @@ export function parsePreferredContents(value: unknown): ParseResult<PreferredCon
   )(value)
 }
 
-function parseTextPlaceholder(value: unknown): ParseResult<PlaceholderSpecFromUtopia> {
-  return mapEither((text) => ({ text }), objectKeyParser(parseString, 'text')(value))
-}
-
-function parseSpacerPlaceholder(value: unknown): ParseResult<PlaceholderSpecFromUtopia> {
-  return applicative2Either(
-    (width, height) => ({ width, height }),
-    objectKeyParser(parseNumber, 'width')(value),
-    objectKeyParser(parseNumber, 'height')(value),
-  )
-}
-
-export const parsePlaceholder = parseAlternative(
-  [parseConstant('fill'), parseTextPlaceholder, parseSpacerPlaceholder],
-  'Invalid placeholder value',
-)
-
-export function parseChildrenSpec(value: unknown): ParseResult<ChildrenSpec> {
-  return applicative2Either(
-    (preferredContents, placeholder) => ({ preferredContents, placeholder }),
+export const parseChildrenSpec = (value: unknown): ParseResult<ChildrenSpec> => {
+  return mapEither(
+    (preferredContents) => ({ preferredContents }),
     optionalObjectKeyParser(
       parseAlternative<PreferredContents | PreferredContents[]>(
         [parsePreferredContents, parseArray(parsePreferredContents)],
@@ -1085,61 +1064,40 @@ export function parseChildrenSpec(value: unknown): ParseResult<ChildrenSpec> {
       ),
       'preferredContents',
     )(value),
-    optionalObjectKeyParser(parsePlaceholder, 'placeholder')(value),
   )
 }
 
-function parseComponentToRegister(value: unknown): ParseResult<ComponentToRegister> {
-  return applicative8Either(
-    (
-      component,
-      properties,
-      variants,
-      children,
-      focus,
-      inspector,
-      emphasis,
-      icon,
-    ): ComponentToRegister => {
-      return {
-        component: component,
-        properties: properties,
-        children: children,
-        variants: variants,
-        focus: focus,
-        inspector: inspector,
-        emphasis: emphasis,
-        icon: icon,
-      }
-    },
-    objectKeyParser(parseAny, 'component')(value),
-    objectKeyParser(fullyParsePropertyControls, 'properties')(value),
-    optionalObjectKeyParser(
-      parseAlternative<ComponentExample | Array<ComponentExample>>(
-        [parseComponentInsertOption, parseArray(parseComponentInsertOption)],
-        'Invalid variants prop',
-      ),
-      'variants',
-    )(value),
-    optionalObjectKeyParser(
-      parseAlternative<Children>(
-        [parseConstant('supported'), parseConstant('not-supported'), parseChildrenSpec],
-        'Invalid children prop',
-      ),
-      'children',
-    )(value),
-    optionalObjectKeyParser(parseEnum(FocusOptions), 'focus')(value),
-    optionalObjectKeyParser(
-      parseAlternative<'all' | Styling[]>(
-        [parseConstant('all'), parseArray(parseEnum(StylingOptions))],
-        'inspector value invalid',
-      ),
-      'inspector',
-    )(value),
-    optionalObjectKeyParser(parseEnum(EmphasisOptions), 'emphasis')(value),
-    optionalObjectKeyParser(parseEnum(IconOptions), 'icon')(value),
-  )
-}
+const parseSectionSpec = objectParser<SectionSpec>({
+  display: optionalProp(parseEnum<Display>(DisplayOptions)),
+  sections: optionalProp(parseArray(parseEnum(StylingOptions))),
+})
+
+const parseComponentToRegister = objectParser<ComponentToRegister>({
+  component: parseAny,
+  label: optionalProp(parseString),
+  properties: fullyParsePropertyControls,
+  variants: optionalProp(
+    parseAlternative<ComponentExample | Array<ComponentExample>>(
+      [parseComponentInsertOption, parseArray(parseComponentInsertOption)],
+      'Invalid variants prop',
+    ),
+  ),
+  children: optionalProp(
+    parseAlternative<Children>(
+      [parseConstant('supported'), parseConstant('not-supported'), parseChildrenSpec],
+      'Invalid children prop',
+    ),
+  ),
+  focus: optionalProp(parseEnum(FocusOptions)),
+  inspector: optionalProp(
+    parseAlternative<'hidden' | SectionSpec>(
+      [parseConstant('hidden'), parseSectionSpec],
+      'inspector value invalid',
+    ),
+  ),
+  emphasis: optionalProp(parseEnum(EmphasisOptions)),
+  icon: optionalProp(parseEnum(IconOptions)),
+})
 
 export const parseComponents: (
   value: unknown,
@@ -1171,8 +1129,8 @@ function fancyErrorToErrorMessage(error: FancyError): ErrorMessage | null {
     const code = printScriptLines(frames[0]._originalScriptCode ?? [], frames[0].columnNumber)
     return errorMessage(
       frames[0]._originalFileName ?? '',
-      frames[0].lineNumber,
-      frames[0].columnNumber,
+      frames[0]._originalLineNumber,
+      frames[0]._originalColumnNumber,
       null,
       null,
       code,

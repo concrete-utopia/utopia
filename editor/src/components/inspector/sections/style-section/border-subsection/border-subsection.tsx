@@ -25,7 +25,7 @@ import {
   parseColor,
   toggleBorderEnabled,
 } from '../../../common/css-utils'
-import { useGetSubsectionHeaderStyle } from '../../../common/inspector-utils'
+import { RemovePropertyButton, useGetSubsectionHeaderStyle } from '../../../common/inspector-utils'
 import { useInspectorStyleInfo, useIsSubSectionVisible } from '../../../common/property-path-hooks'
 import { ColorControl, StringColorControl } from '../../../controls/color-control'
 import { FakeUnknownArrayItem } from '../../../controls/unknown-array-item'
@@ -150,7 +150,7 @@ export const BorderSubsection: React.FunctionComponent<React.PropsWithChildren<u
       </UIGridRow>
     )
 
-    const borderSet: boolean = controlStatus !== 'unset'
+    const borderSet: boolean = controlStatus !== 'unset' && controlStatus !== 'trivial-default'
 
     const contextMenuItems = [addOnUnsetValues(['border parameters'], onUnsetValues)]
 
@@ -173,25 +173,21 @@ export const BorderSubsection: React.FunctionComponent<React.PropsWithChildren<u
             <span>Border</span>
           </FlexRow>
           {propertyStatus.overwritable ? (
-            <>
+            <FlexRow style={{ gap: 4 }}>
+              <RemovePropertyButton
+                testId='inspector-border-remove-all'
+                onUnsetValues={onUnsetValues}
+                propertySet={propertyStatus.set}
+              />
               <SquareButton
                 highlight
-                onMouseDown={onUnsetValues}
-                data-testid={'inspector-border-remove-all'}
+                onMouseDown={onInsertMouseDown}
+                disabled={borderSet}
+                style={{ width: 12 }}
               >
-                <Icons.Cross color={propertyStatus.controlled ? 'primary' : 'secondary'} />
+                <Icn category='semantic' type='plus' width={12} height={12} />
               </SquareButton>
-              <SquareButton highlight onMouseDown={onInsertMouseDown} disabled={borderSet}>
-                <Icn
-                  style={{ paddingTop: 1 }}
-                  category='semantic'
-                  type='plus'
-                  color={propertyStatus.controlled ? 'primary' : 'secondary'}
-                  width={16}
-                  height={16}
-                />
-              </SquareButton>
-            </>
+            </FlexRow>
           ) : null}
         </InspectorSubsectionHeader>
 

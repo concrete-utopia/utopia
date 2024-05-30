@@ -16,6 +16,7 @@ import {
   FunctionIcons,
   OnClickOutsideHOC,
   UIRow,
+  Icn,
 } from '../../../../uuiui'
 import { ContextMenuWrapper } from '../../../../uuiui-deps'
 import { useDispatch } from '../../../editor/store/dispatch-context'
@@ -122,7 +123,6 @@ export const TargetSelectorPanel = React.memo((props: TargetSelectorPanelProps) 
           <FlexColumn
             className='label-scrollableList'
             style={{
-              borderTop: `1px solid ${colorTheme.secondaryBorder.value}`,
               paddingTop: 5,
               paddingBottom: 8,
               background: colorTheme.bg1.value,
@@ -407,13 +407,13 @@ const TargetListHeader = React.memo((props: TargetListHeaderProps) => {
           overflow: 'hidden',
         }}
       >
-        {selectedTargetPath}
+        Target
       </H1>
-      <SectionActionSheet className='actionsheet'>
-        <SquareButton highlight disabled={isAdding} onClick={startAdding}>
-          <FunctionIcons.Add />
+      <SectionActionSheet className='actionsheet' style={{ gap: 4 }}>
+        <SquareButton highlight disabled={isAdding} onClick={startAdding} style={{ width: 12 }}>
+          <Icn category='semantic' type='cross' width={12} height={12} />
         </SquareButton>
-        <SquareButton highlight onClick={togglePathPanel}>
+        <SquareButton highlight onClick={togglePathPanel} style={{ width: 12 }}>
           <ExpandableIndicator
             testId='target-selector'
             visible

@@ -42,7 +42,6 @@ import {
   emptyGithubSettings,
   projectGithubSettings,
 } from '../../../components/editor/store/editor-state'
-import type { UtopiaStoreAPI } from '../../../components/editor/store/store-hook'
 import { Substores, useEditorState } from '../../../components/editor/store/store-hook'
 import { propOrNull } from '../object-utils'
 import { updateProjectContentsWithParseResults } from '../parser-projectcontents-utils'
@@ -63,9 +62,14 @@ import { updatePullRequestsForBranch } from './operations/list-pull-requests-for
 import { getUsersPublicGithubRepositories } from './operations/load-repositories'
 import { set } from '../optics/optic-utilities'
 import { fromField } from '../optics/optic-creators'
-import type { GithubOperationContext } from './operations/github-operation-context'
+import {
+  OperationContext,
+  type GithubOperationContext,
+} from './operations/github-operation-context'
 import { GithubEndpoints } from './endpoints'
 import { getAllComponentDescriptorFilePaths } from '../../property-controls/property-controls-local'
+import React from 'react'
+import { useDispatch } from '../../../components/editor/store/dispatch-context'
 
 export function dispatchPromiseActions(
   dispatch: EditorDispatch,
@@ -180,6 +184,8 @@ function githubOperationPrettyNameForToast(op: GithubOperation): string {
       return 'list GitHub pull requests'
     case 'saveAsset':
       return 'save asset to GitHub'
+    case 'searchRepository':
+      return 'search public repository'
     default:
       assertNever(op)
   }
@@ -203,11 +209,6 @@ export async function runGithubOperation(
   logic: GithubOperationLogic,
 ): Promise<Array<EditorAction>> {
   let result: Array<EditorAction> = []
-  const userDetails = await GithubHelpers.getUserDetailsFromServer()
-  if (userDetails == null) {
-    dispatch(resetGithubStateAndDataActions())
-    return result
-  }
 
   const opName = githubOperationPrettyNameForToast(operation)
   try {
@@ -245,10 +246,11 @@ export function githubAPIError(
   }
 }
 
-export async function githubAPIErrorFromResponse(
-  operation: GithubOperation,
-  response: Response,
-): Promise<GithubAPIError> {
+export function githubAPIErrorStatusFromResponse(response: Response) {
+  return `${response.statusText} (${response.status})`
+}
+
+export async function githubAPIErrorDataFromResponse(response: Response) {
   async function getText() {
     try {
       return await response.text()
@@ -256,10 +258,17 @@ export async function githubAPIErrorFromResponse(
       return null
     }
   }
+  return (await getText()) ?? undefined
+}
+
+export async function githubAPIErrorFromResponse(
+  operation: GithubOperation,
+  response: Response,
+): Promise<GithubAPIError> {
   return {
     operation: operation,
-    status: `${response.statusText} (${response.status})`,
-    data: (await getText()) ?? undefined,
+    status: githubAPIErrorStatusFromResponse(response),
+    data: await githubAPIErrorDataFromResponse(response),
   }
 }
 
@@ -853,154 +862,219 @@ export function mergeProjectContentsTree(
   }
 }
 
-const GITHUB_REFRESH_INTERVAL_MILLISECONDS = 30_000
+// TODO reenable this!
+// const GITHUB_REFRESH_INTERVAL_MILLISECONDS = 15_000
 
-let githubPollingTimeoutId: number | undefined = undefined
+type GithubAuthState = 'not-authenticated' | 'missing-user-details' | 'ready'
 
-export const startGithubPolling =
-  (operationContext: GithubOperationContext) =>
-  async (utopiaStoreAPI: UtopiaStoreAPI, dispatch: EditorDispatch): Promise<void> => {
-    if (githubPollingTimeoutId != null) {
-      window.clearTimeout(githubPollingTimeoutId)
+export function useGithubPolling() {
+  const dispatch = useDispatch()
+
+  // TODO reenable this!
+  //   const [tick, setTick] = React.useState(0)
+  //   const [lastTick, setLastTick] = React.useState<number | null>(null)
+  //   const [timeoutId, setTimeoutId] = React.useState<number | null>(null)
+
+  const githubAuthenticated = useEditorState(
+    Substores.userState,
+    (store) => store.userState.githubState.authenticated,
+    'useGithubPolling githubAuthenticated',
+  )
+  const githubData = useEditorState(
+    Substores.github,
+    (store) => ({
+      githubUserDetails: store.editor.githubData.githubUserDetails,
+      lastRefreshedCommit: store.editor.githubData.lastRefreshedCommit,
+      targetRepository: store.editor.githubSettings.targetRepository,
+      branchName: store.editor.githubSettings.branchName,
+      originCommit: store.editor.githubSettings.originCommit,
+    }),
+    'useGithubPolling githubData',
+  )
+  const branchOriginContentsChecksums = useEditorState(
+    Substores.derived,
+    (store) => store.derived.branchOriginContentsChecksums,
+    'useGithubPolling branchOriginContentsChecksums',
+  )
+
+  const refreshAndScheduleGithubData = React.useCallback(async () => {
+    await refreshGithubData(
+      dispatch,
+      githubData.targetRepository,
+      githubData.branchName,
+      branchOriginContentsChecksums,
+      githubData.lastRefreshedCommit,
+      githubData.originCommit,
+      OperationContext,
+      'polling',
+    )
+
+    // TODO reenable this!
+    // // schedule a new tick for the next Xms
+    // setTimeoutId(
+    //   window.setTimeout(() => {
+    //     setTick((t) => t + 1)
+    //   }, GITHUB_REFRESH_INTERVAL_MILLISECONDS),
+    // )
+  }, [dispatch, branchOriginContentsChecksums, githubData])
+
+  const authState = React.useMemo((): GithubAuthState => {
+    if (!githubAuthenticated) {
+      return 'not-authenticated'
+    } else if (githubData.githubUserDetails == null) {
+      return 'missing-user-details'
+    } else {
+      return 'ready'
     }
-    function pollGithub(): void {
-      try {
-        const currentState = utopiaStoreAPI.getState()
-        const githubAuthenticated = currentState.userState.githubState.authenticated
-        const githubRepo = currentState.editor.githubSettings.targetRepository
-        const branchName = currentState.editor.githubSettings.branchName
-        const branchOriginContentsChecksums = currentState.derived.branchOriginContentsChecksums
-        const githubUserDetails = currentState.editor.githubData.githubUserDetails
-        const lastRefreshedCommit = currentState.editor.githubData.lastRefreshedCommit
-        const originCommitSha = currentState.editor.githubSettings.originCommit
-        void refreshGithubData(
-          dispatch,
-          githubAuthenticated,
-          githubRepo,
-          branchName,
-          branchOriginContentsChecksums,
-          githubUserDetails,
-          lastRefreshedCommit,
-          originCommitSha,
-          operationContext,
-          'polling',
-        )
-      } finally {
-        // Trigger another one to run Xms _after_ this has finished.
-        githubPollingTimeoutId = window.setTimeout(pollGithub, GITHUB_REFRESH_INTERVAL_MILLISECONDS)
-      }
+  }, [githubAuthenticated, githubData])
+
+  // react to non-ready auth states
+  React.useEffect(() => {
+    if (authState == 'ready') {
+      return
     }
 
-    // Trigger a poll initially.
-    githubPollingTimeoutId = window.setTimeout(pollGithub, 0)
-  }
+    switch (authState) {
+      case 'not-authenticated':
+        queueMicrotask(() => {
+          dispatch([updateGithubData(emptyGithubData())])
+        })
+        break
+      case 'missing-user-details':
+        void GithubHelpers.getUserDetailsFromServer().then((userDetails) => {
+          dispatch(
+            userDetails == null
+              ? resetGithubStateAndDataActions()
+              : updateUserDetailsFromServerActions(userDetails),
+          )
+        })
+        break
+      default:
+        assertNever(authState)
+    }
 
-export function getRefreshGithubActions(
+    // TODO fix this!
+    // if (timeoutId != null) {
+    //   window.clearTimeout(timeoutId)
+    // }
+  }, [authState, dispatch])
+
+  // react to ready auth state and tick changes
+  React.useEffect(() => {
+    if (authState !== 'ready') {
+      return
+    }
+
+    // TODO reenable/fix this!
+    // if (lastTick == null || lastTick < tick) {
+    //   setLastTick(() => {
+    //     void refreshAndScheduleGithubData()
+    //     return tick
+    //   })
+    // }
+
+    queueMicrotask(() => {
+      void refreshAndScheduleGithubData()
+    })
+  }, [authState, refreshAndScheduleGithubData])
+}
+
+export async function getRefreshGithubActions(
   dispatch: EditorDispatch,
-  githubAuthenticated: boolean,
   githubRepo: GithubRepo | null,
   branchName: string | null,
   branchOriginChecksums: FileChecksumsWithFile | null,
-  githubUserDetails: GithubUser | null,
   previousCommitSha: string | null,
   originCommitSha: string | null,
   operationContext: GithubOperationContext,
   initiator: GithubOperationSource,
-): Array<Promise<Array<EditorAction>>> {
+): Promise<EditorAction[]> {
   // Collect actions which are the results of the various requests,
   // but not those that show which Github operations are running.
-  let promises: Array<Promise<Array<EditorAction>>> = []
-  if (!githubAuthenticated) {
-    promises.push(Promise.resolve([updateGithubData(emptyGithubData())]))
-  } else if (githubUserDetails === null) {
-    const noUserDetailsActions = GithubHelpers.getUserDetailsFromServer().then((userDetails) => {
-      return userDetails == null
-        ? resetGithubStateAndDataActions()
-        : updateUserDetailsFromServerActions(userDetails)
-    })
-    promises.push(noUserDetailsActions)
-  } else {
-    promises.push(getUsersPublicGithubRepositories(operationContext)(dispatch, initiator))
-    if (githubRepo != null) {
-      promises.push(
-        getBranchesForGithubRepository(operationContext)(dispatch, githubRepo, initiator),
-      )
-      promises.push(
-        updateUpstreamChanges(
-          branchName,
-          branchOriginChecksums,
-          githubRepo,
-          previousCommitSha,
-          operationContext,
-        ),
-      )
-      if (branchName != null) {
-        if (branchOriginChecksums == null) {
-          if (originCommitSha != null) {
-            promises.push(
-              getBranchChecksums(operationContext)(githubRepo, branchName, originCommitSha),
-            )
-          }
-        } else {
-          promises.push(
-            updatePullRequestsForBranch(operationContext)(
-              dispatch,
-              githubRepo,
-              branchName,
-              initiator,
-            ),
+  let actions: EditorAction[] = []
+
+  // 1. list the repos
+  const userRepos = await getUsersPublicGithubRepositories(operationContext)(
+    dispatch,
+    initiator,
+    githubRepo,
+  )
+  actions.push(...userRepos)
+
+  if (githubRepo != null) {
+    // 2. get the branches
+    const branches = await getBranchesForGithubRepository(operationContext)(
+      dispatch,
+      githubRepo,
+      initiator,
+    )
+    actions.push(...branches)
+
+    if (branchName != null) {
+      if (branchOriginChecksums == null) {
+        if (originCommitSha != null) {
+          // 3. get the checksums
+          const checksums = await getBranchChecksums(operationContext)(
+            githubRepo,
+            branchName,
+            originCommitSha,
           )
+          actions.push(...checksums)
         }
+      } else {
+        // 4. update PRs
+        const pullRequests = await updatePullRequestsForBranch(operationContext)(
+          dispatch,
+          githubRepo,
+          branchName,
+          initiator,
+        )
+        actions.push(...pullRequests)
       }
-    } else {
-      promises.push(Promise.resolve([updateGithubData({ branches: null })]))
     }
+    // 5. finally update upstream changes
+    const upstreamChanges = await updateUpstreamChanges(
+      branchName,
+      branchOriginChecksums,
+      githubRepo,
+      previousCommitSha,
+      operationContext,
+    )
+    actions.push(...upstreamChanges)
+  } else {
+    actions.push(updateGithubData({ branches: null }))
   }
 
-  return promises
+  return actions
 }
 
 export async function refreshGithubData(
   dispatch: EditorDispatch,
-  githubAuthenticated: boolean,
   githubRepo: GithubRepo | null,
   branchName: string | null,
   branchOriginChecksums: FileChecksumsWithFile | null,
-  githubUserDetails: GithubUser | null,
   previousCommitSha: string | null,
   originCommitSha: string | null,
   operationContext: GithubOperationContext,
   initiator: GithubOperationSource,
 ): Promise<void> {
-  const promises = await getRefreshGithubActions(
-    dispatch,
-    githubAuthenticated,
-    githubRepo,
-    branchName,
-    branchOriginChecksums,
-    githubUserDetails,
-    previousCommitSha,
-    originCommitSha,
-    operationContext,
-    initiator,
-  )
-  // Resolve all the promises.
-  await Promise.allSettled(promises).then((results) => {
-    let actions: Array<EditorAction> = []
-    for (const result of results) {
-      switch (result.status) {
-        case 'rejected':
-          console.error(`Error while polling Github: ${result.reason}`)
-          break
-        case 'fulfilled':
-          actions.push(...result.value)
-          break
-      }
-    }
+  try {
+    const actions = await getRefreshGithubActions(
+      dispatch,
+      githubRepo,
+      branchName,
+      branchOriginChecksums,
+      previousCommitSha,
+      originCommitSha,
+      operationContext,
+      initiator,
+    )
 
     // Dispatch all the actions from all the polling functions.
     dispatch(actions, 'everyone')
-  })
+  } catch (err) {
+    console.error(`Error while polling Github: ${err}`)
+  }
 }
 
 async function updateUpstreamChanges(

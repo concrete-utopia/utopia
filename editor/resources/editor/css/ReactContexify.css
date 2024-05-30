@@ -1,199 +1,329 @@
-.react-contexify {
-  z-index: 99999;
-  position: fixed;
-  opacity: 0;
-  user-select: none;
-  border-radius: 3px;
-  background-color: var(--utopitheme-contextMenuBackground);
-  box-sizing: border-box;
-  /* the same as boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow */
-  box-shadow: 0px 3px 6px -2px var(--utopitheme-shadow80),
+:root {
+  --contexify-zIndex: 666;
+  --contexify-menu-minWidth: 220px;
+  --contexify-menu-padding: 6px;
+  --contexify-menu-radius: 6px;
+  --contexify-menu-bgColor: var(--utopitheme-contextMenuBackground);
+  --contexify-menu-shadow: 0px 3px 6px -2px var(--utopitheme-shadow80),
     0px 4px 8px -2px var(--utopitheme-shadow40);
-  padding: 4px 0px;
-  font-family: 'utopian-inter';
-}
-.react-contexify .react-contexify__submenu {
-  position: absolute;
-  /* negate padding */
-  top: -4px;
-  pointer-events: none;
-  transition: opacity 0.275s;
-}
-
-.react-contexify__submenu-arrow {
-  font-size: 10px;
-  position: absolute;
-  right: 6px;
-  line-height: 12px;
+  --contexify-menu-negatePadding: var(--contexify-menu-padding);
+  --contexify-separator-color: var(--utopitheme-contextMenuSeparator);
+  --contexify-separator-margin: 5px;
+  --contexify-itemContent-padding: 6px;
+  --contexify-activeItem-radius: 4px;
+  --contexify-item-color: var(--utopitheme-contextMenuForeground);
+  --contexify-activeItem-color: var(--utopitheme-contextMenuHighlightForeground);
+  --contexify-activeItem-bgColor: var(--utopitheme-contextMenuHighlightBackground);
+  --contexify-rightSlot-color: #6f6e77;
+  --contexify-activeRightSlot-color: #fff;
+  --contexify-arrow-color: #6f6e77;
+  --contexify-activeArrow-color: #fff;
 }
 
-.react-contexify__separator {
-  width: 100%;
-  height: 1px;
-  cursor: default;
-  padding: 0px;
-  background-color: var(--utopitheme-contextMenuSeparator);
-}
+@scope (:root) to (#canvas-container) {
+  @keyframes contexify_feedback {
+    from {
+      opacity: 0.4;
+    }
 
-/* this contains dividers, too - so not giving it a height */
-.react-contexify__item {
-  cursor: default;
-  position: relative;
-  margin-left: 8px;
-  margin-right: 8px;
-  color: var(--utopitheme-contextMenuForeground);
-}
-.react-contexify__item:not(.react-contexify__item--disabled):hover {
-  color: var(--utopitheme-contextMenuHighlightForeground);
-  background-color: var(--utopitheme-contextMenuHighlightBackground);
-  border-radius: 2px;
-}
-.react-contexify__item:not(.react-contexify__item--disabled):hover > .react-contexify__submenu {
-  pointer-events: initial;
-  opacity: 1;
-}
-.react-contexify__item--disabled {
-  cursor: default;
-  opacity: 0.67;
-}
-.react-contexify__item__content {
-  min-width: 190px;
-  padding-left: 8px;
-  padding-right: 8px;
-  display: flex;
-  align-items: center;
-  text-align: left;
-  white-space: nowrap;
-}
-
-.react-contexify__item__icon {
-  font-size: inherit;
-  margin-right: 6px;
-}
-
-@keyframes react-contexify__scaleIn {
-  from {
-    opacity: 0;
-    transform: scale3d(0.3, 0.3, 0.3);
+    to {
+      opacity: 1;
+    }
   }
-  to {
+
+  .contexify {
+    position: fixed;
+    opacity: 0;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    background-color: var(--contexify-menu-bgColor);
+    box-sizing: border-box;
+    box-shadow: var(--contexify-menu-shadow);
+    border-radius: var(--contexify-menu-radius);
+    padding: var(--contexify-menu-padding);
+    min-width: var(--contexify-menu-minWidth);
+    z-index: var(--contexify-zIndex);
+  }
+
+  .contexify_submenu-isOpen,
+  .contexify_submenu-isOpen > .contexify_itemContent {
+    color: var(--contexify-activeItem-color);
+    background-color: var(--contexify-activeItem-bgColor);
+    border-radius: var(--contexify-activeItem-radius);
+  }
+
+  .contexify_submenu-isOpen > .contexify_itemContent .contexify_rightSlot {
+    color: var(--contexify-activeArrow-color);
+  }
+
+  .contexify_submenu-isOpen > .contexify_submenu {
+    pointer-events: initial;
     opacity: 1;
   }
-}
-@keyframes react-contexify__scaleOut {
-  from {
+
+  .contexify .contexify_submenu {
+    position: absolute;
+    pointer-events: none;
+    transition: opacity 0.265s;
+    /* Initial submenu position */
+    top: calc(-1 * var(--contexify-menu-negatePadding));
+    left: 100%;
+  }
+
+  .contexify .contexify_submenu-bottom {
+    bottom: calc(-1 * var(--contexify-menu-negatePadding));
+    top: unset;
+  }
+
+  .contexify .contexify_submenu-right {
+    right: 100%;
+    left: unset;
+  }
+
+  .contexify_rightSlot {
+    margin-left: auto;
+    display: -ms-flexbox;
+    display: flex;
+    color: var(--contexify-rightSlot-color);
+  }
+
+  .contexify_separator {
+    height: 1px;
+    cursor: default;
+    margin: var(--contexify-separator-margin);
+    background-color: var(--contexify-separator-color);
+  }
+
+  .contexify_willLeave-disabled {
+    pointer-events: none;
+  }
+
+  .contexify_item {
+    cursor: pointer;
+    position: relative;
+  }
+
+  .contexify_item:focus {
+    outline: 0;
+  }
+
+  .contexify_item:not(.contexify_item-disabled):hover > .contexify_itemContent .contexify_rightSlot,
+  .contexify_item:focus .contexify_rightSlot {
+    color: var(--contexify-activeRightSlot-color);
+  }
+
+  .contexify_item:not(.contexify_item-disabled)[aria-haspopup]
+    > .contexify_itemContent
+    .contexify_rightSlot {
+    color: var(--contexify-arrow-color);
+  }
+
+  .contexify_item[aria-haspopup]:focus > .contexify_itemContent .contexify_rightSlot,
+  .contexify_item:not(.contexify_item-disabled)[aria-haspopup].contexify_submenu-isOpen
+    > .contexify_itemContent
+    .contexify_rightSlot,
+  .contexify_item:not(.contexify_item-disabled)[aria-haspopup]:hover
+    > .contexify_itemContent
+    .contexify_rightSlot {
+    color: var(--contexify-activeArrow-color);
+  }
+
+  .contexify_item:not(.contexify_item-disabled):hover > .contexify_itemContent,
+  .contexify_item:not(.contexify_item-disabled):focus > .contexify_itemContent {
+    color: var(--contexify-activeItem-color);
+    background-color: var(--contexify-activeItem-bgColor);
+    border-radius: var(--contexify-activeItem-radius);
+  }
+
+  .contexify_item:not(.contexify_item-disabled):hover > .contexify_submenu {
+    pointer-events: initial;
     opacity: 1;
   }
-  to {
-    opacity: 0;
-    transform: scale3d(0.3, 0.3, 0.3);
+
+  .contexify_item-disabled {
+    cursor: default;
+    opacity: 0.5;
   }
-}
-.react-contexify__will-enter--scale {
-  transform-origin: top left;
-  animation: react-contexify__scaleIn 0.3s;
+
+  .contexify_itemContent {
+    padding: var(--contexify-itemContent-padding);
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-align: center;
+    align-items: center;
+    white-space: nowrap;
+    color: var(--contexify-item-color);
+    position: relative;
+
+    min-width: 190px;
+    width: 100%;
+    padding-left: 8px;
+    padding-right: 8px;
+    display: flex;
+    align-items: center;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  .contexify_item-feedback {
+    animation: contexify_feedback 0.12s both;
+  }
+
+  .contexify_theme-dark {
+    --contexify-menu-bgColor: rgba(40, 40, 40, 0.98);
+    --contexify-separator-color: #4c4c4c;
+    --contexify-item-color: #fff;
+  }
+
+  .contexify_theme-light {
+    --contexify-separator-color: #eee;
+    --contexify-item-color: #666;
+    --contexify-activeItem-color: #3498db;
+    --contexify-activeItem-bgColor: #e0eefd;
+    --contexify-activeRightSlot-color: #3498db;
+    --contexify-active-arrow-color: #3498db;
+  }
+
+  @keyframes contexify_scaleIn {
+    from {
+      opacity: 0;
+      user-select: none;
+      border-radius: 10px;
+      background-color: var(--utopitheme-contextMenuBackground);
+      box-sizing: border-box;
+      /* the same as boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow */
+      box-shadow: 0px 3px 6px -2px var(--utopitheme-shadow80),
+        0px 4px 8px -2px var(--utopitheme-shadow40);
+      padding: 8px 0px;
+      font-family: 'utopian-inter';
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes contexify_scaleOut {
+    from {
+      opacity: 1;
+    }
+
+    to {
+      opacity: 0;
+      transform: scale3d(0.3, 0.3, 0.3);
+    }
+  }
+
+  .contexify_willEnter-scale {
+    transform-origin: top left;
+    animation: contexify_scaleIn 0.3s;
+  }
+
+  .contexify_willLeave-scale {
+    transform-origin: top left;
+    animation: contexify_scaleOut 0.3s;
+  }
+
+  @keyframes contexify_fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes contexify_fadeOut {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    to {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+  }
+
+  .contexify_willEnter-fade {
+    animation: contexify_fadeIn 0.3s ease;
+  }
+
+  .contexify_willLeave-fade {
+    animation: contexify_fadeOut 0.3s ease;
+  }
+
+  @keyframes contexify_flipInX {
+    from {
+      transform: perspective(800px) rotate3d(1, 0, 0, 45deg);
+    }
+
+    to {
+      transform: perspective(800px);
+    }
+  }
+
+  @keyframes contexify_flipOutX {
+    from {
+      transform: perspective(800px);
+    }
+
+    to {
+      transform: perspective(800px) rotate3d(1, 0, 0, 45deg);
+      opacity: 0;
+    }
+  }
+
+  .contexify_willEnter-flip {
+    -webkit-backface-visibility: visible !important;
+    backface-visibility: visible !important;
+    transform-origin: top center;
+    animation: contexify_flipInX 0.3s;
+  }
+
+  .contexify_willLeave-flip {
+    transform-origin: top center;
+    animation: contexify_flipOutX 0.3s;
+    -webkit-backface-visibility: visible !important;
+    backface-visibility: visible !important;
+  }
+
+  @keyframes contexify_slideIn {
+    from {
+      opacity: 0;
+      transform: scale3d(1, 0.3, 1);
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes contexify_slideOut {
+    from {
+      opacity: 1;
+    }
+
+    to {
+      opacity: 0;
+      transform: scale3d(1, 0.3, 1);
+    }
+  }
+
+  .contexify_willEnter-slide {
+    transform-origin: top center;
+    animation: contexify_slideIn 0.3s;
+  }
+
+  .contexify_willLeave-slide {
+    transform-origin: top center;
+    animation: contexify_slideOut 0.3s;
+  }
 }
 
-.react-contexify__will-leave--scale {
-  transform-origin: top left;
-  animation: react-contexify__scaleOut 0.3s;
-}
-
-@keyframes react-contexify__fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-@keyframes react-contexify__fadeOut {
-  from {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-}
-.react-contexify__will-enter--fade {
-  animation: react-contexify__fadeIn 0.3s ease;
-}
-
-.react-contexify__will-leave--fade {
-  animation: react-contexify__fadeOut 0.3s ease;
-}
-
-@keyframes react-contexify__flipInX {
-  from {
-    transform: perspective(800px) rotate3d(1, 0, 0, 45deg);
-  }
-  to {
-    transform: perspective(800px);
-  }
-}
-@keyframes react-contexify__flipOutX {
-  from {
-    transform: perspective(800px);
-  }
-  to {
-    transform: perspective(800px) rotate3d(1, 0, 0, 45deg);
-    opacity: 0;
-  }
-}
-.react-contexify__will-enter--flip {
-  -webkit-backface-visibility: visible !important;
-  backface-visibility: visible !important;
-  transform-origin: top center;
-  animation: react-contexify__flipInX 0.3s;
-}
-
-.react-contexify__will-leave--flip {
-  transform-origin: top center;
-  animation: react-contexify__flipOutX 0.3s;
-  -webkit-backface-visibility: visible !important;
-  backface-visibility: visible !important;
-}
-
-@keyframes swing-in-top-fwd {
-  0% {
-    transform: rotateX(-100deg);
-    transform-origin: top;
-    opacity: 0;
-  }
-  100% {
-    transform: rotateX(0deg);
-    transform-origin: top;
-    opacity: 1;
-  }
-}
-@keyframes react-contexify__slideIn {
-  from {
-    opacity: 0;
-    transform: scale3d(1, 0.3, 1);
-  }
-  to {
-    opacity: 1;
-  }
-}
-@keyframes react-contexify__slideOut {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-    transform: scale3d(1, 0.3, 1);
-  }
-}
-.react-contexify__will-enter--slide {
-  transform-origin: top center;
-  animation: react-contexify__slideIn 0.3s;
-}
-
-.react-contexify__will-leave--slide {
-  transform-origin: top center;
-  animation: react-contexify__slideOut 0.3s;
-}
+/*# sourceMappingURL=ReactContexify.css.map */

@@ -197,16 +197,13 @@ export function jsOpaqueArbitraryStatement(
   }
 }
 
-export interface JSAssignment {
+export interface JSAssignment<R extends JSExpression = JSExpression> {
   type: 'JS_ASSIGNMENT'
-  leftHandSide: JSIdentifier
-  rightHandSide: JSExpression
+  leftHandSide: BoundParam
+  rightHandSide: R
 }
 
-export function jsAssignment(
-  leftHandSide: JSIdentifier,
-  rightHandSide: JSExpression,
-): JSAssignment {
+export function jsAssignment(leftHandSide: BoundParam, rightHandSide: JSExpression): JSAssignment {
   return {
     type: 'JS_ASSIGNMENT',
     leftHandSide: leftHandSide,
@@ -238,13 +235,12 @@ export function simpleJSAssignmentStatement(
   declarationKeyword: JSAssignmentStatement['declarationKeyword'],
   name: string,
   value: unknown,
-  identifierSourceMap: RawSourceMap | null,
 ): JSAssignmentStatement {
   return jsAssignmentStatement(
     declarationKeyword,
     [
       jsAssignment(
-        jsIdentifier(name, '', identifierSourceMap, emptyComments),
+        regularParam(name, jsExpressionValue(value, emptyComments)),
         jsExpressionValue(value, emptyComments),
       ),
     ],
@@ -253,6 +249,18 @@ export function simpleJSAssignmentStatement(
 }
 
 export type JSArbitraryStatement = JSOpaqueArbitraryStatement | JSAssignmentStatement
+
+export function isJSAssignmentStatement(
+  statement: JSArbitraryStatement,
+): statement is JSAssignmentStatement {
+  return statement.type === 'JS_ASSIGNMENT_STATEMENT'
+}
+
+export function isJSOpaqueArbitraryStatement(
+  statement: JSArbitraryStatement,
+): statement is JSOpaqueArbitraryStatement {
+  return statement.type === 'JS_OPAQUE_ARBITRARY_STATEMENT'
+}
 
 export interface JSExpressionOtherJavaScript extends WithComments, WithElementsWithin {
   type: 'ATTRIBUTE_OTHER_JAVASCRIPT'
@@ -306,38 +314,27 @@ export function jsExpressionOtherJavaScriptSimple(
   )
 }
 
-export interface JSXMapExpression extends WithComments, WithElementsWithin {
+export interface JSXMapExpression extends WithComments {
   type: 'JSX_MAP_EXPRESSION'
-  originalJavascript: string
-  javascriptWithUIDs: string
-  transpiledJavascript: string
-  definedElsewhere: Array<string>
-  sourceMap: RawSourceMap | null
+  valueToMap: JSExpression
+  mapFunction: JSExpression
   valuesInScopeFromParameters: Array<string>
   uid: string
 }
 
 export function jsxMapExpression(
-  originalJavascript: string,
-  javascriptWithUIDs: string,
-  transpiledJavascript: string,
-  definedElsewhere: Array<string>,
-  sourceMap: RawSourceMap | null,
-  elementsWithin: ElementsWithin,
+  valueToMap: JSExpression,
+  mapFunction: JSExpression,
   comments: ParsedComments,
   valuesInScopeFromParameters: Array<string>,
   uid: string = UUID(),
 ): JSXMapExpression {
   return {
     type: 'JSX_MAP_EXPRESSION',
-    originalJavascript: originalJavascript,
-    javascriptWithUIDs: javascriptWithUIDs,
-    transpiledJavascript: transpiledJavascript,
-    definedElsewhere: definedElsewhere,
-    sourceMap: sourceMap,
+    valueToMap: valueToMap,
+    mapFunction: mapFunction,
     uid: uid,
     comments: comments,
-    elementsWithin: elementsWithin,
     valuesInScopeFromParameters: valuesInScopeFromParameters,
   }
 }
@@ -620,6 +617,16 @@ export function isJSElementAccess(expression: JSXElementChild): expression is JS
   return expression.type === 'JS_ELEMENT_ACCESS'
 }
 
+export type IdentifierOrAccess = JSIdentifier | JSPropertyAccess | JSElementAccess
+
+export function isIdentifierOrAccess(
+  expression: JSXElementChild,
+): expression is IdentifierOrAccess {
+  return (
+    isJSIdentifier(expression) || isJSPropertyAccess(expression) || isJSElementAccess(expression)
+  )
+}
+
 export type JSExpression =
   | JSIdentifier
   | JSPropertyAccess
@@ -634,14 +641,35 @@ export type JSExpression =
 
 export type JSExpressionMapOrOtherJavascript = JSExpressionOtherJavaScript | JSXMapExpression
 
-export function clearJSExpressionOtherJavaScriptUniqueIDs(
-  attribute: JSExpressionMapOrOtherJavascript,
-): JSExpressionMapOrOtherJavascript {
-  const updatedElementsWithin = objectMap(clearJSXElementUniqueIDs, attribute.elementsWithin)
+export function clearJSXMapExpressionUniqueIDs(mapExpression: JSXMapExpression): JSXMapExpression {
+  const updatedValueToMap = clearExpressionUniqueIDs(mapExpression.valueToMap)
+  const updatedMapFunction = clearExpressionUniqueIDs(mapExpression.mapFunction)
   return {
-    ...attribute,
+    ...mapExpression,
+    uid: '',
+    valueToMap: updatedValueToMap,
+    mapFunction: updatedMapFunction,
+  }
+}
+
+export function clearJSExpressionOtherJavaScriptUniqueIDs(
+  expression: JSExpressionOtherJavaScript,
+): JSExpressionOtherJavaScript {
+  const updatedElementsWithin = objectMap(clearJSXElementUniqueIDs, expression.elementsWithin)
+  return {
+    ...expression,
     uid: '',
     elementsWithin: updatedElementsWithin,
+  }
+}
+
+export function clearJSExpressionOtherJavaScriptOrMapExpressionUniqueIDs(
+  expression: JSExpressionMapOrOtherJavascript,
+): JSExpressionMapOrOtherJavascript {
+  if (isJSXMapExpression(expression)) {
+    return clearJSXMapExpressionUniqueIDs(expression)
+  } else {
+    return clearJSExpressionOtherJavaScriptUniqueIDs(expression)
   }
 }
 
@@ -773,6 +801,7 @@ export function clearExpressionUniqueIDs(attribute: JSExpression): JSExpression 
     case 'ATTRIBUTE_VALUE':
       return jsExpressionValue(attribute.value, attribute.comments, '')
     case 'JSX_MAP_EXPRESSION':
+      return clearJSXMapExpressionUniqueIDs(attribute)
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return clearJSExpressionOtherJavaScriptUniqueIDs(attribute)
     case 'ATTRIBUTE_NESTED_ARRAY':
@@ -849,9 +878,19 @@ export function clearExpressionUniqueIDs(attribute: JSExpression): JSExpression 
 export function clearJSXAttributeOtherJavaScriptSourceMaps(
   attribute: JSExpressionMapOrOtherJavascript,
 ): JSExpressionMapOrOtherJavascript {
-  return {
-    ...attribute,
-    sourceMap: null,
+  if (isJSXMapExpression(attribute)) {
+    const updatedValueToMap = clearExpressionSourceMaps(attribute.valueToMap)
+    const updatedMapFunction = clearExpressionSourceMaps(attribute.mapFunction)
+    return {
+      ...attribute,
+      valueToMap: updatedValueToMap,
+      mapFunction: updatedMapFunction,
+    }
+  } else {
+    return {
+      ...attribute,
+      sourceMap: null,
+    }
   }
 }
 
@@ -983,7 +1022,7 @@ export function clearIdentifierUniqueIDsAndSourceMaps(identifier: JSIdentifier):
 export function clearAssignmentUniqueIDsAndSourceMaps(assignment: JSAssignment): JSAssignment {
   return {
     type: 'JS_ASSIGNMENT',
-    leftHandSide: clearIdentifierUniqueIDsAndSourceMaps(assignment.leftHandSide),
+    leftHandSide: clearBoundParamUniqueIDsAndSourceMaps(assignment.leftHandSide),
     rightHandSide: clearExpressionUniqueIDsAndSourceMaps(assignment.rightHandSide),
   }
 }
@@ -1235,6 +1274,10 @@ export function attributeReferencesElsewhere(attribute: JSExpression): boolean {
     case 'ATTRIBUTE_VALUE':
       return false
     case 'JSX_MAP_EXPRESSION':
+      return (
+        attributeReferencesElsewhere(attribute.valueToMap) ||
+        attributeReferencesElsewhere(attribute.mapFunction)
+      )
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return (
         attribute.definedElsewhere.filter((r) => !AllowedExternalReferences.includes(r)).length > 0
@@ -1385,7 +1428,10 @@ export function getDefinedElsewhereFromAttribute(attribute: JSExpression): Array
     case 'ATTRIBUTE_VALUE':
       return []
     case 'JSX_MAP_EXPRESSION':
-      return attribute.definedElsewhere
+      return addAllUniquely(
+        getDefinedElsewhereFromAttribute(attribute.valueToMap),
+        getDefinedElsewhereFromAttribute(attribute.mapFunction),
+      )
     case 'ATTRIBUTE_FUNCTION_CALL':
       return attribute.parameters.reduce<Array<string>>((working, elem) => {
         return addAllUniquely(working, getDefinedElsewhereFromAttribute(elem))
@@ -1415,8 +1461,12 @@ export function getDefinedElsewhereFromElementChild(
 ): Array<string> {
   switch (child.type) {
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-    case 'JSX_MAP_EXPRESSION':
       return addAllUniquely(working, child.definedElsewhere)
+    case 'JSX_MAP_EXPRESSION':
+      return addAllUniquely(working, [
+        ...getDefinedElsewhereFromAttribute(child.valueToMap),
+        ...getDefinedElsewhereFromAttribute(child.mapFunction),
+      ])
     case 'JSX_CONDITIONAL_EXPRESSION':
       const withCondition = getDefinedElsewhereFromElementChild(working, child.condition)
       const withWhenTrue = getDefinedElsewhereFromElementChild(withCondition, child.whenTrue)
@@ -1527,6 +1577,11 @@ export function jsxElementName(
   }
 }
 
+export function jsxElementNameFromString(name: string): JSXElementName {
+  const [baseVariable, ...properties] = name.split('.')
+  return jsxElementName(baseVariable, properties)
+}
+
 export function jsxElementNameEquals(first: JSXElementName, second: JSXElementName): boolean {
   return (
     first.baseVariable === second.baseVariable &&
@@ -1593,6 +1648,20 @@ export type JSXElementWithoutUID = Omit<JSXElement, 'uid'>
 export type JSXConditionalExpressionWithoutUID = Omit<JSXConditionalExpression, 'uid'>
 
 export type JSXFragmentWithoutUID = Omit<JSXFragment, 'uid'>
+
+export type JSXMapExpressionWithoutUID = Omit<JSXMapExpression, 'uid'>
+
+export function clearJSXMapExpressionWithoutUIDUniqueIDs(
+  mapExpression: JSXMapExpressionWithoutUID,
+): JSXMapExpressionWithoutUID {
+  const updatedValueToMap = clearExpressionUniqueIDs(mapExpression.valueToMap)
+  const updatedMapFunction = clearExpressionUniqueIDs(mapExpression.mapFunction)
+  return {
+    ...mapExpression,
+    valueToMap: updatedValueToMap,
+    mapFunction: updatedMapFunction,
+  }
+}
 
 export function clearJSXElementWithoutUIDUniqueIDs(
   element: JSXElementWithoutUID,
@@ -1752,6 +1821,7 @@ export type JSXElementChildWithoutUID =
   | JSXElementWithoutUID
   | JSXConditionalExpressionWithoutUID
   | JSXFragmentWithoutUID
+  | JSXMapExpressionWithoutUID
 
 export function canBeRootElementOfComponent(element: JSXElementChild): boolean {
   if (isJSXElement(element) || isJSXFragment(element) || isJSXConditionalExpression(element)) {
@@ -2078,12 +2148,12 @@ export function unparsedCode(rawCode: string): UnparsedCode {
 export interface RegularParam {
   type: 'REGULAR_PARAM'
   paramName: string
-  defaultExpression: JSExpressionMapOrOtherJavascript | null
+  defaultExpression: JSExpression | null
 }
 
 export function regularParam(
   paramName: string,
-  defaultExpression: JSExpressionMapOrOtherJavascript | null,
+  defaultExpression: JSExpression | null,
 ): RegularParam {
   return {
     type: 'REGULAR_PARAM',
@@ -2095,13 +2165,13 @@ export function regularParam(
 export interface DestructuredParamPart {
   propertyName: string | undefined
   param: Param
-  defaultExpression: JSExpressionMapOrOtherJavascript | null
+  defaultExpression: JSExpression | null
 }
 
 export function destructuredParamPart(
   propertyName: string | undefined,
   param: Param,
-  defaultExpression: JSExpressionMapOrOtherJavascript | null,
+  defaultExpression: JSExpression | null,
 ): DestructuredParamPart {
   return {
     propertyName: propertyName,
@@ -2134,13 +2204,17 @@ export function omittedParam(): OmittedParam {
 
 export type DestructuredArrayPart = Param | OmittedParam
 
-export function isOmittedParam(param: DestructuredArrayPart): param is OmittedParam {
-  return (param as any).type === 'OMITTED_PARAM'
-}
-
 export interface DestructuredArray {
   type: 'DESTRUCTURED_ARRAY'
   parts: Array<DestructuredArrayPart>
+}
+
+export function isOmittedParam(param: DestructuredArrayPart): param is OmittedParam {
+  return param.type === 'OMITTED_PARAM'
+}
+
+export function isParam(param: DestructuredArrayPart): param is Param {
+  return param.type === 'PARAM'
 }
 
 export function destructuredArray(parts: Array<DestructuredArrayPart>): DestructuredArray {
@@ -2168,15 +2242,6 @@ export type Param = {
   type: 'PARAM'
   dotDotDotToken: boolean
   boundParam: BoundParam
-}
-
-export function isParam(maybeParam: unknown): maybeParam is Param {
-  return (
-    typeof maybeParam === 'object' &&
-    maybeParam != null &&
-    'type' in maybeParam &&
-    (maybeParam as any)['type'] === 'PARAM'
-  )
 }
 
 export function functionParam(dotDotDotToken: boolean, boundParam: BoundParam): Param {
@@ -2298,6 +2363,13 @@ export function clearArbitraryJSBlockUniqueIDs(block: ArbitraryJSBlock): Arbitra
   }
 }
 
+export function clearArbitraryJSBlockSourceMaps(block: ArbitraryJSBlock): ArbitraryJSBlock {
+  return {
+    ...block,
+    statements: block.statements.map(clearJSArbitraryStatementSourceMaps),
+  }
+}
+
 export function clearDestructuredArrayPartUniqueIDs(
   arrayPart: DestructuredArrayPart,
 ): DestructuredArrayPart {
@@ -2320,7 +2392,7 @@ export function clearDestructuredParamPartUniqueIDs(
     clearParamUniqueIDs(paramPart.param),
     paramPart.defaultExpression == null
       ? null
-      : clearJSExpressionOtherJavaScriptUniqueIDs(paramPart.defaultExpression),
+      : clearExpressionUniqueIDs(paramPart.defaultExpression),
   )
 }
 
@@ -2335,12 +2407,69 @@ export function clearBoundParamUniqueIDs(boundParam: BoundParam): BoundParam {
         boundParam.paramName,
         boundParam.defaultExpression == null
           ? null
-          : clearJSExpressionOtherJavaScriptUniqueIDs(boundParam.defaultExpression),
+          : clearExpressionUniqueIDs(boundParam.defaultExpression),
       )
     default:
       const _exhaustiveCheck: never = boundParam
       throw new Error(`Unhandled element ${JSON.stringify(boundParam)}`)
   }
+}
+
+export function clearDestructuredArrayPartSourceMaps(
+  arrayPart: DestructuredArrayPart,
+): DestructuredArrayPart {
+  switch (arrayPart.type) {
+    case 'OMITTED_PARAM':
+      return arrayPart
+    case 'PARAM':
+      return clearParamSourceMaps(arrayPart)
+    default:
+      const _exhaustiveCheck: never = arrayPart
+      throw new Error(`Unhandled array part ${JSON.stringify(arrayPart)}`)
+  }
+}
+
+export function clearDestructuredParamPartSourceMaps(
+  paramPart: DestructuredParamPart,
+): DestructuredParamPart {
+  return {
+    propertyName: paramPart.propertyName,
+    param: clearParamSourceMaps(paramPart.param),
+    defaultExpression:
+      paramPart.defaultExpression == null
+        ? null
+        : clearExpressionSourceMaps(paramPart.defaultExpression),
+  }
+}
+
+export function clearParamSourceMaps(param: Param): Param {
+  return {
+    ...param,
+    boundParam: clearBoundParamSourceMaps(param.boundParam),
+  }
+}
+
+export function clearBoundParamSourceMaps(boundParam: BoundParam): BoundParam {
+  switch (boundParam.type) {
+    case 'DESTRUCTURED_ARRAY':
+      return destructuredArray(boundParam.parts.map(clearDestructuredArrayPartSourceMaps))
+    case 'DESTRUCTURED_OBJECT':
+      return destructuredObject(boundParam.parts.map(clearDestructuredParamPartSourceMaps))
+    case 'REGULAR_PARAM':
+      return regularParam(
+        boundParam.paramName,
+        boundParam.defaultExpression == null
+          ? null
+          : clearExpressionSourceMaps(boundParam.defaultExpression),
+      )
+    default:
+      const _exhaustiveCheck: never = boundParam
+      throw new Error(`Unhandled element ${JSON.stringify(boundParam)}`)
+  }
+}
+
+export function clearBoundParamUniqueIDsAndSourceMaps(boundParam: BoundParam): BoundParam {
+  return clearBoundParamSourceMaps(clearBoundParamUniqueIDs(boundParam))
 }
 
 export function clearParamUniqueIDs(param: Param): Param {
@@ -2369,6 +2498,36 @@ export function clearTopLevelElementUniqueIDs(element: TopLevelElement): TopLeve
       return updatedComponent
     case 'ARBITRARY_JS_BLOCK':
       return clearArbitraryJSBlockUniqueIDs(element)
+    case 'IMPORT_STATEMENT':
+    case 'UNPARSED_CODE':
+      return element
+    default:
+      const _exhaustiveCheck: never = element
+      throw new Error(`Unhandled element ${JSON.stringify(element)}`)
+  }
+}
+
+export function clearTopLevelElementSourceMaps(element: UtopiaJSXComponent): UtopiaJSXComponent
+export function clearTopLevelElementSourceMaps(element: ArbitraryJSBlock): ArbitraryJSBlock
+export function clearTopLevelElementSourceMaps(element: TopLevelElement): TopLevelElement
+export function clearTopLevelElementSourceMaps(element: TopLevelElement): TopLevelElement {
+  switch (element.type) {
+    case 'UTOPIA_JSX_COMPONENT':
+      let updatedComponent: UtopiaJSXComponent = {
+        ...element,
+        rootElement: clearJSXElementChildSourceMaps(element.rootElement),
+      }
+      if (updatedComponent.arbitraryJSBlock != null) {
+        updatedComponent.arbitraryJSBlock = clearArbitraryJSBlockSourceMaps(
+          updatedComponent.arbitraryJSBlock,
+        )
+      }
+      if (updatedComponent.param != null) {
+        updatedComponent.param = clearParamSourceMaps(updatedComponent.param)
+      }
+      return updatedComponent
+    case 'ARBITRARY_JS_BLOCK':
+      return clearArbitraryJSBlockSourceMaps(element)
     case 'IMPORT_STATEMENT':
     case 'UNPARSED_CODE':
       return element
@@ -2520,6 +2679,7 @@ export interface ElementInstanceMetadata {
   conditionValue: ConditionValue
   textContent: string | null
   earlyReturn: EarlyReturn | null
+  assignedToProp: string | null
 }
 
 export function elementInstanceMetadata(
@@ -2538,6 +2698,7 @@ export function elementInstanceMetadata(
   conditionValue: ConditionValue,
   textContent: string | null,
   earlyReturn: EarlyReturnResult | EarlyReturnVoid | null,
+  assignedToProp: string | null,
 ): ElementInstanceMetadata {
   return {
     elementPath: elementPath,
@@ -2555,6 +2716,7 @@ export function elementInstanceMetadata(
     conditionValue: conditionValue,
     textContent: textContent,
     earlyReturn: earlyReturn,
+    assignedToProp: assignedToProp,
   }
 }
 
@@ -2764,6 +2926,11 @@ export function walkElement(
         const path = EP.appendToElementPath(parentPath, uidAttr.value)
         forEach(element, path, depth)
         fastForEach(element.children, (child) => walkElement(child, path, depth + 1, forEach))
+        element.props.forEach((prop) => {
+          if (prop.type === 'JSX_ATTRIBUTES_ENTRY') {
+            walkElement(prop.value, path, depth + 1, forEach)
+          }
+        })
       }
       break
     case 'JSX_FRAGMENT':
@@ -2774,6 +2941,10 @@ export function walkElement(
       forEach(element, parentPath, depth)
       break
     case 'JSX_MAP_EXPRESSION':
+      forEach(element, parentPath, depth)
+      walkElement(element.valueToMap, parentPath, depth + 1, forEach)
+      walkElement(element.mapFunction, parentPath, depth + 1, forEach)
+      break
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       forEach(element, parentPath, depth)
       fastForEach(Object.keys(element.elementsWithin), (childKey) =>
@@ -2855,8 +3026,16 @@ export function getElementsByUIDFromTopLevelElements(
 export function clearJSAssignmentUniqueIDs(assignment: JSAssignment): JSAssignment {
   return {
     ...assignment,
-    leftHandSide: clearIdentifierUniqueIDs(assignment.leftHandSide),
+    leftHandSide: clearBoundParamUniqueIDs(assignment.leftHandSide),
     rightHandSide: clearExpressionUniqueIDs(assignment.rightHandSide),
+  }
+}
+
+export function clearJSAssignmentSourceMaps(assignment: JSAssignment): JSAssignment {
+  return {
+    ...assignment,
+    leftHandSide: clearBoundParamSourceMaps(assignment.leftHandSide),
+    rightHandSide: clearExpressionSourceMaps(assignment.rightHandSide),
   }
 }
 
@@ -2875,6 +3054,22 @@ export function clearJSArbitraryStatementUniqueIDs(
         ...statement,
         uid: '',
       }
+    default:
+      assertNever(statement)
+  }
+}
+
+export function clearJSArbitraryStatementSourceMaps(
+  statement: JSArbitraryStatement,
+): JSArbitraryStatement {
+  switch (statement.type) {
+    case 'JS_ASSIGNMENT_STATEMENT':
+      return {
+        ...statement,
+        assignments: statement.assignments.map(clearJSAssignmentSourceMaps),
+      }
+    case 'JS_OPAQUE_ARBITRARY_STATEMENT':
+      return statement
     default:
       assertNever(statement)
   }

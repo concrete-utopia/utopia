@@ -17,12 +17,11 @@ import {
   colorTheme,
   UtopiaStyles,
 } from '../../uuiui'
-import { ConsoleAndErrorsPane } from '../code-editor/console-and-errors-pane'
+import { ErrorsPane } from '../code-editor/errors-pane'
 import { CanvasStrategyInspector } from './canvas-strategies/canvas-strategy-inspector'
-import { getQueryParam } from '../../common/env-vars'
+import { IS_TEST_ENVIRONMENT, getQueryParam } from '../../common/env-vars'
 import { when } from '../../utils/react-conditionals'
 import { InsertMenuPane } from '../navigator/insert-menu-pane'
-import { VariablesMenuPane } from '../navigator/variables-menu-pane'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { GridPanelsContainer } from './grid-panels-container'
 import { TitleBarCode, TitleBarUserProfile } from '../titlebar/title-bar'
@@ -146,10 +145,6 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
     onClickTab(RightMenuTab.Insert)
   }, [onClickTab])
 
-  const onClickVariablesTab = React.useCallback(() => {
-    onClickTab(RightMenuTab.Variables)
-  }, [onClickTab])
-
   const onClickCommentsTab = React.useCallback(() => {
     onClickTab(RightMenuTab.Comments)
   }, [onClickTab])
@@ -199,16 +194,14 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
         {when(
           allowedToEdit,
           <>
-            <MenuTab
-              label={'Insert'}
-              selected={selectedTab === RightMenuTab.Insert}
-              onClick={onClickInsertTab}
-            />
-            <MenuTab
-              label={'Variables'}
-              selected={selectedTab === RightMenuTab.Variables}
-              onClick={onClickVariablesTab}
-            />
+            {when(
+              IS_TEST_ENVIRONMENT,
+              <MenuTab
+                label={'Insert'}
+                selected={selectedTab === RightMenuTab.Insert}
+                onClick={onClickInsertTab}
+              />,
+            )}
           </>,
         )}
         {when(
@@ -240,7 +233,6 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
         }}
       >
         {when(selectedTab === RightMenuTab.Insert, <InsertMenuPane />)}
-        {when(selectedTab === RightMenuTab.Variables, <VariablesMenuPane />)}
         {when(selectedTab === RightMenuTab.Inspector, <InspectorEntryPoint />)}
         {when(selectedTab === RightMenuTab.Settings, <SettingsPane />)}
         {when(selectedTab === RightMenuTab.Comments, <CommentsPane />)}
@@ -296,7 +288,7 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
           zoom: props.small ? 0.7 : undefined,
         }}
       >
-        <ConsoleAndErrorsPane />
+        <ErrorsPane />
       </FlexColumn>
     </FlexColumn>
   )

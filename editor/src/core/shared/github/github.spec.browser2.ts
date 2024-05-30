@@ -53,6 +53,71 @@ describe('Github integration', () => {
           type: 'SUCCESS',
           branches: [{ name: 'main' }, { name: 'dev' }],
         }),
+      [GithubEndpoints.getBranchProjectContents({
+        projectId: '0',
+        owner: 'bob',
+        repo: 'awesome-project',
+        branch: 'main',
+      })]: fakeResponse<GetBranchContentResponse>({
+        type: 'SUCCESS',
+        branch: {
+          originCommit: 'initial',
+          content: createModifiedProject({
+            ['/utopia/storyboard.js']: makeTestProjectCodeWithSnippet(`
+            <h1>Editor from Github</h1>
+                `),
+            ['/src/card.js']: `import React from 'react'
+
+                export const Card = ({ label }) => {
+                  return <div>{label}</div>
+                }
+                `,
+            ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
+
+                const Components = {
+              '/src/card': {
+                Card: {
+                  component: Card,
+                  properties: {
+                    label: {
+                      control: 'string-input',
+                    },
+                    background: {
+                      control: 'color',
+                    },
+                    visible: {
+                      control: 'checkbox',
+                      defaultValue: true,
+                    },
+                  },
+                  focus: 'default',
+                  inspector: { display: 'expanded', sections: ['visual', 'typography'] },
+                  emphasis: 'regular',
+                  icon: 'component',
+                  variants: [
+                    {
+                      code: '<Card />',
+                      imports: 'import { Card } from "/src/card"',
+                      label: 'Card',
+                    },
+                    {
+                      code: '<Card person={DefaultPerson} />',
+                      label: 'ID Card',
+                      imports: [
+                        'import { Card } from "/src/card"',
+                        "import { DefaultPerson } from '/src/defaults';",
+                      ],
+                    },
+                  ],
+                },
+              },
+            }
+
+            export default Components
+          `,
+          }).projectContents,
+        },
+      }),
       [GithubEndpoints.branchContents({ owner: 'bob', repository: 'awesome-project' }, 'main')]:
         fakeResponse<GetBranchContentResponse>({
           type: 'SUCCESS',
@@ -87,9 +152,9 @@ describe('Github integration', () => {
                     },
                   },
                   focus: 'default',
-                  inspector: ['visual', 'typography'],
+                  inspector: { display: 'expanded', sections: ['visual', 'typography'] },
                   emphasis: 'regular',
-                  icon: 'regular',
+                  icon: 'component',
                   variants: [
                     {
                       code: '<Card />',
@@ -130,6 +195,8 @@ describe('Github integration', () => {
     await loginUserToGithubForTests(renderResult.dispatch)
 
     await clickTextOnScreen(renderResult, 'Github')
+    await clickTextOnScreen(renderResult, 'Refresh list')
+
     await mock.getUsersPublicGithubRepositories
 
     await clickTextOnScreen(renderResult, 'bob/awesome-project')
@@ -154,6 +221,8 @@ describe('Github integration', () => {
     await loginUserToGithubForTests(renderResult.dispatch)
 
     await clickTextOnScreen(renderResult, 'Github')
+    await clickTextOnScreen(renderResult, 'Refresh list')
+
     await mock.getUsersPublicGithubRepositories
 
     await clickTextOnScreen(renderResult, 'bob/awesome-project')

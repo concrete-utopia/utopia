@@ -1,13 +1,16 @@
 import React from 'react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import * as EP from '../../../core/shared/element-path'
+import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import type { CanvasRectangle } from '../../../core/shared/math-utils'
 import { isInfinityRectangle } from '../../../core/shared/math-utils'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { IndexPosition } from '../../../utils/utils'
 import { useColorTheme } from '../../../uuiui/styles/theme'
-import { openFloatingInsertMenu } from '../../editor/actions/action-creators'
-import { useDispatch } from '../../editor/store/dispatch-context'
+import { insertAsChildTarget } from '../../editor/actions/action-creators'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
+import { useCreateCallbackToShowComponentPicker } from '../../navigator/navigator-item/component-picker-context-menu'
 import type { SiblingPosition } from '../canvas-strategies/strategies/reparent-helpers/reparent-strategy-sibling-position-helpers'
 import {
   getSiblingMidPointPosition,
@@ -58,115 +61,26 @@ export const InsertionControls: React.FunctionComponent = React.memo(
       (store) => store.editor.canvas.scale,
       'InsertionControls scale',
     )
+
     if (selectedViews.length !== 1 || isInteractionActive) {
       return null
     }
     const selectedView = selectedViews[0]
-    const parentPath = selectedView
-    const parentFrame =
-      parentPath != null ? MetadataUtils.getFrameInCanvasCoords(parentPath, jsxMetadata) : null
 
-    const parentElement = MetadataUtils.findElementByElementPath(jsxMetadata, selectedView)
-    if (
-      parentPath == null ||
-      parentFrame == null ||
-      isInfinityRectangle(parentFrame) ||
-      parentElement == null ||
-      parentElement.specialSizeMeasurements.flexDirection == null
-    ) {
-      return null
-    }
-
-    if (MetadataUtils.findLayoutSystemForChildren(jsxMetadata, pathTrees, parentPath) !== 'flex') {
-      return null
-    }
-
-    const { direction, forwardOrReverse } = MetadataUtils.getSimpleFlexDirection(parentElement)
-
-    const children = MetadataUtils.getChildrenOrdered(jsxMetadata, pathTrees, parentPath)
-    let controlProps: ButtonControlProps[] = []
-
-    const siblingPositions: Array<SiblingPosition> = siblingAndPseudoPositions(
-      direction,
-      forwardOrReverse,
-      parentFrame,
-      children.map((m) => m.elementPath),
+    const controlPropsFinished: ButtonControlProps[] | null = collectInsertionControlsForElement(
       jsxMetadata,
+      pathTrees,
+      scale,
+      EP.parentPath(selectedView),
     )
 
-    function getBetweenChildrenPosition(index: number): number {
-      const precedingSiblingPosition: CanvasRectangle = siblingPositions[index].frame
-      const succeedingSiblingPosition: CanvasRectangle = siblingPositions[index + 1].frame
-      return getSiblingMidPointPosition(
-        precedingSiblingPosition,
-        succeedingSiblingPosition,
-        direction,
-        forwardOrReverse,
-      )
-    }
-
-    if (children.length > 0) {
-      for (let index = 0; index < siblingPositions.length - 1; index++) {
-        const insertionIndex = siblingPositions[index].index
-        const positionX =
-          direction == 'vertical'
-            ? parentFrame.x - InsertionButtonOffset
-            : getBetweenChildrenPosition(index)
-        const positionY =
-          direction == 'vertical'
-            ? getBetweenChildrenPosition(index)
-            : parentFrame.y - InsertionButtonOffset
-
-        const lineEndX =
-          direction == 'vertical'
-            ? parentFrame.x + parentFrame.width
-            : getBetweenChildrenPosition(index)
-        const lineEndY =
-          direction == 'vertical'
-            ? getBetweenChildrenPosition(index)
-            : parentFrame.y + parentFrame.height
-        controlProps.push({
-          identifier: `control-${index}`,
-          scale: scale,
-          positionX: positionX,
-          positionY: positionY,
-          lineEndX: lineEndX,
-          lineEndY: lineEndY,
-          isHorizontalLine: direction === 'vertical',
-          parentPath: parentPath,
-          indexPosition: {
-            type: 'absolute',
-            index: insertionIndex,
-          },
-        })
-      }
-    } else {
-      const positionX =
-        direction == 'vertical' ? parentFrame.x - InsertionButtonOffset : parentFrame.x
-      const positionY =
-        direction == 'vertical' ? parentFrame.y : parentFrame.y - InsertionButtonOffset
-
-      const lineEndX = direction == 'vertical' ? parentFrame.x + parentFrame.width : parentFrame.y
-      const lineEndY = direction == 'vertical' ? parentFrame.x : parentFrame.y + parentFrame.height
-      controlProps.push({
-        identifier: `control-0`,
-        scale: scale,
-        positionX: positionX,
-        positionY: positionY,
-        lineEndX: lineEndX,
-        lineEndY: lineEndY,
-        isHorizontalLine: direction === 'vertical',
-        parentPath: parentPath,
-        indexPosition: {
-          type: 'absolute',
-          index: 0,
-        },
-      })
+    if (controlPropsFinished == null) {
+      return null
     }
 
     return (
       <CanvasOffsetWrapper>
-        {controlProps.map((control) => {
+        {controlPropsFinished.map((control) => {
           return <InsertionButtonContainer {...control} key={control.identifier} />
         })}
       </CanvasOffsetWrapper>
@@ -239,25 +153,15 @@ const BlueDot = React.memo((props: ButtonControlProps) => {
 })
 
 const PlusButton = React.memo((props: ButtonControlProps) => {
-  const dispatch = useDispatch()
   const colorTheme = useColorTheme()
   const { parentPath, indexPosition } = props
-  const insertElement: React.MouseEventHandler<HTMLDivElement> = React.useCallback(
-    (event) => {
-      event.stopPropagation()
-      event.preventDefault()
-      dispatch(
-        [
-          openFloatingInsertMenu({
-            insertMenuMode: 'insert',
-            parentPath: parentPath,
-            indexPosition: indexPosition,
-          }),
-        ],
-        'canvas',
-      )
-    },
-    [dispatch, parentPath, indexPosition],
+  const onMouseUpDown: React.MouseEventHandler<HTMLDivElement> = React.useCallback((event) => {
+    event.stopPropagation()
+    event.preventDefault()
+  }, [])
+  const onClick = useCreateCallbackToShowComponentPicker()(
+    [parentPath],
+    insertAsChildTarget(indexPosition),
   )
 
   const ButtonSize = 12
@@ -278,7 +182,9 @@ const PlusButton = React.memo((props: ButtonControlProps) => {
         transform: `scale(${1 / props.scale})`,
       }}
       data-testid={`insertion-plus-button-${props.identifier}`}
-      onMouseDown={insertElement}
+      onClick={onClick}
+      onMouseDown={onMouseUpDown}
+      onMouseUp={onMouseUpDown}
     >
       <div
         style={{
@@ -324,3 +230,111 @@ const Line = React.memo((props: ButtonControlProps) => {
     />
   )
 })
+function collectInsertionControlsForElement(
+  jsxMetadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
+  scale: number,
+  parentPath: ElementPath,
+) {
+  let controlProps: ButtonControlProps[] = []
+  const parentFrame =
+    parentPath != null ? MetadataUtils.getFrameInCanvasCoords(parentPath, jsxMetadata) : null
+
+  const parentElement = MetadataUtils.findElementByElementPath(jsxMetadata, parentPath)
+  if (
+    parentPath == null ||
+    parentFrame == null ||
+    isInfinityRectangle(parentFrame) ||
+    parentElement == null ||
+    parentElement.specialSizeMeasurements.flexDirection == null
+  ) {
+    return null
+  }
+
+  if (MetadataUtils.findLayoutSystemForChildren(jsxMetadata, pathTrees, parentPath) !== 'flex') {
+    return null
+  }
+
+  const { direction, forwardOrReverse } = MetadataUtils.getSimpleFlexDirection(parentElement)
+
+  const children = MetadataUtils.getChildrenOrdered(jsxMetadata, pathTrees, parentPath)
+
+  const siblingPositions: Array<SiblingPosition> = siblingAndPseudoPositions(
+    direction,
+    forwardOrReverse,
+    parentFrame,
+    children.map((m) => m.elementPath),
+    jsxMetadata,
+  )
+
+  function getBetweenChildrenPosition(index: number): number {
+    const precedingSiblingPosition: CanvasRectangle = siblingPositions[index].frame
+    const succeedingSiblingPosition: CanvasRectangle = siblingPositions[index + 1].frame
+    return getSiblingMidPointPosition(
+      precedingSiblingPosition,
+      succeedingSiblingPosition,
+      direction,
+      forwardOrReverse,
+    )
+  }
+
+  if (children.length > 0) {
+    for (let index = 0; index < siblingPositions.length - 1; index++) {
+      const insertionIndex = siblingPositions[index].index
+      const positionX =
+        direction == 'vertical'
+          ? parentFrame.x - InsertionButtonOffset
+          : getBetweenChildrenPosition(index)
+      const positionY =
+        direction == 'vertical'
+          ? getBetweenChildrenPosition(index)
+          : parentFrame.y - InsertionButtonOffset
+
+      const lineEndX =
+        direction == 'vertical'
+          ? parentFrame.x + parentFrame.width
+          : getBetweenChildrenPosition(index)
+      const lineEndY =
+        direction == 'vertical'
+          ? getBetweenChildrenPosition(index)
+          : parentFrame.y + parentFrame.height
+      controlProps.push({
+        identifier: `control-${index}`,
+        scale: scale,
+        positionX: positionX,
+        positionY: positionY,
+        lineEndX: lineEndX,
+        lineEndY: lineEndY,
+        isHorizontalLine: direction === 'vertical',
+        parentPath: parentPath,
+        indexPosition: {
+          type: 'absolute',
+          index: insertionIndex,
+        },
+      })
+    }
+  } else {
+    const positionX =
+      direction == 'vertical' ? parentFrame.x - InsertionButtonOffset : parentFrame.x
+    const positionY =
+      direction == 'vertical' ? parentFrame.y : parentFrame.y - InsertionButtonOffset
+
+    const lineEndX = direction == 'vertical' ? parentFrame.x + parentFrame.width : parentFrame.y
+    const lineEndY = direction == 'vertical' ? parentFrame.x : parentFrame.y + parentFrame.height
+    controlProps.push({
+      identifier: `control-0`,
+      scale: scale,
+      positionX: positionX,
+      positionY: positionY,
+      lineEndX: lineEndX,
+      lineEndY: lineEndY,
+      isHorizontalLine: direction === 'vertical',
+      parentPath: parentPath,
+      indexPosition: {
+        type: 'absolute',
+        index: 0,
+      },
+    })
+  }
+  return controlProps
+}

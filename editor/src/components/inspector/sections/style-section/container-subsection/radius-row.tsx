@@ -52,23 +52,24 @@ export const RadiusRow = React.memo(() => {
       items={contextMenuItems}
       data={null}
     >
-      <UIGridRow
-        tall
-        padded={false}
-        variant='<---1fr--->|------172px-------|'
-        style={{ marginTop: 12 }}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'flex-start',
+          padding: '8px 0',
+        }}
       >
         <PropertyLabel
           target={[]}
           propNamesToUnset={contextMenuLabel}
-          style={{
-            paddingBottom: 20,
-          }}
+          style={{ paddingRight: 2, flexShrink: 0 }}
         >
           Radius
         </PropertyLabel>
         <BorderRadiusControl />
-      </UIGridRow>
+      </div>
     </InspectorContextMenuWrapper>
   )
 })
@@ -241,10 +242,10 @@ export const BorderRadiusControl = React.memo(() => {
   return (
     <SplitChainedNumberInput
       labels={{
-        top: 'TL',
-        bottom: 'BR',
-        left: 'BL',
-        right: 'TR',
+        top: '╭',
+        bottom: '╯',
+        left: '╰',
+        right: '╮',
       }}
       tooltips={{
         oneValue: 'Radius',

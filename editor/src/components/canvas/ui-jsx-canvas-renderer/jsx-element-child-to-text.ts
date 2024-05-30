@@ -24,6 +24,23 @@ export function jsxElementChildToText(
       }
       return ''
     case 'JSX_MAP_EXPRESSION':
+      const valueToMapText = jsxElementChildToText(
+        element.valueToMap,
+        prevElement,
+        nextElement,
+        'javascript',
+        'inner',
+      )
+      const mapFunctionText = jsxElementChildToText(
+        element.mapFunction,
+        prevElement,
+        nextElement,
+        'javascript',
+        'inner',
+      )
+      const mapExpressionText = `${valueToMapText}.map(${mapFunctionText})`
+      // when the context is jsx, we need to wrap expression in curly brackets
+      return expressionContext === 'javascript' ? mapExpressionText : `{${mapExpressionText}}`
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       // when the context is jsx, we need to wrap expression in curly brackets
       return expressionContext === 'javascript'

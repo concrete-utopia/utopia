@@ -186,63 +186,33 @@ function otherFn(n) {
     },
   ],
   "fullHighlightBounds": Object {
-    "32a": Object {
-      "endCol": 1,
-      "endLine": 14,
-      "startCol": 0,
-      "startLine": 12,
-      "uid": "32a",
-    },
-    "6e3": Object {
+    "05f": Object {
       "endCol": 24,
       "endLine": 20,
       "startCol": 19,
       "startLine": 20,
-      "uid": "6e3",
+      "uid": "05f",
     },
-    "8f7": Object {
-      "endCol": 38,
-      "endLine": 23,
-      "startCol": 14,
-      "startLine": 23,
-      "uid": "8f7",
-    },
-    "aaa": Object {
-      "endCol": 11,
-      "endLine": 25,
-      "startCol": 4,
-      "startLine": 20,
-      "uid": "aaa",
-    },
-    "aab": Object {
-      "endCol": 8,
-      "endLine": 24,
-      "startCol": 6,
-      "startLine": 21,
-      "uid": "aab",
-    },
-    "b90": Object {
-      "endCol": 1,
-      "endLine": 17,
-      "startCol": 0,
-      "startLine": 15,
-      "uid": "b90",
-    },
-    "feb": Object {
+    "60d": Object {
       "endCol": 22,
       "endLine": 22,
       "startCol": 17,
       "startLine": 22,
-      "uid": "feb",
+      "uid": "60d",
     },
-  },
-  "highlightBounds": Object {
-    "8f7": Object {
-      "endCol": 38,
-      "endLine": 23,
-      "startCol": 14,
-      "startLine": 23,
-      "uid": "8f7",
+    "8e2": Object {
+      "endCol": 1,
+      "endLine": 17,
+      "startCol": 0,
+      "startLine": 15,
+      "uid": "8e2",
+    },
+    "960": Object {
+      "endCol": 1,
+      "endLine": 14,
+      "startCol": 0,
+      "startLine": 12,
+      "uid": "960",
     },
     "aaa": Object {
       "endCol": 11,
@@ -257,6 +227,36 @@ function otherFn(n) {
       "startCol": 6,
       "startLine": 21,
       "uid": "aab",
+    },
+    "bb8": Object {
+      "endCol": 38,
+      "endLine": 23,
+      "startCol": 14,
+      "startLine": 23,
+      "uid": "bb8",
+    },
+  },
+  "highlightBounds": Object {
+    "aaa": Object {
+      "endCol": 11,
+      "endLine": 25,
+      "startCol": 4,
+      "startLine": 20,
+      "uid": "aaa",
+    },
+    "aab": Object {
+      "endCol": 8,
+      "endLine": 24,
+      "startCol": 6,
+      "startLine": 21,
+      "uid": "aab",
+    },
+    "bb8": Object {
+      "endCol": 38,
+      "endLine": 23,
+      "startCol": 14,
+      "startLine": 23,
+      "uid": "bb8",
     },
   },
   "imports": Object {
@@ -735,75 +735,61 @@ Object {
     },
   ],
   "fullHighlightBounds": Object {
-    "13e": Object {
+    "057": Object {
       "endCol": 22,
       "endLine": 6,
       "startCol": 17,
       "startLine": 6,
-      "uid": "13e",
+      "uid": "057",
     },
-    "1e3": Object {
-      "endCol": 37,
-      "endLine": 6,
-      "startCol": 25,
-      "startLine": 6,
-      "uid": "1e3",
-    },
-    "34a": Object {
-      "endCol": 31,
-      "endLine": 6,
-      "startCol": 30,
-      "startLine": 6,
-      "uid": "34a",
-    },
-    "4cf": Object {
-      "endCol": 37,
-      "endLine": 4,
-      "startCol": 25,
-      "startLine": 4,
-      "uid": "4cf",
-    },
-    "58b": Object {
-      "endCol": 45,
-      "endLine": 4,
-      "startCol": 40,
-      "startLine": 4,
-      "uid": "58b",
-    },
-    "67f": Object {
-      "endCol": 45,
-      "endLine": 4,
-      "startCol": 17,
-      "startLine": 4,
-      "uid": "67f",
-    },
-    "6c7": Object {
-      "endCol": 45,
-      "endLine": 6,
-      "startCol": 17,
-      "startLine": 6,
-      "uid": "6c7",
-    },
-    "6e3": Object {
+    "05f": Object {
       "endCol": 53,
       "endLine": 5,
       "startCol": 48,
       "startLine": 5,
-      "uid": "6e3",
+      "uid": "05f",
     },
-    "7cb": Object {
+    "083": Object {
+      "endCol": 31,
+      "endLine": 6,
+      "startCol": 30,
+      "startLine": 6,
+      "uid": "083",
+    },
+    "262": Object {
+      "endCol": 37,
+      "endLine": 4,
+      "startCol": 25,
+      "startLine": 4,
+      "uid": "262",
+    },
+    "2ec": Object {
+      "endCol": 45,
+      "endLine": 6,
+      "startCol": 17,
+      "startLine": 6,
+      "uid": "2ec",
+    },
+    "389": Object {
+      "endCol": 45,
+      "endLine": 4,
+      "startCol": 17,
+      "startLine": 4,
+      "uid": "389",
+    },
+    "7a0": Object {
       "endCol": 22,
       "endLine": 4,
       "startCol": 17,
       "startLine": 4,
-      "uid": "7cb",
+      "uid": "7a0",
     },
-    "7df": Object {
-      "endCol": 45,
+    "908": Object {
+      "endCol": 37,
       "endLine": 6,
-      "startCol": 40,
+      "startCol": 25,
       "startLine": 6,
-      "uid": "7df",
+      "uid": "908",
     },
     "aaa": Object {
       "endCol": 56,
@@ -812,77 +798,77 @@ Object {
       "startLine": 5,
       "uid": "aaa",
     },
-    "b93": Object {
-      "endCol": 37,
-      "endLine": 6,
-      "startCol": 25,
-      "startLine": 6,
-      "uid": "b93",
-    },
-    "fa9": Object {
-      "endCol": 37,
+    "acb": Object {
+      "endCol": 45,
       "endLine": 4,
-      "startCol": 25,
+      "startCol": 40,
       "startLine": 4,
-      "uid": "fa9",
+      "uid": "acb",
     },
-    "fbe": Object {
+    "b06": Object {
+      "endCol": 45,
+      "endLine": 6,
+      "startCol": 40,
+      "startLine": 6,
+      "uid": "b06",
+    },
+    "c7e": Object {
       "endCol": 31,
       "endLine": 4,
       "startCol": 30,
       "startLine": 4,
-      "uid": "fbe",
+      "uid": "c7e",
     },
-  },
-  "highlightBounds": Object {
-    "13e": Object {
-      "endCol": 22,
+    "c95": Object {
+      "endCol": 37,
       "endLine": 6,
-      "startCol": 17,
+      "startCol": 25,
       "startLine": 6,
-      "uid": "13e",
+      "uid": "c95",
     },
-    "4cf": Object {
+    "e70": Object {
       "endCol": 37,
       "endLine": 4,
       "startCol": 25,
       "startLine": 4,
-      "uid": "4cf",
+      "uid": "e70",
     },
-    "58b": Object {
-      "endCol": 45,
-      "endLine": 4,
-      "startCol": 40,
-      "startLine": 4,
-      "uid": "58b",
-    },
-    "67f": Object {
-      "endCol": 45,
-      "endLine": 4,
+  },
+  "highlightBounds": Object {
+    "057": Object {
+      "endCol": 22,
+      "endLine": 6,
       "startCol": 17,
-      "startLine": 4,
-      "uid": "67f",
+      "startLine": 6,
+      "uid": "057",
     },
-    "6c7": Object {
+    "2ec": Object {
       "endCol": 45,
       "endLine": 6,
       "startCol": 17,
       "startLine": 6,
-      "uid": "6c7",
+      "uid": "2ec",
     },
-    "7cb": Object {
+    "389": Object {
+      "endCol": 45,
+      "endLine": 4,
+      "startCol": 17,
+      "startLine": 4,
+      "uid": "389",
+    },
+    "7a0": Object {
       "endCol": 22,
       "endLine": 4,
       "startCol": 17,
       "startLine": 4,
-      "uid": "7cb",
+      "uid": "7a0",
     },
-    "7df": Object {
-      "endCol": 45,
+    "908": Object {
+      "endCol": 37,
       "endLine": 6,
-      "startCol": 40,
+      "startCol": 25,
       "startLine": 6,
-      "uid": "7df",
+      "uid": "908",
     },
     "aaa": Object {
       "endCol": 56,
@@ -891,12 +877,26 @@ Object {
       "startLine": 5,
       "uid": "aaa",
     },
-    "b93": Object {
-      "endCol": 37,
+    "acb": Object {
+      "endCol": 45,
+      "endLine": 4,
+      "startCol": 40,
+      "startLine": 4,
+      "uid": "acb",
+    },
+    "b06": Object {
+      "endCol": 45,
       "endLine": 6,
-      "startCol": 25,
+      "startCol": 40,
       "startLine": 6,
-      "uid": "b93",
+      "uid": "b06",
+    },
+    "e70": Object {
+      "endCol": 37,
+      "endLine": 4,
+      "startCol": 25,
+      "startLine": 4,
+      "uid": "e70",
     },
   },
   "imports": Object {
@@ -1088,7 +1088,7 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
                 },
                 "type": "ATTRIBUTE_VALUE",
                 "uid": "",
-                "value": "4cf",
+                "value": "e70",
               },
             },
           ],
@@ -1302,7 +1302,7 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
                 },
                 "type": "ATTRIBUTE_VALUE",
                 "uid": "",
-                "value": "b93",
+                "value": "908",
               },
             },
           ],
@@ -1377,39 +1377,17 @@ export var App = (props) => <View data-uid='bbb'>
         "assignments": Array [
           Object {
             "leftHandSide": Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
+              "defaultExpression": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "uid": "",
+                "value": "cake",
               },
-              "name": "a",
-              "sourceMap": Object {
-                "mappings": "CAWO",
-                "names": Array [],
-                "sources": Array [
-                  "code.tsx",
-                ],
-                "sourcesContent": Array [
-                  "import * as React from \\"react\\";
-import {
-  UtopiaUtils,
-  Ellipse,
-  Image,
-  Rectangle,
-  Storyboard,
-  Text,
-  View,
-  Scene
-} from \\"utopia-api\\";
-const a = \\"cake\\"
-export var App = (props) => <View data-uid='bbb'>
-  {{a: a}}
-</View>
-",
-                ],
-                "version": 3,
-              },
-              "type": "JS_IDENTIFIER",
-              "uid": "",
+              "paramName": "a",
+              "type": "REGULAR_PARAM",
             },
             "rightHandSide": Object {
               "comments": Object {
@@ -1444,42 +1422,19 @@ export var App = (props) => <View data-uid='bbb'>
     },
   ],
   "fullHighlightBounds": Object {
-    "5b5": Object {
-      "endCol": 9,
-      "endLine": 13,
-      "startCol": 3,
-      "startLine": 13,
-      "uid": "5b5",
-    },
-    "854": Object {
+    "190": Object {
       "endCol": 48,
       "endLine": 12,
       "startCol": 43,
       "startLine": 12,
-      "uid": "854",
+      "uid": "190",
     },
-    "bbb": Object {
-      "endCol": 7,
-      "endLine": 14,
-      "startCol": 28,
-      "startLine": 12,
-      "uid": "bbb",
-    },
-    "d0b": Object {
+    "522": Object {
       "endCol": 16,
       "endLine": 11,
       "startCol": 0,
       "startLine": 11,
-      "uid": "d0b",
-    },
-  },
-  "highlightBounds": Object {
-    "5b5": Object {
-      "endCol": 9,
-      "endLine": 13,
-      "startCol": 3,
-      "startLine": 13,
-      "uid": "5b5",
+      "uid": "522",
     },
     "bbb": Object {
       "endCol": 7,
@@ -1487,6 +1442,29 @@ export var App = (props) => <View data-uid='bbb'>
       "startCol": 28,
       "startLine": 12,
       "uid": "bbb",
+    },
+    "fae": Object {
+      "endCol": 9,
+      "endLine": 13,
+      "startCol": 3,
+      "startLine": 13,
+      "uid": "fae",
+    },
+  },
+  "highlightBounds": Object {
+    "bbb": Object {
+      "endCol": 7,
+      "endLine": 14,
+      "startCol": 28,
+      "startLine": 12,
+      "uid": "bbb",
+    },
+    "fae": Object {
+      "endCol": 9,
+      "endLine": 13,
+      "startCol": 3,
+      "startLine": 13,
+      "uid": "fae",
     },
   },
   "imports": Object {
@@ -1631,39 +1609,17 @@ export var App = (props) => <View data-uid='bbb'>
           "assignments": Array [
             Object {
               "leftHandSide": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
+                "defaultExpression": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "uid": "",
+                  "value": "cake",
                 },
-                "name": "a",
-                "sourceMap": Object {
-                  "mappings": "CAWO",
-                  "names": Array [],
-                  "sources": Array [
-                    "code.tsx",
-                  ],
-                  "sourcesContent": Array [
-                    "import * as React from \\"react\\";
-import {
-  UtopiaUtils,
-  Ellipse,
-  Image,
-  Rectangle,
-  Storyboard,
-  Text,
-  View,
-  Scene
-} from \\"utopia-api\\";
-const a = \\"cake\\"
-export var App = (props) => <View data-uid='bbb'>
-  {{a: a}}
-</View>
-",
-                  ],
-                  "version": 3,
-                },
-                "type": "JS_IDENTIFIER",
-                "uid": "",
+                "paramName": "a",
+                "type": "REGULAR_PARAM",
               },
               "rightHandSide": Object {
                 "comments": Object {

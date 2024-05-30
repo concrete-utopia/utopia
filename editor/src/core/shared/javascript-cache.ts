@@ -6,7 +6,7 @@ import type {
 import type { MapLike } from 'typescript'
 import { SafeFunctionCurriedErrorHandler } from './code-exec-utils'
 
-type JavaScriptContainer = JSExpressionOtherJavaScript | ArbitraryJSBlock | JSXMapExpression
+type JavaScriptContainer = JSExpressionOtherJavaScript | ArbitraryJSBlock
 
 export type GetOrUpdateFunctionCache = (
   javascript: JavaScriptContainer,

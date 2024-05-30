@@ -4,17 +4,22 @@ import localforage from 'localforage'
 import { imagePathURL } from '../../../common/server'
 import { roundAttributeLayoutValues } from '../../../core/layout/layout-utils'
 import {
+  findElementAtPath,
+  findJSXElementAtPath,
   getZIndexOrderedViewsWithoutDirectChildren,
   MetadataUtils,
 } from '../../../core/model/element-metadata-utils'
 import type { InsertChildAndDetails } from '../../../core/model/element-template-utils'
 import {
+  elementPathForNonChildInsertions,
   elementPathFromInsertionPath,
+  findJSXElementChildAtPath,
   generateUidWithExistingComponents,
   getIndexInParent,
   insertJSXElementChildren,
   renameJsxElementChild,
   renameJsxElementChildWithoutId,
+  transformJSXComponentAtPath,
 } from '../../../core/model/element-template-utils'
 import {
   applyToAllUIJSFiles,
@@ -52,6 +57,7 @@ import type {
   JSXElementChild,
   JSXConditionalExpression,
   JSXFragment,
+  JSExpression,
 } from '../../../core/shared/element-template'
 import {
   deleteJSXAttribute,
@@ -78,6 +84,8 @@ import {
   getDefinedElsewhereFromElementChild,
   isJSXFragment,
   jsxConditionalExpressionConditionOptic,
+  isJSExpressionOtherJavaScript,
+  setJSXAttributesAttribute,
 } from '../../../core/shared/element-template'
 import type { ValueAtPath } from '../../../core/shared/jsx-attributes'
 import {
@@ -120,6 +128,7 @@ import type {
   ParseSuccess,
   ProjectContents,
   ProjectFile,
+  PropertyPath,
   StaticElementPath,
   TextFile,
 } from '../../../core/shared/project-file-types'
@@ -144,10 +153,10 @@ import {
 } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { assertNever, fastForEach, getProjectLockedKey, identity } from '../../../core/shared/utils'
-import { mergeImports } from '../../../core/workers/common/project-file-utils'
+import { emptyImports, mergeImports } from '../../../core/workers/common/project-file-utils'
 import type { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import type { IndexPosition } from '../../../utils/utils'
-import Utils from '../../../utils/utils'
+import Utils, { absolute } from '../../../utils/utils'
 import type { ProjectContentTreeRoot } from '../../assets'
 import {
   isProjectContentFile,
@@ -335,6 +344,10 @@ import type {
   AddNewFeaturedRoute,
   RemoveFeaturedRoute,
   AddCollapsedViews,
+  ReplaceMappedElement,
+  ReplaceElementInScope,
+  ReplaceJSXElement,
+  ToggleDataCanCondense,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -382,9 +395,10 @@ import {
   modifyUnderlyingTargetJSXElement,
   getAllComponentDescriptorErrors,
   updatePackageJsonInEditorState,
+  modifyUnderlyingTarget,
+  modifyUnderlyingParseSuccessOnly,
 } from '../store/editor-state'
 import {
-  areGeneratedElementsTargeted,
   BaseCanvasOffset,
   BaseCanvasOffsetLeftPane,
   editorModelFromPersistentModel,
@@ -450,6 +464,7 @@ import {
   ExportDetailKeepDeepEquality,
   ImportDetailsKeepDeepEquality,
   NavigatorStateKeepDeepEquality,
+  ParseSuccessKeepDeepEquality,
   TopLevelElementKeepDeepEquality,
 } from '../store/store-deep-equality-instances'
 import type { MouseButtonsPressed } from '../../../utils/mouse'
@@ -475,13 +490,19 @@ import type { ShortcutConfiguration } from '../shortcut-definitions'
 import { ElementInstanceMetadataMapKeepDeepEquality } from '../store/store-deep-equality-instances'
 import {
   addImports,
+  addToast,
   clearImageFileBlob,
   enableInsertModeForJSXElement,
   finishCheckpointTimer,
+  insertAsChildTarget,
   insertJSXElement,
   openCodeEditorFile,
+  replaceMappedElement,
   scrollToPosition,
   selectComponents,
+  setCodeEditorBuildErrors,
+  setCodeEditorComponentDescriptorErrors,
+  setCodeEditorLintErrors,
   setFocusedElement,
   setPackageStatus,
   setScrollAnimation,
@@ -504,7 +525,7 @@ import { LayoutPropertyList, StyleProperties } from '../../inspector/common/css-
 import { isUtopiaCommentFlag, makeUtopiaFlagComment } from '../../../core/shared/comment-flags'
 import { modify, toArrayOf } from '../../../core/shared/optics/optic-utilities'
 import { fromField, traverseArray } from '../../../core/shared/optics/optic-creators'
-import type { InsertionPath } from '../store/insertion-path'
+import type { ConditionalClauseInsertBehavior, InsertionPath } from '../store/insertion-path'
 import {
   commonInsertionPathFromArray,
   getElementPathFromInsertionPath,
@@ -580,11 +601,21 @@ import {
 import {
   addNewFeaturedRouteToPackageJson,
   addOrReplaceFeaturedRouteToPackageJson,
+  isInsideRemixFolder,
+  remixFilenameMatchPrefix,
+  renameRemixFile,
   removeFeaturedRouteFromPackageJson,
 } from '../../canvas/remix/remix-utils'
 import type { FixUIDsState } from '../../../core/workers/parser-printer/uid-fix'
 import { fixTopLevelElementsUIDs } from '../../../core/workers/parser-printer/uid-fix'
 import { nextSelectedTab } from '../../navigator/left-pane/left-pane-utils'
+import { getRemixRootDir } from '../store/remix-derived-data'
+import { isReplaceKeepChildrenAndStyleTarget } from '../../navigator/navigator-item/component-picker-context-menu'
+import {
+  canCondenseJSXElementChild,
+  dataCanCondenseProp,
+  isDataCanCondenseProp,
+} from '../../../utils/can-condense'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -727,6 +758,52 @@ export function editorMoveMultiSelectedTemplates(
   }, editor)
   return {
     editor: updatedEditor,
+    newPaths: newPaths,
+  }
+}
+
+export function replaceInsideMap(
+  targets: ElementPath[],
+  intendedParentPath: StaticElementPath,
+  insertBehavior: ConditionalClauseInsertBehavior,
+  editor: EditorModel,
+): {
+  editor: EditorModel
+  newPaths: Array<ElementPath>
+} {
+  const elements: Array<JSXElementChild> = mapDropNulls((path) => {
+    const instance = MetadataUtils.findElementByElementPath(editor.jsxMetadata, path)
+    if (instance == null || isLeft(instance.element)) {
+      return null
+    }
+
+    return instance.element.value
+  }, targets)
+
+  let newPaths: Array<ElementPath> = targets.map((target) =>
+    elementPathForNonChildInsertions(insertBehavior, intendedParentPath, EP.toUid(target)),
+  )
+
+  // TODO: handle multiple elements - currently we're taking the first one
+  const elementToReplace = elements.find((element) => isJSXElement(element))
+
+  if (elementToReplace != null && isJSXElement(elementToReplace)) {
+    const editorAfterReplace = UPDATE_FNS.REPLACE_MAPPED_ELEMENT(
+      replaceMappedElement(elementToReplace, intendedParentPath, emptyImports()),
+      editor,
+    )
+    const updatedEditor = foldAndApplyCommandsSimple(editorAfterReplace, [
+      ...targets.map((path) => deleteElement('always', path)),
+    ])
+    return {
+      editor: updatedEditor,
+      newPaths: newPaths,
+    }
+  }
+
+  // if we couldn't find the JSXElement to replace, we just return the editor as is
+  return {
+    editor: editor,
     newPaths: newPaths,
   }
 }
@@ -973,6 +1050,7 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
   const poppedDerived = history.current.derived
 
   return {
+    navigatorRows: poppedDerived.navigatorRows,
     navigatorTargets: poppedDerived.navigatorTargets,
     visibleNavigatorTargets: poppedDerived.visibleNavigatorTargets,
     autoFocusedPaths: poppedDerived.autoFocusedPaths,
@@ -1234,6 +1312,7 @@ interface ReplaceFilePathSuccess {
   type: 'SUCCESS'
   projectContents: ProjectContentTreeRoot
   updatedFiles: Array<{ oldPath: string; newPath: string }>
+  renamedOptionalPrefix: boolean
 }
 
 interface ReplaceFilePathFailure {
@@ -1243,7 +1322,7 @@ interface ReplaceFilePathFailure {
 
 type ReplaceFilePathResult = ReplaceFilePathFailure | ReplaceFilePathSuccess
 
-function replaceFilePath(
+export function replaceFilePath(
   oldPath: string,
   newPath: string,
   projectContentsTree: ProjectContentTreeRoot,
@@ -1256,17 +1335,33 @@ function replaceFilePath(
     ...projectContents,
   }
   let updatedFiles: Array<{ oldPath: string; newPath: string }> = []
+
+  const remixRootDir = getRemixRootDir(projectContentsTree)
+
+  let renamedOptionalPrefix = false
   Utils.fastForEach(Object.keys(projectContents), (filename) => {
-    const tokens = filename.split('.')
-    const extension = tokens[tokens.length - 1]
     if (
       filename === oldPath ||
       filename.startsWith(oldPath + '/') ||
-      (extension === 'jsx' && filename.startsWith(oldPath + '.')) // remix routes
+      remixFilenameMatchPrefix(remixRootDir, filename, oldPath)
     ) {
       // TODO make sure the prefix search only happens when it makes sense so
       const projectFile = projectContents[filename]
-      const newFilePath = filename.replace(oldPath, newPath)
+
+      const maybeNewFilePathForRemix = isInsideRemixFolder(remixRootDir, filename)
+        ? renameRemixFile({
+            remixRootDir: remixRootDir,
+            filename: filename,
+            oldPath: oldPath,
+            newPath: newPath,
+          })
+        : null
+      if (maybeNewFilePathForRemix?.renamedOptionalPrefix) {
+        renamedOptionalPrefix = true
+      }
+
+      const newFilePath = maybeNewFilePathForRemix?.filename ?? filename.replace(oldPath, newPath)
+
       const fileType = isDirectory(projectFile) ? 'DIRECTORY' : fileTypeFromFileName(newFilePath)
       if (fileType == null) {
         // Can't identify the file type.
@@ -1365,15 +1460,24 @@ function replaceFilePath(
         }
       })
 
-      updatedProjectContents[filename] = saveTextFileContents(
-        projectFile,
-        textFileContents(
-          projectFile.fileContents.code,
-          updatedParseResult,
-          RevisionsState.ParsedAhead,
-        ),
-        projectFile.lastSavedContents == null,
-      )
+      // Only mark these as parsed ahead if they have meaningfully changed,
+      // or if the filename has been changed for this file.
+      const oldFilename =
+        updatedFiles.find((updatedFile) => updatedFile.newPath === filename) ?? filename
+      if (
+        oldFilename !== filename ||
+        !ParseSuccessKeepDeepEquality(projectFile.fileContents.parsed, updatedParseResult).areEqual
+      ) {
+        updatedProjectContents[filename] = saveTextFileContents(
+          projectFile,
+          textFileContents(
+            projectFile.fileContents.code,
+            updatedParseResult,
+            RevisionsState.ParsedAhead,
+          ),
+          projectFile.lastSavedContents == null,
+        )
+      }
     }
   })
   // Check if we discovered an error.
@@ -1382,6 +1486,7 @@ function replaceFilePath(
       type: 'SUCCESS',
       projectContents: contentsToTree(updatedProjectContents),
       updatedFiles: updatedFiles,
+      renamedOptionalPrefix: renamedOptionalPrefix,
     }
   } else {
     return {
@@ -1399,45 +1504,6 @@ function loadModel(newModel: EditorModel, oldModel: EditorModel): EditorModel {
     projectList: oldModel.projectList,
     showcaseProjects: oldModel.showcaseProjects,
   })
-}
-
-function toastOnGeneratedElementsSelected(
-  message: string,
-  editor: EditorState,
-  allowActionRegardless: boolean,
-  actionOtherwise: (e: EditorState) => EditorState,
-  dispatch: EditorDispatch,
-): EditorState {
-  return toastOnGeneratedElementsTargeted(
-    message,
-    editor.selectedViews,
-    editor,
-    allowActionRegardless,
-    actionOtherwise,
-    dispatch,
-  )
-}
-
-function toastOnGeneratedElementsTargeted(
-  message: string,
-  targets: ElementPath[],
-  editor: EditorState,
-  allowActionRegardless: boolean,
-  actionOtherwise: (e: EditorState) => EditorState,
-  dispatch: EditorDispatch,
-): EditorState {
-  const generatedElementsTargeted = areGeneratedElementsTargeted(targets)
-  let result: EditorState = editor
-  if (generatedElementsTargeted) {
-    const showToastAction = showToast(notice(message))
-    result = UPDATE_FNS.ADD_TOAST(showToastAction, result)
-  }
-
-  if (!generatedElementsTargeted || allowActionRegardless) {
-    result = actionOtherwise(editor)
-  }
-
-  return result
 }
 
 let checkpointTimeoutId: number | undefined = undefined
@@ -1721,6 +1787,7 @@ export const UPDATE_FNS = {
   },
   SET_PROP: (action: SetProp, editor: EditorModel): EditorModel => {
     let setPropFailedMessage: string | null = null
+    let newSelectedViews: Array<ElementPath> = editor.selectedViews
     let updatedEditor = modifyUnderlyingTargetElement(
       action.target,
       editor,
@@ -1729,6 +1796,10 @@ export const UPDATE_FNS = {
           return element
         }
         const updatedProps = setJSXValueAtPath(element.props, action.propertyPath, action.value)
+        // when this is a render prop we should select it
+        if (isJSXElement(action.value)) {
+          newSelectedViews = [EP.appendToPath(action.target, action.value.uid)]
+        }
         if (
           isRight(updatedProps) &&
           PP.contains(
@@ -1793,7 +1864,10 @@ export const UPDATE_FNS = {
       updatedEditor = UPDATE_FNS.ADD_TOAST(toastAction, editor)
     }
 
-    return updatedEditor
+    return {
+      ...updatedEditor,
+      selectedViews: newSelectedViews,
+    }
   },
   SET_CANVAS_FRAMES: (action: SetCanvasFrames, editor: EditorModel): EditorModel => {
     return setCanvasFramesInnerNew(editor, action.framesAndTargets, null)
@@ -1803,7 +1877,7 @@ export const UPDATE_FNS = {
       reorderElement('always', action.target, action.indexPosition),
     ])
   },
-  DELETE_SELECTED: (editorForAction: EditorModel, dispatch: EditorDispatch): EditorModel => {
+  DELETE_SELECTED: (editor: EditorModel, dispatch: EditorDispatch): EditorModel => {
     // This function returns whether the given path will have the following deletion behavior:
     //  1. when deleting one of its children, the next sibling will be selected
     //  2. when deleting the last chilren, it is removed as well so as not to remain empty
@@ -1837,178 +1911,130 @@ export const UPDATE_FNS = {
       return result
     }
 
-    return toastOnGeneratedElementsSelected(
-      'Generated elements can only be deleted in code.',
-      editorForAction,
-      true,
-      (editor) => {
-        let bubbledUpDeletions: Array<ElementPath> = []
+    let bubbledUpDeletions: Array<ElementPath> = []
 
-        const staticSelectedElements = editor.selectedViews
-          .filter((selectedView) => {
-            if (MetadataUtils.isRenderPropsFromMetadata(editor.jsxMetadata, selectedView)) {
-              return true
-            }
-            return !MetadataUtils.isElementGenerated(selectedView)
-          })
-          .map((path, _, allSelectedPaths) => {
-            const siblings = MetadataUtils.getSiblingsOrdered(
+    const staticSelectedElements = editor.selectedViews.map((path, _, allSelectedPaths) => {
+      const siblings = MetadataUtils.getSiblingsOrdered(
+        editor.jsxMetadata,
+        editor.elementPathTree,
+        path,
+      )
+      const selectedSiblings = allSelectedPaths.filter((p) =>
+        siblings.some((sibling) => EP.pathsEqual(sibling.elementPath, p)),
+      )
+
+      const parentPath = EP.parentPath(path)
+
+      const mustDeleteEmptyParent = behavesLikeGroupOrFragmentForDeletion(
+        editor.jsxMetadata,
+        parentPath,
+      )
+
+      const parentWillBeEmpty =
+        MetadataUtils.getChildrenOrdered(editor.jsxMetadata, editor.elementPathTree, parentPath)
+          .length === selectedSiblings.length
+
+      if (mustDeleteEmptyParent && parentWillBeEmpty) {
+        const bubbledUp = [
+          parentPath,
+          ...deletableParents(editor.jsxMetadata, parentPath, allSelectedPaths),
+        ]
+        bubbledUpDeletions.push(...bubbledUp)
+        return EP.getCommonParent(bubbledUpDeletions, true) ?? parentPath
+      }
+
+      return path
+    })
+
+    const withElementDeleted = deleteElements(staticSelectedElements, editor, {
+      trueUpHuggingElements: true,
+    })
+
+    const newSelectedViews = uniqBy(
+      mapDropNulls((view) => {
+        const parentPath = EP.parentPath(view)
+        if (behavesLikeGroupOrFragmentForDeletion(editor.jsxMetadata, parentPath)) {
+          // there may be bubbled up deletions, so find out which is the actual parent
+          // where the bubbles stopped
+          const parentsBubbledUp = [
+            view,
+            ...deletableParents(editor.jsxMetadata, parentPath, staticSelectedElements),
+          ].map(EP.parentPath)
+          const actualParent = EP.getCommonParent(parentsBubbledUp, true) ?? parentPath
+
+          if (
+            EP.pathsEqual(actualParent, parentPath) ||
+            behavesLikeGroupOrFragmentForDeletion(editor.jsxMetadata, actualParent)
+          ) {
+            const ignorePaths = [...staticSelectedElements, ...parentsBubbledUp] // ignore these paths when looking for a sibling
+            const target = MetadataUtils.getChildrenOrdered(
               editor.jsxMetadata,
               editor.elementPathTree,
-              path,
-            )
-            const selectedSiblings = allSelectedPaths.filter((p) =>
-              siblings.some((sibling) => EP.pathsEqual(sibling.elementPath, p)),
-            )
-
-            const parentPath = EP.parentPath(path)
-
-            const mustDeleteEmptyParent = behavesLikeGroupOrFragmentForDeletion(
-              editor.jsxMetadata,
-              parentPath,
-            )
-
-            const parentWillBeEmpty =
-              MetadataUtils.getChildrenOrdered(
-                editor.jsxMetadata,
-                editor.elementPathTree,
-                parentPath,
-              ).length === selectedSiblings.length
-
-            if (mustDeleteEmptyParent && parentWillBeEmpty) {
-              const bubbledUp = [
-                parentPath,
-                ...deletableParents(editor.jsxMetadata, parentPath, allSelectedPaths),
-              ]
-              bubbledUpDeletions.push(...bubbledUp)
-              return EP.getCommonParent(bubbledUpDeletions, true) ?? parentPath
+              actualParent,
+            ).find((element) => !EP.containsPath(element.elementPath, ignorePaths))
+            if (target != null) {
+              return target.elementPath
             }
-
-            return path
-          })
-
-        const withElementDeleted = deleteElements(staticSelectedElements, editor, {
-          trueUpHuggingElements: true,
-        })
-
-        const newSelectedViews = uniqBy(
-          mapDropNulls((view) => {
-            const parentPath = EP.parentPath(view)
-            if (behavesLikeGroupOrFragmentForDeletion(editor.jsxMetadata, parentPath)) {
-              // there may be bubbled up deletions, so find out which is the actual parent
-              // where the bubbles stopped
-              const parentsBubbledUp = [
-                view,
-                ...deletableParents(editor.jsxMetadata, parentPath, staticSelectedElements),
-              ].map(EP.parentPath)
-              const actualParent = EP.getCommonParent(parentsBubbledUp, true) ?? parentPath
-
-              if (
-                EP.pathsEqual(actualParent, parentPath) ||
-                behavesLikeGroupOrFragmentForDeletion(editor.jsxMetadata, actualParent)
-              ) {
-                const ignorePaths = [...staticSelectedElements, ...parentsBubbledUp] // ignore these paths when looking for a sibling
-                const target = MetadataUtils.getChildrenOrdered(
-                  editor.jsxMetadata,
-                  editor.elementPathTree,
-                  actualParent,
-                ).find((element) => !EP.containsPath(element.elementPath, ignorePaths))
-                if (target != null) {
-                  return target.elementPath
-                }
-              }
-            }
-
-            const parent = MetadataUtils.findElementByElementPath(editor.jsxMetadata, parentPath)
-            if (
-              parent != null &&
-              isRight(parent.element) &&
-              isJSXConditionalExpression(parent.element.value)
-            ) {
-              const isTrueBranch = EP.toUid(view) === getUtopiaID(parent.element.value.whenTrue)
-
-              const branchPath = withUnderlyingTarget(
-                parentPath,
-                withElementDeleted.projectContents,
-                null,
-                (_, element) => {
-                  if (isJSXConditionalExpression(element) && element.uid === EP.toUid(parentPath)) {
-                    return EP.appendToPath(
-                      parentPath,
-                      getUtopiaID(isTrueBranch ? element.whenTrue : element.whenFalse),
-                    )
-                  }
-                  return null
-                },
-              )
-              if (branchPath != null) {
-                return branchPath
-              }
-            }
-            return EP.isStoryboardPath(parentPath) ? null : parentPath
-          }, staticSelectedElements),
-          EP.pathsEqual,
-        ).filter((path) => {
-          // remove descendants of already-deleted elements during multiselect
-          return !EP.containsPath(path, bubbledUpDeletions)
-        })
-
-        return {
-          ...withElementDeleted,
-          selectedViews: newSelectedViews,
+          }
         }
-      },
-      dispatch,
-    )
-  },
-  DELETE_VIEW: (action: DeleteView, editor: EditorModel, dispatch: EditorDispatch): EditorModel => {
-    const allSelectedElementsRenderProps = editor.selectedViews.every((path) =>
-      MetadataUtils.isRenderPropsFromMetadata(editor.jsxMetadata, path),
-    )
 
-    return toastOnGeneratedElementsTargeted(
-      'Generated elements can only be deleted in code.',
-      [action.target],
-      editor,
-      allSelectedElementsRenderProps,
-      (e) => {
-        const updatedEditor = deleteElements([action.target], e, { trueUpHuggingElements: false })
-        const parentPath = EP.parentPath(action.target)
-        const newSelection = EP.isStoryboardPath(parentPath) ? [] : [parentPath]
-        return {
-          ...updatedEditor,
-          selectedViews: newSelection,
+        const parent = MetadataUtils.findElementByElementPath(editor.jsxMetadata, parentPath)
+        if (
+          parent != null &&
+          isRight(parent.element) &&
+          isJSXConditionalExpression(parent.element.value)
+        ) {
+          const isTrueBranch = EP.toUid(view) === getUtopiaID(parent.element.value.whenTrue)
+
+          const branchPath = withUnderlyingTarget(
+            parentPath,
+            withElementDeleted.projectContents,
+            null,
+            (_, element) => {
+              if (isJSXConditionalExpression(element) && element.uid === EP.toUid(parentPath)) {
+                return EP.appendToPath(
+                  parentPath,
+                  getUtopiaID(isTrueBranch ? element.whenTrue : element.whenFalse),
+                )
+              }
+              return null
+            },
+          )
+          if (branchPath != null) {
+            return branchPath
+          }
         }
-      },
-      dispatch,
-    )
+        return EP.isStoryboardPath(parentPath) ? null : parentPath
+      }, staticSelectedElements),
+      EP.pathsEqual,
+    ).filter((path) => {
+      // remove descendants of already-deleted elements during multiselect
+      return !EP.containsPath(path, bubbledUpDeletions)
+    })
+
+    return {
+      ...withElementDeleted,
+      selectedViews: newSelectedViews,
+    }
   },
-  DUPLICATE_SELECTED: (editor: EditorModel, dispatch: EditorDispatch): EditorModel => {
-    return toastOnGeneratedElementsSelected(
-      'Generated elements can only be duplicated in code',
-      editor,
-      false,
-      (e) => {
-        return duplicateMany(editor.selectedViews, e)
-      },
-      dispatch,
-    )
+  DELETE_VIEW: (action: DeleteView, editor: EditorModel): EditorModel => {
+    const updatedEditor = deleteElements([action.target], editor, { trueUpHuggingElements: false })
+    const parentPath = EP.parentPath(action.target)
+    const newSelection = EP.isStoryboardPath(parentPath) ? [] : [parentPath]
+    return {
+      ...updatedEditor,
+      selectedViews: newSelection,
+    }
+  },
+  DUPLICATE_SELECTED: (editor: EditorModel): EditorModel => {
+    return duplicateMany(editor.selectedViews, editor)
   },
   DUPLICATE_SPECIFIC_ELEMENTS: (
     action: DuplicateSpecificElements,
     editor: EditorModel,
     dispatch: EditorDispatch,
   ): EditorModel => {
-    return toastOnGeneratedElementsTargeted(
-      'Generated elements can only be duplicated in code.',
-      action.paths,
-      editor,
-      false,
-      () => {
-        return duplicateMany(action.paths, editor)
-      },
-      dispatch,
-    )
+    return duplicateMany(action.paths, editor)
   },
   UPDATE_DUPLICATION_STATE: (action: UpdateDuplicationState, editor: EditorModel): EditorModel => {
     return {
@@ -2222,6 +2248,29 @@ export const UPDATE_FNS = {
       }
     }, editor)
   },
+  TOGGLE_DATA_CAN_CONDENSE: (action: ToggleDataCanCondense, editor: EditorModel): EditorModel => {
+    let working = { ...editor }
+    for (const path of action.targets) {
+      working = modifyOpenJsxElementAtPath(
+        path,
+        (element) => {
+          const canCondense = canCondenseJSXElementChild(element)
+          // remove any data-can-condense props
+          const props = element.props.filter((prop) => !isDataCanCondenseProp(prop))
+          // if it needs to switch to true, append the new prop
+          if (!canCondense) {
+            props.push(dataCanCondenseProp(true))
+          }
+          return {
+            ...element,
+            props: props,
+          }
+        },
+        working,
+      )
+    }
+    return working
+  },
   RENAME_COMPONENT: (action: RenameComponent, editor: EditorModel): EditorModel => {
     const { name } = action
     const target = action.target
@@ -2253,30 +2302,20 @@ export const UPDATE_FNS = {
   INSERT_JSX_ELEMENT: (action: InsertJSXElement, editor: EditorModel): EditorModel => {
     let newSelectedViews: ElementPath[] = []
     const parentPath =
-      action.parent ??
-      forceNotNull(
-        'found no element path for the storyboard root',
-        getStoryboardElementPath(editor.projectContents, editor.canvas.openFile?.filename),
-      )
+      action.target == null
+        ? // action.target == null means Canvas, which means storyboard root element
+          forceNotNull(
+            'found no element path for the storyboard root',
+            getStoryboardElementPath(editor.projectContents, editor.canvas.openFile?.filename),
+          )
+        : action.target
+
     const withNewElement = modifyUnderlyingTargetElement(
       parentPath,
       editor,
       (element) => element,
       (success, _, underlyingFilePath) => {
-        const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
-        const targetParent =
-          action.parent == null
-            ? // action.parent == null means Canvas, which means storyboard root element
-              getStoryboardElementPath(
-                editor.projectContents,
-                editor.canvas.openFile?.filename ?? null,
-              )
-            : action.parent
-
-        if (targetParent == null) {
-          // This means there is no storyboard element to add it to
-          return success
-        }
+        const components = getUtopiaJSXComponentsFromSuccess(success)
 
         const updatedImports = mergeImports(
           underlyingFilePath,
@@ -2286,17 +2325,17 @@ export const UPDATE_FNS = {
 
         const { imports, duplicateNameMapping } = updatedImports
 
-        const renamedJsxElement = renameJsxElementChild(action.jsxElement, duplicateNameMapping)
+        const fixedElement = renameJsxElementChild(action.jsxElement, duplicateNameMapping)
 
         const withInsertedElement = insertJSXElementChildren(
-          childInsertionPath(targetParent),
-          [renamedJsxElement],
-          utopiaComponents,
-          null,
+          childInsertionPath(parentPath),
+          [fixedElement],
+          components,
+          action.indexPosition,
         )
 
-        const uid = getUtopiaID(renamedJsxElement)
-        const newPath = EP.appendToPath(targetParent, uid)
+        const uid = getUtopiaID(fixedElement)
+        const newPath = EP.appendToPath(parentPath, uid)
         newSelectedViews.push(newPath)
 
         const updatedTopLevelElements = applyUtopiaJSXComponentsChanges(
@@ -2311,11 +2350,228 @@ export const UPDATE_FNS = {
         }
       },
     )
+
     return {
       ...withNewElement,
       leftMenu: { visible: editor.leftMenu.visible, selectedTab: LeftMenuTab.Navigator },
       selectedViews: newSelectedViews,
     }
+  },
+  REPLACE_JSX_ELEMENT: (action: ReplaceJSXElement, editor: EditorModel): EditorModel => {
+    let newSelectedViews: ElementPath[] = []
+
+    const withNewElement = modifyUnderlyingParseSuccessOnly(
+      action.target,
+      editor,
+      (success, underlyingFilePath) => {
+        const startingComponents = getUtopiaJSXComponentsFromSuccess(success)
+
+        const originalElement = findJSXElementChildAtPath(
+          startingComponents,
+          EP.dynamicPathToStaticPath(action.target),
+        )
+
+        if (originalElement == null) {
+          return success
+        }
+
+        const { imports, duplicateNameMapping } = mergeImports(
+          underlyingFilePath,
+          success.imports,
+          action.importsToAdd,
+        )
+
+        const fixedElement = (() => {
+          const renamedJsxElement = renameJsxElementChild(action.jsxElement, duplicateNameMapping)
+          if (
+            !isReplaceKeepChildrenAndStyleTarget(action.behaviour) ||
+            originalElement.type !== 'JSX_ELEMENT'
+          ) {
+            return renamedJsxElement
+          }
+
+          // apply the style of original element on the new element
+          const renamedJsxElementWithOriginalStyle = applyUpdateToJSXElement(
+            renamedJsxElement,
+            (props) => {
+              const styleProps = getJSXAttribute(originalElement.props, 'style')
+              if (styleProps == null) {
+                return right(deleteJSXAttribute(props, 'style'))
+              } else {
+                return right(setJSXAttributesAttribute(props, 'style', styleProps))
+              }
+            },
+          )
+
+          if (originalElement.children.length > 0) {
+            // apply the children of original element on the new element
+            return {
+              ...renamedJsxElementWithOriginalStyle,
+              children: originalElement.children,
+            }
+          }
+          return renamedJsxElementWithOriginalStyle
+        })()
+
+        const updatedComponents = transformJSXComponentAtPath(
+          startingComponents,
+          EP.dynamicPathToStaticPath(action.target),
+          () => fixedElement,
+        )
+
+        const updatedTopLevelElements = applyUtopiaJSXComponentsChanges(
+          success.topLevelElements,
+          updatedComponents,
+        )
+
+        return {
+          ...success,
+          topLevelElements: updatedTopLevelElements,
+          imports: imports,
+        }
+      },
+    )
+
+    return {
+      ...withNewElement,
+      leftMenu: { visible: editor.leftMenu.visible, selectedTab: LeftMenuTab.Navigator },
+      selectedViews: newSelectedViews,
+    }
+  },
+  REPLACE_MAPPED_ELEMENT: (action: ReplaceMappedElement, editor: EditorModel): EditorModel => {
+    let newSelectedViews: ElementPath[] = []
+    const parentPath =
+      action.target == null
+        ? // action.target == null means Canvas, which means storyboard root element
+          forceNotNull(
+            'found no element path for the storyboard root',
+            getStoryboardElementPath(editor.projectContents, editor.canvas.openFile?.filename),
+          )
+        : EP.isIndexedElement(action.target)
+        ? EP.parentPath(action.target)
+        : action.target
+
+    const withNewElement = modifyUnderlyingTarget(
+      parentPath,
+      editor,
+      (element) => element,
+      (success, _, underlyingFilePath): ParseSuccess => {
+        const startingComponents = getUtopiaJSXComponentsFromSuccess(success)
+        const updatedImports = mergeImports(
+          underlyingFilePath,
+          success.imports,
+          action.importsToAdd,
+        )
+
+        const renamedJsxElement = renameJsxElementChild(
+          action.jsxElement,
+          updatedImports.duplicateNameMapping,
+        )
+
+        const withInsertedElement = transformJSXComponentAtPath(
+          startingComponents,
+          EP.dynamicPathToStaticPath(parentPath),
+          (parentElement) => {
+            if (!isJSXMapExpression(parentElement)) {
+              return parentElement
+            }
+            const mapFunction = parentElement.mapFunction
+            if (!isJSExpressionOtherJavaScript(mapFunction)) {
+              return parentElement
+            }
+
+            const uidToUse = Object.keys(mapFunction.elementsWithin)[0] ?? renamedJsxElement.uid
+            return {
+              ...parentElement,
+              mapFunction: {
+                ...mapFunction,
+                elementsWithin: { [uidToUse]: { ...renamedJsxElement, uid: uidToUse } },
+              },
+            }
+          },
+        )
+
+        const updatedTopLevelElements = applyUtopiaJSXComponentsChanges(
+          success.topLevelElements,
+          withInsertedElement,
+        )
+
+        return {
+          ...success,
+          topLevelElements: updatedTopLevelElements,
+          imports: updatedImports.imports,
+        }
+      },
+    )
+    return {
+      ...withNewElement,
+      leftMenu: { visible: editor.leftMenu.visible, selectedTab: LeftMenuTab.Navigator },
+      selectedViews: newSelectedViews,
+    }
+  },
+  REPLACE_ELEMENT_IN_SCOPE: (action: ReplaceElementInScope, editor: EditorModel): EditorModel => {
+    const replaceChildWithUid = (
+      element: JSXElementChild,
+      uid: string,
+      replaceWith: JSXElementChild,
+    ): JSXElementChild => {
+      if (element.type !== 'JSX_ELEMENT' && element.type !== 'JSX_FRAGMENT') {
+        return element
+      }
+
+      return {
+        ...element,
+        children: element.children.map((c) => (c.uid !== uid ? c : replaceWith)),
+      }
+    }
+
+    const updateMapExpression = (
+      element: JSXElementChild,
+      valueToMap: JSExpression,
+    ): JSXElementChild => {
+      if (element.type !== 'JSX_MAP_EXPRESSION') {
+        return element
+      }
+      return {
+        ...element,
+        valueToMap: valueToMap,
+      }
+    }
+
+    const replacePropertyValue = (
+      element: JSXElementChild,
+      propertyPath: PropertyPath,
+      replaceWith: JSExpression,
+    ): JSXElementChild => {
+      if (element.type !== 'JSX_ELEMENT') {
+        return element
+      }
+      return {
+        ...element,
+        props: defaultEither(
+          element.props,
+          setJSXValueAtPath(element.props, propertyPath, replaceWith),
+        ),
+      }
+    }
+
+    return modifyUnderlyingTarget(action.target, editor, (element) => {
+      const replacementPath = action.replacementPath
+      switch (replacementPath.type) {
+        case 'replace-child-with-uid':
+          return replaceChildWithUid(element, replacementPath.uid, replacementPath.replaceWith)
+        case 'replace-property-value':
+          return replacePropertyValue(
+            element,
+            replacementPath.propertyPath,
+            replacementPath.replaceWith,
+          )
+        case 'update-map-expression':
+          return updateMapExpression(element, replacementPath.valueToMap)
+        default:
+          assertNever(replacementPath)
+      }
+    })
   },
   INSERT_ATTRIBUTE_OTHER_JAVASCRIPT_INTO_ELEMENT: (
     action: InsertAttributeOtherJavascriptIntoElement,
@@ -2334,139 +2590,141 @@ export const UPDATE_FNS = {
   },
   WRAP_IN_ELEMENT: (
     action: WrapInElement,
-    editorForAction: EditorModel,
+    editor: EditorModel,
     derived: DerivedState,
-    dispatch: EditorDispatch,
   ): EditorModel => {
-    return toastOnGeneratedElementsSelected(
-      `Generated elements can't be wrapped into other elements.`,
-      editorForAction,
-      false,
-      (editor) => {
-        const orderedActionTargets = getZIndexOrderedViewsWithoutDirectChildren(
-          action.targets,
-          derived.navigatorTargets,
-        )
-
-        const parentPath = commonInsertionPathFromArray(
-          editorForAction.jsxMetadata,
-          orderedActionTargets.map((actionTarget) => {
-            return MetadataUtils.getReparentTargetOfTarget(
-              editorForAction.jsxMetadata,
-              actionTarget,
-            )
-          }),
-          replaceWithSingleElement(),
-        )
-        if (parentPath == null) {
-          return editor
-        }
-        // If any of the targets are a root element, we check that the parentPath is its parent
-        // If not, we bail and do nothing
-        // If it is, we add the new element as the root element of the parent instance
-        const anyTargetIsARootElement = orderedActionTargets.some(EP.isRootElementOfInstance)
-        const targetThatIsRootElementOfCommonParent = orderedActionTargets.find(
-          (elementPath) =>
-            EP.isRootElementOfInstance(elementPath) &&
-            EP.isParentOf(getElementPathFromInsertionPath(parentPath), elementPath),
-        )
-
-        if (anyTargetIsARootElement) {
-          const showToastAction = showToast(
-            notice(`Root elements can't be wrapped into other elements.`),
-          )
-          return UPDATE_FNS.ADD_TOAST(showToastAction, editor)
-        }
-
-        const anyTargetIsAnEmptyGroup = orderedActionTargets.some((path) =>
-          isEmptyGroup(editor.jsxMetadata, path),
-        )
-        if (anyTargetIsAnEmptyGroup) {
-          return UPDATE_FNS.ADD_TOAST(
-            showToast(notice('Empty Groups cannot be wrapped', 'ERROR')),
-            editor,
-          )
-        }
-
-        if (
-          isMaybeGroupForWrapping(
-            action.whatToWrapWith.element,
-            action.whatToWrapWith.importsToAdd,
-          ) &&
-          orderedActionTargets.some((path) => {
-            return !elementCanBeAGroupChild(
-              MetadataUtils.getJsxElementChildFromMetadata(editor.jsxMetadata, path),
-              path,
-              editor.jsxMetadata,
-            )
-          })
-        ) {
-          return UPDATE_FNS.ADD_TOAST(
-            showToast(notice('Not all targets can be wrapped into a Group', 'ERROR')),
-            editor,
-          )
-        }
-
-        const detailsOfUpdate = null
-        const { updatedEditor, newPath } = wrapElementInsertions(
-          editor,
-          action.targets,
-          parentPath,
-          action.whatToWrapWith.element,
-          action.whatToWrapWith.importsToAdd,
-          anyTargetIsARootElement,
-          targetThatIsRootElementOfCommonParent,
-        )
-        if (newPath == null) {
-          return editor
-        }
-        const withFixedParents = fixParentContainingBlockSettings(updatedEditor, newPath)
-
-        // TODO maybe update frames and position
-        const frameChanges: Array<PinOrFlexFrameChange> = []
-        const withWrapperViewAdded = {
-          ...setCanvasFramesInnerNew(
-            includeToast(detailsOfUpdate, withFixedParents),
-            frameChanges,
-            null,
-          ),
-        }
-
-        const wrapperUID = generateUidWithExistingComponents(editor.projectContents)
-
-        const insertionPath = () => {
-          if (isJSXConditionalExpression(action.whatToWrapWith.element)) {
-            const behaviour =
-              action.targets.length === 1
-                ? replaceWithSingleElement()
-                : replaceWithElementsWrappedInFragmentBehaviour(wrapperUID)
-
-            return conditionalClauseInsertionPath(newPath, 'true-case', behaviour)
-          }
-          return childInsertionPath(newPath)
-        }
-
-        const actualInsertionPath = insertionPath()
-
-        const { editor: editorWithElementsInserted, newPaths } = insertIntoWrapper(
-          orderedActionTargets,
-          actualInsertionPath,
-          includeToast(detailsOfUpdate, withWrapperViewAdded),
-        )
-
-        return {
-          ...editorWithElementsInserted,
-          selectedViews: [actualInsertionPath.intendedParentPath],
-          leftMenu: { visible: editor.leftMenu.visible, selectedTab: LeftMenuTab.Navigator },
-          highlightedViews: [],
-          trueUpElementsAfterDomWalkerRuns: [
-            ...editorWithElementsInserted.trueUpElementsAfterDomWalkerRuns,
-            ...newPaths.map(trueUpGroupElementChanged),
-          ],
-        }
-      },
-      dispatch,
+    const orderedActionTargets = getZIndexOrderedViewsWithoutDirectChildren(
+      action.targets,
+      derived.navigatorTargets,
     )
+
+    const parentPath = commonInsertionPathFromArray(
+      editor.jsxMetadata,
+      orderedActionTargets.map((actionTarget) => {
+        return MetadataUtils.getReparentTargetOfTarget(editor.jsxMetadata, actionTarget)
+      }),
+      replaceWithSingleElement(),
+    )
+    if (parentPath == null) {
+      return editor
+    }
+    // If any of the targets are a root element, we check that the parentPath is its parent
+    // If not, we bail and do nothing
+    // If it is, we add the new element as the root element of the parent instance
+    const anyTargetIsARootElement = orderedActionTargets.some(EP.isRootElementOfInstance)
+    const targetThatIsRootElementOfCommonParent = orderedActionTargets.find(
+      (elementPath) =>
+        EP.isRootElementOfInstance(elementPath) &&
+        EP.isParentOf(getElementPathFromInsertionPath(parentPath), elementPath),
+    )
+
+    if (anyTargetIsARootElement) {
+      const showToastAction = showToast(
+        notice(`Root elements can't be wrapped into other elements.`),
+      )
+      return UPDATE_FNS.ADD_TOAST(showToastAction, editor)
+    }
+
+    const anyTargetIsAnEmptyGroup = orderedActionTargets.some((path) =>
+      isEmptyGroup(editor.jsxMetadata, path),
+    )
+    if (anyTargetIsAnEmptyGroup) {
+      return UPDATE_FNS.ADD_TOAST(
+        showToast(notice('Empty Groups cannot be wrapped', 'ERROR')),
+        editor,
+      )
+    }
+
+    if (
+      isMaybeGroupForWrapping(action.whatToWrapWith.element, action.whatToWrapWith.importsToAdd) &&
+      orderedActionTargets.some((path) => {
+        return !elementCanBeAGroupChild(
+          MetadataUtils.getJsxElementChildFromMetadata(editor.jsxMetadata, path),
+          path,
+          editor.jsxMetadata,
+        )
+      })
+    ) {
+      return UPDATE_FNS.ADD_TOAST(
+        showToast(notice('Not all targets can be wrapped into a Group', 'ERROR')),
+        editor,
+      )
+    }
+
+    const detailsOfUpdate = null
+    const { updatedEditor, newPath } = wrapElementInsertions(
+      editor,
+      action.targets,
+      parentPath,
+      action.whatToWrapWith.element,
+      action.whatToWrapWith.importsToAdd,
+      anyTargetIsARootElement,
+      targetThatIsRootElementOfCommonParent,
+    )
+    if (newPath == null) {
+      return editor
+    }
+    const withFixedParents = fixParentContainingBlockSettings(updatedEditor, newPath)
+
+    // TODO maybe update frames and position
+    const frameChanges: Array<PinOrFlexFrameChange> = []
+    const withWrapperViewAdded = {
+      ...setCanvasFramesInnerNew(
+        includeToast(detailsOfUpdate, withFixedParents),
+        frameChanges,
+        null,
+      ),
+    }
+
+    const wrapperUID = generateUidWithExistingComponents(editor.projectContents)
+    const intendedParentPath = EP.dynamicPathToStaticPath(newPath)
+    const insertionBehavior =
+      action.targets.length === 1
+        ? replaceWithSingleElement()
+        : replaceWithElementsWrappedInFragmentBehaviour(wrapperUID)
+
+    let insertionResult: {
+      editor: EditorModel
+      newPaths: Array<ElementPath>
+    }
+
+    if (isJSXMapExpression(action.whatToWrapWith.element)) {
+      // in maps we do not insert directly, but replace contents
+      insertionResult = replaceInsideMap(
+        orderedActionTargets,
+        intendedParentPath,
+        insertionBehavior,
+        includeToast(detailsOfUpdate, withWrapperViewAdded),
+      )
+    } else if (isJSXConditionalExpression(action.whatToWrapWith.element)) {
+      // for conditionals we're inserting into the true-case according to behavior
+      insertionResult = insertIntoWrapper(
+        orderedActionTargets,
+        conditionalClauseInsertionPath(intendedParentPath, 'true-case', insertionBehavior),
+        includeToast(detailsOfUpdate, withWrapperViewAdded),
+      )
+    } else {
+      // otherwise we fall back to standard child insertion
+      insertionResult = insertIntoWrapper(
+        orderedActionTargets,
+        childInsertionPath(intendedParentPath),
+        includeToast(detailsOfUpdate, withWrapperViewAdded),
+      )
+    }
+
+    const editorWithElementsInserted = insertionResult.editor
+    const newPaths = insertionResult.newPaths
+
+    return {
+      ...editorWithElementsInserted,
+      selectedViews: [intendedParentPath],
+      leftMenu: { visible: editor.leftMenu.visible, selectedTab: LeftMenuTab.Navigator },
+      highlightedViews: [],
+      trueUpElementsAfterDomWalkerRuns: [
+        ...editorWithElementsInserted.trueUpElementsAfterDomWalkerRuns,
+        ...newPaths.map(trueUpGroupElementChanged),
+      ],
+    }
   },
   OPEN_FLOATING_INSERT_MENU: (action: OpenFloatingInsertMenu, editor: EditorModel): EditorModel => {
     return {
@@ -2487,175 +2745,161 @@ export const UPDATE_FNS = {
   },
   UNWRAP_ELEMENTS: (
     action: UnwrapElements,
-    editorForAction: EditorModel,
-    dispatch: EditorDispatch,
+    editor: EditorModel,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
-    return toastOnGeneratedElementsSelected(
-      `Cannot unwrap a generated element.`,
-      editorForAction,
-      false,
-      (initialEditor) => {
-        let groupTrueUps: ElementPath[] = []
-        let viewsToDelete: ElementPath[] = []
-        let newSelection: ElementPath[] = []
+    let groupTrueUps: ElementPath[] = []
+    let viewsToDelete: ElementPath[] = []
+    let newSelection: ElementPath[] = []
 
-        // order paths by depth
-        const orderedPaths = EP.getOrderedPathsByDepth(action.targets)
+    // order paths by depth
+    const orderedPaths = EP.getOrderedPathsByDepth(action.targets)
 
-        // make sure to trim descendant paths, so that unwrapping on a subtree only works on the first ancestor
-        const flattenedPaths = flattenSelection(orderedPaths)
+    // make sure to trim descendant paths, so that unwrapping on a subtree only works on the first ancestor
+    const flattenedPaths = flattenSelection(orderedPaths)
 
-        const withViewsUnwrapped: EditorState = flattenedPaths.reduce((workingEditor, target) => {
-          const supportsChildren = MetadataUtils.targetSupportsChildren(
-            workingEditor.projectContents,
-            workingEditor.jsxMetadata,
-            target,
-            workingEditor.elementPathTree,
-          )
+    const withViewsUnwrapped: EditorState = flattenedPaths.reduce((workingEditor, target) => {
+      const supportsChildren = MetadataUtils.targetSupportsChildren(
+        workingEditor.projectContents,
+        workingEditor.jsxMetadata,
+        target,
+        workingEditor.elementPathTree,
+        workingEditor.propertyControlsInfo,
+      )
 
-          const elementIsFragmentLike = treatElementAsFragmentLike(
-            workingEditor.jsxMetadata,
-            workingEditor.allElementProps,
-            workingEditor.elementPathTree,
-            target,
-          )
+      const elementIsFragmentLike = treatElementAsFragmentLike(
+        workingEditor.jsxMetadata,
+        workingEditor.allElementProps,
+        workingEditor.elementPathTree,
+        target,
+      )
 
-          if (!(supportsChildren || elementIsFragmentLike)) {
-            return workingEditor
-          }
+      if (!(supportsChildren || elementIsFragmentLike)) {
+        return workingEditor
+      }
 
-          viewsToDelete.push(target)
+      viewsToDelete.push(target)
 
-          const parentPath = MetadataUtils.getReparentTargetOfTarget(
-            editorForAction.jsxMetadata,
-            target,
-          )
+      const parentPath = MetadataUtils.getReparentTargetOfTarget(editor.jsxMetadata, target)
 
-          const indexPosition: IndexPosition = indexPositionForAdjustment(
-            target,
-            workingEditor,
-            'forward',
-          )
-          const children = MetadataUtils.getChildrenOrdered(
-            workingEditor.jsxMetadata,
-            workingEditor.elementPathTree,
-            target,
-          ).reverse() // children are reversed so when they are readded one by one as 'forward' index they keep their original order
-          const isGroupChild = treatElementAsGroupLike(
-            workingEditor.jsxMetadata,
-            EP.parentPath(target),
-          )
+      const indexPosition: IndexPosition = indexPositionForAdjustment(
+        target,
+        workingEditor,
+        'forward',
+      )
+      const children = MetadataUtils.getChildrenOrdered(
+        workingEditor.jsxMetadata,
+        workingEditor.elementPathTree,
+        target,
+      ).reverse() // children are reversed so when they are readded one by one as 'forward' index they keep their original order
+      const isGroupChild = treatElementAsGroupLike(workingEditor.jsxMetadata, EP.parentPath(target))
 
-          if (parentPath != null && isConditionalClauseInsertionPath(parentPath)) {
-            return unwrapConditionalClause(workingEditor, target, parentPath)
-          }
-          if (elementIsFragmentLike) {
-            if (isTextContainingConditional(target, workingEditor.jsxMetadata)) {
-              return unwrapTextContainingConditional(workingEditor, target, dispatch)
-            }
-
-            const { editor: withChildrenMoved, newPaths } = editorMoveMultiSelectedTemplates(
-              builtInDependencies,
-              children.map((child) => child.elementPath),
-              indexPosition,
-              parentPath,
-              workingEditor,
-            )
-
-            return {
-              ...withChildrenMoved,
-              selectedViews: newPaths,
-              canvas: {
-                ...withChildrenMoved.canvas,
-                domWalkerInvalidateCount: workingEditor.canvas.domWalkerInvalidateCount + 1,
-              },
-            }
-          } else {
-            const parentFrame =
-              parentPath == null
-                ? (Utils.zeroRectangle as CanvasRectangle)
-                : MetadataUtils.getFrameOrZeroRectInCanvasCoords(
-                    parentPath.intendedParentPath,
-                    workingEditor.jsxMetadata,
-                  )
-
-            const withChildrenMoved = children.reduce((working, child) => {
-              if (parentPath == null) {
-                return working
-              }
-              const result = reparentElementToUnwrap(
-                child.elementPath,
-                parentPath,
-                indexPosition,
-                working,
-                builtInDependencies,
-              )
-              if (result.newPath != null) {
-                const newPath = result.newPath
-                newSelection.push(newPath)
-                if (isGroupChild) {
-                  groupTrueUps.push(newPath)
-                  return foldAndApplyCommandsSimple(
-                    result.editor,
-                    createPinChangeCommandsForElementBecomingGroupChild(
-                      workingEditor.jsxMetadata,
-                      child,
-                      newPath,
-                      parentFrame,
-                      localRectangle(parentFrame),
-                    ),
-                  )
-                }
-                return result.editor
-              }
-              return working
-            }, workingEditor)
-
-            return {
-              ...withChildrenMoved,
-              canvas: {
-                ...withChildrenMoved.canvas,
-                domWalkerInvalidateCount: workingEditor.canvas.domWalkerInvalidateCount + 1,
-              },
-            }
-          }
-        }, initialEditor)
-
-        function adjustPathAfterWrap(paths: ElementPath[], path: ElementPath) {
-          return paths
-            .filter((other) => EP.isDescendantOf(path, other))
-            .reduce((current, ancestor) => {
-              return EP.replaceIfAncestor(current, ancestor, EP.parentPath(ancestor)) ?? current
-            }, path)
+      if (parentPath != null && isConditionalClauseInsertionPath(parentPath)) {
+        return unwrapConditionalClause(workingEditor, target, parentPath)
+      }
+      if (elementIsFragmentLike) {
+        if (isTextContainingConditional(target, workingEditor.jsxMetadata)) {
+          return unwrapTextContainingConditional(workingEditor, target)
         }
-        const adjustedViewsToDelete = viewsToDelete.map((path) => {
-          // make sure the paths to delete reflect the updated paths as per the unwrapping if there are nested
-          // selected views under a common ancestor
-          return adjustPathAfterWrap(viewsToDelete, path)
-        })
-        const adjustedGroupTrueUps = groupTrueUps.map((path) => {
-          return adjustPathAfterWrap(groupTrueUps, path)
-        })
 
-        const withViewsDeleted = deleteElements(adjustedViewsToDelete, withViewsUnwrapped, {
-          trueUpHuggingElements: false,
-        })
+        const { editor: withChildrenMoved, newPaths } = editorMoveMultiSelectedTemplates(
+          builtInDependencies,
+          children.map((child) => child.elementPath),
+          indexPosition,
+          parentPath,
+          workingEditor,
+        )
+
         return {
-          ...withViewsDeleted,
-          selectedViews: newSelection,
-          leftMenu: {
-            visible: withViewsDeleted.leftMenu.visible,
-            selectedTab: LeftMenuTab.Navigator,
+          ...withChildrenMoved,
+          selectedViews: newPaths,
+          canvas: {
+            ...withChildrenMoved.canvas,
+            domWalkerInvalidateCount: workingEditor.canvas.domWalkerInvalidateCount + 1,
           },
-          trueUpGroupsForElementAfterDomWalkerRuns: [
-            ...withViewsDeleted.trueUpElementsAfterDomWalkerRuns,
-            ...adjustedGroupTrueUps.map(trueUpGroupElementChanged),
-          ],
         }
+      } else {
+        const parentFrame =
+          parentPath == null
+            ? (Utils.zeroRectangle as CanvasRectangle)
+            : MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+                parentPath.intendedParentPath,
+                workingEditor.jsxMetadata,
+              )
+
+        const withChildrenMoved = children.reduce((working, child) => {
+          if (parentPath == null) {
+            return working
+          }
+          const result = reparentElementToUnwrap(
+            child.elementPath,
+            parentPath,
+            indexPosition,
+            working,
+            builtInDependencies,
+          )
+          if (result.newPath != null) {
+            const newPath = result.newPath
+            newSelection.push(newPath)
+            if (isGroupChild) {
+              groupTrueUps.push(newPath)
+              return foldAndApplyCommandsSimple(
+                result.editor,
+                createPinChangeCommandsForElementBecomingGroupChild(
+                  workingEditor.jsxMetadata,
+                  child,
+                  newPath,
+                  parentFrame,
+                  localRectangle(parentFrame),
+                ),
+              )
+            }
+            return result.editor
+          }
+          return working
+        }, workingEditor)
+
+        return {
+          ...withChildrenMoved,
+          canvas: {
+            ...withChildrenMoved.canvas,
+            domWalkerInvalidateCount: workingEditor.canvas.domWalkerInvalidateCount + 1,
+          },
+        }
+      }
+    }, editor)
+
+    function adjustPathAfterWrap(paths: ElementPath[], path: ElementPath) {
+      return paths
+        .filter((other) => EP.isDescendantOf(path, other))
+        .reduce((current, ancestor) => {
+          return EP.replaceIfAncestor(current, ancestor, EP.parentPath(ancestor)) ?? current
+        }, path)
+    }
+    const adjustedViewsToDelete = viewsToDelete.map((path) => {
+      // make sure the paths to delete reflect the updated paths as per the unwrapping if there are nested
+      // selected views under a common ancestor
+      return adjustPathAfterWrap(viewsToDelete, path)
+    })
+    const adjustedGroupTrueUps = groupTrueUps.map((path) => {
+      return adjustPathAfterWrap(groupTrueUps, path)
+    })
+
+    const withViewsDeleted = deleteElements(adjustedViewsToDelete, withViewsUnwrapped, {
+      trueUpHuggingElements: false,
+    })
+    return {
+      ...withViewsDeleted,
+      selectedViews: newSelection,
+      leftMenu: {
+        visible: withViewsDeleted.leftMenu.visible,
+        selectedTab: LeftMenuTab.Navigator,
       },
-      dispatch,
-    )
+      trueUpElementsAfterDomWalkerRuns: [
+        ...withViewsDeleted.trueUpElementsAfterDomWalkerRuns,
+        ...adjustedGroupTrueUps.map(trueUpGroupElementChanged),
+      ],
+    }
   },
   SET_PANEL_VISIBILITY: (action: SetPanelVisibility, editor: EditorModel): EditorModel => {
     switch (action.target) {
@@ -2743,7 +2987,6 @@ export const UPDATE_FNS = {
       case 'canvas':
       case 'center':
       case 'insertmenu':
-      case 'variablesmenu':
       case 'projectsettings':
       case 'githuboptions':
         return editor
@@ -2850,7 +3093,6 @@ export const UPDATE_FNS = {
       case 'misccodeeditor':
       case 'center':
       case 'insertmenu':
-      case 'variablesmenu':
       case 'githuboptions':
         return editor
       default:
@@ -3679,12 +3921,33 @@ export const UPDATE_FNS = {
     })
   },
   UPDATE_GITHUB_DATA: (action: UpdateGithubData, editor: EditorModel): EditorModel => {
+    // merge the existing and the new public repos
+    const combinedPublicRepos = [
+      ...editor.githubData.publicRepositories,
+      ...(action.data.publicRepositories ?? []),
+    ]
+
+    // sort public repos by descending updatedAt
+    const sortedCombinedPublicRepos = combinedPublicRepos.sort((a, b) => {
+      if (a.updatedAt == null) {
+        return 1
+      } else if (b.updatedAt == null) {
+        return -1
+      } else {
+        return b.updatedAt.localeCompare(a.updatedAt)
+      }
+    })
+
+    // remove duplicate entries
+    const uniquePublicRepos = uniqBy(sortedCombinedPublicRepos, (a, b) => a.fullName === b.fullName)
+
     return {
       ...editor,
       githubData: {
         ...editor.githubData,
-        lastUpdatedAt: Date.now(),
         ...action.data,
+        lastUpdatedAt: Date.now(),
+        publicRepositories: uniquePublicRepos,
       },
     }
   },
@@ -3876,7 +4139,7 @@ export const UPDATE_FNS = {
       withPackageJson,
       action.parentPath,
       newFileName,
-      codeFile(templateFile.fileContents.code, RevisionsState.CodeAhead),
+      codeFile(templateFile.fileContents.code, null, 1, RevisionsState.CodeAhead),
     )
 
     // 3. open the text file
@@ -3944,15 +4207,15 @@ export const UPDATE_FNS = {
           projectContents: updatedProjectContents,
         }
         if (isComponentDescriptorFile(action.filename)) {
-          return {
+          const withUpdatedPropertyControls = {
             ...nextEditor,
             propertyControlsInfo: updatePropertyControlsOnDescriptorFileDelete(
               editor.propertyControlsInfo,
               action.filename,
             ),
           }
+          return removeErrorMessagesForFile(withUpdatedPropertyControls, action.filename)
         }
-
         return nextEditor
       }
       case 'ASSET_FILE':
@@ -4787,6 +5050,8 @@ export const UPDATE_FNS = {
         editor.jsxMetadata,
         derived.autoFocusedPaths,
         derived.filePathMappings,
+        editor.propertyControlsInfo,
+        editor.projectContents,
       )
     ) {
       shouldApplyChange = true
@@ -5187,6 +5452,18 @@ export const UPDATE_FNS = {
             newSelectedViews.push(newPath)
           } else if (element.type === 'JSX_FRAGMENT') {
             const fixedElement = jsxFragment(newUID, element.children, element.longForm)
+
+            withInsertedElement = insertJSXElementChildren(
+              insertionPath,
+              [fixedElement],
+              utopiaComponents,
+              action.indexPosition,
+            )
+            detailsOfUpdate = withInsertedElement.insertionDetails
+
+            addNewSelectedView(newUID)
+          } else if (element.type === 'JSX_MAP_EXPRESSION') {
+            const fixedElement = fixUtopiaElement({ ...element, uid: newUID }, existingUids).value
 
             withInsertedElement = insertJSXElementChildren(
               insertionPath,
@@ -6186,7 +6463,7 @@ function updateFilePath(
     oldPath: string
     newPath: string
   },
-) {
+): EditorState {
   const replaceFilePathResults = replaceFilePath(
     params.oldPath,
     params.newPath,
@@ -6197,7 +6474,7 @@ function updateFilePath(
     return UPDATE_FNS.ADD_TOAST(toastAction, editor)
   } else {
     let currentDesignerFile = editor.canvas.openFile
-    const { projectContents, updatedFiles } = replaceFilePathResults
+    const { projectContents, updatedFiles, renamedOptionalPrefix } = replaceFilePathResults
     const mainUIFile = getMainUIFromModel(editor)
     let updateUIFile: (e: EditorModel) => EditorModel = (e) => e
     let updatePropertyControls: (e: EditorModel) => EditorModel = (e) => e
@@ -6236,7 +6513,7 @@ function updateFilePath(
       }
     })
 
-    return updatePropertyControls(
+    const withUpdatedPropertyControls = updatePropertyControls(
       updateUIFile({
         ...editor,
         projectContents: projectContents,
@@ -6251,5 +6528,27 @@ function updateFilePath(
         },
       }),
     )
+
+    return renamedOptionalPrefix
+      ? UPDATE_FNS.ADD_TOAST(
+          addToast(notice('Renamed Remix routes with optional prefixes.', 'NOTICE')),
+          withUpdatedPropertyControls,
+        )
+      : withUpdatedPropertyControls
   }
+}
+
+function removeErrorMessagesForFile(editor: EditorState, filename: string): EditorState {
+  const noErrors = { [filename]: [] }
+
+  return UPDATE_FNS.SET_CODE_EDITOR_BUILD_ERRORS(
+    setCodeEditorBuildErrors(noErrors),
+    UPDATE_FNS.SET_CODE_EDITOR_LINT_ERRORS(
+      setCodeEditorLintErrors(noErrors),
+      UPDATE_FNS.SET_CODE_EDITOR_COMPONENT_DESCRIPTOR_ERRORS(
+        setCodeEditorComponentDescriptorErrors(noErrors),
+        editor,
+      ),
+    ),
+  )
 }

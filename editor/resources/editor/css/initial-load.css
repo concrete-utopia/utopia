@@ -1,58 +1,5 @@
-@font-face {
-  font-family: 'utopian-inter';
-  src: url('../fonts/Inter-Regular.woff') format('woff');
-  font-weight: 400;
-}
-
-@font-face {
-  font-family: 'utopian-inter';
-  src: url('../fonts/Inter-Medium.woff') format('woff');
-  font-weight: 500;
-}
-
-@font-face {
-  font-family: 'utopian-inter';
-  src: url('../fonts/Inter-MediumItalic.woff') format('woff');
-  font-weight: 500;
-  font-style: italic;
-}
-
-@font-face {
-  font-family: 'utopian-inter';
-  src: url('../fonts/Inter-SemiBold.woff') format('woff');
-  font-weight: 600;
-}
-
-@font-face {
-  font-family: 'utopian-inter';
-  src: url('../fonts/Inter-SemiBoldItalic.woff') format('woff');
-  font-weight: 600;
-  font-style: italic;
-}
-
-::-webkit-scrollbar {
-  display: none;
-}
-
 body {
   margin: 0;
-  background-color: transparent;
-  font-family: utopian-inter, -apple-system, BlinkMacSystemFont, Helvetica, 'Segoe UI', Roboto,
-    Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; /* from GitHub */
-  font-size: 11px !important;
-  font-feature-settings: 'cv01', 'tnum', 'salt', 'zero';
-  letter-spacing: 0.2px;
-  line-height: 17px;
-  overflow: hidden;
-  outline: none;
-  overscroll-behavior-x: contain;
-}
-
-a {
-  text-decoration: none;
-  color: #007aff;
-}
-a:hover {
 }
 
 div,
@@ -61,39 +8,111 @@ img,
 ul,
 li,
 label {
-  user-select: none;
-  -webkit-user-select: none;
   box-sizing: border-box !important;
 }
 
-.react-error-overlay-allow-text-selection,
-.react-error-overlay-allow-text-selection,
-.react-error-overlay-allow-text-selection span,
-.react-error-overlay-allow-text-selection div,
-.react-error-overlay-allow-text-selection pre {
-  user-select: text;
-  cursor: text;
-}
+@scope (:root) to (#canvas-container) {
+  @font-face {
+    font-family: 'utopian-inter';
+    src: url('../fonts/Inter-Regular.woff2') format('woff');
+    font-weight: 400;
+  }
 
-input {
-  box-sizing: border-box;
-  outline: none;
-  font-family: utopian-inter;
-  font-size: 11px;
-  font-feature-settings: 'cv01', 'tnum', 'salt', 'zero';
-}
+  @font-face {
+    font-family: 'utopian-inter';
+    src: url('../fonts/Inter-Italic.woff2') format('woff');
+    font-weight: 400;
+    font-style: italic;
+  }
 
-span:focus,
-div:focus,
-label:focus,
-button:focus,
-input:focus,
-img:focus,
-svg:focus {
-  outline: none;
-}
+  @font-face {
+    font-family: 'utopian-inter';
+    src: url('../fonts/Inter-Medium.woff2') format('woff');
+    font-weight: 500;
+  }
 
-/* todo put this near the contexify CSS after figuring out where _that_ lives */
-.shortcut {
-  float: right;
+  @font-face {
+    font-family: 'utopian-inter';
+    src: url('../fonts/Inter-MediumItalic.woff2') format('woff');
+    font-weight: 500;
+    font-style: italic;
+  }
+
+  @font-face {
+    font-family: 'utopian-inter';
+    src: url('../fonts/Inter-SemiBold.woff2') format('woff');
+    font-weight: 600;
+  }
+
+  @font-face {
+    font-family: 'utopian-inter';
+    src: url('../fonts/Inter-SemiBoldItalic.woff2') format('woff');
+    font-weight: 600;
+    font-style: italic;
+  }
+
+  * {
+    scrollbar-width: none;
+  }
+
+  body {
+    margin: 0;
+    background-color: transparent;
+    font-family: 'utopian-inter', 'sans-serif';
+    font-size: 11px !important;
+    font-feature-settings: 'cv01', 'tnum', 'zero';
+    letter-spacing: 0.2px;
+    line-height: 17px;
+    overflow: hidden;
+    outline: none;
+    overscroll-behavior-x: contain;
+  }
+
+  a {
+    text-decoration: none;
+    color: #007aff;
+  }
+
+  div,
+  span,
+  img,
+  ul,
+  li,
+  label {
+    user-select: none;
+    -webkit-user-select: none;
+    box-sizing: border-box !important;
+  }
+
+  .react-error-overlay-allow-text-selection,
+  .react-error-overlay-allow-text-selection,
+  .react-error-overlay-allow-text-selection span,
+  .react-error-overlay-allow-text-selection div,
+  .react-error-overlay-allow-text-selection pre {
+    user-select: text;
+    cursor: text;
+  }
+
+  input {
+    box-sizing: border-box;
+    outline: none;
+    font-family: utopian-inter;
+    font-size: 11px;
+    font-feature-settings: 'cv01', 'tnum', 'salt', 'zero';
+  }
+
+  span:focus,
+  div:focus,
+  label:focus,
+  button:focus,
+  input:focus,
+  img:focus,
+  svg:focus {
+    outline: none;
+  }
+
+  /* todo put this near the contexify CSS after figuring out where _that_ lives */
+  .shortcut {
+    float: right;
+  }
 }

@@ -1,4 +1,4 @@
-import { strToBase64, base64ToStr } from '@root/encoding/base64'
+import { strToBase64 } from '@root/encoding/base64'
 import StackFrame, { ScriptLine } from '../../third-party/react-error-overlay/utils/stack-frame'
 import { getSourceMapConsumer } from '../../third-party/react-error-overlay/utils/getSourceMap'
 import {
@@ -7,7 +7,7 @@ import {
 } from '../../third-party/react-error-overlay/utils/mapper'
 import type { RawSourceMap } from '../workers/ts/ts-typings/RawSourceMap'
 import { NO_OP } from './utils'
-import { findLastIndex, last, take } from './array-utils'
+import { findLastIndex, take } from './array-utils'
 import parseError from '../../third-party/react-error-overlay/utils/parser'
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -48,7 +48,9 @@ export type ErrorHandler = (e: Error) => void
 
 const UTOPIA_FUNCTION_ROOT_NAME = 'SafeFunctionCurriedErrorHandler'
 
-export const SOURCE_MAP_PREFIX = `;sourceMap=`
+export const SOURCE_MAP_SEPARATOR = `;##sourceMap##`
+
+export type SourceMapCache = { [key: string]: RawSourceMap }
 
 export function processErrorWithSourceMap(
   fallbackCode: string | null,
@@ -60,6 +62,7 @@ export function processErrorWithSourceMap(
     // this Error is already processed!
     return error
   }
+  const sourceMapCache: SourceMapCache = {}
   const errorStack = error.stack
   if (errorStack != null) {
     try {
@@ -73,13 +76,14 @@ export function processErrorWithSourceMap(
           inSafeFunction ? stackLine.replace(UTOPIA_FUNCTION_ROOT_NAME, 'eval') : stackLine,
         )
         .join('\n')
-      const parsedStackFrames = parseError(error)
+      const parsedStackFrames = parseError(error, sourceMapCache)
 
       const enhancedStackFrames = enhanceStackFrames(
         fallbackCode,
         filePath,
         parsedStackFrames,
         inSafeFunction,
+        sourceMapCache,
       )
       ;(error as FancyError).stackFrames = enhancedStackFrames
     } catch (sourceMapError) {
@@ -94,9 +98,10 @@ export function enhanceStackFrames(
   filePath: string,
   parsedStackFrames: Array<StackFrame>,
   inSafeFunction: boolean,
+  sourceMaps: SourceMapCache,
 ): StackFrame[] {
   return parsedStackFrames.map((frame) => {
-    const rawSourceMap = extractRawSourceMap(frame)
+    const rawSourceMap = extractRawSourceMap(frame, sourceMaps)
     const scriptLinesFromSourceMap = parseSourceCodeFromRawSourceMap(rawSourceMap)
     let scriptLines: Array<ScriptLine> | null = null
     if (scriptLinesFromSourceMap == null) {
@@ -109,7 +114,7 @@ export function enhanceStackFrames(
     } else {
       scriptLines = scriptLinesFromSourceMap
     }
-    let fixedFilename: string | undefined = frame.fileName?.split(SOURCE_MAP_PREFIX)[0]
+    let fixedFilename: string | undefined = frame.fileName?.split(SOURCE_MAP_SEPARATOR)[0]
     if (fixedFilename === 'eval(undefined)') {
       fixedFilename = filePath
     }
@@ -146,9 +151,15 @@ function maybeEnhanceStackFrame(
   }
 }
 
-function extractRawSourceMap(stackFrame: StackFrame): RawSourceMap | null {
-  const possibleSourceMapSegment = stackFrame.fileName?.split(SOURCE_MAP_PREFIX)[1] ?? null
-  return possibleSourceMapSegment == null ? null : JSON.parse(base64ToStr(possibleSourceMapSegment))
+function extractRawSourceMap(
+  stackFrame: StackFrame,
+  sourceMaps: SourceMapCache,
+): RawSourceMap | null {
+  const possibleSourceMapKey = stackFrame.fileName?.split(SOURCE_MAP_SEPARATOR)[1]
+  if (possibleSourceMapKey == null) {
+    return null
+  }
+  return sourceMaps[possibleSourceMapKey] ?? null
 }
 
 function parseSourceCodeFromRawSourceMap(rawSourceMap: RawSourceMap | null): ScriptLine[] | null {
@@ -201,7 +212,7 @@ export const SafeFunctionCurriedErrorHandler = {
 
     const codeWithSourceMapAttached = `${code}
 
-    //# sourceURL=${fileName}${SOURCE_MAP_PREFIX}${sourceMapBase64}
+    //# sourceURL=${fileName}${SOURCE_MAP_SEPARATOR}${sourceMapBase64}${SOURCE_MAP_SEPARATOR}
     `
 
     const FunctionOrAsyncFunction = async ? AsyncFunction : Function

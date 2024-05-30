@@ -62,9 +62,13 @@ import {
   textFileContents,
   unparsed,
 } from '../../../core/shared/project-file-types'
+import { regularNavigatorRow } from '../../navigator/navigator-row'
 
 describe('DerivedStateKeepDeepEquality', () => {
   const oldValue: DerivedState = {
+    navigatorRows: [
+      regularNavigatorRow(regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])), 1),
+    ],
     navigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']]))],
     visibleNavigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']]))],
     autoFocusedPaths: [EP.elementPath([['scene'], ['aaa']])],
@@ -98,6 +102,9 @@ describe('DerivedStateKeepDeepEquality', () => {
     filePathMappings: [],
   }
   const newSameValue: DerivedState = {
+    navigatorRows: [
+      regularNavigatorRow(regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])), 1),
+    ],
     navigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']]))],
     visibleNavigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']]))],
     autoFocusedPaths: [EP.elementPath([['scene'], ['aaa']])],
@@ -131,6 +138,9 @@ describe('DerivedStateKeepDeepEquality', () => {
     filePathMappings: [],
   }
   const newDifferentValue: DerivedState = {
+    navigatorRows: [
+      regularNavigatorRow(regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'ddd']])), 2),
+    ],
     navigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'ddd']]))],
     visibleNavigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']]))],
     autoFocusedPaths: [EP.elementPath([['scene'], ['aaa']])],

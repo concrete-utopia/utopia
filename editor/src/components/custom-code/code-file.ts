@@ -31,12 +31,14 @@ import type {
   JSXConditionalExpressionWithoutUID,
   JSXElementWithoutUID,
   JSXFragmentWithoutUID,
+  JSXMapExpressionWithoutUID,
   UtopiaJSXComponent,
 } from '../../core/shared/element-template'
 import {
   clearJSXConditionalExpressionWithoutUIDUniqueIDs,
   clearJSXElementWithoutUIDUniqueIDs,
   clearJSXFragmentWithoutUIDUniqueIDs,
+  clearJSXMapExpressionWithoutUIDUniqueIDs,
 } from '../../core/shared/element-template'
 import { objectMap } from '../../core/shared/object-utils'
 import { getTransitiveReverseDependencies } from '../../core/shared/project-contents-dependencies'
@@ -49,7 +51,8 @@ import type {
 import type { ProjectContentTreeRoot } from '../assets'
 import { getProjectFileByFilePath } from '../assets'
 import type { EditorDispatch } from '../editor/action-types'
-import type { Emphasis, Focus, Icon, InspectorSpec } from 'utopia-api'
+import { StylingOptions } from 'utopia-api'
+import type { Emphasis, Focus, Icon, Styling } from 'utopia-api'
 
 type ModuleExportTypes = { [name: string]: ExportType }
 
@@ -90,6 +93,7 @@ export type ComponentElementToInsert =
   | JSXElementWithoutUID
   | JSXConditionalExpressionWithoutUID
   | JSXFragmentWithoutUID
+  | JSXMapExpressionWithoutUID
 
 export function clearComponentElementToInsertUniqueIDs(
   toInsert: ComponentElementToInsert,
@@ -101,6 +105,22 @@ export function clearComponentElementToInsertUniqueIDs(
       return clearJSXConditionalExpressionWithoutUIDUniqueIDs(toInsert)
     case 'JSX_FRAGMENT':
       return clearJSXFragmentWithoutUIDUniqueIDs(toInsert)
+    case 'JSX_MAP_EXPRESSION':
+      return clearJSXMapExpressionWithoutUIDUniqueIDs(toInsert)
+    default:
+      assertNever(toInsert)
+  }
+}
+
+export function componentElementToInsertHasChildren(toInsert: ComponentElementToInsert): boolean {
+  switch (toInsert.type) {
+    case 'JSX_ELEMENT':
+    case 'JSX_FRAGMENT':
+      return toInsert.children.length > 0
+    case 'JSX_MAP_EXPRESSION':
+    case 'JSX_CONDITIONAL_EXPRESSION':
+      // More in the conceptual sense than actual sense of having a field containing children.
+      return true
     default:
       assertNever(toInsert)
   }
@@ -124,36 +144,38 @@ export function componentInfo(
   }
 }
 
-export type PlaceholderSpec =
-  // a placeholder that inserts a span that wraps `contents`. This will be
-  // editable with the text editor
-  | { type: 'text'; contents: string }
-  // inserts a `div` with the specified width and height
-  | { type: 'spacer'; width: number; height: number }
-  | { type: 'fill' }
+export type StyleSectionState = 'collapsed' | 'expanded'
+
+export interface ShownInspectorSpec {
+  type: 'shown'
+  display: StyleSectionState
+  sections: Styling[]
+}
+
+export type TypedInpsectorSpec = { type: 'hidden' } | ShownInspectorSpec
 
 export interface ComponentDescriptor {
   properties: PropertyControls
   supportsChildren: boolean
   preferredChildComponents: Array<PreferredChildComponentDescriptor>
-  childrenPropPlaceholder: PlaceholderSpec | null
   variants: ComponentInfo[]
   source: ComponentDescriptorSource
   focus: Focus
-  inspector: InspectorSpec
+  inspector: TypedInpsectorSpec
   emphasis: Emphasis
   icon: Icon
+  label: string | null
 }
 
 export const ComponentDescriptorDefaults: Pick<
   ComponentDescriptor,
-  'focus' | 'inspector' | 'emphasis' | 'icon' | 'childrenPropPlaceholder'
+  'focus' | 'inspector' | 'emphasis' | 'icon' | 'label'
 > = {
   focus: 'default',
-  inspector: 'all',
+  inspector: { type: 'shown', display: 'expanded', sections: [...StylingOptions] },
   emphasis: 'regular',
-  icon: 'regular',
-  childrenPropPlaceholder: null,
+  icon: 'component',
+  label: null,
 }
 
 export function componentDescriptor(
@@ -161,24 +183,24 @@ export function componentDescriptor(
   supportsChildren: boolean,
   variants: Array<ComponentInfo>,
   preferredChildComponents: Array<PreferredChildComponentDescriptor>,
-  childrenPropPlaceholder: PlaceholderSpec | null,
   source: ComponentDescriptorSource,
   focus: Focus,
-  inspector: InspectorSpec,
+  inspector: TypedInpsectorSpec,
   emphasis: Emphasis,
   icon: Icon,
+  label: string | null,
 ): ComponentDescriptor {
   return {
     properties: properties,
     supportsChildren: supportsChildren,
     variants: variants,
     preferredChildComponents: preferredChildComponents,
-    childrenPropPlaceholder: childrenPropPlaceholder,
     source: source,
     focus: focus,
     inspector: inspector,
     emphasis: emphasis,
     icon: icon,
+    label: label,
   }
 }
 

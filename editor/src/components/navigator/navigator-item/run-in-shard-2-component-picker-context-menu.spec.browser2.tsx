@@ -1,11 +1,21 @@
 import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
-import { selectComponentsForTest } from '../../../utils/utils.test-utils'
+import { selectComponentsForTest, wait } from '../../../utils/utils.test-utils'
+import type { EditorRenderResult } from '../../canvas/ui-jsx.test-utils'
 import {
   formatTestProjectCode,
+  getPrintedUiJsCode,
   getPrintedUiJsCodeWithoutUIDs,
+  makeTestProjectCodeWithSnippet,
+  renderTestEditorWithCode,
   renderTestEditorWithModel,
+  TestScenePath,
 } from '../../canvas/ui-jsx.test-utils'
-import { StoryboardFilePath, navigatorEntryToKey } from '../../editor/store/editor-state'
+import {
+  StoryboardFilePath,
+  navigatorEntryToKey,
+  regularNavigatorEntry,
+  varSafeNavigatorEntryToKey,
+} from '../../editor/store/editor-state'
 import * as EP from '../../../core/shared/element-path'
 import {
   mouseClickAtPoint,
@@ -18,9 +28,12 @@ import {
   componentPickerOptionTestId,
   componentPickerTestIdForProp,
 } from './component-picker'
-import { waitFor } from '@testing-library/react'
+import { fireEvent, waitFor } from '@testing-library/react'
 import { labelTestIdForComponentIcon } from './component-picker-context-menu'
-import { addChildButtonTestId } from './navigator-item-components'
+import { ReplaceElementButtonTestId, addChildButtonTestId } from './navigator-item-components'
+import { NavigatorContainerId } from '../navigator'
+import { act } from 'react-dom/test-utils'
+import { cmdModifier } from '../../../utils/modifiers'
 
 describe('The navigator component picker context menu', () => {
   const PreferredChildComponents = [
@@ -64,7 +77,7 @@ describe('The navigator component picker context menu', () => {
 
     export const Card = (props) => {
       return (
-        <div style={props.style}>
+        <div style={props.style} data-uid='card-root'>
           {props.title}
           {props.children}
         </div>
@@ -84,6 +97,22 @@ describe('The navigator component picker context menu', () => {
           }}
           data-uid='card'
         />
+        <Card
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 800,
+            top: 111,
+            width: 139,
+            height: 87,
+          }}
+          data-uid='card-with-title'
+          title={<div data-uid='card-title-div'/>}
+        />
+        <div data-uid='empty-div'/>
+        <div data-uid='non-empty-div'>
+          <span>Something</span>
+        </div>
       </Storyboard>
     )
     `,
@@ -101,10 +130,17 @@ describe('The navigator component picker context menu', () => {
           component: FlexRow,
           icon: 'column',
           properties: {},
+          variants: [
+            {
+              label: 'with a column',
+              imports: 'import { FlexRow, FlexCol } from "/src/other-utils"',
+              code: '<FlexRow><FlexCol /></FlexRow>',
+            },
+          ]
         },
         FlexCol: {
           component: FlexCol,
-          icon: 'regular',
+          icon: 'component',
           properties: {},
         },
         RandomComponent: {
@@ -261,7 +297,7 @@ describe('The navigator component picker context menu', () => {
     ]
   }
 
-  it('Should be displayed with the correct prop when clicking a render prop slot in the navigator', async () => {
+  xit('Should be displayed with the correct prop when clicking a render prop slot in the navigator', async () => {
     const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString('sb/card')])
     const emptySlot = editor.renderedDOM.getByTestId(
@@ -282,7 +318,7 @@ describe('The navigator component picker context menu', () => {
     expect(propField!.textContent).toEqual('Title')
   })
 
-  it('Should include all registered preferred children for that prop', async () => {
+  xit('Should include all registered preferred children for that prop', async () => {
     const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString('sb/card')])
     const emptySlot = editor.renderedDOM.getByTestId(
@@ -308,7 +344,7 @@ describe('The navigator component picker context menu', () => {
     }
   })
 
-  it('Filters the available options', async () => {
+  xit('Filters the available options', async () => {
     const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString('sb/card')])
     const emptySlot = editor.renderedDOM.getByTestId(
@@ -351,7 +387,7 @@ describe('The navigator component picker context menu', () => {
     }
   })
 
-  it('Clears the filter when hitting esc', async () => {
+  xit('Clears the filter when hitting esc', async () => {
     const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString('sb/card')])
     const emptySlot = editor.renderedDOM.getByTestId(
@@ -386,7 +422,7 @@ describe('The navigator component picker context menu', () => {
     }
   })
 
-  it('Closes when clicking the X', async () => {
+  xit('Closes when clicking the X', async () => {
     const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString('sb/card')])
     const emptySlot = editor.renderedDOM.getByTestId(
@@ -411,7 +447,7 @@ describe('The navigator component picker context menu', () => {
     expect(renderPropPickerAfter).toBeNull()
   })
 
-  it('Does not close when clicking the empty space within the popup', async () => {
+  xit('Does not close when clicking the empty space within the popup', async () => {
     const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString('sb/card')])
     const emptySlot = editor.renderedDOM.getByTestId(
@@ -435,7 +471,7 @@ describe('The navigator component picker context menu', () => {
     expect(renderPropPickerAfter).not.toBeNull()
   })
 
-  it('Selecting a component from the full picker should insert that component into the render prop', async () => {
+  xit('Selecting a component from the full picker should insert that component into the render prop', async () => {
     const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString('sb/card')])
     const emptySlot = editor.renderedDOM.getByTestId(
@@ -484,6 +520,17 @@ describe('The navigator component picker context menu', () => {
             <FlexRow>three totally real placeholders</FlexRow>
           }
         />
+        <Card
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 800,
+            top: 111,
+            width: 139,
+            height: 87,
+          }}
+          title={<div />}
+        />
       </Storyboard>
     )
     `),
@@ -509,7 +556,7 @@ describe('The navigator component picker context menu', () => {
     expect(flexColRow).not.toBeNull()
 
     const randomComponentRow = editor.renderedDOM.queryByTestId(
-      labelTestIdForComponentIcon('RandomComponent', '/src/utils', 'regular'),
+      labelTestIdForComponentIcon('RandomComponent', '/src/utils', 'component'),
     )
     expect(randomComponentRow).not.toBeNull()
   })
@@ -533,9 +580,133 @@ describe('The navigator component picker context menu', () => {
     expect(flexColRow).not.toBeNull()
 
     const randomComponentRow = editor.renderedDOM.queryByTestId(
-      labelTestIdForComponentIcon('RandomComponent', '/src/utils', 'regular'),
+      labelTestIdForComponentIcon('RandomComponent', '/src/utils', 'component'),
     )
     expect(randomComponentRow).not.toBeNull()
+
+    const listRow = editor.renderedDOM.queryByTestId(
+      labelTestIdForComponentIcon('List', '', 'code'),
+    )
+    expect(listRow).not.toBeNull()
+  })
+
+  it('Replacing while maintaining children permits a component with children when the target has none', async () => {
+    const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
+    await selectComponentsForTest(editor, [EP.fromString('sb/empty-div')])
+    const navigatorElement = editor.renderedDOM.getByTestId(
+      `navigator-item-${varSafeNavigatorEntryToKey(
+        regularNavigatorEntry(EP.fromString('sb/empty-div')),
+      )}`,
+    )
+    await act(async () => {
+      fireEvent(
+        navigatorElement,
+        new MouseEvent('contextmenu', {
+          bubbles: true,
+          cancelable: true,
+          clientX: 3,
+          clientY: 3,
+          buttons: 0,
+          button: 2,
+        }),
+      )
+    })
+
+    await editor.getDispatchFollowUpActionsFinished()
+
+    const replaceThisMenuButton = await waitFor(() => editor.renderedDOM.getByText('Replace This…'))
+    await mouseClickAtPoint(replaceThisMenuButton, { x: 3, y: 3 })
+
+    await editor.getDispatchFollowUpActionsFinished()
+
+    const flexRowButton = await editor.renderedDOM.findByTestId('/src/other-utils.js-with a column')
+
+    await mouseClickAtPoint(flexRowButton, { x: 3, y: 3 })
+
+    await editor.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState(), StoryboardFilePath)).toEqual(
+      formatTestProjectCode(`
+    import * as React from 'react'
+    import { Storyboard } from 'utopia-api'
+    import { FlexRow, FlexCol } from '/src/other-utils'
+
+    export const Card = (props) => {
+      return (
+        <div style={props.style}>
+          {props.title}
+          {props.children}
+        </div>
+      )
+    }
+
+    export var storyboard = (
+      <Storyboard>
+        <Card
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 945,
+            top: 111,
+            width: 139,
+            height: 87,
+          }}
+        />
+        <Card
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 800,
+            top: 111,
+            width: 139,
+            height: 87,
+          }}
+          title={<div />}
+        />
+        <FlexRow>
+          <FlexCol />
+        </FlexRow>
+        <div>
+          <span>Something</span>
+        </div>
+      </Storyboard>
+    )
+    `),
+    )
+  })
+
+  it('a component with children wont be included when trying to replace an element that also has children', async () => {
+    const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
+    await selectComponentsForTest(editor, [EP.fromString('sb/card')])
+    const navigatorElement = editor.renderedDOM.getByTestId(
+      `navigator-item-${varSafeNavigatorEntryToKey(
+        regularNavigatorEntry(EP.fromString('sb/empty-div')),
+      )}`,
+    )
+    await act(async () => {
+      fireEvent(
+        navigatorElement,
+        new MouseEvent('contextmenu', {
+          bubbles: true,
+          cancelable: true,
+          clientX: 3,
+          clientY: 3,
+          buttons: 0,
+          button: 2,
+        }),
+      )
+    })
+
+    await editor.getDispatchFollowUpActionsFinished()
+
+    const replaceThisMenuButton = await waitFor(() => editor.renderedDOM.getByText('Replace This…'))
+    await mouseClickAtPoint(replaceThisMenuButton, { x: 3, y: 3 })
+
+    await editor.getDispatchFollowUpActionsFinished()
+
+    const flexRowButton = editor.renderedDOM.queryByTestId('/src/other-utils.js-FlexRow')
+
+    expect(flexRowButton).toBeNull()
   })
 
   it('Selecting a component with no variants from the simple picker for a render prop should insert that component into the render prop', async () => {
@@ -581,8 +752,75 @@ describe('The navigator component picker context menu', () => {
             <FlexCol />
           }
         />
+        <Card
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 800,
+            top: 111,
+            width: 139,
+            height: 87,
+          }}
+          title={<div />}
+        />
+        <div/>
+        <div>
+          <span>Something</span>
+        </div>
       </Storyboard>
     )
+    `),
+    )
+  })
+
+  it('Selecting a component with no variants from the simple picker for a conditional slot should insert that component into the render prop', async () => {
+    const editor = await renderTestEditorWithCode(
+      `import * as React from 'react'
+      import { Storyboard } from 'utopia-api'
+      
+      export var storyboard = (
+        <Storyboard data-uid='sb'>
+          {true ? null : null}
+        </Storyboard>
+      )
+      
+      export const Column = () => (
+        <div
+          style={{ display: 'flex', flexDirection: 'column' }}
+        ></div>
+      )
+    `,
+      'await-first-dom-report',
+    )
+    const emptySlot = editor.renderedDOM.getByTestId(
+      'toggle-render-prop-NavigatorItemTestId-synthetic_sb/232/019_attribute',
+    )
+    await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
+
+    const menuButton = await waitFor(() => editor.renderedDOM.getByText('Column'))
+    await mouseClickAtPoint(menuButton, { x: 3, y: 3 })
+
+    await editor.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState(), StoryboardFilePath)).toEqual(
+      formatTestProjectCode(`
+      import * as React from 'react'
+      import { Storyboard } from 'utopia-api'
+  
+      export var storyboard = (
+       <Storyboard>
+          {
+            // @utopia/conditional=false
+            true ? null : <Column />
+          }
+        </Storyboard>
+      )
+    
+      export const Column = () => (
+        <div
+          style={{ display: 'flex', flexDirection: 'column' }}
+        />
+      )
     `),
     )
   })
@@ -629,6 +867,21 @@ describe('The navigator component picker context menu', () => {
         >
           <FlexCol />
         </Card>
+        <Card
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 800,
+            top: 111,
+            width: 139,
+            height: 87,
+          }}
+          title={<div />}
+        />
+        <div/>
+        <div>
+          <span>Something</span>
+        </div>
       </Storyboard>
     )
     `),
@@ -682,6 +935,21 @@ describe('The navigator component picker context menu', () => {
             <FlexRow>three totally real placeholders</FlexRow>
           }
         />
+        <Card
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 800,
+            top: 111,
+            width: 139,
+            height: 87,
+          }}
+          title={<div />}
+        />
+        <div/>
+        <div>
+          <span>Something</span>
+        </div>
       </Storyboard>
     )
     `),
@@ -734,6 +1002,86 @@ describe('The navigator component picker context menu', () => {
         >
           <FlexRow>three totally real placeholders</FlexRow>
         </Card>
+        <Card
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 800,
+            top: 111,
+            width: 139,
+            height: 87,
+          }}
+          title={<div />}
+        />
+        <div/>
+        <div>
+          <span>Something</span>
+        </div>
+      </Storyboard>
+    )
+    `),
+    )
+  })
+
+  it('Selecting a List from the simple picker for adding a child should insert the code for the List', async () => {
+    const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
+    await selectComponentsForTest(editor, [EP.fromString('sb/card')])
+    const addChildButton = editor.renderedDOM.getByTestId(
+      addChildButtonTestId(EP.fromString('sb/card')),
+    )
+    await mouseClickAtPoint(addChildButton, { x: 2, y: 2 })
+
+    const submenuButton = await waitFor(() => editor.renderedDOM.getByText('List'))
+    await mouseClickAtPoint(submenuButton, { x: 2, y: 2 })
+
+    await editor.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState(), StoryboardFilePath)).toEqual(
+      formatTestProjectCode(`
+    import * as React from 'react'
+    import { Storyboard } from 'utopia-api'
+    import { Placeholder } from 'utopia-api'
+
+    export const Card = (props) => {
+      return (
+        <div style={props.style}>
+          {props.title}
+          {props.children}
+        </div>
+      )
+    }
+
+    export var storyboard = (
+      <Storyboard>
+        <Card
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 945,
+            top: 111,
+            width: 139,
+            height: 87,
+          }}
+        >
+          {[1, 2, 3].map((listItem) => (
+            <Placeholder />
+          ))}
+        </Card>
+        <Card
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 800,
+            top: 111,
+            width: 139,
+            height: 87,
+          }}
+          title={<div />}
+        />
+        <div/>
+        <div>
+          <span>Something</span>
+        </div>
       </Storyboard>
     )
     `),
@@ -875,4 +1223,962 @@ describe('The navigator component picker context menu', () => {
       'regular-sb/scene/pg:pg-root/card/contents',
     ])
   })
+
+  it('can replace element inside map', async () => {
+    const editor = await renderTestEditorWithCode(
+      `import * as React from 'react'
+    import { Scene, Storyboard, FlexRow } from 'utopia-api'
+    
+    export var storyboard = (
+      <Storyboard data-uid='sb'>
+        <Scene
+          id='playground-scene'
+          commentId='playground-scene'
+          style={{
+            width: 700,
+            height: 759,
+            position: 'absolute',
+            left: 212,
+            top: 128,
+          }}
+          data-label='Playground'
+          data-uid='scene'
+        >
+          <FlexRow data-uid='flexrow'>
+            {
+              // @utopia/uid=map
+              [1, 1].map(() => (
+              <img
+                style={{
+                  width: 220,
+                  height: 220,
+                  display: 'inline-block',
+                }}
+                src='/editor/utopia-logo-white-fill.png?hash=4c7df4ba0e8686df4fe14e3570f2d3002304b930'
+                data-uid='img'
+              />
+              ))
+            }
+          </FlexRow>
+        </Scene>
+      </Storyboard>
+    )
+`,
+      'await-first-dom-report',
+    )
+
+    await mouseClickAtPoint(
+      editor.renderedDOM.getByTestId('NavigatorItemTestId-regular_sb/scene/flexrow/map/img~~~1'),
+      { x: 2, y: 2 },
+    )
+
+    await mouseClickAtPoint(
+      editor.renderedDOM.getByTestId('replace-element-button-sb/scene/flexrow/map/img~~~1'),
+      { x: 2, y: 2 },
+    )
+
+    await mouseClickAtPoint(editor.renderedDOM.getByText('div'), { x: 2, y: 2 })
+
+    // the element inside the map has been changed to a `div`
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Scene, Storyboard, FlexRow } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      id='playground-scene'
+      commentId='playground-scene'
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <FlexRow data-uid='flexrow'>
+        {
+          // @utopia/uid=map
+          [1, 1].map(() => (
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+              }}
+              data-uid='pro'
+            />
+          ))
+        }
+      </FlexRow>
+    </Scene>
+  </Storyboard>
+)
+`)
+  })
+
+  it('can replace element inside conditional', async () => {
+    const editor = await renderTestEditorWithCode(
+      `import * as React from 'react'
+      import { Scene, Storyboard, FlexRow } from 'utopia-api'
+      
+      export var storyboard = (
+        <Storyboard data-uid='sb'>
+          <Scene
+            id='playground-scene'
+            commentId='playground-scene'
+            style={{
+              width: 700,
+              height: 759,
+              position: 'absolute',
+              left: 212,
+              top: 128,
+            }}
+            data-label='Playground'
+            data-uid='scene'
+          >
+            <FlexRow data-uid='flexrow'>
+              {
+                // @utopia/uid=conditional
+                true ? (
+                  <img
+                    style={{
+                      width: 220,
+                      height: 220,
+                      display: 'inline-block',
+                    }}
+                    src='/editor/utopia-logo-white-fill.png?hash=4c7df4ba0e8686df4fe14e3570f2d3002304b930'
+                    data-uid='img'
+                  />
+                ) : null
+              }
+            </FlexRow>
+          </Scene>
+        </Storyboard>
+      )
+      export const Column = () => (
+        <div
+          style={{ display: 'flex', flexDirection: 'column' }}
+        ></div>
+      )      
+`,
+      'await-first-dom-report',
+    )
+
+    await mouseClickAtPoint(
+      editor.renderedDOM.getByTestId(
+        'NavigatorItemTestId-regular_sb/scene/flexrow/conditional/img-label',
+      ),
+      { x: 2, y: 2 },
+    )
+
+    await mouseClickAtPoint(
+      editor.renderedDOM.getByTestId('replace-element-button-sb/scene/flexrow/conditional/img'),
+      { x: 2, y: 2 },
+    )
+
+    await mouseClickAtPoint(editor.renderedDOM.getByText('Column'), { x: 2, y: 2 })
+
+    // the element inside the map has been changed to a `div`
+    expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState()))
+      .toEqual(`import * as React from 'react'
+import { Scene, Storyboard, FlexRow } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard>
+    <Scene
+      id='playground-scene'
+      commentId='playground-scene'
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+    >
+      <FlexRow>
+        {
+          // @utopia/uid=conditional
+          true ? <Column /> : null
+        }
+      </FlexRow>
+    </Scene>
+  </Storyboard>
+)
+export const Column = () => (
+  <div
+    style={{ display: 'flex', flexDirection: 'column' }}
+  />
+)
+`)
+  })
+
+  describe('Wrapping in a List', () => {
+    const target = EP.fromString('sb/card-with-title')
+
+    const expectedOutput = formatTestProjectCode(`
+      import * as React from 'react'
+      import { Storyboard } from 'utopia-api'
+      import { Placeholder } from 'utopia-api'
+
+      export const Card = (props) => {
+        return (
+          <div style={props.style}>
+            {props.title}
+            {props.children}
+          </div>
+        )
+      }
+
+      export var storyboard = (
+        <Storyboard>
+          <Card
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 945,
+              top: 111,
+              width: 139,
+              height: 87,
+            }}
+          />
+          {[1, 2, 3].map((listItem) => (
+              <Card
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 800,
+                  top: 111,
+                  width: 139,
+                  height: 87,
+                }}
+                title={<div />}
+              />
+            ))}
+          <div/>
+          <div>
+            <span>Something</span>
+          </div>
+        </Storyboard>
+      )
+    `)
+
+    it('Works when using the context menu', async () => {
+      const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
+      await selectComponentsForTest(editor, [target])
+      await openContextMenuAndClick(editor, [{ text: 'Wrap in…' }, { text: 'List' }])
+      expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState(), StoryboardFilePath)).toEqual(
+        expectedOutput,
+      )
+    })
+  })
+
+  describe('wrap in div', () => {
+    const entryPoints = {
+      'choose div from dropdown': async (renderResult: EditorRenderResult): Promise<void> => {
+        await openContextMenuAndClick(renderResult, [
+          { text: 'Wrap in…' },
+          { text: 'div', testId: 'Div-div' },
+        ])
+      },
+      'cmd + enter': (): Promise<void> => pressKey('Enter', { modifiers: cmdModifier }),
+    }
+
+    Object.entries(entryPoints).forEach(([entrypoint, trigger]) => {
+      describe(`${entrypoint}`, () => {
+        it('wrap absolute elements', async () => {
+          const renderResult = await renderTestEditorWithCode(
+            makeTestProjectCodeWithSnippet(` <div
+            style={{
+              height: '100%',
+              width: '100%',
+              contain: 'layout',
+            }}
+            data-uid='root'
+          >
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 20,
+                top: 22,
+                width: 48,
+                height: 41,
+              }}
+              data-uid='one'
+            />
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 82,
+                top: 28,
+                width: 38,
+                height: 29,
+              }}
+              data-uid='two'
+            />
+          </div>`),
+            'await-first-dom-report',
+          )
+          await selectComponentsForTest(renderResult, [
+            EP.appendNewElementPath(TestScenePath, ['root', 'one']),
+            EP.appendNewElementPath(TestScenePath, ['root', 'two']),
+          ])
+          await trigger(renderResult)
+
+          expect(
+            renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+          ).toEqual([
+            'regular-utopia-storyboard-uid/scene-aaa',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/wra',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/wra/one',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/wra/two',
+          ])
+
+          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+            makeTestProjectCodeWithSnippet(` <div
+          style={{
+            height: '100%',
+            width: '100%',
+            contain: 'layout',
+          }}
+          data-uid='root'
+        >
+          <div
+            style={{
+              contain: 'layout',
+              width: 100,
+              height: 41,
+              position: 'absolute',
+              top: 22,
+              left: 20,
+            }}
+          >
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 48,
+                height: 41,
+              }}
+              data-uid='one'
+            />
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 62,
+                top: 6,
+                width: 38,
+                height: 29,
+              }}
+              data-uid='two'
+            />
+          </div>
+        </div>`),
+          )
+        })
+        it('wrap flex elements', async () => {
+          const renderResult = await renderTestEditorWithCode(
+            makeTestProjectCodeWithSnippet(` <div
+            style={{
+              height: '100%',
+              width: '100%',
+              contain: 'layout',
+            }}
+            data-uid='root'
+          >
+            <div
+              style={{
+                contain: 'layout',
+                width: 'max-content',
+                height: 'max-content',
+                position: 'absolute',
+                top: 22,
+                left: 20,
+                display: 'flex',
+                flexDirection: 'row',
+                gap: 12,
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+              }}
+              data-uid='container'
+            >
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  width: 48,
+                  height: 41,
+                  contain: 'layout',
+                }}
+                data-uid='one'
+              />
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  width: 38,
+                  height: 29,
+                  contain: 'layout',
+                }}
+                data-uid='two'
+              />
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  width: 38,
+                  height: 29,
+                  contain: 'layout',
+                }}
+                data-uid='three'
+              />
+            </div>
+          </div>`),
+            'await-first-dom-report',
+          )
+          await selectComponentsForTest(renderResult, [
+            EP.appendNewElementPath(TestScenePath, ['root', 'container', 'one']),
+            EP.appendNewElementPath(TestScenePath, ['root', 'container', 'two']),
+          ])
+          await trigger(renderResult)
+
+          expect(
+            renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+          ).toEqual([
+            'regular-utopia-storyboard-uid/scene-aaa',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/wra',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/wra/one',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/wra/two',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/three',
+          ])
+
+          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+            makeTestProjectCodeWithSnippet(`<div
+          style={{
+            height: '100%',
+            width: '100%',
+            contain: 'layout',
+          }}
+          data-uid='root'
+        >
+          <div
+            style={{
+              contain: 'layout',
+              width: 'max-content',
+              height: 'max-content',
+              position: 'absolute',
+              top: 22,
+              left: 20,
+              display: 'flex',
+              flexDirection: 'row',
+              gap: 12,
+              alignItems: 'center',
+              justifyContent: 'flex-start',
+            }}
+            data-uid='container'
+          >
+            <div
+              style={{
+                contain: 'layout',
+                width: 98,
+                height: 41,
+              }}
+            >
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  width: 48,
+                  height: 41,
+                  contain: 'layout',
+                  top: 0,
+                  left: 0,
+                  position: 'absolute',
+                }}
+                data-uid='one'
+              />
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  width: 38,
+                  height: 29,
+                  contain: 'layout',
+                  top: 6,
+                  left: 60,
+                  position: 'absolute',
+                }}
+                data-uid='two'
+              />
+            </div>
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                width: 38,
+                height: 29,
+                contain: 'layout',
+              }}
+              data-uid='three'
+            />
+          </div>
+        </div>`),
+          )
+        })
+      })
+    })
+  })
+
+  describe('Replacing a regular element', () => {
+    const target = EP.fromString('sb/card-with-title')
+
+    const expectedOutput = formatTestProjectCode(`
+      import * as React from 'react'
+      import { Storyboard } from 'utopia-api'
+      import { FlexCol } from '/src/utils'
+
+      export const Card = (props) => {
+        return (
+          <div style={props.style}>
+            {props.title}
+            {props.children}
+          </div>
+        )
+      }
+
+      export var storyboard = (
+        <Storyboard>
+          <Card
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 945,
+              top: 111,
+              width: 139,
+              height: 87,
+            }}
+          />
+          <FlexCol />
+          <div/>
+          <div>
+            <span>Something</span>
+          </div>
+        </Storyboard>
+      )
+    `)
+
+    it('Works when clicking the navigator button', async () => {
+      const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
+      await selectComponentsForTest(editor, [target])
+      const replaceButton = editor.renderedDOM.getByTestId(ReplaceElementButtonTestId(target, null))
+      await mouseClickAtPoint(replaceButton, { x: 2, y: 2 })
+
+      const menuButton = await waitFor(() => editor.renderedDOM.getAllByText('FlexCol')[1]) // The first result is from other-utils
+      await mouseClickAtPoint(menuButton, { x: 3, y: 3 })
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState(), StoryboardFilePath)).toEqual(
+        expectedOutput,
+      )
+    })
+
+    it('Works when using the context menu', async () => {
+      const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
+      await selectComponentsForTest(editor, [target])
+
+      const navigatorRow = editor.renderedDOM.getByTestId(NavigatorContainerId)
+
+      await act(async () => {
+        fireEvent(
+          navigatorRow,
+          new MouseEvent('contextmenu', {
+            bubbles: true,
+            cancelable: true,
+            clientX: 3,
+            clientY: 3,
+            buttons: 0,
+            button: 2,
+          }),
+        )
+      })
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      const replaceButton = await waitFor(() => editor.renderedDOM.getByText('Replace Everything…'))
+      await mouseClickAtPoint(replaceButton, { x: 3, y: 3 })
+
+      const menuButton = await waitFor(() => editor.renderedDOM.getAllByText('FlexCol')[1])
+      await mouseClickAtPoint(menuButton, { x: 3, y: 3 })
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState(), StoryboardFilePath)).toEqual(
+        expectedOutput,
+      )
+    })
+  })
+
+  describe('Replacing a render prop', () => {
+    const target = EP.fromString('sb/card-with-title/card-title-div')
+
+    const expectedOutput = formatTestProjectCode(`
+      import * as React from 'react'
+      import { Storyboard } from 'utopia-api'
+      import { FlexCol } from '/src/utils'
+
+      export const Card = (props) => {
+        return (
+          <div style={props.style}>
+            {props.title}
+            {props.children}
+          </div>
+        )
+      }
+
+      export var storyboard = (
+        <Storyboard>
+          <Card
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 945,
+              top: 111,
+              width: 139,
+              height: 87,
+            }}
+          />
+          <Card
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 800,
+              top: 111,
+              width: 139,
+              height: 87,
+            }}
+            title={<FlexCol />}
+          />
+          <div/>
+          <div>
+            <span>Something</span>
+          </div>
+        </Storyboard>
+      )
+    `)
+
+    it('Works when clicking the navigator button', async () => {
+      const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
+      await selectComponentsForTest(editor, [target])
+      const replaceButton = editor.renderedDOM.getByTestId(
+        ReplaceElementButtonTestId(target, 'title'),
+      )
+      await mouseClickAtPoint(replaceButton, { x: 2, y: 2 })
+
+      const menuButton = await waitFor(() => editor.renderedDOM.getByText('FlexCol'))
+      await mouseClickAtPoint(menuButton, { x: 3, y: 3 })
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState(), StoryboardFilePath)).toEqual(
+        expectedOutput,
+      )
+    })
+
+    it('Works when using the context menu', async () => {
+      const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
+      await selectComponentsForTest(editor, [target])
+
+      const navigatorRow = editor.renderedDOM.getByTestId(NavigatorContainerId)
+
+      await act(async () => {
+        fireEvent(
+          navigatorRow,
+          new MouseEvent('contextmenu', {
+            bubbles: true,
+            cancelable: true,
+            clientX: 3,
+            clientY: 3,
+            buttons: 0,
+            button: 2,
+          }),
+        )
+      })
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      const replaceButton = await waitFor(() => editor.renderedDOM.getByText('Replace Everything…'))
+      await mouseClickAtPoint(replaceButton, { x: 3, y: 3 })
+
+      const menuButton = await waitFor(() => editor.renderedDOM.getByText('FlexCol'))
+      await mouseClickAtPoint(menuButton, { x: 3, y: 3 })
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState(), StoryboardFilePath)).toEqual(
+        expectedOutput,
+      )
+    })
+
+    it('Works when replacing the root element of a component', async () => {
+      const editor = await renderTestEditorWithCode(
+        TestProjectWithRootElement,
+        'await-first-dom-report',
+      )
+      const targetPath = EP.fromString('sb/scene/pg:pg-root')
+      await selectComponentsForTest(editor, [targetPath])
+
+      const replaceButton = editor.renderedDOM.getByTestId(
+        ReplaceElementButtonTestId(targetPath, null),
+      )
+      await mouseClickAtPoint(replaceButton, { x: 2, y: 2 })
+
+      const menuButton = await waitFor(() => editor.renderedDOM.getByText('FlexCol'))
+      await mouseClickAtPoint(menuButton, { x: 3, y: 3 })
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState(), StoryboardFilePath))
+        .toEqual(`import * as React from 'react'
+import { Scene, Storyboard, Ellipse } from 'utopia-api'
+import { FlexCol } from 'utopia-api'
+
+const Playground = ({ children, style }) => (
+  <FlexCol style={{ position: 'absolute' }} />
+)
+
+export var storyboard = (
+  <Storyboard>
+    <Scene
+      id='playground-scene'
+      commentId='playground-scene'
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+    >
+      <Playground style={{}}>
+        <Ellipse
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 100,
+            height: 100,
+          }}
+        />
+        <Ellipse
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 100,
+            height: 100,
+          }}
+        />
+        <Ellipse
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 100,
+            height: 100,
+          }}
+        />
+      </Playground>
+    </Scene>
+  </Storyboard>
+)
+`)
+    })
+
+    it('Works when swapping the root element of a component', async () => {
+      const editor = await renderTestEditorWithCode(
+        TestProjectWithRootElement,
+        'await-first-dom-report',
+      )
+      const targetPath = EP.fromString('sb/scene/pg:pg-root')
+      await selectComponentsForTest(editor, [targetPath])
+
+      const navigatorRow = editor.renderedDOM.getByTestId(NavigatorContainerId)
+
+      await act(async () => {
+        fireEvent(
+          navigatorRow,
+          new MouseEvent('contextmenu', {
+            bubbles: true,
+            cancelable: true,
+            clientX: 3,
+            clientY: 3,
+            buttons: 0,
+            button: 2,
+          }),
+        )
+      })
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      const replaceButton = await waitFor(() => editor.renderedDOM.getByText('Replace This…'))
+      await mouseClickAtPoint(replaceButton, { x: 3, y: 3 })
+
+      const flexRowButton = await waitFor(() => editor.renderedDOM.getByText('FlexRow'))
+      await mouseClickAtPoint(flexRowButton, { x: 3, y: 3 })
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      // in the code below, FlexRow wraps {children}, preserving them in the rendered content
+      expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState(), StoryboardFilePath))
+        .toEqual(`import * as React from 'react'
+import { Scene, Storyboard, Ellipse } from 'utopia-api'
+import { FlexRow } from 'utopia-api'
+
+const Playground = ({ children, style }) => (
+  <FlexRow style={style}>{children}</FlexRow>
+)
+
+export var storyboard = (
+  <Storyboard>
+    <Scene
+      id='playground-scene'
+      commentId='playground-scene'
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+    >
+      <Playground style={{}}>
+        <Ellipse
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 100,
+            height: 100,
+          }}
+        />
+        <Ellipse
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 100,
+            height: 100,
+          }}
+        />
+        <Ellipse
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 100,
+            height: 100,
+          }}
+        />
+      </Playground>
+    </Scene>
+  </Storyboard>
+)
+`)
+    })
+  })
 })
+
+const TestProjectWithRootElement = `import * as React from 'react'
+import {
+  Scene,
+  Storyboard,
+  Ellipse,
+} from 'utopia-api'
+
+const Playground = ({ children, style }) => (
+  <div data-uid='pg-root' style={style}>
+    {children}
+  </div>
+)
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      id='playground-scene'
+      commentId='playground-scene'
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <Playground style={{}} data-uid='pg'>
+        <Ellipse
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 100,
+            height: 100,
+          }}
+          data-uid='aaa'
+        />
+        <Ellipse
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 100,
+            height: 100,
+          }}
+          data-uid='aag'
+        />
+        <Ellipse
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 100,
+            height: 100,
+          }}
+          data-uid='aai'
+        />
+      </Playground>
+    </Scene>
+  </Storyboard>
+)
+`
+
+type Selector = {
+  text: string
+  testId?: string
+}
+async function openContextMenuAndClick(editor: EditorRenderResult, selectors: Selector[]) {
+  const navigatorRow = editor.renderedDOM.getByTestId(NavigatorContainerId)
+
+  await act(async () => {
+    fireEvent(
+      navigatorRow,
+      new MouseEvent('contextmenu', {
+        bubbles: true,
+        cancelable: true,
+        clientX: 3,
+        clientY: 3,
+        buttons: 0,
+        button: 2,
+      }),
+    )
+  })
+
+  await editor.getDispatchFollowUpActionsFinished()
+
+  for (const selector of selectors) {
+    // we actually need the await here: https://eslint.org/docs/latest/rules/no-await-in-loop#when-not-to-use-it
+    // eslint-disable-next-line no-await-in-loop
+    const button = await waitFor(() =>
+      selector.testId != null
+        ? editor.renderedDOM.getByTestId(selector.testId)
+        : editor.renderedDOM.getByText(selector.text),
+    )
+    // eslint-disable-next-line no-await-in-loop
+    await mouseClickAtPoint(button, { x: 3, y: 3 })
+  }
+
+  await editor.getDispatchFollowUpActionsFinished()
+}

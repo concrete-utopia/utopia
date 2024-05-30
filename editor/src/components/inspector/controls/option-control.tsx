@@ -75,6 +75,8 @@ export const OptionControl: React.FunctionComponent<
     }
   })()
 
+  const rc = controlOptions.roundCorners
+
   return (
     <div
       className={`${
@@ -94,25 +96,55 @@ export const OptionControl: React.FunctionComponent<
           data-testid={props.testId}
           data-ischecked={isChecked}
           data-controlstatus={props.controlStatus}
+          className={`option-control ${
+            props.controlClassName != null ? props.controlClassName : ''
+          }`}
+          onContextMenu={props.onContextMenu}
           css={{
-            border: isChecked ? undefined : `1px solid ${colorTheme.fg8.value}`,
-            backgroundColor: props.value ? colorTheme.bg2.value : 'transparent',
-            background: background,
-            color:
-              isChecked && props.controlStatus === 'overridden'
-                ? colorTheme.brandNeonPink.value
-                : undefined,
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
             flex: 1,
             padding: '0 2px',
             textAlign: 'center',
-            fontWeight: 600,
             minWidth: controlOptions.width,
-            height: '100%',
-            borderRadius: UtopiaTheme.inputBorderRadius,
-            opacity: controlOpacity,
+            height: controlOptions.height,
+            backgroundColor: background,
+            color:
+              isChecked && props.controlStatus === 'overridden'
+                ? colorTheme.brandNeonPink.value
+                : colorTheme.fg1.value,
+            // If just an option control:
+            borderRadius: rc != null ? 0 : UtopiaTheme.inputBorderRadius,
+            // If part of a option chain control:
+            '.option-chain-control-container &': {
+              borderRadius: 0,
+              boxShadow: 'none !important',
+            },
+            '.option-chain-control-container .segment:first-of-type  &': {
+              borderTopLeftRadius: UtopiaTheme.inputBorderRadius,
+              borderBottomLeftRadius: UtopiaTheme.inputBorderRadius,
+            },
+            '.option-chain-control-container .segment:last-child &': {
+              borderTopRightRadius: UtopiaTheme.inputBorderRadius,
+              borderBottomRightRadius: UtopiaTheme.inputBorderRadius,
+            },
+            borderTopRightRadius:
+              rc === 'all' || rc === 'right' || rc === 'topRight' || rc === 'top'
+                ? UtopiaTheme.inputBorderRadius
+                : undefined,
+            borderBottomRightRadius:
+              rc === 'all' || rc === 'right' || rc === 'bottomRight' || rc === 'bottom'
+                ? UtopiaTheme.inputBorderRadius
+                : undefined,
+            borderTopLeftRadius:
+              rc === 'all' || rc === 'left' || rc === 'topLeft' || rc === 'top'
+                ? UtopiaTheme.inputBorderRadius
+                : undefined,
+            borderBottomLeftRadius:
+              rc === 'all' || rc === 'left' || rc === 'bottomLeft' || rc === 'bottom'
+                ? UtopiaTheme.inputBorderRadius
+                : undefined,
             '&:hover': {
               opacity: props.controlStatus == 'disabled' ? undefined : controlOpacity + 0.2,
             },
@@ -120,10 +152,6 @@ export const OptionControl: React.FunctionComponent<
               opacity: props.controlStatus == 'disabled' ? undefined : 1,
             },
           }}
-          className={`option-control ${
-            props.controlClassName != null ? props.controlClassName : ''
-          }`}
-          onContextMenu={props.onContextMenu}
         >
           <input
             style={{

@@ -28,14 +28,24 @@ describe('Conditonals JSX parser', () => {
           JSX_ELEMENT - div - div
             JSX_CONDITIONAL_EXPRESSION - conditional
               JSX_ELEMENT - div - hello
-                JSX_TEXT_BLOCK - 9e1
+                JSX_TEXT_BLOCK - c58
               JSX_ELEMENT - div - world
-                JSX_TEXT_BLOCK - 3d0
+                JSX_TEXT_BLOCK - 935
         UNPARSED_CODE
         UTOPIA_JSX_COMPONENT - storyboard
           JSX_ELEMENT - Storyboard - eee
             JSX_ELEMENT - Scene - fff
               JSX_ELEMENT - App - app
+                  ATTRIBUTE_VALUE - 753
+                  ATTRIBUTE_VALUE - 2c3
+                  ATTRIBUTE_VALUE - 417
+                  ATTRIBUTE_VALUE - 266
+                  ATTRIBUTE_VALUE - 498
+                ATTRIBUTE_VALUE - 7c2
+                ATTRIBUTE_VALUE - d23
+                ATTRIBUTE_VALUE - 14f
+                ATTRIBUTE_VALUE - c79
+                ATTRIBUTE_VALUE - 0c4
         UNPARSED_CODE"
       `)
 
@@ -71,6 +81,16 @@ describe('Conditonals JSX parser', () => {
           JSX_ELEMENT - Storyboard - eee
             JSX_ELEMENT - Scene - fff
               JSX_ELEMENT - App - app
+                  ATTRIBUTE_VALUE - 753
+                  ATTRIBUTE_VALUE - 2c3
+                  ATTRIBUTE_VALUE - 417
+                  ATTRIBUTE_VALUE - 266
+                  ATTRIBUTE_VALUE - 498
+                ATTRIBUTE_VALUE - 7c2
+                ATTRIBUTE_VALUE - d23
+                ATTRIBUTE_VALUE - 14f
+                ATTRIBUTE_VALUE - c79
+                ATTRIBUTE_VALUE - 0c4
         UNPARSED_CODE"
       `)
 
@@ -108,6 +128,16 @@ describe('Conditonals JSX printer', () => {
           JSX_ELEMENT - Storyboard - eee
             JSX_ELEMENT - Scene - fff
               JSX_ELEMENT - App - app
+                  ATTRIBUTE_VALUE - 753
+                  ATTRIBUTE_VALUE - 2c3
+                  ATTRIBUTE_VALUE - 417
+                  ATTRIBUTE_VALUE - 266
+                  ATTRIBUTE_VALUE - 498
+                ATTRIBUTE_VALUE - 7c2
+                ATTRIBUTE_VALUE - d23
+                ATTRIBUTE_VALUE - 14f
+                ATTRIBUTE_VALUE - c79
+                ATTRIBUTE_VALUE - 0c4
         UNPARSED_CODE"
       `)
 

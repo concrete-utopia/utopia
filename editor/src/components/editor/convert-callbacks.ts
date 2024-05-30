@@ -36,6 +36,7 @@ import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import type { InsertMenuItem, InsertMenuItemValue } from '../canvas/ui/floating-insert-menu'
 import { wrapInDivStrategy } from './wrap-in-callbacks'
 import { commandsForFirstApplicableStrategy } from '../inspector/inspector-strategies/inspector-strategy'
+import type { PropertyControlsInfo } from '../custom-code/code-file'
 
 export function changeConditionalOrFragment(
   projectContents: ProjectContentTreeRoot,
@@ -45,6 +46,7 @@ export function changeConditionalOrFragment(
   floatingMenuState: FloatingInsertMenuState,
   fixedSizeForInsertion: boolean,
   element: JSXConditionalExpressionWithoutUID | JSXFragmentWithoutUID,
+  propertyControlsInfo: PropertyControlsInfo,
 ): Array<EditorAction> {
   let actionsToDispatch: Array<EditorAction> = []
   const importsToAdd: Imports =
@@ -82,11 +84,12 @@ export function changeConditionalOrFragment(
         elementPathTree,
         wrapperUID,
         selectedViews.length,
+        propertyControlsInfo,
       )
       actionsToDispatch = [
         insertInsertable(
           insertionPath,
-          insertableComponent(importsToAdd, () => element, '', [], null, null),
+          insertableComponent(importsToAdd, () => element, '', [], null, null, null),
           fixedSizeForInsertion ? 'add-size' : 'do-not-add',
           floatingMenuState.indexPosition,
         ),
@@ -120,6 +123,7 @@ export function changeElement(
   addContentForInsertion: boolean,
   pickedInsertableComponent: InsertMenuItemValue,
   source: InsertableComponentGroupType | null,
+  propertyControlsInfo: PropertyControlsInfo,
 ): Array<EditorAction> {
   const element = pickedInsertableComponent.element()
   if (element.type !== 'JSX_ELEMENT') {
@@ -136,6 +140,7 @@ export function changeElement(
             elementPathTree,
             allElementProps,
             projectContents,
+            propertyControlsInfo,
           ),
         ])
 
@@ -189,6 +194,7 @@ export function changeElement(
           elementPathTree,
           wrapperUID,
           selectedViews.length,
+          propertyControlsInfo,
         )
         // TODO multiselect?
         actionsToDispatch = [
@@ -231,6 +237,7 @@ export function getActionsToApplyChange(
   fixedSizeForInsertion: boolean,
   addContentForInsertion: boolean,
   insertMenuItemValue: InsertMenuItemValue,
+  propertyControlsInfo: PropertyControlsInfo,
 ): Array<EditorAction> {
   const element = insertMenuItemValue.element()
   switch (element.type) {
@@ -244,6 +251,7 @@ export function getActionsToApplyChange(
         floatingMenuState,
         fixedSizeForInsertion,
         element,
+        propertyControlsInfo,
       )
     case 'JSX_ELEMENT':
       return changeElement(
@@ -257,7 +265,10 @@ export function getActionsToApplyChange(
         addContentForInsertion,
         insertMenuItemValue,
         insertMenuItemValue.source,
+        propertyControlsInfo,
       )
+    case 'JSX_MAP_EXPRESSION':
+      return [] // we don't support converting to maps
     default:
       assertNever(element)
   }
@@ -271,6 +282,7 @@ export function useConvertTo(): (convertTo: InsertMenuItem | null) => void {
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
   const allElementPropsRef = useRefEditorState((store) => store.editor.projectContents)
   const floatingMenuStateRef = useRefEditorState((store) => store.editor.floatingInsertMenu)
+  const propertyControlsInfoRef = useRefEditorState((store) => store.editor.propertyControlsInfo)
 
   return React.useCallback(
     (convertToMenuItem: InsertMenuItem | null) => {
@@ -286,6 +298,7 @@ export function useConvertTo(): (convertTo: InsertMenuItem | null) => void {
           false,
           false,
           convertTo,
+          propertyControlsInfoRef.current,
         )
         dispatch(actions, 'everyone')
       }
@@ -298,6 +311,7 @@ export function useConvertTo(): (convertTo: InsertMenuItem | null) => void {
       jsxMetadataRef,
       projectContentsRef,
       selectedViewsRef,
+      propertyControlsInfoRef,
     ],
   )
 }

@@ -42,6 +42,7 @@ import {
   Icn,
   Tooltip,
   iconForControlType,
+  Icons,
 } from '../../../../uuiui'
 import type { CSSNumber } from '../../common/css-utils'
 import { printCSSNumber, cssNumber, defaultCSSColor } from '../../common/css-utils'
@@ -49,10 +50,11 @@ import * as PP from '../../../../core/shared/property-path'
 import { ColorControl } from '../../controls/color-control'
 import { StringControl } from '../../controls/string-control'
 import type { SelectOption } from '../../controls/select-control'
+import type { OptionChainOption } from '../../controls/option-chain-control'
 import { OptionChainControl } from '../../controls/option-chain-control'
 import { useKeepReferenceEqualityIfPossible } from '../../../../utils/react-performance'
 import { UIGridRow } from '../../widgets/ui-grid-row'
-import type { Imports, PropertyPath } from '../../../../core/shared/project-file-types'
+import type { ElementPath, Imports, PropertyPath } from '../../../../core/shared/project-file-types'
 import { importDetailsFromImportOption } from '../../../../core/shared/project-file-types'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { addImports, forceParseFile } from '../../../editor/actions/action-creators'
@@ -65,15 +67,23 @@ import {
 } from '../../../custom-code/code-file'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { HtmlPreview, ImagePreview } from './property-content-preview'
+import type {
+  ElementInstanceMetadata,
+  JSXElementChild,
+} from '../../../../core/shared/element-template'
 import {
   JSElementAccess,
   JSIdentifier,
   JSPropertyAccess,
+  getJSXElementNameLastPart,
 } from '../../../../core/shared/element-template'
 import type { JSXParsedType, JSXParsedValue } from '../../../../utils/value-parser-utils'
 import { assertNever } from '../../../../core/shared/utils'
 import { preventDefault, stopPropagation } from '../../common/inspector-utils'
 import { unless, when } from '../../../../utils/react-conditionals'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { parseNoneControlDescription } from '../../../../core/property-controls/property-controls-parser'
+import * as EP from '../../../../core/shared/element-path'
 
 export interface ControlForPropProps<T extends RegularControlDescription> {
   propPath: PropertyPath
@@ -84,6 +94,7 @@ export interface ControlForPropProps<T extends RegularControlDescription> {
   focusOnMount: boolean
   onOpenDataPicker: () => void
   showHiddenControl: (path: string) => void
+  elementPath: ElementPath
 }
 
 export const CheckboxPropertyControl = React.memo(
@@ -383,7 +394,7 @@ export const RadioPropertyControl = React.memo(
     // TS baulks at the map below for some reason if we don't first do this
     const controlOptions: Array<IndividualOption> = controlDescription.options
 
-    const options: Array<SelectOption> = useKeepReferenceEqualityIfPossible(
+    const options: Array<OptionChainOption<unknown>> = useKeepReferenceEqualityIfPossible(
       controlOptions.map((option) => {
         return {
           value: valueForIndividualOption(option),
@@ -391,12 +402,8 @@ export const RadioPropertyControl = React.memo(
         }
       }),
     )
-    const currentValue = options.find((option) => {
-      return fastDeepEquals(option.value, value)
-    })
-
-    function submitValue(option: SelectOption): void {
-      propMetadata.onSubmitValue(option.value)
+    function submitValue(valueToSubmit: unknown): void {
+      propMetadata.onSubmitValue(valueToSubmit)
     }
 
     return (
@@ -404,7 +411,7 @@ export const RadioPropertyControl = React.memo(
         key={controlId}
         id={controlId}
         testId={controlId}
-        value={currentValue}
+        value={value}
         controlStatus={propMetadata.controlStatus}
         controlStyles={propMetadata.controlStyles}
         // eslint-disable-next-line react/jsx-no-bind
@@ -539,21 +546,22 @@ export const JSXPropertyControl = React.memo(
 
     const safeValue: JSXParsedValue = value ?? { type: 'unknown', name: 'JSX' }
 
-    // TODO: this is copy paste from conditional section
     return (
       <div
         style={{
-          borderRadius: 2,
+          borderRadius: 4,
           background: theme.bg2.value,
-          fontWeight: 600,
+          fontSize: 10,
           display: 'flex',
           justifyContent: 'flex-start',
           alignItems: 'center',
-          gap: 6,
+          gap: 4,
           overflowX: 'scroll',
           whiteSpace: 'nowrap',
-          padding: '2px 6px',
-          color: controlStyles.mainColor,
+          padding: '0px 4px',
+          height: 20,
+          // to match cartouche control
+          border: '1px solid transparent',
         }}
       >
         <JSXPropIcon jsxType={safeValue.type} />
@@ -563,18 +571,54 @@ export const JSXPropertyControl = React.memo(
   },
 )
 
+export const JSXPropertyControlForListSection = React.memo((props: { value: JSXParsedValue }) => {
+  const { value } = props
+
+  const theme = useColorTheme()
+  const controlStyles = getControlStyles('simple')
+  const valueToShow = value
+
+  const safeValue: JSXParsedValue = valueToShow ?? { type: 'unknown', name: 'JSX' }
+
+  return (
+    <div
+      style={{
+        borderRadius: 4,
+        background: theme.bg2.value,
+        fontSize: 10,
+        display: 'flex',
+        justifyContent: 'flex-start',
+        alignItems: 'center',
+        gap: 4,
+        overflowX: 'scroll',
+        whiteSpace: 'nowrap',
+        padding: '0px 4px',
+        height: 20,
+        // to match cartouche control
+        border: '1px solid transparent',
+      }}
+    >
+      <JSXPropIcon jsxType={safeValue.type} />
+      <span style={{ overflow: 'hidden' }}>{safeValue.name}</span>
+    </div>
+  )
+})
+
 // TODO: this is just a dummy component we need more and better icons
 const JSXPropIcon = React.memo((props: { jsxType: JSXParsedType }) => {
   switch (props.jsxType) {
     case 'external-component':
-      return <Icn category={'component'} type={'npm'} width={18} height={18} />
+      return <Icn category={'navigator-element'} type={'component'} width={12} height={12} />
     case 'internal-component':
-      return <Icn category={'component'} type={'default'} width={18} height={18} />
+      return <Icn category={'navigator-element'} type={'component'} width={12} height={12} />
     case 'html':
-      return <Icn category={'element'} type={'div'} width={18} height={18} />
+      return <Icn category={'navigator-element'} type={'div'} width={12} height={12} />
     case 'unknown':
+      return <Icn category={'navigator-element'} type={'none'} width={12} height={12} />
     case 'string':
+      return <Icn category={'navigator-element'} type={'string'} width={12} height={12} />
     case 'number':
+      return <Icn category={'navigator-element'} type={'number'} width={12} height={12} />
     case 'null':
       return null
     default:
@@ -798,82 +842,6 @@ export const Matrix4PropertyControl = React.memo(
           />
         </FlexRow>
       </FlexColumn>
-    )
-  },
-)
-
-interface IdentifierExpressionCartoucheControlProps {
-  contents: string
-  dataType: RegularControlType
-  matchType: 'full' | 'partial'
-  onOpenDataPicker: () => void
-  onDeleteCartouche: () => void
-  safeToDelete: boolean
-  testId: string
-}
-export const IdentifierExpressionCartoucheControl = React.memo(
-  (props: IdentifierExpressionCartoucheControlProps) => {
-    const { onDeleteCartouche, testId, safeToDelete } = props
-    const onDelete = React.useCallback<React.MouseEventHandler<HTMLDivElement>>(
-      (e) => {
-        stopPropagation(e)
-        onDeleteCartouche()
-      },
-      [onDeleteCartouche],
-    )
-
-    const Icon = iconForControlType(props.dataType)
-
-    return (
-      <FlexRow
-        style={{
-          cursor: 'pointer',
-          fontSize: 10,
-          color: props.matchType === 'full' ? colorTheme.bg1.value : colorTheme.primary.value,
-          backgroundColor:
-            props.matchType === 'full' ? colorTheme.primary.value : colorTheme.primary10.value,
-          padding: '0px 4px',
-          borderRadius: 4,
-          height: 22,
-          display: 'flex',
-          flex: 1,
-          gap: 2,
-        }}
-        onClick={props.onOpenDataPicker}
-      >
-        <Icon />
-        <Tooltip title={props.contents}>
-          <div
-            style={{
-              flex: 1,
-              /* Standard CSS ellipsis */
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-
-              /* Beginning of string */
-              direction: 'rtl',
-              textAlign: 'left',
-            }}
-          >
-            {props.contents}
-            &lrm;
-            {/* the &lrm; non-printing character is added to fix the punctuation marks disappearing because of direction: rtl */}
-          </div>
-        </Tooltip>
-        {when(
-          safeToDelete,
-          <Icn
-            category='semantic'
-            type='cross-medium'
-            color='on-highlight-main'
-            width={16}
-            height={16}
-            data-testid={`delete-${testId}`}
-            onClick={onDelete}
-          />,
-        )}
-      </FlexRow>
     )
   },
 )

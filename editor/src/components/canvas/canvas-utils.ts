@@ -40,6 +40,9 @@ import {
   isJSPropertyAccess,
   isJSElementAccess,
   isJSExpression,
+  isJSExpressionOtherJavaScript,
+  isJSXMapExpression,
+  isJSXTextBlock,
 } from '../../core/shared/element-template'
 import {
   guaranteeUniqueUids,
@@ -156,6 +159,10 @@ import type { ErrorMessage } from '../../core/shared/error-messages'
 import type { OverlayError } from '../../core/shared/runtime-report-logs'
 import type { RouteModulesWithRelativePaths } from './remix/remix-utils'
 import type { IsCenterBased } from './canvas-strategies/strategies/resize-helpers'
+import { getComponentDescriptorForTarget } from '../../core/property-controls/property-controls-utils'
+import type { PropertyControlsInfo } from '../custom-code/code-file'
+import { mapDropNulls } from '../../core/shared/array-utils'
+import { isFeatureEnabled } from '../../utils/feature-switches'
 
 function dragDeltaScaleForProp(prop: LayoutTargetableProp): number {
   switch (prop) {
@@ -1688,6 +1695,7 @@ export function getValidElementPaths(
   topLevelElementName: string,
   instancePath: ElementPath,
   projectContents: ProjectContentTreeRoot,
+  autoFocusedPaths: Array<ElementPath>,
   filePath: string,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
   getRemixValidPathsGenerationContext: (path: ElementPath) => RemixValidPathsGenerationContext,
@@ -1720,9 +1728,11 @@ export function getValidElementPaths(
           topLevelElement.rootElement,
           instancePath,
           projectContents,
+          autoFocusedPaths,
           resolvedFilePath,
           filePath,
           false,
+          true,
           true,
           resolve,
           getRemixValidPathsGenerationContext,
@@ -1738,20 +1748,23 @@ function getValidElementPathsFromElement(
   element: JSXElementChild,
   parentPath: ElementPath,
   projectContents: ProjectContentTreeRoot,
+  autoFocusedPaths: Array<ElementPath>,
   filePath: string,
   uiFilePath: string,
   isOnlyChildOfScene: boolean,
   parentIsInstance: boolean,
+  includeElementInPath: boolean,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
   getRemixValidPathsGenerationContext: (path: ElementPath) => RemixValidPathsGenerationContext,
 ): Array<ElementPath> {
-  if (isJSXElementLike(element)) {
-    const uid = getUtopiaID(element)
-    const path = parentIsInstance
+  const uid = getUtopiaID(element)
+  const path = includeElementInPath
+    ? parentIsInstance
       ? EP.appendNewElementPath(parentPath, uid)
       : EP.appendToPath(parentPath, uid)
-    let paths = [path]
-
+    : parentPath
+  let paths = includeElementInPath ? [path] : []
+  if (isJSXElementLike(element)) {
     const isRemixScene = isRemixSceneElement(element, filePath, projectContents)
     const remixPathGenerationContext = getRemixValidPathsGenerationContext(path)
     if (remixPathGenerationContext.type === 'active' && isRemixScene) {
@@ -1773,9 +1786,11 @@ function getValidElementPathsFromElement(
             topLevelElement,
             parentPathInner,
             projectContents,
+            autoFocusedPaths,
             routeModulePath,
             uiFilePath,
             false,
+            true,
             true,
             resolve,
             getRemixValidPathsGenerationContext,
@@ -1812,10 +1827,12 @@ function getValidElementPathsFromElement(
           c,
           path,
           projectContents,
+          autoFocusedPaths,
           filePath,
           uiFilePath,
           isSceneWithOneChild,
           false,
+          true,
           resolve,
           getRemixValidPathsGenerationContext,
         ),
@@ -1833,10 +1850,12 @@ function getValidElementPathsFromElement(
                 prop,
                 path,
                 projectContents,
+                autoFocusedPaths,
                 filePath,
                 uiFilePath,
                 isSceneWithOneChild,
                 false,
+                true,
                 resolve,
                 getRemixValidPathsGenerationContext,
               ),
@@ -1853,32 +1872,81 @@ function getValidElementPathsFromElement(
         ? null
         : EP.pathUpToElementPath(focusedElementPath, lastElementPathPart, 'static-path')
 
+    const matchingAutofocusedPathParts: Array<ElementPath> = mapDropNulls((autofocusedPath) => {
+      return autofocusedPath == null || lastElementPathPart == null
+        ? null
+        : EP.pathUpToElementPath(autofocusedPath, lastElementPathPart, 'static-path')
+    }, autoFocusedPaths)
+
     const isFocused = isOnlyChildOfScene || matchingFocusedPathPart != null
     if (isFocused) {
-      paths.push(
-        ...getValidElementPaths(
-          focusedElementPath,
-          name,
-          matchingFocusedPathPart ?? path,
-          projectContents,
-          filePath,
-          resolve,
-          getRemixValidPathsGenerationContext,
-        ),
+      const result = getValidElementPaths(
+        focusedElementPath,
+        name,
+        matchingFocusedPathPart ?? path,
+        projectContents,
+        autoFocusedPaths,
+        filePath,
+        resolve,
+        getRemixValidPathsGenerationContext,
       )
+      paths.push(...result)
     }
+    matchingAutofocusedPathParts.forEach((autofocusedPathPart) => {
+      const result = getValidElementPaths(
+        focusedElementPath,
+        name,
+        autofocusedPathPart,
+        projectContents,
+        autoFocusedPaths,
+        filePath,
+        resolve,
+        getRemixValidPathsGenerationContext,
+      )
+      paths.push(...result)
+    })
 
     return paths
   } else if (
-    isJSExpression(element) &&
-    (isJSIdentifier(element) || isJSPropertyAccess(element) || isJSElementAccess(element))
+    (isJSXTextBlock(element) && isFeatureEnabled('Condensed Navigator Entries')) ||
+    isJSIdentifier(element) ||
+    isJSPropertyAccess(element) ||
+    isJSElementAccess(element)
   ) {
-    const uid = getUtopiaID(element)
-    const path = parentIsInstance
-      ? EP.appendNewElementPath(parentPath, uid)
-      : EP.appendToPath(parentPath, uid)
-    return [path]
-  } else if (isJSExpressionMapOrOtherJavaScript(element)) {
+    return paths
+  } else if (isJSXMapExpression(element)) {
+    paths.push(
+      ...getValidElementPathsFromElement(
+        focusedElementPath,
+        element.valueToMap,
+        path,
+        projectContents,
+        autoFocusedPaths,
+        filePath,
+        uiFilePath,
+        false,
+        false,
+        false,
+        resolve,
+        getRemixValidPathsGenerationContext,
+      ),
+      ...getValidElementPathsFromElement(
+        focusedElementPath,
+        element.mapFunction,
+        path,
+        projectContents,
+        autoFocusedPaths,
+        filePath,
+        uiFilePath,
+        false,
+        false,
+        false,
+        resolve,
+        getRemixValidPathsGenerationContext,
+      ),
+    )
+    return paths
+  } else if (isJSExpressionOtherJavaScript(element)) {
     // FIXME: From investigation of https://github.com/concrete-utopia/utopia/issues/1137
     // The paths this will generate will only be correct if the elements from `elementsWithin`
     // are used at the same level at which they're defined.
@@ -1894,11 +1962,6 @@ function getValidElementPathsFromElement(
     //     <AppAsVariable />
     //   </div>
     // }
-    const uid = getUtopiaID(element)
-    const path = parentIsInstance
-      ? EP.appendNewElementPath(parentPath, uid)
-      : EP.appendToPath(parentPath, uid)
-    let paths = [path]
     fastForEach(Object.values(element.elementsWithin), (e) =>
       // We explicitly prevent auto-focusing generated elements here, because to support it would
       // require using the elementPathTree to determine how many children of a scene were actually
@@ -1909,10 +1972,12 @@ function getValidElementPathsFromElement(
           e,
           path,
           projectContents,
+          autoFocusedPaths,
           filePath,
           uiFilePath,
           false,
           false,
+          true,
           resolve,
           getRemixValidPathsGenerationContext,
         ),
@@ -1920,11 +1985,6 @@ function getValidElementPathsFromElement(
     )
     return paths
   } else if (isJSXConditionalExpression(element)) {
-    const uid = getUtopiaID(element)
-    const path = parentIsInstance
-      ? EP.appendNewElementPath(parentPath, uid)
-      : EP.appendToPath(parentPath, uid)
-    let paths = [path]
     fastForEach([element.whenTrue, element.whenFalse], (e) => {
       paths.push(
         ...getValidElementPathsFromElement(
@@ -1932,10 +1992,12 @@ function getValidElementPathsFromElement(
           e,
           path,
           projectContents,
+          autoFocusedPaths,
           filePath,
           uiFilePath,
           false,
           false,
+          true,
           resolve,
           getRemixValidPathsGenerationContext,
         ),

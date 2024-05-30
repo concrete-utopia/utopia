@@ -5,9 +5,7 @@ import {
   navigatorEntryToKey,
 } from '../../../components/editor/store/editor-state'
 import type { IcnProps } from '../../../uuiui'
-import { colorTheme } from '../../../uuiui'
 import { Icn, Icons } from '../../../uuiui'
-import { WarningIcon } from '../../../uuiui/warning-icon'
 import { invalidGroupStateToString } from '../../canvas/canvas-strategies/strategies/group-helpers'
 import { ChildWithPercentageSize } from '../../common/size-warnings'
 import { useLayoutOrElementIcon } from '../layout-element-icons'
@@ -22,9 +20,12 @@ import { metadataSelector } from '../../inspector/inpector-selectors'
 import type { MetadataSubstate } from '../../editor/store/store-hook-substore-types'
 import * as EP from '../../../core/shared/element-path'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
+import type { Icon } from 'utopia-api'
+import { when } from '../../../utils/react-conditionals'
 
 interface LayoutIconProps {
   navigatorEntry: NavigatorEntry
+  override?: Icon | null
   color: IcnProps['color']
   warningText?: string | null
   elementWarnings?: ElementWarnings | null
@@ -59,10 +60,15 @@ const isZeroSizedDivSelector = createCachedSelector(
 
 export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutIconProps>> =
   React.memo((props) => {
-    const { elementWarnings, color, warningText: propsWarningText, navigatorEntry } = props
+    const {
+      elementWarnings,
+      color: baseColor,
+      warningText: propsWarningText,
+      navigatorEntry,
+    } = props
     const { iconProps, isPositionAbsolute } = useLayoutOrElementIcon(navigatorEntry)
 
-    const addAbsoltueMarkerToIcon = isPositionAbsolute
+    const addAbsoluteMarkerToIcon = isPositionAbsolute
 
     const isZeroSized = useEditorState(
       Substores.metadata,
@@ -103,101 +109,84 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
       [navigatorEntry],
     )
 
-    const icon = React.useMemo(() => {
-      const defaults = {
-        ...iconProps,
-        color: color,
-        style: { opacity: 'var(--iconOpacity)' },
-      }
-      if (isZeroSized) {
-        return (
-          <Icn
-            category='navigator-element'
-            type='zerosized-div'
-            testId={iconTestId}
-            color={'main'}
-            width={12}
-            height={12}
-          />
-        )
-      }
-      if (isInvalidOverrideNavigatorEntry(navigatorEntry)) {
-        return (
-          <Icn
-            category='navigator-element'
-            type='warningtriangle'
-            tooltipText={navigatorEntry.message}
-            testId={iconTestId}
-            color={'main'}
-            width={12}
-            height={12}
-          />
-        )
+    const { color, iconType, transform } = React.useMemo(() => {
+      let colorToReturn = baseColor
+      let iconTypeToReturn = iconProps.type
+      let transformToReturn: string | undefined = undefined
+      if (props.override != null) {
+        iconTypeToReturn = props.override
+        if (baseColor === 'white') {
+          colorToReturn = baseColor
+        } else if (props.override === 'row' || props.override === 'column') {
+          colorToReturn = 'primary'
+        } else {
+          colorToReturn = baseColor
+        }
+      } else if (isZeroSized) {
+        iconTypeToReturn = 'zerosized-div'
+        colorToReturn = baseColor === 'subdued' ? 'subdued' : 'main'
+      } else if (isInvalidOverrideNavigatorEntry(navigatorEntry)) {
+        iconTypeToReturn = 'warningtriangle'
+        colorToReturn = baseColor
       } else if (warningText == null) {
-        return (
-          <div
-            style={{
-              // with the current design, for absolute elements we apply a 4 corner overlay over the icon,
-              // so we shrink it to make it visually fit inside the box
-              transform: addAbsoltueMarkerToIcon ? 'scale(.8)' : undefined,
-            }}
-          >
-            <Icn
-              {...defaults}
-              category='navigator-element'
-              width={12}
-              height={12}
-              testId={iconTestId}
-            />
-          </div>
-        )
+        transformToReturn = addAbsoluteMarkerToIcon ? 'scale(.8)' : undefined
+        if (baseColor === 'white') {
+          colorToReturn = 'white'
+        } else if (baseColor === 'component') {
+          colorToReturn = 'component'
+        } else if (
+          iconProps.type === 'row' ||
+          iconProps.type === 'column' ||
+          iconProps.type === 'flex-column' ||
+          iconProps.type === 'flex-row' ||
+          iconProps.type === 'grid'
+        ) {
+          colorToReturn = 'primary'
+        } else {
+          colorToReturn = baseColor
+        }
       } else if (isErroredGroup) {
-        return (
+        iconTypeToReturn = 'group-problematic'
+      } else if (isErroredGroupChild) {
+        iconTypeToReturn = iconProps.type
+      } else {
+        iconTypeToReturn = 'warningtriangle'
+      }
+      return { color: colorToReturn, iconType: iconTypeToReturn, transform: transformToReturn }
+    }, [
+      addAbsoluteMarkerToIcon,
+      baseColor,
+      iconProps.type,
+      isErroredGroup,
+      isErroredGroupChild,
+      isZeroSized,
+      navigatorEntry,
+      props.override,
+      warningText,
+    ])
+
+    const icon = React.useMemo(() => {
+      return (
+        <div
+          style={{
+            // with the current design, for absolute elements we apply a 4 corner overlay over the icon,
+            // so we shrink it to make it visually fit inside the box
+            transform: transform,
+          }}
+        >
           <Icn
             category='navigator-element'
-            type='group-problematic'
-            tooltipText={warningText}
+            type={iconType}
+            tooltipText={warningText ?? undefined}
+            style={{ opacity: 'var(--iconOpacity)' }}
             testId={iconTestId}
             color={color}
             width={12}
             height={12}
           />
-        )
-      } else if (isErroredGroupChild) {
-        return (
-          <Icn
-            {...defaults}
-            testId={iconTestId}
-            tooltipText={warningText}
-            category='navigator-element'
-            width={12}
-            height={12}
-          />
-        )
-      } else {
-        return (
-          <Icn
-            category='navigator-element'
-            type='warningtriangle'
-            tooltipText={warningText}
-            testId={iconTestId}
-            color={'main'}
-            width={12}
-            height={12}
-          />
-        )
-      }
-    }, [
-      iconProps,
-      color,
-      isZeroSized,
-      navigatorEntry,
-      warningText,
-      isErroredGroup,
-      isErroredGroupChild,
-      iconTestId,
-      addAbsoltueMarkerToIcon,
-    ])
+        </div>
+      )
+    }, [transform, iconType, warningText, iconTestId, color])
 
     const marker = React.useMemo(() => {
       if (warningText != null && isErroredGroupChild) {
@@ -210,11 +199,12 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
             }}
           />
         )
-      } else if (addAbsoltueMarkerToIcon) {
+      } else if (addAbsoluteMarkerToIcon) {
         return (
           <Icn
             category='navigator-element'
             type='absolute-corners'
+            color={color}
             width={12}
             height={12}
             testId={`absolute-marker-for-${iconTestId}`}
@@ -224,7 +214,7 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
       } else {
         return null
       }
-    }, [addAbsoltueMarkerToIcon, color, warningText, isErroredGroupChild, iconTestId])
+    }, [addAbsoluteMarkerToIcon, color, warningText, isErroredGroupChild, iconTestId])
 
     return (
       <div
@@ -237,19 +227,22 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
           position: 'relative',
         }}
       >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            position: 'absolute',
-            left: -9,
-            height: 18,
-            width: 8,
-          }}
-        >
-          {marker}
-        </div>
+        {when(
+          marker != null,
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'absolute',
+              left: -9,
+              height: 18,
+              width: 8,
+            }}
+          >
+            {marker}
+          </div>,
+        )}
         {icon}
       </div>
     )

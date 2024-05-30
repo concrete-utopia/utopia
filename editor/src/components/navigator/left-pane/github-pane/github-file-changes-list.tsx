@@ -18,7 +18,7 @@ import * as EditorActions from '../../../editor/actions/action-creators'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { GithubFileStatusLetter } from '../../../filebrowser/fileitem'
 import { when } from '../../../../utils/react-conditionals'
-import { MenuProvider, MomentumContextMenu } from '../../../../components/context-menu-wrapper'
+import { MenuProvider, ContextMenu } from '../../../../components/context-menu-wrapper'
 import { NO_OP } from '../../../../core/shared/utils'
 import { useContextMenu } from 'react-contexify'
 import { getConflictMenuItems } from '../../../../core/shared/github-ui'
@@ -107,8 +107,14 @@ const ConflictButton = React.memo((props: ConflictButtonProps) => {
     },
     'ConflictButton projectID',
   )
+  const githubUserDetails = useEditorState(
+    Substores.github,
+    (store) => store.editor.githubData.githubUserDetails,
+    'ConflictButton githubUserDetails',
+  )
+
   const menuItems = React.useMemo(() => {
-    if (githubRepo != null && projectID != null) {
+    if (githubRepo != null && projectID != null && githubUserDetails != null) {
       return getConflictMenuItems(
         githubRepo,
         projectID,
@@ -120,14 +126,14 @@ const ConflictButton = React.memo((props: ConflictButtonProps) => {
     } else {
       return []
     }
-  }, [props.fullPath, props.conflict, dispatch, githubRepo, projectID])
+  }, [props.fullPath, props.conflict, dispatch, githubRepo, projectID, githubUserDetails])
   const { show } = useContextMenu({
     id: menuId,
   })
   const openContextMenu = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
       event.preventDefault()
-      show(event)
+      show({ event })
     },
     [show],
   )
@@ -142,7 +148,7 @@ const ConflictButton = React.memo((props: ConflictButtonProps) => {
       >
         Action...
       </Button>
-      <MomentumContextMenu id={menuId} items={menuItems} getData={NO_OP} />
+      <ContextMenu id={menuId} items={menuItems} getData={NO_OP} />
     </MenuProvider>
   )
 })

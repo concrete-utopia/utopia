@@ -29,8 +29,10 @@ import {
   copyPropertiesMenuItem,
   pasteToReplace,
   pasteHere,
+  replace,
+  toggleCanCondense,
 } from './context-menu-items'
-import { MomentumContextMenu } from './context-menu-wrapper'
+import { ContextMenu } from './context-menu-wrapper'
 import { useRefEditorState, useEditorState, Substores } from './editor/store/store-hook'
 import { CanvasContextMenuPortalTargetID } from '../core/shared/utils'
 import type { EditorDispatch } from './editor/action-types'
@@ -46,6 +48,7 @@ import { WindowMousePositionRaw } from '../utils/global-positions'
 import type { WindowPoint } from '../core/shared/math-utils'
 import { pointsEqual } from '../core/shared/math-utils'
 import { useDispatch } from './editor/store/dispatch-context'
+import { useCreateCallbackToShowComponentPicker } from './navigator/navigator-item/component-picker-context-menu'
 
 export type ElementContextMenuInstance =
   | 'context-menu-navigator'
@@ -74,6 +77,7 @@ const ElementContextMenuItems: Array<ContextMenuItem<CanvasData>> = [
   insert,
   lineSeparator,
   convert,
+  replace,
   escapeHatch,
   lineSeparator,
   wrapInPicker,
@@ -87,6 +91,7 @@ const ElementContextMenuItems: Array<ContextMenuItem<CanvasData>> = [
   sendToBack,
   lineSeparator,
   toggleVisibility,
+  toggleCanCondense,
   lineSeparator,
   toggleBackgroundLayersItem,
   toggleBorderItem,
@@ -195,8 +200,10 @@ function useCanvasContextMenuGetData(
       internalClipboard: store.editor.internalClipboard,
       autoFocusedPaths: store.derived.autoFocusedPaths,
       navigatorTargets: store.derived.navigatorTargets,
+      propertyControlsInfo: store.editor.propertyControlsInfo,
     }
   })
+  const showComponentPicker = useCreateCallbackToShowComponentPicker()
 
   return React.useCallback(() => {
     const currentEditor = editorSliceRef.current
@@ -219,8 +226,10 @@ function useCanvasContextMenuGetData(
       contextMenuInstance: contextMenuInstance,
       autoFocusedPaths: currentEditor.autoFocusedPaths,
       navigatorTargets: currentEditor.navigatorTargets,
+      propertyControlsInfo: currentEditor.propertyControlsInfo,
+      showComponentPicker: showComponentPicker,
     }
-  }, [editorSliceRef, contextMenuInstance])
+  }, [editorSliceRef, contextMenuInstance, showComponentPicker])
 }
 
 export const ElementContextMenu = React.memo(({ contextMenuInstance }: ElementContextMenuProps) => {
@@ -234,7 +243,7 @@ export const ElementContextMenu = React.memo(({ contextMenuInstance }: ElementCo
     return null
   } else {
     return ReactDOM.createPortal(
-      <MomentumContextMenu
+      <ContextMenu
         id={contextMenuInstance}
         key='element-context-menu'
         items={contextMenuItems}

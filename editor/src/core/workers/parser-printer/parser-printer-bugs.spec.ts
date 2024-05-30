@@ -8,6 +8,7 @@ import {
   UtopiaJSXComponent,
   clearAttributesUniqueIDs,
   simplifyAttributesIfPossible,
+  getDefinedElsewhereFromElementChild,
 } from '../../shared/element-template'
 import { forEachLeft, isRight } from '../../shared/either'
 import {
@@ -47,11 +48,17 @@ export var App = props => {
         UNPARSED_CODE
         UTOPIA_JSX_COMPONENT - App
           JSX_ELEMENT - div - aaa
-            JSX_MAP_EXPRESSION - 330
-              JSX_ELEMENT - div - bbb
-                JS_IDENTIFIER - 833
-                JSX_TEXT_BLOCK - d01
-                JS_IDENTIFIER - b90"
+            JSX_MAP_EXPRESSION - 1cc
+                ATTRIBUTE_VALUE - 8f7
+                ATTRIBUTE_VALUE - 5cd
+                ATTRIBUTE_VALUE - 7a4
+              ATTRIBUTE_OTHER_JAVASCRIPT - 831
+                JSX_ELEMENT - div - bbb
+                  JS_IDENTIFIER - aae
+                  JSX_TEXT_BLOCK - 3bd
+                  JS_IDENTIFIER - 804
+              ATTRIBUTE_VALUE - 9e4
+              ATTRIBUTE_VALUE - 753"
       `)
 
       const aaaElement = findJSXElementAtStaticPath(
@@ -59,8 +66,9 @@ export var App = props => {
         EP.dynamicPathToStaticPath(EP.elementPath([['App'], ['aaa']])),
       )
       const aaaJSXMapExpression = aaaElement?.children[0]
-      if (aaaJSXMapExpression?.type === 'JSX_MAP_EXPRESSION') {
-        expect(aaaJSXMapExpression.definedElsewhere).toMatchInlineSnapshot(`
+      if (aaaJSXMapExpression != null) {
+        const definedElsewhere = getDefinedElsewhereFromElementChild([], aaaJSXMapExpression)
+        expect(definedElsewhere).toMatchInlineSnapshot(`
           Array [
             "React",
             "cake",
@@ -180,8 +188,18 @@ export var App = props => {
       UNPARSED_CODE
       UTOPIA_JSX_COMPONENT - Test
         JSX_ELEMENT - div - mapper-parent
-          JSX_MAP_EXPRESSION - f62
-            JSX_ELEMENT - Card - card"
+          JSX_MAP_EXPRESSION - 3d5
+            JS_PROPERTY_ACCESS - 741
+              JS_IDENTIFIER - f38
+            ATTRIBUTE_OTHER_JAVASCRIPT - 2d7
+              JSX_ELEMENT - Card - card
+                  ATTRIBUTE_VALUE - d53
+                JS_PROPERTY_ACCESS - 160
+                  JS_IDENTIFIER - ec0
+                JS_PROPERTY_ACCESS - 109
+                  JS_IDENTIFIER - f0f
+                JS_PROPERTY_ACCESS - 032
+                  JS_IDENTIFIER - 805"
     `)
     expect(elementsStructure((testParseCode(spreadCode) as any).topLevelElements))
       .toMatchInlineSnapshot(`
@@ -192,8 +210,12 @@ export var App = props => {
       UNPARSED_CODE
       UTOPIA_JSX_COMPONENT - Test
         JSX_ELEMENT - div - mapper-parent
-          JSX_MAP_EXPRESSION - 62e
-            JSX_ELEMENT - Card - card"
+          JSX_MAP_EXPRESSION - 84e
+            JS_PROPERTY_ACCESS - 741
+              JS_IDENTIFIER - f38
+            ATTRIBUTE_OTHER_JAVASCRIPT - f54
+              JSX_ELEMENT - Card - card
+                  ATTRIBUTE_VALUE - d53"
     `)
   })
 })

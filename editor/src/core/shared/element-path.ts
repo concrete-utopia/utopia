@@ -16,6 +16,7 @@ import { replaceAll } from './string-utils'
 import type { NonEmptyArray } from './array-utils'
 import { last, dropLastN, drop, dropLast } from './array-utils'
 import { forceNotNull } from './optional-utils'
+import invariant from '../../third-party/remix/invariant'
 
 // KILLME, except in 28 places
 export const toComponentId = toString
@@ -315,6 +316,9 @@ function allElementPathsForPart(path: ElementPathPart): Array<ElementPathPart> {
   return paths
 }
 
+/**
+ * @deprecated use EP.allPathsInsideComponent instead! Reason: this includes the ElementPath of the containing components instance, which is probably not what you want
+ */
 export function allPathsForLastPart(path: ElementPath | null): Array<ElementPath> {
   if (path == null || isEmptyPath(path)) {
     return []
@@ -327,23 +331,24 @@ export function allPathsForLastPart(path: ElementPath | null): Array<ElementPath
   }
 }
 
+export function allPathsInsideComponent(path: ElementPath | null): Array<ElementPath> {
+  if (path == null || isEmptyPath(path)) {
+    return []
+  } else {
+    const prefix = dropLast(path.parts)
+    const lastPart = last(path.parts)!
+    const toElementPath = (elementPathPart: ElementPathPart) =>
+      elementPath([...prefix, elementPathPart])
+    return allElementPathsForPart(lastPart).map(toElementPath).reverse()
+  }
+}
+
 export function depth(path: ElementPath): number {
   return 1 + path.parts.length
 }
 
 export function fullDepth(path: ElementPath): number {
   return path.parts.reduce((working, part) => working + part.length, 0)
-}
-
-export function isInsideFocusedComponent(
-  path: ElementPath,
-  autoFocusedPaths: Array<ElementPath>,
-): boolean {
-  return (
-    path.parts.length > 2 ||
-    (path.parts.length > 1 &&
-      !autoFocusedPaths.some((autoFocusedPath) => isDescendantOf(path, autoFocusedPath)))
-  )
 }
 
 function fullElementPathParent(path: StaticElementPathPart[]): StaticElementPathPart[]
@@ -1115,6 +1120,32 @@ export function isExplicitlyFocused(
   return isNotAutoFocused && isFocused(focusedElementPath, path)
 }
 
+export function isInExplicitlyFocusedSubtree(
+  focusedElementPath: ElementPath | null,
+  autoFocusedPaths: Array<ElementPath>,
+  path: ElementPath,
+): boolean {
+  // we exclude children of a potentially focused component as children are not part of the focus system
+  const componentToCheck = dropLastPathPart(path)
+  // the focusedElementPath can contain multiple focused components along its path parts
+  // if the path to check is a descendant of any of the focused components, it is considered focused
+  let focusedAncestor = focusedElementPath
+  while (
+    focusedAncestor != null &&
+    !isEmptyPath(focusedAncestor) &&
+    !isStoryboardDescendant(focusedAncestor) &&
+    // since there is a single focusedElementPath by default we considered all ancestors as focused
+    // but if an ancestor is also autofocused, we should not consider it as explicitly focused
+    !autoFocusedPaths.some((autoFocusedPath) => pathsEqual(autoFocusedPath, focusedAncestor))
+  ) {
+    if (isDescendantOfOrEqualTo(componentToCheck, focusedAncestor)) {
+      return true
+    }
+    focusedAncestor = getContainingComponent(focusedAncestor)
+  }
+  return false
+}
+
 export function getOrderedPathsByDepth(elementPaths: Array<ElementPath>): Array<ElementPath> {
   return elementPaths.slice().sort((a, b) => {
     if (depth(b) === depth(a)) {
@@ -1135,6 +1166,18 @@ export function getContainingComponent(path: ElementPath): ElementPath {
   return dropLastPathPart(path)
 }
 
+export function getPathOfComponentRoot(path: ElementPath): ElementPath {
+  if (isRootElementOfInstance(path)) {
+    return path
+  }
+  const lastPart = last(path.parts)
+  invariant(
+    lastPart != null,
+    'internal error: Last part cannot be null because of the assertion isRootElementOfInstance',
+  )
+  return elementPath([...dropLast(path.parts), [lastPart[0]]])
+}
+
 export function uniqueElementPaths(paths: Array<ElementPath>): Array<ElementPath> {
   const pathSet = new Set(paths.map(toString))
   return Array.from(pathSet).map(fromString)
@@ -1145,12 +1188,25 @@ export function createIndexedUid(originalUid: string, index: string | number): s
   return `${originalUid}${GeneratedUIDSeparator}${index}`
 }
 
+export function isIndexedUid(uid: string): boolean {
+  return uid.includes(GeneratedUIDSeparator)
+}
+
 export function extractOriginalUidFromIndexedUid(uid: string): string {
   const separatorIndex = uid.indexOf(GeneratedUIDSeparator)
   if (separatorIndex >= 0) {
     return uid.substr(0, separatorIndex)
   } else {
     return uid
+  }
+}
+
+export function extractIndexFromIndexedUid(originaUid: string): string | null {
+  const separatorIndex = originaUid.indexOf(GeneratedUIDSeparator)
+  if (separatorIndex >= 0) {
+    return originaUid.slice(separatorIndex + GeneratedUIDSeparator.length)
+  } else {
+    return null
   }
 }
 
@@ -1175,4 +1231,12 @@ export function multiplePathsAllWithTheSameUID(paths: Array<ElementPath>): boole
     return true
   }
   return false
+}
+
+export function isIndexedElement(path: ElementPath): boolean {
+  return isIndexedUid(toUid(path))
+}
+
+export function getFirstPath(pathArray: Array<ElementPath>): ElementPath {
+  return forceNotNull('Element path array is empty.', pathArray.at(0))
 }

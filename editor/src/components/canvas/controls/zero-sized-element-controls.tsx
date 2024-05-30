@@ -83,7 +83,7 @@ export const ZeroSizedElementControls = controlForStrategyMemoized(
     )
 
     const zeroSizeElements = useEditorState(
-      Substores.metadata,
+      Substores.metadataAndPropertyControlsInfo,
       (store) => {
         if (showAllPossibleElements) {
           return Object.values(store.editor.jsxMetadata).filter((element) => {
@@ -96,6 +96,7 @@ export const ZeroSizedElementControls = controlForStrategyMemoized(
                 element.elementPath,
                 store.editor.jsxMetadata,
                 store.editor.elementPathTree,
+                store.editor.propertyControlsInfo,
               )
             )
           })
@@ -118,6 +119,7 @@ export const ZeroSizedElementControls = controlForStrategyMemoized(
                     child.elementPath,
                     store.editor.jsxMetadata,
                     store.editor.elementPathTree,
+                    store.editor.propertyControlsInfo,
                   )
                 )
               }
@@ -341,7 +343,7 @@ export const ZeroSizeResizeControlWrapper = controlForStrategyMemoized(
         {zeroSizeElements.map((element) => {
           if (element.globalFrame != null && isFiniteRectangle(element.globalFrame)) {
             return (
-              <React.Fragment>
+              <React.Fragment key={EP.toString(element.elementPath)}>
                 <ZeroSizeOutlineControl frame={element.globalFrame} scale={scale} color={null} />
                 <ZeroSizeResizeControl
                   element={element}

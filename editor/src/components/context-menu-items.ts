@@ -1,3 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
+import React from 'react'
 import { MetadataUtils } from '../core/model/element-metadata-utils'
 import type { FilePathMappings } from '../core/model/project-file-utils'
 import type { Either } from '../core/shared/either'
@@ -22,11 +24,13 @@ import { createWrapInGroupActions } from './canvas/canvas-strategies/strategies/
 import { areAllSelectedElementsNonAbsolute } from './canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
 import { windowToCanvasCoordinates } from './canvas/dom-lookup'
 import { setFocus } from './common/actions'
+import type { PropertyControlsInfo } from './custom-code/code-file'
 import type { EditorDispatch } from './editor/action-types'
 import * as EditorActions from './editor/actions/action-creators'
 import {
   copySelectionToClipboard,
   duplicateSelected,
+  toggleDataCanCondense,
   toggleHidden,
 } from './editor/actions/action-creators'
 import {
@@ -44,6 +48,12 @@ import {
   toggleStylePropPath,
   toggleStylePropPaths,
 } from './inspector/common/css-utils'
+import {
+  type ShowComponentPickerContextMenu,
+  type InsertionTarget,
+  type ShowComponentPickerContextMenuCallback,
+  renderPropTarget,
+} from './navigator/navigator-item/component-picker-context-menu'
 
 export interface ContextMenuItem<T> {
   name: string | React.ReactNode
@@ -56,7 +66,7 @@ export interface ContextMenuItem<T> {
     data: T,
     dispatch: EditorDispatch | undefined,
     rightClickCoordinate: WindowPoint | null,
-    event: React.MouseEvent | React.TouchEvent | React.KeyboardEvent,
+    event: React.MouseEvent | React.TouchEvent | React.KeyboardEvent | KeyboardEvent,
   ) => void
 }
 
@@ -76,6 +86,8 @@ export interface CanvasData {
   contextMenuInstance: ElementContextMenuInstance
   autoFocusedPaths: Array<ElementPath>
   navigatorTargets: Array<NavigatorEntry>
+  propertyControlsInfo: PropertyControlsInfo
+  showComponentPicker: ShowComponentPickerContextMenuCallback
 }
 
 export function requireDispatch(dispatch: EditorDispatch | null | undefined): EditorDispatch {
@@ -259,6 +271,8 @@ export const setAsFocusedElement: ContextMenuItem<CanvasData> = {
         data.jsxMetadata,
         data.autoFocusedPaths,
         data.filePathMappings,
+        data.propertyControlsInfo,
+        data.projectContents,
       )
     })
   },
@@ -318,8 +332,18 @@ export const toggleVisibility: ContextMenuItem<CanvasData> = {
   },
 }
 
+export const toggleCanCondense: ContextMenuItem<CanvasData> = {
+  name: 'Toggle Can Condense',
+  enabled: (data) => {
+    return data.selectedViews.length > 0
+  },
+  action: (data, dispatch?: EditorDispatch) => {
+    requireDispatch(dispatch)([toggleDataCanCondense(data.selectedViews)], 'everyone')
+  },
+}
+
 export const lineSeparator: ContextMenuItem<unknown> = {
-  name: RU.create('div', { key: 'separator', className: 'react-contexify__separator' }, ''),
+  name: RU.create('div', { key: 'separator', className: 'contexify_separator' }, ''),
   enabled: false,
   isSeparator: true,
   action: () => null,
@@ -337,32 +361,88 @@ export const insert: ContextMenuItem<CanvasData> = {
   name: 'Add Element…',
   shortcut: 'A',
   enabled: true,
-  action: (data, dispatch) => {
-    requireDispatch(dispatch)([
-      setFocus('canvas'),
-      EditorActions.openFloatingInsertMenu({
-        insertMenuMode: 'insert',
-        parentPath: null,
-        indexPosition: null,
-      }),
-    ])
+  action: (data, _dispatch, _coord, event) => {
+    data.showComponentPicker(data.selectedViews, EditorActions.insertAsChildTarget())(event)
   },
 }
 
+export function showWrapComponentPicker(
+  selectedViews: ElementPath[],
+  jsxMetadata: ElementInstanceMetadataMap,
+  showComponentPicker: ShowComponentPickerContextMenuCallback,
+): ShowComponentPickerContextMenu {
+  return showComponentPicker(selectedViews, EditorActions.wrapTarget)
+}
+
+export function showReplaceComponentPicker(
+  targetElement: ElementPath,
+  jsxMetadata: ElementInstanceMetadataMap,
+  showComponentPicker: ShowComponentPickerContextMenuCallback,
+): ShowComponentPickerContextMenu {
+  const element = MetadataUtils.findElementByElementPath(jsxMetadata, targetElement)
+  const prop = element?.assignedToProp
+  const target = prop == null ? targetElement : EP.parentPath(targetElement)
+  const insertionTarget: InsertionTarget =
+    prop == null ? EditorActions.replaceTarget : renderPropTarget(prop)
+  return showComponentPicker([target], insertionTarget)
+}
+
+export function showSwapComponentPicker(
+  targetElement: ElementPath,
+  jsxMetadata: ElementInstanceMetadataMap,
+  showComponentPicker: ShowComponentPickerContextMenuCallback,
+): ShowComponentPickerContextMenu {
+  const element = MetadataUtils.findElementByElementPath(jsxMetadata, targetElement)
+  const prop = element?.assignedToProp
+  const target = prop == null ? targetElement : EP.parentPath(targetElement)
+  const insertionTarget: InsertionTarget =
+    prop == null ? EditorActions.replaceKeepChildrenAndStyleTarget : renderPropTarget(prop)
+  return showComponentPicker([target], insertionTarget)
+}
+
 export const convert: ContextMenuItem<CanvasData> = {
-  name: 'Swap Element With…',
-  shortcut: 'S',
+  name: 'Replace This…',
+  shortcut: '',
   enabled: (data) => {
-    return data.selectedViews.every((path) => {
-      const element = MetadataUtils.findElementByElementPath(data.jsxMetadata, path)
-      return element != null && isRight(element.element) && isJSXElementLike(element.element.value)
-    })
+    return (
+      data.selectedViews.length > 0 &&
+      data.selectedViews.every((path) => {
+        const element = MetadataUtils.findElementByElementPath(data.jsxMetadata, path)
+        return (
+          element != null && isRight(element.element) && isJSXElementLike(element.element.value)
+        )
+      })
+    )
   },
-  action: (data, dispatch) => {
-    requireDispatch(dispatch)([
-      setFocus('canvas'),
-      EditorActions.openFloatingInsertMenu(floatingInsertMenuStateSwap()),
-    ])
+  action: (data, _dispatch, _coord, event) => {
+    showSwapComponentPicker(
+      data.selectedViews[0],
+      data.jsxMetadata,
+      data.showComponentPicker,
+    )(event)
+  },
+}
+
+export const replace: ContextMenuItem<CanvasData> = {
+  name: 'Replace Everything…',
+  shortcut: '',
+  enabled: (data) => {
+    return (
+      data.selectedViews.length > 0 &&
+      data.selectedViews.every((path) => {
+        const element = MetadataUtils.findElementByElementPath(data.jsxMetadata, path)
+        return (
+          element != null && isRight(element.element) && isJSXElementLike(element.element.value)
+        )
+      })
+    )
+  },
+  action: (data, _dispatch, _coord, event) => {
+    showReplaceComponentPicker(
+      data.selectedViews[0],
+      data.jsxMetadata,
+      data.showComponentPicker,
+    )(event)
   },
 }
 
@@ -398,6 +478,7 @@ export const unwrap: ContextMenuItem<CanvasData> = {
           data.jsxMetadata,
           path,
           data.pathTrees,
+          data.propertyControlsInfo,
         ) ||
         treatElementAsFragmentLike(data.jsxMetadata, data.allElementProps, data.pathTrees, path),
     )
@@ -411,11 +492,8 @@ export const wrapInPicker: ContextMenuItem<CanvasData> = {
   name: 'Wrap in…',
   shortcut: 'W',
   enabled: true,
-  action: (data, dispatch?: EditorDispatch) => {
-    requireDispatch(dispatch)(
-      [setFocus('canvas'), EditorActions.openFloatingInsertMenu({ insertMenuMode: 'wrap' })],
-      'everyone',
-    )
+  action: (data, dispatch, _coord, event) => {
+    showWrapComponentPicker(data.selectedViews, data.jsxMetadata, data.showComponentPicker)(event)
   },
 }
 

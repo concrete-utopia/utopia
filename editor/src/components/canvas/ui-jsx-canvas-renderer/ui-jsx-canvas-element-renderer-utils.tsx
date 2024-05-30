@@ -29,6 +29,7 @@ import {
   isJSXMapExpression,
   propertiesExposedByParam,
   propertiesExposedByParams,
+  hasElementsWithin,
 } from '../../../core/shared/element-template'
 import {
   getAccumulatedElementsWithin,
@@ -75,7 +76,7 @@ import {
   isUtopiaCommentFlagMapCount,
 } from '../../../core/shared/comment-flags'
 import { RemixSceneComponent } from './remix-scene-component'
-import { STEGANOGRAPHY_ENABLED } from '../../../utils/feature-switches'
+import { STEGANOGRAPHY_ENABLED, isFeatureEnabled } from '../../../utils/feature-switches'
 import { jsxElementChildToText } from './jsx-element-child-to-text'
 
 export interface RenderContext {
@@ -104,6 +105,7 @@ export function createLookupRender(
   context: RenderContext,
   renderLimit: number | null,
   valuesInScopeFromParameters: Array<string>,
+  assignedToProp: string | null,
 ): (element: JSXElement, scope: MapLike<any>) => React.ReactChild | null {
   let index = 0
 
@@ -147,6 +149,7 @@ export function createLookupRender(
       { ...context, variablesInScope: innerVariablesInScope },
       generatedUID,
       null,
+      assignedToProp,
     )
   }
 }
@@ -176,6 +179,7 @@ export function renderCoreElement(
   renderContext: RenderContext,
   uid: string | undefined,
   codeError: Error | null,
+  assignedToProp: string | null,
 ): React.ReactChild {
   const {
     requireResult,
@@ -200,7 +204,7 @@ export function renderCoreElement(
       const anyElementsWithin = Object.keys(elementsWithinProps).length > 0
 
       const innerRender = anyElementsWithin
-        ? createLookupRender(elementPath, renderContext, null, [])
+        ? createLookupRender(elementPath, renderContext, null, [], assignedToProp)
         : NoOpLookupRender
 
       const blockScope = anyElementsWithin
@@ -235,15 +239,12 @@ export function renderCoreElement(
         passthroughProps,
         renderContext,
         null, // this null passed as the codeError param is matching the old version of the codebase, but codeError should probably not be passed around anyways as we try to throw it as high as possible
+        assignedToProp,
       )
     }
-    case 'JSX_MAP_EXPRESSION':
-    case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
+    case 'JSX_MAP_EXPRESSION': {
       const commentFlag = findUtopiaCommentFlag(element.comments, 'map-count')
-      const mapCountOverride =
-        isJSXMapExpression(element) && isUtopiaCommentFlagMapCount(commentFlag)
-          ? commentFlag.value
-          : null
+      const mapCountOverride = isUtopiaCommentFlagMapCount(commentFlag) ? commentFlag.value : null
 
       const elementIsTextEdited = elementPath != null && EP.pathsEqual(elementPath, editedText)
 
@@ -257,14 +258,15 @@ export function renderCoreElement(
           imports,
           'not-a-conditional',
           null,
+          null,
         )
       }
 
-      const valuesInScopeFromParameters =
-        element.type === 'JSX_MAP_EXPRESSION'
-          ? element.valuesInScopeFromParameters
-          : propertiesExposedByParams(element.params)
-
+      const valuesInScopeFromParameters = element.valuesInScopeFromParameters
+      const elementsWithin: ElementsWithin = {
+        ...(hasElementsWithin(element.valueToMap) ? element.valueToMap.elementsWithin : {}),
+        ...(hasElementsWithin(element.mapFunction) ? element.mapFunction.elementsWithin : {}),
+      }
       if (elementIsTextEdited) {
         const runJSExpressionLazy = () => {
           const innerRender = createLookupRender(
@@ -272,17 +274,26 @@ export function renderCoreElement(
             renderContext,
             mapCountOverride,
             valuesInScopeFromParameters,
+            null,
           )
 
           const blockScope = {
             ...inScope,
             [JSX_CANVAS_LOOKUP_FUNCTION_NAME]: utopiaCanvasJSXLookup(
-              element.elementsWithin,
+              elementsWithin,
               inScope,
               innerRender,
             ),
           }
-          return runJSExpression(element, elementPath, blockScope, renderContext, uid, codeError)
+          return runJSExpression(
+            element,
+            elementPath,
+            blockScope,
+            renderContext,
+            uid,
+            codeError,
+            null,
+          )
         }
 
         const originalTextContent = STEGANOGRAPHY_ENABLED ? runJSExpressionLazy() : null
@@ -312,6 +323,8 @@ export function renderCoreElement(
           imports,
           filePath,
           variablesInScope,
+          'real-element',
+          null,
         )
       }
       const innerRender = createLookupRender(
@@ -319,6 +332,110 @@ export function renderCoreElement(
         renderContext,
         mapCountOverride,
         valuesInScopeFromParameters,
+        null,
+      )
+
+      const blockScope = {
+        ...inScope,
+        [JSX_CANVAS_LOOKUP_FUNCTION_NAME]: utopiaCanvasJSXLookup(
+          elementsWithin,
+          inScope,
+          innerRender,
+        ),
+      }
+      return runJSExpression(element, elementPath, blockScope, renderContext, uid, codeError, null)
+    }
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
+      const commentFlag = findUtopiaCommentFlag(element.comments, 'map-count')
+      const mapCountOverride =
+        isJSXMapExpression(element) && isUtopiaCommentFlagMapCount(commentFlag)
+          ? commentFlag.value
+          : null
+
+      const elementIsTextEdited = elementPath != null && EP.pathsEqual(elementPath, editedText)
+
+      if (elementPath != null) {
+        addFakeSpyEntry(
+          validPaths,
+          metadataContext,
+          elementPath,
+          element,
+          filePath,
+          imports,
+          'not-a-conditional',
+          null,
+          assignedToProp,
+        )
+      }
+
+      const valuesInScopeFromParameters = propertiesExposedByParams(element.params)
+
+      if (elementIsTextEdited) {
+        const runJSExpressionLazy = () => {
+          const innerRender = createLookupRender(
+            elementPath,
+            renderContext,
+            mapCountOverride,
+            valuesInScopeFromParameters,
+            assignedToProp,
+          )
+
+          const blockScope = {
+            ...inScope,
+            [JSX_CANVAS_LOOKUP_FUNCTION_NAME]: utopiaCanvasJSXLookup(
+              element.elementsWithin,
+              inScope,
+              innerRender,
+            ),
+          }
+          return runJSExpression(
+            element,
+            elementPath,
+            blockScope,
+            renderContext,
+            uid,
+            codeError,
+            assignedToProp,
+          )
+        }
+
+        const originalTextContent = STEGANOGRAPHY_ENABLED ? runJSExpressionLazy() : null
+
+        const textContent = trimJoinUnescapeTextFromJSXElements([element])
+        const textEditorProps: TextEditorProps = {
+          elementPath: elementPath,
+          filePath: filePath,
+          text: textContent,
+          originalText: originalTextContent,
+          component: React.Fragment,
+          passthroughProps: {},
+          textProp: 'itself',
+        }
+
+        return buildSpyWrappedElement(
+          element,
+          textEditorProps,
+          elementPath,
+          metadataContext,
+          updateInvalidatedPaths,
+          [],
+          TextEditorWrapper,
+          inScope,
+          jsxFactoryFunctionName,
+          shouldIncludeCanvasRootInTheSpy,
+          imports,
+          filePath,
+          variablesInScope,
+          'real-element',
+          assignedToProp,
+        )
+      }
+      const innerRender = createLookupRender(
+        elementPath,
+        renderContext,
+        mapCountOverride,
+        valuesInScopeFromParameters,
+        assignedToProp,
       )
 
       const blockScope = {
@@ -329,12 +446,29 @@ export function renderCoreElement(
           innerRender,
         ),
       }
-      return runJSExpression(element, elementPath, blockScope, renderContext, uid, codeError)
+      return runJSExpression(
+        element,
+        elementPath,
+        blockScope,
+        renderContext,
+        uid,
+        codeError,
+        assignedToProp,
+      )
     }
     case 'JSX_FRAGMENT': {
       const key = optionalMap(EP.toString, elementPath) ?? element.uid
 
-      return renderJSXElement(key, element, elementPath, inScope, [], renderContext, codeError)
+      return renderJSXElement(
+        key,
+        element,
+        elementPath,
+        inScope,
+        [],
+        renderContext,
+        codeError,
+        assignedToProp,
+      )
     }
     case 'JSX_TEXT_BLOCK': {
       const parentPath = Utils.optionalMap(EP.parentPath, elementPath)
@@ -365,6 +499,7 @@ export function renderCoreElement(
         renderContext,
         uid,
         codeError,
+        assignedToProp,
       )
       // Coerce `defaultConditionValueAsAny` to a value that is definitely a boolean, not something that is truthy.
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
@@ -392,6 +527,7 @@ export function renderCoreElement(
             default: defaultConditionValue,
           },
           null,
+          assignedToProp,
         )
       }
 
@@ -444,10 +580,20 @@ export function renderCoreElement(
           imports,
           filePath,
           variablesInScope,
+          'real-element',
+          assignedToProp,
         )
       }
 
-      return renderCoreElement(actualElement, childPath, inScope, renderContext, uid, codeError)
+      return renderCoreElement(
+        actualElement,
+        childPath,
+        inScope,
+        renderContext,
+        uid,
+        codeError,
+        assignedToProp,
+      )
     }
     case 'ATTRIBUTE_VALUE':
     case 'ATTRIBUTE_NESTED_ARRAY':
@@ -466,6 +612,7 @@ export function renderCoreElement(
           imports,
           'not-a-conditional',
           null,
+          assignedToProp,
         )
       }
 
@@ -496,10 +643,20 @@ export function renderCoreElement(
           imports,
           filePath,
           variablesInScope,
+          'real-element',
+          assignedToProp,
         )
       }
 
-      return jsxAttributeToValue(inScope, element, elementPath, renderContext, uid, codeError)
+      return jsxAttributeToValue(
+        inScope,
+        element,
+        elementPath,
+        renderContext,
+        uid,
+        codeError,
+        assignedToProp,
+      )
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled type ${JSON.stringify(element)}`)
@@ -529,6 +686,7 @@ function renderJSXElement(
   passthroughProps: MapLike<any>,
   renderContext: RenderContext,
   codeError: Error | null,
+  assignedToProp: string | null,
 ): React.ReactElement {
   const {
     requireResult,
@@ -549,7 +707,7 @@ function renderJSXElement(
   } = renderContext
   const createChildrenElement = (child: JSXElementChild): React.ReactChild => {
     const childPath = optionalMap((path) => EP.appendToPath(path, getUtopiaID(child)), elementPath)
-    return renderCoreElement(child, childPath, inScope, renderContext, undefined, codeError)
+    return renderCoreElement(child, childPath, inScope, renderContext, undefined, codeError, null)
   }
 
   const elementIsIntrinsic = isJSXElement(jsx) && isIntrinsicElement(jsx.name)
@@ -597,7 +755,7 @@ function renderJSXElement(
   const FinalElement = elementIsIntrinsic ? jsx.name.baseVariable : element
   const FinalElementOrFragment = elementIsFragment ? React.Fragment : FinalElement
 
-  let elementProps = { key: key, ...passthroughProps }
+  let elementProps: MapLike<any> = { key: key, ...passthroughProps }
   if (!elementIsFragment) {
     if (isHidden(hiddenInstances, elementPath)) {
       elementProps = hideElement(elementProps)
@@ -606,6 +764,24 @@ function renderJSXElement(
       elementProps = displayNoneElement(elementProps)
     }
     elementProps = streamlineInFileBlobs(elementProps, fileBlobs)
+    for (const prop of jsx.props) {
+      if (prop.type === 'JSX_ATTRIBUTES_ENTRY' && prop.value.type === 'JSX_ELEMENT') {
+        const pathForElementInRenderProp = optionalMap(
+          (p) => EP.appendToPath(p, prop.value.uid),
+          elementPath,
+        )
+        const renderedElement = renderCoreElement(
+          prop.value,
+          pathForElementInRenderProp,
+          inScope,
+          renderContext,
+          prop.value.uid,
+          codeError,
+          `${prop.key}`,
+        )
+        elementProps[prop.key] = renderedElement
+      }
+    }
   }
 
   const elementPropsWithScenePath = isComponentRendererComponent(FinalElement)
@@ -613,7 +789,7 @@ function renderJSXElement(
     : elementProps
 
   const elementPropsWithSceneID =
-    elementIsScene && elementPath != null
+    (elementIsScene || elementIsRemixScene) && elementPath != null
       ? { ...elementPropsWithScenePath, [UTOPIA_SCENE_ID_KEY]: EP.toString(elementPath) }
       : elementPropsWithScenePath
 
@@ -639,7 +815,7 @@ function renderJSXElement(
   ) {
     if (elementIsTextEdited) {
       const runJSExpressionLazy = () => {
-        const innerRender = createLookupRender(elementPath, renderContext, null, [])
+        const innerRender = createLookupRender(elementPath, renderContext, null, [], assignedToProp)
 
         const blockScope: Record<any, any> = {
           ...inScope,
@@ -658,6 +834,7 @@ function renderJSXElement(
           renderContext,
           jsx.uid,
           codeError,
+          assignedToProp,
         )
         return result
       }
@@ -690,6 +867,7 @@ function renderJSXElement(
         filePath,
         variablesInScope,
         'text-editor',
+        assignedToProp,
       )
     }
     return buildSpyWrappedElement(
@@ -706,6 +884,8 @@ function renderJSXElement(
       imports,
       filePath,
       variablesInScope,
+      'real-element',
+      assignedToProp,
     )
   } else {
     return renderComponentUsingJsxFactoryFunction(
@@ -779,6 +959,7 @@ function runJSExpression(
   renderContext: RenderContext,
   uid: string | undefined,
   codeError: Error | null, // this can be probably deleted, it is passed down through multiple layers but we just throw the error in the end
+  assignedToProp: string | null,
 ): any {
   switch (block.type) {
     case 'ATTRIBUTE_VALUE':
@@ -789,9 +970,37 @@ function runJSExpression(
     case 'JS_ELEMENT_ACCESS':
     case 'JS_IDENTIFIER':
     case 'JSX_ELEMENT':
-      return jsxAttributeToValue(currentScope, block, elementPath, renderContext, uid, codeError)
+      return jsxAttributeToValue(
+        currentScope,
+        block,
+        elementPath,
+        renderContext,
+        uid,
+        codeError,
+        assignedToProp,
+      )
 
     case 'JSX_MAP_EXPRESSION':
+      const valueToMap = runJSExpression(
+        block.valueToMap,
+        elementPath,
+        currentScope,
+        renderContext,
+        uid,
+        codeError,
+        null,
+      )
+      const mapFunction = runJSExpression(
+        block.mapFunction,
+        elementPath,
+        currentScope,
+        renderContext,
+        uid,
+        codeError,
+        null,
+      )
+      const result = valueToMap.map(mapFunction)
+      return result
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return resolveParamsAndRunJsCode(
         renderContext.filePath,

@@ -23,6 +23,8 @@ import { getElementFragmentLikeType } from '../canvas/canvas-strategies/strategi
 import { findMaybeConditionalExpression } from '../../core/model/conditionals'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { treatElementAsGroupLike } from '../canvas/canvas-strategies/strategies/group-helpers'
+import type { PropertyControlsInfo } from '../custom-code/code-file'
+import type { ProjectContentTreeRoot } from '../assets'
 
 interface LayoutIconResult {
   iconProps: IcnPropsBase
@@ -66,7 +68,7 @@ export function useComponentIcon(navigatorEntry: NavigatorEntry): IcnPropsBase |
   )
 
   return useEditorState(
-    Substores.metadata,
+    Substores.fullStore,
     (store) => {
       const metadata = store.editor.jsxMetadata
       return createComponentIconProps(
@@ -74,6 +76,8 @@ export function useComponentIcon(navigatorEntry: NavigatorEntry): IcnPropsBase |
         metadata,
         autoFocusedPaths,
         filePathMappings,
+        store.editor.propertyControlsInfo,
+        store.editor.projectContents,
       )
     },
     'useComponentIcon',
@@ -88,9 +92,18 @@ export function createComponentOrElementIconProps(
   navigatorEntry: NavigatorEntry | null,
   allElementProps: AllElementProps,
   filePathMappings: FilePathMappings,
+  propertyControlsInfo: PropertyControlsInfo,
+  projectContents: ProjectContentTreeRoot,
 ): IcnPropsBase {
   return (
-    createComponentIconProps(elementPath, metadata, autoFocusedPaths, filePathMappings) ??
+    createComponentIconProps(
+      elementPath,
+      metadata,
+      autoFocusedPaths,
+      filePathMappings,
+      propertyControlsInfo,
+      projectContents,
+    ) ??
     createElementIconPropsFromMetadata(
       elementPath,
       metadata,
@@ -274,6 +287,70 @@ export function createElementIconPropsFromMetadata(
     }
   }
 
+  if (MetadataUtils.isReactSuspense(element)) {
+    return {
+      iconProps: {
+        category: 'element',
+        type: 'div',
+        width: 18,
+        height: 18,
+      },
+      isPositionAbsolute: isPositionAbsolute,
+    }
+  }
+
+  const isHTMLElement = element != null && MetadataUtils.isHTML(element)
+  if (isHTMLElement) {
+    return {
+      iconProps: {
+        category: 'element',
+        type: 'html',
+        width: 12,
+        height: 12,
+      },
+      isPositionAbsolute: isPositionAbsolute,
+    }
+  }
+
+  const isBodyElement = element != null && MetadataUtils.isBody(element)
+  if (isBodyElement) {
+    return {
+      iconProps: {
+        category: 'element',
+        type: 'body',
+        width: 12,
+        height: 12,
+      },
+      isPositionAbsolute: isPositionAbsolute,
+    }
+  }
+
+  const isHead = element != null && MetadataUtils.isHead(element)
+  if (isHead) {
+    return {
+      iconProps: {
+        category: 'element',
+        type: 'folder',
+        width: 12,
+        height: 12,
+      },
+      isPositionAbsolute: isPositionAbsolute,
+    }
+  }
+
+  const isHeading = element != null && MetadataUtils.isHeading(element)
+  if (isHeading) {
+    return {
+      iconProps: {
+        category: 'element',
+        type: 'headline',
+        width: 12,
+        height: 12,
+      },
+      isPositionAbsolute: isPositionAbsolute,
+    }
+  }
+
   const isButton = MetadataUtils.isButtonFromMetadata(element)
   if (isButton) {
     return {
@@ -287,16 +364,51 @@ export function createElementIconPropsFromMetadata(
     }
   }
 
-  const isGeneratedText = MetadataUtils.isGeneratedTextFromMetadata(
-    elementPath,
-    pathTrees,
-    metadata,
-  )
-  if (isGeneratedText) {
+  const isInput = element != null && MetadataUtils.isInput(element)
+  if (isInput) {
     return {
       iconProps: {
         category: 'element',
-        type: 'text-generated',
+        type: 'input',
+        width: 18,
+        height: 18,
+      },
+      isPositionAbsolute: isPositionAbsolute,
+    }
+  }
+
+  const isAnchorLink = element != null && MetadataUtils.isAnchorLink(element)
+  if (isAnchorLink) {
+    return {
+      iconProps: {
+        category: 'element',
+        type: 'link',
+        width: 18,
+        height: 18,
+      },
+      isPositionAbsolute: isPositionAbsolute,
+    }
+  }
+
+  const isParagraph = element != null && MetadataUtils.isParagraph(element)
+  if (isParagraph) {
+    return {
+      iconProps: {
+        category: 'element',
+        type: 'paragraph',
+        width: 18,
+        height: 18,
+      },
+      isPositionAbsolute: isPositionAbsolute,
+    }
+  }
+
+  const isForm = element != null && MetadataUtils.isForm(element)
+  if (isForm) {
+    return {
+      iconProps: {
+        category: 'element',
+        type: 'form',
         width: 18,
         height: 18,
       },
@@ -406,6 +518,8 @@ function createComponentIconProps(
   metadata: ElementInstanceMetadataMap,
   autoFocusedPaths: Array<ElementPath>,
   filePathMappings: FilePathMappings,
+  propertyControlsInfo: PropertyControlsInfo,
+  projectContents: ProjectContentTreeRoot,
 ): IcnPropsBase | null {
   const element = MetadataUtils.findElementByElementPath(metadata, path)
   if (MetadataUtils.isProbablySceneFromMetadata(element)) {
@@ -455,6 +569,8 @@ function createComponentIconProps(
     metadata,
     autoFocusedPaths,
     filePathMappings,
+    propertyControlsInfo,
+    projectContents,
   )
   if (isComponent) {
     return {

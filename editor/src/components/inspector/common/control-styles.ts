@@ -145,7 +145,7 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = mapArrayToDictio
       case 'unoverwritable':
       case 'multiselect-unoverwritable':
         interactive = false
-        mainColor = colorTheme.fg8.value
+        mainColor = colorTheme.fg7.value
         secondaryColor = colorTheme.fg8.value
         trackColor = colorTheme.fg8.value
         railColor = colorTheme.fg8.value

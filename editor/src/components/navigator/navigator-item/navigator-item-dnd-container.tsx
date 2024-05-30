@@ -101,6 +101,7 @@ export const NavigatorItemDragType = 'navigator-item-drag-item' as const
 export interface NavigatorItemDragAndDropWrapperPropsBase {
   type: typeof NavigatorItemDragType
   index: number
+  indentation: number
   entryDepth: number
   appropriateDropTargetHint: DropTargetHint | null
   editorDispatch: EditorDispatch
@@ -116,6 +117,7 @@ export interface NavigatorItemDragAndDropWrapperPropsBase {
   renamingTarget: ElementPath | null
   windowStyle: React.CSSProperties
   visibleNavigatorTargets: Array<NavigatorEntry>
+  navigatorEntry: NavigatorEntry
 }
 
 export interface NavigatorItemDragAndDropWrapperProps
@@ -135,6 +137,7 @@ export interface RenderPropNavigatorItemContainerProps
   isOutletOrDescendantOfOutlet: boolean
   elementPath: ElementPath
   propName: string
+  childPath: ElementPath | null
 }
 
 export interface SlotNavigatorItemContainerProps extends NavigatorItemDragAndDropWrapperPropsBase {
@@ -271,6 +274,7 @@ function canDropInto(editorState: EditorState, moveToEntry: ElementPath): boolea
     editorState.jsxMetadata,
     moveToEntry,
     editorState.elementPathTree,
+    editorState.propertyControlsInfo,
   )
 
   return (
@@ -824,11 +828,6 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
   const shouldBottomDropLineInterceptMouseEvents =
     isDragSessionInProgress && isCollapsedCondtionalEntry
 
-  const navigatorEntry = React.useMemo(
-    () => regularNavigatorEntry(props.elementPath),
-    [props.elementPath],
-  )
-
   const isOutletOrDescendantOfOutlet = useEditorState(
     Substores.metadata,
     (store) => isDescendantOfOutletOrOutletSelector(store, props.elementPath),
@@ -871,8 +870,9 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         data-testid={ReparentDropTargetTestId(safeComponentId)}
       >
         <NavigatorItem
-          navigatorEntry={navigatorEntry}
+          navigatorEntry={props.navigatorEntry}
           index={props.index}
+          indentation={props.indentation}
           getSelectedViewsInRange={props.getSelectedViewsInRange}
           noOfChildren={props.noOfChildren}
           label={props.label}
@@ -936,10 +936,7 @@ export const SyntheticNavigatorItemContainer = React.memo(
 
     const [, updateDragSessionInProgress] = useAtom(DragSessionInProgressAtom)
 
-    const navigatorEntry = React.useMemo(
-      () => syntheticNavigatorEntry(props.elementPath, props.childOrAttribute),
-      [props.childOrAttribute, props.elementPath],
-    )
+    const navigatorEntry = props.navigatorEntry
 
     const [{ isOver }, reparentDropRef] = useDrop<
       NavigatorItemDragAndDropWrapperProps,
@@ -1029,6 +1026,7 @@ export const SyntheticNavigatorItemContainer = React.memo(
           <NavigatorItem
             navigatorEntry={navigatorEntry}
             index={props.index}
+            indentation={props.indentation}
             getSelectedViewsInRange={props.getSelectedViewsInRange}
             noOfChildren={props.noOfChildren}
             label={props.label}
@@ -1051,8 +1049,8 @@ export const SyntheticNavigatorItemContainer = React.memo(
 export const RenderPropNavigatorItemContainer = React.memo(
   (props: RenderPropNavigatorItemContainerProps) => {
     const navigatorEntry = React.useMemo(
-      () => renderPropNavigatorEntry(props.elementPath, props.propName),
-      [props.propName, props.elementPath],
+      () => renderPropNavigatorEntry(props.elementPath, props.propName, props.childPath),
+      [props.propName, props.elementPath, props.childPath],
     )
 
     const safeComponentId = varSafeNavigatorEntryToKey(navigatorEntry)
@@ -1071,6 +1069,7 @@ export const RenderPropNavigatorItemContainer = React.memo(
           <NavigatorItem
             navigatorEntry={navigatorEntry}
             index={props.index}
+            indentation={props.indentation}
             getSelectedViewsInRange={props.getSelectedViewsInRange}
             noOfChildren={props.noOfChildren}
             label={props.label}
@@ -1112,6 +1111,7 @@ export const SlotNavigatorItemContainer = React.memo((props: SlotNavigatorItemCo
         <NavigatorItem
           navigatorEntry={navigatorEntry}
           index={props.index}
+          indentation={props.indentation}
           getSelectedViewsInRange={props.getSelectedViewsInRange}
           noOfChildren={props.noOfChildren}
           label={props.label}
@@ -1158,6 +1158,7 @@ export const ConditionalClauseNavigatorItemContainer = React.memo(
           <NavigatorItem
             navigatorEntry={props.navigatorEntry}
             index={props.index}
+            indentation={props.indentation}
             getSelectedViewsInRange={props.getSelectedViewsInRange}
             noOfChildren={props.noOfChildren}
             label={props.label}
@@ -1203,6 +1204,7 @@ export const ErrorNavigatorItemContainer = React.memo((props: ErrorNavigatorItem
         <NavigatorItem
           navigatorEntry={props.navigatorEntry}
           index={props.index}
+          indentation={props.indentation}
           getSelectedViewsInRange={props.getSelectedViewsInRange}
           noOfChildren={props.noOfChildren}
           label={props.label}

@@ -51,6 +51,7 @@ import { isFiniteRectangle, size } from '../../../core/shared/math-utils'
 import type { PackageStatus, PackageStatusMap } from '../../../core/shared/npm-dependency-types'
 import type {
   ElementPath,
+  ElementPropertyPath,
   ExportDetail,
   HighlightBoundsForUids,
   HighlightBoundsWithFile,
@@ -60,6 +61,7 @@ import type {
   NodeModules,
   ParseSuccess,
   ProjectFile,
+  PropertyPath,
   StaticElementPath,
   TextFile,
 } from '../../../core/shared/project-file-types'
@@ -126,6 +128,7 @@ import {
   ElementInstanceMetadataMapKeepDeepEquality,
   InvalidOverrideNavigatorEntryKeepDeepEquality,
   RenderPropNavigatorEntryKeepDeepEquality,
+  RenderPropValueNavigatorEntryKeepDeepEquality,
   SyntheticNavigatorEntryKeepDeepEquality,
 } from './store-deep-equality-instances'
 
@@ -188,6 +191,7 @@ import { emptyImports } from '../../../core/workers/common/project-file-utils'
 import type { CommentFilterMode } from '../../inspector/sections/comment-section'
 import type { Collaborator } from '../../../core/shared/multiplayer'
 import type { OnlineState } from '../online-status'
+import type { NavigatorRow } from '../../navigator/navigator-row'
 
 const ObjectPathImmutable: any = OPI
 
@@ -210,7 +214,6 @@ export enum RightMenuTab {
   Inspector = 'inspector',
   Settings = 'settings',
   Comments = 'comments',
-  Variables = 'variables',
 }
 
 // TODO: this should just contain an NpmDependency and a status
@@ -318,6 +321,10 @@ export interface GithubLoadRepositories {
   name: 'loadRepositories'
 }
 
+export interface GithubSearchRepository {
+  name: 'searchRepository'
+}
+
 export interface GithubUpdateAgainstBranch {
   name: 'updateAgainstBranch'
 }
@@ -341,6 +348,7 @@ export type GithubOperation =
   | GithubUpdateAgainstBranch
   | GithubListPullRequestsForBranch
   | GithubSaveAsset
+  | GithubSearchRepository
 
 export function githubOperationLocksEditor(op: GithubOperation): boolean {
   switch (op.name) {
@@ -632,11 +640,6 @@ export type UIFileBase64Blobs = { [key: string]: ImageBlob }
 export type CanvasBase64Blobs = { [key: string]: UIFileBase64Blobs }
 
 export type ErrorMessages = { [filename: string]: Array<ErrorMessage> }
-
-export interface ConsoleLog {
-  method: string
-  data: Array<any>
-}
 
 export interface DesignerFile {
   filename: string
@@ -1186,6 +1189,20 @@ export function githubRepoFullName(repo: GithubRepo | null): string | null {
   return `${repo.owner}/${repo.repository}`
 }
 
+export function githubRepoOwnerName(repo: GithubRepo | null): string | null {
+  if (repo == null) {
+    return null
+  }
+  return repo.owner
+}
+
+export function githubRepositoryName(repo: GithubRepo | null): string | null {
+  if (repo == null) {
+    return null
+  }
+  return repo.repository
+}
+
 export function githubRepo(owner: string, repository: string): GithubRepo {
   return {
     owner: owner,
@@ -1246,6 +1263,7 @@ export interface GithubUser {
 
 export interface GithubData {
   branches: Array<GithubBranch> | null
+  userRepositories: Array<RepositoryEntry>
   publicRepositories: Array<RepositoryEntry>
   treeConflicts: TreeConflicts
   lastUpdatedAt: number | null
@@ -1258,6 +1276,7 @@ export interface GithubData {
 export function emptyGithubData(): GithubData {
   return {
     branches: null,
+    userRepositories: [],
     publicRepositories: [],
     treeConflicts: {},
     lastUpdatedAt: null,
@@ -1265,6 +1284,30 @@ export function emptyGithubData(): GithubData {
     currentBranchPullRequests: null,
     githubUserDetails: null,
     lastRefreshedCommit: null,
+  }
+}
+
+export function newGithubData(
+  branches: Array<GithubBranch> | null,
+  userRepositories: Array<RepositoryEntry>,
+  publicRepositories: Array<RepositoryEntry>,
+  treeConflicts: TreeConflicts,
+  lastUpdatedAt: number | null,
+  upstreamChanges: GithubFileChanges | null,
+  currentBranchPullRequests: Array<PullRequest> | null,
+  githubUserDetails: GithubUser | null,
+  lastRefreshedCommit: string | null,
+): GithubData {
+  return {
+    branches: branches,
+    userRepositories: userRepositories,
+    publicRepositories: publicRepositories,
+    treeConflicts: treeConflicts,
+    lastUpdatedAt: lastUpdatedAt,
+    upstreamChanges: upstreamChanges,
+    currentBranchPullRequests: currentBranchPullRequests,
+    githubUserDetails: githubUserDetails,
+    lastRefreshedCommit: lastRefreshedCommit,
   }
 }
 
@@ -2130,6 +2173,58 @@ export function syntheticNavigatorEntry(
   }
 }
 
+interface RenderedAtPropertyPath {
+  type: 'element-property-path'
+  elementPropertyPath: ElementPropertyPath
+}
+
+interface RenderedAtChildNode {
+  type: 'child-node'
+  parentPath: ElementPath
+  nodeUid: string
+}
+
+export type RenderedAt = RenderedAtPropertyPath | RenderedAtChildNode
+
+export function renderedAtPropertyPath(
+  elementPropertyPath: ElementPropertyPath,
+): RenderedAtPropertyPath {
+  return { type: 'element-property-path', elementPropertyPath: elementPropertyPath }
+}
+
+export function renderedAtChildNode(parentPath: ElementPath, nodeUid: string): RenderedAtChildNode {
+  return { type: 'child-node', parentPath: parentPath, nodeUid: nodeUid }
+}
+
+export interface DataReferenceNavigatorEntry {
+  type: 'DATA_REFERENCE'
+  elementPath: ElementPath
+  renderedAt: RenderedAt
+  surroundingScope: ElementPath
+  childOrAttribute: JSXElementChild
+}
+
+export function dataReferenceNavigatorEntry(
+  elementPath: ElementPath,
+  renderedAt: RenderedAt,
+  surroundingScope: ElementPath,
+  childOrAttribute: JSXElementChild,
+): DataReferenceNavigatorEntry {
+  return {
+    type: 'DATA_REFERENCE',
+    elementPath: elementPath,
+    childOrAttribute: childOrAttribute,
+    renderedAt: renderedAt,
+    surroundingScope: surroundingScope,
+  }
+}
+
+export function isDataReferenceNavigatorEntry(
+  entry: NavigatorEntry,
+): entry is DataReferenceNavigatorEntry {
+  return entry.type === 'DATA_REFERENCE'
+}
+
 export interface SlotNavigatorEntry {
   type: 'SLOT'
   elementPath: ElementPath
@@ -2153,18 +2248,21 @@ export function syntheticNavigatorEntriesEqual(
 
 export interface RenderPropNavigatorEntry {
   type: 'RENDER_PROP'
-  elementPath: ElementPath
+  elementPath: ElementPath // path of the element containing this render prop
   propName: string
+  childPath: ElementPath | null
 }
 
 export function renderPropNavigatorEntry(
   elementPath: ElementPath,
   propName: string,
+  childPath: ElementPath | null,
 ): RenderPropNavigatorEntry {
   return {
     type: 'RENDER_PROP',
     elementPath: elementPath,
     propName: propName,
+    childPath: childPath,
   }
 }
 
@@ -2173,6 +2271,36 @@ export function renderPropNavigatorEntriesEqual(
   second: RenderPropNavigatorEntry,
 ): boolean {
   return RenderPropNavigatorEntryKeepDeepEquality(first, second).areEqual
+}
+
+export interface RenderPropValueNavigatorEntry {
+  type: 'RENDER_PROP_VALUE'
+  elementPath: ElementPath // path of the actual element being used inside a render prop
+  prop: string
+}
+
+export function renderPropValueNavigatorEntry(
+  elementPath: ElementPath,
+  prop: string,
+): RenderPropValueNavigatorEntry {
+  return {
+    type: 'RENDER_PROP_VALUE',
+    elementPath: elementPath,
+    prop: prop,
+  }
+}
+
+export function isRenderPropValueNavigatorEntry(
+  v: NavigatorEntry,
+): v is RenderPropValueNavigatorEntry {
+  return v.type === 'RENDER_PROP_VALUE'
+}
+
+export function renderPropValueNavigatorEntriesEqual(
+  first: RenderPropValueNavigatorEntry,
+  second: RenderPropValueNavigatorEntry,
+): boolean {
+  return RenderPropValueNavigatorEntryKeepDeepEquality(first, second).areEqual
 }
 
 export interface InvalidOverrideNavigatorEntry {
@@ -2209,8 +2337,10 @@ export type NavigatorEntry =
   | RegularNavigatorEntry
   | ConditionalClauseNavigatorEntry
   | SyntheticNavigatorEntry
+  | DataReferenceNavigatorEntry
   | InvalidOverrideNavigatorEntry
   | RenderPropNavigatorEntry
+  | RenderPropValueNavigatorEntry
   | SlotNavigatorEntry
 
 export function navigatorEntriesEqual(
@@ -2234,6 +2364,17 @@ export function navigatorEntriesEqual(
   }
 }
 
+export function navigatorRowToKey(row: NavigatorRow): string {
+  switch (row.type) {
+    case 'regular-row':
+      return navigatorEntryToKey(row.entry)
+    case 'condensed-row':
+      return `condensed-${row.entries.map(navigatorEntryToKey).join('-')}`
+    default:
+      assertNever(row)
+  }
+}
+
 export function navigatorEntryToKey(entry: NavigatorEntry): string {
   switch (entry.type) {
     case 'REGULAR':
@@ -2246,8 +2387,17 @@ export function navigatorEntryToKey(entry: NavigatorEntry): string {
         : `element-${getUtopiaID(entry.childOrAttribute)}`
       return `synthetic-${EP.toComponentId(entry.elementPath)}-${childOrAttributeDetails}`
     }
+    case 'DATA_REFERENCE': {
+      const childOrAttributeDetails = isJSExpression(entry.childOrAttribute)
+        ? `attribute`
+        : `element-${getUtopiaID(entry.childOrAttribute)}`
+      return `data-reference-${EP.toComponentId(entry.elementPath)}-${childOrAttributeDetails}`
+    }
     case 'RENDER_PROP': {
       return `render-prop-${EP.toComponentId(entry.elementPath)}-${entry.propName}`
+    }
+    case 'RENDER_PROP_VALUE': {
+      return `render-prop-value-${EP.toComponentId(entry.elementPath)}-${entry.prop}`
     }
     case 'INVALID_OVERRIDE':
       return `error-${EP.toComponentId(entry.elementPath)}`
@@ -2264,13 +2414,24 @@ export function varSafeNavigatorEntryToKey(entry: NavigatorEntry): string {
       return `regular_${EP.toVarSafeComponentId(entry.elementPath)}`
     case 'CONDITIONAL_CLAUSE':
       return `conditional_clause_${EP.toVarSafeComponentId(entry.elementPath)}_${entry.clause}`
-    case 'SYNTHETIC':
+    case 'SYNTHETIC': {
       const childOrAttributeDetails = isJSExpression(entry.childOrAttribute)
         ? `attribute`
         : `element_${getUtopiaID(entry.childOrAttribute)}`
       return `synthetic_${EP.toVarSafeComponentId(entry.elementPath)}_${childOrAttributeDetails}`
+    }
+    case 'DATA_REFERENCE': {
+      const childOrAttributeDetails = isJSExpression(entry.childOrAttribute)
+        ? `attribute`
+        : `element_${getUtopiaID(entry.childOrAttribute)}`
+      return `data_reference_${EP.toVarSafeComponentId(
+        entry.elementPath,
+      )}_${childOrAttributeDetails}`
+    }
     case 'RENDER_PROP':
       return `renderprop_${EP.toVarSafeComponentId(entry.elementPath)}_${entry.propName}`
+    case 'RENDER_PROP_VALUE':
+      return `renderpropvalue_${EP.toVarSafeComponentId(entry.elementPath)}_${entry.prop}`
     case 'INVALID_OVERRIDE':
       return `error_${EP.toVarSafeComponentId(entry.elementPath)}`
     case 'SLOT':
@@ -2316,6 +2477,7 @@ export function isSlotNavigatorEntry(entry: NavigatorEntry): entry is SlotNaviga
 }
 
 export interface DerivedState {
+  navigatorRows: Array<NavigatorRow>
   navigatorTargets: Array<NavigatorEntry>
   visibleNavigatorTargets: Array<NavigatorEntry>
   autoFocusedPaths: Array<ElementPath>
@@ -2329,6 +2491,7 @@ export interface DerivedState {
 
 function emptyDerivedState(editor: EditorState): DerivedState {
   return {
+    navigatorRows: [],
     navigatorTargets: [],
     visibleNavigatorTargets: [],
     autoFocusedPaths: [],
@@ -2488,7 +2651,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       visible: true,
     },
     interfaceDesigner: {
-      codePaneVisible: true,
+      codePaneVisible: false,
       additionalControls: true,
     },
     canvas: {
@@ -2690,6 +2853,7 @@ function getElementWarningsInner(
 const getElementWarnings = memoize(getElementWarningsInner, { maxSize: 1 })
 
 type CacheableDerivedState = {
+  navigatorRows: Array<NavigatorRow>
   navigatorTargets: Array<NavigatorEntry>
   visibleNavigatorTargets: Array<NavigatorEntry>
   elementWarnings: { [key: string]: ElementWarnings }
@@ -2704,15 +2868,13 @@ function deriveCacheableStateInner(
   collapsedViews: ElementPath[],
   hiddenInNavigator: ElementPath[],
   propertyControlsInfo: PropertyControlsInfo,
-  openFilePath: string | null,
 ): CacheableDerivedState {
-  const { navigatorTargets, visibleNavigatorTargets } = getNavigatorTargets(
+  const { navigatorRows, navigatorTargets, visibleNavigatorTargets } = getNavigatorTargets(
     jsxMetadata,
     elementPathTree,
     collapsedViews,
     hiddenInNavigator,
     propertyControlsInfo,
-    openFilePath,
     projectContents,
   )
 
@@ -2725,11 +2887,18 @@ function deriveCacheableStateInner(
 
   const autoFocusedPaths = MetadataUtils.getAllPaths(jsxMetadata, elementPathTree).filter(
     (path) => {
-      return MetadataUtils.isAutofocusable(jsxMetadata, elementPathTree, path)
+      return MetadataUtils.isAutofocusable(
+        jsxMetadata,
+        elementPathTree,
+        path,
+        propertyControlsInfo,
+        projectContents,
+      )
     },
   )
 
   return {
+    navigatorRows: navigatorRows,
     navigatorTargets: navigatorTargets,
     visibleNavigatorTargets: visibleNavigatorTargets,
     elementWarnings: warnings,
@@ -2752,6 +2921,7 @@ export function deriveState(
     cacheKey === 'patched' ? patchedDeriveCacheableState : unpatchedDeriveCacheableState
 
   const {
+    navigatorRows,
     navigatorTargets,
     visibleNavigatorTargets,
     elementWarnings: warnings,
@@ -2764,7 +2934,6 @@ export function deriveState(
     editor.navigator.collapsedViews,
     editor.navigator.hiddenInNavigator,
     editor.propertyControlsInfo,
-    getOpenUIJSFileKey(editor),
   )
 
   const remixDerivedData = createRemixDerivedDataMemo(
@@ -2776,6 +2945,7 @@ export function deriveState(
   const filePathMappings = getFilePathMappings(editor.projectContents)
 
   const derived: DerivedState = {
+    navigatorRows: navigatorRows,
     navigatorTargets: navigatorTargets,
     visibleNavigatorTargets: visibleNavigatorTargets,
     autoFocusedPaths: autoFocusedPaths,
@@ -2882,7 +3052,7 @@ export function editorModelFromPersistentModel(
       visible: true,
     },
     interfaceDesigner: {
-      codePaneVisible: true,
+      codePaneVisible: false,
       additionalControls: true,
     },
     canvas: {
@@ -3178,6 +3348,7 @@ export function updatePackageJsonInEditorState(
       updatedPackageJsonFile = codeFile(
         transformPackageJson(packageJsonFile.fileContents.code),
         RevisionsState.CodeAhead,
+        packageJsonFile.versionNumber + 1,
       )
     } else {
       // There is something else called package.json, we should bulldoze over it.
@@ -3202,12 +3373,6 @@ export function updateMainUIInEditorState(editor: EditorState, mainUI: string): 
     return updateMainUIInPackageJson(packageJson, mainUI)
   }
   return updatePackageJsonInEditorState(editor, transformPackageJson)
-}
-
-export function areGeneratedElementsTargeted(targets: Array<ElementPath>): boolean {
-  return targets.some((target) => {
-    return MetadataUtils.isElementGenerated(target)
-  })
 }
 
 export function getAllCodeEditorErrors(
@@ -3468,7 +3633,7 @@ export function defaultModifyParseSuccess(success: ParseSuccess): ParseSuccess {
   return success
 }
 
-function modifyUnderlyingTarget(
+export function modifyUnderlyingTarget(
   target: ElementPath | null,
   editor: EditorState,
   modifyElement: (
@@ -3526,6 +3691,25 @@ function modifyUnderlyingTarget(
     } else {
       return updatedParseSuccess
     }
+  }
+
+  return modifyParseSuccessAtPath(targetSuccess.filePath, editor, innerModifyParseSuccess)
+}
+
+export function modifyUnderlyingParseSuccessOnly(
+  target: ElementPath | null,
+  editor: EditorState,
+  modifyParseSuccess: (
+    parseSuccess: ParseSuccess,
+    underlyingFilePath: string,
+  ) => ParseSuccess = defaultModifyParseSuccess,
+): EditorState {
+  const underlyingTarget = normalisePathToUnderlyingTarget(editor.projectContents, target)
+  const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
+
+  function innerModifyParseSuccess(oldParseSuccess: ParseSuccess): ParseSuccess {
+    // Apply the ParseSuccess level changes.
+    return modifyParseSuccess(oldParseSuccess, targetSuccess.filePath)
   }
 
   return modifyParseSuccessAtPath(targetSuccess.filePath, editor, innerModifyParseSuccess)

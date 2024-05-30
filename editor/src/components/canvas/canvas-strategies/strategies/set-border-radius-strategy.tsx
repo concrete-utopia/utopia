@@ -105,6 +105,7 @@ export const setBorderRadiusStrategy: CanvasStrategyFactory = (
     canvasState.scale,
     canvasState.startingMetadata,
     canvasState.startingElementPathTree,
+    canvasState.propertyControlsInfo,
   ).has('borderRadius')
   if (!canShowBorderRadiusControls) {
     return null

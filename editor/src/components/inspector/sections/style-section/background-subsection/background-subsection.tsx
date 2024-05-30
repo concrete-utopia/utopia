@@ -25,7 +25,7 @@ import {
   isCSSSolidBackgroundLayer,
   cssDefault,
 } from '../../../common/css-utils'
-import { useGetSubsectionHeaderStyle } from '../../../common/inspector-utils'
+import { RemovePropertyButton, useGetSubsectionHeaderStyle } from '../../../common/inspector-utils'
 import {
   InspectorPropsContext,
   stylePropPathMappingFn,
@@ -343,25 +343,20 @@ export const BackgroundSubsection = React.memo(() => {
           <span>Background</span>
         </FlexRow>
         {propertyStatus.overwritable ? (
-          <>
+          <FlexRow style={{ gap: 4 }}>
+            <RemovePropertyButton
+              testId='inspector-background-remove-all'
+              onUnsetValues={onUnsetSubsectionValues}
+              propertySet={propertyStatus.set}
+            />
             <SquareButton
               highlight
-              onMouseDown={onUnsetSubsectionValues}
-              data-testid={'inspector-background-remove-all'}
+              onMouseDown={insertBackgroundLayerMouseDown}
+              style={{ width: 12 }}
             >
-              <Icons.Cross color={propertyStatus.controlled ? 'dynamic' : 'secondary'} />
+              <Icn category='semantic' type='plus' width={12} height={12} />
             </SquareButton>
-            <SquareButton highlight onMouseDown={insertBackgroundLayerMouseDown}>
-              <Icn
-                style={{ paddingTop: 1 }}
-                category='semantic'
-                type='plus'
-                color={propertyStatus.controlled ? 'dynamic' : 'secondary'}
-                width={16}
-                height={16}
-              />
-            </SquareButton>
-          </>
+          </FlexRow>
         ) : null}
       </InspectorSubsectionHeader>
       {controlStyles.unknown ? (

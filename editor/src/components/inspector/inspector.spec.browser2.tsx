@@ -1,12 +1,18 @@
 import { canvasPoint } from '../../core/shared/math-utils'
-import { elementPath } from '../../core/shared/element-path'
+import { elementPath, fromString } from '../../core/shared/element-path'
 import { assertNever } from '../../core/shared/utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import { mouseClickAtPoint, mouseMoveToPoint } from '../canvas/event-helpers.test-utils'
-import { getPrintedUiJsCode, renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
+import {
+  getPrintedUiJsCode,
+  renderTestEditorWithCode,
+  renderTestEditorWithModel,
+} from '../canvas/ui-jsx.test-utils'
 import { clearSelection, selectComponents } from '../editor/actions/action-creators'
 import { cmdModifier } from '../../utils/modifiers'
-import { wait } from '../../utils/utils.test-utils'
+import { selectComponentsForTest, wait } from '../../utils/utils.test-utils'
+import { createModifiedProject } from '../../sample-projects/sample-project-utils.test-utils'
+import { StoryboardFilePath } from '../editor/store/editor-state'
 
 function exampleProjectForSelection(): string {
   return `import * as React from "react";
@@ -394,6 +400,172 @@ export var storyboard = (
   </Storyboard>
 )
 `)
+  })
+
+  describe('enabling inspector sections through the component API', () => {
+    const project = (inspectorConfig: string | null) =>
+      createModifiedProject({
+        [StoryboardFilePath]: `import * as React from 'react'
+      import * as Utopia from 'utopia-api'
+      import { Storyboard, Scene } from 'utopia-api'
+      
+      export function Card({ header, children }) {
+        return (
+          <div data-uid='dbc'>
+            <h2 data-uid='4b3'>{header}</h2>
+            {children}
+          </div>
+        )
+      }
+      
+      export var storyboard = (
+        <Storyboard data-uid='sb'>
+          <Scene
+            style={{
+              width: 521,
+              height: 266,
+              position: 'absolute',
+              left: 717,
+              top: 597,
+              backgroundColor: 'white',
+            }}
+            data-uid='scene'
+            data-testid='scene'
+            commentId='sce'
+          >
+            <Card
+              className='card'
+              data-uid='card'
+              header={<h3 data-uid='render-prop'>Header</h3>}
+            >
+              <p data-uid='child'>Card contents</p>
+            </Card>
+          </Scene>
+        </Storyboard>
+      )
+      `,
+        ['/utopia/components.utopia.js']: `import { Card } from './storyboard'
+
+      const Components = {
+        '/utopia/storyboard': {
+          Card: {
+            component: Card,
+            properties: {
+              header: {
+                control: 'jsx',
+              },
+            },
+            ${inspectorConfig == null ? '' : `inspector: ${inspectorConfig},`}
+            variants: [],
+          },
+        },
+      }
+      
+      export default Components
+      `,
+      })
+
+    const VisualSections = ['Transforms', 'Background', 'Border', 'Shadow', 'Text Shadow']
+    const LayoutSections = ['Frame', 'Container']
+    const LayoutSystemSections = ['Layout System']
+    const TypographySections = ['Type']
+
+    it('shows style, transforms, background, border, shadow, text shadow when `visual` is set', async () => {
+      const editor = await renderTestEditorWithModel(
+        project(JSON.stringify({ display: 'expanded', sections: ['visual'] })),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [fromString('sb/scene/card')])
+
+      for (const section of VisualSections) {
+        expect(editor.renderedDOM.queryByText(section)?.innerText).toEqual(section)
+      }
+      for (const section of [...LayoutSections, ...LayoutSystemSections, ...TypographySections]) {
+        expect(editor.renderedDOM.queryByText(section)).toBeNull()
+      }
+    })
+
+    it('shows container when `layout` is set', async () => {
+      const editor = await renderTestEditorWithModel(
+        project(JSON.stringify({ display: 'expanded', sections: ['layout'] })),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [fromString('sb/scene/card')])
+
+      for (const section of LayoutSections) {
+        expect(editor.renderedDOM.queryByText(section)?.innerText).toEqual(section)
+      }
+      for (const section of [...VisualSections, ...LayoutSystemSections, ...TypographySections]) {
+        expect(editor.renderedDOM.queryByText(section)).toBeNull()
+      }
+    })
+
+    it('shows the flex section when `layout-system` is set', async () => {
+      const editor = await renderTestEditorWithModel(
+        project(JSON.stringify({ display: 'expanded', sections: ['layout-system'] })),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [fromString('sb/scene/card')])
+
+      for (const section of LayoutSystemSections) {
+        expect(editor.renderedDOM.queryByText(section)?.innerText).toEqual(section)
+      }
+      for (const section of [...VisualSections, ...LayoutSections, ...TypographySections]) {
+        expect(editor.renderedDOM.queryByText(section)).toBeNull()
+      }
+    })
+
+    it('shows the type section when `typography` is set', async () => {
+      const editor = await renderTestEditorWithModel(
+        project(JSON.stringify({ display: 'expanded', sections: ['typography'] })),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [fromString('sb/scene/card')])
+
+      for (const section of TypographySections) {
+        expect(editor.renderedDOM.queryByText(section)?.innerText).toEqual(section)
+      }
+      for (const section of [...VisualSections, ...LayoutSections, ...LayoutSystemSections]) {
+        expect(editor.renderedDOM.queryByText(section)).toBeNull()
+      }
+    })
+
+    it('shows all sections when `inspector: { display: "expanded" }` is set', async () => {
+      const editor = await renderTestEditorWithModel(
+        project(JSON.stringify({ display: 'expanded' })),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [fromString('sb/scene/card')])
+
+      for (const section of [
+        ...VisualSections,
+        ...LayoutSections,
+        ...LayoutSystemSections,
+        ...TypographySections,
+      ]) {
+        expect(editor.renderedDOM.queryByText(section)?.innerText).toEqual(section)
+      }
+    })
+
+    it('shows all sections when `the inpector prop is not set', async () => {
+      const editor = await renderTestEditorWithModel(project(null), 'await-first-dom-report')
+
+      await selectComponentsForTest(editor, [fromString('sb/scene/card')])
+
+      for (const section of [
+        ...VisualSections,
+        ...LayoutSections,
+        ...LayoutSystemSections,
+        ...TypographySections,
+      ]) {
+        expect(editor.renderedDOM.queryByText(section)?.innerText).toEqual(section)
+      }
+    })
   })
 })
 

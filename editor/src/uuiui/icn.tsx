@@ -24,6 +24,8 @@ export type IcnColor =
   | 'overridden'
   | 'dynamic'
   | 'remix'
+  | 'green'
+  | 'lightgreen'
 
 export type IcnResultingColor =
   | 'white'
@@ -43,6 +45,8 @@ export type IcnResultingColor =
   | 'lightpink'
   | 'aqua'
   | 'lightaqua'
+  | 'green'
+  | 'lightgreen'
 
 function useIconColor(intent: IcnColor): IcnResultingColor {
   const currentTheme: Theme = useEditorState(
@@ -80,6 +84,8 @@ function useIconColor(intent: IcnColor): IcnResultingColor {
         return 'white'
       case 'remix':
         return 'aqua'
+      case 'green':
+        return 'green'
       case 'white':
         return 'white'
       default:
@@ -117,6 +123,8 @@ function useIconColor(intent: IcnColor): IcnResultingColor {
         return 'black'
       case 'remix':
         return 'lightaqua'
+      case 'green':
+        return 'lightgreen'
       case 'white':
         return 'white'
       default:
@@ -217,6 +225,7 @@ export const Icn = React.memo(
         data-testid={props.testId}
         data-category={props.category}
         data-type={props.type}
+        data-color={iconColor}
       />
     )
     if (props.tooltipText == null) {

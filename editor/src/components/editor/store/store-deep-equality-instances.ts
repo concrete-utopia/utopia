@@ -38,6 +38,7 @@ import type {
   TextFile,
   TextFileContents,
   Unparsed,
+  ElementPropertyPath,
 } from '../../../core/shared/project-file-types'
 import { directory } from '../../../core/shared/project-file-types'
 import {
@@ -212,6 +213,7 @@ import {
   jsOpaqueArbitraryStatement,
   jsAssignmentStatement,
   jsAssignment,
+  jsxMapExpression,
 } from '../../../core/shared/element-template'
 import type {
   CanvasRectangle,
@@ -257,6 +259,7 @@ import {
   combine14EqualityCalls,
   combine11EqualityCalls,
   combine15EqualityCalls,
+  combine16EqualityCalls,
 } from '../../../utils/deep-equality'
 import {
   ElementPathArrayKeepDeepEquality,
@@ -351,6 +354,11 @@ import type {
   TrueUpHuggingElement,
   RenderPropNavigatorEntry,
   SlotNavigatorEntry,
+  RenderPropValueNavigatorEntry,
+  DataReferenceNavigatorEntry,
+  GithubUser,
+  PullRequest,
+  RenderedAt,
 } from './editor-state'
 import {
   trueUpGroupElementChanged,
@@ -358,6 +366,11 @@ import {
   invalidOverrideNavigatorEntry,
   trueUpHuggingElement,
   renderPropNavigatorEntry,
+  renderPropValueNavigatorEntry,
+  dataReferenceNavigatorEntry,
+  newGithubData,
+  renderedAtPropertyPath,
+  renderedAtChildNode,
 } from './editor-state'
 import {
   editorStateNodeModules,
@@ -472,7 +485,9 @@ import type {
   CurriedUtopiaRequireFn,
   PropertyControlsInfo,
   ComponentDescriptorFromDescriptorFile,
-  PlaceholderSpec,
+  TypedInpsectorSpec,
+  ShownInspectorSpec,
+  StyleSectionState,
 } from '../../custom-code/code-file'
 import {
   codeResult,
@@ -596,6 +611,18 @@ import type {
 } from '../../custom-code/internal-property-controls'
 import type { OnlineState } from '../online-status'
 import { onlineState } from '../online-status'
+import type { NavigatorRow } from '../../navigator/navigator-row'
+import { condensedNavigatorRow, regularNavigatorRow } from '../../navigator/navigator-row'
+
+export function ElementPropertyPathKeepDeepEquality(): KeepDeepEqualityCall<ElementPropertyPath> {
+  return combine2EqualityCalls(
+    (e) => e.elementPath,
+    ElementPathKeepDeepEquality,
+    (e) => e.propertyPath,
+    PropertyPathKeepDeepEquality(),
+    (elementPath, propertyPath) => ({ elementPath, propertyPath }),
+  )
+}
 
 export const ProjectMetadataFromServerKeepDeepEquality: KeepDeepEqualityCall<ProjectMetadataFromServer> =
   combine4EqualityCalls(
@@ -681,13 +708,68 @@ export const SyntheticNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<Synth
     syntheticNavigatorEntry,
   )
 
+export const RenderedAtKeepDeepEquality: KeepDeepEqualityCall<RenderedAt> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'element-property-path':
+      if (oldValue.type === newValue.type) {
+        return combine1EqualityCall(
+          (r) => r.elementPropertyPath,
+          ElementPropertyPathKeepDeepEquality(),
+          renderedAtPropertyPath,
+        )(oldValue, newValue)
+      }
+      break
+    case 'child-node':
+      if (oldValue.type === newValue.type) {
+        return combine2EqualityCalls(
+          (r) => r.parentPath,
+          ElementPathKeepDeepEquality,
+          (r) => r.nodeUid,
+          StringKeepDeepEquality,
+          renderedAtChildNode,
+        )(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
+export const DataReferenceNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<DataReferenceNavigatorEntry> =
+  combine4EqualityCalls(
+    (entry) => entry.elementPath,
+    ElementPathKeepDeepEquality,
+    (entry) => entry.renderedAt,
+    RenderedAtKeepDeepEquality,
+    (entry) => entry.surroundingScope,
+    ElementPathKeepDeepEquality,
+    (entry) => entry.childOrAttribute,
+    JSXElementChildKeepDeepEquality(),
+    dataReferenceNavigatorEntry,
+  )
+
 export const RenderPropNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<RenderPropNavigatorEntry> =
-  combine2EqualityCalls(
+  combine3EqualityCalls(
     (entry) => entry.elementPath,
     ElementPathKeepDeepEquality,
     (entry) => entry.propName,
     StringKeepDeepEquality,
+    (entry) => entry.childPath,
+    nullableDeepEquality(ElementPathKeepDeepEquality),
     renderPropNavigatorEntry,
+  )
+
+export const RenderPropValueNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<RenderPropValueNavigatorEntry> =
+  combine2EqualityCalls(
+    (entry) => entry.elementPath,
+    ElementPathKeepDeepEquality,
+    (entry) => entry.prop,
+    StringKeepDeepEquality,
+    renderPropValueNavigatorEntry,
   )
 
 export const InvalidOverrideNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<InvalidOverrideNavigatorEntry> =
@@ -707,6 +789,41 @@ export const SlotNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<SlotNaviga
     StringKeepDeepEquality,
     (elementPath, prop) => ({ type: 'SLOT', elementPath: elementPath, prop: prop }),
   )
+
+export const NavigatorRowKeepDeepEquality: KeepDeepEqualityCall<NavigatorRow> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'regular-row':
+      if (oldValue.type === newValue.type) {
+        return combine2EqualityCalls(
+          (row) => row.entry,
+          NavigatorEntryKeepDeepEquality,
+          (row) => row.indentation,
+          createCallWithTripleEquals<number>(),
+          regularNavigatorRow,
+        )(oldValue, newValue)
+      }
+      break
+    case 'condensed-row':
+      if (oldValue.type === newValue.type) {
+        return combine3EqualityCalls(
+          (row) => row.entries,
+          arrayDeepEquality(NavigatorEntryKeepDeepEquality),
+          (row) => row.variant,
+          createCallWithTripleEquals<'trunk' | 'leaf'>(),
+          (row) => row.indentation,
+          createCallWithTripleEquals<number>(),
+          condensedNavigatorRow,
+        )(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
 
 export const NavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<NavigatorEntry> = (
   oldValue,
@@ -728,9 +845,19 @@ export const NavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<NavigatorEntry
         return SyntheticNavigatorEntryKeepDeepEquality(oldValue, newValue)
       }
       break
+    case 'DATA_REFERENCE':
+      if (oldValue.type === newValue.type) {
+        return DataReferenceNavigatorEntryKeepDeepEquality(oldValue, newValue)
+      }
+      break
     case 'RENDER_PROP':
       if (oldValue.type === newValue.type) {
         return RenderPropNavigatorEntryKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'RENDER_PROP_VALUE':
+      if (oldValue.type === newValue.type) {
+        return RenderPropValueNavigatorEntryKeepDeepEquality(oldValue, newValue)
       }
       break
     case 'INVALID_OVERRIDE':
@@ -803,7 +930,9 @@ export const NavigatorStateKeepDeepEquality: KeepDeepEqualityCall<NavigatorState
   )
 
 export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedState> {
-  return combine9EqualityCalls(
+  return combine10EqualityCalls(
+    (state) => state.navigatorRows,
+    arrayDeepEquality(NavigatorRowKeepDeepEquality),
     (state) => state.navigatorTargets,
     arrayDeepEquality(NavigatorEntryKeepDeepEquality),
     (state) => state.visibleNavigatorTargets,
@@ -823,6 +952,7 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
     (state) => state.filePathMappings,
     createCallWithShallowEquals(),
     (
+      navigatorRows,
       navigatorTargets,
       visibleNavigatorTargets,
       autoFocusedPaths,
@@ -834,6 +964,7 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
       filePathMappings,
     ) => {
       return {
+        navigatorRows: navigatorRows,
         navigatorTargets: navigatorTargets,
         visibleNavigatorTargets: visibleNavigatorTargets,
         autoFocusedPaths: autoFocusedPaths,
@@ -955,7 +1086,7 @@ export const RawSourceMapKeepDeepEquality: KeepDeepEqualityCall<RawSourceMap> =
 export function JSAssignmentKeepDeepEqualityCall(): KeepDeepEqualityCall<JSAssignment> {
   return combine2EqualityCalls(
     (assignment) => assignment.leftHandSide,
-    JSIdentifierKeepDeepEquality(),
+    BoundParamKeepDeepEquality(),
     (assignment) => assignment.rightHandSide,
     JSExpressionKeepDeepEqualityCall,
     jsAssignment,
@@ -1032,49 +1163,18 @@ export function JSExpressionOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqual
 }
 
 export function JSXMapExpressionKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXMapExpression> {
-  return combine9EqualityCalls(
-    (attribute) => attribute.javascriptWithUIDs,
-    createCallWithTripleEquals<string>(),
-    (attribute) => attribute.originalJavascript,
-    createCallWithTripleEquals<string>(),
-    (attribute) => attribute.transpiledJavascript,
-    createCallWithTripleEquals<string>(),
-    (attribute) => attribute.definedElsewhere,
-    arrayDeepEquality(createCallWithTripleEquals()),
-    (attribute) => attribute.sourceMap,
-    nullableDeepEquality(RawSourceMapKeepDeepEquality),
-    (attribute) => attribute.uid,
-    createCallWithTripleEquals(),
-    (block) => block.elementsWithin,
-    ElementsWithinKeepDeepEqualityCall(),
-    (block) => block.comments,
+  return combine5EqualityCalls(
+    (expression) => expression.valueToMap,
+    JSExpressionKeepDeepEqualityCall,
+    (expression) => expression.mapFunction,
+    JSExpressionKeepDeepEqualityCall,
+    (expression) => expression.comments,
     ParsedCommentsKeepDeepEqualityCall,
     (block) => block.valuesInScopeFromParameters,
     arrayDeepEquality(createCallWithTripleEquals<string>()),
-    (
-      javascript,
-      originalJavascript,
-      transpiledJavascript,
-      definedElsewhere,
-      sourceMap,
-      uniqueID,
-      elementsWithin,
-      comments,
-      valuesInScopeFromParameters,
-    ) => {
-      return {
-        type: 'JSX_MAP_EXPRESSION',
-        javascriptWithUIDs: javascript,
-        originalJavascript: originalJavascript,
-        transpiledJavascript: transpiledJavascript,
-        definedElsewhere: definedElsewhere,
-        sourceMap: sourceMap,
-        uid: uniqueID,
-        elementsWithin: elementsWithin,
-        comments: comments,
-        valuesInScopeFromParameters: valuesInScopeFromParameters,
-      }
-    },
+    (expression) => expression.uid,
+    createCallWithTripleEquals<string>(),
+    jsxMapExpression,
   )
 }
 
@@ -1624,7 +1724,7 @@ export const RegularParamKeepDeepEquality: KeepDeepEqualityCall<RegularParam> =
     (param) => param.paramName,
     createCallWithTripleEquals(),
     (param) => param.defaultExpression,
-    nullableDeepEquality(JSExpressionOtherJavaScriptOrJSXMapExpressionKeepDeepEqualityCall),
+    nullableDeepEquality(JSExpressionKeepDeepEqualityCall),
     regularParam,
   )
 
@@ -1635,7 +1735,7 @@ export const DestructuredParamPartKeepDeepEquality: KeepDeepEqualityCall<Destruc
     (paramPart) => paramPart.param,
     ParamKeepDeepEquality(),
     (paramPart) => paramPart.defaultExpression,
-    nullableDeepEquality(JSExpressionOtherJavaScriptOrJSXMapExpressionKeepDeepEqualityCall),
+    nullableDeepEquality(JSExpressionKeepDeepEqualityCall),
     destructuredParamPart,
   )
 
@@ -2052,7 +2152,7 @@ export const EarlyReturnKeepDeepEquality: KeepDeepEqualityCall<
 }
 
 export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<ElementInstanceMetadata> =
-  combine15EqualityCalls(
+  combine16EqualityCalls(
     (metadata) => metadata.elementPath,
     ElementPathKeepDeepEquality,
     (metadata) => metadata.element,
@@ -2083,6 +2183,8 @@ export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<Eleme
     nullableDeepEquality(StringKeepDeepEquality),
     (metadata) => metadata.earlyReturn,
     nullableDeepEquality(EarlyReturnKeepDeepEquality),
+    (metadata) => metadata.assignedToProp,
+    nullableDeepEquality(StringKeepDeepEquality),
     elementInstanceMetadata,
   )
 
@@ -3395,43 +3497,31 @@ export function ComponentDescriptorSourceKeepDeepEquality(): KeepDeepEqualityCal
   }
 }
 
-export function PlaceholderKeepDeepEquality(): KeepDeepEqualityCall<PlaceholderSpec> {
-  return (oldValue, newValue) => {
-    switch (oldValue.type) {
-      case 'text':
-        if (oldValue.type === newValue.type) {
-          const areEqual = oldValue.contents === newValue.contents
-          return { areEqual: areEqual, value: areEqual ? oldValue : newValue }
-        }
-        break
-      case 'spacer':
-        if (oldValue.type === newValue.type) {
-          const areEqual = oldValue.width === newValue.width && oldValue.height === newValue.height
-          return { areEqual: areEqual, value: areEqual ? oldValue : newValue }
-        }
-        break
-      case 'fill':
-        if (oldValue.type === newValue.type) {
-          return { areEqual: true, value: oldValue }
-        }
-        break
-      default:
-        assertNever(oldValue)
-    }
-    return keepDeepEqualityResult(newValue, false)
+const InspectorSpecKeepDeepEquality: KeepDeepEqualityCall<TypedInpsectorSpec> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'hidden':
+      if (oldValue.type === newValue.type) {
+        return keepDeepEqualityResult(oldValue, true)
+      }
+      break
+    case 'shown':
+      if (oldValue.type === newValue.type) {
+        return combine2EqualityCalls<StyleSectionState, Styling[], ShownInspectorSpec>(
+          (i) => i.display,
+          createCallWithTripleEquals(),
+          (i) => i.sections,
+          arrayDeepEquality(createCallWithTripleEquals()),
+          (display, sections) => ({ type: 'shown', display: display, sections: sections }),
+        )(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
   }
-}
-
-const InspectorSpecKeepDeepEquality: KeepDeepEqualityCall<InspectorSpec> = (oldValue, newValue) => {
-  if (typeof oldValue === 'string' && typeof newValue === 'string') {
-    return StringKeepDeepEquality(oldValue, newValue) as KeepDeepEqualityResult<InspectorSpec>
-  }
-
-  if (Array.isArray(oldValue) && Array.isArray(newValue)) {
-    return arrayDeepEquality(createCallWithTripleEquals<Styling>())(oldValue, newValue)
-  }
-
-  return { value: newValue, areEqual: false }
+  return keepDeepEqualityResult(newValue, false)
 }
 
 export const ComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<ComponentDescriptor> =
@@ -3444,8 +3534,6 @@ export const ComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<Component
     arrayDeepEquality(ComponentInfoKeepDeepEquality),
     (descriptor) => descriptor.preferredChildComponents,
     arrayDeepEquality(PreferredChildComponentDescriptorKeepDeepEquality),
-    (descriptor) => descriptor.childrenPropPlaceholder,
-    nullableDeepEquality(PlaceholderKeepDeepEquality()),
     (descriptor) => descriptor.source,
     ComponentDescriptorSourceKeepDeepEquality(),
     (descriptor) => descriptor.focus,
@@ -3456,6 +3544,8 @@ export const ComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<Component
     createCallWithTripleEquals<Emphasis>(),
     (descriptor) => descriptor.icon,
     createCallWithTripleEquals<Icon>(),
+    (descriptor) => descriptor.label,
+    nullableDeepEquality(StringKeepDeepEquality),
     componentDescriptor,
   )
 
@@ -4346,16 +4436,53 @@ export const GithubFileChangesKeepDeepEquality: KeepDeepEqualityCall<GithubFileC
     emptyGithubFileChanges,
   )
 
-export const GithubDataKeepDeepEquality: KeepDeepEqualityCall<GithubData> = combine4EqualityCalls(
+export const PullRequestKeepDeepEquality: KeepDeepEqualityCall<PullRequest> = combine3EqualityCalls(
+  (data) => data.htmlURL,
+  StringKeepDeepEquality,
+  (data) => data.number,
+  NumberKeepDeepEquality,
+  (data) => data.title,
+  StringKeepDeepEquality,
+  (htmlURL, number, title) => ({ htmlURL: htmlURL, number: number, title: title }),
+)
+
+export const GithubUserKeepDeepEquality: KeepDeepEqualityCall<GithubUser> = combine4EqualityCalls(
+  (data) => data.avatarURL,
+  StringKeepDeepEquality,
+  (data) => data.htmlURL,
+  StringKeepDeepEquality,
+  (data) => data.login,
+  StringKeepDeepEquality,
+  (data) => data.name,
+  NullableStringKeepDeepEquality,
+  (login, avatarURL, htmlURL, name) => ({
+    login: login,
+    avatarURL: avatarURL,
+    htmlURL: htmlURL,
+    name: name,
+  }),
+)
+
+export const GithubDataKeepDeepEquality: KeepDeepEqualityCall<GithubData> = combine9EqualityCalls(
   (data) => data.branches,
   nullableDeepEquality(arrayDeepEquality(GithubBranchKeepDeepEquality)),
+  (data) => data.userRepositories,
+  arrayDeepEquality(RepositoryEntryKeepDeepEquality),
   (data) => data.publicRepositories,
   arrayDeepEquality(RepositoryEntryKeepDeepEquality),
+  (data) => data.treeConflicts,
+  createCallWithTripleEquals(),
   (data) => data.lastUpdatedAt,
   NullableNumberKeepDeepEquality,
   (data) => data.upstreamChanges,
   nullableDeepEquality(GithubFileChangesKeepDeepEquality),
-  emptyGithubData,
+  (data) => data.currentBranchPullRequests,
+  nullableDeepEquality(arrayDeepEquality(PullRequestKeepDeepEquality)),
+  (data) => data.githubUserDetails,
+  nullableDeepEquality(GithubUserKeepDeepEquality),
+  (data) => data.lastRefreshedCommit,
+  NullableStringKeepDeepEquality,
+  newGithubData,
 )
 
 export const GithubOperationKeepDeepEquality: KeepDeepEqualityCall<GithubOperation> = (

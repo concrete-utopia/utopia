@@ -246,6 +246,22 @@ function jsxAttributeToExpression(
         })
         return TS.createArrayLiteral(arrayExpressions)
       case 'JSX_MAP_EXPRESSION':
+        const valueToMapExpression = jsxAttributeToExpression(
+          attribute.valueToMap,
+          imports,
+          stripUIDs,
+        )
+        const mapFunctionExpression = jsxAttributeToExpression(
+          attribute.mapFunction,
+          imports,
+          stripUIDs,
+        )
+        const propertyAccessExpression = TS.createPropertyAccess(valueToMapExpression, 'map')
+        const callExpression = TS.createCall(propertyAccessExpression, undefined, [
+          mapFunctionExpression,
+        ])
+        addCommentsToNode(callExpression, attribute.comments)
+        return callExpression
       case 'ATTRIBUTE_OTHER_JAVASCRIPT':
         const maybeExpressionStatement = rawCodeToExpressionStatement(
           attribute.javascriptWithUIDs,
@@ -527,6 +543,7 @@ function jsxElementToExpression(
       return jsxElementToTSJSXElement(element, imports, stripUIDs)
     }
     case 'JSX_MAP_EXPRESSION':
+      return jsxAttributeToExpression(element, imports, stripUIDs)
     case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
       if (parentIsJSX) {
         const maybeExpressionStatement = rawCodeToExpressionStatement(element.javascriptWithUIDs)
@@ -828,7 +845,7 @@ function printParam(param: Param, imports: Imports, stripUIDs: boolean): TS.Para
 }
 
 function printBindingExpression(
-  defaultExpression: JSExpressionMapOrOtherJavascript | null,
+  defaultExpression: JSExpression | null,
   imports: Imports,
   stripUIDs: boolean,
 ): TS.Expression | undefined {
@@ -1895,6 +1912,10 @@ export function trimHighlightBounds(success: ParseSuccess): ParseSuccess {
             // Don't walk any further down these.
             break
           case 'JSX_MAP_EXPRESSION':
+            includeElement(element)
+            walkJSXElementChild(element.valueToMap)
+            walkJSXElementChild(element.mapFunction)
+            break
           case 'ATTRIBUTE_OTHER_JAVASCRIPT':
             includeElement(element)
             walkElementsWithin(element.elementsWithin)

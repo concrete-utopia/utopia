@@ -7,16 +7,22 @@ import {
 import type {
   JSXAttributes,
   JSXElementChild,
+  JSXMapExpressionWithoutUID,
   UtopiaJSXComponent,
 } from '../../core/shared/element-template'
 import {
   emptyComments,
+  functionParam,
+  jsExpressionOtherJavaScript,
+  jsExpressionOtherJavaScriptSimple,
   jsExpressionValue,
   jsxAttributesFromMap,
   jsxConditionalExpressionWithoutUID,
+  jsxElement,
   jsxElementWithoutUID,
   jsxFragmentWithoutUID,
   jsxTextBlock,
+  regularParam,
   simpleAttribute,
 } from '../../core/shared/element-template'
 import { dropFileExtension } from '../../core/shared/file-utils'
@@ -29,7 +35,7 @@ import type {
 } from '../../core/shared/npm-dependency-types'
 import { isResolvedNpmDependency } from '../../core/shared/npm-dependency-types'
 import type { ElementPath, Imports, ProjectFile } from '../../core/shared/project-file-types'
-import { isTextFile } from '../../core/shared/project-file-types'
+import { importAlias, isTextFile } from '../../core/shared/project-file-types'
 import { assertNever, fastForEach } from '../../core/shared/utils'
 import type { SelectOption } from '../../uuiui-deps'
 import type { ProjectContentTreeRoot } from '../assets'
@@ -57,6 +63,7 @@ import { insertMenuModes } from '../canvas/ui/floating-insert-menu-helpers'
 import { elementUsesProperty } from '../../core/model/element-template-utils'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../../core/shared/dom-utils'
 import { getTopLevelElementByExportsDetail } from '../../core/model/project-file-utils'
+import { type Icon } from 'utopia-api'
 
 export type StylePropOption = 'do-not-add' | 'add-size'
 
@@ -67,6 +74,7 @@ export interface InsertableComponent {
   stylePropOptions: Array<StylePropOption>
   defaultSize: Size | null
   insertionCeiling: ElementPath | null
+  icon: Icon | null
 }
 
 export function insertableComponent(
@@ -76,6 +84,7 @@ export function insertableComponent(
   stylePropOptions: Array<StylePropOption>,
   defaultSize: Size | null,
   insertionCeiling: ElementPath | null,
+  icon: Icon | null,
 ): InsertableComponent {
   const component = {
     importsToAdd: importsToAdd,
@@ -84,6 +93,7 @@ export function insertableComponent(
     stylePropOptions: stylePropOptions,
     defaultSize: defaultSize,
     insertionCeiling: insertionCeiling,
+    icon: icon,
   }
   return component
 }
@@ -125,6 +135,10 @@ export function insertableComponentGroupHTML(): InsertableComponentGroupHTML {
 
 export interface InsertableComponentGroupConditionals {
   type: 'CONDITIONALS_GROUP'
+}
+
+export interface InsertableComponentGroupMap {
+  type: 'MAP_GROUP'
 }
 
 export function insertableComponentGroupConditionals(): InsertableComponentGroupConditionals {
@@ -193,6 +207,7 @@ export type InsertableComponentGroupType =
   | InsertableComponentGroupFragment
   | InsertableComponentGroupSamples
   | InsertableComponentGroupGroups
+  | InsertableComponentGroupMap
 
 export interface InsertableComponentGroup {
   source: InsertableComponentGroupType
@@ -238,6 +253,8 @@ export function getInsertableGroupLabel(insertableType: InsertableComponentGroup
       return 'Group'
     case 'HTML_DIV':
       return 'Div'
+    case 'MAP_GROUP':
+      return 'List'
     default:
       assertNever(insertableType)
   }
@@ -254,6 +271,7 @@ export function getInsertableGroupPackageStatus(
     case 'FRAGMENT_GROUP':
     case 'GROUPS_GROUP':
     case 'HTML_DIV':
+    case 'MAP_GROUP':
       return 'loaded'
     case 'PROJECT_DEPENDENCY_GROUP':
       return insertableType.dependencyStatus
@@ -299,6 +317,7 @@ export function insertableVariable(
       stylePropOptions,
       defaultSize,
       insertionCeiling,
+      null,
     ),
     variableType: variableType,
     depth: depth,
@@ -497,7 +516,42 @@ export const fragmentComponentInfo: ComponentInfo = {
   },
 }
 
-const fragmentElementsDescriptors: ComponentDescriptorsForFile = {
+export const mapComponentInfo: ComponentInfo = {
+  insertMenuLabel: 'List',
+  elementToInsert: (): JSXMapExpressionWithoutUID => ({
+    type: 'JSX_MAP_EXPRESSION',
+    valueToMap: jsExpressionValue([1, 2, 3], emptyComments),
+    mapFunction: jsExpressionOtherJavaScript(
+      [functionParam(false, regularParam('listItem', null))],
+      `(listItem) => (\n            <Placeholder />\n          )`,
+      `(listItem) => <\nPlaceholder data-uid="placeholder-id" />);`,
+      `return (listItem) => utopiaCanvasJSXLookup("placeholder-id", {\n  callerThis: this\n})`,
+      ['React', 'Placeholder', 'utopiaCanvasJSXLookup'],
+      null,
+      {
+        'placeholder-id': jsxElement('Placeholder', 'placeholder-id', jsxAttributesFromMap({}), []),
+      },
+      emptyComments,
+      '',
+    ),
+    valuesInScopeFromParameters: ['listItem'],
+    comments: emptyComments,
+  }),
+  importsToAdd: {
+    react: {
+      importedAs: 'React',
+      importedFromWithin: [],
+      importedWithName: null,
+    },
+    'utopia-api': {
+      importedAs: null,
+      importedFromWithin: [importAlias('Placeholder')],
+      importedWithName: null,
+    },
+  },
+}
+
+export const fragmentElementsDescriptors: ComponentDescriptorsForFile = {
   fragment: {
     properties: {},
     supportsChildren: true,
@@ -505,6 +559,18 @@ const fragmentElementsDescriptors: ComponentDescriptorsForFile = {
     preferredChildComponents: [],
     source: defaultComponentDescriptor(),
     ...ComponentDescriptorDefaults,
+  },
+}
+
+export const mapElementDescriptors: ComponentDescriptorsForFile = {
+  map: {
+    properties: {},
+    supportsChildren: false,
+    variants: [mapComponentInfo],
+    preferredChildComponents: [],
+    source: defaultComponentDescriptor(),
+    ...ComponentDescriptorDefaults,
+    icon: 'lists',
   },
 }
 
@@ -590,6 +656,7 @@ export function moveSceneToTheBeginningAndSetDefaultSize(
             scene.stylePropOptions,
             size(SceneDefaultWidth, SceneDefaultHeight),
             null,
+            null,
           ),
         ],
       )
@@ -640,6 +707,7 @@ export function getComponentGroups(
         originatingPath,
         fullPath,
         file.fileContents.parsed,
+        propertyControlsInfo,
       )
       let insertableComponents: Array<InsertableComponent> = []
       fastForEach(possibleExportedComponents, (exportedComponent) => {
@@ -651,7 +719,7 @@ export function getComponentGroups(
         )
 
         // Drill down into the property controls to see if this has an appropriate style object entry.
-        const stylePropOptions = hasStyleControls(propertyControls)
+        const stylePropOptions = hasStyleControls(propertyControls ?? {})
           ? addSizeAndNotStyleProp
           : doNotAddStyleProp
 
@@ -672,6 +740,7 @@ export function getComponentGroups(
                   stylePropOptions,
                   null,
                   null,
+                  descriptor.icon,
                 ),
               )
             })
@@ -685,6 +754,7 @@ export function getComponentGroups(
                 () => jsxElementWithoutUID(exportedComponent.listingName, [], []),
                 exportedComponent.listingName,
                 stylePropOptions,
+                null,
                 null,
                 null,
               ),
@@ -704,6 +774,7 @@ export function getComponentGroups(
   function addDependencyDescriptor(
     groupType: InsertableComponentGroupType,
     components: ComponentDescriptorsForFile,
+    defaultSize?: Size,
   ): void {
     let insertableComponents: Array<InsertableComponent> = []
     fastForEach(Object.keys(components), (componentName) => {
@@ -721,8 +792,9 @@ export function getComponentGroups(
               insertOption.elementToInsert,
               insertOption.insertMenuLabel,
               stylePropOptions,
+              defaultSize ?? null,
               null,
-              null,
+              component.icon,
             ),
           )
         })
@@ -731,7 +803,10 @@ export function getComponentGroups(
     result.push(insertableComponentGroup(groupType, insertableComponents))
   }
 
-  addDependencyDescriptor(insertableComponentGroupDiv(), divComponentGroup)
+  addDependencyDescriptor(insertableComponentGroupDiv(), divComponentGroup, {
+    width: 100,
+    height: 100,
+  })
 
   // Add HTML entries.
   addDependencyDescriptor(insertableComponentGroupHTML(), basicHTMLElementsDescriptors)
@@ -741,6 +816,9 @@ export function getComponentGroups(
 
   // Add fragment group.
   addDependencyDescriptor(insertableComponentGroupFragment(), fragmentElementsDescriptors)
+
+  // Add map group.
+  addDependencyDescriptor({ type: 'MAP_GROUP' }, mapElementDescriptors)
 
   // Add samples group.
   addDependencyDescriptor({ type: 'SAMPLES_GROUP' }, samplesDescriptors)
@@ -824,6 +902,7 @@ export function insertMenuModesForInsertableComponentGroupType(
     case 'PROJECT_DEPENDENCY_GROUP':
     case 'SAMPLES_GROUP':
     case 'HTML_DIV':
+    case 'MAP_GROUP':
       return insertMenuModes.all
     case 'GROUPS_GROUP':
       return insertMenuModes.onlyWrap

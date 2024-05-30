@@ -81,7 +81,7 @@ export function isAllowedToReparent(
   elementToReparent: ElementPath,
   targetParentPath: ElementPath,
 ): boolean {
-  if (MetadataUtils.isElementGenerated(elementToReparent)) {
+  if (MetadataUtils.isElementDirectlyGenerated(elementToReparent)) {
     return false
   }
 
@@ -124,7 +124,7 @@ export function isAllowedToNavigatorReparent(
   startingMetadata: ElementInstanceMetadataMap,
   target: ElementPath,
 ): boolean {
-  if (MetadataUtils.isElementGenerated(target)) {
+  if (MetadataUtils.isElementDirectlyGenerated(target)) {
     return false
   } else {
     const metadata = MetadataUtils.findElementByElementPath(startingMetadata, target)
@@ -151,9 +151,6 @@ export function canCopyElement(
   target: ElementPath,
 ): Either<string, ElementPath> {
   const metadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
-  if (MetadataUtils.isElementGenerated(target)) {
-    return left('Cannot copy generated element')
-  }
 
   if (metadata == null) {
     const parentPath = EP.parentPath(target)
@@ -371,9 +368,10 @@ function getComponentNamesFromJSXElementChild(element: JSXElementChild): Array<J
         ...getComponentNamesFromJSXElementChild(element.whenFalse),
       ]
     case 'JSX_MAP_EXPRESSION':
-      return Object.values(element.elementsWithin).flatMap((c) =>
-        getComponentNamesFromJSXElementChild(c),
-      )
+      return [
+        ...getComponentNamesFromJSXElementChild(element.valueToMap),
+        ...getComponentNamesFromJSXElementChild(element.mapFunction),
+      ]
     case 'ATTRIBUTE_FUNCTION_CALL':
     case 'ATTRIBUTE_NESTED_ARRAY':
     case 'ATTRIBUTE_NESTED_OBJECT':

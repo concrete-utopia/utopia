@@ -358,6 +358,20 @@ describe('Monkey Function', () => {
     `)
   })
 
+  it('Props get pushed down off of a fragment onto the children', () => {
+    const ElementThatIsReallyAFragment: any = React.Fragment as any
+    expect(
+      renderToFormattedString(
+        <ElementThatIsReallyAFragment style={{ backgroundColor: 'red' }}>
+          <div>Hello!</div>
+        </ElementThatIsReallyAFragment>,
+      ),
+    ).toMatchInlineSnapshot(`
+      "<div style=\\"background-color: red\\">Hello!</div>
+      "
+    `)
+  })
+
   it('Fragments work if theres a uid 2', () => {
     const Component = () => {
       return (

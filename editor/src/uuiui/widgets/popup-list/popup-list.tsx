@@ -106,8 +106,7 @@ const Option = (props: OptionProps<SelectOption>) => {
         {props.data.icon == null ? null : (
           <Icn
             {...props.data.icon}
-            // We override the color prop here so it can switch between dark and light depending on whether its highlighted (to always contrast the background)
-            color={props.isFocused ? 'on-highlight-main' : 'main'}
+            color={'white'}
             width={16}
             height={16}
             style={{ marginLeft: 4 }}
@@ -607,9 +606,9 @@ export const PopupList = React.memo<PopupListProps>(
 
       const container: styleFn = getContainer(containerMode, controlStyles, style)
 
-      function isOptionDisabled(option: SelectOption) {
+      const isOptionDisabled = React.useCallback((option: SelectOption) => {
         return option.disabled === true
-      }
+      }, [])
 
       const stopPropagation: KeyboardEventHandler = React.useCallback((event) => {
         if (event.key.includes('Arrow')) {
@@ -745,6 +744,14 @@ export const PopupList = React.memo<PopupListProps>(
             indicatorSeparator: displayNone,
             clearIndicator: displayNone,
             loadingIndicator: displayNone,
+          }}
+          css={{
+            '&:hover': {
+              boxShadow: `inset 0px 0px 0px 1px ${colorTheme.fg7.value}`,
+            },
+            '&:focus-within': {
+              boxShadow: `inset 0px 0px 0px 1px ${colorTheme.dynamicBlue.value}`,
+            },
           }}
         />
       )

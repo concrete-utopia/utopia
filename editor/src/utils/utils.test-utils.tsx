@@ -86,6 +86,7 @@ import { editorStateToElementChildOptic } from '../core/model/common-optics'
 import { toFirst } from '../core/shared/optics/optic-utilities'
 import { emptyUiJsxCanvasContextData } from '../components/canvas/ui-jsx-canvas'
 import type { RenderContext } from '../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-element-renderer-utils'
+import { componentPickerFilterInputTestId } from '../components/navigator/navigator-item/component-picker'
 
 export const testRenderContext: RenderContext = {
   rootScope: {},
@@ -391,6 +392,7 @@ function createFakeMetadataForJSXElement(
       conditionValue: 'not-a-conditional',
       textContent: textContents,
       earlyReturn: null,
+      assignedToProp: null,
     })
     elements.push(...children)
   } else if (isJSXFragment(element)) {
@@ -429,6 +431,7 @@ function createFakeMetadataForStoryboard(elementPath: ElementPath): ElementInsta
     conditionValue: 'not-a-conditional',
     textContent: null,
     earlyReturn: null,
+    assignedToProp: null,
   }
 }
 
@@ -629,6 +632,17 @@ export function boundingClientRectToCanvasRectangle(
 export async function searchInFloatingMenu(editor: EditorRenderResult, query: string) {
   const floatingMenu = editor.renderedDOM.getByTestId(CanvasToolbarSearchTestID)
   const searchBox = queryByAttribute('type', floatingMenu, 'text')!
+
+  await act(() => {
+    fireEvent.focus(searchBox)
+    fireEvent.change(searchBox, { target: { value: query } })
+    fireEvent.blur(searchBox)
+    fireEvent.keyDown(searchBox, { key: 'Enter', keyCode: 13, metaKey: true })
+  })
+}
+
+export async function searchInComponentPicker(editor: EditorRenderResult, query: string) {
+  const searchBox = editor.renderedDOM.getByTestId(componentPickerFilterInputTestId)
 
   await act(() => {
     fireEvent.focus(searchBox)

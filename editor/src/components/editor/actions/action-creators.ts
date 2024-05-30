@@ -230,6 +230,15 @@ import type {
   ResetOnlineState,
   IncreaseOnlineStateFailureCount,
   AddCollapsedViews,
+  ReplaceMappedElement,
+  ReplaceTarget,
+  InsertAsChildTarget,
+  ReplaceKeepChildrenAndStyleTarget,
+  WrapTarget,
+  ReplaceElementInScope,
+  ElementReplacementPath,
+  ReplaceJSXElement,
+  ToggleDataCanCondense,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -266,16 +275,66 @@ export function clearSelection(): EditorAction {
   }
 }
 
+export const replaceTarget: ReplaceTarget = { type: 'replace-target' }
+export const wrapTarget: WrapTarget = { type: 'wrap-target' }
+export const replaceKeepChildrenAndStyleTarget: ReplaceKeepChildrenAndStyleTarget = {
+  type: 'replace-target-keep-children-and-style',
+}
+export function insertAsChildTarget(indexPosition?: IndexPosition): InsertAsChildTarget {
+  return { type: 'insert-as-child', indexPosition: indexPosition }
+}
+
 export function insertJSXElement(
   element: JSXElement,
-  parent: ElementPath | null,
+  target: ElementPath | null,
   importsToAdd: Imports,
+  indexPosition?: IndexPosition,
 ): InsertJSXElement {
   return {
     action: 'INSERT_JSX_ELEMENT',
     jsxElement: element,
-    parent: parent,
+    target: target,
     importsToAdd: importsToAdd,
+    indexPosition: indexPosition ?? null,
+  }
+}
+
+export function replaceJSXElement(
+  element: JSXElement,
+  target: ElementPath,
+  importsToAdd: Imports,
+  behaviour: ReplaceKeepChildrenAndStyleTarget | ReplaceTarget,
+): ReplaceJSXElement {
+  return {
+    action: 'REPLACE_JSX_ELEMENT',
+    jsxElement: element,
+    target: target,
+    importsToAdd: importsToAdd,
+    behaviour: behaviour,
+  }
+}
+
+export function replaceMappedElement(
+  element: JSXElement,
+  target: ElementPath,
+  importsToAdd: Imports,
+): ReplaceMappedElement {
+  return {
+    action: 'REPLACE_MAPPED_ELEMENT',
+    jsxElement: element,
+    target: target,
+    importsToAdd: importsToAdd,
+  }
+}
+
+export function replaceElementInScope(
+  target: ElementPath,
+  replacementPath: ElementReplacementPath,
+): ReplaceElementInScope {
+  return {
+    action: 'REPLACE_ELEMENT_IN_SCOPE',
+    target: target,
+    replacementPath: replacementPath,
   }
 }
 
@@ -303,6 +362,13 @@ export function unsetProperty(element: ElementPath, property: PropertyPath): Uns
 export function toggleHidden(targets: Array<ElementPath> = []): ToggleHidden {
   return {
     action: 'TOGGLE_HIDDEN',
+    targets: targets,
+  }
+}
+
+export function toggleDataCanCondense(targets: Array<ElementPath>): ToggleDataCanCondense {
+  return {
+    action: 'TOGGLE_DATA_CAN_CONDENSE',
     targets: targets,
   }
 }

@@ -41,7 +41,7 @@ import {
 } from '../../../printer-parsers/html/external-resources-parser'
 import { defaultEither } from '../../../core/shared/either'
 import { unless, when } from '../../../utils/react-conditionals'
-import { MomentumContextMenu } from '../../context-menu-wrapper'
+import { ContextMenu } from '../../context-menu-wrapper'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import {
   addNewPage,
@@ -58,6 +58,7 @@ import urljoin from 'url-join'
 import { notice } from '../../common/notice'
 import type { EditorDispatch } from '../../editor/action-types'
 import { maybeToArray } from '../../../core/shared/optional-utils'
+import { StarUnstarIcon } from '../../canvas/star-unstar-icon'
 
 type RouteMatch = {
   path: string
@@ -101,7 +102,8 @@ export const PagesPane = React.memo((props) => {
       function processRoutes(routes: Array<any>, prefix: string): RouteMatches {
         let result: RouteMatches = {}
         for (const route of routes) {
-          const path = urljoin(prefix, '/', route.path ?? '')
+          const delimiter = prefix == '' ? '/' : ''
+          const path = urljoin(prefix, delimiter, route.path ?? '')
           const firstMatchingFavorite = mapFirstApplicable(
             [...featuredRoutes, activeRoute],
             (favorite) => matchPath(path, favorite)?.pathname ?? null,
@@ -473,78 +475,13 @@ const FavoriteEntry = React.memo(({ favorite, active, addedToFavorites }: Favori
           </Tooltip>,
         )}
       </span>
-      <StarUnstarIcon url={favorite} selected={active} addedToFavorites={addedToFavorites} />
-    </FlexRow>
-  )
-})
-
-interface StarUnstarIconProps {
-  url: string
-  addedToFavorites: boolean
-  selected: boolean
-}
-
-const StarUnstarIcon = React.memo(({ url, addedToFavorites, selected }: StarUnstarIconProps) => {
-  const dispatch = useDispatch()
-
-  const onClickAddOrRemoveFavorite = React.useCallback(
-    (e: React.MouseEvent) => {
-      if (!addedToFavorites) {
-        dispatch([addNewFeaturedRoute(url)])
-      } else {
-        dispatch([removeFeaturedRoute(url)])
-      }
-      e.stopPropagation()
-    },
-    [dispatch, url, addedToFavorites],
-  )
-
-  const [mouseOver, setMouseOver] = React.useState(false)
-  const onMouseOver = React.useCallback(() => {
-    setMouseOver(true)
-  }, [])
-  const onMouseLeave = React.useCallback(() => {
-    setMouseOver(false)
-  }, [])
-
-  const type: 'star' | 'starfilled' = (() => {
-    if (addedToFavorites) {
-      return mouseOver ? 'star' : 'starfilled'
-    } else {
-      return mouseOver ? 'starfilled' : 'star'
-    }
-  })()
-
-  return (
-    <Tooltip title={addedToFavorites ? 'Remove from Favorites' : 'Add to Favorites'}>
-      <Icn
-        onMouseOver={onMouseOver}
-        onMouseLeave={onMouseLeave}
-        onClick={onClickAddOrRemoveFavorite}
-        category='navigator-element'
-        type={type}
-        color={'main'}
-        width={12}
-        height={12}
-        style={{
-          flexShrink: 0,
-          opacity: selected ? 1 : undefined,
-          color: colorTheme.subduedForeground.value,
-          marginLeft: 6,
-          marginRight: 6,
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          cursor: 'pointer',
-        }}
-        css={{
-          opacity: 0,
-          '*:hover > &': {
-            opacity: 1,
-          },
-        }}
+      <StarUnstarIcon
+        url={favorite}
+        selected={active}
+        addedToFavorites={addedToFavorites}
+        testId='favorite-entry-star'
       />
-    </Tooltip>
+    </FlexRow>
   )
 })
 
@@ -596,7 +533,7 @@ export const AddPageContextMenu = React.memo(
     }
 
     return ReactDOM.createPortal(
-      <MomentumContextMenu
+      <ContextMenu
         id={contextMenuInstance}
         key='add-page-context-menu'
         items={pageTemplates.map((t) => ({

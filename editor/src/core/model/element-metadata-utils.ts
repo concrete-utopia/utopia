@@ -1,5 +1,5 @@
 import * as OPI from 'object-path-immutable'
-import type { FlexLength, Sides } from 'utopia-api/core'
+import type { Emphasis, FlexLength, Icon, Sides } from 'utopia-api/core'
 import { sides } from 'utopia-api/core'
 import { getReorderDirection } from '../../components/canvas/controls/select-mode/yoga-utils'
 import { getImageSize, scaleImageDimensions } from '../../components/images'
@@ -123,7 +123,7 @@ import {
   isGivenUtopiaElementFromMetadata,
   type FilePathMappings,
 } from './project-file-utils'
-import { fastForEach } from '../shared/utils'
+import { assertNever, fastForEach } from '../shared/utils'
 import { mapValues, objectValues, omit } from '../shared/object-utils'
 import { UTOPIA_LABEL_KEY } from './utopia-constants'
 import type {
@@ -139,6 +139,7 @@ import type { ProjectContentTreeRoot } from '../../components/assets'
 import { memoize } from '../shared/memoize'
 import type { ElementPathTree, ElementPathTrees } from '../shared/element-path-tree'
 import { buildTree, getSubTree, getCanvasRoots, elementPathTree } from '../shared/element-path-tree'
+import type { PropertyControlsInfo } from '../../components/custom-code/code-file'
 import { findUnderlyingTargetComponentImplementationFromImportInfo } from '../../components/custom-code/code-file'
 import type {
   Direction,
@@ -166,8 +167,9 @@ import {
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { treatElementAsGroupLikeFromMetadata } from '../../components/canvas/canvas-strategies/strategies/group-helpers'
 import type { RemixRoutingTable } from '../../components/editor/store/remix-derived-data'
-import { exists } from '../shared/optics/optic-utilities'
+import { exists, toFirst } from '../shared/optics/optic-utilities'
 import { eitherRight, fromField, fromTypeGuard, notNull } from '../shared/optics/optic-creators'
+import { getComponentDescriptorForTarget } from '../property-controls/property-controls-utils'
 
 const ObjectPathImmutable: any = OPI
 
@@ -186,13 +188,19 @@ export const getChildrenOfCollapsedViews = (
 
 // eslint-disable-next-line object-shorthand
 export const MetadataUtils = {
-  isElementGenerated(target: ElementPath): boolean {
+  isElementDirectlyGenerated(target: ElementPath): boolean {
+    const staticTarget = EP.dynamicPathToStaticPath(target)
+    const parentPath = EP.parentPath(target)
+    const parentStaticPath = EP.dynamicPathToStaticPath(parentPath)
+    return EP.pathsEqual(parentPath, parentStaticPath) && !EP.pathsEqual(target, staticTarget)
+  },
+  isElementOrAncestorGenerated(target: ElementPath): boolean {
     const staticTarget = EP.dynamicPathToStaticPath(target)
     return !EP.pathsEqual(target, staticTarget)
   },
   findElementByElementPath(
     elementMap: ElementInstanceMetadataMap,
-    path: ElementPath | null,
+    path: ElementPath | null | undefined,
   ): ElementInstanceMetadata | null {
     if (path == null) {
       return null
@@ -230,6 +238,9 @@ export const MetadataUtils = {
   },
   isProbablyRemixLinkFromMetadata(element: ElementInstanceMetadata | null): boolean {
     return MetadataUtils.isImportedComponentFromMetadata(element, '@remix-run/react', 'Link')
+  },
+  isReactComponentFromMetadata(element: ElementInstanceMetadata | null): boolean {
+    return MetadataUtils.isImportedComponentFromMetadata(element, 'react', null)
   },
   isImportedComponent(
     jsxMetadata: ElementInstanceMetadataMap,
@@ -915,6 +926,50 @@ export const MetadataUtils = {
   isSpan(instance: ElementInstanceMetadata): boolean {
     return this.isElementOfType(instance, 'span')
   },
+  isHTML(instance: ElementInstanceMetadata): boolean {
+    return this.isElementOfType(instance, 'html')
+  },
+  isBody(instance: ElementInstanceMetadata): boolean {
+    return this.isElementOfType(instance, 'body')
+  },
+  isHead(instance: ElementInstanceMetadata): boolean {
+    return this.isElementOfType(instance, 'head')
+  },
+  isHeading(instance: ElementInstanceMetadata): boolean {
+    return (
+      this.isElementOfType(instance, 'h1') ||
+      this.isElementOfType(instance, 'h2') ||
+      this.isElementOfType(instance, 'h3') ||
+      this.isElementOfType(instance, 'h4') ||
+      this.isElementOfType(instance, 'h5') ||
+      this.isElementOfType(instance, 'h6')
+    )
+  },
+  isInput(instance: ElementInstanceMetadata): boolean {
+    return this.isElementOfType(instance, 'input')
+  },
+  isAnchorLink(instance: ElementInstanceMetadata): boolean {
+    return this.isElementOfType(instance, 'a')
+  },
+  isParagraph(instance: ElementInstanceMetadata): boolean {
+    return this.isElementOfType(instance, 'p')
+  },
+  isForm(instance: ElementInstanceMetadata): boolean {
+    return this.isElementOfType(instance, 'form')
+  },
+  isReactSuspense(instance: ElementInstanceMetadata | null): boolean {
+    return MetadataUtils.isImportedComponentFromMetadata(instance, 'react', 'Suspense')
+  },
+  isRemixAwait(instance: ElementInstanceMetadata | null): boolean {
+    return MetadataUtils.isImportedComponentFromMetadata(instance, '@remix-run/react', 'Await')
+  },
+  isRemixScrollRestoration(instance: ElementInstanceMetadata | null): boolean {
+    return MetadataUtils.isImportedComponentFromMetadata(
+      instance,
+      '@remix-run/react',
+      'ScrollRestoration',
+    )
+  },
   targetIsScene(metadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
     const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
     return elementMetadata != null && isSceneFromMetadata(elementMetadata)
@@ -934,10 +989,16 @@ export const MetadataUtils = {
     path: ElementPath,
     metadata: ElementInstanceMetadataMap,
     pathTree: ElementPathTrees,
+    propertyControlsInfo: PropertyControlsInfo,
   ): boolean {
     return (
-      this.targetElementSupportsChildrenAlsoText(projectContents, path, metadata, pathTree) ===
-      'supportsChildren'
+      this.targetElementSupportsChildrenAlsoText(
+        projectContents,
+        path,
+        metadata,
+        pathTree,
+        propertyControlsInfo,
+      ) === 'supportsChildren'
     )
   },
   targetElementSupportsChildrenAlsoText(
@@ -945,6 +1006,7 @@ export const MetadataUtils = {
     path: ElementPath,
     metadata: ElementInstanceMetadataMap,
     pathTree: ElementPathTrees,
+    propertyControlsInfo: PropertyControlsInfo,
   ): ElementSupportsChildren {
     const instance = MetadataUtils.findElementByElementPath(metadata, path)
     if (instance == null) {
@@ -962,6 +1024,8 @@ export const MetadataUtils = {
           path,
           metadata,
           pathTree,
+          projectContents,
+          propertyControlsInfo,
         )
         if (elementResult != null) {
           return elementResult
@@ -986,12 +1050,14 @@ export const MetadataUtils = {
     metadata: ElementInstanceMetadataMap,
     target: ElementPath | null,
     pathTree: ElementPathTrees,
+    propertyControlsInfo: PropertyControlsInfo,
   ): boolean {
     const targetSupportsChildrenValue = this.targetSupportsChildrenAlsoText(
       projectContents,
       metadata,
       target,
       pathTree,
+      propertyControlsInfo,
     )
     return (
       targetSupportsChildrenValue !== 'doesNotSupportChildren' &&
@@ -1003,33 +1069,47 @@ export const MetadataUtils = {
     metadata: ElementInstanceMetadataMap,
     target: ElementPath | null,
     pathTree: ElementPathTrees,
+    propertyControlsInfo: PropertyControlsInfo,
   ): ElementSupportsChildren {
     if (target == null) {
       // Assumed to be reparenting to the canvas root.
       return 'supportsChildren'
-    } else {
-      const instance = MetadataUtils.findElementByElementPath(metadata, target)
-      if (instance == null) {
-        return withUnderlyingTarget(
-          target,
-          projectContents,
-          'doesNotSupportChildren',
-          (_, element) => {
-            return (
-              elementChildSupportsChildrenAlsoText(element, target, metadata, pathTree) ??
-              'doesNotSupportChildren'
-            )
-          },
-        )
-      } else {
-        return MetadataUtils.targetElementSupportsChildrenAlsoText(
-          projectContents,
-          target,
-          metadata,
-          pathTree,
-        )
-      }
     }
+    const componentDescriptor = getComponentDescriptorForTarget(
+      target,
+      propertyControlsInfo,
+      projectContents,
+    )
+    if (componentDescriptor != null && !componentDescriptor.supportsChildren) {
+      return 'doesNotSupportChildren'
+    }
+    const instance = MetadataUtils.findElementByElementPath(metadata, target)
+    if (instance == null) {
+      return withUnderlyingTarget(
+        target,
+        projectContents,
+        'doesNotSupportChildren',
+        (_, element) => {
+          return (
+            elementChildSupportsChildrenAlsoText(
+              element,
+              target,
+              metadata,
+              pathTree,
+              projectContents,
+              propertyControlsInfo,
+            ) ?? 'doesNotSupportChildren'
+          )
+        },
+      )
+    }
+    return MetadataUtils.targetElementSupportsChildrenAlsoText(
+      projectContents,
+      target,
+      metadata,
+      pathTree,
+      propertyControlsInfo,
+    )
   },
   targetUsesProperty(
     projectContents: ProjectContentTreeRoot,
@@ -1154,10 +1234,7 @@ export const MetadataUtils = {
       )
       .some((e) => e !== 'br')
 
-    return (
-      !MetadataUtils.isElementGenerated(target) &&
-      (children.length === 0 || !hasNonEditableChildren)
-    )
+    return children.length === 0 || !hasNonEditableChildren
   },
   targetTextEditableAndHasText(
     metadata: ElementInstanceMetadataMap,
@@ -1325,32 +1402,37 @@ export const MetadataUtils = {
           if (isJSXElement(r)) {
             return VoidElementsToFilter.includes(r.name.baseVariable)
           }
-          if (isJSIdentifier(r) || isJSPropertyAccess(r) || isJSElementAccess(r)) {
-            return true
-          }
           if (
-            isJSExpressionOtherJavaScript(r) &&
-            !MetadataUtils.isElementPathConditionalFromMetadata(metadata, EP.parentPath(path))
+            // when Data Entries are enabled, we want to show all expressions in the navigator
+            !isFeatureEnabled('Condensed Navigator Entries')
           ) {
-            const children = MetadataUtils.getChildrenOrdered(metadata, pathTree, path)
-            // if the expression has children we have to show it in the navigator
-            if (children.length > 0) {
-              return false
-            }
-            const parentElement = MetadataUtils.findElementByElementPath(
-              metadata,
-              EP.parentPath(path),
-            )
-            // When the expression doesn't have children and the parent has text content, that
-            // means this is a text expression, which should not appear in the navigator.
-            // The generated text content itself will be the label of the parent.
-            if (parentElement?.textContent != null && parentElement?.textContent.length > 0) {
+            if (isJSIdentifier(r) || isJSPropertyAccess(r) || isJSElementAccess(r)) {
               return true
             }
-            // When the expression doesn't have children and the parent has no text content, then
-            // the expression does not generate neither elements nor text.
-            // In this case the expression doesn't generate anything, but we still want to show it in
-            // the navigator, mostly to make sure to map expressions with zero elements are visible.
+            if (
+              isJSExpressionOtherJavaScript(r) &&
+              !MetadataUtils.isElementPathConditionalFromMetadata(metadata, EP.parentPath(path))
+            ) {
+              const children = MetadataUtils.getChildrenOrdered(metadata, pathTree, path)
+              // if the expression has children we have to show it in the navigator
+              if (children.length > 0) {
+                return false
+              }
+              const parentElement = MetadataUtils.findElementByElementPath(
+                metadata,
+                EP.parentPath(path),
+              )
+              // When the expression doesn't have children and the parent has text content, that
+              // means this is a text expression, which should not appear in the navigator.
+              // The generated text content itself will be the label of the parent.
+              if (parentElement?.textContent != null && parentElement?.textContent.length > 0) {
+                return true
+              }
+              // When the expression doesn't have children and the parent has no text content, then
+              // the expression does not generate neither elements nor text.
+              // In this case the expression doesn't generate anything, but we still want to show it in
+              // the navigator, mostly to make sure to map expressions with zero elements are visible.
+            }
           }
           return false
         },
@@ -1532,20 +1614,25 @@ export const MetadataUtils = {
                 pathTree,
                 element.elementPath,
               ).length
-              if (numberOfChildrenElements === 0) {
-                if (PossibleTextElements.includes(lastNamePart)) {
-                  if (element.textContent != null && element.textContent !== '') {
-                    return element.textContent
-                  }
-
-                  // fall back to the old way of showing text content – this can probably be deleted now
-                  const firstChild = jsxElement.children[0]
-                  if (firstChild != null) {
-                    if (isJSXTextBlock(firstChild)) {
-                      return firstChild.text
+              if (
+                // When Data Entries are enabled, we don't want to rename the parent elements based on their text / expression content
+                !isFeatureEnabled('Condensed Navigator Entries')
+              ) {
+                if (numberOfChildrenElements === 0) {
+                  if (PossibleTextElements.includes(lastNamePart)) {
+                    if (element.textContent != null && element.textContent !== '') {
+                      return element.textContent
                     }
-                    if (isJSExpressionOtherJavaScript(firstChild)) {
-                      return `{${firstChild.originalJavascript}}`
+
+                    // fall back to the old way of showing text content – this can probably be deleted now
+                    const firstChild = jsxElement.children[0]
+                    if (firstChild != null) {
+                      if (isJSXTextBlock(firstChild)) {
+                        return firstChild.text
+                      }
+                      if (isJSExpressionOtherJavaScript(firstChild)) {
+                        return `{${firstChild.originalJavascript}}`
+                      }
                     }
                   }
                 }
@@ -1585,7 +1672,7 @@ export const MetadataUtils = {
             case 'JSX_TEXT_BLOCK':
               return '(text)'
             case 'JSX_MAP_EXPRESSION':
-              return 'Map'
+              return 'List'
             case 'ATTRIBUTE_OTHER_JAVASCRIPT':
               return 'Code'
             case 'JSX_FRAGMENT':
@@ -1732,6 +1819,7 @@ export const MetadataUtils = {
           isEmotionOrStyledComponent: spyElem.isEmotionOrStyledComponent,
           label: spyElem.label,
           importInfo: spyElem.importInfo,
+          assignedToProp: spyElem.assignedToProp,
         }
         workingElements[EP.toString(domElem.elementPath)] = elem
       }
@@ -1924,10 +2012,18 @@ export const MetadataUtils = {
     metadata: ElementInstanceMetadataMap,
     pathTrees: ElementPathTrees,
     path: ElementPath,
+    propertyControlsInfo: PropertyControlsInfo,
+    projectContents: ProjectContentTreeRoot,
   ): boolean {
+    const componentDescriptor = getComponentDescriptorForTarget(
+      path,
+      propertyControlsInfo,
+      projectContents,
+    )
     return (
-      EP.isStoryboardDescendant(path) &&
-      MetadataUtils.parentIsSceneWithOneChild(metadata, pathTrees, path)
+      componentDescriptor?.focus === 'always' ||
+      (EP.isStoryboardDescendant(path) &&
+        MetadataUtils.parentIsSceneWithOneChild(metadata, pathTrees, path))
     )
   },
   isAutomaticOrManuallyFocusableComponent(
@@ -1935,10 +2031,19 @@ export const MetadataUtils = {
     metadata: ElementInstanceMetadataMap,
     autoFocusedPaths: Array<ElementPath>,
     filePathMappings: FilePathMappings,
+    propertyControlsInfo: PropertyControlsInfo,
+    projectContents: ProjectContentTreeRoot,
   ): boolean {
     return (
       EP.containsPath(path, autoFocusedPaths) ||
-      MetadataUtils.isManuallyFocusableComponent(path, metadata, autoFocusedPaths, filePathMappings)
+      MetadataUtils.isManuallyFocusableComponent(
+        path,
+        metadata,
+        autoFocusedPaths,
+        filePathMappings,
+        propertyControlsInfo,
+        projectContents,
+      )
     )
   },
   isManuallyFocusableComponent(
@@ -1946,7 +2051,17 @@ export const MetadataUtils = {
     metadata: ElementInstanceMetadataMap,
     autoFocusedPaths: Array<ElementPath>,
     filePathMappings: FilePathMappings,
+    propertyControlsInfo: PropertyControlsInfo,
+    projectContents: ProjectContentTreeRoot,
   ): boolean {
+    const componentDescriptor = getComponentDescriptorForTarget(
+      path,
+      propertyControlsInfo,
+      projectContents,
+    )
+    if (componentDescriptor != null && componentDescriptor.focus !== 'default') {
+      return false
+    }
     const element = MetadataUtils.findElementByElementPath(metadata, path)
     const isAnimatedComponent = isAnimatedElement(element)
     if (isAnimatedComponent) {
@@ -1970,6 +2085,75 @@ export const MetadataUtils = {
     } else {
       return false
     }
+  },
+  getEmphasisOfComponent(
+    path: ElementPath,
+    metadata: ElementInstanceMetadataMap,
+    propertyControlsInfo: PropertyControlsInfo,
+    projectContents: ProjectContentTreeRoot,
+  ): Emphasis {
+    // Look up the emphasis of the component from the property controls.
+    const componentDescriptor = getComponentDescriptorForTarget(
+      path,
+      propertyControlsInfo,
+      projectContents,
+    )
+    if (componentDescriptor != null) {
+      return componentDescriptor.emphasis
+    }
+
+    const element = MetadataUtils.findElementByElementPath(metadata, path)
+    // Element with flex or grid get high emphasis.
+    if (
+      MetadataUtils.isFlexLayoutedContainer(element) ||
+      MetadataUtils.isGridLayoutedContainer(element)
+    ) {
+      return 'emphasized'
+    }
+
+    // Divs without styling that contain one or zero elements get low emphasis.
+    if (element != null && MetadataUtils.isDiv(element)) {
+      const children = MetadataUtils.getChildrenUnordered(metadata, path)
+      if (children.length <= 1) {
+        const attributes = toFirst(
+          fromField<ElementInstanceMetadata, 'element'>('element')
+            .compose(eitherRight())
+            .compose(fromTypeGuard(isJSXElement))
+            .compose(fromField('props')),
+          element,
+        )
+        if (isRight(attributes)) {
+          const styleAttributes = getJSXAttribute(attributes.value, 'style')
+          if (styleAttributes == null) {
+            return 'subdued'
+          }
+        }
+      }
+    }
+
+    // Suspense and Await get low emphasis.
+    if (
+      MetadataUtils.isReactSuspense(element) ||
+      MetadataUtils.isRemixAwait(element) ||
+      MetadataUtils.isRemixScrollRestoration(element)
+    ) {
+      return 'subdued'
+    }
+
+    // Default to regular.
+    return 'regular'
+  },
+  getIconOfComponent(
+    path: ElementPath,
+    propertyControlsInfo: PropertyControlsInfo,
+    projectContents: ProjectContentTreeRoot,
+  ): Icon | null {
+    const componentDescriptor = getComponentDescriptorForTarget(
+      path,
+      propertyControlsInfo,
+      projectContents,
+    )
+    return componentDescriptor?.icon ?? null
   },
   isEmotionOrStyledComponent(path: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
     const element = MetadataUtils.findElementByElementPath(metadata, path)
@@ -2133,6 +2317,15 @@ export const MetadataUtils = {
   isJSXMapExpression(target: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
     const element = MetadataUtils.findElementByElementPath(metadata, target)
     return MetadataUtils.isJSXMapExpressionFromMetadata(element)
+  },
+  isJSXElementFromMetadata(element: ElementInstanceMetadata | null): boolean {
+    return (
+      element?.element != null && isRight(element.element) && isJSXElement(element.element.value)
+    )
+  },
+  isJSXElement(target: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
+    const element = MetadataUtils.findElementByElementPath(metadata, target)
+    return MetadataUtils.isJSXElementFromMetadata(element)
   },
   resolveReparentTargetParentToPath(
     metadata: ElementInstanceMetadataMap,
@@ -2304,6 +2497,33 @@ export const MetadataUtils = {
       )
     }
     return element.element.value
+  },
+  isElementDataReference(element: JSXElementChild | null): boolean {
+    if (element == null) {
+      return false
+    }
+    switch (element.type) {
+      case 'ATTRIBUTE_FUNCTION_CALL':
+      case 'ATTRIBUTE_NESTED_ARRAY': // TODO: reconsider nested array and nested object
+      case 'ATTRIBUTE_NESTED_OBJECT':
+      case 'JSX_ELEMENT':
+      case 'JSX_FRAGMENT':
+      case 'JSX_MAP_EXPRESSION':
+      case 'JSX_CONDITIONAL_EXPRESSION':
+        return false
+      case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
+        // Attribute other javascript is only true if it does not have children entries in the metadata
+        return Object.keys(element.elementsWithin).length === 0
+      }
+      case 'ATTRIBUTE_VALUE':
+      case 'JSX_TEXT_BLOCK':
+      case 'JS_IDENTIFIER':
+      case 'JS_ELEMENT_ACCESS':
+      case 'JS_PROPERTY_ACCESS':
+        return true
+      default:
+        assertNever(element)
+    }
   },
 }
 
@@ -2833,6 +3053,7 @@ export function createFakeMetadataForElement(
     null,
     null,
     'not-a-conditional',
+    null,
     null,
     null,
   )

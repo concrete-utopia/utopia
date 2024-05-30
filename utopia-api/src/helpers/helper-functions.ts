@@ -21,15 +21,6 @@ export type ComponentExample =
   // variants
   | ComponentInsertOption
 
-export type PlaceholderSpec =
-  // a placeholder that inserts a span that wraps `text`. This will be
-  // editable with the text editor
-  | { text: string }
-  // inserts a `div` with the specified width and height
-  | { width: number; height: number }
-  // inserts a spacer that completely fills the available space
-  | 'fill'
-
 export type PreferredContents =
   | 'text'
   | {
@@ -44,9 +35,6 @@ export interface ChildrenSpec {
   // `'text'`: means only JSX text is accepted
   // `RendersComponent`: detailed spec
   preferredContents?: PreferredContents | PreferredContents[]
-
-  // specifies the placeholder to use
-  placeholder?: PlaceholderSpec
 }
 
 export type Children = 'supported' | 'not-supported' | ChildrenSpec
@@ -57,12 +45,54 @@ export type Focus = (typeof FocusOptions)[number]
 export const StylingOptions = ['layout', 'layout-system', 'visual', 'typography'] as const
 export type Styling = (typeof StylingOptions)[number]
 
-export type InspectorSpec = 'all' | Styling[]
+export const DisplayOptions = ['expanded', 'collapsed'] as const
+export type Display = (typeof DisplayOptions)[number]
+
+export interface SectionSpec {
+  display?: Display
+  sections?: Styling[]
+}
+
+export type InspectorSpec = 'hidden' | SectionSpec
 
 export const EmphasisOptions = ['subdued', 'regular', 'emphasized'] as const
 export type Emphasis = (typeof EmphasisOptions)[number]
 
-export const IconOptions = ['column', 'row', 'regular'] as const // and others
+export const IconOptions = [
+  'body',
+  'clickable',
+  'code',
+  'column',
+  'component',
+  'conditional',
+  'dashedframe',
+  'data',
+  'div',
+  'folder',
+  'form',
+  'grid',
+  'headline',
+  'home',
+  'image',
+  'video',
+  'input',
+  'irregular-layout',
+  'layout',
+  'link',
+  'lists',
+  'page',
+  'paragraph',
+  'row',
+  'section',
+  'scene',
+  'sfx',
+  'solidframe',
+  'star',
+  'starfilled',
+  'text',
+  'title',
+  'xframe',
+] as const
 export type Icon = (typeof IconOptions)[number]
 
 export interface ComponentToRegister {
@@ -73,6 +103,7 @@ export interface ComponentToRegister {
   inspector?: InspectorSpec
   emphasis?: Emphasis
   icon?: Icon
+  label?: string
   variants?: ComponentExample | Array<ComponentExample>
 }
 

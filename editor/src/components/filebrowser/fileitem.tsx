@@ -40,7 +40,6 @@ import type { AddingFile } from './filepath-utils'
 import { applyAddingFile } from './filepath-utils'
 import CanvasActions from '../canvas/canvas-actions'
 import { imagePathURL } from '../../common/server'
-import { useEditorState } from '../editor/store/store-hook'
 import { EditorModes } from '../editor/editor-modes'
 import type { DraggedImageProperties } from '../editor/store/editor-state'
 import { draggingFromSidebar, notDragging } from '../editor/store/editor-state'
@@ -404,6 +403,7 @@ class FileBrowserItemInner extends React.PureComponent<
             <StringInput
               testId=''
               value={this.state.filename}
+              pasteHandler={true}
               onChange={this.onChangeFilename}
               onKeyDown={this.onKeyDownFilename}
               onFocus={this.onFocusFilename}
@@ -867,7 +867,8 @@ class FileBrowserItemInner extends React.PureComponent<
       if (
         this.props.conflict != null &&
         this.props.githubRepo != null &&
-        this.props.projectID != null
+        this.props.projectID != null &&
+        this.props.githubUserDetails != null
       ) {
         items.push(
           ...getConflictMenuItems(

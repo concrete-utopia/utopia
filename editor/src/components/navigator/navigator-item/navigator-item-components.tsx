@@ -17,15 +17,28 @@ import {
   varSafeNavigatorEntryToKey,
 } from '../../editor/store/editor-state'
 import type { SelectionLocked } from '../../canvas/canvas-types'
-import { getJSXElementNameAsString } from '../../../core/shared/element-template'
+import type { InsertionTarget } from './component-picker-context-menu'
+import {
+  conditionalTarget,
+  renderPropTarget,
+  useCreateCallbackToShowComponentPicker,
+} from './component-picker-context-menu'
+import type { ConditionalCase } from '../../../core/model/conditionals'
+import { useConditionalCaseCorrespondingToBranchPath } from '../../../core/model/conditionals'
+import {
+  getJSXElementNameAsString,
+  isIntrinsicElement,
+  isIntrinsicHTMLElement,
+} from '../../../core/shared/element-template'
 import { getRegisteredComponent } from '../../../core/property-controls/property-controls-utils'
+import { intrinsicHTMLElementNamesThatSupportChildren } from '../../../core/shared/dom-utils'
 
 export const NavigatorHintCircleDiameter = 8
 
 const outletAwareBackgroundColor = (
   colorTheme: ReturnType<typeof useColorTheme>,
   isOutlet: boolean,
-) => (isOutlet ? colorTheme.aqua.value : colorTheme.navigatorResizeHintBorder.value)
+) => colorTheme.navigatorResizeHintBorder.value
 
 interface NavigatorHintProps {
   testId: string
@@ -178,8 +191,8 @@ export const VisibilityIndicator: React.FunctionComponent<
     <Button
       onClick={props.onClick}
       style={{
-        height: 18,
-        width: 18,
+        height: 12,
+        width: 12,
         opacity: props.shouldShow ? 1 : 0,
       }}
     >
@@ -203,9 +216,21 @@ const useSupportsChildren = (target: ElementPath): boolean => {
     Substores.restOfEditor,
     (store) => {
       const targetJSXElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(targetElement)
+      if (targetJSXElement == null) {
+        // this should not happen, erring on the side of true
+        return true
+      }
+      if (isIntrinsicHTMLElement(targetJSXElement.name)) {
+        // when it is an intrinsic html element, we check if it supports children from our list
+        return intrinsicHTMLElementNamesThatSupportChildren.includes(
+          targetJSXElement.name.baseVariable,
+        )
+      }
+
       const elementImportInfo = targetElement?.importInfo
-      if (elementImportInfo == null || targetJSXElement == null) {
-        return false
+      if (elementImportInfo == null) {
+        // erring on the side of true
+        return true
       }
 
       const targetName = getJSXElementNameAsString(targetJSXElement.name)
@@ -214,10 +239,12 @@ const useSupportsChildren = (target: ElementPath): boolean => {
         elementImportInfo.filePath,
         store.editor.propertyControlsInfo,
       )
+      if (registeredComponent == null) {
+        // when there is no component annotation default is supporting children
+        return true
+      }
 
-      // FIXME use the below when we are no longer restricted to preferredChildComponents only
-      // return registeredComponent?.supportsChildren ?? false
-      return (registeredComponent?.preferredChildComponents?.length ?? 0) > 0
+      return registeredComponent.supportsChildren
     },
     'useSupportsChildren supportsChildren',
   )
@@ -226,7 +253,6 @@ const useSupportsChildren = (target: ElementPath): boolean => {
 interface AddChildButtonProps {
   target: ElementPath
   iconColor: IcnProps['color']
-  onClick: React.MouseEventHandler<HTMLDivElement>
 }
 
 export function addChildButtonTestId(target: ElementPath): string {
@@ -234,23 +260,87 @@ export function addChildButtonTestId(target: ElementPath): string {
 }
 
 const AddChildButton = React.memo((props: AddChildButtonProps) => {
-  const color = props.iconColor
-  const shouldShow = useSupportsChildren(props.target)
+  const { target, iconColor } = props
+  const supportsChildren = useSupportsChildren(target)
+  const onClick = useCreateCallbackToShowComponentPicker()(
+    [target],
+    EditorActions.insertAsChildTarget(),
+  )
+
+  if (!supportsChildren) {
+    return null
+  }
 
   return (
     <Button
-      onClick={props.onClick}
+      onClick={onClick}
       style={{
-        height: 18,
-        width: 18,
-        opacity: shouldShow ? 1 : 0,
+        height: 12,
+        width: 12,
       }}
-      data-testid={addChildButtonTestId(props.target)}
+      data-testid={addChildButtonTestId(target)}
     >
       <Icn
         category='semantic'
         type='plus-in-white-translucent-circle'
-        color={color}
+        color={iconColor}
+        width={12}
+        height={12}
+      />
+    </Button>
+  )
+})
+
+export const ReplaceElementButtonTestId = (path: ElementPath, prop: string | null) =>
+  `replace-element-button-${EP.toString(path)}${prop == null ? '' : `-${prop}`}`
+
+interface ReplaceElementButtonProps {
+  target: ElementPath
+  iconColor: IcnProps['color']
+  prop: string | null
+  conditionalCase: ConditionalCase | null
+}
+
+const ReplaceElementButton = React.memo((props: ReplaceElementButtonProps) => {
+  const { target, prop, iconColor, conditionalCase } = props
+
+  const { target: realTarget, insertionTarget } = ((): {
+    target: ElementPath
+    insertionTarget: InsertionTarget
+  } => {
+    if (prop != null) {
+      return {
+        target: EP.parentPath(target),
+        insertionTarget: renderPropTarget(prop),
+      }
+    }
+    if (conditionalCase != null) {
+      return {
+        target: EP.parentPath(target),
+        insertionTarget: conditionalTarget(conditionalCase),
+      }
+    }
+    return {
+      target: target,
+      insertionTarget: EditorActions.replaceTarget,
+    }
+  })()
+
+  const onClick = useCreateCallbackToShowComponentPicker()([realTarget], insertionTarget)
+
+  return (
+    <Button
+      data-testid={ReplaceElementButtonTestId(target, prop)}
+      onClick={onClick}
+      style={{
+        height: 12,
+        width: 12,
+      }}
+    >
+      <Icn
+        category='navigator-element'
+        type='convert-action'
+        color={iconColor}
         width={12}
         height={12}
       />
@@ -299,7 +389,6 @@ export const SelectionLockedIndicator: React.FunctionComponent<
         height: 12,
         width: 12,
         display: shouldShow ? 'block' : 'none',
-        paddingRight: 1,
       }}
     >
       {when(
@@ -357,7 +446,6 @@ interface NavigatorItemActionSheetProps {
   iconColor: IcnProps['color']
   background?: string | any
   dispatch: EditorDispatch
-  showInsertChildPicker: React.MouseEventHandler<HTMLDivElement>
 }
 
 export const NavigatorItemActionSheet: React.FunctionComponent<
@@ -422,13 +510,17 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
 
   const isConditionalClauseTitle = isConditionalClauseNavigatorEntry(props.navigatorEntry)
 
+  const conditionalCase = useConditionalCaseCorrespondingToBranchPath(
+    props.navigatorEntry.elementPath,
+  )
+
   return (
     <FlexRow
       style={{
-        padding: '4px',
+        padding: '4px 5px 4px 4px',
         borderRadius: '0 5px 5px 0',
         position: 'fixed',
-        gap: 3,
+        gap: 4,
         right: 0,
         background:
           props.highlighted ||
@@ -445,14 +537,17 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
         selected={props.selected}
         instanceOriginalComponentName={props.instanceOriginalComponentName}
       />
-      {isRegularNavigatorEntry(navigatorEntry) &&
-      !props.isSlot &&
+      {(navigatorEntry.type === 'REGULAR' || navigatorEntry.type === 'RENDER_PROP_VALUE') &&
       (props.highlighted || props.selected) ? (
-        <AddChildButton
-          target={navigatorEntry.elementPath}
-          iconColor={props.iconColor}
-          onClick={props.showInsertChildPicker}
-        />
+        <>
+          <AddChildButton target={navigatorEntry.elementPath} iconColor={props.iconColor} />
+          <ReplaceElementButton
+            target={navigatorEntry.elementPath}
+            iconColor={props.iconColor}
+            prop={navigatorEntry.type === 'RENDER_PROP_VALUE' ? navigatorEntry.prop : null}
+            conditionalCase={conditionalCase}
+          />
+        </>
       ) : null}
       <SelectionLockedIndicator
         key={`selection-locked-indicator-${varSafeNavigatorEntryToKey(navigatorEntry)}`}

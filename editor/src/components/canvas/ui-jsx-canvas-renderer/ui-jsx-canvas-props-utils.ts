@@ -3,6 +3,7 @@ import type {
   Param,
   BoundParam,
   JSExpressionMapOrOtherJavascript,
+  JSExpression,
 } from '../../../core/shared/element-template'
 import {
   isRegularParam,
@@ -25,8 +26,9 @@ export function applyPropsParamToPassedProps(
   let output: MapLike<unknown> = {}
 
   function getParamValue(
+    paramName: string,
     value: unknown,
-    defaultExpression: JSExpressionMapOrOtherJavascript | null,
+    defaultExpression: JSExpression | null,
   ): unknown {
     if (value === undefined && defaultExpression != null) {
       return jsxAttributeToValue(
@@ -36,6 +38,7 @@ export function applyPropsParamToPassedProps(
         renderContext,
         uid,
         codeError,
+        paramName,
       )
     } else {
       return value
@@ -45,7 +48,7 @@ export function applyPropsParamToPassedProps(
   function applyBoundParamToOutput(value: unknown, boundParam: BoundParam): void {
     if (isRegularParam(boundParam)) {
       const { paramName } = boundParam
-      output[paramName] = getParamValue(value, boundParam.defaultExpression)
+      output[paramName] = getParamValue(paramName, value, boundParam.defaultExpression)
     } else if (isDestructuredObject(boundParam)) {
       if (typeof value === 'object' && !Array.isArray(value) && value !== null) {
         const valueAsRecord: Record<string, unknown> = { ...value }
@@ -62,6 +65,7 @@ export function applyPropsParamToPassedProps(
                 remainingValues = {}
               } else {
                 output[paramName] = getParamValue(
+                  paramName,
                   valueAsRecord[paramName],
                   innerBoundParam.defaultExpression,
                 )
@@ -95,6 +99,7 @@ export function applyPropsParamToPassedProps(
                 remainingValues = []
               } else {
                 output[paramName] = getParamValue(
+                  paramName,
                   remainingValues.shift(),
                   innerBoundParam.defaultExpression,
                 )

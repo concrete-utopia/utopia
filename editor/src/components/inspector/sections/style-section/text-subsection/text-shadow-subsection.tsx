@@ -21,7 +21,11 @@ import {
   fallbackOnEmptyInputValueToCSSDefaultEmptyValue,
 } from '../../../common/css-utils'
 import { useInspectorStyleInfo, useIsSubSectionVisible } from '../../../common/property-path-hooks'
-import { stopPropagation, useGetSubsectionHeaderStyle } from '../../../common/inspector-utils'
+import {
+  RemovePropertyButton,
+  stopPropagation,
+  useGetSubsectionHeaderStyle,
+} from '../../../common/inspector-utils'
 import { FakeUnknownArrayItem } from '../../../controls/unknown-array-item'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { addOnUnsetValues } from '../../../common/context-menu-items'
@@ -33,6 +37,7 @@ import {
   InspectorSubsectionHeader,
   FlexRow,
   Icons,
+  Icn,
 } from '../../../../../uuiui'
 
 function getIndexedToggleTextShadowEnabled(index: number) {
@@ -301,21 +306,16 @@ export const TextShadowSubsection = React.memo(() => {
             <span>Text Shadow</span>
           </FlexRow>
           {propertyStatus.overwritable ? (
-            <>
-              <SquareButton
-                highlight
-                onMouseDown={onUnsetValues}
-                data-testid={'inspector-text-shadow-remove-all'}
-              >
-                <Icons.Cross color={propertyStatus.controlled ? 'primary' : 'secondary'} />
+            <FlexRow style={{ gap: 4 }}>
+              <RemovePropertyButton
+                testId='inspector-text-shadow-remove-all'
+                onUnsetValues={onUnsetValues}
+                propertySet={propertyStatus.set}
+              />
+              <SquareButton highlight onMouseDown={insertShadow} style={{ width: 12 }}>
+                <Icn category='semantic' type='plus' width={12} height={12} />
               </SquareButton>
-              <SquareButton highlight onMouseDown={insertShadow}>
-                <Icons.Plus
-                  style={{ paddingTop: 1 }}
-                  color={propertyStatus.controlled ? 'primary' : 'secondary'}
-                />
-              </SquareButton>
-            </>
+            </FlexRow>
           ) : null}
         </InspectorSubsectionHeader>
         <div

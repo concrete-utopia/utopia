@@ -260,6 +260,7 @@ export const SettingsPane = React.memo(() => {
               onChange={onChangeProjectName}
               onKeyDown={handleKeyPress}
               onBlur={handleBlurProjectName}
+              pasteHandler={true}
             />
           </UIGridRow>
           <UIGridRow padded variant='|--80px--|<--------1fr-------->'>
@@ -270,6 +271,7 @@ export const SettingsPane = React.memo(() => {
               onChange={onChangeProjectDescription}
               onKeyDown={handleKeyPress}
               onBlur={handleBlurProjectDescription}
+              pasteHandler={true}
             />
           </UIGridRow>
           <UIGridRow padded variant='|--80px--|<--------1fr-------->' style={{ marginBottom: 10 }}>
@@ -361,6 +363,7 @@ export const SettingsPane = React.memo(() => {
           <div style={{ fontWeight: 500 }}>Contents</div>
           <HeadlessStringInput
             placeholder='Project Contents JSON'
+            testId='project-contents-json-input'
             onSubmitValue={loadProjectContentJson}
             css={{
               color: colorTheme.fg1.value,

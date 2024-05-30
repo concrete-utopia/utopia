@@ -538,7 +538,6 @@ const TextEditor = React.memo((props: TextEditorProps) => {
       width: '100%',
       height: '100%',
       // text editor outline
-      boxShadow: `0px 0px 0px ${outlineWidth}px ${outlineColor}`,
       // Prevent double applying these properties:
       opacity: 1,
     },
@@ -564,7 +563,10 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     suppressContentEditableWarning: true,
   }
 
-  const filteredPassthroughProps = filterEventHandlerProps(passthroughProps)
+  const filteredPassthroughProps = addBoxShadowToProps(filterEventHandlerProps(passthroughProps), {
+    width: outlineWidth,
+    color: outlineColor,
+  })
 
   return React.createElement(
     component,
@@ -663,6 +665,19 @@ function filterEventHandlerProps(props: Record<string, any>) {
     ...filteredProps
   } = props
   return filteredProps
+}
+
+function addBoxShadowToProps(
+  props: Record<string, any>,
+  outline: { width: number; color: string },
+) {
+  return {
+    ...props,
+    style: {
+      ...(props.style ?? {}),
+      boxShadow: `0px 0px 0px ${outline.width}px ${outline.color}`,
+    },
+  }
 }
 
 function getSaveAction(

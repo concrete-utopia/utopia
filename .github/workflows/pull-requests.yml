@@ -253,7 +253,7 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           edit-mode: replace
           body: |
-            ## [Try me](https://${{ secrets.STAGING_SERVER }}/p/?branch_name=${{ steps.extract_branch.outputs.branch }})
+            ## [Try me](https://${{ secrets.STAGING_SERVER }}/p/?accessLevel=public&branch_name=${{ steps.extract_branch.outputs.branch }})
 
   performance-test:
     name: Run Performance Tests
@@ -475,6 +475,30 @@ jobs:
         with:
           path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location
+      - name: Setup minIO
+        run: |
+          docker run -d -p 9000:9000 --name minio \
+                     -e "MINIO_ROOT_USER=minioadmin" \
+                     -e "MINIO_ROOT_PASSWORD=minioadmin" \
+                     -v /tmp/data:/data \
+                     -v /tmp/config:/root/.minio \
+                     quay.io/minio/minio:RELEASE.2024-05-10T01-41-38Z \
+                     server /data
+      - name: Get minIO client
+        run: |
+          wget https://dl.min.io/client/mc/release/linux-amd64/mc
+          chmod +x mc
+          ./mc --version
+          sudo mv mc /usr/local/bin
+      - name: Wait for minIO host
+        run: |
+          until mc config host add minio-test http://localhost:9000 minioadmin minioadmin; do
+            sleep 2
+          done
+      - name: Create test minIO bucket
+        run: |
+          mc mb minio-test/utopia
+          echo "Created utopia bucket"
       - name: Test
         env:
           DATABASE_URL: postgres://postgres:password@localhost:54322/utopia-test?sslmode=disable
@@ -483,6 +507,10 @@ jobs:
           BACKEND_URL: ''
           REACT_APP_EDITOR_URL: ''
           LIVEBLOCKS_SECRET_KEY: 'secret'
+          AWS_S3_BUCKET: 'utopia'
+          AWS_ACCESS_KEY_ID: 'minioadmin'
+          AWS_SECRET_ACCESS_KEY: 'minioadmin'
+          AWS_REGION: 'minio'
         run: |
           cd utopia-remix && ./run-integration-tests-ci.sh
 
