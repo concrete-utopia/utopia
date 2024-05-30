@@ -31,6 +31,8 @@ import type {
   ObjectPath,
 } from './data-picker-utils'
 
+export const DataSelectorPopupBreadCrumbsTestId = 'data-selector-modal-top-bar'
+
 export interface DataSelectorModalProps {
   closePopup: () => void
   style: React.CSSProperties
@@ -119,7 +121,6 @@ export const DataSelectorModal = React.memo(
 
       const [navigatedToPath, setNavigatedToPath] = React.useState<ObjectPath>([])
 
-      // TODO invariant: currentValuePath should be a prefix of currentSelectedPath, we should enforce this
       const [selectedPath, setSelectedPath] = React.useState<ObjectPath | null>(
         startingSelectedValuePath,
       )
@@ -302,7 +303,10 @@ export const DataSelectorModal = React.memo(
                       padding: '0px 6px',
                     }}
                   >
-                    <FlexRow style={{ flexWrap: 'wrap', flexGrow: 1 }}>
+                    <FlexRow
+                      data-testid={DataSelectorPopupBreadCrumbsTestId}
+                      style={{ flexWrap: 'wrap', flexGrow: 1 }}
+                    >
                       {pathBreadcrumbs(pathInTopBarIncludingHover, processedVariablesInScope).map(
                         ({ segment, path }, idx) => (
                           <span key={path.toString()}>

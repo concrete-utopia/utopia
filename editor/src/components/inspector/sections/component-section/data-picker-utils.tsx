@@ -66,6 +66,13 @@ export type DataPickerCallback = (e: JSExpressionOtherJavaScript) => void
 export type ObjectPath = Array<string | number>
 
 export function jsxElementChildToValuePath(child: JSXElementChild): ObjectPath | null {
+  return jsxElementChildToValuePathInner(child, false)
+}
+
+function jsxElementChildToValuePathInner(
+  child: JSXElementChild,
+  insideExpression: boolean,
+): ObjectPath | null {
   switch (child.type) {
     case 'ATTRIBUTE_FUNCTION_CALL':
     case 'ATTRIBUTE_NESTED_ARRAY':
@@ -78,16 +85,16 @@ export function jsxElementChildToValuePath(child: JSXElementChild): ObjectPath |
     case 'JSX_TEXT_BLOCK':
       return null
     case 'ATTRIBUTE_VALUE':
-      return [child.value]
+      return insideExpression ? [child.value] : null
     case 'JS_IDENTIFIER':
       return [child.name]
     case 'JS_ELEMENT_ACCESS':
       return [
-        ...(jsxElementChildToValuePath(child.onValue) ?? []),
-        ...(jsxElementChildToValuePath(child.element) ?? []),
+        ...(jsxElementChildToValuePathInner(child.onValue, true) ?? []),
+        ...(jsxElementChildToValuePathInner(child.element, true) ?? []),
       ]
     case 'JS_PROPERTY_ACCESS':
-      return [...(jsxElementChildToValuePath(child.onValue) ?? []), child.property]
+      return [...(jsxElementChildToValuePathInner(child.onValue, true) ?? []), child.property]
     default:
       assertNever(child)
   }
