@@ -155,7 +155,9 @@ export const MultiplayerPresence = React.memo(() => {
     // (unfortunately there's not a subscription event for room id changes :()
     if (roomId !== room.id) {
       setRoomId(room.id)
-      dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))])
+      queueMicrotask(() => {
+        dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))])
+      })
     }
   }, [room.id, roomId, dispatch])
 

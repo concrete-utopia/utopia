@@ -54,7 +54,8 @@
     "dev-fast": "APP_ENV=development REACT_APP_ENVIRONMENT_CONFIG=development REACT_APP_AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID REACT_APP_AUTH0_ENDPOINT=$AUTH0_ENDPOINT REACT_APP_COMMIT_HASH=`git rev-parse HEAD` vite --force",
     "vite-build": "node --max_old_space_size=16384 ./node_modules/vite/bin/vite build -- -DEBUG",
     "watch-tsc": "tsc --watch --noEmit && NODE_OPTIONS=\"--max_old_space_size=4096 $NODE_OPENSSL_OPTION\"",
-    "unused-exports": "ts-unused-exports ./tsconfig.json --ignoreLocallyUsed"
+    "unused-exports": "ts-unused-exports ./tsconfig.json --ignoreLocallyUsed",
+    "eslint-custom-rules-test": "eslint-plugin-local test"
   },
   "lint-staged": {
     "*.{js,ts,tsx}": [
@@ -370,6 +371,7 @@
     "eslint": "7.32.0",
     "eslint-config-prettier": "6.9.0",
     "eslint-plugin-jest": "^25.3.0",
+    "eslint-plugin-local": "^4.2.2",
     "eslint-plugin-prettier": "3.1.2",
     "expect": "26.1.0",
     "fast-check": "1.15.0",
