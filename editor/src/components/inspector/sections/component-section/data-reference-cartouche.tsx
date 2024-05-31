@@ -212,9 +212,9 @@ export function getTextContentOfElement(
     case 'ATTRIBUTE_VALUE':
       return { type: 'literal', label: `${JSON.stringify(element.value)}` }
     case 'JSX_TEXT_BLOCK':
-      return { type: 'literal', label: `'${element.text}'` }
+      return { type: 'literal', label: element.text.trim() }
     case 'JS_IDENTIFIER':
-      return { type: 'reference', label: `${element.name}` }
+      return { type: 'reference', label: element.name.trim() }
     case 'JS_ELEMENT_ACCESS':
       return {
         type: 'reference',
