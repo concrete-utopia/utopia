@@ -12,6 +12,9 @@ interface ControlBaseFields {
   folder?: string
 }
 
+export const PropertyControlIcons = ['arrow-left', 'arrow-right', 'text'] as const
+export type PropertyControlIcon = (typeof PropertyControlIcons)[number]
+
 // Base Level Controls
 
 export type BaseControlType =
@@ -58,6 +61,12 @@ export type AllowedEnumType = string | boolean | number | undefined | null
 export interface BasicControlOption<T> {
   value: T
   label: string
+}
+
+export interface BasicControlOptionWithIcon<T> {
+  value: T
+  label: string
+  icon?: PropertyControlIcon
 }
 
 export type BasicControlOptions<T> = AllowedEnumType[] | BasicControlOption<T>[]
@@ -164,9 +173,9 @@ export interface RadioControlDescription {
   control: 'radio'
   label?: string
   visibleByDefault?: boolean
-  options: BasicControlOptions<unknown>
+  options: AllowedEnumType[] | BasicControlOptionWithIcon<unknown>[]
   required?: boolean
-  defaultValue?: AllowedEnumType | BasicControlOption<unknown>
+  defaultValue?: AllowedEnumType | BasicControlOptionWithIcon<unknown>
   folder?: string
 }
 

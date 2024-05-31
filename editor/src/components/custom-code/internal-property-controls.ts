@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
 import type { ComponentInfo } from './code-file'
+import type { PropertyControlIcon } from 'utopia-api/core'
 
 interface GenericControlProps<T> {
   label?: string
@@ -46,7 +47,14 @@ export interface BasicControlOption<T> {
   label: string
 }
 
+export interface BasicControlOptionWithIcon<T> {
+  value: T
+  label: string
+  icon: PropertyControlIcon | null
+}
+
 export type BasicControlOptions<T> = AllowedEnumType[] | BasicControlOption<T>[]
+export type BasicControlOptionsWithIcon<T> = AllowedEnumType[] | BasicControlOptionWithIcon<T>[]
 
 export interface PopUpListControlDescription
   extends GenericControlProps<AllowedEnumType | BasicControlOption<unknown>> {
@@ -121,7 +129,7 @@ export interface NumberInputControlDescription extends GenericControlProps<unkno
 export interface RadioControlDescription
   extends GenericControlProps<AllowedEnumType | BasicControlOption<unknown>> {
   control: 'radio'
-  options: BasicControlOptions<unknown>
+  options: BasicControlOptionsWithIcon<unknown>
 }
 
 export interface ExpressionInputControlDescription extends GenericControlProps<unknown> {

@@ -179,6 +179,7 @@ describe('RadioControlDescription', () => {
       {
         value: validValue,
         label: 'Label',
+        icon: null,
       },
     ],
   }

@@ -2,6 +2,9 @@ import type {
   RegularControlDescription as RegularControlDescriptionFromUtopia,
   JSXControlDescription as JSXControlDescriptionFromUtopia,
   PropertyControls as PropertyControlsFromUtopiaAPI,
+  RadioControlDescription as RadioControlDescriptionFromUtopia,
+  AllowedEnumType as AllowedEnumTypeFromUtopia,
+  BasicControlOptionWithIcon as BasicControlOptionWithIconFromUtopia,
   ComponentToRegister,
   ComponentInsertOption,
   ComponentExample,
@@ -26,6 +29,9 @@ import type {
   RegularControlDescription,
   JSXControlDescription,
   PreferredChildComponentDescriptor,
+  RadioControlDescription,
+  AllowedEnumType,
+  BasicControlOptionWithIcon,
 } from '../../components/custom-code/internal-property-controls'
 import { packageJsonFileFromProjectContents, walkContentsTree } from '../../components/assets'
 import {
@@ -65,6 +71,7 @@ import {
   foldEither,
   forEachRight,
   isLeft,
+  isRight,
   left,
   mapEither,
   right,
@@ -743,6 +750,83 @@ async function parseJSXControlDescription(
   })
 }
 
+function parseAllowedEnumType(option: AllowedEnumTypeFromUtopia): AllowedEnumType {
+  return option
+}
+
+function parseBasicControlOptionWithIcon(
+  option: BasicControlOptionWithIconFromUtopia<unknown>,
+): BasicControlOptionWithIcon<unknown> {
+  return {
+    label: option.label,
+    value: option.value,
+    icon: option.icon ?? null,
+  }
+}
+
+function isAllowedEnumType(
+  option: AllowedEnumTypeFromUtopia | BasicControlOptionWithIconFromUtopia<unknown>,
+): option is AllowedEnumTypeFromUtopia {
+  return (
+    typeof option === 'string' ||
+    typeof option === 'boolean' ||
+    typeof option === 'number' ||
+    typeof option === 'undefined' ||
+    (typeof option === 'object' && option === null)
+  )
+}
+
+function parseRadioControlOptions(
+  options: AllowedEnumTypeFromUtopia[] | BasicControlOptionWithIconFromUtopia<unknown>[],
+): Either<string, AllowedEnumType[] | BasicControlOptionWithIcon<unknown>[]> {
+  const allowedEnumTypes = sequenceEither(
+    options.map(
+      (o): Either<string, AllowedEnumType> =>
+        isAllowedEnumType(o) ? right(parseAllowedEnumType(o)) : left('Not an allowed enum type'),
+    ),
+  )
+
+  if (isRight(allowedEnumTypes)) {
+    return allowedEnumTypes
+  }
+
+  const basicControlOptions = sequenceEither(
+    options.map(
+      (o): Either<string, BasicControlOptionWithIcon<unknown>> =>
+        isAllowedEnumType(o)
+          ? left('Not a BasicControlOptionWithIcon<unknown>>')
+          : right(parseBasicControlOptionWithIcon(o)),
+    ),
+  )
+
+  if (isRight(basicControlOptions)) {
+    return basicControlOptions
+  }
+
+  return left('Cannot mix AllowedEnumType and BasicControlOptionWithIcon')
+}
+
+async function parseRadioControlDescription(
+  descriptor: RadioControlDescriptionFromUtopia,
+): Promise<PropertyDescriptorResult<RadioControlDescription>> {
+  const options = parseRadioControlOptions(descriptor.options)
+  if (isLeft(options)) {
+    return options
+  }
+
+  return right({
+    control: descriptor.control,
+    label: descriptor.label,
+    visibleByDefault: descriptor.visibleByDefault,
+    options: options.value,
+    required: descriptor.required,
+    defaultValue: isAllowedEnumType(descriptor.defaultValue)
+      ? parseAllowedEnumType(descriptor.defaultValue)
+      : parseBasicControlOptionWithIcon(descriptor.defaultValue),
+    folder: descriptor.folder,
+  })
+}
+
 async function makeRegularControlDescription(
   descriptor: RegularControlDescriptionFromUtopia,
   context: { moduleName: string; workers: UtopiaTsWorkers },
@@ -751,6 +835,9 @@ async function makeRegularControlDescription(
     if (descriptor.control === 'jsx') {
       const parsedJSXControlDescription = parseJSXControlDescription(descriptor, context)
       return parsedJSXControlDescription
+    }
+    if (descriptor.control === 'radio') {
+      return parseRadioControlDescription(descriptor)
     }
     return right(descriptor)
   }

@@ -392,7 +392,7 @@ export const RadioPropertyControl = React.memo(
     const value = propMetadata.propertyStatus.set ? propMetadata.value : undefined
 
     // TS baulks at the map below for some reason if we don't first do this
-    const controlOptions: Array<IndividualOption> = controlDescription.options
+    const controlOptions: RadioControlDescription['options'] = controlDescription.options
 
     const options: Array<OptionChainOption<unknown>> = useKeepReferenceEqualityIfPossible(
       controlOptions.map((option) => {
