@@ -7,6 +7,7 @@ import { left } from '../../../core/shared/either'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { ProjectContentTreeRoot } from '../../assets'
 import type { TransientFilesState, UIFileBase64Blobs } from '../../editor/store/editor-state'
+import type { FilePathMappings } from '../../../core/model/project-file-utils'
 
 export interface MutableUtopiaCtxRefData {
   [filePath: string]: {
@@ -32,6 +33,7 @@ interface RerenderUtopiaContextProps {
   canvasIsLive: boolean
   shouldIncludeCanvasRootInTheSpy: boolean
   editedText: ElementPath | null
+  filePathMappings: FilePathMappings
 }
 
 export const RerenderUtopiaCtxAtom = atomWithPubSub<RerenderUtopiaContextProps>({
@@ -42,6 +44,7 @@ export const RerenderUtopiaCtxAtom = atomWithPubSub<RerenderUtopiaContextProps>(
     canvasIsLive: false,
     shouldIncludeCanvasRootInTheSpy: false,
     editedText: null,
+    filePathMappings: [],
   },
 })
 

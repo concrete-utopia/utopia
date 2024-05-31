@@ -69,6 +69,7 @@ import { isParseSuccess, isTextFile } from '../../core/shared/project-file-types
 import {
   applyUtopiaJSXComponentsChanges,
   getDefaultExportedTopLevelElement,
+  getFilePathMappings,
   getUtopiaJSXComponentsFromSuccess,
   isRemixSceneElement,
 } from '../../core/model/project-file-utils'
@@ -1700,8 +1701,15 @@ export function getValidElementPaths(
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
   getRemixValidPathsGenerationContext: (path: ElementPath) => RemixValidPathsGenerationContext,
 ): Array<ElementPath> {
+  const filePathMappings = getFilePathMappings(projectContents)
   const { topLevelElements, imports } = getParseSuccessForFilePath(filePath, projectContents)
-  const importSource = importedFromWhere(filePath, topLevelElementName, topLevelElements, imports)
+  const importSource = importedFromWhere(
+    filePathMappings,
+    filePath,
+    topLevelElementName,
+    topLevelElements,
+    imports,
+  )
   if (importSource != null) {
     let originTopLevelName = getTopLevelName(importSource, topLevelElementName)
     const resolvedImportSource = resolve(filePath, importSource.filePath)

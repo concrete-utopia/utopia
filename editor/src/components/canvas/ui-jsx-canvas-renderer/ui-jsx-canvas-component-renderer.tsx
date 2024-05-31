@@ -48,6 +48,7 @@ import type { ComponentRendererComponent } from './component-renderer-component'
 import { mapArrayToDictionary } from '../../../core/shared/array-utils'
 import { assertNever } from '../../../core/shared/utils'
 import { addFakeSpyEntry } from './ui-jsx-canvas-spy-wrapper'
+import type { FilePathMappings } from '../../../core/model/project-file-utils'
 
 function tryToGetInstancePath(
   maybePath: ElementPath | null,
@@ -158,6 +159,7 @@ export function createComponentRendererComponent(params: {
             highlightBounds: highlightBounds,
             editedText: rerenderUtopiaContext.editedText,
             variablesInScope: {},
+            filePathMappings: rerenderUtopiaContext.filePathMappings,
           },
           undefined,
           codeError,
@@ -228,6 +230,7 @@ export function createComponentRendererComponent(params: {
       code: code,
       highlightBounds: highlightBounds,
       editedText: rerenderUtopiaContext.editedText,
+      filePathMappings: rerenderUtopiaContext.filePathMappings,
     }
 
     const buildResult = React.useRef<React.ReactElement | null>(null)
