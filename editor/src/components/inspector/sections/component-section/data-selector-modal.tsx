@@ -293,32 +293,6 @@ export const DataSelectorModal = React.memo(
                 border: `1px solid ${colorTheme.fg0Opacity10.value}`,
               }}
             >
-              <FlexRow style={{ gap: 2, paddingBottom: 8 }}>
-                {['File', 'Component', 'Map', 'Title'].map((label, idx, a) => (
-                  <React.Fragment key={`label-${idx}`}>
-                    <div
-                      onClick={setSelectedScopeNameCurried(label)}
-                      style={{
-                        width: 'max-content',
-                        padding: '2px 4px',
-                        borderRadius: 4,
-                        border: `1px solid ${colorTheme.verySubduedForeground.value}`,
-                        cursor: 'pointer',
-                        background:
-                          selectedScopeName !== label
-                            ? undefined
-                            : colorTheme.neutralInvertedBackground10.value,
-                      }}
-                    >
-                      {label}
-                    </div>
-                    {idx < a.length - 1 ? (
-                      <span style={{ width: 'max-content', padding: '2px 4px' }}>{'/'}</span>
-                    ) : null}
-                  </React.Fragment>
-                ))}
-              </FlexRow>
-
               {/* top bar */}
               <FlexRow style={{ justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
                 <FlexRow style={{ gap: 8, flexWrap: 'wrap', flexGrow: 1 }}>
@@ -387,6 +361,31 @@ export const DataSelectorModal = React.memo(
                 }}
               >
                 {valuePreviewText}
+              </FlexRow>
+              <FlexRow style={{ gap: 2, paddingBottom: 4, paddingTop: 8 }}>
+                {['File', 'Component', 'Map', 'Title'].map((label, idx, a) => (
+                  <React.Fragment key={`label-${idx}`}>
+                    <div
+                      onClick={setSelectedScopeNameCurried(label)}
+                      style={{
+                        width: 'max-content',
+                        padding: '2px 4px',
+                        borderRadius: 4,
+                        border: `1px solid ${colorTheme.verySubduedForeground.value}`,
+                        cursor: 'pointer',
+                        background:
+                          selectedScopeName !== label
+                            ? undefined
+                            : colorTheme.neutralInvertedBackground10.value,
+                      }}
+                    >
+                      {label}
+                    </div>
+                    {idx < a.length - 1 ? (
+                      <span style={{ width: 'max-content', padding: '2px 4px' }}>{'/'}</span>
+                    ) : null}
+                  </React.Fragment>
+                ))}
               </FlexRow>
               <Separator color={colorTheme.seperator.value} margin={12} />
               {/* detail view */}
