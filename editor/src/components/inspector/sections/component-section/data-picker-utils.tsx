@@ -8,12 +8,14 @@ import { assertNever } from '../../../../core/shared/utils'
 import type { ArrayInfo, JSXInfo, ObjectInfo, PrimitiveInfo } from './variables-in-scope-utils'
 import { processJSPropertyAccessors } from '../../../../core/data-tracing/data-tracing'
 import { foldEither } from '../../../../core/shared/either'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 
 interface VariableOptionBase {
   depth: number
   definedElsewhere: string
   valuePath: Array<string | number>
   disabled: boolean
+  insertionCeiling: ElementPath | null
 }
 
 export interface PrimitiveOption extends VariableOptionBase {
