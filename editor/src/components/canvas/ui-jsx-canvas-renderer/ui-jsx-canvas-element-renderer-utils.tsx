@@ -952,7 +952,7 @@ export function utopiaCanvasJSXLookup(
   }
 }
 
-function runJSExpression(
+export function runJSExpression(
   block: JSExpression,
   elementPath: ElementPath | null,
   currentScope: MapLike<any>,

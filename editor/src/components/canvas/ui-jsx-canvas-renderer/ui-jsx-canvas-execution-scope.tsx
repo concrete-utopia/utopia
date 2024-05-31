@@ -19,7 +19,12 @@ import {
   updateMutableUtopiaCtxRefWithNewProps,
   UtopiaProjectCtxAtom,
 } from './ui-jsx-canvas-contexts'
-import { createLookupRender, utopiaCanvasJSXLookup } from './ui-jsx-canvas-element-renderer-utils'
+import type { RenderContext } from './ui-jsx-canvas-element-renderer-utils'
+import {
+  createLookupRender,
+  runJSExpression,
+  utopiaCanvasJSXLookup,
+} from './ui-jsx-canvas-element-renderer-utils'
 import { runBlockUpdatingScope } from './ui-jsx-canvas-scope-utils'
 import * as EP from '../../../core/shared/element-path'
 import type { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
@@ -103,24 +108,25 @@ export function createExecutionScope(
 
   let topLevelJsxComponents: Map<string | null, UtopiaJSXComponent> = new Map()
 
-  // Make sure there is something in scope for all of the top level components
-  fastForEach(topLevelElements, (topLevelElement) => {
-    if (isUtopiaJSXComponent(topLevelElement)) {
-      topLevelJsxComponents.set(topLevelElement.name, topLevelElement)
-      const elementName = topLevelElement.name ?? 'default'
-      if (!(elementName in topLevelComponentRendererComponentsForFile)) {
-        topLevelComponentRendererComponentsForFile[elementName] = createComponentRendererComponent({
-          topLevelElementName: topLevelElement.name,
-          mutableContextRef: mutableContextRef,
-          filePath: filePath,
-        })
-      }
-    }
-  })
-
-  executionScope = {
-    ...executionScope,
-    ...topLevelComponentRendererComponentsForFile,
+  const renderContext: RenderContext = {
+    rootScope: executionScope,
+    parentComponentInputProps: {},
+    requireResult: requireResult,
+    hiddenInstances: hiddenInstances,
+    displayNoneInstances: displayNoneInstances,
+    fileBlobs: fileBlobsForFile,
+    validPaths: new Set(),
+    reactChildren: undefined,
+    metadataContext: metadataContext,
+    updateInvalidatedPaths: updateInvalidatedPaths,
+    jsxFactoryFunctionName: jsxFactoryFunction,
+    shouldIncludeCanvasRootInTheSpy: shouldIncludeCanvasRootInTheSpy,
+    filePath: filePath,
+    imports: imports,
+    code: '',
+    highlightBounds: {},
+    editedText: editedText,
+    variablesInScope: {},
   }
 
   // First make sure everything is in scope
@@ -130,24 +136,9 @@ export function createExecutionScope(
     const lookupRenderer = createLookupRender(
       EP.emptyElementPath,
       {
-        rootScope: executionScope,
-        parentComponentInputProps: {},
-        requireResult: requireResult,
-        hiddenInstances: hiddenInstances,
-        displayNoneInstances: displayNoneInstances,
-        fileBlobs: fileBlobsForFile,
-        validPaths: new Set(),
-        reactChildren: undefined,
-        metadataContext: metadataContext,
-        updateInvalidatedPaths: updateInvalidatedPaths,
-        jsxFactoryFunctionName: jsxFactoryFunction,
-        shouldIncludeCanvasRootInTheSpy: shouldIncludeCanvasRootInTheSpy,
-        filePath: openStoryboardFileNameKILLME,
-        imports: imports,
+        ...renderContext,
         code: code,
         highlightBounds: highlightBounds,
-        editedText: editedText,
-        variablesInScope: {},
       },
       null,
       propertiesFromParams,
@@ -163,6 +154,46 @@ export function createExecutionScope(
 
     runBlockUpdatingScope(filePath, requireResult, combinedTopLevelArbitraryBlock, executionScope)
   }
+
+  // Make sure there is something in scope for all of the top level components
+  fastForEach(topLevelElements, (topLevelElement) => {
+    if (isUtopiaJSXComponent(topLevelElement)) {
+      topLevelJsxComponents.set(topLevelElement.name, topLevelElement)
+      const elementName = topLevelElement.name ?? 'default'
+      if (!(elementName in topLevelComponentRendererComponentsForFile)) {
+        const baseComponent = createComponentRendererComponent({
+          topLevelElementName: topLevelElement.name,
+          mutableContextRef: mutableContextRef,
+          filePath: filePath,
+        })
+        const wrappedComponent = topLevelElement.functionWrapping.reduceRight(
+          (workingComponent, wrap) => {
+            switch (wrap.type) {
+              case 'SIMPLE_FUNCTION_WRAP':
+                const functionExpression = runJSExpression(
+                  wrap.functionExpression,
+                  null,
+                  executionScope,
+                  renderContext,
+                  wrap.functionExpression.uid,
+                  null,
+                  null,
+                )
+                return functionExpression(workingComponent)
+            }
+          },
+          baseComponent,
+        )
+        topLevelComponentRendererComponentsForFile[elementName] = wrappedComponent
+      }
+    }
+  })
+
+  executionScope = {
+    ...executionScope,
+    ...topLevelComponentRendererComponentsForFile,
+  }
+
   // WARNING: mutating the mutableContextRef
   updateMutableUtopiaCtxRefWithNewProps(mutableContextRef, {
     ...mutableContextRef.current,

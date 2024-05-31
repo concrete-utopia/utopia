@@ -725,6 +725,25 @@ function getModifersForComponent(
   return result
 }
 
+function printFunctionWrapping(
+  printOptions: PrintCodeOptions,
+  imports: Imports,
+  statement: TS.Expression,
+  functionWrapping: Array<FunctionWrap>,
+): TS.Expression {
+  return functionWrapping.reduceRight((workingStatement, wrap) => {
+    switch (wrap.type) {
+      case 'SIMPLE_FUNCTION_WRAP':
+        const functionExpression = jsxAttributeToExpression(
+          wrap.functionExpression,
+          imports,
+          printOptions.stripUIDs,
+        )
+        return TS.createCall(functionExpression, undefined, [workingStatement])
+    }
+  }, statement)
+}
+
 function printUtopiaJSXComponent(
   printOptions: PrintCodeOptions,
   imports: Imports,
@@ -803,10 +822,21 @@ function printUtopiaJSXComponent(
           undefined,
           bodyForArrowFunction(),
         )
+        const wrappedArrowFunction = printFunctionWrapping(
+          printOptions,
+          imports,
+          arrowFunction,
+          element.functionWrapping,
+        )
         if (element.name == null) {
-          elementNode = TS.createExportAssignment(undefined, modifiers, undefined, arrowFunction)
+          elementNode = TS.createExportAssignment(
+            undefined,
+            modifiers,
+            undefined,
+            wrappedArrowFunction,
+          )
         } else {
-          const varDec = TS.createVariableDeclaration(element.name, undefined, arrowFunction)
+          const varDec = TS.createVariableDeclaration(element.name, undefined, wrappedArrowFunction)
           const varDecList = TS.createVariableDeclarationList([varDec], nodeFlags)
           elementNode = TS.createVariableStatement(modifiers, varDecList)
         }
@@ -902,10 +932,6 @@ function printBoundParam(
 
 function optionallyCreateDotDotDotToken(createIt: boolean): TS.DotDotDotToken | undefined {
   return createIt ? TS.createToken(TS.SyntaxKind.DotDotDotToken) : undefined
-}
-
-function printRawComment(comment: Comment): string {
-  return `${comment.rawText}${comment.trailingNewLine ? '\n' : ''}`
 }
 
 function printArbitraryJSBlock(block: ArbitraryJSBlock): TS.Node {

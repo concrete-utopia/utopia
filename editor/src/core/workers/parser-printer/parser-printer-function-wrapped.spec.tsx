@@ -5,8 +5,10 @@ import {
   isUtopiaJSXComponent,
 } from '../../shared/element-template'
 import { isParseSuccess } from '../../shared/project-file-types'
+import { printCode, printCodeOptions } from './parser-printer'
 import {
   clearParseResultSourceMapsUniqueIDsAndEmptyBlocks,
+  clearParseResultUniqueIDsAndEmptyBlocks,
   testParseCode,
 } from './parser-printer.test-utils'
 
@@ -31,13 +33,44 @@ function getLoneMainTopLevelElement(code: string): UtopiaJSXComponent | Arbitrar
   }
 }
 
-describe('parseCode', () => {
-  it('simple function component wrapped in a React.memo', () => {
-    const code = `import React from "react";
+function testParsePrintParse(code: string): string {
+  const firstParse = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
+
+  if (!isParseSuccess(firstParse)) {
+    throw new Error(JSON.stringify(firstParse))
+  }
+
+  const firstAsParseSuccess = firstParse
+
+  const printed = printCode(
+    '/index.js',
+    printCodeOptions(false, true, true),
+    firstAsParseSuccess.imports,
+    firstAsParseSuccess.topLevelElements,
+    firstAsParseSuccess.jsxFactoryFunction,
+    firstAsParseSuccess.exportsDetail,
+  )
+
+  const secondParse = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(printed))
+
+  if (!isParseSuccess(secondParse)) {
+    throw new Error(JSON.stringify(secondParse))
+  }
+
+  const secondAsParseSuccess = firstParse
+  expect(secondAsParseSuccess.topLevelElements).toEqual(firstAsParseSuccess.topLevelElements)
+
+  return printed
+}
+
+const simpleReactMemoComponentCode = `import React from "react";
 export const Wrapped = React.memo(() => {
   return <div data-uid={'wrapped'} />
 })`
-    const element = getLoneMainTopLevelElement(code)
+
+describe('parseCode', () => {
+  it('simple function component wrapped in a React.memo', () => {
+    const element = getLoneMainTopLevelElement(simpleReactMemoComponentCode)
     expect(element.type).toEqual('UTOPIA_JSX_COMPONENT')
     expect(element).toMatchInlineSnapshot(`
       Object {
@@ -112,6 +145,19 @@ export const Wrapped = React.memo(() => {
         "type": "UTOPIA_JSX_COMPONENT",
         "usedInReactDOMRender": false,
       }
+    `)
+  })
+})
+
+describe('printCode', () => {
+  it('simple function component wrapped in a React.memo', () => {
+    const actualResult = testParsePrintParse(simpleReactMemoComponentCode)
+    expect(actualResult).toMatchInlineSnapshot(`
+      "import React from 'react'
+      export const Wrapped = React.memo(() => {
+        return <div data-uid='wrapped' />
+      })
+      "
     `)
   })
 })
