@@ -619,7 +619,9 @@ describe('The navigator component picker context menu', () => {
 
     await editor.getDispatchFollowUpActionsFinished()
 
-    const flexRowButton = await editor.renderedDOM.findByTestId('/src/other-utils.js-with a column')
+    const flexRowButton = await editor.renderedDOM.findByTestId(
+      'component-picker-item-/src/other-utils.js-with a column',
+    )
 
     await mouseClickAtPoint(flexRowButton, { x: 3, y: 3 })
 
@@ -2173,7 +2175,7 @@ async function openContextMenuAndClick(editor: EditorRenderResult, selectors: Se
     // eslint-disable-next-line no-await-in-loop
     const button = await waitFor(() =>
       selector.testId != null
-        ? editor.renderedDOM.getByTestId(selector.testId)
+        ? editor.renderedDOM.getByTestId(`component-picker-item-${selector.testId}`)
         : editor.renderedDOM.getByText(selector.text),
     )
     // eslint-disable-next-line no-await-in-loop
