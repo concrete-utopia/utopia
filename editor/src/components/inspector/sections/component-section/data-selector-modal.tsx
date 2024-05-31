@@ -142,13 +142,16 @@ export const DataSelectorModal = React.memo(
         Substores.fullStore,
         (store) => {
           const scopes = getEnclosingScopes(selectedView, store.editor.jsxMetadata)
-          return scopes.map((scope) => ({
-            label: MetadataUtils.getElementLabel(
-              store.editor.allElementProps,
-              scope,
-              store.editor.elementPathTree,
-              store.editor.jsxMetadata,
-            ),
+          return scopes.map((scope, index) => ({
+            label:
+              index == 0
+                ? 'Global'
+                : MetadataUtils.getElementLabel(
+                    store.editor.allElementProps,
+                    scope,
+                    store.editor.elementPathTree,
+                    store.editor.jsxMetadata,
+                  ),
             scope: scope,
           }))
         },
