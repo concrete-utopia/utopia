@@ -30,6 +30,8 @@ import type {
   DataPickerOption,
   ObjectPath,
 } from './data-picker-utils'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
+import * as EP from '../../../../core/shared/element-path'
 
 export const DataSelectorPopupBreadCrumbsTestId = 'data-selector-modal-top-bar'
 
@@ -170,7 +172,10 @@ export const DataSelectorModal = React.memo(
         [],
       )
 
-      const processedVariablesInScope = useProcessVariablesInScope(variablesInScope)
+      const processedVariablesInScope = useProcessVariablesInScope(
+        variablesInScope,
+        'do-not-filter',
+      )
 
       const focusedVariableChildren = React.useMemo(() => {
         if (navigatedToPath.length === 0) {
@@ -490,7 +495,17 @@ function childTypeToCartoucheDataType(
   }
 }
 
-function useProcessVariablesInScope(options: DataPickerOption[]): ProcessedVariablesInScope {
+function useProcessVariablesInScope(
+  options: DataPickerOption[],
+  scopeToShow: ElementPath | null | 'do-not-filter',
+): ProcessedVariablesInScope {
+  const filteredOptions = React.useMemo(() => {
+    if (scopeToShow === 'do-not-filter') {
+      return options
+    }
+    return options.filter((option) => EP.pathsEqual(option.insertionCeiling, scopeToShow))
+  }, [options, scopeToShow])
+
   return React.useMemo(() => {
     let lookup: ProcessedVariablesInScope = {}
     function walk(option: DataPickerOption) {
@@ -507,9 +522,9 @@ function useProcessVariablesInScope(options: DataPickerOption[]): ProcessedVaria
           assertNever(option)
       }
     }
-    options.forEach((o) => walk(o))
+    filteredOptions.forEach((o) => walk(o))
     return lookup
-  }, [options])
+  }, [filteredOptions])
 }
 
 function childVars(option: DataPickerOption, indices: ArrayIndexLookup): DataPickerOption[] {
