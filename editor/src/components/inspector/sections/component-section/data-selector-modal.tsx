@@ -41,6 +41,7 @@ export interface DataSelectorModalProps {
   variablesInScope: DataPickerOption[]
   onPropertyPicked: DataPickerCallback
   startingSelectedValuePath: ObjectPath | null
+  startingSelectedInsertionCeiling: ElementPath | null
 }
 
 const Separator = React.memo(
@@ -116,10 +117,22 @@ interface ArrayIndexLookup {
 export const DataSelectorModal = React.memo(
   React.forwardRef<HTMLDivElement, DataSelectorModalProps>(
     (
-      { style, closePopup, variablesInScope, onPropertyPicked, startingSelectedValuePath },
+      {
+        style,
+        closePopup,
+        variablesInScope: allVariablesInScope,
+        onPropertyPicked,
+        startingSelectedValuePath,
+        startingSelectedInsertionCeiling,
+      },
       forwardedRef,
     ) => {
       const colorTheme = useColorTheme()
+
+      const filteredVariablesInScope = useFilterVariablesInScope(
+        allVariablesInScope,
+        'do-not-filter', // startingSelectedInsertionCeiling,
+      )
 
       const [navigatedToPath, setNavigatedToPath] = React.useState<ObjectPath>([])
 
@@ -172,14 +185,11 @@ export const DataSelectorModal = React.memo(
         [],
       )
 
-      const processedVariablesInScope = useProcessVariablesInScope(
-        variablesInScope,
-        'do-not-filter',
-      )
+      const processedVariablesInScope = useProcessVariablesInScope(filteredVariablesInScope)
 
       const focusedVariableChildren = React.useMemo(() => {
         if (navigatedToPath.length === 0) {
-          return variablesInScope
+          return filteredVariablesInScope
         }
 
         const innerScopeToShow = processedVariablesInScope[navigatedToPath.toString()]
@@ -190,7 +200,7 @@ export const DataSelectorModal = React.memo(
           return [] // TODO this should never happen!
         }
         return innerScopeToShow.children
-      }, [navigatedToPath, processedVariablesInScope, variablesInScope])
+      }, [navigatedToPath, processedVariablesInScope, filteredVariablesInScope])
 
       const { primitiveVars, folderVars } = React.useMemo(() => {
         let primitives: Array<PrimitiveOption | JSXOption> = []
@@ -495,17 +505,32 @@ function childTypeToCartoucheDataType(
   }
 }
 
-function useProcessVariablesInScope(
+function useFilterVariablesInScope(
   options: DataPickerOption[],
   scopeToShow: ElementPath | null | 'do-not-filter',
-): ProcessedVariablesInScope {
+): DataPickerOption[] {
   const filteredOptions = React.useMemo(() => {
-    if (scopeToShow === 'do-not-filter') {
+    if (scopeToShow === 'do-not-filter' || scopeToShow == null) {
       return options
     }
-    return options.filter((option) => EP.pathsEqual(option.insertionCeiling, scopeToShow))
+
+    const result = options.filter((option) => {
+      if (option.insertionCeiling == null) {
+        return false
+      }
+
+      return EP.pathsEqual(
+        EP.takeLastPartOfPath(option.insertionCeiling),
+        EP.takeLastPartOfPath(EP.getContainingComponent(scopeToShow)),
+      )
+    })
+    return result
   }, [options, scopeToShow])
 
+  return filteredOptions
+}
+
+function useProcessVariablesInScope(options: DataPickerOption[]): ProcessedVariablesInScope {
   return React.useMemo(() => {
     let lookup: ProcessedVariablesInScope = {}
     function walk(option: DataPickerOption) {
@@ -522,9 +547,9 @@ function useProcessVariablesInScope(
           assertNever(option)
       }
     }
-    filteredOptions.forEach((o) => walk(o))
+    options.forEach((o) => walk(o))
     return lookup
-  }, [filteredOptions])
+  }, [options])
 }
 
 function childVars(option: DataPickerOption, indices: ArrayIndexLookup): DataPickerOption[] {
@@ -557,6 +582,10 @@ export function pathBreadcrumbs(
   for (const segment of valuePath) {
     current.push(segment)
     const optionFromLookup = processedVariablesInScope[current.toString()]
+
+    if (optionFromLookup == null) {
+      continue
+    }
 
     accumulator.push({
       segment: segment,
