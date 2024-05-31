@@ -89,8 +89,8 @@ import {
   isImportedOrigin,
 } from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
-import type { DataPickerCallback, VariableOption } from './data-picker-popup'
-import { DataPickerPopup, DataPickerPreferredAllAtom } from './data-picker-popup'
+import type { DataPickerCallback, DataPickerOption, ObjectPath } from './data-picker-utils'
+import { DataPickerPreferredAllAtom, jsxElementChildToValuePath } from './data-picker-utils'
 import { jsxElementChildToText } from '../../../canvas/ui-jsx-canvas-renderer/jsx-element-child-to-text'
 import { stopPropagation } from '../../common/inspector-utils'
 import { IdentifierExpressionCartoucheControl } from './cartouche-control'
@@ -99,10 +99,7 @@ import type { EditorAction } from '../../../editor/action-types'
 import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'
 import { useAtom } from 'jotai'
 import { DataSelectorModal } from './data-selector-modal'
-
-export const VariableFromScopeOptionTestId = (idx: string) => `variable-from-scope-${idx}`
-export const DataPickerPopupButtonTestId = `data-picker-popup-button-test-id`
-export const DataPickerPopupTestId = `data-picker-popup-test-id`
+import { getModifiableJSXAttributeAtPath } from '../../../../core/shared/jsx-attribute-utils'
 
 export interface PropertyLabelAndPlusButtonProps {
   title: string
@@ -342,8 +339,9 @@ function getLabelControlStyle(
 const isBaseIndentationLevel = (props: AbstractRowForControlProps) => props.indentationLevel === 1
 
 export function useDataPickerButton(
-  variablesInScope: VariableOption[],
+  variablesInScope: DataPickerOption[],
   onPropertyPicked: DataPickerCallback,
+  currentSelectedValuePath: ObjectPath | null,
 ) {
   const [referenceElement, setReferenceElement] = React.useState<HTMLDivElement | null>(null)
   const [popperElement, setPopperElement] = React.useState<HTMLDivElement | null>(null)
@@ -378,10 +376,12 @@ export function useDataPickerButton(
         ref={setPopperElement}
         onPropertyPicked={onPropertyPicked}
         variablesInScope={variablesInScope}
+        startingSelectedValuePath={currentSelectedValuePath}
       />
     ),
     [
       closePopup,
+      currentSelectedValuePath,
       onPropertyPicked,
       popper.attributes.popper,
       popper.styles.popper,
@@ -434,8 +434,44 @@ function useDataPickerButtonInComponentSection(
     preferredAllState,
   )
 
-  const dataPickerButtonData = useDataPickerButton(variableNamesInScope, (e) =>
-    optionalMap(dispatch, setPropertyFromDataPickerActions(selectedViews, propertyPath, e)),
+  const pathToCurrentValue = useEditorState(
+    Substores.metadata,
+    (store) => {
+      const [selectedView, ...rest] = selectedViews
+      if (selectedView == null || rest.length > 0) {
+        return null
+      }
+
+      const instance = MetadataUtils.findElementByElementPath(
+        store.editor.jsxMetadata,
+        selectedView,
+      )
+      if (
+        instance == null ||
+        instance.element.type !== 'RIGHT' ||
+        instance.element.value.type !== 'JSX_ELEMENT'
+      ) {
+        return null
+      }
+
+      const prop = getModifiableJSXAttributeAtPath(instance.element.value.props, propertyPath)
+      if (
+        prop.type !== 'RIGHT' ||
+        prop.value.type === 'PART_OF_ATTRIBUTE_VALUE' ||
+        prop.value.type === 'ATTRIBUTE_NOT_FOUND'
+      ) {
+        return null
+      }
+
+      return jsxElementChildToValuePath(prop.value)
+    },
+    'useDataPickerButtonInComponentSection pathToCurrentValue',
+  )
+
+  const dataPickerButtonData = useDataPickerButton(
+    variableNamesInScope,
+    (e) => optionalMap(dispatch, setPropertyFromDataPickerActions(selectedViews, propertyPath, e)),
+    pathToCurrentValue,
   )
 
   return dataPickerButtonData

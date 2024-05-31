@@ -4,7 +4,9 @@ module.exports = {
     tsconfigRootDir: __dirname,
     project: ['./tsconfig.json'],
   },
+  plugins: ['eslint-plugin-local'],
   rules: {
+    'local/no-dispatch-use-effect': 'error',
     '@typescript-eslint/no-floating-promises': 'error',
     '@typescript-eslint/strict-boolean-expressions': [
       'error',

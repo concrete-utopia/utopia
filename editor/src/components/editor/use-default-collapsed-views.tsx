@@ -46,13 +46,15 @@ export function useDefaultCollapsedViews() {
     })
 
     if (newCollapsedViews.length > 0) {
-      // 1. add the new collapsed views
-      dispatch([addCollapsedViews(newCollapsedViews.map(EP.fromString))])
-      // 2. store the new added views to the previous ones
-      previouslyCollapsed.current = newCollapsedViews.reduce(
-        (acc, path) => ({ ...acc, [path]: true }),
-        previouslyCollapsed.current,
-      )
+      queueMicrotask(() => {
+        // 1. add the new collapsed views
+        dispatch([addCollapsedViews(newCollapsedViews.map(EP.fromString))])
+        // 2. store the new added views to the previous ones
+        previouslyCollapsed.current = newCollapsedViews.reduce(
+          (acc, path) => ({ ...acc, [path]: true }),
+          previouslyCollapsed.current,
+        )
+      })
     }
   }, [elementNamesByElementPath, collapsedPaths, dispatch, previouslyCollapsed])
 }

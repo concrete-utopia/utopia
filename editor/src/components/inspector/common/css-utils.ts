@@ -1040,6 +1040,33 @@ export const emptyCSSBorder: CSSBorder = {
   type: 'border',
 }
 
+export const emptyCssBorderDefault: CSSBorder = {
+  type: 'border',
+  width: {
+    type: 'line-width',
+    value: {
+      value: 0,
+      unit: 'px',
+    },
+  },
+  style: {
+    type: 'line-style',
+    value: {
+      type: 'keyword',
+      value: 'none',
+    },
+  },
+  color: {
+    type: 'RGB',
+    r: 0,
+    g: 0,
+    b: 0,
+    a: 1,
+    percentageAlpha: false,
+    percentagesUsed: false,
+  },
+}
+
 export const defaultCSSBorder: Complete<CSSBorder> = {
   type: 'border',
   style: cssLineStyle(cssKeyword('solid')),
@@ -5114,7 +5141,7 @@ export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
   backgroundColor: cssDefault(emptyBackgroundColor),
   backgroundImage: [],
   backgroundSize: [],
-  border: emptyCSSBorder,
+  border: emptyCssBorderDefault,
   borderRadius: {
     type: 'LEFT',
     value: {

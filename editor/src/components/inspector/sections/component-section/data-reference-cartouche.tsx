@@ -17,7 +17,7 @@ import { dataPathSuccess, traceDataFromElement } from '../../../../core/data-tra
 import type { RenderedAt } from '../../../editor/store/editor-state'
 import { replaceElementInScope } from '../../../editor/actions/action-creators'
 import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'
-import { DataPickerPreferredAllAtom } from './data-picker-popup'
+import { DataPickerPreferredAllAtom, jsxElementChildToValuePath } from './data-picker-utils'
 import { useAtom } from 'jotai'
 import type { CartoucheUIProps } from './cartouche-ui'
 import { CartoucheUI } from './cartouche-ui'
@@ -101,7 +101,16 @@ export const DataReferenceCartoucheControl = React.memo(
       preferredAllState,
     )
 
-    const dataPickerButtonData = useDataPickerButton(variableNamesInScope, updateDataWithDataPicker)
+    const pathToCurrenlySelectedValue = React.useMemo(
+      () => jsxElementChildToValuePath(childOrAttribute),
+      [childOrAttribute],
+    )
+
+    const dataPickerButtonData = useDataPickerButton(
+      variableNamesInScope,
+      updateDataWithDataPicker,
+      pathToCurrenlySelectedValue,
+    )
 
     const isDataComingFromHookResult = dataTraceResult.type === 'hook-result'
 
@@ -203,9 +212,9 @@ export function getTextContentOfElement(
     case 'ATTRIBUTE_VALUE':
       return { type: 'literal', label: `${JSON.stringify(element.value)}` }
     case 'JSX_TEXT_BLOCK':
-      return { type: 'literal', label: `'${element.text}'` }
+      return { type: 'literal', label: element.text.trim() }
     case 'JS_IDENTIFIER':
-      return { type: 'reference', label: `${element.name}` }
+      return { type: 'reference', label: element.name.trim() }
     case 'JS_ELEMENT_ACCESS':
       return {
         type: 'reference',
