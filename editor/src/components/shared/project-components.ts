@@ -672,7 +672,7 @@ function isDescriptorEligibleForMode(
     return (
       // either the component natively supports children
       component.supportsChildren ||
-      // or it's a map ("List") - in this case we know to handle wrapping even if though it doesn't natively "support" children
+      // or it's a map ("List") - in this case we know to handle wrapping even though it doesn't natively "support" children
       component.variants.every((variant) => variant.elementToInsert().type === 'JSX_MAP_EXPRESSION')
     )
   }
