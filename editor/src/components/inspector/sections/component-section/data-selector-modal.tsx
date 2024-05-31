@@ -177,14 +177,14 @@ export const DataSelectorModal = React.memo(
           return variablesInScope
         }
 
-        const scopeToShow = processedVariablesInScope[navigatedToPath.toString()]
+        const innerScopeToShow = processedVariablesInScope[navigatedToPath.toString()]
         if (
-          scopeToShow == null ||
-          (scopeToShow.type !== 'array' && scopeToShow.type !== 'object')
+          innerScopeToShow == null ||
+          (innerScopeToShow.type !== 'array' && innerScopeToShow.type !== 'object')
         ) {
           return [] // TODO this should never happen!
         }
-        return scopeToShow.children
+        return innerScopeToShow.children
       }, [navigatedToPath, processedVariablesInScope, variablesInScope])
 
       const { primitiveVars, folderVars } = React.useMemo(() => {
