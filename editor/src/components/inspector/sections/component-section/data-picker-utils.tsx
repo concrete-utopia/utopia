@@ -1,14 +1,17 @@
 import { atom } from 'jotai'
+import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import {
   isJSExpression,
   type JSExpressionOtherJavaScript,
   type JSXElementChild,
 } from '../../../../core/shared/element-template'
+import * as EP from '../../../../core/shared/element-path'
 import { assertNever } from '../../../../core/shared/utils'
 import type { ArrayInfo, JSXInfo, ObjectInfo, PrimitiveInfo } from './variables-in-scope-utils'
 import { processJSPropertyAccessors } from '../../../../core/data-tracing/data-tracing'
 import { foldEither } from '../../../../core/shared/either'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 
 interface VariableOptionBase {
   depth: number
@@ -70,4 +73,23 @@ export function jsxElementChildToValuePath(child: JSXElementChild | null): Objec
     (result) => [result.originalIdentifier.name, ...result.path],
     processJSPropertyAccessors(child),
   )
+}
+
+export function getEnclosingScopes(
+  leafScope: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+): ElementPath[] {
+  let result: ElementPath[] = [leafScope]
+  let current = leafScope
+  while (!EP.isEmptyPath(current)) {
+    if (MetadataUtils.isJSXMapExpression(current, metadata)) {
+      result.unshift(current)
+    } else if (EP.isRootElementOfInstance(current)) {
+      result.unshift(EP.parentPath(current))
+    }
+    current = EP.parentPath(current)
+  }
+
+  result.unshift(current)
+  return result
 }

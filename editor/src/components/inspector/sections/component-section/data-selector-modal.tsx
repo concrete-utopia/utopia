@@ -21,17 +21,20 @@ import type { SelectOption } from '../../controls/select-control'
 import { InspectorModal } from '../../widgets/inspector-modal'
 import type { CartoucheUIProps, HoverHandlers } from './cartouche-ui'
 import { CartoucheUI } from './cartouche-ui'
-import type {
-  ArrayOption,
-  DataPickerCallback,
-  JSXOption,
-  ObjectOption,
-  PrimitiveOption,
-  DataPickerOption,
-  ObjectPath,
+import {
+  type ArrayOption,
+  type DataPickerCallback,
+  type JSXOption,
+  type ObjectOption,
+  type PrimitiveOption,
+  type DataPickerOption,
+  type ObjectPath,
+  getEnclosingScopes,
 } from './data-picker-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import * as EP from '../../../../core/shared/element-path'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 
 export const DataSelectorPopupBreadCrumbsTestId = 'data-selector-modal-top-bar'
 
@@ -128,6 +131,35 @@ export const DataSelectorModal = React.memo(
       forwardedRef,
     ) => {
       const colorTheme = useColorTheme()
+
+      const selectedView = useEditorState(
+        Substores.selectedViews,
+        (store) => store.editor.selectedViews.at(0) ?? EP.emptyElementPath,
+        '',
+      )
+
+      const elementLabelsWithScopes = useEditorState(
+        Substores.fullStore,
+        (store) => {
+          const scopes = getEnclosingScopes(selectedView, store.editor.jsxMetadata)
+          return scopes.map((scope) => ({
+            label: MetadataUtils.getElementLabel(
+              store.editor.allElementProps,
+              scope,
+              store.editor.elementPathTree,
+              store.editor.jsxMetadata,
+            ),
+            scope: scope,
+          }))
+        },
+        '',
+      )
+
+      const [selectedScopeName, setSelectedScopeName] = React.useState<string | null>(null)
+      const setSelectedScopeNameCurried = React.useCallback(
+        (name: string) => () => setSelectedScopeName(name),
+        [],
+      )
 
       const filteredVariablesInScope = useFilterVariablesInScope(
         allVariablesInScope,
@@ -370,6 +402,31 @@ export const DataSelectorModal = React.memo(
                 }}
               >
                 {valuePreviewText}
+              </FlexRow>
+              <FlexRow style={{ gap: 2, paddingBottom: 4, paddingTop: 8 }}>
+                {elementLabelsWithScopes.map(({ label }, idx, a) => (
+                  <React.Fragment key={`label-${idx}`}>
+                    <div
+                      onClick={setSelectedScopeNameCurried(label)}
+                      style={{
+                        width: 'max-content',
+                        padding: '2px 4px',
+                        borderRadius: 4,
+                        border: `1px solid ${colorTheme.verySubduedForeground.value}`,
+                        cursor: 'pointer',
+                        background:
+                          selectedScopeName !== label
+                            ? undefined
+                            : colorTheme.neutralInvertedBackground10.value,
+                      }}
+                    >
+                      {label}
+                    </div>
+                    {idx < a.length - 1 ? (
+                      <span style={{ width: 'max-content', padding: '2px 4px' }}>{'/'}</span>
+                    ) : null}
+                  </React.Fragment>
+                ))}
               </FlexRow>
               <Separator color={colorTheme.seperator.value} margin={12} />
               {/* detail view */}
