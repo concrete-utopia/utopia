@@ -6,7 +6,6 @@ import {
 } from '../../core/property-controls/property-controls-utils'
 import type {
   JSXAttributes,
-  JSXElementChild,
   JSXMapExpressionWithoutUID,
   UtopiaJSXComponent,
 } from '../../core/shared/element-template'
@@ -14,7 +13,6 @@ import {
   emptyComments,
   functionParam,
   jsExpressionOtherJavaScript,
-  jsExpressionOtherJavaScriptSimple,
   jsExpressionValue,
   jsxAttributesFromMap,
   jsxConditionalExpressionWithoutUID,
@@ -565,7 +563,7 @@ export const fragmentElementsDescriptors: ComponentDescriptorsForFile = {
 export const mapElementDescriptors: ComponentDescriptorsForFile = {
   map: {
     properties: {},
-    supportsChildren: true,
+    supportsChildren: false,
     variants: [mapComponentInfo],
     preferredChildComponents: [],
     source: defaultComponentDescriptor(),
@@ -670,7 +668,15 @@ function isDescriptorEligibleForMode(
   insertMenuMode: InsertMenuMode,
   component: ComponentDescriptor,
 ): boolean {
-  return insertMenuMode === 'wrap' ? component.supportsChildren : true
+  if (insertMenuMode === 'wrap') {
+    return (
+      // either the component natively supports children
+      component.supportsChildren ||
+      // or it's a map ("List") - in this case we know to handle wrapping even if though it doesn't natively "support" children
+      component.variants.every((variant) => variant.elementToInsert().type === 'JSX_MAP_EXPRESSION')
+    )
+  }
+  return true
 }
 
 function isUtopiaJSXComponentEligibleForMode(
