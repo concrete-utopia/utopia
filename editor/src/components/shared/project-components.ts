@@ -671,7 +671,7 @@ function isDescriptorEligibleForMode(
   if (insertMenuMode === 'wrap') {
     return (
       component.supportsChildren ||
-      // in case it's a map ("List") we know to handle wrapping even though it doesn't natively "support" children
+      // in case it's a map ("List") we can handle wrapping even though it doesn't natively "support" children
       component.variants.every((variant) => variant.elementToInsert().type === 'JSX_MAP_EXPRESSION')
     )
   }
