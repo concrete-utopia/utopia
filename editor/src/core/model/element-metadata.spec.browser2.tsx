@@ -1400,6 +1400,10 @@ describe('record variable values', () => {
     const editor = await renderTestEditorWithCode(ProjectWithVariables, 'await-first-dom-report')
     const { variablesInScope } = editor.getEditorState().editor
     expect(variablesInScope['sb/scene/pg:root']).toEqual<VariableData>({
+      add: {
+        insertionCeiling: null,
+        spiedValue: expect.any(Function),
+      },
       definedInsideNumber: { spiedValue: 12, insertionCeiling: EP.fromString('sb/scene/pg') },
       definedInsideObject: {
         spiedValue: {
@@ -1412,6 +1416,10 @@ describe('record variable values', () => {
       style: { spiedValue: {}, insertionCeiling: EP.fromString('sb/scene/pg') },
     })
     expect(variablesInScope['sb/scene/pg:root/111']).toEqual<VariableData>({
+      add: {
+        insertionCeiling: null,
+        spiedValue: expect.any(Function),
+      },
       definedInsideNumber: { spiedValue: 12, insertionCeiling: EP.fromString('sb/scene/pg') },
       definedInsideObject: {
         spiedValue: {
@@ -1424,6 +1432,10 @@ describe('record variable values', () => {
       style: { spiedValue: {}, insertionCeiling: EP.fromString('sb/scene/pg') },
     })
     expect(variablesInScope['sb/scene/pg:root/222']).toEqual<VariableData>({
+      add: {
+        insertionCeiling: null,
+        spiedValue: expect.any(Function),
+      },
       definedInsideNumber: { spiedValue: 12, insertionCeiling: EP.fromString('sb/scene/pg') },
       definedInsideObject: {
         spiedValue: {
@@ -1436,6 +1448,10 @@ describe('record variable values', () => {
       style: { spiedValue: {}, insertionCeiling: EP.fromString('sb/scene/pg') },
     })
     expect(variablesInScope['sb/scene/pg:root/333']).toEqual<VariableData>({
+      add: {
+        insertionCeiling: null,
+        spiedValue: expect.any(Function),
+      },
       definedInsideNumber: { spiedValue: 12, insertionCeiling: EP.fromString('sb/scene/pg') },
       definedInsideObject: {
         spiedValue: {
