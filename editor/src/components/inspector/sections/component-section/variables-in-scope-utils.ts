@@ -122,38 +122,30 @@ function usePropertyControlDescriptions(
   return controlForProp[0] ?? null
 }
 
-export interface PrimitiveInfo {
+interface VariableInfoBase {
+  type: string
+  expression: string
+  expressionPathPart: string | number
+  value: unknown
+  matches: boolean
+}
+
+export interface PrimitiveInfo extends VariableInfoBase {
   type: 'primitive'
-  expression: string
-  expressionPathPart: string | number
-  value: unknown
-  matches: boolean
 }
 
-export interface ObjectInfo {
+export interface ObjectInfo extends VariableInfoBase {
   type: 'object'
-  expression: string
-  expressionPathPart: string | number
-  value: unknown
   props: Array<VariableInfo>
-  matches: boolean
 }
 
-export interface ArrayInfo {
+export interface ArrayInfo extends VariableInfoBase {
   type: 'array'
-  expression: string
-  expressionPathPart: string | number
-  value: unknown
   elements: Array<VariableInfo>
-  matches: boolean
 }
 
-export interface JSXInfo {
+export interface JSXInfo extends VariableInfoBase {
   type: 'jsx'
-  expression: string
-  expressionPathPart: string | number
-  value: unknown
-  matches: boolean
 }
 
 export type VariableInfo = PrimitiveInfo | ArrayInfo | ObjectInfo | JSXInfo

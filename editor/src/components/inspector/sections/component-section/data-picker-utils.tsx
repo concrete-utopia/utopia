@@ -9,42 +9,33 @@ import type { ArrayInfo, JSXInfo, ObjectInfo, PrimitiveInfo } from './variables-
 import { processJSPropertyAccessors } from '../../../../core/data-tracing/data-tracing'
 import { foldEither } from '../../../../core/shared/either'
 
-export interface PrimitiveOption {
+interface VariableOptionBase {
+  depth: number
+  definedElsewhere: string
+  valuePath: Array<string | number>
+  disabled: boolean
+}
+
+export interface PrimitiveOption extends VariableOptionBase {
   type: 'primitive'
   variableInfo: PrimitiveInfo
-  definedElsewhere: string
-  depth: number
-  valuePath: Array<string | number>
-  disabled: boolean
 }
 
-export interface ArrayOption {
+export interface ArrayOption extends VariableOptionBase {
   type: 'array'
   variableInfo: ArrayInfo
-  depth: number
-  definedElsewhere: string
   children: Array<DataPickerOption>
-  valuePath: Array<string | number>
-  disabled: boolean
 }
 
-export interface ObjectOption {
+export interface ObjectOption extends VariableOptionBase {
   type: 'object'
   variableInfo: ObjectInfo
-  depth: number
-  definedElsewhere: string
   children: Array<DataPickerOption>
-  valuePath: Array<string | number>
-  disabled: boolean
 }
 
-export interface JSXOption {
+export interface JSXOption extends VariableOptionBase {
   type: 'jsx'
   variableInfo: JSXInfo
-  definedElsewhere: string
-  depth: number
-  valuePath: Array<string | number>
-  disabled: boolean
 }
 
 export type DataPickerOption = PrimitiveOption | ArrayOption | ObjectOption | JSXOption
