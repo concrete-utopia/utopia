@@ -9,7 +9,7 @@ import {
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { NO_OP } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
-import { FlexRow, Tooltip, useColorTheme } from '../../../../uuiui'
+import { FlexRow, Icn, Tooltip, useColorTheme } from '../../../../uuiui'
 import { clearHighlightedViews, selectComponents } from '../../../editor/actions/action-creators'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
@@ -359,21 +359,6 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
               onClick={forward}
             >
               〱
-            </span>
-          </Tooltip>
-          <Tooltip title={'Home'}>
-            <span
-              data-testid={RemixSceneLabelButtonTestId(props.target, 'home')}
-              style={{
-                cursor: 'pointer',
-                fontSize: 14 / scale,
-                display: isSelected ? 'block' : 'none',
-                position: 'relative',
-                bottom: 0 / scale,
-              }}
-              onClick={home}
-            >
-              ⛫
             </span>
           </Tooltip>
         </FlexRow>

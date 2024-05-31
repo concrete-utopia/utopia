@@ -8,7 +8,7 @@ import {
   RemixNavigationAtom,
 } from '../canvas/remix/utopia-remix-root-component'
 import { Substores, useEditorState } from './store/store-hook'
-import { FlexRow, StringInput, Tooltip, colorTheme } from '../../uuiui'
+import { FlexRow, Icn, StringInput, Tooltip, colorTheme } from '../../uuiui'
 import { stopPropagation } from '../inspector/common/inspector-utils'
 import * as EP from '../../core/shared/element-path'
 import { getRemixLocationLabel, getRemixUrlFromLocation } from '../canvas/remix/remix-utils'
@@ -136,7 +136,7 @@ export const RemixNavigationBar = React.memo(() => {
       <Tooltip title={'Back'} placement='bottom'>
         <span
           data-testid={RemixNavigationBarButtonTestId('back')}
-          style={{ cursor: 'pointer', fontSize: 12 }}
+          style={{ cursor: 'pointer', fontSize: 10 }}
           css={{
             '&:hover': {
               color: colorTheme.dynamicBlue.value,
@@ -150,7 +150,7 @@ export const RemixNavigationBar = React.memo(() => {
       <Tooltip title={'Forward'} placement='bottom'>
         <span
           data-testid={RemixNavigationBarButtonTestId('forward')}
-          style={{ cursor: 'pointer', fontSize: 12, transform: 'scale(-1, 1)' }}
+          style={{ cursor: 'pointer', fontSize: 10, transform: 'scale(-1, 1)' }}
           css={{
             '&:hover': {
               color: colorTheme.dynamicBlue.value,
@@ -163,16 +163,22 @@ export const RemixNavigationBar = React.memo(() => {
       </Tooltip>
       <Tooltip title={'Home'} placement='bottom'>
         <span
-          data-testid={RemixNavigationBarButtonTestId('home')}
-          style={{ cursor: 'pointer', fontSize: 16 }}
           css={{
             '&:hover': {
               color: colorTheme.dynamicBlue.value,
             },
           }}
-          onClick={home}
         >
-          ⛫
+          <Icn
+            category='semantic'
+            type='home-solid'
+            width={18}
+            height={18}
+            onClick={home}
+            data-testid={RemixNavigationBarButtonTestId('home')}
+            style={{ cursor: 'pointer', fontSize: 16 }}
+            color='main'
+          />
         </span>
       </Tooltip>
       <FlexRow
