@@ -415,12 +415,9 @@ export const DataSelectorModal = React.memo(
                         width: 'max-content',
                         padding: '2px 4px',
                         borderRadius: 4,
-                        border: `1px solid ${colorTheme.verySubduedForeground.value}`,
                         cursor: 'pointer',
-                        background:
-                          selectedScopeName !== label
-                            ? undefined
-                            : colorTheme.neutralInvertedBackground10.value,
+                        fontSize: 12,
+                        fontWeight: selectedScopeName !== label ? undefined : 800,
                       }}
                     >
                       {label}
