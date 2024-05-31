@@ -542,8 +542,9 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
             selected={props.selected}
             instanceOriginalComponentName={props.instanceOriginalComponentName}
           />
-          {(navigatorEntry.type === 'REGULAR' || navigatorEntry.type === 'RENDER_PROP_VALUE') &&
-          (props.highlighted || props.selected) ? (
+          {when(
+            (navigatorEntry.type === 'REGULAR' || navigatorEntry.type === 'RENDER_PROP_VALUE') &&
+              (props.highlighted || props.selected),
             <>
               <AddChildButton target={navigatorEntry.elementPath} iconColor={props.iconColor} />
               <ReplaceElementButton
@@ -552,8 +553,8 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
                 prop={navigatorEntry.type === 'RENDER_PROP_VALUE' ? navigatorEntry.prop : null}
                 conditionalCase={conditionalCase}
               />
-            </>
-          ) : null}
+            </>,
+          )}
           <SelectionLockedIndicator
             key={`selection-locked-indicator-${varSafeNavigatorEntryToKey(navigatorEntry)}`}
             shouldShow={
