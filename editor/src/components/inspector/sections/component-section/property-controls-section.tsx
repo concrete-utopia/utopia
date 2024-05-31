@@ -60,12 +60,16 @@ export const PropertyControlsSection = React.memo((props: PropertyControlsSectio
         )) ||
       propertiesWithFolders.folders.length > 0 ||
       Object.keys(propertiesWithFolders.advanced).length > 0 ||
-      filteredDetectedPropsWithNoValue.length > 0,
+      filteredDetectedPropsWithNoValue.length > 0 ||
+      Object.keys(propertiesWithFolders.uncategorized).length > 0 ||
+      propsWithControlsButNoValue.length > 0,
     [
       detectedPropsAndValuesWithoutControls,
       propertiesWithFolders.folders,
       propertiesWithFolders.advanced,
       filteredDetectedPropsWithNoValue,
+      propertiesWithFolders.uncategorized,
+      propsWithControlsButNoValue.length,
     ],
   )
 
