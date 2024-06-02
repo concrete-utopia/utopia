@@ -36,20 +36,20 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-api
-      ${pnpm}/bin/pnpm install --silent
+      ${pnpm}/bin/pnpm install
       ${pnpm}/bin/pnpm run build
     '')
     (pkgs.writeScriptBin "install-eslint-config-utopia" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/eslint-config-utopia
-      ${pnpm}/bin/pnpm install --silent
+      ${pnpm}/bin/pnpm install
     '')
     (pkgs.writeScriptBin "build-vscode-common" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)
-      ${pnpm}/bin/pnpm install --silent
+      ${pnpm}/bin/pnpm install
       update-vscode-build-extension
     '')
     (pkgs.writeScriptBin "install-editor" ''
@@ -69,7 +69,7 @@ let
       install-eslint-config-utopia
       build-utopia-vscode-common
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm}/bin/pnpm install --silent
+      ${pnpm}/bin/pnpm install
     '')
     (pkgs.writeScriptBin "install-website" ''
       #!/usr/bin/env bash
@@ -222,7 +222,7 @@ let
       set -e
       install-editor-ci
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website-next
-      ${pnpm}/bin/pnpm install --silent
+      ${pnpm}/bin/pnpm install
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
       ${pnpm}/bin/pnpm run staging-print-json
     '')
@@ -231,7 +231,7 @@ let
       set -e
       install-editor-ci
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website-next
-      ${pnpm}/bin/pnpm install --silent
+      ${pnpm}/bin/pnpm install
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
       ${pnpm}/bin/pnpm run branches-print-json
     '')
@@ -246,7 +246,7 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-common
-      ${pnpm}/bin/pnpm install --silent
+      ${pnpm}/bin/pnpm install
       ${pnpm}/bin/pnpm run production
     '')
     (pkgs.writeScriptBin "build-utopia-vscode-extension" ''
@@ -262,7 +262,7 @@ let
       set -e
       build-utopia-vscode-common-production
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-extension
-      ${pnpm}/bin/pnpm install --silent
+      ${pnpm}/bin/pnpm install
       ${pnpm}/bin/pnpm run production
     '')
     (pkgs.writeScriptBin "update-vscode-build-extension" ''
@@ -727,7 +727,7 @@ let
       set -e
       prepare-build-editor
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm}/bin/pnpm install --unsafe-perm --silent
+      ${pnpm}/bin/pnpm install --unsafe-perm
       ${pnpm}/bin/pnpm run production
     '')
     (pkgs.writeScriptBin "build-editor-staging" ''
@@ -735,7 +735,7 @@ let
       set -e
       prepare-build-editor
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm}/bin/pnpm install --unsafe-perm --silent
+      ${pnpm}/bin/pnpm install --unsafe-perm
       ${pnpm}/bin/pnpm run staging
     '')
     # CRA for whatever reason will automatically fail on CI for any warnings, so we need to prefix with `CI=false`. Urgh. https://github.com/facebook/create-react-app/issues/3657
