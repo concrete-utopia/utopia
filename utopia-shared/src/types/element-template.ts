@@ -1,4 +1,5 @@
 import type { PropertyPath } from './project-file-types'
+import { RawSourceMap } from './RawSourceMap'
 
 export interface ParsedComments {
   leadingComments: Array<Comment>
@@ -66,12 +67,9 @@ export interface JSOpaqueArbitraryStatement {
   uid: string
 }
 
-export interface JSAssignment<
-  L extends JSIdentifier = JSIdentifier,
-  R extends JSExpression = JSExpression,
-> {
+export interface JSAssignment<R extends JSExpression = JSExpression> {
   type: 'JS_ASSIGNMENT'
-  leftHandSide: L
+  leftHandSide: BoundParam
   rightHandSide: R
 }
 
@@ -93,17 +91,6 @@ export interface JSExpressionOtherJavaScript extends WithComments, WithElementsW
   definedElsewhere: Array<string>
   sourceMap: RawSourceMap | null
   uid: string
-}
-
-export interface RawSourceMap {
-  version: number
-  sources: string[]
-  names: string[]
-  sourceRoot?: string
-  sourcesContent?: string[]
-  transpiledContentUtopia?: string
-  mappings: string
-  file: string
 }
 
 export interface JSXMapExpression extends WithComments {
@@ -296,13 +283,13 @@ export type JSXElementChildren = Array<JSXElementChild>
 export interface RegularParam {
   type: 'REGULAR_PARAM'
   paramName: string
-  defaultExpression: JSExpressionMapOrOtherJavascript | null
+  defaultExpression: JSExpression | null
 }
 
 export interface DestructuredParamPart {
   propertyName: string | undefined
   param: Param
-  defaultExpression: JSExpressionMapOrOtherJavascript | null
+  defaultExpression: JSExpression | null
 }
 
 export interface DestructuredObject {
