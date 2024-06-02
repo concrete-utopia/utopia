@@ -28,11 +28,11 @@ jobs:
           nix_path: nixpkgs=https://github.com/NixOS/nixpkgs/archive/6120ac5cd201f6cb593d1b80e861be0342495be9.tar.gz
       - name: Capture pnpm store path
         id: capture-pnpm-store-path
-        run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run 'echo "pnpm-store-path=$(pnpm store path)" >> "$GITHUB_OUTPUT"'
+        run: nix-shell --quiet --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run 'echo "pnpm-store-path=$(pnpm store path)" >> "$GITHUB_OUTPUT"'
       - name: Cache pnpm store
         uses: actions/cache@v2
         with:
           path: ${{ steps.capture-pnpm-store-path.outputs.pnpm-store-path }}
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location
       - name: Run the install steps
-        run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run install-website-editor-ci
+        run: nix-shell --quiet --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run install-website-editor-ci
