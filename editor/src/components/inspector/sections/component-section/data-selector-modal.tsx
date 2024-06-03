@@ -139,26 +139,6 @@ export const DataSelectorModal = React.memo(
         '',
       )
 
-      const elementLabelsWithScopes = useEditorState(
-        Substores.fullStore,
-        (store) => {
-          const scopes = getEnclosingScopes(selectedView, store.editor.jsxMetadata)
-          return scopes.map((scope, index) => ({
-            label:
-              index == 0
-                ? 'Global'
-                : MetadataUtils.getElementLabel(
-                    store.editor.allElementProps,
-                    scope,
-                    store.editor.elementPathTree,
-                    store.editor.jsxMetadata,
-                  ),
-            scope: scope,
-          }))
-        },
-        '',
-      )
-
       const [selectedScope, setSelectedScope] = React.useState<ElementPath | null>(
         startingSelectedInsertionCeiling,
       )
@@ -167,7 +147,27 @@ export const DataSelectorModal = React.memo(
         [],
       )
 
-      const filteredVariablesInScope = useFilterVariablesInScope(allVariablesInScope, selectedScope)
+      const { filteredVariablesInScope, scopeBuckets } = useFilterVariablesInScope(
+        allVariablesInScope,
+        selectedScope,
+      )
+
+      const elementLabelsWithScopes = useEditorState(
+        Substores.fullStore,
+        (store) => {
+          const scopes = getEnclosingScopes(store.editor.jsxMetadata, scopeBuckets, selectedView)
+          return scopes.map(({ insertionCeiling, parentElementForNaming, hasContent }, index) => ({
+            label: MetadataUtils.getElementLabel(
+              store.editor.allElementProps,
+              parentElementForNaming,
+              store.editor.elementPathTree,
+              store.editor.jsxMetadata,
+            ),
+            scope: insertionCeiling,
+          }))
+        },
+        'DataSelectorModal elementLabelsWithScopes',
+      )
 
       const [navigatedToPath, setNavigatedToPath] = React.useState<ObjectPath>([])
 
@@ -576,7 +576,10 @@ function putVariablesIntoScopeBuckets(options: DataPickerOption[]): {
 function useFilterVariablesInScope(
   options: DataPickerOption[],
   scopeToShow: ElementPath | null | 'do-not-filter',
-): DataPickerOption[] {
+): {
+  filteredVariablesInScope: Array<DataPickerOption>
+  scopeBuckets: Array<ElementPath>
+} {
   const buckets = React.useMemo(() => putVariablesIntoScopeBuckets(options), [options])
 
   const filteredOptions = React.useMemo(() => {
@@ -596,7 +599,10 @@ function useFilterVariablesInScope(
     return []
   }, [buckets, options, scopeToShow])
 
-  return filteredOptions
+  return {
+    filteredVariablesInScope: filteredOptions,
+    scopeBuckets: Object.keys(buckets).map(EP.fromString),
+  }
 }
 
 function useProcessVariablesInScope(options: DataPickerOption[]): ProcessedVariablesInScope {

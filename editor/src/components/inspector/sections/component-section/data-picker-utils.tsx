@@ -76,20 +76,59 @@ export function jsxElementChildToValuePath(child: JSXElementChild | null): Objec
 }
 
 export function getEnclosingScopes(
-  leafScope: ElementPath,
   metadata: ElementInstanceMetadataMap,
-): ElementPath[] {
-  let result: ElementPath[] = [leafScope]
-  let current = leafScope
-  while (!EP.isEmptyPath(current)) {
-    if (MetadataUtils.isJSXMapExpression(current, metadata)) {
-      result.unshift(current)
-    } else if (EP.isRootElementOfInstance(current)) {
-      result.unshift(EP.parentPath(current))
+  buckets: Array<ElementPath>,
+  leafScope: ElementPath,
+): Array<{
+  insertionCeiling: ElementPath
+  parentElementForNaming: ElementPath
+  hasContent: boolean
+}> {
+  let result: Array<{
+    insertionCeiling: ElementPath
+    parentElementForNaming: ElementPath
+    hasContent: boolean
+  }> = []
+  const pathsToCheck = [
+    ...EP.allPathsInsideComponent(leafScope),
+    EP.emptyElementPath, // empty element path is the file root, TODO make it a separate constant
+  ]
+  for (const current of pathsToCheck) {
+    const parentOfCurrent = EP.parentPath(current)
+
+    // we add maps and components even if they don't have content in scope, for the sake of breadcrumb readability
+    if (
+      MetadataUtils.isJSXMapExpression(parentOfCurrent, metadata) ||
+      EP.isRootElementOfInstance(current)
+    ) {
+      result.unshift({
+        insertionCeiling: current,
+        parentElementForNaming: parentOfCurrent,
+        hasContent: buckets.includes(current),
+      })
+      continue
     }
-    current = EP.parentPath(current)
+
+    // the file root
+    if (EP.pathsEqual(current, EP.emptyElementPath)) {
+      result.unshift({
+        insertionCeiling: current,
+        parentElementForNaming: current,
+        hasContent: buckets.includes(current),
+      })
+      continue
+    }
+
+    // we also add anything that has content in scope even if it's not a component or map
+    if (buckets.includes(current)) {
+      result.unshift({
+        insertionCeiling: current,
+        parentElementForNaming: EP.parentPath(current),
+        hasContent: true,
+      })
+      continue
+    }
   }
 
-  result.unshift(current)
   return result
 }
