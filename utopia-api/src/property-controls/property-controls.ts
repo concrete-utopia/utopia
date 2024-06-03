@@ -12,7 +12,7 @@ interface ControlBaseFields {
   folder?: string
 }
 
-export const PropertyControlIcons = ['arrow-left', 'arrow-right', 'text'] as const
+export const PropertyControlIcons = ['arrow-left', 'arrow-right', 'arrow-up', 'arrow-down'] as const
 export type PropertyControlIcon = (typeof PropertyControlIcons)[number]
 
 // Base Level Controls
