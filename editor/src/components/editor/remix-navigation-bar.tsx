@@ -171,7 +171,7 @@ export const RemixNavigationBar = React.memo(() => {
         >
           <Icn
             category='semantic'
-            type='home-solid'
+            type='home'
             width={18}
             height={18}
             onClick={home}
