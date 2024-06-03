@@ -332,7 +332,7 @@ const CondensedEntryItemContent = React.memo(
               isDataReference,
               <WrappedLayoutIcon
                 entry={props.entry}
-                disabled={isDataReference || showLabel}
+                hideTooltip={isDataReference || showLabel}
                 selected={props.selected}
               />,
             )}
@@ -341,8 +341,9 @@ const CondensedEntryItemContent = React.memo(
           {when(
             isDataReference,
             <DataReferenceCartoucheControl
-              selected={props.selected}
               {...(props.entry as DataReferenceNavigatorEntry)}
+              selected={props.selected}
+              hideTooltip={true}
             />,
           )}
         </div>
@@ -436,7 +437,7 @@ const WrappedExpandableIndicator = React.memo(
 WrappedExpandableIndicator.displayName = 'WrappedExpandableIndicator'
 
 const WrappedLayoutIcon = React.memo(
-  (props: { entry: NavigatorEntry; disabled: boolean; selected: boolean }) => {
+  (props: { entry: NavigatorEntry; hideTooltip: boolean; selected: boolean }) => {
     const entryLabel = useEntryLabel(props.entry)
 
     const iconOverride = useEditorState(
@@ -457,7 +458,7 @@ const WrappedLayoutIcon = React.memo(
     )
 
     return (
-      <Tooltip title={entryLabel} disabled={props.disabled}>
+      <Tooltip title={entryLabel} disabled={props.hideTooltip}>
         <div
           style={{
             width: '100%',
