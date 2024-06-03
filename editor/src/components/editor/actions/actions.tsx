@@ -203,7 +203,6 @@ import type {
   ClearImageFileBlob,
   ClearParseOrPrintInFlight,
   ClearTransientProps,
-  CloseFloatingInsertMenu,
   ClosePopup,
   CloseTextEditor,
   DeleteFile,
@@ -224,7 +223,6 @@ import type {
   Load,
   NewProject,
   OpenCodeEditorFile,
-  OpenFloatingInsertMenu,
   OpenPopup,
   OpenTextEditor,
   RemoveFromNodeModulesContents,
@@ -957,7 +955,6 @@ export function restoreEditorState(
       domWalkerAdditionalElementsToUpdate: currentEditor.canvas.domWalkerAdditionalElementsToUpdate,
       controls: currentEditor.canvas.controls,
     },
-    floatingInsertMenu: currentEditor.floatingInsertMenu,
     inspector: {
       visible: currentEditor.inspector.visible,
       classnameFocusCounter: currentEditor.inspector.classnameFocusCounter,
@@ -2724,23 +2721,6 @@ export const UPDATE_FNS = {
         ...editorWithElementsInserted.trueUpElementsAfterDomWalkerRuns,
         ...newPaths.map(trueUpGroupElementChanged),
       ],
-    }
-  },
-  OPEN_FLOATING_INSERT_MENU: (action: OpenFloatingInsertMenu, editor: EditorModel): EditorModel => {
-    return {
-      ...editor,
-      floatingInsertMenu: action.mode,
-    }
-  },
-  CLOSE_FLOATING_INSERT_MENU: (
-    action: CloseFloatingInsertMenu,
-    editor: EditorModel,
-  ): EditorModel => {
-    return {
-      ...editor,
-      floatingInsertMenu: {
-        insertMenuMode: 'closed',
-      },
     }
   },
   UNWRAP_ELEMENTS: (

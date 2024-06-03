@@ -39,7 +39,6 @@ import {
   expectNoAction,
   expectSingleUndoNSaves,
   searchInComponentPicker,
-  searchInFloatingMenu,
   selectComponentsForTest,
   setFeatureForBrowserTestsUseInDescribeBlockOnly,
 } from '../../../utils/utils.test-utils'
