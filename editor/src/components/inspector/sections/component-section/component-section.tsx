@@ -342,7 +342,7 @@ export function useDataPickerButton(
   variablesInScope: DataPickerOption[],
   onPropertyPicked: DataPickerCallback,
   currentSelectedValuePath: ObjectPath | null,
-  currentlySelectedInsertionCeiling: ElementPath | null,
+  lowestInsertionCeiling: ElementPath | null,
 ) {
   const [referenceElement, setReferenceElement] = React.useState<HTMLDivElement | null>(null)
   const [popperElement, setPopperElement] = React.useState<HTMLDivElement | null>(null)
@@ -378,7 +378,7 @@ export function useDataPickerButton(
         onPropertyPicked={onPropertyPicked}
         variablesInScope={variablesInScope}
         startingSelectedValuePath={currentSelectedValuePath}
-        startingSelectedInsertionCeiling={currentlySelectedInsertionCeiling}
+        lowestInsertionCeiling={lowestInsertionCeiling}
       />
     ),
     [
@@ -388,7 +388,7 @@ export function useDataPickerButton(
       popper.attributes.popper,
       popper.styles.popper,
       variablesInScope,
-      currentlySelectedInsertionCeiling,
+      lowestInsertionCeiling,
     ],
   )
 

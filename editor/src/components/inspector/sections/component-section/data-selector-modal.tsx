@@ -45,7 +45,7 @@ export interface DataSelectorModalProps {
   variablesInScope: DataPickerOption[]
   onPropertyPicked: DataPickerCallback
   startingSelectedValuePath: ObjectPath | null
-  startingSelectedInsertionCeiling: ElementPath | null
+  lowestInsertionCeiling: ElementPath | null
 }
 
 const Separator = React.memo(
@@ -127,7 +127,7 @@ export const DataSelectorModal = React.memo(
         variablesInScope: allVariablesInScope,
         onPropertyPicked,
         startingSelectedValuePath,
-        startingSelectedInsertionCeiling,
+        lowestInsertionCeiling,
       },
       forwardedRef,
     ) => {
@@ -147,10 +147,10 @@ export const DataSelectorModal = React.memo(
       const scopeBucketPaths = Object.keys(scopeBuckets).map((k) => EP.fromString(k))
 
       const firstMatchingScopeBucketForStartingInsertionCeiling = React.useMemo(() => {
-        if (startingSelectedInsertionCeiling == null) {
+        if (lowestInsertionCeiling == null) {
           return null
         }
-        const allPaths = EP.allPathsInsideComponent(startingSelectedInsertionCeiling)
+        const allPaths = EP.allPathsInsideComponent(lowestInsertionCeiling)
         for (const path of allPaths) {
           if (scopeBuckets[EP.toString(path)] != null) {
             return path
@@ -158,8 +158,8 @@ export const DataSelectorModal = React.memo(
         }
 
         // fallback
-        return startingSelectedInsertionCeiling
-      }, [scopeBuckets, startingSelectedInsertionCeiling])
+        return lowestInsertionCeiling
+      }, [scopeBuckets, lowestInsertionCeiling])
 
       const [selectedScope, setSelectedScope] = React.useState<ElementPath | null>(
         firstMatchingScopeBucketForStartingInsertionCeiling,
