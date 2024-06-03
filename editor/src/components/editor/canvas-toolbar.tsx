@@ -189,8 +189,8 @@ const UnreadThreadsIndicator = React.memo(() => {
             ? `1.5px solid ${colorTheme.primary.value}`
             : `1.5px solid ${colorTheme.bg1.value}`,
         position: 'relative',
-        top: 8,
-        left: -15,
+        top: 5,
+        left: -9,
         opacity: unreadThreads.length > 0 ? 1 : 0,
       }}
     />

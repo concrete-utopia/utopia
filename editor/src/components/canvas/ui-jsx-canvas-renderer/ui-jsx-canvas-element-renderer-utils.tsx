@@ -78,6 +78,7 @@ import {
 import { RemixSceneComponent } from './remix-scene-component'
 import { STEGANOGRAPHY_ENABLED, isFeatureEnabled } from '../../../utils/feature-switches'
 import { jsxElementChildToText } from './jsx-element-child-to-text'
+import type { FilePathMappings } from '../../../core/model/project-file-utils'
 
 export interface RenderContext {
   rootScope: MapLike<any>
@@ -98,6 +99,7 @@ export interface RenderContext {
   highlightBounds: HighlightBoundsForUids | null
   editedText: ElementPath | null
   variablesInScope: VariableData
+  filePathMappings: FilePathMappings
 }
 
 export function createLookupRender(
@@ -704,6 +706,7 @@ function renderJSXElement(
     highlightBounds,
     editedText,
     variablesInScope,
+    filePathMappings,
   } = renderContext
   const createChildrenElement = (child: JSXElementChild): React.ReactChild => {
     const childPath = optionalMap((path) => EP.appendToPath(path, getUtopiaID(child)), elementPath)
@@ -729,7 +732,7 @@ function renderJSXElement(
   // elements from scope and import to confirm it's not a top level element.
   const importedFrom = elementIsFragment
     ? null
-    : importedFromWhere(filePath, jsx.name.baseVariable, [], imports)
+    : importedFromWhere(filePathMappings, filePath, jsx.name.baseVariable, [], imports)
 
   const isElementImportedFromModule = (moduleName: string, name: string) =>
     !elementIsIntrinsic &&

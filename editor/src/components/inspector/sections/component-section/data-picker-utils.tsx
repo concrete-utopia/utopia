@@ -62,14 +62,14 @@ export function dataPickerFilterOptionToString(mode: DataPickerFilterOption): st
   }
 }
 
-export const DataPickerPreferredAllAtom = atom<DataPickerFilterOption>('preferred')
+export const DataPickerPreferredAllAtom = atom<DataPickerFilterOption>('all')
 
 export type DataPickerCallback = (e: JSExpressionOtherJavaScript) => void
 
 export type ObjectPath = Array<string | number>
 
-export function jsxElementChildToValuePath(child: JSXElementChild): ObjectPath | null {
-  if (!isJSExpression(child)) {
+export function jsxElementChildToValuePath(child: JSXElementChild | null): ObjectPath | null {
+  if (child == null || !isJSExpression(child)) {
     return null
   }
   return foldEither(

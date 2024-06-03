@@ -7382,7 +7382,7 @@ export var storyboard = (
       )
     })
     describe('groups', () => {
-      it.skip('cannot wrap an empty group', async () => {
+      it('cannot wrap an empty group', async () => {
         const testCode = `
         <div data-uid='aaa'>
           <Group data-uid='group' />
@@ -7408,7 +7408,7 @@ export var storyboard = (
         )
       })
 
-      it.skip('can group conditionals', async () => {
+      it('can group conditionals', async () => {
         const testCode = `
           <div data-uid='aaa'>
             <div data-uid='foo' style={{ position: 'absolute', width: 50, height: 50, top: 0, left: 0, background: 'red' }} />
@@ -7493,10 +7493,10 @@ export var storyboard = (
           ),
         )
 
-        // expect(renderResult.getEditorState().editor.toasts.length).toEqual(1)
-        // expect(renderResult.getEditorState().editor.toasts[0].message).toEqual(
-        //   'Not all targets can be wrapped into a Group',
-        // )
+        expect(renderResult.getEditorState().editor.toasts.length).toEqual(1)
+        expect(renderResult.getEditorState().editor.toasts[0].message).toEqual(
+          'Not all targets can be wrapped into a Group',
+        )
       })
 
       it('cannot group conditionals with active branch that cannot be a group child', async () => {
@@ -7535,13 +7535,13 @@ export var storyboard = (
           ),
         )
 
-        // expect(renderResult.getEditorState().editor.toasts.length).toEqual(1)
-        // expect(renderResult.getEditorState().editor.toasts[0].message).toEqual(
-        //   'Not all targets can be wrapped into a Group',
-        // )
+        expect(renderResult.getEditorState().editor.toasts.length).toEqual(1)
+        expect(renderResult.getEditorState().editor.toasts[0].message).toEqual(
+          'Not all targets can be wrapped into a Group',
+        )
       })
 
-      it.skip('can wrap nested conditionals', async () => {
+      it('can wrap nested conditionals', async () => {
         const testCode = `
           <div data-uid='aaa'>
             <div data-uid='foo' style={{ position: 'absolute', width: 50, height: 50, top: 0, left: 0, background: 'red' }} />
@@ -7646,10 +7646,10 @@ export var storyboard = (
           ),
         )
 
-        // expect(renderResult.getEditorState().editor.toasts.length).toEqual(1)
-        // expect(renderResult.getEditorState().editor.toasts[0].message).toEqual(
-        //   'Not all targets can be wrapped into a Group',
-        // )
+        expect(renderResult.getEditorState().editor.toasts.length).toEqual(1)
+        expect(renderResult.getEditorState().editor.toasts[0].message).toEqual(
+          'Not all targets can be wrapped into a Group',
+        )
       })
     })
   })

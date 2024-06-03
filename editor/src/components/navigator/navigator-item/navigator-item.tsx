@@ -1076,6 +1076,8 @@ export const NavigatorItem: React.FunctionComponent<
                 isSlot={isPlaceholder}
                 iconColor={iconColor}
                 background={rowStyle.background}
+                isScene={isScene}
+                collapsed={collapsed}
               />,
             )}
           </FlexRow>
