@@ -35,7 +35,6 @@ import {
   traceDataFromVariableName,
 } from '../../../../core/data-tracing/data-tracing'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
-import { toString } from '../../../../core/shared/element-path'
 
 export const DataSelectorPopupBreadCrumbsTestId = 'data-selector-modal-top-bar'
 

@@ -4,7 +4,7 @@ import { withUnderlyingTarget } from '../../components/editor/store/editor-state
 import * as TPP from '../../components/template-property-path'
 import { MetadataUtils } from '../model/element-metadata-utils'
 import { findContainingComponentForPath } from '../model/element-template-utils'
-import { last, mapFirstApplicable } from '../shared/array-utils'
+import { mapFirstApplicable } from '../shared/array-utils'
 import type { Either } from '../shared/either'
 import { isLeft, isRight, left, mapEither, maybeEitherToMaybe, right } from '../shared/either'
 import * as EP from '../shared/element-path'
@@ -416,9 +416,7 @@ export function traceDataFromVariableName(
 ): DataTracingResult {
   const component = MetadataUtils.findElementByElementPath(metadata, enclosingScope)
   if (component == null) {
-    return dataTracingFailed(
-      'traceDataFromVariableName - Cannot find element instance pointed to by enclosing scope',
-    )
+    return dataTracingFailed('Could not find element instance pointed to by enclosing scope')
   }
 
   const componentHoldingElement = findUnderlyingTargetComponentImplementationFromImportInfo(
@@ -427,7 +425,7 @@ export function traceDataFromVariableName(
   )
 
   if (componentHoldingElement == null || componentHoldingElement.arbitraryJSBlock == null) {
-    return dataTracingFailed('traceDataFromVariableName - Could not find containing component')
+    return dataTracingFailed('Could not find containing component')
   }
 
   return walkUpInnerScopesUntilReachingComponent(
