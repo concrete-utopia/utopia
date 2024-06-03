@@ -2,7 +2,7 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import { useAtom } from 'jotai'
-import React from 'react'
+import React, { useState } from 'react'
 import {
   ActiveRemixSceneAtom,
   RemixNavigationAtom,
@@ -28,6 +28,15 @@ export const RemixNavigationBarButtonTestId = (button: RemixSceneLabelButtonType
   `remix-navigation-bar-button-${button}`
 
 export const RemixNavigationBar = React.memo(() => {
+  const [isHovered, setIsHovered] = useState(false)
+  const setIsHoveredTrue = React.useCallback(() => {
+    setIsHovered(true)
+  }, [])
+
+  const setIsHoveredFalse = React.useCallback(() => {
+    setIsHovered(false)
+  }, [])
+
   const [navigationControls] = useAtom(RemixNavigationAtom)
   const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
   const routes = useEditorState(
@@ -162,13 +171,7 @@ export const RemixNavigationBar = React.memo(() => {
         </span>
       </Tooltip>
       <Tooltip title={'Home'} placement='bottom'>
-        <span
-          css={{
-            '&:hover': {
-              color: colorTheme.dynamicBlue.value,
-            },
-          }}
-        >
+        <div onMouseEnter={setIsHoveredTrue} onMouseLeave={setIsHoveredFalse}>
           <Icn
             category='semantic'
             type='home'
@@ -176,10 +179,10 @@ export const RemixNavigationBar = React.memo(() => {
             height={18}
             onClick={home}
             data-testid={RemixNavigationBarButtonTestId('home')}
-            style={{ cursor: 'pointer', fontSize: 16 }}
-            color='main'
+            style={{ cursor: 'pointer' }}
+            color={isHovered ? 'dynamic' : 'main'}
           />
-        </span>
+        </div>
       </Tooltip>
       <FlexRow
         data-testid={RemixNavigationBarPathTestId}
