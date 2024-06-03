@@ -5,7 +5,6 @@ import type { ElementInstanceMetadataMap } from '../../../core/shared/element-te
 import { arrayEqualsByReference, assertNever } from '../../../core/shared/utils'
 import type {
   AllElementProps,
-  DerivedState,
   EditorState,
   EditorStorePatched,
 } from '../../editor/store/editor-state'
@@ -45,7 +44,6 @@ import { flexResizeBasicStrategy } from './strategies/flex-resize-basic-strategy
 import { optionalMap } from '../../../core/shared/optional-utils'
 import { setPaddingStrategy } from './strategies/set-padding-strategy'
 import { drawToInsertMetaStrategy } from './strategies/draw-to-insert-metastrategy'
-import { dragToInsertMetaStrategy } from './strategies/drag-to-insert-metastrategy'
 import { DoNothingStrategyID, dragToMoveMetaStrategy } from './strategies/drag-to-move-metastrategy'
 import { ancestorMetaStrategy } from './strategies/ancestor-metastrategy'
 import { keyboardReorderStrategy } from './strategies/keyboard-reorder-strategy'
@@ -166,7 +164,6 @@ export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   preventOnRootElements(resizeStrategies),
   propertyControlStrategies,
   drawToInsertMetaStrategy,
-  dragToInsertMetaStrategy,
   ancestorMetaStrategy(AncestorCompatibleStrategies, 1),
   keyboardShortcutStrategies,
   drawToInsertTextStrategy,
