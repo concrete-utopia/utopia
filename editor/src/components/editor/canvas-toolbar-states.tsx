@@ -21,7 +21,6 @@ type ToolbarMode =
         imageInsertionActive: boolean
         buttonInsertionActive: boolean
         conditionalInsertionActive: boolean
-        floatingInsertMenuOpen: boolean
         insertSidebarOpen: boolean
       }
     }
@@ -34,12 +33,6 @@ export function useToolbarMode(): ToolbarMode {
     Substores.restOfEditor,
     (store) => store.editor.mode,
     'useGetToolbarMode editorMode',
-  )
-
-  const floatingInsertMenu = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.floatingInsertMenu.insertMenuMode,
-    'useGetToolbarMode floatingInsertMenu',
   )
 
   const dragStrategyFlags = useGetDragStrategyIndicatorFlags()
@@ -98,7 +91,6 @@ export function useToolbarMode(): ToolbarMode {
   if (
     (editorMode.type === 'select' && editorMode.toolbarMode === 'pseudo-insert') ||
     editorMode.type === 'insert' ||
-    floatingInsertMenu === 'insert' ||
     rightMenuTab === RightMenuTab.Insert
   ) {
     const insertionTargetDiv =
@@ -127,7 +119,6 @@ export function useToolbarMode(): ToolbarMode {
         imageInsertionActive: insertionTargetImage,
         buttonInsertionActive: insertionTargetButton,
         conditionalInsertionActive: insertionTargetConditional,
-        floatingInsertMenuOpen: floatingInsertMenu === 'insert',
         insertSidebarOpen: rightMenuTab === RightMenuTab.Insert,
       },
     }
@@ -136,10 +127,6 @@ export function useToolbarMode(): ToolbarMode {
   // Edit Mode
   if (nothingSelected) {
     return { primary: 'edit', secondary: 'nothing-selected' }
-  }
-
-  if (floatingInsertMenu === 'swap' || floatingInsertMenu === 'wrap') {
-    return { primary: 'edit', secondary: 'selected' }
   }
 
   if (dragStrategyFlags?.dragStarted) {

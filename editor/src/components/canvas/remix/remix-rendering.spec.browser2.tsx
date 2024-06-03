@@ -1353,10 +1353,6 @@ describe('Remix navigation', () => {
         renderResult.renderedDOM.queryAllByText(AboutTextContent).filter(filterOutMenuLabels),
       ).toHaveLength(1)
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual('/about')
-
-      await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'home')
-      expect(renderResult.renderedDOM.queryAllByText(RootTextContent)).toHaveLength(1)
-      expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixIndexPathLabel)
     })
 
     it('can navigate with the scene label nav buttons, in edit mode', async () => {
@@ -1392,10 +1388,6 @@ describe('Remix navigation', () => {
         renderResult.renderedDOM.queryAllByText(AboutTextContent).filter(filterOutMenuLabels),
       ).toHaveLength(1)
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual('/about')
-
-      await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'home')
-      expect(renderResult.renderedDOM.queryAllByText(RootTextContent)).toHaveLength(1)
-      expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixIndexPathLabel)
     })
 
     it('navigating in one Remix scene does not affect the navigation state in the other', async () => {

@@ -35,6 +35,7 @@ import {
   traceDataFromVariableName,
 } from '../../../../core/data-tracing/data-tracing'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
+import * as EP from '../../../../core/shared/element-path'
 
 export const DataSelectorPopupBreadCrumbsTestId = 'data-selector-modal-top-bar'
 
@@ -228,7 +229,7 @@ export const DataSelectorModal = React.memo(
       const variableSources = React.useMemo(() => {
         let result: { [valuePath: string]: CartoucheUIProps['source'] } = {}
         for (const variable of focusedVariableChildren) {
-          const container = variable.variableInfo.sourceElement
+          const container = EP.parentPath(variable.variableInfo.sourceElement)
           const trace = traceDataFromVariableName(
             container,
             variable.variableInfo.expression,

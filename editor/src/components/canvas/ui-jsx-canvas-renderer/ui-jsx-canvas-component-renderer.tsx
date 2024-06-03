@@ -173,7 +173,7 @@ export function createComponentRendererComponent(params: {
     }
 
     let spiedVariablesInScope: VariableData = {}
-    if (instancePath != null && utopiaJsxComponent.param != null) {
+    if (rootElementPath != null && utopiaJsxComponent.param != null) {
       spiedVariablesInScope = mapArrayToDictionary(
         propertiesExposedByParam(utopiaJsxComponent.param),
         (paramName) => {
@@ -182,7 +182,7 @@ export function createComponentRendererComponent(params: {
         (paramName) => {
           return {
             spiedValue: scope[paramName],
-            insertionCeiling: instancePath,
+            insertionCeiling: rootElementPath,
           }
         },
       )
@@ -267,13 +267,13 @@ export function createComponentRendererComponent(params: {
 
       switch (arbitraryBlockResult.type) {
         case 'ARBITRARY_BLOCK_RAN_TO_END':
-          if (instancePath != null) {
+          if (rootElementPath != null) {
             spiedVariablesInScope = {
               ...spiedVariablesInScope,
               ...objectMap(
                 (spiedValue) => ({
                   spiedValue: spiedValue,
-                  insertionCeiling: instancePath,
+                  insertionCeiling: rootElementPath,
                 }),
                 arbitraryBlockResult.scope,
               ),

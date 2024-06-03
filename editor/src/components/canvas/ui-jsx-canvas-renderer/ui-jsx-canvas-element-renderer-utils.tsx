@@ -137,7 +137,6 @@ export function createLookupRender(
     let innerVariablesInScope: VariableData = {
       ...context.variablesInScope,
     }
-
     if (innerPath != null) {
       for (const valueInScope of valuesInScopeFromParameters) {
         innerVariablesInScope[valueInScope] = {
