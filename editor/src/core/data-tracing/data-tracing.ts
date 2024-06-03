@@ -430,43 +430,16 @@ export function traceDataFromVariableName(
     return dataTracingFailed('traceDataFromVariableName - Could not find containing component')
   }
 
-  const poassibleResults = componentHoldingElement.arbitraryJSBlock.statements.flatMap(
-    (statement) => {
-      switch (statement.type) {
-        case 'JS_OPAQUE_ARBITRARY_STATEMENT':
-          return []
-        case 'JS_ASSIGNMENT_STATEMENT':
-          return statement.assignments.flatMap((assigment) => {
-            if (
-              assigment.leftHandSide.type !== 'REGULAR_PARAM' ||
-              assigment.leftHandSide.paramName !== variableName
-            ) {
-              return []
-            }
-
-            return walkUpInnerScopesUntilReachingComponent(
-              metadata,
-              projectContents,
-              enclosingScope,
-              enclosingScope,
-              enclosingScope,
-              componentHoldingElement,
-              jsIdentifier(variableName, '', null, emptyComments),
-              pathDrillSoFar,
-            )
-          })
-        default:
-          assertNever(statement)
-      }
-    },
+  return walkUpInnerScopesUntilReachingComponent(
+    metadata,
+    projectContents,
+    enclosingScope,
+    enclosingScope,
+    enclosingScope,
+    componentHoldingElement,
+    jsIdentifier(variableName, '', null, emptyComments),
+    pathDrillSoFar,
   )
-
-  const lastResult = last(poassibleResults)
-  if (lastResult == null) {
-    return dataTracingFailed('too bad')
-  }
-
-  return lastResult
 }
 
 function traceDataFromIdentifierOrAccess(
