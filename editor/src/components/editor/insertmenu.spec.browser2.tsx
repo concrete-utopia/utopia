@@ -9,6 +9,8 @@ import {
 } from '../canvas/event-helpers.test-utils'
 import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
 import {
+  TestAppUID,
+  TestSceneUID,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
@@ -16,9 +18,13 @@ import {
 import { setPanelVisibility, setRightMenuTab } from './actions/action-creators'
 import { InsertMenuFilterTestId } from './insertmenu'
 import { RightMenuTab } from './store/editor-state'
+import { ComponentPickerTestId } from '../navigator/navigator-item/component-picker'
+import * as EP from '../../core/shared/element-path'
+import { BakedInStoryboardUID } from '../../core/model/scene-utils'
+import { searchInComponentPicker, selectComponentsForTest } from '../../utils/utils.test-utils'
 
 function getInsertItems() {
-  return screen.queryAllByTestId(/^insert-item-/gi)
+  return screen.queryAllByTestId(/^component-picker-item-/gi)
 }
 
 const allInsertItemsCount = 23
@@ -42,38 +48,13 @@ describe('insert menu', () => {
 
       expect(getInsertItems().length).toEqual(allInsertItemsCount)
 
-      document.execCommand('insertText', false, 'span')
+      await searchInComponentPicker(renderResult, 'span')
 
       expect(getInsertItems().length).toEqual(1)
       expect(getInsertItems()[0].innerText).toEqual('span')
     })
-    it('can filter by group name', async () => {
-      const renderResult = await renderTestEditorWithCode(
-        makeTestProjectCodeWithSnippet(`<div />`),
-        'await-first-dom-report',
-      )
-
-      await openInsertMenu(renderResult)
-
-      document.execCommand('insertText', false, 'elem')
-
-      expect(getInsertItems().length).toEqual(9)
-      expect(getInsertItems().map((s) => s.innerText)).toEqual([
-        // html elements group
-        'span',
-        'h1',
-        'h2',
-        'p',
-        'button',
-        'input',
-        'video',
-        'img',
-        // sample group
-        'Sample text',
-      ])
-    })
     describe('no match', () => {
-      it('shows all elements', async () => {
+      it('shows no elements', async () => {
         const renderResult = await renderTestEditorWithCode(
           makeTestProjectCodeWithSnippet(`<div />`),
           'await-first-dom-report',
@@ -81,20 +62,9 @@ describe('insert menu', () => {
 
         await openInsertMenu(renderResult)
 
-        document.execCommand('insertText', false, 'wr0ng')
-        expect(getInsertItems().length).toEqual(allInsertItemsCount)
+        await searchInComponentPicker(renderResult, 'wr0ng')
+        expect(getInsertItems().length).toEqual(0)
       })
-    })
-    it('does not show insertables that cannot be inserted', async () => {
-      const renderResult = await renderTestEditorWithCode(
-        makeTestProjectCodeWithSnippet(`<div />`),
-        'await-first-dom-report',
-      )
-
-      await openInsertMenu(renderResult)
-
-      document.execCommand('insertText', false, 'group')
-      expect(getInsertItems().length).toEqual(allInsertItemsCount)
     })
   })
 
@@ -115,34 +85,15 @@ describe('insert menu', () => {
       'await-first-dom-report',
     )
 
+    await selectComponentsForTest(renderResult, [
+      EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root`),
+    ])
+
     await openInsertMenu(renderResult)
 
-    FOR_TESTS_setNextGeneratedUid('the-div')
+    FOR_TESTS_setNextGeneratedUid('div')
 
-    expect(getInsertItems().length).toEqual(allInsertItemsCount)
-
-    document.execCommand('insertText', false, 'div')
-
-    const filterBox = await screen.findByTestId(InsertMenuFilterTestId)
-    forceNotNull('the filter box must not be null', filterBox)
-
-    await pressKey('Enter', { targetElement: filterBox })
-
-    const targetElement = renderResult.renderedDOM.getByTestId('root')
-    const targetElementBounds = targetElement.getBoundingClientRect()
-    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-
-    const startPoint = {
-      x: targetElementBounds.x + 5,
-      y: targetElementBounds.y + 5,
-    }
-    const endPoint = {
-      x: targetElementBounds.x + 100,
-      y: targetElementBounds.y + 150,
-    }
-
-    await mouseMoveToPoint(canvasControlsLayer, startPoint)
-    await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+    await searchInComponentPicker(renderResult, 'div')
     await renderResult.getDispatchFollowUpActionsFinished()
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -161,12 +112,8 @@ describe('insert menu', () => {
             style={{
                 backgroundColor: '#aaaaaa33',
                 position: 'absolute',
-                left: 6,
-                top: 6,
-                width: 95,
-                height: 145,
             }}
-            data-uid='the-div'
+            data-uid='div'
         />
         </div>
       `),

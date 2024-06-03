@@ -129,6 +129,7 @@ export const RemixNavigationBar = React.memo(() => {
         pointerEvents: 'initial',
         userSelect: 'none',
         padding: '0 8px',
+        height: 32,
       }}
       onMouseDown={stopPropagation}
       onClick={stopPropagation}
