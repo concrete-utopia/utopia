@@ -182,7 +182,7 @@ export function createComponentRendererComponent(params: {
         (paramName) => {
           return {
             spiedValue: scope[paramName],
-            insertionCeiling: instancePath,
+            insertionCeiling: rootElementPath,
           }
         },
       )
@@ -272,7 +272,7 @@ export function createComponentRendererComponent(params: {
             ...objectMap(
               (spiedValue) => ({
                 spiedValue: spiedValue,
-                insertionCeiling: instancePath,
+                insertionCeiling: rootElementPath,
               }),
               arbitraryBlockResult.scope,
             ),
