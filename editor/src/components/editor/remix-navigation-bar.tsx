@@ -187,7 +187,7 @@ export const RemixNavigationBar = React.memo(() => {
       <FlexRow
         data-testid={RemixNavigationBarPathTestId}
         style={{
-          backgroundColor: colorTheme.bg3.value,
+          backgroundColor: colorTheme.seperator.value,
           borderRadius: 20,
           padding: '2px 2px 2px 6px',
           fontSize: 11,
