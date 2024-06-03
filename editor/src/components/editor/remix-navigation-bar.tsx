@@ -171,15 +171,18 @@ export const RemixNavigationBar = React.memo(() => {
         </span>
       </Tooltip>
       <Tooltip title={'Home'} placement='bottom'>
-        <div onMouseEnter={setIsHoveredTrue} onMouseLeave={setIsHoveredFalse}>
+        <div
+          onMouseEnter={setIsHoveredTrue}
+          onMouseLeave={setIsHoveredFalse}
+          onClick={home}
+          data-testid={RemixNavigationBarButtonTestId('home')}
+          style={{ cursor: 'pointer' }}
+        >
           <Icn
             category='semantic'
             type='home'
             width={18}
             height={18}
-            onClick={home}
-            data-testid={RemixNavigationBarButtonTestId('home')}
-            style={{ cursor: 'pointer' }}
             color={isHovered ? 'dynamic' : 'main'}
           />
         </div>
