@@ -139,16 +139,39 @@ export const DataSelectorModal = React.memo(
         '',
       )
 
+      const scopeBuckets = React.useMemo(
+        () => putVariablesIntoScopeBuckets(allVariablesInScope),
+        [allVariablesInScope],
+      )
+
+      const scopeBucketPaths = Object.keys(scopeBuckets).map((k) => EP.fromString(k))
+
+      const firstMatchingScopeBucketForStartingInsertionCeiling = React.useMemo(() => {
+        if (startingSelectedInsertionCeiling == null) {
+          return null
+        }
+        const allPaths = EP.allPathsInsideComponent(startingSelectedInsertionCeiling)
+        for (const path of allPaths) {
+          if (scopeBuckets[EP.toString(path)] != null) {
+            return path
+          }
+        }
+
+        // fallback
+        return startingSelectedInsertionCeiling
+      }, [scopeBuckets, startingSelectedInsertionCeiling])
+
       const [selectedScope, setSelectedScope] = React.useState<ElementPath | null>(
-        startingSelectedInsertionCeiling,
+        firstMatchingScopeBucketForStartingInsertionCeiling,
       )
       const setSelectedScopeCurried = React.useCallback(
         (name: ElementPath) => () => setSelectedScope(name),
         [],
       )
 
-      const { filteredVariablesInScope, scopeBuckets } = useFilterVariablesInScope(
+      const { filteredVariablesInScope } = useFilterVariablesInScope(
         allVariablesInScope,
+        scopeBuckets,
         selectedScope,
       )
 
@@ -159,7 +182,7 @@ export const DataSelectorModal = React.memo(
             store.editor.jsxMetadata,
             store.editor.allElementProps,
             store.editor.elementPathTree,
-            scopeBuckets,
+            scopeBucketPaths,
             selectedView,
           )
           return scopes.map(({ insertionCeiling, label, hasContent }) => ({
@@ -563,9 +586,11 @@ function childTypeToCartoucheDataType(
   }
 }
 
-function putVariablesIntoScopeBuckets(options: DataPickerOption[]): {
+type ScopeBuckets = {
   [insertionCeiling: string]: Array<DataPickerOption>
-} {
+}
+
+function putVariablesIntoScopeBuckets(options: DataPickerOption[]): ScopeBuckets {
   const buckets: { [insertionCeiling: string]: Array<DataPickerOption> } = groupBy(
     (o) => optionalMap(EP.toString, o.insertionCeiling) ?? '', // '' represents "file root scope", TODO make it clearer
     options,
@@ -576,13 +601,11 @@ function putVariablesIntoScopeBuckets(options: DataPickerOption[]): {
 
 function useFilterVariablesInScope(
   options: DataPickerOption[],
+  scopeBuckets: ScopeBuckets,
   scopeToShow: ElementPath | null | 'do-not-filter',
 ): {
   filteredVariablesInScope: Array<DataPickerOption>
-  scopeBuckets: Array<ElementPath>
 } {
-  const buckets = React.useMemo(() => putVariablesIntoScopeBuckets(options), [options])
-
   const filteredOptions = React.useMemo(() => {
     if (scopeToShow === 'do-not-filter' || scopeToShow == null) {
       return options
@@ -592,17 +615,16 @@ function useFilterVariablesInScope(
     const scopesToCheck = EP.allPathsInsideComponent(scopeToShow)
     for (const scope of scopesToCheck) {
       const scopeString = EP.toString(scope)
-      if (buckets[scopeString] != null) {
-        return buckets[scopeString]
+      if (scopeBuckets[scopeString] != null) {
+        return scopeBuckets[scopeString]
       }
     }
 
     return []
-  }, [buckets, options, scopeToShow])
+  }, [scopeBuckets, options, scopeToShow])
 
   return {
     filteredVariablesInScope: filteredOptions,
-    scopeBuckets: Object.keys(buckets).map(EP.fromString),
   }
 }
 
