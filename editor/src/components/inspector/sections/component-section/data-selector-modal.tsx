@@ -159,16 +159,15 @@ export const DataSelectorModal = React.memo(
         '',
       )
 
-      const [selectedScopeName, setSelectedScopeName] = React.useState<string | null>(null)
-      const setSelectedScopeNameCurried = React.useCallback(
-        (name: string) => () => setSelectedScopeName(name),
+      const [selectedScope, setSelectedScope] = React.useState<ElementPath | null>(
+        startingSelectedInsertionCeiling,
+      )
+      const setSelectedScopeCurried = React.useCallback(
+        (name: ElementPath) => () => setSelectedScope(name),
         [],
       )
 
-      const filteredVariablesInScope = useFilterVariablesInScope(
-        allVariablesInScope,
-        startingSelectedInsertionCeiling,
-      )
+      const filteredVariablesInScope = useFilterVariablesInScope(allVariablesInScope, selectedScope)
 
       const [navigatedToPath, setNavigatedToPath] = React.useState<ObjectPath>([])
 
@@ -408,17 +407,17 @@ export const DataSelectorModal = React.memo(
                 {valuePreviewText}
               </FlexRow>
               <FlexRow style={{ gap: 2, paddingBottom: 4, paddingTop: 8 }}>
-                {elementLabelsWithScopes.map(({ label }, idx, a) => (
+                {elementLabelsWithScopes.map(({ label, scope }, idx, a) => (
                   <React.Fragment key={`label-${idx}`}>
                     <div
-                      onClick={setSelectedScopeNameCurried(label)}
+                      onClick={setSelectedScopeCurried(scope)}
                       style={{
                         width: 'max-content',
                         padding: '2px 4px',
                         borderRadius: 4,
                         cursor: 'pointer',
                         fontSize: 12,
-                        fontWeight: selectedScopeName !== label ? undefined : 800,
+                        fontWeight: EP.pathsEqual(selectedScope, scope) ? 800 : undefined,
                       }}
                     >
                       {label}
