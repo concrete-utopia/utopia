@@ -4,7 +4,6 @@ import { createTestProjectWithMultipleFiles } from '../../sample-projects/sample
 import {
   selectComponentsForTest,
   expectSingleUndo2Saves,
-  searchInFloatingMenu,
   searchInComponentPicker,
 } from '../../utils/utils.test-utils'
 import {
@@ -871,7 +870,7 @@ export var storyboard = (props) => {
     await selectComponentsForTest(editor, [EP.fromString('sb/scene-1/insert-target')])
 
     await pressKey('a')
-    await searchInFloatingMenu(editor, 'DefaultExportedComp')
+    await searchInComponentPicker(editor, 'DefaultExportedComp')
 
     expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState()))
       .toEqual(`import * as React from 'react'
@@ -1431,7 +1430,7 @@ export var Playground = () => {
       const editor = await setup()
 
       await pressKey('a')
-      await searchInFloatingMenu(editor, 'fragm')
+      await searchInComponentPicker(editor, 'fragm')
 
       expect(getPrintedUiJsCode(editor.getEditorState(), PlaygroundFilePath))
         .toEqual(`import * as React from 'react'
@@ -1468,7 +1467,7 @@ export var Playground = () => {
       const editor = await setup()
 
       await pressKey('s')
-      await searchInFloatingMenu(editor, 'fragm')
+      await searchInComponentPicker(editor, 'fragm')
 
       expect(getPrintedUiJsCode(editor.getEditorState(), PlaygroundFilePath))
         .toEqual(`import * as React from 'react'
@@ -1489,104 +1488,6 @@ export var Playground = () => {
 `)
     })
   })
-
-  describe('groups', () => {
-    it('can wrap elements in a group', async () => {
-      const editor = await renderTestEditorWithCode(
-        makeTestProjectCodeWithSnippet(`
-          <div
-            style={{
-              backgroundColor: '#aaaaaa33',
-              position: 'absolute',
-              left: 57,
-              top: 168,
-              width: 247,
-              height: 402,
-            }}
-            data-uid='container'
-          >
-            <div data-uid='target' />
-          </div>
-        `),
-        'await-first-dom-report',
-      )
-
-      await selectComponentsForTest(editor, [
-        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/target`),
-      ])
-
-      FOR_TESTS_setNextGeneratedUid('new-group')
-
-      await wrapViaAddElementPopup(editor, 'group')
-
-      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-        makeTestProjectCodeWithSnippet(`
-          <div
-            style={{
-              backgroundColor: '#aaaaaa33',
-              position: 'absolute',
-              left: 57,
-              top: 168,
-              width: 247,
-              height: 402,
-            }}
-            data-uid='container'
-          >
-            <Group
-              style={{ position: 'absolute', left: 0, top: 0 }}
-              data-uid='new-group'
-            >
-              <div data-uid='target' />
-            </Group>
-          </div>
-      `),
-      )
-    })
-    xit('cannot insert groups because they are not available for insert', async () => {
-      const editor = await renderTestEditorWithCode(
-        makeTestProjectCodeWithSnippet(`
-          <div
-            style={{
-              backgroundColor: '#aaaaaa33',
-              position: 'absolute',
-              left: 57,
-              top: 168,
-              width: 247,
-              height: 402,
-            }}
-            data-uid='container'
-          >
-            <div data-uid='target' />
-          </div>
-        `),
-        'await-first-dom-report',
-      )
-
-      await selectComponentsForTest(editor, [
-        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/target`),
-      ])
-
-      await insertViaAddElementPopup(editor, 'group')
-
-      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-        makeTestProjectCodeWithSnippet(`
-          <div
-            style={{
-              backgroundColor: '#aaaaaa33',
-              position: 'absolute',
-              left: 57,
-              top: 168,
-              width: 247,
-              height: 402,
-            }}
-            data-uid='container'
-          >
-            <div data-uid='target' />
-          </div>
-      `),
-      )
-    })
-  })
 })
 
 async function clickEmptySlot(editor: EditorRenderResult) {
@@ -1596,15 +1497,10 @@ async function clickEmptySlot(editor: EditorRenderResult) {
 
 async function insertViaAddElementPopup(editor: EditorRenderResult, query: string) {
   await pressKey('a')
-  await searchInFloatingMenu(editor, query)
-}
-
-async function wrapViaAddElementPopup(editor: EditorRenderResult, query: string) {
-  await pressKey('g')
-  await searchInFloatingMenu(editor, query)
+  await searchInComponentPicker(editor, query)
 }
 
 async function convertViaAddElementPopup(editor: EditorRenderResult, query: string) {
   await pressKey('s')
-  await searchInFloatingMenu(editor, query)
+  await searchInComponentPicker(editor, query)
 }

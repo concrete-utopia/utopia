@@ -672,59 +672,6 @@ export interface NavigatorState {
   hiddenInNavigator: Array<ElementPath>
 }
 
-export interface FloatingInsertMenuStateClosed {
-  insertMenuMode: 'closed'
-}
-
-export function floatingInsertMenuStateClosed(): FloatingInsertMenuStateClosed {
-  return {
-    insertMenuMode: 'closed',
-  }
-}
-
-export interface FloatingInsertMenuStateInsert {
-  insertMenuMode: 'insert'
-  parentPath: ElementPath | null
-  indexPosition: IndexPosition | null
-}
-
-export function floatingInsertMenuStateInsert(
-  parentPath: ElementPath | null,
-  indexPosition: IndexPosition | null,
-): FloatingInsertMenuStateInsert {
-  return {
-    insertMenuMode: 'insert',
-    parentPath: parentPath,
-    indexPosition: indexPosition,
-  }
-}
-
-export interface FloatingInsertMenuStateSwap {
-  insertMenuMode: 'swap'
-}
-
-export function floatingInsertMenuStateSwap(): FloatingInsertMenuStateSwap {
-  return {
-    insertMenuMode: 'swap',
-  }
-}
-
-export interface FloatingInsertMenuStateWrap {
-  insertMenuMode: 'wrap'
-}
-
-export function floatingInsertMenuStateWrap(): FloatingInsertMenuStateWrap {
-  return {
-    insertMenuMode: 'wrap',
-  }
-}
-
-export type FloatingInsertMenuState =
-  | FloatingInsertMenuStateClosed
-  | FloatingInsertMenuStateInsert
-  | FloatingInsertMenuStateSwap
-  | FloatingInsertMenuStateWrap
-
 export interface ResizeOptions {
   propertyTargetOptions: Array<LayoutTargetableProp>
   propertyTargetSelectedIndex: number
@@ -1469,7 +1416,6 @@ export interface EditorState {
   rightMenu: EditorStateRightMenu
   interfaceDesigner: EditorStateInterfaceDesigner
   canvas: EditorStateCanvas
-  floatingInsertMenu: FloatingInsertMenuState
   inspector: EditorStateInspector
   fileBrowser: EditorStateFileBrowser
   dependencyList: EditorStateDependencyList
@@ -1553,7 +1499,6 @@ export function editorState(
   rightMenu: EditorStateRightMenu,
   interfaceDesigner: EditorStateInterfaceDesigner,
   canvas: EditorStateCanvas,
-  floatingInsertMenu: FloatingInsertMenuState,
   inspector: EditorStateInspector,
   fileBrowser: EditorStateFileBrowser,
   dependencyList: EditorStateDependencyList,
@@ -1638,7 +1583,6 @@ export function editorState(
     rightMenu: rightMenu,
     interfaceDesigner: interfaceDesigner,
     canvas: canvas,
-    floatingInsertMenu: floatingInsertMenu,
     inspector: inspector,
     fileBrowser: fileBrowser,
     dependencyList: dependencyList,
@@ -2690,9 +2634,6 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
         parentOutlineHighlight: null,
       },
     },
-    floatingInsertMenu: {
-      insertMenuMode: 'closed',
-    },
     inspector: {
       visible: true,
       classnameFocusCounter: 0,
@@ -3090,9 +3031,6 @@ export function editorModelFromPersistentModel(
         dragToMoveIndicatorFlags: emptyDragToMoveIndicatorFlags,
         parentOutlineHighlight: null,
       },
-    },
-    floatingInsertMenu: {
-      insertMenuMode: 'closed',
     },
     inspector: {
       visible: true,

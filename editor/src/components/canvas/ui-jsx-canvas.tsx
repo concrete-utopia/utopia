@@ -91,6 +91,7 @@ import { useAtom } from 'jotai'
 import { RemixNavigationAtom } from './remix/utopia-remix-root-component'
 import { IS_TEST_ENVIRONMENT } from '../../common/env-vars'
 import { listenForReactRouterErrors } from '../../core/shared/runtime-report-logs'
+import { getFilePathMappings } from '../../core/model/project-file-utils'
 
 applyUIDMonkeyPatch()
 
@@ -102,7 +103,7 @@ export const ElementsToRerenderGLOBAL: { current: ElementsToRerender } = {
 
 export interface VariableMetadata {
   spiedValue: unknown
-  insertionCeiling: ElementPath | null
+  insertionCeiling: ElementPath
 }
 
 export interface VariableData {
@@ -495,12 +496,15 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     validPaths: rootValidPathsSet,
   })
 
+  const filePathMappings = getFilePathMappings(projectContents)
+
   const rerenderUtopiaContextValue = useKeepShallowReferenceEquality({
     hiddenInstances: hiddenInstances,
     displayNoneInstances: displayNoneInstances,
     canvasIsLive: canvasIsLive,
     shouldIncludeCanvasRootInTheSpy: props.shouldIncludeCanvasRootInTheSpy,
     editedText: props.editedText,
+    filePathMappings: filePathMappings,
   })
 
   const utopiaProjectContextValue = useKeepShallowReferenceEquality({

@@ -82,6 +82,8 @@ function useIconColor(intent: IcnColor): IcnResultingColor {
         return 'lightgray'
       case 'on-light-main':
         return 'white'
+      case 'black':
+        return 'black'
       case 'remix':
         return 'aqua'
       case 'green':

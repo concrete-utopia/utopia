@@ -704,6 +704,51 @@ function getNavigatorRowsForTree(
       return walkTree(e, i)
     }
 
+    function renderPropRows(
+      tree: RegularNavigatorTree,
+      path: ElementPath,
+      nextIndentation: number,
+    ): NavigatorRow[] {
+      return Object.entries(tree.renderProps).flatMap(([propName, renderPropChild]) => {
+        const fakeRenderPropPath = EP.appendToPath(path, renderPropId(propName))
+        let rows: NavigatorRow[] = []
+        if (!isSubtreeHidden(tree)) {
+          rows.push(
+            regularNavigatorRow(
+              renderPropNavigatorEntry(
+                fakeRenderPropPath,
+                propName,
+                renderPropChild.navigatorEntry.elementPath,
+              ),
+              nextIndentation,
+            ),
+          )
+        }
+        rows.push(...walkIfSubtreeVisible(renderPropChild, nextIndentation + 1))
+        return rows
+      })
+    }
+
+    function shouldShowChildrenLabel(tree: RegularNavigatorTree): boolean {
+      return (
+        Object.values(tree.renderProps).length > 0 &&
+        tree.children.length > 0 &&
+        !isSubtreeHidden(tree)
+      )
+    }
+
+    function childrenLabelRow(tree: RegularNavigatorTree, path: ElementPath): RegularNavigatorRow {
+      // we only show the children label if there are render props
+      return regularNavigatorRow(
+        renderPropNavigatorEntry(
+          EP.appendToPath(path, renderPropId('children')),
+          'children',
+          tree.children[0].navigatorEntry.elementPath, // pick the first child path
+        ),
+        nextIndentation,
+      )
+    }
+
     if (isElementHidden(entry) && filterVisible === 'visible-navigator-targets') {
       return []
     }
@@ -741,37 +786,11 @@ function getNavigatorRowsForTree(
         ]
       case 'regular-entry': {
         const path = entry.navigatorEntry.elementPath
-        const showChildrenLabel =
-          Object.values(entry.renderProps).length > 0 && entry.children.length > 0
+        const showChildrenLabel = shouldShowChildrenLabel(entry)
         return [
           regularNavigatorRow(entry.navigatorEntry, indentation),
-          ...Object.entries(entry.renderProps).flatMap(([propName, renderPropChild]) => {
-            const fakeRenderPropPath = EP.appendToPath(path, renderPropId(propName))
-            return [
-              regularNavigatorRow(
-                renderPropNavigatorEntry(
-                  fakeRenderPropPath,
-                  propName,
-                  renderPropChild.navigatorEntry.elementPath,
-                ),
-                nextIndentation,
-              ),
-              ...walkIfSubtreeVisible(renderPropChild, nextIndentation + 1),
-            ]
-          }),
-          ...(showChildrenLabel
-            ? // we only show the children label if there are render props
-              [
-                regularNavigatorRow(
-                  renderPropNavigatorEntry(
-                    EP.appendToPath(path, renderPropId('children')),
-                    'children',
-                    entry.children[0].navigatorEntry.elementPath, // pick the first child path
-                  ),
-                  nextIndentation,
-                ),
-              ]
-            : []),
+          ...renderPropRows(entry, path, nextIndentation),
+          ...(showChildrenLabel ? [childrenLabelRow(entry, path)] : []),
           ...entry.children.flatMap((t) =>
             walkIfSubtreeVisible(t, showChildrenLabel ? nextIndentation + 1 : nextIndentation),
           ),

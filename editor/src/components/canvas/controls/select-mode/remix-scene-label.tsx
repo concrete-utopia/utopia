@@ -361,21 +361,6 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
               〱
             </span>
           </Tooltip>
-          <Tooltip title={'Home'}>
-            <span
-              data-testid={RemixSceneLabelButtonTestId(props.target, 'home')}
-              style={{
-                cursor: 'pointer',
-                fontSize: 14 / scale,
-                display: isSelected ? 'block' : 'none',
-                position: 'relative',
-                bottom: 0 / scale,
-              }}
-              onClick={home}
-            >
-              ⛫
-            </span>
-          </Tooltip>
         </FlexRow>
 
         {unless(
