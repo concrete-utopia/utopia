@@ -133,12 +133,6 @@ export const DataSelectorModal = React.memo(
     ) => {
       const colorTheme = useColorTheme()
 
-      const selectedView = useEditorState(
-        Substores.selectedViews,
-        (store) => store.editor.selectedViews.at(0) ?? EP.emptyElementPath,
-        '',
-      )
-
       const scopeBuckets = React.useMemo(
         () => putVariablesIntoScopeBuckets(allVariablesInScope),
         [allVariablesInScope],
@@ -183,7 +177,7 @@ export const DataSelectorModal = React.memo(
             store.editor.allElementProps,
             store.editor.elementPathTree,
             scopeBucketPaths,
-            selectedView,
+            lowestInsertionCeiling ?? EP.emptyElementPath,
           )
           return scopes.map(({ insertionCeiling, label, hasContent }) => ({
             label: label,

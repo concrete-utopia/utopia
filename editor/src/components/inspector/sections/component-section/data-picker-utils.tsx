@@ -82,7 +82,7 @@ export function getEnclosingScopes(
   allElementProps: AllElementProps,
   elementPathTree: ElementPathTrees,
   buckets: Array<ElementPath>,
-  leafScope: ElementPath,
+  lowestInsertionCeiling: ElementPath,
 ): Array<{
   insertionCeiling: ElementPath
   label: string
@@ -94,7 +94,7 @@ export function getEnclosingScopes(
     hasContent: boolean
   }> = []
   const pathsToCheck = [
-    ...EP.allPathsInsideComponent(leafScope),
+    ...EP.allPathsInsideComponent(lowestInsertionCeiling),
     EP.emptyElementPath, // empty element path is the file root, TODO make it a separate constant
   ]
   for (const current of pathsToCheck) {
