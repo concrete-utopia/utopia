@@ -41,11 +41,27 @@ describe('orderVariablesForRelevance', () => {
         Object {
           "expression": "style",
           "expressionPathPart": "style",
+          "insertionCeiling": Object {
+            "parts": Array [
+              Array [
+                "aaa",
+              ],
+            ],
+            "type": "elementpath",
+          },
           "matches": false,
           "props": Array [
             Object {
               "expression": "style['left']",
               "expressionPathPart": "left",
+              "insertionCeiling": Object {
+                "parts": Array [
+                  Array [
+                    "aaa",
+                  ],
+                ],
+                "type": "elementpath",
+              },
               "matches": true,
               "type": "primitive",
               "value": 300,
@@ -53,6 +69,14 @@ describe('orderVariablesForRelevance', () => {
             Object {
               "expression": "style['position']",
               "expressionPathPart": "position",
+              "insertionCeiling": Object {
+                "parts": Array [
+                  Array [
+                    "aaa",
+                  ],
+                ],
+                "type": "elementpath",
+              },
               "matches": false,
               "type": "primitive",
               "value": "relative",
@@ -103,11 +127,27 @@ describe('orderVariablesForRelevance', () => {
         Object {
           "expression": "style",
           "expressionPathPart": "style",
+          "insertionCeiling": Object {
+            "parts": Array [
+              Array [
+                "aaa",
+              ],
+            ],
+            "type": "elementpath",
+          },
           "matches": true,
           "props": Array [
             Object {
               "expression": "style['left']",
               "expressionPathPart": "left",
+              "insertionCeiling": Object {
+                "parts": Array [
+                  Array [
+                    "aaa",
+                  ],
+                ],
+                "type": "elementpath",
+              },
               "matches": false,
               "type": "primitive",
               "value": 300,
@@ -115,6 +155,14 @@ describe('orderVariablesForRelevance', () => {
             Object {
               "expression": "style['position']",
               "expressionPathPart": "position",
+              "insertionCeiling": Object {
+                "parts": Array [
+                  Array [
+                    "aaa",
+                  ],
+                ],
+                "type": "elementpath",
+              },
               "matches": false,
               "type": "primitive",
               "value": "relative",
