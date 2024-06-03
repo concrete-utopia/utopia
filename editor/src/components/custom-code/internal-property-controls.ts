@@ -54,7 +54,9 @@ export interface BasicControlOptionWithIcon<T> {
 }
 
 export type BasicControlOptions<T> = AllowedEnumType[] | BasicControlOption<T>[]
-export type BasicControlOptionsWithIcon<T> = AllowedEnumType[] | BasicControlOptionWithIcon<T>[]
+export type RadioControlOption<T> =
+  | { type: 'allowed-enum-type'; allowedEnumType: AllowedEnumType }
+  | { type: 'control-option-with-icon'; option: BasicControlOptionWithIcon<T> }
 
 export interface PopUpListControlDescription
   extends GenericControlProps<AllowedEnumType | BasicControlOption<unknown>> {
@@ -126,10 +128,9 @@ export interface NumberInputControlDescription extends GenericControlProps<unkno
   displayStepper?: boolean
 }
 
-export interface RadioControlDescription
-  extends GenericControlProps<AllowedEnumType | BasicControlOption<unknown>> {
+export interface RadioControlDescription extends GenericControlProps<RadioControlOption<unknown>> {
   control: 'radio'
-  options: BasicControlOptionsWithIcon<unknown>
+  options: Array<RadioControlOption<unknown>>
 }
 
 export interface ExpressionInputControlDescription extends GenericControlProps<unknown> {

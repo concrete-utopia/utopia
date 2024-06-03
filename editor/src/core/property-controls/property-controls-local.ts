@@ -30,8 +30,7 @@ import type {
   JSXControlDescription,
   PreferredChildComponentDescriptor,
   RadioControlDescription,
-  AllowedEnumType,
-  BasicControlOptionWithIcon,
+  RadioControlOption,
 } from '../../components/custom-code/internal-property-controls'
 import { packageJsonFileFromProjectContents, walkContentsTree } from '../../components/assets'
 import {
@@ -750,17 +749,20 @@ async function parseJSXControlDescription(
   })
 }
 
-function parseAllowedEnumType(option: AllowedEnumTypeFromUtopia): AllowedEnumType {
-  return option
+function parseAllowedEnumType(option: AllowedEnumTypeFromUtopia): RadioControlOption<unknown> {
+  return { type: 'allowed-enum-type', allowedEnumType: option }
 }
 
 function parseBasicControlOptionWithIcon(
   option: BasicControlOptionWithIconFromUtopia<unknown>,
-): BasicControlOptionWithIcon<unknown> {
+): RadioControlOption<unknown> {
   return {
-    label: option.label,
-    value: option.value,
-    icon: option.icon ?? null,
+    type: 'control-option-with-icon',
+    option: {
+      label: option.label,
+      value: option.value,
+      icon: option.icon ?? null,
+    },
   }
 }
 
@@ -778,10 +780,10 @@ function isAllowedEnumType(
 
 function parseRadioControlOptions(
   options: AllowedEnumTypeFromUtopia[] | BasicControlOptionWithIconFromUtopia<unknown>[],
-): Either<string, AllowedEnumType[] | BasicControlOptionWithIcon<unknown>[]> {
+): Either<string, RadioControlOption<unknown>[]> {
   const allowedEnumTypes = sequenceEither(
     options.map(
-      (o): Either<string, AllowedEnumType> =>
+      (o): Either<string, RadioControlOption<unknown>> =>
         isAllowedEnumType(o) ? right(parseAllowedEnumType(o)) : left('Not an allowed enum type'),
     ),
   )
@@ -792,7 +794,7 @@ function parseRadioControlOptions(
 
   const basicControlOptions = sequenceEither(
     options.map(
-      (o): Either<string, BasicControlOptionWithIcon<unknown>> =>
+      (o): Either<string, RadioControlOption<unknown>> =>
         isAllowedEnumType(o)
           ? left('Not a BasicControlOptionWithIcon<unknown>>')
           : right(parseBasicControlOptionWithIcon(o)),
