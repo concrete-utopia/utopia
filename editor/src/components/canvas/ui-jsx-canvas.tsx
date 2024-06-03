@@ -103,7 +103,7 @@ export const ElementsToRerenderGLOBAL: { current: ElementsToRerender } = {
 
 export interface VariableMetadata {
   spiedValue: unknown
-  insertionCeiling: ElementPath | null
+  insertionCeiling: ElementPath
 }
 
 export interface VariableData {

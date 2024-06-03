@@ -137,10 +137,13 @@ export function createLookupRender(
     let innerVariablesInScope: VariableData = {
       ...context.variablesInScope,
     }
-    for (const valueInScope of valuesInScopeFromParameters) {
-      innerVariablesInScope[valueInScope] = {
-        spiedValue: scope[valueInScope],
-        insertionCeiling: innerPath,
+
+    if (innerPath != null) {
+      for (const valueInScope of valuesInScopeFromParameters) {
+        innerVariablesInScope[valueInScope] = {
+          spiedValue: scope[valueInScope],
+          insertionCeiling: innerPath,
+        }
       }
     }
 

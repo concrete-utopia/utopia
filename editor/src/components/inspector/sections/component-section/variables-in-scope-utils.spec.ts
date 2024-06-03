@@ -1,3 +1,4 @@
+import { emptyElementPath } from '../../../../core/shared/element-path'
 import { maybeToArray } from '../../../../core/shared/optional-utils'
 import type { ControlDescription } from '../../../custom-code/internal-property-controls'
 import type { PropertyValue, VariableInfo } from './variables-in-scope-utils'
@@ -6,7 +7,12 @@ import { orderVariablesForRelevance, variableInfoFromValue } from './variables-i
 describe('orderVariablesForRelevance', () => {
   it('should be able to target a given property', () => {
     const variableNamesInScope: Array<VariableInfo> = maybeToArray(
-      variableInfoFromValue('style', 'style', { left: 300, position: 'relative' }),
+      variableInfoFromValue(
+        'style',
+        'style',
+        { left: 300, position: 'relative' },
+        emptyElementPath,
+      ),
     )
     const controlDescription: ControlDescription = {
       control: 'object',
@@ -63,7 +69,12 @@ describe('orderVariablesForRelevance', () => {
   })
   it('handles the case when not targeting a specific property', () => {
     const variableNamesInScope: Array<VariableInfo> = maybeToArray(
-      variableInfoFromValue('style', 'style', { left: 300, position: 'relative' }),
+      variableInfoFromValue(
+        'style',
+        'style',
+        { left: 300, position: 'relative' },
+        emptyElementPath,
+      ),
     )
     const controlDescription: ControlDescription = {
       control: 'object',

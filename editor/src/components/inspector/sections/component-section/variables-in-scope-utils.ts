@@ -128,6 +128,7 @@ export interface PrimitiveInfo {
   expressionPathPart: string | number
   value: unknown
   matches: boolean
+  sourceElement: ElementPath
 }
 
 export interface ObjectInfo {
@@ -137,6 +138,7 @@ export interface ObjectInfo {
   value: unknown
   props: Array<VariableInfo>
   matches: boolean
+  sourceElement: ElementPath
 }
 
 export interface ArrayInfo {
@@ -146,6 +148,7 @@ export interface ArrayInfo {
   value: unknown
   elements: Array<VariableInfo>
   matches: boolean
+  sourceElement: ElementPath
 }
 
 export interface JSXInfo {
@@ -154,6 +157,7 @@ export interface JSXInfo {
   expressionPathPart: string | number
   value: unknown
   matches: boolean
+  sourceElement: ElementPath
 }
 
 export type VariableInfo = PrimitiveInfo | ArrayInfo | ObjectInfo | JSXInfo
@@ -162,6 +166,7 @@ export function variableInfoFromValue(
   expression: string,
   expressionPathPart: string | number,
   value: unknown,
+  sourceElement: ElementPath,
 ): VariableInfo | null {
   switch (typeof value) {
     case 'function':
@@ -178,6 +183,7 @@ export function variableInfoFromValue(
         expressionPathPart: expressionPathPart,
         value: value,
         matches: false,
+        sourceElement: sourceElement,
       }
     case 'object':
       if (value == null) {
@@ -187,6 +193,7 @@ export function variableInfoFromValue(
           expressionPathPart: expressionPathPart,
           value: value,
           matches: false,
+          sourceElement: sourceElement,
         }
       }
       if (Array.isArray(value)) {
@@ -197,9 +204,10 @@ export function variableInfoFromValue(
           value: value,
           matches: false,
           elements: mapDropNulls(
-            (e, idx) => variableInfoFromValue(`${expression}[${idx}]`, idx, e),
+            (e, idx) => variableInfoFromValue(`${expression}[${idx}]`, idx, e, sourceElement),
             value,
           ),
+          sourceElement: sourceElement,
         }
       }
       if (React.isValidElement(value)) {
@@ -209,6 +217,7 @@ export function variableInfoFromValue(
           expressionPathPart: expressionPathPart,
           value: value,
           matches: false,
+          sourceElement: sourceElement,
         }
       }
       return {
@@ -218,15 +227,17 @@ export function variableInfoFromValue(
         value: value,
         matches: false,
         props: mapDropNulls(([key, propValue]) => {
-          return variableInfoFromValue(`${expression}['${key}']`, key, propValue)
+          return variableInfoFromValue(`${expression}['${key}']`, key, propValue, sourceElement)
         }, Object.entries(value)),
+        sourceElement: sourceElement,
       }
   }
 }
 
 function variableInfoFromVariableData(variableNamesInScope: VariableData): Array<VariableInfo> {
   const info = mapDropNulls(
-    ([key, { spiedValue }]) => variableInfoFromValue(key, key, spiedValue),
+    ([key, { spiedValue, insertionCeiling }]) =>
+      variableInfoFromValue(key, key, spiedValue, insertionCeiling),
     Object.entries(variableNamesInScope),
   )
 

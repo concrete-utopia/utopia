@@ -1,9 +1,10 @@
 import type { ProjectContentTreeRoot } from '../../components/assets'
+import { findUnderlyingTargetComponentImplementationFromImportInfo } from '../../components/custom-code/code-file'
 import { withUnderlyingTarget } from '../../components/editor/store/editor-state'
 import * as TPP from '../../components/template-property-path'
 import { MetadataUtils } from '../model/element-metadata-utils'
 import { findContainingComponentForPath } from '../model/element-template-utils'
-import { mapFirstApplicable } from '../shared/array-utils'
+import { last, mapFirstApplicable } from '../shared/array-utils'
 import type { Either } from '../shared/either'
 import { isLeft, isRight, left, mapEither, maybeEitherToMaybe, right } from '../shared/either'
 import * as EP from '../shared/element-path'
@@ -18,16 +19,16 @@ import type {
   UtopiaJSXComponent,
 } from '../shared/element-template'
 import {
-  emptyComments,
   isJSXElement,
-  jsIdentifier,
   type ElementInstanceMetadataMap,
   isRegularParam,
   isJSAssignmentStatement,
   isJSIdentifier,
+  jsIdentifier,
+  emptyComments,
 } from '../shared/element-template'
 import { getJSXAttributesAtPath, jsxSimpleAttributeToValue } from '../shared/jsx-attribute-utils'
-import { forceNotNull, optionalMap } from '../shared/optional-utils'
+import { optionalMap } from '../shared/optional-utils'
 import type { ElementPath, ElementPropertyPath, PropertyPath } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
 import { assertNever } from '../shared/utils'
@@ -404,6 +405,68 @@ export function traceDataFromElement(
     default:
       assertNever(startFromElement)
   }
+}
+
+export function traceDataFromVariableName(
+  enclosingScope: ElementPath,
+  variableName: string,
+  metadata: ElementInstanceMetadataMap,
+  projectContents: ProjectContentTreeRoot,
+  pathDrillSoFar: DataPathPositiveResult,
+): DataTracingResult {
+  const component = MetadataUtils.findElementByElementPath(metadata, enclosingScope)
+  if (component == null) {
+    return dataTracingFailed(
+      'traceDataFromVariableName - Cannot find element instance pointed to by enclosing scope',
+    )
+  }
+
+  const componentHoldingElement = findUnderlyingTargetComponentImplementationFromImportInfo(
+    projectContents,
+    component.importInfo,
+  )
+
+  if (componentHoldingElement == null || componentHoldingElement.arbitraryJSBlock == null) {
+    return dataTracingFailed('traceDataFromVariableName - Could not find containing component')
+  }
+
+  const poassibleResults = componentHoldingElement.arbitraryJSBlock.statements.flatMap(
+    (statement) => {
+      switch (statement.type) {
+        case 'JS_OPAQUE_ARBITRARY_STATEMENT':
+          return []
+        case 'JS_ASSIGNMENT_STATEMENT':
+          return statement.assignments.flatMap((assigment) => {
+            if (
+              assigment.leftHandSide.type !== 'REGULAR_PARAM' ||
+              assigment.leftHandSide.paramName !== variableName
+            ) {
+              return []
+            }
+
+            return walkUpInnerScopesUntilReachingComponent(
+              metadata,
+              projectContents,
+              enclosingScope,
+              enclosingScope,
+              enclosingScope,
+              componentHoldingElement,
+              jsIdentifier(variableName, '', null, emptyComments),
+              pathDrillSoFar,
+            )
+          })
+        default:
+          assertNever(statement)
+      }
+    },
+  )
+
+  const lastResult = last(poassibleResults)
+  if (lastResult == null) {
+    return dataTracingFailed('too bad')
+  }
+
+  return lastResult
 }
 
 function traceDataFromIdentifierOrAccess(

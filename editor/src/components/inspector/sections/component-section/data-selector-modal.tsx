@@ -30,6 +30,12 @@ import type {
   DataPickerOption,
   ObjectPath,
 } from './data-picker-utils'
+import {
+  dataPathSuccess,
+  traceDataFromVariableName,
+} from '../../../../core/data-tracing/data-tracing'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
+import { toString } from '../../../../core/shared/element-path'
 
 export const DataSelectorPopupBreadCrumbsTestId = 'data-selector-modal-top-bar'
 
@@ -209,6 +215,48 @@ export const DataSelectorModal = React.memo(
         return { primitiveVars: primitives, folderVars: folders }
       }, [focusedVariableChildren])
 
+      const metadata = useEditorState(
+        Substores.metadata,
+        (store) => store.editor.jsxMetadata,
+        'DataSelectorModal metadata',
+      )
+      const projectContents = useEditorState(
+        Substores.projectContents,
+        (store) => store.editor.projectContents,
+        'DataSelectorModal projectContents',
+      )
+
+      const variableSources = React.useMemo(() => {
+        let result: { [valuePath: string]: CartoucheUIProps['source'] } = {}
+        for (const variable of focusedVariableChildren) {
+          const container = variable.variableInfo.sourceElement
+          const trace = traceDataFromVariableName(
+            container,
+            variable.variableInfo.expression,
+            metadata,
+            projectContents,
+            dataPathSuccess([]),
+          )
+
+          switch (trace.type) {
+            case 'hook-result':
+              result[variable.valuePath.toString()] = 'external'
+              break
+            case 'literal-attribute':
+              result[variable.valuePath.toString()] = 'literal'
+              break
+            case 'component-prop':
+            case 'element-at-scope':
+            case 'failed':
+              result[variable.valuePath.toString()] = 'internal'
+              break
+            default:
+              assertNever(trace)
+          }
+        }
+        return result
+      }, [focusedVariableChildren, metadata, projectContents])
+
       const setCurrentSelectedPathCurried = React.useCallback(
         (path: DataPickerOption['valuePath']) => () => {
           if (!isPrefixOf(navigatedToPath, path)) {
@@ -382,7 +430,7 @@ export const DataSelectorModal = React.memo(
                         <CartoucheUI
                           key={variable.valuePath.toString()}
                           tooltip={variableNameFromPath(variable)}
-                          source={'internal'}
+                          source={variableSources[variable.valuePath.toString()] ?? 'internal'}
                           datatype={childTypeToCartoucheDataType(variable.type)}
                           inverted={false}
                           selected={
@@ -409,7 +457,7 @@ export const DataSelectorModal = React.memo(
                     <CartoucheUI
                       tooltip={variableNameFromPath(variable)}
                       datatype={childTypeToCartoucheDataType(variable.type)}
-                      source={'internal'}
+                      source={variableSources[variable.valuePath.toString()] ?? 'internal'}
                       inverted={false}
                       selected={
                         selectedPath == null
@@ -438,7 +486,7 @@ export const DataSelectorModal = React.memo(
                         <CartoucheUI
                           key={child.valuePath.toString()}
                           tooltip={variableNameFromPath(child)}
-                          source={'internal'}
+                          source={variableSources[variable.valuePath.toString()] ?? 'internal'}
                           inverted={false}
                           datatype={childTypeToCartoucheDataType(child.type)}
                           selected={
