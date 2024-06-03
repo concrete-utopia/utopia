@@ -155,16 +155,15 @@ export const DataSelectorModal = React.memo(
       const elementLabelsWithScopes = useEditorState(
         Substores.fullStore,
         (store) => {
-          const scopes = getEnclosingScopes(store.editor.jsxMetadata, scopeBuckets, selectedView)
-          return scopes.map(({ insertionCeiling, parentElementForNaming, label, hasContent }) => ({
-            label:
-              label ??
-              MetadataUtils.getElementLabel(
-                store.editor.allElementProps,
-                parentElementForNaming,
-                store.editor.elementPathTree,
-                store.editor.jsxMetadata,
-              ),
+          const scopes = getEnclosingScopes(
+            store.editor.jsxMetadata,
+            store.editor.allElementProps,
+            store.editor.elementPathTree,
+            scopeBuckets,
+            selectedView,
+          )
+          return scopes.map(({ insertionCeiling, label, hasContent }) => ({
+            label: label,
             scope: insertionCeiling,
           }))
         },

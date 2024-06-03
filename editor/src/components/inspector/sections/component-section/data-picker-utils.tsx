@@ -1,17 +1,19 @@
 import { atom } from 'jotai'
+import { processJSPropertyAccessors } from '../../../../core/data-tracing/data-tracing'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { foldEither } from '../../../../core/shared/either'
+import * as EP from '../../../../core/shared/element-path'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import {
   isJSExpression,
   type JSExpressionOtherJavaScript,
   type JSXElementChild,
 } from '../../../../core/shared/element-template'
-import * as EP from '../../../../core/shared/element-path'
-import { assertNever } from '../../../../core/shared/utils'
-import type { ArrayInfo, JSXInfo, ObjectInfo, PrimitiveInfo } from './variables-in-scope-utils'
-import { processJSPropertyAccessors } from '../../../../core/data-tracing/data-tracing'
-import { foldEither } from '../../../../core/shared/either'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
-import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { assertNever } from '../../../../core/shared/utils'
+import type { AllElementProps } from '../../../editor/store/editor-state'
+import type { ArrayInfo, JSXInfo, ObjectInfo, PrimitiveInfo } from './variables-in-scope-utils'
 
 interface VariableOptionBase {
   depth: number
@@ -77,18 +79,18 @@ export function jsxElementChildToValuePath(child: JSXElementChild | null): Objec
 
 export function getEnclosingScopes(
   metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  elementPathTree: ElementPathTrees,
   buckets: Array<ElementPath>,
   leafScope: ElementPath,
 ): Array<{
   insertionCeiling: ElementPath
-  parentElementForNaming: ElementPath
-  label: string | null
+  label: string
   hasContent: boolean
 }> {
   let result: Array<{
     insertionCeiling: ElementPath
-    parentElementForNaming: ElementPath
-    label: string | null
+    label: string
     hasContent: boolean
   }> = []
   const pathsToCheck = [
@@ -105,8 +107,12 @@ export function getEnclosingScopes(
     ) {
       result.unshift({
         insertionCeiling: current,
-        parentElementForNaming: parentOfCurrent,
-        label: null,
+        label: MetadataUtils.getElementLabel(
+          allElementProps,
+          parentOfCurrent,
+          elementPathTree,
+          metadata,
+        ),
         hasContent: buckets.includes(current),
       })
       continue
@@ -116,7 +122,6 @@ export function getEnclosingScopes(
     if (EP.pathsEqual(current, EP.emptyElementPath)) {
       result.unshift({
         insertionCeiling: current,
-        parentElementForNaming: current,
         label: 'File',
         hasContent: buckets.includes(current),
       })
@@ -127,8 +132,12 @@ export function getEnclosingScopes(
     if (buckets.includes(current)) {
       result.unshift({
         insertionCeiling: current,
-        parentElementForNaming: EP.parentPath(current),
-        label: null,
+        label: MetadataUtils.getElementLabel(
+          allElementProps,
+          parentOfCurrent,
+          elementPathTree,
+          metadata,
+        ),
         hasContent: true,
       })
       continue
