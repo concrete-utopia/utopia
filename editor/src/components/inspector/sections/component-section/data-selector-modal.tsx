@@ -1,5 +1,5 @@
 import React from 'react'
-import { isPrefixOf, last } from '../../../../core/shared/array-utils'
+import { groupBy, isPrefixOf, last } from '../../../../core/shared/array-utils'
 import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
 import {
   CanvasContextMenuPortalTargetID,
@@ -35,6 +35,7 @@ import type { ElementPath } from '../../../../core/shared/project-file-types'
 import * as EP from '../../../../core/shared/element-path'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { optionalMap } from '../../../../core/shared/optional-utils'
 
 export const DataSelectorPopupBreadCrumbsTestId = 'data-selector-modal-top-bar'
 
@@ -166,7 +167,7 @@ export const DataSelectorModal = React.memo(
 
       const filteredVariablesInScope = useFilterVariablesInScope(
         allVariablesInScope,
-        'do-not-filter', // startingSelectedInsertionCeiling,
+        startingSelectedInsertionCeiling,
       )
 
       const [navigatedToPath, setNavigatedToPath] = React.useState<ObjectPath>([])
@@ -562,27 +563,39 @@ function childTypeToCartoucheDataType(
   }
 }
 
+function putVariablesIntoScopeBuckets(options: DataPickerOption[]): {
+  [insertionCeiling: string]: Array<DataPickerOption>
+} {
+  const buckets: { [insertionCeiling: string]: Array<DataPickerOption> } = groupBy(
+    (o) => optionalMap(EP.toString, o.insertionCeiling) ?? '', // '' represents "file root scope", TODO make it clearer
+    options,
+  )
+
+  return buckets
+}
+
 function useFilterVariablesInScope(
   options: DataPickerOption[],
   scopeToShow: ElementPath | null | 'do-not-filter',
 ): DataPickerOption[] {
+  const buckets = React.useMemo(() => putVariablesIntoScopeBuckets(options), [options])
+
   const filteredOptions = React.useMemo(() => {
     if (scopeToShow === 'do-not-filter' || scopeToShow == null) {
       return options
     }
 
-    const result = options.filter((option) => {
-      if (option.insertionCeiling == null) {
-        return false
+    // "walk up" the scopes to find the first bucket that has a scope that is a prefix of the scopeToShow
+    const scopesToCheck = EP.allPathsInsideComponent(scopeToShow)
+    for (const scope of scopesToCheck) {
+      const scopeString = EP.toString(scope)
+      if (buckets[scopeString] != null) {
+        return buckets[scopeString]
       }
+    }
 
-      return EP.pathsEqual(
-        EP.takeLastPartOfPath(option.insertionCeiling),
-        EP.takeLastPartOfPath(EP.getContainingComponent(scopeToShow)),
-      )
-    })
-    return result
-  }, [options, scopeToShow])
+    return []
+  }, [buckets, options, scopeToShow])
 
   return filteredOptions
 }
