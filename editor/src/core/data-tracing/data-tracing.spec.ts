@@ -22,6 +22,7 @@ import {
   dataTracingToLiteralAttribute,
   traceDataFromElement,
   traceDataFromProp,
+  traceDataFromVariableName,
 } from './data-tracing'
 
 describe('Data Tracing', () => {
@@ -1172,6 +1173,87 @@ describe('Data Tracing', () => {
           dataPathSuccess([]),
         ),
       )
+    })
+  })
+
+  describe('Tracing data from the arbitrary js block of a component', () => {
+    it('can trace data from the arbitrary js block', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithStoryboard(`
+        function MyComponent({ doc }) {
+          return <h1 data-uid='component-root'>{doc.title.value}</h1>
+        }
+  
+        function useLoaderData() {
+          return { very: { deep: { title: {value: ['hello', 'world'] } }, a: [1, 2] } }
+        }
+  
+        function App() {
+          const { very } = useLoaderData()
+          const { deep, a } = very
+          const deepButWithAccess = very.deep
+          
+          const [helloFromDestructuredArray] = a
+
+          return <MyComponent data-uid='component-root' doc={deep} />
+        }
+        `),
+        'await-first-dom-report',
+      )
+
+      await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component'))
+
+      {
+        const trace = traceDataFromVariableName(
+          EP.fromString('sb/app'),
+          'deep',
+          editor.getEditorState().editor.jsxMetadata,
+          editor.getEditorState().editor.projectContents,
+          dataPathSuccess([]),
+        )
+
+        expect(trace).toEqual(
+          dataTracingToAHookCall(
+            EP.fromString('sb/app'),
+            'useLoaderData',
+            dataPathSuccess(['very', 'deep']),
+          ),
+        )
+      }
+      {
+        const trace = traceDataFromVariableName(
+          EP.fromString('sb/app'),
+          'deepButWithAccess',
+          editor.getEditorState().editor.jsxMetadata,
+          editor.getEditorState().editor.projectContents,
+          dataPathSuccess([]),
+        )
+
+        expect(trace).toEqual(
+          dataTracingToAHookCall(
+            EP.fromString('sb/app'),
+            'useLoaderData',
+            dataPathSuccess(['very', 'deep']),
+          ),
+        )
+      }
+      {
+        const trace = traceDataFromVariableName(
+          EP.fromString('sb/app'),
+          'helloFromDestructuredArray',
+          editor.getEditorState().editor.jsxMetadata,
+          editor.getEditorState().editor.projectContents,
+          dataPathSuccess([]),
+        )
+
+        expect(trace).toEqual(
+          dataTracingToAHookCall(
+            EP.fromString('sb/app'),
+            'useLoaderData',
+            dataPathSuccess(['very', 'a', '0', 'helloFromDestructuredArray']),
+          ),
+        )
+      }
     })
   })
 })
