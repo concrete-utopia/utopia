@@ -82,11 +82,13 @@ export function getEnclosingScopes(
 ): Array<{
   insertionCeiling: ElementPath
   parentElementForNaming: ElementPath
+  label: string | null
   hasContent: boolean
 }> {
   let result: Array<{
     insertionCeiling: ElementPath
     parentElementForNaming: ElementPath
+    label: string | null
     hasContent: boolean
   }> = []
   const pathsToCheck = [
@@ -104,6 +106,7 @@ export function getEnclosingScopes(
       result.unshift({
         insertionCeiling: current,
         parentElementForNaming: parentOfCurrent,
+        label: null,
         hasContent: buckets.includes(current),
       })
       continue
@@ -114,6 +117,7 @@ export function getEnclosingScopes(
       result.unshift({
         insertionCeiling: current,
         parentElementForNaming: current,
+        label: 'File',
         hasContent: buckets.includes(current),
       })
       continue
@@ -124,6 +128,7 @@ export function getEnclosingScopes(
       result.unshift({
         insertionCeiling: current,
         parentElementForNaming: EP.parentPath(current),
+        label: null,
         hasContent: true,
       })
       continue
