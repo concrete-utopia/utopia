@@ -1,4 +1,3 @@
-import type { CSSProperties } from 'react'
 import React from 'react'
 import * as EP from '../../../core/shared/element-path'
 import { Icons, Tooltip, useColorTheme } from '../../../uuiui'
@@ -50,8 +49,32 @@ export const CondensedEntryItemWrapper = React.memo(
     }, [selectedViews, props.navigatorRow])
 
     const wholeRowInsideSelection = React.useMemo(() => {
-      return selectedViews.some((path) =>
-        props.navigatorRow.entries.every((entry) => EP.isDescendantOf(entry.elementPath, path)),
+      return selectedViews.some((path) => {
+        return props.navigatorRow.entries.every((entry) => {
+          return EP.isDescendantOfOrEqualTo(entry.elementPath, path)
+        })
+      })
+    }, [selectedViews, props.navigatorRow])
+
+    const isCollapsed = useEditorState(
+      Substores.navigator,
+      (store) =>
+        store.editor.navigator.collapsedViews.some((path) =>
+          props.navigatorRow.entries.some((entry) => EP.pathsEqual(path, entry.elementPath)),
+        ),
+      'CondensedEntryItemWrapper isCollapsed',
+    )
+
+    const isDataReferenceRow = React.useMemo(() => {
+      return props.navigatorRow.entries.every(
+        (entry, idx) =>
+          (idx === 0 && entry.type === 'REGULAR') || (idx > 0 && entry.type === 'DATA_REFERENCE'),
+      )
+    }, [props.navigatorRow])
+
+    const rowContainsSelection = React.useMemo(() => {
+      return props.navigatorRow.entries.some((entry) =>
+        selectedViews.some((view) => EP.pathsEqual(view, entry.elementPath)),
       )
     }, [selectedViews, props.navigatorRow])
 
@@ -65,8 +88,10 @@ export const CondensedEntryItemWrapper = React.memo(
             hasSelection || wholeRowInsideSelection
               ? colorTheme.childSelectionBlue.value
               : 'transparent',
-          borderTopLeftRadius: wholeRowInsideSelection ? 0 : 5,
-          borderTopRightRadius: wholeRowInsideSelection ? 0 : 5,
+          borderTopLeftRadius: rowContainsSelection ? 5 : 0,
+          borderTopRightRadius: rowContainsSelection ? 5 : 0,
+          borderBottomLeftRadius: isCollapsed || isDataReferenceRow ? 5 : 0,
+          borderBottomRightRadius: isCollapsed || isDataReferenceRow ? 5 : 0,
           overflowX: 'auto',
         }}
       >
@@ -77,11 +102,13 @@ export const CondensedEntryItemWrapper = React.memo(
           return (
             <CondensedEntryItem
               navigatorRow={props.navigatorRow}
+              isDataReferenceRow={isDataReferenceRow}
               showExpandableIndicator={idx === 0}
               key={EP.toString(entry.elementPath)}
               entry={entry}
               showSeparator={showSeparator}
               wholeRowInsideSelection={wholeRowInsideSelection}
+              rowContainsSelection={rowContainsSelection}
             />
           )
         })}
@@ -95,6 +122,8 @@ const CondensedEntryItem = React.memo(
   (props: {
     entry: NavigatorEntry
     navigatorRow: CondensedNavigatorRow
+    isDataReferenceRow: boolean
+    rowContainsSelection: boolean
     wholeRowInsideSelection: boolean
     showSeparator: boolean
     showExpandableIndicator: boolean
@@ -135,13 +164,6 @@ const CondensedEntryItem = React.memo(
       return selectedViews.some((path) => EP.pathsEqual(path, props.entry.elementPath))
     }, [selectedViews, props.entry])
 
-    const isDataReferenceRow = React.useMemo(() => {
-      return props.navigatorRow.entries.every(
-        (entry, idx) =>
-          (idx === 0 && entry.type === 'REGULAR') || (idx > 0 && entry.type === 'DATA_REFERENCE'),
-      )
-    }, [props.navigatorRow])
-
     const indentation = React.useMemo(() => {
       if (!props.showExpandableIndicator) {
         return 0
@@ -173,12 +195,18 @@ const CondensedEntryItem = React.memo(
           selected={isSelected}
           isChildOfSelected={isChildOfSelected}
           showExpandableIndicator={props.showExpandableIndicator}
-          isDataReferenceRow={isDataReferenceRow}
+          isDataReferenceRow={props.isDataReferenceRow}
           indentation={indentation}
         />
         {when(
           props.showSeparator,
           <CondensedEntryTrunkSeparator backgroundColor={backgroundColor} />,
+        )}
+        {when(
+          !props.showSeparator &&
+            (!props.showExpandableIndicator ||
+              (props.rowContainsSelection && !selectionIsDataReference)),
+          <div style={{ width: 4, height: '100%' }} />,
         )}
       </React.Fragment>
     )
@@ -275,7 +303,6 @@ const CondensedEntryItemContent = React.memo(
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: 5,
             borderRadius: 5,
             backgroundColor:
               props.selected && !isDataReference ? colorTheme.selectionBlue.value : undefined,
@@ -285,29 +312,37 @@ const CondensedEntryItemContent = React.memo(
             paddingLeft: props.indentation,
           }}
         >
-          {when(
-            props.showExpandableIndicator,
-            <WrappedExpandableIndicator
-              elementPath={props.entry.elementPath}
-              selected={props.selected}
-              collapsed={isCollapsed}
-              disabled={props.isDataReferenceRow}
-            />,
-          )}
-          {unless(
-            isDataReference,
-            <WrappedLayoutIcon
-              entry={props.entry}
-              disabled={isDataReference || showLabel}
-              selected={props.selected}
-            />,
-          )}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
+            {when(
+              props.showExpandableIndicator,
+              <WrappedExpandableIndicator
+                elementPath={props.entry.elementPath}
+                selected={props.selected}
+                collapsed={isCollapsed}
+                disabled={props.isDataReferenceRow}
+                invisible={props.isDataReferenceRow && props.entry.type === 'REGULAR'}
+              />,
+            )}
+            {unless(
+              isDataReference,
+              <WrappedLayoutIcon
+                entry={props.entry}
+                disabled={isDataReference || showLabel}
+                selected={props.selected}
+              />,
+            )}
+          </div>
           {when(showLabel, <WrappedLabel selected={props.selected} entry={props.entry} />)}
           {when(
-            isDataReference && props.entry.type === 'DATA_REFERENCE',
-            <WrappedCartouche
+            isDataReference,
+            <DataReferenceCartoucheControl
               selected={props.selected}
-              entry={props.entry as DataReferenceNavigatorEntry}
+              {...(props.entry as DataReferenceNavigatorEntry)}
             />,
           )}
         </div>
@@ -354,30 +389,36 @@ const WrappedExpandableIndicator = React.memo(
     selected: boolean
     collapsed: boolean
     disabled: boolean
+    invisible: boolean
   }) => {
     const dispatch = useDispatch()
 
     const onClickCollapse = React.useCallback(
       (elementPath: ElementPath) => (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        if (props.disabled) {
+          return
+        }
         e.stopPropagation()
         dispatch([toggleCollapse(elementPath)], 'leftpane')
       },
-      [dispatch],
+      [dispatch, props.disabled],
     )
 
     return (
       <div
         style={{
-          width: 12,
+          width: 22,
           height: 29,
+          marginLeft: 5,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
         }}
         onClick={onClickCollapse(props.elementPath)}
       >
+        {when(props.invisible, <div style={{ width: 12, height: 12 }} />)}
         {unless(
-          props.disabled,
+          props.disabled || props.invisible,
           <ExpandableIndicator
             visible={true}
             collapsed={props.collapsed}
@@ -454,14 +495,3 @@ const WrappedLabel = React.memo((props: { selected: boolean; entry: NavigatorEnt
   )
 })
 WrappedLabel.displayName = 'WrappedLabel'
-
-const WrappedCartouche = React.memo(
-  (props: { selected: boolean; entry: DataReferenceNavigatorEntry }) => {
-    return (
-      <div style={{ paddingLeft: 6 }}>
-        <DataReferenceCartoucheControl selected={props.selected} {...props.entry} />
-      </div>
-    )
-  },
-)
-WrappedCartouche.displayName = 'WrappedCartouche'
