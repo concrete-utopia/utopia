@@ -140,7 +140,7 @@ export const DataSelectorModal = React.memo(
 
       const scopeBucketPaths = Object.keys(scopeBuckets).map((k) => EP.fromString(k))
 
-      const firstMatchingScopeBucketForStartingInsertionCeiling = React.useMemo(() => {
+      const lowestMatchingScope = React.useMemo(() => {
         if (lowestInsertionCeiling == null) {
           return null
         }
@@ -149,7 +149,7 @@ export const DataSelectorModal = React.memo(
       }, [scopeBuckets, lowestInsertionCeiling])
 
       const [selectedScope, setSelectedScope] = React.useState<ElementPath | null>(
-        firstMatchingScopeBucketForStartingInsertionCeiling,
+        lowestMatchingScope,
       )
       const setSelectedScopeCurried = React.useCallback(
         (name: ElementPath) => () => setSelectedScope(name),
