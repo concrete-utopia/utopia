@@ -111,6 +111,7 @@ export const DataReferenceCartoucheControl = React.memo(
       variableNamesInScope,
       updateDataWithDataPicker,
       pathToCurrenlySelectedValue,
+      elementPath,
     )
 
     const isDataComingFromHookResult = dataTraceResult.type === 'hook-result'
