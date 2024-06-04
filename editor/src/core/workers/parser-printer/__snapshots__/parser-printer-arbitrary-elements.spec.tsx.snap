@@ -603,6 +603,7 @@ export var storyboard = (
       "arbitraryJSBlock": null,
       "blockOrExpression": "block",
       "declarationSyntax": "var",
+      "functionWrapping": Array [],
       "isFunction": true,
       "name": "App",
       "param": Object {
@@ -987,6 +988,7 @@ export var storyboard = (
       "arbitraryJSBlock": null,
       "blockOrExpression": "parenthesized-expression",
       "declarationSyntax": "var",
+      "functionWrapping": Array [],
       "isFunction": false,
       "name": "storyboard",
       "param": null,

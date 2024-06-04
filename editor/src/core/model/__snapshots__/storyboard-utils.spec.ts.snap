@@ -12,6 +12,7 @@ Array [
     "arbitraryJSBlock": null,
     "blockOrExpression": "block",
     "declarationSyntax": "var",
+    "functionWrapping": Array [],
     "isFunction": false,
     "name": "storyboard",
     "param": null,
