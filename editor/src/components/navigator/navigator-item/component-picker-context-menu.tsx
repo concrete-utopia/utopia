@@ -683,7 +683,7 @@ function insertPreferredChild(
     uid,
     ['do-not-add'],
     null,
-    null,
+    { type: 'file-root' },
     null,
   )
 

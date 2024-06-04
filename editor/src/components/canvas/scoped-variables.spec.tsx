@@ -1,5 +1,9 @@
+import json5 from 'json5'
 import { createBuiltInDependenciesList } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 import { getSamplePreviewFile, getSamplePreviewHTMLFile } from '../../core/model/new-project-files'
+import * as EP from '../../core/shared/element-path'
+import { objectMap } from '../../core/shared/object-utils'
+import { optionalMap } from '../../core/shared/optional-utils'
 import type { ProjectContents, TextFile } from '../../core/shared/project-file-types'
 import {
   textFile,
@@ -9,6 +13,7 @@ import {
   directory,
 } from '../../core/shared/project-file-types'
 import { complexDefaultProjectPreParsed } from '../../sample-projects/sample-project-utils.test-utils'
+import type { ProjectContentTreeRoot } from '../assets'
 import { contentsToTree } from '../assets'
 import type { PersistentModel } from '../editor/store/editor-state'
 import {
@@ -16,7 +21,12 @@ import {
   StoryboardFilePath,
   persistentModelForProjectContents,
 } from '../editor/store/editor-state'
-import { DefaultStartingFeatureSwitches, renderTestEditorWithModel } from './ui-jsx.test-utils'
+import { insertionCeilingToString, type VariableData, type VariableMetadata } from './ui-jsx-canvas'
+import {
+  DefaultStartingFeatureSwitches,
+  renderTestEditorWithModel,
+  renderTestEditorWithProjectContent,
+} from './ui-jsx.test-utils'
 
 function projectWithInlineComponentContents(): ProjectContents {
   function createCodeFile(path: string, contents: string): TextFile {
@@ -210,7 +220,172 @@ function projectWithInlineComponentDestructured(): PersistentModel {
   return persistentModel
 }
 
+function projectWithDeepNestedScopes(): ProjectContentTreeRoot {
+  function createCodeFile(contents: string): TextFile {
+    return textFile(textFileContents(contents, unparsed, RevisionsState.CodeAhead), null, null, 0)
+  }
+
+  return contentsToTree({
+    '/package.json': textFile(
+      textFileContents(
+        JSON.stringify(DefaultPackageJson, null, 2),
+        unparsed,
+        RevisionsState.CodeAhead,
+      ),
+      null,
+      null,
+      0,
+    ),
+    '/src': directory(),
+    '/assets': directory(),
+    '/public': directory(),
+    [StoryboardFilePath]: createCodeFile(
+      `import * as React from 'react'
+  import Utopia, {
+    Scene,
+    Storyboard,
+  } from 'utopia-api'
+  import { App } from '/src/app.js'
+  
+  export var storyboard = (
+    <Storyboard data-uid='storyboard-entity'>
+      <Scene
+        data-label='Imported App'
+        data-uid='scene-1-entity'
+        style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+      >
+        <App data-uid='app-entity' />
+      </Scene>
+    </Storyboard>
+  )`,
+    ),
+    '/src/app.js': createCodeFile(
+      `import * as React from 'react'
+      
+      const globalVar = ['alap']
+      
+      export var App = ({ style }) => {
+        const localVar = ['local']
+        return (
+          <div
+            data-uid='app-root'
+            style={{
+              height: '100%',
+              width: '100%',
+              contain: 'layout',
+              ...style,
+            }}
+          >
+            {
+              // @utopia/uid=globalVarMap
+              globalVar.map((global) => (
+              <div data-uid='div1'>
+                {
+                  // @utopia/uid=localVarMap
+                  localVar.map((local) => (
+                  <div data-uid='div2'>
+                    {
+                      // @utopia/uid=firstMap
+                      ['a', 'b', 'c'].map((first) => (
+                      <div data-uid='div3'>
+                        {
+                          // @utopia/uid=secondMap
+                          [1, 2, 3].map((second) => (
+                          <div data-uid='div4'>
+                            {(() => {
+                              const innerVar = ['cica', 'kutya']
+                              // @utopia/uid=innerVarMap
+                              return innerVar.map((inner) => {
+                                return (
+                                  <div data-uid='div5'>
+                                    {global} -{local} -{first} -
+                                    {second} -{inner}
+                                  </div>
+                                )
+                              })
+                            })()}
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        )
+      }
+      `,
+    ),
+  })
+}
+
+function prettyPrintVariableData(variableData: VariableData) {
+  function prettyPrintVariableMetadata(variableMetadata: VariableMetadata) {
+    return {
+      spiedValue: JSON.stringify(variableMetadata.spiedValue, null, 2),
+      insertionCeiling: insertionCeilingToString(variableMetadata.insertionCeiling),
+    }
+  }
+
+  return objectMap(prettyPrintVariableMetadata, variableData)
+}
+
 describe('scoped variables', () => {
+  it('project with deep nested scopes works', async () => {
+    const renderResult = await renderTestEditorWithProjectContent(
+      projectWithDeepNestedScopes(),
+      'dont-await-first-dom-report',
+    )
+
+    const spiedVarsInScopeForInnermostElement = prettyPrintVariableData(
+      renderResult.getEditorState().editor.variablesInScope[
+        'storyboard-entity/scene-1-entity/app-entity:app-root/globalvarmap/div1~~~1/localvarmap/div2~~~1/firstmap/div3~~~1/secondmap/div4~~~1/5d9/div5~~~1'
+      ],
+    )
+
+    expect(spiedVarsInScopeForInnermostElement).toMatchInlineSnapshot(`
+      Object {
+        "first": Object {
+          "insertionCeiling": "storyboard-entity/scene-1-entity/app-entity:app-root/globalvarmap/div1~~~1/localvarmap/div2~~~1/firstmap/div3~~~1",
+          "spiedValue": "\\"a\\"",
+        },
+        "global": Object {
+          "insertionCeiling": "storyboard-entity/scene-1-entity/app-entity:app-root/globalvarmap/div1~~~1",
+          "spiedValue": "\\"alap\\"",
+        },
+        "globalVar": Object {
+          "insertionCeiling": "file-root",
+          "spiedValue": "[
+        \\"alap\\"
+      ]",
+        },
+        "local": Object {
+          "insertionCeiling": "storyboard-entity/scene-1-entity/app-entity:app-root/globalvarmap/div1~~~1/localvarmap/div2~~~1",
+          "spiedValue": "\\"local\\"",
+        },
+        "localVar": Object {
+          "insertionCeiling": "storyboard-entity/scene-1-entity/app-entity:app-root",
+          "spiedValue": "[
+        \\"local\\"
+      ]",
+        },
+        "second": Object {
+          "insertionCeiling": "storyboard-entity/scene-1-entity/app-entity:app-root/globalvarmap/div1~~~1/localvarmap/div2~~~1/firstmap/div3~~~1/secondmap/div4~~~1",
+          "spiedValue": "1",
+        },
+        "style": Object {
+          "insertionCeiling": "storyboard-entity/scene-1-entity/app-entity:app-root",
+          "spiedValue": undefined,
+        },
+      }
+    `)
+
+    // TODO: these should not be undefined, to be fixed in a follow up PR:
+    expect(spiedVarsInScopeForInnermostElement['innerVar']).toMatchInlineSnapshot(`undefined`)
+    expect(spiedVarsInScopeForInnermostElement['inner']).toMatchInlineSnapshot(`undefined`)
+  })
+
   it('includes scoped variables for an inline component destructuring the parameter', async () => {
     const renderResult = await renderTestEditorWithModel(
       projectWithInlineComponentDestructured(),

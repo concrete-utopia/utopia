@@ -21,6 +21,7 @@ import type { Size } from '../../../core/shared/math-utils'
 import { dataPasteHandler } from '../../../utils/paste-handler'
 import { sortBy } from '../../../core/shared/array-utils'
 import { iconPropsForIcon } from './component-picker-context-menu'
+import type { FileRootPath } from '../../canvas/ui-jsx-canvas'
 
 const FILTER_CATEGORIES: Array<string> = ['Everything']
 
@@ -48,7 +49,7 @@ export function elementToInsertToInsertableComponent(
   uid: string,
   stylePropOptions: Array<StylePropOption>,
   defaultSize: Size | null,
-  insertionCeiling: ElementPath | null,
+  insertionCeiling: ElementPath | FileRootPath,
   icon: Icon | null,
 ): InsertableComponent {
   const element = elementToInsert.elementToInsert(uid)

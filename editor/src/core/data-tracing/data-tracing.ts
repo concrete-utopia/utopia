@@ -1,4 +1,5 @@
 import type { ProjectContentTreeRoot } from '../../components/assets'
+import type { FileRootPath } from '../../components/canvas/ui-jsx-canvas'
 import { findUnderlyingTargetComponentImplementationFromImportInfo } from '../../components/custom-code/code-file'
 import { withUnderlyingTarget } from '../../components/editor/store/editor-state'
 import * as TPP from '../../components/template-property-path'
@@ -428,12 +429,15 @@ export function traceDataFromElement(
 }
 
 export function traceDataFromVariableName(
-  enclosingScope: ElementPath,
+  enclosingScope: ElementPath | FileRootPath,
   variableName: string,
   metadata: ElementInstanceMetadataMap,
   projectContents: ProjectContentTreeRoot,
   pathDrillSoFar: DataPathPositiveResult,
 ): DataTracingResult {
+  if (enclosingScope.type === 'file-root') {
+    return dataTracingFailed('Cannot trace data from variable name in file root')
+  }
   const componentHoldingElement = findContainingComponentForElementPath(
     enclosingScope,
     projectContents,

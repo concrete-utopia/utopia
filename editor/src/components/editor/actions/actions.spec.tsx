@@ -683,7 +683,7 @@ describe('INSERT_INSERTABLE', () => {
       'View',
       [],
       null,
-      null,
+      { type: 'file-root' },
       null,
     )
 
