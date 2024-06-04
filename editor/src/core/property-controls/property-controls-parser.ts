@@ -1,39 +1,39 @@
-import type {
-  CheckboxControlDescription,
-  ColorControlDescription,
-  ControlDescription,
-  NumberInputControlDescription,
-  RadioControlDescription,
-  PopUpListControlDescription,
-  StringInputControlDescription,
-  NoneControlDescription,
-  UnionControlDescription,
-  ArrayControlDescription,
-  ObjectControlDescription,
-  StyleControlsControlDescription,
-  Vector2ControlDescription,
-  Vector3ControlDescription,
-  ExpressionPopUpListControlDescription,
-  ImportType,
-  PropertyControls,
-  RegularControlDescription,
-  ExpressionInputControlDescription,
-  RegularControlType,
-  Vector4ControlDescription,
-  EulerControlDescription,
-  Matrix3ControlDescription,
-  Matrix4ControlDescription,
-  BasicControlOption,
-  BasicControlOptions,
-  ExpressionControlOption,
-  TupleControlDescription,
-  HtmlInputControlDescription,
-  JSXControlDescription,
-  AllowedEnumType,
-  Matrix3,
-  Matrix4,
-  ComponentExample,
-  PreferredContents,
+import {
+  type CheckboxControlDescription,
+  type ColorControlDescription,
+  type ControlDescription,
+  type NumberInputControlDescription,
+  type RadioControlDescription,
+  type PopUpListControlDescription,
+  type StringInputControlDescription,
+  type NoneControlDescription,
+  type UnionControlDescription,
+  type ArrayControlDescription,
+  type ObjectControlDescription,
+  type StyleControlsControlDescription,
+  type Vector2ControlDescription,
+  type Vector3ControlDescription,
+  type ExpressionPopUpListControlDescription,
+  type ImportType,
+  type RegularControlDescription,
+  type ExpressionInputControlDescription,
+  type RegularControlType,
+  type Vector4ControlDescription,
+  type EulerControlDescription,
+  type Matrix3ControlDescription,
+  type Matrix4ControlDescription,
+  type BasicControlOption,
+  type BasicControlOptions,
+  type ExpressionControlOption,
+  type TupleControlDescription,
+  type HtmlInputControlDescription,
+  type JSXControlDescription,
+  type AllowedEnumType,
+  type Matrix3,
+  type Matrix4,
+  type PreferredContents,
+  type BasicControlOptionWithIcon,
+  PropertyControlIcons,
 } from 'utopia-api/core'
 import { parseColor } from '../../components/inspector/common/css-utils'
 import type { Parser, ParseResult } from '../../utils/value-parser-utils'
@@ -51,45 +51,26 @@ import {
   parseArray,
   parseBoolean,
   parseConstant,
-  parseFunction,
+  parseEnum,
   parseNull,
-  parseNullable,
   parseNumber,
   parseObject,
   parseString,
-  parseTuple,
-  parseUndefined,
 } from '../../utils/value-parser-utils'
 import {
   applicative2Either,
   applicative3Either,
   applicative4Either,
-  applicative5Either,
   applicative6Either,
   applicative8Either,
-  applicative9Either,
   foldEither,
   left,
   right,
-  isRight,
-  mapEither,
-  flatMapEither,
-  isLeft,
-  applicative10Either,
   applicative7Either,
 } from '../shared/either'
-import {
-  objectMap,
-  setOptionalProp,
-  forEachValue,
-  objectMapDropNulls,
-} from '../shared/object-utils'
+import { objectMap, setOptionalProp } from '../shared/object-utils'
 import { parseEnumValue } from './property-control-values'
-import {
-  parseComponentExample,
-  parseComponentInsertOption,
-  parsePreferredContents,
-} from './property-controls-local'
+import { parsePreferredContents } from './property-controls-local'
 
 const requiredFieldParser = optionalObjectKeyParser(parseBoolean, 'required')
 
@@ -126,6 +107,22 @@ const parseBasicControlOptions: Parser<BasicControlOptions<unknown>> = parseAlte
   BasicControlOptions<unknown>
 >(
   [parseArray(parseEnumValue), parseArray(parseBasicControlOption<unknown>(parseAny))],
+  'Not a valid array of options',
+)
+
+const parseBasicControlOptionsWithIcon: Parser<
+  AllowedEnumType[] | BasicControlOptionWithIcon<unknown>[]
+> = parseAlternative<AllowedEnumType[] | BasicControlOptionWithIcon<unknown>[]>(
+  [
+    parseArray(parseEnumValue),
+    parseArray(
+      objectParser<BasicControlOptionWithIcon<unknown>>({
+        label: parseString,
+        value: parseAny,
+        icon: optionalProp(parseEnum(PropertyControlIcons)),
+      }),
+    ),
+  ],
   'Not a valid array of options',
 )
 
@@ -345,7 +342,7 @@ export function parseRadioControlDescription(value: unknown): ParseResult<RadioC
     optionalObjectKeyParser(parseString, 'label')(value),
     optionalObjectKeyParser(parseString, 'folder')(value),
     objectKeyParser(parseConstant('radio'), 'control')(value),
-    objectKeyParser(parseBasicControlOptions, 'options')(value),
+    objectKeyParser(parseBasicControlOptionsWithIcon, 'options')(value),
     optionalObjectKeyParser(parseBoolean, 'visibleByDefault')(value),
     requiredFieldParser(value),
     optionalObjectKeyParser(parseEnumValueOrBasicControlOption, 'defaultValue')(value),
