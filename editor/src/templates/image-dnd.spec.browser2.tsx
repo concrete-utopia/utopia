@@ -231,8 +231,7 @@ const contents = {
   },
 } as ProjectContentTreeRoot
 
-// TODO skipping these tests as they are currently broken
-describe.skip('image drag and drop', () => {
+describe('image drag and drop', () => {
   var dropDone: ReturnType<typeof defer> = defer()
   var sandbox = Sinon.createSandbox()
   var originalOnDrop = ImageDrop.DropHandlers.onDrop
