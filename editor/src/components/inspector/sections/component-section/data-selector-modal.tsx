@@ -42,6 +42,7 @@ import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import type { FileRootPath } from '../../../canvas/ui-jsx-canvas'
 import { insertionCeilingToString, insertionCeilingsEqual } from '../../../canvas/ui-jsx-canvas'
+import { set } from 'objectPath'
 
 export const DataSelectorPopupBreadCrumbsTestId = 'data-selector-modal-top-bar'
 
@@ -162,6 +163,9 @@ export const DataSelectorModal = React.memo(
         (name: ElementPath, hasContent: boolean) => () => {
           if (hasContent) {
             setSelectedScope(name)
+            setSelectedPath(null)
+            setHoveredPath(null)
+            setNavigatedToPath([])
           }
         },
         [],
