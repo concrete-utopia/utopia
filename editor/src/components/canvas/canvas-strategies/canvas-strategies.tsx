@@ -5,6 +5,7 @@ import type { ElementInstanceMetadataMap } from '../../../core/shared/element-te
 import { arrayEqualsByReference, assertNever } from '../../../core/shared/utils'
 import type {
   AllElementProps,
+  DerivedState,
   EditorState,
   EditorStorePatched,
 } from '../../editor/store/editor-state'

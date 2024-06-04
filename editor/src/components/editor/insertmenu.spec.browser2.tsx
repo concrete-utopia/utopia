@@ -1,5 +1,12 @@
-import { screen } from '@testing-library/react'
+import { act, fireEvent, screen } from '@testing-library/react'
 import { FOR_TESTS_setNextGeneratedUid } from '../../core/model/element-template-utils.test-utils'
+import { forceNotNull } from '../../core/shared/optional-utils'
+import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
+import {
+  mouseDragFromPointToPoint,
+  mouseMoveToPoint,
+  pressKey,
+} from '../canvas/event-helpers.test-utils'
 import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
 import {
   TestAppUID,
@@ -10,6 +17,7 @@ import {
 } from '../canvas/ui-jsx.test-utils'
 import { setPanelVisibility, setRightMenuTab } from './actions/action-creators'
 import { RightMenuTab } from './store/editor-state'
+import { ComponentPickerTestId } from '../navigator/navigator-item/component-picker'
 import * as EP from '../../core/shared/element-path'
 import { BakedInStoryboardUID } from '../../core/model/scene-utils'
 import { searchInComponentPicker, selectComponentsForTest } from '../../utils/utils.test-utils'

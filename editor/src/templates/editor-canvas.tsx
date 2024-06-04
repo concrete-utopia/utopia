@@ -69,6 +69,8 @@ import type {
   CanvasPoint,
   CanvasRectangle,
   CanvasVector,
+  CoordinateMarker,
+  Point,
   RawPoint,
   Size,
   WindowPoint,
@@ -79,12 +81,18 @@ import {
   roundPointToNearestHalf,
   roundPointToNearestWhole,
   windowRectangle,
+  zeroCanvasPoint,
   zeroCanvasRect,
 } from '../core/shared/math-utils'
 import type { ElementPath } from '../core/shared/project-file-types'
 import { getActionsForClipboardItems, Clipboard } from '../utils/clipboard'
-import { CanvasMousePositionRaw, updateGlobalPositions } from '../utils/global-positions'
+import {
+  CanvasMousePositionRaw,
+  CanvasMousePositionRounded,
+  updateGlobalPositions,
+} from '../utils/global-positions'
 import type { KeysPressed } from '../utils/keyboard'
+import Keyboard, { KeyCharacter } from '../utils/keyboard'
 import { emptyModifiers, Modifier } from '../utils/modifiers'
 import type { MouseButtonsPressed } from '../utils/mouse'
 import RU from '../utils/react-utils'
@@ -94,8 +102,9 @@ import { DropHandlers } from './image-drop'
 import { EditorCommon } from '../components/editor/editor-component-common'
 import { CursorComponent } from '../components/canvas/controls/select-mode/cursor-component'
 import * as ResizeObserverSyntheticDefault from 'resize-observer-polyfill'
+import { isFeatureEnabled } from '../utils/feature-switches'
 import { getCanvasViewportCenter } from './paste-helpers'
-import { isPasteHandler } from '../utils/paste-handler'
+import { DataPasteHandler, isPasteHandler } from '../utils/paste-handler'
 const ResizeObserver = ResizeObserverSyntheticDefault.default ?? ResizeObserverSyntheticDefault
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
@@ -863,7 +872,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
 
     const canvasControls = React.createElement(NewCanvasControls, {
       windowToCanvasPosition: this.getPosition,
-      cursor: cursor,
+      cursor,
     })
 
     const canvasLiveEditingStyle = canvasIsLive
@@ -1303,6 +1312,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
   }
   handlePaste = (event: ClipboardEvent) => {
     const editor = this.props.editor
+    const selectedViews = editor.selectedViews
 
     if (isPasteHandler(event.target)) {
       // components with data-pastehandler='true' have precedence
