@@ -93,10 +93,7 @@ export function getEnclosingScopes(
     label: string
     hasContent: boolean
   }> = []
-  const pathsToCheck = [
-    ...EP.allPathsInsideComponent(lowestInsertionCeiling),
-    EP.emptyElementPath, // empty element path is the file root, TODO make it a separate constant
-  ]
+  const pathsToCheck = [...EP.allPathsInsideComponent(lowestInsertionCeiling)]
   for (const current of pathsToCheck) {
     const parentOfCurrent = EP.parentPath(current)
 
@@ -118,16 +115,6 @@ export function getEnclosingScopes(
       continue
     }
 
-    // the file root
-    if (EP.pathsEqual(current, EP.emptyElementPath)) {
-      result.unshift({
-        insertionCeiling: current,
-        label: 'File',
-        hasContent: buckets.includes(current),
-      })
-      continue
-    }
-
     // we also add anything that has content in scope even if it's not a component or map
     if (buckets.includes(current)) {
       result.unshift({
@@ -143,6 +130,13 @@ export function getEnclosingScopes(
       continue
     }
   }
+
+  // Add file root
+  result.unshift({
+    insertionCeiling: EP.emptyElementPath,
+    label: 'File',
+    hasContent: buckets.includes(EP.emptyElementPath),
+  })
 
   return result
 }
