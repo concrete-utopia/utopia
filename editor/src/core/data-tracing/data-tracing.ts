@@ -102,26 +102,39 @@ export function dataPathResultIsUnavailable(result: DataPathResult): result is D
   return result.type === 'DATA_PATH_UNAVAILABLE'
 }
 
-export type LiteralAttributeLocation =
-  | { type: 'arbitrary-js-block' }
-  | { type: 'property'; propertyPath: PropertyPath }
-
 export type DataTracingToLiteralAttribute = {
   type: 'literal-attribute'
   elementPath: ElementPath
-  location: LiteralAttributeLocation
+  property: PropertyPath
   dataPathIntoAttribute: DataPathPositiveResult
 }
 
 export function dataTracingToLiteralAttribute(
   elementPath: ElementPath,
-  location: LiteralAttributeLocation,
+  property: PropertyPath,
   dataPathIntoAttribute: DataPathPositiveResult,
 ): DataTracingToLiteralAttribute {
   return {
     type: 'literal-attribute',
     elementPath: elementPath,
-    location: location,
+    property: property,
+    dataPathIntoAttribute: dataPathIntoAttribute,
+  }
+}
+
+export type DataTracingToLiteralAssignment = {
+  type: 'literal-assignment'
+  elementPath: ElementPath
+  dataPathIntoAttribute: DataPathPositiveResult
+}
+
+export function dataTracingToLiteralAssignment(
+  elementPath: ElementPath,
+  dataPathIntoAttribute: DataPathPositiveResult,
+): DataTracingToLiteralAssignment {
+  return {
+    type: 'literal-assignment',
+    elementPath: elementPath,
     dataPathIntoAttribute: dataPathIntoAttribute,
   }
 }
@@ -194,6 +207,7 @@ export function dataTracingFailed(reason: string): DataTracingFailed {
 
 export type DataTracingResult =
   | DataTracingToLiteralAttribute
+  | DataTracingToLiteralAssignment
   | DataTracingToAHookCall
   | DataTracingToAComponentProp
   | DataTracingToElementAtScope
@@ -520,7 +534,7 @@ export function traceDataFromProp(
     // bingo
     return dataTracingToLiteralAttribute(
       startFrom.elementPath,
-      { type: 'property', propertyPath: startFrom.propertyPath },
+      startFrom.propertyPath,
       pathDrillSoFar,
     )
   }
@@ -793,11 +807,7 @@ function lookupInComponentScope(
 
     if (foundAssignmentOfIdentifier != null) {
       if (isNestedValueLiteral(foundAssignmentOfIdentifier.rightHandSide)) {
-        return dataTracingToLiteralAttribute(
-          componentPath,
-          { type: 'arbitrary-js-block' },
-          pathDrillSoFar,
-        )
+        return dataTracingToLiteralAssignment(componentPath, pathDrillSoFar)
       }
 
       if (

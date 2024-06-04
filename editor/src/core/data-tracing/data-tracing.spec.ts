@@ -19,6 +19,7 @@ import {
   dataTracingFailed,
   dataTracingToAHookCall,
   dataTracingToElementAtScope,
+  dataTracingToLiteralAssignment,
   dataTracingToLiteralAttribute,
   traceDataFromElement,
   traceDataFromProp,
@@ -49,7 +50,7 @@ describe('Data Tracing', () => {
       expect(traceResult).toEqual(
         dataTracingToLiteralAttribute(
           EP.fromString('sb/app:my-component'),
-          { type: 'property', propertyPath: PP.create('title') },
+          PP.create('title'),
           dataPathSuccess([]),
         ),
       )
@@ -81,7 +82,7 @@ describe('Data Tracing', () => {
       expect(traceResult).toEqual(
         dataTracingToLiteralAttribute(
           EP.fromString('sb/app:my-component/inner-child'),
-          { type: 'property', propertyPath: PP.create('title') },
+          PP.create('title'),
           dataPathSuccess([]),
         ),
       )
@@ -113,7 +114,7 @@ describe('Data Tracing', () => {
       expect(traceResult).toEqual(
         dataTracingToLiteralAttribute(
           EP.fromString('sb/app:my-component'),
-          { type: 'property', propertyPath: PP.create('title') },
+          PP.create('title'),
           dataPathSuccess([]),
         ),
       )
@@ -152,7 +153,7 @@ describe('Data Tracing', () => {
       expect(traceResult).toEqual(
         dataTracingToLiteralAttribute(
           EP.fromString('sb/app:my-component'),
-          { type: 'property', propertyPath: PP.create('title') },
+          PP.create('title'),
           dataPathSuccess([]),
         ),
       )
@@ -184,7 +185,7 @@ describe('Data Tracing', () => {
       expect(traceResult).toEqual(
         dataTracingToLiteralAttribute(
           EP.fromString('sb/app:my-component'),
-          { type: 'property', propertyPath: PP.create('title') },
+          PP.create('title'),
           dataPathSuccess([]),
         ),
       )
@@ -216,7 +217,7 @@ describe('Data Tracing', () => {
       expect(traceResult).toEqual(
         dataTracingToLiteralAttribute(
           EP.fromString('sb/app:my-component'),
-          { type: 'property', propertyPath: PP.create('title') },
+          PP.create('title'),
           dataPathSuccess([]),
         ),
       )
@@ -255,7 +256,7 @@ describe('Data Tracing', () => {
       expect(traceResult).toEqual(
         dataTracingToLiteralAttribute(
           EP.fromString('sb/app:my-component'),
-          { type: 'property', propertyPath: PP.create('title') },
+          PP.create('title'),
           dataPathSuccess([]),
         ),
       )
@@ -287,7 +288,7 @@ describe('Data Tracing', () => {
       expect(traceResult).toEqual(
         dataTracingToLiteralAttribute(
           EP.fromString('sb/app:my-component'),
-          { type: 'property', propertyPath: PP.create('doc') },
+          PP.create('doc'),
           dataPathSuccess(['title']),
         ),
       )
@@ -319,7 +320,7 @@ describe('Data Tracing', () => {
       expect(traceResult).toEqual(
         dataTracingToLiteralAttribute(
           EP.fromString('sb/app:my-component'),
-          { type: 'property', propertyPath: PP.create('doc') },
+          PP.create('doc'),
           dataPathSuccess(['very', 'deep', 'title']),
         ),
       )
@@ -358,7 +359,7 @@ describe('Data Tracing', () => {
       expect(traceResult).toEqual(
         dataTracingToLiteralAttribute(
           EP.fromString('sb/app:my-component'),
-          { type: 'property', propertyPath: PP.create('doc') },
+          PP.create('doc'),
           dataPathSuccess(['very', 'deep', 'title', 'value']),
         ),
       )
@@ -794,7 +795,7 @@ describe('Data Tracing', () => {
       expect(traceResult).toEqual(
         dataTracingToLiteralAttribute(
           EP.fromString('sb/app:my-component'),
-          { type: 'property', propertyPath: PP.create('title') },
+          PP.create('title'),
           dataPathSuccess([]),
         ),
       )
@@ -827,7 +828,7 @@ describe('Data Tracing', () => {
       expect(traceResult).toEqual(
         dataTracingToLiteralAttribute(
           EP.fromString('sb/app:my-component'),
-          { type: 'property', propertyPath: PP.create('title') },
+          PP.create('title'),
           dataPathSuccess([]),
         ),
       )
@@ -860,7 +861,7 @@ describe('Data Tracing', () => {
       expect(traceResult).toEqual(
         dataTracingToLiteralAttribute(
           EP.fromString('sb/app:my-component'),
-          { type: 'property', propertyPath: PP.create('title') },
+          PP.create('title'),
           dataPathSuccess([]),
         ),
       )
@@ -906,7 +907,7 @@ describe('Data Tracing', () => {
       expect(traceResult).toEqual(
         dataTracingToLiteralAttribute(
           EP.fromString('sb/app:my-component'),
-          { type: 'property', propertyPath: PP.create('titles') },
+          PP.create('titles'),
           dataPathSuccess(['1']),
         ),
       )
@@ -1291,11 +1292,7 @@ describe('Data Tracing', () => {
         )
 
         expect(trace).toEqual(
-          dataTracingToLiteralAttribute(
-            EP.fromString('sb/app:my-component'),
-            { type: 'arbitrary-js-block' },
-            dataPathSuccess([]),
-          ),
+          dataTracingToLiteralAssignment(EP.fromString('sb/app:my-component'), dataPathSuccess([])),
         )
       }
       {
@@ -1308,11 +1305,7 @@ describe('Data Tracing', () => {
         )
 
         expect(trace).toEqual(
-          dataTracingToLiteralAttribute(
-            EP.fromString('sb/app:my-component'),
-            { type: 'arbitrary-js-block' },
-            dataPathSuccess([]),
-          ),
+          dataTracingToLiteralAssignment(EP.fromString('sb/app:my-component'), dataPathSuccess([])),
         )
       }
       {
@@ -1325,11 +1318,7 @@ describe('Data Tracing', () => {
         )
 
         expect(trace).toEqual(
-          dataTracingToLiteralAttribute(
-            EP.fromString('sb/app:my-component'),
-            { type: 'arbitrary-js-block' },
-            dataPathSuccess([]),
-          ),
+          dataTracingToLiteralAssignment(EP.fromString('sb/app:my-component'), dataPathSuccess([])),
         )
       }
       {
@@ -1342,11 +1331,7 @@ describe('Data Tracing', () => {
         )
 
         expect(trace).toEqual(
-          dataTracingToLiteralAttribute(
-            EP.fromString('sb/app:my-component'),
-            { type: 'arbitrary-js-block' },
-            dataPathSuccess([]),
-          ),
+          dataTracingToLiteralAssignment(EP.fromString('sb/app:my-component'), dataPathSuccess([])),
         )
       }
       {
@@ -1359,9 +1344,8 @@ describe('Data Tracing', () => {
         )
 
         expect(trace).toEqual(
-          dataTracingToLiteralAttribute(
+          dataTracingToLiteralAssignment(
             EP.fromString('sb/app:my-component'),
-            { type: 'arbitrary-js-block' },
             dataPathSuccess(['very']),
           ),
         )
@@ -1376,9 +1360,8 @@ describe('Data Tracing', () => {
         )
 
         expect(trace).toEqual(
-          dataTracingToLiteralAttribute(
+          dataTracingToLiteralAssignment(
             EP.fromString('sb/app:my-component'),
-            { type: 'arbitrary-js-block' },
             dataPathSuccess(['very', 'deep', 'title', 'value']),
           ),
         )
