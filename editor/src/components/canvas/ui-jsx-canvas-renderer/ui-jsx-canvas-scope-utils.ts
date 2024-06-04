@@ -6,12 +6,7 @@ import {
 } from '../../../core/shared/element-template'
 import { resolveParamsAndRunJsCode } from '../../../core/shared/javascript-cache'
 import type { ElementPath } from '../../../core/shared/project-file-types'
-import {
-  fileRootPathToString,
-  insertionCeilingToString,
-  type FileRootPath,
-  type VariableData,
-} from '../ui-jsx-canvas'
+import { type FileRootPath, type VariableData } from '../ui-jsx-canvas'
 
 export function runBlockUpdatingScope(
   elementPath: ElementPath | FileRootPath | null,

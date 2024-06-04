@@ -105,33 +105,11 @@ export type FileRootPath = {
   type: 'file-root'
 }
 
-export function fileRootPathToString(fileRootPath: FileRootPath): string {
-  return 'file-root'
-}
-
-export function fileRootPathFromString(fileRootPathString: string): FileRootPath {
-  if (fileRootPathString === 'file-root') {
-    return { type: 'file-root' }
-  } else {
-    throw new Error(`Unknown file root path string: ${fileRootPathString}`)
-  }
-}
-
 export function insertionCeilingToString(insertionCeiling: ElementPath | FileRootPath): string {
   if (insertionCeiling.type === 'file-root') {
-    return fileRootPathToString(insertionCeiling)
+    return 'file-root'
   } else {
     return EP.toString(insertionCeiling)
-  }
-}
-
-export function insertionCeilingFromString(
-  insertionCeilingString: string,
-): ElementPath | FileRootPath {
-  if (insertionCeilingString === 'file-root') {
-    return fileRootPathFromString(insertionCeilingString)
-  } else {
-    return EP.fromString(insertionCeilingString)
   }
 }
 
