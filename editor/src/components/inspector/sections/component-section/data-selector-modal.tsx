@@ -144,15 +144,8 @@ export const DataSelectorModal = React.memo(
         if (lowestInsertionCeiling == null) {
           return null
         }
-        const allPaths = EP.allPathsInsideComponent(lowestInsertionCeiling)
-        for (const path of allPaths) {
-          if (scopeBuckets[EP.toString(path)] != null) {
-            return path
-          }
-        }
-
-        // fallback
-        return lowestInsertionCeiling
+        const matchingScope = findClosestMatchingScope(lowestInsertionCeiling, scopeBuckets)
+        return matchingScope ?? lowestInsertionCeiling
       }, [scopeBuckets, lowestInsertionCeiling])
 
       const [selectedScope, setSelectedScope] = React.useState<ElementPath | null>(
@@ -584,6 +577,20 @@ type ScopeBuckets = {
   [insertionCeiling: string]: Array<DataPickerOption>
 }
 
+function findClosestMatchingScope(
+  targetScope: ElementPath,
+  scopeBuckets: ScopeBuckets,
+): ElementPath | null {
+  const allPaths = EP.allPathsInsideComponent(targetScope)
+  for (const path of allPaths) {
+    if (scopeBuckets[EP.toString(path)] != null) {
+      return path
+    }
+  }
+
+  return null
+}
+
 function putVariablesIntoScopeBuckets(options: DataPickerOption[]): ScopeBuckets {
   const buckets: { [insertionCeiling: string]: Array<DataPickerOption> } = groupBy(
     (o) => optionalMap(EP.toString, o.insertionCeiling) ?? '', // '' represents "file root scope", TODO make it clearer
@@ -605,16 +612,8 @@ function useFilterVariablesInScope(
       return options
     }
 
-    // "walk up" the scopes to find the first bucket that has a scope that is a prefix of the scopeToShow
-    const scopesToCheck = EP.allPathsInsideComponent(scopeToShow)
-    for (const scope of scopesToCheck) {
-      const scopeString = EP.toString(scope)
-      if (scopeBuckets[scopeString] != null) {
-        return scopeBuckets[scopeString]
-      }
-    }
-
-    return []
+    const matchingScope = findClosestMatchingScope(scopeToShow, scopeBuckets)
+    return matchingScope == null ? [] : scopeBuckets[EP.toString(matchingScope)]
   }, [scopeBuckets, options, scopeToShow])
 
   return {
