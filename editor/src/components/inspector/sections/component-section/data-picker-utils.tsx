@@ -14,7 +14,7 @@ import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
 import type { AllElementProps } from '../../../editor/store/editor-state'
 import type { ArrayInfo, JSXInfo, ObjectInfo, PrimitiveInfo } from './variables-in-scope-utils'
-import type { FileRootPath } from '../../../canvas/ui-jsx-canvas'
+import { insertionCeilingToString, type FileRootPath } from '../../../canvas/ui-jsx-canvas'
 
 interface VariableOptionBase {
   depth: number
@@ -82,7 +82,7 @@ export function getEnclosingScopes(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   elementPathTree: ElementPathTrees,
-  buckets: Array<ElementPath>,
+  buckets: Array<string>,
   lowestInsertionCeiling: ElementPath,
 ): Array<{
   insertionCeiling: ElementPath
@@ -94,7 +94,7 @@ export function getEnclosingScopes(
     label: string
     hasContent: boolean
   }> = []
-  const pathsToCheck = [...EP.allPathsInsideComponent(lowestInsertionCeiling)]
+  const pathsToCheck = EP.allPathsInsideComponent(lowestInsertionCeiling)
   for (const current of pathsToCheck) {
     const parentOfCurrent = EP.parentPath(current)
 
@@ -111,13 +111,13 @@ export function getEnclosingScopes(
           elementPathTree,
           metadata,
         ),
-        hasContent: buckets.includes(current),
+        hasContent: buckets.includes(insertionCeilingToString(current)),
       })
       continue
     }
 
     // we also add anything that has content in scope even if it's not a component or map
-    if (buckets.includes(current)) {
+    if (buckets.includes(insertionCeilingToString(current))) {
       result.unshift({
         insertionCeiling: current,
         label: MetadataUtils.getElementLabel(
@@ -136,7 +136,7 @@ export function getEnclosingScopes(
   result.unshift({
     insertionCeiling: EP.emptyElementPath,
     label: 'File',
-    hasContent: buckets.includes(EP.emptyElementPath),
+    hasContent: buckets.includes(insertionCeilingToString({ type: 'file-root' })),
   })
 
   return result

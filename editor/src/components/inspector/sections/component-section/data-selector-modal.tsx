@@ -147,8 +147,6 @@ export const DataSelectorModal = React.memo(
         [allVariablesInScope],
       )
 
-      const scopeBucketPaths = Object.keys(scopeBuckets).map((k) => insertionCeilingFromString(k))
-
       const lowestMatchingScope: ElementPath | FileRootPath = React.useMemo(() => {
         if (lowestInsertionCeiling == null) {
           return { type: 'file-root' }
@@ -178,7 +176,7 @@ export const DataSelectorModal = React.memo(
             store.editor.jsxMetadata,
             store.editor.allElementProps,
             store.editor.elementPathTree,
-            scopeBucketPaths,
+            Object.keys(scopeBuckets),
             lowestInsertionCeiling ?? EP.emptyElementPath,
           )
           return scopes.map(({ insertionCeiling, label, hasContent }) => ({
