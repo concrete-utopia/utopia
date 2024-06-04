@@ -806,7 +806,7 @@ function lookupInComponentScope(
     )
 
     if (foundAssignmentOfIdentifier != null) {
-      if (isNestedValueLiteral(foundAssignmentOfIdentifier.rightHandSide)) {
+      if (isConsideredLiteralValue(foundAssignmentOfIdentifier.rightHandSide)) {
         return dataTracingToLiteralAssignment(componentPath, pathDrillSoFar)
       }
 
@@ -898,7 +898,7 @@ function substractFromStringNumber(n: string, minus: number): string {
   return `${parseInt(n) - minus}`
 }
 
-function isNestedValueLiteral(value: JSExpression): boolean {
+function isConsideredLiteralValue(value: JSExpression): boolean {
   switch (value.type) {
     case 'ATTRIBUTE_VALUE':
       return true
@@ -920,9 +920,9 @@ function isNestedValueLiteral(value: JSExpression): boolean {
 }
 
 function isArrayLiteral(array: JSExpressionNestedArray): boolean {
-  return array.content.every((c) => isNestedValueLiteral(c.value))
+  return array.content.every((c) => isConsideredLiteralValue(c.value))
 }
 
 function isObjectLiteral(value: JSExpressionNestedObject): boolean {
-  return value.content.every((c) => isNestedValueLiteral(c.value))
+  return value.content.every((c) => isConsideredLiteralValue(c.value))
 }
