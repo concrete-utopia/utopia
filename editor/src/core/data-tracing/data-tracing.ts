@@ -1,4 +1,5 @@
 import type { ProjectContentTreeRoot } from '../../components/assets'
+import type { FileRootPath } from '../../components/canvas/ui-jsx-canvas'
 import { findUnderlyingTargetComponentImplementationFromImportInfo } from '../../components/custom-code/code-file'
 import { withUnderlyingTarget } from '../../components/editor/store/editor-state'
 import * as TPP from '../../components/template-property-path'
@@ -13,6 +14,8 @@ import type {
   IdentifierOrAccess,
   JSAssignment,
   JSExpression,
+  JSExpressionNestedArray,
+  JSExpressionNestedObject,
   JSIdentifier,
   JSXElementChild,
   Param,
@@ -120,6 +123,23 @@ export function dataTracingToLiteralAttribute(
   }
 }
 
+export type DataTracingToLiteralAssignment = {
+  type: 'literal-assignment'
+  elementPath: ElementPath
+  dataPathIntoAttribute: DataPathPositiveResult
+}
+
+export function dataTracingToLiteralAssignment(
+  elementPath: ElementPath,
+  dataPathIntoAttribute: DataPathPositiveResult,
+): DataTracingToLiteralAssignment {
+  return {
+    type: 'literal-assignment',
+    elementPath: elementPath,
+    dataPathIntoAttribute: dataPathIntoAttribute,
+  }
+}
+
 export type DataTracingToElementAtScope = {
   type: 'element-at-scope'
   scope: ElementPath
@@ -188,6 +208,7 @@ export function dataTracingFailed(reason: string): DataTracingFailed {
 
 export type DataTracingResult =
   | DataTracingToLiteralAttribute
+  | DataTracingToLiteralAssignment
   | DataTracingToAHookCall
   | DataTracingToAComponentProp
   | DataTracingToElementAtScope
@@ -408,12 +429,15 @@ export function traceDataFromElement(
 }
 
 export function traceDataFromVariableName(
-  enclosingScope: ElementPath,
+  enclosingScope: ElementPath | FileRootPath,
   variableName: string,
   metadata: ElementInstanceMetadataMap,
   projectContents: ProjectContentTreeRoot,
   pathDrillSoFar: DataPathPositiveResult,
 ): DataTracingResult {
+  if (enclosingScope.type === 'file-root') {
+    return dataTracingFailed('Cannot trace data from variable name in file root')
+  }
   const componentHoldingElement = findContainingComponentForElementPath(
     enclosingScope,
     projectContents,
@@ -819,6 +843,10 @@ function lookupInComponentScope(
           pathDrillSoFar,
         )
       }
+
+      if (isConsideredLiteralValue(foundAssignmentOfIdentifier.rightHandSide)) {
+        return dataTracingToLiteralAssignment(componentPath, pathDrillSoFar)
+      }
     }
   }
 
@@ -872,4 +900,33 @@ function lookupInComponentScope(
 
 function substractFromStringNumber(n: string, minus: number): string {
   return `${parseInt(n) - minus}`
+}
+
+function isConsideredLiteralValue(value: JSExpression): boolean {
+  switch (value.type) {
+    case 'ATTRIBUTE_VALUE':
+      return true
+    case 'ATTRIBUTE_NESTED_ARRAY':
+      return isArrayLiteral(value)
+    case 'ATTRIBUTE_NESTED_OBJECT':
+      return isObjectLiteral(value)
+    case 'ATTRIBUTE_FUNCTION_CALL':
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+    case 'JSX_ELEMENT':
+    case 'JSX_MAP_EXPRESSION':
+    case 'JS_ELEMENT_ACCESS':
+    case 'JS_IDENTIFIER':
+    case 'JS_PROPERTY_ACCESS':
+      return false
+    default:
+      assertNever(value)
+  }
+}
+
+function isArrayLiteral(array: JSExpressionNestedArray): boolean {
+  return array.content.every((c) => isConsideredLiteralValue(c.value))
+}
+
+function isObjectLiteral(value: JSExpressionNestedObject): boolean {
+  return value.content.every((c) => isConsideredLiteralValue(c.value))
 }

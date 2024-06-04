@@ -23,7 +23,7 @@ import {
   isJSXAttributeValue,
   simplifyAttributeIfPossible,
 } from '../../core/shared/element-template'
-import type { VariableData } from '../canvas/ui-jsx-canvas'
+import type { FileRootPath, VariableData } from '../canvas/ui-jsx-canvas'
 import { type VariablesInScope } from '../canvas/ui-jsx-canvas'
 import { getContainingComponent, toComponentId } from '../../core/shared/element-path'
 import {
@@ -327,5 +327,5 @@ interface Variable {
   value?: unknown
   parent?: Variable
   depth: number
-  insertionCeiling: ElementPath | null
+  insertionCeiling: FileRootPath | ElementPath
 }

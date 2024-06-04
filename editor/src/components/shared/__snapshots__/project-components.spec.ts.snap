@@ -9,7 +9,9 @@ Array [
         "element": [Function],
         "icon": null,
         "importsToAdd": Object {},
-        "insertionCeiling": null,
+        "insertionCeiling": Object {
+          "type": "file-root",
+        },
         "name": "App",
         "stylePropOptions": Array [
           "do-not-add",
@@ -51,7 +53,9 @@ Array [
             "importedWithName": null,
           },
         },
-        "insertionCeiling": null,
+        "insertionCeiling": Object {
+          "type": "file-root",
+        },
         "name": "div",
         "stylePropOptions": Array [
           "do-not-add",
@@ -76,7 +80,9 @@ Array [
             "importedWithName": null,
           },
         },
-        "insertionCeiling": null,
+        "insertionCeiling": Object {
+          "type": "file-root",
+        },
         "name": "span",
         "stylePropOptions": Array [
           "do-not-add",
@@ -94,7 +100,9 @@ Array [
             "importedWithName": null,
           },
         },
-        "insertionCeiling": null,
+        "insertionCeiling": Object {
+          "type": "file-root",
+        },
         "name": "h1",
         "stylePropOptions": Array [
           "do-not-add",
@@ -112,7 +120,9 @@ Array [
             "importedWithName": null,
           },
         },
-        "insertionCeiling": null,
+        "insertionCeiling": Object {
+          "type": "file-root",
+        },
         "name": "h2",
         "stylePropOptions": Array [
           "do-not-add",
@@ -130,7 +140,9 @@ Array [
             "importedWithName": null,
           },
         },
-        "insertionCeiling": null,
+        "insertionCeiling": Object {
+          "type": "file-root",
+        },
         "name": "p",
         "stylePropOptions": Array [
           "do-not-add",
@@ -148,7 +160,9 @@ Array [
             "importedWithName": null,
           },
         },
-        "insertionCeiling": null,
+        "insertionCeiling": Object {
+          "type": "file-root",
+        },
         "name": "button",
         "stylePropOptions": Array [
           "do-not-add",
@@ -166,7 +180,9 @@ Array [
             "importedWithName": null,
           },
         },
-        "insertionCeiling": null,
+        "insertionCeiling": Object {
+          "type": "file-root",
+        },
         "name": "input",
         "stylePropOptions": Array [
           "do-not-add",
@@ -184,7 +200,9 @@ Array [
             "importedWithName": null,
           },
         },
-        "insertionCeiling": null,
+        "insertionCeiling": Object {
+          "type": "file-root",
+        },
         "name": "video",
         "stylePropOptions": Array [
           "do-not-add",
@@ -202,7 +220,9 @@ Array [
             "importedWithName": null,
           },
         },
-        "insertionCeiling": null,
+        "insertionCeiling": Object {
+          "type": "file-root",
+        },
         "name": "img",
         "stylePropOptions": Array [
           "do-not-add",
@@ -221,7 +241,9 @@ Array [
         "element": [Function],
         "icon": "component",
         "importsToAdd": Object {},
-        "insertionCeiling": null,
+        "insertionCeiling": Object {
+          "type": "file-root",
+        },
         "name": "Conditional",
         "stylePropOptions": Array [
           "do-not-add",
@@ -245,7 +267,9 @@ Array [
             "importedWithName": null,
           },
         },
-        "insertionCeiling": null,
+        "insertionCeiling": Object {
+          "type": "file-root",
+        },
         "name": "Fragment",
         "stylePropOptions": Array [
           "do-not-add",
@@ -279,7 +303,9 @@ Array [
             "importedWithName": null,
           },
         },
-        "insertionCeiling": null,
+        "insertionCeiling": Object {
+          "type": "file-root",
+        },
         "name": "List",
         "stylePropOptions": Array [
           "do-not-add",
@@ -297,7 +323,9 @@ Array [
         "element": [Function],
         "icon": "component",
         "importsToAdd": Object {},
-        "insertionCeiling": null,
+        "insertionCeiling": Object {
+          "type": "file-root",
+        },
         "name": "Sample text",
         "stylePropOptions": Array [
           "do-not-add",

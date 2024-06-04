@@ -4,7 +4,7 @@ import type {
   ObjectControlDescription,
 } from '../../../custom-code/internal-property-controls'
 import type { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
-import type { VariableData } from '../../../canvas/ui-jsx-canvas'
+import type { FileRootPath, VariableData } from '../../../canvas/ui-jsx-canvas'
 import { useEditorState, Substores } from '../../../editor/store/store-hook'
 import type { DataPickerFilterOption, DataPickerOption } from './data-picker-utils'
 import * as EP from '../../../../core/shared/element-path'
@@ -15,10 +15,11 @@ import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { assertNever, identity } from '../../../../core/shared/utils'
 import { isValidReactNode } from '../../../../utils/react-utils'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { emptySet } from '../../../../core/shared/set-utils'
 
 function valuesFromObject(
   variable: ArrayInfo | ObjectInfo,
-  insertionCeiling: ElementPath | null,
+  insertionCeiling: ElementPath | FileRootPath,
   depth: number,
   originalObjectName: string,
   valuePath: Array<string | number>,
@@ -75,7 +76,7 @@ function valuesFromObject(
 
 function valuesFromVariable(
   variable: VariableInfo,
-  insertionCeiling: ElementPath | null,
+  insertionCeiling: ElementPath | FileRootPath,
   depth: number,
   originalObjectName: string,
   valuePath: Array<string | number>,
@@ -136,7 +137,7 @@ interface VariableInfoBase {
   expression: string
   expressionPathPart: string | number
   value: unknown
-  insertionCeiling: ElementPath
+  insertionCeiling: ElementPath | FileRootPath
   matches: boolean
 }
 
@@ -164,8 +165,16 @@ export function variableInfoFromValue(
   expression: string,
   expressionPathPart: string | number,
   value: unknown,
-  insertionCeiling: ElementPath,
+  insertionCeiling: ElementPath | FileRootPath,
+  valueStackSoFar: Set<any>,
 ): VariableInfo | null {
+  if (valueStackSoFar.has(value)) {
+    // prevent circular dependencies
+    return null
+  }
+  // mutation
+  valueStackSoFar.add(value)
+
   switch (typeof value) {
     case 'function':
     case 'symbol':
@@ -203,7 +212,14 @@ export function variableInfoFromValue(
           insertionCeiling: insertionCeiling,
           matches: false,
           elements: mapDropNulls(
-            (e, idx) => variableInfoFromValue(`${expression}[${idx}]`, idx, e, insertionCeiling),
+            (e, idx) =>
+              variableInfoFromValue(
+                `${expression}[${idx}]`,
+                idx,
+                e,
+                insertionCeiling,
+                valueStackSoFar,
+              ),
             value,
           ),
         }
@@ -226,7 +242,13 @@ export function variableInfoFromValue(
         insertionCeiling: insertionCeiling,
         matches: false,
         props: mapDropNulls(([key, propValue]) => {
-          return variableInfoFromValue(`${expression}['${key}']`, key, propValue, insertionCeiling)
+          return variableInfoFromValue(
+            `${expression}['${key}']`,
+            key,
+            propValue,
+            insertionCeiling,
+            valueStackSoFar,
+          )
         }, Object.entries(value)),
       }
   }
@@ -235,7 +257,7 @@ export function variableInfoFromValue(
 function variableInfoFromVariableData(variableNamesInScope: VariableData): Array<VariableInfo> {
   const info = mapDropNulls(
     ([key, { spiedValue, insertionCeiling }]) =>
-      variableInfoFromValue(key, key, spiedValue, insertionCeiling),
+      variableInfoFromValue(key, key, spiedValue, insertionCeiling, emptySet()),
     Object.entries(variableNamesInScope),
   )
 
@@ -368,7 +390,7 @@ const keepLocalestScope =
   (variablesInScope: VariableData): VariableData => {
     let deepestInsertionCeiling = -Infinity
     Object.values(variablesInScope).forEach((variable) => {
-      if (variable.insertionCeiling == null) {
+      if (variable.insertionCeiling.type === 'file-root') {
         return
       }
 
@@ -380,7 +402,7 @@ const keepLocalestScope =
 
     const result: VariableData = {}
     Object.entries(variablesInScope).forEach(([key, variable]) => {
-      if (variable.insertionCeiling == null) {
+      if (variable.insertionCeiling.type === 'file-root') {
         result[key] = variable
         return
       }

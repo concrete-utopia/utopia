@@ -22,7 +22,11 @@ import {
 import { createLookupRender, utopiaCanvasJSXLookup } from './ui-jsx-canvas-element-renderer-utils'
 import { runBlockUpdatingScope } from './ui-jsx-canvas-scope-utils'
 import * as EP from '../../../core/shared/element-path'
-import type { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
+import type {
+  DomWalkerInvalidatePathsCtxData,
+  UiJsxCanvasContextData,
+  VariableData,
+} from '../ui-jsx-canvas'
 import type { ElementPath, HighlightBoundsForUids } from '../../../core/shared/project-file-types'
 import { isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
 import { defaultIfNull, optionalFlatMap } from '../../../core/shared/optional-utils'
@@ -125,6 +129,8 @@ export function createExecutionScope(
     ...topLevelComponentRendererComponentsForFile,
   }
 
+  let spiedVariablesInRoot: VariableData = {}
+
   // First make sure everything is in scope
   if (combinedTopLevelArbitraryBlock != null && openStoryboardFileNameKILLME != null) {
     const { highlightBounds, code } = getCodeAndHighlightBoundsForFile(filePath, projectContents)
@@ -164,7 +170,14 @@ export function createExecutionScope(
     )
     applyBlockReturnFunctions(executionScope)
 
-    runBlockUpdatingScope(filePath, requireResult, combinedTopLevelArbitraryBlock, executionScope)
+    const { spiedVariablesDeclaredWithinBlock } = runBlockUpdatingScope(
+      { type: 'file-root' },
+      filePath,
+      requireResult,
+      combinedTopLevelArbitraryBlock,
+      executionScope,
+    )
+    spiedVariablesInRoot = spiedVariablesDeclaredWithinBlock
   }
   // WARNING: mutating the mutableContextRef
   updateMutableUtopiaCtxRefWithNewProps(mutableContextRef, {
@@ -173,6 +186,7 @@ export function createExecutionScope(
       mutableContext: {
         requireResult: requireResult,
         rootScope: executionScope,
+        spiedVariablesDeclaredInRootScope: spiedVariablesInRoot,
         fileBlobs: fileBlobsForFile,
         jsxFactoryFunctionName: jsxFactoryFunction,
       },
