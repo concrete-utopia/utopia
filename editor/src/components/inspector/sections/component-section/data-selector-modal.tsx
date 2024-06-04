@@ -655,18 +655,20 @@ function useFilterVariablesInScope(
 ): {
   filteredVariablesInScope: Array<DataPickerOption>
 } {
-  const filteredOptions = React.useMemo(() => {
+  return React.useMemo(() => {
     if (scopeToShow === 'do-not-filter') {
-      return options
+      return {
+        filteredVariablesInScope: options,
+      }
     }
 
     const matchingScope = findClosestMatchingScope(scopeToShow, scopeBuckets)
-    return scopeBuckets[insertionCeilingToString(matchingScope)]
+    const filteredOptions: Array<DataPickerOption> =
+      scopeBuckets[insertionCeilingToString(matchingScope)] ?? []
+    return {
+      filteredVariablesInScope: filteredOptions,
+    }
   }, [scopeBuckets, options, scopeToShow])
-
-  return {
-    filteredVariablesInScope: filteredOptions,
-  }
 }
 
 function useProcessVariablesInScope(options: DataPickerOption[]): ProcessedVariablesInScope {
