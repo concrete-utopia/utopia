@@ -621,7 +621,7 @@ export const DataSelectorModal = React.memo(
                       height: 100,
                     }}
                   >
-                    No variables in scope
+                    We did not find any insertable data
                   </div>,
                 )}
               </div>
