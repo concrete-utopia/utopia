@@ -21,7 +21,7 @@ import {
   StoryboardFilePath,
   persistentModelForProjectContents,
 } from '../editor/store/editor-state'
-import type { VariableData, VariableMetadata } from './ui-jsx-canvas'
+import { insertionCeilingToString, type VariableData, type VariableMetadata } from './ui-jsx-canvas'
 import {
   DefaultStartingFeatureSwitches,
   renderTestEditorWithModel,
@@ -324,7 +324,7 @@ function prettyPrintVariableData(variableData: VariableData) {
   function prettyPrintVariableMetadata(variableMetadata: VariableMetadata) {
     return {
       spiedValue: JSON.stringify(variableMetadata.spiedValue, null, 2),
-      insertionCeiling: optionalMap(EP.toString, variableMetadata.insertionCeiling),
+      insertionCeiling: insertionCeilingToString(variableMetadata.insertionCeiling),
     }
   }
 
@@ -355,7 +355,7 @@ describe('scoped variables', () => {
           "spiedValue": "\\"alap\\"",
         },
         "globalVar": Object {
-          "insertionCeiling": null,
+          "insertionCeiling": "file-root",
           "spiedValue": "[
         \\"alap\\"
       ]",
@@ -365,7 +365,7 @@ describe('scoped variables', () => {
           "spiedValue": "\\"local\\"",
         },
         "localVar": Object {
-          "insertionCeiling": "storyboard-entity/scene-1-entity/app-entity",
+          "insertionCeiling": "storyboard-entity/scene-1-entity/app-entity:app-root",
           "spiedValue": "[
         \\"local\\"
       ]",
@@ -375,7 +375,7 @@ describe('scoped variables', () => {
           "spiedValue": "1",
         },
         "style": Object {
-          "insertionCeiling": "storyboard-entity/scene-1-entity/app-entity",
+          "insertionCeiling": "storyboard-entity/scene-1-entity/app-entity:app-root",
           "spiedValue": undefined,
         },
       }

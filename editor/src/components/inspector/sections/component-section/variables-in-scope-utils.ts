@@ -4,7 +4,7 @@ import type {
   ObjectControlDescription,
 } from '../../../custom-code/internal-property-controls'
 import type { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
-import type { VariableData } from '../../../canvas/ui-jsx-canvas'
+import type { FileRootPath, VariableData } from '../../../canvas/ui-jsx-canvas'
 import { useEditorState, Substores } from '../../../editor/store/store-hook'
 import type { DataPickerFilterOption, DataPickerOption } from './data-picker-utils'
 import * as EP from '../../../../core/shared/element-path'
@@ -18,7 +18,7 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 
 function valuesFromObject(
   variable: ArrayInfo | ObjectInfo,
-  insertionCeiling: ElementPath | null,
+  insertionCeiling: ElementPath | FileRootPath,
   depth: number,
   originalObjectName: string,
   valuePath: Array<string | number>,
@@ -75,7 +75,7 @@ function valuesFromObject(
 
 function valuesFromVariable(
   variable: VariableInfo,
-  insertionCeiling: ElementPath | null,
+  insertionCeiling: ElementPath | FileRootPath,
   depth: number,
   originalObjectName: string,
   valuePath: Array<string | number>,
@@ -136,7 +136,7 @@ interface VariableInfoBase {
   expression: string
   expressionPathPart: string | number
   value: unknown
-  insertionCeiling: ElementPath
+  insertionCeiling: ElementPath | FileRootPath
   matches: boolean
 }
 
@@ -164,7 +164,7 @@ export function variableInfoFromValue(
   expression: string,
   expressionPathPart: string | number,
   value: unknown,
-  insertionCeiling: ElementPath,
+  insertionCeiling: ElementPath | FileRootPath,
 ): VariableInfo | null {
   switch (typeof value) {
     case 'function':
@@ -368,7 +368,7 @@ const keepLocalestScope =
   (variablesInScope: VariableData): VariableData => {
     let deepestInsertionCeiling = -Infinity
     Object.values(variablesInScope).forEach((variable) => {
-      if (variable.insertionCeiling == null) {
+      if (variable.insertionCeiling.type === 'file-root') {
         return
       }
 
@@ -380,7 +380,7 @@ const keepLocalestScope =
 
     const result: VariableData = {}
     Object.entries(variablesInScope).forEach(([key, variable]) => {
-      if (variable.insertionCeiling == null) {
+      if (variable.insertionCeiling.type === 'file-root') {
         result[key] = variable
         return
       }

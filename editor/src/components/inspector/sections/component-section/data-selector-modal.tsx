@@ -39,6 +39,7 @@ import type { ElementPath } from '../../../../core/shared/project-file-types'
 import * as EP from '../../../../core/shared/element-path'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { optionalMap } from '../../../../core/shared/optional-utils'
+import { insertionCeilingToString } from '../../../canvas/ui-jsx-canvas'
 
 export const DataSelectorPopupBreadCrumbsTestId = 'data-selector-modal-top-bar'
 
@@ -638,7 +639,7 @@ function findClosestMatchingScope(
 
 function putVariablesIntoScopeBuckets(options: DataPickerOption[]): ScopeBuckets {
   const buckets: { [insertionCeiling: string]: Array<DataPickerOption> } = groupBy(
-    (o) => optionalMap(EP.toString, o.insertionCeiling) ?? '', // '' represents "file root scope", TODO make it clearer
+    (o) => insertionCeilingToString(o.insertionCeiling),
     options,
   )
 

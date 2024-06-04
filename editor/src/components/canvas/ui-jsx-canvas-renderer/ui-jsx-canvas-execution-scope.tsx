@@ -171,7 +171,7 @@ export function createExecutionScope(
     applyBlockReturnFunctions(executionScope)
 
     const { spiedVariablesDeclaredWithinBlock } = runBlockUpdatingScope(
-      null,
+      { type: 'file-root' },
       filePath,
       requireResult,
       combinedTopLevelArbitraryBlock,

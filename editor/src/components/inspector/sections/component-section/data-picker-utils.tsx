@@ -14,13 +14,14 @@ import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
 import type { AllElementProps } from '../../../editor/store/editor-state'
 import type { ArrayInfo, JSXInfo, ObjectInfo, PrimitiveInfo } from './variables-in-scope-utils'
+import type { FileRootPath } from '../../../canvas/ui-jsx-canvas'
 
 interface VariableOptionBase {
   depth: number
   definedElsewhere: string
   valuePath: Array<string | number>
   disabled: boolean
-  insertionCeiling: ElementPath | null
+  insertionCeiling: ElementPath | FileRootPath
 }
 
 export interface PrimitiveOption extends VariableOptionBase {
