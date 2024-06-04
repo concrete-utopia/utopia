@@ -135,6 +135,19 @@ export function insertionCeilingFromString(
   }
 }
 
+export function insertionCeilingsEqual(
+  a: ElementPath | FileRootPath,
+  b: ElementPath | FileRootPath,
+): boolean {
+  if (a.type === 'file-root' && b.type === 'file-root') {
+    return true
+  } else if (a.type === 'file-root' || b.type === 'file-root') {
+    return false
+  } else {
+    return EP.pathsEqual(a, b)
+  }
+}
+
 export interface VariableMetadata {
   spiedValue: unknown
   insertionCeiling: FileRootPath | ElementPath
