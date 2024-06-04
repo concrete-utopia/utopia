@@ -1,4 +1,4 @@
-import { emptyElementPath } from '../../../../core/shared/element-path'
+import * as EP from '../../../../core/shared/element-path'
 import { maybeToArray } from '../../../../core/shared/optional-utils'
 import type { ControlDescription } from '../../../custom-code/internal-property-controls'
 import type { PropertyValue, VariableInfo } from './variables-in-scope-utils'
@@ -11,7 +11,7 @@ describe('orderVariablesForRelevance', () => {
         'style',
         'style',
         { left: 300, position: 'relative' },
-        emptyElementPath,
+        EP.fromString('aaa'),
       ),
     )
     const controlDescription: ControlDescription = {
@@ -41,11 +41,27 @@ describe('orderVariablesForRelevance', () => {
         Object {
           "expression": "style",
           "expressionPathPart": "style",
+          "insertionCeiling": Object {
+            "parts": Array [
+              Array [
+                "aaa",
+              ],
+            ],
+            "type": "elementpath",
+          },
           "matches": false,
           "props": Array [
             Object {
               "expression": "style['left']",
               "expressionPathPart": "left",
+              "insertionCeiling": Object {
+                "parts": Array [
+                  Array [
+                    "aaa",
+                  ],
+                ],
+                "type": "elementpath",
+              },
               "matches": true,
               "sourceElement": Object {
                 "parts": Array [],
@@ -57,6 +73,14 @@ describe('orderVariablesForRelevance', () => {
             Object {
               "expression": "style['position']",
               "expressionPathPart": "position",
+              "insertionCeiling": Object {
+                "parts": Array [
+                  Array [
+                    "aaa",
+                  ],
+                ],
+                "type": "elementpath",
+              },
               "matches": false,
               "sourceElement": Object {
                 "parts": Array [],
@@ -85,7 +109,7 @@ describe('orderVariablesForRelevance', () => {
         'style',
         'style',
         { left: 300, position: 'relative' },
-        emptyElementPath,
+        EP.fromString('aaa'),
       ),
     )
     const controlDescription: ControlDescription = {
@@ -115,11 +139,27 @@ describe('orderVariablesForRelevance', () => {
         Object {
           "expression": "style",
           "expressionPathPart": "style",
+          "insertionCeiling": Object {
+            "parts": Array [
+              Array [
+                "aaa",
+              ],
+            ],
+            "type": "elementpath",
+          },
           "matches": true,
           "props": Array [
             Object {
               "expression": "style['left']",
               "expressionPathPart": "left",
+              "insertionCeiling": Object {
+                "parts": Array [
+                  Array [
+                    "aaa",
+                  ],
+                ],
+                "type": "elementpath",
+              },
               "matches": false,
               "sourceElement": Object {
                 "parts": Array [],
@@ -131,6 +171,14 @@ describe('orderVariablesForRelevance', () => {
             Object {
               "expression": "style['position']",
               "expressionPathPart": "position",
+              "insertionCeiling": Object {
+                "parts": Array [
+                  Array [
+                    "aaa",
+                  ],
+                ],
+                "type": "elementpath",
+              },
               "matches": false,
               "sourceElement": Object {
                 "parts": Array [],

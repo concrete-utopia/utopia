@@ -18,6 +18,7 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 
 function valuesFromObject(
   variable: ArrayInfo | ObjectInfo,
+  insertionCeiling: ElementPath | null,
   depth: number,
   originalObjectName: string,
   valuePath: Array<string | number>,
@@ -32,11 +33,15 @@ function valuesFromObject(
       {
         type: 'array',
         variableInfo: variable,
+        insertionCeiling: insertionCeiling,
         depth: depth,
         definedElsewhere: originalObjectName,
         children: variable.elements
           .flatMap((e, index) =>
-            valuesFromVariable(e, depth + 1, originalObjectName, [...valuePath, index]),
+            valuesFromVariable(e, insertionCeiling, depth + 1, originalObjectName, [
+              ...valuePath,
+              index,
+            ]),
           )
           .map(patchDefinedElsewhereInfo),
         valuePath: valuePath,
@@ -48,11 +53,12 @@ function valuesFromObject(
       {
         type: 'object',
         variableInfo: variable,
+        insertionCeiling: insertionCeiling,
         depth: depth,
         definedElsewhere: originalObjectName,
         children: variable.props
           .flatMap((e) =>
-            valuesFromVariable(e, depth + 1, originalObjectName, [
+            valuesFromVariable(e, insertionCeiling, depth + 1, originalObjectName, [
               ...valuePath,
               e.expressionPathPart,
             ]),
@@ -69,6 +75,7 @@ function valuesFromObject(
 
 function valuesFromVariable(
   variable: VariableInfo,
+  insertionCeiling: ElementPath | null,
   depth: number,
   originalObjectName: string,
   valuePath: Array<string | number>,
@@ -79,6 +86,7 @@ function valuesFromVariable(
         {
           type: 'primitive',
           variableInfo: variable,
+          insertionCeiling: insertionCeiling,
           definedElsewhere: originalObjectName,
           depth: depth,
           valuePath: valuePath,
@@ -87,12 +95,13 @@ function valuesFromVariable(
       ]
     case 'array':
     case 'object':
-      return valuesFromObject(variable, depth, originalObjectName, valuePath)
+      return valuesFromObject(variable, insertionCeiling, depth, originalObjectName, valuePath)
     case 'jsx':
       return [
         {
           type: 'jsx',
           variableInfo: variable,
+          insertionCeiling: insertionCeiling,
           definedElsewhere: originalObjectName,
           depth: depth,
           valuePath: valuePath,
@@ -122,42 +131,31 @@ function usePropertyControlDescriptions(
   return controlForProp[0] ?? null
 }
 
-export interface PrimitiveInfo {
+interface VariableInfoBase {
+  type: string
+  expression: string
+  expressionPathPart: string | number
+  value: unknown
+  insertionCeiling: ElementPath
+  matches: boolean
+}
+
+export interface PrimitiveInfo extends VariableInfoBase {
   type: 'primitive'
-  expression: string
-  expressionPathPart: string | number
-  value: unknown
-  matches: boolean
-  sourceElement: ElementPath
 }
 
-export interface ObjectInfo {
+export interface ObjectInfo extends VariableInfoBase {
   type: 'object'
-  expression: string
-  expressionPathPart: string | number
-  value: unknown
   props: Array<VariableInfo>
-  matches: boolean
-  sourceElement: ElementPath
 }
 
-export interface ArrayInfo {
+export interface ArrayInfo extends VariableInfoBase {
   type: 'array'
-  expression: string
-  expressionPathPart: string | number
-  value: unknown
   elements: Array<VariableInfo>
-  matches: boolean
-  sourceElement: ElementPath
 }
 
-export interface JSXInfo {
+export interface JSXInfo extends VariableInfoBase {
   type: 'jsx'
-  expression: string
-  expressionPathPart: string | number
-  value: unknown
-  matches: boolean
-  sourceElement: ElementPath
 }
 
 export type VariableInfo = PrimitiveInfo | ArrayInfo | ObjectInfo | JSXInfo
@@ -166,7 +164,7 @@ export function variableInfoFromValue(
   expression: string,
   expressionPathPart: string | number,
   value: unknown,
-  sourceElement: ElementPath,
+  insertionCeiling: ElementPath,
 ): VariableInfo | null {
   switch (typeof value) {
     case 'function':
@@ -182,8 +180,8 @@ export function variableInfoFromValue(
         expression: expression,
         expressionPathPart: expressionPathPart,
         value: value,
+        insertionCeiling: insertionCeiling,
         matches: false,
-        sourceElement: sourceElement,
       }
     case 'object':
       if (value == null) {
@@ -192,8 +190,8 @@ export function variableInfoFromValue(
           expression: expression,
           expressionPathPart: expressionPathPart,
           value: value,
+          insertionCeiling: insertionCeiling,
           matches: false,
-          sourceElement: sourceElement,
         }
       }
       if (Array.isArray(value)) {
@@ -202,12 +200,12 @@ export function variableInfoFromValue(
           expression: expression,
           expressionPathPart: expressionPathPart,
           value: value,
+          insertionCeiling: insertionCeiling,
           matches: false,
           elements: mapDropNulls(
-            (e, idx) => variableInfoFromValue(`${expression}[${idx}]`, idx, e, sourceElement),
+            (e, idx) => variableInfoFromValue(`${expression}[${idx}]`, idx, e, insertionCeiling),
             value,
           ),
-          sourceElement: sourceElement,
         }
       }
       if (React.isValidElement(value)) {
@@ -216,8 +214,8 @@ export function variableInfoFromValue(
           expression: expression,
           expressionPathPart: expressionPathPart,
           value: value,
+          insertionCeiling: insertionCeiling,
           matches: false,
-          sourceElement: sourceElement,
         }
       }
       return {
@@ -225,11 +223,11 @@ export function variableInfoFromValue(
         expression: expression,
         expressionPathPart: expressionPathPart,
         value: value,
+        insertionCeiling: insertionCeiling,
         matches: false,
         props: mapDropNulls(([key, propValue]) => {
-          return variableInfoFromValue(`${expression}['${key}']`, key, propValue, sourceElement)
+          return variableInfoFromValue(`${expression}['${key}']`, key, propValue, insertionCeiling)
         }, Object.entries(value)),
-        sourceElement: sourceElement,
       }
   }
 }
@@ -453,7 +451,9 @@ export function useVariablesInScopeForSelectedElement(
     )
 
     return orderedVariablesInScope.flatMap((variable) =>
-      valuesFromVariable(variable, 0, variable.expression, [variable.expressionPathPart]),
+      valuesFromVariable(variable, variable.insertionCeiling, 0, variable.expression, [
+        variable.expressionPathPart,
+      ]),
     )
   }, [controlDescriptions, currentPropertyValue, mode, elementPath, variablesInScope, propertyPath])
 

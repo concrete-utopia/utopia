@@ -1,50 +1,48 @@
 import { atom } from 'jotai'
+import { processJSPropertyAccessors } from '../../../../core/data-tracing/data-tracing'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { foldEither } from '../../../../core/shared/either'
+import * as EP from '../../../../core/shared/element-path'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
+import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import {
   isJSExpression,
   type JSExpressionOtherJavaScript,
   type JSXElementChild,
 } from '../../../../core/shared/element-template'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
+import type { AllElementProps } from '../../../editor/store/editor-state'
 import type { ArrayInfo, JSXInfo, ObjectInfo, PrimitiveInfo } from './variables-in-scope-utils'
-import { processJSPropertyAccessors } from '../../../../core/data-tracing/data-tracing'
-import { foldEither } from '../../../../core/shared/either'
 
-export interface PrimitiveOption {
+interface VariableOptionBase {
+  depth: number
+  definedElsewhere: string
+  valuePath: Array<string | number>
+  disabled: boolean
+  insertionCeiling: ElementPath | null
+}
+
+export interface PrimitiveOption extends VariableOptionBase {
   type: 'primitive'
   variableInfo: PrimitiveInfo
-  definedElsewhere: string
-  depth: number
-  valuePath: Array<string | number>
-  disabled: boolean
 }
 
-export interface ArrayOption {
+export interface ArrayOption extends VariableOptionBase {
   type: 'array'
   variableInfo: ArrayInfo
-  depth: number
-  definedElsewhere: string
   children: Array<DataPickerOption>
-  valuePath: Array<string | number>
-  disabled: boolean
 }
 
-export interface ObjectOption {
+export interface ObjectOption extends VariableOptionBase {
   type: 'object'
   variableInfo: ObjectInfo
-  depth: number
-  definedElsewhere: string
   children: Array<DataPickerOption>
-  valuePath: Array<string | number>
-  disabled: boolean
 }
 
-export interface JSXOption {
+export interface JSXOption extends VariableOptionBase {
   type: 'jsx'
   variableInfo: JSXInfo
-  definedElsewhere: string
-  depth: number
-  valuePath: Array<string | number>
-  disabled: boolean
 }
 
 export type DataPickerOption = PrimitiveOption | ArrayOption | ObjectOption | JSXOption
@@ -77,4 +75,68 @@ export function jsxElementChildToValuePath(child: JSXElementChild | null): Objec
     (result) => [result.originalIdentifier.name, ...result.path],
     processJSPropertyAccessors(child),
   )
+}
+
+export function getEnclosingScopes(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  elementPathTree: ElementPathTrees,
+  buckets: Array<ElementPath>,
+  lowestInsertionCeiling: ElementPath,
+): Array<{
+  insertionCeiling: ElementPath
+  label: string
+  hasContent: boolean
+}> {
+  let result: Array<{
+    insertionCeiling: ElementPath
+    label: string
+    hasContent: boolean
+  }> = []
+  const pathsToCheck = [...EP.allPathsInsideComponent(lowestInsertionCeiling)]
+  for (const current of pathsToCheck) {
+    const parentOfCurrent = EP.parentPath(current)
+
+    // we add maps and components even if they don't have content in scope, for the sake of breadcrumb readability
+    if (
+      MetadataUtils.isJSXMapExpression(parentOfCurrent, metadata) ||
+      EP.isRootElementOfInstance(current)
+    ) {
+      result.unshift({
+        insertionCeiling: current,
+        label: MetadataUtils.getElementLabel(
+          allElementProps,
+          parentOfCurrent,
+          elementPathTree,
+          metadata,
+        ),
+        hasContent: buckets.includes(current),
+      })
+      continue
+    }
+
+    // we also add anything that has content in scope even if it's not a component or map
+    if (buckets.includes(current)) {
+      result.unshift({
+        insertionCeiling: current,
+        label: MetadataUtils.getElementLabel(
+          allElementProps,
+          parentOfCurrent,
+          elementPathTree,
+          metadata,
+        ),
+        hasContent: true,
+      })
+      continue
+    }
+  }
+
+  // Add file root
+  result.unshift({
+    insertionCeiling: EP.emptyElementPath,
+    label: 'File',
+    hasContent: buckets.includes(EP.emptyElementPath),
+  })
+
+  return result
 }
