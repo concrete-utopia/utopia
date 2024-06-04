@@ -116,6 +116,7 @@ export const MapListSourceCartouche = React.memo((props: MapListSourceCartoucheP
     filteredVariableNamesInScope,
     onPickMappedElement,
     pathToMappedExpression,
+    target,
   )
 
   const onClick = React.useCallback(() => {

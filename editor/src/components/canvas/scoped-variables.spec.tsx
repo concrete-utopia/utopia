@@ -405,6 +405,9 @@ describe('scoped variables', () => {
                   "scene-1-entity",
                   "app-entity",
                 ],
+                Array [
+                  "8ba",
+                ],
               ],
               "type": "elementpath",
             },
@@ -421,6 +424,9 @@ describe('scoped variables', () => {
                   "storyboard-entity",
                   "scene-1-entity",
                   "app-entity",
+                ],
+                Array [
+                  "8ba",
                 ],
               ],
               "type": "elementpath",
@@ -457,6 +463,9 @@ describe('scoped variables', () => {
                   "storyboard-entity",
                   "scene-1-entity",
                   "app-entity",
+                ],
+                Array [
+                  "8ba",
                 ],
               ],
               "type": "elementpath",
@@ -509,6 +518,9 @@ describe('scoped variables', () => {
                   "scene-1-entity",
                   "app-entity",
                 ],
+                Array [
+                  "af0",
+                ],
               ],
               "type": "elementpath",
             },
@@ -526,6 +538,9 @@ describe('scoped variables', () => {
                   "scene-1-entity",
                   "app-entity",
                 ],
+                Array [
+                  "af0",
+                ],
               ],
               "type": "elementpath",
             },
@@ -542,6 +557,9 @@ describe('scoped variables', () => {
                   "storyboard-entity",
                   "scene-1-entity",
                   "app-entity",
+                ],
+                Array [
+                  "af0",
                 ],
               ],
               "type": "elementpath",

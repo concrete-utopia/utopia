@@ -28,6 +28,7 @@ interface DataReferenceCartoucheControlProps {
   selected: boolean
   renderedAt: RenderedAt
   surroundingScope: ElementPath
+  hideTooltip?: boolean
 }
 
 export const DataReferenceCartoucheControl = React.memo(
@@ -110,6 +111,7 @@ export const DataReferenceCartoucheControl = React.memo(
       variableNamesInScope,
       updateDataWithDataPicker,
       pathToCurrenlySelectedValue,
+      elementPath,
     )
 
     const isDataComingFromHookResult = dataTraceResult.type === 'hook-result'
@@ -131,6 +133,7 @@ export const DataReferenceCartoucheControl = React.memo(
           onDelete={NO_OP}
           testId={`data-reference-cartouche-${EP.toString(elementPath)}`}
           contentIsComingFromServer={isDataComingFromHookResult}
+          hideTooltip={props.hideTooltip}
         />
         {/* this div prevents the popup form putting padding into the condensed rows */}
         <div style={{ width: 0 }}>
@@ -151,6 +154,7 @@ interface DataCartoucheInnerProps {
   onDelete: () => void
   testId: string
   contentIsComingFromServer: boolean
+  hideTooltip?: boolean
 }
 
 export const DataCartoucheInner = React.forwardRef(
@@ -193,7 +197,7 @@ export const DataCartoucheInner = React.forwardRef(
         selected={selected}
         inverted={inverted}
         testId={testId}
-        tooltip={contentsToDisplay.label ?? 'DATA'}
+        tooltip={!props.hideTooltip ? contentsToDisplay.label ?? 'DATA' : null}
         role='selection'
         source={source}
         ref={ref}

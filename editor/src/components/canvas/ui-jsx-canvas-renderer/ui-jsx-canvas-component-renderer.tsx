@@ -175,13 +175,19 @@ export function createComponentRendererComponent(params: {
     let spiedVariablesInScope: VariableData = {
       ...mutableContext.spiedVariablesDeclaredInRootScope,
     }
-    if (utopiaJsxComponent.param != null) {
-      propertiesExposedByParam(utopiaJsxComponent.param).forEach((paramName) => {
-        spiedVariablesInScope[paramName] = {
-          spiedValue: scope[paramName],
-          insertionCeiling: instancePath,
-        }
-      })
+    if (rootElementPath != null && utopiaJsxComponent.param != null) {
+      spiedVariablesInScope = mapArrayToDictionary(
+        propertiesExposedByParam(utopiaJsxComponent.param),
+        (paramName) => {
+          return paramName
+        },
+        (paramName) => {
+          return {
+            spiedValue: scope[paramName],
+            insertionCeiling: rootElementPath,
+          }
+        },
+      )
     }
 
     // Protect against infinite recursion by taking the view that anything
@@ -264,9 +270,18 @@ export function createComponentRendererComponent(params: {
 
       switch (arbitraryBlockResult.type) {
         case 'ARBITRARY_BLOCK_RAN_TO_END':
-          spiedVariablesInScope = {
-            ...spiedVariablesInScope,
-            ...arbitraryBlockResult.spiedVariablesDeclaredWithinBlock,
+          if (rootElementPath != null) {
+            spiedVariablesInScope = {
+              ...spiedVariablesInScope,
+              ...arbitraryBlockResult.spiedVariablesDeclaredWithinBlock,
+              ...objectMap(
+                (spiedValue) => ({
+                  spiedValue: spiedValue,
+                  insertionCeiling: rootElementPath,
+                }),
+                arbitraryBlockResult.scope,
+              ),
+            }
           }
           break
         case 'EARLY_RETURN_VOID':

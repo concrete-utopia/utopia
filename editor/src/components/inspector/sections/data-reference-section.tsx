@@ -103,6 +103,7 @@ export const DataReferenceSection = React.memo(({ paths }: { paths: ElementPath[
       ])
     },
     pathToCurrenlySelectedValue,
+    elementPathForDataPicker,
   )
 
   const openPicker = React.useCallback(
