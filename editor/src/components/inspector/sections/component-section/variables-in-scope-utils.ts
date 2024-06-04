@@ -136,7 +136,7 @@ interface VariableInfoBase {
   expression: string
   expressionPathPart: string | number
   value: unknown
-  insertionCeiling: ElementPath | null
+  insertionCeiling: ElementPath
   matches: boolean
 }
 
@@ -164,7 +164,7 @@ export function variableInfoFromValue(
   expression: string,
   expressionPathPart: string | number,
   value: unknown,
-  insertionCeiling: ElementPath | null,
+  insertionCeiling: ElementPath,
 ): VariableInfo | null {
   switch (typeof value) {
     case 'function':
