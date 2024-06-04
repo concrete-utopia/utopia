@@ -15,6 +15,7 @@ import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { assertNever, identity } from '../../../../core/shared/utils'
 import { isValidReactNode } from '../../../../utils/react-utils'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { emptySet } from '../../../../core/shared/set-utils'
 
 function valuesFromObject(
   variable: ArrayInfo | ObjectInfo,
@@ -165,7 +166,15 @@ export function variableInfoFromValue(
   expressionPathPart: string | number,
   value: unknown,
   insertionCeiling: ElementPath | FileRootPath,
+  valueStackSoFar: Set<any>,
 ): VariableInfo | null {
+  if (valueStackSoFar.has(value)) {
+    // prevent circular dependencies
+    return null
+  }
+  // mutation
+  valueStackSoFar.add(value)
+
   switch (typeof value) {
     case 'function':
     case 'symbol':
@@ -203,7 +212,14 @@ export function variableInfoFromValue(
           insertionCeiling: insertionCeiling,
           matches: false,
           elements: mapDropNulls(
-            (e, idx) => variableInfoFromValue(`${expression}[${idx}]`, idx, e, insertionCeiling),
+            (e, idx) =>
+              variableInfoFromValue(
+                `${expression}[${idx}]`,
+                idx,
+                e,
+                insertionCeiling,
+                valueStackSoFar,
+              ),
             value,
           ),
         }
@@ -226,7 +242,13 @@ export function variableInfoFromValue(
         insertionCeiling: insertionCeiling,
         matches: false,
         props: mapDropNulls(([key, propValue]) => {
-          return variableInfoFromValue(`${expression}['${key}']`, key, propValue, insertionCeiling)
+          return variableInfoFromValue(
+            `${expression}['${key}']`,
+            key,
+            propValue,
+            insertionCeiling,
+            valueStackSoFar,
+          )
         }, Object.entries(value)),
       }
   }
@@ -235,7 +257,7 @@ export function variableInfoFromValue(
 function variableInfoFromVariableData(variableNamesInScope: VariableData): Array<VariableInfo> {
   const info = mapDropNulls(
     ([key, { spiedValue, insertionCeiling }]) =>
-      variableInfoFromValue(key, key, spiedValue, insertionCeiling),
+      variableInfoFromValue(key, key, spiedValue, insertionCeiling, emptySet()),
     Object.entries(variableNamesInScope),
   )
 
