@@ -13,6 +13,8 @@ import type {
   IdentifierOrAccess,
   JSAssignment,
   JSExpression,
+  JSExpressionNestedArray,
+  JSExpressionNestedObject,
   JSIdentifier,
   JSXElementChild,
   Param,
@@ -100,22 +102,26 @@ export function dataPathResultIsUnavailable(result: DataPathResult): result is D
   return result.type === 'DATA_PATH_UNAVAILABLE'
 }
 
+export type LiteralAttributeLocation =
+  | { type: 'arbitrary-js-block' }
+  | { type: 'property'; propertyPath: PropertyPath }
+
 export type DataTracingToLiteralAttribute = {
   type: 'literal-attribute'
   elementPath: ElementPath
-  property: PropertyPath
+  location: LiteralAttributeLocation
   dataPathIntoAttribute: DataPathPositiveResult
 }
 
 export function dataTracingToLiteralAttribute(
   elementPath: ElementPath,
-  property: PropertyPath,
+  location: LiteralAttributeLocation,
   dataPathIntoAttribute: DataPathPositiveResult,
 ): DataTracingToLiteralAttribute {
   return {
     type: 'literal-attribute',
     elementPath: elementPath,
-    property: property,
+    location: location,
     dataPathIntoAttribute: dataPathIntoAttribute,
   }
 }
@@ -514,7 +520,7 @@ export function traceDataFromProp(
     // bingo
     return dataTracingToLiteralAttribute(
       startFrom.elementPath,
-      startFrom.propertyPath,
+      { type: 'property', propertyPath: startFrom.propertyPath },
       pathDrillSoFar,
     )
   }
@@ -786,6 +792,14 @@ function lookupInComponentScope(
     )
 
     if (foundAssignmentOfIdentifier != null) {
+      if (isNestedValueLiteral(foundAssignmentOfIdentifier.rightHandSide)) {
+        return dataTracingToLiteralAttribute(
+          componentPath,
+          { type: 'arbitrary-js-block' },
+          pathDrillSoFar,
+        )
+      }
+
       if (
         foundAssignmentOfIdentifier.rightHandSide.type === 'JS_IDENTIFIER' ||
         foundAssignmentOfIdentifier.rightHandSide.type === 'JS_ELEMENT_ACCESS' ||
@@ -872,4 +886,33 @@ function lookupInComponentScope(
 
 function substractFromStringNumber(n: string, minus: number): string {
   return `${parseInt(n) - minus}`
+}
+
+function isNestedValueLiteral(value: JSExpression): boolean {
+  switch (value.type) {
+    case 'ATTRIBUTE_VALUE':
+      return true
+    case 'ATTRIBUTE_NESTED_ARRAY':
+      return isArrayLiteral(value)
+    case 'ATTRIBUTE_NESTED_OBJECT':
+      return isObjectLiteral(value)
+    case 'ATTRIBUTE_FUNCTION_CALL':
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+    case 'JSX_ELEMENT':
+    case 'JSX_MAP_EXPRESSION':
+    case 'JS_ELEMENT_ACCESS':
+    case 'JS_IDENTIFIER':
+    case 'JS_PROPERTY_ACCESS':
+      return false
+    default:
+      assertNever(value)
+  }
+}
+
+function isArrayLiteral(array: JSExpressionNestedArray): boolean {
+  return array.content.every((c) => isNestedValueLiteral(c.value))
+}
+
+function isObjectLiteral(value: JSExpressionNestedObject): boolean {
+  return value.content.every((c) => isNestedValueLiteral(c.value))
 }

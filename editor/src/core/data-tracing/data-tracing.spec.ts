@@ -49,7 +49,7 @@ describe('Data Tracing', () => {
       expect(traceResult).toEqual(
         dataTracingToLiteralAttribute(
           EP.fromString('sb/app:my-component'),
-          PP.create('title'),
+          { type: 'property', propertyPath: PP.create('title') },
           dataPathSuccess([]),
         ),
       )
@@ -81,7 +81,7 @@ describe('Data Tracing', () => {
       expect(traceResult).toEqual(
         dataTracingToLiteralAttribute(
           EP.fromString('sb/app:my-component/inner-child'),
-          PP.create('title'),
+          { type: 'property', propertyPath: PP.create('title') },
           dataPathSuccess([]),
         ),
       )
@@ -113,7 +113,7 @@ describe('Data Tracing', () => {
       expect(traceResult).toEqual(
         dataTracingToLiteralAttribute(
           EP.fromString('sb/app:my-component'),
-          PP.create('title'),
+          { type: 'property', propertyPath: PP.create('title') },
           dataPathSuccess([]),
         ),
       )
@@ -152,7 +152,7 @@ describe('Data Tracing', () => {
       expect(traceResult).toEqual(
         dataTracingToLiteralAttribute(
           EP.fromString('sb/app:my-component'),
-          PP.create('title'),
+          { type: 'property', propertyPath: PP.create('title') },
           dataPathSuccess([]),
         ),
       )
@@ -184,7 +184,7 @@ describe('Data Tracing', () => {
       expect(traceResult).toEqual(
         dataTracingToLiteralAttribute(
           EP.fromString('sb/app:my-component'),
-          PP.create('title'),
+          { type: 'property', propertyPath: PP.create('title') },
           dataPathSuccess([]),
         ),
       )
@@ -216,7 +216,7 @@ describe('Data Tracing', () => {
       expect(traceResult).toEqual(
         dataTracingToLiteralAttribute(
           EP.fromString('sb/app:my-component'),
-          PP.create('title'),
+          { type: 'property', propertyPath: PP.create('title') },
           dataPathSuccess([]),
         ),
       )
@@ -255,7 +255,7 @@ describe('Data Tracing', () => {
       expect(traceResult).toEqual(
         dataTracingToLiteralAttribute(
           EP.fromString('sb/app:my-component'),
-          PP.create('title'),
+          { type: 'property', propertyPath: PP.create('title') },
           dataPathSuccess([]),
         ),
       )
@@ -287,7 +287,7 @@ describe('Data Tracing', () => {
       expect(traceResult).toEqual(
         dataTracingToLiteralAttribute(
           EP.fromString('sb/app:my-component'),
-          PP.create('doc'),
+          { type: 'property', propertyPath: PP.create('doc') },
           dataPathSuccess(['title']),
         ),
       )
@@ -319,7 +319,7 @@ describe('Data Tracing', () => {
       expect(traceResult).toEqual(
         dataTracingToLiteralAttribute(
           EP.fromString('sb/app:my-component'),
-          PP.create('doc'),
+          { type: 'property', propertyPath: PP.create('doc') },
           dataPathSuccess(['very', 'deep', 'title']),
         ),
       )
@@ -358,7 +358,7 @@ describe('Data Tracing', () => {
       expect(traceResult).toEqual(
         dataTracingToLiteralAttribute(
           EP.fromString('sb/app:my-component'),
-          PP.create('doc'),
+          { type: 'property', propertyPath: PP.create('doc') },
           dataPathSuccess(['very', 'deep', 'title', 'value']),
         ),
       )
@@ -794,7 +794,7 @@ describe('Data Tracing', () => {
       expect(traceResult).toEqual(
         dataTracingToLiteralAttribute(
           EP.fromString('sb/app:my-component'),
-          PP.create('title'),
+          { type: 'property', propertyPath: PP.create('title') },
           dataPathSuccess([]),
         ),
       )
@@ -827,7 +827,7 @@ describe('Data Tracing', () => {
       expect(traceResult).toEqual(
         dataTracingToLiteralAttribute(
           EP.fromString('sb/app:my-component'),
-          PP.create('title'),
+          { type: 'property', propertyPath: PP.create('title') },
           dataPathSuccess([]),
         ),
       )
@@ -860,7 +860,7 @@ describe('Data Tracing', () => {
       expect(traceResult).toEqual(
         dataTracingToLiteralAttribute(
           EP.fromString('sb/app:my-component'),
-          PP.create('title'),
+          { type: 'property', propertyPath: PP.create('title') },
           dataPathSuccess([]),
         ),
       )
@@ -906,7 +906,7 @@ describe('Data Tracing', () => {
       expect(traceResult).toEqual(
         dataTracingToLiteralAttribute(
           EP.fromString('sb/app:my-component'),
-          PP.create('titles'),
+          { type: 'property', propertyPath: PP.create('titles') },
           dataPathSuccess(['1']),
         ),
       )
@@ -1251,6 +1251,135 @@ describe('Data Tracing', () => {
             EP.fromString('sb/app:my-component'),
             'useLoaderData',
             dataPathSuccess(['very', 'a', '0', 'helloFromDestructuredArray']),
+          ),
+        )
+      }
+    })
+
+    it('can to a literal-valued variable in the arbitrary js block', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithStoryboard(`
+        function MyComponent({ doc }) {
+
+          const valueFromTheDeep = doc.title.value
+
+          return <h1 data-uid='component-root'>{doc.title.value}</h1>
+        }
+  
+        function App() {
+          const label = 'yes'
+          const loaded = true
+          const words = ['hello', 'cheese']
+          const deeplyNestedObject = { very: { deep: { title: {value: ['hello', 'world'] } }, a: [1, 2] } }
+          const { very } = deeplyNestedObject
+
+          return <MyComponent data-uid='my-component' doc={very.deep} />
+        }
+        `),
+        'await-first-dom-report',
+      )
+
+      await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component'))
+
+      {
+        const trace = traceDataFromVariableName(
+          EP.fromString('sb/app:my-component'),
+          'label',
+          editor.getEditorState().editor.jsxMetadata,
+          editor.getEditorState().editor.projectContents,
+          dataPathSuccess([]),
+        )
+
+        expect(trace).toEqual(
+          dataTracingToLiteralAttribute(
+            EP.fromString('sb/app:my-component'),
+            { type: 'arbitrary-js-block' },
+            dataPathSuccess([]),
+          ),
+        )
+      }
+      {
+        const trace = traceDataFromVariableName(
+          EP.fromString('sb/app:my-component'),
+          'loaded',
+          editor.getEditorState().editor.jsxMetadata,
+          editor.getEditorState().editor.projectContents,
+          dataPathSuccess([]),
+        )
+
+        expect(trace).toEqual(
+          dataTracingToLiteralAttribute(
+            EP.fromString('sb/app:my-component'),
+            { type: 'arbitrary-js-block' },
+            dataPathSuccess([]),
+          ),
+        )
+      }
+      {
+        const trace = traceDataFromVariableName(
+          EP.fromString('sb/app:my-component'),
+          'words',
+          editor.getEditorState().editor.jsxMetadata,
+          editor.getEditorState().editor.projectContents,
+          dataPathSuccess([]),
+        )
+
+        expect(trace).toEqual(
+          dataTracingToLiteralAttribute(
+            EP.fromString('sb/app:my-component'),
+            { type: 'arbitrary-js-block' },
+            dataPathSuccess([]),
+          ),
+        )
+      }
+      {
+        const trace = traceDataFromVariableName(
+          EP.fromString('sb/app:my-component'),
+          'deeplyNestedObject',
+          editor.getEditorState().editor.jsxMetadata,
+          editor.getEditorState().editor.projectContents,
+          dataPathSuccess([]),
+        )
+
+        expect(trace).toEqual(
+          dataTracingToLiteralAttribute(
+            EP.fromString('sb/app:my-component'),
+            { type: 'arbitrary-js-block' },
+            dataPathSuccess([]),
+          ),
+        )
+      }
+      {
+        const trace = traceDataFromVariableName(
+          EP.fromString('sb/app:my-component'),
+          'very',
+          editor.getEditorState().editor.jsxMetadata,
+          editor.getEditorState().editor.projectContents,
+          dataPathSuccess([]),
+        )
+
+        expect(trace).toEqual(
+          dataTracingToLiteralAttribute(
+            EP.fromString('sb/app:my-component'),
+            { type: 'arbitrary-js-block' },
+            dataPathSuccess(['very']),
+          ),
+        )
+      }
+      {
+        const trace = traceDataFromVariableName(
+          EP.fromString('sb/app:my-component:component-root'),
+          'valueFromTheDeep',
+          editor.getEditorState().editor.jsxMetadata,
+          editor.getEditorState().editor.projectContents,
+          dataPathSuccess([]),
+        )
+
+        expect(trace).toEqual(
+          dataTracingToLiteralAttribute(
+            EP.fromString('sb/app:my-component'),
+            { type: 'arbitrary-js-block' },
+            dataPathSuccess(['very', 'deep', 'title', 'value']),
           ),
         )
       }
