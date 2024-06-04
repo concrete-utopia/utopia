@@ -40,7 +40,11 @@ import * as EP from '../../../../core/shared/element-path'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import type { FileRootPath } from '../../../canvas/ui-jsx-canvas'
-import { insertionCeilingToString, insertionCeilingsEqual } from '../../../canvas/ui-jsx-canvas'
+import {
+  insertionCeilingFromString,
+  insertionCeilingToString,
+  insertionCeilingsEqual,
+} from '../../../canvas/ui-jsx-canvas'
 
 export const DataSelectorPopupBreadCrumbsTestId = 'data-selector-modal-top-bar'
 
@@ -143,7 +147,7 @@ export const DataSelectorModal = React.memo(
         [allVariablesInScope],
       )
 
-      const scopeBucketPaths = Object.keys(scopeBuckets).map((k) => EP.fromString(k))
+      const scopeBucketPaths = Object.keys(scopeBuckets).map((k) => insertionCeilingFromString(k))
 
       const lowestMatchingScope: ElementPath | FileRootPath = React.useMemo(() => {
         if (lowestInsertionCeiling == null) {
