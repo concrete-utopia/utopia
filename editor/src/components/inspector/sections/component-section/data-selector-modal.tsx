@@ -301,6 +301,7 @@ export const DataSelectorModal = React.memo(
               result[variable.valuePath.toString()] = 'external'
               break
             case 'literal-attribute':
+            case 'literal-assignment':
               result[variable.valuePath.toString()] = 'literal'
               break
             case 'component-prop':
