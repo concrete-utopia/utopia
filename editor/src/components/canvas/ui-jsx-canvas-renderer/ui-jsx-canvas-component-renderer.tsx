@@ -131,6 +131,8 @@ export function createComponentRendererComponent(params: {
       instancePath,
     )
 
+    // TODO we should throw an error if rootElementPath is null
+
     let codeError: Error | null = null
 
     const appliedProps = optionalMap(
@@ -176,18 +178,12 @@ export function createComponentRendererComponent(params: {
       ...mutableContext.spiedVariablesDeclaredInRootScope,
     }
     if (rootElementPath != null && utopiaJsxComponent.param != null) {
-      spiedVariablesInScope = mapArrayToDictionary(
-        propertiesExposedByParam(utopiaJsxComponent.param),
-        (paramName) => {
-          return paramName
-        },
-        (paramName) => {
-          return {
-            spiedValue: scope[paramName],
-            insertionCeiling: rootElementPath,
-          }
-        },
-      )
+      propertiesExposedByParam(utopiaJsxComponent.param).forEach((paramName) => {
+        spiedVariablesInScope[paramName] = {
+          spiedValue: scope[paramName],
+          insertionCeiling: rootElementPath,
+        }
+      })
     }
 
     // Protect against infinite recursion by taking the view that anything
@@ -261,7 +257,7 @@ export function createComponentRendererComponent(params: {
       applyBlockReturnFunctions(scope)
 
       const arbitraryBlockResult = runBlockUpdatingScope(
-        instancePath, // maybe this should be rootElementPath, but using instancePath to keep the code consistent with https://github.com/concrete-utopia/utopia/blob/fd43386ca0/editor/src/components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer.tsx#L272
+        rootElementPath,
         params.filePath,
         mutableContext.requireResult,
         utopiaJsxComponent.arbitraryJSBlock,
