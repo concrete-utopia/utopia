@@ -838,12 +838,15 @@ function findFirstObjectPathToNavigateTo(
 
   let currentPath = selectedValuePath
   while (currentPath.length > 0) {
-    const currentPathString = currentPath.toString()
-    const currentOption = processedVariablesInScope[currentPathString]
-    if (currentOption != null) {
-      if (currentOption.type === 'object') {
-        return currentPath
-      }
+    const parentPath = currentPath.slice(0, -1)
+    const parentOption = processedVariablesInScope[parentPath.toString()]
+    const grandParentPath = currentPath.slice(0, -2)
+    const grandParentOption = processedVariablesInScope[grandParentPath.toString()]
+    if (grandParentOption != null && grandParentOption.type === 'array') {
+      return grandParentPath.slice(0, -1)
+    }
+    if (parentOption != null && parentOption.type === 'object') {
+      return parentPath.slice(0, -1)
     }
     currentPath = currentPath.slice(0, -1)
   }
