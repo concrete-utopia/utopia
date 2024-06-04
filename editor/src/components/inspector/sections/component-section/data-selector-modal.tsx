@@ -739,7 +739,7 @@ function childVars(option: DataPickerOption, indices: ArrayIndexLookup): DataPic
   }
 }
 
-export function pathBreadcrumbs(
+function pathBreadcrumbs(
   valuePath: DataPickerOption['valuePath'],
   processedVariablesInScope: ProcessedVariablesInScope,
 ): Array<{
