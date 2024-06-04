@@ -609,6 +609,21 @@ export const DataSelectorModal = React.memo(
                     ) : null}
                   </React.Fragment>
                 ))}
+                {/* Empty State */}
+                {when(
+                  focusedVariableChildren.length === 0,
+                  <div
+                    style={{
+                      gridColumn: '1 / span 3',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      height: 100,
+                    }}
+                  >
+                    No variables in scope
+                  </div>,
+                )}
               </div>
             </FlexColumn>
           </div>
