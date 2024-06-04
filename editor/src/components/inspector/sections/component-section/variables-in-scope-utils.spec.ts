@@ -63,10 +63,6 @@ describe('orderVariablesForRelevance', () => {
                 "type": "elementpath",
               },
               "matches": true,
-              "sourceElement": Object {
-                "parts": Array [],
-                "type": "elementpath",
-              },
               "type": "primitive",
               "value": 300,
             },
@@ -82,18 +78,10 @@ describe('orderVariablesForRelevance', () => {
                 "type": "elementpath",
               },
               "matches": false,
-              "sourceElement": Object {
-                "parts": Array [],
-                "type": "elementpath",
-              },
               "type": "primitive",
               "value": "relative",
             },
           ],
-          "sourceElement": Object {
-            "parts": Array [],
-            "type": "elementpath",
-          },
           "type": "object",
           "value": Object {
             "left": 300,
@@ -161,10 +149,6 @@ describe('orderVariablesForRelevance', () => {
                 "type": "elementpath",
               },
               "matches": false,
-              "sourceElement": Object {
-                "parts": Array [],
-                "type": "elementpath",
-              },
               "type": "primitive",
               "value": 300,
             },
@@ -180,18 +164,10 @@ describe('orderVariablesForRelevance', () => {
                 "type": "elementpath",
               },
               "matches": false,
-              "sourceElement": Object {
-                "parts": Array [],
-                "type": "elementpath",
-              },
               "type": "primitive",
               "value": "relative",
             },
           ],
-          "sourceElement": Object {
-            "parts": Array [],
-            "type": "elementpath",
-          },
           "type": "object",
           "value": Object {
             "left": 300,
