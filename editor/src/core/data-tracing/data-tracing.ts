@@ -806,10 +806,6 @@ function lookupInComponentScope(
     )
 
     if (foundAssignmentOfIdentifier != null) {
-      if (isConsideredLiteralValue(foundAssignmentOfIdentifier.rightHandSide)) {
-        return dataTracingToLiteralAssignment(componentPath, pathDrillSoFar)
-      }
-
       if (
         foundAssignmentOfIdentifier.rightHandSide.type === 'JS_IDENTIFIER' ||
         foundAssignmentOfIdentifier.rightHandSide.type === 'JS_ELEMENT_ACCESS' ||
@@ -842,6 +838,10 @@ function lookupInComponentScope(
           foundAssignmentOfIdentifier.rightHandSide.originalJavascript.split('()')[0],
           pathDrillSoFar,
         )
+      }
+
+      if (isConsideredLiteralValue(foundAssignmentOfIdentifier.rightHandSide)) {
+        return dataTracingToLiteralAssignment(componentPath, pathDrillSoFar)
       }
     }
   }
