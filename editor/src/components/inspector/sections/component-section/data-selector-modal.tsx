@@ -173,6 +173,8 @@ export const DataSelectorModal = React.memo(
         selectedScope,
       )
 
+      const processedVariablesInScope = useProcessVariablesInScope(filteredVariablesInScope)
+
       const elementLabelsWithScopes = useEditorState(
         Substores.fullStore,
         (store) => {
@@ -192,7 +194,9 @@ export const DataSelectorModal = React.memo(
         'DataSelectorModal elementLabelsWithScopes',
       )
 
-      const [navigatedToPath, setNavigatedToPath] = React.useState<ObjectPath>([])
+      const [navigatedToPath, setNavigatedToPath] = React.useState<ObjectPath>(
+        findFirstObjectPathToNavigateTo(processedVariablesInScope, startingSelectedValuePath) ?? [],
+      )
 
       const [selectedPath, setSelectedPath] = React.useState<ObjectPath | null>(
         startingSelectedValuePath,
@@ -242,8 +246,6 @@ export const DataSelectorModal = React.memo(
           setIndexLookup((lookup) => ({ ...lookup, [valuePathString]: option.value })),
         [],
       )
-
-      const processedVariablesInScope = useProcessVariablesInScope(filteredVariablesInScope)
 
       const focusedVariableChildren = React.useMemo(() => {
         if (navigatedToPath.length === 0) {
@@ -816,6 +818,29 @@ function getSelectedScopeFromBuckets(
     if (anyOptionHasMatchingValuePath) {
       return EP.fromString(pathString)
     }
+  }
+
+  return null
+}
+
+function findFirstObjectPathToNavigateTo(
+  processedVariablesInScope: ProcessedVariablesInScope,
+  selectedValuePath: ObjectPath | null,
+): ObjectPath | null {
+  if (selectedValuePath == null) {
+    return null
+  }
+
+  let currentPath = selectedValuePath
+  while (currentPath.length > 0) {
+    const currentPathString = currentPath.toString()
+    const currentOption = processedVariablesInScope[currentPathString]
+    if (currentOption != null) {
+      if (currentOption.type === 'object') {
+        return currentPath
+      }
+    }
+    currentPath = currentPath.slice(0, -1)
   }
 
   return null
