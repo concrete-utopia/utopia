@@ -147,9 +147,19 @@ export const DataSelectorModal = React.memo(
         if (lowestInsertionCeiling == null) {
           return { type: 'file-root' }
         }
+
+        const scopeFromStartedSelectedValuePath = optionalMap(
+          (s) => getSelectedScopeFromBuckets(s, scopeBuckets),
+          startingSelectedValuePath,
+        )
+
+        if (scopeFromStartedSelectedValuePath != null) {
+          return scopeFromStartedSelectedValuePath
+        }
+
         const matchingScope = findClosestMatchingScope(lowestInsertionCeiling, scopeBuckets)
         return matchingScope
-      }, [scopeBuckets, lowestInsertionCeiling])
+      }, [lowestInsertionCeiling, startingSelectedValuePath, scopeBuckets])
 
       const [selectedScope, setSelectedScope] = React.useState<ElementPath | FileRootPath>(
         lowestMatchingScope,
@@ -773,4 +783,20 @@ function pathSegmentToString(segment: string | number) {
     return `.${segment}`
   }
   return `[${segment}]`
+}
+
+function getSelectedScopeFromBuckets(
+  startingSelectedValuePath: ObjectPath,
+  scopeBuckets: ScopeBuckets,
+): ElementPath | null {
+  for (const [pathString, options] of Object.entries(scopeBuckets)) {
+    const anyOptionHasMatchingValuePath = options.some((o) =>
+      arrayEqualsByReference(o.valuePath, startingSelectedValuePath),
+    )
+    if (anyOptionHasMatchingValuePath) {
+      return EP.fromString(pathString)
+    }
+  }
+
+  return null
 }
