@@ -131,6 +131,8 @@ export function createComponentRendererComponent(params: {
       instancePath,
     )
 
+    // TODO we should throw an error if rootElementPath is null
+
     let codeError: Error | null = null
 
     const appliedProps = optionalMap(
@@ -158,7 +160,7 @@ export function createComponentRendererComponent(params: {
             code: code,
             highlightBounds: highlightBounds,
             editedText: rerenderUtopiaContext.editedText,
-            variablesInScope: {},
+            variablesInScope: mutableContext.spiedVariablesDeclaredInRootScope,
             filePathMappings: rerenderUtopiaContext.filePathMappings,
           },
           undefined,
@@ -172,20 +174,16 @@ export function createComponentRendererComponent(params: {
       ...appliedProps,
     }
 
-    let spiedVariablesInScope: VariableData = {}
+    let spiedVariablesInScope: VariableData = {
+      ...mutableContext.spiedVariablesDeclaredInRootScope,
+    }
     if (rootElementPath != null && utopiaJsxComponent.param != null) {
-      spiedVariablesInScope = mapArrayToDictionary(
-        propertiesExposedByParam(utopiaJsxComponent.param),
-        (paramName) => {
-          return paramName
-        },
-        (paramName) => {
-          return {
-            spiedValue: scope[paramName],
-            insertionCeiling: rootElementPath,
-          }
-        },
-      )
+      propertiesExposedByParam(utopiaJsxComponent.param).forEach((paramName) => {
+        spiedVariablesInScope[paramName] = {
+          spiedValue: scope[paramName],
+          insertionCeiling: rootElementPath,
+        }
+      })
     }
 
     // Protect against infinite recursion by taking the view that anything
@@ -259,6 +257,7 @@ export function createComponentRendererComponent(params: {
       applyBlockReturnFunctions(scope)
 
       const arbitraryBlockResult = runBlockUpdatingScope(
+        rootElementPath,
         params.filePath,
         mutableContext.requireResult,
         utopiaJsxComponent.arbitraryJSBlock,
@@ -270,6 +269,7 @@ export function createComponentRendererComponent(params: {
           if (rootElementPath != null) {
             spiedVariablesInScope = {
               ...spiedVariablesInScope,
+              ...arbitraryBlockResult.spiedVariablesDeclaredWithinBlock,
               ...objectMap(
                 (spiedValue) => ({
                   spiedValue: spiedValue,

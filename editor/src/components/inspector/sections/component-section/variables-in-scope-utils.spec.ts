@@ -1,5 +1,6 @@
 import * as EP from '../../../../core/shared/element-path'
 import { maybeToArray } from '../../../../core/shared/optional-utils'
+import { emptySet } from '../../../../core/shared/set-utils'
 import type { ControlDescription } from '../../../custom-code/internal-property-controls'
 import type { PropertyValue, VariableInfo } from './variables-in-scope-utils'
 import { orderVariablesForRelevance, variableInfoFromValue } from './variables-in-scope-utils'
@@ -12,6 +13,7 @@ describe('orderVariablesForRelevance', () => {
         'style',
         { left: 300, position: 'relative' },
         EP.fromString('aaa'),
+        emptySet(),
       ),
     )
     const controlDescription: ControlDescription = {
@@ -98,6 +100,7 @@ describe('orderVariablesForRelevance', () => {
         'style',
         { left: 300, position: 'relative' },
         EP.fromString('aaa'),
+        emptySet(),
       ),
     )
     const controlDescription: ControlDescription = {

@@ -18,6 +18,7 @@ import type {
   NumberInputControlDescription,
   PopUpListControlDescription,
   RadioControlDescription,
+  RadioControlOption,
   RegularControlDescription,
   RegularControlType,
   StringInputControlDescription,
@@ -384,6 +385,28 @@ export const NumberInputPropertyControl = React.memo(
   },
 )
 
+function valueFromRadioControlOption(option: RadioControlOption<unknown>): unknown {
+  switch (option.type) {
+    case 'allowed-enum-type':
+      return option.allowedEnumType
+    case 'control-option-with-icon':
+      return option.option.value
+    default:
+      assertNever(option)
+  }
+}
+
+function labelFromRadioControlOption(option: RadioControlOption<unknown>): string {
+  switch (option.type) {
+    case 'allowed-enum-type':
+      return `${option.allowedEnumType}`
+    case 'control-option-with-icon':
+      return option.option.label
+    default:
+      assertNever(option)
+  }
+}
+
 export const RadioPropertyControl = React.memo(
   (props: ControlForPropProps<RadioControlDescription>) => {
     const { propName, propMetadata, controlDescription } = props
@@ -392,13 +415,13 @@ export const RadioPropertyControl = React.memo(
     const value = propMetadata.propertyStatus.set ? propMetadata.value : undefined
 
     // TS baulks at the map below for some reason if we don't first do this
-    const controlOptions: Array<IndividualOption> = controlDescription.options
+    const controlOptions: RadioControlDescription['options'] = controlDescription.options
 
     const options: Array<OptionChainOption<unknown>> = useKeepReferenceEqualityIfPossible(
       controlOptions.map((option) => {
         return {
-          value: valueForIndividualOption(option),
-          label: labelForIndividualOption(option),
+          value: valueFromRadioControlOption(option),
+          label: labelFromRadioControlOption(option),
         }
       }),
     )

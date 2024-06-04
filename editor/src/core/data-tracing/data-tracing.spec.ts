@@ -19,6 +19,7 @@ import {
   dataTracingFailed,
   dataTracingToAHookCall,
   dataTracingToElementAtScope,
+  dataTracingToLiteralAssignment,
   dataTracingToLiteralAttribute,
   traceDataFromElement,
   traceDataFromProp,
@@ -1251,6 +1252,117 @@ describe('Data Tracing', () => {
             EP.fromString('sb/app:my-component'),
             'useLoaderData',
             dataPathSuccess(['very', 'a', '0', 'helloFromDestructuredArray']),
+          ),
+        )
+      }
+    })
+
+    it('can to a literal-valued variable in the arbitrary js block', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithStoryboard(`
+        function MyComponent({ doc }) {
+
+          const valueFromTheDeep = doc.title.value
+
+          return <h1 data-uid='component-root'>{doc.title.value}</h1>
+        }
+  
+        function App() {
+          const label = 'yes'
+          const loaded = true
+          const words = ['hello', 'cheese']
+          const deeplyNestedObject = { very: { deep: { title: {value: ['hello', 'world'] } }, a: [1, 2] } }
+          const { very } = deeplyNestedObject
+
+          return <MyComponent data-uid='my-component' doc={very.deep} />
+        }
+        `),
+        'await-first-dom-report',
+      )
+
+      await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component'))
+
+      {
+        const trace = traceDataFromVariableName(
+          EP.fromString('sb/app:my-component'),
+          'label',
+          editor.getEditorState().editor.jsxMetadata,
+          editor.getEditorState().editor.projectContents,
+          dataPathSuccess([]),
+        )
+
+        expect(trace).toEqual(
+          dataTracingToLiteralAssignment(EP.fromString('sb/app:my-component'), dataPathSuccess([])),
+        )
+      }
+      {
+        const trace = traceDataFromVariableName(
+          EP.fromString('sb/app:my-component'),
+          'loaded',
+          editor.getEditorState().editor.jsxMetadata,
+          editor.getEditorState().editor.projectContents,
+          dataPathSuccess([]),
+        )
+
+        expect(trace).toEqual(
+          dataTracingToLiteralAssignment(EP.fromString('sb/app:my-component'), dataPathSuccess([])),
+        )
+      }
+      {
+        const trace = traceDataFromVariableName(
+          EP.fromString('sb/app:my-component'),
+          'words',
+          editor.getEditorState().editor.jsxMetadata,
+          editor.getEditorState().editor.projectContents,
+          dataPathSuccess([]),
+        )
+
+        expect(trace).toEqual(
+          dataTracingToLiteralAssignment(EP.fromString('sb/app:my-component'), dataPathSuccess([])),
+        )
+      }
+      {
+        const trace = traceDataFromVariableName(
+          EP.fromString('sb/app:my-component'),
+          'deeplyNestedObject',
+          editor.getEditorState().editor.jsxMetadata,
+          editor.getEditorState().editor.projectContents,
+          dataPathSuccess([]),
+        )
+
+        expect(trace).toEqual(
+          dataTracingToLiteralAssignment(EP.fromString('sb/app:my-component'), dataPathSuccess([])),
+        )
+      }
+      {
+        const trace = traceDataFromVariableName(
+          EP.fromString('sb/app:my-component'),
+          'very',
+          editor.getEditorState().editor.jsxMetadata,
+          editor.getEditorState().editor.projectContents,
+          dataPathSuccess([]),
+        )
+
+        expect(trace).toEqual(
+          dataTracingToLiteralAssignment(
+            EP.fromString('sb/app:my-component'),
+            dataPathSuccess(['very']),
+          ),
+        )
+      }
+      {
+        const trace = traceDataFromVariableName(
+          EP.fromString('sb/app:my-component:component-root'),
+          'valueFromTheDeep',
+          editor.getEditorState().editor.jsxMetadata,
+          editor.getEditorState().editor.projectContents,
+          dataPathSuccess([]),
+        )
+
+        expect(trace).toEqual(
+          dataTracingToLiteralAssignment(
+            EP.fromString('sb/app:my-component'),
+            dataPathSuccess(['very', 'deep', 'title', 'value']),
           ),
         )
       }

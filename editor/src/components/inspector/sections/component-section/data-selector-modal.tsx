@@ -39,6 +39,8 @@ import type { ElementPath } from '../../../../core/shared/project-file-types'
 import * as EP from '../../../../core/shared/element-path'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { optionalMap } from '../../../../core/shared/optional-utils'
+import type { FileRootPath } from '../../../canvas/ui-jsx-canvas'
+import { insertionCeilingToString, insertionCeilingsEqual } from '../../../canvas/ui-jsx-canvas'
 
 export const DataSelectorPopupBreadCrumbsTestId = 'data-selector-modal-top-bar'
 
@@ -141,17 +143,15 @@ export const DataSelectorModal = React.memo(
         [allVariablesInScope],
       )
 
-      const scopeBucketPaths = Object.keys(scopeBuckets).map((k) => EP.fromString(k))
-
-      const lowestMatchingScope = React.useMemo(() => {
+      const lowestMatchingScope: ElementPath | FileRootPath = React.useMemo(() => {
         if (lowestInsertionCeiling == null) {
-          return null
+          return { type: 'file-root' }
         }
         const matchingScope = findClosestMatchingScope(lowestInsertionCeiling, scopeBuckets)
-        return matchingScope ?? lowestInsertionCeiling
+        return matchingScope
       }, [scopeBuckets, lowestInsertionCeiling])
 
-      const [selectedScope, setSelectedScope] = React.useState<ElementPath | null>(
+      const [selectedScope, setSelectedScope] = React.useState<ElementPath | FileRootPath>(
         lowestMatchingScope,
       )
       const setSelectedScopeCurried = React.useCallback(
@@ -172,7 +172,7 @@ export const DataSelectorModal = React.memo(
             store.editor.jsxMetadata,
             store.editor.allElementProps,
             store.editor.elementPathTree,
-            scopeBucketPaths,
+            Object.keys(scopeBuckets),
             lowestInsertionCeiling ?? EP.emptyElementPath,
           )
           return scopes.map(({ insertionCeiling, label, hasContent }) => ({
@@ -301,6 +301,7 @@ export const DataSelectorModal = React.memo(
               result[variable.valuePath.toString()] = 'external'
               break
             case 'literal-attribute':
+            case 'literal-assignment':
               result[variable.valuePath.toString()] = 'literal'
               break
             case 'component-prop':
@@ -473,7 +474,7 @@ export const DataSelectorModal = React.memo(
                         borderRadius: 4,
                         cursor: 'pointer',
                         fontSize: 12,
-                        fontWeight: EP.pathsEqual(selectedScope, scope) ? 800 : undefined,
+                        fontWeight: insertionCeilingsEqual(selectedScope, scope) ? 800 : undefined,
                       }}
                     >
                       {label}
@@ -623,22 +624,24 @@ type ScopeBuckets = {
 }
 
 function findClosestMatchingScope(
-  targetScope: ElementPath,
+  targetScope: ElementPath | FileRootPath,
   scopeBuckets: ScopeBuckets,
-): ElementPath | null {
-  const allPaths = EP.allPathsInsideComponent(targetScope)
-  for (const path of allPaths) {
-    if (scopeBuckets[EP.toString(path)] != null) {
-      return path
+): ElementPath | FileRootPath {
+  if (targetScope.type === 'elementpath') {
+    const allPaths = EP.allPathsInsideComponent(targetScope)
+    for (const path of allPaths) {
+      if (scopeBuckets[EP.toString(path)] != null) {
+        return path
+      }
     }
   }
 
-  return null
+  return { type: 'file-root' }
 }
 
 function putVariablesIntoScopeBuckets(options: DataPickerOption[]): ScopeBuckets {
   const buckets: { [insertionCeiling: string]: Array<DataPickerOption> } = groupBy(
-    (o) => optionalMap(EP.toString, o.insertionCeiling) ?? '', // '' represents "file root scope", TODO make it clearer
+    (o) => insertionCeilingToString(o.insertionCeiling),
     options,
   )
 
@@ -648,17 +651,17 @@ function putVariablesIntoScopeBuckets(options: DataPickerOption[]): ScopeBuckets
 function useFilterVariablesInScope(
   options: DataPickerOption[],
   scopeBuckets: ScopeBuckets,
-  scopeToShow: ElementPath | null | 'do-not-filter',
+  scopeToShow: ElementPath | FileRootPath | 'do-not-filter',
 ): {
   filteredVariablesInScope: Array<DataPickerOption>
 } {
   const filteredOptions = React.useMemo(() => {
-    if (scopeToShow === 'do-not-filter' || scopeToShow == null) {
+    if (scopeToShow === 'do-not-filter') {
       return options
     }
 
     const matchingScope = findClosestMatchingScope(scopeToShow, scopeBuckets)
-    return matchingScope == null ? [] : scopeBuckets[EP.toString(matchingScope)]
+    return scopeBuckets[insertionCeilingToString(matchingScope)]
   }, [scopeBuckets, options, scopeToShow])
 
   return {

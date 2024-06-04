@@ -62,6 +62,7 @@ import { elementUsesProperty } from '../../core/model/element-template-utils'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../../core/shared/dom-utils'
 import { getTopLevelElementByExportsDetail } from '../../core/model/project-file-utils'
 import { type Icon } from 'utopia-api'
+import type { FileRootPath } from '../canvas/ui-jsx-canvas'
 
 export type StylePropOption = 'do-not-add' | 'add-size'
 
@@ -71,7 +72,7 @@ export interface InsertableComponent {
   name: string
   stylePropOptions: Array<StylePropOption>
   defaultSize: Size | null
-  insertionCeiling: ElementPath | null
+  insertionCeiling: ElementPath | FileRootPath
   icon: Icon | null
 }
 
@@ -81,7 +82,7 @@ export function insertableComponent(
   name: string,
   stylePropOptions: Array<StylePropOption>,
   defaultSize: Size | null,
-  insertionCeiling: ElementPath | null,
+  insertionCeiling: ElementPath | FileRootPath,
   icon: Icon | null,
 ): InsertableComponent {
   const component = {
@@ -305,7 +306,7 @@ export function insertableVariable(
   variableType: InsertableVariableType,
   depth: number,
   originalName: string,
-  insertionCeiling: ElementPath | null,
+  insertionCeiling: ElementPath | FileRootPath,
 ): InsertableVariable {
   return {
     ...insertableComponent(
@@ -653,7 +654,7 @@ export function moveSceneToTheBeginningAndSetDefaultSize(
             scene.name,
             scene.stylePropOptions,
             size(SceneDefaultWidth, SceneDefaultHeight),
-            null,
+            { type: 'file-root' },
             null,
           ),
         ],
@@ -744,7 +745,7 @@ export function getComponentGroups(
                   insertOption.insertMenuLabel,
                   stylePropOptions,
                   null,
-                  null,
+                  { type: 'file-root' },
                   descriptor.icon,
                 ),
               )
@@ -760,7 +761,7 @@ export function getComponentGroups(
                 exportedComponent.listingName,
                 stylePropOptions,
                 null,
-                null,
+                { type: 'file-root' },
                 null,
               ),
             )
@@ -798,7 +799,7 @@ export function getComponentGroups(
               insertOption.insertMenuLabel,
               stylePropOptions,
               defaultSize ?? null,
-              null,
+              { type: 'file-root' },
               component.icon,
             ),
           )

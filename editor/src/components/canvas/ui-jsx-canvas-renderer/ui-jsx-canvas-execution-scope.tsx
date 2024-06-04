@@ -27,7 +27,11 @@ import {
 } from './ui-jsx-canvas-element-renderer-utils'
 import { runBlockUpdatingScope } from './ui-jsx-canvas-scope-utils'
 import * as EP from '../../../core/shared/element-path'
-import type { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
+import type {
+  DomWalkerInvalidatePathsCtxData,
+  UiJsxCanvasContextData,
+  VariableData,
+} from '../ui-jsx-canvas'
 import type { ElementPath, HighlightBoundsForUids } from '../../../core/shared/project-file-types'
 import { isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
 import { defaultIfNull, optionalFlatMap } from '../../../core/shared/optional-utils'
@@ -163,6 +167,8 @@ export function createExecutionScope(
     filePathMappings: filePathMappings,
   }
 
+  let spiedVariablesInRoot: VariableData = {}
+
   // First make sure everything is in scope
   if (combinedTopLevelArbitraryBlock != null && openStoryboardFileNameKILLME != null) {
     for (const definedElsewhereValue of combinedTopLevelArbitraryBlock.definedElsewhere) {
@@ -199,7 +205,14 @@ export function createExecutionScope(
     )
     applyBlockReturnFunctions(executionScope)
 
-    runBlockUpdatingScope(filePath, requireResult, combinedTopLevelArbitraryBlock, executionScope)
+    const { spiedVariablesDeclaredWithinBlock } = runBlockUpdatingScope(
+      { type: 'file-root' },
+      filePath,
+      requireResult,
+      combinedTopLevelArbitraryBlock,
+      executionScope,
+    )
+    spiedVariablesInRoot = spiedVariablesDeclaredWithinBlock
   }
 
   // Make sure there is something in scope for all of the top level components
@@ -216,6 +229,7 @@ export function createExecutionScope(
       mutableContext: {
         requireResult: requireResult,
         rootScope: executionScope,
+        spiedVariablesDeclaredInRootScope: spiedVariablesInRoot,
         fileBlobs: fileBlobsForFile,
         jsxFactoryFunctionName: jsxFactoryFunction,
       },

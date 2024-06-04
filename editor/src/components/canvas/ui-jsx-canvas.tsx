@@ -101,9 +101,34 @@ export const ElementsToRerenderGLOBAL: { current: ElementsToRerender } = {
   current: 'rerender-all-elements',
 }
 
+export type FileRootPath = {
+  type: 'file-root'
+}
+
+export function insertionCeilingToString(insertionCeiling: ElementPath | FileRootPath): string {
+  if (insertionCeiling.type === 'file-root') {
+    return 'file-root'
+  } else {
+    return EP.toString(insertionCeiling)
+  }
+}
+
+export function insertionCeilingsEqual(
+  a: ElementPath | FileRootPath,
+  b: ElementPath | FileRootPath,
+): boolean {
+  if (a.type === 'file-root' && b.type === 'file-root') {
+    return true
+  } else if (a.type === 'file-root' || b.type === 'file-root') {
+    return false
+  } else {
+    return EP.pathsEqual(a, b)
+  }
+}
+
 export interface VariableMetadata {
   spiedValue: unknown
-  insertionCeiling: ElementPath
+  insertionCeiling: FileRootPath | ElementPath
 }
 
 export interface VariableData {

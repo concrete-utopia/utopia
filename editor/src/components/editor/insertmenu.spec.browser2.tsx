@@ -16,7 +16,6 @@ import {
   renderTestEditorWithCode,
 } from '../canvas/ui-jsx.test-utils'
 import { setPanelVisibility, setRightMenuTab } from './actions/action-creators'
-import { InsertMenuFilterTestId } from './insertmenu'
 import { RightMenuTab } from './store/editor-state'
 import { ComponentPickerTestId } from '../navigator/navigator-item/component-picker'
 import * as EP from '../../core/shared/element-path'
