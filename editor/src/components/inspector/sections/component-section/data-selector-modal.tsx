@@ -108,13 +108,6 @@ function ArrayIndexSelector({
   )
 }
 
-const DEFAULT_SIZE: React.CSSProperties = {
-  minWidth: 600,
-  minHeight: 50,
-  maxWidth: 700,
-  maxHeight: 300,
-}
-
 interface ProcessedVariablesInScope {
   [valuePath: string]: DataPickerOption
 }
@@ -391,8 +384,8 @@ export const DataSelectorModal = React.memo(
               onClick={catchClick}
               ref={forwardedRef}
               style={{
-                ...style,
-                ...DEFAULT_SIZE,
+                width: 700,
+                height: 300,
                 paddingTop: 16,
                 paddingLeft: 16,
                 paddingRight: 16,
@@ -402,6 +395,7 @@ export const DataSelectorModal = React.memo(
                 borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
                 boxShadow: UtopiaStyles.shadowStyles.highest.boxShadow,
                 border: `1px solid ${colorTheme.fg0Opacity10.value}`,
+                ...style,
               }}
             >
               {/* top bar */}
@@ -495,18 +489,21 @@ export const DataSelectorModal = React.memo(
                   </React.Fragment>
                 ))}
               </FlexRow>
-              <Separator color={colorTheme.seperator.value} margin={12} />
               {/* detail view */}
               <div
                 style={{
                   display: 'grid',
                   gridTemplateColumns: 'auto 40px 1fr',
                   gap: 8,
-                  overflowY: 'scroll',
                   overflowX: 'hidden',
+                  overflowY: 'scroll',
+                  scrollbarWidth: 'auto',
+                  scrollbarColor: 'gray transparent',
+                  paddingTop: 8,
                   paddingBottom: 16,
                 }}
               >
+                <Separator color={colorTheme.seperator.value} spanGridColumns={3} margin={4} />
                 {when(
                   primitiveVars.length > 0,
                   <>
