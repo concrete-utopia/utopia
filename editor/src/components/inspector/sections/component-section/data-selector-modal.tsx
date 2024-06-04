@@ -3,6 +3,7 @@ import { groupBy, isPrefixOf, last } from '../../../../core/shared/array-utils'
 import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
 import {
   CanvasContextMenuPortalTargetID,
+  NO_OP,
   arrayEqualsByReference,
   assertNever,
 } from '../../../../core/shared/utils'
@@ -158,7 +159,11 @@ export const DataSelectorModal = React.memo(
         lowestMatchingScope,
       )
       const setSelectedScopeCurried = React.useCallback(
-        (name: ElementPath) => () => setSelectedScope(name),
+        (name: ElementPath, hasContent: boolean) => () => {
+          if (hasContent) {
+            setSelectedScope(name)
+          }
+        },
         [],
       )
 
@@ -181,6 +186,7 @@ export const DataSelectorModal = React.memo(
           return scopes.map(({ insertionCeiling, label, hasContent }) => ({
             label: label,
             scope: insertionCeiling,
+            hasContent: hasContent,
           }))
         },
         'DataSelectorModal elementLabelsWithScopes',
@@ -456,28 +462,32 @@ export const DataSelectorModal = React.memo(
               {/* Value preview */}
               <FlexRow
                 style={{
+                  flexShrink: 0,
                   gridColumn: '3',
                   flexWrap: 'wrap',
                   gap: 4,
                   overflowX: 'scroll',
                   opacity: 0.8,
                   fontSize: 10,
-                  height: 24,
+                  height: 20,
                 }}
               >
                 {valuePreviewText}
               </FlexRow>
               {/* Scope Selector Breadcrumbs */}
               <FlexRow style={{ gap: 2, paddingBottom: 4, paddingTop: 4 }}>
-                {elementLabelsWithScopes.map(({ label, scope }, idx, a) => (
+                {elementLabelsWithScopes.map(({ label, scope, hasContent }, idx, a) => (
                   <React.Fragment key={`label-${idx}`}>
                     <div
-                      onClick={setSelectedScopeCurried(scope)}
+                      onClick={setSelectedScopeCurried(scope, hasContent)}
                       style={{
                         width: 'max-content',
                         padding: '2px 4px',
                         borderRadius: 4,
-                        cursor: 'pointer',
+                        cursor: hasContent ? 'pointer' : undefined,
+                        color: hasContent
+                          ? colorTheme.neutralForeground.value
+                          : colorTheme.subduedForeground.value,
                         fontSize: 12,
                         fontWeight: insertionCeilingsEqual(selectedScope, scope) ? 800 : undefined,
                       }}
@@ -518,7 +528,6 @@ export const DataSelectorModal = React.memo(
                       {primitiveVars.map((variable) => (
                         <CartoucheUI
                           key={variable.valuePath.toString()}
-                          tooltip={variableNameFromPath(variable)}
                           source={variableSources[variable.valuePath.toString()] ?? 'internal'}
                           datatype={childTypeToCartoucheDataType(variable.type)}
                           inverted={false}
@@ -544,7 +553,6 @@ export const DataSelectorModal = React.memo(
                 {folderVars.map((variable, idx) => (
                   <React.Fragment key={variable.valuePath.toString()}>
                     <CartoucheUI
-                      tooltip={variableNameFromPath(variable)}
                       datatype={childTypeToCartoucheDataType(variable.type)}
                       source={variableSources[variable.valuePath.toString()] ?? 'internal'}
                       inverted={false}
@@ -574,7 +582,6 @@ export const DataSelectorModal = React.memo(
                       {childVars(variable, indexLookup).map((child) => (
                         <CartoucheUI
                           key={child.valuePath.toString()}
-                          tooltip={variableNameFromPath(child)}
                           source={variableSources[variable.valuePath.toString()] ?? 'internal'}
                           inverted={false}
                           datatype={childTypeToCartoucheDataType(child.type)}
