@@ -1195,7 +1195,7 @@ describe('Data Tracing', () => {
           
           const [helloFromDestructuredArray] = a
 
-          return <MyComponent data-uid='component-root' doc={deep} />
+          return <MyComponent data-uid='my-component' doc={deep} />
         }
         `),
         'await-first-dom-report',
@@ -1205,7 +1205,7 @@ describe('Data Tracing', () => {
 
       {
         const trace = traceDataFromVariableName(
-          EP.fromString('sb/app'),
+          EP.fromString('sb/app:my-component'),
           'deep',
           editor.getEditorState().editor.jsxMetadata,
           editor.getEditorState().editor.projectContents,
@@ -1214,7 +1214,7 @@ describe('Data Tracing', () => {
 
         expect(trace).toEqual(
           dataTracingToAHookCall(
-            EP.fromString('sb/app'),
+            EP.fromString('sb/app:my-component'),
             'useLoaderData',
             dataPathSuccess(['very', 'deep']),
           ),
@@ -1222,7 +1222,7 @@ describe('Data Tracing', () => {
       }
       {
         const trace = traceDataFromVariableName(
-          EP.fromString('sb/app'),
+          EP.fromString('sb/app:my-component'),
           'deepButWithAccess',
           editor.getEditorState().editor.jsxMetadata,
           editor.getEditorState().editor.projectContents,
@@ -1231,7 +1231,7 @@ describe('Data Tracing', () => {
 
         expect(trace).toEqual(
           dataTracingToAHookCall(
-            EP.fromString('sb/app'),
+            EP.fromString('sb/app:my-component'),
             'useLoaderData',
             dataPathSuccess(['very', 'deep']),
           ),
@@ -1239,7 +1239,7 @@ describe('Data Tracing', () => {
       }
       {
         const trace = traceDataFromVariableName(
-          EP.fromString('sb/app'),
+          EP.fromString('sb/app:my-component'),
           'helloFromDestructuredArray',
           editor.getEditorState().editor.jsxMetadata,
           editor.getEditorState().editor.projectContents,
@@ -1248,7 +1248,7 @@ describe('Data Tracing', () => {
 
         expect(trace).toEqual(
           dataTracingToAHookCall(
-            EP.fromString('sb/app'),
+            EP.fromString('sb/app:my-component'),
             'useLoaderData',
             dataPathSuccess(['very', 'a', '0', 'helloFromDestructuredArray']),
           ),
