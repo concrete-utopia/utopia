@@ -182,6 +182,7 @@ export const DataSelectorModal = React.memo(
             store.editor.jsxMetadata,
             store.editor.allElementProps,
             store.editor.elementPathTree,
+            store.editor.projectContents,
             Object.keys(scopeBuckets),
             lowestInsertionCeiling ?? EP.emptyElementPath,
           )
