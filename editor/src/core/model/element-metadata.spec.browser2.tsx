@@ -1401,7 +1401,7 @@ describe('record variable values', () => {
     const { variablesInScope } = editor.getEditorState().editor
     expect(variablesInScope['sb/scene/pg:root']).toEqual<VariableData>({
       add: {
-        insertionCeiling: EP.emptyElementPath,
+        insertionCeiling: { type: 'file-root' },
         spiedValue: expect.any(Function),
       },
       definedInsideNumber: { spiedValue: 12, insertionCeiling: EP.fromString('sb/scene/pg:root') },
@@ -1420,7 +1420,7 @@ describe('record variable values', () => {
     })
     expect(variablesInScope['sb/scene/pg:root/111']).toEqual<VariableData>({
       add: {
-        insertionCeiling: EP.emptyElementPath,
+        insertionCeiling: { type: 'file-root' },
         spiedValue: expect.any(Function),
       },
       definedInsideNumber: { spiedValue: 12, insertionCeiling: EP.fromString('sb/scene/pg:root') },
@@ -1439,7 +1439,7 @@ describe('record variable values', () => {
     })
     expect(variablesInScope['sb/scene/pg:root/222']).toEqual<VariableData>({
       add: {
-        insertionCeiling: EP.emptyElementPath,
+        insertionCeiling: { type: 'file-root' },
         spiedValue: expect.any(Function),
       },
       definedInsideNumber: { spiedValue: 12, insertionCeiling: EP.fromString('sb/scene/pg:root') },
@@ -1458,7 +1458,7 @@ describe('record variable values', () => {
     })
     expect(variablesInScope['sb/scene/pg:root/333']).toEqual<VariableData>({
       add: {
-        insertionCeiling: EP.emptyElementPath,
+        insertionCeiling: { type: 'file-root' },
         spiedValue: expect.any(Function),
       },
       definedInsideNumber: { spiedValue: 12, insertionCeiling: EP.fromString('sb/scene/pg:root') },
