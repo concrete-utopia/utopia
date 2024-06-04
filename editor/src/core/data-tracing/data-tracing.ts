@@ -414,14 +414,9 @@ export function traceDataFromVariableName(
   projectContents: ProjectContentTreeRoot,
   pathDrillSoFar: DataPathPositiveResult,
 ): DataTracingResult {
-  const component = MetadataUtils.findElementByElementPath(metadata, enclosingScope)
-  if (component == null) {
-    return dataTracingFailed('Could not find element instance pointed to by enclosing scope')
-  }
-
-  const componentHoldingElement = findUnderlyingTargetComponentImplementationFromImportInfo(
+  const componentHoldingElement = findContainingComponentForElementPath(
+    enclosingScope,
     projectContents,
-    component.importInfo,
   )
 
   if (componentHoldingElement == null || componentHoldingElement.arbitraryJSBlock == null) {

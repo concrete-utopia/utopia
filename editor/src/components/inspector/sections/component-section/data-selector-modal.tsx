@@ -229,7 +229,7 @@ export const DataSelectorModal = React.memo(
       const variableSources = React.useMemo(() => {
         let result: { [valuePath: string]: CartoucheUIProps['source'] } = {}
         for (const variable of focusedVariableChildren) {
-          const container = EP.parentPath(variable.variableInfo.sourceElement)
+          const container = variable.variableInfo.sourceElement
           const trace = traceDataFromVariableName(
             container,
             variable.variableInfo.expression,
