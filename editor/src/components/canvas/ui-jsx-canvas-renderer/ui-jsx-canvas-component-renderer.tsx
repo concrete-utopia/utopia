@@ -48,6 +48,7 @@ import type { ComponentRendererComponent } from './component-renderer-component'
 import { mapArrayToDictionary } from '../../../core/shared/array-utils'
 import { assertNever } from '../../../core/shared/utils'
 import { addFakeSpyEntry } from './ui-jsx-canvas-spy-wrapper'
+import type { FilePathMappings } from '../../../core/model/project-file-utils'
 
 function tryToGetInstancePath(
   maybePath: ElementPath | null,
@@ -158,6 +159,7 @@ export function createComponentRendererComponent(params: {
             highlightBounds: highlightBounds,
             editedText: rerenderUtopiaContext.editedText,
             variablesInScope: {},
+            filePathMappings: rerenderUtopiaContext.filePathMappings,
           },
           undefined,
           codeError,
@@ -171,7 +173,7 @@ export function createComponentRendererComponent(params: {
     }
 
     let spiedVariablesInScope: VariableData = {}
-    if (utopiaJsxComponent.param != null) {
+    if (rootElementPath != null && utopiaJsxComponent.param != null) {
       spiedVariablesInScope = mapArrayToDictionary(
         propertiesExposedByParam(utopiaJsxComponent.param),
         (paramName) => {
@@ -180,7 +182,7 @@ export function createComponentRendererComponent(params: {
         (paramName) => {
           return {
             spiedValue: scope[paramName],
-            insertionCeiling: instancePath,
+            insertionCeiling: rootElementPath,
           }
         },
       )
@@ -228,6 +230,7 @@ export function createComponentRendererComponent(params: {
       code: code,
       highlightBounds: highlightBounds,
       editedText: rerenderUtopiaContext.editedText,
+      filePathMappings: rerenderUtopiaContext.filePathMappings,
     }
 
     const buildResult = React.useRef<React.ReactElement | null>(null)
@@ -264,15 +267,17 @@ export function createComponentRendererComponent(params: {
 
       switch (arbitraryBlockResult.type) {
         case 'ARBITRARY_BLOCK_RAN_TO_END':
-          spiedVariablesInScope = {
-            ...spiedVariablesInScope,
-            ...objectMap(
-              (spiedValue) => ({
-                spiedValue: spiedValue,
-                insertionCeiling: instancePath,
-              }),
-              arbitraryBlockResult.scope,
-            ),
+          if (rootElementPath != null) {
+            spiedVariablesInScope = {
+              ...spiedVariablesInScope,
+              ...objectMap(
+                (spiedValue) => ({
+                  spiedValue: spiedValue,
+                  insertionCeiling: rootElementPath,
+                }),
+                arbitraryBlockResult.scope,
+              ),
+            }
           }
           break
         case 'EARLY_RETURN_VOID':

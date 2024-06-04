@@ -1,4 +1,5 @@
 import type { ProjectContentTreeRoot } from '../../components/assets'
+import { findUnderlyingTargetComponentImplementationFromImportInfo } from '../../components/custom-code/code-file'
 import { withUnderlyingTarget } from '../../components/editor/store/editor-state'
 import * as TPP from '../../components/template-property-path'
 import { MetadataUtils } from '../model/element-metadata-utils'
@@ -18,16 +19,16 @@ import type {
   UtopiaJSXComponent,
 } from '../shared/element-template'
 import {
-  emptyComments,
   isJSXElement,
-  jsIdentifier,
   type ElementInstanceMetadataMap,
   isRegularParam,
   isJSAssignmentStatement,
   isJSIdentifier,
+  jsIdentifier,
+  emptyComments,
 } from '../shared/element-template'
 import { getJSXAttributesAtPath, jsxSimpleAttributeToValue } from '../shared/jsx-attribute-utils'
-import { forceNotNull, optionalMap } from '../shared/optional-utils'
+import { optionalMap } from '../shared/optional-utils'
 import type { ElementPath, ElementPropertyPath, PropertyPath } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
 import { assertNever } from '../shared/utils'
@@ -404,6 +405,34 @@ export function traceDataFromElement(
     default:
       assertNever(startFromElement)
   }
+}
+
+export function traceDataFromVariableName(
+  enclosingScope: ElementPath,
+  variableName: string,
+  metadata: ElementInstanceMetadataMap,
+  projectContents: ProjectContentTreeRoot,
+  pathDrillSoFar: DataPathPositiveResult,
+): DataTracingResult {
+  const componentHoldingElement = findContainingComponentForElementPath(
+    enclosingScope,
+    projectContents,
+  )
+
+  if (componentHoldingElement == null || componentHoldingElement.arbitraryJSBlock == null) {
+    return dataTracingFailed('Could not find containing component')
+  }
+
+  return walkUpInnerScopesUntilReachingComponent(
+    metadata,
+    projectContents,
+    enclosingScope,
+    enclosingScope,
+    enclosingScope,
+    componentHoldingElement,
+    jsIdentifier(variableName, '', null, emptyComments),
+    pathDrillSoFar,
+  )
 }
 
 function traceDataFromIdentifierOrAccess(

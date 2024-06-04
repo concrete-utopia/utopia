@@ -40,6 +40,7 @@ import {
   applyBlockReturnFunctions,
 } from '../../../core/shared/dom-utils'
 import { emptySet } from '../../../core/shared/set-utils'
+import { getFilePathMappings } from '../../../core/model/project-file-utils'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
@@ -70,6 +71,7 @@ export function createExecutionScope(
   topLevelJsxComponents: Map<string | null, UtopiaJSXComponent>
   requireResult: MapLike<any>
 } {
+  const filePathMappings = getFilePathMappings(projectContents)
   if (!(filePath in topLevelComponentRendererComponents.current)) {
     // we make sure that the ref has an entry for this filepath
     topLevelComponentRendererComponents.current[filePath] = {}
@@ -127,6 +129,7 @@ export function createExecutionScope(
     highlightBounds: {},
     editedText: editedText,
     variablesInScope: {},
+    filePathMappings: filePathMappings,
   }
 
   // First make sure everything is in scope
@@ -139,6 +142,7 @@ export function createExecutionScope(
         ...renderContext,
         code: code,
         highlightBounds: highlightBounds,
+        filePathMappings: filePathMappings,
       },
       null,
       propertiesFromParams,
