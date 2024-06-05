@@ -485,53 +485,60 @@ export const DataSelectorModal = React.memo(
               </FlexRow>
               {/* Scope Selector Breadcrumbs */}
               <FlexRow style={{ gap: 2, paddingBottom: 0, paddingTop: 4 }}>
-                {elementLabelsWithScopes.map(({ label, scope, hasContent }, idx, a) => (
-                  <React.Fragment key={`label-${idx}`}>
-                    <div
-                      onClick={setSelectedScopeCurried(scope, hasContent)}
-                      style={{
-                        width: 'max-content',
-                        padding: '2px 4px',
-                        borderRadius: 4,
-                        cursor: hasContent ? 'pointer' : undefined,
-                        color: hasContent
-                          ? colorTheme.neutralForeground.value
-                          : colorTheme.subduedForeground.value,
-                        fontSize: 12,
-                        fontWeight: insertionCeilingsEqual(selectedScope, scope) ? 800 : undefined,
-                      }}
-                    >
-                      {label}
-                    </div>
-                    {idx < a.length - 1 ? (
-                      <span style={{ width: 'max-content', padding: '2px 4px' }}>{'/'}</span>
-                    ) : null}
-                  </React.Fragment>
-                ))}
-              </FlexRow>
-              {/* Scope Selector Breadcrumbs */}
-              <FlexRow style={{ gap: 2, paddingBottom: 0, paddingTop: 4 }}>
-                {pathBreadcrumbs(navigatedToPath ?? [], processedVariablesInScope).map(
-                  ({ segment, path, role, type }, idx, a) => {
-                    const selected = arrayEqualsByReference(path, navigatedToPath)
-                    return (
-                      <React.Fragment key={`label-${idx}`}>
-                        <CartoucheUI
-                          testId={`data-selector-breadcrumbs-${path.toString()}`}
-                          source={variableSources[path.toString()] ?? 'internal'}
-                          datatype={type}
-                          role={'information'}
-                          inverted={false}
-                          selected={selected}
-                        >
-                          {segment}
-                        </CartoucheUI>
-                        {idx < a.length - 1 ? <span>{'.'}</span> : null}
-                      </React.Fragment>
-                    )
-                  },
-                )}
-                &nbsp;
+                {elementLabelsWithScopes.map(({ label, scope, hasContent }, idx, a) => {
+                  const activeScope = insertionCeilingsEqual(selectedScope, scope)
+                  return (
+                    <React.Fragment key={`label-${idx}`}>
+                      <div
+                        onClick={setSelectedScopeCurried(scope, hasContent)}
+                        style={{
+                          width: 'max-content',
+                          padding: '2px 4px',
+                          borderRadius: 4,
+                          cursor: hasContent ? 'pointer' : undefined,
+                          color: hasContent
+                            ? colorTheme.neutralForeground.value
+                            : colorTheme.subduedForeground.value,
+                          fontSize: 12,
+                          fontWeight: activeScope ? 800 : undefined,
+                        }}
+                      >
+                        {label}
+                      </div>
+                      {when(
+                        activeScope,
+                        <FlexRow style={{ gap: 2 }}>
+                          {pathBreadcrumbs(navigatedToPath ?? [], processedVariablesInScope).map(
+                            ({ segment, path, role, type }, index, arr) => {
+                              const selected = arrayEqualsByReference(path, navigatedToPath)
+                              return (
+                                <React.Fragment key={`label-${index}`}>
+                                  {index === 0 ? <span>{'>'}</span> : null}
+                                  <CartoucheUI
+                                    onClick={setNavigatedToPathCurried(path)}
+                                    testId={`data-selector-breadcrumbs-${path.toString()}`}
+                                    source={variableSources[path.toString()] ?? 'internal'}
+                                    datatype={type}
+                                    role={'information'}
+                                    inverted={false}
+                                    selected={selected}
+                                  >
+                                    {segment}
+                                  </CartoucheUI>
+                                  {index < arr.length - 1 ? <span>{'>'}</span> : null}
+                                </React.Fragment>
+                              )
+                            },
+                          )}
+                          &nbsp;
+                        </FlexRow>,
+                      )}
+                      {idx < a.length - 1 ? (
+                        <span style={{ width: 'max-content', padding: '2px 4px' }}>{'/'}</span>
+                      ) : null}
+                    </React.Fragment>
+                  )
+                })}
               </FlexRow>
               {/* detail view */}
               <div
