@@ -470,6 +470,7 @@ dependencies:
   react-windowed-select: 3.1.2_jxk2kndhaer357t5mrx7cw3eei
   remix-react: 0.0.2_ef5jwxihqo6n7gxfmzogljlgcm
   reselect: 4.1.7_lchp3amipq5ospj3jcph7hcfwu
+  resize-observer-polyfill: 1.5.0
   sanitize-html: 2.11.0
   scheduler: 0.17.0
   semver: 7.3.2
@@ -625,7 +626,6 @@ devDependencies:
   pretty-format: 26.1.0
   react-select-event: 5.5.1
   react-test-renderer: 16.9.0_react@18.1.0
-  resize-observer-polyfill: 1.5.0
   script-ext-html-webpack-plugin: 2.1.5_r6mod32wttoeaygbcejskeqeza
   selenium-webdriver: 3.0.1
   shuffle-array: 1.0.1
@@ -16656,7 +16656,7 @@ packages:
 
   /resize-observer-polyfill/1.5.0:
     resolution: {integrity: sha512-M2AelyJDVR/oLnToJLtuDJRBBWUGUvvGigj1411hXhAdyFWqMaqHp7TixW3FpiLuVaikIcR1QL+zqoJoZlOgpg==}
-    dev: true
+    dev: false
 
   /resize-observer-polyfill/1.5.1:
     resolution: {integrity: sha512-LwZrotdHOo12nQuZlHEmtuXdqGoOD0OhaxopaNFxWzInpEgaLWoVuAMbTzixuosCx2nEG58ngzW3vxdWoxIgdg==}
