@@ -1,6 +1,7 @@
 import { atom } from 'jotai'
 import { processJSPropertyAccessors } from '../../../../core/data-tracing/data-tracing'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { findContainingComponentForPathInProjectContents } from '../../../../core/model/element-template-utils'
 import { foldEither } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
@@ -12,9 +13,10 @@ import {
 } from '../../../../core/shared/element-template'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
+import type { ProjectContentTreeRoot } from '../../../assets'
+import { insertionCeilingToString, type FileRootPath } from '../../../canvas/ui-jsx-canvas'
 import type { AllElementProps } from '../../../editor/store/editor-state'
 import type { ArrayInfo, JSXInfo, ObjectInfo, PrimitiveInfo } from './variables-in-scope-utils'
-import { insertionCeilingToString, type FileRootPath } from '../../../canvas/ui-jsx-canvas'
 
 interface VariableOptionBase {
   depth: number
@@ -82,6 +84,7 @@ export function getEnclosingScopes(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   elementPathTree: ElementPathTrees,
+  projectContents: ProjectContentTreeRoot,
   buckets: Array<string>,
   lowestInsertionCeiling: ElementPath,
 ): Array<{
@@ -105,12 +108,7 @@ export function getEnclosingScopes(
     ) {
       result.unshift({
         insertionCeiling: current,
-        label: MetadataUtils.getElementLabel(
-          allElementProps,
-          parentOfCurrent,
-          elementPathTree,
-          metadata,
-        ),
+        label: outletNameHack(metadata, allElementProps, elementPathTree, projectContents, current),
         hasContent: buckets.includes(insertionCeilingToString(current)),
       })
       continue
@@ -120,12 +118,7 @@ export function getEnclosingScopes(
     if (buckets.includes(insertionCeilingToString(current))) {
       result.unshift({
         insertionCeiling: current,
-        label: MetadataUtils.getElementLabel(
-          allElementProps,
-          parentOfCurrent,
-          elementPathTree,
-          metadata,
-        ),
+        label: outletNameHack(metadata, allElementProps, elementPathTree, projectContents, current),
         hasContent: true,
       })
       continue
@@ -140,4 +133,25 @@ export function getEnclosingScopes(
   })
 
   return result
+}
+
+function outletNameHack(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  elementPathTree: ElementPathTrees,
+  projectContents: ProjectContentTreeRoot,
+  target: ElementPath,
+): string {
+  const namePossiblyOutlet = MetadataUtils.getElementLabel(
+    allElementProps,
+    EP.parentPath(target),
+    elementPathTree,
+    metadata,
+  )
+  if (namePossiblyOutlet !== 'Outlet') {
+    return namePossiblyOutlet
+  }
+  // if getElementLabel returned Outlet, we try to find the actual component name by hand – this is a hack and should be removed once the Navigator is capable of showing the correct name
+  const component = findContainingComponentForPathInProjectContents(target, projectContents)
+  return component?.name ?? namePossiblyOutlet
 }

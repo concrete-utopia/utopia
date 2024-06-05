@@ -4,7 +4,10 @@ import { findUnderlyingTargetComponentImplementationFromImportInfo } from '../..
 import { withUnderlyingTarget } from '../../components/editor/store/editor-state'
 import * as TPP from '../../components/template-property-path'
 import { MetadataUtils } from '../model/element-metadata-utils'
-import { findContainingComponentForPath } from '../model/element-template-utils'
+import {
+  findContainingComponentForPath,
+  findContainingComponentForPathInProjectContents,
+} from '../model/element-template-utils'
 import { mapFirstApplicable } from '../shared/array-utils'
 import type { Either } from '../shared/either'
 import { isLeft, isRight, left, mapEither, maybeEitherToMaybe, right } from '../shared/either'
@@ -213,19 +216,6 @@ export type DataTracingResult =
   | DataTracingToAComponentProp
   | DataTracingToElementAtScope
   | DataTracingFailed
-
-function findContainingComponentForElementPath(
-  elementPath: ElementPath,
-  projectContents: ProjectContentTreeRoot,
-): UtopiaJSXComponent | null {
-  return withUnderlyingTarget(elementPath, projectContents, null, (success) => {
-    const containingComponent = findContainingComponentForPath(
-      success.topLevelElements,
-      elementPath,
-    )
-    return containingComponent
-  })
-}
 
 export function processJSPropertyAccessors(
   expression: JSExpression,
@@ -438,7 +428,7 @@ export function traceDataFromVariableName(
   if (enclosingScope.type === 'file-root') {
     return dataTracingFailed('Cannot trace data from variable name in file root')
   }
-  const componentHoldingElement = findContainingComponentForElementPath(
+  const componentHoldingElement = findContainingComponentForPathInProjectContents(
     enclosingScope,
     projectContents,
   )
@@ -466,10 +456,8 @@ function traceDataFromIdentifierOrAccess(
   projectContents: ProjectContentTreeRoot,
   pathDrillSoFar: DataPathPositiveResult,
 ): DataTracingResult {
-  const componentHoldingElement: UtopiaJSXComponent | null = findContainingComponentForElementPath(
-    enclosingScope,
-    projectContents,
-  )
+  const componentHoldingElement: UtopiaJSXComponent | null =
+    findContainingComponentForPathInProjectContents(enclosingScope, projectContents)
 
   if (componentHoldingElement == null) {
     return dataTracingFailed('Could not find containing component')
