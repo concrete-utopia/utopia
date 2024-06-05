@@ -7,11 +7,13 @@ export interface HoverHandlers {
   onMouseLeave: (e: React.MouseEvent) => void
 }
 
+export type CartoucheDataType = 'renderable' | 'boolean' | 'array' | 'object' | 'unknown'
+
 export type CartoucheUIProps = React.PropsWithChildren<{
   tooltip?: string | null
   source: 'internal' | 'external' | 'literal'
   role: 'selection' | 'information' | 'folder'
-  datatype: 'renderable' | 'boolean' | 'array' | 'object'
+  datatype: CartoucheDataType
   inverted: boolean
   selected: boolean
   testId: string
@@ -173,6 +175,8 @@ function dataTypeToIconType(dataType: CartoucheUIProps['datatype']): string {
       return 'array'
     case 'object':
       return 'object'
+    case 'unknown':
+      return '👻'
   }
 }
 
