@@ -20,6 +20,7 @@ import { renderedAtChildNode } from '../../../editor/store/editor-state'
 import { isRight } from '../../../../core/shared/either'
 import { DataReferenceCartoucheControl } from './data-reference-cartouche'
 import { assertNever } from '../../../../core/shared/utils'
+import { childrenAreProbablyNumericExpression } from '../../../editor/element-children'
 
 export function useChildrenPropOverride(
   props: ControlForPropProps<RegularControlDescription> & {
@@ -109,7 +110,7 @@ function getMaybeChildrenContent(
       return { type: 'text' }
     } else if (
       controlDescription.control === 'number-input' &&
-      isProbablyNumericExpression(children)
+      childrenAreProbablyNumericExpression(children)
     ) {
       return { type: 'expression' }
     } else if (
@@ -122,14 +123,4 @@ function getMaybeChildrenContent(
   }
 
   return null
-}
-
-const reNumericComponents = /[0-9\._]/g
-
-function isProbablyNumericExpression(children: JSXElementChild[]) {
-  return children.some(
-    (c) =>
-      c.type === 'ATTRIBUTE_OTHER_JAVASCRIPT' &&
-      c.originalJavascript.trim().replace(reNumericComponents, '').length > 0,
-  )
 }

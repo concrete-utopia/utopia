@@ -68,3 +68,13 @@ export function replaceFirstChildAndDeleteSiblings(
     ...children.slice(1).map((child) => deleteView(EP.appendToPath(target, child.uid))),
   ]
 }
+
+const reNumericComponents = /[0-9\._]/g
+
+export function childrenAreProbablyNumericExpression(children: JSXElementChild[]) {
+  return children.some(
+    (c) =>
+      c.type === 'ATTRIBUTE_OTHER_JAVASCRIPT' &&
+      c.originalJavascript.trim().replace(reNumericComponents, '').length > 0,
+  )
+}

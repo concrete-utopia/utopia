@@ -106,7 +106,10 @@ import { DataSelectorModal } from './data-selector-modal'
 import { getModifiableJSXAttributeAtPath } from '../../../../core/shared/jsx-attribute-utils'
 import { isRight } from '../../../../core/shared/either'
 import { useChildrenPropOverride } from './component-section-children'
-import { replaceFirstChildAndDeleteSiblings } from '../../../editor/element-children'
+import {
+  childrenAreProbablyNumericExpression,
+  replaceFirstChildAndDeleteSiblings,
+} from '../../../editor/element-children'
 
 export interface PropertyLabelAndPlusButtonProps {
   title: string
@@ -557,12 +560,31 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
     setIsHovered(false)
   }, [])
 
-  const isConnectedToData = React.useMemo(() => {
-    return (
-      propMetadata.propertyStatus.controlled &&
-      propMetadata.attributeExpression?.type !== 'JSX_ELEMENT'
-    )
-  }, [propMetadata])
+  const isConnectedToData = useEditorState(
+    Substores.metadata,
+    (store) => {
+      if (propName === 'children') {
+        // for children props, we need to drill down and look for the types of the elements
+        return selectedViews.some((view) => {
+          const element = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, view)
+          if (element != null && isRight(element.element) && isJSXElement(element.element.value)) {
+            const children = element.element.value.children
+            return (
+              (controlDescription.control === 'number-input' &&
+                childrenAreProbablyNumericExpression(children)) ||
+              children.some((child) => child.type === 'JS_IDENTIFIER')
+            )
+          }
+          return false
+        })
+      }
+      return (
+        propMetadata.propertyStatus.controlled &&
+        propMetadata.attributeExpression?.type !== 'JSX_ELEMENT'
+      )
+    },
+    'RowForBaseControl isConnectedToData',
+  )
 
   const propertyLabel =
     props.label == null ? (
