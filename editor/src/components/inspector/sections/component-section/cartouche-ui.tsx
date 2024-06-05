@@ -104,11 +104,10 @@ export const CartoucheUI = React.forwardRef(
               border: shouldShowBorder ? '1px solid ' + borderColor : '1px solid transparent',
               padding: '0px 6px 0 4px',
               borderRadius: 4,
-              height: 20,
               display: 'flex',
-              flex: 1,
               gap: 4,
               opacity: preview ? 0.5 : 1,
+              maxWidth: 160,
             }}
           >
             {source === 'literal' ? null : (
@@ -130,20 +129,21 @@ export const CartoucheUI = React.forwardRef(
                 textOverflow: 'ellipsis',
 
                 /* Beginning of string */
-                direction: source === 'literal' ? 'ltr' : 'rtl', // TODO we need a better way to ellipsize the beginnign because rtl eats ' " marks
+                // direction: source === 'literal' ? 'ltr' : 'rtl', // TODO we need a better way to ellipsize the beginnign because rtl eats ' " marks
                 textAlign: 'left',
                 ...(role !== 'information' ? UtopiaStyles.fontStyles.monospaced : {}),
               }}
             >
               {children}
-              &lrm;
+              {/* &lrm; */}
+              {/* commented because it adds makes the flexcolumn in children too large */}
               {/* the &lrm; non-printing character is added to fix the punctuation marks disappearing because of direction: rtl */}
             </div>
-            {when(
+            {/* {when(
               datatype === 'object' && role === 'folder',
               // a trailing ellipsis is added to indicate that the object can be traversed
               <span>…</span>,
-            )}
+            )} */}
             {when(
               onDelete != null,
               <Icn

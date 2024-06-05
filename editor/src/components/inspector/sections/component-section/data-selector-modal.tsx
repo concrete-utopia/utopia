@@ -558,7 +558,14 @@ export const DataSelectorModal = React.memo(
                             onHover={onHover(variable.valuePath)}
                             onClick={setCurrentSelectedPathCurried(variable)}
                           >
+                            {/* <div
+                              style={{ display: 'flex', flexDirection: 'column', paddingLeft: 4 }}
+                            >
+                              <span>{variableValueFromOption(variable)}</span>
+                              <span style={{ ...UtopiaStyles.fontStyles.monospaced, opacity: 0.5 }}> */}
                             {variableNameFromPath(variable)}
+                            {/* </span>
+                            </div> */}
                           </CartoucheUI>
                         ))}
                       </FlexRow>
@@ -615,7 +622,20 @@ export const DataSelectorModal = React.memo(
                             onDoubleClick={setNavigatedToPathCurried(child.valuePath)}
                             onHover={onHover(child.valuePath)}
                           >
+                            {/* <div
+                              style={{ display: 'flex', flexDirection: 'column', paddingLeft: 4 }}
+                            >
+                              <span>{variableValueFromOption(child)}</span>
+                              <span
+                                style={{
+                                  ...UtopiaStyles.fontStyles.monospaced,
+                                  opacity:
+                                    child.type === 'array' || child.type === 'object' ? 1 : 0.5,
+                                }}
+                              > */}
                             {variableNameFromPath(child)}
+                            {/* </span>
+                            </div> */}
                           </CartoucheUI>
                         ))}
                       </FlexRow>
@@ -887,4 +907,30 @@ function findFirstObjectPathToNavigateTo(
   }
 
   return null
+}
+
+function variableValueFromOption(option: DataPickerOption): string | null {
+  const { value } = option.variableInfo
+
+  const type = typeof value
+
+  switch (type) {
+    case 'bigint':
+    case 'boolean':
+    case 'number':
+    case 'string':
+      return `${value}`
+    case 'object': {
+      if (value === null) {
+        return 'null'
+      }
+      return null
+    }
+    case 'function':
+    case 'symbol':
+    case 'undefined':
+      return null
+    default:
+      assertNever(type)
+  }
 }
