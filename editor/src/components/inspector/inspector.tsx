@@ -779,13 +779,15 @@ export const InspectorContextProvider = React.memo<{
     getElementsToTarget(selectedViews),
   )
 
+  const jsxMetadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+
   const onSubmitValueForHooks = React.useCallback(
     (newValue: JSExpression, path: PropertyPath, transient: boolean) => {
       const actionsArray = [
         ...refElementsToTargetForUpdates.current.flatMap((elem): EditorAction[] => {
           // if the target is the children prop, replace the elements instead
           if (path.propertyElements[0] === 'children') {
-            const element = MetadataUtils.findElementByElementPath(jsxMetadata, elem)
+            const element = MetadataUtils.findElementByElementPath(jsxMetadataRef.current, elem)
             const children =
               element != null && isRight(element.element) && isJSXElement(element.element.value)
                 ? element.element.value.children
@@ -800,7 +802,7 @@ export const InspectorContextProvider = React.memo<{
         : actionsArray
       dispatch(actions, 'everyone')
     },
-    [dispatch, refElementsToTargetForUpdates, jsxMetadata],
+    [dispatch, refElementsToTargetForUpdates, jsxMetadataRef],
   )
 
   const onUnsetValue = React.useCallback(
