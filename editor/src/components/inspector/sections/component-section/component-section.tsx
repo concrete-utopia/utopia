@@ -96,7 +96,10 @@ import { stopPropagation } from '../../common/inspector-utils'
 import { IdentifierExpressionCartoucheControl } from './cartouche-control'
 import { getRegisteredComponent } from '../../../../core/property-controls/property-controls-utils'
 import type { EditorAction } from '../../../editor/action-types'
-import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'
+import {
+  getCartoucheDataTypeForExpression,
+  useVariablesInScopeForSelectedElement,
+} from './variables-in-scope-utils'
 import { useAtom } from 'jotai'
 import { DataSelectorModal } from './data-selector-modal'
 import { getModifiableJSXAttributeAtPath } from '../../../../core/shared/jsx-attribute-utils'
@@ -202,6 +205,21 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
     showHiddenControl,
   ])
 
+  const datatypeForExpression = useEditorState(
+    Substores.projectContentsAndMetadataAndVariablesInScope,
+    (store) => {
+      if (attributeExpression == null) {
+        return 'unknown'
+      }
+      return getCartoucheDataTypeForExpression(
+        props.elementPath,
+        attributeExpression,
+        store.editor.variablesInScope,
+      )
+    },
+    'ControlForProp datatypeForExpression',
+  )
+
   if (controlDescription == null) {
     return null
   }
@@ -225,6 +243,7 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
           safeToDelete={safeToDelete}
           propertyPath={props.propPath}
           elementPath={props.elementPath}
+          datatype={datatypeForExpression}
         />
       )
     }
@@ -246,6 +265,7 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
             propertyPath={props.propPath}
             safeToDelete={safeToDelete}
             elementPath={props.elementPath}
+            datatype={datatypeForExpression}
           />
         )
       }

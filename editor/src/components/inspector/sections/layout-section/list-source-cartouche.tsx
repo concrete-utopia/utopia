@@ -183,6 +183,7 @@ export const MapListSourceCartouche = React.memo((props: MapListSourceCartoucheP
         safeToDelete={false}
         testId='list-source-cartouche'
         contentIsComingFromServer={isDataComingFromHookResult}
+        datatype='array' // this is by definition an array, otherwise it wouldn't be a map expression
       />
     </div>
   )
