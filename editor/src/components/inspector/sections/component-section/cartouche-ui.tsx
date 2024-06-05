@@ -141,11 +141,11 @@ export const CartoucheUI = React.forwardRef(
               &lrm;
               {/* the &lrm; non-printing character is added to fix the punctuation marks disappearing because of direction: rtl */}
             </div>
-            {when(
+            {/* {when(
               datatype === 'object' && role === 'folder',
               // a trailing ellipsis is added to indicate that the object can be traversed
               <span>…</span>,
-            )}
+            )} */}
             {when(
               onDelete != null,
               <Icn

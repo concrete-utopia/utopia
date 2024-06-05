@@ -2,7 +2,7 @@ import * as EP from '../../../../core/shared/element-path'
 import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
 import { mouseClickAtPoint } from '../../../canvas/event-helpers.test-utils'
 import { renderTestEditorWithCode } from '../../../canvas/ui-jsx.test-utils'
-import { DataSelectorPopupBreadCrumbsTestId } from './data-selector-modal'
+import { DataSelectorInputFieldTestId } from './data-selector-modal'
 
 describe('data selector modal', () => {
   it('can be opened', async () => {
@@ -12,7 +12,7 @@ describe('data selector modal', () => {
     await mouseClickAtPoint(editor.renderedDOM.getByTestId('plus-button-title'), { x: 1, y: 1 })
 
     expect(editor.renderedDOM.getByText('Apply')).not.toBeNull()
-    expect(editor.renderedDOM.getByTestId(DataSelectorPopupBreadCrumbsTestId).innerText).toEqual(
+    expect(editor.renderedDOM.getByTestId(DataSelectorInputFieldTestId).innerText).toEqual(
       ['header', '.title'].join('\n'),
     )
   })

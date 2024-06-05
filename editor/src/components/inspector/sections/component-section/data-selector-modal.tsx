@@ -44,7 +44,7 @@ import type { FileRootPath } from '../../../canvas/ui-jsx-canvas'
 import { insertionCeilingToString, insertionCeilingsEqual } from '../../../canvas/ui-jsx-canvas'
 import { set } from 'objectPath'
 
-export const DataSelectorPopupBreadCrumbsTestId = 'data-selector-modal-top-bar'
+export const DataSelectorInputFieldTestId = 'data-selector-modal-top-bar'
 
 export interface DataSelectorModalProps {
   closePopup: () => void
@@ -431,7 +431,7 @@ export const DataSelectorModal = React.memo(
                     }}
                   >
                     <FlexRow
-                      data-testid={DataSelectorPopupBreadCrumbsTestId}
+                      data-testid={DataSelectorInputFieldTestId}
                       style={{ flexWrap: 'wrap', flexGrow: 1 }}
                     >
                       <span>
@@ -483,7 +483,6 @@ export const DataSelectorModal = React.memo(
               >
                 {valuePreviewText}
               </FlexRow>
-
               {/* Scope Selector Breadcrumbs */}
               <FlexRow style={{ gap: 2, paddingBottom: 0, paddingTop: 4 }}>
                 {elementLabelsWithScopes.map(({ label, scope, hasContent }, idx, a) => (
@@ -509,6 +508,30 @@ export const DataSelectorModal = React.memo(
                     ) : null}
                   </React.Fragment>
                 ))}
+              </FlexRow>
+              {/* Scope Selector Breadcrumbs */}
+              <FlexRow style={{ gap: 2, paddingBottom: 0, paddingTop: 4 }}>
+                {pathBreadcrumbs(navigatedToPath ?? [], processedVariablesInScope).map(
+                  ({ segment, path, role, type }, idx, a) => {
+                    const selected = arrayEqualsByReference(path, navigatedToPath)
+                    return (
+                      <React.Fragment key={`label-${idx}`}>
+                        <CartoucheUI
+                          testId={`data-selector-breadcrumbs-${path.toString()}`}
+                          source={variableSources[path.toString()] ?? 'internal'}
+                          datatype={type}
+                          role={'information'}
+                          inverted={false}
+                          selected={selected}
+                        >
+                          {segment}
+                        </CartoucheUI>
+                        {idx < a.length - 1 ? <span>{'.'}</span> : null}
+                      </React.Fragment>
+                    )
+                  },
+                )}
+                &nbsp;
               </FlexRow>
               {/* detail view */}
               <div
