@@ -243,6 +243,7 @@
     "react-helmet": "6.1.0",
     "react-highlight-words": "0.17.0",
     "react-hot-loader": "4.12.12",
+    "react-json-view": "1.21.3",
     "react-merge-refs": "1.0.0",
     "react-onclickoutside": "6.9.0",
     "react-popper": "2.2.3",
