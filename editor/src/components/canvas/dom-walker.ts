@@ -1,5 +1,8 @@
 import React from 'react'
 import { sides } from 'utopia-api/core'
+import * as ResizeObserverSyntheticDefault from 'resize-observer-polyfill'
+const ResizeObserver =
+  window.ResizeObserver ?? ResizeObserverSyntheticDefault.default ?? ResizeObserverSyntheticDefault
 
 import * as EP from '../../core/shared/element-path'
 import type {
@@ -86,10 +89,9 @@ import { pick } from '../../core/shared/object-utils'
 import { getFlexAlignment, getFlexJustifyContent, MaxContent } from '../inspector/inspector-common'
 import type { EditorDispatch } from '../editor/action-types'
 import { runDOMWalker } from '../editor/actions/action-creators'
-import { isLiveMode } from '../editor/editor-modes'
 
 const MutationObserverConfig = { attributes: true, childList: true, subtree: true }
-const ObserversAvailable = (window as any).MutationObserver != null && ResizeObserver != null
+const ObserversAvailable = window.MutationObserver != null && ResizeObserver != null
 
 function elementLayoutSystem(computedStyle: CSSStyleDeclaration | null): DetectedLayoutSystem {
   if (computedStyle == null) {
