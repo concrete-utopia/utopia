@@ -32,7 +32,7 @@ import {
 import { getRegisteredComponent } from '../../../core/property-controls/property-controls-utils'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../../../core/shared/dom-utils'
 import { ExpandableIndicator } from './expandable-indicator'
-import { elementSupportsChildrenFromPropertyControls } from '../../editor/element-supports-children'
+import { elementSupportsChildrenFromPropertyControls } from '../../editor/element-children'
 
 export const NavigatorHintCircleDiameter = 8
 

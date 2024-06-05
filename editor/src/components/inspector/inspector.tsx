@@ -57,7 +57,6 @@ import {
   UtopiaTheme,
   FlexRow,
   Button,
-  H1,
   SectionActionSheet,
   SquareButton,
 } from '../../uuiui'
@@ -100,6 +99,7 @@ import { ExpandableIndicator } from '../navigator/navigator-item/expandable-indi
 import { isIntrinsicElementMetadata } from '../../core/model/project-file-utils'
 import { assertNever } from '../../core/shared/utils'
 import { DataReferenceSection } from './sections/data-reference-section'
+import { replaceFirstChildAndDeleteSiblings } from '../editor/element-children'
 
 export interface ElementPathElement {
   name?: string
@@ -790,19 +790,7 @@ export const InspectorContextProvider = React.memo<{
               element != null && isRight(element.element) && isJSXElement(element.element.value)
                 ? element.element.value.children
                 : []
-
-            return [
-              // replace the first child
-              EditorActions.replaceElementInScope(elem, {
-                type: 'replace-child-with-uid',
-                uid: children[0].uid,
-                replaceWith: newValue,
-              }),
-              // get rid of all the others
-              ...children
-                .slice(1)
-                .map((child) => EditorActions.deleteView(EP.appendToPath(elem, child.uid))),
-            ]
+            return replaceFirstChildAndDeleteSiblings(elem, children, newValue)
           }
           return [setProp_UNSAFE(elem, path, newValue)]
         }),

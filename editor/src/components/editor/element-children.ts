@@ -2,12 +2,18 @@ import type { ElementPath } from 'utopia-shared/src/types'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { getRegisteredComponent } from '../../core/property-controls/property-controls-utils'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../../core/shared/dom-utils'
-import type { ElementInstanceMetadataMap } from '../../core/shared/element-template'
+import type {
+  ElementInstanceMetadataMap,
+  JSXElementChild,
+} from '../../core/shared/element-template'
 import {
   isIntrinsicHTMLElement,
   getJSXElementNameAsString,
 } from '../../core/shared/element-template'
 import type { PropertyControlsInfo } from '../custom-code/code-file'
+import type { EditorAction } from './action-types'
+import { deleteView, replaceElementInScope } from './actions/action-creators'
+import * as EP from '../../core/shared/element-path'
 
 export function elementSupportsChildrenFromPropertyControls(
   metadata: ElementInstanceMetadataMap,
@@ -44,4 +50,21 @@ export function elementSupportsChildrenFromPropertyControls(
   }
 
   return registeredComponent.supportsChildren
+}
+
+export function replaceFirstChildAndDeleteSiblings(
+  target: ElementPath,
+  children: JSXElementChild[],
+  replaceWith: JSXElementChild,
+): EditorAction[] {
+  return [
+    // replace the first child
+    replaceElementInScope(target, {
+      type: 'replace-child-with-uid',
+      uid: children[0].uid,
+      replaceWith: replaceWith,
+    }),
+    // get rid of all the others
+    ...children.slice(1).map((child) => deleteView(EP.appendToPath(target, child.uid))),
+  ]
 }

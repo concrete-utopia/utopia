@@ -76,11 +76,7 @@ import { unless, when } from '../../../../utils/react-conditionals'
 import { PropertyControlsSection } from './property-controls-section'
 import type { ReactEventHandlers } from 'react-use-gesture/dist/types'
 import { normalisePathToUnderlyingTarget } from '../../../custom-code/code-file'
-import {
-  deleteView,
-  openCodeEditorFile,
-  replaceElementInScope,
-} from '../../../editor/actions/action-creators'
+import { openCodeEditorFile, replaceElementInScope } from '../../../editor/actions/action-creators'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { getFilePathForImportedComponent } from '../../../../core/model/project-file-utils'
@@ -110,6 +106,7 @@ import { DataSelectorModal } from './data-selector-modal'
 import { getModifiableJSXAttributeAtPath } from '../../../../core/shared/jsx-attribute-utils'
 import { isRight } from '../../../../core/shared/either'
 import { useChildrenPropOverride } from './component-section-children'
+import { replaceFirstChildAndDeleteSiblings } from '../../../editor/element-children'
 
 export interface PropertyLabelAndPlusButtonProps {
   title: string
@@ -446,14 +443,7 @@ function setPropertyFromDataPickerActions(
       element != null && isRight(element.element) && isJSXElement(element.element.value)
         ? element.element.value.children
         : []
-    return [
-      replaceElementInScope(target, {
-        type: 'replace-child-with-uid',
-        uid: children[0].uid,
-        replaceWith: expression,
-      }),
-      ...children.slice(1).map((child) => deleteView(EP.appendToPath(target, child.uid))),
-    ]
+    return replaceFirstChildAndDeleteSiblings(target, children, expression)
   }
 
   // In all other cases, replace the prop.

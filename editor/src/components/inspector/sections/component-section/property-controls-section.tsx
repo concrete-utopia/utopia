@@ -15,7 +15,7 @@ import {
 } from '../../../../core/property-controls/property-controls-utils'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
-import { elementSupportsChildrenFromPropertyControls } from '../../../editor/element-supports-children'
+import { elementSupportsChildrenFromPropertyControls } from '../../../editor/element-children'
 
 interface PropertyControlsSectionProps {
   targets: ElementPath[]
