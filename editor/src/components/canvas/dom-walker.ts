@@ -1,7 +1,5 @@
 import React from 'react'
 import { sides } from 'utopia-api/core'
-import * as ResizeObserverSyntheticDefault from 'resize-observer-polyfill'
-const ResizeObserver = ResizeObserverSyntheticDefault.default ?? ResizeObserverSyntheticDefault
 
 import * as EP from '../../core/shared/element-path'
 import type {
@@ -170,7 +168,7 @@ function isScene(node: Node): node is HTMLElement {
   )
 }
 
-function findParentScene(target: HTMLElement): string | null {
+function findParentScene(target: Element): string | null {
   // First check if the node is a Scene element, which could be nested at any level
   const sceneID = getDOMAttribute(target, UTOPIA_SCENE_ID_KEY)
   if (sceneID != null) {
@@ -538,12 +536,19 @@ export function initDomWalkerObservers(
   editorStore: UtopiaStoreAPI,
   dispatch: EditorDispatch,
 ): { resizeObserver: ResizeObserver; mutationObserver: MutationObserver } {
+  // Warning: I modified this code so it runs in all modes, not just in live mode. We still don't trigger
+  // the DOM walker during canvas interactions, so the performance impact doesn't seem that bad. But it is
+  // necessary, because after remix navigation, and after dynamic changes coming from loaders sometimes the
+  // dom walker was not executed after all the changes.
+  //
+  // This was the original comment here when this only ran in live mode:
+  //
   // Warning: These observers only trigger the DOM walker whilst in live mode to ensure metadata is up to date
   // when interacting with the actual running application / components. There are likely edge cases where we
   // also want these to trigger the DOM walker whilst in select mode, but if we find such a case we need to
   // adequately assess the performance impact of doing so, and ideally find a way to only do so when the observed
   // change was not triggered by a user interaction
-  const resizeObserver = new ResizeObserver((entries: any) => {
+  const resizeObserver = new ResizeObserver((entries: ResizeObserverEntry[]) => {
     const canvasInteractionHappening = selectCanvasInteractionHappening(editorStore.getState())
     const selectedViews = editorStore.getState().editor.selectedViews
     if (canvasInteractionHappening) {
@@ -560,7 +565,7 @@ export function initDomWalkerObservers(
           shouldRunDOMWalker = true
         }
       }
-      if (shouldRunDOMWalker && isLiveMode(editorStore.getState().editor.mode)) {
+      if (shouldRunDOMWalker) {
         dispatch([runDOMWalker()])
       }
     }
@@ -592,7 +597,7 @@ export function initDomWalkerObservers(
           }
         }
       }
-      if (shouldRunDOMWalker && isLiveMode(editorStore.getState().editor.mode)) {
+      if (shouldRunDOMWalker) {
         dispatch([runDOMWalker()])
       }
     }

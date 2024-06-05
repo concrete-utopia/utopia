@@ -31,8 +31,6 @@ declare module 'lodash.debounce' {
       any
 }
 
-declare module 'resize-observer-polyfill'
-
 declare module 'jest-matcher-deep-close-to'
 
 declare namespace DropboxTypes {

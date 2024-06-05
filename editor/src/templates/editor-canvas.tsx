@@ -101,11 +101,9 @@ import { UtopiaStyles, colorTheme } from '../uuiui'
 import { DropHandlers } from './image-drop'
 import { EditorCommon } from '../components/editor/editor-component-common'
 import { CursorComponent } from '../components/canvas/controls/select-mode/cursor-component'
-import * as ResizeObserverSyntheticDefault from 'resize-observer-polyfill'
 import { isFeatureEnabled } from '../utils/feature-switches'
 import { getCanvasViewportCenter } from './paste-helpers'
 import { DataPasteHandler, isPasteHandler } from '../utils/paste-handler'
-const ResizeObserver = ResizeObserverSyntheticDefault.default ?? ResizeObserverSyntheticDefault
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
