@@ -343,11 +343,11 @@ export const DataSelectorModal = React.memo(
         [navigatedToPath],
       )
 
-      const activeTargetPath = selectedPath ?? navigatedToPath
-      const pathInTopBarIncludingHover = hoveredPath ?? activeTargetPath
-
       const onApplyClick = React.useCallback(() => {
-        const variable = processedVariablesInScope[activeTargetPath.toString()]
+        if (selectedPath == null) {
+          return
+        }
+        const variable = processedVariablesInScope[selectedPath.toString()]
         if (variable == null) {
           return
         }
@@ -358,10 +358,13 @@ export const DataSelectorModal = React.memo(
           ]),
         )
         closePopup()
-      }, [closePopup, onPropertyPicked, processedVariablesInScope, activeTargetPath])
+      }, [selectedPath, processedVariablesInScope, onPropertyPicked, closePopup])
 
       const valuePreviewText = (() => {
-        const variable = processedVariablesInScope[pathInTopBarIncludingHover.toString()]
+        if (selectedPath == null) {
+          return null
+        }
+        const variable = processedVariablesInScope[selectedPath.toString()]
         if (variable == null) {
           return null
         }
@@ -431,7 +434,7 @@ export const DataSelectorModal = React.memo(
                       data-testid={DataSelectorPopupBreadCrumbsTestId}
                       style={{ flexWrap: 'wrap', flexGrow: 1 }}
                     >
-                      {pathBreadcrumbs(pathInTopBarIncludingHover, processedVariablesInScope).map(
+                      {pathBreadcrumbs(selectedPath ?? [], processedVariablesInScope).map(
                         ({ segment, path }, idx) => (
                           <span key={path.toString()}>
                             {idx === 0 ? segment : pathSegmentToString(segment)}
@@ -441,7 +444,7 @@ export const DataSelectorModal = React.memo(
                     </FlexRow>
                     <div
                       style={{
-                        ...disabledButtonStyles(activeTargetPath.length === 0),
+                        ...disabledButtonStyles(selectedPath == null || selectedPath.length === 0),
                         fontWeight: 400,
                         fontSize: 12,
                       }}
@@ -459,7 +462,7 @@ export const DataSelectorModal = React.memo(
                     padding: '8px 12px',
                     fontSize: 14,
                     fontWeight: 500,
-                    ...disabledButtonStyles(activeTargetPath.length === 0),
+                    ...disabledButtonStyles(selectedPath == null || selectedPath.length === 0),
                   }}
                   onClick={onApplyClick}
                 >
