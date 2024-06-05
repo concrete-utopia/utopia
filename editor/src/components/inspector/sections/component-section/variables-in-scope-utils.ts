@@ -676,9 +676,9 @@ function getSpiedValueForIdentifierOrAccess(
   if (isLeft(accessorPath)) {
     return accessorPath
   }
-  const spiedValue =
-    variablesInScope[EP.toString(enclosingScope)]?.[accessorPath.value.originalIdentifier.name]
-      ?.spiedValue
+  const spiedValue = findClosestMatchingScope(variablesInScope, enclosingScope)?.[
+    accessorPath.value.originalIdentifier.name
+  ]?.spiedValue
 
   if (spiedValue == null) {
     return left('Variable not found in scope')
@@ -695,4 +695,21 @@ function getSpiedValueForIdentifierOrAccess(
   const value = ObjectPath.get(spiedValue, accessorPath.value.path)
 
   return right(value)
+}
+
+function findClosestMatchingScope(
+  variablesInScope: VariablesInScope,
+  targetScope: ElementPath,
+): VariableData | null {
+  if (targetScope.type === 'elementpath') {
+    const allPaths = EP.allPathsInsideComponent(targetScope)
+    for (const path of allPaths) {
+      const variableData = variablesInScope[EP.toString(path)]
+      if (variableData != null) {
+        return variableData
+      }
+    }
+  }
+
+  return null
 }
