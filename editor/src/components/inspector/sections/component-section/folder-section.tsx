@@ -122,7 +122,7 @@ export const FolderSection = React.memo((props: FolderSectionProps) => {
       {when(
         props.isRoot,
         Object.keys(props.detectedPropsAndValuesWithoutControls).map((propName) => {
-          if (specialPropertiesToIgnore.includes(propName)) {
+          if (props.propsToIgnore.includes(propName)) {
             return null
           } else {
             const propValue = props.detectedPropsAndValuesWithoutControls[propName]

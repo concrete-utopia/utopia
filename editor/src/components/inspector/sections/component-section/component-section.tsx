@@ -76,7 +76,11 @@ import { unless, when } from '../../../../utils/react-conditionals'
 import { PropertyControlsSection } from './property-controls-section'
 import type { ReactEventHandlers } from 'react-use-gesture/dist/types'
 import { normalisePathToUnderlyingTarget } from '../../../custom-code/code-file'
-import { openCodeEditorFile, replaceElementInScope } from '../../../editor/actions/action-creators'
+import {
+  deleteView,
+  openCodeEditorFile,
+  replaceElementInScope,
+} from '../../../editor/actions/action-creators'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { getFilePathForImportedComponent } from '../../../../core/model/project-file-utils'
@@ -104,9 +108,8 @@ import { useVariablesInScopeForSelectedElement } from './variables-in-scope-util
 import { useAtom } from 'jotai'
 import { DataSelectorModal } from './data-selector-modal'
 import { getModifiableJSXAttributeAtPath } from '../../../../core/shared/jsx-attribute-utils'
-import { DataReferenceCartoucheControl } from './data-reference-cartouche'
-import { renderedAtChildNode } from '../../../editor/store/editor-state'
 import { isRight } from '../../../../core/shared/either'
+import { useChildrenPropOverride } from './component-section-children'
 
 export interface PropertyLabelAndPlusButtonProps {
   title: string
@@ -191,30 +194,6 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
   const hasDefaultValue: boolean = 'defaultValue' in props.controlDescription
   const safeToDelete = !isRequired || hasDefaultValue
 
-  const isChildren = React.useMemo(() => {
-    return (
-      props.propName === 'children' &&
-      props.propMetadata.attributeExpression?.type === 'ATTRIBUTE_NOT_FOUND'
-    )
-  }, [props.propName, props.propMetadata.attributeExpression])
-
-  const maybeDataRefElement = useEditorState(
-    Substores.metadata,
-    (store) => {
-      if (isChildren) {
-        const element = MetadataUtils.findElementByElementPath(
-          store.editor.jsxMetadata,
-          props.elementPath,
-        )
-        if (element != null && isRight(element.element) && isJSXElement(element.element.value)) {
-          return element.element.value.children[0]
-        }
-      }
-      return null
-    },
-    'ControlForProp maybeDataRefElement',
-  )
-
   const onDeleteCartouche = React.useCallback(() => {
     if (safeToDelete) {
       if (isRequired) {
@@ -232,6 +211,15 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
     props.propPath,
     showHiddenControl,
   ])
+
+  const childrenPropOverride = useChildrenPropOverride({
+    ...props,
+    onDeleteCartouche: onDeleteCartouche,
+    safeToDelete: safeToDelete,
+  })
+  if (childrenPropOverride != null) {
+    return childrenPropOverride
+  }
 
   if (controlDescription == null) {
     return null
@@ -281,18 +269,6 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
         )
       }
     }
-  }
-
-  if (isChildren && maybeDataRefElement != null) {
-    return (
-      <DataReferenceCartoucheControl
-        elementPath={props.elementPath}
-        renderedAt={renderedAtChildNode(props.elementPath, maybeDataRefElement.uid)}
-        surroundingScope={props.elementPath}
-        childOrAttribute={maybeDataRefElement}
-        selected={false}
-      />
-    )
   }
 
   switch (controlDescription.control) {
@@ -465,16 +441,19 @@ function setPropertyFromDataPickerActions(
     propertyPath.propertyElements.length === 1 && propertyPath.propertyElements[0] === 'children'
   if (isReplacingChildren) {
     // …and the element has children…
-    const maybeFirstChildUid = MetadataUtils.getFirstElementChildUidOrNull(metadata, target)
-    if (maybeFirstChildUid != null) {
-      return [
-        replaceElementInScope(target, {
-          type: 'replace-child-with-uid',
-          uid: maybeFirstChildUid,
-          replaceWith: expression,
-        }),
-      ]
-    }
+    const element = MetadataUtils.findElementByElementPath(metadata, target)
+    const children =
+      element != null && isRight(element.element) && isJSXElement(element.element.value)
+        ? element.element.value.children
+        : []
+    return [
+      replaceElementInScope(target, {
+        type: 'replace-child-with-uid',
+        uid: children[0].uid,
+        replaceWith: expression,
+      }),
+      ...children.slice(1).map((child) => deleteView(EP.appendToPath(target, child.uid))),
+    ]
   }
 
   // In all other cases, replace the prop.
@@ -1214,9 +1193,17 @@ interface RowForControlProps extends AbstractRowForControlProps {
 }
 
 export const RowForControl = React.memo((props: RowForControlProps) => {
-  const { controlDescription, disableToggling } = props
+  const { controlDescription, disableToggling, propPath } = props
   if (isBaseControlDescription(controlDescription)) {
     return <RowForBaseControl {...props} controlDescription={controlDescription} />
+  } else if (propPath.propertyElements[0] === 'children') {
+    // just show a single element for arrays of children
+    return (
+      <RowForBaseControl
+        {...props}
+        controlDescription={{ control: 'jsx', preferredChildComponents: [], label: 'children' }}
+      />
+    )
   } else {
     switch (controlDescription.control) {
       case 'array':

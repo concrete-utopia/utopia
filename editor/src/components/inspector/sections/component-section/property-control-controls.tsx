@@ -4,7 +4,6 @@ import type { CSSCursor } from '../../../../uuiui-deps'
 import { SliderControl, getControlStyles } from '../../../../uuiui-deps'
 import type {
   AllowedEnumType,
-  BaseControlDescription,
   BasicControlOption,
   CheckboxControlDescription,
   ColorControlDescription,
@@ -20,7 +19,6 @@ import type {
   RadioControlDescription,
   RadioControlOption,
   RegularControlDescription,
-  RegularControlType,
   StringInputControlDescription,
   Vector2ControlDescription,
   Vector3ControlDescription,
@@ -39,11 +37,7 @@ import {
   FlexRow,
   UtopiaTheme,
   useColorTheme,
-  colorTheme,
   Icn,
-  Tooltip,
-  iconForControlType,
-  Icons,
 } from '../../../../uuiui'
 import type { CSSNumber } from '../../common/css-utils'
 import { printCSSNumber, cssNumber, defaultCSSColor } from '../../common/css-utils'
@@ -68,23 +62,12 @@ import {
 } from '../../../custom-code/code-file'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { HtmlPreview, ImagePreview } from './property-content-preview'
-import type {
-  ElementInstanceMetadata,
-  JSXElementChild,
-} from '../../../../core/shared/element-template'
-import {
-  JSElementAccess,
-  JSIdentifier,
-  JSPropertyAccess,
-  getJSXElementNameLastPart,
-} from '../../../../core/shared/element-template'
+import { isJSXElement } from '../../../../core/shared/element-template'
 import type { JSXParsedType, JSXParsedValue } from '../../../../utils/value-parser-utils'
 import { assertNever } from '../../../../core/shared/utils'
-import { preventDefault, stopPropagation } from '../../common/inspector-utils'
-import { unless, when } from '../../../../utils/react-conditionals'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { parseNoneControlDescription } from '../../../../core/property-controls/property-controls-parser'
-import * as EP from '../../../../core/shared/element-path'
+import { isRight } from '../../../../core/shared/either'
+import { parseNumber } from '../../../../core/shared/math-utils'
 
 export interface ControlForPropProps<T extends RegularControlDescription> {
   propPath: PropertyPath
@@ -348,8 +331,32 @@ export const NumberInputPropertyControl = React.memo(
       propMetadata.onUnsetValues,
     )
 
+    const value = useEditorState(
+      Substores.metadata,
+      (store) => {
+        // if the target prop is children, dig for its value
+        if (propName === 'children') {
+          const element = MetadataUtils.findElementByElementPath(
+            store.editor.jsxMetadata,
+            props.elementPath,
+          )
+          if (element != null && isRight(element.element) && isJSXElement(element.element.value)) {
+            const child = element.element.value.children[0]
+            if (child.type === 'ATTRIBUTE_OTHER_JAVASCRIPT') {
+              const parsed = parseNumber(child.originalJavascript)
+              if (isRight(parsed)) {
+                return parsed.value
+              }
+            }
+          }
+        }
+
+        return propMetadata.propertyStatus.set ? propMetadata.value : undefined
+      },
+      'NumberInputPropertyControl value',
+    )
+
     const controlId = `${propName}-number-input-property-control`
-    const value = propMetadata.propertyStatus.set ? propMetadata.value : undefined
     const controlOptions = useKeepReferenceEqualityIfPossible({
       minimum: controlDescription.min,
       maximum: controlDescription.max,
@@ -492,10 +499,33 @@ const NumberWithSliderControl = React.memo(
 
 export const StringInputPropertyControl = React.memo(
   (props: ControlForPropProps<StringInputControlDescription>) => {
-    const { propName, propMetadata, controlDescription } = props
+    const { propName, propMetadata } = props
 
     const controlId = `${propName}-string-input-property-control`
-    const value = propMetadata.propertyStatus.set ? propMetadata.value : undefined
+    const value = useEditorState(
+      Substores.metadata,
+      (store) => {
+        // if the target prop is children, dig for its value
+        if (propName === 'children') {
+          const element = MetadataUtils.findElementByElementPath(
+            store.editor.jsxMetadata,
+            props.elementPath,
+          )
+          if (element != null && isRight(element.element) && isJSXElement(element.element.value)) {
+            const child = element.element.value.children[0]
+            switch (child.type) {
+              case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+                return child.originalJavascript
+              case 'JSX_TEXT_BLOCK':
+                return child.text
+            }
+          }
+        }
+
+        return propMetadata.propertyStatus.set ? propMetadata.value : undefined
+      },
+      'StringInputPropertyControl value',
+    )
 
     const safeValue = value ?? ''
 
@@ -567,7 +597,10 @@ export const JSXPropertyControl = React.memo(
     const controlStyles = getControlStyles(controlStatus)
     const value = propMetadata.propertyStatus.set ? propMetadata.value : undefined
 
-    const safeValue: JSXParsedValue = value ?? { type: 'unknown', name: 'JSX' }
+    const safeValue: JSXParsedValue =
+      props.propName === 'children'
+        ? { type: 'internal-component', name: 'JSX' }
+        : value ?? { type: 'unknown', name: 'JSX' }
 
     return (
       <div

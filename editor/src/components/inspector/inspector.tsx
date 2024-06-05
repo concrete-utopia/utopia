@@ -782,8 +782,29 @@ export const InspectorContextProvider = React.memo<{
   const onSubmitValueForHooks = React.useCallback(
     (newValue: JSExpression, path: PropertyPath, transient: boolean) => {
       const actionsArray = [
-        ...refElementsToTargetForUpdates.current.map((elem) => {
-          return setProp_UNSAFE(elem, path, newValue)
+        ...refElementsToTargetForUpdates.current.flatMap((elem): EditorAction[] => {
+          // if the target is the children prop, replace the elements instead
+          if (path.propertyElements[0] === 'children') {
+            const element = MetadataUtils.findElementByElementPath(jsxMetadata, elem)
+            const children =
+              element != null && isRight(element.element) && isJSXElement(element.element.value)
+                ? element.element.value.children
+                : []
+
+            return [
+              // replace the first child
+              EditorActions.replaceElementInScope(elem, {
+                type: 'replace-child-with-uid',
+                uid: children[0].uid,
+                replaceWith: newValue,
+              }),
+              // get rid of all the others
+              ...children
+                .slice(1)
+                .map((child) => EditorActions.deleteView(EP.appendToPath(elem, child.uid))),
+            ]
+          }
+          return [setProp_UNSAFE(elem, path, newValue)]
         }),
       ]
       const actions: EditorAction[] = transient
@@ -791,7 +812,7 @@ export const InspectorContextProvider = React.memo<{
         : actionsArray
       dispatch(actions, 'everyone')
     },
-    [dispatch, refElementsToTargetForUpdates],
+    [dispatch, refElementsToTargetForUpdates, jsxMetadata],
   )
 
   const onUnsetValue = React.useCallback(
