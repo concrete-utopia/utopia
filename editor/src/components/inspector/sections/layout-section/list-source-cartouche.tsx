@@ -20,9 +20,13 @@ import {
   DataPickerPreferredAllAtom,
   jsxElementChildToValuePath,
 } from '../component-section/data-picker-utils'
-import { useVariablesInScopeForSelectedElement } from '../component-section/variables-in-scope-utils'
+import {
+  getCartoucheDataTypeForExpression,
+  useVariablesInScopeForSelectedElement,
+} from '../component-section/variables-in-scope-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { traceDataFromElement, dataPathSuccess } from '../../../../core/data-tracing/data-tracing'
+import type { CartoucheDataType } from '../component-section/cartouche-ui'
 
 function filterVariableOption(option: DataPickerOption): DataPickerOption | null {
   switch (option.type) {
@@ -153,6 +157,24 @@ export const MapListSourceCartouche = React.memo((props: MapListSourceCartoucheP
     'ListSection isDataComingFromHookResult',
   )
 
+  const cartoucheDataType: CartoucheDataType = useEditorState(
+    Substores.projectContentsAndMetadataAndVariablesInScope,
+    (store) => {
+      if (
+        originalMapExpression === 'multiselect' ||
+        originalMapExpression === 'not-a-mapexpression'
+      ) {
+        return 'unknown'
+      }
+      return getCartoucheDataTypeForExpression(
+        target,
+        originalMapExpression.valueToMap,
+        store.editor.variablesInScope,
+      )
+    },
+    'MapListSourceCartouche cartoucheDataType',
+  )
+
   if (originalMapExpression === 'multiselect' || originalMapExpression === 'not-a-mapexpression') {
     return null
   }
@@ -183,7 +205,7 @@ export const MapListSourceCartouche = React.memo((props: MapListSourceCartoucheP
         safeToDelete={false}
         testId='list-source-cartouche'
         contentIsComingFromServer={isDataComingFromHookResult}
-        datatype='array' // this is by definition an array, otherwise it wouldn't be a map expression
+        datatype={cartoucheDataType}
       />
     </div>
   )
