@@ -83,10 +83,14 @@ import { getFilePathForImportedComponent } from '../../../../core/model/project-
 import { safeIndex } from '../../../../core/shared/array-utils'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { usePopper } from 'react-popper'
-import type { JSExpressionOtherJavaScript } from '../../../../core/shared/element-template'
+import type {
+  ElementInstanceMetadataMap,
+  JSExpressionOtherJavaScript,
+} from '../../../../core/shared/element-template'
 import {
   getJSXElementNameAsString,
   isImportedOrigin,
+  isJSXElement,
 } from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import type { DataPickerCallback, DataPickerOption, ObjectPath } from './data-picker-utils'
@@ -100,6 +104,9 @@ import { useVariablesInScopeForSelectedElement } from './variables-in-scope-util
 import { useAtom } from 'jotai'
 import { DataSelectorModal } from './data-selector-modal'
 import { getModifiableJSXAttributeAtPath } from '../../../../core/shared/jsx-attribute-utils'
+import { DataReferenceCartoucheControl } from './data-reference-cartouche'
+import { renderedAtChildNode } from '../../../editor/store/editor-state'
+import { isRight } from '../../../../core/shared/either'
 
 export interface PropertyLabelAndPlusButtonProps {
   title: string
@@ -184,6 +191,30 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
   const hasDefaultValue: boolean = 'defaultValue' in props.controlDescription
   const safeToDelete = !isRequired || hasDefaultValue
 
+  const isChildren = React.useMemo(() => {
+    return (
+      props.propName === 'children' &&
+      props.propMetadata.attributeExpression?.type === 'ATTRIBUTE_NOT_FOUND'
+    )
+  }, [props.propName, props.propMetadata.attributeExpression])
+
+  const maybeDataRefElement = useEditorState(
+    Substores.metadata,
+    (store) => {
+      if (isChildren) {
+        const element = MetadataUtils.findElementByElementPath(
+          store.editor.jsxMetadata,
+          props.elementPath,
+        )
+        if (element != null && isRight(element.element) && isJSXElement(element.element.value)) {
+          return element.element.value.children[0]
+        }
+      }
+      return null
+    },
+    'ControlForProp maybeDataRefElement',
+  )
+
   const onDeleteCartouche = React.useCallback(() => {
     if (safeToDelete) {
       if (isRequired) {
@@ -250,6 +281,18 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
         )
       }
     }
+  }
+
+  if (isChildren && maybeDataRefElement != null) {
+    return (
+      <DataReferenceCartoucheControl
+        elementPath={props.elementPath}
+        renderedAt={renderedAtChildNode(props.elementPath, maybeDataRefElement.uid)}
+        surroundingScope={props.elementPath}
+        childOrAttribute={maybeDataRefElement}
+        selected={false}
+      />
+    )
   }
 
   switch (controlDescription.control) {
@@ -406,6 +449,7 @@ interface RowForBaseControlProps extends AbstractRowForControlProps {
 }
 
 function setPropertyFromDataPickerActions(
+  metadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
   propertyPath: PropertyPath,
   expression: JSExpressionOtherJavaScript,
@@ -415,6 +459,25 @@ function setPropertyFromDataPickerActions(
     return null
   }
 
+  // If the target replacement is the children property and the element has children,
+  // replace the children directly instead of its prop.
+  const isReplacingChildren =
+    propertyPath.propertyElements.length === 1 && propertyPath.propertyElements[0] === 'children'
+  if (isReplacingChildren) {
+    // …and the element has children…
+    const maybeFirstChildUid = MetadataUtils.getFirstElementChildUidOrNull(metadata, target)
+    if (maybeFirstChildUid != null) {
+      return [
+        replaceElementInScope(target, {
+          type: 'replace-child-with-uid',
+          uid: maybeFirstChildUid,
+          replaceWith: expression,
+        }),
+      ]
+    }
+  }
+
+  // In all other cases, replace the prop.
   return [
     replaceElementInScope(target, {
       type: 'replace-property-value',
@@ -435,6 +498,12 @@ function useDataPickerButtonInComponentSection(
     selectedViews.at(0) ?? EP.emptyElementPath,
     propertyPath,
     preferredAllState,
+  )
+
+  const metadata = useEditorState(
+    Substores.metadata,
+    (store) => store.editor.jsxMetadata,
+    'useDataPickerButtonInComponentSection metadata',
   )
 
   const pathToCurrentValue = useEditorState(
@@ -473,7 +542,11 @@ function useDataPickerButtonInComponentSection(
 
   const dataPickerButtonData = useDataPickerButton(
     variableNamesInScope,
-    (e) => optionalMap(dispatch, setPropertyFromDataPickerActions(selectedViews, propertyPath, e)),
+    (e) =>
+      optionalMap(
+        dispatch,
+        setPropertyFromDataPickerActions(metadata, selectedViews, propertyPath, e),
+      ),
     pathToCurrentValue,
     selectedViews.at(0) ?? null,
   )

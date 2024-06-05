@@ -29,6 +29,7 @@ interface FolderSectionProps {
   setGlobalCursor: (cursor: CSSCursor | null) => void
   showHiddenControl: (path: string) => void
   title?: string
+  propsToIgnore: string[]
 }
 
 export const FolderSection = React.memo((props: FolderSectionProps) => {

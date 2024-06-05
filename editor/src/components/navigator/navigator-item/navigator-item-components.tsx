@@ -32,6 +32,7 @@ import {
 import { getRegisteredComponent } from '../../../core/property-controls/property-controls-utils'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../../../core/shared/dom-utils'
 import { ExpandableIndicator } from './expandable-indicator'
+import { elementSupportsChildrenFromPropertyControls } from '../../editor/element-supports-children'
 
 export const NavigatorHintCircleDiameter = 8
 
@@ -205,51 +206,6 @@ export const VisibilityIndicator: React.FunctionComponent<
   )
 })
 
-const useSupportsChildren = (target: ElementPath): boolean => {
-  const targetElement = useEditorState(
-    Substores.metadata,
-    (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, target),
-    'useSupportsChildren targetElement',
-  )
-
-  return useEditorState(
-    Substores.restOfEditor,
-    (store) => {
-      const targetJSXElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(targetElement)
-      if (targetJSXElement == null) {
-        // this should not happen, erring on the side of true
-        return true
-      }
-      if (isIntrinsicHTMLElement(targetJSXElement.name)) {
-        // when it is an intrinsic html element, we check if it supports children from our list
-        return intrinsicHTMLElementNamesThatSupportChildren.includes(
-          targetJSXElement.name.baseVariable,
-        )
-      }
-
-      const elementImportInfo = targetElement?.importInfo
-      if (elementImportInfo == null) {
-        // erring on the side of true
-        return true
-      }
-
-      const targetName = getJSXElementNameAsString(targetJSXElement.name)
-      const registeredComponent = getRegisteredComponent(
-        targetName,
-        elementImportInfo.filePath,
-        store.editor.propertyControlsInfo,
-      )
-      if (registeredComponent == null) {
-        // when there is no component annotation default is supporting children
-        return true
-      }
-
-      return registeredComponent.supportsChildren
-    },
-    'useSupportsChildren supportsChildren',
-  )
-}
-
 interface AddChildButtonProps {
   target: ElementPath
   iconColor: IcnProps['color']
@@ -261,7 +217,17 @@ export function addChildButtonTestId(target: ElementPath): string {
 
 const AddChildButton = React.memo((props: AddChildButtonProps) => {
   const { target, iconColor } = props
-  const supportsChildren = useSupportsChildren(target)
+  const supportsChildren = useEditorState(
+    Substores.metadataAndPropertyControlsInfo,
+    (store) =>
+      elementSupportsChildrenFromPropertyControls(
+        store.editor.jsxMetadata,
+        store.editor.propertyControlsInfo,
+        target,
+      ),
+    'AddChildButton supportsChildren',
+  )
+
   const onClick = useCreateCallbackToShowComponentPicker()(
     [target],
     EditorActions.insertAsChildTarget(),

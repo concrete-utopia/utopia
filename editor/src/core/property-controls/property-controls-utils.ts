@@ -224,7 +224,7 @@ export function hasStyleControls(propertyControls: PropertyControls): boolean {
   return propertyControls['style']?.control === 'style-controls'
 }
 
-export const specialPropertiesToIgnore: Array<string> = ['style', 'children']
+export const specialPropertiesToIgnore: Array<string> = ['style']
 
 export type InspectorSectionPreference = 'layout' | 'layout-system' | 'visual' | 'typography'
 

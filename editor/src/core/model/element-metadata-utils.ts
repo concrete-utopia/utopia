@@ -2525,6 +2525,18 @@ export const MetadataUtils = {
         assertNever(element)
     }
   },
+  getFirstElementChildUidOrNull(
+    metadata: ElementInstanceMetadataMap,
+    path: ElementPath,
+  ): string | null {
+    const element = MetadataUtils.findElementByElementPath(metadata, path)
+    return element != null &&
+      isRight(element.element) &&
+      isJSXElement(element.element.value) &&
+      element.element.value.children.length > 0
+      ? element.element.value.children[0].uid
+      : null
+  },
 }
 
 function getNonExpressionDescendantsInner(
