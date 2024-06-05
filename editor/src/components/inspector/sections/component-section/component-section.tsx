@@ -205,6 +205,8 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
     showHiddenControl,
   ])
 
+  const attributeExpression = props.propMetadata.attributeExpression
+
   const datatypeForExpression = useEditorState(
     Substores.projectContentsAndMetadataAndVariablesInScope,
     (store) => {
@@ -223,8 +225,6 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
   if (controlDescription == null) {
     return null
   }
-
-  const attributeExpression = props.propMetadata.attributeExpression
 
   if (attributeExpression != null) {
     if (
