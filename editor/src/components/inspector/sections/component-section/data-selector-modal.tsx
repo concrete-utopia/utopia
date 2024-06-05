@@ -434,13 +434,12 @@ export const DataSelectorModal = React.memo(
                       data-testid={DataSelectorPopupBreadCrumbsTestId}
                       style={{ flexWrap: 'wrap', flexGrow: 1 }}
                     >
-                      {pathBreadcrumbs(selectedPath ?? [], processedVariablesInScope).map(
-                        ({ segment, path }, idx) => (
-                          <span key={path.toString()}>
-                            {idx === 0 ? segment : pathSegmentToString(segment)}
-                          </span>
-                        ),
-                      )}
+                      <span>
+                        {selectedPathToTargetInputField(
+                          selectedPath ?? [],
+                          processedVariablesInScope,
+                        )}
+                      </span>
                     </FlexRow>
                     <div
                       style={{
@@ -748,6 +747,18 @@ function childVars(option: DataPickerOption, indices: ArrayIndexLookup): DataPic
     default:
       assertNever(option)
   }
+}
+
+function selectedPathToTargetInputField(
+  valuePath: DataPickerOption['valuePath'] | null,
+  processedVariablesInScope: ProcessedVariablesInScope,
+): string {
+  if (valuePath == null) {
+    return ''
+  }
+
+  const variable = processedVariablesInScope[valuePath.toString()]
+  return variable?.variableInfo.expression ?? ''
 }
 
 function pathBreadcrumbs(
