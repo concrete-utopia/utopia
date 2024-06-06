@@ -60,9 +60,10 @@ export interface BasicControlOption<T> {
   label: string
 }
 
-export interface BasicControlOptionWithUserLabel<T> {
+export interface BasicControlOptionWithIcon<T> {
   value: T
-  label: string | React.ReactNode
+  label: string
+  icon?: React.ReactNode
 }
 
 export type BasicControlOptions<T> = AllowedEnumType[] | BasicControlOption<T>[]
@@ -169,9 +170,9 @@ export interface RadioControlDescription {
   control: 'radio'
   label?: string
   visibleByDefault?: boolean
-  options: AllowedEnumType[] | BasicControlOptionWithUserLabel<unknown>[]
+  options: AllowedEnumType[] | BasicControlOptionWithIcon<unknown>[]
   required?: boolean
-  defaultValue?: AllowedEnumType | BasicControlOptionWithUserLabel<unknown>
+  defaultValue?: AllowedEnumType | BasicControlOptionWithIcon<unknown>
   folder?: string
 }
 

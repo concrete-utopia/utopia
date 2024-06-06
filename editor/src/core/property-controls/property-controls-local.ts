@@ -4,6 +4,7 @@ import type {
   PropertyControls as PropertyControlsFromUtopiaAPI,
   RadioControlDescription as RadioControlDescriptionFromUtopia,
   AllowedEnumType as AllowedEnumTypeFromUtopia,
+  BasicControlOptionWithIcon as BasicControlOptionWithIconFromUtopia,
   ComponentToRegister,
   ComponentInsertOption,
   ComponentExample,
@@ -13,7 +14,6 @@ import type {
   SectionSpec,
   Display,
   InspectorSpec,
-  BasicControlOptionWithUserLabel,
 } from 'utopia-api/core'
 import {
   DisplayOptions,
@@ -754,29 +754,20 @@ function parseAllowedEnumType(option: AllowedEnumTypeFromUtopia): RadioControlOp
 }
 
 function parseBasicControlOptionWithIcon(
-  option: BasicControlOptionWithUserLabel<unknown>,
+  option: BasicControlOptionWithIconFromUtopia<unknown>,
 ): RadioControlOption<unknown> {
-  if (typeof option.label === 'string') {
-    return {
-      type: 'control-option-with-label',
-      option: {
-        label: option.label,
-        value: option.value,
-      },
-    }
-  }
-
   return {
-    type: 'control-option-with-user-label',
+    type: 'control-option-with-icon',
     option: {
+      label: option.label,
       value: option.value,
-      icon: option.label ?? null,
+      icon: option.icon ?? null,
     },
   }
 }
 
 function isAllowedEnumType(
-  option: AllowedEnumTypeFromUtopia | BasicControlOptionWithUserLabel<unknown>,
+  option: AllowedEnumTypeFromUtopia | BasicControlOptionWithIconFromUtopia<unknown>,
 ): option is AllowedEnumTypeFromUtopia {
   return (
     typeof option === 'string' ||
@@ -788,7 +779,7 @@ function isAllowedEnumType(
 }
 
 function parseRadioControlOptions(
-  options: AllowedEnumTypeFromUtopia[] | BasicControlOptionWithUserLabel<unknown>[],
+  options: AllowedEnumTypeFromUtopia[] | BasicControlOptionWithIconFromUtopia<unknown>[],
 ): Either<string, RadioControlOption<unknown>[]> {
   const allowedEnumTypes = sequenceEither(
     options.map(

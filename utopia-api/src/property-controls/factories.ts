@@ -3,7 +3,6 @@ import type {
   ArrayControlDescription,
   BaseControlDescription,
   BasicControlOption,
-  BasicControlOptionWithUserLabel,
   BasicControlOptions,
   CheckboxControlDescription,
   ColorControlDescription,
@@ -185,7 +184,7 @@ export function popupListControl(
 
 export function radioControl(
   options: BasicControlOptions<unknown>,
-  baseOptions?: PropertyControlsOptions<AllowedEnumType | BasicControlOptionWithUserLabel<unknown>>,
+  baseOptions?: PropertyControlsOptions<AllowedEnumType | BasicControlOption<unknown>>,
 ): RadioControlDescription {
   let result: RadioControlDescription = {
     control: 'radio',

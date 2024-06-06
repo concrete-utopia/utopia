@@ -177,10 +177,11 @@ describe('RadioControlDescription', () => {
     control: 'radio',
     options: [
       {
-        type: 'control-option-with-label',
+        type: 'control-option-with-icon',
         option: {
           value: validValue,
           label: 'Label',
+          icon: null,
         },
       },
     ],

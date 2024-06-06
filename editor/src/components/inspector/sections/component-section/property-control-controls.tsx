@@ -364,6 +364,38 @@ export const NumberInputPropertyControl = React.memo(
   },
 )
 
+function valueFromRadioControlOption(option: RadioControlOption<unknown>): unknown {
+  switch (option.type) {
+    case 'allowed-enum-type':
+      return option.allowedEnumType
+    case 'control-option-with-icon':
+      return option.option.value
+    default:
+      assertNever(option)
+  }
+}
+
+function labelFromRadioControlOption(option: RadioControlOption<unknown>): string {
+  switch (option.type) {
+    case 'allowed-enum-type':
+      return `${option.allowedEnumType}`
+    case 'control-option-with-icon':
+      return option.option.label
+    default:
+      assertNever(option)
+  }
+}
+
+function iconFromRadioControlOption(
+  option: RadioControlOption<unknown>,
+): OptionChainOption<unknown>['iconComponent'] {
+  if (option.type === 'allowed-enum-type') {
+    return undefined
+  }
+
+  return option.option.icon
+}
+
 export const RadioPropertyControl = React.memo(
   (props: ControlForPropProps<RadioControlDescription>) => {
     const { propName, propMetadata, controlDescription } = props
@@ -376,15 +408,10 @@ export const RadioPropertyControl = React.memo(
 
     const options: Array<OptionChainOption<unknown>> = useKeepReferenceEqualityIfPossible(
       controlOptions.map((option) => {
-        switch (option.type) {
-          case 'allowed-enum-type':
-            return { value: option, label: `${option.allowedEnumType}` }
-          case 'control-option-with-label':
-            return { value: option, label: option.option.label }
-          case 'control-option-with-user-label':
-            return { value: option, label: '', iconComponent: option.option.icon }
-          default:
-            assertNever(option)
+        return {
+          value: valueFromRadioControlOption(option),
+          label: labelFromRadioControlOption(option),
+          iconComponent: iconFromRadioControlOption(option),
         }
       }),
     )
