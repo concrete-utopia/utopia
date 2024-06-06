@@ -13,6 +13,7 @@ import Utils from '../../../utils/utils'
 export interface OptionChainOption<T> {
   value: T
   icon?: IcnProps
+  iconComponent?: React.ReactNode
   label?: string
   tooltip?: string
   forceCallOnSubmitValue?: boolean // Call the onSubmitValue again even when the control is already on that value
@@ -86,6 +87,7 @@ export const OptionChainControl: React.FunctionComponent<
             DEPRECATED_controlOptions={{
               tooltip: option.tooltip,
               icon: option.icon,
+              iconComponent: option.iconComponent,
               labelInner: option.label,
             }}
             value={props.value === option.value}

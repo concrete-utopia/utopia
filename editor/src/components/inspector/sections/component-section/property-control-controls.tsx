@@ -388,23 +388,12 @@ function labelFromRadioControlOption(option: RadioControlOption<unknown>): strin
 
 function iconFromRadioControlOption(
   option: RadioControlOption<unknown>,
-): OptionChainOption<unknown>['icon'] {
-  if (option.type === 'allowed-enum-type' || option.option.icon == null) {
+): OptionChainOption<unknown>['iconComponent'] {
+  if (option.type === 'allowed-enum-type') {
     return undefined
   }
 
-  switch (option.option.icon) {
-    case 'arrow-up':
-      return { type: 'codymccodeface-larger', color: 'main', width: 18, height: 18 }
-    case 'arrow-down':
-      return { type: 'nodymcnodeface-larger', color: 'main', width: 18, height: 18 }
-    case 'arrow-left':
-      return { type: 'designtool-larger', color: 'main', width: 18, height: 18 }
-    case 'arrow-right':
-      return { type: 'playbutton-larger', color: 'main', width: 18, height: 18 }
-    default:
-      return assertNever(option.option.icon)
-  }
+  return option.option.icon
 }
 
 export const RadioPropertyControl = React.memo(
@@ -422,7 +411,7 @@ export const RadioPropertyControl = React.memo(
         return {
           value: valueFromRadioControlOption(option),
           label: labelFromRadioControlOption(option),
-          icon: iconFromRadioControlOption(option),
+          iconComponent: iconFromRadioControlOption(option),
         }
       }),
     )

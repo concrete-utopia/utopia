@@ -119,7 +119,7 @@ const parseBasicControlOptionsWithIcon: Parser<
       objectParser<BasicControlOptionWithIcon<unknown>>({
         label: parseString,
         value: parseAny,
-        icon: optionalProp(parseEnum(PropertyControlIcons)),
+        icon: optionalProp(parseAny),
       }),
     ),
   ],

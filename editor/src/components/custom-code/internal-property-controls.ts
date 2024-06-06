@@ -50,7 +50,7 @@ export interface BasicControlOption<T> {
 export interface BasicControlOptionWithIcon<T> {
   value: T
   label: string
-  icon: PropertyControlIcon | null
+  icon: React.ReactNode | null
 }
 
 export type BasicControlOptions<T> = AllowedEnumType[] | BasicControlOption<T>[]
