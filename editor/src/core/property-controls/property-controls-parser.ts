@@ -33,7 +33,6 @@ import {
   type Matrix4,
   type PreferredContents,
   type BasicControlOptionWithIcon,
-  PropertyControlIcons,
 } from 'utopia-api/core'
 import { parseColor } from '../../components/inspector/common/css-utils'
 import type { Parser, ParseResult } from '../../utils/value-parser-utils'
@@ -51,7 +50,6 @@ import {
   parseArray,
   parseBoolean,
   parseConstant,
-  parseEnum,
   parseNull,
   parseNumber,
   parseObject,

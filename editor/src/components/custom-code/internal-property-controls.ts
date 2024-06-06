@@ -1,6 +1,5 @@
 import type { CSSProperties } from 'react'
 import type { ComponentInfo } from './code-file'
-import type { PropertyControlIcon } from 'utopia-api/core'
 
 interface GenericControlProps<T> {
   label?: string
