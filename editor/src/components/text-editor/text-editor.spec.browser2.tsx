@@ -221,7 +221,7 @@ describe('Use the text editor', () => {
       const { before, after } = await testModifierExpectingWayTooManySavesTheFirstTime(
         cmdModifier,
         'b',
-        projectWithoutTextWithExtraStyle({ font: 'bold 1.2em "Fira Sans"' }),
+        projectWithCustomTextAndExtraStyle('', { font: 'bold 1.2em "Fira Sans"' }),
       )
       expect(before).toEqual(
         projectWithStyle({ fontWeight: 'normal' }, { font: 'bold 1.2em "Fira Sans"' }),
@@ -240,7 +240,7 @@ describe('Use the text editor', () => {
       const { before, after } = await testModifierExpectingWayTooManySavesTheFirstTime(
         cmdModifier,
         'i',
-        projectWithoutTextWithExtraStyle({ font: 'italic 1.2em "Fira Sans"' }),
+        projectWithCustomTextAndExtraStyle('', { font: 'italic 1.2em "Fira Sans"' }),
       )
       expect(before).toEqual(
         projectWithStyle({ fontStyle: 'normal' }, { font: 'italic 1.2em "Fira Sans"' }),
@@ -675,7 +675,7 @@ describe('Use the text editor', () => {
   describe('elements with custom css', () => {
     it('allows leading spaces while editing text-wrap:pretty', async () => {
       const editor = await renderTestEditorWithCode(
-        projectWithoutTextWithExtraStyle({ textWrap: 'pretty' }),
+        projectWithCustomTextAndExtraStyle('', { textWrap: 'pretty' }),
         'await-first-dom-report',
       )
 
@@ -2579,7 +2579,10 @@ export var storyboard = (
 )
 `)
 
-function projectWithoutTextWithExtraStyle(extraStyleProps: { [prop: string]: string }) {
+function projectWithCustomTextAndExtraStyle(
+  text: string,
+  extraStyleProps: { [prop: string]: string },
+) {
   const styleProps = {
     backgroundColor: '#0091FFAA',
     position: 'absolute',
@@ -2600,7 +2603,7 @@ function projectWithoutTextWithExtraStyle(extraStyleProps: { [prop: string]: str
           data-testid='div'
           style={${JSON.stringify(styleProps)}}
           data-uid='39e'
-        />
+        >${text}</div>
       </Storyboard>
     )
   `)
