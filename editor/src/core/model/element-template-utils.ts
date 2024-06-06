@@ -88,6 +88,7 @@ import { MetadataUtils } from './element-metadata-utils'
 import { mapValues } from '../shared/object-utils'
 import type { PropertyControlsInfo } from '../../components/custom-code/code-file'
 import { getComponentDescriptorForTarget } from '../property-controls/property-controls-utils'
+import { withUnderlyingTarget } from '../../components/editor/store/editor-state'
 
 export function generateUidWithExistingComponents(projectContents: ProjectContentTreeRoot): string {
   const mockUID = generateMockNextGeneratedUID()
@@ -1656,4 +1657,17 @@ export function findContainingComponentForPath(
   }
 
   return null
+}
+
+export function findContainingComponentForPathInProjectContents(
+  elementPath: ElementPath,
+  projectContents: ProjectContentTreeRoot,
+): UtopiaJSXComponent | null {
+  return withUnderlyingTarget(elementPath, projectContents, null, (success) => {
+    const containingComponent = findContainingComponentForPath(
+      success.topLevelElements,
+      elementPath,
+    )
+    return containingComponent
+  })
 }

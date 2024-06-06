@@ -33,7 +33,6 @@ import type {
   JSExpressionMapOrOtherJavascript,
   JSExpressionOtherJavaScript,
   JSXElement,
-  FunctionWrap,
 } from '../../shared/element-template'
 import {
   destructuredArray,
@@ -55,7 +54,6 @@ import {
   unparsedCode,
   emptyComments,
   canBeRootElementOfComponent,
-  simpleFunctionWrap,
 } from '../../shared/element-template'
 import { messageisFatal } from '../../shared/error-messages'
 import { memoize } from '../../shared/memoize'
@@ -125,6 +123,8 @@ import type { Optic } from '../../../core/shared/optics/optics'
 import { modify } from '../../../core/shared/optics/optic-utilities'
 import { identifyValuesDefinedInNode } from './parser-printer-expressions'
 import { isParseableFile } from '../../shared/file-utils'
+import type { FunctionWrap } from 'utopia-shared/src/types/element-template'
+import { simpleFunctionWrap } from 'utopia-shared/src/types/element-template'
 
 const BakedInStoryboardVariableName = 'storyboard'
 

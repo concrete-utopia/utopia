@@ -143,8 +143,6 @@ import type {
   JSOpaqueArbitraryStatement,
   JSAssignmentStatement,
   JSAssignment,
-  FunctionWrap,
-  SimpleFunctionWrap,
 } from '../../../core/shared/element-template'
 import {
   elementInstanceMetadata,
@@ -216,8 +214,6 @@ import {
   jsAssignmentStatement,
   jsAssignment,
   jsxMapExpression,
-  isSimpleFunctionWrap,
-  simpleFunctionWrap,
 } from '../../../core/shared/element-template'
 import type {
   CanvasRectangle,
@@ -608,6 +604,8 @@ import type { OnlineState } from '../online-status'
 import { onlineState } from '../online-status'
 import type { NavigatorRow } from '../../navigator/navigator-row'
 import { condensedNavigatorRow, regularNavigatorRow } from '../../navigator/navigator-row'
+import type { SimpleFunctionWrap, FunctionWrap } from 'utopia-shared/src/types'
+import { simpleFunctionWrap, isSimpleFunctionWrap } from 'utopia-shared/src/types'
 
 export function ElementPropertyPathKeepDeepEquality(): KeepDeepEqualityCall<ElementPropertyPath> {
   return combine2EqualityCalls(

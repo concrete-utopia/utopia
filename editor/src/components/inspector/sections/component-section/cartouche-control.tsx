@@ -8,6 +8,7 @@ import type { ElementPath, PropertyPath } from '../../../../core/shared/project-
 import * as EPP from '../../../template-property-path'
 import { dataPathSuccess, traceDataFromProp } from '../../../../core/data-tracing/data-tracing'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
+import type { CartoucheDataType } from './cartouche-ui'
 
 interface IdentifierExpressionCartoucheControlProps {
   contents: string
@@ -19,6 +20,7 @@ interface IdentifierExpressionCartoucheControlProps {
   testId: string
   propertyPath: PropertyPath
   elementPath: ElementPath
+  datatype: CartoucheDataType
 }
 export const IdentifierExpressionCartoucheControl = React.memo(
   (props: IdentifierExpressionCartoucheControlProps) => {
@@ -47,6 +49,7 @@ export const IdentifierExpressionCartoucheControl = React.memo(
         testId={testId}
         inverted={false}
         contentIsComingFromServer={isDataComingFromHookResult}
+        datatype={props.datatype}
       />
     )
   },
