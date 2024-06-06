@@ -68,7 +68,6 @@ import { assertNever } from '../../../../core/shared/utils'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { isRight } from '../../../../core/shared/either'
 import { parseNumber } from '../../../../core/shared/math-utils'
-import * as EP from '../../../../core/shared/element-path'
 
 export interface ControlForPropProps<T extends RegularControlDescription> {
   propPath: PropertyPath
@@ -82,12 +81,21 @@ export interface ControlForPropProps<T extends RegularControlDescription> {
   elementPath: ElementPath
 }
 
+function getValueOrUndefinedFromPropMetadata(propMetadata: InspectorInfoWithRawValue<any>): any {
+  // NOTE: render props and props.children (which are displayed in the inspector
+  // as of https://github.com/concrete-utopia/utopia/pull/5839) don't use the same
+  // underlying data source, so there can be discrepancies in the values.
+  // Think about unifying the data sources if you touch this.
+  return propMetadata.propertyStatus.set ? propMetadata.value : undefined
+}
+
 export const CheckboxPropertyControl = React.memo(
   (props: ControlForPropProps<CheckboxControlDescription>) => {
     const { propName, propMetadata, controlDescription } = props
 
     const controlId = `${propName}-checkbox-property-control`
-    const value = propMetadata.propertyStatus.set ? propMetadata.value : undefined
+
+    const value = getValueOrUndefinedFromPropMetadata(propMetadata) ?? false
 
     return (
       <BooleanControl
@@ -109,7 +117,8 @@ export const ColorPropertyControl = React.memo(
     const { propName, propMetadata, controlDescription } = props
 
     const controlId = `${propName}-color-property-control`
-    const rawValue = propMetadata.propertyStatus.set ? propMetadata.value : undefined
+
+    const rawValue = getValueOrUndefinedFromPropMetadata(propMetadata)
 
     const value = rawValue ?? defaultCSSColor
 
@@ -149,7 +158,7 @@ export const ExpressionInputPropertyControl = React.memo(
     )
 
     const controlId = `${propName}-expression-input-property-control`
-    const value = propMetadata.propertyStatus.set ? propMetadata.value : undefined
+    const value = getValueOrUndefinedFromPropMetadata(propMetadata)
     const controlStyles = useKeepReferenceEqualityIfPossible({
       ...propMetadata.controlStyles,
       showContent: true,
@@ -203,7 +212,7 @@ function labelForIndividualOption(option: IndividualOption): string {
 export const PopUpListPropertyControl = React.memo(
   (props: ControlForPropProps<PopUpListControlDescription>) => {
     const { propMetadata, controlDescription } = props
-    const value = propMetadata.propertyStatus.set ? propMetadata.value : undefined
+    const value = getValueOrUndefinedFromPropMetadata(propMetadata)
 
     // TS baulks at the map below for some reason if we don't first do this
     const controlOptions: Array<IndividualOption> = controlDescription.options
@@ -363,7 +372,7 @@ export const NumberInputPropertyControl = React.memo(
           return undefined
         }
 
-        return propMetadata.propertyStatus.set ? propMetadata.value : undefined
+        return getValueOrUndefinedFromPropMetadata(propMetadata)
       },
       'NumberInputPropertyControl value',
     )
@@ -431,7 +440,7 @@ export const RadioPropertyControl = React.memo(
     const { propName, propMetadata, controlDescription } = props
 
     const controlId = `${propName}-radio-property-control`
-    const value = propMetadata.propertyStatus.set ? propMetadata.value : undefined
+    const value = getValueOrUndefinedFromPropMetadata(propMetadata)
 
     // TS baulks at the map below for some reason if we don't first do this
     const controlOptions: RadioControlDescription['options'] = controlDescription.options
@@ -473,7 +482,7 @@ const NumberWithSliderControl = React.memo(
     const { propName, propMetadata, controlDescription } = props
 
     const controlId = `${propName}-slider-property-control`
-    const value = propMetadata.propertyStatus.set ? propMetadata.value : undefined
+    const value = getValueOrUndefinedFromPropMetadata(propMetadata) ?? 0
 
     return (
       <UIGridRow padded={false} variant={'<--------auto-------->|--45px--|'}>
@@ -540,7 +549,7 @@ export const StringInputPropertyControl = React.memo(
           return undefined
         }
 
-        return propMetadata.propertyStatus.set ? propMetadata.value : undefined
+        return getValueOrUndefinedFromPropMetadata(propMetadata)
       },
       'StringInputPropertyControl value',
     )
@@ -577,7 +586,7 @@ export const HtmlInputPropertyControl = React.memo(
     const { propName, propMetadata, controlDescription } = props
 
     const controlId = `${propName}-string-input-property-control`
-    const value = propMetadata.propertyStatus.set ? propMetadata.value : undefined
+    const value = getValueOrUndefinedFromPropMetadata(propMetadata)
 
     const safeValue = value ?? ''
 
@@ -613,7 +622,7 @@ export const JSXPropertyControl = React.memo(
     const theme = useColorTheme()
     const controlStatus = propMetadata.controlStatus
     const controlStyles = getControlStyles(controlStatus)
-    const value = propMetadata.propertyStatus.set ? propMetadata.value : undefined
+    const value = getValueOrUndefinedFromPropMetadata(propMetadata)
 
     const safeValue: JSXParsedValue =
       props.propName === 'children'
@@ -758,7 +767,7 @@ export const VectorPropertyControl = React.memo(
     const { propPath, propMetadata, controlDescription, setGlobalCursor } = props
 
     const propsArray: Array<Omit<NumberInputProps, 'id' | 'chained'>> = React.useMemo(() => {
-      const vectorValue = (propMetadata.propertyStatus.set ? propMetadata.value : undefined) ?? []
+      const vectorValue = getValueOrUndefinedFromPropMetadata(propMetadata) ?? []
 
       const keys = keysForVectorOfType(controlDescription.control)
       return propsArrayForCSSNumberArray(vectorValue, keys, propPath, propMetadata)
@@ -781,8 +790,8 @@ export const EulerPropertyControl = React.memo(
     const { propPath, propMetadata, controlDescription, setGlobalCursor } = props
 
     const values = React.useMemo(
-      () => (propMetadata.propertyStatus.set ? propMetadata.value : undefined) ?? [],
-      [propMetadata.propertyStatus.set, propMetadata.value],
+      () => getValueOrUndefinedFromPropMetadata(propMetadata) ?? [],
+      [propMetadata],
     )
 
     const numericPropsArray: Array<Omit<NumberInputProps, 'id' | 'chained'>> = React.useMemo(() => {
@@ -829,7 +838,7 @@ export const Matrix3PropertyControl = React.memo(
     const { propPath, propMetadata, controlDescription, setGlobalCursor } = props
 
     const propsArray: Array<Omit<NumberInputProps, 'id' | 'chained'>> = React.useMemo(() => {
-      const value = (propMetadata.propertyStatus.set ? propMetadata.value : undefined) ?? []
+      const value = getValueOrUndefinedFromPropMetadata(propMetadata) ?? []
 
       // prettier-ignore
       const keys = [
@@ -873,7 +882,7 @@ export const Matrix4PropertyControl = React.memo(
     const { propPath, propMetadata, controlDescription, setGlobalCursor } = props
 
     const propsArray: Array<Omit<NumberInputProps, 'id' | 'chained'>> = React.useMemo(() => {
-      const value = (propMetadata.propertyStatus.set ? propMetadata.value : undefined) ?? []
+      const value = getValueOrUndefinedFromPropMetadata(propMetadata) ?? []
 
       // prettier-ignore
       const keys = [
