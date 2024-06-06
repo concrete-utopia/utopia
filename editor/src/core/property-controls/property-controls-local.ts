@@ -117,7 +117,6 @@ import type { ScriptLine } from '../../third-party/react-error-overlay/utils/sta
 import { intrinsicHTMLElementNamesAsStrings } from '../shared/dom-utils'
 import { valueOrArrayToArray } from '../shared/array-utils'
 import { optionalMap } from '../shared/optional-utils'
-import { Icons } from '../../uuiui'
 
 const exportedNameSymbol = Symbol('__utopia__exportedName')
 const moduleNameSymbol = Symbol('__utopia__moduleName')

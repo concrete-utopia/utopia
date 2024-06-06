@@ -394,8 +394,7 @@ function iconFromRadioControlOption(
     return undefined
   }
 
-  const Component = Icons[option.option.icon]
-  return <Component />
+  return React.createElement(Icons[option.option.icon])
 }
 
 export const RadioPropertyControl = React.memo(
