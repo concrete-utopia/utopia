@@ -70,9 +70,7 @@ export function createComponentRendererComponent(params: {
   filePath: string
   mutableContextRef: React.MutableRefObject<MutableUtopiaCtxRefData>
 }): ComponentRendererComponent {
-  function Component() {
-    // eslint-disable-next-line prefer-rest-params
-    const functionArguments = Array.from(arguments)
+  const Component = (...functionArguments: Array<any>) => {
     // Attempt to determine which function argument is the "regular" props object/value.
     // Default it to the first if one is not identified by looking for some of our special keys.
     let regularPropsArgumentIndex: number = functionArguments.findIndex((functionArgument) => {

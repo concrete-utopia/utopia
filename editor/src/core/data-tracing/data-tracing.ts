@@ -279,67 +279,63 @@ function processJSPropertyAccessorsIntoDataTracingPath(
 }
 
 function propUsedByIdentifierOrAccess(
-  params: Array<Param>,
+  param: Param,
   originalIdentifier: JSIdentifier,
   pathDrillSoFar: DataPathPositiveResult,
 ): Either<string, { propertyName: string; modifiedPathDrillSoFar: DataPathPositiveResult }> {
-  for (const param of params) {
-    function getPropertyNameFromPathSoFar(): Either<
-      string,
-      { propertyName: string; modifiedPathDrillSoFar: DataPathPositiveResult }
-    > {
-      switch (pathDrillSoFar.type) {
-        case 'DATA_PATH_SUCCESS':
-          const propertyName = pathDrillSoFar.dataPath.at(0)
-          if (propertyName == null) {
-            return left('Path so far is empty.')
-          } else {
-            return right({
-              propertyName: propertyName,
-              modifiedPathDrillSoFar: dataPathSuccess(pathDrillSoFar.dataPath.slice(1)),
-            })
-          }
-        case 'DATA_PATH_NOT_POSSIBLE':
-          return left('Path is not available.')
-        default:
-          assertNever(pathDrillSoFar)
-      }
-    }
-    switch (param.boundParam.type) {
-      case 'REGULAR_PARAM': {
-        // in case of a regular prop param, first we want to match the param name to the original identifier
-        if (param.boundParam.paramName !== originalIdentifier.name) {
-          return left('identifier does not match the prop name')
+  function getPropertyNameFromPathSoFar(): Either<
+    string,
+    { propertyName: string; modifiedPathDrillSoFar: DataPathPositiveResult }
+  > {
+    switch (pathDrillSoFar.type) {
+      case 'DATA_PATH_SUCCESS':
+        const propertyName = pathDrillSoFar.dataPath.at(0)
+        if (propertyName == null) {
+          return left('Path so far is empty.')
+        } else {
+          return right({
+            propertyName: propertyName,
+            modifiedPathDrillSoFar: dataPathSuccess(pathDrillSoFar.dataPath.slice(1)),
+          })
         }
-
-        return getPropertyNameFromPathSoFar()
+      case 'DATA_PATH_NOT_POSSIBLE':
+        return left('Path is not available.')
+      default:
+        assertNever(pathDrillSoFar)
+    }
+  }
+  switch (param.boundParam.type) {
+    case 'REGULAR_PARAM': {
+      // in case of a regular prop param, first we want to match the param name to the original identifier
+      if (param.boundParam.paramName !== originalIdentifier.name) {
+        return left('identifier does not match the prop name')
       }
-      case 'DESTRUCTURED_OBJECT': {
-        for (const paramPart of param.boundParam.parts) {
-          if (paramPart.param.boundParam.type === 'REGULAR_PARAM') {
-            if (paramPart.param.boundParam.paramName === originalIdentifier.name) {
-              if (paramPart.param.dotDotDotToken) {
-                return getPropertyNameFromPathSoFar()
-              } else {
-                return right({
-                  propertyName: paramPart.param.boundParam.paramName,
-                  modifiedPathDrillSoFar: pathDrillSoFar,
-                })
-              }
+
+      return getPropertyNameFromPathSoFar()
+    }
+    case 'DESTRUCTURED_OBJECT': {
+      for (const paramPart of param.boundParam.parts) {
+        if (paramPart.param.boundParam.type === 'REGULAR_PARAM') {
+          if (paramPart.param.boundParam.paramName === originalIdentifier.name) {
+            if (paramPart.param.dotDotDotToken) {
+              return getPropertyNameFromPathSoFar()
+            } else {
+              return right({
+                propertyName: paramPart.param.boundParam.paramName,
+                modifiedPathDrillSoFar: pathDrillSoFar,
+              })
             }
           }
         }
-        return left('identifier does not match any of the destructured object properties')
       }
-      case 'DESTRUCTURED_ARRAY': {
-        return left('Destructured array properties are not yet supported')
-      }
-      default:
-        assertNever(param.boundParam)
+      return left('identifier does not match any of the destructured object properties')
     }
+    case 'DESTRUCTURED_ARRAY': {
+      return left('Destructured array properties are not yet supported')
+    }
+    default:
+      assertNever(param.boundParam)
   }
-
-  return left('No applicable properties.')
 }
 
 function paramUsedByIdentifierOrAccess(
@@ -760,13 +756,10 @@ function lookupInComponentScope(
 
   // let's see if the identifier points to a component prop
   {
-    if (componentHoldingElement.params != null) {
+    const firstParam = componentHoldingElement?.params?.at(0)
+    if (firstParam != null) {
       // let's try to match the name to the containing component's props!
-      const foundPropSameName = propUsedByIdentifierOrAccess(
-        componentHoldingElement.params,
-        identifier,
-        pathDrillSoFar,
-      )
+      const foundPropSameName = propUsedByIdentifierOrAccess(firstParam, identifier, pathDrillSoFar)
 
       if (isRight(foundPropSameName)) {
         // ok, so let's now travel to the containing component's instance in the metadata and continue the lookup!

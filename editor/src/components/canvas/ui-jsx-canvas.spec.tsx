@@ -1,4 +1,4 @@
-/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "testCanvasRender", "testCanvasRenderMultifile", "testCanvasErrorMultifile"] }] */
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "testCanvasRender", "testCanvasRenderMultifile", "testCanvasErrorMultifile", "testCanvasRenderInline"] }] */
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import { AwkwardFragmentsCode } from '../../core/workers/parser-printer/parser-printer-fragments.test-utils'
 import {
@@ -157,7 +157,7 @@ export { ToBeDefaultExported as default }`,
   })
 
   it('renders a canvas with a component wrapped in React.memo', () => {
-    testCanvasRender(
+    testCanvasRenderInline(
       null,
       `
       import * as React from 'react'
@@ -194,7 +194,7 @@ export { ToBeDefaultExported as default }`,
   })
 
   it('renders a canvas with a component wrapped in a function that wraps the component with more content', () => {
-    testCanvasRender(
+    testCanvasRenderInline(
       null,
       `
       import * as React from 'react'
@@ -242,7 +242,7 @@ export { ToBeDefaultExported as default }`,
   })
 
   it('renders a canvas with a component wrapped in a function that has more that one parameter', () => {
-    testCanvasRender(
+    testCanvasRenderInline(
       null,
       `
       import * as React from 'react'
@@ -286,7 +286,7 @@ export { ToBeDefaultExported as default }`,
   })
 
   it('renders a canvas with a component wrapped in forwardRef', () => {
-    testCanvasRender(
+    testCanvasRenderInline(
       null,
       `
       import * as React from 'react'
