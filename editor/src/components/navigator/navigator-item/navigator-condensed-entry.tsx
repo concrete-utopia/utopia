@@ -212,7 +212,10 @@ const CondensedEntryItem = React.memo(
         />
         {when(
           props.showSeparator,
-          <CondensedEntryTrunkSeparator backgroundColor={backgroundColor} />,
+          <CondensedEntryTrunkSeparator
+            backgroundColor={backgroundColor}
+            selected={props.rowRootSelected}
+          />,
         )}
       </React.Fragment>
     )
@@ -300,7 +303,7 @@ const CondensedEntryItemContent = React.memo(
               : undefined,
           borderTopRightRadius: props.selected ? 5 : 0,
           borderBottomRightRadius: props.selected ? 5 : 0,
-          marginRight: 4,
+          marginRight: !props.showExpandableIndicator && props.isDataReferenceRow ? 4 : 0,
         }}
         onClick={onClick}
         onMouseOver={onMouseOver}
@@ -341,7 +344,7 @@ const CondensedEntryItemContent = React.memo(
               <WrappedLayoutIcon
                 entry={props.entry}
                 hideTooltip={isDataReference || showLabel}
-                selected={props.selected}
+                selected={props.selected || props.rowRootSelected}
               />,
             )}
           </div>
@@ -364,7 +367,12 @@ const CondensedEntryItemContent = React.memo(
 )
 CondensedEntryItemContent.displayName = 'CondensedEntryItemContent'
 
-const CondensedEntryTrunkSeparator = React.memo((props: { backgroundColor: string }) => {
+type CondensedEntryTrunkSeparatorProps = {
+  backgroundColor: string
+  selected: boolean
+}
+
+const CondensedEntryTrunkSeparator = React.memo((props: CondensedEntryTrunkSeparatorProps) => {
   const colorTheme = useColorTheme()
 
   return (
@@ -387,7 +395,7 @@ const CondensedEntryTrunkSeparator = React.memo((props: { backgroundColor: strin
           color: colorTheme.fg6.value,
         }}
       >
-        <Icons.NarrowExpansionArrowRight />
+        <Icons.NarrowExpansionArrowRight color={props.selected ? 'white' : 'main'} />
       </div>
     </div>
   )
