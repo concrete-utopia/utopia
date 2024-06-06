@@ -350,7 +350,7 @@ export interface UtopiaJSXComponent {
   declarationSyntax: FunctionDeclarationSyntax
   blockOrExpression: BlockOrExpression
   functionWrapping: Array<FunctionWrap>
-  param: Param | null
+  params: Array<Param> | null
   propsUsed: Array<string>
   rootElement: JSXElementChild
   arbitraryJSBlock: ArbitraryJSBlock | null

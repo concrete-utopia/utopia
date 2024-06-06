@@ -569,15 +569,17 @@ export var whatever = (props) => {
       "functionWrapping": Array [],
       "isFunction": true,
       "name": "whatever",
-      "param": Object {
-        "boundParam": Object {
-          "defaultExpression": null,
-          "paramName": "props",
-          "type": "REGULAR_PARAM",
+      "params": Array [
+        Object {
+          "boundParam": Object {
+            "defaultExpression": null,
+            "paramName": "props",
+            "type": "REGULAR_PARAM",
+          },
+          "dotDotDotToken": false,
+          "type": "PARAM",
         },
-        "dotDotDotToken": false,
-        "type": "PARAM",
-      },
+      ],
       "propsUsed": Array [],
       "returnStatementComments": Object {
         "leadingComments": Array [],
@@ -956,15 +958,17 @@ Object {
       "functionWrapping": Array [],
       "isFunction": true,
       "name": "a",
-      "param": Object {
-        "boundParam": Object {
-          "defaultExpression": null,
-          "paramName": "n",
-          "type": "REGULAR_PARAM",
+      "params": Array [
+        Object {
+          "boundParam": Object {
+            "defaultExpression": null,
+            "paramName": "n",
+            "type": "REGULAR_PARAM",
+          },
+          "dotDotDotToken": false,
+          "type": "PARAM",
         },
-        "dotDotDotToken": false,
-        "type": "PARAM",
-      },
+      ],
       "propsUsed": Array [],
       "returnStatementComments": Object {
         "leadingComments": Array [],
@@ -1113,15 +1117,17 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
       "functionWrapping": Array [],
       "isFunction": true,
       "name": "whatever",
-      "param": Object {
-        "boundParam": Object {
-          "defaultExpression": null,
-          "paramName": "props",
-          "type": "REGULAR_PARAM",
+      "params": Array [
+        Object {
+          "boundParam": Object {
+            "defaultExpression": null,
+            "paramName": "props",
+            "type": "REGULAR_PARAM",
+          },
+          "dotDotDotToken": false,
+          "type": "PARAM",
         },
-        "dotDotDotToken": false,
-        "type": "PARAM",
-      },
+      ],
       "propsUsed": Array [],
       "returnStatementComments": Object {
         "leadingComments": Array [],
@@ -1172,15 +1178,17 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
       "functionWrapping": Array [],
       "isFunction": true,
       "name": "b",
-      "param": Object {
-        "boundParam": Object {
-          "defaultExpression": null,
-          "paramName": "n",
-          "type": "REGULAR_PARAM",
+      "params": Array [
+        Object {
+          "boundParam": Object {
+            "defaultExpression": null,
+            "paramName": "n",
+            "type": "REGULAR_PARAM",
+          },
+          "dotDotDotToken": false,
+          "type": "PARAM",
         },
-        "dotDotDotToken": false,
-        "type": "PARAM",
-      },
+      ],
       "propsUsed": Array [],
       "returnStatementComments": Object {
         "leadingComments": Array [],
@@ -1663,15 +1671,17 @@ export var App = (props) => <View data-uid='bbb'>
       "functionWrapping": Array [],
       "isFunction": true,
       "name": "App",
-      "param": Object {
-        "boundParam": Object {
-          "defaultExpression": null,
-          "paramName": "props",
-          "type": "REGULAR_PARAM",
+      "params": Array [
+        Object {
+          "boundParam": Object {
+            "defaultExpression": null,
+            "paramName": "props",
+            "type": "REGULAR_PARAM",
+          },
+          "dotDotDotToken": false,
+          "type": "PARAM",
         },
-        "dotDotDotToken": false,
-        "type": "PARAM",
-      },
+      ],
       "propsUsed": Array [],
       "returnStatementComments": Object {
         "leadingComments": Array [],

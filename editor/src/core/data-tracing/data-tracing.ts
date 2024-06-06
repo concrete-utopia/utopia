@@ -756,13 +756,10 @@ function lookupInComponentScope(
 
   // let's see if the identifier points to a component prop
   {
-    if (componentHoldingElement.param != null) {
+    const firstParam = componentHoldingElement?.params?.at(0)
+    if (firstParam != null) {
       // let's try to match the name to the containing component's props!
-      const foundPropSameName = propUsedByIdentifierOrAccess(
-        componentHoldingElement.param,
-        identifier,
-        pathDrillSoFar,
-      )
+      const foundPropSameName = propUsedByIdentifierOrAccess(firstParam, identifier, pathDrillSoFar)
 
       if (isRight(foundPropSameName)) {
         // ok, so let's now travel to the containing component's instance in the metadata and continue the lookup!
