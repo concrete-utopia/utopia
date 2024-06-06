@@ -63,7 +63,6 @@ export function createBuiltInDependenciesList(
   const UtopiaAPISpecial: typeof UtopiaAPI & { Group: any } = {
     ...UtopiaAPI,
     Group: UtopiaApiGroup,
-    Icons: UUIUI.Icons,
   }
 
   // Ensure this is kept up to date with:

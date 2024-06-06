@@ -13,6 +13,7 @@ import {
   FlexColumn,
   FlexRow,
   Icn,
+  Icons,
   PopupList,
   SimpleNumberInput,
   UtopiaTheme,
@@ -389,11 +390,12 @@ function labelFromRadioControlOption(option: RadioControlOption<unknown>): strin
 function iconFromRadioControlOption(
   option: RadioControlOption<unknown>,
 ): OptionChainOption<unknown>['iconComponent'] {
-  if (option.type === 'allowed-enum-type') {
+  if (option.type === 'allowed-enum-type' || option.option.icon == null) {
     return undefined
   }
 
-  return option.option.icon
+  const Component = Icons[option.option.icon]
+  return <Component />
 }
 
 export const RadioPropertyControl = React.memo(

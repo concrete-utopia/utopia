@@ -386,7 +386,7 @@ export const Icons = {
     width: 12,
     height: 12,
   }),
-}
+} as const
 
 export const FunctionIcons = {
   Add: Icons.Plus,

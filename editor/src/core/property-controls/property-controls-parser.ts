@@ -54,6 +54,7 @@ import {
   parseNumber,
   parseObject,
   parseString,
+  parseEnum,
 } from '../../utils/value-parser-utils'
 import {
   applicative2Either,
@@ -69,6 +70,7 @@ import {
 import { objectMap, setOptionalProp } from '../shared/object-utils'
 import { parseEnumValue } from './property-control-values'
 import { parsePreferredContents } from './property-controls-local'
+import { UtopiaIcons } from 'utopia-api'
 
 const requiredFieldParser = optionalObjectKeyParser(parseBoolean, 'required')
 
@@ -117,7 +119,7 @@ const parseBasicControlOptionsWithIcon: Parser<
       objectParser<BasicControlOptionWithIcon<unknown>>({
         label: parseString,
         value: parseAny,
-        icon: optionalProp(parseAny),
+        icon: optionalProp(parseEnum(UtopiaIcons)),
       }),
     ),
   ],

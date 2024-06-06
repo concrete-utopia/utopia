@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
 import type { ComponentInfo } from './code-file'
+import type { Icons } from '../../uuiui'
 
 interface GenericControlProps<T> {
   label?: string
@@ -49,7 +50,7 @@ export interface BasicControlOption<T> {
 export interface BasicControlOptionWithIcon<T> {
   value: T
   label: string
-  icon: React.ReactNode | null
+  icon: keyof typeof Icons | null
 }
 
 export type BasicControlOptions<T> = AllowedEnumType[] | BasicControlOption<T>[]
