@@ -48,14 +48,14 @@ export interface BasicControlOption<T> {
 
 export interface BasicControlOptionWithIcon<T> {
   value: T
-  label: string
   icon: React.ReactNode | null
 }
 
 export type BasicControlOptions<T> = AllowedEnumType[] | BasicControlOption<T>[]
 export type RadioControlOption<T> =
   | { type: 'allowed-enum-type'; allowedEnumType: AllowedEnumType }
-  | { type: 'control-option-with-icon'; option: BasicControlOptionWithIcon<T> }
+  | { type: 'control-option-with-label'; option: BasicControlOption<T> }
+  | { type: 'control-option-with-user-label'; option: BasicControlOptionWithIcon<T> }
 
 export interface PopUpListControlDescription
   extends GenericControlProps<AllowedEnumType | BasicControlOption<unknown>> {

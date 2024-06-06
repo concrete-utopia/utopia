@@ -1,3 +1,4 @@
+import type { BasicControlOptionWithUserLabel } from 'utopia-api/core'
 import {
   type CheckboxControlDescription,
   type ColorControlDescription,
@@ -32,7 +33,6 @@ import {
   type Matrix3,
   type Matrix4,
   type PreferredContents,
-  type BasicControlOptionWithIcon,
 } from 'utopia-api/core'
 import { parseColor } from '../../components/inspector/common/css-utils'
 import type { Parser, ParseResult } from '../../utils/value-parser-utils'
@@ -109,15 +109,14 @@ const parseBasicControlOptions: Parser<BasicControlOptions<unknown>> = parseAlte
 )
 
 const parseBasicControlOptionsWithIcon: Parser<
-  AllowedEnumType[] | BasicControlOptionWithIcon<unknown>[]
-> = parseAlternative<AllowedEnumType[] | BasicControlOptionWithIcon<unknown>[]>(
+  AllowedEnumType[] | BasicControlOptionWithUserLabel<unknown>[]
+> = parseAlternative<AllowedEnumType[] | BasicControlOptionWithUserLabel<unknown>[]>(
   [
     parseArray(parseEnumValue),
     parseArray(
-      objectParser<BasicControlOptionWithIcon<unknown>>({
-        label: parseString,
+      objectParser<BasicControlOptionWithUserLabel<unknown>>({
+        label: parseAny,
         value: parseAny,
-        icon: optionalProp(parseAny),
       }),
     ),
   ],
