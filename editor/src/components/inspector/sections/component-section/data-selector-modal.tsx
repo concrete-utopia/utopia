@@ -209,7 +209,13 @@ export const DataSelectorModal = React.memo(
         startingSelectedValuePath,
       )
 
-      const searchTerm = React.useState<string | null>(null)
+      const [searchTerm, setSearchTerm] = React.useState<string | null>(null)
+      const onSearchFieldValueChange = React.useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+          setSearchTerm(e.target.value)
+        },
+        [],
+      )
 
       const [hoveredPath, setHoveredPath] = React.useState<ObjectPath | null>(null)
 
@@ -452,11 +458,13 @@ export const DataSelectorModal = React.memo(
                     padding: '8px 8px',
                     borderRadius: 16,
                     gap: 8,
-                    border: `1px solid ${colorTheme.verySubduedForeground.value}`,
+                    border: `1px solid ${colorTheme.fg7.value}`,
                   }}
                 >
                   <LargerIcons.MagnifyingGlass />
                   <input
+                    value={searchTerm ?? ''}
+                    onChange={onSearchFieldValueChange}
                     data-testId='data-selector-modal-search-input'
                     placeholder='Search'
                     style={{ outline: 'none', border: 'none' }}
@@ -533,132 +541,147 @@ export const DataSelectorModal = React.memo(
               >
                 {valuePreviewText}
               </FlexRow>
-
               {/* detail view */}
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'auto 40px 1fr',
-                  gap: 8,
-                  overflowX: 'hidden',
-                  overflowY: 'scroll',
-                  scrollbarWidth: 'auto',
-                  scrollbarColor: 'gray transparent',
-                  paddingTop: 8,
-                  paddingBottom: 16,
-                }}
-              >
-                <Separator color={colorTheme.seperator.value} spanGridColumns={3} margin={4} />
-                {when(
-                  primitiveVars.length > 0,
-                  <>
-                    <FlexRow
-                      style={{
-                        flexWrap: 'wrap',
-                        height: 'max-content',
-                        gap: 4,
-                      }}
-                    >
-                      {primitiveVars.map((variable) => (
-                        <CartoucheUI
-                          key={variable.valuePath.toString()}
-                          source={variableSources[variable.valuePath.toString()] ?? 'internal'}
-                          datatype={childTypeToCartoucheDataType(variable.type)}
-                          inverted={false}
-                          selected={
-                            selectedPath == null
-                              ? false
-                              : arrayEqualsByReference(selectedPath, variable.valuePath)
-                          }
-                          role={cartoucheFolderOrInfo(variable, 'no-folder')}
-                          testId={`data-selector-primitive-values-${variableNameFromPath(
-                            variable,
-                          )}`}
-                          onHover={onHover(variable.valuePath)}
-                          onClick={setCurrentSelectedPathCurried(variable.valuePath)}
-                        >
-                          {variableNameFromPath(variable)}
-                        </CartoucheUI>
-                      ))}
+              {searchTerm == null ? null : (
+                <FlexColumn>
+                  {search(allVariablesInScope, searchTerm.toLowerCase()).map((t, idx) => (
+                    <FlexRow key={[...t.valuePath, idx].toString()}>
+                      <span>{t.valuePath.map(({ value }) => value).toString()}</span>
+                      <span>{t.value.value}</span>
                     </FlexRow>
-                    <Separator color={colorTheme.seperator.value} spanGridColumns={3} margin={4} />
-                  </>,
-                )}
-                {folderVars.map((variable, idx) => (
-                  <React.Fragment key={variable.valuePath.toString()}>
-                    <CartoucheUI
-                      datatype={childTypeToCartoucheDataType(variable.type)}
-                      source={variableSources[variable.valuePath.toString()] ?? 'internal'}
-                      inverted={false}
-                      selected={
-                        selectedPath == null
-                          ? false
-                          : arrayEqualsByReference(selectedPath, variable.valuePath)
-                      }
-                      role={cartoucheFolderOrInfo(variable, 'no-folder')}
-                      testId={`data-selector-left-section-${variableNameFromPath(variable)}`}
-                      onClick={setCurrentSelectedPathCurried(variable.valuePath)}
-                      onHover={onHover(variable.valuePath)}
-                    >
-                      {variableNameFromPath(variable)}
-                    </CartoucheUI>
-                    {variable.type === 'array' ? (
-                      <ArrayIndexSelector
-                        total={variable.children.length}
-                        selected={indexLookup[variable.valuePath.toString()] ?? 0}
-                        onSelect={updateIndexInLookup(variable.valuePath.toString())}
-                      />
-                    ) : (
-                      <div />
-                    )}
-                    {/* properties in scope */}
-                    <FlexRow style={{ flexWrap: 'wrap', height: 'max-content', gap: 4 }}>
-                      {childVars(variable, indexLookup).map((child) => (
-                        <CartoucheUI
-                          key={child.valuePath.toString()}
-                          source={variableSources[variable.valuePath.toString()] ?? 'internal'}
-                          inverted={false}
-                          datatype={childTypeToCartoucheDataType(child.type)}
-                          selected={
-                            selectedPath == null
-                              ? false
-                              : arrayEqualsByReference(selectedPath, child.valuePath)
-                          }
-                          role={cartoucheFolderOrInfo(child, 'can-be-folder')}
-                          testId={`data-selector-right-section-${variableNameFromPath(child)}`}
-                          onClick={setCurrentSelectedPathCurried(child.valuePath)}
-                          onDoubleClick={setNavigatedToPathCurried(child.valuePath)}
-                          onHover={onHover(child.valuePath)}
-                        >
-                          {variableNameFromPath(child)}
-                        </CartoucheUI>
-                      ))}
-                    </FlexRow>
-                    {idx < focusedVariableChildren.length - 1 ? (
+                  ))}
+                </FlexColumn>
+              )}
+              {searchTerm != null ? null : (
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'auto 40px 1fr',
+                    gap: 8,
+                    overflowX: 'hidden',
+                    overflowY: 'scroll',
+                    scrollbarWidth: 'auto',
+                    scrollbarColor: 'gray transparent',
+                    paddingTop: 8,
+                    paddingBottom: 16,
+                  }}
+                >
+                  <Separator color={colorTheme.seperator.value} spanGridColumns={3} margin={4} />
+                  {when(
+                    primitiveVars.length > 0,
+                    <>
+                      <FlexRow
+                        style={{
+                          flexWrap: 'wrap',
+                          height: 'max-content',
+                          gap: 4,
+                        }}
+                      >
+                        {primitiveVars.map((variable) => (
+                          <CartoucheUI
+                            key={variable.valuePath.toString()}
+                            source={variableSources[variable.valuePath.toString()] ?? 'internal'}
+                            datatype={childTypeToCartoucheDataType(variable.type)}
+                            inverted={false}
+                            selected={
+                              selectedPath == null
+                                ? false
+                                : arrayEqualsByReference(selectedPath, variable.valuePath)
+                            }
+                            role={cartoucheFolderOrInfo(variable, 'no-folder')}
+                            testId={`data-selector-primitive-values-${variableNameFromPath(
+                              variable,
+                            )}`}
+                            onHover={onHover(variable.valuePath)}
+                            onClick={setCurrentSelectedPathCurried(variable.valuePath)}
+                          >
+                            {variableNameFromPath(variable)}
+                          </CartoucheUI>
+                        ))}
+                      </FlexRow>
                       <Separator
                         color={colorTheme.seperator.value}
                         spanGridColumns={3}
                         margin={4}
                       />
-                    ) : null}
-                  </React.Fragment>
-                ))}
-                {/* Empty State */}
-                {when(
-                  focusedVariableChildren.length === 0,
-                  <div
-                    style={{
-                      gridColumn: '1 / span 3',
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      height: 100,
-                    }}
-                  >
-                    We did not find any insertable data
-                  </div>,
-                )}
-              </div>
+                    </>,
+                  )}
+                  {folderVars.map((variable, idx) => (
+                    <React.Fragment key={variable.valuePath.toString()}>
+                      <CartoucheUI
+                        datatype={childTypeToCartoucheDataType(variable.type)}
+                        source={variableSources[variable.valuePath.toString()] ?? 'internal'}
+                        inverted={false}
+                        selected={
+                          selectedPath == null
+                            ? false
+                            : arrayEqualsByReference(selectedPath, variable.valuePath)
+                        }
+                        role={cartoucheFolderOrInfo(variable, 'no-folder')}
+                        testId={`data-selector-left-section-${variableNameFromPath(variable)}`}
+                        onClick={setCurrentSelectedPathCurried(variable.valuePath)}
+                        onHover={onHover(variable.valuePath)}
+                      >
+                        {variableNameFromPath(variable)}
+                      </CartoucheUI>
+                      {variable.type === 'array' ? (
+                        <ArrayIndexSelector
+                          total={variable.children.length}
+                          selected={indexLookup[variable.valuePath.toString()] ?? 0}
+                          onSelect={updateIndexInLookup(variable.valuePath.toString())}
+                        />
+                      ) : (
+                        <div />
+                      )}
+                      {/* properties in scope */}
+                      <FlexRow style={{ flexWrap: 'wrap', height: 'max-content', gap: 4 }}>
+                        {childVars(variable, indexLookup).map((child) => (
+                          <CartoucheUI
+                            key={child.valuePath.toString()}
+                            source={variableSources[variable.valuePath.toString()] ?? 'internal'}
+                            inverted={false}
+                            datatype={childTypeToCartoucheDataType(child.type)}
+                            selected={
+                              selectedPath == null
+                                ? false
+                                : arrayEqualsByReference(selectedPath, child.valuePath)
+                            }
+                            role={cartoucheFolderOrInfo(child, 'can-be-folder')}
+                            testId={`data-selector-right-section-${variableNameFromPath(child)}`}
+                            onClick={setCurrentSelectedPathCurried(child.valuePath)}
+                            onDoubleClick={setNavigatedToPathCurried(child.valuePath)}
+                            onHover={onHover(child.valuePath)}
+                          >
+                            {variableNameFromPath(child)}
+                          </CartoucheUI>
+                        ))}
+                      </FlexRow>
+                      {idx < focusedVariableChildren.length - 1 ? (
+                        <Separator
+                          color={colorTheme.seperator.value}
+                          spanGridColumns={3}
+                          margin={4}
+                        />
+                      ) : null}
+                    </React.Fragment>
+                  ))}
+                  {/* Empty State */}
+                  {when(
+                    focusedVariableChildren.length === 0,
+                    <div
+                      style={{
+                        gridColumn: '1 / span 3',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        height: 100,
+                      }}
+                    >
+                      We did not find any insertable data
+                    </div>,
+                  )}
+                </div>
+              )}
             </FlexColumn>
           </div>
         </InspectorModal>
@@ -881,22 +904,58 @@ function findFirstObjectPathToNavigateTo(
   return null
 }
 
-function matches(option: DataPickerOption, term: string): boolean {
-  const termInValuePath = option.valuePath.some((v) => v.toString().toLowerCase().includes(term))
-  const termInValue =
-    typeof option.variableInfo.value === 'object' || Array.isArray(option.variableInfo.value)
-      ? false
-      : `${option.variableInfo.value}`.toLowerCase().includes(term)
-
-  return termInValuePath || termInValue
+interface SearchResult {
+  valuePath: Array<{ value: string; matched: boolean }>
+  value: { value: string; matched: boolean }
 }
 
-function search(options: DataPickerOption[], term: string): DataPickerOption[] {
-  let results: DataPickerOption[] = []
+function searchInValuePath(
+  valuePath: ObjectPath,
+  term: string,
+): { valuePath: SearchResult['valuePath']; matched: boolean } {
+  const segments: SearchResult['valuePath'] = []
+
+  let foundMatch = false
+  for (const segment of valuePath) {
+    const segmentAsString = segment.toString()
+    const containsMatch = segmentAsString.includes(term)
+    segments.push({ value: segmentAsString, matched: containsMatch })
+    foundMatch ||= containsMatch
+  }
+
+  return { valuePath: segments, matched: foundMatch }
+}
+
+function searchInValue(value: unknown, term: string): SearchResult['value'] {
+  if (typeof value === 'object' || Array.isArray(value)) {
+    return { value: '', matched: false }
+  }
+  const valueAsString = `${value}`
+  return { value: valueAsString, matched: valueAsString.toLowerCase().includes(term) }
+}
+
+function matches(option: DataPickerOption, term: string): SearchResult | null {
+  const maybeValuePath = searchInValuePath(option.valuePath, term)
+  const maybeValue = searchInValue(option.variableInfo.value, term)
+
+  if (maybeValuePath.matched || maybeValue.matched) {
+    return { value: maybeValue, valuePath: maybeValuePath.valuePath }
+  }
+
+  return null
+}
+
+function search(options: DataPickerOption[], term: string): SearchResult[] {
+  if (term.length === 0) {
+    return []
+  }
+
+  let results: SearchResult[] = []
 
   function walk(option: DataPickerOption) {
-    if (matches(option, term)) {
-      results.push(option)
+    const searchResult = matches(option, term)
+    if (searchResult != null) {
+      results.push(searchResult)
     }
 
     switch (option.type) {
