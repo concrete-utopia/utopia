@@ -340,7 +340,12 @@ export const NumberInputPropertyControl = React.memo(
             store.editor.jsxMetadata,
             props.elementPath,
           )
-          if (element != null && isRight(element.element) && isJSXElement(element.element.value)) {
+          if (
+            element != null &&
+            isRight(element.element) &&
+            isJSXElement(element.element.value) &&
+            element.element.value.children.length > 0
+          ) {
             const child = element.element.value.children[0]
             if (child.type === 'ATTRIBUTE_OTHER_JAVASCRIPT') {
               const parsed = parseNumber(child.originalJavascript)
@@ -349,6 +354,7 @@ export const NumberInputPropertyControl = React.memo(
               }
             }
           }
+          return undefined
         }
 
         return propMetadata.propertyStatus.set ? propMetadata.value : undefined
@@ -511,7 +517,12 @@ export const StringInputPropertyControl = React.memo(
             store.editor.jsxMetadata,
             props.elementPath,
           )
-          if (element != null && isRight(element.element) && isJSXElement(element.element.value)) {
+          if (
+            element != null &&
+            isRight(element.element) &&
+            isJSXElement(element.element.value) &&
+            element.element.value.children.length > 0
+          ) {
             const child = element.element.value.children[0]
             switch (child.type) {
               case 'ATTRIBUTE_OTHER_JAVASCRIPT':
@@ -520,6 +531,7 @@ export const StringInputPropertyControl = React.memo(
                 return child.text
             }
           }
+          return undefined
         }
 
         return propMetadata.propertyStatus.set ? propMetadata.value : undefined
