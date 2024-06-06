@@ -12,7 +12,9 @@ import {
   FlexColumn,
   FlexRow,
   Icons,
+  LargerIcons,
   PopupList,
+  StringInput,
   UtopiaStyles,
   UtopiaTheme,
   useColorTheme,
@@ -206,6 +208,9 @@ export const DataSelectorModal = React.memo(
       const [selectedPath, setSelectedPath] = React.useState<ObjectPath | null>(
         startingSelectedValuePath,
       )
+
+      const searchTerm = React.useState<string | null>(null)
+
       const [hoveredPath, setHoveredPath] = React.useState<ObjectPath | null>(null)
 
       const setNavigatedToPathCurried = React.useCallback(
@@ -412,30 +417,51 @@ export const DataSelectorModal = React.memo(
               }}
             >
               {/* Scope Selector Breadcrumbs */}
-              <FlexRow style={{ gap: 2, paddingBottom: 8 }}>
-                {elementLabelsWithScopes.map(({ label, scope, hasContent }, idx, a) => (
-                  <React.Fragment key={`label-${idx}`}>
-                    <div
-                      onClick={setSelectedScopeCurried(scope, hasContent)}
-                      style={{
-                        width: 'max-content',
-                        padding: '2px 4px',
-                        borderRadius: 4,
-                        cursor: hasContent ? 'pointer' : undefined,
-                        color: hasContent
-                          ? colorTheme.neutralForeground.value
-                          : colorTheme.subduedForeground.value,
-                        fontSize: 12,
-                        fontWeight: insertionCeilingsEqual(selectedScope, scope) ? 800 : undefined,
-                      }}
-                    >
-                      {label}
-                    </div>
-                    {idx < a.length - 1 ? (
-                      <span style={{ width: 'max-content', padding: '2px 4px' }}>{'/'}</span>
-                    ) : null}
-                  </React.Fragment>
-                ))}
+              <FlexRow
+                style={{ justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}
+              >
+                <FlexRow style={{ gap: 2 }}>
+                  {elementLabelsWithScopes.map(({ label, scope, hasContent }, idx, a) => (
+                    <React.Fragment key={`label-${idx}`}>
+                      <div
+                        onClick={setSelectedScopeCurried(scope, hasContent)}
+                        style={{
+                          width: 'max-content',
+                          padding: '2px 4px',
+                          borderRadius: 4,
+                          cursor: hasContent ? 'pointer' : undefined,
+                          color: hasContent
+                            ? colorTheme.neutralForeground.value
+                            : colorTheme.subduedForeground.value,
+                          fontSize: 12,
+                          fontWeight: insertionCeilingsEqual(selectedScope, scope)
+                            ? 800
+                            : undefined,
+                        }}
+                      >
+                        {label}
+                      </div>
+                      {idx < a.length - 1 ? (
+                        <span style={{ width: 'max-content', padding: '2px 4px' }}>{'/'}</span>
+                      ) : null}
+                    </React.Fragment>
+                  ))}
+                </FlexRow>
+                <FlexRow
+                  style={{
+                    padding: '8px 8px',
+                    borderRadius: 16,
+                    gap: 8,
+                    border: `1px solid ${colorTheme.verySubduedForeground.value}`,
+                  }}
+                >
+                  <LargerIcons.MagnifyingGlass />
+                  <input
+                    data-testId='data-selector-modal-search-input'
+                    placeholder='Search'
+                    style={{ outline: 'none', border: 'none' }}
+                  />
+                </FlexRow>
               </FlexRow>
               {/* top bar */}
               <FlexRow style={{ justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
@@ -853,4 +879,40 @@ function findFirstObjectPathToNavigateTo(
   }
 
   return null
+}
+
+function matches(option: DataPickerOption, term: string): boolean {
+  const termInValuePath = option.valuePath.some((v) => v.toString().toLowerCase().includes(term))
+  const termInValue =
+    typeof option.variableInfo.value === 'object' || Array.isArray(option.variableInfo.value)
+      ? false
+      : `${option.variableInfo.value}`.toLowerCase().includes(term)
+
+  return termInValuePath || termInValue
+}
+
+function search(options: DataPickerOption[], term: string): DataPickerOption[] {
+  let results: DataPickerOption[] = []
+
+  function walk(option: DataPickerOption) {
+    if (matches(option, term)) {
+      results.push(option)
+    }
+
+    switch (option.type) {
+      case 'array':
+      case 'object':
+        option.children.forEach((o) => walk(o))
+        break
+      case 'jsx':
+      case 'primitive':
+        break
+      default:
+        assertNever(option)
+    }
+  }
+
+  options.forEach((o) => walk(o))
+
+  return results
 }
