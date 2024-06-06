@@ -538,7 +538,6 @@ export const DataSelectorModal = React.memo(
                           key={variable.valuePath.toString()}
                           source={variableSources[variable.valuePath.toString()] ?? 'internal'}
                           datatype={childTypeToCartoucheDataType(variable.type)}
-                          inverted={false}
                           selected={
                             selectedPath == null
                               ? false
@@ -563,7 +562,6 @@ export const DataSelectorModal = React.memo(
                     <CartoucheUI
                       datatype={childTypeToCartoucheDataType(variable.type)}
                       source={variableSources[variable.valuePath.toString()] ?? 'internal'}
-                      inverted={false}
                       selected={
                         selectedPath == null
                           ? false
@@ -591,7 +589,6 @@ export const DataSelectorModal = React.memo(
                         <CartoucheUI
                           key={child.valuePath.toString()}
                           source={variableSources[variable.valuePath.toString()] ?? 'internal'}
-                          inverted={false}
                           datatype={childTypeToCartoucheDataType(child.type)}
                           selected={
                             selectedPath == null

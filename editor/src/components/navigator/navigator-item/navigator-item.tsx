@@ -1262,7 +1262,6 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
       />
       <MapListSourceCartouche
         target={props.navigatorEntry.elementPath}
-        inverted={props.selected}
         selected={props.selected}
         openOn='double-click'
       />
