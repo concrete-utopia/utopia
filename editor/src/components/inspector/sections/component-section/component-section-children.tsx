@@ -21,11 +21,13 @@ import { isRight } from '../../../../core/shared/either'
 import { DataReferenceCartoucheControl } from './data-reference-cartouche'
 import { assertNever } from '../../../../core/shared/utils'
 import { childrenAreProbablyNumericExpression } from '../../../editor/element-children'
+import type { CartoucheDataType } from './cartouche-ui'
 
 export function useChildrenPropOverride(
   props: ControlForPropProps<RegularControlDescription> & {
     onDeleteCartouche: () => void
     safeToDelete: boolean
+    dataTypeForExpression: CartoucheDataType
   },
 ) {
   const childrenContent = useEditorState(
@@ -68,6 +70,7 @@ export function useChildrenPropOverride(
           propertyPath={props.propPath}
           safeToDelete={props.safeToDelete}
           elementPath={props.elementPath}
+          datatype={props.dataTypeForExpression}
         />
       )
     case 'text':

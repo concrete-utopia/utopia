@@ -236,6 +236,7 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
     ...props,
     onDeleteCartouche: onDeleteCartouche,
     safeToDelete: safeToDelete,
+    dataTypeForExpression: datatypeForExpression,
   })
   if (childrenPropOverride != null) {
     return childrenPropOverride
