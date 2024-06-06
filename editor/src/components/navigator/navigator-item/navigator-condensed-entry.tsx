@@ -78,20 +78,29 @@ export const CondensedEntryItemWrapper = React.memo(
       )
     }, [selectedViews, props.navigatorRow])
 
+    const rowRootSelected = React.useMemo(() => {
+      return selectedViews.some((view) =>
+        EP.pathsEqual(view, props.navigatorRow.entries[0].elementPath),
+      )
+    }, [selectedViews, props.navigatorRow])
+
     return (
       <div
         style={{
           ...props.windowStyle,
           display: 'flex',
           alignItems: 'center',
-          backgroundColor:
-            hasSelection || wholeRowInsideSelection
-              ? colorTheme.childSelectionBlue.value
-              : 'transparent',
+          backgroundColor: rowRootSelected
+            ? colorTheme.selectionBlue.value
+            : hasSelection || wholeRowInsideSelection
+            ? colorTheme.childSelectionBlue.value
+            : 'transparent',
           borderTopLeftRadius: rowContainsSelection ? 5 : 0,
           borderTopRightRadius: rowContainsSelection ? 5 : 0,
-          borderBottomLeftRadius: isCollapsed || isDataReferenceRow ? 5 : 0,
-          borderBottomRightRadius: isCollapsed || isDataReferenceRow ? 5 : 0,
+          borderBottomLeftRadius:
+            rowContainsSelection && (isCollapsed || isDataReferenceRow) ? 5 : 0,
+          borderBottomRightRadius:
+            rowContainsSelection && (isCollapsed || isDataReferenceRow) ? 5 : 0,
           overflowX: 'auto',
         }}
       >
@@ -109,6 +118,7 @@ export const CondensedEntryItemWrapper = React.memo(
               showSeparator={showSeparator}
               wholeRowInsideSelection={wholeRowInsideSelection}
               rowContainsSelection={rowContainsSelection}
+              rowRootSelected={rowRootSelected}
             />
           )
         })}
@@ -124,6 +134,7 @@ const CondensedEntryItem = React.memo(
     navigatorRow: CondensedNavigatorRow
     isDataReferenceRow: boolean
     rowContainsSelection: boolean
+    rowRootSelected: boolean
     wholeRowInsideSelection: boolean
     showSeparator: boolean
     showExpandableIndicator: boolean
@@ -197,16 +208,11 @@ const CondensedEntryItem = React.memo(
           showExpandableIndicator={props.showExpandableIndicator}
           isDataReferenceRow={props.isDataReferenceRow}
           indentation={indentation}
+          rowRootSelected={props.rowRootSelected}
         />
         {when(
           props.showSeparator,
           <CondensedEntryTrunkSeparator backgroundColor={backgroundColor} />,
-        )}
-        {when(
-          !props.showSeparator &&
-            (!props.showExpandableIndicator ||
-              (props.rowContainsSelection && !selectionIsDataReference)),
-          <div style={{ width: 4, height: '100%' }} />,
         )}
       </React.Fragment>
     )
@@ -220,6 +226,7 @@ const CondensedEntryItemContent = React.memo(
     wholeRowInsideSelection: boolean
     isChildOfSelected: boolean
     selected: boolean
+    rowRootSelected: boolean
     showExpandableIndicator: boolean
     isDataReferenceRow: boolean
     indentation: number
@@ -293,6 +300,7 @@ const CondensedEntryItemContent = React.memo(
               : undefined,
           borderTopRightRadius: props.selected ? 5 : 0,
           borderBottomRightRadius: props.selected ? 5 : 0,
+          marginRight: 4,
         }}
         onClick={onClick}
         onMouseOver={onMouseOver}
@@ -343,6 +351,9 @@ const CondensedEntryItemContent = React.memo(
             <DataReferenceCartoucheControl
               {...(props.entry as DataReferenceNavigatorEntry)}
               selected={props.selected}
+              highlight={
+                props.rowRootSelected ? 'strong' : props.wholeRowInsideSelection ? 'subtle' : null
+              }
               hideTooltip={true}
             />,
           )}
