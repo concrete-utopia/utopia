@@ -392,17 +392,6 @@ export type ImportInfo = SameFileOrigin | ImportedOrigin
 export type ActiveAndDefaultConditionValues = { active: boolean; default: boolean }
 export type ConditionValue = ActiveAndDefaultConditionValues | 'not-a-conditional'
 
-export interface EarlyReturnVoid {
-  type: 'EARLY_RETURN_VOID'
-}
-
-export interface EarlyReturnResult {
-  type: 'EARLY_RETURN_RESULT'
-  result: unknown
-}
-
-export type EarlyReturn = EarlyReturnVoid | EarlyReturnResult
-
 export type DetectedLayoutSystem = 'flex' | 'grid' | 'flow' | 'none'
 export type TextDirection = 'ltr' | 'rtl'
 export type HugProperty = 'hug' | 'squeeze' | 'collapsed'
