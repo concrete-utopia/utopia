@@ -120,7 +120,8 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
         } else if (
           props.override === 'row' ||
           props.override === 'column' ||
-          props.override === 'layout'
+          props.override === 'layout' ||
+          props.override === 'grid'
         ) {
           colorToReturn = 'primary'
         } else {
