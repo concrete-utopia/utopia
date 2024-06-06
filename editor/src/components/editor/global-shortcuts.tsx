@@ -85,7 +85,6 @@ import {
   ZOOM_UI_IN_SHORTCUT,
   ZOOM_UI_OUT_SHORTCUT,
   ADD_ELEMENT_SHORTCUT,
-  GROUP_ELEMENT_PICKER_SHORTCUT,
   GROUP_ELEMENT_DEFAULT_SHORTCUT,
   TOGGLE_FOCUSED_OMNIBOX_TAB,
   FOCUS_CLASS_NAME_INPUT,
@@ -108,7 +107,7 @@ import {
   COMMENT_SHORTCUT,
 } from './shortcut-definitions'
 import type { EditorState, LockedElements, NavigatorEntry, UserState } from './store/editor-state'
-import { floatingInsertMenuStateSwap, getOpenFile, RightMenuTab } from './store/editor-state'
+import { getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
 import { pickColorWithEyeDropper } from '../canvas/canvas-utils'
 import {
@@ -600,7 +599,6 @@ export function handleKeyDown(
         }
         return []
       },
-      // For now, the "Group / G" shortcuts do the same as the Wrap Element shortcuts – until we have Grouping working again
       [GROUP_ELEMENT_DEFAULT_SHORTCUT]: () => {
         return isSelectMode(editor.mode) && editor.selectedViews.length > 0
           ? [
@@ -613,11 +611,6 @@ export function handleKeyDown(
                 navigatorTargetsRef.current,
               ),
             ]
-          : []
-      },
-      [GROUP_ELEMENT_PICKER_SHORTCUT]: () => {
-        return isSelectMode(editor.mode)
-          ? [EditorActions.openFloatingInsertMenu({ insertMenuMode: 'wrap' })]
           : []
       },
       [TOGGLE_HIDDEN_SHORTCUT]: () => {

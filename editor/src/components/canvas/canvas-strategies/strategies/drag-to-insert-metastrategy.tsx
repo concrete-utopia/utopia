@@ -58,6 +58,10 @@ import { wrapInContainerCommand } from '../../commands/wrap-in-container-command
 import type { InsertionPath } from '../../../editor/store/insertion-path'
 import { childInsertionPath } from '../../../editor/store/insertion-path'
 
+/**
+ * NOTE: this strategy was mostly used for legacy insert menu interactions, but it's kept
+ * intact since it's still used for image insertion from other places.
+ */
 export const dragToInsertMetaStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,

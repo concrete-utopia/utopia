@@ -34,7 +34,6 @@ import {
   toggleHidden,
 } from './editor/actions/action-creators'
 import {
-  floatingInsertMenuStateSwap,
   type AllElementProps,
   type InternalClipboard,
   type NavigatorEntry,

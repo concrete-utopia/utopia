@@ -27,7 +27,7 @@ import {
 } from './ui-jsx.test-utils'
 import {
   expectNoAction,
-  searchInFloatingMenu,
+  searchInComponentPicker,
   selectComponentsForTest,
 } from '../../utils/utils.test-utils'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
@@ -952,5 +952,5 @@ describe('canvas context menu', () => {
 
 async function wrapInElement(renderResult: EditorRenderResult, query: string) {
   await pressKey('w') // open the wrap menu
-  await searchInFloatingMenu(renderResult, query)
+  await searchInComponentPicker(renderResult, query)
 }

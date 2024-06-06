@@ -104,7 +104,6 @@ import { CursorComponent } from '../components/canvas/controls/select-mode/curso
 import * as ResizeObserverSyntheticDefault from 'resize-observer-polyfill'
 import { isFeatureEnabled } from '../utils/feature-switches'
 import { getCanvasViewportCenter } from './paste-helpers'
-import { InsertMenuId } from '../components/editor/insertmenu'
 import { DataPasteHandler, isPasteHandler } from '../utils/paste-handler'
 const ResizeObserver = ResizeObserverSyntheticDefault.default ?? ResizeObserverSyntheticDefault
 
@@ -807,8 +806,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
       (event.nativeEvent != null &&
         event.nativeEvent.srcElement != null &&
         (isTargetContextMenu(event.nativeEvent.target as any) ||
-          isTargetInPopup(event.nativeEvent.srcElement as any, this.props.editor.openPopupId) ||
-          isTargetInInsertMenu(event.nativeEvent.target as any))) ||
+          isTargetInPopup(event.nativeEvent.srcElement as any, this.props.editor.openPopupId))) ||
       this.props.editor.modal !== null
     ) {
       return [] // This is a hack implementing a behavior when context menu blocks the UI
@@ -1403,18 +1401,4 @@ function isTargetInPopup(target: HTMLElement, popupId: string | null): boolean {
     const popupElement = document.getElementById(popupId)
     return popupElement != null && popupElement.contains(target)
   }
-}
-
-function isTargetInInsertMenu(target: HTMLElement | null): boolean {
-  /**
-   * this hack is incredibly sad,
-   * the problem is insertmenu.tsx has non-standard mouse handling.
-   * the real solution would be to rewrite the mouse handling code in the insert menu,
-   * but I don't have the time to do it now
-   *
-   * the way I would change the insert menu is to only start the insert mode if the mouse dragged past a threshold instead of immediately starting it,
-   * plus I would also _enter_ insert mode on click similar to how we enter insert mode from the insert TopMenu
-   */
-  const insertMenu = document.getElementById(InsertMenuId)
-  return insertMenu != null && insertMenu.contains(target)
 }

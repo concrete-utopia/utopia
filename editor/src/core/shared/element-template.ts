@@ -73,8 +73,6 @@ import type {
   UnparsedCode,
   SameFileOrigin,
   ImportedOrigin,
-  EarlyReturnVoid,
-  EarlyReturnResult,
   Comment,
   JSArbitraryStatement,
   JSXProperty,
@@ -108,13 +106,13 @@ import type {
   ImportInfo,
   ActiveAndDefaultConditionValues,
   ConditionValue,
-  EarlyReturn,
   DetectedLayoutSystem,
   TextDirection,
   HugProperty,
   HugPropertyWidthHeight,
   ElementsByUID,
 } from 'utopia-shared/src/types/element-template'
+import type { VariableData } from '../../components/canvas/ui-jsx-canvas'
 
 export type {
   ParsedComments,
@@ -156,8 +154,6 @@ export type {
   UnparsedCode,
   SameFileOrigin,
   ImportedOrigin,
-  EarlyReturnVoid,
-  EarlyReturnResult,
   Comment,
   JSArbitraryStatement,
   JSXProperty,
@@ -191,7 +187,6 @@ export type {
   ImportInfo,
   ActiveAndDefaultConditionValues,
   ConditionValue,
-  EarlyReturn,
   DetectedLayoutSystem,
   TextDirection,
   HugProperty,
@@ -2434,28 +2429,48 @@ export function createNotImported(path: string, variableName: string): ImportInf
   return sameFileOrigin(path, variableName)
 }
 
+export interface EarlyReturnVoid {
+  type: 'EARLY_RETURN_VOID'
+  spiedVariablesDeclaredWithinBlock: VariableData
+}
+
 export function earlyReturnVoid(): EarlyReturnVoid {
   return {
     type: 'EARLY_RETURN_VOID',
+    spiedVariablesDeclaredWithinBlock: {},
   }
+}
+
+export interface EarlyReturnResult {
+  type: 'EARLY_RETURN_RESULT'
+  result: unknown
+  spiedVariablesDeclaredWithinBlock: VariableData
 }
 
 export function earlyReturnResult(result: unknown): EarlyReturnResult {
   return {
     type: 'EARLY_RETURN_RESULT',
     result: result,
+    spiedVariablesDeclaredWithinBlock: {},
   }
 }
+
+export type EarlyReturn = EarlyReturnVoid | EarlyReturnResult
 
 export interface ArbitraryBlockRanToEnd {
   type: 'ARBITRARY_BLOCK_RAN_TO_END'
   scope: MapLike<unknown>
+  spiedVariablesDeclaredWithinBlock: VariableData
 }
 
-export function arbitraryBlockRanToEnd(scope: MapLike<unknown>): ArbitraryBlockRanToEnd {
+export function arbitraryBlockRanToEnd(
+  scope: MapLike<unknown>,
+  spiedVariablesDeclaredWithinBlock: VariableData,
+): ArbitraryBlockRanToEnd {
   return {
     type: 'ARBITRARY_BLOCK_RAN_TO_END',
     scope: scope,
+    spiedVariablesDeclaredWithinBlock: spiedVariablesDeclaredWithinBlock,
   }
 }
 

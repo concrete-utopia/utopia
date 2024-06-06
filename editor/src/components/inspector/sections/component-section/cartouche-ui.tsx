@@ -1,5 +1,4 @@
 import React from 'react'
-import type { IcnColor } from '../../../../uuiui'
 import { FlexRow, Icn, Tooltip, UtopiaStyles, useColorTheme } from '../../../../uuiui'
 import { when } from '../../../../utils/react-conditionals'
 
@@ -8,11 +7,13 @@ export interface HoverHandlers {
   onMouseLeave: (e: React.MouseEvent) => void
 }
 
+export type CartoucheDataType = 'renderable' | 'boolean' | 'array' | 'object' | 'unknown'
+
 export type CartoucheUIProps = React.PropsWithChildren<{
-  tooltip: string
+  tooltip?: string | null
   source: 'internal' | 'external' | 'literal'
   role: 'selection' | 'information' | 'folder'
-  datatype: 'renderable' | 'boolean' | 'array' | 'object'
+  datatype: CartoucheDataType
   inverted: boolean
   selected: boolean
   testId: string
@@ -94,7 +95,7 @@ export const CartoucheUI = React.forwardRef(
         }}
         ref={ref}
       >
-        <Tooltip title={tooltip}>
+        <Tooltip title={tooltip ?? ''} disabled={tooltip == null}>
           <FlexRow
             style={{
               cursor: 'pointer',
@@ -174,6 +175,8 @@ function dataTypeToIconType(dataType: CartoucheUIProps['datatype']): string {
       return 'array'
     case 'object':
       return 'object'
+    case 'unknown':
+      return '👻'
   }
 }
 
