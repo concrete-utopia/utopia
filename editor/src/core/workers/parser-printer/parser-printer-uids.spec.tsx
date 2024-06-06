@@ -410,6 +410,7 @@ export var app = (props) => {
                   tle.isFunction,
                   tle.declarationSyntax,
                   tle.blockOrExpression,
+                  tle.functionWrapping,
                   tle.param,
                   tle.propsUsed,
                   updatedRootElement,

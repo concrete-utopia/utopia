@@ -153,6 +153,7 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
               isFunction: true,
               declarationSyntax: 'var',
               blockOrExpression: 'block',
+              functionWrapping: [],
               param: {
                 type: 'PARAM',
                 dotDotDotToken: false,

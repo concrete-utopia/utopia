@@ -48,6 +48,7 @@ Array [
     "arbitraryJSBlock": null,
     "blockOrExpression": "block",
     "declarationSyntax": "var",
+    "functionWrapping": Array [],
     "isFunction": true,
     "name": "App",
     "param": Object {

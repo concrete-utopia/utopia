@@ -111,6 +111,7 @@ import type {
   HugProperty,
   HugPropertyWidthHeight,
   ElementsByUID,
+  FunctionWrap,
 } from 'utopia-shared/src/types/element-template'
 import type { VariableData } from '../../components/canvas/ui-jsx-canvas'
 
@@ -198,6 +199,7 @@ import {
   emptyComments,
   emptyComputedStyle,
   emptyAttributeMetadata,
+  simpleFunctionWrap,
 } from 'utopia-shared/src/types/element-template'
 export { emptyComments, emptyComputedStyle, emptyAttributeMetadata }
 
@@ -1981,6 +1983,7 @@ export function utopiaJSXComponent(
   isFunction: boolean,
   declarationSyntax: FunctionDeclarationSyntax,
   blockOrExpression: BlockOrExpression,
+  functionWrapping: Array<FunctionWrap>,
   param: Param | null,
   propsUsed: Array<string>,
   rootElement: JSXElementChild,
@@ -1994,6 +1997,7 @@ export function utopiaJSXComponent(
     isFunction: isFunction,
     declarationSyntax: declarationSyntax,
     blockOrExpression: blockOrExpression,
+    functionWrapping: functionWrapping,
     param: param,
     propsUsed: propsUsed,
     rootElement: rootElement,
@@ -2179,8 +2183,6 @@ export function propertiesExposedByParam(param: Param): Array<string> {
   }
 }
 
-// FIXME we need to inject data-uids using insertDataUIDsIntoCode
-
 export function clearArbitraryJSBlockUniqueIDs(block: ArbitraryJSBlock): ArbitraryJSBlock {
   return {
     ...block,
@@ -2302,6 +2304,24 @@ export function clearParamUniqueIDs(param: Param): Param {
   return functionParam(param.dotDotDotToken, clearBoundParamUniqueIDs(param.boundParam))
 }
 
+export function clearFunctionWrapUniqueIDs(wrap: FunctionWrap): FunctionWrap {
+  switch (wrap.type) {
+    case 'SIMPLE_FUNCTION_WRAP':
+      return simpleFunctionWrap(clearExpressionUniqueIDs(wrap.functionExpression))
+  }
+}
+
+export function clearFunctionWrapSourceMaps(wrap: FunctionWrap): FunctionWrap {
+  switch (wrap.type) {
+    case 'SIMPLE_FUNCTION_WRAP':
+      return simpleFunctionWrap(clearExpressionSourceMaps(wrap.functionExpression))
+  }
+}
+
+export function clearFunctionWrapUniqueIDsAndSourceMaps(wrap: FunctionWrap): FunctionWrap {
+  return clearFunctionWrapSourceMaps(clearFunctionWrapUniqueIDs(wrap))
+}
+
 // FIXME: Should only really be in test code.
 export function clearTopLevelElementUniqueIDs(element: UtopiaJSXComponent): UtopiaJSXComponent
 export function clearTopLevelElementUniqueIDs(element: ArbitraryJSBlock): ArbitraryJSBlock
@@ -2312,6 +2332,7 @@ export function clearTopLevelElementUniqueIDs(element: TopLevelElement): TopLeve
       let updatedComponent: UtopiaJSXComponent = {
         ...element,
         rootElement: clearJSXElementChildUniqueIDs(element.rootElement),
+        functionWrapping: element.functionWrapping.map(clearFunctionWrapUniqueIDsAndSourceMaps),
       }
       if (updatedComponent.arbitraryJSBlock != null) {
         updatedComponent.arbitraryJSBlock = clearArbitraryJSBlockUniqueIDs(

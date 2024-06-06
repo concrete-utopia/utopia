@@ -320,6 +320,24 @@ export type VarLetOrConst = 'var' | 'let' | 'const'
 export type FunctionDeclarationSyntax = 'function' | VarLetOrConst
 export type BlockOrExpression = 'block' | 'parenthesized-expression' | 'expression'
 
+export interface SimpleFunctionWrap {
+  type: 'SIMPLE_FUNCTION_WRAP'
+  functionExpression: JSExpression
+}
+
+export function simpleFunctionWrap(functionExpression: JSExpression): SimpleFunctionWrap {
+  return {
+    type: 'SIMPLE_FUNCTION_WRAP',
+    functionExpression: functionExpression,
+  }
+}
+
+export type FunctionWrap = SimpleFunctionWrap
+
+export function isSimpleFunctionWrap(wrap: FunctionWrap): wrap is SimpleFunctionWrap {
+  return wrap.type === 'SIMPLE_FUNCTION_WRAP'
+}
+
 export interface UtopiaJSXComponent {
   type: 'UTOPIA_JSX_COMPONENT'
   name: string | null
@@ -331,6 +349,7 @@ export interface UtopiaJSXComponent {
   isFunction: boolean
   declarationSyntax: FunctionDeclarationSyntax
   blockOrExpression: BlockOrExpression
+  functionWrapping: Array<FunctionWrap>
   param: Param | null
   propsUsed: Array<string>
   rootElement: JSXElementChild

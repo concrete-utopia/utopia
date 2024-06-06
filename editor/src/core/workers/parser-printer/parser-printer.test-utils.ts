@@ -873,6 +873,7 @@ export function utopiaJSXComponentArbitrary(): Arbitrary<UtopiaJSXComponent> {
           isFunction,
           declarationSyntax,
           blockOrExpression,
+          [],
           defaultPropsParam,
           [],
           rootElement,
@@ -1477,6 +1478,7 @@ export function clearTopLevelElementSourceMapsUniqueIDsAndEmptyBlocks(
       return clearArbitraryJSBlockSourceMaps({
         ...withoutUID,
         javascript: blockCode,
+        sourceMap: null,
       })
     }
     case 'IMPORT_STATEMENT':
