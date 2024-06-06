@@ -170,7 +170,6 @@ export const DataReferenceSection = React.memo(({ paths }: { paths: ElementPath[
               onClick={openPicker(element.path)}
               onDoubleClick={NO_OP}
               selected={false}
-              inverted={false}
               contentsToDisplay={element.textContent}
               safeToDelete={false}
               onDelete={NO_OP}

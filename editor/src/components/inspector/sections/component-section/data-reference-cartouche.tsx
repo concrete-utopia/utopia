@@ -144,7 +144,6 @@ export const DataReferenceCartoucheControl = React.memo(
           contentsToDisplay={contentsToDisplay}
           selected={selected}
           safeToDelete={false}
-          inverted={false}
           onDelete={NO_OP}
           testId={`data-reference-cartouche-${EP.toString(elementPath)}`}
           contentIsComingFromServer={isDataComingFromHookResult}
@@ -164,7 +163,6 @@ interface DataCartoucheInnerProps {
   onClick: (e: React.MouseEvent) => void
   onDoubleClick: (e: React.MouseEvent) => void
   selected: boolean
-  inverted: boolean
   contentsToDisplay: { type: 'literal' | 'reference'; label: string | null }
   safeToDelete: boolean
   onDelete: () => void
@@ -182,7 +180,6 @@ export const DataCartoucheInner = React.forwardRef(
       safeToDelete,
       onDelete: onDeleteCallback,
       selected,
-      inverted,
       testId,
       contentsToDisplay,
       contentIsComingFromServer,
@@ -213,7 +210,6 @@ export const DataCartoucheInner = React.forwardRef(
         onDoubleClick={onDoubleClick}
         datatype={datatype}
         selected={selected}
-        inverted={inverted}
         testId={testId}
         tooltip={!props.hideTooltip ? contentsToDisplay.label ?? 'DATA' : null}
         role='selection'

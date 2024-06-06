@@ -61,7 +61,6 @@ function filterKeepArraysOnly(options: DataPickerOption[]): DataPickerOption[] {
 
 interface MapListSourceCartoucheProps {
   target: ElementPath
-  inverted: boolean
   selected: boolean
   openOn: 'single-click' | 'double-click'
 }
@@ -201,7 +200,6 @@ export const MapListSourceCartouche = React.memo((props: MapListSourceCartoucheP
         onDoubleClick={onDoubleClick}
         onDelete={NO_OP}
         selected={props.selected}
-        inverted={props.inverted}
         safeToDelete={false}
         testId='list-source-cartouche'
         contentIsComingFromServer={isDataComingFromHookResult}
