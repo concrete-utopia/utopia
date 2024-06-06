@@ -606,15 +606,17 @@ export var storyboard = (
       "functionWrapping": Array [],
       "isFunction": true,
       "name": "App",
-      "param": Object {
-        "boundParam": Object {
-          "defaultExpression": null,
-          "paramName": "props",
-          "type": "REGULAR_PARAM",
+      "params": Array [
+        Object {
+          "boundParam": Object {
+            "defaultExpression": null,
+            "paramName": "props",
+            "type": "REGULAR_PARAM",
+          },
+          "dotDotDotToken": false,
+          "type": "PARAM",
         },
-        "dotDotDotToken": false,
-        "type": "PARAM",
-      },
+      ],
       "propsUsed": Array [],
       "returnStatementComments": Object {
         "leadingComments": Array [],
@@ -991,7 +993,7 @@ export var storyboard = (
       "functionWrapping": Array [],
       "isFunction": false,
       "name": "storyboard",
-      "param": null,
+      "params": null,
       "propsUsed": Array [],
       "returnStatementComments": Object {
         "leadingComments": Array [],

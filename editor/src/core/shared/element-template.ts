@@ -1984,7 +1984,7 @@ export function utopiaJSXComponent(
   declarationSyntax: FunctionDeclarationSyntax,
   blockOrExpression: BlockOrExpression,
   functionWrapping: Array<FunctionWrap>,
-  param: Param | null,
+  params: Array<Param> | null,
   propsUsed: Array<string>,
   rootElement: JSXElementChild,
   jsBlock: ArbitraryJSBlock | null,
@@ -1998,7 +1998,7 @@ export function utopiaJSXComponent(
     declarationSyntax: declarationSyntax,
     blockOrExpression: blockOrExpression,
     functionWrapping: functionWrapping,
-    param: param,
+    params: params,
     propsUsed: propsUsed,
     rootElement: rootElement,
     arbitraryJSBlock: jsBlock,
@@ -2132,7 +2132,7 @@ export function functionParam(dotDotDotToken: boolean, boundParam: BoundParam): 
   }
 }
 
-export const defaultPropsParam: Param = functionParam(false, regularParam('props', null))
+export const defaultPropsParam: Array<Param> = [functionParam(false, regularParam('props', null))]
 
 export function propNamesForParam(param: Param): Array<string> {
   const { boundParam } = param
@@ -2339,8 +2339,8 @@ export function clearTopLevelElementUniqueIDs(element: TopLevelElement): TopLeve
           updatedComponent.arbitraryJSBlock,
         )
       }
-      if (updatedComponent.param != null) {
-        updatedComponent.param = clearParamUniqueIDs(updatedComponent.param)
+      if (updatedComponent.params != null) {
+        updatedComponent.params = updatedComponent.params.map(clearParamUniqueIDs)
       }
       return updatedComponent
     case 'ARBITRARY_JS_BLOCK':
@@ -2369,8 +2369,8 @@ export function clearTopLevelElementSourceMaps(element: TopLevelElement): TopLev
           updatedComponent.arbitraryJSBlock,
         )
       }
-      if (updatedComponent.param != null) {
-        updatedComponent.param = clearParamSourceMaps(updatedComponent.param)
+      if (updatedComponent.params != null) {
+        updatedComponent.params = updatedComponent.params.map(clearParamSourceMaps)
       }
       return updatedComponent
     case 'ARBITRARY_JS_BLOCK':

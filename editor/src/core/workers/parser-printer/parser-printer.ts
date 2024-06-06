@@ -769,7 +769,7 @@ function printUtopiaJSXComponent(
         ? TS.NodeFlags.None
         : nodeFlagsForVarLetOrConst(element.declarationSyntax)
     if (element.isFunction) {
-      const functionParams = maybeToArray(element.param).map((p) =>
+      const functionParams = (element.params ?? []).map((p) =>
         printParam(p, imports, printOptions.stripUIDs),
       )
 
@@ -1631,12 +1631,13 @@ export function parseCode(
             'No contents',
           )
           let isFunction: boolean = false
-          let parsedFunctionParam: Either<string, WithParserMetadata<Param> | null> = right(null)
+          let parsedFunctionParams: Either<string, WithParserMetadata<Array<Param>> | null> =
+            right(null)
           let propsUsed: Array<string> = []
           if (isPossibleCanvasContentsFunction(canvasContents)) {
             const { parameters, body } = canvasContents
             isFunction = true
-            const parsedFunctionParams = parseParams(
+            const notNullParsedFunctionParams = parseParams(
               parameters,
               sourceFile,
               sourceText,
@@ -1647,26 +1648,14 @@ export function parseCode(
               alreadyExistingUIDs_MUTABLE,
               applySteganography,
             )
-            parsedFunctionParam = flatMapEither((parsedParams) => {
-              const paramsValue = parsedParams.value
-              if (paramsValue.length === 0) {
-                return right(null)
-              } else if (paramsValue.length === 1) {
-                // Note: We're explicitly ignoring the `propsUsed` value as
-                // that should be handled by the call to `propNamesForParam` below.
-                return right(
-                  withParserMetadata(paramsValue[0], parsedParams.highlightBounds, [], []),
-                )
-              } else {
-                return left('Invalid number of params')
-              }
-            }, parsedFunctionParams)
-            forEachRight(parsedFunctionParam, (param) => {
-              const boundParam = param?.value.boundParam
+            parsedFunctionParams = notNullParsedFunctionParams
+            forEachRight(notNullParsedFunctionParams, (params) => {
+              const firstParam = params.value.at(0)
+              const boundParam = firstParam?.boundParam
               const propsObjectName =
                 boundParam != null && isRegularParam(boundParam) ? boundParam.paramName : null
 
-              propsUsed = param == null ? [] : propNamesForParam(param.value)
+              propsUsed = firstParam == null ? [] : propNamesForParam(firstParam)
               parsedContents = parseOutFunctionContents(
                 sourceFile,
                 sourceText,
@@ -1674,13 +1663,13 @@ export function parseCode(
                 foldEither(
                   () => [],
                   (paramsSuccess) => paramsSuccess.value,
-                  parsedFunctionParams,
+                  notNullParsedFunctionParams,
                 ),
                 imports,
                 topLevelNames,
                 propsObjectName,
                 body,
-                param?.highlightBounds ?? {},
+                params?.highlightBounds ?? {},
                 alreadyExistingUIDs_MUTABLE,
                 applySteganography,
               )
@@ -1722,7 +1711,7 @@ export function parseCode(
             }
           }
 
-          if (isLeft(parsedContents) || (isFunction && isLeft(parsedFunctionParam))) {
+          if (isLeft(parsedContents) || (isFunction && isLeft(parsedFunctionParams))) {
             pushArbitraryNode(topLevelElement)
           } else {
             const contents = parsedContents.value.value
@@ -1748,7 +1737,7 @@ export function parseCode(
                 foldEither(
                   (_) => null,
                   (param) => param?.value ?? null,
-                  parsedFunctionParam,
+                  parsedFunctionParams,
                 ),
                 propsUsed,
                 contents.elements[0].value,
@@ -1887,7 +1876,7 @@ export function parseCode(
             topLevelElement.declarationSyntax,
             topLevelElement.blockOrExpression,
             topLevelElement.functionWrapping,
-            topLevelElement.param,
+            topLevelElement.params,
             topLevelElement.propsUsed,
             topLevelElement.rootElement,
             topLevelElement.arbitraryJSBlock,

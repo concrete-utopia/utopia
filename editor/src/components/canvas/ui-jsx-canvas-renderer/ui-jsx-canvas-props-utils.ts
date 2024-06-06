@@ -1,10 +1,5 @@
 import type { MapLike } from 'typescript'
-import type {
-  Param,
-  BoundParam,
-  JSExpressionMapOrOtherJavascript,
-  JSExpression,
-} from '../../../core/shared/element-template'
+import type { Param, BoundParam, JSExpression } from '../../../core/shared/element-template'
 import {
   isRegularParam,
   isDestructuredObject,
@@ -17,8 +12,8 @@ import type { RenderContext } from './ui-jsx-canvas-element-renderer-utils'
 export function applyPropsParamToPassedProps(
   inScope: MapLike<any>,
   elementPath: ElementPath | null,
-  passedProps: MapLike<unknown>,
-  propsParam: Param,
+  functionArguments: Array<any>,
+  propsParams: Array<Param>,
   renderContext: RenderContext,
   uid: string | undefined,
   codeError: Error | null,
@@ -45,14 +40,18 @@ export function applyPropsParamToPassedProps(
     }
   }
 
-  function applyBoundParamToOutput(value: unknown, boundParam: BoundParam): void {
+  function applyBoundParamToOutput(functionArgument: unknown, boundParam: BoundParam): void {
     if (isRegularParam(boundParam)) {
       const { paramName } = boundParam
-      output[paramName] = getParamValue(paramName, value, boundParam.defaultExpression)
+      output[paramName] = getParamValue(paramName, functionArgument, boundParam.defaultExpression)
     } else if (isDestructuredObject(boundParam)) {
-      if (typeof value === 'object' && !Array.isArray(value) && value !== null) {
-        const valueAsRecord: Record<string, unknown> = { ...value }
-        let remainingValues = { ...value } as Record<string, unknown>
+      if (
+        typeof functionArgument === 'object' &&
+        !Array.isArray(functionArgument) &&
+        functionArgument !== null
+      ) {
+        const valueAsRecord: Record<string, unknown> = { ...functionArgument }
+        let remainingValues = { ...functionArgument } as Record<string, unknown>
         for (const part of boundParam.parts) {
           const { propertyName, param } = part
           if (propertyName == null) {
@@ -85,8 +84,8 @@ export function applyPropsParamToPassedProps(
       }
       // TODO Throw, but what?
     } else {
-      if (Array.isArray(value)) {
-        let remainingValues = [...value]
+      if (Array.isArray(functionArgument)) {
+        let remainingValues = [...functionArgument]
         boundParam.parts.forEach((param) => {
           if (isOmittedParam(param)) {
             remainingValues.shift()
@@ -115,6 +114,8 @@ export function applyPropsParamToPassedProps(
     }
   }
 
-  applyBoundParamToOutput(passedProps, propsParam.boundParam)
+  propsParams.forEach((propsParam, paramIndex) => {
+    applyBoundParamToOutput(functionArguments[paramIndex], propsParam.boundParam)
+  })
   return output
 }

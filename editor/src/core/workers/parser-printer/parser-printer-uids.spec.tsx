@@ -411,7 +411,7 @@ export var app = (props) => {
                   tle.declarationSyntax,
                   tle.blockOrExpression,
                   tle.functionWrapping,
-                  tle.param,
+                  tle.params,
                   tle.propsUsed,
                   updatedRootElement,
                   tle.arbitraryJSBlock,

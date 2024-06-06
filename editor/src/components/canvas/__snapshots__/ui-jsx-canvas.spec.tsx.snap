@@ -44428,6 +44428,1153 @@ Object {
 }
 `;
 
+exports[`UiJsxCanvas render renders a canvas with a component wrapped in a function that has more that one parameter 1`] = `
+"<div style=\\"all: initial\\">
+  <div
+    id=\\"canvas-container\\"
+    data-testid=\\"canvas-container\\"
+    style=\\"position: absolute\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/b10\\"
+    data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
+  >
+    <div
+      data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+      data-path=\\"utopia-storyboard-uid/scene-aaa\\"
+      style=\\"
+        overflow: hidden;
+        position: absolute;
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
+        background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
+        background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
+        height: 200px;
+        left: 59px;
+        width: 200px;
+        top: 79px;
+      \\"
+      data-uid=\\"scene-aaa\\"
+    >
+      <div
+        style=\\"background-color: green\\"
+        data-uid=\\"aaa\\"
+        data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
+      >
+        <span
+          style=\\"position: absolute\\"
+          data-uid=\\"bbb\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
+          >Some Text</span
+        >
+      </div>
+    </div>
+  </div>
+</div>
+"
+`;
+
+exports[`UiJsxCanvas render renders a canvas with a component wrapped in a function that has more that one parameter 2`] = `
+Object {
+  "utopia-storyboard-uid/scene-aaa": Object {
+    "assignedToProp": null,
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "conditionValue": "not-a-conditional",
+    "earlyReturn": null,
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [
+          Object {
+            "children": Array [],
+            "name": Object {
+              "baseVariable": "App",
+              "propertyPath": Object {
+                "propertyElements": Array [],
+              },
+            },
+            "props": Array [
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "uid": "",
+                  "value": "app-entity",
+                },
+              },
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "uid": "",
+                  "value": Object {
+                    "height": "100%",
+                    "position": "absolute",
+                    "width": "100%",
+                  },
+                },
+              },
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "backgroundColor",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "uid": "",
+                  "value": "green",
+                },
+              },
+            ],
+            "type": "JSX_ELEMENT",
+            "uid": "",
+          },
+        ],
+        "name": Object {
+          "baseVariable": "Scene",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "uid": "",
+              "value": Object {
+                "height": 200,
+                "left": 59,
+                "position": "absolute",
+                "top": 79,
+                "width": 200,
+              },
+            },
+          },
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "uid": "",
+              "value": "scene-aaa",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "exportedName": "Scene",
+      "filePath": "utopia-api",
+      "type": "IMPORTED_ORIGIN",
+      "variableName": "Scene",
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "nonRoundedGlobalFrame": null,
+    "specialSizeMeasurements": Object {
+      "alignItems": null,
+      "borderRadius": null,
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
+      "coordinateSystemBounds": null,
+      "display": "initial",
+      "flexDirection": null,
+      "float": "none",
+      "fontSize": null,
+      "fontStyle": null,
+      "fontWeight": null,
+      "gap": null,
+      "globalContentBoxForChildren": null,
+      "globalFrameWithTextContent": null,
+      "hasPositionOffset": false,
+      "hasTransform": false,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "justifyContent": null,
+      "layoutSystemForChildren": null,
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentFlexGap": 0,
+      "parentHugsOnMainAxis": false,
+      "parentJustifyContent": null,
+      "parentLayoutSystem": "flow",
+      "parentPadding": Object {},
+      "parentTextDirection": "ltr",
+      "position": "static",
+      "providesBoundsForAbsoluteChildren": false,
+      "renderedChildrenCount": 0,
+      "textBounds": null,
+      "textDecorationLine": null,
+      "usesParentBounds": false,
+    },
+    "textContent": null,
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity": Object {
+    "assignedToProp": null,
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "conditionValue": "not-a-conditional",
+    "earlyReturn": null,
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "name": Object {
+          "baseVariable": "App",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "uid": "",
+              "value": "app-entity",
+            },
+          },
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "uid": "",
+              "value": Object {
+                "height": "100%",
+                "position": "absolute",
+                "width": "100%",
+              },
+            },
+          },
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "backgroundColor",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "uid": "",
+              "value": "green",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "filePath": "test.js",
+      "type": "SAME_FILE_ORIGIN",
+      "variableName": "App",
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "nonRoundedGlobalFrame": null,
+    "specialSizeMeasurements": Object {
+      "alignItems": null,
+      "borderRadius": null,
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
+      "coordinateSystemBounds": null,
+      "display": "initial",
+      "flexDirection": null,
+      "float": "none",
+      "fontSize": null,
+      "fontStyle": null,
+      "fontWeight": null,
+      "gap": null,
+      "globalContentBoxForChildren": null,
+      "globalFrameWithTextContent": null,
+      "hasPositionOffset": false,
+      "hasTransform": false,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "justifyContent": null,
+      "layoutSystemForChildren": null,
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentFlexGap": 0,
+      "parentHugsOnMainAxis": false,
+      "parentJustifyContent": null,
+      "parentLayoutSystem": "flow",
+      "parentPadding": Object {},
+      "parentTextDirection": "ltr",
+      "position": "static",
+      "providesBoundsForAbsoluteChildren": false,
+      "renderedChildrenCount": 0,
+      "textBounds": null,
+      "textDecorationLine": null,
+      "usesParentBounds": false,
+    },
+    "textContent": null,
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
+    "assignedToProp": null,
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "conditionValue": "not-a-conditional",
+    "earlyReturn": null,
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [
+          Object {
+            "children": Array [
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "name": "otherValue",
+                "sourceMap": Object {
+                  "mappings": "CAgBoE",
+                  "names": Array [],
+                  "sources": Array [
+                    "code.tsx",
+                  ],
+                  "sourcesContent": Array [
+                    "
+      import * as React from 'react'
+      import { Storyboard, Scene } from 'utopia-api'
+
+      function twoParameterWrapper(componentFunction) {
+        return (props) => {
+          return componentFunction(props, 'Some Text')
+        }
+      }
+      
+      export var App = twoParameterWrapper((props, otherValue) => {
+        return (
+          <div
+            style={{ backgroundColor: props.backgroundColor }}
+            data-uid={'aaa'}
+          >
+            <span style={{position: 'absolute'}} data-uid={'bbb'}>{otherValue}</span>
+          </div>
+        )
+      })
+
+      export var storyboard = (props) => {
+        return (
+          <Storyboard data-uid={'utopia-storyboard-uid'}>
+            <Scene
+              style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
+              data-uid={'scene-aaa'}
+            >
+              <App
+                data-uid='app-entity'
+                style={{ position: 'absolute', height: '100%', width: '100%' }}
+                backgroundColor='green'
+              />
+            </Scene>
+          </Storyboard>
+        )
+      }
+      ",
+                  ],
+                  "version": 3,
+                },
+                "type": "JS_IDENTIFIER",
+                "uid": "",
+              },
+            ],
+            "name": Object {
+              "baseVariable": "span",
+              "propertyPath": Object {
+                "propertyElements": Array [],
+              },
+            },
+            "props": Array [
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "uid": "",
+                  "value": Object {
+                    "position": "absolute",
+                  },
+                },
+              },
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "uid": "",
+                  "value": "bbb",
+                },
+              },
+            ],
+            "type": "JSX_ELEMENT",
+            "uid": "",
+          },
+        ],
+        "name": Object {
+          "baseVariable": "div",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "content": Array [
+                Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "key": "backgroundColor",
+                  "keyComments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "PROPERTY_ASSIGNMENT",
+                  "value": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
+                    "onValue": Object {
+                      "comments": Object {
+                        "leadingComments": Array [],
+                        "trailingComments": Array [],
+                      },
+                      "name": "props",
+                      "sourceMap": Object {
+                        "mappings": "CAauC",
+                        "names": Array [],
+                        "sources": Array [
+                          "code.tsx",
+                        ],
+                        "sourcesContent": Array [
+                          "
+      import * as React from 'react'
+      import { Storyboard, Scene } from 'utopia-api'
+
+      function twoParameterWrapper(componentFunction) {
+        return (props) => {
+          return componentFunction(props, 'Some Text')
+        }
+      }
+      
+      export var App = twoParameterWrapper((props, otherValue) => {
+        return (
+          <div
+            style={{ backgroundColor: props.backgroundColor }}
+            data-uid={'aaa'}
+          >
+            <span style={{position: 'absolute'}} data-uid={'bbb'}>{otherValue}</span>
+          </div>
+        )
+      })
+
+      export var storyboard = (props) => {
+        return (
+          <Storyboard data-uid={'utopia-storyboard-uid'}>
+            <Scene
+              style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
+              data-uid={'scene-aaa'}
+            >
+              <App
+                data-uid='app-entity'
+                style={{ position: 'absolute', height: '100%', width: '100%' }}
+                backgroundColor='green'
+              />
+            </Scene>
+          </Storyboard>
+        )
+      }
+      ",
+                        ],
+                        "version": 3,
+                      },
+                      "type": "JS_IDENTIFIER",
+                      "uid": "",
+                    },
+                    "optionallyChained": "not-optionally-chained",
+                    "originalJavascript": "props.backgroundColor",
+                    "property": "backgroundColor",
+                    "sourceMap": Object {
+                      "mappings": "CAauC",
+                      "names": Array [],
+                      "sources": Array [
+                        "code.tsx",
+                      ],
+                      "sourcesContent": Array [
+                        "
+      import * as React from 'react'
+      import { Storyboard, Scene } from 'utopia-api'
+
+      function twoParameterWrapper(componentFunction) {
+        return (props) => {
+          return componentFunction(props, 'Some Text')
+        }
+      }
+      
+      export var App = twoParameterWrapper((props, otherValue) => {
+        return (
+          <div
+            style={{ backgroundColor: props.backgroundColor }}
+            data-uid={'aaa'}
+          >
+            <span style={{position: 'absolute'}} data-uid={'bbb'}>{otherValue}</span>
+          </div>
+        )
+      })
+
+      export var storyboard = (props) => {
+        return (
+          <Storyboard data-uid={'utopia-storyboard-uid'}>
+            <Scene
+              style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
+              data-uid={'scene-aaa'}
+            >
+              <App
+                data-uid='app-entity'
+                style={{ position: 'absolute', height: '100%', width: '100%' }}
+                backgroundColor='green'
+              />
+            </Scene>
+          </Storyboard>
+        )
+      }
+      ",
+                      ],
+                      "version": 3,
+                    },
+                    "type": "JS_PROPERTY_ACCESS",
+                    "uid": "",
+                  },
+                },
+              ],
+              "type": "ATTRIBUTE_NESTED_OBJECT",
+              "uid": "",
+            },
+          },
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "uid": "",
+              "value": "aaa",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+        Array [
+          "aaa",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "filePath": "test.js",
+      "type": "SAME_FILE_ORIGIN",
+      "variableName": "div",
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "nonRoundedGlobalFrame": null,
+    "specialSizeMeasurements": Object {
+      "alignItems": null,
+      "borderRadius": null,
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
+      "coordinateSystemBounds": null,
+      "display": "initial",
+      "flexDirection": null,
+      "float": "none",
+      "fontSize": null,
+      "fontStyle": null,
+      "fontWeight": null,
+      "gap": null,
+      "globalContentBoxForChildren": null,
+      "globalFrameWithTextContent": null,
+      "hasPositionOffset": false,
+      "hasTransform": false,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "justifyContent": null,
+      "layoutSystemForChildren": null,
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentFlexGap": 0,
+      "parentHugsOnMainAxis": false,
+      "parentJustifyContent": null,
+      "parentLayoutSystem": "flow",
+      "parentPadding": Object {},
+      "parentTextDirection": "ltr",
+      "position": "static",
+      "providesBoundsForAbsoluteChildren": false,
+      "renderedChildrenCount": 0,
+      "textBounds": null,
+      "textDecorationLine": null,
+      "usesParentBounds": false,
+    },
+    "textContent": null,
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb": Object {
+    "assignedToProp": null,
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "conditionValue": "not-a-conditional",
+    "earlyReturn": null,
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "name": "otherValue",
+            "sourceMap": Object {
+              "mappings": "CAgBoE",
+              "names": Array [],
+              "sources": Array [
+                "code.tsx",
+              ],
+              "sourcesContent": Array [
+                "
+      import * as React from 'react'
+      import { Storyboard, Scene } from 'utopia-api'
+
+      function twoParameterWrapper(componentFunction) {
+        return (props) => {
+          return componentFunction(props, 'Some Text')
+        }
+      }
+      
+      export var App = twoParameterWrapper((props, otherValue) => {
+        return (
+          <div
+            style={{ backgroundColor: props.backgroundColor }}
+            data-uid={'aaa'}
+          >
+            <span style={{position: 'absolute'}} data-uid={'bbb'}>{otherValue}</span>
+          </div>
+        )
+      })
+
+      export var storyboard = (props) => {
+        return (
+          <Storyboard data-uid={'utopia-storyboard-uid'}>
+            <Scene
+              style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
+              data-uid={'scene-aaa'}
+            >
+              <App
+                data-uid='app-entity'
+                style={{ position: 'absolute', height: '100%', width: '100%' }}
+                backgroundColor='green'
+              />
+            </Scene>
+          </Storyboard>
+        )
+      }
+      ",
+              ],
+              "version": 3,
+            },
+            "type": "JS_IDENTIFIER",
+            "uid": "",
+          },
+        ],
+        "name": Object {
+          "baseVariable": "span",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "uid": "",
+              "value": Object {
+                "position": "absolute",
+              },
+            },
+          },
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "uid": "",
+              "value": "bbb",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+        Array [
+          "aaa",
+          "bbb",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "filePath": "test.js",
+      "type": "SAME_FILE_ORIGIN",
+      "variableName": "span",
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "nonRoundedGlobalFrame": null,
+    "specialSizeMeasurements": Object {
+      "alignItems": null,
+      "borderRadius": null,
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
+      "coordinateSystemBounds": null,
+      "display": "initial",
+      "flexDirection": null,
+      "float": "none",
+      "fontSize": null,
+      "fontStyle": null,
+      "fontWeight": null,
+      "gap": null,
+      "globalContentBoxForChildren": null,
+      "globalFrameWithTextContent": null,
+      "hasPositionOffset": false,
+      "hasTransform": false,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "justifyContent": null,
+      "layoutSystemForChildren": null,
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentFlexGap": 0,
+      "parentHugsOnMainAxis": false,
+      "parentJustifyContent": null,
+      "parentLayoutSystem": "flow",
+      "parentPadding": Object {},
+      "parentTextDirection": "ltr",
+      "position": "static",
+      "providesBoundsForAbsoluteChildren": false,
+      "renderedChildrenCount": 0,
+      "textBounds": null,
+      "textDecorationLine": null,
+      "usesParentBounds": false,
+    },
+    "textContent": null,
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/b10": Object {
+    "assignedToProp": null,
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "conditionValue": "not-a-conditional",
+    "earlyReturn": null,
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
+        "name": "otherValue",
+        "sourceMap": Object {
+          "mappings": "CAgBoE",
+          "names": Array [],
+          "sources": Array [
+            "code.tsx",
+          ],
+          "sourcesContent": Array [
+            "
+      import * as React from 'react'
+      import { Storyboard, Scene } from 'utopia-api'
+
+      function twoParameterWrapper(componentFunction) {
+        return (props) => {
+          return componentFunction(props, 'Some Text')
+        }
+      }
+      
+      export var App = twoParameterWrapper((props, otherValue) => {
+        return (
+          <div
+            style={{ backgroundColor: props.backgroundColor }}
+            data-uid={'aaa'}
+          >
+            <span style={{position: 'absolute'}} data-uid={'bbb'}>{otherValue}</span>
+          </div>
+        )
+      })
+
+      export var storyboard = (props) => {
+        return (
+          <Storyboard data-uid={'utopia-storyboard-uid'}>
+            <Scene
+              style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
+              data-uid={'scene-aaa'}
+            >
+              <App
+                data-uid='app-entity'
+                style={{ position: 'absolute', height: '100%', width: '100%' }}
+                backgroundColor='green'
+              />
+            </Scene>
+          </Storyboard>
+        )
+      }
+      ",
+          ],
+          "version": 3,
+        },
+        "type": "JS_IDENTIFIER",
+        "uid": "",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+        Array [
+          "aaa",
+          "bbb",
+          "b10",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": null,
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "nonRoundedGlobalFrame": null,
+    "specialSizeMeasurements": Object {
+      "alignItems": null,
+      "borderRadius": null,
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
+      "coordinateSystemBounds": null,
+      "display": "initial",
+      "flexDirection": null,
+      "float": "none",
+      "fontSize": null,
+      "fontStyle": null,
+      "fontWeight": null,
+      "gap": null,
+      "globalContentBoxForChildren": null,
+      "globalFrameWithTextContent": null,
+      "hasPositionOffset": false,
+      "hasTransform": false,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "justifyContent": null,
+      "layoutSystemForChildren": null,
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentFlexGap": 0,
+      "parentHugsOnMainAxis": false,
+      "parentJustifyContent": null,
+      "parentLayoutSystem": "flow",
+      "parentPadding": Object {},
+      "parentTextDirection": "ltr",
+      "position": "static",
+      "providesBoundsForAbsoluteChildren": false,
+      "renderedChildrenCount": 0,
+      "textBounds": null,
+      "textDecorationLine": null,
+      "usesParentBounds": false,
+    },
+    "textContent": null,
+  },
+}
+`;
+
 exports[`UiJsxCanvas render renders a canvas with a component wrapped in a function that wraps the component with more content 1`] = `
 "<div style=\\"all: initial\\">
   <div
@@ -44784,6 +45931,618 @@ Object {
       "filePath": "test.js",
       "type": "SAME_FILE_ORIGIN",
       "variableName": "App",
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "nonRoundedGlobalFrame": null,
+    "specialSizeMeasurements": Object {
+      "alignItems": null,
+      "borderRadius": null,
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
+      "coordinateSystemBounds": null,
+      "display": "initial",
+      "flexDirection": null,
+      "float": "none",
+      "fontSize": null,
+      "fontStyle": null,
+      "fontWeight": null,
+      "gap": null,
+      "globalContentBoxForChildren": null,
+      "globalFrameWithTextContent": null,
+      "hasPositionOffset": false,
+      "hasTransform": false,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "justifyContent": null,
+      "layoutSystemForChildren": null,
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentFlexGap": 0,
+      "parentHugsOnMainAxis": false,
+      "parentJustifyContent": null,
+      "parentLayoutSystem": "flow",
+      "parentPadding": Object {},
+      "parentTextDirection": "ltr",
+      "position": "static",
+      "providesBoundsForAbsoluteChildren": false,
+      "renderedChildrenCount": 0,
+      "textBounds": null,
+      "textDecorationLine": null,
+      "usesParentBounds": false,
+    },
+    "textContent": null,
+  },
+}
+`;
+
+exports[`UiJsxCanvas render renders a canvas with a component wrapped in forwardRef 1`] = `
+"<div style=\\"all: initial\\">
+  <div
+    id=\\"canvas-container\\"
+    data-testid=\\"canvas-container\\"
+    style=\\"position: absolute\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:006\\"
+    data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
+  >
+    <div
+      data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+      data-path=\\"utopia-storyboard-uid/scene-aaa\\"
+      style=\\"
+        overflow: hidden;
+        position: absolute;
+        background-color: var(--utopitheme-emphasizedBackground);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
+        background-image: conic-gradient(
+          var(--utopitheme-checkerboardLight) 0.25turn,
+          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+          var(--utopitheme-checkerboardDark) 0.75turn
+        );
+        background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
+        background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
+        height: 200px;
+        left: 59px;
+        width: 200px;
+        top: 79px;
+      \\"
+      data-uid=\\"scene-aaa\\"
+    >
+      <div
+        data-uid=\\"aaa\\"
+        data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:006:aaa\\"
+      >
+        <span
+          style=\\"position: absolute\\"
+          data-uid=\\"bbb\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:006:aaa/bbb\\"
+          >Something
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+"
+`;
+
+exports[`UiJsxCanvas render renders a canvas with a component wrapped in forwardRef 2`] = `
+Object {
+  "utopia-storyboard-uid/scene-aaa": Object {
+    "assignedToProp": null,
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "conditionValue": "not-a-conditional",
+    "earlyReturn": null,
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [
+          Object {
+            "children": Array [],
+            "name": Object {
+              "baseVariable": "App",
+              "propertyPath": Object {
+                "propertyElements": Array [],
+              },
+            },
+            "props": Array [
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "uid": "",
+                  "value": "app-entity",
+                },
+              },
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "uid": "",
+                  "value": Object {
+                    "height": "100%",
+                    "position": "absolute",
+                    "width": "100%",
+                  },
+                },
+              },
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "backgroundColor",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "uid": "",
+                  "value": "green",
+                },
+              },
+            ],
+            "type": "JSX_ELEMENT",
+            "uid": "",
+          },
+        ],
+        "name": Object {
+          "baseVariable": "Scene",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "uid": "",
+              "value": Object {
+                "height": 200,
+                "left": 59,
+                "position": "absolute",
+                "top": 79,
+                "width": 200,
+              },
+            },
+          },
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "uid": "",
+              "value": "scene-aaa",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "exportedName": "Scene",
+      "filePath": "utopia-api",
+      "type": "IMPORTED_ORIGIN",
+      "variableName": "Scene",
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "nonRoundedGlobalFrame": null,
+    "specialSizeMeasurements": Object {
+      "alignItems": null,
+      "borderRadius": null,
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
+      "coordinateSystemBounds": null,
+      "display": "initial",
+      "flexDirection": null,
+      "float": "none",
+      "fontSize": null,
+      "fontStyle": null,
+      "fontWeight": null,
+      "gap": null,
+      "globalContentBoxForChildren": null,
+      "globalFrameWithTextContent": null,
+      "hasPositionOffset": false,
+      "hasTransform": false,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "justifyContent": null,
+      "layoutSystemForChildren": null,
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentFlexGap": 0,
+      "parentHugsOnMainAxis": false,
+      "parentJustifyContent": null,
+      "parentLayoutSystem": "flow",
+      "parentPadding": Object {},
+      "parentTextDirection": "ltr",
+      "position": "static",
+      "providesBoundsForAbsoluteChildren": false,
+      "renderedChildrenCount": 0,
+      "textBounds": null,
+      "textDecorationLine": null,
+      "usesParentBounds": false,
+    },
+    "textContent": null,
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity": Object {
+    "assignedToProp": null,
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "conditionValue": "not-a-conditional",
+    "earlyReturn": null,
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "name": Object {
+          "baseVariable": "App",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "uid": "",
+              "value": "app-entity",
+            },
+          },
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "uid": "",
+              "value": Object {
+                "height": "100%",
+                "position": "absolute",
+                "width": "100%",
+              },
+            },
+          },
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "backgroundColor",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "uid": "",
+              "value": "green",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "filePath": "test.js",
+      "type": "SAME_FILE_ORIGIN",
+      "variableName": "App",
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "nonRoundedGlobalFrame": null,
+    "specialSizeMeasurements": Object {
+      "alignItems": null,
+      "borderRadius": null,
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
+      "coordinateSystemBounds": null,
+      "display": "initial",
+      "flexDirection": null,
+      "float": "none",
+      "fontSize": null,
+      "fontStyle": null,
+      "fontWeight": null,
+      "gap": null,
+      "globalContentBoxForChildren": null,
+      "globalFrameWithTextContent": null,
+      "hasPositionOffset": false,
+      "hasTransform": false,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "justifyContent": null,
+      "layoutSystemForChildren": null,
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentFlexGap": 0,
+      "parentHugsOnMainAxis": false,
+      "parentJustifyContent": null,
+      "parentLayoutSystem": "flow",
+      "parentPadding": Object {},
+      "parentTextDirection": "ltr",
+      "position": "static",
+      "providesBoundsForAbsoluteChildren": false,
+      "renderedChildrenCount": 0,
+      "textBounds": null,
+      "textDecorationLine": null,
+      "usesParentBounds": false,
+    },
+    "textContent": null,
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity:006": Object {
+    "assignedToProp": null,
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "conditionValue": "not-a-conditional",
+    "earlyReturn": null,
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "name": Object {
+          "baseVariable": "ComponentThatForwards",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "ref",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "name": "ref",
+              "sourceMap": Object {
+                "mappings": "CAmBuC",
+                "names": Array [],
+                "sources": Array [
+                  "code.tsx",
+                ],
+                "sourcesContent": Array [
+                  "
+      import * as React from 'react'
+      import { Storyboard, Scene } from 'utopia-api'
+
+      export var ComponentThatForwards = React.forwardRef((props, ref) => {
+        return (
+          <div
+            style={{ backgroundColor: props.backgroundColor }}
+            data-uid={'aaa'}
+            ref={ref}
+          >
+            <span style={{position: 'absolute'}} data-uid={'bbb'}>Something</span>
+          </div>
+        )
+      })
+
+      export var App = () => {
+        const ref = React.useRef(null)
+        return (
+          <ComponentThatForwards ref={ref} />
+        )
+      }
+
+      export var storyboard = (props) => {
+        return (
+          <Storyboard data-uid={'utopia-storyboard-uid'}>
+            <Scene
+              style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
+              data-uid={'scene-aaa'}
+            >
+              <App
+                data-uid='app-entity'
+                style={{ position: 'absolute', height: '100%', width: '100%' }}
+                backgroundColor='green'
+              />
+            </Scene>
+          </Storyboard>
+        )
+      }
+      ",
+                ],
+                "version": 3,
+              },
+              "type": "JS_IDENTIFIER",
+              "uid": "",
+            },
+          },
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "uid": "",
+              "value": "006",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+        Array [
+          "006",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "filePath": "test.js",
+      "type": "SAME_FILE_ORIGIN",
+      "variableName": "ComponentThatForwards",
     },
     "isEmotionOrStyledComponent": false,
     "label": null,
