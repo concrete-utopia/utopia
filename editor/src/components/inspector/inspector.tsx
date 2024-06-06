@@ -57,7 +57,6 @@ import {
   UtopiaTheme,
   FlexRow,
   Button,
-  H1,
   SectionActionSheet,
   SquareButton,
 } from '../../uuiui'
@@ -100,6 +99,7 @@ import { ExpandableIndicator } from '../navigator/navigator-item/expandable-indi
 import { isIntrinsicElementMetadata } from '../../core/model/project-file-utils'
 import { assertNever } from '../../core/shared/utils'
 import { DataReferenceSection } from './sections/data-reference-section'
+import { replaceFirstChildAndDeleteSiblings } from '../editor/element-children'
 
 export interface ElementPathElement {
   name?: string
@@ -779,11 +779,22 @@ export const InspectorContextProvider = React.memo<{
     getElementsToTarget(selectedViews),
   )
 
+  const jsxMetadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+
   const onSubmitValueForHooks = React.useCallback(
     (newValue: JSExpression, path: PropertyPath, transient: boolean) => {
       const actionsArray = [
-        ...refElementsToTargetForUpdates.current.map((elem) => {
-          return setProp_UNSAFE(elem, path, newValue)
+        ...refElementsToTargetForUpdates.current.flatMap((elem): EditorAction[] => {
+          // if the target is the children prop, replace the elements instead
+          if (path.propertyElements[0] === 'children') {
+            const element = MetadataUtils.findElementByElementPath(jsxMetadataRef.current, elem)
+            const children =
+              element != null && isRight(element.element) && isJSXElement(element.element.value)
+                ? element.element.value.children
+                : []
+            return replaceFirstChildAndDeleteSiblings(elem, children, newValue)
+          }
+          return [setProp_UNSAFE(elem, path, newValue)]
         }),
       ]
       const actions: EditorAction[] = transient
@@ -791,7 +802,7 @@ export const InspectorContextProvider = React.memo<{
         : actionsArray
       dispatch(actions, 'everyone')
     },
-    [dispatch, refElementsToTargetForUpdates],
+    [dispatch, refElementsToTargetForUpdates, jsxMetadataRef],
   )
 
   const onUnsetValue = React.useCallback(

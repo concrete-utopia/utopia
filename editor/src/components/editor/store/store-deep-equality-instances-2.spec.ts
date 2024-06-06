@@ -788,6 +788,7 @@ describe('UtopiaJSXComponentKeepDeepEquality', () => {
     isFunction: true,
     declarationSyntax: 'const',
     blockOrExpression: 'block',
+    functionWrapping: [],
     param: {
       type: 'PARAM',
       dotDotDotToken: false,
@@ -837,6 +838,7 @@ describe('UtopiaJSXComponentKeepDeepEquality', () => {
     isFunction: true,
     declarationSyntax: 'const',
     blockOrExpression: 'block',
+    functionWrapping: [],
     param: {
       type: 'PARAM',
       dotDotDotToken: false,
@@ -886,6 +888,7 @@ describe('UtopiaJSXComponentKeepDeepEquality', () => {
     isFunction: true,
     declarationSyntax: 'const',
     blockOrExpression: 'block',
+    functionWrapping: [],
     param: {
       type: 'PARAM',
       dotDotDotToken: false,

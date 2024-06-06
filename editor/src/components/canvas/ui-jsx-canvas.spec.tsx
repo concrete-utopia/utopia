@@ -156,6 +156,91 @@ export { ToBeDefaultExported as default }`,
     )
   })
 
+  it('renders a canvas with a component wrapped in React.memo', () => {
+    testCanvasRender(
+      null,
+      `
+      import * as React from 'react'
+      import { Storyboard, Scene } from 'utopia-api'
+      
+      export var App = React.memo((props) => {
+        return (
+          <div
+            style={{ ...props.style, backgroundColor: '#FFFFFF' }}
+            data-uid={'aaa'}
+          >
+            <span style={{position: 'absolute'}} data-uid={'bbb'}>hi</span>
+          </div>
+        )
+      })
+      export var ${BakedInStoryboardVariableName} = (props) => {
+        return (
+          <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+            <Scene
+              style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', height: '100%', width: '100%' }}
+                title={'Hi there!'}
+              />
+            </Scene>
+          </Storyboard>
+        )
+      }
+      `,
+    )
+  })
+
+  it('renders a canvas with a component wrapped in a function that wraps the component with more content', () => {
+    testCanvasRender(
+      null,
+      `
+      import * as React from 'react'
+      import { Storyboard, Scene } from 'utopia-api'
+
+      function wrapComponent(Component) {
+        return () => {
+          return <div>
+            <div>
+              <span>wrapComponent</span>
+            </div>
+            <div><Component /></div>
+          </div>
+        }
+      }
+      
+      export var App = wrapComponent(() => {
+        return (
+          <div
+            style={{ backgroundColor: '#FFFFFF' }}
+            data-uid={'aaa'}
+          >
+            <span style={{position: 'absolute'}} data-uid={'bbb'}>hi</span>
+          </div>
+        )
+      })
+      export var ${BakedInStoryboardVariableName} = (props) => {
+        return (
+          <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+            <Scene
+              style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', height: '100%', width: '100%' }}
+                title={'Hi there!'}
+              />
+            </Scene>
+          </Storyboard>
+        )
+      }
+      `,
+    )
+  })
+
   it('renders a canvas defined by a utopia storyboard component', () => {
     testCanvasRender(
       null,

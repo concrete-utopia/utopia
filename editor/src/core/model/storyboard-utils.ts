@@ -384,6 +384,7 @@ function addStoryboardFileForComponent(
     false,
     'var',
     'block',
+    [],
     null,
     [],
     storyboardElement,

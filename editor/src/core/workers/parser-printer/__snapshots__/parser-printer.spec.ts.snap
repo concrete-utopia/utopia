@@ -566,6 +566,7 @@ export var whatever = (props) => {
       "arbitraryJSBlock": null,
       "blockOrExpression": "block",
       "declarationSyntax": "var",
+      "functionWrapping": Array [],
       "isFunction": true,
       "name": "whatever",
       "param": Object {
@@ -952,6 +953,7 @@ Object {
       "arbitraryJSBlock": null,
       "blockOrExpression": "expression",
       "declarationSyntax": "const",
+      "functionWrapping": Array [],
       "isFunction": true,
       "name": "a",
       "param": Object {
@@ -1108,6 +1110,7 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
       "arbitraryJSBlock": null,
       "blockOrExpression": "expression",
       "declarationSyntax": "var",
+      "functionWrapping": Array [],
       "isFunction": true,
       "name": "whatever",
       "param": Object {
@@ -1166,6 +1169,7 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
       "arbitraryJSBlock": null,
       "blockOrExpression": "expression",
       "declarationSyntax": "const",
+      "functionWrapping": Array [],
       "isFunction": true,
       "name": "b",
       "param": Object {
@@ -1656,6 +1660,7 @@ export var App = (props) => <View data-uid='bbb'>
       "arbitraryJSBlock": null,
       "blockOrExpression": "expression",
       "declarationSyntax": "var",
+      "functionWrapping": Array [],
       "isFunction": true,
       "name": "App",
       "param": Object {

@@ -192,6 +192,7 @@ describe('removeJSXElementChild', () => {
       true,
       'var',
       'block',
+      [],
       defaultPropsParam,
       [],
       jsxElement(
@@ -212,6 +213,7 @@ describe('removeJSXElementChild', () => {
       true,
       'var',
       'block',
+      [],
       defaultPropsParam,
       [],
       jsxElement(

@@ -604,6 +604,8 @@ import type { OnlineState } from '../online-status'
 import { onlineState } from '../online-status'
 import type { NavigatorRow } from '../../navigator/navigator-row'
 import { condensedNavigatorRow, regularNavigatorRow } from '../../navigator/navigator-row'
+import type { SimpleFunctionWrap, FunctionWrap } from 'utopia-shared/src/types'
+import { simpleFunctionWrap, isSimpleFunctionWrap } from 'utopia-shared/src/types'
 
 export function ElementPropertyPathKeepDeepEquality(): KeepDeepEqualityCall<ElementPropertyPath> {
   return combine2EqualityCalls(
@@ -1570,8 +1572,29 @@ export function JSXElementChildKeepDeepEquality(): KeepDeepEqualityCall<JSXEleme
   }
 }
 
+export const SimpleFunctionWrapKeepDeepEquality: KeepDeepEqualityCall<SimpleFunctionWrap> =
+  combine1EqualityCall(
+    (wrap) => wrap.functionExpression,
+    JSExpressionKeepDeepEqualityCall,
+    simpleFunctionWrap,
+  )
+
+export const FunctionWrapKeepDeepEquality: KeepDeepEqualityCall<FunctionWrap> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'SIMPLE_FUNCTION_WRAP':
+      if (isSimpleFunctionWrap(newValue)) {
+        return SimpleFunctionWrapKeepDeepEquality(oldValue, newValue)
+      }
+      break
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
 export const UtopiaJSXComponentKeepDeepEquality: KeepDeepEqualityCall<UtopiaJSXComponent> =
-  combine10EqualityCalls(
+  combine11EqualityCalls(
     (component) => component.name,
     createCallWithTripleEquals(),
     (component) => component.isFunction,
@@ -1580,6 +1603,8 @@ export const UtopiaJSXComponentKeepDeepEquality: KeepDeepEqualityCall<UtopiaJSXC
     createCallWithTripleEquals(),
     (component) => component.blockOrExpression,
     createCallWithTripleEquals(),
+    (component) => component.functionWrapping,
+    arrayDeepEquality(FunctionWrapKeepDeepEquality),
     (component) => component.param,
     nullableDeepEquality(ParamKeepDeepEquality()),
     (component) => component.propsUsed,
