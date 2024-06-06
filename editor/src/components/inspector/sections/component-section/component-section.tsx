@@ -83,10 +83,14 @@ import { getFilePathForImportedComponent } from '../../../../core/model/project-
 import { safeIndex } from '../../../../core/shared/array-utils'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { usePopper } from 'react-popper'
-import type { JSExpressionOtherJavaScript } from '../../../../core/shared/element-template'
+import type {
+  ElementInstanceMetadataMap,
+  JSExpressionOtherJavaScript,
+} from '../../../../core/shared/element-template'
 import {
   getJSXElementNameAsString,
   isImportedOrigin,
+  isJSXElement,
 } from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import type { DataPickerCallback, DataPickerOption, ObjectPath } from './data-picker-utils'
@@ -103,6 +107,12 @@ import {
 import { useAtom } from 'jotai'
 import { DataSelectorModal } from './data-selector-modal'
 import { getModifiableJSXAttributeAtPath } from '../../../../core/shared/jsx-attribute-utils'
+import { isRight } from '../../../../core/shared/either'
+import { useChildrenPropOverride } from './component-section-children'
+import {
+  childrenAreProbablyNumericExpression,
+  replaceFirstChildAndDeleteSiblings,
+} from '../../../editor/element-children'
 
 export interface PropertyLabelAndPlusButtonProps {
   title: string
@@ -171,12 +181,13 @@ export function PropertyLabelAndPlusButton(
 }
 
 function useComponentPropsInspectorInfo(
+  elementPath: ElementPath,
   partialPath: PropertyPath,
   addPropsToPath: boolean,
   control: RegularControlDescription,
 ) {
   const propertyPath = addPropsToPath ? PP.append(PathForSceneProps, partialPath) : partialPath
-  return useInspectorInfoForPropertyControl(propertyPath, control)
+  return useInspectorInfoForPropertyControl(elementPath, propertyPath, control)
 }
 
 const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDescription>) => {
@@ -221,6 +232,16 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
     },
     'ControlForProp datatypeForExpression',
   )
+
+  const childrenPropOverride = useChildrenPropOverride({
+    ...props,
+    onDeleteCartouche: onDeleteCartouche,
+    safeToDelete: safeToDelete,
+    dataTypeForExpression: datatypeForExpression,
+  })
+  if (childrenPropOverride != null) {
+    return childrenPropOverride
+  }
 
   if (controlDescription == null) {
     return null
@@ -426,6 +447,7 @@ interface RowForBaseControlProps extends AbstractRowForControlProps {
 }
 
 function setPropertyFromDataPickerActions(
+  metadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
   propertyPath: PropertyPath,
   expression: JSExpressionOtherJavaScript,
@@ -435,6 +457,21 @@ function setPropertyFromDataPickerActions(
     return null
   }
 
+  // If the target replacement is the children property and the element has children,
+  // replace the children directly instead of its prop.
+  const isReplacingChildren =
+    propertyPath.propertyElements.length === 1 && propertyPath.propertyElements[0] === 'children'
+  if (isReplacingChildren) {
+    // …and the element has children…
+    const element = MetadataUtils.findElementByElementPath(metadata, target)
+    const children =
+      element != null && isRight(element.element) && isJSXElement(element.element.value)
+        ? element.element.value.children
+        : []
+    return replaceFirstChildAndDeleteSiblings(target, children, expression)
+  }
+
+  // In all other cases, replace the prop.
   return [
     replaceElementInScope(target, {
       type: 'replace-property-value',
@@ -455,6 +492,12 @@ function useDataPickerButtonInComponentSection(
     selectedViews.at(0) ?? EP.emptyElementPath,
     propertyPath,
     preferredAllState,
+  )
+
+  const metadata = useEditorState(
+    Substores.metadata,
+    (store) => store.editor.jsxMetadata,
+    'useDataPickerButtonInComponentSection metadata',
   )
 
   const pathToCurrentValue = useEditorState(
@@ -493,7 +536,11 @@ function useDataPickerButtonInComponentSection(
 
   const dataPickerButtonData = useDataPickerButton(
     variableNamesInScope,
-    (e) => optionalMap(dispatch, setPropertyFromDataPickerActions(selectedViews, propertyPath, e)),
+    (e) =>
+      optionalMap(
+        dispatch,
+        setPropertyFromDataPickerActions(metadata, selectedViews, propertyPath, e),
+      ),
     pathToCurrentValue,
     selectedViews.at(0) ?? null,
   )
@@ -515,7 +562,12 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
     'RowForBaseControl selectedViews',
   )
 
-  const propMetadata = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
+  const propMetadata = useComponentPropsInspectorInfo(
+    selectedViews[0] ?? EP.emptyElementPath,
+    propPath,
+    isScene,
+    controlDescription,
+  )
   const contextMenuItems = Utils.stripNulls([
     addOnUnsetValues([propName], propMetadata.onUnsetValues),
   ])
@@ -535,12 +587,31 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
     setIsHovered(false)
   }, [])
 
-  const isConnectedToData = React.useMemo(() => {
-    return (
-      propMetadata.propertyStatus.controlled &&
-      propMetadata.attributeExpression?.type !== 'JSX_ELEMENT'
-    )
-  }, [propMetadata])
+  const isConnectedToData = useEditorState(
+    Substores.metadata,
+    (store) => {
+      if (propName === 'children') {
+        // for children props, we need to drill down and look for the types of the elements
+        return selectedViews.some((view) => {
+          const element = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, view)
+          if (element != null && isRight(element.element) && isJSXElement(element.element.value)) {
+            const children = element.element.value.children
+            return (
+              (controlDescription.control === 'number-input' &&
+                childrenAreProbablyNumericExpression(children)) ||
+              children.some((child) => child.type === 'JS_IDENTIFIER')
+            )
+          }
+          return false
+        })
+      }
+      return (
+        propMetadata.propertyStatus.controlled &&
+        propMetadata.attributeExpression?.type !== 'JSX_ELEMENT'
+      )
+    },
+    'RowForBaseControl isConnectedToData',
+  )
 
   const propertyLabel =
     props.label == null ? (
@@ -634,14 +705,27 @@ interface RowForArrayControlProps extends AbstractRowForControlProps {
 const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
   const { propPath, controlDescription, isScene } = props
   const title = labelForControl(propPath, controlDescription)
+
+  const selectedViews = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews,
+    'RowForArrayControl selectedViews',
+  )
+
   const { value, onSubmitValue, propertyStatus } = useComponentPropsInspectorInfo(
+    selectedViews[0] ?? EP.emptyElementPath,
     propPath,
     isScene,
     controlDescription,
   )
 
   const propName = `${PP.lastPart(propPath)}`
-  const propMetadata = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
+  const propMetadata = useComponentPropsInspectorInfo(
+    selectedViews[0] ?? EP.emptyElementPath,
+    propPath,
+    isScene,
+    controlDescription,
+  )
 
   const sectionHeight = React.useMemo(
     () => getSectionHeight(controlDescription),
@@ -675,12 +759,6 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
     onSubmitValue,
     sectionHeight,
     false,
-  )
-
-  const selectedViews = useEditorState(
-    Substores.selectedViews,
-    (store) => store.editor.selectedViews,
-    'RowForArrayControl selectedViews',
   )
 
   const dataPickerButtonData = useDataPickerButtonInComponentSection(selectedViews, props.propPath)
@@ -772,7 +850,14 @@ interface ArrayControlItemProps {
 const ArrayControlItem = React.memo((props: ArrayControlItemProps) => {
   const { bind, propPath, index, isScene, springStyle, controlDescription } = props
   const propPathWithIndex = PP.appendPropertyPathElems(propPath, [index])
+
+  const selectedViews = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews,
+    'ArrayControlItem selectedViews',
+  )
   const propMetadata = useComponentPropsInspectorInfo(
+    selectedViews[0] ?? EP.emptyElementPath,
     propPathWithIndex,
     isScene,
     controlDescription,
@@ -848,7 +933,18 @@ interface RowForTupleControlProps extends AbstractRowForControlProps {
 const RowForTupleControl = React.memo((props: RowForTupleControlProps) => {
   const { propPath, controlDescription, isScene } = props
   const title = labelForControl(propPath, controlDescription)
-  const { value } = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
+
+  const selectedViews = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews,
+    'RowForTupleControl selectedViews',
+  )
+  const { value } = useComponentPropsInspectorInfo(
+    selectedViews[0] ?? EP.emptyElementPath,
+    propPath,
+    isScene,
+    controlDescription,
+  )
 
   const rowHeight = UtopiaTheme.layout.rowHeight.normal
   const transformedValue = Array.isArray(value) ? value : [value]
@@ -900,7 +996,14 @@ interface TupleControlItemProps {
 const TupleControlItem = React.memo((props: TupleControlItemProps) => {
   const { propPath, index, isScene, controlDescription } = props
   const propPathWithIndex = PP.appendPropertyPathElems(propPath, [index])
+
+  const selectedViews = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews,
+    'TupleControlItem selectedViews',
+  )
   const propMetadata = useComponentPropsInspectorInfo(
+    selectedViews[0] ?? EP.emptyElementPath,
     propPathWithIndex,
     isScene,
     controlDescription,
@@ -968,16 +1071,21 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
 
   const propName = `${PP.lastPart(propPath)}`
 
-  const propMetadata = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
-  const contextMenuItems = Utils.stripNulls([
-    addOnUnsetValues([PP.lastPart(propPath)], propMetadata.onUnsetValues),
-  ])
-
   const selectedViews = useEditorState(
     Substores.selectedViews,
     (store) => store.editor.selectedViews,
     'RowForObjectControl selectedViews',
   )
+
+  const propMetadata = useComponentPropsInspectorInfo(
+    selectedViews[0] ?? EP.emptyElementPath,
+    propPath,
+    isScene,
+    controlDescription,
+  )
+  const contextMenuItems = Utils.stripNulls([
+    addOnUnsetValues([PP.lastPart(propPath)], propMetadata.onUnsetValues),
+  ])
 
   const dataPickerButtonData = useDataPickerButtonInComponentSection(selectedViews, props.propPath)
 
@@ -1161,9 +1269,17 @@ interface RowForControlProps extends AbstractRowForControlProps {
 }
 
 export const RowForControl = React.memo((props: RowForControlProps) => {
-  const { controlDescription, disableToggling } = props
+  const { controlDescription, disableToggling, propPath } = props
   if (isBaseControlDescription(controlDescription)) {
     return <RowForBaseControl {...props} controlDescription={controlDescription} />
+  } else if (propPath.propertyElements[0] === 'children') {
+    // just show a single element for arrays of children
+    return (
+      <RowForBaseControl
+        {...props}
+        controlDescription={{ control: 'jsx', preferredChildComponents: [], label: 'children' }}
+      />
+    )
   } else {
     switch (controlDescription.control) {
       case 'array':
