@@ -68,6 +68,7 @@ import { assertNever } from '../../../../core/shared/utils'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { isRight } from '../../../../core/shared/either'
 import { parseNumber } from '../../../../core/shared/math-utils'
+import * as EP from '../../../../core/shared/element-path'
 
 export interface ControlForPropProps<T extends RegularControlDescription> {
   propPath: PropertyPath
@@ -348,6 +349,13 @@ export const NumberInputPropertyControl = React.memo(
           ) {
             const child = element.element.value.children[0]
             if (child.type === 'ATTRIBUTE_OTHER_JAVASCRIPT') {
+              // try first with the value in allElementProps
+              const valueFromAllElementProps =
+                store.editor.allElementProps[EP.toString(props.elementPath)]?.children
+              if (typeof valueFromAllElementProps === 'number') {
+                return valueFromAllElementProps
+              }
+              // if the value is not there, try to parse it
               const parsed = parseNumber(child.originalJavascript)
               if (isRight(parsed)) {
                 return parsed.value
