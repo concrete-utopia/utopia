@@ -673,9 +673,9 @@ describe('Use the text editor', () => {
     })
   })
   describe('elements with custom css', () => {
-    it('allows leading spaces while editing text-wrap:pretty', async () => {
+    it('allows trailing spaces while editing text-wrap:pretty', async () => {
       const editor = await renderTestEditorWithCode(
-        projectWithCustomTextAndExtraStyle('', { textWrap: 'pretty' }),
+        projectWithCustomTextAndExtraStyle('Initial', { textWrap: 'pretty' }),
         'await-first-dom-report',
       )
 
@@ -708,7 +708,7 @@ describe('Use the text editor', () => {
               }}
               data-uid='39e'
             >
-              Hello Utopia
+              InitialHello Utopia
             </div>
           </Storyboard>
         )`),
