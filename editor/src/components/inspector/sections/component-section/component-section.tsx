@@ -181,12 +181,13 @@ export function PropertyLabelAndPlusButton(
 }
 
 function useComponentPropsInspectorInfo(
+  elementPath: ElementPath,
   partialPath: PropertyPath,
   addPropsToPath: boolean,
   control: RegularControlDescription,
 ) {
   const propertyPath = addPropsToPath ? PP.append(PathForSceneProps, partialPath) : partialPath
-  return useInspectorInfoForPropertyControl(propertyPath, control)
+  return useInspectorInfoForPropertyControl(elementPath, propertyPath, control)
 }
 
 const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDescription>) => {
@@ -561,7 +562,12 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
     'RowForBaseControl selectedViews',
   )
 
-  const propMetadata = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
+  const propMetadata = useComponentPropsInspectorInfo(
+    selectedViews[0] ?? EP.emptyElementPath,
+    propPath,
+    isScene,
+    controlDescription,
+  )
   const contextMenuItems = Utils.stripNulls([
     addOnUnsetValues([propName], propMetadata.onUnsetValues),
   ])
@@ -699,14 +705,27 @@ interface RowForArrayControlProps extends AbstractRowForControlProps {
 const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
   const { propPath, controlDescription, isScene } = props
   const title = labelForControl(propPath, controlDescription)
+
+  const selectedViews = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews,
+    'RowForArrayControl selectedViews',
+  )
+
   const { value, onSubmitValue, propertyStatus } = useComponentPropsInspectorInfo(
+    selectedViews[0] ?? EP.emptyElementPath,
     propPath,
     isScene,
     controlDescription,
   )
 
   const propName = `${PP.lastPart(propPath)}`
-  const propMetadata = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
+  const propMetadata = useComponentPropsInspectorInfo(
+    selectedViews[0] ?? EP.emptyElementPath,
+    propPath,
+    isScene,
+    controlDescription,
+  )
 
   const sectionHeight = React.useMemo(
     () => getSectionHeight(controlDescription),
@@ -740,12 +759,6 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
     onSubmitValue,
     sectionHeight,
     false,
-  )
-
-  const selectedViews = useEditorState(
-    Substores.selectedViews,
-    (store) => store.editor.selectedViews,
-    'RowForArrayControl selectedViews',
   )
 
   const dataPickerButtonData = useDataPickerButtonInComponentSection(selectedViews, props.propPath)
@@ -837,7 +850,14 @@ interface ArrayControlItemProps {
 const ArrayControlItem = React.memo((props: ArrayControlItemProps) => {
   const { bind, propPath, index, isScene, springStyle, controlDescription } = props
   const propPathWithIndex = PP.appendPropertyPathElems(propPath, [index])
+
+  const selectedViews = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews,
+    'ArrayControlItem selectedViews',
+  )
   const propMetadata = useComponentPropsInspectorInfo(
+    selectedViews[0] ?? EP.emptyElementPath,
     propPathWithIndex,
     isScene,
     controlDescription,
@@ -913,7 +933,18 @@ interface RowForTupleControlProps extends AbstractRowForControlProps {
 const RowForTupleControl = React.memo((props: RowForTupleControlProps) => {
   const { propPath, controlDescription, isScene } = props
   const title = labelForControl(propPath, controlDescription)
-  const { value } = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
+
+  const selectedViews = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews,
+    'RowForTupleControl selectedViews',
+  )
+  const { value } = useComponentPropsInspectorInfo(
+    selectedViews[0] ?? EP.emptyElementPath,
+    propPath,
+    isScene,
+    controlDescription,
+  )
 
   const rowHeight = UtopiaTheme.layout.rowHeight.normal
   const transformedValue = Array.isArray(value) ? value : [value]
@@ -965,7 +996,14 @@ interface TupleControlItemProps {
 const TupleControlItem = React.memo((props: TupleControlItemProps) => {
   const { propPath, index, isScene, controlDescription } = props
   const propPathWithIndex = PP.appendPropertyPathElems(propPath, [index])
+
+  const selectedViews = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews,
+    'TupleControlItem selectedViews',
+  )
   const propMetadata = useComponentPropsInspectorInfo(
+    selectedViews[0] ?? EP.emptyElementPath,
     propPathWithIndex,
     isScene,
     controlDescription,
@@ -1033,16 +1071,21 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
 
   const propName = `${PP.lastPart(propPath)}`
 
-  const propMetadata = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
-  const contextMenuItems = Utils.stripNulls([
-    addOnUnsetValues([PP.lastPart(propPath)], propMetadata.onUnsetValues),
-  ])
-
   const selectedViews = useEditorState(
     Substores.selectedViews,
     (store) => store.editor.selectedViews,
     'RowForObjectControl selectedViews',
   )
+
+  const propMetadata = useComponentPropsInspectorInfo(
+    selectedViews[0] ?? EP.emptyElementPath,
+    propPath,
+    isScene,
+    controlDescription,
+  )
+  const contextMenuItems = Utils.stripNulls([
+    addOnUnsetValues([PP.lastPart(propPath)], propMetadata.onUnsetValues),
+  ])
 
   const dataPickerButtonData = useDataPickerButtonInComponentSection(selectedViews, props.propPath)
 

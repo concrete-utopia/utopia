@@ -349,13 +349,11 @@ export const NumberInputPropertyControl = React.memo(
           ) {
             const child = element.element.value.children[0]
             if (child.type === 'ATTRIBUTE_OTHER_JAVASCRIPT') {
-              // try first with the value in allElementProps
-              const valueFromAllElementProps =
-                store.editor.allElementProps[EP.toString(props.elementPath)]?.children
-              if (typeof valueFromAllElementProps === 'number') {
-                return valueFromAllElementProps
+              // try first with the prop metadata value…
+              if (props.propMetadata.value != null) {
+                return props.propMetadata.value
               }
-              // if the value is not there, try to parse it
+              // …if the value is not there, try to parse it
               const parsed = parseNumber(child.originalJavascript)
               if (isRight(parsed)) {
                 return parsed.value
