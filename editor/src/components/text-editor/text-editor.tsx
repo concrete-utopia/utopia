@@ -540,6 +540,9 @@ const TextEditor = React.memo((props: TextEditorProps) => {
       // text editor outline
       // Prevent double applying these properties:
       opacity: 1,
+      // this is to be able to add trailing spaces (as part of the writing flow)
+      // to elements where `text-wrap` doesn't allow them
+      whiteSpace: 'normal',
     },
     onPaste: stopPropagation,
     onKeyDown: onKeyDown,

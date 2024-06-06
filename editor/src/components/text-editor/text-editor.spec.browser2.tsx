@@ -221,7 +221,7 @@ describe('Use the text editor', () => {
       const { before, after } = await testModifierExpectingWayTooManySavesTheFirstTime(
         cmdModifier,
         'b',
-        projectWithoutTextWithExtraStyle({ font: 'bold 1.2em "Fira Sans"' }),
+        projectWithCustomTextAndExtraStyle('', { font: 'bold 1.2em "Fira Sans"' }),
       )
       expect(before).toEqual(
         projectWithStyle({ fontWeight: 'normal' }, { font: 'bold 1.2em "Fira Sans"' }),
@@ -240,7 +240,7 @@ describe('Use the text editor', () => {
       const { before, after } = await testModifierExpectingWayTooManySavesTheFirstTime(
         cmdModifier,
         'i',
-        projectWithoutTextWithExtraStyle({ font: 'italic 1.2em "Fira Sans"' }),
+        projectWithCustomTextAndExtraStyle('', { font: 'italic 1.2em "Fira Sans"' }),
       )
       expect(before).toEqual(
         projectWithStyle({ fontStyle: 'normal' }, { font: 'italic 1.2em "Fira Sans"' }),
@@ -670,6 +670,49 @@ describe('Use the text editor', () => {
         )`),
         )
       })
+    })
+  })
+  describe('elements with custom css', () => {
+    it('allows trailing spaces while editing text-wrap:pretty', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithCustomTextAndExtraStyle('Initial', { textWrap: 'pretty' }),
+        'await-first-dom-report',
+      )
+
+      await enterTextEditMode(editor)
+      typeText('Hello')
+      typeText(' ')
+      typeText('Utopia')
+      await closeTextEditor()
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        formatTestProjectCode(`
+        import * as React from 'react'
+        import { Storyboard } from 'utopia-api'
+
+
+        export var storyboard = (
+          <Storyboard data-uid='sb'>
+            <div
+              data-testid='div'
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 288,
+                height: 362,
+                textWrap: 'pretty',
+              }}
+              data-uid='39e'
+            >
+              InitialHello Utopia
+            </div>
+          </Storyboard>
+        )`),
+      )
     })
   })
   describe('multiline editing', () => {
@@ -2536,7 +2579,10 @@ export var storyboard = (
 )
 `)
 
-function projectWithoutTextWithExtraStyle(extraStyleProps: { [prop: string]: string }) {
+function projectWithCustomTextAndExtraStyle(
+  text: string,
+  extraStyleProps: { [prop: string]: string },
+) {
   const styleProps = {
     backgroundColor: '#0091FFAA',
     position: 'absolute',
@@ -2557,7 +2603,7 @@ function projectWithoutTextWithExtraStyle(extraStyleProps: { [prop: string]: str
           data-testid='div'
           style={${JSON.stringify(styleProps)}}
           data-uid='39e'
-        />
+        >${text}</div>
       </Storyboard>
     )
   `)
