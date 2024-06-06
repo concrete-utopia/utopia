@@ -198,6 +198,10 @@ export type CanvasAndMetadataSubstate = {
 
 export type ProjectContentAndMetadataSubstate = ProjectContentSubstate & MetadataSubstate
 
+export type ProjectContentAndMetadataAndVariablesInScopeSubstate = ProjectContentSubstate &
+  MetadataSubstate &
+  VariablesInScopeSubstate
+
 export type NavigatorSubstate = {
   editor: Pick<EditorState, 'navigator'>
 }
