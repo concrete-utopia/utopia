@@ -33,6 +33,7 @@ import {
   replaceMappedElement,
   setProp_UNSAFE,
   showToast,
+  switchEditorMode,
   wrapInElement,
 } from '../../editor/actions/action-creators'
 import * as EP from '../../../core/shared/element-path'
@@ -86,6 +87,7 @@ import { emptyImports } from '../../../core/workers/common/project-file-utils'
 import { commandsForFirstApplicableStrategy } from '../../../components/inspector/inspector-strategies/inspector-strategy'
 import { wrapInDivStrategy } from '../../../components/editor/wrap-in-callbacks'
 import type { AllElementProps } from '../../../components/editor/store/editor-state'
+import { EditorModes } from '../../editor/editor-modes'
 
 type RenderPropTarget = { type: 'render-prop'; prop: string }
 type ConditionalTarget = { type: 'conditional'; conditionalCase: ConditionalCase }
@@ -468,7 +470,7 @@ function moreItem(
   }
 }
 
-function insertComponentPickerItem(
+export function insertComponentPickerItem(
   toInsert: InsertableComponent,
   targets: ElementPath[],
   projectContents: ProjectContentTreeRoot,
@@ -641,7 +643,7 @@ function insertComponentPickerItem(
     ]
   })()
 
-  dispatch(actions)
+  dispatch(actions.concat(switchEditorMode(EditorModes.selectMode(null, false, 'none'))))
 }
 
 function toastMessage(insertionTarget: InsertionTarget, toInsert: InsertableComponent) {
@@ -681,7 +683,7 @@ function insertPreferredChild(
     uid,
     ['do-not-add'],
     null,
-    null,
+    { type: 'file-root' },
     null,
   )
 
@@ -703,11 +705,11 @@ interface ComponentPickerContextMenuProps {
   insertionTarget: InsertionTarget
 }
 
-export function iconPropsForIcon(icon: Icon): IcnProps {
+export function iconPropsForIcon(icon: Icon, inverted: boolean = false): IcnProps {
   return {
     category: 'navigator-element',
     type: icon,
-    color: 'white',
+    color: inverted ? 'black' : 'white',
   }
 }
 
@@ -949,6 +951,8 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
           allComponents={allInsertableComponents}
           onItemClick={onItemClick}
           closePicker={hideAllContextMenus}
+          shownInToolbar={false}
+          insertionActive={false}
         />
       </Menu>
     )

@@ -21,6 +21,7 @@ import type { Size } from '../../../core/shared/math-utils'
 import { dataPasteHandler } from '../../../utils/paste-handler'
 import { sortBy } from '../../../core/shared/array-utils'
 import { iconPropsForIcon } from './component-picker-context-menu'
+import type { FileRootPath } from '../../canvas/ui-jsx-canvas'
 
 const FILTER_CATEGORIES: Array<string> = ['Everything']
 
@@ -33,6 +34,8 @@ export interface ComponentPickerProps {
   allComponents: Array<InsertMenuItemGroup>
   onItemClick: (elementToInsert: InsertableComponent) => React.UIEventHandler
   closePicker: () => void
+  shownInToolbar: boolean
+  insertionActive: boolean
 }
 
 export interface ElementToInsert {
@@ -46,7 +49,7 @@ export function elementToInsertToInsertableComponent(
   uid: string,
   stylePropOptions: Array<StylePropOption>,
   defaultSize: Size | null,
-  insertionCeiling: ElementPath | null,
+  insertionCeiling: ElementPath | FileRootPath,
   icon: Icon | null,
 ): InsertableComponent {
   const element = elementToInsert.elementToInsert(uid)
@@ -61,6 +64,8 @@ export function elementToInsertToInsertableComponent(
   )
 }
 
+export const ComponentPickerTestId = 'component-picker-full'
+
 export function componentPickerTestIdForProp(prop: string): string {
   return `component-picker-${prop}`
 }
@@ -74,7 +79,7 @@ export function componentPickerOptionTestId(componentName: string, variant?: str
 }
 
 export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
-  const { onItemClick, closePicker } = props
+  const { onItemClick, closePicker, shownInToolbar, insertionActive } = props
   const [selectedComponentKey, setSelectedComponentKey] = React.useState<string | null>(null)
   const [filter, setFilter] = React.useState<string>('')
   const menuRef = React.useRef<HTMLDivElement | null>(null)
@@ -177,21 +182,27 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
         width: '100%',
         height: '100%',
         borderRadius: 10,
+        paddingBottom: shownInToolbar ? '8px' : undefined,
       }}
       onKeyDown={onKeyDown}
       ref={menuRef}
+      data-testid={ComponentPickerTestId}
     >
       <ComponentPickerTopSection
         components={categorizedComponents}
         onFilterChange={setFilter}
         onKeyDown={onKeyDown}
+        shownInToolbar={shownInToolbar}
       />
-      <ComponentPickerComponentSection
-        components={categorizedComponents}
-        onItemClick={props.onItemClick}
-        onItemHover={onItemHover}
-        currentlySelectedKey={highlightedComponentKey}
-      />
+      {filter.length > 0 || !insertionActive ? (
+        <ComponentPickerComponentSection
+          components={categorizedComponents}
+          onItemClick={props.onItemClick}
+          onItemHover={onItemHover}
+          currentlySelectedKey={highlightedComponentKey}
+          shownInToolbar={shownInToolbar}
+        />
+      ) : null}
     </div>
   )
 })
@@ -200,33 +211,39 @@ interface ComponentPickerTopSectionProps {
   components: Array<Category>
   onFilterChange: (filter: string) => void
   onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void
+  shownInToolbar: boolean
 }
 
 const ComponentPickerTopSection = React.memo((props: ComponentPickerTopSectionProps) => {
-  const { components, onFilterChange, onKeyDown } = props
+  const { components, shownInToolbar, onFilterChange, onKeyDown } = props
 
   return (
     <div
       style={{
-        padding: '0px 8px 8px 8px',
+        padding: shownInToolbar ? undefined : '0px 8px 8px 8px',
         display: 'flex',
         flexDirection: 'column',
       }}
       tabIndex={0}
     >
       {components.length > 1 && <FilterButtons components={components} />}
-      <FilterBar onFilterChange={onFilterChange} onKeyDown={onKeyDown} />
+      <FilterBar
+        onFilterChange={onFilterChange}
+        onKeyDown={onKeyDown}
+        shownInToolbar={shownInToolbar}
+      />
     </div>
   )
 })
 
 interface FilterBarProps {
+  shownInToolbar: boolean
   onFilterChange: (filter: string) => void
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void
 }
 
 const FilterBar = React.memo((props: FilterBarProps) => {
-  const { onFilterChange, onKeyDown } = props
+  const { shownInToolbar, onFilterChange, onKeyDown } = props
 
   const [filter, setFilterState] = React.useState<string>('')
   const setFilter = React.useCallback(
@@ -270,11 +287,11 @@ const FilterBar = React.memo((props: FilterBarProps) => {
         background: 'transparent',
         // border: `1px solid ${dark.fg3.value}`, --> doesn't work because uses the css var
         border: `1px solid #888`,
-        color: `#888`,
+        color: shownInToolbar ? undefined : `#888`,
         borderRadius: 4,
         width: '100%',
         '&:focus': {
-          color: '#ccc',
+          color: shownInToolbar ? undefined : '#ccc',
           borderColor: '#ccc',
         },
       }}
@@ -424,17 +441,23 @@ interface ComponentPickerComponentSectionProps {
   onItemClick: (elementToInsert: InsertableComponent) => React.MouseEventHandler
   onItemHover: (elementToInsert: InsertMenuItemValue) => React.MouseEventHandler
   currentlySelectedKey: string | null
+  shownInToolbar: boolean
+}
+
+export function componentPickerComponentTestId(key: string): string {
+  return `component-picker-item-${key}`
 }
 
 const ComponentPickerComponentSection = React.memo(
   (props: ComponentPickerComponentSectionProps) => {
-    const { components, onItemClick, onItemHover, currentlySelectedKey } = props
+    const { components, onItemClick, onItemHover, currentlySelectedKey, shownInToolbar } = props
     const [isScrolling, setIsScrolling] = React.useState<boolean>(false)
     const debouncedSetIsScrolling = React.useRef(debounce(() => setIsScrolling(false), 100))
     const onScroll = React.useCallback(() => {
       setIsScrolling(true)
       debouncedSetIsScrolling.current()
     }, [])
+
     return (
       <div
         data-role='component-scroll'
@@ -458,23 +481,25 @@ const ComponentPickerComponentSection = React.memo(
                 style={{
                   alignItems: 'center',
                   cursor: 'pointer',
-                  marginLeft: 8,
-                  marginRight: 8,
+                  margin: shownInToolbar ? undefined : '0 8px',
                   borderRadius: 4,
                   // indentation!
                   paddingLeft: 8,
                   pointerEvents: isScrolling ? 'none' : 'auto',
-                  color: isSelected ? 'white' : '#EEE',
+                  color: isSelected ? 'white' : shownInToolbar ? undefined : '#EEE',
                   backgroundColor: isSelected ? colorTheme.primary.value : undefined,
                 }}
                 onClick={onItemClick(component.value)}
                 onMouseOver={onItemHover(component.value)}
                 data-key={component.value.key}
-                data-testid={component.value.key}
+                data-testid={componentPickerComponentTestId(component.value.key)}
               >
                 <FlexRow css={{ gap: 10, height: 28, alignItems: 'center' }}>
                   <Icn
-                    {...iconPropsForIcon(component.value.icon ?? 'component')}
+                    {...iconPropsForIcon(
+                      component.value.icon ?? 'component',
+                      shownInToolbar && !isSelected,
+                    )}
                     width={12}
                     height={12}
                   />

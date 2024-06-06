@@ -160,8 +160,6 @@ import type {
   SetCurrentTheme,
   FocusFormulaBar,
   UpdateFormulaBarMode,
-  OpenFloatingInsertMenu,
-  CloseFloatingInsertMenu,
   InsertInsertable,
   ToggleFocusedOmniboxTab,
   SetPropTransient,
@@ -246,7 +244,6 @@ import type {
   ImageDragSessionState,
   DuplicationState,
   ErrorMessages,
-  FloatingInsertMenuState,
   GithubState,
   LeftMenuTab,
   ModalDialog,
@@ -809,13 +806,6 @@ export function unwrapElements(targets: ElementPath[]): UnwrapElements {
   }
 }
 
-export function openFloatingInsertMenu(mode: FloatingInsertMenuState): OpenFloatingInsertMenu {
-  return {
-    action: 'OPEN_FLOATING_INSERT_MENU',
-    mode: mode,
-  }
-}
-
 export function wrapInElement(
   targets: Array<ElementPath>,
   whatToWrapWith: WrapInElementWith,
@@ -824,12 +814,6 @@ export function wrapInElement(
     action: 'WRAP_IN_ELEMENT',
     targets: targets,
     whatToWrapWith: whatToWrapWith,
-  }
-}
-
-export function closeFloatingInsertMenu(): CloseFloatingInsertMenu {
-  return {
-    action: 'CLOSE_FLOATING_INSERT_MENU',
   }
 }
 

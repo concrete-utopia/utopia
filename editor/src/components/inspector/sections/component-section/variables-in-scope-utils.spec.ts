@@ -1,4 +1,6 @@
+import * as EP from '../../../../core/shared/element-path'
 import { maybeToArray } from '../../../../core/shared/optional-utils'
+import { emptySet } from '../../../../core/shared/set-utils'
 import type { ControlDescription } from '../../../custom-code/internal-property-controls'
 import type { PropertyValue, VariableInfo } from './variables-in-scope-utils'
 import { orderVariablesForRelevance, variableInfoFromValue } from './variables-in-scope-utils'
@@ -6,7 +8,13 @@ import { orderVariablesForRelevance, variableInfoFromValue } from './variables-i
 describe('orderVariablesForRelevance', () => {
   it('should be able to target a given property', () => {
     const variableNamesInScope: Array<VariableInfo> = maybeToArray(
-      variableInfoFromValue('style', 'style', { left: 300, position: 'relative' }),
+      variableInfoFromValue(
+        'style',
+        'style',
+        { left: 300, position: 'relative' },
+        EP.fromString('aaa'),
+        emptySet(),
+      ),
     )
     const controlDescription: ControlDescription = {
       control: 'object',
@@ -35,11 +43,27 @@ describe('orderVariablesForRelevance', () => {
         Object {
           "expression": "style",
           "expressionPathPart": "style",
+          "insertionCeiling": Object {
+            "parts": Array [
+              Array [
+                "aaa",
+              ],
+            ],
+            "type": "elementpath",
+          },
           "matches": false,
           "props": Array [
             Object {
               "expression": "style['left']",
               "expressionPathPart": "left",
+              "insertionCeiling": Object {
+                "parts": Array [
+                  Array [
+                    "aaa",
+                  ],
+                ],
+                "type": "elementpath",
+              },
               "matches": true,
               "type": "primitive",
               "value": 300,
@@ -47,6 +71,14 @@ describe('orderVariablesForRelevance', () => {
             Object {
               "expression": "style['position']",
               "expressionPathPart": "position",
+              "insertionCeiling": Object {
+                "parts": Array [
+                  Array [
+                    "aaa",
+                  ],
+                ],
+                "type": "elementpath",
+              },
               "matches": false,
               "type": "primitive",
               "value": "relative",
@@ -63,7 +95,13 @@ describe('orderVariablesForRelevance', () => {
   })
   it('handles the case when not targeting a specific property', () => {
     const variableNamesInScope: Array<VariableInfo> = maybeToArray(
-      variableInfoFromValue('style', 'style', { left: 300, position: 'relative' }),
+      variableInfoFromValue(
+        'style',
+        'style',
+        { left: 300, position: 'relative' },
+        EP.fromString('aaa'),
+        emptySet(),
+      ),
     )
     const controlDescription: ControlDescription = {
       control: 'object',
@@ -92,11 +130,27 @@ describe('orderVariablesForRelevance', () => {
         Object {
           "expression": "style",
           "expressionPathPart": "style",
+          "insertionCeiling": Object {
+            "parts": Array [
+              Array [
+                "aaa",
+              ],
+            ],
+            "type": "elementpath",
+          },
           "matches": true,
           "props": Array [
             Object {
               "expression": "style['left']",
               "expressionPathPart": "left",
+              "insertionCeiling": Object {
+                "parts": Array [
+                  Array [
+                    "aaa",
+                  ],
+                ],
+                "type": "elementpath",
+              },
               "matches": false,
               "type": "primitive",
               "value": 300,
@@ -104,6 +158,14 @@ describe('orderVariablesForRelevance', () => {
             Object {
               "expression": "style['position']",
               "expressionPathPart": "position",
+              "insertionCeiling": Object {
+                "parts": Array [
+                  Array [
+                    "aaa",
+                  ],
+                ],
+                "type": "elementpath",
+              },
               "matches": false,
               "type": "primitive",
               "value": "relative",

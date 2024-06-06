@@ -90,9 +90,6 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
       parentOutlineHighlight: null,
     },
   },
-  floatingInsertMenu: {
-    insertMenuMode: 'closed',
-  },
   inspector: {
     visible: true,
     classnameFocusCounter: 0,

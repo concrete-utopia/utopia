@@ -344,8 +344,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.DELETE_SELECTED(state, dispatch)
     case 'WRAP_IN_ELEMENT':
       return UPDATE_FNS.WRAP_IN_ELEMENT(action, state, derivedState)
-    case 'OPEN_FLOATING_INSERT_MENU':
-      return UPDATE_FNS.OPEN_FLOATING_INSERT_MENU(action, state)
     case 'UNWRAP_ELEMENTS':
       return UPDATE_FNS.UNWRAP_ELEMENTS(action, state, builtInDependencies)
     case 'INSERT_IMAGE_INTO_UI':
@@ -419,8 +417,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.FOCUS_FORMULA_BAR(state)
     case 'UPDATE_FORMULA_BAR_MODE':
       return UPDATE_FNS.UPDATE_FORMULA_BAR_MODE(action, state)
-    case 'CLOSE_FLOATING_INSERT_MENU':
-      return UPDATE_FNS.CLOSE_FLOATING_INSERT_MENU(action, state)
     case 'INSERT_INSERTABLE':
       return UPDATE_FNS.INSERT_INSERTABLE(action, state)
     case 'SET_PROP_TRANSIENT':

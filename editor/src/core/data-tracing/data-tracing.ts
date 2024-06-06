@@ -1,8 +1,13 @@
 import type { ProjectContentTreeRoot } from '../../components/assets'
+import type { FileRootPath } from '../../components/canvas/ui-jsx-canvas'
+import { findUnderlyingTargetComponentImplementationFromImportInfo } from '../../components/custom-code/code-file'
 import { withUnderlyingTarget } from '../../components/editor/store/editor-state'
 import * as TPP from '../../components/template-property-path'
 import { MetadataUtils } from '../model/element-metadata-utils'
-import { findContainingComponentForPath } from '../model/element-template-utils'
+import {
+  findContainingComponentForPath,
+  findContainingComponentForPathInProjectContents,
+} from '../model/element-template-utils'
 import { mapFirstApplicable } from '../shared/array-utils'
 import type { Either } from '../shared/either'
 import { isLeft, isRight, left, mapEither, maybeEitherToMaybe, right } from '../shared/either'
@@ -12,22 +17,24 @@ import type {
   IdentifierOrAccess,
   JSAssignment,
   JSExpression,
+  JSExpressionNestedArray,
+  JSExpressionNestedObject,
   JSIdentifier,
   JSXElementChild,
   Param,
   UtopiaJSXComponent,
 } from '../shared/element-template'
 import {
-  emptyComments,
   isJSXElement,
-  jsIdentifier,
   type ElementInstanceMetadataMap,
   isRegularParam,
   isJSAssignmentStatement,
   isJSIdentifier,
+  jsIdentifier,
+  emptyComments,
 } from '../shared/element-template'
 import { getJSXAttributesAtPath, jsxSimpleAttributeToValue } from '../shared/jsx-attribute-utils'
-import { forceNotNull, optionalMap } from '../shared/optional-utils'
+import { optionalMap } from '../shared/optional-utils'
 import type { ElementPath, ElementPropertyPath, PropertyPath } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
 import { assertNever } from '../shared/utils'
@@ -119,6 +126,23 @@ export function dataTracingToLiteralAttribute(
   }
 }
 
+export type DataTracingToLiteralAssignment = {
+  type: 'literal-assignment'
+  elementPath: ElementPath
+  dataPathIntoAttribute: DataPathPositiveResult
+}
+
+export function dataTracingToLiteralAssignment(
+  elementPath: ElementPath,
+  dataPathIntoAttribute: DataPathPositiveResult,
+): DataTracingToLiteralAssignment {
+  return {
+    type: 'literal-assignment',
+    elementPath: elementPath,
+    dataPathIntoAttribute: dataPathIntoAttribute,
+  }
+}
+
 export type DataTracingToElementAtScope = {
   type: 'element-at-scope'
   scope: ElementPath
@@ -187,23 +211,11 @@ export function dataTracingFailed(reason: string): DataTracingFailed {
 
 export type DataTracingResult =
   | DataTracingToLiteralAttribute
+  | DataTracingToLiteralAssignment
   | DataTracingToAHookCall
   | DataTracingToAComponentProp
   | DataTracingToElementAtScope
   | DataTracingFailed
-
-function findContainingComponentForElementPath(
-  elementPath: ElementPath,
-  projectContents: ProjectContentTreeRoot,
-): UtopiaJSXComponent | null {
-  return withUnderlyingTarget(elementPath, projectContents, null, (success) => {
-    const containingComponent = findContainingComponentForPath(
-      success.topLevelElements,
-      elementPath,
-    )
-    return containingComponent
-  })
-}
 
 export function processJSPropertyAccessors(
   expression: JSExpression,
@@ -406,6 +418,37 @@ export function traceDataFromElement(
   }
 }
 
+export function traceDataFromVariableName(
+  enclosingScope: ElementPath | FileRootPath,
+  variableName: string,
+  metadata: ElementInstanceMetadataMap,
+  projectContents: ProjectContentTreeRoot,
+  pathDrillSoFar: DataPathPositiveResult,
+): DataTracingResult {
+  if (enclosingScope.type === 'file-root') {
+    return dataTracingFailed('Cannot trace data from variable name in file root')
+  }
+  const componentHoldingElement = findContainingComponentForPathInProjectContents(
+    enclosingScope,
+    projectContents,
+  )
+
+  if (componentHoldingElement == null || componentHoldingElement.arbitraryJSBlock == null) {
+    return dataTracingFailed('Could not find containing component')
+  }
+
+  return walkUpInnerScopesUntilReachingComponent(
+    metadata,
+    projectContents,
+    enclosingScope,
+    enclosingScope,
+    enclosingScope,
+    componentHoldingElement,
+    jsIdentifier(variableName, '', null, emptyComments),
+    pathDrillSoFar,
+  )
+}
+
 function traceDataFromIdentifierOrAccess(
   startFromElement: IdentifierOrAccess,
   enclosingScope: ElementPath,
@@ -413,10 +456,8 @@ function traceDataFromIdentifierOrAccess(
   projectContents: ProjectContentTreeRoot,
   pathDrillSoFar: DataPathPositiveResult,
 ): DataTracingResult {
-  const componentHoldingElement: UtopiaJSXComponent | null = findContainingComponentForElementPath(
-    enclosingScope,
-    projectContents,
-  )
+  const componentHoldingElement: UtopiaJSXComponent | null =
+    findContainingComponentForPathInProjectContents(enclosingScope, projectContents)
 
   if (componentHoldingElement == null) {
     return dataTracingFailed('Could not find containing component')
@@ -790,6 +831,10 @@ function lookupInComponentScope(
           pathDrillSoFar,
         )
       }
+
+      if (isConsideredLiteralValue(foundAssignmentOfIdentifier.rightHandSide)) {
+        return dataTracingToLiteralAssignment(componentPath, pathDrillSoFar)
+      }
     }
   }
 
@@ -843,4 +888,33 @@ function lookupInComponentScope(
 
 function substractFromStringNumber(n: string, minus: number): string {
   return `${parseInt(n) - minus}`
+}
+
+function isConsideredLiteralValue(value: JSExpression): boolean {
+  switch (value.type) {
+    case 'ATTRIBUTE_VALUE':
+      return true
+    case 'ATTRIBUTE_NESTED_ARRAY':
+      return isArrayLiteral(value)
+    case 'ATTRIBUTE_NESTED_OBJECT':
+      return isObjectLiteral(value)
+    case 'ATTRIBUTE_FUNCTION_CALL':
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+    case 'JSX_ELEMENT':
+    case 'JSX_MAP_EXPRESSION':
+    case 'JS_ELEMENT_ACCESS':
+    case 'JS_IDENTIFIER':
+    case 'JS_PROPERTY_ACCESS':
+      return false
+    default:
+      assertNever(value)
+  }
+}
+
+function isArrayLiteral(array: JSExpressionNestedArray): boolean {
+  return array.content.every((c) => isConsideredLiteralValue(c.value))
+}
+
+function isObjectLiteral(value: JSExpressionNestedObject): boolean {
+  return value.content.every((c) => isConsideredLiteralValue(c.value))
 }

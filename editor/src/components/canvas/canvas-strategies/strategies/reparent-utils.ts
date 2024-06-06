@@ -61,6 +61,7 @@ import { renameDuplicateImports } from '../../../../core/shared/import-shared-ut
 import { set } from '../../../../core/shared/optics/optic-utilities'
 import { fromField, fromTypeGuard } from '../../../../core/shared/optics/optic-creators'
 import type { PropertyControlsInfo } from '../../../custom-code/code-file'
+import type { FileRootPath } from '../../ui-jsx-canvas'
 
 interface GetReparentOutcomeResult {
   commands: Array<CanvasCommand>
@@ -614,10 +615,10 @@ export function applyElementCeilingToReparentTarget(
   elementsToInsert: JSXElementChild[],
   elementPathTree: ElementPathTrees,
   reparentTarget: Either<PasteParentNotFoundError, ReparentTargetForPaste>,
-  elementCeiling: ElementPath | null,
+  elementCeiling: ElementPath | FileRootPath,
   propertyControlsInfo: PropertyControlsInfo,
 ): Either<PasteParentNotFoundError, ReparentTargetForPaste> {
-  if (elementCeiling == null) {
+  if (elementCeiling.type === 'file-root') {
     return reparentTarget
   } else {
     return flatMapEither((targetForPaste) => {
@@ -669,7 +670,7 @@ export function getTargetParentForOneShotInsertion(
   metadata: ElementInstanceMetadataMap,
   elementsToInsert: JSXElementChild[],
   elementPathTree: ElementPathTrees,
-  insertionCeiling: ElementPath | null,
+  insertionCeiling: ElementPath | FileRootPath,
   propertyControlsInfo: PropertyControlsInfo,
 ): Either<PasteParentNotFoundError, ReparentTargetForPaste> {
   if (!isNonEmptyArray(selectedViews)) {

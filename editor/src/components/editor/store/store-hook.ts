@@ -31,6 +31,7 @@ import type {
   NavigatorSubstate,
   OnlineStateSubstate,
   PostActionInteractionSessionSubstate,
+  ProjectContentAndMetadataAndVariablesInScopeSubstate,
   ProjectContentAndMetadataSubstate,
   ProjectContentSubstate,
   ProjectServerStateSubstate,
@@ -302,6 +303,16 @@ export const Substores = {
     b: ProjectContentAndMetadataSubstate,
   ) => {
     return keysEquality([...projectContentsKeys, ...metadataSubstateKeys], a.editor, b.editor)
+  },
+  projectContentsAndMetadataAndVariablesInScope: (
+    a: ProjectContentAndMetadataAndVariablesInScopeSubstate,
+    b: ProjectContentAndMetadataAndVariablesInScopeSubstate,
+  ) => {
+    return keysEquality(
+      [...projectContentsKeys, ...metadataSubstateKeys, ...variablesInScopeSubstateKeys],
+      a.editor,
+      b.editor,
+    )
   },
   projectServerState: (a: ProjectServerStateSubstate, b: ProjectServerStateSubstate) => {
     return ProjectServerStateKeepDeepEquality(a.projectServerState, b.projectServerState).areEqual

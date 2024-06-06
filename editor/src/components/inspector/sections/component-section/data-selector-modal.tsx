@@ -1,8 +1,9 @@
 import React from 'react'
-import { isPrefixOf, last } from '../../../../core/shared/array-utils'
+import { groupBy, isPrefixOf, last } from '../../../../core/shared/array-utils'
 import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
 import {
   CanvasContextMenuPortalTargetID,
+  NO_OP,
   arrayEqualsByReference,
   assertNever,
 } from '../../../../core/shared/utils'
@@ -21,15 +22,27 @@ import type { SelectOption } from '../../controls/select-control'
 import { InspectorModal } from '../../widgets/inspector-modal'
 import type { CartoucheUIProps, HoverHandlers } from './cartouche-ui'
 import { CartoucheUI } from './cartouche-ui'
-import type {
-  ArrayOption,
-  DataPickerCallback,
-  JSXOption,
-  ObjectOption,
-  PrimitiveOption,
-  DataPickerOption,
-  ObjectPath,
+import {
+  type ArrayOption,
+  type DataPickerCallback,
+  type JSXOption,
+  type ObjectOption,
+  type PrimitiveOption,
+  type DataPickerOption,
+  type ObjectPath,
+  getEnclosingScopes,
 } from './data-picker-utils'
+import {
+  dataPathSuccess,
+  traceDataFromVariableName,
+} from '../../../../core/data-tracing/data-tracing'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
+import * as EP from '../../../../core/shared/element-path'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
+import { optionalMap } from '../../../../core/shared/optional-utils'
+import type { FileRootPath } from '../../../canvas/ui-jsx-canvas'
+import { insertionCeilingToString, insertionCeilingsEqual } from '../../../canvas/ui-jsx-canvas'
+import { set } from 'objectPath'
 
 export const DataSelectorPopupBreadCrumbsTestId = 'data-selector-modal-top-bar'
 
@@ -39,6 +52,7 @@ export interface DataSelectorModalProps {
   variablesInScope: DataPickerOption[]
   onPropertyPicked: DataPickerCallback
   startingSelectedValuePath: ObjectPath | null
+  lowestInsertionCeiling: ElementPath | null
 }
 
 const Separator = React.memo(
@@ -96,13 +110,6 @@ function ArrayIndexSelector({
   )
 }
 
-const DEFAULT_SIZE: React.CSSProperties = {
-  minWidth: 600,
-  minHeight: 50,
-  maxWidth: 700,
-  maxHeight: 300,
-}
-
 interface ProcessedVariablesInScope {
   [valuePath: string]: DataPickerOption
 }
@@ -114,12 +121,87 @@ interface ArrayIndexLookup {
 export const DataSelectorModal = React.memo(
   React.forwardRef<HTMLDivElement, DataSelectorModalProps>(
     (
-      { style, closePopup, variablesInScope, onPropertyPicked, startingSelectedValuePath },
+      {
+        style,
+        closePopup,
+        variablesInScope: allVariablesInScope,
+        onPropertyPicked,
+        startingSelectedValuePath,
+        lowestInsertionCeiling,
+      },
       forwardedRef,
     ) => {
       const colorTheme = useColorTheme()
 
-      const [navigatedToPath, setNavigatedToPath] = React.useState<ObjectPath>([])
+      const scopeBuckets = React.useMemo(
+        () => putVariablesIntoScopeBuckets(allVariablesInScope),
+        [allVariablesInScope],
+      )
+
+      const lowestMatchingScope: ElementPath | FileRootPath = React.useMemo(() => {
+        if (lowestInsertionCeiling == null) {
+          return { type: 'file-root' }
+        }
+
+        const scopeFromStartedSelectedValuePath = optionalMap(
+          (s) => getSelectedScopeFromBuckets(s, scopeBuckets),
+          startingSelectedValuePath,
+        )
+
+        if (scopeFromStartedSelectedValuePath != null) {
+          return scopeFromStartedSelectedValuePath
+        }
+
+        const matchingScope = findClosestMatchingScope(lowestInsertionCeiling, scopeBuckets)
+        return matchingScope
+      }, [lowestInsertionCeiling, startingSelectedValuePath, scopeBuckets])
+
+      const [selectedScope, setSelectedScope] = React.useState<ElementPath | FileRootPath>(
+        lowestMatchingScope,
+      )
+      const setSelectedScopeCurried = React.useCallback(
+        (name: ElementPath, hasContent: boolean) => () => {
+          if (hasContent) {
+            setSelectedScope(name)
+            setSelectedPath(null)
+            setHoveredPath(null)
+            setNavigatedToPath([])
+          }
+        },
+        [],
+      )
+
+      const { filteredVariablesInScope } = useFilterVariablesInScope(
+        allVariablesInScope,
+        scopeBuckets,
+        selectedScope,
+      )
+
+      const processedVariablesInScope = useProcessVariablesInScope(filteredVariablesInScope)
+
+      const elementLabelsWithScopes = useEditorState(
+        Substores.fullStore,
+        (store) => {
+          const scopes = getEnclosingScopes(
+            store.editor.jsxMetadata,
+            store.editor.allElementProps,
+            store.editor.elementPathTree,
+            store.editor.projectContents,
+            Object.keys(scopeBuckets),
+            lowestInsertionCeiling ?? EP.emptyElementPath,
+          )
+          return scopes.map(({ insertionCeiling, label, hasContent }) => ({
+            label: label,
+            scope: insertionCeiling,
+            hasContent: hasContent,
+          }))
+        },
+        'DataSelectorModal elementLabelsWithScopes',
+      )
+
+      const [navigatedToPath, setNavigatedToPath] = React.useState<ObjectPath>(
+        findFirstObjectPathToNavigateTo(processedVariablesInScope, startingSelectedValuePath) ?? [],
+      )
 
       const [selectedPath, setSelectedPath] = React.useState<ObjectPath | null>(
         startingSelectedValuePath,
@@ -170,22 +252,20 @@ export const DataSelectorModal = React.memo(
         [],
       )
 
-      const processedVariablesInScope = useProcessVariablesInScope(variablesInScope)
-
       const focusedVariableChildren = React.useMemo(() => {
         if (navigatedToPath.length === 0) {
-          return variablesInScope
+          return filteredVariablesInScope
         }
 
-        const scopeToShow = processedVariablesInScope[navigatedToPath.toString()]
+        const innerScopeToShow = processedVariablesInScope[navigatedToPath.toString()]
         if (
-          scopeToShow == null ||
-          (scopeToShow.type !== 'array' && scopeToShow.type !== 'object')
+          innerScopeToShow == null ||
+          (innerScopeToShow.type !== 'array' && innerScopeToShow.type !== 'object')
         ) {
           return [] // TODO this should never happen!
         }
-        return scopeToShow.children
-      }, [navigatedToPath, processedVariablesInScope, variablesInScope])
+        return innerScopeToShow.children
+      }, [navigatedToPath, processedVariablesInScope, filteredVariablesInScope])
 
       const { primitiveVars, folderVars } = React.useMemo(() => {
         let primitives: Array<PrimitiveOption | JSXOption> = []
@@ -208,6 +288,49 @@ export const DataSelectorModal = React.memo(
 
         return { primitiveVars: primitives, folderVars: folders }
       }, [focusedVariableChildren])
+
+      const metadata = useEditorState(
+        Substores.metadata,
+        (store) => store.editor.jsxMetadata,
+        'DataSelectorModal metadata',
+      )
+      const projectContents = useEditorState(
+        Substores.projectContents,
+        (store) => store.editor.projectContents,
+        'DataSelectorModal projectContents',
+      )
+
+      const variableSources = React.useMemo(() => {
+        let result: { [valuePath: string]: CartoucheUIProps['source'] } = {}
+        for (const variable of focusedVariableChildren) {
+          const container = variable.variableInfo.insertionCeiling
+          const trace = traceDataFromVariableName(
+            container,
+            variable.variableInfo.expression,
+            metadata,
+            projectContents,
+            dataPathSuccess([]),
+          )
+
+          switch (trace.type) {
+            case 'hook-result':
+              result[variable.valuePath.toString()] = 'external'
+              break
+            case 'literal-attribute':
+            case 'literal-assignment':
+              result[variable.valuePath.toString()] = 'literal'
+              break
+            case 'component-prop':
+            case 'element-at-scope':
+            case 'failed':
+              result[variable.valuePath.toString()] = 'internal'
+              break
+            default:
+              assertNever(trace)
+          }
+        }
+        return result
+      }, [focusedVariableChildren, metadata, projectContents])
 
       const setCurrentSelectedPathCurried = React.useCallback(
         (path: DataPickerOption['valuePath']) => () => {
@@ -274,8 +397,8 @@ export const DataSelectorModal = React.memo(
               onClick={catchClick}
               ref={forwardedRef}
               style={{
-                ...style,
-                ...DEFAULT_SIZE,
+                width: 700,
+                height: 300,
                 paddingTop: 16,
                 paddingLeft: 16,
                 paddingRight: 16,
@@ -285,8 +408,35 @@ export const DataSelectorModal = React.memo(
                 borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
                 boxShadow: UtopiaStyles.shadowStyles.highest.boxShadow,
                 border: `1px solid ${colorTheme.fg0Opacity10.value}`,
+                ...style,
               }}
             >
+              {/* Scope Selector Breadcrumbs */}
+              <FlexRow style={{ gap: 2, paddingBottom: 8 }}>
+                {elementLabelsWithScopes.map(({ label, scope, hasContent }, idx, a) => (
+                  <React.Fragment key={`label-${idx}`}>
+                    <div
+                      onClick={setSelectedScopeCurried(scope, hasContent)}
+                      style={{
+                        width: 'max-content',
+                        padding: '2px 4px',
+                        borderRadius: 4,
+                        cursor: hasContent ? 'pointer' : undefined,
+                        color: hasContent
+                          ? colorTheme.neutralForeground.value
+                          : colorTheme.subduedForeground.value,
+                        fontSize: 12,
+                        fontWeight: insertionCeilingsEqual(selectedScope, scope) ? 800 : undefined,
+                      }}
+                    >
+                      {label}
+                    </div>
+                    {idx < a.length - 1 ? (
+                      <span style={{ width: 'max-content', padding: '2px 4px' }}>{'/'}</span>
+                    ) : null}
+                  </React.Fragment>
+                ))}
+              </FlexRow>
               {/* top bar */}
               <FlexRow style={{ justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
                 <FlexRow style={{ gap: 8, flexWrap: 'wrap', flexGrow: 1 }}>
@@ -345,6 +495,7 @@ export const DataSelectorModal = React.memo(
               {/* Value preview */}
               <FlexRow
                 style={{
+                  flexShrink: 0,
                   gridColumn: '3',
                   flexWrap: 'wrap',
                   gap: 4,
@@ -356,18 +507,22 @@ export const DataSelectorModal = React.memo(
               >
                 {valuePreviewText}
               </FlexRow>
-              <Separator color={colorTheme.seperator.value} margin={12} />
+
               {/* detail view */}
               <div
                 style={{
                   display: 'grid',
                   gridTemplateColumns: 'auto 40px 1fr',
                   gap: 8,
-                  overflowY: 'scroll',
                   overflowX: 'hidden',
+                  overflowY: 'scroll',
+                  scrollbarWidth: 'auto',
+                  scrollbarColor: 'gray transparent',
+                  paddingTop: 8,
                   paddingBottom: 16,
                 }}
               >
+                <Separator color={colorTheme.seperator.value} spanGridColumns={3} margin={4} />
                 {when(
                   primitiveVars.length > 0,
                   <>
@@ -381,8 +536,7 @@ export const DataSelectorModal = React.memo(
                       {primitiveVars.map((variable) => (
                         <CartoucheUI
                           key={variable.valuePath.toString()}
-                          tooltip={variableNameFromPath(variable)}
-                          source={'internal'}
+                          source={variableSources[variable.valuePath.toString()] ?? 'internal'}
                           datatype={childTypeToCartoucheDataType(variable.type)}
                           inverted={false}
                           selected={
@@ -407,9 +561,8 @@ export const DataSelectorModal = React.memo(
                 {folderVars.map((variable, idx) => (
                   <React.Fragment key={variable.valuePath.toString()}>
                     <CartoucheUI
-                      tooltip={variableNameFromPath(variable)}
                       datatype={childTypeToCartoucheDataType(variable.type)}
-                      source={'internal'}
+                      source={variableSources[variable.valuePath.toString()] ?? 'internal'}
                       inverted={false}
                       selected={
                         selectedPath == null
@@ -437,8 +590,7 @@ export const DataSelectorModal = React.memo(
                       {childVars(variable, indexLookup).map((child) => (
                         <CartoucheUI
                           key={child.valuePath.toString()}
-                          tooltip={variableNameFromPath(child)}
-                          source={'internal'}
+                          source={variableSources[variable.valuePath.toString()] ?? 'internal'}
                           inverted={false}
                           datatype={childTypeToCartoucheDataType(child.type)}
                           selected={
@@ -465,6 +617,21 @@ export const DataSelectorModal = React.memo(
                     ) : null}
                   </React.Fragment>
                 ))}
+                {/* Empty State */}
+                {when(
+                  focusedVariableChildren.length === 0,
+                  <div
+                    style={{
+                      gridColumn: '1 / span 3',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      height: 100,
+                    }}
+                  >
+                    We did not find any insertable data
+                  </div>,
+                )}
               </div>
             </FlexColumn>
           </div>
@@ -488,6 +655,58 @@ function childTypeToCartoucheDataType(
     default:
       assertNever(childType)
   }
+}
+
+type ScopeBuckets = {
+  [insertionCeiling: string]: Array<DataPickerOption>
+}
+
+function findClosestMatchingScope(
+  targetScope: ElementPath | FileRootPath,
+  scopeBuckets: ScopeBuckets,
+): ElementPath | FileRootPath {
+  if (targetScope.type === 'elementpath') {
+    const allPaths = EP.allPathsInsideComponent(targetScope)
+    for (const path of allPaths) {
+      if (scopeBuckets[EP.toString(path)] != null) {
+        return path
+      }
+    }
+  }
+
+  return { type: 'file-root' }
+}
+
+function putVariablesIntoScopeBuckets(options: DataPickerOption[]): ScopeBuckets {
+  const buckets: { [insertionCeiling: string]: Array<DataPickerOption> } = groupBy(
+    (o) => insertionCeilingToString(o.insertionCeiling),
+    options,
+  )
+
+  return buckets
+}
+
+function useFilterVariablesInScope(
+  options: DataPickerOption[],
+  scopeBuckets: ScopeBuckets,
+  scopeToShow: ElementPath | FileRootPath | 'do-not-filter',
+): {
+  filteredVariablesInScope: Array<DataPickerOption>
+} {
+  return React.useMemo(() => {
+    if (scopeToShow === 'do-not-filter') {
+      return {
+        filteredVariablesInScope: options,
+      }
+    }
+
+    const matchingScope = findClosestMatchingScope(scopeToShow, scopeBuckets)
+    const filteredOptions: Array<DataPickerOption> =
+      scopeBuckets[insertionCeilingToString(matchingScope)] ?? []
+    return {
+      filteredVariablesInScope: filteredOptions,
+    }
+  }, [scopeBuckets, options, scopeToShow])
 }
 
 function useProcessVariablesInScope(options: DataPickerOption[]): ProcessedVariablesInScope {
@@ -528,7 +747,7 @@ function childVars(option: DataPickerOption, indices: ArrayIndexLookup): DataPic
   }
 }
 
-export function pathBreadcrumbs(
+function pathBreadcrumbs(
   valuePath: DataPickerOption['valuePath'],
   processedVariablesInScope: ProcessedVariablesInScope,
 ): Array<{
@@ -542,6 +761,10 @@ export function pathBreadcrumbs(
   for (const segment of valuePath) {
     current.push(segment)
     const optionFromLookup = processedVariablesInScope[current.toString()]
+
+    if (optionFromLookup == null) {
+      continue
+    }
 
     accumulator.push({
       segment: segment,
@@ -588,4 +811,46 @@ function pathSegmentToString(segment: string | number) {
     return `.${segment}`
   }
   return `[${segment}]`
+}
+
+function getSelectedScopeFromBuckets(
+  startingSelectedValuePath: ObjectPath,
+  scopeBuckets: ScopeBuckets,
+): ElementPath | null {
+  for (const [pathString, options] of Object.entries(scopeBuckets)) {
+    const anyOptionHasMatchingValuePath = options.some((o) =>
+      arrayEqualsByReference(o.valuePath, startingSelectedValuePath),
+    )
+    if (anyOptionHasMatchingValuePath) {
+      return EP.fromString(pathString)
+    }
+  }
+
+  return null
+}
+
+function findFirstObjectPathToNavigateTo(
+  processedVariablesInScope: ProcessedVariablesInScope,
+  selectedValuePath: ObjectPath | null,
+): ObjectPath | null {
+  if (selectedValuePath == null) {
+    return null
+  }
+
+  let currentPath = selectedValuePath
+  while (currentPath.length > 0) {
+    const parentPath = currentPath.slice(0, -1)
+    const parentOption = processedVariablesInScope[parentPath.toString()]
+    const grandParentPath = currentPath.slice(0, -2)
+    const grandParentOption = processedVariablesInScope[grandParentPath.toString()]
+    if (grandParentOption != null && grandParentOption.type === 'array') {
+      return grandParentPath.slice(0, -1)
+    }
+    if (parentOption != null && parentOption.type === 'object') {
+      return parentPath.slice(0, -1)
+    }
+    currentPath = currentPath.slice(0, -1)
+  }
+
+  return null
 }

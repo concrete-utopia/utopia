@@ -44,7 +44,6 @@ export const DUPLICATE_SELECTION_SHORTCUT = 'duplicate-selection'
 export const TOGGLE_BACKGROUND_SHORTCUT = 'toggle-background'
 export const UNWRAP_ELEMENT_SHORTCUT = 'unwrap-element'
 export const WRAP_ELEMENT_PICKER_SHORTCUT = 'wrap-element-picker'
-export const GROUP_ELEMENT_PICKER_SHORTCUT = 'group-element-picker'
 export const GROUP_ELEMENT_DEFAULT_SHORTCUT = 'group-element-default'
 export const TOGGLE_HIDDEN_SHORTCUT = 'toggle-hidden'
 export const INSERT_IMAGE_SHORTCUT = 'insert-image'
@@ -150,10 +149,6 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
     key('g', ['cmd', 'shift']),
   ),
   [WRAP_ELEMENT_PICKER_SHORTCUT]: shortcut('Wrap elements with a selected element.', key('w', [])),
-  [GROUP_ELEMENT_PICKER_SHORTCUT]: shortcut(
-    'Group elements with a selected element.',
-    key('g', []),
-  ),
   [GROUP_ELEMENT_DEFAULT_SHORTCUT]: shortcut('Group elements with a div.', key('g', 'cmd')),
   [TOGGLE_HIDDEN_SHORTCUT]: shortcut('Toggle element as hidden.', key('h', ['cmd', 'shift'])),
   [INSERT_IMAGE_SHORTCUT]: shortcut('Insert an image.', key('i', [])),
