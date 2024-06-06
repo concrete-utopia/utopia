@@ -117,7 +117,11 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
         iconTypeToReturn = props.override
         if (baseColor === 'white') {
           colorToReturn = baseColor
-        } else if (props.override === 'row' || props.override === 'column') {
+        } else if (
+          props.override === 'row' ||
+          props.override === 'column' ||
+          props.override === 'layout'
+        ) {
           colorToReturn = 'primary'
         } else {
           colorToReturn = baseColor
