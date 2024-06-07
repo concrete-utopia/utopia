@@ -81,6 +81,7 @@ export const CartoucheUI = React.forwardRef(
               flex: 1,
               gap: 4,
               opacity: preview ? 0.5 : 1,
+              width: 'max-content',
             }}
             css={{
               color: selected || highlight === 'strong' ? colors.fg.selected : colors.fg.default,
