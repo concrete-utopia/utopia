@@ -1,7 +1,4 @@
 import React from 'react'
-import { when } from '../../../../utils/react-conditionals'
-import { FlexRow, Icn, Tooltip, colorTheme } from '../../../../uuiui'
-import { stopPropagation } from '../../common/inspector-utils'
 import { DataCartoucheInner } from './data-reference-cartouche'
 import { NO_OP } from '../../../../core/shared/utils'
 import type { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
@@ -41,9 +38,9 @@ export const IdentifierExpressionCartoucheControl = React.memo(
     return (
       <DataCartoucheInner
         contentsToDisplay={{ label: props.contents, type: 'reference' }}
-        onClick={onOpenDataPicker}
+        onClick={NO_OP}
         selected={false}
-        onDoubleClick={NO_OP}
+        onDoubleClick={onOpenDataPicker}
         safeToDelete={safeToDelete}
         onDelete={onDeleteCartouche}
         testId={testId}
