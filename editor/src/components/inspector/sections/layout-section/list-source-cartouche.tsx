@@ -27,6 +27,7 @@ import {
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { traceDataFromElement, dataPathSuccess } from '../../../../core/data-tracing/data-tracing'
 import type { CartoucheDataType } from '../component-section/cartouche-ui'
+import { CartoucheInspectorWrapper } from '../component-section/cartouche-control'
 
 function filterVariableOption(option: DataPickerOption): DataPickerOption | null {
   switch (option.type) {
@@ -65,7 +66,32 @@ interface MapListSourceCartoucheProps {
   openOn: 'single-click' | 'double-click'
 }
 
-export const MapListSourceCartouche = React.memo((props: MapListSourceCartoucheProps) => {
+export const MapListSourceCartoucheNavigator = React.memo((props: MapListSourceCartoucheProps) => {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        minWidth: 0,
+      }}
+    >
+      <MapListSourceCartoucheInner {...props} />
+    </div>
+  )
+})
+MapListSourceCartoucheNavigator.displayName = 'MapListSourceCartoucheNavigator'
+
+export const MapListSourceCartoucheInspector = React.memo((props: MapListSourceCartoucheProps) => {
+  return (
+    <CartoucheInspectorWrapper>
+      <MapListSourceCartoucheInner {...props} />
+    </CartoucheInspectorWrapper>
+  )
+})
+MapListSourceCartoucheInspector.displayName = 'MapListSourceCartoucheInspector'
+
+const MapListSourceCartoucheInner = React.memo((props: MapListSourceCartoucheProps) => {
   const { target, openOn } = props
 
   const originalMapExpression = useEditorState(
@@ -184,14 +210,7 @@ export const MapListSourceCartouche = React.memo((props: MapListSourceCartoucheP
   )
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'flex-end',
-        minWidth: 0,
-      }}
-    >
+    <React.Fragment>
       {popupIsOpen ? DataPickerComponent : null}
       <DataCartoucheInner
         ref={setReferenceElement}
@@ -205,6 +224,6 @@ export const MapListSourceCartouche = React.memo((props: MapListSourceCartoucheP
         contentIsComingFromServer={isDataComingFromHookResult}
         datatype={cartoucheDataType}
       />
-    </div>
+    </React.Fragment>
   )
 })

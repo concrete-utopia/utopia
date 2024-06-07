@@ -53,6 +53,8 @@ export const CartoucheUI = React.forwardRef(
 
     const wrappedOnClick = useStopPropagation(onClick)
     const wrappedOnDoubleClick = useStopPropagation(onDoubleClick)
+
+    // NOTE: this is currently unused, we should decide if we want to keep allowing deletion of the cartouches from here or not
     const wrappedOnDelete = useStopPropagation(onDelete)
 
     return (
@@ -123,20 +125,6 @@ export const CartoucheUI = React.forwardRef(
               datatype === 'object' && role === 'folder',
               // a trailing ellipsis is added to indicate that the object can be traversed
               <span>…</span>,
-            )}
-            {when(
-              onDelete != null,
-              <Icn
-                category='semantic'
-                type='cross'
-                color={
-                  selected || highlight === 'strong' ? colors.icon.selected : colors.icon.default
-                }
-                width={12}
-                height={12}
-                data-testid={`delete-${props.testId}`}
-                onClick={wrappedOnDelete}
-              />,
             )}
           </FlexRow>
         </Tooltip>
