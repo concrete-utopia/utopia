@@ -1336,8 +1336,7 @@ const projectTemplates = [
     onClick: () =>
       window.open(
         createCloneLink(AccessLevel.PUBLIC, {
-          cloneRepo: 'concrete-utopia/hydrogen-may',
-          cloneBranch: 'sehl-utopia',
+          cloneRepo: 'concrete-utopia/hydrogen-editions-24',
         }),
         '_blank',
       ),
