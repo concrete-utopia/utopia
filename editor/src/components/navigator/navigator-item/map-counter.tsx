@@ -121,7 +121,7 @@ function getMapCounterStyleProps(
     height: 15,
     width: 'max-content',
     minWidth: 15,
-    borderRadius: 15,
+    borderRadius: 4,
     padding: 4,
     fontWeight: 400,
     marginRight: 2,
