@@ -114,29 +114,5 @@ export function useGetInsertableComponents(
     }
   }, [packageStatus, propertyControlsInfo, projectContents, dependencies, fullPath, insertMenuMode])
 
-  const scopedVariables = useEditorState(
-    Substores.variablesInScope,
-    (store) =>
-      getVariablesInScope(
-        store.editor.selectedViews[0],
-        projectContents,
-        store.editor.variablesInScope,
-        store.editor.jsxMetadata,
-      ),
-    'useGetInsertableComponents scopedVariables',
-  )
-
-  const insertableVariables = React.useMemo(() => {
-    if (fullPath == null) {
-      return []
-    } else {
-      return convertInsertableComponentsToFlatList(convertVariablesToElements(scopedVariables))
-    }
-  }, [fullPath, scopedVariables])
-
-  if (insertMenuMode === 'insert') {
-    return insertableComponents.concat(insertableVariables)
-  } else {
-    return insertableComponents
-  }
+  return insertableComponents
 }
