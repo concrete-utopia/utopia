@@ -15,6 +15,7 @@ export interface HoverHandlers {
 export type CartoucheDataType = 'renderable' | 'boolean' | 'array' | 'object' | 'unknown'
 
 type CartoucheSource = 'internal' | 'external' | 'literal'
+export type CartoucheHighlight = 'strong' | 'subtle'
 
 export type CartoucheUIProps = React.PropsWithChildren<{
   tooltip?: string | null
@@ -22,6 +23,7 @@ export type CartoucheUIProps = React.PropsWithChildren<{
   role: 'selection' | 'information' | 'folder'
   datatype: CartoucheDataType
   selected: boolean
+  highlight?: CartoucheHighlight | null
   testId: string
   preview?: boolean
   onDelete?: (e: React.MouseEvent) => void
@@ -40,13 +42,14 @@ export const CartoucheUI = React.forwardRef(
       children,
       source,
       selected,
+      highlight,
       role,
       datatype,
       onHover,
       preview = false,
     } = props
 
-    const colors = useCartoucheColors(source)
+    const colors = useCartoucheColors(source, highlight ?? null)
 
     const wrappedOnClick = useStopPropagation(onClick)
     const wrappedOnDoubleClick = useStopPropagation(onDoubleClick)
@@ -78,10 +81,10 @@ export const CartoucheUI = React.forwardRef(
               opacity: preview ? 0.5 : 1,
             }}
             css={{
-              color: selected ? colors.fg.selected : colors.fg.default,
+              color: selected || highlight === 'strong' ? colors.fg.selected : colors.fg.default,
               backgroundColor: selected ? colors.bg.selected : colors.bg.default,
               ':hover': {
-                color: selected ? undefined : colors.fg.hovered,
+                color: selected || highlight === 'strong' ? undefined : colors.fg.hovered,
                 backgroundColor: selected ? undefined : colors.bg.hovered,
               },
             }}
@@ -90,7 +93,9 @@ export const CartoucheUI = React.forwardRef(
               <Icn
                 category='navigator-element'
                 type={dataTypeToIconType(datatype)}
-                color={selected ? colors.icon.selected : colors.icon.default}
+                color={
+                  selected || highlight === 'strong' ? colors.icon.selected : colors.icon.default
+                }
                 width={12}
                 height={12}
               />
@@ -124,7 +129,9 @@ export const CartoucheUI = React.forwardRef(
               <Icn
                 category='semantic'
                 type='cross'
-                color={selected ? colors.icon.selected : colors.icon.default}
+                color={
+                  selected || highlight === 'strong' ? colors.icon.selected : colors.icon.default
+                }
                 width={12}
                 height={12}
                 data-testid={`delete-${props.testId}`}
@@ -172,7 +179,7 @@ type CartoucheStateColor<T> = {
   selected: T
 }
 
-function useCartoucheColors(source: CartoucheSource) {
+function useCartoucheColors(source: CartoucheSource, highlight: CartoucheHighlight | null) {
   const colorTheme = useColorTheme()
 
   const colors: {
@@ -189,8 +196,10 @@ function useCartoucheColors(source: CartoucheSource) {
             selected: colorTheme.white.value,
           },
           bg: {
-            default: colorTheme.green10.value,
-            hovered: colorTheme.green20.value,
+            default:
+              highlight === 'strong' ? colorTheme.whiteOpacity20.value : colorTheme.green10.value,
+            hovered:
+              highlight === 'strong' ? colorTheme.whiteOpacity30.value : colorTheme.green20.value,
             selected: colorTheme.green.value,
           },
           icon: { default: 'green', hovered: 'green', selected: 'on-highlight-main' },
@@ -203,8 +212,14 @@ function useCartoucheColors(source: CartoucheSource) {
             selected: colorTheme.white.value,
           },
           bg: {
-            default: colorTheme.selectionBlue10.value,
-            hovered: colorTheme.selectionBlue20.value,
+            default:
+              highlight === 'strong'
+                ? colorTheme.whiteOpacity20.value
+                : colorTheme.selectionBlue10.value,
+            hovered:
+              highlight === 'strong'
+                ? colorTheme.whiteOpacity30.value
+                : colorTheme.selectionBlue20.value,
             selected: colorTheme.selectionBlue.value,
           },
           icon: { default: 'dynamic', hovered: 'dynamic', selected: 'on-highlight-main' },
@@ -217,16 +232,29 @@ function useCartoucheColors(source: CartoucheSource) {
             selected: colorTheme.white.value,
           },
           bg: {
-            default: colorTheme.bg5.value,
-            hovered: colorTheme.fg8.value,
-            selected: colorTheme.fg6.value,
+            default:
+              highlight === 'strong'
+                ? colorTheme.whiteOpacity20.value
+                : highlight === 'subtle'
+                ? colorTheme.cartoucheLiteralHighlightDefault.value
+                : colorTheme.bg5.value,
+            hovered:
+              highlight === 'strong'
+                ? colorTheme.whiteOpacity30.value
+                : highlight === 'subtle'
+                ? colorTheme.cartoucheLiteralHighlightHovered.value
+                : colorTheme.fg8.value,
+            selected:
+              highlight === 'subtle'
+                ? colorTheme.cartoucheLiteralHighlightSelected.value
+                : colorTheme.fg6.value,
           },
           icon: { default: 'secondary', hovered: 'secondary', selected: 'on-highlight-main' },
         }
       default:
         assertNever(source)
     }
-  }, [source, colorTheme])
+  }, [source, colorTheme, highlight])
 
   return colors
 }
