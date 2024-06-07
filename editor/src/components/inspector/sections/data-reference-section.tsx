@@ -25,6 +25,7 @@ import {
   useVariablesInScopeForSelectedElement,
 } from './component-section/variables-in-scope-utils'
 import { jsxElementChildToValuePath } from './component-section/data-picker-utils'
+import { CartoucheInspectorWrapper } from './component-section/cartouche-control'
 
 export const DataReferenceSectionId = 'code-element-section-test-id'
 
@@ -165,18 +166,19 @@ export const DataReferenceSection = React.memo(({ paths }: { paths: ElementPath[
             key={`inspector-data-reference-row-${EP.toString(element.path)}`}
           >
             <span>Value</span>
-
-            <DataCartoucheInner
-              onClick={NO_OP}
-              onDoubleClick={openPicker(element.path)}
-              selected={false}
-              contentsToDisplay={element.textContent}
-              safeToDelete={false}
-              onDelete={NO_OP}
-              testId={`inspector-data-cartouche-${EP.toString(element.path)}`}
-              contentIsComingFromServer={element.contentIsComingFromServer}
-              datatype={element.datatype}
-            />
+            <CartoucheInspectorWrapper>
+              <DataCartoucheInner
+                onClick={NO_OP}
+                onDoubleClick={openPicker(element.path)}
+                selected={false}
+                contentsToDisplay={element.textContent}
+                safeToDelete={false}
+                onDelete={NO_OP}
+                testId={`inspector-data-cartouche-${EP.toString(element.path)}`}
+                contentIsComingFromServer={element.contentIsComingFromServer}
+                datatype={element.datatype}
+              />
+            </CartoucheInspectorWrapper>
           </UIGridRow>
         )
       })}

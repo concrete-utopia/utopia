@@ -20,7 +20,8 @@ import type { MetadataSubstate } from '../../../editor/store/store-hook-substore
 import { UIGridRow } from '../../widgets/ui-grid-row'
 import { getTextContentOfElement } from '../component-section/data-reference-cartouche'
 import { JSXPropertyControlForListSection } from '../component-section/property-control-controls'
-import { MapListSourceCartouche } from './list-source-cartouche'
+import { MapListSourceCartoucheInspector } from './list-source-cartouche'
+import { CartoucheInspectorWrapper } from '../component-section/cartouche-control'
 
 type MapExpression = JSXMapExpression | 'multiselect' | 'not-a-mapexpression'
 
@@ -141,18 +142,11 @@ export const ListSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
       </FlexRow>
       <UIGridRow padded variant='<--1fr--><--1fr-->'>
         List Source
-        <MapListSourceCartouche target={target} openOn='double-click' selected={false} />
+        <MapListSourceCartoucheInspector target={target} openOn='double-click' selected={false} />
       </UIGridRow>
       <UIGridRow padded variant='<--1fr--><--1fr-->'>
         Contents
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'flex-end',
-            minWidth: 0,
-          }}
-        >
+        <CartoucheInspectorWrapper>
           <JSXPropertyControlForListSection
             value={
               {
@@ -161,7 +155,7 @@ export const ListSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
               } as JSXParsedValue
             }
           />
-        </div>
+        </CartoucheInspectorWrapper>
       </UIGridRow>
     </div>
   )
