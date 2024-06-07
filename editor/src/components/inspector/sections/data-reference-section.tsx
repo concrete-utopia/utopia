@@ -167,8 +167,8 @@ export const DataReferenceSection = React.memo(({ paths }: { paths: ElementPath[
             <span>Value</span>
 
             <DataCartoucheInner
-              onClick={openPicker(element.path)}
-              onDoubleClick={NO_OP}
+              onClick={NO_OP}
+              onDoubleClick={openPicker(element.path)}
               selected={false}
               contentsToDisplay={element.textContent}
               safeToDelete={false}

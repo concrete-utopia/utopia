@@ -141,7 +141,7 @@ export const ListSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
       </FlexRow>
       <UIGridRow padded variant='<--1fr--><--1fr-->'>
         List Source
-        <MapListSourceCartouche target={target} openOn='single-click' selected={false} />
+        <MapListSourceCartouche target={target} openOn='double-click' selected={false} />
       </UIGridRow>
       <UIGridRow padded variant='<--1fr--><--1fr-->'>
         Contents
