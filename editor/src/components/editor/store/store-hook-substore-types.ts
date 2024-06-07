@@ -30,6 +30,7 @@ export type Substates = {
   projectServerState: ProjectServerStateSubstate
   variablesInScope: VariablesInScopeSubstate
   propertyControlsInfo: PropertyControlsInfoSubstate
+  metadataAndPropertyControlsInfo: MetadataAndPropertyControlsInfoSubstate
 }
 
 export type StoreKey = keyof Substates
@@ -143,6 +144,9 @@ const propertyControlsInfoSubstate = {
 } as const
 export type PropertyControlsInfoSubstate = typeof propertyControlsInfoSubstate
 
+export type MetadataAndPropertyControlsInfoSubstate = MetadataSubstate &
+  PropertyControlsInfoSubstate
+
 export interface DerivedSubstate {
   derived: DerivedState
 }
@@ -193,6 +197,10 @@ export type CanvasAndMetadataSubstate = {
 } & CanvasSubstate
 
 export type ProjectContentAndMetadataSubstate = ProjectContentSubstate & MetadataSubstate
+
+export type ProjectContentAndMetadataAndVariablesInScopeSubstate = ProjectContentSubstate &
+  MetadataSubstate &
+  VariablesInScopeSubstate
 
 export type NavigatorSubstate = {
   editor: Pick<EditorState, 'navigator'>

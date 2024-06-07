@@ -140,7 +140,6 @@ import {
 import * as PP from '../../shared/property-path'
 import type { ElementsWithinInPosition } from './parser-printer-utils'
 import { prependToSourceString, getBoundsOfNodes } from './parser-printer-utils'
-import Hash from 'object-hash'
 import { getComments, getLeadingComments, getTrailingComments } from './parser-printer-comments'
 import {
   BLOCK_RAN_TO_END_FUNCTION_NAME,
@@ -153,6 +152,7 @@ import type { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
 import { emptySet } from '../../../core/shared/set-utils'
 import { getAllUniqueUidsFromAttributes } from '../../../core/model/get-unique-ids'
 import type { SteganographyMode } from './parser-printer'
+import { hashObject } from '../../shared/hash'
 
 export function parseParams(
   params: TS.NodeArray<TS.ParameterDeclaration>,
@@ -252,7 +252,7 @@ export function parseParam(
 
 function parseBindingName(
   elem: TS.BindingName,
-  expression: WithParserMetadata<JSExpressionMapOrOtherJavascript | undefined>,
+  expression: WithParserMetadata<JSExpression | undefined>,
   file: TS.SourceFile,
   sourceText: string,
   filename: string,
@@ -854,50 +854,52 @@ function parseDeclaration(
   applySteganography: SteganographyMode,
   tsDeclaration: TS.VariableDeclaration,
 ): Either<string, WithParserMetadata<JSAssignment>> {
-  const comments = getComments(sourceText, tsDeclaration)
-  if (TS.isIdentifier(tsDeclaration.name)) {
-    const possibleIdentifier = parseIdentifier(
-      sourceFile,
-      tsDeclaration.name,
-      comments,
-      'outermost-expression',
-      alreadyExistingUIDs,
-    )
-    if (tsDeclaration.initializer == null) {
-      return left('Unable to parse variable declaration without initializer.')
-    } else {
-      const possibleExpression = parseAttributeExpression(
-        sourceFile,
-        sourceText,
-        sourceFile.fileName,
-        imports,
-        topLevelNames,
-        initialPropsObjectName,
-        tsDeclaration.initializer,
-        existingHighlightBounds,
-        alreadyExistingUIDs,
-        [],
-        applySteganography,
-        'part-of-expression',
-      )
-      return applicative2Either(
-        (identifierWithMetatadata, expressionWithMetadata) => {
-          return merge2WithParserMetadata(
-            identifierWithMetatadata,
-            expressionWithMetadata,
-            (identifier, expression) => {
-              const assignment = jsAssignment(identifier, expression)
-              return withParserMetadata(assignment, {}, [], [])
-            },
-          )
-        },
-        possibleIdentifier,
-        possibleExpression,
-      )
-    }
-  } else {
-    return left('Unable to parse variable declaration with non-identifier name.')
+  if (tsDeclaration.initializer == null) {
+    return left('Cannot handle a declaration without an initializer.')
   }
+  const comments = getComments(sourceText, tsDeclaration)
+  const possibleExpression = parseAttributeExpression(
+    sourceFile,
+    sourceText,
+    sourceFile.fileName,
+    imports,
+    topLevelNames,
+    initialPropsObjectName,
+    tsDeclaration.initializer,
+    existingHighlightBounds,
+    alreadyExistingUIDs,
+    [],
+    applySteganography,
+    'part-of-expression',
+  )
+  const lhs = flatMapEither((valueExpression) => {
+    return parseBindingName(
+      tsDeclaration.name,
+      valueExpression,
+      sourceFile,
+      sourceText,
+      sourceFile.fileName,
+      imports,
+      topLevelNames,
+      existingHighlightBounds,
+      alreadyExistingUIDs,
+      applySteganography,
+    )
+  }, possibleExpression)
+
+  return applicative2Either(
+    (lhsValueWithMetadata, expressionWithMetadata) => {
+      return merge2WithParserMetadata(
+        lhsValueWithMetadata,
+        expressionWithMetadata,
+        (lhsValue, expression) => {
+          return withParserMetadata(jsAssignment(lhsValue, expression), {}, [], [])
+        },
+      )
+    },
+    lhs,
+    possibleExpression,
+  )
 }
 
 function getDeclarationKind(variableStatement: TS.VariableStatement): 'let' | 'const' | 'var' {
@@ -1799,7 +1801,7 @@ function generateUIDAndAddToExistingUIDs(
   value: any,
   alreadyExistingUIDs: Set<string>,
 ): string {
-  const hash = Hash({
+  const hash = hashObject({
     fileName: sourceFile.fileName,
     value: value,
   })
@@ -3062,7 +3064,7 @@ function getUIDBasedOnElement(
   } else {
     cleansedProps = clearExpressionSourceMaps(clearExpressionUniqueIDs(props))
   }
-  const hash = Hash({
+  const hash = hashObject({
     fileName: sourceFile.fileName,
     bounds: getBoundsOfNodes(sourceFile, originatingElement),
     name: elementName,

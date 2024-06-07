@@ -99,6 +99,7 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
         editor.elementPathTree,
         wrapperUID,
         1,
+        editor.propertyControlsInfo,
       )
       if (insertionPath == null) {
         return // maybe this should throw instead?

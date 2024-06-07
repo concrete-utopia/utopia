@@ -146,11 +146,14 @@ export const UtopiaApiGroup: React.FunctionComponent<
     const observer = new MutationObserver((e) => {
       changeSizeToMatchChildren()
     })
-    observer.observe(document, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-    })
+    observer.observe(
+      document as any as Node, // weirdly this broke when I pulled in "@shopify/hydrogen": "2024.4.1",
+      {
+        childList: true,
+        subtree: true,
+        attributes: true,
+      },
+    )
 
     return function cleanup() {
       observer.disconnect()

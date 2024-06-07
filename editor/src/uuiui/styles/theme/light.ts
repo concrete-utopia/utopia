@@ -18,13 +18,19 @@ const lightBase = {
   brandPurple70: createUtopiColor('oklch(53% 0.31 290 / 70%)'),
   brandNeonPink: createUtopiColor('oklch(72.2% 0.36 331.7)'),
   brandNeonPink10: createUtopiColor('oklch(72.53% 0.353 331.69 / 10%)'),
+  brandNeonPink60: createUtopiColor('oklch(72.53% 0.353 331.69 / 30%)'),
   brandNeonGreen: createUtopiColor('oklch(86.6% 0.27 158.6)'),
+  green: createUtopiColor('oklch(64.6% 0.17 150.6)'),
+  green10: createUtopiColor('oklch(64.6% 0.17 150.6 / 10%)'),
+  green20: createUtopiColor('oklch(64.6% 0.17 150.6 / 20%)'),
   pinkSubdued: createUtopiColor('oklch(92% 0.076 326)'),
   secondaryBlue: createUtopiColor('oklch(74.5% 0.14 241.9)'),
   secondaryOrange: createUtopiColor('oklch(78.97% 0.192 70)'),
   denimBlue: createUtopiColor('oklch(91.3% 0.04 252)'),
   lightDenimBlue: createUtopiColor('oklch(97% 0.02 254)'),
   selectionBlue: createUtopiColor('oklch(66.9% 0.18 248.8)'),
+  selectionBlue10: createUtopiColor('oklch(66.9% 0.18 248.8 / 10%)'),
+  selectionBlue20: createUtopiColor('oklch(66.9% 0.18 248.8 / 20%)'),
   childSelectionBlue: createUtopiColor('oklch(92.39% 0.05 236.2)'),
   selectionPurple: createUtopiColor('oklch(53.22% 0.28 289.7)'),
   childSelectionPurple: createUtopiColor('oklch(89.45% 0.06 302.7)'),
@@ -123,7 +129,11 @@ const colorsWithOpacity = {
   shadow30: createUtopiColor('#00000005'),
 
   fg0Opacity10: createUtopiColor('hsla(0,0%,0%,0.1)'),
+  fg0Opacity20: createUtopiColor('hsla(0,0%,0%,0.2)'),
   fg6Opacity50: createUtopiColor('hsla(0,0%,0%,0.5)'),
+  whiteOpacity20: createUtopiColor('oklch(100% 0 0 /20%)'),
+  whiteOpacity30: createUtopiColor('oklch(100% 0 0 /30%)'),
+  whiteOpacity35: createUtopiColor('oklch(100% 0 0 /35%)'),
   canvasControlsSizeBoxShadowColor20: createUtopiColor('rgba(0,0,0,0.20)'),
   canvasControlsSizeBoxShadowColor50: createUtopiColor('rgba(0,0,0,0.5)'),
   neutralInvertedBackground10: createUtopiColor('hsla(0,0%,0%,0.1)'),
@@ -134,6 +144,10 @@ const colorsWithOpacity = {
   // TODO vv only used by button, refactor & remove
   errorForeground20: createUtopiColor('rgba(253, 0, 59, 0.2)'),
   subduedBorder80: createUtopiColor('hsla(0, 0%, 91%, 0.8)'),
+
+  cartoucheLiteralHighlightDefault: createUtopiColor('rgba(43, 43, 43, 0.1)'),
+  cartoucheLiteralHighlightHovered: createUtopiColor('rgba(43, 43, 43, 0.2)'),
+  cartoucheLiteralHighlightSelected: createUtopiColor('rgba(43, 43, 43, 0.5)'),
 }
 
 const lightTheme = {

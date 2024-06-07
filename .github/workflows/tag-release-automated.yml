@@ -35,7 +35,7 @@ jobs:
       - name: Run System Test
         id: run-system-test
         env:
-          EDITOR_URL: https://utopia.pizza/p/
+          EDITOR_URL: https://utopia.pizza/p/?fakeUser=alice
           HEADLESS: 'true'
         run: |
           nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "cd puppeteer-tests; pnpm install --unsafe-perm; pnpm run system-test"

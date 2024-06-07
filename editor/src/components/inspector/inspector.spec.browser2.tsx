@@ -403,7 +403,7 @@ export var storyboard = (
   })
 
   describe('enabling inspector sections through the component API', () => {
-    const project = (inspectorConfig: string) =>
+    const project = (inspectorConfig: string | null) =>
       createModifiedProject({
         [StoryboardFilePath]: `import * as React from 'react'
       import * as Utopia from 'utopia-api'
@@ -444,7 +444,7 @@ export var storyboard = (
         </Storyboard>
       )
       `,
-        ['components.utopia.js']: `import { Card } from './storyboard'
+        ['/utopia/components.utopia.js']: `import { Card } from './storyboard'
 
       const Components = {
         '/utopia/storyboard': {
@@ -455,7 +455,7 @@ export var storyboard = (
                 control: 'jsx',
               },
             },
-            inspector: ${inspectorConfig},
+            ${inspectorConfig == null ? '' : `inspector: ${inspectorConfig},`}
             variants: [],
           },
         },
@@ -465,93 +465,103 @@ export var storyboard = (
       `,
       })
 
+    const VisualSections = ['Transforms', 'Background', 'Border', 'Shadow', 'Text Shadow']
+    const LayoutSections = ['Frame', 'Container']
+    const LayoutSystemSections = ['Layout System']
+    const TypographySections = ['Type']
+
     it('shows style, transforms, background, border, shadow, text shadow when `visual` is set', async () => {
       const editor = await renderTestEditorWithModel(
-        project(JSON.stringify(['visual'])),
+        project(JSON.stringify({ display: 'expanded', sections: ['visual'] })),
         'await-first-dom-report',
       )
 
       await selectComponentsForTest(editor, [fromString('sb/scene/card')])
 
-      for (const section of ['Transforms', 'Background', 'Border', 'Shadow', 'Text Shadow']) {
+      for (const section of VisualSections) {
         expect(editor.renderedDOM.queryByText(section)?.innerText).toEqual(section)
+      }
+      for (const section of [...LayoutSections, ...LayoutSystemSections, ...TypographySections]) {
+        expect(editor.renderedDOM.queryByText(section)).toBeNull()
       }
     })
 
     it('shows container when `layout` is set', async () => {
       const editor = await renderTestEditorWithModel(
-        project(JSON.stringify(['layout'])),
+        project(JSON.stringify({ display: 'expanded', sections: ['layout'] })),
         'await-first-dom-report',
       )
 
       await selectComponentsForTest(editor, [fromString('sb/scene/card')])
 
-      for (const section of ['Container']) {
+      for (const section of LayoutSections) {
         expect(editor.renderedDOM.queryByText(section)?.innerText).toEqual(section)
+      }
+      for (const section of [...VisualSections, ...LayoutSystemSections, ...TypographySections]) {
+        expect(editor.renderedDOM.queryByText(section)).toBeNull()
       }
     })
 
     it('shows the flex section when `layout-system` is set', async () => {
       const editor = await renderTestEditorWithModel(
-        project(JSON.stringify(['layout'])),
+        project(JSON.stringify({ display: 'expanded', sections: ['layout-system'] })),
         'await-first-dom-report',
       )
 
       await selectComponentsForTest(editor, [fromString('sb/scene/card')])
 
-      for (const section of ['Layout System']) {
+      for (const section of LayoutSystemSections) {
         expect(editor.renderedDOM.queryByText(section)?.innerText).toEqual(section)
+      }
+      for (const section of [...VisualSections, ...LayoutSections, ...TypographySections]) {
+        expect(editor.renderedDOM.queryByText(section)).toBeNull()
       }
     })
 
-    it('shows the type section when `layout-system` is set', async () => {
+    it('shows the type section when `typography` is set', async () => {
       const editor = await renderTestEditorWithModel(
-        project(JSON.stringify(['typography'])),
+        project(JSON.stringify({ display: 'expanded', sections: ['typography'] })),
         'await-first-dom-report',
       )
 
       await selectComponentsForTest(editor, [fromString('sb/scene/card')])
 
-      for (const section of ['Type']) {
+      for (const section of TypographySections) {
         expect(editor.renderedDOM.queryByText(section)?.innerText).toEqual(section)
+      }
+      for (const section of [...VisualSections, ...LayoutSections, ...LayoutSystemSections]) {
+        expect(editor.renderedDOM.queryByText(section)).toBeNull()
       }
     })
 
-    it('shows all sections when `inspector: "all"` is set', async () => {
-      const editor = await renderTestEditorWithModel(project('all'), 'await-first-dom-report')
+    it('shows all sections when `inspector: { display: "expanded" }` is set', async () => {
+      const editor = await renderTestEditorWithModel(
+        project(JSON.stringify({ display: 'expanded' })),
+        'await-first-dom-report',
+      )
 
       await selectComponentsForTest(editor, [fromString('sb/scene/card')])
 
       for (const section of [
-        'Frame',
-        'Layout System',
-        'Container',
-        'Transforms',
-        'Background',
-        'Border',
-        'Shadow',
-        'Text Shadow',
-        'Type',
+        ...VisualSections,
+        ...LayoutSections,
+        ...LayoutSystemSections,
+        ...TypographySections,
       ]) {
         expect(editor.renderedDOM.queryByText(section)?.innerText).toEqual(section)
       }
     })
 
-    it('shows all sections when `inspector: undefined` is set', async () => {
-      const editor = await renderTestEditorWithModel(project('undefined'), 'await-first-dom-report')
+    it('shows all sections when `the inpector prop is not set', async () => {
+      const editor = await renderTestEditorWithModel(project(null), 'await-first-dom-report')
 
       await selectComponentsForTest(editor, [fromString('sb/scene/card')])
 
       for (const section of [
-        'Frame',
-        'Layout System',
-        'Container',
-        'Transforms',
-        'Background',
-        'Border',
-        'Shadow',
-        'Text Shadow',
-        'Type',
+        ...VisualSections,
+        ...LayoutSections,
+        ...LayoutSystemSections,
+        ...TypographySections,
       ]) {
         expect(editor.renderedDOM.queryByText(section)?.innerText).toEqual(section)
       }

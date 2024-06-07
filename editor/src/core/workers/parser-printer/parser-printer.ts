@@ -109,6 +109,7 @@ import {
   markedAsExported,
   markedAsDefault,
   parseParams,
+  parseAttributeExpression,
 } from './parser-printer-parsing'
 import { jsonToExpression } from './json-to-expression'
 import { difference } from '../../shared/set-utils'
@@ -122,6 +123,8 @@ import type { Optic } from '../../../core/shared/optics/optics'
 import { modify } from '../../../core/shared/optics/optic-utilities'
 import { identifyValuesDefinedInNode } from './parser-printer-expressions'
 import { isParseableFile } from '../../shared/file-utils'
+import type { FunctionWrap } from 'utopia-shared/src/types/element-template'
+import { simpleFunctionWrap } from 'utopia-shared/src/types/element-template'
 
 const BakedInStoryboardVariableName = 'storyboard'
 
@@ -722,6 +725,25 @@ function getModifersForComponent(
   return result
 }
 
+function printFunctionWrapping(
+  printOptions: PrintCodeOptions,
+  imports: Imports,
+  statement: TS.Expression,
+  functionWrapping: Array<FunctionWrap>,
+): TS.Expression {
+  return functionWrapping.reduceRight((workingStatement, wrap) => {
+    switch (wrap.type) {
+      case 'SIMPLE_FUNCTION_WRAP':
+        const functionExpression = jsxAttributeToExpression(
+          wrap.functionExpression,
+          imports,
+          printOptions.stripUIDs,
+        )
+        return TS.createCall(functionExpression, undefined, [workingStatement])
+    }
+  }, statement)
+}
+
 function printUtopiaJSXComponent(
   printOptions: PrintCodeOptions,
   imports: Imports,
@@ -747,7 +769,7 @@ function printUtopiaJSXComponent(
         ? TS.NodeFlags.None
         : nodeFlagsForVarLetOrConst(element.declarationSyntax)
     if (element.isFunction) {
-      const functionParams = maybeToArray(element.param).map((p) =>
+      const functionParams = (element.params ?? []).map((p) =>
         printParam(p, imports, printOptions.stripUIDs),
       )
 
@@ -800,10 +822,21 @@ function printUtopiaJSXComponent(
           undefined,
           bodyForArrowFunction(),
         )
+        const wrappedArrowFunction = printFunctionWrapping(
+          printOptions,
+          imports,
+          arrowFunction,
+          element.functionWrapping,
+        )
         if (element.name == null) {
-          elementNode = TS.createExportAssignment(undefined, modifiers, undefined, arrowFunction)
+          elementNode = TS.createExportAssignment(
+            undefined,
+            modifiers,
+            undefined,
+            wrappedArrowFunction,
+          )
         } else {
-          const varDec = TS.createVariableDeclaration(element.name, undefined, arrowFunction)
+          const varDec = TS.createVariableDeclaration(element.name, undefined, wrappedArrowFunction)
           const varDecList = TS.createVariableDeclarationList([varDec], nodeFlags)
           elementNode = TS.createVariableStatement(modifiers, varDecList)
         }
@@ -845,7 +878,7 @@ function printParam(param: Param, imports: Imports, stripUIDs: boolean): TS.Para
 }
 
 function printBindingExpression(
-  defaultExpression: JSExpressionMapOrOtherJavascript | null,
+  defaultExpression: JSExpression | null,
   imports: Imports,
   stripUIDs: boolean,
 ): TS.Expression | undefined {
@@ -899,10 +932,6 @@ function printBoundParam(
 
 function optionallyCreateDotDotDotToken(createIt: boolean): TS.DotDotDotToken | undefined {
   return createIt ? TS.createToken(TS.SyntaxKind.DotDotDotToken) : undefined
-}
-
-function printRawComment(comment: Comment): string {
-  return `${comment.rawText}${comment.trailingNewLine ? '\n' : ''}`
 }
 
 function printArbitraryJSBlock(block: ArbitraryJSBlock): TS.Node {
@@ -1092,18 +1121,21 @@ interface PossibleCanvasContentsExpression {
   name: string
   initializer: TS.Expression
   declarationSyntax: FunctionDeclarationSyntax
+  functionWrapping: Array<FunctionWrap>
 }
 
 function possibleCanvasContentsExpression(
   name: string,
   initializer: TS.Expression,
   declarationSyntax: FunctionDeclarationSyntax,
+  functionWrapping: Array<FunctionWrap>,
 ): PossibleCanvasContentsExpression {
   return {
     type: 'POSSIBLE_CANVAS_CONTENTS_EXPRESSION',
     name: name,
     initializer: initializer,
     declarationSyntax: declarationSyntax,
+    functionWrapping: functionWrapping,
   }
 }
 
@@ -1113,6 +1145,7 @@ interface PossibleCanvasContentsFunction {
   parameters: TS.NodeArray<TS.ParameterDeclaration>
   body: TS.ConciseBody
   declarationSyntax: FunctionDeclarationSyntax
+  functionWrapping: Array<FunctionWrap>
 }
 
 function possibleCanvasContentsFunction(
@@ -1120,6 +1153,7 @@ function possibleCanvasContentsFunction(
   parameters: TS.NodeArray<TS.ParameterDeclaration>,
   body: TS.ConciseBody,
   declarationSyntax: FunctionDeclarationSyntax,
+  functionWrapping: Array<FunctionWrap>,
 ): PossibleCanvasContentsFunction {
   return {
     type: 'POSSIBLE_CANVAS_CONTENTS_FUNCTION',
@@ -1127,6 +1161,7 @@ function possibleCanvasContentsFunction(
     parameters: parameters,
     body: body,
     declarationSyntax: declarationSyntax,
+    functionWrapping: functionWrapping,
   }
 }
 
@@ -1165,37 +1200,77 @@ function nodeFlagsForVarLetOrConst(varLetOrConst: VarLetOrConst): TS.NodeFlags {
 export function looksLikeCanvasElements(
   sourceFile: TS.SourceFile,
   node: TS.Node,
+  sourceText: string,
+  filename: string,
+  imports: Imports,
+  topLevelNames: Array<string>,
+  propsObjectName: string | null,
+  existingHighlightBounds: Readonly<HighlightBoundsForUids>,
+  alreadyExistingUIDs: Set<string>,
+  applySteganography: SteganographyMode,
 ): Either<TS.Node, PossibleCanvasContents> {
   if (TS.isVariableStatement(node)) {
     const variableDeclaration = node.declarationList.declarations[0]
     if (variableDeclaration != null) {
       if (variableDeclaration.initializer != null) {
         const name = variableDeclaration.name.getText(sourceFile)
-        const initializer = variableDeclaration.initializer
         const varLetOrConst = getVarLetOrConst(node.declarationList)
-        if (TS.isArrowFunction(initializer)) {
-          return right(
-            possibleCanvasContentsFunction(
-              name,
-              initializer.parameters,
-              initializer.body,
-              varLetOrConst,
-            ),
-          )
-        } else if (name === BakedInStoryboardVariableName) {
-          // FIXME The below case should result in a parsed top level *element*, but instead it is treated
-          // as a *component*. Unfortunately our use of the storyboard incorrectly relies on it being treated
-          // as a component. See https://github.com/concrete-utopia/utopia/issues/1718 for more info
-          return right(
-            possibleCanvasContentsExpression(name, variableDeclaration.initializer, varLetOrConst),
-          )
+        const initializer = variableDeclaration.initializer
+
+        function processVariable(
+          currentNode: TS.Node,
+          functionWrapping: Array<FunctionWrap>,
+        ): Either<TS.Node, PossibleCanvasContents> {
+          if (TS.isCallExpression(currentNode)) {
+            const expressionFromCall = parseAttributeExpression(
+              sourceFile,
+              sourceText,
+              filename,
+              imports,
+              topLevelNames,
+              propsObjectName,
+              currentNode.expression,
+              existingHighlightBounds,
+              alreadyExistingUIDs,
+              [],
+              applySteganography,
+              'outermost-expression',
+            )
+            if (isRight(expressionFromCall) && currentNode.arguments.length === 1) {
+              const newFunctionWrapping = [
+                ...functionWrapping,
+                simpleFunctionWrap(expressionFromCall.value.value),
+              ]
+              return processVariable(currentNode.arguments[0], newFunctionWrapping)
+            }
+          } else if (TS.isArrowFunction(currentNode)) {
+            return right(
+              possibleCanvasContentsFunction(
+                name,
+                currentNode.parameters,
+                currentNode.body,
+                varLetOrConst,
+                functionWrapping,
+              ),
+            )
+          } else if (name === BakedInStoryboardVariableName) {
+            // FIXME The below case should result in a parsed top level *element*, but instead it is treated
+            // as a *component*. Unfortunately our use of the storyboard incorrectly relies on it being treated
+            // as a component. See https://github.com/concrete-utopia/utopia/issues/1718 for more info
+            return right(
+              possibleCanvasContentsExpression(name, initializer, varLetOrConst, functionWrapping),
+            )
+          }
+          return left(node)
         }
+
+        return processVariable(initializer, [])
       }
     }
   } else if (TS.isFunctionDeclaration(node)) {
     if (node.body != null) {
       const name = node.name == null ? null : node.name.getText(sourceFile)
-      return right(possibleCanvasContentsFunction(name, node.parameters, node.body, 'function'))
+      return right(possibleCanvasContentsFunction(name, node.parameters, node.body, 'function', []))
     }
   }
 
@@ -1537,7 +1612,18 @@ export function parseCode(
           pushImportStatement(rawImportStatement)
         }
       } else {
-        const possibleDeclaration = looksLikeCanvasElements(sourceFile, topLevelElement)
+        const possibleDeclaration = looksLikeCanvasElements(
+          sourceFile,
+          topLevelElement,
+          sourceText,
+          filePath,
+          imports,
+          topLevelNames,
+          null,
+          highlightBounds,
+          alreadyExistingUIDs_MUTABLE,
+          applySteganography,
+        )
         if (isRight(possibleDeclaration)) {
           const canvasContents = possibleDeclaration.value
           const { name } = canvasContents
@@ -1545,12 +1631,13 @@ export function parseCode(
             'No contents',
           )
           let isFunction: boolean = false
-          let parsedFunctionParam: Either<string, WithParserMetadata<Param> | null> = right(null)
+          let parsedFunctionParams: Either<string, WithParserMetadata<Array<Param>> | null> =
+            right(null)
           let propsUsed: Array<string> = []
           if (isPossibleCanvasContentsFunction(canvasContents)) {
             const { parameters, body } = canvasContents
             isFunction = true
-            const parsedFunctionParams = parseParams(
+            const notNullParsedFunctionParams = parseParams(
               parameters,
               sourceFile,
               sourceText,
@@ -1561,26 +1648,14 @@ export function parseCode(
               alreadyExistingUIDs_MUTABLE,
               applySteganography,
             )
-            parsedFunctionParam = flatMapEither((parsedParams) => {
-              const paramsValue = parsedParams.value
-              if (paramsValue.length === 0) {
-                return right(null)
-              } else if (paramsValue.length === 1) {
-                // Note: We're explicitly ignoring the `propsUsed` value as
-                // that should be handled by the call to `propNamesForParam` below.
-                return right(
-                  withParserMetadata(paramsValue[0], parsedParams.highlightBounds, [], []),
-                )
-              } else {
-                return left('Invalid number of params')
-              }
-            }, parsedFunctionParams)
-            forEachRight(parsedFunctionParam, (param) => {
-              const boundParam = param?.value.boundParam
+            parsedFunctionParams = notNullParsedFunctionParams
+            forEachRight(notNullParsedFunctionParams, (params) => {
+              const firstParam = params.value.at(0)
+              const boundParam = firstParam?.boundParam
               const propsObjectName =
                 boundParam != null && isRegularParam(boundParam) ? boundParam.paramName : null
 
-              propsUsed = param == null ? [] : propNamesForParam(param.value)
+              propsUsed = firstParam == null ? [] : propNamesForParam(firstParam)
               parsedContents = parseOutFunctionContents(
                 sourceFile,
                 sourceText,
@@ -1588,13 +1663,13 @@ export function parseCode(
                 foldEither(
                   () => [],
                   (paramsSuccess) => paramsSuccess.value,
-                  parsedFunctionParams,
+                  notNullParsedFunctionParams,
                 ),
                 imports,
                 topLevelNames,
                 propsObjectName,
                 body,
-                param?.highlightBounds ?? {},
+                params?.highlightBounds ?? {},
                 alreadyExistingUIDs_MUTABLE,
                 applySteganography,
               )
@@ -1636,7 +1711,7 @@ export function parseCode(
             }
           }
 
-          if (isLeft(parsedContents) || (isFunction && isLeft(parsedFunctionParam))) {
+          if (isLeft(parsedContents) || (isFunction && isLeft(parsedFunctionParams))) {
             pushArbitraryNode(topLevelElement)
           } else {
             const contents = parsedContents.value.value
@@ -1658,10 +1733,11 @@ export function parseCode(
                 isFunction,
                 canvasContents.declarationSyntax,
                 contents.blockOrExpression,
+                canvasContents.functionWrapping,
                 foldEither(
                   (_) => null,
                   (param) => param?.value ?? null,
-                  parsedFunctionParam,
+                  parsedFunctionParams,
                 ),
                 propsUsed,
                 contents.elements[0].value,
@@ -1799,7 +1875,8 @@ export function parseCode(
             topLevelElement.isFunction,
             topLevelElement.declarationSyntax,
             topLevelElement.blockOrExpression,
-            topLevelElement.param,
+            topLevelElement.functionWrapping,
+            topLevelElement.params,
             topLevelElement.propsUsed,
             topLevelElement.rootElement,
             topLevelElement.arbitraryJSBlock,

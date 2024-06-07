@@ -1335,7 +1335,9 @@ const projectTemplates = [
     title: 'Hydrogen Project',
     onClick: () =>
       window.open(
-        createCloneLink(AccessLevel.PUBLIC, { cloneRepo: 'concrete-utopia/hydrogen-november' }),
+        createCloneLink(AccessLevel.PUBLIC, {
+          cloneRepo: 'concrete-utopia/hydrogen-editions-24',
+        }),
         '_blank',
       ),
     thumbnail: '/assets/thumbnail-hydrogen.png',

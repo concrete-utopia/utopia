@@ -48,6 +48,10 @@ export function mapDropNulls<T, U>(
   return result
 }
 
+export function dropNulls<T>(a: ReadonlyArray<T | null | undefined>): Array<T> {
+  return mapDropNulls((t) => t, a)
+}
+
 export function mapAndFilter<T, U>(
   mapFn: (t: T, i: number) => U,
   filter: (u: U) => boolean,

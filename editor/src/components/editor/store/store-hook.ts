@@ -25,11 +25,13 @@ import type {
   FocusedElementPathSubstate,
   GithubSubstate,
   HighlightedHoveredViewsSubstate,
+  MetadataAndPropertyControlsInfoSubstate,
   MetadataSubstate,
   MultiplayerSubstate,
   NavigatorSubstate,
   OnlineStateSubstate,
   PostActionInteractionSessionSubstate,
+  ProjectContentAndMetadataAndVariablesInScopeSubstate,
   ProjectContentAndMetadataSubstate,
   ProjectContentSubstate,
   ProjectServerStateSubstate,
@@ -57,6 +59,7 @@ import {
   variablesInScopeSubstateKeys,
 } from './store-hook-substore-types'
 import { Getter } from '../hook-utils'
+import { uniq } from '../../../core/shared/array-utils'
 
 // This is how to officially type the store with a subscribeWithSelector middleware as of Zustand 4.1.5 https://github.com/pmndrs/zustand#using-subscribe-with-selector
 type Store<S> = UseBoundStore<Mutate<StoreApi<S>, [['zustand/subscribeWithSelector', never]]>>
@@ -301,6 +304,16 @@ export const Substores = {
   ) => {
     return keysEquality([...projectContentsKeys, ...metadataSubstateKeys], a.editor, b.editor)
   },
+  projectContentsAndMetadataAndVariablesInScope: (
+    a: ProjectContentAndMetadataAndVariablesInScopeSubstate,
+    b: ProjectContentAndMetadataAndVariablesInScopeSubstate,
+  ) => {
+    return keysEquality(
+      [...projectContentsKeys, ...metadataSubstateKeys, ...variablesInScopeSubstateKeys],
+      a.editor,
+      b.editor,
+    )
+  },
   projectServerState: (a: ProjectServerStateSubstate, b: ProjectServerStateSubstate) => {
     return ProjectServerStateKeepDeepEquality(a.projectServerState, b.projectServerState).areEqual
   },
@@ -324,6 +337,16 @@ export const Substores = {
   },
   propertyControlsInfo: (a: PropertyControlsInfoSubstate, b: PropertyControlsInfoSubstate) => {
     return keysEquality(propertyControlsInfoSubstateKeys, a.editor, b.editor)
+  },
+  metadataAndPropertyControlsInfo: (
+    a: MetadataAndPropertyControlsInfoSubstate,
+    b: MetadataAndPropertyControlsInfoSubstate,
+  ) => {
+    return keysEquality(
+      uniq([...propertyControlsInfoSubstateKeys, ...metadataSubstateKeys]),
+      a.editor,
+      b.editor,
+    )
   },
 } as const
 

@@ -1933,6 +1933,11 @@ describe('Fixed / Fill / Hug control', () => {
         EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}`),
       ])
 
+      await mouseClickAtPoint(editor.renderedDOM.getByTestId('section-header-Styles'), {
+        x: 3,
+        y: 3,
+      })
+
       expect(editor.renderedDOM.getAllByText(DetectedLabel).length).toEqual(2)
     })
 

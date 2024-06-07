@@ -51,7 +51,8 @@ import type {
 import type { ProjectContentTreeRoot } from '../assets'
 import { getProjectFileByFilePath } from '../assets'
 import type { EditorDispatch } from '../editor/action-types'
-import type { Emphasis, Focus, Icon, InspectorSpec } from 'utopia-api'
+import { StylingOptions } from 'utopia-api'
+import type { Emphasis, Focus, Icon, Styling } from 'utopia-api'
 
 type ModuleExportTypes = { [name: string]: ExportType }
 
@@ -111,6 +112,20 @@ export function clearComponentElementToInsertUniqueIDs(
   }
 }
 
+export function componentElementToInsertHasChildren(toInsert: ComponentElementToInsert): boolean {
+  switch (toInsert.type) {
+    case 'JSX_ELEMENT':
+    case 'JSX_FRAGMENT':
+      return toInsert.children.length > 0
+    case 'JSX_MAP_EXPRESSION':
+    case 'JSX_CONDITIONAL_EXPRESSION':
+      // More in the conceptual sense than actual sense of having a field containing children.
+      return true
+    default:
+      assertNever(toInsert)
+  }
+}
+
 export interface ComponentInfo {
   insertMenuLabel: string
   elementToInsert: () => ComponentElementToInsert
@@ -129,6 +144,16 @@ export function componentInfo(
   }
 }
 
+export type StyleSectionState = 'collapsed' | 'expanded'
+
+export interface ShownInspectorSpec {
+  type: 'shown'
+  display: StyleSectionState
+  sections: Styling[]
+}
+
+export type TypedInpsectorSpec = { type: 'hidden' } | ShownInspectorSpec
+
 export interface ComponentDescriptor {
   properties: PropertyControls
   supportsChildren: boolean
@@ -136,19 +161,21 @@ export interface ComponentDescriptor {
   variants: ComponentInfo[]
   source: ComponentDescriptorSource
   focus: Focus
-  inspector: InspectorSpec
+  inspector: TypedInpsectorSpec
   emphasis: Emphasis
   icon: Icon
+  label: string | null
 }
 
 export const ComponentDescriptorDefaults: Pick<
   ComponentDescriptor,
-  'focus' | 'inspector' | 'emphasis' | 'icon'
+  'focus' | 'inspector' | 'emphasis' | 'icon' | 'label'
 > = {
   focus: 'default',
-  inspector: [],
+  inspector: { type: 'shown', display: 'expanded', sections: [...StylingOptions] },
   emphasis: 'regular',
-  icon: 'regular',
+  icon: 'component',
+  label: null,
 }
 
 export function componentDescriptor(
@@ -158,9 +185,10 @@ export function componentDescriptor(
   preferredChildComponents: Array<PreferredChildComponentDescriptor>,
   source: ComponentDescriptorSource,
   focus: Focus,
-  inspector: InspectorSpec,
+  inspector: TypedInpsectorSpec,
   emphasis: Emphasis,
   icon: Icon,
+  label: string | null,
 ): ComponentDescriptor {
   return {
     properties: properties,
@@ -172,6 +200,7 @@ export function componentDescriptor(
     inspector: inspector,
     emphasis: emphasis,
     icon: icon,
+    label: label,
   }
 }
 

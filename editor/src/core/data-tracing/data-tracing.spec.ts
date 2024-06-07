@@ -1,20 +1,29 @@
+import type { JSIdentifier, JSXTextBlock } from 'utopia-shared/src/types'
 import type { EditorRenderResult } from '../../components/canvas/ui-jsx.test-utils'
 import {
   formatTestProjectCode,
   renderTestEditorWithCode,
 } from '../../components/canvas/ui-jsx.test-utils'
 import { resetCanvas, setFocusedElement } from '../../components/editor/actions/action-creators'
+import { getElementFromProjectContents } from '../../components/editor/store/editor-state'
 import * as EPP from '../../components/template-property-path'
 import { BakedInStoryboardVariableName } from '../model/scene-utils'
 import { right } from '../shared/either'
 import * as EP from '../shared/element-path'
-import { jsIdentifier } from '../shared/element-template'
+import type { JSExpression } from '../shared/element-template'
 import type { ElementPath } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
 import {
+  dataPathNotPossible,
+  dataPathSuccess,
+  dataTracingFailed,
   dataTracingToAHookCall,
+  dataTracingToElementAtScope,
+  dataTracingToLiteralAssignment,
   dataTracingToLiteralAttribute,
+  traceDataFromElement,
   traceDataFromProp,
+  traceDataFromVariableName,
 } from './data-tracing'
 
 describe('Data Tracing', () => {
@@ -35,11 +44,15 @@ describe('Data Tracing', () => {
         EPP.create(EP.fromString('sb/app:my-component'), PP.create('title')),
         editor.getEditorState().editor.jsxMetadata,
         editor.getEditorState().editor.projectContents,
-        [],
+        dataPathSuccess([]),
       )
 
       expect(traceResult).toEqual(
-        dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('title'), []),
+        dataTracingToLiteralAttribute(
+          EP.fromString('sb/app:my-component'),
+          PP.create('title'),
+          dataPathSuccess([]),
+        ),
       )
     })
 
@@ -63,14 +76,14 @@ describe('Data Tracing', () => {
         EPP.create(EP.fromString('sb/app:my-component/inner-child'), PP.create('title')),
         editor.getEditorState().editor.jsxMetadata,
         editor.getEditorState().editor.projectContents,
-        [],
+        dataPathSuccess([]),
       )
 
       expect(traceResult).toEqual(
         dataTracingToLiteralAttribute(
           EP.fromString('sb/app:my-component/inner-child'),
           PP.create('title'),
-          [],
+          dataPathSuccess([]),
         ),
       )
     })
@@ -95,11 +108,15 @@ describe('Data Tracing', () => {
         EPP.create(EP.fromString('sb/app:my-component:component-root'), PP.create('title')),
         editor.getEditorState().editor.jsxMetadata,
         editor.getEditorState().editor.projectContents,
-        [],
+        dataPathSuccess([]),
       )
 
       expect(traceResult).toEqual(
-        dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('title'), []),
+        dataTracingToLiteralAttribute(
+          EP.fromString('sb/app:my-component'),
+          PP.create('title'),
+          dataPathSuccess([]),
+        ),
       )
     })
 
@@ -130,15 +147,19 @@ describe('Data Tracing', () => {
         ),
         editor.getEditorState().editor.jsxMetadata,
         editor.getEditorState().editor.projectContents,
-        [],
+        dataPathSuccess([]),
       )
 
       expect(traceResult).toEqual(
-        dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('title'), []),
+        dataTracingToLiteralAttribute(
+          EP.fromString('sb/app:my-component'),
+          PP.create('title'),
+          dataPathSuccess([]),
+        ),
       )
     })
 
-    it('Traces back a destrucuted prop to a string literal jsx attribute', async () => {
+    it('Traces back a destructed prop to a string literal jsx attribute', async () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCodeWithStoryboard(`
       function MyComponent({ propA, title, propC, ...restOfProps }) {
@@ -158,11 +179,15 @@ describe('Data Tracing', () => {
         EPP.create(EP.fromString('sb/app:my-component:component-root'), PP.create('title')),
         editor.getEditorState().editor.jsxMetadata,
         editor.getEditorState().editor.projectContents,
-        [],
+        dataPathSuccess([]),
       )
 
       expect(traceResult).toEqual(
-        dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('title'), []),
+        dataTracingToLiteralAttribute(
+          EP.fromString('sb/app:my-component'),
+          PP.create('title'),
+          dataPathSuccess([]),
+        ),
       )
     })
 
@@ -186,11 +211,15 @@ describe('Data Tracing', () => {
         EPP.create(EP.fromString('sb/app:my-component:component-root'), PP.create('title')),
         editor.getEditorState().editor.jsxMetadata,
         editor.getEditorState().editor.projectContents,
-        [],
+        dataPathSuccess([]),
       )
 
       expect(traceResult).toEqual(
-        dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('title'), []),
+        dataTracingToLiteralAttribute(
+          EP.fromString('sb/app:my-component'),
+          PP.create('title'),
+          dataPathSuccess([]),
+        ),
       )
     })
 
@@ -221,11 +250,15 @@ describe('Data Tracing', () => {
         ),
         editor.getEditorState().editor.jsxMetadata,
         editor.getEditorState().editor.projectContents,
-        [],
+        dataPathSuccess([]),
       )
 
       expect(traceResult).toEqual(
-        dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('title'), []),
+        dataTracingToLiteralAttribute(
+          EP.fromString('sb/app:my-component'),
+          PP.create('title'),
+          dataPathSuccess([]),
+        ),
       )
     })
 
@@ -249,13 +282,15 @@ describe('Data Tracing', () => {
         EPP.create(EP.fromString('sb/app:my-component:component-root'), PP.create('title')),
         editor.getEditorState().editor.jsxMetadata,
         editor.getEditorState().editor.projectContents,
-        [],
+        dataPathSuccess([]),
       )
 
       expect(traceResult).toEqual(
-        dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('doc'), [
-          'title',
-        ]),
+        dataTracingToLiteralAttribute(
+          EP.fromString('sb/app:my-component'),
+          PP.create('doc'),
+          dataPathSuccess(['title']),
+        ),
       )
     })
 
@@ -279,15 +314,15 @@ describe('Data Tracing', () => {
         EPP.create(EP.fromString('sb/app:my-component:component-root'), PP.create('title')),
         editor.getEditorState().editor.jsxMetadata,
         editor.getEditorState().editor.projectContents,
-        [],
+        dataPathSuccess([]),
       )
 
       expect(traceResult).toEqual(
-        dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('doc'), [
-          'very',
-          'deep',
-          'title',
-        ]),
+        dataTracingToLiteralAttribute(
+          EP.fromString('sb/app:my-component'),
+          PP.create('doc'),
+          dataPathSuccess(['very', 'deep', 'title']),
+        ),
       )
     })
 
@@ -318,16 +353,15 @@ describe('Data Tracing', () => {
         ),
         editor.getEditorState().editor.jsxMetadata,
         editor.getEditorState().editor.projectContents,
-        [],
+        dataPathSuccess([]),
       )
 
       expect(traceResult).toEqual(
-        dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('doc'), [
-          'very',
-          'deep',
-          'title',
-          'value',
-        ]),
+        dataTracingToLiteralAttribute(
+          EP.fromString('sb/app:my-component'),
+          PP.create('doc'),
+          dataPathSuccess(['very', 'deep', 'title', 'value']),
+        ),
       )
     })
   })
@@ -361,14 +395,14 @@ describe('Data Tracing', () => {
         EPP.create(EP.fromString('sb/app:my-component:component-root'), PP.create('title')),
         editor.getEditorState().editor.jsxMetadata,
         editor.getEditorState().editor.projectContents,
-        [],
+        dataPathSuccess([]),
       )
 
       expect(traceResult).toEqual(
         dataTracingToAHookCall(
           EP.fromString('sb/app:my-component:component-root'),
           'useLoaderData',
-          ['reviews', '0', 'hello'],
+          dataPathSuccess(['reviews', '0', 'hello']),
         ),
       )
     })
@@ -400,14 +434,14 @@ describe('Data Tracing', () => {
         EPP.create(EP.fromString('sb/app:my-component:component-root'), PP.create('title')),
         editor.getEditorState().editor.jsxMetadata,
         editor.getEditorState().editor.projectContents,
-        [],
+        dataPathSuccess([]),
       )
 
       expect(traceResult).toEqual(
         dataTracingToAHookCall(
           EP.fromString('sb/app:my-component:component-root'),
           'useLoaderData',
-          ['reviews', '0', 'hello'],
+          dataPathSuccess(['reviews', '0', 'hello']),
         ),
       )
     })
@@ -444,14 +478,14 @@ describe('Data Tracing', () => {
         ),
         editor.getEditorState().editor.jsxMetadata,
         editor.getEditorState().editor.projectContents,
-        [],
+        dataPathSuccess([]),
       )
 
       expect(traceResult).toEqual(
         dataTracingToAHookCall(
           EP.fromString('sb/app:my-component:component-root'),
           'useLoaderData',
-          ['title'],
+          dataPathSuccess(['title']),
         ),
       )
     })
@@ -481,14 +515,88 @@ describe('Data Tracing', () => {
         EPP.create(EP.fromString('sb/app:my-component:component-root'), PP.create('title')),
         editor.getEditorState().editor.jsxMetadata,
         editor.getEditorState().editor.projectContents,
-        [],
+        dataPathSuccess([]),
       )
 
       expect(traceResult).toEqual(
         dataTracingToAHookCall(
           EP.fromString('sb/app:my-component:component-root'),
           'useLoaderData',
-          ['title'],
+          dataPathSuccess(['title']),
+        ),
+      )
+    })
+
+    it('traces back through a spread value in an object destructured hook value', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithStoryboard(`
+        function useObject() {
+          return { first: 'first', second: 'second', third: 'third', fourth: 'fourth' }
+        }
+
+      function MyComponent(props) {
+        const { first, second, ...rest } = useObject()
+        return <div data-uid='component-root' title={rest.third} />
+      }
+
+      function App() {
+        return <MyComponent data-uid='my-component' />
+      }
+      `),
+        'await-first-dom-report',
+      )
+
+      await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component'))
+
+      const traceResult = traceDataFromProp(
+        EPP.create(EP.fromString('sb/app:my-component:component-root'), PP.create('title')),
+        editor.getEditorState().editor.jsxMetadata,
+        editor.getEditorState().editor.projectContents,
+        dataPathSuccess([]),
+      )
+
+      expect(traceResult).toEqual(
+        dataTracingToAHookCall(
+          EP.fromString('sb/app:my-component:component-root'),
+          'useObject',
+          dataPathSuccess(['third']),
+        ),
+      )
+    })
+
+    it('traces back through an array destructured hook, but without a path', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithStoryboard(`
+        function useArray() {
+          return [ 'first', 'second', 'string literal here']
+        }
+
+      function MyComponent(props) {
+        const [ _first, _second, ...rest ] = useArray()
+        return <div data-uid='component-root' title={rest} />
+      }
+
+      function App() {
+        return <MyComponent data-uid='my-component' />
+      }
+      `),
+        'await-first-dom-report',
+      )
+
+      await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component'))
+
+      const traceResult = traceDataFromProp(
+        EPP.create(EP.fromString('sb/app:my-component:component-root'), PP.create('title')),
+        editor.getEditorState().editor.jsxMetadata,
+        editor.getEditorState().editor.projectContents,
+        dataPathSuccess([]),
+      )
+
+      expect(traceResult).toEqual(
+        dataTracingToAHookCall(
+          EP.fromString('sb/app:my-component:component-root'),
+          'useArray',
+          dataPathNotPossible,
         ),
       )
     })
@@ -519,14 +627,14 @@ describe('Data Tracing', () => {
         EPP.create(EP.fromString('sb/app:my-component:component-root'), PP.create('title')),
         editor.getEditorState().editor.jsxMetadata,
         editor.getEditorState().editor.projectContents,
-        [],
+        dataPathSuccess([]),
       )
 
       expect(traceResult).toEqual(
         dataTracingToAHookCall(
           EP.fromString('sb/app:my-component:component-root'),
           'useLoaderData',
-          ['title'],
+          dataPathSuccess(['title']),
         ),
       )
     })
@@ -557,14 +665,14 @@ describe('Data Tracing', () => {
         EPP.create(EP.fromString('sb/app:my-component:component-root'), PP.create('title')),
         editor.getEditorState().editor.jsxMetadata,
         editor.getEditorState().editor.projectContents,
-        [],
+        dataPathSuccess([]),
       )
 
       expect(traceResult).toEqual(
         dataTracingToAHookCall(
           EP.fromString('sb/app:my-component:component-root'),
           'useLoaderData',
-          ['title'],
+          dataPathSuccess(['title']),
         ),
       )
     })
@@ -601,16 +709,15 @@ describe('Data Tracing', () => {
         ),
         editor.getEditorState().editor.jsxMetadata,
         editor.getEditorState().editor.projectContents,
-        [],
+        dataPathSuccess([]),
       )
 
       expect(traceResult).toEqual(
-        dataTracingToAHookCall(EP.fromString('sb/app:my-component'), 'useLoaderData', [
-          'very',
-          'deep',
-          'title',
-          'value',
-        ]),
+        dataTracingToAHookCall(
+          EP.fromString('sb/app:my-component'),
+          'useLoaderData',
+          dataPathSuccess(['very', 'deep', 'title', 'value']),
+        ),
       )
     })
 
@@ -647,16 +754,15 @@ describe('Data Tracing', () => {
         ),
         editor.getEditorState().editor.jsxMetadata,
         editor.getEditorState().editor.projectContents,
-        [],
+        dataPathSuccess([]),
       )
 
       expect(traceResult).toEqual(
-        dataTracingToAHookCall(EP.fromString('sb/app:my-component'), 'useLoaderData', [
-          'very',
-          'deep',
-          'title',
-          'value',
-        ]),
+        dataTracingToAHookCall(
+          EP.fromString('sb/app:my-component'),
+          'useLoaderData',
+          dataPathSuccess(['very', 'deep', 'title', 'value']),
+        ),
       )
     })
   })
@@ -683,11 +789,15 @@ describe('Data Tracing', () => {
         EPP.create(EP.fromString('sb/app:my-component:component-root'), PP.create('title')),
         editor.getEditorState().editor.jsxMetadata,
         editor.getEditorState().editor.projectContents,
-        [],
+        dataPathSuccess([]),
       )
 
       expect(traceResult).toEqual(
-        dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('title'), []),
+        dataTracingToLiteralAttribute(
+          EP.fromString('sb/app:my-component'),
+          PP.create('title'),
+          dataPathSuccess([]),
+        ),
       )
     })
 
@@ -712,11 +822,48 @@ describe('Data Tracing', () => {
         EPP.create(EP.fromString('sb/app:my-component:component-root'), PP.create('title')),
         editor.getEditorState().editor.jsxMetadata,
         editor.getEditorState().editor.projectContents,
-        [],
+        dataPathSuccess([]),
       )
 
       expect(traceResult).toEqual(
-        dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('title'), []),
+        dataTracingToLiteralAttribute(
+          EP.fromString('sb/app:my-component'),
+          PP.create('title'),
+          dataPathSuccess([]),
+        ),
+      )
+    })
+
+    it('Traces back a regular prop to a string literal jsx attribute via a destructured indirection that renames', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithStoryboard(`
+      function MyComponent(props) {
+        const { title: actualTitle } = props
+        return <div data-uid='component-root' title={actualTitle} />
+      }
+
+      function App() {
+        return <MyComponent data-uid='my-component' title='string literal here' />
+      }
+      `),
+        'await-first-dom-report',
+      )
+
+      await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component'))
+
+      const traceResult = traceDataFromProp(
+        EPP.create(EP.fromString('sb/app:my-component:component-root'), PP.create('title')),
+        editor.getEditorState().editor.jsxMetadata,
+        editor.getEditorState().editor.projectContents,
+        dataPathSuccess([]),
+      )
+
+      expect(traceResult).toEqual(
+        dataTracingToLiteralAttribute(
+          EP.fromString('sb/app:my-component'),
+          PP.create('title'),
+          dataPathSuccess([]),
+        ),
       )
     })
   })
@@ -754,13 +901,15 @@ describe('Data Tracing', () => {
         ),
         editor.getEditorState().editor.jsxMetadata,
         editor.getEditorState().editor.projectContents,
-        [],
+        dataPathSuccess([]),
       )
 
       expect(traceResult).toEqual(
-        dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('titles'), [
-          '1',
-        ]),
+        dataTracingToLiteralAttribute(
+          EP.fromString('sb/app:my-component'),
+          PP.create('titles'),
+          dataPathSuccess(['1']),
+        ),
       )
     })
 
@@ -801,14 +950,14 @@ describe('Data Tracing', () => {
         ),
         editor.getEditorState().editor.jsxMetadata,
         editor.getEditorState().editor.projectContents,
-        [],
+        dataPathSuccess([]),
       )
 
       expect(traceResult).toEqual(
         dataTracingToAHookCall(
           EP.fromString('sb/app:my-component:component-root'),
           'useLoaderData',
-          ['reviews', '1', 'title'],
+          dataPathSuccess(['reviews', '1', 'title']),
         ),
       )
     })
@@ -850,16 +999,373 @@ describe('Data Tracing', () => {
         ),
         editor.getEditorState().editor.jsxMetadata,
         editor.getEditorState().editor.projectContents,
-        [],
+        dataPathSuccess([]),
       )
 
       expect(traceResult).toEqual(
         dataTracingToAHookCall(
           EP.fromString('sb/app:my-component:component-root'),
           'useLoaderData',
-          ['reviews', '1', 'title'],
+          dataPathSuccess(['reviews', '1', 'title']),
         ),
       )
+    })
+  })
+
+  describe('Tracing data from an element', () => {
+    it('Traces back to a hook call from an element in scope', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithStoryboard(`
+        function MyInnerComponent({title}) {
+          return <div data-uid='inner-component-root'>{
+            // @utopia/uid=map
+            title.value.map((el) => <div key={el}>{el}</div>)
+          }</div>
+        }
+        
+        function MyComponent({doc}) {
+          return <MyInnerComponent data-uid='component-root' title={doc.title} />
+        }
+  
+        function useLoaderData() {
+          return {very: { deep: { title: {value: ['hello', 'world']} } } }
+        }
+  
+        function App() {
+          const { very } = useLoaderData()
+          const { deep } = very
+          return <MyComponent data-uid='my-component' doc={deep} />
+        }
+        `),
+        'await-first-dom-report',
+      )
+
+      await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component:component-root'))
+
+      const mappedElement: JSExpression = (() => {
+        const mapElement = getElementFromProjectContents(
+          EP.fromString('sb/app:my-component:component-root:inner-component-root/map'),
+          editor.getEditorState().editor.projectContents,
+        )
+        if (mapElement == null || mapElement.type !== 'JSX_MAP_EXPRESSION') {
+          throw new Error('Could not find map element')
+        }
+        return mapElement.valueToMap
+      })()
+
+      const traceResult = traceDataFromElement(
+        mappedElement,
+        EP.fromString('sb/app:my-component:component-root:inner-component-root'),
+        editor.getEditorState().editor.jsxMetadata,
+        editor.getEditorState().editor.projectContents,
+        dataPathSuccess([]),
+      )
+
+      expect(traceResult).toEqual(
+        dataTracingToAHookCall(
+          EP.fromString('sb/app:my-component'),
+          'useLoaderData',
+          dataPathSuccess(['very', 'deep', 'title', 'value']),
+        ),
+      )
+    })
+
+    it('The element in scope is a child prop', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithStoryboard(`
+        function MyInnerComponent({name}) {
+          return <div data-uid='inner-component-root'>
+            Hello, {name}!
+          </div>
+        }
+        
+        function MyComponent({doc}) {
+          return <MyInnerComponent data-uid='component-root' name={doc.name} />
+        }
+  
+        function useLoaderData() {
+          return {very: { deep: { name: "world" } } }
+        }
+  
+        function App() {
+          const { very } = useLoaderData()
+          const { deep } = very
+          return <MyComponent data-uid='my-component' doc={deep} />
+        }
+        `),
+        'await-first-dom-report',
+      )
+
+      await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component:component-root'))
+
+      const mappedElement: JSIdentifier = (() => {
+        const rootElement = getElementFromProjectContents(
+          EP.fromString('sb/app:my-component:component-root:inner-component-root'),
+          editor.getEditorState().editor.projectContents,
+        )
+        if (rootElement == null || rootElement.type !== 'JSX_ELEMENT') {
+          throw new Error('Could not find map element')
+        }
+        const target = rootElement.children[1]
+        if (target == null || target.type !== 'JS_IDENTIFIER') {
+          throw new Error('Could not find target identifier')
+        }
+        return target
+      })()
+
+      const traceResult = traceDataFromElement(
+        mappedElement,
+        EP.fromString('sb/app:my-component:component-root:inner-component-root'),
+        editor.getEditorState().editor.jsxMetadata,
+        editor.getEditorState().editor.projectContents,
+        dataPathSuccess([]),
+      )
+
+      expect(traceResult).toEqual(
+        dataTracingToAHookCall(
+          EP.fromString('sb/app:my-component'),
+          'useLoaderData',
+          dataPathSuccess(['very', 'deep', 'name']),
+        ),
+      )
+    })
+
+    it('The element in scope is a text literal child', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithStoryboard(`
+        function App() {
+          return <div data-uid='app-root'>
+            Hello, {"world"}!
+          </div>
+        }
+        `),
+        'await-first-dom-report',
+      )
+
+      await focusOnComponentForTest(editor, EP.fromString('sb/app:app-root'))
+
+      const mappedElement: JSXTextBlock = (() => {
+        const rootElement = getElementFromProjectContents(
+          EP.fromString('sb/app:app-root'),
+          editor.getEditorState().editor.projectContents,
+        )
+        if (rootElement == null || rootElement.type !== 'JSX_ELEMENT') {
+          throw new Error('Could not find map element')
+        }
+        const target = rootElement.children[0]
+        if (target == null || target.type !== 'JSX_TEXT_BLOCK') {
+          throw new Error('Could not find target identifier')
+        }
+        return target
+      })()
+
+      const traceResult = traceDataFromElement(
+        mappedElement,
+        EP.fromString('sb/app:my-component:app-root'),
+        editor.getEditorState().editor.jsxMetadata,
+        editor.getEditorState().editor.projectContents,
+        dataPathSuccess([]),
+      )
+
+      expect(traceResult).toEqual(
+        dataTracingToElementAtScope(
+          EP.fromString('sb/app:my-component:app-root'),
+          mappedElement,
+          dataPathSuccess([]),
+        ),
+      )
+    })
+  })
+
+  describe('Tracing data from the arbitrary js block of a component', () => {
+    it('can trace data from the arbitrary js block', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithStoryboard(`
+        function MyComponent({ doc }) {
+          return <h1 data-uid='component-root'>{doc.title.value}</h1>
+        }
+  
+        function useLoaderData() {
+          return { very: { deep: { title: {value: ['hello', 'world'] } }, a: [1, 2] } }
+        }
+  
+        function App() {
+          const { very } = useLoaderData()
+          const { deep, a } = very
+          const deepButWithAccess = very.deep
+          
+          const [helloFromDestructuredArray] = a
+
+          return <MyComponent data-uid='my-component' doc={deep} />
+        }
+        `),
+        'await-first-dom-report',
+      )
+
+      await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component'))
+
+      {
+        const trace = traceDataFromVariableName(
+          EP.fromString('sb/app:my-component'),
+          'deep',
+          editor.getEditorState().editor.jsxMetadata,
+          editor.getEditorState().editor.projectContents,
+          dataPathSuccess([]),
+        )
+
+        expect(trace).toEqual(
+          dataTracingToAHookCall(
+            EP.fromString('sb/app:my-component'),
+            'useLoaderData',
+            dataPathSuccess(['very', 'deep']),
+          ),
+        )
+      }
+      {
+        const trace = traceDataFromVariableName(
+          EP.fromString('sb/app:my-component'),
+          'deepButWithAccess',
+          editor.getEditorState().editor.jsxMetadata,
+          editor.getEditorState().editor.projectContents,
+          dataPathSuccess([]),
+        )
+
+        expect(trace).toEqual(
+          dataTracingToAHookCall(
+            EP.fromString('sb/app:my-component'),
+            'useLoaderData',
+            dataPathSuccess(['very', 'deep']),
+          ),
+        )
+      }
+      {
+        const trace = traceDataFromVariableName(
+          EP.fromString('sb/app:my-component'),
+          'helloFromDestructuredArray',
+          editor.getEditorState().editor.jsxMetadata,
+          editor.getEditorState().editor.projectContents,
+          dataPathSuccess([]),
+        )
+
+        expect(trace).toEqual(
+          dataTracingToAHookCall(
+            EP.fromString('sb/app:my-component'),
+            'useLoaderData',
+            dataPathSuccess(['very', 'a', '0', 'helloFromDestructuredArray']),
+          ),
+        )
+      }
+    })
+
+    it('can to a literal-valued variable in the arbitrary js block', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithStoryboard(`
+        function MyComponent({ doc }) {
+
+          const valueFromTheDeep = doc.title.value
+
+          return <h1 data-uid='component-root'>{doc.title.value}</h1>
+        }
+  
+        function App() {
+          const label = 'yes'
+          const loaded = true
+          const words = ['hello', 'cheese']
+          const deeplyNestedObject = { very: { deep: { title: {value: ['hello', 'world'] } }, a: [1, 2] } }
+          const { very } = deeplyNestedObject
+
+          return <MyComponent data-uid='my-component' doc={very.deep} />
+        }
+        `),
+        'await-first-dom-report',
+      )
+
+      await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component'))
+
+      {
+        const trace = traceDataFromVariableName(
+          EP.fromString('sb/app:my-component'),
+          'label',
+          editor.getEditorState().editor.jsxMetadata,
+          editor.getEditorState().editor.projectContents,
+          dataPathSuccess([]),
+        )
+
+        expect(trace).toEqual(
+          dataTracingToLiteralAssignment(EP.fromString('sb/app:my-component'), dataPathSuccess([])),
+        )
+      }
+      {
+        const trace = traceDataFromVariableName(
+          EP.fromString('sb/app:my-component'),
+          'loaded',
+          editor.getEditorState().editor.jsxMetadata,
+          editor.getEditorState().editor.projectContents,
+          dataPathSuccess([]),
+        )
+
+        expect(trace).toEqual(
+          dataTracingToLiteralAssignment(EP.fromString('sb/app:my-component'), dataPathSuccess([])),
+        )
+      }
+      {
+        const trace = traceDataFromVariableName(
+          EP.fromString('sb/app:my-component'),
+          'words',
+          editor.getEditorState().editor.jsxMetadata,
+          editor.getEditorState().editor.projectContents,
+          dataPathSuccess([]),
+        )
+
+        expect(trace).toEqual(
+          dataTracingToLiteralAssignment(EP.fromString('sb/app:my-component'), dataPathSuccess([])),
+        )
+      }
+      {
+        const trace = traceDataFromVariableName(
+          EP.fromString('sb/app:my-component'),
+          'deeplyNestedObject',
+          editor.getEditorState().editor.jsxMetadata,
+          editor.getEditorState().editor.projectContents,
+          dataPathSuccess([]),
+        )
+
+        expect(trace).toEqual(
+          dataTracingToLiteralAssignment(EP.fromString('sb/app:my-component'), dataPathSuccess([])),
+        )
+      }
+      {
+        const trace = traceDataFromVariableName(
+          EP.fromString('sb/app:my-component'),
+          'very',
+          editor.getEditorState().editor.jsxMetadata,
+          editor.getEditorState().editor.projectContents,
+          dataPathSuccess([]),
+        )
+
+        expect(trace).toEqual(
+          dataTracingToLiteralAssignment(
+            EP.fromString('sb/app:my-component'),
+            dataPathSuccess(['very']),
+          ),
+        )
+      }
+      {
+        const trace = traceDataFromVariableName(
+          EP.fromString('sb/app:my-component:component-root'),
+          'valueFromTheDeep',
+          editor.getEditorState().editor.jsxMetadata,
+          editor.getEditorState().editor.projectContents,
+          dataPathSuccess([]),
+        )
+
+        expect(trace).toEqual(
+          dataTracingToLiteralAssignment(
+            EP.fromString('sb/app:my-component'),
+            dataPathSuccess(['very', 'deep', 'title', 'value']),
+          ),
+        )
+      }
     })
   })
 })

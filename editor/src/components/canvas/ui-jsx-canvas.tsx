@@ -33,7 +33,6 @@ import type {
 import type {
   DerivedState,
   EditorState,
-  ConsoleLog,
   CanvasBase64Blobs,
   ElementsToRerender,
   AllElementProps,
@@ -45,7 +44,6 @@ import {
   getIndexHtmlFileFromEditorState,
   TransientFilesState,
 } from '../editor/store/editor-state'
-import { proxyConsole } from './console-proxy'
 import type { UpdateMutableCallback } from './dom-walker'
 import { isLiveMode, isTextEditMode } from '../editor/editor-modes'
 import { BakedInStoryboardVariableName } from '../../core/model/scene-utils'
@@ -92,6 +90,8 @@ import { matchRoutes } from 'react-router'
 import { useAtom } from 'jotai'
 import { RemixNavigationAtom } from './remix/utopia-remix-root-component'
 import { IS_TEST_ENVIRONMENT } from '../../common/env-vars'
+import { listenForReactRouterErrors } from '../../core/shared/runtime-report-logs'
+import { getFilePathMappings } from '../../core/model/project-file-utils'
 
 applyUIDMonkeyPatch()
 
@@ -101,9 +101,34 @@ export const ElementsToRerenderGLOBAL: { current: ElementsToRerender } = {
   current: 'rerender-all-elements',
 }
 
+export type FileRootPath = {
+  type: 'file-root'
+}
+
+export function insertionCeilingToString(insertionCeiling: ElementPath | FileRootPath): string {
+  if (insertionCeiling.type === 'file-root') {
+    return 'file-root'
+  } else {
+    return EP.toString(insertionCeiling)
+  }
+}
+
+export function insertionCeilingsEqual(
+  a: ElementPath | FileRootPath,
+  b: ElementPath | FileRootPath,
+): boolean {
+  if (a.type === 'file-root' && b.type === 'file-root') {
+    return true
+  } else if (a.type === 'file-root' || b.type === 'file-root') {
+    return false
+  } else {
+    return EP.pathsEqual(a, b)
+  }
+}
+
 export interface VariableMetadata {
   spiedValue: unknown
-  insertionCeiling: ElementPath | null
+  insertionCeiling: FileRootPath | ElementPath
 }
 
 export interface VariableData {
@@ -159,16 +184,11 @@ export interface UiJsxCanvasProps {
   base64FileBlobs: CanvasBase64Blobs
   mountCount: number
   domWalkerInvalidateCount: number
-  imports_KILLME: Imports // FIXME this is the storyboard imports object used only for the cssimport
   canvasIsLive: boolean
   shouldIncludeCanvasRootInTheSpy: boolean // FOR ui-jsx-canvas.spec TESTS ONLY!!!! this prevents us from having to update the legacy test snapshots
-  clearConsoleLogs: () => void
-  addToConsoleLogs: (log: ConsoleLog) => void
   linkTags: string
   focusedElementPath: ElementPath | null
   projectContents: ProjectContentTreeRoot
-  propertyControlsInfo: PropertyControlsInfo
-  dispatch: EditorDispatch
   domWalkerAdditionalElementsToUpdate: Array<ElementPath>
   editedText: ElementPath | null
   autoFocusedPaths: Array<ElementPath>
@@ -190,20 +210,12 @@ export type UiJsxCanvasPropsWithErrorCallback = UiJsxCanvasProps & CanvasReactCl
 export function pickUiJsxCanvasProps(
   editor: EditorState,
   derived: DerivedState,
-  dispatch: EditorDispatch,
-  clearConsoleLogs: () => void,
-  addToConsoleLogs: (log: ConsoleLog) => void,
 ): UiJsxCanvasProps | null {
   const uiFile = getOpenUIJSFile(editor)
   const uiFilePath = getOpenUIJSFileKey(editor)
   if (uiFile == null || uiFilePath == null) {
     return null
   } else {
-    const { imports: imports_KILLME } = getParseSuccessForFilePath(
-      uiFilePath,
-      editor.projectContents,
-    )
-
     let linkTags = ''
     const indexHtml = getIndexHtmlFileFromEditorState(editor)
     if (isRight(indexHtml)) {
@@ -235,32 +247,16 @@ export function pickUiJsxCanvasProps(
       base64FileBlobs: editor.canvas.base64Blobs,
       mountCount: editor.canvas.mountCount,
       domWalkerInvalidateCount: editor.canvas.domWalkerInvalidateCount,
-      imports_KILLME: imports_KILLME,
-      clearConsoleLogs: clearConsoleLogs,
-      addToConsoleLogs: addToConsoleLogs,
       canvasIsLive: isLiveMode(editor.mode),
       shouldIncludeCanvasRootInTheSpy: true,
       linkTags: linkTags,
       focusedElementPath: editor.focusedElementPath,
       projectContents: editor.projectContents,
-      propertyControlsInfo: editor.propertyControlsInfo,
-      dispatch: dispatch,
       domWalkerAdditionalElementsToUpdate: editor.canvas.domWalkerAdditionalElementsToUpdate,
       editedText: editedText,
       autoFocusedPaths: derived.autoFocusedPaths,
     }
   }
-}
-
-function normalizedCssImportsFromImports(filePath: string, imports: Imports): Array<string> {
-  let result: Array<string> = []
-  Utils.fastForEach(Object.keys(imports), (importSource) => {
-    if (importSource.endsWith('.css')) {
-      result.push(normalizeName(filePath, importSource))
-    }
-  })
-  result.sort()
-  return result
 }
 
 function useClearSpyMetadataOnRemount(
@@ -306,17 +302,12 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     curriedResolveFn,
     hiddenInstances,
     displayNoneInstances,
-    imports_KILLME: imports, // FIXME this is the storyboard imports object used only for the cssimport
     clearErrors,
-    clearConsoleLogs,
-    addToConsoleLogs,
     canvasIsLive,
     linkTags,
     base64FileBlobs,
     projectContents,
     shouldIncludeCanvasRootInTheSpy,
-    propertyControlsInfo,
-    dispatch,
     editedText,
     autoFocusedPaths,
   } = props
@@ -328,9 +319,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
   evaluatedFileNames.current = [uiFilePath]
 
   if (!IS_TEST_ENVIRONMENT) {
-    // FIXME This is illegal! The two lines below are triggering a re-render
-    clearConsoleLogs()
-    proxyConsole(console, addToConsoleLogs)
+    listenForReactRouterErrors(console)
   }
 
   React.useEffect(() => {
@@ -532,12 +521,15 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     validPaths: rootValidPathsSet,
   })
 
+  const filePathMappings = getFilePathMappings(projectContents)
+
   const rerenderUtopiaContextValue = useKeepShallowReferenceEquality({
     hiddenInstances: hiddenInstances,
     displayNoneInstances: displayNoneInstances,
     canvasIsLive: canvasIsLive,
     shouldIncludeCanvasRootInTheSpy: props.shouldIncludeCanvasRootInTheSpy,
     editedText: props.editedText,
+    filePathMappings: filePathMappings,
   })
 
   const utopiaProjectContextValue = useKeepShallowReferenceEquality({

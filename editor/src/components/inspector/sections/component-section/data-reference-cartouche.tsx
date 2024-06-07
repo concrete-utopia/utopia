@@ -3,23 +3,36 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import type {
   ElementInstanceMetadata,
+  JSExpressionOtherJavaScript,
   JSXElementChild,
 } from '../../../../core/shared/element-template'
 import { getJSXElementNameLastPart } from '../../../../core/shared/element-template'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
-import * as PP from '../../../../core/shared/property-path'
-import { assertNever } from '../../../../core/shared/utils'
-import { FlexRow, Icn, Icons, Tooltip, UtopiaStyles, colorTheme } from '../../../../uuiui'
+import { NO_OP, assertNever } from '../../../../core/shared/utils'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
-import { IdentifierExpressionCartoucheControl } from './cartouche-control'
 import { useDataPickerButton } from './component-section'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { selectComponents } from '../../../editor/actions/meta-actions'
+import { dataPathSuccess, traceDataFromElement } from '../../../../core/data-tracing/data-tracing'
+import type { RenderedAt } from '../../../editor/store/editor-state'
+import { replaceElementInScope } from '../../../editor/actions/action-creators'
+import {
+  getCartoucheDataTypeForExpression,
+  useVariablesInScopeForSelectedElement,
+} from './variables-in-scope-utils'
+import { DataPickerPreferredAllAtom, jsxElementChildToValuePath } from './data-picker-utils'
+import { useAtom } from 'jotai'
+import type { CartoucheDataType, CartoucheHighlight, CartoucheUIProps } from './cartouche-ui'
+import { CartoucheUI } from './cartouche-ui'
 
 interface DataReferenceCartoucheControlProps {
   elementPath: ElementPath
   childOrAttribute: JSXElementChild
   selected: boolean
+  renderedAt: RenderedAt
+  surroundingScope: ElementPath
+  hideTooltip?: boolean
+  highlight?: CartoucheHighlight | null
 }
 
 export const DataReferenceCartoucheControl = React.memo(
@@ -38,16 +51,86 @@ export const DataReferenceCartoucheControl = React.memo(
       'DataReferenceCartoucheControl contentsToDisplay',
     )
 
-    // TODO get the actual data _value_ to display in the cartouche, and only show the data reference in the tooltip
+    const dataTraceResult = useEditorState(
+      Substores.projectContentsAndMetadata,
+      (store) => {
+        return traceDataFromElement(
+          props.childOrAttribute,
+          props.surroundingScope,
+          store.editor.jsxMetadata,
+          store.editor.projectContents,
+          dataPathSuccess([]),
+        )
+      },
+      'IdentifierExpressionCartoucheControl trace',
+    )
+
+    const updateDataWithDataPicker = React.useCallback(
+      (expression: JSExpressionOtherJavaScript) => {
+        switch (props.renderedAt.type) {
+          case 'element-property-path':
+            return dispatch([
+              replaceElementInScope(props.renderedAt.elementPropertyPath.elementPath, {
+                type: 'replace-property-value',
+                propertyPath: props.renderedAt.elementPropertyPath.propertyPath,
+                replaceWith: expression,
+              }),
+            ])
+          case 'child-node':
+            return dispatch([
+              replaceElementInScope(props.renderedAt.parentPath, {
+                type: 'replace-child-with-uid',
+                uid: props.renderedAt.nodeUid,
+                replaceWith: expression,
+              }),
+            ])
+          default:
+            assertNever(props.renderedAt)
+        }
+      },
+      [dispatch, props.renderedAt],
+    )
+
+    const propertyPath =
+      props.renderedAt.type === 'element-property-path'
+        ? props.renderedAt.elementPropertyPath.propertyPath
+        : props.renderedAt.type === 'child-node'
+        ? null
+        : assertNever(props.renderedAt)
+
+    const [preferredAllState] = useAtom(DataPickerPreferredAllAtom)
+
+    const variableNamesInScope = useVariablesInScopeForSelectedElement(
+      elementPath,
+      propertyPath,
+      preferredAllState,
+    )
+
+    const pathToCurrenlySelectedValue = React.useMemo(
+      () => jsxElementChildToValuePath(childOrAttribute),
+      [childOrAttribute],
+    )
+
+    const currentlySelectedValueDataType = useEditorState(
+      Substores.projectContentsAndMetadataAndVariablesInScope,
+      (store) => {
+        return getCartoucheDataTypeForExpression(
+          elementPath,
+          childOrAttribute,
+          store.editor.variablesInScope,
+        )
+      },
+      'DataReferenceCartoucheControl currentlySelectedValueDataType',
+    )
 
     const dataPickerButtonData = useDataPickerButton(
-      [EP.parentPath(elementPath)],
-      PP.fromString('children'), // TODO
-      false, // TODO
-      {
-        control: 'none',
-      },
+      variableNamesInScope,
+      updateDataWithDataPicker,
+      pathToCurrenlySelectedValue,
+      elementPath,
     )
+
+    const isDataComingFromHookResult = dataTraceResult.type === 'hook-result'
 
     const onClick = React.useCallback(() => {
       dispatch(selectComponents([elementPath], false))
@@ -55,93 +138,91 @@ export const DataReferenceCartoucheControl = React.memo(
 
     return (
       <>
-        {dataPickerButtonData.popupIsOpen ? dataPickerButtonData.DataPickerComponent : null}
         <DataCartoucheInner
           ref={dataPickerButtonData.setReferenceElement}
           onClick={onClick}
           onDoubleClick={dataPickerButtonData.openPopup}
           contentsToDisplay={contentsToDisplay}
           selected={selected}
+          safeToDelete={false}
+          highlight={props.highlight}
+          onDelete={NO_OP}
+          testId={`data-reference-cartouche-${EP.toString(elementPath)}`}
+          contentIsComingFromServer={isDataComingFromHookResult}
+          hideTooltip={props.hideTooltip}
+          datatype={currentlySelectedValueDataType}
         />
+        {/* this div prevents the popup form putting padding into the condensed rows */}
+        <div style={{ width: 0 }}>
+          {dataPickerButtonData.popupIsOpen ? dataPickerButtonData.DataPickerComponent : null}
+        </div>
       </>
     )
   },
 )
 
+interface DataCartoucheInnerProps {
+  onClick: (e: React.MouseEvent) => void
+  onDoubleClick: (e: React.MouseEvent) => void
+  selected: boolean
+  contentsToDisplay: { type: 'literal' | 'reference'; label: string | null }
+  safeToDelete: boolean
+  onDelete: () => void
+  testId: string
+  contentIsComingFromServer: boolean
+  hideTooltip?: boolean
+  datatype: CartoucheDataType
+  highlight?: CartoucheHighlight | null
+}
+
 export const DataCartoucheInner = React.forwardRef(
-  (
-    props: {
-      onClick: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
-      onDoubleClick: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
-      selected: boolean
-      contentsToDisplay: { type: 'literal' | 'reference'; label: string | null }
-    },
-    ref: React.Ref<HTMLDivElement>,
-  ) => {
-    const { onClick, onDoubleClick, selected, contentsToDisplay } = props
+  (props: DataCartoucheInnerProps, ref: React.Ref<HTMLDivElement>) => {
+    const {
+      onClick,
+      onDoubleClick,
+      safeToDelete,
+      onDelete: onDeleteCallback,
+      selected,
+      highlight,
+      testId,
+      contentsToDisplay,
+      contentIsComingFromServer,
+      datatype,
+    } = props
 
-    const cartoucheIconColor = contentsToDisplay.type === 'reference' ? 'primary' : 'secondary'
-    const foregroundColor =
-      contentsToDisplay.type === 'reference'
-        ? colorTheme.primary.value
-        : colorTheme.neutralForeground.value
-    const backgroundColor =
-      contentsToDisplay.type === 'reference' ? colorTheme.primary10.value : colorTheme.bg4.value
+    const onDeleteInner = React.useCallback(
+      (e: React.MouseEvent) => {
+        e.stopPropagation()
+        onDeleteCallback()
+      },
+      [onDeleteCallback],
+    )
 
-    const label = contentsToDisplay.label ?? 'DATA'
+    const onDelete = safeToDelete ? onDeleteInner : undefined
+
+    const source: CartoucheUIProps['source'] =
+      contentsToDisplay.type === 'literal'
+        ? 'literal'
+        : contentIsComingFromServer
+        ? 'external'
+        : 'internal'
 
     return (
-      <div
+      <CartoucheUI
+        onDelete={onDelete}
         onClick={onClick}
         onDoubleClick={onDoubleClick}
-        style={{
-          minWidth: 0, // this ensures that the div can never expand the allocated grid space
-        }}
+        datatype={datatype}
+        selected={selected}
+        highlight={highlight}
+        testId={testId}
+        tooltip={!props.hideTooltip ? contentsToDisplay.label ?? 'DATA' : null}
+        role='selection'
+        source={source}
         ref={ref}
       >
-        <FlexRow
-          style={{
-            cursor: 'pointer',
-            fontSize: 10,
-            color: foregroundColor,
-            backgroundColor: backgroundColor,
-            border: selected ? '1px solid ' + colorTheme.primary.value : '1px solid transparent',
-            padding: '0px 4px',
-            borderRadius: 4,
-            height: 22,
-            display: 'flex',
-            flex: 1,
-            gap: 4,
-          }}
-        >
-          {contentsToDisplay.type === 'reference' ? (
-            <Icons.NavigatorData color={cartoucheIconColor} />
-          ) : (
-            <Icons.NavigatorText color={cartoucheIconColor} />
-          )}
-          <Tooltip title={label}>
-            <div
-              style={{
-                flex: 1,
-                paddingTop: 1,
-                /* Standard CSS ellipsis */
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-
-                /* Beginning of string */
-                direction: contentsToDisplay.type === 'reference' ? 'rtl' : 'ltr', // TODO we need a better way to ellipsize the beginnign because rtl eats ' " marks
-                textAlign: 'left',
-                ...UtopiaStyles.fontStyles.monospaced,
-              }}
-            >
-              {label}
-              &lrm;
-              {/* the &lrm; non-printing character is added to fix the punctuation marks disappearing because of direction: rtl */}
-            </div>
-          </Tooltip>
-        </FlexRow>
-      </div>
+        {contentsToDisplay.label ?? 'DATA'}
+      </CartoucheUI>
     )
   },
 )
@@ -154,9 +235,9 @@ export function getTextContentOfElement(
     case 'ATTRIBUTE_VALUE':
       return { type: 'literal', label: `${JSON.stringify(element.value)}` }
     case 'JSX_TEXT_BLOCK':
-      return { type: 'literal', label: `'${element.text}'` }
+      return { type: 'literal', label: element.text.trim() }
     case 'JS_IDENTIFIER':
-      return { type: 'reference', label: `${element.name}` }
+      return { type: 'reference', label: element.name.trim() }
     case 'JS_ELEMENT_ACCESS':
       return {
         type: 'reference',

@@ -1188,6 +1188,10 @@ export function createIndexedUid(originalUid: string, index: string | number): s
   return `${originalUid}${GeneratedUIDSeparator}${index}`
 }
 
+export function isIndexedUid(uid: string): boolean {
+  return uid.includes(GeneratedUIDSeparator)
+}
+
 export function extractOriginalUidFromIndexedUid(uid: string): string {
   const separatorIndex = uid.indexOf(GeneratedUIDSeparator)
   if (separatorIndex >= 0) {
@@ -1227,4 +1231,12 @@ export function multiplePathsAllWithTheSameUID(paths: Array<ElementPath>): boole
     return true
   }
   return false
+}
+
+export function isIndexedElement(path: ElementPath): boolean {
+  return isIndexedUid(toUid(path))
+}
+
+export function getFirstPath(pathArray: Array<ElementPath>): ElementPath {
+  return forceNotNull('Element path array is empty.', pathArray.at(0))
 }

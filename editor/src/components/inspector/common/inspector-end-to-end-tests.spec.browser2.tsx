@@ -1028,7 +1028,7 @@ describe('inspector tests with real metadata', () => {
       makeTestProjectCodeWithSnippet(`
         <div
           style={{ ...props.style, position: 'absolute', backgroundColor: '#FFFFFF' }}
-          data-uid={'aaa'}
+          data-uid={'xxx'}
         >
           <div
             style={{
@@ -1052,7 +1052,7 @@ describe('inspector tests with real metadata', () => {
     await act(async () => {
       const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       await renderResult.dispatch(
-        [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
+        [selectComponents([EP.appendNewElementPath(TestScenePath, ['xxx', 'bbb'])], false)],
         false,
       )
       await dispatchDone
@@ -1458,6 +1458,11 @@ describe('inspector tests with real metadata', () => {
     )
 
     await act(async () => {
+      await screen.findByTestId('section-header-Advanced')
+      fireEvent.click(screen.getByTestId('section-header-Advanced'))
+    })
+
+    await act(async () => {
       await screen.findByTestId('target-selector-style')
       fireEvent.click(screen.getByTestId('target-selector'))
     })
@@ -1557,6 +1562,11 @@ describe('inspector tests with real metadata', () => {
         false,
       )
       await dispatchDone
+    })
+
+    await act(async () => {
+      await screen.findByTestId('section-header-Advanced')
+      fireEvent.click(screen.getByTestId('section-header-Advanced'))
     })
 
     await act(async () => {

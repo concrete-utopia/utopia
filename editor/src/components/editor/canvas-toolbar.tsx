@@ -1,8 +1,7 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
-import { css, jsx } from '@emotion/react'
-import type { CSSObject } from '@emotion/react'
+import { jsx } from '@emotion/react'
 import React, { useState } from 'react'
 import type { TooltipProps } from '../../uuiui'
 import { Tile, UtopiaStyles, opacity } from '../../uuiui'
@@ -16,16 +15,12 @@ import {
   Tooltip as TooltipWithoutSpanFixme,
   useColorTheme,
 } from '../../uuiui'
-import { getControlStyles } from '../../uuiui-deps'
 import CanvasActions from '../canvas/canvas-actions'
 import {
-  applyCommandsAction,
-  closeFloatingInsertMenu,
-  openFloatingInsertMenu,
+  insertAsChildTarget,
   resetCanvas,
   setRightMenuTab,
   switchEditorMode,
-  wrapInElement,
 } from './actions/action-creators'
 import { EditorModes } from './editor-modes'
 import {
@@ -34,25 +29,18 @@ import {
   useEnterDrawToInsertForDiv,
   useEnterDrawToInsertForImage,
   useEnterTextEditMode,
-  useToInsert,
 } from './insert-callbacks'
 import { useDispatch } from './store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from './store/store-hook'
-import { defaultTransparentViewElement } from './defaults'
-import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import { useToolbarMode } from './canvas-toolbar-states'
 import { unless, when } from '../../utils/react-conditionals'
 import { StrategyIndicator } from '../canvas/controls/select-mode/strategy-indicator'
-import { toggleAbsolutePositioningCommands } from '../inspector/inspector-common'
-import { createFilter } from 'react-select'
-import WindowedSelect from 'react-windowed-select'
-import { InspectorInputEmotionStyle } from '../../uuiui/inputs/base-input'
 import { stopPropagation } from '../inspector/common/inspector-utils'
-import { useConvertTo } from './convert-callbacks'
 import { useWrapInDiv } from './wrap-in-callbacks'
 import { ElementsOutsideVisibleAreaIndicator } from './elements-outside-visible-area-indicator'
 import { RemixNavigationBar } from './remix-navigation-bar'
 import {
+  type InsertableComponent,
   fragmentComponentInfo,
   fragmentElementsDescriptors,
   insertableComponentGroupFragment,
@@ -62,17 +50,18 @@ import type { CanvasStrategyIcon } from '../canvas/canvas-strategies/canvas-stra
 import { isLoggedIn } from './action-types'
 import type { EditorDispatch } from './action-types'
 import type { InsertMenuItem } from '../canvas/ui/floating-insert-menu'
-import {
-  CustomComponentOption,
-  useComponentSelectorStyles,
-  useGetInsertableComponents,
-} from '../canvas/ui/floating-insert-menu'
-import { RightMenuTab, floatingInsertMenuStateSwap } from './store/editor-state'
+import { useGetInsertableComponents } from '../canvas/ui/floating-insert-menu'
+import { RightMenuTab } from './store/editor-state'
 import { useStatus, useThreads } from '../../../liveblocks.config'
 import { useAllowedToEditProject, useIsMyProject } from './store/collaborative-editing'
 import { useCanComment, useReadThreads } from '../../core/commenting/comment-hooks'
 import { pluck } from '../../core/shared/array-utils'
 import { MultiplayerWrapper } from '../../utils/multiplayer-wrapper'
+import { ComponentPicker } from '../navigator/navigator-item/component-picker'
+import { insertComponentPickerItem } from '../navigator/navigator-item/component-picker-context-menu'
+import { useAtom } from 'jotai'
+import { ActiveRemixSceneAtom } from '../canvas/remix/utopia-remix-root-component'
+import * as EP from '../../core/shared/element-path'
 
 export const InsertMenuButtonTestId = 'insert-menu-button'
 export const PlayModeButtonTestId = 'canvas-toolbar-play-mode'
@@ -82,119 +71,85 @@ export const CanvasToolbarId = 'canvas-toolbar'
 
 export const CanvasToolbarSearchPortalId = 'canvas-toolbar-search-portal'
 
-export const ToolbarSearchListing = React.memo(() => {
-  return <div style={{ alignSelf: 'end', width: 232 }} id={CanvasToolbarSearchPortalId} />
-})
-ToolbarSearchListing.displayName = 'ToolbarSearchListing'
-
-export interface CanvasToolbarSearchProps {
-  actionWith: (item: InsertMenuItem | null) => void
-}
-
 export const CanvasToolbarSearchTestID = 'canvas-toolbar-search'
 
-export const CanvasToolbarSearch = React.memo((props: CanvasToolbarSearchProps) => {
-  const dispatch = useDispatch()
-  const insertMenuMode = useEditorState(
+export const CanvasToolbarSearch = React.memo(() => {
+  const insertionActive = useEditorState(
     Substores.restOfEditor,
-    (store) => store.editor.floatingInsertMenu.insertMenuMode,
-    'CanvasToolbarSearch insertMenuMode',
+    (store) => store.editor.mode.type === 'insert' && store.editor.mode.subjects.length > 0,
+    'TopMenu editorMode',
   )
-  const options = useGetInsertableComponents(insertMenuMode)
-  const componentSelectorStyles = useComponentSelectorStyles()
-  const menuPortalTarget = document.getElementById(CanvasToolbarSearchPortalId)
-  const theme = useColorTheme()
-  const focusedPanelRef = useRefEditorState((store) => store.editor.focusedPanel)
-  const interactionSessionRef = useRefEditorState((store) => store.editor.canvas.interactionSession)
 
-  // Focus the input when it is displayed.
-  const selectRef = React.useRef<any>(null)
-  React.useEffect(() => {
-    // Only focus when:
-    // - There's a ref we can use to focus.
-    // - The canvas is focused, so that we don't unfocus the code editor.
-    // - If an interaction hasn't already been started.
-    if (
-      selectRef.current != null &&
-      focusedPanelRef.current === 'canvas' &&
-      interactionSessionRef.current === null
-    ) {
-      selectRef.current.focus()
+  const dispatch = useDispatch()
+
+  const target = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews[0],
+    'CanvasToolbarSearch selectedView',
+  )
+
+  const insertionTarget = insertAsChildTarget()
+
+  const allInsertableComponents = useGetInsertableComponents('insert').flatMap((group) => {
+    return {
+      label: group.label,
+      options: group.options,
     }
   })
 
-  const onKeyDown = React.useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        switchToSelectModeCloseMenus(dispatch)
-      }
+  const projectContentsRef = useRefEditorState((state) => state.editor.projectContents)
+  const metadataRef = useRefEditorState((state) => state.editor.jsxMetadata)
+  const elementPathTreesRef = useRefEditorState((state) => state.editor.elementPathTree)
+  const allElementPropsRef = useRefEditorState((state) => state.editor.allElementProps)
+  const propertyControlsInfoRef = useRefEditorState((state) => state.editor.propertyControlsInfo)
+
+  const onItemClick = React.useCallback(
+    (preferredChildToInsert: InsertableComponent) => (e: React.UIEvent) => {
+      e.stopPropagation()
+      e.preventDefault()
+
+      insertComponentPickerItem(
+        preferredChildToInsert,
+        [target],
+        projectContentsRef.current,
+        allElementPropsRef.current,
+        propertyControlsInfoRef.current,
+        metadataRef.current,
+        elementPathTreesRef.current,
+        dispatch,
+        insertionTarget,
+      )
     },
+    [
+      target,
+      projectContentsRef,
+      allElementPropsRef,
+      propertyControlsInfoRef,
+      metadataRef,
+      elementPathTreesRef,
+      dispatch,
+      insertionTarget,
+    ],
+  )
+
+  const closePicker = React.useCallback(
+    () => dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))], 'everyone'),
     [dispatch],
   )
 
   return (
-    <div data-testid={CanvasToolbarSearchTestID}>
-      <WindowedSelect
-        id={CanvasToolbarSearchTestID}
-        ref={selectRef}
-        components={{ Option: CustomComponentOption }}
-        openMenuOnFocus={true}
-        openMenuOnClick={true}
-        onBlur={undefined}
-        onKeyDown={onKeyDown}
-        onChange={props.actionWith}
-        options={options}
-        menuPortalTarget={menuPortalTarget}
-        filterOption={createFilter({
-          ignoreAccents: true,
-          stringify: (c) => c.data.source + c.data.label,
-        })}
-        styles={{
-          ...componentSelectorStyles,
-          menuPortal: (styles: CSSObject): CSSObject => {
-            return {
-              zIndex: -2,
-              padding: '0 4px',
-              overflow: 'hidden',
-              height: 'auto',
-              backgroundColor: theme.bg1subdued.value,
-              borderRadius: '0px 10px 10px 10px',
-              boxShadow: UtopiaStyles.shadowStyles.low.boxShadow,
-              pointerEvents: 'initial',
-            }
-          },
-          input: (styles: CSSObject): CSSObject => {
-            return {
-              ...(InspectorInputEmotionStyle({
-                hasLabel: false,
-                controlStyles: getControlStyles('simple'),
-              }) as CSSObject),
-              paddingLeft: 4,
-              backgroundColor: colorTheme.seperator.value,
-              flexGrow: 1,
-              display: 'flex',
-              alignItems: 'center',
-              minWidth: '200px',
-              borderRadius: '10px',
-              borderWidth: 1,
-              borderColor: colorTheme.dynamicBlue.value,
-              borderStyle: 'solid',
-            }
-          },
-          menuList: (styles: CSSObject): CSSObject => {
-            return {
-              position: 'relative',
-              maxHeight: 210,
-              paddingLeft: 8,
-              paddingRight: 8,
-              overflowY: 'auto',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 6,
-            }
-          },
-        }}
-        maxMenuHeight={138}
+    <div
+      data-testid={CanvasToolbarSearchTestID}
+      style={{
+        width: '100%',
+      }}
+    >
+      <ComponentPicker
+        allComponents={allInsertableComponents}
+        onItemClick={onItemClick}
+        closePicker={closePicker}
+        shownInToolbar={true}
+        insertionActive={insertionActive}
       />
     </div>
   )
@@ -204,10 +159,7 @@ CanvasToolbarSearch.displayName = 'CanvasToolbarSearch'
 export const CanvasToolbarEditButtonID = 'canvas-toolbar-edit-button'
 
 function switchToSelectModeCloseMenus(dispatch: EditorDispatch) {
-  dispatch(
-    [switchEditorMode(EditorModes.selectMode(null, false, 'none')), closeFloatingInsertMenu()],
-    'everyone',
-  )
+  dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))], 'everyone')
 }
 
 export const WrapInDivButtonTestId = 'wrap-in-div-button'
@@ -237,8 +189,8 @@ const UnreadThreadsIndicator = React.memo(() => {
             ? `1.5px solid ${colorTheme.primary.value}`
             : `1.5px solid ${colorTheme.bg1.value}`,
         position: 'relative',
-        top: 8,
-        left: -15,
+        top: 5,
+        left: -9,
         opacity: unreadThreads.length > 0 ? 1 : 0,
       }}
     />
@@ -257,63 +209,10 @@ export const CanvasToolbar = React.memo(() => {
   const insertButtonCallback = useEnterDrawToInsertForButton()
   const insertConditionalCallback = useEnterDrawToInsertForConditional()
 
-  const insertMenuMode = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.floatingInsertMenu.insertMenuMode,
-    'CanvasToolbar insertMenuMode',
-  )
-  const wrapInDivCallback = useWrapInDiv()
-
-  const convertToCallback = useConvertTo()
-  const toInsertCallback = useToInsert()
-
   // Back to select mode, close the "floating" menu and turn off the forced insert mode.
   const dispatchSwitchToSelectModeCloseMenus = React.useCallback(() => {
     switchToSelectModeCloseMenus(dispatch)
   }, [dispatch])
-
-  const convertToAndClose = React.useCallback(
-    (convertTo: InsertMenuItem | null) => {
-      convertToCallback(convertTo)
-      dispatchSwitchToSelectModeCloseMenus()
-    },
-    [convertToCallback, dispatchSwitchToSelectModeCloseMenus],
-  )
-
-  const convertToFragment = React.useCallback(() => {
-    // Should be consistent with the value that would be present in the dropdown.
-    // Done like this to avoid having to actually pull the options in the dropdown
-    // as that will cause a lot of extra work when rendering this toolbar.
-    const convertToFragmentMenuItem: InsertMenuItem = {
-      label: fragmentComponentInfo.insertMenuLabel,
-      source: null,
-      value: {
-        importsToAdd: fragmentComponentInfo.importsToAdd,
-        element: fragmentComponentInfo.elementToInsert,
-        name: fragmentComponentInfo.insertMenuLabel,
-        stylePropOptions: [],
-        defaultSize: null,
-        source: insertableComponentGroupFragment(),
-        key: fragmentComponentInfo.insertMenuLabel,
-        insertionCeiling: null,
-        icon: fragmentElementsDescriptors.fragment.icon,
-      },
-    }
-    convertToAndClose(convertToFragmentMenuItem)
-  }, [convertToAndClose])
-
-  const wrapInDivAndClose = React.useCallback(() => {
-    wrapInDivCallback()
-    dispatchSwitchToSelectModeCloseMenus()
-  }, [dispatchSwitchToSelectModeCloseMenus, wrapInDivCallback])
-
-  const toInsertAndClose = React.useCallback(
-    (toInsert: InsertMenuItem | null) => {
-      toInsertCallback(toInsert)
-      dispatchSwitchToSelectModeCloseMenus()
-    },
-    [dispatchSwitchToSelectModeCloseMenus, toInsertCallback],
-  )
 
   const zoomLevel = useEditorState(
     Substores.canvas,
@@ -380,21 +279,24 @@ export const CanvasToolbar = React.memo(() => {
 
   const wrapInSubmenu = React.useCallback((wrapped: React.ReactNode) => {
     return (
-      <FlexRow
+      <FlexColumn
         data-testid='canvas-toolbar-submenu'
         style={{
-          marginLeft: 8,
-          height: 32,
+          width: '100%',
           overflow: 'hidden',
+          justifyContent: 'flex-end',
           backgroundColor: colorTheme.bg1subdued.value,
-          borderRadius: '0px 10px 10px 10px',
+          borderRadius: '0 0 6px 6px',
           boxShadow: UtopiaStyles.shadowStyles.low.boxShadow,
           pointerEvents: 'initial',
           zIndex: -1, // it sits below the main menu row, but we want the main menu's shadow to cast over this one
+          // to make the submenu appear visually underneath the corners of the main menu
+          marginTop: -6,
+          paddingTop: 6,
         }}
       >
-        {wrapped}
-      </FlexRow>
+        <FlexRow>{wrapped}</FlexRow>
+      </FlexColumn>
     )
   }, [])
 
@@ -428,6 +330,13 @@ export const CanvasToolbar = React.memo(() => {
 
   const isMyProject = useIsMyProject()
 
+  const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
+  const remixSceneIsActive = !EP.isEmptyPath(activeRemixScene)
+  const showRemixNavBar =
+    remixSceneIsActive &&
+    ((canvasToolbarMode.primary === 'edit' && canvasToolbarMode.secondary !== 'strategy-active') ||
+      canvasToolbarMode.primary === 'play')
+
   return (
     <FlexColumn
       style={{ alignItems: 'start', justifySelf: 'center' }}
@@ -440,14 +349,15 @@ export const CanvasToolbar = React.memo(() => {
         id={CanvasToolbarId}
         style={{
           backgroundColor: theme.inspectorBackground.value,
-          borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
+          borderRadius: 6,
           overflow: 'hidden',
           boxShadow: UtopiaStyles.shadowStyles.low.boxShadow,
           pointerEvents: 'initial',
           display: 'flex',
           flexDirection: 'row',
           alignItems: 'center',
-          padding: '0 6px 0 8px',
+          padding: 3,
+          gap: 8,
         }}
       >
         <Tooltip title='Edit' placement='bottom'>
@@ -458,7 +368,6 @@ export const CanvasToolbar = React.memo(() => {
             onClick={dispatchSwitchToSelectModeCloseMenus}
             keepActiveInLiveMode
             testid={CanvasToolbarEditButtonID}
-            style={{ width: 36 }}
           />
         </Tooltip>
         {when(
@@ -471,7 +380,6 @@ export const CanvasToolbar = React.memo(() => {
                 primary={canvasToolbarMode.primary === 'text'}
                 onClick={insertTextCallback}
                 keepActiveInLiveMode
-                style={{ width: 36 }}
               />
             </Tooltip>
             <Tooltip title='Insert' placement='bottom'>
@@ -482,7 +390,6 @@ export const CanvasToolbar = React.memo(() => {
                 primary={canvasToolbarMode.primary === 'insert'}
                 onClick={toggleInsertButtonClicked}
                 keepActiveInLiveMode
-                style={{ width: 36 }}
               />
             </Tooltip>
           </>,
@@ -495,12 +402,11 @@ export const CanvasToolbar = React.memo(() => {
             primary={canvasToolbarMode.primary === 'play'}
             onClick={toggleLiveMode}
             keepActiveInLiveMode
-            style={{ width: 36 }}
           />
         </Tooltip>
         {when(
           canComment,
-          <div style={{ display: 'flex', width: 36 }}>
+          <div style={{ display: 'flex', width: 26 }}>
             <Tooltip title={commentButtonTooltip} placement='bottom'>
               <InsertModeButton
                 testid={commentButtonTestId}
@@ -509,7 +415,6 @@ export const CanvasToolbar = React.memo(() => {
                 primary={canvasToolbarMode.primary === 'comment'}
                 onClick={toggleCommentMode}
                 keepActiveInLiveMode
-                style={{ width: 36 }}
                 disabled={commentButtonDisabled}
               />
             </Tooltip>
@@ -522,9 +427,8 @@ export const CanvasToolbar = React.memo(() => {
         <Tooltip title='Zoom to 100%' placement='bottom'>
           <SquareButton
             style={{
-              height: 32,
               width: 'min-content',
-              padding: '0 8px',
+              padding: '0 4px',
             }}
             css={{
               '&:hover': {
@@ -551,74 +455,6 @@ export const CanvasToolbar = React.memo(() => {
       {/* Edit Mode submenus */}
       {when(
         canvasToolbarMode.primary === 'edit' &&
-          canvasToolbarMode.secondary === 'selected' &&
-          allowedToEdit,
-        <>
-          {when(
-            insertMenuMode === 'wrap',
-            wrapInSubmenu(
-              <FlexRow style={{ padding: '0 8px' }}>
-                <Tooltip title='Back' placement='bottom'>
-                  <InsertModeButton
-                    iconCategory='semantic'
-                    iconType='icon-semantic-back'
-                    onClick={dispatchSwitchToSelectModeCloseMenus}
-                    style={{ width: undefined }}
-                  />
-                </Tooltip>
-                <Icn
-                  category='tools'
-                  type='wrap-action'
-                  width={18}
-                  height={18}
-                  style={{ marginRight: 10 }}
-                />
-
-                <Tooltip title='Wrap in div' placement='bottom'>
-                  <InsertModeButton
-                    testid={WrapInDivButtonTestId}
-                    iconType='div'
-                    onClick={wrapInDivAndClose}
-                  />
-                </Tooltip>
-                <Tile style={{ height: '100%' }}>
-                  <CanvasToolbarSearch actionWith={convertToAndClose} />
-                </Tile>
-              </FlexRow>,
-            ),
-          )}
-          {when(
-            insertMenuMode === 'swap',
-            wrapInSubmenu(
-              <FlexRow style={{ padding: '0 8px' }}>
-                <Tooltip title='Back' placement='bottom'>
-                  <InsertModeButton
-                    iconCategory='semantic'
-                    iconType='icon-semantic-back'
-                    onClick={dispatchSwitchToSelectModeCloseMenus}
-                    style={{ width: undefined }}
-                  />
-                </Tooltip>
-                <Icn
-                  category='tools'
-                  type='convert-action'
-                  width={18}
-                  height={18}
-                  style={{ marginRight: 10 }}
-                />
-                <Tooltip title='Swap to Fragment' placement='bottom'>
-                  <InsertModeButton iconType='fragment' onClick={convertToFragment} />
-                </Tooltip>
-                <Tile style={{ height: '100%' }}>
-                  <CanvasToolbarSearch actionWith={convertToAndClose} />
-                </Tile>
-              </FlexRow>,
-            ),
-          )}
-        </>,
-      )}
-      {when(
-        canvasToolbarMode.primary === 'edit' &&
           canvasToolbarMode.secondary === 'strategy-active' &&
           allowedToEdit,
         <StrategyIndicator />,
@@ -626,58 +462,56 @@ export const CanvasToolbar = React.memo(() => {
       {/* Insert Mode */}
       {canvasToolbarMode.primary === 'insert'
         ? wrapInSubmenu(
-            <FlexRow style={{ padding: '0 8px' }}>
-              <Tooltip title='Back' placement='bottom'>
-                <InsertModeButton
-                  iconCategory='semantic'
-                  iconType='icon-semantic-back'
-                  onClick={dispatchSwitchToSelectModeCloseMenus}
-                  style={{ width: undefined }}
-                />
-              </Tooltip>
-              <Tooltip title='Insert div' placement='bottom'>
-                <InsertModeButton
-                  iconType='view'
-                  secondary={canvasToolbarMode.secondary.divInsertionActive}
-                  onClick={insertDivCallback}
-                />
-              </Tooltip>
-              <Tooltip title='Insert image' placement='bottom'>
-                <InsertModeButton
-                  iconType='image'
-                  secondary={canvasToolbarMode.secondary.imageInsertionActive}
-                  onClick={insertImgCallback}
-                />
-              </Tooltip>
-              <Tooltip title='Insert button' placement='bottom'>
-                <InsertModeButton
-                  iconType='clickable'
-                  secondary={canvasToolbarMode.secondary.buttonInsertionActive}
-                  onClick={insertButtonCallback}
-                />
-              </Tooltip>
-              <Tooltip title='Insert conditional' placement='bottom'>
-                <InsertModeButton
-                  testid={InsertConditionalButtonTestId}
-                  iconType='conditional'
-                  secondary={canvasToolbarMode.secondary.conditionalInsertionActive}
-                  onClick={insertConditionalCallback}
-                />
-              </Tooltip>
-              <Tile style={{ height: '100%' }}>
-                <CanvasToolbarSearch actionWith={toInsertAndClose} />
-              </Tile>
-            </FlexRow>,
+            <FlexColumn style={{ padding: '3px 8px 0 8px', flexGrow: 1 }}>
+              <FlexRow>
+                <Tooltip title='Back' placement='bottom'>
+                  <InsertModeButton
+                    iconCategory='semantic'
+                    iconType='icon-semantic-back'
+                    onClick={dispatchSwitchToSelectModeCloseMenus}
+                    style={{ width: undefined }}
+                  />
+                </Tooltip>
+                <Tooltip title='Insert div' placement='bottom'>
+                  <InsertModeButton
+                    iconType='view'
+                    secondary={canvasToolbarMode.secondary.divInsertionActive}
+                    onClick={insertDivCallback}
+                  />
+                </Tooltip>
+                <Tooltip title='Insert image' placement='bottom'>
+                  <InsertModeButton
+                    iconType='image'
+                    secondary={canvasToolbarMode.secondary.imageInsertionActive}
+                    onClick={insertImgCallback}
+                  />
+                </Tooltip>
+                <Tooltip title='Insert button' placement='bottom'>
+                  <InsertModeButton
+                    iconType='clickable'
+                    secondary={canvasToolbarMode.secondary.buttonInsertionActive}
+                    onClick={insertButtonCallback}
+                  />
+                </Tooltip>
+                <Tooltip title='Insert conditional' placement='bottom'>
+                  <InsertModeButton
+                    testid={InsertConditionalButtonTestId}
+                    iconType='conditional'
+                    secondary={canvasToolbarMode.secondary.conditionalInsertionActive}
+                    onClick={insertConditionalCallback}
+                  />
+                </Tooltip>
+              </FlexRow>
+              <FlexRow>
+                <Tile style={{ flexGrow: 1 }}>
+                  <CanvasToolbarSearch />
+                </Tile>
+              </FlexRow>
+            </FlexColumn>,
           )
         : null}
       {/* Live Mode */}
-      {(canvasToolbarMode.primary === 'edit' &&
-        canvasToolbarMode.secondary !== 'strategy-active' &&
-        insertMenuMode === 'closed') ||
-      canvasToolbarMode.primary === 'play'
-        ? wrapInSubmenu(<RemixNavigationBar />)
-        : null}
-      <ToolbarSearchListing />
+      {showRemixNavBar ? wrapInSubmenu(<RemixNavigationBar />) : null}
     </FlexColumn>
   )
 })
@@ -724,7 +558,7 @@ const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
   return (
     <SquareButton
       data-testid={props.testid}
-      style={{ height: 32, width: 32, ...props.style }}
+      style={{ height: 26, width: 26, borderRadius: 3, ...props.style }}
       primary={primary}
       spotlight={secondary}
       highlight
@@ -768,7 +602,7 @@ const Separator = React.memo((props) => {
         width: 1,
         height: 16,
         alignSelf: 'center',
-        margin: '0 8px',
+        margin: '0 4px',
         backgroundColor: colorTheme.seperator.value,
       }}
     ></div>

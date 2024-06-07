@@ -14,6 +14,7 @@ import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { treatElementAsGroupLikeFromMetadata } from '../../canvas-strategies/strategies/group-helpers'
 import { assertNever } from '../../../../core/shared/utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
+import type { PropertyControlsInfo } from '../../../custom-code/code-file'
 
 export const Emdash: string = '\u2014'
 
@@ -202,6 +203,7 @@ export function canShowCanvasPropControl(
   scale: number,
   metadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
+  propertyControlsInfo: PropertyControlsInfo,
 ): Set<CanvasPropControl> {
   function getControls(element: ElementInstanceMetadata): CanvasPropControl[] {
     const frame = zeroRectIfNullOrInfinity(element.globalFrame)
@@ -225,6 +227,7 @@ export function canShowCanvasPropControl(
         element.elementPath,
         metadata,
         elementPathTree,
+        propertyControlsInfo,
       )
     ) {
       return ['borderRadius', 'gap']

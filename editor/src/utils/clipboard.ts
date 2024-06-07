@@ -26,6 +26,7 @@ import { fastForEach } from '../core/shared/utils'
 import urljoin from 'url-join'
 import type { ProjectContentTreeRoot } from '../components/assets'
 import { getProjectFileByFilePath } from '../components/assets'
+import type { PropertyControlsInfo } from '../components/custom-code/code-file'
 import {
   normalisePathSuccessOrThrowError,
   normalisePathToUnderlyingTarget,
@@ -142,6 +143,7 @@ function getJSXElementPasteActions(
       originalContextElementPathTrees: clipboardFirstEntry.targetOriginalContextElementPathTrees,
     },
     editor.elementPathTree,
+    editor.propertyControlsInfo,
   )
 
   if (isLeft(target)) {
@@ -195,6 +197,7 @@ function getFilePasteActions(
   componentMetadata: ElementInstanceMetadataMap,
   canvasScale: number,
   elementPathTree: ElementPathTrees,
+  propertyControlsInfo: PropertyControlsInfo,
 ): Array<EditorAction> {
   if (pastedFiles.length == 0) {
     return []
@@ -213,6 +216,7 @@ function getFilePasteActions(
     componentMetadata,
     { elementPaste: [], originalContextMetadata: {}, originalContextElementPathTrees: {} }, // TODO: get rid of this when refactoring pasting images
     elementPathTree,
+    propertyControlsInfo,
   )
 
   if (isLeft(target)) {
@@ -271,6 +275,7 @@ export function getActionsForClipboardItems(
       editor.jsxMetadata,
       canvasScale,
       editor.elementPathTree,
+      editor.propertyControlsInfo,
     ),
   ]
 }

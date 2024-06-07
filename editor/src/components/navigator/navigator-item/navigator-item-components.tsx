@@ -6,14 +6,14 @@ import * as EP from '../../../core/shared/element-path'
 import type { IcnProps } from '../../../uuiui'
 import { useColorTheme, Button, FlexRow, Icn } from '../../../uuiui'
 import { stopPropagation } from '../../inspector/common/inspector-utils'
-import { when } from '../../../utils/react-conditionals'
-import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
+import { unless, when } from '../../../utils/react-conditionals'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import type { NavigatorEntry } from '../../editor/store/editor-state'
 import {
-  getMetadata,
   isConditionalClauseNavigatorEntry,
   isRegularNavigatorEntry,
+  navigatorEntryToKey,
   varSafeNavigatorEntryToKey,
 } from '../../editor/store/editor-state'
 import type { SelectionLocked } from '../../canvas/canvas-types'
@@ -27,11 +27,12 @@ import type { ConditionalCase } from '../../../core/model/conditionals'
 import { useConditionalCaseCorrespondingToBranchPath } from '../../../core/model/conditionals'
 import {
   getJSXElementNameAsString,
-  isIntrinsicElement,
   isIntrinsicHTMLElement,
 } from '../../../core/shared/element-template'
 import { getRegisteredComponent } from '../../../core/property-controls/property-controls-utils'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../../../core/shared/dom-utils'
+import { ExpandableIndicator } from './expandable-indicator'
+import { elementSupportsChildrenFromPropertyControls } from '../../editor/element-children'
 
 export const NavigatorHintCircleDiameter = 8
 
@@ -205,51 +206,6 @@ export const VisibilityIndicator: React.FunctionComponent<
   )
 })
 
-const useSupportsChildren = (target: ElementPath): boolean => {
-  const targetElement = useEditorState(
-    Substores.metadata,
-    (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, target),
-    'useSupportsChildren targetElement',
-  )
-
-  return useEditorState(
-    Substores.restOfEditor,
-    (store) => {
-      const targetJSXElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(targetElement)
-      if (targetJSXElement == null) {
-        // this should not happen, erring on the side of true
-        return true
-      }
-      if (isIntrinsicHTMLElement(targetJSXElement.name)) {
-        // when it is an intrinsic html element, we check if it supports children from our list
-        return intrinsicHTMLElementNamesThatSupportChildren.includes(
-          targetJSXElement.name.baseVariable,
-        )
-      }
-
-      const elementImportInfo = targetElement?.importInfo
-      if (elementImportInfo == null) {
-        // erring on the side of true
-        return true
-      }
-
-      const targetName = getJSXElementNameAsString(targetJSXElement.name)
-      const registeredComponent = getRegisteredComponent(
-        targetName,
-        elementImportInfo.filePath,
-        store.editor.propertyControlsInfo,
-      )
-      if (registeredComponent == null) {
-        // when there is no component annotation default is supporting children
-        return true
-      }
-
-      return registeredComponent.supportsChildren
-    },
-    'useSupportsChildren supportsChildren',
-  )
-}
-
 interface AddChildButtonProps {
   target: ElementPath
   iconColor: IcnProps['color']
@@ -261,9 +217,19 @@ export function addChildButtonTestId(target: ElementPath): string {
 
 const AddChildButton = React.memo((props: AddChildButtonProps) => {
   const { target, iconColor } = props
-  const supportsChildren = useSupportsChildren(target)
+  const supportsChildren = useEditorState(
+    Substores.metadataAndPropertyControlsInfo,
+    (store) =>
+      elementSupportsChildrenFromPropertyControls(
+        store.editor.jsxMetadata,
+        store.editor.propertyControlsInfo,
+        target,
+      ),
+    'AddChildButton supportsChildren',
+  )
+
   const onClick = useCreateCallbackToShowComponentPicker()(
-    target,
+    [target],
     EditorActions.insertAsChildTarget(),
   )
 
@@ -326,7 +292,7 @@ const ReplaceElementButton = React.memo((props: ReplaceElementButtonProps) => {
     }
   })()
 
-  const onClick = useCreateCallbackToShowComponentPicker()(realTarget, insertionTarget)
+  const onClick = useCreateCallbackToShowComponentPicker()([realTarget], insertionTarget)
 
   return (
     <Button
@@ -443,6 +409,8 @@ interface NavigatorItemActionSheetProps {
   isVisibleOnCanvas: boolean // TODO FIXME bad name, also, use state
   instanceOriginalComponentName: string | null
   isSlot: boolean
+  isScene: boolean
+  collapsed: boolean
   iconColor: IcnProps['color']
   background?: string | any
   dispatch: EditorDispatch
@@ -489,14 +457,6 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
     'NavigatorItemActionSheet isLockedHierarchy',
   )
 
-  const jsxMetadataRef = useRefEditorState((store) => getMetadata(store.editor))
-  const isSceneElement = React.useMemo(() => {
-    return (
-      isRegularNavigatorEntry(navigatorEntry) &&
-      MetadataUtils.isProbablyScene(jsxMetadataRef.current, navigatorEntry.elementPath)
-    )
-  }, [navigatorEntry, jsxMetadataRef])
-
   const isDescendantOfLocked = useEditorState(
     Substores.restOfEditor,
     (store) => {
@@ -512,6 +472,14 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
 
   const conditionalCase = useConditionalCaseCorrespondingToBranchPath(
     props.navigatorEntry.elementPath,
+  )
+
+  const collapse = React.useCallback(
+    (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      event.stopPropagation()
+      dispatch([EditorActions.toggleCollapse(navigatorEntry.elementPath)])
+    },
+    [dispatch, navigatorEntry.elementPath],
   )
 
   return (
@@ -533,50 +501,75 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
             : 'transparent',
       }}
     >
-      <OriginalComponentNameLabel
-        selected={props.selected}
-        instanceOriginalComponentName={props.instanceOriginalComponentName}
-      />
-      {(navigatorEntry.type === 'REGULAR' || navigatorEntry.type === 'RENDER_PROP_VALUE') &&
-      (props.highlighted || props.selected) ? (
+      {unless(
+        props.isScene,
         <>
-          <AddChildButton target={navigatorEntry.elementPath} iconColor={props.iconColor} />
-          <ReplaceElementButton
-            target={navigatorEntry.elementPath}
-            iconColor={props.iconColor}
-            prop={navigatorEntry.type === 'RENDER_PROP_VALUE' ? navigatorEntry.prop : null}
-            conditionalCase={conditionalCase}
+          <OriginalComponentNameLabel
+            selected={props.selected}
+            instanceOriginalComponentName={props.instanceOriginalComponentName}
           />
-        </>
-      ) : null}
-      <SelectionLockedIndicator
-        key={`selection-locked-indicator-${varSafeNavigatorEntryToKey(navigatorEntry)}`}
-        shouldShow={
-          !isSceneElement &&
-          (props.highlighted ||
-            props.selected ||
-            isLockedElement ||
-            isLockedHierarchy ||
-            isDescendantOfLocked) &&
-          !props.isSlot &&
-          !isConditionalClauseTitle
-        }
-        value={isLockedElement ? 'locked' : isLockedHierarchy ? 'locked-hierarchy' : 'selectable'}
-        isDescendantOfLocked={isDescendantOfLocked}
-        selected={props.selected}
-        iconColor={props.iconColor}
-        onClick={toggleSelectable}
-      />
-      <VisibilityIndicator
-        key={`visibility-indicator-${varSafeNavigatorEntryToKey(navigatorEntry)}`}
-        shouldShow={
-          !props.isSlot && (props.highlighted || props.selected || !props.isVisibleOnCanvas)
-        }
-        visibilityEnabled={props.isVisibleOnCanvas}
-        selected={props.selected}
-        iconColor={props.iconColor}
-        onClick={toggleHidden}
-      />
+          {when(
+            (navigatorEntry.type === 'REGULAR' || navigatorEntry.type === 'RENDER_PROP_VALUE') &&
+              (props.highlighted || props.selected),
+            <>
+              <AddChildButton target={navigatorEntry.elementPath} iconColor={props.iconColor} />
+              <ReplaceElementButton
+                target={navigatorEntry.elementPath}
+                iconColor={props.iconColor}
+                prop={navigatorEntry.type === 'RENDER_PROP_VALUE' ? navigatorEntry.prop : null}
+                conditionalCase={conditionalCase}
+              />
+            </>,
+          )}
+          <SelectionLockedIndicator
+            key={`selection-locked-indicator-${varSafeNavigatorEntryToKey(navigatorEntry)}`}
+            shouldShow={
+              !props.isScene &&
+              (props.highlighted ||
+                props.selected ||
+                isLockedElement ||
+                isLockedHierarchy ||
+                isDescendantOfLocked) &&
+              !props.isSlot &&
+              !isConditionalClauseTitle
+            }
+            value={
+              isLockedElement ? 'locked' : isLockedHierarchy ? 'locked-hierarchy' : 'selectable'
+            }
+            isDescendantOfLocked={isDescendantOfLocked}
+            selected={props.selected}
+            iconColor={props.iconColor}
+            onClick={toggleSelectable}
+          />
+          <VisibilityIndicator
+            key={`visibility-indicator-${varSafeNavigatorEntryToKey(navigatorEntry)}`}
+            shouldShow={
+              !props.isSlot && (props.highlighted || props.selected || !props.isVisibleOnCanvas)
+            }
+            visibilityEnabled={props.isVisibleOnCanvas}
+            selected={props.selected}
+            iconColor={props.iconColor}
+            onClick={toggleHidden}
+          />
+        </>,
+      )}
+      {when(
+        props.isScene,
+        <ExpandableIndicator
+          key='expandable-indicator'
+          visible={true}
+          collapsed={props.collapsed}
+          selected={props.selected}
+          onMouseDown={collapse}
+          style={{
+            opacity: 'var(--paneHoverOpacity)',
+          }}
+          testId={`navigator-item-action-sheet-collapse-${navigatorEntryToKey(
+            props.navigatorEntry,
+          )}`}
+          iconColor={props.selected ? 'white' : 'main'}
+        />,
+      )}
     </FlexRow>
   )
 })

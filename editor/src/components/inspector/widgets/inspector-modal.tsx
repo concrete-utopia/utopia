@@ -33,9 +33,8 @@ export const InspectorModal: React.FunctionComponent<
   useHandleCloseOnESCOrEnter(closePopup)
   const outerElementRef = React.useRef<HTMLDivElement>(null)
   const wrapperRef = React.useRef<HTMLDivElement>(null)
-  const editor = document.getElementById(EditorID) as HTMLElement
-  const [editorWidth, setEditorWidth] = React.useState(editor.clientWidth)
-  const [editorHeight, setEditorHeight] = React.useState(editor.clientHeight)
+  const [editorWidth, setEditorWidth] = React.useState(document.body.clientWidth)
+  const [editorHeight, setEditorHeight] = React.useState(document.body.clientHeight)
   const [wrapperWidth, setWrapperWidth] = React.useState(0)
   const [wrapperHeight, setWrapperHeight] = React.useState(0)
   const [originLeft, setOriginLeft] = React.useState(0)
@@ -51,8 +50,8 @@ export const InspectorModal: React.FunctionComponent<
   )
 
   const updatePositionAndSize = React.useCallback(() => {
-    setEditorWidth(editor.clientWidth)
-    setEditorHeight(editor.clientHeight)
+    setEditorWidth(document.body.clientWidth)
+    setEditorHeight(document.body.clientHeight)
     if (wrapperRef.current != null) {
       setWrapperWidth(wrapperRef.current.children[0].clientWidth)
       setWrapperHeight(wrapperRef.current.children[0].clientHeight)
@@ -62,7 +61,7 @@ export const InspectorModal: React.FunctionComponent<
       setOriginLeft(boundingRect.left)
       setOriginTop(boundingRect.top)
     }
-  }, [editor.clientWidth, editor.clientHeight])
+  }, [])
 
   React.useLayoutEffect(() => {
     window.addEventListener('resize', updatePositionAndSize)

@@ -101,6 +101,7 @@ export const NavigatorItemDragType = 'navigator-item-drag-item' as const
 export interface NavigatorItemDragAndDropWrapperPropsBase {
   type: typeof NavigatorItemDragType
   index: number
+  indentation: number
   entryDepth: number
   appropriateDropTargetHint: DropTargetHint | null
   editorDispatch: EditorDispatch
@@ -273,6 +274,7 @@ function canDropInto(editorState: EditorState, moveToEntry: ElementPath): boolea
     editorState.jsxMetadata,
     moveToEntry,
     editorState.elementPathTree,
+    editorState.propertyControlsInfo,
   )
 
   return (
@@ -870,6 +872,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         <NavigatorItem
           navigatorEntry={props.navigatorEntry}
           index={props.index}
+          indentation={props.indentation}
           getSelectedViewsInRange={props.getSelectedViewsInRange}
           noOfChildren={props.noOfChildren}
           label={props.label}
@@ -1023,6 +1026,7 @@ export const SyntheticNavigatorItemContainer = React.memo(
           <NavigatorItem
             navigatorEntry={navigatorEntry}
             index={props.index}
+            indentation={props.indentation}
             getSelectedViewsInRange={props.getSelectedViewsInRange}
             noOfChildren={props.noOfChildren}
             label={props.label}
@@ -1065,6 +1069,7 @@ export const RenderPropNavigatorItemContainer = React.memo(
           <NavigatorItem
             navigatorEntry={navigatorEntry}
             index={props.index}
+            indentation={props.indentation}
             getSelectedViewsInRange={props.getSelectedViewsInRange}
             noOfChildren={props.noOfChildren}
             label={props.label}
@@ -1106,6 +1111,7 @@ export const SlotNavigatorItemContainer = React.memo((props: SlotNavigatorItemCo
         <NavigatorItem
           navigatorEntry={navigatorEntry}
           index={props.index}
+          indentation={props.indentation}
           getSelectedViewsInRange={props.getSelectedViewsInRange}
           noOfChildren={props.noOfChildren}
           label={props.label}
@@ -1152,6 +1158,7 @@ export const ConditionalClauseNavigatorItemContainer = React.memo(
           <NavigatorItem
             navigatorEntry={props.navigatorEntry}
             index={props.index}
+            indentation={props.indentation}
             getSelectedViewsInRange={props.getSelectedViewsInRange}
             noOfChildren={props.noOfChildren}
             label={props.label}
@@ -1197,6 +1204,7 @@ export const ErrorNavigatorItemContainer = React.memo((props: ErrorNavigatorItem
         <NavigatorItem
           navigatorEntry={props.navigatorEntry}
           index={props.index}
+          indentation={props.indentation}
           getSelectedViewsInRange={props.getSelectedViewsInRange}
           noOfChildren={props.noOfChildren}
           label={props.label}

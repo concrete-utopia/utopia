@@ -24,6 +24,8 @@ export type IcnColor =
   | 'overridden'
   | 'dynamic'
   | 'remix'
+  | 'green'
+  | 'lightgreen'
 
 export type IcnResultingColor =
   | 'white'
@@ -43,6 +45,8 @@ export type IcnResultingColor =
   | 'lightpink'
   | 'aqua'
   | 'lightaqua'
+  | 'green'
+  | 'lightgreen'
 
 function useIconColor(intent: IcnColor): IcnResultingColor {
   const currentTheme: Theme = useEditorState(
@@ -78,8 +82,12 @@ function useIconColor(intent: IcnColor): IcnResultingColor {
         return 'lightgray'
       case 'on-light-main':
         return 'white'
+      case 'black':
+        return 'black'
       case 'remix':
         return 'aqua'
+      case 'green':
+        return 'green'
       case 'white':
         return 'white'
       default:
@@ -117,6 +125,8 @@ function useIconColor(intent: IcnColor): IcnResultingColor {
         return 'black'
       case 'remix':
         return 'lightaqua'
+      case 'green':
+        return 'lightgreen'
       case 'white':
         return 'white'
       default:

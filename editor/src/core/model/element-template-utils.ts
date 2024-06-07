@@ -16,11 +16,9 @@ import type {
   JSXArrayElement,
   JSXProperty,
   ElementInstanceMetadataMap,
-  JSExpressionMapOrOtherJavascript,
   JSXElementChildWithoutUID,
   JSIdentifier,
   JSPropertyAccess,
-  JSElementAccess,
   JSExpressionOtherJavaScript,
 } from '../shared/element-template'
 import {
@@ -42,7 +40,6 @@ import {
   hasElementsWithin,
   isUtopiaJSXComponent,
   isJSPropertyAccessForProperty,
-  isJSIdentifier,
   isJSIdentifierForName,
   isJSExpressionOtherJavaScript,
   isJSXMapExpression,
@@ -75,7 +72,10 @@ import {
   isTextEditableConditional,
 } from './conditionals'
 import { modify } from '../shared/optics/optic-utilities'
-import type { InsertionPath } from '../../components/editor/store/insertion-path'
+import type {
+  ConditionalClauseInsertBehavior,
+  InsertionPath,
+} from '../../components/editor/store/insertion-path'
 import {
   isChildInsertionPath,
   isConditionalClauseInsertionPath,
@@ -86,6 +86,9 @@ import { getAllUniqueUids } from './get-unique-ids'
 import type { ElementPathTrees } from '../shared/element-path-tree'
 import { MetadataUtils } from './element-metadata-utils'
 import { mapValues } from '../shared/object-utils'
+import type { PropertyControlsInfo } from '../../components/custom-code/code-file'
+import { getComponentDescriptorForTarget } from '../property-controls/property-controls-utils'
+import { withUnderlyingTarget } from '../../components/editor/store/editor-state'
 
 export function generateUidWithExistingComponents(projectContents: ProjectContentTreeRoot): string {
   const mockUID = generateMockNextGeneratedUID()
@@ -684,23 +687,32 @@ export function elementPathFromInsertionPath(
   if (insertionPath.type === 'CHILD_INSERTION') {
     return EP.appendToPath(insertionPath.intendedParentPath, elementUID)
   } else if (insertionPath.type === 'CONDITIONAL_CLAUSE_INSERTION') {
-    switch (insertionPath.insertBehavior.type) {
-      case 'replace-with-single-element':
-        return EP.appendToPath(insertionPath.intendedParentPath, elementUID)
-      case 'replace-with-elements-wrapped-in-fragment':
-      case 'wrap-in-fragment-and-append-elements':
-        return EP.appendToPath(
-          EP.appendToPath(
-            insertionPath.intendedParentPath,
-            insertionPath.insertBehavior.fragmentUID,
-          ),
-          elementUID,
-        )
-      default:
-        assertNever(insertionPath.insertBehavior)
-    }
+    return elementPathForNonChildInsertions(
+      insertionPath.insertBehavior,
+      insertionPath.intendedParentPath,
+      elementUID,
+    )
   } else {
     assertNever(insertionPath)
+  }
+}
+
+export function elementPathForNonChildInsertions(
+  insertBehavior: ConditionalClauseInsertBehavior,
+  intendedParentPath: StaticElementPath,
+  elementUID: string,
+): ElementPath {
+  switch (insertBehavior.type) {
+    case 'replace-with-single-element':
+      return EP.appendToPath(intendedParentPath, elementUID)
+    case 'replace-with-elements-wrapped-in-fragment':
+    case 'wrap-in-fragment-and-append-elements':
+      return EP.appendToPath(
+        EP.appendToPath(intendedParentPath, insertBehavior.fragmentUID),
+        elementUID,
+      )
+    default:
+      assertNever(insertBehavior)
   }
 }
 
@@ -796,42 +808,49 @@ export function elementOnlyHasTextChildren(element: JSXElementChild): boolean {
   }
 }
 
-export function codeUsesProperty(javascript: string, propsParam: Param, property: string): boolean {
-  switch (propsParam.boundParam.type) {
-    case 'REGULAR_PARAM':
-      return javascript.includes(`${propsParam.boundParam.paramName}.${property}`)
-    case 'DESTRUCTURED_OBJECT':
-      return propsParam.boundParam.parts.some((part) => {
-        const partBoundParam = part.param.boundParam
-        if (partBoundParam.type === 'REGULAR_PARAM') {
-          // This handles the aliasing that may be applied to the destructured field.
-          const propertyToCheck = part.propertyName ?? partBoundParam.paramName
-          if (propertyToCheck === property) {
-            // This is the aliased name or if there's no alias the field name.
-            const propertyToLookFor = partBoundParam.paramName
-            return javascript.includes(propertyToLookFor)
+export function codeUsesProperty(
+  javascript: string,
+  propsParams: Array<Param>,
+  property: string,
+): boolean {
+  for (const propsParam of propsParams) {
+    switch (propsParam.boundParam.type) {
+      case 'REGULAR_PARAM':
+        return javascript.includes(`${propsParam.boundParam.paramName}.${property}`)
+      case 'DESTRUCTURED_OBJECT':
+        return propsParam.boundParam.parts.some((part) => {
+          const partBoundParam = part.param.boundParam
+          if (partBoundParam.type === 'REGULAR_PARAM') {
+            // This handles the aliasing that may be applied to the destructured field.
+            const propertyToCheck = part.propertyName ?? partBoundParam.paramName
+            if (propertyToCheck === property) {
+              // This is the aliased name or if there's no alias the field name.
+              const propertyToLookFor = partBoundParam.paramName
+              return javascript.includes(propertyToLookFor)
+            }
           }
-        }
+          return false
+        })
+      case 'DESTRUCTURED_ARRAY':
         return false
-      })
-    case 'DESTRUCTURED_ARRAY':
-      return false
-    default:
-      const _exhaustiveCheck: never = propsParam.boundParam
-      throw new Error(`Unhandled param type: ${JSON.stringify(propsParam.boundParam)}`)
+      default:
+        const _exhaustiveCheck: never = propsParam.boundParam
+        throw new Error(`Unhandled param type: ${JSON.stringify(propsParam.boundParam)}`)
+    }
   }
+  return false
 }
 
 export function componentUsesProperty(component: UtopiaJSXComponent, property: string): boolean {
-  if (component.param == null) {
+  if (component.params == null) {
     return false
   } else {
-    return elementUsesProperty(component.rootElement, component.param, property)
+    return elementUsesProperty(component.rootElement, component.params, property)
   }
 }
 
 export function componentHonoursPropsPosition(component: UtopiaJSXComponent): boolean {
-  if (component.param == null) {
+  if (component.params == null) {
     return false
   } else {
     const rootElement = component.rootElement
@@ -844,11 +863,11 @@ export function componentHonoursPropsPosition(component: UtopiaJSXComponent): bo
         PP.create('style', 'bottom'),
       )
       return (
-        ((propertyComesFromPropsStyle(component.param, leftStyleAttr, 'left') ||
-          propertyComesFromPropsStyle(component.param, rightStyleAttr, 'right')) &&
-          (propertyComesFromPropsStyle(component.param, topStyleAttr, 'top') ||
-            propertyComesFromPropsStyle(component.param, bottomStyleAttr, 'bottom'))) ||
-        propsStyleIsSpreadInto(component.param, rootElement.props)
+        ((propertyComesFromPropsStyle(component.params, leftStyleAttr, 'left') ||
+          propertyComesFromPropsStyle(component.params, rightStyleAttr, 'right')) &&
+          (propertyComesFromPropsStyle(component.params, topStyleAttr, 'top') ||
+            propertyComesFromPropsStyle(component.params, bottomStyleAttr, 'bottom'))) ||
+        propsStyleIsSpreadInto(component.params, rootElement.props)
       )
     } else {
       return false
@@ -857,7 +876,7 @@ export function componentHonoursPropsPosition(component: UtopiaJSXComponent): bo
 }
 
 export function componentHonoursPropsSize(component: UtopiaJSXComponent): boolean {
-  if (component.param == null) {
+  if (component.params == null) {
     return false
   } else {
     const rootElement = component.rootElement
@@ -868,9 +887,9 @@ export function componentHonoursPropsSize(component: UtopiaJSXComponent): boolea
         PP.create('style', 'height'),
       )
       return (
-        (propertyComesFromPropsStyle(component.param, widthStyleAttr, 'width') &&
-          propertyComesFromPropsStyle(component.param, heightStyleAttr, 'height')) ||
-        propsStyleIsSpreadInto(component.param, rootElement.props)
+        (propertyComesFromPropsStyle(component.params, widthStyleAttr, 'width') &&
+          propertyComesFromPropsStyle(component.params, heightStyleAttr, 'height')) ||
+        propsStyleIsSpreadInto(component.params, rootElement.props)
       )
     } else {
       return false
@@ -889,157 +908,160 @@ function checkJSReferencesVariable(
   )
 }
 
-function propsStyleIsSpreadInto(propsParam: Param, attributes: JSXAttributes): boolean {
-  const boundParam = propsParam.boundParam
-  switch (boundParam.type) {
-    case 'REGULAR_PARAM': {
-      const propsVariableName = boundParam.paramName
-      const stylePropPath = `${propsVariableName}.style`
-      const styleProp = getJSXAttributesAtPath(attributes, PP.create('style'))
-      const styleAttribute = styleProp.attribute
-      switch (styleAttribute.type) {
-        case 'ATTRIBUTE_NOT_FOUND':
-          return false
-        case 'ATTRIBUTE_VALUE':
-          return false
-        case 'JSX_MAP_EXPRESSION':
-          if (isJSExpressionOtherJavaScript(styleAttribute.valueToMap)) {
-            return checkJSReferencesVariable(
-              styleAttribute.valueToMap,
-              propsVariableName,
-              stylePropPath,
-            )
-          }
-          if (isJSExpressionOtherJavaScript(styleAttribute.mapFunction)) {
-            return checkJSReferencesVariable(
-              styleAttribute.mapFunction,
-              propsVariableName,
-              stylePropPath,
-            )
-          }
-          return false
-        case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-          return checkJSReferencesVariable(styleAttribute, propsVariableName, stylePropPath)
-        case 'ATTRIBUTE_NESTED_ARRAY':
-          return false
-        case 'ATTRIBUTE_NESTED_OBJECT':
-          return styleAttribute.content.some((attributePart) => {
-            if (isSpreadAssignment(attributePart)) {
-              const spreadPart = attributePart.value
-              if (modifiableAttributeIsAttributeOtherJavaScript(spreadPart)) {
-                return checkJSReferencesVariable(spreadPart, propsVariableName, stylePropPath)
-              }
-              if (
-                isJSPropertyAccessForProperty(spreadPart, 'style') &&
-                isJSIdentifierForName(spreadPart.onValue, 'props')
-              ) {
-                return true
-              }
+function propsStyleIsSpreadInto(propsParams: Array<Param>, attributes: JSXAttributes): boolean {
+  for (const propsParam of propsParams) {
+    const boundParam = propsParam.boundParam
+    switch (boundParam.type) {
+      case 'REGULAR_PARAM': {
+        const propsVariableName = boundParam.paramName
+        const stylePropPath = `${propsVariableName}.style`
+        const styleProp = getJSXAttributesAtPath(attributes, PP.create('style'))
+        const styleAttribute = styleProp.attribute
+        switch (styleAttribute.type) {
+          case 'ATTRIBUTE_NOT_FOUND':
+            return false
+          case 'ATTRIBUTE_VALUE':
+            return false
+          case 'JSX_MAP_EXPRESSION':
+            if (isJSExpressionOtherJavaScript(styleAttribute.valueToMap)) {
+              return checkJSReferencesVariable(
+                styleAttribute.valueToMap,
+                propsVariableName,
+                stylePropPath,
+              )
+            }
+            if (isJSExpressionOtherJavaScript(styleAttribute.mapFunction)) {
+              return checkJSReferencesVariable(
+                styleAttribute.mapFunction,
+                propsVariableName,
+                stylePropPath,
+              )
             }
             return false
-          })
-        case 'ATTRIBUTE_FUNCTION_CALL':
-          return false
-        case 'PART_OF_ATTRIBUTE_VALUE':
-          return false
-        case 'JS_IDENTIFIER':
-          return true
-        case 'JS_PROPERTY_ACCESS':
-        case 'JS_ELEMENT_ACCESS':
-        case 'JSX_ELEMENT':
-          return false
-        default:
-          const _exhaustiveCheck: never = styleAttribute
-          throw new Error(`Unhandled attribute type: ${JSON.stringify(styleAttribute)}`)
+          case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+            return checkJSReferencesVariable(styleAttribute, propsVariableName, stylePropPath)
+          case 'ATTRIBUTE_NESTED_ARRAY':
+            return false
+          case 'ATTRIBUTE_NESTED_OBJECT':
+            return styleAttribute.content.some((attributePart) => {
+              if (isSpreadAssignment(attributePart)) {
+                const spreadPart = attributePart.value
+                if (modifiableAttributeIsAttributeOtherJavaScript(spreadPart)) {
+                  return checkJSReferencesVariable(spreadPart, propsVariableName, stylePropPath)
+                }
+                if (
+                  isJSPropertyAccessForProperty(spreadPart, 'style') &&
+                  isJSIdentifierForName(spreadPart.onValue, 'props')
+                ) {
+                  return true
+                }
+              }
+              return false
+            })
+          case 'ATTRIBUTE_FUNCTION_CALL':
+            return false
+          case 'PART_OF_ATTRIBUTE_VALUE':
+            return false
+          case 'JS_IDENTIFIER':
+            return true
+          case 'JS_PROPERTY_ACCESS':
+          case 'JS_ELEMENT_ACCESS':
+          case 'JSX_ELEMENT':
+            return false
+          default:
+            const _exhaustiveCheck: never = styleAttribute
+            throw new Error(`Unhandled attribute type: ${JSON.stringify(styleAttribute)}`)
+        }
       }
-    }
-    case 'DESTRUCTURED_OBJECT': {
-      return boundParam.parts.some((part) => {
-        const partBoundParam = part.param.boundParam
-        if (partBoundParam.type === 'REGULAR_PARAM') {
-          // This handles the aliasing that may be applied to the destructured field.
-          const propertyToCheck = part.propertyName ?? partBoundParam.paramName
-          if (propertyToCheck === 'style') {
-            // This is the aliased name or if there's no alias the field name.
-            const propertyToLookFor = partBoundParam.paramName
+      case 'DESTRUCTURED_OBJECT': {
+        return boundParam.parts.some((part) => {
+          const partBoundParam = part.param.boundParam
+          if (partBoundParam.type === 'REGULAR_PARAM') {
+            // This handles the aliasing that may be applied to the destructured field.
+            const propertyToCheck = part.propertyName ?? partBoundParam.paramName
+            if (propertyToCheck === 'style') {
+              // This is the aliased name or if there's no alias the field name.
+              const propertyToLookFor = partBoundParam.paramName
 
-            const styleProp = getJSXAttributesAtPath(attributes, PP.create('style'))
-            const styleAttribute = styleProp.attribute
-            switch (styleAttribute.type) {
-              case 'ATTRIBUTE_NOT_FOUND':
-                return false
-              case 'ATTRIBUTE_VALUE':
-                return false
-              case 'JSX_MAP_EXPRESSION':
-                if (isJSExpressionOtherJavaScript(styleAttribute.valueToMap)) {
-                  return checkJSReferencesVariable(
-                    styleAttribute.valueToMap,
-                    propertyToLookFor,
-                    propertyToLookFor,
-                  )
-                }
-                if (isJSExpressionOtherJavaScript(styleAttribute.mapFunction)) {
-                  return checkJSReferencesVariable(
-                    styleAttribute.mapFunction,
-                    propertyToLookFor,
-                    propertyToLookFor,
-                  )
-                }
-                return false
-              case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-                return checkJSReferencesVariable(
-                  styleAttribute,
-                  propertyToLookFor,
-                  propertyToLookFor,
-                )
-              case 'ATTRIBUTE_NESTED_ARRAY':
-                return false
-              case 'ATTRIBUTE_NESTED_OBJECT':
-                return styleAttribute.content.some((attributePart) => {
-                  if (isSpreadAssignment(attributePart)) {
-                    const spreadPart = attributePart.value
-                    if (modifiableAttributeIsAttributeOtherJavaScript(spreadPart)) {
-                      return checkJSReferencesVariable(
-                        spreadPart,
-                        propertyToLookFor,
-                        propertyToLookFor,
-                      )
-                    }
-                    if (spreadPart.type === 'JS_IDENTIFIER' && spreadPart.name === 'style') {
-                      return true
-                    }
+              const styleProp = getJSXAttributesAtPath(attributes, PP.create('style'))
+              const styleAttribute = styleProp.attribute
+              switch (styleAttribute.type) {
+                case 'ATTRIBUTE_NOT_FOUND':
+                  return false
+                case 'ATTRIBUTE_VALUE':
+                  return false
+                case 'JSX_MAP_EXPRESSION':
+                  if (isJSExpressionOtherJavaScript(styleAttribute.valueToMap)) {
+                    return checkJSReferencesVariable(
+                      styleAttribute.valueToMap,
+                      propertyToLookFor,
+                      propertyToLookFor,
+                    )
+                  }
+                  if (isJSExpressionOtherJavaScript(styleAttribute.mapFunction)) {
+                    return checkJSReferencesVariable(
+                      styleAttribute.mapFunction,
+                      propertyToLookFor,
+                      propertyToLookFor,
+                    )
                   }
                   return false
-                })
-              case 'ATTRIBUTE_FUNCTION_CALL':
-                return false
-              case 'PART_OF_ATTRIBUTE_VALUE':
-                return false
-              case 'JS_IDENTIFIER':
-                return true
-              case 'JS_PROPERTY_ACCESS':
-                return (
-                  isJSPropertyAccessForProperty(styleAttribute, propertyToLookFor) &&
-                  isJSIdentifierForName(styleAttribute.onValue, 'style')
-                )
-              case 'JS_ELEMENT_ACCESS':
-              case 'JSX_ELEMENT':
-                return false
-              default:
-                const _exhaustiveCheck: never = styleAttribute
-                throw new Error(`Unhandled attribute type: ${JSON.stringify(styleAttribute)}`)
+                case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+                  return checkJSReferencesVariable(
+                    styleAttribute,
+                    propertyToLookFor,
+                    propertyToLookFor,
+                  )
+                case 'ATTRIBUTE_NESTED_ARRAY':
+                  return false
+                case 'ATTRIBUTE_NESTED_OBJECT':
+                  return styleAttribute.content.some((attributePart) => {
+                    if (isSpreadAssignment(attributePart)) {
+                      const spreadPart = attributePart.value
+                      if (modifiableAttributeIsAttributeOtherJavaScript(spreadPart)) {
+                        return checkJSReferencesVariable(
+                          spreadPart,
+                          propertyToLookFor,
+                          propertyToLookFor,
+                        )
+                      }
+                      if (spreadPart.type === 'JS_IDENTIFIER' && spreadPart.name === 'style') {
+                        return true
+                      }
+                    }
+                    return false
+                  })
+                case 'ATTRIBUTE_FUNCTION_CALL':
+                  return false
+                case 'PART_OF_ATTRIBUTE_VALUE':
+                  return false
+                case 'JS_IDENTIFIER':
+                  return true
+                case 'JS_PROPERTY_ACCESS':
+                  return (
+                    isJSPropertyAccessForProperty(styleAttribute, propertyToLookFor) &&
+                    isJSIdentifierForName(styleAttribute.onValue, 'style')
+                  )
+                case 'JS_ELEMENT_ACCESS':
+                case 'JSX_ELEMENT':
+                  return false
+                default:
+                  const _exhaustiveCheck: never = styleAttribute
+                  throw new Error(`Unhandled attribute type: ${JSON.stringify(styleAttribute)}`)
+              }
             }
           }
-        }
+          return false
+        })
+      }
+      case 'DESTRUCTURED_ARRAY':
         return false
-      })
+      default:
+        const _exhaustiveCheck: never = boundParam
+        throw new Error(`Unhandled param type: ${JSON.stringify(boundParam)}`)
     }
-    case 'DESTRUCTURED_ARRAY':
-      return false
-    default:
-      const _exhaustiveCheck: never = boundParam
-      throw new Error(`Unhandled param type: ${JSON.stringify(boundParam)}`)
   }
+  return false
 }
 
 function propertyAccessLookupForPropsStyleProperty(
@@ -1103,114 +1125,125 @@ function propertyAccessLookupForPropsStyleProperty(
 }
 
 export function propertyComesFromPropsStyle(
-  propsParam: Param,
+  propsParams: Array<Param>,
   result: GetJSXAttributeResult,
   propName: string,
 ): boolean {
-  const attribute = result.attribute
-  switch (attribute.type) {
-    case 'ATTRIBUTE_NOT_FOUND':
-      return false
-    case 'PART_OF_ATTRIBUTE_VALUE':
-      return false
-    default:
-      return checkExpression(attribute)
-  }
-  function checkExpression(expression: JSExpression): boolean {
-    switch (expression.type) {
-      case 'ATTRIBUTE_VALUE':
+  for (const propsParam of propsParams) {
+    const attribute = result.attribute
+    switch (attribute.type) {
+      case 'ATTRIBUTE_NOT_FOUND':
         return false
-      case 'JSX_MAP_EXPRESSION':
-        return checkExpression(expression.valueToMap) || checkExpression(expression.mapFunction)
-      case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
-        const boundParam = propsParam.boundParam
-        switch (boundParam.type) {
-          case 'REGULAR_PARAM':
-            return (
-              expression.definedElsewhere.includes(boundParam.paramName) &&
-              expression.javascriptWithUIDs.includes(`${boundParam.paramName}.style.${propName}`)
-            )
-          case 'DESTRUCTURED_OBJECT':
-            return boundParam.parts.some((part) => {
-              const partBoundParam = part.param.boundParam
-              if (partBoundParam.type === 'REGULAR_PARAM') {
-                // This handles the aliasing that may be applied to the destructured field.
-                const propertyToCheck = part.propertyName ?? partBoundParam.paramName
-                if (propertyToCheck === 'style') {
-                  // This is the aliased name or if there's no alias the field name.
-                  const propertyToLookFor = partBoundParam.paramName
-                  return (
-                    expression.definedElsewhere.includes(propertyToLookFor) &&
-                    expression.transpiledJavascript.includes(`${propertyToLookFor}.${propName}`)
-                  )
+      case 'PART_OF_ATTRIBUTE_VALUE':
+        return false
+      default:
+        return checkExpression(attribute)
+    }
+    function checkExpression(expression: JSExpression): boolean {
+      switch (expression.type) {
+        case 'ATTRIBUTE_VALUE':
+          return false
+        case 'JSX_MAP_EXPRESSION':
+          return checkExpression(expression.valueToMap) || checkExpression(expression.mapFunction)
+        case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
+          const boundParam = propsParam.boundParam
+          switch (boundParam.type) {
+            case 'REGULAR_PARAM':
+              return (
+                expression.definedElsewhere.includes(boundParam.paramName) &&
+                expression.javascriptWithUIDs.includes(`${boundParam.paramName}.style.${propName}`)
+              )
+            case 'DESTRUCTURED_OBJECT':
+              return boundParam.parts.some((part) => {
+                const partBoundParam = part.param.boundParam
+                if (partBoundParam.type === 'REGULAR_PARAM') {
+                  // This handles the aliasing that may be applied to the destructured field.
+                  const propertyToCheck = part.propertyName ?? partBoundParam.paramName
+                  if (propertyToCheck === 'style') {
+                    // This is the aliased name or if there's no alias the field name.
+                    const propertyToLookFor = partBoundParam.paramName
+                    return (
+                      expression.definedElsewhere.includes(propertyToLookFor) &&
+                      expression.transpiledJavascript.includes(`${propertyToLookFor}.${propName}`)
+                    )
+                  } else {
+                    return false
+                  }
                 } else {
                   return false
                 }
-              } else {
-                return false
-              }
-            })
-          default:
-            return false
+              })
+            default:
+              return false
+          }
         }
+        case 'ATTRIBUTE_NESTED_ARRAY':
+          return false
+        case 'ATTRIBUTE_NESTED_OBJECT':
+          return false
+        case 'ATTRIBUTE_FUNCTION_CALL':
+          return false
+        case 'JS_IDENTIFIER':
+          const boundParam = propsParam.boundParam
+          switch (boundParam.type) {
+            case 'REGULAR_PARAM':
+              return false
+            case 'DESTRUCTURED_OBJECT':
+              return boundParam.parts.some((part) => {
+                const partBoundParam = part.param.boundParam
+                if (partBoundParam.type === 'REGULAR_PARAM') {
+                  // This handles the aliasing that may be applied to the destructured field.
+                  const propertyToCheck = part.propertyName ?? partBoundParam.paramName
+                  return propertyToCheck === 'style' && expression.name === 'style'
+                } else {
+                  return false
+                }
+              })
+            case 'DESTRUCTURED_ARRAY':
+              return false
+            default:
+              return assertNever(boundParam)
+          }
+        case 'JS_ELEMENT_ACCESS':
+        case 'JSX_ELEMENT':
+          return false
+        case 'JS_PROPERTY_ACCESS':
+          return propertyAccessLookupForPropsStyleProperty(propsParam, expression, propName)
+        default:
+          const _exhaustiveCheck: never = expression
+          throw new Error(`Unhandled attribute type: ${JSON.stringify(expression)}`)
       }
-      case 'ATTRIBUTE_NESTED_ARRAY':
-        return false
-      case 'ATTRIBUTE_NESTED_OBJECT':
-        return false
-      case 'ATTRIBUTE_FUNCTION_CALL':
-        return false
-      case 'JS_IDENTIFIER':
-        const boundParam = propsParam.boundParam
-        switch (boundParam.type) {
-          case 'REGULAR_PARAM':
-            return false
-          case 'DESTRUCTURED_OBJECT':
-            return boundParam.parts.some((part) => {
-              const partBoundParam = part.param.boundParam
-              if (partBoundParam.type === 'REGULAR_PARAM') {
-                // This handles the aliasing that may be applied to the destructured field.
-                const propertyToCheck = part.propertyName ?? partBoundParam.paramName
-                return propertyToCheck === 'style' && expression.name === 'style'
-              } else {
-                return false
-              }
-            })
-          case 'DESTRUCTURED_ARRAY':
-            return false
-          default:
-            return assertNever(boundParam)
-        }
-      case 'JS_ELEMENT_ACCESS':
-      case 'JSX_ELEMENT':
-        return false
-      case 'JS_PROPERTY_ACCESS':
-        return propertyAccessLookupForPropsStyleProperty(propsParam, expression, propName)
-      default:
-        const _exhaustiveCheck: never = expression
-        throw new Error(`Unhandled attribute type: ${JSON.stringify(expression)}`)
     }
   }
+  return false
 }
 
 function propertyAccessLookupForPropsProperty(
-  propsParam: Param,
+  propsParams: Array<Param>,
   toCheck: JSPropertyAccess,
   propName: string,
 ): boolean {
-  // TODO make this not be special cased to the style prop!
+  for (const propsParam of propsParams) {
+    // TODO make this not be special cased to the style prop!
 
-  // This checks for `something1.something2.something3`:
-  if (toCheck.onValue.type === 'JS_IDENTIFIER' && propsParam.boundParam.type === 'REGULAR_PARAM') {
-    // Constrain the above check to `<props>.style.<propName>`
-    if (toCheck.onValue.name === propsParam.boundParam.paramName && toCheck.property === propName) {
-      return true
+    // This checks for `something1.something2.something3`:
+    if (
+      toCheck.onValue.type === 'JS_IDENTIFIER' &&
+      propsParam.boundParam.type === 'REGULAR_PARAM'
+    ) {
+      // Constrain the above check to `<props>.style.<propName>`
+      if (
+        toCheck.onValue.name === propsParam.boundParam.paramName &&
+        toCheck.property === propName
+      ) {
+        return true
+      }
     }
-  }
 
-  // Work our way back up the calls if there's a really deep chain.
-  if (toCheck.onValue.type === 'JS_PROPERTY_ACCESS') {
-    return propertyAccessLookupForPropsStyleProperty(propsParam, toCheck.onValue, propName)
+    // Work our way back up the calls if there's a really deep chain.
+    if (toCheck.onValue.type === 'JS_PROPERTY_ACCESS') {
+      return propertyAccessLookupForPropsStyleProperty(propsParam, toCheck.onValue, propName)
+    }
   }
 
   return false
@@ -1218,93 +1251,96 @@ function propertyAccessLookupForPropsProperty(
 
 export function identifierUsesProperty(
   element: JSIdentifier,
-  propsParam: Param,
+  propsParams: Array<Param>,
   property: string,
 ): boolean {
-  switch (propsParam.boundParam.type) {
-    case 'REGULAR_PARAM':
-      return element.name === propsParam.boundParam.paramName
-    case 'DESTRUCTURED_ARRAY':
-      return propsParam.boundParam.parts.some((part) => {
-        switch (part.type) {
-          case 'PARAM':
-            return identifierUsesProperty(element, part, property)
-          case 'OMITTED_PARAM':
+  for (const propsParam of propsParams) {
+    switch (propsParam.boundParam.type) {
+      case 'REGULAR_PARAM':
+        return element.name === propsParam.boundParam.paramName
+      case 'DESTRUCTURED_ARRAY':
+        return propsParam.boundParam.parts.some((part) => {
+          switch (part.type) {
+            case 'PARAM':
+              return identifierUsesProperty(element, [part], property)
+            case 'OMITTED_PARAM':
+              return false
+            default:
+              return assertNever(part)
+          }
+        })
+      case 'DESTRUCTURED_OBJECT':
+        return propsParam.boundParam.parts.some((part) => {
+          const partBoundParam = part.param.boundParam
+          if (partBoundParam.type === 'REGULAR_PARAM') {
+            // This handles the aliasing that may be applied to the destructured field.
+            const propertyToCheck = part.propertyName ?? partBoundParam.paramName
+            return propertyToCheck === property
+          } else {
             return false
-          default:
-            return assertNever(part)
-        }
-      })
-    case 'DESTRUCTURED_OBJECT':
-      return propsParam.boundParam.parts.some((part) => {
-        const partBoundParam = part.param.boundParam
-        if (partBoundParam.type === 'REGULAR_PARAM') {
-          // This handles the aliasing that may be applied to the destructured field.
-          const propertyToCheck = part.propertyName ?? partBoundParam.paramName
-          return propertyToCheck === property
-        } else {
-          return false
-        }
-      })
-    default:
-      return assertNever(propsParam.boundParam)
+          }
+        })
+      default:
+        return assertNever(propsParam.boundParam)
+    }
   }
+  return false
 }
 
 export function elementUsesProperty(
   element: JSXElementChild,
-  propsParam: Param,
+  propsParams: Array<Param>,
   property: string,
 ): boolean {
   switch (element.type) {
     case 'JSX_ELEMENT':
       const fromChildren = element.children.some((child) => {
-        return elementUsesProperty(child, propsParam, property)
+        return elementUsesProperty(child, propsParams, property)
       })
-      const fromAttributes = attributesUseProperty(element.props, propsParam, property)
+      const fromAttributes = attributesUseProperty(element.props, propsParams, property)
       return fromChildren || fromAttributes
     case 'JSX_MAP_EXPRESSION':
       return (
-        attributeUsesProperty(element.valueToMap, propsParam, property) ||
-        attributeUsesProperty(element.mapFunction, propsParam, property)
+        attributeUsesProperty(element.valueToMap, propsParams, property) ||
+        attributeUsesProperty(element.mapFunction, propsParams, property)
       )
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      return codeUsesProperty(element.originalJavascript, propsParam, property)
+      return codeUsesProperty(element.originalJavascript, propsParams, property)
     case 'JSX_TEXT_BLOCK':
       return false
     case 'JSX_FRAGMENT':
       return element.children.some((child) => {
-        return elementUsesProperty(child, propsParam, property)
+        return elementUsesProperty(child, propsParams, property)
       })
     case 'JSX_CONDITIONAL_EXPRESSION':
       return (
-        attributeUsesProperty(element.condition, propsParam, property) ||
-        elementUsesProperty(element.whenTrue, propsParam, property) ||
-        elementUsesProperty(element.whenFalse, propsParam, property)
+        attributeUsesProperty(element.condition, propsParams, property) ||
+        elementUsesProperty(element.whenTrue, propsParams, property) ||
+        elementUsesProperty(element.whenFalse, propsParams, property)
       )
     case 'ATTRIBUTE_VALUE':
       return false
     case 'ATTRIBUTE_NESTED_ARRAY':
       return element.content.some((child) => {
-        return elementUsesProperty(child.value, propsParam, property)
+        return elementUsesProperty(child.value, propsParams, property)
       })
     case 'ATTRIBUTE_NESTED_OBJECT':
       return element.content.some((child) => {
-        return elementUsesProperty(child.value, propsParam, property)
+        return elementUsesProperty(child.value, propsParams, property)
       })
     case 'ATTRIBUTE_FUNCTION_CALL':
       return element.parameters.some((param) => {
-        return elementUsesProperty(param, propsParam, property)
+        return elementUsesProperty(param, propsParams, property)
       })
     case 'JS_PROPERTY_ACCESS':
-      return propertyAccessLookupForPropsProperty(propsParam, element, property)
+      return propertyAccessLookupForPropsProperty(propsParams, element, property)
     case 'JS_ELEMENT_ACCESS':
       return (
-        elementUsesProperty(element.onValue, propsParam, property) ||
-        elementUsesProperty(element.element, propsParam, property) // TODO I think this is wrong, as it checks if the element part references the prop, but not that the entire expression itself actually points at a prop
+        elementUsesProperty(element.onValue, propsParams, property) ||
+        elementUsesProperty(element.element, propsParams, property) // TODO I think this is wrong, as it checks if the element part references the prop, but not that the entire expression itself actually points at a prop
       )
     case 'JS_IDENTIFIER':
-      return identifierUsesProperty(element, propsParam, property)
+      return identifierUsesProperty(element, propsParams, property)
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled element type: ${JSON.stringify(element)}`)
@@ -1313,31 +1349,31 @@ export function elementUsesProperty(
 
 export function attributesUseProperty(
   attributes: JSXAttributes,
-  propsParam: Param,
+  propsParams: Array<Param>,
   property: string,
 ): boolean {
-  return attributes.some((part) => attributePartUsesProperty(part, propsParam, property))
+  return attributes.some((part) => attributePartUsesProperty(part, propsParams, property))
 }
 
 export function arrayElementUsesProperty(
   arrayElement: JSXArrayElement,
-  propsParam: Param,
+  propsParams: Array<Param>,
   property: string,
 ): boolean {
-  return attributeUsesProperty(arrayElement.value, propsParam, property)
+  return attributeUsesProperty(arrayElement.value, propsParams, property)
 }
 
 export function jsxPropertyUsesProperty(
   jsxProperty: JSXProperty,
-  propsParam: Param,
+  propsParams: Array<Param>,
   property: string,
 ): boolean {
-  return attributeUsesProperty(jsxProperty.value, propsParam, property)
+  return attributeUsesProperty(jsxProperty.value, propsParams, property)
 }
 
 export function attributeUsesProperty(
   attribute: JSExpression,
-  propsParam: Param,
+  propsParams: Array<Param>,
   property: string,
 ): boolean {
   switch (attribute.type) {
@@ -1345,37 +1381,37 @@ export function attributeUsesProperty(
       return false
     case 'JSX_ELEMENT':
       const fromChildren = attribute.children.some((child) => {
-        return elementUsesProperty(child, propsParam, property)
+        return elementUsesProperty(child, propsParams, property)
       })
-      const fromAttributes = attributesUseProperty(attribute.props, propsParam, property)
+      const fromAttributes = attributesUseProperty(attribute.props, propsParams, property)
       return fromChildren || fromAttributes
     case 'JSX_MAP_EXPRESSION':
       return (
-        attributeUsesProperty(attribute.valueToMap, propsParam, property) ||
-        attributeUsesProperty(attribute.mapFunction, propsParam, property)
+        attributeUsesProperty(attribute.valueToMap, propsParams, property) ||
+        attributeUsesProperty(attribute.mapFunction, propsParams, property)
       )
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      return codeUsesProperty(attribute.javascriptWithUIDs, propsParam, property)
+      return codeUsesProperty(attribute.javascriptWithUIDs, propsParams, property)
     case 'ATTRIBUTE_NESTED_ARRAY':
       return attribute.content.some((elem) => {
-        return arrayElementUsesProperty(elem, propsParam, property)
+        return arrayElementUsesProperty(elem, propsParams, property)
       })
     case 'ATTRIBUTE_NESTED_OBJECT':
       return attribute.content.some((elem) => {
-        return jsxPropertyUsesProperty(elem, propsParam, property)
+        return jsxPropertyUsesProperty(elem, propsParams, property)
       })
     case 'ATTRIBUTE_FUNCTION_CALL':
       return attribute.parameters.some((parameter) => {
-        return attributeUsesProperty(parameter, propsParam, property)
+        return attributeUsesProperty(parameter, propsParams, property)
       })
     case 'JS_PROPERTY_ACCESS':
-      return propertyAccessLookupForPropsProperty(propsParam, attribute, property)
+      return propertyAccessLookupForPropsProperty(propsParams, attribute, property)
     case 'JS_IDENTIFIER':
-      return identifierUsesProperty(attribute, propsParam, property)
+      return identifierUsesProperty(attribute, propsParams, property)
     case 'JS_ELEMENT_ACCESS':
       return (
-        elementUsesProperty(attribute.onValue, propsParam, property) ||
-        elementUsesProperty(attribute.element, propsParam, property)
+        elementUsesProperty(attribute.onValue, propsParams, property) ||
+        elementUsesProperty(attribute.element, propsParams, property)
       )
     default:
       const _exhaustiveCheck: never = attribute
@@ -1385,14 +1421,14 @@ export function attributeUsesProperty(
 
 export function attributePartUsesProperty(
   attributesPart: JSXAttributesPart,
-  propsParam: Param,
+  propsParams: Array<Param>,
   property: string,
 ): boolean {
   switch (attributesPart.type) {
     case 'JSX_ATTRIBUTES_ENTRY':
-      return attributeUsesProperty(attributesPart.value, propsParam, property)
+      return attributeUsesProperty(attributesPart.value, propsParams, property)
     case 'JSX_ATTRIBUTES_SPREAD':
-      return attributeUsesProperty(attributesPart.spreadValue, propsParam, property)
+      return attributeUsesProperty(attributesPart.spreadValue, propsParams, property)
     default:
       const _exhaustiveCheck: never = attributesPart
       throw new Error(`Unhandled attribute part: ${JSON.stringify(attributesPart)}`)
@@ -1410,7 +1446,18 @@ export function elementChildSupportsChildrenAlsoText(
   path: ElementPath,
   metadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
+  projectContents: ProjectContentTreeRoot,
+  propertyControlsInfo: PropertyControlsInfo,
 ): ElementSupportsChildren | null {
+  const componentDescriptor = getComponentDescriptorForTarget(
+    path,
+    propertyControlsInfo,
+    projectContents,
+  )
+  if (componentDescriptor != null && !componentDescriptor.supportsChildren) {
+    return 'doesNotSupportChildren'
+  }
+
   if (isJSXConditionalExpression(element)) {
     if (isTextEditableConditional(path, metadata, elementPathTree)) {
       return 'conditionalWithText'
@@ -1634,4 +1681,17 @@ export function findContainingComponentForPath(
   }
 
   return null
+}
+
+export function findContainingComponentForPathInProjectContents(
+  elementPath: ElementPath,
+  projectContents: ProjectContentTreeRoot,
+): UtopiaJSXComponent | null {
+  return withUnderlyingTarget(elementPath, projectContents, null, (success) => {
+    const containingComponent = findContainingComponentForPath(
+      success.topLevelElements,
+      elementPath,
+    )
+    return containingComponent
+  })
 }

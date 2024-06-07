@@ -154,6 +154,7 @@ function storyboardComponent(numberOfScenes: number): UtopiaJSXComponent {
     false,
     'var',
     'block',
+    [],
     null,
     [],
     jsxElement(
@@ -186,6 +187,7 @@ const originalModel = deepFreeze(
         true,
         'var',
         'block',
+        [],
         defaultPropsParam,
         [],
         jsxElement(
@@ -448,24 +450,25 @@ describe('INSERT_INSERTABLE', () => {
 
     const insertableGroups = getComponentGroups(
       'insert',
-      { antd: { status: 'loaded' } },
-      { antd: DefaultThirdPartyControlDefinitions.antd },
+      { ['utopia-api']: { status: 'loaded' } },
+      { ['utopia-api']: DefaultThirdPartyControlDefinitions['utopia-api'] },
       editorState.projectContents,
-      [resolvedNpmDependency('antd', '4.0.0')],
+      [resolvedNpmDependency('utopia-api', '0.5.1')],
       StoryboardFilePath,
     )
-    const antdGroup = forceNotNull(
+    const utopiaApiGroup = forceNotNull(
       'Group should exist.',
       insertableGroups.find((group) => {
         return (
-          group.source.type === 'PROJECT_DEPENDENCY_GROUP' && group.source.dependencyName === 'antd'
+          group.source.type === 'PROJECT_DEPENDENCY_GROUP' &&
+          group.source.dependencyName === 'utopia-api'
         )
       }),
     )
     const menuInsertable = forceNotNull(
       'Component should exist.',
-      antdGroup.insertableComponents.find((insertable) => {
-        return insertable.name === 'Menu'
+      utopiaApiGroup.insertableComponents.find((insertable) => {
+        return insertable.name === 'View'
       }),
     )
 
@@ -498,8 +501,7 @@ describe('INSERT_INSERTABLE', () => {
         expect(printedCode).toMatchInlineSnapshot(`
           "import * as React from 'react'
           import { Spring } from 'non-existant-dummy-library'
-          import { Menu } from 'antd'
-          import 'antd/dist/antd.css'
+          import { View } from 'utopia-api'
           export var Card = (props) => {
             return (
               <div style={{ ...props.style }}>
@@ -525,16 +527,11 @@ describe('INSERT_INSERTABLE', () => {
                     backgroundColor: 'blue',
                   }}
                 />
-                <Menu
-                  forceSubMenuRender={false}
-                  inlineCollapsed={false}
-                  inlineIndent={24}
-                  mode='inline'
-                  multiple={false}
-                  selectable
-                  subMenuCloseDelay={0.1}
-                  subMenuOpenDelay={0}
-                  theme='light'
+                <View
+                  style={{
+                    backgroundColor: '#aaaaaa33',
+                    position: 'absolute',
+                  }}
                 />
               </div>
             )
@@ -561,24 +558,25 @@ describe('INSERT_INSERTABLE', () => {
 
     const insertableGroups = getComponentGroups(
       'insert',
-      { antd: { status: 'loaded' } },
-      { antd: DefaultThirdPartyControlDefinitions.antd },
+      { ['utopia-api']: { status: 'loaded' } },
+      { ['utopia-api']: DefaultThirdPartyControlDefinitions['utopia-api'] },
       editorState.projectContents,
-      [resolvedNpmDependency('antd', '4.0.0')],
+      [resolvedNpmDependency('utopia-api', '0.5.1')],
       StoryboardFilePath,
     )
-    const antdGroup = forceNotNull(
+    const utopiaApiGroup = forceNotNull(
       'Group should exist.',
       insertableGroups.find((group) => {
         return (
-          group.source.type === 'PROJECT_DEPENDENCY_GROUP' && group.source.dependencyName === 'antd'
+          group.source.type === 'PROJECT_DEPENDENCY_GROUP' &&
+          group.source.dependencyName === 'utopia-api'
         )
       }),
     )
     const menuInsertable = forceNotNull(
       'Component should exist.',
-      antdGroup.insertableComponents.find((insertable) => {
-        return insertable.name === 'Menu'
+      utopiaApiGroup.insertableComponents.find((insertable) => {
+        return insertable.name === 'View'
       }),
     )
 
@@ -611,8 +609,7 @@ describe('INSERT_INSERTABLE', () => {
         expect(printedCode).toMatchInlineSnapshot(`
           "import * as React from 'react'
           import { Spring } from 'non-existant-dummy-library'
-          import { Menu } from 'antd'
-          import 'antd/dist/antd.css'
+          import { View } from 'utopia-api'
           export var Card = (props) => {
             return (
               <div style={{ ...props.style }}>
@@ -638,17 +635,13 @@ describe('INSERT_INSERTABLE', () => {
                     backgroundColor: 'blue',
                   }}
                 />
-                <Menu
-                  forceSubMenuRender={false}
-                  inlineCollapsed={false}
-                  inlineIndent={24}
-                  mode='inline'
-                  multiple={false}
-                  selectable
-                  subMenuCloseDelay={0.1}
-                  subMenuOpenDelay={0}
-                  theme='light'
-                  style={{ width: 100, height: 100 }}
+                <View
+                  style={{
+                    backgroundColor: '#aaaaaa33',
+                    position: 'absolute',
+                    width: 100,
+                    height: 100,
+                  }}
                 />
               </div>
             )
@@ -664,34 +657,35 @@ describe('INSERT_INSERTABLE', () => {
   })
 
   it('inserts an element into the project with the given values, and duplicate name, also adding style props', () => {
-    const project = complexDefaultProjectPreParsed()
+    const project = complexDefaultProjectPreParsed('View')
     const editorState = editorModelFromPersistentModel(project, NO_OP)
 
     const insertableGroups = getComponentGroups(
       'insert',
-      { antd: { status: 'loaded' } },
-      { antd: DefaultThirdPartyControlDefinitions.antd },
+      { ['utopia-api']: { status: 'loaded' } },
+      { ['utopia-api']: DefaultThirdPartyControlDefinitions['utopia-api'] },
       editorState.projectContents,
-      [resolvedNpmDependency('antd', '4.0.0')],
+      [resolvedNpmDependency('utopia-api', '0.5.1')],
       StoryboardFilePath,
     )
-    const antdGroup = forceNotNull(
+    const utopiaApiGroup = forceNotNull(
       'Group should exist.',
       insertableGroups.find((group) => {
         return (
-          group.source.type === 'PROJECT_DEPENDENCY_GROUP' && group.source.dependencyName === 'antd'
+          group.source.type === 'PROJECT_DEPENDENCY_GROUP' &&
+          group.source.dependencyName === 'utopia-api'
         )
       }),
     )
-    const springInsertable = insertableComponent(
+    const viewInsertable = insertableComponent(
       {
-        './test.js': importDetails(null, [importAlias('Spring')], null),
+        './test.js': importDetails(null, [importAlias('View')], null),
       },
-      () => jsxElement('Spring', 'spring', jsxAttributesFromMap({}), []),
-      'Spring',
+      () => jsxElement('View', 'view', jsxAttributesFromMap({}), []),
+      'View',
       [],
       null,
-      null,
+      { type: 'file-root' },
       null,
     )
 
@@ -703,7 +697,7 @@ describe('INSERT_INSERTABLE', () => {
 
     const action = insertInsertable(
       childInsertionPath(targetPath),
-      springInsertable,
+      viewInsertable,
       'add-size',
       null,
     )
@@ -723,8 +717,8 @@ describe('INSERT_INSERTABLE', () => {
         )
         expect(printedCode).toMatchInlineSnapshot(`
           "import * as React from 'react'
-          import { Spring } from 'non-existant-dummy-library'
-          import { Spring as Spring_2 } from './test.js'
+          import { View } from 'non-existant-dummy-library'
+          import { View as View_2 } from './test.js'
           export var Card = (props) => {
             return (
               <div style={{ ...props.style }}>
@@ -739,7 +733,7 @@ describe('INSERT_INSERTABLE', () => {
                     backgroundColor: 'red',
                   }}
                 />
-                <Spring
+                <View
                   data-testid='spring'
                   style={{
                     position: 'absolute',
@@ -750,7 +744,7 @@ describe('INSERT_INSERTABLE', () => {
                     backgroundColor: 'blue',
                   }}
                 />
-                <Spring_2 style={{ width: 100, height: 100 }} />
+                <View_2 style={{ width: 100, height: 100 }} />
               </div>
             )
           }

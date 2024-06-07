@@ -38,6 +38,7 @@ import type {
   TextFile,
   TextFileContents,
   Unparsed,
+  ElementPropertyPath,
 } from '../../../core/shared/project-file-types'
 import { directory } from '../../../core/shared/project-file-types'
 import {
@@ -299,11 +300,6 @@ import type {
   CanvasCursor,
   CursorStackItem,
   CursorImportanceLevel,
-  FloatingInsertMenuStateClosed,
-  FloatingInsertMenuStateSwap,
-  FloatingInsertMenuStateWrap,
-  FloatingInsertMenuStateInsert,
-  FloatingInsertMenuState,
   EditorStateInspector,
   EditorStateFileBrowser,
   EditorStateDependencyList,
@@ -357,6 +353,7 @@ import type {
   DataReferenceNavigatorEntry,
   GithubUser,
   PullRequest,
+  RenderedAt,
 } from './editor-state'
 import {
   trueUpGroupElementChanged,
@@ -367,6 +364,8 @@ import {
   renderPropValueNavigatorEntry,
   dataReferenceNavigatorEntry,
   newGithubData,
+  renderedAtPropertyPath,
+  renderedAtChildNode,
 } from './editor-state'
 import {
   editorStateNodeModules,
@@ -384,10 +383,6 @@ import {
   editorStateCanvas,
   cursorStackItem,
   canvasCursor,
-  floatingInsertMenuStateClosed,
-  floatingInsertMenuStateSwap,
-  floatingInsertMenuStateWrap,
-  floatingInsertMenuStateInsert,
   editorStateInspector,
   editorStateFileBrowser,
   editorStateDependencyList,
@@ -481,6 +476,9 @@ import type {
   CurriedUtopiaRequireFn,
   PropertyControlsInfo,
   ComponentDescriptorFromDescriptorFile,
+  TypedInpsectorSpec,
+  ShownInspectorSpec,
+  StyleSectionState,
 } from '../../custom-code/code-file'
 import {
   codeResult,
@@ -604,6 +602,20 @@ import type {
 } from '../../custom-code/internal-property-controls'
 import type { OnlineState } from '../online-status'
 import { onlineState } from '../online-status'
+import type { NavigatorRow } from '../../navigator/navigator-row'
+import { condensedNavigatorRow, regularNavigatorRow } from '../../navigator/navigator-row'
+import type { SimpleFunctionWrap, FunctionWrap } from 'utopia-shared/src/types'
+import { simpleFunctionWrap, isSimpleFunctionWrap } from 'utopia-shared/src/types'
+
+export function ElementPropertyPathKeepDeepEquality(): KeepDeepEqualityCall<ElementPropertyPath> {
+  return combine2EqualityCalls(
+    (e) => e.elementPath,
+    ElementPathKeepDeepEquality,
+    (e) => e.propertyPath,
+    PropertyPathKeepDeepEquality(),
+    (elementPath, propertyPath) => ({ elementPath, propertyPath }),
+  )
+}
 
 export const ProjectMetadataFromServerKeepDeepEquality: KeepDeepEqualityCall<ProjectMetadataFromServer> =
   combine4EqualityCalls(
@@ -689,9 +701,44 @@ export const SyntheticNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<Synth
     syntheticNavigatorEntry,
   )
 
+export const RenderedAtKeepDeepEquality: KeepDeepEqualityCall<RenderedAt> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'element-property-path':
+      if (oldValue.type === newValue.type) {
+        return combine1EqualityCall(
+          (r) => r.elementPropertyPath,
+          ElementPropertyPathKeepDeepEquality(),
+          renderedAtPropertyPath,
+        )(oldValue, newValue)
+      }
+      break
+    case 'child-node':
+      if (oldValue.type === newValue.type) {
+        return combine2EqualityCalls(
+          (r) => r.parentPath,
+          ElementPathKeepDeepEquality,
+          (r) => r.nodeUid,
+          StringKeepDeepEquality,
+          renderedAtChildNode,
+        )(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
 export const DataReferenceNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<DataReferenceNavigatorEntry> =
-  combine2EqualityCalls(
+  combine4EqualityCalls(
     (entry) => entry.elementPath,
+    ElementPathKeepDeepEquality,
+    (entry) => entry.renderedAt,
+    RenderedAtKeepDeepEquality,
+    (entry) => entry.surroundingScope,
     ElementPathKeepDeepEquality,
     (entry) => entry.childOrAttribute,
     JSXElementChildKeepDeepEquality(),
@@ -735,6 +782,41 @@ export const SlotNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<SlotNaviga
     StringKeepDeepEquality,
     (elementPath, prop) => ({ type: 'SLOT', elementPath: elementPath, prop: prop }),
   )
+
+export const NavigatorRowKeepDeepEquality: KeepDeepEqualityCall<NavigatorRow> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'regular-row':
+      if (oldValue.type === newValue.type) {
+        return combine2EqualityCalls(
+          (row) => row.entry,
+          NavigatorEntryKeepDeepEquality,
+          (row) => row.indentation,
+          createCallWithTripleEquals<number>(),
+          regularNavigatorRow,
+        )(oldValue, newValue)
+      }
+      break
+    case 'condensed-row':
+      if (oldValue.type === newValue.type) {
+        return combine3EqualityCalls(
+          (row) => row.entries,
+          arrayDeepEquality(NavigatorEntryKeepDeepEquality),
+          (row) => row.variant,
+          createCallWithTripleEquals<'trunk' | 'leaf'>(),
+          (row) => row.indentation,
+          createCallWithTripleEquals<number>(),
+          condensedNavigatorRow,
+        )(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
 
 export const NavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<NavigatorEntry> = (
   oldValue,
@@ -841,7 +923,9 @@ export const NavigatorStateKeepDeepEquality: KeepDeepEqualityCall<NavigatorState
   )
 
 export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedState> {
-  return combine9EqualityCalls(
+  return combine10EqualityCalls(
+    (state) => state.navigatorRows,
+    arrayDeepEquality(NavigatorRowKeepDeepEquality),
     (state) => state.navigatorTargets,
     arrayDeepEquality(NavigatorEntryKeepDeepEquality),
     (state) => state.visibleNavigatorTargets,
@@ -861,6 +945,7 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
     (state) => state.filePathMappings,
     createCallWithShallowEquals(),
     (
+      navigatorRows,
       navigatorTargets,
       visibleNavigatorTargets,
       autoFocusedPaths,
@@ -872,6 +957,7 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
       filePathMappings,
     ) => {
       return {
+        navigatorRows: navigatorRows,
         navigatorTargets: navigatorTargets,
         visibleNavigatorTargets: visibleNavigatorTargets,
         autoFocusedPaths: autoFocusedPaths,
@@ -993,7 +1079,7 @@ export const RawSourceMapKeepDeepEquality: KeepDeepEqualityCall<RawSourceMap> =
 export function JSAssignmentKeepDeepEqualityCall(): KeepDeepEqualityCall<JSAssignment> {
   return combine2EqualityCalls(
     (assignment) => assignment.leftHandSide,
-    JSIdentifierKeepDeepEquality(),
+    BoundParamKeepDeepEquality(),
     (assignment) => assignment.rightHandSide,
     JSExpressionKeepDeepEqualityCall,
     jsAssignment,
@@ -1486,8 +1572,29 @@ export function JSXElementChildKeepDeepEquality(): KeepDeepEqualityCall<JSXEleme
   }
 }
 
+export const SimpleFunctionWrapKeepDeepEquality: KeepDeepEqualityCall<SimpleFunctionWrap> =
+  combine1EqualityCall(
+    (wrap) => wrap.functionExpression,
+    JSExpressionKeepDeepEqualityCall,
+    simpleFunctionWrap,
+  )
+
+export const FunctionWrapKeepDeepEquality: KeepDeepEqualityCall<FunctionWrap> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'SIMPLE_FUNCTION_WRAP':
+      if (isSimpleFunctionWrap(newValue)) {
+        return SimpleFunctionWrapKeepDeepEquality(oldValue, newValue)
+      }
+      break
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
 export const UtopiaJSXComponentKeepDeepEquality: KeepDeepEqualityCall<UtopiaJSXComponent> =
-  combine10EqualityCalls(
+  combine11EqualityCalls(
     (component) => component.name,
     createCallWithTripleEquals(),
     (component) => component.isFunction,
@@ -1496,8 +1603,10 @@ export const UtopiaJSXComponentKeepDeepEquality: KeepDeepEqualityCall<UtopiaJSXC
     createCallWithTripleEquals(),
     (component) => component.blockOrExpression,
     createCallWithTripleEquals(),
-    (component) => component.param,
-    nullableDeepEquality(ParamKeepDeepEquality()),
+    (component) => component.functionWrapping,
+    arrayDeepEquality(FunctionWrapKeepDeepEquality),
+    (component) => component.params,
+    nullableDeepEquality(arrayDeepEquality(ParamKeepDeepEquality())),
     (component) => component.propsUsed,
     arrayDeepEquality(createCallWithTripleEquals()),
     (component) => component.rootElement,
@@ -1631,7 +1740,7 @@ export const RegularParamKeepDeepEquality: KeepDeepEqualityCall<RegularParam> =
     (param) => param.paramName,
     createCallWithTripleEquals(),
     (param) => param.defaultExpression,
-    nullableDeepEquality(JSExpressionOtherJavaScriptOrJSXMapExpressionKeepDeepEqualityCall),
+    nullableDeepEquality(JSExpressionKeepDeepEqualityCall),
     regularParam,
   )
 
@@ -1642,7 +1751,7 @@ export const DestructuredParamPartKeepDeepEquality: KeepDeepEqualityCall<Destruc
     (paramPart) => paramPart.param,
     ParamKeepDeepEquality(),
     (paramPart) => paramPart.defaultExpression,
-    nullableDeepEquality(JSExpressionOtherJavaScriptOrJSXMapExpressionKeepDeepEqualityCall),
+    nullableDeepEquality(JSExpressionKeepDeepEqualityCall),
     destructuredParamPart,
   )
 
@@ -3404,20 +3513,35 @@ export function ComponentDescriptorSourceKeepDeepEquality(): KeepDeepEqualityCal
   }
 }
 
-const InspectorSpecKeepDeepEquality: KeepDeepEqualityCall<InspectorSpec> = (oldValue, newValue) => {
-  if (typeof oldValue === 'string' && typeof newValue === 'string') {
-    return StringKeepDeepEquality(oldValue, newValue) as KeepDeepEqualityResult<InspectorSpec>
+const InspectorSpecKeepDeepEquality: KeepDeepEqualityCall<TypedInpsectorSpec> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'hidden':
+      if (oldValue.type === newValue.type) {
+        return keepDeepEqualityResult(oldValue, true)
+      }
+      break
+    case 'shown':
+      if (oldValue.type === newValue.type) {
+        return combine2EqualityCalls<StyleSectionState, Styling[], ShownInspectorSpec>(
+          (i) => i.display,
+          createCallWithTripleEquals(),
+          (i) => i.sections,
+          arrayDeepEquality(createCallWithTripleEquals()),
+          (display, sections) => ({ type: 'shown', display: display, sections: sections }),
+        )(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
   }
-
-  if (Array.isArray(oldValue) && Array.isArray(newValue)) {
-    return arrayDeepEquality(createCallWithTripleEquals<Styling>())(oldValue, newValue)
-  }
-
-  return { value: newValue, areEqual: false }
+  return keepDeepEqualityResult(newValue, false)
 }
 
 export const ComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<ComponentDescriptor> =
-  combine9EqualityCalls(
+  combine10EqualityCalls(
     (descriptor) => descriptor.properties,
     PropertyControlsKeepDeepEquality,
     (descriptor) => descriptor.supportsChildren,
@@ -3436,6 +3560,8 @@ export const ComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<Component
     createCallWithTripleEquals<Emphasis>(),
     (descriptor) => descriptor.icon,
     createCallWithTripleEquals<Icon>(),
+    (descriptor) => descriptor.label,
+    nullableDeepEquality(StringKeepDeepEquality),
     componentDescriptor,
   )
 
@@ -3799,70 +3925,6 @@ export function IndexPositionKeepDeepEquality(
     case 'before':
       if (newValue.type === oldValue.type) {
         return BeforeKeepDeepEquality(oldValue, newValue)
-      }
-      break
-    default:
-      const _exhaustiveCheck: never = oldValue
-      throw new Error(`Unhandled type ${JSON.stringify(oldValue)}`)
-  }
-  return keepDeepEqualityResult(newValue, false)
-}
-
-// Here to cause the build to break if `FloatingInsertMenuStateClosed` is changed.
-floatingInsertMenuStateClosed()
-export const FloatingInsertMenuStateClosedKeepDeepEquality: KeepDeepEqualityCall<
-  FloatingInsertMenuStateClosed
-> = (oldValue, newValue) => {
-  return keepDeepEqualityResult(oldValue, true)
-}
-
-export const FloatingInsertMenuStateInsertKeepDeepEquality: KeepDeepEqualityCall<FloatingInsertMenuStateInsert> =
-  combine2EqualityCalls(
-    (menu) => menu.parentPath,
-    nullableDeepEquality(ElementPathKeepDeepEquality),
-    (menu) => menu.indexPosition,
-    nullableDeepEquality(IndexPositionKeepDeepEquality),
-    floatingInsertMenuStateInsert,
-  )
-
-// Here to cause the build to break if `FloatingInsertMenuStateConvert` is changed.
-floatingInsertMenuStateSwap()
-export const FloatingInsertMenuStateConvertKeepDeepEquality: KeepDeepEqualityCall<
-  FloatingInsertMenuStateSwap
-> = (oldValue, newValue) => {
-  return keepDeepEqualityResult(oldValue, true)
-}
-
-// Here to cause the build to break if `FloatingInsertMenuStateWrap` is changed.
-floatingInsertMenuStateWrap()
-export const FloatingInsertMenuStateWrapKeepDeepEquality: KeepDeepEqualityCall<
-  FloatingInsertMenuStateWrap
-> = (oldValue, newValue) => {
-  return keepDeepEqualityResult(oldValue, true)
-}
-
-export const FloatingInsertMenuStateKeepDeepEquality: KeepDeepEqualityCall<
-  FloatingInsertMenuState
-> = (oldValue, newValue) => {
-  switch (oldValue.insertMenuMode) {
-    case 'closed':
-      if (newValue.insertMenuMode === oldValue.insertMenuMode) {
-        return FloatingInsertMenuStateClosedKeepDeepEquality(oldValue, newValue)
-      }
-      break
-    case 'insert':
-      if (newValue.insertMenuMode === oldValue.insertMenuMode) {
-        return FloatingInsertMenuStateInsertKeepDeepEquality(oldValue, newValue)
-      }
-      break
-    case 'swap':
-      if (newValue.insertMenuMode === oldValue.insertMenuMode) {
-        return FloatingInsertMenuStateConvertKeepDeepEquality(oldValue, newValue)
-      }
-      break
-    case 'wrap':
-      if (newValue.insertMenuMode === oldValue.insertMenuMode) {
-        return FloatingInsertMenuStateWrapKeepDeepEquality(oldValue, newValue)
       }
       break
     default:
@@ -4782,10 +4844,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.interfaceDesigner,
   )
   const canvasResults = EditorStateCanvasKeepDeepEquality(oldValue.canvas, newValue.canvas)
-  const floatingInsertMenuResults = FloatingInsertMenuStateKeepDeepEquality(
-    oldValue.floatingInsertMenu,
-    newValue.floatingInsertMenu,
-  )
   const inspectorResults = EditorStateInspectorKeepDeepEquality(
     oldValue.inspector,
     newValue.inspector,
@@ -4994,7 +5052,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     rightMenuResults.areEqual &&
     interfaceDesignerResults.areEqual &&
     canvasResults.areEqual &&
-    floatingInsertMenuResults.areEqual &&
     inspectorResults.areEqual &&
     fileBrowserResults.areEqual &&
     dependencyListResults.areEqual &&
@@ -5080,7 +5137,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       rightMenuResults.value,
       interfaceDesignerResults.value,
       canvasResults.value,
-      floatingInsertMenuResults.value,
       inspectorResults.value,
       fileBrowserResults.value,
       dependencyListResults.value,

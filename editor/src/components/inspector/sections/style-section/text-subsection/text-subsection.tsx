@@ -18,6 +18,7 @@ import {
   NumberInput,
   SquareButton,
   Icn,
+  colorTheme,
 } from '../../../../../uuiui'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { EditorAction } from '../../../../editor/action-types'
@@ -26,7 +27,10 @@ import { useRefEditorState } from '../../../../editor/store/store-hook'
 import { addOnUnsetValues } from '../../../common/context-menu-items'
 import type { CSSFontStyle, CSSTextDecorationLine } from '../../../common/css-utils'
 import { cssNumber, ParsedCSSPropertiesKeys } from '../../../common/css-utils'
-import { usePropControlledRef_DANGEROUS } from '../../../common/inspector-utils'
+import {
+  RemovePropertyButton,
+  usePropControlledRef_DANGEROUS,
+} from '../../../common/inspector-utils'
 import {
   InspectorCallbackContext,
   InspectorPropsContext,
@@ -98,6 +102,17 @@ export const TextSubsection = React.memo(() => {
     textDecorationLineMetadata.controlStyles.unsettable ||
     letterSpacingMetadata.controlStyles.unsettable ||
     lineHeightMetadata.controlStyles.unsettable
+
+  const anyTextRelatedPropSet = [
+    colorMetadata,
+    fontFamilyMetadata,
+    fontStyleMetadata,
+    fontSizeMetadata,
+    textAlignMetadata,
+    textDecorationLineMetadata,
+    letterSpacingMetadata,
+    lineHeightMetadata,
+  ].some((m) => m.propertyStatus.set)
 
   const { onContextUnsetValue } = useInspectorContext()
 
@@ -212,14 +227,11 @@ export const TextSubsection = React.memo(() => {
           >
             <span>Type</span>
           </FlexRow>
-          <SquareButton
-            highlight
-            onMouseDown={onUnsetSubsectionValues}
-            data-testid={'inspector-text-remove-all'}
-            style={{ width: 12, marginRight: 4 }}
-          >
-            <Icn category='semantic' type='cross' width={12} height={12} />
-          </SquareButton>
+          <RemovePropertyButton
+            testId='inspector-text-remove-all'
+            onUnsetValues={onUnsetSubsectionValues}
+            propertySet={anyTextRelatedPropSet}
+          />
           <Icons.Threedots color={expanded ? 'secondary' : 'subdued'} onClick={toggleExpanded} />
         </InspectorSubsectionHeader>
       </InspectorContextMenuWrapper>
@@ -351,6 +363,7 @@ export const TextSubsection = React.memo(() => {
                   height: 16,
                 },
               }}
+              style={{ border: `1px solid ${colorTheme.bg2.value}`, borderRadius: 3 }}
             />
           </InspectorContextMenuWrapper>
           <InspectorContextMenuWrapper
@@ -366,7 +379,11 @@ export const TextSubsection = React.memo(() => {
               onSubmitValue={onUnderlinedSubmitValue}
               controlStatus={textDecorationLineMetadata.controlStatus}
               controlStyles={textDecorationLineMetadata.controlStyles}
-              style={{ gridColumn: '2 / span 1' }}
+              style={{
+                gridColumn: '2 / span 1',
+                border: `1px solid ${colorTheme.bg2.value}`,
+                borderRadius: 3,
+              }}
               DEPRECATED_controlOptions={{
                 tooltip: 'Underline',
                 icon: {

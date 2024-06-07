@@ -8,6 +8,7 @@ import type {
   JSXFragment,
   TopLevelElement,
   JSExpressionOtherJavaScript,
+  JSXMapExpression,
 } from '../../core/shared/element-template'
 import type { KeysPressed, Key } from '../../utils/keyboard'
 import type { IndexPosition } from '../../utils/utils'
@@ -47,7 +48,6 @@ import type {
   EditorState,
   ElementsToRerender,
   ErrorMessages,
-  FloatingInsertMenuState,
   GithubState,
   LeftMenuTab,
   ModalDialog,
@@ -143,19 +143,24 @@ export type ClearSelection = {
 }
 
 export type ReplaceTarget = { type: 'replace-target' }
+export type WrapTarget = { type: 'wrap-target' }
 export type ReplaceKeepChildrenAndStyleTarget = { type: 'replace-target-keep-children-and-style' }
 export type InsertAsChildTarget = { type: 'insert-as-child'; indexPosition?: IndexPosition }
-export type InsertionBehaviour =
-  | InsertAsChildTarget
-  | ReplaceTarget
-  | ReplaceKeepChildrenAndStyleTarget
 
 export interface InsertJSXElement {
   action: 'INSERT_JSX_ELEMENT'
   jsxElement: JSXElement
   target: ElementPath | null
   importsToAdd: Imports
-  insertionBehaviour: InsertionBehaviour
+  indexPosition: IndexPosition | null
+}
+
+export interface ReplaceJSXElement {
+  action: 'REPLACE_JSX_ELEMENT'
+  jsxElement: JSXElement
+  target: ElementPath
+  importsToAdd: Imports
+  behaviour: ReplaceKeepChildrenAndStyleTarget | ReplaceTarget
 }
 
 export interface ReplaceMappedElement {
@@ -163,6 +168,21 @@ export interface ReplaceMappedElement {
   jsxElement: JSXElement
   target: ElementPath
   importsToAdd: Imports
+}
+
+export type ElementReplacementPath =
+  | {
+      type: 'replace-child-with-uid'
+      uid: string
+      replaceWith: JSXElementChild
+    }
+  | { type: 'update-map-expression'; valueToMap: JSExpression }
+  | { type: 'replace-property-value'; propertyPath: PropertyPath; replaceWith: JSExpression }
+
+export interface ReplaceElementInScope {
+  action: 'REPLACE_ELEMENT_IN_SCOPE'
+  target: ElementPath
+  replacementPath: ElementReplacementPath
 }
 
 export interface InsertAttributeOtherJavascriptIntoElement {
@@ -203,6 +223,11 @@ export interface ToggleCanvasIsLive {
 
 export type ToggleHidden = {
   action: 'TOGGLE_HIDDEN'
+  targets: Array<ElementPath>
+}
+
+export type ToggleDataCanCondense = {
+  action: 'TOGGLE_DATA_CAN_CONDENSE'
   targets: Array<ElementPath>
 }
 
@@ -506,7 +531,7 @@ export type ResetPins = {
 }
 
 export interface WrapInElementWith {
-  element: JSXElement | JSXConditionalExpression | JSXFragment
+  element: JSXElement | JSXConditionalExpression | JSXFragment | JSXMapExpression
   importsToAdd: Imports
 }
 
@@ -514,15 +539,6 @@ export interface WrapInElement {
   action: 'WRAP_IN_ELEMENT'
   targets: ElementPath[]
   whatToWrapWith: WrapInElementWith
-}
-
-export interface OpenFloatingInsertMenu {
-  action: 'OPEN_FLOATING_INSERT_MENU'
-  mode: FloatingInsertMenuState
-}
-
-export interface CloseFloatingInsertMenu {
-  action: 'CLOSE_FLOATING_INSERT_MENU'
 }
 
 export interface UnwrapElements {
@@ -831,12 +847,6 @@ export interface UpdateConditionalExpression {
   action: 'UPDATE_CONIDTIONAL_EXPRESSION'
   target: ElementPath
   expression: string
-}
-
-export interface UpdateMapExpression {
-  action: 'UPDATE_MAP_EXPRESSION'
-  target: ElementPath
-  expression: JSExpression
 }
 
 export interface AddImports {
@@ -1174,7 +1184,9 @@ export interface IncreaseOnlineStateFailureCount {
 export type EditorAction =
   | ClearSelection
   | InsertJSXElement
+  | ReplaceJSXElement
   | ReplaceMappedElement
+  | ReplaceElementInScope
   | InsertAttributeOtherJavascriptIntoElement
   | DeleteSelected
   | DeleteView
@@ -1200,6 +1212,7 @@ export type EditorAction =
   | Undo
   | Redo
   | ToggleHidden
+  | ToggleDataCanCondense
   | RenameComponent
   | SetPanelVisibility
   | ToggleFocusedOmniboxTab
@@ -1235,8 +1248,6 @@ export type EditorAction =
   | SaveAsset
   | ResetPins
   | WrapInElement
-  | OpenFloatingInsertMenu
-  | CloseFloatingInsertMenu
   | UnwrapElements
   | SetNavigatorRenamingTarget
   | RedrawOldCanvasControls
@@ -1342,7 +1353,6 @@ export type EditorAction =
   | SetMapCountOverride
   | SwitchConditionalBranches
   | UpdateConditionalExpression
-  | UpdateMapExpression
   | ExecutePostActionMenuChoice
   | ClearPostActionSession
   | StartPostActionSession

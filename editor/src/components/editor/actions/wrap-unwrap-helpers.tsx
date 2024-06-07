@@ -26,6 +26,7 @@ import type {
   JSXConditionalExpression,
   JSXElement,
   JSXFragment,
+  JSXMapExpression,
 } from '../../../core/shared/element-template'
 import {
   JSXElementChild,
@@ -145,7 +146,6 @@ export function unwrapConditionalClause(
 export function unwrapTextContainingConditional(
   editor: EditorState,
   target: ElementPath,
-  dispatch: EditorDispatch,
 ): EditorState {
   const conditional = findMaybeConditionalExpression(target, editor.jsxMetadata)
   if (conditional == null) {
@@ -181,6 +181,7 @@ export function unwrapTextContainingConditional(
         editor.elementPathTree,
         wrapperUID,
         1,
+        editor.propertyControlsInfo,
       )
       if (insertionPath == null) {
         throw new Error('Invalid unwrap insertion path')
@@ -205,7 +206,7 @@ export function unwrapTextContainingConditional(
     },
   )
 
-  return UPDATE_FNS.DELETE_VIEW(deleteView(target), withParentUpdated, dispatch)
+  return UPDATE_FNS.DELETE_VIEW(deleteView(target), withParentUpdated)
 }
 
 export function isTextContainingConditional(
@@ -334,7 +335,7 @@ export function wrapElementInsertions(
   editor: EditorState,
   targets: Array<ElementPath>,
   parentPath: InsertionPath,
-  rawElementToInsert: JSXElement | JSXFragment | JSXConditionalExpression,
+  rawElementToInsert: JSXElement | JSXFragment | JSXConditionalExpression | JSXMapExpression,
   importsToAdd: Imports,
   anyTargetIsARootElement: boolean,
   targetThatIsRootElementOfCommonParent: ElementPath | undefined,
@@ -444,6 +445,28 @@ export function wrapElementInsertions(
           return { updatedEditor: withTargetAdded, newPath: newPath }
         default:
           const _exhaustiveCheck: never = staticTarget
+          return { updatedEditor: editor, newPath: null }
+      }
+    }
+    case 'JSX_MAP_EXPRESSION': {
+      switch (staticTarget.type) {
+        case 'CHILD_INSERTION':
+          return {
+            updatedEditor: foldAndApplyCommandsSimple(editor, [
+              addElement('always', staticTarget, elementToInsert, { importsToAdd, indexPosition }),
+            ]),
+            newPath: newPath,
+          }
+        case 'CONDITIONAL_CLAUSE_INSERTION':
+          const withTargetAdded = insertElementIntoJSXConditional(
+            editor,
+            staticTarget,
+            jsxFragment(elementToInsert.uid, [elementToInsert], false),
+            importsToAdd,
+          )
+          return { updatedEditor: withTargetAdded, newPath: newPath }
+        default:
+          // const _exhaustiveCheck: never = staticTarget
           return { updatedEditor: editor, newPath: null }
       }
     }

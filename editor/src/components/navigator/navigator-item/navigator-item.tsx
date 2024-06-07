@@ -2,6 +2,7 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import createCachedSelector from 're-reselect'
+import type { CSSProperties } from 'react'
 import React from 'react'
 import type { ConditionalCase } from '../../../core/model/conditionals'
 import {
@@ -56,7 +57,6 @@ import type {
   DerivedSubstate,
   MetadataSubstate,
 } from '../../editor/store/store-hook-substore-types'
-import { navigatorDepth } from '../navigator-utils'
 import { ComponentPreview } from './component-preview'
 import { ExpandableIndicator } from './expandable-indicator'
 import { ItemLabel } from './item-label'
@@ -79,6 +79,7 @@ import { toVSCodeExtensionMessage } from 'utopia-vscode-common'
 import type { Emphasis, Icon } from 'utopia-api'
 import { contextMenu } from 'react-contexify'
 import { DataReferenceCartoucheControl } from '../../inspector/sections/component-section/data-reference-cartouche'
+import { MapListSourceCartouche } from '../../inspector/sections/layout-section/list-source-cartouche'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -100,7 +101,7 @@ interface ComputedLook {
 export const BasePaddingUnit = 17
 
 export function getElementPadding(withNavigatorDepth: number): number {
-  const paddingOffset = withNavigatorDepth - 1
+  const paddingOffset = withNavigatorDepth
   return paddingOffset * BasePaddingUnit
 }
 
@@ -281,6 +282,7 @@ const computeResultingStyle = (
   isDescendantOfSelected: boolean,
   isErroredGroup: boolean,
   colorTheme: ThemeObject,
+  isSingleItem: boolean,
 ) => {
   let styleType: StyleType = 'default'
   let selectedType: SelectedType = 'unselected'
@@ -322,11 +324,15 @@ const computeResultingStyle = (
 
   let result = getColors(styleType, selectedType, colorTheme)
 
+  const borderRadiusTop = selected ? '5px 5px' : '0 0'
+  // TODO: add the case of a last descendant of a selected component
+  const borderRadiusBottom = selected && isSingleItem ? '5px 5px' : '0 0'
+  const borderRadius = `${borderRadiusTop} ${borderRadiusBottom}`
+
   result.style = {
     ...result.style,
     fontWeight: isProbablyParentOfSelected || isProbablyScene ? 600 : 'inherit',
-    // TODO compute bottom borderRadius style by if it has children or siblings
-    borderRadius: selected ? '5px 5px 0 0' : undefined,
+    borderRadius: borderRadius,
   }
 
   return result
@@ -460,7 +466,7 @@ const isHiddenConditionalBranchSelector = createCachedSelector(
   },
 )((_, elementPath, parentPath) => `${EP.toString(elementPath)}_${EP.toString(parentPath)}`)
 
-const elementWarningsSelector = createCachedSelector(
+export const elementWarningsSelector = createCachedSelector(
   (store: DerivedSubstate) => store.derived.elementWarnings,
   (_: DerivedSubstate, navigatorEntry: NavigatorEntry) => navigatorEntry,
   (elementWarnings, navigatorEntry) => {
@@ -478,6 +484,7 @@ export type RemixItemType = 'scene' | 'outlet' | 'link' | 'none'
 export interface NavigatorItemInnerProps {
   navigatorEntry: NavigatorEntry
   index: number
+  indentation: number
   getSelectedViewsInRange: (i: number) => Array<ElementPath> // TODO KILLME
   noOfChildren: number
   label: string
@@ -586,13 +593,7 @@ export const NavigatorItem: React.FunctionComponent<
     'NavigatorItem isManuallyFocusableComponent',
   )
 
-  const entryNavigatorDepth = useEditorState(
-    Substores.metadata,
-    (store) => {
-      return navigatorDepth(navigatorEntry, store.editor.jsxMetadata)
-    },
-    'NavigatorItem entryNavigatorDepth',
-  )
+  const entryNavigatorDepth = props.indentation
 
   const containsExpressions: boolean = useEditorState(
     Substores.metadata,
@@ -603,7 +604,7 @@ export const NavigatorItem: React.FunctionComponent<
         store.editor.elementPathTree,
       )
     },
-    'NavigatorItem entryNavigatorDepth',
+    'NavigatorItem containsExpressions',
   )
 
   const isConditionalDynamicBranch = useEditorState(
@@ -639,7 +640,7 @@ export const NavigatorItem: React.FunctionComponent<
 
   const childComponentCount = props.noOfChildren
 
-  const isGenerated = MetadataUtils.isElementGenerated(navigatorEntry.elementPath)
+  const isGenerated = MetadataUtils.isElementOrAncestorGenerated(navigatorEntry.elementPath)
   const isDynamic = isGenerated || containsExpressions || isConditionalDynamicBranch
 
   const codeItemType: CodeItemType = useEditorState(
@@ -801,22 +802,6 @@ export const NavigatorItem: React.FunctionComponent<
     return elementWarnings.invalidGroup != null || elementWarnings.invalidGroupChild != null
   }, [elementWarnings])
 
-  const resultingStyle = computeResultingStyle(
-    elementIsData ? false : selected,
-    emphasis,
-    isInsideComponent,
-    isDynamic,
-    isProbablyScene,
-    fullyVisible,
-    isFocusedComponent,
-    isInFocusedComponentSubtree,
-    isManuallyFocusableComponent,
-    isHighlightedForInteraction,
-    elementIsData && selected ? false : isDescendantOfSelected,
-    isErroredGroup,
-    colorTheme,
-  )
-
   const collapse = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
       collapseItem(dispatch, navigatorEntry.elementPath, event)
@@ -899,20 +884,39 @@ export const NavigatorItem: React.FunctionComponent<
 
   const cursorStyle = isConditionalClauseNavigatorEntry(navigatorEntry) ? { cursor: 'pointer' } : {}
 
-  const rowStyle = useKeepReferenceEqualityIfPossible({
-    paddingLeft: getElementPadding(entryNavigatorDepth),
-    height: getItemHeight(navigatorEntry),
-    ...resultingStyle.style,
-    ...cursorStyle,
-  })
-
-  const showExpandableIndicator = React.useMemo(() => {
+  const canBeExpanded = React.useMemo(() => {
     return (
       isConditional || // if it is a conditional, so it could have no children if both branches are null
       childComponentCount > 0 ||
       isFocusedComponent
     )
   }, [childComponentCount, isFocusedComponent, isConditional])
+
+  const isSingleItem = (canBeExpanded && collapsed) || childComponentCount === 0
+
+  const resultingStyle = computeResultingStyle(
+    elementIsData ? false : selected,
+    emphasis,
+    isInsideComponent,
+    isDynamic,
+    isProbablyScene,
+    fullyVisible,
+    isFocusedComponent,
+    isInFocusedComponentSubtree,
+    isManuallyFocusableComponent,
+    isHighlightedForInteraction,
+    elementIsData && selected ? false : isDescendantOfSelected,
+    isErroredGroup,
+    colorTheme,
+    isSingleItem,
+  )
+
+  const rowStyle = useKeepReferenceEqualityIfPossible({
+    paddingLeft: getElementPadding(entryNavigatorDepth),
+    height: getItemHeight(navigatorEntry),
+    ...resultingStyle.style,
+    ...cursorStyle,
+  })
 
   const iconColor = resultingStyle.iconColor
 
@@ -928,6 +932,17 @@ export const NavigatorItem: React.FunctionComponent<
     },
     [navigatorEntry],
   )
+
+  const isScene = React.useMemo(() => {
+    return (
+      MetadataUtils.isProbablyScene(metadata, props.navigatorEntry.elementPath) ||
+      MetadataUtils.isProbablyRemixScene(metadata, props.navigatorEntry.elementPath)
+    )
+  }, [props.navigatorEntry, metadata])
+
+  const hideExpandableIndicator = React.useMemo(() => {
+    return props.navigatorEntry.type === 'CONDITIONAL_CLAUSE' || isScene
+  }, [props.navigatorEntry, isScene])
 
   return (
     <div
@@ -996,6 +1011,8 @@ export const NavigatorItem: React.FunctionComponent<
           >
             <DataReferenceCartoucheControl
               elementPath={navigatorEntry.elementPath}
+              renderedAt={navigatorEntry.renderedAt}
+              surroundingScope={navigatorEntry.surroundingScope}
               childOrAttribute={navigatorEntry.childOrAttribute}
               selected={selected}
             />
@@ -1011,10 +1028,10 @@ export const NavigatorItem: React.FunctionComponent<
           >
             <FlexRow style={{ width: '100%' }}>
               {unless(
-                props.navigatorEntry.type === 'CONDITIONAL_CLAUSE',
+                hideExpandableIndicator,
                 <ExpandableIndicator
                   key='expandable-indicator'
-                  visible={showExpandableIndicator}
+                  visible={canBeExpanded}
                   collapsed={collapsed}
                   selected={selected && !isInsideComponent}
                   onMouseDown={collapse}
@@ -1041,6 +1058,10 @@ export const NavigatorItem: React.FunctionComponent<
                 elementWarnings={!isConditional ? elementWarnings : null}
                 childComponentCount={childComponentCount}
                 insideFocusedComponent={isInsideComponent && isDescendantOfSelected}
+                style={{
+                  paddingLeft: isScene ? 0 : 5,
+                  paddingRight: codeItemType === 'map' ? 0 : 5,
+                }}
               />
             </FlexRow>
             {unless(
@@ -1055,6 +1076,8 @@ export const NavigatorItem: React.FunctionComponent<
                 isSlot={isPlaceholder}
                 iconColor={iconColor}
                 background={rowStyle.background}
+                isScene={isScene}
+                collapsed={collapsed}
               />,
             )}
           </FlexRow>
@@ -1077,9 +1100,9 @@ const RenderPropSlot = React.memo((props: RenderPropSlotProps) => {
   const insertionTarget = renderPropTarget(navigatorEntry.prop)
 
   const showComponentPickerContextMenu = useCreateCallbackToShowComponentPicker()(
-    target,
+    [target],
     insertionTarget,
-  )
+  ) as React.MouseEventHandler<Element>
 
   return (
     <PlaceholderSlot
@@ -1106,9 +1129,9 @@ const ConditionalBranchSlot = React.memo((props: ConditionalBranchSlotProps) => 
   const target = EP.parentPath(navigatorEntry.elementPath)
 
   const showComponentPickerContextMenu = useCreateCallbackToShowComponentPicker()(
-    target,
+    [target],
     conditionalTarget(conditionalCase),
-  )
+  ) as React.MouseEventHandler<Element>
 
   return (
     <PlaceholderSlot
@@ -1180,6 +1203,7 @@ interface NavigatorRowLabelProps {
   childComponentCount: number
   dispatch: EditorDispatch
   insideFocusedComponent: boolean
+  style?: CSSProperties
 }
 
 export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
@@ -1188,6 +1212,7 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
   return (
     <div
       style={{
+        ...props.style,
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
@@ -1195,9 +1220,6 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         gap: 5,
         borderRadius: 20,
         height: 22,
-        paddingLeft: 5,
-        paddingRight: props.codeItemType === 'map' ? 0 : 5,
-        textTransform: isCodeItem ? 'uppercase' : undefined,
       }}
     >
       {unless(
@@ -1214,26 +1236,35 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
               ? 'component'
               : props.emphasis === 'subdued'
               ? 'subdued'
-              : props.emphasis === 'emphasized'
-              ? 'primary'
               : props.iconColor
           }
           elementWarnings={props.elementWarnings}
         />,
       )}
 
-      <ItemLabel
-        key={`label-${props.label}`}
-        testId={`navigator-item-label-${props.label}`}
-        name={props.label}
-        isDynamic={props.isDynamic}
-        target={props.navigatorEntry}
-        selected={props.selected}
+      <div style={{ textTransform: isCodeItem ? 'uppercase' : undefined }}>
+        <ItemLabel
+          key={`label-${props.label}`}
+          testId={`navigator-item-label-${props.label}`}
+          name={props.label}
+          isDynamic={props.isDynamic}
+          target={props.navigatorEntry}
+          selected={props.selected}
+          dispatch={props.dispatch}
+          inputVisible={EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath)}
+          remixItemType={props.remixItemType}
+        />
+      </div>
+      <MapCounter
+        navigatorEntry={props.navigatorEntry}
         dispatch={props.dispatch}
-        inputVisible={EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath)}
-        remixItemType={props.remixItemType}
+        selected={props.selected}
       />
-      <MapCounter navigatorEntry={props.navigatorEntry} dispatch={props.dispatch} />
+      <MapListSourceCartouche
+        target={props.navigatorEntry.elementPath}
+        selected={props.selected}
+        openOn='double-click'
+      />
       <ComponentPreview
         key={`preview-${props.label}`}
         navigatorEntry={props.navigatorEntry}

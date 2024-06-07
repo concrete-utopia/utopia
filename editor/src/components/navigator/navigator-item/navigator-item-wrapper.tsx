@@ -1,9 +1,9 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
-import React from 'react'
-import { assertNever } from '../../../core/shared/utils'
 import { createCachedSelector } from 're-reselect'
+import React from 'react'
+import { maybeConditionalExpression } from '../../../core/model/conditionals'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import type {
@@ -15,6 +15,8 @@ import {
   isNullJSXAttributeValue,
 } from '../../../core/shared/element-template'
 import type { ElementPath } from '../../../core/shared/project-file-types'
+import { assertNever } from '../../../core/shared/utils'
+import { getRouteComponentNameForOutlet } from '../../canvas/remix/remix-utils'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import type {
   DropTargetHint,
@@ -32,7 +34,10 @@ import type {
   DerivedSubstate,
   MetadataSubstate,
   ProjectContentAndMetadataSubstate,
+  PropertyControlsInfoSubstate,
 } from '../../editor/store/store-hook-substore-types'
+import { isRegulaNavigatorRow, type NavigatorRow } from '../navigator-row'
+import { navigatorDepth } from '../navigator-utils'
 import type {
   ConditionalClauseNavigatorItemContainerProps,
   ErrorNavigatorItemContainerProps,
@@ -51,14 +56,12 @@ import {
   SlotNavigatorItemContainer,
   SyntheticNavigatorItemContainer,
 } from './navigator-item-dnd-container'
-import { navigatorDepth } from '../navigator-utils'
-import { maybeConditionalExpression } from '../../../core/model/conditionals'
-import { getRouteComponentNameForOutlet } from '../../canvas/remix/remix-utils'
+import { CondensedEntryItemWrapper } from './navigator-condensed-entry'
 
 interface NavigatorItemWrapperProps {
   index: number
   targetComponentKey: string
-  navigatorEntry: NavigatorEntry
+  navigatorRow: NavigatorRow
   getCurrentlySelectedEntries: () => Array<NavigatorEntry>
   getSelectedViewsInRange: (index: number) => Array<ElementPath>
   windowStyle: React.CSSProperties
@@ -88,7 +91,15 @@ const elementSupportsChildrenSelector = createCachedSelector(
   targetElementMetadataSelector,
   (store: MetadataSubstate) => store.editor.elementPathTree,
   targetInNavigatorItemsSelector,
-  (projectContents, metadata, elementMetadata, pathTrees, elementInNavigatorTargets) => {
+  (store: PropertyControlsInfoSubstate) => store.editor.propertyControlsInfo,
+  (
+    projectContents,
+    metadata,
+    elementMetadata,
+    pathTrees,
+    elementInNavigatorTargets,
+    propertyControlsInfo,
+  ) => {
     if (!elementInNavigatorTargets || elementMetadata == null) {
       return false
     }
@@ -97,6 +108,7 @@ const elementSupportsChildrenSelector = createCachedSelector(
       elementMetadata.elementPath,
       metadata,
       pathTrees,
+      propertyControlsInfo,
     )
   },
 )((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
@@ -208,8 +220,39 @@ export function getNavigatorEntryLabel(
   }
 }
 
-export const NavigatorItemWrapper: React.FunctionComponent<
-  React.PropsWithChildren<NavigatorItemWrapperProps>
+export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperProps> = React.memo(
+  (props) => {
+    if (isRegulaNavigatorRow(props.navigatorRow)) {
+      const navigatorEntry = props.navigatorRow.entry
+      return (
+        <SingleEntryNavigatorItemWrapper
+          index={props.index}
+          indentation={props.navigatorRow.indentation}
+          targetComponentKey={props.targetComponentKey}
+          navigatorRow={props.navigatorRow}
+          getCurrentlySelectedEntries={props.getCurrentlySelectedEntries}
+          getSelectedViewsInRange={props.getSelectedViewsInRange}
+          windowStyle={props.windowStyle}
+          navigatorEntry={navigatorEntry}
+        />
+      )
+    }
+    return (
+      <CondensedEntryItemWrapper
+        windowStyle={props.windowStyle}
+        navigatorRow={props.navigatorRow}
+      />
+    )
+  },
+)
+
+type SingleEntryNavigatorItemWrapperProps = NavigatorItemWrapperProps & {
+  indentation: number
+  navigatorEntry: NavigatorEntry
+}
+
+const SingleEntryNavigatorItemWrapper: React.FunctionComponent<
+  React.PropsWithChildren<SingleEntryNavigatorItemWrapperProps>
 > = React.memo((props) => {
   const isSelected = useEditorState(
     Substores.selectedViews,
@@ -335,6 +378,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<
   const navigatorItemProps: NavigatorItemDragAndDropWrapperPropsBase = {
     type: NavigatorItemDragType,
     index: props.index,
+    indentation: props.indentation,
     editorDispatch: dispatch,
     entryDepth: entryDepth,
     selected: isSelected,

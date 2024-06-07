@@ -1,87 +1,52 @@
 import React from 'react'
-import { when } from '../../../../utils/react-conditionals'
-import { FlexRow, Icn, Tooltip, colorTheme } from '../../../../uuiui'
-import { stopPropagation } from '../../common/inspector-utils'
+import { DataCartoucheInner } from './data-reference-cartouche'
+import { NO_OP } from '../../../../core/shared/utils'
+import type { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
+import * as EPP from '../../../template-property-path'
+import { dataPathSuccess, traceDataFromProp } from '../../../../core/data-tracing/data-tracing'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
+import type { CartoucheDataType } from './cartouche-ui'
 
 interface IdentifierExpressionCartoucheControlProps {
   contents: string
   icon: React.ReactChild
-  matchType: 'full' | 'partial' | 'none'
+  matchType: 'full' | 'partial'
   onOpenDataPicker: () => void
   onDeleteCartouche: () => void
   safeToDelete: boolean
   testId: string
+  propertyPath: PropertyPath
+  elementPath: ElementPath
+  datatype: CartoucheDataType
 }
 export const IdentifierExpressionCartoucheControl = React.memo(
   (props: IdentifierExpressionCartoucheControlProps) => {
-    const { onDeleteCartouche, testId, safeToDelete } = props
-    const onDelete = React.useCallback<React.MouseEventHandler<HTMLDivElement>>(
-      (e) => {
-        stopPropagation(e)
-        onDeleteCartouche()
-      },
-      [onDeleteCartouche],
+    const { onOpenDataPicker, onDeleteCartouche, testId, safeToDelete } = props
+
+    const isDataComingFromHookResult = useEditorState(
+      Substores.projectContentsAndMetadata,
+      (store) =>
+        traceDataFromProp(
+          EPP.create(props.elementPath, props.propertyPath),
+          store.editor.jsxMetadata,
+          store.editor.projectContents,
+          dataPathSuccess([]),
+        ).type === 'hook-result',
+      'IdentifierExpressionCartoucheControl trace',
     )
 
     return (
-      <FlexRow
-        style={{
-          cursor: 'pointer',
-          fontSize: 10,
-          color:
-            props.matchType === 'full'
-              ? colorTheme.white.value
-              : props.matchType === 'partial'
-              ? colorTheme.primary.value
-              : colorTheme.neutralForeground.value,
-          backgroundColor:
-            props.matchType === 'full'
-              ? colorTheme.primary.value
-              : props.matchType === 'partial'
-              ? colorTheme.primary10.value
-              : colorTheme.bg4.value,
-          padding: '0px 4px',
-          borderRadius: 4,
-          height: 22,
-          display: 'flex',
-          flex: 1,
-          gap: 2,
-        }}
-        onClick={props.onOpenDataPicker}
-      >
-        {props.icon}
-        <Tooltip title={props.contents}>
-          <div
-            style={{
-              flex: 1,
-              /* Standard CSS ellipsis */
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-
-              /* Beginning of string */
-              direction: 'rtl', // TODO we need a better way to ellipsize the beginnign because rtl eats ' " marks
-              textAlign: 'left',
-            }}
-          >
-            {props.contents}
-            &lrm;
-            {/* the &lrm; non-printing character is added to fix the punctuation marks disappearing because of direction: rtl */}
-          </div>
-        </Tooltip>
-        {when(
-          safeToDelete,
-          <Icn
-            category='semantic'
-            type='cross-medium'
-            color='on-highlight-main'
-            width={16}
-            height={16}
-            data-testid={`delete-${testId}`}
-            onClick={onDelete}
-          />,
-        )}
-      </FlexRow>
+      <DataCartoucheInner
+        contentsToDisplay={{ label: props.contents, type: 'reference' }}
+        onClick={NO_OP}
+        selected={false}
+        onDoubleClick={onOpenDataPicker}
+        safeToDelete={safeToDelete}
+        onDelete={onDeleteCartouche}
+        testId={testId}
+        contentIsComingFromServer={isDataComingFromHookResult}
+        datatype={props.datatype}
+      />
     )
   },
 )

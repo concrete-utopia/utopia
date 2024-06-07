@@ -2,8 +2,6 @@
 /** @jsx jsx */ import { jsx } from '@emotion/react'
 import createCachedSelector from 're-reselect'
 import React from 'react'
-import { usePopper } from 'react-popper'
-import type { ArrayControlDescription } from 'utopia-api/core'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { isLeft } from '../../../../core/shared/either'
@@ -15,31 +13,18 @@ import type {
 } from '../../../../core/shared/element-template'
 import { isJSXMapExpression } from '../../../../core/shared/element-template'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
-import { NO_OP } from '../../../../core/shared/utils'
 import type { JSXParsedValue } from '../../../../utils/value-parser-utils'
-import {
-  Button,
-  FlexRow,
-  Icn,
-  InspectorSectionIcons,
-  UtopiaTheme,
-  useColorTheme,
-} from '../../../../uuiui'
+import { FlexRow, InspectorSectionIcons, UtopiaTheme, useColorTheme } from '../../../../uuiui'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import type { MetadataSubstate } from '../../../editor/store/store-hook-substore-types'
 import { UIGridRow } from '../../widgets/ui-grid-row'
-import { DataPickerPopupButtonTestId } from '../component-section/component-section'
-import { DataPickerPopup, dataPickerForAnElement } from '../component-section/data-picker-popup'
-import {
-  DataCartoucheInner,
-  getTextContentOfElement,
-} from '../component-section/data-reference-cartouche'
+import { getTextContentOfElement } from '../component-section/data-reference-cartouche'
 import { JSXPropertyControlForListSection } from '../component-section/property-control-controls'
-import { useVariablesInScopeForSelectedElement } from '../component-section/variables-in-scope-utils'
+import { MapListSourceCartouche } from './list-source-cartouche'
 
 type MapExpression = JSXMapExpression | 'multiselect' | 'not-a-mapexpression'
 
-const mapExpressionValueToMapSelector = createCachedSelector(
+export const mapExpressionValueToMapSelector = createCachedSelector(
   (store: MetadataSubstate) => store.editor.jsxMetadata,
   (_store: MetadataSubstate, paths: ElementPath[]) => paths,
   (jsxMetadata: ElementInstanceMetadataMap, paths: ElementPath[]): MapExpression => {
@@ -89,89 +74,8 @@ function getMapExpressionMetadata(
 
 export const ListSectionTestId = 'list-section'
 
-function useDataPickerButton(selectedElements: Array<ElementPath>) {
-  const [referenceElement, setReferenceElement] = React.useState<HTMLDivElement | null>(null)
-  const [popperElement, setPopperElement] = React.useState<HTMLDivElement | null>(null)
-  const popper = usePopper(referenceElement, popperElement, {
-    modifiers: [
-      {
-        name: 'offset',
-        options: {
-          offset: [0, 8],
-        },
-      },
-    ],
-  })
-
-  const [popupIsOpen, setPopupIsOpen] = React.useState(false)
-  const togglePopup = React.useCallback(() => setPopupIsOpen((v) => !v), [])
-  const openPopup = React.useCallback(() => setPopupIsOpen(true), [])
-  const closePopup = React.useCallback(() => setPopupIsOpen(false), [])
-
-  const onClick = React.useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation()
-      e.preventDefault()
-
-      togglePopup()
-    },
-    [togglePopup],
-  )
-
-  const selectedElement = selectedElements.at(0) ?? EP.emptyElementPath
-
-  const variablePickerButtonAvailable =
-    useVariablesInScopeForSelectedElement(selectedElement, null, 'all').length > 0
-  const variablePickerButtonTooltipText = variablePickerButtonAvailable
-    ? 'Pick data source'
-    : 'No data sources available'
-
-  const pickerType = React.useMemo(() => {
-    return dataPickerForAnElement(selectedElement)
-  }, [selectedElement])
-
-  const DataPickerComponent = React.useMemo(
-    () => (
-      <DataPickerPopup
-        {...popper.attributes.popper}
-        style={popper.styles.popper}
-        closePopup={closePopup}
-        ref={setPopperElement}
-        pickerType={pickerType}
-      />
-    ),
-    [closePopup, pickerType, popper.attributes.popper, popper.styles.popper],
-  )
-
-  const DataPickerOpener = React.useMemo(
-    () => (
-      <Button
-        onClick={onClick}
-        data-testid={DataPickerPopupButtonTestId}
-        disabled={!variablePickerButtonAvailable}
-      >
-        <Icn
-          type='pipette'
-          color='secondary'
-          tooltipText={variablePickerButtonTooltipText}
-          width={18}
-          height={18}
-        />
-      </Button>
-    ),
-    [onClick, variablePickerButtonAvailable, variablePickerButtonTooltipText],
-  )
-
-  return {
-    popupIsOpen,
-    DataPickerOpener,
-    DataPickerComponent,
-    setReferenceElement,
-    openPopup,
-  }
-}
-
 export const ListSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
+  const target = paths.at(0)
   const colorTheme = useColorTheme()
 
   const originalMapExpression = useEditorState(
@@ -180,26 +84,10 @@ export const ListSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
     'ConditionalSection condition expression',
   )
 
-  const metadataForElement = useEditorState(
-    Substores.metadata,
-    (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, paths.at(0)),
-    'ConditionalSection metadata',
-  )
-
-  const controlDescription: ArrayControlDescription = {
-    control: 'array',
-    propertyControl: {
-      control: 'none',
-    },
-  }
-
-  const { popupIsOpen, DataPickerOpener, DataPickerComponent, setReferenceElement, openPopup } =
-    useDataPickerButton(paths)
-
   const mappedRootElementToDisplay = useEditorState(
     Substores.metadata,
     (store) => {
-      const path = paths.at(0)
+      const path = target
       const elementMetadata: ElementInstanceMetadata | null | undefined =
         path == null
           ? null
@@ -216,14 +104,13 @@ export const ListSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
     'ConditionalSection mappedRootElement',
   )
 
-  if (originalMapExpression === 'multiselect' || originalMapExpression === 'not-a-mapexpression') {
+  if (
+    originalMapExpression === 'multiselect' ||
+    originalMapExpression === 'not-a-mapexpression' ||
+    target == null
+  ) {
     return null
   }
-
-  const contentsToDisplay = getTextContentOfElement(
-    originalMapExpression.valueToMap,
-    metadataForElement,
-  )
 
   return (
     <div style={{ paddingBottom: 8 }} data-testid={ListSectionTestId}>
@@ -245,51 +132,26 @@ export const ListSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
           style={{
             flexGrow: 1,
             gap: 8,
-            color: colorTheme.dynamicBlue.value,
             textTransform: 'uppercase',
           }}
         >
-          <InspectorSectionIcons.Code style={{ width: 16, height: 16 }} color='dynamic' />
+          <InspectorSectionIcons.Code style={{ width: 16, height: 16 }} color='main' />
           <span>List</span>
         </FlexRow>
       </FlexRow>
-      {popupIsOpen ? DataPickerComponent : null}
-      <UIGridRow
-        padded={false}
-        style={{ paddingLeft: 8, paddingRight: 8, paddingTop: 3, paddingBottom: 3 }}
-        variant='<--1fr--><--1fr-->|-18px-|'
-      >
+      <UIGridRow padded variant='<--1fr--><--1fr-->'>
         List Source
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            minWidth: 0,
-          }}
-          ref={setReferenceElement}
-        >
-          <DataCartoucheInner
-            contentsToDisplay={contentsToDisplay}
-            onClick={openPopup}
-            onDoubleClick={NO_OP}
-            selected={false}
-          />
-        </div>
-        {DataPickerOpener}
+        <MapListSourceCartouche target={target} openOn='double-click' selected={false} />
       </UIGridRow>
-      <UIGridRow
-        padded={false}
-        style={{ paddingLeft: 8, paddingRight: 8, paddingTop: 3, paddingBottom: 3 }}
-        variant='<--1fr--><--1fr-->|-18px-|'
-      >
+      <UIGridRow padded variant='<--1fr--><--1fr-->'>
         Contents
         <div
           style={{
             display: 'flex',
             flexDirection: 'row',
+            justifyContent: 'flex-end',
             minWidth: 0,
           }}
-          ref={setReferenceElement}
         >
           <JSXPropertyControlForListSection
             value={

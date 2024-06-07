@@ -17,28 +17,6 @@ import {
 } from './project-components'
 
 describe('getComponentGroups', () => {
-  it('returns all the various default groups', () => {
-    const packageStatus: PackageStatusMap = {
-      antd: { status: 'loaded' },
-    }
-    const dependencies: Array<PossiblyUnversionedNpmDependency> = [
-      resolvedNpmDependency('antd', '4.1.0'),
-    ]
-
-    const propertyControlsInfo: PropertyControlsInfo = {
-      antd: DefaultThirdPartyControlDefinitions.antd,
-    }
-    const actualResult = getComponentGroups(
-      'insert',
-      packageStatus,
-      propertyControlsInfo,
-      simpleDefaultProjectPreParsed().projectContents,
-      dependencies,
-      '/src/app.js',
-    ).map(clearInsertableComponentGroupUniqueIDs)
-
-    expect(actualResult).toMatchSnapshot()
-  })
   it('handles a sub-dependency correctly', () => {
     const packageStatus: PackageStatusMap = {
       '@heroicons/react': { status: 'loaded' },

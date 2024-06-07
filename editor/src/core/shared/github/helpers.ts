@@ -246,10 +246,11 @@ export function githubAPIError(
   }
 }
 
-export async function githubAPIErrorFromResponse(
-  operation: GithubOperation,
-  response: Response,
-): Promise<GithubAPIError> {
+export function githubAPIErrorStatusFromResponse(response: Response) {
+  return `${response.statusText} (${response.status})`
+}
+
+export async function githubAPIErrorDataFromResponse(response: Response) {
   async function getText() {
     try {
       return await response.text()
@@ -257,10 +258,17 @@ export async function githubAPIErrorFromResponse(
       return null
     }
   }
+  return (await getText()) ?? undefined
+}
+
+export async function githubAPIErrorFromResponse(
+  operation: GithubOperation,
+  response: Response,
+): Promise<GithubAPIError> {
   return {
     operation: operation,
-    status: `${response.statusText} (${response.status})`,
-    data: (await getText()) ?? undefined,
+    status: githubAPIErrorStatusFromResponse(response),
+    data: await githubAPIErrorDataFromResponse(response),
   }
 }
 
@@ -928,7 +936,9 @@ export function useGithubPolling() {
 
     switch (authState) {
       case 'not-authenticated':
-        dispatch([updateGithubData(emptyGithubData())])
+        queueMicrotask(() => {
+          dispatch([updateGithubData(emptyGithubData())])
+        })
         break
       case 'missing-user-details':
         void GithubHelpers.getUserDetailsFromServer().then((userDetails) => {
@@ -963,7 +973,9 @@ export function useGithubPolling() {
     //   })
     // }
 
-    void refreshAndScheduleGithubData()
+    queueMicrotask(() => {
+      void refreshAndScheduleGithubData()
+    })
   }, [authState, refreshAndScheduleGithubData])
 }
 

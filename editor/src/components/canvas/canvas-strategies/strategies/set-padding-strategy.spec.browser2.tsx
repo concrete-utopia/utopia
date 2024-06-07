@@ -104,7 +104,7 @@ describe('Padding resize strategy', () => {
               width: 22,
               height: 22,
             }}
-            data-uid='002'
+            data-uid='817'
           />
         </div>
       </div>`),
@@ -928,7 +928,7 @@ function makeTestProjectCodeWithStringPaddingValues(
             width: 100,
             height: 100,
           }}
-          data-uid='002'
+          data-uid='817'
         />
       </div>
     </div>`)
@@ -957,7 +957,7 @@ function makeTestProjectCodeWithHugContentsContainerStringPaddingValues(padding:
             width: 100,
             height: 100,
           }}
-          data-uid='002'
+          data-uid='817'
         />
       </div>
     </div>`)
@@ -990,7 +990,7 @@ function makeTestProjectCodeWithLongHandPaddingValues(
             width: 100,
             height: 100,
           }}
-          data-uid='002'
+          data-uid='817'
         />
       </div>
     </div>`)

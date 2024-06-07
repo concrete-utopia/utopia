@@ -6,6 +6,9 @@ import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { mapDropNulls, uniqBy } from '../../../../core/shared/array-utils'
+import { getElementFromProjectContents } from '../../../editor/store/editor-state'
 
 export const MultiSelectOutlineTestId = 'multiselect-outline'
 
@@ -113,3 +116,41 @@ export const OutlineControl = React.memo<OutlineControlProps>((props) => {
   }
   return null
 })
+
+export const DataReferenceParentOutline = React.memo(
+  (props: { selectedViews: ElementPath[]; highlightedViews: ElementPath[] }) => {
+    const dataReferenceParentPaths = useEditorState(
+      Substores.projectContentsAndMetadata,
+      (store) => {
+        return uniqBy(
+          mapDropNulls(
+            (path) => {
+              const element = getElementFromProjectContents(path, store.editor.projectContents)
+              const isDataReference =
+                element != null && MetadataUtils.isElementDataReference(element)
+              return isDataReference ? EP.parentPath(path) : null
+            },
+            [...props.highlightedViews, ...props.selectedViews],
+          ),
+          EP.pathsEqual,
+        )
+      },
+      'DataReferenceParentOutline dataReferenceParentPaths',
+    )
+
+    return (
+      <CanvasOffsetWrapper>
+        {dataReferenceParentPaths.map((path) => (
+          <OutlineControl
+            testId='data-reference-parents-outline'
+            key={`data-reference-parents-outline-${EP.toString(path)}`}
+            targets={[path]}
+            color='primary'
+            outlineStyle='dotted'
+          />
+        ))}
+      </CanvasOffsetWrapper>
+    )
+  },
+)
+DataReferenceParentOutline.displayName = 'DataReferenceParentOutline'

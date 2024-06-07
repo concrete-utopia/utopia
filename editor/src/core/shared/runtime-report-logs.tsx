@@ -1,5 +1,4 @@
 import React from 'react'
-import type { ConsoleLog } from '../../components/editor/store/editor-state'
 import {
   getAllCodeEditorErrors,
   getOpenUIJSFile,
@@ -17,14 +16,11 @@ import type { FancyError, RuntimeErrorInfo } from './code-exec-utils'
 import { defaultIfNull } from './optional-utils'
 import { reduxDevtoolsLogError } from './redux-devtools'
 import StackFrame from '../../third-party/react-error-overlay/utils/stack-frame'
-import { filterOldPasses } from '../../components/canvas/canvas-wrapper-component'
 import { useEditorState, Substores } from '../../components/editor/store/store-hook'
 import type { ErrorMessage } from './error-messages'
+import { fastForEach } from './utils'
 
 const EmptyArray: Array<RuntimeErrorInfo> = []
-
-const ConsoleLogSizeLimit = 100
-const EmptyConsoleLogs: Array<ConsoleLog> = []
 
 const runtimeErrorsAtom = atomWithPubSub<Array<RuntimeErrorInfo>>({
   key: 'runtimeErrors',
@@ -83,11 +79,6 @@ export function useWriteOnlyRuntimeErrors(): {
   }
 }
 
-const consoleLogsAtom = atomWithPubSub<Array<ConsoleLog>>({
-  key: 'canvasConsoleLogs',
-  defaultValue: [],
-})
-
 let reactRouterErrorLogged: boolean = false
 
 export function hasReactRouterErrorBeenLogged(): boolean {
@@ -96,68 +87,6 @@ export function hasReactRouterErrorBeenLogged(): boolean {
 
 export function setReactRouterErrorHasBeenLogged(value: boolean): void {
   reactRouterErrorLogged = value
-}
-
-const ReactRouterErrorPrefix = `React Router caught the following error during render`
-const ReactRouterAwaitErrorPrefix = `<Await> caught the following error during render`
-
-export function useUpdateOnConsoleLogs(
-  referentiallyStableCallback: (newConsoleLogs: Array<ConsoleLog>) => void,
-): void {
-  useSubscribeToPubSubAtom(consoleLogsAtom, referentiallyStableCallback)
-}
-
-export function useReadOnlyConsoleLogs(): Array<ConsoleLog> {
-  return usePubSubAtomReadOnly(consoleLogsAtom, AlwaysTrue)
-}
-
-export function useWriteOnlyConsoleLogs(): {
-  addToConsoleLogs: (log: ConsoleLog) => void
-  clearConsoleLogs: () => void
-} {
-  const modifyLogs = usePubSubAtomWriteOnly(consoleLogsAtom)
-
-  const clearConsoleLogs = React.useCallback(() => {
-    modifyLogs(EmptyConsoleLogs)
-  }, [modifyLogs])
-
-  const addToConsoleLogs = React.useCallback(
-    (log: ConsoleLog) => {
-      modifyLogs((logs) => {
-        let result = [...logs, log]
-        while (result.length > ConsoleLogSizeLimit) {
-          result.shift()
-        }
-        return result
-      })
-      // For an error...
-      if (log.method === 'error') {
-        // ...where the first value...
-        const firstLine = log.data[0]
-        // ...is a string...
-        if (typeof firstLine === 'string') {
-          // ...and it starts with these prefixes...
-          if (
-            firstLine.startsWith(ReactRouterErrorPrefix) ||
-            firstLine.startsWith(ReactRouterAwaitErrorPrefix)
-          ) {
-            // ...Mark these as having been seen.
-            setReactRouterErrorHasBeenLogged(true)
-          }
-        }
-      }
-    },
-    [modifyLogs],
-  )
-
-  return {
-    addToConsoleLogs: addToConsoleLogs,
-    clearConsoleLogs: clearConsoleLogs,
-  }
-}
-
-export function getConsoleLogsForTests(): Array<ConsoleLog> {
-  return consoleLogsAtom.currentValue
 }
 
 export interface OverlayError {
@@ -224,4 +153,63 @@ export function useErrorOverlayRecords(): ErrorOverlayRecords {
   ])
 
   return { errorRecords, overlayErrors }
+}
+
+function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
+  let passTimes: { [key: string]: number } = {}
+  fastForEach(errorMessages, (errorMessage) => {
+    if (errorMessage.passTime != null) {
+      if (errorMessage.source in passTimes) {
+        const existingPassCount = passTimes[errorMessage.source]
+        if (errorMessage.passTime > existingPassCount) {
+          passTimes[errorMessage.source] = errorMessage.passTime
+        }
+      } else {
+        passTimes[errorMessage.source] = errorMessage.passTime
+      }
+    }
+  })
+  return errorMessages.filter((errorMessage) => {
+    if (errorMessage.passTime == null) {
+      return true
+    } else {
+      return passTimes[errorMessage.source] === errorMessage.passTime
+    }
+  })
+}
+
+const ReactRouterErrorPrefix = `React Router caught the following error during render`
+const ReactRouterAwaitErrorPrefix = `<Await> caught the following error during render`
+
+export function listenForReactRouterErrors(targetConsole: Console): void {
+  const targetConsoleAny = targetConsole as any
+
+  // Remove any existing proxy first.
+  if (targetConsoleAny.originalErrorMethod != null) {
+    // Restore the original method.
+    targetConsoleAny.error = targetConsoleAny.originalErrorMethod
+    // Remove this field, thereby restoring this console to its original state.
+    delete targetConsoleAny['originalErrorMethod']
+  }
+
+  // Squirrel away the original method for unpacking later.
+  const originalMethod = targetConsoleAny.error
+  targetConsoleAny.originalErrorMethod = originalMethod
+  targetConsoleAny.error = function (...args: Array<any>) {
+    // Call the original method first.
+    originalMethod(...args)
+
+    // If the first part of the log line is a string
+    const firstLine = args[0]
+    if (typeof firstLine === 'string') {
+      // ...and it starts with these prefixes...
+      if (
+        firstLine.startsWith(ReactRouterErrorPrefix) ||
+        firstLine.startsWith(ReactRouterAwaitErrorPrefix)
+      ) {
+        // ...Mark these as having been seen.
+        setReactRouterErrorHasBeenLogged(true)
+      }
+    }
+  }
 }

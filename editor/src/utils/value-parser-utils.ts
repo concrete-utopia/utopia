@@ -399,7 +399,7 @@ export function parseJsx(_: unknown, value: unknown): ParseResult<JSXParsedValue
       if (props.hasOwnProperty('elementToRender') === true) {
         return right({
           type: 'internal-component',
-          name: (props as any).elementToRender,
+          name: typeof props.elementToRender === 'string' ? props.elementToRender : 'JSX',
         })
       }
     }

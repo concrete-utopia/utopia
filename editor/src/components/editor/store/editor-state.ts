@@ -51,6 +51,7 @@ import { isFiniteRectangle, size } from '../../../core/shared/math-utils'
 import type { PackageStatus, PackageStatusMap } from '../../../core/shared/npm-dependency-types'
 import type {
   ElementPath,
+  ElementPropertyPath,
   ExportDetail,
   HighlightBoundsForUids,
   HighlightBoundsWithFile,
@@ -60,6 +61,7 @@ import type {
   NodeModules,
   ParseSuccess,
   ProjectFile,
+  PropertyPath,
   StaticElementPath,
   TextFile,
 } from '../../../core/shared/project-file-types'
@@ -189,6 +191,7 @@ import { emptyImports } from '../../../core/workers/common/project-file-utils'
 import type { CommentFilterMode } from '../../inspector/sections/comment-section'
 import type { Collaborator } from '../../../core/shared/multiplayer'
 import type { OnlineState } from '../online-status'
+import type { NavigatorRow } from '../../navigator/navigator-row'
 
 const ObjectPathImmutable: any = OPI
 
@@ -211,7 +214,6 @@ export enum RightMenuTab {
   Inspector = 'inspector',
   Settings = 'settings',
   Comments = 'comments',
-  Variables = 'variables',
 }
 
 // TODO: this should just contain an NpmDependency and a status
@@ -639,11 +641,6 @@ export type CanvasBase64Blobs = { [key: string]: UIFileBase64Blobs }
 
 export type ErrorMessages = { [filename: string]: Array<ErrorMessage> }
 
-export interface ConsoleLog {
-  method: string
-  data: Array<any>
-}
-
 export interface DesignerFile {
   filename: string
 }
@@ -674,59 +671,6 @@ export interface NavigatorState {
   highlightedTargets: Array<ElementPath>
   hiddenInNavigator: Array<ElementPath>
 }
-
-export interface FloatingInsertMenuStateClosed {
-  insertMenuMode: 'closed'
-}
-
-export function floatingInsertMenuStateClosed(): FloatingInsertMenuStateClosed {
-  return {
-    insertMenuMode: 'closed',
-  }
-}
-
-export interface FloatingInsertMenuStateInsert {
-  insertMenuMode: 'insert'
-  parentPath: ElementPath | null
-  indexPosition: IndexPosition | null
-}
-
-export function floatingInsertMenuStateInsert(
-  parentPath: ElementPath | null,
-  indexPosition: IndexPosition | null,
-): FloatingInsertMenuStateInsert {
-  return {
-    insertMenuMode: 'insert',
-    parentPath: parentPath,
-    indexPosition: indexPosition,
-  }
-}
-
-export interface FloatingInsertMenuStateSwap {
-  insertMenuMode: 'swap'
-}
-
-export function floatingInsertMenuStateSwap(): FloatingInsertMenuStateSwap {
-  return {
-    insertMenuMode: 'swap',
-  }
-}
-
-export interface FloatingInsertMenuStateWrap {
-  insertMenuMode: 'wrap'
-}
-
-export function floatingInsertMenuStateWrap(): FloatingInsertMenuStateWrap {
-  return {
-    insertMenuMode: 'wrap',
-  }
-}
-
-export type FloatingInsertMenuState =
-  | FloatingInsertMenuStateClosed
-  | FloatingInsertMenuStateInsert
-  | FloatingInsertMenuStateSwap
-  | FloatingInsertMenuStateWrap
 
 export interface ResizeOptions {
   propertyTargetOptions: Array<LayoutTargetableProp>
@@ -1472,7 +1416,6 @@ export interface EditorState {
   rightMenu: EditorStateRightMenu
   interfaceDesigner: EditorStateInterfaceDesigner
   canvas: EditorStateCanvas
-  floatingInsertMenu: FloatingInsertMenuState
   inspector: EditorStateInspector
   fileBrowser: EditorStateFileBrowser
   dependencyList: EditorStateDependencyList
@@ -1556,7 +1499,6 @@ export function editorState(
   rightMenu: EditorStateRightMenu,
   interfaceDesigner: EditorStateInterfaceDesigner,
   canvas: EditorStateCanvas,
-  floatingInsertMenu: FloatingInsertMenuState,
   inspector: EditorStateInspector,
   fileBrowser: EditorStateFileBrowser,
   dependencyList: EditorStateDependencyList,
@@ -1641,7 +1583,6 @@ export function editorState(
     rightMenu: rightMenu,
     interfaceDesigner: interfaceDesigner,
     canvas: canvas,
-    floatingInsertMenu: floatingInsertMenu,
     inspector: inspector,
     fileBrowser: fileBrowser,
     dependencyList: dependencyList,
@@ -2176,20 +2117,49 @@ export function syntheticNavigatorEntry(
   }
 }
 
+interface RenderedAtPropertyPath {
+  type: 'element-property-path'
+  elementPropertyPath: ElementPropertyPath
+}
+
+interface RenderedAtChildNode {
+  type: 'child-node'
+  parentPath: ElementPath
+  nodeUid: string
+}
+
+export type RenderedAt = RenderedAtPropertyPath | RenderedAtChildNode
+
+export function renderedAtPropertyPath(
+  elementPropertyPath: ElementPropertyPath,
+): RenderedAtPropertyPath {
+  return { type: 'element-property-path', elementPropertyPath: elementPropertyPath }
+}
+
+export function renderedAtChildNode(parentPath: ElementPath, nodeUid: string): RenderedAtChildNode {
+  return { type: 'child-node', parentPath: parentPath, nodeUid: nodeUid }
+}
+
 export interface DataReferenceNavigatorEntry {
   type: 'DATA_REFERENCE'
   elementPath: ElementPath
+  renderedAt: RenderedAt
+  surroundingScope: ElementPath
   childOrAttribute: JSXElementChild
 }
 
 export function dataReferenceNavigatorEntry(
   elementPath: ElementPath,
+  renderedAt: RenderedAt,
+  surroundingScope: ElementPath,
   childOrAttribute: JSXElementChild,
 ): DataReferenceNavigatorEntry {
   return {
     type: 'DATA_REFERENCE',
     elementPath: elementPath,
     childOrAttribute: childOrAttribute,
+    renderedAt: renderedAt,
+    surroundingScope: surroundingScope,
   }
 }
 
@@ -2338,6 +2308,17 @@ export function navigatorEntriesEqual(
   }
 }
 
+export function navigatorRowToKey(row: NavigatorRow): string {
+  switch (row.type) {
+    case 'regular-row':
+      return navigatorEntryToKey(row.entry)
+    case 'condensed-row':
+      return `condensed-${row.entries.map(navigatorEntryToKey).join('-')}`
+    default:
+      assertNever(row)
+  }
+}
+
 export function navigatorEntryToKey(entry: NavigatorEntry): string {
   switch (entry.type) {
     case 'REGULAR':
@@ -2440,6 +2421,7 @@ export function isSlotNavigatorEntry(entry: NavigatorEntry): entry is SlotNaviga
 }
 
 export interface DerivedState {
+  navigatorRows: Array<NavigatorRow>
   navigatorTargets: Array<NavigatorEntry>
   visibleNavigatorTargets: Array<NavigatorEntry>
   autoFocusedPaths: Array<ElementPath>
@@ -2453,6 +2435,7 @@ export interface DerivedState {
 
 function emptyDerivedState(editor: EditorState): DerivedState {
   return {
+    navigatorRows: [],
     navigatorTargets: [],
     visibleNavigatorTargets: [],
     autoFocusedPaths: [],
@@ -2651,9 +2634,6 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
         parentOutlineHighlight: null,
       },
     },
-    floatingInsertMenu: {
-      insertMenuMode: 'closed',
-    },
     inspector: {
       visible: true,
       classnameFocusCounter: 0,
@@ -2814,6 +2794,7 @@ function getElementWarningsInner(
 const getElementWarnings = memoize(getElementWarningsInner, { maxSize: 1 })
 
 type CacheableDerivedState = {
+  navigatorRows: Array<NavigatorRow>
   navigatorTargets: Array<NavigatorEntry>
   visibleNavigatorTargets: Array<NavigatorEntry>
   elementWarnings: { [key: string]: ElementWarnings }
@@ -2829,7 +2810,7 @@ function deriveCacheableStateInner(
   hiddenInNavigator: ElementPath[],
   propertyControlsInfo: PropertyControlsInfo,
 ): CacheableDerivedState {
-  const { navigatorTargets, visibleNavigatorTargets } = getNavigatorTargets(
+  const { navigatorRows, navigatorTargets, visibleNavigatorTargets } = getNavigatorTargets(
     jsxMetadata,
     elementPathTree,
     collapsedViews,
@@ -2858,6 +2839,7 @@ function deriveCacheableStateInner(
   )
 
   return {
+    navigatorRows: navigatorRows,
     navigatorTargets: navigatorTargets,
     visibleNavigatorTargets: visibleNavigatorTargets,
     elementWarnings: warnings,
@@ -2880,6 +2862,7 @@ export function deriveState(
     cacheKey === 'patched' ? patchedDeriveCacheableState : unpatchedDeriveCacheableState
 
   const {
+    navigatorRows,
     navigatorTargets,
     visibleNavigatorTargets,
     elementWarnings: warnings,
@@ -2903,6 +2886,7 @@ export function deriveState(
   const filePathMappings = getFilePathMappings(editor.projectContents)
 
   const derived: DerivedState = {
+    navigatorRows: navigatorRows,
     navigatorTargets: navigatorTargets,
     visibleNavigatorTargets: visibleNavigatorTargets,
     autoFocusedPaths: autoFocusedPaths,
@@ -3047,9 +3031,6 @@ export function editorModelFromPersistentModel(
         dragToMoveIndicatorFlags: emptyDragToMoveIndicatorFlags,
         parentOutlineHighlight: null,
       },
-    },
-    floatingInsertMenu: {
-      insertMenuMode: 'closed',
     },
     inspector: {
       visible: true,
@@ -3330,12 +3311,6 @@ export function updateMainUIInEditorState(editor: EditorState, mainUI: string): 
     return updateMainUIInPackageJson(packageJson, mainUI)
   }
   return updatePackageJsonInEditorState(editor, transformPackageJson)
-}
-
-export function areGeneratedElementsTargeted(targets: Array<ElementPath>): boolean {
-  return targets.some((target) => {
-    return MetadataUtils.isElementGenerated(target)
-  })
 }
 
 export function getAllCodeEditorErrors(
@@ -3654,6 +3629,25 @@ export function modifyUnderlyingTarget(
     } else {
       return updatedParseSuccess
     }
+  }
+
+  return modifyParseSuccessAtPath(targetSuccess.filePath, editor, innerModifyParseSuccess)
+}
+
+export function modifyUnderlyingParseSuccessOnly(
+  target: ElementPath | null,
+  editor: EditorState,
+  modifyParseSuccess: (
+    parseSuccess: ParseSuccess,
+    underlyingFilePath: string,
+  ) => ParseSuccess = defaultModifyParseSuccess,
+): EditorState {
+  const underlyingTarget = normalisePathToUnderlyingTarget(editor.projectContents, target)
+  const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
+
+  function innerModifyParseSuccess(oldParseSuccess: ParseSuccess): ParseSuccess {
+    // Apply the ParseSuccess level changes.
+    return modifyParseSuccess(oldParseSuccess, targetSuccess.filePath)
   }
 
   return modifyParseSuccessAtPath(targetSuccess.filePath, editor, innerModifyParseSuccess)

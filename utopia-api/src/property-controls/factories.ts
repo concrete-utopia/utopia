@@ -10,7 +10,6 @@ import type {
   ExpressionControlOption,
   ExpressionInputControlDescription,
   ExpressionPopUpListControlDescription,
-  FolderControlDescription,
   HtmlInputControlDescription,
   ImportType,
   JSXControlDescription,
@@ -381,13 +380,6 @@ export function unionControl(
   mutateControlWithOptions(result, options)
 
   return result
-}
-
-export function folderControl(controls: PropertyControls): FolderControlDescription {
-  return {
-    control: 'folder',
-    controls: controls,
-  }
 }
 
 function mutateControlWithOptions<T, U extends PropertyControlsOptions<T>>(

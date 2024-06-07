@@ -160,8 +160,6 @@ import type {
   SetCurrentTheme,
   FocusFormulaBar,
   UpdateFormulaBarMode,
-  OpenFloatingInsertMenu,
-  CloseFloatingInsertMenu,
   InsertInsertable,
   ToggleFocusedOmniboxTab,
   SetPropTransient,
@@ -231,11 +229,14 @@ import type {
   IncreaseOnlineStateFailureCount,
   AddCollapsedViews,
   ReplaceMappedElement,
-  UpdateMapExpression,
-  InsertionBehaviour,
   ReplaceTarget,
   InsertAsChildTarget,
   ReplaceKeepChildrenAndStyleTarget,
+  WrapTarget,
+  ReplaceElementInScope,
+  ElementReplacementPath,
+  ReplaceJSXElement,
+  ToggleDataCanCondense,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -243,7 +244,6 @@ import type {
   ImageDragSessionState,
   DuplicationState,
   ErrorMessages,
-  FloatingInsertMenuState,
   GithubState,
   LeftMenuTab,
   ModalDialog,
@@ -273,6 +273,7 @@ export function clearSelection(): EditorAction {
 }
 
 export const replaceTarget: ReplaceTarget = { type: 'replace-target' }
+export const wrapTarget: WrapTarget = { type: 'wrap-target' }
 export const replaceKeepChildrenAndStyleTarget: ReplaceKeepChildrenAndStyleTarget = {
   type: 'replace-target-keep-children-and-style',
 }
@@ -284,14 +285,29 @@ export function insertJSXElement(
   element: JSXElement,
   target: ElementPath | null,
   importsToAdd: Imports,
-  insertionBehaviour: InsertionBehaviour,
+  indexPosition?: IndexPosition,
 ): InsertJSXElement {
   return {
     action: 'INSERT_JSX_ELEMENT',
     jsxElement: element,
     target: target,
     importsToAdd: importsToAdd,
-    insertionBehaviour: insertionBehaviour,
+    indexPosition: indexPosition ?? null,
+  }
+}
+
+export function replaceJSXElement(
+  element: JSXElement,
+  target: ElementPath,
+  importsToAdd: Imports,
+  behaviour: ReplaceKeepChildrenAndStyleTarget | ReplaceTarget,
+): ReplaceJSXElement {
+  return {
+    action: 'REPLACE_JSX_ELEMENT',
+    jsxElement: element,
+    target: target,
+    importsToAdd: importsToAdd,
+    behaviour: behaviour,
   }
 }
 
@@ -305,6 +321,17 @@ export function replaceMappedElement(
     jsxElement: element,
     target: target,
     importsToAdd: importsToAdd,
+  }
+}
+
+export function replaceElementInScope(
+  target: ElementPath,
+  replacementPath: ElementReplacementPath,
+): ReplaceElementInScope {
+  return {
+    action: 'REPLACE_ELEMENT_IN_SCOPE',
+    target: target,
+    replacementPath: replacementPath,
   }
 }
 
@@ -332,6 +359,13 @@ export function unsetProperty(element: ElementPath, property: PropertyPath): Uns
 export function toggleHidden(targets: Array<ElementPath> = []): ToggleHidden {
   return {
     action: 'TOGGLE_HIDDEN',
+    targets: targets,
+  }
+}
+
+export function toggleDataCanCondense(targets: Array<ElementPath>): ToggleDataCanCondense {
+  return {
+    action: 'TOGGLE_DATA_CAN_CONDENSE',
     targets: targets,
   }
 }
@@ -772,13 +806,6 @@ export function unwrapElements(targets: ElementPath[]): UnwrapElements {
   }
 }
 
-export function openFloatingInsertMenu(mode: FloatingInsertMenuState): OpenFloatingInsertMenu {
-  return {
-    action: 'OPEN_FLOATING_INSERT_MENU',
-    mode: mode,
-  }
-}
-
 export function wrapInElement(
   targets: Array<ElementPath>,
   whatToWrapWith: WrapInElementWith,
@@ -787,12 +814,6 @@ export function wrapInElement(
     action: 'WRAP_IN_ELEMENT',
     targets: targets,
     whatToWrapWith: whatToWrapWith,
-  }
-}
-
-export function closeFloatingInsertMenu(): CloseFloatingInsertMenu {
-  return {
-    action: 'CLOSE_FLOATING_INSERT_MENU',
   }
 }
 
@@ -1736,17 +1757,6 @@ export function updateConditionalExpression(
 ): UpdateConditionalExpression {
   return {
     action: 'UPDATE_CONIDTIONAL_EXPRESSION',
-    target: target,
-    expression: expression,
-  }
-}
-
-export function updateMapExpression(
-  target: ElementPath,
-  expression: JSExpression,
-): UpdateMapExpression {
-  return {
-    action: 'UPDATE_MAP_EXPRESSION',
     target: target,
     expression: expression,
   }

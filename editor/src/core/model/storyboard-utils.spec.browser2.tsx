@@ -183,6 +183,18 @@ describe('Storyboard utils', () => {
               content: projectContents,
             },
           }),
+        [GithubEndpoints.getBranchProjectContents({
+          projectId: '0',
+          owner: 'bob',
+          repo: 'awesome-project',
+          branch: 'main',
+        })]: fakeResponse<GetBranchContentResponse>({
+          type: 'SUCCESS',
+          branch: {
+            originCommit: 'initial',
+            content: projectContents,
+          },
+        }),
       },
     })
 

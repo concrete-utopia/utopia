@@ -1,7 +1,7 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import React from 'react'
-import { css, jsx } from '@emotion/react'
+import { jsx } from '@emotion/react'
 import type { OptionsType } from 'react-select'
 import { animated } from 'react-spring'
 import type {
@@ -14,7 +14,7 @@ import type {
   UnionControlDescription,
 } from '../../../custom-code/internal-property-controls'
 import { isBaseControlDescription } from '../../../custom-code/internal-property-controls'
-import { PathForSceneProps, sceneMetadata } from '../../../../core/model/scene-utils'
+import { PathForSceneProps } from '../../../../core/model/scene-utils'
 import { mapToArray } from '../../../../core/shared/object-utils'
 import type { PropertyPath } from '../../../../core/shared/project-file-types'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
@@ -23,7 +23,7 @@ import * as EP from '../../../../core/shared/element-path'
 import { useKeepReferenceEqualityIfPossible } from '../../../../utils/react-performance'
 import Utils from '../../../../utils/utils'
 import type { ParseError } from '../../../../utils/value-parser-utils'
-import { getParseErrorDetails, ParseResult } from '../../../../utils/value-parser-utils'
+import { getParseErrorDetails } from '../../../../utils/value-parser-utils'
 import {
   Tooltip,
   //TODO: switch last component to functional component and make use of 'useColorTheme':
@@ -35,7 +35,6 @@ import {
   Icons,
   FlexRow,
   Icn,
-  OnClickOutsideHOC,
   iconForControlType,
   colorTheme,
 } from '../../../../uuiui'
@@ -49,7 +48,6 @@ import {
   useInspectorInfoForPropertyControl,
 } from '../../common/property-controls-hooks'
 import type { ControlStyles } from '../../common/control-styles'
-import { ControlStatus } from '../../common/control-status'
 import type { InspectorInfo } from '../../common/property-path-hooks'
 import { useArraySuperControl } from '../../controls/array-supercontrol'
 import type { SelectOption } from '../../controls/select-control'
@@ -78,41 +76,118 @@ import { unless, when } from '../../../../utils/react-conditionals'
 import { PropertyControlsSection } from './property-controls-section'
 import type { ReactEventHandlers } from 'react-use-gesture/dist/types'
 import { normalisePathToUnderlyingTarget } from '../../../custom-code/code-file'
-import { openCodeEditorFile, setProp_UNSAFE } from '../../../editor/actions/action-creators'
-import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
+import { openCodeEditorFile, replaceElementInScope } from '../../../editor/actions/action-creators'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { getFilePathForImportedComponent } from '../../../../core/model/project-file-utils'
 import { safeIndex } from '../../../../core/shared/array-utils'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { usePopper } from 'react-popper'
+import type {
+  ElementInstanceMetadataMap,
+  JSExpressionOtherJavaScript,
+} from '../../../../core/shared/element-template'
 import {
-  emptyComments,
-  modifiableAttributeToValuePath,
-  jsExpressionOtherJavaScriptSimple,
-  jsIdentifier,
+  getJSXElementNameAsString,
+  isImportedOrigin,
+  isJSXElement,
 } from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
-import type { VariableData } from '../../../canvas/ui-jsx-canvas'
-import { array } from 'prop-types'
-import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'
-import { DataPickerPopup, dataPickerForAProperty } from './data-picker-popup'
+import type { DataPickerCallback, DataPickerOption, ObjectPath } from './data-picker-utils'
+import { DataPickerPreferredAllAtom, jsxElementChildToValuePath } from './data-picker-utils'
 import { jsxElementChildToText } from '../../../canvas/ui-jsx-canvas-renderer/jsx-element-child-to-text'
-import { foldEither } from '../../../../core/shared/either'
 import { stopPropagation } from '../../common/inspector-utils'
-import { NO_OP } from '../../../../core/shared/utils'
 import { IdentifierExpressionCartoucheControl } from './cartouche-control'
+import { getRegisteredComponent } from '../../../../core/property-controls/property-controls-utils'
+import type { EditorAction } from '../../../editor/action-types'
+import {
+  getCartoucheDataTypeForExpression,
+  useVariablesInScopeForSelectedElement,
+} from './variables-in-scope-utils'
+import { useAtom } from 'jotai'
+import { DataSelectorModal } from './data-selector-modal'
+import { getModifiableJSXAttributeAtPath } from '../../../../core/shared/jsx-attribute-utils'
+import { isRight } from '../../../../core/shared/either'
+import { useChildrenPropOverride } from './component-section-children'
+import {
+  childrenAreProbablyNumericExpression,
+  replaceFirstChildAndDeleteSiblings,
+} from '../../../editor/element-children'
 
-export const VariableFromScopeOptionTestId = (idx: string) => `variable-from-scope-${idx}`
-export const DataPickerPopupButtonTestId = `data-picker-popup-button-test-id`
-export const DataPickerPopupTestId = `data-picker-popup-test-id`
+export interface PropertyLabelAndPlusButtonProps {
+  title: string
+  openPopup: () => void
+  handleMouseEnter: () => void
+  handleMouseLeave: () => void
+  popupIsOpen: boolean
+  isHovered: boolean
+  isConnectedToData: boolean
+  testId: string
+}
+
+export function PropertyLabelAndPlusButton(
+  props: React.PropsWithChildren<PropertyLabelAndPlusButtonProps>,
+) {
+  const {
+    title,
+    openPopup,
+    popupIsOpen,
+    isHovered,
+    isConnectedToData,
+    handleMouseEnter,
+    handleMouseLeave,
+    children,
+    testId,
+  } = props
+
+  return (
+    <Tooltip title={title}>
+      <div
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        style={{
+          lineHeight: `${UtopiaTheme.layout.inputHeight.default}px`,
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 6,
+          color:
+            popupIsOpen || isHovered || isConnectedToData
+              ? colorTheme.dynamicBlue.value
+              : undefined,
+          cursor: 'pointer',
+        }}
+      >
+        <span onClick={openPopup}>{title}</span>
+        {children}
+        <div
+          data-testid={testId}
+          onClick={openPopup}
+          style={{
+            opacity: isHovered || popupIsOpen ? 1 : 0,
+          }}
+        >
+          <Icn
+            category='semantic'
+            type='plus-in-white-translucent-circle'
+            color={'dynamic'}
+            width={12}
+            height={12}
+          />
+        </div>
+      </div>
+    </Tooltip>
+  )
+}
 
 function useComponentPropsInspectorInfo(
+  elementPath: ElementPath,
   partialPath: PropertyPath,
   addPropsToPath: boolean,
   control: RegularControlDescription,
 ) {
   const propertyPath = addPropsToPath ? PP.append(PathForSceneProps, partialPath) : partialPath
-  return useInspectorInfoForPropertyControl(propertyPath, control)
+  return useInspectorInfoForPropertyControl(elementPath, propertyPath, control)
 }
 
 const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDescription>) => {
@@ -141,11 +216,36 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
     showHiddenControl,
   ])
 
+  const attributeExpression = props.propMetadata.attributeExpression
+
+  const datatypeForExpression = useEditorState(
+    Substores.projectContentsAndMetadataAndVariablesInScope,
+    (store) => {
+      if (attributeExpression == null) {
+        return 'unknown'
+      }
+      return getCartoucheDataTypeForExpression(
+        props.elementPath,
+        attributeExpression,
+        store.editor.variablesInScope,
+      )
+    },
+    'ControlForProp datatypeForExpression',
+  )
+
+  const childrenPropOverride = useChildrenPropOverride({
+    ...props,
+    onDeleteCartouche: onDeleteCartouche,
+    safeToDelete: safeToDelete,
+    dataTypeForExpression: datatypeForExpression,
+  })
+  if (childrenPropOverride != null) {
+    return childrenPropOverride
+  }
+
   if (controlDescription == null) {
     return null
   }
-
-  const attributeExpression = props.propMetadata.attributeExpression
 
   if (attributeExpression != null) {
     if (
@@ -162,6 +262,9 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
           onDeleteCartouche={onDeleteCartouche}
           testId={`cartouche-${PP.toString(props.propPath)}`}
           safeToDelete={safeToDelete}
+          propertyPath={props.propPath}
+          elementPath={props.elementPath}
+          datatype={datatypeForExpression}
         />
       )
     }
@@ -180,7 +283,10 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
             onOpenDataPicker={props.onOpenDataPicker}
             onDeleteCartouche={onDeleteCartouche}
             testId={`cartouche-${PP.toString(props.propPath)}`}
+            propertyPath={props.propPath}
             safeToDelete={safeToDelete}
+            elementPath={props.elementPath}
+            datatype={datatypeForExpression}
           />
         )
       }
@@ -274,10 +380,10 @@ function getLabelControlStyle(
 const isBaseIndentationLevel = (props: AbstractRowForControlProps) => props.indentationLevel === 1
 
 export function useDataPickerButton(
-  selectedElements: Array<ElementPath>,
-  propPath: PropertyPath,
-  isScene: boolean,
-  controlDescription: RegularControlDescription,
+  variablesInScope: DataPickerOption[],
+  onPropertyPicked: DataPickerCallback,
+  currentSelectedValuePath: ObjectPath | null,
+  lowestInsertionCeiling: ElementPath | null,
 ) {
   const [referenceElement, setReferenceElement] = React.useState<HTMLDivElement | null>(null)
   const [popperElement, setPopperElement] = React.useState<HTMLDivElement | null>(null)
@@ -286,7 +392,14 @@ export function useDataPickerButton(
       {
         name: 'offset',
         options: {
-          offset: [0, 8],
+          offset: [8, 8],
+        },
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          altAxis: true,
+          padding: 20,
         },
       },
     ],
@@ -296,44 +409,28 @@ export function useDataPickerButton(
   const openPopup = React.useCallback(() => setPopupIsOpen(true), [])
   const closePopup = React.useCallback(() => setPopupIsOpen(false), [])
 
-  const selectedElement = selectedElements.at(0) ?? EP.emptyElementPath
-
-  const variablePickerButtonAvailable =
-    useVariablesInScopeForSelectedElement(selectedElement, propPath, 'all').length > 0
-  const variablePickerButtonTooltipText = variablePickerButtonAvailable
-    ? 'Pick data source'
-    : 'No data sources available'
-  const propMetadata = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
-
-  const propExpressionPath: Array<string | number> | null = React.useMemo(() => {
-    return propMetadata.attributeExpression == null
-      ? null
-      : foldEither(
-          () => {
-            return null
-          },
-          (path) => {
-            return path
-          },
-          modifiableAttributeToValuePath(propMetadata.attributeExpression),
-        )
-  }, [propMetadata.attributeExpression])
-
-  const pickerType = React.useMemo(() => {
-    return dataPickerForAProperty(selectedElement, propPath, propExpressionPath)
-  }, [propExpressionPath, propPath, selectedElement])
-
   const DataPickerComponent = React.useMemo(
     () => (
-      <DataPickerPopup
+      <DataSelectorModal
         {...popper.attributes.popper}
         style={popper.styles.popper}
         closePopup={closePopup}
         ref={setPopperElement}
-        pickerType={pickerType}
+        onPropertyPicked={onPropertyPicked}
+        variablesInScope={variablesInScope}
+        startingSelectedValuePath={currentSelectedValuePath}
+        lowestInsertionCeiling={lowestInsertionCeiling}
       />
     ),
-    [closePopup, pickerType, popper.attributes.popper, popper.styles.popper],
+    [
+      closePopup,
+      currentSelectedValuePath,
+      onPropertyPicked,
+      popper.attributes.popper,
+      popper.styles.popper,
+      variablesInScope,
+      lowestInsertionCeiling,
+    ],
   )
 
   return {
@@ -347,6 +444,108 @@ export function useDataPickerButton(
 interface RowForBaseControlProps extends AbstractRowForControlProps {
   label?: React.ComponentType<React.PropsWithChildren<any>> // TODO Before Merge this probably should not be a component
   controlDescription: BaseControlDescription
+}
+
+function setPropertyFromDataPickerActions(
+  metadata: ElementInstanceMetadataMap,
+  selectedViews: Array<ElementPath>,
+  propertyPath: PropertyPath,
+  expression: JSExpressionOtherJavaScript,
+): Array<EditorAction> | null {
+  const target = selectedViews.at(0)
+  if (target == null) {
+    return null
+  }
+
+  // If the target replacement is the children property and the element has children,
+  // replace the children directly instead of its prop.
+  const isReplacingChildren =
+    propertyPath.propertyElements.length === 1 && propertyPath.propertyElements[0] === 'children'
+  if (isReplacingChildren) {
+    // …and the element has children…
+    const element = MetadataUtils.findElementByElementPath(metadata, target)
+    const children =
+      element != null && isRight(element.element) && isJSXElement(element.element.value)
+        ? element.element.value.children
+        : []
+    return replaceFirstChildAndDeleteSiblings(target, children, expression)
+  }
+
+  // In all other cases, replace the prop.
+  return [
+    replaceElementInScope(target, {
+      type: 'replace-property-value',
+      propertyPath: propertyPath,
+      replaceWith: expression,
+    }),
+  ]
+}
+
+function useDataPickerButtonInComponentSection(
+  selectedViews: Array<ElementPath>,
+  propertyPath: PropertyPath,
+) {
+  const dispatch = useDispatch()
+
+  const [preferredAllState] = useAtom(DataPickerPreferredAllAtom)
+  const variableNamesInScope = useVariablesInScopeForSelectedElement(
+    selectedViews.at(0) ?? EP.emptyElementPath,
+    propertyPath,
+    preferredAllState,
+  )
+
+  const metadata = useEditorState(
+    Substores.metadata,
+    (store) => store.editor.jsxMetadata,
+    'useDataPickerButtonInComponentSection metadata',
+  )
+
+  const pathToCurrentValue = useEditorState(
+    Substores.metadata,
+    (store) => {
+      const [selectedView, ...rest] = selectedViews
+      if (selectedView == null || rest.length > 0) {
+        return null
+      }
+
+      const instance = MetadataUtils.findElementByElementPath(
+        store.editor.jsxMetadata,
+        selectedView,
+      )
+      if (
+        instance == null ||
+        instance.element.type !== 'RIGHT' ||
+        instance.element.value.type !== 'JSX_ELEMENT'
+      ) {
+        return null
+      }
+
+      const prop = getModifiableJSXAttributeAtPath(instance.element.value.props, propertyPath)
+      if (
+        prop.type !== 'RIGHT' ||
+        prop.value.type === 'PART_OF_ATTRIBUTE_VALUE' ||
+        prop.value.type === 'ATTRIBUTE_NOT_FOUND'
+      ) {
+        return null
+      }
+
+      return jsxElementChildToValuePath(prop.value)
+    },
+    'useDataPickerButtonInComponentSection pathToCurrentValue',
+  )
+
+  const dataPickerButtonData = useDataPickerButton(
+    variableNamesInScope,
+    (e) =>
+      optionalMap(
+        dispatch,
+        setPropertyFromDataPickerActions(metadata, selectedViews, propertyPath, e),
+      ),
+    pathToCurrentValue,
+    selectedViews.at(0) ?? null,
+  )
+
+  return dataPickerButtonData
 }
 
 const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
@@ -363,7 +562,12 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
     'RowForBaseControl selectedViews',
   )
 
-  const propMetadata = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
+  const propMetadata = useComponentPropsInspectorInfo(
+    selectedViews[0] ?? EP.emptyElementPath,
+    propPath,
+    isScene,
+    controlDescription,
+  )
   const contextMenuItems = Utils.stripNulls([
     addOnUnsetValues([propName], propMetadata.onUnsetValues),
   ])
@@ -373,24 +577,41 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
     [controlDescription, propMetadata],
   )
 
-  const dataPickerButtonData = useDataPickerButton(
-    selectedViews,
-    props.propPath,
-    props.isScene,
-    props.controlDescription,
-  )
+  const dataPickerButtonData = useDataPickerButtonInComponentSection(selectedViews, props.propPath)
 
-  const handleMouseEnter = () => {
+  const handleMouseEnter = React.useCallback(() => {
     setIsHovered(true)
-  }
+  }, [])
 
-  const handleMouseLeave = () => {
+  const handleMouseLeave = React.useCallback(() => {
     setIsHovered(false)
-  }
+  }, [])
 
-  const isValueSet = React.useMemo(() => {
-    return propMetadata.propertyStatus.set
-  }, [propMetadata])
+  const isConnectedToData = useEditorState(
+    Substores.metadata,
+    (store) => {
+      if (propName === 'children') {
+        // for children props, we need to drill down and look for the types of the elements
+        return selectedViews.some((view) => {
+          const element = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, view)
+          if (element != null && isRight(element.element) && isJSXElement(element.element.value)) {
+            const children = element.element.value.children
+            return (
+              (controlDescription.control === 'number-input' &&
+                childrenAreProbablyNumericExpression(children)) ||
+              children.some((child) => child.type === 'JS_IDENTIFIER')
+            )
+          }
+          return false
+        })
+      }
+      return (
+        propMetadata.propertyStatus.controlled &&
+        propMetadata.attributeExpression?.type !== 'JSX_ELEMENT'
+      )
+    },
+    'RowForBaseControl isConnectedToData',
+  )
 
   const propertyLabel =
     props.label == null ? (
@@ -403,41 +624,16 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
           alignSelf: 'flex-start',
         }}
       >
-        <Tooltip title={title}>
-          <div
-            onClick={dataPickerButtonData.openPopup}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-            style={{
-              lineHeight: `${UtopiaTheme.layout.inputHeight.default}px`,
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 6,
-              color:
-                dataPickerButtonData.popupIsOpen || isHovered || !isValueSet
-                  ? colorTheme.dynamicBlue.value
-                  : undefined,
-            }}
-          >
-            {title}
-            <div
-              style={{
-                opacity: isHovered || dataPickerButtonData.popupIsOpen || !isValueSet ? 1 : 0,
-              }}
-            >
-              <Icn
-                category='semantic'
-                type='plus-in-white-translucent-circle'
-                color={
-                  dataPickerButtonData.popupIsOpen || isHovered || !isValueSet ? 'dynamic' : 'main'
-                }
-                width={12}
-                height={12}
-              />
-            </div>
-          </div>
-        </Tooltip>
+        <PropertyLabelAndPlusButton
+          title={title}
+          openPopup={dataPickerButtonData.openPopup}
+          handleMouseEnter={handleMouseEnter}
+          handleMouseLeave={handleMouseLeave}
+          popupIsOpen={dataPickerButtonData.popupIsOpen}
+          isHovered={isHovered}
+          isConnectedToData={isConnectedToData}
+          testId={`plus-button-${title}`}
+        />
       </PropertyLabel>
     ) : (
       <props.label />
@@ -456,7 +652,7 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
       data={null}
     >
       {dataPickerButtonData.popupIsOpen ? dataPickerButtonData.DataPickerComponent : null}
-      <UIGridRow padded={false} style={{ padding: '3px 0px 3px 8px' }} variant='<--1fr--><--1fr-->'>
+      <UIGridRow padded={false} style={{ padding: '3px 8px' }} variant='<--1fr--><--1fr-->'>
         {propertyLabel}
         <div
           style={{
@@ -473,6 +669,7 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
             focusOnMount={props.focusOnMount}
             onOpenDataPicker={dataPickerButtonData.openPopup}
             showHiddenControl={props.showHiddenControl}
+            elementPath={selectedViews.at(0) ?? EP.emptyElementPath}
           />
         </div>
       </UIGridRow>
@@ -508,14 +705,27 @@ interface RowForArrayControlProps extends AbstractRowForControlProps {
 const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
   const { propPath, controlDescription, isScene } = props
   const title = labelForControl(propPath, controlDescription)
+
+  const selectedViews = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews,
+    'RowForArrayControl selectedViews',
+  )
+
   const { value, onSubmitValue, propertyStatus } = useComponentPropsInspectorInfo(
+    selectedViews[0] ?? EP.emptyElementPath,
     propPath,
     isScene,
     controlDescription,
   )
 
   const propName = `${PP.lastPart(propPath)}`
-  const propMetadata = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
+  const propMetadata = useComponentPropsInspectorInfo(
+    selectedViews[0] ?? EP.emptyElementPath,
+    propPath,
+    isScene,
+    controlDescription,
+  )
 
   const sectionHeight = React.useMemo(
     () => getSectionHeight(controlDescription),
@@ -551,18 +761,7 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
     false,
   )
 
-  const selectedViews = useEditorState(
-    Substores.selectedViews,
-    (store) => store.editor.selectedViews,
-    'RowForArrayControl selectedViews',
-  )
-
-  const dataPickerButtonData = useDataPickerButton(
-    selectedViews,
-    props.propPath,
-    props.isScene,
-    props.controlDescription,
-  )
+  const dataPickerButtonData = useDataPickerButtonInComponentSection(selectedViews, props.propPath)
 
   return (
     <React.Fragment>
@@ -608,6 +807,7 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
               focusOnMount={props.focusOnMount}
               onOpenDataPicker={dataPickerButtonData.openPopup}
               showHiddenControl={props.showHiddenControl}
+              elementPath={selectedViews.at(0) ?? EP.emptyElementPath}
             />
           </FlexRow>
         </SimpleFlexRow>
@@ -650,7 +850,14 @@ interface ArrayControlItemProps {
 const ArrayControlItem = React.memo((props: ArrayControlItemProps) => {
   const { bind, propPath, index, isScene, springStyle, controlDescription } = props
   const propPathWithIndex = PP.appendPropertyPathElems(propPath, [index])
+
+  const selectedViews = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews,
+    'ArrayControlItem selectedViews',
+  )
   const propMetadata = useComponentPropsInspectorInfo(
+    selectedViews[0] ?? EP.emptyElementPath,
     propPathWithIndex,
     isScene,
     controlDescription,
@@ -726,7 +933,14 @@ interface RowForTupleControlProps extends AbstractRowForControlProps {
 const RowForTupleControl = React.memo((props: RowForTupleControlProps) => {
   const { propPath, controlDescription, isScene } = props
   const title = labelForControl(propPath, controlDescription)
-  const { value, onSubmitValue, propertyStatus } = useComponentPropsInspectorInfo(
+
+  const selectedViews = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews,
+    'RowForTupleControl selectedViews',
+  )
+  const { value } = useComponentPropsInspectorInfo(
+    selectedViews[0] ?? EP.emptyElementPath,
     propPath,
     isScene,
     controlDescription,
@@ -782,7 +996,14 @@ interface TupleControlItemProps {
 const TupleControlItem = React.memo((props: TupleControlItemProps) => {
   const { propPath, index, isScene, controlDescription } = props
   const propPathWithIndex = PP.appendPropertyPathElems(propPath, [index])
+
+  const selectedViews = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews,
+    'TupleControlItem selectedViews',
+  )
   const propMetadata = useComponentPropsInspectorInfo(
+    selectedViews[0] ?? EP.emptyElementPath,
     propPathWithIndex,
     isScene,
     controlDescription,
@@ -850,22 +1071,40 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
 
   const propName = `${PP.lastPart(propPath)}`
 
-  const propMetadata = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
-  const contextMenuItems = Utils.stripNulls([
-    addOnUnsetValues([PP.lastPart(propPath)], propMetadata.onUnsetValues),
-  ])
-
   const selectedViews = useEditorState(
     Substores.selectedViews,
     (store) => store.editor.selectedViews,
     'RowForObjectControl selectedViews',
   )
-  const dataPickerButtonData = useDataPickerButton(
-    selectedViews,
-    props.propPath,
-    props.isScene,
-    props.controlDescription,
+
+  const propMetadata = useComponentPropsInspectorInfo(
+    selectedViews[0] ?? EP.emptyElementPath,
+    propPath,
+    isScene,
+    controlDescription,
   )
+  const contextMenuItems = Utils.stripNulls([
+    addOnUnsetValues([PP.lastPart(propPath)], propMetadata.onUnsetValues),
+  ])
+
+  const dataPickerButtonData = useDataPickerButtonInComponentSection(selectedViews, props.propPath)
+
+  const [isHovered, setIsHovered] = React.useState(false)
+
+  const handleMouseEnter = React.useCallback(() => {
+    setIsHovered(true)
+  }, [])
+
+  const handleMouseLeave = React.useCallback(() => {
+    setIsHovered(false)
+  }, [])
+
+  const isConnectedToData = React.useMemo(() => {
+    return (
+      propMetadata.propertyStatus.controlled &&
+      propMetadata.attributeExpression?.type !== 'JSX_ELEMENT'
+    )
+  }, [propMetadata])
 
   return (
     <div>
@@ -897,8 +1136,18 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
                   cursor: props.disableToggling ? 'default' : 'pointer',
                 }}
               >
-                {title}
-                {unless(props.disableToggling, <ObjectIndicator open={open} />)}
+                <PropertyLabelAndPlusButton
+                  title={title}
+                  openPopup={dataPickerButtonData.openPopup}
+                  handleMouseEnter={handleMouseEnter}
+                  handleMouseLeave={handleMouseLeave}
+                  popupIsOpen={dataPickerButtonData.popupIsOpen}
+                  isHovered={isHovered}
+                  isConnectedToData={isConnectedToData}
+                  testId={`plus-button-${title}`}
+                >
+                  {unless(props.disableToggling, <ObjectIndicator open={open} />)}
+                </PropertyLabelAndPlusButton>
               </PropertyLabel>
               <div style={{ minWidth: 0 }} onClick={stopPropagation}>
                 <ControlForProp
@@ -910,6 +1159,7 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
                   focusOnMount={props.focusOnMount}
                   onOpenDataPicker={dataPickerButtonData.openPopup}
                   showHiddenControl={props.showHiddenControl}
+                  elementPath={selectedViews.at(0) ?? EP.emptyElementPath}
                 />
               </div>
             </SimpleFlexRow>
@@ -1019,9 +1269,17 @@ interface RowForControlProps extends AbstractRowForControlProps {
 }
 
 export const RowForControl = React.memo((props: RowForControlProps) => {
-  const { controlDescription, disableToggling } = props
+  const { controlDescription, disableToggling, propPath } = props
   if (isBaseControlDescription(controlDescription)) {
     return <RowForBaseControl {...props} controlDescription={controlDescription} />
+  } else if (propPath.propertyElements[0] === 'children') {
+    // just show a single element for arrays of children
+    return (
+      <RowForBaseControl
+        {...props}
+        controlDescription={{ control: 'jsx', preferredChildComponents: [], label: 'children' }}
+      />
+    )
   } else {
     switch (controlDescription.control) {
       case 'array':
@@ -1095,32 +1353,103 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
     }
   }, [dispatch, locationOfComponentInstance])
 
+  const propertyControlsInfo = useEditorState(
+    Substores.propertyControlsInfo,
+    (store) => store.editor.propertyControlsInfo,
+    'ComponentsectionInner propertyControlsInfo',
+  )
+
+  const componentData = useEditorState(
+    Substores.metadata,
+    (store) => {
+      if (
+        propertyControlsAndTargets.length === 0 ||
+        propertyControlsAndTargets[0].targets.length !== 1
+      ) {
+        return null
+      }
+
+      const element = MetadataUtils.findElementByElementPath(
+        store.editor.jsxMetadata,
+        propertyControlsAndTargets[0].targets[0],
+      )
+
+      const targetJSXElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(element)
+      const elementImportInfo = element?.importInfo
+      if (elementImportInfo == null || targetJSXElement == null) {
+        return null
+      }
+
+      const elementName = getJSXElementNameAsString(targetJSXElement.name)
+
+      const exportedName = isImportedOrigin(elementImportInfo)
+        ? elementImportInfo.exportedName ?? elementName
+        : elementName
+
+      const registeredComponent = getRegisteredComponent(
+        exportedName,
+        elementImportInfo.filePath,
+        propertyControlsInfo,
+      )
+
+      if (registeredComponent?.label == null) {
+        return {
+          displayName: elementName,
+          isRegisteredComponent: registeredComponent != null,
+        }
+      }
+
+      return {
+        displayName: registeredComponent.label,
+        isRegisteredComponent: registeredComponent != null,
+        secondaryName: elementName,
+      }
+    },
+    'ComponentSectionInner componentName',
+  )
+
   return (
     <React.Fragment>
-      <FlexRow
+      <UIGridRow
+        padded={false}
+        variant='<----------1fr---------><-auto->'
         style={{
           borderTop: `1px solid ${colorTheme.seperator.value}`,
           padding: `0 ${UtopiaTheme.layout.inspectorXPadding}px`,
+          alignItems: 'center',
+          gap: 8,
+          height: 38,
+          flexShrink: 0,
         }}
       >
         <FlexRow
+          onClick={OpenFile}
           style={{
             flexGrow: 1,
             height: UtopiaTheme.layout.rowHeight.large,
+            fontWeight: 600,
+            cursor: 'pointer',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            gap: 8,
           }}
         >
-          <div
-            onClick={OpenFile}
-            style={{
-              color: colorTheme.componentPurple.value,
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
-          >
-            Component
-          </div>
+          {componentData != null ? (
+            <React.Fragment>
+              <span>{componentData.displayName}</span>
+              {when(componentData.isRegisteredComponent, <span style={{ fontSize: 6 }}>◇</span>)}
+              {componentData.secondaryName == null ? null : (
+                <span style={{ opacity: 0.5, fontWeight: 'initial' }}>
+                  {componentData.secondaryName}
+                </span>
+              )}
+            </React.Fragment>
+          ) : (
+            <span>Component</span>
+          )}
         </FlexRow>
-        <SquareButton highlight onClick={toggleSection}>
+        <SquareButton highlight style={{ width: 12 }} onClick={toggleSection}>
           <ExpandableIndicator
             testId='component-section-expand'
             visible
@@ -1128,7 +1457,7 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
             selected={false}
           />
         </SquareButton>
-      </FlexRow>
+      </UIGridRow>
       {when(
         sectionExpanded,
         <React.Fragment>

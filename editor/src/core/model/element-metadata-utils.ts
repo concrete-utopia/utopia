@@ -188,7 +188,13 @@ export const getChildrenOfCollapsedViews = (
 
 // eslint-disable-next-line object-shorthand
 export const MetadataUtils = {
-  isElementGenerated(target: ElementPath): boolean {
+  isElementDirectlyGenerated(target: ElementPath): boolean {
+    const staticTarget = EP.dynamicPathToStaticPath(target)
+    const parentPath = EP.parentPath(target)
+    const parentStaticPath = EP.dynamicPathToStaticPath(parentPath)
+    return EP.pathsEqual(parentPath, parentStaticPath) && !EP.pathsEqual(target, staticTarget)
+  },
+  isElementOrAncestorGenerated(target: ElementPath): boolean {
     const staticTarget = EP.dynamicPathToStaticPath(target)
     return !EP.pathsEqual(target, staticTarget)
   },
@@ -983,10 +989,16 @@ export const MetadataUtils = {
     path: ElementPath,
     metadata: ElementInstanceMetadataMap,
     pathTree: ElementPathTrees,
+    propertyControlsInfo: PropertyControlsInfo,
   ): boolean {
     return (
-      this.targetElementSupportsChildrenAlsoText(projectContents, path, metadata, pathTree) ===
-      'supportsChildren'
+      this.targetElementSupportsChildrenAlsoText(
+        projectContents,
+        path,
+        metadata,
+        pathTree,
+        propertyControlsInfo,
+      ) === 'supportsChildren'
     )
   },
   targetElementSupportsChildrenAlsoText(
@@ -994,6 +1006,7 @@ export const MetadataUtils = {
     path: ElementPath,
     metadata: ElementInstanceMetadataMap,
     pathTree: ElementPathTrees,
+    propertyControlsInfo: PropertyControlsInfo,
   ): ElementSupportsChildren {
     const instance = MetadataUtils.findElementByElementPath(metadata, path)
     if (instance == null) {
@@ -1011,6 +1024,8 @@ export const MetadataUtils = {
           path,
           metadata,
           pathTree,
+          projectContents,
+          propertyControlsInfo,
         )
         if (elementResult != null) {
           return elementResult
@@ -1035,12 +1050,14 @@ export const MetadataUtils = {
     metadata: ElementInstanceMetadataMap,
     target: ElementPath | null,
     pathTree: ElementPathTrees,
+    propertyControlsInfo: PropertyControlsInfo,
   ): boolean {
     const targetSupportsChildrenValue = this.targetSupportsChildrenAlsoText(
       projectContents,
       metadata,
       target,
       pathTree,
+      propertyControlsInfo,
     )
     return (
       targetSupportsChildrenValue !== 'doesNotSupportChildren' &&
@@ -1052,33 +1069,47 @@ export const MetadataUtils = {
     metadata: ElementInstanceMetadataMap,
     target: ElementPath | null,
     pathTree: ElementPathTrees,
+    propertyControlsInfo: PropertyControlsInfo,
   ): ElementSupportsChildren {
     if (target == null) {
       // Assumed to be reparenting to the canvas root.
       return 'supportsChildren'
-    } else {
-      const instance = MetadataUtils.findElementByElementPath(metadata, target)
-      if (instance == null) {
-        return withUnderlyingTarget(
-          target,
-          projectContents,
-          'doesNotSupportChildren',
-          (_, element) => {
-            return (
-              elementChildSupportsChildrenAlsoText(element, target, metadata, pathTree) ??
-              'doesNotSupportChildren'
-            )
-          },
-        )
-      } else {
-        return MetadataUtils.targetElementSupportsChildrenAlsoText(
-          projectContents,
-          target,
-          metadata,
-          pathTree,
-        )
-      }
     }
+    const componentDescriptor = getComponentDescriptorForTarget(
+      target,
+      propertyControlsInfo,
+      projectContents,
+    )
+    if (componentDescriptor != null && !componentDescriptor.supportsChildren) {
+      return 'doesNotSupportChildren'
+    }
+    const instance = MetadataUtils.findElementByElementPath(metadata, target)
+    if (instance == null) {
+      return withUnderlyingTarget(
+        target,
+        projectContents,
+        'doesNotSupportChildren',
+        (_, element) => {
+          return (
+            elementChildSupportsChildrenAlsoText(
+              element,
+              target,
+              metadata,
+              pathTree,
+              projectContents,
+              propertyControlsInfo,
+            ) ?? 'doesNotSupportChildren'
+          )
+        },
+      )
+    }
+    return MetadataUtils.targetElementSupportsChildrenAlsoText(
+      projectContents,
+      target,
+      metadata,
+      pathTree,
+      propertyControlsInfo,
+    )
   },
   targetUsesProperty(
     projectContents: ProjectContentTreeRoot,
@@ -1203,10 +1234,7 @@ export const MetadataUtils = {
       )
       .some((e) => e !== 'br')
 
-    return (
-      !MetadataUtils.isElementGenerated(target) &&
-      (children.length === 0 || !hasNonEditableChildren)
-    )
+    return children.length === 0 || !hasNonEditableChildren
   },
   targetTextEditableAndHasText(
     metadata: ElementInstanceMetadataMap,
@@ -1376,7 +1404,7 @@ export const MetadataUtils = {
           }
           if (
             // when Data Entries are enabled, we want to show all expressions in the navigator
-            !isFeatureEnabled('Data Entries in the Navigator')
+            !isFeatureEnabled('Condensed Navigator Entries')
           ) {
             if (isJSIdentifier(r) || isJSPropertyAccess(r) || isJSElementAccess(r)) {
               return true
@@ -1588,7 +1616,7 @@ export const MetadataUtils = {
               ).length
               if (
                 // When Data Entries are enabled, we don't want to rename the parent elements based on their text / expression content
-                !isFeatureEnabled('Data Entries in the Navigator')
+                !isFeatureEnabled('Condensed Navigator Entries')
               ) {
                 if (numberOfChildrenElements === 0) {
                   if (PossibleTextElements.includes(lastNamePart)) {
@@ -2289,6 +2317,15 @@ export const MetadataUtils = {
   isJSXMapExpression(target: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
     const element = MetadataUtils.findElementByElementPath(metadata, target)
     return MetadataUtils.isJSXMapExpressionFromMetadata(element)
+  },
+  isJSXElementFromMetadata(element: ElementInstanceMetadata | null): boolean {
+    return (
+      element?.element != null && isRight(element.element) && isJSXElement(element.element.value)
+    )
+  },
+  isJSXElement(target: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
+    const element = MetadataUtils.findElementByElementPath(metadata, target)
+    return MetadataUtils.isJSXElementFromMetadata(element)
   },
   resolveReparentTargetParentToPath(
     metadata: ElementInstanceMetadataMap,

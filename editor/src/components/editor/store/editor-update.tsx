@@ -139,7 +139,7 @@ export function runSimpleLocalEditorAction(
     case 'LOAD':
       return UPDATE_FNS.LOAD(action, state, dispatch, collaborativeEditingSupport)
     case 'DUPLICATE_SELECTED':
-      return UPDATE_FNS.DUPLICATE_SELECTED(state, dispatch)
+      return UPDATE_FNS.DUPLICATE_SELECTED(state)
     case 'UPDATE_DUPLICATION_STATE':
       return UPDATE_FNS.UPDATE_DUPLICATION_STATE(action, state)
     case 'MOVE_SELECTED_TO_BACK':
@@ -168,10 +168,14 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SWITCH_EDITOR_MODE(action, state, userState)
     case 'TOGGLE_HIDDEN':
       return UPDATE_FNS.TOGGLE_HIDDEN(action, state)
+    case 'TOGGLE_DATA_CAN_CONDENSE':
+      return UPDATE_FNS.TOGGLE_DATA_CAN_CONDENSE(action, state)
     case 'RENAME_COMPONENT':
       return UPDATE_FNS.RENAME_COMPONENT(action, state)
     case 'INSERT_JSX_ELEMENT':
       return UPDATE_FNS.INSERT_JSX_ELEMENT(action, state)
+    case 'REPLACE_JSX_ELEMENT':
+      return UPDATE_FNS.REPLACE_JSX_ELEMENT(action, state)
     case 'INSERT_ATTRIBUTE_OTHER_JAVASCRIPT_INTO_ELEMENT':
       return UPDATE_FNS.INSERT_ATTRIBUTE_OTHER_JAVASCRIPT_INTO_ELEMENT(action, state)
     case 'SET_PANEL_VISIBILITY':
@@ -335,15 +339,13 @@ export function runSimpleLocalEditorAction(
     case 'SAVE_CURRENT_FILE':
       return UPDATE_FNS.SAVE_CURRENT_FILE(action, state)
     case 'DELETE_VIEW':
-      return UPDATE_FNS.DELETE_VIEW(action, state, dispatch)
+      return UPDATE_FNS.DELETE_VIEW(action, state)
     case 'DELETE_SELECTED':
       return UPDATE_FNS.DELETE_SELECTED(state, dispatch)
     case 'WRAP_IN_ELEMENT':
-      return UPDATE_FNS.WRAP_IN_ELEMENT(action, state, derivedState, dispatch)
-    case 'OPEN_FLOATING_INSERT_MENU':
-      return UPDATE_FNS.OPEN_FLOATING_INSERT_MENU(action, state)
+      return UPDATE_FNS.WRAP_IN_ELEMENT(action, state, derivedState)
     case 'UNWRAP_ELEMENTS':
-      return UPDATE_FNS.UNWRAP_ELEMENTS(action, state, dispatch, builtInDependencies)
+      return UPDATE_FNS.UNWRAP_ELEMENTS(action, state, builtInDependencies)
     case 'INSERT_IMAGE_INTO_UI':
       return UPDATE_FNS.INSERT_IMAGE_INTO_UI(action, state, userState)
     case 'UPDATE_JSX_ELEMENT_NAME':
@@ -415,8 +417,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.FOCUS_FORMULA_BAR(state)
     case 'UPDATE_FORMULA_BAR_MODE':
       return UPDATE_FNS.UPDATE_FORMULA_BAR_MODE(action, state)
-    case 'CLOSE_FLOATING_INSERT_MENU':
-      return UPDATE_FNS.CLOSE_FLOATING_INSERT_MENU(action, state)
     case 'INSERT_INSERTABLE':
       return UPDATE_FNS.INSERT_INSERTABLE(action, state)
     case 'SET_PROP_TRANSIENT':
@@ -457,8 +457,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_MAP_COUNT_OVERRIDE(action, state)
     case 'UPDATE_CONIDTIONAL_EXPRESSION':
       return UPDATE_FNS.UPDATE_CONDITIONAL_EXPRESSION(action, state)
-    case 'UPDATE_MAP_EXPRESSION':
-      return UPDATE_FNS.UPDATE_MAP_EXPRESSION(action, state)
     case 'SWITCH_CONDITIONAL_BRANCHES':
       return UPDATE_FNS.SWITCH_CONDITIONAL_BRANCHES(action, state)
     case 'UPDATE_TOP_LEVEL_ELEMENTS_FROM_COLLABORATION_UPDATE':
@@ -491,6 +489,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_SHARING_DIALOG_OPEN(action, state)
     case 'REPLACE_MAPPED_ELEMENT':
       return UPDATE_FNS.REPLACE_MAPPED_ELEMENT(action, state)
+    case 'REPLACE_ELEMENT_IN_SCOPE':
+      return UPDATE_FNS.REPLACE_ELEMENT_IN_SCOPE(action, state)
     default:
       return state
   }
