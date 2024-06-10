@@ -252,7 +252,9 @@ function useScrollIntoView(shouldScroll: boolean) {
 
   React.useEffect(() => {
     if (shouldScroll && elementRef.current != null) {
-      elementRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      elementRef.current.scrollIntoView({
+        behavior: 'instant',
+      })
     }
   }, [shouldScroll])
 
