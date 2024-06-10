@@ -1,7 +1,7 @@
 import React from 'react'
 import * as ReactDOM from 'react-dom'
 import { useHandleCloseOnESCOrEnter } from '../common/inspector-utils'
-import { PortalTargetID } from '../../../core/shared/utils'
+import { EditorID, PortalTargetID } from '../../../core/shared/utils'
 import * as ResizeObserverSyntheticDefault from 'resize-observer-polyfill'
 import { OnClickOutsideHOC } from '../../../uuiui'
 
