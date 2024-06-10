@@ -83,35 +83,3 @@ const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
 
   return <FlexRow onClick={onClick}>{props.data.variableInfo.expressionPathPart}</FlexRow>
 })
-
-interface ProcessedColumns {
-  [columnIndex: number]: Array<DataPickerOption>
-}
-
-function useProcessColumns(
-  startingOptions: DataPickerOption[],
-  targetPathInsideScope: ObjectPath | null,
-): ProcessedColumns {
-  return React.useMemo(() => {
-    function walk(options: DataPickerOption[] | null, columnIndex: number): ProcessedColumns {
-      if (options == null) {
-        return {}
-      }
-      if (targetPathInsideScope == null) {
-        return { [columnIndex]: startingOptions }
-      }
-
-      const nextColumnScope: DataPickerOption[] | null = mapFirstApplicable(options, (option) => {
-        if (
-          isPrefixOf(option.valuePath, targetPathInsideScope) &&
-          (option.type === 'array' || option.type === 'object')
-        ) {
-          return option.children
-        }
-        return null
-      })
-      return { [columnIndex]: options, ...walk(nextColumnScope, columnIndex + 1) }
-    }
-    return walk(startingOptions, 0)
-  }, [startingOptions, targetPathInsideScope])
-}
