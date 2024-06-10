@@ -11,6 +11,7 @@ import {
 } from '../../../../core/data-tracing/data-tracing'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { assertNever } from '../../../../core/shared/utils'
+import styled from '@emotion/styled'
 
 interface DataSelectorColumnsProps {
   activeScope: Array<DataPickerOption>
@@ -59,31 +60,30 @@ const DataSelectorColumn = React.memo((props: DataSelectorColumnProps) => {
   const pseudoSelectedElementForArray: DataPickerOption | null =
     currentlyShowingScopeForArray && activeScope.length > 0 ? activeScope[0] : null
 
+  const elementToUseForNextColumn = selectedElement ?? pseudoSelectedElementForArray
+
   const nextColumnScope: ArrayOption | ObjectOption | null = (() => {
-    const elementToUse = selectedElement ?? pseudoSelectedElementForArray
-    if (elementToUse != null) {
-      if (elementToUse.type === 'object' || elementToUse.type === 'array') {
-        return elementToUse
+    if (elementToUseForNextColumn != null) {
+      if (
+        elementToUseForNextColumn.type === 'object' ||
+        elementToUseForNextColumn.type === 'array'
+      ) {
+        return elementToUseForNextColumn
       }
     }
     return null
   })()
 
+  const nextColumnScopeValue =
+    elementToUseForNextColumn?.type === 'primitive' || elementToUseForNextColumn?.type === 'jsx'
+      ? elementToUseForNextColumn
+      : null
+
   const dataSource = useVariableDataSource(props.originalDataForScope)
 
   return (
     <>
-      <FlexColumn
-        style={{
-          width: 200,
-          height: '100%',
-          flexShrink: 0,
-          overflowX: 'hidden',
-          overflowY: 'scroll',
-          scrollbarWidth: 'auto',
-          scrollbarColor: 'gray transparent',
-        }}
-      >
+      <DataSelectorFlexColumn>
         {activeScope.map((option) => {
           return (
             <RowWithCartouche
@@ -95,7 +95,7 @@ const DataSelectorColumn = React.memo((props: DataSelectorColumnProps) => {
             />
           )
         })}
-      </FlexColumn>
+      </DataSelectorFlexColumn>
       {nextColumnScope != null ? (
         <DataSelectorColumn
           activeScope={nextColumnScope.children}
@@ -105,7 +105,21 @@ const DataSelectorColumn = React.memo((props: DataSelectorColumnProps) => {
           originalDataForScope={props.originalDataForScope ?? selectedElement}
         />
       ) : null}
+      {nextColumnScopeValue != null ? <ValuePreviewColumn data={nextColumnScopeValue} /> : null}
     </>
+  )
+})
+
+interface ValuePreviewColumnProps {
+  data: DataPickerOption
+}
+
+const ValuePreviewColumn = React.memo((props: ValuePreviewColumnProps) => {
+  const text = JSON.stringify(props.data.variableInfo.value, undefined, 2)
+  return (
+    <DataSelectorFlexColumn>
+      <div style={{ textWrap: 'balance' } as any}>{text}</div>
+    </DataSelectorFlexColumn>
   )
 })
 
@@ -211,3 +225,13 @@ function childTypeToCartoucheDataType(
       assertNever(childType)
   }
 }
+
+const DataSelectorFlexColumn = styled(FlexColumn)({
+  width: 200,
+  height: '100%',
+  flexShrink: 0,
+  overflowX: 'hidden',
+  overflowY: 'scroll',
+  scrollbarWidth: 'auto',
+  scrollbarColor: 'gray transparent',
+})
