@@ -50,6 +50,7 @@ import {
   updateRemixRoute,
   addNewFeaturedRoute,
   removeFeaturedRoute,
+  scrollToPosition,
 } from '../../editor/actions/action-creators'
 import type { ElementContextMenuInstance } from '../../element-context-menu'
 import ReactDOM from 'react-dom'
@@ -59,6 +60,7 @@ import { notice } from '../../common/notice'
 import type { EditorDispatch } from '../../editor/action-types'
 import { maybeToArray } from '../../../core/shared/optional-utils'
 import { StarUnstarIcon } from '../../canvas/star-unstar-icon'
+import { canvasRectangle } from '../../../core/shared/math-utils'
 
 type RouteMatch = {
   path: string
@@ -521,7 +523,19 @@ export const AddPageContextMenu = React.memo(
     const addPageAction = React.useCallback(
       (template: PageTemplate) => () => {
         const newPageName = createNewPageName()
-        dispatch([addNewPage('/app/routes', template, newPageName)])
+        dispatch([
+          addNewPage('/app/routes', template, newPageName),
+          scrollToPosition(
+            canvasRectangle({
+              // hardcoded values for now, so the content sits at a usable spot
+              x: 380,
+              y: 120,
+              width: 0,
+              height: 0,
+            }),
+            'to-center',
+          ),
+        ])
         onAfterPageAdd(newPageName)
       },
       [dispatch, onAfterPageAdd],
