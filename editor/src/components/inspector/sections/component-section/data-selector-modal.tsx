@@ -13,6 +13,7 @@ import {
   Icons,
   LargerIcons,
   PopupList,
+  Tooltip,
   UtopiaStyles,
   UtopiaTheme,
   useColorTheme,
@@ -43,8 +44,7 @@ import { optionalMap } from '../../../../core/shared/optional-utils'
 import type { FileRootPath } from '../../../canvas/ui-jsx-canvas'
 import { insertionCeilingToString, insertionCeilingsEqual } from '../../../canvas/ui-jsx-canvas'
 import { memoize } from '../../../../core/shared/memoize'
-import debounce from 'lodash.debounce'
-import { Tooltip } from 'antd'
+import throttle from 'lodash.throttle'
 
 export const DataSelectorPopupBreadCrumbsTestId = 'data-selector-modal-top-bar'
 
@@ -200,8 +200,6 @@ export const DataSelectorModal = React.memo(
         },
         'DataSelectorModal elementLabelsWithScopes',
       )
-
-      const debouncedSearch = React.useRef<typeof search>(debounce(search, 200))
 
       const [navigatedToPath, setNavigatedToPath] = React.useState<ObjectPath>(
         findFirstObjectPathToNavigateTo(processedVariablesInScope, startingSelectedValuePath) ?? [],
@@ -673,9 +671,8 @@ export const DataSelectorModal = React.memo(
                     scrollbarColor: 'gray transparent',
                   }}
                 >
-                  {debouncedSearch
-                    .current(allVariablesInScope, searchTerm.toLowerCase())
-                    ?.map((searchResult, idx) => (
+                  {debouncedSearch(allVariablesInScope, searchTerm.toLowerCase())?.map(
+                    (searchResult, idx) => (
                       // TODO: deeplink to search
                       <FlexRow
                         style={{ gap: 8, alignItems: 'center' }}
@@ -726,7 +723,8 @@ export const DataSelectorModal = React.memo(
                           />
                         </Tooltip>
                       </FlexRow>
-                    ))}
+                    ),
+                  )}
                 </FlexColumn>
               )}
               {/* Scope Selector Breadcrumbs */}
@@ -1085,6 +1083,8 @@ function search(options: DataPickerOption[], term: string): SearchResult[] {
 
   return results
 }
+
+const debouncedSearch: typeof search = throttle(search, 200, {})
 
 function SearchResultString({
   label,
