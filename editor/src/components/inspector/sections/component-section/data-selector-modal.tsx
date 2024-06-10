@@ -484,7 +484,10 @@ export const DataSelectorModal = React.memo(
               </FlexRow>
 
               <FlexColumn style={{ flexGrow: 1, overflow: 'hidden', contain: 'content' }}>
-                <DataSelectorColumns />
+                <DataSelectorColumns
+                  activeScope={filteredVariablesInScope}
+                  targetPathInsideScope={selectedPath}
+                />
               </FlexColumn>
               {/* Scope Selector Breadcrumbs */}
               <FlexRow style={{ gap: 2, paddingTop: 4, paddingBottom: 4, opacity: 0.5 }}>
