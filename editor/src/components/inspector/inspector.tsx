@@ -451,6 +451,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
                     title='Styles'
                     toggle={toggleStyleSection}
                     open={styleSectionOpen}
+                    uppercase={true}
                   />,
                 )}
                 {when(
@@ -492,6 +493,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
                     title='Advanced'
                     toggle={toggleAdvancedSection}
                     open={advancedSectionOpen}
+                    uppercase={true}
                   />,
                 )}
                 {when(

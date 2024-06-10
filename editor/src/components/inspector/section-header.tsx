@@ -6,10 +6,12 @@ export function InspectorSectionHeader({
   title,
   open,
   toggle,
+  uppercase = false,
 }: {
   title: string
   open: boolean
   toggle: () => void
+  uppercase?: boolean
 }) {
   return (
     <FlexRow
@@ -28,7 +30,7 @@ export function InspectorSectionHeader({
           overflow: 'hidden',
           fontSize: '11px',
           fontWeight: 600,
-          textTransform: 'uppercase',
+          textTransform: uppercase ? 'uppercase' : undefined,
         }}
       >
         {title}
