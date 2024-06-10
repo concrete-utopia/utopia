@@ -59,13 +59,13 @@ const DataSelectorColumn = React.memo((props: DataSelectorColumnProps) => {
   const pseudoSelectedElementForArray: DataPickerOption | null =
     currentlyShowingScopeForArray && activeScope.length > 0 ? activeScope[0] : null
 
-  const elementToUseForNextColumn = selectedElement ?? pseudoSelectedElementForArray
-
   const nextColumnScope: ArrayOption | ObjectOption | null = (() => {
+    const elementToUseForNextColumn = selectedElement ?? pseudoSelectedElementForArray
     if (elementToUseForNextColumn != null) {
       if (
-        elementToUseForNextColumn.type === 'object' ||
-        elementToUseForNextColumn.type === 'array'
+        (elementToUseForNextColumn.type === 'object' ||
+          elementToUseForNextColumn.type === 'array') &&
+        elementToUseForNextColumn.children.length > 0
       ) {
         return elementToUseForNextColumn
       }
@@ -73,10 +73,7 @@ const DataSelectorColumn = React.memo((props: DataSelectorColumnProps) => {
     return null
   })()
 
-  const nextColumnScopeValue =
-    elementToUseForNextColumn?.type === 'primitive' || elementToUseForNextColumn?.type === 'jsx'
-      ? elementToUseForNextColumn
-      : null
+  const nextColumnScopeValue = nextColumnScope == null ? selectedElement : null
 
   const dataSource = useVariableDataSource(props.originalDataForScope)
 
@@ -128,6 +125,7 @@ const ValuePreviewColumn = React.memo((props: ValuePreviewColumnProps) => {
           border: '1px solid #ccc',
           borderRadius: 4,
           minHeight: 150,
+          overflowWrap: 'break-word',
           overflowX: 'hidden',
           overflowY: 'scroll',
           scrollbarWidth: 'auto',
