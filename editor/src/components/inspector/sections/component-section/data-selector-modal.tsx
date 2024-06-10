@@ -483,129 +483,142 @@ export const DataSelectorModal = React.memo(
               </FlexRow>
 
               {/* detail view */}
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'auto 40px 1fr',
-                  gap: 8,
-                  overflowX: 'hidden',
-                  overflowY: 'scroll',
-                  scrollbarWidth: 'auto',
-                  scrollbarColor: 'gray transparent',
-                  paddingTop: 8,
-                  paddingBottom: 16,
-                }}
-              >
-                <Separator color={colorTheme.seperator.value} spanGridColumns={3} margin={4} />
-                {when(
-                  primitiveVars.length > 0,
-                  <>
-                    <FlexRow
-                      style={{
-                        flexWrap: 'wrap',
-                        height: 'max-content',
-                        gap: 4,
-                      }}
-                    >
-                      {primitiveVars.map((variable) => (
-                        <CartoucheUI
-                          key={variable.valuePath.toString()}
-                          source={variableSources[variable.valuePath.toString()] ?? 'internal'}
-                          datatype={childTypeToCartoucheDataType(variable.type)}
-                          selected={
-                            selectedPath == null
-                              ? false
-                              : arrayEqualsByReference(selectedPath, variable.valuePath)
-                          }
-                          role={cartoucheFolderOrInfo(variable, 'no-folder')}
-                          testId={`data-selector-primitive-values-${variableNameFromPath(
-                            variable,
-                          )}`}
-                          onHover={onHover(variable.valuePath)}
-                          onClick={setCurrentSelectedPathCurried(variable.valuePath)}
-                        >
-                          {variableNameFromPath(variable)}
-                        </CartoucheUI>
-                      ))}
-                    </FlexRow>
-                    <Separator color={colorTheme.seperator.value} spanGridColumns={3} margin={4} />
-                  </>,
-                )}
-                {folderVars.map((variable, idx) => (
-                  <React.Fragment key={variable.valuePath.toString()}>
-                    <CartoucheUI
-                      datatype={childTypeToCartoucheDataType(variable.type)}
-                      source={variableSources[variable.valuePath.toString()] ?? 'internal'}
-                      selected={
-                        selectedPath == null
-                          ? false
-                          : arrayEqualsByReference(selectedPath, variable.valuePath)
-                      }
-                      role={cartoucheFolderOrInfo(variable, 'no-folder')}
-                      testId={`data-selector-left-section-${variableNameFromPath(variable)}`}
-                      onClick={setCurrentSelectedPathCurried(variable.valuePath)}
-                      onHover={onHover(variable.valuePath)}
-                    >
-                      {variableNameFromPath(variable)}
-                    </CartoucheUI>
-                    {variable.type === 'array' ? (
-                      <ArrayIndexSelector
-                        total={variable.children.length}
-                        selected={indexLookup[variable.valuePath.toString()] ?? 0}
-                        onSelect={updateIndexInLookup(variable.valuePath.toString())}
-                      />
-                    ) : (
-                      <div />
-                    )}
-                    {/* properties in scope */}
-                    <FlexRow style={{ flexWrap: 'wrap', height: 'max-content', gap: 4 }}>
-                      {childVars(variable, indexLookup).map((child) => (
-                        <CartoucheUI
-                          key={child.valuePath.toString()}
-                          source={variableSources[variable.valuePath.toString()] ?? 'internal'}
-                          datatype={childTypeToCartoucheDataType(child.type)}
-                          selected={
-                            selectedPath == null
-                              ? false
-                              : arrayEqualsByReference(selectedPath, child.valuePath)
-                          }
-                          role={cartoucheFolderOrInfo(child, 'can-be-folder')}
-                          testId={`data-selector-right-section-${variableNameFromPath(child)}`}
-                          onClick={setCurrentSelectedPathCurried(child.valuePath)}
-                          onDoubleClick={setNavigatedToPathCurried(child.valuePath)}
-                          onHover={onHover(child.valuePath)}
-                        >
-                          {variableNameFromPath(child)}
-                        </CartoucheUI>
-                      ))}
-                    </FlexRow>
-                    {idx < focusedVariableChildren.length - 1 ? (
+              <FlexColumn style={{ flexGrow: 1, overflow: 'hidden', contain: 'content' }}>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'auto 40px 1fr',
+                    gap: 8,
+                    overflowX: 'hidden',
+                    overflowY: 'scroll',
+                    scrollbarWidth: 'auto',
+                    scrollbarColor: 'gray transparent',
+                    paddingTop: 8,
+                    paddingBottom: 16,
+                  }}
+                >
+                  <Separator color={colorTheme.seperator.value} spanGridColumns={3} margin={4} />
+                  {when(
+                    primitiveVars.length > 0,
+                    <>
+                      <FlexRow
+                        style={{
+                          flexWrap: 'wrap',
+                          height: 'max-content',
+                          gap: 4,
+                        }}
+                      >
+                        {primitiveVars.map((variable) => (
+                          <CartoucheUI
+                            key={variable.valuePath.toString()}
+                            source={variableSources[variable.valuePath.toString()] ?? 'internal'}
+                            datatype={childTypeToCartoucheDataType(variable.type)}
+                            selected={
+                              selectedPath == null
+                                ? false
+                                : arrayEqualsByReference(selectedPath, variable.valuePath)
+                            }
+                            role={cartoucheFolderOrInfo(variable, 'no-folder')}
+                            testId={`data-selector-primitive-values-${variableNameFromPath(
+                              variable,
+                            )}`}
+                            onHover={onHover(variable.valuePath)}
+                            onClick={setCurrentSelectedPathCurried(variable.valuePath)}
+                          >
+                            {variableNameFromPath(variable)}
+                          </CartoucheUI>
+                        ))}
+                      </FlexRow>
                       <Separator
                         color={colorTheme.seperator.value}
                         spanGridColumns={3}
                         margin={4}
                       />
-                    ) : null}
-                  </React.Fragment>
-                ))}
-                {/* Empty State */}
-                {when(
-                  focusedVariableChildren.length === 0,
-                  <div
-                    style={{
-                      gridColumn: '1 / span 3',
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      height: 100,
-                    }}
-                  >
-                    We did not find any insertable data
-                  </div>,
-                )}
-              </div>
+                    </>,
+                  )}
+                  {folderVars.map((variable, idx) => (
+                    <React.Fragment key={variable.valuePath.toString()}>
+                      <CartoucheUI
+                        datatype={childTypeToCartoucheDataType(variable.type)}
+                        source={variableSources[variable.valuePath.toString()] ?? 'internal'}
+                        selected={
+                          selectedPath == null
+                            ? false
+                            : arrayEqualsByReference(selectedPath, variable.valuePath)
+                        }
+                        role={cartoucheFolderOrInfo(variable, 'no-folder')}
+                        testId={`data-selector-left-section-${variableNameFromPath(variable)}`}
+                        onClick={setCurrentSelectedPathCurried(variable.valuePath)}
+                        onHover={onHover(variable.valuePath)}
+                      >
+                        {variableNameFromPath(variable)}
+                      </CartoucheUI>
+                      {variable.type === 'array' ? (
+                        <ArrayIndexSelector
+                          total={variable.children.length}
+                          selected={indexLookup[variable.valuePath.toString()] ?? 0}
+                          onSelect={updateIndexInLookup(variable.valuePath.toString())}
+                        />
+                      ) : (
+                        <div />
+                      )}
+                      {/* properties in scope */}
+                      <FlexRow style={{ flexWrap: 'wrap', height: 'max-content', gap: 4 }}>
+                        {childVars(variable, indexLookup).map((child) => (
+                          <CartoucheUI
+                            key={child.valuePath.toString()}
+                            source={variableSources[variable.valuePath.toString()] ?? 'internal'}
+                            datatype={childTypeToCartoucheDataType(child.type)}
+                            selected={
+                              selectedPath == null
+                                ? false
+                                : arrayEqualsByReference(selectedPath, child.valuePath)
+                            }
+                            role={cartoucheFolderOrInfo(child, 'can-be-folder')}
+                            testId={`data-selector-right-section-${variableNameFromPath(child)}`}
+                            onClick={setCurrentSelectedPathCurried(child.valuePath)}
+                            onDoubleClick={setNavigatedToPathCurried(child.valuePath)}
+                            onHover={onHover(child.valuePath)}
+                          >
+                            {variableNameFromPath(child)}
+                          </CartoucheUI>
+                        ))}
+                      </FlexRow>
+                      {idx < focusedVariableChildren.length - 1 ? (
+                        <Separator
+                          color={colorTheme.seperator.value}
+                          spanGridColumns={3}
+                          margin={4}
+                        />
+                      ) : null}
+                    </React.Fragment>
+                  ))}
+                  {/* Empty State */}
+                  {when(
+                    focusedVariableChildren.length === 0,
+                    <div
+                      style={{
+                        gridColumn: '1 / span 3',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        height: 100,
+                      }}
+                    >
+                      We did not find any insertable data
+                    </div>,
+                  )}
+                </div>
+              </FlexColumn>
               {/* Scope Selector Breadcrumbs */}
-              <FlexRow style={{ gap: 2, paddingTop: 16, paddingBottom: 16, opacity: 0.5 }}>
+              <FlexRow
+                style={{
+                  gap: 2,
+                  paddingTop: 4,
+                  paddingBottom: 4,
+                  opacity: 0.5,
+                }}
+              >
                 {elementLabelsWithScopes.map(({ label, scope, hasContent }, idx, a) => (
                   <React.Fragment key={`label-${idx}`}>
                     <div
