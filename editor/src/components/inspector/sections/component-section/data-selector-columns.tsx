@@ -1,17 +1,17 @@
+import styled from '@emotion/styled'
 import React from 'react'
-import { FlexColumn, FlexRow, colorTheme } from '../../../../uuiui'
-import type { ArrayOption, DataPickerOption, ObjectOption, ObjectPath } from './data-picker-utils'
-import { isPrefixOf, mapFirstApplicable } from '../../../../core/shared/array-utils'
-import { unless, when } from '../../../../utils/react-conditionals'
-import type { CartoucheSource, CartoucheUIProps } from './cartouche-ui'
-import { CartoucheUI } from './cartouche-ui'
 import {
   dataPathSuccess,
   traceDataFromVariableName,
 } from '../../../../core/data-tracing/data-tracing'
-import { Substores, useEditorState } from '../../../editor/store/store-hook'
+import { isPrefixOf } from '../../../../core/shared/array-utils'
 import { assertNever } from '../../../../core/shared/utils'
-import styled from '@emotion/styled'
+import { unless } from '../../../../utils/react-conditionals'
+import { FlexColumn, FlexRow, colorTheme } from '../../../../uuiui'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
+import type { CartoucheSource, CartoucheUIProps } from './cartouche-ui'
+import { CartoucheUI } from './cartouche-ui'
+import type { ArrayOption, DataPickerOption, ObjectOption, ObjectPath } from './data-picker-utils'
 
 interface DataSelectorColumnsProps {
   activeScope: Array<DataPickerOption>
@@ -123,10 +123,40 @@ const ValuePreviewColumn = React.memo((props: ValuePreviewColumnProps) => {
   const ref = useScrollIntoView(true)
   return (
     <DataSelectorFlexColumn ref={ref}>
-      <div style={{ textWrap: 'balance' } as any}>{text}</div>
+      <div
+        style={{
+          padding: 4,
+          border: '1px solid #ccc',
+          borderRadius: 4,
+          minHeight: 150,
+          overflowX: 'hidden',
+          overflowY: 'scroll',
+          scrollbarWidth: 'auto',
+          scrollbarColor: 'gray transparent',
+          ['textWrap' as any]: 'balance', // I think we need to update some typings here?
+        }}
+      >
+        {text}
+      </div>
+      <span>{variableTypeForInfo(props.data)}</span>
     </DataSelectorFlexColumn>
   )
 })
+
+function variableTypeForInfo(info: DataPickerOption): string {
+  switch (info.type) {
+    case 'array':
+      return 'Array'
+    case 'object':
+      return 'Object'
+    case 'primitive':
+      return typeof info.variableInfo.value
+    case 'jsx':
+      return 'JSX'
+    default:
+      assertNever(info)
+  }
+}
 
 interface RowWithCartoucheProps {
   data: DataPickerOption
