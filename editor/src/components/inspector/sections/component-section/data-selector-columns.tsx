@@ -3,7 +3,7 @@ import { FlexColumn, FlexRow, colorTheme } from '../../../../uuiui'
 import type { ArrayOption, DataPickerOption, ObjectOption, ObjectPath } from './data-picker-utils'
 import { isPrefixOf, mapFirstApplicable } from '../../../../core/shared/array-utils'
 import { when } from '../../../../utils/react-conditionals'
-import type { CartoucheUIProps } from './cartouche-ui'
+import type { CartoucheSource, CartoucheUIProps } from './cartouche-ui'
 import { CartoucheUI } from './cartouche-ui'
 import {
   dataPathSuccess,
@@ -35,6 +35,7 @@ export const DataSelectorColumns = React.memo((props: DataSelectorColumnsProps) 
         targetPathInsideScope={props.targetPathInsideScope}
         onTargetPathChange={props.onTargetPathChange}
         currentlyShowingScopeForArray={false}
+        originalDataForScope={null}
       />
     </FlexRow>
   )
@@ -42,6 +43,7 @@ export const DataSelectorColumns = React.memo((props: DataSelectorColumnsProps) 
 
 interface DataSelectorColumnProps {
   activeScope: Array<DataPickerOption>
+  originalDataForScope: DataPickerOption | null
   currentlyShowingScopeForArray: boolean
   targetPathInsideScope: ObjectPath
   onTargetPathChange: (newTargetPath: ObjectPath) => void
@@ -67,6 +69,8 @@ const DataSelectorColumn = React.memo((props: DataSelectorColumnProps) => {
     return null
   })()
 
+  const dataSource = useVariableDataSource(props.originalDataForScope)
+
   return (
     <>
       <FlexColumn style={{ width: 200, flexShrink: 0 }}>
@@ -77,6 +81,7 @@ const DataSelectorColumn = React.memo((props: DataSelectorColumnProps) => {
               data={option}
               selected={option === selectedElement}
               onTargetPathChange={props.onTargetPathChange}
+              forcedDataSource={dataSource}
             />
           )
         })}
@@ -87,6 +92,7 @@ const DataSelectorColumn = React.memo((props: DataSelectorColumnProps) => {
           targetPathInsideScope={targetPathInsideScope}
           onTargetPathChange={props.onTargetPathChange}
           currentlyShowingScopeForArray={nextColumnScope.type === 'array'}
+          originalDataForScope={props.originalDataForScope ?? selectedElement}
         />
       ) : null}
     </>
@@ -96,10 +102,11 @@ const DataSelectorColumn = React.memo((props: DataSelectorColumnProps) => {
 interface RowWithCartoucheProps {
   data: DataPickerOption
   selected: boolean
+  forcedDataSource: CartoucheSource | null
   onTargetPathChange: (newTargetPath: ObjectPath) => void
 }
 const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
-  const { onTargetPathChange, data } = props
+  const { onTargetPathChange, data, forcedDataSource } = props
   const targetPath = data.valuePath
 
   const dataSource = useVariableDataSource(data)
@@ -130,7 +137,7 @@ const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
       <span>
         <CartoucheUI
           key={data.valuePath.toString()}
-          source={dataSource}
+          source={forcedDataSource ?? dataSource ?? 'internal'}
           datatype={childTypeToCartoucheDataType(data.type)}
           selected={props.selected}
           role={'information'}
@@ -144,11 +151,14 @@ const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
   )
 })
 
-function useVariableDataSource(variable: DataPickerOption) {
-  const container = variable.variableInfo.insertionCeiling
+function useVariableDataSource(variable: DataPickerOption | null) {
   return useEditorState(
     Substores.projectContentsAndMetadata,
     (store) => {
+      if (variable == null) {
+        return null
+      }
+      const container = variable.variableInfo.insertionCeiling
       const trace = traceDataFromVariableName(
         container,
         variable.variableInfo.expression,
