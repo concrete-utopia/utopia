@@ -30,6 +30,7 @@ export type CartoucheUIProps = React.PropsWithChildren<{
   onClick?: (e: React.MouseEvent) => void
   onDoubleClick?: (e: React.MouseEvent) => void
   onHover?: HoverHandlers
+  badge?: React.ReactNode
 }>
 
 export const CartoucheUI = React.forwardRef(
@@ -127,6 +128,8 @@ export const CartoucheUI = React.forwardRef(
               // a trailing ellipsis is added to indicate that the object can be traversed
               <span>…</span>,
             )}
+            {/* badge (this check is redundant but it should make it more clear that this is optional) */}
+            {when(props.badge != null, props.badge)}
           </FlexRow>
         </Tooltip>
       </div>

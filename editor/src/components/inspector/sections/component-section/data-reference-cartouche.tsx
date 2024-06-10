@@ -173,6 +173,7 @@ interface DataCartoucheInnerProps {
   hideTooltip?: boolean
   datatype: CartoucheDataType
   highlight?: CartoucheHighlight | null
+  badge?: React.ReactNode
 }
 
 export const DataCartoucheInner = React.forwardRef(
@@ -220,6 +221,7 @@ export const DataCartoucheInner = React.forwardRef(
         role='selection'
         source={source}
         ref={ref}
+        badge={props.badge}
       >
         {contentsToDisplay.label ?? 'DATA'}
       </CartoucheUI>

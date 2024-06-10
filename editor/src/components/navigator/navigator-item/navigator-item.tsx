@@ -64,7 +64,6 @@ import { LayoutIcon } from './layout-icon'
 import { NavigatorItemActionSheet } from './navigator-item-components'
 import { assertNever } from '../../../core/shared/utils'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
-import { MapCounter } from './map-counter'
 import {
   conditionalTarget,
   renderPropTarget,
@@ -1242,7 +1241,12 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         />,
       )}
 
-      <div style={{ textTransform: isCodeItem ? 'uppercase' : undefined }}>
+      <div
+        style={{
+          textTransform: isCodeItem ? 'uppercase' : undefined,
+          display: props.codeItemType === 'map' ? 'none' : 'block',
+        }}
+      >
         <ItemLabel
           key={`label-${props.label}`}
           testId={`navigator-item-label-${props.label}`}
@@ -1255,15 +1259,11 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
           remixItemType={props.remixItemType}
         />
       </div>
-      <MapCounter
-        navigatorEntry={props.navigatorEntry}
-        dispatch={props.dispatch}
-        selected={props.selected}
-      />
       <MapListSourceCartoucheNavigator
         target={props.navigatorEntry.elementPath}
         selected={props.selected}
         openOn='double-click'
+        countChildren={true}
       />
       <ComponentPreview
         key={`preview-${props.label}`}
