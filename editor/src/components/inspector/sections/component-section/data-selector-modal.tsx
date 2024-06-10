@@ -323,7 +323,7 @@ export const DataSelectorModal = React.memo(
 
       const variableSources = React.useMemo(() => {
         let result: { [valuePath: string]: CartoucheUIProps['source'] } = {}
-        for (const variable of focusedVariableChildren) {
+        for (const variable of allVariablesInScope) {
           const container = variable.variableInfo.insertionCeiling
           const trace = traceDataFromVariableName(
             container,
@@ -351,7 +351,7 @@ export const DataSelectorModal = React.memo(
           }
         }
         return result
-      }, [focusedVariableChildren, metadata, projectContents])
+      }, [allVariablesInScope, metadata, projectContents])
 
       const setCurrentSelectedPathCurried = React.useCallback(
         (path: DataPickerOption['valuePath']) => () => {
@@ -683,11 +683,13 @@ export const DataSelectorModal = React.memo(
                           {searchResult.valuePath.map((v, i) => (
                             <CartoucheUI
                               key={`${v.value}-${i}`}
-                              source='internal'
-                              datatype='renderable'
+                              datatype={searchResult.cartoucheProps.datatype}
                               selected={false}
-                              role='information'
-                              highlight='subtle'
+                              role={searchResult.cartoucheProps.role}
+                              source={
+                                variableSources[searchResult.originalValuePath.toString()] ??
+                                'internal'
+                              }
                               testId={`data-selector-primitive-values-${v.value}-${i}`}
                             >
                               <SearchResultString
@@ -999,6 +1001,7 @@ interface SearchResult {
   originalValuePath: ObjectPath
   valuePath: Array<{ value: string; matched: boolean }>
   value: { value: string; matched: boolean }
+  cartoucheProps: Pick<CartoucheUIProps, 'role' | 'datatype'>
 }
 
 function searchInValuePath(
@@ -1042,6 +1045,10 @@ function matches(option: DataPickerOption, context: SearchContext): SearchResult
       originalValuePath: option.valuePath,
       value: maybeValue,
       valuePath: maybeValuePath.valuePath,
+      cartoucheProps: {
+        role: cartoucheFolderOrInfo(option, 'can-be-folder'),
+        datatype: childTypeToCartoucheDataType(option.type),
+      },
     }
   }
 
