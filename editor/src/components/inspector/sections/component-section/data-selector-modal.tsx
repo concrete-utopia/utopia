@@ -404,9 +404,9 @@ export const DataSelectorModal = React.memo(
         (path: ObjectPath) => () => {
           setHoveredSearchRow(-1)
           setSearchTerm(null)
-          navigatedToPath(path)
+          setNavigatedToPath(path.slice(0, -1))
         },
-        [navigatedToPath],
+        [],
       )
 
       const valuePreviewText = (() => {
@@ -665,7 +665,14 @@ export const DataSelectorModal = React.memo(
                 </>,
               )}
               {searchTerm == null ? null : (
-                <FlexColumn>
+                <FlexColumn
+                  style={{
+                    overflowX: 'hidden',
+                    overflowY: 'scroll',
+                    scrollbarWidth: 'auto',
+                    scrollbarColor: 'gray transparent',
+                  }}
+                >
                   {debouncedSearch
                     .current(allVariablesInScope, searchTerm.toLowerCase())
                     ?.map((searchResult, idx) => (
