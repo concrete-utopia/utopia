@@ -1,7 +1,7 @@
+/** @jsxRuntime classic */
+/** @jsx jsx */
 import React from 'react'
-import { when } from '../../../../utils/react-conditionals'
-import { FlexRow, Icn, Tooltip, colorTheme } from '../../../../uuiui'
-import { stopPropagation } from '../../common/inspector-utils'
+import { jsx } from '@emotion/react'
 import { DataCartoucheInner } from './data-reference-cartouche'
 import { NO_OP } from '../../../../core/shared/utils'
 import type { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
@@ -9,6 +9,7 @@ import * as EPP from '../../../template-property-path'
 import { dataPathSuccess, traceDataFromProp } from '../../../../core/data-tracing/data-tracing'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import type { CartoucheDataType } from './cartouche-ui'
+import { useColorTheme } from '../../../../uuiui'
 
 interface IdentifierExpressionCartoucheControlProps {
   contents: string
@@ -39,18 +40,47 @@ export const IdentifierExpressionCartoucheControl = React.memo(
     )
 
     return (
-      <DataCartoucheInner
-        contentsToDisplay={{ label: props.contents, type: 'reference' }}
-        onClick={onOpenDataPicker}
-        selected={false}
-        onDoubleClick={NO_OP}
-        safeToDelete={safeToDelete}
-        onDelete={onDeleteCartouche}
-        testId={testId}
-        inverted={false}
-        contentIsComingFromServer={isDataComingFromHookResult}
-        datatype={props.datatype}
-      />
+      <CartoucheInspectorWrapper>
+        <DataCartoucheInner
+          contentsToDisplay={{ label: props.contents, type: 'reference' }}
+          onClick={NO_OP}
+          selected={false}
+          onDoubleClick={onOpenDataPicker}
+          safeToDelete={safeToDelete}
+          onDelete={onDeleteCartouche}
+          testId={testId}
+          contentIsComingFromServer={isDataComingFromHookResult}
+          datatype={props.datatype}
+        />
+      </CartoucheInspectorWrapper>
     )
   },
 )
+
+export const CartoucheInspectorWrapper = React.memo((props: { children: React.ReactNode }) => {
+  const colorTheme = useColorTheme()
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'flex-start',
+        alignItems: 'center',
+        minWidth: 0,
+        padding: 1,
+        borderRadius: 4,
+        gap: 4,
+      }}
+      css={{
+        border: '1px solid transparent',
+        ':hover': {
+          border: `1px solid ${colorTheme.primary.value}`,
+        },
+      }}
+    >
+      {props.children}
+    </div>
+  )
+})
+CartoucheInspectorWrapper.displayName = 'CartoucheInspectorWrapper'

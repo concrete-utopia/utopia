@@ -286,6 +286,7 @@ function traverseRoutesAndGetIDs(routes: RouteLike[]): Set<string> {
 export interface UtopiaRemixRootComponentProps {
   [UTOPIA_PATH_KEY]: ElementPath
   getLoadContext?: (request: Request) => Promise<AppLoadContext> | AppLoadContext
+  startingRoute?: string
 }
 
 export const UtopiaRemixRootComponent = (props: UtopiaRemixRootComponentProps) => {
@@ -313,6 +314,12 @@ export const UtopiaRemixRootComponent = (props: UtopiaRemixRootComponentProps) =
     const initialEntries = currentEntriesRef.current == null ? undefined : currentEntriesRef.current
     return createMemoryRouter(routes, { initialEntries: initialEntries })
   }, [routes])
+
+  React.useEffect(() => {
+    if (props.startingRoute != null && router != null) {
+      void router.navigate(props.startingRoute)
+    }
+  }, [router, props.startingRoute])
 
   const setNavigationDataForRouter = React.useCallback(
     (

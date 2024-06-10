@@ -212,7 +212,11 @@ export const DataSelectorModal = React.memo(
       const [searchTerm, setSearchTerm] = React.useState<string | null>(null)
       const onSearchFieldValueChange = React.useCallback(
         (e: React.ChangeEvent<HTMLInputElement>) => {
-          setSearchTerm(e.target.value)
+          if (e.target.value.length === 0) {
+            setSearchTerm(null)
+          } else {
+            setSearchTerm(e.target.value)
+          }
         },
         [],
       )
@@ -422,11 +426,223 @@ export const DataSelectorModal = React.memo(
                 ...style,
               }}
             >
+              {when(
+                searchTerm == null,
+                <>
+                  {/* top bar */}
+                  <FlexRow
+                    style={{ justifyContent: 'space-between', alignItems: 'center', gap: 8 }}
+                  >
+                    <FlexRow style={{ gap: 8, flexWrap: 'wrap', flexGrow: 1 }}>
+                      <FlexRow
+                        style={{
+                          flexGrow: 1,
+                          borderStyle: 'solid',
+                          borderWidth: 1,
+                          borderColor: colorTheme.fg7.value,
+                          borderRadius: 4,
+                          fontSize: 11,
+                          fontWeight: 400,
+                          height: 33,
+                          padding: '0px 6px',
+                        }}
+                      >
+                        <FlexRow
+                          data-testid={DataSelectorPopupBreadCrumbsTestId}
+                          style={{ flexWrap: 'wrap', flexGrow: 1 }}
+                        >
+                          {pathBreadcrumbs(
+                            pathInTopBarIncludingHover,
+                            processedVariablesInScope,
+                          ).map(({ segment, path }, idx) => (
+                            <span key={path.toString()}>
+                              {idx === 0 ? segment : pathSegmentToString(segment)}
+                            </span>
+                          ))}
+                        </FlexRow>
+                        <div
+                          style={{
+                            ...disabledButtonStyles(activeTargetPath.length === 0),
+                            fontWeight: 400,
+                            fontSize: 12,
+                          }}
+                          onClick={onHomeClick}
+                        >
+                          <Icons.Cross />
+                        </div>
+                      </FlexRow>
+                    </FlexRow>
+                    <div
+                      style={{
+                        borderRadius: 4,
+                        backgroundColor: colorTheme.primary.value,
+                        color: 'white',
+                        padding: '8px 12px',
+                        fontSize: 14,
+                        fontWeight: 500,
+                        ...disabledButtonStyles(activeTargetPath.length === 0),
+                      }}
+                      onClick={onApplyClick}
+                    >
+                      Apply
+                    </div>
+                  </FlexRow>
+                  {/* Value preview */}
+                  <FlexRow
+                    style={{
+                      flexShrink: 0,
+                      gridColumn: '3',
+                      flexWrap: 'wrap',
+                      gap: 4,
+                      overflowX: 'scroll',
+                      opacity: 0.8,
+                      fontSize: 10,
+                      height: 20,
+                    }}
+                  >
+                    {valuePreviewText}
+                  </FlexRow>
+                  {/* detail view */}
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'auto 40px 1fr',
+                      gap: 8,
+                      overflowX: 'hidden',
+                      overflowY: 'scroll',
+                      scrollbarWidth: 'auto',
+                      scrollbarColor: 'gray transparent',
+                      paddingTop: 8,
+                      paddingBottom: 16,
+                    }}
+                  >
+                    <Separator color={colorTheme.seperator.value} spanGridColumns={3} margin={4} />
+                    {when(
+                      primitiveVars.length > 0,
+                      <>
+                        <FlexRow
+                          style={{
+                            flexWrap: 'wrap',
+                            height: 'max-content',
+                            gap: 4,
+                          }}
+                        >
+                          {primitiveVars.map((variable) => (
+                            <CartoucheUI
+                              key={variable.valuePath.toString()}
+                              source={variableSources[variable.valuePath.toString()] ?? 'internal'}
+                              datatype={childTypeToCartoucheDataType(variable.type)}
+                              selected={
+                                selectedPath == null
+                                  ? false
+                                  : arrayEqualsByReference(selectedPath, variable.valuePath)
+                              }
+                              role={cartoucheFolderOrInfo(variable, 'no-folder')}
+                              testId={`data-selector-primitive-values-${variableNameFromPath(
+                                variable,
+                              )}`}
+                              onHover={onHover(variable.valuePath)}
+                              onClick={setCurrentSelectedPathCurried(variable.valuePath)}
+                            >
+                              {variableNameFromPath(variable)}
+                            </CartoucheUI>
+                          ))}
+                        </FlexRow>
+                        <Separator
+                          color={colorTheme.seperator.value}
+                          spanGridColumns={3}
+                          margin={4}
+                        />
+                      </>,
+                    )}
+                    {folderVars.map((variable, idx) => (
+                      <React.Fragment key={variable.valuePath.toString()}>
+                        <CartoucheUI
+                          datatype={childTypeToCartoucheDataType(variable.type)}
+                          source={variableSources[variable.valuePath.toString()] ?? 'internal'}
+                          selected={
+                            selectedPath == null
+                              ? false
+                              : arrayEqualsByReference(selectedPath, variable.valuePath)
+                          }
+                          role={cartoucheFolderOrInfo(variable, 'no-folder')}
+                          testId={`data-selector-left-section-${variableNameFromPath(variable)}`}
+                          onClick={setCurrentSelectedPathCurried(variable.valuePath)}
+                          onHover={onHover(variable.valuePath)}
+                        >
+                          {variableNameFromPath(variable)}
+                        </CartoucheUI>
+                        {variable.type === 'array' ? (
+                          <ArrayIndexSelector
+                            total={variable.children.length}
+                            selected={indexLookup[variable.valuePath.toString()] ?? 0}
+                            onSelect={updateIndexInLookup(variable.valuePath.toString())}
+                          />
+                        ) : (
+                          <div />
+                        )}
+                        {/* properties in scope */}
+                        <FlexRow style={{ flexWrap: 'wrap', height: 'max-content', gap: 4 }}>
+                          {childVars(variable, indexLookup).map((child) => (
+                            <CartoucheUI
+                              key={child.valuePath.toString()}
+                              source={variableSources[variable.valuePath.toString()] ?? 'internal'}
+                              datatype={childTypeToCartoucheDataType(child.type)}
+                              selected={
+                                selectedPath == null
+                                  ? false
+                                  : arrayEqualsByReference(selectedPath, child.valuePath)
+                              }
+                              role={cartoucheFolderOrInfo(child, 'can-be-folder')}
+                              testId={`data-selector-right-section-${variableNameFromPath(child)}`}
+                              onClick={setCurrentSelectedPathCurried(child.valuePath)}
+                              onDoubleClick={setNavigatedToPathCurried(child.valuePath)}
+                              onHover={onHover(child.valuePath)}
+                            >
+                              {variableNameFromPath(child)}
+                            </CartoucheUI>
+                          ))}
+                        </FlexRow>
+                        {idx < focusedVariableChildren.length - 1 ? (
+                          <Separator
+                            color={colorTheme.seperator.value}
+                            spanGridColumns={3}
+                            margin={4}
+                          />
+                        ) : null}
+                      </React.Fragment>
+                    ))}
+                    {/* Empty State */}
+                    {when(
+                      focusedVariableChildren.length === 0,
+                      <div
+                        style={{
+                          gridColumn: '1 / span 3',
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          height: 100,
+                        }}
+                      >
+                        We did not find any insertable data
+                      </div>,
+                    )}
+                  </div>
+                </>,
+              )}
+              {searchTerm == null ? null : (
+                <FlexColumn>
+                  {search(allVariablesInScope, searchTerm.toLowerCase()).map((t, idx) => (
+                    <FlexRow key={[...t.valuePath, idx].toString()}>
+                      <span>{t.valuePath.map(({ value }) => value).toString()}</span>
+                      <span>{t.value.value}</span>
+                    </FlexRow>
+                  ))}
+                </FlexColumn>
+              )}
               {/* Scope Selector Breadcrumbs */}
-              <FlexRow
-                style={{ justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}
-              >
-                <FlexRow style={{ gap: 2 }}>
+              <FlexRow style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+                <FlexRow style={{ gap: 2, paddingTop: 16, paddingBottom: 16, opacity: 0.5 }}>
                   {elementLabelsWithScopes.map(({ label, scope, hasContent }, idx, a) => (
                     <React.Fragment key={`label-${idx}`}>
                       <div
@@ -471,217 +687,6 @@ export const DataSelectorModal = React.memo(
                   />
                 </FlexRow>
               </FlexRow>
-              {/* top bar */}
-              <FlexRow style={{ justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
-                <FlexRow style={{ gap: 8, flexWrap: 'wrap', flexGrow: 1 }}>
-                  <FlexRow
-                    style={{
-                      flexGrow: 1,
-                      borderStyle: 'solid',
-                      borderWidth: 1,
-                      borderColor: colorTheme.fg7.value,
-                      borderRadius: 4,
-                      fontSize: 11,
-                      fontWeight: 400,
-                      height: 33,
-                      padding: '0px 6px',
-                    }}
-                  >
-                    <FlexRow
-                      data-testid={DataSelectorPopupBreadCrumbsTestId}
-                      style={{ flexWrap: 'wrap', flexGrow: 1 }}
-                    >
-                      {pathBreadcrumbs(pathInTopBarIncludingHover, processedVariablesInScope).map(
-                        ({ segment, path }, idx) => (
-                          <span key={path.toString()}>
-                            {idx === 0 ? segment : pathSegmentToString(segment)}
-                          </span>
-                        ),
-                      )}
-                    </FlexRow>
-                    <div
-                      style={{
-                        ...disabledButtonStyles(activeTargetPath.length === 0),
-                        fontWeight: 400,
-                        fontSize: 12,
-                      }}
-                      onClick={onHomeClick}
-                    >
-                      <Icons.Cross />
-                    </div>
-                  </FlexRow>
-                </FlexRow>
-                <div
-                  style={{
-                    borderRadius: 4,
-                    backgroundColor: colorTheme.primary.value,
-                    color: 'white',
-                    padding: '8px 12px',
-                    fontSize: 14,
-                    fontWeight: 500,
-                    ...disabledButtonStyles(activeTargetPath.length === 0),
-                  }}
-                  onClick={onApplyClick}
-                >
-                  Apply
-                </div>
-              </FlexRow>
-              {/* Value preview */}
-              <FlexRow
-                style={{
-                  flexShrink: 0,
-                  gridColumn: '3',
-                  flexWrap: 'wrap',
-                  gap: 4,
-                  overflowX: 'scroll',
-                  opacity: 0.8,
-                  fontSize: 10,
-                  height: 20,
-                }}
-              >
-                {valuePreviewText}
-              </FlexRow>
-              {/* detail view */}
-              {searchTerm == null ? null : (
-                <FlexColumn>
-                  {search(allVariablesInScope, searchTerm.toLowerCase()).map((t, idx) => (
-                    <FlexRow key={[...t.valuePath, idx].toString()}>
-                      <span>{t.valuePath.map(({ value }) => value).toString()}</span>
-                      <span>{t.value.value}</span>
-                    </FlexRow>
-                  ))}
-                </FlexColumn>
-              )}
-              {searchTerm != null ? null : (
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'auto 40px 1fr',
-                    gap: 8,
-                    overflowX: 'hidden',
-                    overflowY: 'scroll',
-                    scrollbarWidth: 'auto',
-                    scrollbarColor: 'gray transparent',
-                    paddingTop: 8,
-                    paddingBottom: 16,
-                  }}
-                >
-                  <Separator color={colorTheme.seperator.value} spanGridColumns={3} margin={4} />
-                  {when(
-                    primitiveVars.length > 0,
-                    <>
-                      <FlexRow
-                        style={{
-                          flexWrap: 'wrap',
-                          height: 'max-content',
-                          gap: 4,
-                        }}
-                      >
-                        {primitiveVars.map((variable) => (
-                          <CartoucheUI
-                            key={variable.valuePath.toString()}
-                            source={variableSources[variable.valuePath.toString()] ?? 'internal'}
-                            datatype={childTypeToCartoucheDataType(variable.type)}
-                            inverted={false}
-                            selected={
-                              selectedPath == null
-                                ? false
-                                : arrayEqualsByReference(selectedPath, variable.valuePath)
-                            }
-                            role={cartoucheFolderOrInfo(variable, 'no-folder')}
-                            testId={`data-selector-primitive-values-${variableNameFromPath(
-                              variable,
-                            )}`}
-                            onHover={onHover(variable.valuePath)}
-                            onClick={setCurrentSelectedPathCurried(variable.valuePath)}
-                          >
-                            {variableNameFromPath(variable)}
-                          </CartoucheUI>
-                        ))}
-                      </FlexRow>
-                      <Separator
-                        color={colorTheme.seperator.value}
-                        spanGridColumns={3}
-                        margin={4}
-                      />
-                    </>,
-                  )}
-                  {folderVars.map((variable, idx) => (
-                    <React.Fragment key={variable.valuePath.toString()}>
-                      <CartoucheUI
-                        datatype={childTypeToCartoucheDataType(variable.type)}
-                        source={variableSources[variable.valuePath.toString()] ?? 'internal'}
-                        inverted={false}
-                        selected={
-                          selectedPath == null
-                            ? false
-                            : arrayEqualsByReference(selectedPath, variable.valuePath)
-                        }
-                        role={cartoucheFolderOrInfo(variable, 'no-folder')}
-                        testId={`data-selector-left-section-${variableNameFromPath(variable)}`}
-                        onClick={setCurrentSelectedPathCurried(variable.valuePath)}
-                        onHover={onHover(variable.valuePath)}
-                      >
-                        {variableNameFromPath(variable)}
-                      </CartoucheUI>
-                      {variable.type === 'array' ? (
-                        <ArrayIndexSelector
-                          total={variable.children.length}
-                          selected={indexLookup[variable.valuePath.toString()] ?? 0}
-                          onSelect={updateIndexInLookup(variable.valuePath.toString())}
-                        />
-                      ) : (
-                        <div />
-                      )}
-                      {/* properties in scope */}
-                      <FlexRow style={{ flexWrap: 'wrap', height: 'max-content', gap: 4 }}>
-                        {childVars(variable, indexLookup).map((child) => (
-                          <CartoucheUI
-                            key={child.valuePath.toString()}
-                            source={variableSources[variable.valuePath.toString()] ?? 'internal'}
-                            inverted={false}
-                            datatype={childTypeToCartoucheDataType(child.type)}
-                            selected={
-                              selectedPath == null
-                                ? false
-                                : arrayEqualsByReference(selectedPath, child.valuePath)
-                            }
-                            role={cartoucheFolderOrInfo(child, 'can-be-folder')}
-                            testId={`data-selector-right-section-${variableNameFromPath(child)}`}
-                            onClick={setCurrentSelectedPathCurried(child.valuePath)}
-                            onDoubleClick={setNavigatedToPathCurried(child.valuePath)}
-                            onHover={onHover(child.valuePath)}
-                          >
-                            {variableNameFromPath(child)}
-                          </CartoucheUI>
-                        ))}
-                      </FlexRow>
-                      {idx < focusedVariableChildren.length - 1 ? (
-                        <Separator
-                          color={colorTheme.seperator.value}
-                          spanGridColumns={3}
-                          margin={4}
-                        />
-                      ) : null}
-                    </React.Fragment>
-                  ))}
-                  {/* Empty State */}
-                  {when(
-                    focusedVariableChildren.length === 0,
-                    <div
-                      style={{
-                        gridColumn: '1 / span 3',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        height: 100,
-                      }}
-                    >
-                      We did not find any insertable data
-                    </div>,
-                  )}
-                </div>
-              )}
             </FlexColumn>
           </div>
         </InspectorModal>

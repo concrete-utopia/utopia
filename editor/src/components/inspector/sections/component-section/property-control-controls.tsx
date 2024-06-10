@@ -1,7 +1,36 @@
 import fastDeepEquals from 'fast-deep-equal'
 import React from 'react'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { isRight } from '../../../../core/shared/either'
+import { isJSXElement } from '../../../../core/shared/element-template'
+import { parseNumber } from '../../../../core/shared/math-utils'
+import { forceNotNull } from '../../../../core/shared/optional-utils'
+import type { ElementPath, Imports, PropertyPath } from '../../../../core/shared/project-file-types'
+import { importDetailsFromImportOption } from '../../../../core/shared/project-file-types'
+import * as PP from '../../../../core/shared/property-path'
+import { assertNever } from '../../../../core/shared/utils'
+import { useKeepReferenceEqualityIfPossible } from '../../../../utils/react-performance'
+import type { JSXParsedType, JSXParsedValue } from '../../../../utils/value-parser-utils'
+import type { NumberInputProps } from '../../../../uuiui'
+import {
+  ChainedNumberInput,
+  FlexColumn,
+  FlexRow,
+  Icn,
+  Icons,
+  PopupList,
+  SimpleNumberInput,
+  UtopiaTheme,
+  useColorTheme,
+  useWrappedEmptyOrUnknownOnSubmitValue,
+  wrappedEmptyOrUnknownOnSubmitValue,
+} from '../../../../uuiui'
 import type { CSSCursor } from '../../../../uuiui-deps'
 import { SliderControl, getControlStyles } from '../../../../uuiui-deps'
+import {
+  normalisePathSuccessOrThrowError,
+  normalisePathToUnderlyingTarget,
+} from '../../../custom-code/code-file'
 import type {
   AllowedEnumType,
   BasicControlOption,
@@ -24,50 +53,22 @@ import type {
   Vector3ControlDescription,
   Vector4ControlDescription,
 } from '../../../custom-code/internal-property-controls'
+import type { EditorAction } from '../../../editor/action-types'
+import { addImports, forceParseFile } from '../../../editor/actions/action-creators'
+import { useDispatch } from '../../../editor/store/dispatch-context'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
+import type { CSSNumber } from '../../common/css-utils'
+import { cssNumber, defaultCSSColor, printCSSNumber } from '../../common/css-utils'
 import type { InspectorInfo, InspectorInfoWithRawValue } from '../../common/property-path-hooks'
 import { BooleanControl } from '../../controls/boolean-control'
-import type { NumberInputProps } from '../../../../uuiui'
-import {
-  useWrappedEmptyOrUnknownOnSubmitValue,
-  SimpleNumberInput,
-  PopupList,
-  ChainedNumberInput,
-  wrappedEmptyOrUnknownOnSubmitValue,
-  FlexColumn,
-  FlexRow,
-  UtopiaTheme,
-  useColorTheme,
-  Icn,
-} from '../../../../uuiui'
-import type { CSSNumber } from '../../common/css-utils'
-import { printCSSNumber, cssNumber, defaultCSSColor } from '../../common/css-utils'
-import * as PP from '../../../../core/shared/property-path'
 import { ColorControl } from '../../controls/color-control'
-import { StringControl } from '../../controls/string-control'
-import type { SelectOption } from '../../controls/select-control'
 import type { OptionChainOption } from '../../controls/option-chain-control'
 import { OptionChainControl } from '../../controls/option-chain-control'
-import { useKeepReferenceEqualityIfPossible } from '../../../../utils/react-performance'
-import { UIGridRow } from '../../widgets/ui-grid-row'
-import type { ElementPath, Imports, PropertyPath } from '../../../../core/shared/project-file-types'
-import { importDetailsFromImportOption } from '../../../../core/shared/project-file-types'
-import { Substores, useEditorState } from '../../../editor/store/store-hook'
-import { addImports, forceParseFile } from '../../../editor/actions/action-creators'
-import type { EditorAction } from '../../../editor/action-types'
-import { forceNotNull } from '../../../../core/shared/optional-utils'
+import type { SelectOption } from '../../controls/select-control'
 import type { DEPRECATEDSliderControlOptions } from '../../controls/slider-control'
-import {
-  normalisePathSuccessOrThrowError,
-  normalisePathToUnderlyingTarget,
-} from '../../../custom-code/code-file'
-import { useDispatch } from '../../../editor/store/dispatch-context'
+import { StringControl } from '../../controls/string-control'
+import { UIGridRow } from '../../widgets/ui-grid-row'
 import { HtmlPreview, ImagePreview } from './property-content-preview'
-import { isJSXElement } from '../../../../core/shared/element-template'
-import type { JSXParsedType, JSXParsedValue } from '../../../../utils/value-parser-utils'
-import { assertNever } from '../../../../core/shared/utils'
-import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { isRight } from '../../../../core/shared/either'
-import { parseNumber } from '../../../../core/shared/math-utils'
 
 export interface ControlForPropProps<T extends RegularControlDescription> {
   propPath: PropertyPath
@@ -435,6 +436,16 @@ function labelFromRadioControlOption(option: RadioControlOption<unknown>): strin
   }
 }
 
+function iconFromRadioControlOption(
+  option: RadioControlOption<unknown>,
+): OptionChainOption<unknown>['iconComponent'] {
+  if (option.type === 'allowed-enum-type' || option.option.icon == null) {
+    return undefined
+  }
+
+  return React.createElement(Icons[option.option.icon])
+}
+
 export const RadioPropertyControl = React.memo(
   (props: ControlForPropProps<RadioControlDescription>) => {
     const { propName, propMetadata, controlDescription } = props
@@ -450,6 +461,7 @@ export const RadioPropertyControl = React.memo(
         return {
           value: valueFromRadioControlOption(option),
           label: labelFromRadioControlOption(option),
+          iconComponent: iconFromRadioControlOption(option),
         }
       }),
     )

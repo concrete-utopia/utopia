@@ -131,7 +131,9 @@ const colorsWithOpacity = {
   fg0Opacity10: createUtopiColor('hsla(0,0%,0%,0.1)'),
   fg0Opacity20: createUtopiColor('hsla(0,0%,0%,0.2)'),
   fg6Opacity50: createUtopiColor('hsla(0,0%,0%,0.5)'),
+  whiteOpacity20: createUtopiColor('oklch(100% 0 0 /20%)'),
   whiteOpacity30: createUtopiColor('oklch(100% 0 0 /30%)'),
+  whiteOpacity35: createUtopiColor('oklch(100% 0 0 /35%)'),
   canvasControlsSizeBoxShadowColor20: createUtopiColor('rgba(0,0,0,0.20)'),
   canvasControlsSizeBoxShadowColor50: createUtopiColor('rgba(0,0,0,0.5)'),
   neutralInvertedBackground10: createUtopiColor('hsla(0,0%,0%,0.1)'),
@@ -142,6 +144,10 @@ const colorsWithOpacity = {
   // TODO vv only used by button, refactor & remove
   errorForeground20: createUtopiColor('rgba(253, 0, 59, 0.2)'),
   subduedBorder80: createUtopiColor('hsla(0, 0%, 91%, 0.8)'),
+
+  cartoucheLiteralHighlightDefault: createUtopiColor('rgba(43, 43, 43, 0.1)'),
+  cartoucheLiteralHighlightHovered: createUtopiColor('rgba(43, 43, 43, 0.2)'),
+  cartoucheLiteralHighlightSelected: createUtopiColor('rgba(43, 43, 43, 0.5)'),
 }
 
 const lightTheme = {

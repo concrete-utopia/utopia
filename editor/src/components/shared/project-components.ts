@@ -686,8 +686,8 @@ function isUtopiaJSXComponentEligibleForMode(
   if (insertMenuMode === 'wrap') {
     return (
       element != null &&
-      element.param != null &&
-      elementUsesProperty(element.rootElement, element.param, 'children')
+      element.params != null &&
+      elementUsesProperty(element.rootElement, element.params, 'children')
     )
   }
   return true
