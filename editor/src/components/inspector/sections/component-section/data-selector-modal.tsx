@@ -671,9 +671,8 @@ export const DataSelectorModal = React.memo(
                     scrollbarColor: 'gray transparent',
                   }}
                 >
-                  {debouncedSearch(allVariablesInScope, searchTerm.toLowerCase())?.map(
+                  {throttledSearch(allVariablesInScope, searchTerm.toLowerCase())?.map(
                     (searchResult, idx) => (
-                      // TODO: deeplink to search
                       <FlexRow
                         style={{ gap: 8, alignItems: 'center' }}
                         key={[...searchResult.valuePath, idx].toString()}
@@ -1084,7 +1083,7 @@ function search(options: DataPickerOption[], term: string): SearchResult[] {
   return results
 }
 
-const debouncedSearch: typeof search = throttle(search, 200, {})
+const throttledSearch = throttle(search, 200, {})
 
 function SearchResultString({
   label,
