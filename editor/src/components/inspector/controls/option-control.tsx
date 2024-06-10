@@ -120,6 +120,11 @@ export const OptionControl: React.FunctionComponent<
             '.option-chain-control-container &': {
               borderRadius: isChecked ? '3px' : 0,
               boxShadow: 'none !important',
+              opacity: isChecked ? 1 : controlOpacity,
+              '&:hover': {
+                opacity: props.controlStatus == 'disabled' ? undefined : 1,
+                cursor: 'pointer',
+              },
             },
             '.option-chain-control-container .segment:first-of-type  &': {
               borderTopLeftRadius: UtopiaTheme.inputBorderRadius,
@@ -145,10 +150,8 @@ export const OptionControl: React.FunctionComponent<
               rc === 'all' || rc === 'left' || rc === 'bottomLeft' || rc === 'bottom'
                 ? UtopiaTheme.inputBorderRadius
                 : undefined,
-            opacity: isChecked ? 1 : controlOpacity,
             '&:hover': {
-              opacity: props.controlStatus == 'disabled' ? undefined : 1,
-              cursor: 'pointer',
+              opacity: props.controlStatus == 'disabled' ? undefined : controlOpacity + 0.2,
             },
             '&:active': {
               opacity: props.controlStatus == 'disabled' ? undefined : 1,
