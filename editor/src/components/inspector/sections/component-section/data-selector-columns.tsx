@@ -28,7 +28,6 @@ export const DataSelectorColumns = React.memo((props: DataSelectorColumnsProps) 
         overflowY: 'hidden',
         scrollbarWidth: 'auto',
         scrollbarColor: 'gray transparent',
-        gap: 4,
       }}
     >
       <DataSelectorColumn
@@ -275,6 +274,10 @@ const DataSelectorFlexColumn = styled(FlexColumn)({
   overflowY: 'scroll',
   scrollbarWidth: 'auto',
   scrollbarColor: 'gray transparent',
+  paddingRight: 10, // to account for scrollbar
+  paddingLeft: 6,
+  paddingBottom: 10,
+  borderRight: `1px solid ${colorTheme.subduedBorder.cssValue}`,
 })
 
 function useScrollIntoView(shouldScroll: boolean) {
