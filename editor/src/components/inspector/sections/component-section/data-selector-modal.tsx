@@ -43,6 +43,7 @@ import { optionalMap } from '../../../../core/shared/optional-utils'
 import type { FileRootPath } from '../../../canvas/ui-jsx-canvas'
 import { insertionCeilingToString, insertionCeilingsEqual } from '../../../canvas/ui-jsx-canvas'
 import { memoize } from '../../../../core/shared/memoize'
+import debounce from 'lodash.debounce'
 
 export const DataSelectorPopupBreadCrumbsTestId = 'data-selector-modal-top-bar'
 
@@ -177,7 +178,7 @@ export const DataSelectorModal = React.memo(
         selectedScope,
       )
 
-      const processedVariablesInScope = useProcessVariablesInScope(filteredVariablesInScope)
+      const processedVariablesInScope = useProcessVariablesInScope(allVariablesInScope)
 
       const elementLabelsWithScopes = useEditorState(
         Substores.fullStore,
@@ -199,12 +200,20 @@ export const DataSelectorModal = React.memo(
         'DataSelectorModal elementLabelsWithScopes',
       )
 
+      const debouncedSearch = React.useRef<typeof search>(debounce(search, 200))
+
       const [navigatedToPath, setNavigatedToPath] = React.useState<ObjectPath>(
         findFirstObjectPathToNavigateTo(processedVariablesInScope, startingSelectedValuePath) ?? [],
       )
 
       const [selectedPath, setSelectedPath] = React.useState<ObjectPath | null>(
         startingSelectedValuePath,
+      )
+
+      const [hoveredSearchRow, setHoveredSearchRow] = React.useState<number>(-1)
+      const setHoveredSearchRowCurried = React.useCallback(
+        (i: number) => () => setHoveredSearchRow(i),
+        [],
       )
 
       const [searchTerm, setSearchTerm] = React.useState<string | null>(null)
@@ -359,19 +368,36 @@ export const DataSelectorModal = React.memo(
       const activeTargetPath = selectedPath ?? navigatedToPath
       const pathInTopBarIncludingHover = hoveredPath ?? activeTargetPath
 
-      const onApplyClick = React.useCallback(() => {
-        const variable = processedVariablesInScope[activeTargetPath.toString()]
-        if (variable == null) {
-          return
-        }
+      const applyVariable = React.useCallback(
+        (path: ObjectPath) => {
+          const variable = processedVariablesInScope[path.toString()]
+          if (variable == null) {
+            return
+          }
 
-        onPropertyPicked(
-          jsExpressionOtherJavaScriptSimple(variable.variableInfo.expression, [
-            variable.definedElsewhere,
-          ]),
-        )
-        closePopup()
-      }, [closePopup, onPropertyPicked, processedVariablesInScope, activeTargetPath])
+          onPropertyPicked(
+            jsExpressionOtherJavaScriptSimple(variable.variableInfo.expression, [
+              variable.definedElsewhere,
+            ]),
+          )
+          closePopup()
+        },
+        [closePopup, onPropertyPicked, processedVariablesInScope],
+      )
+
+      const onApplyClick = React.useCallback(
+        () => applyVariable(activeTargetPath),
+        [applyVariable, activeTargetPath],
+      )
+
+      const applySearchResult = React.useCallback(
+        (path: ObjectPath) => () => {
+          setHoveredSearchRow(-1)
+          setSearchTerm(null)
+          applyVariable(path)
+        },
+        [applyVariable],
+      )
 
       const valuePreviewText = (() => {
         const variable = processedVariablesInScope[pathInTopBarIncludingHover.toString()]
@@ -630,34 +656,54 @@ export const DataSelectorModal = React.memo(
               )}
               {searchTerm == null ? null : (
                 <FlexColumn>
-                  {search(allVariablesInScope, searchTerm.toLowerCase()).map((t, idx) => (
-                    // TODO: deeplink to search, instant apply
-                    <FlexRow style={{ gap: 8 }} key={[...t.valuePath, idx].toString()}>
-                      <FlexRow style={{ gap: 2 }}>
-                        {t.valuePath.map((v, i) => (
-                          <CartoucheUI
-                            key={`${v.value}-${i}`}
-                            source='internal'
-                            datatype='renderable'
-                            selected={false}
-                            role='information'
-                            highlight='subtle'
-                            testId={`data-selector-primitive-values-${v.value}-${i}`}
-                          >
-                            <SearchResultString
-                              isMatch={v.matched}
-                              label={v.value}
-                              searchTerm={searchTerm}
-                              fontWeightForMatch={900}
-                            />
-                          </CartoucheUI>
-                        ))}
+                  {debouncedSearch
+                    .current(allVariablesInScope, searchTerm.toLowerCase())
+                    ?.map((t, idx) => (
+                      // TODO: deeplink to search
+                      <FlexRow
+                        style={{ gap: 8 }}
+                        key={[...t.valuePath, idx].toString()}
+                        onMouseEnter={setHoveredSearchRowCurried(idx)}
+                        onMouseLeave={setHoveredSearchRowCurried(-1)}
+                      >
+                        <FlexRow style={{ gap: 2 }}>
+                          {t.valuePath.map((v, i) => (
+                            <CartoucheUI
+                              key={`${v.value}-${i}`}
+                              source='internal'
+                              datatype='renderable'
+                              selected={false}
+                              role='information'
+                              highlight='subtle'
+                              testId={`data-selector-primitive-values-${v.value}-${i}`}
+                            >
+                              <SearchResultString
+                                isMatch={v.matched}
+                                label={v.value}
+                                searchTerm={searchTerm}
+                                fontWeightForMatch={900}
+                              />
+                            </CartoucheUI>
+                          ))}
+                        </FlexRow>
+                        <span style={{ opacity: 0.5, ...UtopiaStyles.fontStyles.monospaced }}>
+                          {t.value.value}
+                        </span>
+                        <span
+                          style={{
+                            borderRadius: 4,
+                            color: 'white',
+                            padding: '4px 6px',
+                            backgroundColor: colorTheme.primary.value,
+                            opacity: hoveredSearchRow === idx ? 1 : 0,
+                            cursor: 'pointer',
+                          }}
+                          onClick={applySearchResult(t.originalValuePath)}
+                        >
+                          Apply
+                        </span>
                       </FlexRow>
-                      <span style={{ opacity: 0.5, ...UtopiaStyles.fontStyles.monospaced }}>
-                        {t.value.value}
-                      </span>
-                    </FlexRow>
-                  ))}
+                    ))}
                 </FlexColumn>
               )}
               {/* Scope Selector Breadcrumbs */}
@@ -930,6 +976,7 @@ function findFirstObjectPathToNavigateTo(
 }
 
 interface SearchResult {
+  originalValuePath: ObjectPath
   valuePath: Array<{ value: string; matched: boolean }>
   value: { value: string; matched: boolean }
 }
@@ -971,7 +1018,11 @@ function matches(option: DataPickerOption, context: SearchContext): SearchResult
   const maybeValue = searchInValue(option.variableInfo.value, context)
 
   if (maybeValuePath.matched || maybeValue.matched) {
-    return { value: maybeValue, valuePath: maybeValuePath.valuePath }
+    return {
+      originalValuePath: option.valuePath,
+      value: maybeValue,
+      valuePath: maybeValuePath.valuePath,
+    }
   }
 
   return null
