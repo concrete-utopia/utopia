@@ -183,7 +183,7 @@ export const BackgroundSolidOrGradientThumbnailControl = React.memo(
           ['controlClassName'],
           props,
         )} ignore-react-onclickoutside-${props.id}`}
-        style={props.style}
+        style={{ ...props.style, width: 28 }}
       >
         {picker}
         <div className={`widget-color-control relative`} key={`${props.id}-surround`}>
