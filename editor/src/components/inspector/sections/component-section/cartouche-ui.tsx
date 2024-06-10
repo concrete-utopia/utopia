@@ -15,7 +15,7 @@ export interface HoverHandlers {
 export type CartoucheDataType = 'renderable' | 'boolean' | 'array' | 'object' | 'unknown'
 
 export type CartoucheSource = 'internal' | 'external' | 'literal'
-export type CartoucheHighlight = 'strong' | 'subtle'
+export type CartoucheHighlight = 'strong' | 'subtle' | 'disabled'
 
 export type CartoucheUIProps = React.PropsWithChildren<{
   tooltip?: string | null
@@ -26,6 +26,7 @@ export type CartoucheUIProps = React.PropsWithChildren<{
   highlight?: CartoucheHighlight | null
   testId: string
   preview?: boolean
+  showBackground?: boolean
   onDelete?: (e: React.MouseEvent) => void
   onClick?: (e: React.MouseEvent) => void
   onDoubleClick?: (e: React.MouseEvent) => void
@@ -47,6 +48,7 @@ export const CartoucheUI = React.forwardRef(
       role,
       datatype,
       onHover,
+      showBackground = true,
       preview = false,
     } = props
 
@@ -86,11 +88,19 @@ export const CartoucheUI = React.forwardRef(
             }}
             css={{
               color: selected || highlight === 'strong' ? colors.fg.selected : colors.fg.default,
-              backgroundColor: selected ? colors.bg.selected : colors.bg.default,
-              ':hover': {
-                color: selected || highlight === 'strong' ? undefined : colors.fg.hovered,
-                backgroundColor: selected ? undefined : colors.bg.hovered,
-              },
+              backgroundColor:
+                showBackground == false
+                  ? 'transparent'
+                  : selected
+                  ? colors.bg.selected
+                  : colors.bg.default,
+              ':hover':
+                highlight === 'disabled'
+                  ? {}
+                  : {
+                      color: selected || highlight === 'strong' ? undefined : colors.fg.hovered,
+                      backgroundColor: selected ? undefined : colors.bg.hovered,
+                    },
             }}
           >
             {source === 'literal' ? null : (

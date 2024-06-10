@@ -163,7 +163,9 @@ const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
           key={data.valuePath.toString()}
           source={forcedDataSource ?? dataSource ?? 'internal'}
           datatype={childTypeToCartoucheDataType(data.type)}
-          selected={props.selected}
+          selected={!data.disabled && props.selected}
+          showBackground={!data.disabled}
+          highlight={data.disabled ? 'disabled' : null}
           role={'information'}
           testId={`data-selector-option-${data.variableInfo.expression}`}
         >
