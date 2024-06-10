@@ -349,7 +349,7 @@ export const EditorContractDropdown = React.memo(() => {
         onSubmitValue={onChange}
         controlStyles={simpleControlStyles}
         containerMode={'noBorder'}
-        style={{ borderRadius: 2, width: 'min-wdith', paddingRight: 6 }}
+        style={{ borderRadius: 2, width: 'min-width', paddingRight: 6 }}
       />
       {when(
         groupProblems.length > 0,

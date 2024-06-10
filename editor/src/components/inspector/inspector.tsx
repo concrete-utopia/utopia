@@ -51,15 +51,7 @@ import {
   useKeepReferenceEqualityIfPossible,
   useKeepShallowReferenceEquality,
 } from '../../utils/react-performance'
-import {
-  Icn,
-  useColorTheme,
-  UtopiaTheme,
-  FlexRow,
-  Button,
-  SectionActionSheet,
-  SquareButton,
-} from '../../uuiui'
+import { Icn, useColorTheme, UtopiaTheme, FlexRow, Button } from '../../uuiui'
 import { getElementsToTarget } from './common/inspector-utils'
 import type { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
 import { unless, when } from '../../utils/react-conditionals'
@@ -100,6 +92,7 @@ import { isIntrinsicElementMetadata } from '../../core/model/project-file-utils'
 import { assertNever } from '../../core/shared/utils'
 import { DataReferenceSection } from './sections/data-reference-section'
 import { replaceFirstChildAndDeleteSiblings } from '../editor/element-children'
+import { InspectorSectionHeader } from './section-header'
 
 export interface ElementPathElement {
   name?: string
@@ -180,7 +173,6 @@ const AlignmentButtons = React.memo((props: { numberOfTargets: number }) => {
         justifyContent: 'space-around',
         alignItems: 'center',
         height: UtopiaTheme.layout.rowHeight.normal,
-        outline: `1px solid ${colorTheme.seperator.value}`,
         background: colorTheme.inspectorBackground.value,
         padding: '8px 0',
       }}
@@ -441,6 +433,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
             {unless(
               isCodeElement || isDataReference,
               <FlexCol
+                data-testid='inspector-column'
                 css={{
                   overflowY: 'scroll',
                   width: '100%',
@@ -915,44 +908,6 @@ export const InspectorContextProvider = React.memo<{
     </InspectorCallbackContext.Provider>
   )
 })
-
-function InspectorSectionHeader({
-  title,
-  open,
-  toggle,
-}: {
-  title: string
-  open: boolean
-  toggle: () => void
-}) {
-  return (
-    <FlexRow
-      style={{
-        padding: 8,
-        cursor: 'pointer',
-      }}
-      onClick={toggle}
-      data-testid={`section-header-${title}`}
-    >
-      <div
-        style={{
-          flexGrow: 1,
-          display: 'inline',
-          overflow: 'hidden',
-          fontSize: '11px',
-          fontWeight: 600,
-        }}
-      >
-        {title}
-      </div>
-      <SectionActionSheet className='actionsheet' style={{ gap: 4 }}>
-        <SquareButton highlight style={{ width: 12 }}>
-          <ExpandableIndicator visible collapsed={!open} selected={false} />
-        </SquareButton>
-      </SectionActionSheet>
-    </FlexRow>
-  )
-}
 
 function useBoolean(starting: boolean): {
   value: boolean
