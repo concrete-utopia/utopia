@@ -240,8 +240,6 @@ export const DataSelectorModal = React.memo(
       const catchClick = React.useCallback((e: React.MouseEvent) => {
         e.stopPropagation()
         e.preventDefault()
-
-        setSelectedPath([])
       }, [])
 
       const onHover = React.useCallback(
@@ -401,8 +399,8 @@ export const DataSelectorModal = React.memo(
             onClick={closePopup}
           >
             <FlexColumn
-              onClick={catchClick}
               ref={forwardedRef}
+              onClick={catchClick}
               style={{
                 width: 700,
                 height: 300,
