@@ -6,7 +6,7 @@ import {
   arrayEqualsByReference,
   assertNever,
 } from '../../../../core/shared/utils'
-import { when } from '../../../../utils/react-conditionals'
+import { unless, when } from '../../../../utils/react-conditionals'
 import {
   FlexColumn,
   FlexRow,
@@ -216,6 +216,7 @@ export const DataSelectorModal = React.memo(
       )
 
       const [searchTerm, setSearchTerm] = React.useState<string | null>(null)
+      const onStartSearch = React.useCallback(() => setSearchTerm(''), [])
       const onSearchFieldValueChange = React.useCallback(
         (e: React.ChangeEvent<HTMLInputElement>) => {
           if (e.target.value.length === 0) {
@@ -402,9 +403,11 @@ export const DataSelectorModal = React.memo(
         (path: ObjectPath) => () => {
           setHoveredSearchRow(-1)
           setSearchTerm(null)
-          setNavigatedToPath(path.slice(0, -1))
+          setNavigatedToPath(
+            findFirstObjectPathToNavigateTo(processedVariablesInScope, path) ?? path,
+          )
         },
-        [],
+        [processedVariablesInScope],
       )
 
       const valuePreviewText = (() => {
@@ -415,6 +418,8 @@ export const DataSelectorModal = React.memo(
 
         return JSON.stringify(variable.variableInfo.value, undefined, 2)
       })()
+
+      const searchFocused = searchTerm != null
 
       return (
         <InspectorModal
@@ -458,53 +463,88 @@ export const DataSelectorModal = React.memo(
                 ...style,
               }}
             >
-              {when(
-                searchTerm == null,
-                <>
-                  {/* top bar */}
+              {/* top bar */}
+              <FlexRow style={{ justifyContent: 'flex-end', alignItems: 'center', gap: 8 }}>
+                <FlexRow
+                  style={{
+                    gap: 8,
+                    flexGrow: 25,
+                    opacity: searchFocused ? 0 : 1,
+                    pointerEvents: searchFocused ? 'none' : undefined,
+                  }}
+                >
                   <FlexRow
-                    style={{ justifyContent: 'space-between', alignItems: 'center', gap: 8 }}
+                    style={{
+                      flexGrow: 1,
+                      borderStyle: 'solid',
+                      borderWidth: 1,
+                      borderColor: colorTheme.fg7.value,
+                      borderRadius: 4,
+                      fontSize: 11,
+                      fontWeight: 400,
+                      height: 33,
+                      padding: '0px 6px',
+                    }}
                   >
-                    <FlexRow style={{ gap: 8, flexWrap: 'wrap', flexGrow: 1 }}>
-                      <FlexRow
-                        style={{
-                          flexGrow: 1,
-                          borderStyle: 'solid',
-                          borderWidth: 1,
-                          borderColor: colorTheme.fg7.value,
-                          borderRadius: 4,
-                          fontSize: 11,
-                          fontWeight: 400,
-                          height: 33,
-                          padding: '0px 6px',
-                        }}
-                      >
-                        <FlexRow
-                          data-testid={DataSelectorPopupBreadCrumbsTestId}
-                          style={{ flexWrap: 'wrap', flexGrow: 1 }}
-                        >
-                          {pathBreadcrumbs(
-                            pathInTopBarIncludingHover,
-                            processedVariablesInScope,
-                          ).map(({ segment, path }, idx) => (
-                            <span key={path.toString()}>
-                              {idx === 0 ? segment : pathSegmentToString(segment)}
-                            </span>
-                          ))}
-                        </FlexRow>
-                        <div
-                          style={{
-                            ...disabledButtonStyles(activeTargetPath.length === 0),
-                            fontWeight: 400,
-                            fontSize: 12,
-                          }}
-                          onClick={onHomeClick}
-                        >
-                          <Icons.Cross />
-                        </div>
-                      </FlexRow>
+                    <FlexRow
+                      data-testid={DataSelectorPopupBreadCrumbsTestId}
+                      style={{ flexWrap: 'wrap', flexGrow: 1 }}
+                    >
+                      {pathBreadcrumbs(pathInTopBarIncludingHover, processedVariablesInScope).map(
+                        ({ segment, path }, idx) => (
+                          <span key={path.toString()}>
+                            {idx === 0 ? segment : pathSegmentToString(segment)}
+                          </span>
+                        ),
+                      )}
                     </FlexRow>
                     <div
+                      style={{
+                        ...disabledButtonStyles(activeTargetPath.length === 0),
+                        fontWeight: 400,
+                        fontSize: 12,
+                      }}
+                      onClick={onHomeClick}
+                    >
+                      <Icons.Cross />
+                    </div>
+                  </FlexRow>
+                </FlexRow>
+                <FlexRow
+                  style={{
+                    alignItems: 'flex-start',
+                    justifyContent: 'flex-start',
+                    gap: 8,
+                    flexGrow: 1,
+                  }}
+                >
+                  <FlexRow
+                    style={{
+                      padding: '6px 8px',
+                      borderRadius: 16,
+                      gap: searchFocused ? 0 : 8,
+                      border: `1px solid ${colorTheme.fg7.value}`,
+                      flexGrow: 1,
+                    }}
+                    onClick={onStartSearch}
+                  >
+                    <LargerIcons.MagnifyingGlass />
+                    <input
+                      value={searchTerm ?? ''}
+                      onChange={onSearchFieldValueChange}
+                      data-testId='data-selector-modal-search-input'
+                      placeholder='Search'
+                      style={{
+                        outline: 'none',
+                        border: 'none',
+                        width: searchFocused ? 125 : 0,
+                        transition: 'width 0.2s',
+                      }}
+                    />
+                  </FlexRow>
+                  {unless(
+                    searchFocused,
+                    <FlexRow
                       style={{
                         borderRadius: 4,
                         backgroundColor: colorTheme.primary.value,
@@ -512,13 +552,21 @@ export const DataSelectorModal = React.memo(
                         padding: '8px 12px',
                         fontSize: 14,
                         fontWeight: 500,
+                        flexGrow: 1,
+                        alignItems: 'center',
+                        justifyContent: 'center',
                         ...disabledButtonStyles(activeTargetPath.length === 0),
                       }}
                       onClick={onApplyClick}
                     >
                       Apply
-                    </div>
-                  </FlexRow>
+                    </FlexRow>,
+                  )}
+                </FlexRow>
+              </FlexRow>
+              {when(
+                searchTerm == null,
+                <>
                   {/* Value preview */}
                   <FlexRow
                     style={{
@@ -743,51 +791,30 @@ export const DataSelectorModal = React.memo(
                 </FlexColumn>
               )}
               {/* Scope Selector Breadcrumbs */}
-              <FlexRow style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-                <FlexRow style={{ gap: 2, paddingTop: 16, paddingBottom: 16, opacity: 0.5 }}>
-                  {elementLabelsWithScopes.map(({ label, scope, hasContent }, idx, a) => (
-                    <React.Fragment key={`label-${idx}`}>
-                      <div
-                        onClick={setSelectedScopeCurried(scope, hasContent)}
-                        style={{
-                          width: 'max-content',
-                          padding: '2px 4px',
-                          borderRadius: 4,
-                          cursor: hasContent ? 'pointer' : undefined,
-                          color: hasContent
-                            ? colorTheme.neutralForeground.value
-                            : colorTheme.subduedForeground.value,
-                          fontSize: 12,
-                          fontWeight: insertionCeilingsEqual(selectedScope, scope)
-                            ? 800
-                            : undefined,
-                        }}
-                      >
-                        {label}
-                      </div>
-                      {idx < a.length - 1 ? (
-                        <span style={{ width: 'max-content', padding: '2px 4px' }}>{'/'}</span>
-                      ) : null}
-                    </React.Fragment>
-                  ))}
-                </FlexRow>
-                <FlexRow
-                  style={{
-                    padding: '6px 8px',
-                    borderRadius: 16,
-                    gap: 8,
-                    border: `1px solid ${colorTheme.fg7.value}`,
-                  }}
-                >
-                  <LargerIcons.MagnifyingGlass />
-                  <input
-                    value={searchTerm ?? ''}
-                    onChange={onSearchFieldValueChange}
-                    data-testId='data-selector-modal-search-input'
-                    placeholder='Search'
-                    style={{ outline: 'none', border: 'none' }}
-                  />
-                </FlexRow>
+              <FlexRow style={{ gap: 2, paddingTop: 16, paddingBottom: 16, opacity: 0.5 }}>
+                {elementLabelsWithScopes.map(({ label, scope, hasContent }, idx, a) => (
+                  <React.Fragment key={`label-${idx}`}>
+                    <div
+                      onClick={setSelectedScopeCurried(scope, hasContent)}
+                      style={{
+                        width: 'max-content',
+                        padding: '2px 4px',
+                        borderRadius: 4,
+                        cursor: hasContent ? 'pointer' : undefined,
+                        color: hasContent
+                          ? colorTheme.neutralForeground.value
+                          : colorTheme.subduedForeground.value,
+                        fontSize: 12,
+                        fontWeight: insertionCeilingsEqual(selectedScope, scope) ? 800 : undefined,
+                      }}
+                    >
+                      {label}
+                    </div>
+                    {idx < a.length - 1 ? (
+                      <span style={{ width: 'max-content', padding: '2px 4px' }}>{'/'}</span>
+                    ) : null}
+                  </React.Fragment>
+                ))}
               </FlexRow>
             </FlexColumn>
           </div>
@@ -1104,7 +1131,7 @@ function search(options: DataPickerOption[], term: string): SearchResult[] {
   return results
 }
 
-const throttledSearch = throttle(search, 200, {})
+const throttledSearch = throttle(search, 50, {})
 
 function SearchResultString({
   label,
