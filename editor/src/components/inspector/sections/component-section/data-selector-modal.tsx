@@ -44,6 +44,7 @@ import type { FileRootPath } from '../../../canvas/ui-jsx-canvas'
 import { insertionCeilingToString, insertionCeilingsEqual } from '../../../canvas/ui-jsx-canvas'
 import { memoize } from '../../../../core/shared/memoize'
 import debounce from 'lodash.debounce'
+import { Tooltip } from 'antd'
 
 export const DataSelectorPopupBreadCrumbsTestId = 'data-selector-modal-top-bar'
 
@@ -399,6 +400,15 @@ export const DataSelectorModal = React.memo(
         [applyVariable],
       )
 
+      const onNavigateArrowClick = React.useCallback(
+        (path: ObjectPath) => () => {
+          setHoveredSearchRow(-1)
+          setSearchTerm(null)
+          navigatedToPath(path)
+        },
+        [navigatedToPath],
+      )
+
       const valuePreviewText = (() => {
         const variable = processedVariablesInScope[pathInTopBarIncludingHover.toString()]
         if (variable == null) {
@@ -658,16 +668,16 @@ export const DataSelectorModal = React.memo(
                 <FlexColumn>
                   {debouncedSearch
                     .current(allVariablesInScope, searchTerm.toLowerCase())
-                    ?.map((t, idx) => (
+                    ?.map((searchResult, idx) => (
                       // TODO: deeplink to search
                       <FlexRow
-                        style={{ gap: 8 }}
-                        key={[...t.valuePath, idx].toString()}
+                        style={{ gap: 8, alignItems: 'center' }}
+                        key={[...searchResult.valuePath, idx].toString()}
                         onMouseEnter={setHoveredSearchRowCurried(idx)}
                         onMouseLeave={setHoveredSearchRowCurried(-1)}
                       >
                         <FlexRow style={{ gap: 2 }}>
-                          {t.valuePath.map((v, i) => (
+                          {searchResult.valuePath.map((v, i) => (
                             <CartoucheUI
                               key={`${v.value}-${i}`}
                               source='internal'
@@ -687,7 +697,7 @@ export const DataSelectorModal = React.memo(
                           ))}
                         </FlexRow>
                         <span style={{ opacity: 0.5, ...UtopiaStyles.fontStyles.monospaced }}>
-                          {t.value.value}
+                          {searchResult.value.value}
                         </span>
                         <span
                           style={{
@@ -698,10 +708,16 @@ export const DataSelectorModal = React.memo(
                             opacity: hoveredSearchRow === idx ? 1 : 0,
                             cursor: 'pointer',
                           }}
-                          onClick={applySearchResult(t.originalValuePath)}
+                          onClick={applySearchResult(searchResult.originalValuePath)}
                         >
                           Apply
                         </span>
+                        <Tooltip title='Navigate here'>
+                          <Icons.ExpansionArrowRight
+                            onClick={onNavigateArrowClick(searchResult.originalValuePath)}
+                            style={{ opacity: hoveredSearchRow === idx ? 1 : 0, cursor: 'pointer' }}
+                          />
+                        </Tooltip>
                       </FlexRow>
                     ))}
                 </FlexColumn>
