@@ -2,7 +2,7 @@ import React from 'react'
 import { FlexColumn, FlexRow, colorTheme } from '../../../../uuiui'
 import type { ArrayOption, DataPickerOption, ObjectOption, ObjectPath } from './data-picker-utils'
 import { isPrefixOf, mapFirstApplicable } from '../../../../core/shared/array-utils'
-import { when } from '../../../../utils/react-conditionals'
+import { unless, when } from '../../../../utils/react-conditionals'
 import type { CartoucheSource, CartoucheUIProps } from './cartouche-ui'
 import { CartoucheUI } from './cartouche-ui'
 import {
@@ -81,14 +81,18 @@ const DataSelectorColumn = React.memo((props: DataSelectorColumnProps) => {
 
   const dataSource = useVariableDataSource(props.originalDataForScope)
 
+  const isLastColumn = nextColumnScope == null && nextColumnScopeValue == null
+  const columnRef = useScrollIntoView(isLastColumn)
+
   return (
     <>
-      <DataSelectorFlexColumn>
+      <DataSelectorFlexColumn ref={columnRef}>
         {activeScope.map((option) => {
           return (
             <RowWithCartouche
               key={option.variableInfo.expression}
               data={option}
+              isLeaf={nextColumnScope == null}
               selected={option === selectedElement}
               onTargetPathChange={props.onTargetPathChange}
               forcedDataSource={dataSource}
@@ -116,8 +120,9 @@ interface ValuePreviewColumnProps {
 
 const ValuePreviewColumn = React.memo((props: ValuePreviewColumnProps) => {
   const text = JSON.stringify(props.data.variableInfo.value, undefined, 2)
+  const ref = useScrollIntoView(true)
   return (
-    <DataSelectorFlexColumn>
+    <DataSelectorFlexColumn ref={ref}>
       <div style={{ textWrap: 'balance' } as any}>{text}</div>
     </DataSelectorFlexColumn>
   )
@@ -126,11 +131,12 @@ const ValuePreviewColumn = React.memo((props: ValuePreviewColumnProps) => {
 interface RowWithCartoucheProps {
   data: DataPickerOption
   selected: boolean
+  isLeaf: boolean
   forcedDataSource: CartoucheSource | null
   onTargetPathChange: (newTargetPath: ObjectPath) => void
 }
 const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
-  const { onTargetPathChange, data, forcedDataSource } = props
+  const { onTargetPathChange, data, forcedDataSource, isLeaf } = props
   const targetPath = data.valuePath
 
   const dataSource = useVariableDataSource(data)
@@ -143,9 +149,12 @@ const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
     [targetPath, onTargetPathChange],
   )
 
+  const ref = useScrollIntoView(props.selected)
+
   return (
     <FlexRow
       onClick={onClick}
+      ref={ref}
       style={{
         alignSelf: 'stretch',
         justifyContent: 'space-between',
@@ -172,7 +181,7 @@ const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
           {data.variableInfo.expressionPathPart}
         </CartoucheUI>
       </span>
-      <span>{'>'}</span>
+      {unless(isLeaf, <span>{'>'}</span>)}
     </FlexRow>
   )
 })
@@ -237,3 +246,15 @@ const DataSelectorFlexColumn = styled(FlexColumn)({
   scrollbarWidth: 'auto',
   scrollbarColor: 'gray transparent',
 })
+
+function useScrollIntoView(shouldScroll: boolean) {
+  const elementRef = React.useRef<HTMLDivElement>(null)
+
+  React.useEffect(() => {
+    if (shouldScroll && elementRef.current != null) {
+      elementRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    }
+  }, [shouldScroll])
+
+  return elementRef
+}
