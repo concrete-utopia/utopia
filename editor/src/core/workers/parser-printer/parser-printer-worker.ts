@@ -57,7 +57,7 @@ export function handleMessage(
   }
 }
 
-function getParseFileResult(
+export function getParseFileResult(
   filename: string,
   content: string,
   oldParseResultForUIDComparison: ParseSuccess | null,
