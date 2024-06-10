@@ -26,6 +26,7 @@ export const DataSelectorColumns = React.memo((props: DataSelectorColumnsProps) 
         activeScope={props.activeScope}
         targetPathInsideScope={props.targetPathInsideScope}
         onTargetPathChange={props.onTargetPathChange}
+        currentlyShowingScopeForArray={false}
       />
     </FlexRow>
   )
@@ -33,20 +34,30 @@ export const DataSelectorColumns = React.memo((props: DataSelectorColumnsProps) 
 
 interface DataSelectorColumnProps {
   activeScope: Array<DataPickerOption>
+  currentlyShowingScopeForArray: boolean
   targetPathInsideScope: ObjectPath
   onTargetPathChange: (newTargetPath: ObjectPath) => void
 }
 
 const DataSelectorColumn = React.memo((props: DataSelectorColumnProps) => {
-  const { activeScope, targetPathInsideScope } = props
-  const selectedElement = activeScope.find((option) =>
-    isPrefixOf(option.valuePath, targetPathInsideScope),
-  )
-  const nextColumnScope =
-    selectedElement != null &&
-    (selectedElement.type === 'array' || selectedElement?.type === 'object')
-      ? selectedElement
-      : null
+  const { activeScope, targetPathInsideScope, currentlyShowingScopeForArray } = props
+
+  const selectedElement: DataPickerOption | null =
+    activeScope.find((option) => isPrefixOf(option.valuePath, targetPathInsideScope)) ?? null
+
+  // if the current scope is an array, we want to show not only the array indexes, but also the contents of the first element of the array
+  const pseudoSelectedElementForArray: DataPickerOption | null =
+    currentlyShowingScopeForArray && activeScope.length > 0 ? activeScope[0] : null
+
+  const nextColumnScope: ArrayOption | ObjectOption | null = (() => {
+    const elementToUse = selectedElement ?? pseudoSelectedElementForArray
+    if (elementToUse != null) {
+      if (elementToUse.type === 'object' || elementToUse.type === 'array') {
+        return elementToUse
+      }
+    }
+    return null
+  })()
 
   return (
     <>
@@ -67,6 +78,7 @@ const DataSelectorColumn = React.memo((props: DataSelectorColumnProps) => {
           activeScope={nextColumnScope.children}
           targetPathInsideScope={targetPathInsideScope}
           onTargetPathChange={props.onTargetPathChange}
+          currentlyShowingScopeForArray={nextColumnScope.type === 'array'}
         />
       ) : null}
     </>
