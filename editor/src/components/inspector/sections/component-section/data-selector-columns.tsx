@@ -285,6 +285,8 @@ function useScrollIntoView(shouldScroll: boolean) {
     if (shouldScroll && elementRef.current != null) {
       elementRef.current.scrollIntoView({
         behavior: 'instant',
+        block: 'nearest',
+        inline: 'nearest',
       })
     }
   }, [shouldScroll])
