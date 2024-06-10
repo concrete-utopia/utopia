@@ -1241,22 +1241,24 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         />,
       )}
 
-      {unless(
-        props.codeItemType === 'map',
-        <div style={{ textTransform: isCodeItem ? 'uppercase' : undefined }}>
-          <ItemLabel
-            key={`label-${props.label}`}
-            testId={`navigator-item-label-${props.label}`}
-            name={props.label}
-            isDynamic={props.isDynamic}
-            target={props.navigatorEntry}
-            selected={props.selected}
-            dispatch={props.dispatch}
-            inputVisible={EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath)}
-            remixItemType={props.remixItemType}
-          />
-        </div>,
-      )}
+      <div
+        style={{
+          textTransform: isCodeItem ? 'uppercase' : undefined,
+          display: props.codeItemType === 'map' ? 'none' : 'block',
+        }}
+      >
+        <ItemLabel
+          key={`label-${props.label}`}
+          testId={`navigator-item-label-${props.label}`}
+          name={props.label}
+          isDynamic={props.isDynamic}
+          target={props.navigatorEntry}
+          selected={props.selected}
+          dispatch={props.dispatch}
+          inputVisible={EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath)}
+          remixItemType={props.remixItemType}
+        />
+      </div>
       <MapListSourceCartoucheNavigator
         target={props.navigatorEntry.elementPath}
         selected={props.selected}
