@@ -28,6 +28,7 @@ import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { traceDataFromElement, dataPathSuccess } from '../../../../core/data-tracing/data-tracing'
 import type { CartoucheDataType } from '../component-section/cartouche-ui'
 import { CartoucheInspectorWrapper } from '../component-section/cartouche-control'
+import { MapCounter } from '../../../navigator/navigator-item/map-counter'
 
 function filterVariableOption(option: DataPickerOption): DataPickerOption | null {
   switch (option.type) {
@@ -64,6 +65,7 @@ interface MapListSourceCartoucheProps {
   target: ElementPath
   selected: boolean
   openOn: 'single-click' | 'double-click'
+  countChildren?: boolean
 }
 
 export const MapListSourceCartoucheNavigator = React.memo((props: MapListSourceCartoucheProps) => {
@@ -223,6 +225,9 @@ const MapListSourceCartoucheInner = React.memo((props: MapListSourceCartouchePro
         testId='list-source-cartouche'
         contentIsComingFromServer={isDataComingFromHookResult}
         datatype={cartoucheDataType}
+        badge={
+          props.countChildren ? <MapCounter selected={props.selected} elementPath={target} /> : null
+        }
       />
     </React.Fragment>
   )

@@ -490,7 +490,14 @@ export const DataSelectorModal = React.memo(
                 />
               </FlexColumn>
               {/* Scope Selector Breadcrumbs */}
-              <FlexRow style={{ gap: 2, paddingTop: 4, paddingBottom: 4, opacity: 0.5 }}>
+              <FlexRow
+                style={{
+                  gap: 2,
+                  paddingTop: 4,
+                  paddingBottom: 4,
+                  opacity: 0.5,
+                }}
+              >
                 {elementLabelsWithScopes.map(({ label, scope, hasContent }, idx, a) => (
                   <React.Fragment key={`label-${idx}`}>
                     <div
