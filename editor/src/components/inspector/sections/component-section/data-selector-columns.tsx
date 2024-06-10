@@ -3,6 +3,14 @@ import { FlexColumn, FlexRow, colorTheme } from '../../../../uuiui'
 import type { ArrayOption, DataPickerOption, ObjectOption, ObjectPath } from './data-picker-utils'
 import { isPrefixOf, mapFirstApplicable } from '../../../../core/shared/array-utils'
 import { when } from '../../../../utils/react-conditionals'
+import type { CartoucheUIProps } from './cartouche-ui'
+import { CartoucheUI } from './cartouche-ui'
+import {
+  dataPathSuccess,
+  traceDataFromVariableName,
+} from '../../../../core/data-tracing/data-tracing'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
+import { assertNever } from '../../../../core/shared/utils'
 
 interface DataSelectorColumnsProps {
   activeScope: Array<DataPickerOption>
@@ -91,8 +99,10 @@ interface RowWithCartoucheProps {
   onTargetPathChange: (newTargetPath: ObjectPath) => void
 }
 const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
-  const { onTargetPathChange } = props
-  const targetPath = props.data.valuePath
+  const { onTargetPathChange, data } = props
+  const targetPath = data.valuePath
+
+  const dataSource = useVariableDataSource(data)
 
   const onClick: React.MouseEventHandler<HTMLDivElement> = React.useCallback(
     (e) => {
@@ -110,15 +120,74 @@ const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
         justifyContent: 'space-between',
         fontSize: 10,
         borderRadius: 4,
-        height: 20,
-        backgroundColor: props.selected ? colorTheme.primary.value : 'transparent',
-        color: props.selected ? colorTheme.neutralInvertedForeground.value : colorTheme.fg0.value,
+        height: 24,
+        backgroundColor: props.selected ? colorTheme.bg4.value : 'transparent',
+        color: props.selected ? colorTheme.fg4.value : 'transparent',
         padding: 5,
         cursor: 'pointer',
       }}
     >
-      <span>{props.data.variableInfo.expressionPathPart}</span>
+      <span>
+        <CartoucheUI
+          key={data.valuePath.toString()}
+          source={dataSource}
+          datatype={childTypeToCartoucheDataType(data.type)}
+          selected={props.selected}
+          role={'information'}
+          testId={`data-selector-option-${data.variableInfo.expression}`}
+        >
+          {data.variableInfo.expressionPathPart}
+        </CartoucheUI>
+      </span>
       <span>{'>'}</span>
     </FlexRow>
   )
 })
+
+function useVariableDataSource(variable: DataPickerOption) {
+  const container = variable.variableInfo.insertionCeiling
+  return useEditorState(
+    Substores.projectContentsAndMetadata,
+    (store) => {
+      const trace = traceDataFromVariableName(
+        container,
+        variable.variableInfo.expression,
+        store.editor.jsxMetadata,
+        store.editor.projectContents,
+        dataPathSuccess([]),
+      )
+
+      switch (trace.type) {
+        case 'hook-result':
+          return 'external'
+        case 'literal-attribute':
+        case 'literal-assignment':
+          return 'literal'
+        case 'component-prop':
+        case 'element-at-scope':
+        case 'failed':
+          return 'internal'
+          break
+        default:
+          assertNever(trace)
+      }
+    },
+    'useVariableDataSource',
+  )
+}
+
+function childTypeToCartoucheDataType(
+  childType: DataPickerOption['type'],
+): CartoucheUIProps['datatype'] {
+  switch (childType) {
+    case 'array':
+      return 'array'
+    case 'object':
+      return 'object'
+    case 'jsx':
+    case 'primitive':
+      return 'renderable'
+    default:
+      assertNever(childType)
+  }
+}

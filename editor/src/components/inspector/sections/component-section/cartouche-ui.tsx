@@ -14,7 +14,7 @@ export interface HoverHandlers {
 
 export type CartoucheDataType = 'renderable' | 'boolean' | 'array' | 'object' | 'unknown'
 
-type CartoucheSource = 'internal' | 'external' | 'literal'
+export type CartoucheSource = 'internal' | 'external' | 'literal'
 export type CartoucheHighlight = 'strong' | 'subtle'
 
 export type CartoucheUIProps = React.PropsWithChildren<{
