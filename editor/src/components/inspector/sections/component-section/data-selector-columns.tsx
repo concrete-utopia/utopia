@@ -1,5 +1,5 @@
 import React from 'react'
-import { FlexColumn, FlexRow } from '../../../../uuiui'
+import { FlexColumn, FlexRow, colorTheme } from '../../../../uuiui'
 import type { ArrayOption, DataPickerOption, ObjectOption, ObjectPath } from './data-picker-utils'
 import { isPrefixOf, mapFirstApplicable } from '../../../../core/shared/array-utils'
 import { when } from '../../../../utils/react-conditionals'
@@ -12,7 +12,16 @@ interface DataSelectorColumnsProps {
 
 export const DataSelectorColumns = React.memo((props: DataSelectorColumnsProps) => {
   return (
-    <FlexRow style={{ alignItems: 'flex-start' }}>
+    <FlexRow
+      style={{
+        alignItems: 'flex-start',
+        overflowX: 'scroll',
+        overflowY: 'hidden',
+        scrollbarWidth: 'auto',
+        scrollbarColor: 'gray transparent',
+        gap: 4,
+      }}
+    >
       <DataSelectorColumn
         activeScope={props.activeScope}
         targetPathInsideScope={props.targetPathInsideScope}
@@ -41,7 +50,7 @@ const DataSelectorColumn = React.memo((props: DataSelectorColumnProps) => {
 
   return (
     <>
-      <FlexColumn>
+      <FlexColumn style={{ width: 200, flexShrink: 0 }}>
         {activeScope.map((option) => {
           return (
             <RowWithCartouche
@@ -81,5 +90,20 @@ const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
     [targetPath, onTargetPathChange],
   )
 
-  return <FlexRow onClick={onClick}>{props.data.variableInfo.expressionPathPart}</FlexRow>
+  return (
+    <FlexRow
+      onClick={onClick}
+      style={{
+        alignSelf: 'stretch',
+        fontSize: 10,
+        borderRadius: 4,
+        height: 20,
+        backgroundColor: props.selected ? colorTheme.primary.value : 'transparent',
+        padding: 5,
+        cursor: 'pointer',
+      }}
+    >
+      {props.data.variableInfo.expressionPathPart}
+    </FlexRow>
+  )
 })
