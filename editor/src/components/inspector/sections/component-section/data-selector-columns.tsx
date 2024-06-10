@@ -73,7 +73,17 @@ const DataSelectorColumn = React.memo((props: DataSelectorColumnProps) => {
 
   return (
     <>
-      <FlexColumn style={{ width: 200, flexShrink: 0 }}>
+      <FlexColumn
+        style={{
+          width: 200,
+          height: '100%',
+          flexShrink: 0,
+          overflowX: 'hidden',
+          overflowY: 'scroll',
+          scrollbarWidth: 'auto',
+          scrollbarColor: 'gray transparent',
+        }}
+      >
         {activeScope.map((option) => {
           return (
             <RowWithCartouche
