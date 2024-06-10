@@ -587,7 +587,10 @@ import { addHookForProjectChanges } from '../store/collaborative-editing'
 import { arrayDeepEquality, objectDeepEquality } from '../../../utils/deep-equality'
 import type { ProjectServerState } from '../store/project-server-state'
 import { updateFileIfPossible } from './can-update-file'
-import { getPrintAndReparseCodeResult } from '../../../core/workers/parser-printer/parser-printer-worker'
+import {
+  getParseFileResult,
+  getPrintAndReparseCodeResult,
+} from '../../../core/workers/parser-printer/parser-printer-worker'
 import { isSteganographyEnabled } from '../../../core/shared/stegano-text'
 import type { ParsedTextFileWithPath } from '../../../core/property-controls/property-controls-local'
 import {
@@ -4114,15 +4117,35 @@ export const UPDATE_FNS = {
       addNewFeaturedRouteToPackageJson(action.newPageName),
     )
 
-    // 2. write the new text file
+    // 2. Parse the file upfront.
+    const existingUIDs = new Set(getAllUniqueUids(editor.projectContents).uniqueIDs)
+    const parsedResult = getParseFileResult(
+      newFileName,
+      templateFile.fileContents.code,
+      null,
+      1,
+      existingUIDs,
+      isSteganographyEnabled(),
+    )
+
+    // 3. write the new text file
     const withTextFile = addTextFile(
       withPackageJson,
       action.parentPath,
       newFileName,
-      codeFile(templateFile.fileContents.code, null, 1, RevisionsState.CodeAhead),
+      textFile(
+        textFileContents(
+          templateFile.fileContents.code,
+          parsedResult.parseResult,
+          RevisionsState.CodeAhead,
+        ),
+        null,
+        null,
+        1,
+      ),
     )
 
-    // 3. open the text file
+    // 4. open the text file
     return UPDATE_FNS.OPEN_CODE_EDITOR_FILE(
       openCodeEditorFile(withTextFile.newFileKey, false),
       withTextFile.editorState,

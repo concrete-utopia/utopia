@@ -788,15 +788,18 @@ describe('UtopiaJSXComponentKeepDeepEquality', () => {
     isFunction: true,
     declarationSyntax: 'const',
     blockOrExpression: 'block',
-    param: {
-      type: 'PARAM',
-      dotDotDotToken: false,
-      boundParam: {
-        type: 'REGULAR_PARAM',
-        paramName: 'props',
-        defaultExpression: null,
+    functionWrapping: [],
+    params: [
+      {
+        type: 'PARAM',
+        dotDotDotToken: false,
+        boundParam: {
+          type: 'REGULAR_PARAM',
+          paramName: 'props',
+          defaultExpression: null,
+        },
       },
-    },
+    ],
     propsUsed: [],
     rootElement: {
       type: 'JSX_ELEMENT',
@@ -837,15 +840,18 @@ describe('UtopiaJSXComponentKeepDeepEquality', () => {
     isFunction: true,
     declarationSyntax: 'const',
     blockOrExpression: 'block',
-    param: {
-      type: 'PARAM',
-      dotDotDotToken: false,
-      boundParam: {
-        type: 'REGULAR_PARAM',
-        paramName: 'props',
-        defaultExpression: null,
+    functionWrapping: [],
+    params: [
+      {
+        type: 'PARAM',
+        dotDotDotToken: false,
+        boundParam: {
+          type: 'REGULAR_PARAM',
+          paramName: 'props',
+          defaultExpression: null,
+        },
       },
-    },
+    ],
     propsUsed: [],
     rootElement: {
       type: 'JSX_ELEMENT',
@@ -886,15 +892,18 @@ describe('UtopiaJSXComponentKeepDeepEquality', () => {
     isFunction: true,
     declarationSyntax: 'const',
     blockOrExpression: 'block',
-    param: {
-      type: 'PARAM',
-      dotDotDotToken: false,
-      boundParam: {
-        type: 'REGULAR_PARAM',
-        paramName: 'props',
-        defaultExpression: null,
+    functionWrapping: [],
+    params: [
+      {
+        type: 'PARAM',
+        dotDotDotToken: false,
+        boundParam: {
+          type: 'REGULAR_PARAM',
+          paramName: 'props',
+          defaultExpression: null,
+        },
       },
-    },
+    ],
     propsUsed: [],
     rootElement: {
       type: 'JSX_ELEMENT',
@@ -947,7 +956,7 @@ describe('UtopiaJSXComponentKeepDeepEquality', () => {
     expect(result.value.isFunction).toBe(oldValue.isFunction)
     expect(result.value.declarationSyntax).toBe(oldValue.declarationSyntax)
     expect(result.value.blockOrExpression).toBe(oldValue.blockOrExpression)
-    expect(result.value.param).toBe(oldValue.param)
+    expect(result.value.params).toBe(oldValue.params)
     expect(result.value.propsUsed).toBe(oldValue.propsUsed)
     expect(result.value.rootElement).toBe(oldValue.rootElement)
     expect(result.value.arbitraryJSBlock).toBe(oldValue.arbitraryJSBlock)

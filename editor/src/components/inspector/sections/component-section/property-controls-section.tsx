@@ -14,6 +14,8 @@ import {
   specialPropertiesToIgnore,
 } from '../../../../core/property-controls/property-controls-utils'
 import { useDispatch } from '../../../editor/store/dispatch-context'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
+import { elementSupportsChildrenFromPropertyControls } from '../../../editor/element-children'
 
 interface PropertyControlsSectionProps {
   targets: ElementPath[]
@@ -73,6 +75,27 @@ export const PropertyControlsSection = React.memo((props: PropertyControlsSectio
     ],
   )
 
+  const targetsSupportChildren = useEditorState(
+    Substores.metadataAndPropertyControlsInfo,
+    (store) => {
+      return props.targets.every((target) =>
+        elementSupportsChildrenFromPropertyControls(
+          store.editor.jsxMetadata,
+          store.editor.propertyControlsInfo,
+          target,
+        ),
+      )
+    },
+    'PropertyControlsSection targetsSupportChildren',
+  )
+
+  const propsToIgnore = React.useMemo(() => {
+    if (!targetsSupportChildren) {
+      return [...specialPropertiesToIgnore, 'children']
+    }
+    return specialPropertiesToIgnore
+  }, [targetsSupportChildren])
+
   return hasContent ? (
     <>
       <FolderSection
@@ -84,6 +107,7 @@ export const PropertyControlsSection = React.memo((props: PropertyControlsSectio
         unsetPropNames={propsWithControlsButNoValue}
         showHiddenControl={showHiddenControl}
         detectedPropsAndValuesWithoutControls={detectedPropsAndValuesWithoutControls}
+        propsToIgnore={propsToIgnore}
       />
       {propertiesWithFolders.folders.map(({ name, controls }) => (
         <FolderSection
@@ -97,6 +121,7 @@ export const PropertyControlsSection = React.memo((props: PropertyControlsSectio
           showHiddenControl={showHiddenControl}
           detectedPropsAndValuesWithoutControls={detectedPropsAndValuesWithoutControls}
           title={name}
+          propsToIgnore={propsToIgnore}
         />
       ))}
       {Object.keys(propertiesWithFolders.advanced).length === 0 ? null : (
@@ -109,6 +134,7 @@ export const PropertyControlsSection = React.memo((props: PropertyControlsSectio
           unsetPropNames={propsWithControlsButNoValue}
           showHiddenControl={showHiddenControl}
           detectedPropsAndValuesWithoutControls={detectedPropsAndValuesWithoutControls}
+          propsToIgnore={propsToIgnore}
           title={AdvancedFolderLabel}
         />
       )}

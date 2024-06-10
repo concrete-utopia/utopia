@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
 import type { PreferredContents } from '../core'
+import type { UtopiaIcon } from '../primitives/icons'
 
 // these fields are shared among all RegularControlDescription. the helper function getControlSharedFields makes sure the types line up
 // Ensure that the fields are also added to the object within `getControlSharedFields` for that typechecking.
@@ -11,9 +12,6 @@ interface ControlBaseFields {
   defaultValue?: unknown
   folder?: string
 }
-
-export const PropertyControlIcons = ['arrow-left', 'arrow-right', 'arrow-up', 'arrow-down'] as const
-export type PropertyControlIcon = (typeof PropertyControlIcons)[number]
 
 // Base Level Controls
 
@@ -66,7 +64,7 @@ export interface BasicControlOption<T> {
 export interface BasicControlOptionWithIcon<T> {
   value: T
   label: string
-  icon?: PropertyControlIcon
+  icon?: UtopiaIcon
 }
 
 export type BasicControlOptions<T> = AllowedEnumType[] | BasicControlOption<T>[]

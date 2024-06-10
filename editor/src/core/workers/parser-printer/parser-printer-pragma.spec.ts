@@ -1,3 +1,4 @@
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "testParseThenPrint"] }] */
 import { applyPrettier } from 'utopia-vscode-common'
 import { testParseCode, testParseThenPrint } from './parser-printer.test-utils'
 import { BakedInStoryboardUID } from '../../model/scene-utils'

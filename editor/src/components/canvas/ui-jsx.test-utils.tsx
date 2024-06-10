@@ -613,9 +613,10 @@ export async function renderTestEditorWithModel(
         numberOfCommits++
       }}
     >
-      <div id={CanvasContextMenuPortalTargetID}></div>
-      {failOnCanvasError ? <FailJestOnCanvasError /> : null}
-      <style>{`
+      <div id='utopia-editor-root'>
+        <div id={CanvasContextMenuPortalTargetID}></div>
+        {failOnCanvasError ? <FailJestOnCanvasError /> : null}
+        <style>{`
 div,
 span,
 img,
@@ -624,14 +625,15 @@ li,
 label {
   box-sizing: border-box !important;
 }`}</style>
-      <EditorRoot
-        dispatch={asyncTestDispatch as EditorDispatch}
-        mainStore={storeHook}
-        canvasStore={canvasStoreHook}
-        spyCollector={spyCollector}
-        lowPriorityStore={lowPriorityStoreHook}
-        domWalkerMutableState={domWalkerMutableState}
-      />
+        <EditorRoot
+          dispatch={asyncTestDispatch as EditorDispatch}
+          mainStore={storeHook}
+          canvasStore={canvasStoreHook}
+          spyCollector={spyCollector}
+          lowPriorityStore={lowPriorityStoreHook}
+          domWalkerMutableState={domWalkerMutableState}
+        />
+      </div>
     </React.Profiler>,
   )
 

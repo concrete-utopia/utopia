@@ -3,6 +3,7 @@ import type { MapLike } from 'typescript'
 import type {
   EarlyReturn,
   JSXElementChild,
+  Param,
   UtopiaJSXComponent,
 } from '../../../core/shared/element-template'
 import {
@@ -69,12 +70,32 @@ export function createComponentRendererComponent(params: {
   filePath: string
   mutableContextRef: React.MutableRefObject<MutableUtopiaCtxRefData>
 }): ComponentRendererComponent {
-  const Component = (realPassedPropsIncludingUtopiaSpecialStuff: any) => {
+  const Component = (...functionArguments: Array<any>) => {
+    // Attempt to determine which function argument is the "regular" props object/value.
+    // Default it to the first if one is not identified by looking for some of our special keys.
+    let regularPropsArgumentIndex: number = functionArguments.findIndex((functionArgument) => {
+      if (
+        typeof functionArgument === 'object' &&
+        functionArgument != null &&
+        !Array.isArray(functionArgument)
+      ) {
+        return UTOPIA_INSTANCE_PATH in functionArgument || UTOPIA_PATH_KEY in functionArgument
+      } else {
+        return false
+      }
+    })
+    if (regularPropsArgumentIndex < 0) {
+      regularPropsArgumentIndex = 0
+    }
     const {
       [UTOPIA_INSTANCE_PATH]: instancePathAny, // TODO types?
       [UTOPIA_PATH_KEY]: pathsString, // TODO types?
       ...realPassedProps
-    } = realPassedPropsIncludingUtopiaSpecialStuff
+    } = functionArguments[regularPropsArgumentIndex]
+
+    // We want to strip the instance path and path from the props that we pass to the component.
+    let slightlyStrippedFunctionsArguments = [...functionArguments]
+    slightlyStrippedFunctionsArguments[regularPropsArgumentIndex] = realPassedProps
 
     const mutableContext = params.mutableContextRef.current[params.filePath].mutableContext
 
@@ -140,7 +161,7 @@ export function createComponentRendererComponent(params: {
         applyPropsParamToPassedProps(
           mutableContext.rootScope,
           rootElementPath,
-          realPassedProps,
+          slightlyStrippedFunctionsArguments,
           param,
           {
             requireResult: mutableContext.requireResult,
@@ -166,7 +187,7 @@ export function createComponentRendererComponent(params: {
           undefined,
           codeError,
         ),
-      utopiaJsxComponent.param,
+      utopiaJsxComponent.params,
     ) ?? { props: realPassedProps }
 
     let scope: MapLike<any> = {
@@ -177,13 +198,15 @@ export function createComponentRendererComponent(params: {
     let spiedVariablesInScope: VariableData = {
       ...mutableContext.spiedVariablesDeclaredInRootScope,
     }
-    if (rootElementPath != null && utopiaJsxComponent.param != null) {
-      propertiesExposedByParam(utopiaJsxComponent.param).forEach((paramName) => {
-        spiedVariablesInScope[paramName] = {
-          spiedValue: scope[paramName],
-          insertionCeiling: rootElementPath,
-        }
-      })
+    if (rootElementPath != null && utopiaJsxComponent.params != null) {
+      for (const param of utopiaJsxComponent.params) {
+        propertiesExposedByParam(param).forEach((paramName) => {
+          spiedVariablesInScope[paramName] = {
+            spiedValue: scope[paramName],
+            insertionCeiling: rootElementPath,
+          }
+        })
+      }
     }
 
     // Protect against infinite recursion by taking the view that anything

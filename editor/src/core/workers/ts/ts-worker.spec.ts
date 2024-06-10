@@ -153,15 +153,18 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
               isFunction: true,
               declarationSyntax: 'var',
               blockOrExpression: 'block',
-              param: {
-                type: 'PARAM',
-                dotDotDotToken: false,
-                boundParam: {
-                  type: 'REGULAR_PARAM',
-                  paramName: 'props',
-                  defaultExpression: null,
+              functionWrapping: [],
+              params: [
+                {
+                  type: 'PARAM',
+                  dotDotDotToken: false,
+                  boundParam: {
+                    type: 'REGULAR_PARAM',
+                    paramName: 'props',
+                    defaultExpression: null,
+                  },
                 },
-              },
+              ],
               propsUsed: styleStringInArray,
               rootElement: {
                 type: 'JSX_ELEMENT',

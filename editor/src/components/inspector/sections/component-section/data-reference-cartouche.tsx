@@ -22,7 +22,7 @@ import {
 } from './variables-in-scope-utils'
 import { DataPickerPreferredAllAtom, jsxElementChildToValuePath } from './data-picker-utils'
 import { useAtom } from 'jotai'
-import type { CartoucheDataType, CartoucheUIProps } from './cartouche-ui'
+import type { CartoucheDataType, CartoucheHighlight, CartoucheUIProps } from './cartouche-ui'
 import { CartoucheUI } from './cartouche-ui'
 
 interface DataReferenceCartoucheControlProps {
@@ -32,6 +32,7 @@ interface DataReferenceCartoucheControlProps {
   renderedAt: RenderedAt
   surroundingScope: ElementPath
   hideTooltip?: boolean
+  highlight?: CartoucheHighlight | null
 }
 
 export const DataReferenceCartoucheControl = React.memo(
@@ -144,7 +145,7 @@ export const DataReferenceCartoucheControl = React.memo(
           contentsToDisplay={contentsToDisplay}
           selected={selected}
           safeToDelete={false}
-          inverted={false}
+          highlight={props.highlight}
           onDelete={NO_OP}
           testId={`data-reference-cartouche-${EP.toString(elementPath)}`}
           contentIsComingFromServer={isDataComingFromHookResult}
@@ -164,7 +165,6 @@ interface DataCartoucheInnerProps {
   onClick: (e: React.MouseEvent) => void
   onDoubleClick: (e: React.MouseEvent) => void
   selected: boolean
-  inverted: boolean
   contentsToDisplay: { type: 'literal' | 'reference'; label: string | null }
   safeToDelete: boolean
   onDelete: () => void
@@ -172,6 +172,7 @@ interface DataCartoucheInnerProps {
   contentIsComingFromServer: boolean
   hideTooltip?: boolean
   datatype: CartoucheDataType
+  highlight?: CartoucheHighlight | null
 }
 
 export const DataCartoucheInner = React.forwardRef(
@@ -182,7 +183,7 @@ export const DataCartoucheInner = React.forwardRef(
       safeToDelete,
       onDelete: onDeleteCallback,
       selected,
-      inverted,
+      highlight,
       testId,
       contentsToDisplay,
       contentIsComingFromServer,
@@ -213,7 +214,7 @@ export const DataCartoucheInner = React.forwardRef(
         onDoubleClick={onDoubleClick}
         datatype={datatype}
         selected={selected}
-        inverted={inverted}
+        highlight={highlight}
         testId={testId}
         tooltip={!props.hideTooltip ? contentsToDisplay.label ?? 'DATA' : null}
         role='selection'

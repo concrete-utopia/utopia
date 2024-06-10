@@ -13,7 +13,7 @@ import type {
   UnionControlDescription,
   RegularControlDescription,
 } from '../../custom-code/internal-property-controls'
-import type { InspectorInfo, InspectorInfoWithRawValue } from './property-path-hooks'
+import type { InspectorInfoWithRawValue } from './property-path-hooks'
 import {
   filterUtopiaSpecificProps,
   InspectorPropsContext,
@@ -35,7 +35,7 @@ import {
   useKeepReferenceEqualityIfPossible,
 } from '../../../utils/react-performance'
 import type { UtopiaJSXComponent } from '../../../core/shared/element-template'
-import { emptyComments, isJSXElement, jsIdentifier } from '../../../core/shared/element-template'
+import { isJSXElement } from '../../../core/shared/element-template'
 import { addUniquely, mapDropNulls } from '../../../core/shared/array-utils'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
@@ -66,6 +66,7 @@ function filterSpecialProps(props: Array<string>): Array<string> {
 }
 
 export function useInspectorInfoForPropertyControl(
+  elementPath: ElementPath,
   propertyPath: PropertyPath,
   control: RegularControlDescription,
 ): InspectorInfoWithRawValue<any> {
@@ -103,8 +104,22 @@ export function useInspectorInfoForPropertyControl(
 
   const parserFn = unwrapperAndParserForPropertyControl(control)
   const printerFn = printerForPropertyControl(control)
+
+  const allElementProps = useEditorState(
+    Substores.metadata,
+    (store) => store.editor.allElementProps,
+    'allElementProps',
+  )
+
   let parsedValue: unknown = null
-  if (0 in rawValues && 0 in realValues) {
+  if (propertyPath.propertyElements[0] === 'children') {
+    const fromAllElementProps = allElementProps[EP.toString(elementPath)]?.children ?? null
+    switch (typeof fromAllElementProps) {
+      case 'number':
+        parsedValue = fromAllElementProps
+        break
+    }
+  } else if (0 in rawValues && 0 in realValues) {
     parsedValue = eitherToMaybe(parserFn(rawValues[0], realValues[0])) // TODO We need a way to surface these errors to the users
   }
 
@@ -136,13 +151,13 @@ export function useInspectorInfoForPropertyControl(
   return {
     value: parsedValue,
     attributeExpression: attributeExpression,
-    controlStatus,
+    controlStatus: controlStatus,
     propertyStatus: propertyStatusToReturn,
-    controlStyles,
-    onSubmitValue,
-    onTransientSubmitValue,
-    onUnsetValues,
-    useSubmitValueFactory,
+    controlStyles: controlStyles,
+    onSubmitValue: onSubmitValue,
+    onTransientSubmitValue: onTransientSubmitValue,
+    onUnsetValues: onUnsetValues,
+    useSubmitValueFactory: useSubmitValueFactory,
   }
 }
 

@@ -111,6 +111,7 @@ import type {
   HugProperty,
   HugPropertyWidthHeight,
   ElementsByUID,
+  FunctionWrap,
 } from 'utopia-shared/src/types/element-template'
 import type { VariableData } from '../../components/canvas/ui-jsx-canvas'
 
@@ -198,6 +199,7 @@ import {
   emptyComments,
   emptyComputedStyle,
   emptyAttributeMetadata,
+  simpleFunctionWrap,
 } from 'utopia-shared/src/types/element-template'
 export { emptyComments, emptyComputedStyle, emptyAttributeMetadata }
 
@@ -1981,7 +1983,8 @@ export function utopiaJSXComponent(
   isFunction: boolean,
   declarationSyntax: FunctionDeclarationSyntax,
   blockOrExpression: BlockOrExpression,
-  param: Param | null,
+  functionWrapping: Array<FunctionWrap>,
+  params: Array<Param> | null,
   propsUsed: Array<string>,
   rootElement: JSXElementChild,
   jsBlock: ArbitraryJSBlock | null,
@@ -1994,7 +1997,8 @@ export function utopiaJSXComponent(
     isFunction: isFunction,
     declarationSyntax: declarationSyntax,
     blockOrExpression: blockOrExpression,
-    param: param,
+    functionWrapping: functionWrapping,
+    params: params,
     propsUsed: propsUsed,
     rootElement: rootElement,
     arbitraryJSBlock: jsBlock,
@@ -2128,7 +2132,7 @@ export function functionParam(dotDotDotToken: boolean, boundParam: BoundParam): 
   }
 }
 
-export const defaultPropsParam: Param = functionParam(false, regularParam('props', null))
+export const defaultPropsParam: Array<Param> = [functionParam(false, regularParam('props', null))]
 
 export function propNamesForParam(param: Param): Array<string> {
   const { boundParam } = param
@@ -2178,8 +2182,6 @@ export function propertiesExposedByParam(param: Param): Array<string> {
       assertNever(param.boundParam)
   }
 }
-
-// FIXME we need to inject data-uids using insertDataUIDsIntoCode
 
 export function clearArbitraryJSBlockUniqueIDs(block: ArbitraryJSBlock): ArbitraryJSBlock {
   return {
@@ -2302,6 +2304,24 @@ export function clearParamUniqueIDs(param: Param): Param {
   return functionParam(param.dotDotDotToken, clearBoundParamUniqueIDs(param.boundParam))
 }
 
+export function clearFunctionWrapUniqueIDs(wrap: FunctionWrap): FunctionWrap {
+  switch (wrap.type) {
+    case 'SIMPLE_FUNCTION_WRAP':
+      return simpleFunctionWrap(clearExpressionUniqueIDs(wrap.functionExpression))
+  }
+}
+
+export function clearFunctionWrapSourceMaps(wrap: FunctionWrap): FunctionWrap {
+  switch (wrap.type) {
+    case 'SIMPLE_FUNCTION_WRAP':
+      return simpleFunctionWrap(clearExpressionSourceMaps(wrap.functionExpression))
+  }
+}
+
+export function clearFunctionWrapUniqueIDsAndSourceMaps(wrap: FunctionWrap): FunctionWrap {
+  return clearFunctionWrapSourceMaps(clearFunctionWrapUniqueIDs(wrap))
+}
+
 // FIXME: Should only really be in test code.
 export function clearTopLevelElementUniqueIDs(element: UtopiaJSXComponent): UtopiaJSXComponent
 export function clearTopLevelElementUniqueIDs(element: ArbitraryJSBlock): ArbitraryJSBlock
@@ -2312,14 +2332,15 @@ export function clearTopLevelElementUniqueIDs(element: TopLevelElement): TopLeve
       let updatedComponent: UtopiaJSXComponent = {
         ...element,
         rootElement: clearJSXElementChildUniqueIDs(element.rootElement),
+        functionWrapping: element.functionWrapping.map(clearFunctionWrapUniqueIDsAndSourceMaps),
       }
       if (updatedComponent.arbitraryJSBlock != null) {
         updatedComponent.arbitraryJSBlock = clearArbitraryJSBlockUniqueIDs(
           updatedComponent.arbitraryJSBlock,
         )
       }
-      if (updatedComponent.param != null) {
-        updatedComponent.param = clearParamUniqueIDs(updatedComponent.param)
+      if (updatedComponent.params != null) {
+        updatedComponent.params = updatedComponent.params.map(clearParamUniqueIDs)
       }
       return updatedComponent
     case 'ARBITRARY_JS_BLOCK':
@@ -2348,8 +2369,8 @@ export function clearTopLevelElementSourceMaps(element: TopLevelElement): TopLev
           updatedComponent.arbitraryJSBlock,
         )
       }
-      if (updatedComponent.param != null) {
-        updatedComponent.param = clearParamSourceMaps(updatedComponent.param)
+      if (updatedComponent.params != null) {
+        updatedComponent.params = updatedComponent.params.map(clearParamSourceMaps)
       }
       return updatedComponent
     case 'ARBITRARY_JS_BLOCK':

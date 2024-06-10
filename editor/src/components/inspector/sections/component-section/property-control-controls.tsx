@@ -1,10 +1,38 @@
 import fastDeepEquals from 'fast-deep-equal'
 import React from 'react'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { isRight } from '../../../../core/shared/either'
+import { isJSXElement } from '../../../../core/shared/element-template'
+import { parseNumber } from '../../../../core/shared/math-utils'
+import { forceNotNull } from '../../../../core/shared/optional-utils'
+import type { ElementPath, Imports, PropertyPath } from '../../../../core/shared/project-file-types'
+import { importDetailsFromImportOption } from '../../../../core/shared/project-file-types'
+import * as PP from '../../../../core/shared/property-path'
+import { assertNever } from '../../../../core/shared/utils'
+import { useKeepReferenceEqualityIfPossible } from '../../../../utils/react-performance'
+import type { JSXParsedType, JSXParsedValue } from '../../../../utils/value-parser-utils'
+import type { NumberInputProps } from '../../../../uuiui'
+import {
+  ChainedNumberInput,
+  FlexColumn,
+  FlexRow,
+  Icn,
+  Icons,
+  PopupList,
+  SimpleNumberInput,
+  UtopiaTheme,
+  useColorTheme,
+  useWrappedEmptyOrUnknownOnSubmitValue,
+  wrappedEmptyOrUnknownOnSubmitValue,
+} from '../../../../uuiui'
 import type { CSSCursor } from '../../../../uuiui-deps'
 import { SliderControl, getControlStyles } from '../../../../uuiui-deps'
+import {
+  normalisePathSuccessOrThrowError,
+  normalisePathToUnderlyingTarget,
+} from '../../../custom-code/code-file'
 import type {
   AllowedEnumType,
-  BaseControlDescription,
   BasicControlOption,
   CheckboxControlDescription,
   ColorControlDescription,
@@ -20,71 +48,27 @@ import type {
   RadioControlDescription,
   RadioControlOption,
   RegularControlDescription,
-  RegularControlType,
   StringInputControlDescription,
   Vector2ControlDescription,
   Vector3ControlDescription,
   Vector4ControlDescription,
 } from '../../../custom-code/internal-property-controls'
+import type { EditorAction } from '../../../editor/action-types'
+import { addImports, forceParseFile } from '../../../editor/actions/action-creators'
+import { useDispatch } from '../../../editor/store/dispatch-context'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
+import type { CSSNumber } from '../../common/css-utils'
+import { cssNumber, defaultCSSColor, printCSSNumber } from '../../common/css-utils'
 import type { InspectorInfo, InspectorInfoWithRawValue } from '../../common/property-path-hooks'
 import { BooleanControl } from '../../controls/boolean-control'
-import type { NumberInputProps } from '../../../../uuiui'
-import {
-  useWrappedEmptyOrUnknownOnSubmitValue,
-  SimpleNumberInput,
-  PopupList,
-  ChainedNumberInput,
-  wrappedEmptyOrUnknownOnSubmitValue,
-  FlexColumn,
-  FlexRow,
-  UtopiaTheme,
-  useColorTheme,
-  colorTheme,
-  Icn,
-  Tooltip,
-  iconForControlType,
-  Icons,
-} from '../../../../uuiui'
-import type { CSSNumber } from '../../common/css-utils'
-import { printCSSNumber, cssNumber, defaultCSSColor } from '../../common/css-utils'
-import * as PP from '../../../../core/shared/property-path'
 import { ColorControl } from '../../controls/color-control'
-import { StringControl } from '../../controls/string-control'
-import type { SelectOption } from '../../controls/select-control'
 import type { OptionChainOption } from '../../controls/option-chain-control'
 import { OptionChainControl } from '../../controls/option-chain-control'
-import { useKeepReferenceEqualityIfPossible } from '../../../../utils/react-performance'
-import { UIGridRow } from '../../widgets/ui-grid-row'
-import type { ElementPath, Imports, PropertyPath } from '../../../../core/shared/project-file-types'
-import { importDetailsFromImportOption } from '../../../../core/shared/project-file-types'
-import { Substores, useEditorState } from '../../../editor/store/store-hook'
-import { addImports, forceParseFile } from '../../../editor/actions/action-creators'
-import type { EditorAction } from '../../../editor/action-types'
-import { forceNotNull } from '../../../../core/shared/optional-utils'
+import type { SelectOption } from '../../controls/select-control'
 import type { DEPRECATEDSliderControlOptions } from '../../controls/slider-control'
-import {
-  normalisePathSuccessOrThrowError,
-  normalisePathToUnderlyingTarget,
-} from '../../../custom-code/code-file'
-import { useDispatch } from '../../../editor/store/dispatch-context'
+import { StringControl } from '../../controls/string-control'
+import { UIGridRow } from '../../widgets/ui-grid-row'
 import { HtmlPreview, ImagePreview } from './property-content-preview'
-import type {
-  ElementInstanceMetadata,
-  JSXElementChild,
-} from '../../../../core/shared/element-template'
-import {
-  JSElementAccess,
-  JSIdentifier,
-  JSPropertyAccess,
-  getJSXElementNameLastPart,
-} from '../../../../core/shared/element-template'
-import type { JSXParsedType, JSXParsedValue } from '../../../../utils/value-parser-utils'
-import { assertNever } from '../../../../core/shared/utils'
-import { preventDefault, stopPropagation } from '../../common/inspector-utils'
-import { unless, when } from '../../../../utils/react-conditionals'
-import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { parseNoneControlDescription } from '../../../../core/property-controls/property-controls-parser'
-import * as EP from '../../../../core/shared/element-path'
 
 export interface ControlForPropProps<T extends RegularControlDescription> {
   propPath: PropertyPath
@@ -98,12 +82,21 @@ export interface ControlForPropProps<T extends RegularControlDescription> {
   elementPath: ElementPath
 }
 
+function getValueOrUndefinedFromPropMetadata(propMetadata: InspectorInfoWithRawValue<any>): any {
+  // NOTE: render props and props.children (which are displayed in the inspector
+  // as of https://github.com/concrete-utopia/utopia/pull/5839) don't use the same
+  // underlying data source, so there can be discrepancies in the values.
+  // Think about unifying the data sources if you touch this.
+  return propMetadata.propertyStatus.set ? propMetadata.value : undefined
+}
+
 export const CheckboxPropertyControl = React.memo(
   (props: ControlForPropProps<CheckboxControlDescription>) => {
     const { propName, propMetadata, controlDescription } = props
 
     const controlId = `${propName}-checkbox-property-control`
-    const value = propMetadata.propertyStatus.set ? propMetadata.value : undefined
+
+    const value = getValueOrUndefinedFromPropMetadata(propMetadata) ?? false
 
     return (
       <BooleanControl
@@ -125,7 +118,8 @@ export const ColorPropertyControl = React.memo(
     const { propName, propMetadata, controlDescription } = props
 
     const controlId = `${propName}-color-property-control`
-    const rawValue = propMetadata.propertyStatus.set ? propMetadata.value : undefined
+
+    const rawValue = getValueOrUndefinedFromPropMetadata(propMetadata)
 
     const value = rawValue ?? defaultCSSColor
 
@@ -165,7 +159,7 @@ export const ExpressionInputPropertyControl = React.memo(
     )
 
     const controlId = `${propName}-expression-input-property-control`
-    const value = propMetadata.propertyStatus.set ? propMetadata.value : undefined
+    const value = getValueOrUndefinedFromPropMetadata(propMetadata)
     const controlStyles = useKeepReferenceEqualityIfPossible({
       ...propMetadata.controlStyles,
       showContent: true,
@@ -219,7 +213,7 @@ function labelForIndividualOption(option: IndividualOption): string {
 export const PopUpListPropertyControl = React.memo(
   (props: ControlForPropProps<PopUpListControlDescription>) => {
     const { propMetadata, controlDescription } = props
-    const value = propMetadata.propertyStatus.set ? propMetadata.value : undefined
+    const value = getValueOrUndefinedFromPropMetadata(propMetadata)
 
     // TS baulks at the map below for some reason if we don't first do this
     const controlOptions: Array<IndividualOption> = controlDescription.options
@@ -348,8 +342,43 @@ export const NumberInputPropertyControl = React.memo(
       propMetadata.onUnsetValues,
     )
 
+    const value = useEditorState(
+      Substores.metadata,
+      (store) => {
+        // if the target prop is children, dig for its value
+        if (propName === 'children') {
+          const element = MetadataUtils.findElementByElementPath(
+            store.editor.jsxMetadata,
+            props.elementPath,
+          )
+          if (
+            element != null &&
+            isRight(element.element) &&
+            isJSXElement(element.element.value) &&
+            element.element.value.children.length > 0
+          ) {
+            const child = element.element.value.children[0]
+            if (child.type === 'ATTRIBUTE_OTHER_JAVASCRIPT') {
+              // try first with the prop metadata value…
+              if (props.propMetadata.value != null) {
+                return props.propMetadata.value
+              }
+              // …if the value is not there, try to parse it
+              const parsed = parseNumber(child.originalJavascript)
+              if (isRight(parsed)) {
+                return parsed.value
+              }
+            }
+          }
+          return undefined
+        }
+
+        return getValueOrUndefinedFromPropMetadata(propMetadata)
+      },
+      'NumberInputPropertyControl value',
+    )
+
     const controlId = `${propName}-number-input-property-control`
-    const value = propMetadata.propertyStatus.set ? propMetadata.value : undefined
     const controlOptions = useKeepReferenceEqualityIfPossible({
       minimum: controlDescription.min,
       maximum: controlDescription.max,
@@ -407,12 +436,22 @@ function labelFromRadioControlOption(option: RadioControlOption<unknown>): strin
   }
 }
 
+function iconFromRadioControlOption(
+  option: RadioControlOption<unknown>,
+): OptionChainOption<unknown>['iconComponent'] {
+  if (option.type === 'allowed-enum-type' || option.option.icon == null) {
+    return undefined
+  }
+
+  return React.createElement(Icons[option.option.icon])
+}
+
 export const RadioPropertyControl = React.memo(
   (props: ControlForPropProps<RadioControlDescription>) => {
     const { propName, propMetadata, controlDescription } = props
 
     const controlId = `${propName}-radio-property-control`
-    const value = propMetadata.propertyStatus.set ? propMetadata.value : undefined
+    const value = getValueOrUndefinedFromPropMetadata(propMetadata)
 
     // TS baulks at the map below for some reason if we don't first do this
     const controlOptions: RadioControlDescription['options'] = controlDescription.options
@@ -422,6 +461,7 @@ export const RadioPropertyControl = React.memo(
         return {
           value: valueFromRadioControlOption(option),
           label: labelFromRadioControlOption(option),
+          iconComponent: iconFromRadioControlOption(option),
         }
       }),
     )
@@ -454,7 +494,7 @@ const NumberWithSliderControl = React.memo(
     const { propName, propMetadata, controlDescription } = props
 
     const controlId = `${propName}-slider-property-control`
-    const value = propMetadata.propertyStatus.set ? propMetadata.value : undefined
+    const value = getValueOrUndefinedFromPropMetadata(propMetadata) ?? 0
 
     return (
       <UIGridRow padded={false} variant={'<--------auto-------->|--45px--|'}>
@@ -492,10 +532,39 @@ const NumberWithSliderControl = React.memo(
 
 export const StringInputPropertyControl = React.memo(
   (props: ControlForPropProps<StringInputControlDescription>) => {
-    const { propName, propMetadata, controlDescription } = props
+    const { propName, propMetadata } = props
 
     const controlId = `${propName}-string-input-property-control`
-    const value = propMetadata.propertyStatus.set ? propMetadata.value : undefined
+    const value = useEditorState(
+      Substores.metadata,
+      (store) => {
+        // if the target prop is children, dig for its value
+        if (propName === 'children') {
+          const element = MetadataUtils.findElementByElementPath(
+            store.editor.jsxMetadata,
+            props.elementPath,
+          )
+          if (
+            element != null &&
+            isRight(element.element) &&
+            isJSXElement(element.element.value) &&
+            element.element.value.children.length > 0
+          ) {
+            const child = element.element.value.children[0]
+            switch (child.type) {
+              case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+                return child.originalJavascript
+              case 'JSX_TEXT_BLOCK':
+                return child.text
+            }
+          }
+          return undefined
+        }
+
+        return getValueOrUndefinedFromPropMetadata(propMetadata)
+      },
+      'StringInputPropertyControl value',
+    )
 
     const safeValue = value ?? ''
 
@@ -529,7 +598,7 @@ export const HtmlInputPropertyControl = React.memo(
     const { propName, propMetadata, controlDescription } = props
 
     const controlId = `${propName}-string-input-property-control`
-    const value = propMetadata.propertyStatus.set ? propMetadata.value : undefined
+    const value = getValueOrUndefinedFromPropMetadata(propMetadata)
 
     const safeValue = value ?? ''
 
@@ -565,9 +634,12 @@ export const JSXPropertyControl = React.memo(
     const theme = useColorTheme()
     const controlStatus = propMetadata.controlStatus
     const controlStyles = getControlStyles(controlStatus)
-    const value = propMetadata.propertyStatus.set ? propMetadata.value : undefined
+    const value = getValueOrUndefinedFromPropMetadata(propMetadata)
 
-    const safeValue: JSXParsedValue = value ?? { type: 'unknown', name: 'JSX' }
+    const safeValue: JSXParsedValue =
+      props.propName === 'children'
+        ? { type: 'internal-component', name: 'JSX' }
+        : value ?? { type: 'unknown', name: 'JSX' }
 
     return (
       <div
@@ -707,7 +779,7 @@ export const VectorPropertyControl = React.memo(
     const { propPath, propMetadata, controlDescription, setGlobalCursor } = props
 
     const propsArray: Array<Omit<NumberInputProps, 'id' | 'chained'>> = React.useMemo(() => {
-      const vectorValue = (propMetadata.propertyStatus.set ? propMetadata.value : undefined) ?? []
+      const vectorValue = getValueOrUndefinedFromPropMetadata(propMetadata) ?? []
 
       const keys = keysForVectorOfType(controlDescription.control)
       return propsArrayForCSSNumberArray(vectorValue, keys, propPath, propMetadata)
@@ -730,8 +802,8 @@ export const EulerPropertyControl = React.memo(
     const { propPath, propMetadata, controlDescription, setGlobalCursor } = props
 
     const values = React.useMemo(
-      () => (propMetadata.propertyStatus.set ? propMetadata.value : undefined) ?? [],
-      [propMetadata.propertyStatus.set, propMetadata.value],
+      () => getValueOrUndefinedFromPropMetadata(propMetadata) ?? [],
+      [propMetadata],
     )
 
     const numericPropsArray: Array<Omit<NumberInputProps, 'id' | 'chained'>> = React.useMemo(() => {
@@ -778,7 +850,7 @@ export const Matrix3PropertyControl = React.memo(
     const { propPath, propMetadata, controlDescription, setGlobalCursor } = props
 
     const propsArray: Array<Omit<NumberInputProps, 'id' | 'chained'>> = React.useMemo(() => {
-      const value = (propMetadata.propertyStatus.set ? propMetadata.value : undefined) ?? []
+      const value = getValueOrUndefinedFromPropMetadata(propMetadata) ?? []
 
       // prettier-ignore
       const keys = [
@@ -822,7 +894,7 @@ export const Matrix4PropertyControl = React.memo(
     const { propPath, propMetadata, controlDescription, setGlobalCursor } = props
 
     const propsArray: Array<Omit<NumberInputProps, 'id' | 'chained'>> = React.useMemo(() => {
-      const value = (propMetadata.propertyStatus.set ? propMetadata.value : undefined) ?? []
+      const value = getValueOrUndefinedFromPropMetadata(propMetadata) ?? []
 
       // prettier-ignore
       const keys = [
