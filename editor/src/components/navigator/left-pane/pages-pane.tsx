@@ -57,7 +57,7 @@ import ReactDOM from 'react-dom'
 import { createNewPageName } from '../../editor/store/editor-state'
 import urljoin from 'url-join'
 import { notice } from '../../common/notice'
-import type { EditorDispatch } from '../../editor/action-types'
+import type { EditorAction, EditorDispatch } from '../../editor/action-types'
 import { maybeToArray } from '../../../core/shared/optional-utils'
 import { StarUnstarIcon } from '../../canvas/star-unstar-icon'
 import { canvasRectangle } from '../../../core/shared/math-utils'
@@ -508,6 +508,18 @@ function fillInGapsInRoutes(routes: RouteMatches): Array<RouteMatch> {
   return Object.values(result).sort((a, b) => a.path.localeCompare(b.path))
 }
 
+function resetCanvasForNewPage(): EditorAction {
+  return scrollToPosition(
+    canvasRectangle({
+      x: 380,
+      y: 120,
+      width: 0,
+      height: 0,
+    }),
+    'to-center',
+  )
+}
+
 export const AddPageContextMenu = React.memo(
   ({
     contextMenuInstance,
@@ -525,16 +537,8 @@ export const AddPageContextMenu = React.memo(
         const newPageName = createNewPageName()
         dispatch([
           addNewPage('/app/routes', template, newPageName),
-          scrollToPosition(
-            canvasRectangle({
-              // hardcoded values for now, so the content sits at a usable spot
-              x: 380,
-              y: 120,
-              width: 0,
-              height: 0,
-            }),
-            'to-center',
-          ),
+          // scroll the canvas to the content is at a usable spot
+          resetCanvasForNewPage(),
         ])
         onAfterPageAdd(newPageName)
       },
