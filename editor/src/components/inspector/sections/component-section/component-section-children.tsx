@@ -82,7 +82,7 @@ export function useChildrenPropOverride(
               ? props.controlDescription
               : {
                   control: 'string-input',
-                  label: 'hey',
+                  label: 'children',
                 }
           }
         />
