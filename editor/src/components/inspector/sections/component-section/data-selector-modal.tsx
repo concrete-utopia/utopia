@@ -356,6 +356,9 @@ export const DataSelectorModal = React.memo(
         if (variable == null) {
           return
         }
+        if (variable.disabled) {
+          return
+        }
 
         onPropertyPicked(
           jsExpressionOtherJavaScriptSimple(variable.variableInfo.expression, [
