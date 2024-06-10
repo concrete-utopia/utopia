@@ -12,7 +12,6 @@ type ExtendedSceneProps = SceneProps & { [UTOPIA_SCENE_ID_KEY]: string }
 export const SceneComponent = React.memo(
   (props: React.PropsWithChildren<ExtendedSceneProps>) => {
     const colorTheme = useColorTheme()
-    const canvasIsLive = false
     const updateInvalidatedPaths = usePubSubAtomReadOnly(
       DomWalkerInvalidatePathsCtxAtom,
       AlwaysTrue,

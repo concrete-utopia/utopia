@@ -20,10 +20,21 @@ import type { FileChecksumsWithFile } from './editor/store/editor-state'
 import { memoize } from '../core/shared/memoize'
 import type { Optic } from '../core/shared/optics/optics'
 import { traversal } from '../core/shared/optics/optics'
-
-export interface AssetFileWithFileName {
-  fileName: string
-  file: ImageFile | AssetFile
+import type {
+  AssetFileWithFileName,
+  ProjectContentTreeRoot,
+  ProjectContentDirectory,
+  ProjectContentFile,
+  ProjectContentsTree,
+  PathAndFileEntry,
+} from 'utopia-shared/src/types/assets'
+export type {
+  AssetFileWithFileName,
+  ProjectContentTreeRoot,
+  ProjectContentDirectory,
+  ProjectContentFile,
+  ProjectContentsTree,
+  PathAndFileEntry,
 }
 
 export function getAllProjectAssetFiles(
@@ -192,17 +203,6 @@ export function deriveGithubFileChanges(
   }
 }
 
-// Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
-export type ProjectContentTreeRoot = { [key: string]: ProjectContentsTree }
-
-// Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs
-export interface ProjectContentDirectory {
-  type: 'PROJECT_CONTENT_DIRECTORY'
-  fullPath: string
-  directory: Directory
-  children: ProjectContentTreeRoot
-}
-
 export function projectContentDirectory(
   fullPath: string,
   dir: Directory,
@@ -216,13 +216,6 @@ export function projectContentDirectory(
   }
 }
 
-// Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
-export interface ProjectContentFile {
-  type: 'PROJECT_CONTENT_FILE'
-  fullPath: string
-  content: TextFile | ImageFile | AssetFile
-}
-
 export function projectContentFile(
   fullPath: string,
   content: TextFile | ImageFile | AssetFile,
@@ -233,9 +226,6 @@ export function projectContentFile(
     content: content,
   }
 }
-
-// Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
-export type ProjectContentsTree = ProjectContentDirectory | ProjectContentFile
 
 export function isProjectContentDirectory(
   projectContentsTree: ProjectContentsTree | null,
@@ -381,11 +371,6 @@ export function walkContentsTree(
         throw new Error(`Unhandled tree element ${JSON.stringify(treeElement)}`)
     }
   })
-}
-
-export interface PathAndFileEntry {
-  fullPath: string
-  file: ProjectFile
 }
 
 export const contentsTreeOptic: Optic<ProjectContentTreeRoot, PathAndFileEntry> = traversal(

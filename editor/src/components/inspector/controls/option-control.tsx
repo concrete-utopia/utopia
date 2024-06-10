@@ -6,11 +6,11 @@ import type { DEPRECATEDControlProps, DEPRECATEDGenericControlOptions } from './
 import { colorTheme } from '../../../uuiui'
 import type { IcnProps } from '../../../uuiui'
 import { UtopiaTheme, Tooltip, Icn } from '../../../uuiui'
-import { useIsMyProject } from '../../editor/store/collaborative-editing'
 import { useControlsDisabledInSubtree } from '../../../uuiui/utilities/disable-subtree'
 
 export interface DEPRECATEDOptionControlOptions extends DEPRECATEDGenericControlOptions {
   icon?: IcnProps
+  iconComponent?: React.ReactNode
   labelInner?: string
   tooltip?: string
   roundCorners?:
@@ -181,7 +181,9 @@ export const OptionControl: React.FunctionComponent<
                 style={{ marginRight: controlOptions.labelInner == null ? 0 : 4 }}
                 {...controlOptions.icon}
               />
-            ) : null}
+            ) : (
+              controlOptions.iconComponent ?? null
+            )}
             {controlOptions.labelInner != null ? controlOptions.labelInner : null}
           </div>
         </label>

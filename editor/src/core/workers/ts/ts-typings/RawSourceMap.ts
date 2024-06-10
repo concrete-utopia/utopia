@@ -1,10 +1,2 @@
-export interface RawSourceMap {
-  version: number
-  sources: string[]
-  names: string[]
-  sourceRoot?: string
-  sourcesContent?: string[]
-  transpiledContentUtopia?: string
-  mappings: string
-  file: string
-}
+import type { RawSourceMap } from 'utopia-shared/src/types/RawSourceMap'
+export type { RawSourceMap }

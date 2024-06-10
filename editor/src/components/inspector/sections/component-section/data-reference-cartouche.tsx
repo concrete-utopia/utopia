@@ -16,10 +16,13 @@ import { selectComponents } from '../../../editor/actions/meta-actions'
 import { dataPathSuccess, traceDataFromElement } from '../../../../core/data-tracing/data-tracing'
 import type { RenderedAt } from '../../../editor/store/editor-state'
 import { replaceElementInScope } from '../../../editor/actions/action-creators'
-import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'
+import {
+  getCartoucheDataTypeForExpression,
+  useVariablesInScopeForSelectedElement,
+} from './variables-in-scope-utils'
 import { DataPickerPreferredAllAtom, jsxElementChildToValuePath } from './data-picker-utils'
 import { useAtom } from 'jotai'
-import type { CartoucheUIProps } from './cartouche-ui'
+import type { CartoucheDataType, CartoucheHighlight, CartoucheUIProps } from './cartouche-ui'
 import { CartoucheUI } from './cartouche-ui'
 
 interface DataReferenceCartoucheControlProps {
@@ -29,6 +32,7 @@ interface DataReferenceCartoucheControlProps {
   renderedAt: RenderedAt
   surroundingScope: ElementPath
   hideTooltip?: boolean
+  highlight?: CartoucheHighlight | null
 }
 
 export const DataReferenceCartoucheControl = React.memo(
@@ -107,6 +111,18 @@ export const DataReferenceCartoucheControl = React.memo(
       [childOrAttribute],
     )
 
+    const currentlySelectedValueDataType = useEditorState(
+      Substores.projectContentsAndMetadataAndVariablesInScope,
+      (store) => {
+        return getCartoucheDataTypeForExpression(
+          elementPath,
+          childOrAttribute,
+          store.editor.variablesInScope,
+        )
+      },
+      'DataReferenceCartoucheControl currentlySelectedValueDataType',
+    )
+
     const dataPickerButtonData = useDataPickerButton(
       variableNamesInScope,
       updateDataWithDataPicker,
@@ -129,11 +145,12 @@ export const DataReferenceCartoucheControl = React.memo(
           contentsToDisplay={contentsToDisplay}
           selected={selected}
           safeToDelete={false}
-          inverted={false}
+          highlight={props.highlight}
           onDelete={NO_OP}
           testId={`data-reference-cartouche-${EP.toString(elementPath)}`}
           contentIsComingFromServer={isDataComingFromHookResult}
           hideTooltip={props.hideTooltip}
+          datatype={currentlySelectedValueDataType}
         />
         {/* this div prevents the popup form putting padding into the condensed rows */}
         <div style={{ width: 0 }}>
@@ -148,13 +165,14 @@ interface DataCartoucheInnerProps {
   onClick: (e: React.MouseEvent) => void
   onDoubleClick: (e: React.MouseEvent) => void
   selected: boolean
-  inverted: boolean
   contentsToDisplay: { type: 'literal' | 'reference'; label: string | null }
   safeToDelete: boolean
   onDelete: () => void
   testId: string
   contentIsComingFromServer: boolean
   hideTooltip?: boolean
+  datatype: CartoucheDataType
+  highlight?: CartoucheHighlight | null
 }
 
 export const DataCartoucheInner = React.forwardRef(
@@ -165,10 +183,11 @@ export const DataCartoucheInner = React.forwardRef(
       safeToDelete,
       onDelete: onDeleteCallback,
       selected,
-      inverted,
+      highlight,
       testId,
       contentsToDisplay,
       contentIsComingFromServer,
+      datatype,
     } = props
 
     const onDeleteInner = React.useCallback(
@@ -193,9 +212,9 @@ export const DataCartoucheInner = React.forwardRef(
         onDelete={onDelete}
         onClick={onClick}
         onDoubleClick={onDoubleClick}
-        datatype='renderable' // TODO actually feed the real value here
+        datatype={datatype}
         selected={selected}
-        inverted={inverted}
+        highlight={highlight}
         testId={testId}
         tooltip={!props.hideTooltip ? contentsToDisplay.label ?? 'DATA' : null}
         role='selection'

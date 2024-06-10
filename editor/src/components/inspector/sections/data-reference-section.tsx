@@ -20,8 +20,12 @@ import { useDispatch } from '../../editor/store/dispatch-context'
 import { replaceElementInScope } from '../../editor/actions/action-creators'
 import { NO_OP } from '../../../core/shared/utils'
 import { dataPathSuccess, traceDataFromElement } from '../../../core/data-tracing/data-tracing'
-import { useVariablesInScopeForSelectedElement } from './component-section/variables-in-scope-utils'
+import {
+  getCartoucheDataTypeForExpression,
+  useVariablesInScopeForSelectedElement,
+} from './component-section/variables-in-scope-utils'
 import { jsxElementChildToValuePath } from './component-section/data-picker-utils'
+import { CartoucheInspectorWrapper } from './component-section/cartouche-control'
 
 export const DataReferenceSectionId = 'code-element-section-test-id'
 
@@ -37,7 +41,7 @@ export const DataReferenceSection = React.memo(({ paths }: { paths: ElementPath[
     React.useState<ElementPath | null>(null)
 
   const elements = useEditorState(
-    Substores.projectContentsAndMetadata,
+    Substores.projectContentsAndMetadataAndVariablesInScope,
     (store) => {
       return mapDropNulls((path) => {
         const element = getElementFromProjectContents(path, store.editor.projectContents)
@@ -63,6 +67,7 @@ export const DataReferenceSection = React.memo(({ paths }: { paths: ElementPath[
           textContent: getTextContentOfElement(element, elementMetadata),
           path: path,
           contentIsComingFromServer: isDataComingFromServer.type === 'hook-result',
+          datatype: getCartoucheDataTypeForExpression(path, element, store.editor.variablesInScope),
         }
       }, paths)
     },
@@ -161,18 +166,19 @@ export const DataReferenceSection = React.memo(({ paths }: { paths: ElementPath[
             key={`inspector-data-reference-row-${EP.toString(element.path)}`}
           >
             <span>Value</span>
-
-            <DataCartoucheInner
-              onClick={openPicker(element.path)}
-              onDoubleClick={NO_OP}
-              selected={false}
-              inverted={false}
-              contentsToDisplay={element.textContent}
-              safeToDelete={false}
-              onDelete={NO_OP}
-              testId={`inspector-data-cartouche-${EP.toString(element.path)}`}
-              contentIsComingFromServer={element.contentIsComingFromServer}
-            />
+            <CartoucheInspectorWrapper>
+              <DataCartoucheInner
+                onClick={NO_OP}
+                onDoubleClick={openPicker(element.path)}
+                selected={false}
+                contentsToDisplay={element.textContent}
+                safeToDelete={false}
+                onDelete={NO_OP}
+                testId={`inspector-data-cartouche-${EP.toString(element.path)}`}
+                contentIsComingFromServer={element.contentIsComingFromServer}
+                datatype={element.datatype}
+              />
+            </CartoucheInspectorWrapper>
           </UIGridRow>
         )
       })}
