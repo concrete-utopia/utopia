@@ -1,9 +1,8 @@
 import React from 'react'
-import { groupBy, isPrefixOf, last } from '../../../../core/shared/array-utils'
+import { groupBy, intersperse, isPrefixOf, last } from '../../../../core/shared/array-utils'
 import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
 import {
   CanvasContextMenuPortalTargetID,
-  NO_OP,
   arrayEqualsByReference,
   assertNever,
 } from '../../../../core/shared/utils'
@@ -14,7 +13,6 @@ import {
   Icons,
   LargerIcons,
   PopupList,
-  StringInput,
   UtopiaStyles,
   UtopiaTheme,
   useColorTheme,
@@ -44,7 +42,6 @@ import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import type { FileRootPath } from '../../../canvas/ui-jsx-canvas'
 import { insertionCeilingToString, insertionCeilingsEqual } from '../../../canvas/ui-jsx-canvas'
-import { set } from 'objectPath'
 
 export const DataSelectorPopupBreadCrumbsTestId = 'data-selector-modal-top-bar'
 
@@ -633,9 +630,30 @@ export const DataSelectorModal = React.memo(
               {searchTerm == null ? null : (
                 <FlexColumn>
                   {search(allVariablesInScope, searchTerm.toLowerCase()).map((t, idx) => (
-                    <FlexRow key={[...t.valuePath, idx].toString()}>
-                      <span>{t.valuePath.map(({ value }) => value).toString()}</span>
-                      <span>{t.value.value}</span>
+                    <FlexRow style={{ gap: 8 }} key={[...t.valuePath, idx].toString()}>
+                      <FlexRow style={{ gap: 2 }}>
+                        {t.valuePath.map((v, i) => (
+                          <CartoucheUI
+                            key={`${v.value}-${i}`}
+                            source='internal'
+                            datatype='renderable'
+                            selected={false}
+                            role='information'
+                            highlight='subtle'
+                            testId={`data-selector-primitive-values-${v.value}-${i}`}
+                          >
+                            <SearchResultString
+                              isMatch={v.matched}
+                              label={v.value}
+                              searchTerm={searchTerm}
+                              fontWeightForMatch={700}
+                            />
+                          </CartoucheUI>
+                        ))}
+                      </FlexRow>
+                      <span style={{ opacity: 0.5, ...UtopiaStyles.fontStyles.monospaced }}>
+                        {t.value.value}
+                      </span>
                     </FlexRow>
                   ))}
                 </FlexColumn>
@@ -979,4 +997,39 @@ function search(options: DataPickerOption[], term: string): SearchResult[] {
   options.forEach((o) => walk(o))
 
   return results
+}
+
+function SearchResultString({
+  label,
+  isMatch,
+  searchTerm,
+  fontWeightForMatch,
+}: {
+  label: string
+  isMatch: boolean
+  searchTerm: string
+  fontWeightForMatch: number
+}) {
+  if (!isMatch) {
+    return <span>{label}</span>
+  }
+
+  const segments = intersperse(label.split(searchTerm), searchTerm)
+  return (
+    <>
+      {segments.map((s, idx) => {
+        if (s.length === 0) {
+          return null
+        }
+        return (
+          <span
+            key={`${s}-${idx}`}
+            style={{ fontWeight: s !== searchTerm ? undefined : fontWeightForMatch }}
+          >
+            {s}
+          </span>
+        )
+      })}
+    </>
+  )
 }
