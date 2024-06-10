@@ -107,15 +107,18 @@ const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
       onClick={onClick}
       style={{
         alignSelf: 'stretch',
+        justifyContent: 'space-between',
         fontSize: 10,
         borderRadius: 4,
         height: 20,
         backgroundColor: props.selected ? colorTheme.primary.value : 'transparent',
+        color: props.selected ? colorTheme.neutralInvertedForeground.value : colorTheme.fg0.value,
         padding: 5,
         cursor: 'pointer',
       }}
     >
-      {props.data.variableInfo.expressionPathPart}
+      <span>{props.data.variableInfo.expressionPathPart}</span>
+      <span>{'>'}</span>
     </FlexRow>
   )
 })
