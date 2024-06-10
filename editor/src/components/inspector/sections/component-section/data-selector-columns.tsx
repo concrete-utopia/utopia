@@ -1,36 +1,117 @@
 import React from 'react'
 import { FlexColumn, FlexRow } from '../../../../uuiui'
-import type { DataPickerOption, ObjectPath } from './data-picker-utils'
+import type { ArrayOption, DataPickerOption, ObjectOption, ObjectPath } from './data-picker-utils'
+import { isPrefixOf, mapFirstApplicable } from '../../../../core/shared/array-utils'
+import { when } from '../../../../utils/react-conditionals'
 
 interface DataSelectorColumnsProps {
   activeScope: Array<DataPickerOption>
-  targetPathInsideScope: ObjectPath | null
+  targetPathInsideScope: ObjectPath
+  onTargetPathChange: (newTargetPath: ObjectPath) => void
 }
 
 export const DataSelectorColumns = React.memo((props: DataSelectorColumnsProps) => {
   return (
-    <FlexRow>
-      <DataSelectorColumn elementsToShow={props.activeScope} />
+    <FlexRow style={{ alignItems: 'flex-start' }}>
+      <DataSelectorColumn
+        activeScope={props.activeScope}
+        targetPathInsideScope={props.targetPathInsideScope}
+        onTargetPathChange={props.onTargetPathChange}
+      />
     </FlexRow>
   )
 })
 
 interface DataSelectorColumnProps {
-  elementsToShow: Array<DataPickerOption>
+  activeScope: Array<DataPickerOption>
+  targetPathInsideScope: ObjectPath
+  onTargetPathChange: (newTargetPath: ObjectPath) => void
 }
 
 const DataSelectorColumn = React.memo((props: DataSelectorColumnProps) => {
-  const { elementsToShow } = props
+  const { activeScope, targetPathInsideScope } = props
+  const selectedElement = activeScope.find((option) =>
+    isPrefixOf(option.valuePath, targetPathInsideScope),
+  )
+  const nextColumnScope =
+    selectedElement != null &&
+    (selectedElement.type === 'array' || selectedElement?.type === 'object')
+      ? selectedElement
+      : null
+
   return (
-    <FlexColumn>
-      {elementsToShow.map((option) => {
-        return <RowWithCartouche key={option.variableInfo.expression} />
-      })}
-    </FlexColumn>
+    <>
+      <FlexColumn>
+        {activeScope.map((option) => {
+          return (
+            <RowWithCartouche
+              key={option.variableInfo.expression}
+              data={option}
+              selected={option === selectedElement}
+              onTargetPathChange={props.onTargetPathChange}
+            />
+          )
+        })}
+      </FlexColumn>
+      {nextColumnScope != null ? (
+        <DataSelectorColumn
+          activeScope={nextColumnScope.children}
+          targetPathInsideScope={targetPathInsideScope}
+          onTargetPathChange={props.onTargetPathChange}
+        />
+      ) : null}
+    </>
   )
 })
 
-interface RowWithCartoucheProps {}
+interface RowWithCartoucheProps {
+  data: DataPickerOption
+  selected: boolean
+  onTargetPathChange: (newTargetPath: ObjectPath) => void
+}
 const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
-  return <FlexRow>cica</FlexRow>
+  const { onTargetPathChange } = props
+  const targetPath = props.data.valuePath
+
+  const onClick: React.MouseEventHandler<HTMLDivElement> = React.useCallback(
+    (e) => {
+      e.stopPropagation()
+      onTargetPathChange(targetPath)
+    },
+    [targetPath, onTargetPathChange],
+  )
+
+  return <FlexRow onClick={onClick}>{props.data.variableInfo.expressionPathPart}</FlexRow>
 })
+
+interface ProcessedColumns {
+  [columnIndex: number]: Array<DataPickerOption>
+}
+
+function useProcessColumns(
+  startingOptions: DataPickerOption[],
+  targetPathInsideScope: ObjectPath | null,
+): ProcessedColumns {
+  return React.useMemo(() => {
+    function walk(options: DataPickerOption[] | null, columnIndex: number): ProcessedColumns {
+      if (options == null) {
+        return {}
+      }
+      if (targetPathInsideScope == null) {
+        return { [columnIndex]: startingOptions }
+      }
+
+      const nextColumnScope: DataPickerOption[] | null = mapFirstApplicable(options, (option) => {
+        if (
+          isPrefixOf(option.valuePath, targetPathInsideScope) &&
+          (option.type === 'array' || option.type === 'object')
+        ) {
+          return option.children
+        }
+        return null
+      })
+      return { [columnIndex]: options, ...walk(nextColumnScope, columnIndex + 1) }
+    }
+    return walk(startingOptions, 0)
+  }, [startingOptions, targetPathInsideScope])
+}

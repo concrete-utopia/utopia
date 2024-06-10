@@ -164,7 +164,7 @@ export const DataSelectorModal = React.memo(
         (name: ElementPath, hasContent: boolean) => () => {
           if (hasContent) {
             setSelectedScope(name)
-            setSelectedPath(null)
+            setSelectedPath([])
             setHoveredPath(null)
             setNavigatedToPath([])
           }
@@ -204,10 +204,16 @@ export const DataSelectorModal = React.memo(
         findFirstObjectPathToNavigateTo(processedVariablesInScope, startingSelectedValuePath) ?? [],
       )
 
-      const [selectedPath, setSelectedPath] = React.useState<ObjectPath | null>(
-        startingSelectedValuePath,
+      const [selectedPath, setSelectedPath] = React.useState<ObjectPath>(
+        startingSelectedValuePath ?? [],
       )
       const [hoveredPath, setHoveredPath] = React.useState<ObjectPath | null>(null)
+
+      const setSelectedPathFromColumns = React.useCallback((newPath: ObjectPath) => {
+        setSelectedPath(newPath)
+        setHoveredPath(null)
+        setNavigatedToPath([])
+      }, [])
 
       const setNavigatedToPathCurried = React.useCallback(
         (path: DataPickerOption['valuePath']) => (e: React.MouseEvent) => {
@@ -215,7 +221,7 @@ export const DataSelectorModal = React.memo(
           e.preventDefault()
 
           setNavigatedToPath(path)
-          setSelectedPath(null)
+          setSelectedPath([])
           setHoveredPath(null)
         },
         [],
@@ -235,7 +241,7 @@ export const DataSelectorModal = React.memo(
         e.stopPropagation()
         e.preventDefault()
 
-        setSelectedPath(null)
+        setSelectedPath([])
       }, [])
 
       const onHover = React.useCallback(
@@ -487,6 +493,7 @@ export const DataSelectorModal = React.memo(
                 <DataSelectorColumns
                   activeScope={filteredVariablesInScope}
                   targetPathInsideScope={selectedPath}
+                  onTargetPathChange={setSelectedPathFromColumns}
                 />
               </FlexColumn>
               {/* Scope Selector Breadcrumbs */}
