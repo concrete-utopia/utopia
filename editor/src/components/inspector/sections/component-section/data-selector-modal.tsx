@@ -42,6 +42,7 @@ import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import type { FileRootPath } from '../../../canvas/ui-jsx-canvas'
 import { insertionCeilingToString, insertionCeilingsEqual } from '../../../canvas/ui-jsx-canvas'
+import { memoize } from '../../../../core/shared/memoize'
 
 export const DataSelectorPopupBreadCrumbsTestId = 'data-selector-modal-top-bar'
 
@@ -630,6 +631,7 @@ export const DataSelectorModal = React.memo(
               {searchTerm == null ? null : (
                 <FlexColumn>
                   {search(allVariablesInScope, searchTerm.toLowerCase()).map((t, idx) => (
+                    // TODO: deeplink to search, instant apply
                     <FlexRow style={{ gap: 8 }} key={[...t.valuePath, idx].toString()}>
                       <FlexRow style={{ gap: 2 }}>
                         {t.valuePath.map((v, i) => (
@@ -646,7 +648,7 @@ export const DataSelectorModal = React.memo(
                               isMatch={v.matched}
                               label={v.value}
                               searchTerm={searchTerm}
-                              fontWeightForMatch={700}
+                              fontWeightForMatch={900}
                             />
                           </CartoucheUI>
                         ))}
@@ -689,7 +691,7 @@ export const DataSelectorModal = React.memo(
                 </FlexRow>
                 <FlexRow
                   style={{
-                    padding: '8px 8px',
+                    padding: '6px 8px',
                     borderRadius: 16,
                     gap: 8,
                     border: `1px solid ${colorTheme.fg7.value}`,
@@ -934,14 +936,14 @@ interface SearchResult {
 
 function searchInValuePath(
   valuePath: ObjectPath,
-  term: string,
+  context: SearchContext,
 ): { valuePath: SearchResult['valuePath']; matched: boolean } {
   const segments: SearchResult['valuePath'] = []
 
   let foundMatch = false
   for (const segment of valuePath) {
     const segmentAsString = segment.toString()
-    const containsMatch = segmentAsString.includes(term)
+    const containsMatch = context.matchesSearchQuery(segmentAsString)
     segments.push({ value: segmentAsString, matched: containsMatch })
     foundMatch ||= containsMatch
   }
@@ -949,17 +951,24 @@ function searchInValuePath(
   return { valuePath: segments, matched: foundMatch }
 }
 
-function searchInValue(value: unknown, term: string): SearchResult['value'] {
+function searchInValue(value: unknown, context: SearchContext): SearchResult['value'] {
   if (typeof value === 'object' || Array.isArray(value)) {
     return { value: '', matched: false }
   }
   const valueAsString = `${value}`
-  return { value: valueAsString, matched: valueAsString.toLowerCase().includes(term) }
+  return {
+    value: valueAsString,
+    matched: context.matchesSearchQuery(valueAsString),
+  }
 }
 
-function matches(option: DataPickerOption, term: string): SearchResult | null {
-  const maybeValuePath = searchInValuePath(option.valuePath, term)
-  const maybeValue = searchInValue(option.variableInfo.value, term)
+interface SearchContext {
+  matchesSearchQuery: (_: string) => boolean
+}
+
+function matches(option: DataPickerOption, context: SearchContext): SearchResult | null {
+  const maybeValuePath = searchInValuePath(option.valuePath, context)
+  const maybeValue = searchInValue(option.variableInfo.value, context)
 
   if (maybeValuePath.matched || maybeValue.matched) {
     return { value: maybeValue, valuePath: maybeValuePath.valuePath }
@@ -973,10 +982,14 @@ function search(options: DataPickerOption[], term: string): SearchResult[] {
     return []
   }
 
+  const context: SearchContext = {
+    matchesSearchQuery: memoize((text) => text.toLowerCase().includes(term), { maxSize: 25 }),
+  }
+
   let results: SearchResult[] = []
 
   function walk(option: DataPickerOption) {
-    const searchResult = matches(option, term)
+    const searchResult = matches(option, context)
     if (searchResult != null) {
       results.push(searchResult)
     }
@@ -1010,8 +1023,12 @@ function SearchResultString({
   searchTerm: string
   fontWeightForMatch: number
 }) {
+  const style: React.CSSProperties = {
+    ...UtopiaStyles.fontStyles.monospaced,
+    fontSize: 10,
+  }
   if (!isMatch) {
-    return <span>{label}</span>
+    return <span style={style}>{label}</span>
   }
 
   const segments = intersperse(label.split(searchTerm), searchTerm)
@@ -1024,7 +1041,10 @@ function SearchResultString({
         return (
           <span
             key={`${s}-${idx}`}
-            style={{ fontWeight: s !== searchTerm ? undefined : fontWeightForMatch }}
+            style={{
+              ...style,
+              fontWeight: s !== searchTerm ? 200 : fontWeightForMatch,
+            }}
           >
             {s}
           </span>
