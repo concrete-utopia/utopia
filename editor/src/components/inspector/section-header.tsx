@@ -18,7 +18,6 @@ export function InspectorSectionHeader({
       style={{
         padding: 8,
         cursor: 'pointer',
-        boxShadow: `0 -1px 0 ${colorTheme.seperator.value}`,
       }}
       onClick={toggle}
       data-testid={`section-header-${title}`}
