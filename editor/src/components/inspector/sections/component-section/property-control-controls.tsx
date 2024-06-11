@@ -25,7 +25,7 @@ import {
   useWrappedEmptyOrUnknownOnSubmitValue,
   wrappedEmptyOrUnknownOnSubmitValue,
 } from '../../../../uuiui'
-import type { CSSCursor } from '../../../../uuiui-deps'
+import type { CSSCursor, ControlStatus, ControlStyles } from '../../../../uuiui-deps'
 import { SliderControl, getControlStyles } from '../../../../uuiui-deps'
 import {
   normalisePathSuccessOrThrowError,
@@ -535,11 +535,16 @@ export const StringInputPropertyControl = React.memo(
     const { propName, propMetadata } = props
 
     const controlId = `${propName}-string-input-property-control`
+
+    const isChildren = React.useMemo(() => {
+      return propName === 'children'
+    }, [propName])
+
     const value = useEditorState(
       Substores.metadata,
       (store) => {
         // if the target prop is children, dig for its value
-        if (propName === 'children') {
+        if (isChildren) {
           const element = MetadataUtils.findElementByElementPath(
             store.editor.jsxMetadata,
             props.elementPath,
@@ -574,6 +579,20 @@ export const StringInputPropertyControl = React.memo(
       'StringInputPropertyControl value',
     )
 
+    const controlStatus: ControlStatus = React.useMemo(() => {
+      if (isChildren) {
+        return 'simple'
+      }
+      return propMetadata.controlStatus
+    }, [propMetadata.controlStatus, isChildren])
+
+    const controlStyles: ControlStyles = React.useMemo(() => {
+      if (isChildren) {
+        return getControlStyles(controlStatus)
+      }
+      return propMetadata.controlStyles
+    }, [propMetadata.controlStyles, controlStatus, isChildren])
+
     const safeValue = value ?? ''
 
     return (
@@ -591,8 +610,8 @@ export const StringInputPropertyControl = React.memo(
           testId={controlId}
           value={safeValue}
           onSubmitValue={propMetadata.onSubmitValue}
-          controlStatus={propMetadata.controlStatus}
-          controlStyles={propMetadata.controlStyles}
+          controlStatus={controlStatus}
+          controlStyles={controlStyles}
           focus={props.focusOnMount}
         />
         <ImagePreview url={safeValue} />
