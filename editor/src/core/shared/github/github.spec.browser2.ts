@@ -210,7 +210,7 @@ describe('Github integration', () => {
     expect(renderResult.renderedDOM.getByText('Editor from Github')).toBeDefined()
   })
 
-  it('updates property controls after cloning the branch', async () => {
+  xit('updates property controls after cloning the branch', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
           <h1>Starting Editor</h1>

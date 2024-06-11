@@ -551,11 +551,19 @@ export const StringInputPropertyControl = React.memo(
             element.element.value.children.length > 0
           ) {
             const child = element.element.value.children[0]
-            switch (child.type) {
-              case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-                return child.originalJavascript
-              case 'JSX_TEXT_BLOCK':
-                return child.text
+            function getChildText(): string | null {
+              switch (child.type) {
+                case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+                  return child.originalJavascript
+                case 'JSX_TEXT_BLOCK':
+                  return child.text
+                default:
+                  return null
+              }
+            }
+            const maybeText = getChildText()
+            if (maybeText != null) {
+              return maybeText.trim()
             }
           }
           return undefined
