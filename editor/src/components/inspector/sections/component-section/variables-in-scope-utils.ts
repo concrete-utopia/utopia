@@ -31,6 +31,7 @@ function valuesFromObject(
   depth: number,
   originalObjectName: string,
   valuePath: Array<string | number>,
+  isChildOfArray: boolean,
 ): Array<DataPickerOption> {
   const patchDefinedElsewhereInfo = (option: DataPickerOption): DataPickerOption => ({
     ...option,
@@ -47,14 +48,19 @@ function valuesFromObject(
         definedElsewhere: originalObjectName,
         children: variable.elements
           .flatMap((e, index) =>
-            valuesFromVariable(e, insertionCeiling, depth + 1, originalObjectName, [
-              ...valuePath,
-              index,
-            ]),
+            valuesFromVariable(
+              e,
+              insertionCeiling,
+              depth + 1,
+              originalObjectName,
+              [...valuePath, index],
+              true,
+            ),
           )
           .map(patchDefinedElsewhereInfo),
         valuePath: valuePath,
         disabled: false,
+        isChildOfArray: isChildOfArray,
       },
     ]
   } else if (variable.type === 'object') {
@@ -67,14 +73,19 @@ function valuesFromObject(
         definedElsewhere: originalObjectName,
         children: variable.props
           .flatMap((e) =>
-            valuesFromVariable(e, insertionCeiling, depth + 1, originalObjectName, [
-              ...valuePath,
-              e.expressionPathPart,
-            ]),
+            valuesFromVariable(
+              e,
+              insertionCeiling,
+              depth + 1,
+              originalObjectName,
+              [...valuePath, e.expressionPathPart],
+              false,
+            ),
           )
           .map(patchDefinedElsewhereInfo),
         valuePath: valuePath,
         disabled: false,
+        isChildOfArray: isChildOfArray,
       },
     ]
   } else {
@@ -88,6 +99,7 @@ function valuesFromVariable(
   depth: number,
   originalObjectName: string,
   valuePath: Array<string | number>,
+  isChildOfArray: boolean,
 ): Array<DataPickerOption> {
   switch (variable.type) {
     case 'primitive':
@@ -100,11 +112,27 @@ function valuesFromVariable(
           depth: depth,
           valuePath: valuePath,
           disabled: false,
+          isChildOfArray: isChildOfArray,
         },
       ]
     case 'array':
+      return valuesFromObject(
+        variable,
+        insertionCeiling,
+        depth,
+        originalObjectName,
+        valuePath,
+        isChildOfArray,
+      )
     case 'object':
-      return valuesFromObject(variable, insertionCeiling, depth, originalObjectName, valuePath)
+      return valuesFromObject(
+        variable,
+        insertionCeiling,
+        depth,
+        originalObjectName,
+        valuePath,
+        isChildOfArray,
+      )
     case 'jsx':
       return [
         {
@@ -115,6 +143,7 @@ function valuesFromVariable(
           depth: depth,
           valuePath: valuePath,
           disabled: false,
+          isChildOfArray: isChildOfArray,
         },
       ]
     default:
@@ -481,9 +510,14 @@ export function useVariablesInScopeForSelectedElement(
     )
 
     return orderedVariablesInScope.flatMap((variable) =>
-      valuesFromVariable(variable, variable.insertionCeiling, 0, variable.expression, [
-        variable.expressionPathPart,
-      ]),
+      valuesFromVariable(
+        variable,
+        variable.insertionCeiling,
+        0,
+        variable.expression,
+        [variable.expressionPathPart],
+        false,
+      ),
     )
   }, [controlDescriptions, currentPropertyValue, mode, elementPath, variablesInScope, propertyPath])
 
