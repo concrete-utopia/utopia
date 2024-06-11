@@ -52,7 +52,17 @@ export const CartoucheUI = React.forwardRef(
 
     const colors = useCartoucheColors(source, highlight ?? null)
 
-    const wrappedOnClick = useStopPropagation(onClick)
+    const wrappedOnClick = React.useCallback(
+      (e: React.MouseEvent) => {
+        if (e.shiftKey || e.metaKey) {
+          return
+        }
+        if (onClick != null) {
+          onClick(e)
+        }
+      },
+      [onClick],
+    )
     const wrappedOnDoubleClick = useStopPropagation(onDoubleClick)
 
     // NOTE: this is currently unused, we should decide if we want to keep allowing deletion of the cartouches from here or not
