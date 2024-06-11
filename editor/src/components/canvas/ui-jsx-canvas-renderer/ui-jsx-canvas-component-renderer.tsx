@@ -356,7 +356,8 @@ export function createComponentRendererComponent(params: {
           null,
         )
       }
-    } else if (shouldUpdate()) {
+    }
+    if (shouldUpdate()) {
       buildResult.current = buildComponentRenderResult(utopiaJsxComponent.rootElement)
     }
     return buildResult.current
