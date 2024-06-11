@@ -15,3 +15,7 @@ export const isMenuOpen = (id: string) => {
 export const isSomeMenuOpen = () => {
   return openMenuIds.size > 0
 }
+
+export const clearOpenMenuIds = () => {
+  openMenuIds.clear()
+}
