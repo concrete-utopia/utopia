@@ -2,15 +2,10 @@ import throttle from 'lodash.throttle'
 import React from 'react'
 import { memoize } from '../../../../core/shared/memoize'
 import { assertNever } from '../../../../core/shared/utils'
-import { FlexRow, UtopiaStyles } from '../../../../uuiui'
-import type { CartoucheSource, CartoucheUIProps } from './cartouche-ui'
-import { CartoucheUI } from './cartouche-ui'
-import {
-  cartoucheFolderOrInfo,
-  childTypeToCartoucheDataType,
-  type DataPickerOption,
-  type ObjectPath,
-} from './data-picker-utils'
+import { FlexRow, Icons, UtopiaStyles } from '../../../../uuiui'
+import type { CartoucheSource } from './cartouche-ui'
+import { type DataPickerOption, type ObjectPath } from './data-picker-utils'
+import { DataPickerCartouche } from './data-selector-cartouche'
 
 export interface DataSelectorSearchProps {
   setSearchTerm: (_: string | null) => void
@@ -49,25 +44,25 @@ export const DataSelectorSearch = React.memo(
           (searchResult, idx) => (
             <React.Fragment key={[...searchResult.valuePath, idx].toString()}>
               <FlexRow style={{ gap: 2 }}>
-                {searchResult.valuePath.map((v, i) => (
-                  <CartoucheUI
-                    key={`${v.value}-${i}`}
-                    datatype={searchResult.cartoucheProps.datatype}
-                    selected={false}
-                    role={searchResult.cartoucheProps.role}
-                    source={
-                      variableSources[searchResult.originalValuePath.toString()] ?? 'internal'
-                    }
-                    testId={`data-selector-primitive-values-${v.value}-${i}`}
-                  >
-                    <SearchResultString
-                      isMatch={v.matched}
-                      label={v.value}
-                      searchTerm={searchTerm}
-                      fontWeightForMatch={900}
-                    />
-                  </CartoucheUI>
-                ))}
+                <DataPickerCartouche
+                  data={searchResult.option}
+                  key={`${searchResult.option.variableInfo.expression}-${idx}`}
+                  selected={false}
+                >
+                  {searchResult.valuePath.map((v, i) => (
+                    <React.Fragment key={`${v.value}-${i}`}>
+                      <SearchResultString
+                        isMatch={v.matched}
+                        label={v.value}
+                        searchTerm={searchTerm}
+                        fontWeightForMatch={900}
+                      />
+                      {i < searchResult.valuePath.length - 1 ? (
+                        <Icons.ExpansionArrowRight color='primary' />
+                      ) : null}
+                    </React.Fragment>
+                  ))}
+                </DataPickerCartouche>
               </FlexRow>
               <FlexRow
                 style={{
@@ -91,10 +86,9 @@ export const DataSelectorSearch = React.memo(
 )
 
 interface SearchResult {
-  originalValuePath: ObjectPath
+  option: DataPickerOption
   valuePath: Array<{ value: string; matched: boolean }>
   value: { value: string; matched: boolean }
-  cartoucheProps: Pick<CartoucheUIProps, 'role' | 'datatype'>
 }
 
 function searchInValuePath(
@@ -139,13 +133,9 @@ function matches(option: DataPickerOption, context: SearchContext): SearchResult
 
   if (maybeValuePath.matched || maybeValue.matched) {
     return {
-      originalValuePath: option.valuePath,
+      option: option,
       value: maybeValue,
       valuePath: maybeValuePath.valuePath,
-      cartoucheProps: {
-        role: cartoucheFolderOrInfo(option, 'can-be-folder'),
-        datatype: childTypeToCartoucheDataType(option.type),
-      },
     }
   }
 

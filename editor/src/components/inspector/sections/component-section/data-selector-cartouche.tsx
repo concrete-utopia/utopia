@@ -11,13 +11,16 @@ import { CartoucheUI } from './cartouche-ui'
 import type { DataPickerOption } from './data-picker-utils'
 
 export const DataPickerCartouche = React.memo(
-  (props: {
-    data: DataPickerOption
-    forcedDataSource?: CartoucheSource | null // if the DataPickerOption is actually a child (of a child) of a variable, we need to provide the CartoucheSource that belongs to the original variable
-    selected: boolean
-  }) => {
+  (
+    props: React.PropsWithChildren<{
+      data: DataPickerOption
+      forcedDataSource?: CartoucheSource | null // if the DataPickerOption is actually a child (of a child) of a variable, we need to provide the CartoucheSource that belongs to the original variable
+      selected: boolean
+    }>,
+  ) => {
     const { data, forcedDataSource, selected } = props
     const dataSource = useVariableDataSource(data)
+    const children = props.children ?? data.variableInfo.expressionPathPart
     return (
       <CartoucheUI
         key={data.valuePath.toString()}
@@ -40,10 +43,11 @@ export const DataPickerCartouche = React.memo(
         {data.isChildOfArray ? (
           <>
             <span style={{ fontStyle: 'italic' }}>item </span>
-            {data.variableInfo.expressionPathPart}
+            <div style={{ width: 4 }} />
+            {children}
           </>
         ) : (
-          data.variableInfo.expressionPathPart
+          children
         )}
       </CartoucheUI>
     )

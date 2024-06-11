@@ -54,10 +54,6 @@ interface ProcessedVariablesInScope {
   [valuePath: string]: DataPickerOption
 }
 
-interface ArrayIndexLookup {
-  [valuePath: string]: number
-}
-
 export const DataSelectorModal = React.memo(
   React.forwardRef<HTMLDivElement, DataSelectorModalProps>(
     (

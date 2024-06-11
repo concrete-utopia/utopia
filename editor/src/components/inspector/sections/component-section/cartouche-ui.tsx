@@ -129,13 +129,16 @@ export const CartoucheUI = React.forwardRef(
                 textOverflow: 'ellipsis',
 
                 /* Beginning of string */
-                direction: source === 'literal' ? 'ltr' : 'rtl', // TODO we need a better way to ellipsize the beginnign because rtl eats ' " marks
+                // commented it because it messes with the order of children
+                // direction: source === 'literal' ? 'ltr' : 'rtl', // TODO we need a better way to ellipsize the beginnign because rtl eats ' " marks
                 textAlign: 'left',
                 ...(role !== 'information' ? UtopiaStyles.fontStyles.monospaced : {}),
+                display: 'flex',
+                flexDirection: 'row',
               }}
             >
               {children}
-              &lrm;
+              {/* &lrm; commented because it messes with children layout */}
               {/* the &lrm; non-printing character is added to fix the punctuation marks disappearing because of direction: rtl */}
             </div>
             {when(
