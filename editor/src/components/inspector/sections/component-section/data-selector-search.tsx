@@ -65,6 +65,8 @@ export const DataSelectorSearch = React.memo(
           scrollbarWidth: 'auto',
           scrollbarColor: 'gray transparent',
           flexGrow: 1,
+          gap: 8,
+          paddingTop: 8,
         }}
       >
         {throttledSearch(allVariablesInScope, searchTerm.toLowerCase())?.map(
@@ -96,28 +98,42 @@ export const DataSelectorSearch = React.memo(
                   </CartoucheUI>
                 ))}
               </FlexRow>
-              <span style={{ opacity: 0.5, ...UtopiaStyles.fontStyles.monospaced }}>
+              <FlexRow style={{ opacity: 0.5, ...UtopiaStyles.fontStyles.monospaced }}>
                 {searchResult.value.value}
-              </span>
-              <span
+              </FlexRow>
+              <div
                 style={{
-                  borderRadius: 4,
-                  color: 'white',
-                  padding: '4px 6px',
-                  backgroundColor: colorTheme.primary.value,
-                  opacity: hoveredSearchRow === idx ? 1 : 0,
-                  cursor: 'pointer',
+                  position: 'fixed',
+                  right: 0,
+                  padding: '2px 30px 2px 2px',
                 }}
-                onClick={applySearchResult(searchResult.originalValuePath)}
               >
-                Apply
-              </span>
-              <Tooltip title='Navigate here'>
-                <Icons.ExpansionArrowRight
-                  onClick={onNavigateArrowClick(searchResult.originalValuePath)}
-                  style={{ opacity: hoveredSearchRow === idx ? 1 : 0, cursor: 'pointer' }}
-                />
-              </Tooltip>
+                <FlexRow
+                  style={{
+                    backgroundColor: colorTheme.bg1.value,
+                    opacity: hoveredSearchRow === idx ? 1 : 0,
+                  }}
+                >
+                  <span
+                    style={{
+                      borderRadius: 4,
+                      color: 'white',
+                      padding: '4px 6px',
+                      backgroundColor: colorTheme.primary.value,
+                      cursor: 'pointer',
+                    }}
+                    onClick={applySearchResult(searchResult.originalValuePath)}
+                  >
+                    Apply
+                  </span>
+                  <Tooltip title='Navigate here'>
+                    <Icons.ExpansionArrowRight
+                      onClick={onNavigateArrowClick(searchResult.originalValuePath)}
+                      style={{ opacity: hoveredSearchRow === idx ? 1 : 0, cursor: 'pointer' }}
+                    />
+                  </Tooltip>
+                </FlexRow>
+              </div>
             </FlexRow>
           ),
         )}
