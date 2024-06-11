@@ -6,7 +6,7 @@ import {
   arrayEqualsByReference,
   assertNever,
 } from '../../../../core/shared/utils'
-import { unless } from '../../../../utils/react-conditionals'
+import { unless, when } from '../../../../utils/react-conditionals'
 import {
   FlexColumn,
   FlexRow,
@@ -582,31 +582,36 @@ export const DataSelectorModal = React.memo(
                 )}
               </FlexColumn>
               {/* Scope Selector Breadcrumbs */}
-              <FlexRow style={{ gap: 2, paddingTop: 16, paddingBottom: 16, opacity: 0.5 }}>
-                {elementLabelsWithScopes.map(({ label, scope, hasContent }, idx, a) => (
-                  <React.Fragment key={`label-${idx}`}>
-                    <div
-                      onClick={setSelectedScopeCurried(scope, hasContent)}
-                      style={{
-                        width: 'max-content',
-                        padding: '2px 4px',
-                        borderRadius: 4,
-                        cursor: hasContent ? 'pointer' : undefined,
-                        color: hasContent
-                          ? colorTheme.neutralForeground.value
-                          : colorTheme.subduedForeground.value,
-                        fontSize: 12,
-                        fontWeight: insertionCeilingsEqual(selectedScope, scope) ? 800 : undefined,
-                      }}
-                    >
-                      {label}
-                    </div>
-                    {idx < a.length - 1 ? (
-                      <span style={{ width: 'max-content', padding: '2px 4px' }}>{'/'}</span>
-                    ) : null}
-                  </React.Fragment>
-                ))}
-              </FlexRow>
+              {when(
+                searchTerm == null,
+                <FlexRow style={{ gap: 2, paddingTop: 16, paddingBottom: 16, opacity: 0.5 }}>
+                  {elementLabelsWithScopes.map(({ label, scope, hasContent }, idx, a) => (
+                    <React.Fragment key={`label-${idx}`}>
+                      <div
+                        onClick={setSelectedScopeCurried(scope, hasContent)}
+                        style={{
+                          width: 'max-content',
+                          padding: '2px 4px',
+                          borderRadius: 4,
+                          cursor: hasContent ? 'pointer' : undefined,
+                          color: hasContent
+                            ? colorTheme.neutralForeground.value
+                            : colorTheme.subduedForeground.value,
+                          fontSize: 12,
+                          fontWeight: insertionCeilingsEqual(selectedScope, scope)
+                            ? 800
+                            : undefined,
+                        }}
+                      >
+                        {label}
+                      </div>
+                      {idx < a.length - 1 ? (
+                        <span style={{ width: 'max-content', padding: '2px 4px' }}>{'/'}</span>
+                      ) : null}
+                    </React.Fragment>
+                  ))}
+                </FlexRow>,
+              )}
             </FlexColumn>
           </div>
         </InspectorModal>
