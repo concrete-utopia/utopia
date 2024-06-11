@@ -105,7 +105,7 @@ export const DataSelectorSearch = React.memo(
                 style={{
                   position: 'fixed',
                   right: 0,
-                  padding: '2px 30px 2px 2px',
+                  padding: '2px 12px 2px 2px',
                 }}
               >
                 <FlexRow
