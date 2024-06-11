@@ -1,6 +1,3 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-import { jsx } from '@emotion/react'
 import React from 'react'
 import type { IcnColor } from '../../../../uuiui'
 import { FlexRow, Icn, Tooltip, UtopiaStyles, useColorTheme } from '../../../../uuiui'
@@ -84,14 +81,14 @@ export const CartoucheUI = React.forwardRef(
               opacity: preview ? 0.5 : 1,
               width: 'max-content',
             }}
-            css={{
-              color: selected || highlight === 'strong' ? colors.fg.selected : colors.fg.default,
-              backgroundColor: selected ? colors.bg.selected : colors.bg.default,
-              ':hover': {
-                color: selected || highlight === 'strong' ? undefined : colors.fg.hovered,
-                backgroundColor: selected ? undefined : colors.bg.hovered,
-              },
-            }}
+            // css={{
+            //   color: selected || highlight === 'strong' ? colors.fg.selected : colors.fg.default,
+            //   backgroundColor: selected ? colors.bg.selected : colors.bg.default,
+            //   ':hover': {
+            //     color: selected || highlight === 'strong' ? undefined : colors.fg.hovered,
+            //     backgroundColor: selected ? undefined : colors.bg.hovered,
+            //   },
+            // }}
           >
             {source === 'literal' ? null : (
               <Icn

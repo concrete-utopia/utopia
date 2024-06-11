@@ -224,6 +224,8 @@ export const DataSelectorModal = React.memo(
       }, [])
       const onSearchFieldValueChange = React.useCallback(
         (e: React.ChangeEvent<HTMLInputElement>) => {
+          e.stopPropagation()
+          e.preventDefault()
           if (e.target.value.length === 0) {
             setSearchTerm(null)
           } else {
