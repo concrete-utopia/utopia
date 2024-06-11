@@ -120,9 +120,21 @@ export const OptionControl: React.FunctionComponent<
             '.option-chain-control-container &': {
               borderRadius: isChecked ? '3px' : 0,
               boxShadow: 'none !important',
-              opacity: isChecked ? 1 : controlOpacity,
+              opacity: 1,
+              borderColor: colorTheme.border0.value,
+              backgroundColor: isChecked
+                ? props.controlStatus === 'overridden'
+                  ? colorTheme.brandNeonPink10.value
+                  : colorTheme.bg4.value
+                : 'transparent',
+              color: isChecked
+                ? props.controlStatus === 'overridden'
+                  ? colorTheme.brandNeonPink.value
+                  : colorTheme.fg1.value
+                : colorTheme.verySubduedForeground.value,
               '&:hover': {
                 opacity: props.controlStatus == 'disabled' ? undefined : 1,
+                color: colorTheme.fg1.value,
                 cursor: 'pointer',
               },
             },
