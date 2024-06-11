@@ -105,7 +105,7 @@ specifiers:
   '@types/json-schema': 6.0.0
   '@types/json5': 0.0.29
   '@types/lodash.findlastindex': 4.6.7
-  '@types/lodash.throttle': ^4.1.9
+  '@types/lodash.throttle': 4.1.9
   '@types/matter-js': 0.10.0
   '@types/mime-types': 2.1.0
   '@types/minimatch': 3.0.4
