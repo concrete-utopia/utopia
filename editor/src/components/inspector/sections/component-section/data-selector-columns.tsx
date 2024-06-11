@@ -1,18 +1,11 @@
 import styled from '@emotion/styled'
 import React from 'react'
-import {
-  dataPathSuccess,
-  traceDataFromVariableName,
-} from '../../../../core/data-tracing/data-tracing'
 import { isPrefixOf } from '../../../../core/shared/array-utils'
 import { arrayEqualsByReference, assertNever } from '../../../../core/shared/utils'
-import { unless, when } from '../../../../utils/react-conditionals'
 import { FlexColumn, FlexRow, colorTheme } from '../../../../uuiui'
-import { Substores, useEditorState } from '../../../editor/store/store-hook'
-import type { CartoucheSource, CartoucheUIProps } from './cartouche-ui'
-import { CartoucheUI } from './cartouche-ui'
+import type { CartoucheSource } from './cartouche-ui'
 import type { ArrayOption, DataPickerOption, ObjectOption, ObjectPath } from './data-picker-utils'
-import { MapCounterUi } from '../../../navigator/navigator-item/map-counter'
+import { DataPickerCartouche, useVariableDataSource } from './data-selector-cartouche'
 
 interface DataSelectorColumnsProps {
   activeScope: Array<DataPickerOption>
@@ -185,8 +178,6 @@ const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
   } = props
   const targetPath = data.valuePath
 
-  const dataSource = useVariableDataSource(data)
-
   const onClick: React.MouseEventHandler<HTMLDivElement> = React.useCallback(
     (e) => {
       e.stopPropagation()
@@ -213,33 +204,7 @@ const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
       }}
     >
       <span>
-        <CartoucheUI
-          key={data.valuePath.toString()}
-          source={forcedDataSource ?? dataSource ?? 'internal'}
-          datatype={childTypeToCartoucheDataType(data.type)}
-          selected={!data.disabled && selected}
-          highlight={data.disabled ? 'disabled' : null}
-          role={data.disabled ? 'information' : 'selection'}
-          testId={`data-selector-option-${data.variableInfo.expression}`}
-          badge={
-            data.type === 'array' ? (
-              <MapCounterUi
-                counterValue={data.variableInfo.elements.length}
-                overrideStatus='no-override'
-                selectedStatus={selected}
-              />
-            ) : undefined
-          }
-        >
-          {data.isChildOfArray ? (
-            <>
-              <span style={{ fontStyle: 'italic' }}>item </span>
-              {data.variableInfo.expressionPathPart}
-            </>
-          ) : (
-            data.variableInfo.expressionPathPart
-          )}
-        </CartoucheUI>
+        <DataPickerCartouche data={data} forcedDataSource={forcedDataSource} selected={selected} />
       </span>
       <span
         style={{
@@ -252,57 +217,6 @@ const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
     </FlexRow>
   )
 })
-
-function useVariableDataSource(variable: DataPickerOption | null) {
-  return useEditorState(
-    Substores.projectContentsAndMetadata,
-    (store) => {
-      if (variable == null) {
-        return null
-      }
-      const container = variable.variableInfo.insertionCeiling
-      const trace = traceDataFromVariableName(
-        container,
-        variable.variableInfo.expression,
-        store.editor.jsxMetadata,
-        store.editor.projectContents,
-        dataPathSuccess([]),
-      )
-
-      switch (trace.type) {
-        case 'hook-result':
-          return 'external'
-        case 'literal-attribute':
-        case 'literal-assignment':
-          return 'literal'
-        case 'component-prop':
-        case 'element-at-scope':
-        case 'failed':
-          return 'internal'
-          break
-        default:
-          assertNever(trace)
-      }
-    },
-    'useVariableDataSource',
-  )
-}
-
-function childTypeToCartoucheDataType(
-  childType: DataPickerOption['type'],
-): CartoucheUIProps['datatype'] {
-  switch (childType) {
-    case 'array':
-      return 'array'
-    case 'object':
-      return 'object'
-    case 'jsx':
-    case 'primitive':
-      return 'renderable'
-    default:
-      assertNever(childType)
-  }
-}
 
 const DataSelectorFlexColumn = styled(FlexColumn)({
   minWidth: 200,
