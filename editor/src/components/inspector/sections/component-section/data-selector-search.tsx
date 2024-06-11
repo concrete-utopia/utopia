@@ -3,28 +3,25 @@ import React from 'react'
 import { memoize } from '../../../../core/shared/memoize'
 import { assertNever } from '../../../../core/shared/utils'
 import { FlexRow, Icons, UtopiaStyles } from '../../../../uuiui'
-import type { CartoucheSource } from './cartouche-ui'
 import { type DataPickerOption, type ObjectPath } from './data-picker-utils'
 import { DataPickerCartouche } from './data-selector-cartouche'
 
 export interface DataSelectorSearchProps {
-  setSearchTerm: (_: string | null) => void
-  applyVariable: (_: ObjectPath) => void
   setNavigatedToPath: (_: ObjectPath) => void
-  variableSources: { [valuePathString: string]: CartoucheSource }
   allVariablesInScope: DataPickerOption[]
   searchTerm: string
 }
 
 export const DataSelectorSearch = React.memo(
-  ({
-    setSearchTerm,
-    applyVariable,
-    setNavigatedToPath,
-    searchTerm,
-    variableSources,
-    allVariablesInScope,
-  }: DataSelectorSearchProps) => {
+  ({ setNavigatedToPath, searchTerm, allVariablesInScope }: DataSelectorSearchProps) => {
+    const setNavigatedToPathCurried = React.useCallback(
+      (path: ObjectPath) => (e: React.MouseEvent) => {
+        e.stopPropagation()
+        e.preventDefault()
+        setNavigatedToPath(path)
+      },
+      [setNavigatedToPath],
+    )
     return (
       <div
         style={{
@@ -48,6 +45,7 @@ export const DataSelectorSearch = React.memo(
                   data={searchResult.option}
                   key={`${searchResult.option.variableInfo.expression}-${idx}`}
                   selected={false}
+                  onClick={setNavigatedToPathCurried(searchResult.option.valuePath)}
                 >
                   {searchResult.valuePath.map((v, i) => (
                     <React.Fragment key={`${v.value}-${i}`}>

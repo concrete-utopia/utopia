@@ -1,9 +1,5 @@
 import React from 'react'
-import {
-  dataPathSuccess,
-  traceDataFromVariableName,
-} from '../../../../core/data-tracing/data-tracing'
-import { groupBy, last } from '../../../../core/shared/array-utils'
+import { groupBy } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
@@ -145,7 +141,7 @@ export const DataSelectorModal = React.memo(
         startingSelectedValuePath ?? [],
       )
 
-      const [searchTerm, setSearchTerm] = React.useState<string | null>(null)
+      const [searchTerm, setSearchTerm] = React.useState<string | null>('re')
       const onStartSearch = React.useCallback(() => {
         searchBoxRef.current?.focus()
         setSearchTerm('')
@@ -200,49 +196,6 @@ export const DataSelectorModal = React.memo(
         e.preventDefault()
       }, [])
 
-      const metadata = useEditorState(
-        Substores.metadata,
-        (store) => store.editor.jsxMetadata,
-        'DataSelectorModal metadata',
-      )
-      const projectContents = useEditorState(
-        Substores.projectContents,
-        (store) => store.editor.projectContents,
-        'DataSelectorModal projectContents',
-      )
-
-      const variableSources = React.useMemo(() => {
-        let result: { [valuePath: string]: CartoucheUIProps['source'] } = {}
-        for (const variable of allVariablesInScope) {
-          const container = variable.variableInfo.insertionCeiling
-          const trace = traceDataFromVariableName(
-            container,
-            variable.variableInfo.expression,
-            metadata,
-            projectContents,
-            dataPathSuccess([]),
-          )
-
-          switch (trace.type) {
-            case 'hook-result':
-              result[variable.valuePath.toString()] = 'external'
-              break
-            case 'literal-attribute':
-            case 'literal-assignment':
-              result[variable.valuePath.toString()] = 'literal'
-              break
-            case 'component-prop':
-            case 'element-at-scope':
-            case 'failed':
-              result[variable.valuePath.toString()] = 'internal'
-              break
-            default:
-              assertNever(trace)
-          }
-        }
-        return result
-      }, [allVariablesInScope, metadata, projectContents])
-
       const activeTargetPath = selectedPath ?? navigatedToPath
       const pathInTopBarIncludingHover = hoveredPath ?? activeTargetPath
 
@@ -272,12 +225,10 @@ export const DataSelectorModal = React.memo(
 
       const navigateToSearchResult = React.useCallback(
         (path: ObjectPath) => {
-          setNavigatedToPath(
-            findFirstObjectPathToNavigateTo(processedVariablesInScope, path) ?? path,
-          )
-          setSelectedPath(path)
+          setSearchTerm(null)
+          setSelectedPathFromColumns(path)
         },
-        [processedVariablesInScope],
+        [setSelectedPathFromColumns],
       )
 
       const searchFocused = searchTerm != null
@@ -444,12 +395,9 @@ export const DataSelectorModal = React.memo(
                   />
                 ) : (
                   <DataSelectorSearch
-                    setSearchTerm={setSearchTerm}
                     searchTerm={searchTerm}
-                    applyVariable={applyVariable}
                     setNavigatedToPath={navigateToSearchResult}
                     allVariablesInScope={allVariablesInScope}
-                    variableSources={variableSources}
                   />
                 )}
               </FlexColumn>
