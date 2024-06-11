@@ -217,6 +217,11 @@ export const DataSelectorModal = React.memo(
         setSearchTerm('')
       }, [])
 
+      const cancelSearch = React.useCallback(() => {
+        setSearchTerm(null)
+        searchBoxRef.current?.blur()
+      }, [])
+
       const onSearchFieldValueChange = React.useCallback(
         (e: React.ChangeEvent<HTMLInputElement>) => {
           e.stopPropagation()
@@ -524,10 +529,10 @@ export const DataSelectorModal = React.memo(
                       border: `1px solid ${colorTheme.fg7.value}`,
                       flexGrow: 1,
                     }}
-                    onClick={onStartSearch}
                   >
-                    <LargerIcons.MagnifyingGlass />
+                    <LargerIcons.MagnifyingGlass onClick={onStartSearch} />
                     <input
+                      onClick={onStartSearch}
                       ref={searchBoxRef}
                       value={searchTerm ?? ''}
                       onChange={onSearchFieldValueChange}
@@ -539,6 +544,10 @@ export const DataSelectorModal = React.memo(
                         width: searchFocused ? 125 : 0,
                         transition: 'width 0.2s',
                       }}
+                    />
+                    <Icons.CrossInTranslucentCircle
+                      style={{ cursor: 'pointer' }}
+                      onClick={cancelSearch}
                     />
                   </FlexRow>
                   {unless(
