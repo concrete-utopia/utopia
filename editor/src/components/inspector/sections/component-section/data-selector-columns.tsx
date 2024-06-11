@@ -23,6 +23,7 @@ export const DataSelectorColumns = React.memo((props: DataSelectorColumnsProps) 
   return (
     <FlexRow
       style={{
+        flexGrow: 1,
         alignItems: 'flex-start',
         overflowX: 'scroll',
         overflowY: 'hidden',
