@@ -106,9 +106,13 @@ function searchInValuePath(
   let foundMatch = false
   for (const segment of valuePath) {
     const segmentAsString = segment.toString()
-    const containsMatch = context.matchesSearchQuery(segmentAsString)
-    segments.push({ value: segmentAsString, matched: containsMatch })
-    foundMatch ||= containsMatch
+    if (typeof segment === 'number') {
+      segments.push({ value: segmentAsString, matched: false })
+    } else {
+      const containsMatch = context.matchesSearchQuery(segmentAsString)
+      segments.push({ value: segmentAsString, matched: containsMatch })
+      foundMatch ||= containsMatch
+    }
   }
 
   return { valuePath: segments, matched: foundMatch }
