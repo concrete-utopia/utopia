@@ -5,7 +5,7 @@ import {
   traceDataFromVariableName,
 } from '../../../../core/data-tracing/data-tracing'
 import { isPrefixOf } from '../../../../core/shared/array-utils'
-import { assertNever } from '../../../../core/shared/utils'
+import { arrayEqualsByReference, assertNever } from '../../../../core/shared/utils'
 import { unless, when } from '../../../../utils/react-conditionals'
 import { FlexColumn, FlexRow, colorTheme } from '../../../../uuiui'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
@@ -54,15 +54,17 @@ interface DataSelectorColumnProps {
 const DataSelectorColumn = React.memo((props: DataSelectorColumnProps) => {
   const { activeScope, targetPathInsideScope, currentlyShowingScopeForArray } = props
 
-  const selectedElement: DataPickerOption | null =
+  const elementOnSelectedPath: DataPickerOption | null =
     activeScope.find((option) => isPrefixOf(option.valuePath, targetPathInsideScope)) ?? null
 
   // if the current scope is an array, we want to show not only the array indexes, but also the contents of the first element of the array
   const pseudoSelectedElementForArray: DataPickerOption | null =
-    currentlyShowingScopeForArray && activeScope.length > 0 ? activeScope[0] : null
+    elementOnSelectedPath == null && currentlyShowingScopeForArray && activeScope.length > 0
+      ? activeScope[0]
+      : null
 
   const nextColumnScope: ArrayOption | ObjectOption | null = (() => {
-    const elementToUseForNextColumn = selectedElement ?? pseudoSelectedElementForArray
+    const elementToUseForNextColumn = elementOnSelectedPath ?? pseudoSelectedElementForArray
     if (elementToUseForNextColumn != null) {
       if (
         (elementToUseForNextColumn.type === 'object' ||
@@ -75,7 +77,7 @@ const DataSelectorColumn = React.memo((props: DataSelectorColumnProps) => {
     return null
   })()
 
-  const nextColumnScopeValue = nextColumnScope == null ? selectedElement : null
+  const nextColumnScopeValue = nextColumnScope == null ? elementOnSelectedPath : null
 
   const dataSource = useVariableDataSource(props.originalDataForScope)
 
@@ -86,13 +88,16 @@ const DataSelectorColumn = React.memo((props: DataSelectorColumnProps) => {
     <>
       <DataSelectorFlexColumn ref={columnRef}>
         {activeScope.map((option, index) => {
+          const selected = arrayEqualsByReference(option.valuePath, targetPathInsideScope)
+          const onActivePath = isPrefixOf(option.valuePath, targetPathInsideScope)
           return (
             <RowWithCartouche
               key={option.variableInfo.expression}
               data={option}
               isLeaf={nextColumnScope == null}
-              selected={option === selectedElement}
-              onActivePath={pseudoSelectedElementForArray != null && index === 0}
+              selected={selected}
+              onActivePath={onActivePath}
+              forceShowArrow={pseudoSelectedElementForArray != null && index === 0}
               onTargetPathChange={props.onTargetPathChange}
               forcedDataSource={dataSource}
             />
@@ -105,7 +110,7 @@ const DataSelectorColumn = React.memo((props: DataSelectorColumnProps) => {
           targetPathInsideScope={targetPathInsideScope}
           onTargetPathChange={props.onTargetPathChange}
           currentlyShowingScopeForArray={nextColumnScope.type === 'array'}
-          originalDataForScope={props.originalDataForScope ?? selectedElement}
+          originalDataForScope={props.originalDataForScope ?? elementOnSelectedPath}
         />
       ) : null}
       {nextColumnScopeValue != null ? <ValuePreviewColumn data={nextColumnScopeValue} /> : null}
@@ -128,6 +133,7 @@ const ValuePreviewColumn = React.memo((props: ValuePreviewColumnProps) => {
           border: '1px solid #ccc',
           borderRadius: 4,
           minHeight: 150,
+          width: 200,
           overflowWrap: 'break-word',
           overflowX: 'hidden',
           overflowY: 'scroll',
@@ -162,12 +168,21 @@ interface RowWithCartoucheProps {
   data: DataPickerOption
   selected: boolean
   onActivePath: boolean
+  forceShowArrow: boolean
   isLeaf: boolean
   forcedDataSource: CartoucheSource | null
   onTargetPathChange: (newTargetPath: ObjectPath) => void
 }
 const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
-  const { onTargetPathChange, data, forcedDataSource, isLeaf, selected, onActivePath } = props
+  const {
+    onTargetPathChange,
+    data,
+    forcedDataSource,
+    isLeaf,
+    selected,
+    onActivePath,
+    forceShowArrow,
+  } = props
   const targetPath = data.valuePath
 
   const dataSource = useVariableDataSource(data)
@@ -192,7 +207,7 @@ const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
         fontSize: 10,
         borderRadius: 4,
         height: 24,
-        backgroundColor: selected ? colorTheme.bg4.value : undefined,
+        backgroundColor: onActivePath ? colorTheme.bg4.value : undefined,
         padding: 5,
         cursor: 'pointer',
       }}
@@ -219,7 +234,14 @@ const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
           {data.variableInfo.expressionPathPart}
         </CartoucheUI>
       </span>
-      {when(!isLeaf && onActivePath, <span style={{ color: colorTheme.fg6.value }}>{'>'}</span>)}
+      <span
+        style={{
+          color: colorTheme.fg6.value,
+          opacity: !isLeaf && (onActivePath || forceShowArrow) ? 1 : 0,
+        }}
+      >
+        {'>'}
+      </span>
     </FlexRow>
   )
 })
@@ -276,7 +298,7 @@ function childTypeToCartoucheDataType(
 }
 
 const DataSelectorFlexColumn = styled(FlexColumn)({
-  width: 200,
+  minWidth: 200,
   height: '100%',
   flexShrink: 0,
   overflowX: 'hidden',
