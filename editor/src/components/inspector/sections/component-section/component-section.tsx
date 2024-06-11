@@ -1437,7 +1437,7 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
         >
           {componentData != null ? (
             <React.Fragment>
-              <span>{componentData.displayName}</span>
+              <span style={{ textTransform: 'uppercase' }}>{componentData.displayName}</span>
               {when(componentData.isRegisteredComponent, <span style={{ fontSize: 6 }}>◇</span>)}
               {componentData.secondaryName == null ? null : (
                 <span style={{ opacity: 0.5, fontWeight: 'initial' }}>

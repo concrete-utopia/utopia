@@ -40,10 +40,6 @@ function filterVariableOption(option: DataPickerOption): DataPickerOption | null
       }
     case 'object':
       const children = filterKeepArraysOnly(option.children)
-      if (children.length === 0) {
-        // no array-valued children found
-        return null
-      }
       return {
         ...option,
         children: children,
@@ -51,7 +47,10 @@ function filterVariableOption(option: DataPickerOption): DataPickerOption | null
       }
     case 'jsx':
     case 'primitive':
-      return null
+      return {
+        ...option,
+        disabled: true,
+      }
     default:
       assertNever(option)
   }
