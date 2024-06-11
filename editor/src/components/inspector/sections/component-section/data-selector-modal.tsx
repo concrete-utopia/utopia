@@ -545,10 +545,13 @@ export const DataSelectorModal = React.memo(
                         transition: 'width 0.2s',
                       }}
                     />
-                    <Icons.CrossInTranslucentCircle
-                      style={{ cursor: 'pointer' }}
-                      onClick={cancelSearch}
-                    />
+                    {when(
+                      searchTerm != null,
+                      <Icons.CrossInTranslucentCircle
+                        style={{ cursor: 'pointer' }}
+                        onClick={cancelSearch}
+                      />,
+                    )}
                   </FlexRow>
                   {unless(
                     searchFocused,
