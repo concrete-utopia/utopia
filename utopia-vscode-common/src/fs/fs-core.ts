@@ -58,12 +58,42 @@ export function isStoreDoesNotExist(t: unknown): t is StoreDoesNotExist {
 
 export type AsyncFSResult<T> = Promise<Either<StoreDoesNotExist, T>>
 
+const StoreExistsKeyInterval = 1000
+
+interface StoreKeyExistsCheck {
+  lastCheckedTime: number
+  exists: boolean
+}
+
+let lastCheckedForStoreKeyExists: StoreKeyExistsCheck | null = null
+
+async function checkStoreKeyExists(): Promise<boolean> {
+  if (store == null) {
+    return false
+  } else {
+    const now = Date.now()
+    if (
+      lastCheckedForStoreKeyExists == null ||
+      lastCheckedForStoreKeyExists.lastCheckedTime + StoreExistsKeyInterval < now
+    ) {
+      const exists = (await store.getItem<boolean>(StoreExistsKey)) ?? false
+      lastCheckedForStoreKeyExists = {
+        lastCheckedTime: now,
+        exists: exists,
+      }
+      return exists
+    } else {
+      return lastCheckedForStoreKeyExists.exists
+    }
+  }
+}
+
 async function withSanityCheckedStore<T>(
   withStore: (sanityCheckedStore: LocalForage) => Promise<T>,
 ): AsyncFSResult<T> {
   await firstInitialize
   await initializeStoreChain
-  const storeExists = store != null && (await store.getItem<boolean>(StoreExistsKey))
+  const storeExists = await checkStoreKeyExists()
   if (store != null && storeExists) {
     const result = await withStore(store)
     return right(result)
