@@ -2,7 +2,7 @@ import throttle from 'lodash.throttle'
 import React from 'react'
 import { memoize } from '../../../../core/shared/memoize'
 import { assertNever } from '../../../../core/shared/utils'
-import { FlexColumn, FlexRow, Icons, Tooltip, UtopiaStyles, useColorTheme } from '../../../../uuiui'
+import { FlexRow, UtopiaStyles } from '../../../../uuiui'
 import type { CartoucheSource, CartoucheUIProps } from './cartouche-ui'
 import { CartoucheUI } from './cartouche-ui'
 import {
