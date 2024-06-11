@@ -84,13 +84,14 @@ const DataSelectorColumn = React.memo((props: DataSelectorColumnProps) => {
   return (
     <>
       <DataSelectorFlexColumn ref={columnRef}>
-        {activeScope.map((option) => {
+        {activeScope.map((option, index) => {
           return (
             <RowWithCartouche
               key={option.variableInfo.expression}
               data={option}
               isLeaf={nextColumnScope == null}
               selected={option === selectedElement}
+              onActivePath={pseudoSelectedElementForArray != null && index === 0}
               onTargetPathChange={props.onTargetPathChange}
               forcedDataSource={dataSource}
             />
@@ -159,12 +160,13 @@ function variableTypeForInfo(info: DataPickerOption): string {
 interface RowWithCartoucheProps {
   data: DataPickerOption
   selected: boolean
+  onActivePath: boolean
   isLeaf: boolean
   forcedDataSource: CartoucheSource | null
   onTargetPathChange: (newTargetPath: ObjectPath) => void
 }
 const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
-  const { onTargetPathChange, data, forcedDataSource, isLeaf, selected } = props
+  const { onTargetPathChange, data, forcedDataSource, isLeaf, selected, onActivePath } = props
   const targetPath = data.valuePath
 
   const dataSource = useVariableDataSource(data)
@@ -177,7 +179,7 @@ const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
     [targetPath, onTargetPathChange],
   )
 
-  const ref = useScrollIntoView(props.selected)
+  const ref = useScrollIntoView(selected)
 
   return (
     <FlexRow
@@ -189,8 +191,7 @@ const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
         fontSize: 10,
         borderRadius: 4,
         height: 24,
-        backgroundColor: props.selected ? colorTheme.bg4.value : undefined,
-        color: props.selected ? colorTheme.fg4.value : undefined,
+        backgroundColor: selected ? colorTheme.bg4.value : undefined,
         padding: 5,
         cursor: 'pointer',
       }}
@@ -200,7 +201,7 @@ const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
           key={data.valuePath.toString()}
           source={forcedDataSource ?? dataSource ?? 'internal'}
           datatype={childTypeToCartoucheDataType(data.type)}
-          selected={!data.disabled && props.selected}
+          selected={!data.disabled && selected}
           highlight={data.disabled ? 'disabled' : null}
           role={data.disabled ? 'information' : 'selection'}
           testId={`data-selector-option-${data.variableInfo.expression}`}
@@ -208,7 +209,7 @@ const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
           {data.variableInfo.expressionPathPart}
         </CartoucheUI>
       </span>
-      {when(!isLeaf && selected, <span>{'>'}</span>)}
+      {when(!isLeaf && onActivePath, <span style={{ color: colorTheme.fg6.value }}>{'>'}</span>)}
     </FlexRow>
   )
 })
