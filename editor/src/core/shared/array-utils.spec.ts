@@ -1,7 +1,6 @@
 import {
   aperture,
   intersection,
-  intersperse,
   mapAndFilter,
   possiblyUniqueInArray,
   strictEvery,
@@ -101,12 +100,4 @@ it('possiblyUniqueInArray', () => {
   expect(possiblyUniqueInArray(arr, [1, 2, 4], 5)).toEqual(5)
   expect(possiblyUniqueInArray(arr, arr, 2)).toEqual(2)
   expect(possiblyUniqueInArray([], [], 2)).toEqual(2)
-})
-
-describe('intersperse', () => {
-  it('can intersperse', () => {
-    expect(intersperse([], '-')).toEqual([])
-    expect(intersperse(['hello'], '-')).toEqual(['hello'])
-    expect(intersperse(['hello', 'there'], '-')).toEqual(['hello', '-', 'there'])
-  })
 })

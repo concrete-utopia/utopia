@@ -1,6 +1,5 @@
 import throttle from 'lodash.throttle'
 import React from 'react'
-import { intersperse } from '../../../../core/shared/array-utils'
 import { memoize } from '../../../../core/shared/memoize'
 import { assertNever } from '../../../../core/shared/utils'
 import { FlexColumn, FlexRow, Icons, Tooltip, UtopiaStyles, useColorTheme } from '../../../../uuiui'
@@ -98,8 +97,18 @@ export const DataSelectorSearch = React.memo(
                   </CartoucheUI>
                 ))}
               </FlexRow>
-              <FlexRow style={{ opacity: 0.5, ...UtopiaStyles.fontStyles.monospaced }}>
-                {searchResult.value.value}
+              <FlexRow
+                style={{
+                  opacity: 0.5,
+                  ...UtopiaStyles.fontStyles.monospaced,
+                }}
+              >
+                <SearchResultString
+                  isMatch={searchResult.value.matched}
+                  label={searchResult.value.value}
+                  searchTerm={searchTerm}
+                  fontWeightForMatch={900}
+                />
               </FlexRow>
               <div
                 style={{
@@ -237,6 +246,28 @@ function search(options: DataPickerOption[], term: string): SearchResult[] {
 
 const throttledSearch = throttle(search, 50, {})
 
+function matchedSegments({
+  text,
+  regexp,
+}: {
+  text: string
+  regexp: RegExp
+}): Array<{ text: string; matched: boolean }> {
+  const result: Array<{ text: string; matched: boolean }> = []
+  let current = 0
+
+  let match
+  // https://stackoverflow.com/a/2295681
+  while ((match = regexp.exec(text)) != null) {
+    result.push({ text: text.slice(current, match.index), matched: false })
+    result.push({ text: text.slice(match.index, match.index + match[0].length), matched: true })
+    current = match.index + match[0].length
+  }
+  result.push({ text: text.slice(current), matched: false })
+
+  return result
+}
+
 function SearchResultString({
   label,
   isMatch,
@@ -252,26 +283,30 @@ function SearchResultString({
     ...UtopiaStyles.fontStyles.monospaced,
     fontSize: 10,
   }
+
+  const regexp = React.useMemo(() => new RegExp(searchTerm, 'gi'), [searchTerm])
+
   if (!isMatch) {
     return <span style={style}>{label}</span>
   }
 
-  const segments = intersperse(label.split(searchTerm), searchTerm)
+  const segments = matchedSegments({ text: label, regexp: regexp })
   return (
     <>
-      {segments.map((s, idx) => {
-        if (s.length === 0) {
+      {segments.map(({ text, matched }, idx) => {
+        if (text.length === 0) {
           return null
         }
         return (
           <span
-            key={`${s}-${idx}`}
+            key={`${text}-${idx}`}
             style={{
               ...style,
-              fontWeight: s !== searchTerm ? 200 : fontWeightForMatch,
+              fontWeight: matched ? fontWeightForMatch : 200,
+              whiteSpace: 'pre',
             }}
           >
-            {s}
+            {text}
           </span>
         )
       })}

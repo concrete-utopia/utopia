@@ -525,11 +525,3 @@ export function isPrefixOf<T>(
 export function valueOrArrayToArray<T>(ts: T | T[]): T[] {
   return Array.isArray(ts) ? ts : [ts]
 }
-
-export function intersperse(words: string[], s: string): string[] {
-  if (words.length < 2) {
-    return words
-  }
-
-  return [words[0], ...words.slice(1).flatMap((w) => [s, w])]
-}

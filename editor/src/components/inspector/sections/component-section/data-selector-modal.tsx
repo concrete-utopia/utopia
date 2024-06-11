@@ -6,7 +6,7 @@ import {
   arrayEqualsByReference,
   assertNever,
 } from '../../../../core/shared/utils'
-import { unless, when } from '../../../../utils/react-conditionals'
+import { unless } from '../../../../utils/react-conditionals'
 import {
   FlexColumn,
   FlexRow,
@@ -21,7 +21,6 @@ import { getControlStyles } from '../../common/control-styles'
 import type { SelectOption } from '../../controls/select-control'
 import { InspectorModal } from '../../widgets/inspector-modal'
 import type { CartoucheUIProps, HoverHandlers } from './cartouche-ui'
-import { CartoucheUI } from './cartouche-ui'
 import {
   type ArrayOption,
   type DataPickerCallback,
@@ -45,7 +44,6 @@ import { optionalMap } from '../../../../core/shared/optional-utils'
 import type { FileRootPath } from '../../../canvas/ui-jsx-canvas'
 import { insertionCeilingToString, insertionCeilingsEqual } from '../../../canvas/ui-jsx-canvas'
 import { DataSelectorSearch } from './data-selector-search'
-import { set } from 'objectPath'
 import { DataSelectorColumns } from './data-selector-columns'
 
 export const DataSelectorPopupBreadCrumbsTestId = 'data-selector-modal-top-bar'
