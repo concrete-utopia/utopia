@@ -6,7 +6,7 @@ import {
 } from '../../../../core/data-tracing/data-tracing'
 import { isPrefixOf } from '../../../../core/shared/array-utils'
 import { assertNever } from '../../../../core/shared/utils'
-import { unless } from '../../../../utils/react-conditionals'
+import { unless, when } from '../../../../utils/react-conditionals'
 import { FlexColumn, FlexRow, colorTheme } from '../../../../uuiui'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import type { CartoucheSource, CartoucheUIProps } from './cartouche-ui'
@@ -164,7 +164,7 @@ interface RowWithCartoucheProps {
   onTargetPathChange: (newTargetPath: ObjectPath) => void
 }
 const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
-  const { onTargetPathChange, data, forcedDataSource, isLeaf } = props
+  const { onTargetPathChange, data, forcedDataSource, isLeaf, selected } = props
   const targetPath = data.valuePath
 
   const dataSource = useVariableDataSource(data)
@@ -189,8 +189,8 @@ const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
         fontSize: 10,
         borderRadius: 4,
         height: 24,
-        backgroundColor: props.selected ? colorTheme.bg4.value : 'transparent',
-        color: props.selected ? colorTheme.fg4.value : 'transparent',
+        backgroundColor: props.selected ? colorTheme.bg4.value : undefined,
+        color: props.selected ? colorTheme.fg4.value : undefined,
         padding: 5,
         cursor: 'pointer',
       }}
@@ -201,15 +201,14 @@ const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
           source={forcedDataSource ?? dataSource ?? 'internal'}
           datatype={childTypeToCartoucheDataType(data.type)}
           selected={!data.disabled && props.selected}
-          showBackground={!data.disabled}
           highlight={data.disabled ? 'disabled' : null}
-          role={'information'}
+          role={data.disabled ? 'information' : 'selection'}
           testId={`data-selector-option-${data.variableInfo.expression}`}
         >
           {data.variableInfo.expressionPathPart}
         </CartoucheUI>
       </span>
-      {unless(isLeaf, <span>{'>'}</span>)}
+      {when(!isLeaf && selected, <span>{'>'}</span>)}
     </FlexRow>
   )
 })

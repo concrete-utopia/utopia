@@ -26,7 +26,6 @@ export type CartoucheUIProps = React.PropsWithChildren<{
   highlight?: CartoucheHighlight | null
   testId: string
   preview?: boolean
-  showBackground?: boolean
   onDelete?: (e: React.MouseEvent) => void
   onClick?: (e: React.MouseEvent) => void
   onDoubleClick?: (e: React.MouseEvent) => void
@@ -48,9 +47,10 @@ export const CartoucheUI = React.forwardRef(
       role,
       datatype,
       onHover,
-      showBackground = true,
       preview = false,
     } = props
+
+    const showBackground = role !== 'information'
 
     const colors = useCartoucheColors(source, highlight ?? null)
 
@@ -87,7 +87,12 @@ export const CartoucheUI = React.forwardRef(
               width: 'max-content',
             }}
             css={{
-              color: selected || highlight === 'strong' ? colors.fg.selected : colors.fg.default,
+              color:
+                role === 'information'
+                  ? undefined
+                  : selected || highlight === 'strong'
+                  ? colors.fg.selected
+                  : colors.fg.default,
               backgroundColor:
                 showBackground == false
                   ? 'transparent'
