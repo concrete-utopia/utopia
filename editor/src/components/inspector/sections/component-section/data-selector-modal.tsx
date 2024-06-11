@@ -1,6 +1,13 @@
 import React from 'react'
-import { groupBy, isPrefixOf, last } from '../../../../core/shared/array-utils'
+import {
+  dataPathSuccess,
+  traceDataFromVariableName,
+} from '../../../../core/data-tracing/data-tracing'
+import { groupBy, last } from '../../../../core/shared/array-utils'
+import * as EP from '../../../../core/shared/element-path'
 import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
+import { optionalMap } from '../../../../core/shared/optional-utils'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import {
   CanvasContextMenuPortalTargetID,
   arrayEqualsByReference,
@@ -12,39 +19,25 @@ import {
   FlexRow,
   Icons,
   LargerIcons,
-  PopupList,
   UtopiaStyles,
   UtopiaTheme,
   useColorTheme,
 } from '../../../../uuiui'
-import { getControlStyles } from '../../common/control-styles'
-import type { SelectOption } from '../../controls/select-control'
-import { InspectorModal } from '../../widgets/inspector-modal'
-import type { CartoucheUIProps, HoverHandlers } from './cartouche-ui'
-import {
-  type ArrayOption,
-  type DataPickerCallback,
-  type JSXOption,
-  type ObjectOption,
-  type PrimitiveOption,
-  type DataPickerOption,
-  type ObjectPath,
-  getEnclosingScopes,
-  childTypeToCartoucheDataType,
-  cartoucheFolderOrInfo,
-} from './data-picker-utils'
-import {
-  dataPathSuccess,
-  traceDataFromVariableName,
-} from '../../../../core/data-tracing/data-tracing'
-import type { ElementPath } from '../../../../core/shared/project-file-types'
-import * as EP from '../../../../core/shared/element-path'
-import { Substores, useEditorState } from '../../../editor/store/store-hook'
-import { optionalMap } from '../../../../core/shared/optional-utils'
 import type { FileRootPath } from '../../../canvas/ui-jsx-canvas'
 import { insertionCeilingToString, insertionCeilingsEqual } from '../../../canvas/ui-jsx-canvas'
-import { DataSelectorSearch } from './data-selector-search'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
+import { InspectorModal } from '../../widgets/inspector-modal'
+import type { CartoucheUIProps } from './cartouche-ui'
+import {
+  cartoucheFolderOrInfo,
+  childTypeToCartoucheDataType,
+  getEnclosingScopes,
+  type DataPickerCallback,
+  type DataPickerOption,
+  type ObjectPath,
+} from './data-picker-utils'
 import { DataSelectorColumns } from './data-selector-columns'
+import { DataSelectorSearch } from './data-selector-search'
 
 export const DataSelectorPopupBreadCrumbsTestId = 'data-selector-modal-top-bar'
 
@@ -55,61 +48,6 @@ export interface DataSelectorModalProps {
   onPropertyPicked: DataPickerCallback
   startingSelectedValuePath: ObjectPath | null
   lowestInsertionCeiling: ElementPath | null
-}
-
-const Separator = React.memo(
-  ({
-    color,
-    spanGridColumns,
-    margin,
-  }: {
-    color: string
-    spanGridColumns?: number
-    margin: number
-  }) => {
-    return (
-      <div
-        style={{
-          width: '100%',
-          height: 1,
-          margin: `${margin}px 0px`,
-          backgroundColor: color,
-          gridColumn: spanGridColumns == null ? undefined : `1 / span ${spanGridColumns}`,
-        }}
-      ></div>
-    )
-  },
-)
-
-const SIMPLE_CONTROL_STYLES = getControlStyles('simple')
-
-function ArrayIndexSelector({
-  total,
-  selected,
-  onSelect,
-}: {
-  total: number
-  selected: number
-  onSelect: (_: SelectOption) => void
-}) {
-  const options: SelectOption[] = React.useMemo(
-    () =>
-      Array(total)
-        .fill(0)
-        .map((_, i) => ({ value: i, label: `${i + 1}` })),
-    [total],
-  )
-
-  return (
-    <PopupList
-      id={'data-selector-index-select'}
-      value={{ label: `${selected + 1}`, value: selected }}
-      options={options}
-      onSubmitValue={onSelect}
-      controlStyles={SIMPLE_CONTROL_STYLES}
-      style={{ background: 'transparent' }}
-    />
-  )
 }
 
 interface ProcessedVariablesInScope {
@@ -270,58 +208,6 @@ export const DataSelectorModal = React.memo(
         e.preventDefault()
       }, [])
 
-      const onHover = React.useCallback(
-        (path: DataPickerOption['valuePath']): HoverHandlers => ({
-          onMouseEnter: () => setHoveredPath(path),
-          onMouseLeave: () => setHoveredPath(null),
-        }),
-        [],
-      )
-
-      const [indexLookup, setIndexLookup] = React.useState<ArrayIndexLookup>({})
-      const updateIndexInLookup = React.useCallback(
-        (valuePathString: string) => (option: SelectOption) =>
-          setIndexLookup((lookup) => ({ ...lookup, [valuePathString]: option.value })),
-        [],
-      )
-
-      const focusedVariableChildren = React.useMemo(() => {
-        if (navigatedToPath.length === 0) {
-          return filteredVariablesInScope
-        }
-
-        const innerScopeToShow = processedVariablesInScope[navigatedToPath.toString()]
-        if (
-          innerScopeToShow == null ||
-          (innerScopeToShow.type !== 'array' && innerScopeToShow.type !== 'object')
-        ) {
-          return [] // TODO this should never happen!
-        }
-        return innerScopeToShow.children
-      }, [navigatedToPath, processedVariablesInScope, filteredVariablesInScope])
-
-      const { primitiveVars, folderVars } = React.useMemo(() => {
-        let primitives: Array<PrimitiveOption | JSXOption> = []
-        let folders: Array<ArrayOption | ObjectOption> = []
-
-        for (const option of focusedVariableChildren) {
-          switch (option.type) {
-            case 'array':
-            case 'object':
-              folders.push(option)
-              break
-            case 'jsx':
-            case 'primitive':
-              primitives.push(option)
-              break
-            default:
-              assertNever(option)
-          }
-        }
-
-        return { primitiveVars: primitives, folderVars: folders }
-      }, [focusedVariableChildren])
-
       const metadata = useEditorState(
         Substores.metadata,
         (store) => store.editor.jsxMetadata,
@@ -365,17 +251,6 @@ export const DataSelectorModal = React.memo(
         return result
       }, [allVariablesInScope, metadata, projectContents])
 
-      const setCurrentSelectedPathCurried = React.useCallback(
-        (path: DataPickerOption['valuePath']) => () => {
-          if (!isPrefixOf(navigatedToPath, path)) {
-            // if navigatedToPath is not a prefix of path, we don't update the selection
-            return
-          }
-          setSelectedPath(path)
-        },
-        [navigatedToPath],
-      )
-
       const activeTargetPath = selectedPath ?? navigatedToPath
       const pathInTopBarIncludingHover = hoveredPath ?? activeTargetPath
 
@@ -412,15 +287,6 @@ export const DataSelectorModal = React.memo(
         },
         [processedVariablesInScope],
       )
-
-      const valuePreviewText = (() => {
-        const variable = processedVariablesInScope[pathInTopBarIncludingHover.toString()]
-        if (variable == null) {
-          return null
-        }
-
-        return JSON.stringify(variable.variableInfo.value, undefined, 2)
-      })()
 
       const searchFocused = searchTerm != null
 
@@ -706,22 +572,6 @@ function useProcessVariablesInScope(options: DataPickerOption[]): ProcessedVaria
   }, [options])
 }
 
-function childVars(option: DataPickerOption, indices: ArrayIndexLookup): DataPickerOption[] {
-  switch (option.type) {
-    case 'object':
-      return option.children
-    case 'array':
-      return option.children.length === 0
-        ? []
-        : childVars(option.children[indices[option.valuePath.toString()] ?? 0], indices)
-    case 'jsx':
-    case 'primitive':
-      return []
-    default:
-      assertNever(option)
-  }
-}
-
 function pathBreadcrumbs(
   valuePath: DataPickerOption['valuePath'],
   processedVariablesInScope: ProcessedVariablesInScope,
@@ -749,10 +599,6 @@ function pathBreadcrumbs(
     })
   }
   return accumulator
-}
-
-function variableNameFromPath(variable: DataPickerOption): string {
-  return last(variable.valuePath)?.toString() ?? variable.variableInfo.expression.toString()
 }
 
 function disabledButtonStyles(disabled: boolean): React.CSSProperties {
