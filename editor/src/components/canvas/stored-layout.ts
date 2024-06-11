@@ -5,6 +5,7 @@ export const GridMenuMinWidth = 200
 export const GridMenuMaxWidth = 500
 
 export const GridPaneWidth = 500
+export const GridPaneMinWidth = 100
 
 export const NumberOfColumns = 4
 export const IndexOfCanvas = 2
