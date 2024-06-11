@@ -181,6 +181,8 @@ export const DataSelectorModal = React.memo(
 
       const processedVariablesInScope = useProcessVariablesInScope(allVariablesInScope)
 
+      const searchBoxRef = React.useRef<HTMLInputElement>(null)
+
       const elementLabelsWithScopes = useEditorState(
         Substores.fullStore,
         (store) => {
@@ -216,7 +218,10 @@ export const DataSelectorModal = React.memo(
       )
 
       const [searchTerm, setSearchTerm] = React.useState<string | null>(null)
-      const onStartSearch = React.useCallback(() => setSearchTerm(''), [])
+      const onStartSearch = React.useCallback(() => {
+        searchBoxRef.current?.focus()
+        setSearchTerm('')
+      }, [])
       const onSearchFieldValueChange = React.useCallback(
         (e: React.ChangeEvent<HTMLInputElement>) => {
           if (e.target.value.length === 0) {
@@ -530,6 +535,7 @@ export const DataSelectorModal = React.memo(
                   >
                     <LargerIcons.MagnifyingGlass />
                     <input
+                      ref={searchBoxRef}
                       value={searchTerm ?? ''}
                       onChange={onSearchFieldValueChange}
                       data-testId='data-selector-modal-search-input'
