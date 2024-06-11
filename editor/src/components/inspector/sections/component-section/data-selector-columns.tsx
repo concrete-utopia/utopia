@@ -94,6 +94,7 @@ const DataSelectorColumn = React.memo((props: DataSelectorColumnProps) => {
             <RowWithCartouche
               key={option.variableInfo.expression}
               data={option}
+              currentlyShowingScopeForArray={currentlyShowingScopeForArray}
               isLeaf={nextColumnScope == null}
               selected={selected}
               onActivePath={onActivePath}
@@ -166,6 +167,7 @@ function variableTypeForInfo(info: DataPickerOption): string {
 
 interface RowWithCartoucheProps {
   data: DataPickerOption
+  currentlyShowingScopeForArray: boolean
   selected: boolean
   onActivePath: boolean
   forceShowArrow: boolean
@@ -177,6 +179,7 @@ const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
   const {
     onTargetPathChange,
     data,
+    currentlyShowingScopeForArray,
     forcedDataSource,
     isLeaf,
     selected,
@@ -231,7 +234,14 @@ const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
             ) : undefined
           }
         >
-          {data.variableInfo.expressionPathPart}
+          {currentlyShowingScopeForArray ? (
+            <>
+              <span style={{ fontStyle: 'italic' }}>item </span>
+              {data.variableInfo.expressionPathPart}
+            </>
+          ) : (
+            data.variableInfo.expressionPathPart
+          )}
         </CartoucheUI>
       </span>
       <span
