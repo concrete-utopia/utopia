@@ -164,11 +164,7 @@ export const DataSelectorModal = React.memo(
         (e: React.ChangeEvent<HTMLInputElement>) => {
           e.stopPropagation()
           e.preventDefault()
-          if (e.target.value.length === 0) {
-            setSearchTerm(null)
-          } else {
-            setSearchTerm(e.target.value)
-          }
+          setSearchTerm(e.target.value)
         },
         [],
       )
@@ -399,9 +395,11 @@ export const DataSelectorModal = React.memo(
                     <LargerIcons.MagnifyingGlass onClick={onStartSearch} />
                     <input
                       onClick={onStartSearch}
+                      onFocus={onStartSearch}
+                      onChange={onSearchFieldValueChange}
+                      onBlur={cancelSearch}
                       ref={searchBoxRef}
                       value={searchTerm ?? ''}
-                      onChange={onSearchFieldValueChange}
                       data-testId='data-selector-modal-search-input'
                       placeholder='Search'
                       style={{
@@ -442,7 +440,7 @@ export const DataSelectorModal = React.memo(
                 </FlexRow>
               </FlexRow>
               <FlexColumn style={{ flexGrow: 1, overflow: 'hidden', contain: 'content' }}>
-                {searchTerm == null ? (
+                {searchTerm == null || searchTerm.length < 1 ? (
                   <DataSelectorColumns
                     activeScope={filteredVariablesInScope}
                     targetPathInsideScope={selectedPath}
