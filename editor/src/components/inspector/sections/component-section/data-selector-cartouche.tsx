@@ -13,7 +13,7 @@ import type { DataPickerOption } from './data-picker-utils'
 export const DataPickerCartouche = React.memo(
   (props: {
     data: DataPickerOption
-    forcedDataSource?: CartoucheSource // if the DataPickerOption is actually a child (of a child) of a variable, we need to provide the CartoucheSource that belongs to the original variable
+    forcedDataSource?: CartoucheSource | null // if the DataPickerOption is actually a child (of a child) of a variable, we need to provide the CartoucheSource that belongs to the original variable
     selected: boolean
   }) => {
     const { data, forcedDataSource, selected } = props
