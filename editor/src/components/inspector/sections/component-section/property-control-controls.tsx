@@ -536,9 +536,7 @@ export const StringInputPropertyControl = React.memo(
 
     const controlId = `${propName}-string-input-property-control`
 
-    const isChildren = React.useMemo(() => {
-      return propName === 'children'
-    }, [propName])
+    const isChildren = propName === 'children'
 
     const value = useEditorState(
       Substores.metadata,
