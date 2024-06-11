@@ -1,5 +1,5 @@
 import React from 'react'
-import { groupBy, intersperse, isPrefixOf, last } from '../../../../core/shared/array-utils'
+import { groupBy, isPrefixOf, last } from '../../../../core/shared/array-utils'
 import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
 import {
   CanvasContextMenuPortalTargetID,
@@ -13,7 +13,6 @@ import {
   Icons,
   LargerIcons,
   PopupList,
-  Tooltip,
   UtopiaStyles,
   UtopiaTheme,
   useColorTheme,
@@ -32,6 +31,8 @@ import {
   type DataPickerOption,
   type ObjectPath,
   getEnclosingScopes,
+  childTypeToCartoucheDataType,
+  cartoucheFolderOrInfo,
 } from './data-picker-utils'
 import {
   dataPathSuccess,
@@ -43,8 +44,7 @@ import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import type { FileRootPath } from '../../../canvas/ui-jsx-canvas'
 import { insertionCeilingToString, insertionCeilingsEqual } from '../../../canvas/ui-jsx-canvas'
-import { memoize } from '../../../../core/shared/memoize'
-import throttle from 'lodash.throttle'
+import { DataSelectorSearch } from './data-selector-search'
 
 export const DataSelectorPopupBreadCrumbsTestId = 'data-selector-modal-top-bar'
 
@@ -211,17 +211,12 @@ export const DataSelectorModal = React.memo(
         startingSelectedValuePath,
       )
 
-      const [hoveredSearchRow, setHoveredSearchRow] = React.useState<number>(-1)
-      const setHoveredSearchRowCurried = React.useCallback(
-        (i: number) => () => setHoveredSearchRow(i),
-        [],
-      )
-
       const [searchTerm, setSearchTerm] = React.useState<string | null>(null)
       const onStartSearch = React.useCallback(() => {
         searchBoxRef.current?.focus()
         setSearchTerm('')
       }, [])
+
       const onSearchFieldValueChange = React.useCallback(
         (e: React.ChangeEvent<HTMLInputElement>) => {
           e.stopPropagation()
@@ -397,22 +392,12 @@ export const DataSelectorModal = React.memo(
         [applyVariable, activeTargetPath],
       )
 
-      const applySearchResult = React.useCallback(
-        (path: ObjectPath) => () => {
-          setHoveredSearchRow(-1)
-          setSearchTerm(null)
-          applyVariable(path)
-        },
-        [applyVariable],
-      )
-
-      const onNavigateArrowClick = React.useCallback(
-        (path: ObjectPath) => () => {
-          setHoveredSearchRow(-1)
-          setSearchTerm(null)
+      const navigateToSearchResult = React.useCallback(
+        (path: ObjectPath) => {
           setNavigatedToPath(
             findFirstObjectPathToNavigateTo(processedVariablesInScope, path) ?? path,
           )
+          setSelectedPath(path)
         },
         [processedVariablesInScope],
       )
@@ -732,71 +717,14 @@ export const DataSelectorModal = React.memo(
                 </>,
               )}
               {searchTerm == null ? null : (
-                <FlexColumn
-                  style={{
-                    overflowX: 'hidden',
-                    overflowY: 'scroll',
-                    scrollbarWidth: 'auto',
-                    scrollbarColor: 'gray transparent',
-                    flexGrow: 1,
-                  }}
-                >
-                  {throttledSearch(allVariablesInScope, searchTerm.toLowerCase())?.map(
-                    (searchResult, idx) => (
-                      <FlexRow
-                        style={{ gap: 8, alignItems: 'center' }}
-                        key={[...searchResult.valuePath, idx].toString()}
-                        onMouseEnter={setHoveredSearchRowCurried(idx)}
-                        onMouseLeave={setHoveredSearchRowCurried(-1)}
-                      >
-                        <FlexRow style={{ gap: 2 }}>
-                          {searchResult.valuePath.map((v, i) => (
-                            <CartoucheUI
-                              key={`${v.value}-${i}`}
-                              datatype={searchResult.cartoucheProps.datatype}
-                              selected={false}
-                              role={searchResult.cartoucheProps.role}
-                              source={
-                                variableSources[searchResult.originalValuePath.toString()] ??
-                                'internal'
-                              }
-                              testId={`data-selector-primitive-values-${v.value}-${i}`}
-                            >
-                              <SearchResultString
-                                isMatch={v.matched}
-                                label={v.value}
-                                searchTerm={searchTerm}
-                                fontWeightForMatch={900}
-                              />
-                            </CartoucheUI>
-                          ))}
-                        </FlexRow>
-                        <span style={{ opacity: 0.5, ...UtopiaStyles.fontStyles.monospaced }}>
-                          {searchResult.value.value}
-                        </span>
-                        <span
-                          style={{
-                            borderRadius: 4,
-                            color: 'white',
-                            padding: '4px 6px',
-                            backgroundColor: colorTheme.primary.value,
-                            opacity: hoveredSearchRow === idx ? 1 : 0,
-                            cursor: 'pointer',
-                          }}
-                          onClick={applySearchResult(searchResult.originalValuePath)}
-                        >
-                          Apply
-                        </span>
-                        <Tooltip title='Navigate here'>
-                          <Icons.ExpansionArrowRight
-                            onClick={onNavigateArrowClick(searchResult.originalValuePath)}
-                            style={{ opacity: hoveredSearchRow === idx ? 1 : 0, cursor: 'pointer' }}
-                          />
-                        </Tooltip>
-                      </FlexRow>
-                    ),
-                  )}
-                </FlexColumn>
+                <DataSelectorSearch
+                  setSearchTerm={setSearchTerm}
+                  searchTerm={searchTerm}
+                  applyVariable={applyVariable}
+                  setNavigatedToPath={navigateToSearchResult}
+                  allVariablesInScope={allVariablesInScope}
+                  variableSources={variableSources}
+                />
               )}
               {/* Scope Selector Breadcrumbs */}
               <FlexRow style={{ gap: 2, paddingTop: 16, paddingBottom: 16, opacity: 0.5 }}>
@@ -831,22 +759,6 @@ export const DataSelectorModal = React.memo(
     },
   ),
 )
-
-function childTypeToCartoucheDataType(
-  childType: DataPickerOption['type'],
-): CartoucheUIProps['datatype'] {
-  switch (childType) {
-    case 'array':
-      return 'array'
-    case 'object':
-      return 'object'
-    case 'jsx':
-    case 'primitive':
-      return 'renderable'
-    default:
-      assertNever(childType)
-  }
-}
 
 type ScopeBuckets = {
   [insertionCeiling: string]: Array<DataPickerOption>
@@ -971,25 +883,6 @@ function variableNameFromPath(variable: DataPickerOption): string {
   return last(variable.valuePath)?.toString() ?? variable.variableInfo.expression.toString()
 }
 
-function cartoucheFolderOrInfo(
-  option: DataPickerOption,
-  canBeFolder: 'no-folder' | 'can-be-folder',
-): CartoucheUIProps['role'] {
-  if (option.variableInfo.matches) {
-    return 'selection'
-  }
-  switch (option.type) {
-    case 'object':
-      return canBeFolder === 'can-be-folder' ? 'folder' : 'information'
-    case 'array':
-    case 'jsx':
-    case 'primitive':
-      return 'information'
-    default:
-      assertNever(option)
-  }
-}
-
 function disabledButtonStyles(disabled: boolean): React.CSSProperties {
   return {
     opacity: disabled ? 0.5 : 1,
@@ -1044,141 +937,4 @@ function findFirstObjectPathToNavigateTo(
   }
 
   return null
-}
-
-interface SearchResult {
-  originalValuePath: ObjectPath
-  valuePath: Array<{ value: string; matched: boolean }>
-  value: { value: string; matched: boolean }
-  cartoucheProps: Pick<CartoucheUIProps, 'role' | 'datatype'>
-}
-
-function searchInValuePath(
-  valuePath: ObjectPath,
-  context: SearchContext,
-): { valuePath: SearchResult['valuePath']; matched: boolean } {
-  const segments: SearchResult['valuePath'] = []
-
-  let foundMatch = false
-  for (const segment of valuePath) {
-    const segmentAsString = segment.toString()
-    const containsMatch = context.matchesSearchQuery(segmentAsString)
-    segments.push({ value: segmentAsString, matched: containsMatch })
-    foundMatch ||= containsMatch
-  }
-
-  return { valuePath: segments, matched: foundMatch }
-}
-
-function searchInValue(value: unknown, context: SearchContext): SearchResult['value'] {
-  if (typeof value === 'object' || Array.isArray(value)) {
-    return { value: '', matched: false }
-  }
-  const valueAsString = `${value}`
-  return {
-    value: valueAsString,
-    matched: context.matchesSearchQuery(valueAsString),
-  }
-}
-
-interface SearchContext {
-  matchesSearchQuery: (_: string) => boolean
-}
-
-function matches(option: DataPickerOption, context: SearchContext): SearchResult | null {
-  const maybeValuePath = searchInValuePath(option.valuePath, context)
-  const maybeValue = searchInValue(option.variableInfo.value, context)
-
-  if (maybeValuePath.matched || maybeValue.matched) {
-    return {
-      originalValuePath: option.valuePath,
-      value: maybeValue,
-      valuePath: maybeValuePath.valuePath,
-      cartoucheProps: {
-        role: cartoucheFolderOrInfo(option, 'can-be-folder'),
-        datatype: childTypeToCartoucheDataType(option.type),
-      },
-    }
-  }
-
-  return null
-}
-
-function search(options: DataPickerOption[], term: string): SearchResult[] {
-  if (term.length === 0) {
-    return []
-  }
-
-  const context: SearchContext = {
-    matchesSearchQuery: memoize((text) => text.toLowerCase().includes(term), { maxSize: 25 }),
-  }
-
-  let results: SearchResult[] = []
-
-  function walk(option: DataPickerOption) {
-    const searchResult = matches(option, context)
-    if (searchResult != null) {
-      results.push(searchResult)
-    }
-
-    switch (option.type) {
-      case 'array':
-      case 'object':
-        option.children.forEach((o) => walk(o))
-        break
-      case 'jsx':
-      case 'primitive':
-        break
-      default:
-        assertNever(option)
-    }
-  }
-
-  options.forEach((o) => walk(o))
-
-  return results
-}
-
-const throttledSearch = throttle(search, 50, {})
-
-function SearchResultString({
-  label,
-  isMatch,
-  searchTerm,
-  fontWeightForMatch,
-}: {
-  label: string
-  isMatch: boolean
-  searchTerm: string
-  fontWeightForMatch: number
-}) {
-  const style: React.CSSProperties = {
-    ...UtopiaStyles.fontStyles.monospaced,
-    fontSize: 10,
-  }
-  if (!isMatch) {
-    return <span style={style}>{label}</span>
-  }
-
-  const segments = intersperse(label.split(searchTerm), searchTerm)
-  return (
-    <>
-      {segments.map((s, idx) => {
-        if (s.length === 0) {
-          return null
-        }
-        return (
-          <span
-            key={`${s}-${idx}`}
-            style={{
-              ...style,
-              fontWeight: s !== searchTerm ? 200 : fontWeightForMatch,
-            }}
-          >
-            {s}
-          </span>
-        )
-      })}
-    </>
-  )
 }

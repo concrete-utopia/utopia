@@ -17,6 +17,7 @@ import type { ProjectContentTreeRoot } from '../../../assets'
 import { insertionCeilingToString, type FileRootPath } from '../../../canvas/ui-jsx-canvas'
 import type { AllElementProps } from '../../../editor/store/editor-state'
 import type { ArrayInfo, JSXInfo, ObjectInfo, PrimitiveInfo } from './variables-in-scope-utils'
+import type { CartoucheUIProps } from './cartouche-ui'
 
 interface VariableOptionBase {
   depth: number
@@ -154,4 +155,39 @@ function outletNameHack(
   // if getElementLabel returned Outlet, we try to find the actual component name by hand – this is a hack and should be removed once the Navigator is capable of showing the correct name
   const component = findContainingComponentForPathInProjectContents(target, projectContents)
   return component?.name ?? namePossiblyOutlet
+}
+
+export function cartoucheFolderOrInfo(
+  option: DataPickerOption,
+  canBeFolder: 'no-folder' | 'can-be-folder',
+): CartoucheUIProps['role'] {
+  if (option.variableInfo.matches) {
+    return 'selection'
+  }
+  switch (option.type) {
+    case 'object':
+      return canBeFolder === 'can-be-folder' ? 'folder' : 'information'
+    case 'array':
+    case 'jsx':
+    case 'primitive':
+      return 'information'
+    default:
+      assertNever(option)
+  }
+}
+
+export function childTypeToCartoucheDataType(
+  childType: DataPickerOption['type'],
+): CartoucheUIProps['datatype'] {
+  switch (childType) {
+    case 'array':
+      return 'array'
+    case 'object':
+      return 'object'
+    case 'jsx':
+    case 'primitive':
+      return 'renderable'
+    default:
+      assertNever(childType)
+  }
 }
