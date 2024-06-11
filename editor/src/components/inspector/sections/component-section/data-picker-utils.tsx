@@ -25,6 +25,7 @@ interface VariableOptionBase {
   valuePath: Array<string | number>
   disabled: boolean
   insertionCeiling: ElementPath | FileRootPath
+  isChildOfArray: boolean
 }
 
 export interface PrimitiveOption extends VariableOptionBase {
