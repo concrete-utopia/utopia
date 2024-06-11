@@ -12,6 +12,7 @@ import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import type { CartoucheSource, CartoucheUIProps } from './cartouche-ui'
 import { CartoucheUI } from './cartouche-ui'
 import type { ArrayOption, DataPickerOption, ObjectOption, ObjectPath } from './data-picker-utils'
+import { MapCounterUi } from '../../../navigator/navigator-item/map-counter'
 
 interface DataSelectorColumnsProps {
   activeScope: Array<DataPickerOption>
@@ -205,6 +206,15 @@ const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
           highlight={data.disabled ? 'disabled' : null}
           role={data.disabled ? 'information' : 'selection'}
           testId={`data-selector-option-${data.variableInfo.expression}`}
+          badge={
+            data.type === 'array' ? (
+              <MapCounterUi
+                counterValue={data.variableInfo.elements.length}
+                overrideStatus='no-override'
+                selectedStatus={selected}
+              />
+            ) : undefined
+          }
         >
           {data.variableInfo.expressionPathPart}
         </CartoucheUI>
