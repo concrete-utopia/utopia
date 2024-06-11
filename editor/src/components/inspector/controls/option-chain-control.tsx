@@ -66,6 +66,7 @@ export const OptionChainControl: React.FunctionComponent<
           flexDirection: 'row',
           border: `1px solid ${colorTheme.bg2.value}`,
           borderRadius: 3,
+          padding: '1px',
         }}
         className={`option-chain-control-container ${Utils.pathOr(
           '',
