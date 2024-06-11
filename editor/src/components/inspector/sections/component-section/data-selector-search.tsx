@@ -30,34 +30,8 @@ export const DataSelectorSearch = React.memo(
     variableSources,
     allVariablesInScope,
   }: DataSelectorSearchProps) => {
-    const colorTheme = useColorTheme()
-
-    const [hoveredSearchRow, setHoveredSearchRow] = React.useState<number>(-1)
-    const setHoveredSearchRowCurried = React.useCallback(
-      (i: number) => () => setHoveredSearchRow(i),
-      [],
-    )
-
-    const applySearchResult = React.useCallback(
-      (path: ObjectPath) => () => {
-        setHoveredSearchRow(-1)
-        setSearchTerm(null)
-        applyVariable(path)
-      },
-      [applyVariable, setSearchTerm],
-    )
-
-    const onNavigateArrowClick = React.useCallback(
-      (path: ObjectPath) => () => {
-        setHoveredSearchRow(-1)
-        setSearchTerm(null)
-        setNavigatedToPath(path)
-      },
-      [setNavigatedToPath, setSearchTerm],
-    )
-
     return (
-      <FlexColumn
+      <div
         style={{
           overflowX: 'hidden',
           overflowY: 'scroll',
@@ -66,16 +40,14 @@ export const DataSelectorSearch = React.memo(
           flexGrow: 1,
           gap: 8,
           paddingTop: 8,
+          display: 'grid',
+          gridTemplateColumns: 'auto 1fr',
+          gridAutoRows: 'min-content',
         }}
       >
         {throttledSearch(allVariablesInScope, searchTerm.toLowerCase())?.map(
           (searchResult, idx) => (
-            <FlexRow
-              style={{ gap: 8, alignItems: 'center' }}
-              key={[...searchResult.valuePath, idx].toString()}
-              onMouseEnter={setHoveredSearchRowCurried(idx)}
-              onMouseLeave={setHoveredSearchRowCurried(-1)}
-            >
+            <React.Fragment key={[...searchResult.valuePath, idx].toString()}>
               <FlexRow style={{ gap: 2 }}>
                 {searchResult.valuePath.map((v, i) => (
                   <CartoucheUI
@@ -110,10 +82,10 @@ export const DataSelectorSearch = React.memo(
                   fontWeightForMatch={900}
                 />
               </FlexRow>
-            </FlexRow>
+            </React.Fragment>
           ),
         )}
-      </FlexColumn>
+      </div>
     )
   },
 )
