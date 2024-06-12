@@ -402,7 +402,7 @@ export const DataSelectorModal = React.memo(
           >
             <FlexRow
               style={{
-                width: 700,
+                minWidth: 850,
                 height: 300,
                 backgroundColor: colorTheme.inspectorBackground.value,
                 color: colorTheme.fg1.value,
@@ -428,6 +428,7 @@ export const DataSelectorModal = React.memo(
                   paddingTop: 16,
                   paddingRight: 16,
                   overflow: 'hidden',
+                  width: 700,
                 }}
               >
                 {/* top bar */}
