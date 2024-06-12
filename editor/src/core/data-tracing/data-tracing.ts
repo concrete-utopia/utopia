@@ -434,7 +434,7 @@ export function traceDataFromVariableName(
     projectContents,
   )
 
-  if (componentHoldingElement == null || componentHoldingElement.arbitraryJSBlock == null) {
+  if (componentHoldingElement == null) {
     return dataTracingFailed('Could not find containing component')
   }
 
