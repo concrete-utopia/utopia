@@ -89,12 +89,12 @@ export function getEnclosingScopes(
   buckets: Array<string>,
   lowestInsertionCeiling: ElementPath,
 ): Array<{
-  insertionCeiling: ElementPath
+  insertionCeiling: ElementPath | FileRootPath
   label: string
   hasContent: boolean
 }> {
   let result: Array<{
-    insertionCeiling: ElementPath
+    insertionCeiling: ElementPath | FileRootPath
     label: string
     hasContent: boolean
   }> = []
@@ -128,7 +128,7 @@ export function getEnclosingScopes(
 
   // Add file root
   result.unshift({
-    insertionCeiling: EP.emptyElementPath,
+    insertionCeiling: { type: 'file-root' },
     label: 'File',
     hasContent: buckets.includes(insertionCeilingToString({ type: 'file-root' })),
   })
