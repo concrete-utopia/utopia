@@ -342,7 +342,6 @@ export const DataSelectorModal = React.memo(
                       onClick={onStartSearch}
                       onFocus={onStartSearch}
                       onChange={onSearchFieldValueChange}
-                      onBlur={cancelSearch}
                       ref={searchBoxRef}
                       value={searchTerm ?? ''}
                       data-testId='data-selector-modal-search-input'
