@@ -62,14 +62,14 @@ export const DataSelectorLeftSidebar = React.memo((props: DataSelectorLeftSideba
       </span>
       <FlexColumn>
         <RowWithCheckbox
-          label={'Local Data'}
+          label={'Local'}
           color={colorTheme.selectionBlue.value}
           selected={true}
           disabled={false}
           onClick={NO_OP}
         />
         <RowWithCheckbox
-          label={'Loader Data'}
+          label={'Loader'}
           color={colorTheme.green.value}
           selected={true}
           disabled={false}
