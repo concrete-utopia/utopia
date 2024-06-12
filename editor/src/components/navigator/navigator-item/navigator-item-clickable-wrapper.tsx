@@ -50,14 +50,13 @@ export const NavigatorRowClickableWrapper = React.memo(
 
     const onClick = React.useCallback(
       (e: React.MouseEvent) => {
+        e.stopPropagation()
+        e.preventDefault()
+
         const actions = getActions(e)
-        if (actions.length > 0 && isRegulaNavigatorRow(props.row)) {
-          e.stopPropagation()
-          e.preventDefault()
-        }
         dispatch(actions)
       },
-      [props.row, dispatch, getActions],
+      [dispatch, getActions],
     )
 
     return (
