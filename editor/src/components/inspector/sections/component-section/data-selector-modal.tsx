@@ -141,7 +141,7 @@ export const DataSelectorModal = React.memo(
         startingSelectedValuePath ?? [],
       )
 
-      const [searchTerm, setSearchTerm] = React.useState<string | null>('re')
+      const [searchTerm, setSearchTerm] = React.useState<string | null>(null)
       const onStartSearch = React.useCallback(() => {
         searchBoxRef.current?.focus()
         setSearchTerm('')
@@ -403,7 +403,7 @@ export const DataSelectorModal = React.memo(
               </FlexColumn>
               {/* Scope Selector Breadcrumbs */}
               {when(
-                searchTerm == null,
+                searchTerm == null || searchTerm.length < 1,
                 <FlexRow style={{ gap: 2, paddingTop: 16, paddingBottom: 16, opacity: 0.5 }}>
                   {elementLabelsWithScopes.map(({ label, scope, hasContent }, idx, a) => (
                     <React.Fragment key={`label-${idx}`}>
