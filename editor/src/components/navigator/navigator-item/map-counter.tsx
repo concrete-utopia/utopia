@@ -13,8 +13,7 @@ import { isJSXMapExpression } from '../../../core/shared/element-template'
 import { assertNever } from '../../../core/shared/utils'
 import { setMapCountOverride } from '../../editor/actions/action-creators'
 import { useDispatch } from '../../editor/store/dispatch-context'
-import { useColorTheme } from '../../../uuiui'
-import type { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
+import { colorTheme } from '../../../uuiui'
 
 export const MapCounterTestIdPrefix = 'map-counter-'
 
@@ -100,21 +99,18 @@ export const MapCounter = React.memo((props: MapCounterProps) => {
 
   const selectedStatus = props.selected
 
-  const colorTheme = useColorTheme()
-
   return (
-    <div
+    <MapCounterUi
       data-testid={getMapCounterTestId(props.elementPath)}
-      style={getMapCounterStyleProps(colorTheme, overrideStatus, selectedStatus)}
+      counterValue={shownCounterValue}
+      overrideStatus={overrideStatus}
+      selectedStatus={selectedStatus}
       onClick={onClick}
-    >
-      {shownCounterValue}
-    </div>
+    />
   )
 })
 
 function getMapCounterStyleProps(
-  colorTheme: ThemeObject,
   overrideStatus: OverrideStatus,
   selectedStatus: SelectedStatus,
 ): CSSProperties {
@@ -154,6 +150,26 @@ function getMapCounterStyleProps(
       assertNever(overrideStatus)
   }
 }
+interface MapCounterUIProps {
+  'data-testid'?: string
+  counterValue: number | null
+  overrideStatus: OverrideStatus
+  selectedStatus: SelectedStatus
+  onClick?: React.MouseEventHandler<HTMLDivElement>
+}
+export const MapCounterUi = React.memo((props: MapCounterUIProps) => {
+  const { counterValue, overrideStatus, selectedStatus, onClick } = props
+
+  return (
+    <div
+      data-testid={props['data-testid']}
+      style={getMapCounterStyleProps(overrideStatus, selectedStatus)}
+      onClick={onClick}
+    >
+      {counterValue}
+    </div>
+  )
+})
 
 function getNextOverrideValue(
   overrideStatus: OverrideStatus,

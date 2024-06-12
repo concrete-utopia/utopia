@@ -14,8 +14,8 @@ export interface HoverHandlers {
 
 export type CartoucheDataType = 'renderable' | 'boolean' | 'array' | 'object' | 'unknown'
 
-type CartoucheSource = 'internal' | 'external' | 'literal'
-export type CartoucheHighlight = 'strong' | 'subtle'
+export type CartoucheSource = 'internal' | 'external' | 'literal'
+export type CartoucheHighlight = 'strong' | 'subtle' | 'disabled'
 
 export type CartoucheUIProps = React.PropsWithChildren<{
   tooltip?: string | null
@@ -49,6 +49,8 @@ export const CartoucheUI = React.forwardRef(
       onHover,
       preview = false,
     } = props
+
+    const showBackground = role !== 'information'
 
     const colors = useCartoucheColors(source, highlight ?? null)
 
@@ -96,12 +98,25 @@ export const CartoucheUI = React.forwardRef(
               width: 'max-content',
             }}
             css={{
-              color: selected || highlight === 'strong' ? colors.fg.selected : colors.fg.default,
-              backgroundColor: selected ? colors.bg.selected : colors.bg.default,
-              ':hover': {
-                color: selected || highlight === 'strong' ? undefined : colors.fg.hovered,
-                backgroundColor: selected ? undefined : colors.bg.hovered,
-              },
+              color:
+                role === 'information'
+                  ? undefined
+                  : selected || highlight === 'strong'
+                  ? colors.fg.selected
+                  : colors.fg.default,
+              backgroundColor:
+                showBackground == false
+                  ? 'transparent'
+                  : selected
+                  ? colors.bg.selected
+                  : colors.bg.default,
+              ':hover':
+                highlight === 'disabled'
+                  ? {}
+                  : {
+                      color: selected || highlight === 'strong' ? undefined : colors.fg.hovered,
+                      backgroundColor: selected ? undefined : colors.bg.hovered,
+                    },
             }}
           >
             {source === 'literal' ? null : (

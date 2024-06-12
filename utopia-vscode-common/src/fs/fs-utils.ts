@@ -174,9 +174,16 @@ export async function stat(path: string): Promise<FSStat> {
   return fsStatForNode(node)
 }
 
+export function getDescendentPathsWithAllPaths(
+  path: string,
+  allPaths: Array<string>,
+): Array<string> {
+  return allPaths.filter((k) => k != path && k.startsWith(path))
+}
+
 export async function getDescendentPaths(path: string): Promise<string[]> {
   const allPaths = await keys()
-  return allPaths.filter((k) => k != path && k.startsWith(path))
+  return getDescendentPathsWithAllPaths(path, allPaths)
 }
 
 async function targetsForOperation(path: string, recursive: boolean): Promise<string[]> {
@@ -207,10 +214,15 @@ function filenameOfPath(path: string): string {
   return lastSlashIndex >= 0 ? path.slice(lastSlashIndex + 1) : path
 }
 
-export async function childPaths(path: string): Promise<string[]> {
-  const allDescendents = await getDescendentPaths(path)
+export function childPathsWithAllPaths(path: string, allPaths: Array<string>): Array<string> {
+  const allDescendents = getDescendentPathsWithAllPaths(path, allPaths)
   const pathAsDir = stripTrailingSlash(path)
   return allDescendents.filter((k) => getParentPath(k) === pathAsDir)
+}
+
+export async function childPaths(path: string): Promise<string[]> {
+  const allDescendents = await getDescendentPaths(path)
+  return childPathsWithAllPaths(path, allDescendents)
 }
 
 async function getDirectory(path: string): Promise<FSDirectory> {
@@ -458,66 +470,68 @@ function isFSUnavailableError(e: unknown): boolean {
 
 type FileModifiedStatus = 'modified' | 'not-modified' | 'unknown'
 
-async function onPolledWatch(path: string, config: WatchConfig): Promise<FileModifiedStatus> {
-  const { recursive, onCreated, onModified, onDeleted } = config
+async function onPolledWatch(paths: Map<string, WatchConfig>): Promise<Array<FileModifiedStatus>> {
+  const allKeys = await keys()
+  const results = Array.from(paths).map(async ([path, config]) => {
+    const { recursive, onCreated, onModified, onDeleted } = config
 
-  try {
-    const node = await getItem(path)
-    if (node == null) {
-      watchedPaths.delete(path)
-      lastModifiedTSs.delete(path)
-      onDeleted(path)
-      return 'modified'
-    } else {
-      const stats = fsStatForNode(node)
+    try {
+      const node = await getItem(path)
+      if (node == null) {
+        watchedPaths.delete(path)
+        lastModifiedTSs.delete(path)
+        onDeleted(path)
+        return 'modified'
+      } else {
+        const stats = fsStatForNode(node)
 
-      const modifiedTS = stats.mtime
-      const wasModified = modifiedTS > (lastModifiedTSs.get(path) ?? 0)
-      const modifiedBySelf = stats.sourceOfLastChange === fsUser
+        const modifiedTS = stats.mtime
+        const wasModified = modifiedTS > (lastModifiedTSs.get(path) ?? 0)
+        const modifiedBySelf = stats.sourceOfLastChange === fsUser
 
-      if (isDirectory(node)) {
-        if (recursive) {
-          const children = await childPaths(path)
-          const unsupervisedChildren = children.filter((p) => !watchedPaths.has(p))
-          unsupervisedChildren.forEach((childPath) => {
-            watchPath(childPath, config)
-            onCreated(childPath)
-          })
-          if (unsupervisedChildren.length > 0) {
+        if (isDirectory(node)) {
+          if (recursive) {
+            const children = childPathsWithAllPaths(path, allKeys)
+            const unsupervisedChildren = children.filter((p) => !watchedPaths.has(p))
+            unsupervisedChildren.forEach((childPath) => {
+              watchPath(childPath, config)
+              onCreated(childPath)
+            })
+            if (unsupervisedChildren.length > 0) {
+              onModified(path, modifiedBySelf)
+              lastModifiedTSs.set(path, modifiedTS)
+              return 'modified'
+            }
+          }
+        } else {
+          if (wasModified) {
             onModified(path, modifiedBySelf)
             lastModifiedTSs.set(path, modifiedTS)
             return 'modified'
           }
         }
-      } else {
-        if (wasModified) {
-          onModified(path, modifiedBySelf)
-          lastModifiedTSs.set(path, modifiedTS)
-          return 'modified'
-        }
-      }
 
-      return 'not-modified'
+        return 'not-modified'
+      }
+    } catch (e) {
+      if (isFSUnavailableError(e)) {
+        // Explicitly handle unavailable errors here by removing the watchers, then re-throw
+        watchedPaths.delete(path)
+        lastModifiedTSs.delete(path)
+        throw e
+      }
+      // Something was changed mid-poll, likely the file or its parent was deleted. We'll catch it on the next poll.
+      return 'unknown'
     }
-  } catch (e) {
-    if (isFSUnavailableError(e)) {
-      // Explicitly handle unavailable errors here by removing the watchers, then re-throw
-      watchedPaths.delete(path)
-      lastModifiedTSs.delete(path)
-      throw e
-    }
-    // Something was changed mid-poll, likely the file or its parent was deleted. We'll catch it on the next poll.
-    return 'unknown'
-  }
+  })
+  return Promise.all(results)
 }
 
 async function polledWatch(): Promise<void> {
-  let promises: Array<Promise<FileModifiedStatus>> = []
-  watchedPaths.forEach((config, path) => {
-    promises.push(onPolledWatch(path, config))
-  })
+  let promises: Array<Promise<Array<FileModifiedStatus>>> = []
+  promises.push(onPolledWatch(watchedPaths))
 
-  const results = await Promise.all(promises)
+  const results = await Promise.all(promises).then((nestedResults) => nestedResults.flat())
 
   let shouldReducePollingFrequency = true
   for (var i = 0, len = results.length; i < len; i++) {
