@@ -44,6 +44,7 @@ import type { FileRootPath } from '../../../canvas/ui-jsx-canvas'
 import { insertionCeilingToString, insertionCeilingsEqual } from '../../../canvas/ui-jsx-canvas'
 import { set } from 'objectPath'
 import { DataSelectorColumns } from './data-selector-columns'
+import { DataSelectorLeftSidebar } from './data-selector-left-sidebar'
 
 export const DataSelectorPopupBreadCrumbsTestId = 'data-selector-modal-top-bar'
 
@@ -160,14 +161,12 @@ export const DataSelectorModal = React.memo(
       const [selectedScope, setSelectedScope] = React.useState<ElementPath | FileRootPath>(
         lowestMatchingScope,
       )
-      const setSelectedScopeCurried = React.useCallback(
-        (name: ElementPath, hasContent: boolean) => () => {
-          if (hasContent) {
-            setSelectedScope(name)
-            setSelectedPath([])
-            setHoveredPath(null)
-            setNavigatedToPath([])
-          }
+      const setSelectedScopeAndResetSelection = React.useCallback(
+        (scope: ElementPath | FileRootPath) => {
+          setSelectedScope(scope)
+          setSelectedPath([])
+          setHoveredPath(null)
+          setNavigatedToPath([])
         },
         [],
       )
@@ -401,15 +400,11 @@ export const DataSelectorModal = React.memo(
             }}
             onClick={closePopup}
           >
-            <FlexColumn
+            <FlexRow
               ref={forwardedRef}
-              onClick={catchClick}
               style={{
-                width: 700,
+                minWidth: 850,
                 height: 300,
-                paddingTop: 16,
-                paddingLeft: 16,
-                paddingRight: 16,
                 backgroundColor: colorTheme.inspectorBackground.value,
                 color: colorTheme.fg1.value,
                 overflow: 'hidden',
@@ -419,118 +414,103 @@ export const DataSelectorModal = React.memo(
                 ...style,
               }}
             >
-              {/* top bar */}
-              <FlexRow style={{ justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
-                <FlexRow style={{ gap: 8, flexWrap: 'wrap', flexGrow: 1 }}>
-                  <FlexRow
-                    style={{
-                      flexGrow: 1,
-                      borderStyle: 'solid',
-                      borderWidth: 1,
-                      borderColor: colorTheme.fg7.value,
-                      borderRadius: 4,
-                      fontSize: 11,
-                      fontWeight: 400,
-                      height: 33,
-                      padding: '0px 6px',
-                    }}
-                  >
+              <DataSelectorLeftSidebar
+                scopes={elementLabelsWithScopes}
+                activeScope={selectedScope}
+                setSelectedScope={setSelectedScopeAndResetSelection}
+              />
+              <FlexColumn
+                onClick={catchClick}
+                style={{
+                  alignSelf: 'stretch',
+                  flexGrow: 1,
+                  paddingLeft: 8,
+                  paddingTop: 16,
+                  paddingRight: 16,
+                  overflow: 'hidden',
+                  width: 700,
+                }}
+              >
+                {/* top bar */}
+                <FlexRow style={{ justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+                  <FlexRow style={{ gap: 8, flexWrap: 'wrap', flexGrow: 1 }}>
                     <FlexRow
-                      data-testid={DataSelectorPopupBreadCrumbsTestId}
-                      style={{ flexWrap: 'wrap', flexGrow: 1 }}
-                    >
-                      {pathBreadcrumbs(pathInTopBarIncludingHover, processedVariablesInScope).map(
-                        ({ segment, path }, idx) => (
-                          <span key={path.toString()}>
-                            {idx === 0 ? segment : pathSegmentToString(segment)}
-                          </span>
-                        ),
-                      )}
-                    </FlexRow>
-                    <div
                       style={{
-                        ...disabledButtonStyles(activeTargetPath.length === 0),
-                        fontWeight: 400,
-                        fontSize: 12,
-                      }}
-                      onClick={onHomeClick}
-                    >
-                      <Icons.Cross />
-                    </div>
-                  </FlexRow>
-                </FlexRow>
-                <div
-                  style={{
-                    borderRadius: 4,
-                    backgroundColor: colorTheme.primary.value,
-                    color: 'white',
-                    padding: '8px 12px',
-                    fontSize: 14,
-                    fontWeight: 500,
-                    ...disabledButtonStyles(activeTargetPath.length === 0),
-                  }}
-                  onClick={onApplyClick}
-                >
-                  Apply
-                </div>
-              </FlexRow>
-              {/* Value preview */}
-              <FlexRow
-                style={{
-                  flexShrink: 0,
-                  gridColumn: '3',
-                  flexWrap: 'wrap',
-                  gap: 4,
-                  overflowX: 'scroll',
-                  opacity: 0.8,
-                  fontSize: 10,
-                  height: 20,
-                }}
-              >
-                {valuePreviewText}
-              </FlexRow>
-
-              <FlexColumn style={{ flexGrow: 1, overflow: 'hidden', contain: 'content' }}>
-                <DataSelectorColumns
-                  activeScope={filteredVariablesInScope}
-                  targetPathInsideScope={selectedPath}
-                  onTargetPathChange={setSelectedPathFromColumns}
-                />
-              </FlexColumn>
-              {/* Scope Selector Breadcrumbs */}
-              <FlexRow
-                style={{
-                  gap: 2,
-                  paddingTop: 4,
-                  paddingBottom: 4,
-                  opacity: 0.5,
-                }}
-              >
-                {elementLabelsWithScopes.map(({ label, scope, hasContent }, idx, a) => (
-                  <React.Fragment key={`label-${idx}`}>
-                    <div
-                      onClick={setSelectedScopeCurried(scope, hasContent)}
-                      style={{
-                        width: 'max-content',
-                        padding: '2px 4px',
+                        flexGrow: 1,
+                        borderStyle: 'solid',
+                        borderWidth: 1,
+                        borderColor: colorTheme.fg7.value,
                         borderRadius: 4,
-                        cursor: hasContent ? 'pointer' : undefined,
-                        color: hasContent
-                          ? colorTheme.neutralForeground.value
-                          : colorTheme.subduedForeground.value,
-                        fontSize: 12,
-                        fontWeight: insertionCeilingsEqual(selectedScope, scope) ? 800 : undefined,
+                        fontSize: 11,
+                        fontWeight: 400,
+                        height: 33,
+                        padding: '0px 6px',
                       }}
                     >
-                      {label}
-                    </div>
-                    {idx < a.length - 1 ? (
-                      <span style={{ width: 'max-content', padding: '2px 4px' }}>{'/'}</span>
-                    ) : null}
-                  </React.Fragment>
-                ))}
-              </FlexRow>
-            </FlexColumn>
+                      <FlexRow
+                        data-testid={DataSelectorPopupBreadCrumbsTestId}
+                        style={{ flexWrap: 'wrap', flexGrow: 1 }}
+                      >
+                        {pathBreadcrumbs(pathInTopBarIncludingHover, processedVariablesInScope).map(
+                          ({ segment, path }, idx) => (
+                            <span key={path.toString()}>
+                              {idx === 0 ? segment : pathSegmentToString(segment)}
+                            </span>
+                          ),
+                        )}
+                      </FlexRow>
+                      <div
+                        style={{
+                          ...disabledButtonStyles(activeTargetPath.length === 0),
+                          fontWeight: 400,
+                          fontSize: 12,
+                        }}
+                        onClick={onHomeClick}
+                      >
+                        <Icons.Cross />
+                      </div>
+                    </FlexRow>
+                  </FlexRow>
+                  <div
+                    style={{
+                      borderRadius: 4,
+                      backgroundColor: colorTheme.primary.value,
+                      color: 'white',
+                      padding: '8px 12px',
+                      fontSize: 14,
+                      fontWeight: 500,
+                      ...disabledButtonStyles(activeTargetPath.length === 0),
+                    }}
+                    onClick={onApplyClick}
+                  >
+                    Apply
+                  </div>
+                </FlexRow>
+                {/* Value preview */}
+                <FlexRow
+                  style={{
+                    flexShrink: 0,
+                    gridColumn: '3',
+                    flexWrap: 'wrap',
+                    gap: 4,
+                    overflowX: 'scroll',
+                    opacity: 0.8,
+                    fontSize: 10,
+                    height: 20,
+                  }}
+                >
+                  {valuePreviewText}
+                </FlexRow>
+
+                <FlexColumn style={{ flexGrow: 1, overflow: 'hidden', contain: 'content' }}>
+                  <DataSelectorColumns
+                    activeScope={filteredVariablesInScope}
+                    targetPathInsideScope={selectedPath}
+                    onTargetPathChange={setSelectedPathFromColumns}
+                  />
+                </FlexColumn>
+              </FlexColumn>
+            </FlexRow>
           </div>
         </InspectorModal>
       )
