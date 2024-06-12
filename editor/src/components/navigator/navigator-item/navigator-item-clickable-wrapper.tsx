@@ -26,7 +26,10 @@ import { useDispatch } from '../../editor/store/dispatch-context'
 import { isRight } from '../../../core/shared/either'
 import type { ElementPath, ProjectContentTreeRoot } from 'utopia-shared/src/types'
 import { assertNever } from '../../../core/shared/utils'
-import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import type {
+  ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
+} from '../../../core/shared/element-template'
 
 export const NavigatorItemClickableWrapper = React.memo(
   (props: { row: NavigatorRow; children: React.ReactNode }) => {
@@ -161,8 +164,6 @@ function actionsForRangeSelection(
   const selectionPaths = rows
     // get the rows inside the new selection bounds
     .slice(sliceFrom, sliceTo + 1)
-    // filter out unselectable rows
-    .filter((row) => !isRegulaNavigatorRow(row) || row.entry.type !== 'SLOT')
     // get their paths
     .flatMap((row) => {
       const path = getRowPath(row)
@@ -218,7 +219,7 @@ function getRowPath(row: NavigatorRow): ElementPath {
 
 type ConditionalOverrideUpdate = ConditionalCase | 'clear-override' | 'no-update'
 
-function getConditionalOverrideActions(
+export function getConditionalOverrideActions(
   targetPath: ElementPath,
   conditionalOverrideUpdate: ConditionalOverrideUpdate,
 ): Array<EditorAction> {
@@ -251,34 +252,48 @@ function useConditionalOverrideUpdate(row: NavigatorRow) {
         navigatorEntry.elementPath,
       )
       if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
-        if (isActiveBranchOfConditional(navigatorEntry.clause, elementMetadata)) {
-          if (isOverriddenConditional(elementMetadata)) {
-            return 'clear-override'
-          } else {
-            return navigatorEntry.clause
-          }
-        } else {
-          return navigatorEntry.clause
-        }
+        return conditionalOverrideUpdateForClause(navigatorEntry.clause, elementMetadata)
       } else {
-        const conditionalCase = getConditionalCaseCorrespondingToBranchPath(path, metadata)
-        if (conditionalCase != null) {
-          const parentPath = EP.parentPath(path)
-          const parentMetadata = MetadataUtils.findElementByElementPath(metadata, parentPath)
-          if (isActiveBranchOfConditional(conditionalCase, parentMetadata)) {
-            return 'no-update'
-          } else if (isDefaultBranchOfConditional(conditionalCase, parentMetadata)) {
-            return 'clear-override'
-          } else {
-            return conditionalCase
-          }
-        }
-
-        return 'no-update'
+        return conditionalOverrideUpdateForPath(path, metadata)
       }
     },
     'useConditionalOverrideUpdate conditionalOverrideUpdate',
   )
+}
+
+function conditionalOverrideUpdateForClause(
+  clause: ConditionalCase,
+  elementMetadata: ElementInstanceMetadata | null,
+) {
+  if (isActiveBranchOfConditional(clause, elementMetadata)) {
+    if (isOverriddenConditional(elementMetadata)) {
+      return 'clear-override'
+    } else {
+      return clause
+    }
+  } else {
+    return clause
+  }
+}
+
+export function conditionalOverrideUpdateForPath(
+  path: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+) {
+  const conditionalCase = getConditionalCaseCorrespondingToBranchPath(path, metadata)
+  if (conditionalCase != null) {
+    const parentPath = EP.parentPath(path)
+    const parentMetadata = MetadataUtils.findElementByElementPath(metadata, parentPath)
+    if (isActiveBranchOfConditional(conditionalCase, parentMetadata)) {
+      return 'no-update'
+    } else if (isDefaultBranchOfConditional(conditionalCase, parentMetadata)) {
+      return 'clear-override'
+    } else {
+      return conditionalCase
+    }
+  }
+
+  return 'no-update'
 }
 
 function useHighlightBounds(path: ElementPath) {
