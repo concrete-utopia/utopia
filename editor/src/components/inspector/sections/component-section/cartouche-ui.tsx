@@ -60,6 +60,8 @@ export const CartoucheUI = React.forwardRef(
     // NOTE: this is currently unused, we should decide if we want to keep allowing deletion of the cartouches from here or not
     const wrappedOnDelete = useStopPropagation(onDelete)
 
+    const shouldUseRtlCSS = typeof props.children === 'string'
+
     return (
       <div
         onClick={wrappedOnClick}
@@ -129,8 +131,11 @@ export const CartoucheUI = React.forwardRef(
                 textOverflow: 'ellipsis',
 
                 /* Beginning of string */
-                // commented it because it messes with the order of children
-                // direction: source === 'literal' ? 'ltr' : 'rtl', // TODO we need a better way to ellipsize the beginnign because rtl eats ' " marks
+                ...(shouldUseRtlCSS
+                  ? {
+                      direction: source === 'literal' ? 'ltr' : 'rtl', // TODO we need a better way to ellipsize the beginnign because rtl eats ' " marks
+                    }
+                  : {}),
                 textAlign: 'left',
                 ...(role !== 'information' ? UtopiaStyles.fontStyles.monospaced : {}),
                 display: 'flex',
@@ -138,7 +143,7 @@ export const CartoucheUI = React.forwardRef(
               }}
             >
               {children}
-              {/* &lrm; commented because it messes with children layout */}
+              &lrm;
               {/* the &lrm; non-printing character is added to fix the punctuation marks disappearing because of direction: rtl */}
             </div>
             {when(
