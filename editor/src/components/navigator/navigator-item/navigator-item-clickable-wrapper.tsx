@@ -24,11 +24,7 @@ import { toVSCodeExtensionMessage } from 'utopia-vscode-common'
 import { isRegulaNavigatorRow, type NavigatorRow } from '../navigator-row'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { isRight } from '../../../core/shared/either'
-import type {
-  ElementPath,
-  HighlightBoundsWithFile,
-  ProjectContentTreeRoot,
-} from 'utopia-shared/src/types'
+import type { ElementPath, ProjectContentTreeRoot } from 'utopia-shared/src/types'
 import { assertNever } from '../../../core/shared/utils'
 import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 
@@ -38,6 +34,7 @@ export const NavigatorItemClickableWrapper = React.memo(
 
     const rows = useRefEditorState((store) => store.derived.navigatorRows)
     const selectedViews = useRefEditorState((store) => store.editor.selectedViews)
+    const collapsedViews = useRefEditorState((store) => store.editor.navigator.collapsedViews)
     const projectContents = useRefEditorState((store) => store.editor.projectContents)
     const jsxMetadata = useRefEditorState((store) => store.editor.jsxMetadata)
 
@@ -63,17 +60,23 @@ export const NavigatorItemClickableWrapper = React.memo(
               targetPath,
               rows.current,
               selectedViews.current,
+              collapsedViews.current,
               projectContents.current,
               jsxMetadata.current,
             )
           } else {
-            return actionsForSingleSelection(
-              targetPath,
-              selected,
-              props.row,
-              highlightBounds,
-              conditionalOverrideUpdate,
-            )
+            // when we click on an already selected item we should force vscode to navigate there
+            if (selected && highlightBounds != null) {
+              sendMessage(
+                toVSCodeExtensionMessage(
+                  selectedElementChangedMessageFromHighlightBounds(
+                    highlightBounds,
+                    'force-navigation',
+                  ),
+                ),
+              )
+            }
+            return actionsForSingleSelection(targetPath, props.row, conditionalOverrideUpdate)
           }
         }
 
@@ -96,6 +99,7 @@ export const NavigatorItemClickableWrapper = React.memo(
         jsxMetadata,
         selected,
         targetPath,
+        collapsedViews,
       ],
     )
 
@@ -116,6 +120,7 @@ function actionsForRangeSelection(
   targetPath: ElementPath,
   rows: NavigatorRow[],
   selectedViews: ElementPath[],
+  collapsedViews: ElementPath[],
   projectContents: ProjectContentTreeRoot,
   jsxMetadata: ElementInstanceMetadataMap,
 ) {
@@ -150,30 +155,36 @@ function actionsForRangeSelection(
   }
 
   // derive the slice indexes
-  const from = Math.min(selectionTop, targetIndex)
-  const to = Math.max(selectionBottom, targetIndex)
+  const sliceFrom = Math.min(selectionTop, targetIndex)
+  const sliceTo = Math.max(selectionBottom, targetIndex)
 
-  const selection = rows
-    .slice(from, to + 1)
+  const selectionPaths = rows
+    // get the rows inside the new selection bounds
+    .slice(sliceFrom, sliceTo + 1)
     // filter out unselectable rows
-    .filter((row) => {
-      if (isRegulaNavigatorRow(row)) {
-        return row.entry.type !== 'SLOT'
+    .filter((row) => !isRegulaNavigatorRow(row) || row.entry.type !== 'SLOT')
+    // get their paths
+    .flatMap((row) => {
+      const path = getRowPath(row)
+      let paths = [path]
+      // if a collapsed view is included in the range, get its children paths
+      if (collapsedViews.some((view) => EP.pathsEqual(view, path))) {
+        const children = MetadataUtils.getChildrenUnordered(jsxMetadata, path)
+        paths.push(...children.map((c) => c.elementPath))
       }
-      return true
+      return paths
     })
-    .map(getRowPath)
+
+  const selection = selectionPaths
     // filter out conditional branches rows
     .filter((path) => {
       const parent = MetadataUtils.findElementByElementPath(jsxMetadata, EP.parentPath(path))
-      if (
+      const isConditionalExpression =
         parent != null &&
         isRight(parent.element) &&
         parent.element.value.type === 'JSX_CONDITIONAL_EXPRESSION'
-      ) {
-        return false
-      }
-      return true
+
+      return !isConditionalExpression
     })
 
   return [EditorActions.selectComponents(selection, false)]
@@ -181,26 +192,23 @@ function actionsForRangeSelection(
 
 function actionsForSingleSelection(
   targetPath: ElementPath,
-  selected: boolean,
   row: NavigatorRow,
-  highlightBounds: HighlightBoundsWithFile | null,
   conditionalOverrideUpdate: ConditionalOverrideUpdate,
 ): EditorAction[] {
-  let actions: EditorAction[] = [EditorActions.selectComponents([targetPath], false)]
+  let actions: EditorAction[] = []
+
   if (isRegulaNavigatorRow(row)) {
     const conditionalOverrideActions = isConditionalClauseNavigatorEntry(row.entry)
       ? getConditionalOverrideActions(targetPath, conditionalOverrideUpdate)
       : getConditionalOverrideActions(EP.parentPath(targetPath), conditionalOverrideUpdate)
     actions.push(...conditionalOverrideActions)
   }
-  // when we click on an already selected item we should force vscode to navigate there
-  if (selected && highlightBounds != null) {
-    sendMessage(
-      toVSCodeExtensionMessage(
-        selectedElementChangedMessageFromHighlightBounds(highlightBounds, 'force-navigation'),
-      ),
-    )
+
+  const isNotSelectable = isRegulaNavigatorRow(row) && row.entry.type === 'CONDITIONAL_CLAUSE'
+  if (!isNotSelectable) {
+    actions.push(EditorActions.selectComponents([targetPath], false))
   }
+
   return actions
 }
 

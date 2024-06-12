@@ -116,8 +116,8 @@ const collapseItem = (
   elementPath: ElementPath,
   e: React.MouseEvent<HTMLDivElement>,
 ) => {
-  dispatch([EditorActions.toggleCollapse(elementPath)], 'leftpane')
   e.stopPropagation()
+  dispatch([EditorActions.toggleCollapse(elementPath)], 'leftpane')
 }
 
 type StyleType =
@@ -847,7 +847,7 @@ export const NavigatorItem: React.FunctionComponent<
                     visible={canBeExpanded}
                     collapsed={collapsed}
                     selected={selected && !isInsideComponent}
-                    onMouseDown={collapse}
+                    onClick={collapse}
                     style={{
                       opacity: 'var(--paneHoverOpacity)',
                     }}
