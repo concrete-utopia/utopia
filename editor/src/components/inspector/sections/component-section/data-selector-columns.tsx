@@ -9,7 +9,7 @@ import { DataPickerCartouche } from './data-selector-cartouche'
 interface DataSelectorColumnsProps {
   activeScope: Array<DataPickerOption>
   targetPathInsideScope: ObjectPath
-  onTargetPathChange: (newTargetPath: ObjectPath) => void
+  onTargetPathChange: (newTargetVariable: DataPickerOption) => void
 }
 
 export const DataSelectorColumns = React.memo((props: DataSelectorColumnsProps) => {
@@ -38,7 +38,7 @@ interface DataSelectorColumnProps {
   activeScope: Array<DataPickerOption>
   currentlyShowingScopeForArray: boolean
   targetPathInsideScope: ObjectPath
-  onTargetPathChange: (newTargetPath: ObjectPath) => void
+  onTargetPathChange: (newTargetVariable: DataPickerOption) => void
 }
 
 const DataSelectorColumn = React.memo((props: DataSelectorColumnProps) => {
@@ -156,18 +156,17 @@ interface RowWithCartoucheProps {
   onActivePath: boolean
   forceShowArrow: boolean
   isLeaf: boolean
-  onTargetPathChange: (newTargetPath: ObjectPath) => void
+  onTargetPathChange: (newTargetVariable: DataPickerOption) => void
 }
 const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
   const { onTargetPathChange, data, isLeaf, selected, onActivePath, forceShowArrow } = props
-  const targetPath = data.valuePath
 
   const onClick: React.MouseEventHandler<HTMLDivElement> = React.useCallback(
     (e) => {
       e.stopPropagation()
-      onTargetPathChange(targetPath)
+      onTargetPathChange(data)
     },
-    [targetPath, onTargetPathChange],
+    [data, onTargetPathChange],
   )
 
   const ref = useScrollIntoView(selected)

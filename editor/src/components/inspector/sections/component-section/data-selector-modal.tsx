@@ -32,7 +32,6 @@ import {
 import { DataSelectorColumns } from './data-selector-columns'
 import { DataSelectorLeftSidebar } from './data-selector-left-sidebar'
 import { DataSelectorSearch } from './data-selector-search'
-import { stopPropagation } from '../../common/inspector-utils'
 import { DataPickerCartouche } from './data-selector-cartouche'
 
 export const DataSelectorPopupBreadCrumbsTestId = 'data-selector-modal-top-bar'
@@ -44,10 +43,6 @@ export interface DataSelectorModalProps {
   onPropertyPicked: DataPickerCallback
   startingSelectedValuePath: ObjectPath | null
   lowestInsertionCeiling: ElementPath | null
-}
-
-interface ProcessedVariablesInScope {
-  [valuePath: string]: DataPickerOption
 }
 
 export const DataSelectorModal = React.memo(
@@ -94,7 +89,7 @@ export const DataSelectorModal = React.memo(
       const setSelectedScopeAndResetSelection = React.useCallback(
         (scope: ElementPath | FileRootPath) => {
           setSelectedScope(scope)
-          setSelectedPath([])
+          setSelectedVariableOption(null)
         },
         [],
       )
@@ -104,8 +99,6 @@ export const DataSelectorModal = React.memo(
         scopeBuckets,
         selectedScope,
       )
-
-      const processedVariablesInScope = useProcessVariablesInScope(allVariablesInScope)
 
       const searchBoxRef = React.useRef<HTMLInputElement>(null)
 
@@ -129,9 +122,8 @@ export const DataSelectorModal = React.memo(
         'DataSelectorModal scopeLabels',
       )
 
-      const [selectedPath, setSelectedPath] = React.useState<ObjectPath>(
-        startingSelectedValuePath ?? [],
-      )
+      const [selectedVariableOption, setSelectedVariableOption] =
+        React.useState<DataPickerOption | null>(null)
 
       const [searchTerm, setSearchTerm] = React.useState<string | null>(null)
       const onStartSearch = React.useCallback(() => {
@@ -153,52 +145,33 @@ export const DataSelectorModal = React.memo(
         [],
       )
 
-      const setSelectedPathFromColumns = React.useCallback((newPath: ObjectPath) => {
-        setSelectedPath(newPath)
-      }, [])
-
       const catchClick = React.useCallback((e: React.MouseEvent) => {
         e.stopPropagation()
         e.preventDefault()
       }, [])
 
-      const applyVariable = React.useCallback(
-        (path: ObjectPath) => {
-          const variable = processedVariablesInScope[path.toString()]
-          if (variable == null) {
-            return
-          }
-          if (variable.disabled) {
-            return
-          }
-          onPropertyPicked(
-            jsExpressionOtherJavaScriptSimple(variable.variableInfo.expression, [
-              variable.definedElsewhere,
-            ]),
-          )
-          closePopup()
-        },
-        [closePopup, onPropertyPicked, processedVariablesInScope],
-      )
+      const applyVariable = React.useCallback(() => {
+        const variable = selectedVariableOption
+        if (variable == null) {
+          return
+        }
+        if (variable.disabled) {
+          return
+        }
+        onPropertyPicked(
+          jsExpressionOtherJavaScriptSimple(variable.variableInfo.expression, [
+            variable.definedElsewhere,
+          ]),
+        )
+        closePopup()
+      }, [closePopup, onPropertyPicked, selectedVariableOption])
 
-      const onApplyClick = React.useCallback(
-        () => applyVariable(selectedPath),
-        [applyVariable, selectedPath],
-      )
-
-      const navigateToSearchResult = React.useCallback(
-        (path: ObjectPath) => {
-          setSearchTerm(null)
-          setSelectedPathFromColumns(path)
-        },
-        [setSelectedPathFromColumns],
-      )
+      const navigateToSearchResult = React.useCallback((variable: DataPickerOption) => {
+        setSearchTerm(null)
+        setSelectedVariableOption(variable)
+      }, [])
 
       const searchNullOrEmpty = searchTerm == null || searchTerm.length < 1
-
-      const pickedVariable = processedVariablesInScope[
-        selectedPath.toString()
-      ] as DataPickerOption | null
 
       return (
         <InspectorModal
@@ -298,8 +271,8 @@ export const DataSelectorModal = React.memo(
                   {searchNullOrEmpty ? (
                     <DataSelectorColumns
                       activeScope={filteredVariablesInScope}
-                      targetPathInsideScope={selectedPath}
-                      onTargetPathChange={setSelectedPathFromColumns}
+                      targetPathInsideScope={selectedVariableOption?.valuePath ?? []}
+                      onTargetPathChange={setSelectedVariableOption}
                     />
                   ) : (
                     <DataSelectorSearch
@@ -339,9 +312,9 @@ export const DataSelectorModal = React.memo(
                             style={{ flexWrap: 'wrap', flexGrow: 1 }}
                           >
                             <span>Selection:</span>
-                            {pickedVariable != null ? (
+                            {selectedVariableOption != null ? (
                               <DataPickerCartouche
-                                data={pickedVariable}
+                                data={selectedVariableOption}
                                 selected={false}
                                 forceRole='information'
                               />
@@ -377,9 +350,9 @@ export const DataSelectorModal = React.memo(
                           height: 24,
                           width: 81,
                           textAlign: 'center',
-                          ...disabledButtonStyles(pickedVariable?.disabled ?? true),
+                          ...disabledButtonStyles(selectedVariableOption?.disabled ?? true),
                         }}
-                        onClick={onApplyClick}
+                        onClick={applyVariable}
                       >
                         Apply
                       </div>
@@ -445,28 +418,6 @@ function useFilterVariablesInScope(
       filteredVariablesInScope: filteredOptions,
     }
   }, [scopeBuckets, options, scopeToShow])
-}
-
-function useProcessVariablesInScope(options: DataPickerOption[]): ProcessedVariablesInScope {
-  return React.useMemo(() => {
-    let lookup: ProcessedVariablesInScope = {}
-    function walk(option: DataPickerOption) {
-      lookup[option.valuePath.toString()] = option
-      switch (option.type) {
-        case 'array':
-        case 'object':
-          option.children.forEach((c) => walk(c))
-          return
-        case 'jsx':
-        case 'primitive':
-          return
-        default:
-          assertNever(option)
-      }
-    }
-    options.forEach((o) => walk(o))
-    return lookup
-  }, [options])
 }
 
 function disabledButtonStyles(disabled: boolean): React.CSSProperties {
