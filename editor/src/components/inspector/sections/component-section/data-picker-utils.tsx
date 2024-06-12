@@ -157,38 +157,3 @@ function outletNameHack(
   const component = findContainingComponentForPathInProjectContents(target, projectContents)
   return component?.name ?? namePossiblyOutlet
 }
-
-export function cartoucheFolderOrInfo(
-  option: DataPickerOption,
-  canBeFolder: 'no-folder' | 'can-be-folder',
-): CartoucheUIProps['role'] {
-  if (option.variableInfo.matches) {
-    return 'selection'
-  }
-  switch (option.type) {
-    case 'object':
-      return canBeFolder === 'can-be-folder' ? 'folder' : 'information'
-    case 'array':
-    case 'jsx':
-    case 'primitive':
-      return 'information'
-    default:
-      assertNever(option)
-  }
-}
-
-export function childTypeToCartoucheDataType(
-  childType: DataPickerOption['type'],
-): CartoucheUIProps['datatype'] {
-  switch (childType) {
-    case 'array':
-      return 'array'
-    case 'object':
-      return 'object'
-    case 'jsx':
-    case 'primitive':
-      return 'renderable'
-    default:
-      assertNever(childType)
-  }
-}

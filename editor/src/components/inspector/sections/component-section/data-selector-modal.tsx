@@ -25,8 +25,6 @@ import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { InspectorModal } from '../../widgets/inspector-modal'
 import type { CartoucheUIProps } from './cartouche-ui'
 import {
-  cartoucheFolderOrInfo,
-  childTypeToCartoucheDataType,
   getEnclosingScopes,
   type DataPickerCallback,
   type DataPickerOption,
@@ -520,8 +518,6 @@ function pathBreadcrumbs(
 ): Array<{
   segment: string | number
   path: (string | number)[]
-  role: CartoucheUIProps['role']
-  type: CartoucheUIProps['datatype']
 }> {
   let accumulator = []
   let current: (string | number)[] = []
@@ -536,8 +532,6 @@ function pathBreadcrumbs(
     accumulator.push({
       segment: segment,
       path: [...current],
-      role: cartoucheFolderOrInfo(optionFromLookup, 'can-be-folder'),
-      type: childTypeToCartoucheDataType(optionFromLookup.type),
     })
   }
   return accumulator
