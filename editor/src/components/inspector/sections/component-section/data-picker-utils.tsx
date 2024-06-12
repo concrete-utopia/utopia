@@ -17,6 +17,7 @@ import type { ProjectContentTreeRoot } from '../../../assets'
 import { insertionCeilingToString, type FileRootPath } from '../../../canvas/ui-jsx-canvas'
 import type { AllElementProps } from '../../../editor/store/editor-state'
 import type { ArrayInfo, JSXInfo, ObjectInfo, PrimitiveInfo } from './variables-in-scope-utils'
+import type { CartoucheUIProps } from './cartouche-ui'
 
 interface VariableOptionBase {
   depth: number

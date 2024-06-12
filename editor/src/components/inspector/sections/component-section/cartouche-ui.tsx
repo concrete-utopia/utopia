@@ -71,6 +71,8 @@ export const CartoucheUI = React.forwardRef(
     // NOTE: this is currently unused, we should decide if we want to keep allowing deletion of the cartouches from here or not
     const wrappedOnDelete = useStopPropagation(onDelete)
 
+    const shouldUseRtlCSS = typeof props.children === 'string'
+
     return (
       <div
         onClick={wrappedOnClick}
@@ -140,9 +142,15 @@ export const CartoucheUI = React.forwardRef(
                 textOverflow: 'ellipsis',
 
                 /* Beginning of string */
-                direction: source === 'literal' ? 'ltr' : 'rtl', // TODO we need a better way to ellipsize the beginnign because rtl eats ' " marks
+                ...(shouldUseRtlCSS
+                  ? {
+                      direction: source === 'literal' ? 'ltr' : 'rtl', // TODO we need a better way to ellipsize the beginnign because rtl eats ' " marks
+                    }
+                  : {}),
                 textAlign: 'left',
                 ...(role !== 'information' ? UtopiaStyles.fontStyles.monospaced : {}),
+                display: 'flex',
+                flexDirection: 'row',
               }}
             >
               {children}
