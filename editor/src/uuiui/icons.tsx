@@ -386,6 +386,13 @@ export const Icons = {
     width: 12,
     height: 12,
   }),
+  Italic: makeIcon({
+    category: 'inspector-element',
+    type: 'italic',
+    color: 'main',
+    width: 16,
+    height: 16,
+  }),
 } as const
 
 export const FunctionIcons = {
