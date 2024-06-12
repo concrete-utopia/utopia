@@ -67,7 +67,7 @@ import { contextMenu } from 'react-contexify'
 import { DataReferenceCartoucheControl } from '../../inspector/sections/component-section/data-reference-cartouche'
 import { MapListSourceCartoucheNavigator } from '../../inspector/sections/layout-section/list-source-cartouche'
 import { regularNavigatorRow } from '../navigator-row'
-import { NavigatorItemClickableWrapper } from './navigator-item-clickable-wrapper'
+import { NavigatorRowClickableWrapper } from './navigator-item-clickable-wrapper'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -755,7 +755,7 @@ export const NavigatorItem: React.FunctionComponent<
   }, [props.navigatorEntry, isScene])
 
   return (
-    <NavigatorItemClickableWrapper
+    <NavigatorRowClickableWrapper
       row={regularNavigatorRow(props.navigatorEntry, props.indentation)}
     >
       <div
@@ -897,7 +897,7 @@ export const NavigatorItem: React.FunctionComponent<
           )}
         </FlexRow>
       </div>
-    </NavigatorItemClickableWrapper>
+    </NavigatorRowClickableWrapper>
   )
 })
 NavigatorItem.displayName = 'NavigatorItem'

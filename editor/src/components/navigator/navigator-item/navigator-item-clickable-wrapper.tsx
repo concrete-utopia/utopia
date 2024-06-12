@@ -10,6 +10,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import type { EditorAction } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
+import type { NavigatorEntry } from '../../editor/store/editor-state'
 import {
   getElementFromProjectContents,
   isConditionalClauseNavigatorEntry,
@@ -31,79 +32,32 @@ import type {
   ElementInstanceMetadataMap,
 } from '../../../core/shared/element-template'
 
-export const NavigatorItemClickableWrapper = React.memo(
+export const NavigatorRowClickableWrapper = React.memo(
   (props: { row: NavigatorRow; children: React.ReactNode }) => {
     const dispatch = useDispatch()
 
-    const rows = useRefEditorState((store) => store.derived.navigatorRows)
     const selectedViews = useRefEditorState((store) => store.editor.selectedViews)
-    const collapsedViews = useRefEditorState((store) => store.editor.navigator.collapsedViews)
-    const projectContents = useRefEditorState((store) => store.editor.projectContents)
-    const jsxMetadata = useRefEditorState((store) => store.editor.jsxMetadata)
-
-    const conditionalOverrideUpdate = useConditionalOverrideUpdate(props.row)
 
     const targetPath = React.useMemo(() => {
       return getRowPath(props.row)
     }, [props.row])
 
-    const highlightBounds = useHighlightBounds(targetPath)
-
     const selected = React.useMemo(() => {
       return selectedViews.current.some((view) => EP.pathsEqual(targetPath, view))
     }, [selectedViews, targetPath])
 
+    const getActions = useGetNavigatorClickActions(targetPath, selected, props.row)
+
     const onClick = React.useCallback(
       (e: React.MouseEvent) => {
-        function getActions() {
-          if (e.metaKey && !e.shiftKey) {
-            return actionsForAddToSelection(targetPath)
-          } else if (e.shiftKey) {
-            return actionsForRangeSelection(
-              targetPath,
-              rows.current,
-              selectedViews.current,
-              collapsedViews.current,
-              projectContents.current,
-              jsxMetadata.current,
-            )
-          } else {
-            // when we click on an already selected item we should force vscode to navigate there
-            if (selected && highlightBounds != null) {
-              sendMessage(
-                toVSCodeExtensionMessage(
-                  selectedElementChangedMessageFromHighlightBounds(
-                    highlightBounds,
-                    'force-navigation',
-                  ),
-                ),
-              )
-            }
-            return actionsForSingleSelection(targetPath, props.row, conditionalOverrideUpdate)
-          }
-        }
-
-        const actions = getActions()
-        if (actions.length > 0) {
+        const actions = getActions(e)
+        if (actions.length > 0 && isRegulaNavigatorRow(props.row)) {
           e.stopPropagation()
           e.preventDefault()
-
-          dispatch(actions)
         }
+        dispatch(actions)
       },
-      [
-        props.row,
-        dispatch,
-        rows,
-        selectedViews,
-        projectContents,
-        conditionalOverrideUpdate,
-        highlightBounds,
-        jsxMetadata,
-        selected,
-        targetPath,
-        collapsedViews,
-      ],
+      [props.row, dispatch, getActions],
     )
 
     return (
@@ -113,20 +67,78 @@ export const NavigatorItemClickableWrapper = React.memo(
     )
   },
 )
-NavigatorItemClickableWrapper.displayName = 'NavigatorItemClickable'
+NavigatorRowClickableWrapper.displayName = 'NavigatorRowClickableWrapper'
+
+export function useGetNavigatorClickActions(
+  targetPath: ElementPath,
+  selected: boolean,
+  row: NavigatorRow,
+) {
+  const navigatorTargets = useRefEditorState((store) => store.derived.navigatorTargets)
+  const selectedViews = useRefEditorState((store) => store.editor.selectedViews)
+  const collapsedViews = useRefEditorState((store) => store.editor.navigator.collapsedViews)
+  const projectContents = useRefEditorState((store) => store.editor.projectContents)
+  const jsxMetadata = useRefEditorState((store) => store.editor.jsxMetadata)
+
+  const highlightBounds = useHighlightBounds(targetPath)
+  const conditionalOverrideUpdate = useConditionalOverrideUpdate(row)
+
+  return React.useCallback(
+    (e: React.MouseEvent) => {
+      if (e.metaKey && !e.shiftKey) {
+        return actionsForAddToSelection(targetPath)
+      } else if (e.shiftKey) {
+        return actionsForRangeSelection(
+          targetPath,
+          navigatorTargets.current,
+          selectedViews.current,
+          collapsedViews.current,
+          projectContents.current,
+          jsxMetadata.current,
+        )
+      } else {
+        // when we click on an already selected item we should force vscode to navigate there
+        if (selected && highlightBounds != null) {
+          sendMessage(
+            toVSCodeExtensionMessage(
+              selectedElementChangedMessageFromHighlightBounds(highlightBounds, 'force-navigation'),
+            ),
+          )
+        }
+        return actionsForSingleSelection(targetPath, row, conditionalOverrideUpdate)
+      }
+    },
+    [
+      row,
+      selectedViews,
+      projectContents,
+      conditionalOverrideUpdate,
+      highlightBounds,
+      jsxMetadata,
+      selected,
+      targetPath,
+      collapsedViews,
+      navigatorTargets,
+    ],
+  )
+}
 
 function actionsForAddToSelection(targetPath: ElementPath): EditorAction[] {
   return [EditorActions.selectComponents([targetPath], true)]
 }
 
-function actionsForRangeSelection(
+export function actionsForRangeSelection(
   targetPath: ElementPath,
-  rows: NavigatorRow[],
+  navigatorTargets: NavigatorEntry[],
   selectedViews: ElementPath[],
   collapsedViews: ElementPath[],
   projectContents: ProjectContentTreeRoot,
   jsxMetadata: ElementInstanceMetadataMap,
-) {
+): EditorAction[] {
+  const selectableTargets = navigatorTargets
+    .filter((target) => target.type !== 'SYNTHETIC')
+    .map((target) => target.elementPath)
+
   // boundaries of the current selection
   let selectionTop: number = Infinity
   let selectionBottom: number = -Infinity
@@ -135,24 +147,26 @@ function actionsForRangeSelection(
   let targetIndex: number = Infinity
 
   // populate the indexes by matching rows, selected views, and the target path
-  for (let i = 0; i < rows.length; i++) {
-    const rowTarget = getRowPath(rows[i])
+  for (let i = 0; i < selectableTargets.length; i++) {
+    const target = selectableTargets[i]
     if (
       selectedViews.some((path) => {
-        if (EP.pathsEqual(rowTarget, path)) {
+        if (EP.pathsEqual(target, path)) {
           return true
         }
+
         const element = getElementFromProjectContents(path, projectContents)
         if (MetadataUtils.isElementDataReference(element)) {
-          return EP.isParentOf(rowTarget, path)
+          return EP.isParentOf(target, path)
         }
+
         return false
       })
     ) {
       selectionTop = Math.min(selectionTop, i)
       selectionBottom = Math.max(selectionBottom, i)
     }
-    if (EP.pathsEqual(rowTarget, targetPath)) {
+    if (EP.pathsEqual(target, targetPath)) {
       targetIndex = Math.min(targetIndex, i)
     }
   }
@@ -161,16 +175,15 @@ function actionsForRangeSelection(
   const sliceFrom = Math.min(selectionTop, targetIndex)
   const sliceTo = Math.max(selectionBottom, targetIndex)
 
-  const selectionPaths = rows
-    // get the rows inside the new selection bounds
+  const selectionPaths = selectableTargets
+    // get the targets inside the new selection bounds
     .slice(sliceFrom, sliceTo + 1)
     // get their paths
-    .flatMap((row) => {
-      const path = getRowPath(row)
-      let paths = [path]
+    .flatMap((target) => {
+      let paths = [target]
       // if a collapsed view is included in the range, get its children paths
-      if (collapsedViews.some((view) => EP.pathsEqual(view, path))) {
-        const children = MetadataUtils.getChildrenUnordered(jsxMetadata, path)
+      if (collapsedViews.some((view) => EP.pathsEqual(view, target))) {
+        const children = MetadataUtils.getChildrenUnordered(jsxMetadata, target)
         paths.push(...children.map((c) => c.elementPath))
       }
       return paths

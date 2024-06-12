@@ -4,7 +4,7 @@ import { Icons, Tooltip, useColorTheme } from '../../../uuiui'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import type { DataReferenceNavigatorEntry, NavigatorEntry } from '../../editor/store/editor-state'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
-import type { CondensedNavigatorRow } from '../navigator-row'
+import { condensedNavigatorRow, type CondensedNavigatorRow } from '../navigator-row'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getNavigatorEntryLabel, labelSelector } from './navigator-item-wrapper'
 import { BasePaddingUnit, elementWarningsSelector } from './navigator-item'
@@ -14,7 +14,10 @@ import { unless, when } from '../../../utils/react-conditionals'
 import { ExpandableIndicator } from './expandable-indicator'
 import { LayoutIcon } from './layout-icon'
 import { DataReferenceCartoucheControl } from '../../inspector/sections/component-section/data-reference-cartouche'
-import { NavigatorItemClickableWrapper } from './navigator-item-clickable-wrapper'
+import {
+  NavigatorRowClickableWrapper,
+  useGetNavigatorClickActions,
+} from './navigator-item-clickable-wrapper'
 
 function useEntryLabel(entry: NavigatorEntry) {
   const labelForTheElement = useEditorState(
@@ -104,7 +107,7 @@ export const CondensedEntryItemWrapper = React.memo(
           overflowX: 'auto',
         }}
       >
-        <NavigatorItemClickableWrapper row={props.navigatorRow}>
+        <NavigatorRowClickableWrapper row={props.navigatorRow}>
           {props.navigatorRow.entries.map((entry, idx) => {
             const showSeparator =
               props.navigatorRow.variant === 'trunk' && idx < props.navigatorRow.entries.length - 1
@@ -123,7 +126,7 @@ export const CondensedEntryItemWrapper = React.memo(
               />
             )
           })}
-        </NavigatorItemClickableWrapper>
+        </NavigatorRowClickableWrapper>
       </div>
     )
   },
@@ -281,6 +284,20 @@ const CondensedEntryItemContent = React.memo(
       ])
     }, [props.entry, dispatch, highlightedViews])
 
+    const getClickActions = useGetNavigatorClickActions(
+      props.entry.elementPath,
+      props.selected,
+      condensedNavigatorRow([props.entry], 'leaf', props.indentation),
+    )
+
+    const onClick = React.useCallback(
+      (e: React.MouseEvent) => {
+        e.stopPropagation()
+        dispatch(getClickActions(e))
+      },
+      [dispatch, getClickActions],
+    )
+
     return (
       <div
         style={{
@@ -300,6 +317,7 @@ const CondensedEntryItemContent = React.memo(
         }}
         onMouseOver={onMouseOver}
         onMouseOut={onMouseOut}
+        onClick={onClick}
       >
         <div
           style={{
@@ -371,7 +389,7 @@ const CondensedEntryTrunkSeparator = React.memo((props: CondensedEntryTrunkSepar
     <div
       style={{
         backgroundColor: props.backgroundColor,
-        height: '100%',
+        height: 29,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
