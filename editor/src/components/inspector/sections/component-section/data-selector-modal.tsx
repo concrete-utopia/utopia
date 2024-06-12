@@ -401,6 +401,7 @@ export const DataSelectorModal = React.memo(
             onClick={closePopup}
           >
             <FlexRow
+              ref={forwardedRef}
               style={{
                 minWidth: 850,
                 height: 300,
@@ -419,7 +420,6 @@ export const DataSelectorModal = React.memo(
                 setSelectedScope={setSelectedScopeAndResetSelection}
               />
               <FlexColumn
-                ref={forwardedRef}
                 onClick={catchClick}
                 style={{
                   alignSelf: 'stretch',
