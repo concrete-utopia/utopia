@@ -9,6 +9,7 @@ import { flatMapEither, left, mapEither, right } from './either'
 export const EditorID = 'utopia-editor-root'
 export const PortalTargetID = 'portal-target'
 export const CanvasContextMenuPortalTargetID = 'canvas-contextmenu-portal-target'
+export const BodyMenuOpenClass = 'context-menu-open'
 
 export const RETURN_TO_PREPEND = 'return '
 
@@ -212,4 +213,25 @@ const imgPattern = /\.(jpe?g|png|gif|bmp|svg)(\?.*)?$/i
 export function isImage(str: string): boolean {
   const lowerCaseStr = str.toLowerCase()
   return imgPattern.test(lowerCaseStr) || lowerCaseStr.startsWith('data:image/')
+}
+
+export const addContextMenuClass = (id: string) => {
+  const ids = document.body.dataset.openContextMenus?.split(',') ?? []
+
+  if (ids?.includes(id)) {
+    return
+  }
+
+  document.body.setAttribute('data-open-context-menus', [...ids, id].join(','))
+}
+
+export const removeContextMenuClass = (id: string) => {
+  const ids = document.body.dataset.openContextMenus?.split(',') ?? []
+  const idsAfterRemoval = ids.filter((openId) => openId !== id)
+
+  if (idsAfterRemoval.length === 0) {
+    document.body.removeAttribute('data-open-context-menus')
+  } else {
+    document.body.setAttribute('data-open-context-menus', idsAfterRemoval.join(','))
+  }
 }

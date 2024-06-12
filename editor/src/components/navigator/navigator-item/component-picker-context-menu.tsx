@@ -81,10 +81,10 @@ import { absolute } from '../../../utils/utils'
 import { notice } from '../../common/notice'
 import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../../../core/shared/dom-utils'
+import { addContextMenuClass, removeContextMenuClass } from '../../../core/shared/utils'
 import { commandsForFirstApplicableStrategy } from '../../../components/inspector/inspector-strategies/inspector-strategy'
 import { wrapInDivStrategy } from '../../../components/editor/wrap-in-callbacks'
 import type { AllElementProps } from '../../../components/editor/store/editor-state'
-import { useContextMenuState } from '../../canvas/context-menu-state'
 
 type RenderPropTarget = { type: 'render-prop'; prop: string }
 type ConditionalTarget = { type: 'conditional'; conditionalCase: ConditionalCase }
@@ -926,17 +926,13 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
       e.stopPropagation()
     }, [])
 
-    const { add, remove } = useContextMenuState()
-    const onVisibilityChange = React.useCallback(
-      (isVisible: boolean) => {
-        if (isVisible) {
-          add(FullMenuId)
-        } else {
-          remove(FullMenuId)
-        }
-      },
-      [add, remove],
-    )
+    const onVisibilityChange = React.useCallback((isVisible: boolean) => {
+      if (isVisible) {
+        addContextMenuClass(FullMenuId)
+      } else {
+        removeContextMenuClass(FullMenuId)
+      }
+    }, [])
 
     return (
       <Menu

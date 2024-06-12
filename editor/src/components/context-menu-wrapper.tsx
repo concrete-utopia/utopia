@@ -2,20 +2,18 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import {
-  contextMenu,
-  Item,
-  Menu,
-  Submenu as SubmenuComponent,
-  useContextMenu,
-} from 'react-contexify'
+import { Item, Menu, Submenu as SubmenuComponent, useContextMenu } from 'react-contexify'
 import { colorTheme, Icons, UtopiaStyles } from '../uuiui'
 import { getControlStyles } from '../uuiui-deps'
 import type { ContextMenuItem } from './context-menu-items'
 import type { EditorDispatch } from './editor/action-types'
 import type { WindowPoint } from '../core/shared/math-utils'
 import { windowPoint } from '../core/shared/math-utils'
-import { useContextMenuState } from './canvas/context-menu-state'
+import {
+  BodyMenuOpenClass,
+  addContextMenuClass,
+  removeContextMenuClass,
+} from '../core/shared/utils'
 
 interface Submenu<T> {
   items: Item<T>[]
@@ -141,16 +139,15 @@ export const ContextMenu = <T,>({ dispatch, getData, id, items }: ContextMenuPro
     [getData, dispatch, isDisabled, isHidden],
   )
 
-  const { add, remove } = useContextMenuState()
   const onVisibilityChange = React.useCallback(
     (isVisible: boolean) => {
       if (isVisible) {
-        add(id)
+        addContextMenuClass(`${BodyMenuOpenClass}-${id}`)
       } else {
-        remove(id)
+        removeContextMenuClass(`${BodyMenuOpenClass}-${id}`)
       }
     },
-    [add, id, remove],
+    [id],
   )
 
   return (

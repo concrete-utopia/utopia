@@ -154,8 +154,6 @@ import {
 } from '../editor/store/project-server-state'
 import { uniqBy } from '../../core/shared/array-utils'
 import { InitialOnlineState } from '../editor/online-status'
-import { jotaiStore } from '../../templates/editor'
-import { ContextMenuStateAtom } from '../canvas/context-menu-state'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -267,9 +265,6 @@ export async function renderTestEditorWithCode(
     ...DefaultRenderTestEditorWithCodeOptions,
     ...options,
   }
-
-  // resetting the context menu atom state in-between tests
-  await jotaiStore.set(ContextMenuStateAtom, [])
 
   return renderTestEditorWithModel(
     createTestProjectWithCode(appUiJsFileCode, options.applySteganography),
