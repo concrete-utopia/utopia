@@ -95,8 +95,6 @@ export const DataSelectorModal = React.memo(
         (scope: ElementPath | FileRootPath) => {
           setSelectedScope(scope)
           setSelectedPath([])
-          setHoveredPath(null)
-          setNavigatedToPath([])
         },
         [],
       )
@@ -111,7 +109,7 @@ export const DataSelectorModal = React.memo(
 
       const searchBoxRef = React.useRef<HTMLInputElement>(null)
 
-      const elementLabelsWithScopes = useEditorState(
+      const scopeLabels = useEditorState(
         Substores.fullStore,
         (store) => {
           const scopes = getEnclosingScopes(
@@ -128,11 +126,7 @@ export const DataSelectorModal = React.memo(
             hasContent: hasContent,
           }))
         },
-        'DataSelectorModal elementLabelsWithScopes',
-      )
-
-      const [navigatedToPath, setNavigatedToPath] = React.useState<ObjectPath>(
-        findFirstObjectPathToNavigateTo(processedVariablesInScope, startingSelectedValuePath) ?? [],
+        'DataSelectorModal scopeLabels',
       )
 
       const [selectedPath, setSelectedPath] = React.useState<ObjectPath>(
@@ -159,43 +153,14 @@ export const DataSelectorModal = React.memo(
         [],
       )
 
-      const [hoveredPath, setHoveredPath] = React.useState<ObjectPath | null>(null)
-
       const setSelectedPathFromColumns = React.useCallback((newPath: ObjectPath) => {
         setSelectedPath(newPath)
-        setHoveredPath(null)
-        setNavigatedToPath([])
       }, [])
-
-      const setNavigatedToPathCurried = React.useCallback(
-        (path: DataPickerOption['valuePath']) => (e: React.MouseEvent) => {
-          e.stopPropagation()
-          e.preventDefault()
-
-          setNavigatedToPath(path)
-          setSelectedPath([])
-          setHoveredPath(null)
-        },
-        [],
-      )
-
-      const onHomeClick = React.useCallback(
-        (e: React.MouseEvent) => {
-          e.stopPropagation()
-          e.preventDefault()
-
-          setNavigatedToPathCurried([])(e)
-        },
-        [setNavigatedToPathCurried],
-      )
 
       const catchClick = React.useCallback((e: React.MouseEvent) => {
         e.stopPropagation()
         e.preventDefault()
       }, [])
-
-      const activeTargetPath = selectedPath ?? navigatedToPath
-      const pathInTopBarIncludingHover = hoveredPath ?? activeTargetPath
 
       const applyVariable = React.useCallback(
         (path: ObjectPath) => {
@@ -217,8 +182,8 @@ export const DataSelectorModal = React.memo(
       )
 
       const onApplyClick = React.useCallback(
-        () => applyVariable(activeTargetPath),
-        [applyVariable, activeTargetPath],
+        () => applyVariable(selectedPath),
+        [applyVariable, selectedPath],
       )
 
       const navigateToSearchResult = React.useCallback(
@@ -275,7 +240,7 @@ export const DataSelectorModal = React.memo(
               }}
             >
               <DataSelectorLeftSidebar
-                scopes={elementLabelsWithScopes}
+                scopes={scopeLabels}
                 activeScope={selectedScope}
                 setSelectedScope={setSelectedScopeAndResetSelection}
               />
@@ -396,7 +361,6 @@ export const DataSelectorModal = React.memo(
                           height: 24,
                           width: 81,
                           textAlign: 'center',
-                          ...disabledButtonStyles(false),
                         }}
                         onClick={closePopup}
                       >
@@ -512,13 +476,6 @@ function disabledButtonStyles(disabled: boolean): React.CSSProperties {
   }
 }
 
-function pathSegmentToString(segment: string | number) {
-  if (typeof segment === 'string') {
-    return `.${segment}`
-  }
-  return `[${segment}]`
-}
-
 function getSelectedScopeFromBuckets(
   startingSelectedValuePath: ObjectPath,
   scopeBuckets: ScopeBuckets,
@@ -530,32 +487,6 @@ function getSelectedScopeFromBuckets(
     if (anyOptionHasMatchingValuePath) {
       return EP.fromString(pathString)
     }
-  }
-
-  return null
-}
-
-function findFirstObjectPathToNavigateTo(
-  processedVariablesInScope: ProcessedVariablesInScope,
-  selectedValuePath: ObjectPath | null,
-): ObjectPath | null {
-  if (selectedValuePath == null) {
-    return null
-  }
-
-  let currentPath = selectedValuePath
-  while (currentPath.length > 0) {
-    const parentPath = currentPath.slice(0, -1)
-    const parentOption = processedVariablesInScope[parentPath.toString()]
-    const grandParentPath = currentPath.slice(0, -2)
-    const grandParentOption = processedVariablesInScope[grandParentPath.toString()]
-    if (grandParentOption != null && grandParentOption.type === 'array') {
-      return grandParentPath.slice(0, -1)
-    }
-    if (parentOption != null && parentOption.type === 'object') {
-      return parentPath.slice(0, -1)
-    }
-    currentPath = currentPath.slice(0, -1)
   }
 
   return null
