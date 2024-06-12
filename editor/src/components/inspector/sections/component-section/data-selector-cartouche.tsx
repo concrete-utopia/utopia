@@ -44,8 +44,7 @@ export const DataPickerCartouche = React.memo(
       >
         {data.isChildOfArray ? (
           <>
-            <span style={{ fontStyle: 'italic' }}>item </span>
-            <div style={{ width: 4 }} />
+            <span style={{ fontStyle: 'italic', marginRight: 4 }}>item</span>
             {children}
           </>
         ) : (
