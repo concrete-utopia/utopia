@@ -211,7 +211,7 @@ const DataSelectorFlexColumn = styled(FlexColumn)({
   borderRight: `1px solid ${colorTheme.subduedBorder.cssValue}`,
 })
 
-export const DataPickerRow = styled(FlexRow)((props: { disabled: boolean }) => ({
+const DataPickerRow = styled(FlexRow)((props: { disabled: boolean }) => ({
   alignSelf: 'stretch',
   justifyContent: 'space-between',
   fontSize: 10,

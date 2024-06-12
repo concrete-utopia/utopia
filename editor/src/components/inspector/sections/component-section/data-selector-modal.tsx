@@ -273,23 +273,11 @@ export const DataSelectorModal = React.memo(
                 ...style,
               }}
             >
-              <FlexColumn
-                onClick={stopPropagation}
-                style={{
-                  alignSelf: 'stretch',
-                  minWidth: 150,
-                  padding: 8,
-                  paddingTop: 16,
-                  borderRight: `1px solid ${colorTheme.subduedBorder.cssValue}`,
-                  contain: 'layout',
-                }}
-              >
-                <DataSelectorLeftSidebar
-                  scopes={elementLabelsWithScopes}
-                  activeScope={selectedScope}
-                  setSelectedScope={setSelectedScopeAndResetSelection}
-                />
-              </FlexColumn>
+              <DataSelectorLeftSidebar
+                scopes={elementLabelsWithScopes}
+                activeScope={selectedScope}
+                setSelectedScope={setSelectedScopeAndResetSelection}
+              />
               <FlexColumn
                 onClick={catchClick}
                 style={{
