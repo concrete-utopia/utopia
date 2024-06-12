@@ -68,6 +68,16 @@ export const UtopiaIcons = [
   'StringInputControl',
   'NavigatorText',
   'NavigatorData',
+  'Italic',
+  'Underline',
+  'Strikethrough',
+  'FontStyleSerif',
+  'FontStyleScript',
+  'FontStyleMonospace',
+  'FontStyleSansSerif',
+  'TextAlignLeft',
+  'TextAlignCenter',
+  'TextAlignRight',
 ] as const
 
 export type UtopiaIcon = (typeof UtopiaIcons)[number]
