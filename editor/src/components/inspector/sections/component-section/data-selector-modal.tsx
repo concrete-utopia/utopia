@@ -33,6 +33,7 @@ import { DataSelectorColumns } from './data-selector-columns'
 import { DataSelectorLeftSidebar } from './data-selector-left-sidebar'
 import { DataSelectorSearch } from './data-selector-search'
 import { stopPropagation } from '../../common/inspector-utils'
+import { DataPickerCartouche } from './data-selector-cartouche'
 
 export const DataSelectorPopupBreadCrumbsTestId = 'data-selector-modal-top-bar'
 
@@ -220,14 +221,6 @@ export const DataSelectorModal = React.memo(
         [applyVariable, activeTargetPath],
       )
 
-      const valuePreviewText = (() => {
-        const variable = processedVariablesInScope[pathInTopBarIncludingHover.toString()]
-        if (variable == null) {
-          return null
-        }
-        return JSON.stringify(variable.variableInfo.value, undefined, 2)
-      })()
-
       const navigateToSearchResult = React.useCallback(
         (path: ObjectPath) => {
           setSearchTerm(null)
@@ -237,6 +230,10 @@ export const DataSelectorModal = React.memo(
       )
 
       const searchNullOrEmpty = searchTerm == null || searchTerm.length < 1
+
+      const pickedVariable = processedVariablesInScope[
+        selectedPath.toString()
+      ] as DataPickerOption | null
 
       return (
         <InspectorModal
@@ -287,39 +284,6 @@ export const DataSelectorModal = React.memo(
                   contain: 'layout',
                 }}
               >
-                <FlexRow
-                  style={{
-                    height: 24,
-                    marginBottom: 16,
-                    padding: '6px 8px',
-                    borderRadius: 16,
-                    gap: 8,
-                    border: `1px solid ${colorTheme.fg7.value}`,
-                  }}
-                >
-                  <LargerIcons.MagnifyingGlass style={{ zoom: 0.6 }} />
-                  <input
-                    onClick={onStartSearch}
-                    onFocus={onStartSearch}
-                    onChange={onSearchFieldValueChange}
-                    ref={searchBoxRef}
-                    value={searchTerm ?? ''}
-                    data-testId='data-selector-modal-search-input'
-                    placeholder='Search'
-                    style={{
-                      outline: 'none',
-                      border: 'none',
-                      paddingRight: 14,
-                    }}
-                  />
-                  {when(
-                    searchTerm != null,
-                    <Icons.CrossInTranslucentCircle
-                      style={{ cursor: 'pointer', position: 'fixed', right: 0, marginRight: 14 }}
-                      onClick={cancelSearch}
-                    />,
-                  )}
-                </FlexRow>
                 <DataSelectorLeftSidebar
                   scopes={elementLabelsWithScopes}
                   activeScope={selectedScope}
@@ -331,92 +295,53 @@ export const DataSelectorModal = React.memo(
                 style={{
                   alignSelf: 'stretch',
                   flexGrow: 1,
-                  paddingLeft: 8,
-                  paddingTop: 16,
-                  paddingRight: 16,
                   overflow: 'hidden',
                   width: 700,
                 }}
               >
-                {when(
-                  searchNullOrEmpty,
-                  <>
-                    {/* top bar */}
-                    <FlexRow
-                      style={{ justifyContent: 'space-between', alignItems: 'center', gap: 8 }}
-                    >
-                      <FlexRow style={{ gap: 8, flexWrap: 'wrap', flexGrow: 1 }}>
-                        <FlexRow
-                          style={{
-                            flexGrow: 1,
-                            borderStyle: 'solid',
-                            borderWidth: 1,
-                            borderColor: colorTheme.fg7.value,
-                            borderRadius: 4,
-                            fontSize: 11,
-                            fontWeight: 400,
-                            height: 33,
-                            padding: '0px 6px',
-                          }}
-                        >
-                          <FlexRow
-                            data-testid={DataSelectorPopupBreadCrumbsTestId}
-                            style={{ flexWrap: 'wrap', flexGrow: 1 }}
-                          >
-                            {pathBreadcrumbs(
-                              pathInTopBarIncludingHover,
-                              processedVariablesInScope,
-                            ).map(({ segment, path }, idx) => (
-                              <span key={path.toString()}>
-                                {idx === 0 ? segment : pathSegmentToString(segment)}
-                              </span>
-                            ))}
-                          </FlexRow>
-                          <div
-                            style={{
-                              ...disabledButtonStyles(activeTargetPath.length === 0),
-                              fontWeight: 400,
-                              fontSize: 12,
-                            }}
-                            onClick={onHomeClick}
-                          >
-                            <Icons.Cross />
-                          </div>
-                        </FlexRow>
-                      </FlexRow>
-                      <div
-                        style={{
-                          borderRadius: 4,
-                          backgroundColor: colorTheme.primary.value,
-                          color: 'white',
-                          padding: '8px 12px',
-                          fontSize: 14,
-                          fontWeight: 500,
-                          ...disabledButtonStyles(activeTargetPath.length === 0),
-                        }}
-                        onClick={onApplyClick}
-                      >
-                        Apply
-                      </div>
-                    </FlexRow>
-                    {/* Value preview */}
-                    <FlexRow
+                <FlexRow style={{ padding: '8px 8px 5px' }}>
+                  <FlexRow
+                    style={{
+                      flexGrow: 1,
+                      height: 24,
+                      padding: '6px 8px',
+                      borderRadius: 4,
+                      gap: 8,
+                      border: `1px solid ${colorTheme.subduedBorder.value}`,
+                    }}
+                  >
+                    <LargerIcons.MagnifyingGlass style={{ zoom: 0.6 }} />
+                    <input
+                      onClick={onStartSearch}
+                      onFocus={onStartSearch}
+                      onChange={onSearchFieldValueChange}
+                      ref={searchBoxRef}
+                      value={searchTerm ?? ''}
+                      data-testId='data-selector-modal-search-input'
+                      placeholder='Search data'
                       style={{
-                        flexShrink: 0,
-                        gridColumn: '3',
-                        flexWrap: 'wrap',
-                        gap: 4,
-                        overflowX: 'scroll',
-                        opacity: 0.8,
-                        fontSize: 10,
-                        height: 20,
+                        outline: 'none',
+                        border: 'none',
+                        paddingRight: 14,
                       }}
-                    >
-                      {valuePreviewText}
-                    </FlexRow>
-                  </>,
-                )}
-                <FlexColumn style={{ flexGrow: 1, overflow: 'hidden', contain: 'content' }}>
+                    />
+                    {when(
+                      searchTerm != null,
+                      <Icons.CrossInTranslucentCircle
+                        style={{ cursor: 'pointer', position: 'fixed', right: 0, marginRight: 14 }}
+                        onClick={cancelSearch}
+                      />,
+                    )}
+                  </FlexRow>
+                </FlexRow>
+                <FlexColumn
+                  style={{
+                    flexGrow: 1,
+                    overflow: 'hidden',
+                    contain: 'content',
+                    borderTop: `1px solid ${colorTheme.subduedBorder.cssValue}`,
+                  }}
+                >
                   {searchNullOrEmpty ? (
                     <DataSelectorColumns
                       activeScope={filteredVariablesInScope}
@@ -431,6 +356,84 @@ export const DataSelectorModal = React.memo(
                     />
                   )}
                 </FlexColumn>
+                {when(
+                  searchNullOrEmpty,
+                  <>
+                    {/* bottom bar */}
+                    <FlexRow
+                      style={{
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: 8,
+                        borderTop: `1px solid ${colorTheme.subduedBorder.cssValue}`,
+                        paddingTop: 10,
+                        paddingBottom: 10,
+                        paddingRight: 16,
+                      }}
+                    >
+                      <FlexRow style={{ gap: 8, paddingRight: 8, flexWrap: 'wrap', flexGrow: 1 }}>
+                        <FlexRow
+                          style={{
+                            flexGrow: 1,
+                            fontSize: 11,
+                            fontWeight: 500,
+                            padding: '0px 6px',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <FlexRow
+                            data-testid={DataSelectorPopupBreadCrumbsTestId}
+                            style={{ flexWrap: 'wrap', flexGrow: 1 }}
+                          >
+                            <span>Selection:</span>
+                            {pickedVariable != null ? (
+                              <DataPickerCartouche
+                                data={pickedVariable}
+                                selected={false}
+                                forceRole='information'
+                              />
+                            ) : null}
+                          </FlexRow>
+                        </FlexRow>
+                      </FlexRow>
+                      <div
+                        style={{
+                          borderRadius: 4,
+                          backgroundColor: colorTheme.white.value,
+                          color: colorTheme.fg0.value,
+                          border: `1px solid ${colorTheme.subduedBorder.value}`,
+                          padding: 3,
+                          fontSize: 11,
+                          fontWeight: 400,
+                          height: 24,
+                          width: 81,
+                          textAlign: 'center',
+                          ...disabledButtonStyles(false),
+                        }}
+                        onClick={closePopup}
+                      >
+                        Cancel
+                      </div>
+                      <div
+                        style={{
+                          borderRadius: 4,
+                          backgroundColor: colorTheme.black.value,
+                          color: 'white',
+                          padding: 3,
+                          fontSize: 11,
+                          fontWeight: 400,
+                          height: 24,
+                          width: 81,
+                          textAlign: 'center',
+                          ...disabledButtonStyles(pickedVariable?.disabled ?? true),
+                        }}
+                        onClick={onApplyClick}
+                      >
+                        Apply
+                      </div>
+                    </FlexRow>
+                  </>,
+                )}
               </FlexColumn>
             </FlexRow>
           </div>
@@ -512,31 +515,6 @@ function useProcessVariablesInScope(options: DataPickerOption[]): ProcessedVaria
     options.forEach((o) => walk(o))
     return lookup
   }, [options])
-}
-
-function pathBreadcrumbs(
-  valuePath: DataPickerOption['valuePath'],
-  processedVariablesInScope: ProcessedVariablesInScope,
-): Array<{
-  segment: string | number
-  path: (string | number)[]
-}> {
-  let accumulator = []
-  let current: (string | number)[] = []
-  for (const segment of valuePath) {
-    current.push(segment)
-    const optionFromLookup = processedVariablesInScope[current.toString()]
-
-    if (optionFromLookup == null) {
-      continue
-    }
-
-    accumulator.push({
-      segment: segment,
-      path: [...current],
-    })
-  }
-  return accumulator
 }
 
 function disabledButtonStyles(disabled: boolean): React.CSSProperties {

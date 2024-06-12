@@ -25,9 +25,7 @@ export const DataSelectorLeftSidebar = React.memo((props: DataSelectorLeftSideba
   const { scopes, setSelectedScope, activeScope } = props
   return (
     <>
-      <span style={{ fontSize: 10, fontWeight: 'bold', color: colorTheme.fg4.cssValue }}>
-        Sources
-      </span>
+      <span style={{ fontSize: 10, fontWeight: 500, color: colorTheme.fg5.cssValue }}>Sources</span>
       <FlexColumn>
         {scopes.map((scope) => {
           return (
@@ -67,8 +65,10 @@ const ScopeRow = React.memo(
     return (
       <DataPickerRow
         style={{
+          fontSize: 11,
+          fontWeight: 500,
           backgroundColor: selected ? colorTheme.bg4.value : undefined,
-          color: disabled ? colorTheme.fg6.value : colorTheme.neutralForeground.value,
+          color: disabled ? colorTheme.fg6.value : colorTheme.fg2.value,
         }}
         onClick={onClick}
         disabled={disabled}

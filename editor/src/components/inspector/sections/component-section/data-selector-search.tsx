@@ -32,6 +32,7 @@ export const DataSelectorSearch = React.memo(
           flexGrow: 1,
           gap: 8,
           paddingTop: 8,
+          paddingLeft: 8,
           display: 'grid',
           gridTemplateColumns: 'auto 1fr',
           gridAutoRows: 'min-content',

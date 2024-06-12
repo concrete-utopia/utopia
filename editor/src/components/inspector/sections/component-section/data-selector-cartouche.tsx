@@ -13,12 +13,13 @@ import type { DataPickerOption } from './data-picker-utils'
 interface DataPickerCartoucheProps {
   data: DataPickerOption
   selected: boolean
+  forceRole?: CartoucheUIProps['role']
   onClick?: CartoucheUIProps['onClick']
 }
 
 export const DataPickerCartouche = React.memo(
   (props: React.PropsWithChildren<DataPickerCartoucheProps>) => {
-    const { data, selected } = props
+    const { data, selected, forceRole } = props
     const dataSource = useVariableDataSource(data)
     const children = props.children ?? data.variableInfo.expressionPathPart
     return (
@@ -28,7 +29,7 @@ export const DataPickerCartouche = React.memo(
         datatype={childTypeToCartoucheDataType(data.type)}
         selected={!data.disabled && selected}
         highlight={data.disabled ? 'disabled' : null}
-        role={data.disabled ? 'information' : 'selection'}
+        role={forceRole ?? (data.disabled ? 'information' : 'selection')}
         testId={`data-selector-option-${data.variableInfo.expression}`}
         badge={
           data.type === 'array' ? (

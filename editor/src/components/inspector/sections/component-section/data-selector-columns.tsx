@@ -204,6 +204,7 @@ const DataSelectorFlexColumn = styled(FlexColumn)({
   overflowY: 'scroll',
   scrollbarWidth: 'auto',
   scrollbarColor: 'gray transparent',
+  paddingTop: 8,
   paddingRight: 10, // to account for scrollbar
   paddingLeft: 6,
   paddingBottom: 10,
