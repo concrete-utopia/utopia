@@ -1,6 +1,6 @@
 import React from 'react'
 import type { ElementPath } from 'utopia-shared/src/types'
-import { FlexColumn, FlexRow, LargerIcons, colorTheme } from '../../../../uuiui'
+import { CheckboxInput, FlexColumn, FlexRow, LargerIcons, colorTheme } from '../../../../uuiui'
 import {
   insertionCeilingToString,
   insertionCeilingsEqual,
@@ -65,14 +65,24 @@ const ScopeRow = React.memo(
     return (
       <DataPickerRow
         style={{
+          justifyContent: 'flex-start',
+          gap: 8,
           fontSize: 11,
-          fontWeight: 500,
+          fontWeight: 400,
           backgroundColor: selected ? colorTheme.bg4.value : undefined,
           color: disabled ? colorTheme.fg6.value : colorTheme.fg2.value,
         }}
         onClick={onClick}
         disabled={disabled}
       >
+        <CheckboxInput
+          style={{
+            backgroundColor: colorTheme.bg0.value,
+            border: `1px solid ${colorTheme.fg4.cssValue}`,
+          }}
+          checked={selected}
+          onChange={stopPropagation}
+        />
         {scope.label}
       </DataPickerRow>
     )
