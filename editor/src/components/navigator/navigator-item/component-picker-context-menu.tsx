@@ -383,7 +383,7 @@ export const useCreateCallbackToShowComponentPicker =
           const show = pickerType === 'preferred' ? showPreferred : showFull
           show({ ...params, event })
 
-          // conditional slots should get selected as a result, since this action would superseed
+          // conditional slots should get selected as a result, since this action would supersede
           // the navigator's selection handling.
           if (isConditionalTarget(insertionTarget)) {
             let elementsToSelect: ElementPath[] = []
