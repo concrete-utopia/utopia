@@ -428,6 +428,7 @@ export function traceDataFromVariableName(
   if (enclosingScope.type === 'file-root') {
     return dataTracingFailed('Cannot trace data from variable name in file root')
   }
+  const containingComponentPath = EP.getPathOfComponentRoot(enclosingScope)
   const componentHoldingElement = findContainingComponentForPathInProjectContents(
     enclosingScope,
     projectContents,
@@ -442,7 +443,7 @@ export function traceDataFromVariableName(
     projectContents,
     enclosingScope,
     enclosingScope,
-    enclosingScope,
+    containingComponentPath,
     componentHoldingElement,
     jsIdentifier(variableName, '', null, emptyComments),
     pathDrillSoFar,

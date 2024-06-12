@@ -943,6 +943,12 @@ describe('Data Tracing', () => {
 
       await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component:component-root'))
 
+      const expectedResult = dataTracingToAHookCall(
+        EP.fromString('sb/app:my-component:component-root'),
+        'useLoaderData',
+        dataPathSuccess(['reviews', '1', 'title']),
+      )
+
       const traceResult = traceDataFromProp(
         EPP.create(
           EP.fromString('sb/app:my-component:component-root/map/mapped~~~2/mapped-child'),
@@ -953,13 +959,17 @@ describe('Data Tracing', () => {
         dataPathSuccess([]),
       )
 
-      expect(traceResult).toEqual(
-        dataTracingToAHookCall(
-          EP.fromString('sb/app:my-component:component-root'),
-          'useLoaderData',
-          dataPathSuccess(['reviews', '1', 'title']),
-        ),
+      expect(traceResult).toEqual(expectedResult)
+
+      const variableNameTraceResult = traceDataFromVariableName(
+        EP.fromString('sb/app:my-component:component-root/map/mapped~~~2/mapped-child'),
+        'review',
+        editor.getEditorState().editor.jsxMetadata,
+        editor.getEditorState().editor.projectContents,
+        dataPathSuccess(['title']),
       )
+
+      expect(variableNameTraceResult).toEqual(expectedResult)
     })
 
     it('Works with a destructure in the map function', async () => {
