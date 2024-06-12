@@ -1,5 +1,5 @@
 import React from 'react'
-import { groupBy } from '../../../../core/shared/array-utils'
+import { groupBy, isPrefixOf } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
@@ -7,6 +7,7 @@ import type { ElementPath } from '../../../../core/shared/project-file-types'
 import {
   CanvasContextMenuPortalTargetID,
   arrayEqualsByReference,
+  arrayEqualsByValue,
   assertNever,
 } from '../../../../core/shared/utils'
 import { when } from '../../../../utils/react-conditionals'
@@ -123,7 +124,9 @@ export const DataSelectorModal = React.memo(
       )
 
       const [selectedVariableOption, setSelectedVariableOption] =
-        React.useState<DataPickerOption | null>(null)
+        React.useState<DataPickerOption | null>(
+          getVariableInScope(filteredVariablesInScope, startingSelectedValuePath),
+        )
 
       const [searchTerm, setSearchTerm] = React.useState<string | null>(null)
       const onStartSearch = React.useCallback(() => {
@@ -441,4 +444,29 @@ function getSelectedScopeFromBuckets(
   }
 
   return null
+}
+
+function getVariableInScope(
+  variablesInScope: DataPickerOption[],
+  valuePath: ObjectPath | null,
+): DataPickerOption | null {
+  const looseEquals = (l: string | number, r: string | number) => l == r // props.startingSelectedValuePath seems to have strings for array indexes
+  function findOption(options: DataPickerOption[]): DataPickerOption | null {
+    if (valuePath == null) {
+      return null
+    }
+    for (const option of options) {
+      if (arrayEqualsByValue(option.valuePath, valuePath, looseEquals)) {
+        return option
+      }
+      if (isPrefixOf(option.valuePath, valuePath, looseEquals) && 'children' in option) {
+        const found = findOption(option.children)
+        if (found != null) {
+          return found
+        }
+      }
+    }
+    return null
+  }
+  return findOption(variablesInScope)
 }
