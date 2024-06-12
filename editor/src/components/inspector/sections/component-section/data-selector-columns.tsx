@@ -189,19 +189,13 @@ const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
   const ref = useScrollIntoView(selected)
 
   return (
-    <FlexRow
+    <DataPickerRow
       onClick={onClick}
       ref={ref}
       style={{
-        alignSelf: 'stretch',
-        justifyContent: 'space-between',
-        fontSize: 10,
-        borderRadius: 4,
-        height: 24,
         backgroundColor: onActivePath ? colorTheme.bg4.value : undefined,
-        padding: 5,
-        cursor: 'pointer',
       }}
+      disabled={false}
     >
       <span>
         <DataPickerCartouche data={data} forcedDataSource={forcedDataSource} selected={selected} />
@@ -214,7 +208,7 @@ const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
       >
         {'>'}
       </span>
-    </FlexRow>
+    </DataPickerRow>
   )
 })
 
@@ -231,6 +225,16 @@ const DataSelectorFlexColumn = styled(FlexColumn)({
   paddingBottom: 10,
   borderRight: `1px solid ${colorTheme.subduedBorder.cssValue}`,
 })
+
+export const DataPickerRow = styled(FlexRow)((props: { disabled: boolean }) => ({
+  alignSelf: 'stretch',
+  justifyContent: 'space-between',
+  fontSize: 10,
+  borderRadius: 4,
+  height: 24,
+  padding: 5,
+  cursor: !props.disabled ? 'pointer' : 'initial',
+}))
 
 function useScrollIntoView(shouldScroll: boolean) {
   const elementRef = React.useRef<HTMLDivElement>(null)
