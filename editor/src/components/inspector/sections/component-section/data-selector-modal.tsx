@@ -261,6 +261,7 @@ export const DataSelectorModal = React.memo(
           >
             <FlexRow
               ref={forwardedRef}
+              onClick={catchClick}
               style={{
                 minWidth: 850,
                 height: 300,
@@ -279,7 +280,6 @@ export const DataSelectorModal = React.memo(
                 setSelectedScope={setSelectedScopeAndResetSelection}
               />
               <FlexColumn
-                onClick={catchClick}
                 style={{
                   alignSelf: 'stretch',
                   flexGrow: 1,
