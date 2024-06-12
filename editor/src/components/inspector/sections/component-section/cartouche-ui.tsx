@@ -58,6 +58,7 @@ export const CartoucheUI = React.forwardRef(
           return
         }
         if (onClick != null) {
+          e.stopPropagation()
           onClick(e)
         }
       },
