@@ -24,28 +24,7 @@ interface DataSelectorLeftSidebarProps {
 export const DataSelectorLeftSidebar = React.memo((props: DataSelectorLeftSidebarProps) => {
   const { scopes, setSelectedScope, activeScope } = props
   return (
-    <FlexColumn
-      onClick={stopPropagation}
-      style={{
-        alignSelf: 'stretch',
-        minWidth: 150,
-        padding: 8,
-        paddingTop: 16,
-        borderRight: `1px solid ${colorTheme.subduedBorder.cssValue}`,
-      }}
-    >
-      <FlexRow
-        style={{
-          height: 24,
-          marginBottom: 16,
-          padding: '6px 8px',
-          borderRadius: 16,
-          gap: 8,
-          border: `1px solid ${colorTheme.fg7.value}`,
-        }}
-      >
-        <LargerIcons.MagnifyingGlass style={{ zoom: 0.6 }} />
-      </FlexRow>
+    <>
       <span style={{ fontSize: 10, fontWeight: 'bold', color: colorTheme.fg4.cssValue }}>
         Sources
       </span>
@@ -62,7 +41,7 @@ export const DataSelectorLeftSidebar = React.memo((props: DataSelectorLeftSideba
           )
         })}
       </FlexColumn>
-    </FlexColumn>
+    </>
   )
 })
 
