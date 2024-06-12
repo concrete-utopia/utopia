@@ -47,7 +47,7 @@ export const DataSelectorLeftSidebar = React.memo((props: DataSelectorLeftSideba
         <LargerIcons.MagnifyingGlass style={{ zoom: 0.6 }} />
       </FlexRow>
       <span style={{ fontSize: 10, fontWeight: 'bold', color: colorTheme.fg4.cssValue }}>
-        Scopes
+        Sources
       </span>
       <FlexColumn>
         {scopes.map((scope) => {
