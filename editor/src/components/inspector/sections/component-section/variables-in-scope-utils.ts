@@ -59,7 +59,6 @@ function valuesFromObject(
           )
           .map(patchDefinedElsewhereInfo),
         valuePath: valuePath,
-        disabled: false,
         isChildOfArray: isChildOfArray,
       },
     ]
@@ -84,7 +83,6 @@ function valuesFromObject(
           )
           .map(patchDefinedElsewhereInfo),
         valuePath: valuePath,
-        disabled: false,
         isChildOfArray: isChildOfArray,
       },
     ]
@@ -111,7 +109,6 @@ function valuesFromVariable(
           definedElsewhere: originalObjectName,
           depth: depth,
           valuePath: valuePath,
-          disabled: false,
           isChildOfArray: isChildOfArray,
         },
       ]
@@ -142,7 +139,6 @@ function valuesFromVariable(
           definedElsewhere: originalObjectName,
           depth: depth,
           valuePath: valuePath,
-          disabled: false,
           isChildOfArray: isChildOfArray,
         },
       ]

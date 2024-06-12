@@ -1,5 +1,5 @@
 import React from 'react'
-import { groupBy } from '../../../../core/shared/array-utils'
+import { groupBy, mapDropNulls } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
@@ -55,13 +55,17 @@ export const DataSelectorModal = React.memo(
       {
         style,
         closePopup,
-        variablesInScope: allVariablesInScope,
+        variablesInScope,
         onPropertyPicked,
         startingSelectedValuePath,
         lowestInsertionCeiling,
       },
       forwardedRef,
     ) => {
+      const allVariablesInScope = React.useMemo(
+        () => filterKeepMatchingOnly(variablesInScope),
+        [variablesInScope],
+      )
       const colorTheme = useColorTheme()
 
       const scopeBuckets = React.useMemo(
@@ -202,7 +206,7 @@ export const DataSelectorModal = React.memo(
           if (variable == null) {
             return
           }
-          if (variable.disabled) {
+          if (!variable.variableInfo.matches) {
             return
           }
           onPropertyPicked(
@@ -593,4 +597,24 @@ function findFirstObjectPathToNavigateTo(
   }
 
   return null
+}
+
+function filterVariableOption(option: DataPickerOption): DataPickerOption | null {
+  switch (option.type) {
+    case 'array':
+    case 'object':
+      return {
+        ...option,
+        children: filterKeepMatchingOnly(option.children),
+      }
+    case 'jsx':
+    case 'primitive':
+      return option.variableInfo.matches ? option : null
+    default:
+      assertNever(option)
+  }
+}
+
+function filterKeepMatchingOnly(options: DataPickerOption[]): DataPickerOption[] {
+  return mapDropNulls((o) => filterVariableOption(o), options)
 }

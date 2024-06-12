@@ -27,9 +27,9 @@ export const DataPickerCartouche = React.memo(
         key={data.valuePath.toString()}
         source={forcedDataSource ?? dataSource ?? 'internal'}
         datatype={childTypeToCartoucheDataType(data.type)}
-        selected={!data.disabled && selected}
-        highlight={data.disabled ? 'disabled' : null}
-        role={data.disabled ? 'information' : 'selection'}
+        selected={data.variableInfo.matches && selected}
+        highlight={data.variableInfo.matches ? null : 'disabled'}
+        role={data.variableInfo.matches ? 'selection' : 'information'}
         testId={`data-selector-option-${data.variableInfo.expression}`}
         badge={
           data.type === 'array' ? (
