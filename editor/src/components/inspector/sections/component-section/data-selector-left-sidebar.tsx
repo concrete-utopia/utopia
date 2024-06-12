@@ -92,6 +92,7 @@ const ScopeRow = React.memo(
           color: disabled ? colorTheme.fg6.value : colorTheme.neutralForeground.value,
         }}
         onClick={onClick}
+        disabled={disabled}
       >
         {scope.label}
       </DataPickerRow>

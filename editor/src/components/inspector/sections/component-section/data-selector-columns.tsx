@@ -195,6 +195,7 @@ const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
       style={{
         backgroundColor: onActivePath ? colorTheme.bg4.value : undefined,
       }}
+      disabled={false}
     >
       <span>
         <DataPickerCartouche data={data} forcedDataSource={forcedDataSource} selected={selected} />
@@ -225,15 +226,15 @@ const DataSelectorFlexColumn = styled(FlexColumn)({
   borderRight: `1px solid ${colorTheme.subduedBorder.cssValue}`,
 })
 
-export const DataPickerRow = styled(FlexRow)({
+export const DataPickerRow = styled(FlexRow)((props: { disabled: boolean }) => ({
   alignSelf: 'stretch',
   justifyContent: 'space-between',
   fontSize: 10,
   borderRadius: 4,
   height: 24,
   padding: 5,
-  cursor: 'pointer',
-})
+  cursor: !props.disabled ? 'pointer' : 'initial',
+}))
 
 function useScrollIntoView(shouldScroll: boolean) {
   const elementRef = React.useRef<HTMLDivElement>(null)
