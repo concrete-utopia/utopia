@@ -33,6 +33,7 @@ import { DataSelectorColumns } from './data-selector-columns'
 import { DataSelectorLeftSidebar } from './data-selector-left-sidebar'
 import { DataSelectorSearch } from './data-selector-search'
 import { stopPropagation } from '../../common/inspector-utils'
+import { variableOrChildMatches } from './variables-in-scope-utils'
 
 export const DataSelectorPopupBreadCrumbsTestId = 'data-selector-modal-top-bar'
 
@@ -206,7 +207,7 @@ export const DataSelectorModal = React.memo(
           if (variable == null) {
             return
           }
-          if (!variable.variableInfo.matches) {
+          if (variable.variableInfo.matches !== 'matches') {
             return
           }
           onPropertyPicked(
@@ -609,7 +610,7 @@ function filterVariableOption(option: DataPickerOption): DataPickerOption | null
       }
     case 'jsx':
     case 'primitive':
-      return option.variableInfo.matches ? option : null
+      return variableOrChildMatches(option.variableInfo) ? option : null
     default:
       assertNever(option)
   }

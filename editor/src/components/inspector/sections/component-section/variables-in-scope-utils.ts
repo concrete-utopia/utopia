@@ -165,13 +165,39 @@ function usePropertyControlDescriptions(
   return controlForProp[0] ?? null
 }
 
+export type VariableMatches = 'matches' | 'child-matches' | 'does-not-match'
+
+export const variableOrChildMatches = (variable: VariableInfoBase) => {
+  switch (variable.matches) {
+    case 'matches':
+    case 'child-matches':
+      return true
+    case 'does-not-match':
+      return false
+    default:
+      assertNever(variable.matches)
+  }
+}
+
+export const variableMatches = (variable: VariableInfoBase) => {
+  switch (variable.matches) {
+    case 'matches':
+      return true
+    case 'child-matches':
+    case 'does-not-match':
+      return false
+    default:
+      assertNever(variable.matches)
+  }
+}
+
 interface VariableInfoBase {
   type: string
   expression: string
   expressionPathPart: string | number
   value: unknown
   insertionCeiling: ElementPath | FileRootPath
-  matches: boolean
+  matches: VariableMatches
 }
 
 export interface PrimitiveInfo extends VariableInfoBase {
@@ -223,7 +249,7 @@ export function variableInfoFromValue(
         expressionPathPart: expressionPathPart,
         value: value,
         insertionCeiling: insertionCeiling,
-        matches: false,
+        matches: 'does-not-match',
       }
     case 'object':
       if (value == null) {
@@ -233,7 +259,7 @@ export function variableInfoFromValue(
           expressionPathPart: expressionPathPart,
           value: value,
           insertionCeiling: insertionCeiling,
-          matches: false,
+          matches: 'does-not-match',
         }
       }
       if (Array.isArray(value)) {
@@ -243,7 +269,7 @@ export function variableInfoFromValue(
           expressionPathPart: expressionPathPart,
           value: value,
           insertionCeiling: insertionCeiling,
-          matches: false,
+          matches: 'does-not-match',
           elements: mapDropNulls(
             (e, idx) =>
               variableInfoFromValue(
@@ -264,7 +290,7 @@ export function variableInfoFromValue(
           expressionPathPart: expressionPathPart,
           value: value,
           insertionCeiling: insertionCeiling,
-          matches: false,
+          matches: 'does-not-match',
         }
       }
       return {
@@ -273,7 +299,7 @@ export function variableInfoFromValue(
         expressionPathPart: expressionPathPart,
         value: value,
         insertionCeiling: insertionCeiling,
-        matches: false,
+        matches: 'does-not-match',
         props: mapDropNulls(([key, propValue]) => {
           return variableInfoFromValue(
             `${expression}['${key}']`,
@@ -362,6 +388,9 @@ export function orderVariablesForRelevance(
       targetControlDescription != null &&
       variableMatchesControlDescription(variable.value, targetControlDescription)
 
+    const valueMatchesChildrenProp =
+      targetPropertyName === 'children' && React.isValidElement(variable.value)
+
     const valueMatchesCurrentPropValue =
       currentPropertyValue.type === 'existing' &&
       variableShapesMatch(currentPropertyValue.value, variable.value)
@@ -371,15 +400,15 @@ export function orderVariablesForRelevance(
       (variable.type === 'object' && variable.props.some((e) => e.matches))
 
     if (valueExactlyMatchesPropertyName || variableCanBeMappedOver) {
-      valuesExactlyMatchingPropertyName.push({ ...variable, matches: true })
+      valuesExactlyMatchingPropertyName.push({ ...variable, matches: 'matches' })
     } else if (valueExactlyMatchesControlDescription) {
-      valuesExactlyMatchingPropertyDescription.push({ ...variable, matches: true })
-    } else if (valueMatchesControlDescription) {
-      valuesMatchingPropertyDescription.push({ ...variable, matches: true })
+      valuesExactlyMatchingPropertyDescription.push({ ...variable, matches: 'matches' })
+    } else if (valueMatchesControlDescription || valueMatchesChildrenProp) {
+      valuesMatchingPropertyDescription.push({ ...variable, matches: 'matches' })
     } else if (arrayOrObjectChildMatches) {
-      valueElementMatches.push({ ...variable, matches: false })
+      valueElementMatches.push({ ...variable, matches: 'child-matches' })
     } else if (valueMatchesCurrentPropValue) {
-      valuesMatchingPropertyShape.push({ ...variable, matches: true })
+      valuesMatchingPropertyShape.push({ ...variable, matches: 'matches' })
     } else {
       restOfValues.push(variable)
     }
