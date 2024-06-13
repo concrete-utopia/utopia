@@ -1059,7 +1059,7 @@ interface RowForObjectControlProps extends AbstractRowForControlProps {
 }
 
 const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
-  const [open, setOpen] = React.useState(true)
+  const [open, setOpen] = React.useState(false)
   const handleOnClick = React.useCallback(() => {
     if (!props.disableToggling) {
       setOpen(!open)
@@ -1119,7 +1119,9 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
             style={{ flexGrow: 1, justifyContent: 'space-between', paddingRight: 10 }}
             ref={dataPickerButtonData.setReferenceElement}
           >
-            <SimpleFlexRow
+            <UIGridRow
+              padded={false}
+              variant='<--1fr--><--1fr-->'
               style={{
                 minWidth: 0,
                 flexGrow: 1,
@@ -1162,7 +1164,7 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
                   elementPath={selectedViews.at(0) ?? EP.emptyElementPath}
                 />
               </div>
-            </SimpleFlexRow>
+            </UIGridRow>
           </FlexRow>
         </InspectorContextMenuWrapper>
       </div>
