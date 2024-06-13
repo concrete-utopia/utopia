@@ -68,6 +68,31 @@ export const CondensedEntryItemWrapper = React.memo(
       'CondensedEntryItemWrapper isCollapsed',
     )
 
+    const autoFocusedPaths = useEditorState(
+      Substores.derived,
+      (store) => store.derived.autoFocusedPaths,
+      'CondensedEntryItemWrapper autoFocusedPaths',
+    )
+
+    const isComponentOrInsideComponent = useEditorState(
+      Substores.focusedElement,
+      (store) =>
+        props.navigatorRow.entries.some(
+          (entry) =>
+            EP.isInExplicitlyFocusedSubtree(
+              store.editor.focusedElementPath,
+              autoFocusedPaths,
+              entry.elementPath,
+            ) ||
+            EP.isExplicitlyFocused(
+              store.editor.focusedElementPath,
+              autoFocusedPaths,
+              entry.elementPath,
+            ),
+        ),
+      'CondensedEntryItemWrapper isInFocusedComponentSubtree',
+    )
+
     const isDataReferenceRow = React.useMemo(() => {
       return props.navigatorRow.entries.every(
         (entry, idx) =>
@@ -94,9 +119,13 @@ export const CondensedEntryItemWrapper = React.memo(
           display: 'flex',
           alignItems: 'center',
           backgroundColor: rowRootSelected
-            ? colorTheme.selectionBlue.value
+            ? isComponentOrInsideComponent
+              ? colorTheme.selectionPurple.value
+              : colorTheme.selectionBlue.value
             : hasSelection || wholeRowInsideSelection
-            ? colorTheme.childSelectionBlue.value
+            ? isComponentOrInsideComponent
+              ? colorTheme.childSelectionPurple.value
+              : colorTheme.childSelectionBlue.value
             : 'transparent',
           borderTopLeftRadius: rowContainsSelection ? 5 : 0,
           borderTopRightRadius: rowContainsSelection ? 5 : 0,
@@ -123,6 +152,7 @@ export const CondensedEntryItemWrapper = React.memo(
                 wholeRowInsideSelection={wholeRowInsideSelection}
                 rowContainsSelection={rowContainsSelection}
                 rowRootSelected={rowRootSelected}
+                isComponentOrInsideComponent={isComponentOrInsideComponent}
               />
             )
           })}
@@ -143,6 +173,7 @@ const CondensedEntryItem = React.memo(
     wholeRowInsideSelection: boolean
     showSeparator: boolean
     showExpandableIndicator: boolean
+    isComponentOrInsideComponent: boolean
   }) => {
     const colorTheme = useColorTheme()
 
@@ -191,7 +222,9 @@ const CondensedEntryItem = React.memo(
       if (props.wholeRowInsideSelection) {
         return 'transparent'
       } else if (!selectionIsDataReference && (isSelected || isChildOfSelected)) {
-        return colorTheme.childSelectionBlue.value
+        return props.isComponentOrInsideComponent
+          ? colorTheme.childSelectionPurple.value
+          : colorTheme.childSelectionBlue.value
       } else {
         return colorTheme.bg1.value
       }
@@ -201,6 +234,7 @@ const CondensedEntryItem = React.memo(
       selectionIsDataReference,
       isSelected,
       isChildOfSelected,
+      props.isComponentOrInsideComponent,
     ])
 
     return (
@@ -214,6 +248,7 @@ const CondensedEntryItem = React.memo(
           isDataReferenceRow={props.isDataReferenceRow}
           indentation={indentation}
           rowRootSelected={props.rowRootSelected}
+          isComponentOrInsideComponent={props.isComponentOrInsideComponent}
         />
         {when(
           props.showSeparator,
@@ -238,6 +273,7 @@ const CondensedEntryItemContent = React.memo(
     showExpandableIndicator: boolean
     isDataReferenceRow: boolean
     indentation: number
+    isComponentOrInsideComponent: boolean
   }) => {
     const dispatch = useDispatch()
     const colorTheme = useColorTheme()
@@ -326,7 +362,11 @@ const CondensedEntryItemContent = React.memo(
             justifyContent: 'center',
             borderRadius: 5,
             backgroundColor:
-              props.selected && !isDataReference ? colorTheme.selectionBlue.value : undefined,
+              props.selected && !isDataReference
+                ? props.isComponentOrInsideComponent
+                  ? colorTheme.selectionPurple.value
+                  : colorTheme.selectionBlue.value
+                : undefined,
             width: '100%',
             height: '100%',
             padding: props.showExpandableIndicator ? '0px 5px' : 0,
