@@ -13,13 +13,13 @@ import type { DataPickerOption } from './data-picker-utils'
 interface DataPickerCartoucheProps {
   data: DataPickerOption
   selected: boolean
-  forceRole?: CartoucheUIProps['role']
+  forcedRole?: CartoucheUIProps['role']
   onClick?: CartoucheUIProps['onClick']
 }
 
 export const DataPickerCartouche = React.memo(
   (props: React.PropsWithChildren<DataPickerCartoucheProps>) => {
-    const { data, selected, forceRole } = props
+    const { data, selected, forcedRole: forceRole } = props
     const dataSource = useVariableDataSource(data)
     const children = props.children ?? data.variableInfo.expressionPathPart
     return (

@@ -319,7 +319,7 @@ export const DataSelectorModal = React.memo(
                               <DataPickerCartouche
                                 data={selectedVariableOption}
                                 selected={false}
-                                forceRole='information'
+                                forcedRole='information'
                               />
                             ) : null}
                           </FlexRow>
