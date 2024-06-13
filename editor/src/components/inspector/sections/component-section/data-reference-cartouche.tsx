@@ -25,6 +25,9 @@ import { useAtom } from 'jotai'
 import type { CartoucheDataType, CartoucheHighlight, CartoucheUIProps } from './cartouche-ui'
 import { CartoucheUI } from './cartouche-ui'
 import * as PP from '../../../../core/shared/property-path'
+import { AllHtmlEntities } from 'html-entities'
+
+const htmlEntities = new AllHtmlEntities()
 
 interface DataReferenceCartoucheControlProps {
   elementPath: ElementPath
@@ -44,11 +47,16 @@ export const DataReferenceCartoucheControl = React.memo(
 
     const contentsToDisplay = useEditorState(
       Substores.metadata,
-      (store) =>
-        getTextContentOfElement(
+      (store) => {
+        const content = getTextContentOfElement(
           childOrAttribute,
           MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, elementPath),
-        ),
+        )
+        if (content.label != null) {
+          return { ...content, label: htmlEntities.decode(content.label) }
+        }
+        return content
+      },
       'DataReferenceCartoucheControl contentsToDisplay',
     )
 
