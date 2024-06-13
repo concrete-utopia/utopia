@@ -9,6 +9,7 @@ import { MapCounterUi } from '../../../navigator/navigator-item/map-counter'
 import type { CartoucheUIProps } from './cartouche-ui'
 import { CartoucheUI } from './cartouche-ui'
 import type { DataPickerOption } from './data-picker-utils'
+import { variableMatches } from './variables-in-scope-utils'
 
 interface DataPickerCartoucheProps {
   data: DataPickerOption
@@ -28,9 +29,9 @@ export const DataPickerCartouche = React.memo(
         tooltip={null}
         source={dataSource ?? 'internal'}
         datatype={childTypeToCartoucheDataType(data.type)}
-        selected={!data.disabled && selected}
-        highlight={data.disabled ? 'disabled' : null}
-        role={forceRole ?? (data.disabled ? 'information' : 'selection')}
+        selected={variableMatches(data.variableInfo) && selected}
+        highlight={variableMatches(data.variableInfo) ? null : 'disabled'}
+        role={forceRole ?? (variableMatches(data.variableInfo) ? 'selection' : 'information')}
         testId={`data-selector-option-${data.variableInfo.expression}`}
         badge={
           data.type === 'array' ? (

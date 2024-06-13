@@ -7,7 +7,11 @@ import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { condensedNavigatorRow, type CondensedNavigatorRow } from '../navigator-row'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getNavigatorEntryLabel, labelSelector } from './navigator-item-wrapper'
-import { BasePaddingUnit, elementWarningsSelector } from './navigator-item'
+import {
+  BasePaddingUnit,
+  NavigatorRowBorderRadius,
+  elementWarningsSelector,
+} from './navigator-item'
 import { setHighlightedViews, toggleCollapse } from '../../editor/actions/action-creators'
 import type { ElementPath } from 'utopia-shared/src/types'
 import { unless, when } from '../../../utils/react-conditionals'
@@ -18,6 +22,7 @@ import {
   NavigatorRowClickableWrapper,
   useGetNavigatorClickActions,
 } from './navigator-item-clickable-wrapper'
+import { useNavigatorSelectionBoundsForEntry } from './use-navigator-selection-bounds-for-entry'
 
 function useEntryLabel(entry: NavigatorEntry) {
   const labelForTheElement = useEditorState(
@@ -87,6 +92,12 @@ export const CondensedEntryItemWrapper = React.memo(
       )
     }, [selectedViews, props.navigatorRow])
 
+    const { isTopOfSelection, isBottomOfSelection } = useNavigatorSelectionBoundsForEntry(
+      props.navigatorRow.entries[0],
+      rowRootSelected,
+      0,
+    )
+
     return (
       <div
         style={{
@@ -98,12 +109,16 @@ export const CondensedEntryItemWrapper = React.memo(
             : hasSelection || wholeRowInsideSelection
             ? colorTheme.childSelectionBlue.value
             : 'transparent',
-          borderTopLeftRadius: rowContainsSelection ? 5 : 0,
-          borderTopRightRadius: rowContainsSelection ? 5 : 0,
+          borderTopLeftRadius: isTopOfSelection ? NavigatorRowBorderRadius : 0,
+          borderTopRightRadius: isTopOfSelection ? NavigatorRowBorderRadius : 0,
           borderBottomLeftRadius:
-            rowContainsSelection && (isCollapsed || isDataReferenceRow) ? 5 : 0,
+            isBottomOfSelection && (isCollapsed || isDataReferenceRow)
+              ? NavigatorRowBorderRadius
+              : 0,
           borderBottomRightRadius:
-            rowContainsSelection && (isCollapsed || isDataReferenceRow) ? 5 : 0,
+            isBottomOfSelection && (isCollapsed || isDataReferenceRow)
+              ? NavigatorRowBorderRadius
+              : 0,
           overflowX: 'auto',
         }}
       >

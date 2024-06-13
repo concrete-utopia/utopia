@@ -9,7 +9,6 @@ export interface PrimitiveOption {
   definedElsewhere: string
   depth: number
   valuePath: Array<string | number>
-  disabled: boolean
 }
 
 export interface ArrayOption {
@@ -19,7 +18,6 @@ export interface ArrayOption {
   definedElsewhere: string
   children: Array<DataPickerOption>
   valuePath: Array<string | number>
-  disabled: boolean
 }
 
 export interface ObjectOption {
@@ -29,7 +27,6 @@ export interface ObjectOption {
   definedElsewhere: string
   children: Array<DataPickerOption>
   valuePath: Array<string | number>
-  disabled: boolean
 }
 
 export interface JSXOption {
@@ -38,7 +35,6 @@ export interface JSXOption {
   definedElsewhere: string
   depth: number
   valuePath: Array<string | number>
-  disabled: boolean
 }
 
 export type DataPickerOption = PrimitiveOption | ArrayOption | ObjectOption | JSXOption

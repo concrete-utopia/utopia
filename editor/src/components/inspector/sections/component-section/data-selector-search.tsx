@@ -5,6 +5,7 @@ import { assertNever } from '../../../../core/shared/utils'
 import { FlexRow, Icons, UtopiaStyles } from '../../../../uuiui'
 import { type DataPickerOption, type ObjectPath } from './data-picker-utils'
 import { DataPickerCartouche } from './data-selector-cartouche'
+import { when } from '../../../../utils/react-conditionals'
 
 export interface DataSelectorSearchProps {
   setNavigatedToPath: (_: DataPickerOption) => void
@@ -56,9 +57,10 @@ export const DataSelectorSearch = React.memo(
                         searchTerm={searchTerm}
                         fontWeightForMatch={900}
                       />
-                      {i < searchResult.valuePath.length - 1 ? (
-                        <Icons.ExpansionArrowRight color='primary' />
-                      ) : null}
+                      {when(
+                        i < searchResult.valuePath.length - 1,
+                        <Icons.ExpansionArrowRight color='primary' />,
+                      )}
                     </React.Fragment>
                   ))}
                 </DataPickerCartouche>

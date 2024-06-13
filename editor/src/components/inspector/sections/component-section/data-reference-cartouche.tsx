@@ -24,6 +24,7 @@ import { DataPickerPreferredAllAtom, jsxElementChildToValuePath } from './data-p
 import { useAtom } from 'jotai'
 import type { CartoucheDataType, CartoucheHighlight, CartoucheUIProps } from './cartouche-ui'
 import { CartoucheUI } from './cartouche-ui'
+import * as PP from '../../../../core/shared/property-path'
 
 interface DataReferenceCartoucheControlProps {
   elementPath: ElementPath
@@ -94,7 +95,7 @@ export const DataReferenceCartoucheControl = React.memo(
       props.renderedAt.type === 'element-property-path'
         ? props.renderedAt.elementPropertyPath.propertyPath
         : props.renderedAt.type === 'child-node'
-        ? null
+        ? PP.create('children')
         : assertNever(props.renderedAt)
 
     const [preferredAllState] = useAtom(DataPickerPreferredAllAtom)
