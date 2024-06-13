@@ -426,7 +426,6 @@ export const NavigatorItem: React.FunctionComponent<
   const isInFocusedComponentSubtree = useEditorState(
     Substores.focusedElement,
     (store) =>
-      isRegularNavigatorEntry(navigatorEntry) &&
       EP.isInExplicitlyFocusedSubtree(
         store.editor.focusedElementPath,
         autoFocusedPaths,
