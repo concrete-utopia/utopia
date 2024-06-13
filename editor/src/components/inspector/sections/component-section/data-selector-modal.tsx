@@ -8,7 +8,6 @@ import {
   CanvasContextMenuPortalTargetID,
   arrayEqualsByReference,
   arrayEqualsByValue,
-  assertNever,
 } from '../../../../core/shared/utils'
 import { when } from '../../../../utils/react-conditionals'
 import {
@@ -33,6 +32,7 @@ import {
 import { DataSelectorColumns } from './data-selector-columns'
 import { DataSelectorLeftSidebar } from './data-selector-left-sidebar'
 import { DataSelectorSearch } from './data-selector-search'
+import { variableMatches } from './variables-in-scope-utils'
 import { DataPickerCartouche } from './data-selector-cartouche'
 
 export const DataSelectorPopupBreadCrumbsTestId = 'data-selector-modal-top-bar'
@@ -158,7 +158,7 @@ export const DataSelectorModal = React.memo(
         if (variable == null) {
           return
         }
-        if (variable.disabled) {
+        if (variable.variableInfo.matches !== 'matches') {
           return
         }
         onPropertyPicked(
@@ -175,6 +175,9 @@ export const DataSelectorModal = React.memo(
       }, [])
 
       const searchNullOrEmpty = searchTerm == null || searchTerm.length < 1
+
+      const selectedVariableIsDisabled =
+        optionalMap((v) => !variableMatches(v.variableInfo), selectedVariableOption) ?? true
 
       return (
         <InspectorModal
@@ -353,7 +356,7 @@ export const DataSelectorModal = React.memo(
                           height: 24,
                           width: 81,
                           textAlign: 'center',
-                          ...disabledButtonStyles(selectedVariableOption?.disabled ?? true),
+                          ...disabledButtonStyles(selectedVariableIsDisabled),
                         }}
                         onClick={applyVariable}
                       >
