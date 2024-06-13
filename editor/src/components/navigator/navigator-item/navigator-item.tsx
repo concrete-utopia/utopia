@@ -169,6 +169,8 @@ const getColors = (
   }
 }
 
+export const NavigatorRowBorderRadius = 5
+
 const computeResultingStyle = (params: {
   selected: boolean
   isTopOfSelection: boolean
@@ -239,8 +241,8 @@ const computeResultingStyle = (params: {
 
   let result = getColors(styleType, selectedType, colorTheme)
 
-  const borderRadiusTop = isTopOfSelection ? 5 : 0
-  const borderRadiusBottom = isBottomOfSelection ? 5 : 0
+  const borderRadiusTop = isTopOfSelection ? NavigatorRowBorderRadius : 0
+  const borderRadiusBottom = isBottomOfSelection ? NavigatorRowBorderRadius : 0
 
   result.style = {
     ...result.style,

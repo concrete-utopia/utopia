@@ -7,7 +7,11 @@ import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { condensedNavigatorRow, type CondensedNavigatorRow } from '../navigator-row'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getNavigatorEntryLabel, labelSelector } from './navigator-item-wrapper'
-import { BasePaddingUnit, elementWarningsSelector } from './navigator-item'
+import {
+  BasePaddingUnit,
+  NavigatorRowBorderRadius,
+  elementWarningsSelector,
+} from './navigator-item'
 import { setHighlightedViews, toggleCollapse } from '../../editor/actions/action-creators'
 import type { ElementPath } from 'utopia-shared/src/types'
 import { unless, when } from '../../../utils/react-conditionals'
@@ -94,8 +98,6 @@ export const CondensedEntryItemWrapper = React.memo(
       0,
     )
 
-    const borderRadius = 5
-
     return (
       <div
         style={{
@@ -107,12 +109,16 @@ export const CondensedEntryItemWrapper = React.memo(
             : hasSelection || wholeRowInsideSelection
             ? colorTheme.childSelectionBlue.value
             : 'transparent',
-          borderTopLeftRadius: isTopOfSelection ? borderRadius : 0,
-          borderTopRightRadius: isTopOfSelection ? borderRadius : 0,
+          borderTopLeftRadius: isTopOfSelection ? NavigatorRowBorderRadius : 0,
+          borderTopRightRadius: isTopOfSelection ? NavigatorRowBorderRadius : 0,
           borderBottomLeftRadius:
-            isBottomOfSelection && (isCollapsed || isDataReferenceRow) ? borderRadius : 0,
+            isBottomOfSelection && (isCollapsed || isDataReferenceRow)
+              ? NavigatorRowBorderRadius
+              : 0,
           borderBottomRightRadius:
-            isBottomOfSelection && (isCollapsed || isDataReferenceRow) ? borderRadius : 0,
+            isBottomOfSelection && (isCollapsed || isDataReferenceRow)
+              ? NavigatorRowBorderRadius
+              : 0,
           overflowX: 'auto',
         }}
       >
