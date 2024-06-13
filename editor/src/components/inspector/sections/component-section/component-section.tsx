@@ -770,7 +770,9 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
         <SimpleFlexRow
           style={{ gap: 5, justifyContent: 'space-between', flexGrow: 1, paddingRight: 3 }}
         >
-          <FlexRow
+          <UIGridRow
+            padded={false}
+            variant='<--1fr--><--1fr-->'
             style={{ flex: 1, flexShrink: 0, gap: 5, justifyContent: 'space-between' }}
             ref={dataPickerButtonData.setReferenceElement}
           >
@@ -809,7 +811,7 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
               showHiddenControl={props.showHiddenControl}
               elementPath={selectedViews.at(0) ?? EP.emptyElementPath}
             />
-          </FlexRow>
+          </UIGridRow>
         </SimpleFlexRow>
         <div
           style={{
