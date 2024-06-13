@@ -1063,7 +1063,8 @@ interface RowForObjectControlProps extends AbstractRowForControlProps {
 }
 
 const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
-  const [open, setOpen] = React.useState(false)
+  const partOfBiggerObject = props.propPath.propertyElements.length > 1
+  const [open, setOpen] = React.useState(partOfBiggerObject)
   const handleOnClick = React.useCallback(() => {
     if (!props.disableToggling) {
       setOpen(!open)
