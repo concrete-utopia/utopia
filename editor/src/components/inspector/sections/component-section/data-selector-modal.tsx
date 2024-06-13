@@ -60,10 +60,7 @@ export const DataSelectorModal = React.memo(
       },
       forwardedRef,
     ) => {
-      const allVariablesInScope = React.useMemo(
-        () => filterKeepMatchingOnly(variablesInScope),
-        [variablesInScope],
-      )
+      const allVariablesInScope = variablesInScope
       const colorTheme = useColorTheme()
 
       const scopeBuckets = React.useMemo(
@@ -477,24 +474,4 @@ function getVariableInScope(
     return null
   }
   return findOption(variablesInScope)
-}
-
-function filterVariableOption(option: DataPickerOption): DataPickerOption | null {
-  switch (option.type) {
-    case 'array':
-    case 'object':
-      return {
-        ...option,
-        children: filterKeepMatchingOnly(option.children),
-      }
-    case 'jsx':
-    case 'primitive':
-      return variableOrChildMatches(option.variableInfo) ? option : null
-    default:
-      assertNever(option)
-  }
-}
-
-function filterKeepMatchingOnly(options: DataPickerOption[]): DataPickerOption[] {
-  return mapDropNulls((o) => filterVariableOption(o), options)
 }
