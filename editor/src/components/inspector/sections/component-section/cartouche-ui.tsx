@@ -263,17 +263,17 @@ function useCartoucheColors(source: CartoucheSource, highlight: CartoucheHighlig
                 ? colorTheme.whiteOpacity20.value
                 : highlight === 'subtle'
                 ? colorTheme.cartoucheLiteralHighlightDefault.value
-                : colorTheme.bg5.value,
+                : colorTheme.cartoucheLiteralHighlightDefault.value,
             hovered:
               highlight === 'strong'
                 ? colorTheme.whiteOpacity30.value
                 : highlight === 'subtle'
                 ? colorTheme.cartoucheLiteralHighlightHovered.value
-                : colorTheme.fg8.value,
+                : colorTheme.cartoucheLiteralHighlightHovered.value,
             selected:
               highlight === 'subtle'
                 ? colorTheme.cartoucheLiteralHighlightSelected.value
-                : colorTheme.fg6.value,
+                : colorTheme.cartoucheLiteralHighlightSelected.value,
           },
           icon: { default: 'secondary', hovered: 'secondary', selected: 'on-highlight-main' },
         }

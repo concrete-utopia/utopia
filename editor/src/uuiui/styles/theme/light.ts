@@ -147,7 +147,7 @@ const colorsWithOpacity = {
 
   cartoucheLiteralHighlightDefault: createUtopiColor('rgba(43, 43, 43, 0.1)'),
   cartoucheLiteralHighlightHovered: createUtopiColor('rgba(43, 43, 43, 0.2)'),
-  cartoucheLiteralHighlightSelected: createUtopiColor('rgba(43, 43, 43, 0.5)'),
+  cartoucheLiteralHighlightSelected: createUtopiColor('rgba(43, 43, 43, 0.3)'),
 }
 
 const lightTheme = {
