@@ -384,9 +384,7 @@ const CondensedEntryItemContent = React.memo(
             borderRadius: 5,
             backgroundColor:
               props.selected && !isDataReference
-                ? props.isComponentOrInsideComponent
-                  ? colorTheme.selectionPurple.value
-                  : colorTheme.selectionBlue.value
+                ? getSelectionColor(colorTheme, props.isComponentOrInsideComponent).main
                 : undefined,
             width: '100%',
             height: '100%',
