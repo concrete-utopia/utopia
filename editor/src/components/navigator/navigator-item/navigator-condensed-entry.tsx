@@ -22,6 +22,7 @@ import {
   NavigatorRowClickableWrapper,
   useGetNavigatorClickActions,
 } from './navigator-item-clickable-wrapper'
+import type { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
 import { useNavigatorSelectionBoundsForEntry } from './use-navigator-selection-bounds-for-entry'
 
 function useEntryLabel(entry: NavigatorEntry) {
@@ -36,6 +37,12 @@ function useEntryLabel(entry: NavigatorEntry) {
   }, [entry, labelForTheElement])
 
   return entryLabel
+}
+
+function getSelectionColor(colorTheme: ThemeObject, isComponent: boolean) {
+  return isComponent
+    ? { main: colorTheme.selectionPurple.value, child: colorTheme.childSelectionPurple.value }
+    : { main: colorTheme.selectionBlue.value, child: colorTheme.childSelectionBlue.value }
 }
 
 export const CondensedEntryItemWrapper = React.memo(
@@ -73,6 +80,31 @@ export const CondensedEntryItemWrapper = React.memo(
       'CondensedEntryItemWrapper isCollapsed',
     )
 
+    const autoFocusedPaths = useEditorState(
+      Substores.derived,
+      (store) => store.derived.autoFocusedPaths,
+      'CondensedEntryItemWrapper autoFocusedPaths',
+    )
+
+    const isComponentOrInsideComponent = useEditorState(
+      Substores.focusedElement,
+      (store) =>
+        props.navigatorRow.entries.some(
+          (entry) =>
+            EP.isInExplicitlyFocusedSubtree(
+              store.editor.focusedElementPath,
+              autoFocusedPaths,
+              entry.elementPath,
+            ) ||
+            EP.isExplicitlyFocused(
+              store.editor.focusedElementPath,
+              autoFocusedPaths,
+              entry.elementPath,
+            ),
+        ),
+      'CondensedEntryItemWrapper isInFocusedComponentSubtree',
+    )
+
     const isDataReferenceRow = React.useMemo(() => {
       return props.navigatorRow.entries.every(
         (entry, idx) =>
@@ -92,6 +124,15 @@ export const CondensedEntryItemWrapper = React.memo(
       )
     }, [selectedViews, props.navigatorRow])
 
+    function getBackgroundColor() {
+      if (rowRootSelected) {
+        return getSelectionColor(colorTheme, isComponentOrInsideComponent).main
+      } else if (hasSelection || wholeRowInsideSelection) {
+        return getSelectionColor(colorTheme, isComponentOrInsideComponent).child
+      } else {
+        return 'transparent'
+      }
+    }
     const { isTopOfSelection, isBottomOfSelection } = useNavigatorSelectionBoundsForEntry(
       props.navigatorRow.entries[0],
       rowRootSelected,
@@ -104,11 +145,7 @@ export const CondensedEntryItemWrapper = React.memo(
           ...props.windowStyle,
           display: 'flex',
           alignItems: 'center',
-          backgroundColor: rowRootSelected
-            ? colorTheme.selectionBlue.value
-            : hasSelection || wholeRowInsideSelection
-            ? colorTheme.childSelectionBlue.value
-            : 'transparent',
+          backgroundColor: getBackgroundColor(),
           borderTopLeftRadius: isTopOfSelection ? NavigatorRowBorderRadius : 0,
           borderTopRightRadius: isTopOfSelection ? NavigatorRowBorderRadius : 0,
           borderBottomLeftRadius:
@@ -138,6 +175,7 @@ export const CondensedEntryItemWrapper = React.memo(
                 wholeRowInsideSelection={wholeRowInsideSelection}
                 rowContainsSelection={rowContainsSelection}
                 rowRootSelected={rowRootSelected}
+                isComponentOrInsideComponent={isComponentOrInsideComponent}
               />
             )
           })}
@@ -158,6 +196,7 @@ const CondensedEntryItem = React.memo(
     wholeRowInsideSelection: boolean
     showSeparator: boolean
     showExpandableIndicator: boolean
+    isComponentOrInsideComponent: boolean
   }) => {
     const colorTheme = useColorTheme()
 
@@ -206,7 +245,7 @@ const CondensedEntryItem = React.memo(
       if (props.wholeRowInsideSelection) {
         return 'transparent'
       } else if (!selectionIsDataReference && (isSelected || isChildOfSelected)) {
-        return colorTheme.childSelectionBlue.value
+        return getSelectionColor(colorTheme, props.isComponentOrInsideComponent).child
       } else {
         return colorTheme.bg1.value
       }
@@ -216,6 +255,7 @@ const CondensedEntryItem = React.memo(
       selectionIsDataReference,
       isSelected,
       isChildOfSelected,
+      props.isComponentOrInsideComponent,
     ])
 
     return (
@@ -229,6 +269,7 @@ const CondensedEntryItem = React.memo(
           isDataReferenceRow={props.isDataReferenceRow}
           indentation={indentation}
           rowRootSelected={props.rowRootSelected}
+          isComponentOrInsideComponent={props.isComponentOrInsideComponent}
         />
         {when(
           props.showSeparator,
@@ -253,6 +294,7 @@ const CondensedEntryItemContent = React.memo(
     showExpandableIndicator: boolean
     isDataReferenceRow: boolean
     indentation: number
+    isComponentOrInsideComponent: boolean
   }) => {
     const dispatch = useDispatch()
     const colorTheme = useColorTheme()
@@ -341,7 +383,9 @@ const CondensedEntryItemContent = React.memo(
             justifyContent: 'center',
             borderRadius: 5,
             backgroundColor:
-              props.selected && !isDataReference ? colorTheme.selectionBlue.value : undefined,
+              props.selected && !isDataReference
+                ? getSelectionColor(colorTheme, props.isComponentOrInsideComponent).main
+                : undefined,
             width: '100%',
             height: '100%',
             padding: props.showExpandableIndicator ? '0px 5px' : 0,
