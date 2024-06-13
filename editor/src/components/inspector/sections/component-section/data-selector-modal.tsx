@@ -1,5 +1,5 @@
 import React from 'react'
-import { groupBy, mapDropNulls, isPrefixOf } from '../../../../core/shared/array-utils'
+import { groupBy, isPrefixOf } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
@@ -8,7 +8,6 @@ import {
   CanvasContextMenuPortalTargetID,
   arrayEqualsByReference,
   arrayEqualsByValue,
-  assertNever,
 } from '../../../../core/shared/utils'
 import { when } from '../../../../utils/react-conditionals'
 import {
