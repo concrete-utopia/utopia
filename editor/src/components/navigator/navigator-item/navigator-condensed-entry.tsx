@@ -18,6 +18,7 @@ import {
   NavigatorRowClickableWrapper,
   useGetNavigatorClickActions,
 } from './navigator-item-clickable-wrapper'
+import type { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
 
 function useEntryLabel(entry: NavigatorEntry) {
   const labelForTheElement = useEditorState(
@@ -31,6 +32,12 @@ function useEntryLabel(entry: NavigatorEntry) {
   }, [entry, labelForTheElement])
 
   return entryLabel
+}
+
+function getSelectionColor(colorTheme: ThemeObject, isComponent: boolean) {
+  return isComponent
+    ? { main: colorTheme.selectionPurple.value, child: colorTheme.childSelectionPurple.value }
+    : { main: colorTheme.selectionBlue.value, child: colorTheme.childSelectionBlue.value }
 }
 
 export const CondensedEntryItemWrapper = React.memo(
@@ -112,21 +119,23 @@ export const CondensedEntryItemWrapper = React.memo(
       )
     }, [selectedViews, props.navigatorRow])
 
+    function getBackgroundColor() {
+      if (rowRootSelected) {
+        return getSelectionColor(colorTheme, isComponentOrInsideComponent).main
+      } else if (hasSelection || wholeRowInsideSelection) {
+        return getSelectionColor(colorTheme, isComponentOrInsideComponent).child
+      } else {
+        return 'transparent'
+      }
+    }
+
     return (
       <div
         style={{
           ...props.windowStyle,
           display: 'flex',
           alignItems: 'center',
-          backgroundColor: rowRootSelected
-            ? isComponentOrInsideComponent
-              ? colorTheme.selectionPurple.value
-              : colorTheme.selectionBlue.value
-            : hasSelection || wholeRowInsideSelection
-            ? isComponentOrInsideComponent
-              ? colorTheme.childSelectionPurple.value
-              : colorTheme.childSelectionBlue.value
-            : 'transparent',
+          backgroundColor: getBackgroundColor(),
           borderTopLeftRadius: rowContainsSelection ? 5 : 0,
           borderTopRightRadius: rowContainsSelection ? 5 : 0,
           borderBottomLeftRadius:
@@ -222,9 +231,7 @@ const CondensedEntryItem = React.memo(
       if (props.wholeRowInsideSelection) {
         return 'transparent'
       } else if (!selectionIsDataReference && (isSelected || isChildOfSelected)) {
-        return props.isComponentOrInsideComponent
-          ? colorTheme.childSelectionPurple.value
-          : colorTheme.childSelectionBlue.value
+        return getSelectionColor(colorTheme, props.isComponentOrInsideComponent).child
       } else {
         return colorTheme.bg1.value
       }
