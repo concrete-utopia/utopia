@@ -247,13 +247,13 @@ export function getTextContentOfElement(
         label: `${getTextContentOfElement(element.onValue, null).label}[${
           getTextContentOfElement(element.element, null).label
         }]`,
-        shortLabel: `… .${getTextContentOfElement(element.element, null).label}`,
+        shortLabel: `…${getTextContentOfElement(element.element, null).label}`,
       }
     case 'JS_PROPERTY_ACCESS':
       return {
         type: 'reference',
         label: `${getTextContentOfElement(element.onValue, null).label}.${element.property}`,
-        shortLabel: `… .${element.property}`,
+        shortLabel: `…${element.property}`,
       }
     case 'ATTRIBUTE_FUNCTION_CALL':
       return { type: 'reference', label: `${element.functionName}(...`, shortLabel: null }
