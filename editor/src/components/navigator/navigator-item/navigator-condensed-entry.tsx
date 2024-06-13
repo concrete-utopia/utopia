@@ -18,6 +18,7 @@ import {
   NavigatorRowClickableWrapper,
   useGetNavigatorClickActions,
 } from './navigator-item-clickable-wrapper'
+import { useNavigatorSelectionBoundsForEntry } from './use-navigator-selection-bounds-for-entry'
 
 function useEntryLabel(entry: NavigatorEntry) {
   const labelForTheElement = useEditorState(
@@ -87,6 +88,14 @@ export const CondensedEntryItemWrapper = React.memo(
       )
     }, [selectedViews, props.navigatorRow])
 
+    const { isTopOfSelection, isBottomOfSelection } = useNavigatorSelectionBoundsForEntry(
+      props.navigatorRow.entries[0],
+      rowRootSelected,
+      0,
+    )
+
+    const borderRadius = 5
+
     return (
       <div
         style={{
@@ -98,12 +107,12 @@ export const CondensedEntryItemWrapper = React.memo(
             : hasSelection || wholeRowInsideSelection
             ? colorTheme.childSelectionBlue.value
             : 'transparent',
-          borderTopLeftRadius: rowContainsSelection ? 5 : 0,
-          borderTopRightRadius: rowContainsSelection ? 5 : 0,
+          borderTopLeftRadius: isTopOfSelection ? borderRadius : 0,
+          borderTopRightRadius: isTopOfSelection ? borderRadius : 0,
           borderBottomLeftRadius:
-            rowContainsSelection && (isCollapsed || isDataReferenceRow) ? 5 : 0,
+            isBottomOfSelection && (isCollapsed || isDataReferenceRow) ? borderRadius : 0,
           borderBottomRightRadius:
-            rowContainsSelection && (isCollapsed || isDataReferenceRow) ? 5 : 0,
+            isBottomOfSelection && (isCollapsed || isDataReferenceRow) ? borderRadius : 0,
           overflowX: 'auto',
         }}
       >

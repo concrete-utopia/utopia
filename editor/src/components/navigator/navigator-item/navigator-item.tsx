@@ -68,6 +68,7 @@ import { DataReferenceCartoucheControl } from '../../inspector/sections/componen
 import { MapListSourceCartoucheNavigator } from '../../inspector/sections/layout-section/list-source-cartouche'
 import { regularNavigatorRow } from '../navigator-row'
 import { NavigatorRowClickableWrapper } from './navigator-item-clickable-wrapper'
+import { useNavigatorSelectionBoundsForEntry } from './use-navigator-selection-bounds-for-entry'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -168,22 +169,36 @@ const getColors = (
   }
 }
 
-const computeResultingStyle = (
-  selected: boolean,
-  emphasis: Emphasis,
-  isInsideComponent: boolean,
-  isDynamic: boolean,
-  isProbablyScene: boolean,
-  fullyVisible: boolean,
-  isFocusedComponent: boolean,
-  isInFocusedComponentSubtree: boolean,
-  isFocusableComponent: boolean,
-  isHighlightedForInteraction: boolean,
-  isDescendantOfSelected: boolean,
-  isErroredGroup: boolean,
-  colorTheme: ThemeObject,
-  isSingleItem: boolean,
-) => {
+const computeResultingStyle = (params: {
+  selected: boolean
+  isTopOfSelection: boolean
+  isBottomOfSelection: boolean
+  emphasis: Emphasis
+  isInsideComponent: boolean
+  isProbablyScene: boolean
+  fullyVisible: boolean
+  isFocusedComponent: boolean
+  isFocusableComponent: boolean
+  isHighlightedForInteraction: boolean
+  isDescendantOfSelected: boolean
+  isErroredGroup: boolean
+  colorTheme: ThemeObject
+}) => {
+  const {
+    selected,
+    isTopOfSelection,
+    isBottomOfSelection,
+    emphasis,
+    isInsideComponent,
+    isProbablyScene,
+    fullyVisible,
+    isFocusedComponent,
+    isFocusableComponent,
+    isHighlightedForInteraction,
+    isDescendantOfSelected,
+    isErroredGroup,
+    colorTheme,
+  } = params
   let styleType: StyleType = 'default'
   let selectedType: SelectedType = 'unselected'
 
@@ -224,15 +239,16 @@ const computeResultingStyle = (
 
   let result = getColors(styleType, selectedType, colorTheme)
 
-  const borderRadiusTop = selected ? '5px 5px' : '0 0'
-  // TODO: add the case of a last descendant of a selected component
-  const borderRadiusBottom = selected && isSingleItem ? '5px 5px' : '0 0'
-  const borderRadius = `${borderRadiusTop} ${borderRadiusBottom}`
+  const borderRadiusTop = isTopOfSelection ? 5 : 0
+  const borderRadiusBottom = isBottomOfSelection ? 5 : 0
 
   result.style = {
     ...result.style,
     fontWeight: isProbablyParentOfSelected || isProbablyScene ? 600 : 'inherit',
-    borderRadius: borderRadius,
+    borderTopLeftRadius: borderRadiusTop,
+    borderTopRightRadius: borderRadiusTop,
+    borderBottomLeftRadius: borderRadiusBottom,
+    borderBottomRightRadius: borderRadiusBottom,
   }
 
   return result
@@ -568,8 +584,6 @@ export const NavigatorItem: React.FunctionComponent<
   )
 
   const isConditional = codeItemType === 'conditional'
-  const isRemixItem = codeItemType === 'remix'
-  const isCodeItem = codeItemType !== 'none'
 
   const metadata = useEditorState(
     Substores.metadata,
@@ -648,11 +662,6 @@ export const NavigatorItem: React.FunctionComponent<
     [dispatch, navigatorEntry, selected, isHighlighted],
   )
 
-  const removeHighlight = React.useCallback(
-    () => dispatch([EditorActions.clearHighlightedViews()]),
-    [dispatch],
-  )
-
   const focusComponent = React.useCallback(
     (event: React.MouseEvent) => {
       if (isManuallyFocusableComponent && !event.altKey) {
@@ -680,7 +689,6 @@ export const NavigatorItem: React.FunctionComponent<
 
   const isPlaceholder = isEntryAPlaceholder(props.navigatorEntry)
 
-  const isComponentScene = useIsProbablyScene(navigatorEntry) && childComponentCount === 1
   const isRenderProp = isRenderPropNavigatorEntry(navigatorEntry)
 
   const containerStyle: React.CSSProperties = React.useMemo(() => {
@@ -702,24 +710,27 @@ export const NavigatorItem: React.FunctionComponent<
     )
   }, [childComponentCount, isFocusedComponent, isConditional])
 
-  const isSingleItem = (canBeExpanded && collapsed) || childComponentCount === 0
-
-  const resultingStyle = computeResultingStyle(
-    elementIsData ? false : selected,
-    emphasis,
-    isInsideComponent,
-    isDynamic,
-    isProbablyScene,
-    fullyVisible,
-    isFocusedComponent,
-    isInFocusedComponentSubtree,
-    isManuallyFocusableComponent,
-    isHighlightedForInteraction,
-    elementIsData && selected ? false : isDescendantOfSelected,
-    isErroredGroup,
-    colorTheme,
-    isSingleItem,
+  const { isTopOfSelection, isBottomOfSelection } = useNavigatorSelectionBoundsForEntry(
+    navigatorEntry,
+    selected,
+    childComponentCount,
   )
+
+  const resultingStyle = computeResultingStyle({
+    selected: elementIsData ? false : selected,
+    isTopOfSelection: isTopOfSelection,
+    isBottomOfSelection: isBottomOfSelection,
+    emphasis: emphasis,
+    isInsideComponent: isInsideComponent,
+    isProbablyScene: isProbablyScene,
+    fullyVisible: fullyVisible,
+    isFocusedComponent: isFocusedComponent,
+    isFocusableComponent: isManuallyFocusableComponent,
+    isHighlightedForInteraction: isHighlightedForInteraction,
+    isDescendantOfSelected: elementIsData && selected ? false : isDescendantOfSelected,
+    isErroredGroup: isErroredGroup,
+    colorTheme: colorTheme,
+  })
 
   const rowStyle = useKeepReferenceEqualityIfPossible({
     paddingLeft: getElementPadding(entryNavigatorDepth),
