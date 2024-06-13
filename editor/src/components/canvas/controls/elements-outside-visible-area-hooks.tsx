@@ -8,7 +8,6 @@ import {
   getRectCenter,
   isFiniteRectangle,
   rectangleIntersection,
-  scaleRect,
   windowRectangle,
 } from '../../../core/shared/math-utils'
 import type { ElementPath } from '../../../core/shared/project-file-types'
@@ -23,8 +22,6 @@ type ElementOutsideVisibleArea = {
 }
 
 export type ElementOutsideVisibleAreaIndicator = {
-  elements: number
-  rect: CanvasRectangle
   position: WindowPoint
   selected: boolean
 }
@@ -136,12 +133,10 @@ export function useElementsOutsideVisibleArea(): ElementOutsideVisibleAreaIndica
       return null
     }
     return {
-      elements: elementsOutsideVisibleArea.length,
-      rect: canvasRect,
-      position: getRectCenter(scaleRect(windowRect, canvasScale)),
+      position: getRectCenter(windowRect),
       selected: elementsOutsideVisibleArea.some((e) => EP.containsPath(e.path, selectedViews)),
     }
-  }, [elementsOutsideVisibleArea, framesByPathString, selectedViews, canvasScale])
+  }, [elementsOutsideVisibleArea, framesByPathString, selectedViews])
 }
 
 export function getIndicatorAngleToTarget(from: WindowPoint, to: WindowPoint): number {

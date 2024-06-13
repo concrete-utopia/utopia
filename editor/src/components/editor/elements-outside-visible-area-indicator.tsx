@@ -1,103 +1,80 @@
 import React from 'react'
-import type { WindowPoint } from '../../core/shared/math-utils'
 import { windowPoint } from '../../core/shared/math-utils'
-import { SquareButton, Tooltip, useColorTheme } from '../../uuiui'
 import type { ElementOutsideVisibleAreaIndicator } from '../canvas/controls/elements-outside-visible-area-hooks'
 import {
   getIndicatorAngleToTarget,
   useElementsOutsideVisibleArea,
 } from '../canvas/controls/elements-outside-visible-area-hooks'
-import { scrollToPosition } from './actions/action-creators'
-import { useDispatch } from './store/dispatch-context'
-import { Substores, useEditorState, useRefEditorState } from './store/store-hook'
-import { isFollowMode } from './editor-modes'
+import { useColorTheme } from '../../uuiui'
 
 export const ToolbarIndicatorElementsOutsideVisibleAreaId =
   'indicator-elements-outside-visible-area'
 
 export const ElementsOutsideVisibleAreaIndicator = React.memo(() => {
-  const colorTheme = useColorTheme()
-  const dispatch = useDispatch()
-
   const target = useElementsOutsideVisibleArea()
 
-  const mode = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.mode,
-    'ElementsOutsideVisibleAreaIndicator mode',
-  )
-
-  const scrollTo = React.useCallback(() => {
-    if (target != null && !isFollowMode(mode)) {
-      dispatch([scrollToPosition(target.rect, 'to-center')])
-    }
-  }, [dispatch, target, mode])
-
-  if (target == null) {
-    return null
-  }
-
-  return (
-    <Tooltip title={`Scroll to element${target.elements > 1 ? 's' : ''}`} placement='bottom'>
-      <SquareButton
-        highlight
-        style={{
-          textAlign: 'center',
-          width: 'min-content',
-          padding: '0 8px 0px 2px',
-          position: 'relative',
-          color: colorTheme.dynamicBlue.value,
-        }}
-        onClick={scrollTo}
-      >
-        <IndicatorArrow target={target} />
-      </SquareButton>
-    </Tooltip>
-  )
+  return <IndicatorArrow target={target} />
 })
 
 ElementsOutsideVisibleAreaIndicator.displayName = 'ElementsOutsideVisibleAreaIndicator'
 
-const IndicatorArrow = React.memo(({ target }: { target: ElementOutsideVisibleAreaIndicator }) => {
-  const ref = React.useRef<HTMLDivElement | null>(null)
-  const canvasScale = useRefEditorState((store) => store.editor.canvas.scale)
+const IndicatorArrow = React.memo(
+  ({ target }: { target: ElementOutsideVisibleAreaIndicator | null }) => {
+    const [mouse, setMouse] = React.useState(windowPoint({ x: 0, y: 0 }))
 
-  const [angle, setAngle] = React.useState<number>(0)
-
-  React.useEffect(() => {
-    // useEffect to make sure the origin point is calculated after the arrow has been rendered
-    if (ref.current != null) {
-      const rect = ref.current.getBoundingClientRect()
-      const newAngle = getIndicatorAngleToTarget(
-        getIndicatorOriginPoint(rect, canvasScale.current),
+    const angle = React.useMemo(() => {
+      if (target == null) {
+        return null
+      }
+      return getIndicatorAngleToTarget(
+        windowPoint({ x: mouse.x + 20, y: mouse.y }),
         target.position,
       )
-      setAngle(newAngle)
-    }
-  }, [canvasScale, target])
+    }, [mouse, target])
 
-  return (
-    <div
-      id={ToolbarIndicatorElementsOutsideVisibleAreaId}
-      data-testid={ToolbarIndicatorElementsOutsideVisibleAreaId}
-      ref={ref}
-      style={{
-        transform: `rotate(${angle}rad)`,
-        fontSize: 14,
-        fontWeight: 800,
-        opacity: target.selected ? 1 : 0.5,
-      }}
-    >
-      ←
-    </div>
-  )
-})
+    React.useEffect(() => {
+      function handle(e: MouseEvent) {
+        setMouse(windowPoint({ x: e.clientX, y: e.clientY }))
+      }
+      window.addEventListener('mousemove', handle)
+      window.addEventListener('wheel', handle)
+      return function () {
+        window.removeEventListener('mousemove', handle)
+        window.removeEventListener('wheel', handle)
+      }
+    }, [])
+
+    const colorTheme = useColorTheme()
+
+    if (target == null) {
+      return null
+    }
+
+    return (
+      <div
+        id={ToolbarIndicatorElementsOutsideVisibleAreaId}
+        data-testid={ToolbarIndicatorElementsOutsideVisibleAreaId}
+        style={{
+          transform: `rotate(${angle}rad)`,
+          fontSize: 12,
+          fontWeight: 800,
+          opacity: target.selected ? 1 : 0.5,
+          position: 'fixed',
+          left: mouse.x + 3,
+          top: mouse.y + 14,
+          color: colorTheme.primary.value,
+        }}
+      >
+        <img
+          src='/editor/icons/light/semantic/arrowOutOfBounds@2x.png'
+          style={{
+            width: 14,
+            height: 14,
+          }}
+        />
+      </div>
+    )
+  },
+)
 
 IndicatorArrow.displayName = 'IndicatorArrow'
-
-function getIndicatorOriginPoint(rect: DOMRect, canvasScale: number): WindowPoint {
-  return windowPoint({
-    x: (rect.x + rect.width / 2) * canvasScale,
-    y: (rect.y + rect.height / 2) * canvasScale,
-  })
-}
