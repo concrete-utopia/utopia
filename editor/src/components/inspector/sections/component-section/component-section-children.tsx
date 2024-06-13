@@ -61,7 +61,7 @@ export function useChildrenPropOverride(
     case 'expression':
       return (
         <IdentifierExpressionCartoucheControl
-          contents={{ type: 'literal', label: 'Expression', shortLabel: null }}
+          contents={{ type: 'object-literal', label: 'Expression', shortLabel: null }}
           icon={React.createElement(iconForControlType('none'))}
           matchType='partial'
           onOpenDataPicker={props.onOpenDataPicker}

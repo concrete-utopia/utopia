@@ -2,6 +2,7 @@
 /** @jsx jsx */
 import React from 'react'
 import { jsx } from '@emotion/react'
+import type { DataReferenceCartoucheContentType } from './data-reference-cartouche'
 import { DataCartoucheInner } from './data-reference-cartouche'
 import { NO_OP } from '../../../../core/shared/utils'
 import type { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
@@ -12,7 +13,11 @@ import type { CartoucheDataType } from './cartouche-ui'
 import { useColorTheme } from '../../../../uuiui'
 
 interface IdentifierExpressionCartoucheControlProps {
-  contents: { type: 'literal' | 'reference'; label: string | null; shortLabel: string | null }
+  contents: {
+    type: DataReferenceCartoucheContentType
+    label: string | null
+    shortLabel: string | null
+  }
   icon: React.ReactChild
   matchType: 'full' | 'partial'
   onOpenDataPicker: () => void

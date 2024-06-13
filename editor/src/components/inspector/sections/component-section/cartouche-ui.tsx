@@ -14,7 +14,7 @@ export interface HoverHandlers {
 
 export type CartoucheDataType = 'renderable' | 'boolean' | 'array' | 'object' | 'unknown'
 
-export type CartoucheSource = 'internal' | 'external' | 'literal'
+export type CartoucheSource = 'internal' | 'external' | 'inline-literal' | 'literal-assignment'
 export type CartoucheHighlight = 'strong' | 'subtle' | 'disabled'
 
 export type CartoucheUIProps = React.PropsWithChildren<{
@@ -121,7 +121,7 @@ export const CartoucheUI = React.forwardRef(
                     },
             }}
           >
-            {source === 'literal' ? null : (
+            {source === 'inline-literal' ? null : (
               <Icn
                 category='navigator-element'
                 type={dataTypeToIconType(datatype)}
@@ -244,7 +244,8 @@ function useCartoucheColors(source: CartoucheSource, highlight: CartoucheHighlig
           },
           icon: { default: 'dynamic', hovered: 'dynamic', selected: 'on-highlight-main' },
         }
-      case 'literal':
+      case 'inline-literal':
+      case 'literal-assignment':
         return {
           fg: {
             default: colorTheme.fg1.value,
