@@ -5,7 +5,7 @@ import {
   getIndicatorAngleToTarget,
   useElementsOutsideVisibleArea,
 } from '../canvas/controls/elements-outside-visible-area-hooks'
-import { Icn, useColorTheme } from '../../uuiui'
+import { Icn } from '../../uuiui'
 
 export const ToolbarIndicatorElementsOutsideVisibleAreaId =
   'indicator-elements-outside-visible-area'
@@ -44,8 +44,6 @@ const IndicatorArrow = React.memo(
       }
     }, [])
 
-    const colorTheme = useColorTheme()
-
     if (target == null) {
       return null
     }
@@ -56,13 +54,10 @@ const IndicatorArrow = React.memo(
         data-testid={ToolbarIndicatorElementsOutsideVisibleAreaId}
         style={{
           transform: `rotate(${angle}rad)`,
-          fontSize: 12,
-          fontWeight: 800,
           opacity: target.selected ? 1 : 0.5,
           position: 'fixed',
           left: mouse.x + 3,
           top: mouse.y + 14,
-          color: colorTheme.primary.value,
         }}
       >
         <Icn category='semantic' type='arrow-out-of-bounds' width={12} height={12} />
