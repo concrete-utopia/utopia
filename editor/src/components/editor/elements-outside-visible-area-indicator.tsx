@@ -60,7 +60,7 @@ const IndicatorArrow = React.memo(
           top: mouse.y + 14,
         }}
       >
-        <Icn category='semantic' type='arrow-out-of-bounds' width={12} height={12} />
+        <Icn category='semantic' type='arrow-out-of-bounds' width={12} height={12} color='white' />
       </div>
     )
   },
