@@ -1,3 +1,4 @@
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "expectRegularCounterWithCount"] }] */
 import {
   TestSceneUID,
   formatTestProjectCode,
@@ -247,7 +248,9 @@ describe('maps in the navigator', () => {
 
       const mapPath = EP.fromString('utopia-storyboard-uid/scene-aaa/containing-div/map')
       const counterTestId = getMapCounterTestId(mapPath)
-      let counter = await renderResult.renderedDOM.findByTestId(counterTestId)
+      const counters = await renderResult.renderedDOM.findAllByTestId(counterTestId)
+      expect(counters.length).toEqual(1)
+      const counter = counters[0]
       const counterBounds = counter.getBoundingClientRect()
       const counterCentre = {
         x: counterBounds.x + counterBounds.width / 2,
@@ -268,8 +271,10 @@ describe('maps in the navigator', () => {
       await mouseClickAtPoint(counter, counterCentre)
 
       // The counter will have been remounted
-      counter = await renderResult.renderedDOM.findByTestId(counterTestId)
-      expectRegularCounterWithCount(counter, 3)
+      const newCounters = await renderResult.renderedDOM.findAllByTestId(counterTestId)
+      expect(newCounters.length).toEqual(2)
+      expectRegularCounterWithCount(newCounters[0], 3)
+      expectRegularCounterWithCount(newCounters[1], 3)
     })
 
     it('Cycles through 2, 1, 0, off if the output length is 2', async () => {
