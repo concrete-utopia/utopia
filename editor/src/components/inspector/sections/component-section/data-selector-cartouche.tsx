@@ -26,6 +26,7 @@ export const DataPickerCartouche = React.memo(
     return (
       <CartoucheUI
         key={data.valuePath.toString()}
+        tooltip={null}
         source={dataSource ?? 'internal'}
         datatype={childTypeToCartoucheDataType(data.type)}
         selected={variableMatches(data.variableInfo) && selected}
@@ -56,7 +57,9 @@ export const DataPickerCartouche = React.memo(
   },
 )
 
-export function useVariableDataSource(variable: DataPickerOption | null) {
+export function useVariableDataSource(
+  variable: DataPickerOption | null,
+): CartoucheUIProps['source'] | null {
   return useEditorState(
     Substores.projectContentsAndMetadata,
     (store) => {
@@ -77,7 +80,7 @@ export function useVariableDataSource(variable: DataPickerOption | null) {
           return 'external'
         case 'literal-attribute':
         case 'literal-assignment':
-          return 'literal'
+          return 'literal-assignment'
         case 'component-prop':
         case 'element-at-scope':
         case 'failed':

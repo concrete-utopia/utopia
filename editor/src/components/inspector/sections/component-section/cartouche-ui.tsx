@@ -14,11 +14,11 @@ export interface HoverHandlers {
 
 export type CartoucheDataType = 'renderable' | 'boolean' | 'array' | 'object' | 'unknown'
 
-export type CartoucheSource = 'internal' | 'external' | 'literal'
+export type CartoucheSource = 'internal' | 'external' | 'inline-literal' | 'literal-assignment'
 export type CartoucheHighlight = 'strong' | 'subtle' | 'disabled'
 
 export type CartoucheUIProps = React.PropsWithChildren<{
-  tooltip?: string | null
+  tooltip: string | null
   source: CartoucheSource
   role: 'selection' | 'information' | 'folder'
   datatype: CartoucheDataType
@@ -121,7 +121,7 @@ export const CartoucheUI = React.forwardRef(
                     },
             }}
           >
-            {source === 'literal' ? null : (
+            {source === 'inline-literal' ? null : (
               <Icn
                 category='navigator-element'
                 type={dataTypeToIconType(datatype)}
@@ -141,12 +141,6 @@ export const CartoucheUI = React.forwardRef(
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
 
-                /* Beginning of string */
-                ...(shouldUseRtlCSS
-                  ? {
-                      direction: source === 'literal' ? 'ltr' : 'rtl', // TODO we need a better way to ellipsize the beginning because rtl eats ' " marks
-                    }
-                  : {}),
                 textAlign: 'left',
                 ...(role !== 'information' ? UtopiaStyles.fontStyles.monospaced : {}),
                 display: 'flex',
@@ -250,7 +244,8 @@ function useCartoucheColors(source: CartoucheSource, highlight: CartoucheHighlig
           },
           icon: { default: 'dynamic', hovered: 'dynamic', selected: 'on-highlight-main' },
         }
-      case 'literal':
+      case 'inline-literal':
+      case 'literal-assignment':
         return {
           fg: {
             default: colorTheme.fg1.value,

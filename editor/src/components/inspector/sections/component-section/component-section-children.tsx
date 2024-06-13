@@ -18,7 +18,7 @@ import { isJSXElement, isJSXTextBlock } from '../../../../core/shared/element-te
 import { IdentifierExpressionCartoucheControl } from './cartouche-control'
 import { renderedAtChildNode } from '../../../editor/store/editor-state'
 import { isRight } from '../../../../core/shared/either'
-import { DataReferenceCartoucheControl } from './data-reference-cartouche'
+import { DataReferenceCartoucheControl, getTextContentOfElement } from './data-reference-cartouche'
 import { assertNever } from '../../../../core/shared/utils'
 import { childrenAreProbablyNumericExpression } from '../../../editor/element-children'
 import type { CartoucheDataType } from './cartouche-ui'
@@ -61,7 +61,7 @@ export function useChildrenPropOverride(
     case 'expression':
       return (
         <IdentifierExpressionCartoucheControl
-          contents={'Expression'}
+          contents={{ type: 'object-literal', label: 'Expression', shortLabel: null }}
           icon={React.createElement(iconForControlType('none'))}
           matchType='partial'
           onOpenDataPicker={props.onOpenDataPicker}
