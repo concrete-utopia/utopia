@@ -33,7 +33,7 @@ import {
 import { DataSelectorColumns } from './data-selector-columns'
 import { DataSelectorLeftSidebar } from './data-selector-left-sidebar'
 import { DataSelectorSearch } from './data-selector-search'
-import { variableOrChildMatches } from './variables-in-scope-utils'
+import { variableMatches, variableOrChildMatches } from './variables-in-scope-utils'
 import { DataPickerCartouche } from './data-selector-cartouche'
 
 export const DataSelectorPopupBreadCrumbsTestId = 'data-selector-modal-top-bar'
@@ -180,6 +180,9 @@ export const DataSelectorModal = React.memo(
       }, [])
 
       const searchNullOrEmpty = searchTerm == null || searchTerm.length < 1
+
+      const selectedVariableIsDisabled =
+        optionalMap((v) => !variableMatches(v.variableInfo), selectedVariableOption) ?? true
 
       return (
         <InspectorModal
@@ -358,7 +361,7 @@ export const DataSelectorModal = React.memo(
                           height: 24,
                           width: 81,
                           textAlign: 'center',
-                          // ...disabledButtonStyles(selectedVariableOption?. ?? true), // TODO
+                          ...disabledButtonStyles(selectedVariableIsDisabled),
                         }}
                         onClick={applyVariable}
                       >
