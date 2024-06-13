@@ -25,6 +25,7 @@ export const DataPickerCartouche = React.memo(
     return (
       <CartoucheUI
         key={data.valuePath.toString()}
+        tooltip={null}
         source={dataSource ?? 'internal'}
         datatype={childTypeToCartoucheDataType(data.type)}
         selected={!data.disabled && selected}

@@ -31,7 +31,6 @@ interface DataReferenceCartoucheControlProps {
   selected: boolean
   renderedAt: RenderedAt
   surroundingScope: ElementPath
-  hideTooltip?: boolean
   highlight?: CartoucheHighlight | null
 }
 
@@ -149,7 +148,6 @@ export const DataReferenceCartoucheControl = React.memo(
           onDelete={NO_OP}
           testId={`data-reference-cartouche-${EP.toString(elementPath)}`}
           contentIsComingFromServer={isDataComingFromHookResult}
-          hideTooltip={props.hideTooltip}
           datatype={currentlySelectedValueDataType}
         />
         {/* this div prevents the popup form putting padding into the condensed rows */}
@@ -174,7 +172,6 @@ interface DataCartoucheInnerProps {
   onDelete: () => void
   testId: string
   contentIsComingFromServer: boolean
-  hideTooltip?: boolean
   datatype: CartoucheDataType
   highlight?: CartoucheHighlight | null
   badge?: React.ReactNode
@@ -221,13 +218,13 @@ export const DataCartoucheInner = React.forwardRef(
         selected={selected}
         highlight={highlight}
         testId={testId}
-        tooltip={!props.hideTooltip ? contentsToDisplay.label ?? 'DATA' : null}
+        tooltip={contentsToDisplay.label ?? contentsToDisplay.shortLabel ?? 'DATA'}
         role='selection'
         source={source}
         ref={ref}
         badge={props.badge}
       >
-        {contentsToDisplay.label ?? 'DATA'}
+        {contentsToDisplay.shortLabel ?? contentsToDisplay.label ?? 'DATA'}
       </CartoucheUI>
     )
   },

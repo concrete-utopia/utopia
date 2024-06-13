@@ -367,7 +367,6 @@ const CondensedEntryItemContent = React.memo(
               highlight={
                 props.rowRootSelected ? 'strong' : props.wholeRowInsideSelection ? 'subtle' : null
               }
-              hideTooltip={true}
             />,
           )}
         </div>

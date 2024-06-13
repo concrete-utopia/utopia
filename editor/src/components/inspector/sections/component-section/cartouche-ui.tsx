@@ -18,7 +18,7 @@ export type CartoucheSource = 'internal' | 'external' | 'literal'
 export type CartoucheHighlight = 'strong' | 'subtle' | 'disabled'
 
 export type CartoucheUIProps = React.PropsWithChildren<{
-  tooltip?: string | null
+  tooltip: string | null
   source: CartoucheSource
   role: 'selection' | 'information' | 'folder'
   datatype: CartoucheDataType
@@ -141,12 +141,6 @@ export const CartoucheUI = React.forwardRef(
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
 
-                /* Beginning of string */
-                ...(shouldUseRtlCSS
-                  ? {
-                      direction: source === 'literal' ? 'ltr' : 'rtl', // TODO we need a better way to ellipsize the beginnign because rtl eats ' " marks
-                    }
-                  : {}),
                 textAlign: 'left',
                 ...(role !== 'information' ? UtopiaStyles.fontStyles.monospaced : {}),
                 display: 'flex',
