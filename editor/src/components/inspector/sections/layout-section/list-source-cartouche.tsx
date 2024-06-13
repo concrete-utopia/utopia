@@ -64,7 +64,6 @@ interface MapListSourceCartoucheProps {
   target: ElementPath
   selected: boolean
   openOn: 'single-click' | 'double-click'
-  countChildren?: boolean
 }
 
 export const MapListSourceCartoucheNavigator = React.memo((props: MapListSourceCartoucheProps) => {
@@ -224,9 +223,7 @@ const MapListSourceCartoucheInner = React.memo((props: MapListSourceCartouchePro
         testId='list-source-cartouche'
         contentIsComingFromServer={isDataComingFromHookResult}
         datatype={cartoucheDataType}
-        badge={
-          props.countChildren ? <MapCounter selected={props.selected} elementPath={target} /> : null
-        }
+        badge={<MapCounter selected={props.selected} elementPath={target} />}
       />
     </React.Fragment>
   )
