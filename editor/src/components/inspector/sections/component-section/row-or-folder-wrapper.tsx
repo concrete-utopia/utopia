@@ -11,6 +11,7 @@ type RowOrFolderWrapperProps = {
   setGlobalCursor: (cursor: CSSCursor | null) => void
   controlDescription: ControlDescription
   indentationLevel: number
+  shouldIncreaseIdentation: boolean
   visibleEmptyControls: string[]
   unsetPropNames: string[]
   showHiddenControl: (path: string) => void
@@ -26,9 +27,11 @@ export const RowOrFolderWrapper = React.memo((props: RowOrFolderWrapperProps) =>
         isScene={props.isScene}
         setGlobalCursor={props.setGlobalCursor}
         indentationLevel={props.indentationLevel}
+        shouldIncreaseIdentation={props.shouldIncreaseIdentation}
         focusOnMount={props.focusOnMount ?? false}
         showHiddenControl={props.showHiddenControl}
       />
     </UIGridRow>
   )
 })
+RowOrFolderWrapper.displayName = 'RowOrFolderWrapper'

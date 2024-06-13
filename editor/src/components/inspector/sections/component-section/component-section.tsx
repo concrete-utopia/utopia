@@ -334,6 +334,8 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
       return null
   }
 })
+ControlForProp.displayName = 'ControlForProp'
+
 interface ParseErrorProps {
   parseError: ParseError
 }
@@ -354,6 +356,7 @@ interface AbstractRowForControlProps {
   isScene: boolean
   setGlobalCursor: (cursor: CSSCursor | null) => void
   indentationLevel: number
+  shouldIncreaseIdentation: boolean
   focusOnMount: boolean
   showHiddenControl: (path: string) => void
 }
@@ -620,7 +623,7 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
         target={[propPath]}
         style={{
           textTransform: 'capitalize',
-          paddingLeft: indentation - 8,
+          paddingLeft: indentation,
           alignSelf: 'flex-start',
         }}
       >
@@ -676,6 +679,7 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
     </InspectorContextMenuWrapper>
   )
 })
+RowForBaseControl.displayName = 'RowForBaseControl'
 
 function getSectionHeight(controlDescription: ArrayControlDescription): number {
   const rowHeight = UtopiaTheme.layout.rowHeight.normal
@@ -718,6 +722,7 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
     isScene,
     controlDescription,
   )
+  const indentation = props.indentationLevel * 8
 
   const propName = `${PP.lastPart(propPath)}`
   const propMetadata = useComponentPropsInspectorInfo(
@@ -767,50 +772,51 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
     <React.Fragment>
       {when(dataPickerButtonData.popupIsOpen, dataPickerButtonData.DataPickerComponent)}
       <div>
-        <SimpleFlexRow
-          style={{ gap: 5, justifyContent: 'space-between', flexGrow: 1, paddingRight: 3 }}
+        <UIGridRow
+          padded={false}
+          style={{ padding: '3px 8px' }}
+          variant='<--1fr--><--1fr-->'
+          ref={dataPickerButtonData.setReferenceElement}
         >
-          <FlexRow
-            style={{ flex: 1, flexShrink: 0, gap: 5, justifyContent: 'space-between' }}
-            ref={dataPickerButtonData.setReferenceElement}
+          <PropertyLabel
+            target={[propPath]}
+            style={{ ...objectPropertyLabelStyle, paddingLeft: indentation }}
           >
-            <PropertyLabel target={[propPath]} style={objectPropertyLabelStyle}>
-              {title}
-            </PropertyLabel>
-            {propertyStatus.overwritable && !propertyStatus.controlled ? (
-              <SquareButton
-                highlight
-                onMouseDown={toggleInsertRow}
-                data-testid={`toggle-insert-${PP.toString(propPath)}`}
-              >
-                {insertingRow ? (
-                  <Icons.Minus
-                    color={propertyStatus.controlled ? 'dynamic' : 'secondary'}
-                    width={16}
-                    height={16}
-                  />
-                ) : (
-                  <Icons.Plus
-                    color={propertyStatus.controlled ? 'dynamic' : 'secondary'}
-                    width={16}
-                    height={16}
-                  />
-                )}
-              </SquareButton>
-            ) : null}
-            <ControlForProp
-              propPath={propPath}
-              propName={propName}
-              controlDescription={controlDescription}
-              propMetadata={propMetadata}
-              setGlobalCursor={props.setGlobalCursor}
-              focusOnMount={props.focusOnMount}
-              onOpenDataPicker={dataPickerButtonData.openPopup}
-              showHiddenControl={props.showHiddenControl}
-              elementPath={selectedViews.at(0) ?? EP.emptyElementPath}
-            />
-          </FlexRow>
-        </SimpleFlexRow>
+            {title}
+          </PropertyLabel>
+          {propertyStatus.overwritable && !propertyStatus.controlled ? (
+            <SquareButton
+              highlight
+              onMouseDown={toggleInsertRow}
+              data-testid={`toggle-insert-${PP.toString(propPath)}`}
+            >
+              {insertingRow ? (
+                <Icons.Minus
+                  color={propertyStatus.controlled ? 'dynamic' : 'secondary'}
+                  width={16}
+                  height={16}
+                />
+              ) : (
+                <Icons.Plus
+                  color={propertyStatus.controlled ? 'dynamic' : 'secondary'}
+                  width={16}
+                  height={16}
+                />
+              )}
+            </SquareButton>
+          ) : null}
+          <ControlForProp
+            propPath={propPath}
+            propName={propName}
+            controlDescription={controlDescription}
+            propMetadata={propMetadata}
+            setGlobalCursor={props.setGlobalCursor}
+            focusOnMount={props.focusOnMount}
+            onOpenDataPicker={dataPickerButtonData.openPopup}
+            showHiddenControl={props.showHiddenControl}
+            elementPath={selectedViews.at(0) ?? EP.emptyElementPath}
+          />
+        </UIGridRow>
         <div
           style={{
             height: sectionHeight * springs.length,
@@ -828,6 +834,7 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
               focusOnMount={props.focusOnMount}
               setGlobalCursor={props.setGlobalCursor}
               showHiddenControl={props.showHiddenControl}
+              indentationLevel={props.indentationLevel}
             />
           ))}
         </div>
@@ -835,6 +842,8 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
     </React.Fragment>
   )
 })
+RowForArrayControl.displayName = 'RowForArrayControl'
+
 interface ArrayControlItemProps {
   springStyle: { [x: string]: any; [x: number]: any }
   bind: (...args: any[]) => ReactEventHandlers
@@ -845,6 +854,7 @@ interface ArrayControlItemProps {
   focusOnMount: boolean
   setGlobalCursor: (cursor: CSSCursor | null) => void
   showHiddenControl: (path: string) => void
+  indentationLevel: number
 }
 
 const ArrayControlItem = React.memo((props: ArrayControlItemProps) => {
@@ -894,6 +904,7 @@ const ArrayControlItem = React.memo((props: ArrayControlItemProps) => {
           propPath={PP.appendPropertyPathElems(propPath, [index])}
           setGlobalCursor={props.setGlobalCursor}
           indentationLevel={2}
+          shouldIncreaseIdentation={true}
           focusOnMount={props.focusOnMount && index === 0}
           disableToggling={true}
           showHiddenControl={props.showHiddenControl}
@@ -925,6 +936,7 @@ const ArrayControlItem = React.memo((props: ArrayControlItemProps) => {
     </InspectorContextMenuWrapper>
   )
 })
+ArrayControlItem.displayName = 'ArrayControlItem'
 
 interface RowForTupleControlProps extends AbstractRowForControlProps {
   controlDescription: TupleControlDescription
@@ -983,6 +995,7 @@ const RowForTupleControl = React.memo((props: RowForTupleControlProps) => {
     </React.Fragment>
   )
 })
+RowForTupleControl.displayName = 'RowForTupleControl'
 
 interface TupleControlItemProps {
   propPath: PropertyPath
@@ -1023,20 +1036,24 @@ const TupleControlItem = React.memo((props: TupleControlItemProps) => {
         propPath={PP.appendPropertyPathElems(propPath, [index])}
         setGlobalCursor={props.setGlobalCursor}
         indentationLevel={1}
+        shouldIncreaseIdentation={true}
         focusOnMount={false}
         showHiddenControl={props.showHiddenControl}
       />
     </InspectorContextMenuWrapper>
   )
 })
+TupleControlItem.displayName = 'TupleControlItem'
 
 interface ObjectIndicatorProps {
   open: boolean
+  toggle: () => void
 }
 
 const ObjectIndicator = (props: ObjectIndicatorProps) => {
   return (
     <div
+      onClick={props.toggle}
       style={{
         border: `1px solid ${colorTheme.bg3.value}`,
         paddingLeft: 2,
@@ -1115,55 +1132,51 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
           data={null}
         >
           {when(dataPickerButtonData.popupIsOpen, dataPickerButtonData.DataPickerComponent)}
-          <FlexRow
-            style={{ flexGrow: 1, justifyContent: 'space-between', paddingRight: 10 }}
+          <UIGridRow
+            padded={false}
+            style={{ padding: '3px 8px' }}
+            variant='<--1fr--><--1fr-->'
             ref={dataPickerButtonData.setReferenceElement}
           >
-            <SimpleFlexRow
+            <PropertyLabel
+              target={[propPath]}
               style={{
-                minWidth: 0,
-                flexGrow: 1,
-                justifyContent: 'space-between',
+                ...objectPropertyLabelStyle,
+                paddingLeft: indentation,
+                paddingRight: 6,
+                cursor: props.disableToggling ? 'default' : 'pointer',
               }}
-              onClick={handleOnClick}
             >
-              <PropertyLabel
-                target={[propPath]}
-                style={{
-                  ...objectPropertyLabelStyle,
-                  paddingLeft: indentation,
-                  paddingRight: 6,
-                  cursor: props.disableToggling ? 'default' : 'pointer',
-                }}
+              <PropertyLabelAndPlusButton
+                title={title}
+                openPopup={dataPickerButtonData.openPopup}
+                handleMouseEnter={handleMouseEnter}
+                handleMouseLeave={handleMouseLeave}
+                popupIsOpen={dataPickerButtonData.popupIsOpen}
+                isHovered={isHovered}
+                isConnectedToData={isConnectedToData}
+                testId={`plus-button-${title}`}
               >
-                <PropertyLabelAndPlusButton
-                  title={title}
-                  openPopup={dataPickerButtonData.openPopup}
-                  handleMouseEnter={handleMouseEnter}
-                  handleMouseLeave={handleMouseLeave}
-                  popupIsOpen={dataPickerButtonData.popupIsOpen}
-                  isHovered={isHovered}
-                  isConnectedToData={isConnectedToData}
-                  testId={`plus-button-${title}`}
-                >
-                  {unless(props.disableToggling, <ObjectIndicator open={open} />)}
-                </PropertyLabelAndPlusButton>
-              </PropertyLabel>
-              <div style={{ minWidth: 0 }} onClick={stopPropagation}>
-                <ControlForProp
-                  propPath={propPath}
-                  propName={propName}
-                  controlDescription={controlDescription}
-                  propMetadata={propMetadata}
-                  setGlobalCursor={props.setGlobalCursor}
-                  focusOnMount={props.focusOnMount}
-                  onOpenDataPicker={dataPickerButtonData.openPopup}
-                  showHiddenControl={props.showHiddenControl}
-                  elementPath={selectedViews.at(0) ?? EP.emptyElementPath}
-                />
-              </div>
-            </SimpleFlexRow>
-          </FlexRow>
+                {unless(
+                  props.disableToggling,
+                  <ObjectIndicator open={open} toggle={handleOnClick} />,
+                )}
+              </PropertyLabelAndPlusButton>
+            </PropertyLabel>
+            <div style={{ minWidth: 0 }} onClick={stopPropagation}>
+              <ControlForProp
+                propPath={propPath}
+                propName={propName}
+                controlDescription={controlDescription}
+                propMetadata={propMetadata}
+                setGlobalCursor={props.setGlobalCursor}
+                focusOnMount={props.focusOnMount}
+                onOpenDataPicker={dataPickerButtonData.openPopup}
+                showHiddenControl={props.showHiddenControl}
+                elementPath={selectedViews.at(0) ?? EP.emptyElementPath}
+              />
+            </div>
+          </UIGridRow>
         </InspectorContextMenuWrapper>
       </div>
       {when(
@@ -1177,7 +1190,10 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
               isScene={isScene}
               propPath={innerPropPath}
               setGlobalCursor={props.setGlobalCursor}
-              indentationLevel={props.indentationLevel + 1}
+              indentationLevel={
+                props.shouldIncreaseIdentation ? props.indentationLevel + 1 : props.indentationLevel
+              }
+              shouldIncreaseIdentation={props.shouldIncreaseIdentation}
               focusOnMount={props.focusOnMount && index === 0}
               disableToggling={props.disableToggling}
               showHiddenControl={props.showHiddenControl}
@@ -1188,6 +1204,7 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
     </div>
   )
 })
+RowForObjectControl.displayName = 'RowForObjectControl'
 
 interface RowForUnionControlProps extends AbstractRowForControlProps {
   controlDescription: UnionControlDescription
@@ -1262,6 +1279,7 @@ const RowForUnionControl = React.memo((props: RowForUnionControlProps) => {
     )
   }
 })
+RowForUnionControl.displayName = 'RowForUnionControl'
 
 interface RowForControlProps extends AbstractRowForControlProps {
   controlDescription: RegularControlDescription
@@ -1302,6 +1320,7 @@ export const RowForControl = React.memo((props: RowForControlProps) => {
     }
   }
 })
+RowForControl.displayName = 'RowForControl'
 
 export interface ComponentSectionProps {
   isScene: boolean
@@ -1539,7 +1558,6 @@ export class ComponentSection extends React.Component<
 
 const objectPropertyLabelStyle = {
   textTransform: 'capitalize',
-  paddingLeft: 8,
   display: 'flex',
   alignItems: 'center',
   height: 34,

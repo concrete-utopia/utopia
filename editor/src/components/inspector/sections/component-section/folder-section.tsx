@@ -95,7 +95,8 @@ export const FolderSection = React.memo((props: FolderSectionProps) => {
         controlDescription={controlDescription}
         isScene={false}
         setGlobalCursor={props.setGlobalCursor}
-        indentationLevel={0}
+        indentationLevel={props.indentationLevel}
+        shouldIncreaseIdentation={false}
         visibleEmptyControls={props.visibleEmptyControls}
         unsetPropNames={props.unsetPropNames}
         showHiddenControl={props.showHiddenControl}
@@ -132,7 +133,8 @@ export const FolderSection = React.memo((props: FolderSectionProps) => {
                 controlDescription={controlDescription}
                 isScene={false}
                 setGlobalCursor={props.setGlobalCursor}
-                indentationLevel={0}
+                indentationLevel={props.indentationLevel}
+                shouldIncreaseIdentation={true}
                 showHiddenControl={props.showHiddenControl}
                 focusOnMount={false}
               />
@@ -149,9 +151,10 @@ export const FolderSection = React.memo((props: FolderSectionProps) => {
         <HiddenControls
           hiddenPropNames={hiddenPropsList}
           showHiddenControl={props.showHiddenControl}
-          indentationLevel={0}
+          indentationLevel={props.indentationLevel}
         />,
       )}
     </div>
   )
 })
+FolderSection.displayName = 'FolderSection'

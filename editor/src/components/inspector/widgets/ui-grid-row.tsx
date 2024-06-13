@@ -127,6 +127,10 @@ export interface GridRowProps extends React.InputHTMLAttributes<HTMLDivElement> 
    * alignItems: default value is 'center'
    */
   alignItems?: 'start' | 'center' | 'stretch'
+  /**
+   * ref is the regular element reference for React.
+   */
+  ref?: React.LegacyRef<HTMLDivElement>
 }
 
 export const UIGridRow: React.FunctionComponent<React.PropsWithChildren<GridRowProps>> = ({
@@ -136,10 +140,12 @@ export const UIGridRow: React.FunctionComponent<React.PropsWithChildren<GridRowP
   style,
   padded,
   children,
+  ref,
   ...props
 }) => (
   <div
     {...props}
+    ref={ref}
     css={{
       padding: padded ? `0px ${UtopiaTheme.layout.rowHorizontalPadding}px` : undefined,
       display: 'grid',
