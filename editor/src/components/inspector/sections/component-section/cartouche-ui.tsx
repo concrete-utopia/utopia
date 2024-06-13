@@ -144,7 +144,7 @@ export const CartoucheUI = React.forwardRef(
                 /* Beginning of string */
                 ...(shouldUseRtlCSS
                   ? {
-                      direction: source === 'literal' ? 'ltr' : 'rtl', // TODO we need a better way to ellipsize the beginnign because rtl eats ' " marks
+                      direction: source === 'literal' ? 'ltr' : 'rtl', // TODO we need a better way to ellipsize the beginning because rtl eats ' " marks
                     }
                   : {}),
                 textAlign: 'left',

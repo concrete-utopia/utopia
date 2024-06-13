@@ -109,7 +109,7 @@ interface ValuePreviewColumnProps {
 }
 
 const ValuePreviewColumn = React.memo((props: ValuePreviewColumnProps) => {
-  const text = JSON.stringify(props.data.variableInfo.value, undefined, 2)
+  const text = safeJSONStringify(props.data.variableInfo.value)
   const ref = useScrollIntoView(true)
   return (
     <DataSelectorFlexColumn ref={ref}>
@@ -234,4 +234,12 @@ function useScrollIntoView(shouldScroll: boolean) {
   }, [shouldScroll])
 
   return elementRef
+}
+
+function safeJSONStringify(value: unknown): string | null {
+  try {
+    return JSON.stringify(value, undefined, 2)
+  } catch {
+    return null
+  }
 }
