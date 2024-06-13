@@ -165,7 +165,11 @@ interface DataCartoucheInnerProps {
   onClick: (e: React.MouseEvent) => void
   onDoubleClick: (e: React.MouseEvent) => void
   selected: boolean
-  contentsToDisplay: { type: 'literal' | 'reference'; label: string | null }
+  contentsToDisplay: {
+    type: 'literal' | 'reference'
+    label: string | null
+    shortLabel: string | null
+  }
   safeToDelete: boolean
   onDelete: () => void
   testId: string
@@ -232,45 +236,48 @@ export const DataCartoucheInner = React.forwardRef(
 export function getTextContentOfElement(
   element: JSXElementChild,
   metadata: ElementInstanceMetadata | null,
-): { type: 'literal' | 'reference'; label: string | null } {
+): { type: 'literal' | 'reference'; label: string | null; shortLabel: string | null } {
   switch (element.type) {
     case 'ATTRIBUTE_VALUE':
-      return { type: 'literal', label: `${JSON.stringify(element.value)}` }
+      return { type: 'literal', label: `${JSON.stringify(element.value)}`, shortLabel: null }
     case 'JSX_TEXT_BLOCK':
-      return { type: 'literal', label: element.text.trim() }
+      return { type: 'literal', label: element.text.trim(), shortLabel: null }
     case 'JS_IDENTIFIER':
-      return { type: 'reference', label: element.name.trim() }
+      return { type: 'reference', label: element.name.trim(), shortLabel: null }
     case 'JS_ELEMENT_ACCESS':
       return {
         type: 'reference',
         label: `${getTextContentOfElement(element.onValue, null).label}[${
           getTextContentOfElement(element.element, null).label
         }]`,
+        shortLabel: getTextContentOfElement(element.element, null).label,
       }
     case 'JS_PROPERTY_ACCESS':
       return {
         type: 'reference',
         label: `${getTextContentOfElement(element.onValue, null).label}.${element.property}`,
+        shortLabel: element.property,
       }
     case 'ATTRIBUTE_FUNCTION_CALL':
-      return { type: 'reference', label: `${element.functionName}(...` }
+      return { type: 'reference', label: `${element.functionName}(...`, shortLabel: null }
     case 'JSX_ELEMENT':
       return {
         type: 'literal',
         label: metadata?.textContent ?? `${getJSXElementNameLastPart(element.name)}`,
+        shortLabel: null,
       }
     case 'ATTRIBUTE_NESTED_ARRAY':
-      return { type: 'literal', label: '[...]' }
+      return { type: 'literal', label: '[...]', shortLabel: null }
     case 'ATTRIBUTE_NESTED_OBJECT':
-      return { type: 'literal', label: '{...}' }
+      return { type: 'literal', label: '{...}', shortLabel: null }
     case 'JSX_MAP_EXPRESSION':
-      return { type: 'literal', label: 'List' }
+      return { type: 'literal', label: 'List', shortLabel: null }
     case 'JSX_CONDITIONAL_EXPRESSION':
-      return { type: 'literal', label: 'Conditional' }
+      return { type: 'literal', label: 'Conditional', shortLabel: null }
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      return { type: 'literal', label: element.originalJavascript }
+      return { type: 'literal', label: element.originalJavascript, shortLabel: null }
     case 'JSX_FRAGMENT':
-      return { type: 'literal', label: 'Fragment' }
+      return { type: 'literal', label: 'Fragment', shortLabel: null }
     default:
       assertNever(element)
   }

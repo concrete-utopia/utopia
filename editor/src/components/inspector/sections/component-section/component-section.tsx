@@ -113,6 +113,7 @@ import {
   childrenAreProbablyNumericExpression,
   replaceFirstChildAndDeleteSiblings,
 } from '../../../editor/element-children'
+import { getTextContentOfElement } from './data-reference-cartouche'
 
 export interface PropertyLabelAndPlusButtonProps {
   title: string
@@ -255,7 +256,7 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
     ) {
       return (
         <IdentifierExpressionCartoucheControl
-          contents={jsxElementChildToText(attributeExpression, null, null, 'jsx', 'inner')}
+          contents={getTextContentOfElement(attributeExpression, null)}
           icon={React.createElement(iconForControlType(props.controlDescription.control))}
           matchType='full'
           onOpenDataPicker={props.onOpenDataPicker}
@@ -277,7 +278,7 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
       if (controlDescription.control !== 'jsx') {
         return (
           <IdentifierExpressionCartoucheControl
-            contents={'Expression'}
+            contents={getTextContentOfElement(attributeExpression, null)}
             icon={React.createElement(iconForControlType('none'))}
             matchType='partial'
             onOpenDataPicker={props.onOpenDataPicker}

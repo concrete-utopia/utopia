@@ -12,7 +12,7 @@ import type { CartoucheDataType } from './cartouche-ui'
 import { useColorTheme } from '../../../../uuiui'
 
 interface IdentifierExpressionCartoucheControlProps {
-  contents: string
+  contents: { type: 'literal' | 'reference'; label: string | null; shortLabel: string | null }
   icon: React.ReactChild
   matchType: 'full' | 'partial'
   onOpenDataPicker: () => void
@@ -42,7 +42,7 @@ export const IdentifierExpressionCartoucheControl = React.memo(
     return (
       <CartoucheInspectorWrapper>
         <DataCartoucheInner
-          contentsToDisplay={{ label: props.contents, type: 'reference' }}
+          contentsToDisplay={props.contents}
           onClick={NO_OP}
           selected={false}
           onDoubleClick={onOpenDataPicker}
