@@ -437,7 +437,7 @@ export const CanvasToolbar = React.memo(() => {
             }}
             onClick={zoom100pct}
           >
-            {zoomLevel * 100}%
+            {Math.floor(zoomLevel * 100)}%
           </SquareButton>
         </Tooltip>
         <Tooltip title='Reset Canvas' placement='bottom'>

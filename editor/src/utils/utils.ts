@@ -758,12 +758,14 @@ function stepInArray<T>(
   }
 }
 
+const SCALE = 1.5
+
 function increaseScale(scale: number): number {
-  return scale * 2
+  return scale * SCALE
 }
 
 function decreaseScale(scale: number): number {
-  return scale / 2
+  return scale / SCALE
 }
 
 function createThrottler(
