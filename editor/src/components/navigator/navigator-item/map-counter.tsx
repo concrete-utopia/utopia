@@ -128,7 +128,7 @@ function getMapCounterStyleProps(
       return {
         ...stylePropsBase,
         backgroundColor: selectedStatus ? colorTheme.whiteOpacity30.value : colorTheme.bg1.value,
-        color: selectedStatus ? colorTheme.white.value : colorTheme.brandNeonPink.value,
+        color: selectedStatus ? colorTheme.white.value : undefined,
       }
     case 'overridden':
       return {
