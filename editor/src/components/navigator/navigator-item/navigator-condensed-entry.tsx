@@ -4,17 +4,20 @@ import { Icons, Tooltip, useColorTheme } from '../../../uuiui'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import type { DataReferenceNavigatorEntry, NavigatorEntry } from '../../editor/store/editor-state'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
-import type { CondensedNavigatorRow } from '../navigator-row'
+import { condensedNavigatorRow, type CondensedNavigatorRow } from '../navigator-row'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getNavigatorEntryLabel, labelSelector } from './navigator-item-wrapper'
 import { BasePaddingUnit, elementWarningsSelector } from './navigator-item'
 import { setHighlightedViews, toggleCollapse } from '../../editor/actions/action-creators'
-import { selectComponents } from '../../editor/actions/meta-actions'
 import type { ElementPath } from 'utopia-shared/src/types'
 import { unless, when } from '../../../utils/react-conditionals'
 import { ExpandableIndicator } from './expandable-indicator'
 import { LayoutIcon } from './layout-icon'
 import { DataReferenceCartoucheControl } from '../../inspector/sections/component-section/data-reference-cartouche'
+import {
+  NavigatorRowClickableWrapper,
+  useGetNavigatorClickActions,
+} from './navigator-item-clickable-wrapper'
 
 function useEntryLabel(entry: NavigatorEntry) {
   const labelForTheElement = useEditorState(
@@ -104,24 +107,26 @@ export const CondensedEntryItemWrapper = React.memo(
           overflowX: 'auto',
         }}
       >
-        {props.navigatorRow.entries.map((entry, idx) => {
-          const showSeparator =
-            props.navigatorRow.variant === 'trunk' && idx < props.navigatorRow.entries.length - 1
+        <NavigatorRowClickableWrapper row={props.navigatorRow}>
+          {props.navigatorRow.entries.map((entry, idx) => {
+            const showSeparator =
+              props.navigatorRow.variant === 'trunk' && idx < props.navigatorRow.entries.length - 1
 
-          return (
-            <CondensedEntryItem
-              navigatorRow={props.navigatorRow}
-              isDataReferenceRow={isDataReferenceRow}
-              showExpandableIndicator={idx === 0}
-              key={EP.toString(entry.elementPath)}
-              entry={entry}
-              showSeparator={showSeparator}
-              wholeRowInsideSelection={wholeRowInsideSelection}
-              rowContainsSelection={rowContainsSelection}
-              rowRootSelected={rowRootSelected}
-            />
-          )
-        })}
+            return (
+              <CondensedEntryItem
+                navigatorRow={props.navigatorRow}
+                isDataReferenceRow={isDataReferenceRow}
+                showExpandableIndicator={idx === 0}
+                key={EP.toString(entry.elementPath)}
+                entry={entry}
+                showSeparator={showSeparator}
+                wholeRowInsideSelection={wholeRowInsideSelection}
+                rowContainsSelection={rowContainsSelection}
+                rowRootSelected={rowRootSelected}
+              />
+            )
+          })}
+        </NavigatorRowClickableWrapper>
       </div>
     )
   },
@@ -267,15 +272,6 @@ const CondensedEntryItemContent = React.memo(
       return props.entry.type === 'DATA_REFERENCE'
     }, [props.entry])
 
-    const onClick = React.useCallback(
-      (e: React.MouseEvent) => {
-        e.preventDefault()
-        e.stopPropagation()
-        dispatch(selectComponents([props.entry.elementPath], false))
-      },
-      [dispatch, props.entry],
-    )
-
     const onMouseOver = React.useCallback(() => {
       dispatch([setHighlightedViews([props.entry.elementPath])])
     }, [props.entry, dispatch])
@@ -287,6 +283,20 @@ const CondensedEntryItemContent = React.memo(
         ),
       ])
     }, [props.entry, dispatch, highlightedViews])
+
+    const getClickActions = useGetNavigatorClickActions(
+      props.entry.elementPath,
+      props.selected,
+      condensedNavigatorRow([props.entry], 'leaf', props.indentation),
+    )
+
+    const onClick = React.useCallback(
+      (e: React.MouseEvent) => {
+        e.stopPropagation()
+        dispatch(getClickActions(e))
+      },
+      [dispatch, getClickActions],
+    )
 
     return (
       <div
@@ -305,9 +315,9 @@ const CondensedEntryItemContent = React.memo(
           borderBottomRightRadius: props.selected ? 5 : 0,
           marginRight: !props.showExpandableIndicator && props.isDataReferenceRow ? 4 : 0,
         }}
-        onClick={onClick}
         onMouseOver={onMouseOver}
         onMouseOut={onMouseOut}
+        onClick={onClick}
       >
         <div
           style={{
@@ -379,7 +389,7 @@ const CondensedEntryTrunkSeparator = React.memo((props: CondensedEntryTrunkSepar
     <div
       style={{
         backgroundColor: props.backgroundColor,
-        height: '100%',
+        height: 29,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',

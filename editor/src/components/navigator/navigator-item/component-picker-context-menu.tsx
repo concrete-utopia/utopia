@@ -16,8 +16,6 @@ import {
   jsxElementFromJSXElementWithoutUID,
   jsxElementNameFromString,
   getJSXElementNameLastPart,
-  setJSXAttributesAttribute,
-  jsExpressionValue,
   isIntrinsicHTMLElement,
 } from '../../../core/shared/element-template'
 import type { ElementPath, Imports } from '../../../core/shared/project-file-types'
@@ -31,6 +29,7 @@ import {
   insertJSXElement,
   replaceJSXElement,
   replaceMappedElement,
+  selectComponents,
   setProp_UNSAFE,
   showToast,
   switchEditorMode,
@@ -76,18 +75,23 @@ import {
   replaceWithSingleElement,
 } from '../../editor/store/insertion-path'
 import { mapComponentInfo, type InsertableComponent } from '../../shared/project-components'
-import type { ConditionalCase } from '../../../core/model/conditionals'
+import {
+  getConditionalClausePathFromMetadata,
+  type ConditionalCase,
+} from '../../../core/model/conditionals'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { absolute } from '../../../utils/utils'
 import { notice } from '../../common/notice'
 import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
-import { emptyComments } from 'utopia-shared/src/types'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../../../core/shared/dom-utils'
-import { emptyImports } from '../../../core/workers/common/project-file-utils'
 import { commandsForFirstApplicableStrategy } from '../../../components/inspector/inspector-strategies/inspector-strategy'
 import { wrapInDivStrategy } from '../../../components/editor/wrap-in-callbacks'
 import type { AllElementProps } from '../../../components/editor/store/editor-state'
 import { EditorModes } from '../../editor/editor-modes'
+import {
+  conditionalOverrideUpdateForPath,
+  getConditionalOverrideActions,
+} from './navigator-item-clickable-wrapper'
 
 type RenderPropTarget = { type: 'render-prop'; prop: string }
 type ConditionalTarget = { type: 'conditional'; conditionalCase: ConditionalCase }
@@ -325,6 +329,8 @@ export const useCreateCallbackToShowComponentPicker =
       propertyControlsInfo: store.editor.propertyControlsInfo,
     }))
 
+    const dispatch = useDispatch()
+
     return React.useCallback(
       (
           selectedViews: ElementPath[],
@@ -376,8 +382,32 @@ export const useCreateCallbackToShowComponentPicker =
           setContextMenuProps({ targets: selectedViews, insertionTarget: insertionTarget })
           const show = pickerType === 'preferred' ? showPreferred : showFull
           show({ ...params, event })
+
+          // conditional slots should get selected as a result, since this action would supersede
+          // the navigator's selection handling.
+          if (isConditionalTarget(insertionTarget)) {
+            let elementsToSelect: ElementPath[] = []
+            let overrideActions: EditorAction[] = []
+            for (const view of selectedViews) {
+              const clause = getConditionalClausePathFromMetadata(
+                view,
+                editorRef.current.jsxMetadata,
+                insertionTarget.conditionalCase,
+              )
+              if (clause != null) {
+                elementsToSelect.push(clause)
+                overrideActions.push(
+                  ...getConditionalOverrideActions(
+                    view,
+                    conditionalOverrideUpdateForPath(clause, editorRef.current.jsxMetadata),
+                  ),
+                )
+              }
+            }
+            dispatch([...overrideActions, selectComponents(elementsToSelect, false)])
+          }
         },
-      [editorRef, showPreferred, showFull, setContextMenuProps],
+      [editorRef, showPreferred, showFull, setContextMenuProps, dispatch],
     )
   }
 

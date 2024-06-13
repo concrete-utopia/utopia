@@ -680,8 +680,8 @@ describe('Data Tracing', () => {
     it('Traces back a prop to a useLoaderData with a deep data path through multiple components', async () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCodeWithStoryboard(`
-      function MyInnerComponent({title}) {
-        return <div data-uid='inner-component-root' innerTitle={title.value} />
+      function MyInnerComponent(props) {
+        return <div data-uid='inner-component-root' innerTitle={props.title.value} />
       }
       
       function MyComponent({doc}) {
@@ -702,6 +702,12 @@ describe('Data Tracing', () => {
 
       await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component:component-root'))
 
+      const expectedResult = dataTracingToAHookCall(
+        EP.fromString('sb/app:my-component'),
+        'useLoaderData',
+        dataPathSuccess(['very', 'deep', 'title', 'value']),
+      )
+
       const traceResult = traceDataFromProp(
         EPP.create(
           EP.fromString('sb/app:my-component:component-root:inner-component-root'),
@@ -712,13 +718,17 @@ describe('Data Tracing', () => {
         dataPathSuccess([]),
       )
 
-      expect(traceResult).toEqual(
-        dataTracingToAHookCall(
-          EP.fromString('sb/app:my-component'),
-          'useLoaderData',
-          dataPathSuccess(['very', 'deep', 'title', 'value']),
-        ),
+      expect(traceResult).toEqual(expectedResult)
+
+      const variableNameTraceResult = traceDataFromVariableName(
+        EP.fromString('sb/app:my-component:component-root:inner-component-root'),
+        'props',
+        editor.getEditorState().editor.jsxMetadata,
+        editor.getEditorState().editor.projectContents,
+        dataPathSuccess(['title', 'value']),
       )
+
+      expect(variableNameTraceResult).toEqual(expectedResult)
     })
 
     it('Traces back a prop to a useLoaderData with a deep data path through multiple components and destructure', async () => {
@@ -943,6 +953,12 @@ describe('Data Tracing', () => {
 
       await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component:component-root'))
 
+      const expectedResult = dataTracingToAHookCall(
+        EP.fromString('sb/app:my-component:component-root'),
+        'useLoaderData',
+        dataPathSuccess(['reviews', '1', 'title']),
+      )
+
       const traceResult = traceDataFromProp(
         EPP.create(
           EP.fromString('sb/app:my-component:component-root/map/mapped~~~2/mapped-child'),
@@ -953,13 +969,17 @@ describe('Data Tracing', () => {
         dataPathSuccess([]),
       )
 
-      expect(traceResult).toEqual(
-        dataTracingToAHookCall(
-          EP.fromString('sb/app:my-component:component-root'),
-          'useLoaderData',
-          dataPathSuccess(['reviews', '1', 'title']),
-        ),
+      expect(traceResult).toEqual(expectedResult)
+
+      const variableNameTraceResult = traceDataFromVariableName(
+        EP.fromString('sb/app:my-component:component-root/map/mapped~~~2/mapped-child'),
+        'review',
+        editor.getEditorState().editor.jsxMetadata,
+        editor.getEditorState().editor.projectContents,
+        dataPathSuccess(['title']),
       )
+
+      expect(variableNameTraceResult).toEqual(expectedResult)
     })
 
     it('Works with a destructure in the map function', async () => {

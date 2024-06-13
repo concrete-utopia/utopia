@@ -212,7 +212,7 @@ function createNavigatorSubtree(
   collapsedViews: Array<ElementPath>, // TODO turn this into a single array!!
   hiddenInNavigator: Array<ElementPath>,
   subTree: ElementPathTree,
-): NavigatorTree {
+): NavigatorTree | null {
   const elementPath = subTree.path
   const jsxElementChild = getElementFromProjectContents(elementPath, projectContents)
   if (jsxElementChild == null) {
@@ -315,9 +315,15 @@ function walkRegularNavigatorEntry(
   elementPath: ElementPath,
   elementHidden: boolean,
   subtreeHidden: boolean,
-): NavigatorTree {
+): NavigatorTree | null {
   let renderPropChildrenAccumulator: { [propName: string]: NavigatorTree } = {}
   let processedAccumulator: Set<string> = emptySet()
+
+  const elementMetadata = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  // If there was an early return, then we should stop walking the tree here.
+  if (elementMetadata != null && elementMetadata.earlyReturn != null) {
+    return null
+  }
 
   if (isJSXElement(jsxElement)) {
     Object.entries(propControls ?? {}).forEach(([prop, control]) => {
@@ -352,12 +358,14 @@ function walkRegularNavigatorEntry(
           hiddenInNavigator,
           subTreeChild,
         )
-        const childTree: NavigatorTree = {
-          ...childTreeEntry,
-          navigatorEntry: renderPropValueNavigatorEntry(childPath, prop),
+        if (childTreeEntry != null) {
+          const childTree: NavigatorTree = {
+            ...childTreeEntry,
+            navigatorEntry: renderPropValueNavigatorEntry(childPath, prop),
+          }
+          processedAccumulator.add(EP.toString(subTreeChild.path))
+          renderPropChildrenAccumulator[prop] = childTree
         }
-        processedAccumulator.add(EP.toString(subTreeChild.path))
-        renderPropChildrenAccumulator[prop] = childTree
       } else {
         const synthEntry = isFeatureEnabled('Condensed Navigator Entries')
           ? dataReferenceNavigatorEntry(
@@ -381,8 +389,8 @@ function walkRegularNavigatorEntry(
   const childrenPaths = subTree.children.filter(
     (child) => !processedAccumulator.has(EP.toString(child.path)),
   )
-  const children: Array<NavigatorTree> = childrenPaths.map((child) =>
-    createNavigatorSubtree(
+  const children: Array<NavigatorTree> = mapDropNulls((child) => {
+    return createNavigatorSubtree(
       metadata,
       elementPathTrees,
       projectContents,
@@ -390,8 +398,8 @@ function walkRegularNavigatorEntry(
       collapsedViews,
       hiddenInNavigator,
       child,
-    ),
-  )
+    )
+  }, childrenPaths)
 
   return {
     type: 'regular-entry',
@@ -493,8 +501,8 @@ function walkConditionalClause(
 
   // if we find regular tree entries for the clause, it means the branch has proper JSXElements, so we recurse into the tree building
   if (clausePathTrees.length > 0) {
-    const children = clausePathTrees.map((child) =>
-      createNavigatorSubtree(
+    const children = mapDropNulls((child) => {
+      return createNavigatorSubtree(
         metadata,
         elementPathTrees,
         projectContents,
@@ -502,8 +510,8 @@ function walkConditionalClause(
         collapsedViews,
         hiddenInNavigator,
         child,
-      ),
-    )
+      )
+    }, clausePathTrees)
     return children
   }
 
@@ -563,7 +571,7 @@ function walkMapExpression(
   return {
     type: 'map-entry',
     navigatorEntry: regularNavigatorEntry(subTree.path),
-    mappedEntries: [...mappedChildren, ...invaldiOverrideEntries],
+    mappedEntries: dropNulls([...mappedChildren, ...invaldiOverrideEntries]),
     elementHidden: elementHidden,
     subtreeHidden: subtreeHidden,
   }

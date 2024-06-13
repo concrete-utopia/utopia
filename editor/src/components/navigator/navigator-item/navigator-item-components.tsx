@@ -560,7 +560,7 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
           visible={true}
           collapsed={props.collapsed}
           selected={props.selected}
-          onMouseDown={collapse}
+          onClick={collapse}
           style={{
             opacity: 'var(--paneHoverOpacity)',
           }}

@@ -3,14 +3,13 @@ import React from 'react'
 import { isPrefixOf } from '../../../../core/shared/array-utils'
 import { arrayEqualsByReference, assertNever } from '../../../../core/shared/utils'
 import { FlexColumn, FlexRow, colorTheme } from '../../../../uuiui'
-import type { CartoucheSource } from './cartouche-ui'
 import type { ArrayOption, DataPickerOption, ObjectOption, ObjectPath } from './data-picker-utils'
-import { DataPickerCartouche, useVariableDataSource } from './data-selector-cartouche'
+import { DataPickerCartouche } from './data-selector-cartouche'
 
 interface DataSelectorColumnsProps {
   activeScope: Array<DataPickerOption>
   targetPathInsideScope: ObjectPath
-  onTargetPathChange: (newTargetPath: ObjectPath) => void
+  onTargetPathChange: (newTargetVariable: DataPickerOption) => void
 }
 
 export const DataSelectorColumns = React.memo((props: DataSelectorColumnsProps) => {
@@ -30,7 +29,6 @@ export const DataSelectorColumns = React.memo((props: DataSelectorColumnsProps) 
         targetPathInsideScope={props.targetPathInsideScope}
         onTargetPathChange={props.onTargetPathChange}
         currentlyShowingScopeForArray={false}
-        originalDataForScope={null}
       />
     </FlexRow>
   )
@@ -38,10 +36,9 @@ export const DataSelectorColumns = React.memo((props: DataSelectorColumnsProps) 
 
 interface DataSelectorColumnProps {
   activeScope: Array<DataPickerOption>
-  originalDataForScope: DataPickerOption | null
   currentlyShowingScopeForArray: boolean
   targetPathInsideScope: ObjectPath
-  onTargetPathChange: (newTargetPath: ObjectPath) => void
+  onTargetPathChange: (newTargetVariable: DataPickerOption) => void
 }
 
 const DataSelectorColumn = React.memo((props: DataSelectorColumnProps) => {
@@ -72,8 +69,6 @@ const DataSelectorColumn = React.memo((props: DataSelectorColumnProps) => {
 
   const nextColumnScopeValue = nextColumnScope == null ? elementOnSelectedPath : null
 
-  const dataSource = useVariableDataSource(props.originalDataForScope)
-
   const isLastColumn = nextColumnScope == null && nextColumnScopeValue == null
   const columnRef = useScrollIntoView(isLastColumn)
 
@@ -92,7 +87,6 @@ const DataSelectorColumn = React.memo((props: DataSelectorColumnProps) => {
               onActivePath={onActivePath}
               forceShowArrow={pseudoSelectedElementForArray != null && index === 0}
               onTargetPathChange={props.onTargetPathChange}
-              forcedDataSource={dataSource}
             />
           )
         })}
@@ -103,7 +97,6 @@ const DataSelectorColumn = React.memo((props: DataSelectorColumnProps) => {
           targetPathInsideScope={targetPathInsideScope}
           onTargetPathChange={props.onTargetPathChange}
           currentlyShowingScopeForArray={nextColumnScope.type === 'array'}
-          originalDataForScope={props.originalDataForScope ?? elementOnSelectedPath}
         />
       ) : null}
       {nextColumnScopeValue != null ? <ValuePreviewColumn data={nextColumnScopeValue} /> : null}
@@ -163,27 +156,17 @@ interface RowWithCartoucheProps {
   onActivePath: boolean
   forceShowArrow: boolean
   isLeaf: boolean
-  forcedDataSource: CartoucheSource | null
-  onTargetPathChange: (newTargetPath: ObjectPath) => void
+  onTargetPathChange: (newTargetVariable: DataPickerOption) => void
 }
 const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
-  const {
-    onTargetPathChange,
-    data,
-    forcedDataSource,
-    isLeaf,
-    selected,
-    onActivePath,
-    forceShowArrow,
-  } = props
-  const targetPath = data.valuePath
+  const { onTargetPathChange, data, isLeaf, selected, onActivePath, forceShowArrow } = props
 
   const onClick: React.MouseEventHandler<HTMLDivElement> = React.useCallback(
     (e) => {
       e.stopPropagation()
-      onTargetPathChange(targetPath)
+      onTargetPathChange(data)
     },
-    [targetPath, onTargetPathChange],
+    [data, onTargetPathChange],
   )
 
   const ref = useScrollIntoView(selected)
@@ -198,7 +181,7 @@ const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
       disabled={false}
     >
       <span>
-        <DataPickerCartouche data={data} forcedDataSource={forcedDataSource} selected={selected} />
+        <DataPickerCartouche data={data} selected={selected} />
       </span>
       <span
         style={{
@@ -220,13 +203,14 @@ const DataSelectorFlexColumn = styled(FlexColumn)({
   overflowY: 'scroll',
   scrollbarWidth: 'auto',
   scrollbarColor: 'gray transparent',
+  paddingTop: 8,
   paddingRight: 10, // to account for scrollbar
   paddingLeft: 6,
   paddingBottom: 10,
   borderRight: `1px solid ${colorTheme.subduedBorder.cssValue}`,
 })
 
-export const DataPickerRow = styled(FlexRow)((props: { disabled: boolean }) => ({
+const DataPickerRow = styled(FlexRow)((props: { disabled: boolean }) => ({
   alignSelf: 'stretch',
   justifyContent: 'space-between',
   fontSize: 10,
