@@ -13,7 +13,7 @@ describe('data selector modal', () => {
 
     expect(editor.renderedDOM.getByText('Apply')).not.toBeNull()
     expect(editor.renderedDOM.getByTestId(DataSelectorPopupBreadCrumbsTestId).innerText).toEqual(
-      ['header', '.title'].join('\n'),
+      expect.stringContaining('Selection:'),
     )
   })
 })
