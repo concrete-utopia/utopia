@@ -257,111 +257,111 @@ jobs:
           body: |
             ## [Try me](https://${{ secrets.STAGING_SERVER }}/p/?accessLevel=public&branch_name=${{ steps.extract_branch.outputs.branch }})
 
-  # TODO restore or revamp this!
-  # performance-test:
-  #   name: Run Performance Tests
-  #   timeout-minutes: 15
-  #   runs-on: self-hosted
-  #   needs: [deploy-branch, cache-pnpm-store]
-  #   env:
-  #     UTOPIA_SHA: ${{ github.sha }}
-  #     AUTH0_CLIENT_ID: A9v9iuucCnFzkb1OzGkbAvi3cSF8kQtu
-  #     AUTH0_ENDPOINT: utopia-staging.us.auth0.com
-  #   steps:
-  #     # Gets the branch that this PR is targeting and replaces forward slashes in the name with hyphens.
-  #     # So that later steps can produce a bundle incorporating that into the name and upload it.
-  #     - name: Extract branch name
-  #       shell: bash
-  #       run: |
-  #         FIXED_REF="${GITHUB_HEAD_REF////-}"
-  #         echo "##[set-output name=branch;]$FIXED_REF"
-  #       id: extract_branch
-  #     - name: Check out the repo
-  #       uses: actions/checkout@v2
-  #     - name: Cache .pnpm-store
-  #       uses: actions/cache@v2
-  #       with:
-  #         path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
-  #         key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location
-  #     - name: Build Performance Tests
-  #       run: |
-  #         nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "build-puppeteer-tests"
-  #     - name: Run Performance Test
-  #       id: run-performance-test
-  #       env:
-  #         BRANCH_NAME: ${{ steps.extract_branch.outputs.branch }}
-  #         AWS_S3_BUCKET: ${{secrets.PERFORMANCE_GRAPHS_BUCKET}}
-  #         AWS_ACCESS_KEY_ID: ${{ secrets.PERFORMANCE_GRAPHS_ACCESS_KEY}}
-  #         AWS_SECRET_ACCESS_KEY: ${{ secrets.PERFORMANCE_GRAPHS_SECRET_KEY }}
-  #         AWS_REGION: ${{ secrets.STAGING_BUNDLE_REGION }}
-  #         PERFORMANCE_GRAPHS_PLOTLY_USERNAME: ${{ secrets.PERFORMANCE_GRAPHS_PLOTLY_USERNAME}}
-  #         PERFORMANCE_GRAPHS_PLOTLY_API_KEY: ${{secrets.PERFORMANCE_GRAPHS_PLOTLY_API_KEY}}
-  #       run: |
-  #         nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "xvfb-run --server-args='-screen 0 1920x1080x24 -ac -nolisten tcp -dpi 96 +extension RANDR' run-puppeteer-test"
-  #     - name: Find Comment
-  #       uses: peter-evans/find-comment@v1
-  #       id: fc
-  #       with:
-  #         issue-number: ${{ github.event.pull_request.number }}
-  #         comment-author: 'github-actions[bot]'
-  #         body-includes: Performance test results
-  #     - name: Create or update comment
-  #       uses: peter-evans/create-or-update-comment@v1
-  #       if: ${{ success() || failure() }}
-  #       with:
-  #         comment-id: ${{ steps.fc.outputs.comment-id }}
-  #         issue-number: ${{ github.event.pull_request.number }}
-  #         edit-mode: replace
-  #         body: |
-  #           Performance test results:
-  #           ${{ steps.run-performance-test.outputs.perf-result }}
-  #     - name: Build Discord Message
-  #       if: ${{ steps.run-performance-test.outputs.perf-serious-regression-found == 'true' }}
-  #       env:
-  #         TEMPLATE: >-
-  #           [
-  #             {
-  #               "title": $title,
-  #               "url": $html_url,
-  #               "color": 2369839,
-  #               "description": $description,
-  #               "footer": {
-  #                 "text": $repo_full_name
-  #               }
-  #             },
-  #             {
-  #               "title": "Frame Tests:",
-  #               "color": 2369839,
-  #               "image": {
-  #                 "url": $result_frames_chart
-  #               }
-  #             },
-  #             {
-  #               "title": "Interaction Tests:",
-  #               "color": 14540253,
-  #               "image": {
-  #                 "url": $result_interactions_chart
-  #               }
-  #             }
-  #           ]
-  #         TITLE: 'Performance Results for #${{ github.event.pull_request.number }} ${{ github.event.pull_request.title }}'
-  #         HTML_URL: ${{ github.event.pull_request.html_url }}
-  #         DESCRIPTION: 'Link to test editor: https://${{ secrets.STAGING_SERVER }}/p/?branch_name=${{ steps.extract_branch.outputs.branch }} \n \n Results: \n ${{ steps.run-performance-test.outputs.perf-discord-message }}'
-  #         REPO_FULL_NAME: ${{ github.event.repository.full_name }}
-  #         RESULT_FRAMES_CHART: ${{ steps.run-performance-test.outputs.perf-frames-chart }}
-  #         RESULT_INTERACTIONS_CHART: ${{ steps.run-performance-test.outputs.perf-interactions-chart }}
-  #       run: |
-  #         echo "DISCORD_EMBEDS=$(jq -nc --arg title "$TITLE" --arg html_url "$HTML_URL" --arg description "$DESCRIPTION" --arg repo_full_name "$REPO_FULL_NAME" --arg result_frames_chart "$RESULT_FRAMES_CHART" --arg result_interactions_chart "$RESULT_INTERACTIONS_CHART" "$TEMPLATE")" | sed 's/\\\\n/\\n/g' >> $GITHUB_ENV
-  #     - name: Send Discord Notification
-  #       uses: Ilshidur/action-discord@0.3.2
-  #       if: ${{ steps.run-performance-test.outputs.perf-serious-regression-found == 'true' }}
-  #       env:
-  #         DISCORD_WEBHOOK: ${{ secrets.DISCORD_PRS_WEBHOOK }}
-  #         DISCORD_USERNAME: 'Puppeteer'
-  #         DISCORD_AVATAR: https://octodex.github.com/images/puppeteer.png
-  #         MESSAGE: 'Performance results for #${{ github.event.pull_request.number }}'
-  #       with:
-  #         args: ${{ env.MESSAGE }}
+  performance-test:
+    name: Run Performance Tests
+    if: false # TODO restore / revamp this! (Temporarily disabled)
+    timeout-minutes: 15
+    runs-on: self-hosted
+    needs: [deploy-branch, cache-pnpm-store]
+    env:
+      UTOPIA_SHA: ${{ github.sha }}
+      AUTH0_CLIENT_ID: A9v9iuucCnFzkb1OzGkbAvi3cSF8kQtu
+      AUTH0_ENDPOINT: utopia-staging.us.auth0.com
+    steps:
+      # Gets the branch that this PR is targeting and replaces forward slashes in the name with hyphens.
+      # So that later steps can produce a bundle incorporating that into the name and upload it.
+      - name: Extract branch name
+        shell: bash
+        run: |
+          FIXED_REF="${GITHUB_HEAD_REF////-}"
+          echo "##[set-output name=branch;]$FIXED_REF"
+        id: extract_branch
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Cache .pnpm-store
+        uses: actions/cache@v2
+        with:
+          path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
+          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location
+      - name: Build Performance Tests
+        run: |
+          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "build-puppeteer-tests"
+      - name: Run Performance Test
+        id: run-performance-test
+        env:
+          BRANCH_NAME: ${{ steps.extract_branch.outputs.branch }}
+          AWS_S3_BUCKET: ${{secrets.PERFORMANCE_GRAPHS_BUCKET}}
+          AWS_ACCESS_KEY_ID: ${{ secrets.PERFORMANCE_GRAPHS_ACCESS_KEY}}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.PERFORMANCE_GRAPHS_SECRET_KEY }}
+          AWS_REGION: ${{ secrets.STAGING_BUNDLE_REGION }}
+          PERFORMANCE_GRAPHS_PLOTLY_USERNAME: ${{ secrets.PERFORMANCE_GRAPHS_PLOTLY_USERNAME}}
+          PERFORMANCE_GRAPHS_PLOTLY_API_KEY: ${{secrets.PERFORMANCE_GRAPHS_PLOTLY_API_KEY}}
+        run: |
+          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "xvfb-run --server-args='-screen 0 1920x1080x24 -ac -nolisten tcp -dpi 96 +extension RANDR' run-puppeteer-test"
+      - name: Find Comment
+        uses: peter-evans/find-comment@v1
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: Performance test results
+      - name: Create or update comment
+        uses: peter-evans/create-or-update-comment@v1
+        if: ${{ success() || failure() }}
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
+          body: |
+            Performance test results:
+            ${{ steps.run-performance-test.outputs.perf-result }}
+      - name: Build Discord Message
+        if: ${{ steps.run-performance-test.outputs.perf-serious-regression-found == 'true' }}
+        env:
+          TEMPLATE: >-
+            [
+              {
+                "title": $title,
+                "url": $html_url,
+                "color": 2369839,
+                "description": $description,
+                "footer": {
+                  "text": $repo_full_name
+                }
+              },
+              {
+                "title": "Frame Tests:",
+                "color": 2369839,
+                "image": {
+                  "url": $result_frames_chart
+                }
+              },
+              {
+                "title": "Interaction Tests:",
+                "color": 14540253,
+                "image": {
+                  "url": $result_interactions_chart
+                }
+              }
+            ]
+          TITLE: 'Performance Results for #${{ github.event.pull_request.number }} ${{ github.event.pull_request.title }}'
+          HTML_URL: ${{ github.event.pull_request.html_url }}
+          DESCRIPTION: 'Link to test editor: https://${{ secrets.STAGING_SERVER }}/p/?branch_name=${{ steps.extract_branch.outputs.branch }} \n \n Results: \n ${{ steps.run-performance-test.outputs.perf-discord-message }}'
+          REPO_FULL_NAME: ${{ github.event.repository.full_name }}
+          RESULT_FRAMES_CHART: ${{ steps.run-performance-test.outputs.perf-frames-chart }}
+          RESULT_INTERACTIONS_CHART: ${{ steps.run-performance-test.outputs.perf-interactions-chart }}
+        run: |
+          echo "DISCORD_EMBEDS=$(jq -nc --arg title "$TITLE" --arg html_url "$HTML_URL" --arg description "$DESCRIPTION" --arg repo_full_name "$REPO_FULL_NAME" --arg result_frames_chart "$RESULT_FRAMES_CHART" --arg result_interactions_chart "$RESULT_INTERACTIONS_CHART" "$TEMPLATE")" | sed 's/\\\\n/\\n/g' >> $GITHUB_ENV
+      - name: Send Discord Notification
+        uses: Ilshidur/action-discord@0.3.2
+        if: ${{ steps.run-performance-test.outputs.perf-serious-regression-found == 'true' }}
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_PRS_WEBHOOK }}
+          DISCORD_USERNAME: 'Puppeteer'
+          DISCORD_AVATAR: https://octodex.github.com/images/puppeteer.png
+          MESSAGE: 'Performance results for #${{ github.event.pull_request.number }}'
+        with:
+          args: ${{ env.MESSAGE }}
 
   system-test:
     name: Run System Tests
