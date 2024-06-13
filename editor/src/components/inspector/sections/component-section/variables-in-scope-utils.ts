@@ -389,7 +389,7 @@ export function orderVariablesForRelevance(
       variableMatchesControlDescription(variable.value, targetControlDescription)
 
     const valueMatchesChildrenProp =
-      targetPropertyName === 'children' && React.isValidElement(variable.value)
+      targetPropertyName === 'children' && isValidReactNode(variable.value)
 
     const valueMatchesCurrentPropValue =
       currentPropertyValue.type === 'existing' &&
