@@ -33,7 +33,7 @@ import {
 import { DataSelectorColumns } from './data-selector-columns'
 import { DataSelectorLeftSidebar } from './data-selector-left-sidebar'
 import { DataSelectorSearch } from './data-selector-search'
-import { variableMatches, variableOrChildMatches } from './variables-in-scope-utils'
+import { variableMatches } from './variables-in-scope-utils'
 import { DataPickerCartouche } from './data-selector-cartouche'
 
 export const DataSelectorPopupBreadCrumbsTestId = 'data-selector-modal-top-bar'
@@ -53,17 +53,13 @@ export const DataSelectorModal = React.memo(
       {
         style,
         closePopup,
-        variablesInScope,
+        variablesInScope: allVariablesInScope,
         onPropertyPicked,
         startingSelectedValuePath,
         lowestInsertionCeiling,
       },
       forwardedRef,
     ) => {
-      const allVariablesInScope = React.useMemo(
-        () => filterKeepMatchingOnly(variablesInScope),
-        [variablesInScope],
-      )
       const colorTheme = useColorTheme()
 
       const scopeBuckets = React.useMemo(
@@ -477,24 +473,4 @@ function getVariableInScope(
     return null
   }
   return findOption(variablesInScope)
-}
-
-function filterVariableOption(option: DataPickerOption): DataPickerOption | null {
-  switch (option.type) {
-    case 'array':
-    case 'object':
-      return {
-        ...option,
-        children: filterKeepMatchingOnly(option.children),
-      }
-    case 'jsx':
-    case 'primitive':
-      return variableOrChildMatches(option.variableInfo) ? option : null
-    default:
-      assertNever(option)
-  }
-}
-
-function filterKeepMatchingOnly(options: DataPickerOption[]): DataPickerOption[] {
-  return mapDropNulls((o) => filterVariableOption(o), options)
 }

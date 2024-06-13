@@ -167,18 +167,6 @@ function usePropertyControlDescriptions(
 
 export type VariableMatches = 'matches' | 'child-matches' | 'does-not-match'
 
-export const variableOrChildMatches = (variable: VariableInfoBase) => {
-  switch (variable.matches) {
-    case 'matches':
-    case 'child-matches':
-      return true
-    case 'does-not-match':
-      return false
-    default:
-      assertNever(variable.matches)
-  }
-}
-
 export const variableMatches = (variable: VariableInfoBase) => {
   switch (variable.matches) {
     case 'matches':
