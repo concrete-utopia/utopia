@@ -51,7 +51,7 @@ describe('orderVariablesForRelevance', () => {
             ],
             "type": "elementpath",
           },
-          "matches": false,
+          "matches": "child-matches",
           "props": Array [
             Object {
               "expression": "style['left']",
@@ -64,7 +64,7 @@ describe('orderVariablesForRelevance', () => {
                 ],
                 "type": "elementpath",
               },
-              "matches": true,
+              "matches": "matches",
               "type": "primitive",
               "value": 300,
             },
@@ -79,7 +79,7 @@ describe('orderVariablesForRelevance', () => {
                 ],
                 "type": "elementpath",
               },
-              "matches": false,
+              "matches": "does-not-match",
               "type": "primitive",
               "value": "relative",
             },
@@ -138,7 +138,7 @@ describe('orderVariablesForRelevance', () => {
             ],
             "type": "elementpath",
           },
-          "matches": true,
+          "matches": "matches",
           "props": Array [
             Object {
               "expression": "style['left']",
@@ -151,7 +151,7 @@ describe('orderVariablesForRelevance', () => {
                 ],
                 "type": "elementpath",
               },
-              "matches": false,
+              "matches": "does-not-match",
               "type": "primitive",
               "value": 300,
             },
@@ -166,7 +166,7 @@ describe('orderVariablesForRelevance', () => {
                 ],
                 "type": "elementpath",
               },
-              "matches": false,
+              "matches": "does-not-match",
               "type": "primitive",
               "value": "relative",
             },
