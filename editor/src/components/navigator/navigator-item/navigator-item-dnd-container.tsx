@@ -871,7 +871,6 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
       >
         <NavigatorItem
           navigatorEntry={props.navigatorEntry}
-          index={props.index}
           indentation={props.indentation}
           getSelectedViewsInRange={props.getSelectedViewsInRange}
           noOfChildren={props.noOfChildren}
@@ -1025,7 +1024,6 @@ export const SyntheticNavigatorItemContainer = React.memo(
         >
           <NavigatorItem
             navigatorEntry={navigatorEntry}
-            index={props.index}
             indentation={props.indentation}
             getSelectedViewsInRange={props.getSelectedViewsInRange}
             noOfChildren={props.noOfChildren}
@@ -1068,7 +1066,6 @@ export const RenderPropNavigatorItemContainer = React.memo(
         >
           <NavigatorItem
             navigatorEntry={navigatorEntry}
-            index={props.index}
             indentation={props.indentation}
             getSelectedViewsInRange={props.getSelectedViewsInRange}
             noOfChildren={props.noOfChildren}
@@ -1110,7 +1107,6 @@ export const SlotNavigatorItemContainer = React.memo((props: SlotNavigatorItemCo
       >
         <NavigatorItem
           navigatorEntry={navigatorEntry}
-          index={props.index}
           indentation={props.indentation}
           getSelectedViewsInRange={props.getSelectedViewsInRange}
           noOfChildren={props.noOfChildren}
@@ -1157,7 +1153,6 @@ export const ConditionalClauseNavigatorItemContainer = React.memo(
         >
           <NavigatorItem
             navigatorEntry={props.navigatorEntry}
-            index={props.index}
             indentation={props.indentation}
             getSelectedViewsInRange={props.getSelectedViewsInRange}
             noOfChildren={props.noOfChildren}
@@ -1203,7 +1198,6 @@ export const ErrorNavigatorItemContainer = React.memo((props: ErrorNavigatorItem
       >
         <NavigatorItem
           navigatorEntry={props.navigatorEntry}
-          index={props.index}
           indentation={props.indentation}
           getSelectedViewsInRange={props.getSelectedViewsInRange}
           noOfChildren={props.noOfChildren}

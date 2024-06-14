@@ -17,13 +17,11 @@ import type { ProjectContentTreeRoot } from '../../../assets'
 import { insertionCeilingToString, type FileRootPath } from '../../../canvas/ui-jsx-canvas'
 import type { AllElementProps } from '../../../editor/store/editor-state'
 import type { ArrayInfo, JSXInfo, ObjectInfo, PrimitiveInfo } from './variables-in-scope-utils'
-import type { CartoucheUIProps } from './cartouche-ui'
 
 interface VariableOptionBase {
   depth: number
   definedElsewhere: string
   valuePath: Array<string | number>
-  disabled: boolean
   insertionCeiling: ElementPath | FileRootPath
   isChildOfArray: boolean
 }
@@ -108,7 +106,7 @@ export function getEnclosingScopes(
       MetadataUtils.isJSXMapExpression(parentOfCurrent, metadata) ||
       EP.isRootElementOfInstance(current)
     ) {
-      result.unshift({
+      result.push({
         insertionCeiling: current,
         label: outletNameHack(metadata, allElementProps, elementPathTree, projectContents, current),
         hasContent: buckets.includes(insertionCeilingToString(current)),
@@ -118,7 +116,7 @@ export function getEnclosingScopes(
 
     // we also add anything that has content in scope even if it's not a component or map
     if (buckets.includes(insertionCeilingToString(current))) {
-      result.unshift({
+      result.push({
         insertionCeiling: current,
         label: outletNameHack(metadata, allElementProps, elementPathTree, projectContents, current),
         hasContent: true,
@@ -128,7 +126,7 @@ export function getEnclosingScopes(
   }
 
   // Add file root
-  result.unshift({
+  result.push({
     insertionCeiling: { type: 'file-root' },
     label: 'File',
     hasContent: buckets.includes(insertionCeilingToString({ type: 'file-root' })),

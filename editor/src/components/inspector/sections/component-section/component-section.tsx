@@ -113,6 +113,7 @@ import {
   childrenAreProbablyNumericExpression,
   replaceFirstChildAndDeleteSiblings,
 } from '../../../editor/element-children'
+import { getTextContentOfElement } from './data-reference-cartouche'
 
 export interface PropertyLabelAndPlusButtonProps {
   title: string
@@ -255,7 +256,7 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
     ) {
       return (
         <IdentifierExpressionCartoucheControl
-          contents={jsxElementChildToText(attributeExpression, null, null, 'jsx', 'inner')}
+          contents={getTextContentOfElement(attributeExpression, null)}
           icon={React.createElement(iconForControlType(props.controlDescription.control))}
           matchType='full'
           onOpenDataPicker={props.onOpenDataPicker}
@@ -277,7 +278,7 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
       if (controlDescription.control !== 'jsx') {
         return (
           <IdentifierExpressionCartoucheControl
-            contents={'Expression'}
+            contents={getTextContentOfElement(attributeExpression, null)}
             icon={React.createElement(iconForControlType('none'))}
             matchType='partial'
             onOpenDataPicker={props.onOpenDataPicker}
@@ -770,34 +771,38 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
         <SimpleFlexRow
           style={{ gap: 5, justifyContent: 'space-between', flexGrow: 1, paddingRight: 3 }}
         >
-          <FlexRow
-            style={{ flex: 1, flexShrink: 0, gap: 5, justifyContent: 'space-between' }}
+          <UIGridRow
+            padded={false}
+            variant='<--1fr--><--1fr-->'
+            style={{ flexGrow: 1 }}
             ref={dataPickerButtonData.setReferenceElement}
           >
-            <PropertyLabel target={[propPath]} style={objectPropertyLabelStyle}>
-              {title}
-            </PropertyLabel>
-            {propertyStatus.overwritable && !propertyStatus.controlled ? (
-              <SquareButton
-                highlight
-                onMouseDown={toggleInsertRow}
-                data-testid={`toggle-insert-${PP.toString(propPath)}`}
-              >
-                {insertingRow ? (
-                  <Icons.Minus
-                    color={propertyStatus.controlled ? 'dynamic' : 'secondary'}
-                    width={16}
-                    height={16}
-                  />
-                ) : (
-                  <Icons.Plus
-                    color={propertyStatus.controlled ? 'dynamic' : 'secondary'}
-                    width={16}
-                    height={16}
-                  />
-                )}
-              </SquareButton>
-            ) : null}
+            <FlexRow style={{ flex: 1, flexShrink: 0, gap: 5, justifyContent: 'space-between' }}>
+              <PropertyLabel target={[propPath]} style={objectPropertyLabelStyle}>
+                {title}
+              </PropertyLabel>
+              {propertyStatus.overwritable && !propertyStatus.controlled ? (
+                <SquareButton
+                  highlight
+                  onMouseDown={toggleInsertRow}
+                  data-testid={`toggle-insert-${PP.toString(propPath)}`}
+                >
+                  {insertingRow ? (
+                    <Icons.Minus
+                      color={propertyStatus.controlled ? 'dynamic' : 'secondary'}
+                      width={16}
+                      height={16}
+                    />
+                  ) : (
+                    <Icons.Plus
+                      color={propertyStatus.controlled ? 'dynamic' : 'secondary'}
+                      width={16}
+                      height={16}
+                    />
+                  )}
+                </SquareButton>
+              ) : null}
+            </FlexRow>
             <ControlForProp
               propPath={propPath}
               propName={propName}
@@ -809,7 +814,7 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
               showHiddenControl={props.showHiddenControl}
               elementPath={selectedViews.at(0) ?? EP.emptyElementPath}
             />
-          </FlexRow>
+          </UIGridRow>
         </SimpleFlexRow>
         <div
           style={{
@@ -1059,7 +1064,8 @@ interface RowForObjectControlProps extends AbstractRowForControlProps {
 }
 
 const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
-  const [open, setOpen] = React.useState(true)
+  const partOfBiggerObject = props.propPath.propertyElements.length > 1
+  const [open, setOpen] = React.useState(partOfBiggerObject)
   const handleOnClick = React.useCallback(() => {
     if (!props.disableToggling) {
       setOpen(!open)
@@ -1119,7 +1125,9 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
             style={{ flexGrow: 1, justifyContent: 'space-between', paddingRight: 10 }}
             ref={dataPickerButtonData.setReferenceElement}
           >
-            <SimpleFlexRow
+            <UIGridRow
+              padded={false}
+              variant='<--1fr--><--1fr-->'
               style={{
                 minWidth: 0,
                 flexGrow: 1,
@@ -1162,7 +1170,7 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
                   elementPath={selectedViews.at(0) ?? EP.emptyElementPath}
                 />
               </div>
-            </SimpleFlexRow>
+            </UIGridRow>
           </FlexRow>
         </InspectorContextMenuWrapper>
       </div>

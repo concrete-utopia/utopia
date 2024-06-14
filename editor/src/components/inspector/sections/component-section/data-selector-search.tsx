@@ -5,9 +5,10 @@ import { assertNever } from '../../../../core/shared/utils'
 import { FlexRow, Icons, UtopiaStyles } from '../../../../uuiui'
 import { type DataPickerOption, type ObjectPath } from './data-picker-utils'
 import { DataPickerCartouche } from './data-selector-cartouche'
+import { when } from '../../../../utils/react-conditionals'
 
 export interface DataSelectorSearchProps {
-  setNavigatedToPath: (_: ObjectPath) => void
+  setNavigatedToPath: (_: DataPickerOption) => void
   allVariablesInScope: DataPickerOption[]
   searchTerm: string
 }
@@ -15,10 +16,10 @@ export interface DataSelectorSearchProps {
 export const DataSelectorSearch = React.memo(
   ({ setNavigatedToPath, searchTerm, allVariablesInScope }: DataSelectorSearchProps) => {
     const setNavigatedToPathCurried = React.useCallback(
-      (path: ObjectPath) => (e: React.MouseEvent) => {
+      (data: DataPickerOption) => (e: React.MouseEvent) => {
         e.stopPropagation()
         e.preventDefault()
-        setNavigatedToPath(path)
+        setNavigatedToPath(data)
       },
       [setNavigatedToPath],
     )
@@ -32,6 +33,7 @@ export const DataSelectorSearch = React.memo(
           flexGrow: 1,
           gap: 8,
           paddingTop: 8,
+          paddingLeft: 8,
           display: 'grid',
           gridTemplateColumns: 'auto 1fr',
           gridAutoRows: 'min-content',
@@ -45,7 +47,7 @@ export const DataSelectorSearch = React.memo(
                   data={searchResult.option}
                   key={`${searchResult.option.variableInfo.expression}-${idx}`}
                   selected={false}
-                  onClick={setNavigatedToPathCurried(searchResult.option.valuePath)}
+                  onClick={setNavigatedToPathCurried(searchResult.option)}
                 >
                   {searchResult.valuePath.map((v, i) => (
                     <React.Fragment key={`${v.value}-${i}`}>
@@ -55,9 +57,10 @@ export const DataSelectorSearch = React.memo(
                         searchTerm={searchTerm}
                         fontWeightForMatch={900}
                       />
-                      {i < searchResult.valuePath.length - 1 ? (
-                        <Icons.ExpansionArrowRight color='primary' />
-                      ) : null}
+                      {when(
+                        i < searchResult.valuePath.length - 1,
+                        <Icons.ExpansionArrowRight color='primary' />,
+                      )}
                     </React.Fragment>
                   ))}
                 </DataPickerCartouche>

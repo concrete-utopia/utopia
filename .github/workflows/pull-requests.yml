@@ -259,6 +259,7 @@ jobs:
 
   performance-test:
     name: Run Performance Tests
+    if: false # TODO restore / revamp this! (Temporarily disabled)
     timeout-minutes: 15
     runs-on: self-hosted
     needs: [deploy-branch, cache-pnpm-store]

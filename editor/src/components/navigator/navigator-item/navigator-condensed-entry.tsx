@@ -4,17 +4,26 @@ import { Icons, Tooltip, useColorTheme } from '../../../uuiui'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import type { DataReferenceNavigatorEntry, NavigatorEntry } from '../../editor/store/editor-state'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
-import type { CondensedNavigatorRow } from '../navigator-row'
+import { condensedNavigatorRow, type CondensedNavigatorRow } from '../navigator-row'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getNavigatorEntryLabel, labelSelector } from './navigator-item-wrapper'
-import { BasePaddingUnit, elementWarningsSelector } from './navigator-item'
+import {
+  BasePaddingUnit,
+  NavigatorRowBorderRadius,
+  elementWarningsSelector,
+} from './navigator-item'
 import { setHighlightedViews, toggleCollapse } from '../../editor/actions/action-creators'
-import { selectComponents } from '../../editor/actions/meta-actions'
 import type { ElementPath } from 'utopia-shared/src/types'
 import { unless, when } from '../../../utils/react-conditionals'
 import { ExpandableIndicator } from './expandable-indicator'
 import { LayoutIcon } from './layout-icon'
 import { DataReferenceCartoucheControl } from '../../inspector/sections/component-section/data-reference-cartouche'
+import {
+  NavigatorRowClickableWrapper,
+  useGetNavigatorClickActions,
+} from './navigator-item-clickable-wrapper'
+import type { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
+import { useNavigatorSelectionBoundsForEntry } from './use-navigator-selection-bounds-for-entry'
 
 function useEntryLabel(entry: NavigatorEntry) {
   const labelForTheElement = useEditorState(
@@ -28,6 +37,12 @@ function useEntryLabel(entry: NavigatorEntry) {
   }, [entry, labelForTheElement])
 
   return entryLabel
+}
+
+function getSelectionColor(colorTheme: ThemeObject, isComponent: boolean) {
+  return isComponent
+    ? { main: colorTheme.selectionPurple.value, child: colorTheme.childSelectionPurple.value }
+    : { main: colorTheme.selectionBlue.value, child: colorTheme.childSelectionBlue.value }
 }
 
 export const CondensedEntryItemWrapper = React.memo(
@@ -65,6 +80,31 @@ export const CondensedEntryItemWrapper = React.memo(
       'CondensedEntryItemWrapper isCollapsed',
     )
 
+    const autoFocusedPaths = useEditorState(
+      Substores.derived,
+      (store) => store.derived.autoFocusedPaths,
+      'CondensedEntryItemWrapper autoFocusedPaths',
+    )
+
+    const isComponentOrInsideComponent = useEditorState(
+      Substores.focusedElement,
+      (store) =>
+        props.navigatorRow.entries.some(
+          (entry) =>
+            EP.isInExplicitlyFocusedSubtree(
+              store.editor.focusedElementPath,
+              autoFocusedPaths,
+              entry.elementPath,
+            ) ||
+            EP.isExplicitlyFocused(
+              store.editor.focusedElementPath,
+              autoFocusedPaths,
+              entry.elementPath,
+            ),
+        ),
+      'CondensedEntryItemWrapper isInFocusedComponentSubtree',
+    )
+
     const isDataReferenceRow = React.useMemo(() => {
       return props.navigatorRow.entries.every(
         (entry, idx) =>
@@ -84,44 +124,62 @@ export const CondensedEntryItemWrapper = React.memo(
       )
     }, [selectedViews, props.navigatorRow])
 
+    function getBackgroundColor() {
+      if (rowRootSelected) {
+        return getSelectionColor(colorTheme, isComponentOrInsideComponent).main
+      } else if (hasSelection || wholeRowInsideSelection) {
+        return getSelectionColor(colorTheme, isComponentOrInsideComponent).child
+      } else {
+        return 'transparent'
+      }
+    }
+    const { isTopOfSelection, isBottomOfSelection } = useNavigatorSelectionBoundsForEntry(
+      props.navigatorRow.entries[0],
+      rowRootSelected,
+      0,
+    )
+
     return (
       <div
         style={{
           ...props.windowStyle,
           display: 'flex',
           alignItems: 'center',
-          backgroundColor: rowRootSelected
-            ? colorTheme.selectionBlue.value
-            : hasSelection || wholeRowInsideSelection
-            ? colorTheme.childSelectionBlue.value
-            : 'transparent',
-          borderTopLeftRadius: rowContainsSelection ? 5 : 0,
-          borderTopRightRadius: rowContainsSelection ? 5 : 0,
+          backgroundColor: getBackgroundColor(),
+          borderTopLeftRadius: isTopOfSelection ? NavigatorRowBorderRadius : 0,
+          borderTopRightRadius: isTopOfSelection ? NavigatorRowBorderRadius : 0,
           borderBottomLeftRadius:
-            rowContainsSelection && (isCollapsed || isDataReferenceRow) ? 5 : 0,
+            isBottomOfSelection && (isCollapsed || isDataReferenceRow)
+              ? NavigatorRowBorderRadius
+              : 0,
           borderBottomRightRadius:
-            rowContainsSelection && (isCollapsed || isDataReferenceRow) ? 5 : 0,
+            isBottomOfSelection && (isCollapsed || isDataReferenceRow)
+              ? NavigatorRowBorderRadius
+              : 0,
           overflowX: 'auto',
         }}
       >
-        {props.navigatorRow.entries.map((entry, idx) => {
-          const showSeparator =
-            props.navigatorRow.variant === 'trunk' && idx < props.navigatorRow.entries.length - 1
+        <NavigatorRowClickableWrapper row={props.navigatorRow}>
+          {props.navigatorRow.entries.map((entry, idx) => {
+            const showSeparator =
+              props.navigatorRow.variant === 'trunk' && idx < props.navigatorRow.entries.length - 1
 
-          return (
-            <CondensedEntryItem
-              navigatorRow={props.navigatorRow}
-              isDataReferenceRow={isDataReferenceRow}
-              showExpandableIndicator={idx === 0}
-              key={EP.toString(entry.elementPath)}
-              entry={entry}
-              showSeparator={showSeparator}
-              wholeRowInsideSelection={wholeRowInsideSelection}
-              rowContainsSelection={rowContainsSelection}
-              rowRootSelected={rowRootSelected}
-            />
-          )
-        })}
+            return (
+              <CondensedEntryItem
+                navigatorRow={props.navigatorRow}
+                isDataReferenceRow={isDataReferenceRow}
+                showExpandableIndicator={idx === 0}
+                key={EP.toString(entry.elementPath)}
+                entry={entry}
+                showSeparator={showSeparator}
+                wholeRowInsideSelection={wholeRowInsideSelection}
+                rowContainsSelection={rowContainsSelection}
+                rowRootSelected={rowRootSelected}
+                isComponentOrInsideComponent={isComponentOrInsideComponent}
+              />
+            )
+          })}
+        </NavigatorRowClickableWrapper>
       </div>
     )
   },
@@ -138,6 +196,7 @@ const CondensedEntryItem = React.memo(
     wholeRowInsideSelection: boolean
     showSeparator: boolean
     showExpandableIndicator: boolean
+    isComponentOrInsideComponent: boolean
   }) => {
     const colorTheme = useColorTheme()
 
@@ -186,7 +245,7 @@ const CondensedEntryItem = React.memo(
       if (props.wholeRowInsideSelection) {
         return 'transparent'
       } else if (!selectionIsDataReference && (isSelected || isChildOfSelected)) {
-        return colorTheme.childSelectionBlue.value
+        return getSelectionColor(colorTheme, props.isComponentOrInsideComponent).child
       } else {
         return colorTheme.bg1.value
       }
@@ -196,6 +255,7 @@ const CondensedEntryItem = React.memo(
       selectionIsDataReference,
       isSelected,
       isChildOfSelected,
+      props.isComponentOrInsideComponent,
     ])
 
     return (
@@ -209,6 +269,7 @@ const CondensedEntryItem = React.memo(
           isDataReferenceRow={props.isDataReferenceRow}
           indentation={indentation}
           rowRootSelected={props.rowRootSelected}
+          isComponentOrInsideComponent={props.isComponentOrInsideComponent}
         />
         {when(
           props.showSeparator,
@@ -233,6 +294,7 @@ const CondensedEntryItemContent = React.memo(
     showExpandableIndicator: boolean
     isDataReferenceRow: boolean
     indentation: number
+    isComponentOrInsideComponent: boolean
   }) => {
     const dispatch = useDispatch()
     const colorTheme = useColorTheme()
@@ -267,15 +329,6 @@ const CondensedEntryItemContent = React.memo(
       return props.entry.type === 'DATA_REFERENCE'
     }, [props.entry])
 
-    const onClick = React.useCallback(
-      (e: React.MouseEvent) => {
-        e.preventDefault()
-        e.stopPropagation()
-        dispatch(selectComponents([props.entry.elementPath], false))
-      },
-      [dispatch, props.entry],
-    )
-
     const onMouseOver = React.useCallback(() => {
       dispatch([setHighlightedViews([props.entry.elementPath])])
     }, [props.entry, dispatch])
@@ -287,6 +340,20 @@ const CondensedEntryItemContent = React.memo(
         ),
       ])
     }, [props.entry, dispatch, highlightedViews])
+
+    const getClickActions = useGetNavigatorClickActions(
+      props.entry.elementPath,
+      props.selected,
+      condensedNavigatorRow([props.entry], 'leaf', props.indentation),
+    )
+
+    const onClick = React.useCallback(
+      (e: React.MouseEvent) => {
+        e.stopPropagation()
+        dispatch(getClickActions(e))
+      },
+      [dispatch, getClickActions],
+    )
 
     return (
       <div
@@ -305,9 +372,9 @@ const CondensedEntryItemContent = React.memo(
           borderBottomRightRadius: props.selected ? 5 : 0,
           marginRight: !props.showExpandableIndicator && props.isDataReferenceRow ? 4 : 0,
         }}
-        onClick={onClick}
         onMouseOver={onMouseOver}
         onMouseOut={onMouseOut}
+        onClick={onClick}
       >
         <div
           style={{
@@ -316,7 +383,9 @@ const CondensedEntryItemContent = React.memo(
             justifyContent: 'center',
             borderRadius: 5,
             backgroundColor:
-              props.selected && !isDataReference ? colorTheme.selectionBlue.value : undefined,
+              props.selected && !isDataReference
+                ? getSelectionColor(colorTheme, props.isComponentOrInsideComponent).main
+                : undefined,
             width: '100%',
             height: '100%',
             padding: props.showExpandableIndicator ? '0px 5px' : 0,
@@ -357,7 +426,6 @@ const CondensedEntryItemContent = React.memo(
               highlight={
                 props.rowRootSelected ? 'strong' : props.wholeRowInsideSelection ? 'subtle' : null
               }
-              hideTooltip={true}
             />,
           )}
         </div>
@@ -379,7 +447,7 @@ const CondensedEntryTrunkSeparator = React.memo((props: CondensedEntryTrunkSepar
     <div
       style={{
         backgroundColor: props.backgroundColor,
-        height: '100%',
+        height: 29,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',

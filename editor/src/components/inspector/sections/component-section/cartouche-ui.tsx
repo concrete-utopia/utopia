@@ -14,11 +14,11 @@ export interface HoverHandlers {
 
 export type CartoucheDataType = 'renderable' | 'boolean' | 'array' | 'object' | 'unknown'
 
-export type CartoucheSource = 'internal' | 'external' | 'literal'
+export type CartoucheSource = 'internal' | 'external' | 'inline-literal' | 'literal-assignment'
 export type CartoucheHighlight = 'strong' | 'subtle' | 'disabled'
 
 export type CartoucheUIProps = React.PropsWithChildren<{
-  tooltip?: string | null
+  tooltip: string | null
   source: CartoucheSource
   role: 'selection' | 'information' | 'folder'
   datatype: CartoucheDataType
@@ -54,7 +54,18 @@ export const CartoucheUI = React.forwardRef(
 
     const colors = useCartoucheColors(source, highlight ?? null)
 
-    const wrappedOnClick = useStopPropagation(onClick)
+    const wrappedOnClick = React.useCallback(
+      (e: React.MouseEvent) => {
+        if (e.shiftKey || e.metaKey) {
+          return
+        }
+        if (onClick != null) {
+          e.stopPropagation()
+          onClick(e)
+        }
+      },
+      [onClick],
+    )
     const wrappedOnDoubleClick = useStopPropagation(onDoubleClick)
 
     // NOTE: this is currently unused, we should decide if we want to keep allowing deletion of the cartouches from here or not
@@ -110,7 +121,7 @@ export const CartoucheUI = React.forwardRef(
                     },
             }}
           >
-            {source === 'literal' ? null : (
+            {source === 'inline-literal' ? null : (
               <Icn
                 category='navigator-element'
                 type={dataTypeToIconType(datatype)}
@@ -130,12 +141,6 @@ export const CartoucheUI = React.forwardRef(
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
 
-                /* Beginning of string */
-                ...(shouldUseRtlCSS
-                  ? {
-                      direction: source === 'literal' ? 'ltr' : 'rtl', // TODO we need a better way to ellipsize the beginnign because rtl eats ' " marks
-                    }
-                  : {}),
                 textAlign: 'left',
                 ...(role !== 'information' ? UtopiaStyles.fontStyles.monospaced : {}),
                 display: 'flex',
@@ -239,7 +244,8 @@ function useCartoucheColors(source: CartoucheSource, highlight: CartoucheHighlig
           },
           icon: { default: 'dynamic', hovered: 'dynamic', selected: 'on-highlight-main' },
         }
-      case 'literal':
+      case 'inline-literal':
+      case 'literal-assignment':
         return {
           fg: {
             default: colorTheme.fg1.value,

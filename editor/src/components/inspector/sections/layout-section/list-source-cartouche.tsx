@@ -3,7 +3,7 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
-import { NO_OP, assertNever } from '../../../../core/shared/utils'
+import { NO_OP } from '../../../../core/shared/utils'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import {
   DataCartoucheInner,
@@ -15,7 +15,6 @@ import { useDispatch } from '../../../editor/store/dispatch-context'
 import type { JSExpressionOtherJavaScript } from '../../../../core/shared/element-template'
 import { replaceElementInScope } from '../../../editor/actions/action-creators'
 import { useAtom } from 'jotai'
-import type { DataPickerOption } from '../component-section/data-picker-utils'
 import {
   DataPickerPreferredAllAtom,
   jsxElementChildToValuePath,
@@ -24,41 +23,10 @@ import {
   getCartoucheDataTypeForExpression,
   useVariablesInScopeForSelectedElement,
 } from '../component-section/variables-in-scope-utils'
-import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { traceDataFromElement, dataPathSuccess } from '../../../../core/data-tracing/data-tracing'
 import type { CartoucheDataType } from '../component-section/cartouche-ui'
 import { CartoucheInspectorWrapper } from '../component-section/cartouche-control'
 import { MapCounter } from '../../../navigator/navigator-item/map-counter'
-
-function filterVariableOption(option: DataPickerOption): DataPickerOption | null {
-  switch (option.type) {
-    case 'array':
-      return {
-        ...option,
-        children: filterKeepArraysOnly(option.children),
-        disabled: false,
-      }
-    case 'object':
-      const children = filterKeepArraysOnly(option.children)
-      return {
-        ...option,
-        children: children,
-        disabled: true,
-      }
-    case 'jsx':
-    case 'primitive':
-      return {
-        ...option,
-        disabled: true,
-      }
-    default:
-      assertNever(option)
-  }
-}
-
-function filterKeepArraysOnly(options: DataPickerOption[]): DataPickerOption[] {
-  return mapDropNulls((o) => filterVariableOption(o), options)
-}
 
 interface MapListSourceCartoucheProps {
   target: ElementPath
@@ -129,11 +97,6 @@ const MapListSourceCartoucheInner = React.memo(
       preferredAllState,
     )
 
-    const filteredVariableNamesInScope = React.useMemo(
-      () => filterKeepArraysOnly(variableNamesInScope),
-      [variableNamesInScope],
-    )
-
     const pathToMappedExpression = React.useMemo(
       () =>
         originalMapExpression === 'multiselect' || originalMapExpression === 'not-a-mapexpression'
@@ -143,12 +106,7 @@ const MapListSourceCartoucheInner = React.memo(
     )
 
     const { popupIsOpen, DataPickerComponent, setReferenceElement, openPopup } =
-      useDataPickerButton(
-        filteredVariableNamesInScope,
-        onPickMappedElement,
-        pathToMappedExpression,
-        target,
-      )
+      useDataPickerButton(variableNamesInScope, onPickMappedElement, pathToMappedExpression, target)
 
     const onClick = React.useCallback(() => {
       if (openOn === 'single-click') {

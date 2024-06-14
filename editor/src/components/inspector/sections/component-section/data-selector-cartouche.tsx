@@ -9,26 +9,29 @@ import { MapCounterUi } from '../../../navigator/navigator-item/map-counter'
 import type { CartoucheUIProps } from './cartouche-ui'
 import { CartoucheUI } from './cartouche-ui'
 import type { DataPickerOption } from './data-picker-utils'
+import { variableMatches } from './variables-in-scope-utils'
 
 interface DataPickerCartoucheProps {
   data: DataPickerOption
   selected: boolean
+  forcedRole?: CartoucheUIProps['role']
   onClick?: CartoucheUIProps['onClick']
 }
 
 export const DataPickerCartouche = React.memo(
   (props: React.PropsWithChildren<DataPickerCartoucheProps>) => {
-    const { data, selected } = props
+    const { data, selected, forcedRole: forceRole } = props
     const dataSource = useVariableDataSource(data)
     const children = props.children ?? data.variableInfo.expressionPathPart
     return (
       <CartoucheUI
         key={data.valuePath.toString()}
+        tooltip={null}
         source={dataSource ?? 'internal'}
         datatype={childTypeToCartoucheDataType(data.type)}
-        selected={!data.disabled && selected}
-        highlight={data.disabled ? 'disabled' : null}
-        role={data.disabled ? 'information' : 'selection'}
+        selected={variableMatches(data.variableInfo) && selected}
+        highlight={variableMatches(data.variableInfo) ? null : 'disabled'}
+        role={forceRole ?? (variableMatches(data.variableInfo) ? 'selection' : 'information')}
         testId={`data-selector-option-${data.variableInfo.expression}`}
         badge={
           data.type === 'array' ? (
@@ -54,7 +57,9 @@ export const DataPickerCartouche = React.memo(
   },
 )
 
-export function useVariableDataSource(variable: DataPickerOption | null) {
+export function useVariableDataSource(
+  variable: DataPickerOption | null,
+): CartoucheUIProps['source'] | null {
   return useEditorState(
     Substores.projectContentsAndMetadata,
     (store) => {
@@ -75,7 +80,7 @@ export function useVariableDataSource(variable: DataPickerOption | null) {
           return 'external'
         case 'literal-attribute':
         case 'literal-assignment':
-          return 'literal'
+          return 'literal-assignment'
         case 'component-prop':
         case 'element-at-scope':
         case 'failed':

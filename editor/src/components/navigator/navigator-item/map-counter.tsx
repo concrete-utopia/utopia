@@ -87,15 +87,19 @@ export const MapCounter = React.memo((props: MapCounterProps) => {
     return 'no-override'
   })()
 
-  const onClick = React.useCallback(() => {
-    if (nrChildren == null) {
-      return
-    }
-    const nextValue = getNextOverrideValue(overrideStatus, countOverride, nrChildren)
-    if (nextValue !== countOverride) {
-      dispatch([setMapCountOverride(props.elementPath, nextValue)])
-    }
-  }, [props.elementPath, dispatch, overrideStatus, countOverride, nrChildren])
+  const onClick = React.useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation()
+      if (nrChildren == null) {
+        return
+      }
+      const nextValue = getNextOverrideValue(overrideStatus, countOverride, nrChildren)
+      if (nextValue !== countOverride) {
+        dispatch([setMapCountOverride(props.elementPath, nextValue)])
+      }
+    },
+    [props.elementPath, dispatch, overrideStatus, countOverride, nrChildren],
+  )
 
   const selectedStatus = props.selected
 

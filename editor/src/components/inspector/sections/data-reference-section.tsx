@@ -26,6 +26,7 @@ import {
 } from './component-section/variables-in-scope-utils'
 import { jsxElementChildToValuePath } from './component-section/data-picker-utils'
 import { CartoucheInspectorWrapper } from './component-section/cartouche-control'
+import * as PP from '../../../core/shared/property-path'
 
 export const DataReferenceSectionId = 'code-element-section-test-id'
 
@@ -84,7 +85,7 @@ export const DataReferenceSection = React.memo(({ paths }: { paths: ElementPath[
 
   const varsInScope = useVariablesInScopeForSelectedElement(
     elementPathForDataPicker,
-    null,
+    PP.create('children'),
     preferredAllState,
   )
 
