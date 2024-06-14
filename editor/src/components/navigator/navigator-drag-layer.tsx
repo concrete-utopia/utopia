@@ -1,7 +1,6 @@
 import React from 'react'
 import { useDragLayer } from 'react-dnd'
-import type { RegularNavigatorEntry } from '../editor/store/editor-state'
-import { navigatorEntryToKey, regularNavigatorEntry } from '../editor/store/editor-state'
+import { regularNavigatorEntry } from '../editor/store/editor-state'
 import {
   NavigatorItemDragType,
   type NavigatorItemDragAndDropWrapperProps,
@@ -13,21 +12,7 @@ import { NO_OP } from '../../core/shared/utils'
 import { colorTheme, FlexRow, Icn } from '../../uuiui'
 import { useLayoutOrElementIcon } from './layout-element-icons'
 import { emptyElementPath } from '../../core/shared/element-path'
-import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
-import { navigatorDepth } from './navigator-utils'
 import { getElementPadding } from './navigator-item/navigator-item'
-import { metadataSelector } from '../inspector/inpector-selectors'
-import createCachedSelector from 're-reselect'
-import type { MetadataSubstate } from '../editor/store/store-hook-substore-types'
-import type { NavigatorRow } from './navigator-row'
-
-const depthSelector = createCachedSelector(
-  metadataSelector,
-  (_: MetadataSubstate, rows: NavigatorRow[]) => rows,
-  (_: MetadataSubstate, __rows: NavigatorRow[], navigatorEntry: RegularNavigatorEntry) =>
-    navigatorEntry,
-  (metadata, rows, navigatorEntry) => navigatorDepth(navigatorEntry, metadata, rows) + 1,
-)((_, __, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
 export const NavigatorDragLayer = React.memo(() => {
   const { item, initialOffset, difference } = useDragLayer((monitor) => ({
@@ -45,14 +30,6 @@ export const NavigatorDragLayer = React.memo(() => {
 
   const draggedItemIsNavigatorItem = item != null && item.type === NavigatorItemDragType
   const hidden = !draggedItemIsNavigatorItem
-
-  const navigatorRows = useRefEditorState((store) => store.derived.navigatorRows)
-
-  const entryNavigatorDepth = useEditorState(
-    Substores.metadata,
-    (store) => depthSelector(store, navigatorRows.current, navigatorEntry),
-    'NavigatorDragLayer metadata',
-  )
 
   const offset = windowPoint({
     x: initialOffset.x + difference.x - (containerRef.current?.getBoundingClientRect()?.x ?? 0),
@@ -78,7 +55,7 @@ export const NavigatorDragLayer = React.memo(() => {
     >
       <FlexRow
         style={{
-          paddingLeft: getElementPadding(entryNavigatorDepth),
+          paddingLeft: getElementPadding(item.indentation),
           width: '300px',
           transform: `translate(${offset.x}px, ${offset.y}px)`,
           fontWeight: 600,

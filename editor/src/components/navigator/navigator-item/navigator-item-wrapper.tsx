@@ -29,7 +29,7 @@ import {
   navigatorEntriesEqual,
   navigatorEntryToKey,
 } from '../../editor/store/editor-state'
-import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
 import type {
   DerivedSubstate,
   MetadataSubstate,
@@ -37,7 +37,6 @@ import type {
   PropertyControlsInfoSubstate,
 } from '../../editor/store/store-hook-substore-types'
 import { isRegulaNavigatorRow, type NavigatorRow } from '../navigator-row'
-import { navigatorDepth } from '../navigator-utils'
 import type {
   ConditionalClauseNavigatorItemContainerProps,
   ErrorNavigatorItemContainerProps,
@@ -325,16 +324,6 @@ const SingleEntryNavigatorItemWrapper: React.FunctionComponent<
   )
   const label = getNavigatorEntryLabel(props.navigatorEntry, labelForTheElement)
 
-  const rows = useRefEditorState((store) => store.derived.navigatorRows)
-
-  const entryDepth = useEditorState(
-    Substores.metadata,
-    (store) => {
-      return navigatorDepth(props.navigatorEntry, store.editor.jsxMetadata, rows.current)
-    },
-    'NavigatorItemWrapper entryDepth',
-  )
-
   const visibleNavigatorTargets = useEditorState(
     Substores.derived,
     (store) => store.derived.visibleNavigatorTargets,
@@ -382,7 +371,6 @@ const SingleEntryNavigatorItemWrapper: React.FunctionComponent<
     index: props.index,
     indentation: props.indentation,
     editorDispatch: dispatch,
-    entryDepth: entryDepth,
     selected: isSelected,
     highlighted: isHighlighted,
     collapsed: isCollapsed,

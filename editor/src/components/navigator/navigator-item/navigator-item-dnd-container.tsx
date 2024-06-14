@@ -18,7 +18,6 @@ import {
 import type {
   AllElementProps,
   ConditionalClauseNavigatorEntry,
-  DerivedState,
   DropTargetHint,
   DropTargetType,
   EditorState,
@@ -31,7 +30,6 @@ import {
   regularNavigatorEntry,
   renderPropNavigatorEntry,
   slotNavigatorEntry,
-  syntheticNavigatorEntry,
   varSafeNavigatorEntryToKey,
 } from '../../editor/store/editor-state'
 import {
@@ -47,7 +45,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getEmptyImage } from 'react-dnd-html5-backend'
 import { when } from '../../../utils/react-conditionals'
 import { metadataSelector } from '../../inspector/inpector-selectors'
-import { baseNavigatorDepth, navigatorDepth } from '../navigator-utils'
+import { baseNavigatorDepth } from '../navigator-utils'
 import type {
   ElementInstanceMetadataMap,
   JSXElementChild,
@@ -66,7 +64,7 @@ import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { useAtom, atom } from 'jotai'
 import { AlwaysFalse, usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import type { CanvasPoint } from '../../../core/shared/math-utils'
-import { canvasPoint, zeroCanvasPoint } from '../../../core/shared/math-utils'
+import { zeroCanvasPoint } from '../../../core/shared/math-utils'
 import { createNavigatorReparentPostActionActions } from '../../canvas/canvas-strategies/post-action-options/post-action-options'
 import createCachedSelector from 're-reselect'
 import type { MetadataSubstate } from '../../editor/store/store-hook-substore-types'
@@ -102,7 +100,6 @@ export interface NavigatorItemDragAndDropWrapperPropsBase {
   type: typeof NavigatorItemDragType
   index: number
   indentation: number
-  entryDepth: number
   appropriateDropTargetHint: DropTargetHint | null
   editorDispatch: EditorDispatch
   selected: boolean
@@ -384,7 +381,7 @@ function onHoverDropTargetLine(
       regularNavigatorEntry(propsOfDropTargetItem.elementPath),
     )
 
-    const maximumTargetDepth = propsOfDropTargetItem.entryDepth
+    const maximumTargetDepth = propsOfDropTargetItem.indentation
     const cursorTargetDepth = 1 + Math.floor(Math.abs(cursorDelta.x) / WiggleUnit)
 
     const nPathPartsToDrop = Math.min(
@@ -561,8 +558,6 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     (store) => store.derived.navigatorTargets,
     'NavigatorItemDndWrapper navigatorTargets',
   )
-
-  const navigatorRows = useRefEditorState((store) => store.derived.navigatorRows)
 
   const isFirstSibling = React.useMemo(() => {
     const siblings = MetadataUtils.getSiblingsOrdered(
@@ -802,13 +797,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
       return 0
     }
 
-    return getHintPaddingForDepth(
-      navigatorDepth(
-        dropTargetHint.targetParent,
-        editorStateRef.current.jsxMetadata,
-        navigatorRows.current,
-      ),
-    )
+    return getHintPaddingForDepth(props.indentation)
   })()
 
   const parentOutline = React.useMemo((): ParentOutline => {

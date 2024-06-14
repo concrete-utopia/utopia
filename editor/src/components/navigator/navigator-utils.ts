@@ -16,14 +16,13 @@ import {
   isJSXMapExpression,
 } from '../../core/shared/element-template'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { foldEither, isLeft } from '../../core/shared/either'
+import { isLeft } from '../../core/shared/either'
 import type { ConditionalClauseNavigatorEntry, NavigatorEntry } from '../editor/store/editor-state'
 import {
   conditionalClauseNavigatorEntry,
   dataReferenceNavigatorEntry,
   getElementFromProjectContents,
   invalidOverrideNavigatorEntry,
-  isConditionalClauseNavigatorEntry,
   regularNavigatorEntry,
   renderPropNavigatorEntry,
   renderPropValueNavigatorEntry,
@@ -48,9 +47,7 @@ import * as EPP from '../template-property-path'
 import {
   condensedNavigatorRow,
   getEntriesForRow,
-  isCondensedNavigatorRow,
   regularNavigatorRow,
-  type CondensedNavigatorRow,
   type NavigatorRow,
   type RegularNavigatorRow,
 } from './navigator-row'
@@ -64,63 +61,6 @@ export function baseNavigatorDepth(path: ElementPath): number {
   // The storyboard means that this starts at -1,
   // so that the scenes are the left most entity.
   return EP.fullDepth(path) - 1
-}
-
-export function navigatorDepth(
-  navigatorEntry: NavigatorEntry,
-  metadata: ElementInstanceMetadataMap,
-  navigatorRows: NavigatorRow[],
-): number {
-  const path = navigatorEntry.elementPath
-  let result: number = baseNavigatorDepth(path)
-
-  for (const ancestorPath of EP.getAncestors(path)) {
-    // if the ancestor is a condensed row, indent back
-    const condensedAncestorRoot = navigatorRows.find(
-      (row) =>
-        isCondensedNavigatorRow(row) && EP.pathsEqual(row.entries[0].elementPath, ancestorPath),
-    )
-    if (condensedAncestorRoot != null) {
-      result = result - ((condensedAncestorRoot as CondensedNavigatorRow).entries.length - 1)
-    }
-
-    const elementMetadata = MetadataUtils.findElementByElementPath(metadata, ancestorPath)
-    if (elementMetadata != null) {
-      // if the ancestor is a scene, indent back
-      if (
-        MetadataUtils.isProbablySceneFromMetadata(elementMetadata) ||
-        MetadataUtils.isProbablyRemixSceneFromMetadata(elementMetadata)
-      ) {
-        result = result - 1
-      }
-
-      // if the ancestor is a conditional, indent forward
-      const isConditional = foldEither(
-        () => false,
-        (e) => isJSXConditionalExpression(e),
-        elementMetadata.element,
-      )
-      if (isConditional) {
-        result = result + 1
-      }
-    }
-  }
-
-  // For the clause entry itself, this needs to step back by 1.
-  if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
-    result = result + 1
-  }
-
-  // if the element itself is a scene, indent back as well
-  if (
-    MetadataUtils.isProbablyScene(metadata, navigatorEntry.elementPath) ||
-    MetadataUtils.isProbablyRemixScene(metadata, navigatorEntry.elementPath)
-  ) {
-    result = result - 1
-  }
-
-  // make sure 0 is the minimum indentation no matter what
-  return Math.max(0, result)
 }
 
 type RegularNavigatorTree = {
