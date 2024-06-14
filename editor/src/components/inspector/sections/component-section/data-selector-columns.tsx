@@ -3,7 +3,7 @@ import styled from '@emotion/styled'
 import React from 'react'
 import { isPrefixOf } from '../../../../core/shared/array-utils'
 import { arrayEqualsByReference, assertNever } from '../../../../core/shared/utils'
-import { FlexColumn, FlexRow, colorTheme } from '../../../../uuiui'
+import { FlexColumn, FlexRow, Icons, colorTheme } from '../../../../uuiui'
 import type { ArrayOption, DataPickerOption, ObjectOption, ObjectPath } from './data-picker-utils'
 import { DataPickerCartouche } from './data-selector-cartouche'
 
@@ -102,7 +102,7 @@ const DataSelectorColumn = React.memo((props: DataSelectorColumnProps) => {
             <RowWithCartouche
               key={option.variableInfo.expression}
               data={option}
-              isLeaf={nextColumnScope == null}
+              isLeaf={!('children' in option)}
               selected={selected}
               onActivePath={onActivePath}
               forceShowArrow={pseudoSelectedElementForArray != null && index === 0}
@@ -226,10 +226,10 @@ const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
       <span
         style={{
           color: colorTheme.fg6.value,
-          opacity: !isLeaf && (onActivePath || forceShowArrow) ? 1 : 0,
+          opacity: !isLeaf ? 1 : 0,
         }}
       >
-        {'>'}
+        <Icons.ExpansionArrowRight style={{ zoom: 0.75 }} color='secondary' />
       </span>
     </DataPickerRow>
   )
