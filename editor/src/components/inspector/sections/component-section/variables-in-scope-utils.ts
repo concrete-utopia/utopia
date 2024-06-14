@@ -215,7 +215,7 @@ export function variableInfoFromValue(
   insertionCeiling: ElementPath | FileRootPath,
   valueStackSoFar: Set<any>,
 ): VariableInfo | null {
-  if (valueStackSoFar.has(value)) {
+  if ((typeof value === 'object' || typeof value === 'function') && valueStackSoFar.has(value)) {
     // prevent circular dependencies
     return null
   }
