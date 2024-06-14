@@ -130,48 +130,6 @@ describe('Drag To Move Strategy Indicator', () => {
       midDragCallback: midDragCallback,
     })
   })
-  it('when reparenting an element the Strategy Indicator is visible', async () => {
-    const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(TestProject1),
-      'await-first-dom-report',
-    )
-
-    const targetElement = renderResult.renderedDOM.getByTestId('child-1')
-    const targetElementBounds = targetElement.getBoundingClientRect()
-    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-
-    const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
-    const dragDelta = windowPoint({ x: -50, y: 0 }) // moving it to the empty canvas
-
-    const midDragCallback = async () => {
-      // this is a hack because we no longer default to reparenting to canvas and frankly, probably this test could be deleted
-      await renderResult.dispatch(
-        [CanvasActions.setUsersPreferredStrategy('ABSOLUTE_REPARENT')],
-        true,
-      )
-
-      expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(
-        'FLEX_REPARENT_TO_ABSOLUTE',
-      )
-      expect(
-        renderResult.getEditorState().editor.canvas.controls.dragToMoveIndicatorFlags.showIndicator,
-      ).toEqual(true)
-      expect(
-        renderResult.getEditorState().editor.canvas.controls.dragToMoveIndicatorFlags.ancestor,
-      ).toEqual(false)
-      expect(
-        renderResult.getEditorState().editor.canvas.controls.dragToMoveIndicatorFlags.reparent,
-      ).toEqual('different-component')
-      const indicator = renderResult.renderedDOM.getByTestId('drag-strategy-indicator')
-      expect(indicator).toBeDefined()
-    }
-
-    await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
-    await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
-      modifiers: emptyModifiers,
-      midDragCallback: midDragCallback,
-    })
-  })
   it('when reordering an element the Strategy Indicator is visible', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(TestProject2),
