@@ -144,6 +144,12 @@ describe('Drag To Move Strategy Indicator', () => {
     const dragDelta = windowPoint({ x: -50, y: 0 }) // moving it to the empty canvas
 
     const midDragCallback = async () => {
+      // this is a hack because we no longer default to reparenting to canvas and frankly, probably this test could be deleted
+      await renderResult.dispatch(
+        [CanvasActions.setUsersPreferredStrategy('ABSOLUTE_REPARENT')],
+        true,
+      )
+
       expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(
         'FLEX_REPARENT_TO_ABSOLUTE',
       )
