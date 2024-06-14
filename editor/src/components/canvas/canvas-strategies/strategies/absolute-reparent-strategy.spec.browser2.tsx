@@ -58,6 +58,7 @@ import {
   selectComponentsForTest,
   wait,
 } from '../../../../utils/utils.test-utils'
+import CanvasActions from '../../canvas-actions'
 
 interface CheckCursor {
   cursor: CSSCursor | null
@@ -458,7 +459,9 @@ describe('Absolute Reparent Strategy', () => {
     )
 
     const dragDelta = windowPoint({ x: -1000, y: -1000 })
-    await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null, null)
+    await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null, async () =>
+      renderResult.dispatch([CanvasActions.setUsersPreferredStrategy('ABSOLUTE_REPARENT')], true),
+    )
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -540,7 +543,9 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     )
 
     const dragDelta = windowPoint({ x: -1000, y: -1000 })
-    await dragElement(renderResult, 'bbb', dragDelta, emptyModifiers, null, null)
+    await dragElement(renderResult, 'bbb', dragDelta, emptyModifiers, null, async () =>
+      renderResult.dispatch([CanvasActions.setUsersPreferredStrategy('ABSOLUTE_REPARENT')], true),
+    )
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -1351,7 +1356,11 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           dragDelta,
           cmdModifier,
           null,
-          null,
+          async () =>
+            renderResult.dispatch(
+              [CanvasActions.setUsersPreferredStrategy('ABSOLUTE_REPARENT')],
+              true,
+            ),
         )
 
         await renderResult.getDispatchFollowUpActionsFinished()
@@ -1429,7 +1438,11 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           dragDelta,
           cmdModifier,
           null,
-          null,
+          async () =>
+            renderResult.dispatch(
+              [CanvasActions.setUsersPreferredStrategy('ABSOLUTE_REPARENT')],
+              true,
+            ),
         )
 
         await renderResult.getDispatchFollowUpActionsFinished()
