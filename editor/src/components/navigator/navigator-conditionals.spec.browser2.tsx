@@ -65,7 +65,7 @@ import {
   DragItemTestId,
   TopDropTargetLineTestId,
 } from './navigator-item/navigator-item-dnd-container'
-import { isRegulaNavigatorRow } from './navigator-row'
+import { getEntriesForRow } from './navigator-row'
 
 const ASYNC_NOOP = async () => NO_OP()
 
@@ -526,9 +526,7 @@ function navigatorStructure(editorState: EditorState, deriveState: DerivedState)
     let prefix: string = ''
     const depth =
       deriveState.navigatorRows.find((row) =>
-        isRegulaNavigatorRow(row)
-          ? EP.pathsEqual(row.entry.elementPath, target.elementPath)
-          : row.entries.some((entry) => EP.pathsEqual(entry.elementPath, target.elementPath)),
+        EP.pathsEqual(getEntriesForRow(row)[0].elementPath, target.elementPath),
       )?.indentation ?? 0
     for (let index = 0; index < depth; index++) {
       prefix = prefix.concat('  ')
