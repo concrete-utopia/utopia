@@ -124,14 +124,14 @@ export class DistanceGuideline extends React.Component<DistanceGuidelineProps> {
     return (
       <CanvasOffsetWrapper>
         <div
-          key={id}
+          data-testid={`distance-text-container-${id}`}
           style={{
             visibility: distance > 0 ? 'visible' : 'hidden',
             position: 'absolute',
-            top: Math.min(from.y, to.y),
-            left: Math.min(from.x, to.x),
-            width: isHorizontal ? Math.abs(from.x - to.x) : undefined,
-            height: isHorizontal ? undefined : Math.abs(from.y - to.y),
+            top: Math.min(from.y, to.y) + (isHorizontal ? 4 : 0), // Offset by 4px to keep the control off the line.
+            left: Math.min(from.x, to.x) + (isHorizontal ? 0 : 4), // Offset by 4px to keep the control off the line.
+            width: isHorizontal ? Math.abs(from.x - to.x) : `max-content`,
+            height: isHorizontal ? `max-content` : Math.abs(from.y - to.y),
             pointerEvents: 'none',
             display: 'flex',
             flexDirection: isHorizontal ? 'row' : 'column',
@@ -140,13 +140,15 @@ export class DistanceGuideline extends React.Component<DistanceGuidelineProps> {
         >
           <div
             style={{
-              margin: 4 / this.props.scale,
-              paddingLeft: 4 / this.props.scale,
-              paddingRight: 4 / this.props.scale,
-              borderRadius: 4 / this.props.scale,
+              padding: `0 ${2 / this.props.scale}`,
+              borderRadius: 2 / this.props.scale,
               color: colorTheme.white.value,
               backgroundColor: StrokeColor,
               fontSize: 11 / this.props.scale,
+              width: 'min-content',
+              display: 'flex',
+              alignItems: 'center',
+              height: `${16 / this.props.scale}px`,
             }}
             data-testid={id}
           >
