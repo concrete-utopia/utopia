@@ -128,8 +128,8 @@ export class DistanceGuideline extends React.Component<DistanceGuidelineProps> {
           style={{
             visibility: distance > 0 ? 'visible' : 'hidden',
             position: 'absolute',
-            top: Math.min(from.y, to.y) + (isHorizontal ? 4 : 0), // Offset by 4px to keep the control off the line.
-            left: Math.min(from.x, to.x) + (isHorizontal ? 0 : 4), // Offset by 4px to keep the control off the line.
+            top: Math.min(from.y, to.y) + (isHorizontal ? 4 : 0) / this.props.scale, // Offset by 4px to keep the control off the line.
+            left: Math.min(from.x, to.x) + (isHorizontal ? 0 : 4) / this.props.scale, // Offset by 4px to keep the control off the line.
             width: isHorizontal ? Math.abs(from.x - to.x) : `max-content`,
             height: isHorizontal ? `max-content` : Math.abs(from.y - to.y),
             pointerEvents: 'none',
