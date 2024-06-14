@@ -2525,6 +2525,20 @@ export const MetadataUtils = {
         assertNever(element)
     }
   },
+
+  findSceneOfTarget(target: ElementPath, metadata: ElementInstanceMetadataMap): ElementPath | null {
+    if (
+      MetadataUtils.isProbablyScene(metadata, target) ||
+      MetadataUtils.isProbablyRemixScene(metadata, target)
+    ) {
+      return target
+    }
+    const parent = EP.parentPath(target)
+    if (EP.isEmptyPath(parent)) {
+      return null
+    }
+    return MetadataUtils.findSceneOfTarget(parent, metadata)
+  },
 }
 
 function getNonExpressionDescendantsInner(
