@@ -37,7 +37,6 @@ import { unless, when } from '../../utils/react-conditionals'
 import { StrategyIndicator } from '../canvas/controls/select-mode/strategy-indicator'
 import { stopPropagation } from '../inspector/common/inspector-utils'
 import { useWrapInDiv } from './wrap-in-callbacks'
-import { ElementsOutsideVisibleAreaIndicator } from './elements-outside-visible-area-indicator'
 import { RemixNavigationBar } from './remix-navigation-bar'
 import {
   type InsertableComponent,
@@ -449,7 +448,6 @@ export const CanvasToolbar = React.memo(() => {
             size={16}
           />
         </Tooltip>
-        <ElementsOutsideVisibleAreaIndicator />
         {unless(isMyProject, <ViewOnlyBadge />)}
       </div>
       {/* Edit Mode submenus */}
