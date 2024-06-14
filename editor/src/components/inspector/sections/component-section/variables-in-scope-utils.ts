@@ -311,7 +311,7 @@ function variableInfoFromVariableData(variableNamesInScope: VariableData): Array
   return info
 }
 
-const varSafeStringRegex = /[\p{L}\p{Nl}$\p{Mn}\p{Mc}\p{Nd}\p{Pc}]*$/
+const varSafeStringRegex = /^[a-zA-Z_$][0-9a-zA-Z_$]*$/
 
 function createPropertyAccessExpressionString(expressionSoFar: string, toAppend: string): string {
   const toAppendIsVarsafeString = varSafeStringRegex.test(toAppend)
