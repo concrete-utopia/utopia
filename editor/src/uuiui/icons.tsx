@@ -199,6 +199,13 @@ export const SmallerIcons = {
     width: 11,
     height: 11,
   }),
+  ExpansionArrowRight: makeIcon({
+    category: 'semantic',
+    type: 'expansionarrow-small-right',
+    color: 'main',
+    width: 12,
+    height: 12,
+  }),
 }
 
 export const Icons = {

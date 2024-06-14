@@ -145,6 +145,7 @@ export const CartoucheUI = React.forwardRef(
                 ...(role !== 'information' ? UtopiaStyles.fontStyles.monospaced : {}),
                 display: 'flex',
                 flexDirection: 'row',
+                alignItems: 'center',
               }}
             >
               {children}

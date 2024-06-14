@@ -255,6 +255,7 @@ export const DataSelectorModal = React.memo(
                         outline: 'none',
                         border: 'none',
                         paddingRight: 14,
+                        flex: 1,
                       }}
                     />
                     {when(
