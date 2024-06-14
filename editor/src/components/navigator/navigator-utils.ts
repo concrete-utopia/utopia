@@ -85,9 +85,16 @@ export function navigatorDepth(
 ): number {
   const path = navigatorEntry.elementPath
   let result: number = baseNavigatorDepth(path)
+
   for (const ancestorPath of EP.getAncestors(path)) {
     const elementMetadata = MetadataUtils.findElementByElementPath(metadata, ancestorPath)
     if (elementMetadata != null) {
+      if (
+        MetadataUtils.isProbablySceneFromMetadata(elementMetadata) ||
+        MetadataUtils.isProbablyRemixSceneFromMetadata(elementMetadata)
+      ) {
+        result = result - 1
+      }
       const isConditional = foldEither(
         () => false,
         (e) => isJSXConditionalExpression(e),
@@ -104,7 +111,14 @@ export function navigatorDepth(
     result = result + 1
   }
 
-  return result
+  if (
+    MetadataUtils.isProbablyScene(metadata, navigatorEntry.elementPath) ||
+    MetadataUtils.isProbablyRemixScene(metadata, navigatorEntry.elementPath)
+  ) {
+    result = result - 1
+  }
+
+  return Math.max(0, result)
 }
 
 type RegularNavigatorTree = {

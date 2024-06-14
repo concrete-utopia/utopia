@@ -559,7 +559,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
   const navigatorTargets = useEditorState(
     Substores.derived,
     (store) => store.derived.navigatorTargets,
-    'NavigatorItemDndWrapper moveToElementPath',
+    'NavigatorItemDndWrapper navigatorTargets',
   )
 
   const isFirstSibling = React.useMemo(() => {
