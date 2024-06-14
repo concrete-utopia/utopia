@@ -2,7 +2,14 @@ import throttle from 'lodash.throttle'
 import React from 'react'
 import { memoize } from '../../../../core/shared/memoize'
 import { assertNever } from '../../../../core/shared/utils'
-import { FlexColumn, FlexRow, Icons, SmallerIcons, UtopiaStyles } from '../../../../uuiui'
+import {
+  FlexColumn,
+  FlexRow,
+  Icons,
+  SmallerIcons,
+  UtopiaStyles,
+  colorTheme,
+} from '../../../../uuiui'
 import { type DataPickerOption, type ObjectPath } from './data-picker-utils'
 import { DataPickerCartouche, useVariableDataSource } from './data-selector-cartouche'
 import { when } from '../../../../utils/react-conditionals'
@@ -38,7 +45,7 @@ export const DataSelectorSearch = React.memo(
           overflowX: 'hidden',
           overflowY: 'scroll',
           scrollbarWidth: 'auto',
-          scrollbarColor: 'gray transparent',
+          scrollbarColor: `${colorTheme.subduedBorder.cssValue} transparent`,
           flexGrow: 1,
           gap: 8,
           paddingTop: 8,
