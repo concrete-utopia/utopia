@@ -87,7 +87,7 @@ export const CartoucheUI = React.forwardRef(
         <Tooltip title={tooltip ?? ''} disabled={tooltip == null}>
           <FlexRow
             style={{
-              cursor: 'pointer',
+              cursor: role === 'information' ? undefined : 'pointer',
               fontSize: 10,
               fontWeight: 400,
               padding: '0px 6px 0 4px',

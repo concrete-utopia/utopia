@@ -178,7 +178,7 @@ const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
       style={{
         backgroundColor: onActivePath ? colorTheme.bg4.value : undefined,
       }}
-      disabled={false}
+      disabled={data.variableInfo.matches !== 'matches'}
     >
       <span>
         <DataPickerCartouche data={data} selected={selected} />
