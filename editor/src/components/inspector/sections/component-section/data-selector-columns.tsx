@@ -135,7 +135,7 @@ const ValuePreviewColumn = React.memo((props: ValuePreviewColumnProps) => {
   const text = safeJSONStringify(props.data.variableInfo.value)
   const ref = useScrollIntoView(true)
   return (
-    <DataSelectorFlexColumn ref={ref}>
+    <DataSelectorFlexColumn ref={ref} style={{ paddingLeft: 6, paddingRight: 6 }}>
       <div
         style={{
           padding: 4,
