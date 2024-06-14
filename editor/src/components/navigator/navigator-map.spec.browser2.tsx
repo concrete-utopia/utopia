@@ -104,7 +104,7 @@ describe('maps in the navigator', () => {
         )
 
         const mapPath = EP.fromString('utopia-storyboard-uid/scene-aaa/containing-div/map')
-        const counterTestId = getMapCounterTestId(mapPath)
+        const counterTestId = getMapCounterTestId(mapPath, 'navigator')
         const counter = await renderResult.renderedDOM.findByTestId(counterTestId)
 
         expectRegularCounterWithCount(counter, arr.length)
@@ -228,7 +228,7 @@ describe('maps in the navigator', () => {
           mapParent,
         )[0]
 
-        const counterTestId = getMapCounterTestId(mapElement.elementPath)
+        const counterTestId = getMapCounterTestId(mapElement.elementPath, 'navigator')
         const counter = await renderResult.renderedDOM.findByTestId(counterTestId)
 
         expectOverriddenCounterWithCount(counter, overrideCount, overrideSuccess)
@@ -247,10 +247,8 @@ describe('maps in the navigator', () => {
       )
 
       const mapPath = EP.fromString('utopia-storyboard-uid/scene-aaa/containing-div/map')
-      const counterTestId = getMapCounterTestId(mapPath)
-      const counters = await renderResult.renderedDOM.findAllByTestId(counterTestId)
-      expect(counters.length).toEqual(1)
-      const counter = counters[0]
+      const counterTestId = getMapCounterTestId(mapPath, 'navigator')
+      let counter = await renderResult.renderedDOM.findByTestId(counterTestId)
       const counterBounds = counter.getBoundingClientRect()
       const counterCentre = {
         x: counterBounds.x + counterBounds.width / 2,
@@ -271,10 +269,8 @@ describe('maps in the navigator', () => {
       await mouseClickAtPoint(counter, counterCentre)
 
       // The counter will have been remounted
-      const newCounters = await renderResult.renderedDOM.findAllByTestId(counterTestId)
-      expect(newCounters.length).toEqual(2)
-      expectRegularCounterWithCount(newCounters[0], 3)
-      expectRegularCounterWithCount(newCounters[1], 3)
+      counter = await renderResult.renderedDOM.findByTestId(counterTestId)
+      expectRegularCounterWithCount(counter, 3)
     })
 
     it('Cycles through 2, 1, 0, off if the output length is 2', async () => {
@@ -284,7 +280,7 @@ describe('maps in the navigator', () => {
       )
 
       const mapPath = EP.fromString('utopia-storyboard-uid/scene-aaa/containing-div/map')
-      const counterTestId = getMapCounterTestId(mapPath)
+      const counterTestId = getMapCounterTestId(mapPath, 'navigator')
       let counter = await renderResult.renderedDOM.findByTestId(counterTestId)
       const counterBounds = counter.getBoundingClientRect()
       const counterCentre = {
@@ -317,7 +313,7 @@ describe('maps in the navigator', () => {
       )
 
       const mapPath = EP.fromString('utopia-storyboard-uid/scene-aaa/containing-div/map')
-      const counterTestId = getMapCounterTestId(mapPath)
+      const counterTestId = getMapCounterTestId(mapPath, 'navigator')
       let counter = await renderResult.renderedDOM.findByTestId(counterTestId)
       const counterBounds = counter.getBoundingClientRect()
       const counterCentre = {
@@ -346,7 +342,7 @@ describe('maps in the navigator', () => {
       )
 
       const mapPath = EP.fromString('utopia-storyboard-uid/scene-aaa/containing-div/map')
-      const counterTestId = getMapCounterTestId(mapPath)
+      const counterTestId = getMapCounterTestId(mapPath, 'navigator')
       let counter = await renderResult.renderedDOM.findByTestId(counterTestId)
       const counterBounds = counter.getBoundingClientRect()
       const counterCentre = {

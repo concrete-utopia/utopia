@@ -76,7 +76,7 @@ export const MapListSourceCartoucheNavigator = React.memo((props: MapListSourceC
         minWidth: 0,
       }}
     >
-      <MapListSourceCartoucheInner {...props} />
+      <MapListSourceCartoucheInner {...props} source='navigator' />
     </div>
   )
 })
@@ -85,146 +85,154 @@ MapListSourceCartoucheNavigator.displayName = 'MapListSourceCartoucheNavigator'
 export const MapListSourceCartoucheInspector = React.memo((props: MapListSourceCartoucheProps) => {
   return (
     <CartoucheInspectorWrapper>
-      <MapListSourceCartoucheInner {...props} />
+      <MapListSourceCartoucheInner {...props} source='inspector' />
     </CartoucheInspectorWrapper>
   )
 })
 MapListSourceCartoucheInspector.displayName = 'MapListSourceCartoucheInspector'
 
-const MapListSourceCartoucheInner = React.memo((props: MapListSourceCartoucheProps) => {
-  const { target, openOn } = props
+const MapListSourceCartoucheInner = React.memo(
+  (props: MapListSourceCartoucheProps & { source: 'inspector' | 'navigator' }) => {
+    const { target, openOn } = props
 
-  const originalMapExpression = useEditorState(
-    Substores.metadata,
-    (store) => mapExpressionValueToMapSelector(store, [target]),
-    'ConditionalSection condition expression',
-  )
+    const originalMapExpression = useEditorState(
+      Substores.metadata,
+      (store) => mapExpressionValueToMapSelector(store, [target]),
+      'ConditionalSection condition expression',
+    )
 
-  const metadataForElement = useEditorState(
-    Substores.metadata,
-    (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, target),
-    'ConditionalSection metadata',
-  )
+    const metadataForElement = useEditorState(
+      Substores.metadata,
+      (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, target),
+      'ConditionalSection metadata',
+    )
 
-  const dispatch = useDispatch()
+    const dispatch = useDispatch()
 
-  const onPickMappedElement = React.useCallback(
-    (expression: JSExpressionOtherJavaScript) => {
-      dispatch([
-        replaceElementInScope(target, {
-          type: 'update-map-expression',
-          valueToMap: expression,
-        }),
-      ])
-    },
-    [dispatch, target],
-  )
+    const onPickMappedElement = React.useCallback(
+      (expression: JSExpressionOtherJavaScript) => {
+        dispatch([
+          replaceElementInScope(target, {
+            type: 'update-map-expression',
+            valueToMap: expression,
+          }),
+        ])
+      },
+      [dispatch, target],
+    )
 
-  const [preferredAllState] = useAtom(DataPickerPreferredAllAtom)
+    const [preferredAllState] = useAtom(DataPickerPreferredAllAtom)
 
-  const variableNamesInScope = useVariablesInScopeForSelectedElement(
-    target,
-    null,
-    preferredAllState,
-  )
+    const variableNamesInScope = useVariablesInScopeForSelectedElement(
+      target,
+      null,
+      preferredAllState,
+    )
 
-  const filteredVariableNamesInScope = React.useMemo(
-    () => filterKeepArraysOnly(variableNamesInScope),
-    [variableNamesInScope],
-  )
+    const filteredVariableNamesInScope = React.useMemo(
+      () => filterKeepArraysOnly(variableNamesInScope),
+      [variableNamesInScope],
+    )
 
-  const pathToMappedExpression = React.useMemo(
-    () =>
-      originalMapExpression === 'multiselect' || originalMapExpression === 'not-a-mapexpression'
-        ? null
-        : jsxElementChildToValuePath(originalMapExpression.valueToMap),
-    [originalMapExpression],
-  )
+    const pathToMappedExpression = React.useMemo(
+      () =>
+        originalMapExpression === 'multiselect' || originalMapExpression === 'not-a-mapexpression'
+          ? null
+          : jsxElementChildToValuePath(originalMapExpression.valueToMap),
+      [originalMapExpression],
+    )
 
-  const { popupIsOpen, DataPickerComponent, setReferenceElement, openPopup } = useDataPickerButton(
-    filteredVariableNamesInScope,
-    onPickMappedElement,
-    pathToMappedExpression,
-    target,
-  )
-
-  const onClick = React.useCallback(() => {
-    if (openOn === 'single-click') {
-      openPopup()
-    }
-  }, [openOn, openPopup])
-
-  const onDoubleClick = React.useCallback(() => {
-    if (openOn === 'double-click') {
-      openPopup()
-    }
-  }, [openOn, openPopup])
-
-  const isDataComingFromHookResult = useEditorState(
-    Substores.projectContentsAndMetadata,
-    (store) => {
-      if (
-        originalMapExpression === 'multiselect' ||
-        originalMapExpression === 'not-a-mapexpression'
-      ) {
-        return false
-      } else {
-        const traceDataResult = traceDataFromElement(
-          originalMapExpression.valueToMap,
-          target,
-          store.editor.jsxMetadata,
-          store.editor.projectContents,
-          dataPathSuccess([]),
-        )
-        return traceDataResult.type === 'hook-result'
-      }
-    },
-    'ListSection isDataComingFromHookResult',
-  )
-
-  const cartoucheDataType: CartoucheDataType = useEditorState(
-    Substores.projectContentsAndMetadataAndVariablesInScope,
-    (store) => {
-      if (
-        originalMapExpression === 'multiselect' ||
-        originalMapExpression === 'not-a-mapexpression'
-      ) {
-        return 'unknown'
-      }
-      return getCartoucheDataTypeForExpression(
+    const { popupIsOpen, DataPickerComponent, setReferenceElement, openPopup } =
+      useDataPickerButton(
+        filteredVariableNamesInScope,
+        onPickMappedElement,
+        pathToMappedExpression,
         target,
-        originalMapExpression.valueToMap,
-        store.editor.variablesInScope,
       )
-    },
-    'MapListSourceCartouche cartoucheDataType',
-  )
 
-  if (originalMapExpression === 'multiselect' || originalMapExpression === 'not-a-mapexpression') {
-    return null
-  }
+    const onClick = React.useCallback(() => {
+      if (openOn === 'single-click') {
+        openPopup()
+      }
+    }, [openOn, openPopup])
 
-  const contentsToDisplay = getTextContentOfElement(
-    originalMapExpression.valueToMap,
-    metadataForElement,
-  )
+    const onDoubleClick = React.useCallback(() => {
+      if (openOn === 'double-click') {
+        openPopup()
+      }
+    }, [openOn, openPopup])
 
-  return (
-    <React.Fragment>
-      {popupIsOpen ? DataPickerComponent : null}
-      <DataCartoucheInner
-        ref={setReferenceElement}
-        contentsToDisplay={contentsToDisplay}
-        onClick={onClick}
-        onDoubleClick={onDoubleClick}
-        onDelete={NO_OP}
-        selected={props.selected}
-        safeToDelete={false}
-        testId='list-source-cartouche'
-        contentIsComingFromServer={isDataComingFromHookResult}
-        datatype={cartoucheDataType}
-        badge={<MapCounter selected={props.selected} elementPath={target} />}
-      />
-    </React.Fragment>
-  )
-})
+    const isDataComingFromHookResult = useEditorState(
+      Substores.projectContentsAndMetadata,
+      (store) => {
+        if (
+          originalMapExpression === 'multiselect' ||
+          originalMapExpression === 'not-a-mapexpression'
+        ) {
+          return false
+        } else {
+          const traceDataResult = traceDataFromElement(
+            originalMapExpression.valueToMap,
+            target,
+            store.editor.jsxMetadata,
+            store.editor.projectContents,
+            dataPathSuccess([]),
+          )
+          return traceDataResult.type === 'hook-result'
+        }
+      },
+      'ListSection isDataComingFromHookResult',
+    )
+
+    const cartoucheDataType: CartoucheDataType = useEditorState(
+      Substores.projectContentsAndMetadataAndVariablesInScope,
+      (store) => {
+        if (
+          originalMapExpression === 'multiselect' ||
+          originalMapExpression === 'not-a-mapexpression'
+        ) {
+          return 'unknown'
+        }
+        return getCartoucheDataTypeForExpression(
+          target,
+          originalMapExpression.valueToMap,
+          store.editor.variablesInScope,
+        )
+      },
+      'MapListSourceCartouche cartoucheDataType',
+    )
+
+    if (
+      originalMapExpression === 'multiselect' ||
+      originalMapExpression === 'not-a-mapexpression'
+    ) {
+      return null
+    }
+
+    const contentsToDisplay = getTextContentOfElement(
+      originalMapExpression.valueToMap,
+      metadataForElement,
+    )
+
+    return (
+      <React.Fragment>
+        {popupIsOpen ? DataPickerComponent : null}
+        <DataCartoucheInner
+          ref={setReferenceElement}
+          contentsToDisplay={contentsToDisplay}
+          onClick={onClick}
+          onDoubleClick={onDoubleClick}
+          onDelete={NO_OP}
+          selected={props.selected}
+          safeToDelete={false}
+          testId='list-source-cartouche'
+          contentIsComingFromServer={isDataComingFromHookResult}
+          datatype={cartoucheDataType}
+          badge={
+            <MapCounter selected={props.selected} elementPath={target} source={props.source} />
+          }
+        />
+      </React.Fragment>
+    )
+  },
+)

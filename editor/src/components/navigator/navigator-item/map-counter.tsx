@@ -17,8 +17,11 @@ import { colorTheme } from '../../../uuiui'
 
 export const MapCounterTestIdPrefix = 'map-counter-'
 
-export function getMapCounterTestId(path: ElementPath): string {
-  return `${MapCounterTestIdPrefix}${EP.toString(path)}`
+export function getMapCounterTestId(
+  path: ElementPath,
+  source: 'navigator' | 'inspector' | 'data-picker',
+): string {
+  return `${MapCounterTestIdPrefix}${EP.toString(path)}-${source}`
 }
 
 type OverrideStatus = 'no-override' | 'overridden' | 'override-failed'
@@ -27,6 +30,7 @@ type SelectedStatus = true | false
 interface MapCounterProps {
   elementPath: ElementPath
   selected: boolean
+  source: 'navigator' | 'inspector' | 'data-picker'
 }
 
 export const MapCounter = React.memo((props: MapCounterProps) => {
@@ -97,7 +101,7 @@ export const MapCounter = React.memo((props: MapCounterProps) => {
 
   return (
     <MapCounterUi
-      data-testid={getMapCounterTestId(props.elementPath)}
+      data-testid={getMapCounterTestId(props.elementPath, props.source)}
       counterValue={shownCounterValue}
       overrideStatus={overrideStatus}
       selectedStatus={selectedStatus}
