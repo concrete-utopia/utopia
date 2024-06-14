@@ -79,11 +79,8 @@ export function navigatorDepth(
       (row) =>
         isCondensedNavigatorRow(row) && EP.pathsEqual(row.entries[0].elementPath, ancestorPath),
     )
-    if (
-      condensedAncestorRoot != null &&
-      (condensedAncestorRoot as CondensedNavigatorRow).entries.length > 1
-    ) {
-      result = result - 1
+    if (condensedAncestorRoot != null) {
+      result = result - ((condensedAncestorRoot as CondensedNavigatorRow).entries.length - 1)
     }
 
     const elementMetadata = MetadataUtils.findElementByElementPath(metadata, ancestorPath)
