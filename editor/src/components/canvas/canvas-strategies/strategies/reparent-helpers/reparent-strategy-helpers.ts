@@ -17,7 +17,7 @@ import type { InsertionPath } from '../../../../editor/store/insertion-path'
 import type { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
 import { assertNever } from '../../../../../core/shared/utils'
 import { PropertyControlsInfo } from '../../../../custom-code/code-file'
-import { pathsEqual } from '../../../../../core/shared/element-path'
+import * as EP from '../../../../../core/shared/element-path'
 
 export type ReparentAsAbsolute = 'REPARENT_AS_ABSOLUTE'
 export type ReparentAsStatic = 'REPARENT_AS_STATIC'
@@ -181,5 +181,5 @@ function isReparentingOutFromScene(
 
   const reparentTargetScene = MetadataUtils.findSceneOfTarget(targetParent, metadata)
 
-  return reparentSubjectScenes.some((s) => !pathsEqual(s, reparentTargetScene))
+  return reparentSubjectScenes.some((s) => !EP.pathsEqual(s, reparentTargetScene))
 }
