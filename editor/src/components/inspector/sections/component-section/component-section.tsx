@@ -701,11 +701,19 @@ function getSectionHeightFromPropControl(
 
 interface RowForArrayControlProps extends AbstractRowForControlProps {
   controlDescription: ArrayControlDescription
+  disableToggling: boolean
 }
 
 const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
   const { propPath, controlDescription, isScene } = props
   const title = labelForControl(propPath, controlDescription)
+
+  const [open, setOpen] = React.useState(false)
+  const handleOnClick = React.useCallback(() => {
+    if (!props.disableToggling) {
+      setOpen(!open)
+    }
+  }, [setOpen, open, props.disableToggling])
 
   const selectedViews = useEditorState(
     Substores.selectedViews,
@@ -764,6 +772,23 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
 
   const dataPickerButtonData = useDataPickerButtonInComponentSection(selectedViews, props.propPath)
 
+  const [isHovered, setIsHovered] = React.useState(false)
+
+  const handleMouseEnter = React.useCallback(() => {
+    setIsHovered(true)
+  }, [])
+
+  const handleMouseLeave = React.useCallback(() => {
+    setIsHovered(false)
+  }, [])
+
+  const isConnectedToData = React.useMemo(() => {
+    return (
+      propMetadata.propertyStatus.controlled &&
+      propMetadata.attributeExpression?.type !== 'JSX_ELEMENT'
+    )
+  }, [propMetadata])
+
   return (
     <React.Fragment>
       {when(dataPickerButtonData.popupIsOpen, dataPickerButtonData.DataPickerComponent)}
@@ -776,11 +801,21 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
             variant='<--1fr--><--1fr-->'
             style={{ flexGrow: 1 }}
             ref={dataPickerButtonData.setReferenceElement}
+            onClick={handleOnClick}
           >
             <FlexRow style={{ flex: 1, flexShrink: 0, gap: 5, justifyContent: 'space-between' }}>
-              <PropertyLabel target={[propPath]} style={objectPropertyLabelStyle}>
-                {title}
-              </PropertyLabel>
+              <PropertyLabelAndPlusButton
+                title={title}
+                openPopup={dataPickerButtonData.openPopup}
+                handleMouseEnter={handleMouseEnter}
+                handleMouseLeave={handleMouseLeave}
+                popupIsOpen={dataPickerButtonData.popupIsOpen}
+                isHovered={isHovered}
+                isConnectedToData={isConnectedToData}
+                testId={`plus-button-${title}`}
+              >
+                {unless(props.disableToggling, <ObjectIndicator open={open} />)}
+              </PropertyLabelAndPlusButton>
               {propertyStatus.overwritable && !propertyStatus.controlled ? (
                 <SquareButton
                   highlight
@@ -816,26 +851,29 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
             />
           </UIGridRow>
         </SimpleFlexRow>
-        <div
-          style={{
-            height: sectionHeight * springs.length,
-          }}
-        >
-          {springs.map((springStyle, index) => (
-            <ArrayControlItem
-              springStyle={springStyle}
-              bind={bind}
-              key={index} //FIXME this causes the row drag handle to jump after finishing the re-order
-              index={index}
-              propPath={propPath}
-              isScene={props.isScene}
-              controlDescription={controlDescription}
-              focusOnMount={props.focusOnMount}
-              setGlobalCursor={props.setGlobalCursor}
-              showHiddenControl={props.showHiddenControl}
-            />
-          ))}
-        </div>
+        {when(
+          open,
+          <div
+            style={{
+              height: sectionHeight * springs.length,
+            }}
+          >
+            {springs.map((springStyle, index) => (
+              <ArrayControlItem
+                springStyle={springStyle}
+                bind={bind}
+                key={index} //FIXME this causes the row drag handle to jump after finishing the re-order
+                index={index}
+                propPath={propPath}
+                isScene={props.isScene}
+                controlDescription={controlDescription}
+                focusOnMount={props.focusOnMount}
+                setGlobalCursor={props.setGlobalCursor}
+                showHiddenControl={props.showHiddenControl}
+              />
+            ))}
+          </div>,
+        )}
       </div>
     </React.Fragment>
   )
