@@ -34,6 +34,7 @@ import { CommentsPane } from '../inspector/comments-pane'
 import { EditorModes, isCommentMode } from '../editor/editor-modes'
 import { useAllowedToEditProject } from '../editor/store/collaborative-editing'
 import { useCanComment } from '../../core/commenting/comment-hooks'
+import { ElementsOutsideVisibleAreaIndicator } from '../editor/elements-outside-visible-area-indicator'
 
 function isCodeEditorEnabled(): boolean {
   if (typeof window !== 'undefined') {
@@ -82,6 +83,7 @@ const DesignPanelRootInner = React.memo(() => {
             }}
           >
             <CanvasWrapperComponent />
+            <ElementsOutsideVisibleAreaIndicator />
             <GridPanelsContainer />
           </SimpleFlexColumn>
         }

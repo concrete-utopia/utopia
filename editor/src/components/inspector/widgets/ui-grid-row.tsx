@@ -127,38 +127,27 @@ export interface GridRowProps extends React.InputHTMLAttributes<HTMLDivElement> 
    * alignItems: default value is 'center'
    */
   alignItems?: 'start' | 'center' | 'stretch'
-  /**
-   * ref is the regular element reference for React.
-   */
-  ref?: React.LegacyRef<HTMLDivElement>
 }
 
-export const UIGridRow: React.FunctionComponent<React.PropsWithChildren<GridRowProps>> = ({
-  tall,
-  variant,
-  alignItems,
-  style,
-  padded,
-  children,
-  ref,
-  ...props
-}) => (
-  <div
-    {...props}
-    ref={ref}
-    css={{
-      padding: padded ? `0px ${UtopiaTheme.layout.rowHorizontalPadding}px` : undefined,
-      display: 'grid',
-      minHeight: tall ? UtopiaTheme.layout.rowHeight.max : UtopiaTheme.layout.rowHeight.normal,
-      whiteSpace: 'normal',
-      gridColumnGap: 10,
-      overflow: 'hidden',
-      alignItems: alignItems ?? 'center',
-      ...gridTemplates[variant],
-      ...(style as any), // TODO Emotion and React 18 types don't like each other
-    }}
-  >
-    {children}
-  </div>
+export const UIGridRow = React.forwardRef<HTMLDivElement, React.PropsWithChildren<GridRowProps>>(
+  ({ tall, variant, alignItems, style, padded, children, ...props }, ref) => (
+    <div
+      ref={ref}
+      {...props}
+      css={{
+        padding: padded ? `0px ${UtopiaTheme.layout.rowHorizontalPadding}px` : undefined,
+        display: 'grid',
+        minHeight: tall ? UtopiaTheme.layout.rowHeight.max : UtopiaTheme.layout.rowHeight.normal,
+        whiteSpace: 'normal',
+        gridColumnGap: 10,
+        overflow: 'hidden',
+        alignItems: alignItems ?? 'center',
+        ...gridTemplates[variant],
+        ...(style as any), // TODO Emotion and React 18 types don't like each other
+      }}
+    >
+      {children}
+    </div>
+  ),
 )
 UIGridRow.displayName = 'UIGridRow'

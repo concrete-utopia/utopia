@@ -1090,7 +1090,6 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         target={props.navigatorEntry.elementPath}
         selected={props.selected}
         openOn='double-click'
-        countChildren={true}
       />
       <ComponentPreview
         key={`preview-${props.label}`}
