@@ -372,7 +372,9 @@ export const DataSelectorModal = React.memo(
                         }}
                         onClick={onApplySelectedVariable}
                       >
-                        {altKeyPressedForceApplyMode ? 'Force Apply' : 'Apply'}
+                        {altKeyPressedForceApplyMode && selectedVariableIsDisabled
+                          ? 'Force Apply'
+                          : 'Apply'}
                       </div>
                     </FlexRow>
                   </>,
