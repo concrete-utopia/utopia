@@ -1329,7 +1329,13 @@ export const RowForControl = React.memo((props: RowForControlProps) => {
   } else {
     switch (controlDescription.control) {
       case 'array':
-        return <RowForArrayControl {...props} controlDescription={controlDescription} />
+        return (
+          <RowForArrayControl
+            {...props}
+            disableToggling={disableToggling ?? false}
+            controlDescription={controlDescription}
+          />
+        )
       case 'object':
         return (
           <RowForObjectControl
