@@ -2,9 +2,9 @@ import throttle from 'lodash.throttle'
 import React from 'react'
 import { memoize } from '../../../../core/shared/memoize'
 import { assertNever } from '../../../../core/shared/utils'
-import { FlexRow, Icons, UtopiaStyles } from '../../../../uuiui'
+import { FlexRow, Icons, SmallerIcons, UtopiaStyles } from '../../../../uuiui'
 import { type DataPickerOption, type ObjectPath } from './data-picker-utils'
-import { DataPickerCartouche } from './data-selector-cartouche'
+import { DataPickerCartouche, useVariableDataSource } from './data-selector-cartouche'
 import { when } from '../../../../utils/react-conditionals'
 
 export interface DataSelectorSearchProps {
@@ -43,27 +43,12 @@ export const DataSelectorSearch = React.memo(
           (searchResult, idx) => (
             <React.Fragment key={[...searchResult.valuePath, idx].toString()}>
               <FlexRow style={{ gap: 2 }}>
-                <DataPickerCartouche
-                  data={searchResult.option}
+                <SearchResultCartouche
                   key={`${searchResult.option.variableInfo.expression}-${idx}`}
-                  selected={false}
-                  onClick={setNavigatedToPathCurried(searchResult.option)}
-                >
-                  {searchResult.valuePath.map((v, i) => (
-                    <React.Fragment key={`${v.value}-${i}`}>
-                      <SearchResultString
-                        isMatch={v.matched}
-                        label={v.value}
-                        searchTerm={searchTerm}
-                        fontWeightForMatch={900}
-                      />
-                      {when(
-                        i < searchResult.valuePath.length - 1,
-                        <Icons.ExpansionArrowRight color='primary' />,
-                      )}
-                    </React.Fragment>
-                  ))}
-                </DataPickerCartouche>
+                  searchResult={searchResult}
+                  setNavigatedToPath={setNavigatedToPathCurried(searchResult.option)}
+                  searchTerm={searchTerm}
+                />
               </FlexRow>
               <FlexRow
                 style={{
@@ -245,5 +230,42 @@ function SearchResultString({
         )
       })}
     </>
+  )
+}
+
+function SearchResultCartouche({
+  searchResult,
+  searchTerm,
+  setNavigatedToPath: setNavigatedToPathCurried,
+}: {
+  searchResult: SearchResult
+  searchTerm: string
+  setNavigatedToPath: (e: React.MouseEvent) => void
+}) {
+  const dataSource = useVariableDataSource(searchResult.option)
+  const iconColor = dataSource === 'external' ? 'green' : 'primary'
+
+  return (
+    <DataPickerCartouche
+      data={searchResult.option}
+      selected={false}
+      forcedSource={dataSource ?? undefined}
+      onClick={setNavigatedToPathCurried}
+    >
+      {searchResult.valuePath.map((v, i) => (
+        <React.Fragment key={`${v.value}-${i}`}>
+          <SearchResultString
+            isMatch={v.matched}
+            label={v.value}
+            searchTerm={searchTerm}
+            fontWeightForMatch={900}
+          />
+          {when(
+            i < searchResult.valuePath.length - 1,
+            <SmallerIcons.ExpansionArrowRight color={iconColor} />,
+          )}
+        </React.Fragment>
+      ))}
+    </DataPickerCartouche>
   )
 }

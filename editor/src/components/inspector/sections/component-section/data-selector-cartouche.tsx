@@ -15,6 +15,7 @@ interface DataPickerCartoucheProps {
   data: DataPickerOption
   selected: boolean
   forcedRole?: CartoucheUIProps['role']
+  forcedSource?: CartoucheUIProps['source']
   onClick?: CartoucheUIProps['onClick']
 }
 
