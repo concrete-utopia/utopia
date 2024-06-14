@@ -129,7 +129,7 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
         }
       } else if (isZeroSized) {
         iconTypeToReturn = 'zerosized-div'
-        colorToReturn = baseColor === 'subdued' ? 'subdued' : 'main'
+        colorToReturn = baseColor
       } else if (isInvalidOverrideNavigatorEntry(navigatorEntry)) {
         iconTypeToReturn = 'warningtriangle'
         colorToReturn = baseColor
