@@ -322,6 +322,11 @@ describe('Absolute Reparent Strategy', () => {
 
     const dragDelta = windowPoint({ x: -1000, y: -1000 })
     await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null, async () => {
+      await renderResult.dispatch(
+        [CanvasActions.setUsersPreferredStrategy('ABSOLUTE_REPARENT')],
+        true,
+      )
+
       expect(getRegularNavigatorTargets(renderResult)).toEqual([
         'utopia-storyboard-uid/scene-aaa',
         'utopia-storyboard-uid/scene-aaa/app-entity',
@@ -393,8 +398,12 @@ describe('Absolute Reparent Strategy', () => {
     )
 
     const dragDelta = windowPoint({ x: 400, y: 400 })
-    await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null, null)
-    await dragElement(renderResult, 'ccc', dragDelta, cmdModifier, null, null)
+    await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null, async () =>
+      renderResult.dispatch([CanvasActions.setUsersPreferredStrategy('ABSOLUTE_REPARENT')], true),
+    )
+    await dragElement(renderResult, 'ccc', dragDelta, cmdModifier, null, async () =>
+      renderResult.dispatch([CanvasActions.setUsersPreferredStrategy('ABSOLUTE_REPARENT')], true),
+    )
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -907,14 +916,13 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       x: dragHereCenter.x - dragMeCenter.x,
       y: dragHereCenter.y - dragMeCenter.y,
     })
-    await dragElement(
-      editor,
-      'drag-me',
-      dragDelta,
-      cmdModifier,
-      { cursor: CSSCursor.NotPermitted }, // checks that we show that it's not permitted
-      null,
-    )
+
+    await dragElement(editor, 'drag-me', dragDelta, cmdModifier, null, async () => {
+      await editor.dispatch([CanvasActions.setUsersPreferredStrategy('ABSOLUTE_REPARENT')], true)
+      expect(getCursorFromEditor(await editor.getEditorState().editor)).toEqual(
+        CSSCursor.NotPermitted, // checks that we show that it's not permitted
+      )
+    })
 
     // the drag is prevented, nothing changes
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(ProjectWithNestedComponents)
@@ -965,7 +973,9 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     )
 
     const dragDelta = windowPoint({ x: -1000, y: -1000 })
-    await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null, null)
+    await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null, async () =>
+      renderResult.dispatch([CanvasActions.setUsersPreferredStrategy('ABSOLUTE_REPARENT')], true),
+    )
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -1743,6 +1753,13 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         canvasControlsLayer,
         { x: dragme.x + 10, y: dragme.y + 10 },
         { x: -100, y: 0 },
+        {
+          midDragCallback: async () =>
+            renderResult.dispatch(
+              [CanvasActions.setUsersPreferredStrategy('ABSOLUTE_REPARENT')],
+              true,
+            ),
+        },
       )
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -1791,6 +1808,13 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         canvasControlsLayer,
         { x: dragme.x + 10, y: dragme.y + 10 },
         { x: -100, y: 0 },
+        {
+          midDragCallback: async () =>
+            renderResult.dispatch(
+              [CanvasActions.setUsersPreferredStrategy('ABSOLUTE_REPARENT')],
+              true,
+            ),
+        },
       )
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
