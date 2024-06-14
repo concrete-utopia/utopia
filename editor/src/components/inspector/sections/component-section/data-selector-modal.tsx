@@ -436,7 +436,7 @@ function useFilterVariablesInScope(
 
 function disabledButtonStyles(disabled: boolean): React.CSSProperties {
   return {
-    opacity: disabled ? 0.5 : 1,
+    opacity: disabled ? 0.3 : 1,
     cursor: disabled ? undefined : 'pointer',
   }
 }
