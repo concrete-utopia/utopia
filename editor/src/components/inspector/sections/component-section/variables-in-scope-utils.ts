@@ -290,7 +290,7 @@ export function variableInfoFromValue(
         matches: 'does-not-match',
         props: mapDropNulls(([key, propValue]) => {
           return variableInfoFromValue(
-            `${expression}['${key}']`,
+            createPropertyAccessExpressionString(expression, key),
             key,
             propValue,
             insertionCeiling,
@@ -309,6 +309,17 @@ function variableInfoFromVariableData(variableNamesInScope: VariableData): Array
   )
 
   return info
+}
+
+const varSafeStringRegex = /^[a-zA-Z_$][0-9a-zA-Z_$]*$/
+
+function createPropertyAccessExpressionString(expressionSoFar: string, toAppend: string): string {
+  const toAppendIsVarsafeString = varSafeStringRegex.test(toAppend)
+  if (toAppendIsVarsafeString) {
+    return `${expressionSoFar}.${toAppend}`
+  } else {
+    return `${expressionSoFar}['${toAppend}']`
+  }
 }
 
 function getTargetPropertyFromControlDescription(

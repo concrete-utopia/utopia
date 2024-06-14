@@ -54,7 +54,7 @@ describe('orderVariablesForRelevance', () => {
           "matches": "child-matches",
           "props": Array [
             Object {
-              "expression": "style['left']",
+              "expression": "style.left",
               "expressionPathPart": "left",
               "insertionCeiling": Object {
                 "parts": Array [
@@ -69,7 +69,7 @@ describe('orderVariablesForRelevance', () => {
               "value": 300,
             },
             Object {
-              "expression": "style['position']",
+              "expression": "style.position",
               "expressionPathPart": "position",
               "insertionCeiling": Object {
                 "parts": Array [
@@ -141,7 +141,7 @@ describe('orderVariablesForRelevance', () => {
           "matches": "matches",
           "props": Array [
             Object {
-              "expression": "style['left']",
+              "expression": "style.left",
               "expressionPathPart": "left",
               "insertionCeiling": Object {
                 "parts": Array [
@@ -156,7 +156,7 @@ describe('orderVariablesForRelevance', () => {
               "value": 300,
             },
             Object {
-              "expression": "style['position']",
+              "expression": "style.position",
               "expressionPathPart": "position",
               "insertionCeiling": Object {
                 "parts": Array [
