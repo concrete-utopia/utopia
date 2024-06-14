@@ -52,6 +52,4 @@ export function dataPickerFilterOptionToString(mode: DataPickerFilterOption): st
   }
 }
 
-export const DataPickerPreferredAllAtom = atom<DataPickerFilterOption>('all')
-
 export type DataPickerCallback = (e: JSExpressionOtherJavaScript) => void

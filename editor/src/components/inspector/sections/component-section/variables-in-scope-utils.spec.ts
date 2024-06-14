@@ -36,7 +36,6 @@ describe('orderVariablesForRelevance', () => {
       controlDescription,
       currentPropertyValue,
       targetPropertyName,
-      'all',
     )
     expect(actualResult).toMatchInlineSnapshot(`
       Array [
@@ -123,7 +122,6 @@ describe('orderVariablesForRelevance', () => {
       controlDescription,
       currentPropertyValue,
       targetPropertyName,
-      'all',
     )
     expect(actualResult).toMatchInlineSnapshot(`
       Array [

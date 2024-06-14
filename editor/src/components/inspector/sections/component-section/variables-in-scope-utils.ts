@@ -7,7 +7,7 @@ import type {
 import type { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
 import type { FileRootPath, VariableData, VariablesInScope } from '../../../canvas/ui-jsx-canvas'
 import { useEditorState, Substores } from '../../../editor/store/store-hook'
-import type { DataPickerFilterOption, DataPickerOption } from './data-picker-utils'
+import type { DataPickerOption } from './data-picker-utils'
 import * as EP from '../../../../core/shared/element-path'
 import * as PP from '../../../../core/shared/property-path'
 import React from 'react'
@@ -332,7 +332,6 @@ export function orderVariablesForRelevance(
   controlDescription: ControlDescription | null,
   currentPropertyValue: PropertyValue,
   targetPropertyName: string | null,
-  mode: DataPickerFilterOption,
 ): Array<VariableInfo> {
   let valuesExactlyMatchingPropertyName: Array<VariableInfo> = []
   let valuesExactlyMatchingPropertyDescription: Array<VariableInfo> = []
@@ -348,7 +347,6 @@ export function orderVariablesForRelevance(
         controlDescription,
         currentPropertyValue,
         targetPropertyName,
-        mode,
       )
     } else if (variable.type === 'object') {
       variable.props = orderVariablesForRelevance(
@@ -356,7 +354,6 @@ export function orderVariablesForRelevance(
         controlDescription,
         currentPropertyValue,
         targetPropertyName,
-        mode,
       )
     }
 
@@ -468,7 +465,6 @@ const keepLocalestScope =
 export function useVariablesInScopeForSelectedElement(
   elementPath: ElementPath | null,
   propertyPath: PropertyPath | null,
-  mode: DataPickerFilterOption,
 ): Array<DataPickerOption> {
   const variablesInScope = useEditorState(
     Substores.restOfEditor,
@@ -501,7 +497,6 @@ export function useVariablesInScopeForSelectedElement(
     }
 
     variablesInScopeForSelectedPath = [
-      mode === 'preferred' ? keepLocalestScope() : identity,
       filterKeyFromObject('className'),
       filterKeyFromObject('data-uid'),
       filterKeyFromObject('style'),
@@ -519,7 +514,6 @@ export function useVariablesInScopeForSelectedElement(
       controlDescriptions,
       currentPropertyValue,
       propertyPath == null ? null : '' + PP.lastPart(propertyPath),
-      mode,
     )
 
     return orderedVariablesInScope.flatMap((variable) =>
@@ -532,7 +526,7 @@ export function useVariablesInScopeForSelectedElement(
         false,
       ),
     )
-  }, [controlDescriptions, currentPropertyValue, mode, elementPath, variablesInScope, propertyPath])
+  }, [controlDescriptions, currentPropertyValue, elementPath, variablesInScope, propertyPath])
 
   return variableNamesInScope
 }
