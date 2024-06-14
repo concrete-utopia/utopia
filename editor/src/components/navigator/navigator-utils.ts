@@ -75,6 +75,7 @@ export function navigatorDepth(
   let result: number = baseNavigatorDepth(path)
 
   for (const ancestorPath of EP.getAncestors(path)) {
+    // if the ancestor is a condensed row, indent back
     const condensedAncestorRoot = navigatorRows.find(
       (row) =>
         isCondensedNavigatorRow(row) && EP.pathsEqual(row.entries[0].elementPath, ancestorPath),
@@ -85,12 +86,15 @@ export function navigatorDepth(
 
     const elementMetadata = MetadataUtils.findElementByElementPath(metadata, ancestorPath)
     if (elementMetadata != null) {
+      // if the ancestor is a scene, indent back
       if (
         MetadataUtils.isProbablySceneFromMetadata(elementMetadata) ||
         MetadataUtils.isProbablyRemixSceneFromMetadata(elementMetadata)
       ) {
         result = result - 1
       }
+
+      // if the ancestor is a conditional, indent forward
       const isConditional = foldEither(
         () => false,
         (e) => isJSXConditionalExpression(e),
@@ -107,6 +111,7 @@ export function navigatorDepth(
     result = result + 1
   }
 
+  // if the element itself is a scene, indent back as well
   if (
     MetadataUtils.isProbablyScene(metadata, navigatorEntry.elementPath) ||
     MetadataUtils.isProbablyRemixScene(metadata, navigatorEntry.elementPath)
@@ -114,6 +119,7 @@ export function navigatorDepth(
     result = result - 1
   }
 
+  // make sure 0 is the minimum indentation no matter what
   return Math.max(0, result)
 }
 
