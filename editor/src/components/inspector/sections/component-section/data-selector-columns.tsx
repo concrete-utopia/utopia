@@ -1,3 +1,4 @@
+import type { PropsOf } from '@emotion/react'
 import styled from '@emotion/styled'
 import React from 'react'
 import { isPrefixOf } from '../../../../core/shared/array-utils'
@@ -9,7 +10,7 @@ import { DataPickerCartouche } from './data-selector-cartouche'
 interface DataSelectorColumnsProps {
   activeScope: Array<DataPickerOption>
   targetPathInsideScope: ObjectPath
-  onTargetPathChange: (newTargetVariable: DataPickerOption) => void
+  onTargetPathChange: (newTargetVariable: DataPickerOption | null) => void
 }
 
 export const DataSelectorColumns = React.memo((props: DataSelectorColumnsProps) => {
@@ -26,6 +27,7 @@ export const DataSelectorColumns = React.memo((props: DataSelectorColumnsProps) 
     >
       <DataSelectorColumn
         activeScope={props.activeScope}
+        parentScope={null}
         targetPathInsideScope={props.targetPathInsideScope}
         onTargetPathChange={props.onTargetPathChange}
         currentlyShowingScopeForArray={false}
@@ -36,13 +38,20 @@ export const DataSelectorColumns = React.memo((props: DataSelectorColumnsProps) 
 
 interface DataSelectorColumnProps {
   activeScope: Array<DataPickerOption>
+  parentScope: DataPickerOption | null
   currentlyShowingScopeForArray: boolean
   targetPathInsideScope: ObjectPath
-  onTargetPathChange: (newTargetVariable: DataPickerOption) => void
+  onTargetPathChange: (newTargetVariable: DataPickerOption | null) => void
 }
 
 const DataSelectorColumn = React.memo((props: DataSelectorColumnProps) => {
-  const { activeScope, targetPathInsideScope, currentlyShowingScopeForArray } = props
+  const {
+    activeScope,
+    parentScope,
+    onTargetPathChange,
+    targetPathInsideScope,
+    currentlyShowingScopeForArray,
+  } = props
 
   const elementOnSelectedPath: DataPickerOption | null =
     activeScope.find((option) => isPrefixOf(option.valuePath, targetPathInsideScope)) ?? null
@@ -72,9 +81,17 @@ const DataSelectorColumn = React.memo((props: DataSelectorColumnProps) => {
   const isLastColumn = nextColumnScope == null && nextColumnScopeValue == null
   const columnRef = useScrollIntoView(isLastColumn)
 
+  const onClickColumnBackground: React.MouseEventHandler<HTMLDivElement> = React.useCallback(
+    (e) => {
+      e.stopPropagation()
+      onTargetPathChange(parentScope)
+    },
+    [onTargetPathChange, parentScope],
+  )
+
   return (
     <>
-      <DataSelectorFlexColumn ref={columnRef}>
+      <DataSelectorFlexColumn ref={columnRef} onClick={onClickColumnBackground}>
         {activeScope.map((option, index) => {
           const selected = arrayEqualsByReference(option.valuePath, targetPathInsideScope)
           const onActivePath = isPrefixOf(option.valuePath, targetPathInsideScope)
@@ -94,6 +111,7 @@ const DataSelectorColumn = React.memo((props: DataSelectorColumnProps) => {
       {nextColumnScope != null ? (
         <DataSelectorColumn
           activeScope={nextColumnScope.children}
+          parentScope={nextColumnScope}
           targetPathInsideScope={targetPathInsideScope}
           onTargetPathChange={props.onTargetPathChange}
           currentlyShowingScopeForArray={nextColumnScope.type === 'array'}
@@ -204,21 +222,46 @@ const DataSelectorFlexColumn = styled(FlexColumn)({
   scrollbarWidth: 'auto',
   scrollbarColor: 'gray transparent',
   paddingTop: 8,
-  paddingRight: 10, // to account for scrollbar
-  paddingLeft: 6,
   paddingBottom: 10,
   borderRight: `1px solid ${colorTheme.subduedBorder.cssValue}`,
 })
 
-const DataPickerRow = styled(FlexRow)((props: { disabled: boolean }) => ({
-  alignSelf: 'stretch',
-  justifyContent: 'space-between',
-  fontSize: 10,
-  borderRadius: 4,
-  height: 24,
-  padding: 5,
-  cursor: !props.disabled ? 'pointer' : 'initial',
-}))
+const DataPickerRow = React.forwardRef<
+  HTMLDivElement,
+  React.PropsWithChildren<
+    PropsOf<typeof FlexRow> & {
+      disabled: boolean
+    }
+  >
+>((props, ref) => {
+  return (
+    <FlexRow
+      ref={ref}
+      onClick={props.onClick}
+      style={{
+        alignSelf: 'stretch',
+        height: 24,
+        paddingLeft: 6,
+        paddingRight: 10, // to account for scrollbar
+        cursor: !props.disabled ? 'pointer' : 'initial',
+      }}
+    >
+      <FlexRow
+        style={{
+          flexGrow: 1,
+          justifyContent: 'space-between',
+          height: 24,
+          borderRadius: 4,
+          fontSize: 10,
+          padding: 5,
+          ...props.style,
+        }}
+      >
+        {props.children}
+      </FlexRow>
+    </FlexRow>
+  )
+})
 
 function useScrollIntoView(shouldScroll: boolean) {
   const elementRef = React.useRef<HTMLDivElement>(null)
