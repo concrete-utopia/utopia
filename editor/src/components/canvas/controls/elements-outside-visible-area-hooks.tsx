@@ -1,6 +1,6 @@
 import React from 'react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { mapDropNulls, uniqBy } from '../../../core/shared/array-utils'
+import { mapDropNulls } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
 import type { CanvasRectangle, WindowPoint, WindowRectangle } from '../../../core/shared/math-utils'
 import {
@@ -23,7 +23,6 @@ type ElementOutsideVisibleArea = {
 
 export type ElementOutsideVisibleAreaIndicator = {
   position: WindowPoint
-  selected: boolean
 }
 
 export function useElementsOutsideVisibleArea(): ElementOutsideVisibleAreaIndicator | null {
@@ -33,12 +32,6 @@ export function useElementsOutsideVisibleArea(): ElementOutsideVisibleAreaIndica
     Substores.selectedViews,
     (store) => store.editor.selectedViews,
     'useElementsOutsideVisibleArea selectedViews',
-  )
-
-  const highlightedViews = useEditorState(
-    Substores.highlightedHoveredViews,
-    (store) => store.editor.highlightedViews,
-    'useElementsOutsideVisibleArea highlightedViews',
   )
 
   const storeRef = useRefEditorState((store) => ({
@@ -56,13 +49,9 @@ export function useElementsOutsideVisibleArea(): ElementOutsideVisibleAreaIndica
     'useElementsOutsideVisibleArea canvasOffset',
   )
 
-  const elements = React.useMemo(() => {
-    return uniqBy([...selectedViews, ...highlightedViews], EP.pathsEqual)
-  }, [selectedViews, highlightedViews])
-
   const framesByPathString = React.useMemo(() => {
     const frames: { [key: string]: CanvasRectangle } = {}
-    for (const path of elements) {
+    for (const path of selectedViews) {
       const metadata = MetadataUtils.findElementByElementPath(storeRef.current.jsxMetadata, path)
       if (
         metadata != null &&
@@ -73,7 +62,7 @@ export function useElementsOutsideVisibleArea(): ElementOutsideVisibleAreaIndica
       }
     }
     return frames
-  }, [storeRef, elements])
+  }, [storeRef, selectedViews])
 
   const scaledCanvasArea = React.useMemo(() => {
     if (canvasBounds == null) {
@@ -115,8 +104,8 @@ export function useElementsOutsideVisibleArea(): ElementOutsideVisibleAreaIndica
         path: path,
         rect: elementRect,
       }
-    }, elements)
-  }, [elements, canvasOffset, canvasScale, scaledCanvasArea, framesByPathString])
+    }, selectedViews)
+  }, [selectedViews, canvasOffset, canvasScale, scaledCanvasArea, framesByPathString])
 
   return React.useMemo((): ElementOutsideVisibleAreaIndicator | null => {
     if (elementsOutsideVisibleArea.length === 0) {
@@ -126,17 +115,10 @@ export function useElementsOutsideVisibleArea(): ElementOutsideVisibleAreaIndica
     if (windowRect == null) {
       return null
     }
-    const canvasRect = boundingRectangleArray(
-      elementsOutsideVisibleArea.map((a) => framesByPathString[EP.toString(a.path)]),
-    )
-    if (canvasRect == null) {
-      return null
-    }
     return {
       position: getRectCenter(windowRect),
-      selected: elementsOutsideVisibleArea.some((e) => EP.containsPath(e.path, selectedViews)),
     }
-  }, [elementsOutsideVisibleArea, framesByPathString, selectedViews])
+  }, [elementsOutsideVisibleArea])
 }
 
 export function getIndicatorAngleToTarget(from: WindowPoint, to: WindowPoint): number {

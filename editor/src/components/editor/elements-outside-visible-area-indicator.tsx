@@ -26,21 +26,18 @@ const IndicatorArrow = React.memo(
       if (target == null) {
         return null
       }
-      return getIndicatorAngleToTarget(
-        windowPoint({ x: mouse.x + 20, y: mouse.y }),
-        target.position,
-      )
+      return getIndicatorAngleToTarget(windowPoint({ x: mouse.x, y: mouse.y }), target.position)
     }, [mouse, target])
 
     React.useEffect(() => {
-      function handle(e: MouseEvent) {
+      function storeMousePosition(e: MouseEvent) {
         setMouse(windowPoint({ x: e.clientX, y: e.clientY }))
       }
-      window.addEventListener('mousemove', handle)
-      window.addEventListener('wheel', handle)
+      window.addEventListener('mousemove', storeMousePosition)
+      window.addEventListener('wheel', storeMousePosition)
       return function () {
-        window.removeEventListener('mousemove', handle)
-        window.removeEventListener('wheel', handle)
+        window.removeEventListener('mousemove', storeMousePosition)
+        window.removeEventListener('wheel', storeMousePosition)
       }
     }, [])
 
@@ -54,7 +51,6 @@ const IndicatorArrow = React.memo(
         data-testid={ToolbarIndicatorElementsOutsideVisibleAreaId}
         style={{
           transform: `rotate(${angle}rad)`,
-          opacity: target.selected ? 1 : 0.5,
           position: 'fixed',
           left: mouse.x + 3,
           top: mouse.y + 14,

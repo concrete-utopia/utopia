@@ -4,7 +4,8 @@
 import { jsx } from '@emotion/react'
 import React, { useState } from 'react'
 import type { TooltipProps } from '../../uuiui'
-import { Tile, UtopiaStyles } from '../../uuiui'
+import { Tile, UtopiaStyles, opacity } from '../../uuiui'
+import { UtopiaTheme } from '../../uuiui'
 import {
   colorTheme,
   FlexColumn,
@@ -35,12 +36,19 @@ import { useToolbarMode } from './canvas-toolbar-states'
 import { unless, when } from '../../utils/react-conditionals'
 import { StrategyIndicator } from '../canvas/controls/select-mode/strategy-indicator'
 import { stopPropagation } from '../inspector/common/inspector-utils'
+import { useWrapInDiv } from './wrap-in-callbacks'
 import { RemixNavigationBar } from './remix-navigation-bar'
-import { type InsertableComponent } from '../shared/project-components'
+import {
+  type InsertableComponent,
+  fragmentComponentInfo,
+  fragmentElementsDescriptors,
+  insertableComponentGroupFragment,
+} from '../shared/project-components'
 import { setFocus } from '../common/actions'
 import type { CanvasStrategyIcon } from '../canvas/canvas-strategies/canvas-strategy-types'
 import { isLoggedIn } from './action-types'
 import type { EditorDispatch } from './action-types'
+import type { InsertMenuItem } from '../canvas/ui/floating-insert-menu'
 import { useGetInsertableComponents } from '../canvas/ui/floating-insert-menu'
 import { RightMenuTab } from './store/editor-state'
 import { useStatus, useThreads } from '../../../liveblocks.config'

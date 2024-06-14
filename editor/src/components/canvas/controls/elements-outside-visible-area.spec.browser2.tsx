@@ -1,13 +1,9 @@
 import { act, screen } from '@testing-library/react'
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
-import { getRectCenter, isFiniteRectangle, windowRectangle } from '../../../core/shared/math-utils'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import { selectComponents } from '../../editor/actions/meta-actions'
 import { ToolbarIndicatorElementsOutsideVisibleAreaId } from '../../editor/elements-outside-visible-area-indicator'
-import { DefaultNavigatorWidth } from '../../editor/store/editor-state'
-import { canvasPointToWindowPoint } from '../dom-lookup'
-import { keyDown, mouseClickAtPoint, mouseDragFromPointToPoint } from '../event-helpers.test-utils'
+import { keyDown, mouseDragFromPointToPoint } from '../event-helpers.test-utils'
 import type { EditorRenderResult } from '../ui-jsx.test-utils'
 import { makeTestProjectCodeWithSnippet, renderTestEditorWithCode } from '../ui-jsx.test-utils'
 import { CanvasControlsContainerID } from './new-canvas-controls'
@@ -52,7 +48,7 @@ const farAway = 99999999 // px
 
 describe('elements outside visible area', () => {
   describe('single element', () => {
-    it('shows the indicator on the toolbar', async () => {
+    it('shows the indicator', async () => {
       const renderResult = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(`
         <div data-uid='foo' style={{
