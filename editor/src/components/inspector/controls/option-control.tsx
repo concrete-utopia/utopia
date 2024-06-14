@@ -162,8 +162,18 @@ export const OptionControl: React.FunctionComponent<
               rc === 'all' || rc === 'left' || rc === 'bottomLeft' || rc === 'bottom'
                 ? UtopiaTheme.inputBorderRadius
                 : undefined,
+
+            filter: isChecked && props.controlStatus !== 'disabled' ? undefined : 'grayscale(1)',
             '&:hover': {
               opacity: props.controlStatus == 'disabled' ? undefined : controlOpacity + 0.2,
+              filter: props.controlStatus == 'disabled' ? undefined : 'grayscale(0)',
+            },
+
+            '.control-option-icon-component': {
+              opacity: 0.5,
+            },
+            '&:hover .control-option-icon-component': {
+              opacity: 1,
             },
             '&:active': {
               opacity: props.controlStatus == 'disabled' ? undefined : 1,
@@ -191,6 +201,7 @@ export const OptionControl: React.FunctionComponent<
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
+              gap: 4,
             }}
           >
             {controlOptions.icon != null ? (
@@ -199,7 +210,9 @@ export const OptionControl: React.FunctionComponent<
                 {...controlOptions.icon}
               />
             ) : (
-              controlOptions.iconComponent ?? null
+              <div className='control-option-icon-component'>
+                {controlOptions.iconComponent ?? null}
+              </div>
             )}
             {controlOptions.labelInner != null ? controlOptions.labelInner : null}
           </div>
