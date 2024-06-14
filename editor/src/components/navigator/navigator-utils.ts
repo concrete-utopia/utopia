@@ -3,11 +3,8 @@ import * as EP from '../../core/shared/element-path'
 import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
-  JSExpression,
   JSXConditionalExpression,
-  JSXElement,
   JSXElementChild,
-  JSXFragment,
   JSXMapExpression,
 } from '../../core/shared/element-template'
 import {
@@ -16,20 +13,11 @@ import {
   isJSExpressionValue,
   isJSXConditionalExpression,
   isJSXElement,
-  isJSXElementLike,
   isJSXMapExpression,
 } from '../../core/shared/element-template'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { foldEither, isLeft, isRight } from '../../core/shared/either'
-import type {
-  ConditionalClauseNavigatorEntry,
-  DataReferenceNavigatorEntry,
-  InvalidOverrideNavigatorEntry,
-  NavigatorEntry,
-  RegularNavigatorEntry,
-  SlotNavigatorEntry,
-  SyntheticNavigatorEntry,
-} from '../editor/store/editor-state'
+import { foldEither, isLeft } from '../../core/shared/either'
+import type { ConditionalClauseNavigatorEntry, NavigatorEntry } from '../editor/store/editor-state'
 import {
   conditionalClauseNavigatorEntry,
   dataReferenceNavigatorEntry,
@@ -46,7 +34,7 @@ import {
 } from '../editor/store/editor-state'
 import type { ElementPathTree, ElementPathTrees } from '../../core/shared/element-path-tree'
 import { getCanvasRoots, getSubTree } from '../../core/shared/element-path-tree'
-import { assertNever, fastForEach } from '../../core/shared/utils'
+import { assertNever } from '../../core/shared/utils'
 import type { ConditionalCase } from '../../core/model/conditionals'
 import { getConditionalClausePath } from '../../core/model/conditionals'
 import { findUtopiaCommentFlag, isUtopiaCommentFlagMapCount } from '../../core/shared/comment-flags'
@@ -60,15 +48,14 @@ import * as EPP from '../template-property-path'
 import {
   condensedNavigatorRow,
   getEntriesForRow,
+  isCondensedNavigatorRow,
   regularNavigatorRow,
   type CondensedNavigatorRow,
   type NavigatorRow,
   type RegularNavigatorRow,
 } from './navigator-row'
 import { dropNulls, mapDropNulls } from '../../core/shared/array-utils'
-import invariant from '../../third-party/remix/invariant'
 import { getUtopiaID } from '../../core/shared/uid-utils'
-import { create } from 'tar'
 import { emptySet } from '../../core/shared/set-utils'
 import { objectMap } from '../../core/shared/object-utils'
 import { dataCanCondenseFromMetadata } from '../../utils/can-condense'
@@ -82,11 +69,23 @@ export function baseNavigatorDepth(path: ElementPath): number {
 export function navigatorDepth(
   navigatorEntry: NavigatorEntry,
   metadata: ElementInstanceMetadataMap,
+  navigatorRows: NavigatorRow[],
 ): number {
   const path = navigatorEntry.elementPath
   let result: number = baseNavigatorDepth(path)
 
   for (const ancestorPath of EP.getAncestors(path)) {
+    const condensedAncestorRoot = navigatorRows.find(
+      (row) =>
+        isCondensedNavigatorRow(row) && EP.pathsEqual(row.entries[0].elementPath, ancestorPath),
+    )
+    if (
+      condensedAncestorRoot != null &&
+      (condensedAncestorRoot as CondensedNavigatorRow).entries.length > 1
+    ) {
+      result = result - 1
+    }
+
     const elementMetadata = MetadataUtils.findElementByElementPath(metadata, ancestorPath)
     if (elementMetadata != null) {
       if (

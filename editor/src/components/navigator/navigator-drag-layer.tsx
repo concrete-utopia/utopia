@@ -13,18 +13,21 @@ import { NO_OP } from '../../core/shared/utils'
 import { colorTheme, FlexRow, Icn } from '../../uuiui'
 import { useLayoutOrElementIcon } from './layout-element-icons'
 import { emptyElementPath } from '../../core/shared/element-path'
-import { Substores, useEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { navigatorDepth } from './navigator-utils'
 import { getElementPadding } from './navigator-item/navigator-item'
 import { metadataSelector } from '../inspector/inpector-selectors'
 import createCachedSelector from 're-reselect'
 import type { MetadataSubstate } from '../editor/store/store-hook-substore-types'
+import type { NavigatorRow } from './navigator-row'
 
 const depthSelector = createCachedSelector(
   metadataSelector,
-  (_: MetadataSubstate, navigatorEntry: RegularNavigatorEntry) => navigatorEntry,
-  (metadata, navigatorEntry) => navigatorDepth(navigatorEntry, metadata) + 1,
-)((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
+  (_: MetadataSubstate, rows: NavigatorRow[]) => rows,
+  (_: MetadataSubstate, __rows: NavigatorRow[], navigatorEntry: RegularNavigatorEntry) =>
+    navigatorEntry,
+  (metadata, rows, navigatorEntry) => navigatorDepth(navigatorEntry, metadata, rows) + 1,
+)((_, __, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
 export const NavigatorDragLayer = React.memo(() => {
   const { item, initialOffset, difference } = useDragLayer((monitor) => ({
@@ -43,9 +46,11 @@ export const NavigatorDragLayer = React.memo(() => {
   const draggedItemIsNavigatorItem = item != null && item.type === NavigatorItemDragType
   const hidden = !draggedItemIsNavigatorItem
 
+  const navigatorRows = useRefEditorState((store) => store.derived.navigatorRows)
+
   const entryNavigatorDepth = useEditorState(
     Substores.metadata,
-    (store) => depthSelector(store, navigatorEntry),
+    (store) => depthSelector(store, navigatorRows.current, navigatorEntry),
     'NavigatorDragLayer metadata',
   )
 

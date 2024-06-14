@@ -562,6 +562,8 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     'NavigatorItemDndWrapper navigatorTargets',
   )
 
+  const navigatorRows = useRefEditorState((store) => store.derived.navigatorRows)
+
   const isFirstSibling = React.useMemo(() => {
     const siblings = MetadataUtils.getSiblingsOrdered(
       editorStateRef.current.jsxMetadata,
@@ -801,7 +803,11 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     }
 
     return getHintPaddingForDepth(
-      navigatorDepth(dropTargetHint.targetParent, editorStateRef.current.jsxMetadata),
+      navigatorDepth(
+        dropTargetHint.targetParent,
+        editorStateRef.current.jsxMetadata,
+        navigatorRows.current,
+      ),
     )
   })()
 

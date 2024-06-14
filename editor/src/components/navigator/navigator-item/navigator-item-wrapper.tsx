@@ -29,7 +29,7 @@ import {
   navigatorEntriesEqual,
   navigatorEntryToKey,
 } from '../../editor/store/editor-state'
-import { Substores, useEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import type {
   DerivedSubstate,
   MetadataSubstate,
@@ -325,10 +325,12 @@ const SingleEntryNavigatorItemWrapper: React.FunctionComponent<
   )
   const label = getNavigatorEntryLabel(props.navigatorEntry, labelForTheElement)
 
+  const rows = useRefEditorState((store) => store.derived.navigatorRows)
+
   const entryDepth = useEditorState(
     Substores.metadata,
     (store) => {
-      return navigatorDepth(props.navigatorEntry, store.editor.jsxMetadata)
+      return navigatorDepth(props.navigatorEntry, store.editor.jsxMetadata, rows.current)
     },
     'NavigatorItemWrapper entryDepth',
   )

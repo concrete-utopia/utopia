@@ -524,7 +524,7 @@ function navigatorStructure(editorState: EditorState, deriveState: DerivedState)
   const lines = deriveState.visibleNavigatorTargets.map((target) => {
     const targetAsText = navigatorEntryToKey(target)
     let prefix: string = ''
-    const depth = navigatorDepth(target, editorState.jsxMetadata)
+    const depth = navigatorDepth(target, editorState.jsxMetadata, deriveState.navigatorRows)
     for (let index = 0; index < depth; index++) {
       prefix = prefix.concat('  ')
     }
