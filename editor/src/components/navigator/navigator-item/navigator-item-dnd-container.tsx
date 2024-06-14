@@ -69,6 +69,7 @@ import { createNavigatorReparentPostActionActions } from '../../canvas/canvas-st
 import createCachedSelector from 're-reselect'
 import type { MetadataSubstate } from '../../editor/store/store-hook-substore-types'
 import { getCanvasViewportCenter } from '../../../templates/paste-helpers'
+import { isRegulaNavigatorRow } from '../navigator-row'
 
 export const WiggleUnit = BasePaddingUnit * 1.5
 
@@ -550,7 +551,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
   const dropTargetHint = useEditorState(
     Substores.navigator,
     (store) => store.editor.navigator.dropTargetHint,
-    'NavigatorItemDndWrapper moveToElementPath',
+    'NavigatorItemDndWrapper dropTargetHint',
   )
 
   const navigatorTargets = useEditorState(
@@ -792,12 +793,24 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     !isHintDisallowed(props.elementPath, editorStateRef.current.jsxMetadata) &&
     isCollapsedCondtionalEntry
 
+  const navigatorRows = useRefEditorState((store) => store.derived.navigatorRows)
+
   const margin = (() => {
     if (dropTargetHint == null) {
       return 0
     }
 
-    return getHintPaddingForDepth(props.indentation)
+    const targetRow = navigatorRows.current.find((row) =>
+      isRegulaNavigatorRow(row)
+        ? EP.pathsEqual(row.entry.elementPath, dropTargetHint.targetParent.elementPath)
+        : row.entries.some((entry) =>
+            EP.pathsEqual(dropTargetHint.targetParent.elementPath, entry.elementPath),
+          ),
+    )
+    if (targetRow != null) {
+      return getHintPaddingForDepth(targetRow.indentation)
+    }
+    return props.indentation
   })()
 
   const parentOutline = React.useMemo((): ParentOutline => {
