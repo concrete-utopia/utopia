@@ -140,7 +140,7 @@ export class DistanceGuideline extends React.Component<DistanceGuidelineProps> {
         >
           <div
             style={{
-              padding: `0 ${2 / this.props.scale}`,
+              padding: `0px ${2.5 / this.props.scale}px`,
               borderRadius: 2 / this.props.scale,
               color: colorTheme.white.value,
               backgroundColor: StrokeColor,
@@ -148,6 +148,7 @@ export class DistanceGuideline extends React.Component<DistanceGuidelineProps> {
               width: 'min-content',
               display: 'flex',
               alignItems: 'center',
+              minHeight: `${16 / this.props.scale}px`,
               height: `${16 / this.props.scale}px`,
             }}
             data-testid={id}
