@@ -2,10 +2,13 @@ import throttle from 'lodash.throttle'
 import React from 'react'
 import { memoize } from '../../../../core/shared/memoize'
 import { assertNever } from '../../../../core/shared/utils'
-import { FlexRow, Icons, SmallerIcons, UtopiaStyles } from '../../../../uuiui'
+import { FlexColumn, FlexRow, Icons, SmallerIcons, UtopiaStyles } from '../../../../uuiui'
 import { type DataPickerOption, type ObjectPath } from './data-picker-utils'
 import { DataPickerCartouche, useVariableDataSource } from './data-selector-cartouche'
 import { when } from '../../../../utils/react-conditionals'
+import { AllHtmlEntities } from 'html-entities'
+
+const htmlEntities = new AllHtmlEntities()
 
 export interface DataSelectorSearchProps {
   setNavigatedToPath: (_: DataPickerOption) => void
@@ -23,6 +26,12 @@ export const DataSelectorSearch = React.memo(
       },
       [setNavigatedToPath],
     )
+
+    const results = React.useMemo(
+      () => throttledSearch(allVariablesInScope, searchTerm.toLowerCase()),
+      [allVariablesInScope, searchTerm],
+    )
+
     return (
       <div
         style={{
@@ -35,37 +44,32 @@ export const DataSelectorSearch = React.memo(
           paddingTop: 8,
           paddingLeft: 8,
           display: 'grid',
-          gridTemplateColumns: 'auto 1fr',
+          gridTemplateColumns: '50% 50%',
           gridAutoRows: 'min-content',
         }}
       >
-        {throttledSearch(allVariablesInScope, searchTerm.toLowerCase())?.map(
-          (searchResult, idx) => (
-            <React.Fragment key={[...searchResult.valuePath, idx].toString()}>
-              <FlexRow style={{ gap: 2 }}>
-                <SearchResultCartouche
-                  key={`${searchResult.option.variableInfo.expression}-${idx}`}
-                  searchResult={searchResult}
-                  setNavigatedToPath={setNavigatedToPathCurried(searchResult.option)}
-                  searchTerm={searchTerm}
-                />
-              </FlexRow>
-              <FlexRow
-                style={{
-                  opacity: 0.5,
-                  ...UtopiaStyles.fontStyles.monospaced,
-                }}
-              >
-                <SearchResultString
-                  isMatch={searchResult.value.matched}
-                  label={searchResult.value.value}
-                  searchTerm={searchTerm}
-                  fontWeightForMatch={900}
-                />
-              </FlexRow>
-            </React.Fragment>
-          ),
-        )}
+        <FlexColumn style={{ overflowX: 'scroll', gap: 4 }}>
+          {results?.map((searchResult, idx) => (
+            <SearchResultCartouche
+              key={`${searchResult.option.variableInfo.expression}-${idx}`}
+              searchResult={searchResult}
+              setNavigatedToPath={setNavigatedToPathCurried(searchResult.option)}
+              searchTerm={searchTerm}
+            />
+          ))}
+        </FlexColumn>
+        <FlexColumn style={{ overflowX: 'scroll', gap: 4 }}>
+          {results?.map((searchResult, idx) => (
+            <FlexRow key={`${searchResult.option.variableInfo.expression}-${idx}`}>
+              <SearchResultString
+                isMatch={searchResult.value.matched}
+                label={searchResult.value.value ?? htmlEntities.decode('&nbsp')}
+                searchTerm={searchTerm}
+                fontWeightForMatch={900}
+              />
+            </FlexRow>
+          ))}
+        </FlexColumn>
       </div>
     )
   },
@@ -74,7 +78,7 @@ export const DataSelectorSearch = React.memo(
 interface SearchResult {
   option: DataPickerOption
   valuePath: Array<{ value: string; matched: boolean }>
-  value: { value: string; matched: boolean }
+  value: { value: string | null; matched: boolean }
 }
 
 function searchInValuePath(
@@ -100,7 +104,7 @@ function searchInValuePath(
 
 function searchInValue(value: unknown, context: SearchContext): SearchResult['value'] {
   if (typeof value === 'object' || Array.isArray(value)) {
-    return { value: '', matched: false }
+    return { value: null, matched: false }
   }
   const valueAsString = `${value}`
   return {
@@ -201,6 +205,7 @@ function SearchResultString({
   const style: React.CSSProperties = {
     ...UtopiaStyles.fontStyles.monospaced,
     fontSize: 10,
+    height: 20,
   }
 
   const regexp = React.useMemo(() => new RegExp(searchTerm, 'gi'), [searchTerm])
