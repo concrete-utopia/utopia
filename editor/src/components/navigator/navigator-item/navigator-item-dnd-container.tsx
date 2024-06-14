@@ -382,7 +382,7 @@ function onHoverDropTargetLine(
       regularNavigatorEntry(propsOfDropTargetItem.elementPath),
     )
 
-    const maximumTargetDepth = baseNavigatorDepth(propsOfDraggedItem.elementPath) // this differs from the `indentation` prop as it needs to be calculated on the actual path length
+    const maximumTargetDepth = baseNavigatorDepth(propsOfDropTargetItem.elementPath) // this differs from the `indentation` prop as it needs to be calculated on the actual path length
     const cursorTargetDepth = 1 + Math.floor(Math.abs(cursorDelta.x) / WiggleUnit)
 
     const nPathPartsToDrop = Math.min(
