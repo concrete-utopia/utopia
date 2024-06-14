@@ -153,9 +153,11 @@ export const DataSelectorModal = React.memo(
         e.preventDefault()
       }, [])
 
+      const altKeyPressedForceApplyMode = useAltKeyPressed()
+
       const onApplyVariable = React.useCallback(
         (variable: DataPickerOption) => {
-          if (variable.variableInfo.matches !== 'matches') {
+          if (!altKeyPressedForceApplyMode && variable.variableInfo.matches !== 'matches') {
             return
           }
           onPropertyPicked(
@@ -165,7 +167,7 @@ export const DataSelectorModal = React.memo(
           )
           closePopup()
         },
-        [closePopup, onPropertyPicked],
+        [closePopup, onPropertyPicked, altKeyPressedForceApplyMode],
       )
 
       const onApplySelectedVariable = React.useCallback(() => {
@@ -364,11 +366,13 @@ export const DataSelectorModal = React.memo(
                           height: 24,
                           width: 81,
                           textAlign: 'center',
-                          ...disabledButtonStyles(selectedVariableIsDisabled),
+                          ...disabledButtonStyles(
+                            !altKeyPressedForceApplyMode && selectedVariableIsDisabled,
+                          ),
                         }}
                         onClick={onApplySelectedVariable}
                       >
-                        Apply
+                        {altKeyPressedForceApplyMode ? 'Force Apply' : 'Apply'}
                       </div>
                     </FlexRow>
                   </>,
@@ -480,4 +484,28 @@ function getVariableInScope(
     return null
   }
   return findOption(variablesInScope)
+}
+
+function useAltKeyPressed(): boolean {
+  const [altKeyPressed, setAltKeyPressed] = React.useState(false)
+  React.useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Alt') {
+        setAltKeyPressed(true)
+      }
+    }
+    function handleKeyUp(e: KeyboardEvent) {
+      if (e.key === 'Alt') {
+        setAltKeyPressed(false)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    window.addEventListener('keyup', handleKeyUp)
+    return function cleanup() {
+      window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('keyup', handleKeyUp)
+    }
+  }, [])
+
+  return altKeyPressed
 }
