@@ -13,7 +13,6 @@ import {
   getTextContentOfElement,
 } from './component-section/data-reference-cartouche'
 import { useDataPickerButton } from './component-section/component-section'
-import { DataPickerPreferredAllAtom } from './component-section/data-picker-popup'
 import { useAtom } from 'jotai'
 import * as EP from '../../../core/shared/element-path'
 import { useDispatch } from '../../editor/store/dispatch-context'
@@ -35,8 +34,6 @@ export const DataReferenceSection = React.memo(({ paths }: { paths: ElementPath[
   const dispatch = useDispatch()
 
   const dataPickerWrapperRef = React.useRef<HTMLDivElement | null>(null)
-
-  const [preferredAllState] = useAtom(DataPickerPreferredAllAtom)
 
   const [elementPathForDataPicker, setElementPathForDataPicker] =
     React.useState<ElementPath | null>(null)
@@ -86,7 +83,6 @@ export const DataReferenceSection = React.memo(({ paths }: { paths: ElementPath[
   const varsInScope = useVariablesInScopeForSelectedElement(
     elementPathForDataPicker,
     PP.create('children'),
-    preferredAllState,
   )
 
   const pathToCurrenlySelectedValue = React.useMemo(() => {
