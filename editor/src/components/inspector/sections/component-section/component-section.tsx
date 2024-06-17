@@ -778,6 +778,7 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
       <div>
         <UIGridRow
           padded={false}
+          alignContent='center'
           style={{ padding: '3px 8px' }}
           variant='<--1fr--><--1fr-->'
           ref={dataPickerButtonData.setReferenceElement}
@@ -1139,6 +1140,7 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
           {when(dataPickerButtonData.popupIsOpen, dataPickerButtonData.DataPickerComponent)}
           <UIGridRow
             padded={false}
+            alignContent='center'
             style={{ padding: '3px 8px' }}
             variant='<--1fr--><--1fr-->'
             ref={dataPickerButtonData.setReferenceElement}
