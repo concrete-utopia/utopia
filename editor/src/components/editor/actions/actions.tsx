@@ -442,6 +442,7 @@ import {
   fixUtopiaElement,
   generateConsistentUID,
   getUtopiaID,
+  setUtopiaID,
 } from '../../../core/shared/uid-utils'
 import {
   DefaultPostCSSConfig,
@@ -2358,8 +2359,6 @@ export const UPDATE_FNS = {
     }
   },
   REPLACE_JSX_ELEMENT: (action: ReplaceJSXElement, editor: EditorModel): EditorModel => {
-    let newSelectedViews: ElementPath[] = []
-
     const withNewElement = modifyUnderlyingParseSuccessOnly(
       action.target,
       editor,
@@ -2382,7 +2381,15 @@ export const UPDATE_FNS = {
         )
 
         const fixedElement = (() => {
-          const renamedJsxElement = renameJsxElementChild(action.jsxElement, duplicateNameMapping)
+          const elemenWithOriginalUid = setUtopiaID(
+            action.jsxElement,
+            getUtopiaID(originalElement),
+          ) as JSXElement
+
+          const renamedJsxElement = renameJsxElementChild(
+            elemenWithOriginalUid,
+            duplicateNameMapping,
+          )
           if (
             !isReplaceKeepChildrenAndStyleTarget(action.behaviour) ||
             originalElement.type !== 'JSX_ELEMENT'
@@ -2435,7 +2442,6 @@ export const UPDATE_FNS = {
     return {
       ...withNewElement,
       leftMenu: { visible: editor.leftMenu.visible, selectedTab: LeftMenuTab.Navigator },
-      selectedViews: newSelectedViews,
     }
   },
   REPLACE_MAPPED_ELEMENT: (action: ReplaceMappedElement, editor: EditorModel): EditorModel => {
