@@ -812,7 +812,7 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
             isConnectedToData={isConnectedToData}
             testId={`plus-button-${title}`}
           >
-            {unless(props.disableToggling, <ObjectIndicator open={open} />)}
+            {unless(props.disableToggling, <ObjectIndicator open={open} toggle={handleOnClick} />)}
           </PropertyLabelAndPlusButton>
           {propertyStatus.overwritable && !propertyStatus.controlled ? (
             <SquareButton
@@ -871,6 +871,7 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
                   focusOnMount={props.focusOnMount}
                   setGlobalCursor={props.setGlobalCursor}
                   showHiddenControl={props.showHiddenControl}
+                  indentationLevel={props.indentationLevel}
                 />
               ))}
             </div>,
