@@ -245,12 +245,12 @@ export const DataSelectorModal = React.memo(
                       flexGrow: 1,
                       height: 24,
                       padding: '6px 8px',
-                      borderRadius: 4,
-                      gap: 8,
+                      borderRadius: 16,
+                      gap: 4,
                       border: `1px solid ${colorTheme.subduedBorder.value}`,
                     }}
                   >
-                    <LargerIcons.MagnifyingGlass style={{ zoom: 0.6 }} />
+                    <LargerIcons.MagnifyingGlass style={{ zoom: 0.5 }} />
                     <input
                       onClick={onStartSearch}
                       onFocus={onStartSearch}
@@ -280,7 +280,6 @@ export const DataSelectorModal = React.memo(
                     flexGrow: 1,
                     overflow: 'hidden',
                     contain: 'content',
-                    borderTop: `1px solid ${colorTheme.subduedBorder.cssValue}`,
                   }}
                 >
                   {searchNullOrEmpty ? (
@@ -307,7 +306,6 @@ export const DataSelectorModal = React.memo(
                         justifyContent: 'space-between',
                         alignItems: 'center',
                         gap: 8,
-                        borderTop: `1px solid ${colorTheme.subduedBorder.cssValue}`,
                         paddingTop: 10,
                         paddingBottom: 10,
                         paddingRight: 16,

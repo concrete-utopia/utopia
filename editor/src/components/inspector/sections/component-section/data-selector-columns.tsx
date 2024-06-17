@@ -23,7 +23,7 @@ export const DataSelectorColumns = React.memo((props: DataSelectorColumnsProps) 
         overflowX: 'scroll',
         overflowY: 'hidden',
         scrollbarWidth: 'auto',
-        scrollbarColor: 'gray transparent',
+        scrollbarColor: `${colorTheme.subduedBorder.cssValue} transparent`,
       }}
     >
       <DataSelectorColumn
@@ -135,25 +135,26 @@ const ValuePreviewColumn = React.memo((props: ValuePreviewColumnProps) => {
   const text = safeJSONStringify(props.data.variableInfo.value)
   const ref = useScrollIntoView(true)
   return (
-    <DataSelectorFlexColumn ref={ref} style={{ paddingLeft: 6, paddingRight: 6 }}>
+    <DataSelectorFlexColumn ref={ref} style={{ padding: '0 6px 0 6px' }}>
       <div
         style={{
-          padding: 4,
-          border: '1px solid #ccc',
+          padding: 6,
           borderRadius: 4,
           minHeight: 150,
           width: 200,
+          background: colorTheme.bg2.value,
+          fontFamily: 'Consolas, monospace',
           overflowWrap: 'break-word',
           overflowX: 'hidden',
           overflowY: 'scroll',
           scrollbarWidth: 'auto',
-          scrollbarColor: 'gray transparent',
+          scrollbarColor: `${colorTheme.subduedBorder.cssValue} transparent`,
           ['textWrap' as any]: 'balance', // I think we need to update some typings here?
         }}
       >
         {text}
       </div>
-      <span>{variableTypeForInfo(props.data)}</span>
+      <span style={{ padding: 6 }}>{variableTypeForInfo(props.data)}</span>
     </DataSelectorFlexColumn>
   )
 })
@@ -242,7 +243,7 @@ const DataSelectorFlexColumn = styled(FlexColumn)({
   overflowX: 'hidden',
   overflowY: 'scroll',
   scrollbarWidth: 'auto',
-  scrollbarColor: 'gray transparent',
+  scrollbarColor: `${colorTheme.subduedBorder.cssValue} transparent`,
   paddingTop: 8,
   paddingBottom: 10,
   borderRight: `1px solid ${colorTheme.subduedBorder.cssValue}`,
