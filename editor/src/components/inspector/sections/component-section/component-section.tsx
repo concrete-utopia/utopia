@@ -708,11 +708,19 @@ function getSectionHeightFromPropControl(
 
 interface RowForArrayControlProps extends AbstractRowForControlProps {
   controlDescription: ArrayControlDescription
+  disableToggling: boolean
 }
 
 const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
   const { propPath, controlDescription, isScene } = props
   const title = labelForControl(propPath, controlDescription)
+
+  const [open, setOpen] = React.useState(false)
+  const handleOnClick = React.useCallback(() => {
+    if (!props.disableToggling) {
+      setOpen(!open)
+    }
+  }, [setOpen, open, props.disableToggling])
 
   const selectedViews = useEditorState(
     Substores.selectedViews,
@@ -726,7 +734,6 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
     isScene,
     controlDescription,
   )
-  const indentation = props.indentationLevel * 8
 
   const propName = `${PP.lastPart(propPath)}`
   const propMetadata = useComponentPropsInspectorInfo(
@@ -742,7 +749,11 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
   )
 
   const [insertingRow, setInsertingRow] = React.useState(false)
-  const toggleInsertRow = React.useCallback(() => setInsertingRow((current) => !current), [])
+  const toggleInsertRow = React.useCallback((e: React.MouseEvent) => {
+    e.stopPropagation()
+    e.preventDefault()
+    setInsertingRow((current) => !current)
+  }, [])
 
   // Ensure the value is an array, just in case.
   const transformedValue = React.useMemo(() => {
@@ -772,6 +783,23 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
 
   const dataPickerButtonData = useDataPickerButtonInComponentSection(selectedViews, props.propPath)
 
+  const [isHovered, setIsHovered] = React.useState(false)
+
+  const handleMouseEnter = React.useCallback(() => {
+    setIsHovered(true)
+  }, [])
+
+  const handleMouseLeave = React.useCallback(() => {
+    setIsHovered(false)
+  }, [])
+
+  const isConnectedToData = React.useMemo(() => {
+    return (
+      propMetadata.propertyStatus.controlled &&
+      propMetadata.attributeExpression?.type !== 'JSX_ELEMENT'
+    )
+  }, [propMetadata])
+
   return (
     <React.Fragment>
       {when(dataPickerButtonData.popupIsOpen, dataPickerButtonData.DataPickerComponent)}
@@ -782,13 +810,21 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
           style={{ padding: '3px 8px' }}
           variant='<--1fr--><--1fr-->'
           ref={dataPickerButtonData.setReferenceElement}
+          onClick={handleOnClick}
+          data-testid={`control-container-${title}`}
         >
-          <PropertyLabel
-            target={[propPath]}
-            style={{ ...objectPropertyLabelStyle, paddingLeft: indentation }}
+          <PropertyLabelAndPlusButton
+            title={title}
+            openPopup={dataPickerButtonData.openPopup}
+            handleMouseEnter={handleMouseEnter}
+            handleMouseLeave={handleMouseLeave}
+            popupIsOpen={dataPickerButtonData.popupIsOpen}
+            isHovered={isHovered}
+            isConnectedToData={isConnectedToData}
+            testId={`plus-button-${title}`}
           >
-            {title}
-          </PropertyLabel>
+            {unless(props.disableToggling, <ObjectIndicator open={open} toggle={handleOnClick} />)}
+          </PropertyLabelAndPlusButton>
           {propertyStatus.overwritable && !propertyStatus.controlled ? (
             <SquareButton
               highlight
@@ -822,27 +858,36 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
             elementPath={selectedViews.at(0) ?? EP.emptyElementPath}
           />
         </UIGridRow>
-        <div
-          style={{
-            height: sectionHeight * springs.length,
-          }}
-        >
-          {springs.map((springStyle, index) => (
-            <ArrayControlItem
-              springStyle={springStyle}
-              bind={bind}
-              key={index} //FIXME this causes the row drag handle to jump after finishing the re-order
-              index={index}
-              propPath={propPath}
-              isScene={props.isScene}
-              controlDescription={controlDescription}
-              focusOnMount={props.focusOnMount}
-              setGlobalCursor={props.setGlobalCursor}
-              showHiddenControl={props.showHiddenControl}
-              indentationLevel={props.indentationLevel}
-            />
-          ))}
-        </div>
+        {when(
+          open,
+          <div
+            style={{
+              height: sectionHeight * springs.length,
+            }}
+          >
+            <div
+              style={{
+                height: sectionHeight * springs.length,
+              }}
+            >
+              {springs.map((springStyle, index) => (
+                <ArrayControlItem
+                  springStyle={springStyle}
+                  bind={bind}
+                  key={index} //FIXME this causes the row drag handle to jump after finishing the re-order
+                  index={index}
+                  propPath={propPath}
+                  isScene={props.isScene}
+                  controlDescription={controlDescription}
+                  focusOnMount={props.focusOnMount}
+                  setGlobalCursor={props.setGlobalCursor}
+                  showHiddenControl={props.showHiddenControl}
+                  indentationLevel={props.indentationLevel}
+                />
+              ))}
+            </div>
+          </div>,
+        )}
       </div>
     </React.Fragment>
   )
@@ -1308,7 +1353,13 @@ export const RowForControl = React.memo((props: RowForControlProps) => {
   } else {
     switch (controlDescription.control) {
       case 'array':
-        return <RowForArrayControl {...props} controlDescription={controlDescription} />
+        return (
+          <RowForArrayControl
+            {...props}
+            disableToggling={disableToggling ?? false}
+            controlDescription={controlDescription}
+          />
+        )
       case 'object':
         return (
           <RowForObjectControl
