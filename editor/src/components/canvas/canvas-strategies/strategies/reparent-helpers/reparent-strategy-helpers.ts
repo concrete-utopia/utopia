@@ -17,6 +17,7 @@ import type { InsertionPath } from '../../../../editor/store/insertion-path'
 import type { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
 import { assertNever } from '../../../../../core/shared/utils'
 import { PropertyControlsInfo } from '../../../../custom-code/code-file'
+import * as EP from '../../../../../core/shared/element-path'
 
 export type ReparentAsAbsolute = 'REPARENT_AS_ABSOLUTE'
 export type ReparentAsStatic = 'REPARENT_AS_STATIC'
@@ -25,6 +26,7 @@ export type ReparentStrategy = ReparentAsAbsolute | ReparentAsStatic
 export type FindReparentStrategyResult = {
   strategy: ReparentStrategy
   isFallback: boolean
+  isReparentingOutFromScene: boolean
   target: ReparentTarget
 }
 
@@ -76,14 +78,22 @@ export function findReparentStrategies(
     return []
   }
 
+  const isOutFromScene = isReparentingOutFromScene(
+    reparentSubjects,
+    canvasState.startingMetadata,
+    targetParent.newParent.intendedParentPath,
+  )
+
   const strategy = {
     target: targetParent,
+    isReparentingOutFromScene: isOutFromScene,
     strategy: targetParent.defaultReparentType,
     isFallback: false,
   }
 
   const fallbackStrategy: FindReparentStrategyResult = {
     isFallback: true,
+    isReparentingOutFromScene: isOutFromScene,
     target: strategy.target,
     strategy:
       strategy.strategy === 'REPARENT_AS_ABSOLUTE'
@@ -157,4 +167,19 @@ export function reparentSubjectsForInteractionTarget(
       const _exhaustiveCheck: never = interactionTarget
       throw new Error(`Unhandled interaction target type ${JSON.stringify(interactionTarget)}`)
   }
+}
+
+function isReparentingOutFromScene(
+  reparentSubjects: ReparentSubjects,
+  metadata: ElementInstanceMetadataMap,
+  targetParent: ElementPath,
+) {
+  const reparentSubjectScenes =
+    reparentSubjects.type === 'EXISTING_ELEMENTS'
+      ? reparentSubjects.elements.map((s) => MetadataUtils.findSceneOfTarget(s, metadata))
+      : []
+
+  const reparentTargetScene = MetadataUtils.findSceneOfTarget(targetParent, metadata)
+
+  return reparentSubjectScenes.some((s) => !EP.pathsEqual(s, reparentTargetScene))
 }

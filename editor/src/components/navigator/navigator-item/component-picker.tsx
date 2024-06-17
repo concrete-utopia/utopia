@@ -466,7 +466,7 @@ const ComponentPickerComponentSection = React.memo(
           maxHeight: 250,
           overflowY: 'scroll',
           scrollbarWidth: 'auto',
-          scrollbarColor: 'gray transparent',
+          scrollbarColor: `${colorTheme.subduedBorder.cssValue} transparent`,
         }}
         onScroll={onScroll}
       >

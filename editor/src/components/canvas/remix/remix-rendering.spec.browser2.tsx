@@ -60,6 +60,7 @@ import {
   type MetaCanvasStrategy,
   RegisteredCanvasStrategies,
 } from '../canvas-strategies/canvas-strategies'
+import CanvasActions from '../canvas-actions'
 
 const DefaultRouteTextContent = 'Hello Remix!'
 const RootTextContent = 'This is root!'
@@ -2123,10 +2124,17 @@ export default function Index() {
         AbsoluteDivTestId,
       )
       const absoluteDivBounds = absoluteElement.getBoundingClientRect()
+
       await dragMouse(
         renderResult,
         windowPoint({ x: absoluteDivBounds.x + 1, y: absoluteDivBounds.y + 1 }),
         windowPoint({ x: 10, y: -77 }),
+        emptyModifiers,
+        async () =>
+          renderResult.dispatch(
+            [CanvasActions.setUsersPreferredStrategy('ABSOLUTE_REPARENT')],
+            true,
+          ),
       )
     }
 
@@ -2155,6 +2163,12 @@ export default function Index() {
         renderResult,
         windowPoint({ x: absoluteDivBounds.x + 1, y: absoluteDivBounds.y + 1 }),
         windowPoint({ x: -10, y: 77 }),
+        emptyModifiers,
+        async () =>
+          renderResult.dispatch(
+            [CanvasActions.setUsersPreferredStrategy('ABSOLUTE_REPARENT')],
+            true,
+          ),
       )
     }
 

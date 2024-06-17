@@ -1,5 +1,6 @@
 import { windowPoint } from '../../../../core/shared/math-utils'
 import { cmdModifier, emptyModifiers } from '../../../../utils/modifiers'
+import CanvasActions from '../../canvas-actions'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
 import { makeTestProjectCodeWithSnippet, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
@@ -92,37 +93,6 @@ describe('Drag To Move Metastrategy', () => {
       midDragCallback: midDragCallback,
     })
   })
-  it('when a reparent strategy is active, the fallback DO_NOTHING strategy is not applicable', async () => {
-    const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(TestProject2),
-      'await-first-dom-report',
-    )
-
-    const targetElement = renderResult.renderedDOM.getByTestId('child-1')
-    const targetElementBounds = targetElement.getBoundingClientRect()
-    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-
-    const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
-    const dragDelta = windowPoint({ x: -100, y: -100 })
-
-    const midDragCallback = async () => {
-      const strategies = renderResult.getEditorState().strategyState.sortedApplicableStrategies
-      const doNothingInSortedStrategies = strategies?.findIndex(
-        (strategy) => strategy.name === 'DO_NOTHING',
-      )
-
-      expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(
-        'FLEX_REPARENT_TO_ABSOLUTE',
-      )
-      expect(doNothingInSortedStrategies).toEqual(-1)
-    }
-
-    await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
-    await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
-      modifiers: emptyModifiers,
-      midDragCallback: midDragCallback,
-    })
-  })
 })
 
 describe('Drag To Move Strategy Indicator', () => {
@@ -150,42 +120,6 @@ describe('Drag To Move Strategy Indicator', () => {
       expect(reparent).toEqual('none')
       expect(ancestor).toEqual(false)
 
-      const indicator = renderResult.renderedDOM.getByTestId('drag-strategy-indicator')
-      expect(indicator).toBeDefined()
-    }
-
-    await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
-    await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
-      modifiers: emptyModifiers,
-      midDragCallback: midDragCallback,
-    })
-  })
-  it('when reparenting an element the Strategy Indicator is visible', async () => {
-    const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(TestProject1),
-      'await-first-dom-report',
-    )
-
-    const targetElement = renderResult.renderedDOM.getByTestId('child-1')
-    const targetElementBounds = targetElement.getBoundingClientRect()
-    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-
-    const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
-    const dragDelta = windowPoint({ x: -50, y: 0 }) // moving it to the empty canvas
-
-    const midDragCallback = async () => {
-      expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(
-        'FLEX_REPARENT_TO_ABSOLUTE',
-      )
-      expect(
-        renderResult.getEditorState().editor.canvas.controls.dragToMoveIndicatorFlags.showIndicator,
-      ).toEqual(true)
-      expect(
-        renderResult.getEditorState().editor.canvas.controls.dragToMoveIndicatorFlags.ancestor,
-      ).toEqual(false)
-      expect(
-        renderResult.getEditorState().editor.canvas.controls.dragToMoveIndicatorFlags.reparent,
-      ).toEqual('different-component')
       const indicator = renderResult.renderedDOM.getByTestId('drag-strategy-indicator')
       expect(indicator).toBeDefined()
     }

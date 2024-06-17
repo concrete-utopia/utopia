@@ -15,7 +15,9 @@ interface DataPickerCartoucheProps {
   data: DataPickerOption
   selected: boolean
   forcedRole?: CartoucheUIProps['role']
+  forcedSource?: CartoucheUIProps['source']
   onClick?: CartoucheUIProps['onClick']
+  onDoubleClick?: CartoucheUIProps['onDoubleClick']
 }
 
 export const DataPickerCartouche = React.memo(
@@ -43,6 +45,7 @@ export const DataPickerCartouche = React.memo(
           ) : undefined
         }
         onClick={props.onClick}
+        onDoubleClick={props.onDoubleClick}
       >
         {data.isChildOfArray ? (
           <>

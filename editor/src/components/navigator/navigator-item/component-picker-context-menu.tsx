@@ -582,12 +582,26 @@ export function insertComponentPickerItem(
       }
 
       if (!isConditionalTarget(insertionTarget)) {
-        return [insertJSXElement(fixedElement, firstTarget, toInsert.importsToAdd ?? undefined)]
+        return [
+          insertJSXElement(
+            fixedElement,
+            firstTarget,
+            toInsert.importsToAdd ?? undefined,
+            insertionTarget.indexPosition,
+          ),
+        ]
       }
     }
 
     if (isInsertAsChildTarget(insertionTarget)) {
-      return [insertInsertable(childInsertionPath(firstTarget), toInsert, 'do-not-add', null)]
+      return [
+        insertInsertable(
+          childInsertionPath(firstTarget),
+          toInsert,
+          'do-not-add',
+          insertionTarget.indexPosition ?? null,
+        ),
+      ]
     }
 
     if (isConditionalTarget(insertionTarget)) {

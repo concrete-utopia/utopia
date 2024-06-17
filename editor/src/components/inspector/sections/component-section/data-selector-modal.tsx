@@ -153,21 +153,29 @@ export const DataSelectorModal = React.memo(
         e.preventDefault()
       }, [])
 
-      const applyVariable = React.useCallback(() => {
-        const variable = selectedVariableOption
-        if (variable == null) {
+      const altKeyPressedForceApplyMode = useAltKeyPressed()
+
+      const onApplyVariable = React.useCallback(
+        (variable: DataPickerOption) => {
+          if (!altKeyPressedForceApplyMode && variable.variableInfo.matches !== 'matches') {
+            return
+          }
+          onPropertyPicked(
+            jsExpressionOtherJavaScriptSimple(variable.variableInfo.expression, [
+              variable.definedElsewhere,
+            ]),
+          )
+          closePopup()
+        },
+        [closePopup, onPropertyPicked, altKeyPressedForceApplyMode],
+      )
+
+      const onApplySelectedVariable = React.useCallback(() => {
+        if (selectedVariableOption == null) {
           return
         }
-        if (variable.variableInfo.matches !== 'matches') {
-          return
-        }
-        onPropertyPicked(
-          jsExpressionOtherJavaScriptSimple(variable.variableInfo.expression, [
-            variable.definedElsewhere,
-          ]),
-        )
-        closePopup()
-      }, [closePopup, onPropertyPicked, selectedVariableOption])
+        onApplyVariable(selectedVariableOption)
+      }, [onApplyVariable, selectedVariableOption])
 
       const navigateToSearchResult = React.useCallback((variable: DataPickerOption) => {
         setSearchTerm(null)
@@ -237,12 +245,12 @@ export const DataSelectorModal = React.memo(
                       flexGrow: 1,
                       height: 24,
                       padding: '6px 8px',
-                      borderRadius: 4,
-                      gap: 8,
+                      borderRadius: 16,
+                      gap: 4,
                       border: `1px solid ${colorTheme.subduedBorder.value}`,
                     }}
                   >
-                    <LargerIcons.MagnifyingGlass style={{ zoom: 0.6 }} />
+                    <LargerIcons.MagnifyingGlass style={{ zoom: 0.5 }} />
                     <input
                       onClick={onStartSearch}
                       onFocus={onStartSearch}
@@ -255,6 +263,7 @@ export const DataSelectorModal = React.memo(
                         outline: 'none',
                         border: 'none',
                         paddingRight: 14,
+                        flex: 1,
                       }}
                     />
                     {when(
@@ -271,7 +280,6 @@ export const DataSelectorModal = React.memo(
                     flexGrow: 1,
                     overflow: 'hidden',
                     contain: 'content',
-                    borderTop: `1px solid ${colorTheme.subduedBorder.cssValue}`,
                   }}
                 >
                   {searchNullOrEmpty ? (
@@ -279,6 +287,7 @@ export const DataSelectorModal = React.memo(
                       activeScope={filteredVariablesInScope}
                       targetPathInsideScope={selectedVariableOption?.valuePath ?? []}
                       onTargetPathChange={setSelectedVariableOption}
+                      onApplySelection={onApplyVariable}
                     />
                   ) : (
                     <DataSelectorSearch
@@ -297,7 +306,6 @@ export const DataSelectorModal = React.memo(
                         justifyContent: 'space-between',
                         alignItems: 'center',
                         gap: 8,
-                        borderTop: `1px solid ${colorTheme.subduedBorder.cssValue}`,
                         paddingTop: 10,
                         paddingBottom: 10,
                         paddingRight: 16,
@@ -356,11 +364,15 @@ export const DataSelectorModal = React.memo(
                           height: 24,
                           width: 81,
                           textAlign: 'center',
-                          ...disabledButtonStyles(selectedVariableIsDisabled),
+                          ...disabledButtonStyles(
+                            !altKeyPressedForceApplyMode && selectedVariableIsDisabled,
+                          ),
                         }}
-                        onClick={applyVariable}
+                        onClick={onApplySelectedVariable}
                       >
-                        Apply
+                        {altKeyPressedForceApplyMode && selectedVariableIsDisabled
+                          ? 'Force Apply'
+                          : 'Apply'}
                       </div>
                     </FlexRow>
                   </>,
@@ -428,7 +440,7 @@ function useFilterVariablesInScope(
 
 function disabledButtonStyles(disabled: boolean): React.CSSProperties {
   return {
-    opacity: disabled ? 0.5 : 1,
+    opacity: disabled ? 0.3 : 1,
     cursor: disabled ? undefined : 'pointer',
   }
 }
@@ -472,4 +484,28 @@ function getVariableInScope(
     return null
   }
   return findOption(variablesInScope)
+}
+
+function useAltKeyPressed(): boolean {
+  const [altKeyPressed, setAltKeyPressed] = React.useState(false)
+  React.useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Alt') {
+        setAltKeyPressed(true)
+      }
+    }
+    function handleKeyUp(e: KeyboardEvent) {
+      if (e.key === 'Alt') {
+        setAltKeyPressed(false)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    window.addEventListener('keyup', handleKeyUp)
+    return function cleanup() {
+      window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('keyup', handleKeyUp)
+    }
+  }, [])
+
+  return altKeyPressed
 }

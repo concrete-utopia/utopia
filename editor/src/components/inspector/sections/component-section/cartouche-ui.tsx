@@ -87,7 +87,7 @@ export const CartoucheUI = React.forwardRef(
         <Tooltip title={tooltip ?? ''} disabled={tooltip == null}>
           <FlexRow
             style={{
-              cursor: 'pointer',
+              cursor: role === 'information' ? undefined : 'pointer',
               fontSize: 10,
               fontWeight: 400,
               padding: '0px 6px 0 4px',
@@ -145,6 +145,7 @@ export const CartoucheUI = React.forwardRef(
                 ...(role !== 'information' ? UtopiaStyles.fontStyles.monospaced : {}),
                 display: 'flex',
                 flexDirection: 'row',
+                alignItems: 'center',
               }}
             >
               {children}
@@ -258,17 +259,17 @@ function useCartoucheColors(source: CartoucheSource, highlight: CartoucheHighlig
                 ? colorTheme.whiteOpacity20.value
                 : highlight === 'subtle'
                 ? colorTheme.cartoucheLiteralHighlightDefault.value
-                : colorTheme.bg5.value,
+                : colorTheme.cartoucheLiteralHighlightDefault.value,
             hovered:
               highlight === 'strong'
                 ? colorTheme.whiteOpacity30.value
                 : highlight === 'subtle'
                 ? colorTheme.cartoucheLiteralHighlightHovered.value
-                : colorTheme.fg8.value,
+                : colorTheme.cartoucheLiteralHighlightHovered.value,
             selected:
               highlight === 'subtle'
                 ? colorTheme.cartoucheLiteralHighlightSelected.value
-                : colorTheme.fg6.value,
+                : colorTheme.cartoucheLiteralHighlightSelected.value,
           },
           icon: { default: 'secondary', hovered: 'secondary', selected: 'on-highlight-main' },
         }

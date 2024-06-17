@@ -15,10 +15,7 @@ import { useDispatch } from '../../../editor/store/dispatch-context'
 import type { JSExpressionOtherJavaScript } from '../../../../core/shared/element-template'
 import { replaceElementInScope } from '../../../editor/actions/action-creators'
 import { useAtom } from 'jotai'
-import {
-  DataPickerPreferredAllAtom,
-  jsxElementChildToValuePath,
-} from '../component-section/data-picker-utils'
+import { jsxElementChildToValuePath } from '../component-section/data-picker-utils'
 import {
   getCartoucheDataTypeForExpression,
   useVariablesInScopeForSelectedElement,
@@ -89,13 +86,7 @@ const MapListSourceCartoucheInner = React.memo(
       [dispatch, target],
     )
 
-    const [preferredAllState] = useAtom(DataPickerPreferredAllAtom)
-
-    const variableNamesInScope = useVariablesInScopeForSelectedElement(
-      target,
-      null,
-      preferredAllState,
-    )
+    const variableNamesInScope = useVariablesInScopeForSelectedElement(target, null)
 
     const pathToMappedExpression = React.useMemo(
       () =>

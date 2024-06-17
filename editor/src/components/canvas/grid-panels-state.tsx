@@ -18,6 +18,7 @@ import type {
 import {
   GridMenuMaxWidth,
   GridMenuMinWidth,
+  GridPaneMinWidth,
   GridPanelsNumberOfRows,
   IndexOfCanvas,
   NumberOfColumns,
@@ -340,7 +341,9 @@ export function useColumnWidths(): [
           })
         } else {
           // pane resize!
-          return immutableUpdate(current, { [columnIndex]: { paneWidth: { $set: newWidth } } })
+          return immutableUpdate(current, {
+            [columnIndex]: { paneWidth: { $set: Math.max(newWidth, GridPaneMinWidth) } },
+          })
         }
       })
     },

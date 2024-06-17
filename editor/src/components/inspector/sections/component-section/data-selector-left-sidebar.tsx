@@ -28,12 +28,11 @@ export const DataSelectorLeftSidebar = React.memo((props: DataSelectorLeftSideba
       onClick={stopPropagation}
       style={{
         alignSelf: 'stretch',
-        minWidth: 150,
-        paddingLeft: 16,
-        paddingTop: 8,
-        paddingRight: 8,
+        minWidth: 120,
+        padding: 16,
         borderRight: `1px solid ${colorTheme.subduedBorder.cssValue}`,
         contain: 'layout',
+        gap: 8,
       }}
     >
       <span style={{ fontSize: 10, fontWeight: 500, color: colorTheme.fg5.cssValue }}>Sources</span>
@@ -52,7 +51,7 @@ export const DataSelectorLeftSidebar = React.memo((props: DataSelectorLeftSideba
       </FlexColumn>
       <span
         style={{
-          marginTop: 32,
+          marginTop: 16,
           fontSize: 10,
           fontWeight: 500,
           color: colorTheme.fg5.cssValue,

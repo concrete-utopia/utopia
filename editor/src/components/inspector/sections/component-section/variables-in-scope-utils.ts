@@ -7,7 +7,7 @@ import type {
 import type { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
 import type { FileRootPath, VariableData, VariablesInScope } from '../../../canvas/ui-jsx-canvas'
 import { useEditorState, Substores } from '../../../editor/store/store-hook'
-import type { DataPickerFilterOption, DataPickerOption } from './data-picker-utils'
+import type { DataPickerOption } from './data-picker-utils'
 import * as EP from '../../../../core/shared/element-path'
 import * as PP from '../../../../core/shared/property-path'
 import React from 'react'
@@ -215,7 +215,7 @@ export function variableInfoFromValue(
   insertionCeiling: ElementPath | FileRootPath,
   valueStackSoFar: Set<any>,
 ): VariableInfo | null {
-  if (valueStackSoFar.has(value)) {
+  if ((typeof value === 'object' || typeof value === 'function') && valueStackSoFar.has(value)) {
     // prevent circular dependencies
     return null
   }
@@ -290,7 +290,7 @@ export function variableInfoFromValue(
         matches: 'does-not-match',
         props: mapDropNulls(([key, propValue]) => {
           return variableInfoFromValue(
-            `${expression}['${key}']`,
+            createPropertyAccessExpressionString(expression, key),
             key,
             propValue,
             insertionCeiling,
@@ -309,6 +309,17 @@ function variableInfoFromVariableData(variableNamesInScope: VariableData): Array
   )
 
   return info
+}
+
+const varSafeStringRegex = /^[a-zA-Z_$][0-9a-zA-Z_$]*$/
+
+function createPropertyAccessExpressionString(expressionSoFar: string, toAppend: string): string {
+  const toAppendIsVarsafeString = varSafeStringRegex.test(toAppend)
+  if (toAppendIsVarsafeString) {
+    return `${expressionSoFar}.${toAppend}`
+  } else {
+    return `${expressionSoFar}['${toAppend}']`
+  }
 }
 
 function getTargetPropertyFromControlDescription(
@@ -332,7 +343,6 @@ export function orderVariablesForRelevance(
   controlDescription: ControlDescription | null,
   currentPropertyValue: PropertyValue,
   targetPropertyName: string | null,
-  mode: DataPickerFilterOption,
 ): Array<VariableInfo> {
   let valuesExactlyMatchingPropertyName: Array<VariableInfo> = []
   let valuesExactlyMatchingPropertyDescription: Array<VariableInfo> = []
@@ -348,7 +358,6 @@ export function orderVariablesForRelevance(
         controlDescription,
         currentPropertyValue,
         targetPropertyName,
-        mode,
       )
     } else if (variable.type === 'object') {
       variable.props = orderVariablesForRelevance(
@@ -356,7 +365,6 @@ export function orderVariablesForRelevance(
         controlDescription,
         currentPropertyValue,
         targetPropertyName,
-        mode,
       )
     }
 
@@ -468,7 +476,6 @@ const keepLocalestScope =
 export function useVariablesInScopeForSelectedElement(
   elementPath: ElementPath | null,
   propertyPath: PropertyPath | null,
-  mode: DataPickerFilterOption,
 ): Array<DataPickerOption> {
   const variablesInScope = useEditorState(
     Substores.restOfEditor,
@@ -501,7 +508,6 @@ export function useVariablesInScopeForSelectedElement(
     }
 
     variablesInScopeForSelectedPath = [
-      mode === 'preferred' ? keepLocalestScope() : identity,
       filterKeyFromObject('className'),
       filterKeyFromObject('data-uid'),
       filterKeyFromObject('style'),
@@ -519,7 +525,6 @@ export function useVariablesInScopeForSelectedElement(
       controlDescriptions,
       currentPropertyValue,
       propertyPath == null ? null : '' + PP.lastPart(propertyPath),
-      mode,
     )
 
     return orderedVariablesInScope.flatMap((variable) =>
@@ -532,7 +537,7 @@ export function useVariablesInScopeForSelectedElement(
         false,
       ),
     )
-  }, [controlDescriptions, currentPropertyValue, mode, elementPath, variablesInScope, propertyPath])
+  }, [controlDescriptions, currentPropertyValue, elementPath, variablesInScope, propertyPath])
 
   return variableNamesInScope
 }
