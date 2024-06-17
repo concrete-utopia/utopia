@@ -90,6 +90,7 @@ describe('github helpers', () => {
 
         const got = await getRefreshGithubActions(
           mockDispatch,
+          'project-id',
           null,
           null,
           null,
@@ -146,6 +147,7 @@ describe('github helpers', () => {
 
         const got = await getRefreshGithubActions(
           mockDispatch,
+          'project-id',
           { owner: 'foo', repository: 'bar' },
           null,
           null,
@@ -201,6 +203,7 @@ describe('github helpers', () => {
 
         const got = await getRefreshGithubActions(
           mockDispatch,
+          'project-id',
           { owner: 'foo', repository: 'bar' },
           null,
           null,
