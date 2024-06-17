@@ -127,10 +127,14 @@ export interface GridRowProps extends React.InputHTMLAttributes<HTMLDivElement> 
    * alignItems: default value is 'center'
    */
   alignItems?: 'start' | 'center' | 'stretch'
+  /**
+   * alignContent: default value is 'center'
+   */
+  alignContent?: 'start' | 'center' | 'stretch'
 }
 
 export const UIGridRow = React.forwardRef<HTMLDivElement, React.PropsWithChildren<GridRowProps>>(
-  ({ tall, variant, alignItems, style, padded, children, ...props }, ref) => (
+  ({ tall, variant, alignItems, alignContent, style, padded, children, ...props }, ref) => (
     <div
       ref={ref}
       {...props}
@@ -142,6 +146,7 @@ export const UIGridRow = React.forwardRef<HTMLDivElement, React.PropsWithChildre
         gridColumnGap: 10,
         overflow: 'hidden',
         alignItems: alignItems ?? 'center',
+        alignContent: alignContent,
         ...gridTemplates[variant],
         ...(style as any), // TODO Emotion and React 18 types don't like each other
       }}
