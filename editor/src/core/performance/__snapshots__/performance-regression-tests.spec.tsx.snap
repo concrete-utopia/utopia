@@ -637,13 +637,6 @@ Array [
   "/UtopiaSpiedExoticType(Symbol(react.fragment))/PropertyLabel/Symbol(react.forward_ref)(EmotionCssPropInternal)/div",
   "/Symbol(react.provider)///Symbol(react.memo)(Inspector)",
   "/Symbol(react.provider)///Symbol(react.memo)()",
-  "/null/RowForControl/RowForBaseControl/Symbol(react.memo)(Symbol(react.forward_ref)())",
-  "/null/RowForControl/RowForBaseControl/UtopiaSpiedFunctionComponent(PropertyLabelAndPlusButton)",
-  "/null/RowForControl/RowForBaseControl/Symbol(react.memo)(PropertyLabel)",
-  "/null/RowForControl/RowForBaseControl/Symbol(react.memo)(ControlForProp)",
-  "/null/RowForControl/RowForBaseControl/div",
-  "/null/RowForControl/RowForBaseControl/Symbol(react.forward_ref)(UIGridRow)",
-  "/null/RowForControl/RowForBaseControl/UtopiaSpiedFunctionComponent(InspectorContextMenuWrapper)",
 ]
 `;
 

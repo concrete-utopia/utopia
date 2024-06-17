@@ -50,21 +50,6 @@ export interface JSXOption extends VariableOptionBase {
 
 export type DataPickerOption = PrimitiveOption | ArrayOption | ObjectOption | JSXOption
 
-const DataPickerFilterOptions = ['all', 'preferred'] as const
-export type DataPickerFilterOption = (typeof DataPickerFilterOptions)[number]
-export function dataPickerFilterOptionToString(mode: DataPickerFilterOption): string {
-  switch (mode) {
-    case 'all':
-      return 'All Data'
-    case 'preferred':
-      return 'Preferred'
-    default:
-      assertNever(mode)
-  }
-}
-
-export const DataPickerPreferredAllAtom = atom<DataPickerFilterOption>('all')
-
 export type DataPickerCallback = (e: JSExpressionOtherJavaScript) => void
 
 export type ObjectPath = Array<string | number>

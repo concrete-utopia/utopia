@@ -94,7 +94,7 @@ import {
 } from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import type { DataPickerCallback, DataPickerOption, ObjectPath } from './data-picker-utils'
-import { DataPickerPreferredAllAtom, jsxElementChildToValuePath } from './data-picker-utils'
+import { jsxElementChildToValuePath } from './data-picker-utils'
 import { jsxElementChildToText } from '../../../canvas/ui-jsx-canvas-renderer/jsx-element-child-to-text'
 import { stopPropagation } from '../../common/inspector-utils'
 import { IdentifierExpressionCartoucheControl } from './cartouche-control'
@@ -491,11 +491,9 @@ function useDataPickerButtonInComponentSection(
 ) {
   const dispatch = useDispatch()
 
-  const [preferredAllState] = useAtom(DataPickerPreferredAllAtom)
   const variableNamesInScope = useVariablesInScopeForSelectedElement(
     selectedViews.at(0) ?? EP.emptyElementPath,
     propertyPath,
-    preferredAllState,
   )
 
   const metadata = useEditorState(

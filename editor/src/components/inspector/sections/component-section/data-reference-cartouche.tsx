@@ -20,7 +20,7 @@ import {
   getCartoucheDataTypeForExpression,
   useVariablesInScopeForSelectedElement,
 } from './variables-in-scope-utils'
-import { DataPickerPreferredAllAtom, jsxElementChildToValuePath } from './data-picker-utils'
+import { jsxElementChildToValuePath } from './data-picker-utils'
 import { useAtom } from 'jotai'
 import type { CartoucheDataType, CartoucheHighlight, CartoucheUIProps } from './cartouche-ui'
 import { CartoucheUI } from './cartouche-ui'
@@ -106,13 +106,7 @@ export const DataReferenceCartoucheControl = React.memo(
         ? PP.create('children')
         : assertNever(props.renderedAt)
 
-    const [preferredAllState] = useAtom(DataPickerPreferredAllAtom)
-
-    const variableNamesInScope = useVariablesInScopeForSelectedElement(
-      elementPath,
-      propertyPath,
-      preferredAllState,
-    )
+    const variableNamesInScope = useVariablesInScopeForSelectedElement(elementPath, propertyPath)
 
     const pathToCurrenlySelectedValue = React.useMemo(
       () => jsxElementChildToValuePath(childOrAttribute),

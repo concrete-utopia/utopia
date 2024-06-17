@@ -1,15 +1,17 @@
+import type { PropsOf } from '@emotion/react'
 import styled from '@emotion/styled'
 import React from 'react'
 import { isPrefixOf } from '../../../../core/shared/array-utils'
 import { arrayEqualsByReference, assertNever } from '../../../../core/shared/utils'
-import { FlexColumn, FlexRow, colorTheme } from '../../../../uuiui'
+import { FlexColumn, FlexRow, Icons, colorTheme } from '../../../../uuiui'
 import type { ArrayOption, DataPickerOption, ObjectOption, ObjectPath } from './data-picker-utils'
 import { DataPickerCartouche } from './data-selector-cartouche'
 
 interface DataSelectorColumnsProps {
   activeScope: Array<DataPickerOption>
   targetPathInsideScope: ObjectPath
-  onTargetPathChange: (newTargetVariable: DataPickerOption) => void
+  onTargetPathChange: (newTargetVariable: DataPickerOption | null) => void
+  onApplySelection: (newTargetVariable: DataPickerOption) => void
 }
 
 export const DataSelectorColumns = React.memo((props: DataSelectorColumnsProps) => {
@@ -26,8 +28,10 @@ export const DataSelectorColumns = React.memo((props: DataSelectorColumnsProps) 
     >
       <DataSelectorColumn
         activeScope={props.activeScope}
+        parentScope={null}
         targetPathInsideScope={props.targetPathInsideScope}
         onTargetPathChange={props.onTargetPathChange}
+        onApplySelection={props.onApplySelection}
         currentlyShowingScopeForArray={false}
       />
     </FlexRow>
@@ -36,13 +40,21 @@ export const DataSelectorColumns = React.memo((props: DataSelectorColumnsProps) 
 
 interface DataSelectorColumnProps {
   activeScope: Array<DataPickerOption>
+  parentScope: DataPickerOption | null
   currentlyShowingScopeForArray: boolean
   targetPathInsideScope: ObjectPath
-  onTargetPathChange: (newTargetVariable: DataPickerOption) => void
+  onTargetPathChange: (newTargetVariable: DataPickerOption | null) => void
+  onApplySelection: (newTargetVariable: DataPickerOption) => void
 }
 
 const DataSelectorColumn = React.memo((props: DataSelectorColumnProps) => {
-  const { activeScope, targetPathInsideScope, currentlyShowingScopeForArray } = props
+  const {
+    activeScope,
+    parentScope,
+    onTargetPathChange,
+    targetPathInsideScope,
+    currentlyShowingScopeForArray,
+  } = props
 
   const elementOnSelectedPath: DataPickerOption | null =
     activeScope.find((option) => isPrefixOf(option.valuePath, targetPathInsideScope)) ?? null
@@ -72,9 +84,17 @@ const DataSelectorColumn = React.memo((props: DataSelectorColumnProps) => {
   const isLastColumn = nextColumnScope == null && nextColumnScopeValue == null
   const columnRef = useScrollIntoView(isLastColumn)
 
+  const onClickColumnBackground: React.MouseEventHandler<HTMLDivElement> = React.useCallback(
+    (e) => {
+      e.stopPropagation()
+      onTargetPathChange(parentScope)
+    },
+    [onTargetPathChange, parentScope],
+  )
+
   return (
     <>
-      <DataSelectorFlexColumn ref={columnRef}>
+      <DataSelectorFlexColumn ref={columnRef} onClick={onClickColumnBackground}>
         {activeScope.map((option, index) => {
           const selected = arrayEqualsByReference(option.valuePath, targetPathInsideScope)
           const onActivePath = isPrefixOf(option.valuePath, targetPathInsideScope)
@@ -82,11 +102,12 @@ const DataSelectorColumn = React.memo((props: DataSelectorColumnProps) => {
             <RowWithCartouche
               key={option.variableInfo.expression}
               data={option}
-              isLeaf={nextColumnScope == null}
+              isLeaf={!('children' in option)}
               selected={selected}
               onActivePath={onActivePath}
               forceShowArrow={pseudoSelectedElementForArray != null && index === 0}
               onTargetPathChange={props.onTargetPathChange}
+              onApplySelection={props.onApplySelection}
             />
           )
         })}
@@ -94,9 +115,11 @@ const DataSelectorColumn = React.memo((props: DataSelectorColumnProps) => {
       {nextColumnScope != null ? (
         <DataSelectorColumn
           activeScope={nextColumnScope.children}
+          parentScope={nextColumnScope}
           targetPathInsideScope={targetPathInsideScope}
           onTargetPathChange={props.onTargetPathChange}
           currentlyShowingScopeForArray={nextColumnScope.type === 'array'}
+          onApplySelection={props.onApplySelection}
         />
       ) : null}
       {nextColumnScopeValue != null ? <ValuePreviewColumn data={nextColumnScopeValue} /> : null}
@@ -112,7 +135,7 @@ const ValuePreviewColumn = React.memo((props: ValuePreviewColumnProps) => {
   const text = safeJSONStringify(props.data.variableInfo.value)
   const ref = useScrollIntoView(true)
   return (
-    <DataSelectorFlexColumn ref={ref}>
+    <DataSelectorFlexColumn ref={ref} style={{ paddingLeft: 6, paddingRight: 6 }}>
       <div
         style={{
           padding: 4,
@@ -157,9 +180,18 @@ interface RowWithCartoucheProps {
   forceShowArrow: boolean
   isLeaf: boolean
   onTargetPathChange: (newTargetVariable: DataPickerOption) => void
+  onApplySelection: (newTargetVariable: DataPickerOption) => void
 }
 const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
-  const { onTargetPathChange, data, isLeaf, selected, onActivePath, forceShowArrow } = props
+  const {
+    onTargetPathChange,
+    onApplySelection,
+    data,
+    isLeaf,
+    selected,
+    onActivePath,
+    forceShowArrow,
+  } = props
 
   const onClick: React.MouseEventHandler<HTMLDivElement> = React.useCallback(
     (e) => {
@@ -167,6 +199,14 @@ const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
       onTargetPathChange(data)
     },
     [data, onTargetPathChange],
+  )
+
+  const onDoubleClick: React.MouseEventHandler = React.useCallback(
+    (e) => {
+      e.stopPropagation()
+      onApplySelection(data)
+    },
+    [data, onApplySelection],
   )
 
   const ref = useScrollIntoView(selected)
@@ -178,18 +218,18 @@ const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
       style={{
         backgroundColor: onActivePath ? colorTheme.bg4.value : undefined,
       }}
-      disabled={false}
+      disabled={data.variableInfo.matches !== 'matches'}
     >
       <span>
-        <DataPickerCartouche data={data} selected={selected} />
+        <DataPickerCartouche data={data} selected={selected} onDoubleClick={onDoubleClick} />
       </span>
       <span
         style={{
           color: colorTheme.fg6.value,
-          opacity: !isLeaf && (onActivePath || forceShowArrow) ? 1 : 0,
+          opacity: !isLeaf ? 1 : 0,
         }}
       >
-        {'>'}
+        <Icons.ExpansionArrowRight style={{ zoom: 0.75 }} color='secondary' />
       </span>
     </DataPickerRow>
   )
@@ -204,21 +244,46 @@ const DataSelectorFlexColumn = styled(FlexColumn)({
   scrollbarWidth: 'auto',
   scrollbarColor: 'gray transparent',
   paddingTop: 8,
-  paddingRight: 10, // to account for scrollbar
-  paddingLeft: 6,
   paddingBottom: 10,
   borderRight: `1px solid ${colorTheme.subduedBorder.cssValue}`,
 })
 
-const DataPickerRow = styled(FlexRow)((props: { disabled: boolean }) => ({
-  alignSelf: 'stretch',
-  justifyContent: 'space-between',
-  fontSize: 10,
-  borderRadius: 4,
-  height: 24,
-  padding: 5,
-  cursor: !props.disabled ? 'pointer' : 'initial',
-}))
+const DataPickerRow = React.forwardRef<
+  HTMLDivElement,
+  React.PropsWithChildren<
+    PropsOf<typeof FlexRow> & {
+      disabled: boolean
+    }
+  >
+>((props, ref) => {
+  return (
+    <FlexRow
+      ref={ref}
+      onClick={props.onClick}
+      style={{
+        alignSelf: 'stretch',
+        height: 24,
+        paddingLeft: 6,
+        paddingRight: 10, // to account for scrollbar
+        cursor: !props.disabled ? 'pointer' : 'initial',
+      }}
+    >
+      <FlexRow
+        style={{
+          flexGrow: 1,
+          justifyContent: 'space-between',
+          height: 24,
+          borderRadius: 4,
+          fontSize: 10,
+          padding: 5,
+          ...props.style,
+        }}
+      >
+        {props.children}
+      </FlexRow>
+    </FlexRow>
+  )
+})
 
 function useScrollIntoView(shouldScroll: boolean) {
   const elementRef = React.useRef<HTMLDivElement>(null)

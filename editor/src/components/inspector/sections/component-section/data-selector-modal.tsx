@@ -153,21 +153,29 @@ export const DataSelectorModal = React.memo(
         e.preventDefault()
       }, [])
 
-      const applyVariable = React.useCallback(() => {
-        const variable = selectedVariableOption
-        if (variable == null) {
+      const altKeyPressedForceApplyMode = useAltKeyPressed()
+
+      const onApplyVariable = React.useCallback(
+        (variable: DataPickerOption) => {
+          if (!altKeyPressedForceApplyMode && variable.variableInfo.matches !== 'matches') {
+            return
+          }
+          onPropertyPicked(
+            jsExpressionOtherJavaScriptSimple(variable.variableInfo.expression, [
+              variable.definedElsewhere,
+            ]),
+          )
+          closePopup()
+        },
+        [closePopup, onPropertyPicked, altKeyPressedForceApplyMode],
+      )
+
+      const onApplySelectedVariable = React.useCallback(() => {
+        if (selectedVariableOption == null) {
           return
         }
-        if (variable.variableInfo.matches !== 'matches') {
-          return
-        }
-        onPropertyPicked(
-          jsExpressionOtherJavaScriptSimple(variable.variableInfo.expression, [
-            variable.definedElsewhere,
-          ]),
-        )
-        closePopup()
-      }, [closePopup, onPropertyPicked, selectedVariableOption])
+        onApplyVariable(selectedVariableOption)
+      }, [onApplyVariable, selectedVariableOption])
 
       const navigateToSearchResult = React.useCallback((variable: DataPickerOption) => {
         setSearchTerm(null)
@@ -280,6 +288,7 @@ export const DataSelectorModal = React.memo(
                       activeScope={filteredVariablesInScope}
                       targetPathInsideScope={selectedVariableOption?.valuePath ?? []}
                       onTargetPathChange={setSelectedVariableOption}
+                      onApplySelection={onApplyVariable}
                     />
                   ) : (
                     <DataSelectorSearch
@@ -357,11 +366,15 @@ export const DataSelectorModal = React.memo(
                           height: 24,
                           width: 81,
                           textAlign: 'center',
-                          ...disabledButtonStyles(selectedVariableIsDisabled),
+                          ...disabledButtonStyles(
+                            !altKeyPressedForceApplyMode && selectedVariableIsDisabled,
+                          ),
                         }}
-                        onClick={applyVariable}
+                        onClick={onApplySelectedVariable}
                       >
-                        Apply
+                        {altKeyPressedForceApplyMode && selectedVariableIsDisabled
+                          ? 'Force Apply'
+                          : 'Apply'}
                       </div>
                     </FlexRow>
                   </>,
@@ -429,7 +442,7 @@ function useFilterVariablesInScope(
 
 function disabledButtonStyles(disabled: boolean): React.CSSProperties {
   return {
-    opacity: disabled ? 0.5 : 1,
+    opacity: disabled ? 0.3 : 1,
     cursor: disabled ? undefined : 'pointer',
   }
 }
@@ -473,4 +486,28 @@ function getVariableInScope(
     return null
   }
   return findOption(variablesInScope)
+}
+
+function useAltKeyPressed(): boolean {
+  const [altKeyPressed, setAltKeyPressed] = React.useState(false)
+  React.useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Alt') {
+        setAltKeyPressed(true)
+      }
+    }
+    function handleKeyUp(e: KeyboardEvent) {
+      if (e.key === 'Alt') {
+        setAltKeyPressed(false)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    window.addEventListener('keyup', handleKeyUp)
+    return function cleanup() {
+      window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('keyup', handleKeyUp)
+    }
+  }, [])
+
+  return altKeyPressed
 }
