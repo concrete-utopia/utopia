@@ -46,7 +46,7 @@ export type BranchResponse = {
     originCommit: string
     content: ProjectContentTreeRoot
   } | null
-  noChanges: boolean
+  noChanges?: boolean
 }
 
 export function getBranchProjectContents(params: {
@@ -119,7 +119,6 @@ export function getBranchProjectContents(params: {
           originCommit: commit,
           content: projectContents,
         },
-        noChanges: false,
       })
     } finally {
       // 6. dispose of the zip file
