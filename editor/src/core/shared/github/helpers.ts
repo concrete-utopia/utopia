@@ -115,7 +115,7 @@ export interface BranchContent {
 
 export interface GetBranchContentSuccess {
   type: 'SUCCESS'
-  branch: BranchContent
+  branch: BranchContent | null
   noChanges: boolean
 }
 
@@ -1118,9 +1118,8 @@ async function updateUpstreamChanges(
       specificCommitSha: null,
     })
     if (branchContentResponse.type === 'SUCCESS') {
-      if (branchContentResponse.noChanges) {
-        upstreamChangesSuccess = true
-      } else {
+      upstreamChangesSuccess = true
+      if (branchContentResponse.branch != null) {
         const branchLatestChecksums = getProjectContentsChecksums(
           branchContentResponse.branch.content,
           {},

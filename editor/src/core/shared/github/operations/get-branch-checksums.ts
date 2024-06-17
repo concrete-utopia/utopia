@@ -22,7 +22,7 @@ export const getBranchChecksums =
       existingAssets: [],
     })
 
-    if (specificCommitResponse.type === 'SUCCESS') {
+    if (specificCommitResponse.type === 'SUCCESS' && specificCommitResponse.branch != null) {
       return [updateBranchContents(specificCommitResponse.branch.content)]
     }
     return []

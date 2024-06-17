@@ -90,16 +90,16 @@ export const updateProjectAgainstGithub =
 
         dispatch(
           [
+            updateGithubData({
+              upstreamChanges: null,
+              lastRefreshedCommit: branchLatestResponse.branch.originCommit,
+            }),
             updateBranchContents(parsedLatestContent),
             updateAgainstGithub(
               parsedLatestContent,
               specificCommitResponse.branch.content,
               branchLatestResponse.branch.originCommit,
             ),
-            updateGithubData({
-              upstreamChanges: null,
-              lastRefreshedCommit: branchLatestResponse.branch.originCommit,
-            }),
             showToast(
               notice(`Github: Updated the project against the branch ${branchName}.`, 'SUCCESS'),
             ),

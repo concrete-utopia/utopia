@@ -72,7 +72,7 @@ export const saveProjectToGithub =
             previousCommitSha: null,
             specificCommitSha: null,
           })
-          if (getBranchResponse.type === 'SUCCESS') {
+          if (getBranchResponse.type === 'SUCCESS' && getBranchResponse.branch != null) {
             originCommit = getBranchResponse.branch.originCommit
           }
         }

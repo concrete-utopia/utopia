@@ -45,7 +45,7 @@ export type BranchResponse = {
     branchName: string
     originCommit: string
     content: ProjectContentTreeRoot
-  }
+  } | null
   noChanges: boolean
 }
 
@@ -76,11 +76,7 @@ export function getBranchProjectContents(params: {
 
     if (params.previousCommitSha != null && commit === params.previousCommitSha) {
       return toApiSuccess({
-        branch: {
-          branchName: params.branch,
-          originCommit: params.previousCommitSha,
-          content: {},
-        },
+        branch: null,
         noChanges: true,
       })
     }
