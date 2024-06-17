@@ -16,9 +16,17 @@ import type { OptionsType } from 'react-select'
 import { unsetPropertyMenuItem } from '../../../common/context-menu-items'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { PropertyLabel } from '../../../widgets/property-label'
-import { PopupList, useWrappedEmptyOrUnknownOnSubmitValue, NumberInput } from '../../../../../uuiui'
+import {
+  PopupList,
+  useWrappedEmptyOrUnknownOnSubmitValue,
+  NumberInput,
+  Icons,
+} from '../../../../../uuiui'
 import { useContextSelector } from 'use-context-selector'
 import type { FlexDirection } from '../../../common/css-utils'
+import { when } from '../../../../../utils/react-conditionals'
+import { Substores, useEditorState } from '../../../../editor/store/store-hook'
+import { flexDirectionSelector } from '../../../inpector-selectors'
 
 type uglyLabel =
   | 'left'
@@ -169,6 +177,11 @@ export const FlexWrapControl = React.memo((props: FlexWrapControlProps) => {
     },
     [onSubmit],
   )
+  const flexDirection = useEditorState(
+    Substores.metadata,
+    flexDirectionSelector,
+    'FlexWrapControl flexDirection',
+  )
 
   return (
     <InspectorContextMenuWrapper
@@ -181,13 +194,17 @@ export const FlexWrapControl = React.memo((props: FlexWrapControlProps) => {
         width: undefined,
       }}
     >
-      <PopupList
-        value={FlexWrapOptions.find((option) => option.value === props.value)}
-        options={FlexWrapOptions}
-        onSubmitValue={onSubmitValue}
-        controlStyles={props.controlStyles}
-        style={{ background: 'transparent' }}
-      />
+      <UIGridRow padded={false} variant='<-auto-><----------1fr--------->'>
+        {when(flexDirection.startsWith('row'), <Icons.WrapRow />)}
+        {when(flexDirection.startsWith('column'), <Icons.WrapColumn />)}
+        <PopupList
+          value={FlexWrapOptions.find((option) => option.value === props.value)}
+          options={FlexWrapOptions}
+          onSubmitValue={onSubmitValue}
+          controlStyles={props.controlStyles}
+          style={{ background: 'transparent' }}
+        />
+      </UIGridRow>
     </InspectorContextMenuWrapper>
   )
 })
@@ -241,17 +258,17 @@ export const FlexGapControl = React.memo(() => {
     onUnsetValues,
   )
 
-  const targetPath = useContextSelector(InspectorPropsContext, (contextData) => {
-    return contextData.targetPath
-  })
-  const flexGapProp = React.useMemo(() => {
-    return [stylePropPathMappingFn('gap', targetPath)]
-  }, [targetPath])
+  const flexDirection = useEditorState(
+    Substores.metadata,
+    flexDirectionSelector,
+    'FlexGapControl flexDirection',
+  )
 
   return (
     <InspectorContextMenuWrapper id={`gap-context-menu`} items={menuItems} data={{}}>
       <UIGridRow padded={false} variant='<-auto-><----------1fr--------->'>
-        <PropertyLabel target={flexGapProp}>Gap</PropertyLabel>
+        {when(flexDirection.startsWith('row'), <Icons.GapHorizontal />)}
+        {when(flexDirection.startsWith('column'), <Icons.GapVertical />)}
         <NumberInput
           id='flex.container.gap'
           testId='flex.container.gap'

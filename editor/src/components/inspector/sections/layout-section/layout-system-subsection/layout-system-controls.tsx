@@ -7,7 +7,7 @@ import { mapArrayToDictionary } from '../../../../../core/shared/array-utils'
 import type { DetectedLayoutSystem } from '../../../../../core/shared/element-template'
 import { SettableLayoutSystem } from '../../../../../core/shared/element-template'
 import type { PropertyPath } from '../../../../../core/shared/project-file-types'
-import { FunctionIcons, SquareButton } from '../../../../../uuiui'
+import { FunctionIcons, Icons, SquareButton } from '../../../../../uuiui'
 import {
   getSizeUpdateCommandsForNewPadding,
   pixelPaddingFromPadding,
@@ -385,6 +385,15 @@ export const PaddingControl = React.memo(() => {
 
   return (
     <SplitChainedNumberInput
+      labels={{
+        oneValue: <Icons.Padding color='on-highlight-secondary' />,
+        horizontal: <Icons.PaddingHorizontal color='on-highlight-secondary' />,
+        vertical: <Icons.PaddingVertical color='on-highlight-secondary' />,
+        top: <Icons.PaddingTop color='on-highlight-secondary' />,
+        left: <Icons.PaddingLeft color='on-highlight-secondary' />,
+        bottom: <Icons.PaddingBottom color='on-highlight-secondary' />,
+        right: <Icons.PaddingRight color='on-highlight-secondary' />,
+      }}
       tooltips={{
         oneValue: 'Padding',
         perDirection: 'Padding per direction',
