@@ -77,6 +77,8 @@ export const CartoucheUI = React.forwardRef(
     // NOTE: this is currently unused, we should decide if we want to keep allowing deletion of the cartouches from here or not
     const wrappedOnDelete = useStopPropagation(onDelete)
 
+    const iconType = dataTypeToIconType(datatype)
+
     return (
       <div
         onClick={wrappedOnClick}
@@ -125,10 +127,12 @@ export const CartoucheUI = React.forwardRef(
                     },
             }}
           >
-            {source === 'inline-literal' ? null : (
+            {source === 'inline-literal' ? null : iconType === 'empty' ? (
+              <div style={{ width: 12, height: 12 }} />
+            ) : (
               <Icn
                 category='navigator-element'
-                type={dataTypeToIconType(datatype)}
+                type={iconType}
                 color={
                   selected || highlight === 'strong' ? colors.icon.selected : colors.icon.default
                 }
@@ -170,12 +174,14 @@ export const CartoucheUI = React.forwardRef(
   },
 )
 
-function dataTypeToIconType(dataType: CartoucheUIProps['datatype']): string {
+function dataTypeToIconType(
+  dataType: CartoucheUIProps['datatype'],
+): 'array' | 'object' | 'data' | 'empty' | 'dashedframe' {
   switch (dataType) {
     case 'renderable':
       return 'data'
     case 'boolean':
-      return '👻'
+      return 'empty'
     case 'array':
       return 'array'
     case 'object':
@@ -183,7 +189,7 @@ function dataTypeToIconType(dataType: CartoucheUIProps['datatype']): string {
     case 'promise':
       return 'dashedframe'
     case 'unknown':
-      return '👻'
+      return 'empty'
     default:
       assertNever(dataType)
   }
