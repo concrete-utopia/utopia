@@ -269,9 +269,9 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
           listIndex != null,
           <div
             style={{
-              position: 'absolute',
+              position: 'relative',
               top: 4,
-              right: 13,
+              right: 2,
               fontSize: 8,
               fontWeight: 700,
             }}
