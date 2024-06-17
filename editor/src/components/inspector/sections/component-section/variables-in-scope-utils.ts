@@ -676,10 +676,12 @@ export function getCartoucheDataTypeForExpression(
 ): CartoucheDataType {
   switch (expression.type) {
     case 'ATTRIBUTE_FUNCTION_CALL':
-    case 'ATTRIBUTE_NESTED_ARRAY':
-    case 'ATTRIBUTE_NESTED_OBJECT':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return 'unknown'
+    case 'ATTRIBUTE_NESTED_OBJECT':
+      return 'object'
+    case 'ATTRIBUTE_NESTED_ARRAY':
+      return 'array'
     case 'JSX_ELEMENT':
     case 'JSX_FRAGMENT':
     case 'JSX_MAP_EXPRESSION':
