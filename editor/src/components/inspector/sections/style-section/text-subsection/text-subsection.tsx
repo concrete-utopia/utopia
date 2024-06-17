@@ -438,7 +438,7 @@ export const TextSubsection = React.memo(() => {
               controlStatus={lineHeightMetadata.controlStatus}
               onSubmitValue={wrappedLineHeightOnSubmitValue}
               onTransientSubmitValue={wrappedLineHeightOnTransientSubmitValue}
-              DEPRECATED_labelBelow=<Icons.LineHeight color='on-highlight-secondary' />
+              DEPRECATED_labelBelow={<Icons.LineHeight color='on-highlight-secondary' />}
               stepSize={0.01}
               numberType='Length'
               defaultUnitToHide={'em'}
