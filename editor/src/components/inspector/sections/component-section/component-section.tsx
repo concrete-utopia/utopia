@@ -847,13 +847,13 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
             elementPath={selectedViews.at(0) ?? EP.emptyElementPath}
           />
         </UIGridRow>
-        <div
-          style={{
-            height: sectionHeight * springs.length,
-          }}
-        >
-          {when(
-            open,
+        {when(
+          open,
+          <div
+            style={{
+              height: sectionHeight * springs.length,
+            }}
+          >
             <div
               style={{
                 height: sectionHeight * springs.length,
@@ -874,9 +874,9 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
                   indentationLevel={props.indentationLevel}
                 />
               ))}
-            </div>,
-          )}
-        </div>
+            </div>
+          </div>,
+        )}
       </div>
     </React.Fragment>
   )
