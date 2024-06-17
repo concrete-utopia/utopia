@@ -414,7 +414,7 @@ export const TextSubsection = React.memo(() => {
               onSubmitValue={wrappedLetterSpacingOnSubmitValue}
               onTransientSubmitValue={wrappedLetterSpacingOnTransientSubmitValue}
               controlStatus={letterSpacingMetadata.controlStatus}
-              DEPRECATED_labelBelow=<Icons.LetterSpacing color='on-highlight-secondary' />
+              DEPRECATED_labelBelow={<Icons.LetterSpacing color='on-highlight-secondary' />}
               stepSize={0.01}
               numberType='Length'
               defaultUnitToHide={'px'}
