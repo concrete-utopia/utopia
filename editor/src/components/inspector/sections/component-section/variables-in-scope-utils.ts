@@ -13,7 +13,7 @@ import * as PP from '../../../../core/shared/property-path'
 import React from 'react'
 import { useGetPropertyControlsForSelectedComponents } from '../../common/property-controls-hooks'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
-import { assertNever, identity } from '../../../../core/shared/utils'
+import { assertNever } from '../../../../core/shared/utils'
 import { isValidReactNode } from '../../../../utils/react-utils'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { emptySet } from '../../../../core/shared/set-utils'
@@ -24,6 +24,8 @@ import { processJSPropertyAccessors } from '../../../../core/data-tracing/data-t
 import type { CartoucheDataType } from './cartouche-ui'
 import { jsxSimpleAttributeToValue } from '../../../../core/shared/jsx-attribute-utils'
 import type { ModifiableAttribute } from '../../../../core/shared/jsx-attributes'
+import { getComponentDescriptorForTarget } from '../../../../core/property-controls/property-controls-utils'
+import type { ComponentDescriptor } from '../../../custom-code/code-file'
 
 function valuesFromObject(
   variable: ArrayInfo | ObjectInfo,
@@ -163,6 +165,36 @@ function usePropertyControlDescriptions(
     (c) => c.controls[selectedProperty.propertyElements[0]] ?? [],
   )
   return controlForProp[0] ?? null
+}
+
+export type ChildrenDescriptionData = Pick<ComponentDescriptor, 'supportsChildren'>
+
+function useChildrenDescriptor(
+  elementPath: ElementPath | null, // nullable because of rules of hooks
+): ChildrenDescriptionData | null {
+  return useEditorState(
+    Substores.propertyControlsInfo,
+    (store) => {
+      if (elementPath == null) {
+        return null
+      }
+
+      const descriptor = getComponentDescriptorForTarget(
+        elementPath,
+        store.editor.propertyControlsInfo,
+        store.editor.projectContents,
+      )
+
+      if (descriptor == null) {
+        return null
+      }
+
+      return {
+        supportsChildren: descriptor.supportsChildren,
+      }
+    },
+    'useChildrenDescriptor',
+  )
 }
 
 export type VariableMatches = 'matches' | 'child-matches' | 'does-not-match'
@@ -343,6 +375,7 @@ export function orderVariablesForRelevance(
   controlDescription: ControlDescription | null,
   currentPropertyValue: PropertyValue,
   targetPropertyName: string | null,
+  childrenDescriptor: ChildrenDescriptionData | null,
 ): Array<VariableInfo> {
   let valuesExactlyMatchingPropertyName: Array<VariableInfo> = []
   let valuesExactlyMatchingPropertyDescription: Array<VariableInfo> = []
@@ -358,6 +391,7 @@ export function orderVariablesForRelevance(
         controlDescription,
         currentPropertyValue,
         targetPropertyName,
+        childrenDescriptor,
       )
     } else if (variable.type === 'object') {
       variable.props = orderVariablesForRelevance(
@@ -365,6 +399,7 @@ export function orderVariablesForRelevance(
         controlDescription,
         currentPropertyValue,
         targetPropertyName,
+        childrenDescriptor,
       )
     }
 
@@ -385,7 +420,9 @@ export function orderVariablesForRelevance(
       variableMatchesControlDescription(variable.value, targetControlDescription)
 
     const valueMatchesChildrenProp =
-      targetPropertyName === 'children' && isValidReactNode(variable.value)
+      targetPropertyName === 'children' &&
+      childrenDescriptor?.supportsChildren === true &&
+      isValidReactNode(variable.value)
 
     const valueMatchesCurrentPropValue =
       currentPropertyValue.type === 'existing' &&
@@ -443,36 +480,6 @@ const filterObjectPropFromVariablesInScope =
     return next
   }
 
-const keepLocalestScope =
-  () =>
-  (variablesInScope: VariableData): VariableData => {
-    let deepestInsertionCeiling = -Infinity
-    Object.values(variablesInScope).forEach((variable) => {
-      if (variable.insertionCeiling.type === 'file-root') {
-        return
-      }
-
-      deepestInsertionCeiling = Math.max(
-        deepestInsertionCeiling,
-        EP.fullDepth(variable.insertionCeiling),
-      )
-    })
-
-    const result: VariableData = {}
-    Object.entries(variablesInScope).forEach(([key, variable]) => {
-      if (variable.insertionCeiling.type === 'file-root') {
-        result[key] = variable
-        return
-      }
-
-      if (EP.fullDepth(variable.insertionCeiling) === deepestInsertionCeiling) {
-        result[key] = variable
-      }
-    })
-
-    return result
-  }
-
 export function useVariablesInScopeForSelectedElement(
   elementPath: ElementPath | null,
   propertyPath: PropertyPath | null,
@@ -485,6 +492,7 @@ export function useVariablesInScopeForSelectedElement(
 
   const controlDescriptions = usePropertyControlDescriptions(propertyPath)
   const currentPropertyValue = usePropertyValue(elementPath, propertyPath)
+  const children = useChildrenDescriptor(elementPath)
 
   const variableNamesInScope = React.useMemo((): Array<DataPickerOption> => {
     if (elementPath == null) {
@@ -525,6 +533,7 @@ export function useVariablesInScopeForSelectedElement(
       controlDescriptions,
       currentPropertyValue,
       propertyPath == null ? null : '' + PP.lastPart(propertyPath),
+      children,
     )
 
     return orderedVariablesInScope.flatMap((variable) =>
@@ -537,7 +546,14 @@ export function useVariablesInScopeForSelectedElement(
         false,
       ),
     )
-  }, [controlDescriptions, currentPropertyValue, elementPath, variablesInScope, propertyPath])
+  }, [
+    elementPath,
+    controlDescriptions,
+    currentPropertyValue,
+    propertyPath,
+    children,
+    variablesInScope,
+  ])
 
   return variableNamesInScope
 }
