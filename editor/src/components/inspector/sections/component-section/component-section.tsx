@@ -729,7 +729,6 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
     isScene,
     controlDescription,
   )
-  const indentation = props.indentationLevel * 8
 
   const propName = `${PP.lastPart(propPath)}`
   const propMetadata = useComponentPropsInspectorInfo(
@@ -745,7 +744,11 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
   )
 
   const [insertingRow, setInsertingRow] = React.useState(false)
-  const toggleInsertRow = React.useCallback(() => setInsertingRow((current) => !current), [])
+  const toggleInsertRow = React.useCallback((e: React.MouseEvent) => {
+    e.stopPropagation()
+    e.preventDefault()
+    setInsertingRow((current) => !current)
+  }, [])
 
   // Ensure the value is an array, just in case.
   const transformedValue = React.useMemo(() => {
@@ -801,6 +804,8 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
           style={{ padding: '3px 8px' }}
           variant='<--1fr--><--1fr-->'
           ref={dataPickerButtonData.setReferenceElement}
+          onClick={handleOnClick}
+          data-testid={`control-container-${title}`}
         >
           <PropertyLabelAndPlusButton
             title={title}
