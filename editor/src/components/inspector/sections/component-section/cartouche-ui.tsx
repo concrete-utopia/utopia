@@ -12,7 +12,13 @@ export interface HoverHandlers {
   onMouseLeave: (e: React.MouseEvent) => void
 }
 
-export type CartoucheDataType = 'renderable' | 'boolean' | 'array' | 'object' | 'unknown'
+export type CartoucheDataType =
+  | 'renderable'
+  | 'boolean'
+  | 'array'
+  | 'object'
+  | 'promise'
+  | 'unknown'
 
 export type CartoucheSource = 'internal' | 'external' | 'inline-literal' | 'literal-assignment'
 export type CartoucheHighlight = 'strong' | 'subtle' | 'disabled'
@@ -70,8 +76,6 @@ export const CartoucheUI = React.forwardRef(
 
     // NOTE: this is currently unused, we should decide if we want to keep allowing deletion of the cartouches from here or not
     const wrappedOnDelete = useStopPropagation(onDelete)
-
-    const shouldUseRtlCSS = typeof props.children === 'string'
 
     return (
       <div
@@ -176,8 +180,12 @@ function dataTypeToIconType(dataType: CartoucheUIProps['datatype']): string {
       return 'array'
     case 'object':
       return 'object'
+    case 'promise':
+      return 'dashedframe'
     case 'unknown':
       return '👻'
+    default:
+      assertNever(dataType)
   }
 }
 
