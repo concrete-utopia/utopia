@@ -1,6 +1,6 @@
 import { LiveObject, createClient } from '@liveblocks/client'
 import { createRoomContext } from '@liveblocks/react'
-import { UTOPIA_BACKEND, getProjectID, isBackendBFF } from './src/common/env-vars'
+import { UTOPIA_BACKEND, getProjectID } from './src/common/env-vars'
 import type { ActiveFrameAction } from './src/components/canvas/commands/set-active-frames-command'
 import {
   type CanvasRectangle,
@@ -26,7 +26,7 @@ async function authCall(room?: string) {
 
 export const liveblocksClient = createClient({
   throttle: liveblocksThrottle,
-  authEndpoint: isBackendBFF() ? authCall : '/v1/liveblocks/authentication',
+  authEndpoint: authCall,
   unstable_fallbackToHTTP: true,
   resolveUsers: async ({ userIds }) => {
     // Used only for Comments. Return a list of user information retrieved
@@ -107,7 +107,6 @@ type SceneIdToRouteMapping = LiveObject<{ [sceneId: string]: string }>
 export type Storage = {
   // author: LiveObject<{ firstName: string, lastName: string }>,
   // ...
-  collaborators: LiveObject<{ [userId: string]: User }> // TODO remove collaborators when the BFF is on
   userReadStatusesByThread: LiveObject<{ [threadId: string]: UserReadStatuses }>
   remixSceneRoutes: LiveObject<{ [userId: string]: SceneIdToRouteMapping }>
   connections: LiveObject<{ [userId: string]: ConnectionInfo[] }>
@@ -120,7 +119,6 @@ export type UserReadStatuses = LiveObject<UserReadStatusesMeta>
 
 export function initialStorage(): Storage {
   return {
-    collaborators: new LiveObject(), // TODO remove this when the BFF is on
     userReadStatusesByThread: new LiveObject(),
     remixSceneRoutes: new LiveObject(),
     connections: new LiveObject(),
