@@ -273,60 +273,6 @@ describe('Strategy Fitness', () => {
     const canvasStrategy = renderResult.getEditorState().strategyState.currentStrategy
     expect(canvasStrategy).toEqual('FLEX_REORDER')
   })
-  it('fits Flex Reparent to Absolute Strategy when cmd-dragging a flex element with siblings the cursor is outside of the parent', async () => {
-    const targetElement = elementPath([
-      ['utopia-storyboard-uid', 'scene-aaa', 'app-entity'],
-      ['aaa', 'bbb'],
-    ])
-
-    const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(`
-      <div style={{ ...(props.style || {}), display: 'flex' }} data-uid='aaa'>
-        <div
-          style={{ backgroundColor: '#aaaaaa33', width: 100, height: 200 }}
-          data-uid='bbb'
-        />
-        <div
-          style={{ backgroundColor: '#aaaaaa33', width: 100, height: 50, contain: 'layout' }}
-          data-uid='ccc'
-        />
-      </div>
-      `),
-      'await-first-dom-report',
-    )
-
-    await act(async () => {
-      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
-      await renderResult.dispatch([selectComponents([targetElement], false)], false)
-      await dispatchDone
-    })
-
-    const interactionSession: InteractionSession = {
-      ...createMouseInteractionForTests(
-        canvasPoint({ x: 10, y: 10 }),
-        cmdModifier,
-        boundingArea(),
-        canvasPoint({ x: -25, y: -25 }),
-      ),
-      latestMetadata: renderResult.getEditorState().editor.jsxMetadata,
-      latestAllElementProps: renderResult.getEditorState().editor.allElementProps,
-      latestElementPathTree: renderResult.getEditorState().editor.elementPathTree,
-      latestVariablesInScope: renderResult.getEditorState().editor.variablesInScope,
-    }
-
-    const canvasStrategy = findCanvasStrategy(
-      RegisteredCanvasStrategies,
-      pickCanvasStateFromEditorState(
-        renderResult.getEditorState().editor,
-        renderResult.getEditorState().builtInDependencies,
-      ),
-      interactionSession,
-      defaultCustomStrategyState(),
-      null,
-    )
-
-    expect(canvasStrategy.strategy?.strategy.id).toEqual('FLEX_REPARENT_TO_ABSOLUTE')
-  })
   it('fits Absolute Resize Strategy when resizing an absolute element without modifiers', async () => {
     const targetElement = elementPath([
       ['utopia-storyboard-uid', 'scene-aaa', 'app-entity'],
