@@ -654,7 +654,12 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
       data={null}
     >
       {dataPickerButtonData.popupIsOpen ? dataPickerButtonData.DataPickerComponent : null}
-      <UIGridRow padded={false} style={{ padding: '3px 8px' }} variant='<--1fr--><--1fr-->'>
+      <UIGridRow
+        padded={false}
+        alignContent='center'
+        style={{ padding: '3px 8px' }}
+        variant='<--1fr--><--1fr-->'
+      >
         {propertyLabel}
         <div
           style={{
