@@ -37,6 +37,7 @@ import {
   longhandShorthandEventHandler,
   SplitChainedNumberInput,
 } from '../../layout-section/layout-system-subsection/split-chained-number-input'
+import { Icons } from '../../../../../uuiui/icons'
 
 export const RadiusRow = React.memo(() => {
   const { value: borderRadiusValue, onUnsetValues } = useInspectorStyleInfo('borderRadius')
@@ -232,7 +233,7 @@ export const BorderRadiusControl = React.memo(() => {
 
   const isCmdPressedRef = useRefEditorState((store) => store.editor.keysPressed.cmd === true)
 
-  const onCylceMode = React.useCallback(
+  const onCycleMode = React.useCallback(
     () => cycleToNextMode(initialMode, isCmdPressedRef.current === true ? 'backward' : 'forward'),
     [cycleToNextMode, initialMode, isCmdPressedRef],
   )
@@ -242,16 +243,17 @@ export const BorderRadiusControl = React.memo(() => {
   return (
     <SplitChainedNumberInput
       labels={{
-        top: '╭',
-        bottom: '╯',
-        left: '╰',
-        right: '╮',
+        top: <Icons.BorderRadiusTopLeft color='on-highlight-secondary' />,
+        bottom: <Icons.BorderRadiusBottomRight color='on-highlight-secondary' />,
+        left: <Icons.BorderRadiusBottomLeft color='on-highlight-secondary' />,
+        right: <Icons.BorderRadiusTopRight color='on-highlight-secondary' />,
+        oneValue: <Icons.BorderRadius color='on-highlight-secondary' />,
       }}
       tooltips={{
         oneValue: 'Radius',
         perSide: 'Radius per corner',
       }}
-      onCycleMode={onCylceMode}
+      onCycleMode={onCycleMode}
       numberType={'LengthPercent'}
       name='radius'
       mode={modeToUse}

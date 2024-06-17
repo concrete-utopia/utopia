@@ -106,13 +106,13 @@ export interface SplitChainedNumberInputProps<T> {
   mode: ControlMode | null
   onCycleMode: () => void
   labels?: {
-    top?: string
-    bottom?: string
-    left?: string
-    right?: string
-    horizontal?: string
-    vertical?: string
-    oneValue?: string
+    top?: React.ReactChild
+    bottom?: React.ReactChild
+    left?: React.ReactChild
+    right?: React.ReactChild
+    horizontal?: React.ReactChild
+    vertical?: React.ReactChild
+    oneValue?: React.ReactChild
   }
   tooltips?: {
     oneValue?: string
