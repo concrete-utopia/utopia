@@ -3517,7 +3517,7 @@ export type CSSTextAlign = 'left' | 'right' | 'center' | 'justify' | 'start' | '
 
 export type CSSDirection = 'ltr' | 'rtl'
 
-export type CSSTextDecorationLine = string
+export type CSSTextDecorationLine = 'underline' | 'overline' | 'line-through' | 'none'
 
 export type CSSTextDecorationStyle = 'solid' | 'double' | 'dotted' | 'dashed' | 'wavy'
 
