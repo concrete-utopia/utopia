@@ -1,34 +1,29 @@
 import type { EditorAction } from '../../../../components/editor/action-types'
 import { updateBranchContents } from '../../../../components/editor/actions/action-creators'
+import { getBranchProjectContents } from '../../../../components/editor/server'
 import type { GithubRepo } from '../../../../components/editor/store/editor-state'
-import type { GetBranchContentResponse } from '../helpers'
-import { getBranchContentFromServer } from '../helpers'
 import type { GithubOperationContext } from './github-operation-context'
 
 export const getBranchChecksums =
   (operationContext: GithubOperationContext) =>
   async (
+    projectId: string,
     githubRepo: GithubRepo,
     branchName: string,
     commitSha: string,
   ): Promise<Array<EditorAction>> => {
-    const specificCommitRequest = getBranchContentFromServer(
-      githubRepo,
-      branchName,
-      commitSha,
-      null,
-      operationContext,
-    )
+    const specificCommitResponse = await getBranchProjectContents(operationContext)({
+      projectId: projectId,
+      repo: githubRepo.repository,
+      owner: githubRepo.owner,
+      branch: branchName,
+      specificCommitSha: commitSha,
+      previousCommitSha: null,
+      existingAssets: [],
+    })
 
-    const specificCommitResponse = await specificCommitRequest
-
-    if (specificCommitResponse.ok) {
-      const specificCommitContent: GetBranchContentResponse = await specificCommitResponse.json()
-      if (specificCommitContent.type === 'SUCCESS') {
-        if (specificCommitContent.branch != null) {
-          return [updateBranchContents(specificCommitContent.branch.content)]
-        }
-      }
+    if (specificCommitResponse.type === 'SUCCESS') {
+      return [updateBranchContents(specificCommitResponse.branch.content)]
     }
     return []
   }

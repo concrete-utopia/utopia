@@ -13,10 +13,10 @@ import type {
   PersistentModel,
 } from '../../../../components/editor/store/editor-state'
 import { projectGithubSettings } from '../../../../components/editor/store/editor-state'
-import type { GetBranchContentResponse, GithubFailure, GithubOperationSource } from '../helpers'
+import type { GithubFailure, GithubOperationSource } from '../helpers'
 import {
   dispatchPromiseActions,
-  getBranchContentFromServer,
+  getExistingAssets,
   githubAPIError,
   githubAPIErrorFromResponse,
   runGithubOperation,
@@ -24,6 +24,7 @@ import {
 import { getBranchesForGithubRepository } from './list-branches'
 import type { GithubOperationContext } from './github-operation-context'
 import { GithubEndpoints } from '../endpoints'
+import { getBranchProjectContents } from '../../../../components/editor/server'
 
 export interface SaveProjectToGithubOptions {
   branchName: string | null
@@ -62,18 +63,17 @@ export const saveProjectToGithub =
         // and avoid a fast forward error.
         let originCommit = persistentModel.githubSettings.originCommit
         if (originCommit == null && targetRepository != null && branchName != null) {
-          const getBranchResponse = await getBranchContentFromServer(
-            targetRepository,
-            branchName,
-            null,
-            null,
-            operationContext,
-          )
-          if (getBranchResponse.ok) {
-            const content: GetBranchContentResponse = await getBranchResponse.json()
-            if (content.type === 'SUCCESS' && content.branch != null) {
-              originCommit = content.branch.originCommit
-            }
+          const getBranchResponse = await getBranchProjectContents(operationContext)({
+            projectId: projectID,
+            repo: targetRepository.repository,
+            owner: targetRepository.owner,
+            existingAssets: getExistingAssets(persistentModel.projectContents),
+            branch: branchName,
+            previousCommitSha: null,
+            specificCommitSha: null,
+          })
+          if (getBranchResponse.type === 'SUCCESS') {
+            originCommit = getBranchResponse.branch.originCommit
           }
         }
 

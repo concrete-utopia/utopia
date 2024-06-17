@@ -10,15 +10,11 @@ import {
 } from '../../../../components/editor/actions/action-creators'
 import type { GithubOperation, GithubRepo } from '../../../../components/editor/store/editor-state'
 import { updateProjectContentsWithParseResults } from '../../parser-projectcontents-utils'
-import type { GetBranchContentResponse, GithubOperationSource } from '../helpers'
-import {
-  getBranchContentFromServer,
-  githubAPIError,
-  githubAPIErrorFromResponse,
-  runGithubOperation,
-} from '../helpers'
+import type { GithubOperationSource } from '../helpers'
+import { getExistingAssets, githubAPIError, runGithubOperation } from '../helpers'
 import { saveAssetsToProject } from './load-branch'
 import type { GithubOperationContext } from './github-operation-context'
+import { getBranchProjectContents } from '../../../../components/editor/server'
 
 export const updateProjectAgainstGithub =
   (operationContext: GithubOperationContext) =>
@@ -37,45 +33,38 @@ export const updateProjectAgainstGithub =
       dispatch,
       initiator,
       async (operation: GithubOperation) => {
-        const branchLatestRequest = getBranchContentFromServer(
-          githubRepo,
-          branchName,
-          null,
-          null,
-          operationContext,
-        )
-        const specificCommitRequest = getBranchContentFromServer(
-          githubRepo,
-          branchName,
-          commitSha,
-          null,
-          operationContext,
-        )
+        const existingAssets = getExistingAssets(currentProjectContents)
 
-        const branchLatestResponse = await branchLatestRequest
-        const specificCommitResponse = await specificCommitRequest
+        const branchLatestResponse = await getBranchProjectContents(operationContext)({
+          projectId: projectID,
+          repo: githubRepo.repository,
+          owner: githubRepo.owner,
+          branch: branchName,
+          specificCommitSha: null,
+          previousCommitSha: null,
+          existingAssets: existingAssets,
+        })
+        const specificCommitResponse = await getBranchProjectContents(operationContext)({
+          projectId: projectID,
+          repo: githubRepo.repository,
+          owner: githubRepo.owner,
+          branch: branchName,
+          specificCommitSha: commitSha,
+          previousCommitSha: null,
+          existingAssets: existingAssets,
+        })
 
-        if (!branchLatestResponse.ok) {
-          throw await githubAPIErrorFromResponse(operation, branchLatestResponse)
+        if (branchLatestResponse.type === 'FAILURE') {
+          throw githubAPIError(operation, branchLatestResponse.failureReason)
         }
-        if (!specificCommitResponse.ok) {
-          throw await githubAPIErrorFromResponse(operation, specificCommitResponse)
-        }
-
-        const branchLatestContent: GetBranchContentResponse = await branchLatestResponse.json()
-
-        if (branchLatestContent.type === 'FAILURE') {
-          throw githubAPIError(operation, branchLatestContent.failureReason)
-        }
-        if (branchLatestContent.branch == null) {
+        if (branchLatestResponse.branch == null) {
           throw githubAPIError(operation, `Could not find latest code for branch ${branchName}`)
         }
 
-        const specificCommitContent: GetBranchContentResponse = await specificCommitResponse.json()
-        if (specificCommitContent.type === 'FAILURE') {
-          throw githubAPIError(operation, specificCommitContent.failureReason)
+        if (specificCommitResponse.type === 'FAILURE') {
+          throw githubAPIError(operation, specificCommitResponse.failureReason)
         }
-        if (specificCommitContent.branch == null) {
+        if (specificCommitResponse.branch == null) {
           throw githubAPIError(
             operation,
             `Could not find commit ${commitSha} for branch ${branchName}`,
@@ -86,14 +75,14 @@ export const updateProjectAgainstGithub =
         // TODO: Ideally this should only do a partial parse based on what has changed.
         const parsedLatestContent = await updateProjectContentsWithParseResults(
           workers,
-          branchLatestContent.branch.content,
+          branchLatestResponse.branch.content,
         )
 
         // Save assets to the server from Github.
         await saveAssetsToProject(operationContext)(
           githubRepo,
           projectID,
-          branchLatestContent.branch,
+          branchLatestResponse.branch,
           dispatch,
           currentProjectContents,
           initiator,
@@ -104,12 +93,12 @@ export const updateProjectAgainstGithub =
             updateBranchContents(parsedLatestContent),
             updateAgainstGithub(
               parsedLatestContent,
-              specificCommitContent.branch.content,
-              branchLatestContent.branch.originCommit,
+              specificCommitResponse.branch.content,
+              branchLatestResponse.branch.originCommit,
             ),
             updateGithubData({
               upstreamChanges: null,
-              lastRefreshedCommit: branchLatestContent.branch.originCommit,
+              lastRefreshedCommit: branchLatestResponse.branch.originCommit,
             }),
             showToast(
               notice(`Github: Updated the project against the branch ${branchName}.`, 'SUCCESS'),
