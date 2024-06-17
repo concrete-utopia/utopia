@@ -91,6 +91,7 @@ import { useAtom } from 'jotai'
 import { RemixNavigationAtom } from './remix/utopia-remix-root-component'
 import { IS_TEST_ENVIRONMENT } from '../../common/env-vars'
 import { listenForReactRouterErrors } from '../../core/shared/runtime-report-logs'
+import { getFilePathMappings } from '../../core/model/project-file-utils'
 
 applyUIDMonkeyPatch()
 
@@ -100,9 +101,34 @@ export const ElementsToRerenderGLOBAL: { current: ElementsToRerender } = {
   current: 'rerender-all-elements',
 }
 
+export type FileRootPath = {
+  type: 'file-root'
+}
+
+export function insertionCeilingToString(insertionCeiling: ElementPath | FileRootPath): string {
+  if (insertionCeiling.type === 'file-root') {
+    return 'file-root'
+  } else {
+    return EP.toString(insertionCeiling)
+  }
+}
+
+export function insertionCeilingsEqual(
+  a: ElementPath | FileRootPath,
+  b: ElementPath | FileRootPath,
+): boolean {
+  if (a.type === 'file-root' && b.type === 'file-root') {
+    return true
+  } else if (a.type === 'file-root' || b.type === 'file-root') {
+    return false
+  } else {
+    return EP.pathsEqual(a, b)
+  }
+}
+
 export interface VariableMetadata {
   spiedValue: unknown
-  insertionCeiling: ElementPath | null
+  insertionCeiling: FileRootPath | ElementPath
 }
 
 export interface VariableData {
@@ -495,12 +521,15 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     validPaths: rootValidPathsSet,
   })
 
+  const filePathMappings = getFilePathMappings(projectContents)
+
   const rerenderUtopiaContextValue = useKeepShallowReferenceEquality({
     hiddenInstances: hiddenInstances,
     displayNoneInstances: displayNoneInstances,
     canvasIsLive: canvasIsLive,
     shouldIncludeCanvasRootInTheSpy: props.shouldIncludeCanvasRootInTheSpy,
     editedText: props.editedText,
+    filePathMappings: filePathMappings,
   })
 
   const utopiaProjectContextValue = useKeepShallowReferenceEquality({

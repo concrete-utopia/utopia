@@ -1,4 +1,6 @@
+import * as EP from '../../../../core/shared/element-path'
 import { maybeToArray } from '../../../../core/shared/optional-utils'
+import { emptySet } from '../../../../core/shared/set-utils'
 import type { ControlDescription } from '../../../custom-code/internal-property-controls'
 import type { PropertyValue, VariableInfo } from './variables-in-scope-utils'
 import { orderVariablesForRelevance, variableInfoFromValue } from './variables-in-scope-utils'
@@ -6,7 +8,13 @@ import { orderVariablesForRelevance, variableInfoFromValue } from './variables-i
 describe('orderVariablesForRelevance', () => {
   it('should be able to target a given property', () => {
     const variableNamesInScope: Array<VariableInfo> = maybeToArray(
-      variableInfoFromValue('style', 'style', { left: 300, position: 'relative' }),
+      variableInfoFromValue(
+        'style',
+        'style',
+        { left: 300, position: 'relative' },
+        EP.fromString('aaa'),
+        emptySet(),
+      ),
     )
     const controlDescription: ControlDescription = {
       control: 'object',
@@ -28,26 +36,49 @@ describe('orderVariablesForRelevance', () => {
       controlDescription,
       currentPropertyValue,
       targetPropertyName,
-      'all',
     )
     expect(actualResult).toMatchInlineSnapshot(`
       Array [
         Object {
           "expression": "style",
           "expressionPathPart": "style",
-          "matches": false,
+          "insertionCeiling": Object {
+            "parts": Array [
+              Array [
+                "aaa",
+              ],
+            ],
+            "type": "elementpath",
+          },
+          "matches": "child-matches",
           "props": Array [
             Object {
-              "expression": "style['left']",
+              "expression": "style.left",
               "expressionPathPart": "left",
-              "matches": true,
+              "insertionCeiling": Object {
+                "parts": Array [
+                  Array [
+                    "aaa",
+                  ],
+                ],
+                "type": "elementpath",
+              },
+              "matches": "matches",
               "type": "primitive",
               "value": 300,
             },
             Object {
-              "expression": "style['position']",
+              "expression": "style.position",
               "expressionPathPart": "position",
-              "matches": false,
+              "insertionCeiling": Object {
+                "parts": Array [
+                  Array [
+                    "aaa",
+                  ],
+                ],
+                "type": "elementpath",
+              },
+              "matches": "does-not-match",
               "type": "primitive",
               "value": "relative",
             },
@@ -63,7 +94,13 @@ describe('orderVariablesForRelevance', () => {
   })
   it('handles the case when not targeting a specific property', () => {
     const variableNamesInScope: Array<VariableInfo> = maybeToArray(
-      variableInfoFromValue('style', 'style', { left: 300, position: 'relative' }),
+      variableInfoFromValue(
+        'style',
+        'style',
+        { left: 300, position: 'relative' },
+        EP.fromString('aaa'),
+        emptySet(),
+      ),
     )
     const controlDescription: ControlDescription = {
       control: 'object',
@@ -85,26 +122,49 @@ describe('orderVariablesForRelevance', () => {
       controlDescription,
       currentPropertyValue,
       targetPropertyName,
-      'all',
     )
     expect(actualResult).toMatchInlineSnapshot(`
       Array [
         Object {
           "expression": "style",
           "expressionPathPart": "style",
-          "matches": true,
+          "insertionCeiling": Object {
+            "parts": Array [
+              Array [
+                "aaa",
+              ],
+            ],
+            "type": "elementpath",
+          },
+          "matches": "matches",
           "props": Array [
             Object {
-              "expression": "style['left']",
+              "expression": "style.left",
               "expressionPathPart": "left",
-              "matches": false,
+              "insertionCeiling": Object {
+                "parts": Array [
+                  Array [
+                    "aaa",
+                  ],
+                ],
+                "type": "elementpath",
+              },
+              "matches": "does-not-match",
               "type": "primitive",
               "value": 300,
             },
             Object {
-              "expression": "style['position']",
+              "expression": "style.position",
               "expressionPathPart": "position",
-              "matches": false,
+              "insertionCeiling": Object {
+                "parts": Array [
+                  Array [
+                    "aaa",
+                  ],
+                ],
+                "type": "elementpath",
+              },
+              "matches": "does-not-match",
               "type": "primitive",
               "value": "relative",
             },

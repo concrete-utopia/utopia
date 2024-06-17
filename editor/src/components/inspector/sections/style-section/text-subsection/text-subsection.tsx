@@ -414,7 +414,7 @@ export const TextSubsection = React.memo(() => {
               onSubmitValue={wrappedLetterSpacingOnSubmitValue}
               onTransientSubmitValue={wrappedLetterSpacingOnTransientSubmitValue}
               controlStatus={letterSpacingMetadata.controlStatus}
-              DEPRECATED_labelBelow='letter'
+              DEPRECATED_labelBelow=<Icons.LetterSpacing color='on-highlight-secondary' />
               stepSize={0.01}
               numberType='Length'
               defaultUnitToHide={'px'}
@@ -438,7 +438,7 @@ export const TextSubsection = React.memo(() => {
               controlStatus={lineHeightMetadata.controlStatus}
               onSubmitValue={wrappedLineHeightOnSubmitValue}
               onTransientSubmitValue={wrappedLineHeightOnTransientSubmitValue}
-              DEPRECATED_labelBelow='line'
+              DEPRECATED_labelBelow=<Icons.LineHeight color='on-highlight-secondary' />
               stepSize={0.01}
               numberType='Length'
               defaultUnitToHide={'em'}

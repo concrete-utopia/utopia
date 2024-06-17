@@ -116,6 +116,7 @@ export function convertScenesToUtopiaCanvasComponent(
     false,
     'var',
     'block',
+    [],
     null,
     [],
     jsxElement(

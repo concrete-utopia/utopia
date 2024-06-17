@@ -300,11 +300,6 @@ import type {
   CanvasCursor,
   CursorStackItem,
   CursorImportanceLevel,
-  FloatingInsertMenuStateClosed,
-  FloatingInsertMenuStateSwap,
-  FloatingInsertMenuStateWrap,
-  FloatingInsertMenuStateInsert,
-  FloatingInsertMenuState,
   EditorStateInspector,
   EditorStateFileBrowser,
   EditorStateDependencyList,
@@ -388,10 +383,6 @@ import {
   editorStateCanvas,
   cursorStackItem,
   canvasCursor,
-  floatingInsertMenuStateClosed,
-  floatingInsertMenuStateSwap,
-  floatingInsertMenuStateWrap,
-  floatingInsertMenuStateInsert,
   editorStateInspector,
   editorStateFileBrowser,
   editorStateDependencyList,
@@ -613,6 +604,8 @@ import type { OnlineState } from '../online-status'
 import { onlineState } from '../online-status'
 import type { NavigatorRow } from '../../navigator/navigator-row'
 import { condensedNavigatorRow, regularNavigatorRow } from '../../navigator/navigator-row'
+import type { SimpleFunctionWrap, FunctionWrap } from 'utopia-shared/src/types'
+import { simpleFunctionWrap, isSimpleFunctionWrap } from 'utopia-shared/src/types'
 
 export function ElementPropertyPathKeepDeepEquality(): KeepDeepEqualityCall<ElementPropertyPath> {
   return combine2EqualityCalls(
@@ -1579,8 +1572,29 @@ export function JSXElementChildKeepDeepEquality(): KeepDeepEqualityCall<JSXEleme
   }
 }
 
+export const SimpleFunctionWrapKeepDeepEquality: KeepDeepEqualityCall<SimpleFunctionWrap> =
+  combine1EqualityCall(
+    (wrap) => wrap.functionExpression,
+    JSExpressionKeepDeepEqualityCall,
+    simpleFunctionWrap,
+  )
+
+export const FunctionWrapKeepDeepEquality: KeepDeepEqualityCall<FunctionWrap> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'SIMPLE_FUNCTION_WRAP':
+      if (isSimpleFunctionWrap(newValue)) {
+        return SimpleFunctionWrapKeepDeepEquality(oldValue, newValue)
+      }
+      break
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
 export const UtopiaJSXComponentKeepDeepEquality: KeepDeepEqualityCall<UtopiaJSXComponent> =
-  combine10EqualityCalls(
+  combine11EqualityCalls(
     (component) => component.name,
     createCallWithTripleEquals(),
     (component) => component.isFunction,
@@ -1589,8 +1603,10 @@ export const UtopiaJSXComponentKeepDeepEquality: KeepDeepEqualityCall<UtopiaJSXC
     createCallWithTripleEquals(),
     (component) => component.blockOrExpression,
     createCallWithTripleEquals(),
-    (component) => component.param,
-    nullableDeepEquality(ParamKeepDeepEquality()),
+    (component) => component.functionWrapping,
+    arrayDeepEquality(FunctionWrapKeepDeepEquality),
+    (component) => component.params,
+    nullableDeepEquality(arrayDeepEquality(ParamKeepDeepEquality())),
     (component) => component.propsUsed,
     arrayDeepEquality(createCallWithTripleEquals()),
     (component) => component.rootElement,
@@ -3918,70 +3934,6 @@ export function IndexPositionKeepDeepEquality(
   return keepDeepEqualityResult(newValue, false)
 }
 
-// Here to cause the build to break if `FloatingInsertMenuStateClosed` is changed.
-floatingInsertMenuStateClosed()
-export const FloatingInsertMenuStateClosedKeepDeepEquality: KeepDeepEqualityCall<
-  FloatingInsertMenuStateClosed
-> = (oldValue, newValue) => {
-  return keepDeepEqualityResult(oldValue, true)
-}
-
-export const FloatingInsertMenuStateInsertKeepDeepEquality: KeepDeepEqualityCall<FloatingInsertMenuStateInsert> =
-  combine2EqualityCalls(
-    (menu) => menu.parentPath,
-    nullableDeepEquality(ElementPathKeepDeepEquality),
-    (menu) => menu.indexPosition,
-    nullableDeepEquality(IndexPositionKeepDeepEquality),
-    floatingInsertMenuStateInsert,
-  )
-
-// Here to cause the build to break if `FloatingInsertMenuStateConvert` is changed.
-floatingInsertMenuStateSwap()
-export const FloatingInsertMenuStateConvertKeepDeepEquality: KeepDeepEqualityCall<
-  FloatingInsertMenuStateSwap
-> = (oldValue, newValue) => {
-  return keepDeepEqualityResult(oldValue, true)
-}
-
-// Here to cause the build to break if `FloatingInsertMenuStateWrap` is changed.
-floatingInsertMenuStateWrap()
-export const FloatingInsertMenuStateWrapKeepDeepEquality: KeepDeepEqualityCall<
-  FloatingInsertMenuStateWrap
-> = (oldValue, newValue) => {
-  return keepDeepEqualityResult(oldValue, true)
-}
-
-export const FloatingInsertMenuStateKeepDeepEquality: KeepDeepEqualityCall<
-  FloatingInsertMenuState
-> = (oldValue, newValue) => {
-  switch (oldValue.insertMenuMode) {
-    case 'closed':
-      if (newValue.insertMenuMode === oldValue.insertMenuMode) {
-        return FloatingInsertMenuStateClosedKeepDeepEquality(oldValue, newValue)
-      }
-      break
-    case 'insert':
-      if (newValue.insertMenuMode === oldValue.insertMenuMode) {
-        return FloatingInsertMenuStateInsertKeepDeepEquality(oldValue, newValue)
-      }
-      break
-    case 'swap':
-      if (newValue.insertMenuMode === oldValue.insertMenuMode) {
-        return FloatingInsertMenuStateConvertKeepDeepEquality(oldValue, newValue)
-      }
-      break
-    case 'wrap':
-      if (newValue.insertMenuMode === oldValue.insertMenuMode) {
-        return FloatingInsertMenuStateWrapKeepDeepEquality(oldValue, newValue)
-      }
-      break
-    default:
-      const _exhaustiveCheck: never = oldValue
-      throw new Error(`Unhandled type ${JSON.stringify(oldValue)}`)
-  }
-  return keepDeepEqualityResult(newValue, false)
-}
-
 export const EditorStateInspectorKeepDeepEquality: KeepDeepEqualityCall<EditorStateInspector> =
   combine2EqualityCalls(
     (inspector) => inspector.visible,
@@ -4892,10 +4844,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.interfaceDesigner,
   )
   const canvasResults = EditorStateCanvasKeepDeepEquality(oldValue.canvas, newValue.canvas)
-  const floatingInsertMenuResults = FloatingInsertMenuStateKeepDeepEquality(
-    oldValue.floatingInsertMenu,
-    newValue.floatingInsertMenu,
-  )
   const inspectorResults = EditorStateInspectorKeepDeepEquality(
     oldValue.inspector,
     newValue.inspector,
@@ -5104,7 +5052,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     rightMenuResults.areEqual &&
     interfaceDesignerResults.areEqual &&
     canvasResults.areEqual &&
-    floatingInsertMenuResults.areEqual &&
     inspectorResults.areEqual &&
     fileBrowserResults.areEqual &&
     dependencyListResults.areEqual &&
@@ -5190,7 +5137,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       rightMenuResults.value,
       interfaceDesignerResults.value,
       canvasResults.value,
-      floatingInsertMenuResults.value,
       inspectorResults.value,
       fileBrowserResults.value,
       dependencyListResults.value,

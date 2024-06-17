@@ -154,6 +154,7 @@ function storyboardComponent(numberOfScenes: number): UtopiaJSXComponent {
     false,
     'var',
     'block',
+    [],
     null,
     [],
     jsxElement(
@@ -186,6 +187,7 @@ const originalModel = deepFreeze(
         true,
         'var',
         'block',
+        [],
         defaultPropsParam,
         [],
         jsxElement(
@@ -683,7 +685,7 @@ describe('INSERT_INSERTABLE', () => {
       'View',
       [],
       null,
-      null,
+      { type: 'file-root' },
       null,
     )
 

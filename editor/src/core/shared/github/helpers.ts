@@ -13,6 +13,7 @@ import {
   isProjectContentFile,
   projectContentDirectory,
   projectContentFile,
+  walkContentsTree,
 } from '../../../components/assets'
 import { notice } from '../../../components/common/notice'
 import type { EditorAction, EditorDispatch } from '../../../components/editor/action-types'
@@ -70,6 +71,8 @@ import { GithubEndpoints } from './endpoints'
 import { getAllComponentDescriptorFilePaths } from '../../property-controls/property-controls-local'
 import React from 'react'
 import { useDispatch } from '../../../components/editor/store/dispatch-context'
+import type { ExistingAsset } from '../../../components/editor/server'
+import { getBranchProjectContents } from '../../../components/editor/server'
 
 export function dispatchPromiseActions(
   dispatch: EditorDispatch,
@@ -113,6 +116,7 @@ export interface BranchContent {
 export interface GetBranchContentSuccess {
   type: 'SUCCESS'
   branch: BranchContent | null
+  noChanges?: boolean
 }
 
 export type GetBranchContentResponse = GetBranchContentSuccess | GithubFailure
@@ -293,7 +297,8 @@ export function connectRepo(
   ]
 }
 
-export async function getBranchContentFromServer(
+// TODO Remove this once we're positive it's all working fine with the replacement getBranchProjectContents
+export async function getBranchContentFromServer_DEPRECATED(
   githubRepo: GithubRepo,
   branchName: string | null,
   commitSha: string | null,
@@ -896,10 +901,20 @@ export function useGithubPolling() {
     (store) => store.derived.branchOriginContentsChecksums,
     'useGithubPolling branchOriginContentsChecksums',
   )
+  const projectId = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.id,
+    'useGithubPolling projectId',
+  )
 
   const refreshAndScheduleGithubData = React.useCallback(async () => {
+    if (projectId == null) {
+      return
+    }
+
     await refreshGithubData(
       dispatch,
+      projectId,
       githubData.targetRepository,
       githubData.branchName,
       branchOriginContentsChecksums,
@@ -916,7 +931,7 @@ export function useGithubPolling() {
     //     setTick((t) => t + 1)
     //   }, GITHUB_REFRESH_INTERVAL_MILLISECONDS),
     // )
-  }, [dispatch, branchOriginContentsChecksums, githubData])
+  }, [dispatch, branchOriginContentsChecksums, githubData, projectId])
 
   const authState = React.useMemo((): GithubAuthState => {
     if (!githubAuthenticated) {
@@ -981,6 +996,7 @@ export function useGithubPolling() {
 
 export async function getRefreshGithubActions(
   dispatch: EditorDispatch,
+  projectId: string,
   githubRepo: GithubRepo | null,
   branchName: string | null,
   branchOriginChecksums: FileChecksumsWithFile | null,
@@ -1015,6 +1031,7 @@ export async function getRefreshGithubActions(
         if (originCommitSha != null) {
           // 3. get the checksums
           const checksums = await getBranchChecksums(operationContext)(
+            projectId,
             githubRepo,
             branchName,
             originCommitSha,
@@ -1034,6 +1051,7 @@ export async function getRefreshGithubActions(
     }
     // 5. finally update upstream changes
     const upstreamChanges = await updateUpstreamChanges(
+      projectId,
       branchName,
       branchOriginChecksums,
       githubRepo,
@@ -1050,6 +1068,7 @@ export async function getRefreshGithubActions(
 
 export async function refreshGithubData(
   dispatch: EditorDispatch,
+  projectId: string,
   githubRepo: GithubRepo | null,
   branchName: string | null,
   branchOriginChecksums: FileChecksumsWithFile | null,
@@ -1061,6 +1080,7 @@ export async function refreshGithubData(
   try {
     const actions = await getRefreshGithubActions(
       dispatch,
+      projectId,
       githubRepo,
       branchName,
       branchOriginChecksums,
@@ -1078,6 +1098,7 @@ export async function refreshGithubData(
 }
 
 async function updateUpstreamChanges(
+  projectId: string,
   branchName: string | null,
   branchOriginChecksums: FileChecksumsWithFile | null,
   githubRepo: GithubRepo,
@@ -1087,19 +1108,21 @@ async function updateUpstreamChanges(
   const actions: Array<EditorAction> = []
   let upstreamChangesSuccess = false
   if (branchName != null && branchOriginChecksums != null) {
-    const branchContentResponse = await getBranchContentFromServer(
-      githubRepo,
-      branchName,
-      null,
-      previousCommitSha,
-      operationContext,
-    )
-    if (branchContentResponse.ok) {
-      const branchLatestContent: GetBranchContentResponse = await branchContentResponse.json()
-      if (branchLatestContent.type === 'SUCCESS' && branchLatestContent.branch != null) {
-        upstreamChangesSuccess = true
+    const branchContentResponse = await getBranchProjectContents(operationContext)({
+      projectId: projectId,
+      owner: githubRepo.owner,
+      repo: githubRepo.repository,
+      branch: branchName,
+      existingAssets: [],
+      previousCommitSha: previousCommitSha,
+      specificCommitSha: null,
+    })
+    if (branchContentResponse.type === 'SUCCESS') {
+      upstreamChangesSuccess =
+        branchContentResponse.noChanges === true || branchContentResponse.branch != null
+      if (branchContentResponse.branch != null) {
         const branchLatestChecksums = getProjectContentsChecksums(
-          branchLatestContent.branch.content,
+          branchContentResponse.branch.content,
           {},
         )
         const upstreamChanges = deriveGithubFileChanges(
@@ -1110,13 +1133,10 @@ async function updateUpstreamChanges(
         actions.push(
           updateGithubData({
             upstreamChanges: upstreamChanges,
-            lastRefreshedCommit: branchLatestContent.branch.originCommit,
+            lastRefreshedCommit: branchContentResponse.branch.originCommit,
           }),
         )
       }
-    } else if (branchContentResponse.status === 304) {
-      // Not modified status means that the branch has the same commit SHA.
-      upstreamChangesSuccess = true
     }
   }
   if (!upstreamChangesSuccess) {
@@ -1276,3 +1296,13 @@ export const resolveConflict =
         throw new Error(`Unhandled conflict ${JSON.stringify(conflict)}`)
     }
   }
+
+export function getExistingAssets(currentProjectContents: ProjectContentTreeRoot): ExistingAsset[] {
+  let existingAssets: ExistingAsset[] = []
+  walkContentsTree(currentProjectContents, (path, file) => {
+    if (file.type === 'ASSET_FILE' || file.type === 'IMAGE_FILE') {
+      existingAssets.push({ gitBlobSha: file.gitBlobSha, path: path, type: file.type })
+    }
+  })
+  return existingAssets
+}

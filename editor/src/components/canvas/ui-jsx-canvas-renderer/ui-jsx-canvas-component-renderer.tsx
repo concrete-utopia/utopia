@@ -3,6 +3,7 @@ import type { MapLike } from 'typescript'
 import type {
   EarlyReturn,
   JSXElementChild,
+  Param,
   UtopiaJSXComponent,
 } from '../../../core/shared/element-template'
 import {
@@ -48,6 +49,7 @@ import type { ComponentRendererComponent } from './component-renderer-component'
 import { mapArrayToDictionary } from '../../../core/shared/array-utils'
 import { assertNever } from '../../../core/shared/utils'
 import { addFakeSpyEntry } from './ui-jsx-canvas-spy-wrapper'
+import type { FilePathMappings } from '../../../core/model/project-file-utils'
 
 function tryToGetInstancePath(
   maybePath: ElementPath | null,
@@ -68,12 +70,32 @@ export function createComponentRendererComponent(params: {
   filePath: string
   mutableContextRef: React.MutableRefObject<MutableUtopiaCtxRefData>
 }): ComponentRendererComponent {
-  const Component = (realPassedPropsIncludingUtopiaSpecialStuff: any) => {
+  const Component = (...functionArguments: Array<any>) => {
+    // Attempt to determine which function argument is the "regular" props object/value.
+    // Default it to the first if one is not identified by looking for some of our special keys.
+    let regularPropsArgumentIndex: number = functionArguments.findIndex((functionArgument) => {
+      if (
+        typeof functionArgument === 'object' &&
+        functionArgument != null &&
+        !Array.isArray(functionArgument)
+      ) {
+        return UTOPIA_INSTANCE_PATH in functionArgument || UTOPIA_PATH_KEY in functionArgument
+      } else {
+        return false
+      }
+    })
+    if (regularPropsArgumentIndex < 0) {
+      regularPropsArgumentIndex = 0
+    }
     const {
       [UTOPIA_INSTANCE_PATH]: instancePathAny, // TODO types?
       [UTOPIA_PATH_KEY]: pathsString, // TODO types?
       ...realPassedProps
-    } = realPassedPropsIncludingUtopiaSpecialStuff
+    } = functionArguments[regularPropsArgumentIndex]
+
+    // We want to strip the instance path and path from the props that we pass to the component.
+    let slightlyStrippedFunctionsArguments = [...functionArguments]
+    slightlyStrippedFunctionsArguments[regularPropsArgumentIndex] = realPassedProps
 
     const mutableContext = params.mutableContextRef.current[params.filePath].mutableContext
 
@@ -130,6 +152,8 @@ export function createComponentRendererComponent(params: {
       instancePath,
     )
 
+    // TODO we should throw an error if rootElementPath is null
+
     let codeError: Error | null = null
 
     const appliedProps = optionalMap(
@@ -137,7 +161,7 @@ export function createComponentRendererComponent(params: {
         applyPropsParamToPassedProps(
           mutableContext.rootScope,
           rootElementPath,
-          realPassedProps,
+          slightlyStrippedFunctionsArguments,
           param,
           {
             requireResult: mutableContext.requireResult,
@@ -157,12 +181,13 @@ export function createComponentRendererComponent(params: {
             code: code,
             highlightBounds: highlightBounds,
             editedText: rerenderUtopiaContext.editedText,
-            variablesInScope: {},
+            variablesInScope: mutableContext.spiedVariablesDeclaredInRootScope,
+            filePathMappings: rerenderUtopiaContext.filePathMappings,
           },
           undefined,
           codeError,
         ),
-      utopiaJsxComponent.param,
+      utopiaJsxComponent.params,
     ) ?? { props: realPassedProps }
 
     let scope: MapLike<any> = {
@@ -170,20 +195,18 @@ export function createComponentRendererComponent(params: {
       ...appliedProps,
     }
 
-    let spiedVariablesInScope: VariableData = {}
-    if (utopiaJsxComponent.param != null) {
-      spiedVariablesInScope = mapArrayToDictionary(
-        propertiesExposedByParam(utopiaJsxComponent.param),
-        (paramName) => {
-          return paramName
-        },
-        (paramName) => {
-          return {
+    let spiedVariablesInScope: VariableData = {
+      ...mutableContext.spiedVariablesDeclaredInRootScope,
+    }
+    if (rootElementPath != null && utopiaJsxComponent.params != null) {
+      for (const param of utopiaJsxComponent.params) {
+        propertiesExposedByParam(param).forEach((paramName) => {
+          spiedVariablesInScope[paramName] = {
             spiedValue: scope[paramName],
-            insertionCeiling: instancePath,
+            insertionCeiling: rootElementPath,
           }
-        },
-      )
+        })
+      }
     }
 
     // Protect against infinite recursion by taking the view that anything
@@ -228,6 +251,7 @@ export function createComponentRendererComponent(params: {
       code: code,
       highlightBounds: highlightBounds,
       editedText: rerenderUtopiaContext.editedText,
+      filePathMappings: rerenderUtopiaContext.filePathMappings,
     }
 
     const buildResult = React.useRef<React.ReactElement | null>(null)
@@ -256,6 +280,7 @@ export function createComponentRendererComponent(params: {
       applyBlockReturnFunctions(scope)
 
       const arbitraryBlockResult = runBlockUpdatingScope(
+        rootElementPath,
         params.filePath,
         mutableContext.requireResult,
         utopiaJsxComponent.arbitraryJSBlock,
@@ -264,15 +289,18 @@ export function createComponentRendererComponent(params: {
 
       switch (arbitraryBlockResult.type) {
         case 'ARBITRARY_BLOCK_RAN_TO_END':
-          spiedVariablesInScope = {
-            ...spiedVariablesInScope,
-            ...objectMap(
-              (spiedValue) => ({
-                spiedValue: spiedValue,
-                insertionCeiling: instancePath,
-              }),
-              arbitraryBlockResult.scope,
-            ),
+          if (rootElementPath != null) {
+            spiedVariablesInScope = {
+              ...spiedVariablesInScope,
+              ...arbitraryBlockResult.spiedVariablesDeclaredWithinBlock,
+              ...objectMap(
+                (spiedValue) => ({
+                  spiedValue: spiedValue,
+                  insertionCeiling: rootElementPath,
+                }),
+                arbitraryBlockResult.scope,
+              ),
+            }
           }
           break
         case 'EARLY_RETURN_VOID':

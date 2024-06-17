@@ -6,7 +6,6 @@ import {
 } from '../../core/property-controls/property-controls-utils'
 import type {
   JSXAttributes,
-  JSXElementChild,
   JSXMapExpressionWithoutUID,
   UtopiaJSXComponent,
 } from '../../core/shared/element-template'
@@ -14,7 +13,6 @@ import {
   emptyComments,
   functionParam,
   jsExpressionOtherJavaScript,
-  jsExpressionOtherJavaScriptSimple,
   jsExpressionValue,
   jsxAttributesFromMap,
   jsxConditionalExpressionWithoutUID,
@@ -64,6 +62,7 @@ import { elementUsesProperty } from '../../core/model/element-template-utils'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../../core/shared/dom-utils'
 import { getTopLevelElementByExportsDetail } from '../../core/model/project-file-utils'
 import { type Icon } from 'utopia-api'
+import type { FileRootPath } from '../canvas/ui-jsx-canvas'
 
 export type StylePropOption = 'do-not-add' | 'add-size'
 
@@ -73,7 +72,7 @@ export interface InsertableComponent {
   name: string
   stylePropOptions: Array<StylePropOption>
   defaultSize: Size | null
-  insertionCeiling: ElementPath | null
+  insertionCeiling: ElementPath | FileRootPath
   icon: Icon | null
 }
 
@@ -83,7 +82,7 @@ export function insertableComponent(
   name: string,
   stylePropOptions: Array<StylePropOption>,
   defaultSize: Size | null,
-  insertionCeiling: ElementPath | null,
+  insertionCeiling: ElementPath | FileRootPath,
   icon: Icon | null,
 ): InsertableComponent {
   const component = {
@@ -307,7 +306,7 @@ export function insertableVariable(
   variableType: InsertableVariableType,
   depth: number,
   originalName: string,
-  insertionCeiling: ElementPath | null,
+  insertionCeiling: ElementPath | FileRootPath,
 ): InsertableVariable {
   return {
     ...insertableComponent(
@@ -655,7 +654,7 @@ export function moveSceneToTheBeginningAndSetDefaultSize(
             scene.name,
             scene.stylePropOptions,
             size(SceneDefaultWidth, SceneDefaultHeight),
-            null,
+            { type: 'file-root' },
             null,
           ),
         ],
@@ -670,7 +669,14 @@ function isDescriptorEligibleForMode(
   insertMenuMode: InsertMenuMode,
   component: ComponentDescriptor,
 ): boolean {
-  return insertMenuMode === 'wrap' ? component.supportsChildren : true
+  if (insertMenuMode === 'wrap') {
+    return (
+      component.supportsChildren ||
+      // in case it's a map ("List") we can handle wrapping even though it doesn't natively "support" children
+      component.variants.every((variant) => variant.elementToInsert().type === 'JSX_MAP_EXPRESSION')
+    )
+  }
+  return true
 }
 
 function isUtopiaJSXComponentEligibleForMode(
@@ -680,8 +686,8 @@ function isUtopiaJSXComponentEligibleForMode(
   if (insertMenuMode === 'wrap') {
     return (
       element != null &&
-      element.param != null &&
-      elementUsesProperty(element.rootElement, element.param, 'children')
+      element.params != null &&
+      elementUsesProperty(element.rootElement, element.params, 'children')
     )
   }
   return true
@@ -739,7 +745,7 @@ export function getComponentGroups(
                   insertOption.insertMenuLabel,
                   stylePropOptions,
                   null,
-                  null,
+                  { type: 'file-root' },
                   descriptor.icon,
                 ),
               )
@@ -755,7 +761,7 @@ export function getComponentGroups(
                 exportedComponent.listingName,
                 stylePropOptions,
                 null,
-                null,
+                { type: 'file-root' },
                 null,
               ),
             )
@@ -793,7 +799,7 @@ export function getComponentGroups(
               insertOption.insertMenuLabel,
               stylePropOptions,
               defaultSize ?? null,
-              null,
+              { type: 'file-root' },
               component.icon,
             ),
           )

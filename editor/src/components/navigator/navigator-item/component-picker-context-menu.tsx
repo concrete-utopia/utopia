@@ -16,8 +16,6 @@ import {
   jsxElementFromJSXElementWithoutUID,
   jsxElementNameFromString,
   getJSXElementNameLastPart,
-  setJSXAttributesAttribute,
-  jsExpressionValue,
   isIntrinsicHTMLElement,
 } from '../../../core/shared/element-template'
 import type { ElementPath, Imports } from '../../../core/shared/project-file-types'
@@ -31,8 +29,10 @@ import {
   insertJSXElement,
   replaceJSXElement,
   replaceMappedElement,
+  selectComponents,
   setProp_UNSAFE,
   showToast,
+  switchEditorMode,
   wrapInElement,
 } from '../../editor/actions/action-creators'
 import * as EP from '../../../core/shared/element-path'
@@ -75,17 +75,23 @@ import {
   replaceWithSingleElement,
 } from '../../editor/store/insertion-path'
 import { mapComponentInfo, type InsertableComponent } from '../../shared/project-components'
-import type { ConditionalCase } from '../../../core/model/conditionals'
+import {
+  getConditionalClausePathFromMetadata,
+  type ConditionalCase,
+} from '../../../core/model/conditionals'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { absolute } from '../../../utils/utils'
 import { notice } from '../../common/notice'
 import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
-import { emptyComments } from 'utopia-shared/src/types'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../../../core/shared/dom-utils'
-import { emptyImports } from '../../../core/workers/common/project-file-utils'
 import { commandsForFirstApplicableStrategy } from '../../../components/inspector/inspector-strategies/inspector-strategy'
 import { wrapInDivStrategy } from '../../../components/editor/wrap-in-callbacks'
 import type { AllElementProps } from '../../../components/editor/store/editor-state'
+import { EditorModes } from '../../editor/editor-modes'
+import {
+  conditionalOverrideUpdateForPath,
+  getConditionalOverrideActions,
+} from './navigator-item-clickable-wrapper'
 
 type RenderPropTarget = { type: 'render-prop'; prop: string }
 type ConditionalTarget = { type: 'conditional'; conditionalCase: ConditionalCase }
@@ -323,6 +329,8 @@ export const useCreateCallbackToShowComponentPicker =
       propertyControlsInfo: store.editor.propertyControlsInfo,
     }))
 
+    const dispatch = useDispatch()
+
     return React.useCallback(
       (
           selectedViews: ElementPath[],
@@ -374,8 +382,32 @@ export const useCreateCallbackToShowComponentPicker =
           setContextMenuProps({ targets: selectedViews, insertionTarget: insertionTarget })
           const show = pickerType === 'preferred' ? showPreferred : showFull
           show({ ...params, event })
+
+          // conditional slots should get selected as a result, since this action would supersede
+          // the navigator's selection handling.
+          if (isConditionalTarget(insertionTarget)) {
+            let elementsToSelect: ElementPath[] = []
+            let overrideActions: EditorAction[] = []
+            for (const view of selectedViews) {
+              const clause = getConditionalClausePathFromMetadata(
+                view,
+                editorRef.current.jsxMetadata,
+                insertionTarget.conditionalCase,
+              )
+              if (clause != null) {
+                elementsToSelect.push(clause)
+                overrideActions.push(
+                  ...getConditionalOverrideActions(
+                    view,
+                    conditionalOverrideUpdateForPath(clause, editorRef.current.jsxMetadata),
+                  ),
+                )
+              }
+            }
+            dispatch([...overrideActions, selectComponents(elementsToSelect, false)])
+          }
         },
-      [editorRef, showPreferred, showFull, setContextMenuProps],
+      [editorRef, showPreferred, showFull, setContextMenuProps, dispatch],
     )
   }
 
@@ -468,7 +500,7 @@ function moreItem(
   }
 }
 
-function insertComponentPickerItem(
+export function insertComponentPickerItem(
   toInsert: InsertableComponent,
   targets: ElementPath[],
   projectContents: ProjectContentTreeRoot,
@@ -550,12 +582,26 @@ function insertComponentPickerItem(
       }
 
       if (!isConditionalTarget(insertionTarget)) {
-        return [insertJSXElement(fixedElement, firstTarget, toInsert.importsToAdd ?? undefined)]
+        return [
+          insertJSXElement(
+            fixedElement,
+            firstTarget,
+            toInsert.importsToAdd ?? undefined,
+            insertionTarget.indexPosition,
+          ),
+        ]
       }
     }
 
     if (isInsertAsChildTarget(insertionTarget)) {
-      return [insertInsertable(childInsertionPath(firstTarget), toInsert, 'do-not-add', null)]
+      return [
+        insertInsertable(
+          childInsertionPath(firstTarget),
+          toInsert,
+          'do-not-add',
+          insertionTarget.indexPosition ?? null,
+        ),
+      ]
     }
 
     if (isConditionalTarget(insertionTarget)) {
@@ -641,7 +687,7 @@ function insertComponentPickerItem(
     ]
   })()
 
-  dispatch(actions)
+  dispatch(actions.concat(switchEditorMode(EditorModes.selectMode(null, false, 'none'))))
 }
 
 function toastMessage(insertionTarget: InsertionTarget, toInsert: InsertableComponent) {
@@ -681,7 +727,7 @@ function insertPreferredChild(
     uid,
     ['do-not-add'],
     null,
-    null,
+    { type: 'file-root' },
     null,
   )
 
@@ -703,11 +749,11 @@ interface ComponentPickerContextMenuProps {
   insertionTarget: InsertionTarget
 }
 
-export function iconPropsForIcon(icon: Icon): IcnProps {
+export function iconPropsForIcon(icon: Icon, inverted: boolean = false): IcnProps {
   return {
     category: 'navigator-element',
     type: icon,
-    color: 'white',
+    color: inverted ? 'black' : 'white',
   }
 }
 
@@ -844,7 +890,9 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
       'areAllJsxElements targetElement',
     )
 
-    const allInsertableComponents = useGetInsertableComponents('insert').flatMap((group) => {
+    const mode = insertionTarget.type === 'wrap-target' ? 'wrap' : 'insert'
+
+    const allInsertableComponents = useGetInsertableComponents(mode).flatMap((group) => {
       return {
         label: group.label,
         options: group.options.filter((option) => {
@@ -947,6 +995,8 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
           allComponents={allInsertableComponents}
           onItemClick={onItemClick}
           closePicker={hideAllContextMenus}
+          shownInToolbar={false}
+          insertionActive={false}
         />
       </Menu>
     )

@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
 import type { PreferredContents } from '../core'
+import type { UtopiaIcon } from '../primitives/icons'
 
 // these fields are shared among all RegularControlDescription. the helper function getControlSharedFields makes sure the types line up
 // Ensure that the fields are also added to the object within `getControlSharedFields` for that typechecking.
@@ -58,6 +59,12 @@ export type AllowedEnumType = string | boolean | number | undefined | null
 export interface BasicControlOption<T> {
   value: T
   label: string
+}
+
+export interface BasicControlOptionWithIcon<T> {
+  value: T
+  label: string
+  icon?: UtopiaIcon
 }
 
 export type BasicControlOptions<T> = AllowedEnumType[] | BasicControlOption<T>[]
@@ -164,9 +171,9 @@ export interface RadioControlDescription {
   control: 'radio'
   label?: string
   visibleByDefault?: boolean
-  options: BasicControlOptions<unknown>
+  options: AllowedEnumType[] | BasicControlOptionWithIcon<unknown>[]
   required?: boolean
-  defaultValue?: AllowedEnumType | BasicControlOption<unknown>
+  defaultValue?: AllowedEnumType | BasicControlOptionWithIcon<unknown>
   folder?: string
 }
 

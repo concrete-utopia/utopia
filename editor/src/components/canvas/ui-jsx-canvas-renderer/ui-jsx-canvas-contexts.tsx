@@ -7,6 +7,8 @@ import { left } from '../../../core/shared/either'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { ProjectContentTreeRoot } from '../../assets'
 import type { TransientFilesState, UIFileBase64Blobs } from '../../editor/store/editor-state'
+import type { VariableData } from '../ui-jsx-canvas'
+import type { FilePathMappings } from '../../../core/model/project-file-utils'
 
 export interface MutableUtopiaCtxRefData {
   [filePath: string]: {
@@ -14,6 +16,7 @@ export interface MutableUtopiaCtxRefData {
       requireResult: MapLike<any>
       fileBlobs: UIFileBase64Blobs
       rootScope: MapLike<any>
+      spiedVariablesDeclaredInRootScope: VariableData
       jsxFactoryFunctionName: string | null
     }
   }
@@ -32,6 +35,7 @@ interface RerenderUtopiaContextProps {
   canvasIsLive: boolean
   shouldIncludeCanvasRootInTheSpy: boolean
   editedText: ElementPath | null
+  filePathMappings: FilePathMappings
 }
 
 export const RerenderUtopiaCtxAtom = atomWithPubSub<RerenderUtopiaContextProps>({
@@ -42,6 +46,7 @@ export const RerenderUtopiaCtxAtom = atomWithPubSub<RerenderUtopiaContextProps>(
     canvasIsLive: false,
     shouldIncludeCanvasRootInTheSpy: false,
     editedText: null,
+    filePathMappings: [],
   },
 })
 

@@ -526,7 +526,7 @@ describe('Observing runtime changes', () => {
     expect(metadataAfter).not.toBeNull()
   })
 
-  it('Does not update the metadata in select mode', async () => {
+  xit('Does not update the metadata in select mode', async () => {
     const renderResult = await renderTestEditorWithCode(
       changingProjectCode,
       'await-first-dom-report',

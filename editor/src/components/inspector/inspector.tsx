@@ -51,16 +51,7 @@ import {
   useKeepReferenceEqualityIfPossible,
   useKeepShallowReferenceEquality,
 } from '../../utils/react-performance'
-import {
-  Icn,
-  useColorTheme,
-  UtopiaTheme,
-  FlexRow,
-  Button,
-  H1,
-  SectionActionSheet,
-  SquareButton,
-} from '../../uuiui'
+import { Icn, useColorTheme, UtopiaTheme, FlexRow, Button } from '../../uuiui'
 import { getElementsToTarget } from './common/inspector-utils'
 import type { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
 import { unless, when } from '../../utils/react-conditionals'
@@ -99,6 +90,9 @@ import { ListSection } from './sections/layout-section/list-section'
 import { ExpandableIndicator } from '../navigator/navigator-item/expandable-indicator'
 import { isIntrinsicElementMetadata } from '../../core/model/project-file-utils'
 import { assertNever } from '../../core/shared/utils'
+import { DataReferenceSection } from './sections/data-reference-section'
+import { replaceFirstChildAndDeleteSiblings } from '../editor/element-children'
+import { InspectorSectionHeader } from './section-header'
 
 export interface ElementPathElement {
   name?: string
@@ -179,7 +173,6 @@ const AlignmentButtons = React.memo((props: { numberOfTargets: number }) => {
         justifyContent: 'space-around',
         alignItems: 'center',
         height: UtopiaTheme.layout.rowHeight.normal,
-        outline: `1px solid ${colorTheme.seperator.value}`,
         background: colorTheme.inspectorBackground.value,
         padding: '8px 0',
       }}
@@ -270,7 +263,19 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           MetadataUtils.isExpressionOtherJavascript(path, store.editor.jsxMetadata) ||
           MetadataUtils.isJSXMapExpression(path, store.editor.jsxMetadata),
       ),
-    'Inspector hideAllSections',
+    'Inspector isCodeElement',
+  )
+
+  const isDataReference = useEditorState(
+    Substores.projectContentsAndMetadata,
+    (store) =>
+      store.editor.selectedViews.length > 0 &&
+      store.editor.selectedViews.every((path) =>
+        MetadataUtils.isElementDataReference(
+          getElementFromProjectContents(path, store.editor.projectContents),
+        ),
+      ),
+    'Inspector isDataReference',
   )
 
   const multiselectedContract = useEditorState(
@@ -345,10 +350,15 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
   )
 
   const anyKnownElements = useEditorState(
-    Substores.metadata,
+    Substores.projectContentsAndMetadata,
     (store) => {
       return strictEvery(store.editor.selectedViews, (view) => {
-        return MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, view) != null
+        return (
+          MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, view) != null ||
+          MetadataUtils.isElementDataReference(
+            getElementFromProjectContents(view, store.editor.projectContents),
+          )
+        )
       })
     },
     'Inspector anyKnownElements',
@@ -411,14 +421,19 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           data-testid={InspectorSectionsContainerTestID}
         >
           <DisableControlsInSubtree disable={!canEdit}>
-            {isCodeElement ? (
+            {when(isDataReference, <DataReferenceSection paths={selectedViews} />)}
+            {when(
+              isCodeElement,
               <>
                 <CodeElementSection paths={selectedViews} />
                 <ConditionalSection paths={selectedViews} />
                 <ListSection paths={selectedViews} />
-              </>
-            ) : (
+              </>,
+            )}
+            {unless(
+              isCodeElement || isDataReference,
               <FlexCol
+                data-testid='inspector-column'
                 css={{
                   overflowY: 'scroll',
                   width: '100%',
@@ -436,6 +451,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
                     title='Styles'
                     toggle={toggleStyleSection}
                     open={styleSectionOpen}
+                    uppercase={true}
                   />,
                 )}
                 {when(
@@ -477,6 +493,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
                     title='Advanced'
                     toggle={toggleAdvancedSection}
                     open={advancedSectionOpen}
+                    uppercase={true}
                   />,
                 )}
                 {when(
@@ -496,7 +513,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
                     )}
                   </>,
                 )}
-              </FlexCol>
+              </FlexCol>,
             )}
           </DisableControlsInSubtree>
         </div>
@@ -757,11 +774,22 @@ export const InspectorContextProvider = React.memo<{
     getElementsToTarget(selectedViews),
   )
 
+  const jsxMetadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+
   const onSubmitValueForHooks = React.useCallback(
     (newValue: JSExpression, path: PropertyPath, transient: boolean) => {
       const actionsArray = [
-        ...refElementsToTargetForUpdates.current.map((elem) => {
-          return setProp_UNSAFE(elem, path, newValue)
+        ...refElementsToTargetForUpdates.current.flatMap((elem): EditorAction[] => {
+          // if the target is the children prop, replace the elements instead
+          if (path.propertyElements[0] === 'children') {
+            const element = MetadataUtils.findElementByElementPath(jsxMetadataRef.current, elem)
+            const children =
+              element != null && isRight(element.element) && isJSXElement(element.element.value)
+                ? element.element.value.children
+                : []
+            return replaceFirstChildAndDeleteSiblings(elem, children, newValue)
+          }
+          return [setProp_UNSAFE(elem, path, newValue)]
         }),
       ]
       const actions: EditorAction[] = transient
@@ -769,7 +797,7 @@ export const InspectorContextProvider = React.memo<{
         : actionsArray
       dispatch(actions, 'everyone')
     },
-    [dispatch, refElementsToTargetForUpdates],
+    [dispatch, refElementsToTargetForUpdates, jsxMetadataRef],
   )
 
   const onUnsetValue = React.useCallback(
@@ -882,44 +910,6 @@ export const InspectorContextProvider = React.memo<{
     </InspectorCallbackContext.Provider>
   )
 })
-
-function InspectorSectionHeader({
-  title,
-  open,
-  toggle,
-}: {
-  title: string
-  open: boolean
-  toggle: () => void
-}) {
-  return (
-    <FlexRow
-      style={{
-        padding: 8,
-        cursor: 'pointer',
-      }}
-      onClick={toggle}
-      data-testid={`section-header-${title}`}
-    >
-      <div
-        style={{
-          flexGrow: 1,
-          display: 'inline',
-          overflow: 'hidden',
-          fontSize: '11px',
-          fontWeight: 600,
-        }}
-      >
-        {title}
-      </div>
-      <SectionActionSheet className='actionsheet' style={{ gap: 4 }}>
-        <SquareButton highlight style={{ width: 12 }}>
-          <ExpandableIndicator visible collapsed={!open} selected={false} />
-        </SquareButton>
-      </SectionActionSheet>
-    </FlexRow>
-  )
-}
 
 function useBoolean(starting: boolean): {
   value: boolean

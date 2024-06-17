@@ -6,11 +6,11 @@ import type { DEPRECATEDControlProps, DEPRECATEDGenericControlOptions } from './
 import { colorTheme } from '../../../uuiui'
 import type { IcnProps } from '../../../uuiui'
 import { UtopiaTheme, Tooltip, Icn } from '../../../uuiui'
-import { useIsMyProject } from '../../editor/store/collaborative-editing'
 import { useControlsDisabledInSubtree } from '../../../uuiui/utilities/disable-subtree'
 
 export interface DEPRECATEDOptionControlOptions extends DEPRECATEDGenericControlOptions {
   icon?: IcnProps
+  iconComponent?: React.ReactNode
   labelInner?: string
   tooltip?: string
   roundCorners?:
@@ -118,8 +118,25 @@ export const OptionControl: React.FunctionComponent<
             borderRadius: rc != null ? 0 : UtopiaTheme.inputBorderRadius,
             // If part of a option chain control:
             '.option-chain-control-container &': {
-              borderRadius: 0,
+              borderRadius: isChecked ? '3px' : 0,
               boxShadow: 'none !important',
+              opacity: 1,
+              borderColor: colorTheme.border0.value,
+              backgroundColor: isChecked
+                ? props.controlStatus === 'overridden'
+                  ? colorTheme.brandNeonPink10.value
+                  : colorTheme.bg4.value
+                : 'transparent',
+              color: isChecked
+                ? props.controlStatus === 'overridden'
+                  ? colorTheme.brandNeonPink.value
+                  : colorTheme.fg1.value
+                : colorTheme.verySubduedForeground.value,
+              '&:hover': {
+                opacity: props.controlStatus == 'disabled' ? undefined : 1,
+                color: colorTheme.fg1.value,
+                cursor: 'pointer',
+              },
             },
             '.option-chain-control-container .segment:first-of-type  &': {
               borderTopLeftRadius: UtopiaTheme.inputBorderRadius,
@@ -145,8 +162,18 @@ export const OptionControl: React.FunctionComponent<
               rc === 'all' || rc === 'left' || rc === 'bottomLeft' || rc === 'bottom'
                 ? UtopiaTheme.inputBorderRadius
                 : undefined,
+
+            filter: isChecked && props.controlStatus !== 'disabled' ? undefined : 'grayscale(1)',
             '&:hover': {
               opacity: props.controlStatus == 'disabled' ? undefined : controlOpacity + 0.2,
+              filter: props.controlStatus == 'disabled' ? undefined : 'grayscale(0)',
+            },
+
+            '.control-option-icon-component': {
+              opacity: 0.5,
+            },
+            '&:hover .control-option-icon-component': {
+              opacity: 1,
             },
             '&:active': {
               opacity: props.controlStatus == 'disabled' ? undefined : 1,
@@ -174,6 +201,7 @@ export const OptionControl: React.FunctionComponent<
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
+              gap: 4,
             }}
           >
             {controlOptions.icon != null ? (
@@ -181,7 +209,11 @@ export const OptionControl: React.FunctionComponent<
                 style={{ marginRight: controlOptions.labelInner == null ? 0 : 4 }}
                 {...controlOptions.icon}
               />
-            ) : null}
+            ) : (
+              <div className='control-option-icon-component'>
+                {controlOptions.iconComponent ?? null}
+              </div>
+            )}
             {controlOptions.labelInner != null ? controlOptions.labelInner : null}
           </div>
         </label>

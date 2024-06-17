@@ -7,7 +7,6 @@ export const RootElementIndicator = () => {
       style={{
         justifyContent: 'center',
         alignItems: 'center',
-        outline: `1px solid ${colorTheme.seperator.value}`,
         background: colorTheme.inspectorBackground.value,
       }}
     >

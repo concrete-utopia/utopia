@@ -289,7 +289,7 @@ describe('Navigator item row icons', () => {
     )
     await checkNavigatorIcon(
       'Sizeless div',
-      { category: 'navigator-element', type: 'zerosized-div', color: 'lightgray' },
+      { category: 'navigator-element', type: 'zerosized-div', color: 'gray' },
       visibleNavigatorTargets[17],
     )
     await checkNavigatorIcon(
@@ -322,7 +322,6 @@ describe('Navigator item row icons', () => {
       const testId = itemLabelTestIdForEntry(navigatorEntry)
       if (expectedLabel != null) {
         const labelElement = editor.renderedDOM.getByTestId(testId)
-
         expect(labelElement.innerText).toEqual(expectedLabel)
       } else {
         expect(() => editor.renderedDOM.getByTestId(testId)).toThrow()
@@ -345,7 +344,7 @@ describe('Navigator item row icons', () => {
     await checkNavigatorLabel(visibleNavigatorTargets[11], null)
     await checkNavigatorLabel(visibleNavigatorTargets[12], 'CODE')
     await checkNavigatorLabel(visibleNavigatorTargets[13], 'div')
-    await checkNavigatorLabel(visibleNavigatorTargets[14], 'LIST')
+    await checkNavigatorLabel(visibleNavigatorTargets[14], 'List')
     await checkNavigatorLabel(visibleNavigatorTargets[15], 'div')
     await checkNavigatorLabel(visibleNavigatorTargets[16], 'Fragment')
     await checkNavigatorLabel(visibleNavigatorTargets[17], 'div')

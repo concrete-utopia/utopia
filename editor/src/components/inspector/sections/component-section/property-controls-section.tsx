@@ -1,20 +1,21 @@
 import React from 'react'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import type { PropertyControls } from '../../../custom-code/internal-property-controls'
-import { useEditorState } from '../../../editor/store/store-hook'
 import { setCursorOverlay } from '../../../editor/actions/action-creators'
 import { useKeepReferenceEqualityIfPossible } from '../../../../utils/react-performance'
 import { useHiddenElements } from './hidden-controls-section'
 import { FolderSection } from './folder-section'
 import type { CSSCursor } from '../../../canvas/canvas-types'
 import { UIGridRow } from '../../widgets/ui-grid-row'
-import { VerySubdued } from '../../../../uuiui'
+import { Subdued, VerySubdued } from '../../../../uuiui'
 import {
   AdvancedFolderLabel,
   isAdvancedFolderLabel,
   specialPropertiesToIgnore,
 } from '../../../../core/property-controls/property-controls-utils'
 import { useDispatch } from '../../../editor/store/dispatch-context'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
+import { elementSupportsChildrenFromPropertyControls } from '../../../editor/element-children'
 
 interface PropertyControlsSectionProps {
   targets: ElementPath[]
@@ -52,7 +53,50 @@ export const PropertyControlsSection = React.memo((props: PropertyControlsSectio
 
   const propertiesWithFolders = synthesiseFolders(propertyControls)
 
-  return (
+  // unify the logic from the sub components
+  const hasContent = React.useMemo(
+    () =>
+      (Object.keys(detectedPropsAndValuesWithoutControls).length > 0 &&
+        Object.keys(detectedPropsAndValuesWithoutControls).some(
+          (prop) => !specialPropertiesToIgnore.includes(prop),
+        )) ||
+      propertiesWithFolders.folders.length > 0 ||
+      Object.keys(propertiesWithFolders.advanced).length > 0 ||
+      filteredDetectedPropsWithNoValue.length > 0 ||
+      Object.keys(propertiesWithFolders.uncategorized).length > 0 ||
+      propsWithControlsButNoValue.length > 0,
+    [
+      detectedPropsAndValuesWithoutControls,
+      propertiesWithFolders.folders,
+      propertiesWithFolders.advanced,
+      filteredDetectedPropsWithNoValue,
+      propertiesWithFolders.uncategorized,
+      propsWithControlsButNoValue.length,
+    ],
+  )
+
+  const targetsSupportChildren = useEditorState(
+    Substores.metadataAndPropertyControlsInfo,
+    (store) => {
+      return props.targets.every((target) =>
+        elementSupportsChildrenFromPropertyControls(
+          store.editor.jsxMetadata,
+          store.editor.propertyControlsInfo,
+          target,
+        ),
+      )
+    },
+    'PropertyControlsSection targetsSupportChildren',
+  )
+
+  const propsToIgnore = React.useMemo(() => {
+    if (!targetsSupportChildren) {
+      return [...specialPropertiesToIgnore, 'children']
+    }
+    return specialPropertiesToIgnore
+  }, [targetsSupportChildren])
+
+  return hasContent ? (
     <>
       <FolderSection
         isRoot={true}
@@ -63,12 +107,13 @@ export const PropertyControlsSection = React.memo((props: PropertyControlsSectio
         unsetPropNames={propsWithControlsButNoValue}
         showHiddenControl={showHiddenControl}
         detectedPropsAndValuesWithoutControls={detectedPropsAndValuesWithoutControls}
+        propsToIgnore={propsToIgnore}
       />
       {propertiesWithFolders.folders.map(({ name, controls }) => (
         <FolderSection
           key={name}
           isRoot={false}
-          indentationLevel={2}
+          indentationLevel={0}
           propertyControls={controls}
           setGlobalCursor={setGlobalCursor}
           visibleEmptyControls={visibleEmptyControls}
@@ -76,18 +121,20 @@ export const PropertyControlsSection = React.memo((props: PropertyControlsSectio
           showHiddenControl={showHiddenControl}
           detectedPropsAndValuesWithoutControls={detectedPropsAndValuesWithoutControls}
           title={name}
+          propsToIgnore={propsToIgnore}
         />
       ))}
       {Object.keys(propertiesWithFolders.advanced).length === 0 ? null : (
         <FolderSection
           isRoot={false}
-          indentationLevel={2}
+          indentationLevel={0}
           propertyControls={propertiesWithFolders.advanced}
           setGlobalCursor={setGlobalCursor}
           visibleEmptyControls={visibleEmptyControls}
           unsetPropNames={propsWithControlsButNoValue}
           showHiddenControl={showHiddenControl}
           detectedPropsAndValuesWithoutControls={detectedPropsAndValuesWithoutControls}
+          propsToIgnore={propsToIgnore}
           title={AdvancedFolderLabel}
         />
       )}
@@ -102,8 +149,15 @@ export const PropertyControlsSection = React.memo((props: PropertyControlsSectio
         </UIGridRow>
       ) : null}
     </>
+  ) : (
+    <UIGridRow padded tall={false} variant={'<-------------1fr------------->'}>
+      <div>
+        <Subdued>This component requires no configuration</Subdued>
+      </div>
+    </UIGridRow>
   )
 })
+PropertyControlsSection.displayName = 'PropertyControlsSection'
 
 interface SyntheticFoldersResult {
   uncategorized: PropertyControls

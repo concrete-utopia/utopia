@@ -1,7 +1,7 @@
 import React from 'react'
 import type { EditorAction, EditorDispatch } from './action-types'
 import { useDispatch } from './store/dispatch-context'
-import { BodyMenuOpenClass } from '../../core/shared/utils'
+import { isSomeMenuOpen } from '../../core/shared/menu-state'
 
 type EventHandler<K extends keyof WindowEventMap, R> = (this: Window, event: WindowEventMap[K]) => R
 
@@ -52,10 +52,7 @@ function createHandler<K extends keyof WindowEventMap>(
   } else {
     const windowEventHandler = (event: WindowEventMap[K]) => {
       // check if it's a keyboard event and if react-contexify is open
-      if (
-        ['keydown', 'keyup'].includes(event.type) &&
-        document.body.classList.contains(BodyMenuOpenClass)
-      ) {
+      if (['keydown', 'keyup'].includes(event.type) && isSomeMenuOpen()) {
         return
       }
       const collatedActions = handlers.flatMap((handler) => {

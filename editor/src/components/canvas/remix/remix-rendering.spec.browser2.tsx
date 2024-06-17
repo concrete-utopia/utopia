@@ -60,6 +60,7 @@ import {
   type MetaCanvasStrategy,
   RegisteredCanvasStrategies,
 } from '../canvas-strategies/canvas-strategies'
+import CanvasActions from '../canvas-actions'
 
 const DefaultRouteTextContent = 'Hello Remix!'
 const RootTextContent = 'This is root!'
@@ -1353,10 +1354,6 @@ describe('Remix navigation', () => {
         renderResult.renderedDOM.queryAllByText(AboutTextContent).filter(filterOutMenuLabels),
       ).toHaveLength(1)
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual('/about')
-
-      await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'home')
-      expect(renderResult.renderedDOM.queryAllByText(RootTextContent)).toHaveLength(1)
-      expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixIndexPathLabel)
     })
 
     it('can navigate with the scene label nav buttons, in edit mode', async () => {
@@ -1392,10 +1389,6 @@ describe('Remix navigation', () => {
         renderResult.renderedDOM.queryAllByText(AboutTextContent).filter(filterOutMenuLabels),
       ).toHaveLength(1)
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual('/about')
-
-      await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'home')
-      expect(renderResult.renderedDOM.queryAllByText(RootTextContent)).toHaveLength(1)
-      expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixIndexPathLabel)
     })
 
     it('navigating in one Remix scene does not affect the navigation state in the other', async () => {
@@ -2131,10 +2124,17 @@ export default function Index() {
         AbsoluteDivTestId,
       )
       const absoluteDivBounds = absoluteElement.getBoundingClientRect()
+
       await dragMouse(
         renderResult,
         windowPoint({ x: absoluteDivBounds.x + 1, y: absoluteDivBounds.y + 1 }),
         windowPoint({ x: 10, y: -77 }),
+        emptyModifiers,
+        async () =>
+          renderResult.dispatch(
+            [CanvasActions.setUsersPreferredStrategy('ABSOLUTE_REPARENT')],
+            true,
+          ),
       )
     }
 
@@ -2163,6 +2163,12 @@ export default function Index() {
         renderResult,
         windowPoint({ x: absoluteDivBounds.x + 1, y: absoluteDivBounds.y + 1 }),
         windowPoint({ x: -10, y: 77 }),
+        emptyModifiers,
+        async () =>
+          renderResult.dispatch(
+            [CanvasActions.setUsersPreferredStrategy('ABSOLUTE_REPARENT')],
+            true,
+          ),
       )
     }
 

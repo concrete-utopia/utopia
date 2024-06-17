@@ -66,23 +66,6 @@ export function defaultAnimatedDivElement(uid: string): JSXElement {
   )
 }
 
-export function defaultTransparentViewElement(uid: string): JSXElement {
-  return jsxElement(
-    jsxElementName('div', []),
-    uid,
-    jsxAttributesFromMap({
-      style: jsExpressionValue(
-        {
-          position: 'absolute',
-        },
-        emptyComments,
-      ),
-      'data-uid': jsExpressionValue(uid, emptyComments),
-    }),
-    [],
-  )
-}
-
 export function defaultUnstyledDivElement(uid: string): JSXElement {
   return jsxElement(
     jsxElementName('div', []),

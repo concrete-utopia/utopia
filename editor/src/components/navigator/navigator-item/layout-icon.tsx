@@ -117,14 +117,19 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
         iconTypeToReturn = props.override
         if (baseColor === 'white') {
           colorToReturn = baseColor
-        } else if (props.override === 'row' || props.override === 'column') {
+        } else if (
+          props.override === 'row' ||
+          props.override === 'column' ||
+          props.override === 'layout' ||
+          props.override === 'grid'
+        ) {
           colorToReturn = 'primary'
         } else {
           colorToReturn = baseColor
         }
       } else if (isZeroSized) {
         iconTypeToReturn = 'zerosized-div'
-        colorToReturn = baseColor === 'subdued' ? 'subdued' : 'main'
+        colorToReturn = baseColor
       } else if (isInvalidOverrideNavigatorEntry(navigatorEntry)) {
         iconTypeToReturn = 'warningtriangle'
         colorToReturn = baseColor
@@ -216,6 +221,23 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
       }
     }, [addAbsoluteMarkerToIcon, color, warningText, isErroredGroupChild, iconTestId])
 
+    const listIndex = useEditorState(
+      Substores.metadata,
+      (store) => {
+        const generatedIndex = EP.extractIndexFromIndexedUid(
+          EP.toUid(props.navigatorEntry.elementPath),
+        )
+        if (generatedIndex == null) {
+          return null
+        }
+        const parent = EP.parentPath(props.navigatorEntry.elementPath)
+        return MetadataUtils.isJSXMapExpression(parent, store.editor.jsxMetadata)
+          ? generatedIndex
+          : null
+      },
+      'NavigatorRowLabel listIndex',
+    )
+
     return (
       <div
         style={{
@@ -241,6 +263,21 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
             }}
           >
             {marker}
+          </div>,
+        )}
+        {when(
+          listIndex != null,
+          <div
+            style={{
+              position: 'absolute',
+              top: 4,
+              right: 13,
+              fontSize: 8,
+              fontWeight: 700,
+              textAlign: 'right',
+            }}
+          >
+            {listIndex}
           </div>,
         )}
         {icon}

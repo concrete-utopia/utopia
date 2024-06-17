@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
 import type { ComponentInfo } from './code-file'
+import type { Icons } from '../../uuiui'
 
 interface GenericControlProps<T> {
   label?: string
@@ -46,7 +47,16 @@ export interface BasicControlOption<T> {
   label: string
 }
 
+export interface BasicControlOptionWithIcon<T> {
+  value: T
+  label: string
+  icon: keyof typeof Icons | null
+}
+
 export type BasicControlOptions<T> = AllowedEnumType[] | BasicControlOption<T>[]
+export type RadioControlOption<T> =
+  | { type: 'allowed-enum-type'; allowedEnumType: AllowedEnumType }
+  | { type: 'control-option-with-icon'; option: BasicControlOptionWithIcon<T> }
 
 export interface PopUpListControlDescription
   extends GenericControlProps<AllowedEnumType | BasicControlOption<unknown>> {
@@ -118,10 +128,9 @@ export interface NumberInputControlDescription extends GenericControlProps<unkno
   displayStepper?: boolean
 }
 
-export interface RadioControlDescription
-  extends GenericControlProps<AllowedEnumType | BasicControlOption<unknown>> {
+export interface RadioControlDescription extends GenericControlProps<RadioControlOption<unknown>> {
   control: 'radio'
-  options: BasicControlOptions<unknown>
+  options: Array<RadioControlOption<unknown>>
 }
 
 export interface ExpressionInputControlDescription extends GenericControlProps<unknown> {

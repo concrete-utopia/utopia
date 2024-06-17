@@ -3,11 +3,8 @@ import * as EP from '../../core/shared/element-path'
 import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
-  JSExpression,
   JSXConditionalExpression,
-  JSXElement,
   JSXElementChild,
-  JSXFragment,
   JSXMapExpression,
 } from '../../core/shared/element-template'
 import {
@@ -16,26 +13,16 @@ import {
   isJSExpressionValue,
   isJSXConditionalExpression,
   isJSXElement,
-  isJSXElementLike,
   isJSXMapExpression,
 } from '../../core/shared/element-template'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { foldEither, isLeft, isRight } from '../../core/shared/either'
-import type {
-  ConditionalClauseNavigatorEntry,
-  DataReferenceNavigatorEntry,
-  InvalidOverrideNavigatorEntry,
-  NavigatorEntry,
-  RegularNavigatorEntry,
-  SlotNavigatorEntry,
-  SyntheticNavigatorEntry,
-} from '../editor/store/editor-state'
+import { isLeft } from '../../core/shared/either'
+import type { ConditionalClauseNavigatorEntry, NavigatorEntry } from '../editor/store/editor-state'
 import {
   conditionalClauseNavigatorEntry,
   dataReferenceNavigatorEntry,
   getElementFromProjectContents,
   invalidOverrideNavigatorEntry,
-  isConditionalClauseNavigatorEntry,
   regularNavigatorEntry,
   renderPropNavigatorEntry,
   renderPropValueNavigatorEntry,
@@ -46,7 +33,7 @@ import {
 } from '../editor/store/editor-state'
 import type { ElementPathTree, ElementPathTrees } from '../../core/shared/element-path-tree'
 import { getCanvasRoots, getSubTree } from '../../core/shared/element-path-tree'
-import { assertNever, fastForEach } from '../../core/shared/utils'
+import { assertNever } from '../../core/shared/utils'
 import type { ConditionalCase } from '../../core/model/conditionals'
 import { getConditionalClausePath } from '../../core/model/conditionals'
 import { findUtopiaCommentFlag, isUtopiaCommentFlagMapCount } from '../../core/shared/comment-flags'
@@ -61,14 +48,11 @@ import {
   condensedNavigatorRow,
   getEntriesForRow,
   regularNavigatorRow,
-  type CondensedNavigatorRow,
   type NavigatorRow,
   type RegularNavigatorRow,
 } from './navigator-row'
 import { dropNulls, mapDropNulls } from '../../core/shared/array-utils'
-import invariant from '../../third-party/remix/invariant'
 import { getUtopiaID } from '../../core/shared/uid-utils'
-import { create } from 'tar'
 import { emptySet } from '../../core/shared/set-utils'
 import { objectMap } from '../../core/shared/object-utils'
 import { dataCanCondenseFromMetadata } from '../../utils/can-condense'
@@ -77,34 +61,6 @@ export function baseNavigatorDepth(path: ElementPath): number {
   // The storyboard means that this starts at -1,
   // so that the scenes are the left most entity.
   return EP.fullDepth(path) - 1
-}
-
-export function navigatorDepth(
-  navigatorEntry: NavigatorEntry,
-  metadata: ElementInstanceMetadataMap,
-): number {
-  const path = navigatorEntry.elementPath
-  let result: number = baseNavigatorDepth(path)
-  for (const ancestorPath of EP.getAncestors(path)) {
-    const elementMetadata = MetadataUtils.findElementByElementPath(metadata, ancestorPath)
-    if (elementMetadata != null) {
-      const isConditional = foldEither(
-        () => false,
-        (e) => isJSXConditionalExpression(e),
-        elementMetadata.element,
-      )
-      if (isConditional) {
-        result = result + 1
-      }
-    }
-  }
-
-  // For the clause entry itself, this needs to step back by 1.
-  if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
-    result = result + 1
-  }
-
-  return result
 }
 
 type RegularNavigatorTree = {
@@ -212,7 +168,7 @@ function createNavigatorSubtree(
   collapsedViews: Array<ElementPath>, // TODO turn this into a single array!!
   hiddenInNavigator: Array<ElementPath>,
   subTree: ElementPathTree,
-): NavigatorTree {
+): NavigatorTree | null {
   const elementPath = subTree.path
   const jsxElementChild = getElementFromProjectContents(elementPath, projectContents)
   if (jsxElementChild == null) {
@@ -315,9 +271,15 @@ function walkRegularNavigatorEntry(
   elementPath: ElementPath,
   elementHidden: boolean,
   subtreeHidden: boolean,
-): NavigatorTree {
+): NavigatorTree | null {
   let renderPropChildrenAccumulator: { [propName: string]: NavigatorTree } = {}
   let processedAccumulator: Set<string> = emptySet()
+
+  const elementMetadata = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  // If there was an early return, then we should stop walking the tree here.
+  if (elementMetadata != null && elementMetadata.earlyReturn != null) {
+    return null
+  }
 
   if (isJSXElement(jsxElement)) {
     Object.entries(propControls ?? {}).forEach(([prop, control]) => {
@@ -352,12 +314,14 @@ function walkRegularNavigatorEntry(
           hiddenInNavigator,
           subTreeChild,
         )
-        const childTree: NavigatorTree = {
-          ...childTreeEntry,
-          navigatorEntry: renderPropValueNavigatorEntry(childPath, prop),
+        if (childTreeEntry != null) {
+          const childTree: NavigatorTree = {
+            ...childTreeEntry,
+            navigatorEntry: renderPropValueNavigatorEntry(childPath, prop),
+          }
+          processedAccumulator.add(EP.toString(subTreeChild.path))
+          renderPropChildrenAccumulator[prop] = childTree
         }
-        processedAccumulator.add(EP.toString(subTreeChild.path))
-        renderPropChildrenAccumulator[prop] = childTree
       } else {
         const synthEntry = isFeatureEnabled('Condensed Navigator Entries')
           ? dataReferenceNavigatorEntry(
@@ -381,8 +345,8 @@ function walkRegularNavigatorEntry(
   const childrenPaths = subTree.children.filter(
     (child) => !processedAccumulator.has(EP.toString(child.path)),
   )
-  const children: Array<NavigatorTree> = childrenPaths.map((child) =>
-    createNavigatorSubtree(
+  const children: Array<NavigatorTree> = mapDropNulls((child) => {
+    return createNavigatorSubtree(
       metadata,
       elementPathTrees,
       projectContents,
@@ -390,8 +354,8 @@ function walkRegularNavigatorEntry(
       collapsedViews,
       hiddenInNavigator,
       child,
-    ),
-  )
+    )
+  }, childrenPaths)
 
   return {
     type: 'regular-entry',
@@ -493,8 +457,8 @@ function walkConditionalClause(
 
   // if we find regular tree entries for the clause, it means the branch has proper JSXElements, so we recurse into the tree building
   if (clausePathTrees.length > 0) {
-    const children = clausePathTrees.map((child) =>
-      createNavigatorSubtree(
+    const children = mapDropNulls((child) => {
+      return createNavigatorSubtree(
         metadata,
         elementPathTrees,
         projectContents,
@@ -502,8 +466,8 @@ function walkConditionalClause(
         collapsedViews,
         hiddenInNavigator,
         child,
-      ),
-    )
+      )
+    }, clausePathTrees)
     return children
   }
 
@@ -563,7 +527,7 @@ function walkMapExpression(
   return {
     type: 'map-entry',
     navigatorEntry: regularNavigatorEntry(subTree.path),
-    mappedEntries: [...mappedChildren, ...invaldiOverrideEntries],
+    mappedEntries: dropNulls([...mappedChildren, ...invaldiOverrideEntries]),
     elementHidden: elementHidden,
     subtreeHidden: subtreeHidden,
   }
@@ -704,6 +668,51 @@ function getNavigatorRowsForTree(
       return walkTree(e, i)
     }
 
+    function renderPropRows(
+      tree: RegularNavigatorTree,
+      path: ElementPath,
+      nextIndentation: number,
+    ): NavigatorRow[] {
+      return Object.entries(tree.renderProps).flatMap(([propName, renderPropChild]) => {
+        const fakeRenderPropPath = EP.appendToPath(path, renderPropId(propName))
+        let rows: NavigatorRow[] = []
+        if (!isSubtreeHidden(tree)) {
+          rows.push(
+            regularNavigatorRow(
+              renderPropNavigatorEntry(
+                fakeRenderPropPath,
+                propName,
+                renderPropChild.navigatorEntry.elementPath,
+              ),
+              nextIndentation,
+            ),
+          )
+        }
+        rows.push(...walkIfSubtreeVisible(renderPropChild, nextIndentation + 1))
+        return rows
+      })
+    }
+
+    function shouldShowChildrenLabel(tree: RegularNavigatorTree): boolean {
+      return (
+        Object.values(tree.renderProps).length > 0 &&
+        tree.children.length > 0 &&
+        !isSubtreeHidden(tree)
+      )
+    }
+
+    function childrenLabelRow(tree: RegularNavigatorTree, path: ElementPath): RegularNavigatorRow {
+      // we only show the children label if there are render props
+      return regularNavigatorRow(
+        renderPropNavigatorEntry(
+          EP.appendToPath(path, renderPropId('children')),
+          'children',
+          tree.children[0].navigatorEntry.elementPath, // pick the first child path
+        ),
+        nextIndentation,
+      )
+    }
+
     if (isElementHidden(entry) && filterVisible === 'visible-navigator-targets') {
       return []
     }
@@ -741,37 +750,11 @@ function getNavigatorRowsForTree(
         ]
       case 'regular-entry': {
         const path = entry.navigatorEntry.elementPath
-        const showChildrenLabel =
-          Object.values(entry.renderProps).length > 0 && entry.children.length > 0
+        const showChildrenLabel = shouldShowChildrenLabel(entry)
         return [
           regularNavigatorRow(entry.navigatorEntry, indentation),
-          ...Object.entries(entry.renderProps).flatMap(([propName, renderPropChild]) => {
-            const fakeRenderPropPath = EP.appendToPath(path, renderPropId(propName))
-            return [
-              regularNavigatorRow(
-                renderPropNavigatorEntry(
-                  fakeRenderPropPath,
-                  propName,
-                  renderPropChild.navigatorEntry.elementPath,
-                ),
-                nextIndentation,
-              ),
-              ...walkIfSubtreeVisible(renderPropChild, nextIndentation + 1),
-            ]
-          }),
-          ...(showChildrenLabel
-            ? // we only show the children label if there are render props
-              [
-                regularNavigatorRow(
-                  renderPropNavigatorEntry(
-                    EP.appendToPath(path, renderPropId('children')),
-                    'children',
-                    entry.children[0].navigatorEntry.elementPath, // pick the first child path
-                  ),
-                  nextIndentation,
-                ),
-              ]
-            : []),
+          ...renderPropRows(entry, path, nextIndentation),
+          ...(showChildrenLabel ? [childrenLabelRow(entry, path)] : []),
           ...entry.children.flatMap((t) =>
             walkIfSubtreeVisible(t, showChildrenLabel ? nextIndentation + 1 : nextIndentation),
           ),

@@ -111,6 +111,8 @@ describe('get branch project contents', () => {
           getBranchProjectContentsRequest({
             existingAssets: [],
             uploadAssets: true,
+            previousCommitSha: null,
+            specificCommitSha: null,
           }),
         ),
       }),
@@ -163,6 +165,8 @@ describe('get branch project contents', () => {
           getBranchProjectContentsRequest({
             existingAssets: [],
             uploadAssets: true,
+            previousCommitSha: null,
+            specificCommitSha: null,
           }),
         ),
       }),

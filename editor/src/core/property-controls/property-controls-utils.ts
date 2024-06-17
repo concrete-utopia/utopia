@@ -23,6 +23,7 @@ import { dropFileExtension } from '../shared/file-utils'
 import type { Styling } from 'utopia-api'
 import { StylingOptions } from 'utopia-api'
 import { intersection } from '../shared/set-utils'
+import { getFilePathMappings } from '../model/project-file-utils'
 
 export function propertyControlsForComponentInFile(
   componentName: string,
@@ -49,6 +50,7 @@ export function getPropertyControlsForTarget(
   propertyControlsInfo: PropertyControlsInfo,
   projectContents: ProjectContentTreeRoot,
 ): PropertyControls | null {
+  const filePathMappings = getFilePathMappings(projectContents)
   return withUnderlyingTarget(
     target,
     projectContents,
@@ -61,6 +63,7 @@ export function getPropertyControlsForTarget(
     ) => {
       if (isJSXElement(element)) {
         const importedFrom = importedFromWhere(
+          filePathMappings,
           underlyingFilePath,
           element.name.baseVariable,
           success.topLevelElements,
@@ -137,6 +140,7 @@ export function getComponentDescriptorForTarget(
   propertyControlsInfo: PropertyControlsInfo,
   projectContents: ProjectContentTreeRoot,
 ): ComponentDescriptor | null {
+  const filePathMappings = getFilePathMappings(projectContents)
   return withUnderlyingTarget(
     target,
     projectContents,
@@ -149,6 +153,7 @@ export function getComponentDescriptorForTarget(
     ) => {
       if (isJSXElement(element)) {
         const importedFrom = importedFromWhere(
+          filePathMappings,
           underlyingFilePath,
           element.name.baseVariable,
           success.topLevelElements,
@@ -219,7 +224,7 @@ export function hasStyleControls(propertyControls: PropertyControls): boolean {
   return propertyControls['style']?.control === 'style-controls'
 }
 
-export const specialPropertiesToIgnore: Array<string> = ['style', 'children']
+export const specialPropertiesToIgnore: Array<string> = ['style']
 
 export type InspectorSectionPreference = 'layout' | 'layout-system' | 'visual' | 'typography'
 

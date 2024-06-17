@@ -32,7 +32,7 @@ import {
   pressKey,
 } from '../canvas/event-helpers.test-utils'
 import { NavigatorItemTestId } from './navigator-item/navigator-item'
-import { expectNoAction, selectComponentsForTest } from '../../utils/utils.test-utils'
+import { expectNoAction, selectComponentsForTest, wait } from '../../utils/utils.test-utils'
 import {
   DefaultNavigatorWidth,
   navigatorEntryToKey,
@@ -1025,6 +1025,59 @@ export function Heading({ children }) {
 `,
   })
 
+const projectWithEarlyReturn = createModifiedProject({
+  [StoryboardFilePath]: `import * as React from 'react'
+import * as Utopia from 'utopia-api'
+import {
+  Storyboard,
+  Scene,
+} from 'utopia-api'
+
+var Playground = ({ style }) => {
+  if (true) {
+    return null
+  }
+  return (
+    <div style={style} data-uid='dbc'>Cake</div>
+  )
+}
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      style={{
+        width: 521,
+        height: 266,
+        position: 'absolute',
+        left: 554,
+        top: 247,
+        backgroundColor: 'white',
+      }}
+      data-uid='scene'
+      data-testid='scene'
+      commentId='120'
+    >
+      <Playground
+        style={{
+          width: 454,
+          height: 177,
+          position: 'absolute',
+          left: 34,
+          top: 44,
+          backgroundColor: 'white',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+        className='playground'
+        css={{ color: 'red' }}
+        data-uid='pg'
+      />
+    </Scene>
+  </Storyboard>
+)
+`,
+})
+
 function getProjectCodeForMultipleSelection(): string {
   return `import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
@@ -1441,7 +1494,7 @@ describe('Navigator', () => {
           const parentEntry = renderResult.renderedDOM.getByTestId(
             `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot`,
           )
-          expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
+          expect((parentEntry.firstChild?.firstChild as HTMLElement).style.outline).toEqual(
             '1px solid var(--utopitheme-navigatorResizeHintBorder)',
           )
 
@@ -1515,7 +1568,7 @@ describe('Navigator', () => {
           const parentEntry = renderResult.renderedDOM.getByTestId(
             `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot`,
           )
-          expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
+          expect((parentEntry.firstChild?.firstChild as HTMLElement).style.outline).toEqual(
             '1px solid var(--utopitheme-navigatorResizeHintBorder)',
           )
 
@@ -1589,7 +1642,7 @@ describe('Navigator', () => {
           const parentEntry = renderResult.renderedDOM.getByTestId(
             `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot`,
           )
-          expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
+          expect((parentEntry.firstChild?.firstChild as HTMLElement).style.outline).toEqual(
             '1px solid var(--utopitheme-navigatorResizeHintBorder)',
           )
 
@@ -1666,7 +1719,7 @@ describe('Navigator', () => {
             const parentEntry = renderResult.renderedDOM.getByTestId(
               `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
             )
-            expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
+            expect((parentEntry.firstChild?.firstChild as HTMLElement).style.outline).toEqual(
               '1px solid var(--utopitheme-navigatorResizeHintBorder)',
             )
 
@@ -1739,7 +1792,7 @@ describe('Navigator', () => {
           const parentEntry = renderResult.renderedDOM.getByTestId(
             `navigator-item-regular_utopia_storyboard_uid/scene_aaa`,
           )
-          expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
+          expect((parentEntry.firstChild?.firstChild as HTMLElement).style.outline).toEqual(
             'transparent solid 1px',
           )
 
@@ -1793,7 +1846,7 @@ describe('Navigator', () => {
             const parentEntry = renderResult.renderedDOM.getByTestId(
               `navigator-item-regular_utopia_storyboard_uid/scene_aaa`,
             )
-            expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
+            expect((parentEntry.firstChild?.firstChild as HTMLElement).style.outline).toEqual(
               '1px solid var(--utopitheme-navigatorResizeHintBorder)',
             )
 
@@ -1871,7 +1924,7 @@ describe('Navigator', () => {
             const parentEntry = renderResult.renderedDOM.getByTestId(
               `navigator-item-regular_utopia_storyboard_uid/scene_aaa/parentsibling`,
             )
-            expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
+            expect((parentEntry.firstChild?.firstChild as HTMLElement).style.outline).toEqual(
               '1px solid var(--utopitheme-navigatorResizeHintBorder)',
             )
 
@@ -2767,7 +2820,7 @@ describe('Navigator', () => {
           const parentEntry = renderResult.renderedDOM.getByTestId(
             `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot`,
           )
-          expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
+          expect((parentEntry.firstChild?.firstChild as HTMLElement).style.outline).toEqual(
             '1px solid var(--utopitheme-navigatorResizeHintBorder)',
           )
 
@@ -2845,7 +2898,7 @@ describe('Navigator', () => {
           const parentEntry = renderResult.renderedDOM.getByTestId(
             `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot`,
           )
-          expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
+          expect((parentEntry.firstChild?.firstChild as HTMLElement).style.outline).toEqual(
             '1px solid var(--utopitheme-navigatorResizeHintBorder)',
           )
 
@@ -2923,7 +2976,7 @@ describe('Navigator', () => {
           const parentEntry = renderResult.renderedDOM.getByTestId(
             `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot`,
           )
-          expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
+          expect((parentEntry.firstChild?.firstChild as HTMLElement).style.outline).toEqual(
             '1px solid var(--utopitheme-navigatorResizeHintBorder)',
           )
 
@@ -3004,7 +3057,7 @@ describe('Navigator', () => {
             const parentEntry = renderResult.renderedDOM.getByTestId(
               `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
             )
-            expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
+            expect((parentEntry.firstChild?.firstChild as HTMLElement).style.outline).toEqual(
               '1px solid var(--utopitheme-navigatorResizeHintBorder)',
             )
 
@@ -3222,7 +3275,7 @@ describe('Navigator', () => {
           const parentEntry = renderResult.renderedDOM.getByTestId(
             `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot`,
           )
-          expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
+          expect((parentEntry.firstChild?.firstChild as HTMLElement).style.outline).toEqual(
             '1px solid var(--utopitheme-navigatorResizeHintBorder)',
           )
 
@@ -3297,7 +3350,7 @@ describe('Navigator', () => {
           const parentEntry = renderResult.renderedDOM.getByTestId(
             `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot`,
           )
-          expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
+          expect((parentEntry.firstChild?.firstChild as HTMLElement).style.outline).toEqual(
             '1px solid var(--utopitheme-navigatorResizeHintBorder)',
           )
 
@@ -3372,7 +3425,7 @@ describe('Navigator', () => {
           const parentEntry = renderResult.renderedDOM.getByTestId(
             `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot`,
           )
-          expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
+          expect((parentEntry.firstChild?.firstChild as HTMLElement).style.outline).toEqual(
             '1px solid var(--utopitheme-navigatorResizeHintBorder)',
           )
 
@@ -3450,7 +3503,7 @@ describe('Navigator', () => {
             const parentEntry = renderResult.renderedDOM.getByTestId(
               `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
             )
-            expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
+            expect((parentEntry.firstChild?.firstChild as HTMLElement).style.outline).toEqual(
               '1px solid var(--utopitheme-navigatorResizeHintBorder)',
             )
 
@@ -5708,6 +5761,22 @@ describe('Navigator row order', () => {
       'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
       'regular-sb/scene/pg:dbc/78c/891',
     ])
+  })
+
+  it('is correct in the presence of an early return', async () => {
+    const renderResult = await renderTestEditorWithModel(
+      projectWithEarlyReturn,
+      'await-first-dom-report',
+    )
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
+      ['regular-sb/scene'],
+    )
+    expect(
+      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+    ).toEqual(['regular-sb/scene'])
   })
 })
 

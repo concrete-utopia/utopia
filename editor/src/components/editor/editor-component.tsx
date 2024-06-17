@@ -3,7 +3,7 @@
 /** @jsxFrag React.Fragment */
 import { css, jsx, keyframes } from '@emotion/react'
 import { chrome as isChrome } from 'platform-detect'
-import React from 'react'
+import React, { useEffect } from 'react'
 import ReactDOM from 'react-dom'
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
@@ -92,6 +92,7 @@ import {
 } from '../navigator/navigator-item/component-picker-context-menu'
 import { useGithubPolling } from '../../core/shared/github/helpers'
 import { useAtom } from 'jotai'
+import { clearOpenMenuIds } from '../../core/shared/menu-state'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -232,6 +233,10 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
   )
 
   const showComponentPicker = useCreateCallbackToShowComponentPicker()
+
+  React.useEffect(() => {
+    clearOpenMenuIds()
+  }, [])
 
   const onWindowKeyDown = React.useCallback(
     (event: KeyboardEvent) => {

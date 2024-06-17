@@ -66,6 +66,14 @@ import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import type { InsertionPath } from '../../../editor/store/insertion-path'
 import { childInsertionPath } from '../../../editor/store/insertion-path'
 
+/**
+ *
+ * NOTE: https://github.com/concrete-utopia/utopia/pull/5819 deleted a bunch of
+ * tests for this strategy that relied on the legacy insert menu.
+ *
+ * ! IF YOU WORK ON THIS, PLEASE RESURRECT THE TESTS AND MAKE THEM USE THE 'F' SHORTCUT !
+ *
+ */
 export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,

@@ -15,13 +15,13 @@ export interface RemixSceneProps {
   style?: React.CSSProperties
   [UTOPIA_PATH_KEY]?: string
   getLoadContext?: (request: Request) => Promise<AppLoadContext> | AppLoadContext
+  startingRoute?: string
 }
 
 export const RemixSceneComponent = React.memo((props: React.PropsWithChildren<RemixSceneProps>) => {
   const colorTheme = useColorTheme()
-  const canvasIsLive = false
 
-  const { style, getLoadContext, ...remainingProps } = props
+  const { style, getLoadContext, startingRoute, ...remainingProps } = props
 
   const sceneStyle: React.CSSProperties = {
     position: 'relative',
@@ -51,7 +51,11 @@ export const RemixSceneComponent = React.memo((props: React.PropsWithChildren<Re
       style={sceneStyle}
       onMouseDown={onMouseDown}
     >
-      <UtopiaRemixRootComponent data-path={path} getLoadContext={getLoadContext} />
+      <UtopiaRemixRootComponent
+        data-path={path}
+        getLoadContext={getLoadContext}
+        startingRoute={startingRoute}
+      />
     </div>
   )
 })

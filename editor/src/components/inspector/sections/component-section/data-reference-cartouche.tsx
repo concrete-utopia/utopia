@@ -16,11 +16,18 @@ import { selectComponents } from '../../../editor/actions/meta-actions'
 import { dataPathSuccess, traceDataFromElement } from '../../../../core/data-tracing/data-tracing'
 import type { RenderedAt } from '../../../editor/store/editor-state'
 import { replaceElementInScope } from '../../../editor/actions/action-creators'
-import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'
-import { DataPickerPreferredAllAtom, jsxElementChildToValuePath } from './data-picker-utils'
+import {
+  getCartoucheDataTypeForExpression,
+  useVariablesInScopeForSelectedElement,
+} from './variables-in-scope-utils'
+import { jsxElementChildToValuePath } from './data-picker-utils'
 import { useAtom } from 'jotai'
-import type { CartoucheUIProps } from './cartouche-ui'
+import type { CartoucheDataType, CartoucheHighlight, CartoucheUIProps } from './cartouche-ui'
 import { CartoucheUI } from './cartouche-ui'
+import * as PP from '../../../../core/shared/property-path'
+import { AllHtmlEntities } from 'html-entities'
+
+const htmlEntities = new AllHtmlEntities()
 
 interface DataReferenceCartoucheControlProps {
   elementPath: ElementPath
@@ -28,6 +35,7 @@ interface DataReferenceCartoucheControlProps {
   selected: boolean
   renderedAt: RenderedAt
   surroundingScope: ElementPath
+  highlight?: CartoucheHighlight | null
 }
 
 export const DataReferenceCartoucheControl = React.memo(
@@ -38,11 +46,16 @@ export const DataReferenceCartoucheControl = React.memo(
 
     const contentsToDisplay = useEditorState(
       Substores.metadata,
-      (store) =>
-        getTextContentOfElement(
+      (store) => {
+        const content = getTextContentOfElement(
           childOrAttribute,
           MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, elementPath),
-        ),
+        )
+        if (content.label != null) {
+          return { ...content, label: htmlEntities.decode(content.label) }
+        }
+        return content
+      },
       'DataReferenceCartoucheControl contentsToDisplay',
     )
 
@@ -90,26 +103,33 @@ export const DataReferenceCartoucheControl = React.memo(
       props.renderedAt.type === 'element-property-path'
         ? props.renderedAt.elementPropertyPath.propertyPath
         : props.renderedAt.type === 'child-node'
-        ? null
+        ? PP.create('children')
         : assertNever(props.renderedAt)
 
-    const [preferredAllState] = useAtom(DataPickerPreferredAllAtom)
-
-    const variableNamesInScope = useVariablesInScopeForSelectedElement(
-      elementPath,
-      propertyPath,
-      preferredAllState,
-    )
+    const variableNamesInScope = useVariablesInScopeForSelectedElement(elementPath, propertyPath)
 
     const pathToCurrenlySelectedValue = React.useMemo(
       () => jsxElementChildToValuePath(childOrAttribute),
       [childOrAttribute],
     )
 
+    const currentlySelectedValueDataType = useEditorState(
+      Substores.projectContentsAndMetadataAndVariablesInScope,
+      (store) => {
+        return getCartoucheDataTypeForExpression(
+          elementPath,
+          childOrAttribute,
+          store.editor.variablesInScope,
+        )
+      },
+      'DataReferenceCartoucheControl currentlySelectedValueDataType',
+    )
+
     const dataPickerButtonData = useDataPickerButton(
       variableNamesInScope,
       updateDataWithDataPicker,
       pathToCurrenlySelectedValue,
+      elementPath,
     )
 
     const isDataComingFromHookResult = dataTraceResult.type === 'hook-result'
@@ -127,10 +147,11 @@ export const DataReferenceCartoucheControl = React.memo(
           contentsToDisplay={contentsToDisplay}
           selected={selected}
           safeToDelete={false}
-          inverted={false}
+          highlight={props.highlight}
           onDelete={NO_OP}
           testId={`data-reference-cartouche-${EP.toString(elementPath)}`}
           contentIsComingFromServer={isDataComingFromHookResult}
+          datatype={currentlySelectedValueDataType}
         />
         {/* this div prevents the popup form putting padding into the condensed rows */}
         <div style={{ width: 0 }}>
@@ -141,16 +162,23 @@ export const DataReferenceCartoucheControl = React.memo(
   },
 )
 
+export type DataReferenceCartoucheContentType = 'value-literal' | 'object-literal' | 'reference'
 interface DataCartoucheInnerProps {
   onClick: (e: React.MouseEvent) => void
   onDoubleClick: (e: React.MouseEvent) => void
   selected: boolean
-  inverted: boolean
-  contentsToDisplay: { type: 'literal' | 'reference'; label: string | null }
+  contentsToDisplay: {
+    type: DataReferenceCartoucheContentType
+    label: string | null
+    shortLabel: string | null
+  }
   safeToDelete: boolean
   onDelete: () => void
   testId: string
   contentIsComingFromServer: boolean
+  datatype: CartoucheDataType
+  highlight?: CartoucheHighlight | null
+  badge?: React.ReactNode
 }
 
 export const DataCartoucheInner = React.forwardRef(
@@ -161,10 +189,11 @@ export const DataCartoucheInner = React.forwardRef(
       safeToDelete,
       onDelete: onDeleteCallback,
       selected,
-      inverted,
+      highlight,
       testId,
       contentsToDisplay,
       contentIsComingFromServer,
+      datatype,
     } = props
 
     const onDeleteInner = React.useCallback(
@@ -178,8 +207,10 @@ export const DataCartoucheInner = React.forwardRef(
     const onDelete = safeToDelete ? onDeleteInner : undefined
 
     const source: CartoucheUIProps['source'] =
-      contentsToDisplay.type === 'literal'
-        ? 'literal'
+      contentsToDisplay.type === 'value-literal'
+        ? 'inline-literal'
+        : contentsToDisplay.type === 'object-literal'
+        ? 'internal'
         : contentIsComingFromServer
         ? 'external'
         : 'internal'
@@ -189,16 +220,17 @@ export const DataCartoucheInner = React.forwardRef(
         onDelete={onDelete}
         onClick={onClick}
         onDoubleClick={onDoubleClick}
-        datatype='renderable' // TODO actually feed the real value here
+        datatype={datatype}
         selected={selected}
-        inverted={inverted}
+        highlight={highlight}
         testId={testId}
-        tooltip={contentsToDisplay.label ?? 'DATA'}
+        tooltip={contentsToDisplay.label ?? contentsToDisplay.shortLabel ?? 'DATA'}
         role='selection'
         source={source}
         ref={ref}
+        badge={props.badge}
       >
-        {contentsToDisplay.label ?? 'DATA'}
+        {contentsToDisplay.shortLabel ?? contentsToDisplay.label ?? 'DATA'}
       </CartoucheUI>
     )
   },
@@ -207,46 +239,55 @@ export const DataCartoucheInner = React.forwardRef(
 export function getTextContentOfElement(
   element: JSXElementChild,
   metadata: ElementInstanceMetadata | null,
-): { type: 'literal' | 'reference'; label: string | null } {
+): {
+  type: DataReferenceCartoucheContentType
+  label: string | null
+  shortLabel: string | null
+} {
   switch (element.type) {
     case 'ATTRIBUTE_VALUE':
-      return { type: 'literal', label: `${JSON.stringify(element.value)}` }
+      return { type: 'value-literal', label: `${JSON.stringify(element.value)}`, shortLabel: null }
     case 'JSX_TEXT_BLOCK':
-      return { type: 'literal', label: `'${element.text}'` }
+      return { type: 'value-literal', label: element.text.trim(), shortLabel: null }
     case 'JS_IDENTIFIER':
-      return { type: 'reference', label: `${element.name}` }
+      return { type: 'reference', label: element.name.trim(), shortLabel: null }
     case 'JS_ELEMENT_ACCESS':
       return {
         type: 'reference',
         label: `${getTextContentOfElement(element.onValue, null).label}[${
           getTextContentOfElement(element.element, null).label
         }]`,
+        shortLabel: `${TruncationPrefix}${getTextContentOfElement(element.element, null).label}`,
       }
     case 'JS_PROPERTY_ACCESS':
       return {
         type: 'reference',
         label: `${getTextContentOfElement(element.onValue, null).label}.${element.property}`,
+        shortLabel: `${TruncationPrefix}${element.property}`,
       }
     case 'ATTRIBUTE_FUNCTION_CALL':
-      return { type: 'reference', label: `${element.functionName}(...` }
+      return { type: 'reference', label: `${element.functionName}(...`, shortLabel: null }
     case 'JSX_ELEMENT':
       return {
-        type: 'literal',
+        type: 'object-literal',
         label: metadata?.textContent ?? `${getJSXElementNameLastPart(element.name)}`,
+        shortLabel: null,
       }
     case 'ATTRIBUTE_NESTED_ARRAY':
-      return { type: 'literal', label: '[...]' }
+      return { type: 'object-literal', label: '[...]', shortLabel: null }
     case 'ATTRIBUTE_NESTED_OBJECT':
-      return { type: 'literal', label: '{...}' }
+      return { type: 'object-literal', label: '{...}', shortLabel: null }
     case 'JSX_MAP_EXPRESSION':
-      return { type: 'literal', label: 'List' }
+      return { type: 'object-literal', label: 'List', shortLabel: null }
     case 'JSX_CONDITIONAL_EXPRESSION':
-      return { type: 'literal', label: 'Conditional' }
+      return { type: 'object-literal', label: 'Conditional', shortLabel: null }
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      return { type: 'literal', label: element.originalJavascript }
+      return { type: 'object-literal', label: element.originalJavascript, shortLabel: null }
     case 'JSX_FRAGMENT':
-      return { type: 'literal', label: 'Fragment' }
+      return { type: 'object-literal', label: 'Fragment', shortLabel: null }
     default:
       assertNever(element)
   }
 }
+
+const TruncationPrefix = `…`

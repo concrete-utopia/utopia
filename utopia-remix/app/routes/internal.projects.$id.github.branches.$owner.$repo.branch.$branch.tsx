@@ -61,6 +61,8 @@ async function handler(req: Request, params: Params<string>) {
       branch: branch,
       uploadAssets: body.uploadAssets,
       existingAssets: body.existingAssets ?? [],
+      previousCommitSha: body.previousCommitSha,
+      specificCommitSha: body.specificCommitSha,
     }),
   )
 }

@@ -21,7 +21,6 @@ import { ErrorsPane } from '../code-editor/errors-pane'
 import { CanvasStrategyInspector } from './canvas-strategies/canvas-strategy-inspector'
 import { IS_TEST_ENVIRONMENT, getQueryParam } from '../../common/env-vars'
 import { when } from '../../utils/react-conditionals'
-import { InsertMenuPane } from '../navigator/insert-menu-pane'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { GridPanelsContainer } from './grid-panels-container'
 import { TitleBarCode, TitleBarUserProfile } from '../titlebar/title-bar'
@@ -35,6 +34,7 @@ import { CommentsPane } from '../inspector/comments-pane'
 import { EditorModes, isCommentMode } from '../editor/editor-modes'
 import { useAllowedToEditProject } from '../editor/store/collaborative-editing'
 import { useCanComment } from '../../core/commenting/comment-hooks'
+import { ElementsOutsideVisibleAreaIndicator } from '../editor/elements-outside-visible-area-indicator'
 
 function isCodeEditorEnabled(): boolean {
   if (typeof window !== 'undefined') {
@@ -83,6 +83,7 @@ const DesignPanelRootInner = React.memo(() => {
             }}
           >
             <CanvasWrapperComponent />
+            <ElementsOutsideVisibleAreaIndicator />
             <GridPanelsContainer />
           </SimpleFlexColumn>
         }
@@ -232,7 +233,6 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
           backgroundColor: colorTheme.inspectorBackground.value,
         }}
       >
-        {when(selectedTab === RightMenuTab.Insert, <InsertMenuPane />)}
         {when(selectedTab === RightMenuTab.Inspector, <InspectorEntryPoint />)}
         {when(selectedTab === RightMenuTab.Settings, <SettingsPane />)}
         {when(selectedTab === RightMenuTab.Comments, <CommentsPane />)}

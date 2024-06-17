@@ -1,35 +1,39 @@
 import React from 'react'
-import { isPrefixOf, last } from '../../../../core/shared/array-utils'
+import { groupBy, isPrefixOf } from '../../../../core/shared/array-utils'
+import * as EP from '../../../../core/shared/element-path'
 import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
+import { optionalMap } from '../../../../core/shared/optional-utils'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import {
   CanvasContextMenuPortalTargetID,
   arrayEqualsByReference,
-  assertNever,
+  arrayEqualsByValue,
 } from '../../../../core/shared/utils'
 import { when } from '../../../../utils/react-conditionals'
 import {
   FlexColumn,
   FlexRow,
   Icons,
-  PopupList,
+  LargerIcons,
   UtopiaStyles,
   UtopiaTheme,
   useColorTheme,
 } from '../../../../uuiui'
-import { getControlStyles } from '../../common/control-styles'
-import type { SelectOption } from '../../controls/select-control'
+import type { FileRootPath } from '../../../canvas/ui-jsx-canvas'
+import { insertionCeilingToString } from '../../../canvas/ui-jsx-canvas'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { InspectorModal } from '../../widgets/inspector-modal'
-import type { CartoucheUIProps, HoverHandlers } from './cartouche-ui'
-import { CartoucheUI } from './cartouche-ui'
-import type {
-  ArrayOption,
-  DataPickerCallback,
-  JSXOption,
-  ObjectOption,
-  PrimitiveOption,
-  DataPickerOption,
-  ObjectPath,
+import {
+  getEnclosingScopes,
+  type DataPickerCallback,
+  type DataPickerOption,
+  type ObjectPath,
 } from './data-picker-utils'
+import { DataSelectorColumns } from './data-selector-columns'
+import { DataSelectorLeftSidebar } from './data-selector-left-sidebar'
+import { DataSelectorSearch } from './data-selector-search'
+import { variableMatches } from './variables-in-scope-utils'
+import { DataPickerCartouche } from './data-selector-cartouche'
 
 export const DataSelectorPopupBreadCrumbsTestId = 'data-selector-modal-top-bar'
 
@@ -39,212 +43,149 @@ export interface DataSelectorModalProps {
   variablesInScope: DataPickerOption[]
   onPropertyPicked: DataPickerCallback
   startingSelectedValuePath: ObjectPath | null
-}
-
-const Separator = React.memo(
-  ({
-    color,
-    spanGridColumns,
-    margin,
-  }: {
-    color: string
-    spanGridColumns?: number
-    margin: number
-  }) => {
-    return (
-      <div
-        style={{
-          width: '100%',
-          height: 1,
-          margin: `${margin}px 0px`,
-          backgroundColor: color,
-          gridColumn: spanGridColumns == null ? undefined : `1 / span ${spanGridColumns}`,
-        }}
-      ></div>
-    )
-  },
-)
-
-const SIMPLE_CONTROL_STYLES = getControlStyles('simple')
-
-function ArrayIndexSelector({
-  total,
-  selected,
-  onSelect,
-}: {
-  total: number
-  selected: number
-  onSelect: (_: SelectOption) => void
-}) {
-  const options: SelectOption[] = React.useMemo(
-    () =>
-      Array(total)
-        .fill(0)
-        .map((_, i) => ({ value: i, label: `${i + 1}` })),
-    [total],
-  )
-
-  return (
-    <PopupList
-      id={'data-selector-index-select'}
-      value={{ label: `${selected + 1}`, value: selected }}
-      options={options}
-      onSubmitValue={onSelect}
-      controlStyles={SIMPLE_CONTROL_STYLES}
-      style={{ background: 'transparent' }}
-    />
-  )
-}
-
-const DEFAULT_SIZE: React.CSSProperties = {
-  minWidth: 600,
-  minHeight: 50,
-  maxWidth: 700,
-  maxHeight: 300,
-}
-
-interface ProcessedVariablesInScope {
-  [valuePath: string]: DataPickerOption
-}
-
-interface ArrayIndexLookup {
-  [valuePath: string]: number
+  lowestInsertionCeiling: ElementPath | null
 }
 
 export const DataSelectorModal = React.memo(
   React.forwardRef<HTMLDivElement, DataSelectorModalProps>(
     (
-      { style, closePopup, variablesInScope, onPropertyPicked, startingSelectedValuePath },
+      {
+        style,
+        closePopup,
+        variablesInScope: allVariablesInScope,
+        onPropertyPicked,
+        startingSelectedValuePath,
+        lowestInsertionCeiling,
+      },
       forwardedRef,
     ) => {
       const colorTheme = useColorTheme()
 
-      const [navigatedToPath, setNavigatedToPath] = React.useState<ObjectPath>([])
-
-      const [selectedPath, setSelectedPath] = React.useState<ObjectPath | null>(
-        startingSelectedValuePath,
+      const scopeBuckets = React.useMemo(
+        () => putVariablesIntoScopeBuckets(allVariablesInScope),
+        [allVariablesInScope],
       )
-      const [hoveredPath, setHoveredPath] = React.useState<ObjectPath | null>(null)
 
-      const setNavigatedToPathCurried = React.useCallback(
-        (path: DataPickerOption['valuePath']) => (e: React.MouseEvent) => {
-          e.stopPropagation()
-          e.preventDefault()
+      const lowestMatchingScope: ElementPath | FileRootPath = React.useMemo(() => {
+        if (lowestInsertionCeiling == null) {
+          return { type: 'file-root' }
+        }
 
-          setNavigatedToPath(path)
-          setSelectedPath(null)
-          setHoveredPath(null)
+        const scopeFromStartedSelectedValuePath = optionalMap(
+          (s) => getSelectedScopeFromBuckets(s, scopeBuckets),
+          startingSelectedValuePath,
+        )
+
+        if (scopeFromStartedSelectedValuePath != null) {
+          return scopeFromStartedSelectedValuePath
+        }
+
+        const matchingScope = findClosestMatchingScope(lowestInsertionCeiling, scopeBuckets)
+        return matchingScope
+      }, [lowestInsertionCeiling, startingSelectedValuePath, scopeBuckets])
+
+      const [selectedScope, setSelectedScope] = React.useState<ElementPath | FileRootPath>(
+        lowestMatchingScope,
+      )
+      const setSelectedScopeAndResetSelection = React.useCallback(
+        (scope: ElementPath | FileRootPath) => {
+          setSelectedScope(scope)
+          setSelectedVariableOption(null)
         },
         [],
       )
 
-      const onHomeClick = React.useCallback(
-        (e: React.MouseEvent) => {
+      const { filteredVariablesInScope } = useFilterVariablesInScope(
+        allVariablesInScope,
+        scopeBuckets,
+        selectedScope,
+      )
+
+      const searchBoxRef = React.useRef<HTMLInputElement>(null)
+
+      const scopeLabels = useEditorState(
+        Substores.fullStore,
+        (store) => {
+          const scopes = getEnclosingScopes(
+            store.editor.jsxMetadata,
+            store.editor.allElementProps,
+            store.editor.elementPathTree,
+            store.editor.projectContents,
+            Object.keys(scopeBuckets),
+            lowestInsertionCeiling ?? EP.emptyElementPath,
+          )
+          return scopes.map(({ insertionCeiling, label, hasContent }) => ({
+            label: label,
+            scope: insertionCeiling,
+            hasContent: hasContent,
+          }))
+        },
+        'DataSelectorModal scopeLabels',
+      )
+
+      const [selectedVariableOption, setSelectedVariableOption] =
+        React.useState<DataPickerOption | null>(
+          getVariableInScope(filteredVariablesInScope, startingSelectedValuePath),
+        )
+
+      const [searchTerm, setSearchTerm] = React.useState<string | null>(null)
+      const onStartSearch = React.useCallback(() => {
+        searchBoxRef.current?.focus()
+        setSearchTerm('')
+      }, [])
+
+      const cancelSearch = React.useCallback(() => {
+        setSearchTerm(null)
+        searchBoxRef.current?.blur()
+      }, [])
+
+      const onSearchFieldValueChange = React.useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
           e.stopPropagation()
           e.preventDefault()
-
-          setNavigatedToPathCurried([])(e)
+          setSearchTerm(e.target.value)
         },
-        [setNavigatedToPathCurried],
+        [],
       )
 
       const catchClick = React.useCallback((e: React.MouseEvent) => {
         e.stopPropagation()
         e.preventDefault()
-
-        setSelectedPath(null)
       }, [])
 
-      const onHover = React.useCallback(
-        (path: DataPickerOption['valuePath']): HoverHandlers => ({
-          onMouseEnter: () => setHoveredPath(path),
-          onMouseLeave: () => setHoveredPath(null),
-        }),
-        [],
-      )
+      const altKeyPressedForceApplyMode = useAltKeyPressed()
 
-      const [indexLookup, setIndexLookup] = React.useState<ArrayIndexLookup>({})
-      const updateIndexInLookup = React.useCallback(
-        (valuePathString: string) => (option: SelectOption) =>
-          setIndexLookup((lookup) => ({ ...lookup, [valuePathString]: option.value })),
-        [],
-      )
-
-      const processedVariablesInScope = useProcessVariablesInScope(variablesInScope)
-
-      const focusedVariableChildren = React.useMemo(() => {
-        if (navigatedToPath.length === 0) {
-          return variablesInScope
-        }
-
-        const scopeToShow = processedVariablesInScope[navigatedToPath.toString()]
-        if (
-          scopeToShow == null ||
-          (scopeToShow.type !== 'array' && scopeToShow.type !== 'object')
-        ) {
-          return [] // TODO this should never happen!
-        }
-        return scopeToShow.children
-      }, [navigatedToPath, processedVariablesInScope, variablesInScope])
-
-      const { primitiveVars, folderVars } = React.useMemo(() => {
-        let primitives: Array<PrimitiveOption | JSXOption> = []
-        let folders: Array<ArrayOption | ObjectOption> = []
-
-        for (const option of focusedVariableChildren) {
-          switch (option.type) {
-            case 'array':
-            case 'object':
-              folders.push(option)
-              break
-            case 'jsx':
-            case 'primitive':
-              primitives.push(option)
-              break
-            default:
-              assertNever(option)
-          }
-        }
-
-        return { primitiveVars: primitives, folderVars: folders }
-      }, [focusedVariableChildren])
-
-      const setCurrentSelectedPathCurried = React.useCallback(
-        (path: DataPickerOption['valuePath']) => () => {
-          if (!isPrefixOf(navigatedToPath, path)) {
-            // if navigatedToPath is not a prefix of path, we don't update the selection
+      const onApplyVariable = React.useCallback(
+        (variable: DataPickerOption) => {
+          if (!altKeyPressedForceApplyMode && variable.variableInfo.matches !== 'matches') {
             return
           }
-          setSelectedPath(path)
+          onPropertyPicked(
+            jsExpressionOtherJavaScriptSimple(variable.variableInfo.expression, [
+              variable.definedElsewhere,
+            ]),
+          )
+          closePopup()
         },
-        [navigatedToPath],
+        [closePopup, onPropertyPicked, altKeyPressedForceApplyMode],
       )
 
-      const activeTargetPath = selectedPath ?? navigatedToPath
-      const pathInTopBarIncludingHover = hoveredPath ?? activeTargetPath
-
-      const onApplyClick = React.useCallback(() => {
-        const variable = processedVariablesInScope[activeTargetPath.toString()]
-        if (variable == null) {
+      const onApplySelectedVariable = React.useCallback(() => {
+        if (selectedVariableOption == null) {
           return
         }
+        onApplyVariable(selectedVariableOption)
+      }, [onApplyVariable, selectedVariableOption])
 
-        onPropertyPicked(
-          jsExpressionOtherJavaScriptSimple(variable.variableInfo.expression, [
-            variable.definedElsewhere,
-          ]),
-        )
-        closePopup()
-      }, [closePopup, onPropertyPicked, processedVariablesInScope, activeTargetPath])
+      const navigateToSearchResult = React.useCallback((variable: DataPickerOption) => {
+        setSearchTerm(null)
+        setSelectedVariableOption(variable)
+      }, [])
 
-      const valuePreviewText = (() => {
-        const variable = processedVariablesInScope[pathInTopBarIncludingHover.toString()]
-        if (variable == null) {
-          return null
-        }
+      const searchNullOrEmpty = searchTerm == null || searchTerm.length < 1
 
-        return JSON.stringify(variable.variableInfo.value, undefined, 2)
-      })()
+      const selectedVariableIsDisabled =
+        optionalMap((v) => !variableMatches(v.variableInfo), selectedVariableOption) ?? true
 
       return (
         <InspectorModal
@@ -270,203 +211,174 @@ export const DataSelectorModal = React.memo(
             }}
             onClick={closePopup}
           >
-            <FlexColumn
-              onClick={catchClick}
+            <FlexRow
               ref={forwardedRef}
+              onClick={catchClick}
               style={{
-                ...style,
-                ...DEFAULT_SIZE,
-                paddingTop: 16,
-                paddingLeft: 16,
-                paddingRight: 16,
+                minWidth: 850,
+                height: 300,
                 backgroundColor: colorTheme.inspectorBackground.value,
                 color: colorTheme.fg1.value,
                 overflow: 'hidden',
                 borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
                 boxShadow: UtopiaStyles.shadowStyles.highest.boxShadow,
                 border: `1px solid ${colorTheme.fg0Opacity10.value}`,
+                ...style,
               }}
             >
-              {/* top bar */}
-              <FlexRow style={{ justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
-                <FlexRow style={{ gap: 8, flexWrap: 'wrap', flexGrow: 1 }}>
+              <DataSelectorLeftSidebar
+                scopes={scopeLabels}
+                activeScope={selectedScope}
+                setSelectedScope={setSelectedScopeAndResetSelection}
+              />
+              <FlexColumn
+                style={{
+                  alignSelf: 'stretch',
+                  flexGrow: 1,
+                  overflow: 'hidden',
+                  width: 700,
+                }}
+              >
+                <FlexRow style={{ padding: '8px 8px 5px' }}>
                   <FlexRow
                     style={{
                       flexGrow: 1,
-                      borderStyle: 'solid',
-                      borderWidth: 1,
-                      borderColor: colorTheme.fg7.value,
-                      borderRadius: 4,
-                      fontSize: 11,
-                      fontWeight: 400,
-                      height: 33,
-                      padding: '0px 6px',
+                      height: 24,
+                      padding: '6px 8px',
+                      borderRadius: 16,
+                      gap: 4,
+                      border: `1px solid ${colorTheme.subduedBorder.value}`,
                     }}
                   >
-                    <FlexRow
-                      data-testid={DataSelectorPopupBreadCrumbsTestId}
-                      style={{ flexWrap: 'wrap', flexGrow: 1 }}
-                    >
-                      {pathBreadcrumbs(pathInTopBarIncludingHover, processedVariablesInScope).map(
-                        ({ segment, path }, idx) => (
-                          <span key={path.toString()}>
-                            {idx === 0 ? segment : pathSegmentToString(segment)}
-                          </span>
-                        ),
-                      )}
-                    </FlexRow>
-                    <div
+                    <LargerIcons.MagnifyingGlass style={{ zoom: 0.5 }} />
+                    <input
+                      onClick={onStartSearch}
+                      onFocus={onStartSearch}
+                      onChange={onSearchFieldValueChange}
+                      ref={searchBoxRef}
+                      value={searchTerm ?? ''}
+                      data-testId='data-selector-modal-search-input'
+                      placeholder='Search data'
                       style={{
-                        ...disabledButtonStyles(activeTargetPath.length === 0),
-                        fontWeight: 400,
-                        fontSize: 12,
+                        outline: 'none',
+                        border: 'none',
+                        paddingRight: 14,
+                        flex: 1,
                       }}
-                      onClick={onHomeClick}
-                    >
-                      <Icons.Cross />
-                    </div>
+                    />
+                    {when(
+                      searchTerm != null,
+                      <Icons.CrossInTranslucentCircle
+                        style={{ cursor: 'pointer', position: 'fixed', right: 0, marginRight: 14 }}
+                        onClick={cancelSearch}
+                      />,
+                    )}
                   </FlexRow>
                 </FlexRow>
-                <div
+                <FlexColumn
                   style={{
-                    borderRadius: 4,
-                    backgroundColor: colorTheme.primary.value,
-                    color: 'white',
-                    padding: '8px 12px',
-                    fontSize: 14,
-                    fontWeight: 500,
-                    ...disabledButtonStyles(activeTargetPath.length === 0),
+                    flexGrow: 1,
+                    overflow: 'hidden',
+                    contain: 'content',
                   }}
-                  onClick={onApplyClick}
                 >
-                  Apply
-                </div>
-              </FlexRow>
-              {/* Value preview */}
-              <FlexRow
-                style={{
-                  gridColumn: '3',
-                  flexWrap: 'wrap',
-                  gap: 4,
-                  overflowX: 'scroll',
-                  opacity: 0.8,
-                  fontSize: 10,
-                  height: 20,
-                }}
-              >
-                {valuePreviewText}
-              </FlexRow>
-              <Separator color={colorTheme.seperator.value} margin={12} />
-              {/* detail view */}
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'auto 40px 1fr',
-                  gap: 8,
-                  overflowY: 'scroll',
-                  overflowX: 'hidden',
-                  paddingBottom: 16,
-                }}
-              >
+                  {searchNullOrEmpty ? (
+                    <DataSelectorColumns
+                      activeScope={filteredVariablesInScope}
+                      targetPathInsideScope={selectedVariableOption?.valuePath ?? []}
+                      onTargetPathChange={setSelectedVariableOption}
+                      onApplySelection={onApplyVariable}
+                    />
+                  ) : (
+                    <DataSelectorSearch
+                      searchTerm={searchTerm}
+                      setNavigatedToPath={navigateToSearchResult}
+                      allVariablesInScope={allVariablesInScope}
+                    />
+                  )}
+                </FlexColumn>
                 {when(
-                  primitiveVars.length > 0,
+                  searchNullOrEmpty,
                   <>
+                    {/* bottom bar */}
                     <FlexRow
                       style={{
-                        flexWrap: 'wrap',
-                        height: 'max-content',
-                        gap: 4,
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: 8,
+                        paddingTop: 10,
+                        paddingBottom: 10,
+                        paddingRight: 16,
                       }}
                     >
-                      {primitiveVars.map((variable) => (
-                        <CartoucheUI
-                          key={variable.valuePath.toString()}
-                          tooltip={variableNameFromPath(variable)}
-                          source={'internal'}
-                          datatype={childTypeToCartoucheDataType(variable.type)}
-                          inverted={false}
-                          selected={
-                            selectedPath == null
-                              ? false
-                              : arrayEqualsByReference(selectedPath, variable.valuePath)
-                          }
-                          role={cartoucheFolderOrInfo(variable, 'no-folder')}
-                          testId={`data-selector-primitive-values-${variableNameFromPath(
-                            variable,
-                          )}`}
-                          onHover={onHover(variable.valuePath)}
-                          onClick={setCurrentSelectedPathCurried(variable.valuePath)}
+                      <FlexRow style={{ gap: 8, paddingRight: 8, flexWrap: 'wrap', flexGrow: 1 }}>
+                        <FlexRow
+                          style={{
+                            flexGrow: 1,
+                            fontSize: 11,
+                            fontWeight: 500,
+                            padding: '0px 6px',
+                            alignItems: 'center',
+                          }}
                         >
-                          {variableNameFromPath(variable)}
-                        </CartoucheUI>
-                      ))}
+                          <FlexRow
+                            data-testid={DataSelectorPopupBreadCrumbsTestId}
+                            style={{ flexWrap: 'wrap', flexGrow: 1 }}
+                          >
+                            <span>Selection:</span>
+                            {selectedVariableOption != null ? (
+                              <DataPickerCartouche
+                                data={selectedVariableOption}
+                                selected={false}
+                                forcedRole='information'
+                              />
+                            ) : null}
+                          </FlexRow>
+                        </FlexRow>
+                      </FlexRow>
+                      <div
+                        style={{
+                          borderRadius: 4,
+                          backgroundColor: colorTheme.white.value,
+                          color: colorTheme.fg0.value,
+                          border: `1px solid ${colorTheme.subduedBorder.value}`,
+                          padding: 3,
+                          fontSize: 11,
+                          fontWeight: 400,
+                          height: 24,
+                          width: 81,
+                          textAlign: 'center',
+                        }}
+                        onClick={closePopup}
+                      >
+                        Cancel
+                      </div>
+                      <div
+                        style={{
+                          borderRadius: 4,
+                          backgroundColor: colorTheme.black.value,
+                          color: 'white',
+                          padding: 3,
+                          fontSize: 11,
+                          fontWeight: 400,
+                          height: 24,
+                          width: 81,
+                          textAlign: 'center',
+                          ...disabledButtonStyles(
+                            !altKeyPressedForceApplyMode && selectedVariableIsDisabled,
+                          ),
+                        }}
+                        onClick={onApplySelectedVariable}
+                      >
+                        {altKeyPressedForceApplyMode && selectedVariableIsDisabled
+                          ? 'Force Apply'
+                          : 'Apply'}
+                      </div>
                     </FlexRow>
-                    <Separator color={colorTheme.seperator.value} spanGridColumns={3} margin={4} />
                   </>,
                 )}
-                {folderVars.map((variable, idx) => (
-                  <React.Fragment key={variable.valuePath.toString()}>
-                    <CartoucheUI
-                      tooltip={variableNameFromPath(variable)}
-                      datatype={childTypeToCartoucheDataType(variable.type)}
-                      source={'internal'}
-                      inverted={false}
-                      selected={
-                        selectedPath == null
-                          ? false
-                          : arrayEqualsByReference(selectedPath, variable.valuePath)
-                      }
-                      role={cartoucheFolderOrInfo(variable, 'no-folder')}
-                      testId={`data-selector-left-section-${variableNameFromPath(variable)}`}
-                      onClick={setCurrentSelectedPathCurried(variable.valuePath)}
-                      onHover={onHover(variable.valuePath)}
-                    >
-                      {variableNameFromPath(variable)}
-                    </CartoucheUI>
-                    {variable.type === 'array' ? (
-                      <ArrayIndexSelector
-                        total={variable.children.length}
-                        selected={indexLookup[variable.valuePath.toString()] ?? 0}
-                        onSelect={updateIndexInLookup(variable.valuePath.toString())}
-                      />
-                    ) : (
-                      <div />
-                    )}
-                    {/* properties in scope */}
-                    <FlexRow style={{ flexWrap: 'wrap', height: 'max-content', gap: 4 }}>
-                      {childVars(variable, indexLookup).map((child) => (
-                        <CartoucheUI
-                          key={child.valuePath.toString()}
-                          tooltip={variableNameFromPath(child)}
-                          source={'internal'}
-                          inverted={false}
-                          datatype={childTypeToCartoucheDataType(child.type)}
-                          selected={
-                            selectedPath == null
-                              ? false
-                              : arrayEqualsByReference(selectedPath, child.valuePath)
-                          }
-                          role={cartoucheFolderOrInfo(child, 'can-be-folder')}
-                          testId={`data-selector-right-section-${variableNameFromPath(child)}`}
-                          onClick={setCurrentSelectedPathCurried(child.valuePath)}
-                          onDoubleClick={setNavigatedToPathCurried(child.valuePath)}
-                          onHover={onHover(child.valuePath)}
-                        >
-                          {variableNameFromPath(child)}
-                        </CartoucheUI>
-                      ))}
-                    </FlexRow>
-                    {idx < focusedVariableChildren.length - 1 ? (
-                      <Separator
-                        color={colorTheme.seperator.value}
-                        spanGridColumns={3}
-                        margin={4}
-                      />
-                    ) : null}
-                  </React.Fragment>
-                ))}
-              </div>
-            </FlexColumn>
+              </FlexColumn>
+            </FlexRow>
           </div>
         </InspectorModal>
       )
@@ -474,118 +386,126 @@ export const DataSelectorModal = React.memo(
   ),
 )
 
-function childTypeToCartoucheDataType(
-  childType: DataPickerOption['type'],
-): CartoucheUIProps['datatype'] {
-  switch (childType) {
-    case 'array':
-      return 'array'
-    case 'object':
-      return 'object'
-    case 'jsx':
-    case 'primitive':
-      return 'renderable'
-    default:
-      assertNever(childType)
-  }
+type ScopeBuckets = {
+  [insertionCeiling: string]: Array<DataPickerOption>
 }
 
-function useProcessVariablesInScope(options: DataPickerOption[]): ProcessedVariablesInScope {
-  return React.useMemo(() => {
-    let lookup: ProcessedVariablesInScope = {}
-    function walk(option: DataPickerOption) {
-      lookup[option.valuePath.toString()] = option
-      switch (option.type) {
-        case 'array':
-        case 'object':
-          option.children.forEach((c) => walk(c))
-          return
-        case 'jsx':
-        case 'primitive':
-          return
-        default:
-          assertNever(option)
+function findClosestMatchingScope(
+  targetScope: ElementPath | FileRootPath,
+  scopeBuckets: ScopeBuckets,
+): ElementPath | FileRootPath {
+  if (targetScope.type === 'elementpath') {
+    const allPaths = EP.allPathsInsideComponent(targetScope)
+    for (const path of allPaths) {
+      if (scopeBuckets[EP.toString(path)] != null) {
+        return path
       }
     }
-    options.forEach((o) => walk(o))
-    return lookup
-  }, [options])
+  }
+
+  return { type: 'file-root' }
 }
 
-function childVars(option: DataPickerOption, indices: ArrayIndexLookup): DataPickerOption[] {
-  switch (option.type) {
-    case 'object':
-      return option.children
-    case 'array':
-      return option.children.length === 0
-        ? []
-        : childVars(option.children[indices[option.valuePath.toString()] ?? 0], indices)
-    case 'jsx':
-    case 'primitive':
-      return []
-    default:
-      assertNever(option)
-  }
+function putVariablesIntoScopeBuckets(options: DataPickerOption[]): ScopeBuckets {
+  const buckets: { [insertionCeiling: string]: Array<DataPickerOption> } = groupBy(
+    (o) => insertionCeilingToString(o.insertionCeiling),
+    options,
+  )
+
+  return buckets
 }
 
-export function pathBreadcrumbs(
-  valuePath: DataPickerOption['valuePath'],
-  processedVariablesInScope: ProcessedVariablesInScope,
-): Array<{
-  segment: string | number
-  path: (string | number)[]
-  role: CartoucheUIProps['role']
-  type: CartoucheUIProps['datatype']
-}> {
-  let accumulator = []
-  let current: (string | number)[] = []
-  for (const segment of valuePath) {
-    current.push(segment)
-    const optionFromLookup = processedVariablesInScope[current.toString()]
+function useFilterVariablesInScope(
+  options: DataPickerOption[],
+  scopeBuckets: ScopeBuckets,
+  scopeToShow: ElementPath | FileRootPath | 'do-not-filter',
+): {
+  filteredVariablesInScope: Array<DataPickerOption>
+} {
+  return React.useMemo(() => {
+    if (scopeToShow === 'do-not-filter') {
+      return {
+        filteredVariablesInScope: options,
+      }
+    }
 
-    accumulator.push({
-      segment: segment,
-      path: [...current],
-      role: cartoucheFolderOrInfo(optionFromLookup, 'can-be-folder'),
-      type: childTypeToCartoucheDataType(optionFromLookup.type),
-    })
-  }
-  return accumulator
-}
-
-function variableNameFromPath(variable: DataPickerOption): string {
-  return last(variable.valuePath)?.toString() ?? variable.variableInfo.expression.toString()
-}
-
-function cartoucheFolderOrInfo(
-  option: DataPickerOption,
-  canBeFolder: 'no-folder' | 'can-be-folder',
-): CartoucheUIProps['role'] {
-  if (option.variableInfo.matches) {
-    return 'selection'
-  }
-  switch (option.type) {
-    case 'object':
-      return canBeFolder === 'can-be-folder' ? 'folder' : 'information'
-    case 'array':
-    case 'jsx':
-    case 'primitive':
-      return 'information'
-    default:
-      assertNever(option)
-  }
+    const matchingScope = findClosestMatchingScope(scopeToShow, scopeBuckets)
+    const filteredOptions: Array<DataPickerOption> =
+      scopeBuckets[insertionCeilingToString(matchingScope)] ?? []
+    return {
+      filteredVariablesInScope: filteredOptions,
+    }
+  }, [scopeBuckets, options, scopeToShow])
 }
 
 function disabledButtonStyles(disabled: boolean): React.CSSProperties {
   return {
-    opacity: disabled ? 0.5 : 1,
+    opacity: disabled ? 0.3 : 1,
     cursor: disabled ? undefined : 'pointer',
   }
 }
 
-function pathSegmentToString(segment: string | number) {
-  if (typeof segment === 'string') {
-    return `.${segment}`
+function getSelectedScopeFromBuckets(
+  startingSelectedValuePath: ObjectPath,
+  scopeBuckets: ScopeBuckets,
+): ElementPath | null {
+  for (const [pathString, options] of Object.entries(scopeBuckets)) {
+    const anyOptionHasMatchingValuePath = options.some((o) =>
+      arrayEqualsByReference(o.valuePath, startingSelectedValuePath),
+    )
+    if (anyOptionHasMatchingValuePath) {
+      return EP.fromString(pathString)
+    }
   }
-  return `[${segment}]`
+
+  return null
+}
+
+function getVariableInScope(
+  variablesInScope: DataPickerOption[],
+  valuePath: ObjectPath | null,
+): DataPickerOption | null {
+  const looseEquals = (l: string | number, r: string | number) => l == r // props.startingSelectedValuePath seems to have strings for array indexes
+  function findOption(options: DataPickerOption[]): DataPickerOption | null {
+    if (valuePath == null) {
+      return null
+    }
+    for (const option of options) {
+      if (arrayEqualsByValue(option.valuePath, valuePath, looseEquals)) {
+        return option
+      }
+      if (isPrefixOf(option.valuePath, valuePath, looseEquals) && 'children' in option) {
+        const found = findOption(option.children)
+        if (found != null) {
+          return found
+        }
+      }
+    }
+    return null
+  }
+  return findOption(variablesInScope)
+}
+
+function useAltKeyPressed(): boolean {
+  const [altKeyPressed, setAltKeyPressed] = React.useState(false)
+  React.useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Alt') {
+        setAltKeyPressed(true)
+      }
+    }
+    function handleKeyUp(e: KeyboardEvent) {
+      if (e.key === 'Alt') {
+        setAltKeyPressed(false)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    window.addEventListener('keyup', handleKeyUp)
+    return function cleanup() {
+      window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('keyup', handleKeyUp)
+    }
+  }, [])
+
+  return altKeyPressed
 }
