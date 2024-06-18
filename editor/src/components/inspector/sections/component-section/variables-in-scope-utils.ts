@@ -322,30 +322,58 @@ function createPropertyAccessExpressionString(expressionSoFar: string, toAppend:
 
 type VariableMatcher = (_: VariableInfo) => VariableMatches | null
 
+interface MatchResult {
+  bucket: number
+  variable: VariableInfo
+}
+
+function getVariableMatch(
+  variable: VariableInfo,
+  matchers: Array<VariableMatcher>,
+): MatchResult | null {
+  for (const [idx, matcher] of matchers.entries()) {
+    const matches = matcher(variable)
+    if (matches != null) {
+      return { bucket: idx, variable: { ...variable, matches: matches } }
+    }
+  }
+
+  return null
+}
+
+function matchVariableDescendants(
+  variable: VariableInfo,
+  matchers: Array<VariableMatcher>,
+): VariableInfo {
+  switch (variable.type) {
+    case 'array':
+      return { ...variable, elements: matchVariables(variable.elements, matchers) }
+    case 'object':
+      return { ...variable, props: matchVariables(variable.props, matchers) }
+    case 'jsx':
+    case 'primitive':
+      return variable
+    default:
+      assertNever(variable)
+  }
+}
+
 function matchVariables(
-  variableNamesInScope_MUTABLE: Array<VariableInfo>,
+  variableNamesInScope: Array<VariableInfo>,
   matchers: Array<VariableMatcher>,
 ): Array<VariableInfo> {
   let categories: Array<VariableInfo[]> = matchers.map(() => [])
   let rest: Array<VariableInfo> = []
 
-  const matchersWithIndex: Array<[VariableMatcher, number]> = matchers.map((m, i) => [m, i])
+  variableNamesInScope.forEach((variable) => {
+    const withDescendantsMatched = matchVariableDescendants(variable, matchers)
+    const match = getVariableMatch(withDescendantsMatched, matchers)
 
-  variableNamesInScope_MUTABLE.forEach((variable) => {
-    if (variable.type === 'array') {
-      variable.elements = matchVariables(variable.elements, matchers)
-    } else if (variable.type === 'object') {
-      variable.props = matchVariables(variable.props, matchers)
+    if (match != null) {
+      categories[match.bucket].push(match.variable)
+    } else {
+      rest.push(matchVariableDescendants(withDescendantsMatched, matchers))
     }
-
-    for (const [matcher, idx] of matchersWithIndex) {
-      const match = matcher(variable)
-      if (match != null) {
-        categories[idx].push({ ...variable, matches: match })
-        return
-      }
-    }
-    rest.push(variable)
   })
 
   return [...categories.flat(), ...rest]
