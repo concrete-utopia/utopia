@@ -197,9 +197,9 @@ export var App = props => {
                 JS_PROPERTY_ACCESS - 160
                   JS_IDENTIFIER - ec0
                 JS_PROPERTY_ACCESS - 109
-                  JS_IDENTIFIER - f0f
+                  JS_IDENTIFIER - 391
                 JS_PROPERTY_ACCESS - 032
-                  JS_IDENTIFIER - 805"
+                  JS_IDENTIFIER - aca"
     `)
     expect(elementsStructure((testParseCode(spreadCode) as any).topLevelElements))
       .toMatchInlineSnapshot(`
