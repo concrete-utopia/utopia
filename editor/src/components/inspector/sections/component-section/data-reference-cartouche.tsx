@@ -111,19 +111,20 @@ export const DataReferenceCartoucheControl = React.memo(
     const controlDescriptions = usePropertyControlDescriptions(maybePropertyPath)
     const currentPropertyValue = usePropertyValue(elementPath, maybePropertyPath)
 
-    const matcher = React.useMemo(
-      () =>
-        props.renderedAt.type === 'element-property-path'
-          ? matchForPropertyValue(
-              controlDescriptions,
-              currentPropertyValue,
-              optionalMap((p) => PP.lastPart(p).toString(), maybePropertyPath),
-            )
-          : props.renderedAt.type === 'child-node'
-          ? matchForChildrenProp
-          : assertNever(props.renderedAt),
-      [controlDescriptions, currentPropertyValue, maybePropertyPath, props.renderedAt],
-    )
+    const matcher = React.useMemo(() => {
+      switch (props.renderedAt.type) {
+        case 'child-node':
+          return matchForChildrenProp
+        case 'element-property-path':
+          return matchForPropertyValue(
+            controlDescriptions,
+            currentPropertyValue,
+            optionalMap((p) => PP.lastPart(p).toString(), maybePropertyPath),
+          )
+        default:
+          assertNever(props.renderedAt)
+      }
+    }, [controlDescriptions, currentPropertyValue, maybePropertyPath, props.renderedAt])
 
     const variableNamesInScope = useVariablesInScopeForSelectedElement(elementPath, matcher)
 
