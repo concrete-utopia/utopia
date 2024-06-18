@@ -26,6 +26,8 @@ import type { CartoucheDataType, CartoucheHighlight, CartoucheUIProps } from './
 import { CartoucheUI } from './cartouche-ui'
 import * as PP from '../../../../core/shared/property-path'
 import { AllHtmlEntities } from 'html-entities'
+import { ContextMenuWrapper } from '../../../context-menu-wrapper'
+import type { ContextMenuItem } from '../../../context-menu-items'
 
 const htmlEntities = new AllHtmlEntities()
 
@@ -165,7 +167,7 @@ export const DataReferenceCartoucheControl = React.memo(
 export type DataReferenceCartoucheContentType = 'value-literal' | 'object-literal' | 'reference'
 interface DataCartoucheInnerProps {
   onClick: (e: React.MouseEvent) => void
-  onDoubleClick: (e: React.MouseEvent) => void
+  onDoubleClick: () => void
   selected: boolean
   contentsToDisplay: {
     type: DataReferenceCartoucheContentType
@@ -196,6 +198,8 @@ export const DataCartoucheInner = React.forwardRef(
       datatype,
     } = props
 
+    const dispatch = useDispatch()
+
     const onDeleteInner = React.useCallback(
       (e: React.MouseEvent) => {
         e.stopPropagation()
@@ -216,25 +220,68 @@ export const DataCartoucheInner = React.forwardRef(
         : 'internal'
 
     return (
-      <CartoucheUI
-        onDelete={onDelete}
-        onClick={onClick}
-        onDoubleClick={onDoubleClick}
-        datatype={datatype}
-        selected={selected}
-        highlight={highlight}
-        testId={testId}
-        tooltip={contentsToDisplay.label ?? contentsToDisplay.shortLabel ?? 'DATA'}
-        role='selection'
-        source={source}
-        ref={ref}
-        badge={props.badge}
+      <ContextMenuWrapper<ContextMenuItemsData>
+        id={`cartouche-context-menu-${props.testId}`}
+        dispatch={dispatch}
+        items={contextMenuItems}
+        data={{ openDataPicker: onDoubleClick, deleteCartouche: onDeleteCallback }}
       >
-        {contentsToDisplay.shortLabel ?? contentsToDisplay.label ?? 'DATA'}
-      </CartoucheUI>
+        <CartoucheUI
+          onDelete={onDelete}
+          onClick={onClick}
+          onDoubleClick={onDoubleClick}
+          datatype={datatype}
+          selected={selected}
+          highlight={highlight}
+          testId={testId}
+          tooltip={contentsToDisplay.label ?? contentsToDisplay.shortLabel ?? 'DATA'}
+          role='selection'
+          source={source}
+          ref={ref}
+          badge={props.badge}
+        >
+          {contentsToDisplay.shortLabel ?? contentsToDisplay.label ?? 'DATA'}
+        </CartoucheUI>
+      </ContextMenuWrapper>
     )
   },
 )
+
+type ContextMenuItemsData = {
+  openDataPicker?: () => void
+  deleteCartouche?: () => void
+}
+const contextMenuItems: Array<ContextMenuItem<ContextMenuItemsData>> = [
+  {
+    name: 'Replace with...',
+    enabled: (data) => data.openDataPicker != null,
+    action: (data) => {
+      data.openDataPicker?.()
+    },
+  },
+  {
+    name: 'Delete',
+    enabled: (data) => data.deleteCartouche != null,
+    action: (data) => {
+      data.deleteCartouche?.()
+    },
+  },
+  {
+    name: 'Jump to data source',
+    enabled: false,
+    action: (data) => {},
+  },
+  {
+    name: 'Open in CMS',
+    enabled: false,
+    action: (data) => {},
+  },
+  {
+    name: 'Edit value',
+    enabled: false,
+    action: (data) => {},
+  },
+]
 
 export function getTextContentOfElement(
   element: JSXElementChild,
