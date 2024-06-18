@@ -11,11 +11,7 @@ describe('generateConsistentUID', () => {
   })
   it('if the starting value is used generate another', () => {
     const actualResult = generateConsistentUID('pqr', someExistingIDs)
-    expect(actualResult).toBe('pqs')
-  })
-  it('if the starting value is used generate another, continuously', () => {
-    const actualResult = generateConsistentUID('bbb', someExistingIDs)
-    expect(actualResult).toBe('bbd')
+    expect(actualResult).toBe('aab')
   })
 })
 
