@@ -68,6 +68,8 @@ import {
   jsxSimpleAttributeToValue,
   setJSXValueAtPath,
 } from './jsx-attribute-utils'
+import { hashObject } from './hash'
+import { IS_TEST_ENVIRONMENT } from '../../common/env-vars'
 
 export const MOCK_NEXT_GENERATED_UIDS: { current: Array<string> } = { current: [] }
 export const MOCK_NEXT_GENERATED_UIDS_IDX = { current: 0 }
@@ -116,44 +118,48 @@ export const atoz = [
   'z',
 ]
 
+const UID_LENGTH = IS_TEST_ENVIRONMENT ? 3 : 32 // in characters
+
+/**
+ * Generate a new UID suitable for elements.
+ * The uid will try to use the `possibleUid` value if possible.
+ * The uid will be guaranteed to not clash with the other IDs in the Set passed as argument.
+ * The returned UID will be trimmed to #UID_LENGTH chars.
+ * Note: if a mock UID is available, it will have precedence and be returned immediately.
+ */
+function newUid(possibleUid: string, existingUids: Set<string>): string {
+  const mockUID = generateMockNextGeneratedUID()
+  if (mockUID != null) {
+    return mockUID
+  }
+
+  function trimUid(fullLengthUid: string): string {
+    return fullLengthUid.slice(0, UID_LENGTH)
+  }
+
+  let uid = possibleUid
+  if (uid.trim().length === 0) {
+    uid = hashObject(uid)
+  }
+
+  uid = trimUid(uid)
+  while (existingUids.has(uid)) {
+    uid = trimUid(hashObject(uid))
+  }
+
+  return uid
+}
+
 // Assumes possibleStartingValue consists only of characters that are valid to begin with.
 export function generateConsistentUID(
   possibleStartingValue: string,
-  ...existingIDSets: Array<Set<string>>
+  existingIDs: Set<string>,
 ): string {
-  function alreadyExistingID(idToCheck: string): boolean {
-    return existingIDSets.some((s) => s.has(idToCheck))
-  }
-  const mockUID = generateMockNextGeneratedUID()
-  if (mockUID == null) {
-    if (possibleStartingValue.length >= 3) {
-      const maxSteps = Math.floor(possibleStartingValue.length / 3)
-      for (let step = 0; step < maxSteps; step++) {
-        const possibleUID = possibleStartingValue.substring(step * 3, (step + 1) * 3)
+  return newUid(possibleStartingValue, existingIDs)
+}
 
-        if (!alreadyExistingID(possibleUID)) {
-          return possibleUID
-        }
-      }
-    }
-
-    for (let firstChar of atoz) {
-      for (let secondChar of atoz) {
-        for (let thirdChar of atoz) {
-          const possibleUID = `${firstChar}${secondChar}${thirdChar}`
-
-          if (!alreadyExistingID(possibleUID)) {
-            return possibleUID
-          }
-        }
-      }
-    }
-
-    // Fallback bailout.
-    throw new Error(`Unable to generate a UID from '${possibleStartingValue}'.`)
-  } else {
-    return mockUID
-  }
+export function generateUID(existingIDs: Set<string>): string {
+  return newUid(UUID().replace(/-/g, ''), existingIDs)
 }
 
 export function updateHighlightBounds(
@@ -183,30 +189,6 @@ export function updateHighlightBounds(
   }
 
   return result
-}
-
-export function generateUID(existingIDs: Array<string> | Set<string>): string {
-  const mockUID = generateMockNextGeneratedUID()
-  if (mockUID == null) {
-    const fullUid = UUID().replace(/\-/g, '')
-    // trying to find a new 3 character substring from the full uid
-    for (let i = 0; i < fullUid.length - 3; i++) {
-      const id = fullUid.substring(i, i + 3)
-      if (Array.isArray(existingIDs)) {
-        if (!existingIDs.includes(id)) {
-          return id
-        }
-      } else {
-        if (!existingIDs.has(id)) {
-          return id
-        }
-      }
-    }
-    // if all the substrings are already used as ids, let's try again with a new full uid
-    return generateUID(existingIDs)
-  } else {
-    return mockUID
-  }
 }
 
 export function parseUIDFromComments(comments: ParsedComments): Either<string, string> {
