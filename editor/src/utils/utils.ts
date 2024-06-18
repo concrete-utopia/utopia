@@ -281,6 +281,10 @@ export function generateUUID(): string {
   return UUID().replace(/-/g, '_')
 }
 
+export function stripUUID(): string {
+  return UUID().replace(/-/g, '')
+}
+
 function isColor(color: any): color is Color {
   if (color == null) {
     return false

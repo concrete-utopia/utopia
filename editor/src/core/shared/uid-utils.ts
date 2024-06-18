@@ -68,8 +68,8 @@ import {
   jsxSimpleAttributeToValue,
   setJSXValueAtPath,
 } from './jsx-attribute-utils'
-import { hashObject } from './hash'
 import { IS_TEST_ENVIRONMENT } from '../../common/env-vars'
+import { stripUUID } from '../../utils/utils'
 
 export const MOCK_NEXT_GENERATED_UIDS: { current: Array<string> } = { current: [] }
 export const MOCK_NEXT_GENERATED_UIDS_IDX = { current: 0 }
@@ -118,7 +118,23 @@ export const atoz = [
   'z',
 ]
 
+// Assumes possibleStartingValue consists only of characters that are valid to begin with.
+export function generateConsistentUID(
+  possibleStartingValue: string,
+  existingIDs: Set<string>,
+): string {
+  return newUid(possibleStartingValue, existingIDs)
+}
+
+export function generateUID(existingIDs: Set<string>): string {
+  return generateConsistentUID(stripUUID(), existingIDs)
+}
+
 const UID_LENGTH = IS_TEST_ENVIRONMENT ? 3 : 32 // in characters
+
+function trimUid(fullLengthUid: string): string {
+  return fullLengthUid.slice(0, UID_LENGTH)
+}
 
 /**
  * Generate a new UID suitable for elements.
@@ -133,40 +149,61 @@ function newUid(possibleUid: string, existingUids: Set<string>): string {
     return mockUID
   }
 
-  function trimUid(fullLengthUid: string): string {
-    return fullLengthUid.slice(0, UID_LENGTH)
+  // determine the initial UID which is used as a base for the generation
+  function getInitialUid(): string {
+    // if it's empty, just make a new random UUID v4
+    let uid = possibleUid
+    if (uid.trim().length === 0) {
+      uid = stripUUID()
+    }
+    // for test environments, if the possible value is a collision, return 'a' repeated for the length of the target UID
+    if (IS_TEST_ENVIRONMENT) {
+      return existingUids.has(uid) ? 'a'.repeat(UID_LENGTH) : trimUid(uid)
+    }
+    return trimUid(uid)
   }
 
-  let uid = possibleUid
-  if (uid.trim().length === 0) {
-    uid = stripUUID()
+  function nextUidGenerator(): (previous: string) => string {
+    // for test environments, just increment the string deterministically ('aaab'->'aaac', 'aazz'->'abaa', etc.)
+    if (IS_TEST_ENVIRONMENT) {
+      return incrementTestUid
+    }
+    // otherwise, just make a new random UUID v4 and trim it
+    return () => trimUid(stripUUID())
   }
 
-  uid = trimUid(uid)
-  let initialValue = uid
-
-  let index = 0
+  // grab the initial UID, keep updating it until it is not colliding, and finally return it.
+  let uid = getInitialUid()
+  const next = nextUidGenerator()
   while (existingUids.has(uid)) {
-    uid = `${initialValue}.${++index}`
+    uid = next(uid)
   }
-
   return uid
 }
 
-// Assumes possibleStartingValue consists only of characters that are valid to begin with.
-export function generateConsistentUID(
-  possibleStartingValue: string,
-  existingIDs: Set<string>,
-): string {
-  return newUid(possibleStartingValue, existingIDs)
-}
+export function incrementTestUid(uid: string): string {
+  let result = uid.split('')
+  let i = result.length - 1
 
-function stripUUID(): string {
-  return UUID().replace(/-/g, '')
-}
+  while (i >= 0) {
+    if (result[i] === 'z') {
+      result[i] = 'a'
+      i--
+    } else {
+      if (result[i] < 'a' || result[i] > 'z') {
+        result[i] = 'a'
+      } else {
+        result[i] = String.fromCharCode(result[i].charCodeAt(0) + 1)
+      }
+      break
+    }
+  }
+  if (i < 0) {
+    // Fallback bailout.
+    throw new Error(`Unable to generate a UID from '${uid}'.`)
+  }
 
-export function generateUID(existingIDs: Set<string>): string {
-  return newUid(stripUUID(), existingIDs)
+  return result.join('')
 }
 
 export function updateHighlightBounds(
