@@ -3517,7 +3517,7 @@ export type CSSTextAlign = 'left' | 'right' | 'center' | 'justify' | 'start' | '
 
 export type CSSDirection = 'ltr' | 'rtl'
 
-export type CSSTextDecorationLine = 'underline' | 'overline' | 'line-through' | 'none'
+export type CSSTextDecorationLine = string
 
 export type CSSTextDecorationStyle = 'solid' | 'double' | 'dotted' | 'dashed' | 'wavy'
 
@@ -3708,12 +3708,7 @@ function printTextAlign(cssTextAlign: CSSTextAlign): JSExpressionValue<Property.
   return jsExpressionValue(cssTextAlign, emptyComments)
 }
 
-const parseTextDecorationLine = isOneOfTheseParser<CSSTextDecorationLine>([
-  'underline',
-  'overline',
-  'line-through',
-  'none',
-])
+const parseTextDecorationLine = parseString
 
 function printTextDecorationLine(
   cssTextDecorationLine: CSSTextDecorationLine,

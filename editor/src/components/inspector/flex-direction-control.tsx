@@ -85,6 +85,32 @@ export const FlexDirectionToggle = React.memo(() => {
     [allElementPropsRef, dispatch, metadataRef, elementPathTreeRef, selectedViewsRef],
   )
 
+  const handleColumnReverseClick = React.useCallback(
+    (e: React.MouseEvent) =>
+      maybeSetFlexDirection(
+        dispatch,
+        metadataRef.current,
+        selectedViewsRef.current,
+        elementPathTreeRef.current,
+        allElementPropsRef.current,
+        e.button === 0 ? 'column-reverse' : null,
+      ),
+    [allElementPropsRef, dispatch, metadataRef, elementPathTreeRef, selectedViewsRef],
+  )
+
+  const handleRowReverseClick = React.useCallback(
+    (e: React.MouseEvent) =>
+      maybeSetFlexDirection(
+        dispatch,
+        metadataRef.current,
+        selectedViewsRef.current,
+        elementPathTreeRef.current,
+        allElementPropsRef.current,
+        e.button === 0 ? 'row-reverse' : null,
+      ),
+    [allElementPropsRef, dispatch, metadataRef, elementPathTreeRef, selectedViewsRef],
+  )
+
   const paddingControlsForHover: Array<CanvasControlWithProps<SubduedPaddingControlProps>> =
     React.useMemo(
       () =>
@@ -117,7 +143,7 @@ export const FlexDirectionToggle = React.memo(() => {
       style={{
         display: 'grid',
         gridTemplateRows: '1fr',
-        gridTemplateColumns: '1fr 1fr',
+        gridTemplateColumns: '1fr 1fr 1fr 1fr',
         aspectRatio: '2',
         width: 50,
       }}
@@ -136,7 +162,24 @@ export const FlexDirectionToggle = React.memo(() => {
           borderRadius: UtopiaTheme.inputBorderRadius,
         }}
       >
-        <Icons.FlexRow />
+        <Icons.FlexDirectionRow />
+      </div>
+      <div
+        data-testid={FlexDirectionToggleTestId('row-reverse')}
+        onMouseDown={handleRowReverseClick}
+        style={{
+          aspectRatio: '1',
+          backgroundColor: (flexDirection === 'row-reverse' ? colorTheme.bg2 : colorTheme.bg1)
+            .value,
+          cursor: 'pointer',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: 3,
+          borderRadius: UtopiaTheme.inputBorderRadius,
+        }}
+      >
+        <Icons.FlexDirectionRowReverse />
       </div>
       <div
         data-testid={FlexDirectionToggleTestId('column')}
@@ -152,7 +195,24 @@ export const FlexDirectionToggle = React.memo(() => {
           borderRadius: UtopiaTheme.inputBorderRadius,
         }}
       >
-        <Icons.FlexColumn />
+        <Icons.FlexDirectionColumn />
+      </div>
+      <div
+        data-testid={FlexDirectionToggleTestId('column-reverse')}
+        onMouseDown={handleColumnReverseClick}
+        style={{
+          aspectRatio: '1',
+          backgroundColor: (flexDirection === 'column-reverse' ? colorTheme.bg2 : colorTheme.bg1)
+            .value,
+          cursor: 'pointer',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: 3,
+          borderRadius: UtopiaTheme.inputBorderRadius,
+        }}
+      >
+        <Icons.FlexDirectionColumnReverse />
       </div>
     </div>
   )
