@@ -3,9 +3,9 @@ import { maybeToArray } from '../../../../core/shared/optional-utils'
 import { emptySet } from '../../../../core/shared/set-utils'
 import type { ControlDescription } from '../../../custom-code/internal-property-controls'
 import type { PropertyValue, VariableInfo } from './variables-in-scope-utils'
-import { orderVariablesForRelevance, variableInfoFromValue } from './variables-in-scope-utils'
+import { matchForPropertyValue, variableInfoFromValue } from './variables-in-scope-utils'
 
-describe('orderVariablesForRelevance', () => {
+describe('matchForPropertyValue', () => {
   it('should be able to target a given property', () => {
     const variableNamesInScope: Array<VariableInfo> = maybeToArray(
       variableInfoFromValue(
@@ -31,12 +31,11 @@ describe('orderVariablesForRelevance', () => {
       },
     }
     const targetPropertyName = 'left'
-    const actualResult = orderVariablesForRelevance(
-      variableNamesInScope,
+    const actualResult = matchForPropertyValue(
       controlDescription,
       currentPropertyValue,
       targetPropertyName,
-    )
+    )(variableNamesInScope)
     expect(actualResult).toMatchInlineSnapshot(`
       Array [
         Object {
@@ -117,12 +116,11 @@ describe('orderVariablesForRelevance', () => {
       },
     }
     const targetPropertyName = null
-    const actualResult = orderVariablesForRelevance(
-      variableNamesInScope,
+    const actualResult = matchForPropertyValue(
       controlDescription,
       currentPropertyValue,
       targetPropertyName,
-    )
+    )(variableNamesInScope)
     expect(actualResult).toMatchInlineSnapshot(`
       Array [
         Object {
