@@ -309,17 +309,6 @@ export function importInfoFromImportDetails(
   return foundImportDetail
 }
 
-export function getFilePathForImportedComponent(
-  element: ElementInstanceMetadata | null,
-): string | null {
-  const importInfo = element?.importInfo
-  if (importInfo != null && isImportedOrigin(importInfo)) {
-    return importInfo.filePath
-  } else {
-    return null
-  }
-}
-
 export function isImportedComponentFromProjectFiles(
   element: ElementInstanceMetadata | null,
   filePathMappings: FilePathMappings,
