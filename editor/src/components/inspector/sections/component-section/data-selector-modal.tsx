@@ -434,7 +434,8 @@ function useFilterVariablesInScope(
     }
 
     const filteredOptions: Array<DataPickerOption> = scopesToShow.flatMap(
-      (scope) => scopeBuckets[insertionCeilingToString(scope)] ?? [],
+      (scope) =>
+        scopeBuckets[insertionCeilingToString(findClosestMatchingScope(scope, scopeBuckets))] ?? [],
     )
     return {
       filteredVariablesInScope: filteredOptions,
