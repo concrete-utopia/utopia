@@ -126,8 +126,12 @@ export function generateConsistentUID(
   return newElementUID(possibleStartingValue, existingIDs)
 }
 
+function newRandomUID(): string {
+  return IS_TEST_ENVIRONMENT ? 'a'.repeat(UID_LENGTH) : stripUUID()
+}
+
 export function generateUID(existingIDs: Set<string>): string {
-  return generateConsistentUID(stripUUID(), existingIDs)
+  return generateConsistentUID(newRandomUID(), existingIDs)
 }
 
 const UID_LENGTH = IS_TEST_ENVIRONMENT ? 3 : 32 // in characters
@@ -154,11 +158,7 @@ function newElementUID(possibleUid: string, existingUids: Set<string>): string {
     // if it's empty, just make a new random UUID v4
     let uid = possibleUid
     if (uid.trim().length === 0) {
-      uid = stripUUID()
-    }
-    // for test environments, if the possible value is a collision, return 'a' repeated for the length of the target UID
-    if (IS_TEST_ENVIRONMENT) {
-      return existingUids.has(uid) ? 'a'.repeat(UID_LENGTH) : trimUID(uid)
+      uid = newRandomUID()
     }
     return trimUID(uid)
   }
@@ -183,18 +183,19 @@ function newElementUID(possibleUid: string, existingUids: Set<string>): string {
 
 export function incrementTestUID(uid: string): string {
   let result = uid.split('')
+  for (let i = 0; i < result.length; i++) {
+    if (result[i] < 'a' || result[i] > 'z') {
+      result[i] = 'a'
+    }
+  }
   let i = result.length - 1
 
   while (i >= 0) {
-    if (result[i] === 'z') {
+    if (result[i] >= 'z') {
       result[i] = 'a'
       i--
     } else {
-      if (result[i] < 'a' || result[i] > 'z') {
-        result[i] = 'a'
-      } else {
-        result[i] = String.fromCharCode(result[i].charCodeAt(0) + 1)
-      }
+      result[i] = String.fromCharCode(result[i].charCodeAt(0) + 1)
       break
     }
   }
