@@ -38,14 +38,14 @@ describe('Conditonals JSX parser', () => {
               JSX_ELEMENT - App - app
                   ATTRIBUTE_VALUE - 753
                   ATTRIBUTE_VALUE - 2c3
-                  ATTRIBUTE_VALUE - 2ca
-                  ATTRIBUTE_VALUE - 2cb
-                  ATTRIBUTE_VALUE - 2cc
-                ATTRIBUTE_VALUE - 75a
+                  ATTRIBUTE_VALUE - acb
+                  ATTRIBUTE_VALUE - acc
+                  ATTRIBUTE_VALUE - acd
+                ATTRIBUTE_VALUE - aad
                 ATTRIBUTE_VALUE - d23
-                ATTRIBUTE_VALUE - 2cd
+                ATTRIBUTE_VALUE - ace
                 ATTRIBUTE_VALUE - c79
-                ATTRIBUTE_VALUE - 2ce
+                ATTRIBUTE_VALUE - acf
         UNPARSED_CODE"
       `)
 
@@ -83,14 +83,14 @@ describe('Conditonals JSX parser', () => {
               JSX_ELEMENT - App - app
                   ATTRIBUTE_VALUE - 753
                   ATTRIBUTE_VALUE - 2c3
-                  ATTRIBUTE_VALUE - 2ca
-                  ATTRIBUTE_VALUE - 2cb
-                  ATTRIBUTE_VALUE - 2cc
-                ATTRIBUTE_VALUE - 75a
+                  ATTRIBUTE_VALUE - acb
+                  ATTRIBUTE_VALUE - acc
+                  ATTRIBUTE_VALUE - acd
+                ATTRIBUTE_VALUE - aae
                 ATTRIBUTE_VALUE - d23
-                ATTRIBUTE_VALUE - 2cd
+                ATTRIBUTE_VALUE - ace
                 ATTRIBUTE_VALUE - c79
-                ATTRIBUTE_VALUE - 2ce
+                ATTRIBUTE_VALUE - acf
         UNPARSED_CODE"
       `)
 
@@ -130,14 +130,14 @@ describe('Conditonals JSX printer', () => {
               JSX_ELEMENT - App - app
                   ATTRIBUTE_VALUE - 753
                   ATTRIBUTE_VALUE - 2c3
-                  ATTRIBUTE_VALUE - 2ca
-                  ATTRIBUTE_VALUE - 2cb
-                  ATTRIBUTE_VALUE - 2cc
-                ATTRIBUTE_VALUE - 75a
+                  ATTRIBUTE_VALUE - acb
+                  ATTRIBUTE_VALUE - acc
+                  ATTRIBUTE_VALUE - acd
+                ATTRIBUTE_VALUE - aae
                 ATTRIBUTE_VALUE - d23
-                ATTRIBUTE_VALUE - 2cd
+                ATTRIBUTE_VALUE - ace
                 ATTRIBUTE_VALUE - c79
-                ATTRIBUTE_VALUE - 2ce
+                ATTRIBUTE_VALUE - acf
         UNPARSED_CODE"
       `)
 

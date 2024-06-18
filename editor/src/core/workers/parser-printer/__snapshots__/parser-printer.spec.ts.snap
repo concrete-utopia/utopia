@@ -815,19 +815,19 @@ Object {
       "startLine": 4,
       "uid": "c7e",
     },
-    "c7f": Object {
-      "endCol": 31,
-      "endLine": 6,
-      "startCol": 30,
-      "startLine": 6,
-      "uid": "c7f",
-    },
     "c95": Object {
       "endCol": 37,
       "endLine": 6,
       "startCol": 25,
       "startLine": 6,
       "uid": "c95",
+    },
+    "caf": Object {
+      "endCol": 31,
+      "endLine": 6,
+      "startCol": 30,
+      "startLine": 6,
+      "uid": "caf",
     },
     "e70": Object {
       "endCol": 37,

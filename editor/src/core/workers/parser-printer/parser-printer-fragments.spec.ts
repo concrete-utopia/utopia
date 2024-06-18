@@ -22,9 +22,9 @@ describe('JSX parser', () => {
                 JSX_FRAGMENT - 630
                   JSX_ELEMENT - div - ccc
                       ATTRIBUTE_VALUE - 193
-                      ATTRIBUTE_VALUE - 19a
-                  ATTRIBUTE_VALUE - 19b
-                  ATTRIBUTE_VALUE - 19c
+                      ATTRIBUTE_VALUE - aab
+                  ATTRIBUTE_VALUE - aac
+                  ATTRIBUTE_VALUE - aad
             JSX_ELEMENT - div - ddd
               JSX_TEXT_BLOCK - 935
               JS_PROPERTY_ACCESS - 622
@@ -37,14 +37,14 @@ describe('JSX parser', () => {
               JSX_ELEMENT - App - app
                   ATTRIBUTE_VALUE - 753
                   ATTRIBUTE_VALUE - 2c3
-                  ATTRIBUTE_VALUE - 2ca
-                  ATTRIBUTE_VALUE - 2cb
-                  ATTRIBUTE_VALUE - 2cc
-                ATTRIBUTE_VALUE - 75a
+                  ATTRIBUTE_VALUE - acb
+                  ATTRIBUTE_VALUE - acc
+                  ATTRIBUTE_VALUE - acd
+                ATTRIBUTE_VALUE - aag
                 ATTRIBUTE_VALUE - d23
-                ATTRIBUTE_VALUE - 2cd
+                ATTRIBUTE_VALUE - ace
                 ATTRIBUTE_VALUE - c79
-                ATTRIBUTE_VALUE - 2ce
+                ATTRIBUTE_VALUE - acf
         UNPARSED_CODE"
       `)
 
