@@ -320,16 +320,16 @@ function createPropertyAccessExpressionString(expressionSoFar: string, toAppend:
   }
 }
 
-type Matcher = (_: VariableInfo) => VariableMatches | null
+type VariableMatcher = (_: VariableInfo) => VariableMatches | null
 
 function matchVariables(
   variableNamesInScope_MUTABLE: Array<VariableInfo>,
-  matchers: Array<Matcher>,
+  matchers: Array<VariableMatcher>,
 ): Array<VariableInfo> {
   let categories: Array<VariableInfo[]> = matchers.map(() => [])
   let rest: Array<VariableInfo> = []
 
-  const matchersWithIndex: Array<[Matcher, number]> = matchers.map((m, i) => [m, i])
+  const matchersWithIndex: Array<[VariableMatcher, number]> = matchers.map((m, i) => [m, i])
 
   variableNamesInScope_MUTABLE.forEach((variable) => {
     if (variable.type === 'array') {
@@ -351,25 +351,27 @@ function matchVariables(
   return [...categories.flat(), ...rest]
 }
 
-function predicateMatcher(cb: (_: VariableInfo) => boolean): Matcher {
+function predicateMatcher(cb: (_: VariableInfo) => boolean): VariableMatcher {
   return (variable: VariableInfo) => (cb(variable) ? 'matches' : null)
 }
 
-const valueElementMatches: Matcher = (variable) => {
+const valueElementMatches: VariableMatcher = (variable) => {
   const matches =
     (variable.type === 'array' && variable.elements.some((e) => e.matches)) ||
     (variable.type === 'object' && variable.props.some((e) => e.matches))
   return matches ? 'child-matches' : null
 }
 
+type Matcher = (_: Array<VariableInfo>) => Array<VariableInfo>
+
 export const matchForPropertyValue =
   (
     controlDescription: ControlDescription | null,
     currentPropertyValue: PropertyValue,
     targetPropertyName: string | null,
-  ) =>
+  ): Matcher =>
   (variableNamesInScope: Array<VariableInfo>) => {
-    const valuesExactlyMatchingPropertyDescription: Matcher = predicateMatcher(
+    const valuesExactlyMatchingPropertyDescription: VariableMatcher = predicateMatcher(
       (variable) => controlDescription?.control === 'jsx' && isValidReactNode(variable.value),
     )
 
@@ -380,13 +382,13 @@ export const matchForPropertyValue =
         ? controlDescription
         : controlDescription.object[targetPropertyName] ?? null
 
-    const valuesMatchingPropertyDescription: Matcher = predicateMatcher(
+    const valuesMatchingPropertyDescription: VariableMatcher = predicateMatcher(
       (variable) =>
         targetControlDescription != null &&
         variableMatchesControlDescription(variable.value, targetControlDescription),
     )
 
-    const valuesMatchingPropertyShape: Matcher = predicateMatcher(
+    const valuesMatchingPropertyShape: VariableMatcher = predicateMatcher(
       (variable) =>
         currentPropertyValue.type === 'existing' &&
         variableShapesMatch(currentPropertyValue.value, variable.value),
@@ -400,14 +402,14 @@ export const matchForPropertyValue =
     ])
   }
 
-export function matchForChildrenProp(variableNamesInScope: Array<VariableInfo>) {
+export const matchForChildrenProp: Matcher = (variableNamesInScope: Array<VariableInfo>) => {
   return matchVariables(variableNamesInScope, [
     predicateMatcher((v) => isValidReactNode(v.value)),
     valueElementMatches,
   ])
 }
 
-export function matchForMappedValue(variableNamesInScope: Array<VariableInfo>) {
+export const matchForMappedValue: Matcher = (variableNamesInScope: Array<VariableInfo>) => {
   return matchVariables(variableNamesInScope, [
     predicateMatcher((v) => v.type === 'array'),
     valueElementMatches,
@@ -439,7 +441,7 @@ const filterObjectPropFromVariablesInScope =
 
 export function useVariablesInScopeForSelectedElement(
   elementPath: ElementPath | null,
-  matchFn: (_: Array<VariableInfo>) => Array<VariableInfo>,
+  matcher: Matcher,
 ): Array<DataPickerOption> {
   const variablesInScope = useEditorState(
     Substores.restOfEditor,
@@ -481,7 +483,7 @@ export function useVariablesInScopeForSelectedElement(
 
     const variableInfo = variableInfoFromVariableData(variablesInScopeForSelectedPath)
 
-    const orderedVariablesInScope = matchFn(variableInfo)
+    const orderedVariablesInScope = matcher(variableInfo)
 
     return orderedVariablesInScope.flatMap((variable) =>
       valuesFromVariable(
@@ -493,7 +495,7 @@ export function useVariablesInScopeForSelectedElement(
         false,
       ),
     )
-  }, [elementPath, matchFn, variablesInScope])
+  }, [elementPath, matcher, variablesInScope])
 
   return variableNamesInScope
 }
