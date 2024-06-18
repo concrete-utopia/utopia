@@ -38,14 +38,14 @@ describe('Conditonals JSX parser', () => {
               JSX_ELEMENT - App - app
                   ATTRIBUTE_VALUE - 753
                   ATTRIBUTE_VALUE - 2c3
-                  ATTRIBUTE_VALUE - 7c9
-                  ATTRIBUTE_VALUE - bb2
-                  ATTRIBUTE_VALUE - a2e
-                ATTRIBUTE_VALUE - 26b
+                  ATTRIBUTE_VALUE - 2c3.1
+                  ATTRIBUTE_VALUE - 2c3.2
+                  ATTRIBUTE_VALUE - 2c3.3
+                ATTRIBUTE_VALUE - 753.1
                 ATTRIBUTE_VALUE - d23
-                ATTRIBUTE_VALUE - 3ab
+                ATTRIBUTE_VALUE - 2c3.4
                 ATTRIBUTE_VALUE - c79
-                ATTRIBUTE_VALUE - 325
+                ATTRIBUTE_VALUE - 2c3.5
         UNPARSED_CODE"
       `)
 
@@ -83,14 +83,14 @@ describe('Conditonals JSX parser', () => {
               JSX_ELEMENT - App - app
                   ATTRIBUTE_VALUE - 753
                   ATTRIBUTE_VALUE - 2c3
-                  ATTRIBUTE_VALUE - 3c1
-                  ATTRIBUTE_VALUE - 41c
-                  ATTRIBUTE_VALUE - 0b7
-                ATTRIBUTE_VALUE - ce5
+                  ATTRIBUTE_VALUE - 2c3.1
+                  ATTRIBUTE_VALUE - 2c3.2
+                  ATTRIBUTE_VALUE - 2c3.3
+                ATTRIBUTE_VALUE - 753.1
                 ATTRIBUTE_VALUE - d23
-                ATTRIBUTE_VALUE - d90
+                ATTRIBUTE_VALUE - 2c3.4
                 ATTRIBUTE_VALUE - c79
-                ATTRIBUTE_VALUE - b50
+                ATTRIBUTE_VALUE - 2c3.5
         UNPARSED_CODE"
       `)
 
@@ -130,14 +130,14 @@ describe('Conditonals JSX printer', () => {
               JSX_ELEMENT - App - app
                   ATTRIBUTE_VALUE - 753
                   ATTRIBUTE_VALUE - 2c3
-                  ATTRIBUTE_VALUE - 880
-                  ATTRIBUTE_VALUE - 459
-                  ATTRIBUTE_VALUE - 16a
-                ATTRIBUTE_VALUE - 5c9
+                  ATTRIBUTE_VALUE - 2c3.1
+                  ATTRIBUTE_VALUE - 2c3.2
+                  ATTRIBUTE_VALUE - 2c3.3
+                ATTRIBUTE_VALUE - 753.1
                 ATTRIBUTE_VALUE - d23
-                ATTRIBUTE_VALUE - 468
+                ATTRIBUTE_VALUE - 2c3.4
                 ATTRIBUTE_VALUE - c79
-                ATTRIBUTE_VALUE - 617
+                ATTRIBUTE_VALUE - 2c3.5
         UNPARSED_CODE"
       `)
 

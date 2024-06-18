@@ -143,8 +143,11 @@ function newUid(possibleUid: string, existingUids: Set<string>): string {
   }
 
   uid = trimUid(uid)
+  let initialValue = uid
+
+  let index = 0
   while (existingUids.has(uid)) {
-    uid = trimUid(stripUUID())
+    uid = `${initialValue}.${++index}`
   }
 
   return uid
