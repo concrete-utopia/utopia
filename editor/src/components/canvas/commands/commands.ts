@@ -196,7 +196,7 @@ export function runCanvasCommand(
     case 'ADD_IMPORTS_TO_FILE':
       return runAddImportsToFile(editorState, command)
     case 'ADD_TO_REPARENTED_TO_PATHS':
-      return runAddToReparentedToPaths(editorState, command)
+      return runAddToReparentedToPaths(command, commandLifecycle)
     case 'INSERT_ELEMENT_INSERTION_SUBJECT':
       return runInsertElementInsertionSubject(editorState, command)
     case 'ADD_ELEMENT':
