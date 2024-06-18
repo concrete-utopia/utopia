@@ -583,7 +583,7 @@ describe('fixParseSuccessUIDs', () => {
         f9a
       8a8
         f98
-          3ff
+          758
             3cc
       storyboard
         scene

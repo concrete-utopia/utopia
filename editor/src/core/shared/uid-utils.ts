@@ -139,12 +139,12 @@ function newUid(possibleUid: string, existingUids: Set<string>): string {
 
   let uid = possibleUid
   if (uid.trim().length === 0) {
-    uid = hashObject(uid)
+    uid = stripUUID()
   }
 
   uid = trimUid(uid)
   while (existingUids.has(uid)) {
-    uid = trimUid(hashObject(uid))
+    uid = trimUid(stripUUID())
   }
 
   return uid
@@ -158,8 +158,12 @@ export function generateConsistentUID(
   return newUid(possibleStartingValue, existingIDs)
 }
 
+function stripUUID(): string {
+  return UUID().replace(/-/g, '')
+}
+
 export function generateUID(existingIDs: Set<string>): string {
-  return newUid(UUID().replace(/-/g, ''), existingIDs)
+  return newUid(stripUUID(), existingIDs)
 }
 
 export function updateHighlightBounds(

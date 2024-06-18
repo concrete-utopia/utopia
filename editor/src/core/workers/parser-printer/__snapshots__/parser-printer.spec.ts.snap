@@ -752,19 +752,19 @@ Object {
       "startLine": 5,
       "uid": "05f",
     },
-    "083": Object {
-      "endCol": 31,
-      "endLine": 6,
-      "startCol": 30,
-      "startLine": 6,
-      "uid": "083",
-    },
     "262": Object {
       "endCol": 37,
       "endLine": 4,
       "startCol": 25,
       "startLine": 4,
       "uid": "262",
+    },
+    "2c3": Object {
+      "endCol": 31,
+      "endLine": 6,
+      "startCol": 30,
+      "startLine": 6,
+      "uid": "2c3",
     },
     "2ec": Object {
       "endCol": 45,
