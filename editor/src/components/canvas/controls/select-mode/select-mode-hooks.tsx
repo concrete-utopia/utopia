@@ -64,6 +64,7 @@ import { getAllLockedElementPaths } from '../../../../core/shared/element-lockin
 import { treatElementAsGroupLike } from '../../canvas-strategies/strategies/group-helpers'
 import { useCommentModeSelectAndHover } from '../comment-mode/comment-mode-hooks'
 import { useFollowModeSelectAndHover } from '../follow-mode/follow-mode-hooks'
+import { usePanelsModeSelectAndHover } from '../panels-mode/panels-mode-hooks'
 
 const DRAG_START_THRESHOLD = 2
 
@@ -795,6 +796,7 @@ export function useSelectAndHover(
     mode?.type === 'comment' ? mode.comment : null,
   )
   const followModeCallbacks = useFollowModeSelectAndHover()
+  const panelsModeCallbacks = usePanelsModeSelectAndHover()
 
   if (hasInteractionSession) {
     return {
@@ -816,6 +818,8 @@ export function useSelectAndHover(
         return commentModeCallbacks
       case 'follow':
         return followModeCallbacks
+      case 'panels':
+        return panelsModeCallbacks
       default:
         const _exhaustiveCheck: never = modeType
         throw new Error(`Unhandled editor mode ${JSON.stringify(modeType)}`)
