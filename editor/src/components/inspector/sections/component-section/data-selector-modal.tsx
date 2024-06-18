@@ -257,7 +257,7 @@ export const DataSelectorModal = React.memo(
                       onChange={onSearchFieldValueChange}
                       ref={searchBoxRef}
                       value={searchTerm ?? ''}
-                      data-testId='data-selector-modal-search-input'
+                      data-testid='data-selector-modal-search-input'
                       placeholder='Search data'
                       style={{
                         outline: 'none',

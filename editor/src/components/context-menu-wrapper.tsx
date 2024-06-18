@@ -176,7 +176,8 @@ export const ContextMenu = <T,>({ dispatch, getData, id, items }: ContextMenuPro
   )
 }
 
-export const ContextMenuWrapper = <T,>({
+/** @deprecated use ContextMenuWrapper instead, which is Portaled */
+export const ContextMenuWrapper_DEPRECATED = <T,>({
   children,
   className = '',
   data,
@@ -290,6 +291,7 @@ export const MenuProvider = ({
 
   const onContextMenu = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
+      event.stopPropagation()
       if (itemsLength <= 0) {
         return
       }

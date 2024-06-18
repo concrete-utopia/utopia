@@ -26,7 +26,7 @@ import type { CartoucheDataType, CartoucheHighlight, CartoucheUIProps } from './
 import { CartoucheUI } from './cartouche-ui'
 import * as PP from '../../../../core/shared/property-path'
 import { AllHtmlEntities } from 'html-entities'
-import { ContextMenuWrapper } from '../../../context-menu-wrapper'
+import { ContextMenuWrapper_DEPRECATED } from '../../../context-menu-wrapper'
 import type { ContextMenuItem } from '../../../context-menu-items'
 
 const htmlEntities = new AllHtmlEntities()
@@ -220,7 +220,7 @@ export const DataCartoucheInner = React.forwardRef(
         : 'internal'
 
     return (
-      <ContextMenuWrapper<ContextMenuItemsData>
+      <ContextMenuWrapper_DEPRECATED<ContextMenuItemsData>
         id={`cartouche-context-menu-${props.testId}`}
         dispatch={dispatch}
         items={contextMenuItems}
@@ -242,7 +242,7 @@ export const DataCartoucheInner = React.forwardRef(
         >
           {contentsToDisplay.shortLabel ?? contentsToDisplay.label ?? 'DATA'}
         </CartoucheUI>
-      </ContextMenuWrapper>
+      </ContextMenuWrapper_DEPRECATED>
     )
   },
 )
