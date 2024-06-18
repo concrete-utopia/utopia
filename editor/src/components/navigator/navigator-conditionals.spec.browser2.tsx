@@ -1509,7 +1509,7 @@ regular-utopia-storyboard-uid/scene-aaa/containing-div
       conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-true-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div-element-then-then-div
       conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-false-case
-          regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/aas
+          regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/sib
   conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
       synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div
   regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`,

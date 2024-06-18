@@ -2187,7 +2187,7 @@ describe('Navigator', () => {
       ).toEqual([
         'regular-sb/parent2',
         'regular-sb/parent2/aaa',
-        'regular-sb/parent2/aab',
+        'regular-sb/parent2/a58',
         'regular-sb/parent2/parent1', // <- parent1 and its children moved under parent2
         'regular-sb/parent2/parent1/child1', // <- parent1 and its children moved under parent2
         'regular-sb/parent2/parent1/755', // <- parent1 and its children moved under parent2
@@ -2245,7 +2245,7 @@ describe('Navigator', () => {
         'regular-sb/parent1/755',
         'regular-sb/parent2',
         'regular-sb/parent2/aaa',
-        'regular-sb/parent2/aab',
+        'regular-sb/parent2/a58',
         'regular-sb/text',
       ])
     })
@@ -2297,7 +2297,7 @@ describe('Navigator', () => {
         'regular-sb/parent1/755',
         'regular-sb/parent2',
         'regular-sb/parent2/aaa',
-        'regular-sb/parent2/aab',
+        'regular-sb/parent2/a58',
         'regular-sb/text',
       ])
     })
@@ -2429,7 +2429,7 @@ describe('Navigator', () => {
         'regular-sb/child1',
         'regular-sb/parent2',
         'regular-sb/parent2/aaa',
-        'regular-sb/parent2/aab',
+        'regular-sb/parent2/a58',
         'regular-sb/text',
       ])
       expect(renderResult.getEditorState().editor.selectedViews).toEqual([
@@ -3812,7 +3812,7 @@ describe('Navigator', () => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/aaa',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/thing', // <- thing is moved into the flex container
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/aab',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/0dc',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/fle',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
         ])
@@ -3867,7 +3867,7 @@ describe('Navigator', () => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/aaa',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/thing', // <- thing is moved into the flex container
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/aab',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/0dc',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/fle',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
         ])
@@ -3922,7 +3922,7 @@ describe('Navigator', () => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/aaa',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/thing', // <- thing is moved into the flex container
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/aab',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/0dc',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/fle',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
         ])
@@ -4154,7 +4154,7 @@ describe('Navigator', () => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex2',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex2/flexchild2',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex2/flexchild1',
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex2/aaf',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex2/762',
         ])
 
         const element = editor.renderedDOM.getByTestId('flexchild1')
@@ -4222,7 +4222,7 @@ describe('Navigator', () => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/fragment', // <- fragment is moved into the flex container
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/fragment/child1', // <- fragment child is moved into the flex container
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/fragment/child2', // <- fragment child is moved into the flex container
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/aab',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/0dc',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/fle',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
         ])
