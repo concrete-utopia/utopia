@@ -100,6 +100,9 @@ import { getRegisteredComponent } from '../../../../core/property-controls/prope
 import type { EditorAction } from '../../../editor/action-types'
 import {
   getCartoucheDataTypeForExpression,
+  matchForPropertyValue,
+  usePropertyControlDescriptions,
+  usePropertyValue,
   useVariablesInScopeForSelectedElement,
 } from './variables-in-scope-utils'
 import { DataSelectorModal } from './data-selector-modal'
@@ -488,9 +491,18 @@ function useDataPickerButtonInComponentSection(
 ) {
   const dispatch = useDispatch()
 
+  const elementPath = selectedViews.at(0) ?? EP.emptyElementPath
+
+  const controlDescriptions = usePropertyControlDescriptions(propertyPath)
+  const currentPropertyValue = usePropertyValue(elementPath, propertyPath)
+
   const variableNamesInScope = useVariablesInScopeForSelectedElement(
     selectedViews.at(0) ?? EP.emptyElementPath,
-    propertyPath,
+    matchForPropertyValue(
+      controlDescriptions,
+      currentPropertyValue,
+      PP.lastPart(propertyPath).toString(),
+    ),
   )
 
   const metadata = useEditorState(

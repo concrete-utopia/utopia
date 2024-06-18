@@ -9,13 +9,11 @@ import type { FileRootPath, VariableData, VariablesInScope } from '../../../canv
 import { useEditorState, Substores } from '../../../editor/store/store-hook'
 import type { DataPickerOption } from './data-picker-utils'
 import * as EP from '../../../../core/shared/element-path'
-import * as PP from '../../../../core/shared/property-path'
 import React from 'react'
 import { useGetPropertyControlsForSelectedComponents } from '../../common/property-controls-hooks'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
-import { assertNever, identity } from '../../../../core/shared/utils'
+import { assertNever } from '../../../../core/shared/utils'
 import { isValidReactNode } from '../../../../utils/react-utils'
-import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { emptySet } from '../../../../core/shared/set-utils'
 import type { JSExpression, JSXElementChild } from '../../../../core/shared/element-template'
 import type { Either } from '../../../../core/shared/either'
@@ -147,7 +145,7 @@ function valuesFromVariable(
   }
 }
 
-function usePropertyControlDescriptions(
+export function usePropertyControlDescriptions(
   selectedProperty: PropertyPath | null,
 ): ControlDescription | null {
   const controls = useGetPropertyControlsForSelectedComponents()
@@ -322,102 +320,128 @@ function createPropertyAccessExpressionString(expressionSoFar: string, toAppend:
   }
 }
 
-function getTargetPropertyFromControlDescription(
-  controlDescription: ControlDescription | null,
-  targetPropertyName: string | null,
-): ControlDescription | null {
-  if (targetPropertyName == null || controlDescription == null) {
-    return controlDescription
-  } else {
-    switch (controlDescription.control) {
-      case 'object':
-        return controlDescription.object[targetPropertyName] ?? null
-      default:
-        return controlDescription
+type VariableMatcher = (_: VariableInfo) => VariableMatches | null
+
+interface MatchResult {
+  bucket: number
+  variable: VariableInfo
+}
+
+function getVariableMatch(
+  variable: VariableInfo,
+  matchers: Array<VariableMatcher>,
+): MatchResult | null {
+  for (const [idx, matcher] of matchers.entries()) {
+    const matches = matcher(variable)
+    if (matches != null) {
+      return { bucket: idx, variable: { ...variable, matches: matches } }
     }
+  }
+
+  return null
+}
+
+function matchVariableDescendants(
+  variable: VariableInfo,
+  matchers: Array<VariableMatcher>,
+): VariableInfo {
+  switch (variable.type) {
+    case 'array':
+      return { ...variable, elements: matchVariables(variable.elements, matchers) }
+    case 'object':
+      return { ...variable, props: matchVariables(variable.props, matchers) }
+    case 'jsx':
+    case 'primitive':
+      return variable
+    default:
+      assertNever(variable)
   }
 }
 
-export function orderVariablesForRelevance(
-  variableNamesInScope_MUTABLE: Array<VariableInfo>,
-  controlDescription: ControlDescription | null,
-  currentPropertyValue: PropertyValue,
-  targetPropertyName: string | null,
+function matchVariables(
+  variableNamesInScope: Array<VariableInfo>,
+  matchers: Array<VariableMatcher>,
 ): Array<VariableInfo> {
-  let valuesExactlyMatchingPropertyName: Array<VariableInfo> = []
-  let valuesExactlyMatchingPropertyDescription: Array<VariableInfo> = []
-  let valuesMatchingPropertyDescription: Array<VariableInfo> = []
-  let valuesMatchingPropertyShape: Array<VariableInfo> = []
-  let valueElementMatches: Array<VariableInfo> = []
-  let restOfValues: Array<VariableInfo> = []
+  let categories: Array<VariableInfo[]> = matchers.map(() => [])
+  let rest: Array<VariableInfo> = []
 
-  for (let variable of variableNamesInScope_MUTABLE) {
-    if (variable.type === 'array') {
-      variable.elements = orderVariablesForRelevance(
-        variable.elements,
-        controlDescription,
-        currentPropertyValue,
-        targetPropertyName,
-      )
-    } else if (variable.type === 'object') {
-      variable.props = orderVariablesForRelevance(
-        variable.props,
-        controlDescription,
-        currentPropertyValue,
-        targetPropertyName,
-      )
-    }
+  variableNamesInScope.forEach((variable) => {
+    const withDescendantsMatched = matchVariableDescendants(variable, matchers)
+    const match = getVariableMatch(withDescendantsMatched, matchers)
 
-    const valueExactlyMatchesPropertyName = variable.expressionPathPart === targetPropertyName
-
-    const variableCanBeMappedOver =
-      variable.type === 'array' && currentPropertyValue.type === 'mapped-value'
-
-    const valueExactlyMatchesControlDescription =
-      controlDescription?.control === 'jsx' && React.isValidElement(variable.value)
-
-    const targetControlDescription = getTargetPropertyFromControlDescription(
-      controlDescription,
-      targetPropertyName,
-    )
-    const valueMatchesControlDescription =
-      targetControlDescription != null &&
-      variableMatchesControlDescription(variable.value, targetControlDescription)
-
-    const valueMatchesChildrenProp =
-      targetPropertyName === 'children' && isValidReactNode(variable.value)
-
-    const valueMatchesCurrentPropValue =
-      currentPropertyValue.type === 'existing' &&
-      variableShapesMatch(currentPropertyValue.value, variable.value)
-
-    const arrayOrObjectChildMatches =
-      (variable.type === 'array' && variable.elements.some((e) => e.matches)) ||
-      (variable.type === 'object' && variable.props.some((e) => e.matches))
-
-    if (valueExactlyMatchesPropertyName || variableCanBeMappedOver) {
-      valuesExactlyMatchingPropertyName.push({ ...variable, matches: 'matches' })
-    } else if (valueExactlyMatchesControlDescription) {
-      valuesExactlyMatchingPropertyDescription.push({ ...variable, matches: 'matches' })
-    } else if (valueMatchesControlDescription || valueMatchesChildrenProp) {
-      valuesMatchingPropertyDescription.push({ ...variable, matches: 'matches' })
-    } else if (arrayOrObjectChildMatches) {
-      valueElementMatches.push({ ...variable, matches: 'child-matches' })
-    } else if (valueMatchesCurrentPropValue) {
-      valuesMatchingPropertyShape.push({ ...variable, matches: 'matches' })
+    if (match != null) {
+      categories[match.bucket].push(match.variable)
     } else {
-      restOfValues.push(variable)
+      rest.push(matchVariableDescendants(withDescendantsMatched, matchers))
     }
+  })
+
+  return [...categories.flat(), ...rest]
+}
+
+function predicateMatcher(cb: (_: VariableInfo) => boolean): VariableMatcher {
+  return (variable: VariableInfo) => (cb(variable) ? 'matches' : null)
+}
+
+const valueElementMatches: VariableMatcher = (variable) => {
+  const matches =
+    (variable.type === 'array' && variable.elements.some((e) => e.matches)) ||
+    (variable.type === 'object' && variable.props.some((e) => e.matches))
+  return matches ? 'child-matches' : null
+}
+
+type Matcher = (_: Array<VariableInfo>) => Array<VariableInfo>
+
+export const matchForPropertyValue =
+  (
+    controlDescription: ControlDescription | null,
+    currentPropertyValue: PropertyValue,
+    targetPropertyName: string | null,
+  ): Matcher =>
+  (variableNamesInScope: Array<VariableInfo>) => {
+    const valuesExactlyMatchingPropertyDescription: VariableMatcher = predicateMatcher(
+      (variable) => controlDescription?.control === 'jsx' && isValidReactNode(variable.value),
+    )
+
+    const targetControlDescription =
+      targetPropertyName == null ||
+      controlDescription == null ||
+      controlDescription.control !== 'object'
+        ? controlDescription
+        : controlDescription.object[targetPropertyName] ?? null
+
+    const valuesMatchingPropertyDescription: VariableMatcher = predicateMatcher(
+      (variable) =>
+        targetControlDescription != null &&
+        variableMatchesControlDescription(variable.value, targetControlDescription),
+    )
+
+    const valuesMatchingPropertyShape: VariableMatcher = predicateMatcher(
+      (variable) =>
+        currentPropertyValue.type === 'existing' &&
+        variableShapesMatch(currentPropertyValue.value, variable.value),
+    )
+
+    return matchVariables(variableNamesInScope, [
+      valuesExactlyMatchingPropertyDescription,
+      valuesMatchingPropertyDescription,
+      valuesMatchingPropertyShape,
+      valueElementMatches,
+    ])
   }
 
-  return [
-    ...valuesExactlyMatchingPropertyName,
-    ...valuesExactlyMatchingPropertyDescription,
-    ...valuesMatchingPropertyDescription,
-    ...valuesMatchingPropertyShape,
-    ...valueElementMatches,
-    ...restOfValues,
-  ]
+export const matchForChildrenProp: Matcher = (variableNamesInScope: Array<VariableInfo>) => {
+  return matchVariables(variableNamesInScope, [
+    predicateMatcher((v) => isValidReactNode(v.value)),
+    valueElementMatches,
+  ])
+}
+
+export const matchForMappedValue: Matcher = (variableNamesInScope: Array<VariableInfo>) => {
+  return matchVariables(variableNamesInScope, [
+    predicateMatcher((v) => v.type === 'array'),
+    valueElementMatches,
+  ])
 }
 
 const filterKeyFromObject =
@@ -443,48 +467,15 @@ const filterObjectPropFromVariablesInScope =
     return next
   }
 
-const keepLocalestScope =
-  () =>
-  (variablesInScope: VariableData): VariableData => {
-    let deepestInsertionCeiling = -Infinity
-    Object.values(variablesInScope).forEach((variable) => {
-      if (variable.insertionCeiling.type === 'file-root') {
-        return
-      }
-
-      deepestInsertionCeiling = Math.max(
-        deepestInsertionCeiling,
-        EP.fullDepth(variable.insertionCeiling),
-      )
-    })
-
-    const result: VariableData = {}
-    Object.entries(variablesInScope).forEach(([key, variable]) => {
-      if (variable.insertionCeiling.type === 'file-root') {
-        result[key] = variable
-        return
-      }
-
-      if (EP.fullDepth(variable.insertionCeiling) === deepestInsertionCeiling) {
-        result[key] = variable
-      }
-    })
-
-    return result
-  }
-
 export function useVariablesInScopeForSelectedElement(
   elementPath: ElementPath | null,
-  propertyPath: PropertyPath | null,
+  matcher: Matcher,
 ): Array<DataPickerOption> {
   const variablesInScope = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.variablesInScope,
     'useVariablesInScopeForSelectedElement variablesInScope',
   )
-
-  const controlDescriptions = usePropertyControlDescriptions(propertyPath)
-  const currentPropertyValue = usePropertyValue(elementPath, propertyPath)
 
   const variableNamesInScope = React.useMemo((): Array<DataPickerOption> => {
     if (elementPath == null) {
@@ -520,12 +511,7 @@ export function useVariablesInScopeForSelectedElement(
 
     const variableInfo = variableInfoFromVariableData(variablesInScopeForSelectedPath)
 
-    const orderedVariablesInScope = orderVariablesForRelevance(
-      variableInfo,
-      controlDescriptions,
-      currentPropertyValue,
-      propertyPath == null ? null : '' + PP.lastPart(propertyPath),
-    )
+    const orderedVariablesInScope = matcher(variableInfo)
 
     return orderedVariablesInScope.flatMap((variable) =>
       valuesFromVariable(
@@ -537,7 +523,7 @@ export function useVariablesInScopeForSelectedElement(
         false,
       ),
     )
-  }, [controlDescriptions, currentPropertyValue, elementPath, variablesInScope, propertyPath])
+  }, [elementPath, matcher, variablesInScope])
 
   return variableNamesInScope
 }
@@ -623,12 +609,9 @@ function variableMatchesControlDescription(
   return matches
 }
 
-export type PropertyValue =
-  | { type: 'existing'; value: unknown }
-  | { type: 'mapped-value' }
-  | { type: 'not-found' }
+export type PropertyValue = { type: 'existing'; value: unknown } | { type: 'not-found' }
 
-function usePropertyValue(
+export function usePropertyValue(
   selectedView: ElementPath | null,
   propertyPath: PropertyPath | null,
 ): PropertyValue {
@@ -638,18 +621,8 @@ function usePropertyValue(
     'usePropertyValue allElementProps',
   )
 
-  const metadata = useEditorState(
-    Substores.metadata,
-    (store) => store.editor.jsxMetadata,
-    'usePropertyValue metadata',
-  )
-
   if (selectedView == null) {
     return { type: 'not-found' }
-  }
-
-  if (MetadataUtils.isJSXMapExpression(selectedView, metadata)) {
-    return { type: 'mapped-value' }
   }
 
   const propsForThisElement = allElementProps[EP.toString(selectedView)] ?? null
