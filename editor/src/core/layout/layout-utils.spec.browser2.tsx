@@ -64,7 +64,7 @@ describe('pasteJSXElements', () => {
             style={{ backgroundColor: '#ffcccc', left: 52, top: 61, width: 150, height: 120, display: 'flex' }}
             data-uid='paste-target'
           >
-            <View style={{ width: 100, height: 100 }} data-uid='aaf' />
+            <View style={{ width: 100, height: 100 }} data-uid='ccd' />
           </View>
         </View>`,
       ),
@@ -96,7 +96,7 @@ describe('pasteJSXElements', () => {
             style={{ backgroundColor: '#ffcccc', left: 52, top: 61, width: 150, height: 120, display: 'flex' }}
             data-uid='paste-target'
           >
-            <View style={{ contain: 'layout', width: 100, height: 100 }} data-uid='aag' />
+            <View style={{ contain: 'layout', width: 100, height: 100 }} data-uid='dde' />
           </View>
         </View>`,
       ),
