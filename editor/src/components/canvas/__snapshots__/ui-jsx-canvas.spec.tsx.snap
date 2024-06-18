@@ -39686,7 +39686,7 @@ exports[`UiJsxCanvas render renders a canvas testing a multitude of export style
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:74b utopia-storyboard-uid/scene-aaa/app-entity:74b/0dc utopia-storyboard-uid/scene-aaa/app-entity:74b/ec8 utopia-storyboard-uid/scene-aaa/app-entity:74b/a35 utopia-storyboard-uid/scene-aaa/app-entity:74b/61e utopia-storyboard-uid/scene-aaa/app-entity:74b/4b6 utopia-storyboard-uid/scene-aaa/app-entity:74b/540 utopia-storyboard-uid/scene-aaa/app-entity:74b/bb2 utopia-storyboard-uid/scene-aaa/app-entity:74b/002 utopia-storyboard-uid/scene-aaa/app-entity:74b/3e0 utopia-storyboard-uid/scene-aaa/app-entity:74b/3e0/44c utopia-storyboard-uid/scene-aaa/app-entity:74b/2e4 utopia-storyboard-uid/scene-aaa/app-entity:74b/843 utopia-storyboard-uid/scene-aaa/app-entity:74b/3bc utopia-storyboard-uid/scene-aaa/app-entity:74b/5f7 utopia-storyboard-uid/scene-aaa/app-entity:74b/c19 utopia-storyboard-uid/scene-aaa/app-entity:74b/8e4 utopia-storyboard-uid/scene-aaa/app-entity:74b/1a2 utopia-storyboard-uid/scene-aaa/app-entity:74b/aeb utopia-storyboard-uid/scene-aaa/app-entity:74b/24d utopia-storyboard-uid/scene-aaa/app-entity:74b/0f9\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:74b utopia-storyboard-uid/scene-aaa/app-entity:74b/0dc utopia-storyboard-uid/scene-aaa/app-entity:74b/ec8 utopia-storyboard-uid/scene-aaa/app-entity:74b/a35 utopia-storyboard-uid/scene-aaa/app-entity:74b/61e utopia-storyboard-uid/scene-aaa/app-entity:74b/4b6 utopia-storyboard-uid/scene-aaa/app-entity:74b/540 utopia-storyboard-uid/scene-aaa/app-entity:74b/bb2 utopia-storyboard-uid/scene-aaa/app-entity:74b/002 utopia-storyboard-uid/scene-aaa/app-entity:74b/3e0 utopia-storyboard-uid/scene-aaa/app-entity:74b/3e0/44c utopia-storyboard-uid/scene-aaa/app-entity:74b/2e4 utopia-storyboard-uid/scene-aaa/app-entity:74b/843 utopia-storyboard-uid/scene-aaa/app-entity:74b/3bc utopia-storyboard-uid/scene-aaa/app-entity:74b/5f7 utopia-storyboard-uid/scene-aaa/app-entity:74b/c19 utopia-storyboard-uid/scene-aaa/app-entity:74b/8ea utopia-storyboard-uid/scene-aaa/app-entity:74b/1a2 utopia-storyboard-uid/scene-aaa/app-entity:74b/aeq utopia-storyboard-uid/scene-aaa/app-entity:74b/24d utopia-storyboard-uid/scene-aaa/app-entity:74b/0f9\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -39803,7 +39803,7 @@ exports[`UiJsxCanvas render renders a canvas testing a multitude of export style
         </div>
         <div
           data-uid=\\"e07\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/8e4:e07\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/8ea:e07\\"
         >
           Originally Assigned
         </div>
@@ -39815,7 +39815,7 @@ exports[`UiJsxCanvas render renders a canvas testing a multitude of export style
         </div>
         <div
           data-uid=\\"e07\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/aeb:e07\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/aeq:e07\\"
         >
           Originally Assigned
         </div>
@@ -40700,7 +40700,7 @@ export var App = (props) => {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "8e4",
+                  "value": "8ea",
                 },
               },
             ],
@@ -40762,7 +40762,7 @@ export var App = (props) => {
                   },
                   "type": "ATTRIBUTE_VALUE",
                   "uid": "",
-                  "value": "aeb",
+                  "value": "aeq",
                 },
               },
             ],
@@ -42776,7 +42776,7 @@ export var App = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:74b/8e4": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:74b/8ea": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -42810,7 +42810,7 @@ export var App = (props) => {
               },
               "type": "ATTRIBUTE_VALUE",
               "uid": "",
-              "value": "8e4",
+              "value": "8ea",
             },
           },
         ],
@@ -42827,7 +42827,7 @@ export var App = (props) => {
         ],
         Array [
           "74b",
-          "8e4",
+          "8ea",
         ],
       ],
       "type": "elementpath",
@@ -43026,7 +43026,7 @@ export var App = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:74b/aeb": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:74b/aeq": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
     "componentInstance": false,
@@ -43058,7 +43058,7 @@ export var App = (props) => {
               },
               "type": "ATTRIBUTE_VALUE",
               "uid": "",
-              "value": "aeb",
+              "value": "aeq",
             },
           },
         ],
@@ -43075,7 +43075,7 @@ export var App = (props) => {
         ],
         Array [
           "74b",
-          "aeb",
+          "aeq",
         ],
       ],
       "type": "elementpath",

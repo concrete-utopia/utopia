@@ -1365,7 +1365,7 @@ export var storyboard = (
         Object {
           "elements": Array [
             "96e",
-            "6f5",
+            "6fa",
           ],
           "js": "return (() => {
           function getPicker() {
