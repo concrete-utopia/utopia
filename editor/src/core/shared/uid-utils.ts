@@ -123,7 +123,7 @@ export function generateConsistentUID(
   possibleStartingValue: string,
   existingIDs: Set<string>,
 ): string {
-  return newUid(possibleStartingValue, existingIDs)
+  return newElementUID(possibleStartingValue, existingIDs)
 }
 
 export function generateUID(existingIDs: Set<string>): string {
@@ -132,25 +132,25 @@ export function generateUID(existingIDs: Set<string>): string {
 
 const UID_LENGTH = IS_TEST_ENVIRONMENT ? 3 : 32 // in characters
 
-function trimUid(fullLengthUid: string): string {
+function trimUID(fullLengthUid: string): string {
   return fullLengthUid.slice(0, UID_LENGTH)
 }
 
 /**
  * Generate a new UID suitable for elements.
- * The uid will try to use the `possibleUid` value if possible.
- * The uid will be guaranteed to not clash with the other IDs in the Set passed as argument.
+ * The UID will try to use the `possibleUid` value if possible.
+ * The UID will be guaranteed to not clash with the other IDs in the Set passed as argument.
  * The returned UID will be trimmed to #UID_LENGTH chars.
  * Note: if a mock UID is available, it will have precedence and be returned immediately.
  */
-function newUid(possibleUid: string, existingUids: Set<string>): string {
+function newElementUID(possibleUid: string, existingUids: Set<string>): string {
   const mockUID = generateMockNextGeneratedUID()
   if (mockUID != null) {
     return mockUID
   }
 
   // determine the initial UID which is used as a base for the generation
-  function getInitialUid(): string {
+  function getInitialUID(): string {
     // if it's empty, just make a new random UUID v4
     let uid = possibleUid
     if (uid.trim().length === 0) {
@@ -158,30 +158,30 @@ function newUid(possibleUid: string, existingUids: Set<string>): string {
     }
     // for test environments, if the possible value is a collision, return 'a' repeated for the length of the target UID
     if (IS_TEST_ENVIRONMENT) {
-      return existingUids.has(uid) ? 'a'.repeat(UID_LENGTH) : trimUid(uid)
+      return existingUids.has(uid) ? 'a'.repeat(UID_LENGTH) : trimUID(uid)
     }
-    return trimUid(uid)
+    return trimUID(uid)
   }
 
-  function nextUidGenerator(): (previous: string) => string {
+  function nextUIDGenerator(): (previous: string) => string {
     // for test environments, just increment the string deterministically ('aaab'->'aaac', 'aazz'->'abaa', etc.)
     if (IS_TEST_ENVIRONMENT) {
-      return incrementTestUid
+      return incrementTestUID
     }
     // otherwise, just make a new random UUID v4 and trim it
-    return () => trimUid(stripUUID())
+    return () => trimUID(stripUUID())
   }
 
   // grab the initial UID, keep updating it until it is not colliding, and finally return it.
-  let uid = getInitialUid()
-  const next = nextUidGenerator()
+  let uid = getInitialUID()
+  const next = nextUIDGenerator()
   while (existingUids.has(uid)) {
     uid = next(uid)
   }
   return uid
 }
 
-export function incrementTestUid(uid: string): string {
+export function incrementTestUID(uid: string): string {
   let result = uid.split('')
   let i = result.length - 1
 
