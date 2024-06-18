@@ -9,13 +9,15 @@ import {
   Submenu as SubmenuComponent,
   useContextMenu,
 } from 'react-contexify'
-import { colorTheme, Icons, UtopiaStyles } from '../uuiui'
+import { colorTheme, Icons, OnClickOutsideHOC, UtopiaStyles } from '../uuiui'
 import { getControlStyles } from '../uuiui-deps'
 import type { ContextMenuItem } from './context-menu-items'
 import type { EditorDispatch } from './editor/action-types'
 import type { WindowPoint } from '../core/shared/math-utils'
 import { windowPoint } from '../core/shared/math-utils'
 import { addOpenMenuId, removeOpenMenuId } from '../core/shared/menu-state'
+import { createPortal } from 'react-dom'
+import { CanvasContextMenuPortalTargetID } from '../core/shared/utils'
 
 interface Submenu<T> {
   items: Item<T>[]
@@ -311,5 +313,41 @@ export const MenuProvider = ({
     <div style={style} onContextMenu={onContextMenu}>
       {children}
     </div>
+  )
+}
+
+export const ContextMenuWrapper = <T,>({
+  children,
+  data,
+  dispatch,
+  id,
+  items,
+}: {
+  children?: React.ReactNode
+  data: T
+  dispatch?: EditorDispatch
+  id: string
+  items: ContextMenuItem<T>[]
+}) => {
+  const { hideAll } = useContextMenu({ id })
+
+  const getData = React.useCallback(() => data, [data])
+
+  const portalTarget = document.getElementById(CanvasContextMenuPortalTargetID)
+
+  return (
+    <React.Fragment>
+      <MenuProvider id={id} itemsLength={items.length} key={`${id}-provider`}>
+        {children}
+      </MenuProvider>
+      {portalTarget != null
+        ? createPortal(
+            <OnClickOutsideHOC onClickOutside={hideAll}>
+              <ContextMenu dispatch={dispatch} getData={getData} id={id} items={items} key={id} />
+            </OnClickOutsideHOC>,
+            portalTarget,
+          )
+        : null}
+    </React.Fragment>
   )
 }
