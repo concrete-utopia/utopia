@@ -610,7 +610,7 @@ export var storyboard = (
         [0, 1, 2].map((i) => (
           <>
             <div data-uid='46a'>second {i}</div>
-            <div data-uid='46b'>third {i}</div>
+            <div data-uid='46a'>third {i}</div>
           </>
         ))
       }
@@ -2187,7 +2187,7 @@ describe('Navigator', () => {
       ).toEqual([
         'regular-sb/parent2',
         'regular-sb/parent2/aaa',
-        'regular-sb/parent2/a58',
+        'regular-sb/parent2/aab',
         'regular-sb/parent2/parent1', // <- parent1 and its children moved under parent2
         'regular-sb/parent2/parent1/child1', // <- parent1 and its children moved under parent2
         'regular-sb/parent2/parent1/755', // <- parent1 and its children moved under parent2
@@ -2245,7 +2245,7 @@ describe('Navigator', () => {
         'regular-sb/parent1/755',
         'regular-sb/parent2',
         'regular-sb/parent2/aaa',
-        'regular-sb/parent2/a58',
+        'regular-sb/parent2/aab',
         'regular-sb/text',
       ])
     })
@@ -2297,7 +2297,7 @@ describe('Navigator', () => {
         'regular-sb/parent1/755',
         'regular-sb/parent2',
         'regular-sb/parent2/aaa',
-        'regular-sb/parent2/a58',
+        'regular-sb/parent2/aab',
         'regular-sb/text',
       ])
     })
@@ -2429,7 +2429,7 @@ describe('Navigator', () => {
         'regular-sb/child1',
         'regular-sb/parent2',
         'regular-sb/parent2/aaa',
-        'regular-sb/parent2/a58',
+        'regular-sb/parent2/aab',
         'regular-sb/text',
       ])
       expect(renderResult.getEditorState().editor.selectedViews).toEqual([
@@ -3812,7 +3812,7 @@ describe('Navigator', () => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/aaa',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/thing', // <- thing is moved into the flex container
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/0dc',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/aab',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/fle',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
         ])
@@ -3867,7 +3867,7 @@ describe('Navigator', () => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/aaa',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/thing', // <- thing is moved into the flex container
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/0dc',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/aab',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/fle',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
         ])
@@ -3922,7 +3922,7 @@ describe('Navigator', () => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/aaa',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/thing', // <- thing is moved into the flex container
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/0dc',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/aab',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/fle',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
         ])
@@ -4154,7 +4154,7 @@ describe('Navigator', () => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex2',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex2/flexchild2',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex2/flexchild1',
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex2/762',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex2/aaf',
         ])
 
         const element = editor.renderedDOM.getByTestId('flexchild1')
@@ -4222,7 +4222,7 @@ describe('Navigator', () => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/fragment', // <- fragment is moved into the flex container
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/fragment/child1', // <- fragment child is moved into the flex container
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/fragment/child2', // <- fragment child is moved into the flex container
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/0dc',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/aab',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/fle',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
         ])
@@ -5443,7 +5443,7 @@ describe('Navigator row order', () => {
         'conditional-clause-sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2-false-case',
         'synthetic-sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2/d84-attribute',
         'conditional-clause-sb/sc/app:app-root/frag/cond-1-false-case',
-        'synthetic-sb/sc/app:app-root/frag/cond-1/dab-attribute',
+        'synthetic-sb/sc/app:app-root/frag/cond-1/019-attribute',
         'regular-sb/sc/app/app-child',
       ],
     )
@@ -5470,34 +5470,34 @@ describe('Navigator row order', () => {
         'regular-sb/group/foo',
         'regular-sb/group/b68',
         'regular-sb/group/b68/46a~~~1',
-        'regular-sb/group/b68/46a~~~1/bag',
-        'regular-sb/group/b68/46b~~~2',
-        'regular-sb/group/b68/46b~~~2/bah',
+        'regular-sb/group/b68/46a~~~1/255',
+        'regular-sb/group/b68/46a~~~2',
+        'regular-sb/group/b68/46a~~~2/255',
         'regular-sb/group/b68/46a~~~3',
-        'regular-sb/group/b68/46a~~~3/bag',
-        'regular-sb/group/b68/46b~~~4',
-        'regular-sb/group/b68/46b~~~4/bah',
+        'regular-sb/group/b68/46a~~~3/255',
+        'regular-sb/group/b68/46a~~~4',
+        'regular-sb/group/b68/46a~~~4/255',
         'regular-sb/group/b68/46a~~~5',
-        'regular-sb/group/b68/46a~~~5/bag',
-        'regular-sb/group/b68/46b~~~6',
-        'regular-sb/group/b68/46b~~~6/bah',
+        'regular-sb/group/b68/46a~~~5/255',
+        'regular-sb/group/b68/46a~~~6',
+        'regular-sb/group/b68/46a~~~6/255',
         'regular-sb/group/cond',
         'conditional-clause-sb/group/cond-true-case',
         'regular-sb/group/cond/929',
         'regular-sb/group/cond/929/f23~~~1',
-        'regular-sb/group/cond/929/f23~~~1/bai',
+        'regular-sb/group/cond/929/f23~~~1/c6b',
         'regular-sb/group/cond/929/f23~~~2',
-        'regular-sb/group/cond/929/f23~~~2/bai',
+        'regular-sb/group/cond/929/f23~~~2/c6b',
         'regular-sb/group/cond/929/f23~~~3',
-        'regular-sb/group/cond/929/f23~~~3/bai',
+        'regular-sb/group/cond/929/f23~~~3/c6b',
         'conditional-clause-sb/group/cond-false-case',
         'synthetic-sb/group/cond/235-element-235',
         'regular-sb/group/bar',
         'regular-sb/group/651',
         'regular-sb/group/651/3bc~~~1',
-        'regular-sb/group/651/3bc~~~1/baj',
+        'regular-sb/group/651/3bc~~~1/7a7',
         'regular-sb/group/651/3bc~~~2',
-        'regular-sb/group/651/3bc~~~2/baj',
+        'regular-sb/group/651/3bc~~~2/7a7',
         'regular-sb/group/text-expr-cond-wrapper',
         'regular-sb/group/text-expr-cond-wrapper/text-expr-cond',
         'conditional-clause-sb/group/text-expr-cond-wrapper/text-expr-cond-true-case',
@@ -5505,7 +5505,7 @@ describe('Navigator row order', () => {
         'conditional-clause-sb/group/text-expr-cond-wrapper/text-expr-cond-false-case',
         'synthetic-sb/group/text-expr-cond-wrapper/text-expr-cond/e4a-element-e4a',
         'regular-sb/group/zero-length-map-wrapper',
-        'regular-sb/group/zero-length-map-wrapper/528',
+        'regular-sb/group/zero-length-map-wrapper/e23',
       ],
     )
     expect(
@@ -5519,11 +5519,11 @@ describe('Navigator row order', () => {
       'regular-sb/group/foo',
       'regular-sb/group/b68',
       'regular-sb/group/b68/46a~~~1',
-      'regular-sb/group/b68/46b~~~2',
+      'regular-sb/group/b68/46a~~~2',
       'regular-sb/group/b68/46a~~~3',
-      'regular-sb/group/b68/46b~~~4',
+      'regular-sb/group/b68/46a~~~4',
       'regular-sb/group/b68/46a~~~5',
-      'regular-sb/group/b68/46b~~~6',
+      'regular-sb/group/b68/46a~~~6',
       'regular-sb/group/cond',
       'conditional-clause-sb/group/cond-true-case',
       'regular-sb/group/cond/929',
@@ -5543,7 +5543,7 @@ describe('Navigator row order', () => {
       'conditional-clause-sb/group/text-expr-cond-wrapper/text-expr-cond-false-case',
       'synthetic-sb/group/text-expr-cond-wrapper/text-expr-cond/e4a-element-e4a',
       'regular-sb/group/zero-length-map-wrapper',
-      'regular-sb/group/zero-length-map-wrapper/528',
+      'regular-sb/group/zero-length-map-wrapper/e23',
     ])
   })
 

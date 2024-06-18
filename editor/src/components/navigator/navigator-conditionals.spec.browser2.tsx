@@ -630,20 +630,20 @@ regular-utopia-storyboard-uid/ccc
         conditional-clause-utopia-storyboard-uid/ccc/cond2/eee/cond3-true-case
             regular-utopia-storyboard-uid/ccc/cond2/eee/cond3/fff
         conditional-clause-utopia-storyboard-uid/ccc/cond2/eee/cond3-false-case
-            synthetic-utopia-storyboard-uid/ccc/cond2/eee/cond3/dab-attribute
+            synthetic-utopia-storyboard-uid/ccc/cond2/eee/cond3/019-attribute
         regular-utopia-storyboard-uid/ccc/cond2/eee/ggg
   conditional-clause-utopia-storyboard-uid/ccc/cond2-false-case
-      synthetic-utopia-storyboard-uid/ccc/cond2/dac-attribute
+      synthetic-utopia-storyboard-uid/ccc/cond2/89b-attribute
 regular-utopia-storyboard-uid/cond4
 conditional-clause-utopia-storyboard-uid/cond4-true-case
     regular-utopia-storyboard-uid/cond4/hhh
 conditional-clause-utopia-storyboard-uid/cond4-false-case
-    synthetic-utopia-storyboard-uid/cond4/dad-attribute
+    synthetic-utopia-storyboard-uid/cond4/d00-attribute
 regular-utopia-storyboard-uid/cond5
 conditional-clause-utopia-storyboard-uid/cond5-true-case
     regular-utopia-storyboard-uid/cond5/iii
 conditional-clause-utopia-storyboard-uid/cond5-false-case
-    synthetic-utopia-storyboard-uid/cond5/dae-attribute
+    synthetic-utopia-storyboard-uid/cond5/73a-attribute
 regular-utopia-storyboard-uid/jjj`
     expect(
       navigatorStructure(
@@ -761,7 +761,7 @@ regular-utopia-storyboard-uid/scene-aaa/containing-div
       conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-true-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/d84-attribute
       conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-false-case
-          synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/dab-attribute
+          synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/019-attribute
   conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
       synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div
   regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`)
@@ -834,7 +834,7 @@ regular-utopia-storyboard-uid/scene-aaa/containing-div
       conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-true-case
           regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/sibling-div
       conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-false-case
-          synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/dab-attribute
+          synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/019-attribute
   conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
       synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div`)
 
@@ -1768,9 +1768,9 @@ regular-utopia-storyboard-uid/scene-aaa/containing-div
   conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional-false-case
       synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional/false-branch-element-false-branch
 regular-utopia-storyboard-uid/scene-aaa/268
-  regular-utopia-storyboard-uid/scene-aaa/268/aah~~~1
-  regular-utopia-storyboard-uid/scene-aaa/268/aah~~~2
-  regular-utopia-storyboard-uid/scene-aaa/268/aah~~~3
+  regular-utopia-storyboard-uid/scene-aaa/268/981~~~1
+  regular-utopia-storyboard-uid/scene-aaa/268/981~~~2
+  regular-utopia-storyboard-uid/scene-aaa/268/981~~~3
 regular-utopia-storyboard-uid/scene-aaa/hey`)
     })
   })
