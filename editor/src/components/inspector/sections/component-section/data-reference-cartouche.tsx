@@ -251,33 +251,43 @@ type ContextMenuItemsData = {
   openDataPicker?: () => void
   deleteCartouche?: () => void
 }
+
+const Separator = {
+  name: <div key='separator' className='contexify_separator' />,
+  enabled: false,
+  action: NO_OP,
+  isSeparator: true,
+} as const
+
 const contextMenuItems: Array<ContextMenuItem<ContextMenuItemsData>> = [
   {
-    name: 'Replace with...',
+    name: 'Replace...',
     enabled: (data) => data.openDataPicker != null,
     action: (data) => {
       data.openDataPicker?.()
     },
   },
   {
-    name: 'Delete',
+    name: 'Remove',
     enabled: false,
     action: (data) => {
       data.deleteCartouche?.()
     },
   },
-  {
-    name: 'Jump to data source',
-    enabled: false,
-    action: (data) => {},
-  },
-  {
-    name: 'Open in CMS',
-    enabled: false,
-    action: (data) => {},
-  },
+  Separator,
   {
     name: 'Edit value',
+    enabled: false,
+    action: (data) => {},
+  },
+  {
+    name: 'Open in external CMS',
+    enabled: false,
+    action: (data) => {},
+  },
+  Separator,
+  {
+    name: 'Open in code editor',
     enabled: false,
     action: (data) => {},
   },
