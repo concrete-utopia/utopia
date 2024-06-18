@@ -322,12 +322,14 @@ export const ContextMenuWrapper = <T,>({
   dispatch,
   id,
   items,
+  style,
 }: {
   children?: React.ReactNode
   data: T
   dispatch?: EditorDispatch
   id: string
   items: ContextMenuItem<T>[]
+  style?: React.CSSProperties
 }) => {
   const { hideAll } = useContextMenu({ id })
 
@@ -337,7 +339,7 @@ export const ContextMenuWrapper = <T,>({
 
   return (
     <React.Fragment>
-      <MenuProvider id={id} itemsLength={items.length} key={`${id}-provider`}>
+      <MenuProvider id={id} itemsLength={items.length} key={`${id}-provider`} style={style}>
         {children}
       </MenuProvider>
       {portalTarget != null
