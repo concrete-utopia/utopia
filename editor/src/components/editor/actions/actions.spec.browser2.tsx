@@ -678,7 +678,7 @@ describe('actions', () => {
         <div data-uid='aaa'>
             <div data-uid='bbb'>foo</div>
             <div data-uid='ccc'>bar</div>
-            <div data-uid='aad' style={{ top: 0, left: 0, position: 'absolute' }}>foo</div>
+            <div data-uid='bbc' style={{ top: 0, left: 0, position: 'absolute' }}>foo</div>
         </div>
 		`,
       },
@@ -713,8 +713,8 @@ describe('actions', () => {
             <div data-uid='bbb'>foo</div>
             <div data-uid='ccc'>bar</div>
             <div data-uid='ddd'>baz</div>
-            <div data-uid='aad' style={{ top: 0, left: 0, position: 'absolute' }}>foo</div>
-            <div data-uid='aah' style={{ top: 20, left: 0, position: 'absolute' }}>bar</div>
+            <div data-uid='bbc' style={{ top: 0, left: 0, position: 'absolute' }}>foo</div>
+            <div data-uid='ccd' style={{ top: 20, left: 0, position: 'absolute' }}>bar</div>
         </div>
 		`,
       },
@@ -754,7 +754,7 @@ describe('actions', () => {
             </div>
             <React.Fragment>
               <div
-                data-uid='aaf'
+                data-uid='dde'
                 style={{
                   height: 10,
                   position: 'absolute',
@@ -765,7 +765,7 @@ describe('actions', () => {
                 hello
               </div>
               <div
-                data-uid='aal'
+                data-uid='eef'
                 style={{
                   height: 10,
                   position: 'absolute',
@@ -855,7 +855,7 @@ describe('actions', () => {
                 // @utopia/uid=conditional
                 true ? (
                   <div
-                    data-uid='aag'
+                    data-uid='dde'
                     style={{
                       height: 10,
                       position: 'absolute',
@@ -866,7 +866,7 @@ describe('actions', () => {
                     true
                   </div>
                 ) : (
-                  <div data-uid='aam' style={{ height: 10 }}>false</div>
+                  <div data-uid='eef' style={{ height: 10 }}>false</div>
                 )
               }
             </div>
@@ -909,7 +909,7 @@ describe('actions', () => {
                   foo
                 </div>
                 <div
-                  data-uid='aaf'
+                  data-uid='bbc'
                   style={{
                     height: 10,
                     top: 10,
@@ -959,7 +959,7 @@ describe('actions', () => {
         <React.Fragment>
           <div data-uid='aaa' style={{ height: 10 }}>foo</div>
           <div
-          data-uid='aaf'
+          data-uid='bbc'
           style={{
             height: 10,
             top: 10,
@@ -970,7 +970,7 @@ describe('actions', () => {
             bar
           </div>
           <div
-            data-uid='aal'
+            data-uid='ccd'
             style={{
               height: 10,
               top: 20,
@@ -1022,7 +1022,7 @@ describe('actions', () => {
               // @utopia/uid=conditional
               true ? (
                 <div
-                  data-uid='aad'
+                  data-uid='bbc'
                   style={{
                     top: 0,
                     left: 0,
@@ -1075,7 +1075,7 @@ describe('actions', () => {
             </div>
           ) : (
             <div
-              data-uid='aaf'
+              data-uid='bbc'
               style={{
                 height: 10,
                 top: 10,
@@ -1134,7 +1134,7 @@ describe('actions', () => {
           true ? (
             <React.Fragment>
               <div
-                data-uid='aaf'
+                data-uid='bbc'
                 style={{
                   height: 10,
                   top: 0,
@@ -1145,7 +1145,7 @@ describe('actions', () => {
                 bar
               </div>
               <div
-                data-uid='aal'
+                data-uid='ccd'
                 style={{
                   height: 10,
                   top: 10,
@@ -1215,7 +1215,7 @@ describe('actions', () => {
             ) : (
               <React.Fragment>
                 <div
-                  data-uid='aaf'
+                  data-uid='bbc'
                   style={{
                     height: 10,
                     top: 10,
@@ -1226,7 +1226,7 @@ describe('actions', () => {
                   bar
                 </div>
                 <div
-                  data-uid='aal'
+                  data-uid='ccd'
                   style={{
                     height: 10,
                     top: 20,
@@ -1284,7 +1284,7 @@ describe('actions', () => {
                 true ? (
                     <React.Fragment>
                     	<div
-                        data-uid='aad'
+                        data-uid='bbc'
                         style={{
                           position: 'absolute',
                           top: 0,
@@ -1294,7 +1294,7 @@ describe('actions', () => {
                         bar
                       </div>
                       <div
-                        data-uid='aah'
+                        data-uid='ccd'
                         style={{
                           position: 'absolute',
                           top: 20,
@@ -1360,7 +1360,7 @@ describe('actions', () => {
           <React.Fragment>
             <React.Fragment>
               <div
-              data-uid='aad'
+              data-uid='bbc'
               style={{
                 position: 'absolute',
                 top: 0,
@@ -1370,7 +1370,7 @@ describe('actions', () => {
               bar
             </div>
             <div
-              data-uid='aah'
+              data-uid='ccd'
               style={{
                 position: 'absolute',
                 top: 20,
@@ -1382,7 +1382,7 @@ describe('actions', () => {
           </React.Fragment>
           <React.Fragment>
             <div
-              data-uid='aam'
+              data-uid='dde'
               style={{
                 position: 'absolute',
                 top: 40,
@@ -1392,7 +1392,7 @@ describe('actions', () => {
               qux
             </div>
             <div
-              data-uid='aaq'
+              data-uid='eef'
               style={{
                 position: 'absolute',
                 top: 60,
@@ -1443,7 +1443,7 @@ describe('actions', () => {
           // @utopia/uid=conditional
           true ? <div data-uid='aaa'>foo</div> : null
         }
-        <div data-uid='aad' style={{ top: 0, left: 0, position: 'absolute' }}>foo</div>
+        <div data-uid='aah' style={{ top: 0, left: 0, position: 'absolute' }}>foo</div>
       </div>
 		`,
       },
@@ -1632,7 +1632,7 @@ describe('actions', () => {
           true ? (
             <React.Fragment>
               <div
-                data-uid='aaf'
+                data-uid='bbc'
                 style={{
                   height: 20,
                   top: -10,
@@ -1643,7 +1643,7 @@ describe('actions', () => {
                 bar
               </div>
               <div
-                data-uid='aal'
+                data-uid='ccd'
                 style={{
                   height: 20,
                   top: 10,
@@ -1695,7 +1695,7 @@ describe('actions', () => {
               <Group data-uid='group' style={{ background: 'yellow' }}>
                 <div data-uid='bar' style={{ width: 10, height: 10, background: 'red', position: 'absolute', top: 0, left: 0 }} />
                 <div data-uid='baz' style={{ width: 10, height: 10, background: 'red', position: 'absolute', top: 100, left: 20 }} />
-                <div data-uid='aai' style={{ width: 50, height: 50, background: 'blue', position: 'absolute', left: 200, top: 200 }} />
+                <div data-uid='fop' style={{ width: 50, height: 50, background: 'blue', position: 'absolute', left: 200, top: 200 }} />
               </Group>
             </div>
           `,
@@ -1803,9 +1803,9 @@ describe('actions', () => {
                 style={{ width: 60, height: 60 }}
               />
             </div>
-            <div data-uid='aar' style={{ top: 0, left: 0, position: 'absolute' }}>
+            <div data-uid='bbc' style={{ top: 0, left: 0, position: 'absolute' }}>
               <div
-                data-uid='aai'
+                data-uid='ccd'
                 style={{
                   position: 'absolute',
                   left: 20,
@@ -1815,7 +1815,7 @@ describe('actions', () => {
                 }}
               />
               <div
-                data-uid='aao'
+                data-uid='dde'
                 style={{ width: 60, height: 60 }}
               />
             </div>
@@ -1886,9 +1886,9 @@ describe('actions', () => {
             {
               // @utopia/uid=d54
               (() => (
-                <div data-uid='aas'>
+                <div data-uid='bbc'>
                   <div
-                    data-uid='aaj'
+                    data-uid='ccd'
                     style={{
                       position: 'absolute',
                       left: 20,
@@ -1898,7 +1898,7 @@ describe('actions', () => {
                     }}
                   />
                   <div
-                    data-uid='aap'
+                    data-uid='dde'
                     style={{ width: 60, height: 60 }}
                   />
                 </div>
@@ -1964,7 +1964,7 @@ describe('actions', () => {
                 />
               ))()}  
               <div
-                data-uid='aaf'
+                data-uid='dde'
                 style={{
                   width: 60,
                   height: 60,
@@ -2140,7 +2140,7 @@ export var Playground = () => {
               width: 204,
               height: 54,
             }}
-            data-uid='aao'
+            data-uid='fcc'
           />
         </React.Fragment>
       </div>
@@ -2521,10 +2521,10 @@ export var storyboard = (
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/div',
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aag',
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aai',
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aak',
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/aam',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/diw',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/diy',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/dja',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/djc',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/last',
         ])
         expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
@@ -2571,7 +2571,7 @@ export var App = (props) => {
             width: 100,
             height: 100,
           }}
-          data-uid='aag'
+          data-uid='diw'
         />
         <div
           style={{
@@ -2580,7 +2580,7 @@ export var App = (props) => {
             width: 100,
             height: 100,
           }}
-          data-uid='aai'
+          data-uid='diy'
         />
         <div
           style={{
@@ -2589,7 +2589,7 @@ export var App = (props) => {
             width: 100,
             height: 100,
           }}
-          data-uid='aak'
+          data-uid='dja'
         />
         <div
           style={{
@@ -2598,7 +2598,7 @@ export var App = (props) => {
             width: 100,
             height: 100,
           }}
-          data-uid='aam'
+          data-uid='djc'
         />
         <div
           style={{
@@ -2695,10 +2695,10 @@ export var storyboard = (props) => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/container',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/ccc',
-          'regular-utopia-storyboard-uid/aai',
-          'regular-utopia-storyboard-uid/aak',
-          'regular-utopia-storyboard-uid/aam',
-          'regular-utopia-storyboard-uid/aao',
+          'regular-utopia-storyboard-uid/ccd',
+          'regular-utopia-storyboard-uid/ccf',
+          'regular-utopia-storyboard-uid/cch',
+          'regular-utopia-storyboard-uid/ccj',
         ])
         expect(getPrintedUiJsCode(renderResult.getEditorState()))
           .toEqual(`import * as React from 'react'
@@ -2770,7 +2770,7 @@ export var storyboard = (props) => {
           width: 244,
           height: 208,
         }}
-        data-uid='aai'
+        data-uid='ccd'
       />
       <div
         style={{
@@ -2781,7 +2781,7 @@ export var storyboard = (props) => {
           width: 244,
           height: 208,
         }}
-        data-uid='aak'
+        data-uid='ccf'
       />
       <div
         style={{
@@ -2792,7 +2792,7 @@ export var storyboard = (props) => {
           width: 244,
           height: 208,
         }}
-        data-uid='aam'
+        data-uid='cch'
       />
       <div
         style={{
@@ -2803,7 +2803,7 @@ export var storyboard = (props) => {
           width: 244,
           height: 208,
         }}
-        data-uid='aao'
+        data-uid='ccj'
       />
     </Storyboard>
   )
@@ -2870,10 +2870,10 @@ export var storyboard = (props) => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/container',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/ccc',
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/aai',
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/aak',
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/aam',
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/aao',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/ccd',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/ccf',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/cch',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:sb/ccj',
         ])
 
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -2919,7 +2919,7 @@ export var storyboard = (props) => {
               width: 244,
               height: 208,
             }}
-            data-uid='aai'
+            data-uid='ccd'
           />
           <div
             style={{
@@ -2930,7 +2930,7 @@ export var storyboard = (props) => {
               width: 244,
               height: 208,
             }}
-            data-uid='aak'
+            data-uid='ccf'
           />
           <div
             style={{
@@ -2941,7 +2941,7 @@ export var storyboard = (props) => {
               width: 244,
               height: 208,
             }}
-            data-uid='aam'
+            data-uid='cch'
           />
           <div
             style={{
@@ -2952,7 +2952,7 @@ export var storyboard = (props) => {
               width: 244,
               height: 208,
             }}
-            data-uid='aao'
+            data-uid='ccj'
           />
         </div>`),
         )
@@ -3069,7 +3069,7 @@ export var storyboard = (props) => {
               width: 100,
               height: 100,
             }}
-            data-uid='aag'
+            data-uid='diw'
           />
           <div
             style={{
@@ -3202,7 +3202,7 @@ export var storyboard = (props) => {
               left: 214,
               top: 74,
             }}
-            data-uid='aaj'
+            data-uid='diw'
           />
           <div
             style={{
@@ -3262,7 +3262,7 @@ export var storyboard = (props) => {
                     true ? <div data-uid='aaa' /> : null
                   }
                   <div data-uid='bbb'>foo</div>
-                  <div data-uid='aad' style={{ top: 0, left: 0, position: 'absolute' }}>foo</div>
+                  <div data-uid='bbc' style={{ top: 0, left: 0, position: 'absolute' }}>foo</div>
                 </div>
               `),
           )
@@ -3306,7 +3306,7 @@ export var storyboard = (props) => {
                     // @utopia/uid=conditional
                     true ? (
                       <div data-uid='aaa'>
-                        <div data-uid='aad' style={{top: 0, left: 0, position: 'absolute'}}>foo</div>
+                        <div data-uid='bbc' style={{top: 0, left: 0, position: 'absolute'}}>foo</div>
                       </div>
                     ) : null
                   }
@@ -3353,7 +3353,7 @@ export var storyboard = (props) => {
               true ? (
                 <React.Fragment>
                   <div
-                    data-uid='aaf'
+                    data-uid='bbc'
                     style={{
                       height: 10,
                       top: 45,
@@ -3420,7 +3420,7 @@ export var storyboard = (props) => {
                       <div data-uid='aaa' />
                     ) : (
                       <div
-                        data-uid='aad'
+                        data-uid='bbc'
                         style={{
                           top: 0,
                           left: 0,
@@ -3539,7 +3539,7 @@ export var storyboard = (props) => {
             result: `<div data-uid='root'>
               <div data-uid='bbb' style={{position: 'absolute', width: 50, height: 40, top: 30, left: 20}}>Hello!</div>
           <div data-uid='ccc' style={{display: 'flex'}}>
-            <div data-uid='aai' style={{contain: 'layout', width: 50, height: 40}}>Hello!</div>
+            <div data-uid='bbc' style={{contain: 'layout', width: 50, height: 40}}>Hello!</div>
           </div>
         </div>`,
           },
@@ -3553,7 +3553,7 @@ export var storyboard = (props) => {
             result: `<div data-uid='root'>
               <div data-uid='bbb' style={{position: 'absolute', width: '50%', height: '20%', top: 30, left: 20}}>Hello!</div>
               <div data-uid='ccc' style={{display: 'flex'}}>
-                <div data-uid='aai' style={{contain: 'layout', width: 200, height: 80}}>Hello!</div>
+                <div data-uid='bbc' style={{contain: 'layout', width: 200, height: 80}}>Hello!</div>
               </div>
             </div>`,
           },
@@ -3571,7 +3571,7 @@ export var storyboard = (props) => {
                 <div data-uid='ddd' style={{width: 50, flexBasis: 60}}>Hello!</div>
               </div>
               <div data-uid='ccc' style={{display: 'flex', flexDirection: 'row'}}>
-                <div data-uid='aaf' style={{width: 50, height: 60}}>Hello!</div>
+                <div data-uid='dde' style={{width: 50, height: 60}}>Hello!</div>
               </div>
             </div>`,
           },
@@ -3593,8 +3593,8 @@ export var storyboard = (props) => {
                 </div>
               </div>
               <div data-uid='ccc' style={{display: 'flex', flexDirection: 'row'}}>
-                <div data-uid='aaj' style={{width: 380, height: 20}}>
-                  <div data-uid='aae' style={{width:20, height: 20}}/>
+                <div data-uid='dde' style={{width: 380, height: 20}}>
+                  <div data-uid='eef' style={{width:20, height: 20}}/>
                 </div>
               </div>
             </div>`,
@@ -3617,8 +3617,8 @@ export var storyboard = (props) => {
                 </div>
               </div>
               <div data-uid='ccc' style={{contain: 'layout'}}>
-                <div data-uid='aak' style={{ height: 20, top: -10, left: 15, position: 'absolute' }}>
-                  <div data-uid='aae' style={{ width: 20, height: 20 }}/>
+                <div data-uid='dde' style={{ height: 20, top: -10, left: 15, position: 'absolute' }}>
+                  <div data-uid='eef' style={{ width: 20, height: 20 }}/>
                 </div>
               </div>
             </div>`,
@@ -3805,7 +3805,7 @@ export var storyboard = (props) => {
               <div data-uid='ccc' style={{ contain: 'layout' }}>
                 <div data-uid='ddd' style={{ position: 'absolute', top: 10, left: 10 }}>hi</div>
                 <div data-uid='eee' style={{ width: 20, height: 20 }}/>
-                <div data-uid='aah' style={{ position: 'absolute', top: 20, left: 50, contain: 'layout' }}>hello</div>
+                <div data-uid='bbc' style={{ position: 'absolute', top: 20, left: 50, contain: 'layout' }}>hello</div>
               </div>
               <div data-uid='bbb' style={{ position: 'absolute', top: 20, left: 50, contain: 'layout' }}>hello</div>
             </div>`,
@@ -3820,7 +3820,7 @@ export var storyboard = (props) => {
             result: `<div data-uid='root' style={{ lineHeight: '20px' }}>
                 <span data-uid='ccc'>hi</span>
                 <div data-uid='bbb' style={{ width: 50, height: 50, contain: 'layout' }} />
-                <div data-uid='aaf' style={{ width: 50, height: 50, contain: 'layout', top: 20, left: 0, position: 'absolute' }} />
+                <div data-uid='bbc' style={{ width: 50, height: 50, contain: 'layout', top: 20, left: 0, position: 'absolute' }} />
               </div>`,
           },
           {
@@ -3832,7 +3832,7 @@ export var storyboard = (props) => {
             targets: [makeTargetPath('root/bbb')],
             result: `<div data-uid='root'>
                 <span data-uid='ccc'>
-                  hi<h1 data-uid='aac'>hello</h1>
+                  hi<h1 data-uid='bbc'>hello</h1>
                 </span>
                 <h1 data-uid='bbb'>hello</h1>
               </div>`,
@@ -4021,7 +4021,7 @@ export var storyboard = (props) => {
                 <div data-uid='bbb' style={{position: 'absolute', width: 50, height: 40, top: 30, left: 20}}>Hello!</div>
               </div>`,
             targets: [makeTargetPath('root/bbb')],
-            result: `<div data-uid='aai' style={{position: 'absolute', width: 50, height: 40, top: 400, left: 695}}>Hello!</div>`,
+            result: `<div data-uid='bbc' style={{position: 'absolute', width: 50, height: 40, top: 400, left: 695}}>Hello!</div>`,
           },
           {
             name: `paste a flex child into the storyboard`,
@@ -4033,8 +4033,8 @@ export var storyboard = (props) => {
                 </div>
               </div>`,
             targets: [makeTargetPath('root/bbb/ddd')],
-            result: `<div data-uid='aak' style={{ height: 20, top: 410, left: 535, position: 'absolute' }}>
-                <div data-uid='aae' style={{ width: 20, height: 20 }}/>
+            result: `<div data-uid='dde' style={{ height: 20, top: 410, left: 535, position: 'absolute' }}>
+                <div data-uid='eef' style={{ width: 20, height: 20 }}/>
               </div>`,
           },
           {
@@ -4593,13 +4593,13 @@ export var storyboard = (props) => {
             </div>`,
           copyTargets: [makeTargetPath('root/bbb')],
           pasteTargets: [makeTargetPath('root/ddd')],
-          expectedSelectedViews: [makeTargetPath('root/aai')],
+          expectedSelectedViews: [makeTargetPath('root/bbc')],
           result: `<div data-uid='root'>
               <div data-uid='bbb' style={{backgroundColor: 'lavender', outline: '1px solid black'}}>
                 <span data-uid='ccc'>Hello!</span>
               </div>
-              <div data-uid='aai' style={{backgroundColor: 'lavender', outline: '1px solid black', top: 100, left: 100, position: 'absolute', }}>
-                <span data-uid='aac'>Hello!</span>
+              <div data-uid='bbc' style={{backgroundColor: 'lavender', outline: '1px solid black', top: 100, left: 100, position: 'absolute', }}>
+                <span data-uid='ccd'>Hello!</span>
               </div>
             </div>`,
         },
@@ -4619,15 +4619,15 @@ export var storyboard = (props) => {
             </div>`,
           copyTargets: [makeTargetPath('root/bbb')],
           pasteTargets: [makeTargetPath('root/ddd/fff')],
-          expectedSelectedViews: [makeTargetPath('root/ddd/aak')],
+          expectedSelectedViews: [makeTargetPath('root/ddd/bbc')],
           result: `<div data-uid='root'>
               <div data-uid='bbb' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 50, height: 20}}>
                 <span data-uid='ccc'>Hello!</span>
               </div>
               <div data-uid='ddd' style={{position: 'absolute', top: 100, left: 100, display: 'flex'}}>
                 <div data-uid='eee'/>
-                <div data-uid='aak' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 50, height: 20}}>
-                  <span data-uid='aac'>Hello!</span>
+                <div data-uid='bbc' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 50, height: 20}}>
+                  <span data-uid='ccd'>Hello!</span>
                 </div>
                 <div data-uid='hhh'/>
               </div>
@@ -4650,16 +4650,16 @@ export var storyboard = (props) => {
             </div>`,
           copyTargets: [makeTargetPath('root/bbb'), makeTargetPath('root/fff/ggg')],
           pasteTargets: [makeTargetPath('root/ddd')],
-          expectedSelectedViews: [makeTargetPath('root/aak'), makeTargetPath('root/aaz')],
+          expectedSelectedViews: [makeTargetPath('root/bbc'), makeTargetPath('root/ggh')],
           result: `<div data-uid='root'>
               <div data-uid='bbb' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 40, height: 40}}>
                 <span data-uid='ccc'>Hello!</span>
               </div>
-              <div data-uid='aak' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 40, height: 40, top: 100, left: 100, position: 'absolute' }}>
-                <span data-uid='aac'>Hello!</span>
+              <div data-uid='bbc' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 40, height: 40, top: 100, left: 100, position: 'absolute' }}>
+                <span data-uid='ccd'>Hello!</span>
               </div>
-              <div data-uid='aaz' style={{position: 'absolute', top: 140, left: 140, backgroundColor: 'plum', outline: '1px solid white'}}>
-                  <span data-uid='aaq' style={{color: 'white'}}>second element</span>
+              <div data-uid='ggh' style={{position: 'absolute', top: 140, left: 140, backgroundColor: 'plum', outline: '1px solid white'}}>
+                  <span data-uid='hhi' style={{color: 'white'}}>second element</span>
                 </div>
               <div data-uid='fff'>
                 <div data-uid='ggg' style={{position: 'absolute', top: 40, left: 40, backgroundColor: 'plum', outline: '1px solid white'}}>
@@ -4687,29 +4687,29 @@ export var storyboard = (props) => {
           copyTargets: [makeTargetPath('root/bbb'), makeTargetPath('root/fff')],
           pasteTargets: [makeTargetPath('root/jjj'), makeTargetPath('root/ddd')],
           expectedSelectedViews: [
-            makeTargetPath('root/aak'),
-            makeTargetPath('root/aaz'),
-            makeTargetPath('root/aau'),
-            makeTargetPath('root/abl'),
+            makeTargetPath('root/bbc'),
+            makeTargetPath('root/ffh'),
+            makeTargetPath('root/bbe'),
+            makeTargetPath('root/ffj'),
           ],
           result: `<div data-uid='root'>
               <div data-uid='bbb' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 40, height: 40}}>
                 <span data-uid='ccc'>Hello!</span>
               </div>
-              <div data-uid='aau' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 40, height: 40, top: 100, left: 100, position: 'absolute' }}>
-                <span data-uid='aaf'>Hello!</span>
+              <div data-uid='bbe' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 40, height: 40, top: 100, left: 100, position: 'absolute' }}>
+                <span data-uid='ccf'>Hello!</span>
               </div>
-              <div data-uid='abl' style={{position: 'absolute', top: 140, left: 140, backgroundColor: 'plum', outline: '1px solid white'}}>
-                <span data-uid='abc' style={{color: 'white'}}>second element</span>
+              <div data-uid='ffj' style={{position: 'absolute', top: 140, left: 140, backgroundColor: 'plum', outline: '1px solid white'}}>
+                <span data-uid='ggj' style={{color: 'white'}}>second element</span>
               </div>
               <div data-uid='fff' style={{position: 'absolute', top: 40, left: 40, backgroundColor: 'plum', outline: '1px solid white'}}>
                 <span data-uid='ggg' style={{color: 'white'}}>second element</span>
               </div>
-              <div data-uid='aak' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 40, height: 40, top: 200, left: 200, position: 'absolute' }}>
-                <span data-uid='aac'>Hello!</span>
+              <div data-uid='bbc' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 40, height: 40, top: 200, left: 200, position: 'absolute' }}>
+                <span data-uid='ccd'>Hello!</span>
               </div>
-              <div data-uid='aaz' style={{position: 'absolute', top: 240, left: 240, backgroundColor: 'plum', outline: '1px solid white'}}>
-                  <span data-uid='aaq' style={{color: 'white'}}>second element</span>
+              <div data-uid='ffh' style={{position: 'absolute', top: 240, left: 240, backgroundColor: 'plum', outline: '1px solid white'}}>
+                  <span data-uid='ggh' style={{color: 'white'}}>second element</span>
                 </div>
             </div>`,
         },
@@ -4732,7 +4732,7 @@ export var storyboard = (props) => {
           </div>`,
           copyTargets: [makeTargetPath('root/bbb')],
           pasteTargets: [makeTargetPath('root/cond/ddd')],
-          expectedSelectedViews: [makeTargetPath('root/cond/aai')],
+          expectedSelectedViews: [makeTargetPath('root/cond/bbc')],
           result: `<div data-uid='root'>
             <div data-uid='bbb' style={{backgroundColor: 'lavender', outline: '1px solid black'}}>
               <span data-uid='ccc'>Hello!</span>
@@ -4742,8 +4742,8 @@ export var storyboard = (props) => {
               false
               ? null
               : (
-                <div data-uid='aai' style={{backgroundColor: 'lavender', outline: '1px solid black', top: 100, left: 100, position: 'absolute'}}>
-                  <span data-uid='aac'>Hello!</span>
+                <div data-uid='bbc' style={{backgroundColor: 'lavender', outline: '1px solid black', top: 100, left: 100, position: 'absolute'}}>
+                  <span data-uid='ccd'>Hello!</span>
                 </div>
               )
             }
@@ -4784,11 +4784,11 @@ export var storyboard = (props) => {
               ? null
               : (
                 <React.Fragment>
-                  <div data-uid='aak' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 40, height: 40, top: 100, left: 100, position: 'absolute' }}>
-                    <span data-uid='aac'>Hello!</span>
+                  <div data-uid='bbc' style={{backgroundColor: 'lavender', outline: '1px solid black', width: 40, height: 40, top: 100, left: 100, position: 'absolute' }}>
+                    <span data-uid='ccd'>Hello!</span>
                   </div>
-                  <div data-uid='aaz' style={{position: 'absolute', top: 140, left: 140, backgroundColor: 'plum', outline: '1px solid white'}}>
-                      <span data-uid='aaq' style={{color: 'white'}}>second element</span>
+                  <div data-uid='ggh' style={{position: 'absolute', top: 140, left: 140, backgroundColor: 'plum', outline: '1px solid white'}}>
+                      <span data-uid='hhi' style={{color: 'white'}}>second element</span>
                     </div>
                 </React.Fragment>
               )
@@ -5720,11 +5720,11 @@ export var storyboard = (
                 />
               </div>
               <div
-                data-uid='aat'
+                data-uid='bbc'
                 style={{ position: 'absolute', top: 0, left: 0 }}
               >
                 <div
-                  data-uid='aai'
+                  data-uid='ccd'
                   style={{
                     position: 'absolute',
                     left: 20,
@@ -5734,7 +5734,7 @@ export var storyboard = (
                   }}
                 />
                 <div
-                  data-uid='aao'
+                  data-uid='dde'
                   style={{ width: 60, height: 60 }}
                 />
               </div>
@@ -5811,12 +5811,12 @@ export var storyboard = (
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/ccc',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/ddd',
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/aat', // <- the pasted element
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/aat/aai',
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/aat/aao',
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/abi',
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/abi/aax',
-          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/abi/abd',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbc', // <- the pasted element
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbc/ccd',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbc/dde',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbe',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbe/ccf',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbe/ddg',
         ])
       })
     })
