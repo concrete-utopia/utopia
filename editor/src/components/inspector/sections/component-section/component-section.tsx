@@ -79,7 +79,6 @@ import { normalisePathToUnderlyingTarget } from '../../../custom-code/code-file'
 import { openCodeEditorFile, replaceElementInScope } from '../../../editor/actions/action-creators'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { getFilePathForImportedComponent } from '../../../../core/model/project-file-utils'
 import { safeIndex } from '../../../../core/shared/array-utils'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { usePopper } from 'react-popper'
@@ -95,7 +94,6 @@ import {
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import type { DataPickerCallback, DataPickerOption, ObjectPath } from './data-picker-utils'
 import { jsxElementChildToValuePath } from './data-picker-utils'
-import { jsxElementChildToText } from '../../../canvas/ui-jsx-canvas-renderer/jsx-element-child-to-text'
 import { stopPropagation } from '../../common/inspector-utils'
 import { IdentifierExpressionCartoucheControl } from './cartouche-control'
 import { getRegisteredComponent } from '../../../../core/property-controls/property-controls-utils'
@@ -104,7 +102,6 @@ import {
   getCartoucheDataTypeForExpression,
   useVariablesInScopeForSelectedElement,
 } from './variables-in-scope-utils'
-import { useAtom } from 'jotai'
 import { DataSelectorModal } from './data-selector-modal'
 import { getModifiableJSXAttributeAtPath } from '../../../../core/shared/jsx-attribute-utils'
 import { isRight } from '../../../../core/shared/either'
@@ -1405,26 +1402,16 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
   const target = safeIndex(selectedViews, 0) ?? null
 
   const locationOfComponentInstance = useEditorState(
-    Substores.fullStore,
+    Substores.projectContents,
     (state) => {
-      const element = MetadataUtils.findElementByElementPath(state.editor.jsxMetadata, target)
-      const importResult = getFilePathForImportedComponent(element)
-      if (importResult == null) {
-        const underlyingTarget = normalisePathToUnderlyingTarget(
-          state.editor.projectContents,
-          target,
-        )
-
-        return underlyingTarget.type === 'NORMALISE_PATH_SUCCESS' ? underlyingTarget.filePath : null
-      } else {
-        return importResult
-      }
+      const underlyingTarget = normalisePathToUnderlyingTarget(state.editor.projectContents, target)
+      return underlyingTarget.type === 'NORMALISE_PATH_SUCCESS' ? underlyingTarget.filePath : null
     },
     'ComponentSectionInner locationOfComponentInstance',
   )
   ComponentSectionInner.displayName = 'ComponentSectionInner'
 
-  const OpenFile = React.useCallback(() => {
+  const openInstanceFile = React.useCallback(() => {
     if (locationOfComponentInstance != null) {
       dispatch([openCodeEditorFile(locationOfComponentInstance, true)])
     }
@@ -1469,21 +1456,34 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
         propertyControlsInfo,
       )
 
+      const descriptorFile =
+        registeredComponent?.source.type === 'DESCRIPTOR_FILE'
+          ? registeredComponent?.source.sourceDescriptorFile
+          : null
+
       if (registeredComponent?.label == null) {
         return {
           displayName: elementName,
+          descriptorFile: descriptorFile,
           isRegisteredComponent: registeredComponent != null,
         }
       }
 
       return {
         displayName: registeredComponent.label,
+        descriptorFile: descriptorFile,
         isRegisteredComponent: registeredComponent != null,
         secondaryName: elementName,
       }
     },
     'ComponentSectionInner componentName',
   )
+
+  const openDescriptorFile = React.useCallback(() => {
+    if (componentData?.descriptorFile != null) {
+      dispatch([openCodeEditorFile(componentData?.descriptorFile, true)])
+    }
+  }, [dispatch, componentData?.descriptorFile])
 
   return (
     <React.Fragment>
@@ -1500,12 +1500,10 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
         }}
       >
         <FlexRow
-          onClick={OpenFile}
           style={{
             flexGrow: 1,
             height: UtopiaTheme.layout.rowHeight.large,
             fontWeight: 600,
-            cursor: 'pointer',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
             overflow: 'hidden',
@@ -1514,16 +1512,29 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
         >
           {componentData != null ? (
             <React.Fragment>
-              <span style={{ textTransform: 'uppercase' }}>{componentData.displayName}</span>
-              {when(componentData.isRegisteredComponent, <span style={{ fontSize: 6 }}>◇</span>)}
+              <span
+                onClick={openInstanceFile}
+                style={{ cursor: 'pointer', textTransform: 'uppercase' }}
+              >
+                {componentData.displayName}
+              </span>
+              {when(
+                componentData.isRegisteredComponent,
+                <span onClick={openDescriptorFile} style={{ cursor: 'pointer', fontSize: 6 }}>
+                  ◇
+                </span>,
+              )}
               {componentData.secondaryName == null ? null : (
-                <span style={{ opacity: 0.5, fontWeight: 'initial' }}>
+                <span
+                  onClick={openDescriptorFile}
+                  style={{ cursor: 'pointer', opacity: 0.5, fontWeight: 'initial' }}
+                >
                   {componentData.secondaryName}
                 </span>
               )}
             </React.Fragment>
           ) : (
-            <span>Component</span>
+            <span onClick={openInstanceFile}>Component</span>
           )}
         </FlexRow>
         <SquareButton highlight style={{ width: 12 }} onClick={toggleSection}>
