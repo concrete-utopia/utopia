@@ -752,6 +752,13 @@ Object {
       "startLine": 5,
       "uid": "05f",
     },
+    "083": Object {
+      "endCol": 31,
+      "endLine": 6,
+      "startCol": 30,
+      "startLine": 6,
+      "uid": "083",
+    },
     "262": Object {
       "endCol": 37,
       "endLine": 4,
@@ -821,13 +828,6 @@ Object {
       "startCol": 25,
       "startLine": 6,
       "uid": "c95",
-    },
-    "caf": Object {
-      "endCol": 31,
-      "endLine": 6,
-      "startCol": 30,
-      "startLine": 6,
-      "uid": "caf",
     },
     "e70": Object {
       "endCol": 37,

@@ -1,6 +1,6 @@
 import type { HighlightBoundsForUids } from './project-file-types'
 import type { UIDMappings } from './uid-utils'
-import { generateConsistentUID, incrementTestUID, updateHighlightBounds } from './uid-utils'
+import { generateConsistentUID, nextTestUID, updateHighlightBounds } from './uid-utils'
 
 let someExistingIDs: Set<string> = new Set(['aaa', 'pqr', 'bbb', 'bbc'])
 
@@ -91,17 +91,17 @@ describe('updateHighlightBounds', () => {
   })
 })
 
-describe('incrementTestUID', () => {
+describe('nextTestUID', () => {
   it("increments a string's last character", async () => {
-    expect(incrementTestUID('aaa')).toEqual('aab')
-    expect(incrementTestUID('aab')).toEqual('aac')
-    expect(incrementTestUID('aba')).toEqual('abb')
-    expect(incrementTestUID('aaz')).toEqual('aba')
-    expect(incrementTestUID('azz')).toEqual('baa')
-    expect(incrementTestUID('a9a')).toEqual('aab')
-    expect(incrementTestUID('aa9')).toEqual('aab')
+    expect(nextTestUID('aaa')).toEqual('aab')
+    expect(nextTestUID('aab')).toEqual('aac')
+    expect(nextTestUID('aba')).toEqual('abb')
+    expect(nextTestUID('aaz')).toEqual('aba')
+    expect(nextTestUID('azz')).toEqual('baa')
+    expect(nextTestUID('a9a')).toEqual('aab')
+    expect(nextTestUID('aa9')).toEqual('aab')
   })
   it('throws if it cannot generate anymore', async () => {
-    expect(() => incrementTestUID('zzz')).toThrow('Unable to generate a UID')
+    expect(() => nextTestUID('zzz')).toThrow('Unable to generate a UID')
   })
 })
