@@ -2,7 +2,7 @@ import type { HighlightBoundsForUids } from './project-file-types'
 import type { UIDMappings } from './uid-utils'
 import { generateConsistentUID, incrementTestUID, updateHighlightBounds } from './uid-utils'
 
-let someExistingIDs: Set<string> = new Set(['aaa', 'pqr'])
+let someExistingIDs: Set<string> = new Set(['aaa', 'pqr', 'bbb', 'bbc'])
 
 describe('generateConsistentUID', () => {
   it('if the starting value is unused return it', () => {
@@ -11,7 +11,11 @@ describe('generateConsistentUID', () => {
   })
   it('if the starting value is used generate another', () => {
     const actualResult = generateConsistentUID('pqr', someExistingIDs)
-    expect(actualResult).toBe('aab')
+    expect(actualResult).toBe('pqs')
+  })
+  it('if the starting value is used generate another, continuously', () => {
+    const actualResult = generateConsistentUID('bbb', someExistingIDs)
+    expect(actualResult).toBe('bbd')
   })
 })
 
@@ -94,8 +98,8 @@ describe('incrementTestUID', () => {
     expect(incrementTestUID('aba')).toEqual('abb')
     expect(incrementTestUID('aaz')).toEqual('aba')
     expect(incrementTestUID('azz')).toEqual('baa')
-    expect(incrementTestUID('a9a')).toEqual('a9b')
-    expect(incrementTestUID('aa9')).toEqual('aaa')
+    expect(incrementTestUID('a9a')).toEqual('aab')
+    expect(incrementTestUID('aa9')).toEqual('aab')
   })
   it('throws if it cannot generate anymore', async () => {
     expect(() => incrementTestUID('zzz')).toThrow('Unable to generate a UID')
