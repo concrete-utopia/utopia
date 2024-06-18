@@ -46,7 +46,6 @@ export const RadiusRow = React.memo(() => {
     ['borderRadius'],
     onUnsetValues,
   )
-  const contextMenuLabel = React.useMemo(() => ['border radius'], [])
   return (
     <InspectorContextMenuWrapper
       id='borderRadius-subsection-context-menu'
@@ -62,13 +61,6 @@ export const RadiusRow = React.memo(() => {
           padding: '8px 0',
         }}
       >
-        <PropertyLabel
-          target={[]}
-          propNamesToUnset={contextMenuLabel}
-          style={{ paddingRight: 2, flexShrink: 0 }}
-        >
-          Radius
-        </PropertyLabel>
         <BorderRadiusControl />
       </div>
     </InspectorContextMenuWrapper>
@@ -260,6 +252,7 @@ export const BorderRadiusControl = React.memo(() => {
       values={values}
       canvasControls={canvasControlsForSides}
       eventHandler={eventHandler}
+      cycleModePosition='back'
     />
   )
 })

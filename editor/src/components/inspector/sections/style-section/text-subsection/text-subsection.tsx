@@ -60,8 +60,49 @@ function updateItalicFontStyle(newValue: boolean, oldValue: CSSFontStyle): CSSFo
   return newValue ? 'italic' : 'normal'
 }
 
-function updateUnderlinedTextDecoration(newValue: boolean): CSSTextDecorationLine {
-  return newValue ? 'underline' : 'none'
+const spaceRegex = /\s+/
+
+function updateTextDecorationLine(
+  addValue: boolean,
+  toAddOrRemove: string,
+  currentValue: CSSTextDecorationLine,
+): CSSTextDecorationLine {
+  if (currentValue === 'none') {
+    if (addValue) {
+      return toAddOrRemove
+    } else {
+      return 'none'
+    }
+  } else {
+    if (addValue) {
+      if (currentValue.includes(toAddOrRemove)) {
+        return currentValue
+      } else {
+        return `${currentValue} ${toAddOrRemove}`
+      }
+    } else {
+      const possibleNewValue = currentValue
+        .split(spaceRegex)
+        .filter((value) => value !== toAddOrRemove)
+        .join(' ')
+        .trim()
+      return possibleNewValue === '' ? 'none' : possibleNewValue
+    }
+  }
+}
+
+export function updateUnderlinedTextDecoration(
+  newValue: boolean,
+  oldValue: CSSTextDecorationLine,
+): CSSTextDecorationLine {
+  return updateTextDecorationLine(newValue, 'underline', oldValue)
+}
+
+export function updateStrikethroughTextDecoration(
+  newValue: boolean,
+  oldValue: CSSTextDecorationLine,
+): CSSTextDecorationLine {
+  return updateTextDecorationLine(newValue, 'line-through', oldValue)
 }
 
 const normalLetterSpacingAsCSSNumber = cssNumber(0, 'px')
@@ -83,8 +124,13 @@ export const TextSubsection = React.memo(() => {
   const textAlignMetadata = useInspectorStyleInfo('textAlign')
 
   const textDecorationLineMetadata = useInspectorStyleInfo('textDecorationLine')
+
   const [onUnderlinedSubmitValue] = textDecorationLineMetadata.useSubmitValueFactory(
     updateUnderlinedTextDecoration,
+  )
+
+  const [onStrikethroughSubmitValue] = textDecorationLineMetadata.useSubmitValueFactory(
+    updateStrikethroughTextDecoration,
   )
 
   const letterSpacingMetadata = useInspectorStyleInfo('letterSpacing')
@@ -163,6 +209,12 @@ export const TextSubsection = React.memo(() => {
       : null,
   ])
 
+  const strikethroughContextMenuItems = utils.stripNulls([
+    textDecorationLineMetadata.controlStyles.unsettable
+      ? addOnUnsetValues(['textDecorationLine'], textDecorationLineMetadata.onUnsetValues)
+      : null,
+  ])
+
   const letterSpacingContextMenuItems = utils.stripNulls([
     letterSpacingMetadata.controlStyles.unsettable
       ? addOnUnsetValues(['letterSpacing'], letterSpacingMetadata.onUnsetValues)
@@ -210,6 +262,9 @@ export const TextSubsection = React.memo(() => {
   if (!isVisible) {
     return null
   }
+
+  const isUnderlined = textDecorationLineMetadata.value.includes('underline')
+  const isStruckthrough = textDecorationLineMetadata.value.includes('line-through')
 
   return (
     <>
@@ -338,12 +393,11 @@ export const TextSubsection = React.memo(() => {
         </InspectorContextMenuWrapper>
       </PropertyRow>
       {expanded ? (
-        <PropertyRow style={{ gridColumnGap: 8 }}>
+        <PropertyRow style={{ gridColumnGap: 8, gridTemplateColumns: '26px 26px 26px 62px 62px' }}>
           <InspectorContextMenuWrapper
             id='italic-context-menu'
             items={italicContextMenuItems}
             data={null}
-            style={{ gridColumn: '1 / span 1' }}
           >
             <OptionControl
               id='italic'
@@ -375,12 +429,11 @@ export const TextSubsection = React.memo(() => {
               id='underlined'
               key='underlined'
               testId='underlined'
-              value={textDecorationLineMetadata.value === 'underline'}
+              value={isUnderlined}
               onSubmitValue={onUnderlinedSubmitValue}
               controlStatus={textDecorationLineMetadata.controlStatus}
               controlStyles={textDecorationLineMetadata.controlStyles}
               style={{
-                gridColumn: '2 / span 1',
                 border: `1px solid ${colorTheme.bg2.value}`,
                 borderRadius: 3,
               }}
@@ -397,10 +450,38 @@ export const TextSubsection = React.memo(() => {
             />
           </InspectorContextMenuWrapper>
           <InspectorContextMenuWrapper
+            id='strikethrough-context-menu'
+            items={strikethroughContextMenuItems}
+            data={null}
+          >
+            <OptionControl
+              id='strikethrough'
+              key='strikethrough'
+              testId='strikethrough'
+              value={isStruckthrough}
+              onSubmitValue={onStrikethroughSubmitValue}
+              controlStatus={textDecorationLineMetadata.controlStatus}
+              controlStyles={textDecorationLineMetadata.controlStyles}
+              style={{
+                border: `1px solid ${colorTheme.bg2.value}`,
+                borderRadius: 3,
+              }}
+              DEPRECATED_controlOptions={{
+                tooltip: 'Strikethrough',
+                icon: {
+                  category: 'inspector-element',
+                  type: 'strikethrough',
+                  color: 'secondary',
+                  width: 16,
+                  height: 16,
+                },
+              }}
+            />
+          </InspectorContextMenuWrapper>
+          <InspectorContextMenuWrapper
             id='letterSpacing-context-menu'
             items={letterSpacingContextMenuItems}
             data={null}
-            style={{ gridColumn: '3 / span 2' }}
           >
             <NumberInput
               key='letterSpacing'
@@ -424,7 +505,6 @@ export const TextSubsection = React.memo(() => {
             id='lineHeight-context-menu'
             items={lineHeightContextMenuItems}
             data={null}
-            style={{ gridColumn: '5 / span 2' }}
           >
             <NumberInput
               key='lineHeight'

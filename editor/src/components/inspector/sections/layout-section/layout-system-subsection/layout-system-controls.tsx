@@ -161,19 +161,6 @@ export const PaddingRow = React.memo(() => {
         onMouseLeave={onMouseLeave}
         style={{ margin: '8px 8px', display: 'flex', flexDirection: 'row' }}
       >
-        <div
-          onMouseEnter={onMouseEnterWithPaddingControls}
-          onMouseLeave={onMouseLeave}
-          style={{ width: 'min-contents', paddingRight: 2 }}
-        >
-          <PropertyLabel
-            target={paddingPropsToUnset}
-            propNamesToUnset={contextMenuLabel}
-            style={{ padding: '2px 0 4px 0' }}
-          >
-            Padding
-          </PropertyLabel>
-        </div>
         <PaddingControl />
       </div>
     </InspectorContextMenuWrapper>
@@ -376,7 +363,7 @@ export const PaddingControl = React.memo(() => {
 
   const isCmdPressedRef = useRefEditorState((store) => store.editor.keysPressed.cmd === true)
 
-  const onCylceMode = React.useCallback(
+  const onCycleMode = React.useCallback(
     () => cycleToNextMode(initialMode, isCmdPressedRef.current === true ? 'backward' : 'forward'),
     [cycleToNextMode, initialMode, isCmdPressedRef],
   )
@@ -404,8 +391,9 @@ export const PaddingControl = React.memo(() => {
       numberType={'LengthPercent'}
       eventHandler={eventHandler}
       mode={modeToUse}
-      onCycleMode={onCylceMode}
+      onCycleMode={onCycleMode}
       values={values}
+      cycleModePosition='back'
     />
   )
 })
