@@ -18,14 +18,18 @@ import type { RenderedAt } from '../../../editor/store/editor-state'
 import { replaceElementInScope } from '../../../editor/actions/action-creators'
 import {
   getCartoucheDataTypeForExpression,
+  matchForChildrenProp,
+  matchForPropertyValue,
+  usePropertyControlDescriptions,
+  usePropertyValue,
   useVariablesInScopeForSelectedElement,
 } from './variables-in-scope-utils'
 import { jsxElementChildToValuePath } from './data-picker-utils'
-import { useAtom } from 'jotai'
 import type { CartoucheDataType, CartoucheHighlight, CartoucheUIProps } from './cartouche-ui'
 import { CartoucheUI } from './cartouche-ui'
 import * as PP from '../../../../core/shared/property-path'
 import { AllHtmlEntities } from 'html-entities'
+import { optionalMap } from '../../../../core/shared/optional-utils'
 
 const htmlEntities = new AllHtmlEntities()
 
@@ -99,14 +103,29 @@ export const DataReferenceCartoucheControl = React.memo(
       [dispatch, props.renderedAt],
     )
 
-    const propertyPath =
+    const maybePropertyPath =
       props.renderedAt.type === 'element-property-path'
         ? props.renderedAt.elementPropertyPath.propertyPath
-        : props.renderedAt.type === 'child-node'
-        ? PP.create('children')
-        : assertNever(props.renderedAt)
+        : null
 
-    const variableNamesInScope = useVariablesInScopeForSelectedElement(elementPath, propertyPath)
+    const controlDescriptions = usePropertyControlDescriptions(maybePropertyPath)
+    const currentPropertyValue = usePropertyValue(elementPath, maybePropertyPath)
+
+    const matcher = React.useMemo(
+      () =>
+        props.renderedAt.type === 'element-property-path'
+          ? matchForPropertyValue(
+              controlDescriptions,
+              currentPropertyValue,
+              optionalMap((p) => PP.lastPart(p).toString(), maybePropertyPath),
+            )
+          : props.renderedAt.type === 'child-node'
+          ? matchForChildrenProp
+          : assertNever(props.renderedAt),
+      [controlDescriptions, currentPropertyValue, maybePropertyPath, props.renderedAt],
+    )
+
+    const variableNamesInScope = useVariablesInScopeForSelectedElement(elementPath, matcher)
 
     const pathToCurrenlySelectedValue = React.useMemo(
       () => jsxElementChildToValuePath(childOrAttribute),

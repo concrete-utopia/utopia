@@ -14,10 +14,10 @@ import { useDataPickerButton } from '../component-section/component-section'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import type { JSExpressionOtherJavaScript } from '../../../../core/shared/element-template'
 import { replaceElementInScope } from '../../../editor/actions/action-creators'
-import { useAtom } from 'jotai'
 import { jsxElementChildToValuePath } from '../component-section/data-picker-utils'
 import {
   getCartoucheDataTypeForExpression,
+  matchForMappedValue,
   useVariablesInScopeForSelectedElement,
 } from '../component-section/variables-in-scope-utils'
 import { traceDataFromElement, dataPathSuccess } from '../../../../core/data-tracing/data-tracing'
@@ -86,7 +86,7 @@ const MapListSourceCartoucheInner = React.memo(
       [dispatch, target],
     )
 
-    const variableNamesInScope = useVariablesInScopeForSelectedElement(target, null)
+    const variableNamesInScope = useVariablesInScopeForSelectedElement(target, matchForMappedValue)
 
     const pathToMappedExpression = React.useMemo(
       () =>
