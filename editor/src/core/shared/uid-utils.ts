@@ -875,7 +875,7 @@ function newUIDForTests(possibleUID: string, existingUIDs: Set<string>): string 
 // Non alphabetical characters will be defaulted to 'a'.
 // If the UID cannot be incremented (because it's entirely made of `z`'s), an error will be thrown.
 export function nextTestUID(uid: string): string {
-  let result = uid.split('')
+  let result = Array.from(uid)
 
   // reset to 'a' non-atoz characters
   for (let i = 0; i < result.length; i++) {
