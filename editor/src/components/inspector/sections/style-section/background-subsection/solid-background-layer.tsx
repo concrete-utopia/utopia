@@ -137,7 +137,7 @@ export const SolidBackgroundLayer = React.memo<SolidBackgroundLayerProps>((props
           tall
           alignItems='start'
           padded={false}
-          variant='<--------auto-------->|--45px--|'
+          variant='<-------1fr------>|----80px----|'
         >
           <StringBackgroundColorControl
             id={`background-layer-gradient-${props.index}`}
@@ -162,12 +162,13 @@ export const SolidBackgroundLayer = React.memo<SolidBackgroundLayerProps>((props
             onTransientSubmitValue={onAlphaTransientSubmitValue}
             onForcedSubmitValue={onAlphaSubmitValue}
             controlStatus={props.controlStatus}
-            DEPRECATED_labelBelow='alpha'
+            DEPRECATED_labelBelow='α'
             minimum={0}
             maximum={1}
             stepSize={0.01}
             inputProps={{ onMouseDown: stopPropagation }}
             defaultUnitToHide={null}
+            incrementControls={false}
           />
         </UIGridRow>
       </UIGridRow>

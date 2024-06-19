@@ -315,7 +315,7 @@ const SingleLengthItem = React.memo<SingleLengthItemProps>((props) => {
     <PropertyRow
       key={props.index}
       style={{
-        gridTemplateColumns: '12px 1fr 46px 20px',
+        gridTemplateColumns: '12px 1fr 46px 12px',
         gridColumnGap: 8,
       }}
     >
@@ -360,8 +360,8 @@ const SingleLengthItem = React.memo<SingleLengthItemProps>((props) => {
         controlStatus={props.controlStatus}
         defaultUnitToHide={controlMetadata.defaultUnitToHide}
       />
-      <SquareButton highlight onMouseDown={removeTransformItem} style={{ marginTop: 1 }}>
-        <Icn category='semantic' type='minus' color='secondary' width={16} height={16} />
+      <SquareButton highlight onMouseDown={removeTransformItem} style={{ marginTop: 1, width: 12 }}>
+        <Icons.Minus width={12} height={12} />
       </SquareButton>
     </PropertyRow>
   )
@@ -443,7 +443,7 @@ const DoubleLengthItem = React.memo<DoubleLengthItemProps>((props) => {
     <PropertyRow
       key={props.index}
       style={{
-        gridTemplateColumns: '12px 1fr 46px 46px 20px',
+        gridTemplateColumns: '12px 1fr 46px 46px 12px',
         gridColumnGap: 8,
       }}
     >
@@ -510,8 +510,8 @@ const DoubleLengthItem = React.memo<DoubleLengthItemProps>((props) => {
         controlStatus={props.controlStatus}
         defaultUnitToHide={controlMetadata.defaultUnitToHide}
       />
-      <SquareButton highlight onMouseDown={removeTransformItem} style={{ marginTop: 1 }}>
-        <Icn category='semantic' type='minus' color='secondary' width={16} height={16} />
+      <SquareButton highlight onMouseDown={removeTransformItem} style={{ marginTop: 1, width: 12 }}>
+        <Icons.Minus width={12} height={12} />
       </SquareButton>
     </PropertyRow>
   )
