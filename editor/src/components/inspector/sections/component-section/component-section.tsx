@@ -1469,12 +1469,7 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
       )
 
       const descriptorFile =
-        registeredComponent?.source.type === 'DESCRIPTOR_FILE'
-          ? {
-              path: registeredComponent?.source.sourceDescriptorFile,
-              lineNumber: registeredComponent?.source.lineNumber,
-            }
-          : null
+        registeredComponent?.source.type === 'DESCRIPTOR_FILE' ? registeredComponent.source : null
 
       if (registeredComponent?.label == null) {
         return {
@@ -1498,9 +1493,9 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
     if (componentData?.descriptorFile != null) {
       dispatch([
         openCodeEditorFile(
-          componentData.descriptorFile.path,
+          componentData.descriptorFile.sourceDescriptorFile,
           true,
-          componentData.descriptorFile.lineNumber,
+          componentData.descriptorFile.bounds,
         ),
       ])
     }

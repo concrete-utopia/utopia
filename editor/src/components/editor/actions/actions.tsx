@@ -3795,12 +3795,7 @@ export const UPDATE_FNS = {
   },
   OPEN_CODE_EDITOR_FILE: (action: OpenCodeEditorFile, editor: EditorModel): EditorModel => {
     // Side effect.
-    sendOpenFileMessage(
-      action.filename,
-      action.lineNumber != null
-        ? boundsInFile(action.filename, action.lineNumber, 0, action.lineNumber, 0)
-        : undefined,
-    )
+    sendOpenFileMessage(action.filename, action.bounds)
     if (action.forceShowCodeEditor) {
       return {
         ...editor,

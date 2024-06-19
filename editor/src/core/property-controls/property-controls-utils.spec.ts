@@ -106,7 +106,7 @@ export const App = (props) => {
     supportsChildren: true,
     preferredChildComponents: [],
     variants: [],
-    source: componentDescriptorFromDescriptorFile('/components.utopia.js', 0),
+    source: componentDescriptorFromDescriptorFile('/components.utopia.js', null),
     focus: 'default',
     inspector: { type: 'hidden' },
     emphasis: 'regular',

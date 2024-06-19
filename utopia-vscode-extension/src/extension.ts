@@ -339,7 +339,7 @@ function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscod
     switch (message.type) {
       case 'OPEN_FILE':
         if (message.bounds) {
-          revealRangeIfPossible(workspaceRootUri, message.bounds)
+          revealRangeIfPossible(workspaceRootUri, { ...message.bounds, filePath: message.filePath })
         } else {
           openFile(vscode.Uri.joinPath(workspaceRootUri, message.filePath))
         }

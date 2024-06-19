@@ -548,7 +548,7 @@ import type {
 import { fontSettings } from '../../inspector/common/css-utils'
 import type { ElementPaste, ProjectListing } from '../action-types'
 import { projectListing } from '../action-types'
-import type { UtopiaVSCodeConfig } from 'utopia-vscode-common'
+import type { Bounds, UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import type { MouseButtonsPressed } from '../../../utils/mouse'
 import { assertNever } from '../../../core/shared/utils'
 import type {
@@ -3129,6 +3129,23 @@ export const HighlightBoundsKeepDeepEquality: KeepDeepEqualityCall<HighlightBoun
     highlightBounds,
   )
 
+export const BoundsKeepDeepEquality: KeepDeepEqualityCall<Bounds> = combine4EqualityCalls(
+  (bounds) => bounds.startLine,
+  NumberKeepDeepEquality,
+  (bounds) => bounds.startCol,
+  NumberKeepDeepEquality,
+  (bounds) => bounds.endLine,
+  NumberKeepDeepEquality,
+  (bounds) => bounds.endCol,
+  NumberKeepDeepEquality,
+  (startLine, startCol, endLine, endCol) => ({
+    startLine,
+    startCol,
+    endLine,
+    endCol,
+  }),
+)
+
 export const HighlightBoundsForUidsKeepDeepEquality: KeepDeepEqualityCall<HighlightBoundsForUids> =
   objectDeepEquality(HighlightBoundsKeepDeepEquality)
 
@@ -3489,8 +3506,8 @@ export const DescriptorFileComponentDescriptorKeepDeepEquality: KeepDeepEquality
     StringKeepDeepEquality,
     (descriptor) => descriptor.sourceDescriptorFile,
     StringKeepDeepEquality,
-    (descriptor) => descriptor.lineNumber,
-    nullableDeepEquality(NumberKeepDeepEquality),
+    (descriptor) => descriptor.bounds,
+    nullableDeepEquality(BoundsKeepDeepEquality),
     (_, sourceDescriptorFile, lineNumber) =>
       componentDescriptorFromDescriptorFile(sourceDescriptorFile, lineNumber),
   )

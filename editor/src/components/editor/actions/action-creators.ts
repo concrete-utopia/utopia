@@ -265,6 +265,7 @@ import type { SetHuggingParentToFixed } from '../../canvas/canvas-strategies/str
 import type { CommentFilterMode } from '../../inspector/sections/comment-section'
 import type { Collaborator } from '../../../core/shared/multiplayer'
 import type { PageTemplate } from '../../canvas/remix/remix-utils'
+import type { Bounds } from 'utopia-vscode-common'
 
 export function clearSelection(): EditorAction {
   return {
@@ -1055,13 +1056,13 @@ export function addFolder(parentPath: string, fileName: string): AddFolder {
 export function openCodeEditorFile(
   filename: string,
   forceShowCodeEditor: boolean,
-  lineNumber: number | null = null,
+  bounds: Bounds | null = null,
 ): OpenCodeEditorFile {
   return {
     action: 'OPEN_CODE_EDITOR_FILE',
     filename: filename,
     forceShowCodeEditor: forceShowCodeEditor,
-    lineNumber: lineNumber,
+    bounds: bounds,
   }
 }
 
