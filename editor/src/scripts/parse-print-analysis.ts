@@ -29,6 +29,7 @@ async function processFile(
   const initialPrettifiedContents = applyPrettier(fileContents, false).formatted
   const parsedContents = parseCode(
     javascriptFilePath,
+    [],
     initialPrettifiedContents,
     null,
     emptySet(),

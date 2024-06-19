@@ -3,11 +3,13 @@ import { mapValues } from './object-utils'
 import { importAlias, importDetails } from './project-file-types'
 import { absolutePathFromRelativePath } from '../../utils/path-utils'
 import { stripExtension } from '../../components/custom-code/custom-code-utils'
+import type { FilePathMappings } from '../model/project-file-utils'
 
 export function renameDuplicateImports(
   existingImports: Imports,
   toAdd: Imports,
   targetFilePath: string,
+  filePathMappings: FilePathMappings,
 ): ImportsMergeResolution {
   function absolutePath(relativePath: string): string {
     const rawAbsolutePath = absolutePathFromRelativePath(targetFilePath, false, relativePath)
@@ -87,8 +89,14 @@ export function renameDuplicateImportsInMergeResolution(
   existingImports: Imports,
   toAdd: ImportsMergeResolution,
   targetFilePath: string,
+  filePathMappings: FilePathMappings,
 ): ImportsMergeResolution {
-  const importsResolution = renameDuplicateImports(existingImports, toAdd.imports, targetFilePath)
+  const importsResolution = renameDuplicateImports(
+    existingImports,
+    toAdd.imports,
+    targetFilePath,
+    filePathMappings,
+  )
   const mergedDuplicateNameMapping = mergeDuplicateNameMaps(importsResolution, toAdd)
   return {
     imports: importsResolution.imports,
@@ -186,7 +194,7 @@ function findOriginalNameInExistingImports(
   originalName?: string,
 ): string | null {
   let existingImportAlias: string | null = null
-  // check to see if the new import is already in the existing imports, renamed
+  // check if the new import is already in the existing imports, renamed
   existingNames.forEach((existingImportData, existingName) => {
     if (absolutePath(existingImportData.source) === absolutePath(importSource)) {
       if (existingImportData.type === importType) {
