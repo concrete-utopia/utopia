@@ -6,11 +6,11 @@ export interface OpenFileMessage {
   bounds: Bounds | null
 }
 
-export function openFileMessage(filePath: string, bounds?: Bounds): OpenFileMessage {
+export function openFileMessage(filePath: string, bounds: Bounds | null): OpenFileMessage {
   return {
     type: 'OPEN_FILE',
     filePath: filePath,
-    bounds: bounds ?? null,
+    bounds: bounds,
   }
 }
 
