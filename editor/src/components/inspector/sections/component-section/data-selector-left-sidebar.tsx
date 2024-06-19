@@ -17,12 +17,13 @@ interface SelectableScope {
 
 interface DataSelectorLeftSidebarProps {
   scopes: Array<SelectableScope>
-  activeScope: ElementPath | FileRootPath
+  activeScopes: Array<ElementPath | FileRootPath>
   setSelectedScope: (scope: ElementPath | FileRootPath) => void
 }
 
 export const DataSelectorLeftSidebar = React.memo((props: DataSelectorLeftSidebarProps) => {
-  const { scopes, setSelectedScope, activeScope } = props
+  const { scopes, setSelectedScope, activeScopes } = props
+
   return (
     <FlexColumn
       onClick={stopPropagation}
@@ -42,7 +43,7 @@ export const DataSelectorLeftSidebar = React.memo((props: DataSelectorLeftSideba
             <ScopeRow
               key={insertionCeilingToString(scope.scope)}
               scope={scope}
-              selected={insertionCeilingsEqual(scope.scope, activeScope)}
+              selected={activeScopes.some((s) => insertionCeilingsEqual(scope.scope, s))}
               disabled={!scope.hasContent}
               setSelectedScope={setSelectedScope}
             />
