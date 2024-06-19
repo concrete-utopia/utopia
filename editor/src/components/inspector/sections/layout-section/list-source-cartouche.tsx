@@ -24,6 +24,7 @@ import { traceDataFromElement, dataPathSuccess } from '../../../../core/data-tra
 import type { CartoucheDataType } from '../component-section/cartouche-ui'
 import { CartoucheInspectorWrapper } from '../component-section/cartouche-control'
 import { MapCounter } from '../../../navigator/navigator-item/map-counter'
+import * as EP from '../../../../core/shared/element-path'
 
 interface MapListSourceCartoucheProps {
   target: ElementPath
@@ -174,7 +175,7 @@ const MapListSourceCartoucheInner = React.memo(
           onDelete={NO_OP}
           selected={props.selected}
           safeToDelete={false}
-          testId='list-source-cartouche'
+          testId={`list-source-cartouche-${EP.toString(target)}`}
           contentIsComingFromServer={isDataComingFromHookResult}
           datatype={cartoucheDataType}
           badge={

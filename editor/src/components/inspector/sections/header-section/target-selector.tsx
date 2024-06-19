@@ -18,7 +18,7 @@ import {
   UIRow,
   Icn,
 } from '../../../../uuiui'
-import { ContextMenuWrapper } from '../../../../uuiui-deps'
+import { ContextMenuWrapper_DEPRECATED } from '../../../../uuiui-deps'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { ExpandableIndicator } from '../../../navigator/navigator-item/expandable-indicator'
@@ -299,7 +299,7 @@ const TargetListItem = React.memo((props: TargetListItemProps) => {
   }, [onDeleteByIndex, itemIndex])
 
   return (
-    <ContextMenuWrapper
+    <ContextMenuWrapper_DEPRECATED
       id={`${id}-contextMenu`}
       items={[
         {
@@ -366,7 +366,7 @@ const TargetListItem = React.memo((props: TargetListItemProps) => {
           </React.Fragment>
         )}
       </UIRow>
-    </ContextMenuWrapper>
+    </ContextMenuWrapper_DEPRECATED>
   )
 })
 

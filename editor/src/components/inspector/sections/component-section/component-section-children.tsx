@@ -4,6 +4,7 @@ import type {
   RegularControlDescription,
 } from '../../../custom-code/internal-property-controls'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
+import * as EP from '../../../../core/shared/element-path'
 import * as PP from '../../../../core/shared/property-path'
 import { iconForControlType } from '../../../../uuiui'
 import type { ControlForPropProps } from './property-control-controls'
@@ -66,7 +67,7 @@ export function useChildrenPropOverride(
           matchType='partial'
           onOpenDataPicker={props.onOpenDataPicker}
           onDeleteCartouche={props.onDeleteCartouche}
-          testId={`cartouche-${PP.toString(props.propPath)}`}
+          testId={`cartouche-${EP.toString(props.elementPath)}-${PP.toString(props.propPath)}`}
           propertyPath={props.propPath}
           safeToDelete={props.safeToDelete}
           elementPath={props.elementPath}
