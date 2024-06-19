@@ -40,6 +40,9 @@ export const ServerEnvironment = {
   AWS_REGION: mustEnvOrLocalFallback('AWS_REGION', ''),
   // Local assets
   LOCAL_ASSETS_FOLDER: mustEnvOrLocalFallback('LOCAL_ASSETS_FOLDER', '../server/utopia-local'),
+  // Shopify token for data updating
+  SHOPIFY_STORE_ACCESS_TOKEN: mustEnvOrLocalFallback('SHOPIFY_STORE_ACCESS_TOKEN', ''),
+  SHOPIFY_STORE_URL: mustEnvOrLocalFallback('SHOPIFY_STORE_URL', ''),
 }
 
 export type BrowserEnvironmentType = {

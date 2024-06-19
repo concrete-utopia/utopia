@@ -3,6 +3,10 @@ import { CanvasContextMenuPortalTargetID, assertNever } from '../../../../core/s
 import { InspectorModal } from '../../widgets/inspector-modal'
 import { FlexColumn, FlexRow, UtopiaStyles, UtopiaTheme, useColorTheme } from '../../../../uuiui'
 import { unless } from '../../../../utils/react-conditionals'
+import { HEADERS, MODE } from '../../../../common/server'
+import urljoin from 'url-join'
+import { RemixNavigationAtom } from '../../../canvas/remix/utopia-remix-root-component'
+import { useRefAtom } from '../../../editor/hook-utils'
 
 type SubmissionState = 'draft' | 'confirmed' | 'publishing'
 
@@ -18,9 +22,18 @@ export const DataEditorModal = React.memo(
       e.preventDefault()
     }, [])
 
+    const remix = useRefAtom(RemixNavigationAtom)
+    const revalidateAllLoaders = React.useCallback(() => {
+      // TODO: only revalidate the router that points to the route being edited
+      Object.values(remix.current).forEach((router) => router?.revalidate())
+    }, [remix])
+
     const requestUpdate = React.useCallback(() => {}, [])
 
     const [submissionState, setSubmissionState] = React.useState<SubmissionState>('draft')
+
+    // TODO: figure out data updates (again)
+    // TODO: pass down the option for the label, the gid, the metafield name and the metafield value
 
     const onMainButtonClick = React.useCallback(() => {
       switch (submissionState) {
@@ -29,6 +42,7 @@ export const DataEditorModal = React.memo(
           break
         case 'confirmed':
           requestUpdate()
+          revalidateAllLoaders() // TODO: poll this
           setSubmissionState('publishing')
           break
         case 'publishing':
@@ -36,7 +50,7 @@ export const DataEditorModal = React.memo(
         default:
           assertNever(submissionState)
       }
-    }, [requestUpdate, submissionState])
+    }, [requestUpdate, revalidateAllLoaders, submissionState])
 
     const [value, setValue] = React.useState<string>('')
     const updateValue = React.useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -195,3 +209,15 @@ export const DataEditorModal = React.memo(
     )
   }),
 )
+
+interface RequestUpdateData {}
+
+function updateData(projectId: string, data: RequestUpdateData): Promise<void> {
+  return fetch(urljoin('/internal/metaobjectupdate', projectId), {
+    method: 'POST',
+    credentials: 'include',
+    headers: HEADERS,
+    mode: MODE,
+    body: JSON.stringify(data),
+  }).then((res) => res.json())
+}
