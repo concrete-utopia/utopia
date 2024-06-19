@@ -10,7 +10,7 @@ import { getJSXElementNameLastPart } from '../../../../core/shared/element-templ
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { NO_OP, assertNever } from '../../../../core/shared/utils'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
-import { useDataPickerButton } from './component-section'
+import { useDataPickerButton, useDataUpdateButton } from './component-section'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { selectComponents } from '../../../editor/actions/meta-actions'
 import { dataPathSuccess, traceDataFromElement } from '../../../../core/data-tracing/data-tracing'
@@ -244,6 +244,27 @@ export const DataCartoucheInner = React.forwardRef(
 
     const { hideAll: hideContextMenu } = useContextMenu({ id: contextMenuId })
 
+    const cartouche = (
+      <CartoucheUI
+        onDelete={onDelete}
+        onClick={onClick}
+        onDoubleClick={onDoubleClick}
+        datatype={datatype}
+        selected={selected}
+        highlight={highlight}
+        testId={testId}
+        tooltip={contentsToDisplay.label ?? contentsToDisplay.shortLabel ?? 'DATA'}
+        role='selection'
+        source={source}
+        ref={ref}
+        badge={props.badge}
+      >
+        {contentsToDisplay.shortLabel ?? contentsToDisplay.label ?? 'DATA'}
+      </CartoucheUI>
+    )
+
+    const updateButtonData = useDataUpdateButton(cartouche)
+
     return (
       <ContextMenuWrapper<ContextMenuItemsData>
         id={contextMenuId}
@@ -255,22 +276,7 @@ export const DataCartoucheInner = React.forwardRef(
           hideContextMenu: hideContextMenu,
         }}
       >
-        <CartoucheUI
-          onDelete={onDelete}
-          onClick={onClick}
-          onDoubleClick={onDoubleClick}
-          datatype={datatype}
-          selected={selected}
-          highlight={highlight}
-          testId={testId}
-          tooltip={contentsToDisplay.label ?? contentsToDisplay.shortLabel ?? 'DATA'}
-          role='selection'
-          source={source}
-          ref={ref}
-          badge={props.badge}
-        >
-          {contentsToDisplay.shortLabel ?? contentsToDisplay.label ?? 'DATA'}
-        </CartoucheUI>
+        {cartouche}
       </ContextMenuWrapper>
     )
   },

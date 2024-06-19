@@ -10,204 +10,209 @@ import { useRefAtom } from '../../../editor/hook-utils'
 
 type SubmissionState = 'draft' | 'confirmed' | 'publishing'
 
-interface DataEditorModalProps {
+interface DataUpdateModalProps {
   closePopup: () => void
   style: React.CSSProperties
+  cartouche: React.ReactElement
 }
 
-export const DataEditorModal = React.memo(
-  React.forwardRef<HTMLDivElement, DataEditorModalProps>(({ closePopup, style }, forwardedRef) => {
-    const catchClick = React.useCallback((e: React.MouseEvent) => {
-      e.stopPropagation()
-      e.preventDefault()
-    }, [])
+export const DataUpdateModal = React.memo(
+  React.forwardRef<HTMLDivElement, DataUpdateModalProps>(
+    ({ closePopup, style, cartouche }, forwardedRef) => {
+      const catchClick = React.useCallback((e: React.MouseEvent) => {
+        e.stopPropagation()
+        e.preventDefault()
+      }, [])
 
-    const remix = useRefAtom(RemixNavigationAtom)
-    const revalidateAllLoaders = React.useCallback(() => {
-      // TODO: only revalidate the router that points to the route being edited
-      Object.values(remix.current).forEach((router) => router?.revalidate())
-    }, [remix])
+      const remix = useRefAtom(RemixNavigationAtom)
+      const revalidateAllLoaders = React.useCallback(() => {
+        // TODO: only revalidate the router that points to the route being edited
+        Object.values(remix.current).forEach((router) => router?.revalidate())
+      }, [remix])
 
-    const requestUpdate = React.useCallback(() => {}, [])
+      const requestUpdate = React.useCallback(() => {}, [])
 
-    const [submissionState, setSubmissionState] = React.useState<SubmissionState>('draft')
+      const [submissionState, setSubmissionState] = React.useState<SubmissionState>('draft')
 
-    // TODO: figure out data updates (again)
-    // TODO: pass down the option for the label, the gid, the metafield name and the metafield value
+      // TODO: figure out data updates (again)
+      // TODO: pass down the option for the label, the gid, the metafield name and the metafield value
 
-    const onMainButtonClick = React.useCallback(() => {
-      switch (submissionState) {
-        case 'draft':
-          setSubmissionState('confirmed')
-          break
-        case 'confirmed':
-          requestUpdate()
-          revalidateAllLoaders() // TODO: poll this
-          setSubmissionState('publishing')
-          break
-        case 'publishing':
-          break
-        default:
-          assertNever(submissionState)
-      }
-    }, [requestUpdate, revalidateAllLoaders, submissionState])
+      const onMainButtonClick = React.useCallback(() => {
+        switch (submissionState) {
+          case 'draft':
+            setSubmissionState('confirmed')
+            break
+          case 'confirmed':
+            requestUpdate()
+            revalidateAllLoaders() // TODO: poll this
+            setSubmissionState('publishing')
+            break
+          case 'publishing':
+            break
+          default:
+            assertNever(submissionState)
+        }
+      }, [requestUpdate, revalidateAllLoaders, submissionState])
 
-    const [value, setValue] = React.useState<string>('')
-    const updateValue = React.useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      e.stopPropagation()
-      e.preventDefault()
-      setValue(e.target.value)
-    }, [])
+      const [value, setValue] = React.useState<string>('')
+      const updateValue = React.useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        e.stopPropagation()
+        e.preventDefault()
+        setValue(e.target.value)
+      }, [])
 
-    const onKeyDown = React.useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      e.stopPropagation()
-    }, [])
+      const onKeyDown = React.useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        e.stopPropagation()
+      }, [])
 
-    const colorTheme = useColorTheme()
+      const colorTheme = useColorTheme()
 
-    const mainButtonText =
-      submissionState === 'draft'
-        ? 'Confirm'
-        : submissionState === 'confirmed'
-        ? 'Publish'
-        : submissionState === 'publishing'
-        ? 'Publishing'
-        : assertNever(submissionState)
+      const mainButtonText =
+        submissionState === 'draft'
+          ? 'Confirm'
+          : submissionState === 'confirmed'
+          ? 'Publish'
+          : submissionState === 'publishing'
+          ? 'Publishing'
+          : assertNever(submissionState)
 
-    const mainButtonColor =
-      submissionState === 'draft' ? colorTheme.black.value : colorTheme.error.value
+      const mainButtonColor =
+        submissionState === 'draft' ? colorTheme.black.value : colorTheme.error.value
 
-    return (
-      <InspectorModal
-        offsetX={20}
-        offsetY={0}
-        closePopup={closePopup}
-        style={{
-          zIndex: 1,
-        }}
-        closePopupOnUnmount={false}
-        portalTarget={document.getElementById(CanvasContextMenuPortalTargetID) as HTMLElement}
-        outsideClickIgnoreClass={'ignore-react-onclickoutside-data-picker'}
-      >
-        <div // this entire wrapper div was made before using the InspectorModal, so it should be re-done
+      return (
+        <InspectorModal
+          offsetX={20}
+          offsetY={0}
+          closePopup={closePopup}
           style={{
-            background: 'transparent',
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 1, // so it's above the inspector
+            zIndex: 1,
           }}
-          onClick={closePopup}
+          closePopupOnUnmount={false}
+          portalTarget={document.getElementById(CanvasContextMenuPortalTargetID) as HTMLElement}
+          outsideClickIgnoreClass={'ignore-react-onclickoutside-data-picker'}
         >
-          <FlexColumn
-            ref={forwardedRef}
-            onClick={catchClick}
+          <div // this entire wrapper div was made before using the InspectorModal, so it should be re-done
             style={{
-              width: 550,
-              minHeight: 300,
-              backgroundColor: colorTheme.inspectorBackground.value,
-              color: colorTheme.fg1.value,
-              overflow: 'hidden',
-              borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
-              boxShadow: UtopiaStyles.shadowStyles.highest.boxShadow,
-              border: `1px solid ${colorTheme.fg0Opacity10.value}`,
-              gap: 24,
-              ...style,
+              background: 'transparent',
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 1, // so it's above the inspector
             }}
+            onClick={closePopup}
           >
-            <FlexRow style={{ padding: '24px 24px 0px 24px' }}>
-              <span style={{ fontWeight: 700, fontSize: 18 }}>Editing content of</span>
-              <span>label</span>
-            </FlexRow>
-            <div
+            <FlexColumn
+              ref={forwardedRef}
+              onClick={catchClick}
               style={{
-                display: 'grid',
-                gap: 12,
-                gridTemplateColumns: 'auto 1fr',
-                gridTemplateRows: 'max-content',
-                flex: 1,
-                borderBottom: `1px solid ${colorTheme.subduedBorder.cssValue}`,
-                padding: '8px 24px 0px 24px',
-                fontSize: 12,
+                width: 550,
+                minHeight: 300,
+                backgroundColor: colorTheme.inspectorBackground.value,
+                color: colorTheme.fg1.value,
+                overflow: 'hidden',
+                borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
+                boxShadow: UtopiaStyles.shadowStyles.highest.boxShadow,
+                border: `1px solid ${colorTheme.fg0Opacity10.value}`,
+                gap: 24,
+                ...style,
               }}
             >
-              <span>Data</span>
-              <span style={{ color: colorTheme.green.value }}>Gid</span>
-              <span>Content</span>
-              <textarea
-                value={value}
-                onChange={updateValue}
-                onKeyDown={onKeyDown}
+              <FlexRow style={{ padding: '24px 24px 0px 24px' }}>
+                <span style={{ fontWeight: 700, fontSize: 18 }}>Editing content of</span>
+                {cartouche}
+              </FlexRow>
+              <div
                 style={{
-                  height: 80,
-                  resize: 'none',
-                  outline: 'none',
-                  border: `1px solid ${colorTheme.subduedBorder.cssValue}`,
-                }}
-              />
-              <span>Source</span>
-              <span style={{ color: colorTheme.green.value }}>Shopify: Meatobjects</span>
-            </div>
-            {unless(
-              submissionState === 'draft',
-              <FlexRow
-                style={{
-                  gap: 8,
-                  padding: '0px 24px 0px 24px',
-                  color: colorTheme.error.value,
-                  fontWeight: 600,
+                  display: 'grid',
+                  gap: 12,
+                  gridTemplateColumns: 'auto 1fr',
+                  gridTemplateRows: 'max-content',
+                  flex: 1,
+                  borderBottom: `1px solid ${colorTheme.subduedBorder.cssValue}`,
+                  padding: '8px 24px 0px 24px',
                   fontSize: 12,
-                  whiteSpace: 'initial',
                 }}
               >
-                Your changes will be visible immediately anywhere this data is used. This may
-                include your production site or store.
-              </FlexRow>,
-            )}
-            <FlexRow style={{ justifyContent: 'flex-end', gap: 8, padding: '0px 24px 12px 24px' }}>
-              <div
-                style={{
-                  borderRadius: 4,
-                  backgroundColor: colorTheme.white.value,
-                  color: colorTheme.fg0.value,
-                  border: `1px solid ${colorTheme.subduedBorder.value}`,
-                  padding: 3,
-                  fontSize: 11,
-                  fontWeight: 400,
-                  height: 24,
-                  width: 81,
-                  textAlign: 'center',
-                  cursor: 'pointer',
-                }}
-                onClick={closePopup}
-              >
-                Cancel
+                <span>Data</span>
+                <span style={{ color: colorTheme.green.value }}>Gid</span>
+                <span>Content</span>
+                <textarea
+                  value={value}
+                  onChange={updateValue}
+                  onKeyDown={onKeyDown}
+                  style={{
+                    height: 80,
+                    resize: 'none',
+                    outline: 'none',
+                    border: `1px solid ${colorTheme.subduedBorder.cssValue}`,
+                  }}
+                />
+                <span>Source</span>
+                <span style={{ color: colorTheme.green.value }}>Shopify: Meatobjects</span>
               </div>
-              <div
-                style={{
-                  borderRadius: 4,
-                  backgroundColor: mainButtonColor,
-                  color: 'white',
-                  padding: 3,
-                  fontSize: 11,
-                  fontWeight: 400,
-                  height: 24,
-                  width: 81,
-                  textAlign: 'center',
-                  cursor: 'pointer',
-                }}
-                onClick={onMainButtonClick}
+              {unless(
+                submissionState === 'draft',
+                <FlexRow
+                  style={{
+                    gap: 8,
+                    padding: '0px 24px 0px 24px',
+                    color: colorTheme.error.value,
+                    fontWeight: 600,
+                    fontSize: 12,
+                    whiteSpace: 'initial',
+                  }}
+                >
+                  Your changes will be visible immediately anywhere this data is used. This may
+                  include your production site or store.
+                </FlexRow>,
+              )}
+              <FlexRow
+                style={{ justifyContent: 'flex-end', gap: 8, padding: '0px 24px 12px 24px' }}
               >
-                {mainButtonText}
-              </div>
-            </FlexRow>
-          </FlexColumn>
-        </div>
-      </InspectorModal>
-    )
-  }),
+                <div
+                  style={{
+                    borderRadius: 4,
+                    backgroundColor: colorTheme.white.value,
+                    color: colorTheme.fg0.value,
+                    border: `1px solid ${colorTheme.subduedBorder.value}`,
+                    padding: 3,
+                    fontSize: 11,
+                    fontWeight: 400,
+                    height: 24,
+                    width: 81,
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                  }}
+                  onClick={closePopup}
+                >
+                  Cancel
+                </div>
+                <div
+                  style={{
+                    borderRadius: 4,
+                    backgroundColor: mainButtonColor,
+                    color: 'white',
+                    padding: 3,
+                    fontSize: 11,
+                    fontWeight: 400,
+                    height: 24,
+                    width: 81,
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                  }}
+                  onClick={onMainButtonClick}
+                >
+                  {mainButtonText}
+                </div>
+              </FlexRow>
+            </FlexColumn>
+          </div>
+        </InspectorModal>
+      )
+    },
+  ),
 )
 
 interface RequestUpdateData {}

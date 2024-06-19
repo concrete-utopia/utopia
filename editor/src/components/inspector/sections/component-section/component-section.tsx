@@ -114,7 +114,7 @@ import {
   replaceFirstChildAndDeleteSiblings,
 } from '../../../editor/element-children'
 import { getTextContentOfElement } from './data-reference-cartouche'
-import { DataEditorModal } from './data-editor-modal'
+import { DataUpdateModal } from './data-editor-modal'
 
 export interface PropertyLabelAndPlusButtonProps {
   title: string
@@ -384,12 +384,7 @@ function getLabelControlStyle(
 
 const isBaseIndentationLevel = (props: AbstractRowForControlProps) => props.indentationLevel === 1
 
-export function useDataPickerButton(
-  variablesInScope: DataPickerOption[],
-  onPropertyPicked: DataPickerCallback,
-  currentSelectedValuePath: ObjectPath | null,
-  lowestInsertionCeiling: ElementPath | null,
-) {
+function usePopperBoilerplate() {
   const [referenceElement, setReferenceElement] = React.useState<HTMLDivElement | null>(null)
   const [popperElement, setPopperElement] = React.useState<HTMLDivElement | null>(null)
   const popper = usePopper(referenceElement, popperElement, {
@@ -414,20 +409,66 @@ export function useDataPickerButton(
   const openPopup = React.useCallback(() => setPopupIsOpen(true), [])
   const closePopup = React.useCallback(() => setPopupIsOpen(false), [])
 
+  return { popper, popupIsOpen, openPopup, closePopup, setReferenceElement, setPopperElement }
+}
+
+export function useDataPickerButton(
+  variablesInScope: DataPickerOption[],
+  onPropertyPicked: DataPickerCallback,
+  currentSelectedValuePath: ObjectPath | null,
+  lowestInsertionCeiling: ElementPath | null,
+) {
+  const { popper, closePopup, setPopperElement, popupIsOpen, openPopup, setReferenceElement } =
+    usePopperBoilerplate()
+
   const DataPickerComponent = React.useMemo(
     () => (
-      <DataEditorModal
+      <DataSelectorModal
         {...popper.attributes.popper}
         style={popper.styles.popper}
         closePopup={closePopup}
         ref={setPopperElement}
-        // onPropertyPicked={onPropertyPicked}
-        // variablesInScope={variablesInScope}
-        // startingSelectedValuePath={currentSelectedValuePath}
-        // lowestInsertionCeiling={lowestInsertionCeiling}
+        onPropertyPicked={onPropertyPicked}
+        variablesInScope={variablesInScope}
+        startingSelectedValuePath={currentSelectedValuePath}
+        lowestInsertionCeiling={lowestInsertionCeiling}
       />
     ),
-    [closePopup, popper.attributes.popper, popper.styles.popper],
+    [
+      closePopup,
+      currentSelectedValuePath,
+      lowestInsertionCeiling,
+      onPropertyPicked,
+      popper.attributes.popper,
+      popper.styles.popper,
+      setPopperElement,
+      variablesInScope,
+    ],
+  )
+
+  return {
+    popupIsOpen,
+    DataPickerComponent,
+    setReferenceElement,
+    openPopup,
+  }
+}
+
+export function useDataUpdateButton(cartouche: React.ReactElement) {
+  const { popper, closePopup, setPopperElement, popupIsOpen, openPopup, setReferenceElement } =
+    usePopperBoilerplate()
+
+  const DataPickerComponent = React.useMemo(
+    () => (
+      <DataUpdateModal
+        {...popper.attributes.popper}
+        style={popper.styles.popper}
+        closePopup={closePopup}
+        ref={setPopperElement}
+        cartouche={cartouche}
+      />
+    ),
+    [cartouche, closePopup, popper.attributes.popper, popper.styles.popper, setPopperElement],
   )
 
   return {
