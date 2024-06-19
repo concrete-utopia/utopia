@@ -6,6 +6,7 @@ import type {
   SelectedElementChanged,
   UpdateDecorationsMessage,
   ForceNavigation,
+  BoundsInFile,
 } from 'utopia-vscode-common'
 import {
   boundsInFile,
@@ -177,8 +178,8 @@ export function sendMessage(message: FromUtopiaToVSCodeMessage) {
   vscodeIFrame?.postMessage(message, { targetOrigin: '*' })
 }
 
-export function sendOpenFileMessage(filePath: string) {
-  sendMessage(toVSCodeExtensionMessage(openFileMessage(filePath)))
+export function sendOpenFileMessage(filePath: string, bounds?: BoundsInFile) {
+  sendMessage(toVSCodeExtensionMessage(openFileMessage(filePath, bounds)))
 }
 
 export function sendSetFollowSelectionEnabledMessage(enabled: boolean) {

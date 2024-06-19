@@ -3,12 +3,14 @@ import type { UtopiaVSCodeConfig } from './utopia-vscode-config'
 export interface OpenFileMessage {
   type: 'OPEN_FILE'
   filePath: string
+  bounds: BoundsInFile | null
 }
 
-export function openFileMessage(filePath: string): OpenFileMessage {
+export function openFileMessage(filePath: string, bounds?: BoundsInFile): OpenFileMessage {
   return {
     type: 'OPEN_FILE',
     filePath: filePath,
+    bounds: bounds ?? null,
   }
 }
 

@@ -427,7 +427,7 @@ import {
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
 
-import { defaultConfig } from 'utopia-vscode-common'
+import { boundsInFile, defaultConfig } from 'utopia-vscode-common'
 import { reorderElement } from '../../../components/canvas/commands/reorder-element-command'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch-packages'
@@ -593,7 +593,7 @@ import {
   getPrintAndReparseCodeResult,
 } from '../../../core/workers/parser-printer/parser-printer-worker'
 import { isSteganographyEnabled } from '../../../core/shared/stegano-text'
-import type { ParsedTextFileWithPath } from '../../../core/property-controls/property-controls-local'
+import type { TextFileContentsWithPath } from '../../../core/property-controls/property-controls-local'
 import {
   updatePropertyControlsOnDescriptorFileDelete,
   isComponentDescriptorFile,
@@ -3795,7 +3795,12 @@ export const UPDATE_FNS = {
   },
   OPEN_CODE_EDITOR_FILE: (action: OpenCodeEditorFile, editor: EditorModel): EditorModel => {
     // Side effect.
-    sendOpenFileMessage(action.filename)
+    sendOpenFileMessage(
+      action.filename,
+      action.lineNumber != null
+        ? boundsInFile(action.filename, action.lineNumber, 0, action.lineNumber, 0)
+        : undefined,
+    )
     if (action.forceShowCodeEditor) {
       return {
         ...editor,
@@ -6073,11 +6078,11 @@ export const UPDATE_FNS = {
   ): EditorModel => {
     const evaluator = createModuleEvaluator(state)
 
-    const filesToUpdate: ParsedTextFileWithPath[] = []
+    const filesToUpdate: TextFileContentsWithPath[] = []
     for (const filePath of action.paths) {
       const file = getProjectFileByFilePath(state.projectContents, filePath)
       if (file != null && file.type === 'TEXT_FILE') {
-        filesToUpdate.push({ path: filePath, file: file.fileContents.parsed })
+        filesToUpdate.push({ path: filePath, file: file.fileContents })
       }
     }
 

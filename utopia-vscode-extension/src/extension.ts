@@ -338,7 +338,11 @@ function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscod
   function handleMessage(message: ToVSCodeMessage): void {
     switch (message.type) {
       case 'OPEN_FILE':
-        openFile(vscode.Uri.joinPath(workspaceRootUri, message.filePath))
+        if (message.bounds) {
+          revealRangeIfPossible(workspaceRootUri, message.bounds)
+        } else {
+          openFile(vscode.Uri.joinPath(workspaceRootUri, message.filePath))
+        }
         break
       case 'UPDATE_DECORATIONS':
         currentDecorations = message.decorations

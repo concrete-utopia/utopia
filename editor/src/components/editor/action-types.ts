@@ -644,6 +644,7 @@ export interface OpenCodeEditorFile {
   action: 'OPEN_CODE_EDITOR_FILE'
   filename: string
   forceShowCodeEditor: boolean
+  lineNumber: number | null
 }
 
 export interface CloseDesignerFile {

@@ -1,3 +1,6 @@
+import * as BabelParser from '@babel/parser'
+import traverse from '@babel/traverse'
+
 import type {
   RegularControlDescription as RegularControlDescriptionFromUtopia,
   JSXControlDescription as JSXControlDescriptionFromUtopia,
@@ -77,7 +80,12 @@ import {
   sequenceEither,
 } from '../shared/either'
 import { assertNever } from '../shared/utils'
-import type { Imports, ParsedTextFile } from '../shared/project-file-types'
+import type {
+  Imports,
+  ParsedTextFile,
+  TextFile,
+  TextFileContents,
+} from '../shared/project-file-types'
 import {
   importAlias,
   importDetails,
@@ -118,6 +126,7 @@ import { intrinsicHTMLElementNamesAsStrings } from '../shared/dom-utils'
 import { valueOrArrayToArray } from '../shared/array-utils'
 import { optionalMap } from '../shared/optional-utils'
 import type { RenderContext } from 'src/components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-element-renderer-utils'
+import { ObjectExpression } from '@babel/types'
 
 const exportedNameSymbol = Symbol('__utopia__exportedName')
 const moduleNameSymbol = Symbol('__utopia__moduleName')
@@ -346,27 +355,88 @@ function isComponentRegistrationValid(
 }
 
 async function getComponentDescriptorPromisesFromParseResult(
-  descriptorFile: ParsedTextFileWithPath,
+  descriptorFile: TextFileContentsWithPath,
   workers: UtopiaTsWorkers,
   evaluator: ModuleEvaluator,
 ): Promise<ComponentDescriptorRegistrationResult> {
-  if (descriptorFile.file.type === 'UNPARSED') {
+  if (descriptorFile.file.parsed.type === 'UNPARSED') {
     return { descriptors: [], errors: [{ type: 'file-unparsed' }] }
   }
 
-  if (descriptorFile.file.type === 'PARSE_FAILURE') {
+  if (descriptorFile.file.parsed.type === 'PARSE_FAILURE') {
     return {
       descriptors: [],
       errors: [
-        { type: 'file-parse-failure', parseErrorMessages: descriptorFile.file.errorMessages },
+        {
+          type: 'file-parse-failure',
+          parseErrorMessages: descriptorFile.file.parsed.errorMessages,
+        },
       ],
     }
   }
 
-  const exportDefaultIdentifier = descriptorFile.file.exportsDetail.find(isExportDefault)
+  const exportDefaultIdentifier = descriptorFile.file.parsed.exportsDetail.find(isExportDefault)
   if (exportDefaultIdentifier?.name == null) {
     return { descriptors: [], errors: [{ type: 'no-export-default' }] }
   }
+  const ast = BabelParser.parse(descriptorFile.file.code, {
+    sourceType: 'module',
+    plugins: ['jsx'],
+  })
+
+  const lineNumbers: { [moduleName: string]: { [componentName: string]: number } } = {}
+
+  // Store variable declarations
+  const variableDeclarations: Record<string, any> = {}
+  // Traverse the AST to collect variable declarations
+  traverse(ast, {
+    VariableDeclarator(path) {
+      const { id, init } = path.node
+      if (id.type === 'Identifier' && init != null) {
+        variableDeclarations[id.name] = init
+      }
+    },
+  })
+
+  // Function to resolve a variable to its object value
+  function resolveVariable(node: any): any {
+    if (node.type === 'Identifier' && variableDeclarations[node.name] != null) {
+      return variableDeclarations[node.name]
+    }
+    return node
+  }
+
+  // Traverse the AST to find the default export and process the Components object
+  traverse(ast, {
+    ExportDefaultDeclaration(path) {
+      const declaration = path.node.declaration
+      if (declaration.type === 'Identifier') {
+        const variableName = declaration.name
+        const componentsNode = variableDeclarations[variableName]
+        if (componentsNode?.type === 'ObjectExpression') {
+          componentsNode.properties.forEach((prop: any) => {
+            if (prop.type === 'ObjectProperty' && prop.key.type === 'StringLiteral') {
+              const moduleName = prop.key.value
+              if (lineNumbers[moduleName] == null) {
+                lineNumbers[moduleName] = {}
+              }
+              const moduleValue = resolveVariable(prop.value)
+              if (moduleValue.type === 'ObjectExpression') {
+                moduleValue.properties.forEach((innerProp: any) => {
+                  if (innerProp.type === 'ObjectProperty' && innerProp.key.type === 'Identifier') {
+                    const componentName = innerProp.key.name
+                    const componentStartLine = innerProp.loc?.start.line
+                    const componentEndLine = innerProp.loc?.end.line
+                    lineNumbers[moduleName][componentName] = componentStartLine
+                  }
+                })
+              }
+            }
+          })
+        }
+      }
+    },
+  })
 
   try {
     const evaluatedFile = evaluator(descriptorFile.path)
@@ -412,7 +482,10 @@ async function getComponentDescriptorPromisesFromParseResult(
           componentName,
           moduleName,
           workers,
-          componentDescriptorFromDescriptorFile(descriptorFile.path),
+          componentDescriptorFromDescriptorFile(
+            descriptorFile.path,
+            lineNumbers[moduleName][componentName],
+          ),
         )
 
         switch (componentDescriptor.type) {
@@ -522,14 +595,14 @@ function errorsFromComponentRegistration(
   })
 }
 
-export interface ParsedTextFileWithPath {
-  file: ParsedTextFile
+export interface TextFileContentsWithPath {
+  file: TextFileContents
   path: string
 }
 
 export async function maybeUpdatePropertyControls(
   previousPropertyControlsInfo: PropertyControlsInfo,
-  filesToUpdate: ParsedTextFileWithPath[],
+  filesToUpdate: TextFileContentsWithPath[],
   workers: UtopiaTsWorkers,
   dispatch: EditorDispatch,
   evaluator: ModuleEvaluator,

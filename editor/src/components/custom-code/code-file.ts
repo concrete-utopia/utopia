@@ -227,14 +227,17 @@ export function isDefaultComponentDescriptor(
 export interface ComponentDescriptorFromDescriptorFile {
   type: 'DESCRIPTOR_FILE'
   sourceDescriptorFile: string
+  lineNumber: number | null
 }
 
 export function componentDescriptorFromDescriptorFile(
   sourceDescriptorFile: string,
+  lineNumber: number | null,
 ): ComponentDescriptorFromDescriptorFile {
   return {
     type: 'DESCRIPTOR_FILE',
     sourceDescriptorFile: sourceDescriptorFile,
+    lineNumber: lineNumber,
   }
 }
 

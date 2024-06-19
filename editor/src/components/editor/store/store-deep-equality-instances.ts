@@ -3484,12 +3484,15 @@ const PreferredChildComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<Pr
   )
 
 export const DescriptorFileComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<ComponentDescriptorFromDescriptorFile> =
-  combine2EqualityCalls(
+  combine3EqualityCalls(
     (descriptor) => descriptor.type,
     StringKeepDeepEquality,
     (descriptor) => descriptor.sourceDescriptorFile,
     StringKeepDeepEquality,
-    componentDescriptorFromDescriptorFile,
+    (descriptor) => descriptor.lineNumber,
+    nullableDeepEquality(NumberKeepDeepEquality),
+    (_, sourceDescriptorFile, lineNumber) =>
+      componentDescriptorFromDescriptorFile(sourceDescriptorFile, lineNumber),
   )
 
 export function ComponentDescriptorSourceKeepDeepEquality(): KeepDeepEqualityCall<ComponentDescriptorSource> {

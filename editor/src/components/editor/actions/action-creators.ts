@@ -1055,11 +1055,13 @@ export function addFolder(parentPath: string, fileName: string): AddFolder {
 export function openCodeEditorFile(
   filename: string,
   forceShowCodeEditor: boolean,
+  lineNumber: number | null = null,
 ): OpenCodeEditorFile {
   return {
     action: 'OPEN_CODE_EDITOR_FILE',
     filename: filename,
     forceShowCodeEditor: forceShowCodeEditor,
+    lineNumber: lineNumber,
   }
 }
 
