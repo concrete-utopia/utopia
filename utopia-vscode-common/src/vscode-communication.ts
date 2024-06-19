@@ -138,7 +138,7 @@ async function initIndexedDBBridge(
     await sendMessage(getUtopiaVSCodeConfig())
     watchForChanges()
     if (openFilePath != null) {
-      await sendMessage(openFileMessage(openFilePath))
+      await sendMessage(openFileMessage(openFilePath, null))
     } else {
       window.top?.postMessage(fromVSCodeExtensionMessage(clearLoadingScreen()), '*')
     }

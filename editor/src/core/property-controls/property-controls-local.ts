@@ -77,7 +77,12 @@ import {
   sequenceEither,
 } from '../shared/either'
 import { assertNever } from '../shared/utils'
-import type { Imports, ParsedTextFile } from '../shared/project-file-types'
+import type {
+  Imports,
+  ParsedTextFile,
+  TextFile,
+  TextFileContents,
+} from '../shared/project-file-types'
 import {
   importAlias,
   importDetails,
@@ -117,7 +122,7 @@ import type { ScriptLine } from '../../third-party/react-error-overlay/utils/sta
 import { intrinsicHTMLElementNamesAsStrings } from '../shared/dom-utils'
 import { valueOrArrayToArray } from '../shared/array-utils'
 import { optionalMap } from '../shared/optional-utils'
-import type { RenderContext } from 'src/components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-element-renderer-utils'
+import { generateComponentBounds } from './component-descriptor-parser'
 
 const exportedNameSymbol = Symbol('__utopia__exportedName')
 const moduleNameSymbol = Symbol('__utopia__moduleName')
@@ -346,27 +351,31 @@ function isComponentRegistrationValid(
 }
 
 async function getComponentDescriptorPromisesFromParseResult(
-  descriptorFile: ParsedTextFileWithPath,
+  descriptorFile: TextFileContentsWithPath,
   workers: UtopiaTsWorkers,
   evaluator: ModuleEvaluator,
 ): Promise<ComponentDescriptorRegistrationResult> {
-  if (descriptorFile.file.type === 'UNPARSED') {
+  if (descriptorFile.file.parsed.type === 'UNPARSED') {
     return { descriptors: [], errors: [{ type: 'file-unparsed' }] }
   }
 
-  if (descriptorFile.file.type === 'PARSE_FAILURE') {
+  if (descriptorFile.file.parsed.type === 'PARSE_FAILURE') {
     return {
       descriptors: [],
       errors: [
-        { type: 'file-parse-failure', parseErrorMessages: descriptorFile.file.errorMessages },
+        {
+          type: 'file-parse-failure',
+          parseErrorMessages: descriptorFile.file.parsed.errorMessages,
+        },
       ],
     }
   }
 
-  const exportDefaultIdentifier = descriptorFile.file.exportsDetail.find(isExportDefault)
+  const exportDefaultIdentifier = descriptorFile.file.parsed.exportsDetail.find(isExportDefault)
   if (exportDefaultIdentifier?.name == null) {
     return { descriptors: [], errors: [{ type: 'no-export-default' }] }
   }
+  const componentBoundsByModule = generateComponentBounds(descriptorFile)
 
   try {
     const evaluatedFile = evaluator(descriptorFile.path)
@@ -412,7 +421,10 @@ async function getComponentDescriptorPromisesFromParseResult(
           componentName,
           moduleName,
           workers,
-          componentDescriptorFromDescriptorFile(descriptorFile.path),
+          componentDescriptorFromDescriptorFile(
+            descriptorFile.path,
+            componentBoundsByModule[moduleName][componentName] ?? null,
+          ),
         )
 
         switch (componentDescriptor.type) {
@@ -522,14 +534,14 @@ function errorsFromComponentRegistration(
   })
 }
 
-export interface ParsedTextFileWithPath {
-  file: ParsedTextFile
+export interface TextFileContentsWithPath {
+  file: TextFileContents
   path: string
 }
 
 export async function maybeUpdatePropertyControls(
   previousPropertyControlsInfo: PropertyControlsInfo,
-  filesToUpdate: ParsedTextFileWithPath[],
+  filesToUpdate: TextFileContentsWithPath[],
   workers: UtopiaTsWorkers,
   dispatch: EditorDispatch,
   evaluator: ModuleEvaluator,

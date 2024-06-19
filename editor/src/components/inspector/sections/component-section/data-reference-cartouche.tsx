@@ -32,6 +32,7 @@ import { AllHtmlEntities } from 'html-entities'
 import { ContextMenuWrapper } from '../../../context-menu-wrapper'
 import type { ContextMenuItem } from '../../../context-menu-items'
 import { optionalMap } from '../../../../core/shared/optional-utils'
+import { useContextMenu } from 'react-contexify'
 
 const htmlEntities = new AllHtmlEntities()
 
@@ -239,12 +240,20 @@ export const DataCartoucheInner = React.forwardRef(
         ? 'external'
         : 'internal'
 
+    const contextMenuId = `cartouche-context-menu-${props.testId}`
+
+    const { hideAll: hideContextMenu } = useContextMenu({ id: contextMenuId })
+
     return (
       <ContextMenuWrapper<ContextMenuItemsData>
-        id={`cartouche-context-menu-${props.testId}`}
+        id={contextMenuId}
         dispatch={dispatch}
         items={contextMenuItems}
-        data={{ openDataPicker: onDoubleClick, deleteCartouche: onDeleteCallback }}
+        data={{
+          openDataPicker: onDoubleClick,
+          deleteCartouche: onDeleteCallback,
+          hideContextMenu: hideContextMenu,
+        }}
       >
         <CartoucheUI
           onDelete={onDelete}
@@ -270,6 +279,7 @@ export const DataCartoucheInner = React.forwardRef(
 type ContextMenuItemsData = {
   openDataPicker?: () => void
   deleteCartouche?: () => void
+  hideContextMenu: () => void
 }
 
 const Separator = {
@@ -285,6 +295,7 @@ const contextMenuItems: Array<ContextMenuItem<ContextMenuItemsData>> = [
     enabled: (data) => data.openDataPicker != null,
     action: (data) => {
       data.openDataPicker?.()
+      data.hideContextMenu()
     },
   },
   {
@@ -292,6 +303,7 @@ const contextMenuItems: Array<ContextMenuItem<ContextMenuItemsData>> = [
     enabled: false,
     action: (data) => {
       data.deleteCartouche?.()
+      data.hideContextMenu()
     },
   },
   Separator,

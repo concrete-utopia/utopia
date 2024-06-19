@@ -625,7 +625,7 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
         style={{
           textTransform: 'capitalize',
           paddingLeft: indentation,
-          alignSelf: 'flex-start',
+          alignSelf: 'center',
         }}
       >
         <PropertyLabelAndPlusButton
@@ -1462,9 +1462,7 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
       )
 
       const descriptorFile =
-        registeredComponent?.source.type === 'DESCRIPTOR_FILE'
-          ? registeredComponent?.source.sourceDescriptorFile
-          : null
+        registeredComponent?.source.type === 'DESCRIPTOR_FILE' ? registeredComponent.source : null
 
       if (registeredComponent?.label == null) {
         return {
@@ -1486,7 +1484,13 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
 
   const openDescriptorFile = React.useCallback(() => {
     if (componentData?.descriptorFile != null) {
-      dispatch([openCodeEditorFile(componentData?.descriptorFile, true)])
+      dispatch([
+        openCodeEditorFile(
+          componentData.descriptorFile.sourceDescriptorFile,
+          true,
+          componentData.descriptorFile.bounds,
+        ),
+      ])
     }
   }, [dispatch, componentData?.descriptorFile])
 
