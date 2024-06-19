@@ -702,7 +702,6 @@ export const NumberInput = React.memo<NumberInputProps>(
                 top: 0,
                 left: 0,
                 userSelect: 'none',
-                pointerEvents: 'none',
                 width: 20,
                 height: 20,
                 display: 'block',
@@ -711,7 +710,6 @@ export const NumberInput = React.memo<NumberInputProps>(
               <div
                 style={{
                   position: 'absolute',
-                  pointerEvents: 'none',
                   left: 0,
                   top: 2,
                   textAlign: 'center',
@@ -721,6 +719,7 @@ export const NumberInput = React.memo<NumberInputProps>(
                   height: '100%',
                   color: colorTheme.fg7.value,
                 }}
+                onMouseDown={onLabelMouseDown}
               >
                 {typeof labelInner === 'object' && 'type' in labelInner ? (
                   <Icn {...labelInner} />
@@ -818,6 +817,7 @@ export const NumberInput = React.memo<NumberInputProps>(
                 ></div>
               ) : null}
               <div
+                data-testid={`${testId}-mouse-down-handler`}
                 onMouseDown={onLabelMouseDown}
                 style={{
                   paddingLeft: 4,

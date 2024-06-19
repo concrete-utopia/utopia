@@ -359,6 +359,7 @@ const SingleLengthItem = React.memo<SingleLengthItemProps>((props) => {
         onTransientSubmitValue={singleLengthItemTransientSubmitValue}
         controlStatus={props.controlStatus}
         defaultUnitToHide={controlMetadata.defaultUnitToHide}
+        incrementControls={false}
       />
       <SquareButton highlight onMouseDown={removeTransformItem} style={{ marginTop: 1 }}>
         <Icn category='semantic' type='minus' color='secondary' width={16} height={16} />
@@ -489,6 +490,7 @@ const DoubleLengthItem = React.memo<DoubleLengthItemProps>((props) => {
         onTransientSubmitValue={doubleLengthZeroethItemTransientSubmitValue}
         controlStatus={props.controlStatus}
         defaultUnitToHide={controlMetadata.defaultUnitToHide}
+        incrementControls={false}
       />
       <NumberInput
         style={{
@@ -509,6 +511,7 @@ const DoubleLengthItem = React.memo<DoubleLengthItemProps>((props) => {
         onTransientSubmitValue={doubleLengthFirstItemTransientSubmitValue}
         controlStatus={props.controlStatus}
         defaultUnitToHide={controlMetadata.defaultUnitToHide}
+        incrementControls={false}
       />
       <SquareButton highlight onMouseDown={removeTransformItem} style={{ marginTop: 1 }}>
         <Icn category='semantic' type='minus' color='secondary' width={16} height={16} />
