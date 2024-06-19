@@ -16,7 +16,7 @@ export function generateComponentBounds(
     plugins: ['jsx'],
   })
 
-  const bounds: ComponentBoundsByModule = {}
+  const componentBoundsByModule: ComponentBoundsByModule = {}
 
   // Store variable declarations
   const variableDeclarations: Record<string, any> = {}
@@ -42,39 +42,50 @@ export function generateComponentBounds(
   traverse(ast, {
     ExportDefaultDeclaration(path) {
       const declaration = path.node.declaration
-      if (declaration.type === 'Identifier') {
-        const variableName = declaration.name
-        const componentsNode = variableDeclarations[variableName]
-        if (componentsNode?.type === 'ObjectExpression') {
-          componentsNode.properties.forEach((prop: any) => {
-            if (prop.type === 'ObjectProperty' && prop.key.type === 'StringLiteral') {
-              const moduleName = prop.key.value
-              if (bounds[moduleName] == null) {
-                bounds[moduleName] = {}
-              }
-              const moduleValue = resolveVariable(prop.value)
-              if (moduleValue.type === 'ObjectExpression') {
-                moduleValue.properties.forEach((innerProp: any) => {
-                  if (innerProp.type === 'ObjectProperty' && innerProp.key.type === 'Identifier') {
-                    const componentName = innerProp.key.name
-                    const { loc } = innerProp
-                    if (loc != null) {
-                      bounds[moduleName][componentName] = boundsInFile(
-                        descriptorFile.path,
-                        loc.start.line,
-                        loc.start.column,
-                        loc.end.line,
-                        loc.end.column,
-                      )
-                    }
-                  }
-                })
-              }
-            }
-          })
-        }
+      if (declaration.type !== 'Identifier') {
+        return
       }
+
+      const variableName = declaration.name
+      const componentsNode = variableDeclarations[variableName]
+      if (componentsNode?.type !== 'ObjectExpression') {
+        return
+      }
+
+      componentsNode.properties.forEach((module: any) => {
+        if (module.type !== 'ObjectProperty' || module.key.type !== 'StringLiteral') {
+          return
+        }
+
+        const moduleName = module.key.value
+        if (componentBoundsByModule[moduleName] == null) {
+          componentBoundsByModule[moduleName] = {}
+        }
+
+        const moduleValue = resolveVariable(module.value)
+        if (moduleValue.type !== 'ObjectExpression') {
+          return
+        }
+
+        moduleValue.properties.forEach((component: any) => {
+          if (component.type !== 'ObjectProperty' || component.key.type !== 'Identifier') {
+            return
+          }
+
+          const componentName = component.key.name
+          const { loc } = component
+          if (loc != null) {
+            componentBoundsByModule[moduleName][componentName] = boundsInFile(
+              descriptorFile.path,
+              loc.start.line,
+              loc.start.column,
+              loc.end.line,
+              loc.end.column,
+            )
+          }
+        })
+      })
     },
   })
-  return bounds
+  return componentBoundsByModule
 }

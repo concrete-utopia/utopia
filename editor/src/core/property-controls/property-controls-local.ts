@@ -375,7 +375,7 @@ async function getComponentDescriptorPromisesFromParseResult(
   if (exportDefaultIdentifier?.name == null) {
     return { descriptors: [], errors: [{ type: 'no-export-default' }] }
   }
-  const componentBounds = generateComponentBounds(descriptorFile)
+  const componentBoundsByModule = generateComponentBounds(descriptorFile)
 
   try {
     const evaluatedFile = evaluator(descriptorFile.path)
@@ -423,7 +423,7 @@ async function getComponentDescriptorPromisesFromParseResult(
           workers,
           componentDescriptorFromDescriptorFile(
             descriptorFile.path,
-            componentBounds[moduleName][componentName] ?? null,
+            componentBoundsByModule[moduleName][componentName] ?? null,
           ),
         )
 
