@@ -1,7 +1,8 @@
 import React from 'react'
-import { CanvasContextMenuPortalTargetID, NO_OP, assertNever } from '../../../../core/shared/utils'
+import { CanvasContextMenuPortalTargetID, assertNever } from '../../../../core/shared/utils'
 import { InspectorModal } from '../../widgets/inspector-modal'
 import { FlexColumn, FlexRow, UtopiaStyles, UtopiaTheme, useColorTheme } from '../../../../uuiui'
+import { unless } from '../../../../utils/react-conditionals'
 
 type SubmissionState = 'draft' | 'confirmed' | 'publishing'
 
@@ -28,6 +29,7 @@ export const DataEditorModal = React.memo(
           break
         case 'confirmed':
           requestUpdate()
+          setSubmissionState('publishing')
           break
         case 'publishing':
           break
@@ -37,10 +39,15 @@ export const DataEditorModal = React.memo(
     }, [requestUpdate, submissionState])
 
     const [value, setValue] = React.useState<string>('')
-    const updateValue = React.useCallback(
-      (e: React.ChangeEvent<HTMLTextAreaElement>) => setValue(e.target.value),
-      [],
-    )
+    const updateValue = React.useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      e.stopPropagation()
+      e.preventDefault()
+      setValue(e.target.value)
+    }, [])
+
+    const onKeyDown = React.useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      e.stopPropagation()
+    }, [])
 
     const colorTheme = useColorTheme()
 
@@ -84,8 +91,8 @@ export const DataEditorModal = React.memo(
             ref={forwardedRef}
             onClick={catchClick}
             style={{
-              minWidth: 550,
-              height: 300,
+              width: 550,
+              minHeight: 300,
               backgroundColor: colorTheme.inspectorBackground.value,
               color: colorTheme.fg1.value,
               overflow: 'hidden',
@@ -118,7 +125,9 @@ export const DataEditorModal = React.memo(
               <textarea
                 value={value}
                 onChange={updateValue}
+                onKeyDown={onKeyDown}
                 style={{
+                  height: 80,
                   resize: 'none',
                   outline: 'none',
                   border: `1px solid ${colorTheme.subduedBorder.cssValue}`,
@@ -127,7 +136,23 @@ export const DataEditorModal = React.memo(
               <span>Source</span>
               <span style={{ color: colorTheme.green.value }}>Shopify: Meatobjects</span>
             </div>
-            <FlexRow style={{ justifyContent: 'flex-end', gap: 8, padding: '0px 24px 24px 24px' }}>
+            {unless(
+              submissionState === 'draft',
+              <FlexRow
+                style={{
+                  gap: 8,
+                  padding: '0px 24px 0px 24px',
+                  color: colorTheme.error.value,
+                  fontWeight: 600,
+                  fontSize: 12,
+                  whiteSpace: 'initial',
+                }}
+              >
+                Your changes will be visible immediately anywhere this data is used. This may
+                include your production site or store.
+              </FlexRow>,
+            )}
+            <FlexRow style={{ justifyContent: 'flex-end', gap: 8, padding: '0px 24px 12px 24px' }}>
               <div
                 style={{
                   borderRadius: 4,
@@ -140,6 +165,7 @@ export const DataEditorModal = React.memo(
                   height: 24,
                   width: 81,
                   textAlign: 'center',
+                  cursor: 'pointer',
                 }}
                 onClick={closePopup}
               >
@@ -156,8 +182,9 @@ export const DataEditorModal = React.memo(
                   height: 24,
                   width: 81,
                   textAlign: 'center',
+                  cursor: 'pointer',
                 }}
-                onClick={NO_OP}
+                onClick={onMainButtonClick}
               >
                 {mainButtonText}
               </div>
