@@ -114,6 +114,7 @@ import {
   replaceFirstChildAndDeleteSiblings,
 } from '../../../editor/element-children'
 import { getTextContentOfElement } from './data-reference-cartouche'
+import { DataEditorModal } from './data-editor-modal'
 
 export interface PropertyLabelAndPlusButtonProps {
   title: string
@@ -415,26 +416,18 @@ export function useDataPickerButton(
 
   const DataPickerComponent = React.useMemo(
     () => (
-      <DataSelectorModal
+      <DataEditorModal
         {...popper.attributes.popper}
         style={popper.styles.popper}
         closePopup={closePopup}
         ref={setPopperElement}
-        onPropertyPicked={onPropertyPicked}
-        variablesInScope={variablesInScope}
-        startingSelectedValuePath={currentSelectedValuePath}
-        lowestInsertionCeiling={lowestInsertionCeiling}
+        // onPropertyPicked={onPropertyPicked}
+        // variablesInScope={variablesInScope}
+        // startingSelectedValuePath={currentSelectedValuePath}
+        // lowestInsertionCeiling={lowestInsertionCeiling}
       />
     ),
-    [
-      closePopup,
-      currentSelectedValuePath,
-      onPropertyPicked,
-      popper.attributes.popper,
-      popper.styles.popper,
-      variablesInScope,
-      lowestInsertionCeiling,
-    ],
+    [closePopup, popper.attributes.popper, popper.styles.popper],
   )
 
   return {
