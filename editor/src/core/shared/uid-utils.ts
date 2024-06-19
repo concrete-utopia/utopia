@@ -1,72 +1,74 @@
-import fastDeepEquals from 'fast-deep-equal'
 import { v4 as UUID } from 'uuid'
-import { IS_TEST_ENVIRONMENT } from '../../common/env-vars'
 import { UTOPIA_PATH_KEY } from '../model/utopia-constants'
 import { mapDropNulls } from './array-utils'
 import { deepFindUtopiaCommentFlag, isUtopiaCommentFlagUid } from './comment-flags'
 import { getDOMAttribute } from './dom-utils'
 import type { Either } from './either'
-import { flatMapEither, foldEither, isRight, left, right } from './either'
+import { flatMapEither, foldEither, isLeft, isRight, left, right } from './either'
 import * as EP from './element-path'
 import type {
   ElementInstanceMetadata,
-  JSElementAccess,
   JSExpression,
-  JSExpressionFunctionCall,
-  JSExpressionNestedArray,
-  JSExpressionNestedObject,
-  JSExpressionOtherJavaScript,
-  JSExpressionValue,
-  JSIdentifier,
-  JSPropertyAccess,
-  JSXArrayElement,
   JSXAttributes,
   JSXConditionalExpression,
   JSXElement,
   JSXElementChild,
   JSXFragment,
-  JSXMapExpression,
-  JSXProperty,
   JSXTextBlock,
   ParsedComments,
   TopLevelElement,
+  JSExpressionOtherJavaScript,
+  JSExpressionValue,
+  JSExpressionNestedArray,
+  JSExpressionNestedObject,
+  JSExpressionFunctionCall,
+  JSXArrayElement,
+  JSXProperty,
+  JSExpressionMapOrOtherJavascript,
+  JSXMapExpression,
+  JSIdentifier,
+  JSPropertyAccess,
+  JSElementAccess,
 } from './element-template'
 import {
   emptyComments,
   getJSXAttribute,
-  isJSExpression,
-  isJSExpressionOtherJavaScript,
+  isJSExpressionMapOrOtherJavaScript,
   isJSXAttributeValue,
   isJSXConditionalExpression,
   isJSXElement,
   isJSXFragment,
-  isJSXMapExpression,
   isJSXTextBlock,
-  jsExpressionFunctionCall,
-  jsExpressionNestedArray,
-  jsExpressionNestedObject,
-  jsExpressionOtherJavaScript,
   jsExpressionValue,
   jsxConditionalExpression,
   jsxElement,
   jsxFragment,
-  jsxMapExpression,
-  modifiableAttributeIsAttributeFunctionCall,
+  setJSXAttributesAttribute,
   modifiableAttributeIsAttributeNestedArray,
   modifiableAttributeIsAttributeNestedObject,
-  setJSXAttributesAttribute,
+  modifiableAttributeIsAttributeFunctionCall,
+  jsExpressionNestedArray,
+  jsExpressionNestedObject,
+  jsExpressionFunctionCall,
+  jsExpressionOtherJavaScript,
+  isJSExpression,
+  isJSExpressionOtherJavaScript,
+  isJSXMapExpression,
+  jsxMapExpression,
 } from './element-template'
 import { shallowEqual } from './equality-utils'
+import { objectMap } from './object-utils'
+import type { ElementPath, HighlightBoundsForUids } from './project-file-types'
+import * as PP from './property-path'
+import { assertNever } from './utils'
+import fastDeepEquals from 'fast-deep-equal'
+import { emptySet } from './set-utils'
 import {
   getModifiableJSXAttributeAtPath,
   jsxSimpleAttributeToValue,
   setJSXValueAtPath,
 } from './jsx-attribute-utils'
-import { objectMap } from './object-utils'
-import type { ElementPath, HighlightBoundsForUids } from './project-file-types'
-import * as PP from './property-path'
-import { emptySet } from './set-utils'
-import { assertNever } from './utils'
+import { IS_TEST_ENVIRONMENT } from '../../common/env-vars'
 
 export const MOCK_NEXT_GENERATED_UIDS: { current: Array<string> } = { current: [] }
 export const MOCK_NEXT_GENERATED_UIDS_IDX = { current: 0 }
