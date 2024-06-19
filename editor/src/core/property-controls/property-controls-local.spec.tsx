@@ -141,6 +141,13 @@ describe('registered property controls', () => {
             },
           },
           "source": Object {
+            "bounds": Object {
+              "endCol": 5,
+              "endLine": 42,
+              "filePath": "/utopia/components.utopia.js",
+              "startCol": 4,
+              "startLine": 5,
+            },
             "sourceDescriptorFile": "/utopia/components.utopia.js",
             "type": "DESCRIPTOR_FILE",
           },
@@ -287,6 +294,7 @@ describe('registered property controls', () => {
             },
           },
           "source": Object {
+            "bounds": null,
             "sourceDescriptorFile": "/utopia/components.utopia.js",
             "type": "DESCRIPTOR_FILE",
           },
@@ -370,6 +378,13 @@ describe('registered property controls', () => {
             },
           },
           "source": Object {
+            "bounds": Object {
+              "endCol": 5,
+              "endLine": 16,
+              "filePath": "/utopia/components.utopia.js",
+              "startCol": 4,
+              "startLine": 6,
+            },
             "sourceDescriptorFile": "/utopia/components.utopia.js",
             "type": "DESCRIPTOR_FILE",
           },
@@ -997,6 +1012,13 @@ describe('registered property controls', () => {
             },
           },
           "source": Object {
+            "bounds": Object {
+              "endCol": 5,
+              "endLine": 32,
+              "filePath": "/utopia/components.utopia.js",
+              "startCol": 4,
+              "startLine": 5,
+            },
             "sourceDescriptorFile": "/utopia/components.utopia.js",
             "type": "DESCRIPTOR_FILE",
           },
@@ -1911,6 +1933,13 @@ describe('registered property controls', () => {
               },
             },
             "source": Object {
+              "bounds": Object {
+                "endCol": 5,
+                "endLine": 34,
+                "filePath": "/utopia/components.utopia.js",
+                "startCol": 4,
+                "startLine": 6,
+              },
               "sourceDescriptorFile": "/utopia/components.utopia.js",
               "type": "DESCRIPTOR_FILE",
             },
@@ -2662,6 +2691,13 @@ describe('Lifecycle management of registering components', () => {
       expect(renderResult.getEditorState().editor.propertyControlsInfo['/src/card']['Card'].source)
         .toMatchInlineSnapshot(`
         Object {
+          "bounds": Object {
+            "endCol": 5,
+            "endLine": 12,
+            "filePath": "/utopia/components1.utopia.js",
+            "startCol": 4,
+            "startLine": 5,
+          },
           "sourceDescriptorFile": "/utopia/components1.utopia.js",
           "type": "DESCRIPTOR_FILE",
         }
@@ -2673,6 +2709,13 @@ describe('Lifecycle management of registering components', () => {
       expect(renderResult.getEditorState().editor.propertyControlsInfo['/src/card']['Card'].source)
         .toMatchInlineSnapshot(`
         Object {
+          "bounds": Object {
+            "endCol": 5,
+            "endLine": 12,
+            "filePath": "/utopia/components2.utopia.js",
+            "startCol": 4,
+            "startLine": 5,
+          },
           "sourceDescriptorFile": "/utopia/components2.utopia.js",
           "type": "DESCRIPTOR_FILE",
         }
@@ -2708,6 +2751,13 @@ describe('Lifecycle management of registering components', () => {
       expect(renderResult.getEditorState().editor.propertyControlsInfo['/src/card']['Card'].source)
         .toMatchInlineSnapshot(`
         Object {
+          "bounds": Object {
+            "endCol": 5,
+            "endLine": 12,
+            "filePath": "/utopia/components1.utopia.js",
+            "startCol": 4,
+            "startLine": 5,
+          },
           "sourceDescriptorFile": "/utopia/components1.utopia.js",
           "type": "DESCRIPTOR_FILE",
         }
@@ -2753,6 +2803,13 @@ describe('Lifecycle management of registering components', () => {
       expect(renderResult.getEditorState().editor.propertyControlsInfo['/src/card']['Card'].source)
         .toMatchInlineSnapshot(`
         Object {
+          "bounds": Object {
+            "endCol": 5,
+            "endLine": 12,
+            "filePath": "/utopia/components1.utopia.js",
+            "startCol": 4,
+            "startLine": 5,
+          },
           "sourceDescriptorFile": "/utopia/components1.utopia.js",
           "type": "DESCRIPTOR_FILE",
         }
