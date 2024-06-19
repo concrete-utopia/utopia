@@ -281,11 +281,6 @@ export function generateUUID(): string {
   return UUID().replace(/-/g, '_')
 }
 
-// Returns a UUID v4 with dashes removed.
-export function strippedUUID(): string {
-  return UUID().replace(/-/g, '')
-}
-
 function isColor(color: any): color is Color {
   if (color == null) {
     return false

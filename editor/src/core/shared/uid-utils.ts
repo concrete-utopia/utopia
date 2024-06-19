@@ -1,3 +1,6 @@
+import fastDeepEquals from 'fast-deep-equal'
+import { v4 as UUID } from 'uuid'
+import { IS_TEST_ENVIRONMENT } from '../../common/env-vars'
 import { UTOPIA_PATH_KEY } from '../model/utopia-constants'
 import { mapDropNulls } from './array-utils'
 import { deepFindUtopiaCommentFlag, isUtopiaCommentFlagUid } from './comment-flags'
@@ -7,66 +10,63 @@ import { flatMapEither, foldEither, isRight, left, right } from './either'
 import * as EP from './element-path'
 import type {
   ElementInstanceMetadata,
+  JSElementAccess,
   JSExpression,
+  JSExpressionFunctionCall,
+  JSExpressionNestedArray,
+  JSExpressionNestedObject,
+  JSExpressionOtherJavaScript,
+  JSExpressionValue,
+  JSIdentifier,
+  JSPropertyAccess,
+  JSXArrayElement,
   JSXAttributes,
   JSXConditionalExpression,
   JSXElement,
   JSXElementChild,
   JSXFragment,
+  JSXMapExpression,
+  JSXProperty,
   JSXTextBlock,
   ParsedComments,
   TopLevelElement,
-  JSExpressionOtherJavaScript,
-  JSExpressionValue,
-  JSExpressionNestedArray,
-  JSExpressionNestedObject,
-  JSExpressionFunctionCall,
-  JSXArrayElement,
-  JSXProperty,
-  JSXMapExpression,
-  JSIdentifier,
-  JSPropertyAccess,
-  JSElementAccess,
 } from './element-template'
 import {
   emptyComments,
   getJSXAttribute,
+  isJSExpression,
+  isJSExpressionOtherJavaScript,
   isJSXAttributeValue,
   isJSXConditionalExpression,
   isJSXElement,
   isJSXFragment,
+  isJSXMapExpression,
   isJSXTextBlock,
+  jsExpressionFunctionCall,
+  jsExpressionNestedArray,
+  jsExpressionNestedObject,
+  jsExpressionOtherJavaScript,
   jsExpressionValue,
   jsxConditionalExpression,
   jsxElement,
   jsxFragment,
-  setJSXAttributesAttribute,
+  jsxMapExpression,
+  modifiableAttributeIsAttributeFunctionCall,
   modifiableAttributeIsAttributeNestedArray,
   modifiableAttributeIsAttributeNestedObject,
-  modifiableAttributeIsAttributeFunctionCall,
-  jsExpressionNestedArray,
-  jsExpressionNestedObject,
-  jsExpressionFunctionCall,
-  jsExpressionOtherJavaScript,
-  isJSExpression,
-  isJSExpressionOtherJavaScript,
-  isJSXMapExpression,
-  jsxMapExpression,
+  setJSXAttributesAttribute,
 } from './element-template'
 import { shallowEqual } from './equality-utils'
-import { objectMap } from './object-utils'
-import type { ElementPath, HighlightBoundsForUids } from './project-file-types'
-import * as PP from './property-path'
-import { assertNever } from './utils'
-import fastDeepEquals from 'fast-deep-equal'
-import { emptySet } from './set-utils'
 import {
   getModifiableJSXAttributeAtPath,
   jsxSimpleAttributeToValue,
   setJSXValueAtPath,
 } from './jsx-attribute-utils'
-import { IS_TEST_ENVIRONMENT } from '../../common/env-vars'
-import { strippedUUID } from '../../utils/utils'
+import { objectMap } from './object-utils'
+import type { ElementPath, HighlightBoundsForUids } from './project-file-types'
+import * as PP from './property-path'
+import { emptySet } from './set-utils'
+import { assertNever } from './utils'
 
 export const MOCK_NEXT_GENERATED_UIDS: { current: Array<string> } = { current: [] }
 export const MOCK_NEXT_GENERATED_UIDS_IDX = { current: 0 }
@@ -153,7 +153,7 @@ export function updateHighlightBounds(
 }
 
 export function generateUID(existingIDs: Set<string>): string {
-  return generateConsistentUID(newRandomUID(strippedUUID(), existingIDs), existingIDs)
+  return generateConsistentUID(newRandomUID(UUID(), existingIDs), existingIDs)
 }
 
 export function parseUIDFromComments(comments: ParsedComments): Either<string, string> {
@@ -845,9 +845,7 @@ function truncateUID(uid: string): string {
 }
 
 function newRandomUID(possibleUID: string, existingUIDs: Set<string>): string {
-  return IS_TEST_ENVIRONMENT
-    ? newUIDForTests(possibleUID, existingUIDs)
-    : truncateUID(strippedUUID())
+  return IS_TEST_ENVIRONMENT ? newUIDForTests(possibleUID, existingUIDs) : truncateUID(UUID())
 }
 
 function newUIDForTests(possibleUID: string, existingUIDs: Set<string>): string {
