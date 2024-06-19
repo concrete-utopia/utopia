@@ -10,7 +10,7 @@ import { getJSXElementNameLastPart } from '../../../../core/shared/element-templ
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { NO_OP, assertNever } from '../../../../core/shared/utils'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
-import { useDataPickerButton, useDataUpdateButton } from './component-section'
+import { useDataPickerButton } from './component-section'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { selectComponents } from '../../../editor/actions/meta-actions'
 import { dataPathSuccess, traceDataFromElement } from '../../../../core/data-tracing/data-tracing'
@@ -202,6 +202,7 @@ interface DataCartoucheInnerProps {
   datatype: CartoucheDataType
   highlight?: CartoucheHighlight | null
   badge?: React.ReactNode
+  openEditModal?: () => void
 }
 
 export const DataCartoucheInner = React.forwardRef(
@@ -217,6 +218,7 @@ export const DataCartoucheInner = React.forwardRef(
       contentsToDisplay,
       contentIsComingFromServer,
       datatype,
+      openEditModal,
     } = props
 
     const dispatch = useDispatch()
@@ -263,8 +265,6 @@ export const DataCartoucheInner = React.forwardRef(
       </CartoucheUI>
     )
 
-    const updateButtonData = useDataUpdateButton(cartouche)
-
     return (
       <ContextMenuWrapper<ContextMenuItemsData>
         id={contextMenuId}
@@ -273,6 +273,7 @@ export const DataCartoucheInner = React.forwardRef(
         data={{
           openDataPicker: onDoubleClick,
           deleteCartouche: onDeleteCallback,
+          openEditModal: openEditModal,
           hideContextMenu: hideContextMenu,
         }}
       >
@@ -285,6 +286,7 @@ export const DataCartoucheInner = React.forwardRef(
 type ContextMenuItemsData = {
   openDataPicker?: () => void
   deleteCartouche?: () => void
+  openEditModal?: () => void
   hideContextMenu: () => void
 }
 
@@ -315,8 +317,11 @@ const contextMenuItems: Array<ContextMenuItem<ContextMenuItemsData>> = [
   Separator,
   {
     name: 'Edit value',
-    enabled: false,
-    action: (data) => {},
+    enabled: (data) => data.openEditModal != null,
+    action: (data) => {
+      data.openEditModal?.()
+      data.hideContextMenu()
+    },
   },
   {
     name: 'Open in external CMS',

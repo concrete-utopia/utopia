@@ -80,6 +80,7 @@ export interface ControlForPropProps<T extends RegularControlDescription> {
   onOpenDataPicker: () => void
   showHiddenControl: (path: string) => void
   elementPath: ElementPath
+  onOpenEditModal?: () => void
 }
 
 function getValueOrUndefinedFromPropMetadata(propMetadata: InspectorInfoWithRawValue<any>): any {
@@ -92,7 +93,7 @@ function getValueOrUndefinedFromPropMetadata(propMetadata: InspectorInfoWithRawV
 
 export const CheckboxPropertyControl = React.memo(
   (props: ControlForPropProps<CheckboxControlDescription>) => {
-    const { propName, propMetadata, controlDescription } = props
+    const { propName, propMetadata } = props
 
     const controlId = `${propName}-checkbox-property-control`
 
@@ -115,7 +116,7 @@ export const CheckboxPropertyControl = React.memo(
 
 export const ColorPropertyControl = React.memo(
   (props: ControlForPropProps<ColorControlDescription>) => {
-    const { propName, propMetadata, controlDescription } = props
+    const { propName, propMetadata } = props
 
     const controlId = `${propName}-color-property-control`
 
@@ -141,7 +142,7 @@ export const ColorPropertyControl = React.memo(
 
 export const ExpressionInputPropertyControl = React.memo(
   (props: ControlForPropProps<ExpressionInputControlDescription>) => {
-    const { propName, propMetadata, controlDescription } = props
+    const { propName, propMetadata } = props
     const dispatch = useDispatch()
 
     const targetFilePaths = useEditorState(
@@ -620,7 +621,7 @@ export const StringInputPropertyControl = React.memo(
 
 export const HtmlInputPropertyControl = React.memo(
   (props: ControlForPropProps<HtmlInputControlDescription>) => {
-    const { propName, propMetadata, controlDescription } = props
+    const { propName, propMetadata } = props
 
     const controlId = `${propName}-string-input-property-control`
     const value = getValueOrUndefinedFromPropMetadata(propMetadata)
@@ -657,8 +658,6 @@ export const JSXPropertyControl = React.memo(
     const { propMetadata } = props
 
     const theme = useColorTheme()
-    const controlStatus = propMetadata.controlStatus
-    const controlStyles = getControlStyles(controlStatus)
     const value = getValueOrUndefinedFromPropMetadata(propMetadata)
 
     const safeValue: JSXParsedValue =
@@ -695,7 +694,6 @@ export const JSXPropertyControlForListSection = React.memo((props: { value: JSXP
   const { value } = props
 
   const theme = useColorTheme()
-  const controlStyles = getControlStyles('simple')
   const valueToShow = value
 
   const safeValue: JSXParsedValue = valueToShow ?? { type: 'unknown', name: 'JSX' }
@@ -824,7 +822,7 @@ export const VectorPropertyControl = React.memo(
 
 export const EulerPropertyControl = React.memo(
   (props: ControlForPropProps<EulerControlDescription>) => {
-    const { propPath, propMetadata, controlDescription, setGlobalCursor } = props
+    const { propPath, propMetadata, setGlobalCursor } = props
 
     const values = React.useMemo(
       () => getValueOrUndefinedFromPropMetadata(propMetadata) ?? [],
@@ -872,7 +870,7 @@ export const EulerPropertyControl = React.memo(
 
 export const Matrix3PropertyControl = React.memo(
   (props: ControlForPropProps<Matrix3ControlDescription>) => {
-    const { propPath, propMetadata, controlDescription, setGlobalCursor } = props
+    const { propPath, propMetadata, setGlobalCursor } = props
 
     const propsArray: Array<Omit<NumberInputProps, 'id' | 'chained'>> = React.useMemo(() => {
       const value = getValueOrUndefinedFromPropMetadata(propMetadata) ?? []
@@ -916,7 +914,7 @@ export const Matrix3PropertyControl = React.memo(
 
 export const Matrix4PropertyControl = React.memo(
   (props: ControlForPropProps<Matrix4ControlDescription>) => {
-    const { propPath, propMetadata, controlDescription, setGlobalCursor } = props
+    const { propPath, propMetadata, setGlobalCursor } = props
 
     const propsArray: Array<Omit<NumberInputProps, 'id' | 'chained'>> = React.useMemo(() => {
       const value = getValueOrUndefinedFromPropMetadata(propMetadata) ?? []

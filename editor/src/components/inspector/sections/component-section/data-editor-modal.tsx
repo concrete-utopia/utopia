@@ -119,7 +119,7 @@ export const DataUpdateModal = React.memo(
                 ...style,
               }}
             >
-              <FlexRow style={{ padding: '24px 24px 0px 24px' }}>
+              <FlexRow style={{ padding: '24px 24px 0px 24px', gap: 8, alignItems: 'center' }}>
                 <span style={{ fontWeight: 700, fontSize: 18 }}>Editing content of</span>
                 {cartouche}
               </FlexRow>

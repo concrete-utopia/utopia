@@ -27,10 +27,11 @@ interface IdentifierExpressionCartoucheControlProps {
   propertyPath: PropertyPath
   elementPath: ElementPath
   datatype: CartoucheDataType
+  onOpenEditModal?: () => void
 }
 export const IdentifierExpressionCartoucheControl = React.memo(
   (props: IdentifierExpressionCartoucheControlProps) => {
-    const { onOpenDataPicker, onDeleteCartouche, testId, safeToDelete } = props
+    const { onOpenDataPicker, onDeleteCartouche, testId, safeToDelete, onOpenEditModal } = props
 
     const isDataComingFromHookResult = useEditorState(
       Substores.projectContentsAndMetadata,
@@ -51,6 +52,7 @@ export const IdentifierExpressionCartoucheControl = React.memo(
           onClick={NO_OP}
           selected={false}
           onDoubleClick={onOpenDataPicker}
+          openEditModal={onOpenEditModal}
           safeToDelete={safeToDelete}
           onDelete={onDeleteCartouche}
           testId={testId}

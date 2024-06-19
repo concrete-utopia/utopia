@@ -255,12 +255,13 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
       attributeExpression.type === 'JS_PROPERTY_ACCESS' ||
       attributeExpression.type === 'JS_ELEMENT_ACCESS'
     ) {
-      return (
+      const cartouche = (
         <IdentifierExpressionCartoucheControl
           contents={getTextContentOfElement(attributeExpression, null)}
           icon={React.createElement(iconForControlType(props.controlDescription.control))}
           matchType='full'
           onOpenDataPicker={props.onOpenDataPicker}
+          onOpenEditModal={props.onOpenEditModal}
           onDeleteCartouche={onDeleteCartouche}
           testId={`cartouche-${PP.toString(props.propPath)}`}
           safeToDelete={safeToDelete}
@@ -269,6 +270,8 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
           datatype={datatypeForExpression}
         />
       )
+
+      return cartouche
     }
 
     if (
@@ -454,12 +457,12 @@ export function useDataPickerButton(
   }
 }
 
-export function useDataUpdateButton(cartouche: React.ReactElement) {
+export function useDataUpdateButton() {
   const { popper, closePopup, setPopperElement, popupIsOpen, openPopup, setReferenceElement } =
     usePopperBoilerplate()
 
-  const DataPickerComponent = React.useMemo(
-    () => (
+  const DataUpdaterComponent = React.useCallback(
+    (cartouche: React.ReactElement) => (
       <DataUpdateModal
         {...popper.attributes.popper}
         style={popper.styles.popper}
@@ -468,12 +471,12 @@ export function useDataUpdateButton(cartouche: React.ReactElement) {
         cartouche={cartouche}
       />
     ),
-    [cartouche, closePopup, popper.attributes.popper, popper.styles.popper, setPopperElement],
+    [closePopup, popper.attributes.popper, popper.styles.popper, setPopperElement],
   )
 
   return {
     popupIsOpen,
-    DataPickerComponent,
+    DataUpdaterComponent,
     setReferenceElement,
     openPopup,
   }
@@ -1199,6 +1202,7 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
   ])
 
   const dataPickerButtonData = useDataPickerButtonInComponentSection(selectedViews, props.propPath)
+  const updateButtonData = useDataUpdateButton()
 
   const [isHovered, setIsHovered] = React.useState(false)
 
