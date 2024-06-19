@@ -1,7 +1,6 @@
 import * as BabelParser from '@babel/parser'
 import traverse from '@babel/traverse'
 import type { Bounds } from 'utopia-vscode-common'
-import { boundsInFile } from 'utopia-vscode-common'
 import type { TextFileContentsWithPath } from './property-controls-local'
 
 export type ComponentBoundsByModule = {
@@ -75,13 +74,12 @@ export function generateComponentBounds(
           const componentName = component.key.name
           const { loc } = component
           if (loc != null) {
-            componentBoundsByModule[moduleName][componentName] = boundsInFile(
-              descriptorFile.path,
-              loc.start.line,
-              loc.start.column,
-              loc.end.line,
-              loc.end.column,
-            )
+            componentBoundsByModule[moduleName][componentName] = {
+              startLine: loc.start.line,
+              startCol: loc.start.column,
+              endLine: loc.end.line,
+              endCol: loc.end.column,
+            }
           }
         })
       })
