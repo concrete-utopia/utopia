@@ -80,7 +80,7 @@ import { is } from '../shared/equality-utils'
 import { absolutePathFromRelativePath } from '../../utils/path-utils'
 import json5 from 'json5'
 import type { FilePathMappings, FilePathMapping } from '../workers/common/project-file-utils'
-export { FilePathMappings, FilePathMapping }
+export type { FilePathMappings, FilePathMapping }
 
 export const sceneMetadata = _sceneMetadata // This is a hotfix for a circular dependency AND a leaking of utopia-api into the workers
 
