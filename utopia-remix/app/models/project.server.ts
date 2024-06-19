@@ -206,7 +206,9 @@ export async function listSharedWithMeProjectsAndCollaborators(params: {
       Project: {
         select: {
           ...selectProjectWithoutContent,
-          ProjectCollaborator: { select: { User: true } },
+          ProjectCollaborator: {
+            select: { User: { select: { user_id: true, name: true, picture: true } } },
+          },
         },
       },
     },

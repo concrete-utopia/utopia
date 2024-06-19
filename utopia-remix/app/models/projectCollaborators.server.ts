@@ -1,8 +1,7 @@
-import type { ProjectCollaborator, UserDetails } from 'prisma-client'
+import type { UserDetails } from 'prisma-client'
 import type { UtopiaPrismaClient } from '../db.server'
 import { prisma } from '../db.server'
-import type { CollaboratorsByProject } from '../types'
-import { userToCollaborator } from '../types'
+import { userToCollaborator, type CollaboratorsByProject } from '../types'
 import type { GetBatchResult } from 'prisma-client/runtime/library.js'
 
 export async function getCollaborators(params: {
@@ -11,7 +10,12 @@ export async function getCollaborators(params: {
 }): Promise<CollaboratorsByProject> {
   const projects = await prisma.project.findMany({
     where: { proj_id: { in: params.ids }, owner_id: params.userId },
-    include: { ProjectCollaborator: { include: { User: true } } },
+    select: {
+      proj_id: true,
+      ProjectCollaborator: {
+        select: { User: { select: { user_id: true, name: true, picture: true } } },
+      },
+    },
   })
 
   let collaboratorsByProject: CollaboratorsByProject = {}
