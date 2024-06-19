@@ -10,7 +10,7 @@ import { optionalMap } from '../../core/shared/optional-utils'
 import type { ElementPath } from '../../core/shared/project-file-types'
 import { assertNever } from '../../core/shared/utils'
 import type { CSSNumber, CSSNumberUnit, CSSPadding } from '../inspector/common/css-utils'
-import { printCSSNumber } from '../inspector/common/css-utils'
+import { cssNumber, printCSSNumber } from '../inspector/common/css-utils'
 import type { EdgePiece } from './canvas-types'
 import type {
   AdjustPrecision,
@@ -115,7 +115,7 @@ export function simplePaddingFromMetadata(
         (p) => cssNumberWithRenderedValue(p, paddingNumbers[prop]),
         padding?.[prop] ?? defaults[prop],
       ) ??
-      undefined
+      cssNumberWithRenderedValue(cssNumber(paddingNumbers[prop]), paddingNumbers[prop])
     )
   }
 

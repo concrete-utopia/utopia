@@ -187,7 +187,10 @@ export function maybeFlexGapData(
   const flexDirection = element.specialSizeMeasurements.flexDirection ?? 'row'
 
   return {
-    value: { renderedValuePx: gap, value: gapFromProps ?? cssNumber(0) },
+    value: {
+      renderedValuePx: gap,
+      value: gapFromProps ?? cssNumber(gap),
+    },
     direction: flexDirection,
   }
 }
