@@ -144,7 +144,6 @@ describe('registered property controls', () => {
             "bounds": Object {
               "endCol": 5,
               "endLine": 42,
-              "filePath": "/utopia/components.utopia.js",
               "startCol": 4,
               "startLine": 5,
             },
@@ -381,7 +380,6 @@ describe('registered property controls', () => {
             "bounds": Object {
               "endCol": 5,
               "endLine": 16,
-              "filePath": "/utopia/components.utopia.js",
               "startCol": 4,
               "startLine": 6,
             },
@@ -1015,7 +1013,6 @@ describe('registered property controls', () => {
             "bounds": Object {
               "endCol": 5,
               "endLine": 32,
-              "filePath": "/utopia/components.utopia.js",
               "startCol": 4,
               "startLine": 5,
             },
@@ -1936,7 +1933,6 @@ describe('registered property controls', () => {
               "bounds": Object {
                 "endCol": 5,
                 "endLine": 34,
-                "filePath": "/utopia/components.utopia.js",
                 "startCol": 4,
                 "startLine": 6,
               },
@@ -2694,7 +2690,6 @@ describe('Lifecycle management of registering components', () => {
           "bounds": Object {
             "endCol": 5,
             "endLine": 12,
-            "filePath": "/utopia/components1.utopia.js",
             "startCol": 4,
             "startLine": 5,
           },
@@ -2712,7 +2707,6 @@ describe('Lifecycle management of registering components', () => {
           "bounds": Object {
             "endCol": 5,
             "endLine": 12,
-            "filePath": "/utopia/components2.utopia.js",
             "startCol": 4,
             "startLine": 5,
           },
@@ -2754,7 +2748,6 @@ describe('Lifecycle management of registering components', () => {
           "bounds": Object {
             "endCol": 5,
             "endLine": 12,
-            "filePath": "/utopia/components1.utopia.js",
             "startCol": 4,
             "startLine": 5,
           },
@@ -2806,7 +2799,6 @@ describe('Lifecycle management of registering components', () => {
           "bounds": Object {
             "endCol": 5,
             "endLine": 12,
-            "filePath": "/utopia/components1.utopia.js",
             "startCol": 4,
             "startLine": 5,
           },
