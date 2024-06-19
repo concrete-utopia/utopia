@@ -281,7 +281,8 @@ export function generateUUID(): string {
   return UUID().replace(/-/g, '_')
 }
 
-export function stripUUID(): string {
+// Returns a UUID v4 with dashes removed.
+export function strippedUUID(): string {
   return UUID().replace(/-/g, '')
 }
 

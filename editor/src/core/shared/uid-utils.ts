@@ -66,7 +66,7 @@ import {
   setJSXValueAtPath,
 } from './jsx-attribute-utils'
 import { IS_TEST_ENVIRONMENT } from '../../common/env-vars'
-import { stripUUID } from '../../utils/utils'
+import { strippedUUID } from '../../utils/utils'
 
 export const MOCK_NEXT_GENERATED_UIDS: { current: Array<string> } = { current: [] }
 export const MOCK_NEXT_GENERATED_UIDS_IDX = { current: 0 }
@@ -153,7 +153,7 @@ export function updateHighlightBounds(
 }
 
 export function generateUID(existingIDs: Set<string>): string {
-  return generateConsistentUID(newRandomUID(stripUUID(), existingIDs), existingIDs)
+  return generateConsistentUID(newRandomUID(strippedUUID(), existingIDs), existingIDs)
 }
 
 export function parseUIDFromComments(comments: ParsedComments): Either<string, string> {
@@ -827,7 +827,7 @@ function newElementUID(possibleUID: string, existingUIDs: Set<string>): string {
     return mockUID
   }
 
-  let uid = trimUID(possibleUID)
+  let uid = truncateUID(possibleUID)
   // if the initial UID is empty, default it to a random one.
   if (uid.trim().length === 0) {
     uid = newRandomUID(possibleUID, existingUIDs)
@@ -839,12 +839,15 @@ function newElementUID(possibleUID: string, existingUIDs: Set<string>): string {
   return uid
 }
 
-function trimUID(uid: string): string {
+// Truncates the given UID to the length UID_LENGTH.
+function truncateUID(uid: string): string {
   return uid.slice(0, UID_LENGTH)
 }
 
 function newRandomUID(possibleUID: string, existingUIDs: Set<string>): string {
-  return IS_TEST_ENVIRONMENT ? newUIDForTests(possibleUID, existingUIDs) : trimUID(stripUUID())
+  return IS_TEST_ENVIRONMENT
+    ? newUIDForTests(possibleUID, existingUIDs)
+    : truncateUID(strippedUUID())
 }
 
 function newUIDForTests(possibleUID: string, existingUIDs: Set<string>): string {
