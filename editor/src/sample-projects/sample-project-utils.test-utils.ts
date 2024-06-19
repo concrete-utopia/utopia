@@ -1,4 +1,3 @@
-import type { FilePathMappings } from 'src/core/model/project-file-utils'
 import { getFilePathMappings } from 'src/core/model/project-file-utils'
 import type { ProjectContentsTree, ProjectContentTreeRoot } from '../components/assets'
 import {
@@ -78,12 +77,11 @@ export function parseProjectContents(
 
 export function getParseSuccessForStoryboardCode(
   appUiJsFile: string,
-  filePathMappings: FilePathMappings,
   applySteganography: SteganographyMode = 'do-not-apply-steganography',
 ): ParseSuccess {
   const parsedFile = lintAndParse(
     StoryboardFilePath,
-    filePathMappings,
+    [],
     appUiJsFile,
     null,
     emptySet(),
@@ -104,14 +102,9 @@ export function getParseSuccessForStoryboardCode(
 export function createTestProjectWithCode(
   appUiJsFile: string,
   applySteganography: SteganographyMode = 'do-not-apply-steganography',
-  filePathMappings: FilePathMappings,
 ): PersistentModel {
   const baseModel = complexDefaultProject()
-  const parsedFile: ParseSuccess = getParseSuccessForStoryboardCode(
-    appUiJsFile,
-    [],
-    applySteganography,
-  )
+  const parsedFile: ParseSuccess = getParseSuccessForStoryboardCode(appUiJsFile, applySteganography)
 
   return {
     ...baseModel,
@@ -133,7 +126,7 @@ export function createTestProjectWithMultipleFiles(files: {
 }): PersistentModel {
   const baseModel = complexDefaultProject()
   return Object.entries(files).reduce((model, [filename, contents]) => {
-    const parsedFile: ParseSuccess = getParseSuccessForStoryboardCode(contents, [])
+    const parsedFile: ParseSuccess = getParseSuccessForStoryboardCode(contents)
 
     return {
       ...model,
