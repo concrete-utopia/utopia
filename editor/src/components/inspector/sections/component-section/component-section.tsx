@@ -632,7 +632,7 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
         style={{
           textTransform: 'capitalize',
           paddingLeft: indentation,
-          alignSelf: 'flex-start',
+          alignSelf: 'center',
         }}
       >
         <PropertyLabelAndPlusButton
