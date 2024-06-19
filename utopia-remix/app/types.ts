@@ -53,7 +53,9 @@ export interface Collaborator {
 
 export type CollaboratorsByProject = { [projectId: string]: Collaborator[] }
 
-export function userToCollaborator(user: UserDetails): Collaborator {
+export function userToCollaborator(
+  user: Pick<UserDetails, 'user_id' | 'name' | 'picture'>,
+): Collaborator {
   return {
     id: user.user_id,
     name: user.name,
@@ -409,6 +411,8 @@ export type GetBranchProjectContentsRequest = {
   type: 'GET_BRANCH_PROJECT_CONTENTS_REQUEST'
   existingAssets: ExistingAsset[] | null
   uploadAssets: boolean
+  previousCommitSha: string | null
+  specificCommitSha: string | null
 }
 
 export function getBranchProjectContentsRequest(

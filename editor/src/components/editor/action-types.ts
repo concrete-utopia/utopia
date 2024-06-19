@@ -81,6 +81,7 @@ import type { MapLike } from 'typescript'
 import type { CommentFilterMode } from '../inspector/sections/comment-section'
 import type { Collaborator } from '../../core/shared/multiplayer'
 import type { PageTemplate } from '../canvas/remix/remix-utils'
+import type { Bounds } from 'utopia-vscode-common'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -644,6 +645,7 @@ export interface OpenCodeEditorFile {
   action: 'OPEN_CODE_EDITOR_FILE'
   filename: string
   forceShowCodeEditor: boolean
+  bounds: Bounds | null
 }
 
 export interface CloseDesignerFile {

@@ -196,13 +196,13 @@ export function runCanvasCommand(
     case 'ADD_IMPORTS_TO_FILE':
       return runAddImportsToFile(editorState, command)
     case 'ADD_TO_REPARENTED_TO_PATHS':
-      return runAddToReparentedToPaths(editorState, command)
+      return runAddToReparentedToPaths(command, commandLifecycle)
     case 'INSERT_ELEMENT_INSERTION_SUBJECT':
       return runInsertElementInsertionSubject(editorState, command)
     case 'ADD_ELEMENT':
       return runAddElement(editorState, command)
     case 'ADD_ELEMENTS':
-      return runAddElements(editorState, command)
+      return runAddElements(editorState, command, commandLifecycle)
     case 'HIGHLIGHT_ELEMENTS_COMMAND':
       return runHighlightElementsCommand(editorState, command)
     case 'CONVERT_CSS_PERCENT_TO_PX':

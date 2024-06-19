@@ -7,7 +7,7 @@ import { mapArrayToDictionary } from '../../../../../core/shared/array-utils'
 import type { DetectedLayoutSystem } from '../../../../../core/shared/element-template'
 import { SettableLayoutSystem } from '../../../../../core/shared/element-template'
 import type { PropertyPath } from '../../../../../core/shared/project-file-types'
-import { FunctionIcons, SquareButton } from '../../../../../uuiui'
+import { FunctionIcons, Icons, SquareButton } from '../../../../../uuiui'
 import {
   getSizeUpdateCommandsForNewPadding,
   pixelPaddingFromPadding,
@@ -161,19 +161,6 @@ export const PaddingRow = React.memo(() => {
         onMouseLeave={onMouseLeave}
         style={{ margin: '8px 8px', display: 'flex', flexDirection: 'row' }}
       >
-        <div
-          onMouseEnter={onMouseEnterWithPaddingControls}
-          onMouseLeave={onMouseLeave}
-          style={{ width: 'min-contents', paddingRight: 2 }}
-        >
-          <PropertyLabel
-            target={paddingPropsToUnset}
-            propNamesToUnset={contextMenuLabel}
-            style={{ padding: '2px 0 4px 0' }}
-          >
-            Padding
-          </PropertyLabel>
-        </div>
         <PaddingControl />
       </div>
     </InspectorContextMenuWrapper>
@@ -376,7 +363,7 @@ export const PaddingControl = React.memo(() => {
 
   const isCmdPressedRef = useRefEditorState((store) => store.editor.keysPressed.cmd === true)
 
-  const onCylceMode = React.useCallback(
+  const onCycleMode = React.useCallback(
     () => cycleToNextMode(initialMode, isCmdPressedRef.current === true ? 'backward' : 'forward'),
     [cycleToNextMode, initialMode, isCmdPressedRef],
   )
@@ -385,6 +372,15 @@ export const PaddingControl = React.memo(() => {
 
   return (
     <SplitChainedNumberInput
+      labels={{
+        oneValue: <Icons.Padding color='on-highlight-secondary' />,
+        horizontal: <Icons.PaddingHorizontal color='on-highlight-secondary' />,
+        vertical: <Icons.PaddingVertical color='on-highlight-secondary' />,
+        top: <Icons.PaddingTop color='on-highlight-secondary' />,
+        left: <Icons.PaddingLeft color='on-highlight-secondary' />,
+        bottom: <Icons.PaddingBottom color='on-highlight-secondary' />,
+        right: <Icons.PaddingRight color='on-highlight-secondary' />,
+      }}
       tooltips={{
         oneValue: 'Padding',
         perDirection: 'Padding per direction',
@@ -395,8 +391,9 @@ export const PaddingControl = React.memo(() => {
       numberType={'LengthPercent'}
       eventHandler={eventHandler}
       mode={modeToUse}
-      onCycleMode={onCylceMode}
+      onCycleMode={onCycleMode}
       values={values}
+      cycleModePosition='back'
     />
   )
 })

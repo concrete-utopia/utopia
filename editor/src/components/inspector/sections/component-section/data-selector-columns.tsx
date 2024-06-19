@@ -4,7 +4,13 @@ import React from 'react'
 import { isPrefixOf } from '../../../../core/shared/array-utils'
 import { arrayEqualsByReference, assertNever } from '../../../../core/shared/utils'
 import { FlexColumn, FlexRow, Icons, colorTheme } from '../../../../uuiui'
-import type { ArrayOption, DataPickerOption, ObjectOption, ObjectPath } from './data-picker-utils'
+import {
+  mightBePromise,
+  type ArrayOption,
+  type DataPickerOption,
+  type ObjectOption,
+  type ObjectPath,
+} from './data-picker-utils'
 import { DataPickerCartouche } from './data-selector-cartouche'
 
 interface DataSelectorColumnsProps {
@@ -92,10 +98,33 @@ const DataSelectorColumn = React.memo((props: DataSelectorColumnProps) => {
     [onTargetPathChange, parentScope],
   )
 
+  const sortedActiveScope = React.useMemo(() => {
+    let folders: DataPickerOption[] = []
+    let rest: DataPickerOption[] = []
+    activeScope.forEach((option) => {
+      switch (option.type) {
+        case 'array':
+        case 'object':
+          folders.push(option)
+          break
+        case 'jsx':
+        case 'primitive':
+          rest.push(option)
+          break
+        default:
+          assertNever(option)
+      }
+    })
+
+    folders.sort((a, b) => a.variableInfo.expression.localeCompare(b.variableInfo.expression))
+    rest.sort((a, b) => a.variableInfo.expression.localeCompare(b.variableInfo.expression))
+    return [...folders, ...rest]
+  }, [activeScope])
+
   return (
     <>
       <DataSelectorFlexColumn ref={columnRef} onClick={onClickColumnBackground}>
-        {activeScope.map((option, index) => {
+        {sortedActiveScope.map((option, index) => {
           const selected = arrayEqualsByReference(option.valuePath, targetPathInsideScope)
           const onActivePath = isPrefixOf(option.valuePath, targetPathInsideScope)
           return (
@@ -105,7 +134,6 @@ const DataSelectorColumn = React.memo((props: DataSelectorColumnProps) => {
               isLeaf={!('children' in option)}
               selected={selected}
               onActivePath={onActivePath}
-              forceShowArrow={pseudoSelectedElementForArray != null && index === 0}
               onTargetPathChange={props.onTargetPathChange}
               onApplySelection={props.onApplySelection}
             />
@@ -164,7 +192,7 @@ function variableTypeForInfo(info: DataPickerOption): string {
     case 'array':
       return 'Array'
     case 'object':
-      return 'Object'
+      return mightBePromise(info.variableInfo.value) ? 'Promise' : 'Object'
     case 'primitive':
       return typeof info.variableInfo.value
     case 'jsx':
@@ -178,21 +206,12 @@ interface RowWithCartoucheProps {
   data: DataPickerOption
   selected: boolean
   onActivePath: boolean
-  forceShowArrow: boolean
   isLeaf: boolean
   onTargetPathChange: (newTargetVariable: DataPickerOption) => void
   onApplySelection: (newTargetVariable: DataPickerOption) => void
 }
 const RowWithCartouche = React.memo((props: RowWithCartoucheProps) => {
-  const {
-    onTargetPathChange,
-    onApplySelection,
-    data,
-    isLeaf,
-    selected,
-    onActivePath,
-    forceShowArrow,
-  } = props
+  const { onTargetPathChange, onApplySelection, data, isLeaf, selected, onActivePath } = props
 
   const onClick: React.MouseEventHandler<HTMLDivElement> = React.useCallback(
     (e) => {

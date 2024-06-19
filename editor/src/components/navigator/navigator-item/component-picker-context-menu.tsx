@@ -46,7 +46,7 @@ import type { PreferredChildComponentDescriptor } from '../../custom-code/intern
 import { fixUtopiaElement, generateConsistentUID } from '../../../core/shared/uid-utils'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { elementFromInsertMenuItem } from '../../editor/insert-callbacks'
-import { ContextMenuWrapper } from '../../context-menu-wrapper'
+import { ContextMenuWrapper_DEPRECATED } from '../../context-menu-wrapper'
 import { BodyMenuOpenClass, assertNever } from '../../../core/shared/utils'
 import { type ContextMenuItem } from '../../context-menu-items'
 import { FlexRow, Icn, type IcnProps } from '../../../uuiui'
@@ -848,7 +848,7 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
         const submenuLabel = (
           <FlexRow
             style={{ gap: 10, width: 228 }}
-            data-testId={labelTestIdForComponentIcon(data.name, data.moduleName ?? '', data.icon)}
+            data-testid={labelTestIdForComponentIcon(data.name, data.moduleName ?? '', data.icon)}
           >
             <Icn {...iconProps} width={12} height={12} />
             {data.name}
@@ -868,7 +868,12 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
       .concat([separatorItem, moreItem(wrapperRef, showFullMenu)])
 
     return (
-      <ContextMenuWrapper items={items} data={{}} id={PreferredMenuId} forwardRef={wrapperRef} />
+      <ContextMenuWrapper_DEPRECATED
+        items={items}
+        data={{}}
+        id={PreferredMenuId}
+        forwardRef={wrapperRef}
+      />
     )
   },
 )

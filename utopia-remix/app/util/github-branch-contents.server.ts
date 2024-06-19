@@ -45,7 +45,8 @@ export type BranchResponse = {
     branchName: string
     originCommit: string
     content: ProjectContentTreeRoot
-  }
+  } | null
+  noChanges?: boolean
 }
 
 export function getBranchProjectContents(params: {
@@ -55,15 +56,30 @@ export function getBranchProjectContents(params: {
   branch: string
   uploadAssets: boolean
   existingAssets: ExistingAsset[]
+  specificCommitSha: string | null
+  previousCommitSha: string | null
 }) {
   return async function (client: OctokitClient): Promise<ApiSuccess<BranchResponse>> {
     // 1. get the branch details
-    const response = await client.request('GET /repos/{owner}/{repo}/branches/{branch}', {
-      owner: params.owner,
-      repo: params.repo,
-      branch: params.branch,
-    })
-    const commit = response.data.commit.sha
+    async function getCommit() {
+      if (params.specificCommitSha != null) {
+        return params.specificCommitSha
+      }
+      const response = await client.request('GET /repos/{owner}/{repo}/branches/{branch}', {
+        owner: params.owner,
+        repo: params.repo,
+        branch: params.branch,
+      })
+      return response.data.commit.sha
+    }
+    const commit = await getCommit()
+
+    if (params.previousCommitSha != null && commit === params.previousCommitSha) {
+      return toApiSuccess({
+        branch: null,
+        noChanges: true,
+      })
+    }
 
     // 2. get the zipball
     const tarball = await client.request('GET /repos/{owner}/{repo}/zipball/{ref}', {

@@ -8,7 +8,7 @@ import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { MapCounterUi } from '../../../navigator/navigator-item/map-counter'
 import type { CartoucheUIProps } from './cartouche-ui'
 import { CartoucheUI } from './cartouche-ui'
-import type { DataPickerOption } from './data-picker-utils'
+import { mightBePromise, type DataPickerOption } from './data-picker-utils'
 import { variableMatches } from './variables-in-scope-utils'
 
 interface DataPickerCartoucheProps {
@@ -30,7 +30,7 @@ export const DataPickerCartouche = React.memo(
         key={data.valuePath.toString()}
         tooltip={null}
         source={dataSource ?? 'internal'}
-        datatype={childTypeToCartoucheDataType(data.type)}
+        datatype={childTypeToCartoucheDataType(data)}
         selected={variableMatches(data.variableInfo) && selected}
         highlight={variableMatches(data.variableInfo) ? null : 'disabled'}
         role={forceRole ?? (variableMatches(data.variableInfo) ? 'selection' : 'information')}
@@ -97,18 +97,16 @@ export function useVariableDataSource(
   )
 }
 
-function childTypeToCartoucheDataType(
-  childType: DataPickerOption['type'],
-): CartoucheUIProps['datatype'] {
-  switch (childType) {
+function childTypeToCartoucheDataType(option: DataPickerOption): CartoucheUIProps['datatype'] {
+  switch (option.type) {
     case 'array':
       return 'array'
     case 'object':
-      return 'object'
+      return mightBePromise(option.variableInfo.value) ? 'promise' : 'object'
     case 'jsx':
     case 'primitive':
       return 'renderable'
     default:
-      assertNever(childType)
+      assertNever(option)
   }
 }

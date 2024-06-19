@@ -94,7 +94,7 @@ export function generateUidWithExistingComponents(projectContents: ProjectConten
   const mockUID = generateMockNextGeneratedUID()
   if (mockUID == null) {
     const existingUIDS = getAllUniqueUids(projectContents).allIDs
-    return generateUID(existingUIDS)
+    return generateUID(new Set(existingUIDS))
   } else {
     return mockUID
   }
@@ -107,7 +107,7 @@ export function generateUidWithExistingComponentsAndExtraUids(
   const mockUID = generateMockNextGeneratedUID()
   if (mockUID == null) {
     const existingUIDSFromProject = getAllUniqueUids(projectContents).allIDs
-    return generateUID([...existingUIDSFromProject, ...additionalUids])
+    return generateUID(new Set([...existingUIDSFromProject, ...additionalUids]))
   } else {
     return mockUID
   }

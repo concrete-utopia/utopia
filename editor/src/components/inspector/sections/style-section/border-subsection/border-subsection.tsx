@@ -30,6 +30,7 @@ import { useInspectorStyleInfo, useIsSubSectionVisible } from '../../../common/p
 import { ColorControl, StringColorControl } from '../../../controls/color-control'
 import { FakeUnknownArrayItem } from '../../../controls/unknown-array-item'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
+import { LabelBelowNumberTextStyles } from '../../../common/control-styles'
 
 export function updateBorderWidth(
   newWidth: CSSNumber | EmptyInputValue,
@@ -139,7 +140,8 @@ export const BorderSubsection: React.FunctionComponent<React.PropsWithChildren<u
           id='border-width'
           testId='border-width'
           value={borderWidth}
-          DEPRECATED_labelBelow='width'
+          DEPRECATED_labelBelow='W'
+          labelBelowStyle={LabelBelowNumberTextStyles}
           minimum={0}
           onSubmitValue={borderWidthSubmitValue}
           onTransientSubmitValue={borderWidthTransientSubmitValue}

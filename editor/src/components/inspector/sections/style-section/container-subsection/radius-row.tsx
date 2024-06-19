@@ -37,6 +37,7 @@ import {
   longhandShorthandEventHandler,
   SplitChainedNumberInput,
 } from '../../layout-section/layout-system-subsection/split-chained-number-input'
+import { Icons } from '../../../../../uuiui/icons'
 
 export const RadiusRow = React.memo(() => {
   const { value: borderRadiusValue, onUnsetValues } = useInspectorStyleInfo('borderRadius')
@@ -45,7 +46,6 @@ export const RadiusRow = React.memo(() => {
     ['borderRadius'],
     onUnsetValues,
   )
-  const contextMenuLabel = React.useMemo(() => ['border radius'], [])
   return (
     <InspectorContextMenuWrapper
       id='borderRadius-subsection-context-menu'
@@ -61,13 +61,6 @@ export const RadiusRow = React.memo(() => {
           padding: '8px 0',
         }}
       >
-        <PropertyLabel
-          target={[]}
-          propNamesToUnset={contextMenuLabel}
-          style={{ paddingRight: 2, flexShrink: 0 }}
-        >
-          Radius
-        </PropertyLabel>
         <BorderRadiusControl />
       </div>
     </InspectorContextMenuWrapper>
@@ -232,7 +225,7 @@ export const BorderRadiusControl = React.memo(() => {
 
   const isCmdPressedRef = useRefEditorState((store) => store.editor.keysPressed.cmd === true)
 
-  const onCylceMode = React.useCallback(
+  const onCycleMode = React.useCallback(
     () => cycleToNextMode(initialMode, isCmdPressedRef.current === true ? 'backward' : 'forward'),
     [cycleToNextMode, initialMode, isCmdPressedRef],
   )
@@ -242,22 +235,24 @@ export const BorderRadiusControl = React.memo(() => {
   return (
     <SplitChainedNumberInput
       labels={{
-        top: '╭',
-        bottom: '╯',
-        left: '╰',
-        right: '╮',
+        top: <Icons.BorderRadiusTopLeft color='on-highlight-secondary' />,
+        bottom: <Icons.BorderRadiusBottomRight color='on-highlight-secondary' />,
+        left: <Icons.BorderRadiusBottomLeft color='on-highlight-secondary' />,
+        right: <Icons.BorderRadiusTopRight color='on-highlight-secondary' />,
+        oneValue: <Icons.BorderRadius color='on-highlight-secondary' />,
       }}
       tooltips={{
         oneValue: 'Radius',
         perSide: 'Radius per corner',
       }}
-      onCycleMode={onCylceMode}
+      onCycleMode={onCycleMode}
       numberType={'LengthPercent'}
       name='radius'
       mode={modeToUse}
       values={values}
       canvasControls={canvasControlsForSides}
       eventHandler={eventHandler}
+      cycleModePosition='back'
     />
   )
 })

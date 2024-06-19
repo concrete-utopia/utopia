@@ -428,7 +428,7 @@ import {
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
 
-import { defaultConfig } from 'utopia-vscode-common'
+import { boundsInFile, defaultConfig } from 'utopia-vscode-common'
 import { reorderElement } from '../../../components/canvas/commands/reorder-element-command'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch-packages'
@@ -443,6 +443,7 @@ import {
   fixUtopiaElement,
   generateConsistentUID,
   getUtopiaID,
+  setUtopiaID,
 } from '../../../core/shared/uid-utils'
 import {
   DefaultPostCSSConfig,
@@ -593,7 +594,7 @@ import {
   getPrintAndReparseCodeResult,
 } from '../../../core/workers/parser-printer/parser-printer-worker'
 import { isSteganographyEnabled } from '../../../core/shared/stegano-text'
-import type { ParsedTextFileWithPath } from '../../../core/property-controls/property-controls-local'
+import type { TextFileContentsWithPath } from '../../../core/property-controls/property-controls-local'
 import {
   updatePropertyControlsOnDescriptorFileDelete,
   isComponentDescriptorFile,
@@ -2361,8 +2362,6 @@ export const UPDATE_FNS = {
     }
   },
   REPLACE_JSX_ELEMENT: (action: ReplaceJSXElement, editor: EditorModel): EditorModel => {
-    let newSelectedViews: ElementPath[] = []
-
     const withNewElement = modifyUnderlyingParseSuccessOnly(
       action.target,
       editor,
@@ -2386,7 +2385,15 @@ export const UPDATE_FNS = {
         )
 
         const fixedElement = (() => {
-          const renamedJsxElement = renameJsxElementChild(action.jsxElement, duplicateNameMapping)
+          const elemenWithOriginalUid = setUtopiaID(
+            action.jsxElement,
+            getUtopiaID(originalElement),
+          ) as JSXElement
+
+          const renamedJsxElement = renameJsxElementChild(
+            elemenWithOriginalUid,
+            duplicateNameMapping,
+          )
           if (
             !isReplaceKeepChildrenAndStyleTarget(action.behaviour) ||
             originalElement.type !== 'JSX_ELEMENT'
@@ -2439,7 +2446,6 @@ export const UPDATE_FNS = {
     return {
       ...withNewElement,
       leftMenu: { visible: editor.leftMenu.visible, selectedTab: LeftMenuTab.Navigator },
-      selectedViews: newSelectedViews,
     }
   },
   REPLACE_MAPPED_ELEMENT: (action: ReplaceMappedElement, editor: EditorModel): EditorModel => {
@@ -3794,7 +3800,7 @@ export const UPDATE_FNS = {
   },
   OPEN_CODE_EDITOR_FILE: (action: OpenCodeEditorFile, editor: EditorModel): EditorModel => {
     // Side effect.
-    sendOpenFileMessage(action.filename)
+    sendOpenFileMessage(action.filename, action.bounds)
     if (action.forceShowCodeEditor) {
       return {
         ...editor,
@@ -6077,11 +6083,11 @@ export const UPDATE_FNS = {
   ): EditorModel => {
     const evaluator = createModuleEvaluator(state)
 
-    const filesToUpdate: ParsedTextFileWithPath[] = []
+    const filesToUpdate: TextFileContentsWithPath[] = []
     for (const filePath of action.paths) {
       const file = getProjectFileByFilePath(state.projectContents, filePath)
       if (file != null && file.type === 'TEXT_FILE') {
-        filesToUpdate.push({ path: filePath, file: file.fileContents.parsed })
+        filesToUpdate.push({ path: filePath, file: file.fileContents })
       }
     }
 

@@ -12,7 +12,13 @@ export interface HoverHandlers {
   onMouseLeave: (e: React.MouseEvent) => void
 }
 
-export type CartoucheDataType = 'renderable' | 'boolean' | 'array' | 'object' | 'unknown'
+export type CartoucheDataType =
+  | 'renderable'
+  | 'boolean'
+  | 'array'
+  | 'object'
+  | 'promise'
+  | 'unknown'
 
 export type CartoucheSource = 'internal' | 'external' | 'inline-literal' | 'literal-assignment'
 export type CartoucheHighlight = 'strong' | 'subtle' | 'disabled'
@@ -71,7 +77,7 @@ export const CartoucheUI = React.forwardRef(
     // NOTE: this is currently unused, we should decide if we want to keep allowing deletion of the cartouches from here or not
     const wrappedOnDelete = useStopPropagation(onDelete)
 
-    const shouldUseRtlCSS = typeof props.children === 'string'
+    const iconType = dataTypeToIconType(datatype)
 
     return (
       <div
@@ -121,10 +127,12 @@ export const CartoucheUI = React.forwardRef(
                     },
             }}
           >
-            {source === 'inline-literal' ? null : (
+            {source === 'inline-literal' ? null : iconType === 'empty' ? (
+              <div style={{ width: 12, height: 12 }} />
+            ) : (
               <Icn
                 category='navigator-element'
-                type={dataTypeToIconType(datatype)}
+                type={iconType}
                 color={
                   selected || highlight === 'strong' ? colors.icon.selected : colors.icon.default
                 }
@@ -166,18 +174,24 @@ export const CartoucheUI = React.forwardRef(
   },
 )
 
-function dataTypeToIconType(dataType: CartoucheUIProps['datatype']): string {
+function dataTypeToIconType(
+  dataType: CartoucheUIProps['datatype'],
+): 'array' | 'object' | 'data' | 'empty' | 'dashedframe' {
   switch (dataType) {
     case 'renderable':
       return 'data'
     case 'boolean':
-      return '👻'
+      return 'empty'
     case 'array':
       return 'array'
     case 'object':
       return 'object'
+    case 'promise':
+      return 'dashedframe'
     case 'unknown':
-      return '👻'
+      return 'empty'
+    default:
+      assertNever(dataType)
   }
 }
 

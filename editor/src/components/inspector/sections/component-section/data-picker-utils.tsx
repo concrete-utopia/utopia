@@ -12,7 +12,6 @@ import {
   type JSXElementChild,
 } from '../../../../core/shared/element-template'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
-import { assertNever } from '../../../../core/shared/utils'
 import type { ProjectContentTreeRoot } from '../../../assets'
 import { insertionCeilingToString, type FileRootPath } from '../../../canvas/ui-jsx-canvas'
 import type { AllElementProps } from '../../../editor/store/editor-state'
@@ -139,4 +138,12 @@ function outletNameHack(
   // if getElementLabel returned Outlet, we try to find the actual component name by hand – this is a hack and should be removed once the Navigator is capable of showing the correct name
   const component = findContainingComponentForPathInProjectContents(target, projectContents)
   return component?.name ?? namePossiblyOutlet
+}
+
+export function mightBePromise(value: unknown) {
+  return (
+    typeof value === 'object' &&
+    value != null &&
+    typeof (value as { [key: string]: any }).then === 'function'
+  )
 }

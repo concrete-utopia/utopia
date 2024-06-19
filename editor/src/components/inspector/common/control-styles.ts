@@ -215,3 +215,7 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = mapArrayToDictio
 export function getControlStyles(controlStatus: ControlStatus): ControlStyles {
   return controlStylesByStatus[controlStatus]
 }
+
+export const LabelBelowNumberTextStyles: React.CSSProperties = {
+  fontWeight: 600,
+}

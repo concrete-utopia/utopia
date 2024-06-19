@@ -145,6 +145,7 @@ export interface AbstractNumberInputProps<T extends CSSNumber | number>
     InspectorControlProps {
   value: T | null | undefined
   DEPRECATED_labelBelow?: React.ReactChild
+  labelBelowStyle?: React.CSSProperties
   invalid?: boolean
 }
 
@@ -168,6 +169,7 @@ export const NumberInput = React.memo<NumberInputProps>(
     id,
     className,
     DEPRECATED_labelBelow,
+    labelBelowStyle = {},
     labelInner,
     minimum: unscaledMinimum = -Infinity,
     maximum: unscaledMaximum = Infinity,
@@ -824,6 +826,7 @@ export const NumberInput = React.memo<NumberInputProps>(
                   textAlign: 'center',
                   display: 'block',
                   color: controlStyles.secondaryColor,
+                  ...labelBelowStyle,
                 }}
               >
                 {DEPRECATED_labelBelow}

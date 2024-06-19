@@ -18,7 +18,7 @@ import {
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { addOnUnsetValues } from '../../../common/context-menu-items'
 import type { ControlStatus } from '../../../common/control-status'
-import type { ControlStyles } from '../../../common/control-styles'
+import { LabelBelowNumberTextStyles, type ControlStyles } from '../../../common/control-styles'
 import type {
   CSSDefault,
   CSSNumber,
@@ -137,7 +137,7 @@ const transformItemControlMetadatas: {
     prettyName: 'Scale',
     stepSize: 0.01,
     numberType: 'Unitless',
-    labelBelow: ['x', 'y'],
+    labelBelow: ['X', 'Y'],
     emptyValue: defaultTransformScale,
     defaultUnitToHide: null,
   },
@@ -164,7 +164,7 @@ const transformItemControlMetadatas: {
   },
   skew: {
     prettyName: 'Skew',
-    labelBelow: ['x', 'y'],
+    labelBelow: ['X', 'Y'],
     numberType: 'Angle',
     emptyValue: defaultTransformSkew,
     defaultUnitToHide: 'deg',
@@ -183,7 +183,7 @@ const transformItemControlMetadatas: {
   },
   translate: {
     prettyName: 'Translate',
-    labelBelow: ['x', 'y'],
+    labelBelow: ['X', 'Y'],
     numberType: 'LengthPercent',
     emptyValue: defaultTransformTranslate,
     defaultUnitToHide: 'px',
@@ -436,6 +436,9 @@ const DoubleLengthItem = React.memo<DoubleLengthItemProps>((props) => {
 
   const controlMetadata = transformItemControlMetadatas[props.value.type]
 
+  const firstLabel = controlMetadata.labelBelow?.at(0)
+  const secondLabel = controlMetadata.labelBelow?.at(1)
+
   return (
     <PropertyRow
       key={props.index}
@@ -480,9 +483,8 @@ const DoubleLengthItem = React.memo<DoubleLengthItemProps>((props) => {
         minimum={controlMetadata.minimum}
         maximum={controlMetadata.maximum}
         numberType={controlMetadata.numberType}
-        DEPRECATED_labelBelow={
-          controlMetadata.labelBelow != null ? controlMetadata.labelBelow[0] : undefined
-        }
+        DEPRECATED_labelBelow={firstLabel}
+        labelBelowStyle={firstLabel == null ? LabelBelowNumberTextStyles : undefined}
         onSubmitValue={doubleLengthZeroethItemSubmitValue}
         onTransientSubmitValue={doubleLengthZeroethItemTransientSubmitValue}
         controlStatus={props.controlStatus}
@@ -501,9 +503,8 @@ const DoubleLengthItem = React.memo<DoubleLengthItemProps>((props) => {
         minimum={controlMetadata.minimum}
         maximum={controlMetadata.maximum}
         numberType={controlMetadata.numberType}
-        DEPRECATED_labelBelow={
-          controlMetadata.labelBelow != null ? controlMetadata.labelBelow[1] : undefined
-        }
+        DEPRECATED_labelBelow={secondLabel}
+        labelBelowStyle={secondLabel == null ? LabelBelowNumberTextStyles : undefined}
         onSubmitValue={doubleLengthFirstItemSubmitValue}
         onTransientSubmitValue={doubleLengthFirstItemTransientSubmitValue}
         controlStatus={props.controlStatus}

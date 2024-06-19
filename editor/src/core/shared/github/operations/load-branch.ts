@@ -25,7 +25,13 @@ import type { RequestedNpmDependency } from '../../npm-dependency-types'
 import { forceNotNull } from '../../optional-utils'
 import { isTextFile } from '../../project-file-types'
 import type { BranchContent, GithubOperationSource } from '../helpers'
-import { connectRepo, githubAPIError, runGithubOperation, saveGithubAsset } from '../helpers'
+import {
+  connectRepo,
+  getExistingAssets,
+  githubAPIError,
+  runGithubOperation,
+  saveGithubAsset,
+} from '../helpers'
 import type { GithubOperationContext } from './github-operation-context'
 import { createStoryboardFileIfNecessary } from '../../../../components/editor/actions/actions'
 import { getAllComponentDescriptorFilePaths } from '../../../property-controls/property-controls-local'
@@ -118,19 +124,14 @@ export const updateProjectWithBranchContent =
       dispatch,
       initiator,
       async (operation: GithubOperation) => {
-        let existingAssets: ExistingAsset[] = []
-        walkContentsTree(currentProjectContents, (path, file) => {
-          if (file.type === 'ASSET_FILE' || file.type === 'IMAGE_FILE') {
-            existingAssets.push({ gitBlobSha: file.gitBlobSha, path: path, type: file.type })
-          }
-        })
-
         const responseBody = await GithubOperations.getBranchProjectContents({
           projectId: projectID,
           owner: githubRepo.owner,
           repo: githubRepo.repository,
           branch: branchName,
-          existingAssets: existingAssets,
+          existingAssets: getExistingAssets(currentProjectContents),
+          previousCommitSha: null,
+          specificCommitSha: null,
         })
 
         switch (responseBody.type) {

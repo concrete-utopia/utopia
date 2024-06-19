@@ -14,16 +14,17 @@ import { useDataPickerButton } from '../component-section/component-section'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import type { JSExpressionOtherJavaScript } from '../../../../core/shared/element-template'
 import { replaceElementInScope } from '../../../editor/actions/action-creators'
-import { useAtom } from 'jotai'
 import { jsxElementChildToValuePath } from '../component-section/data-picker-utils'
 import {
   getCartoucheDataTypeForExpression,
+  matchForMappedValue,
   useVariablesInScopeForSelectedElement,
 } from '../component-section/variables-in-scope-utils'
 import { traceDataFromElement, dataPathSuccess } from '../../../../core/data-tracing/data-tracing'
 import type { CartoucheDataType } from '../component-section/cartouche-ui'
 import { CartoucheInspectorWrapper } from '../component-section/cartouche-control'
 import { MapCounter } from '../../../navigator/navigator-item/map-counter'
+import * as EP from '../../../../core/shared/element-path'
 
 interface MapListSourceCartoucheProps {
   target: ElementPath
@@ -86,7 +87,7 @@ const MapListSourceCartoucheInner = React.memo(
       [dispatch, target],
     )
 
-    const variableNamesInScope = useVariablesInScopeForSelectedElement(target, null)
+    const variableNamesInScope = useVariablesInScopeForSelectedElement(target, matchForMappedValue)
 
     const pathToMappedExpression = React.useMemo(
       () =>
@@ -174,7 +175,7 @@ const MapListSourceCartoucheInner = React.memo(
           onDelete={NO_OP}
           selected={props.selected}
           safeToDelete={false}
-          testId='list-source-cartouche'
+          testId={`list-source-cartouche-${EP.toString(target)}`}
           contentIsComingFromServer={isDataComingFromHookResult}
           datatype={cartoucheDataType}
           badge={

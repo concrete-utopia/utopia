@@ -708,6 +708,8 @@ type GetBranchProjectContentsRequest = {
   type: 'GET_BRANCH_PROJECT_CONTENTS_REQUEST'
   existingAssets: ExistingAsset[] | null
   uploadAssets: boolean
+  previousCommitSha: string | null
+  specificCommitSha: string | null
 }
 
 function getBranchProjectContentsRequest(
@@ -725,6 +727,8 @@ export function getBranchProjectContents(operationContext: GithubOperationContex
     owner: string
     repo: string
     branch: string
+    previousCommitSha: string | null
+    specificCommitSha: string | null
     existingAssets: ExistingAsset[]
   }): Promise<GetBranchContentResponse> {
     const url = GithubEndpoints.getBranchProjectContents({
@@ -742,6 +746,8 @@ export function getBranchProjectContents(operationContext: GithubOperationContex
         getBranchProjectContentsRequest({
           existingAssets: params.existingAssets,
           uploadAssets: true,
+          previousCommitSha: params.previousCommitSha,
+          specificCommitSha: params.specificCommitSha,
         }),
       ),
     })

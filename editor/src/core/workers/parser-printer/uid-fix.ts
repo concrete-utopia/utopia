@@ -163,8 +163,7 @@ function updateUID<T>(
           // - Add a mapping for this change.
           uidToUse = generateConsistentUID(
             oldUID,
-            fixUIDsState.mutableAllNewUIDs,
-            fixUIDsState.uidsExpectedToBeSeen,
+            new Set([...fixUIDsState.mutableAllNewUIDs, ...fixUIDsState.uidsExpectedToBeSeen]),
           )
           addMapping(newUID, uidToUse)
         } else if (oldUID === newUID) {
@@ -710,8 +709,7 @@ export function fixJSXElementUIDs(
     // Backup case for where there is no `data-uid` prop.
     dataUIDPropUID = generateConsistentUID(
       elementWithUpdatedUID.uid,
-      fixUIDsState.mutableAllNewUIDs,
-      fixUIDsState.uidsExpectedToBeSeen,
+      new Set([...fixUIDsState.mutableAllNewUIDs, ...fixUIDsState.uidsExpectedToBeSeen]),
     )
     fixUIDsState.mutableAllNewUIDs.add(dataUIDPropUID)
   } else {
