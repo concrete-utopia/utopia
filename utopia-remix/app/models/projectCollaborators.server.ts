@@ -4,6 +4,13 @@ import { prisma } from '../db.server'
 import { userToCollaborator, type CollaboratorsByProject } from '../types'
 import type { GetBatchResult } from 'prisma-client/runtime/library.js'
 
+export const selectUserDetailsForProjectCollaborator: Partial<Record<keyof UserDetails, boolean>> =
+  {
+    user_id: true,
+    name: true,
+    picture: true,
+  }
+
 export async function getCollaborators(params: {
   ids: string[]
   userId: string
@@ -13,7 +20,7 @@ export async function getCollaborators(params: {
     select: {
       proj_id: true,
       ProjectCollaborator: {
-        select: { User: { select: { user_id: true, name: true, picture: true } } },
+        select: { User: { select: selectUserDetailsForProjectCollaborator } },
       },
     },
   })
@@ -23,6 +30,8 @@ export async function getCollaborators(params: {
     const collaboratorUserDetails = project.ProjectCollaborator.map(({ User }) => User)
     collaboratorsByProject[project.proj_id] = collaboratorUserDetails.map(userToCollaborator)
   }
+
+  // TODO this could return a much slimmer payload by having two objects: 1) projectId -> userId[], 2) userId -> userDetails
   return collaboratorsByProject
 }
 
