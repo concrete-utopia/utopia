@@ -2,7 +2,7 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import { CheckboxInput } from '../../../uuiui'
+import { CheckboxInput, colorTheme } from '../../../uuiui'
 import { FlexRow } from 'utopia-api'
 import { Substores, useEditorState } from '../../../components/editor/store/store-hook'
 import { togglePanel } from '../../../components/editor/actions/action-creators'
@@ -78,7 +78,9 @@ const CheckboxRow = React.memo((props: CheckboxRowProps) => {
     >
       <FlexRow css={{ gap: 10, height: 28, alignItems: 'center' }}>
         <CheckboxInput id={id} checked={checked} onChange={onChange} />
-        <label htmlFor={id}>{label}</label>
+        <label htmlFor={id} style={{ color: colorTheme.textColor.value }}>
+          {label}
+        </label>
       </FlexRow>
     </FlexRow>
   )
