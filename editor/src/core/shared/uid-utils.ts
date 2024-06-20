@@ -68,7 +68,7 @@ import {
   jsxSimpleAttributeToValue,
   setJSXValueAtPath,
 } from './jsx-attribute-utils'
-import { IS_TEST_ENVIRONMENT, PRODUCTION_ENV } from '../../common/env-vars'
+import { IS_TEST_ENVIRONMENT } from '../../common/env-vars'
 
 export const MOCK_NEXT_GENERATED_UIDS: { current: Array<string> } = { current: [] }
 export const MOCK_NEXT_GENERATED_UIDS_IDX = { current: 0 }
