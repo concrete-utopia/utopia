@@ -21,7 +21,7 @@ import type { ElementPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
 import * as EP from '../../../../core/shared/element-path'
 import { useKeepReferenceEqualityIfPossible } from '../../../../utils/react-performance'
-import Utils from '../../../../utils/utils'
+import Utils, { mergeRefs } from '../../../../utils/utils'
 import type { ParseError } from '../../../../utils/value-parser-utils'
 import { getParseErrorDetails } from '../../../../utils/value-parser-utils'
 import {
@@ -626,6 +626,7 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
   )
 
   const dataPickerButtonData = useDataPickerButtonInComponentSection(selectedViews, props.propPath)
+  const updateButtonData = useDataUpdateButton()
 
   const handleMouseEnter = React.useCallback(() => {
     setIsHovered(true)
@@ -700,6 +701,7 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
       data={null}
     >
       {dataPickerButtonData.popupIsOpen ? dataPickerButtonData.DataPickerComponent : null}
+      {when(updateButtonData.popupIsOpen, updateButtonData.DataUpdaterComponent(<h2>woot</h2>))}
       <UIGridRow
         padded={false}
         alignContent='center'
@@ -711,7 +713,10 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
           style={{
             minWidth: 0, // this ensures that the div can never expand the allocated grid space
           }}
-          ref={dataPickerButtonData.setReferenceElement}
+          ref={mergeRefs([
+            dataPickerButtonData.setReferenceElement,
+            updateButtonData.setReferenceElement,
+          ])}
         >
           <ControlForProp
             propPath={propPath}
@@ -723,6 +728,7 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
             onOpenDataPicker={dataPickerButtonData.openPopup}
             showHiddenControl={props.showHiddenControl}
             elementPath={selectedViews.at(0) ?? EP.emptyElementPath}
+            onOpenEditModal={updateButtonData.openPopup}
           />
         </div>
       </UIGridRow>
@@ -1202,7 +1208,6 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
   ])
 
   const dataPickerButtonData = useDataPickerButtonInComponentSection(selectedViews, props.propPath)
-  const updateButtonData = useDataUpdateButton()
 
   const [isHovered, setIsHovered] = React.useState(false)
 
