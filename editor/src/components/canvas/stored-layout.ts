@@ -41,6 +41,8 @@ export interface GridPanelData {
 
 export type PanelName = Menu | Pane
 
+export type PanelVisibility = Record<PanelName, boolean>
+
 export interface StoredPanel {
   name: PanelName
   type: 'menu' | 'pane'
