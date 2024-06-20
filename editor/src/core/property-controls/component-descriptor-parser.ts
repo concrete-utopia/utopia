@@ -3,8 +3,19 @@ import traverse from '@babel/traverse'
 import type { Bounds } from 'utopia-vscode-common'
 import type { TextFileContentsWithPath } from './property-controls-local'
 
+export type ComponentDescriptorPropertiesBounds = {
+  [propertyName: string]: Bounds
+}
+
+export type ComponentDescriptorBounds = {
+  bounds: Bounds
+  properties: ComponentDescriptorPropertiesBounds
+}
+
 export type ComponentBoundsByModule = {
-  [moduleName: string]: { [componentName: string]: Bounds }
+  [moduleName: string]: {
+    [componentName: string]: ComponentDescriptorBounds
+  }
 }
 
 export function generateComponentBounds(
@@ -75,11 +86,43 @@ export function generateComponentBounds(
           const { loc } = component
           if (loc != null) {
             componentBoundsByModule[moduleName][componentName] = {
-              startLine: loc.start.line - 1,
-              startCol: loc.start.column - 1,
-              endLine: loc.end.line - 1,
-              endCol: loc.end.column - 1,
+              bounds: {
+                startLine: loc.start.line - 1,
+                startCol: loc.start.column - 1,
+                endLine: loc.end.line - 1,
+                endCol: loc.end.column - 1,
+              },
+              properties: {},
             }
+            const componentValue = resolveVariable(component.value)
+            if (componentValue.type !== 'ObjectExpression') {
+              return
+            }
+
+            componentValue.properties.forEach((componentProp: any) => {
+              if (
+                componentProp.type === 'ObjectProperty' &&
+                componentProp.key.type === 'Identifier' &&
+                componentProp.key.name === 'properties' &&
+                componentProp.value.properties != null
+              ) {
+                componentProp.value.properties.forEach((prop: any) => {
+                  if (prop.type === 'ObjectProperty' && prop.key.type === 'Identifier') {
+                    const propertyName = prop.key.name
+                    const { loc: propLoc } = prop
+                    if (propLoc != null) {
+                      componentBoundsByModule[moduleName][componentName].properties[propertyName] =
+                        {
+                          startLine: propLoc.start.line - 1,
+                          startCol: propLoc.start.column - 1,
+                          endLine: propLoc.end.line - 1,
+                          endCol: propLoc.end.column - 1,
+                        }
+                    }
+                  }
+                })
+              }
+            })
           }
         })
       })

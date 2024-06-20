@@ -75,7 +75,10 @@ import { ExpandableIndicator } from '../../../navigator/navigator-item/expandabl
 import { unless, when } from '../../../../utils/react-conditionals'
 import { PropertyControlsSection } from './property-controls-section'
 import type { ReactEventHandlers } from 'react-use-gesture/dist/types'
-import { normalisePathToUnderlyingTarget } from '../../../custom-code/code-file'
+import {
+  componentDescriptor,
+  normalisePathToUnderlyingTarget,
+} from '../../../custom-code/code-file'
 import { openCodeEditorFile, replaceElementInScope } from '../../../editor/actions/action-creators'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
@@ -114,6 +117,8 @@ import {
   replaceFirstChildAndDeleteSiblings,
 } from '../../../editor/element-children'
 import { getTextContentOfElement } from './data-reference-cartouche'
+import { ContextMenuWrapper } from '../../../../uuiui-deps'
+import type { Bounds } from 'utopia-vscode-common'
 
 export interface PropertyLabelAndPlusButtonProps {
   title: string
@@ -573,6 +578,8 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
     'RowForBaseControl selectedViews',
   )
 
+  const dispatch = useDispatch()
+
   const propMetadata = useComponentPropsInspectorInfo(
     selectedViews[0] ?? EP.emptyElementPath,
     propPath,
@@ -581,6 +588,16 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
   )
   const contextMenuItems = Utils.stripNulls([
     addOnUnsetValues([propName], propMetadata.onUnsetValues),
+    // {
+    //   name: `Open ${propName} annotation`,
+    //   enabled: props.descriptorFilePath != null,
+    //   action: () => {
+    //     console.log('props.bounds', props.bounds)
+    //     if (props.descriptorFilePath != null) {
+    //       dispatch([openCodeEditorFile(props.descriptorFilePath, true, props.bounds)])
+    //     }
+    //   },
+    // },
   ])
 
   const labelControlStyle = React.useMemo(
@@ -1495,7 +1512,7 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
         openCodeEditorFile(
           componentData.descriptorFile.sourceDescriptorFile,
           true,
-          componentData.descriptorFile.bounds,
+          componentData.descriptorFile.bounds?.bounds,
         ),
       ])
     }

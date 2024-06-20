@@ -606,6 +606,10 @@ import type { NavigatorRow } from '../../navigator/navigator-row'
 import { condensedNavigatorRow, regularNavigatorRow } from '../../navigator/navigator-row'
 import type { SimpleFunctionWrap, FunctionWrap } from 'utopia-shared/src/types'
 import { simpleFunctionWrap, isSimpleFunctionWrap } from 'utopia-shared/src/types'
+import type {
+  ComponentDescriptorBounds,
+  ComponentDescriptorPropertiesBounds,
+} from '../../../core/property-controls/component-descriptor-parser'
 
 export function ElementPropertyPathKeepDeepEquality(): KeepDeepEqualityCall<ElementPropertyPath> {
   return combine2EqualityCalls(
@@ -3146,6 +3150,21 @@ export const BoundsKeepDeepEquality: KeepDeepEqualityCall<Bounds> = combine4Equa
   }),
 )
 
+export const ComponentDescriptorPropertiesBoundsKeepDeepEquality: KeepDeepEqualityCall<ComponentDescriptorPropertiesBounds> =
+  objectDeepEquality(BoundsKeepDeepEquality)
+
+export const ComponentDescriptorBoundsKeepDeepEquality: KeepDeepEqualityCall<ComponentDescriptorBounds> =
+  combine2EqualityCalls(
+    (descriptorBounds) => descriptorBounds.bounds,
+    BoundsKeepDeepEquality,
+    (descriptorBounds) => descriptorBounds.properties,
+    ComponentDescriptorPropertiesBoundsKeepDeepEquality,
+    (bounds, properties) => ({
+      bounds,
+      properties,
+    }),
+  )
+
 export const HighlightBoundsForUidsKeepDeepEquality: KeepDeepEqualityCall<HighlightBoundsForUids> =
   objectDeepEquality(HighlightBoundsKeepDeepEquality)
 
@@ -3507,7 +3526,7 @@ export const DescriptorFileComponentDescriptorKeepDeepEquality: KeepDeepEquality
     (descriptor) => descriptor.sourceDescriptorFile,
     StringKeepDeepEquality,
     (descriptor) => descriptor.bounds,
-    nullableDeepEquality(BoundsKeepDeepEquality),
+    nullableDeepEquality(ComponentDescriptorBoundsKeepDeepEquality),
     (_, sourceDescriptorFile, lineNumber) =>
       componentDescriptorFromDescriptorFile(sourceDescriptorFile, lineNumber),
   )
