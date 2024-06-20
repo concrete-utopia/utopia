@@ -11,6 +11,8 @@ import { dataPathSuccess, traceDataFromProp } from '../../../../core/data-tracin
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import type { CartoucheDataType } from './cartouche-ui'
 import { useColorTheme } from '../../../../uuiui'
+import { useSetAtom } from 'jotai'
+import { DataEditModalContextAtom } from './data-editor-modal'
 
 interface IdentifierExpressionCartoucheControlProps {
   contents: {
@@ -31,7 +33,7 @@ interface IdentifierExpressionCartoucheControlProps {
 }
 export const IdentifierExpressionCartoucheControl = React.memo(
   (props: IdentifierExpressionCartoucheControlProps) => {
-    const { onOpenDataPicker, onDeleteCartouche, testId, safeToDelete, onOpenEditModal } = props
+    const { onOpenDataPicker, onDeleteCartouche, testId, safeToDelete } = props
 
     const isDataComingFromHookResult = useEditorState(
       Substores.projectContentsAndMetadata,
@@ -44,6 +46,37 @@ export const IdentifierExpressionCartoucheControl = React.memo(
         ).type === 'hook-result',
       'IdentifierExpressionCartoucheControl trace',
     )
+
+    const setDataEditorContext = useSetAtom(DataEditModalContextAtom)
+
+    const onOpenEditModalWithSetContext = React.useCallback(() => {
+      if (props.onOpenEditModal == null) {
+        return
+      }
+
+      const cartoucheForModal = (
+        <DataCartoucheInner
+          contentsToDisplay={props.contents}
+          onClick={NO_OP}
+          selected={false}
+          onDoubleClick={NO_OP}
+          safeToDelete={safeToDelete}
+          onDelete={NO_OP}
+          testId={`data-editor-cartouche-${testId}`}
+          contentIsComingFromServer={isDataComingFromHookResult}
+          datatype={props.datatype}
+        />
+      )
+
+      setDataEditorContext({
+        cartoucheComponent: cartoucheForModal,
+        propertyPath: props.propertyPath,
+      })
+      props.onOpenEditModal()
+    }, [isDataComingFromHookResult, props, safeToDelete, setDataEditorContext, testId])
+
+    const onOpenEditModal =
+      props.onOpenEditModal == null ? props.onOpenEditModal : onOpenEditModalWithSetContext
 
     return (
       <CartoucheInspectorWrapper>

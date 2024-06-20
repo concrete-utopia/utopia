@@ -459,14 +459,13 @@ export function useDataUpdateButton() {
   const { popper, closePopup, setPopperElement, popupIsOpen, openPopup, setReferenceElement } =
     usePopperBoilerplate()
 
-  const DataUpdaterComponent = React.useCallback(
-    (cartouche: React.ReactElement) => (
+  const DataUpdaterComponent = React.useMemo(
+    () => (
       <DataUpdateModal
         {...popper.attributes.popper}
         style={popper.styles.popper}
         closePopup={closePopup}
         ref={setPopperElement}
-        cartouche={cartouche}
       />
     ),
     [closePopup, popper.attributes.popper, popper.styles.popper, setPopperElement],
@@ -699,7 +698,7 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
       data={null}
     >
       {dataPickerButtonData.popupIsOpen ? dataPickerButtonData.DataPickerComponent : null}
-      {when(updateButtonData.popupIsOpen, updateButtonData.DataUpdaterComponent(<h2>woot</h2>))}
+      {when(updateButtonData.popupIsOpen, updateButtonData.DataUpdaterComponent)}
       <UIGridRow
         padded={false}
         alignContent='center'
