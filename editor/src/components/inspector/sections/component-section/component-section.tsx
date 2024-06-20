@@ -21,7 +21,7 @@ import type { ElementPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
 import * as EP from '../../../../core/shared/element-path'
 import { useKeepReferenceEqualityIfPossible } from '../../../../utils/react-performance'
-import Utils from '../../../../utils/utils'
+import Utils, { mergeRefs } from '../../../../utils/utils'
 import type { ParseError } from '../../../../utils/value-parser-utils'
 import { getParseErrorDetails } from '../../../../utils/value-parser-utils'
 import {
@@ -114,6 +114,7 @@ import {
   replaceFirstChildAndDeleteSiblings,
 } from '../../../editor/element-children'
 import { getTextContentOfElement } from './data-reference-cartouche'
+import { DataUpdateModal } from './data-editor-modal'
 
 export interface PropertyLabelAndPlusButtonProps {
   title: string
@@ -260,6 +261,7 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
           icon={React.createElement(iconForControlType(props.controlDescription.control))}
           matchType='full'
           onOpenDataPicker={props.onOpenDataPicker}
+          onOpenEditModal={props.onOpenEditModal}
           onDeleteCartouche={onDeleteCartouche}
           testId={`cartouche-${PP.toString(props.propPath)}`}
           safeToDelete={safeToDelete}
@@ -383,12 +385,7 @@ function getLabelControlStyle(
 
 const isBaseIndentationLevel = (props: AbstractRowForControlProps) => props.indentationLevel === 1
 
-export function useDataPickerButton(
-  variablesInScope: DataPickerOption[],
-  onPropertyPicked: DataPickerCallback,
-  currentSelectedValuePath: ObjectPath | null,
-  lowestInsertionCeiling: ElementPath | null,
-) {
+function usePopperBoilerplate() {
   const [referenceElement, setReferenceElement] = React.useState<HTMLDivElement | null>(null)
   const [popperElement, setPopperElement] = React.useState<HTMLDivElement | null>(null)
   const popper = usePopper(referenceElement, popperElement, {
@@ -413,6 +410,18 @@ export function useDataPickerButton(
   const openPopup = React.useCallback(() => setPopupIsOpen(true), [])
   const closePopup = React.useCallback(() => setPopupIsOpen(false), [])
 
+  return { popper, popupIsOpen, openPopup, closePopup, setReferenceElement, setPopperElement }
+}
+
+export function useDataPickerButton(
+  variablesInScope: DataPickerOption[],
+  onPropertyPicked: DataPickerCallback,
+  currentSelectedValuePath: ObjectPath | null,
+  lowestInsertionCeiling: ElementPath | null,
+) {
+  const { popper, closePopup, setPopperElement, popupIsOpen, openPopup, setReferenceElement } =
+    usePopperBoilerplate()
+
   const DataPickerComponent = React.useMemo(
     () => (
       <DataSelectorModal
@@ -429,17 +438,42 @@ export function useDataPickerButton(
     [
       closePopup,
       currentSelectedValuePath,
+      lowestInsertionCeiling,
       onPropertyPicked,
       popper.attributes.popper,
       popper.styles.popper,
+      setPopperElement,
       variablesInScope,
-      lowestInsertionCeiling,
     ],
   )
 
   return {
     popupIsOpen,
     DataPickerComponent,
+    setReferenceElement,
+    openPopup,
+  }
+}
+
+export function useDataUpdateButton() {
+  const { popper, closePopup, setPopperElement, popupIsOpen, openPopup, setReferenceElement } =
+    usePopperBoilerplate()
+
+  const DataUpdaterComponent = React.useMemo(
+    () => (
+      <DataUpdateModal
+        {...popper.attributes.popper}
+        style={popper.styles.popper}
+        closePopup={closePopup}
+        ref={setPopperElement}
+      />
+    ),
+    [closePopup, popper.attributes.popper, popper.styles.popper, setPopperElement],
+  )
+
+  return {
+    popupIsOpen,
+    DataUpdaterComponent,
     setReferenceElement,
     openPopup,
   }
@@ -589,6 +623,7 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
   )
 
   const dataPickerButtonData = useDataPickerButtonInComponentSection(selectedViews, props.propPath)
+  const updateButtonData = useDataUpdateButton()
 
   const handleMouseEnter = React.useCallback(() => {
     setIsHovered(true)
@@ -663,6 +698,7 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
       data={null}
     >
       {dataPickerButtonData.popupIsOpen ? dataPickerButtonData.DataPickerComponent : null}
+      {when(updateButtonData.popupIsOpen, updateButtonData.DataUpdaterComponent)}
       <UIGridRow
         padded={false}
         alignContent='center'
@@ -674,7 +710,10 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
           style={{
             minWidth: 0, // this ensures that the div can never expand the allocated grid space
           }}
-          ref={dataPickerButtonData.setReferenceElement}
+          ref={mergeRefs([
+            dataPickerButtonData.setReferenceElement,
+            updateButtonData.setReferenceElement,
+          ])}
         >
           <ControlForProp
             propPath={propPath}
@@ -686,6 +725,7 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
             onOpenDataPicker={dataPickerButtonData.openPopup}
             showHiddenControl={props.showHiddenControl}
             elementPath={selectedViews.at(0) ?? EP.emptyElementPath}
+            onOpenEditModal={updateButtonData.openPopup}
           />
         </div>
       </UIGridRow>

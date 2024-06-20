@@ -32,6 +32,7 @@ interface RemixNavigationContext {
   back: () => Promise<void>
   home: () => Promise<void>
   navigate: (loc: string) => Promise<void>
+  revalidate: () => void
   location: Location
   entries: Array<Location>
 }
@@ -346,6 +347,7 @@ export const UtopiaRemixRootComponent = (props: UtopiaRemixRootComponentProps) =
             back: () => innerRouter.navigate(-1),
             home: () => innerRouter.navigate('/'),
             navigate: (loc: string) => innerRouter.navigate(loc),
+            revalidate: () => innerRouter.revalidate(),
             location: location,
             entries: updatedEntries,
           },
