@@ -44,11 +44,12 @@ import { InspectorContextMenuWrapper } from '../../../context-menu-wrapper'
 import { addOnUnsetValues } from '../../common/context-menu-items'
 import {
   useControlForUnionControl,
+  useGetComponentDataForElementPath,
   useGetPropertyControlsForSelectedComponents,
   useInspectorInfoForPropertyControl,
 } from '../../common/property-controls-hooks'
 import type { ControlStyles } from '../../common/control-styles'
-import type { InspectorInfo } from '../../common/property-path-hooks'
+import { type InspectorInfo } from '../../common/property-path-hooks'
 import { useArraySuperControl } from '../../controls/array-supercontrol'
 import type { SelectOption } from '../../controls/select-control'
 import { UIGridRow } from '../../widgets/ui-grid-row'
@@ -586,18 +587,23 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
     isScene,
     controlDescription,
   )
+
+  const componentData = useGetComponentDataForElementPath(selectedViews[0] ?? null)
+
+  const descriptorFile = componentData?.descriptorFile
+
   const contextMenuItems = Utils.stripNulls([
     addOnUnsetValues([propName], propMetadata.onUnsetValues),
-    // {
-    //   name: `Open ${propName} annotation`,
-    //   enabled: props.descriptorFilePath != null,
-    //   action: () => {
-    //     console.log('props.bounds', props.bounds)
-    //     if (props.descriptorFilePath != null) {
-    //       dispatch([openCodeEditorFile(props.descriptorFilePath, true, props.bounds)])
-    //     }
-    //   },
-    // },
+    {
+      name: `Open ${propName} annotation`,
+      enabled: descriptorFile != null,
+      action: () => {
+        const bounds = descriptorFile?.bounds?.properties[propName]
+        if (descriptorFile != null) {
+          dispatch([openCodeEditorFile(descriptorFile.sourceDescriptorFile, true, bounds)])
+        }
+      },
+    },
   ])
 
   const labelControlStyle = React.useMemo(
@@ -1446,65 +1452,12 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
     }
   }, [dispatch, locationOfComponentInstance])
 
-  const propertyControlsInfo = useEditorState(
-    Substores.propertyControlsInfo,
-    (store) => store.editor.propertyControlsInfo,
-    'ComponentsectionInner propertyControlsInfo',
-  )
+  const elementPath =
+    propertyControlsAndTargets.length === 0 || propertyControlsAndTargets[0].targets.length !== 1
+      ? null
+      : propertyControlsAndTargets[0].targets[0]
 
-  const componentData = useEditorState(
-    Substores.metadata,
-    (store) => {
-      if (
-        propertyControlsAndTargets.length === 0 ||
-        propertyControlsAndTargets[0].targets.length !== 1
-      ) {
-        return null
-      }
-
-      const element = MetadataUtils.findElementByElementPath(
-        store.editor.jsxMetadata,
-        propertyControlsAndTargets[0].targets[0],
-      )
-
-      const targetJSXElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(element)
-      const elementImportInfo = element?.importInfo
-      if (elementImportInfo == null || targetJSXElement == null) {
-        return null
-      }
-
-      const elementName = getJSXElementNameAsString(targetJSXElement.name)
-
-      const exportedName = isImportedOrigin(elementImportInfo)
-        ? elementImportInfo.exportedName ?? elementName
-        : elementName
-
-      const registeredComponent = getRegisteredComponent(
-        exportedName,
-        elementImportInfo.filePath,
-        propertyControlsInfo,
-      )
-
-      const descriptorFile =
-        registeredComponent?.source.type === 'DESCRIPTOR_FILE' ? registeredComponent.source : null
-
-      if (registeredComponent?.label == null) {
-        return {
-          displayName: elementName,
-          descriptorFile: descriptorFile,
-          isRegisteredComponent: registeredComponent != null,
-        }
-      }
-
-      return {
-        displayName: registeredComponent.label,
-        descriptorFile: descriptorFile,
-        isRegisteredComponent: registeredComponent != null,
-        secondaryName: elementName,
-      }
-    },
-    'ComponentSectionInner componentName',
-  )
+  const componentData = useGetComponentDataForElementPath(elementPath)
 
   const openDescriptorFile = React.useCallback(() => {
     if (componentData?.descriptorFile != null) {
