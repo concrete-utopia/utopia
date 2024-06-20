@@ -47,7 +47,6 @@ export const WRAP_ELEMENT_PICKER_SHORTCUT = 'wrap-element-picker'
 export const GROUP_ELEMENT_DEFAULT_SHORTCUT = 'group-element-default'
 export const TOGGLE_HIDDEN_SHORTCUT = 'toggle-hidden'
 export const INSERT_IMAGE_SHORTCUT = 'insert-image'
-export const TOGGLE_PREVIEW_SHORTCUT = 'toggle-preview'
 export const TOGGLE_LIVE_CANVAS_SHORTCUT = 'toggle-live-canvas'
 export const START_RENAMING_SHORTCUT = 'start-renaming'
 export const INSERT_RECTANGLE_SHORTCUT = 'insert-rectangle'
@@ -152,7 +151,6 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
   [GROUP_ELEMENT_DEFAULT_SHORTCUT]: shortcut('Group elements with a div.', key('g', 'cmd')),
   [TOGGLE_HIDDEN_SHORTCUT]: shortcut('Toggle element as hidden.', key('h', ['cmd', 'shift'])),
   [INSERT_IMAGE_SHORTCUT]: shortcut('Insert an image.', key('i', [])),
-  [TOGGLE_PREVIEW_SHORTCUT]: shortcut('Toggle the preview panel.', key('p', 'cmd')),
   [TOGGLE_LIVE_CANVAS_SHORTCUT]: shortcut(
     'Toggle the canvas between live and edit mode.',
     key('p', ['cmd', 'shift']),
