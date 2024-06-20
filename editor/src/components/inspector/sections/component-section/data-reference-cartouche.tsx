@@ -323,8 +323,15 @@ const contextMenuItems: Array<ContextMenuItem<ContextMenuItemsData>> = [
   },
   {
     name: 'Open in external CMS',
-    enabled: false,
-    action: (data) => {},
+    enabled: true,
+    action: (data) => {
+      window
+        .open(
+          'https://admin.shopify.com/store/438c73-58/content/metaobjects/entries/reviews/87105306797',
+          '_blank',
+        )
+        ?.focus()
+    },
   },
   Separator,
   {
