@@ -9,11 +9,12 @@ import { RemixNavigationAtom } from '../../../canvas/remix/utopia-remix-root-com
 import { useRefAtom } from '../../../editor/hook-utils'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { getProjectID } from '../../../../common/env-vars'
-import { showToast } from '../../../editor/actions/action-creators'
+import { removeToast, showToast } from '../../../editor/actions/action-creators'
 import { notice } from '../../../common/notice'
 import { atom, useAtom } from 'jotai'
 import type { EditorState } from '../../../editor/store/editor-state'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
+import { wait } from '../../../../core/model/performance-scripts'
 
 interface DataEditModalContext {
   cartoucheComponent: React.ReactElement | null
@@ -68,7 +69,7 @@ export const DataUpdateModal = React.memo(
       e.stopPropagation()
     }, [])
 
-    const requestUpdate = React.useCallback(() => {
+    const requestUpdate = React.useCallback(async () => {
       const projectId = getProjectID()
       if (projectId == null) {
         dispatch([
@@ -95,14 +96,27 @@ export const DataUpdateModal = React.memo(
         return
       }
 
-      void updateData(projectId, {
+      await updateData(projectId, {
         query: METAOBJECT_UPDATE_MUTATION,
         variables: {
           id: id,
           metaobject: { fields: [{ key, value }] },
         },
       })
-    }, [data?.gid, data?.metafield, dispatch, value])
+      dispatch([
+        showToast(
+          notice(
+            'Updating metaobject...',
+            'INFO',
+            false,
+            'DataUpdateModal-metaobject-update-in-progress',
+          ),
+        ),
+      ])
+      await wait(10000) // adjust as needed
+      revalidateAllLoaders()
+      setSubmissionState('draft')
+    }, [data?.gid, data?.metafield, dispatch, revalidateAllLoaders, value])
 
     const [submissionState, setSubmissionState] = React.useState<SubmissionState>('draft')
 
@@ -112,8 +126,7 @@ export const DataUpdateModal = React.memo(
           setSubmissionState('confirmed')
           break
         case 'confirmed':
-          requestUpdate()
-          // revalidateAllLoaders() // TODO: poll this
+          void requestUpdate()
           setSubmissionState('publishing')
           break
         case 'publishing':
