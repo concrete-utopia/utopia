@@ -246,25 +246,6 @@ export const DataCartoucheInner = React.forwardRef(
 
     const { hideAll: hideContextMenu } = useContextMenu({ id: contextMenuId })
 
-    const cartouche = (
-      <CartoucheUI
-        onDelete={onDelete}
-        onClick={onClick}
-        onDoubleClick={onDoubleClick}
-        datatype={datatype}
-        selected={selected}
-        highlight={highlight}
-        testId={testId}
-        tooltip={contentsToDisplay.label ?? contentsToDisplay.shortLabel ?? 'DATA'}
-        role='selection'
-        source={source}
-        ref={ref}
-        badge={props.badge}
-      >
-        {contentsToDisplay.shortLabel ?? contentsToDisplay.label ?? 'DATA'}
-      </CartoucheUI>
-    )
-
     return (
       <ContextMenuWrapper<ContextMenuItemsData>
         id={contextMenuId}
@@ -277,7 +258,24 @@ export const DataCartoucheInner = React.forwardRef(
           hideContextMenu: hideContextMenu,
         }}
       >
-        {cartouche}
+        {
+          <CartoucheUI
+            onDelete={onDelete}
+            onClick={onClick}
+            onDoubleClick={onDoubleClick}
+            datatype={datatype}
+            selected={selected}
+            highlight={highlight}
+            testId={testId}
+            tooltip={contentsToDisplay.label ?? contentsToDisplay.shortLabel ?? 'DATA'}
+            role='selection'
+            source={source}
+            ref={ref}
+            badge={props.badge}
+          >
+            {contentsToDisplay.shortLabel ?? contentsToDisplay.label ?? 'DATA'}
+          </CartoucheUI>
+        }
       </ContextMenuWrapper>
     )
   },
