@@ -12,6 +12,7 @@ export type FeatureName =
   | 'Performance Test Triggers'
   | 'Canvas Strategies Debug Panel'
   | 'Project Thumbnail Generation'
+  | 'Debug - Print UIDs'
   | 'Debug – Connections'
   | 'Condensed Navigator Entries'
 
@@ -26,6 +27,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Performance Test Triggers',
   'Canvas Strategies Debug Panel',
   'Project Thumbnail Generation',
+  'Debug - Print UIDs',
   'Debug – Connections',
   'Condensed Navigator Entries',
 ]
@@ -40,6 +42,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Performance Test Triggers': !(PRODUCTION_CONFIG as boolean),
   'Canvas Strategies Debug Panel': false,
   'Project Thumbnail Generation': false,
+  'Debug - Print UIDs': false,
   'Debug – Connections': false,
   'Condensed Navigator Entries': !IS_TEST_ENVIRONMENT,
 }

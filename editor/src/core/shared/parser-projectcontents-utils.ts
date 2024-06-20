@@ -144,6 +144,7 @@ export function getFilesToUpdate(
   let filesToUpdate: Array<ParseOrPrint> = []
   let forciblyParsedFiles: Array<string> = []
   let existingUIDs: Set<string> = emptySet()
+  const shouldStripUids = PRODUCTION_ENV || !isFeatureEnabled('Debug - Print UIDs')
   walkContentsTree(projectContents, (fullPath, file) => {
     if (isTextFile(file)) {
       if (
@@ -151,7 +152,12 @@ export function getFilesToUpdate(
         isParseSuccess(file.fileContents.parsed)
       ) {
         filesToUpdate.push(
-          createPrintAndReparseFile(fullPath, file.fileContents.parsed, true, file.versionNumber),
+          createPrintAndReparseFile(
+            fullPath,
+            file.fileContents.parsed,
+            shouldStripUids,
+            file.versionNumber,
+          ),
         )
       } else if (codeNeedsParsing(file.fileContents.revisionsState)) {
         const lastParseSuccess = isParseSuccess(file.fileContents.parsed)

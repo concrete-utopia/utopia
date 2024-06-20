@@ -240,7 +240,9 @@ type StartingFeatureSwitches = Partial<{
   [F in FeatureName]: boolean
 }>
 
-export const DefaultStartingFeatureSwitches: StartingFeatureSwitches = {}
+export const DefaultStartingFeatureSwitches: StartingFeatureSwitches = {
+  'Debug - Print UIDs': true,
+}
 
 interface RenderTestEditorWithCodeOptions {
   strategiesToUse: Array<MetaCanvasStrategy>
