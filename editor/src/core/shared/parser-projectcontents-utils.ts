@@ -151,12 +151,7 @@ export function getFilesToUpdate(
         isParseSuccess(file.fileContents.parsed)
       ) {
         filesToUpdate.push(
-          createPrintAndReparseFile(
-            fullPath,
-            file.fileContents.parsed,
-            true, // DON'T STRIP UIDs FROM THE MODEL
-            file.versionNumber,
-          ),
+          createPrintAndReparseFile(fullPath, file.fileContents.parsed, true, file.versionNumber),
         )
       } else if (codeNeedsParsing(file.fileContents.revisionsState)) {
         const lastParseSuccess = isParseSuccess(file.fileContents.parsed)
