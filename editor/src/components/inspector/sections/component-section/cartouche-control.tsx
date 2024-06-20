@@ -35,7 +35,7 @@ export const IdentifierExpressionCartoucheControl = React.memo(
   (props: IdentifierExpressionCartoucheControlProps) => {
     const { onOpenDataPicker, onDeleteCartouche, testId, safeToDelete } = props
 
-    const isDataComingFromHookResult = useEditorState(
+    const maybeHookResult = useEditorState(
       Substores.projectContentsAndMetadata,
       (store) =>
         traceDataFromProp(
@@ -43,9 +43,11 @@ export const IdentifierExpressionCartoucheControl = React.memo(
           store.editor.jsxMetadata,
           store.editor.projectContents,
           dataPathSuccess([]),
-        ).type === 'hook-result',
+        ),
       'IdentifierExpressionCartoucheControl trace',
     )
+
+    const isDataComingFromHookResult = maybeHookResult.type === 'hook-result'
 
     const setDataEditorContext = useSetAtom(DataEditModalContextAtom)
 
@@ -68,12 +70,25 @@ export const IdentifierExpressionCartoucheControl = React.memo(
         />
       )
 
+      const dataPath =
+        maybeHookResult.type === 'hook-result' &&
+        maybeHookResult.dataPathIntoAttribute.type === 'DATA_PATH_SUCCESS'
+          ? maybeHookResult.dataPathIntoAttribute.dataPath
+          : null
+
       setDataEditorContext({
         cartoucheComponent: cartoucheForModal,
-        propertyPath: props.propertyPath,
+        dataPath: dataPath,
       })
       props.onOpenEditModal()
-    }, [isDataComingFromHookResult, props, safeToDelete, setDataEditorContext, testId])
+    }, [
+      isDataComingFromHookResult,
+      maybeHookResult,
+      props,
+      safeToDelete,
+      setDataEditorContext,
+      testId,
+    ])
 
     const onOpenEditModal =
       props.onOpenEditModal == null ? props.onOpenEditModal : onOpenEditModalWithSetContext

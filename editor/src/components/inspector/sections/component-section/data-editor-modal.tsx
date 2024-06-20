@@ -11,17 +11,18 @@ import { useDispatch } from '../../../editor/store/dispatch-context'
 import { getProjectID } from '../../../../common/env-vars'
 import { showToast } from '../../../editor/actions/action-creators'
 import { notice } from '../../../common/notice'
-import type { PropertyPath } from 'utopia-shared/src/types'
 import { atom, useAtom } from 'jotai'
+import type { EditorState } from '../../../editor/store/editor-state'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
 
 interface DataEditModalContext {
   cartoucheComponent: React.ReactElement | null
-  propertyPath: PropertyPath | null
+  dataPath: string[] | null
 }
 
 export const DataEditModalContextAtom = atom<DataEditModalContext>({
   cartoucheComponent: null,
-  propertyPath: null,
+  dataPath: null,
 })
 
 type SubmissionState = 'draft' | 'confirmed' | 'publishing'
@@ -38,7 +39,13 @@ export const DataUpdateModal = React.memo(
       e.preventDefault()
     }, [])
 
-    const [{ cartoucheComponent, propertyPath }] = useAtom(DataEditModalContextAtom)
+    const [{ cartoucheComponent, dataPath }] = useAtom(DataEditModalContextAtom)
+
+    const allVariablesInScope = useEditorState(
+      Substores.variablesInScope,
+      (store) => store.editor.variablesInScope,
+      'DataUpdateModal allVariablesInScope',
+    )
 
     const remix = useRefAtom(RemixNavigationAtom)
     const revalidateAllLoaders = React.useCallback(() => {
@@ -47,6 +54,19 @@ export const DataUpdateModal = React.memo(
     }, [remix])
 
     const dispatch = useDispatch()
+
+    const data = dataPath == null ? null : getReviewData(dataPath, allVariablesInScope)
+
+    const [value, setValue] = React.useState<string>(data?.value ?? '')
+    const updateValue = React.useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      e.stopPropagation()
+      e.preventDefault()
+      setValue(e.target.value)
+    }, [])
+
+    const onKeyDown = React.useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      e.stopPropagation()
+    }, [])
 
     const requestUpdate = React.useCallback(() => {
       const projectId = getProjectID()
@@ -59,18 +79,32 @@ export const DataUpdateModal = React.memo(
         return
       }
 
+      const id = data?.gid
+      const key = data?.metafield
+      if (id == null || key == null) {
+        dispatch([
+          showToast(
+            notice(
+              'This metafield cannot be edited (yet)',
+              'ERROR',
+              false,
+              'DataUpdateModal-metafield-cannot-be-edited',
+            ),
+          ),
+        ])
+        return
+      }
+
       void updateData(projectId, {
         query: METAOBJECT_UPDATE_MUTATION,
         variables: {
-          id: 'gid://shopify/Metaobject/87105306797',
-          metaobject: { fields: [{ key: 'quote', value: 'Very good' }] },
+          id: id,
+          metaobject: { fields: [{ key, value }] },
         },
       })
-    }, [dispatch])
+    }, [data?.gid, data?.metafield, dispatch, value])
 
     const [submissionState, setSubmissionState] = React.useState<SubmissionState>('draft')
-
-    // TODO: pass down the option for the label, the gid, the metafield name and the metafield value
 
     const onMainButtonClick = React.useCallback(() => {
       switch (submissionState) {
@@ -88,17 +122,6 @@ export const DataUpdateModal = React.memo(
           assertNever(submissionState)
       }
     }, [requestUpdate, submissionState])
-
-    const [value, setValue] = React.useState<string>('')
-    const updateValue = React.useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      e.stopPropagation()
-      e.preventDefault()
-      setValue(e.target.value)
-    }, [])
-
-    const onKeyDown = React.useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      e.stopPropagation()
-    }, [])
 
     const colorTheme = useColorTheme()
 
@@ -171,7 +194,7 @@ export const DataUpdateModal = React.memo(
               }}
             >
               <span>Data</span>
-              <span style={{ color: colorTheme.green.value }}>Gid</span>
+              <span style={{ color: colorTheme.green.value }}>{data?.gid ?? ''}</span>
               <span>Content</span>
               <textarea
                 value={value}
@@ -278,3 +301,32 @@ mutation UpdateMetaobject($id: ID!, $metaobject: MetaobjectUpdateInput!) {
     }
   }
 }`
+
+// TODO: get rid of the hardcoding here
+function getReviewData(
+  dataPath: string[],
+  allVariablesInScope: EditorState['variablesInScope'],
+): { gid: string; metafield: string; value: string } | null {
+  const [root, indexString, propName, value] = dataPath
+  if (
+    root !== 'reviewsWithBg' ||
+    isNaN(parseInt(indexString)) ||
+    propName == null ||
+    propName !== 'quote' ||
+    value !== 'value'
+  ) {
+    return null
+  }
+  const customerReviews = Object.values(allVariablesInScope).find(
+    (scope) => scope['customerReviews'] != null,
+  )?.['customerReviews']?.spiedValue
+
+  if (customerReviews == null) {
+    return null
+  }
+  const idx = parseInt(indexString)
+  const gid = (customerReviews as any)[idx].id
+  const metafieldValue = (customerReviews as any)[idx].quote.value
+
+  return { gid: gid, metafield: propName, value: metafieldValue }
+}
