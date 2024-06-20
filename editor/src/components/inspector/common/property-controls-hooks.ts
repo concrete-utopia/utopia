@@ -35,11 +35,18 @@ import {
   useKeepReferenceEqualityIfPossible,
 } from '../../../utils/react-performance'
 import type { UtopiaJSXComponent } from '../../../core/shared/element-template'
-import { isJSXElement } from '../../../core/shared/element-template'
+import {
+  getJSXElementNameAsString,
+  isImportedOrigin,
+  isJSXElement,
+} from '../../../core/shared/element-template'
 import { addUniquely, mapDropNulls } from '../../../core/shared/array-utils'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { getPropertyControlsForTargetFromEditor } from '../../../core/property-controls/property-controls-utils'
+import {
+  getPropertyControlsForTargetFromEditor,
+  getRegisteredComponent,
+} from '../../../core/property-controls/property-controls-utils'
 import { fastForEach } from '../../../core/shared/utils'
 import { findUnderlyingTargetComponentImplementationFromImportInfo } from '../../custom-code/code-file'
 import {
@@ -157,6 +164,7 @@ export function useInspectorInfoForPropertyControl(
     onSubmitValue: onSubmitValue,
     onTransientSubmitValue: onTransientSubmitValue,
     onUnsetValues: onUnsetValues,
+
     useSubmitValueFactory: useSubmitValueFactory,
   }
 }
@@ -386,4 +394,54 @@ export function useGetPropertyControlsForSelectedComponents(): Array<FullPropert
 function areMatchingPropertyControls(a: PropertyControls, b: PropertyControls): boolean {
   // TODO create equality call
   return deepEqual(a, b)
+}
+
+export function useGetComponentDataForElementPath(elementPath: ElementPath | null) {
+  return useEditorState(
+    Substores.metadataAndPropertyControlsInfo,
+    (store) => {
+      if (elementPath == null) {
+        return null
+      }
+
+      const element = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, elementPath)
+
+      const targetJSXElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(element)
+      const elementImportInfo = element?.importInfo
+      if (elementImportInfo == null || targetJSXElement == null) {
+        return null
+      }
+
+      const elementName = getJSXElementNameAsString(targetJSXElement.name)
+
+      const exportedName = isImportedOrigin(elementImportInfo)
+        ? elementImportInfo.exportedName ?? elementName
+        : elementName
+
+      const registeredComponent = getRegisteredComponent(
+        exportedName,
+        elementImportInfo.filePath,
+        store.editor.propertyControlsInfo,
+      )
+
+      const descriptorFile =
+        registeredComponent?.source.type === 'DESCRIPTOR_FILE' ? registeredComponent.source : null
+
+      if (registeredComponent?.label == null) {
+        return {
+          displayName: elementName,
+          descriptorFile: descriptorFile,
+          isRegisteredComponent: registeredComponent != null,
+        }
+      }
+
+      return {
+        displayName: registeredComponent.label,
+        descriptorFile: descriptorFile,
+        isRegisteredComponent: registeredComponent != null,
+        secondaryName: elementName,
+      }
+    },
+    'useGetComponentDataForElementPath componentName',
+  )
 }

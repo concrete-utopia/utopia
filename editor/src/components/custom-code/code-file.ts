@@ -53,7 +53,7 @@ import { getProjectFileByFilePath } from '../assets'
 import type { EditorDispatch } from '../editor/action-types'
 import { StylingOptions } from 'utopia-api'
 import type { Emphasis, Focus, Icon, Styling } from 'utopia-api'
-import type { Bounds } from 'utopia-vscode-common'
+import type { ComponentDescriptorBounds } from '../../core/property-controls/component-descriptor-parser'
 
 type ModuleExportTypes = { [name: string]: ExportType }
 
@@ -228,12 +228,12 @@ export function isDefaultComponentDescriptor(
 export interface ComponentDescriptorFromDescriptorFile {
   type: 'DESCRIPTOR_FILE'
   sourceDescriptorFile: string
-  bounds: Bounds | null
+  bounds: ComponentDescriptorBounds | null
 }
 
 export function componentDescriptorFromDescriptorFile(
   sourceDescriptorFile: string,
-  bounds: Bounds | null,
+  bounds: ComponentDescriptorBounds | null,
 ): ComponentDescriptorFromDescriptorFile {
   return {
     type: 'DESCRIPTOR_FILE',
