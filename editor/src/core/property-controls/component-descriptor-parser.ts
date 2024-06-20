@@ -28,6 +28,32 @@ export function generateComponentBounds(
 
   const componentBoundsByModule: ComponentBoundsByModule = {}
 
+  function processComponentProperties(componentValue: any, moduleName: any, componentName: any) {
+    componentValue.properties.forEach((componentProp: any) => {
+      if (
+        componentProp.type === 'ObjectProperty' &&
+        componentProp.key.type === 'Identifier' &&
+        componentProp.key.name === 'properties' &&
+        componentProp.value.properties != null
+      ) {
+        componentProp.value.properties.forEach((prop: any) => {
+          if (prop.type === 'ObjectProperty' && prop.key.type === 'Identifier') {
+            const propertyName = prop.key.name
+            const { loc: propLoc } = prop
+            if (propLoc != null) {
+              componentBoundsByModule[moduleName][componentName].properties[propertyName] = {
+                startLine: propLoc.start.line - 1,
+                startCol: propLoc.start.column - 1,
+                endLine: propLoc.end.line - 1,
+                endCol: propLoc.end.column - 1,
+              }
+            }
+          }
+        })
+      }
+    })
+  }
+
   // Store variable declarations
   const variableDeclarations: Record<string, any> = {}
   // Traverse the AST to collect variable declarations
@@ -99,30 +125,7 @@ export function generateComponentBounds(
               return
             }
 
-            componentValue.properties.forEach((componentProp: any) => {
-              if (
-                componentProp.type === 'ObjectProperty' &&
-                componentProp.key.type === 'Identifier' &&
-                componentProp.key.name === 'properties' &&
-                componentProp.value.properties != null
-              ) {
-                componentProp.value.properties.forEach((prop: any) => {
-                  if (prop.type === 'ObjectProperty' && prop.key.type === 'Identifier') {
-                    const propertyName = prop.key.name
-                    const { loc: propLoc } = prop
-                    if (propLoc != null) {
-                      componentBoundsByModule[moduleName][componentName].properties[propertyName] =
-                        {
-                          startLine: propLoc.start.line - 1,
-                          startCol: propLoc.start.column - 1,
-                          endLine: propLoc.end.line - 1,
-                          endCol: propLoc.end.column - 1,
-                        }
-                    }
-                  }
-                })
-              }
-            })
+            processComponentProperties(componentValue, moduleName, componentName)
           }
         })
       })
