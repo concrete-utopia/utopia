@@ -142,10 +142,10 @@ describe('registered property controls', () => {
           },
           "source": Object {
             "bounds": Object {
-              "endCol": 5,
-              "endLine": 42,
-              "startCol": 4,
-              "startLine": 5,
+              "endCol": 4,
+              "endLine": 41,
+              "startCol": 3,
+              "startLine": 4,
             },
             "sourceDescriptorFile": "/utopia/components.utopia.js",
             "type": "DESCRIPTOR_FILE",
@@ -378,10 +378,10 @@ describe('registered property controls', () => {
           },
           "source": Object {
             "bounds": Object {
-              "endCol": 5,
-              "endLine": 16,
-              "startCol": 4,
-              "startLine": 6,
+              "endCol": 4,
+              "endLine": 15,
+              "startCol": 3,
+              "startLine": 5,
             },
             "sourceDescriptorFile": "/utopia/components.utopia.js",
             "type": "DESCRIPTOR_FILE",
@@ -1011,10 +1011,10 @@ describe('registered property controls', () => {
           },
           "source": Object {
             "bounds": Object {
-              "endCol": 5,
-              "endLine": 32,
-              "startCol": 4,
-              "startLine": 5,
+              "endCol": 4,
+              "endLine": 31,
+              "startCol": 3,
+              "startLine": 4,
             },
             "sourceDescriptorFile": "/utopia/components.utopia.js",
             "type": "DESCRIPTOR_FILE",
@@ -1931,10 +1931,10 @@ describe('registered property controls', () => {
             },
             "source": Object {
               "bounds": Object {
-                "endCol": 5,
-                "endLine": 34,
-                "startCol": 4,
-                "startLine": 6,
+                "endCol": 4,
+                "endLine": 33,
+                "startCol": 3,
+                "startLine": 5,
               },
               "sourceDescriptorFile": "/utopia/components.utopia.js",
               "type": "DESCRIPTOR_FILE",
@@ -2688,10 +2688,10 @@ describe('Lifecycle management of registering components', () => {
         .toMatchInlineSnapshot(`
         Object {
           "bounds": Object {
-            "endCol": 5,
-            "endLine": 12,
-            "startCol": 4,
-            "startLine": 5,
+            "endCol": 4,
+            "endLine": 11,
+            "startCol": 3,
+            "startLine": 4,
           },
           "sourceDescriptorFile": "/utopia/components1.utopia.js",
           "type": "DESCRIPTOR_FILE",
@@ -2705,10 +2705,10 @@ describe('Lifecycle management of registering components', () => {
         .toMatchInlineSnapshot(`
         Object {
           "bounds": Object {
-            "endCol": 5,
-            "endLine": 12,
-            "startCol": 4,
-            "startLine": 5,
+            "endCol": 4,
+            "endLine": 11,
+            "startCol": 3,
+            "startLine": 4,
           },
           "sourceDescriptorFile": "/utopia/components2.utopia.js",
           "type": "DESCRIPTOR_FILE",
@@ -2746,10 +2746,10 @@ describe('Lifecycle management of registering components', () => {
         .toMatchInlineSnapshot(`
         Object {
           "bounds": Object {
-            "endCol": 5,
-            "endLine": 12,
-            "startCol": 4,
-            "startLine": 5,
+            "endCol": 4,
+            "endLine": 11,
+            "startCol": 3,
+            "startLine": 4,
           },
           "sourceDescriptorFile": "/utopia/components1.utopia.js",
           "type": "DESCRIPTOR_FILE",
@@ -2797,10 +2797,10 @@ describe('Lifecycle management of registering components', () => {
         .toMatchInlineSnapshot(`
         Object {
           "bounds": Object {
-            "endCol": 5,
-            "endLine": 12,
-            "startCol": 4,
-            "startLine": 5,
+            "endCol": 4,
+            "endLine": 11,
+            "startCol": 3,
+            "startLine": 4,
           },
           "sourceDescriptorFile": "/utopia/components1.utopia.js",
           "type": "DESCRIPTOR_FILE",

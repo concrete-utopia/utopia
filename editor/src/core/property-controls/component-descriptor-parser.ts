@@ -75,10 +75,10 @@ export function generateComponentBounds(
           const { loc } = component
           if (loc != null) {
             componentBoundsByModule[moduleName][componentName] = {
-              startLine: loc.start.line,
-              startCol: loc.start.column,
-              endLine: loc.end.line,
-              endCol: loc.end.column,
+              startLine: loc.start.line - 1,
+              startCol: loc.start.column - 1,
+              endLine: loc.end.line - 1,
+              endCol: loc.end.column - 1,
             }
           }
         })
