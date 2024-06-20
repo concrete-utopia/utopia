@@ -70,6 +70,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "printBehavior": "include-in-printing",
                 "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
@@ -99,6 +100,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "printBehavior": "include-in-printing",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
@@ -116,6 +118,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "printBehavior": "include-in-printing",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
@@ -241,6 +244,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "printBehavior": "include-in-printing",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {

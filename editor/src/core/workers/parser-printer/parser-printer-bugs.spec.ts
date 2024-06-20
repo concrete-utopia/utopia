@@ -48,11 +48,11 @@ export var App = props => {
         UNPARSED_CODE
         UTOPIA_JSX_COMPONENT - App
           JSX_ELEMENT - div - aaa
-            JSX_MAP_EXPRESSION - 1cc
+            JSX_MAP_EXPRESSION - 930
                 ATTRIBUTE_VALUE - 8f7
                 ATTRIBUTE_VALUE - 5cd
                 ATTRIBUTE_VALUE - 7a4
-              ATTRIBUTE_OTHER_JAVASCRIPT - 831
+              ATTRIBUTE_OTHER_JAVASCRIPT - d55
                 JSX_ELEMENT - div - bbb
                   JS_IDENTIFIER - aae
                   JSX_TEXT_BLOCK - 3bd
@@ -188,10 +188,10 @@ export var App = props => {
       UNPARSED_CODE
       UTOPIA_JSX_COMPONENT - Test
         JSX_ELEMENT - div - mapper-parent
-          JSX_MAP_EXPRESSION - 3d5
+          JSX_MAP_EXPRESSION - 40f
             JS_PROPERTY_ACCESS - 741
               JS_IDENTIFIER - f38
-            ATTRIBUTE_OTHER_JAVASCRIPT - 2d7
+            ATTRIBUTE_OTHER_JAVASCRIPT - d89
               JSX_ELEMENT - Card - card
                   ATTRIBUTE_VALUE - d53
                 JS_PROPERTY_ACCESS - 160
@@ -210,10 +210,10 @@ export var App = props => {
       UNPARSED_CODE
       UTOPIA_JSX_COMPONENT - Test
         JSX_ELEMENT - div - mapper-parent
-          JSX_MAP_EXPRESSION - 84e
+          JSX_MAP_EXPRESSION - ebd
             JS_PROPERTY_ACCESS - 741
               JS_IDENTIFIER - f38
-            ATTRIBUTE_OTHER_JAVASCRIPT - f54
+            ATTRIBUTE_OTHER_JAVASCRIPT - 331
               JSX_ELEMENT - Card - card
                   ATTRIBUTE_VALUE - d53"
     `)

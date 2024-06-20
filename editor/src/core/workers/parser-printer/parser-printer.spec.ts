@@ -6241,7 +6241,7 @@ export var App = props => {
                 JS_IDENTIFIER - f38
           UNPARSED_CODE
           UTOPIA_JSX_COMPONENT - App
-            JSX_ELEMENT - MyComp - cc3
+            JSX_ELEMENT - MyComp - 3ab
               JSX_ELEMENT - h1 - 1ee
                 JSX_TEXT_BLOCK - c58"
         `)
@@ -6304,7 +6304,7 @@ export var App = props => {
                 JS_IDENTIFIER - f38
           UNPARSED_CODE
           UTOPIA_JSX_COMPONENT - App
-            JSX_ELEMENT - MyComp - e4f
+            JSX_ELEMENT - MyComp - bdd
               JSX_ELEMENT - div - 776"
         `)
 

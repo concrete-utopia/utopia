@@ -94,6 +94,7 @@ Array [
                     "trailingComments": Array [],
                   },
                   "key": "data-uid",
+                  "printBehavior": "include-in-printing",
                   "type": "JSX_ATTRIBUTES_ENTRY",
                   "value": Object {
                     "comments": Object {
@@ -175,6 +176,7 @@ export var storyboard = (props) => {
             "trailingComments": Array [],
           },
           "key": "data-uid",
+          "printBehavior": "include-in-printing",
           "type": "JSX_ATTRIBUTES_ENTRY",
           "value": Object {
             "comments": Object {

@@ -65,6 +65,7 @@ describe('modifyUnderlyingTarget', () => {
       export var App = (props) => {
         return (
           <div
+            data-uid='app-outer-div'
             style={{
               position: 'relative',
               width: '100%',
@@ -73,6 +74,7 @@ describe('modifyUnderlyingTarget', () => {
             }}
           >
             <Card
+              data-uid='card-instance'
               style={{
                 position: 'absolute',
                 left: 0,
@@ -149,8 +151,12 @@ describe('modifyUnderlyingTarget', () => {
       import { Spring } from 'non-existant-dummy-library'
       export var Card = (props) => {
         return (
-          <div style={{ ...props.style }}>
+          <div
+            data-uid='card-outer-div'
+            style={{ ...props.style }}
+          >
             <div
+              data-uid='card-inner-div'
               data-testid='card-inner-div'
               style={{
                 position: 'absolute',
@@ -163,6 +169,7 @@ describe('modifyUnderlyingTarget', () => {
               data-thing='a thing'
             />
             <Spring
+              data-uid='card-inner-spring'
               data-testid='spring'
               style={{
                 position: 'absolute',
