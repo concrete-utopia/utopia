@@ -28,7 +28,11 @@ export function generateComponentBounds(
 
   const componentBoundsByModule: ComponentBoundsByModule = {}
 
-  function processComponentProperties(componentValue: any, moduleName: any, componentName: any) {
+  function processComponentProperties(
+    componentValue: any,
+    moduleName: string,
+    componentName: string,
+  ) {
     componentValue.properties.forEach((componentProp: any) => {
       if (
         componentProp.type === 'ObjectProperty' &&
