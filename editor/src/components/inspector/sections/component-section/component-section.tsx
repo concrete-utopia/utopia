@@ -255,7 +255,7 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
       attributeExpression.type === 'JS_PROPERTY_ACCESS' ||
       attributeExpression.type === 'JS_ELEMENT_ACCESS'
     ) {
-      const cartouche = (
+      return (
         <IdentifierExpressionCartoucheControl
           contents={getTextContentOfElement(attributeExpression, null)}
           icon={React.createElement(iconForControlType(props.controlDescription.control))}
@@ -270,8 +270,6 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
           datatype={datatypeForExpression}
         />
       )
-
-      return cartouche
     }
 
     if (
