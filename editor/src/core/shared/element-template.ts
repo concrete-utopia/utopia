@@ -273,6 +273,16 @@ export function jsExpressionValue<T>(
   }
 }
 
+export function jsExpressionWithPrintBehavior(
+  jsExpression: JSExpression,
+  printBehavior: PrintBehavior,
+): JSExpressionWithPrintBehavior {
+  return {
+    ...jsExpression,
+    printBehavior: printBehavior,
+  }
+}
+
 /**
  If the contents of an `ATTRIBUTE_VALUE` is an object (whose values are not `JSXAttribute`s), we might still want to
  dig directly into them. This is the return type for when we dig into the `JSXAttribute`s using a path, which
@@ -1161,9 +1171,21 @@ export function isJSXAttributesSpread(part: JSXAttributesPart): part is JSXAttri
   return part.type === 'JSX_ATTRIBUTES_SPREAD'
 }
 
-export function jsxAttributesFromMap(map: MapLike<JSExpression>): Array<JSXAttributesEntry> {
+type JSExpressionWithPrintBehavior = JSExpression & { printBehavior?: PrintBehavior }
+
+export function jsxAttributesFromMap(
+  map: MapLike<JSExpressionWithPrintBehavior>,
+): Array<JSXAttributesEntry> {
+  function getPrintBehavior(e: JSExpressionWithPrintBehavior): PrintBehavior {
+    return e.printBehavior ?? 'include-in-printing'
+  }
   return Object.keys(map).map((objectKey) => {
-    return jsxAttributesEntry(objectKey, map[objectKey], emptyComments, 'include-in-printing')
+    return jsxAttributesEntry(
+      objectKey,
+      map[objectKey],
+      emptyComments,
+      getPrintBehavior(map[objectKey]),
+    )
   })
 }
 
