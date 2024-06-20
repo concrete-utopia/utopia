@@ -2,6 +2,7 @@ import * as BabelParser from '@babel/parser'
 import traverse from '@babel/traverse'
 import type { Bounds } from 'utopia-vscode-common'
 import type { TextFileContentsWithPath } from './property-controls-local'
+import { resolve } from 'path'
 
 export type ComponentDescriptorPropertiesBounds = {
   [propertyName: string]: Bounds
@@ -37,10 +38,13 @@ export function generateComponentBounds(
       if (
         componentProp.type === 'ObjectProperty' &&
         componentProp.key.type === 'Identifier' &&
-        componentProp.key.name === 'properties' &&
-        componentProp.value.properties != null
+        componentProp.key.name === 'properties'
       ) {
-        componentProp.value.properties.forEach((prop: any) => {
+        const componentPropValue = resolveVariable(componentProp.value)
+        if (componentPropValue == null || componentPropValue.type !== 'ObjectExpression') {
+          return
+        }
+        componentPropValue.properties.forEach((prop: any) => {
           if (prop.type === 'ObjectProperty' && prop.key.type === 'Identifier') {
             const propertyName = prop.key.name
             const { loc: propLoc } = prop
