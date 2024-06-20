@@ -592,18 +592,60 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
 
   const descriptorFile = componentData?.descriptorFile
 
-  const contextMenuItems = Utils.stripNulls([
-    addOnUnsetValues([propName], propMetadata.onUnsetValues),
-    {
-      name: `Open ${propName} annotation`,
-      enabled: descriptorFile != null,
-      action: () => {
-        const bounds = descriptorFile?.bounds?.properties[propName]
-        if (descriptorFile != null) {
-          dispatch([openCodeEditorFile(descriptorFile.sourceDescriptorFile, true, bounds)])
-        }
+  const goToAnnotationItems = React.useMemo(() => {
+    // if there are no annotations, or they don't come from a descriptor file skip the menu item
+    if (descriptorFile?.sourceDescriptorFile == null) {
+      return []
+    }
+    // if there are no bounds available for the component annotation, just open the file
+    if (descriptorFile.bounds == null) {
+      return [
+        {
+          name: `Open annotation file`,
+          enabled: true,
+          action: () => {
+            dispatch([openCodeEditorFile(descriptorFile.sourceDescriptorFile, true)])
+          },
+        },
+      ]
+    }
+    // if there are no bounds available for the specific property, just go to the annotation of the component
+    if (descriptorFile?.bounds?.properties[propName] == null) {
+      return [
+        {
+          name: `Open component annotation`,
+          enabled: true,
+          action: () => {
+            if (descriptorFile.bounds != null) {
+              dispatch([
+                openCodeEditorFile(
+                  descriptorFile.sourceDescriptorFile,
+                  true,
+                  descriptorFile.bounds.bounds,
+                ),
+              ])
+            }
+          },
+        },
+      ]
+    }
+    return [
+      {
+        name: `Open property annotation`,
+        enabled: descriptorFile != null,
+        action: () => {
+          const bounds = descriptorFile?.bounds?.properties[propName]
+          if (bounds != null) {
+            dispatch([openCodeEditorFile(descriptorFile.sourceDescriptorFile, true, bounds)])
+          }
+        },
       },
-    },
+    ]
+  }, [descriptorFile, dispatch, propName])
+
+  const contextMenuItems = Utils.stripNulls([
+    addOnUnsetValues(['property'], propMetadata.onUnsetValues),
+    ...goToAnnotationItems,
   ])
 
   const labelControlStyle = React.useMemo(
