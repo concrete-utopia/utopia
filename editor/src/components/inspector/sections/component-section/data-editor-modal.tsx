@@ -7,6 +7,10 @@ import { HEADERS, MODE } from '../../../../common/server'
 import urljoin from 'url-join'
 import { RemixNavigationAtom } from '../../../canvas/remix/utopia-remix-root-component'
 import { useRefAtom } from '../../../editor/hook-utils'
+import { useDispatch } from '../../../editor/store/dispatch-context'
+import { getProjectID } from '../../../../common/env-vars'
+import { showToast } from '../../../editor/actions/action-creators'
+import { notice } from '../../../common/notice'
 
 type SubmissionState = 'draft' | 'confirmed' | 'publishing'
 
@@ -30,11 +34,30 @@ export const DataUpdateModal = React.memo(
         Object.values(remix.current).forEach((router) => router?.revalidate())
       }, [remix])
 
-      const requestUpdate = React.useCallback(() => {}, [])
+      const dispatch = useDispatch()
+
+      const requestUpdate = React.useCallback(() => {
+        const projectId = getProjectID()
+        if (projectId == null) {
+          dispatch([
+            showToast(
+              notice('Cannot find project id', 'ERROR', false, 'DataUpdateModal-no-project-id'),
+            ),
+          ])
+          return
+        }
+
+        void updateData(projectId, {
+          query: METAOBJECT_UPDATE_MUTATION,
+          variables: {
+            id: 'gid://shopify/Metaobject/87105306797',
+            metaobject: { fields: [{ key: 'quote', value: 'Very good' }] },
+          },
+        })
+      }, [dispatch])
 
       const [submissionState, setSubmissionState] = React.useState<SubmissionState>('draft')
 
-      // TODO: figure out data updates (again)
       // TODO: pass down the option for the label, the gid, the metafield name and the metafield value
 
       const onMainButtonClick = React.useCallback(() => {
@@ -44,7 +67,7 @@ export const DataUpdateModal = React.memo(
             break
           case 'confirmed':
             requestUpdate()
-            revalidateAllLoaders() // TODO: poll this
+            // revalidateAllLoaders() // TODO: poll this
             setSubmissionState('publishing')
             break
           case 'publishing':
@@ -52,7 +75,7 @@ export const DataUpdateModal = React.memo(
           default:
             assertNever(submissionState)
         }
-      }, [requestUpdate, revalidateAllLoaders, submissionState])
+      }, [requestUpdate, submissionState])
 
       const [value, setValue] = React.useState<string>('')
       const updateValue = React.useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -215,7 +238,10 @@ export const DataUpdateModal = React.memo(
   ),
 )
 
-interface RequestUpdateData {}
+interface RequestUpdateData {
+  query: string
+  variables: { id: string; metaobject: { fields: Array<{ key: string; value: string }> } }
+}
 
 function updateData(projectId: string, data: RequestUpdateData): Promise<void> {
   return fetch(urljoin('/internal/metaobjectupdate', projectId), {
@@ -224,5 +250,22 @@ function updateData(projectId: string, data: RequestUpdateData): Promise<void> {
     headers: HEADERS,
     mode: MODE,
     body: JSON.stringify(data),
-  }).then((res) => res.json())
+  })
+    .then((res) => res.json())
+    .then((c) => console.info(c))
+    .catch((e) => console.error(e))
 }
+
+const METAOBJECT_UPDATE_MUTATION = `#graphql
+mutation UpdateMetaobject($id: ID!, $metaobject: MetaobjectUpdateInput!) {
+  metaobjectUpdate(id: $id, metaobject: $metaobject) {
+    metaobject {
+      handle
+    }
+    userErrors {
+      field
+      message
+      code
+    }
+  }
+}`

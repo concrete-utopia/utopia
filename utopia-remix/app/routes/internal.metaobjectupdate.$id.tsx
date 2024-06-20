@@ -1,7 +1,5 @@
 import type { ActionFunctionArgs } from '@remix-run/node'
 
-import type { Params } from '@remix-run/react'
-
 import { ensure, handle, requireUser } from '../util/api.server'
 
 import { Status } from '../util/statusCodes'
@@ -24,7 +22,7 @@ export async function action(args: ActionFunctionArgs) {
   })
 }
 
-export async function handleUpdateMetaobject(req: Request, params: Params<string>) {
+export async function handleUpdateMetaobject(req: Request) {
   await requireUser(req)
 
   const body = await req.json()
