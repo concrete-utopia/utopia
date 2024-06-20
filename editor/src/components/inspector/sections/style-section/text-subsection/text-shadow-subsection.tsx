@@ -175,7 +175,7 @@ const TextShadowItem = React.memo<TextShadowItemProps>((props) => {
     <PropertyRow
       key={props.index}
       style={{
-        gridTemplateColumns: '12px 28px repeat(3, 1fr) 20px',
+        gridTemplateColumns: '12px 28px repeat(3, 1fr) 12px',
         gridColumnGap: 8,
       }}
     >
@@ -244,8 +244,8 @@ const TextShadowItem = React.memo<TextShadowItemProps>((props) => {
         numberType='Length'
         defaultUnitToHide={'px'}
       />
-      <SquareButton highlight onMouseDown={removeShadow} style={{ marginTop: 1 }}>
-        <Icons.Minus />
+      <SquareButton highlight onMouseDown={removeShadow} style={{ marginTop: 1, width: 12 }}>
+        <Icons.Minus width={12} height={12} />
       </SquareButton>
     </PropertyRow>
   )

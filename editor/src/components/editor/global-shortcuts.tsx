@@ -74,7 +74,6 @@ import {
   TOGGLE_INSPECTOR_AND_NAVIGATOR_SHORTCUT,
   TOGGLE_NAVIGATOR,
   TOGGLE_LIVE_CANVAS_SHORTCUT,
-  TOGGLE_PREVIEW_SHORTCUT,
   TOGGLE_INSPECTOR,
   TOGGLE_SHADOW_SHORTCUT,
   UNDO_CHANGES_SHORTCUT,
@@ -624,9 +623,6 @@ export function handleKeyDown(
           }
         }
         return []
-      },
-      [TOGGLE_PREVIEW_SHORTCUT]: () => {
-        return [EditorActions.togglePanel('preview')]
       },
       [TOGGLE_LIVE_CANVAS_SHORTCUT]: () => {
         return [EditorActions.toggleCanvasIsLive()]
