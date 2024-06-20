@@ -53,6 +53,7 @@ describe('modifyUnderlyingTarget', () => {
           element.props,
           'data-thing',
           jsExpressionValue('a thing', emptyComments),
+          'include-in-printing',
         )
         return jsxElement(element.name, element.uid, updatedAttributes, element.children)
       },
@@ -137,6 +138,7 @@ describe('modifyUnderlyingTarget', () => {
           element.props,
           'data-thing',
           jsExpressionValue('a thing', emptyComments),
+          'include-in-printing',
         )
         return jsxElement(element.name, element.uid, updatedAttributes, element.children)
       },
@@ -188,6 +190,7 @@ describe('modifyUnderlyingTarget', () => {
           element.props,
           'data-thing',
           jsExpressionValue('a thing', emptyComments),
+          'include-in-printing',
         )
         return jsxElement(element.name, element.uid, updatedAttributes, element.children)
       })
@@ -213,6 +216,7 @@ describe('Revision state management', () => {
           element.props,
           'data-thing',
           jsExpressionValue('a thing', emptyComments),
+          'include-in-printing',
         )
         return jsxElement(element.name, element.uid, updatedAttributes, element.children)
       },

@@ -30,6 +30,7 @@ import type { PropertyPath, PropertyPathPart } from './project-file-types'
 import * as PP from './property-path'
 import * as ObjectPath from 'object-path'
 import { assertNever } from './utils'
+import type { PrintBehavior } from 'utopia-shared/src/types'
 
 export function dropKeyFromNestedObject(
   nestedObject: JSExpressionNestedObject,
@@ -291,8 +292,9 @@ export function setJSXValueAtPath(
   attributes: JSXAttributes,
   path: PropertyPath,
   value: JSExpression,
+  printBehavior: PrintBehavior,
 ): Either<string, JSXAttributes> {
-  return setJSXValueAtPathParts(attributes, PP.getElements(path), 0, value)
+  return setJSXValueAtPathParts(attributes, PP.getElements(path), 0, value, printBehavior)
 }
 
 function setJSXValueAtPathParts(
@@ -300,6 +302,7 @@ function setJSXValueAtPathParts(
   path: Array<PropertyPathPart>,
   pathIndex: number,
   value: JSExpression,
+  printBehavior: PrintBehavior,
 ): Either<string, JSXAttributes> {
   const pathPart = path[pathIndex]
   const pathRemaining = path.length - pathIndex
@@ -310,7 +313,7 @@ function setJSXValueAtPathParts(
       const updatedAttributes = deleteJSXAttribute(attributes, pathPart)
       return right(updatedAttributes)
     } else {
-      return right(setJSXAttributesAttribute(attributes, pathPart, value))
+      return right(setJSXAttributesAttribute(attributes, pathPart, value, printBehavior))
     }
   } else {
     const existingAttribute = getJSXAttribute(attributes, pathPart)
@@ -320,6 +323,7 @@ function setJSXValueAtPathParts(
           attributes,
           pathPart,
           deeplyCreatedValue(path.slice(pathIndex + 1), value),
+          'include-in-printing',
         ),
       )
     } else {
@@ -330,7 +334,7 @@ function setJSXValueAtPathParts(
         value,
       )
       return mapEither((updated) => {
-        return setJSXAttributesAttribute(attributes, pathPart, updated)
+        return setJSXAttributesAttribute(attributes, pathPart, updated, 'include-in-printing')
       }, updatedAttribute)
     }
   }

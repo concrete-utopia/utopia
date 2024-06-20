@@ -122,6 +122,7 @@ export function createLookupRender(
       element.props,
       PP.create('data-uid'),
       jsExpressionValue(generatedUID, emptyComments),
+      'skip-printing',
     )
 
     const innerPath = optionalMap((path) => EP.appendToPath(path, generatedUID), elementPath)

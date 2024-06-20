@@ -282,7 +282,12 @@ export function createJsxImage(uid: string, options: Partial<JSXImageOptions>): 
   return jsxElement(
     'img',
     uid,
-    setJSXAttributesAttribute(propsForElement, 'data-uid', jsExpressionValue(uid, emptyComments)),
+    setJSXAttributesAttribute(
+      propsForElement,
+      'data-uid',
+      jsExpressionValue(uid, emptyComments),
+      'skip-printing',
+    ),
     [],
   )
 }

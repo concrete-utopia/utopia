@@ -184,7 +184,7 @@ export async function benchmarkAttributes(): Promise<void> {
       const attributes = sampleJsxAttributes()
       const newValue = jsExpressionValue(240, emptyComments)
       return () => {
-        const result = setJSXValueAtPath(attributes, propertyPath, newValue)
+        const result = setJSXValueAtPath(attributes, propertyPath, newValue, 'include-in-printing')
         forEachLeft(result, (error) => {
           throw new Error(error)
         })

@@ -37,7 +37,7 @@ export function handleMessage(
               return getPrintAndReparseCodeResult(
                 file.filename,
                 file.parseSuccess,
-                file.stripUIDs,
+                true,
                 file.versionNumber,
                 alreadyExistingUIDs_MUTABLE,
                 workerMessage.applySteganography,

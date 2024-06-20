@@ -744,6 +744,7 @@ export function jsxAttributesArbitrary(): Arbitrary<JSXAttributes> {
         UTOPIA_UID_KEY,
         jsExpressionValue(dataUID, emptyComments, dataUIDValueUID),
         emptyComments,
+        'include-in-printing',
       ),
     ]
   })

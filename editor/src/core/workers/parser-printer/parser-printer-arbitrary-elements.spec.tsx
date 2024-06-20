@@ -206,6 +206,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
               elementWithin.props,
               PP.create('style'),
               jsExpressionValue({ left: 20, top: 300 }, emptyComments),
+              'include-in-printing',
             )
             forEachRight(newAttributes, (updated) => {
               elementWithin.props = updated
@@ -292,6 +293,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
               elementWithin.props,
               PP.create('style'),
               jsExpressionValue({ left: 20, top: 300 }, emptyComments),
+              'include-in-printing',
             )
             forEachRight(newAttributes, (updated) => {
               elementWithin.props = updated

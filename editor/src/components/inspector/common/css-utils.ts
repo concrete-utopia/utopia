@@ -3939,7 +3939,7 @@ export function toggleStylePropPath(
         modifiableAttributeIsAttributeNotFound(updatedAttribute) ||
         modifiableAttributeIsPartOfAttributeValue(updatedAttribute)
           ? left(`Unable to set value of type ${updatedAttribute.type}`)
-          : setJSXValueAtPath(element.props, path, updatedAttribute)
+          : setJSXValueAtPath(element.props, path, updatedAttribute, 'include-in-printing')
       if (isLeft(props)) {
         return element
       } else {
@@ -3960,7 +3960,12 @@ export function toggleStylePropPaths(
     const styleProp = getJSXAttributesAtPath(element.props, PP.create('style'))
     const attribute = styleProp.attribute
     if (styleProp.remainingPath == null && isRegularJSXAttribute(attribute)) {
-      const newProps = setJSXValueAtPath(element.props, PP.create('style'), toggleFn(attribute))
+      const newProps = setJSXValueAtPath(
+        element.props,
+        PP.create('style'),
+        toggleFn(attribute),
+        'include-in-printing',
+      )
       if (isRight(newProps)) {
         return { ...element, props: newProps.value }
       }

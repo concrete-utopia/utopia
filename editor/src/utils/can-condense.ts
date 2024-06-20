@@ -49,5 +49,10 @@ export function isDataCanCondenseProp(prop: JSXAttributesPart): prop is DataCanC
 }
 
 export function dataCanCondenseProp(value: boolean): JSXAttributesEntry {
-  return jsxAttributesEntry(DataCanCondense, jsExpressionValue(value, emptyComments), emptyComments)
+  return jsxAttributesEntry(
+    DataCanCondense,
+    jsExpressionValue(value, emptyComments),
+    emptyComments,
+    'include-in-printing',
+  )
 }

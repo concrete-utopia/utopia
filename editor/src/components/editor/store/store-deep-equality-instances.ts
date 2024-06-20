@@ -1350,13 +1350,15 @@ export const JSExpressionKeepDeepEqualityCall: KeepDeepEqualityCall<JSExpression
 }
 
 export function JSXAttributesEntryDeepEqualityCall(): KeepDeepEqualityCall<JSXAttributesEntry> {
-  return combine3EqualityCalls(
+  return combine4EqualityCalls(
     (entry) => entry.key,
     createCallWithTripleEquals(),
     (entry) => entry.value,
     JSExpressionKeepDeepEqualityCall,
     (entry) => entry.comments,
     ParsedCommentsKeepDeepEqualityCall,
+    (entry) => entry.printBehavior,
+    createCallWithTripleEquals(),
     jsxAttributesEntry,
   )
 }

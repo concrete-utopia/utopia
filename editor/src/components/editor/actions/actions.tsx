@@ -1796,7 +1796,12 @@ export const UPDATE_FNS = {
         if (!isJSXElement(element)) {
           return element
         }
-        const updatedProps = setJSXValueAtPath(element.props, action.propertyPath, action.value)
+        const updatedProps = setJSXValueAtPath(
+          element.props,
+          action.propertyPath,
+          action.value,
+          'include-in-printing',
+        )
         // when this is a render prop we should select it
         if (isJSXElement(action.value)) {
           newSelectedViews = [EP.appendToPath(action.target, action.value.uid)]
@@ -2280,7 +2285,12 @@ export const UPDATE_FNS = {
       propsTransform = (props) => unsetJSXValueAtPath(props, PathForSceneDataLabel)
     } else {
       propsTransform = (props) =>
-        setJSXValueAtPath(props, PathForSceneDataLabel, jsExpressionValue(name, emptyComments))
+        setJSXValueAtPath(
+          props,
+          PathForSceneDataLabel,
+          jsExpressionValue(name, emptyComments),
+          'include-in-printing',
+        )
     }
     return modifyOpenJsxElementAtPath(
       target,
@@ -2405,7 +2415,9 @@ export const UPDATE_FNS = {
               if (styleProps == null) {
                 return right(deleteJSXAttribute(props, 'style'))
               } else {
-                return right(setJSXAttributesAttribute(props, 'style', styleProps))
+                return right(
+                  setJSXAttributesAttribute(props, 'style', styleProps, 'include-in-printing'),
+                )
               }
             },
           )
@@ -2556,7 +2568,7 @@ export const UPDATE_FNS = {
         ...element,
         props: defaultEither(
           element.props,
-          setJSXValueAtPath(element.props, propertyPath, replaceWith),
+          setJSXValueAtPath(element.props, propertyPath, replaceWith, 'include-in-printing'),
         ),
       }
     }
@@ -3141,7 +3153,7 @@ export const UPDATE_FNS = {
             return right(attributes)
           },
           (withPropertiesCleared) => {
-            return setJSXValuesAtPaths(withPropertiesCleared, propsToSet)
+            return setJSXValuesAtPaths(withPropertiesCleared, propsToSet, 'include-in-printing')
           },
           withOriginalPropertiesCleared,
         )
@@ -4410,6 +4422,7 @@ export const UPDATE_FNS = {
             attributesWithUnsetKey.value,
             newPropertyPath,
             jsExpressionValue(originalValue.value, emptyComments),
+            'include-in-printing',
           )
           return setResult
         } else {
@@ -4607,7 +4620,12 @@ export const UPDATE_FNS = {
         const path = PP.create(AspectRatioLockedProp)
         const updatedProps = action.locked
           ? eitherToMaybe(
-              setJSXValueAtPath(element.props, path, jsExpressionValue(true, emptyComments)),
+              setJSXValueAtPath(
+                element.props,
+                path,
+                jsExpressionValue(true, emptyComments),
+                'include-in-printing',
+              ),
             )
           : deleteJSXAttribute(element.props, AspectRatioLockedProp)
         return {
@@ -5397,6 +5415,7 @@ export const UPDATE_FNS = {
                 element.props,
                 PP.create(UTOPIA_UID_KEY),
                 jsExpressionValue(newUID, emptyComments),
+                'skip-printing',
               ),
               `Could not set data-uid on props of insertable element ${element.name}`,
             )
@@ -5410,7 +5429,7 @@ export const UPDATE_FNS = {
                   value: jsExpressionValue(100, emptyComments),
                 },
               ]
-              const withSizeUpdates = setJSXValuesAtPaths(props, sizesToSet)
+              const withSizeUpdates = setJSXValuesAtPaths(props, sizesToSet, 'include-in-printing')
               if (isRight(withSizeUpdates)) {
                 props = withSizeUpdates.value
               } else {

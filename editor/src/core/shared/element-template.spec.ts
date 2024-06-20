@@ -31,6 +31,7 @@ describe('setJSXAttributesAttribute', () => {
     'one',
     jsExpressionValue('thing', emptyComments),
     emptyComments,
+    'include-in-printing',
   )
   const startingAttributesSpread = jsxAttributesSpread(
     jsExpressionValue('theRest', emptyComments),
@@ -41,8 +42,16 @@ describe('setJSXAttributesAttribute', () => {
   it('Setting a value on a new key adds it to the attributes', () => {
     const newKey = 'newKey'
     const newValue = jsExpressionValue('newValue', emptyComments)
-    const expected = [...startingAttributes, jsxAttributesEntry(newKey, newValue, emptyComments)]
-    const actual = setJSXAttributesAttribute(startingAttributes, newKey, newValue)
+    const expected = [
+      ...startingAttributes,
+      jsxAttributesEntry(newKey, newValue, emptyComments, 'include-in-printing'),
+    ]
+    const actual = setJSXAttributesAttribute(
+      startingAttributes,
+      newKey,
+      newValue,
+      'include-in-printing',
+    )
     expect(actual).toEqual(expected)
   })
 
@@ -50,10 +59,15 @@ describe('setJSXAttributesAttribute', () => {
     const existingKey = 'one'
     const newValue = jsExpressionValue('newValue', emptyComments)
     const expected = [
-      jsxAttributesEntry(existingKey, newValue, emptyComments),
+      jsxAttributesEntry(existingKey, newValue, emptyComments, 'include-in-printing'),
       startingAttributesSpread,
     ]
-    const actual = setJSXAttributesAttribute(startingAttributes, existingKey, newValue)
+    const actual = setJSXAttributesAttribute(
+      startingAttributes,
+      existingKey,
+      newValue,
+      'include-in-printing',
+    )
     expect(actual).toEqual(expected)
   })
 })
@@ -63,6 +77,7 @@ describe('deleteJSXAttribute', () => {
     'one',
     jsExpressionValue('thing', emptyComments),
     emptyComments,
+    'include-in-printing',
   )
   const startingAttributesSpread = jsxAttributesSpread(
     jsExpressionValue('theRest', emptyComments),

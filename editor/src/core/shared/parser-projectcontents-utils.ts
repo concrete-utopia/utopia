@@ -144,7 +144,6 @@ export function getFilesToUpdate(
   let filesToUpdate: Array<ParseOrPrint> = []
   let forciblyParsedFiles: Array<string> = []
   let existingUIDs: Set<string> = emptySet()
-  const shouldStripUids = PRODUCTION_ENV || !isFeatureEnabled('Debug - Print UIDs')
   walkContentsTree(projectContents, (fullPath, file) => {
     if (isTextFile(file)) {
       if (
@@ -155,7 +154,7 @@ export function getFilesToUpdate(
           createPrintAndReparseFile(
             fullPath,
             file.fileContents.parsed,
-            shouldStripUids,
+            true, // DON'T STRIP UIDs FROM THE MODEL
             file.versionNumber,
           ),
         )

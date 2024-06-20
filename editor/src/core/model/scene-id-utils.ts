@@ -36,6 +36,7 @@ function setIdPropOnJSXElement(element: JSXElement, idPropValueToUse: string): J
     element.props,
     PP.create(SceneCommentIdPropName),
     jsExpressionValue(idPropValueToUse, emptyComments),
+    'include-in-printing',
   )
 
   if (IS_TEST_ENVIRONMENT || isLeft(updatedProps)) {

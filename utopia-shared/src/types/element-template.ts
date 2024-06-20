@@ -191,10 +191,13 @@ export type JSExpression =
 
 export type JSExpressionMapOrOtherJavascript = JSExpressionOtherJavaScript | JSXMapExpression
 
+export type PrintBehavior = 'skip-printing' | 'include-in-printing'
+
 export interface JSXAttributesEntry extends WithComments {
   type: 'JSX_ATTRIBUTES_ENTRY'
   key: string | number
   value: JSExpression
+  printBehavior: PrintBehavior
 }
 
 export interface JSXAttributesSpread extends WithComments {

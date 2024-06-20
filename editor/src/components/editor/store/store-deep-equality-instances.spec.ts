@@ -932,16 +932,19 @@ describe('JSXAttributesEntryDeepEqualityCall', () => {
     'key',
     jsExpressionValue('old', emptyComments, 'old'),
     emptyComments,
+    'include-in-printing',
   )
   const newSameValue = jsxAttributesEntry(
     'key',
     jsExpressionValue('old', emptyComments, 'old'),
     emptyComments,
+    'include-in-printing',
   )
   const newDifferentValue = jsxAttributesEntry(
     'key',
     jsExpressionValue('new', emptyComments, 'new'),
     emptyComments,
+    'include-in-printing',
   )
 
   it('same reference returns the same reference', () => {

@@ -466,7 +466,8 @@ function jsxElementToTSJSXElement(
   fastForEach(element.props, (propEntry) => {
     switch (propEntry.type) {
       case 'JSX_ATTRIBUTES_ENTRY':
-        const skip = stripUIDs && propEntry.key === 'data-uid'
+        const skip =
+          stripUIDs && propEntry.key === 'data-uid' && propEntry.printBehavior === 'skip-printing'
         if (!skip) {
           const prop = propEntry.value
           const identifier = TS.createIdentifier(

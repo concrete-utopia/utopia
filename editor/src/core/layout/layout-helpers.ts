@@ -59,6 +59,7 @@ export const PinLayoutHelpers = {
             workingProps,
             stylePropPathMappingFn(frameProp, propertyTarget),
             jsExpressionValue(frame[frameProp], emptyComments),
+            'include-in-printing',
           )
         }
       },
@@ -109,7 +110,7 @@ export const FlexLayoutHelpers = {
           }
 
           // Assign the new properties
-          return setJSXValuesAtPaths(props, propsToSet)
+          return setJSXValuesAtPaths(props, propsToSet, 'include-in-printing')
         },
         withoutLayoutProps,
         FlexLayoutHelpers.convertWidthHeightToFlex(

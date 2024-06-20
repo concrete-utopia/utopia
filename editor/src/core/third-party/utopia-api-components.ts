@@ -47,7 +47,11 @@ const BasicUtopiaComponentDescriptor = (
           },
         },
         elementToInsert: () =>
-          jsxElementWithoutUID(name, [jsxAttributesEntry('style', styleProp(), emptyComments)], []),
+          jsxElementWithoutUID(
+            name,
+            [jsxAttributesEntry('style', styleProp(), emptyComments, 'include-in-printing')],
+            [],
+          ),
       },
     ],
     source: defaultComponentDescriptor(),
@@ -91,8 +95,9 @@ const BasicUtopiaSceneDescriptor = (
                 'commentId',
                 jsExpressionValue('scene', emptyComments),
                 emptyComments,
+                'include-in-printing',
               ),
-              jsxAttributesEntry('style', styleProp(), emptyComments),
+              jsxAttributesEntry('style', styleProp(), emptyComments, 'include-in-printing'),
             ],
             [],
           ),

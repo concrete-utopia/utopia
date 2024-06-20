@@ -282,7 +282,7 @@ function setPixelValue(
     },
   ]
 
-  const updatePropsResult = setJSXValuesAtPaths(properties, propsToUpdate)
+  const updatePropsResult = setJSXValuesAtPaths(properties, propsToUpdate, 'include-in-printing')
 
   return mapEither((updatedProps) => {
     return {
@@ -317,7 +317,7 @@ function updatePixelValueByPixel(
       value: jsExpressionValue(newValue, emptyComments),
     },
   ]
-  const updatePropsResult = setJSXValuesAtPaths(properties, propsToUpdate)
+  const updatePropsResult = setJSXValuesAtPaths(properties, propsToUpdate, 'include-in-printing')
 
   return mapEither((updatedProps) => {
     return {
@@ -369,7 +369,7 @@ function updatePercentageValueByPixel(
     },
   ]
 
-  const updatePropsResult = setJSXValuesAtPaths(properties, propsToUpdate)
+  const updatePropsResult = setJSXValuesAtPaths(properties, propsToUpdate, 'include-in-printing')
 
   return mapEither((updatedProps) => {
     return {

@@ -112,6 +112,7 @@ import type {
   HugPropertyWidthHeight,
   ElementsByUID,
   FunctionWrap,
+  PrintBehavior,
 } from 'utopia-shared/src/types/element-template'
 import type { VariableData } from '../../components/canvas/ui-jsx-canvas'
 
@@ -672,6 +673,7 @@ export function simplifyAttributesIfPossible(attributes: JSXAttributes): JSXAttr
           attribute.key,
           simplifyAttributeIfPossible(attribute.value),
           attribute.comments,
+          attribute.printBehavior,
         )
       case 'JSX_ATTRIBUTES_SPREAD':
         return jsxAttributesSpread(
@@ -1120,17 +1122,24 @@ export function jsxAttributesEntry(
   key: string | number,
   value: JSExpression,
   comments: ParsedComments,
+  printBehavior: PrintBehavior,
 ): JSXAttributesEntry {
   return {
     type: 'JSX_ATTRIBUTES_ENTRY',
     key: key,
     value: value,
     comments: comments,
+    printBehavior: printBehavior,
   }
 }
 
 export function simpleAttribute(key: string, value: unknown): JSXAttributesEntry {
-  return jsxAttributesEntry(key, jsExpressionValue(value, emptyComments), emptyComments)
+  return jsxAttributesEntry(
+    key,
+    jsExpressionValue(value, emptyComments),
+    emptyComments,
+    'include-in-printing',
+  )
 }
 
 export function jsxAttributesSpread(
@@ -1154,7 +1163,7 @@ export function isJSXAttributesSpread(part: JSXAttributesPart): part is JSXAttri
 
 export function jsxAttributesFromMap(map: MapLike<JSExpression>): Array<JSXAttributesEntry> {
   return Object.keys(map).map((objectKey) => {
-    return jsxAttributesEntry(objectKey, map[objectKey], emptyComments)
+    return jsxAttributesEntry(objectKey, map[objectKey], emptyComments, 'include-in-printing')
   })
 }
 
@@ -1209,6 +1218,7 @@ export function setJSXAttributesAttribute(
   attributes: JSXAttributes,
   key: string | number,
   value: JSExpression,
+  printBehavior: PrintBehavior,
 ): JSXAttributes {
   let updatedExistingField: boolean = false
   let result: JSXAttributes = []
@@ -1217,7 +1227,7 @@ export function setJSXAttributesAttribute(
     switch (attrPart.type) {
       case 'JSX_ATTRIBUTES_ENTRY':
         if (attrPart.key === key) {
-          result.push(jsxAttributesEntry(key, value, attrPart.comments))
+          result.push(jsxAttributesEntry(key, value, attrPart.comments, attrPart.printBehavior))
           updatedExistingField = true
         } else {
           result.push(attrPart)
@@ -1227,13 +1237,12 @@ export function setJSXAttributesAttribute(
         result.push(attrPart)
         break
       default:
-        const _exhaustiveCheck: never = attrPart
-        throw new Error(`Unhandled attribute type ${JSON.stringify(attrPart)}`)
+        assertNever(attrPart)
     }
   }
 
   if (!updatedExistingField) {
-    result.push(jsxAttributesEntry(key, value, emptyComments))
+    result.push(jsxAttributesEntry(key, value, emptyComments, printBehavior))
   }
   return result
 }
@@ -1504,6 +1513,7 @@ export function clearAttributesUniqueIDs(attributes: JSXAttributes): JSXAttribut
           attribute.key,
           clearExpressionUniqueIDs(attribute.value),
           attribute.comments,
+          attribute.printBehavior,
         )
       case 'JSX_ATTRIBUTES_SPREAD':
         return jsxAttributesSpread(
@@ -1525,6 +1535,7 @@ export function clearAttributesSourceMaps(attributes: JSXAttributes): JSXAttribu
           attribute.key,
           clearExpressionSourceMaps(attribute.value),
           attribute.comments,
+          attribute.printBehavior,
         )
       case 'JSX_ATTRIBUTES_SPREAD':
         return jsxAttributesSpread(
@@ -1932,7 +1943,12 @@ export function jsxTestElement(
   return jsxElement(
     name,
     uid,
-    setJSXAttributesAttribute(props, 'data-uid', jsExpressionValue(uid, emptyComments)),
+    setJSXAttributesAttribute(
+      props,
+      'data-uid',
+      jsExpressionValue(uid, emptyComments),
+      'include-in-printing',
+    ),
     children,
   )
 }

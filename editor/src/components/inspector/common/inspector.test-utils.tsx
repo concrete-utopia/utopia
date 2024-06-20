@@ -130,6 +130,7 @@ export function editPropOfSelectedView(
           element.props,
           path,
           jsExpressionValue(newValue, emptyComments),
+          'include-in-printing',
         )
         if (isRight(updatedAttributes)) {
           return {

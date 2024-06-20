@@ -617,7 +617,7 @@ export function updateFramesOfScenesAndComponents(
           // ...Add in the updated properties.
 
           const layoutPropsAdded = flatMapEither(
-            (props) => setJSXValuesAtPaths(props, propsToSet),
+            (props) => setJSXValuesAtPaths(props, propsToSet, 'include-in-printing'),
             layoutPropsRemoved,
           )
 
