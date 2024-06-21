@@ -406,11 +406,9 @@ export function findJSXElementChildAtPath(
             for (const prop of element.props) {
               if (prop.type === 'JSX_ATTRIBUTES_ENTRY') {
                 const propValue = prop.value
-                if (isJSXElement(propValue)) {
-                  const propResult = findAtPathInner(propValue, tailPath)
-                  if (propResult != null) {
-                    return propResult
-                  }
+                const propResult = findAtPathInner(propValue, tailPath)
+                if (propResult != null) {
+                  return propResult
                 }
               }
             }
