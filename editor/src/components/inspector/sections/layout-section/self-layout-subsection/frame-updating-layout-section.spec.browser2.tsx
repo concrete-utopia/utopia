@@ -105,7 +105,7 @@ interface TestCase {
   expectedFixedHugDropdownHeightValue: string
 }
 
-describe(/*.only*/ 'Frame updating layout section', () => {
+describe('Frame updating layout section', () => {
   function makeTestCase(testCase: TestCase) {
     return async () => {
       const editor = await renderTestEditorWithCode(
