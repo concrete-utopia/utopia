@@ -26,6 +26,7 @@ import type {
 } from '../../shared/element-template'
 import {
   isArbitraryJSBlock,
+  isJSXAttributeValue,
   isJSXAttributesEntry,
   isUtopiaJSXComponent,
 } from '../../shared/element-template'
@@ -151,6 +152,7 @@ function updateUID<T>(
   oldUID: string,
   fixUIDsState: FixUIDsState,
   baseValue: T,
+  dataUIDs: { oldDataUID: string | null; newDataUID: string | null } | null = null,
 ): T {
   function addMapping(originalUID: string, newUID: string): void {
     fixUIDsState.mappings.push({ originalUID: originalUID, newUID: newUID })
@@ -176,7 +178,16 @@ function updateUID<T>(
           uidToUse = newUID
         } else {
           // The UID has changed, add a mapping so the highlight bounds can be updated.
-          uidToUse = oldUID
+          function getUIDToUse(): string {
+            if (dataUIDs == null || dataUIDs.oldDataUID == null || dataUIDs.newDataUID == null) {
+              return oldUID
+            }
+            if (dataUIDs.oldDataUID === dataUIDs.newDataUID) {
+              return oldUID
+            }
+            return dataUIDs.newDataUID
+          }
+          uidToUse = getUIDToUse()
           addMapping(newUID, uidToUse)
         }
         fixUIDsState.mutableAllNewUIDs.add(uidToUse)
@@ -700,12 +711,20 @@ export function fixJSXElementUIDs(
   const oldDataUIDPropUIDInUseElsewhere =
     oldDataUIDProp != null && newDataUIDProp != null && oldDataUIDProp.uid !== newDataUIDProp.uid
 
+  function getDataUIDValueOrNull(dataUIDProp: JSExpression | null): string | null {
+    return dataUIDProp != null && isJSXAttributeValue(dataUIDProp) ? dataUIDProp.value : null
+  }
+
   // Update the UID upfront.
   const elementWithUpdatedUID = updateUID(
     jsxElementUIDOptic,
     oldElement?.uid ?? newElement.uid,
     fixUIDsState,
     newElement,
+    {
+      oldDataUID: getDataUIDValueOrNull(oldDataUIDProp),
+      newDataUID: getDataUIDValueOrNull(newDataUIDProp),
+    },
   )
 
   // Carry the UID of the prop that maybe set over as well.
