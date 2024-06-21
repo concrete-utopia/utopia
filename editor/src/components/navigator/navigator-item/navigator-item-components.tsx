@@ -240,7 +240,8 @@ const AddChildButton = React.memo((props: AddChildButtonProps) => {
   }
 
   return (
-    <Popover activator={
+    <Popover
+      activator={
         <Icn
           category='semantic'
           type='plus-in-white-translucent-circle'

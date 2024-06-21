@@ -12,6 +12,7 @@ interface KeyboardContext {
   length: number | null
   setLength: (numElements: number) => void
   active: number | null
+  setActive: (value: number) => void
   setActiveOnClick: (callback: () => void) => void
 }
 
@@ -19,6 +20,7 @@ const PopoverKeyboardContext = React.createContext<KeyboardContext>({
   length: null,
   setLength: () => {},
   active: null,
+  setActive: () => {},
   setActiveOnClick: (callback: () => void) => {},
 });
 
@@ -36,7 +38,7 @@ const Button = styled(RadixPopover.Close, {
 });
 
 export const PopoverListContent = ({items}: PopoverListContentProps) => {
-  const {setLength, active, setActiveOnClick} = React.useContext(PopoverKeyboardContext);
+  const {setLength, active, setActive, setActiveOnClick} = React.useContext(PopoverKeyboardContext);
 
   React.useEffect(() => {
     setLength(items.length)
@@ -56,7 +58,7 @@ export const PopoverListContent = ({items}: PopoverListContentProps) => {
           <Button
             css={{
               // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-              background: active === index ? colorTheme.primary.value : 'none',
+              background: active === index ? `${colorTheme.primary.value} !important`: 'none',
               border: 'none',
               borderRadius: 4,
               padding: 8,
@@ -66,7 +68,11 @@ export const PopoverListContent = ({items}: PopoverListContentProps) => {
               width: '100%',
               textAlign: 'left',
             }}
-            onClick={onClick}
+            // eslint-disable-next-line react/jsx-no-bind
+            onClick={() => {
+              onClick()
+              setActive(-1)
+            }}
           >
             {label}
           </Button>
@@ -83,7 +89,7 @@ interface PopoverProps {
 }
 
 export const Popover = ({align = 'start', activator, children}: PopoverProps) => {
-  const [selectedIndex, setSelectedIndex] = React.useState(0)
+  const [selectedIndex, setSelectedIndex] = React.useState(-1)
   const [numElements, setNumElements] = React.useState(0)
   const [activeOnClick, setActiveOnClick] = React.useState<(() => void) | null>(null)
 
@@ -106,6 +112,7 @@ export const Popover = ({align = 'start', activator, children}: PopoverProps) =>
       length: numElements,
       setLength: setNumElements,
       active: selectedIndex,
+      setActive: setSelectedIndex,
       setActiveOnClick: (callback) => {
         setActiveOnClick(() => callback)
       },
