@@ -132,7 +132,7 @@ function buildPropertyCallingFunction(
   functionName: string,
   parameters: JSExpression[],
   imports: Imports,
-  stripUIDs: boolean,
+  stripUIDs: StripUIDsBehavior,
 ): TS.Expression {
   return TS.createCall(
     TS.createPropertyAccess(TS.createIdentifier('UtopiaUtils'), TS.createIdentifier(functionName)),
@@ -199,7 +199,7 @@ function rawCodeToExpressionStatement(rawCode: string): {
 function jsxAttributeToExpression(
   attribute: JSExpression,
   imports: Imports,
-  stripUIDs: boolean,
+  stripUIDs: StripUIDsBehavior,
 ): TS.Expression {
   function createExpression(): TS.Expression {
     switch (attribute.type) {
@@ -360,7 +360,7 @@ function updateJSXElementsWithin(
   expression: TS.Expression,
   elementsWithin: ElementsWithin,
   imports: Imports,
-  stripUIDs: boolean,
+  stripUIDs: StripUIDsBehavior,
 ): TS.Expression {
   function streamlineInElementsWithin(
     attributes: TS.JsxAttributes,
@@ -460,14 +460,16 @@ function getFragmentElementNameFromImports(imports: Imports): JSXElementName {
 function jsxElementToTSJSXElement(
   element: JSXElement,
   imports: Imports,
-  stripUIDs: boolean,
+  stripUIDs: StripUIDsBehavior,
 ): TS.JsxElement | TS.JsxSelfClosingElement {
   let attribsArray: Array<TS.JsxAttributeLike> = []
   fastForEach(element.props, (propEntry) => {
     switch (propEntry.type) {
       case 'JSX_ATTRIBUTES_ENTRY':
         const skip =
-          stripUIDs && propEntry.key === 'data-uid' && propEntry.printBehavior === 'skip-printing'
+          propEntry.key === 'data-uid' &&
+          ((propEntry.printBehavior === 'skip-printing' && stripUIDs === 'strip-for-printing') ||
+            stripUIDs === 'always-for-tests')
         if (!skip) {
           const prop = propEntry.value
           const identifier = TS.createIdentifier(
@@ -532,7 +534,7 @@ function jsxElementToTSJSXElement(
 function jsxElementToExpression(
   element: JSXElementChild,
   imports: Imports,
-  stripUIDs: boolean,
+  stripUIDs: StripUIDsBehavior,
   parentIsJSX: boolean,
 ):
   | TS.JsxElement
@@ -631,7 +633,7 @@ function jsxElementToExpression(
 function jsxElementToJSXExpression(
   element: JSXElementChild,
   imports: Imports,
-  stripUIDs: boolean,
+  stripUIDs: StripUIDsBehavior,
 ): TS.JsxElement | TS.JsxSelfClosingElement | TS.JsxText | TS.JsxExpression | TS.JsxFragment {
   const expression = jsxElementToExpression(element, imports, stripUIDs, true)
   if (
@@ -651,15 +653,20 @@ export interface PrintCodeOptions {
   forPreview: boolean
   pretty: boolean
   includeElementMetadata: boolean
-  stripUIDs: boolean
+  stripUIDs: StripUIDsBehavior
   insertLinesBetweenStatements: boolean
 }
+
+export type StripUIDsBehavior =
+  | 'dont-strip' // the UIDs won't be stripped
+  | 'strip-for-printing' // the UIDs will be stripped according to the PrintBehavior attribute of the data-uid
+  | 'always-for-tests' // the UIDs will be always stripped regardless of the PrintBehavior
 
 export function printCodeOptions(
   forPreview: boolean,
   pretty: boolean,
   includeElementMetadata: boolean,
-  stripUIDs: boolean = false,
+  stripUIDs: StripUIDsBehavior = 'dont-strip',
   insertLinesBetweenStatements: boolean = false,
 ): PrintCodeOptions {
   return {
@@ -865,7 +872,11 @@ function printUtopiaJSXComponent(
   }
 }
 
-function printParam(param: Param, imports: Imports, stripUIDs: boolean): TS.ParameterDeclaration {
+function printParam(
+  param: Param,
+  imports: Imports,
+  stripUIDs: StripUIDsBehavior,
+): TS.ParameterDeclaration {
   const dotDotDotToken = optionallyCreateDotDotDotToken(param.dotDotDotToken)
   return TS.createParameter(
     undefined,
@@ -881,7 +892,7 @@ function printParam(param: Param, imports: Imports, stripUIDs: boolean): TS.Para
 function printBindingExpression(
   defaultExpression: JSExpression | null,
   imports: Imports,
-  stripUIDs: boolean,
+  stripUIDs: StripUIDsBehavior,
 ): TS.Expression | undefined {
   if (defaultExpression == null) {
     return undefined
@@ -894,7 +905,7 @@ function printBindingElement(
   propertyName: string | undefined,
   param: Param,
   imports: Imports,
-  stripUIDs: boolean,
+  stripUIDs: StripUIDsBehavior,
 ): TS.BindingElement {
   const dotDotDotToken = optionallyCreateDotDotDotToken(param.dotDotDotToken)
   return TS.createBindingElement(
@@ -910,7 +921,7 @@ function printBindingElement(
 function printBoundParam(
   boundParam: BoundParam,
   imports: Imports,
-  stripUIDs: boolean,
+  stripUIDs: StripUIDsBehavior,
 ): TS.BindingName {
   if (isRegularParam(boundParam)) {
     return TS.createIdentifier(boundParam.paramName)

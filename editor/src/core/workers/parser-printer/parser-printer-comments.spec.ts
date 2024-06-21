@@ -222,7 +222,7 @@ describe('Parsing and printing code with comments', () => {
 
         return parsed
       },
-      true,
+      'always-for-tests',
     )
   })
 })

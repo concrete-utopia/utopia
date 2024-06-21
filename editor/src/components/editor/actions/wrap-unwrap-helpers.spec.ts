@@ -136,7 +136,7 @@ describe('insertElementIntoJSXConditional', () => {
       )
     }`)
     const requiredString = `${required}`
-    expect(printParsedCodeForFile(newEditorState, '/utopia/storyboard.js', false)).toEqual(
+    expect(printParsedCodeForFile(newEditorState, '/utopia/storyboard.js', 'dont-strip')).toEqual(
       requiredString,
     )
   })

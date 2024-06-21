@@ -492,7 +492,7 @@ describe('INSERT_INSERTABLE', () => {
       if (isParseSuccess(parsed)) {
         const printedCode = printCode(
           '/src/card.js',
-          printCodeOptions(false, true, true, true),
+          printCodeOptions(false, true, true, 'always-for-tests'),
           parsed.imports,
           parsed.topLevelElements,
           parsed.jsxFactoryFunction,
@@ -504,12 +504,8 @@ describe('INSERT_INSERTABLE', () => {
           import { View } from 'utopia-api'
           export var Card = (props) => {
             return (
-              <div
-                data-uid='card-outer-div'
-                style={{ ...props.style }}
-              >
+              <div style={{ ...props.style }}>
                 <div
-                  data-uid='card-inner-div'
                   data-testid='card-inner-div'
                   style={{
                     position: 'absolute',
@@ -521,7 +517,6 @@ describe('INSERT_INSERTABLE', () => {
                   }}
                 />
                 <Spring
-                  data-uid='card-inner-spring'
                   data-testid='spring'
                   style={{
                     position: 'absolute',
@@ -605,7 +600,7 @@ describe('INSERT_INSERTABLE', () => {
       if (isParseSuccess(parsed)) {
         const printedCode = printCode(
           '/src/card.js',
-          printCodeOptions(false, true, true, true),
+          printCodeOptions(false, true, true, 'always-for-tests'),
           parsed.imports,
           parsed.topLevelElements,
           parsed.jsxFactoryFunction,
@@ -617,12 +612,8 @@ describe('INSERT_INSERTABLE', () => {
           import { View } from 'utopia-api'
           export var Card = (props) => {
             return (
-              <div
-                data-uid='card-outer-div'
-                style={{ ...props.style }}
-              >
+              <div style={{ ...props.style }}>
                 <div
-                  data-uid='card-inner-div'
                   data-testid='card-inner-div'
                   style={{
                     position: 'absolute',
@@ -634,7 +625,6 @@ describe('INSERT_INSERTABLE', () => {
                   }}
                 />
                 <Spring
-                  data-uid='card-inner-spring'
                   data-testid='spring'
                   style={{
                     position: 'absolute',
@@ -719,7 +709,7 @@ describe('INSERT_INSERTABLE', () => {
       if (isParseSuccess(parsed)) {
         const printedCode = printCode(
           '/src/card.js',
-          printCodeOptions(false, true, true, true),
+          printCodeOptions(false, true, true, 'always-for-tests'),
           parsed.imports,
           parsed.topLevelElements,
           parsed.jsxFactoryFunction,
@@ -731,12 +721,8 @@ describe('INSERT_INSERTABLE', () => {
           import { View as View_2 } from './test.js'
           export var Card = (props) => {
             return (
-              <div
-                data-uid='card-outer-div'
-                style={{ ...props.style }}
-              >
+              <div style={{ ...props.style }}>
                 <div
-                  data-uid='card-inner-div'
                   data-testid='card-inner-div'
                   style={{
                     position: 'absolute',
@@ -748,7 +734,6 @@ describe('INSERT_INSERTABLE', () => {
                   }}
                 />
                 <View
-                  data-uid='card-inner-spring'
                   data-testid='spring'
                   style={{
                     position: 'absolute',
@@ -819,7 +804,7 @@ describe('INSERT_INSERTABLE', () => {
       if (isParseSuccess(parsed)) {
         const printedCode = printCode(
           '/src/card.js',
-          printCodeOptions(false, true, true, true),
+          printCodeOptions(false, true, true, 'always-for-tests'),
           parsed.imports,
           parsed.topLevelElements,
           parsed.jsxFactoryFunction,
@@ -830,12 +815,8 @@ describe('INSERT_INSERTABLE', () => {
           import { Spring } from 'non-existant-dummy-library'
           export var Card = (props) => {
             return (
-              <div
-                data-uid='card-outer-div'
-                style={{ ...props.style }}
-              >
+              <div style={{ ...props.style }}>
                 <div
-                  data-uid='card-inner-div'
                   data-testid='card-inner-div'
                   style={{
                     position: 'absolute',
@@ -847,7 +828,6 @@ describe('INSERT_INSERTABLE', () => {
                   }}
                 />
                 <Spring
-                  data-uid='card-inner-spring'
                   data-testid='spring'
                   style={{
                     position: 'absolute',
@@ -927,7 +907,7 @@ describe('INSERT_INSERTABLE', () => {
       if (isParseSuccess(parsed)) {
         const printedCode = printCode(
           '/src/card.js',
-          printCodeOptions(false, true, true, true),
+          printCodeOptions(false, true, true, 'always-for-tests'),
           parsed.imports,
           parsed.topLevelElements,
           parsed.jsxFactoryFunction,
@@ -938,10 +918,7 @@ describe('INSERT_INSERTABLE', () => {
           import { Spring } from 'non-existant-dummy-library'
           export var Card = (props) => {
             return (
-              <div
-                data-uid='card-outer-div'
-                style={{ ...props.style }}
-              >
+              <div style={{ ...props.style }}>
                 <img
                   style={{
                     width: 100,
@@ -951,7 +928,6 @@ describe('INSERT_INSERTABLE', () => {
                   src='/editor/utopia-logo-white-fill.png?hash=nocommit'
                 />
                 <div
-                  data-uid='card-inner-div'
                   data-testid='card-inner-div'
                   style={{
                     position: 'absolute',
@@ -963,7 +939,6 @@ describe('INSERT_INSERTABLE', () => {
                   }}
                 />
                 <Spring
-                  data-uid='card-inner-spring'
                   data-testid='spring'
                   style={{
                     position: 'absolute',

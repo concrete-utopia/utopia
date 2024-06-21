@@ -60,6 +60,7 @@ import {
   RevisionsState,
   textFile,
 } from '../../shared/project-file-types'
+import type { StripUIDsBehavior } from './parser-printer'
 import { lintAndParse, parseCode, printCode, printCodeOptions } from './parser-printer'
 import { applyPrettier } from 'utopia-vscode-common'
 import { transpileJavascriptFromCode } from './parser-printer-transpiling'
@@ -3957,7 +3958,7 @@ var spacing = 20`
     const detailOfExports = [exportFunction('whatever')]
     const printedCode = printCode(
       '/index.js',
-      printCodeOptions(false, true, true, false, true),
+      printCodeOptions(false, true, true, 'dont-strip', true),
       imports,
       [...topLevelElements],
       null,
@@ -6058,12 +6059,12 @@ export var whatever2 = (props) => <View data-uid='aaa'>
         parseResult,
       )
     }
-    const printedArbitrary = printedProjectContentArbitrary(false)
+    const printedArbitrary = printedProjectContentArbitrary('dont-strip')
     const dataUIDProperty = FastCheck.property(printedArbitrary, checkDataUIDsPopulated)
     FastCheck.assert(dataUIDProperty, { verbose: true })
   })
   describe('check that the UIDs of everything in a file also align with the highlight bounds for that file', () => {
-    function checkElementUIDs(stripUIDs: boolean): void {
+    function checkElementUIDs(stripUIDs: StripUIDsBehavior): void {
       function checkElementUIDSMatchHighlightBounds(
         printedArbitraryProjects: [ArbitraryProject, ArbitraryProject],
       ): boolean {
@@ -6183,10 +6184,10 @@ export var whatever2 = (props) => <View data-uid='aaa'>
       FastCheck.assert(dataUIDProperty, { verbose: false, numRuns: 100 })
     }
     it('with UIDs left in', () => {
-      checkElementUIDs(false)
+      checkElementUIDs('dont-strip')
     })
     it('with UIDs stripped', () => {
-      checkElementUIDs(true)
+      checkElementUIDs('always-for-tests')
     })
   })
   it('when react is not imported treat components as arbitrary blocks', () => {

@@ -123,7 +123,8 @@ export var Card = (props) => {
                 comments: {
                   leadingComments: [],
                   trailingComments: []
-                }
+                },
+                printBehavior: \\"include-in-printing\\"
               }
             ],
             children: []

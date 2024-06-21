@@ -6,6 +6,7 @@ import {
   textFile,
   textFileContents,
 } from '../../core/shared/project-file-types'
+import type { StripUIDsBehavior } from '../../core/workers/parser-printer/parser-printer'
 import {
   lintAndParse,
   printCode,
@@ -80,7 +81,7 @@ export function defaultProjectContentsForNormalising(): ProjectContentTreeRoot {
 export function printParsedCodeForFile(
   actualResult: EditorState,
   filename: string,
-  stripUIDs: boolean = true,
+  stripUIDs: StripUIDsBehavior = 'strip-for-printing',
 ): string {
   const codeFile = getTextFileByPath(actualResult.projectContents, filename)
   const parsed = codeFile.fileContents.parsed

@@ -1,5 +1,5 @@
 import type { ParseSuccess } from '../../shared/project-file-types'
-import type { SteganographyMode } from './parser-printer'
+import type { SteganographyMode, StripUIDsBehavior } from './parser-printer'
 import { printCodeOptions, printCode, lintAndParse } from './parser-printer'
 import type {
   ParseFileResult,
@@ -79,7 +79,7 @@ export function getParseFileResult(
 export function getPrintAndReparseCodeResult(
   filename: string,
   parseSuccess: ParseSuccess,
-  stripUIDs: boolean,
+  stripUIDs: StripUIDsBehavior,
   versionNumber: number,
   alreadyExistingUIDs: Set<string>,
   applySteganography: SteganographyMode,

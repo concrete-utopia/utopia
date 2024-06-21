@@ -98,6 +98,7 @@ import {
   exportVariable,
   exportVariables,
 } from '../../shared/project-file-types'
+import type { StripUIDsBehavior } from './parser-printer'
 import { lintAndParse, printCode, printCodeOptions } from './parser-printer'
 import { atoz, getUtopiaID, getUtopiaIDFromJSXElement } from '../../shared/uid-utils'
 import { assertNever, fastForEach } from '../../shared/utils'
@@ -242,7 +243,7 @@ export function testParseThenPrintWithoutUids(
   originalCode: string,
   expectedFinalCode: string,
 ): void {
-  const printedCode = parseModifyPrint(filename, originalCode, (ps) => ps, true)
+  const printedCode = parseModifyPrint(filename, originalCode, (ps) => ps, 'always-for-tests')
   expect(printedCode).toEqual(expectedFinalCode)
 }
 
@@ -251,7 +252,7 @@ export function testParseModifyPrint(
   originalCode: string,
   expectedFinalCode: string,
   transform: (parseSuccess: ParseSuccess) => ParseSuccess,
-  stripUids?: boolean,
+  stripUids?: StripUIDsBehavior,
 ): void {
   const printedCode = parseModifyPrint(filename, originalCode, transform, stripUids)
   expect(printedCode).toEqual(expectedFinalCode)
@@ -261,7 +262,7 @@ function parseModifyPrint(
   filename: string,
   originalCode: string,
   transform: (parseSuccess: ParseSuccess) => ParseSuccess,
-  stripUids?: boolean,
+  stripUids?: StripUIDsBehavior,
 ): string {
   const initialParseResult = testParseCode(originalCode)
   return foldParsedTextFile(
@@ -1291,7 +1292,9 @@ function areTopLevelElementsValid(topLevelElements: Array<TopLevelElement>): boo
   return variableNames.length === new Set(variableNames).size
 }
 
-export function printedProjectContentArbitrary(stripUIDs: boolean): Arbitrary<ArbitraryProject> {
+export function printedProjectContentArbitrary(
+  stripUIDs: StripUIDsBehavior,
+): Arbitrary<ArbitraryProject> {
   return FastCheck.tuple(
     FastCheck.array(topLevelElementArbitrary(), 3).filter(areTopLevelElementsValid),
     FastCheck.option(lowercaseStringArbitrary()),

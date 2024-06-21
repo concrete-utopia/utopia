@@ -779,7 +779,7 @@ export function getPrintedUiJsCodeWithoutUIDs(
   if (file != null && isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
     return printCode(
       StoryboardFilePath,
-      printCodeOptions(false, true, false, true),
+      printCodeOptions(false, true, false, 'always-for-tests'),
       file.fileContents.parsed.imports,
       file.fileContents.parsed.topLevelElements,
       file.fileContents.parsed.jsxFactoryFunction,
