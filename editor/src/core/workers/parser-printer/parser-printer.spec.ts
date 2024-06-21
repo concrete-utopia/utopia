@@ -68,6 +68,7 @@ import {
   clearParseResultPassTimes,
   clearParseResultSourceMapsUniqueIDsAndEmptyBlocks,
   clearParseResultUniqueIDsAndEmptyBlocks,
+  clearTopLevelElementSourceMapsUniqueIDsAndEmptyBlocks,
   clearTopLevelElementUniqueIDsAndEmptyBlocks,
   elementsStructure,
   ensureArbitraryBlocksHaveUID,
@@ -5016,7 +5017,7 @@ export var App = props => {
   );
 };`
     const actualResult = simplifyParsedTextFileAttributes(
-      clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code)),
+      clearParseResultSourceMapsUniqueIDsAndEmptyBlocks(testParseCode(code)),
     )
     const ellipse = clearJSXElementChildUniqueIDs(
       jsxElement(
@@ -5081,11 +5082,11 @@ export var App = props => {
       ['React', 'View', JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({}),
       {
-        fc7: jsxElement(
+        cf0: jsxElement(
           'View',
           '',
           jsxAttributesFromMap({
-            'data-uid': dataUIDExpression('fc7', 'include-in-printing'),
+            'data-uid': dataUIDExpression('cf0', 'include-in-printing'),
           }),
           [
             jsPropertyAccess(
@@ -5271,7 +5272,9 @@ export var App = props => {
     )
     const expectedResult = parseSuccess(
       sampleImportsForTests,
-      expect.arrayContaining([component].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
+      expect.arrayContaining(
+        [component].map(clearTopLevelElementSourceMapsUniqueIDsAndEmptyBlocks),
+      ),
       expect.objectContaining({}),
       null,
       null,
