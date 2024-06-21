@@ -143,10 +143,6 @@ export const Popover = ({align = 'start', activator, children}: PopoverProps) =>
             }}
           >
             {children}
-            <PopoverListContent items={[
-              {label: 'First', onClick: () => console.log('first')},
-              {label: 'Second', onClick: () => console.log('second')}
-            ]} />
           </RadixPopover.Content>
         </RadixPopover.Portal>
       </RadixPopover.Root>
