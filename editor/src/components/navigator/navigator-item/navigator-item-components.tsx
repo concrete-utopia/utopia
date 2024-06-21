@@ -33,6 +33,8 @@ import { getRegisteredComponent } from '../../../core/property-controls/property
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../../../core/shared/dom-utils'
 import { ExpandableIndicator } from './expandable-indicator'
 import { elementSupportsChildrenFromPropertyControls } from '../../editor/element-children'
+import { Popover } from '../popover/popover'
+import {ContextMenuItem} from '@radix-ui/react-context-menu'
 
 export const NavigatorHintCircleDiameter = 8
 
@@ -238,22 +240,18 @@ const AddChildButton = React.memo((props: AddChildButtonProps) => {
   }
 
   return (
-    <Button
-      onClick={onClick}
-      style={{
-        height: 12,
-        width: 12,
-      }}
-      data-testid={addChildButtonTestId(target)}
+    <Popover activator={
+        <Icn
+          category='semantic'
+          type='plus-in-white-translucent-circle'
+          color={iconColor}
+          width={12}
+          height={12}
+        />
+      }
     >
-      <Icn
-        category='semantic'
-        type='plus-in-white-translucent-circle'
-        color={iconColor}
-        width={12}
-        height={12}
-      />
-    </Button>
+      <p style={{color: 'white'}}>This is some content</p>
+    </Popover>
   )
 })
 
