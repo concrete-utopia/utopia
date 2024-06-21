@@ -8,6 +8,7 @@ import type {
   ArrayControlDescription,
   BaseControlDescription,
   ControlDescription,
+  NoneControlDescription,
   ObjectControlDescription,
   RegularControlDescription,
   TupleControlDescription,
@@ -999,6 +1000,11 @@ const ArrayControlItem = React.memo((props: ArrayControlItemProps) => {
   const contextMenuItems = Utils.stripNulls([addOnUnsetValues([index], propMetadata.onUnsetValues)])
 
   const contextMenuId = `context-menu-for-${PP.toString(propPathWithIndex)}`
+
+  if (controlDescription.propertyControl.control === 'none') {
+    return null
+  }
+
   return (
     <InspectorContextMenuWrapper
       id={contextMenuId}
@@ -1147,6 +1153,12 @@ const TupleControlItem = React.memo((props: TupleControlItemProps) => {
   )
   const contextMenuItems = Utils.stripNulls([addOnUnsetValues([index], propMetadata.onUnsetValues)])
 
+  const indexedPropertyControls = controlDescription.propertyControls[index]
+
+  if (indexedPropertyControls.control === 'none') {
+    return null
+  }
+
   return (
     <InspectorContextMenuWrapper
       id={`context-menu-for-${PP.toString(propPathWithIndex)}`}
@@ -1155,7 +1167,7 @@ const TupleControlItem = React.memo((props: TupleControlItemProps) => {
       key={index}
     >
       <RowForControl
-        controlDescription={controlDescription.propertyControls[index]}
+        controlDescription={indexedPropertyControls}
         isScene={isScene}
         propPath={PP.appendPropertyPathElems(propPath, [index])}
         setGlobalCursor={props.setGlobalCursor}
@@ -1309,6 +1321,9 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
         open,
         mapToArray((innerControl: RegularControlDescription, prop: string, index: number) => {
           const innerPropPath = PP.appendPropertyPathElems(propPath, [prop])
+          if (innerControl.control === 'none') {
+            return null
+          }
           return (
             <RowForControl
               key={`object-control-row-${PP.toString(innerPropPath)}`}
@@ -1408,7 +1423,7 @@ const RowForUnionControl = React.memo((props: RowForUnionControlProps) => {
 RowForUnionControl.displayName = 'RowForUnionControl'
 
 interface RowForControlProps extends AbstractRowForControlProps {
-  controlDescription: RegularControlDescription
+  controlDescription: Exclude<RegularControlDescription, NoneControlDescription>
   disableToggling?: boolean
 }
 

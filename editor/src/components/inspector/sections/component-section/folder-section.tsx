@@ -88,6 +88,9 @@ export const FolderSection = React.memo((props: FolderSectionProps) => {
 
   const createRowForControl = (propName: string, focusOnMount: boolean) => {
     const controlDescription = props.propertyControls[propName]
+    if (controlDescription.control === 'none') {
+      return null
+    }
     return (
       <RowOrFolderWrapper
         key={`section-row-${propName}`}
@@ -126,19 +129,23 @@ export const FolderSection = React.memo((props: FolderSectionProps) => {
               propValue,
               propName,
             )
-            return (
-              <RowForControl
-                key={propName}
-                propPath={PP.create(propName)}
-                controlDescription={controlDescription}
-                isScene={false}
-                setGlobalCursor={props.setGlobalCursor}
-                indentationLevel={props.indentationLevel}
-                shouldIncreaseIdentation={true}
-                showHiddenControl={props.showHiddenControl}
-                focusOnMount={false}
-              />
-            )
+            if (controlDescription.control === 'none') {
+              return null
+            } else {
+              return (
+                <RowForControl
+                  key={propName}
+                  propPath={PP.create(propName)}
+                  controlDescription={controlDescription}
+                  isScene={false}
+                  setGlobalCursor={props.setGlobalCursor}
+                  indentationLevel={props.indentationLevel}
+                  shouldIncreaseIdentation={true}
+                  showHiddenControl={props.showHiddenControl}
+                  focusOnMount={false}
+                />
+              )
+            }
           }
         }),
       )}
