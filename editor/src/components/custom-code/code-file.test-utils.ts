@@ -81,7 +81,7 @@ export function defaultProjectContentsForNormalising(): ProjectContentTreeRoot {
 export function printParsedCodeForFile(
   actualResult: EditorState,
   filename: string,
-  stripUIDs: StripUIDsBehavior = 'strip-for-printing',
+  stripUIDs: StripUIDsBehavior,
 ): string {
   const codeFile = getTextFileByPath(actualResult.projectContents, filename)
   const parsed = codeFile.fileContents.parsed

@@ -58,7 +58,7 @@ describe('modifyUnderlyingTarget', () => {
         return jsxElement(element.name, element.uid, updatedAttributes, element.children)
       },
     )
-    const resultingCode = printParsedCodeForFile(actualResult, '/src/app.js')
+    const resultingCode = printParsedCodeForFile(actualResult, '/src/app.js', 'dont-strip')
     expect(resultingCode).toMatchInlineSnapshot(`
       "import * as React from 'react'
       import { Card } from '/src/card.js'
@@ -145,7 +145,7 @@ describe('modifyUnderlyingTarget', () => {
         return jsxElement(element.name, element.uid, updatedAttributes, element.children)
       },
     )
-    const resultingCode = printParsedCodeForFile(actualResult, '/src/card.js')
+    const resultingCode = printParsedCodeForFile(actualResult, '/src/card.js', 'dont-strip')
     expect(resultingCode).toMatchInlineSnapshot(`
       "import * as React from 'react'
       import { Spring } from 'non-existant-dummy-library'

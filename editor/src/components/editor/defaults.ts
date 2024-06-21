@@ -14,9 +14,13 @@ import {
 } from '../../core/shared/element-template'
 import type { NormalisedFrame } from 'utopia-api/core'
 import { defaultImageAttributes } from '../shared/project-components'
+import type { PrintBehavior } from 'utopia-shared/src/types'
 
-function dataUIDExpression(uid: string): JSExpression {
-  return jsExpressionWithPrintBehavior(jsExpressionValue(uid, emptyComments), 'skip-printing')
+export function dataUIDExpression(
+  uid: string,
+  printBehavior: PrintBehavior = 'skip-printing',
+): JSExpression {
+  return jsExpressionWithPrintBehavior(jsExpressionValue(uid, emptyComments), printBehavior)
 }
 
 export function defaultSceneElement(
