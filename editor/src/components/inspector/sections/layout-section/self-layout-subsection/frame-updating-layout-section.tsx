@@ -384,10 +384,16 @@ const FrameUpdatingLayoutControl = React.memo((props: LayoutPinPropertyControlPr
   // a way to reset the NumberInput to the real measured value it was displaying before the user started typing into it
   const [mountCount, resetNumberInputToOriginalValue] = React.useReducer((c) => c + 1, 0)
 
-  const singleCommonValue = getSingleCommonValue(currentValues)
+  const singleCommonValue = React.useMemo(() => {
+    return getSingleCommonValue(currentValues)
+  }, [currentValues])
+
+  const currentValuesRef = React.useRef(currentValues)
+  currentValuesRef.current = currentValues
 
   const onSubmitValue = React.useCallback(
     (newValue: UnknownOrEmptyInput<CSSNumber>) => {
+      const calculatedSingleCommonValue = getSingleCommonValue(currentValuesRef.current)
       if (isUnknownInputValue(newValue)) {
         // Ignore right now.
         resetNumberInputToOriginalValue()
@@ -397,10 +403,14 @@ const FrameUpdatingLayoutControl = React.memo((props: LayoutPinPropertyControlPr
       } else {
         if (newValue.unit == null || newValue.unit === 'px') {
           const edgePosition = getTLWHEdgePosition(property)
-          if (singleCommonValue == null) {
+          if (calculatedSingleCommonValue == null) {
             updateFrame(directFrameUpdate(edgePosition, newValue.value))
           } else {
-            const movement = getMovementFromValues(property, singleCommonValue, newValue.value)
+            const movement = getMovementFromValues(
+              property,
+              calculatedSingleCommonValue,
+              newValue.value,
+            )
             updateFrame(deltaFrameUpdate(edgePosition, movement))
           }
         } else {
@@ -409,7 +419,7 @@ const FrameUpdatingLayoutControl = React.memo((props: LayoutPinPropertyControlPr
         }
       }
     },
-    [property, singleCommonValue, updateFrame],
+    [property, updateFrame],
   )
 
   return (
@@ -432,6 +442,7 @@ const FrameUpdatingLayoutControl = React.memo((props: LayoutPinPropertyControlPr
         controlStatus={singleCommonValue == null ? 'multiselect-mixed-simple-or-unset' : 'simple'}
         numberType={'LengthPercent'}
         defaultUnitToHide={'px'}
+        stepSize={1}
       />
     </InspectorContextMenuWrapper>
   )
