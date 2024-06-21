@@ -794,8 +794,9 @@ describe('The navigator component picker context menu', () => {
     `,
       'await-first-dom-report',
     )
+
     const emptySlot = editor.renderedDOM.getByTestId(
-      'toggle-render-prop-NavigatorItemTestId-synthetic_sb/232/019_attribute',
+      'toggle-render-prop-NavigatorItemTestId-synthetic_sb/3d7/019_attribute',
     )
     await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
 
