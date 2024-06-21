@@ -360,10 +360,6 @@ export function findJSXElementChildAtPath(
       if (withinResult != null) {
         return withinResult
       }
-    } else if (isJSXTextBlock(element)) {
-      if (workingPath.length === 1) {
-        return element
-      }
     } else if (isJSXMapExpression(element)) {
       let innerPath = workingPath
       if (element.uid === firstUIDOrIndex) {
