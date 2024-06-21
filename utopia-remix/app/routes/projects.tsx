@@ -387,8 +387,8 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
         <div
           style={{
             height: 40,
-            width: 30,
-            backgroundSize: '30px',
+            width: 40,
+            backgroundSize: '40px',
             backgroundRepeat: 'no-repeat',
             backgroundImage: logoPic,
           }}
