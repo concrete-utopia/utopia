@@ -33,7 +33,7 @@ import { getRegisteredComponent } from '../../../core/property-controls/property
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../../../core/shared/dom-utils'
 import { ExpandableIndicator } from './expandable-indicator'
 import { elementSupportsChildrenFromPropertyControls } from '../../editor/element-children'
-import { Popover } from '../popover/popover'
+import { Popover, PopoverListContent } from '../popover/popover'
 import {ContextMenuItem} from '@radix-ui/react-context-menu'
 
 export const NavigatorHintCircleDiameter = 8
@@ -251,7 +251,11 @@ const AddChildButton = React.memo((props: AddChildButtonProps) => {
         />
       }
     >
-      <p style={{color: 'white'}}>This is some content</p>
+      <p style={{color: 'white', margin: 0, padding: '16px' }}>This is separate content, but you can interact with the list items below with arrow keys!</p>
+      <PopoverListContent items={[
+        {label: 'First', onClick: () => console.log('first')},
+        {label: 'Second', onClick: () => console.log('second')}
+      ]} />
     </Popover>
   )
 })

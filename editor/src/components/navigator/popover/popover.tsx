@@ -52,7 +52,7 @@ export const PopoverListContent = ({items}: PopoverListContentProps) => {
   }, [active, items, setActiveOnClick])
 
   return (
-    <ul style={{padding: 0}}>
+    <ul style={{margin: 0, padding: 8}}>
       {items.map(({ label, onClick }, index) => (
         <li key={`popover-item-${label}`} style={{listStyle: 'none'}}>
           <Button
@@ -61,6 +61,7 @@ export const PopoverListContent = ({items}: PopoverListContentProps) => {
               background: active === index ? `${colorTheme.primary.value} !important`: 'none',
               border: 'none',
               borderRadius: 4,
+              fontSize: 11,
               padding: 8,
               outline: 'none',
               color: 'white',
@@ -147,15 +148,10 @@ export const Popover = ({align = 'start', activator, children}: PopoverProps) =>
             style={{
               background: colorTheme.bg0.value,
               width: 260,
-              padding: '4px 16px',
               borderRadius: 4,
             }}
           >
             {children}
-            <PopoverListContent items={[
-              {label: 'First', onClick: () => console.log('first')},
-              {label: 'Second', onClick: () => console.log('second')}
-            ]} />
           </RadixPopover.Content>
         </RadixPopover.Portal>
       </RadixPopover.Root>
