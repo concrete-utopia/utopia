@@ -340,7 +340,7 @@ describe('scoped variables', () => {
 
     const spiedVarsInScopeForInnermostElement = prettyPrintVariableData(
       renderResult.getEditorState().editor.variablesInScope[
-        'storyboard-entity/scene-1-entity/app-entity:app-root/globalvarmap/div1~~~1/localvarmap/div2~~~1/firstmap/div3~~~1/secondmap/div4~~~1/5d9/div5~~~1'
+        'storyboard-entity/scene-1-entity/app-entity:app-root/globalvarmap/div1~~~1/localvarmap/div2~~~1/firstmap/div3~~~1/secondmap/div4~~~1/e64/div5~~~1'
       ],
     )
 
