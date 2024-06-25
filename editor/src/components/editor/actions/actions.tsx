@@ -26,6 +26,7 @@ import {
   applyUtopiaJSXComponentsChanges,
   fileExists,
   fileTypeFromFileName,
+  getFilePathMappings,
   getUtopiaJSXComponentsFromSuccess,
   saveFile,
   saveTextFileContents,
@@ -1851,6 +1852,7 @@ export const UPDATE_FNS = {
       (success, _, underlyingFilePath) => {
         const updatedImports = mergeImports(
           underlyingFilePath,
+          getFilePathMappings(editor.projectContents),
           success.imports,
           action.importsToAdd,
         ).imports
@@ -2320,6 +2322,7 @@ export const UPDATE_FNS = {
 
         const updatedImports = mergeImports(
           underlyingFilePath,
+          getFilePathMappings(editor.projectContents),
           success.imports,
           action.importsToAdd,
         )
@@ -2376,6 +2379,7 @@ export const UPDATE_FNS = {
 
         const { imports, duplicateNameMapping } = mergeImports(
           underlyingFilePath,
+          getFilePathMappings(editor.projectContents),
           success.imports,
           action.importsToAdd,
         )
@@ -2465,6 +2469,7 @@ export const UPDATE_FNS = {
         const startingComponents = getUtopiaJSXComponentsFromSuccess(success)
         const updatedImports = mergeImports(
           underlyingFilePath,
+          getFilePathMappings(editor.projectContents),
           success.imports,
           action.importsToAdd,
         )
@@ -4127,6 +4132,7 @@ export const UPDATE_FNS = {
     const existingUIDs = new Set(getAllUniqueUids(editor.projectContents).uniqueIDs)
     const parsedResult = getParseFileResult(
       newFileName,
+      getFilePathMappings(editor.projectContents),
       templateFile.fileContents.code,
       null,
       1,
@@ -4589,6 +4595,7 @@ export const UPDATE_FNS = {
       (success, _, underlyingFilePath) => {
         const { imports, duplicateNameMapping } = mergeImports(
           underlyingFilePath,
+          getFilePathMappings(editor.projectContents),
           success.imports,
           action.importsToAdd,
         )
@@ -4972,11 +4979,13 @@ export const UPDATE_FNS = {
       changedTextFilenames,
     )
 
+    const filePathMappings = getFilePathMappings(withFileChanges.unpatchedEditor.projectContents)
     // For those files that changed, do a print-parse against each file.
     const workerUpdates = filesToUpdateResult.filesToUpdate.flatMap((fileToUpdate) => {
       if (fileToUpdate.type === 'printandreparsefile') {
         const printParsedContent = getPrintAndReparseCodeResult(
           fileToUpdate.filename,
+          filePathMappings,
           fileToUpdate.parseSuccess,
           fileToUpdate.stripUIDs,
           fileToUpdate.versionNumber,
@@ -5384,6 +5393,7 @@ export const UPDATE_FNS = {
 
           const updatedImports = mergeImports(
             underlyingFilePath,
+            getFilePathMappings(editor.projectContents),
             success.imports,
             action.toInsert.importsToAdd,
           )

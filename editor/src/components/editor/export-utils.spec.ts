@@ -27,6 +27,7 @@ export var Whatever = (props) => {
 }`
     const parseResult = parseCode(
       '/src/index.js',
+      [],
       codeForFile,
       null,
       emptySet(),
@@ -65,6 +66,7 @@ export var Whatever = (props) => {
 export var Whatever = 'something'`
     const parseResult = parseCode(
       '/src/index.js',
+      [],
       codeForFile,
       null,
       emptySet(),
@@ -115,6 +117,7 @@ export var Whatever = 'something'`
 export var Whatever = 'something'`
     const parseResult = parseCode(
       '/src/index.js',
+      [],
       codeForFile,
       null,
       emptySet(),

@@ -17,6 +17,7 @@ import {
 } from '../../../core/model/element-template-utils'
 import {
   applyUtopiaJSXComponentsChanges,
+  getFilePathMappings,
   getUtopiaJSXComponentsFromSuccess,
 } from '../../../core/model/project-file-utils'
 import * as EP from '../../../core/shared/element-path'
@@ -517,6 +518,7 @@ export function insertElementIntoJSXConditional(
 
       const { imports, duplicateNameMapping } = mergeImports(
         underlyingFilePath,
+        getFilePathMappings(editor.projectContents),
         success.imports,
         importsToAdd,
       )
@@ -574,6 +576,7 @@ function insertConditionalIntoConditionalClause(
     (success, _, underlyingFilePath) => {
       const { imports, duplicateNameMapping } = mergeImports(
         underlyingFilePath,
+        getFilePathMappings(editor.projectContents),
         success.imports,
         importsToAdd,
       )

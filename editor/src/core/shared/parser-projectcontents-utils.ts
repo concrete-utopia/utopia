@@ -17,6 +17,7 @@ import {
   walkContentsTree,
 } from '../../components/assets'
 import {
+  getFilePathMappings,
   getHighlightBoundsFromParseResult,
   updateParsedTextFileHighlightBounds,
 } from '../../core/model/project-file-utils'
@@ -199,6 +200,7 @@ export async function updateProjectContentsWithParseResults(
   const parseResult = await getParseResult(
     workers,
     filesToUpdate,
+    getFilePathMappings(projectContents),
     existingUIDs,
     isSteganographyEnabled(),
   )

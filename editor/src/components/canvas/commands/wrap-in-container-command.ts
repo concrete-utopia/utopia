@@ -18,7 +18,10 @@ import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 import { getPatchForComponentChange } from './commands'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
-import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
+import {
+  getFilePathMappings,
+  getUtopiaJSXComponentsFromSuccess,
+} from '../../../core/model/project-file-utils'
 import type { InsertionSubjectWrapper } from '../../editor/editor-modes'
 import { assertNever } from '../../../core/shared/utils'
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
@@ -116,7 +119,12 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
         getPatchForComponentChange(
           success.topLevelElements,
           insertionResult.components,
-          mergeImports(underlyingFilePath, withElementRemoved.imports, imports).imports,
+          mergeImports(
+            underlyingFilePath,
+            getFilePathMappings(editor.projectContents),
+            withElementRemoved.imports,
+            imports,
+          ).imports,
           underlyingFilePath,
         ),
       )

@@ -34,6 +34,7 @@ export var App = (props) => {
   const baseModel = complexDefaultProject()
   const parsedFile = lintAndParse(
     StoryboardFilePath,
+    [],
     appFile,
     null,
     emptySet(),

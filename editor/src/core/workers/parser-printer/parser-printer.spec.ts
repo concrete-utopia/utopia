@@ -175,6 +175,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -241,6 +242,7 @@ export var whatever = () => <View data-uid='aaa'>
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -335,6 +337,7 @@ export function whatever(props) {
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -405,6 +408,7 @@ export function whatever() {
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -499,6 +503,7 @@ export default function whatever(props) {
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -569,6 +574,7 @@ export default function whatever() {
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -660,6 +666,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     )
     const { imports: importsWithCake } = addImport(
       '/code.js',
+      [],
       'cake',
       'cake',
       [],
@@ -668,6 +675,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     )
     const { imports: importsWithStylecss } = addImport(
       '/code.js',
+      [],
       './style.css',
       null,
       [],
@@ -791,6 +799,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       'cake',
       [importAlias('cake2')],
@@ -881,6 +890,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       )
       const { imports } = addImport(
         '/code.js',
+        [],
         'cake',
         null,
         [importAlias('cake', 'cake2')],
@@ -1006,6 +1016,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       )
       const { imports } = addImport(
         '/code.js',
+        [],
         'cake',
         null,
         [importAlias('cake')],
@@ -1105,6 +1116,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -1302,6 +1314,7 @@ var spacing = 20`
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -1449,6 +1462,7 @@ export default function getSizing(n) {
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -1612,6 +1626,7 @@ export function getSizing(n) {
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -1732,6 +1747,7 @@ return {  };`
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -1825,6 +1841,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -2768,6 +2785,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -2875,6 +2893,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -3102,6 +3121,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -3439,7 +3459,14 @@ export var Whatever = (props) => <View>
   <MyComp layout={{left: 100}} />
 </View>
 `
-    const actualResult = parseCode('code.tsx', code, null, emptySet(), 'do-not-apply-steganography')
+    const actualResult = parseCode(
+      'code.tsx',
+      [],
+      code,
+      null,
+      emptySet(),
+      'do-not-apply-steganography',
+    )
     if (isParseSuccess(actualResult)) {
       expect(actualResult.topLevelElements.filter(isArbitraryJSBlock).length).toEqual(1)
       expect(actualResult.topLevelElements.filter(isUtopiaJSXComponent).length).toEqual(0)
@@ -3554,6 +3581,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -3625,6 +3653,7 @@ export var whatever = () => <View data-uid='aaa'>
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -3757,6 +3786,7 @@ export var App = (props) => <View data-uid='bbb'>
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -3948,6 +3978,7 @@ var spacing = 20`
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -4012,6 +4043,7 @@ var spacing = 20`
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -4151,6 +4183,7 @@ export var whatever = props => {
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -4219,6 +4252,7 @@ export var whatever = props => {
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -4320,6 +4354,7 @@ export var whatever = props => {
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -4422,6 +4457,7 @@ export var whatever = props => {
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -4521,6 +4557,7 @@ export var whatever = props => {
 })();`
     const { imports } = addImport(
       'code.jsx',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -6669,6 +6706,7 @@ describe('lintAndParse', () => {
   it('returns a syntax error from eslint when something is broken', () => {
     const result = lintAndParse(
       'test.js',
+      [],
       `
     import {
       Ellipse,

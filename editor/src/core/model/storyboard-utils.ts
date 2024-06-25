@@ -278,9 +278,10 @@ function addStoryboardFileForComponent(
   projectContents: ProjectContentTreeRoot,
 ): ProjectContentTreeRoot {
   // Add import of storyboard and scene components.
-  let importsResolution = addImport(StoryboardFilePath, 'react', null, [], 'React', {})
+  let importsResolution = addImport(StoryboardFilePath, [], 'react', null, [], 'React', {})
   importsResolution = addImport(
     StoryboardFilePath,
+    [],
     'utopia-api',
     null,
     [importAlias('Storyboard'), importAlias('Scene')],
@@ -299,6 +300,7 @@ function addStoryboardFileForComponent(
       )
       importsResolution = addImport(
         StoryboardFilePath,
+        [],
         createFileWithComponent.path,
         null,
         [importAlias(createFileWithComponent.toImport)],
@@ -310,6 +312,7 @@ function addStoryboardFileForComponent(
       sceneElement = createSceneFromComponent(StoryboardFilePath, 'StoryboardComponent', 'scene-1')
       importsResolution = addImport(
         StoryboardFilePath,
+        [],
         createFileWithComponent.path,
         'StoryboardComponent',
         [],
@@ -325,6 +328,7 @@ function addStoryboardFileForComponent(
       )
       importsResolution = addImport(
         StoryboardFilePath,
+        [],
         createFileWithComponent.path,
         null,
         [importAlias(createFileWithComponent.elementName)],

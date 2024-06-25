@@ -109,6 +109,7 @@ async function renderTestProject() {
   const updatedProject = Object.keys(exampleFiles).reduce((workingProject, modifiedFilename) => {
     const parsedFile = lintAndParse(
       modifiedFilename,
+      [],
       exampleFiles[modifiedFilename],
       null,
       emptySet(),

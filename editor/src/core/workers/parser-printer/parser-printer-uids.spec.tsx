@@ -46,6 +46,7 @@ function addCodeFileToProjectContents(
 ): ProjectContentTreeRoot {
   const parseResult = lintAndParse(
     path,
+    [],
     contents,
     null,
     alreadyExistingUIDs_MUTABLE,
@@ -352,6 +353,7 @@ export var app = (props) => {
     `
     const parsedCode = parseCode(
       'test.js',
+      [],
       startingCode,
       null,
       emptySet(),

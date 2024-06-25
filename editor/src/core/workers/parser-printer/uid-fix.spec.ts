@@ -124,6 +124,7 @@ function lintAndParseAndValidateResult(
 ): ParsedTextFile {
   const result = lintAndParse(
     filename,
+    [],
     content,
     oldParseResultForUIDComparison,
     alreadyExistingUIDs_MUTABLE,

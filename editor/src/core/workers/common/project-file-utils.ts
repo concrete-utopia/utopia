@@ -111,6 +111,7 @@ function mergeMaybeImportDetails(
 
 export function mergeImports(
   fileUri: string,
+  filePathMappings: FilePathMappings,
   first: Imports,
   second: Imports,
 ): ImportsMergeResolution {
@@ -118,6 +119,7 @@ export function mergeImports(
     first,
     second,
     fileUri,
+    filePathMappings,
   )
 
   const allImportSources = new Set([...Object.keys(first), ...Object.keys(secondWithoutDuplicates)])
@@ -163,6 +165,7 @@ export function mergeImports(
 
 export function addImport(
   fileUri: string,
+  filePathMappings: FilePathMappings,
   importedFrom: string,
   importedWithName: string | null,
   importedFromWithin: Array<ImportAlias>,
@@ -176,7 +179,7 @@ export function addImport(
       importedAs: importedAs,
     },
   }
-  return mergeImports(fileUri, imports, toAdd)
+  return mergeImports(fileUri, filePathMappings, imports, toAdd)
 }
 
 export function parsedJSONSuccess(value: any): ParsedJSONSuccess {
@@ -204,3 +207,20 @@ export function parsedJSONFailure(
     endCol: endCol,
   }
 }
+
+export function applyFilePathMappingsToFilePath(
+  filepath: string,
+  filePathMappings: FilePathMappings,
+): string {
+  return filePathMappings.reduce((working, nextMapping) => {
+    // FIXME this is limited to only applying the first mapping, both from the paths object, and from the array of aliased paths
+    const [mapFrom, mapToArray] = nextMapping
+    const mapTo = mapToArray[0]
+    const newWorking = working.replace(mapFrom, mapTo)
+    mapFrom.lastIndex = 0 // Reset the regex!
+    return newWorking
+  }, filepath)
+}
+
+export type FilePathMapping = [RegExp, Array<string>]
+export type FilePathMappings = Array<FilePathMapping>

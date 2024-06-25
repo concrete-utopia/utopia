@@ -62,6 +62,7 @@ import { set } from '../../../../core/shared/optics/optic-utilities'
 import { fromField, fromTypeGuard } from '../../../../core/shared/optics/optic-creators'
 import type { PropertyControlsInfo } from '../../../custom-code/code-file'
 import type { FileRootPath } from '../../ui-jsx-canvas'
+import { getFilePathMappings } from '../../../../core/model/project-file-utils'
 
 interface GetReparentOutcomeResult {
   commands: Array<CanvasCommand>
@@ -110,6 +111,7 @@ function adjustElementDuplicateName(
     fileContents.imports,
     element.imports,
     targetFile,
+    getFilePathMappings(projectContents),
   )
   // handle element name
   if (isJSXElement(element.element)) {

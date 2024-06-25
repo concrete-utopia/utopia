@@ -3,6 +3,7 @@ import type { EditorState } from '../../../components/editor/store/editor-state'
 import type { Imports } from '../../../core/shared/project-file-types'
 import type { BaseCommand, WhenToRun, CommandFunction, CommandFunctionResult } from './commands'
 import { patchParseSuccessAtFilePath } from './patch-utils'
+import { getFilePathMappings } from '../../../core/model/project-file-utils'
 
 export interface AddImportsToFile extends BaseCommand {
   type: 'ADD_IMPORTS_TO_FILE'
@@ -34,6 +35,7 @@ export const runAddImportsToFile: CommandFunction<AddImportsToFile> = (
       // TODO handle duplicate name mapping
       const { imports: updatedImports } = mergeImports(
         command.targetFile,
+        getFilePathMappings(editorState.projectContents),
         parseSuccess.imports,
         command.imports,
       )
