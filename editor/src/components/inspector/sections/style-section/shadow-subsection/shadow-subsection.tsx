@@ -231,6 +231,8 @@ const ShadowItem = React.memo<ShadowItemProps>((props) => {
               numberType: 'Length',
               defaultUnitToHide: 'px',
               testId: 'boxShadow-x',
+              stepSize: 0.1,
+              incrementControls: false,
             },
             {
               value: props.value.offsetY,
@@ -242,6 +244,8 @@ const ShadowItem = React.memo<ShadowItemProps>((props) => {
               numberType: 'Length',
               defaultUnitToHide: 'px',
               testId: 'boxShadow-y',
+              stepSize: 0.1,
+              incrementControls: false,
             },
             {
               value: props.value.blurRadius.value,
@@ -253,6 +257,8 @@ const ShadowItem = React.memo<ShadowItemProps>((props) => {
               numberType: 'Length',
               defaultUnitToHide: 'px',
               testId: 'boxShadow-blur',
+              stepSize: 0.1,
+              incrementControls: false,
             },
             {
               value: props.value.spreadRadius.value,
@@ -264,6 +270,8 @@ const ShadowItem = React.memo<ShadowItemProps>((props) => {
               numberType: 'Length',
               defaultUnitToHide: 'px',
               testId: 'boxShadow-spread',
+              stepSize: 0.1,
+              incrementControls: false,
             },
           ]}
         />
