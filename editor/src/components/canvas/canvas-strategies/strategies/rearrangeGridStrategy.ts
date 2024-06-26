@@ -57,7 +57,14 @@ export const rearrangeGridStrategy: CanvasStrategyFactory = (
       category: 'tools',
       type: 'pointer',
     },
-    controlsToRender: [GridControls],
+    controlsToRender: [
+      {
+        control: GridControls,
+        props: {},
+        key: `grid-controls-${EP.toString(selectedElement)}`,
+        show: 'always-visible',
+      },
+    ],
     fitness: onlyFitWhenDraggingThisControl(interactionSession, 'GRID_CELL_HANDLE', 1),
     apply: () => {
       if (
@@ -68,31 +75,8 @@ export const rearrangeGridStrategy: CanvasStrategyFactory = (
         return emptyStrategyApplicationResult
       }
 
-      if (shouldTearOffGap) {
-        return strategyApplicationResult([
-          deleteProperties('always', selectedElement, [StyleGapProp]),
-        ])
-      }
-
-      return strategyApplicationResult([
-        setProperty(
-          'always',
-          selectedElement,
-          StyleGapProp,
-          printCSSNumber(updatedFlexGapMeasurement.value, null),
-        ),
-        setCursorCommand(cursorFromFlexDirection(flexGap.direction)),
-        setElementsToRerenderCommand([...selectedElements, ...children.map((c) => c.elementPath)]),
-        setActiveFrames([
-          {
-            action: 'set-gap',
-            target: activeFrameTargetPath(selectedElement),
-            source: zeroRectIfNullOrInfinity(
-              MetadataUtils.getFrameInCanvasCoords(selectedElement, canvasState.startingMetadata),
-            ),
-          },
-        ]),
-      ])
+      // TODO
+      return emptyStrategyApplicationResult
     },
   }
 }
