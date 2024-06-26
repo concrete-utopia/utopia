@@ -178,10 +178,10 @@ export const GridControls = controlForStrategyMemoized(() => {
         return (
           <motion.div
             initial={{
-              scale: 1.2,
+              scale: 1,
             }}
             animate={{
-              scale: 1.3,
+              scale: 1.1,
               transition: {
                 type: 'tween',
                 repeatType: 'mirror',
