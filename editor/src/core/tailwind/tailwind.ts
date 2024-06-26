@@ -6,10 +6,10 @@ import { isRight, left, right } from '../shared/either'
 import type { RequireFn } from '../shared/npm-dependency-types'
 import type { ProjectFile } from '../shared/project-file-types'
 import { isTextFile } from '../shared/project-file-types'
-import type { Sheet, Twind } from '@twind/core'
-import { cssom, observe, defineConfig } from '@twind/core'
-import presetAutoprefix from '@twind/preset-autoprefix'
-import presetTailwind from '@twind/preset-tailwind'
+import type { Configuration, Sheet } from 'twind'
+import { silent } from 'twind'
+import type { TwindObserver } from 'twind/observe'
+import { create, observe, cssomSheet } from 'twind/observe'
 import React from 'react'
 import { includesDependency } from '../../components/editor/npm-dependency/npm-dependency'
 import { propOrNull } from '../shared/object-utils'
@@ -17,9 +17,6 @@ import { memoize } from '../shared/memoize'
 import { importDefault } from '../es-modules/commonjs-interop'
 import { PostCSSPath, TailwindConfigPath } from './tailwind-config'
 import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
-import { twind } from '@twind/core'
-
-type TwindConfigType = ReturnType<typeof defineConfig>
 
 function hasRequiredDependenciesForTailwind(packageJsonFile: ProjectFile): boolean {
   const hasTailwindDependency = includesDependency(packageJsonFile, 'tailwindcss')
@@ -89,30 +86,19 @@ function enablesPreflight(tailwindConfig: any): boolean {
   return true
 }
 
-function convertTailwindToTwindConfig(tailwindConfig: any): TwindConfigType {
+function convertTailwindToTwindConfig(tailwindConfig: any): Configuration {
   const preflightEnabled = enablesPreflight(tailwindConfig)
 
-  const twindConfig = defineConfig({
-    presets: [
-      presetTailwind({
-        disablePreflight: !preflightEnabled,
-      }),
-      presetAutoprefix(),
-    ],
-    // force pushing tailwind's config to twind
-    theme: tailwindConfig.theme,
-    darkMode: tailwindConfig.darkMode,
-    variants: tailwindConfig.variants,
-    preflight: tailwindConfig.preflight,
-  })
-
-  return twindConfig
+  return {
+    ...tailwindConfig,
+    preflight: preflightEnabled,
+  }
 }
 
 function getTailwindConfig(
   tailwindFile: ProjectFile | null,
   requireFn: RequireFn,
-): Either<any, TwindConfigType> {
+): Either<any, Configuration> {
   if (tailwindFile != null && isTextFile(tailwindFile)) {
     try {
       const requireResult = requireFn('/', TailwindConfigPath)
@@ -141,14 +127,14 @@ function useGetTailwindConfigFile(projectContents: ProjectContentTreeRoot): Proj
 function useGetTailwindConfig(
   projectContents: ProjectContentTreeRoot,
   requireFn: RequireFn,
-): TwindConfigType {
+): Configuration {
   const tailwindConfigFile = useGetTailwindConfigFile(projectContents)
   const tailwindConfig = React.useMemo(() => {
     const maybeConfig = getTailwindConfig(tailwindConfigFile, requireFn)
     if (isRight(maybeConfig)) {
       return maybeConfig.value
     } else {
-      return defineConfig({})
+      return {}
     }
   }, [tailwindConfigFile, requireFn])
   return useKeepReferenceEqualityIfPossible(tailwindConfig)
@@ -156,7 +142,7 @@ function useGetTailwindConfig(
 
 interface TwindInstance {
   element: HTMLStyleElement
-  instance: Twind
+  observer: TwindObserver
 }
 
 let twindInstance: TwindInstance | null = null
@@ -167,8 +153,7 @@ export function isTwindEnabled(): boolean {
 
 function clearTwind() {
   if (twindInstance != null) {
-    twindInstance.instance.clear()
-    twindInstance.instance.destroy()
+    twindInstance.observer.disconnect()
     twindInstance.element.parentNode?.removeChild(twindInstance.element)
   }
 }
@@ -212,27 +197,29 @@ const adjustRuleScope = memoize(adjustRuleScopeImpl, {
   matchesArg: (a, b) => a === b,
 })
 
-function updateTwind(config: TwindConfigType, prefixSelector: string | null) {
+function updateTwind(config: Configuration, prefixSelector: string | null) {
   const element = document.head.appendChild(document.createElement('style'))
   element.appendChild(document.createTextNode('')) // Avoid Edge bug where empty style elements doesn't create sheets
 
-  const sheet = cssom(element)
+  const sheet = cssomSheet({ target: element.sheet ?? undefined })
   const customSheet: Sheet = {
-    ...sheet,
     target: sheet.target,
-    insert: (rule, index, sheetRule) => {
+    insert: (rule, index) => {
       const scopedRule = adjustRuleScope(rule, prefixSelector)
-      sheet.insert(scopedRule, index, sheetRule)
+      sheet.insert(scopedRule, index)
     },
   }
 
   clearTwind()
 
-  const instance = observe(twind(config, customSheet), document.documentElement)
+  const observer = observe(
+    document.documentElement,
+    create({ ...config, sheet: customSheet, mode: silent }),
+  )
 
   twindInstance = {
     element: element,
-    instance: instance,
+    observer: observer,
   }
 }
 
@@ -268,7 +255,7 @@ export function injectTwind(
   const shouldUseTwind = hasDependencies && hasPostCSSPlugin
   const tailwindConfigFile = getProjectFileByFilePath(projectContents, TailwindConfigPath)
   const maybeTailwindConfig = getTailwindConfig(tailwindConfigFile, requireFn)
-  const tailwindConfig = isRight(maybeTailwindConfig) ? maybeTailwindConfig.value : defineConfig({})
+  const tailwindConfig = isRight(maybeTailwindConfig) ? maybeTailwindConfig.value : {}
   if (shouldUseTwind) {
     updateTwind(tailwindConfig, prefixSelector)
   } else {
