@@ -5,8 +5,6 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { isFiniteRectangle, windowPoint } from '../../../core/shared/math-utils'
-import { isRight } from '../../../core/shared/either'
-import { isJSXElement } from '../../../core/shared/element-template'
 import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { createInteractionViaMouse, gridCellHandle } from '../canvas-strategies/interaction-state'
@@ -31,65 +29,40 @@ export const GridControls = controlForStrategyMemoized(() => {
           EP.parentPath(view),
         )
 
-        const target = MetadataUtils.isGridLayoutedContainer(element)
+        const targetGridContainer = MetadataUtils.isGridLayoutedContainer(element)
           ? element
           : MetadataUtils.isGridLayoutedContainer(parent)
           ? parent
           : null
 
         if (
-          target == null ||
-          target.globalFrame == null ||
-          !isFiniteRectangle(target.globalFrame)
+          targetGridContainer == null ||
+          targetGridContainer.globalFrame == null ||
+          !isFiniteRectangle(targetGridContainer.globalFrame)
         ) {
           return null
         }
 
-        let rows = 0
-        let columns = 0
-        let gridTemplateColumns: any = undefined
-        let gridTemplateRows: any = undefined
-        let gap: any = 0
-        let padding: any = 0
-        // TODO well this whole logic piece is garbage, we should have these in the SpecialSizeMeasurements
-        if (isRight(target.element) && isJSXElement(target.element.value)) {
-          for (const prop of target.element.value.props) {
-            if (
-              prop.type === 'JSX_ATTRIBUTES_ENTRY' &&
-              prop.key === 'style' &&
-              prop.value.type === 'ATTRIBUTE_NESTED_OBJECT'
-            ) {
-              for (const entry of prop.value.content) {
-                if (
-                  entry.type === 'PROPERTY_ASSIGNMENT' &&
-                  entry.value.type === 'ATTRIBUTE_VALUE'
-                ) {
-                  if (typeof entry.value.value === 'string') {
-                    // TODO do something about it…
-                    const count = entry.value.value.trim().split(/\s+/).length
-                    if (entry.key === 'gridTemplateColumns') {
-                      columns = count
-                      gridTemplateColumns = entry.value.value
-                    }
-                    if (entry.key === 'gridTemplateRows') {
-                      rows = count
-                      gridTemplateRows = entry.value.value
-                    }
-                  }
-                  if (entry.key === 'gap' || entry.key === 'gridGap') {
-                    gap = entry.value.value
-                  }
-                  if (entry.key === 'padding') {
-                    padding = entry.value.value
-                  }
-                }
-              }
-            }
-          }
+        const gap = targetGridContainer.specialSizeMeasurements.gap
+        const padding = targetGridContainer.specialSizeMeasurements.padding
+        const gridTemplateColumns =
+          targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateColumns
+        const gridTemplateRows =
+          targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateRows
+
+        function getSillyCellsCount(template: string | null) {
+          return template == null ? 0 : template.trim().split(/\s+/).length
         }
+        const columns = getSillyCellsCount(
+          targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateColumns,
+        )
+        const rows = getSillyCellsCount(
+          targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateRows,
+        )
+
         return {
-          elementPath: target.elementPath,
-          frame: target.globalFrame,
+          elementPath: targetGridContainer.elementPath,
+          frame: targetGridContainer.globalFrame,
           gridTemplateColumns: gridTemplateColumns,
           gridTemplateRows: gridTemplateRows,
           gap: gap,
@@ -163,10 +136,13 @@ export const GridControls = controlForStrategyMemoized(() => {
               height: grid.frame.height,
               backgroundColor: '#ff00ff0a',
               display: 'grid',
-              gridTemplateColumns: grid.gridTemplateColumns,
-              gridTemplateRows: grid.gridTemplateRows,
-              gap: grid.gap,
-              padding: grid.padding,
+              gridTemplateColumns: grid.gridTemplateColumns ?? undefined,
+              gridTemplateRows: grid.gridTemplateRows ?? undefined,
+              gap: grid.gap ?? 0,
+              padding:
+                grid.padding == null
+                  ? 0
+                  : `${grid.padding.top} ${grid.padding.right} ${grid.padding.bottom} ${grid.padding.left}`,
             }}
           >
             {placeholders.map((cell) => {
