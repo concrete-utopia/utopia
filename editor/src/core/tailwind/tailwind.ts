@@ -7,7 +7,7 @@ import type { RequireFn } from '../shared/npm-dependency-types'
 import type { ProjectFile } from '../shared/project-file-types'
 import { isTextFile } from '../shared/project-file-types'
 import type { Sheet, Twind } from '@twind/core'
-import { cssom, observe, defineConfig } from '@twind/core'
+import { cssom, observe, defineConfig, tw } from '@twind/core'
 import presetAutoprefix from '@twind/preset-autoprefix'
 import presetTailwind from '@twind/preset-tailwind'
 import React from 'react'
@@ -227,6 +227,18 @@ function updateTwind(config: TwindConfigType, prefixSelector: string | null) {
   }
 
   clearTwind()
+
+  if (twindInstance == null) {
+    const prefixes = ['TWIND_', 'TAILWIND_']
+    window.addEventListener('warning', (event: any | { detail: { code: string } }) => {
+      const isTwindWarning: boolean = prefixes.some((prefix) =>
+        event?.detail?.code?.startsWith?.(prefix),
+      )
+      if (isTwindWarning) {
+        event.preventDefault()
+      }
+    })
+  }
 
   const instance = observe(twind(config, customSheet), document.documentElement)
 
