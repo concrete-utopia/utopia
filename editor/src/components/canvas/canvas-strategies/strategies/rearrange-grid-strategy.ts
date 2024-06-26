@@ -65,7 +65,7 @@ export const rearrangeGridStrategy: CanvasStrategyFactory = (
         show: 'always-visible',
       },
     ],
-    fitness: 1, // onlyFitWhenDraggingThisControl(interactionSession, 'GRID_CELL_HANDLE', 1),
+    fitness: onlyFitWhenDraggingThisControl(interactionSession, 'GRID_CELL_HANDLE', 1),
     apply: () => {
       if (
         interactionSession == null ||

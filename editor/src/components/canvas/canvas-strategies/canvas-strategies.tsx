@@ -584,7 +584,7 @@ export function useGetApplicableStrategyControls(): Array<ControlWithProps<unkno
     }
     // Special case controls.
     if (!isResizable && !currentlyInProgress) {
-      applicableControls.push(notResizableControls)
+      // applicableControls.push(notResizableControls)
     }
     return applicableControls
   }, [applicableStrategies, currentStrategy, currentlyInProgress])
