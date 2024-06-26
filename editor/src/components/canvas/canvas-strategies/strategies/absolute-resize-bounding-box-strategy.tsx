@@ -83,7 +83,12 @@ export function absoluteResizeBoundingBoxStrategy(
     retargetedTargets.length === 0 ||
     !retargetedTargets.every((element) => {
       return supportsAbsoluteResize(canvasState.startingMetadata, element, canvasState)
-    })
+    }) ||
+    retargetedTargets.some((t) =>
+      MetadataUtils.isGridLayoutedContainer(
+        MetadataUtils.findElementByElementPath(canvasState.startingMetadata, EP.parentPath(t)),
+      ),
+    )
   ) {
     return null
   }

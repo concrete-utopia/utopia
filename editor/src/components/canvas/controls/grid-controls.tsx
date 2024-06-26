@@ -1,13 +1,18 @@
 import React from 'react'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
-import { Substores, useEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import { mapDropNulls } from '../../../core/shared/array-utils'
-import { isFiniteRectangle } from '../../../core/shared/math-utils'
+import { isFiniteRectangle, windowPoint } from '../../../core/shared/math-utils'
 import { isRight } from '../../../core/shared/either'
 import { isJSXElement } from '../../../core/shared/element-template'
 import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
+import { useDispatch } from '../../editor/store/dispatch-context'
+import { createInteractionViaMouse, gridCellHandle } from '../canvas-strategies/interaction-state'
+import CanvasActions from '../canvas-actions'
+import { Modifier } from '../../../utils/modifiers'
+import { windowToCanvasCoordinates } from '../dom-lookup'
 
 export const GridControls = controlForStrategyMemoized(() => {
   const selectedViews = useEditorState(
@@ -15,6 +20,7 @@ export const GridControls = controlForStrategyMemoized(() => {
     (store) => store.editor.selectedViews,
     '',
   )
+
   const grids = useEditorState(
     Substores.metadataAndPropertyControlsInfo,
     (store) => {
@@ -109,6 +115,34 @@ export const GridControls = controlForStrategyMemoized(() => {
     })
   }, [grids, jsxMetadata])
 
+  const dispatch = useDispatch()
+
+  const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
+  const scaleRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
+
+  const startInteractionWithUid = React.useCallback(
+    (uid: string) => (event: React.MouseEvent) => {
+      event.stopPropagation()
+      const start = windowToCanvasCoordinates(
+        scaleRef.current,
+        canvasOffsetRef.current,
+        windowPoint({ x: event.nativeEvent.x, y: event.nativeEvent.y }),
+      )
+
+      dispatch([
+        CanvasActions.createInteractionSession(
+          createInteractionViaMouse(
+            start.canvasPositionRounded,
+            Modifier.modifiersForEvent(event),
+            gridCellHandle(uid),
+            'zero-drag-not-permitted',
+          ),
+        ),
+      ])
+    },
+    [canvasOffsetRef, dispatch, scaleRef],
+  )
+
   if (grids.length === 0) {
     return null
   }
@@ -154,6 +188,7 @@ export const GridControls = controlForStrategyMemoized(() => {
         const isSelected = selectedViews.some((view) => EP.pathsEqual(cell.elementPath, view))
         return (
           <div
+            onMouseDown={startInteractionWithUid(EP.toUid(cell.elementPath))}
             key={`grid-cell-${EP.toString(cell.elementPath)}`}
             style={{
               position: 'absolute',

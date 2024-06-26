@@ -54,6 +54,7 @@ import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-
 import { queueTrueUpElement } from '../../commands/queue-true-up-command'
 import { treatElementAsGroupLike } from './group-helpers'
 import { trueUpGroupElementChanged } from '../../../editor/store/editor-state'
+import { parentPath } from '../../../../core/shared/element-path'
 
 export const BASIC_RESIZE_STRATEGY_ID = 'BASIC_RESIZE'
 
@@ -63,7 +64,15 @@ export function basicResizeStrategy(
 ): CanvasStrategy | null {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
 
-  if (selectedElements.length !== 1 || !honoursPropsSize(canvasState, selectedElements[0])) {
+  if (
+    selectedElements.length !== 1 ||
+    !honoursPropsSize(canvasState, selectedElements[0]) ||
+    selectedElements.some((t) =>
+      MetadataUtils.isGridLayoutedContainer(
+        MetadataUtils.findElementByElementPath(canvasState.startingMetadata, parentPath(t)),
+      ),
+    )
+  ) {
     return null
   }
   const metadata = MetadataUtils.findElementByElementPath(
@@ -72,14 +81,6 @@ export function basicResizeStrategy(
   )
   const elementDimensionsProps = metadata != null ? getElementDimensions(metadata) : null
   const elementParentBounds = metadata?.specialSizeMeasurements.immediateParentBounds ?? null
-
-  const elementDimensions =
-    elementDimensionsProps == null
-      ? null
-      : {
-          width: elementDimensionsProps.width,
-          height: elementDimensionsProps.height,
-        }
 
   return {
     id: BASIC_RESIZE_STRATEGY_ID,
