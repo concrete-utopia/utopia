@@ -20,6 +20,7 @@ import {
   emptyAttributeMetadata,
   gridContainerProperties,
   gridElementProperties,
+  gridAutoOrTemplateFallback,
 } from '../../core/shared/element-template'
 import type { ElementPath } from '../../core/shared/project-file-types'
 import {
@@ -61,6 +62,7 @@ import {
   parseCSSPx,
   parseGridPosition,
   parseGridRange,
+  parseGridAutoOrTemplateBase,
 } from '../inspector/common/css-utils'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
 import type { UtopiaStoreAPI } from '../editor/store/store-hook'
@@ -889,10 +891,22 @@ function getComputedStyle(
 }
 
 function getGridContainerProperties(elementStyle: CSSStyleDeclaration): GridContainerProperties {
-  const gridTemplateColumns = defaultEither(null, parseString(elementStyle.gridTemplateColumns))
-  const gridTemplateRows = defaultEither(null, parseString(elementStyle.gridTemplateRows))
-  const gridAutoColumns = defaultEither(null, parseString(elementStyle.gridAutoColumns))
-  const gridAutoRows = defaultEither(null, parseString(elementStyle.gridAutoRows))
+  const gridTemplateColumns = defaultEither(
+    gridAutoOrTemplateFallback(elementStyle.gridTemplateColumns),
+    parseGridAutoOrTemplateBase(elementStyle.gridTemplateColumns),
+  )
+  const gridTemplateRows = defaultEither(
+    gridAutoOrTemplateFallback(elementStyle.gridTemplateRows),
+    parseGridAutoOrTemplateBase(elementStyle.gridTemplateRows),
+  )
+  const gridAutoColumns = defaultEither(
+    gridAutoOrTemplateFallback(elementStyle.gridAutoColumns),
+    parseGridAutoOrTemplateBase(elementStyle.gridAutoColumns),
+  )
+  const gridAutoRows = defaultEither(
+    gridAutoOrTemplateFallback(elementStyle.gridAutoRows),
+    parseGridAutoOrTemplateBase(elementStyle.gridAutoRows),
+  )
   return gridContainerProperties(
     gridTemplateColumns,
     gridTemplateRows,

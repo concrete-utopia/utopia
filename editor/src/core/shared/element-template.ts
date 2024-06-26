@@ -21,7 +21,11 @@ import { sides } from 'utopia-api/core'
 import { assertNever, fastForEach, unknownObjectProperty } from './utils'
 import { addAllUniquely, mapDropNulls } from './array-utils'
 import { objectMap } from './object-utils'
-import type { CSSPosition, FlexDirection } from '../../components/inspector/common/css-utils'
+import type {
+  CSSNumber,
+  CSSPosition,
+  FlexDirection,
+} from '../../components/inspector/common/css-utils'
 import type { ModifiableAttribute } from './jsx-attributes'
 import * as EP from './element-path'
 import { firstLetterIsLowerCase } from './string-utils'
@@ -2585,8 +2589,36 @@ export type GridColumnEnd = GridPosition
 export type GridRowStart = GridPosition
 export type GridRowEnd = GridPosition
 
-export type GridAuto = string
-export type GridTemplate = string
+export interface GridAutoOrTemplateFallback {
+  type: 'FALLBACK'
+  value: string
+}
+
+export function gridAutoOrTemplateFallback(value: string): GridAutoOrTemplateFallback {
+  return {
+    type: 'FALLBACK',
+    value: value,
+  }
+}
+
+export interface GridAutoOrTemplateDimensions {
+  type: 'DIMENSIONS'
+  dimensions: Array<CSSNumber>
+}
+
+export function gridAutoOrTemplateDimensions(
+  dimensions: Array<CSSNumber>,
+): GridAutoOrTemplateDimensions {
+  return {
+    type: 'DIMENSIONS',
+    dimensions: dimensions,
+  }
+}
+
+export type GridAutoOrTemplateBase = GridAutoOrTemplateDimensions | GridAutoOrTemplateFallback
+
+export type GridAuto = GridAutoOrTemplateBase
+export type GridTemplate = GridAutoOrTemplateBase
 
 export type GridTemplateColumns = GridTemplate
 export type GridTemplateRows = GridTemplate

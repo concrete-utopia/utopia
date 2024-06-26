@@ -149,6 +149,9 @@ import type {
   GridElementProperties,
   GridPositionValue,
   GridPosition,
+  GridAutoOrTemplateBase,
+  GridAutoOrTemplateDimensions,
+  GridAutoOrTemplateFallback,
 } from '../../../core/shared/element-template'
 import {
   elementInstanceMetadata,
@@ -223,6 +226,8 @@ import {
   gridContainerProperties,
   gridElementProperties,
   gridPositionValue,
+  gridAutoOrTemplateFallback,
+  gridAutoOrTemplateDimensions,
 } from '../../../core/shared/element-template'
 import type {
   CanvasRectangle,
@@ -552,11 +557,13 @@ import type {
   CSSFontWeightAndStyle,
   CSSLetterSpacing,
   CSSLineHeight,
+  CSSNumber,
+  CSSNumberUnit,
   CSSTextAlign,
   CSSTextDecorationLine,
   FontSettings,
 } from '../../inspector/common/css-utils'
-import { fontSettings } from '../../inspector/common/css-utils'
+import { cssNumber, fontSettings } from '../../inspector/common/css-utils'
 import type { ElementPaste, ProjectListing } from '../action-types'
 import { projectListing } from '../action-types'
 import type { Bounds, UtopiaVSCodeConfig } from 'utopia-vscode-common'
@@ -1947,11 +1954,53 @@ export const ImportInfoKeepDeepEquality: KeepDeepEqualityCall<ImportInfo> = (
   return keepDeepEqualityResult(newValue, false)
 }
 
+export const CSSNumberKeepDeepEquality: KeepDeepEqualityCall<CSSNumber> = combine2EqualityCalls(
+  (cssNum) => cssNum.value,
+  createCallWithTripleEquals<number>(),
+  (cssNum) => cssNum.unit,
+  undefinableDeepEquality(nullableDeepEquality(createCallWithTripleEquals<CSSNumberUnit>())),
+  cssNumber,
+)
+
+export const GridAutoOrTemplateDimensionsKeepDeepEquality: KeepDeepEqualityCall<GridAutoOrTemplateDimensions> =
+  combine1EqualityCall(
+    (value) => value.dimensions,
+    arrayDeepEquality(CSSNumberKeepDeepEquality),
+    gridAutoOrTemplateDimensions,
+  )
+
+export const GridAutoOrTemplateFallbackKeepDeepEquality: KeepDeepEqualityCall<GridAutoOrTemplateFallback> =
+  combine1EqualityCall(
+    (value) => value.value,
+    createCallWithTripleEquals<string>(),
+    gridAutoOrTemplateFallback,
+  )
+
+export const GridAutoOrTemplateBaseKeepDeepEquality: KeepDeepEqualityCall<
+  GridAutoOrTemplateBase
+> = (oldValue, newValue) => {
+  switch (oldValue.type) {
+    case 'DIMENSIONS':
+      if (newValue.type === oldValue.type) {
+        return GridAutoOrTemplateDimensionsKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'FALLBACK':
+      if (newValue.type === oldValue.type) {
+        return GridAutoOrTemplateFallbackKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
 export const GridTemplateKeepDeepEquality: KeepDeepEqualityCall<GridTemplate> =
-  createCallWithTripleEquals<string>()
+  GridAutoOrTemplateBaseKeepDeepEquality
 
 export const GridAutoKeepDeepEquality: KeepDeepEqualityCall<GridAuto> =
-  createCallWithTripleEquals<string>()
+  GridAutoOrTemplateBaseKeepDeepEquality
 
 export function GridContainerPropertiesKeepDeepEquality(): KeepDeepEqualityCall<GridContainerProperties> {
   return combine4EqualityCalls(

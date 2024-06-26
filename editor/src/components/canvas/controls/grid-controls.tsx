@@ -12,6 +12,34 @@ import CanvasActions from '../canvas-actions'
 import { Modifier } from '../../../utils/modifiers'
 import { windowToCanvasCoordinates } from '../dom-lookup'
 import { motion } from 'framer-motion'
+import type { GridAutoOrTemplateBase } from '../../../core/shared/element-template'
+import { assertNever } from '../../../core/shared/utils'
+import { printGridAutoOrTemplateBase } from '../../../components/inspector/common/css-utils'
+
+function getSillyCellsCount(template: GridAutoOrTemplateBase | null): number {
+  if (template == null) {
+    return 0
+  } else {
+    switch (template.type) {
+      case 'DIMENSIONS':
+        return template.dimensions.length
+      case 'FALLBACK':
+        return 0
+      default:
+        assertNever(template)
+    }
+  }
+}
+
+function getNullableAutoOrTemplateBaeString(
+  template: GridAutoOrTemplateBase | null,
+): string | undefined {
+  if (template == null) {
+    return undefined
+  } else {
+    return printGridAutoOrTemplateBase(template)
+  }
+}
 
 export const GridControls = controlForStrategyMemoized(() => {
   const selectedViews = useEditorState(
@@ -65,9 +93,6 @@ export const GridControls = controlForStrategyMemoized(() => {
         const gridTemplateRows =
           targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateRows
 
-        function getSillyCellsCount(template: string | null) {
-          return template == null ? 0 : template.trim().split(/\s+/).length
-        }
         const columns = getSillyCellsCount(
           targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateColumns,
         )
@@ -149,8 +174,8 @@ export const GridControls = controlForStrategyMemoized(() => {
               height: grid.frame.height,
               //   backgroundColor: '#ff00ff09',
               display: 'grid',
-              gridTemplateColumns: grid.gridTemplateColumns ?? undefined,
-              gridTemplateRows: grid.gridTemplateRows ?? undefined,
+              gridTemplateColumns: getNullableAutoOrTemplateBaeString(grid.gridTemplateColumns),
+              gridTemplateRows: getNullableAutoOrTemplateBaeString(grid.gridTemplateRows),
               gap: grid.gap ?? 0,
               padding:
                 grid.padding == null

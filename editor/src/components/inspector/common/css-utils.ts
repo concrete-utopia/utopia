@@ -24,6 +24,7 @@ import {
   isLeft,
   isRight,
   left,
+  leftMapEither,
   mapEither,
   right,
   traverseEither,
@@ -35,6 +36,7 @@ import type {
   JSXElement,
   GridPosition,
   GridRange,
+  GridAutoOrTemplateBase,
 } from '../../../core/shared/element-template'
 import {
   emptyComments,
@@ -46,6 +48,7 @@ import {
   jsExpressionValue,
   gridPositionValue,
   gridRange,
+  gridAutoOrTemplateDimensions,
 } from '../../../core/shared/element-template'
 import type { ModifiableAttribute } from '../../../core/shared/jsx-attributes'
 import {
@@ -67,7 +70,7 @@ import {
 } from '../../../core/shared/math-utils'
 import type { PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
-import type { PrimitiveType, ValueOf } from '../../../core/shared/utils'
+import { assertNever, type PrimitiveType, type ValueOf } from '../../../core/shared/utils'
 import { parseBackgroundSize } from '../../../printer-parsers/css/css-parser-background-size'
 import { parseBorder } from '../../../printer-parsers/css/css-parser-border'
 import Utils from '../../../utils/utils'
@@ -82,6 +85,9 @@ import {
 } from '../../../printer-parsers/css/css-parser-margin'
 import { parseFlex, printFlexAsAttributeValue } from '../../../printer-parsers/css/css-parser-flex'
 import { memoize } from '../../../core/shared/memoize'
+import { parseCSSArray } from '../../../printer-parsers/css/css-parser-utils'
+import type { ParseError } from '../../../utils/value-parser-utils'
+import { descriptionParseError } from '../../../utils/value-parser-utils'
 
 var combineRegExp = function (regexpList: Array<RegExp | string>, flags?: string) {
   let source: string = ''
@@ -733,6 +739,22 @@ export function printCSSNumber(
   }
 }
 
+export function printGridAutoOrTemplateBase(input: GridAutoOrTemplateBase): string {
+  switch (input.type) {
+    case 'DIMENSIONS':
+      return input.dimensions
+        .map((dimension) => {
+          const printed = printCSSNumber(dimension, null)
+          return typeof printed === 'string' ? printed : `${printed}`
+        })
+        .join(' ')
+    case 'FALLBACK':
+      return input.value
+    default:
+      assertNever(input)
+  }
+}
+
 export function printCSSNumberOrKeyword(
   input: CSSNumber | CSSKeyword,
   defaultUnitToSkip: string | null,
@@ -829,6 +851,31 @@ export function parseGridRange(input: unknown): Either<string, GridRange> {
     }
   } else {
     return left('Not a valid grid range.')
+  }
+}
+
+export function parseGridAutoOrTemplateBase(
+  input: unknown,
+): Either<string, GridAutoOrTemplateBase> {
+  function numberParse(inputToParse: unknown): Either<ParseError, CSSNumber> {
+    const result = parseCSSAnyValidNumber(inputToParse)
+    return leftMapEither<string, ParseError, CSSNumber>(descriptionParseError, result)
+  }
+  if (typeof input === 'string') {
+    const parsedCSSArray = parseCSSArray([numberParse])(input.split(/ +/))
+    return bimapEither(
+      (error) => {
+        if (error.type === 'DESCRIPTION_PARSE_ERROR') {
+          return error.description
+        } else {
+          return error.toString()
+        }
+      },
+      gridAutoOrTemplateDimensions,
+      parsedCSSArray,
+    )
+  } else {
+    return left('Unknown input.')
   }
 }
 
