@@ -122,7 +122,6 @@ export const GridControls = controlForStrategyMemoized(() => {
 
   const startInteractionWithUid = React.useCallback(
     (uid: string) => (event: React.MouseEvent) => {
-      event.stopPropagation()
       const start = windowToCanvasCoordinates(
         scaleRef.current,
         canvasOffsetRef.current,
