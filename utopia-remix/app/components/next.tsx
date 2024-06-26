@@ -13,7 +13,7 @@ const mainNavigation = [
   { name: 'Discord', href: 'https://discord.gg/NEEnPKCgzC' },
   {
     name: 'Play with Utopia',
-    href: 'https://utopia.app/p/36ae27be-welcome-to-utopia',
+    href: 'https://utopia.app/projects',
     primary: true,
   },
 ]
@@ -216,7 +216,7 @@ export const GhostBrowser = (props: {
 )
 
 const contactUsNavigation = [
-  { name: 'Play with Utopia', href: 'https://utopia.app/p/36ae27be-welcome-to-utopia' },
+  { name: 'Play with Utopia', href: 'https://utopia.app/projects' },
   { name: 'Join our Discord', href: 'https://discord.gg/NEEnPKCgzC' },
   { name: 'Check us on Github', href: 'https://github.com/concrete-utopia/utopia' },
   { name: 'Privacy Policy', href: '/policies#privacy-policy' },

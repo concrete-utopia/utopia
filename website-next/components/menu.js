@@ -1,4 +1,4 @@
-import { Fragment } from 'react'
+import React, { Fragment } from 'react'
 import { Popover, Transition } from '@headlessui/react'
 import { MenuIcon, XIcon } from '@heroicons/react/outline'
 import { HostedImage } from './hosted-image'
@@ -14,7 +14,7 @@ const navigation = [
   { name: 'Discord', href: 'https://discord.gg/NEEnPKCgzC' },
   {
     name: 'Play with Utopia',
-    href: 'https://utopia.app/p/36ae27be-welcome-to-utopia',
+    href: 'https://utopia.app/projects',
     primary: true,
   },
 ]
