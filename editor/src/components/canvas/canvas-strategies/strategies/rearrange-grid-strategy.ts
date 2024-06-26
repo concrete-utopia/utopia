@@ -11,6 +11,7 @@ import {
   offsetPoint,
   rectContainsPointInclusive,
 } from '../../../../core/shared/math-utils'
+import { optionalMap } from '../../../../core/shared/optional-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { create } from '../../../../core/shared/property-path'
 import type { CanvasCommand } from '../../commands/commands'
