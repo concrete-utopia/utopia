@@ -143,6 +143,12 @@ import type {
   JSOpaqueArbitraryStatement,
   JSAssignmentStatement,
   JSAssignment,
+  GridContainerProperties,
+  GridTemplate,
+  GridAuto,
+  GridElementProperties,
+  GridPositionValue,
+  GridPosition,
 } from '../../../core/shared/element-template'
 import {
   elementInstanceMetadata,
@@ -214,6 +220,9 @@ import {
   jsAssignmentStatement,
   jsAssignment,
   jsxMapExpression,
+  gridContainerProperties,
+  gridElementProperties,
+  gridPositionValue,
 } from '../../../core/shared/element-template'
 import type {
   CanvasRectangle,
@@ -1936,6 +1945,66 @@ export const ImportInfoKeepDeepEquality: KeepDeepEqualityCall<ImportInfo> = (
   return keepDeepEqualityResult(newValue, false)
 }
 
+export const GridTemplateKeepDeepEquality: KeepDeepEqualityCall<GridTemplate> =
+  createCallWithTripleEquals<null>()
+
+export const GridAutoKeepDeepEquality: KeepDeepEqualityCall<GridAuto> =
+  createCallWithTripleEquals<null>()
+
+export function GridContainerPropertiesKeepDeepEquality(): KeepDeepEqualityCall<GridContainerProperties> {
+  return combine4EqualityCalls(
+    (properties) => properties.gridTemplateColumns,
+    GridTemplateKeepDeepEquality,
+    (properties) => properties.gridTemplateRows,
+    GridTemplateKeepDeepEquality,
+    (properties) => properties.gridAutoColumns,
+    GridAutoKeepDeepEquality,
+    (properties) => properties.gridAutoRows,
+    GridAutoKeepDeepEquality,
+    gridContainerProperties,
+  )
+}
+
+export const GridPositionValueKeepDeepEquality: KeepDeepEqualityCall<GridPositionValue> =
+  combine1EqualityCall(
+    (value) => value.numericalPosition,
+    nullableDeepEquality(createCallWithTripleEquals<number>()),
+    gridPositionValue,
+  )
+
+export const GridPositionKeepDeepEquality: KeepDeepEqualityCall<GridPosition> = (
+  oldValue,
+  newValue,
+) => {
+  if (typeof oldValue === 'string') {
+    if (typeof newValue === 'string') {
+      return createCallWithTripleEquals<GridPosition>()(oldValue, newValue)
+    } else {
+      return keepDeepEqualityResult(newValue, false)
+    }
+  } else {
+    if (typeof newValue === 'string') {
+      return keepDeepEqualityResult(newValue, false)
+    } else {
+      return GridPositionValueKeepDeepEquality(oldValue, newValue)
+    }
+  }
+}
+
+export function GridElementPropertiesKeepDeepEquality(): KeepDeepEqualityCall<GridElementProperties> {
+  return combine4EqualityCalls(
+    (properties) => properties.gridColumnStart,
+    nullableDeepEquality(GridPositionKeepDeepEquality),
+    (properties) => properties.gridColumnEnd,
+    nullableDeepEquality(GridPositionKeepDeepEquality),
+    (properties) => properties.gridRowStart,
+    nullableDeepEquality(GridPositionKeepDeepEquality),
+    (properties) => properties.gridRowEnd,
+    nullableDeepEquality(GridPositionKeepDeepEquality),
+    gridElementProperties,
+  )
+}
+
 export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<SpecialSizeMeasurements> {
   return (oldSize, newSize) => {
     const offsetResult = LocalPointKeepDeepEquality(oldSize.offset, newSize.offset)
@@ -2012,6 +2081,15 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       oldSize.computedHugProperty.width === newSize.computedHugProperty.width &&
       oldSize.computedHugProperty.height === newSize.computedHugProperty.height
 
+    const gridContainerPropertiesEqual = GridContainerPropertiesKeepDeepEquality()(
+      oldSize.containerGridProperties,
+      newSize.containerGridProperties,
+    ).areEqual
+    const gridElementPropertiesEqual = GridElementPropertiesKeepDeepEquality()(
+      oldSize.elementGridProperties,
+      newSize.elementGridProperties,
+    ).areEqual
+
     const areEqual =
       offsetResult.areEqual &&
       coordinateSystemBoundsResult.areEqual &&
@@ -2053,7 +2131,9 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       fontStyleEquals &&
       textDecorationLineEquals &&
       textBoundsEqual &&
-      computedHugPropertyEqual
+      computedHugPropertyEqual &&
+      gridContainerPropertiesEqual &&
+      gridElementPropertiesEqual
     if (areEqual) {
       return keepDeepEqualityResult(oldSize, true)
     } else {
@@ -2099,6 +2179,8 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.textDecorationLine,
         newSize.textBounds,
         newSize.computedHugProperty,
+        newSize.containerGridProperties,
+        newSize.elementGridProperties,
       )
       return keepDeepEqualityResult(sizeMeasurements, false)
     }

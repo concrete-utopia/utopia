@@ -9,6 +9,8 @@ import type {
   SpecialSizeMeasurements,
   StyleAttributeMetadata,
   ElementInstanceMetadataMap,
+  GridContainerProperties,
+  GridElementProperties,
 } from '../../core/shared/element-template'
 import {
   elementInstanceMetadata,
@@ -16,6 +18,8 @@ import {
   emptySpecialSizeMeasurements,
   emptyComputedStyle,
   emptyAttributeMetadata,
+  gridContainerProperties,
+  gridElementProperties,
 } from '../../core/shared/element-template'
 import type { ElementPath } from '../../core/shared/project-file-types'
 import {
@@ -55,6 +59,7 @@ import {
   parseDirection,
   parseFlexDirection,
   parseCSSPx,
+  parseGridPosition,
 } from '../inspector/common/css-utils'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
 import type { UtopiaStoreAPI } from '../editor/store/store-hook'
@@ -881,6 +886,18 @@ function getComputedStyle(
   }
 }
 
+function getGridContainerProperties(_elementStyle: CSSStyleDeclaration): GridContainerProperties {
+  return gridContainerProperties(null, null, null, null)
+}
+
+function getGridElementProperties(elementStyle: CSSStyleDeclaration): GridElementProperties {
+  const gridColumnStart = defaultEither(null, parseGridPosition(elementStyle.gridColumnStart))
+  const gridColumnEnd = defaultEither(null, parseGridPosition(elementStyle.gridColumnEnd))
+  const gridRowStart = defaultEither(null, parseGridPosition(elementStyle.gridRowStart))
+  const gridRowEnd = defaultEither(null, parseGridPosition(elementStyle.gridRowEnd))
+  return gridElementProperties(gridColumnStart, gridColumnEnd, gridRowStart, gridRowEnd)
+}
+
 function getSpecialMeasurements(
   element: HTMLElement,
   closestOffsetParentPath: ElementPath,
@@ -1074,6 +1091,9 @@ function getSpecialMeasurements(
     globalFrame,
   )
 
+  const containerGridProperties = getGridContainerProperties(elementStyle)
+  const containerElementProperties = getGridElementProperties(elementStyle)
+
   return specialSizeMeasurements(
     offset,
     coordinateSystemBounds,
@@ -1118,6 +1138,8 @@ function getSpecialMeasurements(
     textDecorationLine,
     textBounds,
     computedHugProperty,
+    containerGridProperties,
+    containerElementProperties,
   )
 }
 

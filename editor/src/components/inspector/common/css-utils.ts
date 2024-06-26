@@ -16,6 +16,7 @@ import type { LayoutPropertyTypes, StyleLayoutProp } from '../../../core/layout/
 import { findLastIndex } from '../../../core/shared/array-utils'
 import type { Either, Right as EitherRight } from '../../../core/shared/either'
 import {
+  alternativeEither,
   bimapEither,
   eitherToMaybe,
   flatMapEither,
@@ -31,6 +32,7 @@ import type {
   JSXAttributes,
   JSExpressionValue,
   JSXElement,
+  GridPosition,
 } from '../../../core/shared/element-template'
 import {
   emptyComments,
@@ -40,6 +42,7 @@ import {
   isRegularJSXAttribute,
   jsExpressionFunctionCall,
   jsExpressionValue,
+  gridPositionValue,
 } from '../../../core/shared/element-template'
 import type { ModifiableAttribute } from '../../../core/shared/jsx-attributes'
 import {
@@ -794,6 +797,19 @@ export const parseCSSNumber = (
     return parseCSSNumericTypeString(input, unitParseFn, defaultUnit)
   } else {
     return left(`Unable to parse invalid number`)
+  }
+}
+
+export function parseGridPosition(input: unknown): Either<string, GridPosition> {
+  if (input === 'auto') {
+    return right('auto')
+  } else if (typeof input === 'string') {
+    const asNumber = parseNumber(input)
+    return mapEither(gridPositionValue, asNumber)
+  } else if (typeof input === 'number') {
+    return right(gridPositionValue(input))
+  } else {
+    return left('Not a valid grid position.')
   }
 }
 

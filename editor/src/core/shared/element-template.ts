@@ -2556,6 +2556,73 @@ export function elementInstanceMetadata(
 
 export type SettableLayoutSystem = 'flex' | 'flow' | 'grid' | LayoutSystem
 
+export interface GridPositionValue {
+  numericalPosition: number | null
+}
+
+export function gridPositionValue(numericalPosition: number | null): GridPositionValue {
+  return {
+    numericalPosition: numericalPosition,
+  }
+}
+
+export type GridPosition = GridPositionValue | 'auto'
+
+export type GridColumnStart = GridPosition
+export type GridColumnEnd = GridPosition
+export type GridRowStart = GridPosition
+export type GridRowEnd = GridPosition
+
+export type GridAuto = null
+export type GridTemplate = null
+
+export type GridTemplateColumns = GridTemplate
+export type GridTemplateRows = GridTemplate
+export type GridAutoColumns = GridAuto
+export type GridAutoRows = GridAuto
+
+export interface GridContainerProperties {
+  gridTemplateColumns: GridTemplateColumns | null
+  gridTemplateRows: GridTemplateRows | null
+  gridAutoColumns: GridAutoColumns | null
+  gridAutoRows: GridAutoRows | null
+}
+
+export function gridContainerProperties(
+  gridTemplateColumns: GridTemplateColumns | null,
+  gridTemplateRows: GridTemplateRows | null,
+  gridAutoColumns: GridAutoColumns | null,
+  gridAutoRows: GridAutoRows | null,
+): GridContainerProperties {
+  return {
+    gridTemplateColumns: gridTemplateColumns,
+    gridTemplateRows: gridTemplateRows,
+    gridAutoColumns: gridAutoColumns,
+    gridAutoRows: gridAutoRows,
+  }
+}
+
+export interface GridElementProperties {
+  gridColumnStart: GridColumnStart | null
+  gridColumnEnd: GridColumnEnd | null
+  gridRowStart: GridRowStart | null
+  gridRowEnd: GridRowEnd | null
+}
+
+export function gridElementProperties(
+  gridColumnStart: GridColumnStart | null,
+  gridColumnEnd: GridColumnEnd | null,
+  gridRowStart: GridRowStart | null,
+  gridRowEnd: GridRowEnd | null,
+): GridElementProperties {
+  return {
+    gridColumnStart: gridColumnStart,
+    gridColumnEnd: gridColumnEnd,
+    gridRowStart: gridRowStart,
+    gridRowEnd: gridRowEnd,
+  }
+}
+
 export interface SpecialSizeMeasurements {
   offset: LocalPoint
   coordinateSystemBounds: CanvasRectangle | null
@@ -2598,6 +2665,8 @@ export interface SpecialSizeMeasurements {
   fontStyle: string | null
   textDecorationLine: string | null
   computedHugProperty: HugPropertyWidthHeight
+  containerGridProperties: GridContainerProperties
+  elementGridProperties: GridElementProperties
 }
 
 export function specialSizeMeasurements(
@@ -2642,6 +2711,8 @@ export function specialSizeMeasurements(
   textDecorationLine: string | null,
   textBounds: CanvasRectangle | null,
   computedHugProperty: HugPropertyWidthHeight,
+  containerGridProperties: GridContainerProperties,
+  elementGridProperties: GridElementProperties,
 ): SpecialSizeMeasurements {
   return {
     offset,
@@ -2685,6 +2756,8 @@ export function specialSizeMeasurements(
     fontStyle,
     textDecorationLine,
     computedHugProperty,
+    containerGridProperties,
+    elementGridProperties,
   }
 }
 
@@ -2733,6 +2806,18 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   null,
   null,
   { width: null, height: null },
+  {
+    gridTemplateColumns: null,
+    gridTemplateRows: null,
+    gridAutoColumns: null,
+    gridAutoRows: null,
+  },
+  {
+    gridColumnStart: null,
+    gridColumnEnd: null,
+    gridRowStart: null,
+    gridRowEnd: null,
+  },
 )
 
 export function walkElement(
