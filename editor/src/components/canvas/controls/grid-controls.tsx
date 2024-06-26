@@ -11,12 +11,27 @@ import { createInteractionViaMouse, gridCellHandle } from '../canvas-strategies/
 import CanvasActions from '../canvas-actions'
 import { Modifier } from '../../../utils/modifiers'
 import { windowToCanvasCoordinates } from '../dom-lookup'
+import { motion } from 'framer-motion'
 
 export const GridControls = controlForStrategyMemoized(() => {
   const selectedViews = useEditorState(
     Substores.selectedViews,
     (store) => store.editor.selectedViews,
+    'GridControls selectedViews',
+  )
+
+  const isActivelyDraggingCell = useEditorState(
+    Substores.canvas,
+    (store) =>
+      store.editor.canvas.interactionSession != null &&
+      store.editor.canvas.interactionSession.activeControl.type === 'GRID_CELL_HANDLE',
     '',
+  )
+
+  const jsxMetadata = useEditorState(
+    Substores.metadata,
+    (store) => store.editor.jsxMetadata,
+    'GridControls jsxMetadata',
   )
 
   const grids = useEditorState(
@@ -71,10 +86,8 @@ export const GridControls = controlForStrategyMemoized(() => {
         }
       }, store.editor.selectedViews)
     },
-    'GridControls selectedGrids',
+    'GridControls grids',
   )
-
-  const jsxMetadata = useEditorState(Substores.metadata, (store) => store.editor.jsxMetadata, '')
 
   const cells = React.useMemo(() => {
     return grids.flatMap((grid) => {
@@ -134,7 +147,7 @@ export const GridControls = controlForStrategyMemoized(() => {
               left: grid.frame.x,
               width: grid.frame.width,
               height: grid.frame.height,
-              backgroundColor: '#ff00ff0a',
+              //   backgroundColor: '#ff00ff09',
               display: 'grid',
               gridTemplateColumns: grid.gridTemplateColumns ?? undefined,
               gridTemplateRows: grid.gridTemplateRows ?? undefined,
@@ -142,7 +155,7 @@ export const GridControls = controlForStrategyMemoized(() => {
               padding:
                 grid.padding == null
                   ? 0
-                  : `${grid.padding.top} ${grid.padding.right} ${grid.padding.bottom} ${grid.padding.left}`,
+                  : `${grid.padding.top}px ${grid.padding.right}px ${grid.padding.bottom}px ${grid.padding.left}px`,
             }}
           >
             {placeholders.map((cell) => {
@@ -151,6 +164,7 @@ export const GridControls = controlForStrategyMemoized(() => {
                   key={`grid-${index}-cell-${cell}`}
                   style={{
                     border: '1px solid #ff00ff66',
+                    background: '#ff00ff06',
                   }}
                 />
               )
@@ -162,7 +176,19 @@ export const GridControls = controlForStrategyMemoized(() => {
       {cells.map((cell) => {
         const isSelected = selectedViews.some((view) => EP.pathsEqual(cell.elementPath, view))
         return (
-          <div
+          <motion.div
+            initial={{
+              scale: 1.2,
+            }}
+            animate={{
+              scale: 1.3,
+              transition: {
+                type: 'tween',
+                repeatType: 'mirror',
+                repeat: Infinity,
+                duration: 0.5,
+              },
+            }}
             onMouseDown={startInteractionWithUid(EP.toUid(cell.elementPath))}
             key={`grid-cell-${EP.toString(cell.elementPath)}`}
             style={{
@@ -171,8 +197,8 @@ export const GridControls = controlForStrategyMemoized(() => {
               left: cell.globalFrame.x,
               width: cell.globalFrame.width,
               height: cell.globalFrame.height,
-              backgroundColor: '#09f',
-              opacity: !isSelected ? 0.3 : 0,
+              backgroundColor: '#f0f',
+              opacity: !isActivelyDraggingCell || isSelected ? 0 : 0.2,
             }}
           />
         )
