@@ -91,7 +91,7 @@ export const GridControls = controlForStrategyMemoized(() => {
   const dispatch = useDispatch()
 
   const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
-  const scaleRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
+  const scaleRef = useRefEditorState((store) => store.editor.canvas.scale)
 
   const startInteractionWithUid = React.useCallback(
     (uid: string) => (event: React.MouseEvent) => {

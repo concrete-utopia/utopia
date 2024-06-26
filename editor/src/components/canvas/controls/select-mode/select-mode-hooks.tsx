@@ -656,23 +656,23 @@ function useSelectOrLiveModeSelectAndHover(
       let editorActions: Array<EditorAction> = []
 
       if (foundTarget != null || isDeselect) {
-        if (foundTarget != null && draggingAllowed) {
-          const start = windowToCanvasCoordinates(
-            windowPoint(point(event.clientX, event.clientY)),
-          ).canvasPositionRounded
-          if (event.button !== 2 && event.type !== 'mouseup') {
-            editorActions.push(
-              CanvasActions.createInteractionSession(
-                createInteractionViaMouse(
-                  start,
-                  Modifier.modifiersForEvent(event),
-                  boundingArea(),
-                  'zero-drag-not-permitted',
-                ),
-              ),
-            )
-          }
-        }
+        // if (foundTarget != null && draggingAllowed) {
+        //   const start = windowToCanvasCoordinates(
+        //     windowPoint(point(event.clientX, event.clientY)),
+        //   ).canvasPositionRounded
+        //   if (event.button !== 2 && event.type !== 'mouseup') {
+        //     editorActions.push(
+        //       CanvasActions.createInteractionSession(
+        //         createInteractionViaMouse(
+        //           start,
+        //           Modifier.modifiersForEvent(event),
+        //           boundingArea(),
+        //           'zero-drag-not-permitted',
+        //         ),
+        //       ),
+        //     )
+        //   }
+        // }
 
         let updatedSelection: Array<ElementPath>
         if (isMultiselect) {
@@ -739,8 +739,6 @@ function useSelectOrLiveModeSelectAndHover(
       setSelectedViewsForCanvasControlsOnly,
       getSelectableViewsForSelectMode,
       editorStoreRef,
-      draggingAllowed,
-      windowToCanvasCoordinates,
       active,
     ],
   )
