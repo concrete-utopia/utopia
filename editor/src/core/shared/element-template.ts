@@ -2573,8 +2573,8 @@ export type GridColumnEnd = GridPosition
 export type GridRowStart = GridPosition
 export type GridRowEnd = GridPosition
 
-export type GridAuto = null
-export type GridTemplate = null
+export type GridAuto = string
+export type GridTemplate = string
 
 export type GridTemplateColumns = GridTemplate
 export type GridTemplateRows = GridTemplate

@@ -91,6 +91,7 @@ import { pick } from '../../core/shared/object-utils'
 import { getFlexAlignment, getFlexJustifyContent, MaxContent } from '../inspector/inspector-common'
 import type { EditorDispatch } from '../editor/action-types'
 import { runDOMWalker } from '../editor/actions/action-creators'
+import { parseString } from '../../utils/value-parser-utils'
 
 export const ResizeObserver =
   window.ResizeObserver ?? ResizeObserverSyntheticDefault.default ?? ResizeObserverSyntheticDefault
@@ -886,8 +887,17 @@ function getComputedStyle(
   }
 }
 
-function getGridContainerProperties(_elementStyle: CSSStyleDeclaration): GridContainerProperties {
-  return gridContainerProperties(null, null, null, null)
+function getGridContainerProperties(elementStyle: CSSStyleDeclaration): GridContainerProperties {
+  const gridTemplateColumns = defaultEither(null, parseString(elementStyle.gridTemplateColumns))
+  const gridTemplateRows = defaultEither(null, parseString(elementStyle.gridTemplateRows))
+  const gridAutoColumns = defaultEither(null, parseString(elementStyle.gridAutoColumns))
+  const gridAutoRows = defaultEither(null, parseString(elementStyle.gridAutoRows))
+  return gridContainerProperties(
+    gridTemplateColumns,
+    gridTemplateRows,
+    gridAutoColumns,
+    gridAutoRows,
+  )
 }
 
 function getGridElementProperties(elementStyle: CSSStyleDeclaration): GridElementProperties {
