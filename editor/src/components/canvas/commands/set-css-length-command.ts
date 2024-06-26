@@ -28,6 +28,12 @@ import { deleteConflictingPropsForWidthHeight } from './adjust-css-length-comman
 import { applyValuesAtPath } from './adjust-number-command'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 import { addToastPatch } from './show-toast-command'
+import { getClassNameAttribute } from '../../../core/tailwind/tailwind-options'
+import { ClassNameToAttributes } from '../../../core/third-party/tailwind-defaults'
+import {
+  convertPixelsToTailwindDimension,
+  getTailwindPropFromPropertyPath,
+} from '../../../core/tailwind/tailwind-helpers'
 
 type CssNumberOrKeepOriginalUnit =
   | { type: 'EXPLICIT_CSS_NUMBER'; value: CSSNumber | CSSKeyword }
@@ -87,6 +93,10 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
     command.parentFlexDirection,
   )
 
+  const tailwindProp = getTailwindPropFromPropertyPath(command.property)
+  let relevantClassNames: Array<string> = []
+  let classNames: Array<string> = []
+
   // Identify the current value, whatever that may be.
   const currentValue: GetModifiableAttributeResult = withUnderlyingTargetFromEditorState(
     command.target,
@@ -94,6 +104,12 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
     left(`no target element was found at path ${EP.toString(command.target)}`),
     (_, element) => {
       if (isJSXElement(element)) {
+        classNames = getClassNameAttribute(element).value?.split(' ') ?? []
+        relevantClassNames =
+          tailwindProp == null
+            ? []
+            : classNames.filter((c) => ClassNameToAttributes[c].includes(tailwindProp))
+
         return getModifiableJSXAttributeAtPath(element.props, command.property)
       } else {
         return left(`No JSXElement was found at path ${EP.toString(command.target)}`)
@@ -164,11 +180,22 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
     }
 
     const printedValue = printCSSNumberOrKeyword(newCssValue, 'px')
-
-    propsToUpdate.push({
-      path: command.property,
-      value: jsExpressionValue(printedValue, emptyComments),
-    })
+    if (relevantClassNames.length > 0 && tailwindProp != null && typeof printedValue === 'number') {
+      propsToUpdate.push({
+        path: PP.fromString('className'),
+        value: jsExpressionValue(
+          `${classNames
+            .filter((c) => !relevantClassNames.includes(c))
+            .join(' ')} ${convertPixelsToTailwindDimension(printedValue, tailwindProp)}`,
+          emptyComments,
+        ),
+      })
+    } else {
+      propsToUpdate.push({
+        path: command.property,
+        value: jsExpressionValue(printedValue, emptyComments),
+      })
+    }
   }
 
   // Apply the update to the properties.

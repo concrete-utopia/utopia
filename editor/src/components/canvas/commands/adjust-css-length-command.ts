@@ -1,6 +1,14 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import type { Either } from '../../../core/shared/either'
-import { foldEither, isLeft, isRight, left, mapEither } from '../../../core/shared/either'
+import {
+  eitherToMaybe,
+  flatMapEither,
+  foldEither,
+  isLeft,
+  isRight,
+  left,
+  mapEither,
+} from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import type { JSXAttributes, JSXElement } from '../../../core/shared/element-template'
 import {
@@ -24,6 +32,13 @@ import { parseCSSPercent, parseCSSPx, printCSSNumber } from '../../inspector/com
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 import { deleteValuesAtPath } from './delete-properties-command'
 import { patchParseSuccessAtElementPath } from './patch-utils'
+import { ClassNameToAttributes } from '../../../core/third-party/tailwind-defaults'
+import type { TailwindProp } from '../../../core/tailwind/tailwind-helpers'
+import {
+  convertPixelsToTailwindDimension,
+  getTailwindPropFromPropertyPath,
+} from '../../../core/tailwind/tailwind-helpers'
+import { stripNulls } from '../../../core/shared/array-utils'
 
 export type CreateIfNotExistant = 'create-if-not-existing' | 'do-not-create-if-doesnt-exist'
 
@@ -86,6 +101,8 @@ export const runAdjustCssLengthProperties: CommandFunction<AdjustCssLengthProper
     (element) => {
       if (isJSXElement(element)) {
         return command.properties.reduce((workingElement, property) => {
+          const tailwindProp = getTailwindPropFromPropertyPath(property.property)
+
           // Remove any conflicting properties...
           const attributesWithConflictingPropsDeleted =
             deleteConflictingPropsForWidthHeightFromAttributes(
@@ -205,6 +222,7 @@ export const runAdjustCssLengthProperties: CommandFunction<AdjustCssLengthProper
                 command.target,
                 property.property,
                 property.valuePx,
+                tailwindProp,
               ),
             )
           }
@@ -268,12 +286,44 @@ function setPixelValue(
   targetElement: ElementPath,
   targetProperty: PropertyPath,
   value: number,
+  tailwindProp: TailwindProp | null,
 ): Either<string, UpdatedPropsAndCommandDescription> {
   const newValueCssNumber: CSSNumber = {
     value: value,
     unit: null,
   }
   const newValue = printCSSNumber(newValueCssNumber, null)
+
+  if (tailwindProp != null && typeof newValue === 'number') {
+    const foundAttribute = getModifiableJSXAttributeAtPath(properties, PP.create('className'))
+    const foundAttributeValue = flatMapEither(jsxSimpleAttributeToValue, foundAttribute)
+    const classNamesValue = eitherToMaybe(foundAttributeValue) as string | null
+    const classNames = classNamesValue == null ? [] : classNamesValue.split(' ')
+
+    const classNamesToKeep = classNames.filter(
+      (c) => !ClassNameToAttributes[c].includes(tailwindProp),
+    )
+    const propsToUpdate: Array<ValueAtPath> = [
+      {
+        path: PP.fromString('className'),
+        value: jsExpressionValue(
+          `${classNamesToKeep} ${convertPixelsToTailwindDimension(newValue, tailwindProp)}`,
+          emptyComments,
+        ),
+      },
+    ]
+
+    const updatePropsResult = setJSXValuesAtPaths(properties, propsToUpdate)
+
+    return mapEither((updatedProps) => {
+      return {
+        updatedProps: updatedProps,
+        commandDescription: `Adjust css Length Prop: ${EP.toUid(targetElement)}/${PP.toString(
+          targetProperty,
+        )} to ${value}.`,
+      }
+    }, updatePropsResult)
+  }
 
   const propsToUpdate: Array<ValueAtPath> = [
     {
@@ -287,7 +337,7 @@ function setPixelValue(
   return mapEither((updatedProps) => {
     return {
       updatedProps: updatedProps,
-      commandDescription: `Set css Length Prop: ${EP.toUid(targetElement)}/${PP.toString(
+      commandDescription: `Adjust css Length Prop: ${EP.toUid(targetElement)}/${PP.toString(
         targetProperty,
       )} to ${value}.`,
     }
