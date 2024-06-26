@@ -46,7 +46,7 @@ export const rearrangeGridStrategy: CanvasStrategyFactory = (
     canvasState.startingMetadata,
     canvasState.startingAllElementProps,
     canvasState.startingElementPathTree,
-    selectedElement,
+    EP.parentPath(selectedElement),
   )
 
   return {
