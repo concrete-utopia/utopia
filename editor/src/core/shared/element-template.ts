@@ -2568,6 +2568,18 @@ export function gridPositionValue(numericalPosition: number | null): GridPositio
 
 export type GridPosition = GridPositionValue | 'auto'
 
+export interface GridRange {
+  start: GridPosition
+  end: GridPosition | null
+}
+
+export function gridRange(start: GridPosition, end: GridPosition | null): GridRange {
+  return {
+    start: start,
+    end: end,
+  }
+}
+
 export type GridColumnStart = GridPosition
 export type GridColumnEnd = GridPosition
 export type GridRowStart = GridPosition

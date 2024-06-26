@@ -17,6 +17,7 @@ import { findLastIndex } from '../../../core/shared/array-utils'
 import type { Either, Right as EitherRight } from '../../../core/shared/either'
 import {
   alternativeEither,
+  applicative2Either,
   bimapEither,
   eitherToMaybe,
   flatMapEither,
@@ -33,6 +34,7 @@ import type {
   JSExpressionValue,
   JSXElement,
   GridPosition,
+  GridRange,
 } from '../../../core/shared/element-template'
 import {
   emptyComments,
@@ -43,6 +45,7 @@ import {
   jsExpressionFunctionCall,
   jsExpressionValue,
   gridPositionValue,
+  gridRange,
 } from '../../../core/shared/element-template'
 import type { ModifiableAttribute } from '../../../core/shared/jsx-attributes'
 import {
@@ -810,6 +813,22 @@ export function parseGridPosition(input: unknown): Either<string, GridPosition> 
     return right(gridPositionValue(input))
   } else {
     return left('Not a valid grid position.')
+  }
+}
+
+export function parseGridRange(input: unknown): Either<string, GridRange> {
+  if (typeof input === 'string') {
+    if (input.includes('/')) {
+      const splitInput = input.split('/')
+      const startParsed = parseGridPosition(splitInput[0])
+      const endParsed = parseGridPosition(splitInput[1])
+      return applicative2Either(gridRange, startParsed, endParsed)
+    } else {
+      const startParsed = parseGridPosition(input)
+      return mapEither((start) => gridRange(start, null), startParsed)
+    }
+  } else {
+    return left('Not a valid grid range.')
   }
 }
 

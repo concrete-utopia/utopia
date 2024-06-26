@@ -60,6 +60,7 @@ import {
   parseFlexDirection,
   parseCSSPx,
   parseGridPosition,
+  parseGridRange,
 } from '../inspector/common/css-utils'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
 import type { UtopiaStoreAPI } from '../editor/store/store-hook'
@@ -901,10 +902,18 @@ function getGridContainerProperties(elementStyle: CSSStyleDeclaration): GridCont
 }
 
 function getGridElementProperties(elementStyle: CSSStyleDeclaration): GridElementProperties {
-  const gridColumnStart = defaultEither(null, parseGridPosition(elementStyle.gridColumnStart))
-  const gridColumnEnd = defaultEither(null, parseGridPosition(elementStyle.gridColumnEnd))
-  const gridRowStart = defaultEither(null, parseGridPosition(elementStyle.gridRowStart))
-  const gridRowEnd = defaultEither(null, parseGridPosition(elementStyle.gridRowEnd))
+  const gridColumn = defaultEither(null, parseGridRange(elementStyle.gridColumn))
+  const gridColumnStart =
+    defaultEither(null, parseGridPosition(elementStyle.gridColumnStart)) ??
+    gridColumn?.start ??
+    null
+  const gridColumnEnd =
+    defaultEither(null, parseGridPosition(elementStyle.gridColumnEnd)) ?? gridColumn?.end ?? null
+  const gridRow = defaultEither(null, parseGridRange(elementStyle.gridRow))
+  const gridRowStart =
+    defaultEither(null, parseGridPosition(elementStyle.gridRowStart)) ?? gridRow?.start ?? null
+  const gridRowEnd =
+    defaultEither(null, parseGridPosition(elementStyle.gridRowEnd)) ?? gridRow?.end ?? null
   return gridElementProperties(gridColumnStart, gridColumnEnd, gridRowStart, gridRowEnd)
 }
 
