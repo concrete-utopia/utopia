@@ -199,7 +199,7 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
   }
 }
 
-function dragFromInteractionSession(
+export function dragFromInteractionSession(
   interactionSession: InteractionSession | null,
 ): CanvasVector | null {
   if (interactionSession != null && interactionSession.interactionData.type === 'DRAG') {
@@ -208,7 +208,7 @@ function dragFromInteractionSession(
   return null
 }
 
-function modifiersFromInteractionSession(
+export function modifiersFromInteractionSession(
   interactionSession: InteractionSession | null,
 ): Modifiers | null {
   if (interactionSession != null && interactionSession.interactionData.type === 'DRAG') {
@@ -217,7 +217,7 @@ function modifiersFromInteractionSession(
   return null
 }
 
-function isDragOverThreshold(
+export function isDragOverThreshold(
   direction: FlexDirection,
   { gapPx, deltaPx }: { gapPx: number; deltaPx: number },
 ): boolean {
@@ -277,7 +277,7 @@ function flexGapValueIndicatorProps(
   }
 }
 
-function isDragOngoing(interactionSession: InteractionSession | null): boolean {
+export function isDragOngoing(interactionSession: InteractionSession | null): boolean {
   return (
     interactionSession != null &&
     interactionSession.activeControl.type === 'FLEX_GAP_HANDLE' &&

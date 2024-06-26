@@ -559,6 +559,18 @@ export function flexGapHandle(): FlexGapHandle {
   }
 }
 
+export interface GridCellHandle {
+  type: 'GRID_CELL_HANDLE'
+  id: string
+}
+
+export function gridCellHandle(id: string): GridCellHandle {
+  return {
+    type: 'GRID_CELL_HANDLE',
+    id: id,
+  }
+}
+
 export interface PaddingResizeHandle {
   type: 'PADDING_RESIZE_HANDLE'
   edgePiece: EdgePiece
@@ -610,6 +622,7 @@ export type CanvasControlType =
   | KeyboardCatcherControl
   | ReorderSlider
   | BorderRadiusResizeHandle
+  | GridCellHandle
 
 export function isDragToPan(
   interaction: InteractionSession | null,
