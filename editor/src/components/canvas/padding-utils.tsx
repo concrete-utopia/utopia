@@ -10,7 +10,7 @@ import { optionalMap } from '../../core/shared/optional-utils'
 import type { ElementPath } from '../../core/shared/project-file-types'
 import { assertNever } from '../../core/shared/utils'
 import type { CSSNumber, CSSNumberUnit, CSSPadding } from '../inspector/common/css-utils'
-import { printCSSNumber } from '../inspector/common/css-utils'
+import { parseCSSLength, printCSSNumber } from '../inspector/common/css-utils'
 import type { EdgePiece } from './canvas-types'
 import type {
   AdjustPrecision,
@@ -33,6 +33,9 @@ import {
 import { detectFillHugFixedState } from '../inspector/inspector-common'
 import { stylePropPathMappingFn } from '../inspector/common/property-path-hooks'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
+import { getClassNameAttribute } from '../../core/tailwind/tailwind-options'
+import { ClassNameToAttributes } from '../../core/third-party/tailwind-defaults'
+import { convertTailwindDimensionToPixels } from '../../core/tailwind/tailwind-helpers'
 
 export const EdgePieces: Array<EdgePiece> = ['top', 'bottom', 'left', 'right']
 
@@ -81,6 +84,47 @@ export function simplePaddingFromMetadata(
 
   const paddingNumbers = paddingFromSpecialSizeMeasurements(metadata, elementPath)
 
+  const jsxElement = MetadataUtils.getJsxElementChildFromMetadata(metadata, elementPath)
+  const classNames =
+    getClassNameAttribute(jsxElement)
+      .value?.split(' ')
+      .filter((c) => c.length > 0) ?? []
+
+  const paddingTailwindClasses = {
+    paddingTop: classNames.find(
+      (c) => ClassNameToAttributes[c] != null && ClassNameToAttributes[c].includes('padding-top'),
+    ),
+    paddingBottom: classNames.find(
+      (c) =>
+        ClassNameToAttributes[c] != null && ClassNameToAttributes[c].includes('padding-bottom'),
+    ),
+    paddingLeft: classNames.find(
+      (c) => ClassNameToAttributes[c] != null && ClassNameToAttributes[c].includes('padding-left'),
+    ),
+    paddingRight: classNames.find(
+      (c) => ClassNameToAttributes[c] != null && ClassNameToAttributes[c].includes('padding-right'),
+    ),
+  }
+
+  const paddingTailwindSizes = {
+    paddingTop:
+      paddingTailwindClasses.paddingTop != null
+        ? convertTailwindDimensionToPixels(paddingTailwindClasses.paddingTop)
+        : undefined,
+    paddingBottom:
+      paddingTailwindClasses.paddingBottom != null
+        ? convertTailwindDimensionToPixels(paddingTailwindClasses.paddingBottom)
+        : undefined,
+    paddingLeft:
+      paddingTailwindClasses.paddingLeft != null
+        ? convertTailwindDimensionToPixels(paddingTailwindClasses.paddingLeft)
+        : undefined,
+    paddingRight:
+      paddingTailwindClasses.paddingRight != null
+        ? convertTailwindDimensionToPixels(paddingTailwindClasses.paddingRight)
+        : undefined,
+  }
+
   const padding: CSSPadding | undefined = defaultEither(
     undefined,
     getLayoutProperty('padding', right(element.element.value.props), styleStringInArray),
@@ -115,6 +159,13 @@ export function simplePaddingFromMetadata(
         (p) => cssNumberWithRenderedValue(p, paddingNumbers[prop]),
         padding?.[prop] ?? defaults[prop],
       ) ??
+      optionalMap((p) => {
+        const cssNum = defaultEither(undefined, parseCSSLength(p))
+        if (cssNum == null) {
+          return undefined
+        }
+        return cssNumberWithRenderedValue(cssNum, paddingNumbers[prop])
+      }, paddingTailwindSizes[prop]) ??
       undefined
     )
   }
