@@ -211,7 +211,10 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
         precision,
       )
 
-      const newPaddingEdgeSnapped: CSSNumberWithRenderedValue = (() => {
+      const {
+        snappedValue: newPaddingEdgeSnapped,
+        didSnap,
+      }: { snappedValue: CSSNumberWithRenderedValue; didSnap: boolean } = (() => {
         const currentValuePx = newPaddingEdgeUnsnapped.renderedValuePx
         const currentValueOther = newPaddingEdgeUnsnapped.value.value
 
@@ -242,11 +245,14 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
 
         const snapResult = snapToNearestPointFromArray(currentValuePx, snapPointsInPx)
 
-        const newValuePx = snapResult.snappedValue
+        const newValuePx = snapResult.shouldSnap ? snapResult.snappedValue : currentValuePx
         const newValueOther = (currentValueOther / currentValuePx) * newValuePx
         return {
-          value: { value: newValueOther, unit: newPaddingEdgeUnsnapped.value.unit },
-          renderedValuePx: newValuePx,
+          snappedValue: {
+            value: { value: newValueOther, unit: newPaddingEdgeUnsnapped.value.unit },
+            renderedValuePx: newValuePx,
+          },
+          didSnap: snapResult.shouldSnap,
         }
       })()
 
@@ -349,7 +355,9 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
       )
 
       const commands =
-        lifecycle === 'mid-interaction' ? midInteractionCommands : [endInteractionCommands]
+        lifecycle === 'mid-interaction' || didSnap == false
+          ? midInteractionCommands
+          : [endInteractionCommands]
 
       // "tearing off" padding
       if (newPaddingEdgeSnapped.renderedValuePx < PaddingTearThreshold) {
