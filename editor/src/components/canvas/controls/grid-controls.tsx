@@ -16,6 +16,7 @@ import {
   createInteractionViaMouse,
   gridCellHandle,
   gridResizeHandle,
+  gridAxisHandle,
 } from '../canvas-strategies/interaction-state'
 import CanvasActions from '../canvas-actions'
 import { Modifier } from '../../../utils/modifiers'
@@ -74,8 +75,8 @@ export const GridControls = controlForStrategyMemoized(() => {
   )
 
   const jsxMetadata = useEditorState(
-    Substores.metadata,
-    (store) => store.editor.jsxMetadata,
+    Substores.fullStore,
+    (store) => store.editor.canvas.interactionSession?.latestMetadata ?? store.editor.jsxMetadata,
     'GridControls jsxMetadata',
   )
 
@@ -83,11 +84,8 @@ export const GridControls = controlForStrategyMemoized(() => {
     Substores.metadataAndPropertyControlsInfo,
     (store) => {
       return mapDropNulls((view) => {
-        const element = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, view)
-        const parent = MetadataUtils.findElementByElementPath(
-          store.editor.jsxMetadata,
-          EP.parentPath(view),
-        )
+        const element = MetadataUtils.findElementByElementPath(jsxMetadata, view)
+        const parent = MetadataUtils.findElementByElementPath(jsxMetadata, EP.parentPath(view))
 
         const targetGridContainer = MetadataUtils.isGridLayoutedContainer(element)
           ? element
@@ -348,6 +346,130 @@ export const GridControls = controlForStrategyMemoized(() => {
             }}
           />
         )
+      })}
+      {grids.flatMap((grid) => {
+        if (grid.gridTemplateColumns == null) {
+          return []
+        } else {
+          switch (grid.gridTemplateColumns.type) {
+            case 'DIMENSIONS':
+              let workingPrefix: number = grid.frame.x
+              return grid.gridTemplateColumns.dimensions.flatMap((dimension, dimensionIndex) => {
+                // Assumes pixels currently.
+                workingPrefix += dimension.value
+                if (dimensionIndex !== 0) {
+                  workingPrefix += grid.gap ?? 0
+                }
+                function mouseDownHandler(event: React.MouseEvent): void {
+                  const start = windowToCanvasCoordinates(
+                    scaleRef.current,
+                    canvasOffsetRef.current,
+                    windowPoint({ x: event.nativeEvent.x, y: event.nativeEvent.y }),
+                  )
+
+                  dispatch([
+                    CanvasActions.createInteractionSession(
+                      createInteractionViaMouse(
+                        start.canvasPositionRounded,
+                        Modifier.modifiersForEvent(event),
+                        gridAxisHandle('column', dimensionIndex),
+                        'zero-drag-not-permitted',
+                      ),
+                    ),
+                  ])
+                  event.stopPropagation()
+                  event.preventDefault()
+                }
+                return (
+                  <div
+                    data-testid={`grid-column-handle-${dimensionIndex}`}
+                    style={{
+                      position: 'absolute',
+                      left: workingPrefix - 15,
+                      top: grid.frame.y - 30,
+                      width: 40,
+                      height: '20px',
+                      borderRadius: 5,
+                      backgroundColor: '#f0f',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}
+                    onMouseDown={mouseDownHandler}
+                  >
+                    {`${dimension.value}${dimension.unit ?? ''}`}
+                  </div>
+                )
+              })
+            case 'FALLBACK':
+              return []
+            default:
+              assertNever(grid.gridTemplateColumns)
+              return []
+          }
+        }
+      })}
+      {grids.flatMap((grid) => {
+        if (grid.gridTemplateRows == null) {
+          return []
+        } else {
+          switch (grid.gridTemplateRows.type) {
+            case 'DIMENSIONS':
+              let workingPrefix: number = grid.frame.y
+              return grid.gridTemplateRows.dimensions.flatMap((dimension, dimensionIndex) => {
+                // Assumes pixels currently.
+                workingPrefix += dimension.value
+                if (dimensionIndex !== 0) {
+                  workingPrefix += grid.gap ?? 0
+                }
+                function mouseDownHandler(event: React.MouseEvent): void {
+                  const start = windowToCanvasCoordinates(
+                    scaleRef.current,
+                    canvasOffsetRef.current,
+                    windowPoint({ x: event.nativeEvent.x, y: event.nativeEvent.y }),
+                  )
+
+                  dispatch([
+                    CanvasActions.createInteractionSession(
+                      createInteractionViaMouse(
+                        start.canvasPositionRounded,
+                        Modifier.modifiersForEvent(event),
+                        gridAxisHandle('row', dimensionIndex),
+                        'zero-drag-not-permitted',
+                      ),
+                    ),
+                  ])
+                  event.stopPropagation()
+                  event.preventDefault()
+                }
+                return (
+                  <div
+                    data-testid={`grid-row-handle-${dimensionIndex}`}
+                    style={{
+                      position: 'absolute',
+                      left: grid.frame.x - 50,
+                      top: workingPrefix - 5,
+                      width: 40,
+                      height: '20px',
+                      borderRadius: 5,
+                      backgroundColor: '#f0f',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}
+                    onMouseDown={mouseDownHandler}
+                  >
+                    {`${dimension.value}${dimension.unit ?? ''}`}
+                  </div>
+                )
+              })
+            case 'FALLBACK':
+              return []
+            default:
+              assertNever(grid.gridTemplateRows)
+              return []
+          }
+        }
       })}
     </CanvasOffsetWrapper>
   )

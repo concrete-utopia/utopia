@@ -2617,6 +2617,12 @@ export function gridAutoOrTemplateDimensions(
 
 export type GridAutoOrTemplateBase = GridAutoOrTemplateDimensions | GridAutoOrTemplateFallback
 
+export function isGridAutoOrTemplateDimensions(
+  value: GridAutoOrTemplateBase,
+): value is GridAutoOrTemplateDimensions {
+  return value.type === 'DIMENSIONS'
+}
+
 export type GridAuto = GridAutoOrTemplateBase
 export type GridTemplate = GridAutoOrTemplateBase
 

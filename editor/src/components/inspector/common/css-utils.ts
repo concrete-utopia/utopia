@@ -739,15 +739,19 @@ export function printCSSNumber(
   }
 }
 
+export function printArrayCSSNumber(array: Array<CSSNumber>): string {
+  return array
+    .map((dimension) => {
+      const printed = printCSSNumber(dimension, null)
+      return typeof printed === 'string' ? printed : `${printed}`
+    })
+    .join(' ')
+}
+
 export function printGridAutoOrTemplateBase(input: GridAutoOrTemplateBase): string {
   switch (input.type) {
     case 'DIMENSIONS':
-      return input.dimensions
-        .map((dimension) => {
-          const printed = printCSSNumber(dimension, null)
-          return typeof printed === 'string' ? printed : `${printed}`
-        })
-        .join(' ')
+      return printArrayCSSNumber(input.dimensions)
     case 'FALLBACK':
       return input.value
     default:

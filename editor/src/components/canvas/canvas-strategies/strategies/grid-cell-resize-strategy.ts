@@ -15,7 +15,7 @@ import {
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
 
-export const gridResizeStrategy: CanvasStrategyFactory = (
+export const gridCellResizeStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ) => {
@@ -36,9 +36,9 @@ export const gridResizeStrategy: CanvasStrategyFactory = (
   }
 
   return {
-    id: 'grid-resize-strategy',
-    name: 'Resize Grid',
-    descriptiveLabel: 'Resize Grid',
+    id: 'grid-cell-resize-strategy',
+    name: 'Resize Grid Cell',
+    descriptiveLabel: 'Resize Grid Cell',
     icon: {
       category: 'tools',
       type: 'pointer',
