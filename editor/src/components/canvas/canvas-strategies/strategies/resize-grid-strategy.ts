@@ -1,4 +1,9 @@
-import { fromArrayIndex, fromField } from '../../../../core/shared/optics/optic-creators'
+import {
+  filtered,
+  fromArrayIndex,
+  fromField,
+  notNull,
+} from '../../../../core/shared/optics/optic-creators'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import * as PP from '../../../../core/shared/property-path'
@@ -13,10 +18,12 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
-import type { CSSNumber } from '../../../../components/inspector/common/css-utils'
+import type { CSSNumber, GridCSSNumber } from '../../../../components/inspector/common/css-utils'
 import { printArrayCSSNumber } from '../../../../components/inspector/common/css-utils'
-import { modify } from '../../../../core/shared/optics/optic-utilities'
+import { any, anyBy, modify, toFirst } from '../../../../core/shared/optics/optic-utilities'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
+import { isRight } from '../../../../core/shared/either'
+import { roundToNearestWhole } from '../../../../core/shared/math-utils'
 
 export const resizeGridStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -70,15 +77,46 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
         canvasState.startingMetadata[EP.toString(parentPath)].specialSizeMeasurements
       const originalValues =
         control.axis === 'column'
+          ? parentSpecialSizeMeasurements.containerGridPropertiesFromProps.gridTemplateColumns
+          : parentSpecialSizeMeasurements.containerGridPropertiesFromProps.gridTemplateRows
+      const calculatedValues =
+        control.axis === 'column'
           ? parentSpecialSizeMeasurements.containerGridProperties.gridTemplateColumns
           : parentSpecialSizeMeasurements.containerGridProperties.gridTemplateRows
 
-      if (originalValues == null || originalValues.type !== 'DIMENSIONS') {
+      if (
+        calculatedValues == null ||
+        calculatedValues.type !== 'DIMENSIONS' ||
+        originalValues == null ||
+        originalValues.type !== 'DIMENSIONS'
+      ) {
         return emptyStrategyApplicationResult
       }
+      const unitOptic = fromArrayIndex<GridCSSNumber>(control.columnOrRow)
+        .compose(fromField('unit'))
+        .compose(notNull())
+      const valueOptic = fromArrayIndex<GridCSSNumber>(control.columnOrRow).compose(
+        fromField('value'),
+      )
+      const isFractional = anyBy(unitOptic, (unit) => unit === 'fr', originalValues.dimensions)
+      let newSetting: Array<GridCSSNumber>
       const originalDimensions = originalValues.dimensions
-      const updateOptic = fromArrayIndex<CSSNumber>(control.columnOrRow).compose(fromField('value'))
-      const newSetting = modify(updateOptic, (current) => current + dragAmount, originalDimensions)
+      if (isFractional) {
+        const possibleOriginalFractionalValue = toFirst(valueOptic, originalValues.dimensions)
+        const possibleCalculatedValue = toFirst(valueOptic, calculatedValues.dimensions)
+        if (isRight(possibleOriginalFractionalValue) && isRight(possibleCalculatedValue)) {
+          const originalFractionalValue = possibleOriginalFractionalValue.value
+          const calculatedValue = possibleCalculatedValue.value
+          const perPointOne =
+            originalFractionalValue == 0 ? 10 : (calculatedValue / originalFractionalValue) * 0.1
+          const newValue = roundToNearestWhole((dragAmount / perPointOne) * 10) / 10
+          newSetting = modify(valueOptic, (current) => current + newValue, originalDimensions)
+        } else {
+          throw new Error(`Somehow we cannot identify the right dimensions.`)
+        }
+      } else {
+        newSetting = modify(valueOptic, (current) => current + dragAmount, originalDimensions)
+      }
       const propertyValueAsString = printArrayCSSNumber(newSetting)
 
       const commands = [

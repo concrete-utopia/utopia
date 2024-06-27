@@ -455,6 +455,7 @@ import type {
   ZeroDragPermitted,
   GridCellHandle,
   GridResizeHandle,
+  GridAxisHandle,
 } from '../../canvas/canvas-strategies/interaction-state'
 import {
   boundingArea,
@@ -465,6 +466,7 @@ import {
   resizeHandle,
   gridCellHandle,
   gridResizeHandle,
+  gridAxisHandle,
 } from '../../canvas/canvas-strategies/interaction-state'
 import type { Modifiers } from '../../../utils/modifiers'
 import type {
@@ -564,8 +566,10 @@ import type {
   CSSTextAlign,
   CSSTextDecorationLine,
   FontSettings,
+  GridCSSNumber,
+  GridCSSNumberUnit,
 } from '../../inspector/common/css-utils'
-import { cssNumber, fontSettings } from '../../inspector/common/css-utils'
+import { cssNumber, fontSettings, gridCSSNumber } from '../../inspector/common/css-utils'
 import type { ElementPaste, ProjectListing } from '../action-types'
 import { projectListing } from '../action-types'
 import type { Bounds, UtopiaVSCodeConfig } from 'utopia-vscode-common'
@@ -1964,10 +1968,19 @@ export const CSSNumberKeepDeepEquality: KeepDeepEqualityCall<CSSNumber> = combin
   cssNumber,
 )
 
+export const GridCSSNumberKeepDeepEquality: KeepDeepEqualityCall<GridCSSNumber> =
+  combine2EqualityCalls(
+    (cssNum) => cssNum.value,
+    createCallWithTripleEquals<number>(),
+    (cssNum) => cssNum.unit,
+    nullableDeepEquality(createCallWithTripleEquals<GridCSSNumberUnit>()),
+    gridCSSNumber,
+  )
+
 export const GridAutoOrTemplateDimensionsKeepDeepEquality: KeepDeepEqualityCall<GridAutoOrTemplateDimensions> =
   combine1EqualityCall(
     (value) => value.dimensions,
-    arrayDeepEquality(CSSNumberKeepDeepEquality),
+    arrayDeepEquality(GridCSSNumberKeepDeepEquality),
     gridAutoOrTemplateDimensions,
   )
 
@@ -2143,6 +2156,15 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       newSize.elementGridProperties,
     ).areEqual
 
+    const gridContainerPropertiesFromPropsEqual = GridContainerPropertiesKeepDeepEquality()(
+      oldSize.containerGridPropertiesFromProps,
+      newSize.containerGridPropertiesFromProps,
+    ).areEqual
+    const gridElementPropertiesFromPropsEqual = GridElementPropertiesKeepDeepEquality()(
+      oldSize.elementGridPropertiesFromProps,
+      newSize.elementGridPropertiesFromProps,
+    ).areEqual
+
     const areEqual =
       offsetResult.areEqual &&
       coordinateSystemBoundsResult.areEqual &&
@@ -2186,7 +2208,9 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       textBoundsEqual &&
       computedHugPropertyEqual &&
       gridContainerPropertiesEqual &&
-      gridElementPropertiesEqual
+      gridElementPropertiesEqual &&
+      gridContainerPropertiesFromPropsEqual &&
+      gridElementPropertiesFromPropsEqual
     if (areEqual) {
       return keepDeepEqualityResult(oldSize, true)
     } else {
@@ -2234,6 +2258,8 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.computedHugProperty,
         newSize.containerGridProperties,
         newSize.elementGridProperties,
+        newSize.containerGridPropertiesFromProps,
+        newSize.elementGridPropertiesFromProps,
       )
       return keepDeepEqualityResult(sizeMeasurements, false)
     }
@@ -2844,6 +2870,15 @@ export const GridResizeHandleKeepDeepEquality: KeepDeepEqualityCall<GridResizeHa
     gridResizeHandle,
   )
 
+export const GridAxisHandleKeepDeepEquality: KeepDeepEqualityCall<GridAxisHandle> =
+  combine2EqualityCalls(
+    (handle) => handle.axis,
+    createCallWithTripleEquals(),
+    (handle) => handle.columnOrRow,
+    createCallWithTripleEquals<number>(),
+    gridAxisHandle,
+  )
+
 export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasControlType> = (
   oldValue,
   newValue,
@@ -2892,6 +2927,11 @@ export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasContr
     case 'GRID_RESIZE_HANDLE':
       if (newValue.type === oldValue.type) {
         return GridResizeHandleKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'GRID_AXIS_HANDLE':
+      if (newValue.type === oldValue.type) {
+        return GridAxisHandleKeepDeepEquality(oldValue, newValue)
       }
       break
     default:

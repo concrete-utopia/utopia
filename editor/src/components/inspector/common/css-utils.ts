@@ -497,6 +497,7 @@ export type CSSNumberType =
   | 'Unitless'
   | 'UnitlessPercent'
   | 'AnyValid'
+  | 'Grid'
 
 // https://developer.mozilla.org/en-US/docs/Web/CSS/length
 export type FontRelativeLengthUnit = 'cap' | 'ch' | 'em' | 'ex' | 'ic' | 'lh' | 'rem' | 'rlh'
@@ -582,6 +583,21 @@ export interface CSSNumber {
   unit: CSSNumberUnit | null
 }
 
+export type GridCSSNumberUnit = LengthUnit | ResolutionUnit | PercentUnit | 'fr'
+const GridCSSNumberUnits: Array<GridCSSNumberUnit> = [...LengthUnits, ...ResolutionUnits, '%', 'fr']
+
+export interface GridCSSNumber {
+  value: number
+  unit: GridCSSNumberUnit | null
+}
+
+export function gridCSSNumber(value: number, unit: GridCSSNumberUnit | null): GridCSSNumber {
+  return {
+    value,
+    unit,
+  }
+}
+
 export function cssNumber(value: number, unit: CSSNumberUnit | null = null): CSSNumber {
   return { value, unit }
 }
@@ -659,6 +675,7 @@ const parseCSSResolutionUnit = (input: string) => parseCSSNumberUnit(input, Reso
 const parseCSSUnitlessUnit = (_: string) => left<string, never>(`No unit expected`)
 const parseCSSUnitlessPercentUnit = (input: string) => parseCSSNumberUnit(input, ['%'])
 const parseCSSAnyValidNumberUnit = (input: string) => parseCSSNumberUnit(input, CSSNumberUnits)
+const parseCSSGridUnit = (input: string) => parseCSSNumberUnit(input, GridCSSNumberUnits)
 
 function unitParseFnForType(
   numberType: CSSNumberType,
@@ -688,6 +705,8 @@ function unitParseFnForType(
       return parseCSSUnitlessPercentUnit
     case 'AnyValid':
       return parseCSSAnyValidNumberUnit
+    case 'Grid':
+      return parseCSSGridUnit
     default:
       const _exhaustiveCheck: never = numberType
       throw new Error(`Unable to parse CSSNumber of type ${numberType}`)
@@ -739,7 +758,7 @@ export function printCSSNumber(
   }
 }
 
-export function printArrayCSSNumber(array: Array<CSSNumber>): string {
+export function printArrayCSSNumber(array: Array<GridCSSNumber>): string {
   return array
     .map((dimension) => {
       const printed = printCSSNumber(dimension, null)
@@ -805,6 +824,7 @@ export const parseCSSTimePercent = (input: unknown) => parseCSSNumber(input, 'Ti
 export const parseCSSUnitless = (input: unknown) => parseCSSNumber(input, 'Unitless')
 export const parseCSSUnitlessPercent = (input: unknown) => parseCSSNumber(input, 'UnitlessPercent')
 export const parseCSSAnyValidNumber = (input: unknown) => parseCSSNumber(input, 'AnyValid')
+export const parseCSSGrid = (input: unknown) => parseCSSNumber(input, 'Grid')
 export const parseCSSUnitlessAsNumber = (input: unknown): Either<string, number> => {
   const parsed = parseCSSNumber(input, 'Unitless')
   if (isRight(parsed)) {
@@ -812,6 +832,15 @@ export const parseCSSUnitlessAsNumber = (input: unknown): Either<string, number>
   } else {
     return parsed
   }
+}
+
+export function parseToCSSGridNumber(input: unknown): Either<string, GridCSSNumber> {
+  return mapEither((value) => {
+    return {
+      value: value.value,
+      unit: value.unit as GridCSSNumberUnit | null,
+    }
+  }, parseCSSGrid(input))
 }
 
 export const parseCSSNumber = (
@@ -861,9 +890,9 @@ export function parseGridRange(input: unknown): Either<string, GridRange> {
 export function parseGridAutoOrTemplateBase(
   input: unknown,
 ): Either<string, GridAutoOrTemplateBase> {
-  function numberParse(inputToParse: unknown): Either<ParseError, CSSNumber> {
-    const result = parseCSSAnyValidNumber(inputToParse)
-    return leftMapEither<string, ParseError, CSSNumber>(descriptionParseError, result)
+  function numberParse(inputToParse: unknown): Either<ParseError, GridCSSNumber> {
+    const result = parseToCSSGridNumber(inputToParse)
+    return leftMapEither<string, ParseError, GridCSSNumber>(descriptionParseError, result)
   }
   if (typeof input === 'string') {
     const parsedCSSArray = parseCSSArray([numberParse])(input.split(/ +/))

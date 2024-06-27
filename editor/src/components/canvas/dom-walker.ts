@@ -1126,6 +1126,8 @@ function getSpecialMeasurements(
 
   const containerGridProperties = getGridContainerProperties(elementStyle)
   const containerElementProperties = getGridElementProperties(elementStyle)
+  const containerGridPropertiesFromProps = getGridContainerProperties(element.style)
+  const containerElementPropertyiesFromProps = getGridElementProperties(element.style)
 
   return specialSizeMeasurements(
     offset,
@@ -1173,6 +1175,8 @@ function getSpecialMeasurements(
     computedHugProperty,
     containerGridProperties,
     containerElementProperties,
+    containerGridPropertiesFromProps,
+    containerElementPropertyiesFromProps,
   )
 }
 

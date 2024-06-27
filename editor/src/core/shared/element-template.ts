@@ -25,6 +25,7 @@ import type {
   CSSNumber,
   CSSPosition,
   FlexDirection,
+  GridCSSNumber,
 } from '../../components/inspector/common/css-utils'
 import type { ModifiableAttribute } from './jsx-attributes'
 import * as EP from './element-path'
@@ -2603,11 +2604,11 @@ export function gridAutoOrTemplateFallback(value: string): GridAutoOrTemplateFal
 
 export interface GridAutoOrTemplateDimensions {
   type: 'DIMENSIONS'
-  dimensions: Array<CSSNumber>
+  dimensions: Array<GridCSSNumber>
 }
 
 export function gridAutoOrTemplateDimensions(
-  dimensions: Array<CSSNumber>,
+  dimensions: Array<GridCSSNumber>,
 ): GridAutoOrTemplateDimensions {
   return {
     type: 'DIMENSIONS',
@@ -2717,6 +2718,8 @@ export interface SpecialSizeMeasurements {
   computedHugProperty: HugPropertyWidthHeight
   containerGridProperties: GridContainerProperties
   elementGridProperties: GridElementProperties
+  containerGridPropertiesFromProps: GridContainerProperties
+  elementGridPropertiesFromProps: GridElementProperties
 }
 
 export function specialSizeMeasurements(
@@ -2763,6 +2766,8 @@ export function specialSizeMeasurements(
   computedHugProperty: HugPropertyWidthHeight,
   containerGridProperties: GridContainerProperties,
   elementGridProperties: GridElementProperties,
+  containerGridPropertiesFromProps: GridContainerProperties,
+  elementGridPropertiesFromProps: GridElementProperties,
 ): SpecialSizeMeasurements {
   return {
     offset,
@@ -2808,6 +2813,8 @@ export function specialSizeMeasurements(
     computedHugProperty,
     containerGridProperties,
     elementGridProperties,
+    containerGridPropertiesFromProps,
+    elementGridPropertiesFromProps,
   }
 }
 
@@ -2856,6 +2863,18 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   null,
   null,
   { width: null, height: null },
+  {
+    gridTemplateColumns: null,
+    gridTemplateRows: null,
+    gridAutoColumns: null,
+    gridAutoRows: null,
+  },
+  {
+    gridColumnStart: null,
+    gridColumnEnd: null,
+    gridRowStart: null,
+    gridRowEnd: null,
+  },
   {
     gridTemplateColumns: null,
     gridTemplateRows: null,
