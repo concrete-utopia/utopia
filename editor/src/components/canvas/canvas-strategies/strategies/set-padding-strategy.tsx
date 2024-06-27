@@ -77,7 +77,11 @@ import {
 } from '../../commands/adjust-css-length-command'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import { activeFrameTargetPath, setActiveFrames } from '../../commands/set-active-frames-command'
-import { convertPixelsToTailwindDimension } from '../../../../core/tailwind/tailwind-helpers'
+import {
+  convertPixelsToTailwindDimension,
+  getTailwindConfigurationForSection,
+  getTailwindSnapPointsInPixelsForSection,
+} from '../../../../core/tailwind/tailwind-helpers'
 import type { TailwindProp } from '../../../../core/tailwind/tailwind-helpers'
 import { camelCaseToDashed } from '../../../../core/shared/string-utils'
 import { create, fromString } from '../../../../core/shared/property-path'
@@ -87,6 +91,7 @@ import {
 } from '../../../../core/shared/jsx-attribute-utils'
 import { getClassNameAttribute } from '../../../../core/tailwind/tailwind-options'
 import { ClassNameToAttributes } from '../../../../core/third-party/tailwind-defaults'
+import { SnappingThreshold } from '../../controls/guideline-helpers'
 
 const StylePaddingProp = stylePropPathMappingFn('padding', styleStringInArray)
 const IndividualPaddingProps: Array<CSSPaddingKey> = [
@@ -209,7 +214,21 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
         const currentValuePx = newPaddingEdgeUnsnapped.renderedValuePx
         const currentValueOther = newPaddingEdgeUnsnapped.value.value
 
-        const newValuePx = currentValuePx
+        const snapPointsInPx = Object.values(getTailwindSnapPointsInPixelsForSection('padding'))
+
+        function snapToNearestPointFromArray(
+          valuetoSnap: number,
+          snapPoints: number[],
+        ): { snappedValue: number; didSnap: boolean } {
+          for (const snapPoint of snapPoints) {
+            if (Math.abs(valuetoSnap - snapPoint) < SnappingThreshold) {
+              return { snappedValue: snapPoint, didSnap: true }
+            }
+          }
+          return { snappedValue: valuetoSnap, didSnap: false }
+        }
+
+        const newValuePx = snapToNearestPointFromArray(currentValuePx, snapPointsInPx).snappedValue
         const newValueOther = (currentValueOther / currentValuePx) * newValuePx
         return {
           value: { value: newValueOther, unit: newPaddingEdgeUnsnapped.value.unit },
