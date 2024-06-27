@@ -1,5 +1,8 @@
 import type { PropertyPath } from 'utopia-shared/src/types'
 import * as PP from '../shared/property-path'
+import type { MapLike } from 'typescript'
+import { twindInstance } from './tailwind'
+import { emptyComplexMap } from '../../utils/map'
 
 const tailwindDimensionMap: { [key: string]: string } = {
   // Width classes
@@ -218,4 +221,20 @@ export function convertPixelsToTailwindDimension(
   }
 
   return closestClass
+}
+
+export function getTailwindConfigurationForSection(tailwindSection: string): MapLike<string> {
+  return (twindInstance.current?.instance.theme('padding') ?? {}) as MapLike<string>
+}
+
+export function getTailwindSnapPointsInPixelsForSection(tailwindSection: string): number[] {
+  const padding = getTailwindConfigurationForSection(tailwindSection)
+  return Object.values(padding).map((value: string) => {
+    // if 'rem', or 'em', use the CSS OM to convert to px
+    if (value.endsWith('rem') || value.endsWith('em')) {
+      return parseFloat(value) * 16
+    } else {
+      return parseFloat(value)
+    }
+  })
 }

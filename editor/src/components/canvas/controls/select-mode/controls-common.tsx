@@ -46,7 +46,7 @@ export function valueWithUnitAppropriatePrecision(
   value: number,
   precision: AdjustPrecision,
 ): number {
-  const baseMultiplicator = unit === 'em' || unit === 'cm' ? 1 : 0
+  const baseMultiplicator = unit === 'rem' || unit === 'em' || unit === 'cm' ? 2 : 0
   const multiplicator = precision === 'coarse' ? baseMultiplicator - 1 : baseMultiplicator
   return roundTo(value, multiplicator)
 }

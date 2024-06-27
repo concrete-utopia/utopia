@@ -159,17 +159,17 @@ interface TwindInstance {
   instance: Twind
 }
 
-let twindInstance: TwindInstance | null = null
+export const twindInstance: { current: TwindInstance | null } = { current: null }
 
 export function isTwindEnabled(): boolean {
   return twindInstance != null
 }
 
 function clearTwind() {
-  if (twindInstance != null) {
-    twindInstance.instance.clear()
-    twindInstance.instance.destroy()
-    twindInstance.element.parentNode?.removeChild(twindInstance.element)
+  if (twindInstance.current != null) {
+    twindInstance.current.instance.clear()
+    twindInstance.current.instance.destroy()
+    twindInstance.current.element.parentNode?.removeChild(twindInstance.current.element)
   }
 }
 
@@ -227,26 +227,33 @@ function updateTwind(config: TwindConfigType, prefixSelector: string | null) {
     },
   }
 
-  clearTwind()
+  addTwindListener()
 
-  if (twindInstance == null) {
-    const prefixes = ['TWIND_', 'TAILWIND_']
-    window.addEventListener('warning', (event: any | { detail: { code: string } }) => {
-      const isTwindWarning: boolean = prefixes.some((prefix) =>
-        event?.detail?.code?.startsWith?.(prefix),
-      )
-      if (isTwindWarning) {
-        event.preventDefault()
-      }
-    })
-  }
+  clearTwind()
 
   const instance = observe(twind(config, customSheet), document.documentElement)
 
-  twindInstance = {
+  twindInstance.current = {
     element: element,
     instance: instance,
   }
+}
+
+let added = false
+function addTwindListener() {
+  if (added) {
+    return
+  }
+  added = true
+  const prefixes = ['TWIND_', 'TAILWIND_', '[TWIND_']
+  window.addEventListener('warning', (event: any | { detail: { code: string } }) => {
+    const isTwindWarning: boolean = prefixes.some((prefix) =>
+      event?.detail?.code?.startsWith?.(prefix),
+    )
+    if (isTwindWarning) {
+      event.preventDefault()
+    }
+  })
 }
 
 export function useTwind(
