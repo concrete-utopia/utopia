@@ -19,7 +19,6 @@ import { deleteProperties } from '../../commands/delete-properties-command'
 import { rearrangeChildren } from '../../commands/rearrange-children-command'
 import { setProperty } from '../../commands/set-property-command'
 import { GridControls } from '../../controls/grid-controls'
-import { getGridPegs } from '../../controls/grid-strategy-utils'
 import { recurseIntoChildrenOfMapOrFragment } from '../../gap-utils'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
@@ -75,11 +74,6 @@ export const gridResizeStrategy: CanvasStrategyFactory = (
         interactionSession.interactionData.drag == null ||
         interactionSession.activeControl.type !== 'GRID_RESIZE_HANDLE'
       ) {
-        return emptyStrategyApplicationResult
-      }
-
-      const gridPegs = getGridPegs(selectedElement, canvasState.startingMetadata)
-      if (gridPegs == null) {
         return emptyStrategyApplicationResult
       }
 
