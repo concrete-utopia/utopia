@@ -50,6 +50,8 @@ import {
 } from '../../../core/shared/optics/optic-creators'
 import { toFirst } from '../../../core/shared/optics/optic-utilities'
 import { defaultEither } from '../../../core/shared/either'
+import { assertNode } from '@babel/types'
+import type { ElementPath } from 'utopia-shared/src/types'
 
 type GridCellCoordinates = { row: number; column: number }
 
@@ -74,6 +76,38 @@ function getSillyCellsCount(template: GridAutoOrTemplateBase | null): number {
     }
   }
 }
+
+export const defaultExperimentalGridFeatures = {
+  dragLockedToCenter: false,
+  dragVerbatim: false,
+  dragMagnetic: false,
+  dragRatio: true,
+  animateSnap: true,
+  dotgrid: true,
+  shadow: true,
+  adaptiveOpacity: true,
+  activeGridColor: '#0099ff77',
+  dotgridColor: '#0099ffaa',
+  inactiveGridColor: '#0000000a',
+  opacityBaseline: 0.25,
+}
+
+export const gridFeaturesExplained: Record<string, string> = {
+  adaptiveOpacity: 'shadow opacity is proportional to the drag distance',
+  dragLockedToCenter: 'drag will keep the shadow centered',
+  dragVerbatim: 'drag will be verbatim',
+  dragMagnetic: 'drag will magnetize to the snap regions',
+  dragRatio: 'drag will keep the shadow positioned based on the drag start',
+  animateSnap: 'the shadow goes *boop* when snapping',
+  dotgrid: 'show dotgrid',
+  shadow: 'show the shadow during drag',
+  activeGridColor: 'grid lines color during drag',
+  dotgridColor: 'dotgrid items color',
+  inactiveGridColor: 'grid lines color when not dragging',
+  opacityBaseline: 'maximum shadow opacity',
+}
+
+export const experimentalGridFeatures = atom(defaultExperimentalGridFeatures)
 
 function getNullableAutoOrTemplateBaseString(
   template: GridAutoOrTemplateBase | null,
@@ -352,159 +386,40 @@ export const GridControls = controlForStrategyMemoized(() => {
         {grids.map((grid, index) => {
           const placeholders = Array.from(Array(grid.cells).keys())
 
-        return (
-          <div
-            key={`grid-${index}`}
-            style={{
-              position: 'absolute',
-              top: grid.frame.y,
-              left: grid.frame.x,
-              width: grid.frame.width,
-              height: grid.frame.height,
-              //   backgroundColor: '#ff00ff09',
-              display: 'grid',
-              gridTemplateColumns: getNullableAutoOrTemplateBaseString(grid.gridTemplateColumns),
-              gridTemplateRows: getNullableAutoOrTemplateBaseString(grid.gridTemplateRows),
-              gap: grid.gap ?? 0,
-              padding:
-                grid.padding == null
-                  ? 0
-                  : `${grid.padding.top}px ${grid.padding.right}px ${grid.padding.bottom}px ${grid.padding.left}px`,
-            }}
-          >
-            {placeholders.map((cell, cellIndex) => {
-              const countedRow = Math.floor(cellIndex / grid.columns) + 1
-              const countedColumn = Math.floor(cellIndex % grid.columns) + 1
-              const id = `gridcell-${index}-${cell}`
-              const edgeColor = isActivelyDraggingCell ? '#00000033' : 'transparent'
-              const borderColor = isActivelyDraggingCell ? '#00000022' : '#0000000a'
-              return (
-                <div
-                  key={id}
-                  id={id}
-                  style={{
-                    border: `1px solid ${borderColor}`,
-                    position: 'relative',
-                  }}
-                  data-grid-row={countedRow}
-                  data-grid-column={countedColumn}
-                >
-                  <div
-                    style={{
-                      position: 'absolute',
-                      top: -1,
-                      bottom: -1,
-                      left: -1,
-                      right: -1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <div style={{ width: 2, height: 2, backgroundColor: edgeColor }} />
-                  </div>
-                  <div
-                    style={{
-                      width: 2,
-                      height: 2,
-                      backgroundColor: edgeColor,
-                      position: 'absolute',
-                      top: -1,
-                      left: -1,
-                    }}
-                  />
-                  <div
-                    style={{
-                      width: 2,
-                      height: 2,
-                      backgroundColor: edgeColor,
-                      position: 'absolute',
-                      bottom: -1,
-                      left: -1,
-                    }}
-                  />
-                  <div
-                    style={{
-                      width: 2,
-                      height: 2,
-                      backgroundColor: edgeColor,
-                      position: 'absolute',
-                      top: -1,
-                      right: -1,
-                    }}
-                  />
-                  <div
-                    style={{
-                      width: 2,
-                      height: 2,
-                      backgroundColor: edgeColor,
-                      position: 'absolute',
-                      bottom: -1,
-                      right: -1,
-                    }}
-                  />
-                </div>
-              )
-            })}
-          </div>
-        )
-      })}
-      {/* cell targets */}
-      {cells.map((cell) => {
-        return (
-          <div
-            onMouseDown={startInteractionWithUid({
-              uid: EP.toUid(cell.elementPath),
-              row: cell.row,
-              column: cell.column,
-            })}
-            key={`grid-cell-${EP.toString(cell.elementPath)}`}
-            style={{
-              position: 'absolute',
-              top: cell.globalFrame.y,
-              left: cell.globalFrame.x,
-              width: cell.globalFrame.width,
-              height: cell.globalFrame.height,
-              display: 'flex',
-              justifyContent: 'flex-end',
-              alignItems: 'flex-end',
-            }}
-          />
-        )
-      })}
-      {grids.flatMap((grid) => {
-        if (grid.gridTemplateColumns == null) {
-          return []
-        } else {
-          switch (grid.gridTemplateColumns.type) {
-            case 'DIMENSIONS':
-              let workingPrefix: number = grid.frame.x
-              return grid.gridTemplateColumns.dimensions.flatMap((dimension, dimensionIndex) => {
-                // Assumes pixels currently.
-                workingPrefix += dimension.value
-                if (dimensionIndex !== 0) {
-                  workingPrefix += grid.gap ?? 0
-                }
-                function mouseDownHandler(event: React.MouseEvent): void {
-                  const start = windowToCanvasCoordinates(
-                    scaleRef.current,
-                    canvasOffsetRef.current,
-                    windowPoint({ x: event.nativeEvent.x, y: event.nativeEvent.y }),
-                  )
-
-                  dispatch([
-                    CanvasActions.createInteractionSession(
-                      createInteractionViaMouse(
-                        start.canvasPositionRounded,
-                        Modifier.modifiersForEvent(event),
-                        gridAxisHandle('column', dimensionIndex),
-                        'zero-drag-not-permitted',
-                      ),
-                    ),
-                  ])
-                  event.stopPropagation()
-                  event.preventDefault()
-                }
+          return (
+            <div
+              key={`grid-${index}`}
+              style={{
+                position: 'absolute',
+                top: grid.frame.y,
+                left: grid.frame.x,
+                width: grid.frame.width,
+                height: grid.frame.height,
+                display: 'grid',
+                gridTemplateColumns: getNullableAutoOrTemplateBaseString(grid.gridTemplateColumns),
+                gridTemplateRows: getNullableAutoOrTemplateBaseString(grid.gridTemplateRows),
+                backgroundColor:
+                  activelyDraggingOrResizingCell != null ? '#0099ff11' : 'transparent',
+                border: `1px solid ${
+                  activelyDraggingOrResizingCell != null ? '#09f' : 'transparent'
+                }`,
+                gap: grid.gap ?? 0,
+                padding:
+                  grid.padding == null
+                    ? 0
+                    : `${grid.padding.top}px ${grid.padding.right}px ${grid.padding.bottom}px ${grid.padding.left}px`,
+              }}
+            >
+              {placeholders.map((cell, cellIndex) => {
+                const countedRow = Math.floor(cellIndex / grid.columns) + 1
+                const countedColumn = Math.floor(cellIndex % grid.columns) + 1
+                const id = `gridcell-${index}-${cell}`
+                const dotgridColor =
+                  activelyDraggingOrResizingCell != null ? features.dotgridColor : 'transparent'
+                const borderColor =
+                  activelyDraggingOrResizingCell != null
+                    ? features.activeGridColor
+                    : features.inactiveGridColor
 
                 return (
                   <div
@@ -517,11 +432,93 @@ export const GridControls = controlForStrategyMemoized(() => {
                     data-grid-row={countedRow}
                     data-grid-column={countedColumn}
                   >
-                    {getLabelForAxis(dimension, dimensionIndex, grid.gridTemplateColumnsFromProps)}
+                    {when(
+                      features.dotgrid,
+                      <>
+                        <div
+                          style={{
+                            position: 'absolute',
+                            top: -1,
+                            bottom: -1,
+                            left: -1,
+                            right: -1,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          <div style={{ width: 2, height: 2, backgroundColor: dotgridColor }} />
+                        </div>
+                        <div
+                          style={{
+                            width: 2,
+                            height: 2,
+                            backgroundColor: dotgridColor,
+                            position: 'absolute',
+                            top: -1,
+                            left: -1,
+                          }}
+                        />
+                        <div
+                          style={{
+                            width: 2,
+                            height: 2,
+                            backgroundColor: dotgridColor,
+                            position: 'absolute',
+                            bottom: -1,
+                            left: -1,
+                          }}
+                        />
+                        <div
+                          style={{
+                            width: 2,
+                            height: 2,
+                            backgroundColor: dotgridColor,
+                            position: 'absolute',
+                            top: -1,
+                            right: -1,
+                          }}
+                        />
+                        <div
+                          style={{
+                            width: 2,
+                            height: 2,
+                            backgroundColor: dotgridColor,
+                            position: 'absolute',
+                            bottom: -1,
+                            right: -1,
+                          }}
+                        />
+                      </>,
+                    )}
                   </div>
                 )
               })}
             </div>
+          )
+        })}
+        {/* cell targets */}
+        {cells.map((cell) => {
+          return (
+            <div
+              onMouseDown={startInteractionWithUid({
+                uid: EP.toUid(cell.elementPath),
+                frame: cell.globalFrame,
+                row: cell.row,
+                column: cell.column,
+              })}
+              key={`grid-cell-${EP.toString(cell.elementPath)}`}
+              style={{
+                position: 'absolute',
+                top: cell.globalFrame.y,
+                left: cell.globalFrame.x,
+                width: cell.globalFrame.width,
+                height: cell.globalFrame.height,
+                display: 'flex',
+                justifyContent: 'flex-end',
+                alignItems: 'flex-end',
+              }}
+            />
           )
         })}
         {grids.flatMap((grid) => {
@@ -553,37 +550,42 @@ export const GridControls = controlForStrategyMemoized(() => {
                           'zero-drag-not-permitted',
                         ),
                       ),
-                    ),
-                  ])
-                  event.stopPropagation()
-                  event.preventDefault()
-                }
-                return (
-                  <div
-                    data-testid={`grid-row-handle-${dimensionIndex}`}
-                    style={{
-                      position: 'absolute',
-                      left: grid.frame.x - 50,
-                      top: workingPrefix - 5,
-                      width: 40,
-                      height: '20px',
-                      borderRadius: 5,
-                      backgroundColor: '#f0f',
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}
-                    onMouseDown={mouseDownHandler}
-                  >
-                    {getLabelForAxis(dimension, dimensionIndex, grid.gridTemplateRowsFromProps)}
-                  </div>
-                )
-              })
-            case 'FALLBACK':
-              return []
-            default:
-              assertNever(grid.gridTemplateRows)
-              return []
+                    ])
+                    event.stopPropagation()
+                    event.preventDefault()
+                  }
+
+                  return (
+                    <div
+                      data-testid={`grid-row-handle-${dimensionIndex}`}
+                      style={{
+                        position: 'absolute',
+                        left: workingPrefix - 15,
+                        top: grid.frame.y - 30,
+                        width: 40,
+                        height: '20px',
+                        borderRadius: 5,
+                        backgroundColor: '#f0f',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}
+                      onMouseDown={mouseDownHandler}
+                    >
+                      {getLabelForAxis(
+                        dimension,
+                        dimensionIndex,
+                        grid.gridTemplateColumnsFromProps,
+                      )}
+                    </div>
+                  )
+                })
+              case 'FALLBACK':
+                return []
+              default:
+                assertNever(grid.gridTemplateColumns)
+                return []
+            }
           }
         })}
         {grids.flatMap((grid) => {
@@ -636,7 +638,7 @@ export const GridControls = controlForStrategyMemoized(() => {
                       }}
                       onMouseDown={mouseDownHandler}
                     >
-                      {`${dimension.value}${dimension.unit ?? ''}`}
+                      {getLabelForAxis(dimension, dimensionIndex, grid.gridTemplateRowsFromProps)}
                     </div>
                   )
                 })
