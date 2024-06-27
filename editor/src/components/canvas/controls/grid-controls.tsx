@@ -11,10 +11,18 @@ import { createInteractionViaMouse, gridCellHandle } from '../canvas-strategies/
 import CanvasActions from '../canvas-actions'
 import { Modifier } from '../../../utils/modifiers'
 import { windowToCanvasCoordinates } from '../dom-lookup'
-import { motion } from 'framer-motion'
 import type { GridAutoOrTemplateBase } from '../../../core/shared/element-template'
 import { assertNever } from '../../../core/shared/utils'
 import { printGridAutoOrTemplateBase } from '../../../components/inspector/common/css-utils'
+
+type GridCellCoordinates = { row: number; column: number }
+
+function emptyGridCellCoordinates(): GridCellCoordinates {
+  return { row: 0, column: 0 }
+}
+
+// TODO please forgive me (hackathon code)
+export let TargetGridCell = { current: emptyGridCellCoordinates() }
 
 function getSillyCellsCount(template: GridAutoOrTemplateBase | null): number {
   if (template == null) {
@@ -42,12 +50,6 @@ function getNullableAutoOrTemplateBaeString(
 }
 
 export const GridControls = controlForStrategyMemoized(() => {
-  const selectedViews = useEditorState(
-    Substores.selectedViews,
-    (store) => store.editor.selectedViews,
-    'GridControls selectedViews',
-  )
-
   const isActivelyDraggingCell = useEditorState(
     Substores.canvas,
     (store) =>
@@ -107,6 +109,8 @@ export const GridControls = controlForStrategyMemoized(() => {
           gridTemplateRows: gridTemplateRows,
           gap: gap,
           padding: padding,
+          rows: rows,
+          columns: columns,
           cells: rows * columns,
         }
       }, store.editor.selectedViews)
@@ -117,11 +121,32 @@ export const GridControls = controlForStrategyMemoized(() => {
   const cells = React.useMemo(() => {
     return grids.flatMap((grid) => {
       const children = MetadataUtils.getChildrenUnordered(jsxMetadata, grid.elementPath)
-      return mapDropNulls((cell) => {
+      return mapDropNulls((cell, index) => {
         if (cell == null || cell.globalFrame == null || !isFiniteRectangle(cell.globalFrame)) {
           return null
         }
-        return { elementPath: cell.elementPath, globalFrame: cell.globalFrame }
+        const countedRow = Math.floor(index / grid.columns) + 1
+        const countedColumn = Math.floor(index % grid.columns) + 1
+
+        const columnFromProps = cell.specialSizeMeasurements.elementGridProperties.gridColumnStart
+        const rowFromProps = cell.specialSizeMeasurements.elementGridProperties.gridRowStart
+        return {
+          elementPath: cell.elementPath,
+          globalFrame: cell.globalFrame,
+          column:
+            columnFromProps == null
+              ? countedColumn
+              : columnFromProps === 'auto'
+              ? countedColumn
+              : columnFromProps.numericalPosition ?? countedColumn,
+          row:
+            rowFromProps == null
+              ? countedRow
+              : rowFromProps === 'auto'
+              ? countedRow
+              : rowFromProps.numericalPosition ?? countedRow,
+          index: index,
+        }
       }, children)
     })
   }, [grids, jsxMetadata])
@@ -132,7 +157,9 @@ export const GridControls = controlForStrategyMemoized(() => {
   const scaleRef = useRefEditorState((store) => store.editor.canvas.scale)
 
   const startInteractionWithUid = React.useCallback(
-    (uid: string) => (event: React.MouseEvent) => {
+    (params: { uid: string; row: number; column: number }) => (event: React.MouseEvent) => {
+      TargetGridCell.current = emptyGridCellCoordinates()
+
       const start = windowToCanvasCoordinates(
         scaleRef.current,
         canvasOffsetRef.current,
@@ -144,7 +171,7 @@ export const GridControls = controlForStrategyMemoized(() => {
           createInteractionViaMouse(
             start.canvasPositionRounded,
             Modifier.modifiersForEvent(event),
-            gridCellHandle(uid),
+            gridCellHandle({ id: params.uid }),
             'zero-drag-not-permitted',
           ),
         ),
@@ -152,6 +179,30 @@ export const GridControls = controlForStrategyMemoized(() => {
     },
     [canvasOffsetRef, dispatch, scaleRef],
   )
+
+  React.useEffect(() => {
+    function h(e: MouseEvent) {
+      if (!isActivelyDraggingCell) {
+        return
+      }
+      const cellsUnderMouse = document
+        .elementsFromPoint(e.clientX, e.clientY)
+        .filter((el) => el.id.startsWith(`gridcell-`))
+
+      // TODO this sucks!
+      if (cellsUnderMouse.length > 0) {
+        const cellUnderMouse = cellsUnderMouse[0]
+        const row = cellUnderMouse.getAttribute('data-grid-row')
+        const column = cellUnderMouse.getAttribute('data-grid-column')
+        TargetGridCell.current.row = row == null ? 0 : parseInt(row)
+        TargetGridCell.current.column = column == null ? 0 : parseInt(column)
+      }
+    }
+    window.addEventListener('mousemove', h)
+    return function () {
+      window.removeEventListener('mousemove', h)
+    }
+  }, [isActivelyDraggingCell])
 
   if (grids.length === 0) {
     return null
@@ -162,11 +213,11 @@ export const GridControls = controlForStrategyMemoized(() => {
       {/* grid lines */}
       {grids.map((grid, index) => {
         const placeholders = Array.from(Array(grid.cells).keys())
+
         return (
           <div
             key={`grid-${index}`}
             style={{
-              pointerEvents: 'none',
               position: 'absolute',
               top: grid.frame.y,
               left: grid.frame.x,
@@ -183,15 +234,78 @@ export const GridControls = controlForStrategyMemoized(() => {
                   : `${grid.padding.top}px ${grid.padding.right}px ${grid.padding.bottom}px ${grid.padding.left}px`,
             }}
           >
-            {placeholders.map((cell) => {
+            {placeholders.map((cell, cellIndex) => {
+              const countedRow = Math.floor(cellIndex / grid.columns) + 1
+              const countedColumn = Math.floor(cellIndex % grid.columns) + 1
+              const id = `gridcell-${index}-${cell}`
+              const edgeColor = isActivelyDraggingCell ? '#00000033' : 'transparent'
+              const borderColor = isActivelyDraggingCell ? '#00000022' : '#0000000a'
               return (
                 <div
-                  key={`grid-${index}-cell-${cell}`}
+                  key={id}
+                  id={id}
                   style={{
-                    border: '1px solid #ff00ff66',
-                    background: '#ff00ff06',
+                    border: `1px solid ${borderColor}`,
+                    position: 'relative',
                   }}
-                />
+                  data-grid-row={countedRow}
+                  data-grid-column={countedColumn}
+                >
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: -1,
+                      bottom: -1,
+                      left: -1,
+                      right: -1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <div style={{ width: 2, height: 2, backgroundColor: edgeColor }} />
+                  </div>
+                  <div
+                    style={{
+                      width: 2,
+                      height: 2,
+                      backgroundColor: edgeColor,
+                      position: 'absolute',
+                      top: -1,
+                      left: -1,
+                    }}
+                  />
+                  <div
+                    style={{
+                      width: 2,
+                      height: 2,
+                      backgroundColor: edgeColor,
+                      position: 'absolute',
+                      bottom: -1,
+                      left: -1,
+                    }}
+                  />
+                  <div
+                    style={{
+                      width: 2,
+                      height: 2,
+                      backgroundColor: edgeColor,
+                      position: 'absolute',
+                      top: -1,
+                      right: -1,
+                    }}
+                  />
+                  <div
+                    style={{
+                      width: 2,
+                      height: 2,
+                      backgroundColor: edgeColor,
+                      position: 'absolute',
+                      bottom: -1,
+                      right: -1,
+                    }}
+                  />
+                </div>
               )
             })}
           </div>
@@ -199,22 +313,13 @@ export const GridControls = controlForStrategyMemoized(() => {
       })}
       {/* cell targets */}
       {cells.map((cell) => {
-        const isSelected = selectedViews.some((view) => EP.pathsEqual(cell.elementPath, view))
         return (
-          <motion.div
-            initial={{
-              scale: 1,
-            }}
-            animate={{
-              scale: 1.1,
-              transition: {
-                type: 'tween',
-                repeatType: 'mirror',
-                repeat: Infinity,
-                duration: 0.5,
-              },
-            }}
-            onMouseDown={startInteractionWithUid(EP.toUid(cell.elementPath))}
+          <div
+            onMouseDown={startInteractionWithUid({
+              uid: EP.toUid(cell.elementPath),
+              row: cell.row,
+              column: cell.column,
+            })}
             key={`grid-cell-${EP.toString(cell.elementPath)}`}
             style={{
               position: 'absolute',
@@ -222,8 +327,6 @@ export const GridControls = controlForStrategyMemoized(() => {
               left: cell.globalFrame.x,
               width: cell.globalFrame.width,
               height: cell.globalFrame.height,
-              backgroundColor: '#f0f',
-              opacity: !isActivelyDraggingCell || isSelected ? 0 : 0.2,
             }}
           />
         )

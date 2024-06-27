@@ -30,7 +30,7 @@ import {
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
 
-export const rearrangeGridStrategy: CanvasStrategyFactory = (
+export const rearrangeGridSwapStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ) => {
@@ -58,9 +58,9 @@ export const rearrangeGridStrategy: CanvasStrategyFactory = (
   )
 
   return {
-    id: 'rearrange-grid-strategy',
-    name: 'Rearrange Grid',
-    descriptiveLabel: 'Rearrange Grid',
+    id: 'rearrange-grid-swap-strategy',
+    name: 'Rearrange Grid (Swap)',
+    descriptiveLabel: 'Rearrange Grid (Swap)',
     icon: {
       category: 'tools',
       type: 'pointer',
@@ -96,19 +96,21 @@ export const rearrangeGridStrategy: CanvasStrategyFactory = (
           rectContainsPointInclusive(c.globalFrame, pointOnCanvas),
       )
 
-      if (
-        pointerOverChild == null ||
-        EP.toUid(pointerOverChild.elementPath) === interactionSession.activeControl.id
-      ) {
-        return emptyStrategyApplicationResult
-      }
+      let commands: CanvasCommand[] = []
 
-      const commands = swapChildrenCommands({
-        grabbedElementUid: interactionSession.activeControl.id,
-        swapToElementUid: EP.toUid(pointerOverChild.elementPath),
-        children: children,
-        parentPath: EP.parentPath(selectedElement),
-      })
+      if (
+        pointerOverChild != null &&
+        EP.toUid(pointerOverChild.elementPath) !== interactionSession.activeControl.id
+      ) {
+        commands.push(
+          ...swapChildrenCommands({
+            grabbedElementUid: interactionSession.activeControl.id,
+            swapToElementUid: EP.toUid(pointerOverChild.elementPath),
+            children: children,
+            parentPath: EP.parentPath(selectedElement),
+          }),
+        )
+      }
 
       if (commands == null) {
         return emptyStrategyApplicationResult
@@ -170,12 +172,12 @@ function swapChildrenCommands({
   swapToElementUid: string
   children: ElementInstanceMetadata[]
   parentPath: ElementPath
-}): CanvasCommand[] | null {
+}): CanvasCommand[] {
   const grabbedElement = children.find((c) => EP.toUid(c.elementPath) === grabbedElementUid)
   const swapToElement = children.find((c) => EP.toUid(c.elementPath) === swapToElementUid)
 
   if (grabbedElement == null || swapToElement == null) {
-    return null
+    return []
   }
 
   const rearrangedChildren = children

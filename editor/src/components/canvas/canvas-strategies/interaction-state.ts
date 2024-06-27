@@ -564,10 +564,10 @@ export interface GridCellHandle {
   id: string
 }
 
-export function gridCellHandle(id: string): GridCellHandle {
+export function gridCellHandle(params: { id: string }): GridCellHandle {
   return {
     type: 'GRID_CELL_HANDLE',
-    id: id,
+    id: params.id,
   }
 }
 
