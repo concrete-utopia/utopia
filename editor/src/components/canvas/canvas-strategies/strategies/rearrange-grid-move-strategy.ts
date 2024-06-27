@@ -51,7 +51,7 @@ export const rearrangeGridMoveStrategy: CanvasStrategyFactory = (
         show: 'always-visible',
       },
     ],
-    fitness: onlyFitWhenDraggingThisControl(interactionSession, 'GRID_CELL_HANDLE', 1) + 1, // add one so it wins over the swap
+    fitness: onlyFitWhenDraggingThisControl(interactionSession, 'GRID_CELL_HANDLE', 2),
     apply: () => {
       if (
         interactionSession == null ||

@@ -54,11 +54,17 @@ function getNullableAutoOrTemplateBaseString(
 }
 
 export const GridControls = controlForStrategyMemoized(() => {
+  const selectedElement = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews.at(0) ?? null,
+    'GridControls selectedElement',
+  )
   const isActivelyDraggingCell = useEditorState(
     Substores.canvas,
     (store) =>
       store.editor.canvas.interactionSession != null &&
-      store.editor.canvas.interactionSession.activeControl.type === 'GRID_CELL_HANDLE',
+      (store.editor.canvas.interactionSession.activeControl.type === 'GRID_CELL_HANDLE' ||
+        store.editor.canvas.interactionSession.activeControl.type === 'GRID_RESIZE_HANDLE'),
     '',
   )
 
@@ -354,8 +360,24 @@ export const GridControls = controlForStrategyMemoized(() => {
               left: cell.globalFrame.x,
               width: cell.globalFrame.width,
               height: cell.globalFrame.height,
+              display: 'flex',
+              justifyContent: 'flex-end',
+              alignItems: 'flex-end',
             }}
-          />
+          >
+            <div
+              onMouseDown={startResizeInteractionWithUid(EP.toUid(cell.elementPath))}
+              style={{
+                opacity: EP.pathsEqual(selectedElement, cell.elementPath) ? 1 : 0,
+                border: '1px solid white',
+                width: 12,
+                height: 12,
+                backgroundColor: 'black',
+                margin: 4,
+                borderRadius: '50%',
+              }}
+            />
+          </div>
         )
       })}
     </CanvasOffsetWrapper>
