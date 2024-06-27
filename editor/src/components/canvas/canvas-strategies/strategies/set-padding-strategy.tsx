@@ -219,16 +219,29 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
         function snapToNearestPointFromArray(
           valuetoSnap: number,
           snapPoints: number[],
-        ): { snappedValue: number; didSnap: boolean } {
-          for (const snapPoint of snapPoints) {
-            if (Math.abs(valuetoSnap - snapPoint) < SnappingThreshold) {
-              return { snappedValue: snapPoint, didSnap: true }
-            }
+        ): { snappedValue: number; delta: number; shouldSnap: boolean } {
+          const closestSnapPoint = snapPoints.reduce(
+            (closest, current) => {
+              const currentDelta = Math.abs(current - valuetoSnap)
+              if (currentDelta < closest.delta) {
+                return { snap: current, delta: currentDelta }
+              } else {
+                return closest
+              }
+            },
+            { snap: snapPoints[0], delta: Math.abs(snapPoints[0] - valuetoSnap) },
+          )
+
+          return {
+            snappedValue: closestSnapPoint.snap,
+            delta: closestSnapPoint.delta,
+            shouldSnap: closestSnapPoint.delta < SnappingThreshold,
           }
-          return { snappedValue: valuetoSnap, didSnap: false }
         }
 
-        const newValuePx = snapToNearestPointFromArray(currentValuePx, snapPointsInPx).snappedValue
+        const snapResult = snapToNearestPointFromArray(currentValuePx, snapPointsInPx)
+
+        const newValuePx = snapResult.snappedValue
         const newValueOther = (currentValueOther / currentValuePx) * newValuePx
         return {
           value: { value: newValueOther, unit: newPaddingEdgeUnsnapped.value.unit },
