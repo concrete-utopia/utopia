@@ -254,7 +254,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
               !ClassNameToAttributes[c].includes(camelCaseToDashed(p)),
           )
           if (tailwindClass != null && lifecycle === 'end-interaction') {
-            return [['className', `${classNamesToKeep.join(' ')} ${tailwindClass}`]]
+            return [['className', `${[...classNamesToKeep, tailwindClass].join(' ')}`]]
           }
           return [[p, printCssNumberWithDefaultUnit(value.value, 'px')]]
         },
