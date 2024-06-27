@@ -87,6 +87,7 @@ import {
 } from '../../../../core/shared/jsx-attribute-utils'
 import { getClassNameAttribute } from '../../../../core/tailwind/tailwind-options'
 import { ClassNameToAttributes } from '../../../../core/third-party/tailwind-defaults'
+import type { CSSNumber } from '../../../inspector/common/css-utils'
 
 const StylePaddingProp = stylePropPathMappingFn('padding', styleStringInArray)
 const IndividualPaddingProps: Array<CSSPaddingKey> = [
@@ -230,35 +231,50 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
         setElementsToRerenderCommand(selectedElements),
       ]
 
-      const nonZeroPropsToAdd = IndividualPaddingProps.flatMap(
-        (p): Array<[CSSPaddingKey | 'className', string | number]> => {
+      const nonZeroPropsToAddRaw = IndividualPaddingProps.flatMap(
+        (p): Array<[CSSPaddingKey, CSSNumber]> => {
           const value = newPaddingMaxed[p]
           if (value == null || value.renderedValuePx < 0) {
             return []
           }
-          const tailwindClass = convertPixelsToTailwindDimension(
-            value.renderedValuePx,
-            camelCaseToDashed(p) as TailwindProp,
-          )
-          const element = MetadataUtils.getJsxElementChildFromMetadata(
-            canvasState.startingMetadata,
-            selectedElement,
-          )
-          const classNames =
-            getClassNameAttribute(element)
-              .value?.split(' ')
-              .filter((c) => c.length > 0) ?? []
-          const classNamesToKeep = classNames.filter(
-            (c) =>
-              ClassNameToAttributes[c] == null ||
-              !ClassNameToAttributes[c].includes(camelCaseToDashed(p)),
-          )
-          if (tailwindClass != null && lifecycle === 'end-interaction') {
-            return [['className', `${[...classNamesToKeep, tailwindClass].join(' ')}`]]
-          }
-          return [[p, printCssNumberWithDefaultUnit(value.value, 'px')]]
+          return [[p, value.value]]
         },
       )
+
+      const nonZeroPropsToAdd: Array<[CSSPaddingKey, string | number]> = nonZeroPropsToAddRaw.map(
+        (p) => [p[0], printCssNumberWithDefaultUnit(p[1], 'px')],
+      )
+
+      const tailwindClasses = (() => {
+        const element = MetadataUtils.getJsxElementChildFromMetadata(
+          canvasState.startingMetadata,
+          selectedElement,
+        )
+        const classNames =
+          getClassNameAttribute(element)
+            .value?.split(' ')
+            .filter((c) => c.length > 0) ?? []
+
+        const modifiedProps = nonZeroPropsToAddRaw.map((p) => p[0])
+
+        const classNamesToKeep = classNames.filter((c) => {
+          if (ClassNameToAttributes[c] == null) {
+            return true
+          }
+          return modifiedProps.every(
+            (p) => !ClassNameToAttributes[c].includes(camelCaseToDashed(p)),
+          )
+        })
+
+        const newClassNames = nonZeroPropsToAddRaw.map((p) => {
+          return convertPixelsToTailwindDimension(
+            p[1].unit === 'rem' ? p[1].value * 16 : p[1].value, // very ugly
+            camelCaseToDashed(p[0]) as TailwindProp,
+          )
+        })
+
+        return [...classNamesToKeep, ...newClassNames].join(' ')
+      })()
 
       const combinedXPadding =
         paddingForEdgeSimplePadding('left', newPaddingMaxed) +
@@ -292,18 +308,19 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
             StylePaddingProp,
             stylePropPathMappingFn(paddingPropInteractedWith, styleStringInArray),
           ]),
-          ...nonZeroPropsToAdd.map(([p, value]) => {
-            if (p === 'className') {
-              return setProperty('always', selectedElement, fromString('className'), value)
-            } else {
-              return setProperty(
-                'always',
-                selectedElement,
-                stylePropPathMappingFn(p, styleStringInArray),
-                value,
-              )
-            }
-          }),
+          // ...nonZeroPropsToAdd.map(([p, value]) => {
+          //   if (p === 'className') {
+          //     return setProperty('always', selectedElement, fromString('className'), value)
+          //   } else {
+          //     return setProperty(
+          //       'always',
+          //       selectedElement,
+          //       stylePropPathMappingFn(p, styleStringInArray),
+          //       value,
+          //     )
+          //   }
+          // }),
+          setProperty('always', selectedElement, fromString('className'), tailwindClasses),
           setActiveFrames(
             selectedElements.map((path) => ({
               action: 'set-padding',
@@ -348,18 +365,19 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
           StylePaddingProp,
           ...IndividualPaddingProps.map((p) => stylePropPathMappingFn(p, styleStringInArray)),
         ]),
-        ...nonZeroPropsToAdd.map(([p, value]) => {
-          if (p === 'className') {
-            return setProperty('always', selectedElement, fromString('className'), value)
-          } else {
-            return setProperty(
-              'always',
-              selectedElement,
-              stylePropPathMappingFn(p, styleStringInArray),
-              value,
-            )
-          }
-        }),
+        // ...nonZeroPropsToAdd.map(([p, value]) => {
+        //   if (p === 'className') {
+        //     return setProperty('always', selectedElement, fromString('className'), value)
+        //   } else {
+        //     return setProperty(
+        //       'always',
+        //       selectedElement,
+        //       stylePropPathMappingFn(p, styleStringInArray),
+        //       value,
+        //     )
+        //   }
+        // }),
+        setProperty('always', selectedElement, fromString('className'), tailwindClasses),
         setActiveFrames(
           selectedElements.map((path) => ({
             action: 'set-padding',
