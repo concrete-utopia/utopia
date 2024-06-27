@@ -224,7 +224,7 @@ export function convertPixelsToTailwindDimension(
 }
 
 export function getTailwindConfigurationForSection(tailwindSection: string): MapLike<string> {
-  return (twindInstance.current?.instance.theme('padding') ?? {}) as MapLike<string>
+  return (twindInstance.current?.instance.theme(tailwindSection) ?? {}) as MapLike<string>
 }
 
 export function getTailwindSnapPointsInPixelsForSection(tailwindSection: string): number[] {
