@@ -190,7 +190,11 @@ export function convertPixelsToTailwindDimension(
   for (const [className, value] of Object.entries(tailwindDimensionMap)) {
     if (
       (dimensionType === 'width' && !className.startsWith('w-')) ||
-      (dimensionType === 'height' && !className.startsWith('h-'))
+      (dimensionType === 'height' && !className.startsWith('h-')) ||
+      (dimensionType === 'padding-top' && !className.startsWith('pt-')) ||
+      (dimensionType === 'padding-bottom' && !className.startsWith('pb-')) ||
+      (dimensionType === 'padding-left' && !className.startsWith('pl-')) ||
+      (dimensionType === 'padding-right' && !className.startsWith('pr-'))
     ) {
       continue
     }

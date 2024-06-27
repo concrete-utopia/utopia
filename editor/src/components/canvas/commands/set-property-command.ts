@@ -22,7 +22,7 @@ export interface SetProperty extends BaseCommand {
 export function setProperty<T extends PropertyPathPart>(
   whenToRun: WhenToRun,
   element: ElementPath,
-  property: PropertyPath<[PropertyPathPart, T extends PositionProp ? never : T]>,
+  property: PropertyPath,
   value: string | number,
 ): SetProperty {
   return {
@@ -37,7 +37,7 @@ export function setProperty<T extends PropertyPathPart>(
 export function setPropertyOmitNullProp<T extends PropertyPathPart>(
   whenToRun: WhenToRun,
   element: ElementPath,
-  property: PropertyPath<[PropertyPathPart, T extends PositionProp ? never : T]>,
+  property: PropertyPath,
   value: string | number | null,
 ): [SetProperty] | [] {
   if (value == null) {

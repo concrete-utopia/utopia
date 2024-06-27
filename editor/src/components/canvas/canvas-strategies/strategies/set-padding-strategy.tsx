@@ -36,7 +36,7 @@ import {
 } from '../../padding-utils'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
-import type { InteractionCanvasState } from '../canvas-strategy-types'
+import type { InteractionCanvasState, InteractionLifecycle } from '../canvas-strategy-types'
 import {
   controlWithProps,
   emptyStrategyApplicationResult,
@@ -65,7 +65,7 @@ import {
   unitlessCSSNumberWithRenderedValue,
 } from '../../controls/select-mode/controls-common'
 import type { CanvasCommand } from '../../commands/commands'
-import { foldEither } from '../../../../core/shared/either'
+import { eitherToMaybe, flatMapEither, foldEither } from '../../../../core/shared/either'
 import { styleStringInArray } from '../../../../utils/common-constants'
 import { elementHasOnlyTextChildren } from '../../canvas-utils'
 import type { Modifiers } from '../../../../utils/modifiers'
@@ -77,6 +77,16 @@ import {
 } from '../../commands/adjust-css-length-command'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import { activeFrameTargetPath, setActiveFrames } from '../../commands/set-active-frames-command'
+import { convertPixelsToTailwindDimension } from '../../../../core/tailwind/tailwind-helpers'
+import type { TailwindProp } from '../../../../core/tailwind/tailwind-helpers'
+import { camelCaseToDashed } from '../../../../core/shared/string-utils'
+import { create, fromString } from '../../../../core/shared/property-path'
+import {
+  getModifiableJSXAttributeAtPath,
+  jsxSimpleAttributeToValue,
+} from '../../../../core/shared/jsx-attribute-utils'
+import { getClassNameAttribute } from '../../../../core/tailwind/tailwind-options'
+import { ClassNameToAttributes } from '../../../../core/third-party/tailwind-defaults'
 
 const StylePaddingProp = stylePropPathMappingFn('padding', styleStringInArray)
 const IndividualPaddingProps: Array<CSSPaddingKey> = [
@@ -155,7 +165,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
     descriptiveLabel: 'Changing Padding',
     icon: { category: 'tools', type: 'pointer' },
     fitness: onlyFitWhenDraggingThisControl(interactionSession, 'PADDING_RESIZE_HANDLE', 1),
-    apply: () => {
+    apply: (lifecycle: InteractionLifecycle) => {
       if (
         interactionSession == null ||
         interactionSession.interactionData.type !== 'DRAG' ||
@@ -210,10 +220,30 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
       ]
 
       const nonZeroPropsToAdd = IndividualPaddingProps.flatMap(
-        (p): Array<[CSSPaddingKey, string | number]> => {
+        (p): Array<[CSSPaddingKey | 'className', string | number]> => {
           const value = newPaddingMaxed[p]
           if (value == null || value.renderedValuePx < 0) {
             return []
+          }
+          const tailwindClass = convertPixelsToTailwindDimension(
+            value.renderedValuePx,
+            camelCaseToDashed(p) as TailwindProp,
+          )
+          const element = MetadataUtils.getJsxElementChildFromMetadata(
+            canvasState.startingMetadata,
+            selectedElement,
+          )
+          const classNames =
+            getClassNameAttribute(element)
+              .value?.split(' ')
+              .filter((c) => c.length > 0) ?? []
+          const classNamesToKeep = classNames.filter(
+            (c) =>
+              ClassNameToAttributes[c] == null ||
+              !ClassNameToAttributes[c].includes(camelCaseToDashed(p)),
+          )
+          if (tailwindClass != null && lifecycle === 'end-interaction') {
+            return [['className', `${classNamesToKeep} ${tailwindClass}`]]
           }
           return [[p, printCssNumberWithDefaultUnit(value.value, 'px')]]
         },
@@ -251,14 +281,18 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
             StylePaddingProp,
             stylePropPathMappingFn(paddingPropInteractedWith, styleStringInArray),
           ]),
-          ...nonZeroPropsToAdd.map(([p, value]) =>
-            setProperty(
-              'always',
-              selectedElement,
-              stylePropPathMappingFn(p, styleStringInArray),
-              value,
-            ),
-          ),
+          ...nonZeroPropsToAdd.map(([p, value]) => {
+            if (p === 'className') {
+              return setProperty('always', selectedElement, fromString('className'), value)
+            } else {
+              return setProperty(
+                'always',
+                selectedElement,
+                stylePropPathMappingFn(p, styleStringInArray),
+                value,
+              )
+            }
+          }),
           setActiveFrames(
             selectedElements.map((path) => ({
               action: 'set-padding',
@@ -271,30 +305,30 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
         ])
       }
 
-      const allPaddingPropsDefined = maybeFullPadding(newPaddingMaxed)
+      // const allPaddingPropsDefined = maybeFullPadding(newPaddingMaxed)
 
-      // all 4 sides present - can be represented via the padding shorthand property
-      if (allPaddingPropsDefined != null) {
-        const paddingString = paddingToPaddingString(allPaddingPropsDefined)
-        return strategyApplicationResult([
-          ...basicCommands,
-          ...IndividualPaddingProps.map((p) =>
-            deleteProperties('always', selectedElement, [
-              stylePropPathMappingFn(p, styleStringInArray),
-            ]),
-          ),
-          setProperty('always', selectedElement, StylePaddingProp, paddingString),
-          setActiveFrames(
-            selectedElements.map((path) => ({
-              action: 'set-padding',
-              target: activeFrameTargetPath(path),
-              source: zeroRectIfNullOrInfinity(
-                MetadataUtils.getFrameInCanvasCoords(path, canvasState.startingMetadata),
-              ),
-            })),
-          ),
-        ])
-      }
+      // // all 4 sides present - can be represented via the padding shorthand property
+      // if (allPaddingPropsDefined != null) {
+      //   const paddingString = paddingToPaddingString(allPaddingPropsDefined)
+      //   return strategyApplicationResult([
+      //     ...basicCommands,
+      //     ...IndividualPaddingProps.map((p) =>
+      //       deleteProperties('always', selectedElement, [
+      //         stylePropPathMappingFn(p, styleStringInArray),
+      //       ]),
+      //     ),
+      //     setProperty('always', selectedElement, StylePaddingProp, paddingString),
+      //     setActiveFrames(
+      //       selectedElements.map((path) => ({
+      //         action: 'set-padding',
+      //         target: activeFrameTargetPath(path),
+      //         source: zeroRectIfNullOrInfinity(
+      //           MetadataUtils.getFrameInCanvasCoords(path, canvasState.startingMetadata),
+      //         ),
+      //       })),
+      //     ),
+      //   ])
+      // }
 
       // only some sides are present - longhand properties have to be used
       return strategyApplicationResult([
@@ -303,14 +337,18 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
           StylePaddingProp,
           ...IndividualPaddingProps.map((p) => stylePropPathMappingFn(p, styleStringInArray)),
         ]),
-        ...nonZeroPropsToAdd.map(([p, value]) =>
-          setProperty(
-            'always',
-            selectedElement,
-            stylePropPathMappingFn(p, styleStringInArray),
-            value,
-          ),
-        ),
+        ...nonZeroPropsToAdd.map(([p, value]) => {
+          if (p === 'className') {
+            return setProperty('always', selectedElement, fromString('className'), value)
+          } else {
+            return setProperty(
+              'always',
+              selectedElement,
+              stylePropPathMappingFn(p, styleStringInArray),
+              value,
+            )
+          }
+        }),
         setActiveFrames(
           selectedElements.map((path) => ({
             action: 'set-padding',
