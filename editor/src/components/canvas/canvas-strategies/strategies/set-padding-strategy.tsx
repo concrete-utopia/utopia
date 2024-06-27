@@ -199,18 +199,29 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
       const rawDelta = deltaFromEdge(drag, edgePiece)
       const maxedDelta = Math.max(-currentPadding, rawDelta)
       const precision = precisionFromModifiers(interactionSession.interactionData.modifiers)
-      const newPaddingEdge = offsetMeasurementByDelta(
+      const newPaddingEdgeUnsnapped = offsetMeasurementByDelta(
         padding[paddingPropInteractedWith] ?? unitlessCSSNumberWithRenderedValue(maxedDelta),
         delta,
         precision,
       )
 
+      const newPaddingEdgeSnapped: CSSNumberWithRenderedValue = (() => {
+        const currentValuePx = newPaddingEdgeUnsnapped.renderedValuePx
+        const currentValueOther = newPaddingEdgeUnsnapped.value.value
+
+        const newValuePx = currentValuePx
+        const newValueOther = (currentValueOther / currentValuePx) * newValuePx
+        return {
+          value: { value: newValueOther, unit: newPaddingEdgeUnsnapped.value.unit },
+          renderedValuePx: newValuePx,
+        }
+      })()
+
       const newPaddingMaxed = adjustPaddingsWithAdjustMode(
         paddingAdjustMode(interactionSession.interactionData.modifiers),
         paddingPropInteractedWith,
-        delta,
+        newPaddingEdgeSnapped,
         padding,
-        precision,
       )
 
       const basicCommands: CanvasCommand[] = [
@@ -274,7 +285,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
       basicCommands.push(adjustSizeCommand)
 
       // "tearing off" padding
-      if (newPaddingEdge.renderedValuePx < PaddingTearThreshold) {
+      if (newPaddingEdgeSnapped.renderedValuePx < PaddingTearThreshold) {
         return strategyApplicationResult([
           ...basicCommands,
           deleteProperties('always', selectedElement, [
@@ -529,16 +540,16 @@ function opposite(padding: CSSPaddingKey): CSSPaddingKey {
 function adjustPaddingsWithAdjustMode(
   adjustMode: PaddingAdjustMode,
   paddingPropInteractedWith: CSSPaddingKey,
-  delta: number,
+  newPaddingValue: CSSNumberWithRenderedValue,
   padding: CSSPaddingMappedValues<CSSNumberWithRenderedValue | undefined>,
-  precision: AdjustPrecision,
 ): CSSPaddingMappedValues<CSSNumberWithRenderedValue | undefined> {
-  const newPadding = offsetPaddingByEdge(paddingPropInteractedWith, delta, padding, precision)
   switch (adjustMode) {
     case 'individual':
-      return newPadding
+      return {
+        ...padding,
+        [paddingPropInteractedWith]: newPaddingValue,
+      }
     case 'all': {
-      const newPaddingValue = newPadding[paddingPropInteractedWith]
       return {
         paddingTop: newPaddingValue,
         paddingBottom: newPaddingValue,
@@ -547,9 +558,11 @@ function adjustPaddingsWithAdjustMode(
       }
     }
     case 'cross-axis': {
-      const newPaddingValue = newPadding[paddingPropInteractedWith]
-      newPadding[opposite(paddingPropInteractedWith)] = newPaddingValue
-      return newPadding
+      return {
+        ...padding,
+        [paddingPropInteractedWith]: newPaddingValue,
+        [opposite(paddingPropInteractedWith)]: newPaddingValue,
+      }
     }
     default:
       assertNever(adjustMode)

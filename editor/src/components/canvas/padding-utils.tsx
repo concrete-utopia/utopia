@@ -183,6 +183,7 @@ export function paddingForEdgeSimplePadding(
   return padding[paddingPropForEdge(edgePiece)]?.renderedValuePx ?? 0
 }
 
+/** @deprecated not used by strategy anymore */
 export function offsetPaddingByEdge(
   prop: CSSPaddingKey,
   delta: number,
