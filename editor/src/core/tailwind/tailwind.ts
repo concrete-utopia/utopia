@@ -215,6 +215,7 @@ const adjustRuleScope = memoize(adjustRuleScopeImpl, {
 function updateTwind(config: TwindConfigType, prefixSelector: string | null) {
   const element = document.head.appendChild(document.createElement('style'))
   element.appendChild(document.createTextNode('')) // Avoid Edge bug where empty style elements doesn't create sheets
+  element.setAttribute('id', `twind-styles-${Math.random().toString(36).slice(2)}`)
 
   const sheet = cssom(element)
   const customSheet: Sheet = {
