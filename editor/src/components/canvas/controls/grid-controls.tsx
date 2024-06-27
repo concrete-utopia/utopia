@@ -4,7 +4,12 @@ import { Substores, useEditorState, useRefEditorState } from '../../editor/store
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import { mapDropNulls } from '../../../core/shared/array-utils'
-import { isFiniteRectangle, windowPoint } from '../../../core/shared/math-utils'
+import {
+  isFiniteRectangle,
+  isInfinityRectangle,
+  windowPoint,
+  zeroRectIfNullOrInfinity,
+} from '../../../core/shared/math-utils'
 import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import {
@@ -15,9 +20,14 @@ import {
 import CanvasActions from '../canvas-actions'
 import { Modifier } from '../../../utils/modifiers'
 import { windowToCanvasCoordinates } from '../dom-lookup'
-import type { GridAutoOrTemplateBase } from '../../../core/shared/element-template'
+import type {
+  ElementInstanceMetadata,
+  GridAutoOrTemplateBase,
+} from '../../../core/shared/element-template'
 import { assertNever } from '../../../core/shared/utils'
 import { printGridAutoOrTemplateBase } from '../../../components/inspector/common/css-utils'
+import type { ElementPath } from '../../../core/shared/project-file-types'
+import { useColorTheme } from '../../../uuiui'
 
 type GridCellCoordinates = { row: number; column: number }
 
@@ -54,18 +64,13 @@ function getNullableAutoOrTemplateBaseString(
 }
 
 export const GridControls = controlForStrategyMemoized(() => {
-  const selectedElement = useEditorState(
-    Substores.selectedViews,
-    (store) => store.editor.selectedViews.at(0) ?? null,
-    'GridControls selectedElement',
-  )
   const isActivelyDraggingCell = useEditorState(
     Substores.canvas,
     (store) =>
       store.editor.canvas.interactionSession != null &&
       (store.editor.canvas.interactionSession.activeControl.type === 'GRID_CELL_HANDLE' ||
         store.editor.canvas.interactionSession.activeControl.type === 'GRID_RESIZE_HANDLE'),
-    '',
+    'GridControls isActivelyDraggingCell',
   )
 
   const jsxMetadata = useEditorState(
@@ -214,29 +219,6 @@ export const GridControls = controlForStrategyMemoized(() => {
     }
   }, [isActivelyDraggingCell])
 
-  const startResizeInteractionWithUid = React.useCallback(
-    (uid: string) => (event: React.MouseEvent) => {
-      event.stopPropagation()
-      const start = windowToCanvasCoordinates(
-        scaleRef.current,
-        canvasOffsetRef.current,
-        windowPoint({ x: event.nativeEvent.x, y: event.nativeEvent.y }),
-      )
-
-      dispatch([
-        CanvasActions.createInteractionSession(
-          createInteractionViaMouse(
-            start.canvasPositionRounded,
-            Modifier.modifiersForEvent(event),
-            gridResizeHandle(uid),
-            'zero-drag-not-permitted',
-          ),
-        ),
-      ])
-    },
-    [canvasOffsetRef, dispatch, scaleRef],
-  )
-
   if (grids.length === 0) {
     return null
   }
@@ -364,22 +346,123 @@ export const GridControls = controlForStrategyMemoized(() => {
               justifyContent: 'flex-end',
               alignItems: 'flex-end',
             }}
-          >
-            <div
-              onMouseDown={startResizeInteractionWithUid(EP.toUid(cell.elementPath))}
-              style={{
-                opacity: EP.pathsEqual(selectedElement, cell.elementPath) ? 1 : 0,
-                border: '1px solid white',
-                width: 12,
-                height: 12,
-                backgroundColor: 'black',
-                margin: 4,
-                borderRadius: '50%',
-              }}
-            />
-          </div>
+          />
         )
       })}
     </CanvasOffsetWrapper>
   )
 })
+
+export const GridResizeShadow = controlForStrategyMemoized(
+  ({ elementPath }: { elementPath: ElementPath }) => {
+    const element = useEditorState(
+      Substores.metadata,
+      (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, elementPath),
+      'GridResizeShadow element',
+    )
+
+    const dispatch = useDispatch()
+    const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
+    const scaleRef = useRefEditorState((store) => store.editor.canvas.scale)
+
+    const dragging = useEditorState(
+      Substores.canvas,
+      (store) =>
+        store.editor.canvas.interactionSession != null &&
+        store.editor.canvas.interactionSession.activeControl.type === 'GRID_RESIZE_HANDLE',
+      '',
+    )
+    const [offset, setOffset] = React.useState<{ width: number; height: number } | null>(null)
+    const onMouseMove = React.useCallback(
+      (e: MouseEvent) => {
+        if (!dragging) {
+          return
+        }
+
+        setOffset((o) =>
+          o == null ? null : { width: o.width + e.movementX, height: o.height + e.movementY },
+        )
+      },
+      [dragging],
+    )
+
+    const onMouseUp = React.useCallback(() => setOffset(null), [])
+
+    React.useEffect(() => {
+      window.addEventListener('mousemove', onMouseMove)
+      window.addEventListener('mouseup', onMouseUp)
+      return () => {
+        window.removeEventListener('mousemove', onMouseMove)
+        window.removeEventListener('mouseup', onMouseUp)
+      }
+    }, [onMouseMove, onMouseUp])
+
+    const startResizeInteractionWithUid = React.useCallback(
+      (uid: string) => (event: React.MouseEvent) => {
+        event.stopPropagation()
+        const frame = zeroRectIfNullOrInfinity(element?.globalFrame ?? null)
+        setOffset({ width: frame.width, height: frame.height })
+        const start = windowToCanvasCoordinates(
+          scaleRef.current,
+          canvasOffsetRef.current,
+          windowPoint({ x: event.nativeEvent.x, y: event.nativeEvent.y }),
+        )
+        dispatch([
+          CanvasActions.createInteractionSession(
+            createInteractionViaMouse(
+              start.canvasPositionRounded,
+              Modifier.modifiersForEvent(event),
+              gridResizeHandle(uid),
+              'zero-drag-not-permitted',
+            ),
+          ),
+        ])
+      },
+      [canvasOffsetRef, dispatch, element?.globalFrame, scaleRef],
+    )
+
+    const colorTheme = useColorTheme()
+
+    if (
+      element == null ||
+      element.globalFrame == null ||
+      isInfinityRectangle(element.globalFrame)
+    ) {
+      return null
+    }
+
+    return (
+      <CanvasOffsetWrapper>
+        <div
+          key={`grid-resize-container-${EP.toString(element.elementPath)}`}
+          style={{
+            pointerEvents: 'none',
+            position: 'absolute',
+            top: element.globalFrame.y,
+            left: element.globalFrame.x,
+            width: offset?.width ?? element.globalFrame.width,
+            height: offset?.height ?? element.globalFrame.height,
+            display: 'flex',
+            justifyContent: 'flex-end',
+            alignItems: 'flex-end',
+            opacity: 0.3,
+            background: colorTheme.denimBlue.value,
+          }}
+        >
+          <div
+            onMouseDown={startResizeInteractionWithUid(EP.toUid(element.elementPath))}
+            style={{
+              pointerEvents: 'initial',
+              border: '1px solid white',
+              width: 12,
+              height: 12,
+              backgroundColor: 'black',
+              margin: 4,
+              borderRadius: '50%',
+            }}
+          />
+        </div>
+      </CanvasOffsetWrapper>
+    )
+  },
+)

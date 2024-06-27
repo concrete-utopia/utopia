@@ -4,7 +4,7 @@ import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { create } from '../../../../core/shared/property-path'
 import type { CanvasCommand } from '../../commands/commands'
 import { setProperty } from '../../commands/set-property-command'
-import { GridControls, TargetGridCell } from '../../controls/grid-controls'
+import { GridControls, GridResizeShadow, TargetGridCell } from '../../controls/grid-controls'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
 import type { InteractionCanvasState } from '../canvas-strategy-types'
@@ -48,6 +48,12 @@ export const gridResizeStrategy: CanvasStrategyFactory = (
         control: GridControls,
         props: {},
         key: `grid-controls-${EP.toString(selectedElement)}`,
+        show: 'always-visible',
+      },
+      {
+        control: GridResizeShadow,
+        props: { elementPath: selectedElement },
+        key: `grid-resize-shadow-${EP.toString(selectedElement)}`,
         show: 'always-visible',
       },
     ],
