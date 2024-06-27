@@ -571,6 +571,18 @@ export function gridCellHandle(params: { id: string }): GridCellHandle {
   }
 }
 
+export interface GridResizeHandle {
+  type: 'GRID_RESIZE_HANDLE'
+  id: string
+}
+
+export function gridResizeHandle(id: string): GridResizeHandle {
+  return {
+    type: 'GRID_RESIZE_HANDLE',
+    id: id,
+  }
+}
+
 export interface PaddingResizeHandle {
   type: 'PADDING_RESIZE_HANDLE'
   edgePiece: EdgePiece
@@ -623,6 +635,7 @@ export type CanvasControlType =
   | ReorderSlider
   | BorderRadiusResizeHandle
   | GridCellHandle
+  | GridResizeHandle
 
 export function isDragToPan(
   interaction: InteractionSession | null,

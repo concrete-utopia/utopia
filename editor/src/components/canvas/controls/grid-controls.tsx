@@ -7,7 +7,11 @@ import { mapDropNulls } from '../../../core/shared/array-utils'
 import { isFiniteRectangle, windowPoint } from '../../../core/shared/math-utils'
 import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
 import { useDispatch } from '../../editor/store/dispatch-context'
-import { createInteractionViaMouse, gridCellHandle } from '../canvas-strategies/interaction-state'
+import {
+  createInteractionViaMouse,
+  gridCellHandle,
+  gridResizeHandle,
+} from '../canvas-strategies/interaction-state'
 import CanvasActions from '../canvas-actions'
 import { Modifier } from '../../../utils/modifiers'
 import { windowToCanvasCoordinates } from '../dom-lookup'
@@ -39,7 +43,7 @@ function getSillyCellsCount(template: GridAutoOrTemplateBase | null): number {
   }
 }
 
-function getNullableAutoOrTemplateBaeString(
+function getNullableAutoOrTemplateBaseString(
   template: GridAutoOrTemplateBase | null,
 ): string | undefined {
   if (template == null) {
@@ -204,6 +208,29 @@ export const GridControls = controlForStrategyMemoized(() => {
     }
   }, [isActivelyDraggingCell])
 
+  const startResizeInteractionWithUid = React.useCallback(
+    (uid: string) => (event: React.MouseEvent) => {
+      event.stopPropagation()
+      const start = windowToCanvasCoordinates(
+        scaleRef.current,
+        canvasOffsetRef.current,
+        windowPoint({ x: event.nativeEvent.x, y: event.nativeEvent.y }),
+      )
+
+      dispatch([
+        CanvasActions.createInteractionSession(
+          createInteractionViaMouse(
+            start.canvasPositionRounded,
+            Modifier.modifiersForEvent(event),
+            gridResizeHandle(uid),
+            'zero-drag-not-permitted',
+          ),
+        ),
+      ])
+    },
+    [canvasOffsetRef, dispatch, scaleRef],
+  )
+
   if (grids.length === 0) {
     return null
   }
@@ -225,8 +252,8 @@ export const GridControls = controlForStrategyMemoized(() => {
               height: grid.frame.height,
               //   backgroundColor: '#ff00ff09',
               display: 'grid',
-              gridTemplateColumns: getNullableAutoOrTemplateBaeString(grid.gridTemplateColumns),
-              gridTemplateRows: getNullableAutoOrTemplateBaeString(grid.gridTemplateRows),
+              gridTemplateColumns: getNullableAutoOrTemplateBaseString(grid.gridTemplateColumns),
+              gridTemplateRows: getNullableAutoOrTemplateBaseString(grid.gridTemplateRows),
               gap: grid.gap ?? 0,
               padding:
                 grid.padding == null
