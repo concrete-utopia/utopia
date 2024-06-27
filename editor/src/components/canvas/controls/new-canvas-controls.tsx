@@ -614,8 +614,10 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
                     bottom: 10,
                     right: 10,
                     background: 'white',
+                    color: 'black',
                     borderRadius: 2,
-                    border: '1px double black',
+                    border: '1px solid black',
+                    boxShadow: '3px 3px 0px black',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: 2,
@@ -645,7 +647,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
                           ease: 'linear',
                         },
                       }}
-                      style={{ display: 'flex', gap: 100 }}
+                      style={{ display: 'flex', gap: 100, padding: 10 }}
                     >
                       <span>Roll your own damn grid</span>
                       <span>Roll your own damn grid</span>
