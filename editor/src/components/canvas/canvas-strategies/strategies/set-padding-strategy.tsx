@@ -319,6 +319,25 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
 
       basicCommands.push(adjustSizeCommand)
 
+      const midInteractionCommands = nonZeroPropsToAdd.map(([p, value]) => {
+        return setProperty(
+          'always',
+          selectedElement,
+          stylePropPathMappingFn(p, styleStringInArray),
+          value,
+        )
+      })
+
+      const endInteractionCommands = setProperty(
+        'always',
+        selectedElement,
+        fromString('className'),
+        tailwindClasses,
+      )
+
+      const commands =
+        lifecycle === 'mid-interaction' ? midInteractionCommands : [endInteractionCommands]
+
       // "tearing off" padding
       if (newPaddingEdgeSnapped.renderedValuePx < PaddingTearThreshold) {
         return strategyApplicationResult([
@@ -327,19 +346,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
             StylePaddingProp,
             stylePropPathMappingFn(paddingPropInteractedWith, styleStringInArray),
           ]),
-          // ...nonZeroPropsToAdd.map(([p, value]) => {
-          //   if (p === 'className') {
-          //     return setProperty('always', selectedElement, fromString('className'), value)
-          //   } else {
-          //     return setProperty(
-          //       'always',
-          //       selectedElement,
-          //       stylePropPathMappingFn(p, styleStringInArray),
-          //       value,
-          //     )
-          //   }
-          // }),
-          setProperty('always', selectedElement, fromString('className'), tailwindClasses),
+          ...commands,
           setActiveFrames(
             selectedElements.map((path) => ({
               action: 'set-padding',
@@ -384,19 +391,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
           StylePaddingProp,
           ...IndividualPaddingProps.map((p) => stylePropPathMappingFn(p, styleStringInArray)),
         ]),
-        // ...nonZeroPropsToAdd.map(([p, value]) => {
-        //   if (p === 'className') {
-        //     return setProperty('always', selectedElement, fromString('className'), value)
-        //   } else {
-        //     return setProperty(
-        //       'always',
-        //       selectedElement,
-        //       stylePropPathMappingFn(p, styleStringInArray),
-        //       value,
-        //     )
-        //   }
-        // }),
-        setProperty('always', selectedElement, fromString('className'), tailwindClasses),
+        ...commands,
         setActiveFrames(
           selectedElements.map((path) => ({
             action: 'set-padding',
