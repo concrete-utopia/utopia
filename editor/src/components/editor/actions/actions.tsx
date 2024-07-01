@@ -114,6 +114,7 @@ import {
   roundPointToNearestWhole,
   boundingRectangleArray,
   zeroRectangle,
+  canvasVector,
 } from '../../../core/shared/math-utils'
 import type {
   PackageStatusMap,
@@ -5164,7 +5165,7 @@ export const UPDATE_FNS = {
       }
     }
 
-    const newCanvasOffset = getNewCanvasOffset(action.target)
+    const newCanvasOffset = canvasVector({ x: 0, y: 0 })
     return newCanvasOffset == null
       ? editor
       : UPDATE_FNS.SET_SCROLL_ANIMATION(
