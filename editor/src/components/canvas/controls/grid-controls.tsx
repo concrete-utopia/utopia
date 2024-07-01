@@ -24,6 +24,9 @@ import { assertNever } from '../../../core/shared/utils'
 import { printGridAutoOrTemplateBase } from '../../../components/inspector/common/css-utils'
 import { CanvasMousePositionRaw } from '../../../utils/global-positions'
 import { motion, useAnimationControls } from 'framer-motion'
+import type { ElementPath } from '../../../core/shared/project-file-types'
+
+export const GridCellTestId = (elementPath: ElementPath) => `grid-cell-${EP.toString(elementPath)}`
 
 const OPACITY_BASELINE = 0.25
 
@@ -245,7 +248,7 @@ export const GridControls = controlForStrategyMemoized(() => {
   }, [hoveringCell, controls])
 
   React.useEffect(() => {
-    function h(e: MouseEvent) {
+    function hover(e: MouseEvent) {
       if (activelyDraggingOrResizingCell == null) {
         setHoveringStart(null)
         return
@@ -254,7 +257,6 @@ export const GridControls = controlForStrategyMemoized(() => {
         .elementsFromPoint(e.clientX, e.clientY)
         .filter((el) => el.id.startsWith(`gridcell-`))
 
-      // TODO this sucks!
       if (cellsUnderMouse.length > 0) {
         const cellUnderMouse = cellsUnderMouse[0]
         const row = cellUnderMouse.getAttribute('data-grid-row')
@@ -271,9 +273,9 @@ export const GridControls = controlForStrategyMemoized(() => {
         })
       }
     }
-    window.addEventListener('mousemove', h)
+    window.addEventListener('mousemove', hover)
     return function () {
-      window.removeEventListener('mousemove', h)
+      window.removeEventListener('mousemove', hover)
     }
   }, [activelyDraggingOrResizingCell])
 
@@ -327,6 +329,7 @@ export const GridControls = controlForStrategyMemoized(() => {
                   <div
                     key={id}
                     id={id}
+                    data-testid={id}
                     style={{
                       border: `1px solid ${borderColor}`,
                       position: 'relative',
@@ -404,7 +407,8 @@ export const GridControls = controlForStrategyMemoized(() => {
                 row: cell.row,
                 column: cell.column,
               })}
-              key={`grid-cell-${EP.toString(cell.elementPath)}`}
+              key={GridCellTestId(cell.elementPath)}
+              data-testid={GridCellTestId(cell.elementPath)}
               style={{
                 position: 'absolute',
                 top: cell.globalFrame.y,
