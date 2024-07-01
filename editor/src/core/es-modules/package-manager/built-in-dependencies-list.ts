@@ -8,6 +8,7 @@ import * as ReactDOM from 'react-dom'
 import * as ReactRouter from 'react-router'
 import * as ReactJsxRuntime from 'react/jsx-runtime'
 import * as UtopiaAPI from 'utopia-api'
+import * as TTYStub from './node-builtin-shims/tty-stub'
 import * as UUIUI from '../../../uuiui'
 import * as UUIUIDeps from '../../../uuiui-deps'
 import * as RemixServerBuild from './built-in-third-party-dependencies/remix-server-build'
@@ -121,5 +122,7 @@ export function createBuiltInDependenciesList(
     builtInDependency('@remix-run/eslint-config', Stub, '2.1.0'),
     builtInDependency('@shopify/cli', Stub, '3.50.0'),
     builtInDependency('@shopify/cli-hydrogen', Stub, '6.0.0'),
+    // Node builtins
+    builtInDependency('tty', TTYStub, '*'),
   ]
 }
