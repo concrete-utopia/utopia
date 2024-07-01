@@ -1,7 +1,7 @@
 import React from 'react'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
-import { MetadataUtils, getSimpleAttributeAtPath } from '../../../core/model/element-metadata-utils'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import type { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
@@ -29,7 +29,6 @@ import { Modifier } from '../../../utils/modifiers'
 import { windowToCanvasCoordinates } from '../dom-lookup'
 import {
   isGridAutoOrTemplateDimensions,
-  type ElementInstanceMetadata,
   type GridAutoOrTemplateBase,
 } from '../../../core/shared/element-template'
 import { assertNever } from '../../../core/shared/utils'
@@ -50,7 +49,6 @@ import {
 } from '../../../core/shared/optics/optic-creators'
 import { toFirst } from '../../../core/shared/optics/optic-utilities'
 import { defaultEither } from '../../../core/shared/either'
-import { assertNode } from '@babel/types'
 import type { ElementPath } from 'utopia-shared/src/types'
 
 type GridCellCoordinates = { row: number; column: number }

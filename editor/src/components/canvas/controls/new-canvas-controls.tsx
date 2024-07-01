@@ -73,13 +73,6 @@ import { NO_OP } from '../../../core/shared/utils'
 import { useIsMyProject } from '../../editor/store/collaborative-editing'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { MultiplayerPresence } from '../multiplayer-presence'
-import { setFeatureEnabled } from '../../../utils/feature-switches'
-import {
-  defaultExperimentalGridFeatures,
-  experimentalGridFeatures,
-  gridFeaturesExplained,
-} from './grid-controls'
-import { motion } from 'framer-motion'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -523,8 +516,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
 
   const resizeStatus = getResizeStatus()
 
-  const [gridFeatures, setGridFeatures] = useAtom(experimentalGridFeatures)
-
   return (
     <>
       <div
@@ -608,117 +599,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
                 )}
                 {when(isSelectMode(editorMode), <DistanceGuidelineControl />)}
                 <GuidelineControls />
-                <div
-                  style={{
-                    position: 'fixed',
-                    bottom: 10,
-                    right: 10,
-                    background: 'white',
-                    color: 'black',
-                    borderRadius: 2,
-                    border: '1px solid black',
-                    boxShadow: '3px 3px 0px black',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 2,
-                    zIndex: 9999999,
-                    padding: 10,
-                    pointerEvents: 'all',
-                  }}
-                >
-                  <h1
-                    style={{
-                      fontSize: 18,
-                      padding: 0,
-                      margin: 0,
-                      textTransform: 'uppercase',
-                      fontFamily: 'monospace',
-                      overflow: 'hidden',
-                      width: 300,
-                    }}
-                  >
-                    <motion.div
-                      animate={{
-                        x: [0, -355],
-                        transition: {
-                          repeat: Infinity,
-                          repeatType: 'loop',
-                          duration: 4,
-                          ease: 'linear',
-                        },
-                      }}
-                      style={{ display: 'flex', gap: 100, padding: 10 }}
-                    >
-                      <span>Roll your own damn grid</span>
-                      <span>Roll your own damn grid</span>
-                    </motion.div>
-                  </h1>
-                  <button
-                    onClick={() => {
-                      for (const [feat, value] of Object.entries(gridFeatures)) {
-                        if (typeof value === 'boolean') {
-                          setFeatureEnabled(`Grid move - ${feat}` as any, value)
-                        }
-                      }
-                      setGridFeatures(defaultExperimentalGridFeatures)
-                    }}
-                  >
-                    Reset defaults
-                  </button>
-                  {Object.entries(gridFeatures).map(([feat, value]) => {
-                    const isDefault = (defaultExperimentalGridFeatures as any)[feat] === true
-                    return (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }} key={feat}>
-                        <div style={{ flex: 1 }}>
-                          <div
-                            style={{
-                              fontWeight: isDefault ? 'bolder' : 'normal',
-                            }}
-                          >
-                            {feat} {isDefault ? '(default)' : ''}
-                          </div>
-                          <div style={{ color: '#ccc', fontSize: 9 }}>
-                            {gridFeaturesExplained[feat]}
-                          </div>
-                        </div>
-                        {typeof value === 'boolean' && (
-                          <input
-                            type='checkbox'
-                            checked={value}
-                            onChange={(e) => {
-                              e.stopPropagation()
-                              setGridFeatures({ ...gridFeatures, [feat]: e.target.checked })
-                              setFeatureEnabled(`Grid move - ${feat}` as any, e.target.checked) // terrible hacks on top of terrible hacks
-                            }}
-                          />
-                        )}
-                        {typeof value === 'string' && (
-                          <input
-                            type='text'
-                            value={value}
-                            onChange={(e) => {
-                              e.stopPropagation()
-                              setGridFeatures({ ...gridFeatures, [feat]: e.target.value })
-                            }}
-                          />
-                        )}
-                        {typeof value === 'number' && (
-                          <input
-                            type='number'
-                            value={value}
-                            onChange={(e) => {
-                              e.stopPropagation()
-                              setGridFeatures({
-                                ...gridFeatures,
-                                [feat]: parseFloat(e.target.value),
-                              })
-                            }}
-                          />
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
               </>,
             )}
           </>,

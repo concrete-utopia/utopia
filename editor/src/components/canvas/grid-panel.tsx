@@ -11,6 +11,7 @@ import {
 } from './stored-layout'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { clearHighlightedViews } from '../editor/actions/action-creators'
+import { assertNever } from '../../core/shared/utils'
 
 interface GridPanelProps {
   onDrop: (itemToMove: StoredPanel, newPosition: LayoutUpdate) => void
@@ -82,7 +83,6 @@ const GridPanelInner = React.memo<GridPanelProps>((props) => {
       case 'navigator':
         return <LeftPaneComponent panelData={props.pane.panel} />
       default:
-        return null
     }
   })()
 

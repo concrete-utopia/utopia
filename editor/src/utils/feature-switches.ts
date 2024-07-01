@@ -23,6 +23,7 @@ export type FeatureName =
   | 'Grid move - shadow'
   | 'Grid move - dragMagnetic'
   | 'Grid move - dragRatio'
+  | 'Roll Your Own'
 
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -46,6 +47,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Grid move - shadow',
   'Grid move - dragMagnetic',
   'Grid move - dragRatio',
+  'Roll Your Own',
 ]
 
 let FeatureSwitches: { [feature in FeatureName]: boolean } = {
@@ -69,6 +71,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Grid move - shadow': true,
   'Grid move - dragMagnetic': false,
   'Grid move - dragRatio': true,
+  'Roll Your Own': false,
 }
 
 export const STEGANOGRAPHY_ENABLED = false
