@@ -293,6 +293,30 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
       width: null,
       height: null,
     },
+    containerGridProperties: {
+      gridTemplateColumns: null,
+      gridTemplateRows: null,
+      gridAutoColumns: null,
+      gridAutoRows: null,
+    },
+    elementGridProperties: {
+      gridColumnStart: null,
+      gridColumnEnd: null,
+      gridRowStart: null,
+      gridRowEnd: null,
+    },
+    containerGridPropertiesFromProps: {
+      gridTemplateColumns: null,
+      gridTemplateRows: null,
+      gridAutoColumns: null,
+      gridAutoRows: null,
+    },
+    elementGridPropertiesFromProps: {
+      gridColumnStart: null,
+      gridColumnEnd: null,
+      gridRowStart: null,
+      gridRowEnd: null,
+    },
   }
 
   const newDifferentValue: SpecialSizeMeasurements = {
@@ -382,6 +406,30 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
     computedHugProperty: {
       width: null,
       height: null,
+    },
+    containerGridProperties: {
+      gridTemplateColumns: null,
+      gridTemplateRows: null,
+      gridAutoColumns: null,
+      gridAutoRows: null,
+    },
+    elementGridProperties: {
+      gridColumnStart: null,
+      gridColumnEnd: null,
+      gridRowStart: null,
+      gridRowEnd: null,
+    },
+    containerGridPropertiesFromProps: {
+      gridTemplateColumns: null,
+      gridTemplateRows: null,
+      gridAutoColumns: null,
+      gridAutoRows: null,
+    },
+    elementGridPropertiesFromProps: {
+      gridColumnStart: null,
+      gridColumnEnd: null,
+      gridRowStart: null,
+      gridRowEnd: null,
     },
   }
 
@@ -534,6 +582,30 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
         width: null,
         height: null,
       },
+      containerGridProperties: {
+        gridTemplateColumns: null,
+        gridTemplateRows: null,
+        gridAutoColumns: null,
+        gridAutoRows: null,
+      },
+      elementGridProperties: {
+        gridColumnStart: null,
+        gridColumnEnd: null,
+        gridRowStart: null,
+        gridRowEnd: null,
+      },
+      containerGridPropertiesFromProps: {
+        gridTemplateColumns: null,
+        gridTemplateRows: null,
+        gridAutoColumns: null,
+        gridAutoRows: null,
+      },
+      elementGridPropertiesFromProps: {
+        gridColumnStart: null,
+        gridColumnEnd: null,
+        gridRowStart: null,
+        gridRowEnd: null,
+      },
     },
     computedStyle: {
       a: 'a',
@@ -661,6 +733,30 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       computedHugProperty: {
         width: null,
         height: null,
+      },
+      containerGridProperties: {
+        gridTemplateColumns: null,
+        gridTemplateRows: null,
+        gridAutoColumns: null,
+        gridAutoRows: null,
+      },
+      elementGridProperties: {
+        gridColumnStart: null,
+        gridColumnEnd: null,
+        gridRowStart: null,
+        gridRowEnd: null,
+      },
+      containerGridPropertiesFromProps: {
+        gridTemplateColumns: null,
+        gridTemplateRows: null,
+        gridAutoColumns: null,
+        gridAutoRows: null,
+      },
+      elementGridPropertiesFromProps: {
+        gridColumnStart: null,
+        gridColumnEnd: null,
+        gridRowStart: null,
+        gridRowEnd: null,
       },
     },
     computedStyle: {
@@ -816,6 +912,30 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
           width: null,
           height: null,
         },
+        containerGridProperties: {
+          gridTemplateColumns: null,
+          gridTemplateRows: null,
+          gridAutoColumns: null,
+          gridAutoRows: null,
+        },
+        elementGridProperties: {
+          gridColumnStart: null,
+          gridColumnEnd: null,
+          gridRowStart: null,
+          gridRowEnd: null,
+        },
+        containerGridPropertiesFromProps: {
+          gridTemplateColumns: null,
+          gridTemplateRows: null,
+          gridAutoColumns: null,
+          gridAutoRows: null,
+        },
+        elementGridPropertiesFromProps: {
+          gridColumnStart: null,
+          gridColumnEnd: null,
+          gridRowStart: null,
+          gridRowEnd: null,
+        },
       },
       computedStyle: {
         a: 'a',
@@ -946,6 +1066,30 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
           width: null,
           height: null,
         },
+        containerGridProperties: {
+          gridTemplateColumns: null,
+          gridTemplateRows: null,
+          gridAutoColumns: null,
+          gridAutoRows: null,
+        },
+        elementGridProperties: {
+          gridColumnStart: null,
+          gridColumnEnd: null,
+          gridRowStart: null,
+          gridRowEnd: null,
+        },
+        containerGridPropertiesFromProps: {
+          gridTemplateColumns: null,
+          gridTemplateRows: null,
+          gridAutoColumns: null,
+          gridAutoRows: null,
+        },
+        elementGridPropertiesFromProps: {
+          gridColumnStart: null,
+          gridColumnEnd: null,
+          gridRowStart: null,
+          gridRowEnd: null,
+        },
       },
       computedStyle: {
         a: 'a',
@@ -1075,6 +1219,30 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         computedHugProperty: {
           width: null,
           height: null,
+        },
+        containerGridProperties: {
+          gridTemplateColumns: null,
+          gridTemplateRows: null,
+          gridAutoColumns: null,
+          gridAutoRows: null,
+        },
+        elementGridProperties: {
+          gridColumnStart: null,
+          gridColumnEnd: null,
+          gridRowStart: null,
+          gridRowEnd: null,
+        },
+        containerGridPropertiesFromProps: {
+          gridTemplateColumns: null,
+          gridTemplateRows: null,
+          gridAutoColumns: null,
+          gridAutoRows: null,
+        },
+        elementGridPropertiesFromProps: {
+          gridColumnStart: null,
+          gridColumnEnd: null,
+          gridRowStart: null,
+          gridRowEnd: null,
         },
       },
       computedStyle: {

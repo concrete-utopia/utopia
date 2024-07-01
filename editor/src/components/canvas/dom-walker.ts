@@ -9,6 +9,8 @@ import type {
   SpecialSizeMeasurements,
   StyleAttributeMetadata,
   ElementInstanceMetadataMap,
+  GridContainerProperties,
+  GridElementProperties as ElementGridProperties,
 } from '../../core/shared/element-template'
 import {
   elementInstanceMetadata,
@@ -16,6 +18,9 @@ import {
   emptySpecialSizeMeasurements,
   emptyComputedStyle,
   emptyAttributeMetadata,
+  gridContainerProperties,
+  gridElementProperties,
+  gridAutoOrTemplateFallback,
 } from '../../core/shared/element-template'
 import type { ElementPath } from '../../core/shared/project-file-types'
 import {
@@ -55,6 +60,9 @@ import {
   parseDirection,
   parseFlexDirection,
   parseCSSPx,
+  parseGridPosition,
+  parseGridRange,
+  parseGridAutoOrTemplateBase,
 } from '../inspector/common/css-utils'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
 import type { UtopiaStoreAPI } from '../editor/store/store-hook'
@@ -881,6 +889,47 @@ function getComputedStyle(
   }
 }
 
+function getGridContainerProperties(elementStyle: CSSStyleDeclaration): GridContainerProperties {
+  const gridTemplateColumns = defaultEither(
+    gridAutoOrTemplateFallback(elementStyle.gridTemplateColumns),
+    parseGridAutoOrTemplateBase(elementStyle.gridTemplateColumns),
+  )
+  const gridTemplateRows = defaultEither(
+    gridAutoOrTemplateFallback(elementStyle.gridTemplateRows),
+    parseGridAutoOrTemplateBase(elementStyle.gridTemplateRows),
+  )
+  const gridAutoColumns = defaultEither(
+    gridAutoOrTemplateFallback(elementStyle.gridAutoColumns),
+    parseGridAutoOrTemplateBase(elementStyle.gridAutoColumns),
+  )
+  const gridAutoRows = defaultEither(
+    gridAutoOrTemplateFallback(elementStyle.gridAutoRows),
+    parseGridAutoOrTemplateBase(elementStyle.gridAutoRows),
+  )
+  return gridContainerProperties(
+    gridTemplateColumns,
+    gridTemplateRows,
+    gridAutoColumns,
+    gridAutoRows,
+  )
+}
+
+function getGridElementProperties(elementStyle: CSSStyleDeclaration): ElementGridProperties {
+  const gridColumn = defaultEither(null, parseGridRange(elementStyle.gridColumn))
+  const gridColumnStart =
+    defaultEither(null, parseGridPosition(elementStyle.gridColumnStart)) ??
+    gridColumn?.start ??
+    null
+  const gridColumnEnd =
+    defaultEither(null, parseGridPosition(elementStyle.gridColumnEnd)) ?? gridColumn?.end ?? null
+  const gridRow = defaultEither(null, parseGridRange(elementStyle.gridRow))
+  const gridRowStart =
+    defaultEither(null, parseGridPosition(elementStyle.gridRowStart)) ?? gridRow?.start ?? null
+  const gridRowEnd =
+    defaultEither(null, parseGridPosition(elementStyle.gridRowEnd)) ?? gridRow?.end ?? null
+  return gridElementProperties(gridColumnStart, gridColumnEnd, gridRowStart, gridRowEnd)
+}
+
 function getSpecialMeasurements(
   element: HTMLElement,
   closestOffsetParentPath: ElementPath,
@@ -1074,6 +1123,11 @@ function getSpecialMeasurements(
     globalFrame,
   )
 
+  const containerGridProperties = getGridContainerProperties(elementStyle)
+  const containerElementProperties = getGridElementProperties(elementStyle)
+  const containerGridPropertiesFromProps = getGridContainerProperties(element.style)
+  const containerElementPropertyiesFromProps = getGridElementProperties(element.style)
+
   return specialSizeMeasurements(
     offset,
     coordinateSystemBounds,
@@ -1118,6 +1172,10 @@ function getSpecialMeasurements(
     textDecorationLine,
     textBounds,
     computedHugProperty,
+    containerGridProperties,
+    containerElementProperties,
+    containerGridPropertiesFromProps,
+    containerElementPropertyiesFromProps,
   )
 }
 
