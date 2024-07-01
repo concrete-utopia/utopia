@@ -656,23 +656,33 @@ function useSelectOrLiveModeSelectAndHover(
       let editorActions: Array<EditorAction> = []
 
       if (foundTarget != null || isDeselect) {
-        // if (foundTarget != null && draggingAllowed) {
-        //   const start = windowToCanvasCoordinates(
-        //     windowPoint(point(event.clientX, event.clientY)),
-        //   ).canvasPositionRounded
-        //   if (event.button !== 2 && event.type !== 'mouseup') {
-        //     editorActions.push(
-        //       CanvasActions.createInteractionSession(
-        //         createInteractionViaMouse(
-        //           start,
-        //           Modifier.modifiersForEvent(event),
-        //           boundingArea(),
-        //           'zero-drag-not-permitted',
-        //         ),
-        //       ),
-        //     )
-        //   }
-        // }
+        if (
+          foundTarget != null &&
+          draggingAllowed &&
+          !MetadataUtils.isGridLayoutedContainer(
+            // grid has its own drag handling
+            MetadataUtils.findElementByElementPath(
+              editorStoreRef.current.editor.jsxMetadata,
+              EP.parentPath(foundTarget.elementPath),
+            ),
+          )
+        ) {
+          const start = windowToCanvasCoordinates(
+            windowPoint(point(event.clientX, event.clientY)),
+          ).canvasPositionRounded
+          if (event.button !== 2 && event.type !== 'mouseup') {
+            editorActions.push(
+              CanvasActions.createInteractionSession(
+                createInteractionViaMouse(
+                  start,
+                  Modifier.modifiersForEvent(event),
+                  boundingArea(),
+                  'zero-drag-not-permitted',
+                ),
+              ),
+            )
+          }
+        }
 
         let updatedSelection: Array<ElementPath>
         if (isMultiselect) {
@@ -733,13 +743,15 @@ function useSelectOrLiveModeSelectAndHover(
       dispatch(editorActions)
     },
     [
-      dispatch,
-      selectedViewsRef,
-      findValidTarget,
-      setSelectedViewsForCanvasControlsOnly,
-      getSelectableViewsForSelectMode,
       editorStoreRef,
       active,
+      getSelectableViewsForSelectMode,
+      findValidTarget,
+      dispatch,
+      draggingAllowed,
+      windowToCanvasCoordinates,
+      selectedViewsRef,
+      setSelectedViewsForCanvasControlsOnly,
     ],
   )
 

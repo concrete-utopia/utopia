@@ -54,7 +54,6 @@ import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-
 import { queueTrueUpElement } from '../../commands/queue-true-up-command'
 import { treatElementAsGroupLike } from './group-helpers'
 import { trueUpGroupElementChanged } from '../../../editor/store/editor-state'
-import { parentPath } from '../../../../core/shared/element-path'
 
 export const BASIC_RESIZE_STRATEGY_ID = 'BASIC_RESIZE'
 
@@ -64,15 +63,7 @@ export function basicResizeStrategy(
 ): CanvasStrategy | null {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
 
-  if (
-    selectedElements.length !== 1 ||
-    !honoursPropsSize(canvasState, selectedElements[0]) ||
-    selectedElements.some((t) =>
-      MetadataUtils.isGridLayoutedContainer(
-        MetadataUtils.findElementByElementPath(canvasState.startingMetadata, parentPath(t)),
-      ),
-    )
-  ) {
+  if (selectedElements.length !== 1 || !honoursPropsSize(canvasState, selectedElements[0])) {
     return null
   }
   const metadata = MetadataUtils.findElementByElementPath(

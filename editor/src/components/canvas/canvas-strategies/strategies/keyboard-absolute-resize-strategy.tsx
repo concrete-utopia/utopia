@@ -128,12 +128,7 @@ export function keyboardAbsoluteResizeStrategy(
     selectedElements.length === 0 ||
     !selectedElements.every((element) => {
       return supportsAbsoluteResize(canvasState.startingMetadata, element, canvasState)
-    }) ||
-    selectedElements.some((t) =>
-      MetadataUtils.isGridLayoutedContainer(
-        MetadataUtils.findElementByElementPath(canvasState.startingMetadata, EP.parentPath(t)),
-      ),
-    )
+    })
   ) {
     return null
   }
