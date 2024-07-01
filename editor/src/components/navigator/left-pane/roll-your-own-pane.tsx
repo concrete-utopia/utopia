@@ -33,7 +33,7 @@ export const rollYourOwnFeatures = atomWithStorage(
   defaultRollYourOwnFeatures,
 )
 
-export const RollYourOwnPane = React.memo(() => {
+export const RollYourOwnFeaturesPane = React.memo(() => {
   const [currentSection, setCurrentSection] = React.useState<Section | null>(null)
   const [features, setFeatures] = useAtom(rollYourOwnFeatures)
 
@@ -100,7 +100,7 @@ export const RollYourOwnPane = React.memo(() => {
     </FlexColumn>
   )
 })
-RollYourOwnPane.displayName = 'RollYourOwnPane'
+RollYourOwnFeaturesPane.displayName = 'RollYourOwnFeaturesPane'
 
 const GridSection = React.memo(
   (props: { features: GridFeatures; onChange: (update: Partial<RollYourOwnFeatures>) => void }) => {

@@ -36,7 +36,7 @@ import { useAllowedToEditProject } from '../editor/store/collaborative-editing'
 import { useCanComment } from '../../core/commenting/comment-hooks'
 import { ElementsOutsideVisibleAreaIndicator } from '../editor/elements-outside-visible-area-indicator'
 import { isFeatureEnabled } from '../../utils/feature-switches'
-import { RollYourOwnPane } from '../navigator/left-pane/roll-your-own-pane'
+import { RollYourOwnFeaturesPane } from '../navigator/left-pane/roll-your-own-pane'
 
 function isCodeEditorEnabled(): boolean {
   if (typeof window !== 'undefined') {
@@ -250,7 +250,7 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
         {when(selectedTab === RightMenuTab.Inspector, <InspectorEntryPoint />)}
         {when(selectedTab === RightMenuTab.Settings, <SettingsPane />)}
         {when(selectedTab === RightMenuTab.Comments, <CommentsPane />)}
-        {when(selectedTab === RightMenuTab.RollYourOwn, <RollYourOwnPane />)}
+        {when(selectedTab === RightMenuTab.RollYourOwn, <RollYourOwnFeaturesPane />)}
       </SimpleFlexRow>
       <CanvasStrategyInspector />
     </FlexColumn>
