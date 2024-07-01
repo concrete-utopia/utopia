@@ -38,7 +38,7 @@ export const RollYourOwnFeaturesPane = React.memo(() => {
   const [features, setFeatures] = useAtom(rollYourOwnFeatures)
 
   const onChange = React.useCallback(
-    (base: RollYourOwnFeatures) => async (update: Partial<RollYourOwnFeatures>) => {
+    (base: RollYourOwnFeatures) => (update: Partial<RollYourOwnFeatures>) => {
       setFeatures({ ...base, ...update })
     },
     [setFeatures],
