@@ -41,7 +41,7 @@ jobs:
           nix_path: nixpkgs=https://github.com/NixOS/nixpkgs/archive/6120ac5cd201f6cb593d1b80e861be0342495be9.tar.gz
       - name: Run tsc, eslint, depdendency-cruiser and the website tests
         if: steps.cache-editor-tests.outputs.cache-hit != 'true'
-        run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run check-editor-code-ci
+        run: nix-shell --quiet --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run check-editor-code-ci
 
   test-editor-jest:
     name: Test Editor - Jest tests
@@ -75,7 +75,7 @@ jobs:
           nix_path: nixpkgs=https://github.com/NixOS/nixpkgs/archive/6120ac5cd201f6cb593d1b80e861be0342495be9.tar.gz
       - name: Run the Jest tests
         if: steps.cache-editor-tests.outputs.cache-hit != 'true'
-        run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run check-editor-jest-ci
+        run: nix-shell --quiet --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run check-editor-jest-ci
 
   call-test-editor-karma-shard-1:
     name: Test Editor Shard 1
@@ -133,10 +133,10 @@ jobs:
         with:
           nix_path: nixpkgs=https://github.com/NixOS/nixpkgs/archive/6120ac5cd201f6cb593d1b80e861be0342495be9.tar.gz
       - name: Start PostgreSQL
-        run: nix-shell --arg includeEditorBuildSupport false --arg includeRunLocallySupport false --arg includeDatabaseSupport true --run start-postgres-background
+        run: nix-shell --quiet --arg includeEditorBuildSupport false --arg includeRunLocallySupport false --arg includeDatabaseSupport true --run start-postgres-background
       - name: Run the tests
         if: steps.cache-server-tests.outputs.cache-hit != 'true'
-        run: nix-shell --arg includeEditorBuildSupport false --arg includeRunLocallySupport false --run test-server-ci
+        run: nix-shell --quiet --arg includeEditorBuildSupport false --arg includeRunLocallySupport false --run test-server-ci
 
   trigger-deploy:
     name: Trigger Deploy
