@@ -16,6 +16,7 @@ import type { LayoutPropertyTypes, StyleLayoutProp } from '../../../core/layout/
 import { findLastIndex } from '../../../core/shared/array-utils'
 import type { Either, Right as EitherRight } from '../../../core/shared/either'
 import {
+  alternativeEither,
   applicative2Either,
   bimapEither,
   eitherToMaybe,
