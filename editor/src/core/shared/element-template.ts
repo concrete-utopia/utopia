@@ -22,7 +22,6 @@ import { assertNever, fastForEach, unknownObjectProperty } from './utils'
 import { addAllUniquely, mapDropNulls } from './array-utils'
 import { objectMap } from './object-utils'
 import type {
-  CSSNumber,
   CSSPosition,
   FlexDirection,
   GridCSSNumber,
