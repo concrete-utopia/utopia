@@ -552,7 +552,7 @@ function objectShapesMatch(l: object, r: object): boolean {
 
 function variableShapesMatch(current: unknown, other: unknown): boolean {
   if (React.isValidElement(current)) {
-    return isValidReactNode(other)
+    return isValidReactNode(other) || typeof other === 'string' || typeof other === 'number'
   }
 
   if (Array.isArray(current) && Array.isArray(other)) {
