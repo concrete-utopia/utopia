@@ -1,3 +1,4 @@
+import type { AnimationControls } from 'framer-motion'
 import { motion, useAnimationControls } from 'framer-motion'
 import React from 'react'
 import type { ElementPath } from 'utopia-shared/src/types'
@@ -45,6 +46,7 @@ import {
 } from '../canvas-strategies/interaction-state'
 import { windowToCanvasCoordinates } from '../dom-lookup'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
+import { useColorTheme } from '../../../uuiui'
 
 export const GridCellTestId = (elementPath: ElementPath) => `grid-cell-${EP.toString(elementPath)}`
 
@@ -104,7 +106,13 @@ function getLabelForAxis(
 const SHADOW_SNAP_ANIMATION = 'shadow-snap'
 
 export const GridControls = controlForStrategyMemoized(() => {
+  const dispatch = useDispatch()
+  const controls = useAnimationControls()
+  const colorTheme = useColorTheme()
   const features = useRollYourOwnFeatures()
+
+  const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
+  const scaleRef = useRefEditorState((store) => store.editor.canvas.scale)
 
   const activelyDraggingOrResizingCell = useEditorState(
     Substores.canvas,
@@ -116,6 +124,9 @@ export const GridControls = controlForStrategyMemoized(() => {
     'GridControls activelyDraggingOrResizingCell',
   )
 
+  const { hoveringCell, hoveringStart } = useHoveringCell(activelyDraggingOrResizingCell)
+  useSnapAnimation(hoveringCell, controls)
+
   const dragging = useEditorState(
     Substores.canvas,
     (store) =>
@@ -126,19 +137,33 @@ export const GridControls = controlForStrategyMemoized(() => {
     'GridControls dragging',
   )
 
-  const interactionSession = useEditorState(
+  const interactionData = useEditorState(
     Substores.canvas,
     (store) =>
       store.editor.canvas.interactionSession?.interactionData.type === 'DRAG'
         ? store.editor.canvas.interactionSession.interactionData
         : null,
-    'GridControls interactionSession',
+    'GridControls interactionData',
   )
 
-  const jsxMetadata = useEditorState(
-    Substores.fullStore,
-    (store) => store.editor.canvas.interactionSession?.latestMetadata ?? store.editor.jsxMetadata,
-    'GridControls jsxMetadata',
+  const interactionLatestMetadata = useEditorState(
+    Substores.canvas,
+    (store) =>
+      store.editor.canvas.interactionSession?.interactionData.type === 'DRAG'
+        ? store.editor.canvas.interactionSession.latestMetadata
+        : null,
+    'GridControls interactionLatestMetadata',
+  )
+
+  const editorMetadata = useEditorState(
+    Substores.metadata,
+    (store) => store.editor.jsxMetadata,
+    'GridControls editorMetadata',
+  )
+
+  const jsxMetadata = React.useMemo(
+    () => interactionLatestMetadata ?? editorMetadata,
+    [interactionLatestMetadata, editorMetadata],
   )
 
   const grids = useEditorState(
@@ -234,11 +259,6 @@ export const GridControls = controlForStrategyMemoized(() => {
     })
   }, [grids, jsxMetadata])
 
-  const dispatch = useDispatch()
-
-  const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
-  const scaleRef = useRefEditorState((store) => store.editor.canvas.scale)
-
   const shadow = React.useMemo(() => {
     return cells.find((cell) => EP.toUid(cell.elementPath) === dragging)
   }, [cells, dragging])
@@ -274,57 +294,8 @@ export const GridControls = controlForStrategyMemoized(() => {
     [canvasOffsetRef, dispatch, scaleRef],
   )
 
-  const [hoveringCell, setHoveringCell] = React.useState<string | null>(null)
-  const [hoveringStart, setHoveringStart] = React.useState<{
-    id: string
-    point: CanvasPoint
-  } | null>(null)
-  const controls = useAnimationControls()
-
-  React.useEffect(() => {
-    if (!features.Grid.animateSnap) {
-      return
-    }
-    if (hoveringCell == null) {
-      return
-    }
-    void controls.start(SHADOW_SNAP_ANIMATION)
-  }, [hoveringCell, controls, features.Grid.animateSnap])
-
-  React.useEffect(() => {
-    function handleMouseMove(e: MouseEvent) {
-      if (activelyDraggingOrResizingCell == null) {
-        setHoveringStart(null)
-        return
-      }
-      const cellsUnderMouse = document
-        .elementsFromPoint(e.clientX, e.clientY)
-        .filter((el) => el.id.startsWith(`gridcell-`))
-
-      if (cellsUnderMouse.length > 0) {
-        const cellUnderMouse = cellsUnderMouse[0]
-        const row = cellUnderMouse.getAttribute('data-grid-row')
-        const column = cellUnderMouse.getAttribute('data-grid-column')
-        TargetGridCell.current.row = row == null ? 0 : parseInt(row)
-        TargetGridCell.current.column = column == null ? 0 : parseInt(column)
-        setHoveringCell(cellUnderMouse.id)
-
-        setHoveringStart((start) => {
-          if (start == null || start.id !== cellUnderMouse.id) {
-            return { id: cellUnderMouse.id, point: canvasPoint(CanvasMousePositionRaw!) }
-          }
-          return start
-        })
-      }
-    }
-    window.addEventListener('mousemove', handleMouseMove)
-    return function () {
-      window.removeEventListener('mousemove', handleMouseMove)
-    }
-  }, [activelyDraggingOrResizingCell])
-
   const shadowOpacity = React.useMemo(() => {
-    if (shadow == null || initialShadowFrame == null || interactionSession == null) {
+    if (shadow == null || initialShadowFrame == null || interactionData == null) {
       return 0
     } else if (!features.Grid.adaptiveOpacity) {
       return features.Grid.opacityBaseline
@@ -340,7 +311,7 @@ export const GridControls = controlForStrategyMemoized(() => {
         (0.2 *
           distance(
             offsetPoint(
-              interactionSession.dragStart,
+              interactionData.dragStart,
               pointDifference(initialShadowFrame, shadow.globalFrame),
             ),
             CanvasMousePositionRaw!,
@@ -350,35 +321,30 @@ export const GridControls = controlForStrategyMemoized(() => {
         features.Grid.opacityBaseline,
       )
     }
-  }, [features, shadow, initialShadowFrame, interactionSession])
+  }, [features, shadow, initialShadowFrame, interactionData])
 
   const shadowPosition = React.useMemo(() => {
+    const drag = interactionData?.drag
+    const dragStart = interactionData?.dragStart
     if (
       initialShadowFrame == null ||
-      interactionSession == null ||
-      interactionSession.drag == null ||
+      interactionData == null ||
+      drag == null ||
+      dragStart == null ||
       hoveringStart == null ||
       shadow == null
     ) {
       return null
     }
 
-    function getCoord(axis: 'x' | 'y', dimension: 'width' | 'height') {
-      if (
-        initialShadowFrame == null ||
-        interactionSession == null ||
-        interactionSession.drag == null ||
-        hoveringStart == null ||
-        shadow == null
-      ) {
-        return undefined
-      } else if (features.Grid.dragVerbatim) {
-        return initialShadowFrame[axis] + interactionSession.drag[axis]
+    const getCoord = (axis: 'x' | 'y', dimension: 'width' | 'height') => {
+      if (features.Grid.dragVerbatim) {
+        return initialShadowFrame[axis] + drag[axis]
       } else if (features.Grid.dragLockedToCenter) {
         return (
           shadow.globalFrame[axis] +
-          interactionSession.drag[axis] -
-          (shadow.globalFrame[axis] - interactionSession.dragStart[axis]) -
+          drag[axis] -
+          (shadow.globalFrame[axis] - dragStart[axis]) -
           shadow.globalFrame[dimension] / 2
         )
       } else if (features.Grid.dragMagnetic) {
@@ -388,11 +354,10 @@ export const GridControls = controlForStrategyMemoized(() => {
       } else if (features.Grid.dragRatio) {
         return (
           shadow.globalFrame[axis] +
-          interactionSession.drag[axis] -
-          (shadow.globalFrame[axis] - interactionSession.dragStart[axis]) -
+          drag[axis] -
+          (shadow.globalFrame[axis] - dragStart[axis]) -
           shadow.globalFrame[dimension] *
-            ((interactionSession.dragStart[axis] - initialShadowFrame[axis]) /
-              initialShadowFrame[dimension])
+            ((dragStart[axis] - initialShadowFrame[axis]) / initialShadowFrame[dimension])
         )
       } else {
         return undefined
@@ -400,7 +365,7 @@ export const GridControls = controlForStrategyMemoized(() => {
     }
 
     return { x: getCoord('x', 'width'), y: getCoord('y', 'height') }
-  }, [features, initialShadowFrame, interactionSession, shadow, hoveringStart])
+  }, [features, initialShadowFrame, interactionData, shadow, hoveringStart])
 
   if (grids.length === 0) {
     return null
@@ -426,9 +391,11 @@ export const GridControls = controlForStrategyMemoized(() => {
                 gridTemplateColumns: getNullableAutoOrTemplateBaseString(grid.gridTemplateColumns),
                 gridTemplateRows: getNullableAutoOrTemplateBaseString(grid.gridTemplateRows),
                 backgroundColor:
-                  activelyDraggingOrResizingCell != null ? '#0099ff11' : 'transparent',
+                  activelyDraggingOrResizingCell != null
+                    ? colorTheme.primary10.value
+                    : 'transparent',
                 border: `1px solid ${
-                  activelyDraggingOrResizingCell != null ? '#09f' : 'transparent'
+                  activelyDraggingOrResizingCell != null ? colorTheme.primary.value : 'transparent'
                 }`,
                 gap: grid.gap ?? 0,
                 padding:
@@ -587,39 +554,38 @@ export const GridControls = controlForStrategyMemoized(() => {
         })}
         {/* shadow */}
         {features.Grid.shadow &&
-          shadow != null &&
-          initialShadowFrame != null &&
-          interactionSession?.dragStart != null &&
-          interactionSession?.drag != null &&
-          hoveringStart != null && (
-            <motion.div
-              // key={`shadow-for-${activelyDraggingCell}`}
-              initial={'normal'}
-              variants={{
-                normal: { scale: 1 },
-                [SHADOW_SNAP_ANIMATION]: {
-                  scale: [1, 1.4, 1],
-                  transition: { duration: 0.15, type: 'tween' },
-                },
-              }}
-              animate={controls}
-              style={{
-                pointerEvents: 'none',
-                position: 'absolute',
-                width: shadow.globalFrame.width,
-                height: shadow.globalFrame.height,
-                borderRadius:
-                  shadow.borderRadius != null
-                    ? `${shadow.borderRadius.top}px ${shadow.borderRadius.right}px ${shadow.borderRadius.bottom}px ${shadow.borderRadius.left}px`
-                    : 0,
-                backgroundColor: 'black',
-                opacity: shadowOpacity,
-                border: '1px solid white',
-                top: shadowPosition?.y,
-                left: shadowPosition?.x,
-              }}
-            />
-          )}
+        shadow != null &&
+        initialShadowFrame != null &&
+        interactionData?.dragStart != null &&
+        interactionData?.drag != null &&
+        hoveringStart != null ? (
+          <motion.div
+            initial={'normal'}
+            variants={{
+              normal: { scale: 1 },
+              [SHADOW_SNAP_ANIMATION]: {
+                scale: [1, 1.4, 1],
+                transition: { duration: 0.15, type: 'tween' },
+              },
+            }}
+            animate={controls}
+            style={{
+              pointerEvents: 'none',
+              position: 'absolute',
+              width: shadow.globalFrame.width,
+              height: shadow.globalFrame.height,
+              borderRadius:
+                shadow.borderRadius != null
+                  ? `${shadow.borderRadius.top}px ${shadow.borderRadius.right}px ${shadow.borderRadius.bottom}px ${shadow.borderRadius.left}px`
+                  : 0,
+              backgroundColor: 'black',
+              opacity: shadowOpacity,
+              border: '1px solid white',
+              top: shadowPosition?.y,
+              left: shadowPosition?.x,
+            }}
+          />
+        ) : null}
         {grids.flatMap((grid) => {
           if (grid.gridTemplateColumns == null) {
             return []
@@ -664,7 +630,8 @@ export const GridControls = controlForStrategyMemoized(() => {
                         width: 40,
                         height: '20px',
                         borderRadius: 5,
-                        backgroundColor: '#f0f',
+                        backgroundColor: colorTheme.brandNeonPink.value,
+                        color: colorTheme.white.value,
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
@@ -730,7 +697,8 @@ export const GridControls = controlForStrategyMemoized(() => {
                         width: 40,
                         height: '20px',
                         borderRadius: 5,
-                        backgroundColor: '#f0f',
+                        backgroundColor: colorTheme.brandNeonPink.value,
+                        color: colorTheme.white.value,
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
@@ -753,3 +721,55 @@ export const GridControls = controlForStrategyMemoized(() => {
     </React.Fragment>
   )
 })
+
+function useSnapAnimation(hoveringCell: string | null, controls: AnimationControls) {
+  const features = useRollYourOwnFeatures()
+  React.useEffect(() => {
+    if (!features.Grid.animateSnap || hoveringCell == null) {
+      return
+    }
+    void controls.start(SHADOW_SNAP_ANIMATION)
+  }, [hoveringCell, controls, features.Grid.animateSnap])
+}
+
+function useHoveringCell(activelyDraggingOrResizingCell: string | null) {
+  const [hoveringCell, setHoveringCell] = React.useState<string | null>(null)
+  const [hoveringStart, setHoveringStart] = React.useState<{
+    id: string
+    point: CanvasPoint
+  } | null>(null)
+
+  React.useEffect(() => {
+    function handleMouseMove(e: MouseEvent) {
+      if (activelyDraggingOrResizingCell == null) {
+        setHoveringStart(null)
+        return
+      }
+      const cellsUnderMouse = document
+        .elementsFromPoint(e.clientX, e.clientY)
+        .filter((el) => el.id.startsWith(`gridcell-`))
+
+      if (cellsUnderMouse.length > 0) {
+        const cellUnderMouse = cellsUnderMouse[0]
+        const row = cellUnderMouse.getAttribute('data-grid-row')
+        const column = cellUnderMouse.getAttribute('data-grid-column')
+        TargetGridCell.current.row = row == null ? 0 : parseInt(row)
+        TargetGridCell.current.column = column == null ? 0 : parseInt(column)
+        setHoveringCell(cellUnderMouse.id)
+
+        setHoveringStart((start) => {
+          if (start == null || start.id !== cellUnderMouse.id) {
+            return { id: cellUnderMouse.id, point: canvasPoint(CanvasMousePositionRaw!) }
+          }
+          return start
+        })
+      }
+    }
+    window.addEventListener('mousemove', handleMouseMove)
+    return function () {
+      window.removeEventListener('mousemove', handleMouseMove)
+    }
+  }, [activelyDraggingOrResizingCell])
+
+  return { hoveringCell, hoveringStart }
+}
