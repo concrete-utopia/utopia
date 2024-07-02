@@ -503,10 +503,16 @@ function paddingValueIndicatorProps(
     delta,
   )
 
+  const matchedTailwindClass = convertPixelsToTailwindDimension(
+    snappedPadding.renderedValuePx,
+    camelCaseToDashed(paddingPropForEdge(edgePiece)) as TailwindProp,
+  )
+
   return {
-    value: didSnapToTailwindClass
-      ? `${roundTo(snappedPadding.renderedValuePx / 16, 2)}rem – tailwind`
-      : `${snappedPadding.renderedValuePx}px`,
+    value:
+      didSnapToTailwindClass && matchedTailwindClass != null
+        ? `${matchedTailwindClass}`
+        : `${snappedPadding.renderedValuePx}px`,
     position: indicatorPosition(edgePiece, canvasState.scale, dragStart, drag),
   }
 }
