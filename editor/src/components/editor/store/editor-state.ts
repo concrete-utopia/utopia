@@ -214,6 +214,7 @@ export enum RightMenuTab {
   Inspector = 'inspector',
   Settings = 'settings',
   Comments = 'comments',
+  RollYourOwn = 'roll-your-own',
 }
 
 // TODO: this should just contain an NpmDependency and a status

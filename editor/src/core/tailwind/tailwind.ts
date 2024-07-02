@@ -124,6 +124,7 @@ function getTailwindConfig(
         return left('Tailwind config contains no default export')
       }
     } catch (error) {
+      console.error('Error loading tailwind config', error)
       return left(error)
     }
   }
