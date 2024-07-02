@@ -8,6 +8,7 @@ import type { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-uti
 import {
   canvasPoint,
   distance,
+  getRectCenter,
   isFiniteRectangle,
   offsetPoint,
   pointDifference,
@@ -22,13 +23,13 @@ import { windowToCanvasCoordinates } from '../dom-lookup'
 import { type GridAutoOrTemplateBase } from '../../../core/shared/element-template'
 import { assertNever } from '../../../core/shared/utils'
 import { printGridAutoOrTemplateBase } from '../../../components/inspector/common/css-utils'
+import { when } from '../../../utils/react-conditionals'
 import { CanvasMousePositionRaw } from '../../../utils/global-positions'
 import { motion, useAnimationControls } from 'framer-motion'
-import type { ElementPath } from '../../../core/shared/project-file-types'
+import { useRollYourOwnFeatures } from '../../navigator/left-pane/roll-your-own-pane'
+import type { ElementPath } from 'utopia-shared/src/types'
 
 export const GridCellTestId = (elementPath: ElementPath) => `grid-cell-${EP.toString(elementPath)}`
-
-const OPACITY_BASELINE = 0.25
 
 type GridCellCoordinates = { row: number; column: number }
 
@@ -63,7 +64,11 @@ function getNullableAutoOrTemplateBaseString(
   }
 }
 
+const SHADOW_SNAP_ANIMATION = 'shadow-snap'
+
 export const GridControls = controlForStrategyMemoized(() => {
+  const features = useRollYourOwnFeatures()
+
   const activelyDraggingOrResizingCell = useEditorState(
     Substores.canvas,
     (store) =>
@@ -201,7 +206,7 @@ export const GridControls = controlForStrategyMemoized(() => {
     return cells.find((cell) => EP.toUid(cell.elementPath) === dragging)
   }, [cells, dragging])
 
-  const [shadowFrame, setShadowFrame] = React.useState<CanvasRectangle | null>(
+  const [initialShadowFrame, setInitialShadowFrame] = React.useState<CanvasRectangle | null>(
     shadow?.globalFrame ?? null,
   )
 
@@ -210,7 +215,7 @@ export const GridControls = controlForStrategyMemoized(() => {
       (event: React.MouseEvent) => {
         TargetGridCell.current = emptyGridCellCoordinates()
 
-        setShadowFrame(params.frame)
+        setInitialShadowFrame(params.frame)
 
         const start = windowToCanvasCoordinates(
           scaleRef.current,
@@ -240,15 +245,17 @@ export const GridControls = controlForStrategyMemoized(() => {
   const controls = useAnimationControls()
 
   React.useEffect(() => {
+    if (!features.Grid.animateSnap) {
+      return
+    }
     if (hoveringCell == null) {
       return
     }
-
-    void controls.start('boop')
-  }, [hoveringCell, controls])
+    void controls.start(SHADOW_SNAP_ANIMATION)
+  }, [hoveringCell, controls, features.Grid.animateSnap])
 
   React.useEffect(() => {
-    function hover(e: MouseEvent) {
+    function handleMouseMove(e: MouseEvent) {
       if (activelyDraggingOrResizingCell == null) {
         setHoveringStart(null)
         return
@@ -273,11 +280,90 @@ export const GridControls = controlForStrategyMemoized(() => {
         })
       }
     }
-    window.addEventListener('mousemove', hover)
+    window.addEventListener('mousemove', handleMouseMove)
     return function () {
-      window.removeEventListener('mousemove', hover)
+      window.removeEventListener('mousemove', handleMouseMove)
     }
   }, [activelyDraggingOrResizingCell])
+
+  const shadowOpacity = React.useMemo(() => {
+    if (shadow == null || initialShadowFrame == null || interactionSession == null) {
+      return 0
+    } else if (!features.Grid.adaptiveOpacity) {
+      return features.Grid.opacityBaseline
+    } else if (features.Grid.dragLockedToCenter) {
+      return Math.min(
+        (0.2 * distance(getRectCenter(shadow.globalFrame), CanvasMousePositionRaw!)) /
+          Math.min(shadow.globalFrame.height, shadow.globalFrame.width) +
+          0.05,
+        features.Grid.opacityBaseline,
+      )
+    } else {
+      return Math.min(
+        (0.2 *
+          distance(
+            offsetPoint(
+              interactionSession.dragStart,
+              pointDifference(initialShadowFrame, shadow.globalFrame),
+            ),
+            CanvasMousePositionRaw!,
+          )) /
+          Math.min(shadow.globalFrame.height, shadow.globalFrame.width) +
+          0.05,
+        features.Grid.opacityBaseline,
+      )
+    }
+  }, [features, shadow, initialShadowFrame, interactionSession])
+
+  const shadowPosition = React.useMemo(() => {
+    if (
+      initialShadowFrame == null ||
+      interactionSession == null ||
+      interactionSession.drag == null ||
+      hoveringStart == null ||
+      shadow == null
+    ) {
+      return null
+    }
+
+    function getCoord(axis: 'x' | 'y', dimension: 'width' | 'height') {
+      if (
+        initialShadowFrame == null ||
+        interactionSession == null ||
+        interactionSession.drag == null ||
+        hoveringStart == null ||
+        shadow == null
+      ) {
+        return undefined
+      } else if (features.Grid.dragVerbatim) {
+        return initialShadowFrame[axis] + interactionSession.drag[axis]
+      } else if (features.Grid.dragLockedToCenter) {
+        return (
+          shadow.globalFrame[axis] +
+          interactionSession.drag[axis] -
+          (shadow.globalFrame[axis] - interactionSession.dragStart[axis]) -
+          shadow.globalFrame[dimension] / 2
+        )
+      } else if (features.Grid.dragMagnetic) {
+        return (
+          shadow.globalFrame[axis] + (CanvasMousePositionRaw![axis] - hoveringStart.point[axis])
+        )
+      } else if (features.Grid.dragRatio) {
+        return (
+          shadow.globalFrame[axis] +
+          interactionSession.drag[axis] -
+          (shadow.globalFrame[axis] - interactionSession.dragStart[axis]) -
+          shadow.globalFrame[dimension] *
+            ((interactionSession.dragStart[axis] - initialShadowFrame[axis]) /
+              initialShadowFrame[dimension])
+        )
+      } else {
+        return undefined
+      }
+    }
+
+    return { x: getCoord('x', 'width'), y: getCoord('y', 'height') }
+  }, [features, initialShadowFrame, interactionSession, shadow, hoveringStart])
 
   if (grids.length === 0) {
     return null
@@ -320,16 +406,17 @@ export const GridControls = controlForStrategyMemoized(() => {
                 const id = `gridcell-${index}-${cell}`
                 const dotgridColor =
                   activelyDraggingOrResizingCell != null
-                    ? '#0099ffaa' // TODO: colortheme
+                    ? features.Grid.dotgridColor
                     : 'transparent'
                 const borderColor =
-                  activelyDraggingOrResizingCell != null ? '#0099ff77' : '#0000000a'
+                  activelyDraggingOrResizingCell != null
+                    ? features.Grid.activeGridColor
+                    : features.Grid.inactiveGridColor
 
                 return (
                   <div
                     key={id}
                     id={id}
-                    data-testid={id}
                     style={{
                       border: `1px solid ${borderColor}`,
                       position: 'relative',
@@ -337,60 +424,65 @@ export const GridControls = controlForStrategyMemoized(() => {
                     data-grid-row={countedRow}
                     data-grid-column={countedColumn}
                   >
-                    <div
-                      style={{
-                        position: 'absolute',
-                        top: -1,
-                        bottom: -1,
-                        left: -1,
-                        right: -1,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <div style={{ width: 2, height: 2, backgroundColor: dotgridColor }} />
-                    </div>
-                    <div
-                      style={{
-                        width: 2,
-                        height: 2,
-                        backgroundColor: dotgridColor,
-                        position: 'absolute',
-                        top: -1,
-                        left: -1,
-                      }}
-                    />
-                    <div
-                      style={{
-                        width: 2,
-                        height: 2,
-                        backgroundColor: dotgridColor,
-                        position: 'absolute',
-                        bottom: -1,
-                        left: -1,
-                      }}
-                    />
-                    <div
-                      style={{
-                        width: 2,
-                        height: 2,
-                        backgroundColor: dotgridColor,
-                        position: 'absolute',
-                        top: -1,
-                        right: -1,
-                      }}
-                    />
-                    <div
-                      style={{
-                        width: 2,
-                        height: 2,
-                        backgroundColor: dotgridColor,
-                        position: 'absolute',
-                        bottom: -1,
-                        right: -1,
-                      }}
-                    />
+                    {when(
+                      features.Grid.dotgrid,
+                      <>
+                        <div
+                          style={{
+                            position: 'absolute',
+                            top: -1,
+                            bottom: -1,
+                            left: -1,
+                            right: -1,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          <div style={{ width: 2, height: 2, backgroundColor: dotgridColor }} />
+                        </div>
+                        <div
+                          style={{
+                            width: 2,
+                            height: 2,
+                            backgroundColor: dotgridColor,
+                            position: 'absolute',
+                            top: -1,
+                            left: -1,
+                          }}
+                        />
+                        <div
+                          style={{
+                            width: 2,
+                            height: 2,
+                            backgroundColor: dotgridColor,
+                            position: 'absolute',
+                            bottom: -1,
+                            left: -1,
+                          }}
+                        />
+                        <div
+                          style={{
+                            width: 2,
+                            height: 2,
+                            backgroundColor: dotgridColor,
+                            position: 'absolute',
+                            top: -1,
+                            right: -1,
+                          }}
+                        />
+                        <div
+                          style={{
+                            width: 2,
+                            height: 2,
+                            backgroundColor: dotgridColor,
+                            position: 'absolute',
+                            bottom: -1,
+                            right: -1,
+                          }}
+                        />
+                      </>,
+                    )}
                   </div>
                 )
               })}
@@ -456,8 +548,9 @@ export const GridControls = controlForStrategyMemoized(() => {
           )
         })}
         {/* shadow */}
-        {shadow != null &&
-          shadowFrame != null &&
+        {features.Grid.shadow &&
+          shadow != null &&
+          initialShadowFrame != null &&
           interactionSession?.dragStart != null &&
           interactionSession?.drag != null &&
           hoveringStart != null && (
@@ -466,7 +559,7 @@ export const GridControls = controlForStrategyMemoized(() => {
               initial={'normal'}
               variants={{
                 normal: { scale: 1 },
-                boop: {
+                [SHADOW_SNAP_ANIMATION]: {
                   scale: [1, 1.4, 1],
                   transition: { duration: 0.15, type: 'tween' },
                 },
@@ -482,32 +575,10 @@ export const GridControls = controlForStrategyMemoized(() => {
                     ? `${shadow.borderRadius.top}px ${shadow.borderRadius.right}px ${shadow.borderRadius.bottom}px ${shadow.borderRadius.left}px`
                     : 0,
                 backgroundColor: 'black',
-                opacity: Math.min(
-                  (0.2 *
-                    distance(
-                      offsetPoint(
-                        interactionSession.dragStart,
-                        pointDifference(shadowFrame, shadow.globalFrame),
-                      ),
-                      CanvasMousePositionRaw!,
-                    )) /
-                    Math.min(shadow.globalFrame.height, shadow.globalFrame.width) +
-                    0.05,
-                  OPACITY_BASELINE,
-                ),
+                opacity: shadowOpacity,
                 border: '1px solid white',
-                top:
-                  shadow.globalFrame.y +
-                  interactionSession.drag.y -
-                  (shadow.globalFrame.y - interactionSession.dragStart.y) -
-                  shadow.globalFrame.height *
-                    ((interactionSession.dragStart.y - shadowFrame.y) / shadowFrame.height),
-                left:
-                  shadow.globalFrame.x +
-                  interactionSession.drag.x -
-                  (shadow.globalFrame.x - interactionSession.dragStart.x) -
-                  shadow.globalFrame.width *
-                    ((interactionSession.dragStart.x - shadowFrame.x) / shadowFrame.width),
+                top: shadowPosition?.y,
+                left: shadowPosition?.x,
               }}
             />
           )}
