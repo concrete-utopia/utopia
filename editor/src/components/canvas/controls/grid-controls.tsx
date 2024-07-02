@@ -294,6 +294,8 @@ export const GridControls = controlForStrategyMemoized(() => {
     [canvasOffsetRef, dispatch, scaleRef],
   )
 
+  // NOTE: this stuff is meant to be temporary, until we settle on the set of interaction pieces we like.
+  // After that, we should get rid of this.
   const shadowOpacity = React.useMemo(() => {
     if (shadow == null || initialShadowFrame == null || interactionData == null) {
       return 0
@@ -323,6 +325,8 @@ export const GridControls = controlForStrategyMemoized(() => {
     }
   }, [features, shadow, initialShadowFrame, interactionData])
 
+  // NOTE: this stuff is meant to be temporary, until we settle on the set of interaction pieces we like.
+  // After that, we should get rid of this.
   const shadowPosition = React.useMemo(() => {
     const drag = interactionData?.drag
     const dragStart = interactionData?.dragStart
