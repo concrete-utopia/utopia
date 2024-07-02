@@ -15,14 +15,7 @@ export type FeatureName =
   | 'Debug - Print UIDs'
   | 'Debug – Connections'
   | 'Condensed Navigator Entries'
-  | 'Grid move - adaptiveOpacity'
-  | 'Grid move - dragLockedToCenter'
-  | 'Grid move - dragVerbatim'
-  | 'Grid move - animateSnap'
-  | 'Grid move - dotgrid'
-  | 'Grid move - shadow'
-  | 'Grid move - dragMagnetic'
-  | 'Grid move - dragRatio'
+  | 'Roll Your Own'
 
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -38,14 +31,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Debug - Print UIDs',
   'Debug – Connections',
   'Condensed Navigator Entries',
-  'Grid move - adaptiveOpacity',
-  'Grid move - dragLockedToCenter',
-  'Grid move - dragVerbatim',
-  'Grid move - animateSnap',
-  'Grid move - dotgrid',
-  'Grid move - shadow',
-  'Grid move - dragMagnetic',
-  'Grid move - dragRatio',
+  'Roll Your Own',
 ]
 
 let FeatureSwitches: { [feature in FeatureName]: boolean } = {
@@ -61,14 +47,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Debug - Print UIDs': false,
   'Debug – Connections': false,
   'Condensed Navigator Entries': !IS_TEST_ENVIRONMENT,
-  'Grid move - adaptiveOpacity': true,
-  'Grid move - dragLockedToCenter': false,
-  'Grid move - dragVerbatim': false,
-  'Grid move - animateSnap': true,
-  'Grid move - dotgrid': true,
-  'Grid move - shadow': true,
-  'Grid move - dragMagnetic': false,
-  'Grid move - dragRatio': true,
+  'Roll Your Own': false,
 }
 
 export const STEGANOGRAPHY_ENABLED = false
