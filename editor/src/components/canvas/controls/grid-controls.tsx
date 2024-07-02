@@ -31,7 +31,6 @@ import {
 import { toFirst } from '../../../core/shared/optics/optic-utilities'
 import type { Optic } from '../../../core/shared/optics/optics'
 import { assertNever } from '../../../core/shared/utils'
-import { CanvasMousePositionRaw } from '../../../utils/global-positions'
 import { Modifier } from '../../../utils/modifiers'
 import { when } from '../../../utils/react-conditionals'
 import { useDispatch } from '../../editor/store/dispatch-context'
@@ -124,7 +123,9 @@ export const GridControls = controlForStrategyMemoized(() => {
     'GridControls activelyDraggingOrResizingCell',
   )
 
-  const { hoveringCell, hoveringStart } = useHoveringCell(activelyDraggingOrResizingCell)
+  const { hoveringCell, hoveringStart, mouseCanvasPosition } = useMouseMove(
+    activelyDraggingOrResizingCell,
+  )
   useSnapAnimation(hoveringCell, controls)
 
   const dragging = useEditorState(
@@ -303,7 +304,7 @@ export const GridControls = controlForStrategyMemoized(() => {
       return features.Grid.opacityBaseline
     } else if (features.Grid.dragLockedToCenter) {
       return Math.min(
-        (0.2 * distance(getRectCenter(shadow.globalFrame), CanvasMousePositionRaw!)) /
+        (0.2 * distance(getRectCenter(shadow.globalFrame), mouseCanvasPosition)) /
           Math.min(shadow.globalFrame.height, shadow.globalFrame.width) +
           0.05,
         features.Grid.opacityBaseline,
@@ -316,14 +317,14 @@ export const GridControls = controlForStrategyMemoized(() => {
               interactionData.dragStart,
               pointDifference(initialShadowFrame, shadow.globalFrame),
             ),
-            CanvasMousePositionRaw!,
+            mouseCanvasPosition,
           )) /
           Math.min(shadow.globalFrame.height, shadow.globalFrame.width) +
           0.05,
         features.Grid.opacityBaseline,
       )
     }
-  }, [features, shadow, initialShadowFrame, interactionData])
+  }, [features, shadow, initialShadowFrame, interactionData, mouseCanvasPosition])
 
   // NOTE: this stuff is meant to be temporary, until we settle on the set of interaction pieces we like.
   // After that, we should get rid of this.
@@ -352,9 +353,7 @@ export const GridControls = controlForStrategyMemoized(() => {
           shadow.globalFrame[dimension] / 2
         )
       } else if (features.Grid.dragMagnetic) {
-        return (
-          shadow.globalFrame[axis] + (CanvasMousePositionRaw![axis] - hoveringStart.point[axis])
-        )
+        return shadow.globalFrame[axis] + (mouseCanvasPosition[axis] - hoveringStart.point[axis])
       } else if (features.Grid.dragRatio) {
         return (
           shadow.globalFrame[axis] +
@@ -369,7 +368,7 @@ export const GridControls = controlForStrategyMemoized(() => {
     }
 
     return { x: getCoord('x', 'width'), y: getCoord('y', 'height') }
-  }, [features, initialShadowFrame, interactionData, shadow, hoveringStart])
+  }, [features, initialShadowFrame, interactionData, shadow, hoveringStart, mouseCanvasPosition])
 
   if (grids.length === 0) {
     return null
@@ -736,12 +735,27 @@ function useSnapAnimation(hoveringCell: string | null, controls: AnimationContro
   }, [hoveringCell, controls, features.Grid.animateSnap])
 }
 
-function useHoveringCell(activelyDraggingOrResizingCell: string | null) {
+function useMouseMove(activelyDraggingOrResizingCell: string | null) {
   const [hoveringCell, setHoveringCell] = React.useState<string | null>(null)
   const [hoveringStart, setHoveringStart] = React.useState<{
     id: string
     point: CanvasPoint
   } | null>(null)
+  const [mouseCanvasPosition, setMouseCanvasPosition] = React.useState<CanvasPoint>(
+    canvasPoint({ x: 0, y: 0 }),
+  )
+
+  const canvasScale = useEditorState(
+    Substores.canvasOffset,
+    (store) => store.editor.canvas.scale,
+    'useHoveringCell canvasScale',
+  )
+
+  const canvasOffset = useEditorState(
+    Substores.canvasOffset,
+    (store) => store.editor.canvas.roundedCanvasOffset,
+    'useHoveringCell canvasOffset',
+  )
 
   React.useEffect(() => {
     function handleMouseMove(e: MouseEvent) {
@@ -761,9 +775,16 @@ function useHoveringCell(activelyDraggingOrResizingCell: string | null) {
         TargetGridCell.current.column = column == null ? 0 : parseInt(column)
         setHoveringCell(cellUnderMouse.id)
 
+        const newMouseCanvasPosition = windowToCanvasCoordinates(
+          canvasScale,
+          canvasOffset,
+          windowPoint({ x: e.clientX, y: e.clientY }),
+        ).canvasPositionRaw
+        setMouseCanvasPosition(newMouseCanvasPosition)
+
         setHoveringStart((start) => {
           if (start == null || start.id !== cellUnderMouse.id) {
-            return { id: cellUnderMouse.id, point: canvasPoint(CanvasMousePositionRaw!) }
+            return { id: cellUnderMouse.id, point: canvasPoint(newMouseCanvasPosition) }
           }
           return start
         })
@@ -773,7 +794,7 @@ function useHoveringCell(activelyDraggingOrResizingCell: string | null) {
     return function () {
       window.removeEventListener('mousemove', handleMouseMove)
     }
-  }, [activelyDraggingOrResizingCell])
+  }, [activelyDraggingOrResizingCell, canvasOffset, canvasScale])
 
-  return { hoveringCell, hoveringStart }
+  return { hoveringCell, hoveringStart, mouseCanvasPosition }
 }
