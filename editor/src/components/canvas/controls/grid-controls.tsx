@@ -454,6 +454,7 @@ export const GridControls = controlForStrategyMemoized(() => {
                   <div
                     key={id}
                     id={id}
+                    data-testid={id}
                     style={{
                       border: `1px solid ${borderColor}`,
                       position: 'relative',
