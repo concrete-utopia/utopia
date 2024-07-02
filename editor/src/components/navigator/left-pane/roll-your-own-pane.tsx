@@ -1,9 +1,10 @@
 import React from 'react'
 import { FlexColumn, FlexRow, Section } from '../../../uuiui'
 import { when } from '../../../utils/react-conditionals'
-import { useAtom } from 'jotai'
+import { atom, useAtom } from 'jotai'
 import { UIGridRow } from '../../inspector/widgets/ui-grid-row'
 import { atomWithStorage } from 'jotai/utils'
+import { IS_TEST_ENVIRONMENT } from '../../../common/env-vars'
 
 const sections = ['Grid'] as const
 type Section = (typeof sections)[number]
@@ -28,10 +29,9 @@ let defaultRollYourOwnFeatures: RollYourOwnFeatures = {
 
 const ROLL_YOUR_OWN_FEATURES_KEY: string = 'roll-your-own-features'
 
-export const rollYourOwnFeatures = atomWithStorage(
-  ROLL_YOUR_OWN_FEATURES_KEY,
-  defaultRollYourOwnFeatures,
-)
+export const rollYourOwnFeatures = IS_TEST_ENVIRONMENT
+  ? atom(defaultRollYourOwnFeatures)
+  : atomWithStorage(ROLL_YOUR_OWN_FEATURES_KEY, defaultRollYourOwnFeatures)
 
 export const RollYourOwnFeaturesPane = React.memo(() => {
   const [currentSection, setCurrentSection] = React.useState<Section | null>(null)
