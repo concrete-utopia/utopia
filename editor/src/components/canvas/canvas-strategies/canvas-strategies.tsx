@@ -43,7 +43,7 @@ import { reorderSliderStategy } from './strategies/reorder-slider-strategy'
 import { NonResizableControl } from '../controls/select-mode/non-resizable-control'
 import { flexResizeBasicStrategy } from './strategies/flex-resize-basic-strategy'
 import { optionalMap } from '../../../core/shared/optional-utils'
-import { setPaddingStrategy } from './strategies/set-padding-strategy'
+import { setPaddingStrategyTailwind } from './strategies/set-padding-strategy-tailwind'
 import { drawToInsertMetaStrategy } from './strategies/draw-to-insert-metastrategy'
 import { dragToInsertMetaStrategy } from './strategies/drag-to-insert-metastrategy'
 import { DoNothingStrategyID, dragToMoveMetaStrategy } from './strategies/drag-to-move-metastrategy'
@@ -118,7 +118,7 @@ const propertyControlStrategies: MetaCanvasStrategy = (
 ): Array<CanvasStrategy> => {
   return mapDropNulls(
     (factory) => factory(canvasState, interactionSession, customStrategyState),
-    [setPaddingStrategy, setFlexGapStrategy, setBorderRadiusStrategy],
+    [setPaddingStrategyTailwind, setFlexGapStrategy, setBorderRadiusStrategy],
   )
 }
 

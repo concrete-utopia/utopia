@@ -104,13 +104,16 @@ const IndividualPaddingProps: Array<CSSPaddingKey> = [
 
 export const PaddingTearThreshold: number = -25
 
-export const SetPaddingStrategyName = 'Set Padding'
+export const SetPaddingStrategyName = 'Set Padding – Tailwind'
 
 function precisionFromModifiers(modifiers: Modifiers): AdjustPrecision {
   return modifiers.cmd ? 'coarse' : 'precise'
 }
 
-export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interactionSession) => {
+export const setPaddingStrategyTailwind: CanvasStrategyFactory = (
+  canvasState,
+  interactionSession,
+) => {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   if (selectedElements.length !== 1) {
     return null
@@ -165,7 +168,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
   ) ?? [resizeControl]
 
   return {
-    id: 'SET_PADDING_STRATEGY',
+    id: 'SET_PADDING_STRATEGY_TAILWIND',
     name: SetPaddingStrategyName,
     controlsToRender: controlsToRender,
     descriptiveLabel: 'Changing Padding',

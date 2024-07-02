@@ -40,7 +40,7 @@ import {
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
 } from '../../ui-jsx.test-utils'
-import { PaddingTearThreshold, SetPaddingStrategyName } from './set-padding-strategy'
+import { PaddingTearThreshold, SetPaddingStrategyName } from './set-padding-strategy-tailwind'
 
 describe('Padding resize strategy', () => {
   it('Padding resize handle is not present for elements that have no padding set', async () => {
