@@ -1,21 +1,10 @@
 import React from 'react'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
-import { MetadataUtils, getSimpleAttributeAtPath } from '../../../core/model/element-metadata-utils'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import { mapDropNulls } from '../../../core/shared/array-utils'
-import type { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
-import {
-  canvasPoint,
-  distance,
-  getRectCenter,
-  isFiniteRectangle,
-  isInfinityRectangle,
-  offsetPoint,
-  pointDifference,
-  windowPoint,
-  zeroRectIfNullOrInfinity,
-} from '../../../core/shared/math-utils'
+import { isFiniteRectangle, windowPoint } from '../../../core/shared/math-utils'
 import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { createInteractionViaMouse, gridAxisHandle } from '../canvas-strategies/interaction-state'
@@ -24,18 +13,10 @@ import { Modifier } from '../../../utils/modifiers'
 import { windowToCanvasCoordinates } from '../dom-lookup'
 import {
   isGridAutoOrTemplateDimensions,
-  type ElementInstanceMetadata,
   type GridAutoOrTemplateBase,
 } from '../../../core/shared/element-template'
 import { assertNever } from '../../../core/shared/utils'
 import type { GridCSSNumber } from '../../../components/inspector/common/css-utils'
-import { printGridAutoOrTemplateBase } from '../../../components/inspector/common/css-utils'
-import { when } from '../../../utils/react-conditionals'
-import { CanvasMousePositionRaw } from '../../../utils/global-positions'
-import { motion, useAnimationControls } from 'framer-motion'
-import { atom, useAtom } from 'jotai'
-import { isFeatureEnabled } from '../../../utils/feature-switches'
-import { useColorTheme } from '../../../uuiui'
 import type { Optic } from '../../../core/shared/optics/optics'
 import {
   fromArrayIndex,
@@ -45,8 +26,6 @@ import {
 } from '../../../core/shared/optics/optic-creators'
 import { toFirst } from '../../../core/shared/optics/optic-utilities'
 import { defaultEither } from '../../../core/shared/either'
-import { assertNode } from '@babel/types'
-import type { ElementPath } from 'utopia-shared/src/types'
 
 type GridCellCoordinates = { row: number; column: number }
 
@@ -72,48 +51,6 @@ function getSillyCellsCount(template: GridAutoOrTemplateBase | null): number {
   }
 }
 
-export const defaultExperimentalGridFeatures = {
-  dragLockedToCenter: false,
-  dragVerbatim: false,
-  dragMagnetic: false,
-  dragRatio: true,
-  animateSnap: true,
-  dotgrid: true,
-  shadow: true,
-  adaptiveOpacity: true,
-  activeGridColor: '#0099ff77',
-  dotgridColor: '#0099ffaa',
-  inactiveGridColor: '#0000000a',
-  opacityBaseline: 0.25,
-}
-
-export const gridFeaturesExplained: Record<string, string> = {
-  adaptiveOpacity: 'shadow opacity is proportional to the drag distance',
-  dragLockedToCenter: 'drag will keep the shadow centered',
-  dragVerbatim: 'drag will be verbatim',
-  dragMagnetic: 'drag will magnetize to the snap regions',
-  dragRatio: 'drag will keep the shadow positioned based on the drag start',
-  animateSnap: 'the shadow goes *boop* when snapping',
-  dotgrid: 'show dotgrid',
-  shadow: 'show the shadow during drag',
-  activeGridColor: 'grid lines color during drag',
-  dotgridColor: 'dotgrid items color',
-  inactiveGridColor: 'grid lines color when not dragging',
-  opacityBaseline: 'maximum shadow opacity',
-}
-
-export const experimentalGridFeatures = atom(defaultExperimentalGridFeatures)
-
-function getNullableAutoOrTemplateBaseString(
-  template: GridAutoOrTemplateBase | null,
-): string | undefined {
-  if (template == null) {
-    return undefined
-  } else {
-    return printGridAutoOrTemplateBase(template)
-  }
-}
-
 function getFromPropsOptic(index: number): Optic<GridAutoOrTemplateBase | null, GridCSSNumber> {
   return notNull<GridAutoOrTemplateBase>()
     .compose(fromTypeGuard(isGridAutoOrTemplateDimensions))
@@ -135,31 +72,6 @@ function getLabelForAxis(
 }
 
 export const GridControls = controlForStrategyMemoized(() => {
-  const [features, setFeatures] = useAtom(experimentalGridFeatures)
-
-  React.useEffect(() => {
-    setFeatures((old) => ({
-      ...old,
-      adaptiveOpacity: isFeatureEnabled('Grid move - adaptiveOpacity'),
-      dragLockedToCenter: isFeatureEnabled('Grid move - dragLockedToCenter'),
-      dragVerbatim: isFeatureEnabled('Grid move - dragVerbatim'),
-      dragMagnetic: isFeatureEnabled('Grid move - dragMagnetic'),
-      dragRatio: isFeatureEnabled('Grid move - dragRatio'),
-      animateSnap: isFeatureEnabled('Grid move - animateSnap'),
-      dotgrid: isFeatureEnabled('Grid move - dotgrid'),
-      shadow: isFeatureEnabled('Grid move - shadow'),
-    }))
-  }, [setFeatures])
-
-  const interactionSession = useEditorState(
-    Substores.canvas,
-    (store) =>
-      store.editor.canvas.interactionSession?.interactionData.type === 'DRAG'
-        ? store.editor.canvas.interactionSession.interactionData
-        : null,
-    '',
-  )
-
   const jsxMetadata = useEditorState(
     Substores.fullStore,
     (store) => store.editor.canvas.interactionSession?.latestMetadata ?? store.editor.jsxMetadata,
@@ -225,65 +137,10 @@ export const GridControls = controlForStrategyMemoized(() => {
     'GridControls grids',
   )
 
-  const cells = React.useMemo(() => {
-    return grids.flatMap((grid) => {
-      const children = MetadataUtils.getChildrenUnordered(jsxMetadata, grid.elementPath)
-      return mapDropNulls((cell, index) => {
-        if (cell == null || cell.globalFrame == null || !isFiniteRectangle(cell.globalFrame)) {
-          return null
-        }
-        const countedRow = Math.floor(index / grid.columns) + 1
-        const countedColumn = Math.floor(index % grid.columns) + 1
-
-        const columnFromProps = cell.specialSizeMeasurements.elementGridProperties.gridColumnStart
-        const rowFromProps = cell.specialSizeMeasurements.elementGridProperties.gridRowStart
-        return {
-          elementPath: cell.elementPath,
-          globalFrame: cell.globalFrame,
-          borderRadius: cell.specialSizeMeasurements.borderRadius,
-          column:
-            columnFromProps == null
-              ? countedColumn
-              : columnFromProps === 'auto'
-              ? countedColumn
-              : columnFromProps.numericalPosition ?? countedColumn,
-          row:
-            rowFromProps == null
-              ? countedRow
-              : rowFromProps === 'auto'
-              ? countedRow
-              : rowFromProps.numericalPosition ?? countedRow,
-          index: index,
-        }
-      }, children)
-    })
-  }, [grids, jsxMetadata])
-
   const dispatch = useDispatch()
 
   const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
   const scaleRef = useRefEditorState((store) => store.editor.canvas.scale)
-
-  const [hoveringCell, setHoveringCell] = React.useState<string | null>(null)
-  const [hoveringStart, setHoveringStart] = React.useState<{
-    id: string
-    point: CanvasPoint
-  } | null>(null)
-  const controls = useAnimationControls()
-
-  React.useEffect(() => {
-    if (hoveringCell == null) {
-      return
-    }
-    if (!features.animateSnap) {
-      return
-    }
-    void controls.start('boop')
-  }, [hoveringCell, controls, features])
-
-  if (grids.length === 0) {
-    return null
-  }
 
   return (
     <React.Fragment>
