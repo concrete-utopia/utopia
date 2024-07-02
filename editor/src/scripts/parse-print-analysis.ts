@@ -39,7 +39,7 @@ async function processFile(
     (success) => {
       return printCode(
         javascriptFilePath,
-        printCodeOptions(false, true, false, true),
+        printCodeOptions(false, true, false, 'always-for-tests'),
         success.imports,
         success.topLevelElements,
         success.jsxFactoryFunction,

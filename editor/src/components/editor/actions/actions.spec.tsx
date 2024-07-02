@@ -492,7 +492,7 @@ describe('INSERT_INSERTABLE', () => {
       if (isParseSuccess(parsed)) {
         const printedCode = printCode(
           '/src/card.js',
-          printCodeOptions(false, true, true, true),
+          printCodeOptions(false, true, true, 'always-for-tests'),
           parsed.imports,
           parsed.topLevelElements,
           parsed.jsxFactoryFunction,
@@ -600,7 +600,7 @@ describe('INSERT_INSERTABLE', () => {
       if (isParseSuccess(parsed)) {
         const printedCode = printCode(
           '/src/card.js',
-          printCodeOptions(false, true, true, true),
+          printCodeOptions(false, true, true, 'always-for-tests'),
           parsed.imports,
           parsed.topLevelElements,
           parsed.jsxFactoryFunction,
@@ -709,7 +709,7 @@ describe('INSERT_INSERTABLE', () => {
       if (isParseSuccess(parsed)) {
         const printedCode = printCode(
           '/src/card.js',
-          printCodeOptions(false, true, true, true),
+          printCodeOptions(false, true, true, 'always-for-tests'),
           parsed.imports,
           parsed.topLevelElements,
           parsed.jsxFactoryFunction,
@@ -804,7 +804,7 @@ describe('INSERT_INSERTABLE', () => {
       if (isParseSuccess(parsed)) {
         const printedCode = printCode(
           '/src/card.js',
-          printCodeOptions(false, true, true, true),
+          printCodeOptions(false, true, true, 'always-for-tests'),
           parsed.imports,
           parsed.topLevelElements,
           parsed.jsxFactoryFunction,
@@ -907,7 +907,7 @@ describe('INSERT_INSERTABLE', () => {
       if (isParseSuccess(parsed)) {
         const printedCode = printCode(
           '/src/card.js',
-          printCodeOptions(false, true, true, true),
+          printCodeOptions(false, true, true, 'always-for-tests'),
           parsed.imports,
           parsed.topLevelElements,
           parsed.jsxFactoryFunction,

@@ -60,6 +60,7 @@ import {
   RevisionsState,
   textFile,
 } from '../../shared/project-file-types'
+import type { StripUIDsBehavior } from './parser-printer'
 import { lintAndParse, parseCode, printCode, printCodeOptions } from './parser-printer'
 import { applyPrettier } from 'utopia-vscode-common'
 import { transpileJavascriptFromCode } from './parser-printer-transpiling'
@@ -67,6 +68,7 @@ import {
   clearParseResultPassTimes,
   clearParseResultSourceMapsUniqueIDsAndEmptyBlocks,
   clearParseResultUniqueIDsAndEmptyBlocks,
+  clearTopLevelElementSourceMapsUniqueIDsAndEmptyBlocks,
   clearTopLevelElementUniqueIDsAndEmptyBlocks,
   elementsStructure,
   ensureArbitraryBlocksHaveUID,
@@ -100,6 +102,7 @@ import {
   traverseArray,
 } from '../../shared/optics/optic-creators'
 import { toFirst } from '../../shared/optics/optic-utilities'
+import { dataUIDExpression } from '../../../components/editor/defaults'
 
 describe('JSX parser', () => {
   it('parses the code when it is a var', () => {
@@ -123,7 +126,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code)),
     )
     const cakeAttributes: JSXAttributes = jsxAttributesFromMap({
-      'data-uid': jsExpressionValue('aab', emptyComments),
+      'data-uid': dataUIDExpression('aab', 'include-in-printing'),
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsPropertyAccess(
         jsElementAccess(
@@ -157,7 +160,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     const view = jsxElement(
       'View',
       'aaa',
-      jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
+      jsxAttributesFromMap({ 'data-uid': dataUIDExpression('aaa', 'include-in-printing') }),
       [cake],
     )
     const exported = utopiaJSXComponent(
@@ -213,7 +216,7 @@ export var whatever = () => <View data-uid='aaa'>
       clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code)),
     )
     const cakeAttributes: JSXAttributes = jsxAttributesFromMap({
-      'data-uid': jsExpressionValue('aab', emptyComments),
+      'data-uid': dataUIDExpression('aab', 'include-in-printing'),
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsExpressionValue(20, emptyComments),
       right: jsExpressionValue(20, emptyComments),
@@ -223,7 +226,7 @@ export var whatever = () => <View data-uid='aaa'>
     const view = jsxElement(
       'View',
       'aaa',
-      jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
+      jsxAttributesFromMap({ 'data-uid': dataUIDExpression('aaa', 'include-in-printing') }),
       [cake],
     )
     const exported = utopiaJSXComponent(
@@ -283,7 +286,7 @@ export function whatever(props) {
       clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code)),
     )
     const cakeAttributes: JSXAttributes = jsxAttributesFromMap({
-      'data-uid': jsExpressionValue('aab', emptyComments),
+      'data-uid': dataUIDExpression('aab', 'include-in-printing'),
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsPropertyAccess(
         jsElementAccess(
@@ -317,7 +320,7 @@ export function whatever(props) {
     const view = jsxElement(
       'View',
       'aaa',
-      jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
+      jsxAttributesFromMap({ 'data-uid': dataUIDExpression('aaa', 'include-in-printing') }),
       [cake],
     )
     const exported = utopiaJSXComponent(
@@ -377,7 +380,7 @@ export function whatever() {
       clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code)),
     )
     const cakeAttributes: JSXAttributes = jsxAttributesFromMap({
-      'data-uid': jsExpressionValue('aab', emptyComments),
+      'data-uid': dataUIDExpression('aab', 'include-in-printing'),
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsExpressionValue(20, emptyComments),
       right: jsExpressionValue(20, emptyComments),
@@ -387,7 +390,7 @@ export function whatever() {
     const view = jsxElement(
       'View',
       'aaa',
-      jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
+      jsxAttributesFromMap({ 'data-uid': dataUIDExpression('aaa', 'include-in-printing') }),
       [cake],
     )
     const exported = utopiaJSXComponent(
@@ -447,7 +450,7 @@ export default function whatever(props) {
       clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code)),
     )
     const cakeAttributes: JSXAttributes = jsxAttributesFromMap({
-      'data-uid': jsExpressionValue('aab', emptyComments),
+      'data-uid': dataUIDExpression('aab', 'include-in-printing'),
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsPropertyAccess(
         jsElementAccess(
@@ -481,7 +484,7 @@ export default function whatever(props) {
     const view = jsxElement(
       'View',
       'aaa',
-      jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
+      jsxAttributesFromMap({ 'data-uid': dataUIDExpression('aaa', 'include-in-printing') }),
       [cake],
     )
     const exported = utopiaJSXComponent(
@@ -541,7 +544,7 @@ export default function whatever() {
       clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code)),
     )
     const cakeAttributes: JSXAttributes = jsxAttributesFromMap({
-      'data-uid': jsExpressionValue('aab', emptyComments),
+      'data-uid': dataUIDExpression('aab', 'include-in-printing'),
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsExpressionValue(20, emptyComments),
       right: jsExpressionValue(20, emptyComments),
@@ -551,7 +554,7 @@ export default function whatever() {
     const view = jsxElement(
       'View',
       'aaa',
-      jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
+      jsxAttributesFromMap({ 'data-uid': dataUIDExpression('aaa', 'include-in-printing') }),
       [cake],
     )
     const exported = utopiaJSXComponent(
@@ -608,7 +611,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code)),
     )
     const cakeAttributes: JSXAttributes = jsxAttributesFromMap({
-      'data-uid': jsExpressionValue('aab', emptyComments),
+      'data-uid': dataUIDExpression('aab', 'include-in-printing'),
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsPropertyAccess(
         jsElementAccess(
@@ -642,7 +645,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     const view = jsxElement(
       'View',
       'aaa',
-      jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
+      jsxAttributesFromMap({ 'data-uid': dataUIDExpression('aaa', 'include-in-printing') }),
       [cake],
     )
     const exported = utopiaJSXComponent(
@@ -707,7 +710,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code)),
     )
     const cakeAttributes: JSXAttributes = jsxAttributesFromMap({
-      'data-uid': jsExpressionValue('aab', emptyComments),
+      'data-uid': dataUIDExpression('aab', 'include-in-printing'),
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsPropertyAccess(
         jsElementAccess(
@@ -738,7 +741,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       top: jsExpressionValue(-20, emptyComments),
     })
     const cake2Attributes: JSXAttributes = jsxAttributesFromMap({
-      'data-uid': jsExpressionValue('aac', emptyComments),
+      'data-uid': dataUIDExpression('aac', 'include-in-printing'),
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsPropertyAccess(
         jsElementAccess(
@@ -773,7 +776,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     const view = jsxElement(
       'View',
       'aaa',
-      jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
+      jsxAttributesFromMap({ 'data-uid': dataUIDExpression('aaa', 'include-in-printing') }),
       [cake, cake2],
     )
     const exported = utopiaJSXComponent(
@@ -829,7 +832,7 @@ export var whatever = (props) => <View data-uid='aaa'>
         clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code)),
       )
       const cake2Attributes: JSXAttributes = jsxAttributesFromMap({
-        'data-uid': jsExpressionValue('aac', emptyComments),
+        'data-uid': dataUIDExpression('aac', 'include-in-printing'),
         style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
         left: jsPropertyAccess(
           jsElementAccess(
@@ -863,7 +866,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       const view = jsxElement(
         'View',
         'aaa',
-        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
+        jsxAttributesFromMap({ 'data-uid': dataUIDExpression('aaa', 'include-in-printing') }),
         [cake2],
       )
       const exported = utopiaJSXComponent(
@@ -920,7 +923,7 @@ export var whatever = (props) => <View data-uid='aaa'>
         clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code)),
       )
       const firstCakeAttributes: JSXAttributes = jsxAttributesFromMap({
-        'data-uid': jsExpressionValue('aab', emptyComments),
+        'data-uid': dataUIDExpression('aab', 'include-in-printing'),
         'data-label': jsExpressionValue('First cake', emptyComments),
         style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
         left: jsPropertyAccess(
@@ -953,7 +956,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       })
       const firstCake = jsxElement('cake', 'aab', firstCakeAttributes, [])
       const secondCakeAttributes: JSXAttributes = jsxAttributesFromMap({
-        'data-uid': jsExpressionValue('111', emptyComments),
+        'data-uid': dataUIDExpression('111', 'include-in-printing'),
         'data-label': jsExpressionValue('Second cake', emptyComments),
         style: jsExpressionValue({ backgroundColor: 'blue' }, emptyComments),
         left: jsPropertyAccess(
@@ -988,7 +991,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       const view = jsxElement(
         'View',
         'aaa',
-        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
+        jsxAttributesFromMap({ 'data-uid': dataUIDExpression('aaa', 'include-in-printing') }),
         [firstCake, secondCake],
       )
       const exported = utopiaJSXComponent(
@@ -1044,7 +1047,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code)),
     )
     const cakeAttributes: JSXAttributes = jsxAttributesFromMap({
-      'data-uid': jsExpressionValue('aab', emptyComments),
+      'data-uid': dataUIDExpression('aab', 'include-in-printing'),
       style: jsExpressionValue(
         {
           backgroundColor: 'red',
@@ -1087,7 +1090,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     const view = jsxElement(
       'View',
       'aaa',
-      jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
+      jsxAttributesFromMap({ 'data-uid': dataUIDExpression('aaa', 'include-in-printing') }),
       [cake],
     )
     const exported = utopiaJSXComponent(
@@ -1147,7 +1150,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code)),
     )
     const cakeAttributes: JSXAttributes = jsxAttributesFromMap({
-      'data-uid': jsExpressionValue('aab', emptyComments),
+      'data-uid': dataUIDExpression('aab', 'include-in-printing'),
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsExpressionOtherJavaScript(
         [],
@@ -1186,7 +1189,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     const view = jsxElement(
       'View',
       'aaa',
-      jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
+      jsxAttributesFromMap({ 'data-uid': dataUIDExpression('aaa', 'include-in-printing') }),
       [cake],
     )
     const exported = utopiaJSXComponent(
@@ -1343,7 +1346,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code)),
     )
     const cakeAttributes: JSXAttributes = jsxAttributesFromMap({
-      'data-uid': jsExpressionValue('aab', emptyComments),
+      'data-uid': dataUIDExpression('aab', 'include-in-printing'),
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsPropertyAccess(
         jsElementAccess(
@@ -1377,7 +1380,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     const view = jsxElement(
       'View',
       'aaa',
-      jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
+      jsxAttributesFromMap({ 'data-uid': dataUIDExpression('aaa', 'include-in-printing') }),
       [cake],
     )
     const exported = utopiaJSXComponent(
@@ -1495,7 +1498,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code)),
     )
     const cakeAttributes: JSXAttributes = jsxAttributesFromMap({
-      'data-uid': jsExpressionValue('aab', emptyComments),
+      'data-uid': dataUIDExpression('aab', 'include-in-printing'),
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsPropertyAccess(
         jsElementAccess(
@@ -1529,7 +1532,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     const view = jsxElement(
       'View',
       'aaa',
-      jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
+      jsxAttributesFromMap({ 'data-uid': dataUIDExpression('aaa', 'include-in-printing') }),
       [cake],
     )
     const exported = utopiaJSXComponent(
@@ -1656,7 +1659,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code)),
     )
     const cakeAttributes: JSXAttributes = jsxAttributesFromMap({
-      'data-uid': jsExpressionValue('aab', emptyComments),
+      'data-uid': dataUIDExpression('aab', 'include-in-printing'),
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsPropertyAccess(
         jsElementAccess(
@@ -1690,7 +1693,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     const view = jsxElement(
       'View',
       'aaa',
-      jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
+      jsxAttributesFromMap({ 'data-uid': dataUIDExpression('aaa', 'include-in-printing') }),
       [cake],
     )
     const exported = utopiaJSXComponent(
@@ -1771,7 +1774,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code)),
     )
     const cakeAttributes: JSXAttributes = jsxAttributesFromMap({
-      'data-uid': jsExpressionValue('aab', emptyComments),
+      'data-uid': dataUIDExpression('aab', 'include-in-printing'),
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsIdentifier('spacing', '', expect.objectContaining({}), emptyComments),
       right: jsExpressionValue(20, emptyComments),
@@ -1781,7 +1784,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     const view = jsxElement(
       'View',
       'aaa',
-      jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
+      jsxAttributesFromMap({ 'data-uid': dataUIDExpression('aaa', 'include-in-printing') }),
       [cake],
     )
     const exported = utopiaJSXComponent(
@@ -1859,7 +1862,7 @@ export var whatever = (props) => {
       clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code)),
     )
     const viewAttributes: JSXAttributes = jsxAttributesFromMap({
-      'data-uid': jsExpressionValue('aaa', emptyComments),
+      'data-uid': dataUIDExpression('aaa', 'include-in-printing'),
       style: jsxAttributeNestedObjectSimple(
         jsxAttributesFromMap({
           backgroundColor: jsElementAccess(
@@ -2003,7 +2006,7 @@ export var whatever = (props) => {
       clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code)),
     )
     const viewAttributes: JSXAttributes = jsxAttributesFromMap({
-      'data-uid': jsExpressionValue('aaa', emptyComments),
+      'data-uid': dataUIDExpression('aaa', 'include-in-printing'),
       colors: jsExpressionNestedArray(
         [
           jsxArrayValue(jsExpressionValue('black', emptyComments), emptyComments),
@@ -2112,7 +2115,7 @@ export var whatever = (props) => {
       clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code)),
     )
     const viewAttributes: JSXAttributes = jsxAttributesFromMap({
-      'data-uid': jsExpressionValue('aaa', emptyComments),
+      'data-uid': dataUIDExpression('aaa', 'include-in-printing'),
       left: jsExpressionOtherJavaScript(
         [],
         'a + b',
@@ -2204,7 +2207,7 @@ export var whatever = (props) => {
       clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code)),
     )
     const viewAttributes: JSXAttributes = jsxAttributesFromMap({
-      'data-uid': jsExpressionValue('aaa', emptyComments),
+      'data-uid': dataUIDExpression('aaa', 'include-in-printing'),
       left: jsExpressionOtherJavaScript(
         [],
         'a ? b : c',
@@ -2298,7 +2301,7 @@ export var whatever = (props) => {
       clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code)),
     )
     const viewAttributes: JSXAttributes = jsxAttributesFromMap({
-      'data-uid': jsExpressionValue('aaa', emptyComments),
+      'data-uid': dataUIDExpression('aaa', 'include-in-printing'),
       left: jsExpressionOtherJavaScript(
         [],
         'a++',
@@ -2397,7 +2400,7 @@ export var whatever = (props) => {
       clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code)),
     )
     const viewAttributes: JSXAttributes = jsxAttributesFromMap({
-      'data-uid': jsExpressionValue('aaa', emptyComments),
+      'data-uid': dataUIDExpression('aaa', 'include-in-printing'),
       left: jsPropertyAccess(
         jsIdentifier('b', '', expect.objectContaining({}), emptyComments),
         'a',
@@ -2578,7 +2581,7 @@ export var whatever = (props) => {
       clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code)),
     )
     const viewAttributes: JSXAttributes = jsxAttributesFromMap({
-      'data-uid': jsExpressionValue('aaa', emptyComments),
+      'data-uid': dataUIDExpression('aaa', 'include-in-printing'),
       style: jsExpressionNestedObject(
         [
           jsxSpreadAssignment(
@@ -2702,7 +2705,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code)),
     )
     const cakeAttributes: JSXAttributes = jsxAttributesFromMap({
-      'data-uid': jsExpressionValue('aab', emptyComments),
+      'data-uid': dataUIDExpression('aab', 'include-in-printing'),
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       text: jsExpressionOtherJavaScript(
         [],
@@ -2723,7 +2726,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     const view = jsxElement(
       'View',
       'aaa',
-      jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
+      jsxAttributesFromMap({ 'data-uid': dataUIDExpression('aaa', 'include-in-printing') }),
       [cake],
     )
     const exported = utopiaJSXComponent(
@@ -2808,7 +2811,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code)),
     )
     const cakeAttributes: JSXAttributes = jsxAttributesFromMap({
-      'data-uid': jsExpressionValue('aab', emptyComments),
+      'data-uid': dataUIDExpression('aab', 'include-in-printing'),
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsExpressionOtherJavaScript(
         [],
@@ -2831,7 +2834,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     const view = jsxElement(
       'View',
       'aaa',
-      jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
+      jsxAttributesFromMap({ 'data-uid': dataUIDExpression('aaa', 'include-in-printing') }),
       [cake],
     )
     const exported = utopiaJSXComponent(
@@ -2915,7 +2918,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     const view = jsxElement(
       'View',
       'aaa',
-      jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
+      jsxAttributesFromMap({ 'data-uid': dataUIDExpression('aaa', 'include-in-printing') }),
       [],
     )
     const exported = utopiaJSXComponent(
@@ -3024,7 +3027,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code)),
     )
     const cakeAttributes: JSXAttributes = jsxAttributesFromMap({
-      'data-uid': jsExpressionValue('aab', emptyComments),
+      'data-uid': dataUIDExpression('aab', 'include-in-printing'),
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsExpressionOtherJavaScript(
         [],
@@ -3047,7 +3050,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     const view = jsxElement(
       'View',
       'aaa',
-      jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
+      jsxAttributesFromMap({ 'data-uid': dataUIDExpression('aaa', 'include-in-printing') }),
       [cake],
     )
     const exported = utopiaJSXComponent(
@@ -3220,14 +3223,14 @@ export var whatever = (props) => <View data-uid='aaa'>
       ],
     )
     const myCompAttributes: JSXAttributes = jsxAttributesFromMap({
-      'data-uid': jsExpressionValue('aab', emptyComments),
+      'data-uid': dataUIDExpression('aab', 'include-in-printing'),
       layout: jsExpressionValue({ left: 100 }, emptyComments),
     })
     const myCompElement = jsxElement('MyComp', 'aab', myCompAttributes, [])
     const view = jsxElement(
       'View',
       'aaa',
-      jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
+      jsxAttributesFromMap({ 'data-uid': dataUIDExpression('aaa', 'include-in-printing') }),
       [myCompElement],
     )
     const exported = utopiaJSXComponent(
@@ -3294,7 +3297,7 @@ export var whatever = props => (
     )
 
     const rootDivAttributes: JSXAttributes = jsxAttributesFromMap({
-      'data-uid': jsExpressionValue('abc', emptyComments),
+      'data-uid': dataUIDExpression('abc', 'include-in-printing'),
       style: jsExpressionNestedObject(
         [
           jsxPropertyAssignment(
@@ -3387,14 +3390,14 @@ export var whatever = props => (
     )
 
     const myCompAttributes: JSXAttributes = jsxAttributesFromMap({
-      'data-uid': jsExpressionValue('aab', emptyComments),
+      'data-uid': dataUIDExpression('aab', 'include-in-printing'),
       layout: jsExpressionValue({ left: 100 }, emptyComments),
     })
     const myCompElement = jsxElement('MyComp', 'aab', myCompAttributes, [])
     const view = jsxElement(
       'View',
       'aaa',
-      jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
+      jsxAttributesFromMap({ 'data-uid': dataUIDExpression('aaa', 'include-in-printing') }),
       [myCompElement],
     )
     const whatever = utopiaJSXComponent(
@@ -3508,7 +3511,7 @@ export var whatever = (props) => <View data-uid='aaa'>
         'cake',
         'aab',
         jsxAttributesFromMap({
-          'data-uid': jsExpressionValue('aab', emptyComments),
+          'data-uid': dataUIDExpression('aab', 'include-in-printing'),
           style: jsxAttributeNestedObjectSimple(
             jsxAttributesFromMap({
               backgroundColor: jsExpressionValue('red', emptyComments),
@@ -3535,7 +3538,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       jsxElement(
         'View',
         'aaa',
-        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
+        jsxAttributesFromMap({ 'data-uid': dataUIDExpression('aaa', 'include-in-printing') }),
         [cake],
       ),
     )
@@ -3596,7 +3599,7 @@ export var whatever = () => <View data-uid='aaa'>
         'cake',
         'aab',
         jsxAttributesFromMap({
-          'data-uid': jsExpressionValue('aab', emptyComments),
+          'data-uid': dataUIDExpression('aab', 'include-in-printing'),
           style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
         }),
         [],
@@ -3606,7 +3609,7 @@ export var whatever = () => <View data-uid='aaa'>
       jsxElement(
         'View',
         'aaa',
-        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
+        jsxAttributesFromMap({ 'data-uid': dataUIDExpression('aaa', 'include-in-printing') }),
         [cake],
       ),
     )
@@ -3669,7 +3672,7 @@ export var App = (props) => <View data-uid='bbb'>
       jsxElement(
         'View',
         'bbb',
-        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('bbb', emptyComments) }),
+        jsxAttributesFromMap({ 'data-uid': dataUIDExpression('bbb', 'include-in-printing') }),
         [emptyBrackets],
       ),
     )
@@ -3726,7 +3729,7 @@ export var App = (props) => <View data-uid='bbb'>
         'cake',
         'aab',
         jsxAttributesFromMap({
-          'data-uid': jsExpressionValue('aab', emptyComments),
+          'data-uid': dataUIDExpression('aab', 'include-in-printing'),
           style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
           left: jsExpressionValue(10, emptyComments),
           name: jsExpressionValue('test', emptyComments),
@@ -3738,7 +3741,7 @@ export var App = (props) => <View data-uid='bbb'>
       jsxElement(
         'View',
         'aaa',
-        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
+        jsxAttributesFromMap({ 'data-uid': dataUIDExpression('aaa', 'include-in-printing') }),
         [cake],
       ),
     )
@@ -3789,7 +3792,7 @@ export var App = (props) => <View data-uid='bbb'>
 
   it('parses back and forth as a var, with some arbitrary javascript', () => {
     const cakeAttributes: JSXAttributes = jsxAttributesFromMap({
-      'data-uid': jsExpressionValue('cake', emptyComments),
+      'data-uid': dataUIDExpression('cake', 'include-in-printing'),
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsExpressionOtherJavaScript(
         [],
@@ -3812,7 +3815,7 @@ export var App = (props) => <View data-uid='bbb'>
     const view = jsxElement(
       'View',
       'view',
-      jsxAttributesFromMap({ 'data-uid': jsExpressionValue('view', emptyComments) }),
+      jsxAttributesFromMap({ 'data-uid': dataUIDExpression('view', 'include-in-printing') }),
       [cake],
     )
     const exported = utopiaJSXComponent(
@@ -3957,7 +3960,7 @@ var spacing = 20`
     const detailOfExports = [exportFunction('whatever')]
     const printedCode = printCode(
       '/index.js',
-      printCodeOptions(false, true, true, false, true),
+      printCodeOptions(false, true, true, 'dont-strip', true),
       imports,
       [...topLevelElements],
       null,
@@ -3983,7 +3986,7 @@ var spacing = 20`
         'cake',
         'aab',
         jsxAttributesFromMap({
-          'data-uid': jsExpressionValue('aab', emptyComments),
+          'data-uid': dataUIDExpression('aab', 'include-in-printing'),
           style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
         }),
         [],
@@ -3993,7 +3996,7 @@ var spacing = 20`
       jsxElement(
         'View',
         'aaa',
-        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
+        jsxAttributesFromMap({ 'data-uid': dataUIDExpression('aaa', 'include-in-printing') }),
         [cake],
       ),
     )
@@ -4122,7 +4125,7 @@ export var whatever = props => {
         'cake',
         'aaa',
         jsxAttributesFromMap({
-          'data-uid': jsExpressionValue('aaa', emptyComments),
+          'data-uid': dataUIDExpression('aaa', 'include-in-printing'),
           style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
         }),
         [],
@@ -4132,7 +4135,7 @@ export var whatever = props => {
       jsxElement(
         'View',
         'aab',
-        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aab', emptyComments) }),
+        jsxAttributesFromMap({ 'data-uid': dataUIDExpression('aab', 'include-in-printing') }),
         [cake],
       ),
     )
@@ -4186,7 +4189,7 @@ export var whatever = props => {
         'cake',
         'aaa',
         jsxAttributesFromMap({
-          'data-uid': jsExpressionValue('aaa', emptyComments),
+          'data-uid': dataUIDExpression('aaa', 'include-in-printing'),
           style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
           trueProp: jsExpressionValue(true, emptyComments),
           falseProp: jsExpressionValue(false, emptyComments),
@@ -4200,7 +4203,7 @@ export var whatever = props => {
       jsxElement(
         'View',
         'aab',
-        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aab', emptyComments) }),
+        jsxAttributesFromMap({ 'data-uid': dataUIDExpression('aab', 'include-in-printing') }),
         [cake],
       ),
     )
@@ -4253,7 +4256,7 @@ export var whatever = props => {
       'cake',
       'aab',
       jsxAttributesFromMap({
-        'data-uid': jsExpressionValue('aab', emptyComments),
+        'data-uid': dataUIDExpression('aab', 'include-in-printing'),
         style: jsxAttributeNestedObjectSimple(
           jsxAttributesFromMap({
             backgroundColor: jsExpressionValue('red', emptyComments),
@@ -4302,7 +4305,7 @@ export var whatever = props => {
     const view = jsxElement(
       'View',
       'aaa',
-      jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
+      jsxAttributesFromMap({ 'data-uid': dataUIDExpression('aaa', 'include-in-printing') }),
       [cake],
     )
     const exported = utopiaJSXComponent(
@@ -4463,14 +4466,14 @@ export var whatever = props => {
               'View',
               'aaa',
               jsxAttributesFromMap({
-                'data-uid': jsExpressionValue('aaa', emptyComments),
+                'data-uid': dataUIDExpression('aaa', 'include-in-printing'),
               }),
               [
                 jsxElement(
                   'cake',
                   'aab',
                   jsxAttributesFromMap({
-                    'data-uid': jsExpressionValue('aab', emptyComments),
+                    'data-uid': dataUIDExpression('aab', 'include-in-printing'),
                     left: jsExpressionOtherJavaScript(
                       [],
                       'test(100)',
@@ -4541,14 +4544,14 @@ export var whatever = props => {
             'View',
             'aaa',
             jsxAttributesFromMap({
-              'data-uid': jsExpressionValue('aaa', emptyComments),
+              'data-uid': dataUIDExpression('aaa', 'include-in-printing'),
             }),
             [
               jsxElement(
                 'cake',
                 'aab',
                 jsxAttributesFromMap({
-                  'data-uid': jsExpressionValue('aab', emptyComments),
+                  'data-uid': dataUIDExpression('aab', 'include-in-printing'),
                   left: jsExpressionOtherJavaScript(
                     [],
                     'test(100)',
@@ -4604,7 +4607,7 @@ export var whatever = props => {
             'Storyboard',
             BakedInStoryboardUID,
             jsxAttributesFromMap({
-              'data-uid': jsExpressionValue(BakedInStoryboardUID, emptyComments),
+              'data-uid': dataUIDExpression(BakedInStoryboardUID, 'include-in-printing'),
             }),
             [],
           ),
@@ -4671,7 +4674,7 @@ export var App = props => {
         'View',
         'aaa',
         jsxAttributesFromMap({
-          'data-uid': jsExpressionValue('aaa', emptyComments),
+          'data-uid': dataUIDExpression('aaa', 'include-in-printing'),
         }),
         [
           jsxMapExpression(
@@ -4698,7 +4701,9 @@ export var App = props => {
                 abc: jsxElement(
                   'View',
                   'abc',
-                  jsxAttributesFromMap({ 'data-uid': jsExpressionValue('abc', emptyComments) }),
+                  jsxAttributesFromMap({
+                    'data-uid': dataUIDExpression('abc', 'include-in-printing'),
+                  }),
                   [],
                 ),
               },
@@ -4759,7 +4764,7 @@ export var App = props => {
         'View',
         'aaa',
         jsxAttributesFromMap({
-          'data-uid': jsExpressionValue('aaa', emptyComments),
+          'data-uid': dataUIDExpression('aaa', 'include-in-printing'),
         }),
         [jsxTextBlock('cake')],
       ),
@@ -4814,7 +4819,7 @@ export var App = props => {
         'View',
         'aaa',
         jsxAttributesFromMap({
-          'data-uid': jsExpressionValue('aaa', emptyComments),
+          'data-uid': dataUIDExpression('aaa', 'include-in-printing'),
         }),
         [
           jsxMapExpression(
@@ -4844,7 +4849,9 @@ export var App = props => {
                 abc: jsxElement(
                   'div',
                   'abc',
-                  jsxAttributesFromMap({ 'data-uid': jsExpressionValue('abc', emptyComments) }),
+                  jsxAttributesFromMap({
+                    'data-uid': dataUIDExpression('abc', 'include-in-printing'),
+                  }),
                   [],
                 ),
               },
@@ -4889,7 +4896,7 @@ export var App = props => {
         'View',
         'aaa',
         jsxAttributesFromMap({
-          'data-uid': jsExpressionValue('aaa', emptyComments),
+          'data-uid': dataUIDExpression('aaa', 'include-in-printing'),
         }),
         [
           jsxMapExpression(
@@ -4919,7 +4926,9 @@ export var App = props => {
                 abc: jsxElement(
                   'View',
                   'abc',
-                  jsxAttributesFromMap({ 'data-uid': jsExpressionValue('abc', emptyComments) }),
+                  jsxAttributesFromMap({
+                    'data-uid': dataUIDExpression('abc', 'include-in-printing'),
+                  }),
                   [],
                 ),
               },
@@ -5008,7 +5017,7 @@ export var App = props => {
   );
 };`
     const actualResult = simplifyParsedTextFileAttributes(
-      clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code)),
+      clearParseResultSourceMapsUniqueIDsAndEmptyBlocks(testParseCode(code)),
     )
     const ellipse = clearJSXElementChildUniqueIDs(
       jsxElement(
@@ -5020,7 +5029,7 @@ export var App = props => {
             { height: 100, left: 150, width: 100, top: 540 },
             emptyComments,
           ),
-          'data-uid': jsExpressionValue('bbb', emptyComments),
+          'data-uid': dataUIDExpression('bbb', 'include-in-printing'),
         }),
         [],
       ),
@@ -5035,7 +5044,7 @@ export var App = props => {
             { height: 100, left: 150, width: 100, top: 540 },
             emptyComments,
           ),
-          'data-uid': jsExpressionValue('ccc', emptyComments),
+          'data-uid': dataUIDExpression('ccc', 'include-in-printing'),
         }),
         [],
       ),
@@ -5045,7 +5054,7 @@ export var App = props => {
         'MyCustomComponent',
         'ddd',
         jsxAttributesFromMap({
-          'data-uid': jsExpressionValue('ddd', emptyComments),
+          'data-uid': dataUIDExpression('ddd', 'include-in-printing'),
         }),
         [ellipse, rectangle],
       ),
@@ -5060,7 +5069,7 @@ export var App = props => {
             emptyComments,
           ),
           layout: jsExpressionValue({ height: 200, left: 80, width: 100, top: 145 }, emptyComments),
-          'data-uid': jsExpressionValue('ggg', emptyComments),
+          'data-uid': dataUIDExpression('ggg', 'include-in-printing'),
         }),
         [],
       ),
@@ -5073,11 +5082,11 @@ export var App = props => {
       ['React', 'View', JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({}),
       {
-        fc7: jsxElement(
+        cf0: jsxElement(
           'View',
           '',
           jsxAttributesFromMap({
-            'data-uid': jsExpressionValue('fc7', emptyComments, ''),
+            'data-uid': dataUIDExpression('cf0', 'include-in-printing'),
           }),
           [
             jsPropertyAccess(
@@ -5184,7 +5193,7 @@ export var App = props => {
             }),
             emptyComments,
           ),
-          'data-uid': jsExpressionValue('aaa', emptyComments),
+          'data-uid': dataUIDExpression('aaa', 'include-in-printing'),
         }),
         [myCustomComponent, view],
       ),
@@ -5263,7 +5272,9 @@ export var App = props => {
     )
     const expectedResult = parseSuccess(
       sampleImportsForTests,
-      expect.arrayContaining([component].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
+      expect.arrayContaining(
+        [component].map(clearTopLevelElementSourceMapsUniqueIDsAndEmptyBlocks),
+      ),
       expect.objectContaining({}),
       null,
       null,
@@ -5306,7 +5317,7 @@ export var App = props => {
         'View',
         'aaa',
         jsxAttributesFromMap({
-          'data-uid': jsExpressionValue('aaa', emptyComments),
+          'data-uid': dataUIDExpression('aaa', 'include-in-printing'),
           booleanProperty: jsExpressionValue(true, emptyComments),
         }),
         [],
@@ -5349,7 +5360,7 @@ export var whatever = props => {
       'View',
       'aaa',
       jsxAttributesFromMap({
-        'data-uid': jsExpressionValue('aaa', emptyComments),
+        'data-uid': dataUIDExpression('aaa', 'include-in-printing'),
         booleanProperty: jsExpressionValue(true, emptyComments),
       }),
       [],
@@ -5400,7 +5411,7 @@ export var whatever = props => {
       'View',
       'aaa',
       jsxAttributesFromMap({
-        'data-uid': jsExpressionValue('aaa', emptyComments),
+        'data-uid': dataUIDExpression('aaa', 'include-in-printing'),
         booleanProperty: jsExpressionValue(false, emptyComments),
       }),
       [],
@@ -5511,7 +5522,7 @@ export var whatever = props => {
     const view = jsxElement(
       'div',
       'aaa',
-      jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
+      jsxAttributesFromMap({ 'data-uid': dataUIDExpression('aaa', 'include-in-printing') }),
       [],
     )
     const exported = utopiaJSXComponent(
@@ -5628,7 +5639,7 @@ export var whatever = props => {
     const view = jsxElement(
       'div',
       'aaa',
-      jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
+      jsxAttributesFromMap({ 'data-uid': dataUIDExpression('aaa', 'include-in-printing') }),
       [innerBlock],
     )
     const exported = utopiaJSXComponent(
@@ -5756,7 +5767,7 @@ export var whatever = props => {
       jsxElement(
         'div',
         'aaa',
-        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
+        jsxAttributesFromMap({ 'data-uid': dataUIDExpression('aaa', 'include-in-printing') }),
         [arbitraryBlock],
       ),
     )
@@ -5923,7 +5934,7 @@ export var whatever = props => {
       jsxElement(
         'div',
         'aaa',
-        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
+        jsxAttributesFromMap({ 'data-uid': dataUIDExpression('aaa', 'include-in-printing') }),
         [arbitraryBlock],
       ),
     )
@@ -5962,7 +5973,7 @@ export var whatever = props => {
     const view = jsxElement(
       'svg',
       'abc',
-      jsxAttributesFromMap({ 'data-uid': jsExpressionValue('abc', emptyComments) }),
+      jsxAttributesFromMap({ 'data-uid': dataUIDExpression('abc', 'include-in-printing') }),
       [],
     )
     const exported = utopiaJSXComponent(
@@ -6058,12 +6069,12 @@ export var whatever2 = (props) => <View data-uid='aaa'>
         parseResult,
       )
     }
-    const printedArbitrary = printedProjectContentArbitrary(false)
+    const printedArbitrary = printedProjectContentArbitrary('dont-strip')
     const dataUIDProperty = FastCheck.property(printedArbitrary, checkDataUIDsPopulated)
     FastCheck.assert(dataUIDProperty, { verbose: true })
   })
   describe('check that the UIDs of everything in a file also align with the highlight bounds for that file', () => {
-    function checkElementUIDs(stripUIDs: boolean): void {
+    function checkElementUIDs(stripUIDs: StripUIDsBehavior): void {
       function checkElementUIDSMatchHighlightBounds(
         printedArbitraryProjects: [ArbitraryProject, ArbitraryProject],
       ): boolean {
@@ -6183,10 +6194,10 @@ export var whatever2 = (props) => <View data-uid='aaa'>
       FastCheck.assert(dataUIDProperty, { verbose: false, numRuns: 100 })
     }
     it('with UIDs left in', () => {
-      checkElementUIDs(false)
+      checkElementUIDs('dont-strip')
     })
     it('with UIDs stripped', () => {
-      checkElementUIDs(true)
+      checkElementUIDs('always-for-tests')
     })
   })
   it('when react is not imported treat components as arbitrary blocks', () => {
@@ -6241,7 +6252,7 @@ export var App = props => {
                 JS_IDENTIFIER - f38
           UNPARSED_CODE
           UTOPIA_JSX_COMPONENT - App
-            JSX_ELEMENT - MyComp - cc3
+            JSX_ELEMENT - MyComp - 3ab
               JSX_ELEMENT - h1 - 1ee
                 JSX_TEXT_BLOCK - c58"
         `)
@@ -6304,7 +6315,7 @@ export var App = props => {
                 JS_IDENTIFIER - f38
           UNPARSED_CODE
           UTOPIA_JSX_COMPONENT - App
-            JSX_ELEMENT - MyComp - e4f
+            JSX_ELEMENT - MyComp - bdd
               JSX_ELEMENT - div - 776"
         `)
 

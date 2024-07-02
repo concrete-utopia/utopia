@@ -187,7 +187,7 @@ export function replacePropsWithRuntimeValues<T extends JSXElementChild>(
         props: updatedProps,
       }
     },
-    setJSXValuesAtPaths(element.props, valuesAndPaths),
+    setJSXValuesAtPaths(element.props, valuesAndPaths, 'include-in-printing'),
   )
 }
 

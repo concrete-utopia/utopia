@@ -7,7 +7,7 @@ import type {
   ParsedTextFile,
   ProjectFile,
 } from '../../shared/project-file-types'
-import type { SteganographyMode } from '../parser-printer/parser-printer'
+import type { SteganographyMode, StripUIDsBehavior } from '../parser-printer/parser-printer'
 import type { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
 
 export type FileContent = string | TextFile
@@ -39,14 +39,14 @@ export interface PrintAndReparseFile {
   type: 'printandreparsefile'
   filename: string
   parseSuccess: ParseSuccess
-  stripUIDs: boolean
+  stripUIDs: StripUIDsBehavior
   versionNumber: number
 }
 
 export function createPrintAndReparseFile(
   filename: string,
   parseSuccess: ParseSuccess,
-  stripUIDs: boolean,
+  stripUIDs: StripUIDsBehavior,
   versionNumber: number,
 ): PrintAndReparseFile {
   return {

@@ -138,6 +138,7 @@ describe('parseCode', () => {
                 "trailingComments": Array [],
               },
               "key": "data-uid",
+              "printBehavior": "include-in-printing",
               "type": "JSX_ATTRIBUTES_ENTRY",
               "value": Object {
                 "comments": Object {
@@ -253,6 +254,7 @@ describe('parseCode', () => {
                 "trailingComments": Array [],
               },
               "key": "style",
+              "printBehavior": "include-in-printing",
               "type": "JSX_ATTRIBUTES_ENTRY",
               "value": Object {
                 "comments": Object {
@@ -315,6 +317,7 @@ describe('parseCode', () => {
                 "trailingComments": Array [],
               },
               "key": "ref",
+              "printBehavior": "include-in-printing",
               "type": "JSX_ATTRIBUTES_ENTRY",
               "value": Object {
                 "comments": Object {
@@ -333,6 +336,7 @@ describe('parseCode', () => {
                 "trailingComments": Array [],
               },
               "key": "data-uid",
+              "printBehavior": "include-in-printing",
               "type": "JSX_ATTRIBUTES_ENTRY",
               "value": Object {
                 "comments": Object {

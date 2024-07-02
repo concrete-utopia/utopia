@@ -458,6 +458,7 @@ describe('setJSXValueAtPath', () => {
         sampleJsxAttributes(),
         PP.create('top'),
         jsExpressionValue(55, emptyComments),
+        'include-in-printing',
       ),
     )
     const compiledProps = jsxAttributesToProps(
@@ -477,6 +478,7 @@ describe('setJSXValueAtPath', () => {
         sampleJsxAttributes(),
         PP.create('otherJs'),
         jsExpressionValue('shadowy', emptyComments),
+        'include-in-printing',
       ),
     )
     expect(getJSXAttributeForced(updatedAttributes, 'otherJs').type).toEqual('ATTRIBUTE_VALUE')
@@ -488,6 +490,7 @@ describe('setJSXValueAtPath', () => {
         sampleJsxAttributes(),
         PP.create('my', 'property', 'path'),
         jsExpressionValue('hello', emptyComments),
+        'include-in-printing',
       ),
     )
     const compiledProps = jsxAttributesToProps(
@@ -507,6 +510,7 @@ describe('setJSXValueAtPath', () => {
         sampleJsxAttributes(),
         PP.create('layout', 'left'),
         jsExpressionValue(2000, emptyComments),
+        'include-in-printing',
       ),
     )
     const compiledProps = jsxAttributesToProps(
@@ -526,6 +530,7 @@ describe('setJSXValueAtPath', () => {
         sampleJsxAttributes(),
         PP.create('layout', 'deep', 'path'),
         jsExpressionValue('easy!', emptyComments),
+        'include-in-printing',
       ),
     )
     const compiledProps = jsxAttributesToProps(
@@ -545,6 +550,7 @@ describe('setJSXValueAtPath', () => {
         sampleJsxAttributes(),
         PP.create('objectWithArray', 'array', 2),
         jsExpressionValue('wee', emptyComments),
+        'include-in-printing',
       ),
     )
     const compiledProps = jsxAttributesToProps(
@@ -564,6 +570,7 @@ describe('setJSXValueAtPath', () => {
         sampleJsxAttributes(),
         PP.create('objectWithNestedArray', 'array', 2),
         jsExpressionValue('wee', emptyComments),
+        'include-in-printing',
       ),
     )
     const compiledProps = jsxAttributesToProps(
@@ -583,6 +590,7 @@ describe('setJSXValueAtPath', () => {
         sampleJsxAttributes(),
         PP.create('objectWithNestedArray', 'array', '2'),
         jsExpressionValue('wee', emptyComments),
+        'include-in-printing',
       ),
     )
     const compiledProps = jsxAttributesToProps(
@@ -602,6 +610,7 @@ describe('setJSXValueAtPath', () => {
         sampleJsxAttributes(),
         PP.create('objectWithNestedArray', 'array', 'wee'),
         jsExpressionValue('wee', emptyComments),
+        'include-in-printing',
       ),
     )
     const compiledProps = jsxAttributesToProps(
@@ -622,6 +631,7 @@ describe('setJSXValueAtPath', () => {
           sampleJsxAttributes(),
           PP.create('style', 'backgroundColor', 'red'),
           jsExpressionValue('wee', emptyComments),
+          'include-in-printing',
         ),
       )
       const compiledProps = jsxAttributesToProps(
@@ -641,6 +651,7 @@ describe('setJSXValueAtPath', () => {
         sampleJsxAttributes(),
         PP.create('style', 'backgroundColor'),
         jsExpressionValue('wee', emptyComments),
+        'include-in-printing',
       ),
     )
     const compiledProps = jsxAttributesToProps(
@@ -660,6 +671,7 @@ describe('setJSXValueAtPath', () => {
         sampleJsxAttributes(),
         PP.create('my', 'property', 'path'),
         jsExpressionValue('hello', emptyComments),
+        'include-in-printing',
       ),
     )
     const updatedAttributes2 = forceRight(
@@ -667,6 +679,7 @@ describe('setJSXValueAtPath', () => {
         updatedAttributes,
         PP.create('my', 'property', 'other', 'path'),
         jsExpressionValue('hola', emptyComments),
+        'include-in-printing',
       ),
     )
     const compiledProps = jsxAttributesToProps(
@@ -687,6 +700,7 @@ describe('setJSXValueAtPath', () => {
         sampleJsxAttributes(),
         PP.create('style', 'backgroundColor'),
         jsExpressionValue('blue', emptyComments),
+        'include-in-printing',
       ),
     )
     const compiledProps = jsxAttributesToProps(
@@ -705,18 +719,21 @@ describe('setJSXValueAtPath', () => {
       sampleJsxAttributes(),
       PP.create('style', 'shadow', 'left'),
       jsExpressionValue('shadowy', emptyComments),
+      'include-in-printing',
     )
 
     const result2 = setJSXValueAtPath(
       sampleJsxAttributes(),
       PP.create('style', 'boxShadow', '0'),
       jsExpressionValue('shadowy', emptyComments),
+      'include-in-printing',
     )
 
     const result3 = setJSXValueAtPath(
       sampleJsxAttributes(),
       PP.create('otherJs', 'wrongProp'),
       jsExpressionValue('shadowy', emptyComments),
+      'include-in-printing',
     )
 
     expect(result1.type).toBe('LEFT')
@@ -747,6 +764,7 @@ describe('setJSXValueAtPath', () => {
         attributes,
         PP.create('style', 'paddingLeft'),
         jsExpressionValue(100, emptyComments),
+        'include-in-printing',
       ),
     )
     const expectedValue = mapEither(
@@ -815,6 +833,7 @@ describe('setJSXValueAtPath', () => {
         attributes,
         PP.create('style', 'paddingLeft'),
         jsExpressionValue(100, emptyComments),
+        'include-in-printing',
       ),
     )
 
@@ -846,7 +865,12 @@ describe('setJSXValueAtPath', () => {
 
   it('creates an array if the property path part is a number', () => {
     const updatedAttributes = forceRight(
-      setJSXValueAtPath([], PP.create('top', 0), jsExpressionValue(55, emptyComments)),
+      setJSXValueAtPath(
+        [],
+        PP.create('top', 0),
+        jsExpressionValue(55, emptyComments),
+        'include-in-printing',
+      ),
     )
     const compiledProps = jsxAttributesToProps(
       { props: sampleParentProps },

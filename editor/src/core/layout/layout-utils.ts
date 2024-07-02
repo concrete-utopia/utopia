@@ -212,7 +212,7 @@ export function switchPinnedChildToFlex(
     ])
     // ...Add in the flex properties.
     const flexPropsAdded = flatMapEither(
-      (props) => setJSXValuesAtPaths(props, propsToAdd),
+      (props) => setJSXValuesAtPaths(props, propsToAdd, 'include-in-printing'),
       pinnedPropsRemoved,
     )
     if (isLeft(flexPropsAdded)) {
@@ -610,7 +610,7 @@ function removeFlexAndNonDefaultPinsAddPinnedPropsToComponent(
       propsToRemove.map((p) => stylePropPathMappingFn(p, propertyTarget)),
     )
     const pinnedPropsAdded = flatMapEither(
-      (props) => setJSXValuesAtPaths(props, propsToAdd),
+      (props) => setJSXValuesAtPaths(props, propsToAdd, 'include-in-printing'),
       flexPropsRemoved,
     )
     if (isLeft(pinnedPropsAdded)) {
@@ -663,7 +663,7 @@ function removeFlexAndAddPinnedPropsToComponent(
       propsToRemove.map((p) => stylePropPathMappingFn(p, propertyTarget)),
     )
     const pinnedPropsAdded = flatMapEither(
-      (props) => setJSXValuesAtPaths(props, propsToAdd),
+      (props) => setJSXValuesAtPaths(props, propsToAdd, 'include-in-printing'),
       flexPropsRemoved,
     )
     if (isLeft(pinnedPropsAdded)) {
@@ -711,7 +711,7 @@ function changePinsToDefaultOnComponent(
       propsToRemove.map((p) => stylePropPathMappingFn(p, propertyTarget)),
     )
     const pinnedPropsAdded = flatMapEither(
-      (props) => setJSXValuesAtPaths(props, propsToAdd),
+      (props) => setJSXValuesAtPaths(props, propsToAdd, 'include-in-printing'),
       pinPropsRemoved,
     )
     if (isLeft(pinnedPropsAdded)) {
@@ -775,6 +775,7 @@ export function roundAttributeLayoutValues(
                 workingAttributes,
                 propertyToRound,
                 jsExpressionValue(rounded, emptyComments),
+                'include-in-printing',
               )
               // Should we (unexpectedly) be unable to set the value, default the result.
               return defaultEither(workingAttributes, withValueSet)

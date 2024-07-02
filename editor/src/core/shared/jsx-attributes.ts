@@ -85,6 +85,7 @@ import {
 } from './jsx-attribute-utils'
 import * as EP from './element-path'
 import { render } from 'enzyme'
+import type { PrintBehavior } from 'utopia-shared/src/types'
 
 export type AnyMap = { [key: string]: any }
 
@@ -502,10 +503,11 @@ export function valueAtPath(path: PropertyPath, value: JSExpression): ValueAtPat
 export function setJSXValuesAtPaths(
   attributes: JSXAttributes,
   valuesAtPaths: Array<ValueAtPath>,
+  printBehavior: PrintBehavior,
 ): Either<string, JSXAttributes> {
   return reduceWithEither(
     (working, { path, value }) => {
-      return setJSXValueAtPath(working, path, value)
+      return setJSXValueAtPath(working, path, value, printBehavior)
     },
     attributes,
     valuesAtPaths,
@@ -686,7 +688,12 @@ export function unsetJSXValueAtPath(
           tailPath,
         )
         return mapEither((updated) => {
-          return setJSXAttributesAttribute(attributes, attributeKeyAsString, updated)
+          return setJSXAttributesAttribute(
+            attributes,
+            attributeKeyAsString,
+            updated,
+            'include-in-printing',
+          )
         }, updatedAttribute)
       }
   }

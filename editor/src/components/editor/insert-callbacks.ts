@@ -282,7 +282,7 @@ function attributesWithDefaults(initialProps: JSXAttributes, defaultSize: Size):
     ),
   )
 
-  return setJSXAttributesAttribute(initialProps, 'style', styleWithHeight)
+  return setJSXAttributesAttribute(initialProps, 'style', styleWithHeight, 'include-in-printing')
 }
 
 export function elementFromInsertMenuItem(
@@ -299,6 +299,7 @@ export function elementFromInsertMenuItem(
         attributes,
         'data-uid',
         jsExpressionValue(uid, emptyComments),
+        'skip-printing',
       )
 
       return jsxElement(element.name, uid, attributesWithUid, element.children)

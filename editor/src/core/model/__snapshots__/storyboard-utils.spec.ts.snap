@@ -40,6 +40,7 @@ Array [
                     "trailingComments": Array [],
                   },
                   "key": "data-uid",
+                  "printBehavior": "include-in-printing",
                   "type": "JSX_ATTRIBUTES_ENTRY",
                   "value": Object {
                     "comments": Object {
@@ -69,6 +70,7 @@ Array [
                 "trailingComments": Array [],
               },
               "key": "data-uid",
+              "printBehavior": "include-in-printing",
               "type": "JSX_ATTRIBUTES_ENTRY",
               "value": Object {
                 "comments": Object {
@@ -86,6 +88,7 @@ Array [
                 "trailingComments": Array [],
               },
               "key": "style",
+              "printBehavior": "include-in-printing",
               "type": "JSX_ATTRIBUTES_ENTRY",
               "value": Object {
                 "comments": Object {
@@ -121,6 +124,7 @@ Array [
             "trailingComments": Array [],
           },
           "key": "data-uid",
+          "printBehavior": "include-in-printing",
           "type": "JSX_ATTRIBUTES_ENTRY",
           "value": Object {
             "comments": Object {

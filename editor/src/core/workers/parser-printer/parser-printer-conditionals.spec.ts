@@ -143,7 +143,7 @@ describe('Conditonals JSX printer', () => {
 
       const printedCode = printCode(
         'code.tsx',
-        printCodeOptions(false, true, true, false),
+        printCodeOptions(false, true, true, 'dont-strip'),
         parseResult.imports,
         parseResult.topLevelElements,
         parseResult.jsxFactoryFunction,

@@ -3293,7 +3293,7 @@ describe('Navigator', () => {
         'regular-utopia-storyboard-uid/scene-aaa',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62', // <- moved to before `firstdiv`
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62/7b7~~~1',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62/ccc~~~1',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
@@ -3369,7 +3369,7 @@ describe('Navigator', () => {
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62', // <- moved to after `firstdiv`
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62/7b7~~~1',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62/ccc~~~1',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
@@ -3449,7 +3449,7 @@ describe('Navigator', () => {
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62', // <- moved to after the last sibling `notdrag` under its parent
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62/7b7~~~1',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62/ccc~~~1',
         'regular-utopia-storyboard-uid/scene-aaa/parentsibling',
       ])
     })
@@ -3530,7 +3530,7 @@ describe('Navigator', () => {
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv/b62', // <- moved to under the first sibling
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv/b62/7b7~~~1',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv/b62/ccc~~~1',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
@@ -3594,7 +3594,7 @@ describe('Navigator', () => {
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62',
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62/7b7~~~1',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62/ccc~~~1',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
         'regular-utopia-storyboard-uid/scene-aaa/parentsibling',
       ])
@@ -3612,7 +3612,7 @@ describe('Navigator', () => {
       const dragMeElementRect = dragMeElement.getBoundingClientRect()
       const dragMeElementCenter = getDomRectCenter(dragMeElementRect)
       const notDraggableDivElement = await renderResult.renderedDOM.findByTestId(
-        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/b62/7b7~~~1`,
+        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/b62/ccc~~~1`,
       )
       const notDraggableDivElementRect = notDraggableDivElement.getBoundingClientRect()
       const notDraggableDivElementCenter = getDomRectCenter(notDraggableDivElementRect)
@@ -3639,7 +3639,7 @@ describe('Navigator', () => {
         dragElementWithDNDEvents(
           renderResult,
           `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
-          `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/b62/7b7~~~1`,
+          `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/b62/ccc~~~1`,
           windowPoint(dragMeElementCenter),
           dragDelta,
         ),
@@ -3656,7 +3656,7 @@ describe('Navigator', () => {
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62',
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62/7b7~~~1',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/b62/ccc~~~1',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
         'regular-utopia-storyboard-uid/scene-aaa/parentsibling',
       ])
@@ -5505,7 +5505,7 @@ describe('Navigator row order', () => {
         'conditional-clause-sb/group/text-expr-cond-wrapper/text-expr-cond-false-case',
         'synthetic-sb/group/text-expr-cond-wrapper/text-expr-cond/e4a-element-e4a',
         'regular-sb/group/zero-length-map-wrapper',
-        'regular-sb/group/zero-length-map-wrapper/e23',
+        'regular-sb/group/zero-length-map-wrapper/a47',
       ],
     )
     expect(
@@ -5543,7 +5543,7 @@ describe('Navigator row order', () => {
       'conditional-clause-sb/group/text-expr-cond-wrapper/text-expr-cond-false-case',
       'synthetic-sb/group/text-expr-cond-wrapper/text-expr-cond/e4a-element-e4a',
       'regular-sb/group/zero-length-map-wrapper',
-      'regular-sb/group/zero-length-map-wrapper/e23',
+      'regular-sb/group/zero-length-map-wrapper/a47',
     ])
   })
 

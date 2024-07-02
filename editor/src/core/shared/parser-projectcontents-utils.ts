@@ -34,6 +34,7 @@ import { fastForEach } from '../../core/shared/utils'
 import { codeNeedsPrinting, codeNeedsParsing } from '../../core/workers/common/project-file-utils'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { isSteganographyEnabled } from './stegano-text'
+import type { StripUIDsBehavior } from '../workers/parser-printer/parser-printer'
 
 export function parseResultToWorkerUpdates(fileResult: ParseOrPrintResult): WorkerUpdate {
   switch (fileResult.type) {
@@ -144,7 +145,8 @@ export function getFilesToUpdate(
   let filesToUpdate: Array<ParseOrPrint> = []
   let forciblyParsedFiles: Array<string> = []
   let existingUIDs: Set<string> = emptySet()
-  const shouldStripUids = PRODUCTION_ENV || !isFeatureEnabled('Debug - Print UIDs')
+  const shouldStripUids: StripUIDsBehavior =
+    PRODUCTION_ENV || !isFeatureEnabled('Debug - Print UIDs') ? 'strip-for-printing' : 'dont-strip'
   walkContentsTree(projectContents, (fullPath, file) => {
     if (isTextFile(file)) {
       if (

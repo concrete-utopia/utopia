@@ -276,10 +276,12 @@ export function fixUtopiaElement(
         mappings.push({ originalUID: uidProp.uid, newUID: newUIDForProp })
       }
       uniqueIDsMutable.add(newUIDForProp)
+
       const elementPropsWithNewUID = setJSXValueAtPath(
         fixedProps,
         UtopiaIDPropertyPath,
         jsExpressionValue(newUID, emptyComments, newUIDForProp),
+        'skip-printing',
       )
 
       return foldEither(
@@ -759,7 +761,12 @@ export function setUtopiaID(element: JSXElementChild, uid: string): JSXElementCh
     return jsxElement(
       element.name,
       uid,
-      setJSXAttributesAttribute(element.props, 'data-uid', jsExpressionValue(uid, emptyComments)),
+      setJSXAttributesAttribute(
+        element.props,
+        'data-uid',
+        jsExpressionValue(uid, emptyComments),
+        'skip-printing',
+      ),
       element.children,
     )
   } else if (isUtopiaJSXFragment(element)) {
