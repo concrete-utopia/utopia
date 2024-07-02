@@ -59,7 +59,9 @@ import type {
 } from '../../controls/select-mode/controls-common'
 import {
   canShowCanvasPropControl,
+  cssNumberWithRenderedValue,
   indicatorMessage,
+  measurementBasedOnOtherMeasurement,
   offsetMeasurementByDelta,
   shouldShowControls,
   unitlessCSSNumberWithRenderedValue,
@@ -91,7 +93,7 @@ import {
 } from '../../../../core/shared/jsx-attribute-utils'
 import { getClassNameAttribute } from '../../../../core/tailwind/tailwind-options'
 import { ClassNameToAttributes } from '../../../../core/third-party/tailwind-defaults'
-import type { CSSNumber } from '../../../inspector/common/css-utils'
+import { cssNumber, type CSSNumber } from '../../../inspector/common/css-utils'
 import { SnappingThreshold } from '../../controls/guideline-helpers'
 
 const StylePaddingProp = stylePropPathMappingFn('padding', styleStringInArray)
@@ -201,68 +203,25 @@ export const setPaddingStrategyTailwind: CanvasStrategyFactory = (
       }
 
       const edgePiece = interactionSession.activeControl.edgePiece
-      const drag = interactionSession.interactionData.drag ?? canvasVector({ x: 0, y: 0 })
       const padding = simplePaddingFromMetadata(canvasState.startingMetadata, selectedElement)
       const paddingPropInteractedWith = paddingPropForEdge(edgePiece)
-      const currentPadding = padding[paddingPropInteractedWith]?.renderedValuePx ?? 0
-      const rawDelta = deltaFromEdge(drag, edgePiece)
-      const maxedDelta = Math.max(-currentPadding, rawDelta)
-      const precision = precisionFromModifiers(interactionSession.interactionData.modifiers)
-      const newPaddingEdgeUnsnapped = offsetMeasurementByDelta(
-        padding[paddingPropInteractedWith] ?? unitlessCSSNumberWithRenderedValue(maxedDelta),
-        delta,
-        precision,
-      )
 
-      const {
-        snappedValue: newPaddingEdgeSnapped,
-        didSnap,
-      }: { snappedValue: CSSNumberWithRenderedValue; didSnap: boolean } = (() => {
-        const currentValuePx = newPaddingEdgeUnsnapped.renderedValuePx
-        const currentValueOther = newPaddingEdgeUnsnapped.value.value
+      const { snappedPadding, didSnapToTailwindClass, shouldDeletePadding } =
+        getSnappedPaddingValue(
+          padding[paddingPropInteractedWith] ?? unitlessCSSNumberWithRenderedValue(0),
+          precisionFromModifiers(interactionSession.interactionData.modifiers),
+          delta,
+        )
 
-        const snapPointsInPx = Object.values(getTailwindSnapPointsInPixelsForSection('padding'))
-
-        function snapToNearestPointFromArray(
-          valuetoSnap: number,
-          snapPoints: number[],
-        ): { snappedValue: number; delta: number; shouldSnap: boolean } {
-          const closestSnapPoint = snapPoints.reduce(
-            (closest, current) => {
-              const currentDelta = Math.abs(current - valuetoSnap)
-              if (currentDelta < closest.delta) {
-                return { snap: current, delta: currentDelta }
-              } else {
-                return closest
-              }
-            },
-            { snap: snapPoints[0], delta: Math.abs(snapPoints[0] - valuetoSnap) },
-          )
-
-          return {
-            snappedValue: closestSnapPoint.snap,
-            delta: closestSnapPoint.delta,
-            shouldSnap: closestSnapPoint.delta < SnappingThreshold,
-          }
-        }
-
-        const snapResult = snapToNearestPointFromArray(currentValuePx, snapPointsInPx)
-
-        const newValuePx = snapResult.shouldSnap ? snapResult.snappedValue : currentValuePx
-        const newValueOther = (currentValueOther / currentValuePx) * newValuePx
-        return {
-          snappedValue: {
-            value: { value: newValueOther, unit: newPaddingEdgeUnsnapped.value.unit },
-            renderedValuePx: newValuePx,
-          },
-          didSnap: snapResult.shouldSnap,
-        }
-      })()
+      const snappedPaddingConvertedToPxOrRem =
+        didSnapToTailwindClass && snappedPadding.value.unit === 'rem'
+          ? snappedPadding
+          : unitlessCSSNumberWithRenderedValue(snappedPadding.renderedValuePx)
 
       const newPaddingMaxed = adjustPaddingsWithAdjustMode(
         paddingAdjustMode(interactionSession.interactionData.modifiers),
         paddingPropInteractedWith,
-        newPaddingEdgeSnapped,
+        snappedPaddingConvertedToPxOrRem,
         padding,
       )
 
@@ -358,12 +317,12 @@ export const setPaddingStrategyTailwind: CanvasStrategyFactory = (
       )
 
       const commands =
-        lifecycle === 'mid-interaction' || didSnap == false
+        lifecycle === 'mid-interaction' || didSnapToTailwindClass == false
           ? midInteractionCommands
           : [endInteractionCommands]
 
       // "tearing off" padding
-      if (newPaddingEdgeSnapped.renderedValuePx < PaddingTearThreshold) {
+      if (shouldDeletePadding) {
         return strategyApplicationResult([
           ...basicCommands,
           deleteProperties('always', selectedElement, [
@@ -538,23 +497,16 @@ function paddingValueIndicatorProps(
     return null
   }
 
-  const updatedPaddingMeasurement = offsetMeasurementByDelta(
+  const { snappedPadding, didSnapToTailwindClass } = getSnappedPaddingValue(
     currentPadding,
+    precisionFromModifiers(interactionSession.interactionData.modifiers),
     delta,
-    precisionFromModifiers(interactionSession.interactionData.modifiers),
-  )
-
-  const maxedPaddingMeasurement = offsetMeasurementByDelta(
-    currentPadding,
-    Math.max(-currentPadding.renderedValuePx, delta),
-    precisionFromModifiers(interactionSession.interactionData.modifiers),
   )
 
   return {
-    value: indicatorMessage(
-      updatedPaddingMeasurement.renderedValuePx > PaddingTearThreshold,
-      maxedPaddingMeasurement,
-    ),
+    value: didSnapToTailwindClass
+      ? `${roundTo(snappedPadding.renderedValuePx / 16, 2)}rem – tailwind`
+      : `${snappedPadding.renderedValuePx}px`,
     position: indicatorPosition(edgePiece, canvasState.scale, dragStart, drag),
   }
 }
@@ -692,4 +644,56 @@ function calculateAdjustDelta(
       : delta
 
   return deltaAdjusted
+}
+
+function getSnappedPaddingValue(
+  currentPaddingValue: CSSNumberWithRenderedValue,
+  precision: AdjustPrecision,
+  deltaPx: number,
+): {
+  snappedPadding: CSSNumberWithRenderedValue
+  didSnapToTailwindClass: boolean
+  shouldDeletePadding: boolean
+} {
+  const currentTargetValue = currentPaddingValue.renderedValuePx + deltaPx
+  const snapPointsInPx = Object.values(getTailwindSnapPointsInPixelsForSection('padding'))
+
+  const snapResultPx = snapToNearestPointFromArray(currentTargetValue, snapPointsInPx)
+
+  const newValuePx = snapResultPx.shouldSnap ? snapResultPx.snappedValue : currentTargetValue
+
+  const newCssNumber = measurementBasedOnOtherMeasurement(
+    currentPaddingValue,
+    newValuePx,
+    precision,
+  )
+
+  return {
+    snappedPadding: newCssNumber,
+    didSnapToTailwindClass: snapResultPx.shouldSnap,
+    shouldDeletePadding: false, // check if we should delete padding
+  }
+}
+
+function snapToNearestPointFromArray(
+  valuetoSnap: number,
+  snapPoints: number[],
+): { snappedValue: number; delta: number; shouldSnap: boolean } {
+  const closestSnapPoint = snapPoints.reduce(
+    (closest, current) => {
+      const currentDelta = Math.abs(current - valuetoSnap)
+      if (currentDelta < closest.delta) {
+        return { snap: current, delta: currentDelta }
+      } else {
+        return closest
+      }
+    },
+    { snap: snapPoints[0], delta: Math.abs(snapPoints[0] - valuetoSnap) },
+  )
+
+  return {
+    snappedValue: closestSnapPoint.snap,
+    delta: closestSnapPoint.delta,
+    shouldSnap: closestSnapPoint.delta < SnappingThreshold,
+  }
 }
