@@ -1,7 +1,7 @@
 import React from 'react'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
-import { MetadataUtils, getSimpleAttributeAtPath } from '../../../core/model/element-metadata-utils'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import type { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
@@ -29,7 +29,6 @@ import { Modifier } from '../../../utils/modifiers'
 import { windowToCanvasCoordinates } from '../dom-lookup'
 import {
   isGridAutoOrTemplateDimensions,
-  type ElementInstanceMetadata,
   type GridAutoOrTemplateBase,
 } from '../../../core/shared/element-template'
 import { assertNever } from '../../../core/shared/utils'
@@ -38,8 +37,6 @@ import { printGridAutoOrTemplateBase } from '../../../components/inspector/commo
 import { when } from '../../../utils/react-conditionals'
 import { CanvasMousePositionRaw } from '../../../utils/global-positions'
 import { motion, useAnimationControls } from 'framer-motion'
-import { atom, useAtom } from 'jotai'
-import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { useColorTheme } from '../../../uuiui'
 import type { Optic } from '../../../core/shared/optics/optics'
 import {
@@ -50,8 +47,8 @@ import {
 } from '../../../core/shared/optics/optic-creators'
 import { toFirst } from '../../../core/shared/optics/optic-utilities'
 import { defaultEither } from '../../../core/shared/either'
-import { assertNode } from '@babel/types'
 import type { ElementPath } from 'utopia-shared/src/types'
+import { useRollYourOwnFeatures } from '../../navigator/left-pane/roll-your-own-pane'
 
 type GridCellCoordinates = { row: number; column: number }
 
@@ -76,38 +73,6 @@ function getSillyCellsCount(template: GridAutoOrTemplateBase | null): number {
     }
   }
 }
-
-export const defaultExperimentalGridFeatures = {
-  dragLockedToCenter: false,
-  dragVerbatim: false,
-  dragMagnetic: false,
-  dragRatio: true,
-  animateSnap: true,
-  dotgrid: true,
-  shadow: true,
-  adaptiveOpacity: true,
-  activeGridColor: '#0099ff77',
-  dotgridColor: '#0099ffaa',
-  inactiveGridColor: '#0000000a',
-  opacityBaseline: 0.25,
-}
-
-export const gridFeaturesExplained: Record<string, string> = {
-  adaptiveOpacity: 'shadow opacity is proportional to the drag distance',
-  dragLockedToCenter: 'drag will keep the shadow centered',
-  dragVerbatim: 'drag will be verbatim',
-  dragMagnetic: 'drag will magnetize to the snap regions',
-  dragRatio: 'drag will keep the shadow positioned based on the drag start',
-  animateSnap: 'the shadow goes *boop* when snapping',
-  dotgrid: 'show dotgrid',
-  shadow: 'show the shadow during drag',
-  activeGridColor: 'grid lines color during drag',
-  dotgridColor: 'dotgrid items color',
-  inactiveGridColor: 'grid lines color when not dragging',
-  opacityBaseline: 'maximum shadow opacity',
-}
-
-export const experimentalGridFeatures = atom(defaultExperimentalGridFeatures)
 
 function getNullableAutoOrTemplateBaseString(
   template: GridAutoOrTemplateBase | null,
@@ -140,21 +105,7 @@ function getLabelForAxis(
 }
 
 export const GridControls = controlForStrategyMemoized(() => {
-  const [features, setFeatures] = useAtom(experimentalGridFeatures)
-
-  React.useEffect(() => {
-    setFeatures((old) => ({
-      ...old,
-      adaptiveOpacity: isFeatureEnabled('Grid move - adaptiveOpacity'),
-      dragLockedToCenter: isFeatureEnabled('Grid move - dragLockedToCenter'),
-      dragVerbatim: isFeatureEnabled('Grid move - dragVerbatim'),
-      dragMagnetic: isFeatureEnabled('Grid move - dragMagnetic'),
-      dragRatio: isFeatureEnabled('Grid move - dragRatio'),
-      animateSnap: isFeatureEnabled('Grid move - animateSnap'),
-      dotgrid: isFeatureEnabled('Grid move - dotgrid'),
-      shadow: isFeatureEnabled('Grid move - shadow'),
-    }))
-  }, [setFeatures])
+  const features = useRollYourOwnFeatures()
 
   const activelyDraggingOrResizingCell = useEditorState(
     Substores.canvas,
@@ -336,7 +287,7 @@ export const GridControls = controlForStrategyMemoized(() => {
     if (hoveringCell == null) {
       return
     }
-    if (!features.animateSnap) {
+    if (!features.Grid.animateSnap) {
       return
     }
     void controls.start('boop')
@@ -415,11 +366,13 @@ export const GridControls = controlForStrategyMemoized(() => {
                 const countedColumn = Math.floor(cellIndex % grid.columns) + 1
                 const id = `gridcell-${index}-${cell}`
                 const dotgridColor =
-                  activelyDraggingOrResizingCell != null ? features.dotgridColor : 'transparent'
+                  activelyDraggingOrResizingCell != null
+                    ? features.Grid.dotgridColor
+                    : 'transparent'
                 const borderColor =
                   activelyDraggingOrResizingCell != null
-                    ? features.activeGridColor
-                    : features.inactiveGridColor
+                    ? features.Grid.activeGridColor
+                    : features.Grid.inactiveGridColor
 
                 return (
                   <div
@@ -433,7 +386,7 @@ export const GridControls = controlForStrategyMemoized(() => {
                     data-grid-column={countedColumn}
                   >
                     {when(
-                      features.dotgrid,
+                      features.Grid.dotgrid,
                       <>
                         <div
                           style={{
@@ -684,7 +637,7 @@ export const GridControls = controlForStrategyMemoized(() => {
           )
         })}
         {/* shadow */}
-        {features.shadow &&
+        {features.Grid.shadow &&
           shadow != null &&
           shadowFrame != null &&
           interactionSession?.dragStart != null &&
@@ -711,14 +664,14 @@ export const GridControls = controlForStrategyMemoized(() => {
                     ? `${shadow.borderRadius.top}px ${shadow.borderRadius.right}px ${shadow.borderRadius.bottom}px ${shadow.borderRadius.left}px`
                     : 0,
                 backgroundColor: 'black',
-                opacity: features.adaptiveOpacity
-                  ? features.dragLockedToCenter
+                opacity: features.Grid.adaptiveOpacity
+                  ? features.Grid.dragLockedToCenter
                     ? Math.min(
                         (0.2 *
                           distance(getRectCenter(shadow.globalFrame), CanvasMousePositionRaw!)) /
                           Math.min(shadow.globalFrame.height, shadow.globalFrame.width) +
                           0.05,
-                        features.opacityBaseline,
+                        features.Grid.opacityBaseline,
                       )
                     : Math.min(
                         (0.2 *
@@ -731,36 +684,36 @@ export const GridControls = controlForStrategyMemoized(() => {
                           )) /
                           Math.min(shadow.globalFrame.height, shadow.globalFrame.width) +
                           0.05,
-                        features.opacityBaseline,
+                        features.Grid.opacityBaseline,
                       )
-                  : features.opacityBaseline,
+                  : features.Grid.opacityBaseline,
                 border: '1px solid white',
-                top: features.dragVerbatim
+                top: features.Grid.dragVerbatim
                   ? shadowFrame.y + interactionSession.drag.y
-                  : features.dragLockedToCenter
+                  : features.Grid.dragLockedToCenter
                   ? shadow.globalFrame.y +
                     interactionSession.drag.y -
                     (shadow.globalFrame.y - interactionSession.dragStart.y) -
                     shadow.globalFrame.height / 2
-                  : features.dragMagnetic
+                  : features.Grid.dragMagnetic
                   ? shadow.globalFrame.y + (CanvasMousePositionRaw!.y - hoveringStart.point.y)
-                  : features.dragRatio
+                  : features.Grid.dragRatio
                   ? shadow.globalFrame.y +
                     interactionSession.drag.y -
                     (shadow.globalFrame.y - interactionSession.dragStart.y) -
                     shadow.globalFrame.height *
                       ((interactionSession.dragStart.y - shadowFrame.y) / shadowFrame.height)
                   : undefined,
-                left: features.dragVerbatim
+                left: features.Grid.dragVerbatim
                   ? shadowFrame.x + interactionSession.drag.x
-                  : features.dragLockedToCenter
+                  : features.Grid.dragLockedToCenter
                   ? shadow.globalFrame.x +
                     interactionSession.drag.x -
                     (shadow.globalFrame.x - interactionSession.dragStart.x) -
                     shadow.globalFrame.width / 2
-                  : features.dragMagnetic
+                  : features.Grid.dragMagnetic
                   ? shadow.globalFrame.x + (CanvasMousePositionRaw!.x - hoveringStart.point.x)
-                  : features.dragRatio
+                  : features.Grid.dragRatio
                   ? shadow.globalFrame.x +
                     interactionSession.drag.x -
                     (shadow.globalFrame.x - interactionSession.dragStart.x) -

@@ -1,7 +1,7 @@
 import React from 'react'
 import { FlexColumn, FlexRow, Section } from '../../../uuiui'
 import { when } from '../../../utils/react-conditionals'
-import { atom, useAtom } from 'jotai'
+import { atom, useAtom, useSetAtom } from 'jotai'
 import { UIGridRow } from '../../inspector/widgets/ui-grid-row'
 import { atomWithStorage } from 'jotai/utils'
 import { IS_TEST_ENVIRONMENT } from '../../../common/env-vars'
@@ -10,7 +10,18 @@ const sections = ['Grid'] as const
 type Section = (typeof sections)[number]
 
 type GridFeatures = {
-  foo: boolean
+  dragLockedToCenter: boolean
+  dragVerbatim: boolean
+  dragMagnetic: boolean
+  dragRatio: boolean
+  animateSnap: boolean
+  dotgrid: boolean
+  shadow: boolean
+  adaptiveOpacity: boolean
+  activeGridColor: string
+  dotgridColor: string
+  inactiveGridColor: string
+  opacityBaseline: number
 }
 
 type RollYourOwnFeaturesTypes = {
@@ -21,17 +32,39 @@ type RollYourOwnFeatures = {
   [K in Section]: RollYourOwnFeaturesTypes[K]
 }
 
-let defaultRollYourOwnFeatures: RollYourOwnFeatures = {
+const defaultRollYourOwnFeatures: RollYourOwnFeatures = {
   Grid: {
-    foo: true,
+    dragLockedToCenter: false,
+    dragVerbatim: false,
+    dragMagnetic: false,
+    dragRatio: true,
+    animateSnap: true,
+    dotgrid: true,
+    shadow: true,
+    adaptiveOpacity: true,
+    activeGridColor: '#0099ff77',
+    dotgridColor: '#0099ffaa',
+    inactiveGridColor: '#0000000a',
+    opacityBaseline: 0.25,
   },
 }
 
 const ROLL_YOUR_OWN_FEATURES_KEY: string = 'roll-your-own-features'
 
-export const rollYourOwnFeatures = IS_TEST_ENVIRONMENT
+const rollYourOwnFeaturesAtom = IS_TEST_ENVIRONMENT
   ? atom(defaultRollYourOwnFeatures)
   : atomWithStorage(ROLL_YOUR_OWN_FEATURES_KEY, defaultRollYourOwnFeatures)
+
+export function useRollYourOwnFeatures() {
+  const [features] = useAtom(rollYourOwnFeaturesAtom)
+  const merged: RollYourOwnFeatures = {
+    Grid: {
+      ...defaultRollYourOwnFeatures.Grid,
+      ...features.Grid,
+    },
+  }
+  return merged
+}
 
 export const RollYourOwnFeaturesPane = React.memo(() => {
   const [currentSection, setCurrentSection] = React.useState<Section | null>(null)
@@ -91,38 +124,54 @@ export const RollYourOwnFeaturesPane = React.memo(() => {
 })
 RollYourOwnFeaturesPane.displayName = 'RollYourOwnFeaturesPane'
 
+function getNewFeatureValueOrNull(currentValue: any, e: React.ChangeEvent<HTMLInputElement>) {
+  switch (typeof currentValue) {
+    case 'boolean':
+      return e.target.checked
+    case 'string':
+      return e.target.value
+    case 'number':
+      return parseFloat(e.target.value)
+    default:
+      return null
+  }
+}
+
 const GridSection = React.memo(() => {
-  const [features, setFeatures] = useAtom(rollYourOwnFeatures)
+  const features = useRollYourOwnFeatures()
+  const setFeatures = useSetAtom(rollYourOwnFeaturesAtom)
 
   const onChange = React.useCallback(
     (feat: keyof GridFeatures) => (e: React.ChangeEvent<HTMLInputElement>) => {
-      setFeatures((existing) => {
-        return {
-          ...existing,
+      const newValue = getNewFeatureValueOrNull(features.Grid[feat], e)
+      if (newValue != null) {
+        setFeatures({
+          ...features,
           Grid: {
-            ...existing.Grid,
-            [feat]: e.target.checked,
+            ...features.Grid,
+            [feat]: newValue,
           },
-        }
-      })
+        })
+      }
     },
-    [setFeatures],
+    [features, setFeatures],
   )
 
   return (
     <FlexColumn style={{ gap: 10 }}>
-      {Object.entries(features.Grid).map(([feat, value]) => {
+      {Object.keys(defaultRollYourOwnFeatures.Grid).map((key) => {
+        const feat = key as keyof GridFeatures
+        const value = features.Grid[feat] ?? defaultRollYourOwnFeatures.Grid[feat]
         return (
           <UIGridRow padded variant='<--1fr--><--1fr-->' key={`feat-${feat}`}>
             <div>{feat}</div>
-            {when(
-              typeof value === 'boolean',
-              <input
-                type='checkbox'
-                checked={value}
-                onChange={onChange(feat as keyof GridFeatures)}
-              />,
-            )}
+            {typeof value === 'boolean' ? (
+              <input type='checkbox' checked={value} onChange={onChange(feat)} />
+            ) : typeof value === 'string' ? (
+              <input type='text' value={value} onChange={onChange(feat)} />
+            ) : typeof value === 'number' ? (
+              <input type='number' value={value} onChange={onChange(feat)} />
+            ) : null}
           </UIGridRow>
         )
       })}
