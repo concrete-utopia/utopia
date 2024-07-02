@@ -743,15 +743,15 @@ function useSelectOrLiveModeSelectAndHover(
       dispatch(editorActions)
     },
     [
-      dispatch,
-      selectedViewsRef,
-      findValidTarget,
-      setSelectedViewsForCanvasControlsOnly,
-      getSelectableViewsForSelectMode,
       editorStoreRef,
+      active,
+      getSelectableViewsForSelectMode,
+      findValidTarget,
+      dispatch,
       draggingAllowed,
       windowToCanvasCoordinates,
-      active,
+      selectedViewsRef,
+      setSelectedViewsForCanvasControlsOnly,
     ],
   )
 

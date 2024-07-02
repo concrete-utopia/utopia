@@ -18,9 +18,11 @@ import {
   distance,
   getRectCenter,
   isFiniteRectangle,
+  isInfinityRectangle,
   offsetPoint,
   pointDifference,
   windowPoint,
+  zeroRectIfNullOrInfinity,
 } from '../../../core/shared/math-utils'
 import {
   fromArrayIndex,
@@ -42,6 +44,7 @@ import {
   createInteractionViaMouse,
   gridAxisHandle,
   gridCellHandle,
+  gridResizeHandle,
 } from '../canvas-strategies/interaction-state'
 import { windowToCanvasCoordinates } from '../dom-lookup'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
@@ -798,3 +801,117 @@ function useMouseMove(activelyDraggingOrResizingCell: string | null) {
 
   return { hoveringCell, hoveringStart, mouseCanvasPosition }
 }
+
+export const GridResizeShadow = controlForStrategyMemoized(
+  ({ elementPath }: { elementPath: ElementPath }) => {
+    const element = useEditorState(
+      Substores.metadata,
+      (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, elementPath),
+      'GridResizeShadow element',
+    )
+
+    const dispatch = useDispatch()
+    const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
+    const scaleRef = useRefEditorState((store) => store.editor.canvas.scale)
+
+    const dragging = useEditorState(
+      Substores.canvas,
+      (store) =>
+        store.editor.canvas.interactionSession != null &&
+        store.editor.canvas.interactionSession.activeControl.type === 'GRID_RESIZE_HANDLE',
+      '',
+    )
+    const [offset, setOffset] = React.useState<{ width: number; height: number } | null>(null)
+    const onMouseMove = React.useCallback(
+      (e: MouseEvent) => {
+        if (!dragging) {
+          return
+        }
+
+        setOffset((o) =>
+          o == null ? null : { width: o.width + e.movementX, height: o.height + e.movementY },
+        )
+      },
+      [dragging],
+    )
+
+    const onMouseUp = React.useCallback(() => setOffset(null), [])
+
+    React.useEffect(() => {
+      window.addEventListener('mousemove', onMouseMove)
+      window.addEventListener('mouseup', onMouseUp)
+      return () => {
+        window.removeEventListener('mousemove', onMouseMove)
+        window.removeEventListener('mouseup', onMouseUp)
+      }
+    }, [onMouseMove, onMouseUp])
+
+    const startResizeInteractionWithUid = React.useCallback(
+      (uid: string) => (event: React.MouseEvent) => {
+        event.stopPropagation()
+        const frame = zeroRectIfNullOrInfinity(element?.globalFrame ?? null)
+        setOffset({ width: frame.width, height: frame.height })
+        const start = windowToCanvasCoordinates(
+          scaleRef.current,
+          canvasOffsetRef.current,
+          windowPoint({ x: event.nativeEvent.x, y: event.nativeEvent.y }),
+        )
+        dispatch([
+          CanvasActions.createInteractionSession(
+            createInteractionViaMouse(
+              start.canvasPositionRounded,
+              Modifier.modifiersForEvent(event),
+              gridResizeHandle(uid),
+              'zero-drag-not-permitted',
+            ),
+          ),
+        ])
+      },
+      [canvasOffsetRef, dispatch, element?.globalFrame, scaleRef],
+    )
+
+    const colorTheme = useColorTheme()
+
+    if (
+      element == null ||
+      element.globalFrame == null ||
+      isInfinityRectangle(element.globalFrame)
+    ) {
+      return null
+    }
+
+    return (
+      <CanvasOffsetWrapper>
+        <div
+          key={`grid-resize-container-${EP.toString(element.elementPath)}`}
+          style={{
+            pointerEvents: 'none',
+            position: 'absolute',
+            top: element.globalFrame.y,
+            left: element.globalFrame.x,
+            width: offset?.width ?? element.globalFrame.width,
+            height: offset?.height ?? element.globalFrame.height,
+            display: 'flex',
+            justifyContent: 'flex-end',
+            alignItems: 'flex-end',
+            opacity: 0.3,
+            background: colorTheme.denimBlue.value,
+          }}
+        >
+          <div
+            onMouseDown={startResizeInteractionWithUid(EP.toUid(element.elementPath))}
+            style={{
+              pointerEvents: 'initial',
+              border: '1px solid white',
+              width: 12,
+              height: 12,
+              backgroundColor: 'black',
+              margin: 4,
+              borderRadius: '50%',
+            }}
+          />
+        </div>
+      </CanvasOffsetWrapper>
+    )
+  },
+)

@@ -5,7 +5,6 @@ import type { ElementInstanceMetadataMap } from '../../../core/shared/element-te
 import { arrayEqualsByReference, assertNever } from '../../../core/shared/utils'
 import type {
   AllElementProps,
-  DerivedState,
   EditorState,
   EditorStorePatched,
 } from '../../editor/store/editor-state'
@@ -63,6 +62,9 @@ import type { InsertionSubject, InsertionSubjectWrapper } from '../../editor/edi
 import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
 import { retargetStrategyToChildrenOfFragmentLikeElements } from './strategies/fragment-like-helpers'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { rearrangeGridSwapStrategy } from './strategies/rearrange-grid-swap-strategy'
+import { rearrangeGridMoveStrategy } from './strategies/rearrange-grid-move-strategy'
+import { gridCellResizeStrategy } from './strategies/grid-cell-resize-strategy'
 import { gridRearrangeMoveStrategy } from './strategies/grid-rearrange-move-strategy'
 import { resizeGridStrategy } from './strategies/resize-grid-strategy'
 
@@ -92,6 +94,9 @@ const moveOrReorderStrategies: MetaCanvasStrategy = (
       convertToAbsoluteAndMoveStrategy,
       convertToAbsoluteAndMoveAndSetParentFixedStrategy,
       reorderSliderStategy,
+      rearrangeGridMoveStrategy,
+      rearrangeGridSwapStrategy,
+      gridCellResizeStrategy,
       gridRearrangeMoveStrategy,
     ],
   )
@@ -586,7 +591,7 @@ export function useGetApplicableStrategyControls(): Array<ControlWithProps<unkno
     }
     // Special case controls.
     if (!isResizable && !currentlyInProgress) {
-      applicableControls.push(notResizableControls)
+      // applicableControls.push(notResizableControls)
     }
     return applicableControls
   }, [applicableStrategies, currentStrategy, currentlyInProgress])

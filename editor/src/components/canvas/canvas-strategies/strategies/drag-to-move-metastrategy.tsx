@@ -29,6 +29,7 @@ import { relativeMoveStrategy } from './relative-move-strategy'
 import { reparentMetaStrategy } from './reparent-metastrategy'
 import { flattenSelection } from './shared-move-strategies-helpers'
 import * as EP from '../../../../core/shared/element-path'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 
 type MoveStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -101,8 +102,12 @@ export const dragToMoveMetaStrategy: MetaCanvasStrategy = (
       dragToMoveStrategies,
     )
   } else {
+    const doNothing = doNothingStrategy(canvasState, interactionSession, customStrategyState)
+    if (doNothing == null) {
+      return []
+    }
     return filterStrategiesWhileSpacePressed(interactionSession.interactionData.spacePressed, [
-      doNothingStrategy(canvasState, interactionSession, customStrategyState),
+      doNothing,
     ])
   }
 }
@@ -124,8 +129,18 @@ export function doNothingStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   customStrategyState: CustomStrategyState,
-): CanvasStrategy {
+): CanvasStrategy | null {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+
+  if (
+    selectedElements.some((t) =>
+      MetadataUtils.isGridLayoutedContainer(
+        MetadataUtils.findElementByElementPath(canvasState.startingMetadata, EP.parentPath(t)),
+      ),
+    )
+  ) {
+    return null
+  }
 
   return {
     id: DoNothingStrategyID,
