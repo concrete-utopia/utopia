@@ -93,6 +93,8 @@ export const TestMenu = React.memo(() => {
   return (
     <div
       style={{
+        position: 'absolute',
+        bottom: 6,
         boxShadow: UtopiaStyles.shadowStyles.low.boxShadow,
         borderRadius: '15px',
         paddingLeft: 8,
