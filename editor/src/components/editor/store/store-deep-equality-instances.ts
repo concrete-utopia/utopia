@@ -453,8 +453,8 @@ import type {
   ResizeHandle,
   BorderRadiusResizeHandle,
   ZeroDragPermitted,
-  GridCellHandle,
   GridResizeHandle,
+  GridCellHandle,
   GridAxisHandle,
 } from '../../canvas/canvas-strategies/interaction-state'
 import {
@@ -464,8 +464,8 @@ import {
   interactionSession,
   keyboardCatcherControl,
   resizeHandle,
-  gridCellHandle,
   gridResizeHandle,
+  gridCellHandle,
   gridAxisHandle,
 } from '../../canvas/canvas-strategies/interaction-state'
 import type { Modifiers } from '../../../utils/modifiers'

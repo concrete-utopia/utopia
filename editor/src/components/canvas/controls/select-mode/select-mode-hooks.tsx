@@ -657,6 +657,8 @@ function useSelectOrLiveModeSelectAndHover(
 
       if (foundTarget != null || isDeselect) {
         if (
+          event.button !== 2 &&
+          event.type !== 'mouseup' &&
           foundTarget != null &&
           draggingAllowed &&
           !MetadataUtils.isGridLayoutedContainer(
@@ -670,18 +672,16 @@ function useSelectOrLiveModeSelectAndHover(
           const start = windowToCanvasCoordinates(
             windowPoint(point(event.clientX, event.clientY)),
           ).canvasPositionRounded
-          if (event.button !== 2 && event.type !== 'mouseup') {
-            editorActions.push(
-              CanvasActions.createInteractionSession(
-                createInteractionViaMouse(
-                  start,
-                  Modifier.modifiersForEvent(event),
-                  boundingArea(),
-                  'zero-drag-not-permitted',
-                ),
+          editorActions.push(
+            CanvasActions.createInteractionSession(
+              createInteractionViaMouse(
+                start,
+                Modifier.modifiersForEvent(event),
+                boundingArea(),
+                'zero-drag-not-permitted',
               ),
-            )
-          }
+            ),
+          )
         }
 
         let updatedSelection: Array<ElementPath>

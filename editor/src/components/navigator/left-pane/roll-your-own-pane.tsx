@@ -1,5 +1,5 @@
 import React from 'react'
-import { FlexColumn, FlexRow, Section } from '../../../uuiui'
+import { Button, FlexColumn, FlexRow, Section } from '../../../uuiui'
 import { when } from '../../../utils/react-conditionals'
 import { atom, useAtom, useSetAtom } from 'jotai'
 import { UIGridRow } from '../../inspector/widgets/ui-grid-row'
@@ -157,13 +157,22 @@ const GridSection = React.memo(() => {
     [features, setFeatures],
   )
 
+  const resetDefaults = React.useCallback(() => {
+    setFeatures(defaultRollYourOwnFeatures)
+  }, [setFeatures])
+
   return (
     <FlexColumn style={{ gap: 10 }}>
+      <UIGridRow padded variant='<-------------1fr------------->'>
+        <Button highlight spotlight onClick={resetDefaults}>
+          Reset defaults
+        </Button>
+      </UIGridRow>
       {Object.keys(defaultRollYourOwnFeatures.Grid).map((key) => {
         const feat = key as keyof GridFeatures
         const value = features.Grid[feat] ?? defaultRollYourOwnFeatures.Grid[feat]
         return (
-          <UIGridRow padded variant='<--1fr--><--1fr-->' key={`feat-${feat}`}>
+          <UIGridRow padded variant='<----------1fr---------><-auto->' key={`feat-${feat}`}>
             <div>{feat}</div>
             {typeof value === 'boolean' ? (
               <input type='checkbox' checked={value} onChange={onChange(feat)} />

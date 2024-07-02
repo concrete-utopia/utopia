@@ -5,7 +5,6 @@ import type { ElementInstanceMetadataMap } from '../../../core/shared/element-te
 import { arrayEqualsByReference, assertNever } from '../../../core/shared/utils'
 import type {
   AllElementProps,
-  DerivedState,
   EditorState,
   EditorStorePatched,
 } from '../../editor/store/editor-state'
@@ -66,6 +65,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { rearrangeGridSwapStrategy } from './strategies/rearrange-grid-swap-strategy'
 import { rearrangeGridMoveStrategy } from './strategies/rearrange-grid-move-strategy'
 import { gridCellResizeStrategy } from './strategies/grid-cell-resize-strategy'
+import { gridRearrangeMoveStrategy } from './strategies/grid-rearrange-move-strategy'
 import { resizeGridStrategy } from './strategies/resize-grid-strategy'
 
 export type CanvasStrategyFactory = (
@@ -94,9 +94,10 @@ const moveOrReorderStrategies: MetaCanvasStrategy = (
       convertToAbsoluteAndMoveStrategy,
       convertToAbsoluteAndMoveAndSetParentFixedStrategy,
       reorderSliderStategy,
-      rearrangeGridSwapStrategy,
       rearrangeGridMoveStrategy,
+      rearrangeGridSwapStrategy,
       gridCellResizeStrategy,
+      gridRearrangeMoveStrategy,
     ],
   )
 }
