@@ -27,15 +27,6 @@ import {
 import { toFirst } from '../../../core/shared/optics/optic-utilities'
 import { defaultEither } from '../../../core/shared/either'
 
-type GridCellCoordinates = { row: number; column: number }
-
-function emptyGridCellCoordinates(): GridCellCoordinates {
-  return { row: 0, column: 0 }
-}
-
-// TODO please forgive me (hackathon code)
-export let TargetGridCell = { current: emptyGridCellCoordinates() }
-
 function getSillyCellsCount(template: GridAutoOrTemplateBase | null): number {
   if (template == null) {
     return 0
