@@ -307,7 +307,11 @@ function setPixelValue(
       {
         path: PP.fromString('className'),
         value: jsExpressionValue(
-          `${classNamesToKeep} ${convertPixelsToTailwindDimension(newValue, tailwindProp)}`,
+          `${classNamesToKeep} ${convertPixelsToTailwindDimension(
+            newValue,
+            tailwindProp,
+            'spacing',
+          )}`,
           emptyComments,
         ),
       },

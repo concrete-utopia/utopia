@@ -270,6 +270,7 @@ export const setPaddingStrategyTailwind: CanvasStrategyFactory = (
           return convertPixelsToTailwindDimension(
             p[1].unit === 'rem' ? p[1].value * 16 : p[1].value, // very ugly
             camelCaseToDashed(p[0]) as TailwindProp,
+            'padding',
           )
         })
 
@@ -506,6 +507,7 @@ function paddingValueIndicatorProps(
   const matchedTailwindClass = convertPixelsToTailwindDimension(
     snappedPadding.renderedValuePx,
     camelCaseToDashed(paddingPropForEdge(edgePiece)) as TailwindProp,
+    'padding',
   )
 
   return {

@@ -186,7 +186,7 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
         value: jsExpressionValue(
           `${classNames
             .filter((c) => !relevantClassNames.includes(c))
-            .join(' ')} ${convertPixelsToTailwindDimension(printedValue, tailwindProp)}`,
+            .join(' ')} ${convertPixelsToTailwindDimension(printedValue, tailwindProp, 'spacing')}`,
           emptyComments,
         ),
       })

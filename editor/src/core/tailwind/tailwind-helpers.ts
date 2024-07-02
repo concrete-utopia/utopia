@@ -3,6 +3,8 @@ import * as PP from '../shared/property-path'
 import type { MapLike } from 'typescript'
 import { twindInstance } from './tailwind'
 import { emptyComplexMap } from '../../utils/map'
+import { assert } from 'chai'
+import { assertNever } from '../shared/utils'
 
 const tailwindDimensionMap: { [key: string]: string } = {
   // Width classes
@@ -183,6 +185,7 @@ export function convertTailwindDimensionToPixels(tailwindClass: string): string 
 export function convertPixelsToTailwindDimension(
   pixelValue: number,
   dimensionType: TailwindProp,
+  section: 'padding' | 'spacing',
 ): string | null {
   // Convert rem values to pixels for comparison
   const remToPx = (rem: string): number => parseFloat(rem) * 16
@@ -190,18 +193,9 @@ export function convertPixelsToTailwindDimension(
   let closestClass: string | null = null
   let closestValue: number = Infinity
 
-  for (const [className, value] of Object.entries(tailwindDimensionMap)) {
-    if (
-      (dimensionType === 'width' && !className.startsWith('w-')) ||
-      (dimensionType === 'height' && !className.startsWith('h-')) ||
-      (dimensionType === 'padding-top' && !className.startsWith('pt-')) ||
-      (dimensionType === 'padding-bottom' && !className.startsWith('pb-')) ||
-      (dimensionType === 'padding-left' && !className.startsWith('pl-')) ||
-      (dimensionType === 'padding-right' && !className.startsWith('pr-'))
-    ) {
-      continue
-    }
-
+  for (const [classNamePostfix, value] of Object.entries(
+    getTailwindConfigurationForSection(section),
+  )) {
     let numericValue: number
 
     if (value.endsWith('rem')) {
@@ -209,18 +203,37 @@ export function convertPixelsToTailwindDimension(
     } else if (value.endsWith('px')) {
       numericValue = parseFloat(value)
     } else {
-      continue // Skip non-pixel/rem values like 'auto', '100%', '100vw', '100vh'
+      continue // Skip non-pixel/rem values like 'auto', '100%', '100vw', '100vh' // TODO actually support these too!!
     }
 
     const difference = Math.abs(numericValue - pixelValue)
 
     if (difference < closestValue) {
       closestValue = difference
-      closestClass = className
+      closestClass = getClassNamePrefix(dimensionType) + classNamePostfix
     }
   }
 
   return closestClass
+}
+
+function getClassNamePrefix(tailwindProp: TailwindProp): string {
+  switch (tailwindProp) {
+    case 'width':
+      return 'w-'
+    case 'height':
+      return 'h-'
+    case 'padding-left':
+      return 'pl-'
+    case 'padding-right':
+      return 'pr-'
+    case 'padding-bottom':
+      return 'pb-'
+    case 'padding-top':
+      return 'pt-'
+    default:
+      assertNever(tailwindProp)
+  }
 }
 
 export function getTailwindConfigurationForSection(tailwindSection: string): MapLike<string> {
