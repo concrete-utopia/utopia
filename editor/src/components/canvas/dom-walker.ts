@@ -10,7 +10,7 @@ import type {
   StyleAttributeMetadata,
   ElementInstanceMetadataMap,
   GridContainerProperties,
-  GridElementProperties as ElementGridProperties,
+  GridElementProperties,
 } from '../../core/shared/element-template'
 import {
   elementInstanceMetadata,
@@ -94,6 +94,7 @@ import { pick } from '../../core/shared/object-utils'
 import { getFlexAlignment, getFlexJustifyContent, MaxContent } from '../inspector/inspector-common'
 import type { EditorDispatch } from '../editor/action-types'
 import { runDOMWalker } from '../editor/actions/action-creators'
+import { parseString } from '../../utils/value-parser-utils'
 
 export const ResizeObserver =
   window.ResizeObserver ?? ResizeObserverSyntheticDefault.default ?? ResizeObserverSyntheticDefault
@@ -914,7 +915,7 @@ function getGridContainerProperties(elementStyle: CSSStyleDeclaration): GridCont
   )
 }
 
-function getGridElementProperties(elementStyle: CSSStyleDeclaration): ElementGridProperties {
+function getGridElementProperties(elementStyle: CSSStyleDeclaration): GridElementProperties {
   const gridColumn = defaultEither(null, parseGridRange(elementStyle.gridColumn))
   const gridColumnStart =
     defaultEither(null, parseGridPosition(elementStyle.gridColumnStart)) ??
