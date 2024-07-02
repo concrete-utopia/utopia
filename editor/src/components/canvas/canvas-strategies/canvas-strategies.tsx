@@ -65,6 +65,7 @@ import { retargetStrategyToChildrenOfFragmentLikeElements } from './strategies/f
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { gridRearrangeMoveStrategy } from './strategies/grid-rearrange-move-strategy'
 import { resizeGridStrategy } from './strategies/resize-grid-strategy'
+import { rearrangeGridSwapStrategy } from './strategies/rearrange-grid-swap-strategy'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -93,6 +94,7 @@ const moveOrReorderStrategies: MetaCanvasStrategy = (
       convertToAbsoluteAndMoveAndSetParentFixedStrategy,
       reorderSliderStategy,
       gridRearrangeMoveStrategy,
+      rearrangeGridSwapStrategy,
     ],
   )
 }
