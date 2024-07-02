@@ -7,6 +7,7 @@ import {
   dragTargetsElementPaths,
 } from '../../controls/select-mode/drag-outline-control'
 import type { MetaCanvasStrategy } from '../canvas-strategies'
+import { CanvasStrategyFactory } from '../canvas-strategies'
 import type {
   CustomStrategyState,
   InteractionCanvasState,
@@ -15,6 +16,7 @@ import type {
 } from '../canvas-strategy-types'
 import {
   getTargetPathsFromInteractionTarget,
+  emptyStrategyApplicationResult,
   controlWithProps,
   strategyApplicationResult,
 } from '../canvas-strategy-types'

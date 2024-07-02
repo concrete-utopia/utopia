@@ -73,6 +73,14 @@ export function basicResizeStrategy(
   const elementDimensionsProps = metadata != null ? getElementDimensions(metadata) : null
   const elementParentBounds = metadata?.specialSizeMeasurements.immediateParentBounds ?? null
 
+  const elementDimensions =
+    elementDimensionsProps == null
+      ? null
+      : {
+          width: elementDimensionsProps.width,
+          height: elementDimensionsProps.height,
+        }
+
   return {
     id: BASIC_RESIZE_STRATEGY_ID,
     name: 'Resize (Basic)',
