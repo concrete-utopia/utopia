@@ -64,6 +64,7 @@ import { generateUidWithExistingComponents } from '../../../core/model/element-t
 import { retargetStrategyToChildrenOfFragmentLikeElements } from './strategies/fragment-like-helpers'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { gridRearrangeMoveStrategy } from './strategies/grid-rearrange-move-strategy'
+import { resizeGridStrategy } from './strategies/resize-grid-strategy'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -102,13 +103,14 @@ const resizeStrategies: MetaCanvasStrategy = (
   customStrategyState: CustomStrategyState,
 ): Array<CanvasStrategy> => {
   return mapDropNulls(
-    (factory) => factory(canvasState, interactionSession),
+    (factory) => factory(canvasState, interactionSession, customStrategyState),
     [
       keyboardAbsoluteResizeStrategy,
       absoluteResizeBoundingBoxStrategy,
       flexResizeBasicStrategy,
       flexResizeStrategy,
       basicResizeStrategy,
+      resizeGridStrategy,
     ],
   )
 }
