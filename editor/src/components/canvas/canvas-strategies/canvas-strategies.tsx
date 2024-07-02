@@ -63,6 +63,7 @@ import type { InsertionSubject, InsertionSubjectWrapper } from '../../editor/edi
 import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
 import { retargetStrategyToChildrenOfFragmentLikeElements } from './strategies/fragment-like-helpers'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { gridRearrangeMoveStrategy } from './strategies/grid-rearrange-move-strategy'
 import { resizeGridStrategy } from './strategies/resize-grid-strategy'
 
 export type CanvasStrategyFactory = (
@@ -91,6 +92,7 @@ const moveOrReorderStrategies: MetaCanvasStrategy = (
       convertToAbsoluteAndMoveStrategy,
       convertToAbsoluteAndMoveAndSetParentFixedStrategy,
       reorderSliderStategy,
+      gridRearrangeMoveStrategy,
     ],
   )
 }

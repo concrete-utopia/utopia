@@ -616,6 +616,18 @@ export function reorderSlider(): ReorderSlider {
   }
 }
 
+export interface GridCellHandle {
+  type: 'GRID_CELL_HANDLE'
+  id: string
+}
+
+export function gridCellHandle(params: { id: string }): GridCellHandle {
+  return {
+    type: 'GRID_CELL_HANDLE',
+    id: params.id,
+  }
+}
+
 export type CanvasControlType =
   | BoundingArea
   | ResizeHandle
@@ -624,6 +636,7 @@ export type CanvasControlType =
   | KeyboardCatcherControl
   | ReorderSlider
   | BorderRadiusResizeHandle
+  | GridCellHandle
   | GridAxisHandle
 
 export function isDragToPan(
