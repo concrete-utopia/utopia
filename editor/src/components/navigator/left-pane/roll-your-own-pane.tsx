@@ -35,14 +35,6 @@ export const rollYourOwnFeatures = atomWithStorage(
 
 export const RollYourOwnFeaturesPane = React.memo(() => {
   const [currentSection, setCurrentSection] = React.useState<Section | null>(null)
-  const [features, setFeatures] = useAtom(rollYourOwnFeatures)
-
-  const onChange = React.useCallback(
-    (base: RollYourOwnFeatures) => (update: Partial<RollYourOwnFeatures>) => {
-      setFeatures({ ...base, ...update })
-    },
-    [setFeatures],
-  )
 
   const onChangeSection = React.useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     const maybeSectionValue = e.target.value as Section
@@ -92,44 +84,49 @@ export const RollYourOwnFeaturesPane = React.memo(() => {
           </select>
         </FlexRow>
 
-        {when(
-          currentSection === 'Grid',
-          <GridSection features={features.Grid} onChange={onChange(features)} />,
-        )}
+        {when(currentSection === 'Grid', <GridSection />)}
       </Section>
     </FlexColumn>
   )
 })
 RollYourOwnFeaturesPane.displayName = 'RollYourOwnFeaturesPane'
 
-const GridSection = React.memo(
-  (props: { features: GridFeatures; onChange: (update: Partial<RollYourOwnFeatures>) => void }) => {
-    const onChange = React.useCallback(
-      (feat: keyof GridFeatures) => (e: React.ChangeEvent<HTMLInputElement>) => {
-        return props.onChange({ Grid: { ...props.features, [feat]: e.target.checked } })
-      },
-      [props],
-    )
+const GridSection = React.memo(() => {
+  const [features, setFeatures] = useAtom(rollYourOwnFeatures)
 
-    return (
-      <FlexColumn style={{ gap: 10 }}>
-        {Object.entries(props.features).map(([feat, value]) => {
-          return (
-            <UIGridRow padded variant='<--1fr--><--1fr-->' key={`feat-${feat}`}>
-              <div>{feat}</div>
-              {when(
-                typeof value === 'boolean',
-                <input
-                  type='checkbox'
-                  checked={value}
-                  onChange={onChange(feat as keyof GridFeatures)}
-                />,
-              )}
-            </UIGridRow>
-          )
-        })}
-      </FlexColumn>
-    )
-  },
-)
+  const onChange = React.useCallback(
+    (feat: keyof GridFeatures) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      setFeatures((existing) => {
+        return {
+          ...existing,
+          Grid: {
+            ...existing.Grid,
+            [feat]: e.target.checked,
+          },
+        }
+      })
+    },
+    [setFeatures],
+  )
+
+  return (
+    <FlexColumn style={{ gap: 10 }}>
+      {Object.entries(features.Grid).map(([feat, value]) => {
+        return (
+          <UIGridRow padded variant='<--1fr--><--1fr-->' key={`feat-${feat}`}>
+            <div>{feat}</div>
+            {when(
+              typeof value === 'boolean',
+              <input
+                type='checkbox'
+                checked={value}
+                onChange={onChange(feat as keyof GridFeatures)}
+              />,
+            )}
+          </UIGridRow>
+        )
+      })}
+    </FlexColumn>
+  )
+})
 GridSection.displayName = 'GridSection'
