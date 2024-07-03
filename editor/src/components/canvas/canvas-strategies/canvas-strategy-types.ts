@@ -11,6 +11,7 @@ import type { StrategyApplicationStatus } from './interaction-state'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import type { ActiveFrameAction } from '../commands/set-active-frames-command'
 import type { PropertyControlsInfo } from '../../custom-code/code-file'
+import type { GridCellCoordinates } from '../controls/grid-controls'
 
 // TODO: fill this in, maybe make it an ADT for different strategies
 export interface CustomStrategyState {
@@ -20,6 +21,7 @@ export interface CustomStrategyState {
   strategyGeneratedUidsCache: { [elementPath: string]: string | undefined }
   elementsToRerender: Array<ElementPath>
   action: ActiveFrameAction | null
+  targetGridCell: GridCellCoordinates | null
 }
 
 export type CustomStrategyStatePatch = Partial<CustomStrategyState>
@@ -32,6 +34,7 @@ export function defaultCustomStrategyState(): CustomStrategyState {
     strategyGeneratedUidsCache: {},
     elementsToRerender: [],
     action: null,
+    targetGridCell: null,
   }
 }
 

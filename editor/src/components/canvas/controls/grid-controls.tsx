@@ -51,16 +51,15 @@ import {
 import { windowToCanvasCoordinates } from '../dom-lookup'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { useColorTheme } from '../../../uuiui'
+import { getGridCellUnderMouse } from '../canvas-strategies/strategies/grid-helpers'
 
 export const GridCellTestId = (elementPath: ElementPath) => `grid-cell-${EP.toString(elementPath)}`
 
-type GridCellCoordinates = { row: number; column: number }
+export type GridCellCoordinates = { row: number; column: number }
 
-function emptyGridCellCoordinates(): GridCellCoordinates {
-  return { row: 0, column: 0 }
+export function gridCellCoordinates(row: number, column: number): GridCellCoordinates {
+  return { row: row, column: column }
 }
-
-export let TargetGridCell = { current: emptyGridCellCoordinates() }
 
 function getCellsCount(template: GridAutoOrTemplateBase | null): number {
   if (template == null) {
@@ -276,8 +275,6 @@ export const GridControls = controlForStrategyMemoized(() => {
   const startInteractionWithUid = React.useCallback(
     (params: { uid: string; row: number; column: number; frame: CanvasRectangle }) =>
       (event: React.MouseEvent) => {
-        TargetGridCell.current = emptyGridCellCoordinates()
-
         setInitialShadowFrame(params.frame)
 
         const start = windowToCanvasCoordinates(
@@ -768,16 +765,12 @@ function useMouseMove(activelyDraggingOrResizingCell: string | null) {
         setHoveringStart(null)
         return
       }
-      const cellsUnderMouse = document
-        .elementsFromPoint(e.clientX, e.clientY)
-        .filter((el) => el.id.startsWith(`gridcell-`))
 
-      if (cellsUnderMouse.length > 0) {
-        const cellUnderMouse = cellsUnderMouse[0]
-        const row = cellUnderMouse.getAttribute('data-grid-row')
-        const column = cellUnderMouse.getAttribute('data-grid-column')
-        TargetGridCell.current.row = row == null ? 0 : parseInt(row)
-        TargetGridCell.current.column = column == null ? 0 : parseInt(column)
+      // TODO most of this logic can be simplified consistently
+      // by moving the hovering cell info to the editor state, dispatched
+      // from the grid-rearrange-move-strategy logic.
+      const cellUnderMouse = getGridCellUnderMouse(windowPoint({ x: e.clientX, y: e.clientY }))
+      if (cellUnderMouse != null) {
         setHoveringCell(cellUnderMouse.id)
 
         const newMouseCanvasPosition = windowToCanvasCoordinates(
