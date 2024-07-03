@@ -15,6 +15,7 @@ import {
 import type { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
 import {
   canvasPoint,
+  canvasRectangle,
   distance,
   getRectCenter,
   isFiniteRectangle,
@@ -813,28 +814,54 @@ export const GridResizeControls = controlForStrategyMemoized<GridResizeControlPr
     const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
     const scaleRef = useRefEditorState((store) => store.editor.canvas.scale)
 
-    const dragging = useEditorState(
-      Substores.canvas,
-      (store) =>
-        store.editor.canvas.interactionSession != null &&
-        store.editor.canvas.interactionSession.activeControl.type === 'GRID_RESIZE_HANDLE',
-      '',
+    const resizeControlRef = useRefEditorState((store) =>
+      store.editor.canvas.interactionSession?.activeControl.type !== 'GRID_RESIZE_HANDLE'
+        ? null
+        : store.editor.canvas.interactionSession.activeControl,
     )
-    const [offset, setOffset] = React.useState<{ width: number; height: number } | null>(null)
+
+    const [bounds, setBounds] = React.useState<CanvasRectangle | null>(null)
     const onMouseMove = React.useCallback(
       (e: MouseEvent) => {
-        if (!dragging) {
+        if (resizeControlRef.current == null) {
           return
         }
 
-        setOffset((o) =>
-          o == null ? null : { width: o.width + e.movementX, height: o.height + e.movementY },
+        let delta: CanvasRectangle = canvasRectangle({ x: 0, y: 0, width: 0, height: 0 })
+        switch (resizeControlRef.current.edge) {
+          case 'column-end':
+            delta.width = e.movementX
+            break
+          case 'column-start':
+            delta.x = e.movementX
+            delta.width = -e.movementX
+            break
+          case 'row-start':
+            delta.y = e.movementY
+            delta.height = -e.movementY
+            break
+          case 'row-end':
+            delta.height = e.movementY
+            break
+          default:
+            assertNever(resizeControlRef.current.edge)
+        }
+
+        setBounds((o) =>
+          o == null
+            ? null
+            : canvasRectangle({
+                x: o.x + delta.x,
+                y: o.y + delta.y,
+                width: o.width + delta.width,
+                height: o.height + delta.height,
+              }),
         )
       },
-      [dragging],
+      [resizeControlRef],
     )
 
-    const onMouseUp = React.useCallback(() => setOffset(null), [])
+    const onMouseUp = React.useCallback(() => setBounds(null), [])
 
     React.useEffect(() => {
       window.addEventListener('mousemove', onMouseMove)
@@ -849,7 +876,7 @@ export const GridResizeControls = controlForStrategyMemoized<GridResizeControlPr
       (uid: string, edge: GridResizeEdge) => (event: React.MouseEvent) => {
         event.stopPropagation()
         const frame = zeroRectIfNullOrInfinity(element?.globalFrame ?? null)
-        setOffset({ width: frame.width, height: frame.height })
+        setBounds(frame)
         const start = windowToCanvasCoordinates(
           scaleRef.current,
           canvasOffsetRef.current,
@@ -887,10 +914,10 @@ export const GridResizeControls = controlForStrategyMemoized<GridResizeControlPr
           style={{
             pointerEvents: 'none',
             position: 'absolute',
-            top: element.globalFrame.y,
-            left: element.globalFrame.x,
-            width: offset?.width ?? element.globalFrame.width,
-            height: offset?.height ?? element.globalFrame.height,
+            top: bounds?.y ?? element.globalFrame.y,
+            left: bounds?.x ?? element.globalFrame.x,
+            width: bounds?.width ?? element.globalFrame.width,
+            height: bounds?.height ?? element.globalFrame.height,
             display: 'grid',
             gridTemplateRows: '10px 1fr 10px',
             gridTemplateColumns: '10px 1fr 10px',
