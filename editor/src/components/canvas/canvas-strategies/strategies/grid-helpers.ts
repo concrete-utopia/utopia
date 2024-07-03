@@ -78,12 +78,24 @@ export function runGridRearrangeMove(
   canvasScale: number,
   canvasOffset: CanvasVector,
   targetGridCell: GridCellCoordinates | null,
+  initialDraggingFromCell: GridCellCoordinates | null,
+  initialOriginalElementRootCell: GridCellCoordinates | null,
   duplicating: boolean,
-): { commands: CanvasCommand[]; targetGridCell: GridCellCoordinates | null } {
+): {
+  commands: CanvasCommand[]
+  targetGridCell: GridCellCoordinates | null
+  initialDraggingFromCell: GridCellCoordinates | null
+  initialOriginalElementRootCell: GridCellCoordinates | null
+} {
   let commands: CanvasCommand[] = []
 
   if (interactionData.drag == null) {
-    return { commands: [], targetGridCell: null }
+    return {
+      commands: [],
+      targetGridCell: null,
+      initialOriginalElementRootCell: null,
+      initialDraggingFromCell: null,
+    }
   }
 
   const mouseWindowPoint = canvasPointToWindowPoint(
@@ -99,9 +111,13 @@ export function runGridRearrangeMove(
   if (cellUnderMouse != null) {
     newTargetGridCell = cellUnderMouse.coordinates
   }
-
   if (newTargetGridCell == null || newTargetGridCell.row < 1 || newTargetGridCell.column < 1) {
-    return { commands: [], targetGridCell: null }
+    return {
+      commands: [],
+      targetGridCell: null,
+      initialOriginalElementRootCell: null,
+      initialDraggingFromCell: null,
+    }
   }
 
   const originalElementMetadata = MetadataUtils.findElementByElementPath(
@@ -109,7 +125,12 @@ export function runGridRearrangeMove(
     selectedElement,
   )
   if (originalElementMetadata == null) {
-    return { commands: [], targetGridCell: null }
+    return {
+      commands: [],
+      targetGridCell: null,
+      initialOriginalElementRootCell: null,
+      initialDraggingFromCell: null,
+    }
   }
 
   function getGridProperty(field: keyof GridElementProperties, fallback: number) {
@@ -122,33 +143,48 @@ export function runGridRearrangeMove(
   const gridRowStart = getGridProperty('gridRowStart', 0)
   const gridRowEnd = getGridProperty('gridRowEnd', 1)
 
+  const draggingFromCell = initialDraggingFromCell ?? newTargetGridCell
+  const originalElementRootCell =
+    initialOriginalElementRootCell ?? gridCellCoordinates(gridRowStart, gridColumnStart)
+
+  const columnDiff = draggingFromCell.column - originalElementRootCell.column
+  const rowDiff = draggingFromCell.row - originalElementRootCell.row
+
+  const columnStart = newTargetGridCell.column
+  const columnEnd = Math.max(
+    newTargetGridCell.column,
+    newTargetGridCell.column + (gridColumnEnd - gridColumnStart),
+  )
+  const rowStart = newTargetGridCell.row
+  const rowEnd = Math.max(
+    newTargetGridCell.row,
+    newTargetGridCell.row + (gridRowEnd - gridRowStart),
+  )
+
+  const height = columnEnd - columnStart
+  const width = rowEnd - rowStart
+
+  const adjustedStart = {
+    column: Math.max(1, columnStart - columnDiff),
+    row: Math.max(1, rowStart - rowDiff),
+  }
+
+  const adjustedEnd = {
+    column: Math.max(1, adjustedStart.column + height),
+    row: Math.max(1, adjustedStart.row + width),
+  }
+
   commands.push(
-    setProperty(
-      'always',
-      targetElement,
-      create('style', 'gridColumnStart'),
-      newTargetGridCell.column,
-    ),
-    setProperty(
-      'always',
-      targetElement,
-      create('style', 'gridColumnEnd'),
-      Math.max(
-        newTargetGridCell.column,
-        newTargetGridCell.column + (gridColumnEnd - gridColumnStart),
-      ),
-    ),
-    setProperty('always', targetElement, create('style', 'gridRowStart'), newTargetGridCell.row),
-    setProperty(
-      'always',
-      targetElement,
-      create('style', 'gridRowEnd'),
-      Math.max(newTargetGridCell.row, newTargetGridCell.row + (gridRowEnd - gridRowStart)),
-    ),
+    setProperty('always', targetElement, create('style', 'gridColumnStart'), adjustedStart.column),
+    setProperty('always', targetElement, create('style', 'gridColumnEnd'), adjustedEnd.column),
+    setProperty('always', targetElement, create('style', 'gridRowStart'), adjustedStart.row),
+    setProperty('always', targetElement, create('style', 'gridRowEnd'), adjustedEnd.row),
   )
 
   return {
     commands: commands,
     targetGridCell: newTargetGridCell,
+    initialOriginalElementRootCell: originalElementRootCell,
+    initialDraggingFromCell: draggingFromCell,
   }
 }

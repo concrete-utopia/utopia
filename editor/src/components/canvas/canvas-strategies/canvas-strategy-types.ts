@@ -22,6 +22,8 @@ export interface CustomStrategyState {
   elementsToRerender: Array<ElementPath>
   action: ActiveFrameAction | null
   targetGridCell: GridCellCoordinates | null
+  initialDraggingFromCell: GridCellCoordinates | null
+  initialOriginalElementRootCell: GridCellCoordinates | null
 }
 
 export type CustomStrategyStatePatch = Partial<CustomStrategyState>
@@ -35,6 +37,8 @@ export function defaultCustomStrategyState(): CustomStrategyState {
     elementsToRerender: [],
     action: null,
     targetGridCell: null,
+    initialDraggingFromCell: null,
+    initialOriginalElementRootCell: null,
   }
 }
 
