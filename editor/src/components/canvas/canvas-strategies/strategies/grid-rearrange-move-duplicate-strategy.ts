@@ -85,14 +85,19 @@ export const gridRearrangeMoveDuplicateStrategy: CanvasStrategyFactory = (
 
       const targetElement = EP.appendToPath(EP.parentPath(selectedElement), newUid)
 
-      const { commands: moveCommands, targetGridCell: newTargetGridCell } = runGridRearrangeMove(
+      const {
+        commands: moveCommands,
+        targetCell: targetGridCell,
+        draggingFromCell,
+        rootCell,
+      } = runGridRearrangeMove(
         targetElement,
         selectedElement,
         canvasState.startingMetadata,
         interactionSession.interactionData,
         canvasState.scale,
         canvasState.canvasOffset,
-        customState.targetGridCell,
+        customState.grid,
         true,
       )
       if (moveCommands.length === 0) {
@@ -109,7 +114,11 @@ export const gridRearrangeMoveDuplicateStrategy: CanvasStrategyFactory = (
           setCursorCommand(CSSCursor.Duplicate),
         ],
         {
-          targetGridCell: newTargetGridCell,
+          grid: {
+            targetCell: targetGridCell,
+            draggingFromCell: draggingFromCell,
+            rootCell: rootCell,
+          },
           duplicatedElementNewUids: duplicatedElementNewUids,
         },
       )
