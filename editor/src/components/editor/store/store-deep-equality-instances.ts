@@ -455,6 +455,8 @@ import type {
   ZeroDragPermitted,
   GridCellHandle,
   GridAxisHandle,
+  GridResizeHandle,
+  GridResizeEdge,
 } from '../../canvas/canvas-strategies/interaction-state'
 import {
   boundingArea,
@@ -465,6 +467,7 @@ import {
   resizeHandle,
   gridCellHandle,
   gridAxisHandle,
+  gridResizeHandle,
 } from '../../canvas/canvas-strategies/interaction-state'
 import type { Modifiers } from '../../../utils/modifiers'
 import type {
@@ -2870,6 +2873,15 @@ export const GridAxisHandleKeepDeepEquality: KeepDeepEqualityCall<GridAxisHandle
     gridAxisHandle,
   )
 
+export const GridResizeHandleKeepDeepEquality: KeepDeepEqualityCall<GridResizeHandle> =
+  combine2EqualityCalls(
+    (handle) => handle.id,
+    createCallWithTripleEquals<string>(),
+    (handle) => handle.edge,
+    createCallWithTripleEquals<GridResizeEdge>(),
+    gridResizeHandle,
+  )
+
 export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasControlType> = (
   oldValue,
   newValue,
@@ -2918,6 +2930,11 @@ export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasContr
     case 'GRID_AXIS_HANDLE':
       if (newValue.type === oldValue.type) {
         return GridAxisHandleKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'GRID_RESIZE_HANDLE':
+      if (newValue.type === oldValue.type) {
+        return GridResizeHandleKeepDeepEquality(oldValue, newValue)
       }
       break
     default:

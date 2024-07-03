@@ -18,9 +18,11 @@ import {
   distance,
   getRectCenter,
   isFiniteRectangle,
+  isInfinityRectangle,
   offsetPoint,
   pointDifference,
   windowPoint,
+  zeroRectIfNullOrInfinity,
 } from '../../../core/shared/math-utils'
 import {
   fromArrayIndex,
@@ -38,10 +40,13 @@ import { Substores, useEditorState, useRefEditorState } from '../../editor/store
 import { useRollYourOwnFeatures } from '../../navigator/left-pane/roll-your-own-pane'
 import CanvasActions from '../canvas-actions'
 import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
+import type { GridResizeEdge } from '../canvas-strategies/interaction-state'
 import {
+  GridResizeEdges,
   createInteractionViaMouse,
   gridAxisHandle,
   gridCellHandle,
+  gridResizeHandle,
 } from '../canvas-strategies/interaction-state'
 import { windowToCanvasCoordinates } from '../dom-lookup'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
@@ -797,4 +802,168 @@ function useMouseMove(activelyDraggingOrResizingCell: string | null) {
   }, [activelyDraggingOrResizingCell, canvasOffset, canvasScale])
 
   return { hoveringCell, hoveringStart, mouseCanvasPosition }
+}
+
+interface GridResizeControlProps {
+  target: ElementPath
+}
+
+export const GridResizeControls = controlForStrategyMemoized<GridResizeControlProps>(
+  ({ target }) => {
+    const element = useEditorState(
+      Substores.metadata,
+      (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, target),
+      'GridResizeShadow element',
+    )
+
+    const dispatch = useDispatch()
+    const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
+    const scaleRef = useRefEditorState((store) => store.editor.canvas.scale)
+
+    const dragging = useEditorState(
+      Substores.canvas,
+      (store) =>
+        store.editor.canvas.interactionSession != null &&
+        store.editor.canvas.interactionSession.activeControl.type === 'GRID_RESIZE_HANDLE',
+      '',
+    )
+    const [offset, setOffset] = React.useState<{ width: number; height: number } | null>(null)
+    const onMouseMove = React.useCallback(
+      (e: MouseEvent) => {
+        if (!dragging) {
+          return
+        }
+
+        setOffset((o) =>
+          o == null ? null : { width: o.width + e.movementX, height: o.height + e.movementY },
+        )
+      },
+      [dragging],
+    )
+
+    const onMouseUp = React.useCallback(() => setOffset(null), [])
+
+    React.useEffect(() => {
+      window.addEventListener('mousemove', onMouseMove)
+      window.addEventListener('mouseup', onMouseUp)
+      return () => {
+        window.removeEventListener('mousemove', onMouseMove)
+        window.removeEventListener('mouseup', onMouseUp)
+      }
+    }, [onMouseMove, onMouseUp])
+
+    const startResizeInteraction = React.useCallback(
+      (uid: string, edge: GridResizeEdge) => (event: React.MouseEvent) => {
+        event.stopPropagation()
+        const frame = zeroRectIfNullOrInfinity(element?.globalFrame ?? null)
+        setOffset({ width: frame.width, height: frame.height })
+        const start = windowToCanvasCoordinates(
+          scaleRef.current,
+          canvasOffsetRef.current,
+          windowPoint({ x: event.nativeEvent.x, y: event.nativeEvent.y }),
+        )
+        dispatch([
+          CanvasActions.createInteractionSession(
+            createInteractionViaMouse(
+              start.canvasPositionRounded,
+              Modifier.modifiersForEvent(event),
+              gridResizeHandle(uid, edge),
+              'zero-drag-not-permitted',
+            ),
+          ),
+        ])
+      },
+      [canvasOffsetRef, dispatch, element?.globalFrame, scaleRef],
+    )
+
+    const colorTheme = useColorTheme()
+
+    if (
+      element == null ||
+      element.globalFrame == null ||
+      isInfinityRectangle(element.globalFrame)
+    ) {
+      return null
+    }
+
+    return (
+      <CanvasOffsetWrapper>
+        <div
+          data-testid={`grid-resize-container-${EP.toString(element.elementPath)}`}
+          key={`grid-resize-container-${EP.toString(element.elementPath)}`}
+          style={{
+            pointerEvents: 'none',
+            position: 'absolute',
+            top: element.globalFrame.y,
+            left: element.globalFrame.x,
+            width: offset?.width ?? element.globalFrame.width,
+            height: offset?.height ?? element.globalFrame.height,
+            display: 'grid',
+            gridTemplateRows: '10px 1fr 10px',
+            gridTemplateColumns: '10px 1fr 10px',
+            gridTemplateAreas: "'empty1 rs empty2' 'cs empty3 ce' 'empty4 re empty5'",
+          }}
+        >
+          {GridResizeEdges.map((edge) => (
+            <div
+              key={edge}
+              style={{
+                pointerEvents: 'none',
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                gridArea: gridEdgeToGridArea(edge),
+                padding: 2,
+              }}
+            >
+              <div
+                data-testid={`grid-resize-edge-${edge}`}
+                onMouseDown={startResizeInteraction(EP.toUid(element.elementPath), edge)}
+                style={{
+                  ...gridEdgeToWidthHeight(edge),
+                  backgroundColor: 'black',
+                }}
+              />
+            </div>
+          ))}
+        </div>
+      </CanvasOffsetWrapper>
+    )
+  },
+)
+
+function gridEdgeToGridArea(edge: GridResizeEdge): string {
+  switch (edge) {
+    case 'column-end':
+      return 'ce'
+    case 'column-start':
+      return 'cs'
+    case 'row-end':
+      return 're'
+    case 'row-start':
+      return 'rs'
+    default:
+      assertNever(edge)
+  }
+}
+
+function gridEdgeToWidthHeight(edge: GridResizeEdge): {
+  width: number
+  height: number
+  borderRadius: number
+} {
+  const LONG_EDGE = 20
+  const SHORT_EDGE = 6
+  switch (edge) {
+    case 'column-end':
+    case 'column-start':
+      return { width: SHORT_EDGE, height: LONG_EDGE, borderRadius: SHORT_EDGE / 2 }
+    case 'row-end':
+    case 'row-start':
+      return { width: LONG_EDGE, height: SHORT_EDGE, borderRadius: SHORT_EDGE / 2 }
+    default:
+      assertNever(edge)
+  }
 }

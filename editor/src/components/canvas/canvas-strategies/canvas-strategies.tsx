@@ -66,6 +66,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { gridRearrangeMoveStrategy } from './strategies/grid-rearrange-move-strategy'
 import { resizeGridStrategy } from './strategies/resize-grid-strategy'
 import { rearrangeGridSwapStrategy } from './strategies/rearrange-grid-swap-strategy'
+import { gridResizeElementStrategy } from './strategies/grid-resize-element-strategy'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -93,8 +94,8 @@ const moveOrReorderStrategies: MetaCanvasStrategy = (
       convertToAbsoluteAndMoveStrategy,
       convertToAbsoluteAndMoveAndSetParentFixedStrategy,
       reorderSliderStategy,
-      gridRearrangeMoveStrategy,
-      rearrangeGridSwapStrategy,
+      // gridRearrangeMoveStrategy,
+      // rearrangeGridSwapStrategy,
     ],
   )
 }
@@ -113,6 +114,7 @@ const resizeStrategies: MetaCanvasStrategy = (
       flexResizeStrategy,
       basicResizeStrategy,
       resizeGridStrategy,
+      gridResizeElementStrategy,
     ],
   )
 }
