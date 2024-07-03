@@ -35,7 +35,14 @@ export const rearrangeGridSwapStrategy: CanvasStrategyFactory = (
   interactionSession: InteractionSession | null,
 ) => {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-  if (selectedElements.length !== 1) {
+  if (
+    selectedElements.length !== 1 ||
+    interactionSession == null ||
+    interactionSession.interactionData.type !== 'DRAG' ||
+    interactionSession.interactionData.drag == null ||
+    interactionSession.activeControl.type !== 'GRID_CELL_HANDLE' ||
+    interactionSession.interactionData.modifiers.alt
+  ) {
     return null
   }
 

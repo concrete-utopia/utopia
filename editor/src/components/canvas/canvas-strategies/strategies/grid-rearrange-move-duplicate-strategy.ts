@@ -1,5 +1,12 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
 import * as EP from '../../../../core/shared/element-path'
+import { CSSCursor } from '../../../../uuiui-deps'
+import { duplicateElement } from '../../commands/duplicate-element-command'
+import { setCursorCommand } from '../../commands/set-cursor-command'
+import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
+import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
+import { updateSelectedViews } from '../../commands/update-selected-views-command'
 import { GridControls } from '../../controls/grid-controls'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
@@ -12,7 +19,7 @@ import {
 import type { InteractionSession } from '../interaction-state'
 import { runGridRearrangeMove } from './grid-helpers'
 
-export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
+export const gridRearrangeMoveDuplicateStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   customState: CustomStrategyState,
@@ -24,7 +31,7 @@ export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
     interactionSession.interactionData.type !== 'DRAG' ||
     interactionSession.interactionData.drag == null ||
     interactionSession.activeControl.type !== 'GRID_CELL_HANDLE' ||
-    interactionSession.interactionData.modifiers.alt
+    !interactionSession.interactionData.modifiers.alt
   ) {
     return null
   }
@@ -41,9 +48,9 @@ export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
   }
 
   return {
-    id: 'rearrange-grid-move-strategy',
-    name: 'Rearrange Grid (Move)',
-    descriptiveLabel: 'Rearrange Grid (Move)',
+    id: 'rearrange-grid-move-duplicate-strategy',
+    name: 'Rearrange Grid (Duplicate)',
+    descriptiveLabel: 'Rearrange Grid (Duplicate)',
     icon: {
       category: 'tools',
       type: 'pointer',
@@ -56,7 +63,7 @@ export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
         show: 'always-visible',
       },
     ],
-    fitness: onlyFitWhenDraggingThisControl(interactionSession, 'GRID_CELL_HANDLE', 2),
+    fitness: onlyFitWhenDraggingThisControl(interactionSession, 'GRID_CELL_HANDLE', 3),
     apply: () => {
       if (
         interactionSession == null ||
@@ -67,7 +74,16 @@ export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
         return emptyStrategyApplicationResult
       }
 
-      const targetElement = selectedElement
+      const oldUid = EP.toUid(selectedElement)
+
+      let duplicatedElementNewUids = { ...customState.duplicatedElementNewUids }
+      let newUid = duplicatedElementNewUids[oldUid]
+      if (newUid == null) {
+        newUid = 'dup-' + generateUidWithExistingComponents(canvasState.projectContents)
+        duplicatedElementNewUids[oldUid] = newUid
+      }
+
+      const targetElement = EP.appendToPath(EP.parentPath(selectedElement), newUid)
 
       const { commands: moveCommands, targetGridCell: newTargetGridCell } = runGridRearrangeMove(
         targetElement,
@@ -82,9 +98,20 @@ export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
         return emptyStrategyApplicationResult
       }
 
-      return strategyApplicationResult(moveCommands, {
-        targetGridCell: newTargetGridCell,
-      })
+      return strategyApplicationResult(
+        [
+          duplicateElement('always', selectedElement, newUid),
+          ...moveCommands,
+          setElementsToRerenderCommand([...selectedElements, targetElement]),
+          updateSelectedViews('always', [targetElement]),
+          updateHighlightedViews('always', [targetElement]),
+          setCursorCommand(CSSCursor.Duplicate),
+        ],
+        {
+          targetGridCell: newTargetGridCell,
+          duplicatedElementNewUids: duplicatedElementNewUids,
+        },
+      )
     },
   }
 }
