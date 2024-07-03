@@ -1,10 +1,8 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
+import type { GridElementProperties } from '../../../../core/shared/element-template'
 import { offsetPoint } from '../../../../core/shared/math-utils'
-import type { ElementPath } from '../../../../core/shared/project-file-types'
-import { create } from '../../../../core/shared/property-path'
-import type { CanvasCommand } from '../../commands/commands'
-import { setProperty } from '../../commands/set-property-command'
+import { assertNever } from '../../../../core/shared/utils'
 import { GridControls, GridResizeControls } from '../../controls/grid-controls'
 import { canvasPointToWindowPoint } from '../../dom-lookup'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
@@ -16,7 +14,7 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
-import { getGridCellUnderMouse } from './grid-helpers'
+import { getGridCellUnderMouse, setGridProps } from './grid-helpers'
 
 export const gridResizeElementStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -91,23 +89,48 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
         return emptyStrategyApplicationResult
       }
 
-      return strategyApplicationResult(
-        resizeGridCellCommands(selectedElement, {
-          columnEnd: targetCell.column + 1,
-          rowEnd: targetCell.row + 1,
-        }),
-        { targetGridCell: targetCell },
-      )
+      let gridProps: GridElementProperties = MetadataUtils.findElementByElementPath(
+        canvasState.startingMetadata,
+        selectedElement,
+      )?.specialSizeMeasurements.elementGridProperties ?? {
+        gridColumnEnd: { numericalPosition: 0 },
+        gridColumnStart: { numericalPosition: 0 },
+        gridRowEnd: { numericalPosition: 0 },
+        gridRowStart: { numericalPosition: 0 },
+      }
+
+      switch (interactionSession.activeControl.edge) {
+        case 'column-start':
+          gridProps = {
+            ...gridProps,
+            gridColumnStart: { numericalPosition: targetCell.column },
+          }
+          break
+        case 'column-end':
+          gridProps = {
+            ...gridProps,
+            gridColumnEnd: { numericalPosition: targetCell.column + 1 },
+          }
+          break
+        case 'row-end':
+          gridProps = {
+            ...gridProps,
+            gridRowEnd: { numericalPosition: targetCell.row + 1 },
+          }
+          break
+        case 'row-start':
+          gridProps = {
+            ...gridProps,
+            gridRowStart: { numericalPosition: targetCell.row },
+          }
+          break
+        default:
+          assertNever(interactionSession.activeControl.edge)
+      }
+
+      return strategyApplicationResult(setGridProps(selectedElement, gridProps), {
+        targetGridCell: targetCell,
+      })
     },
   }
-}
-
-function resizeGridCellCommands(
-  elementPath: ElementPath,
-  { columnEnd, rowEnd }: { columnEnd: number; rowEnd: number },
-): CanvasCommand[] {
-  return [
-    setProperty('always', elementPath, create('style', 'gridColumnEnd'), columnEnd),
-    setProperty('always', elementPath, create('style', 'gridRowEnd'), rowEnd),
-  ]
 }

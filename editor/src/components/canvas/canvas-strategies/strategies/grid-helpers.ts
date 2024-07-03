@@ -3,6 +3,7 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import type {
   ElementInstanceMetadataMap,
   GridElementProperties,
+  GridPosition,
 } from '../../../../core/shared/element-template'
 import type { CanvasVector } from '../../../../core/shared/math-utils'
 import {
@@ -18,6 +19,8 @@ import type { GridCellCoordinates } from '../../controls/grid-controls'
 import { gridCellCoordinates } from '../../controls/grid-controls'
 import { canvasPointToWindowPoint } from '../../dom-lookup'
 import type { DragInteractionData } from '../interaction-state'
+import { stripNulls } from '../../../../core/shared/array-utils'
+import { optionalMap } from '../../../../core/shared/optional-utils'
 
 export function getGridCellUnderMouse(mousePoint: WindowPoint) {
   return getGridCellAtPoint(mousePoint, false)
@@ -151,4 +154,39 @@ export function runGridRearrangeMove(
     commands: commands,
     targetGridCell: newTargetGridCell,
   }
+}
+
+export function gridPositionToValue(p: GridPosition | null | undefined): string | number | null {
+  if (p == null) {
+    return null
+  }
+  if (p === 'auto') {
+    return 'auto'
+  }
+
+  return p.numericalPosition
+}
+
+export function setGridProps(
+  elementPath: ElementPath,
+  gridProps: Partial<GridElementProperties>,
+): CanvasCommand[] {
+  return stripNulls([
+    optionalMap(
+      (s) => setProperty('always', elementPath, create('style', 'gridColumnStart'), s),
+      gridPositionToValue(gridProps?.gridColumnStart),
+    ),
+    optionalMap(
+      (s) => setProperty('always', elementPath, create('style', 'gridColumnEnd'), s),
+      gridPositionToValue(gridProps?.gridColumnEnd),
+    ),
+    optionalMap(
+      (s) => setProperty('always', elementPath, create('style', 'gridRowStart'), s),
+      gridPositionToValue(gridProps?.gridRowStart),
+    ),
+    optionalMap(
+      (s) => setProperty('always', elementPath, create('style', 'gridRowEnd'), s),
+      gridPositionToValue(gridProps?.gridRowEnd),
+    ),
+  ])
 }
