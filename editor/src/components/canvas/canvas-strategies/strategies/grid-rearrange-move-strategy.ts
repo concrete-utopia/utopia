@@ -77,6 +77,7 @@ export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
         canvasState.scale,
         canvasState.canvasOffset,
         customState.targetGridCell,
+        false,
       )
       if (moveCommands.length === 0) {
         return emptyStrategyApplicationResult

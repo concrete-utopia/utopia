@@ -19,10 +19,19 @@ import { gridCellCoordinates } from '../../controls/grid-controls'
 import { canvasPointToWindowPoint } from '../../dom-lookup'
 import type { DragInteractionData } from '../interaction-state'
 
-export function getGridCellUnderMouse(
+export function getGridCellUnderMouse(mousePoint: WindowPoint) {
+  return getGridCellAtPoint(mousePoint, false)
+}
+
+function getGridCellUnderMouseRecursive(mousePoint: WindowPoint) {
+  return getGridCellAtPoint(mousePoint, true)
+}
+
+function getGridCellAtPoint(
   windowPoint: WindowPoint,
+  duplicating: boolean,
 ): { id: string; coordinates: GridCellCoordinates } | null {
-  function maybeRecursivelyFindElementUnderPoint(elements: Element[]): Element | null {
+  function maybeRecursivelyFindCellAtPoint(elements: Element[]): Element | null {
     // If this used during duplication, the canvas controls will be in the way and we need to look into the
     // children too.
     for (const element of elements) {
@@ -33,16 +42,18 @@ export function getGridCellUnderMouse(
         }
       }
 
-      const child = maybeRecursivelyFindElementUnderPoint(Array.from(element.children))
-      if (child != null) {
-        return child
+      if (duplicating) {
+        const child = maybeRecursivelyFindCellAtPoint(Array.from(element.children))
+        if (child != null) {
+          return child
+        }
       }
     }
 
     return null
   }
 
-  const cellUnderMouse = maybeRecursivelyFindElementUnderPoint(
+  const cellUnderMouse = maybeRecursivelyFindCellAtPoint(
     document.elementsFromPoint(windowPoint.x, windowPoint.y),
   )
   if (cellUnderMouse == null) {
@@ -68,6 +79,7 @@ export function runGridRearrangeMove(
   canvasScale: number,
   canvasOffset: CanvasVector,
   targetGridCell: GridCellCoordinates | null,
+  duplicating: boolean,
 ): { commands: CanvasCommand[]; targetGridCell: GridCellCoordinates | null } {
   let commands: CanvasCommand[] = []
 
@@ -82,7 +94,9 @@ export function runGridRearrangeMove(
   )
 
   let newTargetGridCell = targetGridCell ?? null
-  const cellUnderMouse = getGridCellUnderMouse(mouseWindowPoint)
+  const cellUnderMouse = duplicating
+    ? getGridCellUnderMouseRecursive(mouseWindowPoint)
+    : getGridCellUnderMouse(mouseWindowPoint)
   if (cellUnderMouse != null) {
     newTargetGridCell = cellUnderMouse.coordinates
   }
