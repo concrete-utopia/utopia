@@ -1,10 +1,12 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
+import { offsetPoint } from '../../../../core/shared/math-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { create } from '../../../../core/shared/property-path'
 import type { CanvasCommand } from '../../commands/commands'
 import { setProperty } from '../../commands/set-property-command'
-import { GridControls, GridResizeControls, TargetGridCell } from '../../controls/grid-controls'
+import { GridResizeControls } from '../../controls/grid-controls'
+import { canvasPointToWindowPoint } from '../../dom-lookup'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
 import type { InteractionCanvasState } from '../canvas-strategy-types'
@@ -14,10 +16,12 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
+import { getGridCellUnderMouse } from './grid-helpers'
 
 export const gridResizeElementStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
+  customState,
 ) => {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   if (selectedElements.length !== 1) {
@@ -62,11 +66,31 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
         return emptyStrategyApplicationResult
       }
 
+      const mouseWindowPoint = canvasPointToWindowPoint(
+        offsetPoint(
+          interactionSession.interactionData.dragStart,
+          interactionSession.interactionData.drag,
+        ),
+        canvasState.scale,
+        canvasState.canvasOffset,
+      )
+
+      let targetCell = customState.targetGridCell
+      const cellUnderMouse = getGridCellUnderMouse(mouseWindowPoint)
+      if (cellUnderMouse != null) {
+        targetCell = cellUnderMouse.coordinates
+      }
+
+      if (targetCell == null) {
+        return emptyStrategyApplicationResult
+      }
+
       return strategyApplicationResult(
         resizeGridCellCommands(selectedElement, {
-          columnEnd: TargetGridCell.current.column + 1,
-          rowEnd: TargetGridCell.current.row + 1,
+          columnEnd: targetCell.column,
+          rowEnd: targetCell.row,
         }),
+        { targetGridCell: targetCell },
       )
     },
   }
