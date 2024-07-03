@@ -32,8 +32,7 @@ function getGridCellAtPoint(
   duplicating: boolean,
 ): { id: string; coordinates: GridCellCoordinates } | null {
   function maybeRecursivelyFindCellAtPoint(elements: Element[]): Element | null {
-    // If this used during duplication, the canvas controls will be in the way and we need to look into the
-    // children too.
+    // If this used during duplication, the canvas controls will be in the way and we need to traverse the children too.
     for (const element of elements) {
       if (element.id.startsWith('gridcell-')) {
         const rect = element.getBoundingClientRect()
