@@ -198,6 +198,7 @@ describe('interactionStart', () => {
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
           "strategyGeneratedUidsCache": Object {},
+          "targetGridCell": null,
         },
         "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
@@ -260,6 +261,7 @@ describe('interactionStart', () => {
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
           "strategyGeneratedUidsCache": Object {},
+          "targetGridCell": null,
         },
         "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
@@ -342,6 +344,7 @@ describe('interactionUpdate', () => {
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
           "strategyGeneratedUidsCache": Object {},
+          "targetGridCell": null,
         },
         "sortedApplicableStrategies": Array [
           Object {
@@ -424,6 +427,7 @@ describe('interactionUpdate', () => {
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
           "strategyGeneratedUidsCache": Object {},
+          "targetGridCell": null,
         },
         "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
@@ -500,6 +504,7 @@ describe('interactionHardReset', () => {
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
           "strategyGeneratedUidsCache": Object {},
+          "targetGridCell": null,
         },
         "sortedApplicableStrategies": Array [
           Object {
@@ -584,6 +589,7 @@ describe('interactionHardReset', () => {
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
           "strategyGeneratedUidsCache": Object {},
+          "targetGridCell": null,
         },
         "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
@@ -674,6 +680,7 @@ describe('interactionUpdate with user changed strategy', () => {
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
           "strategyGeneratedUidsCache": Object {},
+          "targetGridCell": null,
         },
         "sortedApplicableStrategies": Array [
           Object {
@@ -759,6 +766,7 @@ describe('interactionUpdate with user changed strategy', () => {
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
           "strategyGeneratedUidsCache": Object {},
+          "targetGridCell": null,
         },
         "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
