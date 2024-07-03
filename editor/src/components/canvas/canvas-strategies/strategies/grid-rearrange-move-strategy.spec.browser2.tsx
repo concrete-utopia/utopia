@@ -18,14 +18,10 @@ describe('grid rearrange move strategy', () => {
 
     await mouseDragFromPointToPoint(
       sourceGridCell,
-      getRectCenter(
-        localRectangle({
-          x: sourceGridCell.getBoundingClientRect().x,
-          y: sourceGridCell.getBoundingClientRect().y,
-          width: sourceGridCell.getBoundingClientRect().width,
-          height: sourceGridCell.getBoundingClientRect().height,
-        }),
-      ),
+      {
+        x: sourceGridCell.getBoundingClientRect().x + 10,
+        y: sourceGridCell.getBoundingClientRect().y + 10,
+      },
       getRectCenter(
         localRectangle({
           x: targetGridCell.getBoundingClientRect().x,
