@@ -21,7 +21,13 @@ export interface CustomStrategyState {
   strategyGeneratedUidsCache: { [elementPath: string]: string | undefined }
   elementsToRerender: Array<ElementPath>
   action: ActiveFrameAction | null
-  targetGridCell: GridCellCoordinates | null
+  grid: GridCustomStrategyState
+}
+
+export type GridCustomStrategyState = {
+  targetCell: GridCellCoordinates | null
+  draggingFromCell: GridCellCoordinates | null
+  rootCell: GridCellCoordinates | null
 }
 
 export type CustomStrategyStatePatch = Partial<CustomStrategyState>
@@ -34,7 +40,11 @@ export function defaultCustomStrategyState(): CustomStrategyState {
     strategyGeneratedUidsCache: {},
     elementsToRerender: [],
     action: null,
-    targetGridCell: null,
+    grid: {
+      targetCell: null,
+      draggingFromCell: null,
+      rootCell: null,
+    },
   }
 }
 
