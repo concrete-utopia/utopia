@@ -9,10 +9,19 @@ import {
   jsxElementName,
   jsxAttributesFromMap,
   emptyComments,
-  simpleAttribute,
+  jsExpressionWithPrintBehavior,
+  jsxAttributesEntry,
 } from '../../core/shared/element-template'
 import type { NormalisedFrame } from 'utopia-api/core'
 import { defaultImageAttributes } from '../shared/project-components'
+import type { PrintBehavior } from 'utopia-shared/src/types'
+
+export function dataUIDExpression(
+  uid: string,
+  printBehavior: PrintBehavior = 'skip-printing',
+): JSExpression {
+  return jsExpressionWithPrintBehavior(jsExpressionValue(uid, emptyComments), printBehavior)
+}
 
 export function defaultSceneElement(
   uid: string,
@@ -21,7 +30,7 @@ export function defaultSceneElement(
   children: JSXElementChildren,
 ): JSXElement {
   const props = jsxAttributesFromMap({
-    'data-uid': jsExpressionValue(uid, emptyComments),
+    'data-uid': dataUIDExpression(uid),
     'data-label': jsExpressionValue(label, emptyComments),
     style: defaultSceneElementStyle(frame),
   })
@@ -60,7 +69,7 @@ export function defaultAnimatedDivElement(uid: string): JSXElement {
         },
         emptyComments,
       ),
-      'data-uid': jsExpressionValue(uid, emptyComments),
+      'data-uid': dataUIDExpression(uid),
     }),
     [],
   )
@@ -71,7 +80,7 @@ export function defaultUnstyledDivElement(uid: string): JSXElement {
     jsxElementName('div', []),
     uid,
     jsxAttributesFromMap({
-      'data-uid': jsExpressionValue(uid, emptyComments),
+      'data-uid': dataUIDExpression(uid),
     }),
     [],
   )
@@ -102,7 +111,7 @@ export function defaultRectangleElement(uid: string): JSXElement {
     uid,
     jsxAttributesFromMap({
       style: defaultRectangleElementStyle(),
-      'data-uid': jsExpressionValue(uid, emptyComments),
+      'data-uid': dataUIDExpression(uid),
     }),
     [],
   )
@@ -114,7 +123,7 @@ export function defaultEllipseElement(uid: string): JSXElement {
     uid,
     jsxAttributesFromMap({
       style: defaultElementStyle(),
-      'data-uid': jsExpressionValue(uid, emptyComments),
+      'data-uid': dataUIDExpression(uid),
     }),
     [],
   )
@@ -126,7 +135,7 @@ export function defaultDivElement(uid: string): JSXElement {
     uid,
     jsxAttributesFromMap({
       style: defaultElementStyle(),
-      'data-uid': jsExpressionValue(uid, emptyComments),
+      'data-uid': dataUIDExpression(uid),
     }),
     [],
   )
@@ -144,7 +153,7 @@ export function defaultSpanElement(uid: string): JSXElement {
         },
         emptyComments,
       ),
-      'data-uid': jsExpressionValue(uid, emptyComments),
+      'data-uid': dataUIDExpression(uid),
     }),
     [],
   )
@@ -154,7 +163,15 @@ export function defaultImgElement(uid: string): JSXElement {
   return jsxElement(
     jsxElementName('img', []),
     uid,
-    [...defaultImageAttributes(), simpleAttribute('data-uid', uid)],
+    [
+      ...defaultImageAttributes(),
+      jsxAttributesEntry(
+        'data-uid',
+        jsExpressionValue('data-uid', emptyComments),
+        emptyComments,
+        'skip-printing',
+      ),
+    ],
     [],
   )
 }
@@ -164,7 +181,7 @@ export function defaultButtonElement(uid: string): JSXElement {
     jsxElementName('button', []),
     uid,
     jsxAttributesFromMap({
-      'data-uid': jsExpressionValue(uid, emptyComments),
+      'data-uid': dataUIDExpression(uid),
       style: jsExpressionValue({ position: 'absolute' }, emptyComments),
     }),
     [],

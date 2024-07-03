@@ -426,7 +426,7 @@ export var app = (props) => {
         })
         return printCode(
           '/index.js',
-          printCodeOptions(false, true, false, true),
+          printCodeOptions(false, true, false, 'always-for-tests'),
           success.imports,
           updatedTopLevelElements,
           success.jsxFactoryFunction,

@@ -1886,7 +1886,7 @@ function createExpressionOtherJavaScript(
     sourceFile,
     node,
     null,
-    [jsxAttributesEntry('expression', withoutUID, emptyComments)],
+    [jsxAttributesEntry('expression', withoutUID, emptyComments, 'include-in-printing')],
     existingHighlightBounds,
     alreadyExistingUIDs,
     comments,
@@ -2705,7 +2705,12 @@ function parseElementProps(
           alreadyExistingUIDs,
         )
         result.push(
-          jsxAttributesEntry(prop.name.getText(sourceFile), expression.value, propComments),
+          jsxAttributesEntry(
+            prop.name.getText(sourceFile),
+            expression.value,
+            propComments,
+            'include-in-printing',
+          ),
         )
         highlightBounds = mergeHighlightBounds(highlightBounds, expression.highlightBounds)
         propsUsed.push(...expression.propsUsed)
@@ -2732,6 +2737,7 @@ function parseElementProps(
                 prop.name.getText(sourceFile),
                 attributeResult.value.value,
                 propComments,
+                'include-in-printing',
               ),
             )
             highlightBounds = mergeHighlightBounds(
@@ -3098,7 +3104,9 @@ function forciblyUpdateDataUID(
     alreadyExistingUIDs,
   )
   const updatedProps =
-    props == null ? null : setJSXAttributesAttribute(props, 'data-uid', uidExpression)
+    props == null
+      ? null
+      : setJSXAttributesAttribute(props, 'data-uid', uidExpression, 'skip-printing')
   let highlightBoundsResult: HighlightBoundsForUids = mergeHighlightBounds(
     existingHighlightBounds,
     buildHighlightBoundsForUids(sourceFile, originatingElement, uid),
@@ -3733,6 +3741,7 @@ export function parseOutJSXElements(
           'condition',
           jsExpressionValue(originalConditionString, emptyComments),
           emptyComments,
+          'include-in-printing',
         ),
       ],
       existingHighlightBounds,

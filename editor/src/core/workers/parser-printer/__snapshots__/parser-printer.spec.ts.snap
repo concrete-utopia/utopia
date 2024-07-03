@@ -193,6 +193,13 @@ function otherFn(n) {
       "startLine": 20,
       "uid": "05f",
     },
+    "3c3": Object {
+      "endCol": 38,
+      "endLine": 23,
+      "startCol": 14,
+      "startLine": 23,
+      "uid": "3c3",
+    },
     "60d": Object {
       "endCol": 22,
       "endLine": 22,
@@ -228,15 +235,15 @@ function otherFn(n) {
       "startLine": 21,
       "uid": "aab",
     },
-    "bb8": Object {
+  },
+  "highlightBounds": Object {
+    "3c3": Object {
       "endCol": 38,
       "endLine": 23,
       "startCol": 14,
       "startLine": 23,
-      "uid": "bb8",
+      "uid": "3c3",
     },
-  },
-  "highlightBounds": Object {
     "aaa": Object {
       "endCol": 11,
       "endLine": 25,
@@ -250,13 +257,6 @@ function otherFn(n) {
       "startCol": 6,
       "startLine": 21,
       "uid": "aab",
-    },
-    "bb8": Object {
-      "endCol": 38,
-      "endLine": 23,
-      "startCol": 14,
-      "startLine": 23,
-      "uid": "bb8",
     },
   },
   "imports": Object {
@@ -602,6 +602,7 @@ export var whatever = (props) => {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "printBehavior": "include-in-printing",
                 "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
@@ -619,6 +620,7 @@ export var whatever = (props) => {
                   "trailingComments": Array [],
                 },
                 "key": "left",
+                "printBehavior": "include-in-printing",
                 "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
@@ -700,6 +702,7 @@ export var whatever = (props) => {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "printBehavior": "include-in-printing",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
@@ -738,13 +741,6 @@ Object {
     },
   ],
   "fullHighlightBounds": Object {
-    "057": Object {
-      "endCol": 22,
-      "endLine": 6,
-      "startCol": 17,
-      "startLine": 6,
-      "uid": "057",
-    },
     "05f": Object {
       "endCol": 53,
       "endLine": 5,
@@ -759,6 +755,20 @@ Object {
       "startLine": 6,
       "uid": "083",
     },
+    "093": Object {
+      "endCol": 22,
+      "endLine": 4,
+      "startCol": 17,
+      "startLine": 4,
+      "uid": "093",
+    },
+    "15f": Object {
+      "endCol": 45,
+      "endLine": 6,
+      "startCol": 17,
+      "startLine": 6,
+      "uid": "15f",
+    },
     "262": Object {
       "endCol": 37,
       "endLine": 4,
@@ -766,26 +776,19 @@ Object {
       "startLine": 4,
       "uid": "262",
     },
-    "2ec": Object {
-      "endCol": 45,
+    "58a": Object {
+      "endCol": 22,
       "endLine": 6,
       "startCol": 17,
       "startLine": 6,
-      "uid": "2ec",
+      "uid": "58a",
     },
-    "389": Object {
+    "66a": Object {
       "endCol": 45,
       "endLine": 4,
       "startCol": 17,
       "startLine": 4,
-      "uid": "389",
-    },
-    "7a0": Object {
-      "endCol": 22,
-      "endLine": 4,
-      "startCol": 17,
-      "startLine": 4,
-      "uid": "7a0",
+      "uid": "66a",
     },
     "908": Object {
       "endCol": 37,
@@ -801,19 +804,12 @@ Object {
       "startLine": 5,
       "uid": "aaa",
     },
-    "acb": Object {
+    "b18": Object {
       "endCol": 45,
       "endLine": 4,
       "startCol": 40,
       "startLine": 4,
-      "uid": "acb",
-    },
-    "b06": Object {
-      "endCol": 45,
-      "endLine": 6,
-      "startCol": 40,
-      "startLine": 6,
-      "uid": "b06",
+      "uid": "b18",
     },
     "c7e": Object {
       "endCol": 31,
@@ -836,35 +832,42 @@ Object {
       "startLine": 4,
       "uid": "e70",
     },
+    "fcb": Object {
+      "endCol": 45,
+      "endLine": 6,
+      "startCol": 40,
+      "startLine": 6,
+      "uid": "fcb",
+    },
   },
   "highlightBounds": Object {
-    "057": Object {
-      "endCol": 22,
-      "endLine": 6,
-      "startCol": 17,
-      "startLine": 6,
-      "uid": "057",
-    },
-    "2ec": Object {
-      "endCol": 45,
-      "endLine": 6,
-      "startCol": 17,
-      "startLine": 6,
-      "uid": "2ec",
-    },
-    "389": Object {
-      "endCol": 45,
-      "endLine": 4,
-      "startCol": 17,
-      "startLine": 4,
-      "uid": "389",
-    },
-    "7a0": Object {
+    "093": Object {
       "endCol": 22,
       "endLine": 4,
       "startCol": 17,
       "startLine": 4,
-      "uid": "7a0",
+      "uid": "093",
+    },
+    "15f": Object {
+      "endCol": 45,
+      "endLine": 6,
+      "startCol": 17,
+      "startLine": 6,
+      "uid": "15f",
+    },
+    "58a": Object {
+      "endCol": 22,
+      "endLine": 6,
+      "startCol": 17,
+      "startLine": 6,
+      "uid": "58a",
+    },
+    "66a": Object {
+      "endCol": 45,
+      "endLine": 4,
+      "startCol": 17,
+      "startLine": 4,
+      "uid": "66a",
     },
     "908": Object {
       "endCol": 37,
@@ -880,19 +883,12 @@ Object {
       "startLine": 5,
       "uid": "aaa",
     },
-    "acb": Object {
+    "b18": Object {
       "endCol": 45,
       "endLine": 4,
       "startCol": 40,
       "startLine": 4,
-      "uid": "acb",
-    },
-    "b06": Object {
-      "endCol": 45,
-      "endLine": 6,
-      "startCol": 40,
-      "startLine": 6,
-      "uid": "b06",
+      "uid": "b18",
     },
     "e70": Object {
       "endCol": 37,
@@ -900,6 +896,13 @@ Object {
       "startCol": 25,
       "startLine": 4,
       "uid": "e70",
+    },
+    "fcb": Object {
+      "endCol": 45,
+      "endLine": 6,
+      "startCol": 40,
+      "startLine": 6,
+      "uid": "fcb",
     },
   },
   "imports": Object {
@@ -1086,6 +1089,7 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
                 "trailingComments": Array [],
               },
               "key": "data-uid",
+              "printBehavior": "skip-printing",
               "type": "JSX_ATTRIBUTES_ENTRY",
               "value": Object {
                 "comments": Object {
@@ -1148,6 +1152,7 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "printBehavior": "include-in-printing",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
@@ -1306,6 +1311,7 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
                 "trailingComments": Array [],
               },
               "key": "data-uid",
+              "printBehavior": "skip-printing",
               "type": "JSX_ATTRIBUTES_ENTRY",
               "value": Object {
                 "comments": Object {
@@ -1441,6 +1447,13 @@ export var App = (props) => <View data-uid='bbb'>
       "startLine": 12,
       "uid": "190",
     },
+    "4e2": Object {
+      "endCol": 9,
+      "endLine": 13,
+      "startCol": 3,
+      "startLine": 13,
+      "uid": "4e2",
+    },
     "522": Object {
       "endCol": 16,
       "endLine": 11,
@@ -1455,28 +1468,21 @@ export var App = (props) => <View data-uid='bbb'>
       "startLine": 12,
       "uid": "bbb",
     },
-    "fae": Object {
+  },
+  "highlightBounds": Object {
+    "4e2": Object {
       "endCol": 9,
       "endLine": 13,
       "startCol": 3,
       "startLine": 13,
-      "uid": "fae",
+      "uid": "4e2",
     },
-  },
-  "highlightBounds": Object {
     "bbb": Object {
       "endCol": 7,
       "endLine": 14,
       "startCol": 28,
       "startLine": 12,
       "uid": "bbb",
-    },
-    "fae": Object {
-      "endCol": 9,
-      "endLine": 13,
-      "startCol": 3,
-      "startLine": 13,
-      "uid": "fae",
     },
   },
   "imports": Object {
@@ -1752,6 +1758,7 @@ export var App = (props) => <View data-uid='bbb'>
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "printBehavior": "include-in-printing",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {

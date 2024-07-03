@@ -203,6 +203,13 @@ function b(n) {
       "startLine": 34,
       "uid": "190",
     },
+    "1cc": Object {
+      "endCol": 19,
+      "endLine": 21,
+      "startCol": 15,
+      "startLine": 21,
+      "uid": "1cc",
+    },
     "2c3": Object {
       "endCol": 44,
       "endLine": 37,
@@ -265,6 +272,13 @@ function b(n) {
       "startCol": 14,
       "startLine": 20,
       "uid": "79f",
+    },
+    "7a1": Object {
+      "endCol": 10,
+      "endLine": 21,
+      "startCol": 6,
+      "startLine": 21,
+      "uid": "7a1",
     },
     "a53": Object {
       "endCol": 1,
@@ -343,13 +357,6 @@ function b(n) {
       "startLine": 34,
       "uid": "dea",
     },
-    "e18": Object {
-      "endCol": 19,
-      "endLine": 21,
-      "startCol": 15,
-      "startLine": 21,
-      "uid": "e18",
-    },
     "f31": Object {
       "endCol": 74,
       "endLine": 19,
@@ -357,15 +364,22 @@ function b(n) {
       "startLine": 19,
       "uid": "f31",
     },
-    "f55": Object {
+  },
+  "highlightBounds": Object {
+    "1cc": Object {
+      "endCol": 19,
+      "endLine": 21,
+      "startCol": 15,
+      "startLine": 21,
+      "uid": "1cc",
+    },
+    "7a1": Object {
       "endCol": 10,
       "endLine": 21,
       "startCol": 6,
       "startLine": 21,
-      "uid": "f55",
+      "uid": "7a1",
     },
-  },
-  "highlightBounds": Object {
     "aaa": Object {
       "endCol": 26,
       "endLine": 21,
@@ -393,20 +407,6 @@ function b(n) {
       "startCol": 4,
       "startLine": 35,
       "uid": "ccc",
-    },
-    "e18": Object {
-      "endCol": 19,
-      "endLine": 21,
-      "startCol": 15,
-      "startLine": 21,
-      "uid": "e18",
-    },
-    "f55": Object {
-      "endCol": 10,
-      "endLine": 21,
-      "startCol": 6,
-      "startLine": 21,
-      "uid": "f55",
     },
   },
   "imports": Object {
@@ -793,6 +793,7 @@ export var storyboard = (
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "printBehavior": "include-in-printing",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
@@ -810,6 +811,7 @@ export var storyboard = (
               "trailingComments": Array [],
             },
             "key": "style",
+            "printBehavior": "include-in-printing",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
@@ -831,6 +833,7 @@ export var storyboard = (
               "trailingComments": Array [],
             },
             "key": "layout",
+            "printBehavior": "include-in-printing",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
@@ -1018,6 +1021,7 @@ export var storyboard = (
                       "trailingComments": Array [],
                     },
                     "key": "data-uid",
+                    "printBehavior": "include-in-printing",
                     "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
                       "comments": Object {
@@ -1047,6 +1051,7 @@ export var storyboard = (
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "printBehavior": "include-in-printing",
                 "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
@@ -1064,6 +1069,7 @@ export var storyboard = (
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "printBehavior": "include-in-printing",
                 "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
@@ -1099,6 +1105,7 @@ export var storyboard = (
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "printBehavior": "include-in-printing",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
@@ -1116,6 +1123,7 @@ export var storyboard = (
               "trailingComments": Array [],
             },
             "key": "layout",
+            "printBehavior": "include-in-printing",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {

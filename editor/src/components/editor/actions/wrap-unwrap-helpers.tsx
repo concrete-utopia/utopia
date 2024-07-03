@@ -304,6 +304,7 @@ export function fixParentContainingBlockSettings(
           attributes,
           PP.create('style', 'contain'),
           jsExpressionValue('layout', emptyComments),
+          'include-in-printing',
         )
         return foldEither(
           () => {

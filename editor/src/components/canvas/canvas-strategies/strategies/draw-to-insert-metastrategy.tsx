@@ -538,7 +538,7 @@ function getStyleAttributesForFixedPositionAndSizeHug(
     },
   ]
 
-  const layoutProps = setJSXValuesAtPaths(subject.element.props, propsToSet)
+  const layoutProps = setJSXValuesAtPaths(subject.element.props, propsToSet, 'include-in-printing')
   // Assign the new properties
   return foldEither(
     (_) => {

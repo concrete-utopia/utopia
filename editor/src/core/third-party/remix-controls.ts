@@ -36,7 +36,14 @@ export const RemixRunReactComponents: ComponentDescriptorsForFile = {
         elementToInsert: () =>
           jsxElementWithoutUID(
             'Link',
-            [jsxAttributesEntry('to', jsExpressionValue('/', emptyComments), emptyComments)],
+            [
+              jsxAttributesEntry(
+                'to',
+                jsExpressionValue('/', emptyComments),
+                emptyComments,
+                'include-in-printing',
+              ),
+            ],
             [jsxTextBlock('Link')],
           ),
       },

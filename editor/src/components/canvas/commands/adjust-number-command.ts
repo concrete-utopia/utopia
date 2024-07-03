@@ -188,7 +188,7 @@ export function applyValuesAtPath(
             props: updatedProps,
           }
         },
-        setJSXValuesAtPaths(element.props, jsxValuesAndPathsToSet),
+        setJSXValuesAtPaths(element.props, jsxValuesAndPathsToSet, 'include-in-printing'),
       )
     },
   )
