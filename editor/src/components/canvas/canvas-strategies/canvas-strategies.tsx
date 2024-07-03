@@ -94,8 +94,8 @@ const moveOrReorderStrategies: MetaCanvasStrategy = (
       convertToAbsoluteAndMoveStrategy,
       convertToAbsoluteAndMoveAndSetParentFixedStrategy,
       reorderSliderStategy,
-      // gridRearrangeMoveStrategy,
-      // rearrangeGridSwapStrategy,
+      gridRearrangeMoveStrategy,
+      rearrangeGridSwapStrategy,
     ],
   )
 }

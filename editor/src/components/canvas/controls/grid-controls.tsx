@@ -895,6 +895,7 @@ export const GridResizeControls = controlForStrategyMemoized<GridResizeControlPr
             gridTemplateRows: '10px 1fr 10px',
             gridTemplateColumns: '10px 1fr 10px',
             gridTemplateAreas: "'empty1 rs empty2' 'cs empty3 ce' 'empty4 re empty5'",
+            backgroundColor: '#ffffff66',
           }}
         >
           {GridResizeEdges.map((edge) => (
@@ -908,15 +909,16 @@ export const GridResizeControls = controlForStrategyMemoized<GridResizeControlPr
                 justifyContent: 'center',
                 alignItems: 'center',
                 gridArea: gridEdgeToGridArea(edge),
-                padding: 2,
               }}
             >
               <div
                 data-testid={`grid-resize-edge-${edge}`}
                 onMouseDown={startResizeInteraction(EP.toUid(element.elementPath), edge)}
                 style={{
+                  pointerEvents: 'initial',
                   ...gridEdgeToWidthHeight(edge),
                   backgroundColor: 'black',
+                  opacity: 0.5,
                 }}
               />
             </div>
@@ -947,8 +949,8 @@ function gridEdgeToWidthHeight(edge: GridResizeEdge): {
   height: number
   borderRadius: number
 } {
-  const LONG_EDGE = 20
-  const SHORT_EDGE = 6
+  const LONG_EDGE = 24
+  const SHORT_EDGE = 4
   switch (edge) {
     case 'column-end':
     case 'column-start':

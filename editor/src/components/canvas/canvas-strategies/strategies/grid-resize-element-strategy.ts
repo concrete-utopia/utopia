@@ -5,7 +5,7 @@ import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { create } from '../../../../core/shared/property-path'
 import type { CanvasCommand } from '../../commands/commands'
 import { setProperty } from '../../commands/set-property-command'
-import { GridResizeControls } from '../../controls/grid-controls'
+import { GridControls, GridResizeControls } from '../../controls/grid-controls'
 import { canvasPointToWindowPoint } from '../../dom-lookup'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
@@ -54,6 +54,12 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
         key: `grid-resize-controls-${EP.toString(selectedElement)}`,
         show: 'always-visible',
       },
+      {
+        control: GridControls,
+        props: {},
+        key: `grid-controls-${EP.toString(selectedElement)}`,
+        show: 'always-visible',
+      },
     ],
     fitness: onlyFitWhenDraggingThisControl(interactionSession, 'GRID_RESIZE_HANDLE', 1),
     apply: () => {
@@ -87,8 +93,8 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
 
       return strategyApplicationResult(
         resizeGridCellCommands(selectedElement, {
-          columnEnd: targetCell.column,
-          rowEnd: targetCell.row,
+          columnEnd: targetCell.column + 1,
+          rowEnd: targetCell.row + 1,
         }),
         { targetGridCell: targetCell },
       )
