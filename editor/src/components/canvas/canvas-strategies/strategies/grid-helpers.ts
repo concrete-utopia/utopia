@@ -1,6 +1,7 @@
 import type { ElementPath } from 'utopia-shared/src/types'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import type {
+  ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   GridElementProperties,
 } from '../../../../core/shared/element-template'
@@ -14,10 +15,11 @@ import {
 import { create } from '../../../../core/shared/property-path'
 import type { CanvasCommand } from '../../commands/commands'
 import { setProperty } from '../../commands/set-property-command'
-import type { GridCellCoordinates } from '../../controls/grid-controls'
-import { gridCellCoordinates } from '../../controls/grid-controls'
 import { canvasPointToWindowPoint } from '../../dom-lookup'
 import type { DragInteractionData } from '../interaction-state'
+import type { GridCustomStrategyState } from '../canvas-strategy-types'
+import type { GridCellCoordinates } from '../../controls/grid-controls'
+import { gridCellCoordinates } from '../../controls/grid-controls'
 
 export function getGridCellUnderMouse(mousePoint: WindowPoint) {
   return getGridCellAtPoint(mousePoint, false)
@@ -77,24 +79,20 @@ export function runGridRearrangeMove(
   interactionData: DragInteractionData,
   canvasScale: number,
   canvasOffset: CanvasVector,
-  targetGridCell: GridCellCoordinates | null,
-  initialDraggingFromCell: GridCellCoordinates | null,
-  initialOriginalElementRootCell: GridCellCoordinates | null,
+  customState: GridCustomStrategyState,
   duplicating: boolean,
 ): {
   commands: CanvasCommand[]
-  targetGridCell: GridCellCoordinates | null
-  initialDraggingFromCell: GridCellCoordinates | null
-  initialOriginalElementRootCell: GridCellCoordinates | null
+  targetCell: GridCellCoordinates | null
+  draggingFromCell: GridCellCoordinates | null
+  rootCell: GridCellCoordinates | null
 } {
-  let commands: CanvasCommand[] = []
-
   if (interactionData.drag == null) {
     return {
       commands: [],
-      targetGridCell: null,
-      initialOriginalElementRootCell: null,
-      initialDraggingFromCell: null,
+      targetCell: null,
+      rootCell: null,
+      draggingFromCell: null,
     }
   }
 
@@ -104,19 +102,13 @@ export function runGridRearrangeMove(
     canvasOffset,
   )
 
-  let newTargetGridCell = targetGridCell ?? null
-  const cellUnderMouse = duplicating
-    ? getGridCellUnderMouseRecursive(mouseWindowPoint)
-    : getGridCellUnderMouse(mouseWindowPoint)
-  if (cellUnderMouse != null) {
-    newTargetGridCell = cellUnderMouse.coordinates
-  }
-  if (newTargetGridCell == null || newTargetGridCell.row < 1 || newTargetGridCell.column < 1) {
+  const newTargetCell = getTargetCell(customState.targetCell, duplicating, mouseWindowPoint)
+  if (newTargetCell == null) {
     return {
       commands: [],
-      targetGridCell: null,
-      initialOriginalElementRootCell: null,
-      initialDraggingFromCell: null,
+      targetCell: null,
+      draggingFromCell: null,
+      rootCell: null,
     }
   }
 
@@ -127,64 +119,100 @@ export function runGridRearrangeMove(
   if (originalElementMetadata == null) {
     return {
       commands: [],
-      targetGridCell: null,
-      initialOriginalElementRootCell: null,
-      initialDraggingFromCell: null,
+      targetCell: null,
+      rootCell: null,
+      draggingFromCell: null,
     }
   }
 
-  function getGridProperty(field: keyof GridElementProperties, fallback: number) {
-    const propValue = originalElementMetadata?.specialSizeMeasurements.elementGridProperties[field]
-    return propValue == null || propValue === 'auto' ? 0 : propValue.numericalPosition ?? fallback
-  }
+  const gridProperties = getElementGridProperties(originalElementMetadata)
 
-  const gridColumnStart = getGridProperty('gridColumnStart', 0)
-  const gridColumnEnd = getGridProperty('gridColumnEnd', 1)
-  const gridRowStart = getGridProperty('gridRowStart', 0)
-  const gridRowEnd = getGridProperty('gridRowEnd', 1)
+  // calculate the difference between the cell the mouse started the interaction from, and the "root"
+  // cell of the element, meaning the top-left-most cell the element occupies.
+  const draggingFromCell = customState.draggingFromCell ?? newTargetCell
+  const rootCell =
+    customState.rootCell ?? gridCellCoordinates(gridProperties.row, gridProperties.column)
+  const coordsDiff = getCellCoordsDelta(draggingFromCell, rootCell)
 
-  const draggingFromCell = initialDraggingFromCell ?? newTargetGridCell
-  const originalElementRootCell =
-    initialOriginalElementRootCell ?? gridCellCoordinates(gridRowStart, gridColumnStart)
-
-  const columnDiff = draggingFromCell.column - originalElementRootCell.column
-  const rowDiff = draggingFromCell.row - originalElementRootCell.row
-
-  const columnStart = newTargetGridCell.column
-  const columnEnd = Math.max(
-    newTargetGridCell.column,
-    newTargetGridCell.column + (gridColumnEnd - gridColumnStart),
-  )
-  const rowStart = newTargetGridCell.row
-  const rowEnd = Math.max(
-    newTargetGridCell.row,
-    newTargetGridCell.row + (gridRowEnd - gridRowStart),
-  )
-
-  const height = columnEnd - columnStart
-  const width = rowEnd - rowStart
-
-  const adjustedStart = {
-    column: Math.max(1, columnStart - columnDiff),
-    row: Math.max(1, rowStart - rowDiff),
-  }
-
-  const adjustedEnd = {
-    column: Math.max(1, adjustedStart.column + height),
-    row: Math.max(1, adjustedStart.row + width),
-  }
-
-  commands.push(
-    setProperty('always', targetElement, create('style', 'gridColumnStart'), adjustedStart.column),
-    setProperty('always', targetElement, create('style', 'gridColumnEnd'), adjustedEnd.column),
-    setProperty('always', targetElement, create('style', 'gridRowStart'), adjustedStart.row),
-    setProperty('always', targetElement, create('style', 'gridRowEnd'), adjustedEnd.row),
-  )
+  // get the new adjusted row
+  const row = getCoordBounds(newTargetCell, 'row', gridProperties.width, coordsDiff.row)
+  // get the new adjusted column
+  const column = getCoordBounds(newTargetCell, 'column', gridProperties.height, coordsDiff.column)
 
   return {
-    commands: commands,
-    targetGridCell: newTargetGridCell,
-    initialOriginalElementRootCell: originalElementRootCell,
-    initialDraggingFromCell: draggingFromCell,
+    commands: [
+      setProperty('always', targetElement, create('style', 'gridColumnStart'), column.start),
+      setProperty('always', targetElement, create('style', 'gridColumnEnd'), column.end),
+      setProperty('always', targetElement, create('style', 'gridRowStart'), row.start),
+      setProperty('always', targetElement, create('style', 'gridRowEnd'), row.end),
+    ],
+    targetCell: newTargetCell,
+    rootCell: rootCell,
+    draggingFromCell: draggingFromCell,
   }
+}
+
+function getTargetCell(
+  previousTargetCell: GridCellCoordinates | null,
+  duplicating: boolean,
+  mouseWindowPoint: WindowPoint,
+): GridCellCoordinates | null {
+  let cell = previousTargetCell ?? null
+  const cellUnderMouse = duplicating
+    ? getGridCellUnderMouseRecursive(mouseWindowPoint)
+    : getGridCellUnderMouse(mouseWindowPoint)
+  if (cellUnderMouse != null) {
+    cell = cellUnderMouse.coordinates
+  }
+  if (cell == null || cell.row < 1 || cell.column < 1) {
+    return null
+  }
+  return cell
+}
+
+function getElementGridProperties(element: ElementInstanceMetadata): {
+  row: number
+  width: number
+  column: number
+  height: number
+} {
+  // get the grid fixtures (start and end for column and row) from the element metadata
+  function getGridProperty(field: keyof GridElementProperties, fallback: number) {
+    const propValue = element.specialSizeMeasurements.elementGridProperties[field]
+    return propValue == null || propValue === 'auto' ? 0 : propValue.numericalPosition ?? fallback
+  }
+  const column = getGridProperty('gridColumnStart', 0)
+  const height = getGridProperty('gridColumnEnd', 1) - column
+  const row = getGridProperty('gridRowStart', 0)
+  const width = getGridProperty('gridRowEnd', 1) - row
+
+  return {
+    row,
+    width,
+    column,
+    height,
+  }
+}
+
+function getCellCoordsDelta(
+  dragFrom: GridCellCoordinates,
+  rootCell: GridCellCoordinates,
+): GridCellCoordinates {
+  const rowDiff = dragFrom.row - rootCell.row
+  const columnDiff = dragFrom.column - rootCell.column
+
+  return gridCellCoordinates(rowDiff, columnDiff)
+}
+
+function getCoordBounds(
+  cell: GridCellCoordinates,
+  coord: 'column' | 'row',
+  size: number, // width or height
+  adjustOffset: number, // adjustment based on the difference between the initial dragging cell and the root cell
+): { start: number; end: number } {
+  // the start is the first cell's coord the element will occupy
+  const start = Math.max(1, cell[coord] - adjustOffset)
+  // the end is the last cell's coord the element will occupy
+  const end = Math.max(1, start + size)
+  return { start, end }
 }

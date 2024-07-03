@@ -87,9 +87,9 @@ export const gridRearrangeMoveDuplicateStrategy: CanvasStrategyFactory = (
 
       const {
         commands: moveCommands,
-        targetGridCell: newTargetGridCell,
-        initialOriginalElementRootCell,
-        initialDraggingFromCell,
+        targetCell: targetGridCell,
+        draggingFromCell,
+        rootCell,
       } = runGridRearrangeMove(
         targetElement,
         selectedElement,
@@ -97,9 +97,7 @@ export const gridRearrangeMoveDuplicateStrategy: CanvasStrategyFactory = (
         interactionSession.interactionData,
         canvasState.scale,
         canvasState.canvasOffset,
-        customState.targetGridCell,
-        customState.initialDraggingFromCell,
-        customState.initialOriginalElementRootCell,
+        customState.grid,
         true,
       )
       if (moveCommands.length === 0) {
@@ -116,9 +114,11 @@ export const gridRearrangeMoveDuplicateStrategy: CanvasStrategyFactory = (
           setCursorCommand(CSSCursor.Duplicate),
         ],
         {
-          targetGridCell: newTargetGridCell,
-          initialDraggingFromCell: initialDraggingFromCell,
-          initialOriginalElementRootCell: initialOriginalElementRootCell,
+          grid: {
+            targetCell: targetGridCell,
+            draggingFromCell: draggingFromCell,
+            rootCell: rootCell,
+          },
           duplicatedElementNewUids: duplicatedElementNewUids,
         },
       )

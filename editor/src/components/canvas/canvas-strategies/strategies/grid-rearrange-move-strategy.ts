@@ -71,9 +71,9 @@ export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
 
       const {
         commands: moveCommands,
-        targetGridCell: newTargetGridCell,
-        initialOriginalElementRootCell,
-        initialDraggingFromCell,
+        targetCell: targetGridCell,
+        draggingFromCell,
+        rootCell,
       } = runGridRearrangeMove(
         targetElement,
         selectedElement,
@@ -81,9 +81,7 @@ export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
         interactionSession.interactionData,
         canvasState.scale,
         canvasState.canvasOffset,
-        customState.targetGridCell,
-        customState.initialDraggingFromCell,
-        customState.initialOriginalElementRootCell,
+        customState.grid,
         false,
       )
       if (moveCommands.length === 0) {
@@ -91,9 +89,11 @@ export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
       }
 
       return strategyApplicationResult(moveCommands, {
-        targetGridCell: newTargetGridCell,
-        initialDraggingFromCell: initialDraggingFromCell,
-        initialOriginalElementRootCell: initialOriginalElementRootCell,
+        grid: {
+          targetCell: targetGridCell,
+          draggingFromCell: draggingFromCell,
+          rootCell: rootCell,
+        },
       })
     },
   }
