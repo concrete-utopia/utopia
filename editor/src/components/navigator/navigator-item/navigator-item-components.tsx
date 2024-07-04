@@ -34,7 +34,7 @@ import { intrinsicHTMLElementNamesThatSupportChildren } from '../../../core/shar
 import { ExpandableIndicator } from './expandable-indicator'
 import { elementSupportsChildrenFromPropertyControls } from '../../editor/element-children'
 import { Popover, PopoverListContent } from '../popover/popover'
-import {ContextMenuItem} from '@radix-ui/react-context-menu'
+import { ContextMenuItem } from '@radix-ui/react-context-menu'
 
 export const NavigatorHintCircleDiameter = 8
 
@@ -219,6 +219,9 @@ export function addChildButtonTestId(target: ElementPath): string {
 
 const AddChildButton = React.memo((props: AddChildButtonProps) => {
   const { target, iconColor } = props
+
+  const colorTheme = useColorTheme()
+
   const supportsChildren = useEditorState(
     Substores.metadataAndPropertyControlsInfo,
     (store) =>
@@ -251,11 +254,17 @@ const AddChildButton = React.memo((props: AddChildButtonProps) => {
         />
       }
     >
-      <p style={{color: 'white', margin: 0, padding: '16px' }}>This is separate content, but you can interact with the list items below with arrow keys!</p>
-      <PopoverListContent items={[
-        {label: 'First', onClick: () => console.log('first')},
-        {label: 'Second', onClick: () => console.log('second')}
-      ]} />
+      <p style={{ color: colorTheme.textColor.value, margin: 0, padding: '16px' }}>
+        This is separate content, but you can interact with the list items below with arrow keys!
+      </p>
+      <PopoverListContent
+        items={[
+          // eslint-disable-next-line no-console
+          { label: 'First', onClick: () => console.log('first') },
+          // eslint-disable-next-line no-console
+          { label: 'Second', onClick: () => console.log('second') },
+        ]}
+      />
     </Popover>
   )
 })

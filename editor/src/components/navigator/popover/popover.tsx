@@ -64,7 +64,7 @@ export const PopoverListContent = ({items}: PopoverListContentProps) => {
               fontSize: 11,
               padding: 8,
               outline: 'none',
-              color: 'white',
+              color: colorTheme.textColor.value,
               cursor: 'pointer',
               width: '100%',
               textAlign: 'left',
