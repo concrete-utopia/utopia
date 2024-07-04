@@ -4,6 +4,7 @@ import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
 import { GridCellTestId } from '../../controls/grid-controls'
 import { mouseDragFromPointToPoint } from '../../event-helpers.test-utils'
 import { renderTestEditorWithCode } from '../../ui-jsx.test-utils'
+import { gridCellTargetId } from './grid-helpers'
 
 describe('grid rearrange move strategy', () => {
   it('can rearrange elements on a grid', async () => {
@@ -14,7 +15,9 @@ describe('grid rearrange move strategy', () => {
     await selectComponentsForTest(editor, [elementPathToDrag])
 
     const sourceGridCell = editor.renderedDOM.getByTestId(GridCellTestId(elementPathToDrag))
-    const targetGridCell = editor.renderedDOM.getByTestId('gridcell-0-14')
+    const targetGridCell = editor.renderedDOM.getByTestId(
+      gridCellTargetId(EP.fromString('sb/scene/grid'), 2, 3),
+    )
 
     await mouseDragFromPointToPoint(
       sourceGridCell,

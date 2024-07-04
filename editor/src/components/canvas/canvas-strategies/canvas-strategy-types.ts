@@ -27,7 +27,8 @@ export interface CustomStrategyState {
 export type GridCustomStrategyState = {
   targetCell: GridCellCoordinates | null
   draggingFromCell: GridCellCoordinates | null
-  rootCell: GridCellCoordinates | null
+  originalRootCell: GridCellCoordinates | null
+  currentRootCell: GridCellCoordinates | null
 }
 
 export type CustomStrategyStatePatch = Partial<CustomStrategyState>
@@ -43,7 +44,8 @@ export function defaultCustomStrategyState(): CustomStrategyState {
     grid: {
       targetCell: null,
       draggingFromCell: null,
-      rootCell: null,
+      originalRootCell: null,
+      currentRootCell: null,
     },
   }
 }
