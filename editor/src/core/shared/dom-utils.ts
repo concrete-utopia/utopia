@@ -279,7 +279,7 @@ function getRoundingFn(rounding: 'nearest-half' | 'no-rounding') {
 export function getCanvasRectangleFromElement(
   element: HTMLElement,
   canvasScale: number,
-  withContent: 'without-content' | 'with-content' | 'only-content',
+  withContent: 'without-text-content' | 'with-text-content' | 'only-text-content',
   rounding: 'nearest-half' | 'no-rounding',
 ): CanvasRectangle {
   const scale = canvasScale < 1 ? 1 / canvasScale : 1
@@ -301,17 +301,22 @@ export function getCanvasRectangleFromElement(
 
   const boundingRect = element.getBoundingClientRect()
   const elementRect = domRectToScaledCanvasRectangle(boundingRect)
-  if (withContent === 'without-content') {
+  if (withContent === 'without-text-content') {
     return elementRect
   }
 
   const range = document.createRange()
   switch (withContent) {
-    case 'only-content':
-      range.selectNodeContents(element)
-      break
-    case 'with-content':
-      range.selectNode(element)
+    case 'only-text-content':
+    case 'with-text-content':
+      for (const childNode of element.childNodes) {
+        if (childNode.nodeType === Node.TEXT_NODE) {
+          range.selectNode(childNode)
+        }
+      }
+      if (withContent === 'with-text-content') {
+        range.selectNode(element)
+      }
       break
     default:
       assertNever(withContent)
@@ -322,9 +327,9 @@ export function getCanvasRectangleFromElement(
   const contentRect = domRectToScaledCanvasRectangle(rangeBounding)
 
   switch (withContent) {
-    case 'only-content':
+    case 'only-text-content':
       return contentRect
-    case 'with-content':
+    case 'with-text-content':
       return boundingRectangle(elementRect, contentRect)
     default:
       assertNever(withContent)
