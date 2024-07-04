@@ -20,6 +20,7 @@ import type { DragInteractionData } from '../interaction-state'
 import type { GridCustomStrategyState } from '../canvas-strategy-types'
 import type { GridCellCoordinates } from '../../controls/grid-controls'
 import { gridCellCoordinates } from '../../controls/grid-controls'
+import * as EP from '../../../../core/shared/element-path'
 
 export function getGridCellUnderMouse(mousePoint: WindowPoint) {
   return getGridCellAtPoint(mousePoint, false)
@@ -29,6 +30,20 @@ function getGridCellUnderMouseRecursive(mousePoint: WindowPoint) {
   return getGridCellAtPoint(mousePoint, true)
 }
 
+const gridCellTargetIdPrefix = 'grid-cell-target-'
+
+export function gridCellTargetId(
+  gridElementPath: ElementPath,
+  row: number,
+  column: number,
+): string {
+  return gridCellTargetIdPrefix + `${EP.toString(gridElementPath)}-${row}-${column}`
+}
+
+function isCellTargetId(id: string): boolean {
+  return id.startsWith(gridCellTargetIdPrefix)
+}
+
 function getGridCellAtPoint(
   windowPoint: WindowPoint,
   duplicating: boolean,
@@ -36,7 +51,7 @@ function getGridCellAtPoint(
   function maybeRecursivelyFindCellAtPoint(elements: Element[]): Element | null {
     // If this used during duplication, the canvas controls will be in the way and we need to traverse the children too.
     for (const element of elements) {
-      if (element.id.startsWith('gridcell-')) {
+      if (isCellTargetId(element.id)) {
         const rect = element.getBoundingClientRect()
         if (rectContainsPoint(windowRectangle(rect), windowPoint)) {
           return element

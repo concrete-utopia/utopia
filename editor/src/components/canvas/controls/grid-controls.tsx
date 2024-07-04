@@ -46,6 +46,7 @@ import {
 import { windowToCanvasCoordinates } from '../dom-lookup'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { useColorTheme } from '../../../uuiui'
+import { gridCellTargetId } from '../canvas-strategies/strategies/grid-helpers'
 
 export const GridCellTestId = (elementPath: ElementPath) => `grid-cell-${EP.toString(elementPath)}`
 
@@ -418,9 +419,7 @@ export const GridControls = controlForStrategyMemoized(() => {
               {placeholders.map((cell) => {
                 const countedRow = Math.floor(cell / grid.columns) + 1
                 const countedColumn = Math.floor(cell % grid.columns) + 1
-                const id = `gridcell-${EP.toString(
-                  grid.elementPath,
-                )}-${countedRow}-${countedColumn}`
+                const id = gridCellTargetId(grid.elementPath, countedRow, countedColumn)
                 const dotgridColor =
                   activelyDraggingOrResizingCell != null
                     ? features.Grid.dotgridColor
