@@ -40,7 +40,7 @@ export function gridCellTargetId(
   return gridCellTargetIdPrefix + `${EP.toString(gridElementPath)}-${row}-${column}`
 }
 
-function isCellTargetId(id: string): boolean {
+function isGridCellTargetId(id: string): boolean {
   return id.startsWith(gridCellTargetIdPrefix)
 }
 
@@ -51,7 +51,7 @@ function getGridCellAtPoint(
   function maybeRecursivelyFindCellAtPoint(elements: Element[]): Element | null {
     // If this used during duplication, the canvas controls will be in the way and we need to traverse the children too.
     for (const element of elements) {
-      if (isCellTargetId(element.id)) {
+      if (isGridCellTargetId(element.id)) {
         const rect = element.getBoundingClientRect()
         if (rectContainsPoint(windowRectangle(rect), windowPoint)) {
           return element
