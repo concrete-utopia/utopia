@@ -14,7 +14,7 @@ describe('grid rearrange move strategy', () => {
     await selectComponentsForTest(editor, [elementPathToDrag])
 
     const sourceGridCell = editor.renderedDOM.getByTestId(GridCellTestId(elementPathToDrag))
-    const targetGridCell = editor.renderedDOM.getByTestId('gridcell-0-14')
+    const targetGridCell = editor.renderedDOM.getByTestId('gridcell-sb/scene/grid-2-3')
 
     await mouseDragFromPointToPoint(
       sourceGridCell,
