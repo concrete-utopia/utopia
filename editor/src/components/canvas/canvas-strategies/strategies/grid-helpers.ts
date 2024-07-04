@@ -85,14 +85,16 @@ export function runGridRearrangeMove(
   commands: CanvasCommand[]
   targetCell: GridCellCoordinates | null
   draggingFromCell: GridCellCoordinates | null
-  rootCell: GridCellCoordinates | null
+  originalRootCell: GridCellCoordinates | null
+  targetRootCell: GridCellCoordinates | null
 } {
   if (interactionData.drag == null) {
     return {
       commands: [],
       targetCell: null,
-      rootCell: null,
+      originalRootCell: null,
       draggingFromCell: null,
+      targetRootCell: null,
     }
   }
 
@@ -108,7 +110,8 @@ export function runGridRearrangeMove(
       commands: [],
       targetCell: null,
       draggingFromCell: null,
-      rootCell: null,
+      originalRootCell: null,
+      targetRootCell: null,
     }
   }
 
@@ -120,8 +123,9 @@ export function runGridRearrangeMove(
     return {
       commands: [],
       targetCell: null,
-      rootCell: null,
+      originalRootCell: null,
       draggingFromCell: null,
+      targetRootCell: null,
     }
   }
 
@@ -131,13 +135,15 @@ export function runGridRearrangeMove(
   // cell of the element, meaning the top-left-most cell the element occupies.
   const draggingFromCell = customState.draggingFromCell ?? newTargetCell
   const rootCell =
-    customState.rootCell ?? gridCellCoordinates(gridProperties.row, gridProperties.column)
+    customState.originalRootCell ?? gridCellCoordinates(gridProperties.row, gridProperties.column)
   const coordsDiff = getCellCoordsDelta(draggingFromCell, rootCell)
 
   // get the new adjusted row
   const row = getCoordBounds(newTargetCell, 'row', gridProperties.width, coordsDiff.row)
   // get the new adjusted column
   const column = getCoordBounds(newTargetCell, 'column', gridProperties.height, coordsDiff.column)
+
+  const targetRootCell = gridCellCoordinates(row.start, column.start)
 
   return {
     commands: [
@@ -147,8 +153,9 @@ export function runGridRearrangeMove(
       setProperty('always', targetElement, create('style', 'gridRowEnd'), row.end),
     ],
     targetCell: newTargetCell,
-    rootCell: rootCell,
+    originalRootCell: rootCell,
     draggingFromCell: draggingFromCell,
+    targetRootCell: targetRootCell,
   }
 }
 

@@ -73,7 +73,8 @@ export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
         commands: moveCommands,
         targetCell: targetGridCell,
         draggingFromCell,
-        rootCell,
+        originalRootCell,
+        targetRootCell,
       } = runGridRearrangeMove(
         targetElement,
         selectedElement,
@@ -92,7 +93,8 @@ export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
         grid: {
           targetCell: targetGridCell,
           draggingFromCell: draggingFromCell,
-          rootCell: rootCell,
+          originalRootCell: originalRootCell,
+          currentRootCell: targetRootCell,
         },
       })
     },
