@@ -22,11 +22,11 @@ const PopoverKeyboardContext = React.createContext<KeyboardContext>({
   active: null,
   setActive: () => {},
   setActiveOnClick: (callback: () => void) => {},
-});
+})
 
 interface PopoverListContentProps {
   items: Array<{
-    label: string;
+    label: string
     onClick: () => void
   }>
 }
@@ -34,31 +34,31 @@ interface PopoverListContentProps {
 const Button = styled(RadixPopover.Close, {
   '&:hover': {
     background: colorTheme.primary50.value,
-  }
-});
+  },
+})
 
-export const PopoverListContent = ({items}: PopoverListContentProps) => {
-  const {setLength, active, setActive, setActiveOnClick} = React.useContext(PopoverKeyboardContext);
+export const PopoverListContent = ({ items }: PopoverListContentProps) => {
+  const { setLength, active, setActive, setActiveOnClick } =
+    React.useContext(PopoverKeyboardContext)
 
   React.useEffect(() => {
     setLength(items.length)
   }, [items.length, setLength])
 
   React.useEffect(() => {
-    if (active === null) return;
+    if (active === null) return
     setActiveOnClick(() => {
       items[active].onClick()
     })
   }, [active, items, setActiveOnClick])
 
   return (
-    <ul style={{margin: 0, padding: 8}}>
+    <ul style={{ margin: 0, padding: 8 }}>
       {items.map(({ label, onClick }, index) => (
-        <li key={`popover-item-${label}`} style={{listStyle: 'none'}}>
+        <li key={`popover-item-${label}`} style={{ listStyle: 'none' }}>
           <Button
             css={{
-              // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-              background: active === index ? `${colorTheme.primary.value} !important`: 'none',
+              background: active === index ? `${colorTheme.primary.value} !important` : 'none',
               border: 'none',
               borderRadius: 4,
               fontSize: 11,
@@ -81,7 +81,7 @@ export const PopoverListContent = ({items}: PopoverListContentProps) => {
       ))}
     </ul>
   )
-};
+}
 
 interface PopoverProps {
   activator: React.ReactNode
@@ -89,52 +89,63 @@ interface PopoverProps {
   children: React.ReactElement | React.ReactElement[]
 }
 
-export const Popover = ({align = 'start', activator, children}: PopoverProps) => {
+export const Popover = ({ align = 'start', activator, children }: PopoverProps) => {
   const [open, setOpen] = React.useState(false)
 
   const [selectedIndex, setSelectedIndex] = React.useState(-1)
   const [numElements, setNumElements] = React.useState(0)
   const [activeOnClick, setActiveOnClick] = React.useState<(() => void) | null>(null)
- 
-  const containsListComponent = React.useMemo(() => React.Children.toArray(children).some((child) => {
-    return React.isValidElement(child) && (child.type as any)?.name === 'PopoverListContent';
-  }), [children]);
 
-  const handleKeyPress = React.useCallback((e: React.KeyboardEvent) => {
-    handleClick(e)
+  const containsListComponent = React.useMemo(
+    () =>
+      React.Children.toArray(children).some((child) => {
+        return React.isValidElement(child) && (child.type as any)?.name === 'PopoverListContent'
+      }),
+    [children],
+  )
 
-    if (!containsListComponent) {
-      return
-    }
+  const handleKeyPress = React.useCallback(
+    (e: React.KeyboardEvent) => {
+      handleClick(e)
 
-    if (e.key === 'ArrowDown') {
-      setSelectedIndex((previousIndex) => Math.min(previousIndex + 1, numElements - 1))
-    } else if (e.key === 'ArrowUp') {
-      setSelectedIndex((previousIndex) => Math.max(previousIndex - 1, 0))
-    } else if (e.key === 'Enter') {
-      activeOnClick?.()
-      setOpen(false)
-    }
-  }, [activeOnClick, containsListComponent, numElements])
+      if (!containsListComponent) {
+        return
+      }
+
+      if (e.key === 'ArrowDown') {
+        setSelectedIndex((previousIndex) => Math.min(previousIndex + 1, numElements - 1))
+      } else if (e.key === 'ArrowUp') {
+        setSelectedIndex((previousIndex) => Math.max(previousIndex - 1, 0))
+      } else if (e.key === 'Enter') {
+        activeOnClick?.()
+        setOpen(false)
+      }
+    },
+    [activeOnClick, containsListComponent, numElements],
+  )
 
   return (
-    <PopoverKeyboardContext.Provider value={{
-      length: numElements,
-      setLength: setNumElements,
-      active: selectedIndex,
-      setActive: setSelectedIndex,
-      setActiveOnClick: (callback) => {
-        setActiveOnClick(() => callback)
-      },
-    }}>
+    <PopoverKeyboardContext.Provider
+      value={{
+        length: numElements,
+        setLength: setNumElements,
+        active: selectedIndex,
+        setActive: setSelectedIndex,
+        setActiveOnClick: (callback) => {
+          setActiveOnClick(() => callback)
+        },
+      }}
+    >
       <RadixPopover.Root open={open} onOpenChange={setOpen}>
-        <RadixPopover.Trigger style={{
-          background: 'none',
-          outline: 'none',
-          border: 'none',
-          padding: 0,
-          cursor: 'pointer',
-        }}>
+        <RadixPopover.Trigger
+          style={{
+            background: 'none',
+            outline: 'none',
+            border: 'none',
+            padding: 0,
+            cursor: 'pointer',
+          }}
+        >
           {activator}
         </RadixPopover.Trigger>
         <RadixPopover.Anchor />
