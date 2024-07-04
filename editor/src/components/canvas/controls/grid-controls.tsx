@@ -46,7 +46,6 @@ import {
 import { windowToCanvasCoordinates } from '../dom-lookup'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { useColorTheme } from '../../../uuiui'
-import { getGridCellUnderMouse } from '../canvas-strategies/strategies/grid-helpers'
 
 export const GridCellTestId = (elementPath: ElementPath) => `grid-cell-${EP.toString(elementPath)}`
 
@@ -54,6 +53,10 @@ export type GridCellCoordinates = { row: number; column: number }
 
 export function gridCellCoordinates(row: number, column: number): GridCellCoordinates {
   return { row: row, column: column }
+}
+
+export function gridCellCoordinatesToString(coords: GridCellCoordinates): string {
+  return `${coords.row}:${coords.column}`
 }
 
 function getCellsCount(template: GridAutoOrTemplateBase | null): number {
@@ -122,10 +125,18 @@ export const GridControls = controlForStrategyMemoized(() => {
     'GridControls activelyDraggingOrResizingCell',
   )
 
-  const { hoveringCell, hoveringStart, mouseCanvasPosition } = useMouseMove(
-    activelyDraggingOrResizingCell,
+  const { hoveringStart, mouseCanvasPosition } = useMouseMove(activelyDraggingOrResizingCell)
+
+  const targetRootCell = useEditorState(
+    Substores.restOfStore,
+    (store) => store.strategyState.customStrategyState.grid.currentRootCell,
+    'GridControls targetRootCell',
   )
-  useSnapAnimation(hoveringCell, controls)
+  const targetRootCellId = React.useMemo(
+    () => (targetRootCell == null ? null : gridCellCoordinatesToString(targetRootCell)),
+    [targetRootCell],
+  )
+  useSnapAnimation(targetRootCellId, controls)
 
   const dragging = useEditorState(
     Substores.canvas,
@@ -375,12 +386,12 @@ export const GridControls = controlForStrategyMemoized(() => {
     <React.Fragment>
       <CanvasOffsetWrapper>
         {/* grid lines */}
-        {grids.map((grid, index) => {
+        {grids.map((grid) => {
           const placeholders = Array.from(Array(grid.cells).keys())
 
           return (
             <div
-              key={`grid-${index}`}
+              key={`grid-${EP.toString(grid.elementPath)}`}
               style={{
                 position: 'absolute',
                 top: grid.frame.y,
@@ -404,10 +415,12 @@ export const GridControls = controlForStrategyMemoized(() => {
                     : `${grid.padding.top}px ${grid.padding.right}px ${grid.padding.bottom}px ${grid.padding.left}px`,
               }}
             >
-              {placeholders.map((cell, cellIndex) => {
-                const countedRow = Math.floor(cellIndex / grid.columns) + 1
-                const countedColumn = Math.floor(cellIndex % grid.columns) + 1
-                const id = `gridcell-${index}-${cell}`
+              {placeholders.map((cell) => {
+                const countedRow = Math.floor(cell / grid.columns) + 1
+                const countedColumn = Math.floor(cell % grid.columns) + 1
+                const id = `gridcell-${EP.toString(
+                  grid.elementPath,
+                )}-${countedRow}-${countedColumn}`
                 const dotgridColor =
                   activelyDraggingOrResizingCell != null
                     ? features.Grid.dotgridColor
@@ -515,30 +528,6 @@ export const GridControls = controlForStrategyMemoized(() => {
                 display: 'flex',
                 justifyContent: 'flex-end',
                 alignItems: 'flex-end',
-              }}
-            />
-          )
-        })}
-        {/* cell targets */}
-        {cells.map((cell) => {
-          return (
-            <div
-              onMouseDown={startInteractionWithUid({
-                uid: EP.toUid(cell.elementPath),
-                frame: cell.globalFrame,
-                row: cell.row,
-                column: cell.column,
-              })}
-              key={`grid-cell-${EP.toString(cell.elementPath)}`}
-              style={{
-                position: 'absolute',
-                top: cell.globalFrame.y,
-                left: cell.globalFrame.x,
-                width: cell.globalFrame.width,
-                height: cell.globalFrame.height,
-                display: 'flex',
-                justifyContent: 'flex-end',
-                alignItems: 'flex-end',
                 backgroundColor:
                   activelyDraggingOrResizingCell != null &&
                   EP.toUid(cell.elementPath) !== activelyDraggingOrResizingCell
@@ -620,9 +609,12 @@ export const GridControls = controlForStrategyMemoized(() => {
                     event.preventDefault()
                   }
 
+                  const id = `grid-column-handle-${dimensionIndex}`
+
                   return (
                     <div
-                      data-testid={`grid-column-handle-${dimensionIndex}`}
+                      key={id}
+                      data-testid={id}
                       style={{
                         position: 'absolute',
                         left: workingPrefix - 15,
@@ -687,9 +679,13 @@ export const GridControls = controlForStrategyMemoized(() => {
                     event.stopPropagation()
                     event.preventDefault()
                   }
+
+                  const id = `grid-row-handle-${dimensionIndex}`
+
                   return (
                     <div
-                      data-testid={`grid-row-handle-${dimensionIndex}`}
+                      key={id}
+                      data-testid={id}
                       style={{
                         position: 'absolute',
                         left: grid.frame.x - 50,
@@ -722,20 +718,18 @@ export const GridControls = controlForStrategyMemoized(() => {
   )
 })
 
-function useSnapAnimation(hoveringCell: string | null, controls: AnimationControls) {
+function useSnapAnimation(targetRootCellId: string | null, controls: AnimationControls) {
   const features = useRollYourOwnFeatures()
   React.useEffect(() => {
-    if (!features.Grid.animateSnap || hoveringCell == null) {
+    if (!features.Grid.animateSnap || targetRootCellId == null) {
       return
     }
     void controls.start(SHADOW_SNAP_ANIMATION)
-  }, [hoveringCell, controls, features.Grid.animateSnap])
+  }, [targetRootCellId, controls, features.Grid.animateSnap])
 }
 
 function useMouseMove(activelyDraggingOrResizingCell: string | null) {
-  const [hoveringCell, setHoveringCell] = React.useState<string | null>(null)
   const [hoveringStart, setHoveringStart] = React.useState<{
-    id: string
     point: CanvasPoint
   } | null>(null)
   const [mouseCanvasPosition, setMouseCanvasPosition] = React.useState<CanvasPoint>(
@@ -761,27 +755,21 @@ function useMouseMove(activelyDraggingOrResizingCell: string | null) {
         return
       }
 
-      // TODO most of this logic can be simplified consistently
-      // by moving the hovering cell info to the editor state, dispatched
-      // from the grid-rearrange-move-strategy logic.
-      const cellUnderMouse = getGridCellUnderMouse(windowPoint({ x: e.clientX, y: e.clientY }))
-      if (cellUnderMouse != null) {
-        setHoveringCell(cellUnderMouse.id)
+      const newMouseCanvasPosition = windowToCanvasCoordinates(
+        canvasScale,
+        canvasOffset,
+        windowPoint({ x: e.clientX, y: e.clientY }),
+      ).canvasPositionRaw
+      setMouseCanvasPosition(newMouseCanvasPosition)
 
-        const newMouseCanvasPosition = windowToCanvasCoordinates(
-          canvasScale,
-          canvasOffset,
-          windowPoint({ x: e.clientX, y: e.clientY }),
-        ).canvasPositionRaw
-        setMouseCanvasPosition(newMouseCanvasPosition)
-
-        setHoveringStart((start) => {
-          if (start == null || start.id !== cellUnderMouse.id) {
-            return { id: cellUnderMouse.id, point: canvasPoint(newMouseCanvasPosition) }
+      setHoveringStart((start) => {
+        if (start == null) {
+          return {
+            point: canvasPoint(newMouseCanvasPosition),
           }
-          return start
-        })
-      }
+        }
+        return start
+      })
     }
     window.addEventListener('mousemove', handleMouseMove)
     return function () {
@@ -789,5 +777,5 @@ function useMouseMove(activelyDraggingOrResizingCell: string | null) {
     }
   }, [activelyDraggingOrResizingCell, canvasOffset, canvasScale])
 
-  return { hoveringCell, hoveringStart, mouseCanvasPosition }
+  return { hoveringStart, mouseCanvasPosition }
 }
