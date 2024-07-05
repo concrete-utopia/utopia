@@ -858,7 +858,7 @@ export function getDefaultExportedTopLevelElement(file: TextFile): JSXElementChi
 export function getDefaultExportNameAndUidFromFile(
   projectContents: ProjectContentTreeRoot,
   filePath: string,
-): { name: string; uid: string } | null {
+): { name: string; uid: string | null } | null {
   const file = getProjectFileByFilePath(projectContents, filePath)
   if (
     file == null ||
@@ -875,13 +875,11 @@ export function getDefaultExportNameAndUidFromFile(
     return null
   }
 
-  const elementUid = file.fileContents.parsed.topLevelElements.find(
-    (t): t is UtopiaJSXComponent =>
-      t.type === 'UTOPIA_JSX_COMPONENT' && t.name === defaultExportName,
-  )?.rootElement.uid
-  if (elementUid == null) {
-    return null
-  }
+  const elementUid =
+    file.fileContents.parsed.topLevelElements.find(
+      (t): t is UtopiaJSXComponent =>
+        t.type === 'UTOPIA_JSX_COMPONENT' && t.name === defaultExportName,
+    )?.rootElement.uid ?? null
 
   return { name: defaultExportName, uid: elementUid }
 }
