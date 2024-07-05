@@ -2,6 +2,7 @@ import type { ReactDOM } from 'react'
 import type { CanvasRectangle, MaybeInfinityCanvasRectangle } from './math-utils'
 import {
   boundingRectangle,
+  boundingRectangleArray,
   canvasRectangle,
   isNotNullFiniteRectangle,
   roundToNearestHalf,
@@ -299,38 +300,31 @@ export function getCanvasRectangleFromElement(
     )
   }
 
-  const boundingRect = element.getBoundingClientRect()
-  const elementRect = domRectToScaledCanvasRectangle(boundingRect)
-  if (withContent === 'without-text-content') {
-    return elementRect
-  }
-
-  const range = document.createRange()
   switch (withContent) {
+    case 'without-text-content': {
+      const boundingRect = element.getBoundingClientRect()
+      const elementRect = domRectToScaledCanvasRectangle(boundingRect)
+      return elementRect
+    }
     case 'only-text-content':
     case 'with-text-content':
+      let rectangles: Array<CanvasRectangle> = []
       for (const childNode of element.childNodes) {
         if (childNode.nodeType === Node.TEXT_NODE) {
-          range.selectNode(childNode)
+          const range = document.createRange()
+          // this is needed because jsdom can throw an error on the range.getBoundingClientRect() call, see https://github.com/jsdom/jsdom/issues/3002
+          if (typeof range.getBoundingClientRect === 'function') {
+            range.selectNode(childNode)
+            rectangles.push(domRectToScaledCanvasRectangle(range.getBoundingClientRect()))
+          }
         }
       }
       if (withContent === 'with-text-content') {
-        range.selectNode(element)
+        rectangles.push(domRectToScaledCanvasRectangle(element.getBoundingClientRect()))
       }
-      break
-    default:
-      assertNever(withContent)
-  }
-  const rangeBounding =
-    // this is needed because jsdom can throw an error on the range.getBoundingClientRect() call, see https://github.com/jsdom/jsdom/issues/3002
-    typeof range.getBoundingClientRect === 'function' ? range.getBoundingClientRect() : boundingRect
-  const contentRect = domRectToScaledCanvasRectangle(rangeBounding)
-
-  switch (withContent) {
-    case 'only-text-content':
-      return contentRect
-    case 'with-text-content':
-      return boundingRectangle(elementRect, contentRect)
+      return (
+        boundingRectangleArray(rectangles) ?? canvasRectangle({ x: 0, y: 0, width: 0, height: 0 })
+      )
     default:
       assertNever(withContent)
   }
