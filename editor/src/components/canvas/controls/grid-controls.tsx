@@ -12,7 +12,7 @@ import {
   isGridAutoOrTemplateDimensions,
   type GridAutoOrTemplateBase,
 } from '../../../core/shared/element-template'
-import type { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
+import type { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../core/shared/math-utils'
 import {
   canvasPoint,
   distance,
@@ -47,6 +47,8 @@ import { windowToCanvasCoordinates } from '../dom-lookup'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { useColorTheme } from '../../../uuiui'
 import { gridCellTargetId } from '../canvas-strategies/strategies/grid-helpers'
+import type { EditorDispatch } from '../../../components/editor/action-types'
+import { CanvasLabel } from './select-mode/controls-common'
 
 export const GridCellTestId = (elementPath: ElementPath) => `grid-cell-${EP.toString(elementPath)}`
 
@@ -106,6 +108,111 @@ function getLabelForAxis(
 }
 
 const SHADOW_SNAP_ANIMATION = 'shadow-snap'
+
+export interface GridResizingProps {
+  axisValues: GridAutoOrTemplateBase | null
+  fromPropsAxisValues: GridAutoOrTemplateBase | null
+  containingFrame: CanvasRectangle
+  axis: 'row' | 'column'
+  gap: number | null
+}
+
+const GridResizingContainerSize = 100
+
+export const GridResizing = React.memo((props: GridResizingProps) => {
+  const colorTheme = useColorTheme()
+  const dispatch = useDispatch()
+  const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
+  const scaleRef = useRefEditorState((store) => store.editor.canvas.scale)
+
+  if (props.axisValues == null) {
+    return null
+  } else {
+    switch (props.axisValues.type) {
+      case 'DIMENSIONS':
+        let workingPrefix: number =
+          props.axis === 'column' ? props.containingFrame.x : props.containingFrame.y
+        return (
+          <>
+            {props.axisValues.dimensions.flatMap((dimension, dimensionIndex) => {
+              const mouseDownHandler = (event: React.MouseEvent): void => {
+                const start = windowToCanvasCoordinates(
+                  scaleRef.current,
+                  canvasOffsetRef.current,
+                  windowPoint({ x: event.nativeEvent.x, y: event.nativeEvent.y }),
+                )
+
+                dispatch([
+                  CanvasActions.createInteractionSession(
+                    createInteractionViaMouse(
+                      start.canvasPositionRounded,
+                      Modifier.modifiersForEvent(event),
+                      gridAxisHandle(props.axis, dimensionIndex),
+                      'zero-drag-not-permitted',
+                    ),
+                  ),
+                ])
+                event.stopPropagation()
+                event.preventDefault()
+              }
+
+              // Assumes pixels currently.
+              workingPrefix += dimension.value
+              if (dimensionIndex === 0) {
+                // Shift by half the gap initially...
+                workingPrefix += (props.gap ?? 0) / 2
+              } else {
+                // ...Then by the full gap, as it would be half from the prior entry
+                // and half from the current one.
+                workingPrefix += props.gap ?? 0
+              }
+
+              const id = `grid-${props.axis}-handle-${dimensionIndex}-container`
+
+              return (
+                <div
+                  key={id}
+                  data-testid={id}
+                  style={{
+                    position: 'absolute',
+                    left:
+                      props.axis === 'column'
+                        ? workingPrefix - GridResizingContainerSize / 2
+                        : undefined,
+                    top:
+                      props.axis === 'row'
+                        ? workingPrefix - GridResizingContainerSize / 2
+                        : props.containingFrame.y - 30,
+                    right: props.axis === 'row' ? 10 - props.containingFrame.x : undefined,
+                    width: props.axis === 'column' ? GridResizingContainerSize : `max-content`,
+                    height: props.axis === 'row' ? GridResizingContainerSize : `max-content`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <CanvasLabel
+                    value={getLabelForAxis(dimension, dimensionIndex, props.fromPropsAxisValues)}
+                    scale={scaleRef.current}
+                    color={colorTheme.brandNeonPink.value}
+                    textColor={colorTheme.white.value}
+                    // eslint-disable-next-line react/jsx-no-bind
+                    onMouseDown={mouseDownHandler}
+                  />
+                </div>
+              )
+            })}
+          </>
+        )
+      case 'FALLBACK':
+        return null
+      default:
+        assertNever(props.axisValues)
+        return null
+    }
+  }
+})
+GridResizing.displayName = 'GridResizing'
 
 export const GridControls = controlForStrategyMemoized(() => {
   const dispatch = useDispatch()
@@ -575,142 +682,26 @@ export const GridControls = controlForStrategyMemoized(() => {
           />
         ) : null}
         {grids.flatMap((grid) => {
-          if (grid.gridTemplateColumns == null) {
-            return []
-          } else {
-            switch (grid.gridTemplateColumns.type) {
-              case 'DIMENSIONS':
-                let workingPrefix: number = grid.frame.x
-                return grid.gridTemplateColumns.dimensions.flatMap((dimension, dimensionIndex) => {
-                  // Assumes pixels currently.
-                  workingPrefix += dimension.value
-                  if (dimensionIndex !== 0) {
-                    workingPrefix += grid.gap ?? 0
-                  }
-                  function mouseDownHandler(event: React.MouseEvent): void {
-                    const start = windowToCanvasCoordinates(
-                      scaleRef.current,
-                      canvasOffsetRef.current,
-                      windowPoint({ x: event.nativeEvent.x, y: event.nativeEvent.y }),
-                    )
-
-                    dispatch([
-                      CanvasActions.createInteractionSession(
-                        createInteractionViaMouse(
-                          start.canvasPositionRounded,
-                          Modifier.modifiersForEvent(event),
-                          gridAxisHandle('column', dimensionIndex),
-                          'zero-drag-not-permitted',
-                        ),
-                      ),
-                    ])
-                    event.stopPropagation()
-                    event.preventDefault()
-                  }
-
-                  const id = `grid-column-handle-${dimensionIndex}`
-
-                  return (
-                    <div
-                      key={id}
-                      data-testid={id}
-                      style={{
-                        position: 'absolute',
-                        left: workingPrefix - 15,
-                        top: grid.frame.y - 30,
-                        width: 40,
-                        height: '20px',
-                        borderRadius: 5,
-                        backgroundColor: colorTheme.brandNeonPink.value,
-                        color: colorTheme.white.value,
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                      }}
-                      onMouseDown={mouseDownHandler}
-                    >
-                      {getLabelForAxis(
-                        dimension,
-                        dimensionIndex,
-                        grid.gridTemplateColumnsFromProps,
-                      )}
-                    </div>
-                  )
-                })
-              case 'FALLBACK':
-                return []
-              default:
-                assertNever(grid.gridTemplateColumns)
-                return []
-            }
-          }
+          return (
+            <GridResizing
+              axisValues={grid.gridTemplateColumns}
+              fromPropsAxisValues={grid.gridTemplateColumnsFromProps}
+              containingFrame={grid.frame}
+              axis={'column'}
+              gap={grid.gap}
+            />
+          )
         })}
         {grids.flatMap((grid) => {
-          if (grid.gridTemplateRows == null) {
-            return []
-          } else {
-            switch (grid.gridTemplateRows.type) {
-              case 'DIMENSIONS':
-                let workingPrefix: number = grid.frame.y
-                return grid.gridTemplateRows.dimensions.flatMap((dimension, dimensionIndex) => {
-                  // Assumes pixels currently.
-                  workingPrefix += dimension.value
-                  if (dimensionIndex !== 0) {
-                    workingPrefix += grid.gap ?? 0
-                  }
-                  function mouseDownHandler(event: React.MouseEvent): void {
-                    const start = windowToCanvasCoordinates(
-                      scaleRef.current,
-                      canvasOffsetRef.current,
-                      windowPoint({ x: event.nativeEvent.x, y: event.nativeEvent.y }),
-                    )
-
-                    dispatch([
-                      CanvasActions.createInteractionSession(
-                        createInteractionViaMouse(
-                          start.canvasPositionRounded,
-                          Modifier.modifiersForEvent(event),
-                          gridAxisHandle('row', dimensionIndex),
-                          'zero-drag-not-permitted',
-                        ),
-                      ),
-                    ])
-                    event.stopPropagation()
-                    event.preventDefault()
-                  }
-
-                  const id = `grid-row-handle-${dimensionIndex}`
-
-                  return (
-                    <div
-                      key={id}
-                      data-testid={id}
-                      style={{
-                        position: 'absolute',
-                        left: grid.frame.x - 50,
-                        top: workingPrefix - 5,
-                        width: 40,
-                        height: '20px',
-                        borderRadius: 5,
-                        backgroundColor: colorTheme.brandNeonPink.value,
-                        color: colorTheme.white.value,
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                      }}
-                      onMouseDown={mouseDownHandler}
-                    >
-                      {getLabelForAxis(dimension, dimensionIndex, grid.gridTemplateRowsFromProps)}
-                    </div>
-                  )
-                })
-              case 'FALLBACK':
-                return []
-              default:
-                assertNever(grid.gridTemplateRows)
-                return []
-            }
-          }
+          return (
+            <GridResizing
+              axisValues={grid.gridTemplateRows}
+              fromPropsAxisValues={grid.gridTemplateRowsFromProps}
+              containingFrame={grid.frame}
+              axis={'row'}
+              gap={grid.gap}
+            />
+          )
         })}
       </CanvasOffsetWrapper>
     </React.Fragment>
