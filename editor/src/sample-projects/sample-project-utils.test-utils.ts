@@ -1,4 +1,4 @@
-import { getFilePathMappings } from 'src/core/model/project-file-utils'
+import { getFilePathMappings } from '../core/model/project-file-utils'
 import type { ProjectContentsTree, ProjectContentTreeRoot } from '../components/assets'
 import {
   addFileToProjectContents,
