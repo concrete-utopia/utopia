@@ -21,7 +21,12 @@ import { sides } from 'utopia-api/core'
 import { assertNever, fastForEach, unknownObjectProperty } from './utils'
 import { addAllUniquely, mapDropNulls } from './array-utils'
 import { objectMap } from './object-utils'
-import type { CSSPosition, FlexDirection } from '../../components/inspector/common/css-utils'
+import type {
+  CSSNumber,
+  CSSPosition,
+  FlexDirection,
+  GridCSSNumber,
+} from '../../components/inspector/common/css-utils'
 import type { ModifiableAttribute } from './jsx-attributes'
 import * as EP from './element-path'
 import { firstLetterIsLowerCase } from './string-utils'
@@ -2556,6 +2561,119 @@ export function elementInstanceMetadata(
 
 export type SettableLayoutSystem = 'flex' | 'flow' | 'grid' | LayoutSystem
 
+export interface GridPositionValue {
+  numericalPosition: number | null
+}
+
+export function gridPositionValue(numericalPosition: number | null): GridPositionValue {
+  return {
+    numericalPosition: numericalPosition,
+  }
+}
+
+export type GridPosition = GridPositionValue | 'auto'
+
+export interface GridRange {
+  start: GridPosition
+  end: GridPosition | null
+}
+
+export function gridRange(start: GridPosition, end: GridPosition | null): GridRange {
+  return {
+    start: start,
+    end: end,
+  }
+}
+
+export type GridColumnStart = GridPosition
+export type GridColumnEnd = GridPosition
+export type GridRowStart = GridPosition
+export type GridRowEnd = GridPosition
+
+export interface GridAutoOrTemplateFallback {
+  type: 'FALLBACK'
+  value: string
+}
+
+export function gridAutoOrTemplateFallback(value: string): GridAutoOrTemplateFallback {
+  return {
+    type: 'FALLBACK',
+    value: value,
+  }
+}
+
+export interface GridAutoOrTemplateDimensions {
+  type: 'DIMENSIONS'
+  dimensions: Array<GridCSSNumber>
+}
+
+export function gridAutoOrTemplateDimensions(
+  dimensions: Array<GridCSSNumber>,
+): GridAutoOrTemplateDimensions {
+  return {
+    type: 'DIMENSIONS',
+    dimensions: dimensions,
+  }
+}
+
+export type GridAutoOrTemplateBase = GridAutoOrTemplateDimensions | GridAutoOrTemplateFallback
+
+export function isGridAutoOrTemplateDimensions(
+  value: GridAutoOrTemplateBase,
+): value is GridAutoOrTemplateDimensions {
+  return value.type === 'DIMENSIONS'
+}
+
+export type GridAuto = GridAutoOrTemplateBase
+export type GridTemplate = GridAutoOrTemplateBase
+
+export type GridTemplateColumns = GridTemplate
+export type GridTemplateRows = GridTemplate
+export type GridAutoColumns = GridAuto
+export type GridAutoRows = GridAuto
+
+export interface GridContainerProperties {
+  gridTemplateColumns: GridTemplateColumns | null
+  gridTemplateRows: GridTemplateRows | null
+  gridAutoColumns: GridAutoColumns | null
+  gridAutoRows: GridAutoRows | null
+}
+
+export function gridContainerProperties(
+  gridTemplateColumns: GridTemplateColumns | null,
+  gridTemplateRows: GridTemplateRows | null,
+  gridAutoColumns: GridAutoColumns | null,
+  gridAutoRows: GridAutoRows | null,
+): GridContainerProperties {
+  return {
+    gridTemplateColumns: gridTemplateColumns,
+    gridTemplateRows: gridTemplateRows,
+    gridAutoColumns: gridAutoColumns,
+    gridAutoRows: gridAutoRows,
+  }
+}
+
+export interface GridElementProperties {
+  gridColumnStart: GridColumnStart | null
+  gridColumnEnd: GridColumnEnd | null
+  gridRowStart: GridRowStart | null
+  gridRowEnd: GridRowEnd | null
+}
+
+export function gridElementProperties(
+  gridColumnStart: GridColumnStart | null,
+  gridColumnEnd: GridColumnEnd | null,
+  gridRowStart: GridRowStart | null,
+  gridRowEnd: GridRowEnd | null,
+): GridElementProperties {
+  return {
+    gridColumnStart: gridColumnStart,
+    gridColumnEnd: gridColumnEnd,
+    gridRowStart: gridRowStart,
+    gridRowEnd: gridRowEnd,
+  }
+}
+
 export interface SpecialSizeMeasurements {
   offset: LocalPoint
   coordinateSystemBounds: CanvasRectangle | null
@@ -2598,6 +2716,10 @@ export interface SpecialSizeMeasurements {
   fontStyle: string | null
   textDecorationLine: string | null
   computedHugProperty: HugPropertyWidthHeight
+  containerGridProperties: GridContainerProperties
+  elementGridProperties: GridElementProperties
+  containerGridPropertiesFromProps: GridContainerProperties
+  elementGridPropertiesFromProps: GridElementProperties
 }
 
 export function specialSizeMeasurements(
@@ -2642,6 +2764,10 @@ export function specialSizeMeasurements(
   textDecorationLine: string | null,
   textBounds: CanvasRectangle | null,
   computedHugProperty: HugPropertyWidthHeight,
+  containerGridProperties: GridContainerProperties,
+  elementGridProperties: GridElementProperties,
+  containerGridPropertiesFromProps: GridContainerProperties,
+  elementGridPropertiesFromProps: GridElementProperties,
 ): SpecialSizeMeasurements {
   return {
     offset,
@@ -2685,6 +2811,10 @@ export function specialSizeMeasurements(
     fontStyle,
     textDecorationLine,
     computedHugProperty,
+    containerGridProperties,
+    elementGridProperties,
+    containerGridPropertiesFromProps,
+    elementGridPropertiesFromProps,
   }
 }
 
@@ -2733,6 +2863,30 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   null,
   null,
   { width: null, height: null },
+  {
+    gridTemplateColumns: null,
+    gridTemplateRows: null,
+    gridAutoColumns: null,
+    gridAutoRows: null,
+  },
+  {
+    gridColumnStart: null,
+    gridColumnEnd: null,
+    gridRowStart: null,
+    gridRowEnd: null,
+  },
+  {
+    gridTemplateColumns: null,
+    gridTemplateRows: null,
+    gridAutoColumns: null,
+    gridAutoRows: null,
+  },
+  {
+    gridColumnStart: null,
+    gridColumnEnd: null,
+    gridRowStart: null,
+    gridRowEnd: null,
+  },
 )
 
 export function walkElement(

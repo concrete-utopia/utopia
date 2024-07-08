@@ -559,6 +559,20 @@ export function flexGapHandle(): FlexGapHandle {
   }
 }
 
+export interface GridAxisHandle {
+  type: 'GRID_AXIS_HANDLE'
+  axis: 'column' | 'row'
+  columnOrRow: number
+}
+
+export function gridAxisHandle(axis: 'column' | 'row', columnOrRow: number): GridAxisHandle {
+  return {
+    type: 'GRID_AXIS_HANDLE',
+    axis: axis,
+    columnOrRow: columnOrRow,
+  }
+}
+
 export interface PaddingResizeHandle {
   type: 'PADDING_RESIZE_HANDLE'
   edgePiece: EdgePiece
@@ -602,6 +616,18 @@ export function reorderSlider(): ReorderSlider {
   }
 }
 
+export interface GridCellHandle {
+  type: 'GRID_CELL_HANDLE'
+  id: string
+}
+
+export function gridCellHandle(params: { id: string }): GridCellHandle {
+  return {
+    type: 'GRID_CELL_HANDLE',
+    id: params.id,
+  }
+}
+
 export type CanvasControlType =
   | BoundingArea
   | ResizeHandle
@@ -610,6 +636,8 @@ export type CanvasControlType =
   | KeyboardCatcherControl
   | ReorderSlider
   | BorderRadiusResizeHandle
+  | GridCellHandle
+  | GridAxisHandle
 
 export function isDragToPan(
   interaction: InteractionSession | null,

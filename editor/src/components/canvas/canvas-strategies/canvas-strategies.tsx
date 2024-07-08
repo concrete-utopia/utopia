@@ -63,6 +63,10 @@ import type { InsertionSubject, InsertionSubjectWrapper } from '../../editor/edi
 import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
 import { retargetStrategyToChildrenOfFragmentLikeElements } from './strategies/fragment-like-helpers'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { gridRearrangeMoveStrategy } from './strategies/grid-rearrange-move-strategy'
+import { resizeGridStrategy } from './strategies/resize-grid-strategy'
+import { rearrangeGridSwapStrategy } from './strategies/rearrange-grid-swap-strategy'
+import { gridRearrangeMoveDuplicateStrategy } from './strategies/grid-rearrange-move-duplicate-strategy'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -90,6 +94,9 @@ const moveOrReorderStrategies: MetaCanvasStrategy = (
       convertToAbsoluteAndMoveStrategy,
       convertToAbsoluteAndMoveAndSetParentFixedStrategy,
       reorderSliderStategy,
+      gridRearrangeMoveStrategy,
+      rearrangeGridSwapStrategy,
+      gridRearrangeMoveDuplicateStrategy,
     ],
   )
 }
@@ -100,13 +107,14 @@ const resizeStrategies: MetaCanvasStrategy = (
   customStrategyState: CustomStrategyState,
 ): Array<CanvasStrategy> => {
   return mapDropNulls(
-    (factory) => factory(canvasState, interactionSession),
+    (factory) => factory(canvasState, interactionSession, customStrategyState),
     [
       keyboardAbsoluteResizeStrategy,
       absoluteResizeBoundingBoxStrategy,
       flexResizeBasicStrategy,
       flexResizeStrategy,
       basicResizeStrategy,
+      resizeGridStrategy,
     ],
   )
 }
@@ -221,6 +229,7 @@ function getInteractionTargetFromEditorState(editor: EditorState): InteractionTa
     case 'textEdit':
     case 'comment':
     case 'follow':
+    case 'panels':
       return targetPaths(editor.selectedViews)
     default:
       assertNever(editor.mode)
