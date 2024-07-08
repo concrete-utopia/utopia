@@ -123,7 +123,11 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
   const colorTheme = useColorTheme()
   const dispatch = useDispatch()
   const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
-  const scaleRef = useRefEditorState((store) => store.editor.canvas.scale)
+  const scale = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.scale,
+    'GridResizing scale',
+  )
 
   if (props.axisValues == null) {
     return null
@@ -137,7 +141,7 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
             {props.axisValues.dimensions.flatMap((dimension, dimensionIndex) => {
               const mouseDownHandler = (event: React.MouseEvent): void => {
                 const start = windowToCanvasCoordinates(
-                  scaleRef.current,
+                  scale,
                   canvasOffsetRef.current,
                   windowPoint({ x: event.nativeEvent.x, y: event.nativeEvent.y }),
                 )
@@ -182,8 +186,8 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
                     top:
                       props.axis === 'row'
                         ? workingPrefix - GridResizingContainerSize / 2
-                        : props.containingFrame.y - 30,
-                    right: props.axis === 'row' ? 10 - props.containingFrame.x : undefined,
+                        : props.containingFrame.y - 30 / scale,
+                    right: props.axis === 'row' ? 10 / scale - props.containingFrame.x : undefined,
                     width: props.axis === 'column' ? GridResizingContainerSize : `max-content`,
                     height: props.axis === 'row' ? GridResizingContainerSize : `max-content`,
                     display: 'flex',
@@ -193,7 +197,7 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
                 >
                   <CanvasLabel
                     value={getLabelForAxis(dimension, dimensionIndex, props.fromPropsAxisValues)}
-                    scale={scaleRef.current}
+                    scale={scale}
                     color={colorTheme.brandNeonPink.value}
                     textColor={colorTheme.white.value}
                     // eslint-disable-next-line react/jsx-no-bind
