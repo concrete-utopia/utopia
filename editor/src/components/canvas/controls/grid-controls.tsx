@@ -171,12 +171,13 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
                 workingPrefix += props.gap ?? 0
               }
 
-              const id = `grid-${props.axis}-handle-${dimensionIndex}-container`
+              const labelId = `grid-${props.axis}-handle-${dimensionIndex}`
+              const containerId = `${labelId}-container`
 
               return (
                 <div
-                  key={id}
-                  data-testid={id}
+                  key={containerId}
+                  data-testid={containerId}
                   style={{
                     position: 'absolute',
                     left:
@@ -196,6 +197,7 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
                   }}
                 >
                   <CanvasLabel
+                    testId={labelId}
                     value={getLabelForAxis(dimension, dimensionIndex, props.fromPropsAxisValues)}
                     scale={scale}
                     color={colorTheme.brandNeonPink.value}
