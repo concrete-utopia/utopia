@@ -37,6 +37,7 @@ import { useCanComment } from '../../core/commenting/comment-hooks'
 import { ElementsOutsideVisibleAreaIndicator } from '../editor/elements-outside-visible-area-indicator'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { RollYourOwnFeaturesPane } from '../navigator/left-pane/roll-your-own-pane'
+import { AnimationContext } from './ui-jsx-canvas-renderer/animation-context'
 
 function isCodeEditorEnabled(): boolean {
   if (typeof window !== 'undefined') {
@@ -95,9 +96,11 @@ const DesignPanelRootInner = React.memo(() => {
 })
 
 export const DesignPanelRoot = React.memo(() => {
+  const { scope: animationScope } = React.useContext(AnimationContext)
   return (
     <>
       <SimpleFlexRow
+        ref={animationScope}
         className='OpenFileEditorShell'
         style={{
           position: 'relative',
