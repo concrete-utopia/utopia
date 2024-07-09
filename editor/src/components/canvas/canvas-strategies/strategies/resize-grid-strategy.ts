@@ -1,9 +1,4 @@
-import {
-  filtered,
-  fromArrayIndex,
-  fromField,
-  notNull,
-} from '../../../../core/shared/optics/optic-creators'
+import { fromArrayIndex, fromField, notNull } from '../../../../core/shared/optics/optic-creators'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import * as PP from '../../../../core/shared/property-path'
@@ -18,9 +13,9 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
-import type { CSSNumber, GridCSSNumber } from '../../../../components/inspector/common/css-utils'
+import type { GridCSSNumber } from '../../../../components/inspector/common/css-utils'
 import { printArrayCSSNumber } from '../../../../components/inspector/common/css-utils'
-import { any, anyBy, modify, toFirst } from '../../../../core/shared/optics/optic-utilities'
+import { anyBy, modify, toFirst } from '../../../../core/shared/optics/optic-utilities'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { isRight } from '../../../../core/shared/either'
 import { roundToNearestWhole } from '../../../../core/shared/math-utils'
@@ -35,11 +30,8 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
   }
 
   const selectedElement = selectedElements[0]
-  const parentPath = EP.parentPath(selectedElement)
-  const ok = MetadataUtils.isGridLayoutedContainer(
-    MetadataUtils.findElementByElementPath(canvasState.startingMetadata, parentPath),
-  )
-  if (!ok) {
+
+  if (!MetadataUtils.isGridCell(canvasState.startingMetadata, selectedElement)) {
     return null
   }
 
@@ -73,6 +65,7 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
       const control = interactionSession.activeControl
       const drag = interactionSession.interactionData.drag
       const dragAmount = control.axis === 'column' ? drag.x : drag.y
+      const parentPath = EP.parentPath(selectedElement)
       const parentSpecialSizeMeasurements =
         canvasState.startingMetadata[EP.toString(parentPath)].specialSizeMeasurements
       const originalValues =
