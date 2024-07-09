@@ -413,12 +413,7 @@ export const GridControls = controlForStrategyMemoized(() => {
     shadow?.globalFrame ?? null,
   )
 
-  const gridPath = React.useMemo(() => {
-    if (shadow == null) {
-      return null
-    }
-    return EP.parentPath(shadow.elementPath)
-  }, [shadow])
+  const gridPath = shadow != null ? EP.parentPath(shadow.elementPath) : null
 
   useSnapAnimation({
     targetRootCell: targetRootCell,
@@ -755,10 +750,10 @@ function useSnapAnimation(params: {
   targetRootCell: GridCellCoordinates | null
   controls: AnimationControls
 }) {
-  const { gridPath, targetRootCell: targetRootCellId, controls, shadowFrame } = params
+  const { gridPath, targetRootCell, controls, shadowFrame } = params
   const features = useRollYourOwnFeatures()
 
-  const [lastTargetRootCellId, setLastTargetRootCellId] = React.useState(targetRootCellId)
+  const [lastTargetRootCellId, setLastTargetRootCellId] = React.useState(targetRootCell)
   const [lastSnapPoint, setLastSnapPoint] = React.useState<CanvasPoint | null>(shadowFrame)
 
   const selectedViews = useEditorState(
@@ -786,12 +781,12 @@ function useSnapAnimation(params: {
   }, [lastSnapPoint, shadowFrame])
 
   const snapPoint = React.useMemo(() => {
-    if (gridPath == null || targetRootCellId == null) {
+    if (gridPath == null || targetRootCell == null) {
       return null
     }
 
     const element = document.getElementById(
-      gridCellTargetId(gridPath, targetRootCellId.row, targetRootCellId.column),
+      gridCellTargetId(gridPath, targetRootCell.row, targetRootCell.column),
     )
     if (element == null) {
       return null
@@ -799,11 +794,12 @@ function useSnapAnimation(params: {
 
     const rect = element.getBoundingClientRect()
     const point = windowPoint({ x: rect.x, y: rect.y })
+
     return windowToCanvasCoordinates(canvasScale, canvasOffset, point).canvasPositionRounded
-  }, [canvasScale, canvasOffset, gridPath, targetRootCellId])
+  }, [canvasScale, canvasOffset, gridPath, targetRootCell])
 
   React.useEffect(() => {
-    if (targetRootCellId != null && snapPoint != null && moveFromPoint != null) {
+    if (targetRootCell != null && snapPoint != null && moveFromPoint != null) {
       const snapPointsDiffer = lastSnapPoint == null || !pointsEqual(snapPoint, lastSnapPoint)
       const hasMovedToANewCell = lastTargetRootCellId != null
       const shouldAnimate = snapPointsDiffer && hasMovedToANewCell
@@ -823,9 +819,9 @@ function useSnapAnimation(params: {
       }
     }
     setLastSnapPoint(snapPoint)
-    setLastTargetRootCellId(targetRootCellId)
+    setLastTargetRootCellId(targetRootCell)
   }, [
-    targetRootCellId,
+    targetRootCell,
     controls,
     features.Grid.animateShadowSnap,
     lastSnapPoint,
