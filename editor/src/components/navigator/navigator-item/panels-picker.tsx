@@ -5,8 +5,9 @@ import React from 'react'
 import { CheckboxInput, colorTheme } from '../../../uuiui'
 import { FlexRow } from 'utopia-api'
 import { Substores, useEditorState } from '../../../components/editor/store/store-hook'
-import { togglePanel } from '../../../components/editor/actions/action-creators'
+import { switchEditorMode, togglePanel } from '../../../components/editor/actions/action-creators'
 import { useDispatch } from '../../../components/editor/store/dispatch-context'
+import { EditorModes } from '../../editor/editor-modes'
 
 export const PanelsPicker = React.memo(() => {
   const dispatch = useDispatch()
@@ -24,15 +25,24 @@ export const PanelsPicker = React.memo(() => {
   )
 
   const toggleNavigator = React.useCallback(() => {
-    dispatch([togglePanel('leftmenu')])
+    dispatch([
+      togglePanel('leftmenu'),
+      switchEditorMode(EditorModes.selectMode(null, false, 'none')),
+    ])
   }, [dispatch])
 
   const toggleCodeEditor = React.useCallback(() => {
-    dispatch([togglePanel('codeEditor')])
+    dispatch([
+      togglePanel('codeEditor'),
+      switchEditorMode(EditorModes.selectMode(null, false, 'none')),
+    ])
   }, [dispatch])
 
   const toggleInspector = React.useCallback(() => {
-    dispatch([togglePanel('rightmenu')])
+    dispatch([
+      togglePanel('rightmenu'),
+      switchEditorMode(EditorModes.selectMode(null, false, 'none')),
+    ])
   }, [dispatch])
 
   return (
