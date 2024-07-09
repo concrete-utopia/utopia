@@ -482,7 +482,7 @@ export function runDomWalker({
       return getCanvasRectangleFromElement(
         canvasRootContainer,
         scale,
-        'without-content',
+        'without-text-content',
         'nearest-half',
       )
     })
@@ -677,7 +677,7 @@ function collectMetadataForElement(
     element,
     scale,
     containerRectLazy,
-    'without-content',
+    'without-text-content',
     'nearest-half',
   )
   const localFrame = localRectangle(Utils.offsetRect(globalFrame, Utils.negate(parentPoint)))
@@ -685,7 +685,7 @@ function collectMetadataForElement(
     element,
     scale,
     containerRectLazy,
-    'without-content',
+    'without-text-content',
     'no-rounding',
   )
 
@@ -952,7 +952,7 @@ function getSpecialMeasurements(
           element.offsetParent,
           scale,
           containerRectLazy,
-          'without-content',
+          'without-text-content',
           'nearest-half',
         )
       : null
@@ -963,7 +963,7 @@ function getSpecialMeasurements(
           element.parentElement,
           scale,
           containerRectLazy,
-          'without-content',
+          'without-text-content',
           'nearest-half',
         )
       : null
@@ -1048,7 +1048,7 @@ function getSpecialMeasurements(
     elementOrContainingParent,
     scale,
     containerRectLazy,
-    'without-content',
+    'without-text-content',
     'nearest-half',
   )
 
@@ -1056,7 +1056,7 @@ function getSpecialMeasurements(
     element,
     scale,
     containerRectLazy,
-    'with-content',
+    'with-text-content',
     'nearest-half',
   )
 
@@ -1103,18 +1103,21 @@ function getSpecialMeasurements(
   const textDecorationLine = elementStyle.textDecorationLine
 
   const textBounds = elementContainsOnlyText(element)
-    ? stretchRect(getCanvasRectangleFromElement(element, scale, 'only-content', 'nearest-half'), {
-        w:
-          maybeValueFromComputedStyle(elementStyle.paddingLeft) +
-          maybeValueFromComputedStyle(elementStyle.paddingRight) +
-          maybeValueFromComputedStyle(elementStyle.marginLeft) +
-          maybeValueFromComputedStyle(elementStyle.marginRight),
-        h:
-          maybeValueFromComputedStyle(elementStyle.paddingTop) +
-          maybeValueFromComputedStyle(elementStyle.paddingBottom) +
-          maybeValueFromComputedStyle(elementStyle.marginTop) +
-          maybeValueFromComputedStyle(elementStyle.marginBottom),
-      })
+    ? stretchRect(
+        getCanvasRectangleFromElement(element, scale, 'only-text-content', 'nearest-half'),
+        {
+          w:
+            maybeValueFromComputedStyle(elementStyle.paddingLeft) +
+            maybeValueFromComputedStyle(elementStyle.paddingRight) +
+            maybeValueFromComputedStyle(elementStyle.marginLeft) +
+            maybeValueFromComputedStyle(elementStyle.marginRight),
+          h:
+            maybeValueFromComputedStyle(elementStyle.paddingTop) +
+            maybeValueFromComputedStyle(elementStyle.paddingBottom) +
+            maybeValueFromComputedStyle(elementStyle.marginTop) +
+            maybeValueFromComputedStyle(elementStyle.marginBottom),
+        },
+      )
     : null
 
   const computedStyleMap =
@@ -1204,7 +1207,7 @@ function globalFrameForElement(
   element: HTMLElement,
   scale: number,
   containerRectLazy: () => CanvasRectangle,
-  withContent: 'without-content' | 'with-content',
+  withContent: 'without-text-content' | 'with-text-content',
   rounding: 'nearest-half' | 'no-rounding',
 ) {
   const elementRect = getCanvasRectangleFromElement(element, scale, withContent, rounding)
@@ -1339,7 +1342,7 @@ function walkSceneInner(
     scene,
     globalProps.scale,
     globalProps.containerRectLazy,
-    'without-content',
+    'without-text-content',
     'nearest-half',
   )
 
@@ -1418,7 +1421,7 @@ function walkElements(
       element,
       globalProps.scale,
       globalProps.containerRectLazy,
-      'without-content',
+      'without-text-content',
       'nearest-half',
     )
 
