@@ -14,7 +14,7 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
-import { getGridCellUnderMouse, setGridProps } from './grid-helpers'
+import { getGridCellUnderMouse, setGridPropsCommands } from './grid-helpers'
 
 export const gridResizeElementStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -127,7 +127,7 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
       }
 
       return strategyApplicationResult(
-        setGridProps(selectedElement, gridPropsWithDragOver(gridProps)),
+        setGridPropsCommands(selectedElement, gridPropsWithDragOver(gridProps)),
         {
           grid: { ...customState.grid, targetCell },
         },

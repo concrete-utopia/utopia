@@ -189,7 +189,7 @@ export function gridPositionToValue(p: GridPosition | null | undefined): string 
   return p.numericalPosition
 }
 
-export function setGridProps(
+export function setGridPropsCommands(
   elementPath: ElementPath,
   gridProps: Partial<GridElementProperties>,
 ): CanvasCommand[] {

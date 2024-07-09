@@ -22,7 +22,7 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
-import { setGridProps } from './grid-helpers'
+import { setGridPropsCommands } from './grid-helpers'
 
 export const rearrangeGridSwapStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -168,11 +168,11 @@ function swapChildrenCommands({
       grabbedElement.elementPath,
       GridPositioningProps.map((p) => create('style', p)),
     ),
-    ...setGridProps(
+    ...setGridPropsCommands(
       grabbedElement.elementPath,
       swapToElement.specialSizeMeasurements.elementGridProperties,
     ),
-    ...setGridProps(
+    ...setGridPropsCommands(
       swapToElement.elementPath,
       grabbedElement.specialSizeMeasurements.elementGridProperties,
     ),
