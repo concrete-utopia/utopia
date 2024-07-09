@@ -125,8 +125,8 @@ import {
 } from '../components/github/github-repository-clone-flow'
 import { hasReactRouterErrorBeenLogged } from '../core/shared/runtime-report-logs'
 import { InitialOnlineState, startOnlineStatusPolling } from '../components/editor/online-status'
-import { AnimationContext } from '../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
 import { useAnimate } from 'framer-motion'
+import { AnimationContext } from '../components/canvas/ui-jsx-canvas-renderer/animation-context'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
