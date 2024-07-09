@@ -15,7 +15,6 @@ import {
 import type { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
 import {
   canvasPoint,
-  canvasRectangle,
   distance,
   getRectCenter,
   isFiniteRectangle,
@@ -794,6 +793,8 @@ function useMouseMove(activelyDraggingOrResizingCell: string | null) {
   return { hoveringStart, mouseCanvasPosition }
 }
 
+export const GridResizeEdgeTestId = (edge: GridResizeEdge) => `grid-resize-edge-${edge}`
+
 interface GridResizeControlProps {
   target: ElementPath
 }
@@ -930,7 +931,7 @@ export const GridResizeControls = controlForStrategyMemoized<GridResizeControlPr
               }}
             >
               <div
-                data-testid={`grid-resize-edge-${edge}`}
+                data-testid={GridResizeEdgeTestId(edge)}
                 onMouseDown={startResizeInteraction(EP.toUid(element.elementPath), edge)}
                 style={{
                   pointerEvents: 'initial',
