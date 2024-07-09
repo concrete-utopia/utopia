@@ -789,6 +789,38 @@ interface GridResizeControlProps {
   target: ElementPath
 }
 
+function boundsWithDragOver({
+  bounds,
+  delta,
+}: {
+  bounds: CanvasRectangle
+  delta: CanvasRectangle
+}): CanvasRectangle {
+  const offsetWithDelta = canvasRectangle({
+    x: bounds.x + delta.x,
+    y: bounds.y + delta.y,
+    width: bounds.width + delta.width,
+    height: bounds.height + delta.height,
+  })
+
+  const { x, width } =
+    offsetWithDelta.width >= 0
+      ? offsetWithDelta
+      : { x: bounds.x + offsetWithDelta.width, width: -offsetWithDelta.width * 2 }
+
+  const { y, height } =
+    offsetWithDelta.height >= 0
+      ? offsetWithDelta
+      : { y: bounds.y + offsetWithDelta.height, height: -offsetWithDelta.height * 2 }
+
+  return canvasRectangle({
+    x,
+    y,
+    width,
+    height,
+  })
+}
+
 export const GridResizeControls = controlForStrategyMemoized<GridResizeControlProps>(
   ({ target }) => {
     const element = useEditorState(
@@ -834,16 +866,7 @@ export const GridResizeControls = controlForStrategyMemoized<GridResizeControlPr
             assertNever(resizeControlRef.current.edge)
         }
 
-        setBounds((o) =>
-          o == null
-            ? null
-            : canvasRectangle({
-                x: o.x + delta.x,
-                y: o.y + delta.y,
-                width: o.width + delta.width,
-                height: o.height + delta.height,
-              }),
-        )
+        setBounds((o) => (o == null ? null : boundsWithDragOver({ bounds: o, delta: delta })))
       },
       [resizeControlRef],
     )
@@ -882,8 +905,6 @@ export const GridResizeControls = controlForStrategyMemoized<GridResizeControlPr
       },
       [canvasOffsetRef, dispatch, element?.globalFrame, scaleRef],
     )
-
-    const colorTheme = useColorTheme()
 
     if (
       element == null ||

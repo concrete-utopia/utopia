@@ -1,6 +1,6 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
-import type { GridElementProperties } from '../../../../core/shared/element-template'
+import type { GridElementProperties, GridPosition } from '../../../../core/shared/element-template'
 import { offsetPoint } from '../../../../core/shared/math-utils'
 import { assertNever } from '../../../../core/shared/utils'
 import { GridControls, GridResizeControls } from '../../controls/grid-controls'
@@ -79,7 +79,7 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
         canvasState.canvasOffset,
       )
 
-      let targetCell = customState.targetGridCell
+      let targetCell = customState.grid.targetCell
       const cellUnderMouse = getGridCellUnderMouse(mouseWindowPoint)
       if (cellUnderMouse != null) {
         targetCell = cellUnderMouse.coordinates
@@ -128,9 +128,54 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
           assertNever(interactionSession.activeControl.edge)
       }
 
-      return strategyApplicationResult(setGridProps(selectedElement, gridProps), {
-        targetGridCell: targetCell,
-      })
+      return strategyApplicationResult(
+        setGridProps(selectedElement, gridPropsWithDragOver(gridProps)),
+        {
+          grid: { ...customState.grid, targetCell },
+        },
+      )
     },
   }
+}
+
+function orderedGridPositions({
+  start,
+  end,
+}: {
+  start: GridPosition | null
+  end: GridPosition | null
+}): {
+  start: GridPosition | null
+  end: GridPosition | null
+} {
+  if (
+    start == null ||
+    start === 'auto' ||
+    start.numericalPosition == null ||
+    end == null ||
+    end === 'auto' ||
+    end.numericalPosition == null
+  ) {
+    return { start, end }
+  }
+
+  return start.numericalPosition <= end.numericalPosition
+    ? { start, end }
+    : {
+        start: { numericalPosition: end.numericalPosition - 1 },
+        end: { numericalPosition: end.numericalPosition + 1 },
+      }
+}
+
+function gridPropsWithDragOver(props: GridElementProperties): GridElementProperties {
+  const { start: gridColumnStart, end: gridColumnEnd } = orderedGridPositions({
+    start: props.gridColumnStart,
+    end: props.gridColumnEnd,
+  })
+  const { start: gridRowStart, end: gridRowEnd } = orderedGridPositions({
+    start: props.gridRowStart,
+    end: props.gridRowEnd,
+  })
+
+  return { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }
 }
