@@ -1,11 +1,12 @@
 import type React from 'react'
+import { emptySet } from '../../../core/shared/set-utils'
 import type { MapLike } from 'typescript'
 import { atomWithPubSub } from '../../../core/shared/atom-with-pub-sub'
 import type { Either } from '../../../core/shared/either'
 import { left } from '../../../core/shared/either'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { ProjectContentTreeRoot } from '../../assets'
-import type { UIFileBase64Blobs } from '../../editor/store/editor-state'
+import type { TransientFilesState, UIFileBase64Blobs } from '../../editor/store/editor-state'
 import type { VariableData } from '../ui-jsx-canvas'
 import type { FilePathMappings } from '../../../core/model/project-file-utils'
 
