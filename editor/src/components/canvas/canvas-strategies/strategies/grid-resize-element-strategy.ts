@@ -27,11 +27,9 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
   }
 
   const selectedElement = selectedElements[0]
-  const isElementInsideGrid = MetadataUtils.isGridLayoutedContainer(
-    MetadataUtils.findElementByElementPath(
-      canvasState.startingMetadata,
-      EP.parentPath(selectedElement),
-    ),
+  const isElementInsideGrid = MetadataUtils.isGridCell(
+    canvasState.startingMetadata,
+    selectedElement,
   )
   if (!isElementInsideGrid) {
     return null
