@@ -125,6 +125,7 @@ import { identifyValuesDefinedInNode } from './parser-printer-expressions'
 import { isParseableFile } from '../../shared/file-utils'
 import type { FunctionWrap } from 'utopia-shared/src/types/element-template'
 import { simpleFunctionWrap } from 'utopia-shared/src/types/element-template'
+import type { FilePathMappings } from '../../../core/model/project-file-utils'
 
 const BakedInStoryboardVariableName = 'storyboard'
 
@@ -1423,6 +1424,7 @@ export type SteganographyMode = 'apply-steganography' | 'do-not-apply-steganogra
 
 export function parseCode(
   filePath: string,
+  filePathMappings: FilePathMappings,
   sourceText: string,
   oldParseResultForUIDComparison: ParseSuccess | null,
   alreadyExistingUIDs_MUTABLE: Set<string>,
@@ -1596,6 +1598,7 @@ export function parseCode(
           const importedWithName = optionalMap((n) => n.getText(sourceFile), importClause?.name)
           imports = addImport(
             filePath,
+            filePathMappings,
             importFrom,
             importedWithName,
             importedFromWithin,
@@ -2034,6 +2037,7 @@ export function trimHighlightBounds(success: ParseSuccess): ParseSuccess {
 
 export function lintAndParse(
   filename: string,
+  filePathMappings: FilePathMappings,
   content: string,
   oldParseResultForUIDComparison: ParseSuccess | null,
   alreadyExistingUIDs_MUTABLE: Set<string>,
@@ -2049,6 +2053,7 @@ export function lintAndParse(
   if (lintResult.filter(messageisFatal).length === 0) {
     const result = parseCode(
       filename,
+      filePathMappings,
       content,
       oldParseResultForUIDComparison,
       alreadyExistingUIDs_MUTABLE,

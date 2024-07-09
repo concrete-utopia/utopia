@@ -32,10 +32,8 @@ import type { MapLike } from 'typescript'
 
 import LRU from 'lru-cache'
 import type { BuiltInDependencies } from './built-in-dependencies-list'
-import {
-  applyFilePathMappingsToFilePath,
-  getFilePathMappings,
-} from '../../model/project-file-utils'
+import { getFilePathMappings } from '../../model/project-file-utils'
+import { applyFilePathMappingsToFilePath } from '../../../core/workers/common/project-file-utils'
 
 const partialPackageJsonCache: LRU<string, ParseResult<PartialPackageJsonDefinition>> = new LRU({
   max: 20,

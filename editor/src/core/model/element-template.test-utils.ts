@@ -4,7 +4,7 @@ import { isParseSuccess } from '../shared/project-file-types'
 import { parseCode } from '../workers/parser-printer/parser-printer'
 
 export function getComponentFromCode(componentName: string, code: string): UtopiaJSXComponent {
-  const parseResult = parseCode('test.jsx', code, null, new Set(), 'do-not-apply-steganography')
+  const parseResult = parseCode('test.jsx', [], code, null, new Set(), 'do-not-apply-steganography')
   if (isParseSuccess(parseResult)) {
     for (const topLevelElement of parseResult.topLevelElements) {
       if (isUtopiaJSXComponent(topLevelElement) && topLevelElement.name === componentName) {
