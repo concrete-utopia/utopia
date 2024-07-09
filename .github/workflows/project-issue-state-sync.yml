@@ -1,0 +1,23 @@
+name: Project Issue State Sync
+
+on:
+  schedule:
+    # At minute 0 every 2 hours
+    - cron: 0 0-23/2 * * *
+
+  workflow_dispatch:
+    # Manual trigger
+
+jobs:
+  issue-state-sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Sync issue states
+        uses: dasmerlon/project-issue-state-sync@v2
+        with:
+          github_token: ${{ secrets.PROJECT_ISSUE_STATE_SYNC_ACCESS_TOKEN }}
+          owner: concrete-utopia
+          project_number: 6
+          closed_statuses: Done
+          open_statuses: Available,Doing,PR Open,Malte's Inbox
