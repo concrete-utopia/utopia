@@ -61,10 +61,6 @@ export function gridCellCoordinates(row: number, column: number): GridCellCoordi
   return { row: row, column: column }
 }
 
-export function gridCellCoordinatesToString(coords: GridCellCoordinates): string {
-  return `${coords.row}-${coords.column}`
-}
-
 function getCellsCount(template: GridAutoOrTemplateBase | null): number {
   if (template == null) {
     return 0
