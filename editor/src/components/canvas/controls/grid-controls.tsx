@@ -53,6 +53,14 @@ import { windowToCanvasCoordinates } from '../dom-lookup'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { useColorTheme } from '../../../uuiui'
 import { gridCellTargetId } from '../canvas-strategies/strategies/grid-helpers'
+import { resizeBoundingBoxFromSide } from '../canvas-strategies/strategies/resize-helpers'
+import type { EdgePosition } from '../canvas-types'
+import {
+  EdgePositionBottom,
+  EdgePositionLeft,
+  EdgePositionRight,
+  EdgePositionTop,
+} from '../canvas-types'
 
 export const GridCellTestId = (elementPath: ElementPath) => `grid-cell-${EP.toString(elementPath)}`
 
@@ -789,38 +797,6 @@ interface GridResizeControlProps {
   target: ElementPath
 }
 
-function boundsWithDragOver({
-  bounds,
-  delta,
-}: {
-  bounds: CanvasRectangle
-  delta: CanvasRectangle
-}): CanvasRectangle {
-  const offsetWithDelta = canvasRectangle({
-    x: bounds.x + delta.x,
-    y: bounds.y + delta.y,
-    width: bounds.width + delta.width,
-    height: bounds.height + delta.height,
-  })
-
-  const { x, width } =
-    offsetWithDelta.width >= 0
-      ? offsetWithDelta
-      : { x: bounds.x + offsetWithDelta.width, width: -offsetWithDelta.width * 2 }
-
-  const { y, height } =
-    offsetWithDelta.height >= 0
-      ? offsetWithDelta
-      : { y: bounds.y + offsetWithDelta.height, height: -offsetWithDelta.height * 2 }
-
-  return canvasRectangle({
-    x,
-    y,
-    width,
-    height,
-  })
-}
-
 export const GridResizeControls = controlForStrategyMemoized<GridResizeControlProps>(
   ({ target }) => {
     const element = useEditorState(
@@ -839,39 +815,38 @@ export const GridResizeControls = controlForStrategyMemoized<GridResizeControlPr
         : store.editor.canvas.interactionSession.activeControl,
     )
 
-    const [bounds, setBounds] = React.useState<CanvasRectangle | null>(null)
-    const onMouseMove = React.useCallback(
-      (e: MouseEvent) => {
-        if (resizeControlRef.current == null) {
-          return
-        }
-
-        let delta: CanvasRectangle = canvasRectangle({ x: 0, y: 0, width: 0, height: 0 })
-        switch (resizeControlRef.current.edge) {
-          case 'column-end':
-            delta.width = e.movementX
-            break
-          case 'column-start':
-            delta.x = e.movementX
-            delta.width = -e.movementX
-            break
-          case 'row-start':
-            delta.y = e.movementY
-            delta.height = -e.movementY
-            break
-          case 'row-end':
-            delta.height = e.movementY
-            break
-          default:
-            assertNever(resizeControlRef.current.edge)
-        }
-
-        setBounds((o) => (o == null ? null : boundsWithDragOver({ bounds: o, delta: delta })))
-      },
-      [resizeControlRef],
+    const dragRef = useRefEditorState((store) =>
+      store.editor.canvas.interactionSession?.interactionData.type !== 'DRAG'
+        ? null
+        : store.editor.canvas.interactionSession?.interactionData.drag,
     )
 
-    const onMouseUp = React.useCallback(() => setBounds(null), [])
+    const [startingBounds, setStartingBounds] = React.useState<CanvasRectangle | null>(null)
+    const [bounds, setBounds] = React.useState<CanvasRectangle | null>(null)
+    const onMouseMove = React.useCallback(() => {
+      if (resizeControlRef.current == null || dragRef.current == null) {
+        return
+      }
+
+      if (startingBounds == null) {
+        return
+      }
+
+      setBounds(
+        resizeBoundingBoxFromSide(
+          startingBounds,
+          dragRef.current,
+          gridEdgeToEdgePosition(resizeControlRef.current.edge),
+          'non-center-based',
+          null,
+        ),
+      )
+    }, [dragRef, resizeControlRef, startingBounds])
+
+    const onMouseUp = React.useCallback(() => {
+      setBounds(null)
+      setStartingBounds(null)
+    }, [])
 
     React.useEffect(() => {
       window.addEventListener('mousemove', onMouseMove)
@@ -887,6 +862,7 @@ export const GridResizeControls = controlForStrategyMemoized<GridResizeControlPr
         event.stopPropagation()
         const frame = zeroRectIfNullOrInfinity(element?.globalFrame ?? null)
         setBounds(frame)
+        setStartingBounds(frame)
         const start = windowToCanvasCoordinates(
           scaleRef.current,
           canvasOffsetRef.current,
@@ -974,6 +950,21 @@ function gridEdgeToGridArea(edge: GridResizeEdge): string {
       return 're'
     case 'row-start':
       return 'rs'
+    default:
+      assertNever(edge)
+  }
+}
+
+function gridEdgeToEdgePosition(edge: GridResizeEdge): EdgePosition {
+  switch (edge) {
+    case 'column-end':
+      return EdgePositionRight
+    case 'column-start':
+      return EdgePositionLeft
+    case 'row-end':
+      return EdgePositionBottom
+    case 'row-start':
+      return EdgePositionTop
     default:
       assertNever(edge)
   }
