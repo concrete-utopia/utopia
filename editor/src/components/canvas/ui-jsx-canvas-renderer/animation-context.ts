@@ -3,6 +3,7 @@ import type {
   DOMKeyframesDefinition,
   DynamicAnimationOptions,
   AnimationPlaybackControls,
+  AnimationScope,
 } from 'framer-motion'
 import React, { useContext } from 'react'
 import type { ElementPath } from 'utopia-shared/src/types'
@@ -12,6 +13,7 @@ import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 
 export type AnimationCtx = {
+  scope: AnimationScope | null
   animate:
     | ((
         value: ElementOrSelector,
@@ -22,6 +24,7 @@ export type AnimationCtx = {
 }
 
 export const AnimationContext = React.createContext<AnimationCtx>({
+  scope: null,
   animate: null,
 })
 

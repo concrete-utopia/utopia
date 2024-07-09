@@ -705,8 +705,10 @@ export const EditorRoot: React.FunctionComponent<{
                 <CanvasStateContext.Provider value={canvasStore}>
                   <LowPriorityStateContext.Provider value={lowPriorityStore}>
                     <UiJsxCanvasCtxAtom.Provider value={spyCollector}>
-                      <AnimationContext.Provider value={{ animate: animate }}>
-                        <EditorComponent animationScope={animationScope} />
+                      <AnimationContext.Provider
+                        value={{ animate: animate, scope: animationScope }}
+                      >
+                        <EditorComponent />
                       </AnimationContext.Provider>
                     </UiJsxCanvasCtxAtom.Provider>
                   </LowPriorityStateContext.Provider>
