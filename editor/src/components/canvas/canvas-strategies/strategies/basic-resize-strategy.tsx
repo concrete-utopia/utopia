@@ -66,20 +66,19 @@ export function basicResizeStrategy(
   if (selectedElements.length !== 1 || !honoursPropsSize(canvasState, selectedElements[0])) {
     return null
   }
+
+  const selectedElement = selectedElements[0]
+
   const metadata = MetadataUtils.findElementByElementPath(
     canvasState.startingMetadata,
-    selectedElements[0],
+    selectedElement,
   )
   const elementDimensionsProps = metadata != null ? getElementDimensions(metadata) : null
   const elementParentBounds = metadata?.specialSizeMeasurements.immediateParentBounds ?? null
 
-  const elementDimensions =
-    elementDimensionsProps == null
-      ? null
-      : {
-          width: elementDimensionsProps.width,
-          height: elementDimensionsProps.height,
-        }
+  if (MetadataUtils.isGridCell(canvasState.startingMetadata, selectedElement)) {
+    return null
+  }
 
   return {
     id: BASIC_RESIZE_STRATEGY_ID,
@@ -128,7 +127,6 @@ export function basicResizeStrategy(
         interactionSession.activeControl.type === 'RESIZE_HANDLE'
       ) {
         // no multiselection support yet
-        const selectedElement = selectedElements[0]
         const edgePosition = interactionSession.activeControl.edgePosition
         if (interactionSession.interactionData.drag != null) {
           const drag = interactionSession.interactionData.drag

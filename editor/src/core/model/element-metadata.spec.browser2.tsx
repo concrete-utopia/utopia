@@ -1478,6 +1478,50 @@ describe('record variable values', () => {
   })
 })
 
+describe('specialSizeMeasurements.globalFrameWithTextContent', () => {
+  // Disabled temporarily as we're seeing different results in different places.
+  xit('includes the size of a contained text node', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+      <div data-uid='div' style={{position: 'absolute', left: 0, top: 0, width: 50, height: 50}}>
+        THIS IS A BIG CHUNK OF TEXT WHICH SHOULD MAKE THE OVERALL SIZE A LITTLE LARGER 
+      </div>
+    `),
+      'await-first-dom-report',
+    )
+    const divMetadata =
+      renderResult.getEditorState().editor.jsxMetadata[
+        `utopia-storyboard-uid/scene-aaa/app-entity:div`
+      ]
+    expect(divMetadata.specialSizeMeasurements.globalFrameWithTextContent).toEqual({
+      x: 0,
+      y: 0,
+      height: 251,
+      width: 74.5,
+    })
+  })
+  it('does not include the size of a contained div', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+      <div data-uid='div' style={{position: 'absolute', left: 0, top: 0, width: 50, height: 50}}>
+        <div style={{position: 'absolute', left: 0, top: 0, width: 30, height: 30}} /> 
+      </div>
+    `),
+      'await-first-dom-report',
+    )
+    const divMetadata =
+      renderResult.getEditorState().editor.jsxMetadata[
+        `utopia-storyboard-uid/scene-aaa/app-entity:div`
+      ]
+    expect(divMetadata.specialSizeMeasurements.globalFrameWithTextContent).toEqual({
+      x: 0,
+      y: 0,
+      width: 50,
+      height: 50,
+    })
+  })
+})
+
 const TestProjectWithSeveralComponents = `
 import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'

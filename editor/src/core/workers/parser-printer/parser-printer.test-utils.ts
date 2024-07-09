@@ -207,6 +207,7 @@ export function testParseCode(
   const filename = 'code.tsx'
   const result = lintAndParse(
     filename,
+    [],
     contents,
     null,
     alreadyExistingUIDs,
@@ -1337,7 +1338,8 @@ export function printedProjectContentArbitrary(stripUIDs: boolean): Arbitrary<Ar
         if (componentExistsInFile) {
           return workingImports
         } else {
-          return addImport('code.jsx', 'testlib', baseVariable, [], null, workingImports).imports
+          return addImport('code.jsx', [], 'testlib', baseVariable, [], null, workingImports)
+            .imports
         }
       }, JustImportViewAndReact)
 

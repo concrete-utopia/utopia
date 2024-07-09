@@ -37,13 +37,7 @@ export const gridRearrangeMoveDuplicateStrategy: CanvasStrategyFactory = (
   }
 
   const selectedElement = selectedElements[0]
-  const ok = MetadataUtils.isGridLayoutedContainer(
-    MetadataUtils.findElementByElementPath(
-      canvasState.startingMetadata,
-      EP.parentPath(selectedElement),
-    ),
-  )
-  if (!ok) {
+  if (!MetadataUtils.isGridCell(canvasState.startingMetadata, selectedElement)) {
     return null
   }
 
@@ -89,7 +83,8 @@ export const gridRearrangeMoveDuplicateStrategy: CanvasStrategyFactory = (
         commands: moveCommands,
         targetCell: targetGridCell,
         draggingFromCell,
-        rootCell,
+        originalRootCell,
+        targetRootCell,
       } = runGridRearrangeMove(
         targetElement,
         selectedElement,
@@ -117,7 +112,8 @@ export const gridRearrangeMoveDuplicateStrategy: CanvasStrategyFactory = (
           grid: {
             targetCell: targetGridCell,
             draggingFromCell: draggingFromCell,
-            rootCell: rootCell,
+            originalRootCell: originalRootCell,
+            currentRootCell: targetRootCell,
           },
           duplicatedElementNewUids: duplicatedElementNewUids,
         },
