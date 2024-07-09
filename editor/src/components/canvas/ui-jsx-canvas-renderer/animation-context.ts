@@ -39,7 +39,7 @@ export function useCanvasAnimation(paths: ElementPath[]) {
         return getUtopiaID(element)
       }, paths)
     },
-    'useAnimateElement uids',
+    'useCanvasAnimation uids',
   )
 
   const selector = React.useMemo(() => {
