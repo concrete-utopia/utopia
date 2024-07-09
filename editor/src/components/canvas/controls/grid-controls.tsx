@@ -50,6 +50,7 @@ import { useColorTheme } from '../../../uuiui'
 import { gridCellTargetId } from '../canvas-strategies/strategies/grid-helpers'
 import { useCanvasAnimation } from '../ui-jsx-canvas-renderer/animation-context'
 import { CanvasLabel } from './select-mode/controls-common'
+import { optionalMap } from '../../../core/shared/optional-utils'
 
 const CELL_ANIMATION_DURATION = 0.15 // seconds
 
@@ -413,7 +414,7 @@ export const GridControls = controlForStrategyMemoized(() => {
     shadow?.globalFrame ?? null,
   )
 
-  const gridPath = shadow != null ? EP.parentPath(shadow.elementPath) : null
+  const gridPath = optionalMap(EP.parentPath, shadow?.elementPath)
 
   useSnapAnimation({
     targetRootCell: targetRootCell,
