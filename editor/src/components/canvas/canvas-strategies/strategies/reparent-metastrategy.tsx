@@ -69,11 +69,18 @@ export function getApplicableReparentFactories(
   const factories: Array<ReparentFactoryAndDetails> = reparentStrategies.map((result) => {
     switch (result.strategy) {
       case 'REPARENT_AS_ABSOLUTE': {
-        const fitness = result.isReparentingOutFromScene
-          ? OutOfSceneReparentWeight
-          : result.isFallback
-          ? FallbackReparentWeight
-          : DefaultReparentWeight
+        const fitness = (() => {
+          if (!cmdPressed) {
+            return 0
+          }
+          if (result.isReparentingOutFromScene) {
+            return OutOfSceneReparentWeight
+          }
+          if (result.isFallback) {
+            return FallbackReparentWeight
+          }
+          return DefaultReparentWeight
+        })()
 
         if (allDraggedElementsAbsolute) {
           return {
@@ -106,13 +113,21 @@ export function getApplicableReparentFactories(
         const targetParentDisplayType = parentLayoutSystem === 'flex' ? 'flex' : 'flow'
 
         // We likely never want flow insertion or re-parenting to be the default
-        const fitness = result.isReparentingOutFromScene
-          ? OutOfSceneReparentWeight
-          : targetParentDisplayType === 'flow'
-          ? FlowReparentWeight
-          : result.isFallback
-          ? FallbackReparentWeight
-          : DefaultReparentWeight
+        const fitness = (() => {
+          if (!cmdPressed) {
+            return 0
+          }
+          if (result.isReparentingOutFromScene) {
+            return OutOfSceneReparentWeight
+          }
+          if (targetParentDisplayType === 'flow') {
+            return FlowReparentWeight
+          }
+          if (result.isFallback) {
+            return FallbackReparentWeight
+          }
+          return DefaultReparentWeight
+        })()
 
         return {
           targetParent: result.target.newParent,
