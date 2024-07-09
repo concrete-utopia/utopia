@@ -807,28 +807,25 @@ function useSnapAnimation(params: {
   }, [canvasScale, canvasOffset, gridPath, targetRootCellId])
 
   React.useEffect(() => {
-    if (targetRootCellId == null || snapPoint == null || moveFromPoint == null) {
-      return
-    }
+    if (targetRootCellId != null && snapPoint != null && moveFromPoint != null) {
+      const snapPointsDiffer = lastSnapPoint == null || !pointsEqual(snapPoint, lastSnapPoint)
+      const hasMovedToANewCell = lastTargetRootCellId != null
+      const shouldAnimate = snapPointsDiffer && hasMovedToANewCell
+      if (shouldAnimate) {
+        void animate(
+          {
+            scale: [0.97, 1.02, 1], // a very subtle boop
+            x: [moveFromPoint.x - snapPoint.x, 0],
+            y: [moveFromPoint.y - snapPoint.y, 0],
+          },
+          { duration: CELL_ANIMATION_DURATION },
+        )
 
-    const snapPointsDiffer = lastSnapPoint == null || !pointsEqual(snapPoint, lastSnapPoint)
-    const hasMovedToANewCell = lastTargetRootCellId != null
-    const shouldAnimate = snapPointsDiffer && hasMovedToANewCell
-    if (shouldAnimate) {
-      void animate(
-        {
-          scale: [0.97, 1.02, 1], // a very subtle boop
-          x: [moveFromPoint.x - snapPoint.x, 0],
-          y: [moveFromPoint.y - snapPoint.y, 0],
-        },
-        { duration: CELL_ANIMATION_DURATION },
-      )
-
-      if (features.Grid.animateShadowSnap) {
-        void controls.start(SHADOW_SNAP_ANIMATION)
+        if (features.Grid.animateShadowSnap) {
+          void controls.start(SHADOW_SNAP_ANIMATION)
+        }
       }
     }
-
     setLastSnapPoint(snapPoint)
     setLastTargetRootCellId(targetRootCellId)
   }, [
