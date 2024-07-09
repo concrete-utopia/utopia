@@ -159,7 +159,7 @@ function orderedGridPositions({
     return { start, end }
   }
 
-  return start.numericalPosition <= end.numericalPosition
+  return start.numericalPosition < end.numericalPosition
     ? { start, end }
     : {
         start: { numericalPosition: end.numericalPosition - 1 },
