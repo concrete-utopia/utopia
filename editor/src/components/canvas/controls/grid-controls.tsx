@@ -817,6 +817,7 @@ function useSnapAnimation(params: {
     if (shouldAnimate) {
       void animate(
         {
+          scale: [0.97, 1.02, 1], // a very subtle boop
           x: [moveFromPoint.x - snapPoint.x, 0],
           y: [moveFromPoint.y - snapPoint.y, 0],
         },
