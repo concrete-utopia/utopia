@@ -521,6 +521,7 @@ export function isResizableStrategy(canvasStrategy: CanvasStrategy): boolean {
     case 'FLEX_RESIZE_BASIC':
     case 'FLEX_RESIZE':
     case 'BASIC_RESIZE':
+      // TODO add grid cell resize
       return true
     default:
       return false

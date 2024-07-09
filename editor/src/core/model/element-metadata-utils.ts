@@ -371,6 +371,10 @@ export const MetadataUtils = {
   isGridLayoutedContainer(instance: ElementInstanceMetadata | null): boolean {
     return instance?.specialSizeMeasurements.layoutSystemForChildren === 'grid'
   },
+  isGridCell(metadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
+    const parent = MetadataUtils.findElementByElementPath(metadata, EP.parentPath(path))
+    return MetadataUtils.isGridLayoutedContainer(parent)
+  },
   isPositionAbsolute(instance: ElementInstanceMetadata | null): boolean {
     return instance?.specialSizeMeasurements.position === 'absolute'
   },

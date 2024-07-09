@@ -662,12 +662,10 @@ function useSelectOrLiveModeSelectAndHover(
           event.type !== 'mouseup' &&
           foundTarget != null &&
           draggingAllowed &&
-          !MetadataUtils.isGridLayoutedContainer(
-            // grid has its own drag handling
-            MetadataUtils.findElementByElementPath(
-              editorStoreRef.current.editor.jsxMetadata,
-              EP.parentPath(foundTarget.elementPath),
-            ),
+          // grid has its own drag handling
+          !MetadataUtils.isGridCell(
+            editorStoreRef.current.editor.jsxMetadata,
+            foundTarget.elementPath,
           )
         ) {
           const start = windowToCanvasCoordinates(
