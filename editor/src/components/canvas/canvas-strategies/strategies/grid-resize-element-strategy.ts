@@ -38,7 +38,7 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
   }
 
   return {
-    id: 'grid-cell-resize-strategy',
+    id: 'GRID-CELL-RESIZE-STRATEGY',
     name: 'Resize Grid Cell',
     descriptiveLabel: 'Resize Grid Cell',
     icon: {
