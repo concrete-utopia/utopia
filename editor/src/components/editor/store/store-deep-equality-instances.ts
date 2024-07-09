@@ -533,6 +533,7 @@ import type {
   SelectModeToolbarMode,
   CommentMode,
   FollowMode,
+  PanelsMode,
   CommentId,
   NewComment,
   ExistingComment,
@@ -4035,6 +4036,12 @@ export const FollowModeKeepDeepEquality: KeepDeepEqualityCall<FollowMode> = comb
   EditorModes.followMode,
 )
 
+export const PanelsModeKeepDeepEquality: KeepDeepEqualityCall<PanelsMode> = combine1EqualityCall(
+  (mode) => mode.type,
+  StringKeepDeepEquality,
+  EditorModes.panelsMode,
+)
+
 export const ModeKeepDeepEquality: KeepDeepEqualityCall<Mode> = (oldValue, newValue) => {
   switch (oldValue.type) {
     case 'insert':
@@ -4065,6 +4072,11 @@ export const ModeKeepDeepEquality: KeepDeepEqualityCall<Mode> = (oldValue, newVa
     case 'follow':
       if (newValue.type === oldValue.type) {
         return FollowModeKeepDeepEquality(newValue, oldValue)
+      }
+      break
+    case 'panels':
+      if (newValue.type === oldValue.type) {
+        return PanelsModeKeepDeepEquality(oldValue, newValue)
       }
       break
     default:

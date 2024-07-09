@@ -231,6 +231,7 @@ function getInteractionTargetFromEditorState(editor: EditorState): InteractionTa
     case 'textEdit':
     case 'comment':
     case 'follow':
+    case 'panels':
       return targetPaths(editor.selectedViews)
     default:
       assertNever(editor.mode)

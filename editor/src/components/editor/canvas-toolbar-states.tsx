@@ -27,6 +27,7 @@ type ToolbarMode =
   | { primary: 'play' }
   | { primary: 'comment' }
   | { primary: 'zoom' }
+  | { primary: 'panels' }
 
 export function useToolbarMode(): ToolbarMode {
   const editorMode = useEditorState(
@@ -122,6 +123,10 @@ export function useToolbarMode(): ToolbarMode {
         insertSidebarOpen: rightMenuTab === RightMenuTab.Insert,
       },
     }
+  }
+
+  if (editorMode.type === 'panels') {
+    return { primary: 'panels' }
   }
 
   // Edit Mode
