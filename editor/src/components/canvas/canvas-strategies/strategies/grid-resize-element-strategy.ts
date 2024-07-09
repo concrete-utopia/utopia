@@ -163,7 +163,7 @@ function orderedGridPositions({
     ? { start, end }
     : {
         start: { numericalPosition: end.numericalPosition - 1 },
-        end: { numericalPosition: end.numericalPosition + 1 },
+        end: { numericalPosition: start.numericalPosition + 1 },
       }
 }
 
