@@ -21,6 +21,7 @@ import {
   isInfinityRectangle,
   offsetPoint,
   pointDifference,
+  pointsEqual,
   windowPoint,
   zeroRectIfNullOrInfinity,
 } from '../../../core/shared/math-utils'
@@ -61,7 +62,11 @@ import {
   EdgePositionRight,
   EdgePositionTop,
 } from '../canvas-types'
+import { useCanvasAnimation } from '../ui-jsx-canvas-renderer/animation-context'
 import { CanvasLabel } from './select-mode/controls-common'
+import { optionalMap } from '../../../core/shared/optional-utils'
+
+const CELL_ANIMATION_DURATION = 0.15 // seconds
 
 export const GridCellTestId = (elementPath: ElementPath) => `grid-cell-${EP.toString(elementPath)}`
 
@@ -69,10 +74,6 @@ export type GridCellCoordinates = { row: number; column: number }
 
 export function gridCellCoordinates(row: number, column: number): GridCellCoordinates {
   return { row: row, column: column }
-}
-
-export function gridCellCoordinatesToString(coords: GridCellCoordinates): string {
-  return `${coords.row}:${coords.column}`
 }
 
 function getCellsCount(template: GridAutoOrTemplateBase | null): number {
@@ -286,11 +287,6 @@ export const GridControls = controlForStrategyMemoized(() => {
     (store) => store.strategyState.customStrategyState.grid.currentRootCell,
     'GridControls targetRootCell',
   )
-  const targetRootCellId = React.useMemo(
-    () => (targetRootCell == null ? null : gridCellCoordinatesToString(targetRootCell)),
-    [targetRootCell],
-  )
-  useSnapAnimation(targetRootCellId, controls)
 
   const dragging = useEditorState(
     Substores.canvas,
@@ -425,12 +421,21 @@ export const GridControls = controlForStrategyMemoized(() => {
   }, [grids, jsxMetadata])
 
   const shadow = React.useMemo(() => {
-    return cells.find((cell) => EP.toUid(cell.elementPath) === dragging)
+    return cells.find((cell) => EP.toUid(cell.elementPath) === dragging) ?? null
   }, [cells, dragging])
 
   const [initialShadowFrame, setInitialShadowFrame] = React.useState<CanvasRectangle | null>(
     shadow?.globalFrame ?? null,
   )
+
+  const gridPath = optionalMap(EP.parentPath, shadow?.elementPath)
+
+  useSnapAnimation({
+    targetRootCell: targetRootCell,
+    controls: controls,
+    shadowFrame: initialShadowFrame,
+    gridPath: gridPath,
+  })
 
   const startInteractionWithUid = React.useCallback(
     (params: { uid: string; row: number; column: number; frame: CanvasRectangle }) =>
@@ -754,14 +759,92 @@ export const GridControls = controlForStrategyMemoized(() => {
   )
 })
 
-function useSnapAnimation(targetRootCellId: string | null, controls: AnimationControls) {
+function useSnapAnimation(params: {
+  gridPath: ElementPath | null
+  shadowFrame: CanvasRectangle | null
+  targetRootCell: GridCellCoordinates | null
+  controls: AnimationControls
+}) {
+  const { gridPath, targetRootCell, controls, shadowFrame } = params
   const features = useRollYourOwnFeatures()
-  React.useEffect(() => {
-    if (!features.Grid.animateSnap || targetRootCellId == null) {
-      return
+
+  const [lastTargetRootCellId, setLastTargetRootCellId] = React.useState(targetRootCell)
+  const [lastSnapPoint, setLastSnapPoint] = React.useState<CanvasPoint | null>(shadowFrame)
+
+  const selectedViews = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews,
+    'useSnapAnimation selectedViews',
+  )
+
+  const animate = useCanvasAnimation(selectedViews)
+
+  const canvasScale = useEditorState(
+    Substores.canvasOffset,
+    (store) => store.editor.canvas.scale,
+    'useSnapAnimation canvasScale',
+  )
+
+  const canvasOffset = useEditorState(
+    Substores.canvasOffset,
+    (store) => store.editor.canvas.roundedCanvasOffset,
+    'useSnapAnimation canvasOffset',
+  )
+
+  const moveFromPoint = React.useMemo(() => {
+    return lastSnapPoint ?? shadowFrame
+  }, [lastSnapPoint, shadowFrame])
+
+  const snapPoint = React.useMemo(() => {
+    if (gridPath == null || targetRootCell == null) {
+      return null
     }
-    void controls.start(SHADOW_SNAP_ANIMATION)
-  }, [targetRootCellId, controls, features.Grid.animateSnap])
+
+    const element = document.getElementById(
+      gridCellTargetId(gridPath, targetRootCell.row, targetRootCell.column),
+    )
+    if (element == null) {
+      return null
+    }
+
+    const rect = element.getBoundingClientRect()
+    const point = windowPoint({ x: rect.x, y: rect.y })
+
+    return windowToCanvasCoordinates(canvasScale, canvasOffset, point).canvasPositionRounded
+  }, [canvasScale, canvasOffset, gridPath, targetRootCell])
+
+  React.useEffect(() => {
+    if (targetRootCell != null && snapPoint != null && moveFromPoint != null) {
+      const snapPointsDiffer = lastSnapPoint == null || !pointsEqual(snapPoint, lastSnapPoint)
+      const hasMovedToANewCell = lastTargetRootCellId != null
+      const shouldAnimate = snapPointsDiffer && hasMovedToANewCell
+      if (shouldAnimate) {
+        void animate(
+          {
+            scale: [0.97, 1.02, 1], // a very subtle boop
+            x: [moveFromPoint.x - snapPoint.x, 0],
+            y: [moveFromPoint.y - snapPoint.y, 0],
+          },
+          { duration: CELL_ANIMATION_DURATION },
+        )
+
+        if (features.Grid.animateShadowSnap) {
+          void controls.start(SHADOW_SNAP_ANIMATION)
+        }
+      }
+    }
+    setLastSnapPoint(snapPoint)
+    setLastTargetRootCellId(targetRootCell)
+  }, [
+    targetRootCell,
+    controls,
+    features.Grid.animateShadowSnap,
+    lastSnapPoint,
+    snapPoint,
+    animate,
+    moveFromPoint,
+    lastTargetRootCellId,
+  ])
 }
 
 function useMouseMove(activelyDraggingOrResizingCell: string | null) {

@@ -14,7 +14,7 @@ type GridFeatures = {
   dragVerbatim: boolean
   dragMagnetic: boolean
   dragRatio: boolean
-  animateSnap: boolean
+  animateShadowSnap: boolean
   dotgrid: boolean
   shadow: boolean
   adaptiveOpacity: boolean
@@ -38,7 +38,7 @@ const defaultRollYourOwnFeatures: RollYourOwnFeatures = {
     dragVerbatim: false,
     dragMagnetic: false,
     dragRatio: true,
-    animateSnap: true,
+    animateShadowSnap: false,
     dotgrid: true,
     shadow: true,
     adaptiveOpacity: true,

@@ -194,7 +194,7 @@ specifiers:
   fontfaceobserver: 2.1.0
   fork-ts-checker-async-overlay-webpack-plugin: 0.4.0
   fork-ts-checker-webpack-plugin: 8.0.0
-  framer-motion: 10.16.5
+  framer-motion: 11.2.13
   friendly-words: 1.1.10
   fse: 1.0.1
   fsevents: 2.1.2
@@ -406,7 +406,7 @@ dependencies:
   eslint4b: 6.6.0
   fast-deep-equal: 2.0.1
   fontfaceobserver: 2.1.0
-  framer-motion: 10.16.5_ef5jwxihqo6n7gxfmzogljlgcm
+  framer-motion: 11.2.13_ef5jwxihqo6n7gxfmzogljlgcm
   friendly-words: 1.1.10
   glob-to-regexp: 0.4.1
   graphlib: 2.1.1
@@ -2258,14 +2258,6 @@ packages:
   /@emotion/hash/0.8.0:
     resolution: {integrity: sha512-kBJtf7PH6aWwZ6fka3zQ0p6SBYzx4fl1LoZXE2RrnYST9Xljm7WfKJrU4g/Xr3Beg72MLrp1AWNUmuYJTL7Cow==}
     dev: false
-
-  /@emotion/is-prop-valid/0.8.8:
-    resolution: {integrity: sha512-u5WtneEAr5IDG2Wv65yhunPSMLIpuKsbuOktRojfrEiEvRyC85LgPMZI63cr7NUqT8ZIGdSVg8ZKGxIug4lXcA==}
-    requiresBuild: true
-    dependencies:
-      '@emotion/memoize': 0.7.4
-    dev: false
-    optional: true
 
   /@emotion/is-prop-valid/1.1.0:
     resolution: {integrity: sha512-9RkilvXAufQHsSsjQ3PIzSns+pxuX4EW8EbGeSPjZMHuMx6z/MOzb9LpqNieQX4F3mre3NWS2+X3JNRHTQztUQ==}
@@ -10257,12 +10249,15 @@ packages:
       map-cache: 0.2.2
     dev: true
 
-  /framer-motion/10.16.5_ef5jwxihqo6n7gxfmzogljlgcm:
-    resolution: {integrity: sha512-GEzVjOYP2MIpV9bT/GbhcsBNoImG3/2X3O/xVNWmktkv9MdJ7P/44zELm/7Fjb+O3v39SmKFnoDQB32giThzpg==}
+  /framer-motion/11.2.13_ef5jwxihqo6n7gxfmzogljlgcm:
+    resolution: {integrity: sha512-AyIeegfkXlkX1lWEudRYsJlC+0A59cE8oFK9IsN9bUQzxLwcvN3AEaYaznkELiWlHC7a0eD7pxsYQo7BC05S5A==}
     peerDependencies:
+      '@emotion/is-prop-valid': '*'
       react: ^18.0.0
       react-dom: ^18.0.0
     peerDependenciesMeta:
+      '@emotion/is-prop-valid':
+        optional: true
       react:
         optional: true
       react-dom:
@@ -10271,8 +10266,6 @@ packages:
       react: 18.1.0_47cciibm4ysmleigs33s763fqu
       react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
       tslib: 2.6.2
-    optionalDependencies:
-      '@emotion/is-prop-valid': 0.8.8
     dev: false
 
   /fresh/0.5.2:
