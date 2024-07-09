@@ -56,6 +56,7 @@ import { gridCellTargetId } from '../canvas-strategies/strategies/grid-helpers'
 import { resizeBoundingBoxFromSide } from '../canvas-strategies/strategies/resize-helpers'
 import type { EdgePosition } from '../canvas-types'
 import {
+  CSSCursor,
   EdgePositionBottom,
   EdgePositionLeft,
   EdgePositionRight,
@@ -807,7 +808,11 @@ export const GridResizeControls = controlForStrategyMemoized<GridResizeControlPr
 
     const dispatch = useDispatch()
     const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
-    const scaleRef = useRefEditorState((store) => store.editor.canvas.scale)
+    const scale = useEditorState(
+      Substores.canvas,
+      (store) => store.editor.canvas.scale,
+      'GridResizingControl scale',
+    )
 
     const resizeControlRef = useRefEditorState((store) =>
       store.editor.canvas.interactionSession?.activeControl.type !== 'GRID_RESIZE_HANDLE'
@@ -864,7 +869,7 @@ export const GridResizeControls = controlForStrategyMemoized<GridResizeControlPr
         setBounds(frame)
         setStartingBounds(frame)
         const start = windowToCanvasCoordinates(
-          scaleRef.current,
+          scale,
           canvasOffsetRef.current,
           windowPoint({ x: event.nativeEvent.x, y: event.nativeEvent.y }),
         )
@@ -879,7 +884,7 @@ export const GridResizeControls = controlForStrategyMemoized<GridResizeControlPr
           ),
         ])
       },
-      [canvasOffsetRef, dispatch, element?.globalFrame, scaleRef],
+      [canvasOffsetRef, dispatch, element?.globalFrame, scale],
     )
 
     if (
@@ -919,7 +924,9 @@ export const GridResizeControls = controlForStrategyMemoized<GridResizeControlPr
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
+                padding: 2 / scale,
                 gridArea: gridEdgeToGridArea(edge),
+                cursor: gridEdgeToCSSCursor(edge),
               }}
             >
               <div
@@ -927,7 +934,7 @@ export const GridResizeControls = controlForStrategyMemoized<GridResizeControlPr
                 onMouseDown={startResizeInteraction(EP.toUid(element.elementPath), edge)}
                 style={{
                   pointerEvents: 'initial',
-                  ...gridEdgeToWidthHeight(edge),
+                  ...gridEdgeToWidthHeight(edge, scale),
                   backgroundColor: 'black',
                   opacity: 0.5,
                 }}
@@ -970,13 +977,30 @@ function gridEdgeToEdgePosition(edge: GridResizeEdge): EdgePosition {
   }
 }
 
-function gridEdgeToWidthHeight(edge: GridResizeEdge): {
+function gridEdgeToCSSCursor(edge: GridResizeEdge): CSSCursor {
+  switch (edge) {
+    case 'column-end':
+    case 'column-start':
+      return CSSCursor.ColResize
+    case 'row-end':
+    case 'row-start':
+      return CSSCursor.RowResize
+    default:
+      assertNever(edge)
+  }
+}
+
+function gridEdgeToWidthHeight(
+  edge: GridResizeEdge,
+  scale: number,
+): {
   width: number
   height: number
   borderRadius: number
 } {
-  const LONG_EDGE = 24
-  const SHORT_EDGE = 4
+  const LONG_EDGE = 24 / scale
+  const SHORT_EDGE = 4 / scale
+
   switch (edge) {
     case 'column-end':
     case 'column-start':
