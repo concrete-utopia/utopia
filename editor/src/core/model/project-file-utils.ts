@@ -79,6 +79,8 @@ import globToRegexp from 'glob-to-regexp'
 import { is } from '../shared/equality-utils'
 import { absolutePathFromRelativePath } from '../../utils/path-utils'
 import json5 from 'json5'
+import type { FilePathMappings, FilePathMapping } from '../workers/common/project-file-utils'
+export type { FilePathMappings, FilePathMapping }
 
 export const sceneMetadata = _sceneMetadata // This is a hotfix for a circular dependency AND a leaking of utopia-api into the workers
 
@@ -858,7 +860,7 @@ export function getDefaultExportedTopLevelElement(file: TextFile): JSXElementChi
 export function getDefaultExportNameAndUidFromFile(
   projectContents: ProjectContentTreeRoot,
   filePath: string,
-): { name: string; uid: string } | null {
+): { name: string; uid: string | null } | null {
   const file = getProjectFileByFilePath(projectContents, filePath)
   if (
     file == null ||
@@ -875,13 +877,11 @@ export function getDefaultExportNameAndUidFromFile(
     return null
   }
 
-  const elementUid = file.fileContents.parsed.topLevelElements.find(
-    (t): t is UtopiaJSXComponent =>
-      t.type === 'UTOPIA_JSX_COMPONENT' && t.name === defaultExportName,
-  )?.rootElement.uid
-  if (elementUid == null) {
-    return null
-  }
+  const elementUid =
+    file.fileContents.parsed.topLevelElements.find(
+      (t): t is UtopiaJSXComponent =>
+        t.type === 'UTOPIA_JSX_COMPONENT' && t.name === defaultExportName,
+    )?.rootElement.uid ?? null
 
   return { name: defaultExportName, uid: elementUid }
 }
@@ -917,23 +917,6 @@ export function getTopLevelElementByExportsDetail(
     ) ?? null
   )
 }
-
-export function applyFilePathMappingsToFilePath(
-  filepath: string,
-  filePathMappings: FilePathMappings,
-): string {
-  return filePathMappings.reduce((working, nextMapping) => {
-    // FIXME this is limited to only applying the first mapping, both from the paths object, and from the array of aliased paths
-    const [mapFrom, mapToArray] = nextMapping
-    const mapTo = mapToArray[0]
-    const newWorking = working.replace(mapFrom, mapTo)
-    mapFrom.lastIndex = 0 // Reset the regex!
-    return newWorking
-  }, filepath)
-}
-
-type FilePathMapping = [RegExp, Array<string>]
-export type FilePathMappings = Array<FilePathMapping>
 
 export const getFilePathMappings = memoize(getFilePathMappingsImpl, { maxSize: 1, matchesArg: is })
 

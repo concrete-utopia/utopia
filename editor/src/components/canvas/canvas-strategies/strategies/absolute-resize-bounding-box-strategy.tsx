@@ -88,6 +88,12 @@ export function absoluteResizeBoundingBoxStrategy(
     return null
   }
 
+  if (
+    retargetedTargets.some((path) => MetadataUtils.isGridCell(canvasState.startingMetadata, path))
+  ) {
+    return null
+  }
+
   return {
     id: 'ABSOLUTE_RESIZE_BOUNDING_BOX',
     name: 'Resize',

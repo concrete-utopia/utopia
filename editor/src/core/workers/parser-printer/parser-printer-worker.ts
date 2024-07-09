@@ -13,6 +13,7 @@ import {
   createParsePrintFilesResult,
   createPrintAndReparseResult,
 } from '../common/worker-types'
+import type { FilePathMappings } from '../common/project-file-utils'
 
 export function handleMessage(
   workerMessage: ParsePrintFilesRequest,
@@ -27,6 +28,7 @@ export function handleMessage(
             case 'parsefile':
               return getParseFileResult(
                 file.filename,
+                workerMessage.filePathMappings,
                 file.content,
                 file.previousParsed,
                 file.versionNumber,
@@ -36,6 +38,7 @@ export function handleMessage(
             case 'printandreparsefile':
               return getPrintAndReparseCodeResult(
                 file.filename,
+                workerMessage.filePathMappings,
                 file.parseSuccess,
                 file.stripUIDs,
                 file.versionNumber,
@@ -59,6 +62,7 @@ export function handleMessage(
 
 export function getParseFileResult(
   filename: string,
+  filePathMappings: FilePathMappings,
   content: string,
   oldParseResultForUIDComparison: ParseSuccess | null,
   versionNumber: number,
@@ -67,6 +71,7 @@ export function getParseFileResult(
 ): ParseFileResult {
   const parseResult = lintAndParse(
     filename,
+    filePathMappings,
     content,
     oldParseResultForUIDComparison,
     alreadyExistingUIDs_MUTABLE,
@@ -78,6 +83,7 @@ export function getParseFileResult(
 
 export function getPrintAndReparseCodeResult(
   filename: string,
+  filePathMappings: FilePathMappings,
   parseSuccess: ParseSuccess,
   stripUIDs: boolean,
   versionNumber: number,
@@ -95,6 +101,7 @@ export function getPrintAndReparseCodeResult(
 
   const parseResult = getParseFileResult(
     filename,
+    filePathMappings,
     printedCode,
     parseSuccess,
     versionNumber,

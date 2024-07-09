@@ -30,13 +30,7 @@ export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
   }
 
   const selectedElement = selectedElements[0]
-  const ok = MetadataUtils.isGridLayoutedContainer(
-    MetadataUtils.findElementByElementPath(
-      canvasState.startingMetadata,
-      EP.parentPath(selectedElement),
-    ),
-  )
-  if (!ok) {
+  if (!MetadataUtils.isGridCell(canvasState.startingMetadata, selectedElement)) {
     return null
   }
 

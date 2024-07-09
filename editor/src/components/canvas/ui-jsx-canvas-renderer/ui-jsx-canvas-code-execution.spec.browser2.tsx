@@ -95,6 +95,7 @@ describe('Updating a transitive dependency', () => {
 
     const updatedIndirectFileParsedTextFile = lintAndParse(
       indirectFilePath,
+      [],
       updatedIndirectFileContent,
       null,
       emptySet(),
