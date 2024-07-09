@@ -86,6 +86,7 @@ import {
 } from '../../../core/property-controls/property-controls-local'
 import { setReactRouterErrorHasBeenLogged } from '../../../core/shared/runtime-report-logs'
 import type { PropertyControlsInfo } from '../../custom-code/code-file'
+import { getFilePathMappings } from '../../../core/model/project-file-utils'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -345,6 +346,7 @@ function maybeRequestModelUpdate(
     const parseFinished = getParseResult(
       workers,
       filesToUpdate,
+      getFilePathMappings(projectContents),
       existingUIDs,
       isSteganographyEnabled(),
     )

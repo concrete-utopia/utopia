@@ -286,6 +286,7 @@ describe('jsxElementChildToText', () => {
   it('complicated case', () => {
     const parsedResult: ParsedTextFile = lintAndParse(
       'test.js',
+      [],
       `const TestComponent = (props) => <div>{something()?.[another().property?.deeperProperty]}</div>`,
       null,
       emptySet(),
