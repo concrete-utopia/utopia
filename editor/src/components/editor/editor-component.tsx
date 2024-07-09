@@ -93,6 +93,7 @@ import {
 import { useGithubPolling } from '../../core/shared/github/helpers'
 import { useAtom } from 'jotai'
 import { clearOpenMenuIds } from '../../core/shared/menu-state'
+import type { AnimationScope } from 'framer-motion'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -143,7 +144,9 @@ function githubOperationPrettyNameForOverlay(op: GithubOperation): string {
   }
 }
 
-export interface EditorProps {}
+export interface EditorProps {
+  animationScope: AnimationScope<any>
+}
 
 export const EditorComponentInner = React.memo((props: EditorProps) => {
   const room = useRoom()
@@ -516,7 +519,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
                   overflowX: 'hidden',
                 }}
               >
-                <DesignPanelRoot />
+                <DesignPanelRoot animationScope={props.animationScope} />
               </SimpleFlexRow>
               {/* insert more columns here */}
 

@@ -125,6 +125,8 @@ import {
 } from '../components/github/github-repository-clone-flow'
 import { hasReactRouterErrorBeenLogged } from '../core/shared/runtime-report-logs'
 import { InitialOnlineState, startOnlineStatusPolling } from '../components/editor/online-status'
+import { AnimationContext } from '../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
+import { useAnimate } from 'framer-motion'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -691,6 +693,8 @@ export const EditorRoot: React.FunctionComponent<{
   spyCollector,
   domWalkerMutableState,
 }) => {
+  const [animationScope, animate] = useAnimate()
+
   return (
     <AtomsDevtools>
       <JotaiProvider>
@@ -701,7 +705,9 @@ export const EditorRoot: React.FunctionComponent<{
                 <CanvasStateContext.Provider value={canvasStore}>
                   <LowPriorityStateContext.Provider value={lowPriorityStore}>
                     <UiJsxCanvasCtxAtom.Provider value={spyCollector}>
-                      <EditorComponent />
+                      <AnimationContext.Provider value={{ animate: animate }}>
+                        <EditorComponent animationScope={animationScope} />
+                      </AnimationContext.Provider>
                     </UiJsxCanvasCtxAtom.Provider>
                   </LowPriorityStateContext.Provider>
                 </CanvasStateContext.Provider>

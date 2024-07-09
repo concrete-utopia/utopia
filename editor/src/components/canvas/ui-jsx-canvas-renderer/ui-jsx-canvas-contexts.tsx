@@ -1,4 +1,4 @@
-import type React from 'react'
+import React from 'react'
 import { emptySet } from '../../../core/shared/set-utils'
 import type { MapLike } from 'typescript'
 import { atomWithPubSub } from '../../../core/shared/atom-with-pub-sub'
@@ -9,6 +9,12 @@ import type { ProjectContentTreeRoot } from '../../assets'
 import type { TransientFilesState, UIFileBase64Blobs } from '../../editor/store/editor-state'
 import type { VariableData } from '../ui-jsx-canvas'
 import type { FilePathMappings } from '../../../core/model/project-file-utils'
+import type {
+  ElementOrSelector,
+  DOMKeyframesDefinition,
+  DynamicAnimationOptions,
+  AnimationPlaybackControls,
+} from 'framer-motion'
 
 export interface MutableUtopiaCtxRefData {
   [filePath: string]: {
@@ -77,4 +83,18 @@ export const SceneLevelUtopiaCtxAtom = atomWithPubSub<SceneLevelContextProps>({
   defaultValue: {
     validPaths: new Set(),
   },
+})
+
+export type AnimationCtx = {
+  animate:
+    | ((
+        value: ElementOrSelector,
+        keyframes: DOMKeyframesDefinition,
+        options?: DynamicAnimationOptions | undefined,
+      ) => AnimationPlaybackControls)
+    | null
+}
+
+export const AnimationContext = React.createContext<AnimationCtx>({
+  animate: null,
 })
