@@ -240,7 +240,8 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
       >
         {props.axis === 'row' ? '↕' : '↔'}
       </div>
-      {resizing ? (
+      {when(
+        resizing,
         <div
           style={{
             position: 'absolute',
@@ -263,8 +264,8 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
             color={colorTheme.brandNeonPink.value}
             textColor={colorTheme.white.value}
           />
-        </div>
-      ) : null}
+        </div>,
+      )}
     </div>
   )
 })
