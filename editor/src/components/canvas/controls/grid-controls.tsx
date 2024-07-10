@@ -1,3 +1,6 @@
+/** @jsxRuntime classic */
+/** @jsx jsx */
+import { jsx } from '@emotion/react'
 import type { AnimationControls } from 'framer-motion'
 import { motion, useAnimationControls } from 'framer-motion'
 import React from 'react'
@@ -123,7 +126,8 @@ function getLabelForAxis(
 }
 
 const SHADOW_SNAP_ANIMATION = 'shadow-snap'
-const GRID_RESIZE_HANDLE_SIZE = 30 // px
+const GRID_RESIZE_HANDLE_CONTAINER_SIZE = 30 // px
+const GRID_RESIZE_HANDLE_SIZE = 15 // px
 
 export interface GridResizingControlProps {
   dimension: GridCSSNumber
@@ -186,8 +190,8 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
 
   const shadowSize = React.useMemo(() => {
     return props.axis === 'column'
-      ? props.containingFrame.height + GRID_RESIZE_HANDLE_SIZE
-      : props.containingFrame.width + GRID_RESIZE_HANDLE_SIZE
+      ? props.containingFrame.height + GRID_RESIZE_HANDLE_CONTAINER_SIZE
+      : props.containingFrame.width + GRID_RESIZE_HANDLE_CONTAINER_SIZE
   }, [props.containingFrame, props.axis])
 
   return (
@@ -210,8 +214,8 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
       <div
         style={{
           zoom: 1 / scale,
-          width: 17,
-          height: 17,
+          width: GRID_RESIZE_HANDLE_SIZE,
+          height: GRID_RESIZE_HANDLE_SIZE,
           borderRadius: '100%',
           border: `1px solid ${colorTheme.border0.value}`,
           boxShadow: `${colorTheme.canvasControlsSizeBoxShadowColor50.value} 0px 0px
@@ -223,7 +227,13 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
           alignItems: 'center',
           justifyContent: 'center',
           cursor: gridEdgeToCSSCursor(props.axis === 'column' ? 'column-start' : 'row-start'),
-          fontSize: 9,
+          fontSize: 8,
+        }}
+        css={{
+          opacity: 0.5,
+          ':hover': {
+            opacity: 1,
+          },
         }}
         onMouseDown={mouseDownHandler}
       >
@@ -233,8 +243,8 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
         <div
           style={{
             position: 'absolute',
-            top: props.axis === 'column' ? GRID_RESIZE_HANDLE_SIZE : 0,
-            left: props.axis === 'row' ? GRID_RESIZE_HANDLE_SIZE : 0,
+            top: props.axis === 'column' ? GRID_RESIZE_HANDLE_CONTAINER_SIZE : 0,
+            left: props.axis === 'row' ? GRID_RESIZE_HANDLE_CONTAINER_SIZE : 0,
             right: 0,
             bottom: 0,
             display: 'flex',
@@ -280,7 +290,7 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
   }
   switch (props.axisValues.type) {
     case 'DIMENSIONS':
-      const size = GRID_RESIZE_HANDLE_SIZE / canvasScale
+      const size = GRID_RESIZE_HANDLE_CONTAINER_SIZE / canvasScale
       return (
         <div
           style={{
@@ -334,7 +344,6 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
       return null
     default:
       assertNever(props.axisValues)
-      return null
   }
 })
 GridResizing.displayName = 'GridResizing'
@@ -679,7 +688,7 @@ export const GridControls = controlForStrategyMemoized(() => {
                   >
                     {when(
                       features.Grid.dotgrid,
-                      <>
+                      <React.Fragment>
                         <div
                           style={{
                             position: 'absolute',
@@ -734,7 +743,7 @@ export const GridControls = controlForStrategyMemoized(() => {
                             right: -1,
                           }}
                         />
-                      </>,
+                      </React.Fragment>,
                     )}
                   </div>
                 )
