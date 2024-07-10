@@ -42,7 +42,7 @@ import {
   mouseUpAtPoint,
   pressKey,
 } from '../../event-helpers.test-utils'
-import { cmdModifier } from '../../../../utils/modifiers'
+import { cmdModifier, ctrlModifier } from '../../../../utils/modifiers'
 import type { FragmentLikeType } from './fragment-like-helpers'
 import {
   AllFragmentLikeNonDomElementTypes,
@@ -1604,6 +1604,7 @@ describe('Escape hatch strategy on awkward project', () => {
         x: 15,
         y: 15,
       },
+      { modifiers: ctrlModifier },
     )
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
