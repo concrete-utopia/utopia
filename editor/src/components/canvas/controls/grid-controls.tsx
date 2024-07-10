@@ -298,10 +298,7 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
             position: 'absolute',
             top: props.containingFrame.y - (props.axis === 'column' ? size : 0),
             left: props.containingFrame.x - (props.axis === 'row' ? size : 0),
-            width:
-              props.axis === 'column'
-                ? props.containingFrame.width
-                : size + props.containingFrame.width,
+            width: props.axis === 'column' ? props.containingFrame.width : size,
             height: props.axis === 'row' ? props.containingFrame.height : size,
             display: 'grid',
             gridTemplateColumns:
