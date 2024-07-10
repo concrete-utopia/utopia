@@ -1261,6 +1261,7 @@ describe('Convert to absolute/escape hatch', () => {
         canvas,
         viewCenter,
         offsetPoint(viewCenter, canvasPoint({ x: 15, y: 15 })),
+        { modifiers: ctrlModifier },
       )
 
       expect(getPrintedUiJsCode(initialEditor.getEditorState())).toEqual(
@@ -1366,15 +1367,19 @@ describe('Convert to absolute/escape hatch', () => {
         y: viewBounds.top + viewBounds.height / 2,
       })
 
-      await mouseDownAtPoint(canvas, viewCenter)
-      await mouseMoveToPoint(canvas, offsetPoint(viewCenter, canvasPoint({ x: 15, y: 15 })))
+      await mouseDownAtPoint(canvas, viewCenter, { modifiers: ctrlModifier })
+      await mouseMoveToPoint(canvas, offsetPoint(viewCenter, canvasPoint({ x: 15, y: 15 })), {
+        modifiers: ctrlModifier,
+      })
 
       await initialEditor.dispatch(
         [CanvasActions.setUsersPreferredStrategy(ConvertToAbsoluteAndMoveStrategyID)],
         true,
       )
 
-      await mouseUpAtPoint(canvas, offsetPoint(viewCenter, canvasPoint({ x: 15, y: 15 })))
+      await mouseUpAtPoint(canvas, offsetPoint(viewCenter, canvasPoint({ x: 15, y: 15 })), {
+        modifiers: ctrlModifier,
+      })
 
       expect(getPrintedUiJsCode(initialEditor.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(
@@ -1427,15 +1432,19 @@ describe('Convert to absolute/escape hatch', () => {
         y: viewBounds.top + viewBounds.height / 2,
       })
 
-      await mouseDownAtPoint(canvas, viewCenter)
-      await mouseMoveToPoint(canvas, offsetPoint(viewCenter, canvasPoint({ x: 15, y: 15 })))
+      await mouseDownAtPoint(canvas, viewCenter, { modifiers: ctrlModifier })
+      await mouseMoveToPoint(canvas, offsetPoint(viewCenter, canvasPoint({ x: 15, y: 15 })), {
+        modifiers: ctrlModifier,
+      })
 
       await initialEditor.dispatch(
         [CanvasActions.setUsersPreferredStrategy(ConvertToAbsoluteAndMoveStrategyID)],
         true,
       )
 
-      await mouseUpAtPoint(canvas, offsetPoint(viewCenter, canvasPoint({ x: 15, y: 15 })))
+      await mouseUpAtPoint(canvas, offsetPoint(viewCenter, canvasPoint({ x: 15, y: 15 })), {
+        modifiers: ctrlModifier,
+      })
 
       expect(getPrintedUiJsCode(initialEditor.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(
@@ -1495,8 +1504,10 @@ describe('Convert to absolute/escape hatch', () => {
         y: viewBounds.top + viewBounds.height / 2,
       })
 
-      await mouseDownAtPoint(canvas, viewCenter)
-      await mouseMoveToPoint(canvas, offsetPoint(viewCenter, canvasPoint({ x: 15, y: 15 })))
+      await mouseDownAtPoint(canvas, viewCenter, { modifiers: ctrlModifier })
+      await mouseMoveToPoint(canvas, offsetPoint(viewCenter, canvasPoint({ x: 15, y: 15 })), {
+        modifiers: ctrlModifier,
+      })
 
       await initialEditor.dispatch(
         [CanvasActions.setUsersPreferredStrategy(ConvertToAbsoluteAndMoveStrategyID)],
