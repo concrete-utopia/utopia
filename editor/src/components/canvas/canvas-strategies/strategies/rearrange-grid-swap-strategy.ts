@@ -1,23 +1,16 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { stripNulls } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
-import type {
-  ElementInstanceMetadata,
-  GridElementProperties,
-  GridPosition,
-} from '../../../../core/shared/element-template'
+import type { ElementInstanceMetadata } from '../../../../core/shared/element-template'
 import {
   isFiniteRectangle,
   offsetPoint,
   rectContainsPointInclusive,
 } from '../../../../core/shared/math-utils'
-import { optionalMap } from '../../../../core/shared/optional-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { create } from '../../../../core/shared/property-path'
 import type { CanvasCommand } from '../../commands/commands'
 import { deleteProperties } from '../../commands/delete-properties-command'
 import { rearrangeChildren } from '../../commands/rearrange-children-command'
-import { setProperty } from '../../commands/set-property-command'
 import { GridControls } from '../../controls/grid-controls'
 import { recurseIntoChildrenOfMapOrFragment } from '../../gap-utils'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
@@ -29,6 +22,7 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
+import { setGridPropsCommands } from './grid-helpers'
 
 export const rearrangeGridSwapStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -132,38 +126,6 @@ const GridPositioningProps: Array<keyof React.CSSProperties> = [
   'gridRowEnd',
 ]
 
-function gridPositionToValue(p: GridPosition | null): string | number | null {
-  if (p == null) {
-    return null
-  }
-  if (p === 'auto') {
-    return 'auto'
-  }
-
-  return p.numericalPosition
-}
-
-function setGridProps(elementPath: ElementPath, gridProps: GridElementProperties): CanvasCommand[] {
-  return stripNulls([
-    optionalMap(
-      (s) => setProperty('always', elementPath, create('style', 'gridColumnStart'), s),
-      gridPositionToValue(gridProps.gridColumnStart),
-    ),
-    optionalMap(
-      (s) => setProperty('always', elementPath, create('style', 'gridColumnEnd'), s),
-      gridPositionToValue(gridProps.gridColumnEnd),
-    ),
-    optionalMap(
-      (s) => setProperty('always', elementPath, create('style', 'gridRowStart'), s),
-      gridPositionToValue(gridProps.gridRowStart),
-    ),
-    optionalMap(
-      (s) => setProperty('always', elementPath, create('style', 'gridRowEnd'), s),
-      gridPositionToValue(gridProps.gridRowEnd),
-    ),
-  ])
-}
-
 function swapChildrenCommands({
   grabbedElementUid,
   swapToElementUid,
@@ -206,11 +168,11 @@ function swapChildrenCommands({
       grabbedElement.elementPath,
       GridPositioningProps.map((p) => create('style', p)),
     ),
-    ...setGridProps(
+    ...setGridPropsCommands(
       grabbedElement.elementPath,
       swapToElement.specialSizeMeasurements.elementGridProperties,
     ),
-    ...setGridProps(
+    ...setGridPropsCommands(
       swapToElement.elementPath,
       grabbedElement.specialSizeMeasurements.elementGridProperties,
     ),

@@ -1,6 +1,7 @@
 import * as EP from '../../../../core/shared/element-path'
 import { getRectCenter, localRectangle } from '../../../../core/shared/math-utils'
 import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
+import CanvasActions from '../../canvas-actions'
 import { GridCellTestId } from '../../controls/grid-controls'
 import { mouseDragFromPointToPoint } from '../../event-helpers.test-utils'
 import { renderTestEditorWithCode } from '../../ui-jsx.test-utils'
@@ -8,35 +9,32 @@ import { gridCellTargetId } from './grid-helpers'
 
 describe('grid rearrange move strategy', () => {
   it('can rearrange elements on a grid', async () => {
-    const editor = await renderTestEditorWithCode(ProjectCode, 'await-first-dom-report')
+    const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } = await runMoveTest({
+      scale: 1,
+    })
+    expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+      gridColumnEnd: '7',
+      gridColumnStart: '3',
+      gridRowEnd: '4',
+      gridRowStart: '2',
+    })
+  })
+  it('can rearrange elements on a grid (zoom out)', async () => {
+    const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } = await runMoveTest({
+      scale: 0.5,
+    })
+    expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+      gridColumnEnd: '7',
+      gridColumnStart: '3',
+      gridRowEnd: '4',
+      gridRowStart: '2',
+    })
+  })
 
-    const elementPathToDrag = EP.fromString('sb/scene/grid/aaa')
-
-    await selectComponentsForTest(editor, [elementPathToDrag])
-
-    const sourceGridCell = editor.renderedDOM.getByTestId(GridCellTestId(elementPathToDrag))
-    const targetGridCell = editor.renderedDOM.getByTestId(
-      gridCellTargetId(EP.fromString('sb/scene/grid'), 2, 3),
-    )
-
-    await mouseDragFromPointToPoint(
-      sourceGridCell,
-      {
-        x: sourceGridCell.getBoundingClientRect().x + 10,
-        y: sourceGridCell.getBoundingClientRect().y + 10,
-      },
-      getRectCenter(
-        localRectangle({
-          x: targetGridCell.getBoundingClientRect().x,
-          y: targetGridCell.getBoundingClientRect().y,
-          width: targetGridCell.getBoundingClientRect().width,
-          height: targetGridCell.getBoundingClientRect().height,
-        }),
-      ),
-    )
-
-    const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } =
-      editor.renderedDOM.getByTestId('aaa').style
+  it('can rearrange elements on a grid (zoom in)', async () => {
+    const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } = await runMoveTest({
+      scale: 2,
+    })
     expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
       gridColumnEnd: '7',
       gridColumnStart: '3',
@@ -45,6 +43,42 @@ describe('grid rearrange move strategy', () => {
     })
   })
 })
+
+async function runMoveTest(props: { scale: number }) {
+  const editor = await renderTestEditorWithCode(ProjectCode, 'await-first-dom-report')
+
+  const elementPathToDrag = EP.fromString('sb/scene/grid/aaa')
+
+  await selectComponentsForTest(editor, [elementPathToDrag])
+
+  await editor.dispatch([CanvasActions.zoom(props.scale)], true)
+
+  const sourceGridCell = editor.renderedDOM.getByTestId(GridCellTestId(elementPathToDrag))
+  const targetGridCell = editor.renderedDOM.getByTestId(
+    gridCellTargetId(EP.fromString('sb/scene/grid'), 2, 3),
+  )
+
+  const sourceRect = sourceGridCell.getBoundingClientRect()
+  const targetRect = targetGridCell.getBoundingClientRect()
+
+  await mouseDragFromPointToPoint(
+    sourceGridCell,
+    {
+      x: sourceRect.x * (props.scale > 1 ? props.scale : 1) + 10,
+      y: sourceRect.y * (props.scale > 1 ? props.scale : 1) + 10,
+    },
+    getRectCenter(
+      localRectangle({
+        x: targetRect.x * (props.scale > 1 ? props.scale : 1),
+        y: targetRect.y * (props.scale > 1 ? props.scale : 1),
+        width: targetRect.width,
+        height: targetRect.height,
+      }),
+    ),
+  )
+
+  return editor.renderedDOM.getByTestId('aaa').style
+}
 
 const ProjectCode = `import * as React from 'react'
 import { Scene, Storyboard, Placeholder } from 'utopia-api'
