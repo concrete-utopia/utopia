@@ -268,14 +268,6 @@ export const CanvasToolbar = React.memo(() => {
     }
   }, [canvasToolbarMode.primary, dispatch, dispatchSwitchToSelectModeCloseMenus])
 
-  const togglePanelsButtonClicked = React.useCallback(() => {
-    if (canvasToolbarMode.primary === 'panels') {
-      dispatchSwitchToSelectModeCloseMenus()
-    } else {
-      dispatch([switchEditorMode(EditorModes.panelsMode())])
-    }
-  }, [canvasToolbarMode.primary, dispatch, dispatchSwitchToSelectModeCloseMenus])
-
   const currentStrategyState = useEditorState(
     Substores.restOfStore,
     (store) => store.strategyState,
@@ -529,18 +521,6 @@ export const CanvasToolbar = React.memo(() => {
         : null}
       {/* Live Mode */}
       {showRemixNavBar ? wrapInSubmenu(<RemixNavigationBar />) : null}
-      {/* Panels Mode */}
-      {canvasToolbarMode.primary === 'panels'
-        ? wrapInSubmenu(
-            <FlexColumn style={{ padding: '3px 8px 0 8px', flexGrow: 1 }}>
-              <FlexRow>
-                <Tile style={{ flexGrow: 1 }}>
-                  <PanelsPicker />
-                </Tile>
-              </FlexRow>
-            </FlexColumn>,
-          )
-        : null}
     </FlexColumn>
   )
 })
