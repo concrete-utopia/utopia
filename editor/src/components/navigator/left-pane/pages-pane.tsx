@@ -64,6 +64,8 @@ import { canvasRectangle, isFiniteRectangle } from '../../../core/shared/math-ut
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import type { ElementPath } from 'utopia-shared/src/types'
+import type { DropdownMenuItem } from '../../../uuiui/radix-components'
+import { DropdownMenu } from '../../../uuiui/radix-components'
 
 type RouteMatch = {
   path: string
@@ -150,13 +152,6 @@ export const PagesPane = React.memo((props) => {
 
   const dispatch = useDispatch()
 
-  const onClickAddPage = React.useCallback(
-    (e: React.MouseEvent) => {
-      dispatch([showContextMenu('context-menu-add-page', e.nativeEvent)])
-    },
-    [dispatch],
-  )
-
   const [navigateTo, setNavigateTo] = React.useState<NavigateTo | null>(null)
 
   const onAfterPageAdd = React.useCallback((pageName: string) => {
@@ -179,6 +174,30 @@ export const PagesPane = React.memo((props) => {
   useNavigateToRouteWhenAvailable(remixRoutes, navigateTo, () => {
     setNavigateTo(null)
   })
+
+  const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+
+  const addPageAction = React.useCallback(
+    (template: PageTemplate) => () => {
+      const newPageName = createNewPageName()
+      dispatch([
+        addNewPage('/app/routes', template, newPageName),
+        ...resetCanvasForNewPage(metadataRef.current, activeRemixScene),
+      ])
+      onAfterPageAdd(newPageName)
+    },
+    [dispatch, metadataRef, activeRemixScene, onAfterPageAdd],
+  )
+
+  const addPageDropdownItems: DropdownMenuItem[] = React.useMemo(
+    () =>
+      pageTemplates.map((t) => ({
+        id: t.label,
+        label: t.label,
+        onSelect: addPageAction(t),
+      })),
+    [addPageAction, pageTemplates],
+  )
 
   const activeRouteDoesntMatchAnyFavorites = !featuredRoutes.includes(activeRoute!)
   const activeRouteTemplatePath = matchRoutes(remixRoutes, pathname)?.[0].route.path
@@ -217,9 +236,16 @@ export const PagesPane = React.memo((props) => {
         {when(
           canAddPage,
           <React.Fragment>
-            <SquareButton onClick={onClickAddPage}>
-              <FunctionIcons.Add />
-            </SquareButton>
+            <DropdownMenu
+              side='right'
+              sideOffset={10}
+              items={addPageDropdownItems}
+              opener={
+                <SquareButton onClick={NO_OP}>
+                  <FunctionIcons.Add />
+                </SquareButton>
+              }
+            ></DropdownMenu>
             <AddPageContextMenu
               contextMenuInstance={'context-menu-add-page'}
               pageTemplates={pageTemplates}

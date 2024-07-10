@@ -37,11 +37,12 @@ export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
           sideOffset={props.sideOffset}
           side={props.side}
           collisionPadding={{ top: 8 }}
+          align='start'
           style={{
-            padding: 4,
+            padding: '6px 8px',
             flexDirection: 'column',
             backgroundColor: theme.inspectorBackground.value,
-            borderRadius: 6,
+            borderRadius: 4,
             display: 'flex',
             gap: 4,
           }}
