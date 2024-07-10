@@ -21,6 +21,7 @@ import {
   resetCanvas,
   setRightMenuTab,
   switchEditorMode,
+  togglePanel,
 } from './actions/action-creators'
 import { EditorModes } from './editor-modes'
 import {
@@ -61,9 +62,9 @@ import { insertComponentPickerItem } from '../navigator/navigator-item/component
 import { useAtom } from 'jotai'
 import { ActiveRemixSceneAtom } from '../canvas/remix/utopia-remix-root-component'
 import * as EP from '../../core/shared/element-path'
-import { PanelsPicker } from '../navigator/navigator-item/panels-picker' // TODO
-import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { NO_OP } from '../../core/shared/utils'
+import type { DropdownMenuItem } from '../../uuiui/radix-components'
+import { DropdownMenu } from '../../uuiui/radix-components'
 
 export const InsertMenuButtonTestId = 'insert-menu-button'
 export const PlayModeButtonTestId = 'canvas-toolbar-play-mode'
@@ -339,6 +340,27 @@ export const CanvasToolbar = React.memo(() => {
     ((canvasToolbarMode.primary === 'edit' && canvasToolbarMode.secondary !== 'strategy-active') ||
       canvasToolbarMode.primary === 'play')
 
+  const panelPopupItems: DropdownMenuItem[] = React.useMemo(
+    () => [
+      {
+        id: 'navigator',
+        label: 'Navigator',
+        onSelect: () => dispatch([togglePanel('leftmenu')]),
+      },
+      {
+        id: 'code-editor',
+        label: 'Code Editor',
+        onSelect: () => dispatch([togglePanel('codeEditor')]),
+      },
+      {
+        id: 'rightmenu',
+        label: 'Inspector',
+        onSelect: () => dispatch([togglePanel('rightmenu')]),
+      },
+    ],
+    [dispatch],
+  )
+
   return (
     <FlexColumn
       style={{ alignItems: 'start', justifySelf: 'center' }}
@@ -426,24 +448,6 @@ export const CanvasToolbar = React.memo(() => {
           </div>,
         )}
         <Separator />
-        <Tooltip title='Manage panels' placement='bottom'>
-          <DropdownMenu.Root>
-            <DropdownMenu.Trigger style={{ background: 'none', border: 'none' }}>
-              <InsertModeButton
-                testid={commentButtonTestId}
-                iconType={'panels'}
-                iconCategory='tools'
-                onClick={NO_OP}
-                keepActiveInLiveMode
-              />
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Portal>
-              <DropdownMenu.Content sideOffset={6}>
-                <PanelsPicker />
-              </DropdownMenu.Content>
-            </DropdownMenu.Portal>
-          </DropdownMenu.Root>
-        </Tooltip>
         <Tooltip title='Zoom to 100%' placement='bottom'>
           <SquareButton
             style={{
@@ -470,6 +474,22 @@ export const CanvasToolbar = React.memo(() => {
           />
         </Tooltip>
         {unless(isMyProject, <ViewOnlyBadge />)}
+        <Tooltip title='Manage panels'>
+          <DropdownMenu
+            sideOffset={8}
+            side='right'
+            items={panelPopupItems}
+            opener={
+              <InsertModeButton
+                testid={commentButtonTestId}
+                iconType={'panels'}
+                iconCategory='tools'
+                onClick={NO_OP}
+                keepActiveInLiveMode
+              />
+            }
+          />
+        </Tooltip>
       </div>
       {/* Edit Mode submenus */}
       {when(
