@@ -347,30 +347,45 @@ export const CanvasToolbar = React.memo(() => {
     ((canvasToolbarMode.primary === 'edit' && canvasToolbarMode.secondary !== 'strategy-active') ||
       canvasToolbarMode.primary === 'play')
 
+  const { codeEditorVisible, navigatorVisible, inspectorVisible } = useEditorState(
+    Substores.restOfEditor,
+    (store) => {
+      return {
+        codeEditorVisible: store.editor.interfaceDesigner.codePaneVisible,
+        navigatorVisible: store.editor.leftMenu.visible,
+        inspectorVisible: store.editor.rightMenu.visible,
+      }
+    },
+    'storedLayoutToResolvedPanels panel visibility',
+  )
+
   const panelPopupItems: DropdownMenuItem[] = React.useMemo(
     () => [
       {
         id: 'navigator',
         label: 'Navigator',
+        checked: navigatorVisible,
         shortcut: keyToString(shortcutDetailsWithDefaults[TOGGLE_NAVIGATOR].shortcutKeys[0]),
         onSelect: () => dispatch([togglePanel('leftmenu')]),
       },
       {
         id: 'rightmenu',
         label: 'Inspector',
+        checked: inspectorVisible,
         shortcut: keyToString(shortcutDetailsWithDefaults[TOGGLE_INSPECTOR].shortcutKeys[0]),
         onSelect: () => dispatch([togglePanel('rightmenu')]),
       },
       {
         id: 'code-editor',
         label: 'Code Editor',
+        checked: codeEditorVisible,
         shortcut: keyToString(
           shortcutDetailsWithDefaults[TOGGLE_CODE_EDITOR_SHORTCUT].shortcutKeys[0],
         ),
         onSelect: () => dispatch([togglePanel('codeEditor')]),
       },
     ],
-    [dispatch],
+    [codeEditorVisible, dispatch, inspectorVisible, navigatorVisible],
   )
 
   const panelSelectorOpenButton = React.useCallback(
