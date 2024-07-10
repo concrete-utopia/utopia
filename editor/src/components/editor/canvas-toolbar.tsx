@@ -490,6 +490,7 @@ export const CanvasToolbar = React.memo(() => {
         <Tooltip title='Manage panels'>
           <DropdownMenu
             sideOffset={8}
+            alignOffset={-3}
             side='right'
             items={panelPopupItems}
             opener={

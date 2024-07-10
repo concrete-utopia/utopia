@@ -238,7 +238,8 @@ export const PagesPane = React.memo((props) => {
           <React.Fragment>
             <DropdownMenu
               side='right'
-              sideOffset={10}
+              sideOffset={12}
+              alignOffset={-8}
               items={addPageDropdownItems}
               opener={
                 <SquareButton onClick={NO_OP}>

@@ -33,6 +33,7 @@ export interface DropdownMenuProps {
   opener: React.ReactNode
   items: DropdownMenuItem[]
   sideOffset?: number
+  alignOffset?: number
   side?: DropdownMenuContentProps['side']
 }
 
@@ -51,6 +52,7 @@ export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
           side={props.side}
           collisionPadding={{ top: -4 }}
           align='start'
+          alignOffset={props.alignOffset}
         >
           {props.items.map((item) => (
             <RadixItemContainer key={item.id} onSelect={item.onSelect}>
