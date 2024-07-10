@@ -231,7 +231,7 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
           fontSize: 8,
         }}
         css={{
-          opacity: 0.5,
+          opacity: resizing ? 1 : 0.5,
           ':hover': {
             opacity: 1,
           },
