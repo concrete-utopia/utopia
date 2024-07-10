@@ -11,6 +11,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getUtopiaID } from '../../../core/shared/uid-utils'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { mapDropNulls } from '../../../core/shared/array-utils'
+import { toUid } from '../../../core/shared/element-path'
 
 export type AnimationCtx = {
   scope: AnimationScope | null
@@ -62,5 +63,26 @@ export function useCanvasAnimation(paths: ElementPath[]) {
       void ctx.animate(elements, keyframes, options)
     },
     [ctx, elements],
+  )
+}
+
+export function useCanvasAnimations() {
+  const ctx = useContext(AnimationContext)
+
+  return React.useCallback(
+    (
+      elementPath: ElementPath,
+      keyframes: DOMKeyframesDefinition,
+      options?: DynamicAnimationOptions,
+    ) => {
+      const uid = toUid(elementPath)
+      const selector = `[data-uid='${uid}']`
+      const element = document.querySelector(selector)
+      if (ctx.animate == null || element == null) {
+        return
+      }
+      void ctx.animate(element, keyframes, options)
+    },
+    [ctx],
   )
 }
