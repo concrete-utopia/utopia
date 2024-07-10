@@ -2,7 +2,7 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import { CheckboxInput, colorTheme } from '../../../uuiui'
+import { CheckboxInput, colorTheme, useColorTheme } from '../../../uuiui'
 import { FlexRow } from 'utopia-api'
 import { Substores, useEditorState } from '../../../components/editor/store/store-hook'
 import { switchEditorMode, togglePanel } from '../../../components/editor/actions/action-creators'
@@ -25,25 +25,18 @@ export const PanelsPicker = React.memo(() => {
   )
 
   const toggleNavigator = React.useCallback(() => {
-    dispatch([
-      togglePanel('leftmenu'),
-      switchEditorMode(EditorModes.selectMode(null, false, 'none')),
-    ])
+    dispatch([togglePanel('leftmenu')])
   }, [dispatch])
 
   const toggleCodeEditor = React.useCallback(() => {
-    dispatch([
-      togglePanel('codeEditor'),
-      switchEditorMode(EditorModes.selectMode(null, false, 'none')),
-    ])
+    dispatch([togglePanel('codeEditor')])
   }, [dispatch])
 
   const toggleInspector = React.useCallback(() => {
-    dispatch([
-      togglePanel('rightmenu'),
-      switchEditorMode(EditorModes.selectMode(null, false, 'none')),
-    ])
+    dispatch([togglePanel('rightmenu')])
   }, [dispatch])
+
+  const theme = useColorTheme()
 
   return (
     <div
@@ -53,8 +46,9 @@ export const PanelsPicker = React.memo(() => {
         gap: 0,
         width: '100%',
         height: '100%',
-        borderRadius: 10,
-        padding: '8px 0',
+        padding: '8px 12px 8px 0px',
+        backgroundColor: theme.inspectorBackground.value,
+        borderRadius: 6,
       }}
     >
       <CheckboxRow label='Navigator' checked={navigatorVisible} onChange={toggleNavigator} />

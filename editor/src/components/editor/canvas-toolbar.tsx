@@ -61,7 +61,9 @@ import { insertComponentPickerItem } from '../navigator/navigator-item/component
 import { useAtom } from 'jotai'
 import { ActiveRemixSceneAtom } from '../canvas/remix/utopia-remix-root-component'
 import * as EP from '../../core/shared/element-path'
-import { PanelsPicker } from '../navigator/navigator-item/panels-picker'
+import { PanelsPicker } from '../navigator/navigator-item/panels-picker' // TODO
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
+import { NO_OP } from '../../core/shared/utils'
 
 export const InsertMenuButtonTestId = 'insert-menu-button'
 export const PlayModeButtonTestId = 'canvas-toolbar-play-mode'
@@ -425,14 +427,22 @@ export const CanvasToolbar = React.memo(() => {
         )}
         <Separator />
         <Tooltip title='Manage panels' placement='bottom'>
-          <InsertModeButton
-            testid={commentButtonTestId}
-            iconType={'panels'}
-            iconCategory='tools'
-            primary={canvasToolbarMode.primary === 'panels'}
-            onClick={togglePanelsButtonClicked}
-            keepActiveInLiveMode
-          />
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger style={{ background: 'none', border: 'none' }}>
+              <InsertModeButton
+                testid={commentButtonTestId}
+                iconType={'panels'}
+                iconCategory='tools'
+                onClick={NO_OP}
+                keepActiveInLiveMode
+              />
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Portal>
+              <DropdownMenu.Content sideOffset={6}>
+                <PanelsPicker />
+              </DropdownMenu.Content>
+            </DropdownMenu.Portal>
+          </DropdownMenu.Root>
         </Tooltip>
         <Tooltip title='Zoom to 100%' placement='bottom'>
           <SquareButton
