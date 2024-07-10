@@ -212,6 +212,7 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
       }}
     >
       <div
+        data-testid={labelId}
         style={{
           zoom: 1 / scale,
           width: GRID_RESIZE_HANDLE_SIZE,
@@ -253,7 +254,6 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
           }}
         >
           <CanvasLabel
-            testId={labelId}
             value={getLabelForAxis(
               props.dimension,
               props.dimensionIndex,
