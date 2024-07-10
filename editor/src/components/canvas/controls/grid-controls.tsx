@@ -123,6 +123,7 @@ function getLabelForAxis(
 }
 
 const SHADOW_SNAP_ANIMATION = 'shadow-snap'
+const GRID_RESIZE_HANDLE_SIZE = 30 // px
 
 export interface GridResizingControlProps {
   dimension: GridCSSNumber
@@ -186,8 +187,8 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
 
   const shadowSize = React.useMemo(() => {
     return props.axis === 'column'
-      ? props.containingFrame.height + 30
-      : props.containingFrame.width + 30
+      ? props.containingFrame.height + GRID_RESIZE_HANDLE_SIZE
+      : props.containingFrame.width + GRID_RESIZE_HANDLE_SIZE
   }, [props.containingFrame, props.axis])
 
   return (
@@ -233,8 +234,8 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
         <div
           style={{
             position: 'absolute',
-            top: props.axis === 'column' ? 30 : 0,
-            left: props.axis === 'row' ? 30 : 0,
+            top: props.axis === 'column' ? GRID_RESIZE_HANDLE_SIZE : 0,
+            left: props.axis === 'row' ? GRID_RESIZE_HANDLE_SIZE : 0,
             right: 0,
             bottom: 0,
             display: 'flex',
@@ -282,7 +283,7 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
     case 'DIMENSIONS':
       let workingPrefix: number =
         props.axis === 'column' ? props.containingFrame.x : props.containingFrame.y
-      const size = 30 / canvasScale
+      const size = GRID_RESIZE_HANDLE_SIZE / canvasScale
       return (
         <div
           style={{
