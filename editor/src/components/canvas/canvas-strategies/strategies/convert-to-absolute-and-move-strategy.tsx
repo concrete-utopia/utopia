@@ -311,10 +311,7 @@ function getFitness(
     ) {
       if (interactionSession.interactionData.spacePressed) {
         // If space is pressed, this should happening!
-        return setHuggingParentToFixed === 'set-hugging-parent-to-fixed' ? 100 : 100.1
-      }
-      if (!interactionSession.interactionData.modifiers.ctrl) {
-        return 0
+        return 100
       }
 
       if (interactionSession.interactionData.drag == null) {
