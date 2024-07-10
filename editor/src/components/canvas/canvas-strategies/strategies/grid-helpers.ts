@@ -9,6 +9,7 @@ import type { CanvasVector } from '../../../../core/shared/math-utils'
 import {
   offsetPoint,
   rectContainsPoint,
+  scaleRect,
   windowRectangle,
   type WindowPoint,
 } from '../../../../core/shared/math-utils'
@@ -22,12 +23,12 @@ import type { GridCellCoordinates } from '../../controls/grid-controls'
 import { gridCellCoordinates } from '../../controls/grid-controls'
 import * as EP from '../../../../core/shared/element-path'
 
-export function getGridCellUnderMouse(mousePoint: WindowPoint) {
-  return getGridCellAtPoint(mousePoint, false)
+export function getGridCellUnderMouse(mousePoint: WindowPoint, canvasScale: number) {
+  return getGridCellAtPoint(mousePoint, canvasScale, false)
 }
 
-function getGridCellUnderMouseRecursive(mousePoint: WindowPoint) {
-  return getGridCellAtPoint(mousePoint, true)
+function getGridCellUnderMouseRecursive(mousePoint: WindowPoint, canvasScale: number) {
+  return getGridCellAtPoint(mousePoint, canvasScale, true)
 }
 
 const gridCellTargetIdPrefix = 'grid-cell-target-'
@@ -46,14 +47,19 @@ function isGridCellTargetId(id: string): boolean {
 
 function getGridCellAtPoint(
   windowPoint: WindowPoint,
+  canvasScale: number,
   duplicating: boolean,
 ): { id: string; coordinates: GridCellCoordinates } | null {
   function maybeRecursivelyFindCellAtPoint(elements: Element[]): Element | null {
     // If this used during duplication, the canvas controls will be in the way and we need to traverse the children too.
     for (const element of elements) {
       if (isGridCellTargetId(element.id)) {
-        const rect = element.getBoundingClientRect()
-        if (rectContainsPoint(windowRectangle(rect), windowPoint)) {
+        const domRect = element.getBoundingClientRect()
+        const windowRect =
+          canvasScale > 1
+            ? scaleRect(windowRectangle(domRect), canvasScale)
+            : windowRectangle(domRect)
+        if (rectContainsPoint(windowRect, windowPoint)) {
           return element
         }
       }
@@ -119,7 +125,12 @@ export function runGridRearrangeMove(
     canvasOffset,
   )
 
-  const newTargetCell = getTargetCell(customState.targetCell, duplicating, mouseWindowPoint)
+  const newTargetCell = getTargetCell(
+    customState.targetCell,
+    canvasScale,
+    duplicating,
+    mouseWindowPoint,
+  )
   if (newTargetCell == null) {
     return {
       commands: [],
@@ -176,13 +187,14 @@ export function runGridRearrangeMove(
 
 function getTargetCell(
   previousTargetCell: GridCellCoordinates | null,
+  canvasScale: number,
   duplicating: boolean,
   mouseWindowPoint: WindowPoint,
 ): GridCellCoordinates | null {
   let cell = previousTargetCell ?? null
   const cellUnderMouse = duplicating
-    ? getGridCellUnderMouseRecursive(mouseWindowPoint)
-    : getGridCellUnderMouse(mouseWindowPoint)
+    ? getGridCellUnderMouseRecursive(mouseWindowPoint, canvasScale)
+    : getGridCellUnderMouse(mouseWindowPoint, canvasScale)
   if (cellUnderMouse != null) {
     cell = cellUnderMouse.coordinates
   }
