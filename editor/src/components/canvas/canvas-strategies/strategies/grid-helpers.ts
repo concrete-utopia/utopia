@@ -4,6 +4,7 @@ import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   GridElementProperties,
+  GridPosition,
 } from '../../../../core/shared/element-template'
 import type { CanvasVector } from '../../../../core/shared/math-utils'
 import {
@@ -13,15 +14,18 @@ import {
   windowRectangle,
   type WindowPoint,
 } from '../../../../core/shared/math-utils'
-import { create } from '../../../../core/shared/property-path'
+import * as PP from '../../../../core/shared/property-path'
 import type { CanvasCommand } from '../../commands/commands'
 import { setProperty } from '../../commands/set-property-command'
 import { canvasPointToWindowPoint } from '../../dom-lookup'
 import type { DragInteractionData } from '../interaction-state'
+import { stripNulls } from '../../../../core/shared/array-utils'
+import { optionalMap } from '../../../../core/shared/optional-utils'
 import type { GridCustomStrategyState } from '../canvas-strategy-types'
 import type { GridCellCoordinates } from '../../controls/grid-controls'
 import { gridCellCoordinates } from '../../controls/grid-controls'
 import * as EP from '../../../../core/shared/element-path'
+import { deleteProperties } from '../../commands/delete-properties-command'
 
 export function getGridCellUnderMouse(mousePoint: WindowPoint, canvasScale: number) {
   return getGridCellAtPoint(mousePoint, canvasScale, false)
@@ -173,16 +177,55 @@ export function runGridRearrangeMove(
 
   return {
     commands: [
-      setProperty('always', targetElement, create('style', 'gridColumnStart'), column.start),
-      setProperty('always', targetElement, create('style', 'gridColumnEnd'), column.end),
-      setProperty('always', targetElement, create('style', 'gridRowStart'), row.start),
-      setProperty('always', targetElement, create('style', 'gridRowEnd'), row.end),
+      setProperty('always', targetElement, PP.create('style', 'gridColumnStart'), column.start),
+      setProperty('always', targetElement, PP.create('style', 'gridColumnEnd'), column.end),
+      setProperty('always', targetElement, PP.create('style', 'gridRowStart'), row.start),
+      setProperty('always', targetElement, PP.create('style', 'gridRowEnd'), row.end),
     ],
     targetCell: newTargetCell,
     originalRootCell: rootCell,
     draggingFromCell: draggingFromCell,
     targetRootCell: targetRootCell,
   }
+}
+
+export function gridPositionToValue(p: GridPosition | null | undefined): string | number | null {
+  if (p == null) {
+    return null
+  }
+  if (p === 'auto') {
+    return 'auto'
+  }
+
+  return p.numericalPosition
+}
+
+export function setGridPropsCommands(
+  elementPath: ElementPath,
+  gridProps: Partial<GridElementProperties>,
+): CanvasCommand[] {
+  return stripNulls([
+    deleteProperties('always', elementPath, [
+      PP.create('style', 'gridColumn'),
+      PP.create('style', 'gridRow'),
+    ]),
+    optionalMap(
+      (s) => setProperty('always', elementPath, PP.create('style', 'gridColumnStart'), s),
+      gridPositionToValue(gridProps?.gridColumnStart),
+    ),
+    optionalMap(
+      (s) => setProperty('always', elementPath, PP.create('style', 'gridColumnEnd'), s),
+      gridPositionToValue(gridProps?.gridColumnEnd),
+    ),
+    optionalMap(
+      (s) => setProperty('always', elementPath, PP.create('style', 'gridRowStart'), s),
+      gridPositionToValue(gridProps?.gridRowStart),
+    ),
+    optionalMap(
+      (s) => setProperty('always', elementPath, PP.create('style', 'gridRowEnd'), s),
+      gridPositionToValue(gridProps?.gridRowEnd),
+    ),
+  ])
 }
 
 function getTargetCell(
