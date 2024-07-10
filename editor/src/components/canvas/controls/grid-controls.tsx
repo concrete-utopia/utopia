@@ -240,6 +240,7 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
 
               return (
                 <GridResizingControl
+                  key={`grid-resizing-control-${dimensionIndex}`}
                   dimensionIndex={dimensionIndex}
                   dimension={dimension}
                   fromPropsAxisValues={props.fromPropsAxisValues}
@@ -735,6 +736,7 @@ export const GridControls = controlForStrategyMemoized(() => {
         {grids.flatMap((grid) => {
           return (
             <GridResizing
+              key={`grid-resizing-column-${EP.toString(grid.elementPath)}`}
               axisValues={grid.gridTemplateColumns}
               fromPropsAxisValues={grid.gridTemplateColumnsFromProps}
               containingFrame={grid.frame}
@@ -746,6 +748,7 @@ export const GridControls = controlForStrategyMemoized(() => {
         {grids.flatMap((grid) => {
           return (
             <GridResizing
+              key={`grid-resizing-row-${EP.toString(grid.elementPath)}`}
               axisValues={grid.gridTemplateRows}
               fromPropsAxisValues={grid.gridTemplateRowsFromProps}
               containingFrame={grid.frame}
