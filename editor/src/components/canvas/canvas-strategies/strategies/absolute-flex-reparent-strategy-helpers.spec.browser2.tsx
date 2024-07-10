@@ -110,7 +110,7 @@ describe('Unified Reparent Fitness Function Tests', () => {
 
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc'])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
-    await dragElement(renderResult, 'ccc', defaultMouseDownOffset, dragDelta, emptyModifiers, true)
+    await dragElement(renderResult, 'ccc', defaultMouseDownOffset, dragDelta, cmdModifier, true)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -198,7 +198,7 @@ describe('Unified Reparent Fitness Function Tests', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc'])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
-    await dragElement(renderResult, 'ccc', defaultMouseDownOffset, dragDelta, emptyModifiers, true)
+    await dragElement(renderResult, 'ccc', defaultMouseDownOffset, dragDelta, cmdModifier, true)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
