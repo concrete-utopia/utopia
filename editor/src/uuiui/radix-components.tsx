@@ -12,14 +12,19 @@ const RadixItemContainer = styled(RadixDropdownMenu.Item, {
   display: 'flex',
   justifyContent: 'space-between',
   cursor: 'pointer',
-  '&[data-highlighted]': { backgroundColor: colorTheme.subtleBackground.value, borderRadius: 6 },
+  color: colorTheme.contextMenuForeground.value,
+  '&[data-highlighted]': {
+    backgroundColor: colorTheme.contextMenuHighlightBackground.value,
+    color: colorTheme.contextMenuForeground.value,
+    borderRadius: 6,
+  },
 })
 
 const RadixDropdownContent = styled(RadixDropdownMenu.Content, {
   padding: '6px 8px',
   flexDirection: 'column',
-  backgroundColor: colorTheme.inspectorBackground.value,
-  borderRadius: 4,
+  backgroundColor: colorTheme.contextMenuBackground.value,
+  borderRadius: 6,
   display: 'grid',
   gridTemplateRows: '1fr auto',
 })
@@ -67,7 +72,7 @@ export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
                 {when(
                   shouldShowCheckboxes,
                   <div style={{ opacity: item.checked ? 1 : 0 }}>
-                    <Icons.Checkmark />
+                    <Icons.Checkmark color='white' />
                   </div>,
                 )}
                 <span>{item.label}</span>
