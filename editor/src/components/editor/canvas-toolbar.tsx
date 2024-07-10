@@ -373,6 +373,20 @@ export const CanvasToolbar = React.memo(() => {
     [dispatch],
   )
 
+  const panelSelectorOpenButton = React.useCallback(
+    (open: boolean) => (
+      <InsertModeButton
+        testid={commentButtonTestId}
+        iconType={'panels'}
+        iconCategory='tools'
+        primary={open}
+        onClick={NO_OP}
+        keepActiveInLiveMode
+      />
+    ),
+    [commentButtonTestId],
+  )
+
   return (
     <FlexColumn
       style={{ alignItems: 'start', justifySelf: 'center' }}
@@ -493,15 +507,7 @@ export const CanvasToolbar = React.memo(() => {
             alignOffset={-3}
             side='right'
             items={panelPopupItems}
-            opener={
-              <InsertModeButton
-                testid={commentButtonTestId}
-                iconType={'panels'}
-                iconCategory='tools'
-                onClick={NO_OP}
-                keepActiveInLiveMode
-              />
-            }
+            opener={panelSelectorOpenButton}
           />
         </Tooltip>
       </div>

@@ -199,6 +199,15 @@ export const PagesPane = React.memo((props) => {
     [addPageAction, pageTemplates],
   )
 
+  const addPageOpenButton = React.useCallback(
+    () => (
+      <SquareButton onClick={NO_OP}>
+        <FunctionIcons.Add />
+      </SquareButton>
+    ),
+    [],
+  )
+
   const activeRouteDoesntMatchAnyFavorites = !featuredRoutes.includes(activeRoute!)
   const activeRouteTemplatePath = matchRoutes(remixRoutes, pathname)?.[0].route.path
 
@@ -241,11 +250,7 @@ export const PagesPane = React.memo((props) => {
               sideOffset={12}
               alignOffset={-8}
               items={addPageDropdownItems}
-              opener={
-                <SquareButton onClick={NO_OP}>
-                  <FunctionIcons.Add />
-                </SquareButton>
-              }
+              opener={addPageOpenButton}
             />
           </React.Fragment>,
         )}

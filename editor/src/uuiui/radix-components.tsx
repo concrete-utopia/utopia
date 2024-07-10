@@ -30,7 +30,7 @@ export interface DropdownMenuItem {
 }
 
 export interface DropdownMenuProps {
-  opener: React.ReactNode
+  opener: (open: boolean) => React.ReactNode
   items: DropdownMenuItem[]
   sideOffset?: number
   alignOffset?: number
@@ -40,10 +40,12 @@ export interface DropdownMenuProps {
 export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
   const stopPropagation = React.useCallback((e: React.KeyboardEvent) => e.stopPropagation(), [])
 
+  const [open, onOpen] = React.useState(false)
+
   return (
-    <RadixDropdownMenu.Root>
+    <RadixDropdownMenu.Root open={open} onOpenChange={onOpen}>
       <RadixDropdownMenu.Trigger style={{ background: 'none', border: 'none' }}>
-        {props.opener}
+        {props.opener(open)}
       </RadixDropdownMenu.Trigger>
       <RadixDropdownMenu.Portal>
         <RadixDropdownContent
