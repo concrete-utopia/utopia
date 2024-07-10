@@ -245,11 +245,6 @@ export const PagesPane = React.memo((props) => {
                   <FunctionIcons.Add />
                 </SquareButton>
               }
-            ></DropdownMenu>
-            <AddPageContextMenu
-              contextMenuInstance={'context-menu-add-page'}
-              pageTemplates={pageTemplates}
-              onAfterPageAdd={onAfterPageAdd}
             />
           </React.Fragment>,
         )}

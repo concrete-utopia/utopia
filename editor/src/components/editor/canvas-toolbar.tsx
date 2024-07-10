@@ -65,6 +65,13 @@ import * as EP from '../../core/shared/element-path'
 import { NO_OP } from '../../core/shared/utils'
 import type { DropdownMenuItem } from '../../uuiui/radix-components'
 import { DropdownMenu } from '../../uuiui/radix-components'
+import {
+  TOGGLE_INSPECTOR,
+  TOGGLE_CODE_EDITOR_SHORTCUT,
+  TOGGLE_NAVIGATOR,
+  keyToString,
+  shortcutDetailsWithDefaults,
+} from './shortcut-definitions'
 
 export const InsertMenuButtonTestId = 'insert-menu-button'
 export const PlayModeButtonTestId = 'canvas-toolbar-play-mode'
@@ -345,17 +352,22 @@ export const CanvasToolbar = React.memo(() => {
       {
         id: 'navigator',
         label: 'Navigator',
+        shortcut: keyToString(shortcutDetailsWithDefaults[TOGGLE_NAVIGATOR].shortcutKeys[0]),
         onSelect: () => dispatch([togglePanel('leftmenu')]),
-      },
-      {
-        id: 'code-editor',
-        label: 'Code Editor',
-        onSelect: () => dispatch([togglePanel('codeEditor')]),
       },
       {
         id: 'rightmenu',
         label: 'Inspector',
+        shortcut: keyToString(shortcutDetailsWithDefaults[TOGGLE_INSPECTOR].shortcutKeys[0]),
         onSelect: () => dispatch([togglePanel('rightmenu')]),
+      },
+      {
+        id: 'code-editor',
+        label: 'Code Editor',
+        shortcut: keyToString(
+          shortcutDetailsWithDefaults[TOGGLE_CODE_EDITOR_SHORTCUT].shortcutKeys[0],
+        ),
+        onSelect: () => dispatch([togglePanel('codeEditor')]),
       },
     ],
     [dispatch],
@@ -474,6 +486,7 @@ export const CanvasToolbar = React.memo(() => {
           />
         </Tooltip>
         {unless(isMyProject, <ViewOnlyBadge />)}
+        <Separator />
         <Tooltip title='Manage panels'>
           <DropdownMenu
             sideOffset={8}

@@ -2,16 +2,30 @@ import * as RadixDropdownMenu from '@radix-ui/react-dropdown-menu'
 import type { DropdownMenuContentProps } from '@radix-ui/react-dropdown-menu'
 import { styled } from '@stitches/react'
 import React from 'react'
-import { colorTheme, useColorTheme } from './styles/theme'
+import { colorTheme } from './styles/theme'
 
 const RadixItemContainer = styled(RadixDropdownMenu.Item, {
+  minWidth: 128,
   padding: '4px 8px',
+  display: 'flex',
+  justifyContent: 'space-between',
+  cursor: 'pointer',
   '&[data-highlighted]': { backgroundColor: colorTheme.subtleBackground.value, borderRadius: 6 },
+})
+
+const RadixDropdownContent = styled(RadixDropdownMenu.Content, {
+  padding: '6px 8px',
+  flexDirection: 'column',
+  backgroundColor: colorTheme.inspectorBackground.value,
+  borderRadius: 4,
+  display: 'grid',
+  gridTemplateRows: '1fr auto',
 })
 
 export interface DropdownMenuItem {
   id: string
   label: React.ReactNode
+  shortcut?: string
   onSelect: () => void
 }
 
@@ -24,7 +38,6 @@ export interface DropdownMenuProps {
 
 export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
   const stopPropagation = React.useCallback((e: React.KeyboardEvent) => e.stopPropagation(), [])
-  const theme = useColorTheme()
 
   return (
     <RadixDropdownMenu.Root>
@@ -32,31 +45,20 @@ export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
         {props.opener}
       </RadixDropdownMenu.Trigger>
       <RadixDropdownMenu.Portal>
-        <RadixDropdownMenu.Content
+        <RadixDropdownContent
           onKeyDown={stopPropagation}
           sideOffset={props.sideOffset}
           side={props.side}
-          collisionPadding={{ top: 8 }}
+          collisionPadding={{ top: -4 }}
           align='start'
-          style={{
-            padding: '6px 8px',
-            flexDirection: 'column',
-            backgroundColor: theme.inspectorBackground.value,
-            borderRadius: 4,
-            display: 'flex',
-            gap: 4,
-          }}
         >
           {props.items.map((item) => (
-            <RadixItemContainer
-              key={item.id}
-              style={{ cursor: 'pointer' }}
-              onSelect={item.onSelect}
-            >
-              {item.label}
+            <RadixItemContainer key={item.id} onSelect={item.onSelect}>
+              <span>{item.label}</span>
+              <span style={{ opacity: 0.5 }}>{item.shortcut}</span>
             </RadixItemContainer>
           ))}
-        </RadixDropdownMenu.Content>
+        </RadixDropdownContent>
       </RadixDropdownMenu.Portal>
     </RadixDropdownMenu.Root>
   )
