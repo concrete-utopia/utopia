@@ -456,7 +456,7 @@ export class Editor {
 
       const shouldRerender =
         (somethingChanged || runDomWalker) &&
-        anyCodeAhead(dispatchResult.unpatchedEditor.projectContents)
+        !anyCodeAhead(dispatchResult.unpatchedEditor.projectContents)
 
       const updateId = canvasUpdateId++
       if (shouldRerender) {
