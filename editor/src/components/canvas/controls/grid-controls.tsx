@@ -130,7 +130,6 @@ export interface GridResizingControlProps {
   dimensionIndex: number
   axis: 'row' | 'column'
   containingFrame: CanvasRectangle
-  workingPrefix: number
   fromPropsAxisValues: GridAutoOrTemplateBase | null
   padding: number | null
 }
@@ -281,8 +280,6 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
   }
   switch (props.axisValues.type) {
     case 'DIMENSIONS':
-      let workingPrefix: number =
-        props.axis === 'column' ? props.containingFrame.x : props.containingFrame.y
       const size = GRID_RESIZE_HANDLE_SIZE / canvasScale
       return (
         <div
@@ -314,17 +311,6 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
           }}
         >
           {props.axisValues.dimensions.flatMap((dimension, dimensionIndex) => {
-            // Assumes pixels currently.
-            workingPrefix += dimension.value
-            if (dimensionIndex === 0) {
-              // Shift by half the gap initially...
-              workingPrefix += (props.gap ?? 0) / 2
-            } else {
-              // ...Then by the full gap, as it would be half from the prior entry
-              // and half from the current one.
-              workingPrefix += props.gap ?? 0
-            }
-
             return (
               <GridResizingControl
                 dimensionIndex={dimensionIndex}
@@ -332,7 +318,6 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
                 fromPropsAxisValues={props.fromPropsAxisValues}
                 axis={props.axis}
                 containingFrame={props.containingFrame}
-                workingPrefix={workingPrefix}
                 padding={
                   props.padding == null
                     ? 0
