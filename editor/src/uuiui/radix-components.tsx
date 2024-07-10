@@ -3,14 +3,16 @@ import type { DropdownMenuContentProps } from '@radix-ui/react-dropdown-menu'
 import { styled } from '@stitches/react'
 import React from 'react'
 import { colorTheme } from './styles/theme'
-import { Icons } from './icons'
+import { Icons, LargerIcons } from './icons'
 import { when } from '../utils/react-conditionals'
 
 const RadixItemContainer = styled(RadixDropdownMenu.Item, {
   minWidth: 128,
   padding: '4px 8px',
   display: 'flex',
+  gap: 12,
   justifyContent: 'space-between',
+  alignItems: 'center',
   cursor: 'pointer',
   color: colorTheme.contextMenuForeground.value,
   '&[data-highlighted]': {
@@ -33,6 +35,7 @@ export interface DropdownMenuItem {
   id: string
   label: React.ReactNode
   shortcut?: string
+  icon?: React.ReactNode
   checked?: boolean
   onSelect: () => void
 }
@@ -51,6 +54,7 @@ export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
   const [open, onOpen] = React.useState(false)
 
   const shouldShowCheckboxes = props.items.some((i) => i.checked != null)
+  const shouldShowIcons = props.items.some((i) => i.icon != null)
 
   return (
     <RadixDropdownMenu.Root open={open} onOpenChange={onOpen}>
@@ -68,12 +72,16 @@ export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
         >
           {props.items.map((item) => (
             <RadixItemContainer key={item.id} onSelect={item.onSelect}>
-              <div style={{ display: 'flex', gap: 4 }}>
+              <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
                 {when(
                   shouldShowCheckboxes,
                   <div style={{ opacity: item.checked ? 1 : 0 }}>
                     <Icons.Checkmark color='white' />
                   </div>,
+                )}
+                {when(
+                  shouldShowIcons,
+                  <div style={{ opacity: item.icon == null ? 0 : 1 }}>{item.icon}</div>,
                 )}
                 <span>{item.label}</span>
               </div>

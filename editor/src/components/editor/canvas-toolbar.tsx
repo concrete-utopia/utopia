@@ -4,7 +4,7 @@
 import { jsx } from '@emotion/react'
 import React, { useState } from 'react'
 import type { TooltipProps } from '../../uuiui'
-import { Tile, UtopiaStyles, opacity } from '../../uuiui'
+import { Icons, LargerIcons, SmallerIcons, Tile, UtopiaStyles, opacity } from '../../uuiui'
 import { UtopiaTheme } from '../../uuiui'
 import {
   colorTheme,
@@ -365,12 +365,22 @@ export const CanvasToolbar = React.memo(() => {
         id: 'navigator',
         label: 'Navigator',
         checked: navigatorVisible,
+        icon: (
+          <div style={{ transform: 'scale(0.8)' }}>
+            <LargerIcons.Navigator color='white' />
+          </div>
+        ),
         shortcut: keyToString(shortcutDetailsWithDefaults[TOGGLE_NAVIGATOR].shortcutKeys[0]),
         onSelect: () => dispatch([togglePanel('leftmenu')]),
       },
       {
         id: 'rightmenu',
         label: 'Inspector',
+        icon: (
+          <div style={{ transform: 'scale(0.8)' }}>
+            <LargerIcons.Inspector color='white' />
+          </div>
+        ),
         checked: inspectorVisible,
         shortcut: keyToString(shortcutDetailsWithDefaults[TOGGLE_INSPECTOR].shortcutKeys[0]),
         onSelect: () => dispatch([togglePanel('rightmenu')]),
@@ -378,6 +388,11 @@ export const CanvasToolbar = React.memo(() => {
       {
         id: 'code-editor',
         label: 'Code Editor',
+        icon: (
+          <div style={{ transform: 'scale(0.8)' }}>
+            <LargerIcons.Node color='white' />
+          </div>
+        ),
         checked: codeEditorVisible,
         shortcut: keyToString(
           shortcutDetailsWithDefaults[TOGGLE_CODE_EDITOR_SHORTCUT].shortcutKeys[0],
