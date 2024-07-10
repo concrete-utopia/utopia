@@ -907,6 +907,8 @@ interface GridResizeControlProps {
 
 export const GridResizeControls = controlForStrategyMemoized<GridResizeControlProps>(
   ({ target }) => {
+    const colorTheme = useColorTheme()
+
     const element = useEditorState(
       Substores.metadata,
       (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, target),
@@ -954,6 +956,8 @@ export const GridResizeControls = controlForStrategyMemoized<GridResizeControlPr
         ),
       )
     }, [dragRef, resizeControlRef, startingBounds])
+
+    const isResizing = bounds != null
 
     const onMouseUp = React.useCallback(() => {
       setBounds(null)
@@ -1018,7 +1022,7 @@ export const GridResizeControls = controlForStrategyMemoized<GridResizeControlPr
             gridTemplateRows: '10px 1fr 10px',
             gridTemplateColumns: '10px 1fr 10px',
             gridTemplateAreas: "'empty1 rs empty2' 'cs empty3 ce' 'empty4 re empty5'",
-            backgroundColor: '#ffffff66',
+            backgroundColor: isResizing ? colorTheme.whiteOpacity30.value : 'transparent',
           }}
         >
           {GridResizeEdges.map((edge) => (
@@ -1042,8 +1046,11 @@ export const GridResizeControls = controlForStrategyMemoized<GridResizeControlPr
                 style={{
                   pointerEvents: 'initial',
                   ...gridEdgeToWidthHeight(edge, scale),
-                  backgroundColor: 'black',
-                  opacity: 0.5,
+                  backgroundColor: colorTheme.white.value,
+                  boxShadow: `${colorTheme.canvasControlsSizeBoxShadowColor50.value} 0px 0px
+					${1 / scale}px, ${colorTheme.canvasControlsSizeBoxShadowColor20.value} 0px ${1 / scale}px ${
+                    2 / scale
+                  }px ${1 / scale}px`,
                 }}
               />
             </div>
