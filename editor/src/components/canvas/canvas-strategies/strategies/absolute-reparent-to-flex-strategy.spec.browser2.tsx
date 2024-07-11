@@ -64,6 +64,7 @@ async function dragElement(
           movementY: dragDelta.y,
           buttons: 1,
         },
+        modifiers: cmdModifier,
       },
     )
   } else {
@@ -857,7 +858,7 @@ describe('Absolute Reparent To Flex Strategy with more complex flex layouts', ()
       x: parentRightEdge.x - childCenter.x,
       y: parentRightEdge.y - childCenter.y,
     })
-    await dragElement(renderResult, 'innerchild2', dragDelta, emptyModifiers)
+    await dragElement(renderResult, 'innerchild2', dragDelta, cmdModifier)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -900,7 +901,7 @@ describe('Absolute Reparent To Flex Strategy with more complex flex layouts', ()
       x: parentRightEdge.x - childCenter.x,
       y: parentRightEdge.y - childCenter.y,
     })
-    await dragElement(renderResult, 'innerchild2', dragDelta, emptyModifiers)
+    await dragElement(renderResult, 'innerchild2', dragDelta, cmdModifier)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -943,7 +944,6 @@ describe('Absolute Reparent To Flex Strategy with more complex flex layouts', ()
       x: newParentTargetCenter.x - childCenter.x,
       y: newParentTargetCenter.y - childCenter.y,
     })
-
     await dragElement(renderResult, 'innerchild2', dragDelta, emptyModifiers, true)
     await renderResult.getDispatchFollowUpActionsFinished()
 
