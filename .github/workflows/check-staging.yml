@@ -44,7 +44,7 @@ jobs:
           AWS_REGION: ${{ secrets.STAGING_BUNDLE_REGION }}
           HEADLESS: 'true'
         run: |
-          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "cd puppeteer-tests; pnpm install --unsafe-perm; pnpm run screenshot-test"
+          nix-shell --quiet --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "cd puppeteer-tests; pnpm install --unsafe-perm; pnpm run screenshot-test"
       - name: Build Discord Message
         env:
           TEMPLATE: >-
@@ -93,13 +93,13 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location
       - name: Build Comments Tests
         run: |
-          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "build-puppeteer-tests"
+          nix-shell --quiet --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "build-puppeteer-tests"
       - name: Run Comments Test
         id: run-comments-test
         env:
           BASE_URL: 'https://utopia.pizza'
         run: |
-          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "xvfb-run --server-args='-screen 0 1920x1080x24 -ac -nolisten tcp -dpi 96 +extension RANDR' run-collaboration-test"
+          nix-shell --quiet --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "xvfb-run --server-args='-screen 0 1920x1080x24 -ac -nolisten tcp -dpi 96 +extension RANDR' run-collaboration-test"
 
   post-failure-to-discord:
     name: Post Failure Message To Discord
