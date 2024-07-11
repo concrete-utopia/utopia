@@ -42,7 +42,6 @@ import {
   mouseUpAtPoint,
   pressKey,
 } from '../../event-helpers.test-utils'
-import { cmdModifier, ctrlModifier } from '../../../../utils/modifiers'
 import type { FragmentLikeType } from './fragment-like-helpers'
 import {
   AllFragmentLikeNonDomElementTypes,
@@ -683,7 +682,14 @@ describe('Convert to Absolute', () => {
         x: elementBounds.x + elementBounds.width / 2,
         y: elementBounds.y + elementBounds.width / 2,
       },
-      { modifiers: cmdModifier },
+      {
+        modifiers: {
+          alt: false,
+          cmd: true,
+          ctrl: true,
+          shift: false,
+        },
+      },
     )
 
     // move so that the bottom right corner snaps to the center of the parent
@@ -747,12 +753,30 @@ describe('Convert to absolute/escape hatch', () => {
         x: elementBounds.x + 10,
         y: elementBounds.y + 10,
       },
-      { modifiers: cmdModifier },
+      {
+        modifiers: {
+          alt: false,
+          cmd: true,
+          ctrl: true,
+          shift: false,
+        },
+      },
     )
-    await mouseMoveToPoint(canvasControlsLayer, {
-      x: elementBounds.x + 50,
-      y: elementBounds.y + 50,
-    })
+    await mouseMoveToPoint(
+      canvasControlsLayer,
+      {
+        x: elementBounds.x + 50,
+        y: elementBounds.y + 50,
+      },
+      {
+        modifiers: {
+          alt: false,
+          cmd: true,
+          ctrl: true,
+          shift: false,
+        },
+      },
+    )
 
     const strategyBeforeSpacePressed = renderResult.getEditorState().strategyState.currentStrategy
     expect(strategyBeforeSpacePressed).toEqual('FLEX_REORDER')
@@ -811,7 +835,14 @@ describe('Convert to absolute/escape hatch', () => {
         x: elementBounds.x + 10,
         y: elementBounds.y + 10,
       },
-      { modifiers: cmdModifier },
+      {
+        modifiers: {
+          alt: false,
+          cmd: true,
+          ctrl: true,
+          shift: false,
+        },
+      },
     )
     await mouseMoveToPoint(canvasControlsLayer, {
       x: elementBounds.x + 50,
@@ -858,7 +889,14 @@ describe('Convert to absolute/escape hatch', () => {
           x: elementBounds.x + 10,
           y: elementBounds.y + 10,
         },
-        { modifiers: cmdModifier },
+        {
+          modifiers: {
+            alt: false,
+            cmd: true,
+            ctrl: true,
+            shift: false,
+          },
+        },
       )
 
       // Drag without going outside the sibling bounds
@@ -918,24 +956,53 @@ describe('Convert to absolute/escape hatch', () => {
           x: elementBounds.x + 10,
           y: elementBounds.y + 10,
         },
-        { modifiers: cmdModifier },
+        {
+          modifiers: {
+            alt: false,
+            cmd: true,
+            ctrl: true,
+            shift: false,
+          },
+        },
       )
 
       // Drag without going outside the sibling bounds
-      await mouseMoveToPoint(canvasControlsLayer, {
-        x: elementBounds.x + 50,
-        y: elementBounds.y + 10,
-      })
+      await mouseMoveToPoint(
+        canvasControlsLayer,
+        {
+          x: elementBounds.x + 50,
+          y: elementBounds.y + 10,
+        },
+        {
+          modifiers: {
+            alt: false,
+            cmd: true,
+            ctrl: true,
+            shift: false,
+          },
+        },
+      )
 
       const midDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
       expect(midDragStrategy).not.toBeNull()
       expect(midDragStrategy).not.toEqual(ConvertToAbsoluteAndMoveStrategyID)
 
       // Now drag until we have passed the sibling bounds
-      await mouseMoveToPoint(canvasControlsLayer, {
-        x: elementBounds.x + 110,
-        y: elementBounds.y + 10,
-      })
+      await mouseMoveToPoint(
+        canvasControlsLayer,
+        {
+          x: elementBounds.x + 110,
+          y: elementBounds.y + 10,
+        },
+        {
+          modifiers: {
+            alt: false,
+            cmd: true,
+            ctrl: true,
+            shift: false,
+          },
+        },
+      )
 
       const endDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
       expect(endDragStrategy).not.toBeNull()
@@ -981,24 +1048,53 @@ describe('Convert to absolute/escape hatch', () => {
             x: elementBounds.x + 10,
             y: elementBounds.y + 10,
           },
-          { modifiers: cmdModifier },
+          {
+            modifiers: {
+              alt: false,
+              cmd: true,
+              ctrl: true,
+              shift: false,
+            },
+          },
         )
 
         // Drag without going outside the sibling bounds
-        await mouseMoveToPoint(canvasControlsLayer, {
-          x: elementBounds.x + 50,
-          y: elementBounds.y + 10,
-        })
+        await mouseMoveToPoint(
+          canvasControlsLayer,
+          {
+            x: elementBounds.x + 50,
+            y: elementBounds.y + 10,
+          },
+          {
+            modifiers: {
+              alt: false,
+              cmd: true,
+              ctrl: true,
+              shift: false,
+            },
+          },
+        )
 
         const midDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
         expect(midDragStrategy).not.toBeNull()
         expect(midDragStrategy).not.toEqual(ConvertToAbsoluteAndMoveStrategyID)
 
         // Now drag until we have passed the sibling bounds
-        await mouseMoveToPoint(canvasControlsLayer, {
-          x: elementBounds.x + 110,
-          y: elementBounds.y + 10,
-        })
+        await mouseMoveToPoint(
+          canvasControlsLayer,
+          {
+            x: elementBounds.x + 110,
+            y: elementBounds.y + 10,
+          },
+          {
+            modifiers: {
+              alt: false,
+              cmd: true,
+              ctrl: true,
+              shift: false,
+            },
+          },
+        )
 
         const endDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
         expect(endDragStrategy).not.toBeNull()
@@ -1043,33 +1139,73 @@ describe('Convert to absolute/escape hatch', () => {
             x: elementBounds.x + 10,
             y: elementBounds.y + 10,
           },
-          { modifiers: cmdModifier },
+          {
+            modifiers: {
+              alt: false,
+              cmd: true,
+              ctrl: true,
+              shift: false,
+            },
+          },
         )
 
         // Drag without going outside the sibling bounds
-        await mouseMoveToPoint(canvasControlsLayer, {
-          x: elementBounds.x + 50,
-          y: elementBounds.y + 10,
-        })
+        await mouseMoveToPoint(
+          canvasControlsLayer,
+          {
+            x: elementBounds.x + 50,
+            y: elementBounds.y + 10,
+          },
+          {
+            modifiers: {
+              alt: false,
+              cmd: true,
+              ctrl: true,
+              shift: false,
+            },
+          },
+        )
 
         const midDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
         expect(midDragStrategy).not.toBeNull()
         expect(midDragStrategy).not.toEqual(ConvertToAbsoluteAndMoveStrategyID)
 
         // Now drag until we have passed the sibling bounds
-        await mouseMoveToPoint(canvasControlsLayer, {
-          x: elementBounds.x + 110,
-          y: elementBounds.y + 10,
-        })
+        await mouseMoveToPoint(
+          canvasControlsLayer,
+          {
+            x: elementBounds.x + 110,
+            y: elementBounds.y + 10,
+          },
+          {
+            modifiers: {
+              alt: false,
+              cmd: true,
+              ctrl: true,
+              shift: false,
+            },
+          },
+        )
 
         const endDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
         expect(endDragStrategy).not.toBeNull()
         expect(endDragStrategy).toEqual(ConvertToAbsoluteAndMoveStrategyID)
 
-        await mouseUpAtPoint(canvasControlsLayer, {
-          x: elementBounds.x + 110,
-          y: elementBounds.y + 10,
-        })
+        await mouseUpAtPoint(
+          canvasControlsLayer,
+          {
+            x: elementBounds.x + 110,
+            y: elementBounds.y + 10,
+          },
+          {
+            modifiers: {
+              alt: false,
+              cmd: true,
+              ctrl: true,
+              shift: false,
+            },
+          },
+        )
 
         const jsxMetadataAfter = renderResult.getEditorState().editor.jsxMetadata
         const allElementPropsAfter = renderResult.getEditorState().editor.allElementProps
@@ -1261,7 +1397,14 @@ describe('Convert to absolute/escape hatch', () => {
         canvas,
         viewCenter,
         offsetPoint(viewCenter, canvasPoint({ x: 15, y: 15 })),
-        { modifiers: ctrlModifier },
+        {
+          modifiers: {
+            alt: false,
+            cmd: true,
+            ctrl: true,
+            shift: false,
+          },
+        },
       )
 
       expect(getPrintedUiJsCode(initialEditor.getEditorState())).toEqual(
@@ -1367,9 +1510,21 @@ describe('Convert to absolute/escape hatch', () => {
         y: viewBounds.top + viewBounds.height / 2,
       })
 
-      await mouseDownAtPoint(canvas, viewCenter, { modifiers: ctrlModifier })
+      await mouseDownAtPoint(canvas, viewCenter, {
+        modifiers: {
+          alt: false,
+          cmd: true,
+          ctrl: true,
+          shift: false,
+        },
+      })
       await mouseMoveToPoint(canvas, offsetPoint(viewCenter, canvasPoint({ x: 15, y: 15 })), {
-        modifiers: ctrlModifier,
+        modifiers: {
+          alt: false,
+          cmd: true,
+          ctrl: true,
+          shift: false,
+        },
       })
 
       await initialEditor.dispatch(
@@ -1378,7 +1533,12 @@ describe('Convert to absolute/escape hatch', () => {
       )
 
       await mouseUpAtPoint(canvas, offsetPoint(viewCenter, canvasPoint({ x: 15, y: 15 })), {
-        modifiers: ctrlModifier,
+        modifiers: {
+          alt: false,
+          cmd: true,
+          ctrl: true,
+          shift: false,
+        },
       })
 
       expect(getPrintedUiJsCode(initialEditor.getEditorState())).toEqual(
@@ -1432,9 +1592,21 @@ describe('Convert to absolute/escape hatch', () => {
         y: viewBounds.top + viewBounds.height / 2,
       })
 
-      await mouseDownAtPoint(canvas, viewCenter, { modifiers: ctrlModifier })
+      await mouseDownAtPoint(canvas, viewCenter, {
+        modifiers: {
+          alt: false,
+          cmd: true,
+          ctrl: true,
+          shift: false,
+        },
+      })
       await mouseMoveToPoint(canvas, offsetPoint(viewCenter, canvasPoint({ x: 15, y: 15 })), {
-        modifiers: ctrlModifier,
+        modifiers: {
+          alt: false,
+          cmd: true,
+          ctrl: true,
+          shift: false,
+        },
       })
 
       await initialEditor.dispatch(
@@ -1443,7 +1615,12 @@ describe('Convert to absolute/escape hatch', () => {
       )
 
       await mouseUpAtPoint(canvas, offsetPoint(viewCenter, canvasPoint({ x: 15, y: 15 })), {
-        modifiers: ctrlModifier,
+        modifiers: {
+          alt: false,
+          cmd: true,
+          ctrl: true,
+          shift: false,
+        },
       })
 
       expect(getPrintedUiJsCode(initialEditor.getEditorState())).toEqual(
@@ -1504,9 +1681,21 @@ describe('Convert to absolute/escape hatch', () => {
         y: viewBounds.top + viewBounds.height / 2,
       })
 
-      await mouseDownAtPoint(canvas, viewCenter, { modifiers: ctrlModifier })
+      await mouseDownAtPoint(canvas, viewCenter, {
+        modifiers: {
+          alt: false,
+          cmd: true,
+          ctrl: true,
+          shift: false,
+        },
+      })
       await mouseMoveToPoint(canvas, offsetPoint(viewCenter, canvasPoint({ x: 15, y: 15 })), {
-        modifiers: ctrlModifier,
+        modifiers: {
+          alt: false,
+          cmd: true,
+          ctrl: true,
+          shift: false,
+        },
       })
 
       await initialEditor.dispatch(
@@ -1615,7 +1804,14 @@ describe('Escape hatch strategy on awkward project', () => {
         x: 15,
         y: 15,
       },
-      { modifiers: ctrlModifier },
+      {
+        modifiers: {
+          alt: false,
+          cmd: true,
+          ctrl: true,
+          shift: false,
+        },
+      },
     )
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
