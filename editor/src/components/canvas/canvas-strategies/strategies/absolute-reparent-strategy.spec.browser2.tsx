@@ -17,7 +17,7 @@ import {
   windowPoint,
 } from '../../../../core/shared/math-utils'
 import type { Modifiers } from '../../../../utils/modifiers'
-import { cmdModifier, emptyModifiers } from '../../../../utils/modifiers'
+import { cmdModifier, cmdModifier } from '../../../../utils/modifiers'
 import { selectComponents } from '../../../editor/actions/meta-actions'
 import { RightMenuTab, navigatorEntryToKey } from '../../../editor/store/editor-state'
 import { CSSCursor } from '../../canvas-types'
@@ -191,8 +191,8 @@ describe('Absolute Reparent Strategy', () => {
       y: targetElementBounds.y + 50,
     }
 
-    await mouseMoveToPoint(canvasControlsLayer, firstInsertionPoint)
-    await mouseClickAtPoint(canvasControlsLayer, firstInsertionPoint)
+    await mouseMoveToPoint(canvasControlsLayer, firstInsertionPoint, { modifiers: cmdModifier })
+    await mouseClickAtPoint(canvasControlsLayer, firstInsertionPoint, { modifiers: cmdModifier })
 
     await renderResult.getDispatchFollowUpActionsFinished()
     const afterFirstInsertMetadataKeys = new Set(
@@ -216,8 +216,8 @@ describe('Absolute Reparent Strategy', () => {
       y: targetElementBounds.y + 200,
     }
 
-    await mouseMoveToPoint(canvasControlsLayer, secondInsertionPoint)
-    await mouseClickAtPoint(canvasControlsLayer, secondInsertionPoint)
+    await mouseMoveToPoint(canvasControlsLayer, secondInsertionPoint, { modifiers: cmdModifier })
+    await mouseClickAtPoint(canvasControlsLayer, secondInsertionPoint, { modifiers: cmdModifier })
 
     await renderResult.getDispatchFollowUpActionsFinished()
     const afterSecondInsertMetadataKeys = new Set(
@@ -552,7 +552,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     )
 
     const dragDelta = windowPoint({ x: -1000, y: -1000 })
-    await dragElement(renderResult, 'bbb', dragDelta, emptyModifiers, null, async () =>
+    await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null, async () =>
       renderResult.dispatch([CanvasActions.setUsersPreferredStrategy('ABSOLUTE_REPARENT')], true),
     )
 
@@ -620,7 +620,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     )
 
     const dragDelta = windowPoint({ x: -1000, y: -1000 })
-    await dragElement(renderResult, 'bbb', dragDelta, emptyModifiers, null, null)
+    await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null, null)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -762,7 +762,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     )
 
     const dragDelta = windowPoint({ x: -1000, y: -1000 })
-    await dragElement(renderResult, 'bbb', dragDelta, emptyModifiers, null, null)
+    await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null, null)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -1040,7 +1040,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       }
 
       const dragDelta = windowPoint({ x: bbbCenter.x - cccCenter.x, y: bbbCenter.y - cccCenter.y })
-      await dragElement(renderResult, 'ccc', dragDelta, emptyModifiers, null, async () => {
+      await dragElement(renderResult, 'ccc', dragDelta, cmdModifier, null, async () => {
         const draggedElement = await renderResult.renderedDOM.findByTestId('ccc')
         const draggedElementBounds = draggedElement.getBoundingClientRect()
         const draggedElementCanvasBounds = boundingClientRectToCanvasRectangle(
@@ -1161,7 +1161,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       }
 
       const dragDelta = windowPoint({ x: bbbCenter.x - cccCenter.x, y: bbbCenter.y - cccCenter.y })
-      await dragElement(renderResult, 'ccc', dragDelta, emptyModifiers, null, async () => {
+      await dragElement(renderResult, 'ccc', dragDelta, cmdModifier, null, async () => {
         const draggedElement = await renderResult.renderedDOM.findByTestId('ccc')
         const draggedElementBounds = draggedElement.getBoundingClientRect()
         const draggedElementCanvasBounds = boundingClientRectToCanvasRectangle(
@@ -1526,7 +1526,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       )
 
       const dragDelta = windowPoint({ x: -150, y: -150 })
-      await dragElement(renderResult, 'bbb', dragDelta, emptyModifiers, null, null)
+      await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null, null)
 
       await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -1575,7 +1575,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       )
 
       const dragDelta = windowPoint({ x: -150, y: -150 })
-      await dragElement(renderResult, 'bbb', dragDelta, emptyModifiers, null, null)
+      await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null, null)
 
       await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -1629,7 +1629,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       )
 
       const dragDelta = windowPoint({ x: -150, y: -150 })
-      await dragElement(renderResult, 'bbb', dragDelta, emptyModifiers, null, null)
+      await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null, null)
 
       await renderResult.getDispatchFollowUpActionsFinished()
 

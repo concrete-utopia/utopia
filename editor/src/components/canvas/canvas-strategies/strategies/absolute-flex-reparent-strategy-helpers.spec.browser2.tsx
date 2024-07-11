@@ -8,7 +8,7 @@ import * as EP from '../../../../core/shared/element-path'
 import type { WindowPoint } from '../../../../core/shared/math-utils'
 import { windowPoint, offsetPoint } from '../../../../core/shared/math-utils'
 import type { Modifiers } from '../../../../utils/modifiers'
-import { cmdModifier, emptyModifiers } from '../../../../utils/modifiers'
+import { cmdModifier } from '../../../../utils/modifiers'
 import { selectComponents } from '../../../editor/actions/action-creators'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import {
@@ -291,7 +291,7 @@ describe('Unified Reparent Fitness Function Tests', () => {
       'draggedElement',
       defaultMouseDownOffset,
       dragDelta,
-      emptyModifiers,
+      cmdModifier,
       true,
     )
 
@@ -486,7 +486,7 @@ describe('Unified Reparent Fitness Function Tests', () => {
       'draggedElement',
       defaultMouseDownOffset,
       dragDelta,
-      emptyModifiers,
+      cmdModifier,
       true,
     )
 
@@ -582,7 +582,7 @@ describe('Unified Reparent Fitness Function Tests', () => {
       'draggedElement',
       defaultMouseDownOffset,
       dragDelta,
-      emptyModifiers,
+      cmdModifier,
       true,
     )
 
@@ -949,7 +949,7 @@ describe('Target parents with flow layout', () => {
         'draggedElement',
         defaultMouseDownOffset,
         dragDelta,
-        emptyModifiers,
+        cmdModifier,
         true,
       )
 
@@ -1092,7 +1092,7 @@ describe('Target parents with flow layout', () => {
         'draggedElement',
         defaultMouseDownOffset,
         dragDelta,
-        emptyModifiers,
+        cmdModifier,
         true,
       )
 
@@ -1200,7 +1200,7 @@ describe('Target parents with flow layout', () => {
         'draggedElement',
         defaultMouseDownOffset,
         dragDelta,
-        emptyModifiers,
+        cmdModifier,
         true,
       )
 
@@ -1297,7 +1297,7 @@ describe('Target parents with flow layout', () => {
         'draggedElement',
         defaultMouseDownOffset,
         dragDelta,
-        emptyModifiers,
+        cmdModifier,
         true,
         () => pressKey('2', { modifiers: cmdModifier }), // Switch to flow reparenting strategy
       )
@@ -1423,7 +1423,7 @@ describe('Target parents with flow layout', () => {
         'draggedElement',
         defaultMouseDownOffset,
         dragDelta,
-        emptyModifiers,
+        cmdModifier,
         true,
         () => pressKey('2', { modifiers: cmdModifier }), // Switch to flow reparenting strategy
       )
@@ -1929,7 +1929,7 @@ describe('Target parent filtering', () => {
     // drag to the left so that the cursor is over the larger element
     const dragDelta = windowPoint({ x: -10, y: -10 })
 
-    await dragElement(renderResult, 'dragme', mouseDownOffset, dragDelta, emptyModifiers, true)
+    await dragElement(renderResult, 'dragme', mouseDownOffset, dragDelta, cmdModifier, true)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -2272,7 +2272,7 @@ describe('Reparent indicators', () => {
       'seconddiv',
       defaultMouseDownOffset,
       dragDelta,
-      emptyModifiers,
+      cmdModifier,
       false,
     )
 
@@ -2318,7 +2318,7 @@ describe('Reparent indicators', () => {
       'seconddiv',
       defaultMouseDownOffset,
       dragDelta,
-      emptyModifiers,
+      cmdModifier,
       false,
     )
 
@@ -2361,7 +2361,7 @@ describe('Reparent indicators', () => {
       'seconddiv',
       defaultMouseDownOffset,
       dragDelta,
-      emptyModifiers,
+      cmdModifier,
       false,
     )
 
@@ -2404,7 +2404,7 @@ describe('Reparent indicators', () => {
       'seconddiv',
       defaultMouseDownOffset,
       dragDelta,
-      emptyModifiers,
+      cmdModifier,
       false,
     )
 
@@ -2448,7 +2448,7 @@ describe('Reparent indicators', () => {
       'absolutechild',
       defaultMouseDownOffset,
       dragDelta,
-      emptyModifiers,
+      cmdModifier,
       false,
     )
 
@@ -2492,7 +2492,7 @@ describe('Reparent indicators', () => {
       'absolutechild',
       defaultMouseDownOffset,
       dragDelta,
-      emptyModifiers,
+      cmdModifier,
       false,
     )
 
@@ -2536,7 +2536,7 @@ describe('Reparent indicators', () => {
       'absolutechild',
       defaultMouseDownOffset,
       dragDelta,
-      emptyModifiers,
+      cmdModifier,
       false,
     )
 
@@ -2580,7 +2580,7 @@ describe('Reparent indicators', () => {
       'absolutechild',
       defaultMouseDownOffset,
       dragDelta,
-      emptyModifiers,
+      cmdModifier,
       false,
     )
 
@@ -2660,7 +2660,7 @@ describe('Reparent indicators', () => {
       'absolutechild',
       defaultMouseDownOffset,
       dragDelta,
-      emptyModifiers,
+      cmdModifier,
       false,
     )
 
@@ -2758,7 +2758,7 @@ describe('Reparent indicators', () => {
       'absolutechild',
       defaultMouseDownOffset,
       dragDelta,
-      emptyModifiers,
+      cmdModifier,
       false,
     )
 
