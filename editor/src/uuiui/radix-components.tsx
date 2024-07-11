@@ -48,6 +48,7 @@ export interface DropdownMenuProps {
 
 export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
   const stopPropagation = React.useCallback((e: React.KeyboardEvent) => e.stopPropagation(), [])
+  const onEscapeKeyDown = React.useCallback((e: KeyboardEvent) => e.stopPropagation(), [])
 
   const [open, onOpen] = React.useState(false)
 
@@ -62,6 +63,7 @@ export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
       <RadixDropdownMenu.Portal>
         <RadixDropdownContent
           onKeyDown={stopPropagation}
+          onEscapeKeyDown={onEscapeKeyDown}
           sideOffset={props.sideOffset}
           collisionPadding={{ top: -4 }}
           align='start'
