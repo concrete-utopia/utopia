@@ -1918,7 +1918,8 @@ describe('Target parent filtering', () => {
     )
   })
 
-  it('Dragging without cmd with cursor over the smaller element prevents reparenting into the larger element', async () => {
+  // now we need cmd for any kind of reparent, so this test is outdated
+  xit('Dragging without cmd with cursor over the smaller element prevents reparenting into the larger element', async () => {
     const renderResult = await renderTestEditorWithCode(startingCode, 'await-first-dom-report')
 
     const targetPath = EP.elementPath([[BakedInStoryboardUID, TestSceneUID, 'dragme']])
@@ -2664,7 +2665,7 @@ describe('Reparent indicators', () => {
       false,
     )
 
-    await pressKey('2') // Switch to flow reparenting strategy
+    await pressKey('2', { modifiers: cmdModifier }) // Switch to flow reparenting strategy
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -2762,7 +2763,7 @@ describe('Reparent indicators', () => {
       false,
     )
 
-    await pressKey('2') // Switch to flow reparenting strategy
+    await pressKey('2', { modifiers: cmdModifier }) // Switch to flow reparenting strategy
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
