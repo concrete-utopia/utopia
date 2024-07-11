@@ -532,13 +532,7 @@ export const CanvasToolbar = React.memo(() => {
         {unless(isMyProject, <ViewOnlyBadge />)}
         <Separator />
         <Tooltip title='Manage panels'>
-          <DropdownMenu
-            sideOffset={8}
-            alignOffset={-3}
-            side='right'
-            items={panelPopupItems}
-            opener={panelSelectorOpenButton}
-          />
+          <DropdownMenu sideOffset={6} items={panelPopupItems} opener={panelSelectorOpenButton} />
         </Tooltip>
       </div>
       {/* Edit Mode submenus */}
