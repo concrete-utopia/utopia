@@ -17,7 +17,7 @@ import {
   windowPoint,
 } from '../../../../core/shared/math-utils'
 import type { Modifiers } from '../../../../utils/modifiers'
-import { cmdModifier, cmdModifier } from '../../../../utils/modifiers'
+import { cmdModifier } from '../../../../utils/modifiers'
 import { selectComponents } from '../../../editor/actions/meta-actions'
 import { RightMenuTab, navigatorEntryToKey } from '../../../editor/store/editor-state'
 import { CSSCursor } from '../../canvas-types'
