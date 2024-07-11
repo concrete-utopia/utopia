@@ -84,6 +84,25 @@ describe('mergeImports', () => {
     })
   })
 
+  it('does not duplicate same import from aliased sources', () => {
+    const result = mergeImports(
+      '/src/code.js',
+      [[/@h2\/([^/]*)/y, ['/app/components/hydrogen/$1']]],
+      { '@h2/ProductCard': importDetails(null, [importAlias('Card')], null) },
+      {
+        '/app/components/hydrogen/ProductCard.jsx': importDetails(
+          null,
+          [importAlias('Card')],
+          null,
+        ),
+      },
+    )
+    expect(result.imports).toEqual({
+      '@h2/ProductCard': importDetails(null, [importAlias('Card')], null),
+    })
+    expect(result.duplicateNameMapping).toEqual(new Map())
+  })
+
   it('handles duplicate imports', () => {
     const result = mergeImports(
       '/src/code.js',
