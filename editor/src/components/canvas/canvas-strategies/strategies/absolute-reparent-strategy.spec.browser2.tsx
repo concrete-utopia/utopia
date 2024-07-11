@@ -115,7 +115,7 @@ async function dragAlreadySelectedElement(
     }
   }
 
-  await mouseDownAtPoint(canvasControlsLayer, startPoint)
+  await mouseDownAtPoint(canvasControlsLayer, startPoint, { modifiers: modifiers })
 
   await mouseDragFromPointToPointNoMouseDown(
     canvasControlsLayer,
@@ -511,7 +511,8 @@ describe('Absolute Reparent Strategy', () => {
       ),
     )
   })
-  it('reparents to the canvas root when target parent on the canvas is small', async () => {
+  // this test is outdated, we only reparent with cmd pressed, and then we reparent to smaller parents too
+  xit('reparents to the canvas root when target parent on the canvas is small', async () => {
     const renderResult = await renderTestEditorWithCode(
       formatTestProjectCode(`
 import * as React from 'react'
@@ -552,9 +553,12 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     )
 
     const dragDelta = windowPoint({ x: -1000, y: -1000 })
-    await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null, async () =>
-      renderResult.dispatch([CanvasActions.setUsersPreferredStrategy('ABSOLUTE_REPARENT')], true),
-    )
+    await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null, async () => {
+      void renderResult.dispatch(
+        [CanvasActions.setUsersPreferredStrategy('ABSOLUTE_REPARENT')],
+        true,
+      )
+    })
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -1754,6 +1758,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         { x: dragme.x + 10, y: dragme.y + 10 },
         { x: -100, y: 0 },
         {
+          modifiers: cmdModifier,
           midDragCallback: async () =>
             renderResult.dispatch(
               [CanvasActions.setUsersPreferredStrategy('ABSOLUTE_REPARENT')],
@@ -1809,6 +1814,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         { x: dragme.x + 10, y: dragme.y + 10 },
         { x: -100, y: 0 },
         {
+          modifiers: cmdModifier,
           midDragCallback: async () =>
             renderResult.dispatch(
               [CanvasActions.setUsersPreferredStrategy('ABSOLUTE_REPARENT')],
@@ -1933,7 +1939,9 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         elementToDragCenter,
         windowPoint({ x: newParentCenterX, y: newSiblingCenterY }),
         {
+          modifiers: cmdModifier,
           midDragCallback: async () => {
+            await wait(10000000)
             const guidelines =
               renderResult.getEditorState().editor.canvas.controls.snappingGuidelines
             expect(guidelines).toHaveLength(2)
@@ -1992,6 +2000,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         elementToDragCenter,
         windowPoint({ x: newParentCenterX, y: newSiblingCenterY }),
         {
+          modifiers: cmdModifier,
           midDragCallback: async () => {
             const guidelines =
               renderResult.getEditorState().editor.canvas.controls.snappingGuidelines
@@ -2051,6 +2060,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         elementToDragCenter,
         windowPoint({ x: newParentCenterX, y: newSiblingCenterY }),
         {
+          modifiers: cmdModifier,
           midDragCallback: async () => {
             const guidelines =
               renderResult.getEditorState().editor.canvas.controls.snappingGuidelines

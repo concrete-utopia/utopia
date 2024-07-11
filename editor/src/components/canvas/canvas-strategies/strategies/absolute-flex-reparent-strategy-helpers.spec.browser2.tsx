@@ -8,7 +8,7 @@ import * as EP from '../../../../core/shared/element-path'
 import type { WindowPoint } from '../../../../core/shared/math-utils'
 import { windowPoint, offsetPoint } from '../../../../core/shared/math-utils'
 import type { Modifiers } from '../../../../utils/modifiers'
-import { cmdModifier } from '../../../../utils/modifiers'
+import { cmdModifier, emptyModifiers } from '../../../../utils/modifiers'
 import { selectComponents } from '../../../editor/actions/action-creators'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import {
@@ -26,7 +26,7 @@ import {
   TestScenePath,
   TestSceneUID,
 } from '../../ui-jsx.test-utils'
-import { boundingClientRectToCanvasRectangle } from '../../../../utils/utils.test-utils'
+import { boundingClientRectToCanvasRectangle, wait } from '../../../../utils/utils.test-utils'
 import { FlexReparentIndicatorSize } from '../../controls/select-mode/flex-reparent-target-indicator'
 
 async function dragElement(
@@ -65,6 +65,62 @@ async function dragElement(
 const defaultMouseDownOffset = windowPoint({ x: 20, y: 20 })
 
 describe('Unified Reparent Fitness Function Tests', () => {
+  it('if cmd is not pressed no reparent strategies have nonzero fitness', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          style={{
+            backgroundColor: 'white',
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+          }}
+          data-uid='aaa'
+        >
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 40,
+              top: 40,
+              width: 100,
+              height: 100,
+            }}
+            data-uid='bbb'
+          >
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 200,
+                height: 200,
+              }}
+              data-uid='ccc'
+              data-testid='ccc'
+            />
+          </div>
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    const dragDelta = windowPoint({ x: 120, y: 0 })
+
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc'])
+    await renderResult.dispatch([selectComponents([targetPath], false)], false)
+    await dragElement(renderResult, 'ccc', defaultMouseDownOffset, dragDelta, emptyModifiers, false)
+
+    const strategies = renderResult.getEditorState().strategyState.sortedApplicableStrategies
+
+    if (strategies == null) {
+      // here for type assertion
+      throw new Error('`strategies` should not be null')
+    }
+    expect(strategies[0].strategy.id.includes('REPARENT')).toBeFalsy()
+  })
+
   it('if an element is larger than its parent, we still allow reparent to its grandparent, if the reparenting starts from the area of the original parent', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
