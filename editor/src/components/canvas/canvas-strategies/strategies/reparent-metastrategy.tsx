@@ -70,9 +70,9 @@ export function getApplicableReparentFactories(
     switch (result.strategy) {
       case 'REPARENT_AS_ABSOLUTE': {
         const fitness = (() => {
-          // if (!cmdPressed) {
-          //   return 0
-          // }
+          if (!cmdPressed) {
+            return 0
+          }
           if (result.isReparentingOutFromScene) {
             return OutOfSceneReparentWeight
           }
@@ -114,9 +114,9 @@ export function getApplicableReparentFactories(
 
         // We likely never want flow insertion or re-parenting to be the default
         const fitness = (() => {
-          // if (!cmdPressed) {
-          //   return 0
-          // }
+          if (!cmdPressed) {
+            return 0
+          }
           if (result.isReparentingOutFromScene) {
             return OutOfSceneReparentWeight
           }
