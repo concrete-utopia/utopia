@@ -159,7 +159,6 @@ function getDefaultCursorForMode(mode: Mode): CSSCursor {
     case 'select':
     case 'follow':
     case 'textEdit':
-    case 'panels':
       return CSSCursor.Select
     default:
       const _exhaustiveCheck: never = mode

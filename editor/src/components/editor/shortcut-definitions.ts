@@ -1,3 +1,4 @@
+import { assertNever } from '../../core/shared/utils'
 import type { Key } from '../../utils/keyboard'
 import { Keyboard } from '../../utils/keyboard'
 import type { ComplexMap } from '../../utils/map'
@@ -87,7 +88,7 @@ export const WRAP_IN_DIV = 'wrap-in-div'
 
 export type ShortcutDetails = { [key: string]: Shortcut }
 
-const shortcutDetailsWithDefaults: ShortcutDetails = {
+export const shortcutDetailsWithDefaults: ShortcutDetails = {
   [DELETE_SELECTED_SHORTCUT]: shortcut('Delete the selected element.', [
     key('delete', []),
     key('backspace', []),
@@ -334,4 +335,32 @@ export function handleShortcuts<T>(
       return callback()
     }
   }
+}
+
+export function keyToString(shortcutKey: Key): string {
+  const mods = shortcutKey.modifiers.map((m) => {
+    switch (m) {
+      case 'alt':
+        return '⌥'
+      case 'cmd':
+        return '⌘'
+      case 'ctrl':
+        return '^'
+      case 'shift':
+        return '⬆'
+      default:
+        assertNever(m)
+    }
+  })
+
+  const char = () => {
+    switch (shortcutKey.character) {
+      case 'period':
+        return '.'
+      default:
+        return shortcutKey.character
+    }
+  }
+
+  return [...mods, char()].join('')
 }

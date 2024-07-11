@@ -66,6 +66,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { gridRearrangeMoveStrategy } from './strategies/grid-rearrange-move-strategy'
 import { resizeGridStrategy } from './strategies/resize-grid-strategy'
 import { rearrangeGridSwapStrategy } from './strategies/rearrange-grid-swap-strategy'
+import { gridResizeElementStrategy } from './strategies/grid-resize-element-strategy'
 import { gridRearrangeMoveDuplicateStrategy } from './strategies/grid-rearrange-move-duplicate-strategy'
 
 export type CanvasStrategyFactory = (
@@ -115,6 +116,7 @@ const resizeStrategies: MetaCanvasStrategy = (
       flexResizeStrategy,
       basicResizeStrategy,
       resizeGridStrategy,
+      gridResizeElementStrategy,
     ],
   )
 }
@@ -229,7 +231,6 @@ function getInteractionTargetFromEditorState(editor: EditorState): InteractionTa
     case 'textEdit':
     case 'comment':
     case 'follow':
-    case 'panels':
       return targetPaths(editor.selectedViews)
     default:
       assertNever(editor.mode)
@@ -521,7 +522,7 @@ export function isResizableStrategy(canvasStrategy: CanvasStrategy): boolean {
     case 'FLEX_RESIZE_BASIC':
     case 'FLEX_RESIZE':
     case 'BASIC_RESIZE':
-      // TODO add grid cell resize
+    case 'GRID-CELL-RESIZE-STRATEGY':
       return true
     default:
       return false

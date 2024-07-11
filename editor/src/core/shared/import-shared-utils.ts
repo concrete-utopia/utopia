@@ -4,6 +4,7 @@ import { importAlias, importDetails } from './project-file-types'
 import { absolutePathFromRelativePath } from '../../utils/path-utils'
 import { stripExtension } from '../../components/custom-code/custom-code-utils'
 import type { FilePathMappings } from '../model/project-file-utils'
+import { applyFilePathMappingsToFilePath } from '../workers/common/project-file-utils'
 
 export function renameDuplicateImports(
   existingImports: Imports,
@@ -13,7 +14,8 @@ export function renameDuplicateImports(
 ): ImportsMergeResolution {
   function absolutePath(relativePath: string): string {
     const rawAbsolutePath = absolutePathFromRelativePath(targetFilePath, false, relativePath)
-    const absoluteImportSource = stripExtension(rawAbsolutePath)
+    const afterFilePathMapping = applyFilePathMappingsToFilePath(rawAbsolutePath, filePathMappings)
+    const absoluteImportSource = stripExtension(afterFilePathMapping)
     return absoluteImportSource
   }
   const existingNames = getAllImportsUniqueNames(existingImports)

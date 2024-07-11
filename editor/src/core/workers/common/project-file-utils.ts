@@ -132,7 +132,8 @@ export function mergeImports(
 
   allImportSources.forEach((importSource) => {
     const rawAbsolutePath = absolutePathFromRelativePath(fileUri, false, importSource)
-    const absoluteImportSource = stripExtension(rawAbsolutePath)
+    const unaliasedPath = applyFilePathMappingsToFilePath(rawAbsolutePath, filePathMappings)
+    const absoluteImportSource = stripExtension(unaliasedPath)
     if (fileUriWithoutExtension === absoluteImportSource) {
       // Prevent accidentally importing the current file
       return
