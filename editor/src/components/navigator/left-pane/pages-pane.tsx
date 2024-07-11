@@ -6,14 +6,9 @@ import { jsx } from '@emotion/react'
 import { useAtom } from 'jotai'
 import React from 'react'
 import { matchPath, matchRoutes } from 'react-router'
-import { mapFirstApplicable, safeIndex, uniqBy } from '../../../core/shared/array-utils'
+import { mapFirstApplicable } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
-import {
-  NO_OP,
-  PortalTargetID,
-  arrayEqualsByReference,
-  assertNever,
-} from '../../../core/shared/utils'
+import { NO_OP, arrayEqualsByReference, assertNever } from '../../../core/shared/utils'
 import {
   FlexColumn,
   FlexRow,
@@ -22,7 +17,6 @@ import {
   InspectorSectionHeader,
   SquareButton,
   StringInput,
-  Subdued,
   Tooltip,
   UtopiaTheme,
   colorTheme,
@@ -41,24 +35,17 @@ import {
 } from '../../../printer-parsers/html/external-resources-parser'
 import { defaultEither } from '../../../core/shared/either'
 import { unless, when } from '../../../utils/react-conditionals'
-import { ContextMenu } from '../../context-menu-wrapper'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import {
   addNewPage,
-  showContextMenu,
   showToast,
   updateRemixRoute,
-  addNewFeaturedRoute,
-  removeFeaturedRoute,
   scrollToPosition,
 } from '../../editor/actions/action-creators'
-import type { ElementContextMenuInstance } from '../../element-context-menu'
-import ReactDOM from 'react-dom'
 import { createNewPageName } from '../../editor/store/editor-state'
 import urljoin from 'url-join'
 import { notice } from '../../common/notice'
 import type { EditorAction, EditorDispatch } from '../../editor/action-types'
-import { maybeToArray } from '../../../core/shared/optional-utils'
 import { StarUnstarIcon } from '../../canvas/star-unstar-icon'
 import { canvasRectangle, isFiniteRectangle } from '../../../core/shared/math-utils'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
@@ -548,55 +535,6 @@ function resetCanvasForNewPage(
   }
   return []
 }
-
-export const AddPageContextMenu = React.memo(
-  ({
-    contextMenuInstance,
-    pageTemplates,
-    onAfterPageAdd,
-  }: {
-    contextMenuInstance: ElementContextMenuInstance
-    pageTemplates: PageTemplate[]
-    onAfterPageAdd: (pageName: string) => void
-  }) => {
-    const dispatch = useDispatch()
-
-    const metadata = useRefEditorState((store) => store.editor.jsxMetadata)
-    const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
-
-    const addPageAction = React.useCallback(
-      (template: PageTemplate) => () => {
-        const newPageName = createNewPageName()
-        dispatch([
-          addNewPage('/app/routes', template, newPageName),
-          ...resetCanvasForNewPage(metadata.current, activeRemixScene),
-        ])
-        onAfterPageAdd(newPageName)
-      },
-      [dispatch, onAfterPageAdd, activeRemixScene, metadata],
-    )
-
-    const portalTarget = document.getElementById(PortalTargetID)
-    if (portalTarget == null) {
-      return null
-    }
-
-    return ReactDOM.createPortal(
-      <ContextMenu
-        id={contextMenuInstance}
-        key='add-page-context-menu'
-        items={pageTemplates.map((t) => ({
-          name: t.label,
-          enabled: true,
-          action: addPageAction(t),
-        }))}
-        dispatch={dispatch}
-        getData={NO_OP}
-      />,
-      portalTarget,
-    )
-  },
-)
 
 function useNavigateToRouteWhenAvailable(
   remixRoutes: RouteMatch[],
