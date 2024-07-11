@@ -602,7 +602,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       ),
     )
   })
-  it('does not reparent to ancestor outside of the containing component when the mouse is inside the containing component bounds', async () => {
+  // Outdated test, cmd is necessary for reparenting, and it forces reparenting to ancestor outside of the containing component
+  xit('does not reparent to ancestor outside of the containing component when the mouse is inside the containing component bounds', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
         <>  
@@ -1850,7 +1851,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       )
     })
   })
-  describe('snapping', () => {
+  // we don't have snapping with reparenting anymore, because cmd enables reparenting and disables snapping at the same time
+  xdescribe('snapping', () => {
     const NewParentTestId = 'new-parent'
     const NewSiblingTestId = 'new-sibling'
     const project = (innards: string) => `<div
@@ -1941,7 +1943,6 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         {
           modifiers: cmdModifier,
           midDragCallback: async () => {
-            await wait(10000000)
             const guidelines =
               renderResult.getEditorState().editor.canvas.controls.snappingGuidelines
             expect(guidelines).toHaveLength(2)
