@@ -4,7 +4,6 @@ import { windowPoint } from '../../../../core/shared/math-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import type { Modifiers } from '../../../../utils/modifiers'
 import { ctrlModifier, shiftModifier } from '../../../../utils/modifiers'
-import { wait } from '../../../../utils/utils.test-utils'
 import { selectComponents } from '../../../editor/actions/meta-actions'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import {

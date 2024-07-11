@@ -26,7 +26,7 @@ import {
   TestScenePath,
   TestSceneUID,
 } from '../../ui-jsx.test-utils'
-import { boundingClientRectToCanvasRectangle, wait } from '../../../../utils/utils.test-utils'
+import { boundingClientRectToCanvasRectangle } from '../../../../utils/utils.test-utils'
 import { FlexReparentIndicatorSize } from '../../controls/select-mode/flex-reparent-target-indicator'
 
 async function dragElement(
