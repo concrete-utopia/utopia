@@ -32,6 +32,7 @@ import {
 } from 'utopia-vscode-common'
 import type { ProjectContentTreeRoot } from '../../components/assets'
 import { walkContentsTree } from '../../components/assets'
+import type { EditorAction } from '../../components/editor/action-types'
 import { EditorDispatch } from '../../components/editor/action-types'
 import type { EditorState } from '../../components/editor/store/editor-state'
 import { getHighlightBoundsForElementPath } from '../../components/editor/store/editor-state'
@@ -44,7 +45,6 @@ import type {
   ProjectFile,
 } from '../shared/project-file-types'
 import { assertNever, NO_OP } from '../shared/utils'
-import type { FromVSCodeAction } from '../../components/editor/actions/actions-from-vscode'
 import {
   deleteFileFromVSCode,
   hideVSCodeLoadingScreen,
@@ -56,6 +56,7 @@ import {
   updateConfigFromVSCode,
   updateFromCodeEditor,
 } from '../../components/editor/actions/actions-from-vscode'
+import { reactRouterErrorTriggeredReset } from '../shared/runtime-report-logs'
 
 export const VSCODE_EDITOR_IFRAME_ID = 'vscode-editor'
 
@@ -97,7 +98,7 @@ let registeredHandlers: (messageEvent: MessageEvent) => void = NO_OP
 
 export function initVSCodeBridge(
   projectContents: ProjectContentTreeRoot,
-  dispatch: (actions: Array<FromVSCodeAction>) => void,
+  dispatch: (actions: Array<EditorAction>) => void,
   openFilePath: string | null,
 ) {
   let loadingScreenHidden = false
@@ -163,7 +164,9 @@ export function initVSCodeBridge(
         filePath,
         fileContent.unsavedContent ?? fileContent.content,
       )
-      dispatch([updateAction, requestLintAction])
+      let actionsToDispatch: Array<EditorAction> = [updateAction, requestLintAction]
+      actionsToDispatch.push(...reactRouterErrorTriggeredReset())
+      dispatch(actionsToDispatch)
     } else if (isVSCodeFileDelete(data)) {
       dispatch([deleteFileFromVSCode(data.filePath)])
     } else if (isIndexedDBFailure(data)) {
