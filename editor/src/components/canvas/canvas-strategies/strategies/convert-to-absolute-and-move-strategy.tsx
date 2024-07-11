@@ -299,7 +299,10 @@ function getFitness(
   if (
     interactionSession != null &&
     interactionSession.interactionData.type === 'DRAG' &&
-    !interactionSession.interactionData.modifiers.ctrl
+    !(
+      interactionSession.interactionData.modifiers.ctrl ||
+      interactionSession.interactionData.spacePressed
+    )
   ) {
     return 0
   }
