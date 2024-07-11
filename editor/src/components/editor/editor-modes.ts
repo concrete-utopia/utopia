@@ -200,10 +200,6 @@ export interface FollowMode {
   connectionId: number // the connection ID of the followed player
 }
 
-export interface PanelsMode {
-  type: 'panels'
-}
-
 export type Mode =
   | InsertMode
   | SelectMode
@@ -211,7 +207,7 @@ export type Mode =
   | TextEditMode
   | CommentMode
   | FollowMode
-  | PanelsMode
+
 export type PersistedMode = SelectMode | LiveCanvasMode
 
 export const EditorModes = {
@@ -267,11 +263,6 @@ export const EditorModes = {
       connectionId: connectionId,
     }
   },
-  panelsMode: function (): PanelsMode {
-    return {
-      type: 'panels',
-    }
-  },
 }
 
 export function isInsertMode(value: Mode): value is InsertMode {
@@ -305,7 +296,6 @@ export function convertModeToSavedMode(mode: Mode): PersistedMode {
     case 'textEdit':
     case 'comment':
     case 'follow':
-    case 'panels':
       return EditorModes.selectMode(null, false, 'none')
   }
 }
