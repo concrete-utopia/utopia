@@ -115,7 +115,7 @@ async function dragAlreadySelectedElement(
     }
   }
 
-  await mouseDownAtPoint(canvasControlsLayer, startPoint, { modifiers: modifiers })
+  await mouseDownAtPoint(canvasControlsLayer, startPoint)
 
   await mouseDragFromPointToPointNoMouseDown(
     canvasControlsLayer,
