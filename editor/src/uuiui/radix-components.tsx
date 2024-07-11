@@ -1,9 +1,8 @@
 import * as RadixDropdownMenu from '@radix-ui/react-dropdown-menu'
-import type { DropdownMenuContentProps } from '@radix-ui/react-dropdown-menu'
 import { styled } from '@stitches/react'
 import React from 'react'
 import { colorTheme } from './styles/theme'
-import { Icons, LargerIcons } from './icons'
+import { Icons } from './icons'
 import { when } from '../utils/react-conditionals'
 
 const RadixItemContainer = styled(RadixDropdownMenu.Item, {
@@ -45,7 +44,6 @@ export interface DropdownMenuProps {
   items: DropdownMenuItem[]
   sideOffset?: number
   alignOffset?: number
-  side?: DropdownMenuContentProps['side']
 }
 
 export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
@@ -65,7 +63,6 @@ export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
         <RadixDropdownContent
           onKeyDown={stopPropagation}
           sideOffset={props.sideOffset}
-          side={props.side}
           collisionPadding={{ top: -4 }}
           align='start'
           alignOffset={props.alignOffset}

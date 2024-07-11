@@ -390,7 +390,7 @@ export const CanvasToolbar = React.memo(() => {
         label: 'Code Editor',
         icon: (
           <div style={{ transform: 'scale(0.8)' }}>
-            <LargerIcons.Node color='white' />
+            <LargerIcons.Code color='white' />
           </div>
         ),
         checked: codeEditorVisible,

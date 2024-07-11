@@ -39,7 +39,7 @@ export const LargerIcons = {
     width: 18,
     height: 18,
   }),
-  Code: makeIcon({ type: 'codymccodeface-larger', color: 'main', width: 18, height: 18 }),
+  Code: makeIcon({ type: 'cody', color: 'main', width: 22, height: 22 }),
   Node: makeIcon({ type: 'nodymcnodeface-larger', color: 'main', width: 18, height: 18 }),
   DesignTool: makeIcon({ type: 'designtool-larger', color: 'main', width: 18, height: 18 }),
   PlayButton: makeIcon({ type: 'playbutton-larger', color: 'main', width: 18, height: 18 }),

@@ -245,12 +245,7 @@ export const PagesPane = React.memo((props) => {
         {when(
           canAddPage,
           <React.Fragment>
-            <DropdownMenu
-              side='right'
-              sideOffset={12}
-              items={addPageDropdownItems}
-              opener={addPageOpenButton}
-            />
+            <DropdownMenu items={addPageDropdownItems} opener={addPageOpenButton} />
           </React.Fragment>,
         )}
       </InspectorSectionHeader>
