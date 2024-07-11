@@ -47,7 +47,12 @@ export interface DropdownMenuProps {
 }
 
 export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
-  const stopPropagation = React.useCallback((e: React.KeyboardEvent) => e.stopPropagation(), [])
+  const stopPropagation = React.useCallback((e: React.KeyboardEvent) => {
+    const hasModifiers = e.altKey || e.metaKey || e.shiftKey || e.ctrlKey
+    if (!hasModifiers) {
+      e.stopPropagation()
+    }
+  }, [])
   const onEscapeKeyDown = React.useCallback((e: KeyboardEvent) => e.stopPropagation(), [])
 
   const [open, onOpen] = React.useState(false)
