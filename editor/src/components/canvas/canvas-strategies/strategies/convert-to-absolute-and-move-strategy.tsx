@@ -285,6 +285,7 @@ function convertToAbsoluteAndMoveStrategyFactory(setHuggingParentToFixed: SetHug
   }
 }
 
+const VeryHighWeight = 100
 const BaseWeight = 0.5
 const DragConversionWeight = 1.5 // needs to be higher then FlexReorderFitness in flex-reorder-strategy
 
@@ -314,7 +315,7 @@ function getFitness(
     ) {
       if (interactionSession.interactionData.spacePressed) {
         // If space is pressed, this should happening!
-        return 100
+        return VeryHighWeight
       }
 
       if (interactionSession.interactionData.drag == null) {
