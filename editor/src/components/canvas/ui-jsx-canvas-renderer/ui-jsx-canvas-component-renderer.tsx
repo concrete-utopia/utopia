@@ -387,7 +387,7 @@ function isElementInChildrenOrPropsTree(elementPath: string, props: any): boolea
     }
   }
 
-  for (let p of props) {
+  for (let p in props) {
     if (React.isValidElement(p) && (p.props as any)[UTOPIA_PATH_KEY] === elementPath) {
       return true
     }
