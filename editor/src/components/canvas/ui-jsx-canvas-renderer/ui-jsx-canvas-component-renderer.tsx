@@ -102,15 +102,29 @@ export function createComponentRendererComponent(params: {
     const instancePath: ElementPath | null = tryToGetInstancePath(instancePathAny, pathsString)
 
     function shouldUpdate() {
-      return (
-        ElementsToRerenderGLOBAL.current === 'rerender-all-elements' ||
-        ElementsToRerenderGLOBAL.current.some((er) => {
-          return (
-            (instancePath != null &&
-              (EP.pathsEqual(er, instancePath) || EP.isParentComponentOf(instancePath, er))) ||
-            isElementInChildrenOrPropsTree(EP.toString(er), realPassedProps)
-          )
-        })
+      if (ElementsToRerenderGLOBAL.current === 'rerender-all-elements') {
+        return true
+      }
+
+      if (
+        instancePath != null &&
+        ElementsToRerenderGLOBAL.current.some(
+          (er) => EP.pathsEqual(er, instancePath) || EP.isParentComponentOf(instancePath, er),
+        )
+      ) {
+        return true
+      }
+
+      if (ElementsToRerenderGLOBAL.current.length === 1) {
+        return isElementInChildrenOrPropsTreeSingle(
+          EP.toString(ElementsToRerenderGLOBAL.current[0]),
+          realPassedProps,
+        )
+      }
+
+      return isElementInChildrenOrPropsTreeMulti(
+        ElementsToRerenderGLOBAL.current.map(EP.toString),
+        realPassedProps,
       )
     }
 
@@ -379,7 +393,11 @@ function isRenderProp(prop: any): prop is { props: { [UTOPIA_PATH_KEY]: string }
   )
 }
 
-function isElementInChildrenOrPropsTree(elementPath: string, props: any): boolean {
+function isElementInChildrenOrPropsTreeSingle(elementPath: string, props: any): boolean {
+  if (props.children == null || typeof props.children === 'string') {
+    return false
+  }
+
   const childrenArr = fastReactChildrenToArray(props.children)
   for (let c of childrenArr) {
     if ((c.props as any)[UTOPIA_PATH_KEY] === elementPath) {
@@ -394,17 +412,49 @@ function isElementInChildrenOrPropsTree(elementPath: string, props: any): boolea
   }
 
   for (let c of childrenArr) {
-    if (isElementInChildrenOrPropsTree(elementPath, c.props)) {
+    if (isElementInChildrenOrPropsTreeSingle(elementPath, c.props)) {
       return true
     }
   }
 
   for (let p in props) {
-    if (isRenderProp(p) && isElementInChildrenOrPropsTree(elementPath, p.props)) {
+    if (isRenderProp(p) && isElementInChildrenOrPropsTreeSingle(elementPath, p.props)) {
       return true
     }
   }
 
+  return false
+}
+function isElementInChildrenOrPropsTreeMulti(elementPaths: Array<string>, props: any): boolean {
+  if (props.children == null || typeof props.children === 'string') {
+    return false
+  }
+
+  const childrenArr = fastReactChildrenToArray(props.children)
+
+  for (let c of childrenArr) {
+    if (elementPaths.includes((c.props as any)[UTOPIA_PATH_KEY])) {
+      return true
+    }
+  }
+
+  for (let p in props) {
+    if (React.isValidElement(p) && elementPaths.includes((p.props as any)[UTOPIA_PATH_KEY])) {
+      return true
+    }
+  }
+
+  for (let c of childrenArr) {
+    if (isElementInChildrenOrPropsTreeMulti(elementPaths, c.props)) {
+      return true
+    }
+  }
+
+  for (let p in props) {
+    if (isRenderProp(p) && isElementInChildrenOrPropsTreeMulti(elementPaths, p.props)) {
+      return true
+    }
+  }
   return false
 }
 
