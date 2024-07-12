@@ -1,4 +1,4 @@
-import { fromArrayIndex, fromField, notNull } from '../../../../core/shared/optics/optic-creators'
+import { fromArrayIndex, fromField } from '../../../../core/shared/optics/optic-creators'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import * as PP from '../../../../core/shared/property-path'
@@ -15,10 +15,8 @@ import {
 import type { InteractionSession } from '../interaction-state'
 import type { GridCSSNumber } from '../../../../components/inspector/common/css-utils'
 import { printArrayCSSNumber } from '../../../../components/inspector/common/css-utils'
-import { anyBy, modify, toFirst } from '../../../../core/shared/optics/optic-utilities'
+import { modify } from '../../../../core/shared/optics/optic-utilities'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
-import { isRight } from '../../../../core/shared/either'
-import { roundToNearestWhole } from '../../../../core/shared/math-utils'
 
 export const resizeGridStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -76,48 +74,23 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
 
       const gridSpecialSizeMeasurements =
         canvasState.startingMetadata[EP.toString(gridPath)].specialSizeMeasurements
-      const originalValues =
-        control.axis === 'column'
-          ? gridSpecialSizeMeasurements.containerGridPropertiesFromProps.gridTemplateColumns
-          : gridSpecialSizeMeasurements.containerGridPropertiesFromProps.gridTemplateRows
       const calculatedValues =
         control.axis === 'column'
           ? gridSpecialSizeMeasurements.containerGridProperties.gridTemplateColumns
           : gridSpecialSizeMeasurements.containerGridProperties.gridTemplateRows
 
-      if (
-        calculatedValues == null ||
-        calculatedValues.type !== 'DIMENSIONS' ||
-        originalValues == null ||
-        originalValues.type !== 'DIMENSIONS'
-      ) {
+      if (calculatedValues == null || calculatedValues.type !== 'DIMENSIONS') {
         return emptyStrategyApplicationResult
       }
-      const unitOptic = fromArrayIndex<GridCSSNumber>(control.columnOrRow)
-        .compose(fromField('unit'))
-        .compose(notNull())
       const valueOptic = fromArrayIndex<GridCSSNumber>(control.columnOrRow).compose(
         fromField('value'),
       )
-      const isFractional = anyBy(unitOptic, (unit) => unit === 'fr', originalValues.dimensions)
-      let newSetting: Array<GridCSSNumber>
-      const originalDimensions = originalValues.dimensions
-      if (isFractional) {
-        const possibleOriginalFractionalValue = toFirst(valueOptic, originalValues.dimensions)
-        const possibleCalculatedValue = toFirst(valueOptic, calculatedValues.dimensions)
-        if (isRight(possibleOriginalFractionalValue) && isRight(possibleCalculatedValue)) {
-          const originalFractionalValue = possibleOriginalFractionalValue.value
-          const calculatedValue = possibleCalculatedValue.value
-          const perPointOne =
-            originalFractionalValue == 0 ? 10 : (calculatedValue / originalFractionalValue) * 0.1
-          const newValue = roundToNearestWhole((dragAmount / perPointOne) * 10) / 10
-          newSetting = modify(valueOptic, (current) => current + newValue, originalDimensions)
-        } else {
-          throw new Error(`Somehow we cannot identify the right dimensions.`)
-        }
-      } else {
-        newSetting = modify(valueOptic, (current) => current + dragAmount, originalDimensions)
-      }
+
+      const newSetting = modify(
+        valueOptic,
+        (current) => current + dragAmount,
+        calculatedValues.dimensions,
+      )
       const propertyValueAsString = printArrayCSSNumber(newSetting)
 
       const commands = [
