@@ -455,6 +455,8 @@ import type {
   ZeroDragPermitted,
   GridCellHandle,
   GridAxisHandle,
+  GridResizeHandle,
+  GridResizeEdge,
 } from '../../canvas/canvas-strategies/interaction-state'
 import {
   boundingArea,
@@ -465,6 +467,7 @@ import {
   resizeHandle,
   gridCellHandle,
   gridAxisHandle,
+  gridResizeHandle,
 } from '../../canvas/canvas-strategies/interaction-state'
 import type { Modifiers } from '../../../utils/modifiers'
 import type {
@@ -530,7 +533,6 @@ import type {
   SelectModeToolbarMode,
   CommentMode,
   FollowMode,
-  PanelsMode,
   CommentId,
   NewComment,
   ExistingComment,
@@ -2871,6 +2873,15 @@ export const GridAxisHandleKeepDeepEquality: KeepDeepEqualityCall<GridAxisHandle
     gridAxisHandle,
   )
 
+export const GridResizeHandleKeepDeepEquality: KeepDeepEqualityCall<GridResizeHandle> =
+  combine2EqualityCalls(
+    (handle) => handle.id,
+    createCallWithTripleEquals<string>(),
+    (handle) => handle.edge,
+    createCallWithTripleEquals<GridResizeEdge>(),
+    gridResizeHandle,
+  )
+
 export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasControlType> = (
   oldValue,
   newValue,
@@ -2919,6 +2930,11 @@ export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasContr
     case 'GRID_AXIS_HANDLE':
       if (newValue.type === oldValue.type) {
         return GridAxisHandleKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'GRID_RESIZE_HANDLE':
+      if (newValue.type === oldValue.type) {
+        return GridResizeHandleKeepDeepEquality(oldValue, newValue)
       }
       break
     default:
@@ -4019,12 +4035,6 @@ export const FollowModeKeepDeepEquality: KeepDeepEqualityCall<FollowMode> = comb
   EditorModes.followMode,
 )
 
-export const PanelsModeKeepDeepEquality: KeepDeepEqualityCall<PanelsMode> = combine1EqualityCall(
-  (mode) => mode.type,
-  StringKeepDeepEquality,
-  EditorModes.panelsMode,
-)
-
 export const ModeKeepDeepEquality: KeepDeepEqualityCall<Mode> = (oldValue, newValue) => {
   switch (oldValue.type) {
     case 'insert':
@@ -4055,11 +4065,6 @@ export const ModeKeepDeepEquality: KeepDeepEqualityCall<Mode> = (oldValue, newVa
     case 'follow':
       if (newValue.type === oldValue.type) {
         return FollowModeKeepDeepEquality(newValue, oldValue)
-      }
-      break
-    case 'panels':
-      if (newValue.type === oldValue.type) {
-        return PanelsModeKeepDeepEquality(oldValue, newValue)
       }
       break
     default:

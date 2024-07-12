@@ -1,3 +1,6 @@
+/** @jsxRuntime classic */
+/** @jsx jsx */
+import { jsx } from '@emotion/react'
 import type { AnimationControls } from 'framer-motion'
 import { motion, useAnimationControls } from 'framer-motion'
 import React from 'react'
@@ -18,10 +21,12 @@ import {
   distance,
   getRectCenter,
   isFiniteRectangle,
+  isInfinityRectangle,
   offsetPoint,
   pointDifference,
   pointsEqual,
   windowPoint,
+  zeroRectIfNullOrInfinity,
 } from '../../../core/shared/math-utils'
 import {
   fromArrayIndex,
@@ -39,18 +44,31 @@ import { Substores, useEditorState, useRefEditorState } from '../../editor/store
 import { useRollYourOwnFeatures } from '../../navigator/left-pane/roll-your-own-pane'
 import CanvasActions from '../canvas-actions'
 import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
+import type { GridResizeEdge } from '../canvas-strategies/interaction-state'
 import {
+  GridResizeEdges,
   createInteractionViaMouse,
   gridAxisHandle,
   gridCellHandle,
+  gridResizeHandle,
 } from '../canvas-strategies/interaction-state'
 import { windowToCanvasCoordinates } from '../dom-lookup'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
-import { useColorTheme } from '../../../uuiui'
+import { useColorTheme, UtopiaStyles } from '../../../uuiui'
 import { gridCellTargetId } from '../canvas-strategies/strategies/grid-helpers'
+import { resizeBoundingBoxFromSide } from '../canvas-strategies/strategies/resize-helpers'
+import type { EdgePosition } from '../canvas-types'
+import {
+  CSSCursor,
+  EdgePositionBottom,
+  EdgePositionLeft,
+  EdgePositionRight,
+  EdgePositionTop,
+} from '../canvas-types'
 import { useCanvasAnimation } from '../ui-jsx-canvas-renderer/animation-context'
 import { CanvasLabel } from './select-mode/controls-common'
 import { optionalMap } from '../../../core/shared/optional-utils'
+import type { Sides } from 'utopia-api/core'
 
 const CELL_ANIMATION_DURATION = 0.15 // seconds
 
@@ -108,16 +126,16 @@ function getLabelForAxis(
 }
 
 const SHADOW_SNAP_ANIMATION = 'shadow-snap'
-
-const GridResizingContainerSize = 100
+const GRID_RESIZE_HANDLE_CONTAINER_SIZE = 30 // px
+const GRID_RESIZE_HANDLE_SIZE = 15 // px
 
 export interface GridResizingControlProps {
   dimension: GridCSSNumber
   dimensionIndex: number
   axis: 'row' | 'column'
   containingFrame: CanvasRectangle
-  workingPrefix: number
   fromPropsAxisValues: GridAutoOrTemplateBase | null
+  padding: number | null
 }
 
 export const GridResizingControl = React.memo((props: GridResizingControlProps) => {
@@ -134,13 +152,22 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
   const dispatch = useDispatch()
   const colorTheme = useColorTheme()
 
+  const [resizing, setResizing] = React.useState(false)
+
   const mouseDownHandler = React.useCallback(
     (event: React.MouseEvent): void => {
+      function mouseUpHandler() {
+        setResizing(false)
+        window.removeEventListener('mouseup', mouseUpHandler)
+      }
+      window.addEventListener('mouseup', mouseUpHandler)
+
       const start = windowToCanvasCoordinates(
         scale,
         canvasOffset,
         windowPoint({ x: event.nativeEvent.x, y: event.nativeEvent.y }),
       )
+      setResizing(true)
 
       dispatch([
         CanvasActions.createInteractionSession(
@@ -161,34 +188,84 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
   const labelId = `grid-${props.axis}-handle-${props.dimensionIndex}`
   const containerId = `${labelId}-container`
 
+  const shadowSize = React.useMemo(() => {
+    return props.axis === 'column'
+      ? props.containingFrame.height + GRID_RESIZE_HANDLE_CONTAINER_SIZE
+      : props.containingFrame.width + GRID_RESIZE_HANDLE_CONTAINER_SIZE
+  }, [props.containingFrame, props.axis])
+
   return (
     <div
       key={containerId}
       data-testid={containerId}
       style={{
-        position: 'absolute',
-        left:
-          props.axis === 'column' ? props.workingPrefix - GridResizingContainerSize / 2 : undefined,
-        top:
-          props.axis === 'row'
-            ? props.workingPrefix - GridResizingContainerSize / 2
-            : props.containingFrame.y - 30 / scale,
-        right: props.axis === 'row' ? 10 / scale - props.containingFrame.x : undefined,
-        width: props.axis === 'column' ? GridResizingContainerSize : `max-content`,
-        height: props.axis === 'row' ? GridResizingContainerSize : `max-content`,
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        alignItems: props.axis === 'column' ? 'flex-start' : 'center',
+        justifyContent: props.axis === 'column' ? 'center' : 'flex-start',
+        border: `1px solid ${resizing ? colorTheme.brandNeonPink.value : 'transparent'}`,
+        height: props.axis === 'column' && resizing ? shadowSize : '100%',
+        width: props.axis === 'row' && resizing ? shadowSize : '100%',
+        position: 'relative',
+        ...(resizing
+          ? UtopiaStyles.backgrounds.stripedBackground(colorTheme.brandNeonPink60.value, scale)
+          : {}),
       }}
     >
-      <CanvasLabel
-        testId={labelId}
-        value={getLabelForAxis(props.dimension, props.dimensionIndex, props.fromPropsAxisValues)}
-        scale={scale}
-        color={colorTheme.brandNeonPink.value}
-        textColor={colorTheme.white.value}
+      <div
+        data-testid={labelId}
+        style={{
+          zoom: 1 / scale,
+          width: GRID_RESIZE_HANDLE_SIZE,
+          height: GRID_RESIZE_HANDLE_SIZE,
+          borderRadius: '100%',
+          border: `1px solid ${colorTheme.border0.value}`,
+          boxShadow: `${colorTheme.canvasControlsSizeBoxShadowColor50.value} 0px 0px
+              ${1 / scale}px, ${colorTheme.canvasControlsSizeBoxShadowColor20.value} 0px ${
+            1 / scale
+          }px ${2 / scale}px ${1 / scale}px`,
+          background: colorTheme.white.value,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: gridEdgeToCSSCursor(props.axis === 'column' ? 'column-start' : 'row-start'),
+          fontSize: 8,
+        }}
+        css={{
+          opacity: resizing ? 1 : 0.5,
+          ':hover': {
+            opacity: 1,
+          },
+        }}
         onMouseDown={mouseDownHandler}
-      />
+      >
+        {props.axis === 'row' ? '↕' : '↔'}
+      </div>
+      {when(
+        resizing,
+        <div
+          style={{
+            position: 'absolute',
+            top: props.axis === 'column' ? GRID_RESIZE_HANDLE_CONTAINER_SIZE : 0,
+            left: props.axis === 'row' ? GRID_RESIZE_HANDLE_CONTAINER_SIZE : 0,
+            right: 0,
+            bottom: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <CanvasLabel
+            value={getLabelForAxis(
+              props.dimension,
+              props.dimensionIndex,
+              props.fromPropsAxisValues,
+            )}
+            scale={scale}
+            color={colorTheme.brandNeonPink.value}
+            textColor={colorTheme.white.value}
+          />
+        </div>,
+      )}
     </div>
   )
 })
@@ -200,49 +277,72 @@ export interface GridResizingProps {
   containingFrame: CanvasRectangle
   axis: 'row' | 'column'
   gap: number | null
+  padding: Sides | null
 }
 
 export const GridResizing = React.memo((props: GridResizingProps) => {
+  const canvasScale = useEditorState(
+    Substores.canvasOffset,
+    (store) => store.editor.canvas.scale,
+    'GridResizing canvasScale',
+  )
   if (props.axisValues == null) {
     return null
-  } else {
-    switch (props.axisValues.type) {
-      case 'DIMENSIONS':
-        let workingPrefix: number =
-          props.axis === 'column' ? props.containingFrame.x : props.containingFrame.y
-        return (
-          <>
-            {props.axisValues.dimensions.flatMap((dimension, dimensionIndex) => {
-              // Assumes pixels currently.
-              workingPrefix += dimension.value
-              if (dimensionIndex === 0) {
-                // Shift by half the gap initially...
-                workingPrefix += (props.gap ?? 0) / 2
-              } else {
-                // ...Then by the full gap, as it would be half from the prior entry
-                // and half from the current one.
-                workingPrefix += props.gap ?? 0
-              }
-
-              return (
-                <GridResizingControl
-                  dimensionIndex={dimensionIndex}
-                  dimension={dimension}
-                  fromPropsAxisValues={props.fromPropsAxisValues}
-                  axis={props.axis}
-                  containingFrame={props.containingFrame}
-                  workingPrefix={workingPrefix}
-                />
-              )
-            })}
-          </>
-        )
-      case 'FALLBACK':
-        return null
-      default:
-        assertNever(props.axisValues)
-        return null
-    }
+  }
+  switch (props.axisValues.type) {
+    case 'DIMENSIONS':
+      const size = GRID_RESIZE_HANDLE_CONTAINER_SIZE / canvasScale
+      return (
+        <div
+          style={{
+            position: 'absolute',
+            top: props.containingFrame.y - (props.axis === 'column' ? size : 0),
+            left: props.containingFrame.x - (props.axis === 'row' ? size : 0),
+            width: props.axis === 'column' ? props.containingFrame.width : size,
+            height: props.axis === 'row' ? props.containingFrame.height : size,
+            display: 'grid',
+            gridTemplateColumns:
+              props.axis === 'column'
+                ? props.axisValues.dimensions.map((dim) => `${dim.value}${dim.unit}`).join(' ')
+                : undefined,
+            gridTemplateRows:
+              props.axis === 'row'
+                ? props.axisValues.dimensions.map((dim) => `${dim.value}${dim.unit}`).join(' ')
+                : undefined,
+            gap: props.gap ?? 0,
+            paddingLeft:
+              props.axis === 'column' && props.padding != null
+                ? `${props.padding.left}px`
+                : undefined,
+            paddingTop:
+              props.axis === 'row' && props.padding != null ? `${props.padding.top}px` : undefined,
+          }}
+        >
+          {props.axisValues.dimensions.flatMap((dimension, dimensionIndex) => {
+            return (
+              <GridResizingControl
+                key={`grid-resizing-control-${dimensionIndex}`}
+                dimensionIndex={dimensionIndex}
+                dimension={dimension}
+                fromPropsAxisValues={props.fromPropsAxisValues}
+                axis={props.axis}
+                containingFrame={props.containingFrame}
+                padding={
+                  props.padding == null
+                    ? 0
+                    : props.axis === 'column'
+                    ? props.padding.left ?? 0
+                    : props.padding.top ?? 0
+                }
+              />
+            )
+          })}
+        </div>
+      )
+    case 'FALLBACK':
+      return null
+    default:
+      assertNever(props.axisValues)
   }
 })
 GridResizing.displayName = 'GridResizing'
@@ -587,7 +687,7 @@ export const GridControls = controlForStrategyMemoized(() => {
                   >
                     {when(
                       features.Grid.dotgrid,
-                      <>
+                      <React.Fragment>
                         <div
                           style={{
                             position: 'absolute',
@@ -642,7 +742,7 @@ export const GridControls = controlForStrategyMemoized(() => {
                             right: -1,
                           }}
                         />
-                      </>,
+                      </React.Fragment>,
                     )}
                   </div>
                 )
@@ -721,22 +821,26 @@ export const GridControls = controlForStrategyMemoized(() => {
         {grids.flatMap((grid) => {
           return (
             <GridResizing
+              key={`grid-resizing-column-${EP.toString(grid.elementPath)}`}
               axisValues={grid.gridTemplateColumns}
               fromPropsAxisValues={grid.gridTemplateColumnsFromProps}
               containingFrame={grid.frame}
               axis={'column'}
               gap={grid.gap}
+              padding={grid.padding}
             />
           )
         })}
         {grids.flatMap((grid) => {
           return (
             <GridResizing
+              key={`grid-resizing-row-${EP.toString(grid.elementPath)}`}
               axisValues={grid.gridTemplateRows}
               fromPropsAxisValues={grid.gridTemplateRowsFromProps}
               containingFrame={grid.frame}
               axis={'row'}
               gap={grid.gap}
+              padding={grid.padding}
             />
           )
         })}
@@ -883,4 +987,232 @@ function useMouseMove(activelyDraggingOrResizingCell: string | null) {
   }, [activelyDraggingOrResizingCell, canvasOffset, canvasScale])
 
   return { hoveringStart, mouseCanvasPosition }
+}
+
+export const GridResizeEdgeTestId = (edge: GridResizeEdge) => `grid-resize-edge-${edge}`
+
+interface GridResizeControlProps {
+  target: ElementPath
+}
+
+export const GridResizeControls = controlForStrategyMemoized<GridResizeControlProps>(
+  ({ target }) => {
+    const colorTheme = useColorTheme()
+
+    const element = useEditorState(
+      Substores.metadata,
+      (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, target),
+      'GridResizeShadow element',
+    )
+
+    const dispatch = useDispatch()
+    const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
+    const scale = useEditorState(
+      Substores.canvas,
+      (store) => store.editor.canvas.scale,
+      'GridResizingControl scale',
+    )
+
+    const resizeControlRef = useRefEditorState((store) =>
+      store.editor.canvas.interactionSession?.activeControl.type !== 'GRID_RESIZE_HANDLE'
+        ? null
+        : store.editor.canvas.interactionSession.activeControl,
+    )
+
+    const dragRef = useRefEditorState((store) =>
+      store.editor.canvas.interactionSession?.interactionData.type !== 'DRAG'
+        ? null
+        : store.editor.canvas.interactionSession?.interactionData.drag,
+    )
+
+    const [startingBounds, setStartingBounds] = React.useState<CanvasRectangle | null>(null)
+    const [bounds, setBounds] = React.useState<CanvasRectangle | null>(null)
+    const onMouseMove = React.useCallback(() => {
+      if (resizeControlRef.current == null || dragRef.current == null) {
+        return
+      }
+
+      if (startingBounds == null) {
+        return
+      }
+
+      setBounds(
+        resizeBoundingBoxFromSide(
+          startingBounds,
+          dragRef.current,
+          gridEdgeToEdgePosition(resizeControlRef.current.edge),
+          'non-center-based',
+          null,
+        ),
+      )
+    }, [dragRef, resizeControlRef, startingBounds])
+
+    const isResizing = bounds != null
+
+    const onMouseUp = React.useCallback(() => {
+      setBounds(null)
+      setStartingBounds(null)
+    }, [])
+
+    React.useEffect(() => {
+      window.addEventListener('mousemove', onMouseMove)
+      window.addEventListener('mouseup', onMouseUp)
+      return () => {
+        window.removeEventListener('mousemove', onMouseMove)
+        window.removeEventListener('mouseup', onMouseUp)
+      }
+    }, [onMouseMove, onMouseUp])
+
+    const startResizeInteraction = React.useCallback(
+      (uid: string, edge: GridResizeEdge) => (event: React.MouseEvent) => {
+        event.stopPropagation()
+        const frame = zeroRectIfNullOrInfinity(element?.globalFrame ?? null)
+        setBounds(frame)
+        setStartingBounds(frame)
+        const start = windowToCanvasCoordinates(
+          scale,
+          canvasOffsetRef.current,
+          windowPoint({ x: event.nativeEvent.x, y: event.nativeEvent.y }),
+        )
+        dispatch([
+          CanvasActions.createInteractionSession(
+            createInteractionViaMouse(
+              start.canvasPositionRounded,
+              Modifier.modifiersForEvent(event),
+              gridResizeHandle(uid, edge),
+              'zero-drag-not-permitted',
+            ),
+          ),
+        ])
+      },
+      [canvasOffsetRef, dispatch, element?.globalFrame, scale],
+    )
+
+    if (
+      element == null ||
+      element.globalFrame == null ||
+      isInfinityRectangle(element.globalFrame)
+    ) {
+      return null
+    }
+
+    return (
+      <CanvasOffsetWrapper>
+        <div
+          data-testid={`grid-resize-container-${EP.toString(element.elementPath)}`}
+          key={`grid-resize-container-${EP.toString(element.elementPath)}`}
+          style={{
+            pointerEvents: 'none',
+            position: 'absolute',
+            top: bounds?.y ?? element.globalFrame.y,
+            left: bounds?.x ?? element.globalFrame.x,
+            width: bounds?.width ?? element.globalFrame.width,
+            height: bounds?.height ?? element.globalFrame.height,
+            display: 'grid',
+            gridTemplateRows: '10px 1fr 10px',
+            gridTemplateColumns: '10px 1fr 10px',
+            gridTemplateAreas: "'empty1 rs empty2' 'cs empty3 ce' 'empty4 re empty5'",
+            backgroundColor: isResizing ? colorTheme.whiteOpacity30.value : 'transparent',
+          }}
+        >
+          {GridResizeEdges.map((edge) => (
+            <div
+              key={edge}
+              style={{
+                pointerEvents: 'none',
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                padding: 2 / scale,
+                gridArea: gridEdgeToGridArea(edge),
+                cursor: gridEdgeToCSSCursor(edge),
+              }}
+            >
+              <div
+                data-testid={GridResizeEdgeTestId(edge)}
+                onMouseDown={startResizeInteraction(EP.toUid(element.elementPath), edge)}
+                style={{
+                  pointerEvents: 'initial',
+                  ...gridEdgeToWidthHeight(edge, scale),
+                  backgroundColor: colorTheme.white.value,
+                  boxShadow: `${colorTheme.canvasControlsSizeBoxShadowColor50.value} 0px 0px
+					${1 / scale}px, ${colorTheme.canvasControlsSizeBoxShadowColor20.value} 0px ${1 / scale}px ${
+                    2 / scale
+                  }px ${1 / scale}px`,
+                }}
+              />
+            </div>
+          ))}
+        </div>
+      </CanvasOffsetWrapper>
+    )
+  },
+)
+
+function gridEdgeToGridArea(edge: GridResizeEdge): string {
+  switch (edge) {
+    case 'column-end':
+      return 'ce'
+    case 'column-start':
+      return 'cs'
+    case 'row-end':
+      return 're'
+    case 'row-start':
+      return 'rs'
+    default:
+      assertNever(edge)
+  }
+}
+
+function gridEdgeToEdgePosition(edge: GridResizeEdge): EdgePosition {
+  switch (edge) {
+    case 'column-end':
+      return EdgePositionRight
+    case 'column-start':
+      return EdgePositionLeft
+    case 'row-end':
+      return EdgePositionBottom
+    case 'row-start':
+      return EdgePositionTop
+    default:
+      assertNever(edge)
+  }
+}
+
+function gridEdgeToCSSCursor(edge: GridResizeEdge): CSSCursor {
+  switch (edge) {
+    case 'column-end':
+    case 'column-start':
+      return CSSCursor.ColResize
+    case 'row-end':
+    case 'row-start':
+      return CSSCursor.RowResize
+    default:
+      assertNever(edge)
+  }
+}
+
+function gridEdgeToWidthHeight(
+  edge: GridResizeEdge,
+  scale: number,
+): {
+  width: number
+  height: number
+  borderRadius: number
+} {
+  const LONG_EDGE = 24 / scale
+  const SHORT_EDGE = 4 / scale
+
+  switch (edge) {
+    case 'column-end':
+    case 'column-start':
+      return { width: SHORT_EDGE, height: LONG_EDGE, borderRadius: SHORT_EDGE / 2 }
+    case 'row-end':
+    case 'row-start':
+      return { width: LONG_EDGE, height: SHORT_EDGE, borderRadius: SHORT_EDGE / 2 }
+    default:
+      assertNever(edge)
+  }
 }

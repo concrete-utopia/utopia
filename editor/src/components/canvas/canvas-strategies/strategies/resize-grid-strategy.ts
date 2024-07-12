@@ -31,7 +31,13 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
 
   const selectedElement = selectedElements[0]
 
-  if (!MetadataUtils.isGridCell(canvasState.startingMetadata, selectedElement)) {
+  const isGridCell = MetadataUtils.isGridCell(canvasState.startingMetadata, selectedElement)
+  const isGrid = MetadataUtils.isGridLayoutedContainer(
+    MetadataUtils.findElementByElementPath(canvasState.startingMetadata, selectedElement),
+  )
+  const isGridOrGridCell = isGridCell || isGrid
+
+  if (!isGridOrGridCell) {
     return null
   }
 
@@ -65,17 +71,19 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
       const control = interactionSession.activeControl
       const drag = interactionSession.interactionData.drag
       const dragAmount = control.axis === 'column' ? drag.x : drag.y
-      const parentPath = EP.parentPath(selectedElement)
-      const parentSpecialSizeMeasurements =
-        canvasState.startingMetadata[EP.toString(parentPath)].specialSizeMeasurements
+
+      const gridPath = isGrid ? selectedElement : EP.parentPath(selectedElement)
+
+      const gridSpecialSizeMeasurements =
+        canvasState.startingMetadata[EP.toString(gridPath)].specialSizeMeasurements
       const originalValues =
         control.axis === 'column'
-          ? parentSpecialSizeMeasurements.containerGridPropertiesFromProps.gridTemplateColumns
-          : parentSpecialSizeMeasurements.containerGridPropertiesFromProps.gridTemplateRows
+          ? gridSpecialSizeMeasurements.containerGridPropertiesFromProps.gridTemplateColumns
+          : gridSpecialSizeMeasurements.containerGridPropertiesFromProps.gridTemplateRows
       const calculatedValues =
         control.axis === 'column'
-          ? parentSpecialSizeMeasurements.containerGridProperties.gridTemplateColumns
-          : parentSpecialSizeMeasurements.containerGridProperties.gridTemplateRows
+          ? gridSpecialSizeMeasurements.containerGridProperties.gridTemplateColumns
+          : gridSpecialSizeMeasurements.containerGridProperties.gridTemplateRows
 
       if (
         calculatedValues == null ||
@@ -115,14 +123,14 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
       const commands = [
         setProperty(
           'always',
-          parentPath,
+          gridPath,
           PP.create(
             'style',
             control.axis === 'column' ? 'gridTemplateColumns' : 'gridTemplateRows',
           ),
           propertyValueAsString,
         ),
-        setElementsToRerenderCommand([parentPath]),
+        setElementsToRerenderCommand([gridPath]),
       ]
 
       return strategyApplicationResult(commands)
