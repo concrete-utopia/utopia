@@ -380,20 +380,40 @@ function isRenderProp(prop: any): prop is { props: { [UTOPIA_PATH_KEY]: string }
 }
 
 function isElementInChildrenOrPropsTree(elementPath: string, props: any): boolean {
-  const childrenArr = React.Children.toArray(props.children).filter(React.isValidElement)
-  const elementIsChild = childrenArr.some((c) => (c.props as any)[UTOPIA_PATH_KEY] === elementPath)
-  if (elementIsChild) {
-    return true
+  const childrenArr = fastReactChildrenToArray(props.children)
+  for (let c of childrenArr) {
+    if ((c.props as any)[UTOPIA_PATH_KEY] === elementPath) {
+      return true
+    }
   }
 
-  const elementsInProps = Object.values(props).filter(isRenderProp)
-  const isElementInProps = elementsInProps.some((p) => p.props[UTOPIA_PATH_KEY] === elementPath)
-  if (isElementInProps) {
-    return true
+  for (let p of props) {
+    if (React.isValidElement(p) && (p.props as any)[UTOPIA_PATH_KEY] === elementPath) {
+      return true
+    }
   }
 
-  return (
-    childrenArr.some((c) => isElementInChildrenOrPropsTree(elementPath, c.props)) ||
-    elementsInProps.some((p) => isElementInChildrenOrPropsTree(elementPath, p.props))
-  )
+  for (let c of childrenArr) {
+    if (isElementInChildrenOrPropsTree(elementPath, c.props)) {
+      return true
+    }
+  }
+
+  for (let p in props) {
+    if (isRenderProp(p) && isElementInChildrenOrPropsTree(elementPath, p.props)) {
+      return true
+    }
+  }
+
+  return false
+}
+
+function fastReactChildrenToArray(children: any) {
+  if (React.isValidElement(children)) {
+    return [children]
+  }
+  if (Array.isArray(children)) {
+    return children.filter(React.isValidElement)
+  }
+  return React.Children.toArray(children).filter(React.isValidElement)
 }
