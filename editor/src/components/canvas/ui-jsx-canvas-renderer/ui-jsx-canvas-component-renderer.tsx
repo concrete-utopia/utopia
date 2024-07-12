@@ -408,7 +408,7 @@ function isElementInChildrenOrPropsTree(elementPath: string, props: any): boolea
   return false
 }
 
-function fastReactChildrenToArray(children: React.ReactNode | React.ReactNode[]) {
+function fastReactChildrenToArray(children: any) {
   if (React.isValidElement(children)) {
     return [children]
   }
