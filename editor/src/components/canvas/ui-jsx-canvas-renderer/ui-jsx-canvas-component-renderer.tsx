@@ -385,11 +385,11 @@ function isElementInChildrenOrPropsTree(elementPath: string, props: any): boolea
     if ((c.props as any)[UTOPIA_PATH_KEY] === elementPath) {
       return true
     }
+  }
 
-    for (let p in props) {
-      if (React.isValidElement(p) && (p.props as any)[UTOPIA_PATH_KEY] === elementPath) {
-        return true
-      }
+  for (let p of props) {
+    if (React.isValidElement(p) && (p.props as any)[UTOPIA_PATH_KEY] === elementPath) {
+      return true
     }
   }
 
@@ -397,11 +397,11 @@ function isElementInChildrenOrPropsTree(elementPath: string, props: any): boolea
     if (isElementInChildrenOrPropsTree(elementPath, c.props)) {
       return true
     }
+  }
 
-    for (let p in props) {
-      if (isRenderProp(p) && isElementInChildrenOrPropsTree(elementPath, p.props)) {
-        return true
-      }
+  for (let p in props) {
+    if (isRenderProp(p) && isElementInChildrenOrPropsTree(elementPath, p.props)) {
+      return true
     }
   }
 
