@@ -397,7 +397,9 @@ describe('Flex Reparent To Flex Strategy', () => {
         y: targetFlexParentEnd.y - flexChildToReparentCenter.y,
       })
 
-      await mouseDragFromPointWithDelta(canvasControlsLayer, flexChildToReparentCenter, dragDelta)
+      await mouseDragFromPointWithDelta(canvasControlsLayer, flexChildToReparentCenter, dragDelta, {
+        modifiers: cmdModifier,
+      })
 
       await renderResult.getDispatchFollowUpActionsFinished()
 
