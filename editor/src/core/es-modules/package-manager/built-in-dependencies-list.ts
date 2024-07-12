@@ -12,7 +12,7 @@ import * as TTYStub from './node-builtin-shims/tty-stub'
 import * as UUIUI from '../../../uuiui'
 import * as UUIUIDeps from '../../../uuiui-deps'
 import * as RemixServerBuild from './built-in-third-party-dependencies/remix-server-build'
-import { SafeLink, SafeOutlet } from './canvas-safe-remix'
+import { SafeLink, SafeOutlet, useErrorRecordingRouteError } from './canvas-safe-remix'
 import { UtopiaApiGroup } from './group-component'
 
 import utopiaAPIPackageJSON from '../../../../../utopia-api/package.json'
@@ -98,6 +98,7 @@ export function createBuiltInDependenciesList(
         ...RemixRunReact,
         Link: SafeLink,
         Outlet: SafeOutlet,
+        useRouteError: useErrorRecordingRouteError,
       },
       editorPackageJSON.dependencies['@remix-run/react'],
     ),
