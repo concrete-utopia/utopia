@@ -17,6 +17,7 @@ import type { GridCSSNumber } from '../../../../components/inspector/common/css-
 import { printArrayCSSNumber } from '../../../../components/inspector/common/css-utils'
 import { modify, toFirst } from '../../../../core/shared/optics/optic-utilities'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
+import type { Either } from '../../../../core/shared/either'
 import { foldEither, isRight } from '../../../../core/shared/either'
 import { roundToNearestWhole } from '../../../../core/shared/math-utils'
 import type { GridAutoOrTemplateBase } from '../../../../core/shared/element-template'
@@ -106,32 +107,29 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
         }),
       }
 
+      const unitOptic = fromArrayIndex<GridCSSNumber>(control.columnOrRow).compose(
+        fromField('unit'),
+      )
       const valueOptic = fromArrayIndex<GridCSSNumber>(control.columnOrRow).compose(
         fromField('value'),
       )
 
-      const isFractional = mergedValues.dimensions.at(control.columnOrRow)?.unit === 'fr'
+      const calculatedValue = toFirst(valueOptic, calculatedValues.dimensions)
+      const mergedValue = toFirst(valueOptic, mergedValues.dimensions)
+      const mergedUnit = toFirst(unitOptic, mergedValues.dimensions)
 
-      let newSetting: Array<GridCSSNumber>
-      if (isFractional) {
-        const possibleCalculatedValue = toFirst(valueOptic, calculatedValues.dimensions)
-        if (isRight(possibleCalculatedValue)) {
-          const mergedFractionalValue = foldEither(
-            () => 0,
-            (r) => r,
-            toFirst(valueOptic, mergedValues.dimensions),
-          )
-          const calculatedValue = possibleCalculatedValue.value
-          const perPointOne =
-            mergedFractionalValue == 0 ? 10 : (calculatedValue / mergedFractionalValue) * 0.1
-          const newValue = roundToNearestWhole((dragAmount / perPointOne) * 10) / 10
-          newSetting = modify(valueOptic, (current) => current + newValue, mergedValues.dimensions)
-        } else {
-          throw new Error(`Somehow we cannot identify the right dimensions.`)
-        }
-      } else {
-        newSetting = modify(valueOptic, (current) => current + dragAmount, mergedValues.dimensions)
-      }
+      const newSetting = modify(
+        valueOptic,
+        (current) =>
+          current +
+          getNewDragValue(
+            dragAmount,
+            isRight(mergedUnit) && mergedUnit.value === 'fr',
+            calculatedValue,
+            mergedValue,
+          ),
+        mergedValues.dimensions,
+      )
       const propertyValueAsString = printArrayCSSNumber(newSetting)
 
       const commands = [
@@ -150,4 +148,30 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
       return strategyApplicationResult(commands)
     },
   }
+}
+
+function getNewDragValue(
+  dragAmount: number,
+  isFractional: boolean,
+  possibleCalculatedValue: Either<string, number>,
+  mergedValue: Either<string, number>,
+) {
+  if (!isFractional) {
+    return dragAmount
+  }
+
+  if (!isRight(possibleCalculatedValue)) {
+    return 0
+  }
+
+  const mergedFractionalValue = foldEither(
+    () => 0,
+    (r) => r,
+    mergedValue,
+  )
+  const calculatedValue = possibleCalculatedValue.value
+  const perPointOne =
+    mergedFractionalValue == 0 ? 10 : (calculatedValue / mergedFractionalValue) * 0.1
+  const newValue = roundToNearestWhole((dragAmount / perPointOne) * 10) / 10
+  return newValue
 }
