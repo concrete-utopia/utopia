@@ -476,7 +476,7 @@ export class Editor {
       }
 
       // run the dom-walker
-      if (runDomWalker) {
+      if (shouldRerender || runDomWalker) {
         const domWalkerDispatchResult = runDomWalkerAndSaveResults(
           this.boundDispatch,
           this.domWalkerMutableState,
@@ -556,19 +556,17 @@ export class Editor {
         })
       }
 
-      if (somethingChanged) {
-        this.storedState = editorDispatchClosingOut(
-          this.boundDispatch,
-          dispatchedActions,
-          oldEditorState,
-          {
-            ...this.storedState,
-            entireUpdateFinished: entireUpdateFinished,
-            nothingChanged: dispatchResult.nothingChanged,
-          },
-          reactRouterErrorPreviouslyLogged,
-        )
-      }
+      this.storedState = editorDispatchClosingOut(
+        this.boundDispatch,
+        dispatchedActions,
+        oldEditorState,
+        {
+          ...this.storedState,
+          entireUpdateFinished: entireUpdateFinished,
+          nothingChanged: dispatchResult.nothingChanged,
+        },
+        reactRouterErrorPreviouslyLogged,
+      )
 
       Measure.taskTime(`Update Editor ${updateId}`, () => {
         ReactDOM.flushSync(() => {
