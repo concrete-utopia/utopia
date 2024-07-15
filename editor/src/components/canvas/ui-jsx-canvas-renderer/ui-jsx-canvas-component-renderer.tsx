@@ -387,10 +387,6 @@ function isRenderProp(prop: any): prop is { props: { [UTOPIA_PATH_KEY]: string }
 }
 
 function areElementsInChildrenOrPropsTree(elementPaths: Array<string>, props: any): boolean {
-  if (props.children == null || typeof props.children === 'string') {
-    return false
-  }
-
   const childrenArr = fastReactChildrenToArray(props.children)
 
   for (let c of childrenArr) {
@@ -420,6 +416,9 @@ function areElementsInChildrenOrPropsTree(elementPaths: Array<string>, props: an
 }
 
 function fastReactChildrenToArray(children: any) {
+  if (children == null || typeof children === 'string') {
+    return []
+  }
   if (React.isValidElement(children)) {
     return [children]
   }
