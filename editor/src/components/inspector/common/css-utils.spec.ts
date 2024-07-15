@@ -1816,7 +1816,7 @@ describe('tokenizeGridTemplate', () => {
   it('tokenizes the grid template strings (with units)', async () => {
     expect(tokenizeGridTemplate('123 456px 78 9rem')).toEqual(['123', '456px', '78', '9rem'])
   })
-  it('tokenizes the grid template strings (with some labels)', async () => {
+  it('tokenizes the grid template strings (with some area names)', async () => {
     expect(tokenizeGridTemplate('[foo] 123 456px 78 9rem')).toEqual([
       '[foo] 123',
       '456px',
@@ -1830,7 +1830,7 @@ describe('tokenizeGridTemplate', () => {
       '[bar] 9rem',
     ])
   })
-  it('tokenizes the grid template strings (with all labels)', async () => {
+  it('tokenizes the grid template strings (with all area names)', async () => {
     expect(tokenizeGridTemplate('[foo] 123 [bar]456px [baz]       78  [QUX]9rem')).toEqual([
       '[foo] 123',
       '[bar] 456px',
