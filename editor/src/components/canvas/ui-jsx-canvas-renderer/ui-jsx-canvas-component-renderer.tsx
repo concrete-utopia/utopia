@@ -115,14 +115,7 @@ export function createComponentRendererComponent(params: {
         return true
       }
 
-      if (ElementsToRerenderGLOBAL.current.length === 1) {
-        return isElementInChildrenOrPropsTree(
-          EP.toString(ElementsToRerenderGLOBAL.current[0]),
-          realPassedProps,
-        )
-      }
-
-      return isElementsInChildrenOrPropsTree(
+      return areElementsInChildrenOrPropsTree(
         ElementsToRerenderGLOBAL.current.map(EP.toString),
         realPassedProps,
       )
@@ -393,39 +386,7 @@ function isRenderProp(prop: any): prop is { props: { [UTOPIA_PATH_KEY]: string }
   )
 }
 
-function isElementInChildrenOrPropsTree(elementPath: string, props: any): boolean {
-  if (props.children == null || typeof props.children === 'string') {
-    return false
-  }
-
-  const childrenArr = fastReactChildrenToArray(props.children)
-  for (let c of childrenArr) {
-    if ((c.props as any)[UTOPIA_PATH_KEY] === elementPath) {
-      return true
-    }
-  }
-
-  for (let p in props) {
-    if (React.isValidElement(p) && (p.props as any)[UTOPIA_PATH_KEY] === elementPath) {
-      return true
-    }
-  }
-
-  for (let c of childrenArr) {
-    if (isElementInChildrenOrPropsTree(elementPath, c.props)) {
-      return true
-    }
-  }
-
-  for (let p in props) {
-    if (isRenderProp(p) && isElementInChildrenOrPropsTree(elementPath, p.props)) {
-      return true
-    }
-  }
-
-  return false
-}
-function isElementsInChildrenOrPropsTree(elementPaths: Array<string>, props: any): boolean {
+function areElementsInChildrenOrPropsTree(elementPaths: Array<string>, props: any): boolean {
   if (props.children == null || typeof props.children === 'string') {
     return false
   }
@@ -445,13 +406,13 @@ function isElementsInChildrenOrPropsTree(elementPaths: Array<string>, props: any
   }
 
   for (let c of childrenArr) {
-    if (isElementsInChildrenOrPropsTree(elementPaths, c.props)) {
+    if (areElementsInChildrenOrPropsTree(elementPaths, c.props)) {
       return true
     }
   }
 
   for (let p in props) {
-    if (isRenderProp(p) && isElementsInChildrenOrPropsTree(elementPaths, p.props)) {
+    if (isRenderProp(p) && areElementsInChildrenOrPropsTree(elementPaths, p.props)) {
       return true
     }
   }
