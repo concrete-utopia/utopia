@@ -897,38 +897,46 @@ function useAllInsertableComponents(targets: ElementPath[], insertionTarget: Ins
 
   const mode = insertionTarget.type === 'wrap-target' ? 'wrap' : 'insert'
 
-  const allInsertableComponents = useGetInsertableComponents(mode).flatMap((group) => {
-    return {
-      label: group.label,
-      options: group.options.filter((option) => {
-        const element = option.value.element()
-        if (
-          isInsertAsChildTarget(insertionTarget) ||
-          isConditionalTarget(insertionTarget) ||
-          isReplaceTarget(insertionTarget)
-        ) {
-          return true
+  const components = useGetInsertableComponents(mode)
+
+  const allInsertableComponents = React.useMemo(
+    () =>
+      components.flatMap((group) => {
+        return {
+          label: group.label,
+          options: group.options.filter((option) => {
+            const element = option.value.element()
+            if (
+              isInsertAsChildTarget(insertionTarget) ||
+              isConditionalTarget(insertionTarget) ||
+              isReplaceTarget(insertionTarget)
+            ) {
+              return true
+            }
+            if (isReplaceKeepChildrenAndStyleTarget(insertionTarget)) {
+              // If we want to keep the children of this element when it has some, don't include replacements that have children.
+              return targetChildren.length === 0 || !componentElementToInsertHasChildren(element)
+            }
+            if (isWrapTarget(insertionTarget)) {
+              if (element.type === 'JSX_ELEMENT' && isIntrinsicHTMLElement(element.name)) {
+                // when it is an intrinsic html element, we check if it supports children from our list
+                return intrinsicHTMLElementNamesThatSupportChildren.includes(
+                  element.name.baseVariable,
+                )
+              }
+              if (element.type === 'JSX_MAP_EXPRESSION') {
+                // we cannot currently wrap in List a conditional, fragment or map expression
+                return areAllJsxElements
+              }
+              return true
+            }
+            // Right now we only support inserting JSX elements when we insert into a render prop or when replacing elements
+            return element.type === 'JSX_ELEMENT'
+          }),
         }
-        if (isReplaceKeepChildrenAndStyleTarget(insertionTarget)) {
-          // If we want to keep the children of this element when it has some, don't include replacements that have children.
-          return targetChildren.length === 0 || !componentElementToInsertHasChildren(element)
-        }
-        if (isWrapTarget(insertionTarget)) {
-          if (element.type === 'JSX_ELEMENT' && isIntrinsicHTMLElement(element.name)) {
-            // when it is an intrinsic html element, we check if it supports children from our list
-            return intrinsicHTMLElementNamesThatSupportChildren.includes(element.name.baseVariable)
-          }
-          if (element.type === 'JSX_MAP_EXPRESSION') {
-            // we cannot currently wrap in List a conditional, fragment or map expression
-            return areAllJsxElements
-          }
-          return true
-        }
-        // Right now we only support inserting JSX elements when we insert into a render prop or when replacing elements
-        return element.type === 'JSX_ELEMENT'
       }),
-    }
-  })
+    [areAllJsxElements, components, insertionTarget, targetChildren.length],
+  )
 
   return allInsertableComponents
 }
