@@ -94,6 +94,7 @@ import {
   DropdownItem,
   DropdownMenuContainer,
   DropdownMenuItemList,
+  Separator,
 } from '../../../uuiui/radix-components'
 import { ContextMenuWrapper_DEPRECATED } from '../../context-menu-wrapper'
 import type { ContextMenuItem } from '../../context-menu-items'
@@ -975,7 +976,7 @@ export const ComponentPickerDropDown = React.memo<ComponentPickerDropDownProps>(
         return (
           <>
             <DropdownMenuItemList items={preferredChildItems} />
-            <div>----</div>
+            <Separator />
             <DropdownItem
               onSelect={showFullPicker}
               shouldShowCheckboxes={false}
@@ -1004,7 +1005,15 @@ export const ComponentPickerDropDown = React.memo<ComponentPickerDropDownProps>(
     }
   }, [allInsertableComponents, onItemClickFn, page, preferredChildItems, showFullPicker])
 
-  return <DropdownMenuContainer opener={props.opener} contents={contents} onClose={resetPage} />
+  return (
+    <DropdownMenuContainer
+      style={{ minWidth: 280 }}
+      sideOffset={4}
+      opener={props.opener}
+      contents={contents}
+      onClose={resetPage}
+    />
+  )
 })
 
 function contextMenuItemsFromVariants(

@@ -5,9 +5,15 @@ import { colorTheme } from './styles/theme'
 import { Icons } from './icons'
 import { when } from '../utils/react-conditionals'
 
+export const Separator = styled('div', {
+  height: 1,
+  margin: 5,
+  backgroundColor: colorTheme.contextMenuSeparator.value,
+})
+
 const DropdownMenuItemContainer = styled('div', {
   minWidth: 128,
-  padding: '4px 8px',
+  padding: '6px 8px',
   cursor: 'pointer',
   color: colorTheme.contextMenuForeground.value,
   '[data-highlighted] > &': {
@@ -189,11 +195,14 @@ export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
       e.stopPropagation()
     }
   }, [])
+
+  const opener = React.useMemo(() => props.opener(open), [open, props])
+
   const onEscapeKeyDown = React.useCallback((e: KeyboardEvent) => e.stopPropagation(), [])
   return (
     <RadixDropdownMenu.Root open={open} onOpenChange={onOpen}>
       <RadixDropdownMenu.Trigger style={{ background: 'none', border: 'none' }}>
-        {props.opener(open)}
+        {opener}
       </RadixDropdownMenu.Trigger>
       <RadixDropdownMenu.Portal>
         <RadixDropdownContent
@@ -217,6 +226,7 @@ export interface DropdownMenuContainerProps {
   onClose?: () => void
   sideOffset?: number
   alignOffset?: number
+  style?: React.CSSProperties
 }
 
 export const DropdownMenuContainer = React.memo<DropdownMenuContainerProps>((props) => {
@@ -252,6 +262,7 @@ export const DropdownMenuContainer = React.memo<DropdownMenuContainerProps>((pro
           collisionPadding={{ top: -4 }}
           align='start'
           alignOffset={props.alignOffset}
+          style={{ ...props.style }}
         >
           {props.contents}
         </RadixDropdownContent>
