@@ -229,6 +229,7 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
           justifyContent: 'center',
           cursor: gridEdgeToCSSCursor(props.axis === 'column' ? 'column-start' : 'row-start'),
           fontSize: 8,
+          position: 'relative',
         }}
         css={{
           opacity: resizing ? 1 : 0.5,
@@ -239,6 +240,10 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
         onMouseDown={mouseDownHandler}
       >
         {props.axis === 'row' ? '↕' : '↔'}
+        {when(
+          props.dimension.areaName != null,
+          <span style={{ position: 'absolute', top: 12 }}>{props.dimension.areaName}</span>,
+        )}
       </div>
       {when(
         resizing,

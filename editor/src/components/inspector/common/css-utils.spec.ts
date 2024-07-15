@@ -71,6 +71,7 @@ import {
   RegExpLibrary,
   toggleSimple,
   toggleStylePropPath,
+  tokenizeGridTemplate,
 } from './css-utils'
 
 describe('toggleStyleProp', () => {
@@ -1805,5 +1806,36 @@ describe('printBackgroundSize', () => {
         "value": "auto, auto auto, 100px, 100% 100%",
       }
     `)
+  })
+})
+
+describe('tokenizeGridTemplate', () => {
+  it('tokenizes the grid template strings (no units)', async () => {
+    expect(tokenizeGridTemplate('123 456 78 9')).toEqual(['123', '456', '78', '9'])
+  })
+  it('tokenizes the grid template strings (with units)', async () => {
+    expect(tokenizeGridTemplate('123 456px 78 9rem')).toEqual(['123', '456px', '78', '9rem'])
+  })
+  it('tokenizes the grid template strings (with some area names)', async () => {
+    expect(tokenizeGridTemplate('[foo] 123 456px 78 9rem')).toEqual([
+      '[foo] 123',
+      '456px',
+      '78',
+      '9rem',
+    ])
+    expect(tokenizeGridTemplate('123 [foo]456px 78 [bar]       9rem')).toEqual([
+      '123',
+      '[foo] 456px',
+      '78',
+      '[bar] 9rem',
+    ])
+  })
+  it('tokenizes the grid template strings (with all area names)', async () => {
+    expect(tokenizeGridTemplate('[foo] 123 [bar]456px [baz]       78  [QUX]9rem')).toEqual([
+      '[foo] 123',
+      '[bar] 456px',
+      '[baz] 78',
+      '[QUX] 9rem',
+    ])
   })
 })

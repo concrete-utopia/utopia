@@ -589,12 +589,18 @@ const GridCSSNumberUnits: Array<GridCSSNumberUnit> = [...LengthUnits, ...Resolut
 export interface GridCSSNumber {
   value: number
   unit: GridCSSNumberUnit | null
+  areaName: string | null
 }
 
-export function gridCSSNumber(value: number, unit: GridCSSNumberUnit | null): GridCSSNumber {
+export function gridCSSNumber(
+  value: number,
+  unit: GridCSSNumberUnit | null,
+  areaName: string | null,
+): GridCSSNumber {
   return {
-    value,
-    unit,
+    value: value,
+    unit: unit,
+    areaName: areaName,
   }
 }
 
@@ -762,7 +768,8 @@ export function printArrayCSSNumber(array: Array<GridCSSNumber>): string {
   return array
     .map((dimension) => {
       const printed = printCSSNumber(dimension, null)
-      return typeof printed === 'string' ? printed : `${printed}`
+      const areaName = dimension.areaName != null ? `[${dimension.areaName}] ` : ''
+      return `${areaName}${printed}`
     })
     .join(' ')
 }
@@ -834,13 +841,30 @@ export const parseCSSUnitlessAsNumber = (input: unknown): Either<string, number>
   }
 }
 
+const gridCSSTemplateNumberRegex = /^\[(.+)\]\s*(.+)$/
+
 export function parseToCSSGridNumber(input: unknown): Either<string, GridCSSNumber> {
+  function getParts() {
+    if (typeof input === 'string') {
+      const match = input.match(gridCSSTemplateNumberRegex)
+      if (match != null) {
+        return {
+          areaName: match[1],
+          inputToParse: match[2],
+        }
+      }
+    }
+    return { areaName: null, inputToParse: input }
+  }
+  const { areaName, inputToParse } = getParts()
+
   return mapEither((value) => {
     return {
       value: value.value,
       unit: value.unit as GridCSSNumberUnit | null,
+      areaName: areaName,
     }
-  }, parseCSSGrid(input))
+  }, parseCSSGrid(inputToParse))
 }
 
 export const parseCSSNumber = (
@@ -887,6 +911,27 @@ export function parseGridRange(input: unknown): Either<string, GridRange> {
   }
 }
 
+const reGridAreaNameBrackets = /^\[.+\]$/
+
+export function tokenizeGridTemplate(str: string): string[] {
+  let tokens: string[] = []
+  let parts = str.replace(/\]/g, '] ').split(/\s+/)
+
+  while (parts.length > 0) {
+    const part = parts.shift()?.trim()
+    if (part == null) {
+      break
+    }
+    if (part.match(reGridAreaNameBrackets) != null && parts.length > 0) {
+      const withAreaName = `${part} ${parts.shift()}`
+      tokens.push(withAreaName)
+    } else {
+      tokens.push(part)
+    }
+  }
+  return tokens
+}
+
 export function parseGridAutoOrTemplateBase(
   input: unknown,
 ): Either<string, GridAutoOrTemplateBase> {
@@ -895,7 +940,7 @@ export function parseGridAutoOrTemplateBase(
     return leftMapEither<string, ParseError, GridCSSNumber>(descriptionParseError, result)
   }
   if (typeof input === 'string') {
-    const parsedCSSArray = parseCSSArray([numberParse])(input.split(/ +/))
+    const parsedCSSArray = parseCSSArray([numberParse])(tokenizeGridTemplate(input))
     return bimapEither(
       (error) => {
         if (error.type === 'DESCRIPTION_PARSE_ERROR') {
