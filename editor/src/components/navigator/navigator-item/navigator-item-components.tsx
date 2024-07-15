@@ -22,7 +22,6 @@ import {
   ComponentPickerDropDown,
   conditionalTarget,
   renderPropTarget,
-  useCreateCallbackToShowComponentPicker,
 } from './component-picker-context-menu'
 import type { ConditionalCase } from '../../../core/model/conditionals'
 import { useConditionalCaseCorrespondingToBranchPath } from '../../../core/model/conditionals'
@@ -276,49 +275,52 @@ interface ReplaceElementButtonProps {
 const ReplaceElementButton = React.memo((props: ReplaceElementButtonProps) => {
   const { target, prop, iconColor, conditionalCase } = props
 
-  const { target: realTarget, insertionTarget } = ((): {
-    target: ElementPath
+  const { targets, insertionTarget } = React.useMemo((): {
+    targets: ElementPath[]
     insertionTarget: InsertionTarget
   } => {
     if (prop != null) {
       return {
-        target: EP.parentPath(target),
+        targets: [EP.parentPath(target)],
         insertionTarget: renderPropTarget(prop),
       }
     }
     if (conditionalCase != null) {
       return {
-        target: EP.parentPath(target),
+        targets: [EP.parentPath(target)],
         insertionTarget: conditionalTarget(conditionalCase),
       }
     }
     return {
-      target: target,
+      targets: [target],
       insertionTarget: EditorActions.replaceTarget,
     }
-  })()
+  }, [conditionalCase, prop, target])
 
-  const onClick = useCreateCallbackToShowComponentPicker()([realTarget], insertionTarget)
-
-  // TODO: show dropdown here
+  const opener = React.useCallback(
+    () => (
+      <Button
+        data-testid={ReplaceElementButtonTestId(target, prop)}
+        onClick={NO_OP}
+        style={{
+          height: 12,
+          width: 12,
+        }}
+      >
+        <Icn
+          category='navigator-element'
+          type='convert-action'
+          color={iconColor}
+          width={12}
+          height={12}
+        />
+      </Button>
+    ),
+    [iconColor, prop, target],
+  )
 
   return (
-    <Button
-      data-testid={ReplaceElementButtonTestId(target, prop)}
-      onClick={onClick}
-      style={{
-        height: 12,
-        width: 12,
-      }}
-    >
-      <Icn
-        category='navigator-element'
-        type='convert-action'
-        color={iconColor}
-        width={12}
-        height={12}
-      />
-    </Button>
+    <ComponentPickerDropDown opener={opener} insertionTarget={insertionTarget} targets={targets} />
   )
 })
 
