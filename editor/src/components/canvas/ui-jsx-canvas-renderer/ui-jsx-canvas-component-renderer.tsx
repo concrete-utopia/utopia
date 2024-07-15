@@ -116,13 +116,13 @@ export function createComponentRendererComponent(params: {
       }
 
       if (ElementsToRerenderGLOBAL.current.length === 1) {
-        return isElementInChildrenOrPropsTreeSingle(
+        return isElementInChildrenOrPropsTree(
           EP.toString(ElementsToRerenderGLOBAL.current[0]),
           realPassedProps,
         )
       }
 
-      return isElementInChildrenOrPropsTreeMulti(
+      return isElementsInChildrenOrPropsTree(
         ElementsToRerenderGLOBAL.current.map(EP.toString),
         realPassedProps,
       )
@@ -393,7 +393,7 @@ function isRenderProp(prop: any): prop is { props: { [UTOPIA_PATH_KEY]: string }
   )
 }
 
-function isElementInChildrenOrPropsTreeSingle(elementPath: string, props: any): boolean {
+function isElementInChildrenOrPropsTree(elementPath: string, props: any): boolean {
   if (props.children == null || typeof props.children === 'string') {
     return false
   }
@@ -412,20 +412,20 @@ function isElementInChildrenOrPropsTreeSingle(elementPath: string, props: any): 
   }
 
   for (let c of childrenArr) {
-    if (isElementInChildrenOrPropsTreeSingle(elementPath, c.props)) {
+    if (isElementInChildrenOrPropsTree(elementPath, c.props)) {
       return true
     }
   }
 
   for (let p in props) {
-    if (isRenderProp(p) && isElementInChildrenOrPropsTreeSingle(elementPath, p.props)) {
+    if (isRenderProp(p) && isElementInChildrenOrPropsTree(elementPath, p.props)) {
       return true
     }
   }
 
   return false
 }
-function isElementInChildrenOrPropsTreeMulti(elementPaths: Array<string>, props: any): boolean {
+function isElementsInChildrenOrPropsTree(elementPaths: Array<string>, props: any): boolean {
   if (props.children == null || typeof props.children === 'string') {
     return false
   }
@@ -445,13 +445,13 @@ function isElementInChildrenOrPropsTreeMulti(elementPaths: Array<string>, props:
   }
 
   for (let c of childrenArr) {
-    if (isElementInChildrenOrPropsTreeMulti(elementPaths, c.props)) {
+    if (isElementsInChildrenOrPropsTree(elementPaths, c.props)) {
       return true
     }
   }
 
   for (let p in props) {
-    if (isRenderProp(p) && isElementInChildrenOrPropsTreeMulti(elementPaths, p.props)) {
+    if (isRenderProp(p) && isElementsInChildrenOrPropsTree(elementPaths, p.props)) {
       return true
     }
   }
