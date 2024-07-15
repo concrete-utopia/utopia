@@ -1052,14 +1052,3 @@ export const ComponentPickerDropDown = React.memo<ComponentPickerDropDownProps>(
     />
   )
 })
-
-export const ComponentPickerContextMenu_D = React.memo(() => {
-  const [{ targets, insertionTarget }] = useAtom(ComponentPickerContextMenuAtom)
-
-  return (
-    <React.Fragment>
-      <ComponentPickerContextMenuSimple targets={targets} insertionTarget={insertionTarget} />
-      <ComponentPickerContextMenuFull targets={targets} insertionTarget={insertionTarget} />
-    </React.Fragment>
-  )
-})
