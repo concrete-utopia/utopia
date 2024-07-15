@@ -589,12 +589,18 @@ const GridCSSNumberUnits: Array<GridCSSNumberUnit> = [...LengthUnits, ...Resolut
 export interface GridCSSNumber {
   value: number
   unit: GridCSSNumberUnit | null
+  label: string | null
 }
 
-export function gridCSSNumber(value: number, unit: GridCSSNumberUnit | null): GridCSSNumber {
+export function gridCSSNumber(
+  value: number,
+  unit: GridCSSNumberUnit | null,
+  label: string | null,
+): GridCSSNumber {
   return {
     value,
     unit,
+    label,
   }
 }
 
@@ -762,7 +768,9 @@ export function printArrayCSSNumber(array: Array<GridCSSNumber>): string {
   return array
     .map((dimension) => {
       const printed = printCSSNumber(dimension, null)
-      return typeof printed === 'string' ? printed : `${printed}`
+      const label = dimension.label != null ? `[${dimension.label}] ` : ''
+      const value = typeof printed === 'string' ? printed : `${printed}`
+      return `${label}${value}`
     })
     .join(' ')
 }
@@ -834,13 +842,30 @@ export const parseCSSUnitlessAsNumber = (input: unknown): Either<string, number>
   }
 }
 
+const gridCSSTemplateNumberRegex = /^\[(.+)\]\s*(.+)$/
+
 export function parseToCSSGridNumber(input: unknown): Either<string, GridCSSNumber> {
+  function getParts() {
+    if (typeof input === 'string') {
+      const match = input.match(gridCSSTemplateNumberRegex)
+      if (match != null) {
+        return {
+          label: match[1],
+          inputToParse: match[2],
+        }
+      }
+    }
+    return { label: null, inputToParse: input }
+  }
+  const { label, inputToParse } = getParts()
+
   return mapEither((value) => {
     return {
       value: value.value,
       unit: value.unit as GridCSSNumberUnit | null,
+      label: label,
     }
-  }, parseCSSGrid(input))
+  }, parseCSSGrid(inputToParse))
 }
 
 export const parseCSSNumber = (
@@ -887,6 +912,25 @@ export function parseGridRange(input: unknown): Either<string, GridRange> {
   }
 }
 
+export function tokenizeGridTemplate(str: string): string[] {
+  let tokens: string[] = []
+  let parts = str.replace(/\]/g, '] ').split(/\s+/)
+
+  while (parts.length > 0) {
+    const part = parts.shift()?.trim()
+    if (part == null) {
+      break
+    }
+    if (part.match(/^\[.+\]$/) != null && parts.length > 0) {
+      const withLabel = `${part} ${parts.shift()}`
+      tokens.push(withLabel)
+    } else {
+      tokens.push(part)
+    }
+  }
+  return tokens
+}
+
 export function parseGridAutoOrTemplateBase(
   input: unknown,
 ): Either<string, GridAutoOrTemplateBase> {
@@ -895,7 +939,7 @@ export function parseGridAutoOrTemplateBase(
     return leftMapEither<string, ParseError, GridCSSNumber>(descriptionParseError, result)
   }
   if (typeof input === 'string') {
-    const parsedCSSArray = parseCSSArray([numberParse])(input.split(/ +/))
+    const parsedCSSArray = parseCSSArray([numberParse])(tokenizeGridTemplate(input))
     return bimapEither(
       (error) => {
         if (error.type === 'DESCRIPTION_PARSE_ERROR') {

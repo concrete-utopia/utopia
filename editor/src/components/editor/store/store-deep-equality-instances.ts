@@ -1970,11 +1970,13 @@ export const CSSNumberKeepDeepEquality: KeepDeepEqualityCall<CSSNumber> = combin
 )
 
 export const GridCSSNumberKeepDeepEquality: KeepDeepEqualityCall<GridCSSNumber> =
-  combine2EqualityCalls(
+  combine3EqualityCalls(
     (cssNum) => cssNum.value,
     createCallWithTripleEquals<number>(),
     (cssNum) => cssNum.unit,
     nullableDeepEquality(createCallWithTripleEquals<GridCSSNumberUnit>()),
+    (cssNum) => cssNum.label,
+    nullableDeepEquality(StringKeepDeepEquality),
     gridCSSNumber,
   )
 
