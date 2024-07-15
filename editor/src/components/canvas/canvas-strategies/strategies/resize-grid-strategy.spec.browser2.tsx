@@ -249,7 +249,7 @@ export var storyboard = (
         width: 600,
         height: 600,
         gridTemplateColumns: '2.4fr 1fr 1fr',
-        gridTemplateRows: '99px 129px 90px',
+        gridTemplateRows: '99px 129px 90px 0px',
         height: 'max-content',
       }}
     >

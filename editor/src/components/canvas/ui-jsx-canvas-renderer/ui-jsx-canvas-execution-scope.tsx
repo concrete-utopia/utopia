@@ -54,6 +54,9 @@ export interface ExecutionScope {
   requireResult: MapLike<any>
 }
 
+let lastSeenProjectContents: ProjectContentTreeRoot | null
+let executionScopeCache: { [filename: string]: ExecutionScope } = {}
+
 export function createExecutionScope(
   filePath: string,
   customRequire: (importOrigin: string, toImport: string) => any,
@@ -70,11 +73,18 @@ export function createExecutionScope(
   updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
   shouldIncludeCanvasRootInTheSpy: boolean,
   editedText: ElementPath | null,
-): {
-  scope: MapLike<any>
-  topLevelJsxComponents: Map<string | null, UtopiaJSXComponent>
-  requireResult: MapLike<any>
-} {
+): ExecutionScope {
+  // Return something from the cache as appropriate.
+  if (lastSeenProjectContents === projectContents) {
+    if (filePath in executionScopeCache) {
+      return executionScopeCache[filePath]
+    }
+  } else {
+    lastSeenProjectContents = projectContents
+    executionScopeCache = {}
+  }
+
+  // Build the scope.
   const { topLevelElements, imports, jsxFactoryFunction, combinedTopLevelArbitraryBlock } =
     getParseSuccessForFilePath(filePath, projectContents)
   const requireResult: MapLike<any> = importResultFromImports(filePath, imports, customRequire)
@@ -236,11 +246,13 @@ export function createExecutionScope(
     },
   })
 
-  return {
+  const toReturn = {
     scope: executionScope,
     topLevelJsxComponents: topLevelJsxComponents,
     requireResult: requireResult,
   }
+  executionScopeCache[filePath] = toReturn
+  return toReturn
 }
 
 const emptyHighlightBoundsResult = { code: '', highlightBounds: null }

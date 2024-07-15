@@ -7,7 +7,12 @@ import type {
   AssetFile,
   ParseSuccess,
 } from '../core/shared/project-file-types'
-import { directory, isDirectory, isImageFile } from '../core/shared/project-file-types'
+import {
+  directory,
+  isDirectory,
+  isImageFile,
+  RevisionsState,
+} from '../core/shared/project-file-types'
 import { isTextFile, isParseSuccess, isAssetFile } from '../core/shared/project-file-types'
 import Utils from '../utils/utils'
 import { dropLeadingSlash } from './filebrowser/filepath-utils'
@@ -28,6 +33,8 @@ import type {
   ProjectContentsTree,
   PathAndFileEntry,
 } from 'utopia-shared/src/types/assets'
+import { filtered, fromField, fromTypeGuard } from '../core/shared/optics/optic-creators'
+import { anyBy, toArrayOf } from '../core/shared/optics/optic-utilities'
 export type {
   AssetFileWithFileName,
   ProjectContentTreeRoot,
@@ -390,6 +397,32 @@ export const contentsTreeOptic: Optic<ProjectContentTreeRoot, PathAndFileEntry> 
     return result
   },
 )
+
+export function anyCodeAhead(tree: ProjectContentTreeRoot): boolean {
+  const revisionsStateOptic = contentsTreeOptic
+    .compose(fromField('file'))
+    .compose(fromTypeGuard(isTextFile))
+    .compose(fromField('fileContents'))
+    .compose(filtered((f) => f.parsed.type === 'PARSE_SUCCESS'))
+    .compose(fromField('revisionsState'))
+
+  return anyBy(
+    revisionsStateOptic,
+    (revisionsState) => {
+      switch (revisionsState) {
+        case 'BOTH_MATCH':
+        case 'PARSED_AHEAD':
+          return false
+        case 'CODE_AHEAD':
+        case 'CODE_AHEAD_BUT_PLEASE_TELL_VSCODE_ABOUT_IT':
+          return true
+        default:
+          assertNever(revisionsState)
+      }
+    },
+    tree,
+  )
+}
 
 export function walkContentsTreeForParseSuccess(
   tree: ProjectContentTreeRoot,

@@ -19,6 +19,8 @@ import StackFrame from '../../third-party/react-error-overlay/utils/stack-frame'
 import { useEditorState, Substores } from '../../components/editor/store/store-hook'
 import type { ErrorMessage } from './error-messages'
 import { fastForEach } from './utils'
+import type { EditorAction } from '../../components/editor/action-types'
+import * as EditorActions from '../../components/editor/actions/action-creators'
 
 const EmptyArray: Array<RuntimeErrorInfo> = []
 
@@ -87,6 +89,16 @@ export function hasReactRouterErrorBeenLogged(): boolean {
 
 export function setReactRouterErrorHasBeenLogged(value: boolean): void {
   reactRouterErrorLogged = value
+}
+
+export function reactRouterErrorTriggeredReset(): Array<EditorAction> {
+  const reactRouterErrorPreviouslyLogged = hasReactRouterErrorBeenLogged()
+  if (reactRouterErrorPreviouslyLogged) {
+    setReactRouterErrorHasBeenLogged(false)
+    return [EditorActions.resetCanvas()]
+  } else {
+    return []
+  }
 }
 
 export interface OverlayError {
