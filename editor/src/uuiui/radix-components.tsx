@@ -97,7 +97,7 @@ export const DropdownItem = React.memo<DropdownItemProps>((props) => {
   const shouldShowIconsForSubmenuItems = subMenuItems?.some((s) => s.icon != null) ?? false
 
   return (
-    <ItemContainer isSubmenu={subMenuItems != null} onSelect={onSelect}>
+    <ItemContainer isSubmenu={!isNullOrEmptyArray(subMenuItems)} onSelect={onSelect}>
       <div
         style={{
           display: 'flex',
@@ -214,6 +214,7 @@ export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
 export interface DropdownMenuContainerProps {
   opener: (open: boolean) => React.ReactNode
   contents: React.ReactNode
+  onClose?: () => void
   sideOffset?: number
   alignOffset?: number
 }
@@ -228,9 +229,18 @@ export const DropdownMenuContainer = React.memo<DropdownMenuContainerProps>((pro
   const onEscapeKeyDown = React.useCallback((e: KeyboardEvent) => e.stopPropagation(), [])
 
   const [open, onOpen] = React.useState(false)
+  const onOpenCallback = React.useCallback(
+    (opened: boolean) => {
+      if (props.onClose != null && opened === false) {
+        props.onClose()
+      }
+      onOpen(opened)
+    },
+    [props],
+  )
 
   return (
-    <RadixDropdownMenu.Root open={open} onOpenChange={onOpen}>
+    <RadixDropdownMenu.Root open={open} onOpenChange={onOpenCallback}>
       <RadixDropdownMenu.Trigger style={{ background: 'none', border: 'none' }}>
         {props.opener(open)}
       </RadixDropdownMenu.Trigger>
