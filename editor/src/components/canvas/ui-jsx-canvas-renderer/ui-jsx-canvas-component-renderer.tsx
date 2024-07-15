@@ -102,15 +102,22 @@ export function createComponentRendererComponent(params: {
     const instancePath: ElementPath | null = tryToGetInstancePath(instancePathAny, pathsString)
 
     function shouldUpdate() {
-      return (
-        ElementsToRerenderGLOBAL.current === 'rerender-all-elements' ||
-        ElementsToRerenderGLOBAL.current.some((er) => {
-          return (
-            (instancePath != null &&
-              (EP.pathsEqual(er, instancePath) || EP.isParentComponentOf(instancePath, er))) ||
-            isElementInChildrenOrPropsTree(EP.toString(er), realPassedProps)
-          )
-        })
+      if (ElementsToRerenderGLOBAL.current === 'rerender-all-elements') {
+        return true
+      }
+
+      if (
+        instancePath != null &&
+        ElementsToRerenderGLOBAL.current.some(
+          (er) => EP.pathsEqual(er, instancePath) || EP.isParentComponentOf(instancePath, er),
+        )
+      ) {
+        return true
+      }
+
+      return areElementsInChildrenOrPropsTree(
+        ElementsToRerenderGLOBAL.current.map(EP.toString),
+        realPassedProps,
       )
     }
 
@@ -379,36 +386,39 @@ function isRenderProp(prop: any): prop is { props: { [UTOPIA_PATH_KEY]: string }
   )
 }
 
-function isElementInChildrenOrPropsTree(elementPath: string, props: any): boolean {
+function areElementsInChildrenOrPropsTree(elementPaths: Array<string>, props: any): boolean {
   const childrenArr = fastReactChildrenToArray(props.children)
+
   for (let c of childrenArr) {
-    if ((c.props as any)[UTOPIA_PATH_KEY] === elementPath) {
+    if (elementPaths.includes((c.props as any)[UTOPIA_PATH_KEY])) {
       return true
     }
   }
 
   for (let p in props) {
-    if (React.isValidElement(p) && (p.props as any)[UTOPIA_PATH_KEY] === elementPath) {
+    if (React.isValidElement(p) && elementPaths.includes((p.props as any)[UTOPIA_PATH_KEY])) {
       return true
     }
   }
 
   for (let c of childrenArr) {
-    if (isElementInChildrenOrPropsTree(elementPath, c.props)) {
+    if (areElementsInChildrenOrPropsTree(elementPaths, c.props)) {
       return true
     }
   }
 
   for (let p in props) {
-    if (isRenderProp(p) && isElementInChildrenOrPropsTree(elementPath, p.props)) {
+    if (isRenderProp(p) && areElementsInChildrenOrPropsTree(elementPaths, p.props)) {
       return true
     }
   }
-
   return false
 }
 
 function fastReactChildrenToArray(children: any) {
+  if (children == null || typeof children === 'string') {
+    return []
+  }
   if (React.isValidElement(children)) {
     return [children]
   }
