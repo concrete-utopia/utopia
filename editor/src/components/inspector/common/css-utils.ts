@@ -769,8 +769,7 @@ export function printArrayCSSNumber(array: Array<GridCSSNumber>): string {
     .map((dimension) => {
       const printed = printCSSNumber(dimension, null)
       const areaName = dimension.areaName != null ? `[${dimension.areaName}] ` : ''
-      const value = typeof printed === 'string' ? printed : `${printed}`
-      return `${areaName}${value}`
+      return `${areaName}${printed}`
     })
     .join(' ')
 }
