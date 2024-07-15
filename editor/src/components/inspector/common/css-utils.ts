@@ -589,18 +589,18 @@ const GridCSSNumberUnits: Array<GridCSSNumberUnit> = [...LengthUnits, ...Resolut
 export interface GridCSSNumber {
   value: number
   unit: GridCSSNumberUnit | null
-  label: string | null
+  areaName: string | null
 }
 
 export function gridCSSNumber(
   value: number,
   unit: GridCSSNumberUnit | null,
-  label: string | null,
+  areaName: string | null,
 ): GridCSSNumber {
   return {
-    value,
-    unit,
-    label,
+    value: value,
+    unit: unit,
+    areaName: areaName,
   }
 }
 
@@ -768,9 +768,9 @@ export function printArrayCSSNumber(array: Array<GridCSSNumber>): string {
   return array
     .map((dimension) => {
       const printed = printCSSNumber(dimension, null)
-      const label = dimension.label != null ? `[${dimension.label}] ` : ''
+      const areaName = dimension.areaName != null ? `[${dimension.areaName}] ` : ''
       const value = typeof printed === 'string' ? printed : `${printed}`
-      return `${label}${value}`
+      return `${areaName}${value}`
     })
     .join(' ')
 }
@@ -850,20 +850,20 @@ export function parseToCSSGridNumber(input: unknown): Either<string, GridCSSNumb
       const match = input.match(gridCSSTemplateNumberRegex)
       if (match != null) {
         return {
-          label: match[1],
+          areaName: match[1],
           inputToParse: match[2],
         }
       }
     }
-    return { label: null, inputToParse: input }
+    return { areaName: null, inputToParse: input }
   }
-  const { label, inputToParse } = getParts()
+  const { areaName, inputToParse } = getParts()
 
   return mapEither((value) => {
     return {
       value: value.value,
       unit: value.unit as GridCSSNumberUnit | null,
-      label: label,
+      areaName: areaName,
     }
   }, parseCSSGrid(inputToParse))
 }
@@ -912,6 +912,8 @@ export function parseGridRange(input: unknown): Either<string, GridRange> {
   }
 }
 
+const reGridAreaNameBrackets = /^\[.+\]$/
+
 export function tokenizeGridTemplate(str: string): string[] {
   let tokens: string[] = []
   let parts = str.replace(/\]/g, '] ').split(/\s+/)
@@ -921,9 +923,9 @@ export function tokenizeGridTemplate(str: string): string[] {
     if (part == null) {
       break
     }
-    if (part.match(/^\[.+\]$/) != null && parts.length > 0) {
-      const withLabel = `${part} ${parts.shift()}`
-      tokens.push(withLabel)
+    if (part.match(reGridAreaNameBrackets) != null && parts.length > 0) {
+      const withAreaName = `${part} ${parts.shift()}`
+      tokens.push(withAreaName)
     } else {
       tokens.push(part)
     }

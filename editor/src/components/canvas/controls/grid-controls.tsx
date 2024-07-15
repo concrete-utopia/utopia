@@ -241,8 +241,8 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
       >
         {props.axis === 'row' ? '↕' : '↔'}
         {when(
-          props.dimension.label != null,
-          <span style={{ position: 'absolute', top: 12 }}>{props.dimension.label}</span>,
+          props.dimension.areaName != null,
+          <span style={{ position: 'absolute', top: 12 }}>{props.dimension.areaName}</span>,
         )}
       </div>
       {when(

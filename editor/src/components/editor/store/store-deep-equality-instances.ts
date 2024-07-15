@@ -1975,7 +1975,7 @@ export const GridCSSNumberKeepDeepEquality: KeepDeepEqualityCall<GridCSSNumber> 
     createCallWithTripleEquals<number>(),
     (cssNum) => cssNum.unit,
     nullableDeepEquality(createCallWithTripleEquals<GridCSSNumberUnit>()),
-    (cssNum) => cssNum.label,
+    (cssNum) => cssNum.areaName,
     nullableDeepEquality(StringKeepDeepEquality),
     gridCSSNumber,
   )
