@@ -1,5 +1,11 @@
 import React from 'react'
-import { useContextMenu, type ShowContextMenuParams, type TriggerEvent } from 'react-contexify'
+import {
+  Menu,
+  contextMenu,
+  useContextMenu,
+  type ShowContextMenuParams,
+  type TriggerEvent,
+} from 'react-contexify'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import {
@@ -9,8 +15,10 @@ import {
   jsxElement,
   jsxElementFromJSXElementWithoutUID,
   isIntrinsicHTMLElement,
+  jsxElementNameFromString,
+  getJSXElementNameLastPart,
 } from '../../../core/shared/element-template'
-import type { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import {
@@ -37,8 +45,8 @@ import {
 import type { PreferredChildComponentDescriptor } from '../../custom-code/internal-property-controls'
 import { fixUtopiaElement, generateConsistentUID } from '../../../core/shared/uid-utils'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
-import { NO_OP, assertNever } from '../../../core/shared/utils'
-import { Icn, type IcnProps } from '../../../uuiui'
+import { BodyMenuOpenClass, NO_OP, assertNever } from '../../../core/shared/utils'
+import { FlexRow, Icn, type IcnProps } from '../../../uuiui'
 import type {
   EditorAction,
   EditorDispatch,
@@ -48,6 +56,7 @@ import type {
   WrapTarget,
 } from '../../editor/action-types'
 import { type ProjectContentTreeRoot } from '../../assets'
+import type { ComponentInfo } from '../../custom-code/code-file'
 import {
   type PropertyControlsInfo,
   componentElementToInsertHasChildren,
@@ -56,7 +65,7 @@ import { type Icon } from 'utopia-api'
 import { getRegisteredComponent } from '../../../core/property-controls/property-controls-utils'
 import { defaultImportsForComponentModule } from '../../../core/property-controls/property-controls-local'
 import { useGetInsertableComponents } from '../../canvas/ui/floating-insert-menu'
-import { atom, useSetAtom } from 'jotai'
+import { atom, useAtom, useSetAtom } from 'jotai'
 import {
   childInsertionPath,
   conditionalClauseInsertionPath,
@@ -86,6 +95,9 @@ import {
   DropdownMenuContainer,
   DropdownMenuItemList,
 } from '../../../uuiui/radix-components'
+import { ContextMenuWrapper_DEPRECATED } from '../../context-menu-wrapper'
+import type { ContextMenuItem } from '../../context-menu-items'
+import { elementFromInsertMenuItem } from '../../editor/insert-callbacks'
 
 type RenderPropTarget = { type: 'render-prop'; prop: string }
 type ConditionalTarget = { type: 'conditional'; conditionalCase: ConditionalCase }
@@ -405,6 +417,95 @@ export const useCreateCallbackToShowComponentPicker =
     )
   }
 
+function defaultVariantItem(
+  elementName: string,
+  label: string | React.ReactNode,
+  imports: Imports,
+  submenuName: string | React.ReactNode | null,
+  onItemClick: (preferredChildToInsert: ElementToInsert) => void,
+): ContextMenuItem<unknown> {
+  return {
+    name: label,
+    submenuName: submenuName,
+    enabled: true,
+    action: () =>
+      onItemClick({
+        name: elementName,
+        elementToInsert: (uid: string) =>
+          jsxElement(elementName, uid, jsxAttributesFromMap({}), []),
+        additionalImports: imports,
+      }),
+  }
+}
+
+function singletonItem(
+  label: string | React.ReactNode,
+  variant: ComponentInfo,
+  onItemClick: (preferredChildToInsert: ElementToInsert) => void,
+): ContextMenuItem<unknown> {
+  return {
+    name: label,
+    submenuName: null,
+    enabled: true,
+    action: () =>
+      onItemClick({
+        name: variant.insertMenuLabel,
+        elementToInsert: (uid: string) => elementFromInsertMenuItem(variant.elementToInsert(), uid),
+        additionalImports: variant.importsToAdd,
+      }),
+  }
+}
+
+function variantItem(
+  variant: ComponentInfo,
+  submenuName: string | React.ReactNode | null,
+  onItemClick: (preferredChildToInsert: ElementToInsert) => void,
+): ContextMenuItem<unknown> {
+  return {
+    name: variant.insertMenuLabel,
+    submenuName: submenuName,
+    enabled: true,
+    action: () =>
+      onItemClick({
+        name: variant.insertMenuLabel,
+        elementToInsert: (uid: string) => elementFromInsertMenuItem(variant.elementToInsert(), uid),
+        additionalImports: variant.importsToAdd,
+      }),
+  }
+}
+
+const separatorItem: ContextMenuItem<unknown> = {
+  name: <div key='separator' className='contexify_separator' />,
+  enabled: false,
+  isSeparator: true,
+  action: () => null,
+}
+
+function moreItem(
+  menuWrapperRef: React.RefObject<HTMLDivElement>,
+  showComponentPickerContextMenu: ShowComponentPickerContextMenu,
+): ContextMenuItem<unknown> {
+  return {
+    name: <FlexRow style={{ paddingLeft: 22 }}>More…</FlexRow>,
+    enabled: true,
+    action: (_data, _dispatch, _rightClickCoordinate, e) => {
+      // FIXME Yeah this is horrific
+      const currentMenu = (menuWrapperRef.current?.childNodes[1] as HTMLDivElement) ?? null
+      const position =
+        currentMenu == null
+          ? undefined
+          : {
+              x: currentMenu.offsetLeft,
+              y: currentMenu.offsetTop,
+            }
+
+      showComponentPickerContextMenu(e as React.MouseEvent<any>, {
+        position: position,
+      })
+    },
+  }
+}
+
 export function insertComponentPickerItem(
   toInsert: InsertableComponent,
   targets: ElementPath[],
@@ -647,6 +748,11 @@ function insertPreferredChild(
     dispatch,
     insertionTarget,
   )
+}
+
+interface ComponentPickerContextMenuProps {
+  targets: ElementPath[]
+  insertionTarget: InsertionTarget
 }
 
 export function iconPropsForIcon(icon: Icon, inverted: boolean = false): IcnProps {
@@ -899,4 +1005,258 @@ export const ComponentPickerDropDown = React.memo<ComponentPickerDropDownProps>(
   }, [allInsertableComponents, onItemClickFn, page, preferredChildItems, showFullPicker])
 
   return <DropdownMenuContainer opener={props.opener} contents={contents} onClose={resetPage} />
+})
+
+function contextMenuItemsFromVariants(
+  preferredChildComponentDescriptor: PreferredChildComponentDescriptorWithIcon,
+  submenuLabel: React.ReactElement,
+  defaultVariantImports: Imports,
+  onItemClick: (_: ElementToInsert) => void,
+): ContextMenuItem<unknown>[] {
+  const allJSXElements = preferredChildComponentDescriptor.variants.every(
+    (v) => v.elementToInsert().type === 'JSX_ELEMENT',
+  )
+
+  if (allJSXElements) {
+    return [
+      defaultVariantItem(
+        preferredChildComponentDescriptor.name,
+        '(empty)',
+        defaultVariantImports,
+        submenuLabel,
+        onItemClick,
+      ),
+      ...preferredChildComponentDescriptor.variants.map((variant) => {
+        return variantItem(variant, submenuLabel, onItemClick)
+      }),
+    ]
+  }
+
+  if (preferredChildComponentDescriptor.variants.length === 1) {
+    return [singletonItem(submenuLabel, preferredChildComponentDescriptor.variants[0], onItemClick)]
+  }
+
+  return preferredChildComponentDescriptor.variants.map((variant) => {
+    return variantItem(variant, submenuLabel, onItemClick)
+  })
+}
+
+const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuProps>(
+  ({ targets, insertionTarget }) => {
+    const showFullMenu = useCreateCallbackToShowComponentPicker()(targets, insertionTarget, 'full')
+
+    // for insertion we currently only support one target
+    const firstTarget = targets[0]
+    const preferredChildren = usePreferredChildrenForTarget(firstTarget, insertionTarget)
+
+    const dispatch = useDispatch()
+
+    const projectContentsRef = useRefEditorState((state) => state.editor.projectContents)
+    const allElementPropsRef = useRefEditorState((state) => state.editor.allElementProps)
+    const propertyControlsInfoRef = useRefEditorState((state) => state.editor.propertyControlsInfo)
+    const metadataRef = useRefEditorState((state) => state.editor.jsxMetadata)
+    const elementPathTreesRef = useRefEditorState((state) => state.editor.elementPathTree)
+
+    const onItemClick = React.useCallback(
+      (preferredChildToInsert: ElementToInsert) =>
+        insertPreferredChild(
+          preferredChildToInsert,
+          targets,
+          projectContentsRef.current,
+          allElementPropsRef.current,
+          propertyControlsInfoRef.current,
+          metadataRef.current,
+          elementPathTreesRef.current,
+          dispatch,
+          insertionTarget,
+        ),
+      [
+        targets,
+        projectContentsRef,
+        allElementPropsRef,
+        propertyControlsInfoRef,
+        metadataRef,
+        elementPathTreesRef,
+        dispatch,
+        insertionTarget,
+      ],
+    )
+    const wrapperRef = React.useRef<HTMLDivElement>(null)
+
+    const items: Array<ContextMenuItem<unknown>> = preferredChildren
+      .flatMap<ContextMenuItem<unknown>>((data) => {
+        const iconProps = iconPropsForIcon(data.icon)
+
+        const submenuLabel = (
+          <FlexRow
+            style={{ gap: 10, width: 228 }}
+            data-testid={labelTestIdForComponentIcon(data.name, data.moduleName ?? '', data.icon)}
+          >
+            <Icn {...iconProps} width={12} height={12} />
+            {data.name}
+          </FlexRow>
+        )
+
+        const defaultVariantImports = defaultImportsForComponentModule(data.name, data.moduleName)
+
+        const jsxName = jsxElementNameFromString(data.name)
+        const name = getJSXElementNameLastPart(jsxName)
+        if (data.variants == null || data.variants.length === 0) {
+          return [defaultVariantItem(name, submenuLabel, defaultVariantImports, null, onItemClick)]
+        }
+
+        return contextMenuItemsFromVariants(data, submenuLabel, defaultVariantImports, onItemClick)
+      })
+      .concat([separatorItem, moreItem(wrapperRef, showFullMenu)])
+
+    return (
+      <ContextMenuWrapper_DEPRECATED
+        items={items}
+        data={{}}
+        id={PreferredMenuId}
+        forwardRef={wrapperRef}
+      />
+    )
+  },
+)
+
+const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProps>(
+  ({ targets, insertionTarget }) => {
+    // for insertion we currently only support one target
+    const firstTarget = targets[0]
+    const targetChildren = useEditorState(
+      Substores.metadata,
+      (store) => MetadataUtils.getChildrenUnordered(store.editor.jsxMetadata, firstTarget),
+      'usePreferredChildrenForTarget targetChildren',
+    )
+
+    const areAllJsxElements = useEditorState(
+      Substores.metadata,
+      (store) =>
+        targets.every((target) => MetadataUtils.isJSXElement(target, store.editor.jsxMetadata)),
+      'areAllJsxElements targetElement',
+    )
+
+    const mode = insertionTarget.type === 'wrap-target' ? 'wrap' : 'insert'
+
+    const allInsertableComponents = useGetInsertableComponents(mode).flatMap((group) => {
+      return {
+        label: group.label,
+        options: group.options.filter((option) => {
+          const element = option.value.element()
+          if (
+            isInsertAsChildTarget(insertionTarget) ||
+            isConditionalTarget(insertionTarget) ||
+            isReplaceTarget(insertionTarget)
+          ) {
+            return true
+          }
+          if (isReplaceKeepChildrenAndStyleTarget(insertionTarget)) {
+            // If we want to keep the children of this element when it has some, don't include replacements that have children.
+            return targetChildren.length === 0 || !componentElementToInsertHasChildren(element)
+          }
+          if (isWrapTarget(insertionTarget)) {
+            if (element.type === 'JSX_ELEMENT' && isIntrinsicHTMLElement(element.name)) {
+              // when it is an intrinsic html element, we check if it supports children from our list
+              return intrinsicHTMLElementNamesThatSupportChildren.includes(
+                element.name.baseVariable,
+              )
+            }
+            if (element.type === 'JSX_MAP_EXPRESSION') {
+              // we cannot currently wrap in List a conditional, fragment or map expression
+              return areAllJsxElements
+            }
+            return true
+          }
+          // Right now we only support inserting JSX elements when we insert into a render prop or when replacing elements
+          return element.type === 'JSX_ELEMENT'
+        }),
+      }
+    })
+
+    const dispatch = useDispatch()
+
+    const projectContentsRef = useRefEditorState((state) => state.editor.projectContents)
+    const allElementPropsRef = useRefEditorState((state) => state.editor.allElementProps)
+    const propertyControlsInfoRef = useRefEditorState((state) => state.editor.propertyControlsInfo)
+    const metadataRef = useRefEditorState((state) => state.editor.jsxMetadata)
+    const elementPathTreesRef = useRefEditorState((state) => state.editor.elementPathTree)
+
+    const hideAllContextMenus = React.useCallback(() => {
+      contextMenu.hideAll()
+    }, [])
+
+    const onItemClick = React.useCallback(
+      (preferredChildToInsert: InsertableComponent) => (e: React.UIEvent) => {
+        e.stopPropagation()
+        e.preventDefault()
+
+        insertComponentPickerItem(
+          preferredChildToInsert,
+          targets,
+          projectContentsRef.current,
+          allElementPropsRef.current,
+          propertyControlsInfoRef.current,
+          metadataRef.current,
+          elementPathTreesRef.current,
+          dispatch,
+          insertionTarget,
+        )
+
+        hideAllContextMenus()
+      },
+      [
+        targets,
+        projectContentsRef,
+        allElementPropsRef,
+        propertyControlsInfoRef,
+        metadataRef,
+        elementPathTreesRef,
+        dispatch,
+        insertionTarget,
+        hideAllContextMenus,
+      ],
+    )
+
+    const squashEvents = React.useCallback((e: React.UIEvent<unknown>) => {
+      e.stopPropagation()
+    }, [])
+
+    const onVisibilityChange = React.useCallback((isVisible: boolean) => {
+      if (isVisible) {
+        document.body.classList.add(BodyMenuOpenClass)
+      } else {
+        document.body.classList.remove(BodyMenuOpenClass)
+      }
+    }, [])
+
+    return (
+      <Menu
+        id={FullMenuId}
+        animation={false}
+        style={{ width: 260 }}
+        onClick={squashEvents}
+        onVisibilityChange={onVisibilityChange}
+      >
+        <ComponentPicker
+          allComponents={allInsertableComponents}
+          onItemClick={onItemClick}
+          closePicker={hideAllContextMenus}
+          shownInToolbar={false}
+          insertionActive={false}
+        />
+      </Menu>
+    )
+  },
+)
+
+export const ComponentPickerContextMenu = React.memo(() => {
+  const [{ targets, insertionTarget }] = useAtom(ComponentPickerContextMenuAtom)
+
+  return (
+    <React.Fragment>
+      <ComponentPickerContextMenuSimple targets={targets} insertionTarget={insertionTarget} />
+      <ComponentPickerContextMenuFull targets={targets} insertionTarget={insertionTarget} />
+    </React.Fragment>
+  )
 })
