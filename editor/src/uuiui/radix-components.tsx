@@ -121,10 +121,10 @@ export const DropdownItem = React.memo<DropdownItemProps>((props) => {
           {when(
             shouldShowChevrons,
             <>
-              <div style={{ opacity: subMenuItems == null ? 0 : 1 }}>
+              <div style={{ opacity: isNullOrEmptyArray(subMenuItems) ? 0 : 1 }}>
                 <Icons.ExpansionArrowRight color='white' />
               </div>
-              {subMenuItems == null ? null : (
+              {isNullOrEmptyArray(subMenuItems) ? null : (
                 <RadixDropdownMenu.Portal>
                   <RadixDropdownSubcontent sideOffset={10} alignOffset={-6}>
                     {subMenuItems.map((child) => (
@@ -249,3 +249,7 @@ export const DropdownMenuContainer = React.memo<DropdownMenuContainerProps>((pro
     </RadixDropdownMenu.Root>
   )
 })
+
+function isNullOrEmptyArray<T>(ts: Array<T> | null | undefined): ts is null | undefined {
+  return ts == null || ts.length === 0
+}
