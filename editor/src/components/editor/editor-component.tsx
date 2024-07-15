@@ -3,16 +3,11 @@
 /** @jsxFrag React.Fragment */
 import { css, jsx, keyframes } from '@emotion/react'
 import { chrome as isChrome } from 'platform-detect'
-import React, { useEffect } from 'react'
-import ReactDOM from 'react-dom'
+import React from 'react'
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { IS_TEST_ENVIRONMENT } from '../../common/env-vars'
-import {
-  CanvasContextMenuPortalTargetID,
-  assertNever,
-  projectURLForProject,
-} from '../../core/shared/utils'
+import { assertNever, projectURLForProject } from '../../core/shared/utils'
 import Keyboard from '../../utils/keyboard'
 import { Modifier } from '../../utils/modifiers'
 import {
@@ -86,10 +81,7 @@ import {
   useUpdateActiveRemixSceneOnSelectionChange,
 } from '../canvas/remix/utopia-remix-root-component'
 import { useDefaultCollapsedViews } from './use-default-collapsed-views'
-import {
-  ComponentPickerContextMenu,
-  useCreateCallbackToShowComponentPicker,
-} from '../navigator/navigator-item/component-picker-context-menu'
+import { useCreateCallbackToShowComponentPicker } from '../navigator/navigator-item/component-picker-context-menu'
 import { useGithubPolling } from '../../core/shared/github/helpers'
 import { useAtom } from 'jotai'
 import { clearOpenMenuIds } from '../../core/shared/menu-state'
@@ -461,8 +453,6 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
 
   useClearSelectionOnNavigation()
 
-  const portalTarget = document.getElementById(CanvasContextMenuPortalTargetID)
-
   return (
     <>
       <ColorThemeComponent />
@@ -559,9 +549,6 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
         <LockedOverlay />
         <SharingDialog />
       </SimpleFlexRow>
-      {portalTarget != null
-        ? ReactDOM.createPortal(<ComponentPickerContextMenu />, portalTarget)
-        : null}
       <EditorCommon
         mouseDown={onWindowMouseDown}
         mouseUp={onWindowMouseUp}

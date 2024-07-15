@@ -97,3 +97,42 @@ export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
     </RadixDropdownMenu.Root>
   )
 })
+
+export interface DropdownMenuContainerProps {
+  opener: (open: boolean) => React.ReactNode
+  contents: React.ReactNode
+  sideOffset?: number
+  alignOffset?: number
+}
+
+export const DropdownMenuContainer = React.memo<DropdownMenuContainerProps>((props) => {
+  const stopPropagation = React.useCallback((e: React.KeyboardEvent) => {
+    const hasModifiers = e.altKey || e.metaKey || e.shiftKey || e.ctrlKey
+    if (!hasModifiers) {
+      e.stopPropagation()
+    }
+  }, [])
+  const onEscapeKeyDown = React.useCallback((e: KeyboardEvent) => e.stopPropagation(), [])
+
+  const [open, onOpen] = React.useState(false)
+
+  return (
+    <RadixDropdownMenu.Root open={open} onOpenChange={onOpen}>
+      <RadixDropdownMenu.Trigger style={{ background: 'none', border: 'none' }}>
+        {props.opener(open)}
+      </RadixDropdownMenu.Trigger>
+      <RadixDropdownMenu.Portal>
+        <RadixDropdownContent
+          onKeyDown={stopPropagation}
+          onEscapeKeyDown={onEscapeKeyDown}
+          sideOffset={props.sideOffset}
+          collisionPadding={{ top: -4 }}
+          align='start'
+          alignOffset={props.alignOffset}
+        >
+          {props.contents}
+        </RadixDropdownContent>
+      </RadixDropdownMenu.Portal>
+    </RadixDropdownMenu.Root>
+  )
+})

@@ -19,20 +19,16 @@ import {
 import type { SelectionLocked } from '../../canvas/canvas-types'
 import type { InsertionTarget } from './component-picker-context-menu'
 import {
+  ComponentPickerDropDown,
   conditionalTarget,
   renderPropTarget,
   useCreateCallbackToShowComponentPicker,
 } from './component-picker-context-menu'
 import type { ConditionalCase } from '../../../core/model/conditionals'
 import { useConditionalCaseCorrespondingToBranchPath } from '../../../core/model/conditionals'
-import {
-  getJSXElementNameAsString,
-  isIntrinsicHTMLElement,
-} from '../../../core/shared/element-template'
-import { getRegisteredComponent } from '../../../core/property-controls/property-controls-utils'
-import { intrinsicHTMLElementNamesThatSupportChildren } from '../../../core/shared/dom-utils'
 import { ExpandableIndicator } from './expandable-indicator'
 import { elementSupportsChildrenFromPropertyControls } from '../../editor/element-children'
+import { NO_OP } from '../../../core/shared/utils'
 
 export const NavigatorHintCircleDiameter = 8
 
@@ -215,6 +211,8 @@ export function addChildButtonTestId(target: ElementPath): string {
   return `add-child-button-${EP.toString(target)}`
 }
 
+const INSERT_AS_CHILD_TARGET = EditorActions.insertAsChildTarget()
+
 const AddChildButton = React.memo((props: AddChildButtonProps) => {
   const { target, iconColor } = props
   const supportsChildren = useEditorState(
@@ -228,9 +226,28 @@ const AddChildButton = React.memo((props: AddChildButtonProps) => {
     'AddChildButton supportsChildren',
   )
 
-  const onClick = useCreateCallbackToShowComponentPicker()(
-    [target],
-    EditorActions.insertAsChildTarget(),
+  const targets = React.useMemo(() => [target], [target])
+
+  const opener = React.useCallback(
+    () => (
+      <Button
+        onClick={NO_OP}
+        style={{
+          height: 12,
+          width: 12,
+        }}
+        data-testid={addChildButtonTestId(target)}
+      >
+        <Icn
+          category='semantic'
+          type='plus-in-white-translucent-circle'
+          color={iconColor}
+          width={12}
+          height={12}
+        />
+      </Button>
+    ),
+    [iconColor, target],
   )
 
   if (!supportsChildren) {
@@ -238,22 +255,11 @@ const AddChildButton = React.memo((props: AddChildButtonProps) => {
   }
 
   return (
-    <Button
-      onClick={onClick}
-      style={{
-        height: 12,
-        width: 12,
-      }}
-      data-testid={addChildButtonTestId(target)}
-    >
-      <Icn
-        category='semantic'
-        type='plus-in-white-translucent-circle'
-        color={iconColor}
-        width={12}
-        height={12}
-      />
-    </Button>
+    <ComponentPickerDropDown
+      opener={opener}
+      insertionTarget={INSERT_AS_CHILD_TARGET}
+      targets={targets}
+    />
   )
 })
 
@@ -293,6 +299,8 @@ const ReplaceElementButton = React.memo((props: ReplaceElementButtonProps) => {
   })()
 
   const onClick = useCreateCallbackToShowComponentPicker()([realTarget], insertionTarget)
+
+  // TODO: show dropdown here
 
   return (
     <Button
