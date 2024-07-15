@@ -92,6 +92,7 @@ import {
   conditionalOverrideUpdateForPath,
   getConditionalOverrideActions,
 } from './navigator-item-clickable-wrapper'
+import type { DropdownMenuItem } from '../../../uuiui/radix-components'
 import {
   DropdownItem,
   DropdownMenuContainer,
@@ -986,54 +987,8 @@ function useOnItemClick(targets: ElementPath[], insertionTarget: InsertionTarget
   return onItemClick
 }
 
-const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProps>(
-  ({ targets, insertionTarget }) => {
-    // for insertion we currently only support one target
-    const allInsertableComponents = useAllInsertableComponents(targets, insertionTarget)
-
-    const hideAllContextMenus = React.useCallback(() => {
-      contextMenu.hideAll()
-    }, [])
-
-    const onItemClickFn = useOnItemClick(targets, insertionTarget)
-    const onItemClick = React.useCallback(
-      (preferredChildToInsert: InsertableComponent) => (e: React.UIEvent) => {
-        onItemClickFn(preferredChildToInsert)
-        hideAllContextMenus()
-      },
-      [hideAllContextMenus, onItemClickFn],
-    )
-
-    const squashEvents = React.useCallback((e: React.UIEvent<unknown>) => {
-      e.stopPropagation()
-    }, [])
-
-    const onVisibilityChange = React.useCallback((isVisible: boolean) => {
-      if (isVisible) {
-        document.body.classList.add(BodyMenuOpenClass)
-      } else {
-        document.body.classList.remove(BodyMenuOpenClass)
-      }
-    }, [])
-
-    return (
-      <Menu
-        id={FullMenuId}
-        animation={false}
-        style={{ width: 260 }}
-        onClick={squashEvents}
-        onVisibilityChange={onVisibilityChange}
-      >
-        <ComponentPicker
-          allComponents={allInsertableComponents}
-          onItemClick={onItemClick}
-          closePicker={hideAllContextMenus}
-          shownInToolbar={false}
-          insertionActive={false}
-        />
-      </Menu>
-    )
-  },
+const PreferredChildIcon = React.memo<{ icon: PreferredChildComponentDescriptorWithIcon['icon'] }>(
+  (props) => <Icn {...iconPropsForIcon(props.icon)} width={12} height={12} />,
 )
 
 interface ComponentPickerDropDownProps {
@@ -1049,21 +1004,90 @@ export const ComponentPickerDropDown = React.memo<ComponentPickerDropDownProps>(
 
   const onItemClickFn = useOnItemClick(targets, insertionTarget)
 
-  const [page, setPage] = React.useState<'preferred' | 'full'>('preferred')
+  const firstTarget = targets[0]
+  const preferredChildren = usePreferredChildrenForTarget(firstTarget, insertionTarget)
+
+  const initialPage = preferredChildren.length > 0 ? 'preferred' : 'full'
+
+  const [page, setPage] = React.useState<'preferred' | 'full'>(initialPage)
 
   const showFullPicker = React.useCallback((e: Event) => {
     e.preventDefault()
     setPage('full')
   }, [])
 
+  const resetPage = React.useCallback(() => setPage(initialPage), [initialPage])
+
+  const projectContentsRef = useRefEditorState((state) => state.editor.projectContents)
+  const allElementPropsRef = useRefEditorState((state) => state.editor.allElementProps)
+  const propertyControlsInfoRef = useRefEditorState((state) => state.editor.propertyControlsInfo)
+  const metadataRef = useRefEditorState((state) => state.editor.jsxMetadata)
+  const elementPathTreesRef = useRefEditorState((state) => state.editor.elementPathTree)
+
+  const dispatch = useDispatch()
+
+  const insertPreferredChildInner = React.useCallback(
+    (preferredChildToInsert: ElementToInsert) =>
+      insertPreferredChild(
+        preferredChildToInsert,
+        targets,
+        projectContentsRef.current,
+        allElementPropsRef.current,
+        propertyControlsInfoRef.current,
+        metadataRef.current,
+        elementPathTreesRef.current,
+        dispatch,
+        insertionTarget,
+      ),
+    [
+      allElementPropsRef,
+      dispatch,
+      elementPathTreesRef,
+      insertionTarget,
+      metadataRef,
+      projectContentsRef,
+      propertyControlsInfoRef,
+      targets,
+    ],
+  )
+
+  const preferredChildItems = React.useMemo(
+    (): DropdownMenuItem[] =>
+      preferredChildren.map((child) => ({
+        id: child.name,
+        label: child.name,
+        onSelect:
+          child.variants.length > 0
+            ? NO_OP
+            : () =>
+                insertPreferredChildInner({
+                  name: child.name,
+                  elementToInsert: (uid) =>
+                    jsxElement(child.name, uid, jsxAttributesFromMap({}), []),
+                  additionalImports: defaultImportsForComponentModule(child.name, child.moduleName),
+                }),
+
+        icon: <PreferredChildIcon icon={child.icon} />,
+        subMenuItems: child.variants.map((variant) => ({
+          id: `${child.name}-${variant.insertMenuLabel}}`,
+          label: variant.insertMenuLabel,
+          onSelect: () =>
+            insertPreferredChildInner({
+              name: child.name,
+              elementToInsert: (uid) => ({ uid: uid, ...variant.elementToInsert() }),
+              additionalImports: variant.importsToAdd,
+            }),
+        })),
+      })),
+    [insertPreferredChildInner, preferredChildren],
+  )
+
   const contents = React.useMemo(() => {
     switch (page) {
       case 'preferred':
         return (
           <>
-            <DropdownMenuItemList
-              items={[{ id: 'hello', label: 'Good day', onSelect: () => console.info('wooot') }]}
-            />
+            <DropdownMenuItemList items={preferredChildItems} />
             <div>----</div>
             <DropdownItem
               onSelect={showFullPicker}
@@ -1091,7 +1115,7 @@ export const ComponentPickerDropDown = React.memo<ComponentPickerDropDownProps>(
       default:
         assertNever(page)
     }
-  }, [allInsertableComponents, onItemClickFn, page, showFullPicker])
+  }, [allInsertableComponents, onItemClickFn, page, preferredChildItems, showFullPicker])
 
-  return <DropdownMenuContainer opener={props.opener} contents={contents} />
+  return <DropdownMenuContainer opener={props.opener} contents={contents} onClose={resetPage} />
 })
