@@ -5,7 +5,7 @@ import { colorTheme } from './styles/theme'
 import { Icons } from './icons'
 import { when } from '../utils/react-conditionals'
 
-const StyledItemContainer = styled('div', {
+const DropdownMenuItemContainer = styled('div', {
   minWidth: 128,
   padding: '4px 8px',
   cursor: 'pointer',
@@ -46,11 +46,13 @@ export interface DropdownMenuProps {
   alignOffset?: number
 }
 
+type OnSelect = (e: Event) => void
+
 interface DropdownItemProps {
   shouldShowCheckboxes: boolean
   shouldShowChevrons: boolean
   shouldShowIcons: boolean
-  onSelect: () => void
+  onSelect: OnSelect
   label: React.ReactNode
   icon: React.ReactNode | null
   checked: boolean | null
@@ -59,13 +61,13 @@ interface DropdownItemProps {
 }
 
 const ItemContainer = React.memo<
-  React.PropsWithChildren<{ isSubmenu: boolean; onSelect: () => void }>
+  React.PropsWithChildren<{ isSubmenu: boolean; onSelect: OnSelect }>
 >(({ children, isSubmenu, onSelect }) => {
   if (isSubmenu) {
     return (
       <RadixDropdownMenu.Sub>
         <RadixDropdownMenu.SubTrigger>
-          <StyledItemContainer>{children}</StyledItemContainer>
+          <DropdownMenuItemContainer>{children}</DropdownMenuItemContainer>
         </RadixDropdownMenu.SubTrigger>
       </RadixDropdownMenu.Sub>
     )
@@ -73,12 +75,12 @@ const ItemContainer = React.memo<
 
   return (
     <RadixDropdownMenu.Item onSelect={onSelect}>
-      <StyledItemContainer>{children}</StyledItemContainer>
+      <DropdownMenuItemContainer>{children}</DropdownMenuItemContainer>
     </RadixDropdownMenu.Item>
   )
 })
 
-const DropdownItem = React.memo<DropdownItemProps>((props) => {
+export const DropdownItem = React.memo<DropdownItemProps>((props) => {
   const {
     shouldShowCheckboxes,
     shouldShowIcons,
@@ -150,7 +152,37 @@ const DropdownItem = React.memo<DropdownItemProps>((props) => {
   )
 })
 
+export interface DropdownMenuItemListProps {
+  items: DropdownMenuItem[]
+}
+
+export const DropdownMenuItemList = React.memo<DropdownMenuItemListProps>((props) => {
+  const shouldShowCheckboxes = props.items.some((i) => i.checked != null)
+  const shouldShowIcons = props.items.some((i) => i.icon != null)
+  const shouldShowChevrons = props.items.some((i) => i.subMenuItems != null)
+
+  return (
+    <>
+      {props.items.map((item) => (
+        <DropdownItem
+          key={item.id}
+          shouldShowChevrons={shouldShowChevrons}
+          shouldShowCheckboxes={shouldShowCheckboxes}
+          shouldShowIcons={shouldShowIcons}
+          onSelect={item.onSelect}
+          label={item.label}
+          icon={item.icon}
+          checked={item.checked ?? null}
+          shortcut={item.shortcut ?? null}
+          subMenuItems={item.subMenuItems ?? null}
+        />
+      ))}
+    </>
+  )
+})
+
 export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
+  const [open, onOpen] = React.useState(false)
   const stopPropagation = React.useCallback((e: React.KeyboardEvent) => {
     const hasModifiers = e.altKey || e.metaKey || e.shiftKey || e.ctrlKey
     if (!hasModifiers) {
@@ -158,13 +190,6 @@ export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
     }
   }, [])
   const onEscapeKeyDown = React.useCallback((e: KeyboardEvent) => e.stopPropagation(), [])
-
-  const [open, onOpen] = React.useState(false)
-
-  const shouldShowCheckboxes = props.items.some((i) => i.checked != null)
-  const shouldShowIcons = props.items.some((i) => i.icon != null)
-  const shouldShowChevrons = props.items.some((i) => i.subMenuItems != null)
-
   return (
     <RadixDropdownMenu.Root open={open} onOpenChange={onOpen}>
       <RadixDropdownMenu.Trigger style={{ background: 'none', border: 'none' }}>
@@ -179,20 +204,7 @@ export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
           align='start'
           alignOffset={props.alignOffset}
         >
-          {props.items.map((item) => (
-            <DropdownItem
-              key={item.id}
-              shouldShowChevrons={shouldShowChevrons}
-              shouldShowCheckboxes={shouldShowCheckboxes}
-              shouldShowIcons={shouldShowIcons}
-              onSelect={item.onSelect}
-              label={item.label}
-              icon={item.icon}
-              checked={item.checked ?? null}
-              shortcut={item.shortcut ?? null}
-              subMenuItems={item.subMenuItems ?? null}
-            />
-          ))}
+          <DropdownMenuItemList items={props.items} />
         </RadixDropdownContent>
       </RadixDropdownMenu.Portal>
     </RadixDropdownMenu.Root>

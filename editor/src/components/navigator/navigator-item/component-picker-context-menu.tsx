@@ -92,7 +92,11 @@ import {
   conditionalOverrideUpdateForPath,
   getConditionalOverrideActions,
 } from './navigator-item-clickable-wrapper'
-import { DropdownMenuContainer } from '../../../uuiui/radix-components'
+import {
+  DropdownItem,
+  DropdownMenuContainer,
+  DropdownMenuItemList,
+} from '../../../uuiui/radix-components'
 
 type RenderPropTarget = { type: 'render-prop'; prop: string }
 type ConditionalTarget = { type: 'conditional'; conditionalCase: ConditionalCase }
@@ -1045,18 +1049,49 @@ export const ComponentPickerDropDown = React.memo<ComponentPickerDropDownProps>(
 
   const onItemClickFn = useOnItemClick(targets, insertionTarget)
 
-  return (
-    <DropdownMenuContainer
-      opener={props.opener}
-      contents={
-        <ComponentPicker
-          allComponents={allInsertableComponents}
-          onItemClick={onItemClickFn}
-          closePicker={NO_OP}
-          shownInToolbar={false}
-          insertionActive={false}
-        />
-      }
-    />
-  )
+  const [page, setPage] = React.useState<'preferred' | 'full'>('preferred')
+
+  const showFullPicker = React.useCallback((e: Event) => {
+    e.preventDefault()
+    setPage('full')
+  }, [])
+
+  const contents = React.useMemo(() => {
+    switch (page) {
+      case 'preferred':
+        return (
+          <>
+            <DropdownMenuItemList
+              items={[{ id: 'hello', label: 'Good day', onSelect: () => console.info('wooot') }]}
+            />
+            <div>----</div>
+            <DropdownItem
+              onSelect={showFullPicker}
+              shouldShowCheckboxes={false}
+              shouldShowChevrons={false}
+              shouldShowIcons={false}
+              label={'More...'}
+              icon={undefined}
+              checked={null}
+              shortcut={null}
+              subMenuItems={null}
+            />
+          </>
+        )
+      case 'full':
+        return (
+          <ComponentPicker
+            allComponents={allInsertableComponents}
+            onItemClick={onItemClickFn}
+            closePicker={NO_OP}
+            shownInToolbar={false}
+            insertionActive={false}
+          />
+        )
+      default:
+        assertNever(page)
+    }
+  }, [allInsertableComponents, onItemClickFn, page, showFullPicker])
+
+  return <DropdownMenuContainer opener={props.opener} contents={contents} />
 })
