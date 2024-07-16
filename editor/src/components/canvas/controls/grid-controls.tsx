@@ -26,6 +26,7 @@ import {
   offsetPoint,
   pointDifference,
   pointsEqual,
+  scaleRect,
   windowPoint,
   zeroRectIfNullOrInfinity,
 } from '../../../core/shared/math-utils'
@@ -1109,7 +1110,8 @@ export const GridResizeControls = controlForStrategyMemoized<GridResizeControlPr
       if (element?.globalFrame == null || isInfinityRectangle(element.globalFrame)) {
         return false
       }
-      return element.globalFrame.width * scale > 40 && element.globalFrame.height > 40
+      const scaledFrame = scaleRect(element.globalFrame, scale)
+      return scaledFrame.width * scale > 30 && scaledFrame.height > 30
     }, [element, scale, isResizing])
 
     if (
