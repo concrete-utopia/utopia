@@ -942,7 +942,7 @@ export const ComponentPickerDropDown = React.memo<ComponentPickerDropDownProps>(
   const preferredChildItems = React.useMemo(
     (): DropdownMenuItem[] =>
       preferredChildren.map((child) => ({
-        id: labelTestIdForComponentIcon(child.name, child.moduleName ?? 'intrinsic', child.icon),
+        id: labelTestIdForComponentIcon(child.name, child.moduleName ?? '', child.icon),
         label: child.name,
         onSelect:
           child.variants.length > 0
