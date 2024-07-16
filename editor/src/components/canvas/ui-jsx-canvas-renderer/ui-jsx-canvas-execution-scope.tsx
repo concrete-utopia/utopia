@@ -264,7 +264,7 @@ export function useGetCodeAndHighlightBounds(
   code: string
   highlightBounds: HighlightBoundsForUids | null
 } {
-  const projectContext = usePubSubAtomReadOnly(UtopiaProjectCtxAtom, shouldUpdateCallback)
+  const projectContext = React.useContext(UtopiaProjectCtxAtom)
   if (filePath == null) {
     return emptyHighlightBoundsResult
   } else {

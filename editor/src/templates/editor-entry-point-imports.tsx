@@ -1,7 +1,9 @@
 // import * as React from 'react'
-// const whyDidYouRender = require('@welldone-software/why-did-you-render')
+// import whyDidYouRender from '@welldone-software/why-did-you-render'
 // whyDidYouRender(React, {
-//   trackAllPureComponents: true,
+//   trackAllPureComponents: false,
+//   logOnDifferentValues: true,
+//   logOwnerReasons: true,
 // })
 
 import '../vite-shims'

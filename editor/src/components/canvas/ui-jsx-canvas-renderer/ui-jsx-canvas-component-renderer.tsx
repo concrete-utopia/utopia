@@ -50,6 +50,17 @@ import { mapArrayToDictionary } from '../../../core/shared/array-utils'
 import { assertNever } from '../../../core/shared/utils'
 import { addFakeSpyEntry } from './ui-jsx-canvas-spy-wrapper'
 import type { FilePathMappings } from '../../../core/model/project-file-utils'
+import {
+  CanvasStateMetaContext,
+  PerformanceOptimizedCanvasContextProvider,
+} from './ui-jsx-canvas-selective-context-provider'
+import { enableWhyDidYouRenderOnComponent } from '../../../utils/react-memoize.test-utils'
+
+function tryToGetInstancePathFromAllProps(props: any): ElementPath | null {
+  const { [UTOPIA_INSTANCE_PATH]: instancePathAny, [UTOPIA_PATH_KEY]: pathsString } = props
+
+  return tryToGetInstancePath(instancePathAny, pathsString)
+}
 
 function tryToGetInstancePath(
   maybePath: ElementPath | null,
@@ -65,12 +76,33 @@ function tryToGetInstancePath(
   }
 }
 
+let componentRenderNumber: { [componentName: string]: { rerenderNumber: number } } = {}
+
 export function createComponentRendererComponent(params: {
   topLevelElementName: string | null
   filePath: string
   mutableContextRef: React.MutableRefObject<MutableUtopiaCtxRefData>
 }): ComponentRendererComponent {
   const Component = (...functionArguments: Array<any>) => {
+    if (componentRenderNumber[params.topLevelElementName ?? ''] == null) {
+      componentRenderNumber[params.topLevelElementName ?? ''] = { rerenderNumber: 0 }
+    } else {
+      componentRenderNumber[params.topLevelElementName ?? ''].rerenderNumber++
+    }
+
+    if (componentRenderNumber[params.topLevelElementName ?? ''].rerenderNumber > 1000) {
+      throw new Error(
+        `ComponentRendererComponent rerendered more than 1000 times: ${params.topLevelElementName}`,
+      )
+    }
+    // throw an error if this component is accidentally used outside of a PerformanceSensitiveCanvsaContextProvider
+    const canvasStateMeta = React.useContext(CanvasStateMetaContext)
+    if (canvasStateMeta == null) {
+      throw new Error(
+        `ComponentRendererComponent used outside of a PerformanceSensitiveCanvsaContextProvider`,
+      )
+    }
+
     // Attempt to determine which function argument is the "regular" props object/value.
     // Default it to the first if one is not identified by looking for some of our special keys.
     let regularPropsArgumentIndex: number = functionArguments.findIndex((functionArgument) => {
@@ -99,7 +131,9 @@ export function createComponentRendererComponent(params: {
 
     const mutableContext = params.mutableContextRef.current[params.filePath].mutableContext
 
-    const instancePath: ElementPath | null = tryToGetInstancePath(instancePathAny, pathsString)
+    const instancePath: ElementPath | null = tryToGetInstancePathFromAllProps(
+      functionArguments[regularPropsArgumentIndex],
+    )
 
     function shouldUpdate() {
       return (
@@ -366,7 +400,31 @@ export function createComponentRendererComponent(params: {
   Component.utopiaType = 'UTOPIA_COMPONENT_RENDERER_COMPONENT' as const
   Component.filePath = params.filePath
   Component.originalName = params.topLevelElementName
-  return Component
+  if (params.topLevelElementName === 'storyboard') {
+    enableWhyDidYouRenderOnComponent(Component)
+  }
+
+  const WrapperComponentToGetStateContext = (...args: any[]) => {
+    const elementPath = tryToGetInstancePathFromAllProps(args[0])
+
+    return (
+      // {/* TODO how to pass down rest of params */}
+      // <PerformanceOptimizedCanvasContextProvider targetPath={elementPath}>
+      <Component {...args[0]} />
+      // </PerformanceOptimizedCanvasContextProvider>
+    )
+  }
+
+  WrapperComponentToGetStateContext.displayName = `ComponentRendererWrapper(${params.topLevelElementName})`
+  WrapperComponentToGetStateContext.topLevelElementName = params.topLevelElementName
+  WrapperComponentToGetStateContext.utopiaType = 'UTOPIA_COMPONENT_WRAPPER_COMPONENT' as const
+  WrapperComponentToGetStateContext.filePath = params.filePath
+  WrapperComponentToGetStateContext.originalName = params.topLevelElementName
+  if (params.topLevelElementName === 'storyboard') {
+    enableWhyDidYouRenderOnComponent(WrapperComponentToGetStateContext)
+  }
+
+  return WrapperComponentToGetStateContext
 }
 
 function isRenderProp(prop: any): prop is { props: { [UTOPIA_PATH_KEY]: string } } {
