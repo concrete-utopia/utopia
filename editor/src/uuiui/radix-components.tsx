@@ -55,6 +55,7 @@ export interface DropdownMenuProps {
 type OnSelect = (e: Event) => void
 
 interface DropdownItemProps {
+  itemId: string
   shouldShowCheckboxes: boolean
   shouldShowChevrons: boolean
   shouldShowIcons: boolean
@@ -67,13 +68,13 @@ interface DropdownItemProps {
 }
 
 const ItemContainer = React.memo<
-  React.PropsWithChildren<{ isSubmenu: boolean; onSelect: OnSelect }>
->(({ children, isSubmenu, onSelect }) => {
+  React.PropsWithChildren<{ isSubmenu: boolean; onSelect: OnSelect; testid: string }>
+>(({ children, isSubmenu, onSelect, testid }) => {
   if (isSubmenu) {
     return (
       <RadixDropdownMenu.Sub>
         <RadixDropdownMenu.SubTrigger>
-          <DropdownMenuItemContainer>{children}</DropdownMenuItemContainer>
+          <DropdownMenuItemContainer data-testid={testid}>{children}</DropdownMenuItemContainer>
         </RadixDropdownMenu.SubTrigger>
       </RadixDropdownMenu.Sub>
     )
@@ -81,13 +82,14 @@ const ItemContainer = React.memo<
 
   return (
     <RadixDropdownMenu.Item onSelect={onSelect}>
-      <DropdownMenuItemContainer>{children}</DropdownMenuItemContainer>
+      <DropdownMenuItemContainer data-testid={testid}>{children}</DropdownMenuItemContainer>
     </RadixDropdownMenu.Item>
   )
 })
 
 export const DropdownItem = React.memo<DropdownItemProps>((props) => {
   const {
+    itemId,
     shouldShowCheckboxes,
     shouldShowIcons,
     shouldShowChevrons,
@@ -103,7 +105,11 @@ export const DropdownItem = React.memo<DropdownItemProps>((props) => {
   const shouldShowIconsForSubmenuItems = subMenuItems?.some((s) => s.icon != null) ?? false
 
   return (
-    <ItemContainer isSubmenu={!isNullOrEmptyArray(subMenuItems)} onSelect={onSelect}>
+    <ItemContainer
+      testid={itemId}
+      isSubmenu={!isNullOrEmptyArray(subMenuItems)}
+      onSelect={onSelect}
+    >
       <div
         style={{
           display: 'flex',
@@ -135,6 +141,7 @@ export const DropdownItem = React.memo<DropdownItemProps>((props) => {
                   <RadixDropdownSubcontent sideOffset={10} alignOffset={-6}>
                     {subMenuItems.map((child) => (
                       <DropdownItem
+                        itemId={child.id}
                         key={child.id}
                         shouldShowChevrons={false}
                         shouldShowCheckboxes={shouldShowCheckboxesForSubmenuItems}
@@ -171,6 +178,7 @@ export const DropdownMenuItemList = React.memo<DropdownMenuItemListProps>((props
     <>
       {props.items.map((item) => (
         <DropdownItem
+          itemId={item.id}
           key={item.id}
           shouldShowChevrons={shouldShowChevrons}
           shouldShowCheckboxes={shouldShowCheckboxes}
