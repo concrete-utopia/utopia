@@ -155,10 +155,8 @@ export var storyboard = (
         data-testid='row-1-column-2'
         style={{
           backgroundColor: 'green',
-          gridColumnStart: 'auto',
-          gridColumnEnd: 'auto',
-          gridRowStart: 'auto',
-          gridRowEnd: 'auto',
+          gridColumn: 'auto',
+          gridRow: 'auto',
         }}
       />
       <div
@@ -171,10 +169,8 @@ export var storyboard = (
         data-testid='row-2-column-1'
         style={{
           backgroundColor: 'blue',
-          gridColumnStart: 'auto',
-          gridColumnEnd: 'auto',
-          gridRowStart: 'auto',
-          gridRowEnd: 'auto',
+          gridColumn: 'auto',
+          gridRow: 'auto',
         }}
       />
       <div

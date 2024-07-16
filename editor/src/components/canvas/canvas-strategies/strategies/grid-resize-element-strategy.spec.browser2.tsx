@@ -53,8 +53,8 @@ describe('grid rearrange move strategy', () => {
       expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
         gridColumnEnd: '11',
         gridColumnStart: '7',
-        gridRowEnd: '3',
         gridRowStart: '2',
+        gridRowEnd: 'auto',
       })
     })
 
@@ -72,7 +72,7 @@ describe('grid rearrange move strategy', () => {
       expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
         gridColumnEnd: '9',
         gridColumnStart: '7',
-        gridRowEnd: '3',
+        gridRowEnd: 'auto',
         gridRowStart: '2',
       })
     })
@@ -93,7 +93,7 @@ describe('grid rearrange move strategy', () => {
       expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
         gridColumnEnd: '10',
         gridColumnStart: '6',
-        gridRowEnd: '3',
+        gridRowEnd: 'auto',
         gridRowStart: '2',
       })
     })
@@ -112,7 +112,7 @@ describe('grid rearrange move strategy', () => {
       expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
         gridColumnEnd: '10',
         gridColumnStart: '8',
-        gridRowEnd: '3',
+        gridRowEnd: 'auto',
         gridRowStart: '2',
       })
     })
@@ -149,7 +149,7 @@ describe('grid rearrange move strategy', () => {
         expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
           gridColumnEnd: '10',
           gridColumnStart: '7',
-          gridRowEnd: '3',
+          gridRowEnd: 'auto',
           gridRowStart: '2',
         })
       }
