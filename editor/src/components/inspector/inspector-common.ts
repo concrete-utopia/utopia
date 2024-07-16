@@ -255,24 +255,30 @@ export function detectAreElementsFlexContainers(
 export const isFlexColumn = (flexDirection: FlexDirection): boolean =>
   flexDirection.startsWith('column')
 
-export const hugContentsApplicableForContainer = (
+export const basicHugContentsApplicableForContainer = (
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   elementPath: ElementPath,
 ): boolean => {
-  return (
+  const anyChildrenFixStickyOrAbsolute =
     mapDropNulls(
       (path) => MetadataUtils.findElementByElementPath(metadata, path),
       MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath),
     ).filter(
       (element) =>
-        !(
-          MetadataUtils.isPositionFixed(element) ||
-          MetadataUtils.isPositionSticky(element) ||
-          MetadataUtils.isPositionAbsolute(element)
-        ),
+        MetadataUtils.isPositionFixed(element) ||
+        MetadataUtils.isPositionSticky(element) ||
+        MetadataUtils.isPositionAbsolute(element),
     ).length > 0
+
+  const isElementGrid = MetadataUtils.isGridLayoutedContainer(
+    MetadataUtils.findElementByElementPath(metadata, elementPath),
   )
+
+  if (anyChildrenFixStickyOrAbsolute || isElementGrid) {
+    return false
+  }
+  return true
 }
 
 export const hugContentsApplicableForText = (
@@ -999,7 +1005,7 @@ export function getFixedFillHugOptionsForElement(
       isGroup ? 'hug-group' : null,
       'fixed',
       hugContentsApplicableForText(metadata, selectedView) ||
-      (!isGroup && hugContentsApplicableForContainer(metadata, pathTrees, selectedView))
+      (!isGroup && basicHugContentsApplicableForContainer(metadata, pathTrees, selectedView))
         ? 'hug'
         : null,
       fillContainerApplicable(metadata, selectedView) ? 'fill' : null,
