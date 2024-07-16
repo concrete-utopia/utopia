@@ -631,6 +631,22 @@ export function gridCellHandle(params: { id: string }): GridCellHandle {
 export const GridResizeEdges = ['row-start', 'row-end', 'column-start', 'column-end'] as const
 export type GridResizeEdge = (typeof GridResizeEdges)[number]
 
+export type GridResizeEdgeProperties = {
+  isRow: boolean
+  isColumn: boolean
+  isStart: boolean
+  isEnd: boolean
+}
+
+export function gridResizeEdgeProperties(edge: GridResizeEdge): GridResizeEdgeProperties {
+  return {
+    isRow: edge === 'row-start' || edge === 'row-end',
+    isColumn: edge === 'column-start' || edge === 'column-end',
+    isStart: edge === 'row-start' || edge === 'column-start',
+    isEnd: edge === 'row-end' || edge === 'column-end',
+  }
+}
+
 export interface GridResizeHandle {
   type: 'GRID_RESIZE_HANDLE'
   id: string
