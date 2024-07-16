@@ -30,6 +30,7 @@ import { trueUpGroupElementChanged } from '../../../components/editor/store/edit
 import type { AllElementProps } from '../../../components/editor/store/editor-state'
 import { convertSizelessDivToFrameCommands } from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
+import { assertNever } from '../../../core/shared/utils'
 
 const CHILDREN_CONVERTED_TOAST_ID = 'CHILDREN_CONVERTED_TOAST_ID'
 
@@ -89,8 +90,12 @@ function hugContentsSingleElement(
   ]
 }
 
-function gridTemplateUsesFr(template: GridTemplate) {
-  return template.type === 'DIMENSIONS' && template.dimensions.some((d) => d.unit === 'fr')
+function gridTemplateUsesFr(template: GridTemplate | null) {
+  return (
+    template != null &&
+    template.type === 'DIMENSIONS' &&
+    template.dimensions.some((d) => d.unit === 'fr')
+  )
 }
 
 function elementUsesFrAlongAxis(
@@ -102,15 +107,23 @@ function elementUsesFrAlongAxis(
   if (instance == null) {
     return false
   }
-  const { containerGridProperties } = instance.specialSizeMeasurements
-  if (axis === 'horizontal' && containerGridProperties.gridTemplateColumns != null) {
-    return gridTemplateUsesFr(containerGridProperties.gridTemplateColumns)
-  }
-  if (axis === 'vertical' && containerGridProperties.gridTemplateRows != null) {
-    return gridTemplateUsesFr(containerGridProperties.gridTemplateRows)
-  }
+  const { containerGridProperties, containerGridPropertiesFromProps } =
+    instance.specialSizeMeasurements
 
-  return true
+  switch (axis) {
+    case 'horizontal':
+      return (
+        gridTemplateUsesFr(containerGridProperties.gridTemplateColumns) ||
+        gridTemplateUsesFr(containerGridPropertiesFromProps.gridTemplateColumns)
+      )
+    case 'vertical':
+      return (
+        gridTemplateUsesFr(containerGridProperties.gridTemplateRows) ||
+        gridTemplateUsesFr(containerGridPropertiesFromProps.gridTemplateRows)
+      )
+    default:
+      assertNever(axis)
+  }
 }
 
 export const hugContentsGridStrategy = (
