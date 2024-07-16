@@ -1,4 +1,4 @@
-import type React from 'react'
+import React from 'react'
 import { emptySet } from '../../../core/shared/set-utils'
 import type { MapLike } from 'typescript'
 import { atomWithPubSub } from '../../../core/shared/atom-with-pub-sub'
@@ -59,13 +59,10 @@ const EmptyResolve = (importOrigin: string, toImport: string): Either<string, st
   return left(`Error while resolving ${toImport}, the resolver is missing`)
 }
 
-export const UtopiaProjectCtxAtom = atomWithPubSub<UtopiaProjectCtxProps>({
-  key: 'UtopiaProjectCtxAtom',
-  defaultValue: {
-    projectContents: {},
-    openStoryboardFilePathKILLME: null,
-    resolve: EmptyResolve,
-  },
+export const UtopiaProjectCtxAtom = React.createContext<UtopiaProjectCtxProps>({
+  projectContents: {},
+  openStoryboardFilePathKILLME: null,
+  resolve: EmptyResolve,
 })
 
 interface SceneLevelContextProps {

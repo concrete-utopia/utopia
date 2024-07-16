@@ -10,7 +10,7 @@ export type ComponentRendererComponent = React.ComponentType<
 > & {
   topLevelElementName: string | null
   propertyControls?: PropertyControls
-  utopiaType: 'UTOPIA_COMPONENT_RENDERER_COMPONENT'
+  utopiaType: 'UTOPIA_COMPONENT_WRAPPER_COMPONENT' | 'UTOPIA_COMPONENT_RENDERER_COMPONENT'
   filePath: string
   originalName: string | null
 }
@@ -25,6 +25,9 @@ export function isComponentRendererComponent(
   return (
     component != null &&
     typeof component === 'function' &&
-    (component as ComponentRendererComponent).utopiaType === 'UTOPIA_COMPONENT_RENDERER_COMPONENT'
+    ((component as ComponentRendererComponent).utopiaType ===
+      'UTOPIA_COMPONENT_WRAPPER_COMPONENT' ||
+      (component as ComponentRendererComponent).utopiaType ===
+        'UTOPIA_COMPONENT_RENDERER_COMPONENT')
   )
 }

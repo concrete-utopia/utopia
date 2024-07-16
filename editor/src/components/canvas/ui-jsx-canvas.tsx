@@ -318,9 +318,10 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
   let evaluatedFileNames = React.useRef<Array<string>>([]) // evaluated (i.e. not using a cached evaluation) this render
   evaluatedFileNames.current = [uiFilePath]
 
-  if (!IS_TEST_ENVIRONMENT) {
-    listenForReactRouterErrors(console)
-  }
+  // TODO undo before merge
+  // if (!IS_TEST_ENVIRONMENT) {
+  //   listenForReactRouterErrors(console)
+  // }
 
   React.useEffect(() => {
     if (clearErrors != null) {

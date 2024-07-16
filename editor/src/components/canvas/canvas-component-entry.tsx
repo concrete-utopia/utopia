@@ -12,6 +12,7 @@ import { useDispatch } from '../editor/store/dispatch-context'
 import {
   CanvasStateContext,
   EditorStateContext,
+  LowPriorityStateContext,
   Substores,
   useEditorState,
 } from '../editor/store/store-hook'
@@ -23,15 +24,19 @@ import type {
   UiJsxCanvasPropsWithErrorCallback,
 } from './ui-jsx-canvas'
 import { DomWalkerInvalidatePathsCtxAtom, UiJsxCanvas, pickUiJsxCanvasProps } from './ui-jsx-canvas'
+import { PerformanceOptimizedCanvasContextProvider } from './ui-jsx-canvas-renderer/ui-jsx-canvas-selective-context-provider'
 
 interface CanvasComponentEntryProps {}
 
 export const CanvasComponentEntry = React.memo((props: CanvasComponentEntryProps) => {
   const canvasStore = React.useContext(CanvasStateContext)
+  const lowPrioritystore = React.useContext(LowPriorityStateContext) // TODO before merge: use the low priority provider!!
 
   return (
-    <EditorStateContext.Provider value={canvasStore == null ? null : canvasStore}>
-      <CanvasComponentEntryInner {...props} />
+    <EditorStateContext.Provider value={lowPrioritystore == null ? null : lowPrioritystore}>
+      <PerformanceOptimizedCanvasContextProvider targetPath={null}>
+        <CanvasComponentEntryInner {...props} />
+      </PerformanceOptimizedCanvasContextProvider>
     </EditorStateContext.Provider>
   )
 })

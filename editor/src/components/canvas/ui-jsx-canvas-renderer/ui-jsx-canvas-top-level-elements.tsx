@@ -1,3 +1,4 @@
+import React from 'react'
 import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import type { TopLevelElement } from '../../../core/shared/element-template'
 import type { Imports } from '../../../core/shared/project-file-types'
@@ -14,7 +15,7 @@ export function useGetTopLevelElementsAndImports(
   topLevelElements: TopLevelElement[]
   imports: Imports
 } {
-  const projectContext = usePubSubAtomReadOnly(UtopiaProjectCtxAtom, shouldUpdateCallback) // TODO MAYBE create a usePubSubAtomSelector
+  const projectContext = React.useContext(UtopiaProjectCtxAtom)
   if (filePath == null) {
     return emptyResult
   } else {
