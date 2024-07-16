@@ -286,6 +286,7 @@ export function createComponentRendererComponent(params: {
       )
       applyBlockReturnFunctions(scope)
 
+      // possibly problematic: this should ONLY run if shouldUpdate() is true
       const arbitraryBlockResult = runBlockUpdatingScope(
         rootElementPath,
         params.filePath,
