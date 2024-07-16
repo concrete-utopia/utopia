@@ -1,10 +1,12 @@
 import type { ElementPath } from 'utopia-shared/src/types'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import type {
-  ElementInstanceMetadata,
-  ElementInstanceMetadataMap,
-  GridElementProperties,
-  GridPosition,
+import {
+  gridPositionValue,
+  type ElementInstanceMetadata,
+  type ElementInstanceMetadataMap,
+  type GridContainerProperties,
+  type GridElementProperties,
+  type GridPosition,
 } from '../../../../core/shared/element-template'
 import type { CanvasVector } from '../../../../core/shared/math-utils'
 import {
@@ -19,8 +21,6 @@ import type { CanvasCommand } from '../../commands/commands'
 import { setProperty } from '../../commands/set-property-command'
 import { canvasPointToWindowPoint } from '../../dom-lookup'
 import type { DragInteractionData } from '../interaction-state'
-import { stripNulls } from '../../../../core/shared/array-utils'
-import { optionalMap } from '../../../../core/shared/optional-utils'
 import type { GridCustomStrategyState } from '../canvas-strategy-types'
 import type { GridCellCoordinates } from '../../controls/grid-controls'
 import { gridCellCoordinates } from '../../controls/grid-controls'
@@ -159,29 +159,53 @@ export function runGridRearrangeMove(
     }
   }
 
-  const gridProperties = getElementGridProperties(originalElementMetadata)
+  const containerMetadata = MetadataUtils.findElementByElementPath(
+    jsxMetadata,
+    EP.parentPath(selectedElement),
+  )
+  if (containerMetadata == null) {
+    return {
+      commands: [],
+      targetCell: null,
+      originalRootCell: null,
+      draggingFromCell: null,
+      targetRootCell: null,
+    }
+  }
+
+  const gridTemplate = containerMetadata.specialSizeMeasurements.containerGridProperties
+
+  const cellGridProperties = getElementGridProperties(originalElementMetadata)
 
   // calculate the difference between the cell the mouse started the interaction from, and the "root"
   // cell of the element, meaning the top-left-most cell the element occupies.
   const draggingFromCell = customState.draggingFromCell ?? newTargetCell
   const rootCell =
-    customState.originalRootCell ?? gridCellCoordinates(gridProperties.row, gridProperties.column)
+    customState.originalRootCell ??
+    gridCellCoordinates(cellGridProperties.row, cellGridProperties.column)
   const coordsDiff = getCellCoordsDelta(draggingFromCell, rootCell)
 
   // get the new adjusted row
-  const row = getCoordBounds(newTargetCell, 'row', gridProperties.width, coordsDiff.row)
+  const row = getCoordBounds(newTargetCell, 'row', cellGridProperties.width, coordsDiff.row)
   // get the new adjusted column
-  const column = getCoordBounds(newTargetCell, 'column', gridProperties.height, coordsDiff.column)
+  const column = getCoordBounds(
+    newTargetCell,
+    'column',
+    cellGridProperties.height,
+    coordsDiff.column,
+  )
 
   const targetRootCell = gridCellCoordinates(row.start, column.start)
 
+  const commands = setGridPropsCommands(targetElement, gridTemplate, {
+    gridColumnStart: gridPositionValue(column.start),
+    gridColumnEnd: gridPositionValue(column.end),
+    gridRowEnd: gridPositionValue(row.end),
+    gridRowStart: gridPositionValue(row.start),
+  })
+
   return {
-    commands: [
-      setProperty('always', targetElement, PP.create('style', 'gridColumnStart'), column.start),
-      setProperty('always', targetElement, PP.create('style', 'gridColumnEnd'), column.end),
-      setProperty('always', targetElement, PP.create('style', 'gridRowStart'), row.start),
-      setProperty('always', targetElement, PP.create('style', 'gridRowEnd'), row.end),
-    ],
+    commands: commands,
     targetCell: newTargetCell,
     originalRootCell: rootCell,
     draggingFromCell: draggingFromCell,
@@ -202,30 +226,80 @@ export function gridPositionToValue(p: GridPosition | null | undefined): string 
 
 export function setGridPropsCommands(
   elementPath: ElementPath,
+  gridTemplate: GridContainerProperties,
   gridProps: Partial<GridElementProperties>,
 ): CanvasCommand[] {
-  return stripNulls([
+  let commands: CanvasCommand[] = [
     deleteProperties('always', elementPath, [
-      PP.create('style', 'gridColumn'),
       PP.create('style', 'gridRow'),
+      PP.create('style', 'gridColumn'),
+      PP.create('style', 'gridColumnStart'),
+      PP.create('style', 'gridColumnEnd'),
+      PP.create('style', 'gridRowStart'),
+      PP.create('style', 'gridRowEnd'),
     ]),
-    optionalMap(
-      (s) => setProperty('always', elementPath, PP.create('style', 'gridColumnStart'), s),
-      gridPositionToValue(gridProps?.gridColumnStart),
-    ),
-    optionalMap(
-      (s) => setProperty('always', elementPath, PP.create('style', 'gridColumnEnd'), s),
-      gridPositionToValue(gridProps?.gridColumnEnd),
-    ),
-    optionalMap(
-      (s) => setProperty('always', elementPath, PP.create('style', 'gridRowStart'), s),
-      gridPositionToValue(gridProps?.gridRowStart),
-    ),
-    optionalMap(
-      (s) => setProperty('always', elementPath, PP.create('style', 'gridRowEnd'), s),
-      gridPositionToValue(gridProps?.gridRowEnd),
-    ),
-  ])
+  ]
+  const columnStart = gridPositionToValue(gridProps.gridColumnStart)
+  const columnEnd = gridPositionToValue(gridProps.gridColumnEnd)
+  const rowStart = gridPositionToValue(gridProps.gridRowStart)
+  const rowEnd = gridPositionToValue(gridProps.gridRowEnd)
+
+  const areaColumnStart = asMaybeNamedAreaOrValue(gridTemplate, 'column', columnStart)
+  const areaColumnEnd = asMaybeNamedAreaOrValue(gridTemplate, 'column', columnEnd)
+  const areaRowStart = asMaybeNamedAreaOrValue(gridTemplate, 'row', rowStart)
+  const areaRowEnd = asMaybeNamedAreaOrValue(gridTemplate, 'row', rowEnd)
+
+  if (columnStart != null && columnStart === columnEnd) {
+    commands.push(
+      setProperty('always', elementPath, PP.create('style', 'gridColumn'), areaColumnStart),
+    )
+  } else if (
+    columnStart != null &&
+    typeof columnStart === 'number' &&
+    columnEnd != null &&
+    typeof columnEnd === 'number' &&
+    columnStart === columnEnd - 1
+  ) {
+    commands.push(
+      setProperty('always', elementPath, PP.create('style', 'gridColumn'), areaColumnStart),
+    )
+  } else {
+    if (columnStart != null) {
+      commands.push(
+        setProperty('always', elementPath, PP.create('style', 'gridColumnStart'), areaColumnStart),
+      )
+    }
+    if (columnEnd != null) {
+      commands.push(
+        setProperty('always', elementPath, PP.create('style', 'gridColumnEnd'), areaColumnEnd),
+      )
+    }
+  }
+
+  if (rowStart != null && rowStart === rowEnd) {
+    commands.push(setProperty('always', elementPath, PP.create('style', 'gridRow'), areaRowStart))
+  } else if (
+    rowStart != null &&
+    typeof rowStart === 'number' &&
+    rowEnd != null &&
+    typeof rowEnd === 'number' &&
+    rowStart === rowEnd - 1
+  ) {
+    commands.push(setProperty('always', elementPath, PP.create('style', 'gridRow'), areaRowStart))
+  } else {
+    if (rowStart != null) {
+      commands.push(
+        setProperty('always', elementPath, PP.create('style', 'gridRowStart'), areaRowStart),
+      )
+    }
+    if (rowEnd != null) {
+      commands.push(
+        setProperty('always', elementPath, PP.create('style', 'gridRowEnd'), areaRowEnd),
+      )
+    }
+  }
+
+  return commands
 }
 
 function getTargetCell(
@@ -292,4 +366,23 @@ function getCoordBounds(
   // the end is the last cell's coord the element will occupy
   const end = Math.max(1, start + size)
   return { start, end }
+}
+
+function asMaybeNamedAreaOrValue(
+  grid: GridContainerProperties,
+  axis: 'row' | 'column',
+  value: number | string | null,
+): string | number {
+  if (value == null) {
+    return 0
+  } else if (typeof value === 'number') {
+    const template = axis === 'row' ? grid.gridTemplateRows : grid.gridTemplateColumns
+    if (template?.type === 'DIMENSIONS') {
+      const maybeAreaStart = template.dimensions.at(value - 1)
+      if (maybeAreaStart != null && maybeAreaStart.areaName != null) {
+        return maybeAreaStart.areaName
+      }
+    }
+  }
+  return value
 }
