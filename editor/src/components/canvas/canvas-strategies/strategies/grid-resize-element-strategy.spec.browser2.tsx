@@ -172,7 +172,7 @@ describe('grid rearrange move strategy', () => {
         expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
           gridColumnEnd: '10',
           gridColumnStart: '7',
-          gridRowEnd: 'auto',
+          gridRowEnd: '3',
           gridRowStart: '1',
         })
       }
