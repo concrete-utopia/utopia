@@ -260,25 +260,24 @@ export const basicHugContentsApplicableForContainer = (
   pathTrees: ElementPathTrees,
   elementPath: ElementPath,
 ): boolean => {
-  const anyChildrenFixStickyOrAbsolute =
+  const hasNonFixStickyOrAbsolute =
     mapDropNulls(
       (path) => MetadataUtils.findElementByElementPath(metadata, path),
       MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath),
     ).filter(
       (element) =>
-        MetadataUtils.isPositionFixed(element) ||
-        MetadataUtils.isPositionSticky(element) ||
-        MetadataUtils.isPositionAbsolute(element),
+        !(
+          MetadataUtils.isPositionFixed(element) ||
+          MetadataUtils.isPositionSticky(element) ||
+          MetadataUtils.isPositionAbsolute(element)
+        ),
     ).length > 0
 
   const isElementGrid = MetadataUtils.isGridLayoutedContainer(
     MetadataUtils.findElementByElementPath(metadata, elementPath),
   )
 
-  if (anyChildrenFixStickyOrAbsolute || isElementGrid) {
-    return false
-  }
-  return true
+  return hasNonFixStickyOrAbsolute && !isElementGrid
 }
 
 export const hugContentsApplicableForText = (
