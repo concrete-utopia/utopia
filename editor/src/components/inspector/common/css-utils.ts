@@ -943,11 +943,35 @@ export function parseGridRange(
   }
 }
 
+// this regex matches 'repeat ( [unit] , [value] )', capturing groups around the unit (1) and the value (2)
+const reRepeatFunction = /repeat\s*\(\s*(\d+)\s*,\s*([^,\)]+)\s*\)/
+
+export function expandRepeatFunctions(str: string): string {
+  let expanded = str
+
+  // If the string matches the regex, calculate its expansion and replace it in-place,
+  // and try again so we can keep expanding nested repeats.
+  let match: RegExpMatchArray | null = null
+  while ((match = expanded.match(reRepeatFunction)) != null) {
+    const times = parseInt(match[1])
+    const unit = match[2]
+    expanded = expanded.replace(match[0], `${unit.trim()} `.repeat(times).trim())
+  }
+
+  return expanded
+}
+
 const reGridAreaNameBrackets = /^\[.+\]$/
 
 export function tokenizeGridTemplate(str: string): string[] {
   let tokens: string[] = []
-  let parts = str.replace(/\]/g, '] ').split(/\s+/)
+  let parts =
+    // 1. expand any `repeat()` functions
+    expandRepeatFunctions(str)
+      // 2. make sure square brackets have a trailing whitespace so we can normalize the parsing
+      .replace(/\]/g, '] ')
+      // 3. tokenize by whitespace
+      .split(/\s+/)
 
   while (parts.length > 0) {
     const part = parts.shift()?.trim()
